@@ -29,7 +29,8 @@ with sync_playwright() as p:
     pg.evaluate(MESURE)
     # marcher : on tourne d'un carrefour à l'autre (des rues neuves, donc du décor neuf à dessiner)
     pas = 0
-    pg.evaluate(f"() => {{ var z = {Z}, M = z.monde; z.poser(M.gx[0], M.gy[0]); }}")
+    # (la forêt : --moment foret, foretmatin ou foretjour — on part de la première rangée de chemins dans les bois)
+    pg.evaluate(f"() => {{ var z = {Z}, M = z.monde; z.poser(M.gx[0], M.gy[M.foret ? 2 : 0]); }}")
     dirs = [(1, 0), (0, 1), (1, 0), (0, 1), (-1, 0), (0, -1), (1, 0), (0, 1)]
     t = 0
     while t < SEC * 1000:

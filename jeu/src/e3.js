@@ -585,7 +585,8 @@ E[3] = {
           avant:'Du lait renversé devant la porte d\'Odette, et des pattes partout : ses chats ont filé, chacun de son côté ! Suis celles de Moustache… si tu sais les reconnaître.',
           bouton:'🐾 Suivre les traces',
           t:'Les traces arrivent sous l\'église, à l\'entrée de la crypte. Mais sa grille est fermée à clé !',
-          rate:'Ce n\'était pas Moustache.'}
+          /* (15 novembre, 14 h 26 : « Désolé, tu t'es trompé, tu n'as pas suivi la bonne trace ») */
+          rate:'Désolé, tu t\'es trompé : ce n\'était pas Moustache. Tu n\'as pas suivi la bonne trace.'}
       ]}
     },
     place:{
@@ -707,8 +708,19 @@ E[3] = {
           avant:'Les cloches sonnent ! Là-haut, Anselme compte les coups, les yeux fermés. Traverse l\'église et monte tout en haut du clocher sans te faire voir. Un seul essai !',
           bouton:'🫥 Se faufiler',
           t:'DONG ! DONG ! Anselme compte les coups, les yeux fermés. Sa clé pend à sa ceinture… Tu la décroches, tout doucement.',
-          rate:'« Qui va là ?! » Anselme pose la main sur sa clé. En redescendant, tu vois Moustache filer vers la forêt… vers le vieux puits !',
+          rate:'« Qui va là ?! » Anselme pose la main sur sa clé. Tu redescends en vitesse… Dehors, des miaulements dans la nuit : Moustache file vers la forêt !',
           ferme:'Anselme garde sa clé à la ceinture.'},
+        /* LES TRACES JUSQU'AU PUITS (Romain, 15 novembre, 14 h 28 et 14 h 29 : « quand il ne réussit pas à attraper la clé d'Anselme, il y a
+           des miaulements et un chat qui va vers le puits […] moitié ville et moitié forêt […] à la fin, il y a le puits » ; « dans ce mini-jeu
+           précisément, il ne peut pas perdre […] sinon on va se retrouver bloqué »). Le même mini-jeu que chez Odette (mj-pistage.js), dans
+           son décor « forêt » : on n'y perd jamais (près d'un mauvais chat, il file, et on rebrousse chemin), et on le recommence autant
+           qu'on veut. Au bout, la grille du vieux puits apparaît (lieux.puits). La nuit seulement (comme la clé). */
+        {id:'traces_puits', ic:'🐾', nom:'Les traces de Moustache', moments:['nuit'], mj:'pistage', essaisInfinis:true, params:{decor:'foret', moment:'nuit'},
+          visibleSi:[{rate:'pisteur:clocher:cle'}], cacheSi:[{vu:'pisteur:clocher:cle'}],
+          avant:'Des miaulements, partout dans la nuit ! Moustache a filé vers la forêt… mais ce n\'est pas le seul chat dehors. Suis ses traces, et seulement les siennes.',
+          bouton:'🐾 Suivre Moustache',
+          t:'Les traces s\'arrêtent au bord d\'un vieux puits, au bout de la forêt. Moustache s\'est glissé entre les barreaux de sa grille !',
+          note:'Moustache s\'est glissé dans le vieux puits, au bout de la forêt.'},
         /* LA GRILLE (Romain, 12 novembre, 21 h 44, et 13 novembre : « Explorer, déverrouiller ; tirer ou pousser : un énorme bruit s'est entendu
            dans tout le village ; soulever : le portail s'ouvre sans bruit et vous pénétrez dans la crypte »). La clé en main, la grille se
            déverrouille ; reste à l'ouvrir : trois gestes, un seul compte (les deux autres s'en vont : cacheSi). Silas le dit au Barde :
@@ -745,9 +757,10 @@ E[3] = {
     lisiere:{alchimiste:{cueillir:[{ingr:'baies', n:3}]}},
     puits:{
       pisteur:{intro:'Le vieux puits, au bord de la forêt. Plus personne n\'y tire d\'eau depuis longtemps.', points:[
-        /* seulement si la clé d'Anselme est ratée, ou avec « Le vieux puits » du Barde ; jamais si la clé a été prise.
+        /* seulement si la clé d'Anselme est ratée (et ses traces suivies jusqu'ici, au clocher : traces_puits — 15 novembre), ou avec « Le
+           vieux puits » du Barde ; jamais si la clé a été prise.
            (L'acide de l'Alchimiste, qui fait fondre les barreaux, arrive avec son code, quand ses sept potions sont prêtes : descente.js.) */
-        {id:'grille', ic:'🕳️', nom:'La grille du vieux puits', moments:['nuit'], visibleSi:[{rate:'pisteur:clocher:cle'}, {code:'info:vieux_puits'}], cacheSi:[{vu:'pisteur:clocher:cle'}],
+        {id:'grille', ic:'🕳️', nom:'La grille du vieux puits', moments:['nuit'], visibleSi:[{vu:'pisteur:clocher:traces_puits'}, {code:'info:vieux_puits'}], cacheSi:[{vu:'pisteur:clocher:cle'}],
           t:'Une vieille grille rouillée. Moustache passe entre les barreaux… toi, non. Il faudrait de quoi ronger toute cette rouille !'},
         /* (étape 6) l'acide de l'Alchimiste (son code, tapé par le Pisteur : P.vus['sac:acide'], descente.js) fait fondre les barreaux */
         {id:'acide', ic:'🧪', nom:'Verser l\'acide sur la grille', moments:['nuit'], visibleSi:[{vu:'pisteur:puits:grille'}], besoin:[{vu:'sac:acide'}],

@@ -40,7 +40,11 @@ var VARIANTES = {
      (le jeu sans variante tire un moment au hasard) */
   pistage:[{id:'matin', ic:'🌅', nom:'Suivre les traces : le matin', d:'Un soleil bas, de longues ombres, la brume', params:{moment:'matin'}},
     {id:'apresmidi', ic:'☀️', nom:'Suivre les traces : l\'après-midi', d:'La lumière dorée, des ombres courtes', params:{moment:'apresmidi'}},
-    {id:'nuit', ic:'🌙', nom:'Suivre les traces : la nuit', d:'La lanterne du Pisteur, les lanternes des carrefours', params:{moment:'nuit'}}],
+    {id:'nuit', ic:'🌙', nom:'Suivre les traces : la nuit', d:'La lanterne du Pisteur, les lanternes des carrefours', params:{moment:'nuit'}},
+    /* (15 novembre, 14 h 28) la piste qui mène au vieux puits, à travers la forêt : on ne peut pas y perdre (enquête 3, la clé ratée) */
+    {id:'foret', ic:'🌲', nom:'Jusqu\'au puits : la nuit', d:'Du clocher au vieux puits, à travers la forêt (enquête 3)', params:{decor:'foret', moment:'nuit'}},
+    {id:'foretmatin', ic:'🍄', nom:'Jusqu\'au puits : le matin', d:'La forêt, avec la brume du matin', params:{decor:'foret', moment:'matin'}},
+    {id:'foretjour', ic:'🌳', nom:'Jusqu\'au puits : l\'après-midi', d:'La forêt, en plein jour', params:{decor:'foret', moment:'apresmidi'}}],
   tir:[{id:'cerfvolant', ic:'🪁', nom:'Tir à l\'arc : le cerf-volant', d:'Coincé en haut du clocher (enquête 2)', params:{decor:'cerfvolant'}},
     {id:'banderoles', ic:'🎏', nom:'Tir à l\'arc : les banderoles', d:'Décorer la place pour la fête (enquête 3)', params:{decor:'banderoles'}}]
 };

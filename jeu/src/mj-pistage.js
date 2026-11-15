@@ -39,6 +39,34 @@
      dorée, des ombres courtes ; la nuit : tout est bleu et sombre, sauf la lanterne du Pisteur, les lanternes des carrefours, les
      fenêtres allumées, celles de l'église.
 
+   LE DEUXIÈME TOUR DU 15 NOVEMBRE (Romain, 14 h 26 à 14 h 29) — CE QUI CHANGE PAR RAPPORT À CE QUI EST ÉCRIT JUSTE AU-DESSUS :
+   · « tu fais 7 sorties avec 7 chats, et il n'y en a qu'une qui est la bonne ; les autres, tu les fais sortir vers des endroits
+     aléatoires de la ville » : toujours les sept chats d'Odette, Moustache et six fausses pistes (plus de nombre selon le niveau).
+   · « les flaques de boue, les flaques d'eau […] tout le long de la rue, qu'on ne puisse pas les éviter » : elles barrent la rue
+     d'un mur à l'autre (EN TRAVERS), et il y en a dans beaucoup de bouts de rue. Un chat qui y passe laisse ensuite des traces
+     toutes fraîches, PAR-DESSUS les autres.
+   · « au début on voit bien, et plus on avance, moins on voit la trace, jusqu'à un moment où on ne la voit plus du tout ; on avance
+     un peu à l'aveugle jusqu'à la prochaine flaque » : PLUS DE PLANCHER. Une trace pâlit avec la distance depuis sa dernière
+     flaque (ou depuis le lait), puis disparaît. Sur la piste de Moustache, jamais plus de p.ecart sans une flaque (on en ajoute).
+   · « tu mets 2 fois plus de chats qui courent » ; « le passage des chats efface les traces » ; « plus on met de temps, plus ce sera
+     difficile » : les chats qui passent en courant arrivent sur une horloge (un de plus toutes les p.coureurs.tous secondes, sans
+     limite : plus on cherche longtemps, plus il y en a) ; sous leurs pattes, les traces s'effacent, et ils laissent les leurs (le
+     morceau du décor touché est redessiné : Blocs.salir). Ce sont les six autres chats ; jamais Moustache (« il n'a qu'une trace »).
+   · « tu les fais tous miauler un peu différemment » ; « quand on entend des miaulements, on a envie d'aller vers le miaulement, mais
+     des fois, c'est des fausses pistes » : au bout de chaque fausse piste, son chat est assis et appelle, chacun avec sa voix (et le
+     son vient du bon côté : à gauche, à droite).
+   · « dès qu'on s'approche trop d'un mauvais chat […] “Désolé, tu t'es trompé, tu n'as pas suivi la bonne trace” » : c'est perdu
+     quand on entre dans son impasse et qu'on arrive près de lui (plus besoin d'aller tout au bout).
+   · LA FORÊT (params.decor 'foret') : « quand il ne réussit pas à attraper la clé d'Anselme, il y a des miaulements et un chat qui
+     va vers le puits […] moitié ville et moitié forêt […] tu modélises les arbres […] des variétés de décors […] à la fin, il y a
+     le puits ». On part du pied du clocher (une flaque sous la gouttière : tous les chats y ont marché) ; en haut, deux rangées de
+     rues ; puis la forêt : des chemins de terre, des chênes, des hêtres, des bouleaux, des pins, des sapins, des buissons, des
+     fougères, de la mousse, des champignons, des rochers, des souches, des arbres couchés, un ruisseau qui coupe les chemins, des
+     lucioles la nuit, un hibou ; au bout, une clairière et le vieux puits. Les fausses pistes finissent surtout dans la forêt
+     (une souche, un terrier, une mare, un rond de champignons, des rochers, un arbre tombé).
+     « Celui-là, il ne peut pas perdre » : près d'un mauvais chat, il file dans les fougères et le conteur dit de rebrousser
+     chemin ; on ne perd jamais (sinon l'enquête serait bloquée). La ville, elle, se perd toujours.
+
    COMMENT C'EST FAIT (pour la fluidité : jeu/donjon/RAPIDITE.md)
    · Le quartier : des rues en quadrillage, des impasses ; le monde est tiré au hasard à chaque partie. Chez Odette (une impasse en
      haut), du lait renversé ; la piste de Moustache mène à l'église, tout au bout ; chaque autre piste finit dans une impasse.
@@ -100,8 +128,21 @@ var LIEUX = {
   lavoir:{nom:'au lavoir', t:'Ces traces s\'arrêtent au bord du lavoir.'},
   arbre:{nom:'au pied d\'un arbre', t:'Ces traces s\'arrêtent au pied d\'un arbre : ce chat-là dort tout là-haut.'},
   carriole:{nom:'sous la carriole de Fortuné', t:'Ces traces s\'arrêtent sous la carriole de Fortuné.'},
-  potager:{nom:'dans le potager', t:'Ces traces s\'arrêtent dans les choux de Basile.'}
+  potager:{nom:'dans le potager', t:'Ces traces s\'arrêtent dans les choux de Basile.'},
+  /* dans la forêt (la piste qui mène au puits) */
+  souche:{nom:'à une vieille souche', t:'Ces traces s\'arrêtent au pied d\'une vieille souche creuse.'},
+  terrier:{nom:'devant un terrier', t:'Ces traces s\'arrêtent devant un terrier de renard.'},
+  mare:{nom:'à la mare', t:'Ces traces s\'arrêtent au bord d\'une mare pleine de grenouilles.'},
+  champignons:{nom:'dans un rond de champignons', t:'Ces traces s\'arrêtent au milieu d\'un rond de champignons.'},
+  rochers:{nom:'entre deux rochers', t:'Ces traces s\'arrêtent entre deux gros rochers couverts de mousse.'},
+  tronc:{nom:'à un arbre tombé', t:'Ces traces s\'arrêtent devant un grand arbre tombé, tout creux.'}
 };
+var LIEUX_VILLE = ['voisin', 'boulangerie', 'lavoir', 'arbre', 'carriole', 'potager'];
+var LIEUX_FORET = ['souche', 'terrier', 'mare', 'champignons', 'rochers', 'tronc'];
+var SEUIL = .1;           /* en dessous de cette force, une trace ne se voit plus du tout : on ne la pose pas */
+/* la force d'une trace, d : la distance parcourue depuis la dernière flaque (ou le lait), V : jusqu'où chaque matière se voit
+   (p.vue). Elle pâlit doucement, puis vite, puis plus rien (Romain : « jusqu'à un moment donné, on ne la voit plus du tout »). */
+function force(sub, d, V){ if(!sub || sub === 'sec') return 0; var u = d / ((V && V[sub]) || 200); return u >= 1 ? 0 : Math.pow(1 - u, .75); }
 
 /* ---------- la lumière de chaque moment ----------
    ombre : là où tombent les ombres (le soleil est de l'autre côté) ; l : leur longueur pour une hauteur de 1 ; a : leur force.
@@ -111,9 +152,8 @@ var LUM = {
   apresmidi:{ombre:{x:.62, y:-.58, l:.85, a:.27}, ciel:'#9ccaee', cielB:'#5f90c2', reflet:'rgba(255,255,255,.62)', herbe:0},
   nuit:{ombre:{x:.3, y:-.55, l:.6, a:.18}, ciel:'#3b4d78', cielB:'#1e2a48', reflet:'rgba(200,215,255,.32)', herbe:0, nuit:true}
 };
-/* ce que les chats ont sous les pattes, et ce qu'en garde une trace de plus (elle pâlit) */
-var PERTE = {eau:.9, boue:.945, farine:.955};
-var DE_TACHE = {flaque:'eau', boue:'boue', farine:'farine'};
+/* ce que les chats ont sous les pattes après une flaque, la boue, la farine, le ruisseau (le gué de la forêt) */
+var DE_TACHE = {flaque:'eau', boue:'boue', farine:'farine', ruisseau:'eau'};
 /* les semelles du Pisteur : ce qu'elles gardent d'un pas à l'autre, combien de secondes une trace met à sécher, sa force, sa couleur */
 var SEMELLE = {eau:{perte:.91, vie:55, a:.62, c:'#2a221e'}, boue:{perte:.94, vie:160, a:.92, c:'#5e3f21'}, farine:{perte:.93, vie:110, a:.92, c:'#ffffff'}};
 var VENT = {x:.92, y:-.38};
@@ -122,10 +162,20 @@ var VENT = {x:.92, y:-.38};
    LE MONDE : le quadrillage, les impasses, les pistes, les passages couverts, les obstacles, les flaques, les traces, le décor
    ========================================================== */
 function creerMonde(p){
-  var NX = p.nx, NY = p.ny, miroir = Math.random() < .5;
+  /* la forêt : deux rangées de rues en haut (le village, le clocher), puis trois rangées de chemins dans les bois, et le puits tout en bas */
+  var FORET = p.decor === 'foret', RANGS_VILLE = 2;
+  var NX = p.nx, NY = FORET ? RANGS_VILLE + 3 : p.ny, miroir = Math.random() < .5;
   function nx(i){ return BORD + (miroir ? NX - 1 - i : i) * PASX; }
   function ny(j){ return BORD + IMPASSE + j * PASY; }
   var Wm = BORD * 2 + (NX - 1) * PASX, Hm = BORD * 2 + IMPASSE + (NY - 1) * PASY + IMPASSE;
+  /* là où commence la forêt (Infinity : pas de forêt) ; sa lisière ondule un peu */
+  var Yf = FORET ? ny(RANGS_VILLE - 1) + RUE / 2 + 10 : Infinity;
+  function estForet(y){ return y > Yf; }
+  /* le ruisseau de la forêt : il coupe tous les chemins qui descendent, entre deux rangées de la forêt */
+  var jR = FORET ? RANGS_VILLE + Math.floor(Math.random() * 2) : -1;
+  var ruisseau = FORET ? {y:(ny(jR) + ny(jR + 1)) / 2 + U.rand(-22, 22), a1:U.rand(14, 22), a2:U.rand(6, 10), p1:U.rand(0, TAU), p2:U.rand(0, TAU), l:9.5} : null;
+  function yRuisseau(x){ return ruisseau.y + ruisseau.a1 * Math.sin(x / 97 + ruisseau.p1) + ruisseau.a2 * Math.sin(x / 41 + ruisseau.p2); }
+  function dansRuisseau(x, y, m){ return !!ruisseau && Math.abs(y - yRuisseau(x)) < ruisseau.l + 3 + (m || 0); }
   var rues = [], i, j, k;
   for(i = 0; i < NX; i++) rues.push({x:nx(i) - RUE / 2, y:ny(0) - RUE / 2, w:RUE, h:(NY - 1) * PASY + RUE});
   for(j = 0; j < NY; j++) rues.push({x:Math.min(nx(0), nx(NX - 1)) - RUE / 2, y:ny(j) - RUE / 2, w:(NX - 1) * PASX + RUE, h:RUE});
@@ -136,10 +186,13 @@ function creerMonde(p){
     r.imp = true; rues.push(r);
     return {mx:mx, my:my, dx:dx, dy:dy, fx:mx + dx * (lg - 26), fy:my + dy * (lg - 26), bx:mx + dx * lg, by:my + dy * lg, rect:r};
   }
-  /* chez Odette : une impasse au-dessus du premier carrefour */
+  /* le départ : chez Odette (la ville) ou le pied du clocher (la forêt) — une impasse au-dessus du premier carrefour.
+     (Les noms « odette » et « eglise » restent : le départ et l'arrivée ; dans la forêt, l'arrivée est le vieux puits.) */
   var odette = impasse(nx(0), ny(0) - RUE / 2, 0, -1);
-  /* l'église : au bout du quartier, à l'opposé — après le dernier carrefour, vers le bas ou vers le côté (tiré au hasard) */
-  var eg = U.choix([[NX - 1, NY - 1, 'bas'], [NX - 1, NY - 1, 'cote'], [NX - 1, NY - 2, 'cote'], [NX - 2, NY - 1, 'bas']]);
+  /* l'arrivée : au bout du quartier, à l'opposé — après le dernier carrefour, vers le bas ou vers le côté (tiré au hasard) ;
+     dans la forêt, toujours tout en bas (le puits, dans sa clairière) */
+  var eg = FORET ? U.choix([[NX - 1, NY - 1, 'bas'], [NX - 2, NY - 1, 'bas'], [Math.floor(NX / 2), NY - 1, 'bas']]) :
+    U.choix([[NX - 1, NY - 1, 'bas'], [NX - 1, NY - 1, 'cote'], [NX - 1, NY - 2, 'cote'], [NX - 2, NY - 1, 'bas']]);
   var sx = miroir ? -1 : 1;
   var eglise = eg[2] === 'bas' ? impasse(nx(eg[0]), ny(eg[1]) + RUE / 2, 0, 1, IMPASSE + 14) : impasse(nx(eg[0]) + sx * RUE / 2, ny(eg[1]), sx, 0, IMPASSE + 14);
   eglise.noeud = [eg[0], eg[1]];
@@ -163,12 +216,11 @@ function creerMonde(p){
     return prises.every(function(q){ return Math.hypot(q.mx + q.dx * IMPASSE - (e.mx + e.dx * IMPASSE), q.my + q.dy * IMPASSE - (e.my + e.dy * IMPASSE)) > RUE * 1.6; }) &&
       Math.hypot(eglise.bx - (e.mx + e.dx * IMPASSE), eglise.by - (e.my + e.dy * IMPASSE)) > RUE * 2.2;
   }
-  /* ---- les chats de cette partie : Moustache, et p.faux fausses pistes ---- */
-  var autres = CH.liste.filter(function(c){ return c.id !== 'moustache' && (p.cinq || c.id !== 'noisette'); });
-  autres = U.melanger(autres).slice(0, p.faux);
-  if(p.cinq && !autres.some(function(c){ return c.id === 'noisette'; })) autres[0] = CH.par.noisette;   /* à partir du niveau 5, Noisette est toujours là */
-  autres = U.melanger(autres);
-  var noms = U.melanger(Object.keys(LIEUX).filter(function(k2){ return k2 !== 'voisin'; }));
+  /* ---- les chats de cette partie : Moustache, et les six autres (Romain, 15 novembre, 14 h 26 : « 7 sorties avec 7 chats ») ---- */
+  var autres = U.melanger(CH.liste.filter(function(c){ return c.id !== 'moustache'; })).slice(0, p.faux == null ? 6 : p.faux);
+  /* le ruisseau ne passe jamais dans une impasse */
+  if(FORET) libres = libres.filter(function(L){ return !((L.dy === 1 && L.a[1] === jR) || (L.dy === -1 && L.a[1] === jR + 1) || (L.dx && L.a[1] === jR)); });
+  var nomsV = U.melanger(LIEUX_VILLE.filter(function(k2){ return k2 !== 'voisin'; })), nomsF = U.melanger(LIEUX_FORET.slice());
   var couloirs = U.melanger(COULOIRS.slice());
   var pistes = [], fins = [], reserves = [];
   function chemin(n){
@@ -197,21 +249,26 @@ function creerMonde(p){
   var oM = couloirs.pop();
   pistes.push({chat:'moustache', bon:true, pts:ligne(chemin(eglise.noeud), oM, eglise, eglise)});
   autres.forEach(function(c, n){
-    var e = null, q;
-    for(q = 0; q < libres.length && !e; q++){
-      var L = libres[q], pres = Math.min(dist(L.a), dist(L.b));
+    var e = null, q, tour;
+    /* deux tours : d'abord comme on voudrait (dans la forêt, les fausses pistes partent surtout dans les bois), puis sans être difficile */
+    for(tour = 0; tour < 2 && !e; tour++) for(q = 0; q < libres.length && !e; q++){
+      var L = libres[q], pres = Math.min(dist(L.a), dist(L.b)), finY = L.my + L.dy * IMPASSE;
       if(!loin(L)) continue;
-      if(n === 0 ? pres > 1 : pres < 1) continue;
+      if(!tour && (n === 0 ? pres > 1 : pres < 1)) continue;
+      if(!tour && FORET && n >= 2 && !estForet(finY - 30)) continue;
       e = L; libres.splice(q, 1);
     }
     if(!e) return;
     prises.push(e);
     var imp = impasse(e.mx, e.my, e.dx, e.dy);
-    var lieu = n === 0 ? 'voisin' : noms[(n - 1) % noms.length];
+    var auBois = FORET && estForet(imp.by - e.dy * 30);
+    var lieu = auBois ? (nomsF.shift() || U.choix(LIEUX_FORET)) : n === 0 && !FORET ? 'voisin' : (nomsV.shift() || U.choix(LIEUX_VILLE));
     var dep = dist(e.a) <= dist(e.b) ? e.a : e.b;
     var o = couloirs.pop();
     pistes.push({chat:c.id, bon:false, lieu:lieu, pts:ligne(chemin(dep), o, e, imp)});
-    fins.push({x:imp.fx, y:imp.fy, bx:imp.bx, by:imp.by, dx:e.dx, dy:e.dy, lieu:lieu, chat:c.id, e:e, rect:imp.rect, g:nouvelleGraine()});
+    /* le chat est assis tout au fond, tourné vers la rue : il appelle (ses traces y mènent) */
+    fins.push({x:imp.fx, y:imp.fy, bx:imp.bx, by:imp.by, dx:e.dx, dy:e.dy, lieu:lieu, chat:c.id, e:e, rect:imp.rect, g:nouvelleGraine(), foret:auBois,
+      cx:imp.bx - e.dx * 14, cy:imp.by - e.dy * 14});
     reserves.push({x:imp.bx + e.dx * 34 - 64, y:imp.by + e.dy * 34 - 64, w:128, h:128});
   });
 
@@ -245,11 +302,18 @@ function creerMonde(p){
   var arches = [], segArche = {};
   var candA = U.melanger(Object.keys(usage).filter(function(key){ return nbUsage(key) >= 2 && !segImp[key]; }));
   candA.sort(function(a, b){ return (usage[b][0] ? 1 : 0) - (usage[a][0] ? 1 : 0); });   /* le premier sur le chemin de Moustache */
+  function surRuisseau(key){ return FORET && key.charAt(0) === 'v' && +key.split(':')[2] === jR; }
   for(i = 0; i < candA.length && arches.length < (p.arches || 0); i++){
-    var key = candA[i], g = geoSeg(key), La = U.rand(56, 70), mid = (g.a0 + g.a1) / 2, A;
+    if(surRuisseau(candA[i])) continue;
+    /* (pas au milieu du bout de rue : vers un bout, pour laisser à l'autre bout la place d'une flaque) */
+    var key = candA[i], g = geoSeg(key), La = U.rand(56, 70), mid = Math.random() < .5 ? g.a0 + La / 2 + 16 : g.a1 - La / 2 - 16, A;
     A = g.sens === 'h' ? {x:mid - La / 2, y:g.c - RUE / 2, w:La, h:RUE} : {x:g.c - RUE / 2, y:mid - La / 2, w:RUE, h:La};
     A.sens = g.sens; A.k = key; A.g = nouvelleGraine(); A.cx = A.x + A.w / 2; A.cy = A.y + A.h / 2;
     A.bat = g.sens === 'h' ? {x:A.x - 4, y:A.y - 34, w:A.w + 8, h:A.h + 68} : {x:A.x - 34, y:A.y - 4, w:A.w + 68, h:A.h + 8};
+    /* dans la forêt, le passage couvert est une voûte de branches : un grand chêne penché par-dessus le chemin */
+    A.foret = estForet(A.cy - 40);
+    if(A.foret) A.bat = g.sens === 'h' ? {x:A.x - 10, y:A.y - 30, w:A.w + 20, h:A.h + 60} : {x:A.x - 30, y:A.y - 10, w:A.w + 60, h:A.h + 20};
+    if(A.foret !== estForet(A.cy + 40)) continue;   /* (pas sur la lisière) */
     if(arches.some(function(B){ return Math.hypot(B.cx - A.cx, B.cy - A.cy) < 300; })) continue;
     arches.push(A); segArche[key] = 1;
   }
@@ -262,11 +326,11 @@ function creerMonde(p){
       if(Math.abs(a - along) < 2 && Math.abs(l) < RUE / 2 && segment(q.x, q.y) === G.key) return l; }
     return null;
   }
-  var TYPES_OB = ['caisses', 'tonneaux', 'charrette', 'sacs', 'bois', 'paniers'];
+  var TYPES_OB = ['caisses', 'tonneaux', 'charrette', 'sacs', 'bois', 'paniers'], TYPES_OB_F = ['tronc', 'rochers', 'souche', 'branches'];
   var ordreP = [0].concat(U.melanger(pistes.map(function(P, ip){ return ip; }).slice(1))), io = 0;
   for(var essai = 0; essai < 80 && obstacles.length < (p.sauts || 0); essai++){
     var ip = ordreP[io++ % ordreP.length], P = pistes[ip];
-    var ks = Object.keys(usage).filter(function(key2){ return usage[key2][ip] && !segArche[key2] && !segOb[key2]; });
+    var ks = Object.keys(usage).filter(function(key2){ return usage[key2][ip] && !segArche[key2] && !segOb[key2] && !surRuisseau(key2); });
     if(!ks.length) continue;
     var k2 = U.choix(ks), g2 = geoSeg(k2), u = Math.random() < .5 ? U.rand(.2, .3) : U.rand(.7, .8), along = g2.a0 + (g2.a1 - g2.a0) * u;
     g2.key = k2;
@@ -277,61 +341,96 @@ function creerMonde(p){
     if(a1 - a0 > 50) continue;
     var O = g2.sens === 'h' ? {x:along - Lo / 2, y:g2.c + a0, w:Lo, h:a1 - a0} : {x:g2.c + a0, y:along - Lo / 2, w:a1 - a0, h:Lo};
     if(Math.hypot(O.x + O.w / 2 - depart.x, O.y + O.h / 2 - depart.y) < 170) continue;
-    O.sens = g2.sens; O.cote = cote; O.type = U.choix(TYPES_OB); O.g = nouvelleGraine(); O.k = k2; O.haut = O.type === 'charrette' ? 12 : O.type === 'bois' || O.type === 'sacs' ? 7 : 10;
+    O.sens = g2.sens; O.cote = cote; O.type = U.choix(estForet(O.y + O.h / 2) ? TYPES_OB_F : TYPES_OB); O.g = nouvelleGraine(); O.k = k2;
+    O.haut = O.type === 'charrette' ? 12 : O.type === 'bois' || O.type === 'sacs' || O.type === 'branches' ? 7 : O.type === 'tronc' ? 9 : 10;
     obstacles.push(O); segOb[k2] = 1;
   }
   function dansObstacle(x, y, m){ for(var q = 0; q < obstacles.length; q++) if(dans(obstacles[q], x, y, m || 0)) return obstacles[q]; return null; }
 
-  /* ---- les flaques, la boue, la farine : sur les pistes (la première sur celle de Moustache), et deux flaques au hasard ---- */
-  var taches = [];
-  var aFaire = [], boul = -1;
-  for(i = 0; i < (p.flaques || 0); i++) aFaire.push('flaque');
-  for(i = 0; i < (p.boues || 0); i++) aFaire.push('boue');
-  for(i = 0; i < (p.farines || 0); i++) aFaire.push('farine');
-  pistes.forEach(function(P2, ip2){ if(P2.lieu === 'boulangerie') boul = ip2; });
-  var premFarine = true;
-  function tachePossible(cx, cy, rx){
-    if(!dansRue(cx, cy)) return false;
-    if(Math.hypot(cx - depart.x, cy - depart.y) < 175 || Math.hypot(cx - eglise.fx, cy - eglise.fy) < 150) return false;
-    if(fins.some(function(F){ return Math.hypot(cx - F.x, cy - F.y) < 74; })) return false;
-    var bb = {x:cx - rx, y:cy - rx, w:rx * 2, h:rx * 2};
-    if(arches.some(function(A2){ return croise(A2, bb, 14); }) || obstacles.some(function(O2){ return croise(O2, bb, 24); })) return false;
-    if(taches.some(function(T){ return Math.hypot(T.x - cx, T.y - cy) < T.rx + rx + 34; })) return false;
-    return true;
-  }
-  function nouvelleTache(type, cx, cy, rx, rot){
-    var m = [], v = 1; for(var q = 0; q < 14; q++){ v = U.borne(v + U.rand(-.16, .16), .74, 1.16); m.push(v); }
+  /* ---- les flaques, la boue, la farine : EN TRAVERS de la rue, d'un mur à l'autre (Romain, 14 h 26 : « qu'on ne puisse pas les
+     éviter »), dans une bonne part des bouts de rue (p.taux) ; sur la piste de Moustache, jamais plus de p.ecart sans en croiser une ;
+     dans la forêt, le ruisseau coupe chaque chemin qui descend (un gué). Une seule par bout de rue (deux pour le ruisseau). ---- */
+  var taches = [], segTache = {};
+  function nouvelleTache(type, cx, cy, rx, ry, rot){
+    var m = [], v = 1; for(var q = 0; q < 14; q++){ v = U.borne(v + U.rand(-.14, .14), .78, 1.16); m.push(v); }
     m[13] = (m[12] + m[0]) / 2;
-    var T = {type:type, x:cx, y:cy, rx:rx, ry:rx * U.rand(.55, .78), rot:rot, m:m, g:nouvelleGraine(), saut:{}};
+    var T = {type:type, x:cx, y:cy, rx:rx, ry:ry, rot:rot, m:m, g:nouvelleGraine(), travers:true, foret:estForet(cy)};
     taches.push(T); return T;
   }
-  aFaire.forEach(function(type, idx){
-    for(var e3 = 0; e3 < 50; e3++){
-      var versBoul = type === 'farine' && premFarine && boul >= 0;
-      var ip3 = idx === 0 ? 0 : versBoul ? boul : (Math.random() < .3 ? 0 : Math.floor(Math.random() * pistes.length));
-      var P3 = pistes[ip3], s3 = versBoul ? P3.longueur - U.rand(84, 120) : U.rand(175, P3.longueur - 110);
-      if(s3 < 150) continue;
-      var q3 = point(P3.lisse, s3);
-      var rx = type === 'flaque' ? U.rand(16, 27) : type === 'boue' ? U.rand(15, 23) : U.rand(13, 18);
-      var sh = U.rand(-8, 8), cx = q3.x + Math.cos(q3.a + PI / 2) * sh, cy = q3.y + Math.sin(q3.a + PI / 2) * sh;
-      if(!tachePossible(cx, cy, rx)) continue;
-      nouvelleTache(type, cx, cy, rx, q3.a + U.rand(-.3, .3));
-      if(versBoul) premFarine = false;
-      break;
-    }
-  });
-  /* deux flaques au hasard, sur aucune piste en particulier (elles mouillent les semelles du Pisteur) */
-  for(i = 0; i < 2; i++) for(var e4 = 0; e4 < 30; e4++){
-    var rq = U.choix(rues.filter(function(r){ return !r.imp; }));
-    var px4 = U.rand(rq.x + 16, rq.x + rq.w - 16), py4 = U.rand(rq.y + 16, rq.y + rq.h - 16), rx4 = U.rand(14, 22);
-    if(!tachePossible(px4, py4, rx4)) continue;
-    nouvelleTache('flaque', px4, py4, rx4, rq.w > rq.h ? U.rand(-.3, .3) : PI / 2 + U.rand(-.3, .3)); break;
+  function typeTache(cy){ var r = Math.random(); return estForet(cy) ? (r < .48 ? 'boue' : 'flaque') : (r < (p.boue == null ? .32 : p.boue) ? 'boue' : 'flaque'); }
+  /* une tache en travers du bout de rue « key » ; al : où, le long de la rue (sinon au hasard) */
+  /* une tache de demi-longueur rx peut-elle aller en a (le long du bout de rue « key ») ? */
+  function tacheIci(key, a, rx){
+    var g = geoSeg(key);
+    if(a < g.a0 + rx + 18 || a > g.a1 - rx - 18) return null;
+    var cx = g.sens === 'h' ? a : g.c, cy = g.sens === 'h' ? g.c : a;
+    var bb = g.sens === 'h' ? {x:cx - rx - 4, y:g.c - RUE / 2, w:rx * 2 + 8, h:RUE} : {x:g.c - RUE / 2, y:cy - rx - 4, w:RUE, h:rx * 2 + 8};
+    if(Math.hypot(cx - depart.x, cy - depart.y) < 70) return null;
+    if(arches.some(function(A2){ return croise(A2, bb, 12); }) || obstacles.some(function(O2){ return croise(O2, bb, 16); })) return null;
+    if(taches.some(function(T){ return Math.hypot(T.x - cx, T.y - cy) < Math.min(T.rx, 30) + rx + 46; })) return null;
+    if(dansRuisseau(cx, cy, rx + 30)) return null;
+    return {g:g, cx:cx, cy:cy};
   }
+  /* poser une tache en travers du bout de rue « key » ; al : où, le long de la rue (sinon au hasard) ; rxFixe : sa demi-longueur */
+  function poserTacheSeg(key, type, al, rxFixe){
+    var g = geoSeg(key), len = g.a1 - g.a0;
+    type = type || typeTache(g.sens === 'h' ? g.c : (g.a0 + g.a1) / 2);
+    var rx = rxFixe || (type === 'boue' ? U.rand(15, 21) : type === 'farine' ? U.rand(13, 16) : U.rand(15, 24));
+    if(len < rx * 2 + 44) return null;
+    for(var e3 = 0; e3 < (al != null ? 1 : 14); e3++){
+      var ici = tacheIci(key, al != null ? al : U.rand(g.a0 + rx + 18, g.a1 - rx - 18), rx); if(!ici) continue;
+      /* ry : d'un mur à l'autre, même là où le bord de la tache rentre un peu (0,78 × 0,93 × 0,76 × RUE > RUE / 2) */
+      var T = nouvelleTache(type, ici.cx, ici.cy, rx, RUE * U.rand(.76, .82), (g.sens === 'h' ? 0 : PI / 2) + U.rand(-.1, .1));
+      T.k = key; segTache[key] = (segTache[key] || 0) + 1;
+      return T;
+    }
+    return null;
+  }
+  var segs = [];
+  for(i = 0; i < NX - 1; i++) for(j = 0; j < NY; j++) segs.push('h:' + i + ':' + j);
+  for(i = 0; i < NX; i++) for(j = 0; j < NY - 1; j++) segs.push('v:' + i + ':' + j);
+  /* le ruisseau, d'abord : un gué sur chaque chemin qui descend */
+  if(FORET) for(i = 0; i < NX; i++){
+    var kR = 'v:' + i + ':' + jR, yR = yRuisseau(gx[i]), pente = ruisseau.a1 / 97 * Math.cos(gx[i] / 97 + ruisseau.p1) + ruisseau.a2 / 41 * Math.cos(gx[i] / 41 + ruisseau.p2);
+    var TR = nouvelleTache('ruisseau', gx[i], yR, ruisseau.l + 2, RUE * .8, PI / 2 + Math.atan(pente));
+    TR.m = TR.m.map(function(){ return 1; }); TR.k = kR; segTache[kR] = 2;
+  }
+  /* la farine (la ville) : devant la boulangerie, sur le dernier bout de rue de sa fausse piste */
+  if(!FORET) pistes.forEach(function(P2){
+    if(P2.lieu !== 'boulangerie') return;
+    for(var s4 = P2.longueur - 140; s4 > 0; s4 -= 20){ var q4 = point(P2.lisse, s4), k4 = segment(q4.x, q4.y); if(k4 && k4.charAt(0) !== 'c' && !segTache[k4]){ poserTacheSeg(k4, 'farine'); break; } }
+  });
+  /* sur la piste de Moustache, d'abord : jamais plus de p.ecart sans une tache. On note tous les endroits de sa piste où une tache
+     pourrait aller ; puis, depuis le départ (le lait), on prend chaque fois le plus lointain qui reste dans la limite (s'il n'y en a
+     pas, le plus proche après). Les taches déjà là (le gué du ruisseau, la farine) comptent. */
+  (function(){
+    var P0 = pistes[0], E = p.ecart || 380, L0 = P0.longueur, RX = 16, possibles = [], s5, q5;
+    for(s5 = 0; s5 < L0 - 140; s5 += 8){
+      q5 = point(P0.lisse, s5); var k5 = segment(q5.x, q5.y); if(!k5 || k5.charAt(0) === 'c') continue;
+      var g5 = geoSeg(k5), a5 = g5.sens === 'h' ? q5.x : q5.y;
+      if(tacheIci(k5, a5, RX)) possibles.push({s:s5, k:k5, a:a5});
+    }
+    function sortie(s){ while(s < L0){ var q = point(P0.lisse, s); if(!dansTache(q.x, q.y, 0)) return s; s += 4; } return s; }
+    var dern = 0, garde = 0;
+    while(dern + E < L0 - 140 && garde++ < 40){
+      var lim = dern + E, deja = -1;
+      for(s5 = dern + 6; s5 <= lim; s5 += 5){ q5 = point(P0.lisse, s5); if(dansTache(q5.x, q5.y, 0)) deja = s5; }
+      if(deja >= 0){ dern = sortie(deja); continue; }
+      var choix = null;
+      possibles.forEach(function(c){ if(c.s > dern + RX + 30 && c.s <= lim + RX - 6 && (!choix || c.s > choix.s) && tacheIci(c.k, c.a, RX)) choix = c; });
+      if(!choix) possibles.forEach(function(c){ if(c.s > lim && (!choix || c.s < choix.s) && tacheIci(c.k, c.a, RX)) choix = c; });
+      if(!choix || !poserTacheSeg(choix.k, null, choix.a, RX)) break;
+      dern = sortie(choix.s);
+    }
+  })();
+  U.melanger(segs).forEach(function(key){ if(!segTache[key] && Math.random() < (p.taux == null ? .65 : p.taux)) poserTacheSeg(key); });
+  /* et dans la forêt, une flaque sous la gouttière du clocher, juste devant le départ : tous les chats y ont marché */
+  if(FORET){ var Tg = nouvelleTache('flaque', odette.mx, odette.my - 30, 14, RUE * .8, PI / 2); Tg.depart = true; }
   function dansTache(x, y, m){
     m = m || 0;
     for(var q = 0; q < taches.length; q++){
-      var T = taches[q], dx = x - T.x, dy = y - T.y;
-      if(Math.abs(dx) > T.rx * 1.2 + m || Math.abs(dy) > T.rx * 1.2 + m) continue;
+      var T = taches[q], dx = x - T.x, dy = y - T.y, e = Math.max(T.rx, T.ry) * 1.2 + m;
+      if(Math.abs(dx) > e || Math.abs(dy) > e) continue;
       if(dansForme(T, x, y, m)) return T;
     }
     return null;
@@ -362,15 +461,26 @@ function creerMonde(p){
      changent ce que le chat a sous les pattes ; sous un passage couvert, rien ; par-dessus un obstacle, il saute ==== */
   var traces = [], CASE = 220, cases = {};
   function poser(t){ traces.push(t); var cle = Math.floor(t.x / CASE) + ':' + Math.floor(t.y / CASE); (cases[cle] = cases[cle] || []).push(t); }
-  var plancher = p.plancher == null ? .32 : p.plancher, trouMax = p.trou || 0, perteLait = p.lait || .98;
-  pistes.forEach(function(P, ipp){
-    var pts = P.lisse, L = P.longueur, s = 14, nP = 0, sub = 'lait', c = 1, dedans = null, enSaut = false;
+  /* effacer : les traces sous les pattes d'un chat qui passe en courant (sauf les siennes) ; rend combien */
+  function effacer(x, y, r, sauf){
+    var n = 0, a0 = Math.floor((x - r) / CASE), a1 = Math.floor((x + r) / CASE), b0 = Math.floor((y - r) / CASE), b1 = Math.floor((y + r) / CASE);
+    for(var a = a0; a <= a1; a++) for(var b = b0; b <= b1; b++){
+      var l = cases[a + ':' + b]; if(!l) continue;
+      for(var k = 0; k < l.length; k++){ var T = l[k]; if(T.ef || (sauf && T.own === sauf)) continue; if(Math.abs(T.x - x) < r && Math.abs(T.y - y) < r && Math.hypot(T.x - x, T.y - y) < r){ T.ef = 1; n++; } }
+    }
+    return n;
+  }
+  var V = p.vue || {lait:280, eau:200, boue:280, farine:240}, trouMax = p.trou || 0;
+  pistes.forEach(function(P){
+    /* chez Odette, les pattes pleines de lait ; au pied du clocher, encore sèches (la flaque de la gouttière est juste devant) */
+    var pts = P.lisse, L = P.longueur, s = 14, nP = 0, sub = FORET ? 'sec' : 'lait', d = 0, enSaut = false;
     var pk = CH.par[P.chat].trace.k < .8 ? .8 : 1;
     function une(q, cote, ecart, dec){
+      var al = force(sub, d, V); if(al < SEUIL) return;
       var x = q.x + Math.cos(q.a + PI / 2) * ecart * cote + Math.cos(q.a) * (dec || 0) + U.rand(-.9, .9);
       var y = q.y + Math.sin(q.a + PI / 2) * ecart * cote + Math.sin(q.a) * (dec || 0) + U.rand(-.9, .9);
       if(!dansRue(x, y) || dansObstacle(x, y, 3) || dansArche(x, y, 1) || dansTache(x, y, 1)) return;
-      poser({x:x, y:y, a:q.a + PI / 2 + U.rand(-.12, .12), c:P.chat, sub:sub, al:plancher + (1 - plancher) * c, k:U.rand(.94, 1.06), g:nouvelleGraine()});
+      poser({x:x, y:y, a:q.a + PI / 2 + U.rand(-.12, .12), c:P.chat, sub:sub, al:al, k:U.rand(.94, 1.06), g:nouvelleGraine()});
     }
     function serrees(q, quatre){   /* l'appel (deux pattes serrées) ou la réception (quatre) d'un saut */
       une(q, -1, 2.6, 0); une(q, 1, 2.6, 0);
@@ -378,7 +488,7 @@ function creerMonde(p){
     }
     while(s < L - 6){
       var q = point(pts, s), cote = nP % 2 ? 1 : -1, pas = PAS_CHAT * pk * U.rand(.93, 1.07);
-      if(dansArche(q.x, q.y, 3)){ s += pas; nP++; continue; }          /* sous le passage couvert : rien */
+      if(dansArche(q.x, q.y, 3)){ s += pas; d += pas; nP++; continue; }          /* sous le passage couvert : rien */
       var ob = dansObstacle(q.x, q.y, 8);
       if(ob){
         if(!enSaut){   /* l'appel : on recule jusqu'à être devant l'obstacle, et là, deux pattes serrées */
@@ -386,30 +496,29 @@ function creerMonde(p){
           while(sb > 0 && dansObstacle(qb.x, qb.y, 9)){ sb -= 2; qb = point(pts, sb); }
           serrees(qb, false);
         }
-        s += pas * .6; continue;
+        s += pas * .6; d += pas * .6; continue;
       }
-      if(enSaut){ enSaut = false; serrees(q, true); s += pas * 1.4; nP += 2; continue; }
+      if(enSaut){ enSaut = false; serrees(q, true); s += pas * 1.4; d += pas * 1.4; nP += 2; continue; }
       var ta = dansTache(q.x, q.y, 1);
-      if(ta){
-        if(ta !== dedans){ dedans = ta; if(ta.type === 'flaque' && ta.rx < 23 && Math.random() < .35 && !ta.saut.pris){ ta.saut[ipp] = 1; } }
-        if(!ta.saut[ipp]){ sub = DE_TACHE[ta.type]; c = 1; }
-        s += pas; nP++; continue;                                        /* dans la flaque, la boue, la farine : on ne voit plus rien */
-      }
-      if(dedans){ var sautee = dedans.saut[ipp]; dedans = null; if(sautee){ serrees(q, true); s += pas * 1.4; nP += 2; continue; } }
-      if(Math.random() >= trouMax * (1 - c)) une(q, cote, 3.4, 0);
-      c *= sub === 'lait' ? perteLait : PERTE[sub];
-      s += pas; nP++;
+      if(ta){ sub = DE_TACHE[ta.type]; d = 0; s += pas; nP++; continue; }    /* dans la flaque, la boue, la farine : on ne voit plus rien */
+      var fo = force(sub, d, V);
+      if(fo >= SEUIL && Math.random() >= trouMax * (1 - fo)) une(q, cote, 3.4, 0);
+      s += pas; d += pas; nP++;
     }
   });
 
   /* ==== le décor : les pâtés de maisons, et tout autour des bandes de jardins ==== */
   var eviteRues = rues.map(function(r){ return {x:r.x - 4, y:r.y - 4, w:r.w + 8, h:r.h + 8}; }), eviteAutres = reserves.slice();
-  eviteAutres.push({x:odette.bx - 66, y:odette.by - 64, w:132, h:68});
-  var egBoite = boiteEglise(eglise); eviteAutres.push(egBoite);
+  /* la ville : chez Odette au départ, l'église à l'arrivée ; la forêt : l'église (le clocher) au départ, la clairière du puits à l'arrivée */
+  var egBoite = FORET ? boitePuits(eglise) : boiteEglise(eglise), departBoite = FORET ? boiteEglise(odette) : {x:odette.bx - 66, y:odette.by - 64, w:132, h:68};
+  eviteAutres.push(departBoite); eviteAutres.push(egBoite);
   arches.forEach(function(A2){ eviteAutres.push(A2.bat); });
-  /* les lanternes, au coin des carrefours */
+  /* le ruisseau : une file de petites boîtes, pour que rien ne pousse dans l'eau */
+  if(FORET) for(var xr = -MARGE; xr < Wm + MARGE; xr += 14){ var yr = yRuisseau(xr); eviteAutres.push({x:xr - 7, y:yr - ruisseau.l - 3, w:14, h:ruisseau.l * 2 + 6, eau:true}); }
+  /* les lanternes, au coin des carrefours (dans le village seulement) */
   var lampes = [];
   for(i = 0; i < NX; i++) for(j = 0; j < NY; j++){
+    if(estForet(gy[j] - RUE)) continue;
     var coins = U.melanger([[-1, -1], [1, -1], [-1, 1], [1, 1]]).slice(0, Math.random() < .35 ? 2 : 1);
     coins.forEach(function(cn){
       var lx = gx[i] + cn[0] * (RUE / 2 + 5.5), ly = gy[j] + cn[1] * (RUE / 2 + 5.5), bb = {x:lx - 6, y:ly - 6, w:12, h:12};
@@ -419,16 +528,18 @@ function creerMonde(p){
     });
   }
   /* les arbres qui débordent sur la rue (dessinés au-dessus du Pisteur : ils cachent les traces dessous) */
-  var dessus = [];
-  for(var e5 = 0; e5 < 40 && dessus.length < (p.branches || 2); e5++){
-    var kb = U.choix(Object.keys(usage)); if(segArche[kb]) continue;
+  var dessus = [], segsF = segs.filter(function(k6){ var g6 = geoSeg(k6); return estForet((g6.sens === 'h' ? g6.c : g6.a0) - 20); });
+  var nDessus = (p.branches || 2) + (FORET ? 7 : 0);
+  for(var e5 = 0; e5 < 90 && dessus.length < nDessus; e5++){
+    var kb = FORET && dessus.length >= (p.branches || 2) && segsF.length ? U.choix(segsF) : U.choix(Object.keys(usage)); if(segArche[kb]) continue;
     var gb = geoSeg(kb), ub = U.rand(.25, .75), alb = gb.a0 + (gb.a1 - gb.a0) * ub, cb = Math.random() < .5 ? -1 : 1, rb = U.rand(22, 28);
     var tx = gb.sens === 'h' ? alb : gb.c + cb * (RUE / 2 + 9), ty = gb.sens === 'h' ? gb.c + cb * (RUE / 2 + 9) : alb;
-    var bbt = {x:tx - 10, y:ty - 10, w:20, h:20};
+    var bbt = {x:tx - 10, y:ty - 10, w:20, h:20}, auBois2 = estForet(ty);
+    if(auBois2) rb = U.rand(25, 32);
     if(eviteAutres.some(function(r){ return croise(r, bbt); }) || rues.some(function(r){ return croise(r, {x:tx - 6, y:ty - 6, w:12, h:12}); })) continue;
-    if(dessus.some(function(d){ return Math.hypot(d.x - tx, d.y - ty) < 160; }) || Math.hypot(tx - depart.x, ty - depart.y) < 150) continue;
+    if(dessus.some(function(d){ return Math.hypot(d.x - tx, d.y - ty) < (auBois2 ? 120 : 160); }) || Math.hypot(tx - depart.x, ty - depart.y) < 150) continue;
     if(obstacles.some(function(O3){ return Math.hypot(O3.x + O3.w / 2 - tx, O3.y + O3.h / 2 - ty) < 50; })) continue;
-    dessus.push({x:tx, y:ty, r:rb, g:nouvelleGraine(), sorte:'feuillu', haut:26});
+    dessus.push({x:tx, y:ty, r:rb, g:nouvelleGraine(), sorte:auBois2 ? U.choix(['chene', 'hetre', 'chene']) : 'feuillu', haut:26});
     eviteAutres.push({x:tx - 12, y:ty - 12, w:24, h:24});
   }
   var evite = eviteRues.concat(eviteAutres);
@@ -442,14 +553,17 @@ function creerMonde(p){
   }
   for(i = 0; i < NX - 1; i++) for(j = 0; j < NY - 1; j++) cellules.push({x:gx[i] + RUE / 2, y:gy[j] + RUE / 2, w:gx[i + 1] - gx[i] - RUE, h:gy[j + 1] - gy[j] - RUE});
   var hautG = gy[0] - RUE / 2, basG = gy[NY - 1] + RUE / 2, gaucheG = gx[0] - RUE / 2, droiteG = gx[NX - 1] + RUE / 2;
-  couper({x:-MARGE, y:-MARGE, w:Wm + 2 * MARGE, h:hautG + MARGE}, 300).forEach(function(c){ cellules.push(c); });
-  couper({x:-MARGE, y:basG, w:Wm + 2 * MARGE, h:Hm + MARGE - basG}, 300).forEach(function(c){ cellules.push(c); });
-  couper({x:-MARGE, y:hautG, w:gaucheG + MARGE, h:basG - hautG}, 300).forEach(function(c){ cellules.push(c); });
-  couper({x:droiteG, y:hautG, w:Wm + MARGE - droiteG, h:basG - hautG}, 300).forEach(function(c){ cellules.push(c); });
+  /* (la forêt : les bandes des côtés sont coupées à la lisière — le haut est au village, le bas dans les bois) */
+  function aLisiere(R){ if(!FORET || R.y >= Yf || R.y + R.h <= Yf) return [R]; return [{x:R.x, y:R.y, w:R.w, h:Yf - R.y}, {x:R.x, y:Yf, w:R.w, h:R.y + R.h - Yf}]; }
+  [{x:-MARGE, y:-MARGE, w:Wm + 2 * MARGE, h:hautG + MARGE}, {x:-MARGE, y:basG, w:Wm + 2 * MARGE, h:Hm + MARGE - basG},
+    {x:-MARGE, y:hautG, w:gaucheG + MARGE, h:basG - hautG}, {x:droiteG, y:hautG, w:Wm + MARGE - droiteG, h:basG - hautG}].forEach(function(R){
+    aLisiere(R).forEach(function(R2){ couper(R2, 300).forEach(function(c){ cellules.push(c); }); });
+  });
+  cellules.forEach(function(c){ c.foret = estForet(c.y + c.h / 2); });
   var maisons = [], arbres = [], objets = [], sols = [], bords = [], fenetres = [];
   /* d'abord, des maisons le long des impasses (les voisins d'Odette, les maisons près de l'église, celles des fausses pistes) */
   rues.forEach(function(r){
-    if(!r.imp) return;
+    if(!r.imp || estForet(r.y + r.h / 2)) return;
     var vert = r.h > r.w, len = vert ? r.h : r.w;
     [-1, 1].forEach(function(cote){
       var t = 2;
@@ -463,7 +577,13 @@ function creerMonde(p){
       }
     });
   });
-  cellules.forEach(function(c){ decorCellule(c, evite, dansRue, maisons, arbres, objets, sols, bords); });
+  cellules.forEach(function(c){ if(c.foret) decorForet(c, evite, dansRue, arbres, objets, sols, estForet); else decorCellule(c, evite, dansRue, maisons, arbres, objets, sols, bords); });
+  /* la lisière : une haie de buissons tout le long, côté village (là où la forêt commence) */
+  if(FORET) for(var xl = -MARGE + 10; xl < Wm + MARGE; xl += U.rand(16, 26)){
+    var yl = Yf + 8 + U.rand(-4, 6), bl = {x:xl - 8, y:yl - 8, w:16, h:16};
+    if(evite.some(function(q){ return croise(bl, q, 1); })) continue;
+    arbres.push({x:xl, y:yl, r:U.rand(8, 12), sorte:'buisson', g:nouvelleGraine(), haut:7, baies:Math.random() < .3 ? '#c8304a' : null});
+  }
   /* quelques fenêtres allumées la nuit (la lumière tombe dans la rue, devant la maison) */
   maisons.forEach(function(m){ if(m.devant && Math.random() < .24) fenetres.push({x:m.devant.x, y:m.devant.y}); });
   /* deux chats endormis sur des toits (ce ne sont pas ceux d'Odette) */
@@ -473,6 +593,7 @@ function creerMonde(p){
   for(var e6 = 0; e6 < 40 && linges.length < 3; e6++){
     var kl = U.choix(Object.keys(usage).concat(Object.keys(usage))); if(segArche[kl]) continue;
     var gl = geoSeg(kl), al2 = gl.a0 + (gl.a1 - gl.a0) * U.rand(.35, .65);
+    if(estForet((gl.sens === 'h' ? gl.c : al2) - RUE)) continue;   /* (pas de linge dans les bois) */
     if(linges.some(function(Lg){ return Math.hypot(Lg.cx - (gl.sens === 'h' ? al2 : gl.c), Lg.cy - (gl.sens === 'h' ? gl.c : al2)) < 250; })) continue;
     var habits = [], nh = 3 + Math.floor(Math.random() * 3), COUL = ['#e8e2d4', '#c94b4b', '#4f7ec4', '#e3b84a', '#7ab06a', '#d87aa8', '#f4f0e6'];
     for(var q4 = 0; q4 < nh; q4++) habits.push({u:(q4 + .5) / nh + U.rand(-.04, .04), w:U.rand(6, 10), h:U.rand(7, 13), c:U.choix(COUL), f:U.choix(['drap', 'chemise', 'chaussette', 'drap']), ph:U.rand(0, TAU)});
@@ -482,15 +603,29 @@ function creerMonde(p){
   var pigeons = [];
   for(var e7 = 0; e7 < 40 && pigeons.length < 14; e7++){
     var rp = U.choix(rues.filter(function(r){ return !r.imp; })), pxp = U.rand(rp.x + 14, rp.x + rp.w - 14), pyp = U.rand(rp.y + 14, rp.y + rp.h - 14);
-    if(Math.hypot(pxp - depart.x, pyp - depart.y) < 200 || dansTache(pxp, pyp, 10) || dansObstacle(pxp, pyp, 14) || dansArche(pxp, pyp, 10)) continue;
+    if(Math.hypot(pxp - depart.x, pyp - depart.y) < 200 || dansTache(pxp, pyp, 10) || dansObstacle(pxp, pyp, 14) || dansArche(pxp, pyp, 10) || estForet(pyp - 30)) continue;
     if(pigeons.some(function(pp){ return Math.hypot(pp.x - pxp, pp.y - pyp) < 180; })) continue;
     var n3 = 3 + Math.floor(Math.random() * 3);
     for(var q5 = 0; q5 < n3; q5++){ var xx = pxp + U.rand(-13, 13), yy = pyp + U.rand(-10, 10); if(dansRue(xx, yy)) pigeons.push({x:xx, y:yy, x0:xx, y0:yy, a:U.rand(0, TAU), ph:U.rand(0, 10), vol:0, tv:0, vx:0, vy:0}); }
   }
+  /* la nuit, dans les bois : des lucioles */
+  var lucioles = [];
+  if(FORET) for(var e8 = 0; e8 < 200 && lucioles.length < 70; e8++){
+    var lx2 = U.rand(-MARGE + 40, Wm + MARGE - 40), ly2 = U.rand(Yf + 40, Hm + MARGE - 40);
+    lucioles.push({x:lx2, y:ly2, ph:U.rand(0, TAU), v:U.rand(.6, 1.4), r:U.rand(10, 22)});
+  }
   return {W:Wm, H:Hm, rues:rues, odette:odette, eglise:eglise, pistes:pistes, fins:fins, traces:traces, cases:cases, CASE:CASE, miroir:miroir,
     depart:depart, gx:gx, gy:gy, arches:arches, obstacles:obstacles, taches:taches, lampes:lampes, dessus:dessus, cellules:cellules,
     maisons:maisons, arbres:arbres, objets:objets, sols:sols, bords:bords, fenetres:fenetres, linges:linges, pigeons:pigeons,
-    dansRue:dansRue, dansArche:dansArche, dansObstacle:dansObstacle, dansTache:dansTache, segment:segment, egBoite:egBoite};
+    dansRue:dansRue, dansArche:dansArche, dansObstacle:dansObstacle, dansTache:dansTache, segment:segment, egBoite:egBoite, departBoite:departBoite,
+    poser:poser, effacer:effacer, vue:V, foret:FORET, Yf:Yf, estForet:estForet, ruisseau:ruisseau, yRuisseau:FORET ? yRuisseau : null, lucioles:lucioles};
+}
+/* la clairière du puits (la forêt), dans le repère du monde : (0, -40) est le puits, au-delà du bout du chemin */
+function boitePuits(E){
+  var r = Math.atan2(E.dy, E.dx) + PI / 2, c = Math.cos(r), s = Math.sin(r), xs = [], ys = [];
+  [[-96, -136], [96, -136], [96, 8], [-96, 8]].forEach(function(q){ xs.push(E.bx + q[0] * c - q[1] * s); ys.push(E.by + q[0] * s + q[1] * c); });
+  var x0 = Math.min.apply(null, xs), y0 = Math.min.apply(null, ys);
+  return {x:x0, y:y0, w:Math.max.apply(null, xs) - x0, h:Math.max.apply(null, ys) - y0};
 }
 /* la place que prend l'église (et son cimetière), dans le repère du monde */
 function boiteEglise(E){
@@ -581,6 +716,63 @@ function decorCellule(c, evite, dansRue, maisons, arbres, objets, sols, bords){
     (ty === 'potager' || ty === 'fleurs' ? sols : objets).push(o); miennes.push(o); nO--;
   }
 }
+/* le décor d'une cellule de la forêt (Romain : « tu modélises les arbres […] des variétés de décors ») : des arbres serrés (chênes,
+   hêtres, bouleaux, pins, sapins) dont les branches débordent un peu sur le chemin ; au bord des chemins, des buissons, des fougères,
+   des champignons ; par terre, de la mousse, des fleurs des bois, des feuilles mortes ; çà et là, un rocher, une souche, un arbre
+   couché, un tas de branches. Rien ne pousse dans le ruisseau (evite). */
+var ESSENCES = ['chene', 'chene', 'chene', 'hetre', 'hetre', 'bouleau', 'pin', 'sapin', 'sapin'];
+function decorForet(c, evite, dansRue, arbres, objets, sols){
+  c.sol = 'bois'; c.g = nouvelleGraine();
+  var miennes = [];
+  function dedans(r, m){ return r.x >= c.x - m && r.y >= c.y - m && r.x + r.w <= c.x + c.w + m && r.y + r.h <= c.y + c.h + m; }
+  function libreE(r, m){ return !evite.some(function(q){ return croise(r, q, m); }); }
+  function libreM(r, m){ return !miennes.some(function(q){ return croise(r, q, m); }); }
+  /* 1. le bord des chemins */
+  [{h:true, y:c.y, d:1}, {h:true, y:c.y + c.h, d:-1}, {h:false, x:c.x, d:1}, {h:false, x:c.x + c.w, d:-1}].forEach(function(cd){
+    var ox = cd.h ? c.x + c.w / 2 : cd.x - cd.d * 12, oy = cd.h ? cd.y - cd.d * 12 : c.y + c.h / 2;
+    if(!dansRue(ox, oy)) return;
+    var len = cd.h ? c.w : c.h;
+    for(var t = U.rand(2, 10); t < len - 4; t += U.rand(9, 19)){
+      var pr = U.rand(5, 13), px = cd.h ? c.x + t : cd.x + cd.d * pr, py = cd.h ? cd.y + cd.d * pr : c.y + t, r = Math.random();
+      if(r < .42){
+        var rb = U.rand(7, 12), b = {x:px - rb * .6, y:py - rb * .6, w:rb * 1.2, h:rb * 1.2};
+        if(libreE(b, 0) && libreM(b, -2)){ arbres.push({x:px, y:py, r:rb, sorte:'buisson', g:nouvelleGraine(), haut:6, baies:Math.random() < .22 ? U.choix(['#c8304a', '#3c2c70']) : null}); miennes.push(b); }
+      } else if(r < .86){
+        var rf = U.rand(7, 11), bf = {x:px - rf * .5, y:py - rf * .5, w:rf, h:rf};
+        if(libreE(bf, 0)) sols.push({type:'fougere', x:px - rf, y:py - rf, w:rf * 2, h:rf * 2, cx:px, cy:py, r:rf, a:U.rand(0, TAU), g:nouvelleGraine()});
+      } else {
+        var bc = {x:px - 4, y:py - 4, w:8, h:8};
+        if(libreE(bc, 0)) sols.push({type:'champis', x:px - 6, y:py - 6, w:12, h:12, cx:px, cy:py, g:nouvelleGraine()});
+      }
+    }
+  });
+  /* 2. les arbres : serrés, les feuillages peuvent se toucher ; ils ne mordent sur le chemin que de quelques pas */
+  var nA = Math.round(c.w * c.h / 1350) + 2;
+  for(var e = 0; e < nA * 5 && nA > 0; e++){
+    var so = U.choix(ESSENCES), ra = so === 'bouleau' ? U.rand(11, 17) : so === 'sapin' || so === 'pin' ? U.rand(13, 21) : U.rand(16, 28);
+    var x = U.rand(c.x + 6, c.x + c.w - 6), y = U.rand(c.y + 6, c.y + c.h - 6);
+    var tronc = {x:x - ra * .42, y:y - ra * .42, w:ra * .84, h:ra * .84}, feuillage = {x:x - (ra - 7), y:y - (ra - 7), w:(ra - 7) * 2, h:(ra - 7) * 2};
+    if(!dedans(tronc, 4) || !libreE(feuillage, 0) || !libreM(tronc, 0)) continue;
+    arbres.push({x:x, y:y, r:ra, sorte:so, g:nouvelleGraine(), haut:ra * 1.4});
+    miennes.push(tronc); nA--;
+  }
+  /* 3. les choses par terre : rochers, souches, arbres couchés, tas de branches */
+  var TAILLES = {rocher:[16, 13], souche:[14, 14], tronc:[46, 11], branches:[22, 13]}, nO = 1 + Math.floor(Math.random() * 3);
+  for(e = 0; e < 50 && nO > 0; e++){
+    var ty = U.choix(['rocher', 'rocher', 'souche', 'tronc', 'branches']), T = TAILLES[ty], tourne = Math.random() < .5, ow = tourne ? T[1] : T[0], oh = tourne ? T[0] : T[1];
+    var o = {x:U.rand(c.x + 6, c.x + c.w - ow - 6), y:U.rand(c.y + 6, c.y + c.h - oh - 6), w:ow, h:oh, type:ty, g:nouvelleGraine(), sens:tourne ? 'v' : 'h', haut:ty === 'rocher' ? 8 : ty === 'souche' ? 6 : 5};
+    if(!libreE(o, 3) || !libreM(o, 2)) continue;
+    objets.push(o); miennes.push(o); nO--;
+  }
+  /* 4. le sol : de la mousse, des fougères, des fleurs des bois, des champignons, des feuilles mortes (sous les arbres aussi) */
+  var nS = Math.round(c.w * c.h / 2200);
+  for(e = 0; e < nS * 3 && nS > 0; e++){
+    var tS = U.choix(['mousse', 'mousse', 'fougere', 'fougere', 'fougere', 'fleursF', 'champis', 'feuilles', 'feuilles']), rs = tS === 'mousse' ? U.rand(8, 16) : tS === 'feuilles' ? U.rand(7, 12) : U.rand(6, 11);
+    var sx = U.rand(c.x + rs, c.x + c.w - rs), sy = U.rand(c.y + rs, c.y + c.h - rs), bs = {x:sx - rs * .5, y:sy - rs * .5, w:rs, h:rs};
+    if(!libreE(bs, 0)) continue;
+    sols.push({type:tS, x:sx - rs, y:sy - rs, w:rs * 2, h:rs * 2, cx:sx, cy:sy, r:rs, a:U.rand(0, TAU), g:nouvelleGraine()}); nS--;
+  }
+}
 function longueur(pts){ var L = 0; for(var i = 1; i < pts.length; i++) L += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y); return L; }
 function point(pts, s){
   for(var i = 1; i < pts.length; i++){
@@ -611,7 +803,7 @@ function arrondir(pts, r){
 function partout(px, py, m, f){ for(var dx = -64; dx <= 64; dx += 64) for(var dy = -64; dy <= 64; dy += 64){ var X = px + dx, Y = py + dy; if(X > -m && X < 64 + m && Y > -m && Y < 64 + m) f(X, Y); } }
 function tuile(s, quoi){
   var T = Math.max(32, Math.round(64 * s)), c = document.createElement('canvas'); c.width = c.height = T;
-  var x = c.getContext('2d'), r = graine(quoi === 'paves' ? 11 : quoi === 'herbe' ? 23 : 37), k;
+  var x = c.getContext('2d'), r = graine(quoi === 'paves' ? 11 : quoi === 'herbe' ? 23 : quoi === 'humus' ? 53 : quoi === 'sentier' ? 61 : 37), k;
   x.scale(T / 64, T / 64);
   if(quoi === 'paves'){
     /* des pavés posés en rangs décalés : chacun sa teinte, un bord clair en haut à gauche, un bord sombre en bas à droite */
@@ -642,6 +834,32 @@ function tuile(s, quoi){
     }
     for(k = 0; k < 7; k++){ var fx = r() * 64, fy = r() * 64, fc = r() < .6 ? '#f6f1e4' : '#f2d04a';
       (function(fc2){ partout(fx, fy, 2, function(X, Y){ x.fillStyle = fc2; for(var pp = 0; pp < 5; pp++){ rond(x, X + Math.cos(pp * 1.257) * .7, Y + Math.sin(pp * 1.257) * .7, .45); x.fill(); } x.fillStyle = '#e8b030'; rond(x, X, Y, .35); x.fill(); }); })(fc); }
+  } else if(quoi === 'humus'){
+    /* le sol de la forêt : de la terre sombre, des aiguilles, des feuilles mortes de toutes les couleurs, des brindilles, de la mousse */
+    x.fillStyle = '#3f4a2a'; x.fillRect(0, 0, 64, 64);
+    for(k = 0; k < 18; k++){ var hx2 = r() * 64, hy2 = r() * 64, hr = 5 + r() * 10, hc = r() < .4 ? 'rgba(90,110,50,.22)' : r() < .7 ? 'rgba(40,30,18,.22)' : 'rgba(110,84,46,.18)';
+      partout(hx2, hy2, hr, function(X, Y){ x.fillStyle = hc; rond(x, X, Y, hr); x.fill(); }); }
+    var FEUILLES = ['#7a5a2a', '#9a6a2a', '#6a4a24', '#a8782e', '#5a4a26', '#8a3a20', '#b08a3a', '#4e5a2a'];
+    for(k = 0; k < 150; k++){ var fx2 = r() * 64, fy2 = r() * 64, fa = r() * PI, fl = .9 + r() * 1.5, fc2 = FEUILLES[Math.floor(r() * FEUILLES.length)];
+      (function(fc3, fa2, fl2){ partout(fx2, fy2, 3, function(X, Y){ x.fillStyle = fc3; ovale(x, X, Y, fl2, fl2 * .5, fa2); x.fill(); }); })(fc2, fa, fl); }
+    x.lineWidth = .3; x.lineCap = 'round';
+    for(k = 0; k < 90; k++){ var ax2 = r() * 64, ay2 = r() * 64, aa = r() * PI, al3 = 1.2 + r() * 1.8, ac = r() < .5 ? '#6a5430' : '#2e3a20';
+      (function(ac2, aa2, al4){ partout(ax2, ay2, 3, function(X, Y){ x.strokeStyle = ac2; x.beginPath(); x.moveTo(X, Y); x.lineTo(X + Math.cos(aa2) * al4, Y + Math.sin(aa2) * al4); x.stroke(); }); })(ac, aa, al3); }
+    for(k = 0; k < 40; k++){ var mx2 = r() * 64, my2 = r() * 64, mc2 = r() < .5 ? 'rgba(110,150,60,.5)' : 'rgba(80,120,48,.45)';
+      partout(mx2, my2, 2, function(X, Y){ x.fillStyle = mc2; rond(x, X, Y, .5 + r() * .4); x.fill(); }); }
+  } else if(quoi === 'sentier'){
+    /* la terre tassée d'un chemin de forêt : plus claire, des cailloux, quelques feuilles, des petites racines */
+    x.fillStyle = '#86704c'; x.fillRect(0, 0, 64, 64);
+    for(k = 0; k < 22; k++){ var sx3 = r() * 64, sy3 = r() * 64, sr3 = 3 + r() * 9, sc3 = r() < .5 ? 'rgba(104,84,54,.26)' : 'rgba(160,138,100,.22)';
+      partout(sx3, sy3, sr3, function(X, Y){ x.fillStyle = sc3; rond(x, X, Y, sr3); x.fill(); }); }
+    var CAIL2 = ['#6e604a', '#a8967a', '#5e5240', '#9a8a70', '#b8a888'];
+    for(k = 0; k < 70; k++){ var cx4 = r() * 64, cy4 = r() * 64, cr4 = .35 + r() * .8, cc4 = CAIL2[Math.floor(r() * CAIL2.length)], ca4 = r() * 3;
+      partout(cx4, cy4, 2, function(X, Y){ x.fillStyle = cc4; ovale(x, X, Y, cr4, cr4 * .75, ca4); x.fill(); }); }
+    for(k = 0; k < 16; k++){ var lx3 = r() * 64, ly3 = r() * 64, la3 = r() * PI, lc3 = ['#8a5a26', '#a8782e', '#6a4a24'][Math.floor(r() * 3)];
+      partout(lx3, ly3, 3, function(X, Y){ x.fillStyle = lc3; ovale(x, X, Y, 1.5, .75, la3); x.fill(); }); }
+    x.strokeStyle = 'rgba(70,52,32,.4)'; x.lineWidth = .6; x.lineCap = 'round';
+    for(k = 0; k < 3; k++){ var rx3 = r() * 64, ry3 = r() * 64, ra3 = r() * PI;
+      partout(rx3, ry3, 10, function(X, Y){ x.beginPath(); x.moveTo(X, Y); x.quadraticCurveTo(X + Math.cos(ra3) * 5 + 2, Y + Math.sin(ra3) * 5 - 1, X + Math.cos(ra3) * 9, Y + Math.sin(ra3) * 9); x.stroke(); }); }
   } else {
     /* la terre battue des cours : des cailloux, des taches */
     x.fillStyle = '#a48e6d'; x.fillRect(0, 0, 64, 64);
@@ -690,8 +908,9 @@ function ombreObjet(x, o, L){
     x.fill(); return;
   }
   if(o.type === 'paniers'){ x.beginPath(); for(q = 0; q < 2; q++){ var pr = Math.min(o.w * .22, o.h * .46), px = o.x + o.w * (.28 + .44 * q) + dx * .6; x.moveTo(px + pr, cy + dy * .6); x.arc(px, cy + dy * .6, pr, 0, TAU); } x.fill(); return; }
-  if(o.type === 'puits' || o.type === 'meule'){ ovale(x, cx + dx, cy + dy, o.w / 2, o.w / 2 * .94, 0); x.fill(); return; }
-  if(o.type === 'sacs' || o.type === 'bois' || o.type === 'ruches' || o.type === 'linge'){ ovale(x, cx + dx * .6, cy + dy * .6, o.w * .46, o.h * .44, 0); x.fill(); return; }
+  if(o.type === 'puits' || o.type === 'meule' || o.type === 'souche'){ ovale(x, cx + dx, cy + dy, o.w / 2, o.w / 2 * .94, 0); x.fill(); return; }
+  if(o.type === 'rocher' || o.type === 'rochers'){ ovale(x, cx + dx * .8, cy + dy * .8, o.w * .5, o.h * .5, 0); x.fill(); return; }
+  if(o.type === 'sacs' || o.type === 'bois' || o.type === 'ruches' || o.type === 'linge' || o.type === 'tronc' || o.type === 'branches'){ ovale(x, cx + dx * .6, cy + dy * .6, o.w * .48, o.h * .46, 0); x.fill(); return; }
   ombre(x, {x:o.x + 2, y:o.y + 2, w:o.w - 4, h:o.h - 4}, L, h);
 }
 /* un toit vu du ciel : deux pans (celui qui regarde le soleil est plus clair), les rangs de tuiles ou d'ardoises, les joints décalés,
@@ -769,16 +988,39 @@ function chatEndormi(x, cx, cy, c, a){
   x.restore();
 }
 /* un arbre vu du ciel : des touffes de feuilles (le contour d'abord, puis le remplissage), plus claires du côté du soleil */
+/* les feuillages : le plus sombre, le moyen, le plus clair (du côté du soleil) */
+var FEUILLAGES = {feuillu:['#2d6a3a', '#3f8a4a', '#62ae5e'], fruitier:['#3d6e34', '#549448', '#7cbc62'], chene:['#22492a', '#336a36', '#58944a'],
+  hetre:['#386a30', '#508e3c', '#82b458'], bouleau:['#5a8a36', '#7eae4a', '#b6d874'], buisson:['#2c562c', '#427838', '#69a04e']};
+/* les touffes d'un feuillage : leur nombre, leur écart au centre, leur taille, selon l'arbre */
+var FORMES = {feuillu:[6, 3, .42, .16, .42, .14, .58], fruitier:[6, 3, .42, .16, .42, .14, .58], chene:[8, 3, .44, .2, .36, .16, .55],
+  hetre:[7, 2, .4, .14, .44, .12, .6], bouleau:[10, 3, .5, .2, .27, .1, .45], buisson:[5, 2, .4, .14, .48, .12, .6]};
 function touffes(a){
   if(a.touffes) return a.touffes;
-  var r = graine(a.g), n = a.sorte === 'sapin' ? 0 : 6 + Math.floor(r() * 3), T = [], q;
-  for(q = 0; q < n; q++){ var an = q / n * TAU + r() * .5, d = a.r * (.42 + r() * .16); T.push([a.x + Math.cos(an) * d, a.y + Math.sin(an) * d, a.r * (.42 + r() * .14)]); }
-  T.push([a.x, a.y, a.r * (a.sorte === 'sapin' ? .95 : .58)]);
+  var r = graine(a.g), F = FORMES[a.sorte] || FORMES.feuillu, n = a.sorte === 'sapin' || a.sorte === 'pin' ? 0 : F[0] + Math.floor(r() * F[1]), T = [], q;
+  for(q = 0; q < n; q++){ var an = q / n * TAU + r() * .5, d = a.r * (F[2] + r() * F[3]); T.push([a.x + Math.cos(an) * d, a.y + Math.sin(an) * d, a.r * (F[4] + r() * F[5])]); }
+  T.push([a.x, a.y, a.r * (a.sorte === 'sapin' ? .95 : F[6])]);
   a.touffes = T; return T;
 }
 function dessinerArbre(x, a, L){
   var r = graine(a.g + 7), T = touffes(a), sx = -L.ombre.x, sy = -L.ombre.y, n = Math.hypot(sx, sy) || 1, q;
   sx /= n; sy /= n;
+  if(a.sorte === 'pin'){
+    /* un pin : quatre à six bouquets d'aiguilles, bleu-vert sombre, chacun en étoile ; on devine les branches entre eux */
+    var nb = 4 + Math.floor(r() * 3), B = [], k2;
+    for(k2 = 0; k2 < nb; k2++){ var ab = k2 / nb * TAU + r() * .6, db = a.r * (.3 + r() * .28); B.push([a.x + Math.cos(ab) * db, a.y + Math.sin(ab) * db, a.r * (.34 + r() * .14)]); }
+    B.push([a.x, a.y, a.r * .42]);
+    x.strokeStyle = '#4a3420'; x.lineWidth = 1.4; x.lineCap = 'round'; x.beginPath(); B.forEach(function(b){ x.moveTo(a.x, a.y); x.lineTo(b[0], b[1]); }); x.stroke();
+    B.forEach(function(b){
+      x.fillStyle = '#1d3b30'; x.strokeStyle = K; x.lineWidth = 1.3; x.beginPath();
+      for(var k3 = 0; k3 < 18; k3++){ var a3 = k3 / 18 * TAU, rr3 = b[2] * (k3 % 2 ? .78 : 1); x.lineTo(b[0] + Math.cos(a3) * rr3, b[1] + Math.sin(a3) * rr3); }
+      x.closePath(); x.fill(); x.stroke();
+      x.strokeStyle = '#3a6a52'; x.lineWidth = .7; x.beginPath();
+      for(k3 = 0; k3 < 14; k3++){ var a4 = k3 / 14 * TAU + r() * .2; x.moveTo(b[0] + sx * 1.2 + Math.cos(a4) * b[2] * .2, b[1] + sy * 1.2 + Math.sin(a4) * b[2] * .2); x.lineTo(b[0] + sx * 1.2 + Math.cos(a4) * b[2] * .85, b[1] + sy * 1.2 + Math.sin(a4) * b[2] * .85); }
+      x.stroke();
+      x.fillStyle = '#5a8a6a'; rond(x, b[0] + sx * b[2] * .3, b[1] + sy * b[2] * .3, b[2] * .18); x.fill();
+    });
+    return;
+  }
   if(a.sorte === 'sapin'){
     /* un sapin : une étoile de branches, du plus sombre au plus clair */
     /* un sapin vu d'en haut : une boule d'aiguilles, des rayons de branches, plus clair vers le soleil et vers la pointe */
@@ -794,14 +1036,19 @@ function dessinerArbre(x, a, L){
     x.fillStyle = '#6aa070'; rond(x, a.x + sx * 4, a.y + sy * 4, R * .1); x.fill();
     return;
   }
-  var fonce = a.sorte === 'fruitier' ? '#3d6e34' : '#2d6a3a', moyen = a.sorte === 'fruitier' ? '#549448' : '#3f8a4a', clair = a.sorte === 'fruitier' ? '#7cbc62' : '#62ae5e';
-  x.strokeStyle = K; x.lineWidth = 2.1; T.forEach(function(t){ rond(x, t[0], t[1], t[2]); x.stroke(); });
+  var P = FEUILLAGES[a.sorte] || FEUILLAGES.feuillu, fonce = P[0], moyen = P[1], clair = P[2], petit = a.sorte === 'buisson';
+  x.strokeStyle = K; x.lineWidth = petit ? 1.5 : 2.1; T.forEach(function(t){ rond(x, t[0], t[1], t[2]); x.stroke(); });
   x.fillStyle = fonce; T.forEach(function(t){ rond(x, t[0], t[1], t[2]); x.fill(); });
   x.fillStyle = moyen; T.forEach(function(t){ rond(x, t[0] + sx * t[2] * .16, t[1] + sy * t[2] * .16, t[2] * .8); x.fill(); });
   x.fillStyle = clair; T.forEach(function(t){ rond(x, t[0] + sx * t[2] * .34, t[1] + sy * t[2] * .34, t[2] * .44); x.fill(); });
-  x.fillStyle = 'rgba(16,44,22,.32)'; for(q = 0; q < 16; q++){ var ar = r() * TAU, ad = r() * a.r * .85; rond(x, a.x + Math.cos(ar) * ad, a.y + Math.sin(ar) * ad, .6 + r() * .7); x.fill(); }
-  x.fillStyle = 'rgba(190,232,150,.42)'; for(q = 0; q < 12; q++){ ar = r() * TAU; ad = r() * a.r * .7; rond(x, a.x + sx * a.r * .3 + Math.cos(ar) * ad * .6, a.y + sy * a.r * .3 + Math.sin(ar) * ad * .6, .4 + r() * .5); x.fill(); }
+  var nd = Math.round(a.r * (petit ? .8 : .7));
+  x.fillStyle = 'rgba(16,44,22,.32)'; for(q = 0; q < nd; q++){ var ar = r() * TAU, ad = r() * a.r * .85; rond(x, a.x + Math.cos(ar) * ad, a.y + Math.sin(ar) * ad, .6 + r() * .7); x.fill(); }
+  x.fillStyle = 'rgba(190,232,150,.42)'; for(q = 0; q < nd * .7; q++){ ar = r() * TAU; ad = r() * a.r * .7; rond(x, a.x + sx * a.r * .3 + Math.cos(ar) * ad * .6, a.y + sy * a.r * .3 + Math.sin(ar) * ad * .6, .4 + r() * .5); x.fill(); }
+  /* le chêne : des feuilles lobées qui dépassent du bord ; le bouleau : un feuillage léger, on voit le sol entre les touffes */
+  if(a.sorte === 'chene'){ x.fillStyle = clair; for(q = 0; q < 10; q++){ ar = r() * TAU; ad = a.r * (.55 + r() * .3); ovale(x, a.x + Math.cos(ar) * ad, a.y + Math.sin(ar) * ad, 1.6, 1, ar); x.fill(); } }
+  if(a.sorte === 'bouleau'){ x.fillStyle = 'rgba(240,236,200,.5)'; for(q = 0; q < 14; q++){ ar = r() * TAU; ad = r() * a.r * .8; rond(x, a.x + Math.cos(ar) * ad, a.y + Math.sin(ar) * ad, .45); x.fill(); } }
   if(a.fruits){ x.fillStyle = a.fruits; for(q = 0; q < 9; q++){ ar = r() * TAU; ad = r() * a.r * .8; rond(x, a.x + Math.cos(ar) * ad, a.y + Math.sin(ar) * ad, .95); x.fill(); } }
+  if(a.baies){ x.fillStyle = a.baies; for(q = 0; q < 7; q++){ ar = r() * TAU; ad = r() * a.r * .75; rond(x, a.x + Math.cos(ar) * ad, a.y + Math.sin(ar) * ad, .8); x.fill(); } }
 }
 /* un muret ou une haie, le long d'un côté qui donne sur la rue (on le voit entre deux maisons) */
 function dessinerBord(x, b){
@@ -906,7 +1153,7 @@ function dessinerObjet(x, o, L){
     case 'etal':
       /* un petit étal : sa toile rayée */
       x.save(); x.translate(cx, cy); if(o.sens === 'v') x.rotate(PI / 2);
-      var ew = o.sens === 'v' ? H : W, eh = o.sens === 'v' ? W : H, coul = U.choix(['#c94b4b', '#4f7ec4', '#3f9a62', '#d8963a']);
+      var ew = o.sens === 'v' ? H : W, eh = o.sens === 'v' ? W : H, coul = ['#c94b4b', '#4f7ec4', '#3f9a62', '#d8963a'][Math.floor(r() * 4)];   /* (r : le même dessin dans deux morceaux voisins) */
       x.fillStyle = '#f4eee0'; x.fillRect(-ew / 2, -eh / 2, ew, eh);
       x.fillStyle = coul; for(q = 0; q < 6; q += 2) x.fillRect(-ew / 2 + ew * q / 6, -eh / 2, ew / 6, eh);
       x.fillStyle = 'rgba(0,0,0,.14)'; x.fillRect(-ew / 2, 0, ew, eh / 2);
@@ -916,7 +1163,54 @@ function dessinerObjet(x, o, L){
       break;
     case 'linge':
       x.strokeStyle = '#5a4a3a'; x.lineWidth = .5; x.beginPath(); if(W > H){ x.moveTo(X, cy); x.lineTo(X + W, cy); } else { x.moveTo(cx, Y); x.lineTo(cx, Y + H); } x.stroke();
-      for(q = 0; q < 4; q++){ x.fillStyle = U.choix(['#e8e2d4', '#c94b4b', '#4f7ec4', '#e3b84a']); var u5 = (q + .5) / 4; if(W > H) x.fillRect(X + W * u5 - 3, cy - .6, 6, 4.6); else x.fillRect(cx - .6, Y + H * u5 - 3, 4.6, 6); }
+      for(q = 0; q < 4; q++){ x.fillStyle = ['#e8e2d4', '#c94b4b', '#4f7ec4', '#e3b84a'][Math.floor(r() * 4)]; var u5 = (q + .5) / 4; if(W > H) x.fillRect(X + W * u5 - 3, cy - .6, 6, 4.6); else x.fillRect(cx - .6, Y + H * u5 - 3, 4.6, 6); }
+      break;
+    /* ---- la forêt ---- */
+    case 'tronc':
+      /* un arbre couché : l'écorce en long, des nœuds, de la mousse sur le dos, un bout cassé (les cernes), des champignons */
+      x.save(); x.translate(cx, cy); if(H > W) x.rotate(PI / 2);
+      var tl = Math.max(W, H), te = Math.min(W, H);
+      x.fillStyle = '#6a4a2e'; x.strokeStyle = K; x.lineWidth = 1.5; x.beginPath(); rr(x, -tl / 2, -te / 2, tl, te, te / 2); x.fill(); x.stroke();
+      x.fillStyle = 'rgba(255,230,190,.14)'; x.beginPath(); rr(x, -tl / 2 + 2, -te / 2 + 1, tl - 4, te * .38, te * .2); x.fill();
+      x.strokeStyle = 'rgba(40,24,12,.5)'; x.lineWidth = .5; x.beginPath(); for(q = 0; q < 7; q++){ var ty2 = -te / 2 + 1.5 + r() * (te - 3); x.moveTo(-tl / 2 + 3 + r() * 6, ty2); x.lineTo(tl / 2 - 4 - r() * 8, ty2 + (r() - .5) * 1.2); } x.stroke();
+      x.fillStyle = 'rgba(96,140,56,.75)'; for(q = 0; q < 6; q++){ ovale(x, -tl / 2 + 6 + r() * (tl - 12), -te * .18 + (r() - .5) * 2, 2 + r() * 3.5, 1.2 + r() * 1.2, 0); x.fill(); }
+      x.fillStyle = '#c8a878'; x.strokeStyle = K; x.lineWidth = 1.1; ovale(x, tl / 2 - 1, 0, 2.6, te / 2 - .4, 0); x.fill(); x.stroke();
+      x.strokeStyle = '#8a6a44'; x.lineWidth = .4; ovale(x, tl / 2 - 1, 0, 1.5, te / 2 - 2, 0); x.stroke(); ovale(x, tl / 2 - 1, 0, .7, te / 4, 0); x.stroke();
+      for(q = 0; q < 3; q++){ var mxp = -tl / 2 + 8 + r() * (tl - 18); x.fillStyle = '#e8d8b8'; x.strokeStyle = K; x.lineWidth = .6; ovale(x, mxp, te / 2 + .4, 1.8, 1.2, 0); x.fill(); x.stroke(); }
+      x.restore();
+      break;
+    case 'rocher': case 'rochers':
+      /* un ou deux gros rochers : la pierre grise, son côté éclairé, une fente, de la mousse sur le dessus */
+      var nr = o.type === 'rochers' ? 2 : 1;
+      for(q = 0; q < nr; q++){
+        var rcx = nr === 1 ? cx : X + W * (.3 + .4 * q), rcy = nr === 1 ? cy : Y + H * (q ? .62 : .38), rw = nr === 1 ? W / 2 : W * .3, rh = nr === 1 ? H / 2 : H * .32;
+        x.fillStyle = '#8a8a86'; x.strokeStyle = K; x.lineWidth = 1.4; x.beginPath();
+        for(var k5 = 0; k5 < 9; k5++){ var ak = k5 / 9 * TAU, rk = .84 + r() * .2; x.lineTo(rcx + Math.cos(ak) * rw * rk, rcy + Math.sin(ak) * rh * rk); }
+        x.closePath(); x.fill(); x.stroke();
+        x.fillStyle = 'rgba(230,230,220,.3)'; ovale(x, rcx - L.ombre.x * rw * .25, rcy - L.ombre.y * rh * .25, rw * .55, rh * .45, 0); x.fill();
+        x.strokeStyle = 'rgba(40,40,40,.4)'; x.lineWidth = .5; x.beginPath(); x.moveTo(rcx - rw * .3, rcy - rh * .5); x.lineTo(rcx, rcy); x.lineTo(rcx + rw * .1, rcy + rh * .5); x.stroke();
+        x.fillStyle = 'rgba(86,130,52,.7)'; for(k5 = 0; k5 < 4; k5++){ ovale(x, rcx + (r() - .5) * rw, rcy - rh * .3 + (r() - .5) * rh * .5, 1.5 + r() * 2.5, 1 + r() * 1.5, r() * 3); x.fill(); }
+      }
+      break;
+    case 'souche':
+      /* une souche : les racines qui s'étalent, l'écorce, les cernes du dessus, un peu de mousse */
+      x.strokeStyle = K; x.lineWidth = 3.2; x.lineCap = 'round'; x.beginPath();
+      for(q = 0; q < 5; q++){ var ar2 = q / 5 * TAU + r(); x.moveTo(cx, cy); x.lineTo(cx + Math.cos(ar2) * W * .62, cy + Math.sin(ar2) * W * .62); } x.stroke();
+      x.strokeStyle = '#5a3e24'; x.lineWidth = 1.8; x.stroke();
+      x.fillStyle = '#5a3e24'; x.strokeStyle = K; x.lineWidth = 1.4; rond(x, cx, cy, W * .42); x.fill(); x.stroke();
+      x.fillStyle = '#c8a476'; rond(x, cx, cy, W * .32); x.fill();
+      x.strokeStyle = '#8a6a44'; x.lineWidth = .4; for(q = 1; q < 4; q++){ rond(x, cx + .3, cy + .2, W * .08 * q); x.stroke(); }
+      x.fillStyle = 'rgba(86,130,52,.7)'; ovale(x, cx - W * .3, cy + W * .2, 2.2, 1.4, .5); x.fill();
+      break;
+    case 'branches':
+      /* un tas de branches mortes */
+      x.lineCap = 'round';
+      for(q = 0; q < 7; q++){
+        var b0x = X + r() * W, b0y = Y + r() * H, ba = (o.sens === 'v' ? PI / 2 : 0) + (r() - .5) * .9, bl2 = Math.max(W, H) * (.4 + r() * .4);
+        x.strokeStyle = K; x.lineWidth = 2.6; x.beginPath(); x.moveTo(b0x - Math.cos(ba) * bl2 / 2, b0y - Math.sin(ba) * bl2 / 2); x.lineTo(b0x + Math.cos(ba) * bl2 / 2, b0y + Math.sin(ba) * bl2 / 2); x.stroke();
+        x.strokeStyle = q % 2 ? '#7a5a36' : '#8e6a40'; x.lineWidth = 1.5; x.stroke();
+        x.strokeStyle = '#6a4a2e'; x.lineWidth = .7; x.beginPath(); x.moveTo(b0x, b0y); x.lineTo(b0x + Math.cos(ba + .7) * 4, b0y + Math.sin(ba + .7) * 4); x.stroke();
+      }
       break;
   }
 }
@@ -924,7 +1218,7 @@ function dessinerSol(x, o){
   var r = graine(o.g), q, X = o.x, Y = o.y, W = o.w, H = o.h;
   if(o.type === 'potager'){
     x.fillStyle = '#6e5236'; x.strokeStyle = 'rgba(40,26,16,.6)'; x.lineWidth = 1; x.beginPath(); rr(x, X, Y, W, H, 2); x.fill(); x.stroke();
-    var rangs = Math.max(2, Math.floor((o.sens === 'h' ? H : W) / 6)), cou = U.choix(['#6fbf5a', '#8fcf64', '#e07a3a']);
+    var rangs = Math.max(2, Math.floor((o.sens === 'h' ? H : W) / 6)), cou = ['#6fbf5a', '#8fcf64', '#e07a3a'][Math.floor(r() * 3)];
     for(q = 0; q < rangs; q++){
       var f = (q + .5) / rangs;
       x.strokeStyle = 'rgba(40,26,16,.4)'; x.lineWidth = 1.6; x.beginPath(); if(o.sens === 'h'){ x.moveTo(X + 2, Y + H * f); x.lineTo(X + W - 2, Y + H * f); } else { x.moveTo(X + W * f, Y + 2); x.lineTo(X + W * f, Y + H - 2); } x.stroke();
@@ -933,15 +1227,115 @@ function dessinerSol(x, o){
         x.fillStyle = q % 2 ? '#5aa84c' : cou; rond(x, px, py, 1.6 + r() * .5); x.fill(); x.fillStyle = 'rgba(200,240,160,.4)'; rond(x, px - .4, py - .4, .6); x.fill();
       }
     }
-  } else {
+  } else if(o.type === 'fleurs'){
     /* un massif de fleurs */
     x.fillStyle = '#5e7a3e'; x.beginPath(); rr(x, X, Y, W, H, 3); x.fill();
     var C = ['#e84a6a', '#f2d04a', '#f6f1e4', '#b96ad8', '#f08a3a', '#6aa0e8'];
     for(q = 0; q < W * H / 9; q++){ x.fillStyle = C[Math.floor(r() * C.length)]; rond(x, X + 1.5 + r() * (W - 3), Y + 1.5 + r() * (H - 3), .9 + r() * .7); x.fill(); }
+  } else if(o.type === 'fougere'){
+    /* une fougère vue d'en haut : des frondes en étoile, chacune avec ses folioles */
+    var nf = 5 + Math.floor(r() * 3);
+    for(q = 0; q < nf; q++){
+      var fa = o.a + q / nf * TAU + (r() - .5) * .4, fl = o.r * (.75 + r() * .3), ex = o.cx + Math.cos(fa) * fl, ey = o.cy + Math.sin(fa) * fl;
+      x.strokeStyle = '#2a4a22'; x.lineWidth = .7; x.beginPath(); x.moveTo(o.cx, o.cy); x.lineTo(ex, ey); x.stroke();
+      x.fillStyle = q % 2 ? '#4f8a3a' : '#5e9a44';
+      for(var u2 = .18; u2 < .95; u2 += .14){ var px2 = o.cx + Math.cos(fa) * fl * u2, py2 = o.cy + Math.sin(fa) * fl * u2, lg2 = (1 - u2) * 3 + .8;
+        ovale(x, px2 + Math.cos(fa + PI / 2) * lg2 * .8, py2 + Math.sin(fa + PI / 2) * lg2 * .8, lg2, .7, fa + PI / 2.6); x.fill();
+        ovale(x, px2 - Math.cos(fa + PI / 2) * lg2 * .8, py2 - Math.sin(fa + PI / 2) * lg2 * .8, lg2, .7, fa - PI / 2.6); x.fill(); }
+    }
+    x.fillStyle = '#7ab45a'; rond(x, o.cx, o.cy, 1.2); x.fill();
+  } else if(o.type === 'mousse'){
+    var gm = x.createRadialGradient(o.cx, o.cy, 0, o.cx, o.cy, o.r); gm.addColorStop(0, 'rgba(104,150,60,.55)'); gm.addColorStop(1, 'rgba(104,150,60,0)');
+    x.fillStyle = gm; rond(x, o.cx, o.cy, o.r); x.fill();
+    x.fillStyle = 'rgba(150,196,90,.5)'; for(q = 0; q < o.r * 1.5; q++){ var ma = r() * TAU, md = r() * o.r * .8; rond(x, o.cx + Math.cos(ma) * md, o.cy + Math.sin(ma) * md, .5 + r() * .5); x.fill(); }
+  } else if(o.type === 'champis'){
+    /* trois à six champignons : des rouges à pois blancs, ou des bruns */
+    var rouge = r() < .4, nc2 = 3 + Math.floor(r() * 4);
+    for(q = 0; q < nc2; q++){ var ca = r() * TAU, cd2 = r() * 4.5, cr2 = 1.4 + r() * 1.3, ccx = o.cx + Math.cos(ca) * cd2, ccy = o.cy + Math.sin(ca) * cd2;
+      x.fillStyle = 'rgba(16,22,40,.3)'; rond(x, ccx + .7, ccy + .8, cr2); x.fill();
+      x.fillStyle = rouge ? '#c8302a' : '#9a6a3a'; x.strokeStyle = K; x.lineWidth = .6; rond(x, ccx, ccy, cr2); x.fill(); x.stroke();
+      x.fillStyle = rouge ? '#fff4e8' : 'rgba(240,210,160,.6)'; rond(x, ccx - cr2 * .3, ccy - cr2 * .3, cr2 * .26); x.fill(); if(rouge){ rond(x, ccx + cr2 * .35, ccy + cr2 * .1, cr2 * .2); x.fill(); } }
+  } else if(o.type === 'fleursF'){
+    /* des fleurs des bois : des jacinthes bleues, des anémones blanches, quelques primevères jaunes */
+    var cf = ['#7a7ae0', '#f4f0ea', '#f2d04a', '#9a6ad8'][Math.floor(r() * 4)];
+    for(q = 0; q < o.r * 1.4; q++){ var fa2 = r() * TAU, fd2 = r() * o.r * .9, fx3 = o.cx + Math.cos(fa2) * fd2, fy3 = o.cy + Math.sin(fa2) * fd2;
+      x.fillStyle = '#4a7a36'; ovale(x, fx3 + .6, fy3 + .6, 1.1, .5, fa2); x.fill(); x.fillStyle = cf; rond(x, fx3, fy3, .75); x.fill(); }
+  } else if(o.type === 'feuilles'){
+    /* un tas de feuilles mortes poussées par le vent */
+    var FC = ['#9a6a2a', '#b8862e', '#8a3a20', '#c89a3a', '#6a4a24'];
+    for(q = 0; q < o.r * 2.2; q++){ var la = r() * TAU, ld = Math.sqrt(r()) * o.r, lx4 = o.cx + Math.cos(la) * ld, ly4 = o.cy + Math.sin(la) * ld;
+      x.fillStyle = FC[Math.floor(r() * FC.length)]; ovale(x, lx4, ly4, 1.6, .85, r() * PI); x.fill(); }
   }
+}
+/* une flaque, de la boue, de la farine EN TRAVERS de la rue (15 novembre, 14 h 26), ou le gué du ruisseau : dessinée dans son repère
+   (lx le long de la rue, ly en travers), coupée au bord de la rue */
+function contourLocal(x, T, g){
+  var N = T.m.length, P = [];
+  for(var i = 0; i < N; i++){ var a = TAU * i / N; P.push([Math.cos(a) * (T.rx + g) * T.m[i], Math.sin(a) * (T.ry + g) * T.m[i]]); }
+  x.beginPath(); x.moveTo((P[N - 1][0] + P[0][0]) / 2, (P[N - 1][1] + P[0][1]) / 2);
+  for(i = 0; i < N; i++){ var b = P[(i + 1) % N]; x.quadraticCurveTo(P[i][0], P[i][1], (P[i][0] + b[0]) / 2, (P[i][1] + b[1]) / 2); }
+  x.closePath();
+}
+function dessinerTacheTravers(x, T, L, rues){
+  var r = graine(T.g), q, rx = T.rx, ry = T.ry;
+  x.save(); x.beginPath(); rues.forEach(function(R2){ if(Math.abs(R2.x + R2.w / 2 - T.x) < R2.w / 2 + ry && Math.abs(R2.y + R2.h / 2 - T.y) < R2.h / 2 + ry) x.rect(R2.x, R2.y, R2.w, R2.h); }); x.clip();
+  x.translate(T.x, T.y); x.rotate(T.rot);
+  if(T.type === 'flaque' || T.type === 'ruisseau'){
+    var eauB = T.foret ? (T.type === 'ruisseau' ? '#4a6a7a' : '#5a5440') : null;
+    /* le sol mouillé autour (plus sombre), puis l'eau : le ciel qui s'y reflète (en ville), une eau brune (dans les bois), le ruisseau bleu-vert */
+    contourLocal(x, T, 7); x.fillStyle = 'rgba(30,22,16,.2)'; x.fill();
+    contourLocal(x, T, 3); x.fillStyle = 'rgba(30,22,16,.22)'; x.fill();
+    contourLocal(x, T, 0);
+    var gr = x.createLinearGradient(-rx, -ry, rx, ry);
+    if(T.type === 'ruisseau'){ gr.addColorStop(0, mix(L.ciel, '#3a6a6a', .55)); gr.addColorStop(1, mix(L.cielB, '#24464a', .5)); }
+    else if(T.foret){ gr.addColorStop(0, mix(L.ciel, eauB, .6)); gr.addColorStop(1, mix(L.cielB, '#3a3424', .6)); }
+    else { gr.addColorStop(0, L.ciel); gr.addColorStop(1, L.cielB); }
+    x.fillStyle = gr; x.globalAlpha = .92; x.fill(); x.globalAlpha = 1;
+    x.strokeStyle = 'rgba(30,26,30,.35)'; x.lineWidth = 1.1; x.stroke();
+    x.save(); contourLocal(x, T, -1); x.clip();
+    /* le fond qu'on devine sous l'eau : les pavés (en ville), des cailloux (dans les bois) */
+    if(T.foret){ for(q = 0; q < 18; q++){ x.fillStyle = r() < .5 ? 'rgba(40,36,26,.3)' : 'rgba(150,140,110,.22)'; ovale(x, (r() - .5) * rx * 1.8, (r() - .5) * ry * 1.8, .8 + r() * 1.6, .6 + r(), r() * 3); x.fill(); } }
+    else { x.strokeStyle = 'rgba(40,50,70,.18)'; x.lineWidth = .45; x.beginPath(); for(q = -10; q <= 10; q++){ x.moveTo(q * 6.4, -ry); x.lineTo(q * 6.4, ry); } x.stroke(); }
+    /* des reflets du ciel (de petits traits couchés, comme le soleil sur l'eau, toujours dans le même sens à l'écran) ; le ruisseau,
+       lui, coule : de petites rides */
+    x.strokeStyle = L.reflet; x.lineWidth = .9; x.lineCap = 'round';
+    var nR = Math.round(ry / 7);
+    for(q = 0; q < nR; q++){ var py = -ry * .8 + ry * 1.6 * (q + r() * .5) / nR, px = (r() - .5) * rx * .9; x.beginPath();
+      if(T.type === 'ruisseau'){ x.moveTo(px - 3, py); x.quadraticCurveTo(px, py - 1.6, px + 3, py); }
+      else { var cr = Math.cos(-T.rot), sr = Math.sin(-T.rot), lg = 2.5 + r() * 5;   /* (dans le sens de l'écran : on défait la rotation) */
+        x.moveTo(px - cr * lg, py - sr * lg); x.lineTo(px + cr * lg, py + sr * lg - .4); }
+      x.stroke(); }
+    x.restore();
+    /* le gué : des pierres plates au bord de l'eau */
+    if(T.type === 'ruisseau') for(q = 0; q < 6; q++){ var sy = -ry * .9 + r() * ry * 1.8, sxx = (r() < .5 ? -1 : 1) * (rx + .5 + r() * 2.5);
+      x.fillStyle = '#8a867a'; x.strokeStyle = K; x.lineWidth = .7; ovale(x, sxx, sy, 2 + r() * 1.6, 1.4 + r(), r() * 3); x.fill(); x.stroke(); }
+  } else if(T.type === 'boue'){
+    contourLocal(x, T, 5); x.fillStyle = 'rgba(70,46,24,.28)'; x.fill();
+    contourLocal(x, T, 0); x.fillStyle = T.foret ? '#5a3c20' : '#6a4826'; x.fill();
+    x.save(); contourLocal(x, T, 0); x.clip();
+    for(q = 0; q < ry * .5; q++){ x.fillStyle = r() < .5 ? 'rgba(40,24,10,.35)' : 'rgba(140,100,60,.3)'; ovale(x, (r() - .5) * rx * 1.7, (r() - .5) * ry * 1.7, 1.5 + r() * 4, 1 + r() * 2.6, r() * 3); x.fill(); }
+    /* des ornières, des flaques d'eau dans la boue */
+    x.fillStyle = 'rgba(120,130,140,.28)'; for(q = 0; q < 3; q++){ ovale(x, (r() - .5) * rx, (r() - .5) * ry * 1.2, 2 + r() * 3, 1 + r() * 1.6, r() * 3); x.fill(); }
+    x.strokeStyle = 'rgba(255,240,220,.25)'; x.lineWidth = .7; x.lineCap = 'round'; for(q = 0; q < 6; q++){ var bx = (r() - .5) * rx, by = (r() - .5) * ry * 1.4; x.beginPath(); x.arc(bx, by, 2 + r() * 2, PI * 1.1, PI * 1.7); x.stroke(); }
+    x.restore();
+    contourLocal(x, T, 0); x.strokeStyle = 'rgba(40,24,10,.45)'; x.lineWidth = 1; x.stroke();
+    x.fillStyle = T.foret ? '#5a3c20' : '#6a4826'; for(q = 0; q < 14; q++){ var ea = r() * TAU, ed = 1.05 + r() * .22; rond(x, Math.cos(ea) * rx * ed, Math.sin(ea) * ry * ed, .6 + r() * .8); x.fill(); }
+  } else {
+    /* de la farine renversée en travers de la rue, et le sac crevé au bord */
+    contourLocal(x, T, 3); x.fillStyle = 'rgba(255,255,255,.3)'; x.fill();
+    contourLocal(x, T, 0); x.fillStyle = '#f7f4ec'; x.fill();
+    x.save(); contourLocal(x, T, 0); x.clip();
+    for(q = 0; q < ry * 1.2; q++){ x.fillStyle = r() < .5 ? 'rgba(220,210,190,.4)' : 'rgba(255,255,255,.8)'; rond(x, (r() - .5) * rx * 2, (r() - .5) * ry * 2, .3 + r() * 1.4); x.fill(); }
+    x.restore();
+    x.fillStyle = 'rgba(255,255,255,.85)'; for(q = 0; q < 24; q++){ var fa = r() * TAU, fd = 1 + r() * .3; rond(x, Math.cos(fa) * rx * fd, Math.sin(fa) * ry * fd, .3 + r() * .6); x.fill(); }
+    x.fillStyle = '#d8c69c'; x.strokeStyle = K; x.lineWidth = 1.1; ovale(x, rx * .5, -RUE / 2 + 7, 7, 5, .2); x.fill(); x.stroke();
+    x.fillStyle = '#f7f4ec'; ovale(x, rx * .5, -RUE / 2 + 10.5, 3.4, 2.4, .2); x.fill();
+  }
+  x.restore();
 }
 /* une flaque, de la boue, de la farine (le dessin est coupé au bord de la rue) */
 function dessinerTache(x, T, L, rues){
+  if(T.travers){ dessinerTacheTravers(x, T, L, rues); return; }
   var r = graine(T.g), q;
   x.save(); x.beginPath(); rues.forEach(function(R2){ if(Math.abs(R2.x + R2.w / 2 - T.x) < R2.w / 2 + T.rx * 1.5 && Math.abs(R2.y + R2.h / 2 - T.y) < R2.h / 2 + T.rx * 1.5) x.rect(R2.x, R2.y, R2.w, R2.h); }); x.clip();
   if(T.type === 'flaque'){
@@ -1104,6 +1498,73 @@ function dessinerEglise(x, E, L){
   [[-36, -26], [36, -26]].forEach(function(p3){ dessinerLampe(x, {x:p3[0], y:p3[1], lx:p3[0], ly:p3[1] + 6}, L); });
   x.restore();
 }
+/* le ruisseau de la forêt, entre x = a et x = b : ses berges de terre mouillée, l'eau (le ciel qui s'y reflète, en plus vert), des
+   rides, des cailloux, des joncs ; là où il coupe un chemin, le gué est une tache (dessinerTacheTravers) */
+function dessinerRuisseau(x, M, a, b, L){
+  var R = M.ruisseau, f = M.yRuisseau, r = graine(Math.round(a) + 909), xx, q;
+  function bande(dl){ x.beginPath(); for(xx = a - 2; xx <= b + 2; xx += 6) x.lineTo(xx, f(xx) - R.l - dl); for(xx = b + 2; xx >= a - 2; xx -= 6) x.lineTo(xx, f(xx) + R.l + dl); x.closePath(); }
+  bande(5); x.fillStyle = 'rgba(50,36,20,.45)'; x.fill();
+  bande(2); x.fillStyle = '#5a4630'; x.fill();
+  bande(0);
+  var g = x.createLinearGradient(0, R.y - R.l - 30, 0, R.y + R.l + 30); g.addColorStop(0, mix(L.ciel, '#3a6a6a', .5)); g.addColorStop(1, mix(L.cielB, '#24464a', .5));
+  x.fillStyle = g; x.fill(); x.strokeStyle = 'rgba(30,26,30,.4)'; x.lineWidth = 1; x.stroke();
+  x.strokeStyle = L.reflet; x.lineWidth = .8; x.lineCap = 'round';
+  for(q = 0; q < (b - a) / 14; q++){ var rx = a + r() * (b - a), ry = f(rx) + (r() - .5) * R.l * 1.2; x.beginPath(); x.moveTo(rx - 3, ry); x.quadraticCurveTo(rx, ry - 1.4, rx + 3, ry); x.stroke(); }
+  for(q = 0; q < (b - a) / 16; q++){ var sx = a + r() * (b - a), sy = f(sx) + (r() < .5 ? -1 : 1) * (R.l + 1 + r() * 3);
+    x.fillStyle = '#8a867a'; x.strokeStyle = K; x.lineWidth = .6; ovale(x, sx, sy, 1.4 + r() * 1.6, 1 + r(), r() * 3); x.fill(); x.stroke(); }
+  x.strokeStyle = '#5a7a30'; x.lineWidth = .9; x.beginPath();
+  for(q = 0; q < (b - a) / 9; q++){ var jx = a + r() * (b - a), jy = f(jx) + (r() < .5 ? -1 : 1) * (R.l + 3 + r() * 5); x.moveTo(jx, jy); x.lineTo(jx + (r() - .5) * 3, jy - 3 - r() * 3); }
+  x.stroke();
+}
+/* LE VIEUX PUITS (la forêt) : une clairière au bout du chemin, puis le puits — sa margelle de pierres, le noir au fond, la grille de fer
+   rouillée posée dessus (Moustache passe entre les barreaux), les deux montants et le treuil, la corde, un seau renversé.
+   (0, 0) : le bout du chemin, qui arrive par le bas ; le puits est en (0, -46). */
+var PUITS = {x:0, y:-46, r:18};
+function dessinerClairiere(x, E, L){
+  x.save(); x.translate(E.bx, E.by); x.rotate(Math.atan2(E.dy, E.dx) + PI / 2);
+  var r = graine(97), q;
+  var g = x.createRadialGradient(0, -44, 10, 0, -44, 92); g.addColorStop(0, 'rgba(120,170,80,.9)'); g.addColorStop(.7, 'rgba(100,150,70,.6)'); g.addColorStop(1, 'rgba(100,150,70,0)');
+  x.fillStyle = g; rond(x, 0, -44, 92); x.fill();
+  /* l'herbe, et un sentier de terre battue jusqu'au puits */
+  x.strokeStyle = 'rgba(90,140,60,.8)'; x.lineWidth = .45; x.lineCap = 'round'; x.beginPath();
+  for(q = 0; q < 320; q++){ var a = r() * TAU, d = Math.sqrt(r()) * 82, bx = Math.cos(a) * d, by = -44 + Math.sin(a) * d; x.moveTo(bx, by); x.lineTo(bx + (r() - .5), by - 1.5 - r()); } x.stroke();
+  x.fillStyle = 'rgba(134,112,76,.85)'; x.beginPath(); x.moveTo(-26, 4); x.quadraticCurveTo(-18, -20, -24, -44); x.lineTo(24, -44); x.quadraticCurveTo(18, -20, 26, 4); x.closePath(); x.fill();
+  x.fillStyle = 'rgba(134,112,76,.8)'; rond(x, 0, -46, 30); x.fill();
+  /* des pierres, des fleurs */
+  for(q = 0; q < 10; q++){ var sa = r() * TAU, sd = 38 + r() * 40; x.fillStyle = '#8a867a'; x.strokeStyle = K; x.lineWidth = .7; ovale(x, Math.cos(sa) * sd, -44 + Math.sin(sa) * sd * .8, 1.6 + r() * 2.2, 1.2 + r() * 1.4, r() * 3); x.fill(); x.stroke(); }
+  for(q = 0; q < 30; q++){ var fa = r() * TAU, fd = 40 + r() * 42; x.fillStyle = ['#f4f0ea', '#f2d04a', '#9a8ae0'][Math.floor(r() * 3)]; rond(x, Math.cos(fa) * fd, -44 + Math.sin(fa) * fd * .85, .8); x.fill(); }
+  x.restore();
+}
+function dessinerPuits(x, E, L){
+  x.save(); x.translate(E.bx, E.by); x.rotate(Math.atan2(E.dy, E.dx) + PI / 2); x.translate(PUITS.x, PUITS.y);
+  var r = graine(131), q, R = PUITS.r;
+  ombreRond(x, 0, 0, R + 1, L, 8);
+  /* la margelle : un anneau de pierres jointoyées */
+  x.fillStyle = '#9a958a'; x.strokeStyle = K; x.lineWidth = 2; rond(x, 0, 0, R); x.fill(); x.stroke();
+  for(q = 0; q < 14; q++){ var a0 = q / 14 * TAU, a1 = (q + 1) / 14 * TAU - .05;
+    x.fillStyle = mix('#a8a296', r() < .5 ? '#ffffff' : '#3a3630', r() * .18); x.beginPath(); x.arc(0, 0, R - 1, a0, a1); x.arc(0, 0, R - 6.4, a1, a0, true); x.closePath(); x.fill();
+    x.strokeStyle = 'rgba(50,44,36,.5)'; x.lineWidth = .5; x.stroke(); }
+  x.fillStyle = 'rgba(86,130,52,.7)'; for(q = 0; q < 5; q++){ var am = r() * TAU; ovale(x, Math.cos(am) * (R - 3.5), Math.sin(am) * (R - 3.5), 2.4, 1.3, am + PI / 2); x.fill(); }
+  /* le noir, tout au fond */
+  var gn = x.createRadialGradient(0, 0, 1, 0, 0, R - 6); gn.addColorStop(0, '#05040a'); gn.addColorStop(1, '#1c1824'); x.fillStyle = gn; rond(x, 0, 0, R - 6.2); x.fill();
+  /* la grille de fer, rouillée */
+  x.save(); rond(x, 0, 0, R - 5.6); x.clip();
+  x.strokeStyle = '#4a3a30'; x.lineWidth = 2.4; x.lineCap = 'butt'; x.beginPath(); for(q = -2; q <= 2; q++){ x.moveTo(q * 4.6, -R); x.lineTo(q * 4.6, R); x.moveTo(-R, q * 4.6); x.lineTo(R, q * 4.6); } x.stroke();
+  x.strokeStyle = '#9a5a32'; x.lineWidth = 1.3; x.stroke();
+  x.strokeStyle = 'rgba(230,170,110,.4)'; x.lineWidth = .4; x.beginPath(); for(q = -2; q <= 2; q++){ x.moveTo(q * 4.6 - .4, -R); x.lineTo(q * 4.6 - .4, R); } x.stroke();
+  x.restore();
+  /* les deux montants, la traverse et le treuil, la corde qui pend */
+  [[-R - 3, 0], [R + 3, 0]].forEach(function(m){ x.fillStyle = '#6a4a2e'; x.strokeStyle = K; x.lineWidth = 1.3; x.fillRect(m[0] - 2.6, m[1] - 2.6, 5.2, 5.2); x.strokeRect(m[0] - 2.6, m[1] - 2.6, 5.2, 5.2); });
+  x.strokeStyle = K; x.lineWidth = 4.2; x.lineCap = 'round'; x.beginPath(); x.moveTo(-R - 3, 0); x.lineTo(R + 3, 0); x.stroke();
+  x.strokeStyle = '#8a6a44'; x.lineWidth = 2.6; x.stroke();
+  x.fillStyle = '#c8b08a'; x.strokeStyle = K; x.lineWidth = .8; x.beginPath(); rr(x, -5, -2.4, 10, 4.8, 2); x.fill(); x.stroke();
+  x.strokeStyle = '#d8c8a0'; x.lineWidth = .5; x.beginPath(); for(q = -4; q <= 4; q += 1.4){ x.moveTo(q, -2.4); x.lineTo(q + .6, 2.4); } x.stroke();
+  x.strokeStyle = '#4a3a2a'; x.lineWidth = 1.6; x.beginPath(); x.moveTo(R + 5, 0); x.lineTo(R + 9, 3); x.lineTo(R + 9, 6.4); x.stroke();
+  /* le seau renversé, à côté */
+  x.save(); x.translate(-R - 12, 10); x.rotate(.8); x.fillStyle = '#8a6a44'; x.strokeStyle = K; x.lineWidth = 1.1; x.beginPath(); x.moveTo(-4, -4); x.lineTo(4, -4); x.lineTo(3, 5); x.lineTo(-3, 5); x.closePath(); x.fill(); x.stroke();
+  x.strokeStyle = '#3a3640'; x.lineWidth = .8; x.beginPath(); x.moveTo(-3.6, -1); x.lineTo(3.6, -1); x.moveTo(-3.2, 2.6); x.lineTo(3.2, 2.6); x.stroke(); x.restore();
+  x.restore();
+}
 /* le bout d'une fausse piste : (0, 0) le fond de l'impasse, l'impasse arrive par le bas (on tourne le dessin) */
 function dessinerLieu(x, F, L){
   x.save(); x.translate(F.bx, F.by); x.rotate(Math.atan2(F.dy, F.dx) + PI / 2);
@@ -1148,6 +1609,56 @@ function dessinerLieu(x, F, L){
     x.fillStyle = 'rgba(255,255,255,.18)'; x.fillRect(-21, -4, 42, 8);
     x.strokeStyle = K; x.lineWidth = 2; x.beginPath(); rr(x, -21, -4, 42, 42, 5); x.stroke();
     x.beginPath(); x.moveTo(0, -4); x.lineTo(0, 38); x.lineWidth = 1; x.stroke();
+  } else if(F.lieu === 'souche'){
+    /* une grosse souche creuse, ses racines, un trou noir dedans */
+    x.strokeStyle = K; x.lineWidth = 5; x.lineCap = 'round'; x.beginPath(); for(i = 0; i < 6; i++){ var ar = i / 6 * TAU + .3; x.moveTo(0, -18); x.lineTo(Math.cos(ar) * 34, -18 + Math.sin(ar) * 30); } x.stroke();
+    x.strokeStyle = '#5a3e24'; x.lineWidth = 3; x.stroke();
+    x.fillStyle = '#5a3e24'; x.strokeStyle = K; x.lineWidth = 2; rond(x, 0, -18, 22); x.fill(); x.stroke();
+    x.fillStyle = '#b8946a'; rond(x, 0, -18, 17); x.fill();
+    x.strokeStyle = '#8a6a44'; x.lineWidth = .6; for(i = 1; i < 5; i++){ rond(x, 1, -17, i * 3.6); x.stroke(); }
+    x.fillStyle = '#1a1210'; ovale(x, -3, -16, 8, 6, .3); x.fill();
+    x.fillStyle = 'rgba(86,130,52,.75)'; for(i = 0; i < 6; i++){ ovale(x, -20 + r() * 40, -2 + r() * 10, 2.5 + r() * 2, 1.4, r() * 3); x.fill(); }
+  } else if(F.lieu === 'terrier'){
+    /* un talus de terre sous les racines d'un arbre, le trou du terrier, de la terre fraîche devant */
+    var a1 = {x:0, y:-34, r:30, sorte:'chene', g:F.g}; ombreRond(x, a1.x, a1.y, a1.r, L, 26); dessinerArbre(x, a1, L);
+    x.fillStyle = '#7a5a36'; x.strokeStyle = K; x.lineWidth = 1.6; ovale(x, 0, -6, 24, 12, 0); x.fill(); x.stroke();
+    x.fillStyle = '#140e0c'; ovale(x, 0, -4, 10, 7, 0); x.fill();
+    x.strokeStyle = '#4a3420'; x.lineWidth = 2; x.lineCap = 'round'; x.beginPath(); x.moveTo(-14, -12); x.quadraticCurveTo(-6, -2, -2, -10); x.moveTo(12, -12); x.quadraticCurveTo(6, -1, 3, -9); x.stroke();
+    x.fillStyle = '#8a6a44'; for(i = 0; i < 14; i++){ ovale(x, (r() - .5) * 34, 8 + r() * 16, 1 + r() * 2, .7 + r(), r() * 3); x.fill(); }
+  } else if(F.lieu === 'mare'){
+    /* une petite mare : l'eau, les roseaux, des nénuphars, une grenouille sur un nénuphar */
+    x.fillStyle = 'rgba(40,30,20,.25)'; ovale(x, 0, -26, 40, 28, 0); x.fill();
+    var gm = x.createLinearGradient(-36, -50, 36, 0); gm.addColorStop(0, mix(L.ciel, '#3a6a5a', .5)); gm.addColorStop(1, mix(L.cielB, '#24463a', .5));
+    x.fillStyle = gm; x.strokeStyle = K; x.lineWidth = 1.6; ovale(x, 0, -26, 36, 24, 0); x.fill(); x.stroke();
+    x.strokeStyle = L.reflet; x.lineWidth = 1; x.beginPath(); x.moveTo(-18, -34); x.lineTo(-4, -35); x.moveTo(6, -22); x.lineTo(20, -23); x.stroke();
+    [[-14, -20, 5], [10, -34, 6], [18, -16, 4]].forEach(function(n, k){ x.fillStyle = '#4f8a3a'; x.strokeStyle = K; x.lineWidth = .8; x.beginPath(); x.moveTo(n[0], n[1]); x.arc(n[0], n[1], n[2], .5, TAU - .1); x.closePath(); x.fill(); x.stroke();
+      if(k === 1){ x.fillStyle = '#6aae4a'; x.strokeStyle = K; x.lineWidth = .8; ovale(x, n[0], n[1], 2.6, 3.2, 0); x.fill(); x.stroke(); x.fillStyle = '#f4f0d0'; rond(x, n[0] - 1.2, n[1] - 2.4, .9); x.fill(); rond(x, n[0] + 1.2, n[1] - 2.4, .9); x.fill(); } });
+    x.strokeStyle = '#5a7a30'; x.lineWidth = 1; x.lineCap = 'round'; x.beginPath();
+    for(i = 0; i < 16; i++){ var ra2 = r() * TAU, rd = 1.02 + r() * .08, bx2 = Math.cos(ra2) * 36 * rd, by2 = -26 + Math.sin(ra2) * 24 * rd; x.moveTo(bx2, by2); x.lineTo(bx2 + (r() - .5) * 3, by2 - 3 - r() * 3); } x.stroke();
+    x.fillStyle = '#7a4a24'; for(i = 0; i < 4; i++){ var ra3 = r() * TAU; ovale(x, Math.cos(ra3) * 37, -26 + Math.sin(ra3) * 25, .9, 2.2, ra3); x.fill(); }
+  } else if(F.lieu === 'champignons'){
+    /* un rond de champignons, au milieu d'une petite clairière */
+    x.fillStyle = 'rgba(120,160,80,.3)'; rond(x, 0, -22, 30); x.fill();
+    for(i = 0; i < 13; i++){ var ca = i / 13 * TAU, ccx = Math.cos(ca) * 24, ccy = -22 + Math.sin(ca) * 20, cr = 2.4 + r() * 1.4;
+      x.fillStyle = 'rgba(16,22,40,.3)'; rond(x, ccx + 1, ccy + 1, cr); x.fill();
+      x.fillStyle = i % 3 ? '#e8dcc0' : '#c8302a'; x.strokeStyle = K; x.lineWidth = .8; rond(x, ccx, ccy, cr); x.fill(); x.stroke();
+      x.fillStyle = i % 3 ? 'rgba(160,120,70,.5)' : '#fff4e8'; rond(x, ccx - cr * .3, ccy - cr * .3, cr * .3); x.fill(); }
+  } else if(F.lieu === 'rochers'){
+    [[-18, -24, 17, 14], [17, -30, 15, 13], [2, -46, 11, 9]].forEach(function(b){
+      x.fillStyle = 'rgba(16,22,40,' + L.ombre.a + ')'; ovale(x, b[0] + L.ombre.x * 8, b[1] + L.ombre.y * 8, b[2], b[3], 0); x.fill();
+      x.fillStyle = '#8a8a86'; x.strokeStyle = K; x.lineWidth = 1.8; x.beginPath(); for(var k6 = 0; k6 < 10; k6++){ var ak = k6 / 10 * TAU, rk = .85 + r() * .18; x.lineTo(b[0] + Math.cos(ak) * b[2] * rk, b[1] + Math.sin(ak) * b[3] * rk); } x.closePath(); x.fill(); x.stroke();
+      x.fillStyle = 'rgba(230,230,220,.3)'; ovale(x, b[0] - L.ombre.x * b[2] * .25, b[1] - L.ombre.y * b[3] * .25, b[2] * .55, b[3] * .45, 0); x.fill();
+      x.fillStyle = 'rgba(86,130,52,.75)'; for(k6 = 0; k6 < 6; k6++){ ovale(x, b[0] + (r() - .5) * b[2], b[1] - b[3] * .3 + (r() - .5) * b[3] * .6, 2 + r() * 3, 1.2 + r() * 1.6, r() * 3); x.fill(); }
+    });
+  } else if(F.lieu === 'tronc'){
+    /* un grand arbre tombé en travers, tout creux : on voit le noir à son bout */
+    x.save(); x.translate(0, -20); x.rotate(.12);
+    x.fillStyle = '#6a4a2e'; x.strokeStyle = K; x.lineWidth = 2; x.beginPath(); rr(x, -52, -9, 104, 18, 9); x.fill(); x.stroke();
+    x.fillStyle = 'rgba(255,230,190,.14)'; x.fillRect(-48, -7, 96, 5);
+    x.strokeStyle = 'rgba(40,24,12,.5)'; x.lineWidth = .6; x.beginPath(); for(i = 0; i < 8; i++){ var ty3 = -7 + r() * 14; x.moveTo(-48 + r() * 10, ty3); x.lineTo(46 - r() * 12, ty3 + (r() - .5) * 1.4); } x.stroke();
+    x.fillStyle = '#c8a878'; x.strokeStyle = K; x.lineWidth = 1.4; ovale(x, 51, 0, 4, 8.6, 0); x.fill(); x.stroke(); x.fillStyle = '#140e0c'; ovale(x, 51, 0, 2.6, 6, 0); x.fill();
+    x.fillStyle = 'rgba(86,130,52,.75)'; for(i = 0; i < 7; i++){ ovale(x, -44 + r() * 86, -3 + (r() - .5) * 4, 2.5 + r() * 3, 1.3, 0); x.fill(); }
+    x.restore();
   } else {
     x.fillStyle = '#6e5236'; x.strokeStyle = K; x.lineWidth = 2; x.beginPath(); rr(x, -34, -6, 68, 52, 4); x.fill(); x.stroke();
     for(i = 0; i < 12; i++){ var cx = -24 + (i % 4) * 16, cy = 4 + Math.floor(i / 4) * 15;
@@ -1195,38 +1706,76 @@ function preparerDecor(M, L){
     })(vx + rv() * 96, vy + rv() * 96, 40 + rv() * 60, rv() < .5, rv() < .6);
   }
   M.cellules.forEach(function(c){ if(c.sol === 'cour') aj(1, c, function(x, E){ x.save(); x.beginPath(); x.rect(c.x, c.y, c.w, c.h); x.clip(); carreler(x, E.tu.terre, E.R, E.tu.Tw); x.restore(); }); });
-  M.sols.forEach(function(o){ aj(1.2, o, function(x){ dessinerSol(x, o); }); });
+  /* (les choses de la forêt sont dessinées après les chemins : les fougères mordent un peu sur leur bord) */
+  var SOLS_BOIS = {fougere:1, mousse:1, champis:1, fleursF:1, feuilles:1};
+  M.sols.forEach(function(o){ aj(SOLS_BOIS[o.type] ? 2.4 : 1.2, o, function(x){ dessinerSol(x, o); }); });
   M.bords.forEach(function(b){ aj(1.4, boite(Math.min(b.x1, b.x2) - 6, Math.min(b.y1, b.y2) - 6, Math.max(b.x1, b.x2) + 6, Math.max(b.y1, b.y2) + 6), function(x){ dessinerBord(x, b); }); });
-  /* les détails de la rue : des grilles d'égout, des feuilles mortes, de la paille */
+  /* le ruisseau de la forêt : par tronçons (chaque morceau du décor ne dessine que le sien) */
+  if(M.ruisseau) for(var xs = -MARGE; xs < M.W + MARGE; xs += 120){
+    (function(a, b){ var ya = M.ruisseau.y, h = M.ruisseau.a1 + M.ruisseau.a2 + M.ruisseau.l + 14;
+      aj(1.1, boite(a - 4, ya - h, b + 4, ya + h), function(x){ dessinerRuisseau(x, M, a, b, L); }); })(xs, xs + 120);
+  }
+  /* le bord des chemins de la forêt : pas une ligne droite, de l'humus, de la mousse et des touffes d'herbe qui mordent un peu sur la
+     terre (quelques pas au plus : jamais jusqu'aux traces) */
+  if(M.foret) M.rues.forEach(function(R2){
+    [[R2.x, R2.y, R2.x + R2.w, R2.y, 0, -1], [R2.x, R2.y + R2.h, R2.x + R2.w, R2.y + R2.h, 0, 1], [R2.x, R2.y, R2.x, R2.y + R2.h, -1, 0], [R2.x + R2.w, R2.y, R2.x + R2.w, R2.y + R2.h, 1, 0]].forEach(function(c){
+      var len = Math.hypot(c[2] - c[0], c[3] - c[1]);
+      for(var u = 0; u < len; u += 40) (function(a0, a1){
+        var xa = c[0] + (c[2] - c[0]) * a0 / len, ya = c[1] + (c[3] - c[1]) * a0 / len, xb = c[0] + (c[2] - c[0]) * a1 / len, yb = c[1] + (c[3] - c[1]) * a1 / len;
+        if(!M.estForet(Math.max(ya, yb) + 10)) return;
+        aj(2.3, boite(Math.min(xa, xb) - 12, Math.min(ya, yb) - 12, Math.max(xa, xb) + 12, Math.max(ya, yb) + 12), function(x){
+          var r2 = graine(Math.round(xa * 7 + ya * 13) + 5), t2;
+          for(t2 = a0; t2 < a1; t2 += 3.4){
+            var ex = c[0] + (c[2] - c[0]) * t2 / len, ey = c[1] + (c[3] - c[1]) * t2 / len, k1 = r2(), k2 = r2(), k3 = r2();
+            if(M.dansRue(ex + c[4] * 5, ey + c[5] * 5) || !M.estForet(ey)) continue;
+            var dd = -1 + k1 * 5.5, bx = ex - c[4] * dd, by = ey - c[5] * dd, rb = 2.4 + k2 * 3.6;
+            x.fillStyle = k3 < .55 ? '#3f4a2a' : k3 < .8 ? '#465a2c' : '#4c3e26'; ovale(x, bx, by, rb, rb * .8, k1 * 3); x.fill();
+            if(k2 > .55){ x.strokeStyle = k3 < .5 ? '#5e8a3e' : '#6f9a46'; x.lineWidth = .5; x.lineCap = 'round'; x.beginPath();
+              for(var g2 = 0; g2 < 4; g2++){ var gx2 = bx + (r2() - .5) * rb, gy2 = by + (r2() - .5) * rb; x.moveTo(gx2, gy2); x.lineTo(gx2 + (r2() - .5) * 1.6 - c[4] * 2, gy2 - 2 - c[5] * 2); } x.stroke(); }
+          }
+        });
+      })(u, Math.min(len, u + 40));
+    });
+  });
+  /* les détails de la rue : des grilles d'égout, des feuilles mortes, de la paille ; sur les chemins de la forêt, des brindilles,
+     des feuilles, des cailloux, des pommes de pin, des racines */
   var r = graine(M.W * 7 + M.H), rues = M.rues;
   rues.forEach(function(R2){
     var n = Math.round(R2.w * R2.h / 2600);
-    for(var q = 0; q < n; q++){
-      var d = {x:R2.x + 4 + r() * (R2.w - 8), y:R2.y + 4 + r() * (R2.h - 8), a:r() * TAU, t:r() < .55 ? 'feuille' : r() < .7 ? 'paille' : 'caillou', c:U.choix(['#c9742f', '#d8a13a', '#a8562a', '#b88a3a'])};
-      (function(d2){ aj(3, boite(d2.x - 3, d2.y - 3, d2.x + 3, d2.y + 3), function(x){
+    for(var q = 0; q < n * (M.foret ? 1.6 : 1); q++){
+      var d = {x:R2.x + 4 + r() * (R2.w - 8), y:R2.y + 4 + r() * (R2.h - 8), a:r() * TAU, t:r() < .55 ? 'feuille' : r() < .7 ? 'paille' : 'caillou', c:U.choix(['#c9742f', '#d8a13a', '#a8562a', '#b88a3a']), u:r()};
+      if(M.estForet(d.y)) d.t = d.u < .4 ? 'feuille' : d.u < .65 ? 'brindille' : d.u < .82 ? 'caillou' : d.u < .92 ? 'pomme' : 'racine';
+      (function(d2){ aj(3, boite(d2.x - 9, d2.y - 9, d2.x + 9, d2.y + 9), function(x){
         if(d2.t === 'feuille'){ x.fillStyle = d2.c; ovale(x, d2.x, d2.y, 1.9, .95, d2.a); x.fill(); x.strokeStyle = 'rgba(80,40,10,.5)'; x.lineWidth = .3; x.beginPath(); x.moveTo(d2.x - Math.cos(d2.a) * 1.9, d2.y - Math.sin(d2.a) * 1.9); x.lineTo(d2.x + Math.cos(d2.a) * 2.6, d2.y + Math.sin(d2.a) * 2.6); x.stroke(); }
         else if(d2.t === 'paille'){ x.strokeStyle = '#d8b860'; x.lineWidth = .4; x.beginPath(); for(var k = 0; k < 3; k++){ var aa = d2.a + k * .5; x.moveTo(d2.x, d2.y); x.lineTo(d2.x + Math.cos(aa) * 3, d2.y + Math.sin(aa) * 3); } x.stroke(); }
+        else if(d2.t === 'brindille'){ x.strokeStyle = '#5a4026'; x.lineWidth = .6; x.lineCap = 'round'; x.beginPath(); x.moveTo(d2.x - Math.cos(d2.a) * 3.4, d2.y - Math.sin(d2.a) * 3.4); x.lineTo(d2.x + Math.cos(d2.a) * 3.4, d2.y + Math.sin(d2.a) * 3.4); x.moveTo(d2.x, d2.y); x.lineTo(d2.x + Math.cos(d2.a + .7) * 1.8, d2.y + Math.sin(d2.a + .7) * 1.8); x.stroke(); }
+        else if(d2.t === 'pomme'){ x.fillStyle = '#7a4a24'; x.strokeStyle = K; x.lineWidth = .4; ovale(x, d2.x, d2.y, 1.5, 1, d2.a); x.fill(); x.stroke(); x.strokeStyle = 'rgba(200,150,90,.6)'; x.beginPath(); x.moveTo(d2.x - 1, d2.y); x.lineTo(d2.x + 1, d2.y); x.stroke(); }
+        else if(d2.t === 'racine'){ x.strokeStyle = 'rgba(70,48,28,.7)'; x.lineWidth = 1.2; x.lineCap = 'round'; x.beginPath(); x.moveTo(d2.x - Math.cos(d2.a) * 8, d2.y - Math.sin(d2.a) * 8); x.quadraticCurveTo(d2.x + Math.sin(d2.a) * 2, d2.y - Math.cos(d2.a) * 2, d2.x + Math.cos(d2.a) * 8, d2.y + Math.sin(d2.a) * 8); x.stroke(); }
         else { x.fillStyle = '#8d8070'; ovale(x, d2.x, d2.y, 1.1, .8, d2.a); x.fill(); x.fillStyle = 'rgba(255,255,255,.3)'; rond(x, d2.x - .3, d2.y - .3, .35); x.fill(); }
       }); })(d);
     }
   });
   M.gx.forEach(function(gxx, i){ M.gy.forEach(function(gyy, j){
-    if((i * 7 + j * 3) % 4) return;
+    if((i * 7 + j * 3) % 4 || M.estForet(gyy - RUE)) return;
     var dx = gxx + (j % 2 ? 24 : -24), dy = gyy + (i % 2 ? -24 : 24);
     aj(3, boite(dx - 6, dy - 6, dx + 6, dy + 6), function(x){ x.fillStyle = '#3a3640'; x.strokeStyle = K; x.lineWidth = .9; x.fillRect(dx - 4.5, dy - 3, 9, 6); x.strokeRect(dx - 4.5, dy - 3, 9, 6);
       x.strokeStyle = '#706a78'; x.lineWidth = .7; x.beginPath(); for(var k = -3; k <= 3; k += 1.5){ x.moveTo(dx + k, dy - 2.4); x.lineTo(dx + k, dy + 2.4); } x.stroke(); });
   }); });
-  /* le lait devant chez Odette (sous les traces) */
-  aj(4, boite(M.odette.bx - 50, M.odette.by - 4, M.odette.bx + 50, M.odette.by + 56), function(x){ dessinerOdetteSol(x, M.odette); });
-  M.taches.forEach(function(T){ aj(5, boite(T.x - T.rx * 1.5 - 6, T.y - T.rx * 1.5 - 6, T.x + T.rx * 1.5 + 6, T.y + T.rx * 1.5 + 6), function(x){ dessinerTache(x, T, L, rues); }); });
+  /* le lait devant chez Odette (sous les traces) ; dans la forêt, l'herbe de la clairière du puits */
+  if(!M.foret) aj(4, boite(M.odette.bx - 50, M.odette.by - 4, M.odette.bx + 50, M.odette.by + 56), function(x){ dessinerOdetteSol(x, M.odette); });
+  else aj(1.15, M.egBoite, function(x){ dessinerClairiere(x, M.eglise, L); });
+  M.taches.forEach(function(T){ var e = Math.max(T.rx, T.ry) + 9; aj(5, boite(T.x - e, T.y - e, T.x + e, T.y + e), function(x){ dessinerTache(x, T, L, rues); }); });
   M.arches.forEach(function(A){
     aj(5.5, A, function(x){
       var g = A.sens === 'h' ? x.createLinearGradient(A.x, 0, A.x + A.w, 0) : x.createLinearGradient(0, A.y, 0, A.y + A.h);
       g.addColorStop(0, 'rgba(14,10,22,.25)'); g.addColorStop(.2, 'rgba(14,10,22,.5)'); g.addColorStop(.8, 'rgba(14,10,22,.5)'); g.addColorStop(1, 'rgba(14,10,22,.25)');
       x.fillStyle = g; x.fillRect(A.x, A.y, A.w, A.h);
+      /* sous la voûte de la forêt, un tapis épais de feuilles mortes : on n'y voit aucune trace */
+      if(A.foret){ var rf = graine(A.g + 3), FC = ['#7a5a2a', '#9a6a2a', '#6a4a24', '#8a3a20', '#5a4a26'];
+        for(var q2 = 0; q2 < A.w * A.h / 14; q2++){ x.fillStyle = FC[Math.floor(rf() * FC.length)]; ovale(x, A.x + rf() * A.w, A.y + rf() * A.h, 1.7, .9, rf() * PI); x.fill(); } }
     });
-    /* l'ombre de la maison du passage, sur la rue */
-    aj(6, boite(A.bat.x - 40, A.bat.y - 40, A.bat.x + A.bat.w + 40, A.bat.y + A.bat.h + 40), function(x){ ombre(x, A.bat, L, 22); });
+    /* l'ombre de la maison du passage (ou du grand arbre), sur la rue */
+    aj(6, boite(A.bat.x - 40, A.bat.y - 40, A.bat.x + A.bat.w + 40, A.bat.y + A.bat.h + 40), function(x){ if(A.foret) ombreRond(x, A.cx, A.cy, Math.max(A.bat.w, A.bat.h) * .48, L, 30); else ombre(x, A.bat, L, 22); });
   });
   /* les ombres, puis les choses, puis les toits, puis les arbres */
   M.obstacles.forEach(function(o){ var b = boite(o.x - 30, o.y - 30, o.x + o.w + 30, o.y + o.h + 30);
@@ -1240,66 +1789,122 @@ function preparerDecor(M, L){
   M.dessus.forEach(function(a){ var b = boite(a.x - a.r - 40, a.y - a.r - 40, a.x + a.r + 40, a.y + a.r + 40);
     aj(6, b, function(x){ ombreRond(x, a.x, a.y, a.r, L, a.haut); });
     aj(7, boite(a.x - 4, a.y - 4, a.x + 4, a.y + 4), function(x){ x.fillStyle = '#5a3e26'; x.strokeStyle = K; x.lineWidth = 1; rond(x, a.x, a.y, 3.2); x.fill(); x.stroke(); }); });
-  /* les lieux : chez Odette, l'église, les bouts des fausses pistes */
-  aj(10, boite(M.odette.bx - 70, M.odette.by - 90, M.odette.bx + 70, M.odette.by + 20), function(x){ dessinerOdette(x, M.odette, L); });
-  aj(10, M.egBoite, function(x){ dessinerEglise(x, M.eglise, L); });
-  M.fins.forEach(function(F){ aj(10, boite(F.bx - 110, F.by - 110, F.bx + 110, F.by + 110), function(x){ dessinerLieu(x, F, L); }); });
+  /* les lieux : chez Odette et l'église (la ville), l'église et le puits (la forêt), les bouts des fausses pistes */
+  if(!M.foret){
+    aj(10, boite(M.odette.bx - 70, M.odette.by - 90, M.odette.bx + 70, M.odette.by + 20), function(x){ dessinerOdette(x, M.odette, L); });
+    aj(10, M.egBoite, function(x){ dessinerEglise(x, M.eglise, L); });
+  } else {
+    aj(10, M.departBoite, function(x){ dessinerEglise(x, M.odette, L); });
+    aj(10, M.egBoite, function(x){ dessinerPuits(x, M.eglise, L); });
+  }
+  M.fins.forEach(function(F){
+    /* dans la forêt, une petite clairière d'herbe autour du bout de la fausse piste */
+    if(F.foret) aj(1.15, boite(F.bx - 80, F.by - 80, F.bx + 80, F.by + 80), function(x){ var cx = F.bx + F.dx * 30, cy = F.by + F.dy * 30, g = x.createRadialGradient(cx, cy, 6, cx, cy, 62);
+      g.addColorStop(0, 'rgba(110,156,72,.7)'); g.addColorStop(1, 'rgba(110,156,72,0)'); x.fillStyle = g; rond(x, cx, cy, 62); x.fill(); });
+    aj(10, boite(F.bx - 110, F.by - 110, F.bx + 110, F.by + 110), function(x){ dessinerLieu(x, F, L); });
+  });
   M.lampes.forEach(function(l){ aj(11, boite(l.x - 30, l.y - 30, l.x + 30, l.y + 30), function(x){ dessinerLampe(x, l, L); }); });
   return I;
 }
 function Blocs(M, I, L, s){
   var CW = CPX / s, cache = {}, nb = 0, MAX = 48, horloge = 0, pool = [];
   var tu = {paves:tuile(s, 'paves'), herbe:tuile(s, 'herbe'), terre:tuile(s, 'terre')}; tu.Tw = tu.paves.width / s;
-  var stats = {faits:0, ms:0, pire:0};
-  function rendre(bx, by){
+  if(M.foret){ tu.humus = tuile(s, 'humus'); tu.sentier = tuile(s, 'sentier'); }
+  var stats = {faits:0, ms:0, pire:0, coins:0, msCoins:0};
+  /* zone : ne redessiner qu'un petit coin d'un morceau déjà dessiné (là où un chat qui court a effacé ou posé des traces) */
+  function rendre(bx, by, zone, dans){
     var t0 = performance.now();
-    var c = pool.pop(); if(!c){ c = document.createElement('canvas'); c.width = c.height = CPX; }
-    var x = c.getContext('2d', {alpha:false}), X0 = bx * CW, Y0 = by * CW, R = {x:X0, y:Y0, w:CW, h:CW}, E = {R:R, tu:tu, L:L};   /* (opaque : se recopie plus vite) */
-    x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, CPX, CPX);
+    var c = dans || pool.pop(); if(!c){ c = document.createElement('canvas'); c.width = c.height = CPX; }
+    var x = c.getContext('2d', {alpha:false}), X0 = bx * CW, Y0 = by * CW, R = zone || {x:X0, y:Y0, w:CW, h:CW}, E = {R:R, tu:tu, L:L};   /* (opaque : se recopie plus vite) */
+    x.save();
+    x.setTransform(1, 0, 0, 1, 0, 0); if(!zone) x.clearRect(0, 0, CPX, CPX);
     x.setTransform(s, 0, 0, s, -X0 * s, -Y0 * s);
+    if(zone){ x.beginPath(); x.rect(R.x, R.y, R.w, R.h); x.clip(); }
     x.lineCap = 'butt'; x.lineJoin = 'miter';
+    /* la forêt : sous la lisière (qui ondule), l'humus au lieu de l'herbe ; les chemins de terre au lieu des pavés */
+    var aBois = M.foret && R.y + R.h > M.Yf - 20, aVille = !M.foret || R.y < M.Yf + 20;
     carreler(x, tu.herbe, R, tu.Tw);
-    var items = I.chercher({x:X0 - 2, y:Y0 - 2, w:CW + 4, h:CW + 4}), i = 0;
+    if(aBois){ x.save(); lisiere(x, R, false); x.clip(); carreler(x, tu.humus, R, tu.Tw); x.restore(); }
+    var items = I.chercher({x:R.x - 2, y:R.y - 2, w:R.w + 4, h:R.h + 4}), i = 0;
     for(; i < items.length && items[i].z < 2; i++) items[i].d(x, E);
     /* les rues : la bordure de pierre (le trottoir), les pavés, une ombre douce le long des bords */
     var rs = M.rues.filter(function(r){ return croise(r, R, 8); });
-    if(rs.length){
+    if(rs.length && aBois){
+      /* les chemins de la forêt : un bord de terre plus sombre, la terre tassée, une ombre douce le long des bords */
+      x.save(); lisiere(x, R, false); x.clip();
+      x.fillStyle = 'rgba(46,34,20,.5)'; rs.forEach(function(r){ x.fillRect(r.x - 3, r.y - 3, r.w + 6, r.h + 6); });
+      x.beginPath(); rs.forEach(function(r){ x.rect(r.x, r.y, r.w, r.h); }); x.clip();
+      carreler(x, tu.sentier, R, tu.Tw);
+      x.restore();
+    }
+    if(rs.length && aVille){
+      if(aBois){ x.save(); lisiere(x, R, true); x.clip(); }
       x.fillStyle = '#8f8270'; rs.forEach(function(r){ x.fillRect(r.x - 4.5, r.y - 4.5, r.w + 9, r.h + 9); });
       x.strokeStyle = 'rgba(60,50,40,.45)'; x.lineWidth = .5; x.beginPath();
-      rs.forEach(function(r){ for(var u = r.x - 4.5; u < r.x + r.w + 4.5; u += 5.5){ if(u < X0 - 6 || u > X0 + CW + 6) continue; x.moveTo(u, r.y - 4.5); x.lineTo(u, r.y - .5); x.moveTo(u, r.y + r.h + .5); x.lineTo(u, r.y + r.h + 4.5); }
-        for(var v = r.y - 4.5; v < r.y + r.h + 4.5; v += 5.5){ if(v < Y0 - 6 || v > Y0 + CW + 6) continue; x.moveTo(r.x - 4.5, v); x.lineTo(r.x - .5, v); x.moveTo(r.x + r.w + .5, v); x.lineTo(r.x + r.w + 4.5, v); } });
+      rs.forEach(function(r){ for(var u = r.x - 4.5; u < r.x + r.w + 4.5; u += 5.5){ if(u < R.x - 6 || u > R.x + R.w + 6) continue; x.moveTo(u, r.y - 4.5); x.lineTo(u, r.y - .5); x.moveTo(u, r.y + r.h + .5); x.lineTo(u, r.y + r.h + 4.5); }
+        for(var v = r.y - 4.5; v < r.y + r.h + 4.5; v += 5.5){ if(v < R.y - 6 || v > R.y + R.h + 6) continue; x.moveTo(r.x - 4.5, v); x.lineTo(r.x - .5, v); x.moveTo(r.x + r.w + .5, v); x.lineTo(r.x + r.w + 4.5, v); } });
       x.stroke();
       x.save(); x.beginPath(); rs.forEach(function(r){ x.rect(r.x, r.y, r.w, r.h); }); x.clip();
-      carreler(x, tu.paves, R, tu.Tw); x.fillStyle = 'rgba(40,30,20,.24)'; x.fillRect(X0 - 2, Y0 - 2, CW + 4, CW + 4);
+      carreler(x, tu.paves, R, tu.Tw); x.fillStyle = 'rgba(40,30,20,.24)'; x.fillRect(R.x - 2, R.y - 2, R.w + 4, R.h + 4);
       x.restore();
       x.save(); x.beginPath(); rs.forEach(function(r){ x.rect(r.x + 2.2, r.y + 2.2, r.w - 4.4, r.h - 4.4); }); x.clip();
       carreler(x, tu.paves, R, tu.Tw);
       x.restore();
+      if(aBois) x.restore();
     }
     for(; i < items.length && items[i].z < 6; i++) items[i].d(x, E);
-    /* les traces des chats */
-    var cx0 = Math.floor((X0 - 10) / M.CASE), cx1 = Math.floor((X0 + CW + 10) / M.CASE), cy0 = Math.floor((Y0 - 10) / M.CASE), cy1 = Math.floor((Y0 + CW + 10) / M.CASE);
+    /* les traces des chats (sauf celles qu'un chat qui court a effacées) ; les plus récentes par-dessus */
+    var cx0 = Math.floor((R.x - 10) / M.CASE), cx1 = Math.floor((R.x + R.w + 10) / M.CASE), cy0 = Math.floor((R.y - 10) / M.CASE), cy1 = Math.floor((R.y + R.h + 10) / M.CASE);
     for(var a = cx0; a <= cx1; a++) for(var b = cy0; b <= cy1; b++){
       var l = M.cases[a + ':' + b]; if(!l) continue;
-      for(var k = 0; k < l.length; k++){ var T = l[k]; if(T.x < X0 - 10 || T.x > X0 + CW + 10 || T.y < Y0 - 10 || T.y > Y0 + CW + 10) continue; dessinerTrace(x, T); }
+      for(var k = 0; k < l.length; k++){ var T = l[k]; if(T.ef || T.x < R.x - 10 || T.x > R.x + R.w + 10 || T.y < R.y - 10 || T.y > R.y + R.h + 10) continue; dessinerTrace(x, T); }
     }
     for(; i < items.length; i++) items[i].d(x, E);
-    var dt = performance.now() - t0; stats.faits++; stats.ms += dt; if(dt > stats.pire) stats.pire = dt;
+    x.restore();
+    var dt = performance.now() - t0;
+    if(zone){ stats.coins++; stats.msCoins += dt; } else { stats.faits++; stats.ms += dt; if(dt > stats.pire) stats.pire = dt; }
     return c;
   }
-  function obtenir(bx, by, forcer){
+  /* la lisière de la forêt (elle ondule) : le chemin de la partie « forêt » (ville : la partie du dessus) */
+  function lisiere(x, R, ville){
+    x.beginPath(); var u;
+    if(ville){ x.moveTo(R.x - 12, R.y - 12); x.lineTo(R.x + R.w + 12, R.y - 12); }
+    else { x.moveTo(R.x - 12, R.y + R.h + 12); x.lineTo(R.x + R.w + 12, R.y + R.h + 12); }
+    for(u = R.x + R.w + 12; u >= R.x - 12; u -= 6) x.lineTo(u, M.Yf + 9 * Math.sin(u / 53) + 5 * Math.sin(u / 19 + 1.7));
+    x.closePath();
+  }
+  /* reprendre : un morceau qui a changé (un chat a effacé ou posé des traces) est redessiné — au plus « budget » par image ;
+     les autres gardent un instant leur ancienne image */
+  function obtenir(bx, by, forcer, budget){
     var cle = bx + ':' + by, e = cache[cle];
-    if(e){ e.h = ++horloge; return e.c; }
+    if(e){
+      e.h = ++horloge;
+      /* les petits coins à reprendre (budget.n : combien par image, pour tous les morceaux) */
+      while(e.coins && e.coins.length && budget && budget.n > 0){ budget.n--; rendre(bx, by, e.coins.shift(), e.c); }
+      return e.c;
+    }
     if(!forcer) return null;
     if(nb >= MAX){
       var vieux = null; for(var k in cache){ if(!vieux || cache[k].h < cache[vieux].h) vieux = k; }
       if(vieux){ pool.push(cache[vieux].c); delete cache[vieux]; nb--; }
     }
-    var c = rendre(bx, by); cache[cle] = {c:c, h:++horloge}; nb++;
+    var c = rendre(bx, by); cache[cle] = {c:c, h:++horloge, coins:[]}; nb++;
     return c;
   }
+  /* un coin d'un morceau a changé : on le note (s'il touche un coin déjà noté, les deux n'en font plus qu'un) */
+  function salir(x0, y0, x1, y1){
+    var a0 = Math.floor(x0 / CW), a1 = Math.floor(x1 / CW), b0 = Math.floor(y0 / CW), b1 = Math.floor(y1 / CW);
+    for(var a = a0; a <= a1; a++) for(var b = b0; b <= b1; b++){
+      var e = cache[a + ':' + b]; if(!e) continue;
+      var r = {x:Math.max(x0, a * CW), y:Math.max(y0, b * CW)}; r.w = Math.min(x1, (a + 1) * CW) - r.x; r.h = Math.min(y1, (b + 1) * CW) - r.y;
+      if(r.w <= 0 || r.h <= 0) continue;
+      var fus = null; for(var q = 0; q < e.coins.length; q++){ var z = e.coins[q]; if(croise(z, r, 2) && Math.max(z.x + z.w, r.x + r.w) - Math.min(z.x, r.x) < 60 && Math.max(z.y + z.h, r.y + r.h) - Math.min(z.y, r.y) < 60){ fus = z; break; } }
+      if(fus){ var X1 = Math.max(fus.x + fus.w, r.x + r.w), Y1 = Math.max(fus.y + fus.h, r.y + r.h); fus.x = Math.min(fus.x, r.x); fus.y = Math.min(fus.y, r.y); fus.w = X1 - fus.x; fus.h = Y1 - fus.y; }
+      else e.coins.push(r);
+    }
+  }
   function vider(){ for(var k in cache) pool.push(cache[k].c); cache = {}; nb = 0; }
-  return {CW:CW, obtenir:obtenir, vider:vider, stats:stats, a:function(bx, by){ return !!cache[bx + ':' + by]; }};
+  return {CW:CW, obtenir:obtenir, vider:vider, salir:salir, stats:stats, a:function(bx, by){ return !!cache[bx + ':' + by]; }};
 }
 
 /* ==========================================================
@@ -1446,27 +2051,46 @@ function sonsPistage(audio, sortie){
     var s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = buf; f.type = 'highpass'; f.frequency.value = passeHaut || 2400; g.gain.value = vol;
     s.connect(f); f.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + .02);
   }
-  /* un miaulement : une voix un peu nasillarde (dents de scie filtrées) dont la hauteur monte puis retombe */
-  function miaule(t0, f0, f1, f2, duree, vol){
+  /* un miaulement : une voix un peu nasillarde (dents de scie filtrées) dont la hauteur monte puis retombe ; pan : à gauche (−1) ou à
+     droite (1) — d'où vient le cri ; vib : la vitesse du tremblement de la voix ; ff : la « bouche » (le filtre principal) */
+  function miaule(t0, f0, f1, f2, duree, vol, pan, vib, ff, rauque){
     var a = audio(); if(!a) return;
     var t = a.currentTime + t0, o = a.createOscillator(), v = a.createOscillator(), vg = a.createGain(), b1 = a.createBiquadFilter(), b2 = a.createBiquadFilter(), g = a.createGain(), g2 = a.createGain();
-    o.type = 'sawtooth'; o.frequency.setValueAtTime(f0, t); o.frequency.linearRampToValueAtTime(f1, t + duree * .38); o.frequency.linearRampToValueAtTime(f2, t + duree);
-    v.frequency.value = 6.2; vg.gain.value = f1 * .018; v.connect(vg); vg.connect(o.frequency);
-    b1.type = 'bandpass'; b1.Q.value = 3.2; b1.frequency.setValueAtTime(800, t); b1.frequency.linearRampToValueAtTime(1600, t + duree * .4); b1.frequency.linearRampToValueAtTime(900, t + duree);
-    b2.type = 'bandpass'; b2.Q.value = 5; b2.frequency.setValueAtTime(2500, t);
+    o.type = rauque ? 'square' : 'sawtooth'; o.frequency.setValueAtTime(f0, t); o.frequency.linearRampToValueAtTime(f1, t + duree * .38); o.frequency.linearRampToValueAtTime(f2, t + duree);
+    v.frequency.value = vib || 6.2; vg.gain.value = f1 * (rauque ? .03 : .018); v.connect(vg); vg.connect(o.frequency);
+    var F = ff || 1;
+    b1.type = 'bandpass'; b1.Q.value = 3.2; b1.frequency.setValueAtTime(800 * F, t); b1.frequency.linearRampToValueAtTime(1600 * F, t + duree * .4); b1.frequency.linearRampToValueAtTime(900 * F, t + duree);
+    b2.type = 'bandpass'; b2.Q.value = 5; b2.frequency.setValueAtTime(2500 * F, t);
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .06); g.gain.setValueAtTime(vol, t + duree * .7); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
-    g2.gain.value = .35;
-    o.connect(b1); o.connect(b2); b2.connect(g2); g2.connect(g); b1.connect(g); g.connect(sortie(a));
+    g2.gain.value = rauque ? .2 : .35;
+    o.connect(b1); o.connect(b2); b2.connect(g2); g2.connect(g); b1.connect(g);
+    var fin = sortie(a);
+    if(pan && a.createStereoPanner){ var p = a.createStereoPanner(); p.pan.value = Math.max(-1, Math.min(1, pan)); g.connect(p); p.connect(fin); } else g.connect(fin);
     o.start(t); v.start(t); o.stop(t + duree + .05); v.stop(t + duree + .05);
   }
   function v(x){ return x == null ? 1 : Math.max(0, Math.min(1, x)); }
+  /* LA VOIX DE CHACUN DES SEPT CHATS (Romain, 14 h 26 : « tu les fais tous miauler un peu différemment ») : départ, sommet, fin (Hz),
+     durée (s), force, vibrato, bouche, rauque ; deux cris par chat (A, puis B une fois sur trois) */
+  var VOIX = {
+    moustache:[[430, 660, 380, .78, .13, 5.2, .92], [470, 700, 520, .55, .12, 5.2, .92]],      /* le gros gris : grave, long, « mraaaou » */
+    biscotte:[[880, 1180, 980, .3, .1, 8, 1.3], [940, 1240, 1100, .22, .09, 8, 1.3]],           /* la toute petite : « mi ! » aigu et court */
+    pompon:[[620, 860, 560, .62, .12, 6, 1.08], [600, 800, 640, .48, .11, 6, 1.08]],             /* le gros blanc : rond, doux */
+    caramel:[[520, 740, 430, .58, .13, 7.5, 1, 1], [560, 760, 470, .42, .12, 7.5, 1, 1]],      /* le rouquin : éraillé */
+    mistigri:[[480, 620, 780, .5, .12, 5.6, .96], [500, 600, 820, .4, .11, 5.6, .96]],           /* le noir : « mrrou ? » qui monte, comme une question */
+    noisette:[[560, 820, 470, .66, .12, 6.4, 1.02], [540, 760, 500, .5, .11, 6.4, 1.02]],        /* la brune : « miaou » bien net */
+    grisette:[[720, 980, 640, 1.02, .1, 4.4, 1.16], [700, 920, 600, .8, .1, 4.4, 1.16]]          /* la fine : long et plaintif */
+  };
+  function chat(id, k, x, pan){ var V2 = VOIX[id] || VOIX.moustache, c = V2[k] || V2[0]; miaule(0, c[0], c[1], c[2], c[3], c[4] * v(x), pan, c[5], c[6], c[7]); }
   return {
+    /* un chat qui appelle : miaou(id, volume, pan) — le jeu ; les boutons de l'Atelier : m_moustache, m_biscotte… */
+    miaou:function(id, x, pan){ chat(id, Math.random() < .34 ? 1 : 0, x, pan); },
+    m_moustache:function(x){ chat('moustache', 0, x); }, m_biscotte:function(x){ chat('biscotte', 0, x); }, m_pompon:function(x){ chat('pompon', 0, x); },
+    m_caramel:function(x){ chat('caramel', 0, x); }, m_mistigri:function(x){ chat('mistigri', 0, x); }, m_noisette:function(x){ chat('noisette', 0, x); },
+    m_grisette:function(x){ chat('grisette', 0, x); },
+    hibou:function(x){ x = v(x); tendre(400, 0, .34, .05 * x, 370, .05, 'sine', 900); tendre(392, .5, .2, .03 * x, 380, .03, 'sine', 900); tendre(400, .74, .62, .05 * x, 330, .06, 'sine', 900); },   /* hou… hou-houuu */
     plouf:function(x){ x = v(x); souffle(0, .2, .05 * x, 1500, 380, .7, 'lowpass'); tendre(620, .01, .12, .03 * x, 240, .005); tendre(1300, .06, .05, .012 * x, 700, .003); tendre(980, .11, .05, .01 * x, 520, .003); },   /* un pied dans la flaque */
     floc:function(x){ x = v(x); souffle(0, .16, .055 * x, 500, 160, 1.2); tendre(150, .02, .14, .05 * x, 85, .01, 'triangle', 420); tendre(240, .1, .06, .02 * x, 120, .005, 'triangle', 600); },                /* un pied dans la boue */
     pouf:function(x){ x = v(x); souffle(0, .34, .03 * x, 3200, 1100, .6); grains(.02, .22, .012 * x, 22, 3500); },                                                                                                    /* un pied dans la farine */
-    miaouA:function(x){ miaule(0, 520, 780, 430, .62, .13 * v(x)); },                       /* « mi-aou » */
-    miaouB:function(x){ miaule(0, 600, 860, 520, .95, .11 * v(x)); },                       /* un long miaulement plaintif */
-    miaouC:function(x){ miaule(0, 470, 640, 700, .48, .12 * v(x)); },                       /* « mrraou ? » : il se demande */
     fuite:function(x){ x = v(x); for(var i = 0; i < 6; i++) tendre(420 + Math.random() * 120, i * .055, .03, .025 * x, 240, .002, 'triangle', 1400); miaule(.36, 700, 520, 380, .26, .04 * x); },   /* il file entre les barreaux */
     course:function(x){ x = v(x); for(var i = 0; i < 9; i++){ tendre(320 + (i % 2) * 70, i * .07, .028, .018 * x, 200, .002, 'triangle', 1100); } souffle(0, .6, .006 * x, 1800, 900, .9); },   /* un chat qui passe en courant */
     pigeons:function(x){ x = v(x); for(var i = 0; i < 12; i++) souffle(i * .045, .04, .045 * x, 1600 + Math.random() * 500, 900, 1.4); tendre(330, .02, .2, .02 * x, 290, .03); }                       /* les pigeons s'envolent */
@@ -1483,6 +2107,7 @@ function audio(){
 }
 var SONS = null;
 function son(nom, vol){ try{ if(!SONS) SONS = sonsPistage(audio, function(a){ return a.destination; }); if(SONS[nom]) SONS[nom](vol); }catch(e){} }
+function miaou(id, vol, pan){ try{ if(!SONS) SONS = sonsPistage(audio, function(a){ return a.destination; }); SONS.miaou(id, vol, pan); }catch(e){} }
 
 /* ==========================================================
    LE JEU
@@ -1507,23 +2132,36 @@ function jouer(zone, p, fin){
   var pos = {x:M.depart.x, y:M.depart.y}, cap = Math.PI / 2, but = null, marche = 0, phase = 0, tPas = 0, aBouge = false, touches = {}, marcheTot = 0, tJeu = 0;
   var semelle = {sub:null, c:0, pas:0, cote:1}, dedansTache = null, mesPas = [], rides = [], poudre = [];
   var vus = {};   /* les phrases du conteur déjà dites */
-  var coureurs = [], nbCoureurs = 0, prochainCoureur = 420 + Math.random() * 200;
+  /* les chats qui passent en courant : sur une horloge (Romain : « plus on met de temps, plus ce sera difficile ») */
+  var CR = p.coureurs && typeof p.coureurs === 'object' ? p.coureurs : {premier:7, tous:12};
+  var coureurs = [], nbCoureurs = 0, tCoureur = CR.premier, nCoureur = 0;
+  /* on ne perd jamais dans la forêt (Romain : « celui-là, il ne peut pas perdre ») ; la ville se perd (params.perdre pour forcer) */
+  var perdre = p.perdre != null ? !!p.perdre : !M.foret;
+  /* un point dans le repère d'un bout d'impasse (lx en travers, ly : négatif = au-delà du bout) */
+  function repere(E, lx, ly){ var rot = Math.atan2(E.dy, E.dx) + PI / 2; return {x:E.bx + lx * Math.cos(rot) - ly * Math.sin(rot), y:E.by + lx * Math.sin(rot) + ly * Math.cos(rot)}; }
   var mou = (function(){
-    var E = M.eglise, rot = Math.atan2(E.dy, E.dx) + PI / 2;
-    function monde(lx, ly){ return {x:E.bx + lx * Math.cos(rot) - ly * Math.sin(rot), y:E.by + lx * Math.sin(rot) + ly * Math.cos(rot)}; }
-    var p0 = monde(4, 14), gr = monde(0, -12);
+    var E = M.eglise;
+    /* la ville : devant la grille de la crypte ; la forêt : sur la margelle du puits, il file entre les barreaux de sa grille */
+    var p0 = M.foret ? repere(E, 3, PUITS.y + PUITS.r + 5) : repere(E, 4, 14), gr = M.foret ? repere(E, PUITS.x, PUITS.y) : repere(E, 0, -12);
     return {x:p0.x, y:p0.y, x0:p0.x, y0:p0.y, gx:gr.x, gy:gr.y, a:Math.atan2(-E.dy, -E.dx), etat:'assis', t:0, miaou:0, prochain:1.2, bulle:0};
   })();
+  /* les six autres chats, assis au bout de leur fausse piste : ils appellent, chacun avec sa voix */
+  var fauxChats = M.fins.map(function(F){ return {F:F, chat:F.chat, x:F.cx, y:F.cy, x0:F.cx, y0:F.cy, a:Math.atan2(-F.dy, -F.dx), etat:'assis', t:0, miaou:0, prochain:U.rand(1, 5)}; });
   var lumieres = [];
   M.lampes.forEach(function(l){ lumieres.push({x:l.lx, y:l.ly, r:80, f:.9, c:1}); });
   M.fenetres.forEach(function(f){ lumieres.push({x:f.x, y:f.y, r:34, f:.55, c:.6}); });
-  lumieres.push({x:M.odette.bx, y:M.odette.by + 12, r:62, f:.85, c:1});
-  (function(){ var E = M.eglise, rot = Math.atan2(E.dy, E.dx) + PI / 2; [[-36, -20], [36, -20], [0, -10]].forEach(function(q, i){ lumieres.push({x:E.bx + q[0] * Math.cos(rot) - q[1] * Math.sin(rot), y:E.by + q[0] * Math.sin(rot) + q[1] * Math.cos(rot), r:i === 2 ? 40 : 62, f:i === 2 ? .55 : .85, c:i === 2 ? .5 : 1}); }); })();
+  /* l'église : ses deux lanternes et la lueur de la crypte (à l'arrivée en ville, au départ dans la forêt) */
+  (function(){ var E = M.foret ? M.odette : M.eglise; [[-36, -20], [36, -20], [0, -10]].forEach(function(q, i){ var P = repere(E, q[0], q[1]); lumieres.push({x:P.x, y:P.y, r:i === 2 ? 40 : 62, f:i === 2 ? .55 : .85, c:i === 2 ? .5 : 1}); }); })();
+  if(!M.foret) lumieres.push({x:M.odette.bx, y:M.odette.by + 12, r:62, f:.85, c:1});
+  else { var Pp = repere(M.eglise, PUITS.x, PUITS.y); lumieres.push({x:Pp.x, y:Pp.y, r:46, f:.5, c:.35}); }
   var fumees = [];
   M.maisons.forEach(function(m){ if(m.fum && (moment !== 'apresmidi' || Math.random() < .5)) m.chem.forEach(function(c){ fumees.push({x:m.x + m.w * c.u, y:m.y + m.h * c.v, ph:Math.random()}); }); });
   M.fins.forEach(function(F){ if(F.lieu === 'boulangerie'){ var rot = Math.atan2(F.dy, F.dx) + PI / 2, lx = -54 + 108 * .78, ly = -70 + 66 * .3; fumees.push({x:F.bx + lx * Math.cos(rot) - ly * Math.sin(rot), y:F.by + lx * Math.sin(rot) + ly * Math.cos(rot), ph:.3, fort:true}); } });
   var brumes = [];
   if(moment === 'matin') for(var b = 0; b < 14; b++) brumes.push({x:U.rand(-200, M.W + 200), y:U.rand(-200, M.H + 200), r:U.rand(130, 230), v:U.rand(4, 9)});
+  /* dans les bois, une brume légère traîne entre les arbres, à toute heure */
+  if(M.foret) for(b = 0; b < 12; b++) brumes.push({x:U.rand(-200, M.W + 200), y:U.rand(M.Yf + 60, M.H + 200), r:U.rand(110, 190), v:U.rand(3, 6), bois:true});
+  var tHibou = U.rand(6, 10);
 
   function mesurer(){
     var r = racine.getBoundingClientRect(); if(!r.width || !r.height) return;
@@ -1541,9 +2179,10 @@ function jouer(zone, p, fin){
   if(ro) ro.observe(racine); else window.addEventListener('resize', mesurer);
   mesurer();
   /* la phrase du conteur (une bulle, avec 🔊) */
-  var tDit = null;
+  var tDit = null, journal = [];
   function dire(t, ms){
     if(tDit){ clearTimeout(tDit); tDit = null; }
+    if(t){ journal.push(t); if(journal.length > 12) journal.shift(); }
     if(t) t = t.replace(/ ([!?:;…])/g, ' $1');   /* (pas de « ! » tout seul en début de ligne) */
     dit.innerHTML = t ? '<p>' + esc(t) + '</p>' : ''; dit.hidden = !t;
     if(t && MJ.boutonLire && MJ.nbMots && MJ.nbMots(t) > 3) try{ dit.appendChild(MJ.boutonLire(t)); }catch(e){}
@@ -1551,7 +2190,8 @@ function jouer(zone, p, fin){
     if(t && ms) tDit = setTimeout(function(){ tDit = null; dit.innerHTML = ''; dit.hidden = true; }, ms);
   }
   function direUneFois(cle, t){ if(vus[cle] || fini) return; vus[cle] = 1; dire(t, 5200); }
-  dire('Du lait renversé, et des pattes partout ! Le Pisteur suit ton doigt : tant qu\'il est posé, il marche.');
+  dire(M.foret ? (moment === 'nuit' ? 'Des miaulements, partout dans la nuit ! ' : 'Des miaulements, partout ! ') + 'Sept chats ont marché dans la flaque du clocher. Le Pisteur suit ton doigt : tant qu\'il est posé, il marche.' :
+    'Du lait renversé, et des pattes partout ! Le Pisteur suit ton doigt : tant qu\'il est posé, il marche.');
 
   function libre(x, y){ return M.dansRue(x - 9, y) && M.dansRue(x + 9, y) && M.dansRue(x, y - 9) && M.dansRue(x, y + 9) && !M.dansObstacle(x, y, 9); }
   function viser(ev){ var r = racine.getBoundingClientRect(); but = {x:ev.clientX - r.left - W / 2, y:ev.clientY - r.top - H / 2}; }
@@ -1568,13 +2208,15 @@ function jouer(zone, p, fin){
 
   function finir(ok, F){
     if(fini) return; fini = true; but = null;
-    if(ok){ U.son('magie'); dire('Les traces passent sous la grille de la crypte !'); }
-    else { U.son('ko'); dire(LIEUX[F.lieu].t); }
+    if(ok){ U.son('magie'); dire(M.foret ? 'Moustache s\'est glissé dans le vieux puits !' : 'Les traces passent sous la grille de la crypte !'); }
+    /* (Romain, 14 h 26 : « le jeu dit : Désolé, tu t'es trompé, tu n'as pas suivi la bonne trace ») */
+    else { U.son('ko'); dire('Désolé, tu t\'es trompé : tu n\'as pas suivi la bonne trace.'); }
     setTimeout(function(){
       if(arrete) return;
-      if(ok) fin({reussi:true, score:1, message:'La crypte !', detail:'Les traces de Moustache passent sous la grille, au pied du clocher.'});
-      else fin({reussi:false, score:0, message:'Ce n\'était pas Moustache…', detail:LIEUX[F.lieu].t + ' C\'était ' + CH.par[F.chat].nom + ' !'});
-    }, ok ? 1500 : 1900);
+      if(ok && M.foret) fin({reussi:true, score:1, message:'Le vieux puits !', detail:'Les traces de Moustache mènent au vieux puits, au bout de la forêt. Il s\'est glissé entre les barreaux de la grille.'});
+      else if(ok) fin({reussi:true, score:1, message:'La crypte !', detail:'Les traces de Moustache passent sous la grille, au pied du clocher.'});
+      else fin({reussi:false, score:0, message:'Désolé, tu t\'es trompé…', detail:'Tu n\'as pas suivi la bonne trace. ' + LIEUX[F.lieu].t + ' C\'était ' + CH.par[F.chat].nom + ' !'});
+    }, ok ? 1500 : 2100);
   }
 
   /* ----- un chat qui passe en courant : il arrive derrière le Pisteur, le dépasse, tourne au carrefour, et saute sur un toit ----- */
@@ -1608,12 +2250,20 @@ function jouer(zone, p, fin){
     pts[pts.length - 1] = mi;
     pts.push({x:mi.x - uy * cote * 70 + ux * 14, y:mi.y + ux * cote * 70 + uy * 14});
     pts = arrondir(pts, 22);
+    /* (ce sont les six autres chats d'Odette — jamais Moustache : « il n'a qu'une seule trace ») */
     var ids = CH.liste.filter(function(cc){ return cc.id !== 'moustache' && !coureurs.some(function(q){ return q.chat === cc.id; }); });
-    var ch = U.choix(ids);
-    coureurs.push({chat:ch.id, pts:pts, L:longueur(pts), s:0, v:U.rand(205, 240), ph:0, dPas:0, nPas:0, pres:false, al:1});
+    if(!ids.length) return false;
+    var ch = U.choix(ids), ss = Math.random();
+    /* ses pattes : un peu mouillées ou boueuses (il vient de passer quelque part), puis la prochaine flaque les remouille */
+    coureurs.push({chat:ch.id, id:'c' + (++nCoureur), pts:pts, L:longueur(pts), s:0, v:U.rand(205, 240), ph:0, dPas:0, nPas:0, pres:false, al:1,
+      sub:ss < .6 ? 'eau' : 'boue', d:U.rand(.1, .45) * ((M.vue || {}).eau || 200), dedans:null});
     nbCoureurs++;
     return true;
   }
+  /* LE PASSAGE D'UN CHAT QUI COURT (Romain, 14 h 26 : « le passage des chats efface les traces » ; « il met ses traces par-dessus ») :
+     tous les 7,5 pas, il efface les traces sous ses pattes ; tous les 15, il pose les siennes (dans le décor, pour de bon) ; dans une
+     flaque, il se remouille. Le morceau du décor touché est redessiné. */
+  var effacees = 0, poseesC = 0;
   function majCoureurs(dt, t){
     for(var i = coureurs.length - 1; i >= 0; i--){
       var C = coureurs[i];
@@ -1621,14 +2271,25 @@ function jouer(zone, p, fin){
       var q = point(C.pts, Math.min(C.s, C.L)); C.x = q.x; C.y = q.y; C.a = q.a;
       var surRue = M.dansRue(q.x, q.y);
       if(!surRue) C.al = Math.max(0, C.al - dt * 3);
-      while(C.dPas > 15){
-        C.dPas -= 15; C.nPas++;
-        if(!surRue || M.dansTache(q.x, q.y) || M.dansArche(q.x, q.y)) continue;
-        var cote = C.nPas % 2 ? 1 : -1;
-        mesPas.push({chat:C.chat, x:q.x + Math.cos(q.a + PI / 2) * 2.4 * cote, y:q.y + Math.sin(q.a + PI / 2) * 2.4 * cote, a:q.a + PI / 2, al:.92, t0:tJeu, vie:70, sub:'eau'});
+      while(C.dPas > 7.5){
+        C.dPas -= 7.5; C.nPas++;
+        var qs = point(C.pts, Math.max(0, Math.min(C.L, C.s - C.dPas)));
+        if(!surRue || M.dansArche(qs.x, qs.y)) continue;
+        var ta = M.dansTache(qs.x, qs.y, 1);
+        if(ta){ if(ta !== C.dedans){ C.dedans = ta; if(Math.hypot(qs.x - pos.x, qs.y - pos.y) < 160) rides.push({x:qs.x, y:qs.y, t0:t, sub:DE_TACHE[ta.type], petit:true}); }
+          C.sub = DE_TACHE[ta.type]; C.d = 0; continue; }
+        C.dedans = null; C.d += 7.5;
+        var n = M.effacer(qs.x, qs.y, 7, C.id);
+        if(n){ effacees += n; if(blocs) blocs.salir(qs.x - 14, qs.y - 14, qs.x + 14, qs.y + 14); }
+        if(C.nPas % 2) continue;
+        var fo = force(C.sub, C.d, M.vue); if(fo < SEUIL) continue;
+        var cote = C.nPas % 4 ? 1 : -1, tx = qs.x + Math.cos(qs.a + PI / 2) * 2.6 * cote, ty = qs.y + Math.sin(qs.a + PI / 2) * 2.6 * cote;
+        if(!M.dansRue(tx, ty) || M.dansObstacle(tx, ty, 3) || M.dansTache(tx, ty, 1)) continue;
+        M.poser({x:tx, y:ty, a:qs.a + PI / 2 + U.rand(-.12, .12), c:C.chat, sub:C.sub, al:fo, k:U.rand(.94, 1.06), g:nouvelleGraine(), own:C.id});
+        poseesC++; if(blocs) blocs.salir(tx - 12, ty - 12, tx + 12, ty + 12);
       }
       var d = Math.hypot(C.x - pos.x, C.y - pos.y);
-      if(!C.pres && d < 60){ C.pres = true; son('course', .9); direUneFois('coureur', 'Un chat te file sous le nez ! Ses traces sont toutes fraîches…'); }
+      if(!C.pres && d < 60){ C.pres = true; son('course', .9); direUneFois('coureur', 'Un chat te file sous le nez ! Sous ses pattes, les traces s\'effacent…'); }
       if(C.s >= C.L || C.al <= 0) coureurs.splice(i, 1);
     }
   }
@@ -1685,11 +2346,18 @@ function jouer(zone, p, fin){
     dedansTache = ta;
     /* les traces qui ont séché disparaissent */
     if(mesPas.length && (mesure.images % 30 === 0)) mesPas = mesPas.filter(function(m){ return t - m.t0 < m.vie; });
-    /* les chats qui passent : deux ou trois, au fil de la marche */
-    if(!fini && nbCoureurs < (p.coureurs || 0) && marcheTot > prochainCoureur && f > .3 && Math.hypot(pos.x - mou.x, pos.y - mou.y) > 420){
-      if(lancerCoureur()) prochainCoureur = marcheTot + U.rand(700, 1100); else prochainCoureur = marcheTot + 120;
+    /* les chats qui passent : un de plus toutes les CR.tous secondes, sans limite (dès qu'on a commencé à marcher) */
+    if(!fini && aBouge){
+      tCoureur -= dt;
+      if(tCoureur <= 0 && f > .2 && Math.hypot(pos.x - mou.x, pos.y - mou.y) > 380){
+        tCoureur = lancerCoureur() ? CR.tous * U.rand(.8, 1.2) : 1.5;
+        /* (de temps en temps, deux à la fois) */
+        if(nbCoureurs > 3 && Math.random() < .3) lancerCoureur();
+      }
     }
     majCoureurs(dt, t);
+    /* le hibou, dans les bois, la nuit */
+    if(M.foret && moment === 'nuit' && M.estForet(pos.y)){ tHibou -= dt; if(tHibou <= 0){ tHibou = U.rand(12, 22); son('hibou', .7); } }
     /* les pigeons s'envolent quand on approche */
     M.pigeons.forEach(function(P){
       if(P.vol){ P.tv += dt; P.x += P.vx * dt; P.y += P.vy * dt; return; }
@@ -1699,25 +2367,44 @@ function jouer(zone, p, fin){
         if(!vus['pig' + Math.round(P.x0 / 60)]){ vus['pig' + Math.round(P.x0 / 60)] = 1; son('pigeons', .8); }
       } else if(Math.random() < dt * .5){ P.a += U.rand(-.8, .8); }
     });
-    /* Moustache, devant la grille : il miaule ; quand on arrive, il file entre les barreaux */
-    var dm = Math.hypot(pos.x - mou.x, pos.y - mou.y);
+    /* Moustache, devant la grille (ou sur la margelle du puits) : il miaule ; quand on arrive, il file entre les barreaux */
+    var dm = Math.hypot(pos.x - mou.x, pos.y - mou.y), vuDe = U.borne(Math.min(W, H) / 2 / ech * .75, 60, 120);
     mou.t += dt;
     if(mou.etat === 'assis'){
       mou.prochain -= dt;
-      if(mou.prochain <= 0){ mou.prochain = U.rand(2.2, 3.6); mou.miaou = .9; if(dm < 460) son(U.choix(['miaouA', 'miaouB', 'miaouC']), Math.min(1, 1.15 - dm / 460)); }
+      if(mou.prochain <= 0){ mou.prochain = U.rand(2.2, 3.6); mou.miaou = .9; if(dm < 480) miaou('moustache', Math.min(1, 1.15 - dm / 480), (mou.x - pos.x) / 260); }
       /* il file quand le Pisteur est tout près (assez tard pour qu'on l'ait vu miauler, même sur un petit téléphone) */
-      if(dm < U.borne(Math.min(W, H) / 2 / ech * .75, 60, 120) && !fini){ mou.etat = 'fuite'; mou.t = 0; son('fuite', 1); direUneFois('moustache', 'Un gros chat gris file entre les barreaux de la grille !'); }
+      if(dm < vuDe && !fini){ mou.etat = 'fuite'; mou.t = 0; son('fuite', 1); direUneFois('moustache', M.foret ? 'Un gros chat gris se glisse entre les barreaux du vieux puits !' : 'Un gros chat gris file entre les barreaux de la grille !'); }
     } else if(mou.etat === 'fuite'){
       var u = Math.min(1, mou.t / .6);
       mou.x = lerp(mou.x0, mou.gx, u * u); mou.y = lerp(mou.y0, mou.gy, u * u); mou.a = Math.atan2(mou.gy - mou.y0, mou.gx - mou.x0);
       if(mou.t > .75) mou.etat = 'parti';
     }
     if(mou.miaou > 0) mou.miaou -= dt;
-    /* au bout d'une piste ? */
-    if(!fini){
-      if(Math.hypot(pos.x - M.eglise.fx, pos.y - M.eglise.fy) < R_FIN + 6) finir(true);
-      else for(var i = 0; i < M.fins.length; i++) if(Math.hypot(pos.x - M.fins[i].x, pos.y - M.fins[i].y) < R_FIN){ finir(false, M.fins[i]); break; }
-    }
+    /* LES SIX AUTRES CHATS, au bout de leur fausse piste : ils appellent (Romain : « on a envie d'aller vers le miaulement, mais des
+       fois, c'est des fausses pistes ») ; trop près de l'un d'eux, c'est perdu (la ville), ou il file dans les fougères (la forêt) */
+    fauxChats.forEach(function(Fc){
+      Fc.t += dt; if(Fc.miaou > 0) Fc.miaou -= dt;
+      if(Fc.etat === 'assis'){
+        var dc = Math.hypot(pos.x - Fc.x, pos.y - Fc.y);
+        Fc.prochain -= dt;
+        if(Fc.prochain <= 0){ Fc.prochain = U.rand(2.6, 5.4); Fc.miaou = .9; if(dc < 480) miaou(Fc.chat, Math.min(1, 1.15 - dc / 480), (Fc.x - pos.x) / 260); }
+        if(!fini && dans(Fc.F.rect, pos.x, pos.y, 2) && dc < vuDe + 10){
+          if(perdre){ Fc.etat = 'regarde'; Fc.t = 0; finir(false, Fc.F); }
+          else {
+            /* la forêt : il bondit au fond des bois, et le conteur dit de rebrousser chemin */
+            Fc.etat = 'fuite'; Fc.t = 0; son('course', .8);
+            dire('Ce n\'est pas Moustache ! ' + CH.par[Fc.chat].nom + (Fc.F.foret ? ' file entre les fougères.' : ' saute par-dessus un mur.') + ' Ce n\'était pas la bonne trace : reviens sur tes pas.', 6200);
+          }
+        }
+      } else if(Fc.etat === 'fuite'){
+        var uf = Math.min(1, Fc.t / .7), fx = Fc.x0 + Fc.F.dx * 90, fy = Fc.y0 + Fc.F.dy * 90;
+        Fc.x = lerp(Fc.x0, fx, uf); Fc.y = lerp(Fc.y0, fy, uf); Fc.a = Math.atan2(Fc.F.dy, Fc.F.dx);
+        if(Fc.t > .9) Fc.etat = 'parti';
+      }
+    });
+    /* au bout de la bonne piste ? */
+    if(!fini && Math.hypot(pos.x - M.eglise.fx, pos.y - M.eglise.fy) < R_FIN + 6) finir(true);
     dessiner(t, dt);
   });
 
@@ -1730,7 +2417,8 @@ function jouer(zone, p, fin){
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     /* les morceaux du décor déjà dessinés (ceux qui manquent sont dessinés maintenant) */
     var b0 = Math.floor(-ox / CPX), b1 = Math.floor((cv.width - ox) / CPX), c0 = Math.floor(-oy / CPX), c1 = Math.floor((cv.height - oy) / CPX), a, b;
-    for(a = b0; a <= b1; a++) for(b = c0; b <= c1; b++){ var bl = blocs.obtenir(a, b, true); ctx.drawImage(bl, a * CPX + ox, b * CPX + oy); }
+    var budget = {n:4};   /* (au plus quatre petits coins redessinés par image, là où un chat qui court a changé les traces) */
+    for(a = b0; a <= b1; a++) for(b = c0; b <= c1; b++){ var bl = blocs.obtenir(a, b, true, budget); ctx.drawImage(bl, a * CPX + ox, b * CPX + oy); }
     /* et, s'il reste du temps, un morceau d'avance, là où l'on va */
     if(performance.now() - t0 < 6){
       var avx = Math.cos(cap) > .3 ? 1 : Math.cos(cap) < -.3 ? -1 : 0, avy = Math.sin(cap) > .3 ? 1 : Math.sin(cap) < -.3 ? -1 : 0, fait = false;
@@ -1770,9 +2458,18 @@ function jouer(zone, p, fin){
       if(mou.etat === 'assis') chatAssis(ctx, CH.par.moustache, mou.x, mou.y, mou.a, t, mou.miaou > .35);
       else chatCourt(ctx, CH.par.moustache, mou.x, mou.y, mou.a, mou.t * 22, t, Math.max(0, 1 - Math.max(0, mou.t - .4) / .35));
     }
-    /* la petite lueur qui bat, tout au fond de la crypte */
+    /* les six autres, au bout de leur fausse piste */
+    fauxChats.forEach(function(Fc){
+      if(Fc.etat === 'parti' || Math.abs(Fc.x - pos.x) > (x1 - x0) / 2 + 40 || Math.abs(Fc.y - pos.y) > (y1 - y0) / 2 + 40) return;
+      if(Fc.etat === 'fuite') chatCourt(ctx, CH.par[Fc.chat], Fc.x, Fc.y, Fc.a, Fc.t * 22, t, Math.max(0, 1 - Math.max(0, Fc.t - .45) / .45));
+      else chatAssis(ctx, CH.par[Fc.chat], Fc.x, Fc.y, Fc.a, t, Fc.miaou > .35 || Fc.etat === 'regarde');
+    });
+    /* la petite lueur qui bat, tout au fond de la crypte ; au fond du puits, quand Moustache y est, deux yeux qui brillent */
     var Eg = M.eglise;
-    if(Math.abs(mou.gx - pos.x) < (x1 - x0) / 2 + 40 && Math.abs(mou.gy - pos.y) < (y1 - y0) / 2 + 40){ ctx.fillStyle = 'rgba(255,214,110,' + (.16 + .1 * Math.sin(t * 2.2)).toFixed(3) + ')'; ovale(ctx, mou.gx, mou.gy, 11, 7, Math.atan2(Eg.dy, Eg.dx) + PI / 2); ctx.fill(); }
+    if(Math.abs(mou.gx - pos.x) < (x1 - x0) / 2 + 40 && Math.abs(mou.gy - pos.y) < (y1 - y0) / 2 + 40){
+      if(!M.foret){ ctx.fillStyle = 'rgba(255,214,110,' + (.16 + .1 * Math.sin(t * 2.2)).toFixed(3) + ')'; ovale(ctx, mou.gx, mou.gy, 11, 7, Math.atan2(Eg.dy, Eg.dx) + PI / 2); ctx.fill(); }
+      else if(mou.etat === 'parti' && Math.sin(t * 1.7) > -.85){ ctx.fillStyle = '#f2d04a'; rond(ctx, mou.gx - 2.2, mou.gy + 1, .95); ctx.fill(); rond(ctx, mou.gx + 2.2, mou.gy + 1, .95); ctx.fill(); }
+    }
     var t2 = performance.now(); mesure.td += t2 - t1;
     dessinerHaut(t, ox, oy, x0, x1, y0, y1);
     var t3 = performance.now(); mesure.th += t3 - t2;
@@ -1803,7 +2500,12 @@ function jouer(zone, p, fin){
     hx.setTransform(1, 0, 0, 1, 0, 0);
     if(hautSale){ hx.clearRect(0, 0, cvH.width, cvH.height); hautSale = false; cvH.style.visibility = 'hidden'; }   /* (vide : le navigateur ne la pose même plus) */
     var dessinsH = [];
-    M.arches.forEach(function(A, i){ if(vu(A.bat, 30)) dessinsH.push(function(){
+    M.arches.forEach(function(A, i){ if(A.foret && vu(A.bat, 40)) dessinsH.push(function(){
+      /* la voûte de la forêt : un grand chêne penché par-dessus le chemin ; on le voit à travers quand on passe dessous */
+      var rA = Math.max(A.bat.w, A.bat.h) * .56, bbA = {x:A.cx - rA - 4, y:A.cy - rA - 4, w:2 * rA + 8, h:2 * rA + 8};
+      var spA = sprite('voute' + i, bbA, function(x){ dessinerArbre(x, {x:A.cx, y:A.cy, r:rA, sorte:'chene', g:A.g}, L); });
+      hx.globalAlpha = dans(A, pos.x, pos.y, 10) ? .35 : .97; hx.drawImage(spA.c, spA.x, spA.y, spA.w, spA.h); hx.globalAlpha = 1; });
+    else if(!A.foret && vu(A.bat, 30)) dessinsH.push(function(){
       var sp = sprite('arche' + i, A.bat, function(x){ dessinerToit(x, {x:A.bat.x, y:A.bat.y, w:A.bat.w, h:A.bat.h, sens:A.sens === 'h' ? 'v' : 'h', c:TUILES[i % TUILES.length], toit:'tuile', chem:[{u:A.sens === 'h' ? .5 : .2, v:A.sens === 'h' ? .2 : .5}], lucarne:true, g:A.g}, L);
         /* les arcs de pierre, de chaque côté */
         x.fillStyle = '#9a8e7a'; x.strokeStyle = K; x.lineWidth = 1.2;
@@ -1820,11 +2522,11 @@ function jouer(zone, p, fin){
       hx.globalAlpha = Math.hypot(pos.x - a.x, pos.y - a.y) < a.r * .95 ? .4 : .96; hx.drawImage(sp.c, sp.x, sp.y, sp.w, sp.h); hx.globalAlpha = 1; }); });
     M.linges.forEach(function(Ln){ if(Ln.cx > x0 - 50 && Ln.cx < x1 + 50 && Ln.cy > y0 - 50 && Ln.cy < y1 + 50) dessinsH.push(function(){ dessinerLinge(hx, Ln, t); }); });
     M.pigeons.forEach(function(P){ if(P.vol && P.tv < 2.2 && P.x > x0 - 40 && P.x < x1 + 40 && P.y > y0 - 40 && P.y < y1 + 40) dessinsH.push(function(){ hx.globalAlpha = Math.max(0, 1 - Math.max(0, P.tv - 1.4) / .8); pigeon(hx, P, t); hx.globalAlpha = 1; }); });
-    if(mou.miaou > 0 && mou.etat === 'assis' && Math.abs(mou.x - pos.x) < (x1 - x0) / 2 && Math.abs(mou.y - pos.y) < (y1 - y0) / 2) dessinsH.push(function(){
-      var al = Math.min(1, mou.miaou * 3), bxx = mou.x + 10, byy = mou.y - 22 - (.9 - mou.miaou) * 6;
+    [mou].concat(fauxChats).forEach(function(cA){ if(cA.miaou > 0 && cA.etat === 'assis' && Math.abs(cA.x - pos.x) < (x1 - x0) / 2 && Math.abs(cA.y - pos.y) < (y1 - y0) / 2) dessinsH.push(function(){
+      var al = Math.min(1, cA.miaou * 3), bxx = cA.x + 10, byy = cA.y - 22 - (.9 - cA.miaou) * 6;
       hx.globalAlpha = al; hx.fillStyle = '#fffdf4'; hx.strokeStyle = K; hx.lineWidth = 1.2; hx.beginPath(); rr(hx, bxx - 16, byy - 7, 32, 13, 6); hx.fill(); hx.stroke();
       hx.beginPath(); hx.moveTo(bxx - 7, byy + 6); hx.lineTo(bxx - 10, byy + 11); hx.lineTo(bxx - 2, byy + 6); hx.closePath(); hx.fill(); hx.stroke(); hx.fillStyle = '#fffdf4'; hx.fillRect(bxx - 8, byy + 4, 6, 2.4);
-      hx.fillStyle = K; hx.font = '700 7.6px system-ui, sans-serif'; hx.textAlign = 'center'; hx.textBaseline = 'middle'; hx.fillText('Miaou !', bxx, byy - .4); hx.globalAlpha = 1; });
+      hx.fillStyle = K; hx.font = '700 7.6px system-ui, sans-serif'; hx.textAlign = 'center'; hx.textBaseline = 'middle'; hx.fillText('Miaou !', bxx, byy - .4); hx.globalAlpha = 1; }); });
     if(dessinsH.length){
       hx.clearRect(0, 0, cvH.width, cvH.height); hx.setTransform(s, 0, 0, s, ox, oy); dessinsH.forEach(function(f){ f(); }); hautSale = true; rien = false;
       if(cvH.style.visibility) cvH.style.visibility = '';
@@ -1849,11 +2551,30 @@ function jouer(zone, p, fin){
       ax.globalCompositeOperation = 'source-over';
     } else if(moment === 'matin'){
       ax.fillStyle = 'rgba(255,214,186,.08)'; ax.fillRect(0, 0, aw, ah);
-      brumes.forEach(function(B){ var bx = B.x + t * B.v, p2 = A(((bx + 400) % (M.W + 800)) - 400, B.y), rr2 = B.r * sw;
+      brumes.forEach(function(B){ if(B.bois) return; var bx = B.x + t * B.v, p2 = A(((bx + 400) % (M.W + 800)) - 400, B.y), rr2 = B.r * sw;
         if(p2[0] < -rr2 || p2[0] > aw + rr2 || p2[1] < -rr2 || p2[1] > ah + rr2) return;
         var g = ax.createRadialGradient(p2[0], p2[1], 0, p2[0], p2[1], rr2); g.addColorStop(0, 'rgba(240,244,252,.3)'); g.addColorStop(1, 'rgba(240,244,252,0)'); ax.fillStyle = g; ax.fillRect(p2[0] - rr2, p2[1] - rr2, rr2 * 2, rr2 * 2); });
     } else {
       var g2 = ax.createLinearGradient(0, 0, aw, ah); g2.addColorStop(0, 'rgba(255,226,150,.1)'); g2.addColorStop(1, 'rgba(255,200,120,.03)'); ax.fillStyle = g2; ax.fillRect(0, 0, aw, ah);
+    }
+    /* la forêt : une brume légère entre les arbres ; la nuit, les lucioles qui s'allument et s'éteignent */
+    if(M.foret){
+      var cb = moment === 'nuit' ? '170,190,230' : '236,240,248', ab = moment === 'nuit' ? .1 : moment === 'matin' ? .26 : .14;
+      brumes.forEach(function(B){ if(!B.bois) return; var bx = B.x + t * B.v, p2 = A(((bx + 400) % (M.W + 800)) - 400, B.y), rr2 = B.r * sw;
+        if(p2[0] < -rr2 || p2[0] > aw + rr2 || p2[1] < -rr2 || p2[1] > ah + rr2) return;
+        var g = ax.createRadialGradient(p2[0], p2[1], 0, p2[0], p2[1], rr2); g.addColorStop(0, 'rgba(' + cb + ',' + ab + ')'); g.addColorStop(1, 'rgba(' + cb + ',0)'); ax.fillStyle = g; ax.fillRect(p2[0] - rr2, p2[1] - rr2, rr2 * 2, rr2 * 2); });
+      if(moment === 'nuit'){
+        ax.globalCompositeOperation = 'lighter';
+        M.lucioles.forEach(function(Lc){
+          var lx = Lc.x + Math.sin(t * .7 * Lc.v + Lc.ph) * Lc.r, ly = Lc.y + Math.cos(t * .5 * Lc.v + Lc.ph * 1.3) * Lc.r * .7, p2 = A(lx, ly);
+          if(p2[0] < -8 || p2[0] > aw + 8 || p2[1] < -8 || p2[1] > ah + 8) return;
+          var on = Math.max(0, Math.sin(t * 1.6 * Lc.v + Lc.ph * 3)); if(on < .05) return;
+          var rr3 = 5 * sw, g = ax.createRadialGradient(p2[0], p2[1], 0, p2[0], p2[1], rr3);
+          g.addColorStop(0, 'rgba(220,255,140,' + (.9 * on).toFixed(3) + ')'); g.addColorStop(.3, 'rgba(180,240,90,' + (.35 * on).toFixed(3) + ')'); g.addColorStop(1, 'rgba(180,240,90,0)');
+          ax.fillStyle = g; ax.fillRect(p2[0] - rr3, p2[1] - rr3, rr3 * 2, rr3 * 2);
+        });
+        ax.globalCompositeOperation = 'source-over';
+      }
     }
     /* la fumée des cheminées : floue de toute façon, elle est dessinée ici, sur la petite toile (rien à redessiner en grand) */
     var hw = W / 2 / ech, hh = H / 2 / ech;
@@ -1865,7 +2586,9 @@ function jouer(zone, p, fin){
     poser:function(x, y){ pos.x = x; pos.y = y; }, aller:function(vx, vy){ but = vx == null ? null : {x:vx, y:vy}; }, libre:libre,
     coureur:function(){ return lancerCoureur(true); }, coureurs:function(){ return coureurs.map(function(C){ return {chat:C.chat, x:C.x, y:C.y}; }); },
     moustache:function(){ return {etat:mou.etat, x:mou.x, y:mou.y}; }, pas:function(){ return mesPas.filter(function(m){ return !m.chat; }).length; },
-    pasChats:function(){ return mesPas.filter(function(m){ return !!m.chat; }).length; }, chaussures:function(){ return {sub:semelle.sub, c:semelle.c}; },
+    pasChats:function(){ return poseesC; }, effacees:function(){ return effacees; }, perdre:perdre, nbCoureurs:function(){ return nbCoureurs; }, dits:function(){ return journal.slice(); },
+    fauxChats:function(){ return fauxChats.map(function(F){ return {chat:F.chat, etat:F.etat, x:F.x, y:F.y, lieu:F.F.lieu}; }); },
+    chaussures:function(){ return {sub:semelle.sub, c:semelle.c}; },
     mesures:function(){ return {images:mesure.images, ms:mesure.t, decor:mesure.tb, bouge:mesure.td, dessus:mesure.th, lumiere:mesure.tl, blocs:blocs ? blocs.stats : null}; }};
   return {arreter:function(){
     arrete = true; try{ stop(); }catch(e){}
@@ -1878,31 +2601,33 @@ function jouer(zone, p, fin){
 
 MJ.enregistrer('pistage', {
   nom:'Suivre les traces', ic:'🐾', role:'pisteur',
-  consigne:'Plusieurs chats ont laissé leurs traces. Marche, regarde bien les pattes, et suis la bonne piste jusqu\'au bout. Au bout d\'une mauvaise piste, c\'est perdu.',
+  consigne:function(pa){ return 'Les sept chats d\'Odette ont laissé leurs traces. Marche, regarde bien les pattes, et suis celles de Moustache. Les flaques les font réapparaître. ' +
+    (pa && pa.decor === 'foret' ? 'Elles mènent au fond de la forêt.' : 'Trop près d\'un autre chat, c\'est perdu.'); },
+  /* (15 novembre, 14 h 26) toujours les sept chats ; la difficulté : jusqu'où une trace se voit après une flaque, combien de bouts de rue
+     ont une flaque, la place qu'on laisse sans flaque sur la piste de Moustache, les chats qui passent en courant */
   reglages:function(n, mods){
-    var p = {}, nn = U.borne((n - 1) / 9, 0, 1);
-    p.faux = Math.max(2, Math.min(6, (n <= 3 ? 3 : n <= 6 ? 4 : n <= 8 ? 5 : 6) - (mods.aide || 0)));
-    p.cinq = n >= 5;                      /* Noisette, à cinq doigts : presque Moustache */
-    p.nx = n <= 4 ? 4 : 5; p.ny = n <= 4 ? 3 : 4;
-    p.flaques = n <= 2 ? 2 : n <= 4 ? 3 : n <= 7 ? 4 : 5;
-    p.boues = n <= 3 ? 1 : 2;
-    p.farines = n <= 5 ? 1 : 2;
+    var p = {}, nn = U.borne((n - 1) / 9, 0, 1), aide = mods.aide ? 1.25 : 1;
+    p.faux = 6;                           /* les sept chats d'Odette : Moustache et six fausses pistes */
+    p.cinq = true;                        /* (Noisette, à cinq doigts, est toujours là) */
+    p.nx = n <= 5 ? 5 : 6; p.ny = 4;
+    p.taux = lerp(.8, .5, nn);            /* la part des bouts de rue qui ont une flaque, de la boue (en travers) */
+    p.boue = .32;
+    p.vue = {lait:lerp(330, 200, nn) * aide, eau:lerp(250, 150, nn) * aide, boue:lerp(330, 210, nn) * aide, farine:lerp(300, 180, nn) * aide};
+    p.ecart = lerp(280, 470, nn);         /* sur la piste de Moustache, jamais plus loin que ça sans une flaque */
+    p.trou = lerp(.04, .22, nn);          /* des traces qui manquent, quand elles sont presque effacées */
     p.arches = n <= 2 ? 1 : n <= 6 ? 2 : 3;
     p.sauts = n <= 2 ? 1 : n <= 5 ? 2 : 3;
-    p.coureurs = n <= 4 ? 2 : 3;
+    p.coureurs = {premier:lerp(9, 5, nn), tous:lerp(15, 8, nn)};   /* les chats qui passent : le premier, puis un toutes les … secondes */
     p.branches = n <= 3 ? 2 : 3;
-    p.plancher = lerp(.46, .22, nn) + (mods.aide ? .08 : 0);   /* ce qui reste d'une trace toute sèche */
-    p.lait = lerp(.985, .972, nn);                              /* ce qu'une trace de lait garde d'un pas à l'autre */
-    p.trou = lerp(.04, .26, nn);                                /* des traces qui manquent, quand elles sont presque sèches */
-    p.lignes = [{nom:'Fausses pistes', val:String(p.faux)}, {nom:'Un chat à cinq doigts', val:p.cinq ? 'oui' : 'non'}, {nom:'Le quartier', val:p.nx + ' rues sur ' + p.ny},
-      {nom:'Flaques, boue, farine', val:p.flaques + ' · ' + p.boues + ' · ' + p.farines}, {nom:'Passages couverts', val:String(p.arches)}, {nom:'Obstacles', val:String(p.sauts)}];
+    p.lignes = [{nom:'Les chats', val:'7'}, {nom:'Le quartier', val:p.nx + ' rues sur ' + p.ny}, {nom:'Rues avec une flaque', val:Math.round(p.taux * 100) + ' %'},
+      {nom:'Une trace se voit', val:Math.round(p.vue.eau) + ' pas'}, {nom:'Un chat passe toutes les', val:Math.round(p.coureurs.tous) + ' s'}, {nom:'Passages couverts', val:String(p.arches)}];
     return p;
   },
   jouer:jouer
 });
 MJ.PLEIN_ECRAN = MJ.PLEIN_ECRAN || {}; MJ.PLEIN_ECRAN.pistage = 1;
 MJ.LARGE = MJ.LARGE || {}; MJ.LARGE.pistage = 1;
-MJ.PHRASES = MJ.PHRASES || {}; MJ.PHRASES.pistage = 'Suis les bonnes traces jusqu\'au bout. Pas les autres !';
+MJ.PHRASES = MJ.PHRASES || {}; MJ.PHRASES.pistage = 'Suis les traces de Moustache. Les flaques les font réapparaître !';
 
 /* ==========================================================
    L'explication en images, avant de jouer (MJ.DEMOS.pistage) : le Pisteur au milieu, trois pistes de petites pattes qui se
@@ -1918,7 +2643,10 @@ MJ.DEMOS.pistage = {w:340, h:190, f:function(el){
   var cv = el.querySelector('canvas'), x = cv.getContext('2d'), sv = el.querySelector('svg'), g = el.querySelector('.pgd-h'), doigt = el.querySelector('.pgd-doigt'), anim = null;
   try{ if(MJ.DESSUS){ g.innerHTML = MJ.DESSUS.pisteur(); anim = MJ.DESSUS.Bonhomme(g); } }catch(e){}
   var A = [{c:'moustache', pts:[{x:40, y:96}, {x:150, y:100}, {x:300, y:100}]}, {c:'pompon', pts:[{x:40, y:88}, {x:140, y:86}, {x:150, y:30}]}, {c:'caramel', pts:[{x:40, y:106}, {x:200, y:112}, {x:210, y:168}]}];
-  var tP = null, tH = null, Lm = LUM.apresmidi, flaque = {type:'flaque', x:232, y:100, rx:17, ry:11, rot:0, m:[1, .95, 1.05, 1, .92, 1.08, 1, .96, 1.04, 1], g:5};
+  /* (15 novembre) deux flaques en travers de la rue : les traces de lait s'effacent avant la première, reviennent toutes sombres après,
+     s'effacent encore, et celles de Moustache reviennent après la deuxième */
+  var MF = [1, .95, 1.05, 1, .92, 1.08, 1, .96, 1.04, 1, .97, 1.03, 1, 1];
+  var tP = null, tH = null, Lm = LUM.apresmidi, flaque = {type:'flaque', x:96, y:100, rx:11, ry:46, rot:0, m:MF, g:5, travers:true}, flaque2 = {type:'flaque', x:262, y:100, rx:10, ry:46, rot:0, m:MF, g:9, travers:true};
   function fond(){
     x.setTransform(2, 0, 0, 2, 0, 0);
     if(!tH){ try{ tP = tuile(2, 'paves'); tH = tuile(2, 'herbe'); }catch(e){} }
@@ -1928,14 +2656,14 @@ MJ.DEMOS.pistage = {w:340, h:190, f:function(el){
     x.save(); x.beginPath(); rues.forEach(function(r){ x.rect(r.x, r.y, r.w, r.h); }); x.clip();
     if(tP) carreler(x, tP, {x:0, y:0, w:W, h:H}, tP.width / 2); else { x.fillStyle = '#b7a58a'; x.fillRect(0, 0, W, H); }
     x.restore();
-    try{ dessinerTache(x, flaque, Lm, rues); }catch(e){}
+    try{ dessinerTache(x, flaque, Lm, [rues[0]]); dessinerTache(x, flaque2, Lm, [rues[0]]); }catch(e){}
     A.forEach(function(P, ip){
       var pts = arrondir(P.pts, 16), L = longueur(pts), s = 8, n = 0, sub = 'lait', c = 1;
       while(s < L - 4){
         var q = point(pts, s), cc = n % 2 ? 1 : -1, px = q.x + Math.cos(q.a + 1.5708) * 3.2 * cc, py = q.y + Math.sin(q.a + 1.5708) * 3.2 * cc;
-        if(ip === 0 && dansForme(flaque, px, py, 2)){ sub = 'eau'; c = 1; s += 19; n++; continue; }
-        dessinerTrace(x, {x:px, y:py, a:q.a + 1.5708, c:P.c, sub:sub, al:sub === 'eau' ? .35 + .65 * c : 1, k:1.3, g:n + 1});
-        if(sub === 'eau') c *= .82;
+        if(dansForme(flaque, px, py, 3) || dansForme(flaque2, px, py, 3)){ sub = 'eau'; c = 1; s += 19; n++; continue; }
+        if(c > .2) dessinerTrace(x, {x:px, y:py, a:q.a + 1.5708, c:P.c, sub:sub, al:c, k:1.3, g:n + 1});
+        c *= sub === 'eau' ? .78 : .7;
         s += 19; n++;
       }
     });
