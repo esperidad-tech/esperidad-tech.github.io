@@ -1,6 +1,12 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 20 h 35)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 21 h 45)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 15 novembre (21 h 45) : LÉO, LES À-COUPS DES SORTS ET LA PAGE QUI SE FERME (Bible §13.50) — EN LIGNE (15 novembre, 21 h 40 ; commit d8148bc du site ; version « 15/11 à 21 h 23 », à lire dans la fenêtre « Pause » du combat ; publication de GitHub vérifiée)
+
+- Romain : des sorts font des sautes d'images, et deux fois la page s'est fermée toute seule en phase 3 (« ça bug et ça quitte »). Pas reproduit ici ; les effets des sorts sont refaits sans les calculs qu'un téléphone fait mal, les sons sont tous prêts avant le combat.
+- **Pour la conception** : rien ne change dans les règles. **Si la page se ferme pendant Léo, on reprend au début de la phase où l'on était** (dans le vrai jeu, c'était déjà le cas ; à l'adresse d'essai aussi maintenant). Une famille ne refait donc jamais les trois phases.
+- **Rien n'a changé dans l'histoire, les dialogues ni les codes.**
 
 ## Nouveau depuis le 15 novembre (20 h 27) : LA CINÉMATIQUE DE L'ENTRÉE CHEZ LÉO (Bible §13.45) — EN LIGNE (commit 847fe1d du site ; le donjon : version « 15/11 à 20 h 18 »)
 

@@ -152,6 +152,12 @@ Romain : « ça rame de partout », « ça fait que quitter sur l'iPhone ». Les
 **Les outils** : `moteur/perf-leo.py` (les images par seconde du fil principal, où part son temps, les fonctions les plus chères, avec ou sans le son), `moteur/memoire.py` (émulation iPhone : le nombre de calques et leur poids).
 **Ce qui reste cher** : fabriquer les sons en direct (un quart du temps du fil principal en combat) ; les gestes des héros (une cinquantaine de pièces animées chacun).
 
+**R19 — Aucun filtre, aucun fondu, aucun masque sur un effet de sort** (15 novembre, 19 h 28 : « il y a encore des sorts qui font des sautes de FPS » ; 21 h 14 : « ça bug et ça quitte »). `filter` (drop-shadow, blur, brightness), `mix-blend-mode`, `clip-path` sur un élément qui bouge : un iPhone refait le calcul à chaque image, élément par élément — et un sort en crée vingt ou trente. On en a compté de 57 à 65 sortes par phase. **Une lueur se dessine** : la même forme, plus grande et presque transparente, sous la vraie (`lueurForme`, `lueurTrait`, `lueurRonde` dans `anim/heros/src/f-moteur.js`), ou un rond en dégradé (`tache`, `l-reactions.js`) ; un éclat = un voile dont on ne change que l'opacité. Pour vérifier : `test-leo.py` (`SEUL=filet`) relève tout ce qui est filtré pendant que les trois héros lancent leurs sorts.
+
+**R20 — Rien ne se fabrique pendant un combat en temps réel.** Ni un son (la liste `BRUITS` de `leo.js` doit être complète : `sautes-leo.py` nomme chaque son encore fait en direct), ni une musique, ni le lot de « bruitages lourds » des combats ordinaires. Fabriquer UN son occupe le fil de l'écran jusqu'à 0,4 s sur une machine lente. Le combat attend que tout soit prêt (`sonsPrets`), avec une limite pour ne jamais rester bloqué.
+
+**R21 — Mesurer sort par sort, pas en moyenne** : `python3 moteur/sautes-leo.py <phase> [--froid]`. Sur l'ordinateur d'essai (pas de carte graphique), l'écart entre deux images est bruité par le dessin lui-même : regarder aussi les **longues tâches** du fil de l'écran, et ne comparer que deux mesures faites à la suite.
+
 ## 5. Ce qui reste à faire
 
 - **Le critique et le nuage** restent sous l'objectif (≈ 31-41 images/s « écran »), surtout à cause du compositeur simulé
