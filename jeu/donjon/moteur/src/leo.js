@@ -129,7 +129,7 @@ function mem(sel){ var c = E.mem || (E.mem = {}), e = c[sel]; return e && e.isCo
 function slotH(h){ return mem('.h-' + h); }
 /* la phase 2 se joue avec le nouveau Léo : sa pose vient, à chaque image, de l'horloge des règles (leo-p2.js) */
 /* (le nouveau Léo — phases 2 et 3 : ses gestes sont calculés à chaque image d'après les règles, par leo-p2.js) */
-function p2(){ return !!(E && E.p2 && E.c && (E.c.phase === 2 || E.c.phase === 3) && E.leo.nouveau()); }
+function p2(){ return !!(E && E.p2 && E.c && E.leo.nouveau()); }        /* (15 novembre : les trois phases) */
 
 /* ====================================================================== 2. LES PHASES */
 function demarrerPhase(n, premiere){
@@ -180,7 +180,8 @@ async function cineEntree(){
   bruit('leoCape', {}, ['magie']);
   for(var k = 0; k <= 10 && !E.saute; k++){ E.leo.voile(1 - k / 10); await pause(70); }
   E.leo.voile(0);
-  await pose({x:0, torse:5, brasG:22, avantG:62, brasD:-18}, 900, 'o');
+  /* (15 novembre : le nouveau Léo, en cape — il avance d'un pas lourd, se redresse, écarte les bras sous sa cape) */
+  await pose(E.leo.nouveau() ? {x:0, torse:8, tete:14, bas:12} : {x:0, torse:5, brasG:22, avantG:62, brasD:-18}, 900, 'o');
   titre(NOMS[1], null, 2200);
   await pose('rugit', 500, 'o'); Fx.tremble(7, 400);
   await pause(900);

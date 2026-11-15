@@ -57,7 +57,8 @@ var C = {
   vert:['#eaffc0', '#9cff5c', '#3fd13a', '#1f8a2a'], verre:'#d8fff0',
   toile:['#d7b98a', '#a8865a', '#6e5232'],
   tunique:['#4a4060', '#2e2740', '#1a1526'], cape:['#2a2438', '#151120', '#0a080f'],
-  rat:['#b9b2a8', '#8a8076', '#5c544c'], ratRose:'#e6a0a0'
+  rat:['#b9b2a8', '#8a8076', '#5c544c'], ratRose:'#e6a0a0',
+  paille:['#fff3b0', '#ecca62', '#b88e2c', '#7a5a18'], fer:['#c9ced8', '#8a909c', '#4c515c', '#2a2d34']
 };
 
 /* ============================================================================ LES DÉGRADÉS (dans chaque pièce, mêmes noms) */
@@ -76,7 +77,7 @@ var DEFS = '<defs>' +
   lin('l2o', C.or) + lin('l2b', C.bande, .8, 0, .2, 1) + lin('l2h', C.cheveux, .8, 0, .3, 1) +
   lin('l2a', C.acier, .3, 0, .6, 1) + lin('l2bo', C.bois, 0, .5, 1, .5) + rad('l2v', C.vert, .4, .35, .8) +
   lin('l2to', C.toile) + lin('l2tu', C.tunique) + lin('l2tuS', [C.tunique[1], C.tunique[2], '#100c18']) + lin('l2ca', C.cape) +
-  rad('l2ra', C.rat, .6, .3, .9) +
+  rad('l2ra', C.rat, .6, .3, .9) + lin('l2pa', C.paille, .2, 0, .8, 1) + lin('l2fe', C.fer, .2, 0, .8, 1) +
   '</defs>';
 
 /* ============================================================================ LES PETITS OUTILS DE DESSIN */
@@ -374,6 +375,23 @@ P.tunique = {os:'torse', boite:[84, 84, 134, 134], habit:'tunique', svg:(functio
   s += ligne('M104 146 C114 160 126 168 136 172 M196 140 C190 158 176 170 160 176 M120 196 C134 200 160 200 176 194', C.tunique[2], 2.4, .9);
   s += ligne('M200 132 C204 146 200 162 192 176', '#6a5e88', 2.2, .6);
   s += ov(170, 182, 12, 6, '#f4ecdc', .18, -10) + ov(118, 168, 8, 5, '#f4ecdc', .15);
+  /* (15 novembre, la phase 1 refaite) les plis éclairés par les torches, les coutures des épaules, une pièce recousue */
+  s += ligne('M100 132 C108 142 118 148 130 150 M108 126 C114 132 122 136 130 137', '#6a5e88', 2, .75) + ligne('M168 122 C178 124 190 128 198 134', '#6a5e88', 1.8, .6);
+  s += ligne('M112 118 C116 128 116 140 112 150 M190 116 C188 126 190 138 196 148', '#8a7fb0', 1.3, .7, ' stroke-dasharray="3 3.4"');
+  s += f('M164 146 L184 142 L188 160 L168 165 Z', '#3c3354', 2) + ligne('M166 148 L183 144 M186 158 L169 163 M165 149 L168 163 M184 144 L187 158', '#a99fd0', 1.2, .9, ' stroke-dasharray="2.4 2.6"');
+  /* le baudrier : une large sangle de cuir en travers du buste, sa boucle de laiton, ses rivets — et une sacoche de meunier */
+  s += f('M100 124 L113 115 L196 196 L186 208 Z', 'url(#l2c)', 2.8) + ligne('M104 124 L190 205', '#c08a5a', 1.4, .7) + ligne('M111 118 L194 198', '#33200f', 1.6, .7);
+  [[118, 132], [136, 150], [172, 185]].forEach(function(q){ s += rond(q[0], q[1], 2.4, '#e9c46a', 1.4); });
+  s += f('M144 152 L160 148 L166 164 L150 169 Z', 'url(#l2o)', 2.4) + f('M150 156 L158 154 L161 161 L153 164 Z', '#33200f', 1.2) + ligne('M146 154 L158 151', '#fffbe8', 1.3, .9);
+  s += f('M184 186 C192 180 204 184 206 194 C208 204 200 212 190 211 C184 210 180 202 181 194 Z', 'url(#l2c)', 2.6) + ligne('M184 192 C192 188 200 190 204 196', '#33200f', 1.6, .8) + rond(194, 197, 2.2, '#e9c46a', 1.2);
+  /* la farine : il sort du moulin — une poudre claire sur le bas de la tunique et sur une épaule, des grains */
+  s += ov(132, 200, 26, 9, '#f4ecdc', .26, -4) + ov(176, 204, 16, 6, '#f4ecdc', .2) + ov(108, 132, 12, 6, '#f4ecdc', .16, 30);
+  [[122, 190], [140, 194], [150, 204], [116, 204], [166, 198], [104, 140], [112, 126], [182, 176]].forEach(function(q, i){ s += rond(q[0], q[1], i % 3 ? 1.1 : 1.6, '#fff8e8', 0); });
+  /* le col : un grand rabat de capuche roulé autour du cou, et l'agrafe de la cape (un anneau de laiton, sa chaînette) */
+  s += f('M120 98 C128 112 164 112 172 96 C178 102 176 112 166 117 C154 123 138 123 127 117 C118 112 116 104 120 98 Z', 'url(#l2ca)', 2.6);
+  s += ligne('M126 106 C138 114 156 114 168 104', '#3a3250', 2, .9) + ligne('M124 101 C136 109 158 109 170 100', '#4a4266', 1.4, .7);
+  s += rond(118, 110, 5.2, 'url(#l2o)', 2) + rond(118, 110, 1.8, '#33200f', 0) + rond(176, 108, 5.2, 'url(#l2o)', 2) + rond(176, 108, 1.8, '#33200f', 0);
+  s += ligne('M122 113 C136 126 160 126 172 111', '#33200f', 3.4) + ligne('M122 113 C136 126 160 126 172 111', '#e9c46a', 1.6, 1, ' stroke-dasharray="3 2.4"');
   return s;
 })()};
 function manche(dx, haut, S){
@@ -381,10 +399,17 @@ function manche(dx, haut, S){
   if(haut){
     s = f(dec('M177 118 C188 104 218 106 224 124 C228 140 226 158 220 172 C216 182 210 188 202 190 L186 190 C179 183 173 170 173 157 C173 144 175 132 177 118 Z', dx, 0), g);
     s += ligne(dec('M186 150 C196 156 208 156 218 150 M190 172 C198 176 208 174 214 168', dx, 0), C.tunique[2], 2, .9);
+    /* (15 novembre) l'épaule éclairée, sa couture, une pièce au coude */
+    s += ligne(dec('M184 122 C194 114 210 116 218 126', dx, 0), S ? '#3c3354' : '#6a5e88', 2, .8) + ligne(dec('M180 128 C190 122 208 122 220 132', dx, 0), '#8a7fb0', 1.2, S ? .35 : .7, ' stroke-dasharray="3 3.4"');
+    s += f(dec('M188 166 L208 164 L210 180 L190 183 Z', dx, 0), S ? '#221c30' : '#3c3354', 1.8) + ligne(dec('M190 168 L207 166 M208 178 L191 181', dx, 0), '#a99fd0', 1.1, S ? .4 : .85, ' stroke-dasharray="2.4 2.6"');
   } else {
     s = f(dec('M179 176 C174 192 180 214 184 232 L210 232 C214 212 221 194 218 176 C212 170 186 170 179 176 Z', dx, 0), g);
     s += f(dec('M183 222 L211 222 L210 234 L184 234 Z', dx, 0), S ? C.tunique[2] : C.tunique[1], 2.2);
     s += ligne(dec('M186 196 C194 200 204 200 212 194', dx, 0), C.tunique[2], 2, .9);
+    /* (15 novembre) le brassard de cuir : deux sangles, trois clous de laiton */
+    s += f(dec('M180 192 C190 186 208 186 219 191 C218 202 215 213 212 222 L184 222 C182 212 180 202 180 192 Z', dx, 0), S ? 'url(#l2cS)' : 'url(#l2c)', 2.4);
+    s += ligne(dec('M182 198 C192 193 208 193 217 197 M184 214 C192 211 204 211 212 214', dx, 0), '#33200f', 2.2, .85) + ligne(dec('M184 204 C194 200 206 200 214 204', dx, 0), S ? '#74492a' : '#c08a5a', 1.3, .7);
+    [[190, 206], [199, 205], [208, 206]].forEach(function(q){ s += rond(q[0] + dx, q[1], 2, S ? '#b8944a' : '#e9c46a', 1.2); });
   }
   return s;
 }
@@ -397,6 +422,79 @@ P.capuche = {os:'tete', boite:[96, 18, 104, 108], habit:'capuche', svg:(function
   s += '<ellipse cx="128" cy="80" rx="21" ry="26" fill="#07060b"/>';
   s += '<path d="M114 76 L126 80 L115 84 Z M133 80 L144 75 L143 84 Z" fill="#ffe9a0"/>';
   s += ligne('M112 50 C122 36 138 30 152 32 M170 40 C180 50 186 64 186 80', '#3a3250', 2.4, .9) + ligne('M150 116 C164 112 176 102 182 90', '#3a3250', 2, .7);
+  /* (15 novembre, la phase 1 refaite) l'ourlet épais autour du visage et ses points de couture ; la couture du dessus ; des plis ;
+     une pièce recousue ; le bord élimé ; ses yeux luisent au fond du noir */
+  s += '<ellipse cx="128" cy="80" rx="23.5" ry="28.5" fill="none" stroke="' + O + '" stroke-width="6.5"/><ellipse cx="128" cy="80" rx="23.5" ry="28.5" fill="none" stroke="#3f3658" stroke-width="3.6"/>';
+  s += '<ellipse cx="128" cy="80" rx="23.5" ry="28.5" fill="none" stroke="#a99fd0" stroke-width="1.1" stroke-dasharray="2.6 3" opacity=".8"/>';
+  s += ligne('M128 51 C132 40 142 32 154 30', '#4a4266', 1.6, .8) + ligne('M134 28 C150 22 172 30 184 46', '#5a5078', 2, .7) + ligne('M158 46 C168 56 174 70 174 86 M164 100 C172 96 180 88 184 78', '#3a3250', 2, .8);
+  s += ligne('M160 36 C174 44 184 58 188 74', '#6a5e88', 1.6, .55);
+  s += f('M162 58 L178 62 L176 78 L160 74 Z', '#3c3354', 1.8) + ligne('M164 60 L176 63 M175 76 L162 73 M163 61 L161 73 M177 64 L175 76', '#a99fd0', 1.1, .85, ' stroke-dasharray="2.4 2.6"');
+  s += ligne('M112 104 l-3 6 M120 112 l-2 6 M132 118 l0 6 M146 120 l1 6 M160 117 l3 5 M172 110 l4 4', '#151120', 2.4, .9);
+  s += ov(120, 80, 9, 5.5, '#ffd86a', .22) + ov(139, 80, 9, 5.5, '#ffd86a', .22);
+  s += '<path d="M114 76 L126 80 L115 84 Z M133 80 L144 75 L143 84 Z" fill="#fff3c0"/>';
+  return s;
+})()};
+
+/* ---------- LES ARMES DE LA PHASE 1 : le fléau, le marteau, la meule de paille, le crochet (15 novembre) ----------
+   Le repère de chacune est la main qui la tient : le manche descend (+y), la tête est au bout. Elles gardent l'angle qu'on leur
+   donne par rapport au buste (pose : aa), comme la faux. */
+function chaine(x, y, n, pas){ var s = '', k; for(k = 0; k < n; k++){ var yy = y + k * pas; s += '<ellipse cx="' + x + '" cy="' + yy + '" rx="' + (k % 2 ? 2.6 : 4.6) + '" ry="' + (pas * .62) + '" fill="none" stroke="' + O + '" stroke-width="4.6"/>' + '<ellipse cx="' + x + '" cy="' + yy + '" rx="' + (k % 2 ? 2.6 : 4.6) + '" ry="' + (pas * .62) + '" fill="none" stroke="url(#l2fe)" stroke-width="2.4"/>'; } return s; }
+/* LE FLÉAU : un long manche de frêne, un anneau de fer, trois maillons, et le battant — un gourdin cerclé de fer, clouté */
+P.fleau = {os:'arme', boite:[-30, -44, 60, 300], arme:'fleau', svg:(function(){
+  var s = '';
+  s += ligne('M-1 -36 C-4 10 4 60 0 118', O, 11) + ligne('M-1 -36 C-4 10 4 60 0 118', 'url(#l2bo)', 7.2) + ligne('M1 -30 C-1 10 6 60 2 112', '#e2b07a', 1.5, .7);
+  s += ligne('M-4 -8 L4 -6 M-4 0 L4 2 M-4 8 L4 10 M-4 16 L4 18', '#3a2412', 1.6, .8);                 /* la poignée ficelée */
+  s += f('M-7 106 L7 106 L8 122 L-8 122 Z', 'url(#l2fe)', 2.4) + rond(0, 114, 1.8, '#e8ecf4', 0);      /* la virole */
+  s += chaine(0, 130, 3, 9);
+  s += f('M-5 152 L5 152 L7 158 L-7 158 Z', 'url(#l2fe)', 2.2);
+  /* le battant : un peu de perspective — il s'élargit vers le bas, son bout est un ovale vu de trois quarts */
+  s += f('M-9 158 C-12 190 -15 220 -16 240 C-12 250 12 250 16 240 C15 220 12 190 9 158 Z', 'url(#l2bo)', 3);
+  s += '<ellipse cx="0" cy="241" rx="16" ry="6.5" fill="#6e4424" stroke="' + O + '" stroke-width="2.6"/>' + '<ellipse cx="-2" cy="240" rx="9" ry="3" fill="#8a5a2e" opacity=".8"/>';
+  s += ligne('M-4 164 C-6 190 -8 214 -9 234', '#e2b07a', 2, .55) + ligne('M6 166 C8 192 10 214 11 232', '#3a2412', 2.2, .6);
+  [176, 204, 228].forEach(function(y, i){ var w = 11.5 + i * 2.2; s += f('M' + (-w) + ' ' + (y - 4) + ' C' + (-w / 2) + ' ' + (y - 1) + ' ' + (w / 2) + ' ' + (y - 1) + ' ' + w + ' ' + (y - 4) + ' L' + (w + .6) + ' ' + (y + 4) + ' C' + (w / 2) + ' ' + (y + 7) + ' ' + (-w / 2) + ' ' + (y + 7) + ' ' + (-w - .6) + ' ' + (y + 4) + ' Z', 'url(#l2fe)', 2.2);
+    [-.62, 0, .62].forEach(function(u){ s += f('M' + (u * w - 3) + ' ' + (y + 1) + ' L' + (u * w) + ' ' + (y - 5 - (u ? 0 : 1)) + ' L' + (u * w + 3) + ' ' + (y + 1) + ' Z', '#dfe5ee', 1.4); }); });
+  return s;
+})()};
+/* LE MARTEAU : une masse de meunier — un manche épais, une grosse tête de fer aux arêtes abattues, deux faces, des rivets */
+P.marteau = {os:'arme', boite:[-52, -44, 104, 250], arme:'marteau', svg:(function(){
+  var s = '';
+  s += ligne('M-1 -36 C-4 20 4 80 0 150', O, 13) + ligne('M-1 -36 C-4 20 4 80 0 150', 'url(#l2bo)', 9) + ligne('M2 -30 C0 20 7 80 3 144', '#e2b07a', 1.6, .7);
+  s += f('M-7 -14 L7 -12 L7 22 L-7 20 Z', 'url(#l2c)', 2.2) + ligne('M-6 -6 L6 -4 M-6 4 L6 6 M-6 13 L6 15', '#33200f', 1.5, .8);       /* la poignée de cuir */
+  /* la tête : le dessus (vu d'un peu au-dessus), la grande face, la face de frappe à gauche */
+  s += f('M-40 138 L34 136 L44 144 L-32 147 Z', '#aeb4c0', 2.6);
+  s += f('M-32 147 L44 144 L45 190 L-31 194 Z', 'url(#l2fe)', 3);
+  s += f('M-40 138 L-32 147 L-31 194 L-41 184 Z', '#3c4049', 2.6);
+  s += ligne('M-26 152 L38 149', '#eef1f6', 2, .7) + ligne('M-28 188 L40 185', '#2a2d34', 2.4, .7);
+  s += f('M-9 142 L9 141 L10 148 L-9 149 Z', '#55341a', 2);                                         /* le manche qui traverse */
+  [[-20, 160], [-20, 180], [32, 157], [32, 178]].forEach(function(q){ s += rond(q[0], q[1], 2.6, '#e8ecf4', 1.4); });
+  s += ligne('M-2 160 C6 164 14 164 22 160 M2 174 C10 178 18 177 24 172', '#5c616c', 1.8, .7);       /* des coups, des éraflures */
+  return s;
+})()};
+/* LA MEULE DE PAILLE : une grosse botte ronde, vue de trois quarts — sa face en spirale, son flanc ligoté de deux cordes, des brins qui dépassent */
+P.meule = {os:'arme', boite:[-78, 6, 156, 150], arme:'meule', svg:(function(){
+  var s = '', k;
+  s += f('M-34 22 C-64 28 -72 60 -70 84 C-68 112 -52 136 -30 140 L26 140 C52 136 70 112 70 82 C70 54 56 26 30 22 Z', 'url(#l2pa)', 3.4);       /* le flanc */
+  s += '<ellipse cx="-30" cy="81" rx="38" ry="59" fill="#f0d070" stroke="' + O + '" stroke-width="3.2"/>';                                   /* la face */
+  for(k = 0; k < 5; k++) s += '<ellipse cx="' + (-30 + k * .6) + '" cy="81" rx="' + (31 - k * 6.4) + '" ry="' + (49 - k * 10) + '" fill="none" stroke="' + (k % 2 ? '#b88e2c' : '#fff3b0') + '" stroke-width="' + (k % 2 ? 2.2 : 1.6) + '" opacity=".85"/>';
+  s += rond(-29, 81, 3, '#7a5a18', 0);
+  s += ligne('M-2 24 C18 46 20 110 2 138 M30 24 C52 48 54 108 34 138', '#7a4a22', 5.4) + ligne('M-2 24 C18 46 20 110 2 138 M30 24 C52 48 54 108 34 138', '#c08a4e', 2.6);   /* les cordes */
+  s += ligne('M10 34 C24 40 40 40 54 36 M14 62 C30 68 48 66 62 60 M14 96 C30 104 48 104 62 96 M8 122 C22 130 38 130 50 124', '#b88e2c', 1.8, .8);
+  s += ligne('M14 48 C28 54 46 54 60 48 M16 80 C32 86 50 86 66 80 M12 110 C26 118 44 118 56 110', '#fff3b0', 1.4, .7);
+  s += ligne('M-58 30 l-10 -9 M-66 54 l-11 -3 M-70 96 l-9 6 M-48 134 l-8 9 M40 22 l6 -10 M62 40 l11 -6 M70 96 l9 4 M54 132 l8 8 M6 20 l-2 -11 M-14 142 l-3 8', '#ecca62', 2.4, .95);   /* les brins qui dépassent */
+  return s;
+})()};
+/* LE CROCHET : un grand croc de fer à foin, sa poignée de bois en travers, et un rouleau de chaîne */
+P.crochet = {os:'arme', boite:[-50, -34, 104, 200], arme:'crochet', svg:(function(){
+  var s = '';
+  s += f('M-17 -8 C-19 -14 17 -16 19 -9 C20 -2 -16 0 -17 -8 Z', 'url(#l2bo)', 2.6) + ligne('M-12 -11 C-2 -13 8 -13 14 -11', '#e2b07a', 1.4, .7);     /* la poignée en T */
+  /* le croc : une tige, puis une grande courbe qui revient vers le haut, la pointe effilée */
+  s += ligne('M0 -6 C2 30 2 70 2 96 C4 132 38 140 44 108 C46 96 42 86 38 80', O, 13) + ligne('M0 -6 C2 30 2 70 2 96 C4 132 38 140 44 108 C46 96 42 86 38 80', 'url(#l2fe)', 8.4);
+  s += f('M32 84 L40 60 L46 86 Z', '#dfe5ee', 2.2);
+  s += ligne('M3 0 C5 34 5 70 5 96 C8 124 32 130 39 108', '#eef1f6', 1.8, .75) + ligne('M-2 20 C-1 50 -2 80 -1 98 C1 120 12 132 24 132', '#2a2d34', 2, .5);
+  s += f('M-5 18 L7 18 L7 28 L-5 28 Z', '#4c515c', 2) + rond(1, 23, 1.6, '#e8ecf4', 0);
+  /* la chaîne, enroulée près de la poignée */
+  s += '<ellipse cx="-22" cy="20" rx="13" ry="17" fill="none" stroke="' + O + '" stroke-width="7.4"/><ellipse cx="-22" cy="20" rx="13" ry="17" fill="none" stroke="url(#l2fe)" stroke-width="4.4" stroke-dasharray="7 3.4"/>';
+  s += '<ellipse cx="-25" cy="24" rx="9" ry="12" fill="none" stroke="' + O + '" stroke-width="6.4"/><ellipse cx="-25" cy="24" rx="9" ry="12" fill="none" stroke="#8a909c" stroke-width="3.6" stroke-dasharray="6 3"/>';
   return s;
 })()};
 
@@ -529,7 +627,7 @@ P.plaie3 = {os:'torse', boite:[114, 156, 88, 72], plaie:3, svg:plaie(125, 170, 1
 var ORDRE = ['faux@dos', 'brasAr', 'p3-brasAr', 'mancheAr', 'avantAr', 'p3-avantAr', 'mancheArA', 'poingAr', 'mainAr', 'cuisseAr', 'tibiaAr', 'piedAr', 'sac',
   'cuisseAv', 'tibiaAv', 'piedAv', 'bassin', 'gourde@ceinture', 'bouchon@ceinture', 'torse', 'p3-torse', 'plaie1', 'plaie2', 'plaie3', 'tunique', 'siffletCou',
   'tete', 'v-colere', 'v-rictus', 'v-cri', 'v-effort', 'v-souffle', 'v-boit', 'v-aah', 'v-ko', 'v-douleur', 'cheveux', 'p3-tete', 'capuche',
-  'faux@main', 'brasAv', 'p3-brasAv', 'mancheAv', 'avantAv', 'p3-avantAv', 'mancheAvA', 'gourde@main', 'bouchon@main', 'rat', 'sifflet', 'poingAv', 'mainAv'];
+  'faux@main', 'fleau', 'marteau', 'meule', 'crochet', 'brasAv', 'p3-brasAv', 'mancheAv', 'avantAv', 'p3-avantAv', 'mancheAvA', 'gourde@main', 'bouchon@main', 'rat', 'sifflet', 'poingAv', 'mainAv'];
 
 /* ============================================================================ LES POSES
    x, y : tout le corps (y < 0 : en l'air) ; r : il bascule autour des pieds (une chute) ; bas : il plie les genoux (les hanches
@@ -554,7 +652,7 @@ var POSES = {
   rugit:{bas:6, torse:-12, tete:-22, bAv:[40, 120, 0], bAr:[60, 110, 0], pAv:[198, 318], pAr:[104, 318]},
   sonne:{bas:14, torse:14, tete:24, bAv:[6, 20, 0], bAr:[14, 16, 0], pAv:[190, 318], pAr:[112, 318]}
 };
-var CLES_N = ['x', 'y', 'r', 'bas', 'bassin', 'torse', 'tete', 'piedAv', 'piedAr', 'souffle', 'ombre', 'fa', 'fg', 'ga', 'gp', 'ra', 'deux'];
+var CLES_N = ['x', 'y', 'r', 'bas', 'bassin', 'torse', 'tete', 'piedAv', 'piedAr', 'souffle', 'ombre', 'fa', 'fg', 'ga', 'gp', 'ra', 'deux', 'aa', 'ag'];
 var CLES_T = ['bAv', 'bAr', 'mAv', 'mAr', 'pAv', 'pAr', 'jAv', 'jAr'];
 /* une pose complète (ce qui manque vient de la garde) */
 function complete(p){
@@ -691,7 +789,7 @@ function Corps(parent, o){
   });
   this.liste = []; this.surToile = false; this.teinteT = null; this.flashT = 0;
   this.teinteEl = document.createElement('div'); this.teinteEl.className = 'lc-teinte'; d.appendChild(this.teinteEl);
-  this.etat = {forme:2, plaies:0, visage:'colere', faux:'dos', gourde:'ceinture', bouchon:true, sifflet:'cou', rat:null, capuche:false, tunique:false, cape:false, main:{Av:'poing', Ar:'poing'}, devantAr:false};
+  this.etat = {forme:2, plaies:0, visage:'colere', faux:'dos', gourde:'ceinture', bouchon:true, sifflet:'cou', rat:null, capuche:false, tunique:false, cape:false, arme:null, main:{Av:'poing', Ar:'poing'}, devantAr:false};
   this.p = complete(GARDE);
   this.de = null; this.a = null; this.t = 0; this.duree = 0; this.courbe = null; this.fin = null; this.temps = 0;
   this.M = {};
@@ -710,6 +808,7 @@ CP._maj = function(){
     if(p.potion) vu = E.forme === 3 && !(p.saufVisage && p.saufVisage.indexOf(E.visage) >= 0);
     else if(p.plaie) vu = E.forme === 3 && E.plaies >= p.plaie;
     else if(p.visage) vu = p.visage === E.visage && !E.capuche;
+    else if(p.arme) vu = E.arme === p.arme;
     else if(n === 'faux') vu = E.faux === q.ou;
     else if(n === 'gourde') vu = E.gourde === q.ou;
     else if(n === 'bouchon') vu = E.gourde === q.ou && E.bouchon;
@@ -722,6 +821,8 @@ CP._maj = function(){
     /* (habillé : la faux et le sac à rats sont sous la cape ; le sifflet et la gourde, sous la tunique) */
     if(E.cape && (n === 'faux' && q.ou === 'dos' || n === 'sac')) vu = false;
     if(E.tunique && (n === 'gourde' || n === 'bouchon' || n === 'siffletCou')) vu = false;
+    /* (15 novembre, la phase 1 : sous la tunique et ses manches, on ne voit ni le buste ni les bras — autant de pièces en moins à poser à chaque image) */
+    if(E.tunique && (n === 'torse' || n === 'brasAv' || n === 'avantAv' || n === 'brasAr' || n === 'avantAr')) vu = false;
     if(vu !== q.vu){ q.vu = vu; q.tr = null; q.el.classList.toggle('cache', !vu); }
   });
   /* le bras de derrière passe devant le buste quand il tient la faux avec l'autre main */
@@ -842,6 +943,8 @@ CP.forme = function(n){
 };
 /* les entailles de la faux (0 à 3) */
 CP.plaies = function(n){ n = Math.max(0, Math.min(3, n | 0)); if(this.etat.plaies !== n){ this.etat.plaies = n; this._maj(); } return this; };
+/* (phase 1) l'arme qu'il a en main : 'fleau' | 'marteau' | 'meule' | 'crochet' | null */
+CP.arme = function(nom){ nom = nom || null; if(this.etat.arme !== nom){ this.etat.arme = nom; this._maj(); } return this; };
 CP.objet = function(nom, ou){ if(this.etat[nom] !== ou){ this.etat[nom] = ou; this._maj(); } return this; };
 CP.main = function(cote, forme){ if(this.etat.main[cote] !== forme){ this.etat.main[cote] = forme; this._maj(); } return this; };
 CP.devantAr = function(on){ on = !!on; if(this.etat.devantAr !== on){ this.etat.devantAr = on; this._maj(); } return this; };
@@ -877,6 +980,8 @@ CP._os = function(p){
   var lin = [M.torse[0], M.torse[1], M.torse[2], M.torse[3], 0, 0];
   function enMain(dx, dy, ang, apres){ var w = ap(M.mainAv, SQ.PAv[0] + dx, SQ.PAv[1] + dy); return mul(T(w[0], w[1]), mul(lin, mul(R(ang || 0), apres || [1, 0, 0, 1, 0, 0]))); }
   M['faux@main'] = enMain(0, 14, p.fa, T(0, -(p.fg || 0)));
+  /* (phase 1) son arme : aa, son angle par rapport au buste (0 : elle pend ; 180 : levée) ; ag : à quelle hauteur du manche il la tient */
+  M.arme = enMain(0, 14, p.aa, T(0, -(p.ag || 0)));
   var prise = null;
   if(p.deux > .01){
     /* la poignée du milieu de la faux, ramenée dans le repère du buste au repos : c'est là que va le poignet de derrière */
@@ -942,7 +1047,11 @@ CP._ecrire = function(){
 };
 /* la cape : ses coins du haut suivent les épaules (le buste), son ourlet traîne au sol */
 CP._cape = function(){
-  var M = this.M, A = ap(M.torse, 96, 124), B = ap(M.torse, 206, 126), t = this.temps, v = Math.sin(t * 1.7) * 4, sol = PIED - 2;
+  var M = this.M, A = ap(M.torse, 96, 124), B = ap(M.torse, 206, 126), t = this.temps, v = Math.round(Math.sin(t * 1.7) * 4), sol = PIED - 2;
+  A = [Math.round(A[0]), Math.round(A[1])]; B = [Math.round(B[0]), Math.round(B[1])];
+  var sig = A[0] + ',' + A[1] + ',' + B[0] + ',' + B[1] + ',' + v;
+  if(sig === this._capeSig) return;                    /* (RAPIDITE.md, R14 : rien n'a bougé d'un point — on ne redessine pas) */
+  this._capeSig = sig;
   var mx = (A[0] + B[0]) / 2, bl = [Math.min(A[0] - 30, mx - 92) + v, sol], br = [Math.max(B[0] + 40, mx + 98) + v * .8, sol];
   function n(q){ return q[0].toFixed(1) + ' ' + q[1].toFixed(1); }
   var d = 'M' + n(A) + ' C' + n([A[0] - 24, A[1] + 70]) + ' ' + n([bl[0] + 6, bl[1] - 60]) + ' ' + n(bl) + ' C' + n([bl[0] + 40, sol + 10]) + ' ' + n([br[0] - 44, sol + 10]) + ' ' + n(br) +

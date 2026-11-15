@@ -294,7 +294,9 @@ P.arreter = function(){ this.duree = 0; if(this.fin){ var f = this.fin; this.fin
    en attendant que Romain valide le nouveau style) et le NOUVEAU LÉO, torse nu, détaillé (leo-corps.js), pour la phase 2, la
    cinématique où il arrache sa cape et sa tunique, et la fin (il redevient Léo). leo.js parle toujours au même objet :
    tenue(1 | 3) montre l'ancien, tenue(2) montre le nouveau ; .corps donne le nouveau pantin, pour la phase 2. */
-var NOUVEAU = {2:true, 3:true};        /* (15 novembre : la phase 3 aussi — Léo sous la potion, LeoCorps.forme(3)) */
+/* (15 novembre, 13 h 54, Romain : « la phase 1, tu refais le personnage comme les autres, avec beaucoup plus de détails » : les trois
+   phases sont maintenant sur le nouveau Léo ; en phase 1 il porte sa capuche, sa tunique et sa cape — LeoCorps.habits) */
+var NOUVEAU = {1:true, 2:true, 3:true};
 function Leo(parent, o){
   o = o || {};
   this.cx = o.x == null ? 815 : o.x; this.sol = o.sol == null ? 340 : o.sol;
@@ -319,7 +321,7 @@ F.tenue = function(n){
   this.ancien.el.style.display = neuf ? 'none' : '';
   if(this.corps) this.corps.el.style.display = neuf ? '' : 'none';
   if(neuf){
-    this.corps.habits({capuche:false, tunique:false, cape:false}); this.corps.objet('rat', null); this.corps.objet('sifflet', 'cou');
+    this.corps.habits({capuche:n === 1, tunique:n === 1, cape:n === 1}); this.corps.objet('rat', null); this.corps.objet('sifflet', 'cou'); this.corps.arme(null);
     /* (phase 3 : sous la potion ; sa faux et sa gourde, c'est le Pisteur qui les a) */
     this.corps.forme(n === 3 ? 3 : 2);
     this.corps.objet('faux', n === 3 ? null : 'dos'); this.corps.objet('gourde', n === 3 ? null : 'ceinture');
@@ -328,7 +330,7 @@ F.tenue = function(n){
 };
 Object.defineProperty(F, 'p', {get:function(){ return this.actif.p; }});
 Object.defineProperty(F, 'T', {get:function(){ return this.actif.T || {ech:this.corps ? this.corps.ech : 1}; }});
-F.arme = function(nom){ if(!this.nouveau()) this.ancien.arme(nom); return this; };
+F.arme = function(nom){ if(!this.nouveau()) this.ancien.arme(nom); else if(!nom) this.corps.arme(null); return this; };
 var VISAGES = {colere:'colere', cri:'cri', ko:'ko', boit:'boit'};
 F.visage = function(v){ if(this.nouveau()) this.corps.visage(VISAGES[v] || v); else this.ancien.visage(v); return this; };
 F.vers = function(pose, ms, courbe){ return this.actif.vers(pose, ms, courbe); };

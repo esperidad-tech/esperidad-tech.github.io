@@ -158,7 +158,7 @@ function vider(X){
   X.cibleSaut = null;
   X.sig = ''; X.faits = {}; X.brule = false; X.flinch = 0; X.douleur = 0; X.coupe = 0;
   var C = corps(X), f3 = !!(C && C.etat.forme === 3);
-  if(C){ C.objet('faux', f3 ? null : 'dos'); C.objet('gourde', f3 ? null : 'ceinture'); C.objet('bouchon', true); C.objet('sifflet', 'cou'); C.objet('rat', null); C.visage('colere'); C.devantAr(false); C.main('Av', 'poing'); C.main('Ar', 'poing'); }
+  if(C){ C.objet('faux', f3 ? null : 'dos'); C.objet('gourde', f3 ? null : 'ceinture'); C.objet('bouchon', true); C.objet('sifflet', 'cou'); C.objet('rat', null); C.visage('colere'); C.devantAr(false); C.main('Av', 'poing'); C.main('Ar', 'poing'); if(C.arme) C.arme(null); }
   if(X.mareEl){ try{ X.mareEl.remove(); }catch(x){} X.mareEl = null; }
   if(X.porte){ try{ var sp = X.porte.el; sp.style.transform = ''; sp.style.willChange = ''; sp.style.zIndex = ''; }catch(x){} X.porte = null; }
   X.cibleH = null; X.cibleX2 = 0; X.coupVu = 0; X.sangT = 0;
@@ -185,8 +185,8 @@ function image(X, dt, c){
   var p;
   CIBLE2 = X.cibleX2 || 0;
   if(etape === 'coups' && att === 'rafale' && !PISTES.rafale.coups) PISTES.rafale.coups = pisteCoups();
-  if((etape === 'prise' || etape === 'elan' || etape === 'retour' || etape === 'coups' || etape === 'porte') && PISTES[att] && PISTES[att][etape]) { var q0 = poseDe(att, etape, k, X.cibleX); p = LC.melange(q0, q0, 0); }
-  else if(etape === 'sonne') p = sonne(t);
+  if((etape === 'prise' || etape === 'elan' || etape === 'retour' || etape === 'coups' || etape === 'porte' || etape === 'tient' || etape === 'farine') && PISTES[att] && PISTES[att][etape]) { var q0 = poseDe(att, etape, k, X.cibleX); p = LC.melange(q0, q0, 0); }
+  else if(etape === 'sonne' || etape === 'noirci') p = sonne(t);
   else if(etape === 'sol') p = auSol(k, t);
   else p = idle(X, t);
   /* par-dessus : ce qui se répète pendant une étape (le raclement, les glous, le sifflet qui tremble) */
@@ -209,14 +209,15 @@ function image(X, dt, c){
 /* L'ANNONCE (15 novembre ; Romain : « les animations restent pas très claires, il faut augmenter la clarté encore ») : pendant
    qu'il prépare une attaque, son nom s'affiche en gros au milieu de la salle, avec une jauge qui se remplit jusqu'au coup.
    On sait ce qui arrive, et quand. (Trois mots au plus : pas de bouton 🔊.) */
-var ANNONCES = {poing3:['👊', 'LE POING'], rafale:['🥊', 'LA RAFALE'], hurlement:['📢', 'LE CRI'], attrape:['✊', 'IL ATTRAPE'], souffle:['🔥', 'LE FEU'],
+var ANNONCES = {fleau:['⚠️', 'LE FLÉAU'], marteau:['🔨', 'LE MARTEAU'], meule:['⚠️', 'LA MEULE'], crochet:['🪝', 'LE CROCHET'], cape:['🌑', 'LA CAPE'],
+  poing3:['👊', 'LE POING'], rafale:['🥊', 'LA RAFALE'], hurlement:['📢', 'LE CRI'], attrape:['✊', 'IL ATTRAPE'], souffle:['🔥', 'LE FEU'],
   sifflet:['🐀', 'IL SIFFLE'], faux:['⚠️', 'LA FAUX'], charge:['⚠️', 'LA CHARGE'], lancer:['🐀', 'UN RAT VOLE'], gourde:['🧪', 'IL BOIT'], saut:['⚠️', 'LE SAUT'], poing:['⚠️', 'LE POING']};
 /* (15 novembre, 13 h 54 — Romain : « pour chaque animation, tu mets à chaque fois un petit curseur qui montre ce qu'il fait. Quand il
    donne sa volée de coups, tu vois écrit 1, 2, 3 … 16 ») : pendant la rafale, l'annonce reste et compte les coups (« 7 / 16 », la
    jauge avance d'un cran par coup) ; pendant qu'il porte un héros, « IL VA FRAPPER », et la jauge court jusqu'au coup. */
-var ANNONCES_SUITE = {porte:['✊', 'IL VA FRAPPER']};
+var ANNONCES_SUITE = {porte:['✊', 'IL VA FRAPPER'], tient:['🪝', 'IL SERRE']};
 function annoncer(X, etape, att, k){
-  var suite = (etape === 'coups' && att === 'rafale') || (etape === 'porte' && att === 'attrape');
+  var suite = (etape === 'coups' && att === 'rafale') || (etape === 'porte' && att === 'attrape') || (etape === 'tient' && att === 'crochet');
   var A = ANNONCES[att], en = !!A && (etape === 'prise' || etape === 'elan' || suite), a = X.annonce;
   if(a && en && a.att === att && suite){
     /* la suite de la même attaque : le même panneau, son texte et sa jauge changent */
@@ -224,7 +225,7 @@ function annoncer(X, etape, att, k){
       var NC = (window.LeoRegles && window.LeoRegles.L.ATTAQUES.rafale.coups) || 16, nc = Math.min(NC, X.coupVu || 0);
       if(a.n !== 1000 + nc){ a.n = 1000 + nc; a.txt.textContent = nc + ' / ' + NC; a.u.style.transform = 'scaleX(' + (nc / NC).toFixed(3) + ')'; if(!a.suite){ a.suite = 1; a.el.classList.add('coups'); } }
     } else {
-      if(a.suite !== 2){ a.suite = 2; a.txt.textContent = ANNONCES_SUITE.porte[1]; a.el.classList.add('coups'); }
+      if(a.suite !== 2){ a.suite = 2; a.txt.textContent = ANNONCES_SUITE[etape][1]; a.el.classList.add('coups'); }
       var np = Math.round(k * 60); if(a.n !== 2000 + np){ a.n = 2000 + np; a.u.style.transform = 'scaleX(' + (np / 60).toFixed(3) + ')'; }
     }
     return;
@@ -250,6 +251,8 @@ function changer(X, Z, c){
   X.faits = {};
   X.etape = Z.etape; X.att = Z.att;
   var C = corps(X);
+  /* (phase 1 : une attaque finie ou coupée — il n'a plus son arme en main) */
+  if(C && C.arme && (Z.etape === 'repos' || Z.etape === 'sonne' || Z.etape === 'sol' || Z.etape === 'noirci')) C.arme(null);
   /* (une attaque qui recommence : tout reprend sa place, au cas où une étape aurait été coupée) */
   if(p3(X)){ if(Z.etape === 'repos' || Z.etape === 'prise'){ C.main('Ar', 'poing'); if(Z.att !== 'attrape') C.main('Av', 'poing'); }
     /* (un héros encore porté alors que l'attaque est finie ou coupée : il retombe) */
@@ -272,6 +275,66 @@ function auSol(k, t){
   if(k > .86){ var u = (k - .86) / .14; p = LC.melange(p, LC.complete(pose({bas:30, torse:20, tete:6, x:-120, bAv:[-30, 40, 0], bAr:[40, 60, 0]})), COURBES.io(u)); }
   return p;
 }
+
+/* ============================================================================ LA PHASE 1 : L'HOMME EN CAPE (15 novembre, 13 h 54)
+   Romain : « la phase 1, tu refais le personnage comme les autres, plus joli, plus animé […] ses sorts bien lisibles, avec des petites
+   indications, des petits timers qui avancent ». C'est le même pantin, habillé (la capuche, la tunique, la cape : LeoCorps.habits) ;
+   chaque attaque a sa préparation — il sort son arme de sous sa cape, on la voit —, son coup, son retour ; son nom s'affiche
+   avec la jauge. aa : l'angle de l'arme (0 : elle pend ; 180 : levée). */
+function p1(X){ var C = corps(X); return !!(C && C.etat.cape); }
+var SOUS_CAPE = {torse:10, tete:12, bAv:[-34, 70, 0], bAr:[22, 40, 0]};                           /* sa main passe sous la cape */
+/* ---------- LE FLÉAU : il le fait tournoyer au-dessus de sa tête, puis l'abat sur deux héros ---------- */
+var FL_PRET = {torse:2, tete:6, bAv:[72, 50, 0], aa:150, ag:40};
+/* (il le fait tourner devant lui, le bras tendu vers les héros : levé au-dessus de sa tête, le fléau sortait de l'écran) */
+var FL_TOURNE = {torse:-6, bas:10, tete:2, bAv:[84, 10, 0], bAr:[30, 50, 0], aa:180, ag:40};
+var FL_ABAT = {x:'cible', torse:34, bas:20, bassin:8, tete:12, bAv:[62, 6, 0], bAr:[-30, 50, 0], pAv:[180, 318], pAr:[66, 318], aa:64, ag:40};
+PISTES.fleau = {
+  prise:[[0, pose({}), 'io'], [.36, pose(SOUS_CAPE), 'io'], [1, pose(FL_PRET)]],
+  elan:[[0, pose(FL_PRET), 'io'], [.2, pose(FL_TOURNE), 'lin'], [.82, pose(FL_TOURNE), 'i'], [1, pose(FL_ABAT)]],
+  retour:[[0, pose(FL_ABAT), 'lin'], [.3, pose(FL_ABAT), 'io'], [1, pose({})]]
+};
+/* ---------- LE MARTEAU : sur l'épaule, puis levé à bout de bras (il tremble sous le poids)… et il l'écrase sur un héros ---------- */
+/* (le haut de l'écran est pris par la barre de Léo et les réglages : un marteau levé au-dessus de sa tête ne se verrait pas.
+   Il le pose devant lui, la tête au sol ; le ramène en arrière, à l'horizontale, en se cabrant ; puis bondit et l'abat.) */
+var MA_EPAULE = {torse:12, tete:12, bas:14, bAv:[52, 40, 0], bAr:[40, 50, 0], aa:32, ag:56};
+var MA_HAUT = {torse:-16, bas:12, bassin:-5, tete:-4, bAv:[-36, 104, 0], bAr:[60, 60, 0], aa:96, ag:30};
+var MA_DESSUS = {x:'cible', torse:6, bas:10, tete:4, bAv:[150, 12, 0], bAr:[40, 40, 0], pAv:[190, 318], pAr:[80, 318], aa:168, ag:30};
+var MA_ABAT = {x:'cible', torse:38, bas:24, bassin:10, tete:14, bAv:[58, 4, 0], bAr:[40, 30, 0], pAv:[182, 318], pAr:[66, 318], aa:58, ag:30};
+PISTES.marteau = {
+  prise:[[0, pose({}), 'io'], [.36, pose(SOUS_CAPE), 'io'], [1, pose(MA_EPAULE)]],
+  elan:[[0, pose(MA_EPAULE), 'io'], [.4, pose(MA_HAUT), 'lin'], [.82, pose(MA_HAUT), 'i'], [.93, pose(MA_DESSUS), 'i'], [1, pose(MA_ABAT)]],
+  retour:[[0, pose(MA_ABAT), 'lin'], [.35, pose(MA_ABAT), 'io'], [1, pose({})]]
+};
+/* ---------- LA MEULE DE PAILLE : il se baisse, la soulève au-dessus de sa tête, la tient là… et la lance : elle roule sur les trois ---------- */
+var ME_PREND = {bas:40, torse:30, tete:20, bAv:[40, 30, 0], bAr:[50, 30, 0], aa:96};
+/* (la meule contre sa poitrine, puis ramenée en arrière — au-dessus de sa tête, elle sortait de l'écran) */
+var ME_HAUT = {bas:14, torse:-14, bassin:-5, tete:-4, bAv:[34, 66, 0], bAr:[46, 64, 0], aa:96};
+var ME_JETTE = {torse:32, bas:20, bassin:8, tete:12, bAv:[84, 0, 0], bAr:[70, 10, 0], aa:100};
+PISTES.meule = {
+  prise:[[0, pose({}), 'io'], [.34, pose(ME_PREND), 'io'], [1, pose(ME_HAUT)]],
+  elan:[[0, pose(ME_HAUT), 'lin'], [.8, pose(ME_HAUT), 'i'], [1, pose(ME_JETTE)]],
+  retour:[[0, pose(ME_JETTE), 'io'], [1, pose({})]]
+};
+/* ---------- LE CROCHET : il jette sa farine (le nuage), arme son croc en arrière, le lance au bout de sa chaîne… et il serre ---------- */
+var CR_FARINE = {torse:14, tete:10, bAv:[40, 20, 0], bAr:[120, 10, 0]};
+var CR_ARME = {torse:-12, bas:14, tete:0, bAv:[-84, 104, 0], bAr:[40, 40, 0], aa:-30};
+var CR_LANCE = {torse:30, bas:20, bassin:8, tete:10, bAv:[96, 0, 0], bAr:[-30, 50, 0], aa:92};
+var CR_TIENT = {torse:8, bas:16, tete:8, bAv:[50, 96, 0], bAr:[40, 90, 0], aa:120};
+PISTES.crochet = {
+  prise:[[0, pose({}), 'io'], [.3, pose(CR_FARINE), 'io'], [.55, pose(SOUS_CAPE), 'io'], [1, pose(CR_ARME)]],
+  elan:[[0, pose(CR_ARME), 'lin'], [.7, pose(CR_ARME), 'i'], [1, pose(CR_LANCE)]],
+  tient:[[0, pose(CR_LANCE), 'io'], [.06, pose(CR_TIENT), 'lin'], [1, pose(CR_TIENT)]],
+  farine:[[0, pose(CR_TIENT), 'io'], [.3, pose({}), 'lin'], [1, pose({})]],
+  retour:[[0, pose(CR_TIENT), 'io'], [1, pose({})]]
+};
+/* ---------- LA CAPE : il se ramasse sous sa cape… et l'ouvre d'un grand geste : les torches s'éteignent ---------- */
+var CA_PREND = {torse:16, bas:14, tete:18, bAv:[24, 112, 0], bAr:[34, 112, 0]};
+var CA_OUVRE = {torse:-12, bas:6, tete:-8, bAv:[150, 12, 0], bAr:[-118, 18, 0]};
+PISTES.cape = {
+  prise:[[0, pose({}), 'io'], [1, pose(CA_PREND)]],
+  elan:[[0, pose(CA_PREND), 'lin'], [.7, pose(CA_PREND), 'o'], [1, pose(CA_OUVRE)]],
+  retour:[[0, pose(CA_OUVRE), 'io'], [1, pose({})]]
+};
 
 /* ============================================================================ LA PHASE 3 : LÉO SOUS LA POTION (Romain, 15 novembre)
    « Toutes les attaques, il n'y a absolument rien qui va. On comprend rien […] je veux vraiment des animations très très
@@ -361,6 +424,9 @@ function visage(X, etape, att, k, dt){
 /* ============================================================================ CE QUI SE RÉPÈTE PENDANT UNE ÉTAPE */
 function plus(X, p, etape, att, k, t, Z, c){
   var dur = X.duree;
+  /* (phase 1) le fléau tournoie au-dessus de sa tête : trois tours, de plus en plus vite ; le marteau et la meule : il tremble sous le poids */
+  if(att === 'fleau' && etape === 'elan' && k > .2 && k < .82){ var uf = (k - .2) / .62; p.aa = 180 + uf * uf * 1080; if(p.bAv) p.bAv[0] += Math.sin(uf * uf * 18.85) * 5; }
+  if((att === 'marteau' || att === 'meule') && etape === 'elan' && k > .4 && k < .82){ p.x += Math.sin(t * 52) * 1.2; p.torse += Math.sin(t * 9) * 1.4; }
   if(att === 'charge' && etape === 'elan'){
     /* il racle le sol avec le pied de derrière, encore et encore ; tout le corps se balance (le taureau va charger) */
     var per = .62, u = ((k * dur) % per) / per, lev = Math.sin(Math.min(1, u * 1.6) * Math.PI);
@@ -435,6 +501,18 @@ function reperes(X, etape, att, k, c){
     if(etape === 'prise' && une(X, 'g2', k, .86)){ C.objet('bouchon', false); bouchon(X); }
     if(etape === 'elan' && une(X, 'g3', k, .12)){ X.glou = -1; flot(X); halo(X, d); }
     if(etape === 'retour' && une(X, 'g4', k, .5)){ C.objet('gourde', 'ceinture'); C.objet('bouchon', true); }
+  }
+  /* ---------- la phase 1 ---------- */
+  if(att === 'fleau' || att === 'marteau' || att === 'meule' || att === 'crochet'){
+    if(etape === 'prise' && une(X, 'w0', k, 0)){ X.cibleX = cibleX(X, Z); alerte(X, '!', '#ff6a5a'); if(att === 'crochet') bruit(X, 'leoFarine', {}, ['vole']); }
+    if(etape === 'prise' && une(X, 'w1', k, att === 'crochet' ? .56 : att === 'meule' ? .34 : .38)){ C.arme(att); bruit(X, 'leoMuscles', {}, null); }
+    if(etape === 'elan' && une(X, 'w2', k, 0)) bruit(X, att === 'fleau' ? 'leoFleau' : att === 'marteau' ? 'leoMarteau' : att === 'meule' ? 'leoMeule' : 'leoCrochet', {cale:d}, null);
+    if(etape === 'elan' && att !== 'meule' && une(X, 'w3', k, att === 'crochet' ? .72 : .84)) vitesse(X);
+    if(etape === 'retour' && une(X, 'w4', k, .55)) C.arme(null);
+  }
+  if(att === 'cape'){
+    if(etape === 'prise' && une(X, 'k0', k, 0)) alerte(X, '!', '#b9a8ff');
+    if(etape === 'elan' && une(X, 'k1', k, 0)) bruit(X, 'leoCape', {cale:d}, ['magie']);
   }
   /* ---------- la phase 3 ---------- */
   if(att === 'poing3' || att === 'rafale' || att === 'attrape'){
@@ -549,6 +627,28 @@ function impact(X, ev, c){
   if(att === 'lancer'){ lancerRat(X, l[0]); C.objet('rat', null); return true; }
   if(att === 'saut'){ finCibleSaut(X); atterrit(X); return true; }
   if(att === 'gourde') return true;                     /* (le soin arrive avec « soin-leo ») */
+  /* ---------- la phase 1 ---------- */
+  if(att === 'fleau' || att === 'marteau'){
+    l.forEach(function(h, i){ var q1 = ctx.hPt(h); setTimeout(function(){ try{ Fx.eclat(q1.x + 24, q1.y - 4, att === 'marteau' ? 280 : 220, 'radial-gradient(closest-side,#fff,rgba(255,225,150,.95) 32%,rgba(255,120,50,.5) 60%,rgba(255,120,50,0))', 380); Fx.onde(q1.x + 10, q1.y + 110, '#d8c8a8', att === 'marteau' ? 300 : 220, 460); }catch(e){} }, i * 70); });
+    var q0 = l[0] ? ctx.hPt(l[0]) : {x:300, y:220};
+    Fx.tremble(10, 300); Fx.mot(q0.x + 40, Math.max(100, q0.y - 120), att === 'marteau' ? 'BONG !' : 'PAF !', 'croc');
+    return true;
+  }
+  if(att === 'meule'){
+    /* la meule quitte ses mains et roule sur les trois héros */
+    C.arme(null);
+    var D1 = LC.DESSINS, m0 = sc(X, 'mainAv', 197, 246), me = el('leo-meule', '<svg viewBox="-78 6 156 150" width="132" height="127" aria-hidden="true" style="overflow:visible">' + LC.DEFS + D1.meule.svg + '</svg>', calque(X));
+    me.style.left = (m0.x - 66) + 'px'; me.style.top = '222px';
+    anim(me, [{transform:'translate(0px,' + (m0.y - 290).toFixed(0) + 'px) rotate(0deg)'}, {transform:'translate(-120px,0px) rotate(-140deg)', offset:.16, easing:'linear'}, {transform:'translate(' + (-m0.x - 160).toFixed(0) + 'px,0px) rotate(-1040deg)'}], {duration:820, easing:'ease-in', fill:'both'});
+    retirer(me, 860); Fx.tremble(8, 300);
+    return true;
+  }
+  if(att === 'crochet'){
+    /* la chaîne file hors du nuage, jusqu'au héros */
+    if(l[0]){ var ch = el('leo-chaine', null, calque(X)), x1 = ctx.hCx(l[0]) + 20, x2 = ctx.leo.ancre('centre').x - 40; ch.style.left = x1 + 'px'; ch.style.width = Math.max(10, x2 - x1) + 'px'; ch.style.top = '214px'; retirer(ch, 380); }
+    return true;
+  }
+  if(att === 'cape') return true;                        /* (les torches s'éteignent : « noir ») */
   /* ---------- la phase 3 ---------- */
   if(att === 'poing3'){
     var h3 = l[0], q3 = h3 ? ctx.hPt(h3) : {x:300, y:220};
@@ -665,6 +765,8 @@ function etoiles(X, duree){
 }
 function coupe(X, ev){
   var ctx = X.ctx, C = corps(X), p = ctx.leo.ancre('haut');
+  /* (phase 1) la lumière du bâton de lune l'éblouit et coupe son attaque : pas de coup de marteau, pas d'étoiles */
+  if(ev.par === 'lune'){ ctx.Fx.mot(p.x, Math.max(100, p.y), 'Ébloui !', 'refus'); ctx.Fx.onde(p.x, p.y + 40, '#eef4ff', 300, 500); X.douleur = 1.1; if(C.arme) C.arme(null); return; }
   bruit(X, 'leoSonne', {}, ['bong']);
   ctx.Fx.mot(p.x, Math.max(100, p.y), 'Coupé !', 'croc'); ctx.Fx.onde(p.x, p.y + 40, '#fff1b8', 240, 500);
   etoiles(X, 1.5);

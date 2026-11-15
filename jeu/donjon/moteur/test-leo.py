@@ -444,12 +444,47 @@ def test_phase3(nav):
     ctx.close()
 
 
+def test_phase1(nav):
+    print('— 15. La phase 1 refaite : l\'homme en cape, le nouveau Léo habillé, ses cinq armes et leurs annonces (15 novembre, Bible §13.47)')
+    ctx, pg, errs = ouvrir(nav, '?leo=1&graine=7')
+    pg.wait_for_timeout(400)
+    e = pg.evaluate("() => { var E = DJ.Leo._E(), C = E.leo.corps; return {neuf:E.leo.nouveau(), cape:C.etat.cape, capuche:C.etat.capuche, tunique:C.etat.tunique, arme:C.etat.arme, visages:[].filter.call(document.querySelectorAll('.lc .lc-p:not(.cache)'), function(x){ return /v-/.test(x.getAttribute('data-n') || ''); }).length, ancien:getComputedStyle(E.leo.ancien.el).display, nom:document.querySelector('#leo-barre em').textContent}; }")
+    verifie(e['neuf'] and e['cape'] and e['capuche'] and e['tunique'] and e['ancien'] == 'none' and e['arme'] is None, f'phase 1 : c\'est le nouveau Léo, en capuche, tunique et cape ; l\'ancien dessin ne sert plus ; aucune arme en main au repos ({e})')
+    verifie(e['nom'] == 'L\'homme en cape', f'il s\'appelle toujours « {e["nom"]} » (son visage reste caché)')
+    pg.evaluate("() => { window.__soin = setInterval(function(){ var E = DJ.Leo._E(); if(!E || !E.c) return; ['sage', 'alchimiste', 'pisteur'].forEach(function(h){ var S = E.c.h[h]; S.pv = S.pvMax; S.sol = false; S.etourdi = 0; S.attrape = false; }); E.c.leo.tenu = null; if(E.c.leo.pv < 9000) E.c.leo.pv = 9000; }, 120); }")
+    vues, armes = {}, {}
+    for nom in ['fleau', 'charge', 'marteau', 'meule', 'crochet', 'cape']:
+        pg.evaluate("(n) => { var c = DJ.Leo._E().c; c.noir = false; document.querySelector('#combat').classList.remove('noir'); window.__k = setInterval(function(){ var e = DJ.Leo._E(); if(e && e.c.leo.etape === 'repos') e.c.leo.k = LeoRegles.L.ORDRE[1].indexOf(n) - 1; }, 40); }", nom)
+        pg.wait_for_function("(n) => { var Z = DJ.Leo._E().c.leo; return Z.att === n && Z.etape === 'elan' && !!document.querySelector('.lp-annonce span'); }", arg=nom, timeout=40000)
+        pg.evaluate("() => clearInterval(window.__k)")
+        vues[nom] = pg.evaluate("() => document.querySelector('.lp-annonce span').textContent")
+        armes[nom] = pg.evaluate("() => DJ.Leo._E().leo.corps.etat.arme")
+        if nom == 'meule':
+            pg.wait_for_function("() => !!document.querySelector('.leo-meule svg')", timeout=8000)
+            verifie(True, 'la meule de paille quitte ses mains et roule sur les héros')
+        if nom == 'crochet':
+            pg.wait_for_function("() => DJ.Leo._E().c.leo.etape === 'tient'", timeout=8000); pg.wait_for_timeout(300)
+            t = pg.evaluate("() => { var a = document.querySelector('.lp-annonce span'); return a ? a.textContent : ''; }")
+            verifie(t == 'IL SERRE', f'le crochet a pris un héros : l\'annonce dit « {t} », et sa jauge court jusqu\'à ce qu\'il l\'écrase')
+            pg.evaluate("() => { var c = DJ.Leo._E().c; c.leo.fin = c.leo.tl + .2; }")
+        pg.wait_for_function("() => { var e = DJ.Leo._E().c.leo.etape; return e === 'retour' || e === 'repos'; }", timeout=20000)
+        pg.evaluate("() => { var E = DJ.Leo._E(), c = E.c; c.leo.nuage = false; c.leo.boum = false; var n = document.querySelector('#leo-nuage'); if(n) n.classList.remove('on'); E.leo.voile(0); }")
+    verifie(len(vues) == 6 and all(len(v.split(' ')) <= 3 for v in vues.values()), f'les six attaques de la phase 1 s\'annoncent, chacune par son nom ({vues})')
+    verifie(armes == {'fleau': 'fleau', 'charge': None, 'marteau': 'marteau', 'meule': 'meule', 'crochet': 'crochet', 'cape': None}, f'on voit dans sa main l\'arme qu\'il a sortie ({armes})')
+    pg.wait_for_function("() => DJ.Leo._E().c.leo.etape === 'repos'", timeout=20000); pg.wait_for_timeout(200)
+    verifie(pg.evaluate("() => DJ.Leo._E().leo.corps.etat.arme") is None, 'l\'attaque finie, il range son arme')
+    pg.screenshot(path=os.path.join(CAP, 'leo-1-neuf.png'))
+    verifie(errs == [], f'aucune erreur {errs[:3]}')
+    ctx.close()
+
+
 with sync_playwright() as p:
     nav = p.chromium.launch()
     seul = os.environ.get('SEUL')
     if not seul: test(nav)
     if not seul or seul == 'adresse': test_adresse(nav)
     if not seul or seul == 'phase3': test_phase3(nav)
+    if not seul or seul == 'phase1': test_phase1(nav)
     nav.close()
 print(f'\n{len(OK)} vérifications réussies' + (f', {len(ERREURS)} échecs' if ERREURS else ' — tout est bon'))
 for e in ERREURS: print('  ✗', e)
