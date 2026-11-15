@@ -115,6 +115,7 @@ function niveau(cle){ return (window.NIVEAUX || {})[cle] || 1; }
 var critique = {v:null, quand:0};
 function versionDe(id, o){
   if(o.version) return o.version;
+  if(PRE.fixeV[id]) return PRE.fixeV[id];                        /* (un combat en temps réel : sa liste de bruitages, fabriquée à l'avance) */
   if(PRE.sfxV[id]) return PRE.sfxV[id];                          /* pendant un combat : la version fabriquée à l'avance pour ce combat */
   if(!o.partie) return tire(CHOIX[id]);
   var maintenant = Date.now();
@@ -130,7 +131,7 @@ function bruitage(id, o){
   if(o.cale != null && fn.moment != null) o.dt = o.cale - fn.moment;     /* on cale l'instant clé du son sur celui de l'animation */
   var t = ctx.currentTime + .02 + Math.max(0, o.dt || 0);
   /* déjà fabriqué à l'avance : on joue l'enregistrement (presque rien à calculer), remis à sa place à gauche ou à droite */
-  var pre = sfxPre && PRE.sfx[cle + (o.partie ? ':' + o.partie : '')];
+  var pre = sfxPre && (PRE.sfx[cle + (o.partie ? ':' + o.partie : '')] || (!o.partie && !o.voix && !o.enrage && !o.un && PRE.fixe[cle]));
   if(pre){
     var src = ctx.createBufferSource(), sortiePre = sfxPre, pan = null; src.buffer = pre.buf;
     if(pre.pan && ctx.createStereoPanner){ pan = ctx.createStereoPanner(); pan.pan.value = pre.pan; pan.connect(sfxPre); sortiePre = pan; }
@@ -258,7 +259,7 @@ function programme(){
      (l'explosion C reste en stéréo : son souffle traverse la salle) ; libérés après le combat.
    - Les rats (leur voix change quand ils sont enragés) restent fabriqués en direct. */
 var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-var PRE = {possible:!!(OAC && window.Moteur && window.MUSIQUES), mus:{}, sfx:{}, sfxV:{}, prochain:{}, duree:{}, attente:{}, file:[], occupe:false, pireTache:0, taches:{}, fait:0};
+var PRE = {possible:!!(OAC && window.Moteur && window.MUSIQUES), mus:{}, sfx:{}, sfxV:{}, fixe:{}, fixeV:{}, fixeJeton:0, prochain:{}, duree:{}, attente:{}, file:[], occupe:false, pireTache:0, taches:{}, fait:0};
 var SR_MUS = 16000, SR_SFX = 32000;
 /* la longueur de chaque boucle (en secondes) : un cycle d'accords ; C : le fondu entre la fin et le début ; lin : fondu droit (musique rythmée) ;
    n0 : on fait commencer la musique à cette mesure, pour que la boucle garde les deux airs de la boîte à musique (exploration B) */
@@ -348,8 +349,10 @@ function rendreMusique(cle){
   });
 }
 /* un bruitage lourd, seul dans son petit rendu : mono (sans placement), sauf l'explosion C ; puis coupé à la fin du son */
-function rendreUnBruitage(id, v, partie, stereo){
-  var cle = id + v, sr = SR_SFX, d = SFX_DUREE[partie || id] || 6, can = stereo ? 2 : 1, off = new OAC(can, Math.ceil(sr * d), sr), Ao;
+/* court : pour les bruitages d'un combat en temps réel — quatre secondes au plus, et la fin de l'écho coupée plus tôt (en dessous
+   de −56 dB, avec un fondu) : trois fois moins de mémoire, pour la même oreille */
+function rendreUnBruitage(id, v, partie, stereo, court){
+  var cle = id + v, sr = SR_SFX, d = court ? Math.min(4, SFX_DUREE[partie || id] || 4) : SFX_DUREE[partie || id] || 6, can = stereo ? 2 : 1, off = new OAC(can, Math.ceil(sr * d), sr), Ao;
   if(!stereo) try{ off.createStereoPanner = null; }catch(e){}            /* mono : la place gauche/droite est remise en le jouant */
   chrono(function(){
     Ao = window.Moteur(off, {horsLigne:true, brut:true, volume:1});
@@ -361,8 +364,9 @@ function rendreUnBruitage(id, v, partie, stereo){
     return chrono(function(){
       var ch = [], c, i, n = x.length, fin = 0;
       for(c = 0; c < can; c++) ch.push(x.getChannelData(c));
-      for(i = n - 1; i > 0 && !fin; i -= 16) for(c = 0; c < can; c++) if(ch[c][i] > 2e-4 || ch[c][i] < -2e-4){ fin = Math.min(n, i + 16); break; }
-      var m = Math.max(1, Math.min(n, fin + Math.floor(sr * .05))), y = off.createBuffer(can, m, sr), fondu = Math.floor(sr * .03);
+      var seuil = court ? 1.6e-3 : 2e-4;
+      for(i = n - 1; i > 0 && !fin; i -= 16) for(c = 0; c < can; c++) if(ch[c][i] > seuil || ch[c][i] < -seuil){ fin = Math.min(n, i + 16); break; }
+      var m = Math.max(1, Math.min(n, fin + Math.floor(sr * (court ? .12 : .05)))), y = off.createBuffer(can, m, sr), fondu = Math.floor(sr * (court ? .14 : .03));
       for(c = 0; c < can; c++){ var dd = y.getChannelData(c), src = ch[c]; dd.set(src.subarray(0, m)); for(i = Math.max(0, m - fondu); i < m; i++) dd[i] *= (m - i) / fondu; }
       return y;
     }, 'decoupe');
@@ -387,6 +391,32 @@ function rendreBruitages(){
     });
   }, Promise.resolve()).then(function(){ return true; });
 }
+/* LES BRUITAGES D'UN COMBAT EN TEMPS RÉEL, FABRIQUÉS À L'AVANCE (15 novembre, 13 h 54 — Romain : « ça rame à mort » ; RAPIDITE.md, R16).
+   Contre Léo, un son fabriqué en direct coûte au fil principal au pire moment (seize coups de poing d'affilée, pendant qu'on
+   pianote). Son.preparerBruits(['leoPoing', …]) les enregistre un par un pendant l'écran de passage et le début du combat (une
+   version tirée au sort par son, pour ce combat) ; bruitage() joue ensuite l'enregistrement. Un son pas encore prêt est fabriqué
+   en direct, comme avant. Son.oublierBruits() libère tout à la fin du combat. (Rangés à part de PRE.sfx, que la fin d'un combat
+   ordinaire vide.) */
+function preparerBruits(ids, o){
+  if(!PRE.possible || !window.BRUITAGES) return Promise.resolve(0);
+  var jeton = ++PRE.fixeJeton, n = 0;
+  /* o.seuls : on ne garde que cette liste (une nouvelle phase du combat : les sons de la phase d'avant libèrent leur mémoire) */
+  if(o && o.seuls) Object.keys(PRE.fixeV).forEach(function(id){ if(ids.indexOf(id) < 0){ delete PRE.fixe[id + PRE.fixeV[id]]; delete PRE.fixeV[id]; } });
+  PRE.fixeEnCours = true;
+  return (ids || []).reduce(function(p, id){
+    return p.then(function(){
+      if(jeton !== PRE.fixeJeton || !CHOIX[id] || !CHOIX[id].length) return;
+      var v = PRE.fixeV[id] || tire(CHOIX[id]), cle = id + v;
+      if(!window.BRUITAGES[cle] || PRE.fixe[cle]) return;
+      return rendreUnBruitage(id, v, null, false, true).then(function(y){
+        if(jeton !== PRE.fixeJeton) return;
+        PRE.fixeV[id] = v; PRE.fixe[cle] = {buf:y, pan:0}; n++;
+        return new Promise(function(ok){ setTimeout(ok, 30); });           /* (on laisse respirer la page entre deux sons) */
+      }, function(){});
+    });
+  }, Promise.resolve()).then(function(){ if(jeton === PRE.fixeJeton){ PRE.fixeEnCours = false; window.Moteur.oublier(SR_SFX); } return n; });
+}
+function oublierBruits(){ PRE.fixeJeton++; PRE.fixe = {}; PRE.fixeV = {}; PRE.fixeEnCours = false; }
 /* la file d'attente : une chose à la fois, la plus urgente d'abord */
 PRE.demander = function(cle, urgent){
   var f = famille(cle);
@@ -427,6 +457,7 @@ PRE.memoire = function(){
   var o = 0;
   Object.keys(PRE.mus).forEach(function(k){ o += PRE.mus[k].buf.length * PRE.mus[k].buf.numberOfChannels * 4; });
   Object.keys(PRE.sfx).forEach(function(k){ o += PRE.sfx[k].buf.length * PRE.sfx[k].buf.numberOfChannels * 4; });
+  Object.keys(PRE.fixe).forEach(function(k){ o += PRE.fixe[k].buf.length * PRE.fixe[k].buf.numberOfChannels * 4; });
   return Math.round(o / 1e5) / 10;
 };
 /* pour les mesures : fabriquer les trois musiques et les bruitages lourds, et dire quand c'est fini */
@@ -770,6 +801,8 @@ S.Son = {
   musiqueDesQuePrete:musiqueDesQuePrete,
   combat:enCombat,             /* le donjon : un combat commence (true) ou finit (false) — les bruitages lourds sont fabriqués, puis libérés */
   preparer:preparer,
+  preparerBruits:preparerBruits, oublierBruits:oublierBruits, bruitsPrets:function(){ return Object.keys(PRE.fixe).length; }, bruitsEnCours:function(){ return !!PRE.fixeEnCours; },
+  bruitsListe:function(){ return Object.keys(PRE.fixe).map(function(k){ return [k, Math.round(PRE.fixe[k].buf.duration * 100) / 100]; }); },
   volume:volume,
   precalcul:{tout:function(){ return PRE.tout(); }, etat:function(){ return PRE.etat(); }, memoire:function(){ return PRE.memoire(); }},
   baisser:baisser,

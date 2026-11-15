@@ -61,10 +61,21 @@ function eclat(x, y, taille, fond, ms){
   L.fx.appendChild(c);
   anime(c, [{transform:'translate(-50%,-50%) scale(.2)', opacity:1}, {transform:'translate(-50%,-50%) scale(1.6)', opacity:0}], {duration:ms || 500, easing:'ease-out'}).then(function(){ c.remove(); });
 }
+/* (15 novembre, 13 h 54 — RAPIDITE.md, R17) la secousse fait bouger TOUTE la scène (des centaines de pièces). Deux précautions :
+   - chaque image a la même forme (un déplacement puis une rotation), la dernière aussi (plus de « none ») : c'est ce qu'il faut
+     pour que la carte graphique la joue seule, sur Safari comme ailleurs ;
+   - dans un combat en temps réel (S.tempsReel : Léo), jamais deux secousses à la fois ni coup sur coup, jamais plus de 300 ms :
+     une rafale de seize coups ne secoue pas seize fois l'écran, un souffle de feu ne le secoue pas deux secondes. */
 function tremble(force, ms, delai){
-  var s = L.secousse, n = Math.round((ms || 400) / 40), images = [];
-  for(var k = 0; k <= n; k++){ var f = force * (1 - k / n); images.push({transform:k === n ? 'none' : 'translate(' + hasard(-f, f).toFixed(1) + 'px,' + hasard(-f * .7, f * .7).toFixed(1) + 'px) rotate(' + hasard(-f * .05, f * .05).toFixed(2) + 'deg)'}); }
-  return anime(s, images, {duration:ms || 400, delay:delai || 0});
+  ms = ms || 400;
+  if(S.tempsReel){
+    var m = Date.now() + (delai || 0);
+    if(m < (tremble.jusque || 0)) return Promise.resolve();
+    ms = Math.min(ms, 300); force = Math.min(force, 10); tremble.jusque = m + ms + 350;
+  }
+  var s = L.secousse, n = Math.round(ms / 40), images = [];
+  for(var k = 0; k <= n; k++){ var f = k === n ? 0 : force * (1 - k / n); images.push({transform:'translate(' + hasard(-f, f).toFixed(1) + 'px,' + hasard(-f * .7, f * .7).toFixed(1) + 'px) rotate(' + hasard(-f * .05, f * .05).toFixed(2) + 'deg)'}); }
+  return anime(s, images, {duration:ms, delay:delai || 0});
 }
 function onde(x, y, coul, taille, ms){
   var o = el('div', 'onde-fx'); o.style.cssText = 'left:' + x + 'px;top:' + y + 'px;width:' + taille + 'px;height:' + taille + 'px;margin:' + (-taille / 2) + 'px 0 0 ' + (-taille / 2) + 'px;border-color:' + coul + ';box-shadow:0 0 18px ' + coul + ',inset 0 0 18px ' + coul;

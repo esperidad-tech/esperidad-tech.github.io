@@ -769,7 +769,7 @@ function lancerLeo(){
   if(X.sansCombat){ DJ.fermer(); Regles.bossBattu(p, 'leo'); garder(); finDonjon(); return Promise.resolve(); }
   DJ.fermer(); quitterCarte(); X.ecran = 'combat';
   jeu.classList.remove('sur-carte'); jeu.innerHTML = '';
-  return DJ.passage(nomLieu('leo'), function(){ return DJ.Leo.preparer(); }).then(function(){ return DJ.Leo.lancer(p, {vite:X.leoVite}); }).then(function(res){
+  return DJ.passage(nomLieu('leo'), function(){ return DJ.Leo.preparer(p); }).then(function(){ return DJ.Leo.lancer(p, {vite:X.leoVite}); }).then(function(res){
     if(res === 'victoire'){ Regles.bossBattu(p, 'leo'); garder(); finDonjon(); return; }
     garder();
     carte({texte:'Léo attend toujours, tout au fond. Ce que vous avez gagné contre lui reste gagné.'});

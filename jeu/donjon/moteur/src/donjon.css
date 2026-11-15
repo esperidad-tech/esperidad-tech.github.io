@@ -365,6 +365,14 @@ i.lp-flam{border-radius:50% 50% 46% 46%/64% 64% 36% 36%;background:radial-gradie
 .lp-annonce b{font-size:25px;font-weight:400}
 .lp-annonce > i{position:absolute;left:10px;right:10px;bottom:5px;height:5px;border-radius:3px;background:rgba(255,255,255,.16);overflow:hidden}
 .lp-annonce u{display:block;width:100%;height:100%;background:#ffb050;transform-origin:0 50%;transform:scaleX(0);will-change:transform;text-decoration:none}
+/* (15 novembre, 13 h 54) l'annonce qui continue pendant l'attaque (le compteur de la rafale, « IL VA FRAPPER ») : en rouge */
+.lp-annonce.coups{border-color:#ff6a5a;color:#fff0e6}.lp-annonce.coups u{background:#ff6a5a}
+.lp-annonce span{display:inline-block;min-width:118px;text-align:center}
+/* l'éclat d'un coup de la rafale : un seul, posé une fois, qui saute près du héros et se rallume (RAPIDITE.md, R18) */
+.lp-eclat-r{position:absolute;left:-55px;top:-55px;width:110px;height:110px;border-radius:50%;background:radial-gradient(closest-side,#fff,rgba(255,225,150,.9) 40%,rgba(255,140,50,0));pointer-events:none;z-index:45;opacity:0;will-change:transform,opacity}
+/* (R10 : au repos, aucune boucle — la flamme et les gouttes posées sur un héros ne bougent plus pendant le combat de Léo ; les
+   chiffres qui s'envolent disent déjà que ça brûle ou que ça saigne) */
+#combat.leo .l-feu, #combat.leo .l-gouttes, #combat.leo .l-gouttes *{animation:none}
 .lp-annonce.vert{border-color:#7dff6a;color:#dcffd0}.lp-annonce.vert u{background:#7dff6a}
 .lp-annonce.rat{border-color:#d8c8a8;color:#f3ead8}.lp-annonce.rat u{background:#d8c8a8}
 /* le saut : la cible au sol, là où il va retomber (l'anneau se resserre jusqu'au choc) */
