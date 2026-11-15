@@ -1,6 +1,12 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 13 h 18)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 14 h 20)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 15 novembre (14 h 09) : LES TRACES DE MOUSTACHE SONT REFAITES (Bible §13.44) — EN LIGNE (commit 7303221 du site, version 20261115-1309 ; publication de GitHub vérifiée)
+
+- Le mini-jeu du Pisteur chez Odette (`pistage`) : **une vraie petite ville vue du ciel**, le lait qui sèche, **les flaques, la boue et la farine** qui changent la couleur des traces, **les passages couverts** (plus une trace dessous), **les obstacles** par-dessus lesquels les chats sautent, **les traces du Pisteur** quand ses semelles sont sales, **deux ou trois chats qui passent** en courant, **Moustache qui miaule devant la grille** puis file entre les barreaux, et **l'éclairage du moment** (matin, après-midi, nuit).
+- **Rien n'a changé dans l'histoire, les dialogues, les codes ni les niveaux** (enfant 3, adulte 6). Le mini-jeu reste « on recommence autant qu'on veut ».
+- **Pour la conception** : Romain dit que ce mini-jeu « reviendra souvent ». Il sait recevoir d'autres départs, d'autres chats ou d'autres arrivées ; tout se règle dans `reglages` et `creerMonde` de `jeu/src/mj-pistage.js`. Dix décisions de Claude à faire valider (Bible §13.44).
 
 ## Nouveau depuis le 15 novembre (13 h 18) : POUR ESSAYER LE COMBAT DE LÉO SANS REFAIRE LE DONJON (Bible §13.43) — EN LIGNE (15 novembre, 13 h 18 ; commit 7a7274f du site ; le donjon : version « 15/11 à 13 h 17 » (en bas de « 🎒 Objets ») ; publication de GitHub vérifiée)
 
