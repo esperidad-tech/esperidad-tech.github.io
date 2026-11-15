@@ -77,7 +77,12 @@ L.ORDRE = {
   1:['fleau', 'charge', 'marteau', 'meule', 'crochet', 'cape'],
   /* (Romain, 15 novembre : « enlève une attaque, il y a une attaque qui sert à rien, qu'on peut pas contrer : c'est le coup de poing ») */
   2:['sifflet', 'faux', 'charge', 'lancer', 'gourde', 'saut'],
-  3:['poing3', 'rafale', 'charge', 'hurlement', 'attrape', 'souffle']
+  /* (Romain, 15 novembre, 17 h 26 : « quand il attrape quelqu'un, il faut pas que ça enchaîne avec le souffle : ça met les gens à
+     10 % de leur vie, et après, s'il fait le souffle, c'est impossible à remonter […] il faut qu'il enchaîne avec une charge, comme
+     ça on a le temps de réagir ». Une DEUXIÈME charge après « il attrape », le souffle ensuite. La charge d'après la rafale reste :
+     c'est elle qui laisse le temps de remonter le héros qui sort de la rafale — mesuré (/tmp, deux robots, 20 combats) : quand le
+     souffle tombe, le héros le plus bas a 100 % de sa vie (40 % avant) ; un simple échange charge ↔ souffle donnait 64 à 81 %.) */
+  3:['poing3', 'rafale', 'charge', 'hurlement', 'attrape', 'charge', 'souffle']
 };
 /* prise : il prend son arme (on la voit) ; elan : il arme son coup ; retour : il revient en garde. cibles : 'un' | 'deux' | 'tous'.
    rapide : presque aucun élan, rien ne l'arrête. part : la part de la vie MAX du héros que le coup enlève. */

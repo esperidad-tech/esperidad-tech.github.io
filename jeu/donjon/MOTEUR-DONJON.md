@@ -467,4 +467,4 @@ Romain a joué l'enquête 3 avec sa famille, donjon compris, et a dicté ses cor
 - **`leo-corps.js`** : une arme = une pièce `{os:'arme', arme:'<nom>'}` (repère : la main ; le manche descend), montrée par `C.arme(nom)` ; sa matrice `M.arme = enMain(0, 14, p.aa, T(0, -p.ag))`. Pour en ajouter une : la pièce, son nom dans `ORDRE`, et c'est tout. Sous la tunique, `torse`, `bras*`, `avant*` sont cachés (`_maj`).
 - **`leo-p2.js`** : `PISTES.<attaque>.tient` et `.farine` (le crochet), l'étape `noirci` (après le BOUM) = la pose « sonné » ; `ANNONCES_SUITE.tient`. **Rien ne doit monter au-dessus de la tête de Léo** (le haut de l'écran est couvert).
 - **Regarder une attaque** : `…/donjon/?leo=1`, puis dans la console `DJ.Leo._E().c.leo.k = LeoRegles.L.ORDRE[1].indexOf('marteau') - 1`.
-
+- **17 h 26, l'ordre de la phase 3** (Bible §13.46, retouche) : `L.ORDRE[3] = ['poing3', 'rafale', 'charge', 'hurlement', 'attrape', 'charge', 'souffle']` — **une attaque peut revenir deux fois dans un tour** (rien ne suppose le contraire : `_leoChoisir`, `_suite`, l'œil) ; les essais qui sautent à une attaque prennent la première (`indexOf`).
