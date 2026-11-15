@@ -94,7 +94,8 @@ def test(nav):
 
     print('— 3. La victoire : Léo parle (le film)')
     film(pg, 'finLeo')
-    pg.evaluate("() => { DJ.Leo._E().c.leo.pv = 5; }")
+    # (phase 3 : seul le saignement de la faux le blesse — Bible §13.42)
+    pg.evaluate("() => { var z = DJ.Leo._E().c.leo; z.pv = 5; z.saigne = 1; z.saigneT = 0; }")
     attendre_film(pg)
     verifie(not pg.query_selector('[data-cine=passer]'), 'la première fois, pas de « Passer » (c\'est l\'histoire)')
     st = pg.evaluate("() => CINE_INFOS.finLeo.sousTitres.map(function(s){ return s[2]; }).join(' ')")

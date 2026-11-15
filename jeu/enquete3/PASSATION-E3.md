@@ -1,8 +1,8 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 14 h 20)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 15 h 05)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
-## Nouveau depuis le 15 novembre (HEURE_CINE) : LES CINÉMATIQUES DE LÉO EN VRAIS PETITS FILMS (Bible §13.45) — EN LIGNE (15 novembre, HEURE_CINE ; commit SITE_CINE du site ; publication de GitHub vérifiée)
+## Nouveau depuis le 15 novembre (15 h 00) : LES CINÉMATIQUES DE LÉO EN VRAIS PETITS FILMS (Bible §13.45) — EN LIGNE (15 novembre, 15 h 00 ; commit 0057583 du site, version 20261115-1359 ; le donjon : version « 15/11 à 14 h 58 » ; publication de GitHub vérifiée)
 
 - **À lire : Bible §13.45.** Romain (12 h 40) voulait des « cinématiques de film » : 21:9, bandes noires, la caméra à la place des héros, Léo de face, le fond flou, des torches. **Quatre petites vidéos** : la fin de la phase 1, la fin de la phase 2 (la potion et la transformation), et **la fin en deux morceaux** : Léo qui parle (dans le donjon), puis, après les accusations, le maire qui descend avec Silas et six gardes (dans le jeu, à la place des quatre images de la fin), puis la prison.
 - **Pour la conception** : **les textes sont exactement ceux validés le 13 novembre** (§13.33 : les cinq phrases de Léo ; le maire et Silas), en sous-titres avec 🔊 ; personne n'a de voix. **L'ordre de la fin ne change pas** (Léo parle → les accusations → le maire → la prison) : c'est pour ça que la fin est en deux films (à faire valider par Romain). **La potion de force d'Iris est verte** dans le film (le vert des veines de la phase 3) ; Léo la sort de son sac à rats. **Silas descend avec le maire**, et le maire retire **un seul gant** (le droit, celui de la bague à tête de corbeau).

@@ -1,0 +1,97 @@
+{
+ "nom": "Fin de la phase 2",
+ "duree": 14.2,
+ "sons": [
+  [
+   0.1,
+   "cineSouffle"
+  ],
+  [
+   1.6,
+   "cineSouffle"
+  ],
+  [
+   2.45,
+   "cineEssuie"
+  ],
+  [
+   6.8,
+   "leoSac"
+  ],
+  [
+   8.120000000000001,
+   "leoBouchon"
+  ],
+  [
+   8.35,
+   "cineCrache"
+  ],
+  [
+   8.85,
+   "leoGlou"
+  ],
+  [
+   9.15,
+   "leoGlou"
+  ],
+  [
+   9.45,
+   "leoGlou"
+  ],
+  [
+   10.1,
+   "leoBrise"
+  ],
+  [
+   10.25,
+   "cineCoeur"
+  ],
+  [
+   10.45,
+   "leoPotion"
+  ],
+  [
+   10.9,
+   "cineCoeur"
+  ],
+  [
+   11,
+   "cineMontee"
+  ],
+  [
+   11.45,
+   "cineCoeur"
+  ],
+  [
+   11.98,
+   "leoMuscles"
+  ],
+  [
+   12.45,
+   "leoHurlement"
+  ],
+  [
+   12.5,
+   "cineOnde"
+  ],
+  [
+   12.95,
+   "cineOnde"
+  ]
+ ],
+ "sousTitres": [
+  [
+   3.55,
+   4.75,
+   "Très bien…",
+   "Léo"
+  ],
+  [
+   4.95,
+   6.35,
+   "Je n'ai pas le choix.",
+   "Léo"
+  ]
+ ],
+ "fps": 30
+}

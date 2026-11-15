@@ -1,0 +1,64 @@
+{
+ "nom": "Fin de la phase 1",
+ "duree": 13.6,
+ "sons": [
+  [
+   0.62,
+   "cineOutils"
+  ],
+  [
+   0.78,
+   "cineOutils"
+  ],
+  [
+   1.38,
+   "leoChute"
+  ],
+  [
+   1.45,
+   "cineOutils"
+  ],
+  [
+   1.9,
+   "cineSouffle"
+  ],
+  [
+   3.4,
+   "cineGrogne"
+  ],
+  [
+   4.3,
+   "cinePas"
+  ],
+  [
+   5.48,
+   "leoDechire"
+  ],
+  [
+   5.6,
+   "cineCape"
+  ],
+  [
+   7.15,
+   "leoHurlement"
+  ],
+  [
+   9.95,
+   "leoMuscles"
+  ],
+  [
+   10.05,
+   "cineOnde"
+  ],
+  [
+   11.45,
+   "cineGrogne"
+  ],
+  [
+   11.5,
+   "cineOnde"
+  ]
+ ],
+ "sousTitres": [],
+ "fps": 30
+}

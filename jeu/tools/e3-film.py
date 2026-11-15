@@ -47,7 +47,8 @@ with sync_playwright() as p:
     pg = debut(b, 'Sage', 'sage')
     fin(pg)
     pg.wait_for_selector('.cine-ecran video', timeout=15000)
-    pg.wait_for_function("() => { var v = document.querySelector('.cine-ecran video'); return v && v.currentTime > .5; }", timeout=15000)
+    # (on laisse passer les premiers pas — l'écho à 0,9 s, la lanterne, le premier pas dans l'escalier à 2,7 s — avant de sauter plus loin)
+    pg.wait_for_function("() => { var v = document.querySelector('.cine-ecran video'); return v && v.currentTime > 3.0; }", timeout=20000)
     r = pg.evaluate("""() => { var c = document.querySelector('.cine-cadre').getBoundingClientRect();
       return {ratio:c.width / c.height, haut:c.top, bas:innerHeight - c.bottom, passer:!!document.querySelector('[data-cine=passer]'), slide:M.P().fin.slide}; }""")
     verifier(abs(r['ratio'] - 1440 / 616) < .02 and r['haut'] > 60 and abs(r['haut'] - r['bas']) < 2 and r['passer'] and r['slide'] == 0, f'la fin commence : le film, en 21:9 entre deux bandes noires, « Passer ➜ » ({r})')
