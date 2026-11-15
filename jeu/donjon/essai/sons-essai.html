@@ -1402,7 +1402,8 @@ function Moteur(ctx, opt){
     var fin = t + env[env.length - 1][0], dur = fin - t;
     if(o.vague) x.setPeriodicWave(o.vague); else x.type = o.type || 'sine';
     if(o.courbe) x.frequency.setValueCurveAtTime(o.courbe, t, o.cd || dur);
-    else { x.frequency.setValueAtTime(o.f, t); if(o.pts) o.pts.forEach(function(p){ x.frequency.exponentialRampToValueAtTime(p[1], t + p[0]); }); if(o.f2) x.frequency.exponentialRampToValueAtTime(o.f2, t + (o.gl || dur)); }
+    /* (15 novembre : un son fabriqué à l'avance l'est à 32 000 échantillons par seconde — une note au-dessus de la moitié n'y existe pas) */
+    else { x.frequency.setValueAtTime(Math.min(o.f, ctx.sampleRate / 2 - 60), t); if(o.pts) o.pts.forEach(function(p){ x.frequency.exponentialRampToValueAtTime(p[1], t + p[0]); }); if(o.f2) x.frequency.exponentialRampToValueAtTime(o.f2, t + (o.gl || dur)); }
     if(o.det) x.detune.value = o.det;
     if(o.vib){
       var v = ctx.createOscillator(), vg = g(0); v.frequency.value = o.vib[0];
