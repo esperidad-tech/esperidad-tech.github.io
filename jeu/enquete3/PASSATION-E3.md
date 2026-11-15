@@ -1,6 +1,14 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 15 h 05)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 15 h 30)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 15 novembre (après-midi) : LA PHASE 3 DE LÉO NE PARDONNE PLUS (Bible §13.46) — EN LIGNE (15 novembre, 15 h 28 ; commit c247611 du site ; le donjon : version « 15/11 à 15 h 26 » (en bas de « 🎒 Objets ») ; publication de GitHub vérifiée)
+
+- **À lire : Bible §13.46.** Romain a essayé la phase 3 : elle ramait pendant la rafale et les flammes, et « il suffit d'appuyer sur la gourde et le bouclier ». Les deux sont repris.
+- **Ce qui change pour la conception (phase 3)** : **chaque attaque a sa parade, et une seule** — la charge : l'huile (sinon le héros percuté tombe) ; la rafale (16 coups) : le bouclier jaune dès l'annonce PUIS la gourde juste après le premier coup ; le cri : le marteau (sinon tout le monde est étourdi 7 secondes) ; « il attrape » : avoir plus de la moitié de sa vie (sinon les deux héros tombent), puis soigner vite ; le feu : un soin, tout de suite (15 par seconde). **Le marteau est de nouveau dans la main du Pisteur en phase 3.**
+- **Phase 2** : un rat cuirassé demande deux coups de fléau. **Tout le donjon** : le bouclier jaune est plus long à poser.
+- **⚠️ Les indices de Farinel et d'Iris** ne disent rien de tout ça (le marteau contre le cri, l'huile contre la charge en phase 3, la gourde pendant la rafale). Une équipe qui arrive en phase 3 sans le savoir perd plusieurs fois avant de comprendre : c'est voulu par Romain (« si on est arrivé en phase 3, on a commencé à comprendre »), mais à revoir avec lui s'il veut un mot du Barde.
+- **Rien n'a changé dans l'histoire, les dialogues ni les codes.**
 
 ## Nouveau depuis le 15 novembre (15 h 00) : LES CINÉMATIQUES DE LÉO EN VRAIS PETITS FILMS (Bible §13.45) — EN LIGNE (15 novembre, 15 h 00 ; commit 0057583 du site, version 20261115-1359 ; le donjon : version « 15/11 à 14 h 58 » ; publication de GitHub vérifiée)
 
