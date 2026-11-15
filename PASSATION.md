@@ -1,4 +1,4 @@
-# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 15 novembre, 17 h 35)
+# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 15 novembre, 17 h 40)
 
 À lire en entier par la nouvelle conversation avant de toucher à quoi que ce soit.
 
