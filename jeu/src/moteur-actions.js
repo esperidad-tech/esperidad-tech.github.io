@@ -1584,6 +1584,25 @@ A.stratege = function(){
   P.usages.stratege = 1; M.son('magie'); M.sauver(); M.render();
 };
 A['fin-sage'] = function(el){ commencerFin((+el.dataset.n || 0) + 10 * M.finVariante()); };
+/* la cinématique de la fin (un film : jeu/cine, cine-lecteur.js) ; vue, on saute les images qu'elle remplace */
+M.jouerFilmFin = function(){
+  var P = M.P(), E = M.E();
+  if(UI.film || !P || !P.fin || !E || !E.fin.film || P.fin.filmFait) return;
+  var nom = E.fin.film.nom;
+  if(!window.CineLecteur || !window.CINE_INFOS || !window.CINE_INFOS[nom]){ P.fin.filmFait = true; M.sauver(); return; }
+  UI.film = true;
+  var QUI = {'Le maire':'grosbec', 'Silas':'silas', 'Léo':'leo'};
+  window.CineLecteur.jouer({url:'cine/' + nom + '.mp4', infos:window.CINE_INFOS[nom], passer:true, attente:9000,
+    son:window.CineLecteur.sonJeu, lire:function(t, qui){ M.lire(t, {qui:QUI[qui] || null}); }, parle:function(){ return !!M.parle; }, taire:function(){ try{ M.stop(); }catch(e){} }
+  }).then(function(r){
+    UI.film = false;
+    var P2 = M.P(), E2 = M.E();
+    if(!P2 || !P2.fin) return;
+    P2.fin.filmFait = true;
+    if(r !== 'echec' && P2.fin.slide < E2.fin.film.remplace) P2.fin.slide = E2.fin.film.remplace;
+    M.sauver(); M.render();
+  });
+};
 A['fin-suite'] = function(){
   var P = M.P(), E = M.E();
   if(!P || !E || !P.fin){ UI.ecran = 'accueil'; M.render(); return; }

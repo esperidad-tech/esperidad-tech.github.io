@@ -1147,6 +1147,10 @@ E[3] = {
       fin:'Ton gâteau part sur la grande table de la fête.'};
   }),
   fin:{
+    /* (15 novembre, Bible §13.45) la cinématique du maire : un film (jeu/cine, « finMaire ») joué tout seul au début de la fin, sur
+       chaque tablette ; s'il est vu, on saute les quatre images qu'il remplace (jusqu'au cachot). S'il n'arrive pas (pas d'internet),
+       les quatre images restent. */
+    film:{nom:'finMaire', remplace:4},
     slides:[
       'Dans la crypte des Fondateurs, des pas descendent l\'escalier. Des lanternes : c\'est le maire, avec Silas et deux gardes.',
       'Le maire lève sa lanterne. « Que s\'est-il passé ici ? Léo ! Qu\'avez-vous fait à Léo ? »',
