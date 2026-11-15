@@ -1,4 +1,4 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 17 h 40)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 18 h 10)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
@@ -35,6 +35,7 @@
 - **Pour la conception** : **les textes sont exactement ceux validés le 13 novembre** (§13.33 : les cinq phrases de Léo ; le maire et Silas), en sous-titres avec 🔊 ; personne n'a de voix. **L'ordre de la fin ne change pas** (Léo parle → les accusations → le maire → la prison) : c'est pour ça que la fin est en deux films (à faire valider par Romain). **La potion de force d'Iris est verte** dans le film (le vert des veines de la phase 3) ; Léo la sort de son sac à rats. **Silas descend avec le maire**, et le maire retire **un seul gant** (le droit, celui de la bague à tête de corbeau).
 - **Rien n'a changé dans l'histoire, les dialogues ni les codes.**
 - **17 h 37, en ligne (commit 0bd26af du site) : le son des films, deuxième tour** (Romain, 16 h 57 ; Bible §13.45) : une musique par film, le cri de Léo fabriqué (trois versions dans l'Atelier), les sous-titres plus gros qui s'écrivent petit à petit, une bande-son cuite d'avance par film. Toujours les mêmes textes ; personne n'a de voix (le cri n'est pas une parole).
+- **18 h 06, en ligne (commit 333a182 du site) : Léo qui boit la potion, refait** (Romain, 17 h 34) : un gros plan sur sa tête ; il arrache le bouchon avec les dents, boit trois gorgées qui descendent en lueur verte dans sa gorge. Rien ne change dans l'histoire ni les codes.
 
 ## Nouveau depuis le 15 novembre (14 h 09) : LES TRACES DE MOUSTACHE SONT REFAITES (Bible §13.44) — EN LIGNE (commit 7303221 du site, version 20261115-1309 ; publication de GitHub vérifiée)
 

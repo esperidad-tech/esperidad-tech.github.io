@@ -7,6 +7,7 @@
 'use strict';
 var U = window.CU, FX = window.CFX, AC = window.Accessoires;
 function PT_piece(m, svg){ return Pantin.piece(m, svg); }
+function M_pt(m, x, y){ return Pantin.M.pt(m, x, y); }
 
 /* ---------------------------------------------------------------- outils communs */
 /* une caméra par plans : [[t début, [[t, {cam}, courbe], …]], …] ; on coupe d'un plan à l'autre (pas de glissement) */
@@ -23,7 +24,7 @@ function fondu(t, debut, fin, total){
 }
 
 /* ---------------------------------------------------------------- LÉO : les poses de base */
-var V0 = {sourcils:{f:.9, l:0, t:0}, yeux:{o:1, lx:0, ly:0, cl:0}, bouche:{o:0, w:0, c:-.3, d:0, cri:0}, nez:0, veines:0, sueur:0, rouge:0, tSueur:0};
+var V0 = {sourcils:{f:.9, l:0, t:0}, yeux:{o:1, lx:0, ly:0, cl:0}, bouche:{o:0, w:0, c:-.3, d:0, cri:0}, nez:0, veines:0, sueur:0, rouge:0, tSueur:0, leve:0};
 var BASE = {w:[0, -270], r:0, t:0, tk:1, souffle:0, fl:0, balance:0,
   tete:{r:0, k:0, ht:0, x:0, y:0},
   bD:{a:14, c:-18, l1:1, l2:1, ik:0, cible:[90, -260], devant:false, fl:1}, bG:{a:14, c:-18, l1:1, l2:1, ik:0, cible:[-90, -260], devant:false, fl:1},
@@ -170,7 +171,11 @@ CINE.films.a12 = {
    s'allument et courent sur lui, ses épaules gonflent ; il se redresse, plus grand, les yeux qui luisent, et hurle (trois ondes vertes).
    C'est le Léo de la phase 3 dessiné par l'autre conversation (Bible §13.42). Environ 14,2 secondes. */
 (function(){
-var T = 14.2, SORT = 7.0, BOUCHON = 8.15, CRACHE = 8.35, JETTE = 9.85, CRI = 12.5;
+/* GP → FINGP : LE GROS PLAN où il boit (Romain, 15 novembre, 17 h 34 : le bras « animé bizarrement », « qu'on voie le liquide
+   qui tombe dans sa gorge ») — de face, un bras qui porte une fiole à la bouche vient droit vers nous : le pantin ne sait pas
+   le montrer. On cadre donc la tête et le cou, et le film dessine lui-même l'avant-bras, qui entre par le bas de l'image. */
+var T = 14.2, SORT = 7.0, GP = 7.85, BOUCHON = 8.15, CRACHE = 8.35, FINGP = 9.7, JETTE = 9.85, CRI = 12.5;
+var GLOUS = [8.85, 9.15, 9.45];
 var VB = U.melange(V0, {sueur:1, rouge:.5}, 1);
 var BASE2 = U.melange(BASE, {v:VB}, 1);
 var poseB = U.poses(BASE2, [
@@ -188,13 +193,25 @@ var poseB = U.poses(BASE2, [
   [6.4, {tete:{k:6, r:0, ht:.2}}],
   [6.95, {bD:{ik:1, cible:[88, -244]}, t:-4, tete:{k:10, ht:.35}, v:{yeux:{ly:.9, lx:.5}}}, 'io'],
   [7.15, {bD:{cible:[84, -262]}}, 'io'],
-  [7.7, {bD:{cible:[38, -430], devant:true}, t:0, tete:{k:2, ht:0}, v:{yeux:{lx:.35, ly:.55}, sourcils:{f:.45, l:.25}}}, 'io'],
-  [8.0, {bD:{cible:[14, -466]}, tete:{k:-2}, v:{yeux:{lx:0, ly:0}, bouche:{o:.25, d:.6}}}, 'io'],
-  [BOUCHON, {bD:{cible:[48, -446]}, tete:{k:2, r:4}}, 'o'],
-  [CRACHE, {tete:{r:-12, ht:-.45}, v:{bouche:{o:.35, d:0}}}, 'o'],
-  [8.5, {tete:{r:0, ht:0}, v:{bouche:{o:0}}}, 'io'],
-  [8.75, {bD:{cible:[8, -486]}, tete:{k:-16}, v:{yeux:{o:.25}, bouche:{o:.45}}}, 'io'],
-  [9.6, {tete:{k:-18}}, 'l'],
+  /* il lève la fiole devant lui et la regarde (elle lui éclaire le visage par en dessous) */
+  [7.6, {bD:{cible:[62, -390]}, t:0, tete:{k:7, ht:.12}, v:{yeux:{lx:.45, ly:.8}, sourcils:{f:.45, l:.25}}}, 'io'],
+  [GP, {bD:{cible:[58, -398]}, tete:{k:5, ht:.08}}, 'l'],
+  /* le gros plan : ce bras-là est dessiné par le film (cacheBras) ; le pantin le laisse pendre, hors de l'image */
+  [GP + .01, {bD:{ik:0, a:14, c:-18, devant:false}, tete:{k:0, ht:0}, v:{yeux:{lx:0, ly:.35, o:.95}, sourcils:{f:.7, l:0}, bouche:{o:.08}}}, 'pas'],
+  /* il mord le bouchon… */
+  [8.03, {tete:{k:-3}, v:{yeux:{ly:.5}, bouche:{o:.22, d:.8}}}, 'io'],
+  /* … l'arrache d'un coup de tête… */
+  [BOUCHON, {tete:{k:1, r:6}, v:{bouche:{o:.18, d:1}, sourcils:{f:1}}}, 'o'],
+  /* … et le recrache sur le côté */
+  [CRACHE, {tete:{r:-11, ht:-.45}, v:{bouche:{o:.38, d:0, w:.3}}}, 'o'],
+  [8.52, {tete:{r:0, ht:0, k:0}, v:{bouche:{o:.08, w:0}, yeux:{ly:.15}}}, 'io'],
+  /* il renverse la tête et boit d'un trait, les yeux fermés */
+  [8.82, {tete:{k:-16, y:-12}, v:{leve:1, yeux:{o:.1, ly:0}, bouche:{o:.4}, sourcils:{f:.35, l:.3}}}, 'io'],
+  [9.5, {tete:{k:-18, y:-13}}, 'l'],
+  /* il baisse la fiole : « Ah… » */
+  [FINGP - .01, {tete:{k:-5, y:-4}, v:{leve:.3, yeux:{o:.75}, bouche:{o:.36}, sourcils:{f:.8, l:0}}}, 'io'],
+  /* plan large : le bras revient au pantin, il jette la fiole */
+  [FINGP, {bD:{ik:1, cible:[72, -404], devant:false}, tete:{k:0, y:0}, v:{leve:0, yeux:{o:1}, bouche:{o:.3}, sourcils:{f:.9}}}, 'pas'],
   [JETTE, {bD:{ik:1, cible:[280, -430], devant:false}, tete:{k:0}, v:{yeux:{o:1}, bouche:{o:.1}}}, 'o'],
   [10.0, {bD:{ik:0, a:30, c:-24}}, 'io'],
   /* elle agit : les mains sur la poitrine, les yeux grands ouverts */
@@ -219,12 +236,66 @@ function pose(t){
   if(t > 10.3) tremble(p, t, t < 12.2 ? U.clamp((t - 10.3) * 1.6, 0, 1.6) : U.lerp(1.6, .9, U.clamp((t - 12.2) / .6, 0, 1)));
   bouchePar(p, t, [[3.6, 4.6], [5.0, 6.15]]);
   if(t < 3.0) p.v.bouche.o = .3 + .25 * (.5 + .5 * Math.sin(t * Math.PI * 2 * 1.05));
-  p.v.yeux.cl = t > 8.6 && t < 9.7 ? 0 : cligne(t, 1.3);
+  p.v.yeux.cl = t > 8.6 && t < FINGP ? 0 : cligne(t, 1.3);
   p.v.tSueur = t;
   return p;
 }
-var vide = U.piste([[8.7, 0], [9.6, 1, 'l']]);
+var vide = U.piste([[8.72, 0], [9.5, 1, 'l']]);
 var lueurP = U.piste([[SORT, .3], [7.7, 1, 'o'], [9.6, .8], [JETTE, .6]]);
+
+/* ---- le gros plan : la fiole, la main, l'avant-bras (dans le repère de Léo) ---- */
+/* Il tient la fiole en travers du poing (comme dans les plans larges : son axe est en travers de l'avant-bras), COUCHÉE,
+   le goulot vers sa bouche : il mord le bouchon, l'arrache en tirant la fiole sur le côté, le crache ; puis il lève le fond
+   et boit d'un trait. L'avant-bras monte d'en bas (le coude est hors de l'image). */
+var ECH_F = .95, ECH_B = 1.08;
+var penche = U.piste([[8.55, -92], [8.84, -110, 'io'], [9.5, -121, 'l'], [FINGP, -98, 'io']]);   /* −90 : couchée, le goulot à gauche */
+var entre = U.piste([[GP, 1], [8.03, 0, 'o']]);                                   /* elle monte jusqu'aux dents */
+var tire = U.piste([[BOUCHON, 0], [BOUCHON + .09, 1, 'o'], [8.47, 1], [8.62, 0, 'io']]);   /* il tire, puis la ramène aux lèvres */
+var baisse = U.piste([[9.5, 0], [FINGP, 1, 'i2']]);                              /* il la baisse */
+function rot(x, y, a){ var r = a * Math.PI / 180, c = Math.cos(r), s = Math.sin(r); return [x * c - y * s, x * s + y * c]; }
+/* où est la fiole : son milieu, son angle ; aux lèvres, c'est le goulot qui touche la bouche B */
+function fioleGP(t, B){
+  var a = penche(t), levres = rot(0, 36 * ECH_F, a), loin, k;
+  if(t < BOUCHON){ loin = [40, 175]; k = entre(t); }
+  else if(t < 8.62){ loin = [levres[0] + 30, levres[1] + 6]; k = tire(t); }
+  else { loin = [90, 175]; k = baisse(t); }
+  return {x:B[0] + U.lerp(levres[0], loin[0], k), y:B[1] + U.lerp(levres[1], loin[1], k), a:a};
+}
+/* la main : son repère part du poignet, l'os vers les doigts ; la fiole est en travers (+90°), son ventre sous les doigts */
+function brasGP(t, B){
+  /* les doigts serrent le bas de la fiole : on voit son ventre et la potion entre le poing et la bouche */
+  var F = fioleGP(t, B), th = F.a + 270, os = rot(0, 1, th), o = rot(22 * ECH_F, 22, th);
+  var W = [F.x - o[0] * ECH_B, F.y - o[1] * ECH_B], L = 92 * ECH_B, E = [W[0] - os[0] * L, W[1] - os[1] * L];
+  return {F:F, W:W, E:E, ang:th};
+}
+function dessinGP(t, os){
+  var B = LeoFace.point(os, 'bouche'), A = brasGP(t, B), F = A.F, s = '';
+  var M = Pantin.M, mAv = M.mul(M.mul(M.tr(A.E[0], A.E[1]), M.rot(A.ang)), M.sc(ECH_B, ECH_B));
+  var mMain = M.mul(M.mul(M.tr(A.W[0], A.W[1]), M.rot(A.ang)), M.sc(ECH_B, ECH_B));
+  /* l'avant-bras (prolongé vers le coude, qui reste hors de l'image), le dos de la main, la fiole, les doigts par-dessus */
+  s += PT_piece(mAv, '<path d="M-27 -110 L -19 -4 L 22 -4 L 30 -110" fill="url(#lfBras)" stroke="#170d07" stroke-width="2.6"/>' + LeoFace.avantBras());
+  s += PT_piece(mMain, ObjetsCine.dosMain());
+  s += '<g transform="translate(' + U.r(F.x) + ' ' + U.r(F.y) + ') rotate(' + U.r(F.a) + ') scale(' + ECH_F + ')">' + ObjetsCine.fioleMonde(lueurP(t), t < BOUCHON, vide(t), F.a) + '</g>';
+  s += PT_piece(mMain, ObjetsCine.doigtsGP());
+  /* le bouchon entre ses dents, jusqu'à ce qu'il le crache */
+  if(t >= BOUCHON && t < CRACHE) s += '<g transform="translate(' + U.r(B[0] + 2) + ' ' + U.r(B[1] - 2) + ') rotate(' + U.r(-8) + ')">' + ObjetsCine.bouchon() + '</g>';
+  /* une goutte verte s'échappe au coin de la bouche et coule sur le menton */
+  if(t > 9.0 && t < FINGP){
+    var k = (t - 9.0) / (FINGP - 9.0), gx = B[0] - 13 - k * 3, gy = B[1] + 2 + k * 34;
+    s += '<path d="M' + U.r(B[0] - 12) + ' ' + U.r(B[1] + 1) + ' C ' + U.r(B[0] - 14) + ' ' + U.r(B[1] + 8) + ' ' + U.r(gx) + ' ' + U.r(gy - 8) + ' ' + U.r(gx) + ' ' + U.r(gy - 3) + '" fill="none" stroke="#a6ff6a" stroke-width="2" opacity=".55" stroke-linecap="round"/>' +
+      '<path d="M' + U.r(gx) + ' ' + U.r(gy - 5) + ' C ' + U.r(gx + 3) + ' ' + U.r(gy) + ' ' + U.r(gx + 3) + ' ' + U.r(gy + 4) + ' ' + U.r(gx) + ' ' + U.r(gy + 4) + ' C ' + U.r(gx - 3) + ' ' + U.r(gy + 4) + ' ' + U.r(gx - 3) + ' ' + U.r(gy) + ' ' + U.r(gx) + ' ' + U.r(gy - 5) + ' Z" fill="#c8ff8a" stroke="#1f8a2a" stroke-width=".8"/>';
+  }
+  return s;
+}
+/* la gorge : la pomme d'Adam qui monte et redescend à chaque gorgée ; chaque gorgée, une lueur verte qui descend */
+function gorge(t, leve){
+  var pomme = 0, bols = [];
+  GLOUS.forEach(function(g){
+    var x = (t - (g - .06)) / .3; if(x > 0 && x < 1) pomme -= 8 * Math.sin(x * Math.PI);
+    var p = (t - g) / .55; if(p > 0 && p < 1) bols.push({p:p, k:.95 * (p < .15 ? p / .15 : p > .8 ? (1 - p) / .2 : 1)});
+  });
+  return {leve:leve, pomme:pomme, bols:bols};
+}
 /* la forme 3 qui monte : les veines, les épaules (0 → 1) ; la peau qui rougit par à-coups, de plus en plus souvent ; il grandit un peu */
 var forme = U.piste([[10.45, 0], [11.95, 1, 'io']]);
 function rougit(t){ if(t < 10.85) return false; if(t >= 11.95) return true; return ((t - 10.85) * 7.5) % 1 < .15 + .8 * (t - 10.85) / 1.1; }
@@ -232,8 +303,10 @@ var grand = U.piste([[10.9, 1], [12.35, 1.07, 'io']]);
 var camera = plans([
   [0, [[0, {x:0, y:-270, z:1260, focus:1260}], [3.2, {x:16, y:-300, z:1120, focus:1120}, 'io']]],
   [3.2, [[3.2, {x:0, y:-508, z:560, focus:560, ouverture:1.1}], [6.4, {x:0, y:-506, z:500, focus:500, ouverture:1.1}, 'l']]],
-  [6.4, [[6.4, {x:60, y:-380, z:930, focus:930}], [8.5, {x:30, y:-420, z:820, focus:820}, 'io']]],
-  [8.5, [[8.5, {x:30, y:-470, z:860, focus:860}], [10.1, {x:20, y:-470, z:780, focus:780}, 'l']]],
+  [6.4, [[6.4, {x:60, y:-380, z:930, focus:930}], [GP, {x:34, y:-412, z:840, focus:840}, 'io']]],
+  /* le gros plan : la tête et le cou, un peu par en dessous */
+  [GP, [[GP, {x:16, y:-500, z:530, focus:530, ouverture:1.2}], [FINGP, {x:10, y:-504, z:490, focus:490, ouverture:1.2}, 'l']]],
+  [FINGP, [[FINGP, {x:40, y:-440, z:880, focus:880}], [10.1, {x:30, y:-440, z:840, focus:840}, 'l']]],
   [10.1, [[10.1, {x:0, y:-380, z:860, focus:860}], [11.95, {x:0, y:-372, z:760, focus:760}, 'l']]],
   [11.95, [[11.95, {x:0, y:-300, z:1580, focus:1580, tangage:.05}], [T, {x:0, y:-330, z:1400, focus:1400, tangage:.05}, 'io']]]
 ]);
@@ -245,16 +318,21 @@ CINE.films.b23 = {
     [11.0, 'cineMontee'], [11.45, 'cineCoeur'], [11.98, 'leoMuscles'], [CRI - .35, 'cineCri'], [CRI, 'cineOnde'], [CRI + .45, 'cineOnde']],
   sousTitres:[[3.55, 4.75, 'Très bien…', 'Léo'], [4.95, 6.35, 'Je n\'ai pas le choix.', 'Léo']],
   etat:function(t){
-    var p = pose(t), fio = t >= SORT && t < JETTE, k3 = forme(t), g = grand(t), rouge = rougit(t);
+    var p = pose(t), gp = t >= GP && t < FINGP, fio = t >= SORT && t < JETTE && !gp, k3 = forme(t), g = grand(t), rouge = rougit(t);
     var flamme = t > 10.2 ? U.clamp((t - 10.2) / 1.6, 0, 1) : 0;
     /* un point du corps, à l'écran (il a grandi : on en tient compte) */
     function ecran(pt){ var pr = CAM.projeter(0, 0, 0); return [pr.x + pt[0] * pr.s * g, pr.y + pt[1] * pr.s * g, pr.s * g]; }
+    /* la fiole : dans la main du pantin (plans larges), ou portée par le bras du gros plan */
+    function laFiole(){ var os = LeoFace.dernier.os; if(gp){ var F = fioleGP(t, LeoFace.point(os, 'bouche')); return [F.x, F.y]; } var m = LeoFace.point(os, 'mainD'); return [m[0], m[1] + 10]; }
+    var o = {abime:1, forme3:k3, peau3:rouge};
+    if(gp) o.cacheBras = 'D';
+    if(t >= GP && t < 10.4) o.gorge = gorge(t, p.v.leve || 0);
     return {
       cam:camera(t), tremble:secousses(SEC, t) + (t > 10.3 && t < 12.2 ? (t - 10.3) * 2.4 : 0), flare:1 + flamme * .4,
-      acteurs:[{type:'leo', x:0, z:0, pose:p, echelle:g, o:{abime:1, forme3:k3, peau3:rouge}, ombreR:170 * g,
+      acteurs:[{type:'leo', x:0, z:0, pose:p, echelle:g, o:o, ombreR:170 * g,
         lum:{dx:-280, dy:-600, k:1.1, rimsEcran:function(pr){
           var r = [], s = pr.s * g;
-          if(fio){ var m = LeoFace.point(LeoFace.dernier.os, 'mainD'); r.push({x:pr.x + m[0] * s, y:pr.y + (m[1] + 10) * s, z:30 * s, k:1.6 * lueurP(t), c:'#9cff5a'}); }
+          if(fio || gp){ var m = laFiole(); r.push({x:pr.x + m[0] * s, y:pr.y + m[1] * s, z:30 * s, k:(gp ? .6 : 1.6) * lueurP(t) * (1 - .5 * vide(t)), c:'#9cff5a'}); }
           if(flamme > 0){ var c = LeoFace.point(LeoFace.dernier.os, 'poitrine'); r.push({x:pr.x + c[0] * s, y:pr.y + c[1] * s, z:20 * s, k:2.2 * flamme, c:'#8dff5a'}); }
           /* sous la potion : un liseré vert, des deux côtés */
           if(k3 > 0){ r.push({x:pr.x - 380 * s, y:pr.y - 420 * s, z:60 * s, k:.9 * k3, c:'#7dff5a'}); r.push({x:pr.x + 380 * s, y:pr.y - 420 * s, z:60 * s, k:.9 * k3, c:'#7dff5a'}); }
@@ -262,16 +340,21 @@ CINE.films.b23 = {
         }},
         plus:function(){
           var os = LeoFace.dernier.os, s = '';
-          if(fio){
-            var ang = t < 8.6 ? 0 : t < 9.6 ? U.lerp(0, 150, U.lisse((t - 8.6) / .35)) : 150;
-            s += PT_piece(os.mD, '<g transform="translate(0 26) rotate(' + U.r(ang - U.deg(Math.atan2(os.mD[1], os.mD[0]))) + ')">' + ObjetsCine.fiole(lueurP(t), t < BOUCHON, vide(t)) + '</g>' + ObjetsCine.doigts());
+          if(gp) s += dessinGP(t, os);
+          else if(fio){
+            /* debout dans sa main (vide après le gros plan) */
+            var ang = U.deg(Math.atan2(os.mD[1], os.mD[0]));
+            s += PT_piece(os.mD, '<g transform="translate(0 26) rotate(' + U.r(-ang) + ')">' + ObjetsCine.fioleMonde(lueurP(t), t < BOUCHON, vide(t), 0) + '</g>' + ObjetsCine.doigts());
           }
           return s;
         }}],
       devant:function(t){
         var s = '';
-        /* le bouchon craché, la fiole jetée qui se brise (hors champ, à droite) */
-        if(t > CRACHE && t < CRACHE + .7){ var a = t - CRACHE, b = versEcran([-30 - a * 520, -460 + a * a * 1600 - a * 260]); s += '<g transform="translate(' + U.r(b[0]) + ' ' + U.r(b[1]) + ') scale(' + U.r(b[2] * 1.2) + ') rotate(' + U.r(a * 900) + ')">' + ObjetsCine.bouchon() + '</g>'; }
+        /* le bouchon craché sur le côté (gros plan), la fiole jetée qui se brise (hors champ, à droite) */
+        if(t > CRACHE && t < CRACHE + .6){
+          var a = t - CRACHE, B0 = LeoFace.point(LeoFace.dernier.os, 'bouche'), b = ecran([B0[0] - 6 - a * 420, B0[1] - a * 150 + a * a * 1100]);
+          s += '<g transform="translate(' + U.r(b[0]) + ' ' + U.r(b[1]) + ') scale(' + U.r(b[2] * 1.1) + ') rotate(' + U.r(-8 - a * 900) + ')">' + ObjetsCine.bouchon() + '</g>';
+        }
         if(t > JETTE && t < JETTE + .4){ var a2 = t - JETTE, b2 = versEcran([280 + a2 * 1500, -430 - a2 * 300 + a2 * a2 * 1400]); s += '<g transform="translate(' + U.r(b2[0]) + ' ' + U.r(b2[1]) + ') scale(' + U.r(b2[2] * 1.3) + ') rotate(' + U.r(a2 * 1100) + ')">' + ObjetsCine.fiole(.3, false, 1) + '</g>'; }
         s += FX.bouffee(t, CRI, 0, 0, 16, 7, 1.4) + FX.cailloux(t, CRI, 0, 40, 16, 8);
         s += FX.plafond(t, CRI, 14.0, 50, 13, [-900, -800, 900, 300]);
@@ -279,7 +362,17 @@ CINE.films.b23 = {
       },
       lumieres:function(t){
         var s = '';
-        if(fio){ var m = versEcran(LeoFace.point(LeoFace.dernier.os, 'mainD')); s += ObjetsCine.lueur(m[0], m[1], 180 * m[2] * (.8 + .2 * U.bruit(t * 9, 2)), .75 * lueurP(t) * (t > 8.6 && t < 9.7 ? .55 : 1)); }
+        if(fio || gp){
+          var m = ecran(laFiole()), v = vide(t);
+          s += ObjetsCine.lueur(m[0], m[1], (gp ? 60 : 170) * m[2] * (.8 + .2 * U.bruit(t * 9, 2)), (gp ? .32 : .7) * lueurP(t) * (1 - .6 * v));
+          /* la potion qui coule entre ses lèvres */
+          if(gp && t > 8.72 && v < 1){ var bo = ecran(LeoFace.point(LeoFace.dernier.os, 'bouche')); s += ObjetsCine.lueur(bo[0], bo[1], 16 * bo[2], .4 * (1 - v)); }
+        }
+        /* les gorgées qui descendent dans le cou */
+        if(t >= GP && t < 10.4) gorge(t, 0).bols.forEach(function(b){
+          var os = LeoFace.dernier.os, c = M_pt(os.buste, 0, U.lerp(-204, -122, b.p)), e = ecran(c);
+          s += ObjetsCine.lueur(e[0], e[1], 40 * e[2], .45 * b.k);
+        });
         if(flamme > 0){ var c = ecran(LeoFace.point(LeoFace.dernier.os, 'poitrine')); s += ObjetsCine.lueur(c[0], c[1], (50 + 70 * flamme) * c[2] * (.9 + .1 * U.bruit(t * 6, 3)), .3 + .3 * flamme); }
         /* les à-coups : à chaque fois que la peau rougit, une bouffée de lumière verte */
         if(rouge && t < 11.95){ var c2 = ecran(LeoFace.point(LeoFace.dernier.os, 'poitrine')); s += ObjetsCine.lueur(c2[0], c2[1], 240 * c2[2], .16); }

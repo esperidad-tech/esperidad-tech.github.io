@@ -81,6 +81,15 @@ function buste(o, fl){
     '<path d="M-24 -204 C -18 -190 -10 -178 -3 -170 M24 -204 C 18 -190 10 -178 3 -170" fill="none" stroke="' + C.trait + '" stroke-width="1.6" opacity=".55"/>' +
     '<path d="M-3 -170 C -1 -167 1 -167 3 -170" fill="none" stroke="' + C.trait + '" stroke-width="1.4" opacity=".6"/>' +
     '<path d="M-30 -172 C -20 -176 -10 -176 -2 -172 M30 -172 C 20 -176 10 -176 2 -172" fill="none" stroke="' + C.peau[3] + '" stroke-width="3" opacity=".25"/>';
+  /* la gorge, quand il boit (o.gorge = {leve, pomme, bols}) : la pomme d'Adam qui monte et redescend à chaque gorgée,
+     et chaque gorgée de potion, une lueur verte qui descend dans le cou jusqu'à la poitrine (bols : de 0, sous le menton, à 1) */
+  var go = o.gorge;
+  if(go){
+    var lv = U.clamp(go.leve || 0, 0, 1), py = -190 + (go.pomme || 0);
+    s += '<path d="M-22 -206 C -16 -192 -9 -180 -4 -171 M22 -206 C 16 -192 9 -180 4 -171" fill="none" stroke="' + C.trait + '" stroke-width="2" opacity="' + f(.25 + .45 * lv) + '"/>' +
+      '<path d="M-7 ' + f(py - 7) + ' C -9 ' + f(py - 1) + ' -7 ' + f(py + 6) + ' 0 ' + f(py + 8) + ' C 7 ' + f(py + 6) + ' 9 ' + f(py - 1) + ' 7 ' + f(py - 7) + '" fill="' + C.peau[1] + '" stroke="' + C.trait + '" stroke-width="1.6" opacity="' + f(.55 + .4 * lv) + '"/>' +
+      '<ellipse cx="-1.5" cy="' + f(py) + '" rx="2.6" ry="3.6" fill="' + C.peauL + '" opacity="' + f(.5 * lv + .2) + '"/>';
+  }
   /* les pectoraux */
   [1, -1].forEach(function(sg){
     var g = '<path d="M4 -158 C 30 ' + f(-166 - gon) + ' 62 ' + f(-162 - gon) + ' ' + f(84 + gon) + ' -148 C ' + f(90 + gon) + ' -134 ' + f(86 + gon) + ' -112 72 -100 C 56 -86 26 -84 7 -95 C 4 -116 3 -140 4 -158 Z" fill="url(#lfPec)"/>' +
@@ -109,6 +118,13 @@ function buste(o, fl){
   /* la vieille cicatrice recousue, sur le pectoral (à gauche de l'image) */
   s += '<path d="M-64 -140 C -52 -132 -40 -124 -26 -114" fill="none" stroke="#c97a6a" stroke-width="3.2" stroke-linecap="round"/>' +
     '<path d="M-58 -142 L -60 -132 M-50 -137 L -53 -127 M-42 -131 L -45 -121 M-34 -125 L -37 -115" fill="none" stroke="#8a3a30" stroke-width="1.4" stroke-linecap="round"/>';
+  /* les gorgées de potion qui descendent (par-dessus tout le buste : elles luisent à travers la peau) */
+  if(go) (go.bols || []).forEach(function(b){
+    if(!(b.k > 0)) return;
+    var by = U.lerp(-204, -122, b.p), k = U.clamp(b.k, 0, 1);
+    s += '<ellipse cx="0" cy="' + f(by) + '" rx="' + f(11 + 9 * b.p) + '" ry="' + f(14 + 6 * b.p) + '" fill="url(#lfVert3)" opacity="' + f(k) + '"/>' +
+      '<ellipse cx="0" cy="' + f(by) + '" rx="' + f(4 + 2 * b.p) + '" ry="' + f(6 + 2 * b.p) + '" fill="#eaffc0" opacity="' + f(k * .75) + '"/>';
+  });
   return s;
 }
 
@@ -249,6 +265,10 @@ function tete(v, o, uid){
   });
   /* le visage : la mâchoire carrée */
   var jaw = U.clamp((bo.o || 0) * 13 + (bo.cri || 0) * 6, 0, 20);
+  /* la tête renversée en arrière (il boit) : on voit le dessous du menton, dans l'ombre (le visage le recouvre en haut) */
+  var lv = U.clamp(v.leve || 0, 0, 1);
+  if(lv > 0) s += '<path d="M-31 -48 C -29 -30 -18 ' + f(-12 + jaw) + ' 0 ' + f(-9 + jaw) + ' C 18 ' + f(-12 + jaw) + ' 29 -30 31 -48 Z" fill="' + C.peau[2] + '" stroke="' + O + '" stroke-width="2" opacity="' + f(lv) + '"/>' +
+    '<path d="M-20 ' + f(-14 + jaw) + ' C -10 ' + f(-10 + jaw) + ' 10 ' + f(-10 + jaw) + ' 20 ' + f(-14 + jaw) + '" fill="none" stroke="' + C.peau[3] + '" stroke-width="3" opacity="' + f(lv * .5) + '"/>';
   s += '<path d="M-13 ' + f(-22 + jaw) + ' C -25 ' + f(-24 + jaw * .8) + ' -32 ' + f(-33 + jaw * .4) + ' -33 -45 L -35 -63 C -36 -78 -33 -94 -23 -101 C -12 -107 12 -107 23 -101 C 33 -94 36 -78 35 -63 L 33 -45 C 32 ' + f(-33 + jaw * .4) + ' 25 ' + f(-24 + jaw * .8) + ' 13 ' + f(-22 + jaw) + ' C 6 ' + f(-18 + jaw) + ' -6 ' + f(-18 + jaw) + ' -13 ' + f(-22 + jaw) + ' Z" fill="url(#lfTete)" stroke="' + O + '" stroke-width="' + OL + '"/>';
   /* la barbe de trois jours (des points), le menton fendu */
   var R = U.hasard(77), pts = '';
@@ -493,6 +513,8 @@ LF.dessin = function(p, o){
   /* les bras derrière le buste (ils pendent le long du corps), sauf ceux qui passent devant (b.devant) */
   function unBras(c, quoi){
     var b = p['b' + c] || {}, r = '';
+    /* un bras que le film dessine lui-même (il vient vers nous : la fiole à la bouche, en gros plan) */
+    if(o.cacheBras === c) return '';
     if(quoi !== 'avant') r += PT.piece(os['b' + c], brasHaut(fl * (b.fl == null ? 1 : b.fl), o) + veine3(o.forme3, 'M6 4 C 10 30 4 56 10 80 C 12 92 8 100 10 104 M-8 30 C -12 50 -8 70 -12 92', 2.2));
     if(quoi !== 'haut'){ r += PT.piece(os['a' + c], avantBras(o) + veine3(o.forme3, 'M4 0 C 8 22 2 42 6 66 M-8 10 C -12 30 -8 46 -10 60', 2)); r += PT.piece(os['m' + c], main(p['poing' + c] || 'poing', o)); }
     return r;
@@ -524,4 +546,7 @@ LF.point = function(os, nom){
   return [0, 0];
 };
 LF.couleurs = C;
+/* pour un bras dessiné par le film (repères : l'avant-bras part du coude, la main du poignet ; l'os descend) */
+LF.avantBras = function(o){ return avantBras(o || {}); };
+LF.main = function(type, o){ return main(type, o || {}); };
 })();
