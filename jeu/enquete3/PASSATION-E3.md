@@ -2,6 +2,13 @@
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
+## Nouveau depuis le 15 novembre (midi) : LA PHASE 3 DE LÉO EST REFAITE (Bible §13.42) — EN LIGNE (15 novembre, 12 h 55 ; commit f7eee5e du site ; le donjon : version « 15/11 à 12 h 50 » (en bas de « 🎒 Objets ») ; publication de GitHub vérifiée)
+
+- **À lire : Bible §13.42.** Léo sous la potion a un nouveau dessin (le même pantin que la phase 2, transformé : peau rougie, veines vertes, yeux qui luisent) ; ses six attaques sont refaites et annoncées ; on voit ses trois entailles et son sang.
+- **Ce qui change pour la conception** : **la gourde volée par le Pisteur est infinie** (mais plus longue à boire) ; **le feu du souffle brûle jusqu'à ce qu'on soigne** ; le gros coup de poing se prépare 1,4 s. Rien d'autre : la faux garde ses trois coups, seul le saignement blesse Léo.
+- **⚠️ Les indices de Farinel et d'Iris** sur la phase 3 (« la faux qui fait saigner », la potion volée) restent justes. Rien ne dit aux joueurs que le feu ne s'éteint qu'avec un soin : à voir avec Romain (un mot d'Iris ?).
+- **Rien n'a changé dans l'histoire, les dialogues ni les codes.**
+
 ## Nouveau depuis le 15 novembre : LÉO, LA FLUIDITÉ ET LES RETOUCHES DU COMBAT (Bible §13.41) — EN LIGNE (15 novembre, 11 h 17 ; commit 36d1391 du site ; le donjon : version « 15/11 à 11 h 13 » (en bas de « 🎒 Objets ») ; publication de GitHub vérifiée)
 
 - **À lire : Bible §13.41.** Romain a essayé la phase 2 : « ça rame de partout », « ça fait que quitter sur l'iPhone ». La conversation qui construit a d'abord allégé le combat (deux fois plus fluide sur la machine d'essai ; jamais essayé sur un vrai iPhone), puis fait ses retouches.

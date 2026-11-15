@@ -101,14 +101,18 @@ L.ATTAQUES = {
   gourde:{nom:'La gourde', ic:'🧴', arme:'gourde', prise:.8, elan:2.4, retour:.6, soin:600},                                /* Romain : il reprend beaucoup de vie ; le marteau l'arrête */
   lancer:{nom:'Le lancer de rat', ic:'🐁', arme:null, prise:0, elan:.55, retour:.5, degats:15, fois:2, cibles:'un', rapide:true},   /* Romain : rapide, le rat mord deux fois */
   /* ---------- phase 3 : la potion ---------- */
-  poing3:{nom:'Le coup de poing', ic:'👊', arme:null, prise:0, elan:.5, retour:.6, degats:30, cibles:'un', rapide:true},    /* Romain : 30, très rapide, inarrêtable */
+  /* (Romain, 15 novembre, la phase 3 refaite : « son gros coup de poing, je veux qu'on sente vraiment qu'il va se préparer » : il arme
+     son poing .6 s, le tient .8 s — 1,4 s pour réagir, au lieu d'une demi-seconde) */
+  poing3:{nom:'Le coup de poing', ic:'👊', arme:null, prise:.6, elan:.8, retour:.7, degats:30, cibles:'un', rapide:true},    /* Romain : 30, inarrêtable */
   rafale:{nom:'La rafale de coups', ic:'🥊', arme:null, prise:.8, elan:1.3, retour:1.0, part:.8, cibles:'un'},              /* Romain : environ 80 % de la vie d'un héros */
   hurlement:{nom:'Le hurlement', ic:'📢', arme:null, prise:.7, elan:1.0, retour:.8, cibles:'tous', etourdit:3.2},           /* Romain : étourdit tout le monde ; le bouclier jaune l'arrête */
   attrape:{nom:'Il attrape un héros', ic:'✊', arme:null, prise:.5, elan:.9, retour:1.2, part:.7, cibles:'deux', saisit:true},   /* Romain : il attrape un héros et frappe un autre avec — rapide, dur à contrer */
   souffle:{nom:'Le souffle de feu', ic:'🔥', arme:'potion', prise:1.0, elan:1.2, retour:1.0, degats:22, cibles:'tous', brule:true}   /* Romain : tout le monde brûle ; ça s'arrête tout seul */
 };
 L.SAIGNE = {n:5, pas:.5};                             /* Romain : « 5 par héros, deux fois par seconde » ; il ne s'arrête qu'avec un soin */
-L.BRULE = {n:5, pas:.5, duree:4};                     /* la brûlure du souffle : elle s'arrête toute seule */
+/* (Romain, 15 novembre : « j'aimerais bien que le feu dure à l'infini ; du moment qu'on les soigne, ça s'arrête » : la brûlure du
+   souffle ne s'arrête plus toute seule — comme le saignement, n'importe quel soin l'éteint) */
+L.BRULE = {n:5, pas:.5, duree:Infinity};
 L.BOUM = {leo:520, heros:30};                         /* Romain : « 30 points de vie » sur le héros pris dans la farine ; gros dégâts sur Léo */
 L.NOIRCI = 2.2;                                       /* après le BOUM, il titube */
 L.SONNE = 1.5;                                        /* coupé par le marteau, il reste sonné */
@@ -140,7 +144,9 @@ L.ARMES = {
   fleau:{nom:'Fléau', ic:'🌾', d:'frappe deux cibles, fait fuir les rats', phase:2, vise:'ennemi', infini:true},
   marteau:{nom:'Marteau', ic:'🔨', d:'coupe son geste', phase:2, vise:'ennemi', infini:true},
   faux:{nom:'Faux', ic:'🌙', d:'fait saigner', phase:3, vise:'ennemi'},
-  gourde:{nom:'Gourde', ic:'🧴', d:'toute la vie', phase:3, vise:'heros'}
+  /* (Romain, 15 novembre : « la potion qu'on lui pique, j'aimerais bien qu'elle soit infinie, mais que l'animation soit un petit peu
+     plus longue, histoire que ça soit pas trop facile ») */
+  gourde:{nom:'Gourde', ic:'🧴', d:'toute la vie', phase:3, vise:'heros', infini:true}
 };
 L.GOURDE_SOIN = 1;                                    /* Romain : la gourde rend 100 % de la vie, à qui on veut */
 /* les rats de la phase 2 (Romain : « Léo prend un emplacement, les rats deux »). Les mêmes bêtes que dans le donjon. */
@@ -158,7 +164,7 @@ L.DUREES = {
   fleche:{impact:1.57, fin:2.26}, lourde:{impact:1.97, fin:2.67}, dague:{impact:.71, fin:1.99}, arme:{impact:.71, fin:1.99},
   potion:{impact:2.54, fin:2.75}, herbes:{impact:1.1, fin:1.1}, louche:{impact:1.25, fin:1.72},
   rune:{impact:.9, fin:1.56}, lune:{impact:.79, fin:1.82}, bouclier:{impact:.77, fin:1.48}, bouclier2:{impact:1.26, fin:1.5}, oeil:{impact:1.3, fin:2.2},
-  gourde:{impact:.8, fin:1.3}
+  gourde:{impact:1.7, fin:2.3}
 };
 L.MOTS = {
   occupe:'Pas encore !', etourdi:'Étourdi !', attrape:'Attrapé !', sol:'Au sol !', noir:'Dans le noir !', farine:'Dans la farine !', loin:'Trop loin !',
@@ -518,6 +524,8 @@ P._soin = function(ev, h, n, par){
   ev.push({t:'soin', heros:h, n:S.pv - avant, pv:S.pv, par:par});
   /* Romain : « le saignement, il s'arrête que si on met un soin. N'importe quel soin. » */
   if(S.saigne){ S.saigne = false; ev.push({t:'etat', heros:h, nom:'saigne', on:false}); }
+  /* (15 novembre) la brûlure du souffle aussi : elle ne s'arrête plus qu'avec un soin */
+  if(S.brule){ S.brule = 0; ev.push({t:'etat', heros:h, nom:'brule', on:false}); }
 };
 P._bilan = function(ev){
   if(this.resultat) return true;
@@ -826,7 +834,7 @@ P._leoImpact = function(ev, A){
     if(!vivant(h) || !passe) return;
     if(A.etourdit) self._etourdit(ev, h, A.etourdit);
     if(A.saigne && !self.h[h].saigne){ self.h[h].saigne = true; self.h[h].saigneT = t + L.SAIGNE.pas; ev.push({t:'etat', heros:h, nom:'saigne', on:true}); }
-    if(A.brule){ var S = self.h[h]; if(!S.brule) S.bruleT = t + L.BRULE.pas; S.brule = t + L.BRULE.duree; ev.push({t:'etat', heros:h, nom:'brule', on:true, duree:L.BRULE.duree}); }
+    if(A.brule){ var S = self.h[h]; if(!S.brule) S.bruleT = t + L.BRULE.pas; S.brule = t + L.BRULE.duree; ev.push({t:'etat', heros:h, nom:'brule', on:true, duree:isFinite(L.BRULE.duree) ? L.BRULE.duree : null}); }
     if(A.attrape){
       self._annuler(ev, h, 'attrape');
       self.h[h].attrape = true; Z.tenu = h;

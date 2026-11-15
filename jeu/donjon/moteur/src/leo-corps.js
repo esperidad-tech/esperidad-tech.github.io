@@ -451,10 +451,85 @@ var RAT = (function(){
 P.rat = {os:'rat', boite:[-30, -6, 54, 112], objet:'rat', svg:RAT};
 
 /* ============================================================================ L'ORDRE D'EMPILEMENT (du fond vers l'avant) */
-var ORDRE = ['faux@dos', 'brasAr', 'mancheAr', 'avantAr', 'mancheArA', 'poingAr', 'mainAr', 'cuisseAr', 'tibiaAr', 'piedAr', 'sac',
-  'cuisseAv', 'tibiaAv', 'piedAv', 'bassin', 'gourde@ceinture', 'bouchon@ceinture', 'torse', 'tunique', 'siffletCou',
-  'tete', 'v-colere', 'v-rictus', 'v-cri', 'v-effort', 'v-souffle', 'v-boit', 'v-aah', 'v-ko', 'v-douleur', 'cheveux', 'capuche',
-  'faux@main', 'brasAv', 'mancheAv', 'avantAv', 'mancheAvA', 'gourde@main', 'bouchon@main', 'rat', 'sifflet', 'poingAv', 'mainAv'];
+
+/* ============================================================================ LÉO SOUS LA POTION (phase 3 ; Romain, 15 novembre)
+   « Ça doit être la modélisation la plus jolie de toutes […] le modèle le plus détaillé de tout le donjon. » Le même pantin, le même
+   squelette, mais : la peau rougie par la potion (les couleurs changées à la cuisson : potion()), les veines qui brillent en vert,
+   des trapèzes énormes, une lueur dans la poitrine, les yeux qui luisent, les cheveux dressés, la sueur, la vapeur — autant de
+   pièces posées PAR-DESSUS celles du corps (elles suivent les mêmes os : aucune animation en plus). Et les TROIS ENTAILLES de la
+   faux (« je veux trois traits rouges […] je veux vraiment qu'on voit qu'il saigne ») : plaie1, plaie2, plaie3. */
+var POTION = [[C.peau[0], '#ffcda0'], [C.peau[1], '#ee975c'], [C.peau[2], '#c05a34'], [C.peau[3], '#762c1c'],
+  [C.peauS[0], '#dc9c70'], [C.peauS[1], '#bd7044'], [C.peauS[2], '#8e4228'], [C.peauS[3], '#562014'], [C.veine, '#8dff5a']];
+function potion(svg){ POTION.forEach(function(c){ svg = svg.split(c[0]).join(c[1]); }); return svg; }
+function veine(d, w, op){ w = w || 1.5; op = op || 1; return ligne(d, '#3fd13a', w + 2.6, .2 * op) + ligne(d, '#a6ff6a', w, .88 * op) + ligne(d, '#f4ffdc', w * .36, .85 * op); }
+function noeud(x, y, r){ return '<circle cx="' + x + '" cy="' + y + '" r="' + (r * 2.4) + '" fill="#8dff5a" opacity=".3"/>' + rond(x, y, r, '#f4ffdc', 0); }
+function goutte(x, y, r){ return ov(x, y, r * .7, r, '#e8f8ff', .9) + ov(x - r * .2, y - r * .3, r * .25, r * .35, '#fff', .95); }
+P['p3-torse'] = {os:'torse', boite:[76, 66, 150, 156], potion:true, svg:(function(){
+  var s = '';
+  /* les trapèzes, énormes, qui montent jusqu'aux oreilles */
+  s += f('M134 88 C122 92 108 102 96 121 C108 116 122 112 136 110 Z', 'url(#l2p)', 2.6) + f('M157 88 C172 92 190 103 205 123 C190 117 172 112 155 110 Z', 'url(#l2p)', 2.6);
+  s += ligne('M130 94 C120 100 110 108 102 118 M162 94 C174 100 188 108 198 120', C.peau[3], 1.4, .55) + ligne('M133 91 C124 95 114 102 106 111 M159 91 C170 95 182 102 192 110', C.rim, 1.8, .55);
+  /* la potion luit dans sa poitrine, et sur le bord de son corps (une lumière verte) */
+  s += '<circle cx="147" cy="148" r="36" fill="url(#l2v)" opacity=".2"/><circle cx="147" cy="148" r="15" fill="url(#l2v)" opacity=".32"/>';
+  s += ligne('M95 127 C91 134 91 143 94 152 C97 165 104 178 111 189', '#b6ff8a', 1.6, .5) + ligne('M207 150 C205 163 198 176 190 187', '#b6ff8a', 1.6, .45);
+  /* les muscles, plus creusés : les pectoraux, les dentelés, les abdominaux */
+  s += ligne('M110 131 C120 137 131 139 141 137 M155 137 C167 140 181 138 193 131', C.peau[3], 1.5, .5);
+  s += ligne('M112 150 C116 156 118 162 118 168 M108 142 C112 150 114 156 114 162 M184 152 C182 158 181 164 182 170 M190 144 C187 152 186 158 186 164', C.peau[3], 1.3, .5);
+  s += ligne('M131 166 C137 164 143 164 147 166 M152 166 C158 164 166 165 172 168 M132 181 C138 179 143 179 147 181 M152 181 C158 179 166 180 171 183 M134 195 C139 193 144 193 148 195 M153 195 C158 193 164 194 169 197', C.rim, 1.7, .55);
+  /* les veines, pleines de potion : elles partent du cœur et se ramifient (fines, sinueuses) */
+  s += veine('M146 150 C142 142 143 134 139 126 C137 119 141 112 140 104', 1.7) + veine('M139 126 C134 122 130 121 126 116', 1.1) + veine('M141 112 C145 108 147 104 147 99', 1);
+  s += veine('M146 150 C138 150 132 144 124 144 C117 143 112 137 105 134', 1.6) + veine('M124 144 C121 150 122 156 118 162', 1.1) + veine('M112 138 C109 142 108 147 105 150', .9);
+  s += veine('M148 150 C156 151 162 145 170 146 C178 146 184 139 193 137', 1.6) + veine('M170 146 C174 152 173 159 177 165', 1.1) + veine('M184 140 C188 144 192 144 196 148', .9);
+  s += veine('M147 152 C145 160 149 167 147 175 C146 183 150 190 149 199', 1.5) + veine('M147 175 C141 178 138 184 132 187', 1) + veine('M148 182 C155 185 158 191 165 193', 1);
+  s += noeud(146, 150, 2.2) + noeud(124, 144, 1.2) + noeud(170, 146, 1.2) + noeud(147, 175, 1.1) + noeud(139, 126, 1.1);
+  /* de vieilles cicatrices, la sueur, la vapeur qui monte de ses épaules */
+  s += ligne('M166 157 L181 151 M169 162 L184 156 M114 176 L124 184', '#6a2418', 1.5, .75) + ligne('M167 156 L180 151 M170 161 L183 156', '#ffd0b0', .7, .6);
+  s += goutte(117, 158, 2.6) + goutte(186, 168, 2.4) + goutte(160, 191, 2.2) + goutte(133, 122, 2) + goutte(176, 126, 2);
+  s += ligne('M99 110 C94 102 101 96 96 88 C93 82 97 78 95 72 M207 112 C212 104 205 98 210 90 C213 84 208 80 211 74', '#ffffff', 3.4, .22);
+  return s;
+})()};
+P['p3-tete'] = {os:'tete', boite:[90, 0, 110, 126], potion:true, saufVisage:['ko', 'boit'], svg:(function(){
+  var s = '', H1 = '#f6cf6a';
+  /* les cheveux dressés (au-dessus de sa crête) */
+  s += f('M127 34 L123 19 L137 29 Z', H1, 2.2) + f('M141 29 L144 14 L155 26 Z', H1, 2.2) + f('M158 28 L167 15 L170 31 Z', H1, 2.2) + f('M171 34 L183 23 L181 40 Z', H1, 2.2);
+  s += ligne('M127 26 L129 31 M145 20 L146 26 M166 21 L165 27 M180 29 L178 35', '#fff6c8', 1.3, .85);
+  /* les yeux qui luisent */
+  s += '<circle cx="122.5" cy="71" r="8" fill="url(#l2v)" opacity=".5"/><circle cx="138" cy="71" r="10.5" fill="url(#l2v)" opacity=".55"/>';
+  s += rond(120.5, 71, 1.7, '#f4ffdc', 0) + rond(135, 71, 2.3, '#f4ffdc', 0) + ligne('M127 70 L113 66 M145 70 L157 65', '#8dff5a', 1.2, .6);
+  /* une veine à la tempe, la mâchoire serrée, la vapeur des naseaux */
+  s += veine('M152 58 C155 62 154 67 157 71 C159 74 158 78 160 81', 1.1) + veine('M157 71 C161 71 163 73 166 73', .8);
+  s += ligne('M124 96 C130 99 138 99 146 95', C.peau[3], 1.4, .5);
+  s += ligne('M107 82 C101 81 97 85 92 83 M108 85 C103 87 100 91 95 91', '#ffffff', 2.6, .4);
+  return s;
+})()};
+function vBrasH(dx, S){ var k = S ? .65 : 1; return veine(dec('M193 120 C196 128 201 134 200 143 C199 152 204 160 200 169 C198 176 197 181 197 186', dx, 0), 1.6, k) + veine(dec('M200 143 C206 146 209 152 212 157', dx, 0), 1, k) + veine(dec('M200 169 C194 171 190 176 187 180', dx, 0), .9, k) +
+  ligne(dec('M183 123 C190 118 204 118 213 127 M186 172 C192 176 202 176 210 170', dx, 0), C.peau[3], 1.3, .5 * k) + ligne(dec('M211 131 C217 142 217 156 213 168', dx, 0), C.rim, 2, .5 * k) + noeud(200 + dx, 143, 1) + goutte(206 + dx, 138, 2); }
+function vBrasA(dx, S){ var k = S ? .65 : 1; return veine(dec('M196 181 C194 188 198 194 196 201 C194 208 198 214 198 221', dx, 0), 1.4, k) + veine(dec('M196 201 C201 203 204 208 206 213', dx, 0), .9, k) +
+  ligne(dec('M186 184 C192 180 204 180 212 186', dx, 0), C.peau[3], 1.2, .5 * k); }
+P['p3-brasAv'] = {os:'brasAv', boite:[166, 100, 66, 98], potion:true, svg:vBrasH(0, false)};
+P['p3-avantAv'] = {os:'avantAv', boite:[168, 164, 58, 80], potion:true, svg:vBrasA(0, false)};
+P['p3-brasAr'] = {os:'brasAr', boite:[166 + dAr, 100, 66, 98], potion:true, svg:vBrasH(dAr, true)};
+P['p3-avantAr'] = {os:'avantAr', boite:[168 + dAr, 164, 58, 80], potion:true, svg:vBrasA(dAr, true)};
+/* les trois entailles de la faux : trois traits rouges, l'un sous l'autre, en travers du torse (comme un coup de griffes) — une
+   entaille effilée aux deux bouts, la chair rouge vif entre deux lèvres sombres, et le sang qui coule */
+function fuseau(x0, y0, x1, y1, e, coul, op){
+  var mx = (x0 + x1) / 2, my = (y0 + y1) / 2, L = Math.hypot(x1 - x0, y1 - y0) || 1, nx = -(y1 - y0) / L * e * 2, ny = (x1 - x0) / L * e * 2;
+  return '<path d="M' + x0 + ' ' + y0 + ' Q' + (mx + nx).toFixed(1) + ' ' + (my + ny).toFixed(1) + ' ' + x1 + ' ' + y1 + ' Q' + (mx - nx).toFixed(1) + ' ' + (my - ny).toFixed(1) + ' ' + x0 + ' ' + y0 + ' Z" fill="' + coul + '"' + (op != null ? ' opacity="' + op + '"' : '') + '/>';
+}
+function plaie(x0, y0, x1, y1, coulures){
+  var s = fuseau(x0, y0, x1, y1, 4.6, '#2a0406', .92) + fuseau(x0 + 2, y0 + .8, x1 - 2, y1 - .8, 3, '#a80e18') + fuseau(x0 + 5, y0 + 2, x1 - 5, y1 - 2, 1.3, '#ff4a44') + ligne('M' + (x0 + 8) + ' ' + (y0 + 2.4) + ' L' + (x1 - 10) + ' ' + (y1 - 4.6), '#ffc0b0', .7, .7);
+  coulures.forEach(function(g){ var x = x0 + (x1 - x0) * g[0], y = y0 + (y1 - y0) * g[0] + 2, l = g[1];
+    s += ligne('M' + x.toFixed(1) + ' ' + y.toFixed(1) + ' C' + (x - .8).toFixed(1) + ' ' + (y + l * .4).toFixed(1) + ' ' + (x + 1).toFixed(1) + ' ' + (y + l * .7).toFixed(1) + ' ' + x.toFixed(1) + ' ' + (y + l).toFixed(1), '#a80e18', 2.1, .95) +
+      ligne('M' + (x - .5).toFixed(1) + ' ' + (y + 1.5).toFixed(1) + ' L' + (x - .3).toFixed(1) + ' ' + (y + l * .6).toFixed(1), '#ff6a5a', .7, .8) + ov(x, y + l + 1.2, 1.7, 2.5, '#c8101c'); });
+  return s;
+}
+P.plaie1 = {os:'torse', boite:[104, 108, 90, 70], plaie:1, svg:plaie(114, 122, 172, 144, [[.25, 12], [.55, 19], [.8, 10]])};
+P.plaie2 = {os:'torse', boite:[108, 132, 90, 72], plaie:2, svg:plaie(119, 146, 178, 168, [[.2, 10], [.5, 16], [.78, 12]])};
+P.plaie3 = {os:'torse', boite:[114, 156, 88, 72], plaie:3, svg:plaie(125, 170, 181, 191, [[.3, 13], [.62, 17]])};
+var ORDRE = ['faux@dos', 'brasAr', 'p3-brasAr', 'mancheAr', 'avantAr', 'p3-avantAr', 'mancheArA', 'poingAr', 'mainAr', 'cuisseAr', 'tibiaAr', 'piedAr', 'sac',
+  'cuisseAv', 'tibiaAv', 'piedAv', 'bassin', 'gourde@ceinture', 'bouchon@ceinture', 'torse', 'p3-torse', 'plaie1', 'plaie2', 'plaie3', 'tunique', 'siffletCou',
+  'tete', 'v-colere', 'v-rictus', 'v-cri', 'v-effort', 'v-souffle', 'v-boit', 'v-aah', 'v-ko', 'v-douleur', 'cheveux', 'p3-tete', 'capuche',
+  'faux@main', 'brasAv', 'p3-brasAv', 'mancheAv', 'avantAv', 'p3-avantAv', 'mancheAvA', 'gourde@main', 'bouchon@main', 'rat', 'sifflet', 'poingAv', 'mainAv'];
 
 /* ============================================================================ LES POSES
    x, y : tout le corps (y < 0 : en l'air) ; r : il bascule autour des pieds (une chute) ; bas : il plie les genoux (les hanches
@@ -534,7 +609,10 @@ var CUIT = {};                      /* nom de pièce -> url de l'image */
 var IMG = {};                       /* nom de pièce -> l'image décodée (pour la peindre sur la toile) */
 var cuisson = null;
 /* (pour la cuisson : Cuire.image ajoute lui-même la largeur et la hauteur ; avec, l'image serait invalide) */
-function svgPiece(nom, enLigne){ var p = P[nom], b = p.boite; return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + b.join(' ') + '"' + (enLigne ? ' width="' + b[2] + '" height="' + b[3] + '"' : '') + '>' + (enLigne ? '' : DEFS) + p.svg + '</svg>'; }
+function svgPiece(nom, enLigne, forme){ var p = P[nom], b = p.boite, s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + b.join(' ') + '"' + (enLigne ? ' width="' + b[2] + '" height="' + b[3] + '"' : '') + '>' + (enLigne ? '' : DEFS) + p.svg + '</svg>'; return forme === 3 || p.potion ? potion(s) : s; }
+/* les pièces qui changent de couleur sous la potion (celles qui montrent de la peau) : elles sont cuites une deuxième fois */
+var CUIT3 = {};
+function aDeLaPeau(nom){ var p = P[nom]; if(p.potion || p.plaie || p.habit || p.objet) return false; var s = p.svg; return s.indexOf('l2p') >= 0 || POTION.some(function(c){ return s.indexOf(c[0]) >= 0; }); }
 /* sans cuisson, les pièces restent en SVG : leurs dégradés sont posés UNE fois dans la page (dans un SVG jamais caché : un dégradé
    rangé dans une pièce cachée — display:none — ne se dessinerait plus nulle part) */
 function defsPage(){
@@ -555,7 +633,10 @@ function preparer(){
   cuisson = Promise.all(Object.keys(P).map(function(nom){
     var b = P[nom].boite;
     return Cu.image(svgPiece(nom), b[2], b[3], res).then(function(url){ if(url) CUIT[nom] = url; }).catch(function(){});
-  })).then(function(){
+  }).concat(Object.keys(P).filter(aDeLaPeau).map(function(nom){
+    var b = P[nom].boite;
+    return Cu.image(svgPiece(nom, false, 3), b[2], b[3], res).then(function(url){ if(url) CUIT3[nom] = url; }).catch(function(){});
+  }))).then(function(){
     /* les images décodées d'avance (RAPIDITE.md, R7) */
     return Promise.all(Object.keys(CUIT).map(function(n){ var i = new Image(); i.src = CUIT[n]; return i.decode ? i.decode().then(function(){ IMG[n] = i; }, function(){}) : new Promise(function(ok){ i.onload = function(){ IMG[n] = i; ok(); }; i.onerror = ok; }); }));
   }).then(function(){ return true; }, function(){ return false; });
@@ -602,14 +683,15 @@ function Corps(parent, o){
     var nom = cle.split('@')[0], ou = cle.split('@')[1] || null, p = P[nom];
     var e = document.createElement('div'); e.className = 'lc-p'; e.style.zIndex = String(z + 2);
     var b = p.boite;
-    if(CUIT[nom]){ var i = document.createElement('img'); i.src = CUIT[nom]; i.alt = ''; i.style.cssText = 'left:' + b[0] + 'px;top:' + b[1] + 'px;width:' + b[2] + 'px;height:' + b[3] + 'px'; e.appendChild(i); }
+    var im = null;
+    if(CUIT[nom]){ var i = im = document.createElement('img'); i.src = CUIT[nom]; i.alt = ''; i.style.cssText = 'left:' + b[0] + 'px;top:' + b[1] + 'px;width:' + b[2] + 'px;height:' + b[3] + 'px'; e.appendChild(i); }
     else { defsPage(); e.innerHTML = svgPiece(nom, true); var sv = e.firstChild; sv.style.left = b[0] + 'px'; sv.style.top = b[1] + 'px'; sv.style.overflow = 'visible'; }
     d.appendChild(e);
-    self.pieces[cle] = {el:e, cle:cle, nom:nom, ou:ou, os:p.os, z:z + 2, vu:true, b:b};
+    self.pieces[cle] = {el:e, cle:cle, nom:nom, ou:ou, os:p.os, z:z + 2, vu:true, b:b, im:im};
   });
   this.liste = []; this.surToile = false; this.teinteT = null; this.flashT = 0;
   this.teinteEl = document.createElement('div'); this.teinteEl.className = 'lc-teinte'; d.appendChild(this.teinteEl);
-  this.etat = {visage:'colere', faux:'dos', gourde:'ceinture', bouchon:true, sifflet:'cou', rat:null, capuche:false, tunique:false, cape:false, main:{Av:'poing', Ar:'poing'}, devantAr:false};
+  this.etat = {forme:2, plaies:0, visage:'colere', faux:'dos', gourde:'ceinture', bouchon:true, sifflet:'cou', rat:null, capuche:false, tunique:false, cape:false, main:{Av:'poing', Ar:'poing'}, devantAr:false};
   this.p = complete(GARDE);
   this.de = null; this.a = null; this.t = 0; this.duree = 0; this.courbe = null; this.fin = null; this.temps = 0;
   this.M = {};
@@ -624,7 +706,10 @@ CP._maj = function(){
   var E = this.etat, self = this;
   Object.keys(this.pieces).forEach(function(cle){
     var q = self.pieces[cle], n = q.nom, p = P[n], vu = true;
-    if(p.visage) vu = p.visage === E.visage && !E.capuche;
+    /* (sous la potion — phase 3 : ses veines, ses yeux qui luisent, ses entailles) */
+    if(p.potion) vu = E.forme === 3 && !(p.saufVisage && p.saufVisage.indexOf(E.visage) >= 0);
+    else if(p.plaie) vu = E.forme === 3 && E.plaies >= p.plaie;
+    else if(p.visage) vu = p.visage === E.visage && !E.capuche;
     else if(n === 'faux') vu = E.faux === q.ou;
     else if(n === 'gourde') vu = E.gourde === q.ou;
     else if(n === 'bouchon') vu = E.gourde === q.ou && E.bouchon;
@@ -745,6 +830,18 @@ CP._peindre = function(){
   }
 };
 CP.visage = function(v){ if(V[v] && v !== this.etat.visage){ this.etat.visage = v; this._maj(); } return this; };
+/* la forme : 2 = Léo torse nu ; 3 = sous la potion (plus grand, le haut du corps plus large, la peau rougie, les veines vertes) */
+CP.forme = function(n){
+  var self = this, E = this.etat; n = n === 3 ? 3 : 2;
+  if(E.forme === n) return this;
+  E.forme = n; this.ech = n === 3 ? .98 : .94;
+  Object.keys(this.pieces).forEach(function(cle){ var q = self.pieces[cle], u = n === 3 ? CUIT3[q.nom] : CUIT[q.nom]; if(q.im && u && CUIT3[q.nom]) q.im.src = u; q.tr = null; });
+  if(n !== 3) E.plaies = 0;
+  this._maj(); this._os(this.p); this._ecrire();
+  return this;
+};
+/* les entailles de la faux (0 à 3) */
+CP.plaies = function(n){ n = Math.max(0, Math.min(3, n | 0)); if(this.etat.plaies !== n){ this.etat.plaies = n; this._maj(); } return this; };
 CP.objet = function(nom, ou){ if(this.etat[nom] !== ou){ this.etat[nom] = ou; this._maj(); } return this; };
 CP.main = function(cote, forme){ if(this.etat.main[cote] !== forme){ this.etat.main[cote] = forme; this._maj(); } return this; };
 CP.devantAr = function(on){ on = !!on; if(this.etat.devantAr !== on){ this.etat.devantAr = on; this._maj(); } return this; };
@@ -761,6 +858,7 @@ CP._os = function(p){
   M.bassin = mul(racine, Lb);
   var Lt = mul(Lb, mul(R(-p.torse, SQ.HC[0], SQ.HC[1]), T(0, -resp * .6)));
   M.torse = mul(racine, Lt);
+  if(this.etat.forme === 3) M.torse = mul(M.torse, S(1.07, SQ.HC[0], SQ.HC[1]));          /* (sous la potion : le haut du corps plus large) */
   M.tete = mul(M.torse, R(-p.tete + resp * .5, SQ.COU[0], SQ.COU[1]));
   /* les bras (dans le repère du buste) : celui de devant d'abord, puis la faux qu'il tient, puis celui de derrière (qui peut
      tenir la faux, lui aussi, par sa poignée du milieu : deux mains) */

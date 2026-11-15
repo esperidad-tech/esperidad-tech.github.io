@@ -344,6 +344,20 @@
 .parchemin.leo-def h2{font-size:30px}
 /* ====================================================================== LA PHASE 2 DE LÉO (leo-p2.js ; Bible §13.40) : ses effets
    (RAPIDITE.md : on n'anime que transform et opacity ; tout est posé en coordonnées de scène, puis retiré) */
+/* ---------- la phase 3 (15 novembre) : l'air aspiré, les ondes du cri, les flammes, le sang ---------- */
+.lp-aspire{position:absolute;width:70px;height:4px;margin:-2px 0 0 0;border-radius:2px;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.95));pointer-events:none;z-index:45;opacity:0;transform-origin:0 50%}
+.lp-cri{position:absolute;width:150px;height:230px;margin-left:-150px;border-radius:50%;border-left:9px solid rgba(255,244,214,.95);border-top:4px solid transparent;border-bottom:4px solid transparent;pointer-events:none;z-index:45;opacity:0;transform-origin:100% 50%}
+.lp-raah{position:absolute;font:900 46px/1 var(--f-titre, serif);color:#fff2c8;text-shadow:0 3px 0 #1a0e08,0 0 14px rgba(0,0,0,.85),0 0 20px #ff7a3a;pointer-events:none;z-index:46;white-space:nowrap;opacity:0}
+.lp-lueur.braise{background:radial-gradient(closest-side,#fff 0%,rgba(255,236,150,.98) 22%,rgba(255,140,40,.8) 48%,rgba(255,60,20,.35) 70%,rgba(255,60,20,0))}
+.lp-jet{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:44}
+.lp-jet-lueur{position:absolute;top:250px;height:110px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,170,60,.55),rgba(255,110,30,.28) 55%,rgba(255,90,20,0));opacity:0}
+.lp-flam{position:absolute;width:74px;height:118px;opacity:0;pointer-events:none;will-change:transform,opacity}
+i.lp-flam{border-radius:50% 50% 46% 46%/64% 64% 36% 36%;background:radial-gradient(circle at 50% 72%,#fff7c0 0 22%,#ffc040 46%,#ff7a20 76%,rgba(255,90,20,0))}
+.lp-sang{width:7px;height:9px;border-radius:50% 50% 50% 50%/36% 36% 64% 64%;background:#c8101c;border:1px solid #5a0408;pointer-events:none;z-index:43}
+.lp-mare{position:absolute;top:338px;width:150px;height:22px;border-radius:50%;background:radial-gradient(closest-side,#a00c16,#7a0810 60%,rgba(90,4,8,0));pointer-events:none;opacity:0;transform:translate(-50%,-50%) scale(.3);transition:transform .5s ease-out,opacity .3s}
+.lp-entaille.leo{width:120px;height:80px}
+.lp-entaille.leo i{width:120px;height:7px;top:36px;background:linear-gradient(90deg,rgba(255,255,255,0),#fff 35%,#ff9a9a 70%,rgba(255,60,60,0))}
+.lp-entaille.leo i + i{top:46px;height:4px}
 /* l'annonce d'une attaque (15 novembre) : son nom en gros au milieu de la salle, et la jauge qui se remplit jusqu'au coup */
 .lp-annonce{position:absolute;left:236px;top:54px;display:flex;align-items:center;gap:8px;padding:7px 16px 13px 12px;border-radius:14px;background:rgba(20,10,8,.88);border:3px solid #ffb050;color:#ffe9c4;font:900 25px/1 var(--f-titre, serif);letter-spacing:.03em;white-space:nowrap;pointer-events:none;z-index:46;opacity:0;text-shadow:0 2px 0 #000;will-change:transform,opacity}
 .lp-annonce b{font-size:25px;font-weight:400}

@@ -426,3 +426,13 @@ Romain a joué l'enquête 3 avec sa famille, donjon compris, et a dicté ses cor
 - **Le critique** (`noyau.js`) : `SALLE.critLeger = true` pour tous ; `DJ.mesurerCritique` ne fait plus rien (l'ancienne : `DJ.mesurerCritiqueVrai`).
 - **Les robots de mesure** : `python3 perf-leo.py [phase] [--taux 6] [--sans-son] [--repos] [--profil] [--js "…"]` (images par seconde du fil principal, où part le temps, les fonctions les plus chères) ; `python3 memoire.py` (émulation iPhone : les calques et leur poids, les images, les toiles). Toujours sous `flock /tmp/brumeval-pw.lock`.
 
+### 9.18 Le 15 novembre : la phase 3 de Léo refaite (Bible §13.42)
+
+- **`LeoAnime` : `NOUVEAU = {2, 3}`** — la phase 3 passe par le nouveau pantin ; `tenue(3)` appelle `corps.forme(3)` et retire la faux et la gourde. L'ancien pantin (`Ancien`) ne sert plus qu'à la phase 1.
+- **`LeoCorps.forme(3)`** : `ech` .98, le buste ×1,07 (`_os`), les pièces à peau recuites en couleurs « potion » (`CUIT3`, `aDeLaPeau`, `potion()` : un simple remplacement de couleurs dans le SVG avant la cuisson), les pièces `potion:true` montrées (`p3-torse`, `p3-tete` — cachée pour les visages `ko` et `boit` —, `p3-bras*`, `p3-avant*`), les pièces `plaie:n` montrées selon `etat.plaies` (`C.plaies(n)`). Pour ajouter un détail à Léo sous potion : une pièce `P['p3-…'] = {os, boite, potion:true, svg}` et son nom dans `ORDRE`.
+- **`leo.js`** : `p2()` est vrai en phase 2 ET 3 (le nom est resté) ; le contexte de `LeoP2` a `soulever(h, on)` et `balancer([h1, h2])` (les héros de « il attrape ») ; `cine23`.
+- **`leo-p2.js`** : `p3(X)` (la forme 3), `G3` / `pose3` (sa posture voûtée), `PISTES.poing3 / rafale / hurlement / attrape / souffle` (la charge est celle de la phase 2), `RAFALE_COUPS`, les effets `aspire`, `ondesCri`, `braise`, `jetDeFlammes`, `fumeeBouche`, `coupRafale`, `entaille`, `mare`, `gouttes` ; `changer` et `vider` ne remettent plus la faux ni la gourde sur lui en forme 3.
+- **Les flammes** : `jetDeFlammes` pose quinze `<img class="lp-flam">` (l'image `flamme.png`, `SALLE.img('flamme')`) animées d'un coup (WAAPI, `transform` et `opacity`), en boucle le temps du souffle, puis retirées. Rien à chaque image.
+- **Les règles** : `L.BRULE.duree = Infinity` (éteinte dans `_soin`), `L.ARMES.gourde.infini`, `L.DUREES.gourde`, `L.ATTAQUES.poing3`.
+- **Essais** : `…/index.html?combat=leo&phase=3&vu=1&objets=…&potions=toutes` ; dans la console, `DJ.Leo._E().c.leo.k = LeoRegles.L.ORDRE[3].indexOf('souffle')` fait venir une attaque ; `DJ.Leo._E().leo.corps.plaies(3)` montre les entailles.
+
