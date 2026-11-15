@@ -1,6 +1,12 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 15 h 45)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 16 h 40)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 15 novembre (16 h 36) : LA PHASE 1 DE LÉO EST REFAITE (Bible §13.47) — EN LIGNE (15 novembre, 16 h 36 ; commit 9708074 du site ; version « 15/11 à 16 h 35 », dernière ligne de « 🎒 Objets »)
+
+- **À lire : Bible §13.47.** L'homme en cape a le même dessin détaillé que les phases 2 et 3 : la capuche (on ne voit que ses yeux qui luisent), la tunique avec un baudrier et une sacoche, des brassards cloutés, la cape. Il sort de sous sa cape **le fléau, le marteau, la meule de paille, le crochet** : on les voit, chaque attaque s'annonce par son nom avec une jauge.
+- **Pour la conception** : les règles de la phase 1 n'ont pas changé. **Il a de la farine sur sa tunique** (avec le fléau, la meule et le nuage de farine, tout dit « le moulin » avant qu'on voie son visage) : à voir avec Romain si c'est trop tôt.
+- **Rien n'a changé dans l'histoire, les dialogues ni les codes.**
 
 ## Nouveau depuis le 15 novembre (15 h 45) : LES TRACES DE MOUSTACHE, DEUXIÈME TOUR, ET LA FORÊT JUSQU'AU PUITS (Bible §13.48) — EN LIGNE (15 novembre, 15 h 43 ; commit e3a02e0 du site, version 20261115-1444, « 15/11 à 15 h 41 » dans les Réglages ; publication de GitHub vérifiée)
 

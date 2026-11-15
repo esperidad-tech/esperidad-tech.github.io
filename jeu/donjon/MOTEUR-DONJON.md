@@ -460,3 +460,10 @@ Romain a joué l'enquête 3 avec sa famille, donjon compris, et a dicté ses cor
 - **Les héros** : `anim/heros/src/` est la source (`sh anim/heros/build.sh` fabrique `heros-anime.js`) ; `H._flash` sans filtre ; le geste du bouclier jaune ×1,5.
 - **Mesurer une attaque** : `python3 perf-leo.py 3 --attaque rafale` (Léo ne fait plus que celle-là ; les images par seconde moment par moment) ; `DOSSIER=<un donjon construit> python3 perf-leo.py 3` pour comparer deux versions **au même moment** (la machine d'essai change de vitesse d'une heure à l'autre).
 
+### 9.22 Le 15 novembre : la phase 1 sur le nouveau Léo (Bible §13.47)
+
+- **`leo-anime.js`** : `NOUVEAU = {1, 2, 3}` ; `tenue(1)` = `corps.forme(2)` + `corps.habits({capuche, tunique, cape})`. **`leo.js`** : `p2()` est vrai dans les trois phases (les gestes de Léo viennent toujours de `leo-p2.js`) ; `leo()`, `leoImpact`, `JEU`, `racler` et `Ancien` ne servent plus (à retirer).
+- **`leo-corps.js`** : une arme = une pièce `{os:'arme', arme:'<nom>'}` (repère : la main ; le manche descend), montrée par `C.arme(nom)` ; sa matrice `M.arme = enMain(0, 14, p.aa, T(0, -p.ag))`. Pour en ajouter une : la pièce, son nom dans `ORDRE`, et c'est tout. Sous la tunique, `torse`, `bras*`, `avant*` sont cachés (`_maj`).
+- **`leo-p2.js`** : `PISTES.<attaque>.tient` et `.farine` (le crochet), l'étape `noirci` (après le BOUM) = la pose « sonné » ; `ANNONCES_SUITE.tient`. **Rien ne doit monter au-dessus de la tête de Léo** (le haut de l'écran est couvert).
+- **Regarder une attaque** : `…/donjon/?leo=1`, puis dans la console `DJ.Leo._E().c.leo.k = LeoRegles.L.ORDRE[1].indexOf('marteau') - 1`.
+
