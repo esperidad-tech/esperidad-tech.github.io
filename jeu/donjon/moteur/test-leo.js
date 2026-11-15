@@ -352,7 +352,7 @@ section('Phase 2 — les armes ramassées');
   egal(L.COUPS.crochet, 2 * L.COUPS.dague, '… exactement deux');
   for(var k = 0; k < 6; k++) ev = geste(c, 'pisteur', 'l:crochet', 'leo');
   ok(!trouve(ev, 'arme') && g1(c, 'pisteur', 'l:crochet') && g1(c, 'pisteur', 'l:crochet').permis && c.etat().armes.crochet === L.USAGES, 'le crochet est infini : au septième coup il est toujours là, et il ne s\'use pas (Romain, 15 novembre)');
-  ok(L.ARMES.crochet.infini && L.ARMES.fleau.infini && L.ARMES.marteau.infini && !L.ARMES.faux.infini && !L.ARMES.gourde.infini, 'le crochet, le fléau et le marteau sont infinis ; la faux et la gourde de la phase 3 gardent leurs trois coups');
+  ok(L.ARMES.crochet.infini && L.ARMES.fleau.infini && L.ARMES.marteau.infini && !L.ARMES.faux.infini, 'le crochet, le fléau et le marteau sont infinis ; la faux de la phase 3 garde ses trois coups');
   pv = c.leo.pv; ev = geste(c, 'pisteur', 'l:fleau', 'leo');
   ok(pv - c.leo.pv === L.COUPS.fleau && L.COUPS.fleau < L.COUPS.dague, 'le fléau sur Léo tout seul : moins fort que la dague (' + L.COUPS.fleau + ')');
   /* le marteau coupe la gourde */
@@ -493,7 +493,7 @@ section('Phase 3 — insensible, sauf au saignement');
   /* la gourde */
   c = combat(3); c.h.sage.pv = 9;
   ev = geste(c, 'pisteur', 'l:gourde', 'sage');
-  egal([c.h.sage.pv, c.etat().armes.gourde], [90, 2], 'la gourde rend toute sa vie à qui on veut (Romain) ; trois gorgées');
+  egal([c.h.sage.pv, c.etat().armes.gourde], [90, L.USAGES], 'la gourde rend toute sa vie à qui on veut (Romain) ; elle ne se vide plus (infinie : Romain, 15 novembre)');
   /* le givre le ralentit */
   c = combat(3); ev = geste(c, 'pisteur', 'p:givre', 'leo');
   ok(c.etat().leo.ralenti, 'le givre le ralentit (dans les trois phases)');
@@ -522,8 +522,14 @@ section('Phase 3 — ses attaques');
   ok(D.ORDRE.every(function(h){ return !c.h[h].attrape; }), 'le héros attrapé peut encore jouer (Romain)');
   soigner(); ev = jusque(c, leo('impact', 'souffle'));
   ok(D.ORDRE.every(function(h){ return c.h[h].brule > c.t; }), 'le souffle de feu : tout le monde brûle');
-  var pv = c.h.pisteur.pv; c.leo.fin += 100; c.avancer(L.BRULE.duree + .3);
-  egal([pv - c.h.pisteur.pv, c.etat().heros.pisteur.brule], [L.BRULE.n * (L.BRULE.duree / L.BRULE.pas - 1), false], 'la brûlure s\'arrête toute seule (Romain)');
+  D.ORDRE.forEach(function(h){ c.h[h].pv = c.h[h].pvMax = 400; });
+  var pv = c.h.pisteur.pv; c.leo.fin += 100; c.avancer(8.2);
+  ok(pv - c.h.pisteur.pv >= L.BRULE.n * 15 && c.etat().heros.pisteur.brule, 'la brûlure ne s\'arrête plus toute seule : huit secondes après, il brûle toujours (Romain, 15 novembre)');
+  D.ORDRE.forEach(function(h){ c.h[h].act = null; c.h[h].etourdi = 0; });
+  var evS = geste(c, 'alchimiste', 'herbes');
+  ok(D.ORDRE.every(function(h){ return !c.etat().heros[h].brule; }) && tous(evS, 'etat', function(e){ return e.nom === 'brule' && e.on === false; }).length === 3, 'un soin (les herbes) éteint le feu de tout le monde');
+  ok(L.ARMES.gourde.infini && !L.ARMES.faux.infini && L.DUREES.gourde.impact >= 1.5, 'la gourde volée est infinie, et plus longue à boire (Romain, 15 novembre) ; la faux garde ses trois coups');
+  egal([L.ATTAQUES.poing3.prise, L.ATTAQUES.poing3.elan], [.6, .8], 'le gros coup de poing de la phase 3 se prépare : 1,4 seconde');
   /* le bouclier jaune empêche d'être attrapé : le coup est raté pour les deux */
   c = combat(3); jusque(c, leo('impact', 'poing3'));
   ['rafale', 'charge', 'hurlement'].forEach(function(a){ jusque(c, leo('impact', a), 40); soigner(); });

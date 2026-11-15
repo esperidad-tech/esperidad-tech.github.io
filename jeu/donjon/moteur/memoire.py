@@ -103,5 +103,5 @@ if __name__ == '__main__':
             for q in args:
                 s = Sonde(nav, q); s.pg.wait_for_timeout(6000); ligne(q[:34], s.releve()); ligne('   8 s (pire)', pire(s, 8000)); s.fermer()
         else:
-            leo(nav, 1); leo(nav, 2)
+            leo(nav, 1); leo(nav, 2); leo(nav, 3)
         nav.close()

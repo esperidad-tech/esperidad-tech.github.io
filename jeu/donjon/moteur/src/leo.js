@@ -96,7 +96,12 @@ function construire(){
   E.leo = window.LeoAnime.creer(p, {x:LX, sol:SOL, tenue:1});
   E.leo.el.style.zIndex = 3;
   /* la phase 2 (Bible §13.40) : le nouveau Léo, ses gestes calés sur l'horloge des règles, ses effets (leo-p2.js) */
-  E.p2 = window.LeoP2 && E.leo.corps ? window.LeoP2.creer({leo:E.leo, fx:fx, sol:q('#sol-fx'), persos:p, Fx:Fx, bruit:bruit, son:son, hCx:hCx, hPt:hPt, LX:LX, SOL:SOL}) : null;
+  E.p2 = window.LeoP2 && E.leo.corps ? window.LeoP2.creer({leo:E.leo, fx:fx, sol:q('#sol-fx'), persos:p, Fx:Fx, bruit:bruit, son:son, hCx:hCx, hPt:hPt, LX:LX, SOL:SOL,
+    /* (phase 3, « il attrape un héros ») soulever : le héros empoigné décolle du sol ; balancer : Léo s'en sert pour frapper le voisin */
+    soulever:function(h, on){ var s = slotH(h); if(!s) return; s.style.transition = 'transform .22s cubic-bezier(.3,.6,.4,1)'; s.style.transform = on ? 'translate(34px,-74px) rotate(-16deg)' : ''; },
+    balancer:function(l){ if(!l || l.length < 2){ if(l && l[0]){ var s0 = slotH(l[0]); if(s0){ s0.style.transition = 'transform .2s ease-in'; s0.style.transform = ''; } } return; }
+      var s1 = slotH(l[0]), dx = hCx(l[1]) - hCx(l[0]); s1.style.transition = ''; s1.style.transform = '';
+      try{ s1.animate([{transform:'translate(34px,-74px) rotate(-16deg)'}, {transform:'translate(' + (dx * .4) + 'px,-110px) rotate(-40deg)', offset:.3}, {transform:'translate(' + (dx * .9) + 'px,-6px) rotate(46deg)', offset:.58}, {transform:'translate(' + (dx * .5) + 'px,-40px) rotate(20deg)', offset:.78}, {transform:'translate(0,0) rotate(0)'}], {duration:620, easing:'ease-in-out'}); }catch(x){} }}) : null;
   var zl = el('div', 'zone'); zl.id = 'zone-leo'; zl.setAttribute('data-act', 'l-perso'); zl.setAttribute('data-type', 'ennemi'); zl.setAttribute('data-id', 'leo');
   zl.style.cssText = 'left:' + (LX - 100) + 'px;top:70px;width:200px;height:290px';
   hud.appendChild(zl);
@@ -111,7 +116,8 @@ function construire(){
 function mem(sel){ var c = E.mem || (E.mem = {}), e = c[sel]; return e && e.isConnected ? e : (c[sel] = q(sel)); }
 function slotH(h){ return mem('.h-' + h); }
 /* la phase 2 se joue avec le nouveau Léo : sa pose vient, à chaque image, de l'horloge des règles (leo-p2.js) */
-function p2(){ return !!(E && E.p2 && E.c && E.c.phase === 2 && E.leo.nouveau()); }
+/* (le nouveau Léo — phases 2 et 3 : ses gestes sont calculés à chaque image d'après les règles, par leo-p2.js) */
+function p2(){ return !!(E && E.p2 && E.c && (E.c.phase === 2 || E.c.phase === 3) && E.leo.nouveau()); }
 
 /* ====================================================================== 2. LES PHASES */
 function demarrerPhase(n, premiere){
@@ -236,9 +242,28 @@ async function cine23(){
   await pause(700);
   bruit('leoPotion', {}, ['bulles']);
   if(E.leo.nouveau()){
-    /* (le nouveau Léo de la phase 2 : il sort une potion et la boit, à genoux ; la grosse bête verte reste l'ancien dessin) */
+    /* (15 novembre : c'est le même Léo qui boit et qui se transforme — plus d'ancien dessin en phase 3) */
     var C = E.leo.corps; C.visage('rictus'); C.objet('gourde', 'main'); C.objet('bouchon', false);
     await pose(window.LeoP2 ? window.LeoP2.BOIT : 'garde', 600, 'o'); C.visage('boit');
+    await pause(1000);
+    /* la potion fait effet : il lâche la gourde, se tord, verdit par à-coups… */
+    C.objet('gourde', null); C.visage('douleur');
+    await pose('genou', 350, 'o');
+    for(var k3 = 0; k3 < 4 && !E.saute; k3++){ E.leo.teinte('vert'); Fx.tremble(4 + k3 * 2, 160); await pause(150); E.leo.teinte(null); await pause(110); }
+    /* … et il se relève, plus grand, les veines pleines de potion */
+    E.leo.eclair(); E.leo.tenue(3); C.visage('effort'); bruit('leoMuscles', {}, ['tombe']);
+    var a3 = E.leo.ancre('centre'); Fx.onde(a3.x, a3.y, '#b6ff8a', 420, 800); Fx.etincelles(a3.x, a3.y - 20, 16, '#b6ff8a', 1.4);
+    await pose({bas:30, torse:20, tete:14, bAv:[-30, 80, 0], bAr:[20, 86, 0]}, 380, 'o');
+    C.visage('cri'); bruit('leoHurlement', {}, ['rugit']);
+    await pose('rugit', 420, 'o'); Fx.tremble(16, 900);
+    for(var o3 = 0; o3 < 3; o3++){ (function(d){ setTimeout(function(){ if(E){ var m3 = E.leo.ancre('bouche'); Fx.onde(m3.x, m3.y, '#eaffc0', 520, 700); } }, d); })(o3 * 220); }
+    await pause(1200);
+    C.visage('colere');
+    ramasser(['faux', 'gourde']);
+    await pose('garde', 500, 'io');
+    await pause(800);
+    passer(false);
+    return;
   } else {
     E.leo.arme('gourde');
     await pose('boit', 600, 'o'); E.leo.visage('boit');
@@ -407,7 +432,7 @@ function maj(force){
 }
 /* les icônes de la rune de l'œil, aux pieds de Léo : celle qui vient (en grand), puis les deux suivantes (en petit) */
 function icAttaque(x){
-  var ic2 = E.p2 && E.c.phase === 2 ? E.p2.icone(x.att) : null;
+  var ic2 = p2() ? E.p2.icone(x.att) : null;
   if(ic2) return ic2;
   if(x.ic === 'meule') return '<svg viewBox="-50 -56 100 100" width="100%" height="100%" aria-hidden="true">' + window.LeoAnime.ARMES.meule() + '</svg>';
   return x.ic;

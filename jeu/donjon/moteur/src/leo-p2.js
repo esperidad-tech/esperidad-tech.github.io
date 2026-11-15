@@ -120,7 +120,7 @@ function poseDe(att, etape, k, cx){ var P = PISTES[att]; return P && P[etape] ? 
 
 /* ============================================================================ CE QUE FAIT SON VISAGE, ÉTAPE PAR ÉTAPE
    [k, visage] : à partir de k dans l'étape (Romain : « son visage, je veux qu'il change en fonction de ce qu'il fait ») */
-var VISAGES = {
+var VISAGES = {/* (ceux de la phase 3 sont ajoutés plus bas) */
   sifflet:{prise:[[0, 'colere'], [.8, 'souffle']], elan:[[0, 'souffle']], retour:[[0, 'rictus']]},
   poing:{elan:[[0, 'effort']], retour:[[0, 'cri'], [.5, 'colere']]},
   faux:{prise:[[0, 'colere'], [.75, 'rictus']], elan:[[0, 'effort']], retour:[[0, 'cri'], [.55, 'rictus']]},
@@ -157,7 +157,10 @@ function vider(X){
   if(X.annonce){ try{ X.annonce.el.remove(); }catch(x){} X.annonce = null; }
   X.cibleSaut = null;
   X.sig = ''; X.faits = {}; X.brule = false; X.flinch = 0; X.douleur = 0; X.coupe = 0;
-  var C = corps(X); if(C){ C.objet('faux', 'dos'); C.objet('gourde', 'ceinture'); C.objet('bouchon', true); C.objet('sifflet', 'cou'); C.objet('rat', null); C.visage('colere'); C.devantAr(false); }
+  var C = corps(X), f3 = !!(C && C.etat.forme === 3);
+  if(C){ C.objet('faux', f3 ? null : 'dos'); C.objet('gourde', f3 ? null : 'ceinture'); C.objet('bouchon', true); C.objet('sifflet', 'cou'); C.objet('rat', null); C.visage('colere'); C.devantAr(false); C.main('Av', 'poing'); C.main('Ar', 'poing'); }
+  if(X.mareEl){ try{ X.mareEl.remove(); }catch(x){} X.mareEl = null; }
+  if(X.ctx.soulever && X.cibleH){ try{ X.ctx.soulever(X.cibleH, false); }catch(x){} } X.cibleH = null; X.sangT = 0;
 }
 function bruit(X, id, o, ancien){ try{ return X.ctx.bruit(id, o || {}, ancien); }catch(e){ return null; } }
 function son(X){ try{ X.ctx.son.apply(null, [].slice.call(arguments, 1)); }catch(e){} }
@@ -165,10 +168,10 @@ function son(X){ try{ X.ctx.son.apply(null, [].slice.call(arguments, 1)); }catch
 /* ============================================================================ À CHAQUE IMAGE */
 function idle(X, t){
   /* au repos, il n'est jamais immobile : il souffle fort (il est en colère), il se balance, il serre les poings */
-  var p = LC.complete(G), s1 = Math.sin(t * 1.25), s2 = Math.sin(t * .7 + 1);
+  var f3 = p3(X), p = LC.complete(f3 ? pose(G3) : G), s1 = Math.sin(t * 1.25), s2 = Math.sin(t * .7 + 1);
   p.x = s1 * 2.5; p.torse += s1 * 1.6 + 1; p.tete += s2 * 2;
   p.bAv[1] += Math.sin(t * 2.1) * 6; p.bAr[1] += Math.sin(t * 1.8 + 2) * 6; p.bAv[0] += s2 * 3;
-  p.souffle = 1.7;
+  p.souffle = f3 ? 2.6 : 1.7;                       /* (sous la potion : il halète, les bras ballants) */
   return p;
 }
 function image(X, dt, c){
@@ -192,6 +195,7 @@ function image(X, dt, c){
   /* les repères de l'étape (les effets, les sons, une seule fois) */
   reperes(X, etape, att, k, c);
   annoncer(X, etape, att, k);
+  if(p3(X)) gouttes(X, dt, Z);
   /* le visage */
   visage(X, etape, att, k, dt);
   X.pose = p;
@@ -202,7 +206,8 @@ function image(X, dt, c){
 /* L'ANNONCE (15 novembre ; Romain : « les animations restent pas très claires, il faut augmenter la clarté encore ») : pendant
    qu'il prépare une attaque, son nom s'affiche en gros au milieu de la salle, avec une jauge qui se remplit jusqu'au coup.
    On sait ce qui arrive, et quand. (Trois mots au plus : pas de bouton 🔊.) */
-var ANNONCES = {sifflet:['🐀', 'IL SIFFLE'], faux:['⚠️', 'LA FAUX'], charge:['⚠️', 'LA CHARGE'], lancer:['🐀', 'UN RAT VOLE'], gourde:['🧪', 'IL BOIT'], saut:['⚠️', 'LE SAUT'], poing:['⚠️', 'LE POING']};
+var ANNONCES = {poing3:['👊', 'LE POING'], rafale:['🥊', 'LA RAFALE'], hurlement:['📢', 'LE CRI'], attrape:['✊', 'IL ATTRAPE'], souffle:['🔥', 'LE FEU'],
+  sifflet:['🐀', 'IL SIFFLE'], faux:['⚠️', 'LA FAUX'], charge:['⚠️', 'LA CHARGE'], lancer:['🐀', 'UN RAT VOLE'], gourde:['🧪', 'IL BOIT'], saut:['⚠️', 'LE SAUT'], poing:['⚠️', 'LE POING']};
 function annoncer(X, etape, att, k){
   var A = ANNONCES[att], en = !!A && (etape === 'prise' || etape === 'elan'), a = X.annonce;
   if(a && (!en || a.att !== att)){ X.annonce = null; var e0 = a.el; anim(e0, [{opacity:1}, {opacity:0}], {duration:160, fill:'forwards'}); retirer(e0, 180); a = null; if(X.cibleSaut && att !== 'saut') finCibleSaut(X); }
@@ -226,7 +231,9 @@ function changer(X, Z, c){
   X.etape = Z.etape; X.att = Z.att;
   var C = corps(X);
   /* (une attaque qui recommence : tout reprend sa place, au cas où une étape aurait été coupée) */
-  if(Z.etape === 'repos' || Z.etape === 'prise' && Z.att !== 'faux' && Z.att !== 'gourde'){
+  if(p3(X)){ if(Z.etape === 'repos' || Z.etape === 'prise'){ C.main('Ar', 'poing'); if(Z.att !== 'attrape') C.main('Av', 'poing'); } /* (le héros empoigné retombe dès que le coup est passé — ou raté : un bouclier jaune l'a protégé) */
+    if(X.ctx.soulever && X.cibleH && (Z.etape === 'retour' || Z.etape === 'repos' || Z.etape === 'sonne')){ if(X.att === 'attrape' || Z.etape !== 'retour') X.ctx.soulever(X.cibleH, false); X.cibleH = null; } }
+  else if(Z.etape === 'repos' || Z.etape === 'prise' && Z.att !== 'faux' && Z.att !== 'gourde'){
     if(C.etat.faux === 'main' && Z.att !== 'faux') C.objet('faux', 'dos');
     if(C.etat.sifflet === 'main' && Z.att !== 'sifflet') C.objet('sifflet', 'cou');
     if(C.etat.rat === 'main' && Z.att !== 'lancer') C.objet('rat', null);
@@ -243,6 +250,66 @@ function auSol(k, t){
   if(k > .86){ var u = (k - .86) / .14; p = LC.melange(p, LC.complete(pose({bas:30, torse:20, tete:6, x:-120, bAv:[-30, 40, 0], bAr:[40, 60, 0]})), COURBES.io(u)); }
   return p;
 }
+
+/* ============================================================================ LA PHASE 3 : LÉO SOUS LA POTION (Romain, 15 novembre)
+   « Toutes les attaques, il n'y a absolument rien qui va. On comprend rien […] je veux vraiment des animations très très
+   travaillées […] une animation très précise pour chaque sort qu'il fait, pour qu'on comprenne bien. » Même façon que la phase 2 :
+   chaque attaque a sa préparation (qu'on voit venir), son coup, son retour ; son nom s'affiche avec la jauge (ANNONCES). */
+var G3 = {torse:11, tete:5, bas:14, bassin:4, bAv:[-24, 42, -6], bAr:[32, 48, 0], pAv:[206, 318], pAr:[96, 318]};      /* voûté, les bras écartés */
+function pose3(o){ var r = pose(G3), k; for(k in o) r[k] = o[k]; return r; }
+/* ---------- LE GROS COUP DE POING : il recule son poing très loin (il rougeoie, il tremble), puis il bondit et frappe ---------- */
+var ARME3 = {torse:-17, bas:22, bassin:-6, tete:2, bAv:[-98, 130, -10], bAr:[72, 52, 0], pAv:[224, 318], pAr:[92, 318]};
+var FRAPPE3 = {x:'cible', torse:30, bas:16, bassin:8, tete:10, bAv:[100, 2, 0], bAr:[-40, 50, 0], pAv:[176, 318], pAr:[60, 318]};
+PISTES.poing3 = {
+  prise:[[0, pose3({}), 'io'], [1, pose3(ARME3)]],
+  elan:[[0, pose3(ARME3), 'io'], [.5, pose3({torse:-22, bas:27, bassin:-7, tete:0, bAv:[-108, 136, -10], bAr:[78, 46, 0], pAv:[226, 318], pAr:[92, 318]}), 'lin'],
+    [.82, pose3({torse:-24, bas:28, bassin:-7, tete:0, bAv:[-112, 138, -10], bAr:[80, 44, 0], pAv:[226, 318], pAr:[92, 318]}), 'i'], [1, pose3(FRAPPE3)]],
+  retour:[[0, pose3(FRAPPE3), 'lin'], [.35, pose3({x:'cible', torse:27, bas:16, bassin:8, tete:10, bAv:[96, 8, 0], bAr:[-36, 50, 0], pAv:[176, 318], pAr:[60, 318]}), 'io'], [1, pose3({})]]
+};
+/* ---------- LA RAFALE : la garde du boxeur (il sautille), il fonce, et les coups pleuvent, gauche, droite, gauche, droite ---------- */
+var BOXE = {torse:6, bas:16, tete:6, bAv:[62, 112, 0], bAr:[72, 112, 0]};
+var DIRECT_A = {x:'cible', torse:26, bas:16, tete:8, bAv:[100, 4, 0], bAr:[44, 120, 0], pAv:[178, 318], pAr:[66, 318]};
+var DIRECT_B = {x:'cible', torse:19, bas:16, tete:8, bAv:[52, 122, 0], bAr:[106, 6, 0], pAv:[178, 318], pAr:[66, 318]};
+PISTES.rafale = {
+  prise:[[0, pose3({}), 'io'], [.4, pose3(BOXE), 'io'], [1, pose3(BOXE)]],
+  elan:[[0, pose3(BOXE), 'i'], [.16, pose3({x:'cible', torse:18, bas:16, tete:6, bAv:[62, 112, 0], bAr:[72, 112, 0], pAv:[178, 318], pAr:[66, 318]}), 'o'],
+    [.26, pose3(DIRECT_A), 'o'], [.36, pose3(DIRECT_B), 'o'], [.46, pose3(DIRECT_A), 'o'], [.56, pose3(DIRECT_B), 'o'], [.66, pose3(DIRECT_A), 'o'], [.76, pose3(DIRECT_B), 'o'], [.86, pose3(DIRECT_A), 'o'],
+    [1, pose3({x:'cible', torse:32, bas:18, tete:10, bAv:[52, 122, 0], bAr:[112, 0, 0], pAv:[178, 318], pAr:[60, 318]})]],
+  retour:[[0, pose3({x:'cible', torse:32, bas:18, tete:10, bAv:[52, 122, 0], bAr:[112, 0, 0], pAv:[178, 318], pAr:[60, 318]}), 'lin'], [.3, pose3({x:'cible', torse:10, bas:14}), 'io'], [1, pose3({})]]
+};
+var RAFALE_COUPS = [.26, .36, .46, .56, .66, .76, .86, .97];
+/* ---------- LE HURLEMENT : il se redresse et aspire tout l'air de la salle (la poitrine gonflée, la tête en arrière)… puis il se
+   plie en avant et hurle : les ondes du cri traversent la salle ---------- */
+var INSPIRE = {torse:-18, bas:6, bassin:-4, tete:-26, bAv:[-60, 30, 0], bAr:[-40, 36, 0]};
+var INSPIRE2 = {torse:-23, bas:4, bassin:-5, tete:-33, bAv:[-74, 34, 0], bAr:[-54, 40, 0]};
+var HURLE = {torse:27, bas:24, bassin:8, tete:14, bAv:[-52, 72, 0], bAr:[-32, 78, 0], pAv:[214, 318], pAr:[86, 318]};
+PISTES.hurlement = {
+  prise:[[0, pose3({}), 'io'], [.6, pose3(INSPIRE), 'io'], [1, pose3(INSPIRE2)]],
+  elan:[[0, pose3(INSPIRE2), 'o'], [.13, pose3(HURLE), 'lin'], [1, pose3({torse:30, bas:26, bassin:8, tete:16, bAv:[-58, 76, 0], bAr:[-38, 82, 0], pAv:[214, 318], pAr:[86, 318]})]],
+  retour:[[0, pose3(HURLE), 'io'], [.4, pose3({torse:16, bas:16}), 'io'], [1, pose3({})]]
+};
+/* ---------- IL ATTRAPE UN HÉROS : la main grande ouverte, il fonce, l'empoigne, le soulève… et s'en sert pour frapper le voisin ---------- */
+var GUET = {torse:22, bas:26, bassin:8, tete:8, bAv:[72, 30, 0], bAr:[-30, 60, 0], pAv:[216, 318], pAr:[88, 318]};
+PISTES.attrape = {
+  prise:[[0, pose3({}), 'io'], [1, pose3(GUET)]],
+  elan:[[0, pose3(GUET), 'i'], [.5, pose3({x:'cible', torse:26, bas:22, bassin:8, tete:8, bAv:[86, 12, 0], bAr:[-30, 60, 0], pAv:[190, 318], pAr:[70, 318]}), 'o'],
+    [.64, pose3({x:'cible', torse:31, bas:20, bassin:8, tete:10, bAv:[98, 0, 0], bAr:[-34, 60, 0], pAv:[186, 318], pAr:[66, 318]}), 'io'],
+    [1, pose3({x:'cible', torse:-6, bas:8, tete:-8, bAv:[152, 18, 0], bAr:[10, 60, 0], pAv:[190, 318], pAr:[72, 318]})]],
+  retour:[[0, pose3({x:'cible', torse:40, bas:22, bassin:10, tete:12, bAv:[62, 10, 0], bAr:[-20, 60, 0], pAv:[184, 318], pAr:[66, 318]}), 'lin'],
+    [.3, pose3({x:'cible', torse:36, bas:22, bassin:10, tete:12, bAv:[58, 14, 0], bAr:[-20, 60, 0], pAv:[184, 318], pAr:[66, 318]}), 'io'], [1, pose3({})]]
+};
+/* ---------- LE SOUFFLE DE FEU : il aspire (une braise grossit dans sa gorge)… puis se penche et crache un long jet de flammes ---------- */
+var CRACHE = {torse:30, bas:26, bassin:8, tete:10, bAv:[-56, 60, 0], bAr:[-36, 66, 0], pAv:[216, 318], pAr:[86, 318]};
+PISTES.souffle = {
+  prise:[[0, pose3({}), 'io'], [.55, pose3(INSPIRE), 'io'], [1, pose3(INSPIRE2)]],
+  elan:[[0, pose3(INSPIRE2), 'o'], [.12, pose3(CRACHE), 'lin'], [1, pose3(CRACHE)]],
+  retour:[[0, pose3(CRACHE), 'io'], [.35, pose3({torse:14, bas:16, tete:8}), 'io'], [1, pose3({})]]
+};
+/*§V3*/VISAGES.poing3 = {prise:[[0, 'effort']], elan:[[0, 'effort'], [.84, 'cri']], retour:[[0, 'cri'], [.5, 'rictus']]};
+VISAGES.rafale = {prise:[[0, 'rictus']], elan:[[0, 'effort'], [.2, 'cri']], retour:[[0, 'rictus']]};
+VISAGES.hurlement = {prise:[[0, 'souffle']], elan:[[0, 'souffle'], [.1, 'cri']], retour:[[0, 'rictus']]};
+VISAGES.attrape = {prise:[[0, 'rictus']], elan:[[0, 'effort']], retour:[[0, 'cri'], [.4, 'rictus']]};
+VISAGES.souffle = {prise:[[0, 'souffle']], elan:[[0, 'souffle'], [.1, 'cri']], retour:[[0, 'aah'], [.5, 'rictus']]};
 function visage(X, etape, att, k, dt){
   var C = corps(X), v = 'colere';
   if(X.douleur > 0){ X.douleur -= dt; }
@@ -284,6 +351,11 @@ function plus(X, p, etape, att, k, t, Z, c){
   if(att === 'poing' && etape === 'elan'){ p.x += Math.sin(t * 50) * k * 1.6; }
   if(att === 'faux' && etape === 'elan'){ p.x += Math.sin(t * 46) * k * 1.4; }
   if(att === 'saut' && etape === 'prise'){ p.x += Math.sin(t * 52) * k * 2; }
+  /* la phase 3 : le poing qui tremble d'être retenu, le boxeur qui sautille, le corps qui vibre quand il hurle ou crache */
+  if(att === 'poing3' && etape === 'elan' && k < .82){ p.x += Math.sin(t * 54) * (.6 + k * 2.2); p.bAv = [p.bAv[0] + Math.sin(t * 47) * 2, p.bAv[1], p.bAv[2]]; }
+  if(att === 'rafale' && etape === 'prise'){ var sr = Math.abs(Math.sin(t * 11)); p.y = -7 * sr; p.bas = Math.max(0, p.bas - 5 * sr); }
+  if((att === 'hurlement' || att === 'souffle') && etape === 'elan' && k > .12){ p.x += Math.sin(t * 58) * 1.6; p.tete += Math.sin(t * 6) * 3; }
+  if((att === 'hurlement' || att === 'souffle') && etape === 'prise'){ p.souffle = 0; p.torse -= Math.sin(t * 30) * .6 * k; }
   return p;
 }
 function glisseDebut(p, v){
@@ -328,6 +400,33 @@ function reperes(X, etape, att, k, c){
     if(etape === 'elan' && une(X, 'g3', k, .12)){ X.glou = -1; flot(X); halo(X, d); }
     if(etape === 'retour' && une(X, 'g4', k, .5)){ C.objet('gourde', 'ceinture'); C.objet('bouchon', true); }
   }
+  /* ---------- la phase 3 ---------- */
+  if(att === 'poing3' || att === 'rafale' || att === 'attrape'){
+    if(etape === 'prise' && une(X, 'q0', k, 0)){ X.cibleX = cibleX(X, Z); X.cibleH = Z.cibles && Z.cibles[0]; alerte(X, '!', '#ff6a5a'); bruit(X, 'leoMuscles', {}, null); if(att === 'attrape') C.main('Av', 'ouvert'); }
+  }
+  if(att === 'poing3'){
+    if(etape === 'prise' && une(X, 'q1', k, .25)) lueurPoing(X, d * .75 + ((window.LeoRegles && window.LeoRegles.L.ATTAQUES.poing3.elan) || .8));
+    if(etape === 'elan' && une(X, 'q2', k, .3)) poussiereTourne(X);
+    if(etape === 'elan' && une(X, 'q3', k, .8)){ vitesse(X); bruit(X, 'leoPoing', {cale:d * .2}, ['bong']); }
+  }
+  if(att === 'rafale'){
+    if(etape === 'prise' && une(X, 'r0', k, .4)) poussiereTourne(X);
+    if(etape === 'elan' && une(X, 'r1', k, .02)){ vitesse(X); bruit(X, 'leoRafale', {}, ['bong']); }
+    if(etape === 'elan') RAFALE_COUPS.forEach(function(s, i){ if(une(X, 'rc' + i, k, s)) coupRafale(X, i); });
+  }
+  if(att === 'hurlement'){
+    if(etape === 'prise' && une(X, 'h0', k, .05)){ aspire(X, d * .9); bruit(X, 'leoNaseaux', {}, null); }
+    if(etape === 'elan' && une(X, 'h1', k, .1)){ ondesCri(X, d * .9); bruit(X, 'leoHurlement', {}, ['rugit']); }
+  }
+  if(att === 'attrape'){
+    if(etape === 'elan' && une(X, 'a1', k, .2)) vitesse(X);
+    if(etape === 'elan' && une(X, 'a2', k, .64)){ C.main('Av', 'poing'); bruit(X, 'leoAttrape', {}, ['bong']); if(X.ctx.soulever && X.cibleH) X.ctx.soulever(X.cibleH, true); }
+  }
+  if(att === 'souffle'){
+    if(etape === 'prise' && une(X, 's0', k, .05)){ aspire(X, d * .9, 'linear-gradient(90deg,rgba(255,170,60,0),#ffb050)'); braise(X, d); bruit(X, 'leoNaseaux', {}, null); }
+    if(etape === 'elan' && une(X, 's1', k, .1)){ jetDeFlammes(X, d * .92); bruit(X, 'leoSouffle', {}, ['feu']); }
+    if(etape === 'retour' && une(X, 's2', k, .05)) fumeeBouche(X);
+  }
   if(att === 'saut'){
     if(etape === 'prise' && une(X, 'j0', k, 0)){ poussiereTourne(X); cibleSaut(X, d + ((window.LeoRegles && window.LeoRegles.L.ATTAQUES.saut.elan) || 1.5)); }
     if(etape === 'prise' && une(X, 'j0b', k, .5)) poussiereTourne(X);
@@ -353,6 +452,7 @@ function evenement(X, ev, c){
   }
   if(ev.t === 'leo-etat'){
     if(ev.nom === 'brule'){ brule(X, ev.on); return true; }
+    if(ev.nom === 'saigne' && ev.on && p3(X)){ entaille(X, ev.n || 1); return false; }      /* (l'état « 🩸 » s'affiche comme avant) */
     return false;
   }
   if(ev.t === 'degats' && ev.cible === 'leo' && ev.n > 0 && !ev.coule){ X.flinch = 1; X.flinchF = ev.n >= 150 ? 1.6 : 1; X.douleur = .35; return false; }
@@ -372,6 +472,17 @@ function impact(X, ev, c){
   if(att === 'lancer'){ lancerRat(X, l[0]); C.objet('rat', null); return true; }
   if(att === 'saut'){ finCibleSaut(X); atterrit(X); return true; }
   if(att === 'gourde') return true;                     /* (le soin arrive avec « soin-leo ») */
+  /* ---------- la phase 3 ---------- */
+  if(att === 'poing3'){
+    var h3 = l[0], q3 = h3 ? ctx.hPt(h3) : {x:300, y:220};
+    Fx.eclat(q3.x + 26, q3.y - 6, 300, 'radial-gradient(closest-side,#fff,rgba(255,225,150,.95) 30%,rgba(255,110,40,.5) 60%,rgba(255,110,40,0))', 420); Fx.etincelles(q3.x + 20, q3.y, 18, null, 1.3);
+    Fx.onde(q3.x + 20, q3.y, '#ffe2b0', 300, 420); Fx.tremble(18, 520); Fx.mot(q3.x + 40, Math.max(100, q3.y - 120), 'PAF !', 'croc');
+    return true;
+  }
+  if(att === 'rafale'){ var hr = l[0], qr = hr ? ctx.hPt(hr) : {x:300, y:220}; Fx.eclat(qr.x + 26, qr.y, 240, 'radial-gradient(closest-side,#fff,rgba(255,225,150,.9) 35%,rgba(255,120,60,0))', 360); Fx.tremble(14, 420); return true; }
+  if(att === 'hurlement'){ Fx.tremble(16, 520); return true; }
+  if(att === 'attrape'){ if(ctx.balancer) ctx.balancer(l); Fx.tremble(14, 460); C.main('Av', 'ouvert'); setTimeout(function(){ try{ C.main('Av', 'poing'); }catch(e){} }, 500); return true; }
+  if(att === 'souffle'){ return true; }                  /* (les flammes sont déjà là ; les héros prennent feu avec « etat ») */
   return false;
 }
 
@@ -557,6 +668,106 @@ function lancerRat(X, h){
   setTimeout(function(){ r.remove(); son(X, 'morsure'); }, 270);
 }
 /* LE SAUT : la poussière qui tourne pendant qu'il se ramasse, le décollage, l'atterrissage qui fait trembler toute la salle */
+/* ============================================================================ LES EFFETS DE LA PHASE 3 */
+function p3(X){ var C = corps(X); return !!(C && C.etat.forme === 3); }
+function bouche(X){ return X.ctx.leo.ancre('bouche'); }
+/* l'air aspiré (le hurlement, le souffle) : des traits qui filent vers sa bouche */
+function aspire(X, d, coul){
+  var m = bouche(X);
+  for(var i = 0; i < 9; i++){
+    var a = Math.PI * (.75 + i / 8 * .5) + hasard(-.1, .1), r = hasard(150, 250), e = el('lp-aspire', null, calque(X));
+    if(coul) e.style.background = coul;
+    e.style.left = m.x + 'px'; e.style.top = m.y + 'px';
+    anim(e, [{transform:'translate(' + (Math.cos(a) * r).toFixed(0) + 'px,' + (Math.sin(a) * r * .6).toFixed(0) + 'px) rotate(' + (a * 180 / Math.PI).toFixed(0) + 'deg) scaleX(1.4)', opacity:0}, {opacity:.9, offset:.3},
+      {transform:'translate(0px,0px) rotate(' + (a * 180 / Math.PI).toFixed(0) + 'deg) scaleX(.2)', opacity:0}], {duration:d * 520, delay:i * d * 60, iterations:Math.max(1, Math.round(d / .6)), easing:'ease-in'});
+    retirer(e, d * 1000 + 600);
+  }
+}
+/* LE HURLEMENT : les ondes du cri partent de sa bouche et traversent la salle, l'une après l'autre ; un gros « RAAAH ! » */
+function ondesCri(X, d){
+  var m = bouche(X), n = Math.max(3, Math.round(d / .17));
+  for(var i = 0; i < n; i++){
+    var e = el('lp-cri', null, calque(X)); e.style.left = m.x + 'px'; e.style.top = m.y + 'px';
+    anim(e, [{transform:'translate(0,-50%) scale(.12,.2)', opacity:0}, {opacity:.95, offset:.12}, {transform:'translate(-720px,-50%) scale(1.25,1.5)', opacity:0}], {duration:620, delay:i * 170, easing:'cubic-bezier(.2,.6,.4,1)', fill:'backwards'});
+    retirer(e, i * 170 + 660);
+  }
+  var t = el('lp-raah', 'RAAAH !', calque(X)); t.style.left = (m.x - 150) + 'px'; t.style.top = Math.max(84, m.y - 96) + 'px';
+  anim(t, [{transform:'scale(.3) rotate(-10deg)', opacity:0}, {transform:'scale(1.15) rotate(-6deg)', opacity:1, offset:.14}, {transform:'scale(1.3) rotate(-5deg)', opacity:1, offset:.8}, {transform:'scale(1.5) rotate(-4deg)', opacity:0}], {duration:d * 1000 + 200, easing:'ease-out'});
+  retirer(t, d * 1000 + 240);
+  X.ctx.Fx.tremble(7, d * 1000);
+}
+/* LE SOUFFLE DE FEU : la braise qui grossit dans sa gorge pendant qu'il aspire */
+function braise(X, d){
+  var e = garde(X, el('lp-lueur braise', null, calque(X))), t = 0;
+  suivre(X, {maj:function(dt){ t += dt; var p = bouche(X), k = Math.min(1, t / d); e.style.transform = 'translate(' + p.x.toFixed(1) + 'px,' + p.y.toFixed(1) + 'px) scale(' + (.25 + k * .75).toFixed(3) + ')'; e.style.opacity = String(Math.min(1, .3 + k)); return X.att === 'souffle' && (X.etape === 'prise' || X.etape === 'elan'); },
+    fin:function(){ e.remove(); }});
+}
+/* … et le jet de flammes : de VRAIES flammes (l'image de flamme du donjon), une quinzaine, qui partent de sa bouche, grossissent et
+   s'éteignent en traversant la salle, l'une derrière l'autre, tant qu'il crache. La carte graphique les joue seule. */
+function jetDeFlammes(X, d){
+  var ctx = X.ctx, m = bouche(X), src = window.SALLE && window.SALLE.img ? window.SALLE.img('flamme') : null, N = 15, vie = 620;
+  var boite = garde(X, el('lp-jet', '<i class="lp-jet-lueur"></i>', calque(X)));
+  var x1 = 30, long = m.x - x1, n = Math.max(1, Math.ceil(d * 1000 / vie));
+  var lu = boite.firstChild; lu.style.left = (x1 - 30) + 'px'; lu.style.width = (long + 60) + 'px';
+  anim(lu, [{opacity:0}, {opacity:1, offset:.15}, {opacity:.75, offset:.5}, {opacity:1, offset:.85}, {opacity:0}], {duration:d * 1000 + 300, fill:'forwards'});
+  for(var i = 0; i < N; i++){
+    var f = src ? document.createElement('img') : document.createElement('i');
+    f.className = 'lp-flam'; if(src){ f.src = src; f.alt = ''; }
+    var u = i / N, dy = hasard(-1, 1), k = hasard(.85, 1.2), r0 = -90 + hasard(-10, 10), fin = hasard(.72, 1);
+    f.style.left = m.x + 'px'; f.style.top = m.y + 'px';
+    boite.appendChild(f);
+    anim(f, [
+      {transform:'translate(-50%,-50%) translate(-6px,4px) rotate(' + r0 + 'deg) scale(.22)', opacity:0},
+      {transform:'translate(-50%,-50%) translate(' + (-long * .16).toFixed(0) + 'px,' + (10 + dy * 8).toFixed(0) + 'px) rotate(' + (r0 + dy * 6).toFixed(0) + 'deg) scale(' + (.7 * k).toFixed(2) + ')', opacity:1, offset:.14},
+      {transform:'translate(-50%,-50%) translate(' + (-long * .55 * fin).toFixed(0) + 'px,' + (34 + dy * 34).toFixed(0) + 'px) rotate(' + (r0 + dy * 14).toFixed(0) + 'deg) scale(' + (1.5 * k).toFixed(2) + ')', opacity:.95, offset:.55},
+      {transform:'translate(-50%,-50%) translate(' + (-long * fin).toFixed(0) + 'px,' + (52 + dy * 56).toFixed(0) + 'px) rotate(' + (r0 + dy * 22).toFixed(0) + 'deg) scale(' + (2.3 * k).toFixed(2) + ')', opacity:0}],
+      {duration:vie, delay:u * vie, iterations:n, easing:'linear', fill:'backwards'});
+  }
+  setTimeout(function(){ try{ boite.remove(); }catch(e){} }, d * 1000 + vie + 80);
+  ctx.Fx.tremble(4, d * 1000);
+}
+/* la fumée qui lui sort de la bouche, après */
+function fumeeBouche(X){
+  var m = bouche(X);
+  for(var i = 0; i < 4; i++){ var e = el('lp-vapeur', null, calque(X)); e.style.left = (m.x - 8) + 'px'; e.style.top = (m.y - 6) + 'px';
+    anim(e, [{transform:'translate(0,0) scale(.4)', opacity:.75}, {transform:'translate(' + hasard(-50, -14).toFixed(0) + 'px,' + hasard(-70, -40).toFixed(0) + 'px) scale(1.7)', opacity:0}], {duration:900, delay:i * 130, easing:'ease-out', fill:'backwards'}); retirer(e, 1500); }
+}
+/* LA RAFALE : chaque coup claque sur le héros (un éclat, un « paf ») */
+function coupRafale(X, n){
+  var ctx = X.ctx, h = X.cibleH, p = h ? ctx.hPt(h) : {x:300, y:220};
+  var x = p.x + 26 + hasard(-12, 12), y = p.y + hasard(-34, 30);
+  ctx.Fx.eclat(x, y, 110, 'radial-gradient(closest-side,#fff,rgba(255,225,150,.9) 40%,rgba(255,140,50,0))', 170);
+  ctx.Fx.etincelles(x, y, 4, null, .8);
+  if(n % 2 === 0) bruit(X, 'leoPoing', {}, ['bong']);
+  ctx.Fx.tremble(4, 110);
+}
+/* IL SAIGNE : la faux vient de l'entailler — un trait blanc claque sur son torse, le sang gicle, l'entaille reste */
+var PLAIES = [[143, 134], [148, 158], [153, 181]];
+function entaille(X, n){
+  var ctx = X.ctx, C = corps(X), k = Math.max(1, Math.min(3, n)), w = PLAIES[k - 1], p = sc(X, 'torse', w[0], w[1]);
+  C.plaies(k);
+  var e = el('lp-entaille leo', '<i></i><i></i>', calque(X)); e.style.left = (p.x - 60) + 'px'; e.style.top = (p.y - 40) + 'px';
+  anim(e, [{opacity:0, transform:'scale(.4) rotate(34deg)'}, {opacity:1, transform:'scale(1.5) rotate(34deg)', offset:.3}, {opacity:0, transform:'scale(1.8) rotate(34deg)'}], {duration:340, easing:'ease-out'}); retirer(e, 360);
+  for(var i = 0; i < 10; i++){ var g = el('lp-sang', null, calque(X)); ctx.Fx.particule(g, {x:p.x + hasard(-14, 14), y:p.y + hasard(-8, 8), vx:hasard(-220, 120), vy:hasard(-260, -40), g:900, vie:hasard(.5, .8), sol:338}); }
+  ctx.Fx.mot(p.x - 10, Math.max(100, p.y - 90), 'Il saigne !', 'croc');
+  X.flinch = 1; X.flinchF = 1.5; X.douleur = .6;
+  mare(X, k);
+}
+/* la mare de sang à ses pieds : elle grandit à chaque entaille */
+function mare(X, n){
+  var ctx = X.ctx;
+  if(!X.mareEl){ X.mareEl = el('lp-mare', null, ctx.sol || calque(X)); X.mareEl.style.left = (ctx.LX - 16) + 'px'; }
+  X.mareEl.style.transform = 'translate(-50%,-50%) scale(' + (.35 + n * .22).toFixed(2) + ')'; X.mareEl.style.opacity = n ? '1' : '0';
+}
+/* … et le sang qui goutte de ses entailles, sans arrêt (plus il en a, plus ça coule) */
+function gouttes(X, dt, Z){
+  var n = Math.min(3, Z.saigne || 0); if(!n) return;
+  X.sangT = (X.sangT || 0) + dt * (1.1 + n * .9);
+  if(X.sangT < 1) return;
+  X.sangT = 0;
+  var w = PLAIES[Math.floor(Math.random() * n)], p = sc(X, 'torse', w[0] + hasard(-10, 10), w[1] + hasard(0, 12));
+  var g = el('lp-sang', null, calque(X)); X.ctx.Fx.particule(g, {x:p.x, y:p.y, vx:hasard(-14, 14), vy:hasard(0, 40), g:760, vie:.9, sol:339});
+}
 /* LE SAUT : la cible au sol, là où il va retomber — dès qu'il se ramasse, et jusqu'au choc (elle se resserre : c'est le compte à rebours) */
 function cibleSaut(X, d){
   var ctx = X.ctx, x = ctx.LX + SAUT_X, e = garde(X, el('lp-cible-saut', '<i></i><i></i>', ctx.sol || calque(X)));

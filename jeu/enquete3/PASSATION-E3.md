@@ -1,6 +1,20 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 14 novembre au soir)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 13 h 18)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 15 novembre (13 h 18) : POUR ESSAYER LE COMBAT DE LÉO SANS REFAIRE LE DONJON (Bible §13.43) — EN LIGNE (15 novembre, 13 h 18 ; commit 7a7274f du site ; le donjon : version « 15/11 à 13 h 17 » (en bas de « 🎒 Objets ») ; publication de GitHub vérifiée)
+
+- **Trois adresses** : https://esperidad-tech.github.io/brumeval/donjon/?leo=1 (tout le combat), https://esperidad-tech.github.io/brumeval/donjon/?leo=2 (droit à la phase 2), https://esperidad-tech.github.io/brumeval/donjon/?leo=3 (droit à la phase 3). Le combat s'ouvre tout de suite, les héros ont tout leur équipement ; à la fin, « Rejouer ↻ » et un bouton par phase.
+- **Rien n'est gardé dans l'appareil** : une descente de l'enquête 3 en cours sur la tablette n'est pas touchée.
+- **Pour la conception** : l'essai donne tout (les deux bâtons, les flèches, toutes les potions). Il ne dit donc rien de la difficulté pour une équipe qui a raté des objets, et il ne passe ni par le code du Barde devant Léo ni par la fin du donjon.
+- **Rien n'a changé dans l'histoire, les dialogues, les règles du combat ni les codes.**
+
+## Nouveau depuis le 15 novembre (midi) : LA PHASE 3 DE LÉO EST REFAITE (Bible §13.42) — EN LIGNE (15 novembre, 12 h 55 ; commit f7eee5e du site ; le donjon : version « 15/11 à 12 h 50 » (en bas de « 🎒 Objets ») ; publication de GitHub vérifiée)
+
+- **À lire : Bible §13.42.** Léo sous la potion a un nouveau dessin (le même pantin que la phase 2, transformé : peau rougie, veines vertes, yeux qui luisent) ; ses six attaques sont refaites et annoncées ; on voit ses trois entailles et son sang.
+- **Ce qui change pour la conception** : **la gourde volée par le Pisteur est infinie** (mais plus longue à boire) ; **le feu du souffle brûle jusqu'à ce qu'on soigne** ; le gros coup de poing se prépare 1,4 s. Rien d'autre : la faux garde ses trois coups, seul le saignement blesse Léo.
+- **⚠️ Les indices de Farinel et d'Iris** sur la phase 3 (« la faux qui fait saigner », la potion volée) restent justes. Rien ne dit aux joueurs que le feu ne s'éteint qu'avec un soin : à voir avec Romain (un mot d'Iris ?).
+- **Rien n'a changé dans l'histoire, les dialogues ni les codes.**
 
 ## Nouveau depuis le 15 novembre : LÉO, LA FLUIDITÉ ET LES RETOUCHES DU COMBAT (Bible §13.41) — EN LIGNE (15 novembre, 11 h 17 ; commit 36d1391 du site ; le donjon : version « 15/11 à 11 h 13 » (en bas de « 🎒 Objets ») ; publication de GitHub vérifiée)
 

@@ -25,6 +25,7 @@ DJ.passage = function(nom, travail){
 
 /* un combat tout seul, pour les essais */
 function essaiCombat(P){
+  DJ.essai = true;                                        /* (un essai ne touche pas à la partie gardée dans l'appareil) */
   var salle = P.combat, partie = Regles.nouvellePartie(P.graine ? +P.graine : Math.floor(Math.random() * 1e9));
   /* &sac=… (ou &potions=…) : les potions que l'Alchimiste a su créer, pour cet essai ; « toutes » : les 9 ; rien : les 7 du départ
      (depuis le 10 novembre, il n'y a plus de sac de 3 recettes : il a toutes ses potions) */
@@ -49,21 +50,27 @@ function essaiCombat(P){
 }
 
 function essaiLeo(P){
+  DJ.essai = true;                                        /* (un essai ne touche pas à la partie gardée dans l'appareil) */
   var partie = Regles.nouvellePartie(P.graine ? +P.graine : Math.floor(Math.random() * 1e9));
   var liste = P.potions || P.sac;
   if(liste === 'toutes') partie.recettes = D.ORDRE_RECETTES.slice();
   else if(liste) partie.recettes = liste.split(',').filter(function(r){ return D.RECETTES[r]; });
   (P.objets || '').split(',').forEach(function(x){ var k = x.split(':'); if(k.length === 2 && partie.heros[k[0]] && D.OBJETS[k[1]]) partie.heros[k[0]].objets.push(k[1]); });
-  if(P.vu) partie.faits['leo:vu'] = 1;
+  if(P.vu && P.vu !== '0') partie.faits['leo:vu'] = 1;    /* (&vu=0 : avec la cinématique d'entrée) */
   window.PARTIE = partie;
   DJ.passage('La dernière salle', function(){ return DJ.Leo.preparer(); }).then(function(){ return DJ.Leo.lancer(partie, {phase:+P.phase || 1, vite:+P.leovite || 1}); }).then(function(res){
     window.RESULTAT = res;
     var jeu = q('#jeu'); jeu.innerHTML = '';
     var e = el('div', 'ecran'); e.id = 'essai-fin';
-    e.innerHTML = '<div class="pa-nom">' + (res === 'victoire' ? 'Victoire' : 'Retour à la carte') + '</div><button class="aller guide" data-act="essai-encore">Rejouer ↻</button>';
+    e.innerHTML = '<div class="pa-nom">' + (res === 'victoire' ? 'Victoire' : 'Retour à la carte') + '</div><button class="aller guide" data-act="essai-encore">Rejouer ↻</button>' +
+      '<div class="essai-phases">' + [1, 2, 3].map(function(n){ return '<button class="aller" data-act="essai-phase-' + n + '">Phase ' + n + '</button>'; }).join('') + '</div>';
     jeu.appendChild(e);
   });
-  DJ.toucher(function(a){ if(a === 'essai-encore'){ location.reload(); return true; } return false; });
+  DJ.toucher(function(a){
+    if(a === 'essai-encore'){ location.reload(); return true; }
+    if(a.indexOf('essai-phase-') === 0){ location.href = location.pathname + '?leo=' + a.slice(12); return true; }
+    return false;
+  });
 }
 
 function demarrer(){
@@ -74,6 +81,15 @@ function demarrer(){
   var P = parametres();
   if(P.vitesse) SALLE.vitesse = +P.vitesse;
   /* (pour les essais) le combat de Léo tout seul : index.html?combat=leo&phase=2&objets=sage:cristal-lune,sage:baton-chene&potions=toutes */
+  /* (Romain, 15 novembre, 13 h 01 : « faire en sorte que je sois directement au combat de fin ») l'adresse courte :
+     donjon/?leo=1, ?leo=2, ?leo=3 — le combat de Léo tout de suite, à la phase voulue, sans la cinématique d'entrée, avec les deux
+     bâtons du Sage, les flèches du Pisteur et toutes les potions. Rien n'est gardé : la descente en cours dans l'appareil reste là. */
+  if(P.leo){
+    P.combat = 'leo'; P.phase = P.leo;
+    if(P.vu == null) P.vu = '1';
+    if(!P.objets) P.objets = 'sage:cristal-lune,sage:baton-chene,pisteur:fleches-lourdes,pisteur:fleches-argent';
+    if(!P.potions && !P.sac) P.potions = 'toutes';
+  }
   if(P.combat === 'leo') return essaiLeo(P);
   if(P.combat && D.COMBATS[P.combat]) return essaiCombat(P);
   if(DJ.Explo && DJ.Explo.demarrer) return DJ.Explo.demarrer(P);

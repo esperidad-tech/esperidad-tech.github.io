@@ -294,7 +294,7 @@ P.arreter = function(){ this.duree = 0; if(this.fin){ var f = this.fin; this.fin
    en attendant que Romain valide le nouveau style) et le NOUVEAU LÉO, torse nu, détaillé (leo-corps.js), pour la phase 2, la
    cinématique où il arrache sa cape et sa tunique, et la fin (il redevient Léo). leo.js parle toujours au même objet :
    tenue(1 | 3) montre l'ancien, tenue(2) montre le nouveau ; .corps donne le nouveau pantin, pour la phase 2. */
-var NOUVEAU = {2:true};
+var NOUVEAU = {2:true, 3:true};        /* (15 novembre : la phase 3 aussi — Léo sous la potion, LeoCorps.forme(3)) */
 function Leo(parent, o){
   o = o || {};
   this.cx = o.x == null ? 815 : o.x; this.sol = o.sol == null ? 340 : o.sol;
@@ -318,7 +318,12 @@ F.tenue = function(n){
   if(!neuf) this.ancien.tenue(n);
   this.ancien.el.style.display = neuf ? 'none' : '';
   if(this.corps) this.corps.el.style.display = neuf ? '' : 'none';
-  if(neuf){ this.corps.habits({capuche:false, tunique:false, cape:false}); this.corps.objet('faux', 'dos'); this.corps.objet('gourde', 'ceinture'); this.corps.objet('sifflet', 'cou'); this.corps.objet('rat', null); }
+  if(neuf){
+    this.corps.habits({capuche:false, tunique:false, cape:false}); this.corps.objet('rat', null); this.corps.objet('sifflet', 'cou');
+    /* (phase 3 : sous la potion ; sa faux et sa gourde, c'est le Pisteur qui les a) */
+    this.corps.forme(n === 3 ? 3 : 2);
+    this.corps.objet('faux', n === 3 ? null : 'dos'); this.corps.objet('gourde', n === 3 ? null : 'ceinture');
+  }
   return this;
 };
 Object.defineProperty(F, 'p', {get:function(){ return this.actif.p; }});

@@ -3119,7 +3119,77 @@ Go à 10 h 05 : « Ok, tu peux commencer le chantier et quand c'est fait, tu peu
 
 **Reste à faire.** (1) **L'essai de Romain sur son iPhone** : si ça quitte encore, lui demander la dernière ligne de « 🎒 Objets » et à quel moment. (2) Les sons du combat fabriqués d'avance. (3) L'équilibre de la phase 2 avec les armes infinies. (4) S'il valide : la phase 3, puis la phase 1, dans le style du nouveau Léo (§13.40) — avec les mêmes règles de fluidité.
 
-### 13.42 Les cinématiques de Léo en vrais petits films (21:9, bandes noires, fond flou, éclairage des torches) — fin de phase 1, fin de phase 2, la fin en deux morceaux (15 novembre ; demande de Romain à 12 h 40, précisée à 12 h 43) — CONSTRUIT (voir l'état de la mise en ligne en tête de `PASSATION.md`)
+### 13.42 Léo, la phase 3 refaite : Léo sous la potion (le modèle le plus détaillé), chaque attaque préparée et annoncée, les trois entailles rouges, de vraies flammes ; la gourde infinie, le feu jusqu'au soin (15 novembre ; demande de Romain à 11 h 51) — CONSTRUIT, VÉRIFIÉ, EN LIGNE (15 novembre, 12 h 55 ; commit f7eee5e du site ; le donjon : version « 15/11 à 12 h 50 » (en bas de « 🎒 Objets ») ; publication de GitHub vérifiée)
+
+**Ce que Romain a dit (15 novembre, 11 h 51).** « La phase 3 : il y a tout à refaire, il n'y a absolument rien qui va. Ça doit être la modélisation la plus jolie de toutes […] le modèle le plus détaillé de tout le donjon […] plus joli encore que les héros. » ; « toutes les attaques […] on comprend rien, c'est très mal animé, c'est très simpliste […] son gros coup de poing, je veux qu'on sente vraiment qu'il va se préparer […] quand il crie, je veux vraiment qu'on voit l'animation qui se prépare à crier […] comme pour la phase 2, tu fais un peu le même style » ; « je veux qu'on voit bien qu'il saigne […] les trois coups de faux, donc trois traits rouges » ; « le crachat du feu, un joli crachat animé, avec des vraies flammes » ; « mais tu gardes une optimisation parfaite pour jouer sur des tablettes très vieilles […] il faut que tu testes sur des petites tablettes » ; « la potion qu'on lui pique, j'aimerais bien qu'elle soit infinie, mais que l'animation soit un petit peu plus longue, histoire que ça soit pas trop facile » ; « le feu, quand il crache, j'aimerais bien qu'il dure à l'infini ; du moment qu'on les soigne, ça s'arrête ».
+
+**Le modèle : Léo sous la potion** (`moteur/src/leo-corps.js`, `LeoCorps.forme(3)`). C'est **le même pantin** que la phase 2 (mêmes os, mêmes gestes possibles : plus d'ancien dessin en phase 3), transformé par la potion de force :
+- **la peau rougie** : toutes les pièces qui montrent de la peau sont cuites une deuxième fois, avec d'autres couleurs (`POTION`, `potion()`, `CUIT3`) ;
+- **un peu plus grand** (`ech` .98 au lieu de .94) et **le haut du corps plus large** (le buste agrandi de 7 %, avec les bras et la tête) ;
+- des pièces **posées par-dessus**, qui suivent les mêmes os (aucune animation en plus) : `p3-torse` (des trapèzes énormes, la potion qui luit dans la poitrine, **les veines vertes qui partent du cœur et se ramifient**, les muscles creusés, de vieilles cicatrices, la sueur, la vapeur des épaules, une lumière verte sur le bord du corps), `p3-tete` (**les yeux qui luisent**, les cheveux dressés, une veine à la tempe, la vapeur des naseaux), `p3-brasAv`, `p3-avantAv`, `p3-brasAr`, `p3-avantAr` (les veines des bras) ;
+- **les trois entailles de la faux** : `plaie1`, `plaie2`, `plaie3` — **trois traits rouges, l'un sous l'autre, en travers du torse**, avec le sang qui coule ; `LeoCorps.plaies(n)` en montre autant qu'il a reçu de coups de faux.
+Il n'a plus ni sa faux ni sa gourde (le Pisteur les a prises).
+
+**On voit qu'il saigne** (`leo-p2.js` : `entaille`, `gouttes`, `mare`). À chaque coup de faux : un trait blanc claque sur son torse, le sang gicle, « Il saigne ! », **l'entaille reste** ; ensuite **le sang goutte sans arrêt** de ses entailles (plus il en a, plus ça coule) et **une mare** grandit à ses pieds.
+
+**Les six attaques, refaites une par une** (`leo-p2.js` : `PISTES`, les repères, `ANNONCES` ; comme en phase 2, le nom s'affiche sous sa barre avec la jauge) :
+- **« 👊 LE POING »** : il recule son poing très loin (il rougeoie, il tremble d'être retenu, la poussière tourne), puis bondit jusqu'au héros et frappe : un grand éclat, « PAF ! ». **Il se prépare maintenant 1,4 seconde** (0,6 + 0,8) au lieu d'une demi-seconde ;
+- **« 🥊 LA RAFALE »** : la garde du boxeur (il sautille), il fonce, et huit coups pleuvent, gauche, droite — chaque coup claque sur le héros ;
+- **« ⚠️ LA CHARGE »** : celle de la phase 2 (il racle le sol, souffle par les naseaux, fonce) ;
+- **« 📢 LE CRI »** : il se redresse et **aspire tout l'air de la salle** (la poitrine gonflée, la tête en arrière, des traits d'air filent vers sa bouche)… puis se plie en avant et hurle : **les ondes du cri traversent la salle**, un gros « RAAAH ! » ;
+- **« ✊ IL ATTRAPE »** : la main grande ouverte, il fonce, **empoigne le héros, le soulève** — et s'en sert pour frapper le voisin ;
+- **« 🔥 LE FEU »** : il aspire (**une braise grossit dans sa gorge**)… puis se penche et **crache un long jet de vraies flammes** qui traverse les trois héros (quinze flammes — l'image de flamme du donjon —, jouées par la carte graphique) ; de la fumée lui sort de la bouche ensuite.
+
+**La cinématique 2 → 3** (`cine23`, `leo.js`) : à genoux, il boit ; la potion fait effet — il lâche la gourde, se tord, verdit par à-coups — puis **il se relève transformé** (plus grand, les veines pleines), et rugit (trois ondes vertes). À la fin du combat, la potion cesse d'agir : il redevient le Léo de la phase 2 (comme avant).
+
+**Les règles** (`leo-regles.js`).
+- **La gourde volée est infinie** (`L.ARMES.gourde.infini`), **mais plus longue à boire** : `L.DUREES.gourde` passe de 0,8 s à **1,7 s** avant le soin (2,3 s en tout).
+- **Le feu du souffle ne s'arrête plus tout seul** (`L.BRULE.duree = Infinity`) : 5 points deux fois par seconde, **jusqu'à un soin** — n'importe lequel (les herbes l'éteignent sur les trois, comme pour le saignement).
+- **Le gros coup de poing** : `prise` .6, `elan` .8 (c'était 0 et .5). Toujours 30, toujours « inarrêtable ».
+- La faux garde ses trois coups (trois entailles, pas plus).
+
+**La fluidité** (les règles R10 à R14 de `RAPIDITE.md`) : aucun filtre, aucune boucle sur les héros ; les effets sont de petites animations courtes jouées par la carte graphique. Mesuré, processeur ralenti ×6, en pianotant : **phase 3 ≈ 13 images/s**, comme la phase 2 allégée ; **sur une petite tablette (800 × 480), pareil**. En émulation iPhone : 58 calques au repos, **82 au pire** (la phase 2 monte à 168, à cause des rats). **« Tester sur des petites tablettes » : fait en émulation (800 × 480, processeur ralenti) — pas sur une vraie tablette, Claude n'en a pas.**
+
+**⚠️ Dit à Romain.** (1) Le modèle est le pantin de la phase 2 enrichi (peau, veines, yeux, trapèzes, entailles) : s'il le veut encore plus détaillé, dire où (le pantalon et les bottes n'ont pas changé). (2) **Le feu infini est mortel** : 10 points par seconde et par héros tant qu'on ne soigne pas — les trois héros tombent en dix secondes environ. Les herbes l'éteignent pour tous. (3) Avec la gourde infinie (toute la vie d'un héros toutes les 2,3 s), il n'y a plus de limite aux soins : la phase 3 se joue à la vitesse du joueur. La simulation d'équilibre n'a pas été relancée.
+
+**Décisions de Claude à faire valider.** (1) Le même pantin enrichi, plutôt qu'un dessin entièrement neuf. (2) Les trois entailles l'une sous l'autre, comme un coup de griffes. (3) Le poing : 1,4 s. (4) La gourde : 1,7 s. (5) Les noms affichés : « LE POING », « LA RAFALE », « LE CRI », « IL ATTRAPE », « LE FEU ». (6) Le héros attrapé est soulevé, puis sert à frapper l'autre. (7) Le « RAAAH ! » et le « PAF ! » écrits. (8) Pas de nouveau son (ceux de la phase 3 d'avant sont gardés : `leoPoing`, `leoRafale`, `leoHurlement`, `leoAttrape`, `leoSouffle`).
+
+**Les fichiers.** `moteur/src/leo-corps.js` (la forme 3, les pièces `p3-*`, les plaies), `leo-p2.js` (les six attaques, les effets, le sang), `leo-anime.js` (`NOUVEAU[3]`, `tenue(3)`), `leo.js` (`p2()` vaut pour les phases 2 et 3, `cine23`, `soulever`, `balancer`), `leo-regles.js`, `donjon.css` ; `test-leo.js` (172), `test-leo.py` (69, dont une section 12 pour la phase 3) ; `perf-leo.py --ecran 800x480x1`. **Les codes : aucun n'a changé.**
+
+**Vérifié.** `test-regles.js` (453), `test-leo.js` (172 : dont le feu qui ne s'éteint qu'au soin, la gourde infinie, le poing), `test-leo.py` (69, à l'écran : dont une section 12 pour la phase 3 — la forme sous potion, les six attaques annoncées, les quinze flammes, le feu qui dure et que les herbes éteignent, les trois entailles, la mare, le sang), `test-descente.py` (24), `test-enquete.py` (33) ; les mesures `perf-leo.py 3` (tablette et petite tablette 800 × 480, processeur ×6) et `memoire.py`. Images regardées : le modèle de près, et chaque attaque image par image. Le donjon en ligne était exactement celui du matin. **Pas relancés** : `test-combat.py`, `test-donjon.py`, `test-objets.py` (rien de ce qu'ils essaient n'a changé depuis leur passage du matin), `leo-sim.js`. **Tout cela est fait par des robots, en émulation : jamais essayé sur un vrai iPhone ni une vraie tablette.**
+
+**Reste à faire.** (1) L'essai de Romain. (2) La phase 1 dans le même style (le nouveau pantin sait porter la cape). (3) Les sons fabriqués d'avance (§13.41). (4) L'équilibre des phases 2 et 3 avec les armes et la gourde infinies.
+
+### 13.43 L'adresse d'essai du combat de Léo : `donjon/?leo=1`, `?leo=2`, `?leo=3` — droit au combat de fin, sans toucher à la partie gardée (15 novembre ; demande de Romain à 13 h 01) — CONSTRUIT, VÉRIFIÉ, EN LIGNE (15 novembre, 13 h 18 ; commit 7a7274f du site ; le donjon : version « 15/11 à 13 h 17 » (en bas de « 🎒 Objets ») ; publication de GitHub vérifiée)
+
+**Ce que Romain a dit (15 novembre, 13 h 01).** « Est-ce que tu peux faire en sorte que je puisse tester le combat de fin ? […] je sais pas trop comment tu peux faire, mais faire en sorte que je sois directement au combat de fin. » Puis, à 13 h 02 : « Et mets à jour la Bible aussi. Mets à jour pour que les autres discussions voient ce que tu as fait. »
+
+**Les trois adresses (à coller telles quelles quand Romain demande le lien).**
+- tout le combat, depuis la phase 1 : https://esperidad-tech.github.io/brumeval/donjon/?leo=1
+- droit à la phase 2 (Léo torse nu) : https://esperidad-tech.github.io/brumeval/donjon/?leo=2
+- droit à la phase 3 (Léo sous la potion) : https://esperidad-tech.github.io/brumeval/donjon/?leo=3
+
+**Ce que fait l'adresse.**
+- Le combat s'ouvre **tout de suite**, à la phase demandée, **sans la cinématique d'entrée** (ajouter `&vu=0` pour la revoir). Ensuite tout est comme dans le vrai jeu : les cinématiques entre les phases, la victoire, les cinq phrases de Léo.
+- Les héros ont **tout** : le Sage ses deux bâtons (de lune, de chêne), le Pisteur ses flèches (de lune, transperçantes), l'Alchimiste toutes ses potions.
+- **À la fin** (la victoire, ou quand on choisit « Retour à la carte », dans la pause ou après une défaite) : un bouton jaune « Rejouer ↻ » (la même phase) et trois boutons « Phase 1 », « Phase 2 », « Phase 3 » pour sauter d'une phase à l'autre sans revenir chercher le lien.
+- **Rien n'est gardé dans l'appareil.** Un essai lancé par l'adresse (`?leo=…`, et aussi l'ancienne `?combat=…`) met `DJ.essai`, et `DJ.garder` ne fait alors plus rien : **la descente de l'enquête 3 en cours sur la tablette reste intacte.** Le jeu normal (https://esperidad-tech.github.io/brumeval/donjon/) reprend là où il en était.
+- Ce n'est **pas** un mode pour la famille : aucun bouton du jeu n'y mène, il faut l'adresse.
+
+**Le défaut corrigé au passage.** Avant, l'adresse d'essai de Léo écrivait par-dessus la partie du donjon gardée dans l'appareil (à chaque phase gagnée) : sur une tablette où une descente était en cours, cette descente était perdue. C'était noté comme un piège dans `MOTEUR-DONJON.md` ; ce n'en est plus un.
+
+**Ce que l'essai ne montre pas** (à dire à Romain s'il s'en sert pour juger la difficulté).
+- Les héros de l'essai ont **tout l'équipement** : le combat y est plus facile que pour une équipe qui a raté un bâton, des flèches ou des potions. Pour essayer avec moins, la longue adresse marche toujours : `donjon/?combat=leo&phase=2&vu=1&objets=sage:cristal-lune&potions=feu,huile,baume`.
+- L'essai ne passe pas par **l'arrivée devant Léo dans l'enquête** (la fenêtre du code du Barde, la carte) ni par la fin du donjon (les codes de retour). Pour ça : une vraie descente.
+
+**Décisions de Claude, à faire valider par Romain.** (1) L'adresse courte `?leo=N` plutôt qu'un bouton caché dans le jeu (personne ne tombe dessus par erreur). (2) L'essai saute la cinématique d'entrée. (3) L'essai donne tout l'équipement. (4) Les trois boutons « Phase 1 / 2 / 3 » sur l'écran de fin de l'essai.
+
+**Les fichiers.** `moteur/src/demarrage.js` (`?leo=`, `DJ.essai` dans `essaiLeo` et `essaiCombat`, l'écran de fin et ses boutons `essai-phase-N`, `&vu=0`), `moteur/src/noyau.js` (`DJ.garder` ne fait rien si `DJ.essai`), `moteur/src/donjon.css` (`.essai-phases`), `moteur/test-leo.py` (une section 13 ; `SEUL=adresse python3 test-leo.py` ne lance qu'elle). **Les règles du combat, les dessins, les sons et les codes : rien n'a changé.**
+
+**Vérifié.** `test-leo.py` (76, dont la section 13 : `?leo=3` ouvre la phase 3 avec tout l'équipement ; rien n'est écrit dans l'appareil ; Léo battu dans l'essai, une descente gardée est toujours là, intacte ; les quatre boutons de fin ; « Phase 2 » ouvre la phase 2), `test-donjon.py` (92 : la sauvegarde normale du donjon marche comme avant), `test-leo.js` (172), `test-regles.js` (453). Pas essayé sur un vrai iPhone ni une vraie tablette.
+
+**Reste à faire** (inchangé depuis §13.42). (1) L'essai de Romain, avec ces adresses. (2) La phase 1 dans le même style. (3) Les sons fabriqués d'avance (§13.41). (4) L'équilibre des phases 2 et 3 avec les armes et la gourde infinies. **En attente de Romain** : le temps de recharge du marteau (ou le laisser infini), les héros immobiles entre deux gestes, et, si le jeu quitte encore sur l'iPhone, à quel moment et la dernière ligne de « 🎒 Objets ».
+### 13.44 Les cinématiques de Léo en vrais petits films (21:9, bandes noires, fond flou, éclairage des torches) — fin de phase 1, fin de phase 2, la fin en deux morceaux (15 novembre ; demande de Romain à 12 h 40, précisée à 12 h 43) — CONSTRUIT (voir l'état de la mise en ligne en tête de `PASSATION.md`)
 
 **Ce que Romain a demandé (12 h 40, à la voix).** « Des cinématiques de film », au format 21:9 avec les bandes noires ; **la caméra à la place des trois héros** (on ne les voit pas), **Léo de face**, une profondeur de champ (le fond flou), « des textures, le fond, les décors », **des éclairages sympas** sur toutes les cinématiques, des mouvements « très humains, réalistes », « fluide », « intéressante et pas trop longue », et « les dialogues, tu jauges bien le temps ».
 - **Fin de la phase 1** : Léo tombe à terre en cape noire ; d'un coup il retire sa cape ; il est énervé, il crie, il bande ses muscles ; la cinématique s'arrête, on reprend en phase 2.

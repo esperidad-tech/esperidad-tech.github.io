@@ -25,6 +25,7 @@ def opt(nom, defaut, typ=int):
 
 TAUX = opt('--taux', 6); SEC = opt('--sec', 25); SALLE = opt('--salle', None, str)
 JS = opt('--js', None, str)
+ECRAN = opt('--ecran', '1024x768x2', str)          # largeur x hauteur x densité : une petite tablette = 800x480x1
 REPOS = '--repos' in args
 SANS_SON = '--sans-son' in args; PROFIL = '--profil' in args
 args = [a for a in args if not a.startswith('--')]
@@ -72,7 +73,8 @@ def profil_top(prof, n=28):
 
 with sync_playwright() as p:
     nav = p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
-    ctx = nav.new_context(viewport={'width': 1024, 'height': 768}, device_scale_factor=2, has_touch=True, is_mobile=True)
+    _e = [float(x) for x in ECRAN.split('x')]
+    ctx = nav.new_context(viewport={'width': int(_e[0]), 'height': int(_e[1])}, device_scale_factor=_e[2], has_touch=True, is_mobile=True)
     pg = ctx.new_page(); errs = []
     pg.on('pageerror', lambda e: errs.append(str(e)))
     pg.route('**/fonts.googleapis.com/**', lambda r: r.fulfill(status=200, content_type='text/css', body=''))
@@ -103,7 +105,7 @@ with sync_playwright() as p:
     else:
         for i in range(int(SEC / .45)):
             pg.evaluate("""(i) => { var E = DJ.Leo._E(), c = E.c; ['sage', 'alchimiste', 'pisteur'].forEach(function(h){ var S = c.h[h]; if(!S.sol && S.pv < S.pvMax * .5) S.pv = S.pvMax; });
-              if(c.leo.pv < 2500) c.leo.pv = 2500;
+              if(c.leo.pv < 2500 && c.phase < 3) c.leo.pv = 2500; ['sage', 'alchimiste', 'pisteur'].forEach(function(h){ c.h[h].brule = 0; });
               var l = [].filter.call(document.querySelectorAll('#bande .lb-g .carte'), function(x){ return !x.classList.contains('off'); });
               if(l.length){ var x = l[(i * 7) % l.length]; x.dispatchEvent(new Event('pointerdown', {bubbles:true})); x.click(); } }""", i)
             pg.wait_for_timeout(450)

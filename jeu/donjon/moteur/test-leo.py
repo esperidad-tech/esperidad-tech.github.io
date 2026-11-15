@@ -14,6 +14,8 @@ Sur une tablette 1024 x 768 au doigt (les règles elles-mêmes sont vérifiées 
   - (14 novembre au soir, Bible §13.40) le nouveau Léo de la phase 2 : ses pièces cuites en images ; la gourde (il boit, le marteau
     la lui fait lâcher : elle se brise, pas de soin) ; la faux (tirée du dos, à deux mains, rangée après) ; la flèche de feu (des
     flammes sur lui) ; la rune de l'œil (ses vraies affaires) ; la cinématique 1 → 2 (la barre descend, la cape, la tunique).
+  - (15 novembre, Bible §13.43) l'adresse courte ?leo=1|2|3 : droit au combat, tout l'équipement ; un essai ne garde rien : la
+    descente en cours dans l'appareil reste intacte ; à la fin, « Rejouer » et un bouton par phase.   (SEUL=adresse : ce seul test)
 Des captures dans captures/."""
 import os, sys
 from playwright.sync_api import sync_playwright
@@ -285,10 +287,92 @@ def test(nav):
     verifie(errs == [], f'aucune erreur {errs[:3]}')
     ctx.close()
 
+    print('— 12. La phase 3 refaite : Léo sous la potion (15 novembre, Bible §13.42)')
+    ctx, pg, errs = ouvrir(nav, '?combat=leo&phase=3&vu=1&' + OBJETS)
+    pg.wait_for_timeout(500)
+    def att3(js, t=20000):
+        pg.wait_for_function(js, timeout=t)
+    def calme():
+        pg.evaluate("() => { var c = DJ.Leo._E().c; ['sage', 'alchimiste', 'pisteur'].forEach(function(h){ var S = c.h[h]; S.pv = S.pvMax; S.sol = false; S.etourdi = 0; S.act = null; }); }")
+    e = pg.evaluate("() => { var E = DJ.Leo._E(), C = E.leo.corps; return {neuf:E.leo.nouveau(), forme:C.etat.forme, potion:document.querySelectorAll('.lc .lc-p:not(.cache)').length, faux:C.etat.faux, gourde:C.etat.gourde, plaies:C.etat.plaies, ech:C.ech, cuit3:document.querySelectorAll('.lc .lc-p:not(.cache) > img').length, filtre:getComputedStyle(E.leo.el).filter}; }")
+    verifie(e['neuf'] and e['forme'] == 3 and e['faux'] is None and e['gourde'] is None, f'phase 3 : c\'est le nouveau Léo, sous la potion ; il n\'a plus ni sa faux ni sa gourde ({e})')
+    verifie(e['potion'] >= 24 and e['cuit3'] == e['potion'] and e['plaies'] == 0 and e['filtre'] == 'none', f'ses pièces en plus (les veines, les yeux, les trapèzes) sont là, toutes cuites en images ; aucune entaille au début ; aucun filtre ({e["potion"]} pièces)')
+    c3 = pg.evaluate("() => [].map.call(document.querySelectorAll('#bande .lb-g[data-h=pisteur] .carte'), function(c){ return c.getAttribute('data-id') + (c.querySelector('.l-usure') ? c.querySelector('.l-usure').textContent : '∞'); })")
+    verifie('l:gourde∞' in c3 and 'l:faux3' in c3, f'le Pisteur : la gourde volée est infinie, la faux a ses trois coups ({c3})')
+    # chaque attaque s'annonce, et se joue sans erreur (les héros sont soignés en douce : on regarde Léo)
+    pg.evaluate("() => { window.__soin = setInterval(function(){ var E = DJ.Leo._E(); if(!E || !E.c) return; ['sage', 'alchimiste', 'pisteur'].forEach(function(h){ var S = E.c.h[h]; S.pv = S.pvMax; S.sol = false; S.etourdi = 0; }); }, 120); }")
+    vues = {}
+    for nom in ['poing3', 'rafale', 'charge', 'hurlement', 'attrape', 'souffle']:
+        pg.evaluate("(n) => { var c = DJ.Leo._E().c; c.leo.k = LeoRegles.L.ORDRE[3].indexOf(n); }", nom)
+        pg.wait_for_function("(n) => { var Z = DJ.Leo._E().c.leo; return Z.att === n && (Z.etape === 'prise' || Z.etape === 'elan') && !!document.querySelector('.lp-annonce span'); }", arg=nom, timeout=40000)
+        vues[nom] = pg.evaluate("() => document.querySelector('.lp-annonce span').textContent")
+        if nom == 'souffle':
+            att3("() => document.querySelectorAll('.lp-flam').length >= 10", 8000)
+            fl = pg.evaluate("() => ({n:document.querySelectorAll('.lp-flam').length, img:document.querySelectorAll('img.lp-flam').length})")
+            verifie(fl['n'] >= 10, f'le souffle de feu : un vrai jet de flammes ({fl["n"]} flammes, dont {fl["img"]} en image)')
+        att3("() => DJ.Leo._E().c.leo.etape === 'retour' || DJ.Leo._E().c.leo.etape === 'repos'", 15000)
+        calme()
+    verifie(len(vues) == 6 and all(len(v.split(' ')) <= 3 for v in vues.values()), f'les six attaques de la phase 3 s\'annoncent, chacune par son nom ({vues})')
+    # le feu : il ne s'arrête plus tout seul ; un soin l'éteint
+    att3("() => DJ.Leo.etat().photo.heros.pisteur.brule", 15000)
+    pg.evaluate("() => { clearInterval(window.__soin); }")
+    pg.evaluate("() => { DJ.Leo._E().c.leo.fin += 60; }"); calme(); pg.wait_for_timeout(5200); calme()
+    b1 = pg.evaluate("() => { var p = DJ.Leo.etat().photo.heros; return [p.sage.brule, p.alchimiste.brule, p.pisteur.brule, document.querySelectorAll('.heros.brule').length]; }")
+    verifie(b1 == [True, True, True, 3], f'cinq secondes après, les trois héros brûlent toujours (le feu dure jusqu\'au soin) {b1}')
+    pg.wait_for_function("() => DJ.Leo.etat().photo.heros.alchimiste.libre", timeout=10000)
+    pg.tap('#bande .carte[data-h=alchimiste][data-id=herbes]', force=True); pg.wait_for_timeout(1800)
+    b2 = pg.evaluate("() => { var p = DJ.Leo.etat().photo.heros; return [p.sage.brule, p.alchimiste.brule, p.pisteur.brule, document.querySelectorAll('.heros.brule').length]; }")
+    verifie(b2 == [False, False, False, 0], f'les herbes : le feu s\'éteint sur les trois {b2}')
+    # la faux : trois coups, trois entailles rouges qu'on voit, et le sang
+    for k in range(3):
+        calme(); pg.evaluate("() => { DJ.Leo._E().c.leo.fin += 30; }")
+        pg.wait_for_function("() => DJ.Leo.etat().photo.heros.pisteur.libre", timeout=10000)
+        pg.tap('#bande .carte[data-h=pisteur][data-id="l:faux"]', force=True)
+        pg.wait_for_function("(n) => DJ.Leo._E().leo.corps.etat.plaies === n", arg=k + 1, timeout=8000)
+    pg.wait_for_timeout(900)
+    pl = pg.evaluate("() => { var C = DJ.Leo._E().leo.corps; return {plaies:C.etat.plaies, vues:['plaie1', 'plaie2', 'plaie3'].filter(function(n){ return C.pieces[n].vu; }).length, mare:!!document.querySelector('.lp-mare'), saigne:DJ.Leo.etat().photo.leo.saigne, faux:document.querySelectorAll('#bande .carte.vide[data-id=\"l:faux\"]').length}; }")
+    verifie(pl['plaies'] == 3 and pl['vues'] == 3 and pl['mare'] and pl['saigne'] == 3, f'trois coups de faux : trois entailles rouges sur son torse, une mare de sang à ses pieds ({pl})')
+    verifie(pl['faux'] == 1, 'la faux, usée, s\'éteint — et reste à sa place')
+    pg.wait_for_function("() => document.querySelectorAll('.lp-sang').length > 0", timeout=6000)
+    verifie(True, 'le sang goutte de ses entailles')
+    pg.screenshot(path=os.path.join(CAP, 'leo-3-plaies.png'))
+    verifie(errs == [], f'aucune erreur {errs[:3]}')
+    ctx.close()
+
+
+def test_adresse(nav):
+    print('— 13. L\'adresse courte donjon/?leo=3 : droit au combat de fin, et la partie gardée reste là (15 novembre, Bible §13.43)')
+    CLE = 'brumeval-donjon-partie'
+    ctx, pg, errs = ouvrir(nav, '?leo=3')
+    pg.wait_for_timeout(400)
+    e = pg.evaluate("() => { var p = window.PARTIE, D = window.DonjonDonnees; return {phase:DJ.Leo.etat().phase, sage:p.heros.sage.objets.slice().sort(), pisteur:p.heros.pisteur.objets.slice().sort(), potions:p.recettes.length === D.ORDRE_RECETTES.length, vu:p.faits['leo:vu'], essai:!!DJ.essai}; }")
+    verifie(e['phase'] == 3 and e['vu'] == 1 and e['essai'], f'?leo=3 : la phase 3 tout de suite, sans la cinématique d\'entrée ({e})')
+    verifie('baton-chene' in e['sage'] and 'cristal-lune' in e['sage'] and 'fleches-lourdes' in e['pisteur'] and 'fleches-argent' in e['pisteur'] and e['potions'], 'les deux bâtons du Sage, les flèches du Pisteur, toutes les potions')
+    verifie(pg.evaluate("(k) => localStorage.getItem(k)", CLE) is None, 'l\'essai n\'a rien gardé dans l\'appareil')
+    # une descente en cours dans l'appareil : l'essai, gagné jusqu'au bout, ne doit pas y toucher
+    pg.evaluate("(k) => localStorage.setItem(k, 'DESCENTE-EN-COURS')", CLE)
+    pg.wait_for_function("() => DJ.Leo.etat().photo.heros.pisteur.libre", timeout=20000)
+    pg.evaluate("() => { DJ.Leo._E().c.leo.pv = 5; DJ.Leo.agir('pisteur', 'l:faux', 'leo'); }")     # (en phase 3, seule la faux le blesse)
+    pg.wait_for_function("() => DJ.Leo.etat().aveu === 0", timeout=40000); pg.wait_for_timeout(300)
+    for k in range(5):
+        pg.tap('[data-act=l-aveu]', force=True); pg.wait_for_timeout(250)
+    pg.wait_for_function("() => window.RESULTAT === 'victoire'", timeout=10000)
+    verifie(pg.evaluate("() => window.PARTIE.faits['leo:phase']") == 4 and pg.evaluate("(k) => localStorage.getItem(k)", CLE) == 'DESCENTE-EN-COURS', 'Léo battu dans l\'essai : la descente gardée dans l\'appareil est toujours là, intacte')
+    pg.wait_for_selector('#essai-fin .essai-phases button', timeout=8000)
+    b = pg.evaluate("() => [].map.call(document.querySelectorAll('#essai-fin button'), function(x){ return x.textContent; })")
+    verifie(b == ['Rejouer ↻', 'Phase 1', 'Phase 2', 'Phase 3'], f'à la fin de l\'essai : « Rejouer », et un bouton par phase ({b})')
+    pg.screenshot(path=os.path.join(CAP, 'leo-essai-fin.png'))
+    pg.tap('#essai-fin [data-act=essai-phase-2]')
+    pg.wait_for_function("() => location.search === '?leo=2' && window.DJ && DJ.Leo && DJ.Leo.etat() && DJ.Leo.etat().phase === 2 && !DJ.Leo.etat().cine", timeout=90000)
+    verifie(pg.evaluate("(k) => localStorage.getItem(k)", CLE) == 'DESCENTE-EN-COURS', '« Phase 2 » : la phase 2 tout de suite ; la descente gardée n\'a toujours pas bougé')
+    verifie(errs == [], f'aucune erreur {errs[:3]}')
+    ctx.close()
+
 
 with sync_playwright() as p:
     nav = p.chromium.launch()
-    test(nav)
+    if os.environ.get('SEUL') != 'adresse': test(nav)
+    test_adresse(nav)
     nav.close()
 print(f'\n{len(OK)} vérifications réussies' + (f', {len(ERREURS)} échecs' if ERREURS else ' — tout est bon'))
 for e in ERREURS: print('  ✗', e)
