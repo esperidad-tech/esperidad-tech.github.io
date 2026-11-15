@@ -164,7 +164,9 @@ DJ.verifierTemoin = function(){
     if(tc && Date.now() - tc < 600000) localStorage.setItem(CLE_PLANT_CHARGE, String(DJ.plantagesCharge() + 1));
     localStorage.removeItem(CLE_CHARGE);
   }catch(e){}
-  if(DJ.plantages() > 0 || DJ.critLent()) SALLE.critLeger = true;
+  /* (Romain, 15 novembre : « depuis le début, il y a toujours des problèmes avec le critique, ça rame à chaque fois que ça pète » :
+     le critique allégé — six volutes de fumée au lieu de onze, quatre morceaux — devient celui de TOUT LE MONDE) */
+  SALLE.critLeger = true;
   return DJ.plantages();
 };
 /* La fluidité du critique, mesurée sur l'appareil lui-même (Romain, 10 novembre, iPhone 16 Pro : « il a l'air de marcher,
@@ -174,7 +176,12 @@ DJ.verifierTemoin = function(){
 var CLE_LENT = 'brumeval-donjon-critique-lent', CLE_MESURE = 'brumeval-donjon-critique-mesure';
 DJ.critLent = function(){ try{ return +localStorage.getItem(CLE_LENT) || 0; }catch(e){ return 0; } };
 DJ.critMesure = function(){ try{ return localStorage.getItem(CLE_MESURE) || ''; }catch(e){ return ''; } };
-DJ.mesurerCritique = function(){
+/* ⚠️ 15 novembre : CETTE MESURE EST ÉTEINTE. Pour compter les images en retard, elle réveillait le fil principal à CHAQUE image
+   pendant tout le critique — et une image du fil principal, dans une salle pleine de personnages animés, coûte cher (RAPIDITE.md,
+   R3 et R6) : l'outil qui devait dire si le critique ramait le faisait ramer. Sans elle, c'est la carte graphique qui joue seule
+   tout le critique (il est programmé d'un coup, d'avance). L'ancienne mesure est gardée sous le nom DJ.mesurerCritiqueVrai. */
+DJ.mesurerCritique = function(){ return {fin:function(){}}; };
+DJ.mesurerCritiqueVrai = function(){
   var dernier = 0, pire = 0, lentes = 0, n = 0, fini = false, raf = window.requestAnimationFrame;
   if(!raf) return {fin:function(){}};
   function image(t){

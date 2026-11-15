@@ -531,6 +531,7 @@ function ik(j, t, L1, L2, sens){
 
 /* ============================================================================ LA CUISSON (une fois pour toutes) */
 var CUIT = {};                      /* nom de pièce -> url de l'image */
+var IMG = {};                       /* nom de pièce -> l'image décodée (pour la peindre sur la toile) */
 var cuisson = null;
 /* (pour la cuisson : Cuire.image ajoute lui-même la largeur et la hauteur ; avec, l'image serait invalide) */
 function svgPiece(nom, enLigne){ var p = P[nom], b = p.boite; return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + b.join(' ') + '"' + (enLigne ? ' width="' + b[2] + '" height="' + b[3] + '"' : '') + '>' + (enLigne ? '' : DEFS) + p.svg + '</svg>'; }
@@ -556,7 +557,7 @@ function preparer(){
     return Cu.image(svgPiece(nom), b[2], b[3], res).then(function(url){ if(url) CUIT[nom] = url; }).catch(function(){});
   })).then(function(){
     /* les images décodées d'avance (RAPIDITE.md, R7) */
-    return Promise.all(Object.keys(CUIT).map(function(n){ var i = new Image(); i.src = CUIT[n]; return i.decode ? i.decode().catch(function(){}) : null; }));
+    return Promise.all(Object.keys(CUIT).map(function(n){ var i = new Image(); i.src = CUIT[n]; return i.decode ? i.decode().then(function(){ IMG[n] = i; }, function(){}) : new Promise(function(ok){ i.onload = function(){ IMG[n] = i; ok(); }; i.onerror = ok; }); }));
   }).then(function(){ return true; }, function(){ return false; });
   return cuisson;
 }
@@ -571,12 +572,20 @@ function css(){
     '.lc-p{position:absolute;left:0;top:0;width:1px;height:1px;transform-origin:0 0;will-change:transform}' +
     '.lc-p > img, .lc-p > svg{position:absolute;display:block;max-width:none;pointer-events:none;-webkit-user-drag:none;user-select:none}' +
     '.lc-p.cache{display:none}' +
-    '.lc-ombre{position:absolute;left:76px;top:' + (PIED - 9) + 'px;width:150px;height:18px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.55),rgba(0,0,0,0));transform-origin:50% 50%}' +
+    /* (en combat : tout Léo est peint sur UNE toile ; ses pièces ne sont plus dans la page — voir _peindre) */
+    '.lc.lc-sur-toile .lc-p{display:none}' +
+    '.lc-toile{position:absolute;display:block;pointer-events:none}' +
+    '.lc-ombre{position:absolute;left:76px;top:' + (PIED - 9) + 'px;width:150px;height:18px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.55),rgba(0,0,0,0));transform-origin:50% 50%;will-change:transform,opacity}' +
+    /* la teinte (le givre, le feu, le soin…) : une lueur de couleur posée sur lui — plus de filtre sur tout Léo, recalculé à chaque image */
+    '.lc-teinte{position:absolute;left:10px;top:20px;width:280px;height:320px;border-radius:46%;pointer-events:none;opacity:0;z-index:200;transition:opacity .25s;will-change:transform,opacity}' +
     '.lc-cape{position:absolute;left:0;top:0;width:' + W + 'px;height:' + H + 'px;overflow:visible;pointer-events:none}';
   document.head.appendChild(s);
 }
-function Corps(parent){
+function Corps(parent, o){
   css();
+  o = o || {};
+  /* où est le pantin dans la scène (pour la toile, qui couvre toute la salle) */
+  this.ox = (o.cx == null ? 815 : o.cx) - W / 2; this.oy = (o.sol == null ? 340 : o.sol) - PIED;
   var self = this, d = document.createElement('div');
   d.className = 'lc';
   parent.appendChild(d);
@@ -596,8 +605,10 @@ function Corps(parent){
     if(CUIT[nom]){ var i = document.createElement('img'); i.src = CUIT[nom]; i.alt = ''; i.style.cssText = 'left:' + b[0] + 'px;top:' + b[1] + 'px;width:' + b[2] + 'px;height:' + b[3] + 'px'; e.appendChild(i); }
     else { defsPage(); e.innerHTML = svgPiece(nom, true); var sv = e.firstChild; sv.style.left = b[0] + 'px'; sv.style.top = b[1] + 'px'; sv.style.overflow = 'visible'; }
     d.appendChild(e);
-    self.pieces[cle] = {el:e, nom:nom, ou:ou, os:p.os, z:z + 2, vu:true};
+    self.pieces[cle] = {el:e, cle:cle, nom:nom, ou:ou, os:p.os, z:z + 2, vu:true, b:b};
   });
+  this.liste = []; this.surToile = false; this.teinteT = null; this.flashT = 0;
+  this.teinteEl = document.createElement('div'); this.teinteEl.className = 'lc-teinte'; d.appendChild(this.teinteEl);
   this.etat = {visage:'colere', faux:'dos', gourde:'ceinture', bouchon:true, sifflet:'cou', rat:null, capuche:false, tunique:false, cape:false, main:{Av:'poing', Ar:'poing'}, devantAr:false};
   this.p = complete(GARDE);
   this.de = null; this.a = null; this.t = 0; this.duree = 0; this.courbe = null; this.fin = null; this.temps = 0;
@@ -631,6 +642,107 @@ CP._maj = function(){
   /* le bras de derrière passe devant le buste quand il tient la faux avec l'autre main */
   ['brasAr', 'mancheAr', 'avantAr', 'mancheArA', 'poingAr', 'mainAr'].forEach(function(cle, k){ var q = self.pieces[cle]; q.el.style.zIndex = String(E.devantAr ? 80 + k : q.z); });
   this.capeEl.style.display = E.cape ? '' : 'none';
+  /* la liste de ce qui se voit, de derrière vers devant (pour la toile) */
+  this.liste = Object.keys(this.pieces).map(function(cle){ return self.pieces[cle]; }).filter(function(q){ return q.vu; })
+    .map(function(q){ var k = ['brasAr', 'mancheAr', 'avantAr', 'mancheArA', 'poingAr', 'mainAr'].indexOf(q.cle); return {q:q, z:E.devantAr && k >= 0 ? 80 + k : q.z}; })
+    .sort(function(a, b){ return a.z - b.z; }).map(function(x){ return x.q; });
+  /* torse nu (le combat) : sur la toile ; habillé (la cinématique : la cape est un dessin vivant) : en pièces, comme avant */
+  this._choisirToile(!E.cape && !E.tunique && !E.capuche);
+};
+/* ---------- LA TOILE (Romain, 15 novembre : « ça rame de partout », « optimisation au maximum ») ----------
+   Avant : une quarantaine de pièces, chacune sur son calque, déplacées une par une à chaque image (autant de styles à recalculer
+   et de calques à renvoyer à la carte graphique, 60 fois par seconde — et autant de mémoire, ce qui compte sur un iPhone).
+   Maintenant, en combat : UNE toile (canvas) de la taille de la salle ; à chaque image, on y repeint les pièces (des images déjà
+   prêtes) à leur place. Un seul calque, aucun style à recalculer ; la teinte (le givre, le feu, le soin) se peint sur la toile,
+   sans filtre. On n'efface que le rectangle peint à l'image d'avant. */
+var SCENE = [960, 372];
+/* ⚠️ ESSAYÉ LE 15 NOVEMBRE, ET LAISSÉ ÉTEINT : sur la machine d'essai (sans carte graphique), la toile est DEUX FOIS PLUS LENTE que
+   les pièces sur leurs calques (une toile se repeint et se renvoie en entier à chaque image ; les calques, eux, sont seulement
+   déplacés). Sur une vieille tablette, ce serait pareil. LeoCorps.avecToile = true la rallume, pour comparer sur un vrai appareil. */
+function LeoCorps_sansToile(){ return !(window.LeoCorps && window.LeoCorps.avecToile); }
+function echelleToile(){
+  var dpr = window.devicePixelRatio || 1, sc = Math.min(1.6, Math.max(.5, (window.innerWidth || 960) / 960));
+  return Math.max(1, Math.min(2, dpr * sc));
+}
+CP._choisirToile = function(veut){
+  var self = this, peut = !LeoCorps_sansToile() && Object.keys(P).every(function(n){ return !!IMG[n]; });
+  var on = !!(veut && peut);
+  if(on === this.surToile) return;
+  this.surToile = on;
+  if(on){
+    if(!this.toile){
+      var cv = this.toile = document.createElement('canvas'); cv.className = 'lc-toile';
+      cv.style.left = (-this.ox) + 'px'; cv.style.top = (-this.oy) + 'px'; cv.style.width = SCENE[0] + 'px'; cv.style.height = SCENE[1] + 'px';
+      cv.style.zIndex = '1';
+      this.el.appendChild(cv);
+    }
+    this.kT = echelleToile();
+    this.toile.width = Math.round(SCENE[0] * this.kT); this.toile.height = Math.round(SCENE[1] * this.kT);
+    this.g = this.toile.getContext('2d');
+    this.sale = null;
+    this.toile.style.display = '';
+  } else if(this.toile){
+    /* (RAPIDITE.md, R9 : une toile qui ne sert plus est vidée) */
+    this.toile.style.display = 'none'; this.toile.width = this.toile.height = 0; this.g = null;
+    Object.keys(this.pieces).forEach(function(cle){ self.pieces[cle].tr = null; });
+  }
+  this.el.classList.toggle('lc-sur-toile', on);
+};
+var TEINTES = {gel:['#8fd8ff', .42], noirci:['#000', .78], feu:['#ff7a1a', .34], rouge:['#ff3a2a', .3], vert:['#7dff6a', .34]};
+CP.teinter = function(nom){
+  var T2 = this.teinteT = TEINTES[nom] || null, e = this.teinteEl;
+  if(this.surToile){ e.style.opacity = '0'; this._ecrire(); return this; }
+  this._bgT = T2 ? 'radial-gradient(closest-side,' + T2[0] + ' 0%,' + T2[0] + ' 40%,rgba(0,0,0,0) 100%)' : '';
+  if(!this._flash) e.style.background = this._bgT;
+  e.style.opacity = T2 ? String(nom === 'noirci' ? .8 : Math.min(.5, T2[1] + .08)) : '0';
+  return this;
+};
+CP.flash = function(coul, ms){
+  if(this.surToile){ this.flashFin = performance.now() + 320; return this; }
+  var e = this.teinteEl, self = this, c = coul || '#fff', o = this.p;
+  if(this._flash) return this;
+  this._flash = true;
+  try{
+    e.style.background = 'radial-gradient(closest-side,' + c + ' 0%,' + c + ' 40%,rgba(255,255,255,0) 100%)';
+    e.style.transform = 'translate(' + Math.round(o.x) + 'px,' + Math.round(Math.min(0, o.y)) + 'px)'; this._tt = null;
+    var a = e.animate([{opacity:coul ? .7 : .85}, {opacity:0}], {duration:ms || 320, easing:'ease-out'});
+    a.onfinish = a.oncancel = function(){ self._flash = false; e.style.background = self._bgT || ''; };
+  }catch(x){ this._flash = false; }
+  return this;
+};
+CP._peindre = function(){
+  var g = this.g, k = this.kT, M = this.M, ox = this.ox, oy = this.oy, l = this.liste, i, q, m, b, s = this.sale;
+  if(!g) return;
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  if(s) g.clearRect(s[0], s[1], s[2] - s[0], s[3] - s[1]);
+  var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  for(i = 0; i < l.length; i++){
+    q = l[i]; m = M[q.cle] || M[q.os]; var im = IMG[q.nom];
+    if(!m || !im) continue;
+    b = q.b;
+    var a = k * m[0], bb = k * m[1], c = k * m[2], d = k * m[3], e = k * (m[4] + ox), f = k * (m[5] + oy);
+    g.setTransform(a, bb, c, d, e, f);
+    g.drawImage(im, b[0], b[1], b[2], b[3]);
+    /* le rectangle sali (les quatre coins de la pièce) */
+    var X0 = b[0], Y0 = b[1], X1 = b[0] + b[2], Y1 = b[1] + b[3], px, py;
+    px = a * X0 + c * Y0 + e; py = bb * X0 + d * Y0 + f; if(px < x0) x0 = px; if(px > x1) x1 = px; if(py < y0) y0 = py; if(py > y1) y1 = py;
+    px = a * X1 + c * Y0 + e; py = bb * X1 + d * Y0 + f; if(px < x0) x0 = px; if(px > x1) x1 = px; if(py < y0) y0 = py; if(py > y1) y1 = py;
+    px = a * X0 + c * Y1 + e; py = bb * X0 + d * Y1 + f; if(px < x0) x0 = px; if(px > x1) x1 = px; if(py < y0) y0 = py; if(py > y1) y1 = py;
+    px = a * X1 + c * Y1 + e; py = bb * X1 + d * Y1 + f; if(px < x0) x0 = px; if(px > x1) x1 = px; if(py < y0) y0 = py; if(py > y1) y1 = py;
+  }
+  if(x1 < x0){ this.sale = null; return; }
+  x0 = Math.max(0, Math.floor(x0) - 2); y0 = Math.max(0, Math.floor(y0) - 2); x1 = Math.min(this.toile.width, Math.ceil(x1) + 2); y1 = Math.min(this.toile.height, Math.ceil(y1) + 2);
+  this.sale = [x0, y0, x1, y1];
+  /* la teinte et l'éclair : peints par-dessus Léo, seulement là où il est (pas de filtre) */
+  var T2 = this.teinteT, fl = this.flashFin ? Math.max(0, (this.flashFin - performance.now()) / 320) : 0;
+  if(!fl) this.flashFin = 0;
+  if((T2 || fl) && x1 > x0 && y1 > y0){
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.globalCompositeOperation = 'source-atop';
+    if(T2){ g.globalAlpha = T2[1]; g.fillStyle = T2[0]; g.fillRect(x0, y0, x1 - x0, y1 - y0); }
+    if(fl){ g.globalAlpha = Math.min(.85, fl * .85); g.fillStyle = '#fff'; g.fillRect(x0, y0, x1 - x0, y1 - y0); }
+    g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  }
 };
 CP.visage = function(v){ if(V[v] && v !== this.etat.visage){ this.etat.visage = v; this._maj(); } return this; };
 CP.objet = function(nom, ou){ if(this.etat[nom] !== ou){ this.etat[nom] = ou; this._maj(); } return this; };
@@ -709,17 +821,25 @@ CP._os = function(p){
 };
 CP._ecrire = function(){
   var M = this.M, self = this;
-  Object.keys(this.pieces).forEach(function(cle){
+  if(this.surToile) this._peindre();
+  else Object.keys(this.pieces).forEach(function(cle){
     var q = self.pieces[cle]; if(!q.vu) return;
     var m = M[cle] || M[q.os]; if(!m) return;
-    /* (on n'écrit que ce qui a bougé : une pièce immobile ne coûte rien) */
+    /* (on n'écrit que ce qui a VRAIMENT bougé : une pièce immobile ne coûte rien. 15 novembre : au repos, Léo respire et se balance
+       tout doucement — moins d'un tiers de point par image ; ses pièces ne sont réécrites que lorsqu'elles ont bougé d'au moins
+       un tiers de point, ou tourné d'un quart de degré : six à dix fois moins d'écritures, et l'œil ne voit pas la différence.
+       Dès qu'il bouge pour de bon, chaque image est écrite.) */
+    var w = q.w;
+    if(w && q.tr && Math.abs(m[4] - w[4]) < .34 && Math.abs(m[5] - w[5]) < .34 && Math.abs(m[0] - w[0]) < .0045 && Math.abs(m[1] - w[1]) < .0045 && Math.abs(m[2] - w[2]) < .0045 && Math.abs(m[3] - w[3]) < .0045) return;
     var tr = 'matrix(' + m[0].toFixed(3) + ',' + m[1].toFixed(3) + ',' + m[2].toFixed(3) + ',' + m[3].toFixed(3) + ',' + m[4].toFixed(1) + ',' + m[5].toFixed(1) + ')';
-    if(tr !== q.tr){ q.tr = tr; q.el.style.transform = tr; }
+    if(tr !== q.tr){ q.tr = tr; q.w = [m[0], m[1], m[2], m[3], m[4], m[5]]; q.el.style.transform = tr; }
   });
   /* l'ombre au sol : plus petite quand il saute */
+  /* (15 novembre : l'ombre a son propre calque et n'est réécrite que si elle a bougé d'un demi-point — au repos, plus jamais) */
   var o = this.p, sx = Math.max(.25, (1 - Math.max(0, -o.y) / 260) * (o.ombre || 1));
-  var to = 'translate(' + o.x.toFixed(1) + 'px,0) scale(' + sx.toFixed(2) + ',' + sx.toFixed(2) + ')';
-  if(to !== this._to){ this._to = to; this.ombreEl.style.transform = to; this.ombreEl.style.opacity = String(Math.max(.2, sx).toFixed(2)); }
+  var to = 'translate(' + (Math.round(o.x * 2) / 2) + 'px,0) scale(' + sx.toFixed(2) + ',' + sx.toFixed(2) + ')';
+  if(to !== this._to){ this._to = to; this.ombreEl.style.transform = to; var op = Math.max(.2, Math.min(1, sx)).toFixed(1); if(op !== this._op){ this._op = op; this.ombreEl.style.opacity = op; } }
+  if(this.teinteT && !this.surToile){ var tt = 'translate(' + Math.round(o.x) + 'px,' + Math.round(Math.min(0, o.y)) + 'px)'; if(tt !== this._tt){ this._tt = tt; this.teinteEl.style.transform = tt; } }
   if(this.etat.cape) this._cape();
 };
 /* la cape : ses coins du haut suivent les épaules (le buste), son ourlet traîne au sol */
@@ -767,7 +887,7 @@ CP.point = function(os, x, y){ var m = this.M[os]; if(!m) return {x:x, y:y}; var
 CP.arreter = function(){ this.duree = 0; if(this.fin){ var f = this.fin; this.fin = null; f(); } };
 
 window.LeoCorps = {
-  creer:function(parent){ return new Corps(parent); },
+  creer:function(parent, o){ return new Corps(parent, o); },
   preparer:preparer, cuit:function(){ return Object.keys(CUIT).length; },
   POSES:POSES, GARDE:GARDE, SQ:SQ, DESSINS:P, ORDRE:ORDRE, complete:complete, melange:melange, ik:ik, R:R, T:T, mul:mul, ap:ap, inv:inv, svgPiece:svgPiece, DEFS:DEFS, W:W, H:H, PIED:PIED
 };

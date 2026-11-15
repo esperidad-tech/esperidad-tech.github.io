@@ -75,7 +75,8 @@ L.DEBUT = 2.2;                                        /* le calme du début d'un
 /* l'ordre des attaques, en boucle. Romain : PAS au hasard — « un ordre très particulier, que tu calcules ». On l'apprend en jouant. */
 L.ORDRE = {
   1:['fleau', 'charge', 'marteau', 'meule', 'crochet', 'cape'],
-  2:['sifflet', 'poing', 'faux', 'charge', 'lancer', 'gourde', 'saut'],
+  /* (Romain, 15 novembre : « enlève une attaque, il y a une attaque qui sert à rien, qu'on peut pas contrer : c'est le coup de poing ») */
+  2:['sifflet', 'faux', 'charge', 'lancer', 'gourde', 'saut'],
   3:['poing3', 'rafale', 'charge', 'hurlement', 'attrape', 'souffle']
 };
 /* prise : il prend son arme (on la voit) ; elan : il arme son coup ; retour : il revient en garde. cibles : 'un' | 'deux' | 'tous'.
@@ -94,7 +95,9 @@ L.ATTAQUES = {
   sifflet:{nom:'Le sifflet', ic:'🐀', arme:'sifflet', prise:.7, elan:.9, retour:.5, rats:true},                             /* Romain : deux rats ; d'abord normaux, puis cuirassés, puis les deux */
   poing:{nom:'Le coup de poing', ic:'👊', arme:null, prise:0, elan:.5, retour:.5, degats:10, cibles:'tous', casse:true, rapide:true},   /* Romain : très rapide, 10, enlève tous les boucliers */
   faux:{nom:'La faux', ic:'🌙', arme:'faux', prise:1.0, elan:1.3, retour:.9, degats:10, cibles:'tous', saigne:true},         /* Romain : un balayage sur les trois, qui fait saigner */
-  saut:{nom:'Le saut', ic:'💥', arme:null, prise:.5, elan:1.0, retour:1.0, degats:16, cibles:'tous', etourdit:3.0},         /* Romain : étourdit les trois ; on n'a le temps que d'un bouclier jaune */
+  /* (Romain, 15 novembre : « il faut qu'elle dure un tout petit peu plus longtemps pour la préparation, comme c'est une assez grosse
+     attaque » : il se ramasse .8 s puis reste 1,5 s en l'air — 2,3 s pour réagir, au lieu de 1,5) */
+  saut:{nom:'Le saut', ic:'💥', arme:null, prise:.8, elan:1.5, retour:1.0, degats:16, cibles:'tous', etourdit:3.0},         /* Romain : étourdit les trois ; on n'a le temps que d'un bouclier jaune */
   gourde:{nom:'La gourde', ic:'🧴', arme:'gourde', prise:.8, elan:2.4, retour:.6, soin:600},                                /* Romain : il reprend beaucoup de vie ; le marteau l'arrête */
   lancer:{nom:'Le lancer de rat', ic:'🐁', arme:null, prise:0, elan:.55, retour:.5, degats:15, fois:2, cibles:'un', rapide:true},   /* Romain : rapide, le rat mord deux fois */
   /* ---------- phase 3 : la potion ---------- */
@@ -118,7 +121,9 @@ L.BARRE = {
   /* (phase 2 : l'acide de l'Alchimiste reste — sans lui, les rats cuirassés seraient increvables une fois le crochet cassé ; et le
      feu reste — c'est la seule chose qui touche Léo par-dessus ses rats : sans lui, la simulation met deux fois plus de temps
      à finir la phase, plus de quatre minutes pour un joueur ordinaire) */
-  2:{pisteur:['dague', 'l:crochet', 'l:fleau', 'l:marteau', 'p:huile', 'p:feu'], alchimiste:['p:huile', 'p:feu', 'p:acide', 'herbes', 'p:baume', 'p:coeur'], sage:['oeil', 'rune', 'bouclier', 'a:baton-chene']},
+  /* (Romain, 15 novembre : « enlève-moi cette flèche de feu, elle sert à rien, alors que la flèche d'acide va enlever les armures » :
+     le Pisteur a la flèche d'acide à la place ; le feu de l'Alchimiste reste, pour toucher Léo par-dessus ses rats) */
+  2:{pisteur:['dague', 'l:crochet', 'l:fleau', 'l:marteau', 'p:huile', 'p:acide'], alchimiste:['p:huile', 'p:feu', 'p:acide', 'herbes', 'p:baume', 'p:coeur'], sage:['oeil', 'rune', 'bouclier', 'a:baton-chene']},
   3:{pisteur:['l:faux', 'l:gourde', 'p:givre', 'p:huile'], alchimiste:['p:givre', 'p:huile', 'herbes', 'p:baume', 'p:coeur'], sage:['oeil', 'bouclier', 'a:baton-chene']}
 };
 L.FLAQUE = 6;                                         /* l'huile ou la colle sous ses pieds tient six secondes */
@@ -129,9 +134,11 @@ L.COUPS = {fleche:45, lourde:55, dague:90, dagueSol:270, feu:60, acide:30, louch
 L.FEU = {n:8, pas:.5, duree:4};                       /* le feu le fait brûler quatre secondes */
 L.USAGES = 3;                                         /* Romain : chaque arme ramassée sert trois fois, puis casse */
 L.ARMES = {
-  crochet:{nom:'Crochet', ic:'🪝', d:'fait très mal', phase:2, vise:'ennemi'},
-  fleau:{nom:'Fléau', ic:'🌾', d:'frappe deux cibles', phase:2, vise:'ennemi'},
-  marteau:{nom:'Marteau', ic:'🔨', d:'coupe son geste', phase:2, vise:'ennemi'},
+  /* (Romain, 15 novembre : « j'aimerais que le marteau soit infini, que le fléau soit infini, et le crochet aussi » : ces trois-là
+     ne s'usent plus — infini:true ; la faux et la gourde de la phase 3 gardent leurs trois coups) */
+  crochet:{nom:'Crochet', ic:'🪝', d:'fait très mal', phase:2, vise:'ennemi', infini:true},
+  fleau:{nom:'Fléau', ic:'🌾', d:'frappe deux cibles, fait fuir les rats', phase:2, vise:'ennemi', infini:true},
+  marteau:{nom:'Marteau', ic:'🔨', d:'coupe son geste', phase:2, vise:'ennemi', infini:true},
   faux:{nom:'Faux', ic:'🌙', d:'fait saigner', phase:3, vise:'ennemi'},
   gourde:{nom:'Gourde', ic:'🧴', d:'toute la vie', phase:3, vise:'heros'}
 };
@@ -155,7 +162,7 @@ L.DUREES = {
 };
 L.MOTS = {
   occupe:'Pas encore !', etourdi:'Étourdi !', attrape:'Attrapé !', sol:'Au sol !', noir:'Dans le noir !', farine:'Dans la farine !', loin:'Trop loin !',
-  casse:'Cassé !', insensible:'Insensible !', rien:'Rien du tout', personne:'Personne au sol', debout:'Encore debout', fini:'C\'est fini', cible:'Qui viser ?',
+  fuit:'Il détale !', casse:'Cassé !', insensible:'Insensible !', rien:'Rien du tout', personne:'Personne au sol', debout:'Encore debout', fini:'C\'est fini', cible:'Qui viser ?',
   impossible:'Impossible !', glisse:'Ça glisse !', vu:'Il voit tout', boucle:'Déjà protégé', tousse:'Il tousse…', tropTard:'Trop tard !',
   clair:'Il fait clair', forme:'En pleine forme', ebloui:'Ébloui !'
 };
@@ -239,7 +246,9 @@ P.gestes = function(h){
     else if(id === 'dague'){ var d = self.devant(), ok = !(d === 'leo' && cache); g(id, G.nom, 'ennemi', ok ? [d] : [], ok, sombre ? L.MOTS.noir : L.MOTS.farine); }
     else if(id === 'oeil') g(id, G.nom, 'salle', [], !self.vu, L.MOTS.vu);
     else if(id === 'rune'){
-      g(id, G.nom, 'ennemi', rats, rats.length > 0, L.MOTS.rien);
+      /* (Romain, 15 novembre : « quand on appuie sur la lumière, il faut que ça illumine tout le monde, pas juste une personne » :
+         contre Léo, la rune de lumière éclaire toute la salle — tous les rats d'un coup) */
+      g(id, G.nom, 'salle', [], rats.length > 0, L.MOTS.rien);
       /* le bâton de lune : toute la salle — il rallume les torches (et coupe l'attaque de Léo), il aveugle tous les rats */
       if(self.objets[h].indexOf('cristal-lune') >= 0) g('a:cristal-lune', G.nom, 'salle', [], sombre || rats.length > 0, L.MOTS.clair);
     }
@@ -257,6 +266,7 @@ P.gestes = function(h){
     var A = L.ARMES[a], reste = self.armes[a];
     if(reste === undefined) return;
     if(reste <= 0) return;                                           /* cassée : elle a quitté la bande */
+    if(A.infini) reste = null;                                       /* (elle ne s'use pas : pas de compteur sur son icône) */
     if(A.vise === 'heros') g('l:' + a, A.nom, 'heros', amis, amis.length > 0, L.MOTS.personne, {reste:reste, arme:a});
     else if(a === 'marteau' || a === 'faux'){ var okM = !cache; g('l:' + a, A.nom, 'ennemi', okM ? ['leo'] : [], okM, sombre ? L.MOTS.noir : L.MOTS.farine, {reste:reste, arme:a}); }
     else { var dz = self.devant(), okA = !(dz === 'leo' && cache); g('l:' + a, A.nom, 'ennemi', okA ? [dz] : [], okA, sombre ? L.MOTS.noir : L.MOTS.farine, {reste:reste, arme:a}); }
@@ -331,7 +341,7 @@ P.barre = function(){
       if(!g) return;                                                  /* pas cette recette, pas ce bâton, arme cassée : pas d'icône */
       if(id === 'oeil' && self.vu) return;                            /* la rune de l'œil est ouverte pour tout le combat : son icône a fini de servir */
       var a = self.auto(h, id, g), o = {heros:h, geste:id, nom:g.nom, vise:g.vise, permis:g.permis, mot:g.mot, auto:a};
-      if(g.reste != null){ o.reste = g.reste; o.arme = g.arme; }
+      if(g.arme){ o.arme = g.arme; if(g.reste != null) o.reste = g.reste; }
       if(g.sorte) o.sorte = g.sorte;
       /* personne à viser : l'icône est éteinte, avec son mot */
       if(o.permis && g.vise !== 'salle' && g.vise !== 'equipe' && !a.length){
@@ -391,7 +401,7 @@ P.agir = function(h, geste, cible){
   S.act = {geste:geste, cibles:cibles, impact:this.t + d.impact, fin:this.t + d.fin, fait:false};
   var ev = [{t:'geste', heros:h, geste:geste, cible:cibles.length > 1 ? cibles.slice() : (cibles[0] == null ? null : cibles[0]), impact:d.impact, fin:d.fin}];
   /* une arme ramassée s'use dès qu'on s'en sert */
-  if(geste.indexOf('l:') === 0){ var a = geste.slice(2); this.armes[a]--; ev.push({t:'arme', nom:a, reste:this.armes[a]}); }
+  if(geste.indexOf('l:') === 0){ var a = geste.slice(2); if(!L.ARMES[a].infini){ this.armes[a]--; ev.push({t:'arme', nom:a, reste:this.armes[a]}); } }
   return ev;
 };
 P._annuler = function(ev, h, cause){ var S = this.h[h]; if(S.act && !S.act.fait){ ev.push({t:'annule', heros:h, cause:cause}); } S.act = null; };
@@ -581,7 +591,7 @@ P._effet = function(ev, h, a){
     this.ratsVivants().forEach(function(r){ self._ratLumiere(ev, r); });
     return;
   }
-  if(g === 'rune'){ var rr = this.rat(x); if(rr && !rr.mort) this._ratLumiere(ev, rr); return; }
+  if(g === 'rune'){ this.ratsVivants().forEach(function(r){ self._ratLumiere(ev, r); }); return; }
   if(g === 'l:gourde'){ if(!this.h[x].sol) this._soin(ev, x, Math.ceil(this.h[x].pvMax * L.GOURDE_SOIN), 'gourde'); return; }
   if(g.indexOf('p:') === 0 && h !== 'pisteur'){
     var rec = D.RECETTES[g.slice(2)];
@@ -674,6 +684,9 @@ P._toucheRat = function(ev, r, coup){
     ev.push({t:'degats', cible:r.id, n:n, pv:r.pv, cause:cause, critique:n >= 60});
     if(r.pv <= 0){ r.mort = true; ev.push({t:'rat', quoi:'meurt', id:r.id, par:cause}); }
   }
+  /* (Romain, 15 novembre : « quand on utilise le fléau, ça tape deux personnes ; et les rats, ça les fait automatiquement fuir » :
+     un rat touché par le fléau détale, cuirassé ou non) */
+  if(coup === 'fleau'){ r.mort = true; ev.push({t:'mot', sur:r.id, texte:L.MOTS.fuit}); ev.push({t:'rat', quoi:'meurt', id:r.id, par:'fleau'}); return; }
   if(coup === 'crochet'){
     /* Romain : le crochet tue un rat d'un coup ; sur un rat cuirassé, il casse l'armure, et le coup d'après le tue */
     if(cuir){ r.nu = true; ev.push({t:'rat', quoi:'nu', id:r.id, par:'crochet'}); return; }

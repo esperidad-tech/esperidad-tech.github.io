@@ -223,9 +223,11 @@
 .b-heros .bouc-b.jaune{filter:sepia(1) saturate(6) hue-rotate(5deg) brightness(1.15)}
 
 /* ====================================================================== LE COMBAT DE LÉO (leo.js ; Bible §13.33) : en temps réel */
-#combat.leo .decor{filter:brightness(1.55) saturate(1.1)}
-#leo-lueur{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;transition:opacity .5s;
-  background:radial-gradient(circle at 33% 34%,rgba(255,170,80,.36),rgba(255,140,60,0) 34%),radial-gradient(circle at 65.5% 34%,rgba(255,170,80,.36),rgba(255,140,60,0) 34%)}
+/* (15 novembre, la fluidité : plus de filtre sur le décor — il était recalculé chaque fois que la tablette repeignait la salle ;
+   l'image est éclaircie une fois pour toutes par construire.py : scene-leo-clair.webp. Et la lueur des torches n'est plus
+   « fondue » dans l'image d'en dessous (mix-blend-mode : toute la salle recomposée à part, à chaque image) : une simple lueur.) */
+#leo-lueur{position:absolute;inset:0;pointer-events:none;transition:opacity .5s;
+  background:radial-gradient(circle at 33% 34%,rgba(255,170,80,.2),rgba(255,140,60,0) 34%),radial-gradient(circle at 65.5% 34%,rgba(255,170,80,.2),rgba(255,140,60,0) 34%)}
 .leo-torche{position:absolute;top:96px;width:40px;height:90px;pointer-events:none}
 .leo-flamme{position:absolute;left:8px;top:-2px;width:24px;height:40px;border-radius:50% 50% 46% 46%/64% 64% 36% 36%;background:radial-gradient(circle at 50% 72%,#fff7c0 0 22%,#ffc040 46%,#ff7a20 76%,rgba(255,90,20,0));
   transform-origin:50% 100%;animation:leoFlamme .42s ease-in-out infinite alternate;transition:opacity .35s,transform .35s}
@@ -275,7 +277,7 @@
 @keyframes leoGoutte{0%{transform:translateY(0) scale(.5);opacity:0}15%{opacity:1;transform:translateY(8px) scale(1)}85%{opacity:1}100%{transform:translateY(118px) scale(.9);opacity:0}}
 .l-feu{position:absolute;left:118px;top:56px;font-size:30px;display:none;animation:flotte .5s ease-in-out infinite;pointer-events:none}
 .heros.brule .l-feu{display:block}
-.heros.brule .acteur{filter:sepia(.5) saturate(2) hue-rotate(-18deg)}
+/* (15 novembre : plus de filtre sur tout le héros qui brûle — la flamme au-dessus de lui suffit) */
 .l-proie{position:absolute;left:104px;top:22px;font-size:26px;display:none;pointer-events:none;text-align:center;width:70px;animation:pulse .7s ease-in-out infinite}
 .l-proie b{display:block;font-size:15px;color:#ff9a8a;text-shadow:0 1px 0 #000,0 0 4px #000;line-height:1}
 .heros.proie .l-proie{display:block}
@@ -286,7 +288,10 @@
 .lb-nom{display:flex;align-items:baseline;gap:8px;height:16px;line-height:16px;padding:0 3px;white-space:nowrap}
 .lb-nom b{font-family:var(--f-titre);font-weight:400;font-size:14.5px;color:var(--hc);text-shadow:0 1px 0 #000}
 .lb-nom em{font-style:normal;font-size:12.5px;color:#ffd0c0;font-weight:800}
-.lb-g > u{position:absolute;left:0;right:0;bottom:0;height:6px;background:linear-gradient(90deg,#ffd36a,#ff9a3a);transform-origin:0 50%;transform:scaleX(0);text-decoration:none}
+.lb-g > u{position:absolute;left:0;right:0;bottom:0;height:6px;background:linear-gradient(90deg,#ffd36a,#ff9a3a);transform-origin:0 50%;transform:scaleX(0);text-decoration:none;will-change:transform}
+/* une icône qui a fini de servir (une arme cassée, la rune de l'œil ouverte) : elle garde sa case, éteinte pour de bon (Romain, 15 novembre) */
+.lb-cartes .carte.vide{opacity:.13;pointer-events:none}
+.lb-cartes .carte .l-us{display:contents}
 .lb-g.pris .lb-cartes{opacity:.4}
 .lb-cartes{display:grid;grid-auto-rows:62px;gap:5px;align-content:start;flex:1;min-width:0}
 /* ce que montre la rune de l'œil : ses trois prochaines attaques, aux pieds de Léo, tout en bas de la salle */
@@ -295,7 +300,7 @@
 #leo-suite i{font-style:normal;display:block;line-height:1;text-align:center}
 #leo-suite i.grand{font-size:29px;width:34px;height:34px;line-height:34px}
 #leo-suite i.petit{font-size:19px;width:23px;height:23px;line-height:23px;opacity:.78}
-#leo-suite i.cours{animation:pulse .7s ease-in-out infinite;filter:drop-shadow(0 0 5px #ff6a4a)}
+#leo-suite i.cours{animation:pulse .7s ease-in-out infinite}
 #leo-suite i + i::before{content:'›';position:absolute;margin-left:-8px;color:#7fb4d4;font-size:13px;font-weight:800;line-height:inherit}
 .lb-cartes .carte.mini{height:62px;min-width:0;touch-action:manipulation}
 .lb-cartes .carte.mini .c-ic{height:34px;line-height:34px;font-size:25px}
@@ -339,6 +344,18 @@
 .parchemin.leo-def h2{font-size:30px}
 /* ====================================================================== LA PHASE 2 DE LÉO (leo-p2.js ; Bible §13.40) : ses effets
    (RAPIDITE.md : on n'anime que transform et opacity ; tout est posé en coordonnées de scène, puis retiré) */
+/* l'annonce d'une attaque (15 novembre) : son nom en gros au milieu de la salle, et la jauge qui se remplit jusqu'au coup */
+.lp-annonce{position:absolute;left:236px;top:54px;display:flex;align-items:center;gap:8px;padding:7px 16px 13px 12px;border-radius:14px;background:rgba(20,10,8,.88);border:3px solid #ffb050;color:#ffe9c4;font:900 25px/1 var(--f-titre, serif);letter-spacing:.03em;white-space:nowrap;pointer-events:none;z-index:46;opacity:0;text-shadow:0 2px 0 #000;will-change:transform,opacity}
+.lp-annonce b{font-size:25px;font-weight:400}
+.lp-annonce > i{position:absolute;left:10px;right:10px;bottom:5px;height:5px;border-radius:3px;background:rgba(255,255,255,.16);overflow:hidden}
+.lp-annonce u{display:block;width:100%;height:100%;background:#ffb050;transform-origin:0 50%;transform:scaleX(0);will-change:transform;text-decoration:none}
+.lp-annonce.vert{border-color:#7dff6a;color:#dcffd0}.lp-annonce.vert u{background:#7dff6a}
+.lp-annonce.rat{border-color:#d8c8a8;color:#f3ead8}.lp-annonce.rat u{background:#d8c8a8}
+/* le saut : la cible au sol, là où il va retomber (l'anneau se resserre jusqu'au choc) */
+.lp-cible-saut{position:absolute;top:336px;width:0;height:0;pointer-events:none;opacity:0;will-change:opacity}
+.lp-cible-saut i{position:absolute;left:0;top:0;width:330px;height:64px;border-radius:50%;transform:translate(-50%,-50%)}
+.lp-cible-saut i:first-child{border:5px solid #ffb050;will-change:transform}
+.lp-cible-saut i:last-child{width:150px;height:30px;background:radial-gradient(closest-side,rgba(255,176,80,.75),rgba(255,120,40,.35) 60%,rgba(255,120,40,0))}
 .lp-alerte{position:absolute;font:900 44px/1 var(--f-titre, serif);text-shadow:0 3px 0 #1a0e08,0 0 12px rgba(0,0,0,.8),0 0 18px currentColor;pointer-events:none;z-index:45}
 .lp-note{position:absolute;font-size:30px;line-height:1;color:#ffe9a0;text-shadow:0 2px 0 #1a0e08,0 0 8px rgba(255,220,120,.8);pointer-events:none;z-index:45}
 .lp-lueur{position:absolute;left:-60px;top:-60px;width:120px;height:120px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,250,220,.95),rgba(255,170,60,.75) 35%,rgba(255,90,30,.35) 62%,rgba(255,60,20,0));pointer-events:none;z-index:44;opacity:0;will-change:transform,opacity}

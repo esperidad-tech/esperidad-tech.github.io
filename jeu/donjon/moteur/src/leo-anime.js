@@ -305,7 +305,7 @@ function Leo(parent, o){
   this.el = d;
   this.ancien = new Ancien(d, {x:W / 2, sol:PIED, tenue:o.tenue === 2 ? 1 : (o.tenue || 1)});
   this.ancien.el.style.willChange = 'auto';
-  this.corps = window.LeoCorps ? window.LeoCorps.creer(d) : null;
+  this.corps = window.LeoCorps ? window.LeoCorps.creer(d, {cx:this.cx, sol:this.sol}) : null;
   this.n = 0;
   this.tenue(o.tenue || 1);
 }
@@ -346,10 +346,13 @@ F.ancre = function(nom){
 F.scene = function(os, x, y){ var q = this.corps.point(os, x, y); return {x:q.x + this.cx - W / 2, y:q.y + this.sol - PIED}; };
 F.teinte = function(nom){
   var f = {gel:'hue-rotate(160deg) saturate(.7) brightness(1.25)', noirci:'brightness(.25) contrast(1.2)', feu:'sepia(.6) saturate(2.4) hue-rotate(-20deg) brightness(1.1)', rouge:'saturate(1.5) brightness(1.05) drop-shadow(0 0 8px rgba(255,60,40,.8))', vert:'brightness(1.12) saturate(1.3) drop-shadow(0 0 10px rgba(120,255,110,.85))'}[nom] || '';
-  this.el.style.filter = f; return this;
+  /* (15 novembre : en combat, le nouveau Léo est peint sur une toile — sa teinte s'y peint aussi, sans filtre : un filtre sur
+     tout Léo était recalculé à chaque image) */
+  if(this.corps) this.corps.teinter(nom);
+  this.el.style.filter = this.nouveau() ? '' : f; return this;
 };
 F.voile = function(v){ this.el.style.opacity = String(1 - Math.max(0, Math.min(1, v)) * .82); return this; };
-F.eclair = function(){ try{ this.el.animate([{filter:'brightness(1)'}, {filter:'brightness(2.6)', offset:.15}, {filter:'brightness(1)'}], {duration:320}); }catch(e){} return this; };
+F.eclair = function(){ if(this.nouveau()){ this.corps.flash(); return this; } try{ this.el.animate([{filter:'brightness(1)'}, {filter:'brightness(2.6)', offset:.15}, {filter:'brightness(1)'}], {duration:320}); }catch(e){} return this; };
 
 window.LeoAnime = {creer:function(parent, o){ return new Leo(parent, o); }, POSES:POSES, ARMES:ARMES, TENUES:TENUES};
 })();

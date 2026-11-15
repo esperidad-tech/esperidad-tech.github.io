@@ -45,6 +45,15 @@ def webp(src, dst, qualite=82, largeur=None):
     im.save(dst, 'WEBP', quality=qualite, method=6)
 
 
+def clair(src, dst, lumiere=1.55, couleur=1.1, qualite=84):
+    if not plus_recent(src, dst):
+        return
+    from PIL import Image, ImageEnhance
+    im = Image.open(src).convert('RGB')
+    im = ImageEnhance.Color(ImageEnhance.Brightness(im).enhance(lumiere)).enhance(couleur)
+    im.save(dst, 'WEBP', quality=qualite, method=6)
+
+
 def copier(src, dst):
     if plus_recent(src, dst):
         shutil.copyfile(src, dst)
@@ -60,6 +69,9 @@ def images():
     for f in sorted(os.listdir(os.path.join(DONJON, 'scenes', 'png'))):
         if f.endswith('.png'):
             webp(os.path.join(DONJON, 'scenes', 'png', f), os.path.join(d, 'scene-' + f[:-4] + '.webp'), 82)
+    # le décor du combat de Léo, ÉCLAIRCI ICI, une fois (15 novembre : avant, un filtre « brightness » posé sur l'image dans la page,
+    # que la tablette recalculait chaque fois qu'elle repeignait la salle — un des gros freins du combat de Léo)
+    clair(os.path.join(DONJON, 'scenes', 'png', 'leo.png'), os.path.join(d, 'scene-leo-clair.webp'))
     # les photos des héros (portraits), les textures de fumée
     for f in ['heros-sage.png', 'heros-alchimiste.png', 'heros-pisteur.png', 'fumee-a.png', 'fumee-b.png', 'fumee-c.png', 'brume-a.png', 'brume-b.png', 'flamme.png']:
         copier(os.path.join(ESSAI, 'img', f), os.path.join(d, f))

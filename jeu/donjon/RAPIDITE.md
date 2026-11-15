@@ -135,6 +135,19 @@ Avant, tout était repeint par le fil principal : son rythme était celui de l'a
 
 L'entrée dans la salle (construction de la scène) a une tâche de ~0,3 s au ralenti ×4 : c'est le « chargement ».
 
+## 4 bis. Le 15 novembre : un combat en temps réel (Léo) — ce qu'on a appris de plus
+
+Romain : « ça rame de partout », « ça fait que quitter sur l'iPhone ». Les règles R1 à R9 supposaient qu'au repos le fil principal dort. **Dans un combat en temps réel, il ne dort jamais** (une boucle par image fait avancer le combat). Alors :
+
+**R10 — En temps réel, rien ne tourne en boucle.** Chaque animation en cours (même jouée par la carte graphique) est recalculée par le fil principal à chaque image qu'il fabrique, et un personnage dont une seule pièce bouge reste découpé en plusieurs calques (de la mémoire). Mesuré en pause, ×6 : 30 images/s avec les animations d'attente des trois héros, 49 sans. Un combat en temps réel pose `SALLE.tempsReel` et `SALLE.tissusFiges` : héros et monstres immobiles entre deux gestes.
+**R11 — Ne jamais réécrire un grand morceau de page pendant le jeu** (`innerHTML` d'une rangée d'icônes, d'un panneau) : le construire une fois, puis ne changer que des classes et de petits textes.
+**R12 — Aucun effet plein écran « vivant »** : ni `filter` sur un décor, ni `mix-blend-mode` sur un calque qui couvre la salle (toute la salle est alors recomposée à part, à chaque image). Un décor plus clair = une image plus claire, faite à la construction.
+**R13 — Ne pas mesurer avec une boucle par image.** `DJ.mesurerCritique` réveillait le fil principal à chaque image du critique : la mesure faisait ramer ce qu'elle mesurait. Mesurer du dehors (`perf-leo.py`, `perf.py`).
+**R14 — Une pièce déplacée par le JavaScript n'est écrite que si elle a bougé pour de bon** (un tiers de point, un quart de degré) : au repos, un personnage qui respire ne coûte presque plus rien.
+**Essayé, à ne pas refaire sans mesure sur un vrai appareil** : peindre un personnage sur une toile (canvas) à chaque image — deux fois plus lent, sur la machine d'essai, que ses pièces sur leurs calques.
+**Les outils** : `moteur/perf-leo.py` (les images par seconde du fil principal, où part son temps, les fonctions les plus chères, avec ou sans le son), `moteur/memoire.py` (émulation iPhone : le nombre de calques et leur poids).
+**Ce qui reste cher** : fabriquer les sons en direct (un quart du temps du fil principal en combat) ; les gestes des héros (une cinquantaine de pièces animées chacun).
+
 ## 5. Ce qui reste à faire
 
 - **Le critique et le nuage** restent sous l'objectif (≈ 31-41 images/s « écran »), surtout à cause du compositeur simulé

@@ -47,6 +47,10 @@ function lancer(partie, o){
   return new Promise(function(fin){
     E = {partie:partie, c:null, ph:null, A:{h:{}}, leo:null, rats:{}, sel:'pisteur', geste:null, choix:[], pause:false, cine:true, fini:false, finir:fin,
       sig:'', etatsH:{}, occ:{}, jet:{}, temps:0, elan:null, vite:+o.vite || 1, saute:false, essais:0};
+    /* LA FLUIDITÉ (Romain, 15 novembre : « ça rame de partout », « optimisation au maximum ») : ce combat est en temps réel, la page
+       refait une image à chaque instant. Tout ce qui tourne en boucle sur les héros et les rats coûte alors à chaque image :
+       pendant ce combat, ils ne gardent que leur souffle (SALLE.tempsReel), et leurs tissus ne sont plus recalculés (SALLE.tissusFiges). */
+    SALLE.tempsReel = true; SALLE.tissusFiges = true;
     construire();
     demarrerPhase(o.phase || phaseGardee(partie), true);
     E.raf = requestAnimationFrame(boucle);
@@ -61,7 +65,7 @@ function construire(){
   jeu.innerHTML = '';
   DJ.cssHeros();
   var c = el('div', 'ecran salle-leo leo ouvert'); c.id = 'combat';
-  c.innerHTML = '<div id="monde"><div id="secousse"><img class="decor" src="' + DJ.charger.scene('leo') + '" alt=""><div id="leo-lueur"></div>' + torche(300) + torche(610) +
+  c.innerHTML = '<div id="monde"><div id="secousse"><img class="decor" src="' + DJ.charger.scene('leo-clair') + '" alt=""><div id="leo-lueur"></div>' + torche(300) + torche(610) +
     '<div id="sol-fx"></div><div id="persos"></div><div id="fx"></div><div id="fumee"></div><div id="leo-noir"></div><div id="hud"></div></div></div>' +
     '<div id="haut"><div id="leo-barre"><em></em><div class="barre"><i></i><u style="left:60%"></u><u style="left:30%"></u></div><b></b><span id="leo-etats"></span></div>' + DJ.curseursVolume() +
     '<button id="fuite" class="sombre" data-act="l-pause" aria-label="Pause">⏸ Pause</button></div>' +
@@ -103,7 +107,9 @@ function construire(){
   c.addEventListener('pointerdown', doigt);
   DJ.musiqueCombat('bassin');
 }
-function slotH(h){ return q('.h-' + h); }
+/* (un élément cherché une fois, puis gardé : maj() tourne à chaque image) */
+function mem(sel){ var c = E.mem || (E.mem = {}), e = c[sel]; return e && e.isConnected ? e : (c[sel] = q(sel)); }
+function slotH(h){ return mem('.h-' + h); }
 /* la phase 2 se joue avec le nouveau Léo : sa pose vient, à chaque image, de l'horloge des règles (leo-p2.js) */
 function p2(){ return !!(E && E.p2 && E.c && E.c.phase === 2 && E.leo.nouveau()); }
 
@@ -111,7 +117,7 @@ function p2(){ return !!(E && E.p2 && E.c && E.c.phase === 2 && E.leo.nouveau())
 function demarrerPhase(n, premiere){
   E.c = LR.combat(E.partie, {phase:n});
   E.ph = E.c.etat();
-  E.elan = null; E.sig = ''; E.suiteSig = null;
+  E.elan = null; E.cases = null; E.suiteSig = null;
   Object.keys(E.rats).forEach(function(id){ retirerRat(id); });
   ORDRE.forEach(function(h){ remettreHeros(h); });
   nuage(false); flaque(false); noir(false, true);
@@ -250,7 +256,7 @@ async function finPhase(res){
   if(!E) return;
   E.saute = false;
   E.c.phaseSuivante();
-  E.ph = E.c.etat(); E.sig = '';
+  E.ph = E.c.etat(); E.cases = null;
   ORDRE.forEach(function(h){ remettreHeros(h); });
   if(E.p2) E.p2.vider();
   q('#combat').classList.add('ouvert');
@@ -313,6 +319,7 @@ function terminer(res){
   Object.keys(E.rats).forEach(function(id){ try{ E.rats[id].arreter(); }catch(e){} });
   ORDRE.forEach(function(h){ try{ E.A.h[h].arreter(); }catch(e){} });
   DJ.taire(); DJ.fermer();
+  SALLE.tempsReel = false; SALLE.tissusFiges = false;
   E = null;
   fin(res);
 }
@@ -338,14 +345,14 @@ function boucle(ts){
 function maj(force){
   var ph = E.ph = E.c.etat(), Z = ph.leo;
   ORDRE.forEach(function(h){
-    var s = ph.heros[h], e = q('#pv-' + h), k = Math.max(0, s.pv / s.pvMax), i = q('i', e), st = E.etatsH[h] || (E.etatsH[h] = {}), slot = slotH(h);
-    if(st.pv !== s.pv){ st.pv = s.pv; i.style.transform = 'scaleX(' + k + ')'; i.className = k <= .25 ? 'bas' : k <= .5 ? 'moyen' : ''; q('b', e).textContent = s.pv; }
+    var s = ph.heros[h], e = mem('#pv-' + h), k = Math.max(0, s.pv / s.pvMax), st = E.etatsH[h] || (E.etatsH[h] = {}), slot = slotH(h);
+    if(st.pv !== s.pv){ var i = q('i', e); st.pv = s.pv; i.style.transform = 'scaleX(' + k + ')'; i.className = k <= .25 ? 'bas' : k <= .5 ? 'moyen' : ''; q('b', e).textContent = s.pv; }
     basc(slot, st, 'saigne', s.saigne); basc(slot, st, 'brule', s.brule); basc(slot, st, 'bj', s.bouclier === 'jaune'); basc(slot, st, 'bc', s.bouclier === 'chene');
     var et = s.etourdi > 0; if(st.etourdi !== et){ st.etourdi = et; try{ if(!s.sol) E.A.h[h]._etoiles(et); }catch(x){} }
     var pr = Z.vise ? Z.vise.cibles.indexOf(h) >= 0 : false;
     if(st.proie !== pr){ st.proie = pr; slot.classList.toggle('proie', pr); if(pr) q('.l-proie b', slot).textContent = Z.vise.part ? '−' + Math.round(Z.vise.part * 100) + ' %' : Z.vise.degats ? '−' + Z.vise.degats + (Z.vise.fois > 1 ? ' ×' + Z.vise.fois : '') : ''; }
   });
-  var b = q('#leo-barre'), kz = Math.max(0, Z.pv / Z.pvMax);
+  var b = mem('#leo-barre'), kz = Math.max(0, Z.pv / Z.pvMax);
   if(E.pvLeo !== Z.pv){ E.pvLeo = Z.pv; q('.barre i', b).style.transform = 'scaleX(' + kz + ')'; q('b', b).textContent = Z.pv; }
   var ch = (Z.saigne ? '<i>🩸' + (Z.saigne > 1 ? '×' + Z.saigne : '') + '</i>' : '') + (Z.brule ? '<i>🔥</i>' : '') + (Z.ralenti ? '<i>❄️</i>' : '');
   if(E.chLeo !== ch){ E.chLeo = ch; q('#leo-etats').innerHTML = ch; }
@@ -365,7 +372,7 @@ function icAttaque(x){
   return x.ic;
 }
 function suite(Z){
-  var e = q('#leo-suite'); if(!e) return;
+  var e = mem('#leo-suite'); if(!e) return;
   var l = Z.suite || [], sig = l.map(function(x){ return x.att + (x.enCours ? '!' : ''); }).join(',');
   if(sig === E.suiteSig) return;
   E.suiteSig = sig;
@@ -396,31 +403,50 @@ function infoCarte(g){
   R = D.GESTES[id];
   return {ic:R.ic, nom:id === 'fleche' ? 'Flèche' : (R.arme || R.nom)};
 }
+function usureHTML(reste){
+  return reste == null ? '' : '<i class="l-usure u' + reste + '">' + reste + '</i>' + (reste < 3 ? '<svg class="l-fissure" viewBox="0 0 84 59" preserveAspectRatio="none"><path d="M20 0 L30 16 L24 26 L36 40' + (reste < 2 ? ' L30 59 M30 16 L46 22 L58 12 M36 40 L52 46 L62 59' : '') + '" fill="none" stroke="#0c0810" stroke-width="2.2" stroke-linejoin="round"/></svg>' : '');
+}
 function carte(g){
   var R = infoCarte(g), cls = (!g.permis ? ' off' : '') + (R.cls || '') + (R.nom.length > 10 ? ' long' : '');
-  var usure = R.reste != null ? '<i class="l-usure u' + R.reste + '">' + R.reste + '</i>' + (R.reste < 3 ? '<svg class="l-fissure" viewBox="0 0 84 59" preserveAspectRatio="none"><path d="M20 0 L30 16 L24 26 L36 40' + (R.reste < 2 ? ' L30 59 M30 16 L46 22 L58 12 M36 40 L52 46 L62 59' : '') + '" fill="none" stroke="#0c0810" stroke-width="2.2" stroke-linejoin="round"/></svg>' : '') : '';
-  return '<button class="carte mini' + cls + '" data-act="l-geste" data-h="' + g.heros + '" data-id="' + g.geste + '" aria-label="' + esc(R.nom) + '"><span class="c-ic">' + R.ic + '</span><b>' + esc(R.nom) + '</b>' + usure + '</button>';
+  return '<button class="carte mini' + cls + '" data-act="l-geste" data-h="' + g.heros + '" data-id="' + g.geste + '" aria-label="' + esc(R.nom) + '"><span class="c-ic">' + R.ic + '</span><b>' + esc(R.nom) + '</b><span class="l-us">' + usureHTML(R.reste) + '</span></button>';
 }
 /* UNE SEULE RANGÉE D'ICÔNES (Romain, 14 novembre) : un cadre par héros, à sa couleur, dans l'ordre où ils sont à l'écran ; dedans,
-   ses icônes de la phase, sur deux lignes. Plus d'onglets, plus de cible : on pianote. */
+   ses icônes de la phase, sur deux lignes. Plus d'onglets, plus de cible : on pianote.
+   15 novembre (Romain : « quand les armes s'épuisent, il faut pas que les icônes changent de place » ; et « ça rame ») : la rangée
+   est construite UNE SEULE FOIS par phase. Chaque icône garde sa case jusqu'au bout — une arme cassée, la rune de l'œil ouverte
+   restent à leur place, éteintes pour de bon (« vide »). Ensuite, on ne touche qu'à ce qui change vraiment (allumée / éteinte,
+   l'usure d'une arme) : plus jamais toute la rangée réécrite pendant qu'on pianote. */
 function bande(force){
-  var ph = E.ph, B = E.c.barre();
-  var sig = B.map(function(g){ return g.heros[0] + g.geste + (g.permis ? 1 : 0) + (g.reste || ''); }).join(',') + '|' +
-    ORDRE.map(function(x){ var s = ph.heros[x]; return (s.sol ? 's' : '') + (s.etourdi > 0 ? 'e' : '') + (s.attrape ? 'a' : ''); }).join(',') + '|' + (E.cine ? 'c' : '');
-  if(force || sig !== E.sig){
-    E.sig = sig; E.barre = B;
+  var ph = E.ph, B = E.c.barre(), par = {}, C = E.cases;
+  E.barre = B;
+  B.forEach(function(g){ par[g.heros + '|' + g.geste] = g; });
+  if(!C || C.phase !== E.c.phase){
+    C = E.cases = {phase:E.c.phase, l:[], h:{}, cine:null};
     bandeEl.innerHTML = ORDRE.map(function(h){
-      var l = B.filter(function(g){ return g.heros === h; }), st = ph.heros[h], cols = Math.max(2, Math.ceil(l.length / 2));
-      var et = st.sol ? '💫 au sol' : st.attrape ? '🪝 attrapé' : st.etourdi > 0 ? '💫 étourdi' : '';
-      return '<div class="lb-g g-' + h + (st.sol ? ' sol' : '') + (et ? ' pris' : '') + '" data-h="' + h + '" style="flex:' + cols + ' 1 0"><div class="lb-nom"><b>' + D.HEROS[h].nom + '</b><em>' + et + '</em></div>' +
+      var l = B.filter(function(g){ return g.heros === h; }), cols = Math.max(2, Math.ceil(l.length / 2));
+      return '<div class="lb-g g-' + h + '" data-h="' + h + '" style="flex:' + cols + ' 1 0"><div class="lb-nom"><b>' + D.HEROS[h].nom + '</b><em></em></div>' +
         '<div class="lb-cartes" style="grid-template-columns:repeat(' + cols + ',1fr)">' + l.map(carte).join('') + '</div><u id="lbo-' + h + '"></u></div>';
     }).join('');
-    bandeEl.classList.toggle('attend', !!E.cine);
+    [].forEach.call(bandeEl.querySelectorAll('.carte'), function(el){
+      var k = el.getAttribute('data-h') + '|' + el.getAttribute('data-id'), g = par[k];
+      C.l.push({k:k, el:el, us:el.querySelector('.l-us'), la:true, permis:!!g.permis, reste:g.reste});
+    });
+    ORDRE.forEach(function(h){ var g = bandeEl.querySelector('.lb-g[data-h=' + h + ']'); C.h[h] = {g:g, em:g.querySelector('em'), u:g.querySelector('u'), sig:'', occ:-1}; });
   }
-  ORDRE.forEach(function(x){
-    var st = ph.heros[x], u = q('#lbo-' + x), tot = E.occ[x] || 1;
-    if(u) u.style.transform = 'scaleX(' + Math.max(0, Math.min(1, st.occupe / tot)).toFixed(3) + ')';
+  C.l.forEach(function(c){
+    var g = par[c.k], la = !!g, permis = la && !!g.permis;
+    if(la !== c.la){ c.la = la; c.el.classList.toggle('vide', !la); }
+    if(permis !== c.permis){ c.permis = permis; c.el.classList.toggle('off', !permis); }
+    if(la && g.reste !== c.reste){ c.reste = g.reste; c.us.innerHTML = usureHTML(g.reste); }
   });
+  ORDRE.forEach(function(x){
+    var st = ph.heros[x], H = C.h[x], et = st.sol ? '💫 au sol' : st.attrape ? '🪝 attrapé' : st.etourdi > 0 ? '💫 étourdi' : '';
+    if(H.sig !== et){ H.sig = et; H.em.textContent = et; H.g.classList.toggle('sol', !!st.sol); H.g.classList.toggle('pris', !!et); }
+    /* la petite barre « occupé » : écrite seulement quand elle a bougé d'un cran (elle a son propre calque : rien n'est repeint) */
+    var occ = Math.round(Math.max(0, Math.min(1, st.occupe / (E.occ[x] || 1))) * 80);
+    if(occ !== H.occ){ H.occ = occ; H.u.style.transform = 'scaleX(' + (occ / 80) + ')'; }
+  });
+  if(C.cine !== !!E.cine){ C.cine = !!E.cine; bandeEl.classList.toggle('attend', C.cine); }
 }
 
 /* ====================================================================== 5. LES DOIGTS */
@@ -587,9 +613,9 @@ function geste(ev){
     Promise.resolve(H.sage.etudier()).catch(function(){});
     return;
   }
-  if(g === 'rune'){ son('magie'); to = ancreDe(c, 'centre'); Promise.resolve(H.sage.sort(fx, to, {cristal:false})).catch(function(){}); apres(ev.impact, function(){ Fx.eclat(to.x, to.y, 240, 'radial-gradient(closest-side,#fff,rgba(191,248,255,.9) 30%,rgba(63,208,255,0))', 500); }); return; }
-  if(g === 'a:cristal-lune'){
-    son('magie'); bruit('cristal');
+  /* (Romain, 15 novembre : la rune de lumière éclaire TOUTE la salle, comme le bâton de lune — tous les rats d'un coup) */
+  if(g === 'rune' || g === 'a:cristal-lune'){
+    son('magie'); if(g !== 'rune') bruit('cristal');
     var pts = Object.keys(E.rats).map(function(id){ return E.rats[id].ancre('centre'); }); if(!pts.length) pts = [E.leo.ancre('centre')];
     Promise.resolve(H.sage.eclairSalle ? H.sage.eclairSalle(fx, {cibles:pts}) : H.sage.sort(fx, pts[0])).catch(function(){});
     return;
@@ -822,7 +848,7 @@ function rat(ev){
       son('couine', 0, .8, 1.3);
       ['zone-', 'pv-'].forEach(function(pp){ var e = q('#' + pp + ev.id); if(e) e.remove(); });
       delete E.rats[ev.id];
-      Promise.resolve(ev.par === 'chef' ? a.fuir() : a.mourir()).catch(function(){}).then(function(){ setTimeout(function(){ try{ a.arreter(); a.el.remove(); }catch(e){} }, 900); });
+      Promise.resolve(ev.par === 'chef' || ev.par === 'fleau' ? a.fuir() : a.mourir()).catch(function(){}).then(function(){ setTimeout(function(){ try{ a.arreter(); a.el.remove(); }catch(e){} }, 900); });
       return;
   }
 }

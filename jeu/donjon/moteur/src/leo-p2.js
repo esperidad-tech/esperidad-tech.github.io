@@ -71,16 +71,25 @@ PISTES.gourde = {
   elan:[[0, pose({mAv:[158, 146], tete:8, torse:4, bAr:[44, 74, 0], ga:-12}), 'io'], [.16, pose(BOIT), 'lin'], [1, pose(BOIT)]],     /* (les glous sont ajoutés par-dessus) */
   retour:[[0, pose({mAv:[160, 150], tete:-4, torse:-6, bAr:[96, 100, 0], bas:6, ga:-10}), 'io'], [.45, pose({mAv:[186, 206], tete:10, torse:6, bas:12, ga:0}), 'io'], [1, pose({})]]
 };
-/* ---------- LE SAUT : il s'accroupit très bas (la poussière tourne), bondit hors de l'écran, et retombe poings joints ---------- */
-var ACCROUPI = {bas:52, torse:30, bassin:12, tete:-4, bAv:[-70, 30, 0], bAr:[-50, 34, 0], pAv:[214, 318], pAr:[90, 318]};
+/* ---------- LE SAUT (refait le 15 novembre ; Romain : « l'animation est pas claire », « il faut qu'elle dure un tout petit peu plus
+   longtemps pour la préparation ») : il se ramasse très bas, les bras en arrière (la poussière tourne) ; il bondit VERS les héros,
+   bien visible, les deux poings levés au-dessus de la tête ; il reste un instant en l'air au-dessus de l'endroit où il va tomber
+   (une grande cible orange au sol, son ombre qui grossit) ; puis il s'abat, poings joints. Il ne sort plus de l'écran. ---------- */
+var ACCROUPI = {bas:60, torse:34, bassin:14, tete:-8, bAv:[-84, 34, 0], bAr:[-66, 38, 0], pAv:[218, 318], pAr:[86, 318]};
+var SAUT_X = -250;                       /* là où il retombe (au milieu de la salle, devant les héros) */
 PISTES.saut = {
-  prise:[[0, pose({}), 'io'], [1, pose(ACCROUPI)]],
-  elan:[[0, pose(ACCROUPI), 'o'], [.14, pose({y:-120, bas:0, torse:-6, tete:-10, bAv:[176, 20, 0], bAr:[170, 24, 0], jAv:[-30, 70], jAr:[20, 60]}), 'o'],
-    [.5, pose({y:-300, bas:0, torse:-4, tete:-4, bAv:[176, 20, 0], bAr:[170, 24, 0], jAv:[-40, 90], jAr:[30, 80], ombre:1.6}), 'i'],
-    [.82, pose({y:-260, bas:0, torse:10, tete:6, bAv:[184, 60, 0], bAr:[178, 64, 0], jAv:[-20, 80], jAr:[30, 70], ombre:1.8}), 'i'],
-    [1, pose({y:-20, bas:0, torse:20, tete:6, bAv:[150, 40, 0], bAr:[146, 44, 0], jAv:[-6, 30], jAr:[16, 30], ombre:1.4})]],
-  retour:[[0, pose({bas:58, torse:40, bassin:14, tete:10, mAv:[120, 252], mAr:[100, 256], pAv:[224, 318], pAr:[84, 318]}), 'o'], [.35, pose({bas:56, torse:38, bassin:14, tete:6, mAv:[120, 250], mAr:[100, 254], pAv:[224, 318], pAr:[84, 318]}), 'io'],
-    [.7, pose({bas:8, torse:-14, tete:-20, bAv:[40, 120, 0], bAr:[60, 110, 0]}), 'io'], [1, pose({})]]
+  prise:[[0, pose({}), 'io'], [.55, pose(ACCROUPI), 'io'], [1, pose({bas:66, torse:38, bassin:15, tete:-10, bAv:[-92, 36, 0], bAr:[-74, 40, 0], pAv:[218, 318], pAr:[86, 318]})]],
+  elan:[[0, pose({bas:66, torse:38, bassin:15, tete:-10, bAv:[-92, 36, 0], bAr:[-74, 40, 0], pAv:[218, 318], pAr:[86, 318]}), 'o'],
+    /* (il ne monte pas plus haut que le haut de la salle : il bondit ramassé, les genoux sous lui — on le voit en entier) */
+    [.1, pose({x:-24, y:-44, bas:14, torse:6, tete:-10, bAv:[120, 30, 0], bAr:[114, 34, 0], ombre:1.1}), 'o'],
+    [.4, pose({x:SAUT_X * .62, y:-84, bas:32, torse:18, tete:-8, bAv:[150, 34, 0], bAr:[144, 38, 0], ombre:1.5}), 'io'],
+    [.82, pose({x:SAUT_X, y:-92, bas:36, torse:8, tete:-16, bAv:[168, 24, 0], bAr:[162, 28, 0], ombre:1.9}), 'i'],
+    [1, pose({x:SAUT_X, y:0, bas:58, torse:40, bassin:14, tete:10, mAv:[120, 252], mAr:[100, 256], pAv:[224, 318], pAr:[84, 318], ombre:1.3})]],
+  retour:[[0, pose({x:SAUT_X, bas:58, torse:40, bassin:14, tete:10, mAv:[120, 252], mAr:[100, 256], pAv:[224, 318], pAr:[84, 318]}), 'o'],
+    [.3, pose({x:SAUT_X, bas:54, torse:36, bassin:14, tete:4, mAv:[120, 250], mAr:[100, 254], pAv:[224, 318], pAr:[84, 318]}), 'io'],
+    [.5, pose({x:SAUT_X, bas:30, torse:10, tete:-6, bAv:[-30, 40, 0], bAr:[-20, 44, 0]}), 'o'],
+    [.75, pose({x:SAUT_X * .5, y:-50, bas:22, torse:4, tete:-4, bAv:[40, 60, 0], bAr:[50, 56, 0]}), 'i'],
+    [.92, pose({x:0, bas:30, torse:12, tete:2}), 'o'], [1, pose({})]]
 };
 /* ---------- ce qui lui arrive ---------- */
 var SONNE = pose({bas:16, torse:16, tete:24, bAv:[6, 20, 0], bAr:[14, 16, 0], pAv:[194, 318], pAr:[110, 318]});
@@ -145,6 +154,8 @@ function suivre(X, s){ X.suiveurs.push(s); return s; }
 function vider(X){
   X.suiveurs.forEach(function(s){ try{ if(s.fin) s.fin(); }catch(e){} }); X.suiveurs = [];
   X.fx.forEach(function(e){ try{ e.remove(); }catch(x){} }); X.fx = [];
+  if(X.annonce){ try{ X.annonce.el.remove(); }catch(x){} X.annonce = null; }
+  X.cibleSaut = null;
   X.sig = ''; X.faits = {}; X.brule = false; X.flinch = 0; X.douleur = 0; X.coupe = 0;
   var C = corps(X); if(C){ C.objet('faux', 'dos'); C.objet('gourde', 'ceinture'); C.objet('bouchon', true); C.objet('sifflet', 'cou'); C.objet('rat', null); C.visage('colere'); C.devantAr(false); }
 }
@@ -180,12 +191,31 @@ function image(X, dt, c){
   if(X.flinch > 0){ X.flinch = Math.max(0, X.flinch - dt * 4); var f = X.flinch * X.flinchF; p.torse -= 7 * f; p.tete -= 10 * f; p.x += 6 * f; }
   /* les repères de l'étape (les effets, les sons, une seule fois) */
   reperes(X, etape, att, k, c);
+  annoncer(X, etape, att, k);
   /* le visage */
   visage(X, etape, att, k, dt);
   X.pose = p;
   C.temps += dt; C.poser(p);
   /* les effets qui le suivent */
   for(var i = X.suiveurs.length - 1; i >= 0; i--){ var s = X.suiveurs[i], garde = true; try{ garde = s.maj(dt) !== false; }catch(e){ garde = false; } if(!garde){ try{ if(s.fin) s.fin(); }catch(e){} X.suiveurs.splice(i, 1); } }
+}
+/* L'ANNONCE (15 novembre ; Romain : « les animations restent pas très claires, il faut augmenter la clarté encore ») : pendant
+   qu'il prépare une attaque, son nom s'affiche en gros au milieu de la salle, avec une jauge qui se remplit jusqu'au coup.
+   On sait ce qui arrive, et quand. (Trois mots au plus : pas de bouton 🔊.) */
+var ANNONCES = {sifflet:['🐀', 'IL SIFFLE'], faux:['⚠️', 'LA FAUX'], charge:['⚠️', 'LA CHARGE'], lancer:['🐀', 'UN RAT VOLE'], gourde:['🧪', 'IL BOIT'], saut:['⚠️', 'LE SAUT'], poing:['⚠️', 'LE POING']};
+function annoncer(X, etape, att, k){
+  var A = ANNONCES[att], en = !!A && (etape === 'prise' || etape === 'elan'), a = X.annonce;
+  if(a && (!en || a.att !== att)){ X.annonce = null; var e0 = a.el; anim(e0, [{opacity:1}, {opacity:0}], {duration:160, fill:'forwards'}); retirer(e0, 180); a = null; if(X.cibleSaut && att !== 'saut') finCibleSaut(X); }
+  if(!en) return;
+  var R = window.LeoRegles && window.LeoRegles.L.ATTAQUES[att], pr = R ? R.prise || 0 : 0, elx = R ? R.elan || 0 : 1, tot = (pr + elx) || 1;
+  if(!a){
+    var e = el('lp-annonce' + (att === 'gourde' ? ' vert' : att === 'sifflet' || att === 'lancer' ? ' rat' : ''), '<b>' + A[0] + '</b><span>' + A[1] + '</span><i><u></u></i>', calque(X));
+    anim(e, [{opacity:0, transform:'translate(-50%,10px) scale(.7)'}, {opacity:1, transform:'translate(-50%,0) scale(1.08)', offset:.7}, {opacity:1, transform:'translate(-50%,0) scale(1)'}], {duration:200, fill:'forwards', easing:'ease-out'});
+    a = X.annonce = {att:att, el:e, u:e.querySelector('u'), n:-1};
+  }
+  /* la jauge : où l'on en est entre le début de la préparation et le coup (l'horloge de Léo fait foi, même ralentie par le givre) */
+  var n = Math.round(Math.max(0, Math.min(1, (etape === 'prise' ? k * pr : pr + k * elx) / tot)) * 60);
+  if(n !== a.n){ a.n = n; a.u.style.transform = 'scaleX(' + (n / 60).toFixed(3) + ')'; }
 }
 function changer(X, Z, c){
   /* une nouvelle étape commence : on note d'où l'on part ; les effets de l'étape d'avant s'arrêtent */
@@ -299,9 +329,9 @@ function reperes(X, etape, att, k, c){
     if(etape === 'retour' && une(X, 'g4', k, .5)){ C.objet('gourde', 'ceinture'); C.objet('bouchon', true); }
   }
   if(att === 'saut'){
-    if(etape === 'prise' && une(X, 'j0', k, 0)){ poussiereTourne(X); alerte(X, '!', '#ffb050'); }
-    if(etape === 'elan' && une(X, 'j1', k, .12)){ decollage(X); bruit(X, 'leoSaut', {cale:d * .88}, ['tombe']); }
-    if(etape === 'elan' && une(X, 'j2', k, .5)) dangerSol(X, d * .5, '#ffb050', true);
+    if(etape === 'prise' && une(X, 'j0', k, 0)){ poussiereTourne(X); cibleSaut(X, d + ((window.LeoRegles && window.LeoRegles.L.ATTAQUES.saut.elan) || 1.5)); }
+    if(etape === 'prise' && une(X, 'j0b', k, .5)) poussiereTourne(X);
+    if(etape === 'elan' && une(X, 'j1', k, .06)){ decollage(X); bruit(X, 'leoSaut', {cale:d * .88}, ['tombe']); }
   }
 }
 function cibleX(X, Z){
@@ -340,7 +370,7 @@ function impact(X, ev, c){
     return true;
   }
   if(att === 'lancer'){ lancerRat(X, l[0]); C.objet('rat', null); return true; }
-  if(att === 'saut'){ atterrit(X); return true; }
+  if(att === 'saut'){ finCibleSaut(X); atterrit(X); return true; }
   if(att === 'gourde') return true;                     /* (le soin arrive avec « soin-leo ») */
   return false;
 }
@@ -514,8 +544,8 @@ function gueri(X, ev){
   var e = garde(X, el('lp-aura', '<i></i><i></i><i></i>', ctx.persos)), t = 0;
   e.style.zIndex = '2';
   suivre(X, {maj:function(dt){ t += dt; var q = ctx.leo.ancre('pieds'); e.style.transform = 'translate(' + q.x.toFixed(1) + 'px,' + q.y.toFixed(1) + 'px)'; e.style.opacity = String(t < 1.8 ? 1 : Math.max(0, 1 - (t - 1.8) / .8)); return t < 2.6; }, fin:function(){ e.remove(); }});
-  /* (un éclair vert, court : pas de filtre qui reste — RAPIDITE.md, R2) */
-  anim(ctx.leo.el, [{filter:'brightness(1)'}, {filter:'brightness(1.7) sepia(.5) hue-rotate(60deg) saturate(2)', offset:.2}, {filter:'brightness(1)'}], {duration:700});
+  /* (un éclair vert, court, sans filtre : une lueur posée sur lui — RAPIDITE.md, R2) */
+  try{ ctx.leo.corps.flash('#9dff8a', 700); }catch(e){}
 }
 /* LE LANCER : le rat vole en tournant jusqu'au héros */
 function lancerRat(X, h){
@@ -527,6 +557,15 @@ function lancerRat(X, h){
   setTimeout(function(){ r.remove(); son(X, 'morsure'); }, 270);
 }
 /* LE SAUT : la poussière qui tourne pendant qu'il se ramasse, le décollage, l'atterrissage qui fait trembler toute la salle */
+/* LE SAUT : la cible au sol, là où il va retomber — dès qu'il se ramasse, et jusqu'au choc (elle se resserre : c'est le compte à rebours) */
+function cibleSaut(X, d){
+  var ctx = X.ctx, x = ctx.LX + SAUT_X, e = garde(X, el('lp-cible-saut', '<i></i><i></i>', ctx.sol || calque(X)));
+  e.style.left = x + 'px';
+  anim(e, [{opacity:0}, {opacity:1, offset:.1}, {opacity:1}], {duration:d * 1000, fill:'forwards'});
+  anim(e.firstChild, [{transform:'translate(-50%,-50%) scale(1.5)'}, {transform:'translate(-50%,-50%) scale(.42)'}], {duration:d * 1000, fill:'forwards', easing:'linear'});
+  X.cibleSaut = e;
+}
+function finCibleSaut(X){ var e = X.cibleSaut; if(!e) return; X.cibleSaut = null; anim(e, [{opacity:1}, {opacity:0}], {duration:200, fill:'forwards'}); retirer(e, 220); }
 function poussiereTourne(X){
   var ctx = X.ctx, p = ctx.leo.ancre('pieds');
   for(var i = 0; i < 8; i++){ var e = el('lp-terre gros', null, calque(X)); var a = (i / 8) * Math.PI * 2; ctx.Fx.particule(e, {x:p.x + Math.cos(a) * 60, y:334, vx:-Math.sin(a) * 120, vy:-hasard(60, 160), g:300, vie:.6, s0:1.2, s1:.3, delai:i * .04}); }

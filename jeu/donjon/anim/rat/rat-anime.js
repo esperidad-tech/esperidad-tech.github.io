@@ -589,7 +589,11 @@ R._lancerBoucles = function(){
   this.vitesse = V;
   function B(n){ return fusion(Z, b[n]); }
   function autour(n, d){ var v = B(n), o = {}; for(var k in d) o[k] = (k === 'sx' || k === 'sy') ? v[k] * d[k] : v[k] + d[k]; return o; }
+  /* (un combat en temps réel — Léo : chaque boucle coûte à chaque image, et de la mémoire ; debout, le rat ne bouge qu'en
+     attaquant ; ébloui ou sur le dos, il garde sa posture qui se tortille — c'est elle qui dit « frappe maintenant ») */
+  var TR = global.SALLE && global.SALLE.tempsReel;
   function boucle(n, deltas, duree, e, delai){
+    if(TR && !(n === 'posture' && mode !== 'normal')) return null;
     var cles = deltas.map(function(d){ return {t: d[0], p: (function(){ var o = {}; o[n] = autour(n, d[1]); return o; })(), e: e}; });
     return self._seq(cles, duree, {boucle: true, vitesse: V, depuis: b, delai: delai || 0});
   }
@@ -650,6 +654,7 @@ R._lancerBoucles = function(){
 /* les petits événements qui rendent l'attente vivante et menaçante */
 R._planifier = function(ms){
   var self = this;
+  if(global.SALLE && global.SALLE.tempsReel) return;      /* (temps réel : pas de petits événements d'attente) */
   this._minuteur(function(){
     if(self.enAction || self.mort || !self.attente) return;
     self._evenement();

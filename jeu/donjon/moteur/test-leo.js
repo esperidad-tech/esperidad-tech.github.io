@@ -230,7 +230,7 @@ section('La rangée d\'icônes (Romain, 14 novembre)');
 (function(){
   function ids(c){ return c.barre().map(function(x){ return x.heros[0] + ':' + x.geste; }).join(' '); }
   egal(ids(combat(1)), 's:oeil s:bouclier s:a:baton-chene s:a:cristal-lune a:p:huile a:p:feu a:p:givre a:herbes a:p:baume a:p:coeur p:dague p:p:huile p:p:feu p:p:givre', 'phase 1 : quatorze icônes — plus de flèche simple, plus de louche, d\'acide, de colle, de fumigène');
-  egal(ids(combat(2)), 's:oeil s:rune s:bouclier s:a:baton-chene a:p:huile a:p:feu a:p:acide a:herbes a:p:baume a:p:coeur p:dague p:l:crochet p:l:fleau p:l:marteau p:p:huile p:p:feu', 'phase 2 : les trois outils de Léo, la rune et l\'acide (pour les rats), le feu (il passe par-dessus les rats) ; plus de givre, plus de lumière');
+  egal(ids(combat(2)), 's:oeil s:rune s:bouclier s:a:baton-chene a:p:huile a:p:feu a:p:acide a:herbes a:p:baume a:p:coeur p:dague p:l:crochet p:l:fleau p:l:marteau p:p:huile p:p:acide', 'phase 2 : les trois outils de Léo, la rune et l\'acide (pour les rats), le feu de l\'Alchimiste (il passe par-dessus les rats) ; le Pisteur a la flèche d\'acide, plus la flèche de feu (Romain, 15 novembre)');
   egal(ids(combat(3)), 's:oeil s:bouclier s:a:baton-chene a:p:givre a:p:huile a:herbes a:p:baume a:p:coeur p:l:faux p:l:gourde p:p:givre p:p:huile', 'phase 3 : la faux, la gourde, le givre et l\'huile ; plus de dague');
   var p0 = R.nouvellePartie(7), c0 = LR.combat(p0, {phase:1});
   egal(ids(c0), 's:oeil s:bouclier a:p:huile a:p:feu a:herbes a:p:baume a:p:coeur p:dague p:p:huile p:p:feu', 'une équipe sans bâtons ni givre : ces icônes-là n\'existent pas');
@@ -263,10 +263,22 @@ section('La rangée d\'icônes (Romain, 14 novembre)');
   /* ce qu'on lance va sur Léo ; la rune sur un rat */
   c = combat(2); jusqueG(c, leo('impact', 'sifflet'));
   var rats = c.ratsVivants().map(function(r){ return r.id; });
-  egal([c.auto('alchimiste', 'p:huile'), c.auto('sage', 'rune'), c.auto('pisteur', 'dague'), c.auto('pisteur', 'l:marteau')], [['leo'], [rats[0]], [rats[0]], ['leo']], 'phase 2 : l\'huile va sur Léo, la rune sur un rat, la dague sur ce qui est devant, le marteau sur Léo');
+  egal([c.auto('alchimiste', 'p:huile'), c.auto('sage', 'rune'), c.auto('pisteur', 'dague'), c.auto('pisteur', 'l:marteau')], [['leo'], [], [rats[0]], ['leo']], 'phase 2 : l\'huile va sur Léo, la rune sur toute la salle (personne à viser), la dague sur ce qui est devant, le marteau sur Léo');
   D.ORDRE.forEach(function(h){ c.h[h].act = null; c.h[h].etourdi = 0; });
-  geste(c, 'sage', 'rune');
-  egal(c.auto('sage', 'rune'), [rats[1]], 'la rune suivante va sur le rat qui n\'est pas encore ébloui');
+  var evR = geste(c, 'sage', 'rune');
+  egal(tous(evR, 'rat', function(e){ return e.quoi === 'ebloui'; }).map(function(e){ return e.id; }), rats, 'la rune de lumière éclaire TOUTE la salle : les deux rats sont éblouis d\'un coup (Romain, 15 novembre)');
+  /* (Romain, 15 novembre) l'acide va toujours sur le PREMIER rat cuirassé qui a encore son armure : celui de devant d'abord */
+  (function(){
+    var c2 = combat(2); jusqueG(c2, leo('impact', 'sifflet'));
+    c2.rats.forEach(function(r){ r.type = 'ratcuir'; r.nu = false; });
+    var v = c2.ratsVivants().map(function(r){ return r.id; });
+    egal([c2.auto('alchimiste', 'p:acide'), c2.auto('pisteur', 'p:acide')], [[v[0]], [v[0]]], 'l\'acide (la potion comme la flèche) : deux rats cuirassés → toujours celui de devant');
+    for(var k = 0; k < 6; k++) egal(c2.auto('alchimiste', 'p:acide', null, true), [v[0]], 'l\'acide : jamais au hasard (tirage ' + k + ')');
+    D.ORDRE.forEach(function(h){ c2.h[h].act = null; c2.h[h].etourdi = 0; });
+    var e2 = geste(c2, 'pisteur', 'p:acide');
+    ok(trouve(e2, 'rat', function(e){ return e.quoi === 'nu' && e.id === v[0]; }), 'la flèche d\'acide du Pisteur ronge l\'armure du premier');
+    egal(c2.auto('alchimiste', 'p:acide'), [v[1]], 'le premier n\'a plus d\'armure : l\'acide suivant va sur le deuxième');
+  })();
   /* l'acide : sur un rat cuirassé, rien d'autre */
   ok(!c.barre().filter(function(x){ return x.geste === 'p:acide'; })[0].permis, 'l\'acide, sans rat cuirassé : éteint');
   c.rats.forEach(function(r){ r.mort = true; }); jusqueG(c, leo('impact', 'sifflet'));
@@ -302,7 +314,7 @@ section('La rune de l\'œil : ses trois prochaines attaques');
   ok(Object.keys(L.ATTAQUES).every(function(a){ return !!L.ATTAQUES[a].ic; }), 'toutes ses attaques ont une icône');
   c = combat(2); geste(c, 'sage', 'oeil'); jusqueG(c, leo('retour', 'sifflet'));
   var k = c.leo.k; c.leo.k = L.ORDRE[2].length - 1;
-  egal(c.etat().leo.suite[0].att, 'poing', 'phase 2 : tant que ses deux rats sont là, le sifflet est sauté');
+  egal(c.etat().leo.suite[0].att, 'faux', 'phase 2 : tant que ses deux rats sont là, le sifflet est sauté (et plus de coup de poing : Romain, 15 novembre)');
   c.leo.k = k;
 })();
 
@@ -328,7 +340,7 @@ section('Phase 1 → phase 2 : la vie revient, les armes sont ramassées');
   egal([c.phase, c.fini(), ev[0].t], [2, null, 'phase'], 'la phase 2 commence');
   egal(D.ORDRE.map(function(h){ return [c.h[h].pv, c.h[h].sol]; }), [[90, false], [100, false], [120, false]], 'tous les héros ont toute leur vie (Romain)');
   egal(c.etat().armes, {crochet:3, fleau:3, marteau:3}, 'le Pisteur ramasse le crochet, le fléau et le marteau : trois coups chacun');
-  ok(g1(c, 'pisteur', 'l:crochet').reste === 3 && g1(c, 'pisteur', 'l:marteau').permis, 'elles sont dans ses cartes');
+  ok(g1(c, 'pisteur', 'l:crochet').reste == null && g1(c, 'pisteur', 'l:crochet').arme === 'crochet' && g1(c, 'pisteur', 'l:marteau').permis, 'elles sont dans ses cartes, sans compteur : elles ne s\'usent plus (Romain, 15 novembre)');
 })();
 
 section('Phase 2 — les armes ramassées');
@@ -338,8 +350,9 @@ section('Phase 2 — les armes ramassées');
   ev = geste(c, 'pisteur', 'l:crochet', 'leo');
   egal(pv - c.leo.pv, L.COUPS.crochet, 'le crochet sur Léo : comme deux coups de dague (' + L.COUPS.crochet + ')');
   egal(L.COUPS.crochet, 2 * L.COUPS.dague, '… exactement deux');
-  geste(c, 'pisteur', 'l:crochet', 'leo'); ev = geste(c, 'pisteur', 'l:crochet', 'leo');
-  ok(trouve(ev, 'arme', function(e){ return e.nom === 'crochet' && e.reste === 0; }) && !g1(c, 'pisteur', 'l:crochet') && c.refus('pisteur', 'l:crochet', 'leo') === L.MOTS.casse, 'au troisième coup il casse, et quitte la bande');
+  for(var k = 0; k < 6; k++) ev = geste(c, 'pisteur', 'l:crochet', 'leo');
+  ok(!trouve(ev, 'arme') && g1(c, 'pisteur', 'l:crochet') && g1(c, 'pisteur', 'l:crochet').permis && c.etat().armes.crochet === L.USAGES, 'le crochet est infini : au septième coup il est toujours là, et il ne s\'use pas (Romain, 15 novembre)');
+  ok(L.ARMES.crochet.infini && L.ARMES.fleau.infini && L.ARMES.marteau.infini && !L.ARMES.faux.infini && !L.ARMES.gourde.infini, 'le crochet, le fléau et le marteau sont infinis ; la faux et la gourde de la phase 3 gardent leurs trois coups');
   pv = c.leo.pv; ev = geste(c, 'pisteur', 'l:fleau', 'leo');
   ok(pv - c.leo.pv === L.COUPS.fleau && L.COUPS.fleau < L.COUPS.dague, 'le fléau sur Léo tout seul : moins fort que la dague (' + L.COUPS.fleau + ')');
   /* le marteau coupe la gourde */
@@ -360,7 +373,7 @@ section('Phase 2 — les armes ramassées');
   c = combat(2); jusque(c, leo('impact', 'sifflet'));
   c.rats.forEach(function(r){ r.mort = true; });
   ev = geste(c, 'pisteur', 'l:marteau', 'leo');
-  egal(c.etat().armes.marteau, 2, 'un coup de marteau dans le vide est un coup perdu');
+  egal(c.etat().armes.marteau, L.USAGES, 'un coup de marteau dans le vide ne coûte plus rien (le marteau est infini)');
 })();
 
 section('Phase 2 — les rats');
@@ -384,6 +397,18 @@ section('Phase 2 — les rats');
   egal(tous(ev, 'rat', function(e){ return e.quoi === 'ebloui'; }).length, 2, 'le bâton de lune éblouit les deux rats d\'un coup');
   ev = geste(c, 'pisteur', 'l:fleau', c.etat().rats[0].id);
   egal(tous(ev, 'rat', function(e){ return e.quoi === 'meurt'; }).length, 2, 'le fléau frappe deux cibles : les deux rats éblouis tombent ensemble (Romain)');
+  /* (Romain, 15 novembre) le fléau fait fuir les rats, même en pleine forme, même cuirassés */
+  (function(){
+    var c3 = combat(2); jusque(c3, leo('impact', 'sifflet')); D.ORDRE.forEach(function(h){ c3.h[h].act = null; });
+    c3.rats[0].type = 'ratcuir';
+    var e3 = geste(c3, 'pisteur', 'l:fleau', c3.etat().rats[0].id), m = tous(e3, 'rat', function(e){ return e.quoi === 'meurt'; });
+    ok(m.length === 2 && m.every(function(e){ return e.par === 'fleau'; }) && c3.ratsVivants().length === 0, 'le fléau : deux rats qui voient clair (dont un cuirassé) → les deux détalent');
+    D.ORDRE.forEach(function(h){ c3.h[h].act = null; });
+    var c4 = combat(2); jusque(c4, leo('impact', 'sifflet')); D.ORDRE.forEach(function(h){ c4.h[h].act = null; });
+    c4.rats[1].mort = true; var pv4 = c4.leo.pv;
+    var e4 = geste(c4, 'pisteur', 'l:fleau', c4.ratsVivants()[0].id);
+    ok(tous(e4, 'rat', function(e){ return e.quoi === 'meurt'; }).length === 1 && pv4 - c4.leo.pv === L.COUPS.fleau, 'le fléau : un seul rat devant → il détale, et Léo prend le deuxième coup (' + L.COUPS.fleau + ')');
+  })();
   c = combat(2); jusque(c, leo('impact', 'sifflet')); D.ORDRE.forEach(function(h){ c.h[h].act = null; });
   geste(c, 'sage', 'a:cristal-lune'); c.avancer(L.EBLOUI + .2);
   ok(!c.etat().rats[0].ouvert, 'l\'aveuglement ne dure que ' + L.EBLOUI + ' secondes');
@@ -414,13 +439,12 @@ section('Phase 2 — les rats');
   ok(c.etat().rats[0].enrage, 'le piège du donjon tient toujours : le BONG enrage le rat (il mordra deux fois)');
 })();
 
-section('Phase 2 — le poing, la faux, le saut');
+section('Phase 2 — la faux, le saut (plus de coup de poing : Romain, 15 novembre)');
 (function(){
   var c = combat(2), ev;
   jusque(c, leo('impact', 'sifflet')); c.rats.forEach(function(r){ r.mort = true; });
-  D.ORDRE.forEach(function(h){ c.h[h].bouclier = 'jaune'; });
-  ev = jusque(c, leo('impact', 'poing'));
-  ok(D.ORDRE.every(function(h){ return !c.h[h].bouclier; }) && tous(ev, 'degats', function(e){ return e.cause === 'poing'; }).length === 3, 'le coup de poing : tout le monde, et tous les boucliers sautent');
+  ok(L.ORDRE[2].indexOf('poing') < 0 && L.ORDRE[2].join(' ') === 'sifflet faux charge lancer gourde saut', 'phase 2 : six attaques, le coup de poing n\'y est plus');
+  egal([L.ATTAQUES.saut.prise, L.ATTAQUES.saut.elan], [.8, 1.5], 'le saut se prépare plus longtemps : 2,3 secondes pour réagir');
   ev = jusque(c, leo('impact', 'faux'));
   ok(D.ORDRE.every(function(h){ return c.h[h].saigne; }), 'la faux : les trois héros saignent');
   var pv0 = c.h.pisteur.pv; c.leo.fin += 100;
@@ -433,13 +457,13 @@ section('Phase 2 — le poing, la faux, le saut');
   ok(D.ORDRE.every(function(h){ return !c.h[h].saigne; }) && tous(ev, 'soin').length === 3, 'les herbes : 15 pour chacun, et plus personne ne saigne (n\'importe quel soin l\'arrête)');
   /* le bouclier jaune empêche le saignement ; le chêne non */
   c = combat(2); jusque(c, leo('impact', 'sifflet')); c.rats.forEach(function(r){ r.mort = true; });
-  jusque(c, leo('impact', 'poing')); c.h.pisteur.bouclier = 'jaune'; c.h.alchimiste.bouclier = 'chene';
+  jusque(c, leo('elan', 'faux')); c.h.pisteur.bouclier = 'jaune'; c.h.alchimiste.bouclier = 'chene';
   jusque(c, leo('impact', 'faux'));
   egal([c.h.pisteur.saigne, c.h.alchimiste.saigne, c.h.sage.saigne], [false, true, true], 'le bouclier jaune empêche de saigner ; le bouclier de chêne, non');
   /* le saut */
   c = combat(2); jusque(c, leo('impact', 'sifflet')); c.rats.forEach(function(r){ r.mort = true; });
   function soigner(){ D.ORDRE.forEach(function(h){ c.h[h].pv = c.h[h].pvMax; c.h[h].sol = false; c.h[h].saigne = false; c.h[h].etourdi = 0; c.h[h].act = null; c.h[h].bouclier = null; }); }
-  ['poing', 'faux', 'charge', 'lancer', 'gourde'].forEach(function(a){ jusque(c, leo('impact', a), 60); soigner(); });
+  ['faux', 'charge', 'lancer', 'gourde'].forEach(function(a){ jusque(c, leo('impact', a), 60); soigner(); });
   c.h.alchimiste.bouclier = 'jaune';
   ev = jusque(c, leo('impact', 'saut'), 60);
   egal([c.h.pisteur.etourdi > c.t, c.h.sage.etourdi > c.t, c.h.alchimiste.etourdi > c.t], [true, true, false], 'le saut étourdit tout le monde, sauf celui qui a un bouclier jaune (l\'Alchimiste peut encore soigner)');

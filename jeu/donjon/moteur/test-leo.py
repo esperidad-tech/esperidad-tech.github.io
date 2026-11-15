@@ -50,7 +50,7 @@ def accord(pg):
         if(!b || +b.textContent !== ph.heros[h].pv) pb.push(h + ' (scène) ' + (b && b.textContent) + '≠' + ph.heros[h].pv); });
       /* la rangée d'icônes : exactement celles des règles, allumées ou éteintes pareil */
       var regles = DJ.Leo.etat().barre.map(function(g){ return g.heros + '/' + g.geste + (g.permis ? '' : '-'); }).join(' ');
-      var ecran = [].map.call(document.querySelectorAll('#bande .lb-g .carte'), function(c){ return c.getAttribute('data-h') + '/' + c.getAttribute('data-id') + (c.classList.contains('off') ? '-' : ''); }).join(' ');
+      var ecran = [].map.call(document.querySelectorAll('#bande .lb-g .carte:not(.vide)'), function(c){ return c.getAttribute('data-h') + '/' + c.getAttribute('data-id') + (c.classList.contains('off') ? '-' : ''); }).join(' ');
       if(regles !== ecran) pb.push('la rangée : ' + ecran + ' ≠ ' + regles);
       var l = document.querySelector('#leo-barre > b'); if(!l || +l.textContent !== ph.leo.pv) pb.push('Léo ' + (l && l.textContent) + '≠' + ph.leo.pv);
       ph.rats.forEach(function(r){ if(!document.querySelector('#zone-' + r.id)) pb.push(r.id + ' sans zone'); });
@@ -98,9 +98,9 @@ def test(nav):
     soigner(pg)
     pg.wait_for_function("() => DJ.Leo.etat().photo.heros.sage.libre", timeout=10000)
     pg.tap('#bande .carte[data-h=sage][data-id=oeil]', force=True); pg.wait_for_timeout(2600)
-    e = pg.evaluate("() => { var s = document.querySelector('#leo-suite'), r = s.getBoundingClientRect(), m = document.querySelector('#monde').getBoundingClientRect(), b = document.querySelector('#bande').getBoundingClientRect(); return {on:s.classList.contains('on'), n:s.querySelectorAll('i').length, grand:s.querySelectorAll('i.grand').length, att:[].map.call(s.querySelectorAll('i'), function(i){ return i.getAttribute('data-att'); }), regles:DJ.Leo.etat().photo.leo.suite.map(function(x){ return x.att; }), bas:Math.abs(r.bottom - b.top) < 6, oeil:document.querySelectorAll('#bande .carte[data-id=oeil]').length}; }")
+    e = pg.evaluate("() => { var s = document.querySelector('#leo-suite'), r = s.getBoundingClientRect(), m = document.querySelector('#monde').getBoundingClientRect(), b = document.querySelector('#bande').getBoundingClientRect(); return {on:s.classList.contains('on'), n:s.querySelectorAll('i').length, grand:s.querySelectorAll('i.grand').length, att:[].map.call(s.querySelectorAll('i'), function(i){ return i.getAttribute('data-att'); }), regles:DJ.Leo.etat().photo.leo.suite.map(function(x){ return x.att; }), bas:Math.abs(r.bottom - b.top) < 6, oeil:document.querySelectorAll('#bande .carte[data-id=oeil]').length, vide:document.querySelectorAll('#bande .carte.vide[data-id=oeil]').length, places:[].map.call(document.querySelectorAll('#bande .lb-g[data-h=sage] .carte'), function(c){ return c.getAttribute('data-id'); })}; }")
     verifie(e['on'] and e['n'] == 3 and e['grand'] == 1 and e['att'] == e['regles'], f'la rune de l\'œil : aux pieds de Léo, l\'attaque qui vient (en grand) et les deux suivantes ({e["att"]})')
-    verifie(e['bas'] and e['oeil'] == 0, 'ces icônes sont tout en bas de la salle ; et l\'icône de l\'œil a quitté la rangée')
+    verifie(e['bas'] and e['oeil'] == 1 and e['vide'] == 1 and e['places'] == ['oeil', 'bouclier', 'a:baton-chene', 'a:cristal-lune'], f'ces icônes sont tout en bas de la salle ; l\'icône de l\'œil a fini de servir : elle s\'éteint pour de bon, MAIS RESTE À SA PLACE — aucune icône ne bouge (Romain, 15 novembre) ({e["places"]})')
     verifie(accord(pg) == [], f'l\'écran et les règles disent toujours la même chose {accord(pg)}')
     pg.screenshot(path=os.path.join(CAP, 'leo-oeil.png'))
 
@@ -132,10 +132,10 @@ def test(nav):
     verifie(pg.locator('#leo-cine [data-act=l-passer]').count() == 1, 'la cinématique : un bouton « Passer »')
     pg.tap('#leo-cine [data-act=l-passer]', force=True)
     pg.wait_for_function("() => DJ.Leo.etat().phase === 2 && !DJ.Leo.etat().cine", timeout=30000); pg.wait_for_timeout(300)
-    e = pg.evaluate("() => { var e = DJ.Leo.etat(), p = e.photo; return {nom:document.querySelector('#leo-barre em').textContent, pv:p.leo.pv, heros:[p.heros.sage.pv, p.heros.alchimiste.pv, p.heros.pisteur.pv], armes:p.armes, garde:window.PARTIE.faits['leo:phase'], cartes:[].map.call(document.querySelectorAll('#bande .lb-cartes .carte.leo-arme'), function(c){ return c.getAttribute('data-id') + c.querySelector('.l-usure').textContent; })}; }")
+    e = pg.evaluate("() => { var e = DJ.Leo.etat(), p = e.photo; return {nom:document.querySelector('#leo-barre em').textContent, pv:p.leo.pv, heros:[p.heros.sage.pv, p.heros.alchimiste.pv, p.heros.pisteur.pv], armes:p.armes, garde:window.PARTIE.faits['leo:phase'], cartes:[].map.call(document.querySelectorAll('#bande .lb-cartes .carte.leo-arme'), function(c){ return c.getAttribute('data-id') + (c.querySelector('.l-usure') ? c.querySelector('.l-usure').textContent : '∞'); })}; }")
     verifie(e['nom'] == 'Léo' and e['pv'] == 6000 and e['heros'] == [90, 100, 120], f'phase 2 : sous la cape, « Léo » ; 6 000 points de vie ; les héros ont toute leur vie ({e["nom"]}, {e["pv"]}, {e["heros"]})')
     verifie(e['garde'] == 2, 'la phase gagnée est gardée toute seule (on reprendrait à la phase 2)')
-    verifie(sorted(e['cartes']) == ['l:crochet3', 'l:fleau3', 'l:marteau3'], f'le Pisteur a ramassé le crochet, le fléau et le marteau : trois coups chacun ({e["cartes"]})')
+    verifie(sorted(e['cartes']) == ['l:crochet∞', 'l:fleau∞', 'l:marteau∞'], f'le Pisteur a ramassé le crochet, le fléau et le marteau : ils ne s\'usent plus, pas de compteur (Romain, 15 novembre) ({e["cartes"]})')
     pg.wait_for_function("() => DJ.Leo.etat().photo.rats.length === 2", timeout=30000); pg.wait_for_timeout(700)
     verifie(accord(pg) == [] and pg.locator('#hud .zone[data-type=ennemi]').count() == 3, 'le sifflet : deux rats, chacun avec sa zone à toucher')
     pg.screenshot(path=os.path.join(CAP, 'leo-2.png'))
@@ -147,7 +147,7 @@ def test(nav):
         pg.evaluate("() => { var g = DJ.Leo._E().c.gestes('pisteur').filter(function(x){ return x.geste === 'l:crochet'; })[0]; DJ.Leo.agir('pisteur', 'l:crochet', g.cibles[0]); }")
         pg.wait_for_timeout(2200)
     c = pg.evaluate("() => [].map.call(document.querySelectorAll('#bande .lb-cartes .carte.leo-arme'), function(c){ return c.getAttribute('data-id'); })")
-    verifie('l:crochet' not in c and len(c) == 2, f'au troisième coup, le crochet casse : il quitte la bande ({c})')
+    verifie(c == ['l:crochet', 'l:fleau', 'l:marteau'] and pg.locator('#bande .carte.vide').count() <= 1, f'après trois coups de crochet, il est toujours là, à sa place : il est infini ({c})')
 
     print('— 6. Phase 2 → phase 3')
     soigner(pg)
@@ -250,9 +250,16 @@ def test(nav):
     verifie(pg.evaluate("() => DJ.Leo._E().leo.corps.etat.faux") == 'dos', 'après le coup, la faux retourne dans son dos')
     # la flèche de feu : des flammes sur lui
     attendre("() => DJ.Leo.etat().photo.heros.pisteur.libre", 8000)
-    pg.tap('#bande .carte[data-h=pisteur][data-id="p:feu"]', force=True)
-    attendre("() => DJ.Leo.etat().photo.leo.brule", 6000)
-    verifie(pg.evaluate("() => !!document.querySelector('.lp-feu')"), 'la flèche de feu : il brûle, et ça se voit (des flammes sur lui)')
+    verifie(pg.locator('#bande .carte[data-h=pisteur][data-id="p:feu"]').count() == 0 and pg.locator('#bande .carte[data-h=pisteur][data-id="p:acide"]').count() == 1, 'phase 2 : le Pisteur n\'a plus la flèche de feu ; il a la flèche d\'acide (Romain, 15 novembre)')
+    pg.tap('#bande .carte[data-h=alchimiste][data-id="p:feu"]', force=True)
+    attendre("() => DJ.Leo.etat().photo.leo.brule", 8000)
+    verifie(pg.evaluate("() => !!document.querySelector('.lp-feu')"), 'le feu de l\'Alchimiste : Léo brûle, et ça se voit (des flammes sur lui)')
+    # (15 novembre) la clarté : l'annonce de l'attaque, avec sa jauge ; la fluidité : rien ne tourne en boucle sur les héros
+    attendre("() => { var Z = DJ.Leo._E().c.leo; return (Z.etape === 'prise' || Z.etape === 'elan') && !!document.querySelector('.lp-annonce span'); }", 20000)
+    an = pg.evaluate("() => { var a = document.querySelector('.lp-annonce'), Z = DJ.Leo._E().c.leo; return {att:Z.att, texte:a ? a.querySelector('span').textContent : null, jauge:!!(a && a.querySelector('u'))}; }")
+    verifie(bool(an['texte']) and len(an['texte'].split(' ')) <= 3 and an['jauge'], f'pendant qu\'il prépare une attaque, son nom s\'affiche en gros, avec une jauge jusqu\'au coup ({an["att"]} : « {an["texte"]} »)')
+    fl = pg.evaluate("() => ({tr:!!SALLE.tempsReel, tissus:!!SALLE.tissusFiges, filtre:getComputedStyle(document.querySelector('#combat .decor')).filter, melange:getComputedStyle(document.querySelector('#leo-lueur')).mixBlendMode, leo:getComputedStyle(DJ.Leo._E().leo.el).filter})")
+    verifie(fl['tr'] and fl['tissus'] and fl['filtre'] == 'none' and fl['melange'] == 'normal' and fl['leo'] == 'none', f'la fluidité : le combat est en mode « temps réel » (héros et rats sans boucles, tissus figés) ; plus de filtre sur le décor ni sur Léo, plus de lueur « fondue » ({fl})')
     # la rune de l'œil : ses vraies affaires en icônes
     pg.tap('#bande .carte[data-h=sage][data-id=oeil]', force=True)
     attendre("() => DJ.Leo.etat().photo.leo.suite", 8000)

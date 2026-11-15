@@ -2,6 +2,14 @@
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
+## Nouveau depuis le 15 novembre : LÉO, LA FLUIDITÉ ET LES RETOUCHES DU COMBAT (Bible §13.41) — EN LIGNE (15 novembre, 11 h 17 ; commit 36d1391 du site ; le donjon : version « 15/11 à 11 h 13 » (en bas de « 🎒 Objets ») ; publication de GitHub vérifiée)
+
+- **À lire : Bible §13.41.** Romain a essayé la phase 2 : « ça rame de partout », « ça fait que quitter sur l'iPhone ». La conversation qui construit a d'abord allégé le combat (deux fois plus fluide sur la machine d'essai ; jamais essayé sur un vrai iPhone), puis fait ses retouches.
+- **Ce qui change pour la conception (phase 2 de Léo)** : **six attaques** (le sifflet, la faux, la charge, le lancer de rat, la gourde, le saut — plus de coup de poing) ; **le Pisteur a la flèche d'acide** à la place de la flèche de feu ; **le crochet, le fléau et le marteau ne s'usent plus** ; **le fléau fait détaler les rats** ; **la lumière du Sage éblouit tous les rats d'un coup** ; **le nom de chaque attaque s'affiche** pendant qu'il la prépare, avec une jauge.
+- **⚠️ Les indices de Farinel et d'Iris** (les réponses du Barde pendant le combat) parlent des outils de Léo : à relire avec Romain — « le crochet contre le cuir » reste juste, mais l'acide du Pisteur et le fléau qui fait fuir les rats ne sont dits nulle part, et rien ne dit plus que les outils cassent (ils ne cassent plus).
+- **⚠️ L'équilibre** : avec le marteau infini (il coupe presque toutes les attaques), la phase 2, qui était un mur, risque d'être trop facile. À voir avec Romain après son essai.
+- **Rien n'a changé dans l'histoire, les dialogues ni les codes.**
+
 ## Nouveau depuis le 14 novembre au soir : LÉO, LA PHASE 2 REFAITE — le nouveau Léo torse nu, ses attaques qu'on comprend, la cinématique où il arrache sa cape et sa tunique — EN LIGNE (Bible §13.40)
 
 - **À lire : Bible §13.40.** Romain (21 h 11) : Léo « hyper mal fait », moins détaillé que ses rats ; il veut qu'il « en impose », que chaque attaque se prépare et se comprenne (effets, visages, sons), une vraie potion verte qu'on le voit boire, un vrai coup de faux, et une transition où il arrache cape et tunique pour montrer ses muscles. **Fait pour la phase 2 et la cinématique 1 → 2** (14 novembre, 22 h 37 ; commit 528f751 du site ; le donjon : version « 14/11 à 22 h 36 » (en bas de « 🎒 Objets ») ; l'Atelier des sons republié avec ; publication de GitHub vérifiée). **Les phases 1 et 3 gardent l'ancien dessin** : Romain valide d'abord la phase 2, puis demandera la phase 3 « à peu près du même style ».
