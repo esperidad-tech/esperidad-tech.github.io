@@ -1,5 +1,7 @@
-/* Atelier des sons de Brumeval — LES CINÉMATIQUES (Bible §13.45 ; 15 novembre). La vidéo des cinématiques est muette : le jeu
-   joue ces bruitages à l'instant dit (la liste « sons » de chaque film, jeu/cine/src/films.js), au volume des réglages.
+/* Atelier des sons de Brumeval — LES CINÉMATIQUES (Bible §13.45 ; 15 novembre). La vidéo des cinématiques est muette : ces
+   bruitages (la liste « sons » de chaque film, jeu/cine/src/films.js) sont mélangés d'avance, avec la musique du film
+   (cine-musiques.js), dans sa bande-son (jeu/cine/bande-son.py → <film>.mp3) ; sans elle, le jeu les joue un par un, à l'instant dit.
+   APRÈS UNE RETOUCHE ICI (ou une version choisie par Romain) : relancer bande-son.py, sinon le jeu garde l'ancienne bande-son.
    Tous NEUFS (🆕) : une seule version (A) chacun, que le jeu joue en attendant que Romain les écoute dans l'Atelier.
    Mêmes règles que leo.js : une fonction (A : le moteur, P : la prise, P.t : l'instant de départ) qui rend {duree}. */
 (function(G){
@@ -157,4 +159,80 @@ S.cineCoupA = function(A, P){
   A.bruit(t, {coul:'brun', filtres:[{type:'lowpass', f:300}], env:[[0, 0], [.05, 1], [2.4, 0]], g:.6}, o);
   return {duree:3.2};
 };
+
+/* =================== LE CRI DE LÉO (Romain, 15 novembre, 16 h 57 : « est-ce que tu peux générer un cri ? ») ===================
+   Une vraie voix d'homme fabriquée : des cordes vocales (trois dents de scie un peu désaccordées, une hauteur qui tremble),
+   un grognement une octave dessous, la gorge qui force (saturation), puis la bouche : quatre résonances (les « formants ») qui
+   passent de « AAA » à « OOO ». Ce n'est pas une voix enregistrée : ça ne sonnera jamais tout à fait comme un vrai homme. */
+var VOY = {a:[730, 1090, 2440, 3400], o:[500, 850, 2400, 3300], e:[600, 1700, 2500, 3400], ou:[350, 750, 2300, 3200]};
+function rugir(A, t, d, o, dest){
+  var ctx = A.ctx, f0 = o.f || 110, pts = o.hauteur || [[0, .8], [.12, 1.12], [.45, 1.22], [.8, 1.05], [1, .78]];
+  var c = A.courbe(pts, d, f0), csub = A.courbe(pts, d, f0 * .5);
+  var env = o.env || [[0, 0], [.07, 1], [d * .72, .88], [d, 0]], gv = o.g == null ? .5 : o.g;
+  /* la source : les cordes vocales */
+  var src = A.gain(1);
+  [-9, 7, 16].forEach(function(det, k){
+    var x = ctx.createOscillator(); x.type = 'sawtooth'; x.frequency.setValueCurveAtTime(c, t, d); x.detune.value = det;
+    var j = ctx.createBufferSource(); j.buffer = A.lent; j.loop = true; j.playbackRate.value = 1.6 + k * .4;
+    var jg = A.gain(f0 * (o.gigue == null ? .035 : o.gigue)); j.connect(jg); jg.connect(x.frequency);
+    var xg = A.gain(k ? .55 : .7); x.connect(xg); xg.connect(src);
+    x.start(t); x.stop(t + d + .05); j.start(t, h(0, 3)); j.stop(t + d + .05);
+  });
+  if(o.grogne){                                                       /* le grognement, une octave dessous */
+    var s2 = ctx.createOscillator(); s2.type = 'square'; s2.frequency.setValueCurveAtTime(csub, t, d);
+    var s2g = A.gain(o.grogne * .45); s2.connect(s2g); s2g.connect(src); s2.start(t); s2.stop(t + d + .05);
+  }
+  /* la gorge qui force */
+  var pre = A.gain(1 + (o.force || 1.5)), w = A.sature(1 + (o.force || 1.5) * 1.6); src.connect(pre); pre.connect(w);
+  /* le souffle qui passe dans la gorge */
+  var souf = ctx.createBufferSource(); souf.buffer = A.rose; souf.loop = true;
+  var sg = A.gain(o.souffle == null ? .35 : o.souffle); souf.connect(sg); souf.start(t, h(0, 1.5)); souf.stop(t + d + .05);
+  /* la bouche : quatre résonances qui vont d'une voyelle à l'autre */
+  var v1 = VOY[o.de || 'a'], v2 = VOY[o.vers || 'o'], bouche = A.gain(1), poids = [1, .62, .3, .14], qs = [5.5, 7, 10, 12];
+  v1.forEach(function(f, k){
+    var b = ctx.createBiquadFilter(); b.type = 'bandpass'; b.Q.value = qs[k];
+    b.frequency.setValueAtTime(f, t); b.frequency.linearRampToValueAtTime(f, t + d * .4); b.frequency.linearRampToValueAtTime(v2[k], t + d * .9);
+    var bg = A.gain(poids[k] * 2.6); w.connect(b); sg.connect(b); b.connect(bg); bg.connect(bouche);
+  });
+  var corps = ctx.createBiquadFilter(); corps.type = 'lowpass'; corps.frequency.value = 420; corps.Q.value = .8;   /* la poitrine */
+  var cg = A.gain(.5); w.connect(corps); corps.connect(cg); cg.connect(bouche);
+  var amp = A.gain(0), fin = A.chaine(t, bouche, [{type:'highpass', f:85, q:.7}, {type:'lowpass', f:o.lp || 6500, q:.6}]);
+  fin.connect(amp); amp.connect(dest);
+  A.env(amp.gain, t, env, gv);
+  A.plusTard(t - ctx.currentTime + d + .5, function(){ try{ amp.disconnect(); }catch(e){} });
+}
+/* il prend son souffle (avant), il reprend son souffle (après) */
+function inspire(A, t, d, g, dest){ A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:1100, pts:[[d, 1700]], q:1.2}], env:[[0, 0], [d * .8, 1], [d, 0]], g:g}, dest); }
+function expire(A, t, d, g, dest){ A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:900, pts:[[d, 500]], q:1}], env:[[0, 0], [.04, 1], [d, 0]], g:g, rugueux:.6, rugVit:9}, dest); }
+
+/* A — le cri de rage : un homme, gorge ouverte, « AAAAH » qui finit en « OOO » */
+S.cineCriA = function(A, P){
+  var t = P.t, o = bus(A, P, 0, .7), d = 1.75;
+  inspire(A, t, .32, .35, o);
+  rugir(A, t + .3, d, {f:118, grogne:.35, force:1.6, g:.55}, o);
+  rugir(A, t + .33, d - .05, {f:236, hauteur:[[0, .78], [.15, 1.08], [.5, 1.16], [.85, 1], [1, .76]], force:.8, souffle:.2, g:.12, lp:7500}, bus(A, P, .25, .7));   /* l'harmonique qui crie plus haut */
+  expire(A, t + .3 + d - .05, .5, .25, o);
+  return {duree:2.8};
+};
+S.cineCriA.moment = .45;
+/* B — le rugissement : plus grave, plus rauque, presque une bête */
+S.cineCriB = function(A, P){
+  var t = P.t, o = bus(A, P, 0, .8), d = 2.1;
+  inspire(A, t, .4, .4, o);
+  rugir(A, t + .36, d, {f:84, grogne:.8, force:2.6, gigue:.05, de:'a', vers:'ou', g:.6, lp:5000}, o);
+  rugir(A, t + .4, d - .1, {f:126, grogne:.2, force:1.8, g:.22, de:'e', vers:'o'}, bus(A, P, -.2, .8));
+  A.bruit(t + .36, {coul:'brun', lp:220, env:[[0, 0], [.15, 1], [d, 0]], g:.9}, o);                  /* le grondement dans la poitrine */
+  expire(A, t + .36 + d - .1, .6, .3, o);
+  return {duree:3.2};
+};
+S.cineCriB.moment = .5;
+/* C — le cri qui monte et se casse : il force jusqu'à ce que la voix déraille */
+S.cineCriC = function(A, P){
+  var t = P.t, o = bus(A, P, 0, .7), d = 1.9;
+  inspire(A, t, .3, .35, o);
+  rugir(A, t + .28, d, {f:122, hauteur:[[0, .75], [.2, 1.05], [.55, 1.3], [.62, 1.62], [.78, 1.55], [1, .9]], grogne:.45, force:2.1, gigue:.045, g:.52}, o);
+  expire(A, t + .28 + d - .05, .55, .3, o);
+  return {duree:2.9};
+};
+S.cineCriC.moment = .45;
 })(window);

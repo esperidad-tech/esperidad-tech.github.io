@@ -1592,7 +1592,9 @@ M.jouerFilmFin = function(){
   if(!window.CineLecteur || !window.CINE_INFOS || !window.CINE_INFOS[nom]){ P.fin.filmFait = true; M.sauver(); return; }
   UI.film = true;
   var QUI = {'Le maire':'grosbec', 'Silas':'silas', 'Léo':'leo'};
-  window.CineLecteur.jouer({url:'cine/' + nom + '.mp4', infos:window.CINE_INFOS[nom], passer:true, attente:9000,
+  var I = window.CINE_INFOS[nom];
+  window.CineLecteur.jouer({url:'cine/' + nom + '.mp4', piste:I.piste ? 'cine/' + nom + '.mp3' : null, infos:I, passer:true, attente:9000,
+    audio:function(){ return M.audioCtx ? M.audioCtx() : null; }, volume:function(){ return M.S && M.S.options && M.S.options.son === false ? 0 : 1; },
     son:window.CineLecteur.sonJeu, lire:function(t, qui){ M.lire(t, {qui:QUI[qui] || null}); }, parle:function(){ return !!M.parle; }, taire:function(){ try{ M.stop(); }catch(e){} }
   }).then(function(r){
     UI.film = false;

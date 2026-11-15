@@ -8,8 +8,12 @@ Sur une tablette 1024 x 768, avec les vraies vidéos (jeu/cine/sortie/*.mp4, don
   - la victoire : le film de Léo qui parle, sans « Passer » la première fois ; ses dix sous-titres sont ses cinq phrases validées,
     mot pour mot ; à la fin du film : la victoire (leo:phase = 4, leo:finVu = 1) ;
   - sans film (pas d'internet) : l'ancienne scène, dessinée en direct ;
+  - les sous-titres, plus gros, s'écrivent lettre après lettre ; 🔊 les montre en entier (Romain, 15 novembre, 16 h 57) ;
+  - LA BANDE-SON (servie comme sur le site, par un petit serveur : le donjon en /donjon/, les films en /cine/) : elle est là,
+    elle joue avec la vidéo, s'arrête et repart avec elle ; plus aucun bruitage un par un ; la musique du donjon se tait
+    pendant le film et revient après ;
   - aucune erreur JavaScript."""
-import os, sys
+import os, sys, threading, tempfile, http.server, socketserver, functools
 from playwright.sync_api import sync_playwright
 
 ICI = os.path.dirname(os.path.abspath(__file__))
@@ -79,13 +83,16 @@ def test(nav):
     pg.evaluate("() => { document.querySelector('.cine-ecran video').currentTime = 3.7; }")
     pg.wait_for_function("() => { var s = document.querySelector('.cine-st'); return s && s.classList.contains('on'); }", timeout=10000)
     r = pg.evaluate("""() => { var s = document.querySelector('.cine-st'), c = document.querySelector('.cine-cadre').getBoundingClientRect(), b = s.getBoundingClientRect();
-      return {txt:s.querySelector('.cine-txt').textContent, qui:s.querySelector('.cine-qui').textContent, lire:!!s.querySelector('[data-cine=lire]'), dessous:b.top >= c.bottom - 1}; }""")
+      return {txt:s.querySelector('.cine-txt').textContent, qui:s.querySelector('.cine-qui').textContent, lire:!!s.querySelector('[data-cine=lire]'), dessous:b.top >= c.bottom - 1,
+        vu:s.querySelector('.cine-vu').textContent.length, taille:parseFloat(getComputedStyle(s).fontSize)}; }""")
     pg.screenshot(path=os.path.join(CAP, 'cine-b23.png'))
     verifie(r['txt'] == '« Très bien… »' and r['qui'] == 'Léo' and r['lire'] and r['dessous'], f'le sous-titre, dans la bande noire du bas, avec qui parle et son 🔊 ({r})')
+    verifie(0 < r['vu'] < len(r['txt']) and r['taille'] >= 20, f'il est gros, et il s\'écrit lettre après lettre ({r["vu"]} lettres sur {len(r["txt"])}, {r["taille"]} px)')
     verifie(pg.evaluate("() => window.__parle") == 0, 'aucune lecture vocale toute seule')
     pg.tap('.cine-st [data-cine=lire]', force=True); pg.wait_for_timeout(300)
     r = pg.evaluate("() => ({pause:document.querySelector('.cine-ecran video').paused, parle:window.__parle, dit:window.__dit})")
     verifie(r['pause'] and r['parle'] == 1 and 'Très bien' in (r['dit'] or ''), f'🔊 : le film s\'arrête et la phrase est lue ({r})')
+    verifie(pg.evaluate("() => document.querySelector('.cine-vu').textContent") == '« Très bien… »', '🔊 : la phrase s\'affiche en entier')
     pg.wait_for_function("() => !document.querySelector('.cine-ecran video').paused", timeout=10000)
     verifie(True, 'puis le film repart')
     pg.tap('[data-cine=passer]', force=True)
@@ -122,10 +129,56 @@ def test(nav):
     ctx.close()
 
 
+class Muet(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, *a): pass
+
+
+def bande_son(p):
+    """la bande-son, servie comme sur le site (le donjon en /donjon/, les films en /cine/)"""
+    print('— 5. La bande-son du film (servie comme sur le site)')
+    for n in ('a12', 'b23', 'finLeo'):
+        verifie(os.path.exists(os.path.join(FILMS, n + '.mp3')), f'la bande-son {n}.mp3 existe')
+    racine = tempfile.mkdtemp()
+    os.symlink(os.path.join(ICI, 'sortie'), os.path.join(racine, 'donjon')); os.symlink(FILMS, os.path.join(racine, 'cine'))
+    srv = socketserver.TCPServer(('127.0.0.1', 0), functools.partial(Muet, directory=racine))
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    nav = p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
+    try:
+        global PAGE
+        ancienne, PAGE = PAGE, 'http://127.0.0.1:%d/donjon/index.html' % srv.server_address[1]
+        ctx, pg, errs = ouvrir(nav, '?combat=leo&vu=1&phase=1&' + OBJETS)
+        PAGE = ancienne
+        pg.evaluate("() => { SALLE.Son.demarrer(); }")          # (le premier toucher : le son du donjon démarre)
+        pg.wait_for_timeout(1500)
+        pg.evaluate("() => { var c = DJ.Leo._E().c; c.leo.pv = 6030; DJ.Leo.agir('pisteur', 'dague'); }")
+        attendre_film(pg)
+        pg.wait_for_timeout(2500)
+        r = pg.evaluate("""() => ({d:Object.assign({}, CineLecteur.dernier), b:window.__bruits.filter(function(x){ return /^cine|^leoChute/.test(x); }),
+          mus:SALLE.Son.musiqueEtat().gain, ctx:SALLE.Son.contexte() ? SALLE.Son.contexte().state : null})""")
+        verifie(r['d'].get('bande') and r['d'].get('joue') and r['ctx'] == 'running', f'la bande-son est là et joue avec la vidéo ({r["d"]}, {r["ctx"]})')
+        verifie(r['b'] == [] and r['d'].get('bruitages') == 0, f'plus aucun bruitage joué un par un ({r["b"]})')
+        verifie(r['mus'] is not None and r['mus'] < .1, f'la musique du donjon se tait pendant le film ({r["mus"]})')
+        pg.evaluate("() => document.querySelector('.cine-ecran video').pause()"); pg.wait_for_timeout(300)
+        a = pg.evaluate("() => CineLecteur.dernier.joue")
+        pg.evaluate("() => document.querySelector('.cine-ecran video').play()"); pg.wait_for_timeout(600)
+        b = pg.evaluate("() => [CineLecteur.dernier.joue, CineLecteur.dernier.departs, CineLecteur.dernier.depuis]")
+        verifie(a is False and b[0] is True and b[1] >= 2 and b[2] > 2, f'elle s\'arrête avec la vidéo et repart au même endroit ({a}, {b})')
+        pg.tap('[data-cine=passer]', force=True)
+        pg.wait_for_function("() => DJ.Leo.etat().phase === 2 && !DJ.Leo.etat().cine", timeout=30000)
+        pg.wait_for_timeout(2500)
+        m = pg.evaluate("() => [SALLE.Son.musiqueEtat().gain, CineLecteur.dernier.joue]")
+        verifie(m[0] is not None and m[0] > .5 and m[1] is False, f'après le film : la bande-son s\'arrête, la musique du donjon revient ({m})')
+        verifie(errs == [], f'aucune erreur ni avertissement JavaScript {errs[:3]}')
+        ctx.close()
+    finally:
+        nav.close(); srv.shutdown()
+
+
 with sync_playwright() as p:
     nav = p.chromium.launch()
     try: test(nav)
     finally: nav.close()
+    bande_son(p)
 print('\n%d vérifications, %d échecs' % (len(OK) + len(ERREURS), len(ERREURS)))
 for e in ERREURS: print('  ÉCHEC :', e)
 sys.exit(1 if ERREURS else 0)

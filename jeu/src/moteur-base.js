@@ -26,6 +26,7 @@ function audio(){
   if(ctx && ctx.state === 'suspended') try{ ctx.resume(); }catch(e){}
   return ctx;
 }
+M.audioCtx = audio;      /* (les cinématiques, Bible §13.45 : leur bande-son se joue sur ce contexte, déjà débloqué par les touchers) */
 function note(f, t0, duree, type, vol, glisse){
   var a = audio(); if(!a) return;
   var o = a.createOscillator(), g = a.createGain();

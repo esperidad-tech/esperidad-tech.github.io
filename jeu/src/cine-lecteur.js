@@ -1,27 +1,34 @@
 /* cine-lecteur.js — LE LECTEUR DES CINÉMATIQUES (Bible §13.45), le même dans le donjon (construire.py) et dans le jeu (build.py).
    Romain, 15 novembre : « des cinématiques de film », en 21:9 avec les bandes noires. Ce sont de vrais petits films, fabriqués
    d'avance image par image (jeu/cine/ : filmer.py) : ils ne peuvent pas ramer, même sur une vieille tablette.
-   - La vidéo est MUETTE (elle part toute seule partout, même sur iPhone) : les bruitages sont ceux de l'Atelier des sons, joués à
-     l'instant dit (o.infos.sons) par le moteur de son du jeu — le volume des réglages compte.
-   - Les sous-titres sont dans la bande noire du bas (ou sur l'image, en bas, si l'écran est trop allongé) ; chacun a son 🔊 :
+   - La vidéo est MUETTE (elle part toute seule partout, même sur iPhone). LE SON (Romain, 15 novembre, 16 h 57 : une musique) :
+     la BANDE-SON du film (o.piste : sortie/<film>.mp3, jeu/cine/bande-son.py — les bruitages de l'Atelier des sons et la musique
+     du film, mélangés d'avance) est jouée avec la vidéo sur le contexte audio du jeu (o.audio), déjà débloqué par un toucher ;
+     elle s'arrête et repart avec elle. Si elle n'arrive pas : les bruitages seuls, joués à l'instant dit (o.infos.sons, o.son).
+     Le volume des réglages compte (o.volume).
+   - Les sous-titres sont dans la bande noire du bas (ou sur l'image, en bas, si l'écran est trop allongé), en gros, et ils
+     s'écrivent lettre après lettre (Romain, 16 h 57 : « plus gros », « qu'il s'affiche petit à petit ») ; chacun a son 🔊 :
      le toucher arrête le film le temps de la lecture (jamais de lecture toute seule).
    - « Passer ➜ » en haut à droite.
    - Si le film n'arrive pas (pas d'internet, un vieux navigateur), CineLecteur.jouer répond 'echec' : on joue l'ancienne scène.
 
    CineLecteur.precharger(url) -> Promise (le film téléchargé en entier, gardé en mémoire)
-   CineLecteur.jouer({url, infos:{duree, sons:[[t, id]], sousTitres:[[t0, t1, texte, qui]]}, son:function(id), lire:function(texte, qui),
+   CineLecteur.prechargerPiste(url) -> Promise (la bande-son téléchargée, gardée en mémoire)
+   CineLecteur.jouer({url, piste, audio:function() -> AudioContext, volume:function() -> 0..1,
+                      infos:{duree, sons:[[t, id]], sousTitres:[[t0, t1, texte, qui]]}, son:function(id), lire:function(texte, qui),
                       parle:function() -> bool, taire:function(), attente:ms, passer:true}) -> Promise('fini' | 'passe' | 'echec') */
 (function(){
 'use strict';
 var CL = window.CineLecteur = {};
-var CACHE = {};
+var CACHE = {}, PISTES = {};
 var CSS = '.cine-ecran{position:fixed;inset:0;z-index:99990;background:#000;opacity:0;transition:opacity .35s;touch-action:none;-webkit-user-select:none;user-select:none}' +
   '.cine-ecran.on{opacity:1}.cine-cadre{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#000;overflow:hidden}' +
   '.cine-cadre video{display:block;width:100%;height:100%;object-fit:cover;background:#000}' +
-  '.cine-st{position:absolute;left:50%;transform:translateX(-50%);width:min(92vw,980px);text-align:center;color:#f4ecd8;font:600 clamp(16px,2.6vw,26px)/1.35 Georgia,serif;' +
+  '.cine-st{position:absolute;left:50%;transform:translateX(-50%);width:min(94vw,1100px);text-align:center;color:#f4ecd8;font:600 clamp(20px,3.4vw,36px)/1.3 Georgia,serif;' +
   'text-shadow:0 2px 6px #000,0 0 2px #000;opacity:0;transition:opacity .25s;pointer-events:none;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}' +
   '.cine-st.on{opacity:1}.cine-st.sur{padding:28px 18px 14px;background:linear-gradient(transparent,rgba(0,0,0,.72))}' +
-  '.cine-qui{display:block;width:100%;font:700 clamp(12px,1.6vw,15px)/1 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#e8b84a;margin-bottom:4px}' +
+  '.cine-qui{display:block;width:100%;font:700 clamp(13px,1.9vw,19px)/1 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#e8b84a;margin-bottom:5px}' +
+  '.cine-pas{color:transparent;text-shadow:none}' +
   '.cine-lire{pointer-events:auto;flex:none;border:0;border-radius:50%;width:44px;height:44px;font-size:21px;background:rgba(255,255,255,.14);color:#fff;cursor:pointer}' +
   '.cine-lire:active{transform:scale(.92)}' +
   '.cine-passer{position:absolute;right:max(14px,env(safe-area-inset-right));top:max(12px,env(safe-area-inset-top));border:1px solid rgba(255,255,255,.35);border-radius:999px;background:rgba(0,0,0,.4);' +
@@ -44,6 +51,27 @@ CL.precharger = function(url){
   });
   return CACHE[url];
 };
+/* la bande-son : téléchargée d'avance aussi (un ArrayBuffer ; on la décode au moment de jouer, sur le contexte du jeu) */
+CL.prechargerPiste = function(url){
+  if(!url) return Promise.resolve(null);
+  if(PISTES[url]) return PISTES[url];
+  PISTES[url] = new Promise(function(ok){
+    if(!window.fetch || location.protocol === 'file:'){ ok(null); return; }
+    fetch(url).then(function(r){ if(!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+      .then(function(b){ ok(b); })
+      .catch(function(){ PISTES[url] = null; ok(null); });
+  });
+  return PISTES[url];
+};
+function decoder(ctx, ab){
+  return new Promise(function(ok){
+    try{ var p = ctx.decodeAudioData(ab.slice(0), function(b){ ok(b); }, function(){ ok(null); }); if(p && p.catch) p.catch(function(){ ok(null); }); }
+    catch(e){ ok(null); }
+  });
+}
+/* la vitesse d'écriture d'un sous-titre (lettres par seconde) : la phrase est entière à mi-temps au plus tard
+   (la même règle que les copies « à regarder » de jeu/cine/bande-son.py) */
+function vitesse(texte, t0, t1){ return Math.max(28, texte.length / Math.max(.4, (t1 - t0) * .5)); }
 /* LE SON DANS LE JEU (le donjon a le sien : DJ.bruit) : le moteur de l'Atelier des sons et les bruitages des cinématiques
    (build.py : SON_DONJON et essai/sons/cine.js), version A, sur un contexte audio à lui. Rien si le son est coupé (Réglages). */
 var ctxJ = null, engJ = null;
@@ -60,12 +88,35 @@ CL.sonJeu = function(id){
 };
 /* (pour les robots : une adresse forcée — ou rien, et le film « n'arrive pas ») */
 CL.essai = null;
+/* (pour les robots : ce que fait le dernier film — la bande-son est-elle là, joue-t-elle, combien de bruitages un par un) */
+CL.dernier = {};
 
 CL.jouer = function(o){
   style();
   return new Promise(function(fin){
     var fini = false, raf = 0, video = null, cues = (o.infos && o.infos.sons || []).map(function(c){ return {t:c[0], id:c[1], fait:false}; });
-    var st = (o.infos && o.infos.sousTitres) || [], courant = -1, lecture = null;
+    var st = (o.infos && o.infos.sousTitres) || [], courant = -1, lecture = null, ecrit = -1, plein = {};
+    /* la bande-son : décodée sur le contexte du jeu ; si elle est là, plus de bruitages un par un */
+    var bande = null, srcB = null, gainB = null, D = CL.dernier = {bande:false, joue:false, departs:0, bruitages:0};
+    function ctxA(){ try{ return o.audio ? o.audio() : null; }catch(e){ return null; } }
+    function vol(){ try{ var v = o.volume ? o.volume() : 1; return v == null ? 1 : Math.max(0, Math.min(1, v)); }catch(e){ return 1; } }
+    function bandeStop(fondu){
+      if(!srcB) return;
+      var s0 = srcB, g0 = gainB, c = ctxA(); srcB = null; gainB = null; D.joue = false;
+      try{ if(fondu && c){ g0.gain.setTargetAtTime(0, c.currentTime, .1); s0.stop(c.currentTime + .5); } else s0.stop(); }catch(e){}
+    }
+    function bandeJoue(){
+      if(!bande || fini || !video) return;
+      bandeStop();
+      var c = ctxA(); if(!c) return;
+      if(c.state === 'suspended') try{ c.resume(); }catch(e){}
+      var off = video.currentTime; if(off >= bande.duration - .05) return;
+      try{
+        srcB = c.createBufferSource(); srcB.buffer = bande; gainB = c.createGain(); gainB.gain.value = vol();
+        srcB.connect(gainB); gainB.connect(c.destination); srcB.start(0, Math.max(0, off));
+        D.joue = true; D.departs++; D.depuis = off;
+      }catch(e){ srcB = null; }
+    }
     var ecran = el('div', 'cine-ecran'), cadre = el('div', 'cine-cadre'), sous = el('div', 'cine-st'), att = el('div', 'cine-attente');
     ecran.appendChild(cadre); ecran.appendChild(sous); ecran.appendChild(att);
     if(o.passer !== false){ var bp = el('button', 'cine-passer', 'Passer ➜'); bp.setAttribute('data-cine', 'passer'); ecran.appendChild(bp); }
@@ -84,6 +135,7 @@ CL.jouer = function(o){
       if(fini) return; fini = true;
       cancelAnimationFrame(raf); window.removeEventListener('resize', place);
       if(lecture) clearInterval(lecture);
+      bandeStop(true);
       try{ if(video){ video.pause(); video.removeAttribute('src'); video.load(); } }catch(e){}
       if(r === 'passe' && o.taire) try{ o.taire(); }catch(e){}
       ecran.classList.remove('on');
@@ -101,7 +153,7 @@ CL.jouer = function(o){
     /* 🔊 : le film s'arrête le temps de la lecture, puis repart */
     function ecouter(i){
       var s = st[i]; if(!s || !video || !o.lire) return;
-      video.pause();
+      video.pause(); plein[i] = true; ecrit = -1; if(i === courant) ecrire(i, video.currentTime);
       try{ o.lire(s[2], s[3]); }catch(e){}
       var t0 = Date.now(), mini = 600, maxi = 1500 + s[2].length * 95;
       if(lecture) clearInterval(lecture);
@@ -115,24 +167,43 @@ CL.jouer = function(o){
       raf = requestAnimationFrame(image);
       if(!video || video.paused) return;
       var t = video.currentTime;
-      /* les sons : chacun une fois, à son instant (pas ceux qu'on a sautés) */
-      cues.forEach(function(c){ if(!c.fait && t >= c.t){ c.fait = true; if(t - c.t < .5 && o.son) try{ o.son(c.id); }catch(e){} } });
+      /* les sons (seulement sans bande-son) : chacun une fois, à son instant (pas ceux qu'on a sautés) */
+      if(!bande) cues.forEach(function(c){ if(!c.fait && t >= c.t){ c.fait = true; if(t - c.t < .5 && o.son) try{ D.bruitages++; o.son(c.id); }catch(e){} } });
       var k = -1;
       for(var i = 0; i < st.length; i++) if(t >= st[i][0] && t <= st[i][1]){ k = i; break; }
       if(k !== courant){
         courant = k;
+        ecrit = -1;
         if(k < 0){ sous.classList.remove('on'); }
         else {
-          var s = st[k], mots = String(s[2]).split(/\s+/).length;
-          sous.innerHTML = (s[3] ? '<span class="cine-qui">' + esc(s[3]) + '</span>' : '') + '<span class="cine-txt">« ' + esc(s[2]) + ' »</span>' +
+          var s = st[k];
+          /* la phrase entière est posée (invisible) dès le début : elle s'écrit sans que rien ne bouge */
+          sous.innerHTML = (s[3] ? '<span class="cine-qui">' + esc(s[3]) + '</span>' : '') + '<span class="cine-txt"><span class="cine-vu"></span><span class="cine-pas"></span></span>' +
             (o.lire ? '<button class="cine-lire" data-cine="lire" data-i="' + k + '" aria-label="Écouter">🔊</button>' : '');
           sous.classList.add('on');
         }
       }
+      if(k >= 0) ecrire(k, t);
+    }
+    /* le sous-titre s'écrit lettre après lettre, au temps du film (s'il s'arrête, l'écriture aussi) */
+    function ecrire(k, t){
+      var s = st[k], phrase = '« ' + s[2] + ' »', n = plein[k] ? phrase.length : Math.min(phrase.length, Math.floor((t - s[0]) * vitesse(phrase, s[0], s[1])) + 1);
+      if(n === ecrit) return;
+      ecrit = n;
+      var vu = sous.querySelector('.cine-vu'), pas = sous.querySelector('.cine-pas');
+      if(vu) vu.textContent = phrase.slice(0, n);
+      if(pas) pas.textContent = phrase.slice(n);
     }
     var url = CL.essai != null ? CL.essai : o.url;
     var delai = setTimeout(function(){ terminer('echec'); }, o.attente || 8000);
-    (url ? CL.precharger(url) : Promise.resolve(null)).then(function(src){
+    /* la bande-son d'abord (2,5 secondes au plus : sinon, les bruitages un par un) */
+    var c0 = o.piste && CL.essai == null ? ctxA() : null;
+    var attendreBande = !c0 ? Promise.resolve(null) : Promise.race([
+      CL.prechargerPiste(o.piste).then(function(ab){ return ab ? decoder(c0, ab) : null; }),
+      new Promise(function(ok){ setTimeout(function(){ ok(null); }, 2500); })
+    ]);
+    Promise.all([url ? CL.precharger(url) : Promise.resolve(null), attendreBande]).then(function(r){
+      var src = r[0]; bande = r[1] || null; D.bande = !!bande;
       if(fini) return;
       if(!src){ clearTimeout(delai); terminer('echec'); return; }
       video = document.createElement('video');
@@ -140,7 +211,9 @@ CL.jouer = function(o){
       video.setAttribute('muted', ''); video.setAttribute('playsinline', ''); video.setAttribute('webkit-playsinline', ''); video.setAttribute('preload', 'auto');
       video.addEventListener('ended', function(){ terminer('fini'); });
       video.addEventListener('error', function(){ clearTimeout(delai); terminer('echec'); });
-      video.addEventListener('playing', function(){ clearTimeout(delai); att.remove(); });
+      video.addEventListener('playing', function(){ clearTimeout(delai); att.remove(); bandeJoue(); });
+      video.addEventListener('pause', function(){ bandeStop(); });
+      video.addEventListener('waiting', function(){ bandeStop(); });
       video.src = src;
       cadre.appendChild(video);
       var p = video.play();

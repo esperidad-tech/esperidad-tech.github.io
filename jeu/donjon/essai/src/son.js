@@ -477,6 +477,13 @@ function baisser(sec){
   g.cancelScheduledValues(now); g.setValueAtTime(g.value, now);
   g.setTargetAtTime(.28, now, .12); g.setTargetAtTime(1, now + (sec || 3), .7);
 }
+/* les cinématiques (Bible §13.45) : la musique du donjon se tait pendant le film (il a sa propre bande-son), puis revient */
+function sourdine(oui){
+  if(!ctx || !A) return;
+  var g = A.mus.gain, now = ctx.currentTime;
+  g.cancelScheduledValues(now); g.setValueAtTime(g.value, now);
+  g.setTargetAtTime(oui ? 0 : 1, now, oui ? .15 : .6);
+}
 function t0(dt){ return ctx.currentTime + (dt || 0) + .01; }
 /* une sortie : sec vers les bruitages, et un peu (ou beaucoup) dans la réverbération */
 function bus(humide, vers){
@@ -806,6 +813,8 @@ S.Son = {
   volume:volume,
   precalcul:{tout:function(){ return PRE.tout(); }, etat:function(){ return PRE.etat(); }, memoire:function(){ return PRE.memoire(); }},
   baisser:baisser,
+  sourdine:sourdine,                                   /* (les cinématiques) */
+  contexte:function(){ return ctx; },                  /* (les cinématiques : la bande-son se joue sur le même contexte, déjà débloqué par un toucher) */
   musiqueEtat:function(){ return {voulu:MUS.voulu, attendue:MUS.attendue || null, nom:MUS.actuel ? MUS.actuel.nom : null, cles:MUS.actuel ? MUS.actuel.cles.slice() : [], gain:A ? A.mus.gain.value : null,
     joue:MUS.actuel ? Object.keys(MUS.actuel.par).reduce(function(n, c){ return n + MUS.actuel.par[c].length; }, 0) : 0, combat:MUS.combat}; },
   jouer:function(nom){

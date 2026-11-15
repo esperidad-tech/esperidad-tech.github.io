@@ -101,7 +101,11 @@ window.CATALOGUE = [
           {id:'cineCape', t:'La cape vole', v:'A'}, {id:'cineOnde', t:'Onde de choc', v:'A'}, {id:'cineEssuie', t:'Il s\'essuie', v:'A'}, {id:'cineCrache', t:'Il crache', v:'A'},
           {id:'cineCoeur', t:'Le cœur', v:'A'}, {id:'cineMontee', t:'La potion monte', v:'A'}, {id:'cineChute', t:'Il s\'effondre', v:'A'}, {id:'cinePasEcho', t:'Pas au loin', v:'A'},
           {id:'cineLanterne', t:'La lanterne', v:'A'}, {id:'cinePasEscalier', t:'Pas, escalier', v:'A'}, {id:'cineArmure', t:'Les gardes', v:'A'}, {id:'cineGant', t:'Le gant', v:'A'},
-          {id:'cineBague', t:'La bague', v:'A'}, {id:'cineLances', t:'Les lances', v:'A'}, {id:'cineGardes', t:'La charge', v:'A'}, {id:'cineCoup', t:'Le coup final', v:'A'}
+          {id:'cineBague', t:'La bague', v:'A'}, {id:'cineLances', t:'Les lances', v:'A'}, {id:'cineGardes', t:'La charge', v:'A'}, {id:'cineCoup', t:'Le coup final', v:'A'},
+          /* 15 novembre, 16 h 57 (Romain) : le cri de Léo (une voix fabriquée), et une musique par film (cine-musiques.js) */
+          {id:'cineCri', t:'Le cri', v:'ABC'},
+          {id:'cineMusA12', t:'Musique phase 1', v:'A', m:1}, {id:'cineMusB23', t:'Musique phase 2', v:'A', m:1},
+          {id:'cineMusFinLeo', t:'Musique Léo parle', v:'A', m:1}, {id:'cineMusFinMaire', t:'Musique du maire', v:'A', m:1}
         ]}
       ]}
     ]},

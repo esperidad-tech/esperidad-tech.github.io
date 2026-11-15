@@ -46,3 +46,6 @@ jeu/test/etabli/
 jeu/test/e3-cueillette/
 # les captures du robot des banderoles de la fête (le tir à l'arc vu de face), tools/visee.py (refaites à chaque fois)
 jeu/test/visee-*.png
+
+# les captures du test du film du cachot, tools/e3-film.py (refaites à chaque fois)
+jeu/test/e3-film/

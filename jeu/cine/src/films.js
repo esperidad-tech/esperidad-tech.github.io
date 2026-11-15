@@ -132,7 +132,7 @@ var SEC = [[1.4, 11, .55], [5.55, 7, .4], [7.2, 5, 1.4], [10.05, 12, .7], [11.5,
 CINE.films.a12 = {
   nom:'Fin de la phase 1', duree:T,
   sons:[[.62, 'cineOutils'], [.78, 'cineOutils'], [1.38, 'leoChute'], [1.45, 'cineOutils'], [1.9, 'cineSouffle'], [3.4, 'cineGrogne'], [4.3, 'cinePas'],
-    [5.48, 'leoDechire'], [5.6, 'cineCape'], [7.15, 'leoHurlement'], [9.95, 'leoMuscles'], [10.05, 'cineOnde'], [11.45, 'cineGrogne'], [11.5, 'cineOnde']],
+    [5.48, 'leoDechire'], [5.6, 'cineCape'], [6.85, 'cineCri'], [9.95, 'leoMuscles'], [10.05, 'cineOnde'], [11.45, 'cineGrogne'], [11.5, 'cineOnde']],
   sousTitres:[],
   etat:function(t){
     var p = pose(t), habit = t < RIP + .02 ? 'cape' : null;
@@ -242,7 +242,7 @@ CINE.films.b23 = {
   nom:'Fin de la phase 2', duree:T,
   sons:[[.1, 'cineSouffle'], [1.6, 'cineSouffle'], [2.45, 'cineEssuie'], [6.8, 'leoSac'], [BOUCHON - .03, 'leoBouchon'], [CRACHE, 'cineCrache'],
     [8.85, 'leoGlou'], [9.15, 'leoGlou'], [9.45, 'leoGlou'], [JETTE + .25, 'leoBrise'], [10.25, 'cineCoeur'], [10.45, 'leoPotion'], [10.9, 'cineCoeur'],
-    [11.0, 'cineMontee'], [11.45, 'cineCoeur'], [11.98, 'leoMuscles'], [CRI - .05, 'leoHurlement'], [CRI, 'cineOnde'], [CRI + .45, 'cineOnde']],
+    [11.0, 'cineMontee'], [11.45, 'cineCoeur'], [11.98, 'leoMuscles'], [CRI - .35, 'cineCri'], [CRI, 'cineOnde'], [CRI + .45, 'cineOnde']],
   sousTitres:[[3.55, 4.75, 'Très bien…', 'Léo'], [4.95, 6.35, 'Je n\'ai pas le choix.', 'Léo']],
   etat:function(t){
     var p = pose(t), fio = t >= SORT && t < JETTE, k3 = forme(t), g = grand(t), rouge = rougit(t);

@@ -296,18 +296,28 @@ async function cine23(){
   passer(false);
 }
 /* LES CINÉMATIQUES EN FILM (Romain, 15 novembre, 12 h 40 : « des cinématiques de film », 21:9, bandes noires ; Bible §13.45) :
-   de vraies petites vidéos fabriquées d'avance (jeu/cine/, jeu/src/cine-lecteur.js), muettes — les bruitages sont ceux de l'Atelier,
-   joués à l'instant dit. Si le film n'arrive pas (pas d'internet…), on joue l'ancienne scène, dessinée en direct. */
+   de vraies petites vidéos fabriquées d'avance (jeu/cine/, jeu/src/cine-lecteur.js), muettes ; leur BANDE-SON (les bruitages de
+   l'Atelier et la musique du film, mélangés d'avance : <film>.mp3) se joue avec elles sur le contexte audio du donjon, et la musique
+   du donjon se tait le temps du film. Sans bande-son : les bruitages un par un, à l'instant dit. Si le film n'arrive pas (pas
+   d'internet…), on joue l'ancienne scène, dessinée en direct. */
 var CINE_URL = '../cine/';
 function film(nom, o){
   if(!window.CineLecteur || !window.CINE_INFOS || !window.CINE_INFOS[nom]) return Promise.resolve('echec');
-  return window.CineLecteur.jouer({url:CINE_URL + nom + '.mp4', infos:window.CINE_INFOS[nom], passer:!(o && o.passer === false), attente:6000,
+  var I = window.CINE_INFOS[nom], S = SALLE.Son || {};
+  if(S.sourdine) S.sourdine(true);
+  return window.CineLecteur.jouer({url:CINE_URL + nom + '.mp4', piste:I.piste ? CINE_URL + nom + '.mp3' : null, infos:I, passer:!(o && o.passer === false), attente:6000,
+    audio:function(){ return S.contexte ? S.contexte() : null; }, volume:function(){ return S.volume ? S.volume('bruitages') : 1; },
     son:function(id){ bruit(id, {}); },
-    lire:function(t){ DJ.lire(t); }, parle:function(){ try{ return speechSynthesis.speaking; }catch(e){ return false; } }, taire:function(){ DJ.taire(); }});
+    lire:function(t){ DJ.lire(t); }, parle:function(){ try{ return speechSynthesis.speaking; }catch(e){ return false; } }, taire:function(){ DJ.taire(); }
+  }).then(function(r){ if(S.sourdine) S.sourdine(false); return r; });
 }
 function prechargerFilms(n){
   if(!window.CineLecteur || !window.CINE_INFOS) return;
-  (n <= 1 ? ['a12', 'b23', 'finLeo'] : n <= 2 ? ['b23', 'finLeo'] : ['finLeo']).forEach(function(f){ if(window.CINE_INFOS[f]) window.CineLecteur.precharger(CINE_URL + f + '.mp4'); });
+  (n <= 1 ? ['a12', 'b23', 'finLeo'] : n <= 2 ? ['b23', 'finLeo'] : ['finLeo']).forEach(function(f){
+    var I = window.CINE_INFOS[f]; if(!I) return;
+    window.CineLecteur.precharger(CINE_URL + f + '.mp4');
+    if(I.piste && window.CineLecteur.prechargerPiste) window.CineLecteur.prechargerPiste(CINE_URL + f + '.mp3');
+  });
 }
 /* les outils de Léo glissent jusqu'au Pisteur */
 function ramasser(l){
