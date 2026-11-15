@@ -268,7 +268,9 @@ var BOUCLE = {exploA:{L:44}, exploB:{L:32, n0:7}, exploC:{L:48}, combatA:{L:32 *
   donjon:{L:56}, toiles:{L:48}, atelier:{L:48}, canauxA:{L:60}, canauxB:{L:60}, ossuaireA:{L:60}, ossuaireB:{L:60},
   reposA:{L:64}, reposB:{L:70.4}, feuCampA:{L:40}, feuCampB:{L:40}, finDonjonA:{L:64}, finDonjonB:{L:64},
   gardienA:{L:128 * 60 / 66, C:1.5, lin:true}, roiA:{L:128 * 60 / 84, C:1.5, lin:true},
-  bossA:{L:128 * 60 / 92, C:1.5, lin:true}, bossB:{L:96 * 60 / 76, C:1.5, lin:true}, bossC:{L:128 * 60 / 100, C:1.5, lin:true}};
+  bossA:{L:128 * 60 / 92, C:1.5, lin:true}, bossB:{L:96 * 60 / 76, C:1.5, lin:true}, bossC:{L:128 * 60 / 100, C:1.5, lin:true},
+  /* Léo : une musique par phase (Romain, 15 novembre, 18 h 29) */
+  leo1A:{L:128 * 60 / 76, C:1.5, lin:true}, leo2A:{L:128 * 60 / 104, C:1.5, lin:true}, leo3A:{L:96 * 60 / 66, C:1.5, lin:true}};
 /* les bruitages lourds : [id, morceau, place à gauche (−) ou à droite (+), stéréo] — une version par combat */
 var SFX_PRE = {arc:[[null, -.35]], ratCritique:[['avant', .35], ['impact', .35], ['explosion', .35]], victoire:[[null, 0]], fuite:[[null, -.5]]};
 var SFX_DUREE = {arc:3.5, victoire:6.5, fuite:8, avant:3.5, impact:5.5, explosion:8.5};

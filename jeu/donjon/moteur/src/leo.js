@@ -122,7 +122,18 @@ function construire(){
   var nu = el('div', 'leo-nuage'); nu.id = 'leo-nuage'; nu.innerHTML = '<i></i><i></i><i></i><i></i><i></i>'; p.appendChild(nu);
   var fl = el('div'); fl.id = 'leo-flaque'; q('#sol-fx').appendChild(fl);
   c.addEventListener('pointerdown', doigt);
-  DJ.musiqueCombat('bassin');
+  /* (la musique : une par phase, posée au début de chaque phase — musiquePhase) */
+  if(SALLE.Son && SALLE.Son.combat) SALLE.Son.combat(true);
+}
+/* LA MUSIQUE DE CHAQUE PHASE (Romain, 15 novembre, 18 h 29 : « la phase 1, c'est une musique un peu mystérieuse ; phase 2,
+   musique un peu combat ; et phase 3, une musique terrifiante qui fait peur » — MUSIQUES.leo1A, leo2A, leo3A, dans l'Atelier).
+   Avant, c'était la musique de Bourbe. Entre deux phases, on la change AU DÉBUT de la cinématique : la musique du donjon s'y tait
+   (le film a sa bande-son), la nouvelle se fabrique pendant le film et part quand il finit. Tant qu'elle n'est pas prête,
+   l'ancienne continue (pas de trou de silence). */
+function musiquePhase(n){
+  var S = SALLE.Son;
+  if(!S || !S.musique) return;
+  (S.musiqueDesQuePrete || S.musique)('grand:leo' + Math.max(1, Math.min(3, n)));
 }
 /* (un élément cherché une fois, puis gardé : maj() tourne à chaque image) */
 function mem(sel){ var c = E.mem || (E.mem = {}), e = c[sel]; return e && e.isConnected ? e : (c[sel] = q(sel)); }
@@ -134,6 +145,7 @@ function p2(){ return !!(E && E.p2 && E.c && E.leo.nouveau()); }        /* (15 n
 /* ====================================================================== 2. LES PHASES */
 function demarrerPhase(n, premiere){
   sonsPhase(n);
+  musiquePhase(n);
   E.c = LR.combat(E.partie, {phase:n});
   E.ph = E.c.etat();
   E.elan = null; E.cases = null; E.suiteSig = null;
@@ -338,6 +350,7 @@ async function finPhase(res){
   E.partie.faits['leo:phase'] = n; DJ.garder(E.partie);
   son('victoire');
   sonsPhase(n);                                         /* (les sons de la phase qui vient se fabriquent pendant la cinématique) */
+  musiquePhase(n);                                      /* (sa musique aussi : elle part à la fin du film) */
   await (n === 2 ? cine12() : cine23());
   if(!E) return;
   E.saute = false;
@@ -366,6 +379,8 @@ function defaite(){
 }
 async function victoire(){
   E.partie.faits['leo:phase'] = 4; DJ.garder(E.partie);
+  /* le combat est fini : plus la musique de la phase 3 (terrifiante), l'ambiance de la salle (sous le film, puis ses aveux) */
+  DJ.musiqueApresCombat('leo');
   passer(false);
   Object.keys(E.rats).forEach(function(id){ retirerRat(id); });
   nuage(false); flaque(false); noir(false, true);

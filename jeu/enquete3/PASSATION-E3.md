@@ -1,6 +1,12 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 18 h 10)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 18 h 55)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 15 novembre (18 h 48) : LÉO, UNE MUSIQUE PAR PHASE ; LE MARTEAU (PHASE 2) NE COUPE PLUS QUE LE SAUT ET LA GOURDE ; LE FEU (PHASE 3) BRÛLE LES TROIS (Bible §13.46, retouche de 18 h 29 et 18 h 33) — EN LIGNE (commit 4481b6d du site ; le donjon : version « 15/11 à 18 h 47 »)
+
+- **La musique** : mystérieuse en phase 1, le combat en phase 2, terrifiante en phase 3 (avant : celle de Bourbe).
+- **Les règles** : en phase 2, le marteau du Pisteur ne coupe plus que **le saut et la gourde** (« Il résiste ! » sinon) ; en phase 3, **le souffle de feu brûle les trois héros, même derrière un bouclier jaune**, et seul un soin éteint le feu.
+- **Pour la conception** : les indices de Farinel et d'Iris ne disent pas que le marteau coupe le saut, ni qu'il faut soigner tout de suite après le feu (à voir avec Romain s'il veut un mot de plus). **Rien n'a changé dans l'histoire, les dialogues ni les codes.**
 
 ## Nouveau depuis le 15 novembre (17 h 33) : PHASE 3 DE LÉO, APRÈS « IL ATTRAPE », UNE CHARGE (Bible §13.46, retouche de 17 h 26) — EN LIGNE (commit 7440589 du site ; version « 15/11 à 17 h 30 »)
 

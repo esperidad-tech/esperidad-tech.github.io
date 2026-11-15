@@ -104,8 +104,10 @@ L.ATTAQUES = {
   faux:{nom:'La faux', ic:'🌙', arme:'faux', prise:1.0, elan:1.3, retour:.9, degats:10, cibles:'tous', saigne:true},         /* Romain : un balayage sur les trois, qui fait saigner */
   /* (Romain, 15 novembre : « il faut qu'elle dure un tout petit peu plus longtemps pour la préparation, comme c'est une assez grosse
      attaque » : il se ramasse .8 s puis reste 1,5 s en l'air — 2,3 s pour réagir, au lieu de 1,5) */
-  saut:{nom:'Le saut', ic:'💥', arme:null, prise:.8, elan:1.5, retour:1.0, degats:16, cibles:'tous', etourdit:3.0},         /* Romain : étourdit les trois ; on n'a le temps que d'un bouclier jaune */
-  gourde:{nom:'La gourde', ic:'🧴', arme:'gourde', prise:.8, elan:2.4, retour:.6, soin:600},                                /* Romain : il reprend beaucoup de vie ; le marteau l'arrête */
+  /* marteau : le marteau du Pisteur coupe ce geste-là (Romain, 15 novembre, 18 h 29 : « on peut le faire trop souvent et ça
+     interrompt un peu tout […] en phase 2, le marteau, il peut servir que à interrompre le saut et le soin ») */
+  saut:{nom:'Le saut', ic:'💥', arme:null, prise:.8, elan:1.5, retour:1.0, degats:16, cibles:'tous', etourdit:3.0, marteau:true},   /* Romain : étourdit les trois ; on n'a le temps que d'un bouclier jaune */
+  gourde:{nom:'La gourde', ic:'🧴', arme:'gourde', prise:.8, elan:2.4, retour:.6, soin:600, marteau:true},                  /* Romain : il reprend beaucoup de vie ; le marteau l'arrête */
   lancer:{nom:'Le lancer de rat', ic:'🐁', arme:null, prise:0, elan:.55, retour:.5, degats:15, fois:2, cibles:'un', rapide:true},   /* Romain : rapide, le rat mord deux fois */
   /* ---------- phase 3 : la potion ---------- */
   /* (Romain, 15 novembre, la phase 3 refaite : « son gros coup de poing, je veux qu'on sente vraiment qu'il va se préparer » : il arme
@@ -197,7 +199,7 @@ L.MOTS = {
   occupe:'Pas encore !', etourdi:'Étourdi !', attrape:'Attrapé !', sol:'Au sol !', noir:'Dans le noir !', farine:'Dans la farine !', loin:'Trop loin !',
   fuit:'Il détale !', casse:'Cassé !', insensible:'Insensible !', rien:'Rien du tout', cri:'Seulement son cri !', personne:'Personne au sol', debout:'Encore debout', fini:'C\'est fini', cible:'Qui viser ?',
   impossible:'Impossible !', glisse:'Ça glisse !', vu:'Il voit tout', boucle:'Déjà protégé', tousse:'Il tousse…', tropTard:'Trop tard !',
-  clair:'Il fait clair', forme:'En pleine forme', ebloui:'Ébloui !'
+  clair:'Il fait clair', forme:'En pleine forme', ebloui:'Ébloui !', resiste:'Il résiste !'
 };
 
 function copie(o){ return JSON.parse(JSON.stringify(o)); }
@@ -694,11 +696,13 @@ P._touche = function(ev, h, id, coup){
   if(coup === 'marteau'){
     /* Romain : il ne fait pas de dégâts, il lui coupe son geste (c'est fait pour la gourde) */
     var A = Z.att ? L.ATTAQUES[Z.att] : null;
-    /* (15 novembre, 13 h 54 : en phase 3, sous la potion, le marteau ne coupe plus que son cri) */
-    if(A && !A.rapide && (this.phase < 3 || A.marteau) && (Z.etape === 'prise' || Z.etape === 'elan')){
+    /* (15 novembre, 13 h 54 : en phase 3, sous la potion, le marteau ne coupe plus que son cri ; 18 h 29 : en phase 2, plus que
+       le saut et la gourde — les gestes marqués « marteau » dans L.ATTAQUES) */
+    var enGeste = A && (Z.etape === 'prise' || Z.etape === 'elan');
+    if(enGeste && !A.rapide && A.marteau){
       ev.push({t:'leo', quoi:'coupe', att:Z.att, par:'marteau'});
       Z.etape = 'sonne'; Z.fin = Z.tl + L.SONNE; Z.att = null; Z.cibles = [];
-    } else ev.push({t:'mot', sur:'leo', texte:this.phase === 3 ? L.MOTS.cri : L.MOTS.rien});
+    } else ev.push({t:'mot', sur:'leo', texte:this.phase === 3 ? L.MOTS.cri : enGeste ? L.MOTS.resiste : L.MOTS.rien});
     return;
   }
   if(coup === 'faux'){
@@ -893,10 +897,13 @@ P._leoImpact = function(ev, A){
       var brut = A.part ? Math.round(self.h[h].pvMax * A.part) : (A.degats || 0);
       passe = self._frappe(ev, h, brut, {cause:nom});
     }
+    /* le souffle de feu : les trois héros prennent feu, même derrière un bouclier jaune (il pare le coup, pas les flammes) ;
+       seul un soin l'éteint (Romain, 15 novembre, 18 h 33 : « que les trois personnes se prennent le feu, et que vraiment il n'y
+       ait que le soin qui permette d'arrêter le feu ») */
+    if(A.brule && vivant(h)){ var S = self.h[h]; if(!S.brule) S.bruleT = t + L.BRULE.pas; S.brule = t + L.BRULE.duree; ev.push({t:'etat', heros:h, nom:'brule', on:true, duree:isFinite(L.BRULE.duree) ? L.BRULE.duree : null}); }
     if(!vivant(h) || !passe) return;
     if(A.etourdit) self._etourdit(ev, h, A.etourdit);
     if(A.saigne && !self.h[h].saigne){ self.h[h].saigne = true; self.h[h].saigneT = t + L.SAIGNE.pas; ev.push({t:'etat', heros:h, nom:'saigne', on:true}); }
-    if(A.brule){ var S = self.h[h]; if(!S.brule) S.bruleT = t + L.BRULE.pas; S.brule = t + L.BRULE.duree; ev.push({t:'etat', heros:h, nom:'brule', on:true, duree:isFinite(L.BRULE.duree) ? L.BRULE.duree : null}); }
     if(A.attrape){
       self._annuler(ev, h, 'attrape');
       self.h[h].attrape = true; Z.tenu = h;

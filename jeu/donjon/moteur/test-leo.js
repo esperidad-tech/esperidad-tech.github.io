@@ -362,6 +362,19 @@ section('Phase 2 — les armes ramassées');
   c.leo.pv = 4000;
   ev = geste(c, 'pisteur', 'l:marteau', 'leo');
   ok(trouve(ev, 'leo', function(e){ return e.quoi === 'coupe' && e.att === 'gourde'; }) && c.leo.pv === 4000 && !trouve(ev, 'soin-leo'), 'le marteau coupe sa gourde : il ne reprend rien (et le marteau ne fait pas de dégâts)');
+  /* (Romain, 15 novembre, 18 h 29) en phase 2, le marteau ne coupe plus que le saut et la gourde */
+  c = combat(2); jusqueG(c, leo('prise', 'saut'), 160, true);
+  D.ORDRE.forEach(function(h){ c.h[h].act = null; });
+  ev = geste(c, 'pisteur', 'l:marteau', 'leo');
+  ok(!!trouve(ev, 'leo', function(e){ return e.quoi === 'coupe' && e.att === 'saut'; }), 'phase 2 : le marteau coupe le saut');
+  ['faux', 'sifflet'].forEach(function(att){
+    var c2 = combat(2); jusqueG(c2, leo('prise', att), 160, true);
+    D.ORDRE.forEach(function(h){ c2.h[h].act = null; });
+    var e2 = geste(c2, 'pisteur', 'l:marteau', 'leo').concat(c2.avancer(.5));
+    ok(!trouve(e2, 'leo', function(e){ return e.quoi === 'coupe'; }) && (trouve(e2, 'mot', function(e){ return e.sur === 'leo'; }) || {}).texte === L.MOTS.resiste,
+      'phase 2 : le marteau ne coupe pas ' + (att === 'faux' ? 'la faux' : 'le sifflet') + ' (« ' + L.MOTS.resiste + ' »)');
+  });
+  ok(Object.keys(L.ATTAQUES).filter(function(a){ return L.ATTAQUES[a].marteau; }).sort().join(' ') === 'gourde hurlement saut', 'le marteau ne coupe que trois gestes : le saut, la gourde (phase 2) et le cri (phase 3)');
   /* sans marteau : il boit */
   c = combat(2); jusqueG(c, leo('prise', 'gourde'), 120, true); c.leo.pv = 4000;
   ev = jusqueG(c, leo('impact', 'gourde'), 20, true);
@@ -608,6 +621,14 @@ section('Phase 3 — ses attaques (les règles du 15 novembre, 13 h 54 : « il f
   D.ORDRE.forEach(function(h){ c.h[h].act = null; c.h[h].etourdi = 0; });
   var evS = geste(c, 'alchimiste', 'herbes');
   ok(D.ORDRE.every(function(h){ return !c.etat().heros[h].brule; }) && tous(evS, 'etat', function(e){ return e.nom === 'brule' && e.on === false; }).length === 3, 'un soin (les herbes) éteint le feu de tout le monde');
+  /* (Romain, 15 novembre, 18 h 33) les trois prennent feu, même derrière un bouclier jaune ; seul un soin l'éteint */
+  c = vers('souffle'); jusque(c, leo('elan', 'souffle'));
+  D.ORDRE.forEach(function(h){ c.h[h].bouclier = 'jaune'; });
+  ev = jusque(c, leo('impact', 'souffle'));
+  ok(D.ORDRE.every(function(h){ return c.h[h].brule > c.t && !c.h[h].sol; }), 'le souffle de feu : les trois prennent feu, même derrière un bouclier jaune (il pare le coup, pas les flammes)');
+  D.ORDRE.forEach(function(h){ c.h[h].pv = c.h[h].pvMax = 2000; });
+  c.leo.fin += 100; c.avancer(30);
+  ok(D.ORDRE.every(function(h){ return c.etat().heros[h].brule; }), '… et sans soin, le feu dure encore 30 secondes après');
   ok(L.ARMES.gourde.infini && !L.ARMES.faux.infini && L.ARMES.marteau.infini, 'la gourde volée et le marteau sont infinis ; la faux garde ses trois coups');
   egal([L.ATTAQUES.poing3.prise, L.ATTAQUES.poing3.elan], [.6, .8], 'le gros coup de poing de la phase 3 se prépare : 1,4 seconde');
   egal([L.DUREES.bouclier.impact, L.DUREES.bouclier.fin], [1.16, 2.22], 'le bouclier jaune est 50 % plus long à poser (Romain, 15 novembre) : 1,16 s, et 2,22 s avant de rejouer');

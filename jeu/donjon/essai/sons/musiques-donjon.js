@@ -230,6 +230,127 @@ M.bossC = function(A, P){
   return I;
 };
 
+/* =================== LÉO, LE BOSS FINAL : UNE MUSIQUE PAR PHASE ===================
+   Romain, 15 novembre, 18 h 29 : « la phase 1, c'est une musique un peu mystérieuse ; phase 2, musique un peu combat ; et phase 3,
+   une musique terrifiante qui fait peur ». Comme les autres grands combats : des parties de 16 temps qui s'enchaînent, une boucle
+   longue (75 à 100 s) ; rien d'aigu ni d'animal (la règle du 9 novembre). Toutes en ré, comme le donjon. Les longueurs : BOUCLE (son.js). */
+/* un grand coup (grosse caisse, et le grave qui tremble) */
+function grosCoup(A, t, g, dest){ A.tambour(t, {f:52, d:1.6, g:g}, dest); A.bruit(t, {coul:'brun', lp:150, env:A.perc(.01, 1.2), g:g * .7}, dest); }
+/* des cordes graves en trémolo, qui glissent (ou non) */
+function tremGrave(A, t, f, f2, d, g, dest){
+  [-5, 5].forEach(function(det){ A.ton(t, {type:'sawtooth', f:f, f2:f2 || f, gl:d, det:det, env:[[0, 0], [d * .55, 1], [d * .9, .8], [d, 0]], g:g, trem:[10, .85], filtres:[{type:'lowpass', f:1100, q:.6}]}, dest); });
+}
+/* un cuivre grave qui gonfle (cor, trombone) */
+function corGrave(A, t, f, d, g, dest){
+  var env = [[0, 0], [Math.min(.4, d * .35), 1], [d * .7, .8], [d, 0]];
+  A.ton(t, {type:'sawtooth', f:f, env:env, g:g, sat:1.3, filtres:[{type:'lowpass', f:260, pts:[[Math.min(.45, d * .35), 1300], [d, 340]], q:1.2}]}, dest);
+  A.ton(t, {type:'sawtooth', f:f, det:9, env:env, g:g * .6, filtres:[{type:'lowpass', f:800, q:.7}]}, dest);
+}
+
+/* PHASE 1 — L'HOMME EN CAPE (mystérieuse, 76 à la minute ; huit parties, ≈ 101 s) : un bourdon, un pas qui rôde, une petite
+   phrase de harpe qui monte de travers (sol dièse, do dièse), un chœur qui chuchote, une cloche très loin ; au milieu, presque rien */
+M.leo1A = function(A, P){
+  var I = Instance(A, P), b = 60 / 76;
+  var proche = A.bus(P, {grotte:.35}), tamb = A.bus(P, {grotte:.8, g:.85}), loin = A.bus(P, {grotte:1, g:.7}), ech = I.echo(loin, {temps:b * .75, retour:.42, lp:2000, sortie:.5});
+  bourdon(I, [m(38), m(45)], {dest:proche, lp:230, g:.05, lfo:.04, lfoAmp:50, a:2});
+  souffle(I, {dest:loin, coul:'brun', f:260, q:.8, balai:70, lfo1:.03, lfo2:.08, g:.035});
+  I.chaque(.4, 4 * b, function(t, n){                                                                                  /* un pas qui rôde : boum… boum-boum */
+    var s = partie(n, 4, 8), k = s === 4 ? .5 : 1;
+    A.tambour(t, {f:68, d:.7, g:.2 * k}, tamb); A.tambour(t + 1.5 * b, {f:74, d:.5, g:.12 * k}, tamb);
+    if(s >= 5) A.tambour(t + 2.5 * b, {f:80, d:.4, g:.1}, tamb);
+  });
+  var PH = [[0, 62], [1, 65], [2, 68], [3, 69], [5, 65], [6, 62], [7, 61], [8, 62]], PH2 = [[0, 69], [1, 68], [2, 65], [3, 62], [5, 61], [6, 62], [7, 65], [8, 64]];
+  I.chaque(.4 + 2 * b, 16 * b, function(t, n){                                                                         /* la phrase de harpe (pas dans les parties 0 et 4) */
+    var s = partie(n, 1, 8); if(s === 0 || s === 4) return;
+    (s === 3 || s === 7 ? PH2 : PH).forEach(function(p){ A.harpe(t + p[0] * b * .5, m(p[1]), {t60:2.2, g:.09, lp:2200}, ech); });
+    if(s >= 5) PH.forEach(function(p){ A.harpe(t + 8 * b + p[0] * b * .5, m(p[1] - 12), {t60:1.8, g:.07, lp:1600}, ech); });
+  });
+  I.chaque(.4, 8 * b, function(t, n){                                                                                  /* le chœur qui chuchote : ré mineur, puis un accord qui grince */
+    var s = partie(n, 2, 8); if(s === 0) return;
+    A.choeur(t, (n % 2 ? [m(46), m(50), m(54)] : [m(50), m(53), m(57)]), 8 * b + 1, {voyelle:'ou', a:2.5, r:2.5, g:s === 4 ? .014 : .022}, loin);
+  });
+  I.chaque(.4, 2 * b, function(t, n){                                                                                  /* les violoncelles : ré, mi bémol… ça insiste (parties 2, 3, 6, 7) */
+    var s = partie(n, 8, 8); if(!(s === 2 || s === 3 || s === 6 || s === 7)) return;
+    A.archet(t, m([38, 39, 38, 36][n % 4]), 2 * b * .95, {a:.25, r:.3, g:.035}, proche);
+  });
+  I.chaque(.4, 16 * b, function(t){ A.cloche(t, m(45), {d:5, rapport:3.5, indice:.7, g:.03}, loin); });               /* la cloche, très loin */
+  return I;
+};
+
+/* PHASE 2 — TORSE NU (le combat, 104 à la minute ; huit parties, ≈ 74 s) : des tambours qui cognent, des violoncelles qui
+   galopent, des cuivres qui frappent, un air de cor ; une partie plus calme au milieu, puis ça repart plus fort */
+M.leo2A = function(A, P){
+  var I = Instance(A, P), b = 60 / 104;
+  var proche = A.bus(P, {grotte:.25}), tamb = A.bus(P, {grotte:.7, g:.9}), loin = A.bus(P, {grotte:1, g:.7});
+  bourdon(I, [m(38)], {dest:proche, lp:240, g:.045, lfo:.05, lfoAmp:60, a:1.5});
+  var R1 = [[0, 1], [.75, .45], [1.5, .7], [2, .9], [3, .6], [3.5, .55]], R2 = [[0, 1], [.5, .5], [1, .7], [1.5, .6], [2, .95], [2.75, .5], [3, .7], [3.5, .7], [3.75, .5]], R0 = [[0, .8], [2, .5]];
+  var rythmes = [R0, R1, R1, R2, R0, R1, R2, R2];
+  I.chaque(.3, 4 * b, function(t, n){ rythmes[partie(n, 4, 8)].forEach(function(p){ A.tambour(t + p[0] * b, {f:p[1] > .85 ? 72 : 88, d:.6, g:.32 * p[1]}, tamb); }); });
+  var G1 = [38, 38, 50, 38, 41, 38, 36, 38], G2 = [38, 38, 46, 38, 45, 38, 43, 41], basses = [G1, G1, G1, G2, null, G1, G2, G1], trans = [0, 0, 0, 0, 0, -2, 0, 3];
+  I.chaque(.3, b / 2, function(t, n){                                                                                  /* les violoncelles qui galopent (croches) */
+    var s = partie(n, 32, 8), l = basses[s]; if(!l) return;
+    var note = l[n % 8] + trans[s], fort = n % 8 === 0;
+    A.ton(t, {type:'sawtooth', f:m(note), env:A.perc(.006, .2), g:fort ? .085 : .06, filtres:[{type:'lowpass', f:320, pts:[[.02, 1400], [.18, 320]], q:2.5}]}, proche);
+  });
+  var AC = [[50, 53, 57], [46, 50, 53], [48, 52, 55], [45, 49, 52]];                                                   /* ré mineur, si bémol, do, la */
+  I.chaque(.3, 4 * b, function(t, n){                                                                                  /* les cuivres qui frappent */
+    var s = partie(n, 4, 8); if(s < 2 || s === 4) return;
+    var a = AC[n % 4];
+    /* (des cuivres légers à fabriquer : un seul son par note — la tablette fabrique cette musique pendant le film) */
+    [[0, .7, .034], [2.5, .6, .026]].forEach(function(x){ a.forEach(function(nn){
+      A.ton(t + x[0] * b, {type:'sawtooth', f:m(nn - 12), env:[[0, 0], [.03, 1], [x[1] * b * .7, .6], [x[1] * b, 0]], g:x[2], sat:1.2, filtres:[{type:'lowpass', f:500, pts:[[.04, 1800], [x[1] * b, 500]], q:1.2}]}, proche);
+    }); });
+    if(n % 4 === 3) A.bruit(t + 3 * b, {coul:'rose', filtres:[{type:'bandpass', f:300, pts:[[b, 3000]], q:1}], env:[[0, 0], [b * .95, 1], [b, 0]], g:.14}, loin);   /* ça monte avant la reprise */
+  });
+  var AIR = [[0, 62, 1.5], [1.5, 65, .5], [2, 64, 1], [3, 62, 1], [4, 60, 1.5], [5.5, 57, .5], [6, 58, 2], [8, 57, 1.5], [9.5, 55, .5], [10, 57, 1], [11, 58, 1], [12, 60, 1.5], [13.5, 61, .5], [14, 62, 2]];
+  I.chaque(.3, 16 * b, function(t, n){                                                                                 /* l'air de cor (parties 3, 6, 7) */
+    var s = partie(n, 1, 8); if(!(s === 3 || s === 6 || s === 7)) return;
+    AIR.forEach(function(p){ corGrave(A, t + p[0] * b, m(p[1] - 12), p[2] * b * .95, .03, proche); });
+  });
+  I.chaque(.3 + b / 2, b, function(t, n){                                                                              /* la caisse claire, à contretemps (parties 5 à 7) */
+    if(partie(n, 16, 8) < 5) return;
+    A.bruit(t, {coul:'rose', bp:1500, bq:.9, env:A.perc(.002, .08), g:.09}, tamb);
+  });
+  return I;
+};
+
+/* PHASE 3 — LA POTION (terrifiante, 66 à la minute ; six parties, ≈ 87 s) : un grondement tout en bas qui frotte (ré et mi bémol),
+   un cœur qui cogne, de grands coups avec des cuivres qui grincent (ré, mi bémol, la bémol), un chœur grave qui gémit, des
+   cordes qui montent en tremblant, un glas ; rien d'aigu : la peur vient du bas */
+M.leo3A = function(A, P){
+  var I = Instance(A, P), b = 60 / 66;
+  var proche = A.bus(P, {grotte:.3}), coeur = A.bus(P, {grotte:.25}), tamb = A.bus(P, {grotte:.9, g:.9}), loin = A.bus(P, {grotte:1, g:.75});
+  bourdon(I, [m(26), m(27)], {dest:proche, lp:170, g:.06, lfo:.07, lfoAmp:40, a:2});                                    /* le grondement qui frotte */
+  bourdon(I, [m(38)], {dest:proche, lp:300, g:.025, lfo:.11, lfoAmp:80, a:3});
+  souffle(I, {dest:loin, coul:'brun', f:200, q:.9, balai:60, lfo1:.05, lfo2:.12, g:.04});
+  I.chaque(.4, b, function(t, n){                                                                                      /* le cœur (plus léger dans la partie calme) */
+    var s = partie(n, 16, 6), k = s === 3 ? .55 : 1;
+    A.choc(t, {f:80, f2:44, d:.2, g:.42 * k, sat:3, lp:500, bruit:.2, corpsF:200, corps:.8}, coeur);
+    A.choc(t + .22, {f:72, f2:42, d:.16, g:.28 * k, sat:3, lp:500, bruit:.2, corpsF:200, corps:.8}, coeur);
+  });
+  I.chaque(.4, 8 * b, function(t, n){                                                                                  /* les grands coups et les cuivres qui grincent */
+    var s = partie(n, 2, 6); if(s === 0 && n % 2) return;
+    if(s !== 3) grosCoup(A, t, s >= 4 ? .5 : .4, tamb);
+    var acc = n % 2 ? [38, 39, 44] : [38, 44, 45];
+    acc.forEach(function(nn){ corGrave(A, t, m(nn), 6 * b, s === 3 ? .02 : .032, proche); });
+    if(s >= 1 && s !== 3) A.bruit(t + 6.5 * b, {coul:'rose', filtres:[{type:'bandpass', f:180, pts:[[1.5 * b, 2400]], q:1.1}], env:[[0, 0], [1.45 * b, 1], [1.5 * b, 0]], g:.16}, loin);   /* le souffle qui aspire avant le coup */
+  });
+  I.chaque(.4, 16 * b, function(t, n){                                                                                 /* le chœur grave qui gémit (parties 1, 2, 4, 5) */
+    var s = partie(n, 1, 6); if(s === 0 || s === 3) return;
+    A.choeur(t, [m(50), m(51), m(56)], 8 * b, {voyelle:'a', a:3, r:3, g:.022}, loin);
+    A.choeur(t + 8 * b, [m(49), m(50), m(55)], 8 * b, {voyelle:'o', a:3, r:3, g:.022}, loin);
+  });
+  I.chaque(.4 + 8 * b, 16 * b, function(t, n){                                                                         /* les cordes qui montent en tremblant */
+    var s = partie(n, 1, 6); if(s === 0) return;
+    tremGrave(A, t, m(45), m(47), 8 * b, .016, proche); tremGrave(A, t, m(51), m(53), 8 * b, .012, proche);
+  });
+  I.chaque(.4, 4 * b, function(t, n){                                                                                  /* le glas (parties 2 et 5) */
+    var s = partie(n, 4, 6); if(!(s === 2 || s === 5)) return;
+    A.cloche(t, m(38), {d:4, rapport:2.8, indice:1.1, g:.05}, loin);
+  });
+  return I;
+};
+
 /* =================== LA FIN DU DONJON : LÉO RETROUVÉ =================== */
 /* A — La lanterne de Léo : une harpe, un chœur, des cloches, en do majeur ; enfin de l'espoir */
 M.finDonjonA = function(A, P){
