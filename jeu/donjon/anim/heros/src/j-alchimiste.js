@@ -178,7 +178,8 @@ H.lancer = function(scene, to, couleur, opt){
 };
 H._fioleVole = function(scene, a, to, c, opt){
   if(opt._potion) return this._fioleVole2(scene, a, to, c, opt);     /* (givre, acide, huile, colle : sans filtre, voir m-armes.js) */
-  var L = couche(scene), e = div(L, 'width:26px;height:31px;filter:drop-shadow(0 0 6px ' + c + ')', fioleSVG(c));
+  /* (sa lueur : un rond de lumière dessiné dessous, plus de filtre — RAPIDITE.md R19) */
+  var L = couche(scene), e = div(L, 'width:26px;height:31px', '<div style="position:absolute;left:-13px;top:-10px;width:52px;height:52px;' + tache(c, c) + ';opacity:.5"></div><div style="position:absolute;inset:0">' + fioleSVG(c) + '</div>');
   var dist = Math.hypot(to.x - a.x, to.y - a.y), last = 0;
   return voler(e, a, to, {d:Math.max(420, Math.min(760, dist * 1.3)), haut:120 + dist * 0.26, tourne:620, r0:-20, chaque:function(p){
     var n = performance.now(); if(n - last < 30) return; last = n;
@@ -258,7 +259,8 @@ H.herbes = function(scene, to, opt){
 H._feuilles = function(scene, a, to, opt){
   var L = couche(scene), ps = [], dist = Math.hypot(to.x - a.x, to.y - a.y);
   for(var i = 0; i < 11; i++) (function(i){
-    var e = div(L, 'width:' + alea(12, 18) + 'px;height:' + alea(8, 11) + 'px;filter:drop-shadow(0 0 4px #8aff9a) drop-shadow(0 0 1px #fff)', FEUILLE), last = 0;
+    /* (onze feuilles qui volent : chacune avait deux filtres ; leur lueur est maintenant un petit rond vert dessiné dessous — R19) */
+    var e = div(L, 'width:' + alea(12, 18) + 'px;height:' + alea(8, 11) + 'px', '<div style="position:absolute;left:-5px;right:-5px;top:-6px;bottom:-6px;' + tache('#c8ffb8', '#8aff9a') + ';opacity:.45"></div><div style="position:absolute;inset:0">' + FEUILLE + '</div>'), last = 0;
     var b = {x:to.x + alea(-26, 26), y:to.y + alea(-30, 24)};
     ps.push(new Promise(function(res){ setTimeout(res, i * 45); }).then(function(){
       return voler(e, {x:a.x + alea(-12, 12), y:a.y + alea(-12, 12)}, b, {d:alea(480, 760) + dist * 0.3, haut:alea(-30, 120) + dist * 0.12, tourne:alea(-540, 540), ease:function(t){ return t + Math.sin(t * Math.PI * 2) * 0.04; }, chaque:function(p, an, t){

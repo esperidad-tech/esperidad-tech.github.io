@@ -35,25 +35,41 @@ var AVEUX = [
 /* ====================================================================== 1. PRÉPARER, CONSTRUIRE */
 /* (15 novembre, 13 h 54 — RAPIDITE.md, R16) les bruitages du combat qui reviennent le plus, fabriqués à l'avance (un par un, en
    arrière-plan : on n'attend pas la fin pour commencer) */
-var BRUITS = {tous:['swish', 'chairF', 'chairD', 'arc', 'vol', 'leoCharge', 'leoGlisse', 'leoSonne', 'leoMuscles'],
-  1:['leoFleau', 'leoMarteau', 'leoMeule', 'leoCrochet', 'leoCape', 'leoFarine', 'baton', 'cristal'],
-  2:['leoPoing', 'leoSifflet', 'leoSaut', 'leoLancer', 'leoGlou', 'leoFaux', 'baton'],
-  3:['leoPoing', 'leoNaseaux', 'leoRafale', 'leoHurlement', 'leoSouffle', 'leoAttrape', 'leoSaigne', 'leoFaux', 'leoChute']};
+/* (15 novembre, 19 h 28 : la liste est COMPLÈTE — `sautes-leo.py` nomme chaque son encore fabriqué en direct pendant un combat ;
+   il en restait de 6 à 12 par phase : le clic des icônes, les fioles, le pied qui racle, les naseaux, la torche, le sac, le
+   saignement de la phase 2… Si ce robot en nomme un nouveau, l'ajouter ici. « id:B » : cette version-là exactement.) */
+var BRUITS = {tous:['icone', 'swish', 'chairF', 'chairD', 'arc', 'vol', 'baton', 'potHuile', 'leoCharge', 'leoRacle', 'leoNaseaux', 'leoGlisse', 'leoSonne', 'leoMuscles', 'leoTouche'],
+  1:['leoFleau', 'leoMarteau', 'leoMeule', 'leoCrochet', 'leoCape', 'leoFarine', 'leoPoing', 'leoTorches', 'cristal', 'potGivre'],
+  2:['leoPoing', 'leoSifflet', 'leoSaut', 'leoLancer', 'leoSac', 'leoGlou', 'leoBouchon', 'leoAah', 'leoAura', 'leoBrise', 'leoFaux', 'leoFaux:B', 'leoFauxTire', 'leoSaigne'],
+  3:['leoPoing', 'leoRafale', 'leoHurlement', 'leoSouffle', 'leoAttrape', 'leoSaigne', 'leoFaux', 'leoChute', 'potGivre']};
 /* les sons d'une phase : fabriqués pendant l'écran de passage (la première) ou pendant la cinématique d'avant (les suivantes) ;
    ceux de la phase d'avant rendent leur mémoire. Rend une promesse (on peut l'attendre, pas trop longtemps). */
 function sonsPhase(n){
   try{ if(SALLE.Son && SALLE.Son.preparerBruits) return SALLE.Son.preparerBruits(BRUITS.tous.concat(BRUITS[n] || []), {seuls:true}); }catch(e){}
   return Promise.resolve(0);
 }
+/* LE COMBAT NE S'OUVRE PAS TANT QU'IL RESTE QUELQUE CHOSE À FABRIQUER (Romain, 15 novembre, 19 h 28 : « il y a encore des sorts qui
+   font des sautes de FPS »). Mesuré (sautes-leo.py --froid) : les sons et la musique d'une phase, s'ils se fabriquent encore
+   pendant le combat, lui prennent ses quatre premières secondes — 6 à 12 images par seconde au lieu de 40, des images de 300 à
+   470 ms (fabriquer UN son occupe le fil de l'écran jusqu'à 0,4 s sur une machine lente). On attend donc la fin de la
+   fabrication (les bruitages de la phase, et sa musique) — au plus « max » secondes, pour ne jamais rester bloqué. */
+function fabricationFinie(){
+  try{ var S = SALLE.Son, p = S && S.precalcul ? S.precalcul.etat() : null; return !(S && S.bruitsEnCours && S.bruitsEnCours()) && !(p && (p.occupe || (p.file || []).length)); }catch(e){ return true; }
+}
+function sonsPrets(max){
+  var fin = Date.now() + (max || 8) * 1000;
+  return new Promise(function(ok){ (function voir(){ if(fabricationFinie() || Date.now() > fin) ok(); else setTimeout(voir, 150); })(); });
+}
 function preparer(phase){
-  /* (on attend les sons au plus trois secondes : le reste se finit pendant le début du combat) */
   if(phase && typeof phase === 'object') phase = phaseGardee(phase);                    /* (la partie : la phase gardée) */
-  var sons = Promise.race([sonsPhase(+phase || 1), new Promise(function(ok){ setTimeout(ok, 3000); })]);
-  return Promise.all([sons, DJ.charger.bete('rat'), DJ.charger.bete('ratcuir')]).then(function(){
+  /* les sons et la musique de la phase se fabriquent PENDANT qu'on prépare les images ; on n'ouvre le combat que quand tout est prêt */
+  sonsPhase(+phase || 1);
+  try{ if(SALLE.Son && SALLE.Son.preparerMusique) SALLE.Son.preparerMusique('grand:leo' + Math.max(1, Math.min(3, +phase || 1))); }catch(e){}
+  return Promise.all([DJ.charger.bete('rat'), DJ.charger.bete('ratcuir')]).then(function(){
     return Promise.all([DJ.Combat.cuireHeros(), DJ.Combat.cuireRat(), DJ.charger.image(DJ.charger.scene('leo')), DJ.charger.image(SALLE.img('fumee-a')), DJ.charger.image(SALLE.img('brume-a')),
       /* le nouveau Léo (torse nu) : ses pièces cuites en images (leo-corps.js) */
       window.LeoCorps ? window.LeoCorps.preparer() : null]);
-  }).catch(function(e){ if(window.console) console.warn('Léo', e); });
+  }).then(function(){ return sonsPrets(10); }).catch(function(e){ if(window.console) console.warn('Léo', e); });
 }
 function phaseGardee(p){ var n = +(p.faits && p.faits['leo:phase']) || 1; return Math.max(1, Math.min(3, n)); }
 function lancer(partie, o){
@@ -161,7 +177,8 @@ function demarrerPhase(n, premiere){
   /* la première fois qu'on arrive devant lui : il sort de l'ombre. Sinon (un nouvel essai) : on y retourne tout de suite. */
   prechargerFilms(n);
   E.cine = true;
-  (premiere && n === 1 && !E.partie.faits['leo:vu'] ? cineEntree() : cinePret(n)).then(function(){ if(!E) return; E.cine = false; E.saute = false; E.ts = 0; });
+  /* (un nouvel essai après une défaite, une phase reprise : ses sons sont peut-être encore en fabrication — on les attend) */
+  (premiere && n === 1 && !E.partie.faits['leo:vu'] ? cineEntree() : cinePret(n)).then(function(){ return sonsPrets(8); }).then(function(){ if(!E) return; E.cine = false; E.saute = false; E.ts = 0; });
 }
 function remettreHeros(h){
   var A = E.A.h[h], s = slotH(h);
@@ -348,6 +365,8 @@ async function finPhase(res){
   /* une phase est gagnée : on la garde tout de suite (Romain : « une sauvegarde automatique à chaque cinématique ») */
   var n = E.c.phase + 1;
   E.partie.faits['leo:phase'] = n; DJ.garder(E.partie);
+  adressePhase(n);
+  DJ.temoinLeo('phase ' + n + ' : le film d\'avant');
   son('victoire');
   sonsPhase(n);                                         /* (les sons de la phase qui vient se fabriquent pendant la cinématique) */
   musiquePhase(n);                                      /* (sa musique aussi : elle part à la fin du film) */
@@ -364,6 +383,8 @@ async function finPhase(res){
   maj(true);
   titre(NOMS[n], 'Phase ' + n, 1400);
   await pause(700);
+  await sonsPrets(6);                                   /* (le film passé d'un doigt : les sons de la phase ne sont peut-être pas finis) */
+  if(!E) return;
   E.cine = false; E.saute = false; E.ts = 0;
 }
 function defaite(){
@@ -418,6 +439,7 @@ function aveu(){
 }
 function terminer(res){
   if(!E) return;
+  DJ.temoinLeo(false);
   var fin = E.finir;
   E.fini = true; cancelAnimationFrame(E.raf);
   if(E.p2) try{ E.p2.vider(); }catch(e){}
@@ -602,7 +624,9 @@ DJ.toucher(function(a, id, b){
   if(a === 'l-pause'){
     if(E.cine || E.fini) return true;
     var t = 'Le combat attend. Léo aussi… mais il n\'aime pas ça.';
-    DJ.fenetre('<h2>Pause</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div><div class="boutons"><button class="sombre" data-act="l-quitter">Retour à la carte</button><button class="aller guide" data-act="fermer">Reprendre ➜</button></div>');
+    /* (la version, et ce que l'appareil a retenu de ses plantages : à l'adresse d'essai, il n'y a pas de « 🎒 Objets » où la lire) */
+    DJ.fenetre('<h2>Pause</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div><div class="boutons"><button class="sombre" data-act="l-quitter">Retour à la carte</button><button class="aller guide" data-act="fermer">Reprendre ➜</button></div>' +
+      '<div class="ligne petit version">' + esc(DJ.ligneVersion()) + '</div>');
     return true;
   }
   if(a === 'l-encore'){ DJ.fermer(); demarrerPhase(E.c.phase); return true; }
@@ -624,7 +648,24 @@ var NOMS_POTION = {givre:1, acide:1, huile:1, colle:1}, SON_POTION = {givre:'pot
 function tard(s, fn){ var e = E; setTimeout(function(){ if(E === e && !E.fini) try{ fn(); }catch(x){ if(window.console) console.error(x); } }, s * 1000 / E.vite); }
 
 function jouer(evs){
-  for(var k = 0; k < evs.length; k++){ try{ un(evs[k]); }catch(e){ if(window.console) console.error('Léo, évènement ' + evs[k].t, e); } }
+  for(var k = 0; k < evs.length; k++){ try{ noter(evs[k]); un(evs[k]); }catch(e){ if(window.console) console.error('Léo, évènement ' + evs[k].t, e); } }
+}
+/* LE TÉMOIN DU COMBAT (noyau.js, DJ.temoinLeo — Romain, 15 novembre, 19 h 28 : « un bug qui a fait retourner au début, quand il
+   attrape quelqu'un et qu'il le jette ») : à chaque moment de Léo et à chaque geste d'un héros, on note où l'on en est. Si la page
+   se ferme toute seule, la note est encore là au démarrage suivant : on sait PENDANT QUOI. (Une ou deux écritures par seconde.) */
+var MOMENTS = {prise:'il se prépare', elan:'il arme son coup', impact:'le coup', coups:'la série de coups', porte:'il le porte', 'frappe-avec':'il le jette sur l\'autre', tient:'il le tient', retour:'il revient'};
+function noter(ev){
+  if(!E || !E.c) return;
+  var N = E.note || (E.note = {leo:'', geste:''}), change = false;
+  if(ev.t === 'leo' && MOMENTS[ev.quoi] && ev.att){ N.leo = ((L.ATTAQUES[ev.att] || {}).nom || ev.att) + ' (' + MOMENTS[ev.quoi] + ')'; N.geste = ''; change = true; }
+  else if(ev.t === 'geste' && ev.heros){ N.geste = ev.heros + ' ' + (ev.geste || ev.g || ''); change = true; }
+  if(change) DJ.temoinLeo('phase ' + E.c.phase + ' : ' + (N.leo || 'au calme') + (N.geste ? ', ' + N.geste : ''));
+}
+/* à l'adresse d'essai (…/donjon/?leo=1), une phase gagnée s'écrit dans l'adresse : si la page se recharge (ou se ferme toute seule),
+   on reprend à cette phase-là, pas au début. (Dans le vrai jeu, la phase est gardée dans la partie.) */
+function adressePhase(n){
+  if(!DJ.essai) return;
+  try{ var u = new URL(location.href); if(u.searchParams.get('leo') != null){ u.searchParams.set('leo', n); history.replaceState(null, '', u.pathname + u.search + u.hash); } }catch(e){}
 }
 function un(ev){
   var h = ev.heros, p, a;

@@ -1021,16 +1021,26 @@ function ou(el, ref){
 }
 function alea(a, b){ return a + Math.random() * (b - a); }
 /* une gerbe de particules : n, couleur, vitesse, pesanteur, taille, durée */
+/* COMBIEN D'ÉTINCELLES (RAPIDITE.md R19). Chaque étincelle est un élément de plus à créer d'un coup, puis un calque de plus à
+   déplacer à chaque image. Dans un combat en temps réel (Léo), où les sorts s'enchaînent sans attendre : un tiers de moins
+   (à partir de six — on ne touche pas aux petits effets). Sur un appareil qui a déjà fermé la page pendant ce combat
+   (SALLE.leger, noyau.js) : la moitié. Ailleurs (les combats au tour par tour) : rien ne change. */
+function combien(n){
+  var S = window.SALLE || {};
+  if(S.leger) return Math.max(1, Math.ceil(n / 2));
+  if(S.tempsReel && n >= 6) return Math.ceil(n * .67);
+  return n;
+}
 function gerbe(layer, x, y, o){
   o = o || {};
-  var n = o.n || 12, ps = [];
+  var n = combien(o.n || 12), ps = [];
   for(var i = 0; i < n; i++){
     var an = (o.angle !== undefined ? o.angle : 0) + (o.ecart !== undefined ? alea(-o.ecart, o.ecart) : alea(-180, 180));
     var v = alea(o.v0 || 60, o.v1 || 160), vx = Math.cos(an / DEG) * v, vy = Math.sin(an / DEG) * v, g = o.g === undefined ? 300 : o.g;
     var dur = alea(o.d0 || 400, o.d1 || 800), sz = alea(o.t0 || 3, o.t1 || 6), coul = o.c instanceof Array ? o.c[i % o.c.length] : (o.c || '#ffd36a');
     var forme = o.forme || 'rond';
     var css = 'width:' + sz + 'px;height:' + (forme === 'trait' ? sz * 0.35 : sz) + 'px;border-radius:' + (forme === 'carre' ? '1px' : '50%') + ';background:' + coul + ';' + (o.lueur === false ? '' : 'box-shadow:0 0 ' + (sz * 1.4) + 'px ' + coul + ';');
-    if(forme === 'eclat') css = 'width:0;height:0;border-left:' + (sz * 0.45) + 'px solid transparent;border-right:' + (sz * 0.45) + 'px solid transparent;border-bottom:' + sz + 'px solid ' + coul + ';filter:drop-shadow(0 0 2px #fff8);';
+    if(forme === 'eclat') css = 'width:0;height:0;border-left:' + (sz * 0.45) + 'px solid transparent;border-right:' + (sz * 0.45) + 'px solid transparent;border-bottom:' + sz + 'px solid ' + coul + ';';   /* (plus de filtre : R19) */
     if(forme === 'html') css = 'font-size:' + sz + 'px;line-height:1;color:' + coul + ';text-shadow:0 0 6px ' + coul + ';';
     var e = div(layer, css, forme === 'html' ? o.html : '');
     var k = [], rot0 = alea(-180, 180), rotv = alea(-540, 540);
@@ -1051,13 +1061,24 @@ function onde(layer, x, y, o){
   return jouerEl(e, [{transform:place(x, y, 0, o.s0 || 0.2), opacity:o.o0 === undefined ? 1 : o.o0}, {transform:place(x, y, 0, o.s1 || 2.4), opacity:0}],
     {duration:o.d || 500, delay:o.retard || 0, easing:o.e || 'cubic-bezier(.1,.7,.3,1)', fill:'backwards'});
 }
+/* LES LUEURS SANS FILTRE (RAPIDITE.md, R19 — Romain, 15 novembre, 19 h 28 : « il y a encore des sorts qui font des sautes de FPS »).
+   Un « filter » (drop-shadow, blur, brightness) ou un « mix-blend-mode » sur un élément qui bouge oblige le téléphone à refaire le
+   calcul à chaque image, élément par élément — et un sort en lance vingt ou trente à la fois. Ici, la lueur est DESSINÉE une fois :
+   la même forme, plus grande et presque transparente, sous la vraie (ou un rond qui s'efface vers les bords). Ensuite, on ne
+   touche plus qu'à transform et opacity. NE JAMAIS REMETTRE DE FILTRE SUR UN EFFET DE SORT. */
+function lueurForme(d, c, f){ f = f || 1; return '<path d="' + d + '" fill="' + c + '" opacity=".13" transform="scale(' + (1 + .85 * f) + ')"/><path d="' + d + '" fill="' + c + '" opacity=".22" transform="scale(' + (1 + .42 * f) + ')"/>'; }
+function lueurTrait(d, c, ep, f){ f = f || 1; var q = '" fill="none" stroke="' + c + '" stroke-linecap="round" stroke-linejoin="round" stroke-width="'; return '<path d="' + d + q + (ep + 5.2 * f) + '" opacity=".12"/><path d="' + d + q + (ep + 2.6 * f) + '" opacity=".22"/>'; }
+function lueurRonde(c, r, x, y){ var p = '" cx="' + (x || 0) + '" cy="' + (y || 0) + '" fill="' + c + '" opacity="'; return '<circle r="' + r + p + '.09"/><circle r="' + (r * .72) + p + '.13"/><circle r="' + (r * .46) + p + '.17"/>'; }
+/* (pour un élément HTML : un rond de lumière posé dessous, t = son diamètre) */
+function haloCSS(c, t, o){ return '<i style="position:absolute;left:50%;top:50%;width:' + t + 'px;height:' + t + 'px;margin:' + (-t / 2) + 'px 0 0 ' + (-t / 2) + 'px;border-radius:50%;z-index:-1;pointer-events:none;opacity:' + (o || .6) + ';background:radial-gradient(closest-side,' + c + ',transparent)"></i>'; }
+var ETOILE4 = 'M0 -10 Q 1.5 -1.5 10 0 Q 1.5 1.5 0 10 Q -1.5 1.5 -10 0 Q -1.5 -1.5 0 -10 Z';
 /* une petite étoile à 4 branches (scintillement) */
-function etoile4(c, t){ return '<svg viewBox="-10 -10 20 20" style="width:' + t + 'px;height:' + t + 'px;display:block;overflow:visible;filter:drop-shadow(0 0 3px ' + c + ')"><path d="M0 -10 Q 1.5 -1.5 10 0 Q 1.5 1.5 0 10 Q -1.5 1.5 -10 0 Q -1.5 -1.5 0 -10 Z" fill="' + c + '"/><circle r="2" fill="#fff"/></svg>'; }
+function etoile4(c, t){ return '<svg viewBox="-10 -10 20 20" style="width:' + t + 'px;height:' + t + 'px;display:block;overflow:visible">' + lueurForme(ETOILE4, c) + '<path d="' + ETOILE4 + '" fill="' + c + '"/><circle r="2" fill="#fff"/></svg>'; }
 function etoile5(c, t){ return '<svg viewBox="-12 -12 24 24" style="width:' + t + 'px;height:' + t + 'px;display:block;overflow:visible"><path d="M0 -11 L 3.2 -3.6 L 11 -3.4 L 5 1.8 L 7 9.6 L 0 5.2 L -7 9.6 L -5 1.8 L -11 -3.4 L -3.2 -3.6 Z" fill="' + c + '" stroke="#24182e" stroke-width="2" stroke-linejoin="round"/><path d="M-2 -5 L 0 -8" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>'; }
 function scintille(layer, x, y, o){
   o = o || {};
-  var ps = [];
-  for(var i = 0; i < (o.n || 8); i++){
+  var ps = [], nb = combien(o.n || 8);
+  for(var i = 0; i < nb; i++){
     var px = x + alea(-(o.rx || 40), o.rx || 40), py = y + alea(-(o.ry || 40), o.ry || 40), t = alea(o.t0 || 8, o.t1 || 16);
     var e = div(layer, '', etoile4(o.c instanceof Array ? o.c[i % o.c.length] : (o.c || '#ffe9a0'), t));
     ps.push(jouerEl(e, [{transform:place(px, py, 0, 0), opacity:1}, {transform:place(px, py + (o.dy || -10) * 0.5, 45, 1.2), opacity:1, offset:0.4}, {transform:place(px, py + (o.dy || -10), 90, 0), opacity:0}],
@@ -1541,7 +1562,7 @@ H.relever = function(){
     var me = this, g = this.garde();
     this._etoiles(false);
     var W = this.fx.offsetWidth || 200, Hh = this.fx.offsetHeight || 240, cx = W / 2 - 30, sy = Hh * 293 / 300;
-    var col = div(this.fx, 'width:150px;height:260px;border-radius:50% 50% 40% 40%;background:radial-gradient(ellipse at 50% 80%,rgba(255,236,160,.85),rgba(255,200,90,.35) 40%,rgba(255,190,80,0) 70%);mix-blend-mode:screen;filter:blur(2px)');
+    var col = div(this.fx, 'width:150px;height:260px;border-radius:50% 50% 40% 40%;background:radial-gradient(ellipse at 50% 80%,rgba(255,240,180,.8),rgba(255,210,110,.32) 40%,rgba(255,190,80,0) 70%)');     /* (ni fondu ni flou : RAPIDITE.md R19 — une grande lumière « fondue » et floutée, qui bouge, c'est ce qu'un téléphone fait le plus mal) */
     jouerEl(col, [{transform:place(cx + 30, sy - 110, 0, 0.2), opacity:0}, {transform:place(cx + 30, sy - 120, 0, 1), opacity:1, offset:.35}, {transform:place(cx + 30, sy - 120, 0, 1.05), opacity:.9, offset:.7}, {transform:place(cx + 30, sy - 130, 0, 1.2), opacity:0}], {duration:1700, easing:'ease-out'});
     onde(this.fx, cx + 30, sy + 2, {w:150, h:34, c:'#ffd36a', ep:3, s0:0.2, s1:1.3, d:900});
     onde(this.fx, cx + 30, sy + 2, {w:150, h:34, c:'#fff0b0', ep:2, s0:0.2, s1:1.6, d:1100, retard:300});
@@ -1730,7 +1751,7 @@ H._fleche = function(scene, n, t, to, type, opt){
   var L = couche(scene), len = Math.hypot(t.x - n.x, t.y - n.y), k = len / 124;
   var w = div(L, 'width:0;height:0;z-index:3');
   var tr = div(w, 'left:' + (-len - 70 * k) + 'px;top:' + (-2.5 * k) + 'px;width:' + (len * 0.9) + 'px;height:' + (5 * k) + 'px;border-radius:3px;background:linear-gradient(90deg,rgba(255,255,255,0),' +
-    ({feu:'rgba(255,150,50,.75)', huile:'rgba(90,70,40,.5)', colle:'rgba(230,245,210,.7)'}[type] || 'rgba(255,250,220,.6)') + ');filter:blur(1px)');
+    ({feu:'rgba(255,150,50,.75)', huile:'rgba(90,70,40,.5)', colle:'rgba(230,245,210,.7)'}[type] || 'rgba(255,250,220,.6)') + ')');     /* (plus de flou : RAPIDITE.md R19) */
   tr.style.transform = 'none';
   var a = div(w, 'left:' + (-len - 14 * k) + 'px;top:' + (-16 * k) + 'px;width:' + (150 * k) + 'px;height:' + (32 * k) + 'px', FLECHE_SVG(type));
   a.style.transform = 'none';
@@ -1825,7 +1846,10 @@ H.dague = function(scene, to, opt){
 H._lame = function(scene, to){
   var L = couche(scene), id = 'hal' + (++uid);
   var e = div(L, 'width:160px;height:160px', '<svg viewBox="-80 -80 160 160" style="width:100%;height:100%;overflow:visible"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#e8fdff"/><stop offset="1" stop-color="#8ff3ff"/></linearGradient></defs>' +
-    '<path d="M-52 -46 A 70 70 0 0 1 40 50 A 62 62 0 0 0 -52 -46 Z" fill="url(#' + id + ')" style="filter:drop-shadow(0 0 6px #8ff3ff) drop-shadow(0 0 2px #fff)"/>' +
+    /* (la lueur du croissant est dessinée : deux traits larges et presque transparents sous lui — plus de filtre, RAPIDITE.md R19) */
+    '<path d="M-52 -46 A 70 70 0 0 1 40 50 A 62 62 0 0 0 -52 -46 Z" fill="none" stroke="#8ff3ff" stroke-width="15" stroke-linejoin="round" opacity=".12"/>' +
+    '<path d="M-52 -46 A 70 70 0 0 1 40 50 A 62 62 0 0 0 -52 -46 Z" fill="none" stroke="#8ff3ff" stroke-width="7" stroke-linejoin="round" opacity=".22"/>' +
+    '<path d="M-52 -46 A 70 70 0 0 1 40 50 A 62 62 0 0 0 -52 -46 Z" fill="url(#' + id + ')"/>' +
     '<path d="M-44 -40 A 62 62 0 0 1 34 44" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"><animate attributeName="stroke-dashoffset" from="100" to="0" dur="0.12s" fill="freeze"/></path></svg>');
   jouerEl(e, [{transform:place(to.x - 8, to.y - 6, -30, 0.7), opacity:0}, {transform:place(to.x - 4, to.y - 4, 0, 1), opacity:1, offset:.25}, {transform:place(to.x, to.y, 18, 1.08), opacity:0}], {duration:360, easing:'ease-out'});
 };
@@ -2015,7 +2039,8 @@ H.lancer = function(scene, to, couleur, opt){
 };
 H._fioleVole = function(scene, a, to, c, opt){
   if(opt._potion) return this._fioleVole2(scene, a, to, c, opt);     /* (givre, acide, huile, colle : sans filtre, voir m-armes.js) */
-  var L = couche(scene), e = div(L, 'width:26px;height:31px;filter:drop-shadow(0 0 6px ' + c + ')', fioleSVG(c));
+  /* (sa lueur : un rond de lumière dessiné dessous, plus de filtre — RAPIDITE.md R19) */
+  var L = couche(scene), e = div(L, 'width:26px;height:31px', '<div style="position:absolute;left:-13px;top:-10px;width:52px;height:52px;' + tache(c, c) + ';opacity:.5"></div><div style="position:absolute;inset:0">' + fioleSVG(c) + '</div>');
   var dist = Math.hypot(to.x - a.x, to.y - a.y), last = 0;
   return voler(e, a, to, {d:Math.max(420, Math.min(760, dist * 1.3)), haut:120 + dist * 0.26, tourne:620, r0:-20, chaque:function(p){
     var n = performance.now(); if(n - last < 30) return; last = n;
@@ -2095,7 +2120,8 @@ H.herbes = function(scene, to, opt){
 H._feuilles = function(scene, a, to, opt){
   var L = couche(scene), ps = [], dist = Math.hypot(to.x - a.x, to.y - a.y);
   for(var i = 0; i < 11; i++) (function(i){
-    var e = div(L, 'width:' + alea(12, 18) + 'px;height:' + alea(8, 11) + 'px;filter:drop-shadow(0 0 4px #8aff9a) drop-shadow(0 0 1px #fff)', FEUILLE), last = 0;
+    /* (onze feuilles qui volent : chacune avait deux filtres ; leur lueur est maintenant un petit rond vert dessiné dessous — R19) */
+    var e = div(L, 'width:' + alea(12, 18) + 'px;height:' + alea(8, 11) + 'px', '<div style="position:absolute;left:-5px;right:-5px;top:-6px;bottom:-6px;' + tache('#c8ffb8', '#8aff9a') + ';opacity:.45"></div><div style="position:absolute;inset:0">' + FEUILLE + '</div>'), last = 0;
     var b = {x:to.x + alea(-26, 26), y:to.y + alea(-30, 24)};
     ps.push(new Promise(function(res){ setTimeout(res, i * 45); }).then(function(){
       return voler(e, {x:a.x + alea(-12, 12), y:a.y + alea(-12, 12)}, b, {d:alea(480, 760) + dist * 0.3, haut:alea(-30, 120) + dist * 0.12, tourne:alea(-540, 540), ease:function(t){ return t + Math.sin(t * Math.PI * 2) * 0.04; }, chaque:function(p, an, t){
@@ -2176,11 +2202,13 @@ H.cristalFlash = function(fort){
 
 /* des runes (petits signes gravés), en SVG pour ne dépendre d'aucune police */
 var RUNES = ['M-6 8 L 0 -8 L 6 8 M-3 2 L 3 2', 'M-4 -8 L -4 8 M-4 -8 L 5 -3 L -4 2', 'M0 -8 L 0 8 M-6 -4 L 6 4 M6 -4 L -6 4', 'M-6 -6 L 6 6 M-6 6 L 6 -6 M0 -8 L 0 8', 'M-5 -8 L -5 8 M-5 0 L 5 -8 M-5 0 L 5 8', 'M0 -8 L 6 0 L 0 8 L -6 0 Z'];
-function rune(i, c, t){ return '<svg viewBox="-10 -10 20 20" style="width:' + t + 'px;height:' + t + 'px;display:block;overflow:visible;filter:drop-shadow(0 0 3px ' + c + ') drop-shadow(0 0 6px ' + c + ')"><path d="' + RUNES[i % RUNES.length] + '" fill="none" stroke="' + c + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+/* (les lueurs sont dessinées, sans filtre : f-moteur.js, « LES LUEURS SANS FILTRE », RAPIDITE.md R19) */
+function rune(i, c, t){ var d = RUNES[i % RUNES.length]; return '<svg viewBox="-10 -10 20 20" style="width:' + t + 'px;height:' + t + 'px;display:block;overflow:visible">' + lueurTrait(d, c, 2.4) + '<path d="' + d + '" fill="none" stroke="' + c + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
 function cercleRunes(t, id){
-  var s = '<svg viewBox="-60 -60 120 120" style="width:' + t + 'px;height:' + t + 'px;display:block;overflow:visible;filter:drop-shadow(0 0 4px #8ff3ff) drop-shadow(0 0 10px #3fd0ff)">' +
+  var s = '<svg viewBox="-60 -60 120 120" style="width:' + t + 'px;height:' + t + 'px;display:block;overflow:visible">' +
     '<defs><radialGradient id="' + id + '"><stop offset="0" stop-color="#e8fdff" stop-opacity=".55"/><stop offset=".6" stop-color="#3fd0ff" stop-opacity=".15"/><stop offset="1" stop-color="#3fd0ff" stop-opacity="0"/></radialGradient></defs>' +
-    '<circle r="56" fill="url(#' + id + ')"/><circle r="50" fill="none" stroke="#bff8ff" stroke-width="2.4"/><circle r="40" fill="none" stroke="#8ff3ff" stroke-width="1.4" stroke-dasharray="4 5"/>' +
+    '<circle r="56" fill="url(#' + id + ')"/><circle r="50" fill="none" stroke="#3fd0ff" stroke-width="15" opacity=".12"/><circle r="50" fill="none" stroke="#8ff3ff" stroke-width="8" opacity=".22"/>' +
+    '<circle r="50" fill="none" stroke="#bff8ff" stroke-width="2.4"/><circle r="40" fill="none" stroke="#8ff3ff" stroke-width="1.4" stroke-dasharray="4 5"/>' +
     '<g style="transform-origin:0 0;animation:haTourne 1.6s linear infinite">';
   for(var k = 0; k < 8; k++){ var a = k * 45; s += '<g transform="rotate(' + a + ') translate(0 -45) scale(.42)"><path d="' + RUNES[k % RUNES.length] + '" fill="none" stroke="#e8fdff" stroke-width="3" stroke-linecap="round"/></g>'; }
   s += '</g><g style="transform-origin:0 0;animation:haTourneR 2.4s linear infinite"><path d="M0 -30 L 8 -8 L 30 0 L 8 8 L 0 30 L -8 8 L -30 0 L -8 -8 Z" fill="none" stroke="#e8fdff" stroke-width="2"/><circle r="7" fill="#e8fdff"/></g></svg>';
@@ -2234,7 +2262,7 @@ H._appel = function(scene, a, to){
 H._eclair = function(scene, a, to, opt){
   var L = couche(scene), dist = Math.hypot(to.x - a.x, to.y - a.y), ang = Math.atan2(to.y - a.y, to.x - a.x) * DEG;
   /* le rayon : un trait de lumière qui file */
-  var r = div(L, 'width:' + dist + 'px;height:10px;border-radius:6px;transform-origin:0 50%;background:linear-gradient(90deg,rgba(143,243,255,0),rgba(191,248,255,.9) 70%,#fff);filter:blur(1px);box-shadow:0 0 14px #3fd0ff');
+  var r = div(L, 'width:' + dist + 'px;height:10px;border-radius:6px;transform-origin:0 50%;background:linear-gradient(90deg,rgba(143,243,255,0),rgba(191,248,255,.9) 70%,#fff);box-shadow:0 0 14px #3fd0ff');
   jouerEl(r, [{transform:'translate(' + a.x + 'px,' + (a.y - 5) + 'px) rotate(' + ang + 'deg) scaleX(0) scaleY(1)', opacity:1}, {transform:'translate(' + a.x + 'px,' + (a.y - 5) + 'px) rotate(' + ang + 'deg) scaleX(1) scaleY(1)', opacity:1, offset:.45},
     {transform:'translate(' + a.x + 'px,' + (a.y - 5) + 'px) rotate(' + ang + 'deg) scaleX(1) scaleY(.15)', opacity:0}], {duration:420, easing:'ease-out'});
   var o = div(L, 'width:26px;height:26px;border-radius:50%;background:radial-gradient(circle,#fff 0,#fff 30%,#bff8ff 50%,rgba(63,208,255,0) 72%);box-shadow:0 0 18px #8ff3ff,0 0 34px #3fd0ff');
@@ -2244,7 +2272,8 @@ H._eclair = function(scene, a, to, opt){
     gerbe(L, p.x, p.y, {n:2, c:['#e8fdff', CYAN, '#fff'], angle:ang + 180, ecart:40, v0:20, v1:90, g:0, t0:2.5, t1:4.5, d0:250, d1:450});
   }}).then(function(res){
     o.remove();
-    var st = div(L, 'width:120px;height:120px', '<svg viewBox="-60 -60 120 120" style="width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 6px #8ff3ff) drop-shadow(0 0 16px #3fd0ff)"><path d="M0 -58 L 9 -9 L 58 0 L 9 9 L 0 58 L -9 9 L -58 0 L -9 -9 Z" fill="#e8fdff"/><path d="M0 -34 L 6 -6 L 34 0 L 6 6 L 0 34 L -6 6 L -34 0 L -6 -6 Z" fill="#fff" transform="rotate(45)"/><circle r="10" fill="#fff"/></svg>');
+    var ET8 = 'M0 -58 L 9 -9 L 58 0 L 9 9 L 0 58 L -9 9 L -58 0 L -9 -9 Z';
+    var st = div(L, 'width:120px;height:120px', '<svg viewBox="-60 -60 120 120" style="width:100%;height:100%;overflow:visible">' + lueurRonde('#3fd0ff', 46) + lueurForme(ET8, '#8ff3ff', .45) + '<path d="' + ET8 + '" fill="#e8fdff"/><path d="M0 -34 L 6 -6 L 34 0 L 6 6 L 0 34 L -6 6 L -34 0 L -6 -6 Z" fill="#fff" transform="rotate(45)"/><circle r="10" fill="#fff"/></svg>');
     jouerEl(st, [{transform:place(to.x, to.y, 0, 0.1), opacity:1}, {transform:place(to.x, to.y, 20, 1.1), opacity:1, offset:.3}, {transform:place(to.x, to.y, 45, 1.4), opacity:0}], {duration:560, easing:'ease-out'});
     onde(L, to.x, to.y, {css:'background:radial-gradient(circle,#fff,rgba(191,248,255,.7) 35%,rgba(63,208,255,0) 70%)', w:80, s0:0.3, s1:1.6, d:420});
     onde(L, to.x, to.y, {w:60, c:CYAN, ep:3, s0:0.3, s1:2.8, d:600});
@@ -2297,7 +2326,7 @@ function domeChemin(w, h){
 H._dome = function(L, scene, cible, opt){
   var R = scene.getBoundingClientRect(), k = (R.width / (scene.offsetWidth || R.width)) || 1, r = cible.getBoundingClientRect();
   var w = r.width / k * 0.95, h = r.height / k * 0.92, x = (r.left - R.left) / k + r.width / k / 2, yb = (r.bottom - R.top) / k - 4;
-  var id = 'hdm' + (++uid);
+  var id = 'hdm' + (++uid), figer = !!(window.SALLE && window.SALLE.tempsReel);
   var e = document.createElement('div'); e.className = 'ha-dome';
   e.style.cssText = 'left:' + (x - w / 2) + 'px;top:' + (yb - h) + 'px;width:' + w + 'px;height:' + h + 'px;transform-origin:50% 100%';
   var mot6 = '';
@@ -2306,14 +2335,23 @@ H._dome = function(L, scene, cible, opt){
     '<defs><radialGradient id="' + id + '" cx=".5" cy=".95" r=".9"><stop offset="0" stop-color="#3fd0ff" stop-opacity=".05"/><stop offset=".7" stop-color="#8ff3ff" stop-opacity=".18"/><stop offset="1" stop-color="#e8fdff" stop-opacity=".55"/></radialGradient>' +
     '<pattern id="' + id + 'p" width="12" height="10.4" patternUnits="userSpaceOnUse"><path d="M3 0 L 9 0 L 12 5.2 L 9 10.4 L 3 10.4 L 0 5.2 Z" fill="none" stroke="#bff8ff" stroke-width=".5" opacity=".55"/></pattern></defs>' +
     '<path d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100 Z" fill="url(#' + id + ')"/>' +
-    '<path d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100" fill="none" stroke="#bff8ff" stroke-width="2" style="filter:drop-shadow(0 0 3px #8ff3ff)"/>' +
+    /* (les lueurs du contour et du socle sont dessinées — plus de filtre : RAPIDITE.md R19) */
+    '<path d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100" fill="none" stroke="#8ff3ff" stroke-width="8" opacity=".13"/>' +
+    '<path d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100" fill="none" stroke="#8ff3ff" stroke-width="4.6" opacity=".22"/>' +
+    '<path d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100" fill="none" stroke="#bff8ff" stroke-width="2"/>' +
     '<path d="M-36 30 C -26 14 -14 9 -4 8" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>' +
     '<g opacity=".85">' + mot6 + '</g>' +
-    '<ellipse cx="0" cy="100" rx="52" ry="6" fill="none" stroke="#8ff3ff" stroke-width="2" stroke-dasharray="5 4" style="filter:drop-shadow(0 0 4px #3fd0ff)"/></svg>' +
-    /* le motif d'hexagones qui défile (RAPIDITE.md) : un calque à part, animé en entier ; le dôme, lui, n'est jamais repeint */
-    '<div class="ha-hexs" style="position:absolute;inset:0;overflow:hidden;-webkit-clip-path:path(\'' + domeChemin(w, h) + '\');clip-path:path(\'' + domeChemin(w, h) + '\')">' +
+    '<ellipse cx="0" cy="100" rx="52" ry="6" fill="none" stroke="#3fd0ff" stroke-width="9" opacity=".12"/><ellipse cx="0" cy="100" rx="52" ry="6" fill="none" stroke="#3fd0ff" stroke-width="5" opacity=".2"/>' +
+    '<ellipse cx="0" cy="100" rx="52" ry="6" fill="none" stroke="#8ff3ff" stroke-width="2" stroke-dasharray="5 4"/>' +
+    /* en temps réel (Léo) : les hexagones sont dessinés DANS le dôme, une fois, immobiles — plus de calque découpé qui défile sans fin */
+    (figer ? '<path d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100 Z" fill="url(#' + id + 'p)" opacity=".7"/>' : '') + '</svg>' +
+    /* ailleurs : le motif d'hexagones qui défile (RAPIDITE.md) : un calque à part, animé en entier ; le dôme, lui, n'est jamais repeint */
+    (figer ? '' : '<div class="ha-hexs" style="position:absolute;inset:0;overflow:hidden;-webkit-clip-path:path(\'' + domeChemin(w, h) + '\');clip-path:path(\'' + domeChemin(w, h) + '\')">' +
     '<svg viewBox="-55 0 110 114.4" preserveAspectRatio="none" class="ha-hex" style="position:absolute;left:0;top:0;width:100%;height:' + r1(h * 1.1) + 'px;overflow:visible;will-change:transform">' +
-    '<rect x="-55" y="0" width="110" height="114.4" fill="url(#' + id + 'p)" opacity=".7"/></svg></div>' +
+    '<rect x="-55" y="0" width="110" height="114.4" fill="url(#' + id + 'p)" opacity=".7"/></svg></div>') +
+    /* l'éclat du dôme (quand il encaisse, quand il se brise) : un voile de lumière dont on ne change que l'opacité — avant, un
+       filtre de luminosité sur tout le dôme, recalculé à chaque image */
+    '<div class="ha-dome-eclat" style="position:absolute;left:4%;right:4%;top:3%;bottom:3%;border-radius:50% 50% 0 0 / 82% 82% 0 0;opacity:0;pointer-events:none;background:radial-gradient(ellipse at 50% 62%,rgba(255,255,255,.95),rgba(232,253,255,.5) 55%,rgba(232,253,255,.12) 100%)"></div>' +
     '<div class="ha-badge">🛡️ −' + ((opt && opt.pct) || 75) + ' %' + (opt && opt.sansTour ? '' : ' · 1 tour') + '</div>';     /* (le bouclier arrête 75 % : Romain, 11 novembre) */
   /* LE BOUCLIER JAUNE (Romain, 13 novembre) : celui du bâton normal — 75 %, et il arrête les « contrôles ». Le même dôme, doré.
      (opt.sorte === 'jaune' ; les boucliers du bâton de chêne gardent le bleu des runes.) */
@@ -2324,8 +2362,10 @@ H._dome = function(L, scene, cible, opt){
   L.appendChild(e);
   var svg = e.querySelector('svg');
   e.animate([{transform:'scale(.2,0)', opacity:0}, {transform:'scale(1.08,1.1)', opacity:1, offset:.6}, {transform:'scale(.97,.96)', offset:.8}, {transform:'scale(1,1)', opacity:1}], {duration:520, easing:'ease-out'});
-  var vit = svg.animate([{opacity:.85}, {opacity:1}], {duration:900, iterations:Infinity, direction:'alternate', easing:'ease-in-out'});
-  var hex = e.querySelector('.ha-hex'); hex.animate([{transform:'translateY(0px)'}, {transform:'translateY(' + r1(-10.4 * h / 104) + 'px)'}], {duration:1600, iterations:Infinity});
+  /* (en temps réel : un dôme posé ne bouge plus du tout — rien qui tourne sans fin pendant qu'on se bat : R19) */
+  var vit = figer ? {cancel:function(){}} : svg.animate([{opacity:.85}, {opacity:1}], {duration:900, iterations:Infinity, direction:'alternate', easing:'ease-in-out'});
+  var hex = e.querySelector('.ha-hex'); if(hex) hex.animate([{transform:'translateY(0px)'}, {transform:'translateY(' + r1(-10.4 * h / 104) + 'px)'}], {duration:1600, iterations:Infinity});
+  var eclat = e.querySelector('.ha-dome-eclat');
   scintille(L, x, yb - h * 0.5, {n:12, rx:w * 0.45, ry:h * 0.45, c:['#e8fdff', CYAN], etale:400});
   onde(L, x, yb, {w:w * 1.1, h:20, c:CYAN, ep:3, s0:0.3, s1:1.3, d:700});
   var fini = false;
@@ -2333,7 +2373,7 @@ H._dome = function(L, scene, cible, opt){
     el:e,
     absorber:function(n){
       if(fini) return Promise.resolve();
-      svg.animate([{filter:'brightness(2.2)'}, {filter:'brightness(1)'}], {duration:420, easing:'ease-out'});
+      eclat.animate([{opacity:.75}, {opacity:0}], {duration:420, easing:'ease-out'});
       e.animate([{transform:'scale(1,1)'}, {transform:'scale(1.06,.95)', offset:.25}, {transform:'scale(.98,1.03)', offset:.6}, {transform:'scale(1,1)'}], {duration:420});
       onde(L, x, yb - h * 0.55, {css:'background:radial-gradient(circle,rgba(232,253,255,.8),rgba(143,243,255,0) 70%)', w:w * 0.7, s0:0.3, s1:1.5, d:450});
       gerbe(L, x, yb - h * 0.6, {n:10, c:['#fff', CYAN], v0:60, v1:140, g:100, t0:3, t1:5, d0:300, d1:550});
@@ -2344,7 +2384,8 @@ H._dome = function(L, scene, cible, opt){
       gerbe(L, x, yb - h * 0.5, {n:22, c:['#e8fdff', '#bff8ff', CYAN], forme:'eclat', v0:80, v1:220, g:500, t0:7, t1:13, d0:500, d1:850, lueur:false});
       scintille(L, x, yb - h * 0.5, {n:8, rx:w * 0.4, ry:h * 0.4, c:['#e8fdff', CYAN], etale:200});
       vit.cancel();
-      return e.animate([{transform:'scale(1,1)', opacity:1, filter:'brightness(1)'}, {transform:'scale(1.06,1.04)', opacity:1, filter:'brightness(2)', offset:.25}, {transform:'scale(1.15,.7)', opacity:0, filter:'brightness(1)'}], {duration:380, easing:'ease-in', fill:'forwards'})
+      eclat.animate([{opacity:0}, {opacity:.7, offset:.25}, {opacity:0}], {duration:380, easing:'ease-in'});
+      return e.animate([{transform:'scale(1,1)', opacity:1}, {transform:'scale(1.06,1.04)', opacity:1, offset:.25}, {transform:'scale(1.15,.7)', opacity:0}], {duration:380, easing:'ease-in', fill:'forwards'})
         .finished.then(function(){ e.remove(); });
     }
   };
@@ -2386,8 +2427,8 @@ H._runesLivre = function(){
 };
 H._idee = function(){
   var p = this.rep('tete'), id = 'hid' + (++uid);
-  var e = div(this.fx, 'width:46px;height:56px', '<svg viewBox="-23 -30 46 56" style="width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 6px #8ff3ff) drop-shadow(0 0 14px #3fd0ff)">' +
-    '<defs><radialGradient id="' + id + '"><stop offset="0" stop-color="#fff"/><stop offset=".6" stop-color="#bff8ff"/><stop offset="1" stop-color="#3fd0ff"/></radialGradient></defs>' +
+  var e = div(this.fx, 'width:46px;height:56px', '<svg viewBox="-23 -30 46 56" style="width:100%;height:100%;overflow:visible">' +
+    '<defs><radialGradient id="' + id + '"><stop offset="0" stop-color="#fff"/><stop offset=".6" stop-color="#bff8ff"/><stop offset="1" stop-color="#3fd0ff"/></radialGradient></defs>' + lueurRonde('#3fd0ff', 40, 0, -6) +
     '<path d="M0 -26 C 14 -26 20 -14 18 -4 C 16 4 10 8 9 14 L -9 14 C -10 8 -16 4 -18 -4 C -20 -14 -14 -26 0 -26 Z" fill="url(#' + id + ')" stroke="#24182e" stroke-width="2.6"/>' +
     '<path d="M-8 16 L 8 16 M-7 20 L 7 20 M-4 24 L 4 24" stroke="#e8c062" stroke-width="3" stroke-linecap="round"/>' +
     '<path d="M0 -18 L 0 0" stroke="#24182e" stroke-width="5" stroke-linecap="round"/><circle cx="0" cy="7" r="2.8" fill="#24182e"/>' +

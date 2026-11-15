@@ -172,6 +172,14 @@ function musiqueDesQuePrete(nom){
   MUS.attendue = nom;
   Promise.all(cles.map(function(c){ return PRE.demander(c, true); })).then(function(){ if(MUS.attendue === nom) musique(nom); });
 }
+/* fabriquer une musique à l'avance SANS y passer, et sans attendre que le son soit débloqué par un premier toucher (l'adresse
+   d'essai du combat de Léo : sinon elle se fabriquait au premier toucher, en plein combat). Rend une promesse. */
+function preparerMusique(nom){
+  var cles;
+  if(!PRE.possible) return Promise.resolve();
+  try{ cles = clesDe(nom).filter(function(c){ return !!window.MUSIQUES[c]; }); }catch(e){ return Promise.resolve(); }
+  return Promise.all(cles.map(function(c){ return PRE.demander(c, true); })).catch(function(){});
+}
 function famille(c){ return c.replace(/[A-C]$/, ''); }
 /* la clé d'une musique : son nom s'il n'y en a qu'une (le puits, le fond du donjon), sinon la version choisie */
 function cleMus(f){ return window.MUSIQUES[f] ? f : PRE.cle(f); }
@@ -220,7 +228,9 @@ function enCombat(on){
   if(MUS.combat === on) return;
   MUS.combat = on;
   if(!PRE.possible) return;
-  if(on) setTimeout(function(){ if(MUS.combat) PRE.demander('bruitages'); }, 2500);
+  /* (pas dans un combat en temps réel — Léo : il prépare lui-même ses sons AVANT de commencer (Son.preparerBruits) ; fabriquer
+     ceux-ci 2,5 s après le début lui prenait ses premières secondes — RAPIDITE.md R20) */
+  if(on) setTimeout(function(){ if(MUS.combat && !S.tempsReel) PRE.demander('bruitages'); }, 2500);
   else setTimeout(function(){ if(MUS.combat) return; PRE.sfx = {}; PRE.sfxV = {}; delete PRE.attente.bruitages; }, 9000);
 }
 /* la musique fabriquée en direct (l'ancienne façon : seulement si le navigateur ne sait pas fabriquer à l'avance) */
@@ -402,23 +412,33 @@ function rendreBruitages(){
 function preparerBruits(ids, o){
   if(!PRE.possible || !window.BRUITAGES) return Promise.resolve(0);
   var jeton = ++PRE.fixeJeton, n = 0;
+  ids = ids || [];
+  /* « id:B » : cette version-là exactement (quand le jeu la demande par son nom — la faux de Léo, version B : sinon la version
+     fabriquée n'était pas celle qu'il jouait, et le son se refaisait en direct) */
+  var noms = ids.map(function(x){ return x.split(':')[0]; });
+  PRE.fixeF = PRE.fixeF || {};
   /* o.seuls : on ne garde que cette liste (une nouvelle phase du combat : les sons de la phase d'avant libèrent leur mémoire) */
-  if(o && o.seuls) Object.keys(PRE.fixeV).forEach(function(id){ if(ids.indexOf(id) < 0){ delete PRE.fixe[id + PRE.fixeV[id]]; delete PRE.fixeV[id]; } });
+  if(o && o.seuls){
+    Object.keys(PRE.fixeV).forEach(function(id){ if(noms.indexOf(id) < 0){ delete PRE.fixe[id + PRE.fixeV[id]]; delete PRE.fixeV[id]; } });
+    Object.keys(PRE.fixeF).forEach(function(cle){ if(noms.indexOf(PRE.fixeF[cle]) < 0){ delete PRE.fixe[cle]; delete PRE.fixeF[cle]; } });
+  }
   PRE.fixeEnCours = true;
-  return (ids || []).reduce(function(p, id){
+  return ids.reduce(function(p, x){
     return p.then(function(){
+      var k = x.split(':'), id = k[0];
       if(jeton !== PRE.fixeJeton || !CHOIX[id] || !CHOIX[id].length) return;
-      var v = PRE.fixeV[id] || tire(CHOIX[id]), cle = id + v;
+      var v = k[1] || PRE.fixeV[id] || tire(CHOIX[id]), cle = id + v;
       if(!window.BRUITAGES[cle] || PRE.fixe[cle]) return;
       return rendreUnBruitage(id, v, null, false, true).then(function(y){
         if(jeton !== PRE.fixeJeton) return;
-        PRE.fixeV[id] = v; PRE.fixe[cle] = {buf:y, pan:0}; n++;
+        if(k[1]) PRE.fixeF[cle] = id; else PRE.fixeV[id] = v;
+        PRE.fixe[cle] = {buf:y, pan:0}; n++;
         return new Promise(function(ok){ setTimeout(ok, 30); });           /* (on laisse respirer la page entre deux sons) */
       }, function(){});
     });
   }, Promise.resolve()).then(function(){ if(jeton === PRE.fixeJeton){ PRE.fixeEnCours = false; window.Moteur.oublier(SR_SFX); } return n; });
 }
-function oublierBruits(){ PRE.fixeJeton++; PRE.fixe = {}; PRE.fixeV = {}; PRE.fixeEnCours = false; }
+function oublierBruits(){ PRE.fixeJeton++; PRE.fixe = {}; PRE.fixeV = {}; PRE.fixeF = {}; PRE.fixeEnCours = false; }
 /* la file d'attente : une chose à la fois, la plus urgente d'abord */
 PRE.demander = function(cle, urgent){
   var f = famille(cle);
@@ -808,6 +828,7 @@ S.Son = {
   bruitage:bruitage,
   musique:musique,
   musiqueDesQuePrete:musiqueDesQuePrete,
+  preparerMusique:preparerMusique,
   combat:enCombat,             /* le donjon : un combat commence (true) ou finit (false) — les bruitages lourds sont fabriqués, puis libérés */
   preparer:preparer,
   preparerBruits:preparerBruits, oublierBruits:oublierBruits, bruitsPrets:function(){ return Object.keys(PRE.fixe).length; }, bruitsEnCours:function(){ return !!PRE.fixeEnCours; },
