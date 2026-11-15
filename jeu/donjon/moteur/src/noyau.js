@@ -400,7 +400,9 @@ DJ.potion = function(t){
 
 /* ================= la partie dans le localStorage (recharger la page n'est pas une fuite) ================= */
 var CLE = 'brumeval-donjon-partie';
-DJ.garder = function(partie){ try{ localStorage.setItem(CLE, window.Regles.exporter(partie)); }catch(e){} };
+/* (15 novembre) DJ.essai : un combat lancé tout seul par l'adresse (?combat=…, ?leo=…) ne garde RIEN — avant, l'essai de Léo
+   écrivait par-dessus la descente en cours dans l'appareil, et cette descente était perdue. */
+DJ.garder = function(partie){ if(DJ.essai) return; try{ localStorage.setItem(CLE, window.Regles.exporter(partie)); }catch(e){} };
 DJ.relire = function(){ try{ var t = localStorage.getItem(CLE); return t ? window.Regles.importer(t) : null; }catch(e){ return null; } };
 DJ.oublier = function(){ try{ localStorage.removeItem(CLE); }catch(e){} };
 
