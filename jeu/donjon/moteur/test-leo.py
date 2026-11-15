@@ -14,6 +14,8 @@ Sur une tablette 1024 x 768 au doigt (les règles elles-mêmes sont vérifiées 
   - (14 novembre au soir, Bible §13.40) le nouveau Léo de la phase 2 : ses pièces cuites en images ; la gourde (il boit, le marteau
     la lui fait lâcher : elle se brise, pas de soin) ; la faux (tirée du dos, à deux mains, rangée après) ; la flèche de feu (des
     flammes sur lui) ; la rune de l'œil (ses vraies affaires) ; la cinématique 1 → 2 (la barre descend, la cape, la tunique).
+  - (15 novembre, Bible §13.43) l'adresse courte ?leo=1|2|3 : droit au combat, tout l'équipement ; un essai ne garde rien : la
+    descente en cours dans l'appareil reste intacte ; à la fin, « Rejouer » et un bouton par phase.   (SEUL=adresse : ce seul test)
 Des captures dans captures/."""
 import os, sys
 from playwright.sync_api import sync_playwright
@@ -338,9 +340,39 @@ def test(nav):
     ctx.close()
 
 
+def test_adresse(nav):
+    print('— 13. L\'adresse courte donjon/?leo=3 : droit au combat de fin, et la partie gardée reste là (15 novembre, Bible §13.43)')
+    CLE = 'brumeval-donjon-partie'
+    ctx, pg, errs = ouvrir(nav, '?leo=3')
+    pg.wait_for_timeout(400)
+    e = pg.evaluate("() => { var p = window.PARTIE, D = window.DonjonDonnees; return {phase:DJ.Leo.etat().phase, sage:p.heros.sage.objets.slice().sort(), pisteur:p.heros.pisteur.objets.slice().sort(), potions:p.recettes.length === D.ORDRE_RECETTES.length, vu:p.faits['leo:vu'], essai:!!DJ.essai}; }")
+    verifie(e['phase'] == 3 and e['vu'] == 1 and e['essai'], f'?leo=3 : la phase 3 tout de suite, sans la cinématique d\'entrée ({e})')
+    verifie('baton-chene' in e['sage'] and 'cristal-lune' in e['sage'] and 'fleches-lourdes' in e['pisteur'] and 'fleches-argent' in e['pisteur'] and e['potions'], 'les deux bâtons du Sage, les flèches du Pisteur, toutes les potions')
+    verifie(pg.evaluate("(k) => localStorage.getItem(k)", CLE) is None, 'l\'essai n\'a rien gardé dans l\'appareil')
+    # une descente en cours dans l'appareil : l'essai, gagné jusqu'au bout, ne doit pas y toucher
+    pg.evaluate("(k) => localStorage.setItem(k, 'DESCENTE-EN-COURS')", CLE)
+    pg.wait_for_function("() => DJ.Leo.etat().photo.heros.pisteur.libre", timeout=20000)
+    pg.evaluate("() => { DJ.Leo._E().c.leo.pv = 5; DJ.Leo.agir('pisteur', 'l:faux', 'leo'); }")     # (en phase 3, seule la faux le blesse)
+    pg.wait_for_function("() => DJ.Leo.etat().aveu === 0", timeout=40000); pg.wait_for_timeout(300)
+    for k in range(5):
+        pg.tap('[data-act=l-aveu]', force=True); pg.wait_for_timeout(250)
+    pg.wait_for_function("() => window.RESULTAT === 'victoire'", timeout=10000)
+    verifie(pg.evaluate("() => window.PARTIE.faits['leo:phase']") == 4 and pg.evaluate("(k) => localStorage.getItem(k)", CLE) == 'DESCENTE-EN-COURS', 'Léo battu dans l\'essai : la descente gardée dans l\'appareil est toujours là, intacte')
+    pg.wait_for_selector('#essai-fin .essai-phases button', timeout=8000)
+    b = pg.evaluate("() => [].map.call(document.querySelectorAll('#essai-fin button'), function(x){ return x.textContent; })")
+    verifie(b == ['Rejouer ↻', 'Phase 1', 'Phase 2', 'Phase 3'], f'à la fin de l\'essai : « Rejouer », et un bouton par phase ({b})')
+    pg.screenshot(path=os.path.join(CAP, 'leo-essai-fin.png'))
+    pg.tap('#essai-fin [data-act=essai-phase-2]')
+    pg.wait_for_function("() => location.search === '?leo=2' && window.DJ && DJ.Leo && DJ.Leo.etat() && DJ.Leo.etat().phase === 2 && !DJ.Leo.etat().cine", timeout=90000)
+    verifie(pg.evaluate("(k) => localStorage.getItem(k)", CLE) == 'DESCENTE-EN-COURS', '« Phase 2 » : la phase 2 tout de suite ; la descente gardée n\'a toujours pas bougé')
+    verifie(errs == [], f'aucune erreur {errs[:3]}')
+    ctx.close()
+
+
 with sync_playwright() as p:
     nav = p.chromium.launch()
-    test(nav)
+    if os.environ.get('SEUL') != 'adresse': test(nav)
+    test_adresse(nav)
     nav.close()
 print(f'\n{len(OK)} vérifications réussies' + (f', {len(ERREURS)} échecs' if ERREURS else ' — tout est bon'))
 for e in ERREURS: print('  ✗', e)

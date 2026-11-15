@@ -3160,6 +3160,36 @@ Il n'a plus ni sa faux ni sa gourde (le Pisteur les a prises).
 
 **Reste à faire.** (1) L'essai de Romain. (2) La phase 1 dans le même style (le nouveau pantin sait porter la cape). (3) Les sons fabriqués d'avance (§13.41). (4) L'équilibre des phases 2 et 3 avec les armes et la gourde infinies.
 
+### 13.43 L'adresse d'essai du combat de Léo : `donjon/?leo=1`, `?leo=2`, `?leo=3` — droit au combat de fin, sans toucher à la partie gardée (15 novembre ; demande de Romain à 13 h 01) — CONSTRUIT, VÉRIFIÉ, EN LIGNE (15 novembre, 13 h 18 ; commit 7a7274f du site ; le donjon : version « 15/11 à 13 h 17 » (en bas de « 🎒 Objets ») ; publication de GitHub vérifiée)
+
+**Ce que Romain a dit (15 novembre, 13 h 01).** « Est-ce que tu peux faire en sorte que je puisse tester le combat de fin ? […] je sais pas trop comment tu peux faire, mais faire en sorte que je sois directement au combat de fin. » Puis, à 13 h 02 : « Et mets à jour la Bible aussi. Mets à jour pour que les autres discussions voient ce que tu as fait. »
+
+**Les trois adresses (à coller telles quelles quand Romain demande le lien).**
+- tout le combat, depuis la phase 1 : https://esperidad-tech.github.io/brumeval/donjon/?leo=1
+- droit à la phase 2 (Léo torse nu) : https://esperidad-tech.github.io/brumeval/donjon/?leo=2
+- droit à la phase 3 (Léo sous la potion) : https://esperidad-tech.github.io/brumeval/donjon/?leo=3
+
+**Ce que fait l'adresse.**
+- Le combat s'ouvre **tout de suite**, à la phase demandée, **sans la cinématique d'entrée** (ajouter `&vu=0` pour la revoir). Ensuite tout est comme dans le vrai jeu : les cinématiques entre les phases, la victoire, les cinq phrases de Léo.
+- Les héros ont **tout** : le Sage ses deux bâtons (de lune, de chêne), le Pisteur ses flèches (de lune, transperçantes), l'Alchimiste toutes ses potions.
+- **À la fin** (la victoire, ou quand on choisit « Retour à la carte », dans la pause ou après une défaite) : un bouton jaune « Rejouer ↻ » (la même phase) et trois boutons « Phase 1 », « Phase 2 », « Phase 3 » pour sauter d'une phase à l'autre sans revenir chercher le lien.
+- **Rien n'est gardé dans l'appareil.** Un essai lancé par l'adresse (`?leo=…`, et aussi l'ancienne `?combat=…`) met `DJ.essai`, et `DJ.garder` ne fait alors plus rien : **la descente de l'enquête 3 en cours sur la tablette reste intacte.** Le jeu normal (https://esperidad-tech.github.io/brumeval/donjon/) reprend là où il en était.
+- Ce n'est **pas** un mode pour la famille : aucun bouton du jeu n'y mène, il faut l'adresse.
+
+**Le défaut corrigé au passage.** Avant, l'adresse d'essai de Léo écrivait par-dessus la partie du donjon gardée dans l'appareil (à chaque phase gagnée) : sur une tablette où une descente était en cours, cette descente était perdue. C'était noté comme un piège dans `MOTEUR-DONJON.md` ; ce n'en est plus un.
+
+**Ce que l'essai ne montre pas** (à dire à Romain s'il s'en sert pour juger la difficulté).
+- Les héros de l'essai ont **tout l'équipement** : le combat y est plus facile que pour une équipe qui a raté un bâton, des flèches ou des potions. Pour essayer avec moins, la longue adresse marche toujours : `donjon/?combat=leo&phase=2&vu=1&objets=sage:cristal-lune&potions=feu,huile,baume`.
+- L'essai ne passe pas par **l'arrivée devant Léo dans l'enquête** (la fenêtre du code du Barde, la carte) ni par la fin du donjon (les codes de retour). Pour ça : une vraie descente.
+
+**Décisions de Claude, à faire valider par Romain.** (1) L'adresse courte `?leo=N` plutôt qu'un bouton caché dans le jeu (personne ne tombe dessus par erreur). (2) L'essai saute la cinématique d'entrée. (3) L'essai donne tout l'équipement. (4) Les trois boutons « Phase 1 / 2 / 3 » sur l'écran de fin de l'essai.
+
+**Les fichiers.** `moteur/src/demarrage.js` (`?leo=`, `DJ.essai` dans `essaiLeo` et `essaiCombat`, l'écran de fin et ses boutons `essai-phase-N`, `&vu=0`), `moteur/src/noyau.js` (`DJ.garder` ne fait rien si `DJ.essai`), `moteur/src/donjon.css` (`.essai-phases`), `moteur/test-leo.py` (une section 13 ; `SEUL=adresse python3 test-leo.py` ne lance qu'elle). **Les règles du combat, les dessins, les sons et les codes : rien n'a changé.**
+
+**Vérifié.** `test-leo.py` (76, dont la section 13 : `?leo=3` ouvre la phase 3 avec tout l'équipement ; rien n'est écrit dans l'appareil ; Léo battu dans l'essai, une descente gardée est toujours là, intacte ; les quatre boutons de fin ; « Phase 2 » ouvre la phase 2), `test-donjon.py` (92 : la sauvegarde normale du donjon marche comme avant), `test-leo.js` (172), `test-regles.js` (453). Pas essayé sur un vrai iPhone ni une vraie tablette.
+
+**Reste à faire** (inchangé depuis §13.42). (1) L'essai de Romain, avec ces adresses. (2) La phase 1 dans le même style. (3) Les sons fabriqués d'avance (§13.41). (4) L'équilibre des phases 2 et 3 avec les armes et la gourde infinies. **En attente de Romain** : le temps de recharge du marteau (ou le laisser infini), les héros immobiles entre deux gestes, et, si le jeu quitte encore sur l'iPhone, à quel moment et la dernière ligne de « 🎒 Objets ».
+
 ## 14. La grande carte et la brume (chantier ouvert le 12 novembre) — DANS LE JEU ET EN LIGNE DEPUIS LE 12 NOVEMBRE À 12 H 06 (§14.5) ; depuis l'après-midi, deux zones se lèvent dans l'enquête 3 pour l'Alchimiste (§14.7)
 
 **À lire d'abord : le §14.5** (ce qui est dans le jeu), **puis le §14.7** (les deux premières zones levées). Les §14.1 à §14.4 racontent le modèle du matin ; ils restent vrais pour les lieux, les zones et les questions à décider.
