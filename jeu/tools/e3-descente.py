@@ -339,7 +339,7 @@ def partie_enquete(b):
     pg.locator('#voile [data-act=ds-aller]').click(); pg.wait_for_timeout(300)
     u = vers(pg); j = jeton(pg)
     verifier('entree=puits' in u and 'potions=feu,fumigene,huile,colle,acide,baume,coeur' in u, f'on part par le puits, avec les sept potions ({u[-120:]})')
-    verifier(lieu(pg, 'clocher') == ['cle'], 'toujours pas de crypte au clocher'); fermer(pg)
+    verifier(lieu(pg, 'clocher') == ['cle', 'traces_puits'], 'toujours pas de crypte au clocher (la clé, et les traces jusqu\'au puits)'); fermer(pg)
     # le donjon fini sans avoir trouvé la porte aux quatre signes : un seul code
     donjon_ecrit(pg, 'brumeval-donjon-partie', {'v': 1, 'jeton': j, 'faits': {'code:leo:salle': 1, 'code:leo:battu': 1, 'combat:leo': 1, 'fin': 1}})
     rendre(pg, 900)

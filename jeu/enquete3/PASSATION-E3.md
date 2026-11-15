@@ -1,6 +1,13 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 15 h 05)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 15 h 50)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 15 novembre (15 h 50) : LES TRACES DE MOUSTACHE, DEUXIÈME TOUR, ET LA FORÊT JUSQU'AU PUITS (Bible §13.46) — EN LIGNE (le commit et la version : à la fin du §13.46)
+
+- **Ce qui change dans l'enquête 3** (`e3.js`, le Pisteur) : **la clé d'Anselme ratée** → « Dehors, des miaulements dans la nuit : Moustache file vers la forêt ! » → au clocher, un point nouveau, **« 🐾 Les traces de Moustache »** (`traces_puits`, la nuit) : le même mini-jeu que chez Odette, **dans un monde moitié village, moitié forêt, du pied du clocher au vieux puits ; on n'y perd jamais** (Romain : « sinon on va se retrouver bloqué »), essais infinis → **seulement ensuite, la grille du vieux puits** (avant : tout de suite après la clé ratée). Avec « Le vieux puits » (le code de Tim, chez le Barde), on va au puits tout droit, comme avant. Chez Odette, l'échec dit maintenant « Désolé, tu t'es trompé : ce n'était pas Moustache. Tu n'as pas suivi la bonne trace. »
+- **Le mini-jeu** (les deux versions) : toujours les sept chats ; les flaques barrent la rue ; les traces s'effacent pour de bon entre deux flaques ; les chats qui courent arrivent de plus en plus, effacent et posent leurs traces ; chaque chat a sa voix et appelle du bout de sa fausse piste ; chez Odette, perdu près d'un mauvais chat.
+- **Les codes n'ont pas bougé** (aucun nouveau). `verif.js 3` : la clé ratée mène toujours au puits.
+- **À faire valider par Romain** : les dix décisions du §13.46 (surtout : avoir compris « tu le remplaces par le mini-jeu de l'autre chat » comme « le même mini-jeu, dans la forêt, après la clé ratée »).
 
 ## Nouveau depuis le 15 novembre (15 h 00) : LES CINÉMATIQUES DE LÉO EN VRAIS PETITS FILMS (Bible §13.45) — EN LIGNE (15 novembre, 15 h 00 ; commit 0057583 du site, version 20261115-1359 ; le donjon : version « 15/11 à 14 h 58 » ; publication de GitHub vérifiée)
 

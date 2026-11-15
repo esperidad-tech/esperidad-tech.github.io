@@ -1121,27 +1121,46 @@ function sonsPistage(audio, sortie){
     var s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = buf; f.type = 'highpass'; f.frequency.value = passeHaut || 2400; g.gain.value = vol;
     s.connect(f); f.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + .02);
   }
-  /* un miaulement : une voix un peu nasillarde (dents de scie filtrées) dont la hauteur monte puis retombe */
-  function miaule(t0, f0, f1, f2, duree, vol){
+  /* un miaulement : une voix un peu nasillarde (dents de scie filtrées) dont la hauteur monte puis retombe ; pan : à gauche (−1) ou à
+     droite (1) — d'où vient le cri ; vib : la vitesse du tremblement de la voix ; ff : la « bouche » (le filtre principal) */
+  function miaule(t0, f0, f1, f2, duree, vol, pan, vib, ff, rauque){
     var a = audio(); if(!a) return;
     var t = a.currentTime + t0, o = a.createOscillator(), v = a.createOscillator(), vg = a.createGain(), b1 = a.createBiquadFilter(), b2 = a.createBiquadFilter(), g = a.createGain(), g2 = a.createGain();
-    o.type = 'sawtooth'; o.frequency.setValueAtTime(f0, t); o.frequency.linearRampToValueAtTime(f1, t + duree * .38); o.frequency.linearRampToValueAtTime(f2, t + duree);
-    v.frequency.value = 6.2; vg.gain.value = f1 * .018; v.connect(vg); vg.connect(o.frequency);
-    b1.type = 'bandpass'; b1.Q.value = 3.2; b1.frequency.setValueAtTime(800, t); b1.frequency.linearRampToValueAtTime(1600, t + duree * .4); b1.frequency.linearRampToValueAtTime(900, t + duree);
-    b2.type = 'bandpass'; b2.Q.value = 5; b2.frequency.setValueAtTime(2500, t);
+    o.type = rauque ? 'square' : 'sawtooth'; o.frequency.setValueAtTime(f0, t); o.frequency.linearRampToValueAtTime(f1, t + duree * .38); o.frequency.linearRampToValueAtTime(f2, t + duree);
+    v.frequency.value = vib || 6.2; vg.gain.value = f1 * (rauque ? .03 : .018); v.connect(vg); vg.connect(o.frequency);
+    var F = ff || 1;
+    b1.type = 'bandpass'; b1.Q.value = 3.2; b1.frequency.setValueAtTime(800 * F, t); b1.frequency.linearRampToValueAtTime(1600 * F, t + duree * .4); b1.frequency.linearRampToValueAtTime(900 * F, t + duree);
+    b2.type = 'bandpass'; b2.Q.value = 5; b2.frequency.setValueAtTime(2500 * F, t);
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .06); g.gain.setValueAtTime(vol, t + duree * .7); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
-    g2.gain.value = .35;
-    o.connect(b1); o.connect(b2); b2.connect(g2); g2.connect(g); b1.connect(g); g.connect(sortie(a));
+    g2.gain.value = rauque ? .2 : .35;
+    o.connect(b1); o.connect(b2); b2.connect(g2); g2.connect(g); b1.connect(g);
+    var fin = sortie(a);
+    if(pan && a.createStereoPanner){ var p = a.createStereoPanner(); p.pan.value = Math.max(-1, Math.min(1, pan)); g.connect(p); p.connect(fin); } else g.connect(fin);
     o.start(t); v.start(t); o.stop(t + duree + .05); v.stop(t + duree + .05);
   }
   function v(x){ return x == null ? 1 : Math.max(0, Math.min(1, x)); }
+  /* LA VOIX DE CHACUN DES SEPT CHATS (Romain, 14 h 26 : « tu les fais tous miauler un peu différemment ») : départ, sommet, fin (Hz),
+     durée (s), force, vibrato, bouche, rauque ; deux cris par chat (A, puis B une fois sur trois) */
+  var VOIX = {
+    moustache:[[430, 660, 380, .78, .13, 5.2, .92], [470, 700, 520, .55, .12, 5.2, .92]],      /* le gros gris : grave, long, « mraaaou » */
+    biscotte:[[880, 1180, 980, .3, .1, 8, 1.3], [940, 1240, 1100, .22, .09, 8, 1.3]],           /* la toute petite : « mi ! » aigu et court */
+    pompon:[[620, 860, 560, .62, .12, 6, 1.08], [600, 800, 640, .48, .11, 6, 1.08]],             /* le gros blanc : rond, doux */
+    caramel:[[520, 740, 430, .58, .13, 7.5, 1, 1], [560, 760, 470, .42, .12, 7.5, 1, 1]],      /* le rouquin : éraillé */
+    mistigri:[[480, 620, 780, .5, .12, 5.6, .96], [500, 600, 820, .4, .11, 5.6, .96]],           /* le noir : « mrrou ? » qui monte, comme une question */
+    noisette:[[560, 820, 470, .66, .12, 6.4, 1.02], [540, 760, 500, .5, .11, 6.4, 1.02]],        /* la brune : « miaou » bien net */
+    grisette:[[720, 980, 640, 1.02, .1, 4.4, 1.16], [700, 920, 600, .8, .1, 4.4, 1.16]]          /* la fine : long et plaintif */
+  };
+  function chat(id, k, x, pan){ var V2 = VOIX[id] || VOIX.moustache, c = V2[k] || V2[0]; miaule(0, c[0], c[1], c[2], c[3], c[4] * v(x), pan, c[5], c[6], c[7]); }
   return {
+    /* un chat qui appelle : miaou(id, volume, pan) — le jeu ; les boutons de l'Atelier : m_moustache, m_biscotte… */
+    miaou:function(id, x, pan){ chat(id, Math.random() < .34 ? 1 : 0, x, pan); },
+    m_moustache:function(x){ chat('moustache', 0, x); }, m_biscotte:function(x){ chat('biscotte', 0, x); }, m_pompon:function(x){ chat('pompon', 0, x); },
+    m_caramel:function(x){ chat('caramel', 0, x); }, m_mistigri:function(x){ chat('mistigri', 0, x); }, m_noisette:function(x){ chat('noisette', 0, x); },
+    m_grisette:function(x){ chat('grisette', 0, x); },
+    hibou:function(x){ x = v(x); tendre(400, 0, .34, .05 * x, 370, .05, 'sine', 900); tendre(392, .5, .2, .03 * x, 380, .03, 'sine', 900); tendre(400, .74, .62, .05 * x, 330, .06, 'sine', 900); },   /* hou… hou-houuu */
     plouf:function(x){ x = v(x); souffle(0, .2, .05 * x, 1500, 380, .7, 'lowpass'); tendre(620, .01, .12, .03 * x, 240, .005); tendre(1300, .06, .05, .012 * x, 700, .003); tendre(980, .11, .05, .01 * x, 520, .003); },   /* un pied dans la flaque */
     floc:function(x){ x = v(x); souffle(0, .16, .055 * x, 500, 160, 1.2); tendre(150, .02, .14, .05 * x, 85, .01, 'triangle', 420); tendre(240, .1, .06, .02 * x, 120, .005, 'triangle', 600); },                /* un pied dans la boue */
     pouf:function(x){ x = v(x); souffle(0, .34, .03 * x, 3200, 1100, .6); grains(.02, .22, .012 * x, 22, 3500); },                                                                                                    /* un pied dans la farine */
-    miaouA:function(x){ miaule(0, 520, 780, 430, .62, .13 * v(x)); },                       /* « mi-aou » */
-    miaouB:function(x){ miaule(0, 600, 860, 520, .95, .11 * v(x)); },                       /* un long miaulement plaintif */
-    miaouC:function(x){ miaule(0, 470, 640, 700, .48, .12 * v(x)); },                       /* « mrraou ? » : il se demande */
     fuite:function(x){ x = v(x); for(var i = 0; i < 6; i++) tendre(420 + Math.random() * 120, i * .055, .03, .025 * x, 240, .002, 'triangle', 1400); miaule(.36, 700, 520, 380, .26, .04 * x); },   /* il file entre les barreaux */
     course:function(x){ x = v(x); for(var i = 0; i < 9; i++){ tendre(320 + (i % 2) * 70, i * .07, .028, .018 * x, 200, .002, 'triangle', 1100); } souffle(0, .6, .006 * x, 1800, 900, .9); },   /* un chat qui passe en courant */
     pigeons:function(x){ x = v(x); for(var i = 0; i < 12; i++) souffle(i * .045, .04, .045 * x, 1600 + Math.random() * 500, 900, 1.4); tendre(330, .02, .2, .02 * x, 290, .03); }                       /* les pigeons s'envolent */
@@ -5065,7 +5084,8 @@ if(mj) mj.sous.push(section);
    EXTRAITS.pistage) : ce qu'on entend ici est ce qu'on entend dans le mini-jeu.
    Ils sont NEUFS : Romain ne les a pas encore écoutés. Ils sont donc marqués 🆕 (neuf:1), pas ✅ ;
    il coche ceux qu'il garde, et touche 🔁 « à refaire » sur ceux qu'il veut changer.
-   (Le jeu tire un des trois miaulements au hasard ; il les joue plus ou moins fort selon la distance.) */
+   (15 novembre, 14 h 26 : « tu les fais tous miauler un peu différemment » — une voix par chat, au lieu des trois miaulements de
+   Moustache ; le jeu les joue plus ou moins fort selon la distance, à gauche ou à droite. Et le hibou de la forêt.) */
 (function(G){
 'use strict';
 var X = G.EXISTANTS = G.EXISTANTS || {}, E = G.EXTRAITS || {};
@@ -5073,8 +5093,9 @@ function pistage(nom, duree){ return {chemin:'jeu', duree:duree, joue:function(J
 function liste(l){ return l.map(function(e){ X['pg_' + e[0]] = pistage(e[0], e[2]); return {id:'pg_' + e[0], t:e[1], x:1, neuf:1}; }); }
 var section = {id:'mj-pistage', titre:'Traces de Moustache', sous:[
   {id:'pistage-pas', titre:'Pieds du Pisteur', sons:liste([['plouf', 'Dans une flaque', .25], ['floc', 'Dans la boue', .2], ['pouf', 'Dans la farine', .35]])},
-  {id:'pistage-chats', titre:'Les chats', sons:liste([['miaouA', 'Moustache miaule A', .65], ['miaouB', 'Moustache miaule B', 1], ['miaouC', 'Moustache miaule C', .5],
-    ['fuite', 'Moustache file', .65], ['course', 'Un chat passe', .65], ['pigeons', 'Les pigeons s’envolent', .6]])}
+  {id:'pistage-chats', titre:'Les sept chats', sons:liste([['m_moustache', 'Moustache', .8], ['m_biscotte', 'Biscotte', .35], ['m_pompon', 'Pompon', .65], ['m_caramel', 'Caramel', .6],
+    ['m_mistigri', 'Mistigri', .55], ['m_noisette', 'Noisette', .7], ['m_grisette', 'Grisette', 1.05]])},
+  {id:'pistage-autres', titre:'Rues et forêt', sons:liste([['fuite', 'Moustache file', .65], ['course', 'Un chat passe', .65], ['pigeons', 'Les pigeons s’envolent', .6], ['hibou', 'Le hibou', 1.4]])}
 ]};
 var mj = (G.CATALOGUE || []).filter(function(s){ return s.id === 'mj'; })[0];
 if(mj) mj.sous.push(section);
