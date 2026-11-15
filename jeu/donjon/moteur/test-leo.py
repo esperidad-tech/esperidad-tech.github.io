@@ -159,7 +159,7 @@ def test(nav):
     pg.tap('#leo-cine [data-act=l-passer]', force=True)
     pg.wait_for_function("() => DJ.Leo.etat().phase === 3 && !DJ.Leo.etat().cine", timeout=30000); pg.wait_for_timeout(300)
     e = pg.evaluate("() => { var p = DJ.Leo.etat().photo; return [p.leo.pv, p.armes, window.PARTIE.faits['leo:phase']]; }")
-    verifie(e == [3000, {'faux': 3, 'gourde': 3}, 3], f'phase 3 : 3 000 points de vie ; le Pisteur ramasse la faux et la gourde ; c\'est gardé ({e})')
+    verifie(e == [3000, {'marteau': 3, 'faux': 3, 'gourde': 3}, 3], f'phase 3 : 3 000 points de vie ; le Pisteur ramasse la faux et la gourde, et garde le marteau ; c\'est gardé ({e})')
     pg.evaluate("() => DJ.Leo.agir('pisteur', 'dague', 'leo')"); pg.wait_for_timeout(1000)
     verifie(pg.evaluate("() => DJ.Leo.etat().photo.leo.pv") == 3000, 'la dague ne lui fait plus rien (« Insensible ! »)')
     pg.wait_for_function("() => DJ.Leo.etat().photo.heros.pisteur.libre", timeout=20000); soigner(pg)
@@ -369,10 +369,87 @@ def test_adresse(nav):
     ctx.close()
 
 
+def test_phase3(nav):
+    print('— 14. La phase 3 après l\'essai de Romain (15 novembre, 13 h 54, Bible §13.44) : la rafale comptée, le cri et le marteau, il attrape, la charge')
+    ctx, pg, errs = ouvrir(nav, '?leo=3&graine=7')
+    pg.wait_for_timeout(400)
+    def forcer(att):
+        pg.evaluate("""(att) => { var c = DJ.Leo._E().c; clearInterval(window.__f); ['sage', 'alchimiste', 'pisteur'].forEach(function(h){ var S = c.h[h]; S.pv = S.pvMax; S.sol = false; S.etourdi = 0; S.brule = 0; S.act = null; S.bouclier = null; });
+          window.__f = setInterval(function(){ var e = DJ.Leo._E(); if(e && e.c.leo.etape === 'repos') e.c.leo.k = LeoRegles.L.ORDRE[3].indexOf(att) - 1; }, 40); }""", att)
+        pg.wait_for_function("(a) => { var Z = DJ.Leo._E().c.leo; return Z.att === a && Z.etape === 'prise'; }", arg=att, timeout=40000)
+    def etape(att, et, t=30000):
+        pg.wait_for_function("(a) => { var Z = DJ.Leo._E().c.leo; return Z.att === a[0] && Z.etape === a[1]; }", arg=[att, et], timeout=t)
+    pg.evaluate("() => { DJ.Leo._E().c.vu = true; }")
+    pg.wait_for_function("() => SALLE.Son.bruitsEnCours && !SALLE.Son.bruitsEnCours()", timeout=90000)
+    nb = pg.evaluate("() => SALLE.Son.bruitsPrets()")
+    verifie(nb >= 15, f'les sons du combat sont fabriqués à l\'avance ({nb} sons prêts)')
+    c3 = pg.evaluate("() => [].map.call(document.querySelectorAll('#bande .lb-g[data-h=pisteur] .carte'), function(c){ return c.getAttribute('data-id'); })")
+    verifie(c3 == ['l:faux', 'l:gourde', 'l:marteau', 'p:givre', 'p:huile'], f'la rangée du Pisteur en phase 3 : la faux, la gourde, le marteau, le givre, l\'huile ({c3})')
+    # la rafale : le bouclier jaune pare trois coups ; l'annonce compte les seize coups ; plus aucun filtre sur le héros frappé
+    forcer('rafale')
+    pg.tap('#bande .carte[data-h=sage][data-id=bouclier]', force=True)
+    etape('rafale', 'coups')
+    pg.wait_for_function("() => DJ.Leo._E().c.leo.coup >= 2", timeout=8000)
+    pg.tap('#bande .carte[data-h=pisteur][data-id="l:gourde"]', force=True)
+    pg.wait_for_function("() => DJ.Leo._E().c.leo.coup >= 7", timeout=8000)
+    r = pg.evaluate("""() => { var E = DJ.Leo._E(), h = E.c.leo.cibles[0], a = document.querySelector('.lp-annonce'), H = E.A.h[h];
+      return {texte:a ? a.querySelector('span').textContent : '', rouge:!!a && a.classList.contains('coups'), coup:E.c.leo.coup, filtre:getComputedStyle(H.svg).filter, anims:H.svg.getAnimations().length, lueur:!!H._coup,
+        etincelles:document.querySelectorAll('.etincelle-fx').length, eclats:document.querySelectorAll('.lp-eclat-r').length}; }""")
+    verifie(r['rouge'] and r['texte'].endswith('/ 16') and abs(int(r['texte'].split(' ')[0]) - r['coup']) <= 1, f'pendant la rafale, l\'annonce compte les coups : « {r["texte"]} »')
+    verifie(r['filtre'] == 'none' and r['anims'] == 0 and r['lueur'], f'le héros frappé : plus de filtre sur lui, une lueur à la place ({r["filtre"]}, {r["anims"]} animation sur lui)')
+    verifie(r['etincelles'] == 0 and r['eclats'] == 1, f'un coup de la rafale ne fabrique plus rien : un seul éclat, relancé, aucune étincelle ({r})')
+    pg.screenshot(path=os.path.join(CAP, 'leo-3-rafale.png'))
+    etape('rafale', 'retour', 15000)
+    r = pg.evaluate("() => { var E = DJ.Leo._E(), h = E.c.leo.cibles[0] || 'sage'; return {coup:E.c.leo.coup, debout:['sage', 'alchimiste', 'pisteur'].every(function(x){ return !E.c.h[x].sol; })}; }")
+    verifie(r['coup'] == 16 and r['debout'], f'le bouclier jaune dès l\'annonce, la gourde juste après le premier coup : les seize coups passent, tout le monde est debout ({r})')
+    # le cri : le marteau le coupe
+    forcer('hurlement')
+    pg.tap('#bande .carte[data-h=pisteur][data-id="l:marteau"]', force=True)
+    pg.wait_for_function("() => { var Z = DJ.Leo._E().c.leo; return Z.etape === 'sonne' || (Z.att === 'hurlement' && Z.etape === 'retour'); }", timeout=10000)
+    r = pg.evaluate("() => { var c = DJ.Leo._E().c; return [c.leo.etape, ['sage', 'alchimiste', 'pisteur'].filter(function(h){ return c.h[h].etourdi > c.t; }).length]; }")
+    verifie(r == ['sonne', 0], f'le cri : un coup de marteau pendant qu\'il se prépare le coupe, personne n\'est étourdi ({r})')
+    forcer('hurlement'); etape('hurlement', 'retour', 12000)
+    r = pg.evaluate("() => { var c = DJ.Leo._E().c; return ['sage', 'alchimiste', 'pisteur'].filter(function(h){ return c.h[h].etourdi > c.t + 5; }).length; }")
+    verifie(r == 3, f'le cri sans marteau : les trois héros sont étourdis pour longtemps ({r})')
+    # il attrape : le héros est porté par sa main, « IL VA FRAPPER », puis les deux perdent 90 % de leur vie
+    forcer('attrape'); etape('attrape', 'porte')
+    pg.wait_for_function("() => DJ.Leo._E().p2.X.k > .45", timeout=8000)
+    r = pg.evaluate("""() => { var E = DJ.Leo._E(), Z = E.c.leo, s = document.querySelector('.h-' + Z.tenu), m = new DOMMatrix(getComputedStyle(s).transform), a = document.querySelector('.lp-annonce span');
+      return {pris:Z.tenu, autre:Z.autre, haut:Math.round(m.f), cote:Math.round(m.e), texte:a ? a.textContent : '', pv:[E.c.h[Z.tenu].pv, E.c.h[Z.tenu].pvMax]}; }""")
+    verifie(r['haut'] < -40 and r['cote'] > 100 and r['texte'] == 'IL VA FRAPPER' and r['pv'][0] == r['pv'][1], f'il attrape : le héros est soulevé et porté jusqu\'à Léo, sans dégât ; l\'annonce dit « IL VA FRAPPER » ({r})')
+    pris, autre = r['pris'], r['autre']
+    pg.screenshot(path=os.path.join(CAP, 'leo-3-porte.png'))
+    etape('attrape', 'retour', 8000); pg.wait_for_timeout(250)
+    pg.screenshot(path=os.path.join(CAP, 'leo-3-frappe.png'))
+    pg.wait_for_timeout(1100)
+    r = pg.evaluate("""(l) => { var c = DJ.Leo._E().c; return l.map(function(h){ var S = c.h[h], s = document.querySelector('.h-' + h); return [S.pv, S.pvMax, S.sol, getComputedStyle(s).transform]; }); }""", [pris, autre])
+    verifie(all(x[0] == x[1] - int(x[1] * .9) and not x[2] for x in r), f'il frappe le second avec le premier : chacun perd 90 % de sa vie, ils restent debout ({[x[:3] for x in r]})')
+    verifie(all(x[3] in ('none', 'matrix(1, 0, 0, 1, 0, 0)') for x in r), 'les deux héros ont retrouvé leur place')
+    # la charge : mortelle sans huile
+    forcer('charge'); etape('charge', 'retour', 15000)
+    r = pg.evaluate("() => { var c = DJ.Leo._E().c; return ['sage', 'alchimiste', 'pisteur'].filter(function(h){ return c.h[h].sol; }).length; }")
+    verifie(r == 1, f'la charge de la phase 3, sans huile : le héros percuté tombe ({r})')
+    forcer('charge')
+    pg.tap('#bande .carte[data-h=alchimiste][data-id="p:huile"]', force=True)
+    pg.wait_for_function("() => { var Z = DJ.Leo._E().c.leo; return Z.etape === 'sol' || (Z.att === 'charge' && Z.etape === 'retour'); }", timeout=15000)
+    r = pg.evaluate("() => { var c = DJ.Leo._E().c; return [c.leo.etape, ['sage', 'alchimiste', 'pisteur'].filter(function(h){ return c.h[h].sol; }).length]; }")
+    verifie(r == ['sol', 0], f'… avec l\'huile lancée dès l\'annonce : il glisse, personne ne tombe ({r})')
+    # la gourde : trois secondes
+    pg.evaluate("() => { clearInterval(window.__f); var c = DJ.Leo._E().c; c.leo.fin += 30; ['sage', 'alchimiste', 'pisteur'].forEach(function(h){ var S = c.h[h]; S.pv = S.pvMax; S.sol = false; S.etourdi = 0; S.act = null; }); c.h.sage.pv = 20; }")
+    pg.tap('#bande .carte[data-h=pisteur][data-id="l:gourde"]', force=True)
+    pg.wait_for_timeout(2300); avant = pg.evaluate("() => DJ.Leo._E().c.h.sage.pv")
+    pg.wait_for_timeout(1300); apres = pg.evaluate("() => DJ.Leo._E().c.h.sage.pv")
+    verifie(avant == 20 and apres == 90, f'la gourde volée : trois secondes avant de faire son effet ({avant} puis {apres})')
+    verifie(errs == [], f'aucune erreur {errs[:3]}')
+    ctx.close()
+
+
 with sync_playwright() as p:
     nav = p.chromium.launch()
-    if os.environ.get('SEUL') != 'adresse': test(nav)
-    test_adresse(nav)
+    seul = os.environ.get('SEUL')
+    if not seul: test(nav)
+    if not seul or seul == 'adresse': test_adresse(nav)
+    if not seul or seul == 'phase3': test_phase3(nav)
     nav.close()
 print(f'\n{len(OK)} vérifications réussies' + (f', {len(ERREURS)} échecs' if ERREURS else ' — tout est bon'))
 for e in ERREURS: print('  ✗', e)

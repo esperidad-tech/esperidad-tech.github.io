@@ -58,7 +58,7 @@ function essaiLeo(P){
   (P.objets || '').split(',').forEach(function(x){ var k = x.split(':'); if(k.length === 2 && partie.heros[k[0]] && D.OBJETS[k[1]]) partie.heros[k[0]].objets.push(k[1]); });
   if(P.vu && P.vu !== '0') partie.faits['leo:vu'] = 1;    /* (&vu=0 : avec la cinématique d'entrée) */
   window.PARTIE = partie;
-  DJ.passage('La dernière salle', function(){ return DJ.Leo.preparer(); }).then(function(){ return DJ.Leo.lancer(partie, {phase:+P.phase || 1, vite:+P.leovite || 1}); }).then(function(res){
+  DJ.passage('La dernière salle', function(){ return DJ.Leo.preparer(+P.phase || 1); }).then(function(){ return DJ.Leo.lancer(partie, {phase:+P.phase || 1, vite:+P.leovite || 1}); }).then(function(res){
     window.RESULTAT = res;
     var jeu = q('#jeu'); jeu.innerHTML = '';
     var e = el('div', 'ecran'); e.id = 'essai-fin';
