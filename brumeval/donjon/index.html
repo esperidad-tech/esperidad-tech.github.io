@@ -3778,6 +3778,169 @@ S.leoJetteA = function(A, P){
 })(window);
 
 
+/* ===== essai/sons/cine.js ===== */
+/* Atelier des sons de Brumeval — LES CINÉMATIQUES (Bible §13.45 ; 15 novembre). La vidéo des cinématiques est muette : le jeu
+   joue ces bruitages à l'instant dit (la liste « sons » de chaque film, jeu/cine/src/films.js), au volume des réglages.
+   Tous NEUFS (🆕) : une seule version (A) chacun, que le jeu joue en attendant que Romain les écoute dans l'Atelier.
+   Mêmes règles que leo.js : une fonction (A : le moteur, P : la prise, P.t : l'instant de départ) qui rend {duree}. */
+(function(G){
+'use strict';
+var S = G.BRUITAGES;
+function h(a, b){ return a + Math.random() * (b - a); }
+function bus(A, P, pan, rev){ return A.bus(P, {rev:rev == null ? .5 : rev, grotte:.4, pan:pan == null ? 0 : pan}); }
+function fouet(A, t, d, o, dest){
+  o = o || {};
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:o.f || 500, pts:[[d, o.f2 || 2200]], q:o.q || 1.4}], env:[[0, 0], [d * .55, 1], [d, 0]], g:o.g == null ? 1 : o.g}, dest);
+}
+function voix(A, t, d, o, dest){
+  o = o || {};
+  var f = o.f || 110, env = o.env || [[0, 0], [.05, 1], [d * .7, .85], [d, 0]], g = o.g == null ? .3 : o.g;
+  A.ton(t, {type:'sawtooth', f:f, f2:f * (o.chute || .8), gl:d, env:env, g:g, gigue:o.gigue || 14, trem:[o.rr || 24, o.tr == null ? .8 : o.tr], sat:o.sat || 2,
+    filtres:[{type:'peaking', f:o.f1 || 600, q:1.3, gain:8}, {type:'peaking', f:o.f2 || 1300, q:2, gain:5}, {type:'lowpass', f:o.lp || 2400, q:.7}]}, dest);
+  A.bruit(t, {bp:o.fb || 900, bq:1, env:env, g:g * (o.souffle == null ? .9 : o.souffle), rugueux:.8, rugVit:6}, dest);
+}
+function souffle(A, t, d, g, f, dest){ A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:f || 700, q:.9}], env:[[0, 0], [d * .3, 1], [d, 0]], g:g}, dest); }
+function fer(A, t, f, g, dest){ [1, 2.76, 5.4].forEach(function(m, k){ A.ton(t, {f:f * m, env:[[0, 0], [.003, 1], [.5 - k * .12, 0]], g:(g || .12) / (k + 1)}, dest); }); }
+function bois(A, t, o, dest){ o = o || {}; A.choc(t, {f:o.f || 240, f2:o.f2 || 90, d:o.d || .16, g:o.g == null ? .7 : o.g, sat:3, corps:1.8, corpsF:o.cf || 620}, dest); }
+function lourd(A, t, g, dest){ A.choc(t, {f:110, f2:38, d:.32, g:g == null ? .8 : g, sat:3, corps:1.8, corpsF:240}, dest); A.bruit(t, {coul:'brun', filtres:[{type:'lowpass', f:600}], env:A.perc(.004, .25), g:.3 * (g || .8)}, dest); }
+
+/* les outils qui tombent sur la pierre (le fléau, le marteau, le crochet) */
+S.cineOutilsA = function(A, P){
+  var t = P.t, o = bus(A, P, h(-.3, .3), .45);
+  bois(A, t, {f:300, f2:120, g:.75, d:.12, cf:900}, o); fer(A, t + .01, h(780, 980), .1, o);
+  bois(A, t + .11, {f:260, f2:100, g:.45, d:.1}, o); fer(A, t + .12, h(1100, 1300), .05, o);
+  A.joue(t + .02, A.crepitement(.25, 40), {g:.35, filtres:[{type:'highpass', f:1800}]}, o);
+  return {duree:1.2};
+};
+/* il souffle fort (trois grandes respirations) */
+S.cineSouffleA = function(A, P){
+  var t = P.t, o = bus(A, P, .1, .35);
+  for(var k = 0; k < 3; k++){
+    souffle(A, t + k * 1.1, .45, .55, 900, o);              /* il inspire */
+    souffle(A, t + k * 1.1 + .48, .55, .7, 520, o);          /* il expire */
+    voix(A, t + k * 1.1 + .5, .4, {f:95, chute:.85, g:.06, tr:.2, souffle:1.6}, o);
+  }
+  return {duree:3.6};
+};
+/* un grognement sourd */
+S.cineGrogneA = function(A, P){
+  var t = P.t, o = bus(A, P, .1, .6);
+  voix(A, t, 1.3, {f:72, chute:.92, g:.36, rr:17, tr:.95, sat:3, f1:420, f2:900, lp:1600}, o);
+  return {duree:2};
+};
+/* un pas lourd */
+S.cinePasA = function(A, P){ var t = P.t, o = bus(A, P, .1, .5); lourd(A, t, .7, o); A.joue(t + .02, A.crepitement(.12, 30), {g:.25, filtres:[{type:'bandpass', f:2400}]}, o); return {duree:1}; };
+/* la cape qui s'envole (un grand claquement de tissu) */
+S.cineCapeA = function(A, P){
+  var t = P.t, o = bus(A, P, .5, .4);
+  fouet(A, t, .32, {f:300, f2:1600, g:1.1}, o);
+  for(var k = 0; k < 7; k++) A.bruit(t + .25 + k * .09, {coul:'rose', filtres:[{type:'bandpass', f:h(500, 900), q:1.6}], env:A.perc(.01, .08), g:.5 * (1 - k / 8)}, bus(A, P, .5 + k * .06, .4));
+  return {duree:1.4};
+};
+/* l'onde de choc : un grand coup sourd, la salle qui gronde, des cailloux qui retombent */
+S.cineOndeA = function(A, P){
+  var t = P.t, o = bus(A, P, 0, .7);
+  A.choc(t, {f:80, f2:26, d:.9, g:1.2, sat:4, corps:2, corpsF:180}, o);
+  A.bruit(t, {coul:'brun', filtres:[{type:'lowpass', f:180}], env:[[0, 0], [.08, 1], [2.2, 0]], g:.9, rugueux:.6, rugVit:4}, o);
+  A.joue(t + .35, A.crepitement(1.4, 70), {g:.4, filtres:[{type:'bandpass', f:2600, q:.7}]}, bus(A, P, .4, .5));
+  return {duree:2.8};
+};
+/* il s'essuie la bouche d'un revers de poignet */
+S.cineEssuieA = function(A, P){ var t = P.t, o = bus(A, P, .2, .2); fouet(A, t, .28, {f:1200, f2:2600, q:.8, g:.35}, o); return {duree:.6}; };
+/* il recrache le bouchon */
+S.cineCracheA = function(A, P){
+  var t = P.t, o = bus(A, P, -.3, .35);
+  A.bruit(t, {filtres:[{type:'bandpass', f:1400, q:1.2}], env:A.perc(.005, .09), g:.6}, o);
+  A.ton(t + .02, {f:260, f2:140, gl:.08, env:A.perc(.004, .07), g:.12}, o);
+  [.45, .62, .74].forEach(function(d, k){ bois(A, t + d, {f:900 - k * 80, f2:600, g:.18 - k * .04, d:.04, cf:2400}, bus(A, P, -.6, .35)); });
+  return {duree:1.2};
+};
+/* le cœur qui cogne (deux fois deux coups) */
+S.cineCoeurA = function(A, P){
+  var t = P.t, o = bus(A, P, 0, .25);
+  [0, .26, .9, 1.16].forEach(function(d, k){ A.choc(t + d, {f:62, f2:34, d:.22, g:k % 2 ? .55 : .8, corps:1.4, corpsF:120}, o); });
+  return {duree:2};
+};
+/* la potion monte : un souffle qui grimpe, un grondement, jusqu'à l'éclair */
+S.cineMonteeA = function(A, P){
+  var t = P.t, o = bus(A, P, 0, .6), d = 1.3;
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:200, pts:[[d, 4200]], q:1.1}], env:[[0, 0], [d * .9, 1], [d, 0]], g:1}, o);
+  A.ton(t, {type:'sawtooth', f:60, f2:240, gl:d, env:[[0, 0], [d * .8, 1], [d, 0]], g:.16, lp:900, sat:3}, o);
+  A.choc(t + d, {f:140, f2:40, d:.8, g:1, sat:4, corps:2, corpsF:300}, o);
+  A.ton(t + d, {f:1760, f2:1700, gl:1, env:[[0, 0], [.01, 1], [1.4, 0]], g:.08, vib:[5, 12]}, o);
+  return {duree:2.8};
+};
+/* il s'effondre : les genoux, puis les mains */
+S.cineChuteA = function(A, P){ var t = P.t, o = bus(A, P, .1, .5); lourd(A, t, .55, o); lourd(A, t + .32, .4, o); souffle(A, t + .05, .5, .4, 600, o); return {duree:1.4}; };
+/* des pas qui descendent, au loin (l'écho de l'escalier) */
+S.cinePasEchoA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.85, grotte:.8, pan:.7});
+  for(var k = 0; k < 4; k++) A.pas(t + k * .42, {f:h(95, 120), bp:h(1300, 1800), g:.22 + k * .06}, o);
+  return {duree:2.6};
+};
+/* la lanterne qui grince en se balançant */
+S.cineLanterneA = function(A, P){
+  var t = P.t, o = bus(A, P, .6, .5);
+  [0, .55, 1.1].forEach(function(d, k){ A.ton(t + d, {type:'triangle', f:1450 + k * 60, f2:1180, gl:.32, env:[[0, 0], [.04, 1], [.35, 0]], g:.05, vib:[9, 25]}, o); });
+  fer(A, t + .2, 1900, .03, o);
+  return {duree:1.8};
+};
+/* un pas sur une marche de pierre (plus clair, plus d'écho) */
+S.cinePasEscalierA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.6, grotte:.6, pan:.5});
+  A.pas(t, {f:h(110, 135), bp:h(1700, 2300), g:.6}, o);
+  A.pas(t + .4, {f:h(110, 135), bp:h(1700, 2300), g:.5}, o);
+  return {duree:1.4};
+};
+/* les gardes : la cotte de mailles qui cliquette, le bout des lances sur la pierre */
+S.cineArmureA = function(A, P){
+  var t = P.t, o = bus(A, P, h(.2, .7), .55);
+  A.joue(t, A.crepitement(.5, 90), {g:.32, filtres:[{type:'highpass', f:3200}]}, o);
+  A.modes(t + .05, 2900, [[1, 1, .12], [2.4, .5, .08], [3.9, .3, .05]], {g:.04}, o);
+  A.pas(t + .02, {f:120, bp:1900, g:.4}, o); A.pas(t + .3, {f:115, bp:1800, g:.35}, o);
+  A.choc(t + .18, {f:500, f2:300, d:.05, g:.15, corps:1.2, corpsF:1500}, o);
+  return {duree:1.2};
+};
+/* le gant de cuir qu'on tire, doigt après doigt */
+S.cineGantA = function(A, P){
+  var t = P.t, o = bus(A, P, -.1, .2);
+  for(var k = 0; k < 4; k++){
+    A.bruit(t + k * .42, {coul:'rose', filtres:[{type:'bandpass', f:h(1500, 2400), q:2}], env:[[0, 0], [.08, 1], [.28, 0]], g:.22}, o);
+    A.ton(t + k * .42 + .05, {type:'triangle', f:h(700, 900), f2:h(1100, 1400), gl:.18, env:A.perc(.02, .16), g:.025}, o);
+  }
+  fouet(A, t + 1.7, .3, {f:800, f2:2200, g:.3}, o);
+  return {duree:2.3};
+};
+/* la bague qui brille : un tintement d'argent, froid */
+S.cineBagueA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.7, grotte:.3, pan:-.2});
+  [2637, 3520, 4186].forEach(function(f, k){ A.ton(t + k * .07, {f:f, env:[[0, 0], [.004, 1], [1.6 - k * .3, 0]], g:.07 / (k + 1), vib:[6, 6]}, o); });
+  A.ton(t, {f:622, f2:587, gl:1.6, env:[[0, 0], [.02, 1], [1.8, 0]], g:.05}, o);
+  return {duree:2.4};
+};
+/* les lances qui s'abaissent (des souffles d'acier) */
+S.cineLancesA = function(A, P){
+  var t = P.t;
+  [0, .08, .15, .21, .28, .33].forEach(function(d, k){ var o = bus(A, P, -.6 + k * .24, .45); fouet(A, t + d, .22, {f:1400, f2:4200, q:2, g:.35}, o); fer(A, t + d + .2, h(1800, 2600), .03, o); });
+  return {duree:1.4};
+};
+/* les gardes s'élancent : des pas lourds, en désordre, et le métal */
+S.cineGardesA = function(A, P){
+  var t = P.t;
+  for(var k = 0; k < 10; k++){ var o = bus(A, P, h(-.7, .7), .5); lourd(A, t + k * .17 + h(0, .05), .35 + k * .04, o); if(k % 2) A.joue(t + k * .17, A.crepitement(.2, 50), {g:.2, filtres:[{type:'highpass', f:3000}]}, o); }
+  return {duree:2.4};
+};
+/* le coup final (le noir tombe) */
+S.cineCoupA = function(A, P){
+  var t = P.t, o = bus(A, P, 0, .8);
+  A.choc(t, {f:70, f2:28, d:1.2, g:1.2, sat:4, corps:2.2, corpsF:160}, o);
+  fer(A, t + .01, 220, .2, o); fer(A, t + .02, 330, .1, o);
+  A.bruit(t, {coul:'brun', filtres:[{type:'lowpass', f:300}], env:[[0, 0], [.05, 1], [2.4, 0]], g:.6}, o);
+  return {duree:3.2};
+};
+})(window);
+
+
 /* ===== essai/sons/musiques.js ===== */
 /* Atelier des sons de Brumeval — les musiques d'ambiance, fabriquées en direct et sans fin.
    Une musique = des sons continus (bourdon, souffle) + des « voix » qui reviennent à leur rythme
@@ -16099,6 +16262,170 @@ global.AMBIANCE = AMBIANCE;
 })(typeof window !== 'undefined' ? window : this);
 
 
+/* ===== ../src/cine-lecteur.js ===== */
+/* cine-lecteur.js — LE LECTEUR DES CINÉMATIQUES (Bible §13.45), le même dans le donjon (construire.py) et dans le jeu (build.py).
+   Romain, 15 novembre : « des cinématiques de film », en 21:9 avec les bandes noires. Ce sont de vrais petits films, fabriqués
+   d'avance image par image (jeu/cine/ : filmer.py) : ils ne peuvent pas ramer, même sur une vieille tablette.
+   - La vidéo est MUETTE (elle part toute seule partout, même sur iPhone) : les bruitages sont ceux de l'Atelier des sons, joués à
+     l'instant dit (o.infos.sons) par le moteur de son du jeu — le volume des réglages compte.
+   - Les sous-titres sont dans la bande noire du bas (ou sur l'image, en bas, si l'écran est trop allongé) ; chacun a son 🔊 :
+     le toucher arrête le film le temps de la lecture (jamais de lecture toute seule).
+   - « Passer ➜ » en haut à droite.
+   - Si le film n'arrive pas (pas d'internet, un vieux navigateur), CineLecteur.jouer répond 'echec' : on joue l'ancienne scène.
+
+   CineLecteur.precharger(url) -> Promise (le film téléchargé en entier, gardé en mémoire)
+   CineLecteur.jouer({url, infos:{duree, sons:[[t, id]], sousTitres:[[t0, t1, texte, qui]]}, son:function(id), lire:function(texte, qui),
+                      parle:function() -> bool, taire:function(), attente:ms, passer:true}) -> Promise('fini' | 'passe' | 'echec') */
+(function(){
+'use strict';
+var CL = window.CineLecteur = {};
+var CACHE = {};
+var CSS = '.cine-ecran{position:fixed;inset:0;z-index:99990;background:#000;opacity:0;transition:opacity .35s;touch-action:none;-webkit-user-select:none;user-select:none}' +
+  '.cine-ecran.on{opacity:1}.cine-cadre{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#000;overflow:hidden}' +
+  '.cine-cadre video{display:block;width:100%;height:100%;object-fit:cover;background:#000}' +
+  '.cine-st{position:absolute;left:50%;transform:translateX(-50%);width:min(92vw,980px);text-align:center;color:#f4ecd8;font:600 clamp(16px,2.6vw,26px)/1.35 Georgia,serif;' +
+  'text-shadow:0 2px 6px #000,0 0 2px #000;opacity:0;transition:opacity .25s;pointer-events:none;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}' +
+  '.cine-st.on{opacity:1}.cine-st.sur{padding:28px 18px 14px;background:linear-gradient(transparent,rgba(0,0,0,.72))}' +
+  '.cine-qui{display:block;width:100%;font:700 clamp(12px,1.6vw,15px)/1 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#e8b84a;margin-bottom:4px}' +
+  '.cine-lire{pointer-events:auto;flex:none;border:0;border-radius:50%;width:44px;height:44px;font-size:21px;background:rgba(255,255,255,.14);color:#fff;cursor:pointer}' +
+  '.cine-lire:active{transform:scale(.92)}' +
+  '.cine-passer{position:absolute;right:max(14px,env(safe-area-inset-right));top:max(12px,env(safe-area-inset-top));border:1px solid rgba(255,255,255,.35);border-radius:999px;background:rgba(0,0,0,.4);' +
+  'color:#ddd;font:600 15px/1 system-ui,sans-serif;padding:10px 16px;cursor:pointer;z-index:2}' +
+  '.cine-attente{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px;border-radius:50%;background:#e8b84a;animation:cineAtt 1s ease-in-out infinite}' +
+  '@keyframes cineAtt{0%,100%{opacity:.2;transform:scale(.7)}50%{opacity:1;transform:scale(1)}}' +
+  '.cine-go{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:0;border-radius:16px;background:#ffd23f;color:#111;font:800 22px/1 system-ui,sans-serif;padding:18px 28px;cursor:pointer}';
+function style(){ if(document.getElementById('cine-css')) return; var s = document.createElement('style'); s.id = 'cine-css'; s.textContent = CSS; document.head.appendChild(s); }
+function el(tag, cls, html){ var e = document.createElement(tag); if(cls) e.className = cls; if(html != null) e.innerHTML = html; return e; }
+function esc(t){ return String(t).replace(/[&<>"]/g, function(c){ return {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]; }); }
+
+/* télécharger tout le film d'avance (une coupure de réseau au milieu ne le casse plus) */
+CL.precharger = function(url){
+  if(CACHE[url]) return CACHE[url];
+  CACHE[url] = new Promise(function(ok){
+    if(!window.fetch || !window.URL || !URL.createObjectURL || location.protocol === 'file:'){ ok(url); return; }
+    fetch(url).then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); })
+      .then(function(b){ ok(URL.createObjectURL(b)); })
+      .catch(function(){ CACHE[url] = null; ok(url); });
+  });
+  return CACHE[url];
+};
+/* LE SON DANS LE JEU (le donjon a le sien : DJ.bruit) : le moteur de l'Atelier des sons et les bruitages des cinématiques
+   (build.py : SON_DONJON et essai/sons/cine.js), version A, sur un contexte audio à lui. Rien si le son est coupé (Réglages). */
+var ctxJ = null, engJ = null;
+CL.sonJeu = function(id){
+  try{
+    if(window.M && M.S && M.S.options && M.S.options.son === false) return;
+    if(!window.Moteur || !window.BRUITAGES) return;
+    var fn = window.BRUITAGES[id + 'A']; if(typeof fn !== 'function') return;
+    if(!ctxJ){ var AC = window.AudioContext || window.webkitAudioContext; if(!AC) return; ctxJ = new AC(); engJ = window.Moteur(ctxJ, {}); }
+    if(ctxJ.state === 'suspended') ctxJ.resume();
+    var t = ctxJ.currentTime + .02, P = engJ.prise(t, (window.NIVEAUX || {})[id + 'A'] || 1), r = fn(engJ, P) || {duree:1};
+    setTimeout(function(){ try{ P.lacher(); }catch(e){} }, ((r.duree || 1) + 5) * 1000);
+  }catch(e){ if(window.console) console.warn('son de cinématique', id, e); }
+};
+/* (pour les robots : une adresse forcée — ou rien, et le film « n'arrive pas ») */
+CL.essai = null;
+
+CL.jouer = function(o){
+  style();
+  return new Promise(function(fin){
+    var fini = false, raf = 0, video = null, cues = (o.infos && o.infos.sons || []).map(function(c){ return {t:c[0], id:c[1], fait:false}; });
+    var st = (o.infos && o.infos.sousTitres) || [], courant = -1, lecture = null;
+    var ecran = el('div', 'cine-ecran'), cadre = el('div', 'cine-cadre'), sous = el('div', 'cine-st'), att = el('div', 'cine-attente');
+    ecran.appendChild(cadre); ecran.appendChild(sous); ecran.appendChild(att);
+    if(o.passer !== false){ var bp = el('button', 'cine-passer', 'Passer ➜'); bp.setAttribute('data-cine', 'passer'); ecran.appendChild(bp); }
+    (o.parent || document.body).appendChild(ecran);
+    requestAnimationFrame(function(){ ecran.classList.add('on'); });
+    function place(){
+      var W = window.innerWidth, H = window.innerHeight, w = Math.min(W, H * 21 / 9), h = w * 616 / 1440, bande = (H - h) / 2;
+      cadre.style.width = w + 'px'; cadre.style.height = h + 'px';
+      var dedans = bande < 66;
+      sous.classList.toggle('sur', dedans);
+      if(dedans){ sous.style.top = ''; sous.style.bottom = (bande + 6) + 'px'; sous.style.width = Math.min(w, 980) + 'px'; }
+      else { sous.style.bottom = ''; sous.style.top = (bande + h + Math.min(18, bande * .12)) + 'px'; sous.style.width = ''; }
+    }
+    place(); window.addEventListener('resize', place);
+    function terminer(r){
+      if(fini) return; fini = true;
+      cancelAnimationFrame(raf); window.removeEventListener('resize', place);
+      if(lecture) clearInterval(lecture);
+      try{ if(video){ video.pause(); video.removeAttribute('src'); video.load(); } }catch(e){}
+      if(r === 'passe' && o.taire) try{ o.taire(); }catch(e){}
+      ecran.classList.remove('on');
+      setTimeout(function(){ ecran.remove(); }, r === 'echec' ? 0 : 380);
+      fin(r);
+    }
+    ecran.addEventListener('click', function(ev){
+      var b = ev.target.closest && ev.target.closest('[data-cine]'); if(!b) return;
+      ev.stopPropagation();
+      var a = b.getAttribute('data-cine');
+      if(a === 'passer') terminer('passe');
+      if(a === 'lire') ecouter(+b.getAttribute('data-i'));
+      if(a === 'go' && video){ b.remove(); video.play().catch(function(){}); }
+    });
+    /* 🔊 : le film s'arrête le temps de la lecture, puis repart */
+    function ecouter(i){
+      var s = st[i]; if(!s || !video || !o.lire) return;
+      video.pause();
+      try{ o.lire(s[2], s[3]); }catch(e){}
+      var t0 = Date.now(), mini = 600, maxi = 1500 + s[2].length * 95;
+      if(lecture) clearInterval(lecture);
+      lecture = setInterval(function(){
+        var d = Date.now() - t0, parle = o.parle ? o.parle() : false;
+        if((d > mini && !parle) || d > maxi){ clearInterval(lecture); lecture = null; if(!fini) video.play().catch(function(){}); }
+      }, 120);
+    }
+    function image(){
+      if(fini) return;
+      raf = requestAnimationFrame(image);
+      if(!video || video.paused) return;
+      var t = video.currentTime;
+      /* les sons : chacun une fois, à son instant (pas ceux qu'on a sautés) */
+      cues.forEach(function(c){ if(!c.fait && t >= c.t){ c.fait = true; if(t - c.t < .5 && o.son) try{ o.son(c.id); }catch(e){} } });
+      var k = -1;
+      for(var i = 0; i < st.length; i++) if(t >= st[i][0] && t <= st[i][1]){ k = i; break; }
+      if(k !== courant){
+        courant = k;
+        if(k < 0){ sous.classList.remove('on'); }
+        else {
+          var s = st[k], mots = String(s[2]).split(/\s+/).length;
+          sous.innerHTML = (s[3] ? '<span class="cine-qui">' + esc(s[3]) + '</span>' : '') + '<span class="cine-txt">« ' + esc(s[2]) + ' »</span>' +
+            (o.lire ? '<button class="cine-lire" data-cine="lire" data-i="' + k + '" aria-label="Écouter">🔊</button>' : '');
+          sous.classList.add('on');
+        }
+      }
+    }
+    var url = CL.essai != null ? CL.essai : o.url;
+    var delai = setTimeout(function(){ terminer('echec'); }, o.attente || 8000);
+    (url ? CL.precharger(url) : Promise.resolve(null)).then(function(src){
+      if(fini) return;
+      if(!src){ clearTimeout(delai); terminer('echec'); return; }
+      video = document.createElement('video');
+      video.muted = true; video.defaultMuted = true; video.playsInline = true;
+      video.setAttribute('muted', ''); video.setAttribute('playsinline', ''); video.setAttribute('webkit-playsinline', ''); video.setAttribute('preload', 'auto');
+      video.addEventListener('ended', function(){ terminer('fini'); });
+      video.addEventListener('error', function(){ clearTimeout(delai); terminer('echec'); });
+      video.addEventListener('playing', function(){ clearTimeout(delai); att.remove(); });
+      video.src = src;
+      cadre.appendChild(video);
+      var p = video.play();
+      if(p && p.catch) p.catch(function(){
+        /* le navigateur refuse de partir tout seul : un grand bouton jaune */
+        clearTimeout(delai); att.remove();
+        if(!fini && !ecran.querySelector('.cine-go')){ var g = el('button', 'cine-go', '▶ Regarder'); g.setAttribute('data-cine', 'go'); ecran.appendChild(g); }
+      });
+      raf = requestAnimationFrame(image);
+    });
+  });
+};
+})();
+
+
+/* ===== ../cine/sortie/cine-infos.js ===== */
+/* les cinématiques (jeu/cine : infos.py, ne pas modifier à la main) — la durée, les sons, les sous-titres de chaque film */
+window.CINE_INFOS = {"a12":{"duree":13.6,"sons":[[0.62,"cineOutils"],[0.78,"cineOutils"],[1.38,"leoChute"],[1.45,"cineOutils"],[1.9,"cineSouffle"],[3.4,"cineGrogne"],[4.3,"cinePas"],[5.48,"leoDechire"],[5.6,"cineCape"],[7.15,"leoHurlement"],[9.95,"leoMuscles"],[10.05,"cineOnde"],[11.45,"cineGrogne"],[11.5,"cineOnde"]],"sousTitres":[],"octets":2279521},"b23":{"duree":14.2,"sons":[[0.1,"cineSouffle"],[1.6,"cineSouffle"],[2.45,"cineEssuie"],[6.8,"leoSac"],[8.120000000000001,"leoBouchon"],[8.35,"cineCrache"],[8.85,"leoGlou"],[9.15,"leoGlou"],[9.45,"leoGlou"],[10.1,"leoBrise"],[10.25,"cineCoeur"],[10.45,"leoPotion"],[10.9,"cineCoeur"],[11,"cineMontee"],[11.45,"cineCoeur"],[11.98,"leoMuscles"],[12.45,"leoHurlement"],[12.5,"cineOnde"],[12.95,"cineOnde"]],"sousTitres":[[3.55,4.75,"Très bien…","Léo"],[4.95,6.35,"Je n'ai pas le choix.","Léo"]],"octets":2459801},"finLeo":{"duree":41.8,"sons":[[0.05,"cineSouffle"],[0.6,"cineCoeur"],[1.2,"cineCoeur"],[1.85,"cineChute"],[3.2,"cineSouffle"],[28.3,"cineCoeur"]],"sousTitres":[[4.6,7.2,"Assez… Vous avez gagné.","Léo"],[7.6,11,"Meunier… Je n'ai jamais voulu être meunier.","Léo"],[11.3,15.2,"Le maire, lui, m'a promis autre chose. Une vraie place.","Léo"],[15.8,18.7,"C'est lui qui a tout préparé, depuis le début :","Léo"],[18.9,22.1,"la rivière rouge, les fumigènes, la lettre.","Léo"],[22.4,26.3,"Odette, ce n'était pas prévu. Elle a été trop curieuse.","Léo"],[26.9,30.4,"Il descend souvent, tout seul, encore plus bas.","Léo"],[30.7,34.3,"Là-dessous, il y a une ville. Une ville entière, sous Brumeval.","Léo"],[34.8,37.6,"Moi, il ne m'a jamais laissé y aller.","Léo"],[37.8,39.9,"Personne n'y va. Jamais.","Léo"]],"octets":4405987},"finMaire":{"duree":27.2,"sons":[[0.9,"cinePasEcho"],[2.2,"cineLanterne"],[2.7,"cinePasEscalier"],[3.5,"cinePasEscalier"],[4.3,"cinePasEscalier"],[5.1,"cinePasEscalier"],[5.9,"cinePasEscalier"],[6.7,"cinePasEscalier"],[4.4,"cineArmure"],[5.6,"cineArmure"],[6.8,"cineArmure"],[8,"cineArmure"],[8.2,"cinePas"],[9.2,"cinePas"],[10.2,"cinePas"],[9.4,"cineArmure"],[15.1,"cineGant"],[17.3,"cineBague"],[24,"cineCoeur"],[24.8,"cineLances"],[25.2,"cineGardes"],[26.6,"cineCoup"]],"sousTitres":[[11,13.1,"Que s'est-il passé ici ? Léo !","Le maire"],[13.2,14.7,"Qu'avez-vous fait à Léo ?","Le maire"],[18.3,21.4,"Vous êtes allés trop loin. Beaucoup trop loin.","Le maire"],[21.9,23.6,"Monsieur le maire… ?","Silas"],[24,25.7,"Gardes ! Attrapez-les !","Le maire"]],"octets":4334110}};
+
+
 /* ===== moteur/src/allure.js ===== */
 /* allure.js — l'allure des trois héros du donjon, quand elle vient de l'enquête (Romain, 13 novembre : « les codes d'apparence »).
 
@@ -16341,7 +16668,7 @@ DJ.mesurerCritiqueVrai = function(){
     if(lent) SALLE.critLeger = true;
   }};
 };
-DJ.VERSION = '15/11 à 13 h 17';
+DJ.VERSION = '15/11 à 14 h 58';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
@@ -20522,6 +20849,7 @@ function demarrerPhase(n, premiere){
   q('#combat').setAttribute('data-phase', n);
   maj(true);
   /* la première fois qu'on arrive devant lui : il sort de l'ombre. Sinon (un nouvel essai) : on y retourne tout de suite. */
+  prechargerFilms(n);
   E.cine = true;
   (premiere && n === 1 && !E.partie.faits['leo:vu'] ? cineEntree() : cinePret(n)).then(function(){ if(!E) return; E.cine = false; E.saute = false; E.ts = 0; });
 }
@@ -20568,6 +20896,17 @@ async function cinePret(n){
 /* phase 1 → 2 : tout s'arrête, la barre des sorts descend ; il arrache sa cape et sa tunique, les jette hors de l'écran, et montre
    ses muscles — c'est Léo ! Le Pisteur ramasse ses outils (Romain, 14 novembre au soir : leo-p2.js, Bible §13.40). */
 async function cine12(){
+  var r = await film('a12');
+  if(!E) return;
+  if(r !== 'echec'){
+    E.leo.arme(null); nuage(false); noir(false, true); flaque(false);
+    ORDRE.forEach(function(h){ remettreHeros(h); });
+    E.leo.tenue(2); E.leo.visage('colere');
+    q('#leo-barre em').textContent = NOMS[2];
+    ramasser(['crochet', 'fleau', 'marteau']);
+    await pause(1300);
+    return;
+  }
   passer(true);
   E.leo.arme(null); nuage(false); noir(false, true); flaque(false);
   ORDRE.forEach(function(h){ remettreHeros(h); });
@@ -20600,6 +20939,16 @@ async function cine12(){
 }
 /* phase 2 → 3 : il boit la potion volée à Iris, et devient une grosse bête. Le Pisteur ramasse la faux et la gourde. */
 async function cine23(){
+  var r = await film('b23');
+  if(!E) return;
+  if(r !== 'echec'){
+    E.leo.arme(null);
+    if(E.p2) E.p2.vider();
+    E.leo.tenue(3); E.leo.visage('colere');
+    ramasser(['faux', 'gourde']);
+    await pause(1300);
+    return;
+  }
   passer(true);
   E.leo.arme(null);
   if(E.p2) E.p2.vider();
@@ -20646,6 +20995,20 @@ async function cine23(){
   await pose('garde', 500);
   await pause(800);
   passer(false);
+}
+/* LES CINÉMATIQUES EN FILM (Romain, 15 novembre, 12 h 40 : « des cinématiques de film », 21:9, bandes noires ; Bible §13.45) :
+   de vraies petites vidéos fabriquées d'avance (jeu/cine/, jeu/src/cine-lecteur.js), muettes — les bruitages sont ceux de l'Atelier,
+   joués à l'instant dit. Si le film n'arrive pas (pas d'internet…), on joue l'ancienne scène, dessinée en direct. */
+var CINE_URL = '../cine/';
+function film(nom, o){
+  if(!window.CineLecteur || !window.CINE_INFOS || !window.CINE_INFOS[nom]) return Promise.resolve('echec');
+  return window.CineLecteur.jouer({url:CINE_URL + nom + '.mp4', infos:window.CINE_INFOS[nom], passer:!(o && o.passer === false), attente:6000,
+    son:function(id){ bruit(id, {}); },
+    lire:function(t){ DJ.lire(t); }, parle:function(){ try{ return speechSynthesis.speaking; }catch(e){ return false; } }, taire:function(){ DJ.taire(); }});
+}
+function prechargerFilms(n){
+  if(!window.CineLecteur || !window.CINE_INFOS) return;
+  (n <= 1 ? ['a12', 'b23', 'finLeo'] : n <= 2 ? ['b23', 'finLeo'] : ['finLeo']).forEach(function(f){ if(window.CINE_INFOS[f]) window.CineLecteur.precharger(CINE_URL + f + '.mp4'); });
 }
 /* les outils de Léo glissent jusqu'au Pisteur */
 function ramasser(l){
@@ -20697,6 +21060,11 @@ async function victoire(){
   Object.keys(E.rats).forEach(function(id){ retirerRat(id); });
   nuage(false); flaque(false); noir(false, true);
   E.leo.arme(null); E.leo.teinte(null);
+  var vu = !!E.partie.faits['leo:finVu'];
+  var r = await film('finLeo', {passer:vu});
+  if(!E) return;
+  E.partie.faits['leo:finVu'] = 1; DJ.garder(E.partie);
+  if(r !== 'echec'){ terminer('victoire'); return; }
   bruit('leoChute', {}, ['tombe']);
   await E.leo.vers('genou', 800, 'o');
   /* la potion ne fait plus effet : il redevient Léo */
