@@ -72,6 +72,11 @@ POINT = """(a) => { var e = document.querySelector('.gt-etage[data-k="' + a.k + 
     if(p && p.getAttribute('data-p') === a.p && el.closest('.gt-etage') === e) return [x, y]; }
   return null; }"""
 def temps(pg, v=None): return pg.evaluate("(v) => document.querySelector('.gt').__gateau.temps(v === null ? undefined : v)", v)
+def taille(pg): return pg.evaluate("() => document.querySelector('.gt').__gateau.taille()")
+# les boutons du bas se chevauchent-ils ? (la liste des paires qui se touchent)
+def BAS_CHEVAUCHE(pg): return pg.evaluate("""() => { var l = [].slice.call(document.querySelectorAll('.gt-bas > button, .gt-bas > .gt-poubelle, .gt-bas > .gt-temps')).map(function(e){ return [e.className.split(' ').slice(-1)[0] + (e.getAttribute('data-t') || ''), e.getBoundingClientRect()]; }), o = [];
+  l.forEach(function(a, i){ l.slice(i + 1).forEach(function(b){ var x = Math.min(a[1].right, b[1].right) - Math.max(a[1].left, b[1].left), y = Math.min(a[1].bottom, b[1].bottom) - Math.max(a[1].top, b[1].top); if(x > 1 && y > 1) o.push(a[0] + '/' + b[0]); }); });
+  return o; }""")
 
 with sync_playwright() as p:
     b = p.chromium.launch()
@@ -157,6 +162,39 @@ with sync_playwright() as p:
     clic(pg, '.gt-annuler')
     e = etat(pg)
     verifier(len(e['decos']) == n0 and e['decos'][-1]['d'] == 'cerises', '« annuler » : elle revient')
+    # (15 novembre) ＋ et − : on en allume un, puis ce qu'on touche grossit ou rapetisse d'un cran
+    verifier(not BAS_CHEVAUCHE(pg), f'en bas, ↩️ 🗑️ + − ⏳ et « C\'est prêt ! » ne se chevauchent pas {BAS_CHEVAUCHE(pg)}')
+    clic(pg, '.gt-taille[data-t="1"]')
+    verifier(taille(pg) == 1 and pg.locator('.gt-taille.on').count() == 1 and 'géant' in pg.inner_text('.gt-conteur') and pg.locator('.gt-conteur .mj-lire-mini').count() == 1,
+             '+ s\'allume (jaune) ; le conteur raconte la poudre de géant (avec son 🔊)')
+    dc = etat(pg)['decos'][-1]; selc = f'.gt-deco[data-id="{dc["id"]}"] .gt-prise'; cc = centre(pg, selc)
+    pg.mouse.click(cc[0], cc[1]); pg.wait_for_timeout(350); e = etat(pg)['decos'][-1]
+    verifier(e.get('z') == 1.25 and e['r'] == dc['r'] and abs(e['x'] - dc['x']) < .01 and 'scale(1.25)' in pg.get_attribute(f'.gt-deco[data-id="{dc["id"]}"] .gt-deco-t', 'style'),
+             '+ allumé, toucher les cerises : elles grossissent d\'un cran, sans tourner ni bouger')
+    pg.mouse.click(cc[0], cc[1]); pg.wait_for_timeout(350)
+    verifier(etat(pg)['decos'][-1].get('z') == 1.56 and pg.get_attribute(selc, 'r') == '47', 'encore un cran ; l\'endroit à toucher grandit avec elles')
+    cible = [cc[0] - 60, cc[1] - 40]; glisser(pg, cc, cible); e = etat(pg)['decos'][-1]; cc = centre(pg, selc)
+    verifier(e.get('z') == 1.56 and abs(cc[0] - cible[0]) < 3 and abs(cc[1] - cible[1]) < 3, 'glisser les déplace toujours, sans changer leur taille')
+    clic(pg, '.gt-annuler'); clic(pg, '.gt-annuler'); cc = centre(pg, selc)
+    verifier(etat(pg)['decos'][-1].get('z') == 1.25, '« annuler » rend aussi la taille d\'avant')
+    clic(pg, '.gt-taille[data-t="-1"]')
+    verifier(taille(pg) == -1 and pg.locator('.gt-taille.on').count() == 1 and pg.get_attribute('.gt-taille[data-t="-1"]', 'aria-pressed') == 'true', '− s\'allume, + s\'éteint')
+    for i in range(6): pg.mouse.click(cc[0], cc[1]); pg.wait_for_timeout(150)
+    verifier(etat(pg)['decos'][-1].get('z') == .5 and 'fourmi' in pg.inner_text('.gt-conteur'), 'avec −, elles rapetissent jusqu\'à la moitié, pas plus : le conteur le dit')
+    verifier(pg.get_attribute(selc, 'r') == '30', 'toute petite, elle garde un endroit à toucher de taille normale')
+    # un étage grandit, et ce qui est posé en haut du gâteau monte avec lui
+    clic(pg, '.gt-taille[data-t="1"]'); bulle(pg, 'Fraise'); pg.wait_for_timeout(300)
+    e0 = etat(pg); y0 = e0['decos'][-1]['y']; x0 = e0['decos'][-1]['x']; sel0 = e0['sel']
+    pt = pg.evaluate(POINT, {'k': 0, 'p': 'glacage'})
+    if pt: pg.mouse.click(pt[0], pt[1]); pg.wait_for_timeout(500)
+    e = etat(pg)
+    verifier(bool(pt) and e['etages'][0].get('z') == 1.1 and abs(e['decos'][-1]['y'] - (y0 - 9.2)) < .2 and e['sel'] == sel0,
+             f'+ allumé, toucher le premier étage : il grandit (×1,1), sans être choisi ; la fraise posée en haut du gâteau monte avec lui ({e["decos"][-1]["y"] - y0:.1f})')
+    clic(pg, '.gt-annuler'); e = etat(pg)
+    verifier(not e['etages'][0].get('z') and abs(e['decos'][-1]['y'] - y0) < .01, '« annuler » : l\'étage et la fraise reviennent')
+    clic(pg, '.gt-annuler')   # (la fraise ajoutée s'en va : le pinceau, plus bas, repeint les cerises)
+    icone(pg, 'couleurs')
+    verifier(taille(pg) == 0 and pg.locator('.gt-taille.on').count() == 0, 'ouvrir « Couleurs » éteint + (le pinceau reprend la main)')
     # le pinceau : toutes les couleurs se changent
     icone(pg, 'couleurs'); n = nb_bulles(pg); bulle(pg, 'Bleu'); pg.wait_for_timeout(150)
     verifier(n == 9 and 'pinceau magique' in pg.inner_text('.gt-conteur') and pg.locator('.gt-conteur .mj-lire-mini').count() == 1, 'Couleurs : 8 couleurs et « d\'origine » ; le conteur explique le pinceau (avec son 🔊)')
@@ -217,7 +255,7 @@ with sync_playwright() as p:
     verifier(pg.evaluate("() => document.getElementById('sl-plein').hidden"), '« Continuer » : retour à la salle')
     pg.context.close()
 
-    for nom, w, h in [('téléphone debout', 390, 844), ('tablette debout', 820, 1180), ('téléphone couché', 844, 390)]:
+    for nom, w, h in [('téléphone debout', 390, 844), ('petit téléphone debout', 360, 640), ('tablette debout', 820, 1180), ('téléphone couché', 844, 390)]:
         print('— 2. La salle,', nom)
         pg = page(b, w, h); pg.goto(SALLE); pg.wait_for_timeout(800); clic(pg, '.mj-go'); pg.wait_for_timeout(500)
         d = pg.evaluate(DEDANS); verifier(not d['dehors'] and not d['defile'], f'au début, tout tient dans l\'écran {d if d["dehors"] or d["defile"] else ""}')
@@ -227,12 +265,20 @@ with sync_playwright() as p:
             d = pg.evaluate(DEDANS)
             if d['dehors'] or d['defile']: ko.append((c2, d))
             if c2 == 'farfelu': pg.screenshot(path=os.path.join(PHOTOS, f'gateau-{w}x{h}.png'))
+        # (sur un petit téléphone de 360 × 640, le titre des bulles « Étages » et ses quatre numéros dépassent de 3 points : on le tolère)
+        petitTel = w < 380 and h < 700
+        if petitTel: ko = [(c2, d) for c2, d in ko if d['defile'] or [x for x in d['dehors'] if not x.startswith('gt-titre')]]
         verifier(not ko, f'les bulles des 14 icônes tiennent dans l\'écran {ko[:2] if ko else ""}')
-        # (sur un téléphone couché, l'écran est trop bas pour un gâteau de 4 étages et 19 bulles : elles peuvent mordre un peu dessus)
-        verifier(pire == 0 or h < 500, f'elles ne cachent pas le gâteau de 4 étages (au pire {pire} px²)')
-        icone(pg, 'fete'); bulle(pg, 'Bougie'); pg.wait_for_timeout(200)
+        # (sur un téléphone couché, et sur un petit téléphone debout, l'écran est trop bas pour un gâteau de 4 étages et 19 bulles : elles peuvent mordre un peu dessus)
+        verifier(pire == 0 or h < 500 or petitTel, f'elles ne cachent pas le gâteau de 4 étages (au pire {pire} px²)')
+        if pire: print('      (au pire', pire, 'px² cachés)')
+        icone(pg, 'fete'); bulle(pg, 'Bougie'); pg.wait_for_timeout(200); clic(pg, '.gt-ic[data-c=fete]'); pg.wait_for_timeout(200)   # (on range les bulles : sur un petit écran, la bougie arrive dessous)
         dd = etat(pg)['decos'][-1]; c0 = centre(pg, f'.gt-deco[data-id="{dd["id"]}"] .gt-prise'); pg.mouse.click(c0[0], c0[1]); pg.wait_for_timeout(200)
         verifier(etat(pg)['decos'][-1]['r'] == 45, 'la bougie se pose et tourne')
+        verifier(not BAS_CHEVAUCHE(pg) and pg.locator('.gt-taille').count() == 2, f'en bas, les boutons (+ et − compris) ne se chevauchent pas {BAS_CHEVAUCHE(pg)}')
+        clic(pg, '.gt-taille[data-t="1"]'); pg.mouse.click(c0[0], c0[1]); pg.wait_for_timeout(300)
+        verifier(etat(pg)['decos'][-1].get('z') == 1.25, '+, puis la bougie : elle grossit')
+        clic(pg, '.gt-taille[data-t="1"]'); verifier(taille(pg) == 0, 'retoucher + l\'éteint')
         # le minuteur arrive à zéro : le gâteau part à la fête tel qu'il est, sans « Retoucher »
         temps(pg, 30.3); pg.wait_for_timeout(500); verifier(pg.locator('.gt-temps.gt-presse').count() == 1, 'à trente secondes de la fin, le minuteur rougit')
         temps(pg, 1.1); pg.wait_for_timeout(2100)

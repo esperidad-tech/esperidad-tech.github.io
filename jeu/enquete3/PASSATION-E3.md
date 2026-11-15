@@ -1,6 +1,12 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 18 h 55)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 20 h 20)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 15 novembre (20 h 10) : LE GÂTEAU DE LA FÊTE A DES BOUTONS + ET − (Bible §13.49) — EN LIGNE (commit 52dddcc du site, version 20261115-1909 ; publication de GitHub vérifiée)
+
+- Romain (19 h 43) : un bouton + et un bouton − ; on en allume un, puis chaque décoration ou chaque étage qu'on touche grossit ou rapetisse d'un cran. Les décorations posées sur un étage le suivent.
+- **Pour la conception** : le concours de gâteaux (§13.30) ne change pas (dix minutes, le vote à voix haute). Le résumé du gâteau rendu à la fin ne note pas les tailles (rien n'en dépend).
+- **Rien n'a changé dans l'histoire, les dialogues ni les codes.**
 
 ## Nouveau depuis le 15 novembre (18 h 48) : LÉO, UNE MUSIQUE PAR PHASE ; LE MARTEAU (PHASE 2) NE COUPE PLUS QUE LE SAUT ET LA GOURDE ; LE FEU (PHASE 3) BRÛLE LES TROIS (Bible §13.46, retouche de 18 h 29 et 18 h 33) — EN LIGNE (commit 4481b6d du site ; le donjon : version « 15/11 à 18 h 47 »)
 
