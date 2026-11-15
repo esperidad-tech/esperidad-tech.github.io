@@ -128,6 +128,7 @@ function demarrerPhase(n, premiere){
   q('#combat').setAttribute('data-phase', n);
   maj(true);
   /* la première fois qu'on arrive devant lui : il sort de l'ombre. Sinon (un nouvel essai) : on y retourne tout de suite. */
+  prechargerFilms(n);
   E.cine = true;
   (premiere && n === 1 && !E.partie.faits['leo:vu'] ? cineEntree() : cinePret(n)).then(function(){ if(!E) return; E.cine = false; E.saute = false; E.ts = 0; });
 }
@@ -174,6 +175,17 @@ async function cinePret(n){
 /* phase 1 → 2 : tout s'arrête, la barre des sorts descend ; il arrache sa cape et sa tunique, les jette hors de l'écran, et montre
    ses muscles — c'est Léo ! Le Pisteur ramasse ses outils (Romain, 14 novembre au soir : leo-p2.js, Bible §13.40). */
 async function cine12(){
+  var r = await film('a12');
+  if(!E) return;
+  if(r !== 'echec'){
+    E.leo.arme(null); nuage(false); noir(false, true); flaque(false);
+    ORDRE.forEach(function(h){ remettreHeros(h); });
+    E.leo.tenue(2); E.leo.visage('colere');
+    q('#leo-barre em').textContent = NOMS[2];
+    ramasser(['crochet', 'fleau', 'marteau']);
+    await pause(1300);
+    return;
+  }
   passer(true);
   E.leo.arme(null); nuage(false); noir(false, true); flaque(false);
   ORDRE.forEach(function(h){ remettreHeros(h); });
@@ -206,6 +218,16 @@ async function cine12(){
 }
 /* phase 2 → 3 : il boit la potion volée à Iris, et devient une grosse bête. Le Pisteur ramasse la faux et la gourde. */
 async function cine23(){
+  var r = await film('b23');
+  if(!E) return;
+  if(r !== 'echec'){
+    E.leo.arme(null);
+    if(E.p2) E.p2.vider();
+    E.leo.tenue(3); E.leo.visage('colere');
+    ramasser(['faux', 'gourde']);
+    await pause(1300);
+    return;
+  }
   passer(true);
   E.leo.arme(null);
   if(E.p2) E.p2.vider();
@@ -233,6 +255,20 @@ async function cine23(){
   await pose('garde', 500);
   await pause(800);
   passer(false);
+}
+/* LES CINÉMATIQUES EN FILM (Romain, 15 novembre, 12 h 40 : « des cinématiques de film », 21:9, bandes noires ; Bible §13.42) :
+   de vraies petites vidéos fabriquées d'avance (jeu/cine/, jeu/src/cine-lecteur.js), muettes — les bruitages sont ceux de l'Atelier,
+   joués à l'instant dit. Si le film n'arrive pas (pas d'internet…), on joue l'ancienne scène, dessinée en direct. */
+var CINE_URL = '../cine/';
+function film(nom, o){
+  if(!window.CineLecteur || !window.CINE_INFOS || !window.CINE_INFOS[nom]) return Promise.resolve('echec');
+  return window.CineLecteur.jouer({url:CINE_URL + nom + '.mp4', infos:window.CINE_INFOS[nom], passer:!(o && o.passer === false), attente:6000,
+    son:function(id){ bruit(id, {}); },
+    lire:function(t){ DJ.lire(t); }, parle:function(){ try{ return speechSynthesis.speaking; }catch(e){ return false; } }, taire:function(){ DJ.taire(); }});
+}
+function prechargerFilms(n){
+  if(!window.CineLecteur || !window.CINE_INFOS) return;
+  (n <= 1 ? ['a12', 'b23', 'finLeo'] : n <= 2 ? ['b23', 'finLeo'] : ['finLeo']).forEach(function(f){ if(window.CINE_INFOS[f]) window.CineLecteur.precharger(CINE_URL + f + '.mp4'); });
 }
 /* les outils de Léo glissent jusqu'au Pisteur */
 function ramasser(l){
@@ -284,6 +320,11 @@ async function victoire(){
   Object.keys(E.rats).forEach(function(id){ retirerRat(id); });
   nuage(false); flaque(false); noir(false, true);
   E.leo.arme(null); E.leo.teinte(null);
+  var vu = !!E.partie.faits['leo:finVu'];
+  var r = await film('finLeo', {passer:vu});
+  if(!E) return;
+  E.partie.faits['leo:finVu'] = 1; DJ.garder(E.partie);
+  if(r !== 'echec'){ terminer('victoire'); return; }
   bruit('leoChute', {}, ['tombe']);
   await E.leo.vers('genou', 800, 'o');
   /* la potion ne fait plus effet : il redevient Léo */

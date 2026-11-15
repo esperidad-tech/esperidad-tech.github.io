@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<title>Brumeval — l'atelier des cinématiques</title>
+<style>
+  html, body { margin:0; background:#000; overflow:hidden; }
+  #film { position:relative; width:1440px; height:616px; overflow:hidden; background:#050407; }
+  #film > * { position:absolute; left:0; top:0; }
+  #persos, #lumieres, #avant { width:1440px; height:616px; overflow:visible; }
+  #lumieres { mix-blend-mode:screen; }
+  #voile { width:1440px; height:616px; pointer-events:none; }
+</style>
+<div id="film">
+  <svg id="persos" viewBox="0 0 1440 616"></svg>
+  <svg id="lumieres" viewBox="0 0 1440 616"></svg>
+  <svg id="avant" viewBox="0 0 1440 616"></svg>
+  <div id="voile"></div>
+</div>
+<script src="src/outils.js"></script>
+<script src="src/textures.js"></script>
+<script src="src/plateau.js"></script>
+<script src="src/effets.js"></script>
+<script src="src/pantin.js"></script>
+<script src="src/leo-face.js"></script>
+<script src="src/tissu.js"></script>
+<script src="src/accessoires.js"></script>
+<script src="src/objets.js"></script>
+<script src="src/gens.js"></script>
+<script src="src/scene.js"></script>
+<script src="src/films.js"></script>

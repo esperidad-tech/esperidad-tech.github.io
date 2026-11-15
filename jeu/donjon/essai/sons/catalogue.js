@@ -94,6 +94,14 @@ window.CATALOGUE = [
         {id:'e-leo4', titre:'Ce qui lui arrive', sons:[
           {id:'leoTouche', t:'Touché', v:'A'}, {id:'leoGlisse', t:'Il glisse', v:'A'}, {id:'leoSonne', t:'Sonné (le marteau)', v:'A'}, {id:'leoSaigne', t:'Une goutte (saignement)', v:'A'}, {id:'leoCasse', t:'Un outil casse', v:'A'},
           {id:'leoRamasse', t:'Le Pisteur ramasse', v:'A'}, {id:'leoDechire', t:'Il arrache sa cape', v:'A'}, {id:'leoPotion', t:'Il boit la potion', v:'A'}, {id:'leoChute', t:'Il tombe', v:'A'}
+        ]},
+        /* 15 novembre (Bible §13.42) : les cinématiques (la vidéo est muette, le jeu joue ces bruitages) — tous neufs, à écouter */
+        {id:'e-cine', titre:'Cinématiques', sons:[
+          {id:'cineOutils', t:'Outils qui tombent', v:'A'}, {id:'cineSouffle', t:'Il souffle', v:'A'}, {id:'cineGrogne', t:'Il grogne', v:'A'}, {id:'cinePas', t:'Pas lourd', v:'A'},
+          {id:'cineCape', t:'La cape vole', v:'A'}, {id:'cineOnde', t:'Onde de choc', v:'A'}, {id:'cineEssuie', t:'Il s\'essuie', v:'A'}, {id:'cineCrache', t:'Il crache', v:'A'},
+          {id:'cineCoeur', t:'Le cœur', v:'A'}, {id:'cineMontee', t:'La potion monte', v:'A'}, {id:'cineChute', t:'Il s\'effondre', v:'A'}, {id:'cinePasEcho', t:'Pas au loin', v:'A'},
+          {id:'cineLanterne', t:'La lanterne', v:'A'}, {id:'cinePasEscalier', t:'Pas, escalier', v:'A'}, {id:'cineArmure', t:'Les gardes', v:'A'}, {id:'cineGant', t:'Le gant', v:'A'},
+          {id:'cineBague', t:'La bague', v:'A'}, {id:'cineLances', t:'Les lances', v:'A'}, {id:'cineGardes', t:'La charge', v:'A'}, {id:'cineCoup', t:'Le coup final', v:'A'}
         ]}
       ]}
     ]},
