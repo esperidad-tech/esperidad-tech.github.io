@@ -1,4 +1,4 @@
-/* films.js — LES CINÉMATIQUES (Bible §13.44). Chacune : sa durée, ses plans (la caméra), les poses de Léo (clés + respiration),
+/* films.js — LES CINÉMATIQUES (Bible §13.45). Chacune : sa durée, ses plans (la caméra), les poses de Léo (clés + respiration),
    ses effets, ses sons (des repères pour le jeu : la vidéo est muette, le jeu joue les sons de l'Atelier à l'instant dit) et
    ses sous-titres (chacun avec son 🔊 dans le jeu).
    Romain (15 novembre, 12 h 40) : « des cinématiques de film », en 21:9 avec les bandes noires ; la caméra à la place des héros,

@@ -36,6 +36,11 @@ var VARIANTES = {
     {id:'moulin', ic:'🌾', nom:'Se cacher : le moulin', d:'La nuit au moulin (enquête 2)', params:{decor:'moulin'}},
     {id:'clocher', ic:'🔔', nom:'Se cacher : le clocher', d:'Jusqu\'à la Grosse Marie et la clé (enquête 3)', params:{decor:'clocher'}},
     {id:'mairie', ic:'🏛️', nom:'Se cacher : la mairie', d:'Jusqu\'au bureau du maire et la lettre (enquête 3)', params:{decor:'mairie'}}],
+  /* (15 novembre) les traces de Moustache, à chaque moment de la journée : dans l'enquête, c'est le moment de la partie qui choisit
+     (le jeu sans variante tire un moment au hasard) */
+  pistage:[{id:'matin', ic:'🌅', nom:'Suivre les traces : le matin', d:'Un soleil bas, de longues ombres, la brume', params:{moment:'matin'}},
+    {id:'apresmidi', ic:'☀️', nom:'Suivre les traces : l\'après-midi', d:'La lumière dorée, des ombres courtes', params:{moment:'apresmidi'}},
+    {id:'nuit', ic:'🌙', nom:'Suivre les traces : la nuit', d:'La lanterne du Pisteur, les lanternes des carrefours', params:{moment:'nuit'}}],
   tir:[{id:'cerfvolant', ic:'🪁', nom:'Tir à l\'arc : le cerf-volant', d:'Coincé en haut du clocher (enquête 2)', params:{decor:'cerfvolant'}},
     {id:'banderoles', ic:'🎏', nom:'Tir à l\'arc : les banderoles', d:'Décorer la place pour la fête (enquête 3)', params:{decor:'banderoles'}}]
 };

@@ -1,4 +1,4 @@
-/* outils.js — les petits outils des cinématiques (Bible §13.44).
+/* outils.js — les petits outils des cinématiques (Bible §13.45).
    Tout ici est DÉTERMINISTE : une image ne dépend que de son temps t. C'est ce qui permet de filmer image par image
    (filmer.py) et de refaire exactement le même film. Aucune horloge, aucun Math.random. */
 (function(){

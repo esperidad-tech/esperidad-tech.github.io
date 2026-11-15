@@ -1,4 +1,4 @@
-/* leo-face.js — LÉO VU DE FACE, pour les cinématiques (Bible §13.44).
+/* leo-face.js — LÉO VU DE FACE, pour les cinématiques (Bible §13.45).
    Le même Léo que dans le combat (leo-corps.js : cheveux de paille en épis, taches de rousseur, barbe de trois jours, le nez qui a
    pris des coups, une cicatrice recousue sur le pectoral et une au sourcil, des bandes de toile aux poignets, le pantalon de meunier
    enfariné, la ceinture à boucle de laiton, la faux dans le dos tenue par une bandoulière, la gourde verte, le sifflet de laiton,

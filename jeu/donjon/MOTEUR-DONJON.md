@@ -443,7 +443,7 @@ Romain a joué l'enquête 3 avec sa famille, donjon compris, et a dicté ses cor
 - **L'écran de fin de l'essai de Léo** (`#essai-fin`) : « Rejouer ↻ » (`essai-encore` : recharge la page) et `.essai-phases` : « Phase 1 / 2 / 3 » (`essai-phase-N` : va à `?leo=N`).
 - **Le test** : `test-leo.py`, section 13 (`test_adresse`) ; `SEUL=adresse python3 test-leo.py` ne lance qu'elle (une minute au lieu de cinq).
 
-### 9.20 Le 15 novembre : les cinématiques de Léo en vrais petits films (Bible §13.44)
+### 9.20 Le 15 novembre : les cinématiques de Léo en vrais petits films (Bible §13.45)
 
 - **Les films** sont fabriqués à part (`jeu/cine/`, voir la Bible) et mis en ligne dans `brumeval/cine/` du site ; le donjon les lit en `../cine/<nom>.mp4`. **`CINE_INFOS`** (`jeu/cine/sortie/cine-infos.js`, embarqué par `construire.py`, groupe « cinématiques », avec `jeu/src/cine-lecteur.js`) : la durée, les sons à l'heure, les sous-titres de chaque film.
 - **`leo.js`** : `film(nom, o)` (le lecteur, les bruitages par `DJ.bruit`, le 🔊 par `DJ.lire`) ; `prechargerFilms(n)` (appelé par `lancer`, avant `E.cine = true` : télécharge d'avance les films des phases qui restent) ; **`cine12`, `cine23` et `victoire` jouent le film d'abord** ; s'il répond `'echec'` (pas de film, pas d'internet, vidéo illisible), l'ancienne scène dessinée en direct. Après `b23` : `E.leo.tenue(3)`, le Pisteur ramasse la faux et la gourde. `victoire` : « Passer » seulement si `faits['leo:finVu']` ; après le film, `terminer('victoire')` (les cinq bulles de l'aveu ne sont plus montrées : les phrases sont dans le film).

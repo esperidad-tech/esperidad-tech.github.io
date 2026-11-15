@@ -79,6 +79,10 @@ def extraits():
     mv = lire(os.path.join(JEU, 'mj-visee.js'))
     b = entre(mv, 'function sonsVisee(audio, sortie){', '/* <<< LES SONS DE LA VISÉE */')
     morceaux.append('visee:function(audio, SORTIE){\n' + b + '\nreturn sonsVisee(audio, function(){ return SORTIE; });\n}')
+    # 11) les traces de Moustache (mj-pistage.js, 15 novembre) : sa fabrique de sons, entre ses deux bornes
+    mp = lire(os.path.join(JEU, 'mj-pistage.js'))
+    b = entre(mp, 'function sonsPistage(audio, sortie){', '/* <<< LES SONS DES TRACES */')
+    morceaux.append('pistage:function(audio, SORTIE){\n' + b + '\nreturn sonsPistage(audio, function(){ return SORTIE; });\n}')
     choix =entre(ss, 'var CHOIX = S.CHOIX_SONS = {', '};', garder_fin=True)
     table = {k: re.findall(r"'([A-C])'", v) for k, v in re.findall(r'(\w+):\[([^\]]*)\]', choix)}
     return '/* ===== les sons déjà dans le jeu, copiés tels quels (construire-sons.py) ===== */\nwindow.EXTRAITS = {\n' + ',\n'.join(morceaux) + '\n};\n', table
@@ -92,7 +96,7 @@ ext, choix = extraits()
 js = 'window.NIVEAUX = ' + json.dumps({k: round(v, 3) for k, v in sorted(niveaux.items())}, separators=(',', ':')) + ';\n'
 js += '/* les choix de Romain, d\'après la table CHOIX de essai/src/son.js */\nwindow.CHOIX_ROMAIN = ' + json.dumps(choix, separators=(',', ':')) + ';\n'
 js += ext
-js += '\n'.join(lire(os.path.join(S, f)) for f in ['moteur.js', 'bruitages.js', 'musiques.js', 'bestiaire.js', 'donjon.js', 'leo.js', 'cine.js', 'musiques-donjon.js', 'existants.js', 'banc.js', 'catalogue.js', 'labo.js', 'gateau.js', 'etabli.js', 'visee.js', 'page.js'])
+js += '\n'.join(lire(os.path.join(S, f)) for f in ['moteur.js', 'bruitages.js', 'musiques.js', 'bestiaire.js', 'donjon.js', 'leo.js', 'cine.js', 'musiques-donjon.js', 'existants.js', 'banc.js', 'catalogue.js', 'labo.js', 'gateau.js', 'etabli.js', 'visee.js', 'pistage.js', 'page.js'])
 assert '</script' not in js.lower()
 html = html.replace('/*CSS*/', lire(os.path.join(S, 'page.css'))).replace('/*JS*/', js)
 sortie = os.path.join(ICI, 'sons-essai.html')

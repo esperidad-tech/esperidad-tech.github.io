@@ -1,4 +1,4 @@
-"""Enquête 3 : la cinématique du maire, en film, au début de la fin (Bible §13.44) — sur une tablette, avec la vraie vidéo
+"""Enquête 3 : la cinématique du maire, en film, au début de la fin (Bible §13.45) — sur une tablette, avec la vraie vidéo
    (copiée dans <dossier construit>/cine/ ; sans elle, le robot vérifie que les quatre images d'avant restent).
   - la fin commence : le film part tout seul, en 21:9 entre deux bandes noires, avec « Passer ➜ » ; ses bruitages (le moteur de son
     de l'Atelier, dans le jeu) ; les sous-titres du maire et de Silas, avec leur 🔊 ; jamais de lecture toute seule ;
