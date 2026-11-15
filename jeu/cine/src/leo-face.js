@@ -1,4 +1,4 @@
-/* leo-face.js — LÉO VU DE FACE, pour les cinématiques (Bible §13.42).
+/* leo-face.js — LÉO VU DE FACE, pour les cinématiques (Bible §13.44).
    Le même Léo que dans le combat (leo-corps.js : cheveux de paille en épis, taches de rousseur, barbe de trois jours, le nez qui a
    pris des coups, une cicatrice recousue sur le pectoral et une au sourcil, des bandes de toile aux poignets, le pantalon de meunier
    enfariné, la ceinture à boucle de laiton, la faux dans le dos tenue par une bandoulière, la gourde verte, le sifflet de laiton,
@@ -50,8 +50,20 @@ LF.defs = function(){
     lin('lfRobe', [C.robe[0], C.robe[1], C.robe[2]], .5, 0, .5, 1) + lin('lfRobeX', [C.robe[2], C.robe[1], C.robe[0], C.robe[1], C.robe[2]], 0, 0, 1, 0) +
     rad('lfBleu', ['#5a3a6a', '#7a3a4a', '#a0503a', 'rgba(160,80,58,0)'], .5, .5, .5) +
     rad('lfYeuxCape', ['#fff8c0', '#ffd040', 'rgba(255,170,0,0)'], .5, .5, .5) +
-    rad('lfRat', C.rat, .6, .3, .9);
+    rad('lfRat', C.rat, .6, .3, .9) +
+    /* sous la potion (phase 3, comme leo-corps.js : POTION) : la peau rougie */
+    lin('lfPeauX3', [P3[2], P3[1], P3[0], P3[1], P3[2], P3[3]], 0, 0, 1, 0) + lin('lfPeauB3', [P3[0], P3[1], P3[2]], .2, 0, .8, 1) +
+    rad('lfPec3', ['#ffdcc0', P3[0], P3[1], P3[2]], .55, .3, .8) + rad('lfAbs3', [P3[0], P3[1], P3[2]], .45, .35, .75) +
+    lin('lfBras3', [P3[0], P3[1], P3[2], P3[3]], .9, 0, .1, .2) + rad('lfTete3', ['#ffdcc0', P3[0], P3[1], P3[2]], .5, .38, .7) +
+    rad('lfVert3', ['#f4ffdc', '#a6ff6a', 'rgba(63,209,58,.35)', 'rgba(63,209,58,0)'], .5, .5, .5);
 };
+/* la peau sous potion : on change les couleurs de la peau dans le dessin (comme potion() de leo-corps.js) */
+var P3 = ['#ffcda0', '#ee975c', '#c05a34', '#762c1c'];
+var POT = [['url(#lfPeauX)', 'url(#lfPeauX3)'], ['url(#lfPeauB)', 'url(#lfPeauB3)'], ['url(#lfPec)', 'url(#lfPec3)'], ['url(#lfAbs)', 'url(#lfAbs3)'],
+  ['url(#lfBras)', 'url(#lfBras3)'], ['url(#lfTete)', 'url(#lfTete3)'], ['#ffd9b0', P3[0]], ['#f2b07e', P3[1]], ['#cf8152', P3[2]], ['#9a5532', P3[3]], ['#ffe6c8', '#ffdcc0'],
+  ['#4f7fa6', '#9cff4a'], ['#7fb0d4', '#e8ffb0'], ['#1e3448', '#2a6a1a']];
+function potion3(svg){ POT.forEach(function(c){ svg = svg.split(c[0]).join(c[1]); }); return svg; }
+LF.potion3 = potion3;
 
 /* ====================================================================== LES PIÈCES */
 /* le buste, torse nu (le repère : la taille en 0, 0 ; il monte vers −200) */
@@ -431,6 +443,37 @@ function fauxDos(os){
 }
 
 /* ====================================================================== LE PERSONNAGE ENTIER */
+/* la forme 3 (sous la potion) : veines vertes qui luisent, trapèzes énormes, yeux qui brillent ; k de 0 à 1 */
+function veine3(k, d, w){
+  if(!(k > 0)) return '';
+  return '<g opacity="' + f(U.clamp(k, 0, 1)) + '"><path d="' + d + '" fill="none" stroke="#3fd13a" stroke-width="' + (w + 3.4) + '" opacity=".28" stroke-linecap="round"/><path d="' + d + '" fill="none" stroke="#a6ff6a" stroke-width="' + w + '" opacity=".92" stroke-linecap="round"/><path d="' + d + '" fill="none" stroke="#f4ffdc" stroke-width="' + f(w * .35) + '" opacity=".85" stroke-linecap="round"/></g>';
+}
+function veinesBuste(k){
+  if(!(k > 0)) return '';
+  return '<circle cx="-16" cy="-126" r="' + f(22 + 14 * k) + '" fill="url(#lfVert3)" opacity="' + f(.6 * U.clamp(k, 0, 1)) + '"/>' +
+    veine3(k, 'M-16 -126 C -30 -138 -46 -142 -62 -150 C -70 -154 -76 -152 -84 -150 M-16 -126 C -34 -118 -50 -108 -66 -96 M-16 -126 C -12 -108 -18 -90 -12 -70 C -6 -56 -12 -40 -6 -22 M-16 -126 C 2 -136 22 -146 42 -150 M-16 -126 C 4 -116 24 -106 46 -100 M-16 -126 C -18 -146 -20 -162 -22 -180', 2.4);
+}
+function trapezes(k){
+  if(!(k > 0)) return '';
+  var h = f(10 + 28 * U.clamp(k, 0, 1)), y0 = -172;
+  return [-1, 1].map(function(sg){
+    return '<path d="M' + (sg * 24) + ' ' + (y0 - 24) + ' C ' + (sg * 40) + ' ' + f(y0 - 10 - h * .5) + ' ' + (sg * 70) + ' ' + f(y0 + 8 - h * .4) + ' ' + (sg * 98) + ' ' + (y0 + 26) + ' C ' + (sg * 76) + ' ' + (y0 + 14) + ' ' + (sg * 50) + ' ' + (y0 + 6) + ' ' + (sg * 26) + ' ' + (y0 + 4) + ' Z" fill="url(#lfPeauX)" stroke="' + O + '" stroke-width="2.4" stroke-linejoin="round"/>' +
+      '<path d="M' + (sg * 34) + ' ' + f(y0 - 12 - h * .3) + ' C ' + (sg * 52) + ' ' + f(y0 - 4 - h * .3) + ' ' + (sg * 70) + ' ' + (y0 + 6) + ' ' + (sg * 84) + ' ' + (y0 + 16) + '" fill="none" stroke="' + C.peauL + '" stroke-width="3" opacity=".45" stroke-linecap="round"/>';
+  }).join('');
+}
+function yeux3(k, v){
+  if(!(k > 0)) return '';
+  var ye = v.yeux || {}, cl = ye.cl || 0, dx = f((v.ht || 0) * 5);
+  return '<g opacity="' + f(U.clamp(k, 0, 1) * (1 - cl * .8)) + '" transform="translate(' + dx + ' 0)"><circle cx="-15" cy="-66" r="13" fill="url(#lfVert3)"/><circle cx="15" cy="-66" r="13" fill="url(#lfVert3)"/>' +
+    '<circle cx="-15" cy="-66" r="3.4" fill="#f4ffdc"/><circle cx="15" cy="-66" r="3.4" fill="#f4ffdc"/></g>';
+}
+/* les trois entailles de la faux (la fin de la phase 3) : trois traits rouges, sans plus */
+function entailles(k){
+  if(!(k > 0)) return '';
+  return '<g opacity="' + f(U.clamp(k, 0, 1)) + '">' + [[-58, -142, 34, -84], [-52, -100, 42, -40], [-40, -62, 30, -16]].map(function(e){
+    return '<path d="M' + e[0] + ' ' + e[1] + ' L ' + e[2] + ' ' + e[3] + '" stroke="#5a0a0a" stroke-width="4.6" stroke-linecap="round" opacity=".45"/><path d="M' + e[0] + ' ' + e[1] + ' L ' + e[2] + ' ' + e[3] + '" stroke="#c8302a" stroke-width="2.4" stroke-linecap="round"/><path d="M' + (e[0] + 2) + ' ' + (e[1] - 2) + ' L ' + (e[2] + 2) + ' ' + (e[3] - 2) + '" stroke="#ffb0a0" stroke-width=".8" stroke-linecap="round" opacity=".6"/>';
+  }).join('') + '</g>';
+}
 LF.dessin = function(p, o){
   o = o || {};
   var D = LF.D, os = PT.os(D, p), uid = 'L' + (++idn);
@@ -450,18 +493,20 @@ LF.dessin = function(p, o){
   /* les bras derrière le buste (ils pendent le long du corps), sauf ceux qui passent devant (b.devant) */
   function unBras(c, quoi){
     var b = p['b' + c] || {}, r = '';
-    if(quoi !== 'avant') r += PT.piece(os['b' + c], brasHaut(fl * (b.fl == null ? 1 : b.fl), o));
-    if(quoi !== 'haut'){ r += PT.piece(os['a' + c], avantBras(o)); r += PT.piece(os['m' + c], main(p['poing' + c] || 'poing', o)); }
+    if(quoi !== 'avant') r += PT.piece(os['b' + c], brasHaut(fl * (b.fl == null ? 1 : b.fl), o) + veine3(o.forme3, 'M6 4 C 10 30 4 56 10 80 C 12 92 8 100 10 104 M-8 30 C -12 50 -8 70 -12 92', 2.2));
+    if(quoi !== 'haut'){ r += PT.piece(os['a' + c], avantBras(o) + veine3(o.forme3, 'M4 0 C 8 22 2 42 6 66 M-8 10 C -12 30 -8 46 -10 60', 2)); r += PT.piece(os['m' + c], main(p['poing' + c] || 'poing', o)); }
     return r;
   }
   /* le bassin et le buste */
   s += PT.piece(os.bassin, cape ? '' : bassin(o));
   if(cape) s += PT.piece(os.buste, robeBuste());
-  else s += PT.piece(os.buste, buste(o, fl) + marques(o.abime) + (o.faux !== false ? bandouliere() : '') + (o.sifflet !== false ? sifflet() : ''));
+  else s += PT.piece(os.buste, buste(o, fl) + marques(o.abime) + entailles(o.entailles) + trapezes(o.forme3) + veinesBuste(o.forme3) + (o.faux !== false ? bandouliere() : '') + (o.sifflet !== false ? sifflet() : ''));
   ['G', 'D'].forEach(function(c){ s += unBras(c); });
   /* la tête (avec le capuchon, en phase 1) */
   var te = p.tete || {};
-  s += PT.piece(os.tete, cape ? capuchon(o.yeuxCape, uid) : tete(Object.assign({ht:te.ht || 0}, v), o, uid));
+  s += PT.piece(os.tete, cape ? capuchon(o.yeuxCape, uid) : tete(Object.assign({ht:te.ht || 0}, v), o, uid) + veine3(o.forme3, 'M24 -96 C 28 -88 26 -80 30 -72 M18 -26 C 14 -14 16 -6 12 4', 1.8) + yeux3(o.forme3, Object.assign({ht:te.ht || 0}, v)));
+  /* sous la potion : la peau rougie (o.peau3, qui peut clignoter pendant la transformation) */
+  if(o.peau3) s = potion3(s);
   /* ce qu'il tient (la fiole, l'agrafe) : dessiné par le film, au point de la main */
   LF.dernier = {os:os, uid:uid};
   return s;
@@ -474,6 +519,8 @@ LF.point = function(os, nom){
   if(nom === 'agrafe') return M.pt(os.tete, 0, 2);
   if(nom === 'poitrine') return M.pt(os.buste, 0, -120);
   if(nom === 'tete') return M.pt(os.tete, 0, -66);
+  if(nom === 'oeilD') return M.pt(os.tete, 15, -66);
+  if(nom === 'oeilG') return M.pt(os.tete, -15, -66);
   return [0, 0];
 };
 LF.couleurs = C;

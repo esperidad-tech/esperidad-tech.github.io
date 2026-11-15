@@ -1,4 +1,4 @@
-/* cine-lecteur.js — LE LECTEUR DES CINÉMATIQUES (Bible §13.42), le même dans le donjon (construire.py) et dans le jeu (build.py).
+/* cine-lecteur.js — LE LECTEUR DES CINÉMATIQUES (Bible §13.44), le même dans le donjon (construire.py) et dans le jeu (build.py).
    Romain, 15 novembre : « des cinématiques de film », en 21:9 avec les bandes noires. Ce sont de vrais petits films, fabriqués
    d'avance image par image (jeu/cine/ : filmer.py) : ils ne peuvent pas ramer, même sur une vieille tablette.
    - La vidéo est MUETTE (elle part toute seule partout, même sur iPhone) : les bruitages sont ceux de l'Atelier des sons, joués à

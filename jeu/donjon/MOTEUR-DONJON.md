@@ -442,3 +442,11 @@ Romain a joué l'enquête 3 avec sa famille, donjon compris, et a dicté ses cor
 - **`DJ.essai`** : mis par `essaiLeo` et `essaiCombat` ; `DJ.garder` (noyau.js) ne fait alors rien. `window.PARTIE` reste la partie de l'essai, en mémoire (les tests la lisent là). Le jeu normal (`DJ.Explo.demarrer`) ne met jamais `DJ.essai`.
 - **L'écran de fin de l'essai de Léo** (`#essai-fin`) : « Rejouer ↻ » (`essai-encore` : recharge la page) et `.essai-phases` : « Phase 1 / 2 / 3 » (`essai-phase-N` : va à `?leo=N`).
 - **Le test** : `test-leo.py`, section 13 (`test_adresse`) ; `SEUL=adresse python3 test-leo.py` ne lance qu'elle (une minute au lieu de cinq).
+
+### 9.20 Le 15 novembre : les cinématiques de Léo en vrais petits films (Bible §13.44)
+
+- **Les films** sont fabriqués à part (`jeu/cine/`, voir la Bible) et mis en ligne dans `brumeval/cine/` du site ; le donjon les lit en `../cine/<nom>.mp4`. **`CINE_INFOS`** (`jeu/cine/sortie/cine-infos.js`, embarqué par `construire.py`, groupe « cinématiques », avec `jeu/src/cine-lecteur.js`) : la durée, les sons à l'heure, les sous-titres de chaque film.
+- **`leo.js`** : `film(nom, o)` (le lecteur, les bruitages par `DJ.bruit`, le 🔊 par `DJ.lire`) ; `prechargerFilms(n)` (appelé par `lancer`, avant `E.cine = true` : télécharge d'avance les films des phases qui restent) ; **`cine12`, `cine23` et `victoire` jouent le film d'abord** ; s'il répond `'echec'` (pas de film, pas d'internet, vidéo illisible), l'ancienne scène dessinée en direct. Après `b23` : `E.leo.tenue(3)`, le Pisteur ramasse la faux et la gourde. `victoire` : « Passer » seulement si `faits['leo:finVu']` ; après le film, `terminer('victoire')` (les cinq bulles de l'aveu ne sont plus montrées : les phrases sont dans le film).
+- **Les sons** : `essai/sons/cine.js` (20 sons « cine… », section « Léo › Cinématiques » de l'Atelier), embarqués dans le donjon comme les autres (`DJ.sonsProvisoires`).
+- **Essayer un film à part** : dans la console, `CineLecteur.essai = '<adresse d'une vidéo>'` force la vidéo du prochain film ; `CineLecteur.essai = ''` fait échouer le prochain film (l'ancienne scène).
+- **Le test** : `moteur/test-cine.py` (les trois films du combat, les sous-titres, le 🔊, « Passer », sans film).

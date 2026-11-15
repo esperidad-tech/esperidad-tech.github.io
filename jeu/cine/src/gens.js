@@ -1,4 +1,4 @@
-/* gens.js — LE MAIRE, SILAS ET LES GARDES, vus de face, pour la fin (Bible §13.42). Mêmes pantins que Léo (pantin.js).
+/* gens.js — LE MAIRE, SILAS ET LES GARDES, vus de face, pour la fin (Bible §13.44). Mêmes pantins que Léo (pantin.js).
    Le maire (Monsieur Grosbec, le dessin du village en plus détaillé) : chauve, des touffes grises sur les côtés et des favoris,
    un nez en bec, les yeux plissés, un trop grand sourire ; la redingote violette à boutons de laiton, le gilet, la cravate rouge,
    l'écharpe de maire dorée à bande rouge et sa médaille, des gants gris — et dessous, une bague en argent à tête de corbeau.

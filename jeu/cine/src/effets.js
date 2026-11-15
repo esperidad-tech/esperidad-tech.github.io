@@ -88,14 +88,20 @@ FX.cailloux = function(t, t0, x, z, n, graine){
   return s;
 };
 /* une onde de choc au sol : un anneau qui s'élargit (un trait de lumière et de poussière) */
-FX.onde = function(t, t0, x, z, rmax){
+FX.onde = function(t, t0, x, z, rmax, coul){
   var a = t - t0; if(a < 0 || a > .9) return '';
   var k = U.COURBES.o(a / .9), r = (rmax || 700) * k, s = '';
   var c = CAM.projeter(x, 0, z), ex = CAM.projeter(x + r, 0, z), ez1 = CAM.projeter(x, 0, z + r), ez2 = CAM.projeter(x, 0, z - r);
   var rx = Math.abs(ex.x - c.x), ry = Math.abs(ez1.y - ez2.y) / 2;
-  s += '<ellipse cx="' + U.r(c.x) + '" cy="' + U.r((ez1.y + ez2.y) / 2) + '" rx="' + U.r(rx) + '" ry="' + U.r(ry) + '" fill="none" stroke="#ffd9a0" stroke-width="' + U.r(10 * c.s * (1 - k)) + '" opacity="' + U.r(.7 * (1 - k)) + '" filter="url(#fl6)"/>';
-  s += '<ellipse cx="' + U.r(c.x) + '" cy="' + U.r((ez1.y + ez2.y) / 2) + '" rx="' + U.r(rx * .92) + '" ry="' + U.r(ry * .92) + '" fill="none" stroke="#a89070" stroke-width="' + U.r(30 * c.s * (1 - k)) + '" opacity="' + U.r(.4 * (1 - k)) + '" filter="url(#fl12)"/>';
+  s += '<ellipse cx="' + U.r(c.x) + '" cy="' + U.r((ez1.y + ez2.y) / 2) + '" rx="' + U.r(rx) + '" ry="' + U.r(ry) + '" fill="none" stroke="' + (coul || '#ffd9a0') + '" stroke-width="' + U.r(10 * c.s * (1 - k)) + '" opacity="' + U.r(.7 * (1 - k)) + '" filter="url(#fl6)"/>';
+  s += '<ellipse cx="' + U.r(c.x) + '" cy="' + U.r((ez1.y + ez2.y) / 2) + '" rx="' + U.r(rx * .92) + '" ry="' + U.r(ry * .92) + '" fill="none" stroke="' + (coul ? coul : '#a89070') + '" stroke-width="' + U.r(30 * c.s * (1 - k)) + '" opacity="' + U.r((coul ? .3 : .4) * (1 - k)) + '" filter="url(#fl12)"/>';
   return s;
+};
+/* une onde dans l'air (à l'écran, autour d'un point : le hurlement) */
+FX.ondeAir = function(t, t0, x, y, rmax, coul){
+  var a = t - t0; if(a < 0 || a > .7) return '';
+  var k = U.COURBES.o(a / .7), r = rmax * (.15 + .85 * k);
+  return '<circle cx="' + U.r(x) + '" cy="' + U.r(y) + '" r="' + U.r(r) + '" fill="none" stroke="' + coul + '" stroke-width="' + U.r(Math.max(1, rmax * .05 * (1 - k))) + '" opacity="' + U.r(.5 * (1 - k)) + '" filter="url(#fl4)"/>';
 };
 /* de la poussière et des petits gravats qui tombent du plafond (la salle tremble) */
 FX.plafond = function(t, t0, t1, n, graine, boite){

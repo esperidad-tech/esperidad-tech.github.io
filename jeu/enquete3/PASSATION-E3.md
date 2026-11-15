@@ -2,6 +2,12 @@
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
+## Nouveau depuis le 15 novembre (HEURE_CINE) : LES CINÉMATIQUES DE LÉO EN VRAIS PETITS FILMS (Bible §13.44) — EN LIGNE (15 novembre, HEURE_CINE ; commit SITE_CINE du site ; publication de GitHub vérifiée)
+
+- **À lire : Bible §13.44.** Romain (12 h 40) voulait des « cinématiques de film » : 21:9, bandes noires, la caméra à la place des héros, Léo de face, le fond flou, des torches. **Quatre petites vidéos** : la fin de la phase 1, la fin de la phase 2 (la potion et la transformation), et **la fin en deux morceaux** : Léo qui parle (dans le donjon), puis, après les accusations, le maire qui descend avec Silas et six gardes (dans le jeu, à la place des quatre images de la fin), puis la prison.
+- **Pour la conception** : **les textes sont exactement ceux validés le 13 novembre** (§13.33 : les cinq phrases de Léo ; le maire et Silas), en sous-titres avec 🔊 ; personne n'a de voix. **L'ordre de la fin ne change pas** (Léo parle → les accusations → le maire → la prison) : c'est pour ça que la fin est en deux films (à faire valider par Romain). **La potion de force d'Iris est verte** dans le film (le vert des veines de la phase 3) ; Léo la sort de son sac à rats. **Silas descend avec le maire**, et le maire retire **un seul gant** (le droit, celui de la bague à tête de corbeau).
+- **Rien n'a changé dans l'histoire, les dialogues ni les codes.**
+
 ## Nouveau depuis le 15 novembre (13 h 18) : POUR ESSAYER LE COMBAT DE LÉO SANS REFAIRE LE DONJON (Bible §13.43) — EN LIGNE (15 novembre, 13 h 18 ; commit 7a7274f du site ; le donjon : version « 15/11 à 13 h 17 » (en bas de « 🎒 Objets ») ; publication de GitHub vérifiée)
 
 - **Trois adresses** : https://esperidad-tech.github.io/brumeval/donjon/?leo=1 (tout le combat), https://esperidad-tech.github.io/brumeval/donjon/?leo=2 (droit à la phase 2), https://esperidad-tech.github.io/brumeval/donjon/?leo=3 (droit à la phase 3). Le combat s'ouvre tout de suite, les héros ont tout leur équipement ; à la fin, « Rejouer ↻ » et un bouton par phase.

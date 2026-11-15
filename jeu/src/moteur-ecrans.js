@@ -481,7 +481,7 @@ function vueFin(){
     if(t && typeof t === 'object'){ img = t.img === 'prison' ? prisonHTML(t) : ''; plus = t.img === 'prison' && t.codes ? prisonCodesHTML() : ''; t = t.t || ''; }   /* une image dans l'histoire : {t, img:'prison'} */
     /* une petite scène animée sous le texte (E.fin.illus[i] : illus-fin.js ; Romain, 5 novembre, 9 h 37) */
     var anim = !img && E.fin.illus && E.fin.illus[i] && M.illustration ? M.illustration(E.fin.illus[i]) : '';
-    /* (15 novembre, Bible §13.42) une cinématique en film au début de la fin (E.fin.film) : elle part toute seule */
+    /* (15 novembre, Bible §13.44) une cinématique en film au début de la fin (E.fin.film) : elle part toute seule */
     if(i === 0 && E.fin.film && !F.filmFait && !UI.film && M.jouerFilmFin) setTimeout(M.jouerFilmFin, 0);
     var codeFin = M.role() === 'sage' ? '<details class="b-code-fin"><summary>🔢 Le code de fin pour l\'équipe</summary>' + M.codeHTML(M.code(M.idVictoire(F.erreurs, F.variante || 0))) + '</details>' : '';
     return '<main class="b-page b-fin"><p class="sur-titre centre">Enquête ' + E.id + ' · ' + esc(E.titre) + '</p>' + codeFin +

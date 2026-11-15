@@ -1,4 +1,4 @@
-"""Les cinématiques en film dans le combat de Léo (Bible §13.42) : python3 test-cine.py   (sous le verrou : flock /tmp/brumeval-pw.lock …)
+"""Les cinématiques en film dans le combat de Léo (Bible §13.44) : python3 test-cine.py   (sous le verrou : flock /tmp/brumeval-pw.lock …)
 
 Sur une tablette 1024 x 768, avec les vraies vidéos (jeu/cine/sortie/*.mp4, données au lecteur par CineLecteur.essai) :
   - fin de la phase 1 : le film part tout seul, en 21:9 entre deux bandes noires ; il avance ; ses bruitages partent à l'heure

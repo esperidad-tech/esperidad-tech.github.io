@@ -1,4 +1,4 @@
-/* Atelier des sons de Brumeval — LES CINÉMATIQUES (Bible §13.42 ; 15 novembre). La vidéo des cinématiques est muette : le jeu
+/* Atelier des sons de Brumeval — LES CINÉMATIQUES (Bible §13.44 ; 15 novembre). La vidéo des cinématiques est muette : le jeu
    joue ces bruitages à l'instant dit (la liste « sons » de chaque film, jeu/cine/src/films.js), au volume des réglages.
    Tous NEUFS (🆕) : une seule version (A) chacun, que le jeu joue en attendant que Romain les écoute dans l'Atelier.
    Mêmes règles que leo.js : une fonction (A : le moteur, P : la prise, P.t : l'instant de départ) qui rend {duree}. */
