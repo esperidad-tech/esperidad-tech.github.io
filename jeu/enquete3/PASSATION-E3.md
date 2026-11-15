@@ -1,6 +1,11 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 20 h 20)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 20 h 35)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 15 novembre (20 h 27) : LA CINÉMATIQUE DE L'ENTRÉE CHEZ LÉO (Bible §13.45) — EN LIGNE (commit 847fe1d du site ; le donjon : version « 15/11 à 20 h 18 »)
+
+- Quand les héros entrent dans sa salle (la première fois) : l'homme en cape attend dans l'ombre, ses yeux s'allument, il avance et dit **« J'attends ce moment depuis longtemps. »**, **« Vous n'auriez jamais dû venir ici. »**, **« Je vais m'occuper de vous. »** (les mots de Romain, 19 h 05 ; sous-titres signés « L'homme en cape » : on ne sait pas encore que c'est Léo). Les gros plans de tous les films sont recadrés.
+- **Pour la conception** : trois répliques de plus pour l'homme en cape, avant le combat. **Rien n'a changé dans l'histoire, les dialogues du Barde ni les codes.**
 
 ## Nouveau depuis le 15 novembre (20 h 10) : LE GÂTEAU DE LA FÊTE A DES BOUTONS + ET − (Bible §13.49) — EN LIGNE (commit 52dddcc du site, version 20261115-1909 ; publication de GitHub vérifiée)
 
