@@ -3496,6 +3496,18 @@ html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc
 @keyframes gt-poubelle{to{transform:scale(1.12)}}
 .gt-poubelle.gt-chaud{animation:none;transform:scale(1.35);background:#e8693c;box-shadow:0 0 0 4px #ffd23f, 0 0 18px rgba(255,210,63,.9)}
 .gt-pret{min-height:50px;white-space:nowrap}
+/* ＋ et − (15 novembre) : allumés, ils deviennent jaunes et respirent, avec le rond jaune ; ce qu'on touche alors grossit ou rapetisse */
+.gt-taille{font-size:2rem;font-weight:900;font-family:system-ui, sans-serif}
+.gt-taille.on{background:#ffd23f;color:#111;border-color:#111;box-shadow:0 0 0 4px #ffd23f, 0 0 16px rgba(255,210,63,.9);animation:gt-taille 1s ease-in-out infinite}
+@keyframes gt-taille{50%{transform:scale(1.12)}}
+.gt-petit .gt-taille{font-size:1.75rem}
+.gt-mode-plus .gt-deco,.gt-mode-plus .gt-etage{cursor:zoom-in}
+.gt-mode-moins .gt-deco,.gt-mode-moins .gt-etage{cursor:zoom-out}
+.gt-deco-t{transition:transform .28s cubic-bezier(.3,1.6,.5,1)}
+/* sur un écran étroit, deux rangées : ↩️ 🗑️ ＋ − en haut ; le temps et « C'est prêt ! » en dessous */
+.gt-coupe{display:none}
+.gt-etroit .gt-bas{flex-wrap:wrap;align-content:flex-end;row-gap:6px}
+.gt-etroit .gt-bas > .gt-coupe{display:block;flex:0 0 100%;height:0}
 /* le temps qui reste : une pastille ; à trente secondes de la fin, elle rougit et bat */
 .gt-temps{display:inline-flex;align-items:center;gap:5px;min-height:38px;padding:0 13px 0 9px;border-radius:999px;background:var(--nuit-2, #1c2447);color:var(--lune, #eef0ff);border:3px solid #24182e;box-shadow:0 3px 0 rgba(20,10,30,.6), 0 6px 12px rgba(0,0,0,.35);font-weight:700;font-size:1.1rem;line-height:1;font-variant-numeric:tabular-nums}
 .gt-temps i{font-style:normal;font-size:1rem}
@@ -3513,8 +3525,8 @@ html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc
 .gt-conteur p{margin:0}
 .gt-conteur .mj-lire-mini{margin:0;flex:none}
 /* sur un petit écran, la phrase est en haut, entre les deux colonnes (mj-gateau.js la sort de la barre du bas) : en bas, elle cacherait le gâteau */
-.gt > .gt-conteur{position:absolute;z-index:7;top:var(--gt-sous, 8px);left:8px;right:8px;max-width:none;font-size:.86rem}
-.gt-ouvert > .gt-conteur{left:calc(var(--gt-cg, 60px) + 2px);right:calc(var(--gt-cd, 60px) + 2px)}
+/* (15 novembre) toujours entre les deux colonnes : sur un petit téléphone, elle cachait la première icône, celle qui appelle le doigt */
+.gt > .gt-conteur{position:absolute;z-index:7;top:var(--gt-sous, 8px);left:calc(var(--gt-cg, 60px) + 2px);right:calc(var(--gt-cd, 60px) + 2px);max-width:none;font-size:.86rem}
 
 /* ---------- la fête ---------- */
 .gt-fini .gt-col,.gt-fini .gt-bas,.gt-fini .gt-plateau,.gt-fini .gt-conteur{display:none}
@@ -3548,7 +3560,7 @@ html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc
   .gt-ic,.gt-bulle,.gt-titre,.gt-conteur,.gt-e-in.gt-tombe,.gt-e-in.gt-pouf,.gt-deco-p.gt-pose,.gta,.gt-rune,.gt-sel,.gt-drag .gt-poubelle,.gt-temps.gt-presse{animation:none}
   .gt-eclat{animation:none;opacity:0}
   .gt-ic.gt-appel{animation:none}
-  .gt-deco-r{transition:none}
+  .gt-deco-r,.gt-deco-t{transition:none}
 }
 
 /* Ce mini-jeu prend toute la largeur de l'écran (MJ.LARGE, mj-core.js) : on voit la place en fête de chaque côté du gâteau */
@@ -31107,6 +31119,11 @@ MJ.GATEAU_ART = {K:K, ANIMEES:ANIMEES, PINCEAUX:PINCEAUX, teinter:teinter, dessi
      veut repeindre — une décoration, la pâte, le glaçage, le motif, la crème d'un étage, le plat, la nappe.
    - À droite, les décorations (fruits, fleurs, bonbons, fête, farfelu, paillettes, chantilly) : on touche une bulle
      (ou on la tire jusqu'au gâteau), on déplace au doigt, un petit coup de doigt fait tourner d'un huitième de tour.
+   - En bas, ＋ et − (Romain, 15 novembre, 19 h 43 : « quand on appuie sur plus et qu'on appuie sur un élément du gâteau ou un
+     élément de décor, ça le fasse grossir ; et moins, ça le fasse rétrécir ») : on allume ＋ (ou −), puis chaque petit coup de
+     doigt sur une décoration ou sur un étage le fait grossir (ou rapetisser) d'un cran ; on glisse toujours pour déplacer ; on
+     éteint en retouchant le bouton. Une décoration : 8 tailles (de ×0,5 à ×2,44, d.z) ; un étage : 7 tailles (de ×0,7 à ×1,3,
+     t.z), et les décorations posées dessus ou au-dessus le suivent (porter). Sur un écran étroit, la barre du bas a deux rangées.
    - Les dessins et les listes sont dans mj-gateau-dessins.js (MJ.GATEAU_ART) ; les sons du gâteau sont ici (sonsGateau),
      et dans l'Atelier des sons (donjon/essai/sons/gateau.js) pour que Romain les écoute.
    - fin({reussi:true, gateau:{…}}) : le résumé du gâteau, pour une future « commande de Gaspard » (rien n'en dépend encore).
@@ -31178,6 +31195,8 @@ function sonsGateau(audio, sortie){
     annule:function(){ souffle(0, .16, .022, 1400, 500, .8); tendre(587, 0, .1, .03, 440, .008); },                                                                                                    /* un pas en arrière */
     pinceau:function(){ souffle(0, .17, .03, 900, 2300, .8); tendre(659, .03, .09, .03, 880, .006); tendre(1319, .1, .1, .014, null, .006); },                                                         /* un coup de pinceau */
     plein:function(){ tendre(330, 0, .12, .05, 294, .01, 'triangle', 1100); tendre(262, .1, .18, .045, 233, .01, 'triangle', 900); },                                                                  /* plus de place ! */
+    grossit:function(){ souffle(0, .2, .02, 500, 1600, .8); tendre(262, 0, .22, .05, 523, .01, 'triangle', 1400); tendre(784, .16, .1, .026, null, .006); },                                          /* ＋ : « bloup ! », ça gonfle */
+    rapetisse:function(){ tendre(784, 0, .2, .04, 330, .008, 'triangle', 1800); souffle(0, .14, .016, 1800, 600, .9); tendre(1175, .17, .05, .016, null, .004); },                                   /* − : « fiou… », ça dégonfle */
     /* la fête */
     bravo:function(){ [523, 659, 784, 1047, 1319, 1568].forEach(function(f, i){ tendre(f, i * .09, .3, .055, null, .01, 'triangle', 3000); });
       tendre(1047, .6, .95, .04, null, .02); tendre(1319, .6, .95, .03, null, .02); tendre(1568, .6, .95, .024, null, .02); grains(.55, .8, .016, 50, 5000); },                                        /* « C'est prêt ! » */
@@ -31206,10 +31225,12 @@ var MAX_ETAGES = 4, MAX_DECOS = 80;
 var DUREE = 600;   /* dix minutes pour faire le gâteau (Romain, 11 novembre : « un timer de 5 minutes » à 20 h 29, puis « de 15 minutes » à 21 h 31 ;
                       12 novembre, 21 h 34 : « qu'il dure uniquement 10 minutes », tout le monde fait le sien en même temps) ; à zéro, il part à la fête tel qu'il est */
 var HAUT_VUE = 590, DY = 32;   /* ce qu'on voit toujours de la scène : de y = 32 à y = 622 */
+/* ＋ et − : les tailles d'une décoration (d.z) et d'un étage (t.z), un cran par petit coup de doigt (1 = la taille d'origine) */
+var TAILLES_DECO = [.5, .64, .8, 1, 1.25, 1.56, 1.95, 2.44], TAILLES_ETAGE = [.7, .8, .9, 1, 1.1, 1.2, 1.3];
 function geo(etages){
   var g = [], cx = CX, y = BASE;
   etages.forEach(function(t, k){
-    var h = HAUT[k], r = LARG[k] / 2, s = t.penche ? (k % 2 ? -1 : 1) * h * PENCHE : 0;
+    var z = t.z || 1, h = HAUT[k] * z, r = LARG[k] / 2 * z, s = t.penche ? (k % 2 ? -1 : 1) * h * PENCHE : 0;
     g.push({k:k, cx:cx, yB:y, yT:y - h, r:r, h:h, e:r * APLAT, s:s, dir:k % 2 ? -1 : 1});
     cx += s; y -= h;
   });
@@ -31393,6 +31414,11 @@ var DIT = {
   plein:'Stop ! Le gâteau n\'en peut plus. Une de plus, et il s\'écroule !',
   minute:'Plus qu\'une minute ! Gaspard a déjà sorti les assiettes.',
   pinceau:'Un pinceau magique ! Choisis une couleur, puis effleure ce que tu veux repeindre : une fraise, un étage, la nappe…',
+  /* ＋ et − (15 novembre) */
+  grossir:'Poudre de géant ! Une fraise, un étage… tout ce que ton doigt effleure se met à grossir.',
+  rapetisser:'Poudre de lutin ! Tout ce que ton doigt effleure rapetisse… pas trop, on finirait par le perdre !',
+  tropGrand:'Plus gros, il ferait de l\'ombre au clocher !',
+  tropPetit:'Plus petit, même une fourmi ne le verrait pas !',
   fini:'Dong ! Les dix minutes sont passées. Gaspard emporte le gâteau… en courant !',
   /* le vote (13 novembre) : à voix haute, autour de la table */
   note:'Montre ton gâteau à tes amis. Quelle note sur 20 lui donnent-ils ?',
@@ -31419,6 +31445,7 @@ function jouer(zone, params, fin){
   var etat = {etages:[etageNeuf()], sel:0, plat:'porcelaine', nappe:'vichy', decos:[]}, nDeco = 0, histoire = [], ouvert = null, tours = {}, dejaDit = {};
   var reste = (params && params.duree) || DUREE, tempsFini = false, horloge = null, tAvant = Date.now();
   var pinceau = A.PINCEAUX[0].c;   /* la couleur du pinceau (null : « d'origine », il rend ses couleurs à ce qu'il touche) */
+  var taille = 0;                  /* ＋ allumé : 1 ; − allumé : -1 ; aucun : 0 */
   var VB = '0 0 640 ' + HAUT_VUE, MONDE = '<g class="gt-monde" transform="translate(0,' + (-DY) + ')">';
   zone.innerHTML = '';
   var racine = U.html('<div class="gt">' +
@@ -31430,6 +31457,8 @@ function jouer(zone, params, fin){
     '<div class="gt-col gt-gauche"></div><div class="gt-col gt-droite"></div>' +
     '<div class="gt-plateau" hidden></div>' +
     '<div class="gt-bas"><button type="button" class="gt-rond gt-annuler" aria-label="Annuler" disabled>↩️</button><span class="gt-rond gt-poubelle" role="img" aria-label="La poubelle">🗑️</span>' +
+      '<button type="button" class="gt-rond gt-taille" data-t="1" aria-label="Grossir" aria-pressed="false">+</button><button type="button" class="gt-rond gt-taille" data-t="-1" aria-label="Rapetisser" aria-pressed="false">−</button>' +
+      '<i class="gt-coupe" aria-hidden="true"></i>' +   /* (sur un écran étroit, la barre passe à la ligne ici) */
       '<span class="gt-temps" role="timer" aria-label="Le temps qui reste"><i aria-hidden="true">⏳</i><b>15:00</b></span>' +
       '<div class="gt-place"><div class="gt-conteur" hidden></div></div><button type="button" class="btn b-aller gt-pret">🎂 C\'est prêt !</button></div>' +
     '<div class="gt-final" hidden></div>' +
@@ -31458,9 +31487,11 @@ function jouer(zone, params, fin){
     var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.setAttribute('class', 'gt-deco'); g.setAttribute('data-id', d.id); g.setAttribute('transform', 'translate(' + P(d.x, d.y) + ')');
     if(tours[d.id] === undefined) tours[d.id] = d.r;
-    g.innerHTML = '<circle class="gt-prise" r="30"/><g class="gt-deco-p"><g class="gt-deco-r" style="transform:rotate(' + tours[d.id] + 'deg)">' + A.dessinDeco(d.d, d.t) + '</g></g>';
+    g.innerHTML = '<circle class="gt-prise" r="' + rayonPrise(d) + '"/><g class="gt-deco-p"><g class="gt-deco-t" style="transform:scale(' + (d.z || 1) + ')"><g class="gt-deco-r" style="transform:rotate(' + tours[d.id] + 'deg)">' + A.dessinDeco(d.d, d.t) + '</g></g></g>';
     return g;
   }
+  /* l'endroit à toucher grandit avec la décoration ; une petite garde le même (sinon, plus moyen de l'attraper) */
+  function rayonPrise(d){ return Math.round(30 * Math.max(1, d.z || 1)); }
   function rendreDecos(){ gDecos.innerHTML = ''; tours = {}; etat.decos.forEach(function(d){ gDecos.appendChild(noeudDeco(d)); }); }
   function noeudDe(d){ return gDecos.querySelector('.gt-deco[data-id="' + d.id + '"]'); }
   function parId(n){ for(var i = 0; i < etat.decos.length; i++) if(String(etat.decos[i].id) === String(n)) return etat.decos[i]; return null; }
@@ -31585,6 +31616,7 @@ function jouer(zone, params, fin){
     taire();
     racine.querySelectorAll('.gt-appel').forEach(function(e){ e.classList.remove('gt-appel'); });
     if(ouvert === c){ fermer(); U.son('clic'); return; }
+    if(c === 'couleurs' && taille) choisirTaille(0, true);   /* le pinceau et ＋ / − ne vont pas ensemble : le pinceau gagne */
     ouvert = c; racine.classList.add('gt-ouvert');
     racine.querySelectorAll('.gt-ic').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-c') === c); });
     pops(bulles(c));
@@ -31714,6 +31746,60 @@ function jouer(zone, params, fin){
     var n = noeudDe(d); if(n) n.querySelector('.gt-deco-r').style.transform = 'rotate(' + tours[d.id] + 'deg)';
     son('tourne');
   }
+
+  /* ----- ＋ et − (Romain, 15 novembre, 19 h 43) : on allume l'un des deux, puis ce qu'on touche grossit ou rapetisse d'un cran ----- */
+  var bTailles = racine.querySelectorAll('.gt-taille');
+  function choisirTaille(s, sansBruit){
+    if(enFete && s) return;
+    taille = taille === s ? 0 : s;
+    [].forEach.call(bTailles, function(b){ var on = +b.getAttribute('data-t') === taille; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    racine.classList.toggle('gt-mode-plus', taille > 0); racine.classList.toggle('gt-mode-moins', taille < 0);
+    if(taille && ouvert === 'couleurs') fermer();
+    if(!sansBruit) U.son('clic');
+    if(taille) dire(taille > 0 ? 'grossir' : 'rapetisser', 9000);
+  }
+  [].forEach.call(bTailles, function(b){ b.addEventListener('click', function(){ choisirTaille(+b.getAttribute('data-t')); }); });
+  /* le cran d'à côté dans une liste de tailles (null : on est déjà au bout) */
+  function cran(l, z, s){
+    var i = 0; l.forEach(function(v, j){ if(Math.abs(v - (z || 1)) < Math.abs(l[i] - (z || 1))) i = j; });
+    var j = i + s; return j < 0 || j >= l.length ? null : l[j];
+  }
+  function auBout(s){ son('plein'); dire(s > 0 ? 'tropGrand' : 'tropPetit', 6000); }
+  function changerDeco(d, s){
+    var z = cran(TAILLES_DECO, d.z, s); if(z === null){ auBout(s); return; }
+    memo(); if(z === 1) delete d.z; else d.z = z;
+    var n = noeudDe(d); if(n){ n.querySelector('.gt-deco-t').style.transform = 'scale(' + z + ')'; n.querySelector('.gt-prise').setAttribute('r', rayonPrise(d)); }
+    son(s > 0 ? 'grossit' : 'rapetisse');
+  }
+  function changerEtage(k, s){
+    var t = etat.etages[k]; if(!t) return;
+    var z = cran(TAILLES_ETAGE, t.z, s); if(z === null){ auBout(s); return; }
+    memo(); var avant = geo(etat.etages);
+    if(z === 1) delete t.z; else t.z = z;
+    porter(avant); rendreGateau({pouf:k}); placer();
+    son(s > 0 ? 'grossit' : 'rapetisse');
+  }
+  /* Un étage grandit ou rapetisse : les décorations posées sur lui (sur ses côtés, ou sur son dessus) et sur les étages du dessus
+     restent à leur place sur leur étage. Chacune est d'abord rattachée à l'étage qui la porte (celui du haut d'abord), avec sa
+     place sur lui ; puis on la remet au même endroit de l'étage changé. Une décoration posée dans le vide ne bouge pas. */
+  function attache(G, d){
+    for(var j = G.length - 1; j >= 0; j--){
+      var g = G[j], ly = (g.yB - d.y) / g.h, cxy = g.cx + g.s * Math.min(1, Math.max(0, ly));
+      if(d.y < g.yT - 60 || d.y > g.yB + g.e + 6 || Math.abs(d.x - cxy) > g.r + 12) continue;
+      if(d.y < g.yT) return {j:j, dessus:true, dy:d.y - g.yT, lx:(d.x - g.cx - g.s) / g.r};
+      return {j:j, ly:ly, lx:(d.x - cxy) / g.r};
+    }
+    return null;
+  }
+  function porter(avant){
+    var att = etat.decos.map(function(d){ return attache(avant, d); }), G = geo(etat.etages);
+    etat.decos.forEach(function(d, i){
+      var a = att[i], g = a && G[a.j]; if(!g) return;
+      if(a.dessus){ d.y = g.yT + a.dy; d.x = g.cx + g.s + a.lx * g.r; }
+      else { d.y = g.yB - a.ly * g.h; d.x = g.cx + g.s * Math.min(1, Math.max(0, a.ly)) + a.lx * g.r; }
+      var n = noeudDe(d); if(n) n.setAttribute('transform', 'translate(' + P(d.x, d.y) + ')');
+    });
+  }
   /* une décoration déjà posée : glisser = déplacer, toucher = tourner
      (c'est le calque des décorations qui retient le doigt, pas la décoration : elle passe devant les autres pendant qu'on la promène,
      et changer un dessin de place dans la page lui ferait lâcher le doigt) */
@@ -31740,7 +31826,7 @@ function jouer(zone, params, fin){
     delete prises[ev.pointerId];
     try{ gDecos.releasePointerCapture(ev.pointerId); }catch(e){}
     var perdu = ev.type !== 'pointerup';   /* le doigt a été repris (un appel, un geste du système) : on pose là où elle est */
-    if(pr.bouge) lacher(pr.d, !perdu && surPoubelle(ev.clientX, ev.clientY)); else if(!perdu){ if(ouvert === 'couleurs') peindreDeco(pr.d); else tourner(pr.d); }
+    if(pr.bouge) lacher(pr.d, !perdu && surPoubelle(ev.clientX, ev.clientY)); else if(!perdu){ if(taille) changerDeco(pr.d, taille); else if(ouvert === 'couleurs') peindreDeco(pr.d); else tourner(pr.d); }
   }
   gDecos.addEventListener('pointermove', surBouge);
   gDecos.addEventListener('pointerup', surLache);
@@ -31782,6 +31868,7 @@ function jouer(zone, params, fin){
   scene.addEventListener('pointerdown', function(ev){
     if(enFete || arrete) return;
     var g = ev.target.closest ? ev.target.closest('.gt-etage') : null;
+    if(g && taille){ changerEtage(parseInt(g.getAttribute('data-k'), 10) || 0, taille); return; }   /* ＋ ou − allumé : l'étage touché grossit ou rapetisse */
     if(ouvert === 'couleurs'){
       /* avec le pinceau : on repeint ce qu'on touche (la pâte, le glaçage, le motif, la crème d'un étage ; le plat ; la nappe) */
       if(g){ var pp = ev.target.closest('[data-p]'), kk = parseInt(g.getAttribute('data-k'), 10) || 0; peindreEtage(kk, pp ? pp.getAttribute('data-p') : (etat.etages[kk].glacage ? 'glacage' : 'pate')); return; }
@@ -31808,7 +31895,7 @@ function jouer(zone, params, fin){
   }
   function feter(){
     if(enFete || arrete) return;
-    enFete = true; fermer(); taire(); U.stop();
+    enFete = true; fermer(); choisirTaille(0, true); taire(); U.stop();
     racine.classList.remove('gt-drag'); poubelle.classList.remove('gt-chaud');
     gDecos.querySelectorAll('.gt-tenu, .gt-jete').forEach(function(n){ n.classList.remove('gt-tenu', 'gt-jete'); });   /* (une décoration qu'on tirait encore de sa bulle se pose là) */
     racine.classList.add('gt-fini');
@@ -31911,10 +31998,15 @@ function jouer(zone, params, fin){
   function mesurer(){
     if(arrete || !racine.isConnected) return;
     var w = racine.clientWidth, h = racine.clientHeight; if(!w || !h) return;
-    var bas = h < 420 ? 54 : 66, ic = Math.floor((h - bas - 18) / 7) - 16, etroit = w < 640;
+    var etroit = w < 640, bas = h < 420 ? 54 : 66;
+    function tailleIc(b){ return Math.max(38, Math.min(66, Math.floor((h - b - 18) / 7) - 16, w < 520 ? 48 : (w < 760 ? 56 : 66))); }
+    var ic = tailleIc(bas);
+    /* (15 novembre) un écran étroit n'a pas la place pour ↩️ 🗑️ ＋ − ⏳ et « C'est prêt ! » sur une ligne : deux rangées, au plus juste */
+    if(etroit && !enFete){ bas = (ic < 50 ? 44 : 50) * 2 + 16; ic = tailleIc(bas); }
     if(enFete) bas = Math.max(bas, final.offsetHeight);   /* à la fête, le gâteau monte au-dessus de ce que dit le conteur */
-    var place = q('.gt-place'); if(etroit && conteur.parentNode !== racine) racine.appendChild(conteur); else if(!etroit && conteur.parentNode !== place) place.appendChild(conteur);
-    ic = Math.max(38, Math.min(66, ic, w < 520 ? 48 : (w < 760 ? 56 : 66)));
+    /* la phrase du conteur va en haut, entre les colonnes, quand la barre du bas n'a pas la place de la montrer en deux lignes */
+    var place = q('.gt-place'), enHaut = etroit || place.clientWidth < 430;
+    if(enHaut && conteur.parentNode !== racine) racine.appendChild(conteur); else if(!enHaut && conteur.parentNode !== place) place.appendChild(conteur);
     racine.style.setProperty('--gt-ic', ic + 'px'); racine.style.setProperty('--gt-bas', bas + 'px');
     var mm = monde.getScreenCTM(); racine.style.setProperty('--gt-flou', (mm ? Math.max(1.5, Math.min(3.4, mm.a * 2.7)) : 2.6).toFixed(1) + 'px');   /* le flou du fond suit la taille du dessin */
     racine.style.setProperty('--gt-b', (w < 520 || h < 420 ? 46 : (w < 760 ? 52 : 58)) + 'px');
@@ -31927,7 +32019,7 @@ function jouer(zone, params, fin){
   toutRendre(); mesurer();
   /* pour commencer : le conteur dit un mot, et la première icône appelle le doigt (elle bouge, avec son rond jaune) */
   dire('debut'); colG.firstChild.classList.add('gt-appel');
-  racine.__gateau = {etat:function(){ return etat; }, resume:resume, temps:function(v){ if(v !== undefined){ reste = v; ecrireTemps(); } return reste; }, grand:function(){ return grand; }};   /* pour les essais */
+  racine.__gateau = {etat:function(){ return etat; }, resume:resume, temps:function(v){ if(v !== undefined){ reste = v; ecrireTemps(); } return reste; }, grand:function(){ return grand; }, taille:function(){ return taille; }};   /* pour les essais */
 
   return {arreter:function(){
     arrete = true; clearInterval(horloge); minuteurs.forEach(function(t){ clearTimeout(t); }); if(ro) ro.disconnect(); else window.removeEventListener('resize', mesurer);
@@ -31937,7 +32029,7 @@ function jouer(zone, params, fin){
 
 MJ.enregistrer('gateau', {
   nom:'Le gâteau de la fête', role:'alchimiste', ic:'🎂', minuteur:true,
-  consigne:'Fabrique le gâteau de la fête : jusqu\'à quatre étages, la pâte, le glaçage, la crème, et toutes les décorations que tu veux, posées où tu veux. Un petit coup de doigt sur une décoration la fait tourner. Tu as dix minutes : à la fin, le gâteau part à la fête tel qu\'il est.',
+  consigne:'Fabrique le gâteau de la fête : jusqu\'à quatre étages, la pâte, le glaçage, la crème, et toutes les décorations que tu veux, posées où tu veux. Un petit coup de doigt sur une décoration la fait tourner. Avec + ou −, ce que tu touches grossit ou rapetisse. Tu as dix minutes : à la fin, le gâteau part à la fête tel qu\'il est.',
   reglages:function(){ return {duree:DUREE, lignes:[{nom:'Étages', val:'de 1 à ' + MAX_ETAGES}, {nom:'Décorations', val:'jusqu\'à ' + MAX_DECOS}, {nom:'Temps', val:Math.round(DUREE / 60) + ' minutes'}]}; },
   jouer:jouer
 });
@@ -31947,7 +32039,8 @@ MJ.PHRASES = MJ.PHRASES || {}; MJ.PHRASES.gateau = 'Dix minutes pour le plus bea
 
 /* ==========================================================
    L'explication en images, avant de jouer (MJ.DEMOS.gateau) : la main touche une icône, les bulles sortent, elle en choisit une
-   (le glaçage change) ; puis elle tire une fraise jusqu'au gâteau, et un petit coup de doigt la fait tourner.
+   (le glaçage change) ; puis elle tire une fraise jusqu'au gâteau, et un petit coup de doigt la fait tourner ; enfin elle allume
+   ＋ (15 novembre) et touche la fraise : elle grossit.
    ========================================================== */
 var MAIN = '<g class="rg-main"><circle class="rg-onde" r="13" fill="none" stroke="#8ff3ff" stroke-width="3" opacity="0"/><g class="rg-main-g">' +
   '<g transform="scale(.7) rotate(-12)"><path d="M-5,4 C-5,-4 5,-4 5,4 L5,24 C9,21 15,22 16,27 C19,25 24,27 24,32 C27,31 31,34 30,40 L28,54 C27,60 21,64 13,64 L1,64 C-7,64 -11,59 -13,52 L-20,34 C-22,28 -16,25 -12,30 L-5,39 Z" fill="#ffe0c2" stroke="' + K + '" stroke-width="4" stroke-linejoin="round"/>' +
@@ -31967,7 +32060,7 @@ MJ.DEMOS.gateau = {w:300, h:420, f:function(el){
   var e2b = JSON.parse(JSON.stringify(e2)); e2b.glacage = 'menthe';
   var G = geo([e1, e2]);
   function medaillon(cls, x, y, r, dedans){ return '<g class="' + cls + '" transform="translate(' + P(x, y) + ')"><g class="gtd-in"><circle r="' + r + '" fill="#fff6dc" stroke="' + K + '" stroke-width="' + f1(r * .11) + '"/><g transform="scale(' + f1(r / 36) + ')">' + dedans + '</g></g></g>'; }
-  var IC1 = [62, 392], IC2 = [578, 392], B1 = [[150, 300], [150, 392], [150, 484]], B2 = [486, 392], FR = [300, 348];
+  var IC1 = [62, 392], IC2 = [578, 392], B1 = [[150, 300], [150, 392], [150, 484]], B2 = [486, 392], FR = [300, 348], PL = [62, 556];
   var coul = ['rose', 'menthe', 'citron'].map(function(c){ return A.glac(c).c; });
   var VUE = ' viewBox="0 0 300 420" preserveAspectRatio="xMidYMid slice">', CALQUE = '<g transform="translate(' + OX + ',' + OY + ') scale(' + E + ')">';
   el.innerHTML = '<div class="gtd-cadre"><svg class="gtd-fond" aria-hidden="true"' + VUE + A.defs(id) + CALQUE + A.fond(id) + '</g></svg><svg class="rg-demo-svg gtd"' + VUE +
@@ -31976,19 +32069,25 @@ MJ.DEMOS.gateau = {w:300, h:420, f:function(el){
       '<g class="gtd-e2a" transform="translate(' + P(G[1].cx, G[1].yB) + ')">' + etageSVG(e2, G[1], id + 'b') + '</g>' +
       '<g class="gtd-e2b" transform="translate(' + P(G[1].cx, G[1].yB) + ')" opacity="0">' + etageSVG(e2b, G[1], id + 'd') + '</g>' +
       medaillon('gtd-ic1', IC1[0], IC1[1], 46, A.icoBrut('glacage')) + medaillon('gtd-ic2', IC2[0], IC2[1], 46, A.icoBrut('fruits')) +
+      /* le bouton ＋ du bas : sombre, puis jaune quand il est allumé */
+      '<g class="gtd-plus" transform="translate(' + P(PL[0], PL[1]) + ')"><g class="gtd-in"><circle r="34" fill="#1c2447" stroke="' + K + '" stroke-width="4.5"/><circle class="gtd-plus-on" r="34" fill="#ffd23f" stroke="' + K + '" stroke-width="4.5" opacity="0"/>' +
+        '<path d="M-15,0 H15 M0,-15 V15" stroke="#eef0ff" stroke-width="8" stroke-linecap="round"/><path class="gtd-plus-on" d="M-15,0 H15 M0,-15 V15" stroke="#111" stroke-width="8" stroke-linecap="round" opacity="0"/></g></g>' +
       B1.map(function(b, i){ return '<g class="gtd-b1" transform="translate(' + P(b[0], b[1]) + ')" opacity="0"><g class="gtd-in"><circle r="34" fill="#fff6dc" stroke="' + K + '" stroke-width="4"/><circle r="21" fill="' + coul[i] + '" stroke="' + K + '" stroke-width="3.4"/><path d="M-12,-8 C-8,-13 0,-15 7,-13" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" opacity=".6"/></g></g>'; }).join('') +
       '<g class="gtd-b2" transform="translate(' + P(B2[0], B2[1]) + ')" opacity="0"><g class="gtd-in"><circle r="34" fill="#fff6dc" stroke="' + K + '" stroke-width="4"/><g transform="scale(1.05)">' + A.DECOS.fraise.dessin() + '</g></g></g>' +
       '<g class="gtd-fr" opacity="0"><g class="gtd-frr" transform="scale(1.5)">' + A.DECOS.fraise.dessin() + '</g></g>' +
     '</g>' + MAIN + '</svg></div>';
   var svg = el.querySelector('.gtd'), $ = function(s){ return svg.querySelector(s); }, $$ = function(s){ return Array.prototype.slice.call(svg.querySelectorAll(s)); };
   var main = $('.rg-main'), ic1 = $('.gtd-ic1 .gtd-in'), ic2 = $('.gtd-ic2 .gtd-in'), b1 = $$('.gtd-b1'), b2 = $('.gtd-b2'), fr = $('.gtd-fr'), frr = $('.gtd-frr'), ea = $('.gtd-e2a'), eb = $('.gtd-e2b');
-  /* le film (8 secondes) : 0,8 la main touche « glaçage » ; 1,9 elle touche la bulle verte ; 3,4 elle touche « fruits » ;
-     4,3 → 5,5 elle tire la fraise jusqu'au gâteau ; 6,3 un petit coup de doigt : la fraise tourne */
-  var m1 = sc(IC1[0], IC1[1]), mb = sc(B1[1][0], B1[1][1]), m2 = sc(IC2[0], IC2[1]), mf = sc(B2[0], B2[1]), mg = sc(FR[0], FR[1]);
+  var pl = $('.gtd-plus .gtd-in'), plOn = $$('.gtd-plus-on');
+  /* le film (10,2 secondes) : 0,8 la main touche « glaçage » ; 1,9 elle touche la bulle verte ; 3,4 elle touche « fruits » ;
+     4,3 → 5,5 elle tire la fraise jusqu'au gâteau ; 6,3 un petit coup de doigt : la fraise tourne ; 7,3 elle allume ＋ ;
+     8,3 elle touche la fraise : elle grossit */
+  var m1 = sc(IC1[0], IC1[1]), mb = sc(B1[1][0], B1[1][1]), m2 = sc(IC2[0], IC2[1]), mf = sc(B2[0], B2[1]), mg = sc(FR[0], FR[1]), mp = sc(PL[0], PL[1]);
   var PF = piste([[0, 120, 400, 0], [.7, m1[0], m1[1], 0], [.8, m1[0], m1[1], 1], [1.05, m1[0], m1[1], 0], [1.8, mb[0], mb[1], 0], [1.9, mb[0], mb[1], 1], [2.15, mb[0], mb[1], 0],
     [3.3, m2[0], m2[1], 0], [3.4, m2[0], m2[1], 1], [3.65, m2[0], m2[1], 0], [4.2, mf[0], mf[1], 0], [4.3, mf[0], mf[1], 1], [5.5, mg[0], mg[1], 1], [5.6, mg[0], mg[1], 0], [5.9, mg[0] + 14, mg[1] + 26, 0],
-    [6.2, mg[0], mg[1], 0], [6.3, mg[0], mg[1], 1], [6.5, mg[0], mg[1], 0], [7.2, mg[0] + 40, mg[1] + 70, 0], [8, 120, 400, 0]]);
-  var TAPES = [.8, 1.9, 3.4, 6.3], P0 = 8;
+    [6.2, mg[0], mg[1], 0], [6.3, mg[0], mg[1], 1], [6.5, mg[0], mg[1], 0], [7.2, mp[0], mp[1], 0], [7.3, mp[0], mp[1], 1], [7.55, mp[0], mp[1], 0],
+    [8.2, mg[0], mg[1], 0], [8.3, mg[0], mg[1], 1], [8.55, mg[0], mg[1], 0], [9.3, 120, 400, 0], [10.2, 120, 400, 0]]);
+  var TAPES = [.8, 1.9, 3.4, 6.3, 7.3, 8.3], P0 = 10.2;
   function rebond(t, t0){ var u = (t - t0) / .4; return u > 0 && u < 1 ? 1 + .16 * Math.sin(Math.PI * u) * (1 - u) * 2 : 1; }
   function eclos(t, t0){ var u = (t - t0) / .35; if(u <= 0) return 0; if(u >= 1) return 1; return u < .6 ? 1.12 * lisse(u / .6) : 1.12 - .12 * lisse((u - .6) / .4); }
   function image(t){
@@ -31998,14 +32097,16 @@ MJ.DEMOS.gateau = {w:300, h:420, f:function(el){
     o.setAttribute('r', f1(r)); o.setAttribute('opacity', op.toFixed(2)); mm.setAttribute('transform', m.p ? 'scale(.9)' : '');
     ic1.setAttribute('transform', 'scale(' + rebond(t, .8).toFixed(3) + ')'); ic2.setAttribute('transform', 'scale(' + rebond(t, 3.4).toFixed(3) + ')');
     b1.forEach(function(b, i){ var k = t < 2.9 ? eclos(t, .9 + i * .09) : 1 - lisse((t - 2.9) / .25); b.setAttribute('opacity', k > 0 ? Math.min(1, k * 1.5).toFixed(2) : '0'); b.firstChild.setAttribute('transform', 'scale(' + Math.max(.01, k).toFixed(3) + ')'); });
-    var vert = lisse((t - 1.9) / .25) * (1 - lisse((t - 7.5) / .4));
+    var vert = lisse((t - 1.9) / .25) * (1 - lisse((t - 9.5) / .4));
+    var allume = lisse((t - 7.3) / .15) * (1 - lisse((t - 9.4) / .3));   /* ＋ allumé */
+    pl.setAttribute('transform', 'scale(' + (rebond(t, 7.3) * (1 + .08 * allume * Math.sin(t * 6.3))).toFixed(3) + ')'); plOn.forEach(function(n){ n.setAttribute('opacity', allume.toFixed(2)); });
     eb.setAttribute('opacity', vert.toFixed(2)); ea.setAttribute('opacity', vert > .99 ? '0' : '1');
     var k2 = t < 5.7 ? eclos(t, 3.5) : 1 - lisse((t - 5.7) / .25); b2.setAttribute('opacity', k2 > 0 ? Math.min(1, k2 * 1.5).toFixed(2) : '0'); b2.firstChild.setAttribute('transform', 'scale(' + Math.max(.01, k2).toFixed(3) + ')');
     /* la fraise : elle sort de sa bulle sous le doigt, se pose, puis tourne d'un cran */
-    var vis = t > 4.35 && t < 7.6 ? 1 : 0, u = lisse((t - 4.3) / 1.2), fx = B2[0] + (FR[0] - B2[0]) * u, fy = B2[1] + (FR[1] - B2[1]) * u;
-    fr.setAttribute('opacity', vis ? (t > 7.3 ? (1 - lisse((t - 7.3) / .3)).toFixed(2) : '1') : '0');
+    var vis = t > 4.35 && t < 9.9 ? 1 : 0, u = lisse((t - 4.3) / 1.2), fx = B2[0] + (FR[0] - B2[0]) * u, fy = B2[1] + (FR[1] - B2[1]) * u;
+    fr.setAttribute('opacity', vis ? (t > 9.6 ? (1 - lisse((t - 9.6) / .3)).toFixed(2) : '1') : '0');
     fr.setAttribute('transform', 'translate(' + P(fx, fy) + ')');
-    frr.setAttribute('transform', 'scale(' + (t > 4.3 && t < 5.5 ? 1.7 : 1.5) + ') rotate(' + f1(45 * lisse((t - 6.3) / .25)) + ')');
+    frr.setAttribute('transform', 'scale(' + ((t > 4.3 && t < 5.5 ? 1.7 : 1.5) * (1 + .65 * eclos(t, 8.3))).toFixed(3) + ') rotate(' + f1(45 * lisse((t - 6.3) / .25)) + ')');
   }
   if(reduit()){ image(5.55); return {arreter:function(){}}; }
   image(0);

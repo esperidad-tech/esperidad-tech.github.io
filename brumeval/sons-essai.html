@@ -929,6 +929,8 @@ function sonsGateau(audio, sortie){
     annule:function(){ souffle(0, .16, .022, 1400, 500, .8); tendre(587, 0, .1, .03, 440, .008); },                                                                                                    /* un pas en arrière */
     pinceau:function(){ souffle(0, .17, .03, 900, 2300, .8); tendre(659, .03, .09, .03, 880, .006); tendre(1319, .1, .1, .014, null, .006); },                                                         /* un coup de pinceau */
     plein:function(){ tendre(330, 0, .12, .05, 294, .01, 'triangle', 1100); tendre(262, .1, .18, .045, 233, .01, 'triangle', 900); },                                                                  /* plus de place ! */
+    grossit:function(){ souffle(0, .2, .02, 500, 1600, .8); tendre(262, 0, .22, .05, 523, .01, 'triangle', 1400); tendre(784, .16, .1, .026, null, .006); },                                          /* ＋ : « bloup ! », ça gonfle */
+    rapetisse:function(){ tendre(784, 0, .2, .04, 330, .008, 'triangle', 1800); souffle(0, .14, .016, 1800, 600, .9); tendre(1175, .17, .05, .016, null, .004); },                                   /* − : « fiou… », ça dégonfle */
     /* la fête */
     bravo:function(){ [523, 659, 784, 1047, 1319, 1568].forEach(function(f, i){ tendre(f, i * .09, .3, .055, null, .01, 'triangle', 3000); });
       tendre(1047, .6, .95, .04, null, .02); tendre(1319, .6, .95, .03, null, .02); tendre(1568, .6, .95, .024, null, .02); grains(.55, .8, .016, 50, 5000); },                                        /* « C'est prêt ! » */
@@ -5414,7 +5416,7 @@ var section = {id:'mj-gateau', titre:'Gâteau de fête', sous:[
   {id:'gateau-decos', titre:'Une décoration posée', sons:liste([['fruit', 'Un fruit', .25], ['fleur', 'Une fleur', .7], ['bonbon', 'Un bonbon', .25], ['fete', 'Fête', .3], ['farfelu', 'Farfelu', .45],
     ['paillettes', 'Paillettes', .4], ['chantilly', 'Chantilly', .4]])},
   {id:'gateau-gestes', titre:'Gestes et fête', sons:liste([['prend', 'On la soulève', .12], ['tourne', 'Elle tourne', .15], ['poubelle', 'À la poubelle', .4], ['annule', 'Annuler', .2],
-    ['plein', 'Plus de place', .3], ['bravo', 'C’est prêt !', 1.6], ['confetti', 'Confettis', .5]])}
+    ['plein', 'Plus de place', .3], ['grossit', 'Ça grossit', .3], ['rapetisse', 'Ça rapetisse', .25], ['bravo', 'C’est prêt !', 1.6], ['confetti', 'Confettis', .5]])}
 ]};
 var mj = (G.CATALOGUE || []).filter(function(s){ return s.id === 'mj'; })[0];
 if(mj) mj.sous.push(section);
