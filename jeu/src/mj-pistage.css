@@ -1,9 +1,15 @@
-/* « Suivre les traces » (mj-pistage.js) : le monde est dessiné sur un canevas, le Pisteur reste au milieu de l'écran */
-.pg{position:relative;width:100%;height:100%;min-height:320px;overflow:hidden;border-radius:14px;background:#6fa85a;touch-action:none;user-select:none;-webkit-user-select:none;outline:none;cursor:pointer}
-.pg-sol{position:absolute;inset:0;width:100%;height:100%;display:block}
-.pg-heros{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;overflow:visible;filter:drop-shadow(0 3px 2px rgba(11,26,16,.35))}
+/* « Suivre les traces » (mj-pistage.js) : le monde est dessiné sur un canevas, le Pisteur reste au milieu de l'écran.
+   Par-dessus lui : les toits des passages couverts, les arbres qui débordent, le linge, la fumée (.pg-haut), puis la lumière
+   (.pg-amb : une toile trois fois plus petite, étirée — la nuit, la brume du matin, le soleil de l'après-midi). */
+.pg{position:relative;width:100%;height:100%;min-height:320px;overflow:hidden;border-radius:14px;background:#679a50;touch-action:none;user-select:none;-webkit-user-select:none;outline:none;cursor:pointer}
+.pg-sol,.pg-haut,.pg-amb{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+.pg-sol{pointer-events:auto}
+/* (pas de filtre d'ombre sur le Pisteur : il change à chaque image, le filtre coûtait cher ; son dessin a déjà son ombre) */
+.pg-heros{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;overflow:visible}
 /* les bords de l'image s'assombrissent un peu : on regarde par terre, pas au loin */
 .pg-voile{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 50%, rgba(20,14,30,0) 52%, rgba(20,14,30,.34) 100%)}
-.pg-dit{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);width:max-content;max-width:min(94%,470px);box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:16px;background:#fffdf4;border:3px solid #24182e;box-shadow:0 4px 0 rgba(36,24,46,.35);color:#24182e;font-weight:700;font-size:16px;line-height:1.25}
+.pg-matin .pg-voile{background:radial-gradient(ellipse at 50% 50%, rgba(60,50,90,0) 50%, rgba(60,50,90,.32) 100%)}
+.pg-nuit .pg-voile{background:radial-gradient(ellipse at 50% 50%, rgba(4,6,20,0) 45%, rgba(4,6,20,.5) 100%)}
+.pg-dit{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);width:max-content;max-width:min(94%,470px);box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:16px;background:#fffdf4;border:3px solid #24182e;box-shadow:0 4px 0 rgba(36,24,46,.35);color:#24182e;font-weight:700;font-size:16px;line-height:1.25;z-index:2}
 .pg-dit[hidden]{display:none}
 .pg-dit p{margin:0}
