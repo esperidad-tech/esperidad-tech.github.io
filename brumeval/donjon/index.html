@@ -714,9 +714,11 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .b-heros .bouc-b.jaune{filter:sepia(1) saturate(6) hue-rotate(5deg) brightness(1.15)}
 
 /* ====================================================================== LE COMBAT DE LÉO (leo.js ; Bible §13.33) : en temps réel */
-#combat.leo .decor{filter:brightness(1.55) saturate(1.1)}
-#leo-lueur{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;transition:opacity .5s;
-  background:radial-gradient(circle at 33% 34%,rgba(255,170,80,.36),rgba(255,140,60,0) 34%),radial-gradient(circle at 65.5% 34%,rgba(255,170,80,.36),rgba(255,140,60,0) 34%)}
+/* (15 novembre, la fluidité : plus de filtre sur le décor — il était recalculé chaque fois que la tablette repeignait la salle ;
+   l'image est éclaircie une fois pour toutes par construire.py : scene-leo-clair.webp. Et la lueur des torches n'est plus
+   « fondue » dans l'image d'en dessous (mix-blend-mode : toute la salle recomposée à part, à chaque image) : une simple lueur.) */
+#leo-lueur{position:absolute;inset:0;pointer-events:none;transition:opacity .5s;
+  background:radial-gradient(circle at 33% 34%,rgba(255,170,80,.2),rgba(255,140,60,0) 34%),radial-gradient(circle at 65.5% 34%,rgba(255,170,80,.2),rgba(255,140,60,0) 34%)}
 .leo-torche{position:absolute;top:96px;width:40px;height:90px;pointer-events:none}
 .leo-flamme{position:absolute;left:8px;top:-2px;width:24px;height:40px;border-radius:50% 50% 46% 46%/64% 64% 36% 36%;background:radial-gradient(circle at 50% 72%,#fff7c0 0 22%,#ffc040 46%,#ff7a20 76%,rgba(255,90,20,0));
   transform-origin:50% 100%;animation:leoFlamme .42s ease-in-out infinite alternate;transition:opacity .35s,transform .35s}
@@ -766,7 +768,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 @keyframes leoGoutte{0%{transform:translateY(0) scale(.5);opacity:0}15%{opacity:1;transform:translateY(8px) scale(1)}85%{opacity:1}100%{transform:translateY(118px) scale(.9);opacity:0}}
 .l-feu{position:absolute;left:118px;top:56px;font-size:30px;display:none;animation:flotte .5s ease-in-out infinite;pointer-events:none}
 .heros.brule .l-feu{display:block}
-.heros.brule .acteur{filter:sepia(.5) saturate(2) hue-rotate(-18deg)}
+/* (15 novembre : plus de filtre sur tout le héros qui brûle — la flamme au-dessus de lui suffit) */
 .l-proie{position:absolute;left:104px;top:22px;font-size:26px;display:none;pointer-events:none;text-align:center;width:70px;animation:pulse .7s ease-in-out infinite}
 .l-proie b{display:block;font-size:15px;color:#ff9a8a;text-shadow:0 1px 0 #000,0 0 4px #000;line-height:1}
 .heros.proie .l-proie{display:block}
@@ -777,7 +779,10 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .lb-nom{display:flex;align-items:baseline;gap:8px;height:16px;line-height:16px;padding:0 3px;white-space:nowrap}
 .lb-nom b{font-family:var(--f-titre);font-weight:400;font-size:14.5px;color:var(--hc);text-shadow:0 1px 0 #000}
 .lb-nom em{font-style:normal;font-size:12.5px;color:#ffd0c0;font-weight:800}
-.lb-g > u{position:absolute;left:0;right:0;bottom:0;height:6px;background:linear-gradient(90deg,#ffd36a,#ff9a3a);transform-origin:0 50%;transform:scaleX(0);text-decoration:none}
+.lb-g > u{position:absolute;left:0;right:0;bottom:0;height:6px;background:linear-gradient(90deg,#ffd36a,#ff9a3a);transform-origin:0 50%;transform:scaleX(0);text-decoration:none;will-change:transform}
+/* une icône qui a fini de servir (une arme cassée, la rune de l'œil ouverte) : elle garde sa case, éteinte pour de bon (Romain, 15 novembre) */
+.lb-cartes .carte.vide{opacity:.13;pointer-events:none}
+.lb-cartes .carte .l-us{display:contents}
 .lb-g.pris .lb-cartes{opacity:.4}
 .lb-cartes{display:grid;grid-auto-rows:62px;gap:5px;align-content:start;flex:1;min-width:0}
 /* ce que montre la rune de l'œil : ses trois prochaines attaques, aux pieds de Léo, tout en bas de la salle */
@@ -786,7 +791,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 #leo-suite i{font-style:normal;display:block;line-height:1;text-align:center}
 #leo-suite i.grand{font-size:29px;width:34px;height:34px;line-height:34px}
 #leo-suite i.petit{font-size:19px;width:23px;height:23px;line-height:23px;opacity:.78}
-#leo-suite i.cours{animation:pulse .7s ease-in-out infinite;filter:drop-shadow(0 0 5px #ff6a4a)}
+#leo-suite i.cours{animation:pulse .7s ease-in-out infinite}
 #leo-suite i + i::before{content:'›';position:absolute;margin-left:-8px;color:#7fb4d4;font-size:13px;font-weight:800;line-height:inherit}
 .lb-cartes .carte.mini{height:62px;min-width:0;touch-action:manipulation}
 .lb-cartes .carte.mini .c-ic{height:34px;line-height:34px;font-size:25px}
@@ -830,6 +835,18 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .parchemin.leo-def h2{font-size:30px}
 /* ====================================================================== LA PHASE 2 DE LÉO (leo-p2.js ; Bible §13.40) : ses effets
    (RAPIDITE.md : on n'anime que transform et opacity ; tout est posé en coordonnées de scène, puis retiré) */
+/* l'annonce d'une attaque (15 novembre) : son nom en gros au milieu de la salle, et la jauge qui se remplit jusqu'au coup */
+.lp-annonce{position:absolute;left:236px;top:54px;display:flex;align-items:center;gap:8px;padding:7px 16px 13px 12px;border-radius:14px;background:rgba(20,10,8,.88);border:3px solid #ffb050;color:#ffe9c4;font:900 25px/1 var(--f-titre, serif);letter-spacing:.03em;white-space:nowrap;pointer-events:none;z-index:46;opacity:0;text-shadow:0 2px 0 #000;will-change:transform,opacity}
+.lp-annonce b{font-size:25px;font-weight:400}
+.lp-annonce > i{position:absolute;left:10px;right:10px;bottom:5px;height:5px;border-radius:3px;background:rgba(255,255,255,.16);overflow:hidden}
+.lp-annonce u{display:block;width:100%;height:100%;background:#ffb050;transform-origin:0 50%;transform:scaleX(0);will-change:transform;text-decoration:none}
+.lp-annonce.vert{border-color:#7dff6a;color:#dcffd0}.lp-annonce.vert u{background:#7dff6a}
+.lp-annonce.rat{border-color:#d8c8a8;color:#f3ead8}.lp-annonce.rat u{background:#d8c8a8}
+/* le saut : la cible au sol, là où il va retomber (l'anneau se resserre jusqu'au choc) */
+.lp-cible-saut{position:absolute;top:336px;width:0;height:0;pointer-events:none;opacity:0;will-change:opacity}
+.lp-cible-saut i{position:absolute;left:0;top:0;width:330px;height:64px;border-radius:50%;transform:translate(-50%,-50%)}
+.lp-cible-saut i:first-child{border:5px solid #ffb050;will-change:transform}
+.lp-cible-saut i:last-child{width:150px;height:30px;background:radial-gradient(closest-side,rgba(255,176,80,.75),rgba(255,120,40,.35) 60%,rgba(255,120,40,0))}
 .lp-alerte{position:absolute;font:900 44px/1 var(--f-titre, serif);text-shadow:0 3px 0 #1a0e08,0 0 12px rgba(0,0,0,.8),0 0 18px currentColor;pointer-events:none;z-index:45}
 .lp-note{position:absolute;font-size:30px;line-height:1;color:#ffe9a0;text-shadow:0 2px 0 #1a0e08,0 0 8px rgba(255,220,120,.8);pointer-events:none;z-index:45}
 .lp-lueur{position:absolute;left:-60px;top:-60px;width:120px;height:120px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,250,220,.95),rgba(255,170,60,.75) 35%,rgba(255,90,30,.35) 62%,rgba(255,60,20,0));pointer-events:none;z-index:44;opacity:0;will-change:transform,opacity}
@@ -5845,6 +5862,7 @@ function css(){
     '.ha.ha-calme .cu-ilot.ha-meche,.ha.ha-calme .cu-ilot.ha-tresse{animation:haVent2 2.4s ease-in-out infinite}' +
     '@keyframes haVent{0%,100%{transform:none}25%{transform:rotate(-1.3deg) skewX(1deg)}75%{transform:rotate(1.1deg) skewX(-1deg)}}' +
     '@keyframes haVent2{0%,100%{transform:none}25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}' +
+    '.ha.ha-tr .cu-ilot,.ha.ha-tr .ha-bulle-boucle,.ha.ha-tr .ha-etinc-boucle{animation:none!important}' +
     '.ha .ha-calme-seul{display:none}.ha.ha-calme .ha-calme-seul{display:block}.ha.ha-calme .cu-ilot.ha-trait{visibility:hidden}' +
     '.ha.ha-calme.ha-corde-vive .cu-ilot.ha-trait{visibility:visible}.ha.ha-calme.ha-corde-vive .ha-corde-fixe{display:none}' +
     '.ha .ha-bulle-boucle{animation:haBulle 1.3s ease-out infinite}.ha.ha-bout .ha-bulle-boucle{animation-duration:.5s}' +
@@ -6060,7 +6078,16 @@ H._idleOn = function(){
     boucle('tete', 'rotate(-5deg)', 430, 90);
     boucle('brasA', 'rotate(-4deg)', 380, 40); boucle('brasB', 'rotate(4deg)', 410, 60);
     if(this.R0.idle) this.R0.idle.call(this, A, boucle);
+  } else if(window.SALLE && window.SALLE.tempsReel){
+    /* un combat en temps réel (Léo ; Romain, 15 novembre : « ça rame de partout ») : la page refait une image du fil principal
+       à chaque instant, et chaque animation en boucle lui coûte à chaque fois — et une seule pièce qui bouge oblige la carte
+       graphique à garder tout le héros en plusieurs calques (de la mémoire : c'est elle qui fait « quitter » le jeu sur un iPhone).
+       Entre deux gestes, le héros se tient donc immobile : ni souffle, ni petits gestes, ni clignements, ni tissus qui se balancent.
+       (On pianote sans arrêt : il ne reste pas immobile longtemps.) */
+    this.racine.classList.add('ha-tr');
+    return;
   } else {
+    this.racine.classList.remove('ha-tr');
     boucle('torse', 'translate(0px,-1.6px) scale(1.014,1.025)', 1400);
     boucle('tete', 'translate(0px,-1.4px) rotate(-2.4deg)', 1400, 180);
     boucle('brasA', 'rotate(-2.8deg)', 1400, 260); boucle('brasB', 'rotate(3deg)', 1400, 330);
@@ -6103,6 +6130,11 @@ H._gestes = function(){
 H._actif = function(t){
   if(!this.cuit) return true;
   var c = this.corde, corde = c && (c.mode !== 'libre' || c.fl || c.vib > .25);
+  /* (Romain, 15 novembre : « ça rame de partout », le combat de Léo. En temps réel, les héros agissent sans arrêt : leurs tissus
+     seraient recalculés à chaque image — lire toutes les positions, redessiner les capes, tout repeindre. SALLE.tissusFiges :
+     les tissus restent sur leur balancement tout fait, joué par la carte graphique ; seule la corde de l'arc est calculée.) */
+  /* (sauf pendant que l'Alchimiste verse d'une fiole dans l'autre : le filet de potion se calcule à chaque image, une seconde) */
+  if(window.SALLE && window.SALLE.tissusFiges && !this._verse){ if(!this._dort) this._endormir(); this._corde(corde); return corde ? 'corde' : false; }
   /* une vraie action : tout est recalculé (tissus compris) */
   if(this._occupe || this._verse){ this._calmeDepuis = 0; this._corde(false); if(this._dort) this._reveil(); return true; }
   /* les petits gestes d'attente ne bougent que les bras : ils se jouent sans réveiller les tissus ; seule la corde tirée
@@ -11036,7 +11068,8 @@ L.DEBUT = 2.2;                                        /* le calme du début d'un
 /* l'ordre des attaques, en boucle. Romain : PAS au hasard — « un ordre très particulier, que tu calcules ». On l'apprend en jouant. */
 L.ORDRE = {
   1:['fleau', 'charge', 'marteau', 'meule', 'crochet', 'cape'],
-  2:['sifflet', 'poing', 'faux', 'charge', 'lancer', 'gourde', 'saut'],
+  /* (Romain, 15 novembre : « enlève une attaque, il y a une attaque qui sert à rien, qu'on peut pas contrer : c'est le coup de poing ») */
+  2:['sifflet', 'faux', 'charge', 'lancer', 'gourde', 'saut'],
   3:['poing3', 'rafale', 'charge', 'hurlement', 'attrape', 'souffle']
 };
 /* prise : il prend son arme (on la voit) ; elan : il arme son coup ; retour : il revient en garde. cibles : 'un' | 'deux' | 'tous'.
@@ -11055,7 +11088,9 @@ L.ATTAQUES = {
   sifflet:{nom:'Le sifflet', ic:'🐀', arme:'sifflet', prise:.7, elan:.9, retour:.5, rats:true},                             /* Romain : deux rats ; d'abord normaux, puis cuirassés, puis les deux */
   poing:{nom:'Le coup de poing', ic:'👊', arme:null, prise:0, elan:.5, retour:.5, degats:10, cibles:'tous', casse:true, rapide:true},   /* Romain : très rapide, 10, enlève tous les boucliers */
   faux:{nom:'La faux', ic:'🌙', arme:'faux', prise:1.0, elan:1.3, retour:.9, degats:10, cibles:'tous', saigne:true},         /* Romain : un balayage sur les trois, qui fait saigner */
-  saut:{nom:'Le saut', ic:'💥', arme:null, prise:.5, elan:1.0, retour:1.0, degats:16, cibles:'tous', etourdit:3.0},         /* Romain : étourdit les trois ; on n'a le temps que d'un bouclier jaune */
+  /* (Romain, 15 novembre : « il faut qu'elle dure un tout petit peu plus longtemps pour la préparation, comme c'est une assez grosse
+     attaque » : il se ramasse .8 s puis reste 1,5 s en l'air — 2,3 s pour réagir, au lieu de 1,5) */
+  saut:{nom:'Le saut', ic:'💥', arme:null, prise:.8, elan:1.5, retour:1.0, degats:16, cibles:'tous', etourdit:3.0},         /* Romain : étourdit les trois ; on n'a le temps que d'un bouclier jaune */
   gourde:{nom:'La gourde', ic:'🧴', arme:'gourde', prise:.8, elan:2.4, retour:.6, soin:600},                                /* Romain : il reprend beaucoup de vie ; le marteau l'arrête */
   lancer:{nom:'Le lancer de rat', ic:'🐁', arme:null, prise:0, elan:.55, retour:.5, degats:15, fois:2, cibles:'un', rapide:true},   /* Romain : rapide, le rat mord deux fois */
   /* ---------- phase 3 : la potion ---------- */
@@ -11079,7 +11114,9 @@ L.BARRE = {
   /* (phase 2 : l'acide de l'Alchimiste reste — sans lui, les rats cuirassés seraient increvables une fois le crochet cassé ; et le
      feu reste — c'est la seule chose qui touche Léo par-dessus ses rats : sans lui, la simulation met deux fois plus de temps
      à finir la phase, plus de quatre minutes pour un joueur ordinaire) */
-  2:{pisteur:['dague', 'l:crochet', 'l:fleau', 'l:marteau', 'p:huile', 'p:feu'], alchimiste:['p:huile', 'p:feu', 'p:acide', 'herbes', 'p:baume', 'p:coeur'], sage:['oeil', 'rune', 'bouclier', 'a:baton-chene']},
+  /* (Romain, 15 novembre : « enlève-moi cette flèche de feu, elle sert à rien, alors que la flèche d'acide va enlever les armures » :
+     le Pisteur a la flèche d'acide à la place ; le feu de l'Alchimiste reste, pour toucher Léo par-dessus ses rats) */
+  2:{pisteur:['dague', 'l:crochet', 'l:fleau', 'l:marteau', 'p:huile', 'p:acide'], alchimiste:['p:huile', 'p:feu', 'p:acide', 'herbes', 'p:baume', 'p:coeur'], sage:['oeil', 'rune', 'bouclier', 'a:baton-chene']},
   3:{pisteur:['l:faux', 'l:gourde', 'p:givre', 'p:huile'], alchimiste:['p:givre', 'p:huile', 'herbes', 'p:baume', 'p:coeur'], sage:['oeil', 'bouclier', 'a:baton-chene']}
 };
 L.FLAQUE = 6;                                         /* l'huile ou la colle sous ses pieds tient six secondes */
@@ -11090,9 +11127,11 @@ L.COUPS = {fleche:45, lourde:55, dague:90, dagueSol:270, feu:60, acide:30, louch
 L.FEU = {n:8, pas:.5, duree:4};                       /* le feu le fait brûler quatre secondes */
 L.USAGES = 3;                                         /* Romain : chaque arme ramassée sert trois fois, puis casse */
 L.ARMES = {
-  crochet:{nom:'Crochet', ic:'🪝', d:'fait très mal', phase:2, vise:'ennemi'},
-  fleau:{nom:'Fléau', ic:'🌾', d:'frappe deux cibles', phase:2, vise:'ennemi'},
-  marteau:{nom:'Marteau', ic:'🔨', d:'coupe son geste', phase:2, vise:'ennemi'},
+  /* (Romain, 15 novembre : « j'aimerais que le marteau soit infini, que le fléau soit infini, et le crochet aussi » : ces trois-là
+     ne s'usent plus — infini:true ; la faux et la gourde de la phase 3 gardent leurs trois coups) */
+  crochet:{nom:'Crochet', ic:'🪝', d:'fait très mal', phase:2, vise:'ennemi', infini:true},
+  fleau:{nom:'Fléau', ic:'🌾', d:'frappe deux cibles, fait fuir les rats', phase:2, vise:'ennemi', infini:true},
+  marteau:{nom:'Marteau', ic:'🔨', d:'coupe son geste', phase:2, vise:'ennemi', infini:true},
   faux:{nom:'Faux', ic:'🌙', d:'fait saigner', phase:3, vise:'ennemi'},
   gourde:{nom:'Gourde', ic:'🧴', d:'toute la vie', phase:3, vise:'heros'}
 };
@@ -11116,7 +11155,7 @@ L.DUREES = {
 };
 L.MOTS = {
   occupe:'Pas encore !', etourdi:'Étourdi !', attrape:'Attrapé !', sol:'Au sol !', noir:'Dans le noir !', farine:'Dans la farine !', loin:'Trop loin !',
-  casse:'Cassé !', insensible:'Insensible !', rien:'Rien du tout', personne:'Personne au sol', debout:'Encore debout', fini:'C\'est fini', cible:'Qui viser ?',
+  fuit:'Il détale !', casse:'Cassé !', insensible:'Insensible !', rien:'Rien du tout', personne:'Personne au sol', debout:'Encore debout', fini:'C\'est fini', cible:'Qui viser ?',
   impossible:'Impossible !', glisse:'Ça glisse !', vu:'Il voit tout', boucle:'Déjà protégé', tousse:'Il tousse…', tropTard:'Trop tard !',
   clair:'Il fait clair', forme:'En pleine forme', ebloui:'Ébloui !'
 };
@@ -11200,7 +11239,9 @@ P.gestes = function(h){
     else if(id === 'dague'){ var d = self.devant(), ok = !(d === 'leo' && cache); g(id, G.nom, 'ennemi', ok ? [d] : [], ok, sombre ? L.MOTS.noir : L.MOTS.farine); }
     else if(id === 'oeil') g(id, G.nom, 'salle', [], !self.vu, L.MOTS.vu);
     else if(id === 'rune'){
-      g(id, G.nom, 'ennemi', rats, rats.length > 0, L.MOTS.rien);
+      /* (Romain, 15 novembre : « quand on appuie sur la lumière, il faut que ça illumine tout le monde, pas juste une personne » :
+         contre Léo, la rune de lumière éclaire toute la salle — tous les rats d'un coup) */
+      g(id, G.nom, 'salle', [], rats.length > 0, L.MOTS.rien);
       /* le bâton de lune : toute la salle — il rallume les torches (et coupe l'attaque de Léo), il aveugle tous les rats */
       if(self.objets[h].indexOf('cristal-lune') >= 0) g('a:cristal-lune', G.nom, 'salle', [], sombre || rats.length > 0, L.MOTS.clair);
     }
@@ -11218,6 +11259,7 @@ P.gestes = function(h){
     var A = L.ARMES[a], reste = self.armes[a];
     if(reste === undefined) return;
     if(reste <= 0) return;                                           /* cassée : elle a quitté la bande */
+    if(A.infini) reste = null;                                       /* (elle ne s'use pas : pas de compteur sur son icône) */
     if(A.vise === 'heros') g('l:' + a, A.nom, 'heros', amis, amis.length > 0, L.MOTS.personne, {reste:reste, arme:a});
     else if(a === 'marteau' || a === 'faux'){ var okM = !cache; g('l:' + a, A.nom, 'ennemi', okM ? ['leo'] : [], okM, sombre ? L.MOTS.noir : L.MOTS.farine, {reste:reste, arme:a}); }
     else { var dz = self.devant(), okA = !(dz === 'leo' && cache); g('l:' + a, A.nom, 'ennemi', okA ? [dz] : [], okA, sombre ? L.MOTS.noir : L.MOTS.farine, {reste:reste, arme:a}); }
@@ -11292,7 +11334,7 @@ P.barre = function(){
       if(!g) return;                                                  /* pas cette recette, pas ce bâton, arme cassée : pas d'icône */
       if(id === 'oeil' && self.vu) return;                            /* la rune de l'œil est ouverte pour tout le combat : son icône a fini de servir */
       var a = self.auto(h, id, g), o = {heros:h, geste:id, nom:g.nom, vise:g.vise, permis:g.permis, mot:g.mot, auto:a};
-      if(g.reste != null){ o.reste = g.reste; o.arme = g.arme; }
+      if(g.arme){ o.arme = g.arme; if(g.reste != null) o.reste = g.reste; }
       if(g.sorte) o.sorte = g.sorte;
       /* personne à viser : l'icône est éteinte, avec son mot */
       if(o.permis && g.vise !== 'salle' && g.vise !== 'equipe' && !a.length){
@@ -11352,7 +11394,7 @@ P.agir = function(h, geste, cible){
   S.act = {geste:geste, cibles:cibles, impact:this.t + d.impact, fin:this.t + d.fin, fait:false};
   var ev = [{t:'geste', heros:h, geste:geste, cible:cibles.length > 1 ? cibles.slice() : (cibles[0] == null ? null : cibles[0]), impact:d.impact, fin:d.fin}];
   /* une arme ramassée s'use dès qu'on s'en sert */
-  if(geste.indexOf('l:') === 0){ var a = geste.slice(2); this.armes[a]--; ev.push({t:'arme', nom:a, reste:this.armes[a]}); }
+  if(geste.indexOf('l:') === 0){ var a = geste.slice(2); if(!L.ARMES[a].infini){ this.armes[a]--; ev.push({t:'arme', nom:a, reste:this.armes[a]}); } }
   return ev;
 };
 P._annuler = function(ev, h, cause){ var S = this.h[h]; if(S.act && !S.act.fait){ ev.push({t:'annule', heros:h, cause:cause}); } S.act = null; };
@@ -11542,7 +11584,7 @@ P._effet = function(ev, h, a){
     this.ratsVivants().forEach(function(r){ self._ratLumiere(ev, r); });
     return;
   }
-  if(g === 'rune'){ var rr = this.rat(x); if(rr && !rr.mort) this._ratLumiere(ev, rr); return; }
+  if(g === 'rune'){ this.ratsVivants().forEach(function(r){ self._ratLumiere(ev, r); }); return; }
   if(g === 'l:gourde'){ if(!this.h[x].sol) this._soin(ev, x, Math.ceil(this.h[x].pvMax * L.GOURDE_SOIN), 'gourde'); return; }
   if(g.indexOf('p:') === 0 && h !== 'pisteur'){
     var rec = D.RECETTES[g.slice(2)];
@@ -11635,6 +11677,9 @@ P._toucheRat = function(ev, r, coup){
     ev.push({t:'degats', cible:r.id, n:n, pv:r.pv, cause:cause, critique:n >= 60});
     if(r.pv <= 0){ r.mort = true; ev.push({t:'rat', quoi:'meurt', id:r.id, par:cause}); }
   }
+  /* (Romain, 15 novembre : « quand on utilise le fléau, ça tape deux personnes ; et les rats, ça les fait automatiquement fuir » :
+     un rat touché par le fléau détale, cuirassé ou non) */
+  if(coup === 'fleau'){ r.mort = true; ev.push({t:'mot', sur:r.id, texte:L.MOTS.fuit}); ev.push({t:'rat', quoi:'meurt', id:r.id, par:'fleau'}); return; }
   if(coup === 'crochet'){
     /* Romain : le crochet tue un rat d'un coup ; sur un rat cuirassé, il casse l'armure, et le coup d'après le tue */
     if(cuir){ r.nu = true; ev.push({t:'rat', quoi:'nu', id:r.id, par:'crochet'}); return; }
@@ -16235,7 +16280,9 @@ DJ.verifierTemoin = function(){
     if(tc && Date.now() - tc < 600000) localStorage.setItem(CLE_PLANT_CHARGE, String(DJ.plantagesCharge() + 1));
     localStorage.removeItem(CLE_CHARGE);
   }catch(e){}
-  if(DJ.plantages() > 0 || DJ.critLent()) SALLE.critLeger = true;
+  /* (Romain, 15 novembre : « depuis le début, il y a toujours des problèmes avec le critique, ça rame à chaque fois que ça pète » :
+     le critique allégé — six volutes de fumée au lieu de onze, quatre morceaux — devient celui de TOUT LE MONDE) */
+  SALLE.critLeger = true;
   return DJ.plantages();
 };
 /* La fluidité du critique, mesurée sur l'appareil lui-même (Romain, 10 novembre, iPhone 16 Pro : « il a l'air de marcher,
@@ -16245,7 +16292,12 @@ DJ.verifierTemoin = function(){
 var CLE_LENT = 'brumeval-donjon-critique-lent', CLE_MESURE = 'brumeval-donjon-critique-mesure';
 DJ.critLent = function(){ try{ return +localStorage.getItem(CLE_LENT) || 0; }catch(e){ return 0; } };
 DJ.critMesure = function(){ try{ return localStorage.getItem(CLE_MESURE) || ''; }catch(e){ return ''; } };
-DJ.mesurerCritique = function(){
+/* ⚠️ 15 novembre : CETTE MESURE EST ÉTEINTE. Pour compter les images en retard, elle réveillait le fil principal à CHAQUE image
+   pendant tout le critique — et une image du fil principal, dans une salle pleine de personnages animés, coûte cher (RAPIDITE.md,
+   R3 et R6) : l'outil qui devait dire si le critique ramait le faisait ramer. Sans elle, c'est la carte graphique qui joue seule
+   tout le critique (il est programmé d'un coup, d'avance). L'ancienne mesure est gardée sous le nom DJ.mesurerCritiqueVrai. */
+DJ.mesurerCritique = function(){ return {fin:function(){}}; };
+DJ.mesurerCritiqueVrai = function(){
   var dernier = 0, pire = 0, lentes = 0, n = 0, fini = false, raf = window.requestAnimationFrame;
   if(!raf) return {fin:function(){}};
   function image(t){
@@ -16265,7 +16317,7 @@ DJ.mesurerCritique = function(){
     if(lent) SALLE.critLeger = true;
   }};
 };
-DJ.VERSION = '14/11 à 22 h 36';
+DJ.VERSION = '15/11 à 11 h 13';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
@@ -18536,6 +18588,7 @@ function ik(j, t, L1, L2, sens){
 
 /* ============================================================================ LA CUISSON (une fois pour toutes) */
 var CUIT = {};                      /* nom de pièce -> url de l'image */
+var IMG = {};                       /* nom de pièce -> l'image décodée (pour la peindre sur la toile) */
 var cuisson = null;
 /* (pour la cuisson : Cuire.image ajoute lui-même la largeur et la hauteur ; avec, l'image serait invalide) */
 function svgPiece(nom, enLigne){ var p = P[nom], b = p.boite; return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + b.join(' ') + '"' + (enLigne ? ' width="' + b[2] + '" height="' + b[3] + '"' : '') + '>' + (enLigne ? '' : DEFS) + p.svg + '</svg>'; }
@@ -18561,7 +18614,7 @@ function preparer(){
     return Cu.image(svgPiece(nom), b[2], b[3], res).then(function(url){ if(url) CUIT[nom] = url; }).catch(function(){});
   })).then(function(){
     /* les images décodées d'avance (RAPIDITE.md, R7) */
-    return Promise.all(Object.keys(CUIT).map(function(n){ var i = new Image(); i.src = CUIT[n]; return i.decode ? i.decode().catch(function(){}) : null; }));
+    return Promise.all(Object.keys(CUIT).map(function(n){ var i = new Image(); i.src = CUIT[n]; return i.decode ? i.decode().then(function(){ IMG[n] = i; }, function(){}) : new Promise(function(ok){ i.onload = function(){ IMG[n] = i; ok(); }; i.onerror = ok; }); }));
   }).then(function(){ return true; }, function(){ return false; });
   return cuisson;
 }
@@ -18576,12 +18629,20 @@ function css(){
     '.lc-p{position:absolute;left:0;top:0;width:1px;height:1px;transform-origin:0 0;will-change:transform}' +
     '.lc-p > img, .lc-p > svg{position:absolute;display:block;max-width:none;pointer-events:none;-webkit-user-drag:none;user-select:none}' +
     '.lc-p.cache{display:none}' +
-    '.lc-ombre{position:absolute;left:76px;top:' + (PIED - 9) + 'px;width:150px;height:18px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.55),rgba(0,0,0,0));transform-origin:50% 50%}' +
+    /* (en combat : tout Léo est peint sur UNE toile ; ses pièces ne sont plus dans la page — voir _peindre) */
+    '.lc.lc-sur-toile .lc-p{display:none}' +
+    '.lc-toile{position:absolute;display:block;pointer-events:none}' +
+    '.lc-ombre{position:absolute;left:76px;top:' + (PIED - 9) + 'px;width:150px;height:18px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.55),rgba(0,0,0,0));transform-origin:50% 50%;will-change:transform,opacity}' +
+    /* la teinte (le givre, le feu, le soin…) : une lueur de couleur posée sur lui — plus de filtre sur tout Léo, recalculé à chaque image */
+    '.lc-teinte{position:absolute;left:10px;top:20px;width:280px;height:320px;border-radius:46%;pointer-events:none;opacity:0;z-index:200;transition:opacity .25s;will-change:transform,opacity}' +
     '.lc-cape{position:absolute;left:0;top:0;width:' + W + 'px;height:' + H + 'px;overflow:visible;pointer-events:none}';
   document.head.appendChild(s);
 }
-function Corps(parent){
+function Corps(parent, o){
   css();
+  o = o || {};
+  /* où est le pantin dans la scène (pour la toile, qui couvre toute la salle) */
+  this.ox = (o.cx == null ? 815 : o.cx) - W / 2; this.oy = (o.sol == null ? 340 : o.sol) - PIED;
   var self = this, d = document.createElement('div');
   d.className = 'lc';
   parent.appendChild(d);
@@ -18601,8 +18662,10 @@ function Corps(parent){
     if(CUIT[nom]){ var i = document.createElement('img'); i.src = CUIT[nom]; i.alt = ''; i.style.cssText = 'left:' + b[0] + 'px;top:' + b[1] + 'px;width:' + b[2] + 'px;height:' + b[3] + 'px'; e.appendChild(i); }
     else { defsPage(); e.innerHTML = svgPiece(nom, true); var sv = e.firstChild; sv.style.left = b[0] + 'px'; sv.style.top = b[1] + 'px'; sv.style.overflow = 'visible'; }
     d.appendChild(e);
-    self.pieces[cle] = {el:e, nom:nom, ou:ou, os:p.os, z:z + 2, vu:true};
+    self.pieces[cle] = {el:e, cle:cle, nom:nom, ou:ou, os:p.os, z:z + 2, vu:true, b:b};
   });
+  this.liste = []; this.surToile = false; this.teinteT = null; this.flashT = 0;
+  this.teinteEl = document.createElement('div'); this.teinteEl.className = 'lc-teinte'; d.appendChild(this.teinteEl);
   this.etat = {visage:'colere', faux:'dos', gourde:'ceinture', bouchon:true, sifflet:'cou', rat:null, capuche:false, tunique:false, cape:false, main:{Av:'poing', Ar:'poing'}, devantAr:false};
   this.p = complete(GARDE);
   this.de = null; this.a = null; this.t = 0; this.duree = 0; this.courbe = null; this.fin = null; this.temps = 0;
@@ -18636,6 +18699,107 @@ CP._maj = function(){
   /* le bras de derrière passe devant le buste quand il tient la faux avec l'autre main */
   ['brasAr', 'mancheAr', 'avantAr', 'mancheArA', 'poingAr', 'mainAr'].forEach(function(cle, k){ var q = self.pieces[cle]; q.el.style.zIndex = String(E.devantAr ? 80 + k : q.z); });
   this.capeEl.style.display = E.cape ? '' : 'none';
+  /* la liste de ce qui se voit, de derrière vers devant (pour la toile) */
+  this.liste = Object.keys(this.pieces).map(function(cle){ return self.pieces[cle]; }).filter(function(q){ return q.vu; })
+    .map(function(q){ var k = ['brasAr', 'mancheAr', 'avantAr', 'mancheArA', 'poingAr', 'mainAr'].indexOf(q.cle); return {q:q, z:E.devantAr && k >= 0 ? 80 + k : q.z}; })
+    .sort(function(a, b){ return a.z - b.z; }).map(function(x){ return x.q; });
+  /* torse nu (le combat) : sur la toile ; habillé (la cinématique : la cape est un dessin vivant) : en pièces, comme avant */
+  this._choisirToile(!E.cape && !E.tunique && !E.capuche);
+};
+/* ---------- LA TOILE (Romain, 15 novembre : « ça rame de partout », « optimisation au maximum ») ----------
+   Avant : une quarantaine de pièces, chacune sur son calque, déplacées une par une à chaque image (autant de styles à recalculer
+   et de calques à renvoyer à la carte graphique, 60 fois par seconde — et autant de mémoire, ce qui compte sur un iPhone).
+   Maintenant, en combat : UNE toile (canvas) de la taille de la salle ; à chaque image, on y repeint les pièces (des images déjà
+   prêtes) à leur place. Un seul calque, aucun style à recalculer ; la teinte (le givre, le feu, le soin) se peint sur la toile,
+   sans filtre. On n'efface que le rectangle peint à l'image d'avant. */
+var SCENE = [960, 372];
+/* ⚠️ ESSAYÉ LE 15 NOVEMBRE, ET LAISSÉ ÉTEINT : sur la machine d'essai (sans carte graphique), la toile est DEUX FOIS PLUS LENTE que
+   les pièces sur leurs calques (une toile se repeint et se renvoie en entier à chaque image ; les calques, eux, sont seulement
+   déplacés). Sur une vieille tablette, ce serait pareil. LeoCorps.avecToile = true la rallume, pour comparer sur un vrai appareil. */
+function LeoCorps_sansToile(){ return !(window.LeoCorps && window.LeoCorps.avecToile); }
+function echelleToile(){
+  var dpr = window.devicePixelRatio || 1, sc = Math.min(1.6, Math.max(.5, (window.innerWidth || 960) / 960));
+  return Math.max(1, Math.min(2, dpr * sc));
+}
+CP._choisirToile = function(veut){
+  var self = this, peut = !LeoCorps_sansToile() && Object.keys(P).every(function(n){ return !!IMG[n]; });
+  var on = !!(veut && peut);
+  if(on === this.surToile) return;
+  this.surToile = on;
+  if(on){
+    if(!this.toile){
+      var cv = this.toile = document.createElement('canvas'); cv.className = 'lc-toile';
+      cv.style.left = (-this.ox) + 'px'; cv.style.top = (-this.oy) + 'px'; cv.style.width = SCENE[0] + 'px'; cv.style.height = SCENE[1] + 'px';
+      cv.style.zIndex = '1';
+      this.el.appendChild(cv);
+    }
+    this.kT = echelleToile();
+    this.toile.width = Math.round(SCENE[0] * this.kT); this.toile.height = Math.round(SCENE[1] * this.kT);
+    this.g = this.toile.getContext('2d');
+    this.sale = null;
+    this.toile.style.display = '';
+  } else if(this.toile){
+    /* (RAPIDITE.md, R9 : une toile qui ne sert plus est vidée) */
+    this.toile.style.display = 'none'; this.toile.width = this.toile.height = 0; this.g = null;
+    Object.keys(this.pieces).forEach(function(cle){ self.pieces[cle].tr = null; });
+  }
+  this.el.classList.toggle('lc-sur-toile', on);
+};
+var TEINTES = {gel:['#8fd8ff', .42], noirci:['#000', .78], feu:['#ff7a1a', .34], rouge:['#ff3a2a', .3], vert:['#7dff6a', .34]};
+CP.teinter = function(nom){
+  var T2 = this.teinteT = TEINTES[nom] || null, e = this.teinteEl;
+  if(this.surToile){ e.style.opacity = '0'; this._ecrire(); return this; }
+  this._bgT = T2 ? 'radial-gradient(closest-side,' + T2[0] + ' 0%,' + T2[0] + ' 40%,rgba(0,0,0,0) 100%)' : '';
+  if(!this._flash) e.style.background = this._bgT;
+  e.style.opacity = T2 ? String(nom === 'noirci' ? .8 : Math.min(.5, T2[1] + .08)) : '0';
+  return this;
+};
+CP.flash = function(coul, ms){
+  if(this.surToile){ this.flashFin = performance.now() + 320; return this; }
+  var e = this.teinteEl, self = this, c = coul || '#fff', o = this.p;
+  if(this._flash) return this;
+  this._flash = true;
+  try{
+    e.style.background = 'radial-gradient(closest-side,' + c + ' 0%,' + c + ' 40%,rgba(255,255,255,0) 100%)';
+    e.style.transform = 'translate(' + Math.round(o.x) + 'px,' + Math.round(Math.min(0, o.y)) + 'px)'; this._tt = null;
+    var a = e.animate([{opacity:coul ? .7 : .85}, {opacity:0}], {duration:ms || 320, easing:'ease-out'});
+    a.onfinish = a.oncancel = function(){ self._flash = false; e.style.background = self._bgT || ''; };
+  }catch(x){ this._flash = false; }
+  return this;
+};
+CP._peindre = function(){
+  var g = this.g, k = this.kT, M = this.M, ox = this.ox, oy = this.oy, l = this.liste, i, q, m, b, s = this.sale;
+  if(!g) return;
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  if(s) g.clearRect(s[0], s[1], s[2] - s[0], s[3] - s[1]);
+  var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  for(i = 0; i < l.length; i++){
+    q = l[i]; m = M[q.cle] || M[q.os]; var im = IMG[q.nom];
+    if(!m || !im) continue;
+    b = q.b;
+    var a = k * m[0], bb = k * m[1], c = k * m[2], d = k * m[3], e = k * (m[4] + ox), f = k * (m[5] + oy);
+    g.setTransform(a, bb, c, d, e, f);
+    g.drawImage(im, b[0], b[1], b[2], b[3]);
+    /* le rectangle sali (les quatre coins de la pièce) */
+    var X0 = b[0], Y0 = b[1], X1 = b[0] + b[2], Y1 = b[1] + b[3], px, py;
+    px = a * X0 + c * Y0 + e; py = bb * X0 + d * Y0 + f; if(px < x0) x0 = px; if(px > x1) x1 = px; if(py < y0) y0 = py; if(py > y1) y1 = py;
+    px = a * X1 + c * Y0 + e; py = bb * X1 + d * Y0 + f; if(px < x0) x0 = px; if(px > x1) x1 = px; if(py < y0) y0 = py; if(py > y1) y1 = py;
+    px = a * X0 + c * Y1 + e; py = bb * X0 + d * Y1 + f; if(px < x0) x0 = px; if(px > x1) x1 = px; if(py < y0) y0 = py; if(py > y1) y1 = py;
+    px = a * X1 + c * Y1 + e; py = bb * X1 + d * Y1 + f; if(px < x0) x0 = px; if(px > x1) x1 = px; if(py < y0) y0 = py; if(py > y1) y1 = py;
+  }
+  if(x1 < x0){ this.sale = null; return; }
+  x0 = Math.max(0, Math.floor(x0) - 2); y0 = Math.max(0, Math.floor(y0) - 2); x1 = Math.min(this.toile.width, Math.ceil(x1) + 2); y1 = Math.min(this.toile.height, Math.ceil(y1) + 2);
+  this.sale = [x0, y0, x1, y1];
+  /* la teinte et l'éclair : peints par-dessus Léo, seulement là où il est (pas de filtre) */
+  var T2 = this.teinteT, fl = this.flashFin ? Math.max(0, (this.flashFin - performance.now()) / 320) : 0;
+  if(!fl) this.flashFin = 0;
+  if((T2 || fl) && x1 > x0 && y1 > y0){
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.globalCompositeOperation = 'source-atop';
+    if(T2){ g.globalAlpha = T2[1]; g.fillStyle = T2[0]; g.fillRect(x0, y0, x1 - x0, y1 - y0); }
+    if(fl){ g.globalAlpha = Math.min(.85, fl * .85); g.fillStyle = '#fff'; g.fillRect(x0, y0, x1 - x0, y1 - y0); }
+    g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  }
 };
 CP.visage = function(v){ if(V[v] && v !== this.etat.visage){ this.etat.visage = v; this._maj(); } return this; };
 CP.objet = function(nom, ou){ if(this.etat[nom] !== ou){ this.etat[nom] = ou; this._maj(); } return this; };
@@ -18714,17 +18878,25 @@ CP._os = function(p){
 };
 CP._ecrire = function(){
   var M = this.M, self = this;
-  Object.keys(this.pieces).forEach(function(cle){
+  if(this.surToile) this._peindre();
+  else Object.keys(this.pieces).forEach(function(cle){
     var q = self.pieces[cle]; if(!q.vu) return;
     var m = M[cle] || M[q.os]; if(!m) return;
-    /* (on n'écrit que ce qui a bougé : une pièce immobile ne coûte rien) */
+    /* (on n'écrit que ce qui a VRAIMENT bougé : une pièce immobile ne coûte rien. 15 novembre : au repos, Léo respire et se balance
+       tout doucement — moins d'un tiers de point par image ; ses pièces ne sont réécrites que lorsqu'elles ont bougé d'au moins
+       un tiers de point, ou tourné d'un quart de degré : six à dix fois moins d'écritures, et l'œil ne voit pas la différence.
+       Dès qu'il bouge pour de bon, chaque image est écrite.) */
+    var w = q.w;
+    if(w && q.tr && Math.abs(m[4] - w[4]) < .34 && Math.abs(m[5] - w[5]) < .34 && Math.abs(m[0] - w[0]) < .0045 && Math.abs(m[1] - w[1]) < .0045 && Math.abs(m[2] - w[2]) < .0045 && Math.abs(m[3] - w[3]) < .0045) return;
     var tr = 'matrix(' + m[0].toFixed(3) + ',' + m[1].toFixed(3) + ',' + m[2].toFixed(3) + ',' + m[3].toFixed(3) + ',' + m[4].toFixed(1) + ',' + m[5].toFixed(1) + ')';
-    if(tr !== q.tr){ q.tr = tr; q.el.style.transform = tr; }
+    if(tr !== q.tr){ q.tr = tr; q.w = [m[0], m[1], m[2], m[3], m[4], m[5]]; q.el.style.transform = tr; }
   });
   /* l'ombre au sol : plus petite quand il saute */
+  /* (15 novembre : l'ombre a son propre calque et n'est réécrite que si elle a bougé d'un demi-point — au repos, plus jamais) */
   var o = this.p, sx = Math.max(.25, (1 - Math.max(0, -o.y) / 260) * (o.ombre || 1));
-  var to = 'translate(' + o.x.toFixed(1) + 'px,0) scale(' + sx.toFixed(2) + ',' + sx.toFixed(2) + ')';
-  if(to !== this._to){ this._to = to; this.ombreEl.style.transform = to; this.ombreEl.style.opacity = String(Math.max(.2, sx).toFixed(2)); }
+  var to = 'translate(' + (Math.round(o.x * 2) / 2) + 'px,0) scale(' + sx.toFixed(2) + ',' + sx.toFixed(2) + ')';
+  if(to !== this._to){ this._to = to; this.ombreEl.style.transform = to; var op = Math.max(.2, Math.min(1, sx)).toFixed(1); if(op !== this._op){ this._op = op; this.ombreEl.style.opacity = op; } }
+  if(this.teinteT && !this.surToile){ var tt = 'translate(' + Math.round(o.x) + 'px,' + Math.round(Math.min(0, o.y)) + 'px)'; if(tt !== this._tt){ this._tt = tt; this.teinteEl.style.transform = tt; } }
   if(this.etat.cape) this._cape();
 };
 /* la cape : ses coins du haut suivent les épaules (le buste), son ourlet traîne au sol */
@@ -18772,7 +18944,7 @@ CP.point = function(os, x, y){ var m = this.M[os]; if(!m) return {x:x, y:y}; var
 CP.arreter = function(){ this.duree = 0; if(this.fin){ var f = this.fin; this.fin = null; f(); } };
 
 window.LeoCorps = {
-  creer:function(parent){ return new Corps(parent); },
+  creer:function(parent, o){ return new Corps(parent, o); },
   preparer:preparer, cuit:function(){ return Object.keys(CUIT).length; },
   POSES:POSES, GARDE:GARDE, SQ:SQ, DESSINS:P, ORDRE:ORDRE, complete:complete, melange:melange, ik:ik, R:R, T:T, mul:mul, ap:ap, inv:inv, svgPiece:svgPiece, DEFS:DEFS, W:W, H:H, PIED:PIED
 };
@@ -19087,7 +19259,7 @@ function Leo(parent, o){
   this.el = d;
   this.ancien = new Ancien(d, {x:W / 2, sol:PIED, tenue:o.tenue === 2 ? 1 : (o.tenue || 1)});
   this.ancien.el.style.willChange = 'auto';
-  this.corps = window.LeoCorps ? window.LeoCorps.creer(d) : null;
+  this.corps = window.LeoCorps ? window.LeoCorps.creer(d, {cx:this.cx, sol:this.sol}) : null;
   this.n = 0;
   this.tenue(o.tenue || 1);
 }
@@ -19128,10 +19300,13 @@ F.ancre = function(nom){
 F.scene = function(os, x, y){ var q = this.corps.point(os, x, y); return {x:q.x + this.cx - W / 2, y:q.y + this.sol - PIED}; };
 F.teinte = function(nom){
   var f = {gel:'hue-rotate(160deg) saturate(.7) brightness(1.25)', noirci:'brightness(.25) contrast(1.2)', feu:'sepia(.6) saturate(2.4) hue-rotate(-20deg) brightness(1.1)', rouge:'saturate(1.5) brightness(1.05) drop-shadow(0 0 8px rgba(255,60,40,.8))', vert:'brightness(1.12) saturate(1.3) drop-shadow(0 0 10px rgba(120,255,110,.85))'}[nom] || '';
-  this.el.style.filter = f; return this;
+  /* (15 novembre : en combat, le nouveau Léo est peint sur une toile — sa teinte s'y peint aussi, sans filtre : un filtre sur
+     tout Léo était recalculé à chaque image) */
+  if(this.corps) this.corps.teinter(nom);
+  this.el.style.filter = this.nouveau() ? '' : f; return this;
 };
 F.voile = function(v){ this.el.style.opacity = String(1 - Math.max(0, Math.min(1, v)) * .82); return this; };
-F.eclair = function(){ try{ this.el.animate([{filter:'brightness(1)'}, {filter:'brightness(2.6)', offset:.15}, {filter:'brightness(1)'}], {duration:320}); }catch(e){} return this; };
+F.eclair = function(){ if(this.nouveau()){ this.corps.flash(); return this; } try{ this.el.animate([{filter:'brightness(1)'}, {filter:'brightness(2.6)', offset:.15}, {filter:'brightness(1)'}], {duration:320}); }catch(e){} return this; };
 
 window.LeoAnime = {creer:function(parent, o){ return new Leo(parent, o); }, POSES:POSES, ARMES:ARMES, TENUES:TENUES};
 })();
@@ -19211,16 +19386,25 @@ PISTES.gourde = {
   elan:[[0, pose({mAv:[158, 146], tete:8, torse:4, bAr:[44, 74, 0], ga:-12}), 'io'], [.16, pose(BOIT), 'lin'], [1, pose(BOIT)]],     /* (les glous sont ajoutés par-dessus) */
   retour:[[0, pose({mAv:[160, 150], tete:-4, torse:-6, bAr:[96, 100, 0], bas:6, ga:-10}), 'io'], [.45, pose({mAv:[186, 206], tete:10, torse:6, bas:12, ga:0}), 'io'], [1, pose({})]]
 };
-/* ---------- LE SAUT : il s'accroupit très bas (la poussière tourne), bondit hors de l'écran, et retombe poings joints ---------- */
-var ACCROUPI = {bas:52, torse:30, bassin:12, tete:-4, bAv:[-70, 30, 0], bAr:[-50, 34, 0], pAv:[214, 318], pAr:[90, 318]};
+/* ---------- LE SAUT (refait le 15 novembre ; Romain : « l'animation est pas claire », « il faut qu'elle dure un tout petit peu plus
+   longtemps pour la préparation ») : il se ramasse très bas, les bras en arrière (la poussière tourne) ; il bondit VERS les héros,
+   bien visible, les deux poings levés au-dessus de la tête ; il reste un instant en l'air au-dessus de l'endroit où il va tomber
+   (une grande cible orange au sol, son ombre qui grossit) ; puis il s'abat, poings joints. Il ne sort plus de l'écran. ---------- */
+var ACCROUPI = {bas:60, torse:34, bassin:14, tete:-8, bAv:[-84, 34, 0], bAr:[-66, 38, 0], pAv:[218, 318], pAr:[86, 318]};
+var SAUT_X = -250;                       /* là où il retombe (au milieu de la salle, devant les héros) */
 PISTES.saut = {
-  prise:[[0, pose({}), 'io'], [1, pose(ACCROUPI)]],
-  elan:[[0, pose(ACCROUPI), 'o'], [.14, pose({y:-120, bas:0, torse:-6, tete:-10, bAv:[176, 20, 0], bAr:[170, 24, 0], jAv:[-30, 70], jAr:[20, 60]}), 'o'],
-    [.5, pose({y:-300, bas:0, torse:-4, tete:-4, bAv:[176, 20, 0], bAr:[170, 24, 0], jAv:[-40, 90], jAr:[30, 80], ombre:1.6}), 'i'],
-    [.82, pose({y:-260, bas:0, torse:10, tete:6, bAv:[184, 60, 0], bAr:[178, 64, 0], jAv:[-20, 80], jAr:[30, 70], ombre:1.8}), 'i'],
-    [1, pose({y:-20, bas:0, torse:20, tete:6, bAv:[150, 40, 0], bAr:[146, 44, 0], jAv:[-6, 30], jAr:[16, 30], ombre:1.4})]],
-  retour:[[0, pose({bas:58, torse:40, bassin:14, tete:10, mAv:[120, 252], mAr:[100, 256], pAv:[224, 318], pAr:[84, 318]}), 'o'], [.35, pose({bas:56, torse:38, bassin:14, tete:6, mAv:[120, 250], mAr:[100, 254], pAv:[224, 318], pAr:[84, 318]}), 'io'],
-    [.7, pose({bas:8, torse:-14, tete:-20, bAv:[40, 120, 0], bAr:[60, 110, 0]}), 'io'], [1, pose({})]]
+  prise:[[0, pose({}), 'io'], [.55, pose(ACCROUPI), 'io'], [1, pose({bas:66, torse:38, bassin:15, tete:-10, bAv:[-92, 36, 0], bAr:[-74, 40, 0], pAv:[218, 318], pAr:[86, 318]})]],
+  elan:[[0, pose({bas:66, torse:38, bassin:15, tete:-10, bAv:[-92, 36, 0], bAr:[-74, 40, 0], pAv:[218, 318], pAr:[86, 318]}), 'o'],
+    /* (il ne monte pas plus haut que le haut de la salle : il bondit ramassé, les genoux sous lui — on le voit en entier) */
+    [.1, pose({x:-24, y:-44, bas:14, torse:6, tete:-10, bAv:[120, 30, 0], bAr:[114, 34, 0], ombre:1.1}), 'o'],
+    [.4, pose({x:SAUT_X * .62, y:-84, bas:32, torse:18, tete:-8, bAv:[150, 34, 0], bAr:[144, 38, 0], ombre:1.5}), 'io'],
+    [.82, pose({x:SAUT_X, y:-92, bas:36, torse:8, tete:-16, bAv:[168, 24, 0], bAr:[162, 28, 0], ombre:1.9}), 'i'],
+    [1, pose({x:SAUT_X, y:0, bas:58, torse:40, bassin:14, tete:10, mAv:[120, 252], mAr:[100, 256], pAv:[224, 318], pAr:[84, 318], ombre:1.3})]],
+  retour:[[0, pose({x:SAUT_X, bas:58, torse:40, bassin:14, tete:10, mAv:[120, 252], mAr:[100, 256], pAv:[224, 318], pAr:[84, 318]}), 'o'],
+    [.3, pose({x:SAUT_X, bas:54, torse:36, bassin:14, tete:4, mAv:[120, 250], mAr:[100, 254], pAv:[224, 318], pAr:[84, 318]}), 'io'],
+    [.5, pose({x:SAUT_X, bas:30, torse:10, tete:-6, bAv:[-30, 40, 0], bAr:[-20, 44, 0]}), 'o'],
+    [.75, pose({x:SAUT_X * .5, y:-50, bas:22, torse:4, tete:-4, bAv:[40, 60, 0], bAr:[50, 56, 0]}), 'i'],
+    [.92, pose({x:0, bas:30, torse:12, tete:2}), 'o'], [1, pose({})]]
 };
 /* ---------- ce qui lui arrive ---------- */
 var SONNE = pose({bas:16, torse:16, tete:24, bAv:[6, 20, 0], bAr:[14, 16, 0], pAv:[194, 318], pAr:[110, 318]});
@@ -19285,6 +19469,8 @@ function suivre(X, s){ X.suiveurs.push(s); return s; }
 function vider(X){
   X.suiveurs.forEach(function(s){ try{ if(s.fin) s.fin(); }catch(e){} }); X.suiveurs = [];
   X.fx.forEach(function(e){ try{ e.remove(); }catch(x){} }); X.fx = [];
+  if(X.annonce){ try{ X.annonce.el.remove(); }catch(x){} X.annonce = null; }
+  X.cibleSaut = null;
   X.sig = ''; X.faits = {}; X.brule = false; X.flinch = 0; X.douleur = 0; X.coupe = 0;
   var C = corps(X); if(C){ C.objet('faux', 'dos'); C.objet('gourde', 'ceinture'); C.objet('bouchon', true); C.objet('sifflet', 'cou'); C.objet('rat', null); C.visage('colere'); C.devantAr(false); }
 }
@@ -19320,12 +19506,31 @@ function image(X, dt, c){
   if(X.flinch > 0){ X.flinch = Math.max(0, X.flinch - dt * 4); var f = X.flinch * X.flinchF; p.torse -= 7 * f; p.tete -= 10 * f; p.x += 6 * f; }
   /* les repères de l'étape (les effets, les sons, une seule fois) */
   reperes(X, etape, att, k, c);
+  annoncer(X, etape, att, k);
   /* le visage */
   visage(X, etape, att, k, dt);
   X.pose = p;
   C.temps += dt; C.poser(p);
   /* les effets qui le suivent */
   for(var i = X.suiveurs.length - 1; i >= 0; i--){ var s = X.suiveurs[i], garde = true; try{ garde = s.maj(dt) !== false; }catch(e){ garde = false; } if(!garde){ try{ if(s.fin) s.fin(); }catch(e){} X.suiveurs.splice(i, 1); } }
+}
+/* L'ANNONCE (15 novembre ; Romain : « les animations restent pas très claires, il faut augmenter la clarté encore ») : pendant
+   qu'il prépare une attaque, son nom s'affiche en gros au milieu de la salle, avec une jauge qui se remplit jusqu'au coup.
+   On sait ce qui arrive, et quand. (Trois mots au plus : pas de bouton 🔊.) */
+var ANNONCES = {sifflet:['🐀', 'IL SIFFLE'], faux:['⚠️', 'LA FAUX'], charge:['⚠️', 'LA CHARGE'], lancer:['🐀', 'UN RAT VOLE'], gourde:['🧪', 'IL BOIT'], saut:['⚠️', 'LE SAUT'], poing:['⚠️', 'LE POING']};
+function annoncer(X, etape, att, k){
+  var A = ANNONCES[att], en = !!A && (etape === 'prise' || etape === 'elan'), a = X.annonce;
+  if(a && (!en || a.att !== att)){ X.annonce = null; var e0 = a.el; anim(e0, [{opacity:1}, {opacity:0}], {duration:160, fill:'forwards'}); retirer(e0, 180); a = null; if(X.cibleSaut && att !== 'saut') finCibleSaut(X); }
+  if(!en) return;
+  var R = window.LeoRegles && window.LeoRegles.L.ATTAQUES[att], pr = R ? R.prise || 0 : 0, elx = R ? R.elan || 0 : 1, tot = (pr + elx) || 1;
+  if(!a){
+    var e = el('lp-annonce' + (att === 'gourde' ? ' vert' : att === 'sifflet' || att === 'lancer' ? ' rat' : ''), '<b>' + A[0] + '</b><span>' + A[1] + '</span><i><u></u></i>', calque(X));
+    anim(e, [{opacity:0, transform:'translate(-50%,10px) scale(.7)'}, {opacity:1, transform:'translate(-50%,0) scale(1.08)', offset:.7}, {opacity:1, transform:'translate(-50%,0) scale(1)'}], {duration:200, fill:'forwards', easing:'ease-out'});
+    a = X.annonce = {att:att, el:e, u:e.querySelector('u'), n:-1};
+  }
+  /* la jauge : où l'on en est entre le début de la préparation et le coup (l'horloge de Léo fait foi, même ralentie par le givre) */
+  var n = Math.round(Math.max(0, Math.min(1, (etape === 'prise' ? k * pr : pr + k * elx) / tot)) * 60);
+  if(n !== a.n){ a.n = n; a.u.style.transform = 'scaleX(' + (n / 60).toFixed(3) + ')'; }
 }
 function changer(X, Z, c){
   /* une nouvelle étape commence : on note d'où l'on part ; les effets de l'étape d'avant s'arrêtent */
@@ -19439,9 +19644,9 @@ function reperes(X, etape, att, k, c){
     if(etape === 'retour' && une(X, 'g4', k, .5)){ C.objet('gourde', 'ceinture'); C.objet('bouchon', true); }
   }
   if(att === 'saut'){
-    if(etape === 'prise' && une(X, 'j0', k, 0)){ poussiereTourne(X); alerte(X, '!', '#ffb050'); }
-    if(etape === 'elan' && une(X, 'j1', k, .12)){ decollage(X); bruit(X, 'leoSaut', {cale:d * .88}, ['tombe']); }
-    if(etape === 'elan' && une(X, 'j2', k, .5)) dangerSol(X, d * .5, '#ffb050', true);
+    if(etape === 'prise' && une(X, 'j0', k, 0)){ poussiereTourne(X); cibleSaut(X, d + ((window.LeoRegles && window.LeoRegles.L.ATTAQUES.saut.elan) || 1.5)); }
+    if(etape === 'prise' && une(X, 'j0b', k, .5)) poussiereTourne(X);
+    if(etape === 'elan' && une(X, 'j1', k, .06)){ decollage(X); bruit(X, 'leoSaut', {cale:d * .88}, ['tombe']); }
   }
 }
 function cibleX(X, Z){
@@ -19480,7 +19685,7 @@ function impact(X, ev, c){
     return true;
   }
   if(att === 'lancer'){ lancerRat(X, l[0]); C.objet('rat', null); return true; }
-  if(att === 'saut'){ atterrit(X); return true; }
+  if(att === 'saut'){ finCibleSaut(X); atterrit(X); return true; }
   if(att === 'gourde') return true;                     /* (le soin arrive avec « soin-leo ») */
   return false;
 }
@@ -19654,8 +19859,8 @@ function gueri(X, ev){
   var e = garde(X, el('lp-aura', '<i></i><i></i><i></i>', ctx.persos)), t = 0;
   e.style.zIndex = '2';
   suivre(X, {maj:function(dt){ t += dt; var q = ctx.leo.ancre('pieds'); e.style.transform = 'translate(' + q.x.toFixed(1) + 'px,' + q.y.toFixed(1) + 'px)'; e.style.opacity = String(t < 1.8 ? 1 : Math.max(0, 1 - (t - 1.8) / .8)); return t < 2.6; }, fin:function(){ e.remove(); }});
-  /* (un éclair vert, court : pas de filtre qui reste — RAPIDITE.md, R2) */
-  anim(ctx.leo.el, [{filter:'brightness(1)'}, {filter:'brightness(1.7) sepia(.5) hue-rotate(60deg) saturate(2)', offset:.2}, {filter:'brightness(1)'}], {duration:700});
+  /* (un éclair vert, court, sans filtre : une lueur posée sur lui — RAPIDITE.md, R2) */
+  try{ ctx.leo.corps.flash('#9dff8a', 700); }catch(e){}
 }
 /* LE LANCER : le rat vole en tournant jusqu'au héros */
 function lancerRat(X, h){
@@ -19667,6 +19872,15 @@ function lancerRat(X, h){
   setTimeout(function(){ r.remove(); son(X, 'morsure'); }, 270);
 }
 /* LE SAUT : la poussière qui tourne pendant qu'il se ramasse, le décollage, l'atterrissage qui fait trembler toute la salle */
+/* LE SAUT : la cible au sol, là où il va retomber — dès qu'il se ramasse, et jusqu'au choc (elle se resserre : c'est le compte à rebours) */
+function cibleSaut(X, d){
+  var ctx = X.ctx, x = ctx.LX + SAUT_X, e = garde(X, el('lp-cible-saut', '<i></i><i></i>', ctx.sol || calque(X)));
+  e.style.left = x + 'px';
+  anim(e, [{opacity:0}, {opacity:1, offset:.1}, {opacity:1}], {duration:d * 1000, fill:'forwards'});
+  anim(e.firstChild, [{transform:'translate(-50%,-50%) scale(1.5)'}, {transform:'translate(-50%,-50%) scale(.42)'}], {duration:d * 1000, fill:'forwards', easing:'linear'});
+  X.cibleSaut = e;
+}
+function finCibleSaut(X){ var e = X.cibleSaut; if(!e) return; X.cibleSaut = null; anim(e, [{opacity:1}, {opacity:0}], {duration:200, fill:'forwards'}); retirer(e, 220); }
 function poussiereTourne(X){
   var ctx = X.ctx, p = ctx.leo.ancre('pieds');
   for(var i = 0; i < 8; i++){ var e = el('lp-terre gros', null, calque(X)); var a = (i / 8) * Math.PI * 2; ctx.Fx.particule(e, {x:p.x + Math.cos(a) * 60, y:334, vx:-Math.sin(a) * 120, vy:-hasard(60, 160), g:300, vie:.6, s0:1.2, s1:.3, delai:i * .04}); }
@@ -19881,6 +20095,10 @@ function lancer(partie, o){
   return new Promise(function(fin){
     E = {partie:partie, c:null, ph:null, A:{h:{}}, leo:null, rats:{}, sel:'pisteur', geste:null, choix:[], pause:false, cine:true, fini:false, finir:fin,
       sig:'', etatsH:{}, occ:{}, jet:{}, temps:0, elan:null, vite:+o.vite || 1, saute:false, essais:0};
+    /* LA FLUIDITÉ (Romain, 15 novembre : « ça rame de partout », « optimisation au maximum ») : ce combat est en temps réel, la page
+       refait une image à chaque instant. Tout ce qui tourne en boucle sur les héros et les rats coûte alors à chaque image :
+       pendant ce combat, ils ne gardent que leur souffle (SALLE.tempsReel), et leurs tissus ne sont plus recalculés (SALLE.tissusFiges). */
+    SALLE.tempsReel = true; SALLE.tissusFiges = true;
     construire();
     demarrerPhase(o.phase || phaseGardee(partie), true);
     E.raf = requestAnimationFrame(boucle);
@@ -19895,7 +20113,7 @@ function construire(){
   jeu.innerHTML = '';
   DJ.cssHeros();
   var c = el('div', 'ecran salle-leo leo ouvert'); c.id = 'combat';
-  c.innerHTML = '<div id="monde"><div id="secousse"><img class="decor" src="' + DJ.charger.scene('leo') + '" alt=""><div id="leo-lueur"></div>' + torche(300) + torche(610) +
+  c.innerHTML = '<div id="monde"><div id="secousse"><img class="decor" src="' + DJ.charger.scene('leo-clair') + '" alt=""><div id="leo-lueur"></div>' + torche(300) + torche(610) +
     '<div id="sol-fx"></div><div id="persos"></div><div id="fx"></div><div id="fumee"></div><div id="leo-noir"></div><div id="hud"></div></div></div>' +
     '<div id="haut"><div id="leo-barre"><em></em><div class="barre"><i></i><u style="left:60%"></u><u style="left:30%"></u></div><b></b><span id="leo-etats"></span></div>' + DJ.curseursVolume() +
     '<button id="fuite" class="sombre" data-act="l-pause" aria-label="Pause">⏸ Pause</button></div>' +
@@ -19937,7 +20155,9 @@ function construire(){
   c.addEventListener('pointerdown', doigt);
   DJ.musiqueCombat('bassin');
 }
-function slotH(h){ return q('.h-' + h); }
+/* (un élément cherché une fois, puis gardé : maj() tourne à chaque image) */
+function mem(sel){ var c = E.mem || (E.mem = {}), e = c[sel]; return e && e.isConnected ? e : (c[sel] = q(sel)); }
+function slotH(h){ return mem('.h-' + h); }
 /* la phase 2 se joue avec le nouveau Léo : sa pose vient, à chaque image, de l'horloge des règles (leo-p2.js) */
 function p2(){ return !!(E && E.p2 && E.c && E.c.phase === 2 && E.leo.nouveau()); }
 
@@ -19945,7 +20165,7 @@ function p2(){ return !!(E && E.p2 && E.c && E.c.phase === 2 && E.leo.nouveau())
 function demarrerPhase(n, premiere){
   E.c = LR.combat(E.partie, {phase:n});
   E.ph = E.c.etat();
-  E.elan = null; E.sig = ''; E.suiteSig = null;
+  E.elan = null; E.cases = null; E.suiteSig = null;
   Object.keys(E.rats).forEach(function(id){ retirerRat(id); });
   ORDRE.forEach(function(h){ remettreHeros(h); });
   nuage(false); flaque(false); noir(false, true);
@@ -20084,7 +20304,7 @@ async function finPhase(res){
   if(!E) return;
   E.saute = false;
   E.c.phaseSuivante();
-  E.ph = E.c.etat(); E.sig = '';
+  E.ph = E.c.etat(); E.cases = null;
   ORDRE.forEach(function(h){ remettreHeros(h); });
   if(E.p2) E.p2.vider();
   q('#combat').classList.add('ouvert');
@@ -20147,6 +20367,7 @@ function terminer(res){
   Object.keys(E.rats).forEach(function(id){ try{ E.rats[id].arreter(); }catch(e){} });
   ORDRE.forEach(function(h){ try{ E.A.h[h].arreter(); }catch(e){} });
   DJ.taire(); DJ.fermer();
+  SALLE.tempsReel = false; SALLE.tissusFiges = false;
   E = null;
   fin(res);
 }
@@ -20172,14 +20393,14 @@ function boucle(ts){
 function maj(force){
   var ph = E.ph = E.c.etat(), Z = ph.leo;
   ORDRE.forEach(function(h){
-    var s = ph.heros[h], e = q('#pv-' + h), k = Math.max(0, s.pv / s.pvMax), i = q('i', e), st = E.etatsH[h] || (E.etatsH[h] = {}), slot = slotH(h);
-    if(st.pv !== s.pv){ st.pv = s.pv; i.style.transform = 'scaleX(' + k + ')'; i.className = k <= .25 ? 'bas' : k <= .5 ? 'moyen' : ''; q('b', e).textContent = s.pv; }
+    var s = ph.heros[h], e = mem('#pv-' + h), k = Math.max(0, s.pv / s.pvMax), st = E.etatsH[h] || (E.etatsH[h] = {}), slot = slotH(h);
+    if(st.pv !== s.pv){ var i = q('i', e); st.pv = s.pv; i.style.transform = 'scaleX(' + k + ')'; i.className = k <= .25 ? 'bas' : k <= .5 ? 'moyen' : ''; q('b', e).textContent = s.pv; }
     basc(slot, st, 'saigne', s.saigne); basc(slot, st, 'brule', s.brule); basc(slot, st, 'bj', s.bouclier === 'jaune'); basc(slot, st, 'bc', s.bouclier === 'chene');
     var et = s.etourdi > 0; if(st.etourdi !== et){ st.etourdi = et; try{ if(!s.sol) E.A.h[h]._etoiles(et); }catch(x){} }
     var pr = Z.vise ? Z.vise.cibles.indexOf(h) >= 0 : false;
     if(st.proie !== pr){ st.proie = pr; slot.classList.toggle('proie', pr); if(pr) q('.l-proie b', slot).textContent = Z.vise.part ? '−' + Math.round(Z.vise.part * 100) + ' %' : Z.vise.degats ? '−' + Z.vise.degats + (Z.vise.fois > 1 ? ' ×' + Z.vise.fois : '') : ''; }
   });
-  var b = q('#leo-barre'), kz = Math.max(0, Z.pv / Z.pvMax);
+  var b = mem('#leo-barre'), kz = Math.max(0, Z.pv / Z.pvMax);
   if(E.pvLeo !== Z.pv){ E.pvLeo = Z.pv; q('.barre i', b).style.transform = 'scaleX(' + kz + ')'; q('b', b).textContent = Z.pv; }
   var ch = (Z.saigne ? '<i>🩸' + (Z.saigne > 1 ? '×' + Z.saigne : '') + '</i>' : '') + (Z.brule ? '<i>🔥</i>' : '') + (Z.ralenti ? '<i>❄️</i>' : '');
   if(E.chLeo !== ch){ E.chLeo = ch; q('#leo-etats').innerHTML = ch; }
@@ -20199,7 +20420,7 @@ function icAttaque(x){
   return x.ic;
 }
 function suite(Z){
-  var e = q('#leo-suite'); if(!e) return;
+  var e = mem('#leo-suite'); if(!e) return;
   var l = Z.suite || [], sig = l.map(function(x){ return x.att + (x.enCours ? '!' : ''); }).join(',');
   if(sig === E.suiteSig) return;
   E.suiteSig = sig;
@@ -20230,31 +20451,50 @@ function infoCarte(g){
   R = D.GESTES[id];
   return {ic:R.ic, nom:id === 'fleche' ? 'Flèche' : (R.arme || R.nom)};
 }
+function usureHTML(reste){
+  return reste == null ? '' : '<i class="l-usure u' + reste + '">' + reste + '</i>' + (reste < 3 ? '<svg class="l-fissure" viewBox="0 0 84 59" preserveAspectRatio="none"><path d="M20 0 L30 16 L24 26 L36 40' + (reste < 2 ? ' L30 59 M30 16 L46 22 L58 12 M36 40 L52 46 L62 59' : '') + '" fill="none" stroke="#0c0810" stroke-width="2.2" stroke-linejoin="round"/></svg>' : '');
+}
 function carte(g){
   var R = infoCarte(g), cls = (!g.permis ? ' off' : '') + (R.cls || '') + (R.nom.length > 10 ? ' long' : '');
-  var usure = R.reste != null ? '<i class="l-usure u' + R.reste + '">' + R.reste + '</i>' + (R.reste < 3 ? '<svg class="l-fissure" viewBox="0 0 84 59" preserveAspectRatio="none"><path d="M20 0 L30 16 L24 26 L36 40' + (R.reste < 2 ? ' L30 59 M30 16 L46 22 L58 12 M36 40 L52 46 L62 59' : '') + '" fill="none" stroke="#0c0810" stroke-width="2.2" stroke-linejoin="round"/></svg>' : '') : '';
-  return '<button class="carte mini' + cls + '" data-act="l-geste" data-h="' + g.heros + '" data-id="' + g.geste + '" aria-label="' + esc(R.nom) + '"><span class="c-ic">' + R.ic + '</span><b>' + esc(R.nom) + '</b>' + usure + '</button>';
+  return '<button class="carte mini' + cls + '" data-act="l-geste" data-h="' + g.heros + '" data-id="' + g.geste + '" aria-label="' + esc(R.nom) + '"><span class="c-ic">' + R.ic + '</span><b>' + esc(R.nom) + '</b><span class="l-us">' + usureHTML(R.reste) + '</span></button>';
 }
 /* UNE SEULE RANGÉE D'ICÔNES (Romain, 14 novembre) : un cadre par héros, à sa couleur, dans l'ordre où ils sont à l'écran ; dedans,
-   ses icônes de la phase, sur deux lignes. Plus d'onglets, plus de cible : on pianote. */
+   ses icônes de la phase, sur deux lignes. Plus d'onglets, plus de cible : on pianote.
+   15 novembre (Romain : « quand les armes s'épuisent, il faut pas que les icônes changent de place » ; et « ça rame ») : la rangée
+   est construite UNE SEULE FOIS par phase. Chaque icône garde sa case jusqu'au bout — une arme cassée, la rune de l'œil ouverte
+   restent à leur place, éteintes pour de bon (« vide »). Ensuite, on ne touche qu'à ce qui change vraiment (allumée / éteinte,
+   l'usure d'une arme) : plus jamais toute la rangée réécrite pendant qu'on pianote. */
 function bande(force){
-  var ph = E.ph, B = E.c.barre();
-  var sig = B.map(function(g){ return g.heros[0] + g.geste + (g.permis ? 1 : 0) + (g.reste || ''); }).join(',') + '|' +
-    ORDRE.map(function(x){ var s = ph.heros[x]; return (s.sol ? 's' : '') + (s.etourdi > 0 ? 'e' : '') + (s.attrape ? 'a' : ''); }).join(',') + '|' + (E.cine ? 'c' : '');
-  if(force || sig !== E.sig){
-    E.sig = sig; E.barre = B;
+  var ph = E.ph, B = E.c.barre(), par = {}, C = E.cases;
+  E.barre = B;
+  B.forEach(function(g){ par[g.heros + '|' + g.geste] = g; });
+  if(!C || C.phase !== E.c.phase){
+    C = E.cases = {phase:E.c.phase, l:[], h:{}, cine:null};
     bandeEl.innerHTML = ORDRE.map(function(h){
-      var l = B.filter(function(g){ return g.heros === h; }), st = ph.heros[h], cols = Math.max(2, Math.ceil(l.length / 2));
-      var et = st.sol ? '💫 au sol' : st.attrape ? '🪝 attrapé' : st.etourdi > 0 ? '💫 étourdi' : '';
-      return '<div class="lb-g g-' + h + (st.sol ? ' sol' : '') + (et ? ' pris' : '') + '" data-h="' + h + '" style="flex:' + cols + ' 1 0"><div class="lb-nom"><b>' + D.HEROS[h].nom + '</b><em>' + et + '</em></div>' +
+      var l = B.filter(function(g){ return g.heros === h; }), cols = Math.max(2, Math.ceil(l.length / 2));
+      return '<div class="lb-g g-' + h + '" data-h="' + h + '" style="flex:' + cols + ' 1 0"><div class="lb-nom"><b>' + D.HEROS[h].nom + '</b><em></em></div>' +
         '<div class="lb-cartes" style="grid-template-columns:repeat(' + cols + ',1fr)">' + l.map(carte).join('') + '</div><u id="lbo-' + h + '"></u></div>';
     }).join('');
-    bandeEl.classList.toggle('attend', !!E.cine);
+    [].forEach.call(bandeEl.querySelectorAll('.carte'), function(el){
+      var k = el.getAttribute('data-h') + '|' + el.getAttribute('data-id'), g = par[k];
+      C.l.push({k:k, el:el, us:el.querySelector('.l-us'), la:true, permis:!!g.permis, reste:g.reste});
+    });
+    ORDRE.forEach(function(h){ var g = bandeEl.querySelector('.lb-g[data-h=' + h + ']'); C.h[h] = {g:g, em:g.querySelector('em'), u:g.querySelector('u'), sig:'', occ:-1}; });
   }
-  ORDRE.forEach(function(x){
-    var st = ph.heros[x], u = q('#lbo-' + x), tot = E.occ[x] || 1;
-    if(u) u.style.transform = 'scaleX(' + Math.max(0, Math.min(1, st.occupe / tot)).toFixed(3) + ')';
+  C.l.forEach(function(c){
+    var g = par[c.k], la = !!g, permis = la && !!g.permis;
+    if(la !== c.la){ c.la = la; c.el.classList.toggle('vide', !la); }
+    if(permis !== c.permis){ c.permis = permis; c.el.classList.toggle('off', !permis); }
+    if(la && g.reste !== c.reste){ c.reste = g.reste; c.us.innerHTML = usureHTML(g.reste); }
   });
+  ORDRE.forEach(function(x){
+    var st = ph.heros[x], H = C.h[x], et = st.sol ? '💫 au sol' : st.attrape ? '🪝 attrapé' : st.etourdi > 0 ? '💫 étourdi' : '';
+    if(H.sig !== et){ H.sig = et; H.em.textContent = et; H.g.classList.toggle('sol', !!st.sol); H.g.classList.toggle('pris', !!et); }
+    /* la petite barre « occupé » : écrite seulement quand elle a bougé d'un cran (elle a son propre calque : rien n'est repeint) */
+    var occ = Math.round(Math.max(0, Math.min(1, st.occupe / (E.occ[x] || 1))) * 80);
+    if(occ !== H.occ){ H.occ = occ; H.u.style.transform = 'scaleX(' + (occ / 80) + ')'; }
+  });
+  if(C.cine !== !!E.cine){ C.cine = !!E.cine; bandeEl.classList.toggle('attend', C.cine); }
 }
 
 /* ====================================================================== 5. LES DOIGTS */
@@ -20421,9 +20661,9 @@ function geste(ev){
     Promise.resolve(H.sage.etudier()).catch(function(){});
     return;
   }
-  if(g === 'rune'){ son('magie'); to = ancreDe(c, 'centre'); Promise.resolve(H.sage.sort(fx, to, {cristal:false})).catch(function(){}); apres(ev.impact, function(){ Fx.eclat(to.x, to.y, 240, 'radial-gradient(closest-side,#fff,rgba(191,248,255,.9) 30%,rgba(63,208,255,0))', 500); }); return; }
-  if(g === 'a:cristal-lune'){
-    son('magie'); bruit('cristal');
+  /* (Romain, 15 novembre : la rune de lumière éclaire TOUTE la salle, comme le bâton de lune — tous les rats d'un coup) */
+  if(g === 'rune' || g === 'a:cristal-lune'){
+    son('magie'); if(g !== 'rune') bruit('cristal');
     var pts = Object.keys(E.rats).map(function(id){ return E.rats[id].ancre('centre'); }); if(!pts.length) pts = [E.leo.ancre('centre')];
     Promise.resolve(H.sage.eclairSalle ? H.sage.eclairSalle(fx, {cibles:pts}) : H.sage.sort(fx, pts[0])).catch(function(){});
     return;
@@ -20656,7 +20896,7 @@ function rat(ev){
       son('couine', 0, .8, 1.3);
       ['zone-', 'pv-'].forEach(function(pp){ var e = q('#' + pp + ev.id); if(e) e.remove(); });
       delete E.rats[ev.id];
-      Promise.resolve(ev.par === 'chef' ? a.fuir() : a.mourir()).catch(function(){}).then(function(){ setTimeout(function(){ try{ a.arreter(); a.el.remove(); }catch(e){} }, 900); });
+      Promise.resolve(ev.par === 'chef' || ev.par === 'fleau' ? a.fuir() : a.mourir()).catch(function(){}).then(function(){ setTimeout(function(){ try{ a.arreter(); a.el.remove(); }catch(e){} }, 900); });
       return;
   }
 }

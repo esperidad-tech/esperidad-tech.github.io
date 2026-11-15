@@ -412,6 +412,7 @@ B._boucleur = function(){
 };
 B._planifier = function(ms){
   var self = this;
+  if(window.SALLE && window.SALLE.tempsReel) return;      /* (temps réel : pas de petits événements d'attente) */
   this._minuteur(function(){
     if(self.enAction || self.mort || !self.attente) return;
     if(!self.etat.gele) self._evenement();
@@ -1247,6 +1248,9 @@ R._lancerBoucles = function(){
   this.vitesse = V;
   b = this._boucleur();
   var self = this;
+  /* (un combat en temps réel — Léo : chaque boucle coûte à chaque image ; il ne reste que le souffle, la tête, la posture) */
+  var TR = window.SALLE && window.SALLE.tempsReel;
+  if(TR){ var b0 = b; b = function(n){ if((n === 'posture' && mode !== 'normal') || (n === 'secousse' && self.etat.gele)) return b0.apply(null, arguments); }; }
   function queue(amp, duree, base){
     for(var i = 0; i < QP.length - 1; i++){
       var A = amp * (.4 + i * .2), cles = onde(0, A, 8).map(function(k){ return [k.t, {a: k.v.a + (base ? base[i] || 0 : 0)}]; });
