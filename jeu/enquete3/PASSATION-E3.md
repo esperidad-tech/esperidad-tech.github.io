@@ -1,6 +1,12 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 16 h 40)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 17 h 35)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 15 novembre (17 h 33) : PHASE 3 DE LÉO, APRÈS « IL ATTRAPE », UNE CHARGE (Bible §13.46, retouche de 17 h 26) — EN LIGNE (commit 7440589 du site ; version « 15/11 à 17 h 30 »)
+
+- Romain a trouvé l'enchaînement « il attrape » puis le souffle de feu impossible à remonter. **Nouvel ordre de la phase 3** : le poing, la rafale, la charge, le cri, « il attrape », **la charge**, le souffle. Il y a donc deux charges par tour (décision de Claude, à faire valider).
+- **Pour la conception** : l'huile sert encore plus en phase 3 (deux fois par tour). Les indices de Farinel et d'Iris n'en disent toujours rien.
+- **Rien n'a changé dans l'histoire, les dialogues ni les codes.**
 
 ## Nouveau depuis le 15 novembre (16 h 36) : LA PHASE 1 DE LÉO EST REFAITE (Bible §13.47) — EN LIGNE (15 novembre, 16 h 36 ; commit 9708074 du site ; version « 15/11 à 16 h 35 », dernière ligne de « 🎒 Objets »)
 
