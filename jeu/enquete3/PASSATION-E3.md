@@ -1,6 +1,21 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 15 h 05)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 15 h 45)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 15 novembre (15 h 45) : LES TRACES DE MOUSTACHE, DEUXIÈME TOUR, ET LA FORÊT JUSQU'AU PUITS (Bible §13.48) — EN LIGNE (15 novembre, 15 h 43 ; commit e3a02e0 du site, version 20261115-1444, « 15/11 à 15 h 41 » dans les Réglages ; publication de GitHub vérifiée)
+
+- **Ce qui change dans l'enquête 3** (`e3.js`, le Pisteur) : **la clé d'Anselme ratée** → « Dehors, des miaulements dans la nuit : Moustache file vers la forêt ! » → au clocher, un point nouveau, **« 🐾 Les traces de Moustache »** (`traces_puits`, la nuit) : le même mini-jeu que chez Odette, **dans un monde moitié village, moitié forêt, du pied du clocher au vieux puits ; on n'y perd jamais** (Romain : « sinon on va se retrouver bloqué »), essais infinis → **seulement ensuite, la grille du vieux puits** (avant : tout de suite après la clé ratée). Avec « Le vieux puits » (le code de Tim, chez le Barde), on va au puits tout droit, comme avant. Chez Odette, l'échec dit maintenant « Désolé, tu t'es trompé : ce n'était pas Moustache. Tu n'as pas suivi la bonne trace. »
+- **Le mini-jeu** (les deux versions) : toujours les sept chats ; les flaques barrent la rue ; les traces s'effacent pour de bon entre deux flaques ; les chats qui courent arrivent de plus en plus, effacent et posent leurs traces ; chaque chat a sa voix et appelle du bout de sa fausse piste ; chez Odette, perdu près d'un mauvais chat.
+- **Les codes n'ont pas bougé** (aucun nouveau). `verif.js 3` : la clé ratée mène toujours au puits.
+- **À faire valider par Romain** : les dix décisions du §13.48 (surtout : avoir compris « tu le remplaces par le mini-jeu de l'autre chat » comme « le même mini-jeu, dans la forêt, après la clé ratée »).
+
+## Nouveau depuis le 15 novembre (après-midi) : LA PHASE 3 DE LÉO NE PARDONNE PLUS (Bible §13.46) — EN LIGNE (15 novembre, 15 h 28 ; commit c247611 du site ; le donjon : version « 15/11 à 15 h 26 » (en bas de « 🎒 Objets ») ; publication de GitHub vérifiée)
+
+- **À lire : Bible §13.46.** Romain a essayé la phase 3 : elle ramait pendant la rafale et les flammes, et « il suffit d'appuyer sur la gourde et le bouclier ». Les deux sont repris.
+- **Ce qui change pour la conception (phase 3)** : **chaque attaque a sa parade, et une seule** — la charge : l'huile (sinon le héros percuté tombe) ; la rafale (16 coups) : le bouclier jaune dès l'annonce PUIS la gourde juste après le premier coup ; le cri : le marteau (sinon tout le monde est étourdi 7 secondes) ; « il attrape » : avoir plus de la moitié de sa vie (sinon les deux héros tombent), puis soigner vite ; le feu : un soin, tout de suite (15 par seconde). **Le marteau est de nouveau dans la main du Pisteur en phase 3.**
+- **Phase 2** : un rat cuirassé demande deux coups de fléau. **Tout le donjon** : le bouclier jaune est plus long à poser.
+- **⚠️ Les indices de Farinel et d'Iris** ne disent rien de tout ça (le marteau contre le cri, l'huile contre la charge en phase 3, la gourde pendant la rafale). Une équipe qui arrive en phase 3 sans le savoir perd plusieurs fois avant de comprendre : c'est voulu par Romain (« si on est arrivé en phase 3, on a commencé à comprendre »), mais à revoir avec lui s'il veut un mot du Barde.
+- **Rien n'a changé dans l'histoire, les dialogues ni les codes.**
 
 ## Nouveau depuis le 15 novembre (15 h 00) : LES CINÉMATIQUES DE LÉO EN VRAIS PETITS FILMS (Bible §13.45) — EN LIGNE (15 novembre, 15 h 00 ; commit 0057583 du site, version 20261115-1359 ; le donjon : version « 15/11 à 14 h 58 » ; publication de GitHub vérifiée)
 

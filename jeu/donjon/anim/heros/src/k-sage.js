@@ -138,13 +138,17 @@ H.bouclier = function(scene, cible, opt){
     var g = this.garde(), base = {pA:[102, 272], pB:[156, 272]};
     var leve = copie(g, copie(base, {bassin:{y:2}, torse:-4, tete:-12, mB:[150, 74], hB:0, mA:[178, 66], hA:-160}));
     var haut = copie(leve, {bassin:{y:-2}, torse:-6, tete:-14, mB:[150, 66], mA:[180, 60]});
+    /* (Romain, 15 novembre, 13 h 54 : « le bouclier jaune, le temps d'animation du personnage pour le faire, légèrement plus long,
+       pour éviter de pouvoir le spammer […] tu augmentes de 50 % […] sur tout le donjon » — le geste dure 2,22 s au lieu de 1,48 ;
+       le dôme se pose à 1,14 s. Le bouclier de chêne garde sa durée.) */
+    var k = opt.sorte === 'chene' ? 1 : 1.5;
     this.expr('colere');
     return this.jouer([
-      {d:300, p:leve, e:'io', f:function(){ me.cristalFlash(true); me.expr('cri'); var q = me.rep('baton-bas'); onde(me.fx, q.x, q.y, {w:120, h:26, c:CYAN, ep:3, s0:0.2, s1:1.4, d:800}); me._runesMontent(); }},
-      {d:200, p:haut, e:'b'},
-      {d:260, p:haut, e:'lin', f:function(){ bq = me._dome(L, scene, cible, opt); sig(bq); }},
-      {d:420, p:g, e:'io', f:function(){ me.expr('content'); }},
-      {d:300, p:g, e:'lin', f:function(){ me.expr('garde'); }}
+      {d:300 * k, p:leve, e:'io', f:function(){ me.cristalFlash(true); me.expr('cri'); var q = me.rep('baton-bas'); onde(me.fx, q.x, q.y, {w:120, h:26, c:CYAN, ep:3, s0:0.2, s1:1.4, d:800}); me._runesMontent(); }},
+      {d:200 * k, p:haut, e:'b'},
+      {d:260 * k, p:haut, e:'lin', f:function(){ bq = me._dome(L, scene, cible, opt); sig(bq); }},
+      {d:420 * k, p:g, e:'io', f:function(){ me.expr('content'); }},
+      {d:300 * k, p:g, e:'lin', f:function(){ me.expr('garde'); }}
     ]);
   });
   pret = p;

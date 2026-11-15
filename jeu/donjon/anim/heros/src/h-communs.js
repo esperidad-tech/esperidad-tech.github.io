@@ -80,9 +80,19 @@ H.tomber = function(){
       {d:220, p:bascule, e:'i'}, {d:170, p:sol, e:'i', f:function(){ me._boum(); }}, {d:150, p:rb, e:'o'}, {d:240, p:sol, e:'b', f:function(){ me.expr('ko'); me.ko = true; me._etoiles(true); }}]).then(function(){ me.ko = true; });
   });
 };
+/* le héros encaisse un coup. (15 novembre, 13 h 54 — Romain : « la rafale de coups, ça fait ramer extrêmement le téléphone » ;
+   RAPIDITE.md, R15.) Avant : un filtre (éclat blanc, puis halo rouge) animé sur le héros ENTIER — la tablette devait l'aplatir et le
+   refaire à chaque image, une demi-seconde, et chaque coup en rajoutait un par-dessus. Maintenant : une lueur rouge posée sur
+   lui une fois pour toutes, dont seule l'opacité bouge ; un nouveau coup relance la même, il ne s'en empile jamais. */
 H._flash = function(){
-  this.svg.animate([{filter:'brightness(1) drop-shadow(0 0 0 rgba(255,60,70,0))'}, {filter:'brightness(2.3) drop-shadow(0 0 2px rgba(255,255,255,.9))', offset:.1},
-    {filter:'brightness(1.08) drop-shadow(0 0 7px rgba(255,50,70,.95))', offset:.3}, {filter:'brightness(1) drop-shadow(0 0 0 rgba(255,60,70,0))'}], {duration:560, easing:'ease-out'});
+  var e = this._coup;
+  if(!e || !e.isConnected){
+    var p = this.rep('tete'), q = this.rep('chevilleB'), h = Math.max(150, Math.abs(q.y - p.y) + 70);
+    e = this._coup = div(this.fx, 'left:0;top:0;width:150px;height:' + r1(h) + 'px;border-radius:50%;opacity:0;pointer-events:none;' +
+      'background:radial-gradient(closest-side,rgba(255,255,255,.85),rgba(255,80,90,.62) 42%,rgba(255,50,70,0));transform:' + place((p.x + q.x) / 2, (p.y + q.y) / 2));
+  }
+  if(this._coupA) try{ this._coupA.cancel(); }catch(x){}
+  this._coupA = e.animate([{opacity:0}, {opacity:1, offset:.12}, {opacity:.55, offset:.35}, {opacity:0}], {duration:420, easing:'ease-out'});
 };
 H._boum = function(){
   var p = this.rep('tete'), q = this.rep('chevilleB');

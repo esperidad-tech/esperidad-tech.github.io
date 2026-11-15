@@ -79,7 +79,7 @@ section('Les deux boucliers');
   egal(c.etat().heros.pisteur.bouclier, 'jaune', 'le bâton normal pose un bouclier jaune');
   c.avancer(20);
   egal(c.h.pisteur.bouclier === 'jaune' || c.h.pisteur.pv < 120, true, 'un bouclier reste posé tant qu\'aucun coup ne l\'a cassé');
-  c = combat(1);
+  c = combat(1); c.leo.fin += 4;                       /* (le bouclier jaune est plus long à poser depuis le 15 novembre : Léo attend, pour ce test) */
   geste(c, 'sage', 'bouclier', 'sage'); geste(c, 'sage', 'bouclier', 'alchimiste'); geste(c, 'sage', 'bouclier', 'pisteur');
   ok(D.ORDRE.every(function(h){ return c.h[h].bouclier === 'jaune'; }), 'on peut en poser trois d\'avance (Romain)');
   ev = jusque(c, leo('impact', 'fleau'));
@@ -231,7 +231,7 @@ section('La rangée d\'icônes (Romain, 14 novembre)');
   function ids(c){ return c.barre().map(function(x){ return x.heros[0] + ':' + x.geste; }).join(' '); }
   egal(ids(combat(1)), 's:oeil s:bouclier s:a:baton-chene s:a:cristal-lune a:p:huile a:p:feu a:p:givre a:herbes a:p:baume a:p:coeur p:dague p:p:huile p:p:feu p:p:givre', 'phase 1 : quatorze icônes — plus de flèche simple, plus de louche, d\'acide, de colle, de fumigène');
   egal(ids(combat(2)), 's:oeil s:rune s:bouclier s:a:baton-chene a:p:huile a:p:feu a:p:acide a:herbes a:p:baume a:p:coeur p:dague p:l:crochet p:l:fleau p:l:marteau p:p:huile p:p:acide', 'phase 2 : les trois outils de Léo, la rune et l\'acide (pour les rats), le feu de l\'Alchimiste (il passe par-dessus les rats) ; le Pisteur a la flèche d\'acide, plus la flèche de feu (Romain, 15 novembre)');
-  egal(ids(combat(3)), 's:oeil s:bouclier s:a:baton-chene a:p:givre a:p:huile a:herbes a:p:baume a:p:coeur p:l:faux p:l:gourde p:p:givre p:p:huile', 'phase 3 : la faux, la gourde, le givre et l\'huile ; plus de dague');
+  egal(ids(combat(3)), 's:oeil s:bouclier s:a:baton-chene a:p:givre a:p:huile a:herbes a:p:baume a:p:coeur p:l:faux p:l:gourde p:l:marteau p:p:givre p:p:huile', 'phase 3 : la faux, la gourde, le givre et l\'huile ; plus de dague');
   var p0 = R.nouvellePartie(7), c0 = LR.combat(p0, {phase:1});
   egal(ids(c0), 's:oeil s:bouclier a:p:huile a:p:feu a:herbes a:p:baume a:p:coeur p:dague p:p:huile p:p:feu', 'une équipe sans bâtons ni givre : ces icônes-là n\'existent pas');
   var c = combat(1), b;
@@ -402,7 +402,11 @@ section('Phase 2 — les rats');
     var c3 = combat(2); jusque(c3, leo('impact', 'sifflet')); D.ORDRE.forEach(function(h){ c3.h[h].act = null; });
     c3.rats[0].type = 'ratcuir';
     var e3 = geste(c3, 'pisteur', 'l:fleau', c3.etat().rats[0].id), m = tous(e3, 'rat', function(e){ return e.quoi === 'meurt'; });
-    ok(m.length === 2 && m.every(function(e){ return e.par === 'fleau'; }) && c3.ratsVivants().length === 0, 'le fléau : deux rats qui voient clair (dont un cuirassé) → les deux détalent');
+    /* (15 novembre, 13 h 54) un rat cuirassé : le premier coup de fléau casse son armure, le deuxième le fait fuir */
+    ok(m.length === 1 && m[0].par === 'fleau' && c3.ratsVivants().length === 1 && c3.ratsVivants()[0].nu && !!trouve(e3, 'rat', function(e){ return e.quoi === 'nu' && e.par === 'fleau'; }), 'le fléau : le rat ordinaire détale ; le cuirassé perd son armure (premier coup)');
+    D.ORDRE.forEach(function(h){ c3.h[h].act = null; });
+    e3 = geste(c3, 'pisteur', 'l:fleau', c3.etat().rats[0].id);
+    ok(c3.ratsVivants().length === 0 && !!trouve(e3, 'rat', function(e){ return e.quoi === 'meurt' && e.par === 'fleau'; }), '… et le deuxième coup de fléau le fait détaler');
     D.ORDRE.forEach(function(h){ c3.h[h].act = null; });
     var c4 = combat(2); jusque(c4, leo('impact', 'sifflet')); D.ORDRE.forEach(function(h){ c4.h[h].act = null; });
     c4.rats[1].mort = true; var pv4 = c4.leo.pv;
@@ -474,7 +478,7 @@ section('Phase 2 — la faux, le saut (plus de coup de poing : Romain, 15 novemb
 section('Phase 3 — insensible, sauf au saignement');
 (function(){
   var c = combat(3), ev;
-  egal(c.etat().armes, {faux:3, gourde:3}, 'le Pisteur ramasse la faux et la gourde (le marteau est cassé)');
+  egal(c.etat().armes, {marteau:3, faux:3, gourde:3}, 'le Pisteur ramasse la faux et la gourde, et garde le marteau (15 novembre : il arrête le cri)');
   ev = geste(c, 'pisteur', 'dague', 'leo');
   ok(c.leo.pv === 3000 && trouve(ev, 'degats', function(e){ return e.cible === 'leo'; }).n === 0 && trouve(ev, 'degats', function(e){ return e.cible === 'leo'; }).mot === L.MOTS.insensible, 'la dague : « Insensible ! »');
   ev = geste(c, 'alchimiste', 'p:feu', 'leo');
@@ -491,8 +495,10 @@ section('Phase 3 — insensible, sauf au saignement');
   var n = 0; while(!c.fini() && n++ < 3000){ c.avancer(.05); soigner(); }
   egal([c.fini(), c.leo.pv], ['victoire', 0], 'quand le saignement l\'a vidé : victoire');
   /* la gourde */
-  c = combat(3); c.h.sage.pv = 9;
-  ev = geste(c, 'pisteur', 'l:gourde', 'sage');
+  c = combat(3); c.h.sage.pv = 9; c.leo.fin += 10;
+  ev = c.agir('pisteur', 'l:gourde', 'sage').concat(c.avancer(2.9));
+  egal(c.h.sage.pv, 9, 'la gourde volée met trois secondes à faire son effet (Romain, 15 novembre, 13 h 54)');
+  ev = ev.concat(c.avancer(.8));
   egal([c.h.sage.pv, c.etat().armes.gourde], [90, L.USAGES], 'la gourde rend toute sa vie à qui on veut (Romain) ; elle ne se vide plus (infinie : Romain, 15 novembre)');
   /* le givre le ralentit */
   c = combat(3); ev = geste(c, 'pisteur', 'p:givre', 'leo');
@@ -501,42 +507,119 @@ section('Phase 3 — insensible, sauf au saignement');
   ok(Math.abs((c.leo.tl - tl0) - 2 * L.RALENTI.k) < .06, 'ralenti, son temps passe presque deux fois moins vite');
 })();
 
-section('Phase 3 — ses attaques');
+section('Phase 3 — ses attaques (les règles du 15 novembre, 13 h 54 : « il faudrait que ses compétences one shot »)');
 (function(){
-  var c = combat(3), ev;
-  function soigner(){ D.ORDRE.forEach(function(h){ c.h[h].pv = c.h[h].pvMax; c.h[h].sol = false; c.h[h].etourdi = 0; c.h[h].brule = 0; c.h[h].act = null; c.h[h].bouclier = null; }); }
+  var c = combat(3), ev, A = L.ATTAQUES;
+  function soigner(c){ D.ORDRE.forEach(function(h){ c.h[h].pv = c.h[h].pvMax; c.h[h].sol = false; c.h[h].etourdi = 0; c.h[h].brule = 0; c.h[h].act = null; c.h[h].bouclier = null; c.h[h].attrape = false; }); }
+  /* amener Léo au début de la préparation d'une attaque (les héros soignés en chemin) */
+  function vers(att, phase){ var c = combat(phase || 3); c.leo.k = L.ORDRE[c.phase].indexOf(att) - 1; jusque(c, leo('prise', att)); soigner(c); return c; }
   ev = jusque(c, leo('impact', 'poing3'));
   egal(trouve(ev, 'degats', function(e){ return e.cause === 'poing3'; }).n, 30, 'le coup de poing : 30 (Romain)');
-  soigner(); ev = jusque(c, leo('impact', 'rafale'));
-  var d = trouve(ev, 'degats', function(e){ return e.cause === 'rafale'; });
-  egal(d.n, Math.round(c.h[d.heros].pvMax * .8), 'la rafale : 80 % de la vie du héros (Romain)');
-  soigner(); jusque(c, leo('prise', 'charge')); c.leo.flaque = c.t + 5;
+
+  /* ----- la rafale ----- */
+  egal([A.rafale.coups, A.rafale.pare, L.DUREES.gourde.impact], [16, 3, 3], 'la rafale : 16 coups ; le bouclier jaune en pare 3 ; la gourde se boit en 3 secondes (Romain)');
+  c = vers('rafale'); var proie = c.leo.cibles[0];
+  ev = jusque(c, leo('retour', 'rafale'));
+  var coups = tous(ev, 'leo', function(e){ return e.quoi === 'coup'; });
+  ok(c.h[proie].sol && coups.length === 9 && tous(ev, 'degats', function(e){ return e.cause === 'rafale'; }).length === 9, 'la rafale sans rien faire : le héros tombe au 9e coup, et Léo s\'arrête');
+  c = vers('rafale'); proie = c.leo.cibles[0]; c.h[proie].bouclier = 'jaune';
+  ev = jusque(c, leo('retour', 'rafale'));
+  egal([tous(ev, 'pare').length, tous(ev, 'leo', function(e){ return e.quoi === 'coup'; }).length, c.h[proie].sol], [3, 12, true], 'avec le bouclier jaune seul : il pare 3 coups entiers, casse… et le héros tombe quand même (au 12e)');
+  /* la gourde seule, au meilleur moment possible (juste après le 8e coup) : le dernier coup, double, l'achève */
+  c = vers('rafale'); proie = c.leo.cibles[0];
+  ev = jusque(c, function(e){ return e.t === 'leo' && e.quoi === 'coup' && e.k === 8; });
+  ok(!c.h[proie].sol && c.h[proie].pv > 0, '… (au 8e coup, il est encore debout, de justesse)');
+  c.h[proie].pv = c.h[proie].pvMax;
+  ev = jusque(c, leo('retour', 'rafale'));
+  ok(c.h[proie].sol, 'la gourde seule, même au meilleur moment : il tombe (le dernier coup compte double)');
+  /* le bouclier jaune + la gourde bue quand les coups commencent : il tient */
+  c = vers('rafale'); proie = c.leo.cibles[0]; c.vu = true;
+  var eb = c.agir('sage', 'bouclier');
+  egal(eb[0].cible, proie, '(la rune de l\'œil ouverte, le bouclier jaune va tout seul sur celui que Léo vise)');
+  var e0 = jusque(c, function(e){ return e.t === 'leo' && e.quoi === 'coup' && e.k === 2; });
+  if(proie === 'pisteur') c.h.pisteur.act = null;
+  c.agir('pisteur', 'l:gourde', proie);
+  ev = e0.concat(jusque(c, leo('retour', 'rafale')));
+  egal([tous(ev, 'pare').length, tous(ev, 'leo', function(e){ return e.quoi === 'coup'; }).length, c.h[proie].sol], [3, 16, false], 'le bouclier jaune, puis la gourde lancée juste après le premier coup : les 16 coups passent, il est debout');
+  /* la gourde, pendant la rafale, va toute seule à celui que Léo frappe — même s'il n'a encore rien perdu, même si un autre est blessé */
+  c = vers('rafale'); proie = c.leo.cibles[0]; c.h[proie].bouclier = 'jaune';
+  var autreH = D.ORDRE.filter(function(h){ return h !== proie && h !== 'pisteur'; })[0] || 'sage';
+  egal(c.barre().filter(function(x){ return x.geste === 'l:gourde'; })[0].permis, false, '(avant les coups, personne n\'est blessé : la gourde est éteinte)');
+  jusque(c, function(e){ return e.t === 'leo' && e.quoi === 'coup' && e.k === 1; });
+  if(autreH !== proie) c.h[autreH].pv -= 30;
+  egal(c.auto('pisteur', 'l:gourde'), [proie], 'pendant la rafale, la gourde va à celui que Léo frappe (son bouclier pare encore, un autre est blessé : c\'est quand même pour lui)');
+  /* la fenêtre : la gourde bue trop tôt (dès l'annonce) ne sert à rien */
+  c = vers('rafale'); proie = c.leo.cibles[0]; c.vu = true; c.agir('sage', 'bouclier');
+  if(proie !== 'pisteur'){ c.agir('pisteur', 'l:gourde', proie); ev = jusque(c, leo('retour', 'rafale')); ok(c.h[proie].sol, 'la gourde bue trop tôt (dès l\'annonce) : gâchée, il tombe'); }
+  else ok(true, '(la proie est le Pisteur : fenêtre non essayée ici)');
+
+  /* ----- la charge : mortelle, sauf l'huile ----- */
+  c = vers('charge'); proie = c.leo.cibles[0]; c.h[proie].bouclier = 'jaune';
+  ev = jusque(c, leo('impact', 'charge'));
+  ok(c.h[proie].sol && !!trouve(ev, 'degats', function(e){ return e.cause === 'charge' && e.mortel; }), 'phase 3, la charge : celui qu\'il percute tombe, même sous un bouclier jaune');
+  c = vers('charge'); c.agir('alchimiste', 'p:huile');
   ev = jusque(c, function(e){ return e.t === 'leo' && (e.quoi === 'glisse' || e.quoi === 'impact'); });
-  ok(!!trouve(ev, 'leo', function(e){ return e.quoi === 'glisse'; }), 'la charge se pare toujours à l\'huile ou à la colle');
-  soigner(); jusque(c, leo('debout')); soigner(); c.h.alchimiste.bouclier = 'jaune';
+  ok(!!trouve(ev, 'leo', function(e){ return e.quoi === 'glisse'; }) && D.ORDRE.every(function(h){ return !c.h[h].sol; }), '… sauf l\'huile, lancée quand il se prépare : il glisse, personne ne tombe');
+  c = vers('charge', 1); proie = c.leo.cibles[0];
+  jusque(c, leo('impact', 'charge'));
+  ok(!c.h[proie].sol, '(en phase 1, la charge n\'est pas mortelle)');
+
+  /* ----- le cri : seul le marteau ----- */
+  c = vers('hurlement'); D.ORDRE.forEach(function(h){ c.h[h].bouclier = 'jaune'; });
   ev = jusque(c, leo('impact', 'hurlement'));
-  egal([c.h.pisteur.etourdi > c.t, c.h.alchimiste.etourdi > c.t], [true, false], 'le hurlement étourdit tout le monde ; le bouclier jaune l\'arrête');
-  soigner(); ev = jusque(c, leo('impact', 'attrape'));
-  var da = tous(ev, 'degats', function(e){ return e.cause === 'attrape'; });
-  ok(da.length === 2 && da[0].heros !== da[1].heros && da.every(function(e){ return e.n === Math.round(c.h[e.heros].pvMax * L.ATTAQUES.attrape.part); }), 'il attrape un héros et frappe un autre avec : de gros dégâts sur les deux');
-  ok(D.ORDRE.every(function(h){ return !c.h[h].attrape; }), 'le héros attrapé peut encore jouer (Romain)');
-  soigner(); ev = jusque(c, leo('impact', 'souffle'));
+  ok(D.ORDRE.every(function(h){ return c.h[h].etourdi > c.t + 6; }), 'le cri étourdit les trois héros 7 secondes — même sous un bouclier jaune');
+  c = vers('hurlement'); c.agir('pisteur', 'l:marteau');
+  ev = jusque(c, function(e){ return e.t === 'leo' && (e.quoi === 'coupe' || e.quoi === 'impact'); });
+  ok(!!trouve(ev, 'leo', function(e){ return e.quoi === 'coupe' && e.par === 'marteau'; }) && D.ORDRE.every(function(h){ return !(c.h[h].etourdi > c.t); }), 'le marteau, lancé pendant qu\'il se prépare, coupe le cri : personne n\'est étourdi');
+  c = vers('rafale');
+  ev = c.agir('pisteur', 'l:marteau').concat(c.avancer(1));
+  ok(!trouve(ev, 'leo', function(e){ return e.quoi === 'coupe'; }) && trouve(ev, 'mot', function(e){ return e.sur === 'leo'; }).texte === L.MOTS.cri, 'en phase 3, le marteau ne coupe rien d\'autre (« Seulement son cri ! »)');
+  ok(A.hurlement.prise + A.hurlement.elan >= 2 && L.DUREES.arme.impact < 1, 'le cri se prépare plus de 2 secondes : le temps de lancer le marteau');
+
+  /* ----- il attrape ----- */
+  c = vers('attrape');
+  ev = jusque(c, leo('porte', 'attrape'));
+  var po = trouve(ev, 'leo', function(e){ return e.quoi === 'porte'; }), pris = po.heros, autre = po.autre;
+  ok(c.h[pris].attrape && !c.libre(pris) && !trouve(ev, 'degats', function(e){ return e.cause === 'attrape'; }) && pris !== autre && !!autre, 'il attrape un héros : aucun dégât, mais il le tient (il ne peut plus rien faire)');
+  var av = [c.h[pris].pv, c.h[autre].pv];
+  ev = jusque(c, leo('frappe-avec', 'attrape'));
+  egal([c.h[pris].pv, c.h[autre].pv], [av[0] - Math.floor(av[0] * .9), av[1] - Math.floor(av[1] * .9)], 'il frappe le second avec le premier : chacun perd 90 % de la vie qui lui reste — ils restent debout');
+  ok(c.h[pris].etourdi > c.t && c.h[autre].etourdi > c.t && c.h[pris].etourdi > c.h[autre].etourdi && !c.h[pris].attrape, '… étourdis tous les deux, celui qui a volé moins longtemps');
+  c = vers('attrape'); jusque(c, leo('porte', 'attrape')); pris = c.leo.tenu; autre = c.leo.autre;
+  c.h[autre].pv = Math.floor(c.h[autre].pvMax * .45);
+  ev = jusque(c, leo('frappe-avec', 'attrape'));
+  ok(c.h[pris].sol && c.h[autre].sol && trouve(ev, 'leo', function(e){ return e.quoi === 'frappe-avec'; }).mortel, 'si l\'un des deux a moins de la moitié de sa vie : ils tombent tous les deux');
+  c = vers('attrape'); jusque(c, leo('porte', 'attrape')); pris = c.leo.tenu; autre = c.leo.autre;
+  c.h[autre].pv = Math.floor(c.h[autre].pvMax * .45);
+  var tiers = D.ORDRE.filter(function(h){ return h !== pris; })[0];
+  c._soin([], autre, 15, 'herbes');
+  ev = jusque(c, leo('frappe-avec', 'attrape'));
+  ok(!c.h[pris].sol && !c.h[autre].sol, '… un soin pendant qu\'il le porte (1,6 seconde) les sauve');
+  c = vers('attrape'); c.h[c.leo.cibles[0]].bouclier = 'jaune';
+  ev = jusque(c, leo('porte', 'attrape'));
+  ok(!!c.leo.tenu, 'le bouclier jaune n\'empêche plus d\'être attrapé');
+
+  /* ----- le souffle de feu ----- */
+  c = vers('souffle'); ev = jusque(c, leo('impact', 'souffle'));
   ok(D.ORDRE.every(function(h){ return c.h[h].brule > c.t; }), 'le souffle de feu : tout le monde brûle');
   D.ORDRE.forEach(function(h){ c.h[h].pv = c.h[h].pvMax = 400; });
-  var pv = c.h.pisteur.pv; c.leo.fin += 100; c.avancer(8.2);
-  ok(pv - c.h.pisteur.pv >= L.BRULE.n * 15 && c.etat().heros.pisteur.brule, 'la brûlure ne s\'arrête plus toute seule : huit secondes après, il brûle toujours (Romain, 15 novembre)');
+  var pv = c.h.pisteur.pv; c.leo.fin += 100; c.avancer(8.05);
+  egal([pv - c.h.pisteur.pv, c.etat().heros.pisteur.brule], [15 * 8, true], 'le feu : 15 points par seconde (Romain), et il ne s\'arrête plus tout seul');
   D.ORDRE.forEach(function(h){ c.h[h].act = null; c.h[h].etourdi = 0; });
   var evS = geste(c, 'alchimiste', 'herbes');
   ok(D.ORDRE.every(function(h){ return !c.etat().heros[h].brule; }) && tous(evS, 'etat', function(e){ return e.nom === 'brule' && e.on === false; }).length === 3, 'un soin (les herbes) éteint le feu de tout le monde');
-  ok(L.ARMES.gourde.infini && !L.ARMES.faux.infini && L.DUREES.gourde.impact >= 1.5, 'la gourde volée est infinie, et plus longue à boire (Romain, 15 novembre) ; la faux garde ses trois coups');
+  ok(L.ARMES.gourde.infini && !L.ARMES.faux.infini && L.ARMES.marteau.infini, 'la gourde volée et le marteau sont infinis ; la faux garde ses trois coups');
   egal([L.ATTAQUES.poing3.prise, L.ATTAQUES.poing3.elan], [.6, .8], 'le gros coup de poing de la phase 3 se prépare : 1,4 seconde');
-  /* le bouclier jaune empêche d'être attrapé : le coup est raté pour les deux */
-  c = combat(3); jusque(c, leo('impact', 'poing3'));
-  ['rafale', 'charge', 'hurlement'].forEach(function(a){ jusque(c, leo('impact', a), 40); soigner(); });
-  soigner(); jusque(c, leo('prise', 'attrape'), 40);
-  var proie = c.leo.cibles[0]; c.h[proie].bouclier = 'jaune';
-  ev = jusque(c, leo('impact', 'attrape'));
-  ok(!trouve(ev, 'degats', function(e){ return e.cause === 'attrape'; }), 'un bouclier jaune sur celui qu\'il veut attraper : raté, personne n\'est frappé');
+  egal([L.DUREES.bouclier.impact, L.DUREES.bouclier.fin], [1.16, 2.22], 'le bouclier jaune est 50 % plus long à poser (Romain, 15 novembre) : 1,16 s, et 2,22 s avant de rejouer');
+})();
+
+section('Phase 3 — deux joueurs (leo-joueurs3.js)');
+(function(){
+  var J = require('./leo-joueurs3.js'), bon = [], lent = [], spam = [], g;
+  for(g = 1; g <= 6; g++){ bon.push(J.jouer('bon', g)); lent.push(J.jouer('bon', g, 400, 1)); spam.push(J.jouer('spam', g)); }
+  ok(bon.every(function(x){ return x.fin === 'victoire'; }), 'celui qui a compris Léo (la bonne parade à chaque attaque) gagne la phase 3, six combats sur six');
+  ok(lent.every(function(x){ return x.fin === 'victoire'; }), '… et même s\'il met une seconde à réagir');
+  ok(spam.every(function(x){ return x.fin === 'defaite'; }), 'celui qui ne fait que la gourde et le bouclier jaune, sans arrêt (l\'essai de Romain), perd à chaque fois');
 })();
 
 section('La défaite');

@@ -86,7 +86,9 @@ L.ATTAQUES = {
   fleau:{nom:'Le fléau', ic:'🌾', arme:'fleau', prise:1.0, elan:1.4, retour:.9, degats:42, cibles:'deux'},                 /* Romain : frappe deux héros, assez fort */
   /* (14 novembre, Romain : « que la position dure assez longtemps pour qu'on ait le temps de mettre de l'huile » — une fiole met
      2,5 s à tomber, une flèche 1,6 s : il se prépare 4,4 s) */
-  charge:{nom:'La charge', ic:'💨', arme:null, prise:1.4, elan:3.0, retour:.8, degats:58, cibles:'un', glisse:5.0},         /* Romain : huile ou colle juste avant → il tombe sur place */
+  /* (15 novembre, 13 h 54, Romain : « en phase 3, ça one shot : il n'y a qu'une seule chose à faire, c'est mettre de l'huile » —
+     mortel:{3:true} : en phase 3, celui qu'il percute tombe, bouclier ou pas) */
+  charge:{nom:'La charge', ic:'💨', arme:null, prise:1.4, elan:3.0, retour:.8, degats:58, cibles:'un', glisse:5.0, mortel:{3:true}},         /* Romain : huile ou colle juste avant → il tombe sur place */
   marteau:{nom:'Le marteau', ic:'🔨', arme:'marteau', prise:1.0, elan:1.4, retour:.9, degats:38, cibles:'un', etourdit:3.0},  /* Romain : dégâts moyens, et il étourdit */
   meule:{nom:'La meule de paille', ic:'meule', arme:'meule', prise:1.2, elan:1.6, retour:1.0, degats:28, cibles:'tous'},       /* Romain : touche tout le monde, un peu moins fort ; rien ne l'arrête */
   crochet:{nom:'Le crochet', ic:'🪝', arme:'crochet', prise:1.4, elan:1.0, retour:.8, degats:58, cibles:'un', attrape:true, tient:7.0, ecrase:46, farine:3.6},   /* Romain : d'abord la farine, puis un coup énorme qui attrape */
@@ -104,15 +106,31 @@ L.ATTAQUES = {
   /* (Romain, 15 novembre, la phase 3 refaite : « son gros coup de poing, je veux qu'on sente vraiment qu'il va se préparer » : il arme
      son poing .6 s, le tient .8 s — 1,4 s pour réagir, au lieu d'une demi-seconde) */
   poing3:{nom:'Le coup de poing', ic:'👊', arme:null, prise:.6, elan:.8, retour:.7, degats:30, cibles:'un', rapide:true},    /* Romain : 30, inarrêtable */
-  rafale:{nom:'La rafale de coups', ic:'🥊', arme:null, prise:.8, elan:1.3, retour:1.0, part:.8, cibles:'un'},              /* Romain : environ 80 % de la vie d'un héros */
-  hurlement:{nom:'Le hurlement', ic:'📢', arme:null, prise:.7, elan:1.0, retour:.8, cibles:'tous', etourdit:3.2},           /* Romain : étourdit tout le monde ; le bouclier jaune l'arrête */
-  attrape:{nom:'Il attrape un héros', ic:'✊', arme:null, prise:.5, elan:.9, retour:1.2, part:.7, cibles:'deux', saisit:true},   /* Romain : il attrape un héros et frappe un autre avec — rapide, dur à contrer */
+  /* (15 novembre, 13 h 54, Romain, après son essai : « il suffit d'appuyer sur la gourde et le bouclier et de spammer, c'est pas très
+     intéressant […] si on est arrivé en phase 3, on a commencé à comprendre : il faudrait que ses compétences one shot ».)
+     LA RAFALE : « au lieu de 8 coups, tu fais 16 coups, des coups assez violents […] le bouclier jaune peut absorber 3 coups […] il
+     faut absolument un bouclier jaune et une gourde, au bon moment, sinon le héros se fait défoncer ». Seize coups, un toutes les
+     .4 s (6,4 s en tout), chacun 12 % de la vie du héros (le dernier compte double) : seul, il tombe au 9e ; le bouclier jaune pare
+     les 3 premiers qu'il reçoit ; la gourde (toute la vie, 3 s à boire) doit tomber quand il a encaissé 6 à 8 coups — il faut donc la
+     lancer juste après le premier coup (entre .2 et 1,4 s après : leo-joueurs3.js). Sans bouclier, la gourde seule ne suffit pas. */
+  rafale:{nom:'La rafale de coups', ic:'🥊', arme:null, prise:.8, elan:1.3, retour:1.0, cibles:'un', coups:16, pas:.4, part:.12, dernier:2, pare:3},
+  /* LE CRI : « le marteau pour l'arrêter : c'est la seule chose qui peut arrêter son cri ; s'il fait son cri et que les héros sont
+     étourdis, c'est fini » — perce : aucun bouclier ne l'arrête ; marteau : en phase 3, c'est le seul geste que le marteau coupe ;
+     les trois héros restent étourdis 7 s (il a le temps d'en attraper un, puis de cracher son feu). Il se prépare 2,2 s. */
+  hurlement:{nom:'Le hurlement', ic:'📢', arme:null, prise:1.0, elan:1.2, retour:.8, cibles:'tous', etourdit:7, perce:true, marteau:true},
+  /* IL ATTRAPE : « il saute, il attrape, il revient en arrière, et là il tape quelqu'un […] l'autre valdingue en l'air, étourdi pas
+     longtemps […] ça enlève 90 % des points de vie, en pourcentage, comme ça il reste en vie, mais ça fait flipper […] quand il se
+     fait attraper, il prend pas de dégâts : c'est au deuxième coup […] mais si l'un des deux ou les deux sont en dessous de 50 %,
+     ils meurent instantanément les deux ». porte : le temps où il le porte (c'est là qu'on soigne) ; part : la part de la vie
+     QUI RESTE que le coup enlève ; seuil : en dessous de cette part de sa vie, un héros n'y survit pas — et l'autre non plus. */
+  attrape:{nom:'Il attrape un héros', ic:'✊', arme:null, prise:.5, elan:.9, porte:1.6, retour:1.2, cibles:'deux', saisit:true, part:.9, seuil:.5, sonne:{pris:1.5, autre:.8}},
   souffle:{nom:'Le souffle de feu', ic:'🔥', arme:'potion', prise:1.0, elan:1.2, retour:1.0, degats:22, cibles:'tous', brule:true}   /* Romain : tout le monde brûle ; ça s'arrête tout seul */
 };
 L.SAIGNE = {n:5, pas:.5};                             /* Romain : « 5 par héros, deux fois par seconde » ; il ne s'arrête qu'avec un soin */
 /* (Romain, 15 novembre : « j'aimerais bien que le feu dure à l'infini ; du moment qu'on les soigne, ça s'arrête » : la brûlure du
    souffle ne s'arrête plus toute seule — comme le saignement, n'importe quel soin l'éteint) */
-L.BRULE = {n:5, pas:.5, duree:Infinity};
+/* (15 novembre, 13 h 54, Romain : « le feu, tu mets 15 points par seconde » ; « il faut qu'on ait très très peu de temps pour faire le soin ») */
+L.BRULE = {n:15, pas:1, duree:Infinity};
 L.BOUM = {leo:520, heros:30};                         /* Romain : « 30 points de vie » sur le héros pris dans la farine ; gros dégâts sur Léo */
 L.NOIRCI = 2.2;                                       /* après le BOUM, il titube */
 L.SONNE = 1.5;                                        /* coupé par le marteau, il reste sonné */
@@ -128,7 +146,8 @@ L.BARRE = {
   /* (Romain, 15 novembre : « enlève-moi cette flèche de feu, elle sert à rien, alors que la flèche d'acide va enlever les armures » :
      le Pisteur a la flèche d'acide à la place ; le feu de l'Alchimiste reste, pour toucher Léo par-dessus ses rats) */
   2:{pisteur:['dague', 'l:crochet', 'l:fleau', 'l:marteau', 'p:huile', 'p:acide'], alchimiste:['p:huile', 'p:feu', 'p:acide', 'herbes', 'p:baume', 'p:coeur'], sage:['oeil', 'rune', 'bouclier', 'a:baton-chene']},
-  3:{pisteur:['l:faux', 'l:gourde', 'p:givre', 'p:huile'], alchimiste:['p:givre', 'p:huile', 'herbes', 'p:baume', 'p:coeur'], sage:['oeil', 'bouclier', 'a:baton-chene']}
+  /* (15 novembre, 13 h 54 : le marteau revient en phase 3 — c'est la seule chose qui arrête le cri) */
+  3:{pisteur:['l:faux', 'l:gourde', 'l:marteau', 'p:givre', 'p:huile'], alchimiste:['p:givre', 'p:huile', 'herbes', 'p:baume', 'p:coeur'], sage:['oeil', 'bouclier', 'a:baton-chene']}
 };
 L.FLAQUE = 6;                                         /* l'huile ou la colle sous ses pieds tient six secondes */
 L.RALENTI = {k:.55, duree:5};                         /* le givre : tout ce qu'il fait va presque deux fois moins vite, cinq secondes */
@@ -142,7 +161,7 @@ L.ARMES = {
      ne s'usent plus — infini:true ; la faux et la gourde de la phase 3 gardent leurs trois coups) */
   crochet:{nom:'Crochet', ic:'🪝', d:'fait très mal', phase:2, vise:'ennemi', infini:true},
   fleau:{nom:'Fléau', ic:'🌾', d:'frappe deux cibles, fait fuir les rats', phase:2, vise:'ennemi', infini:true},
-  marteau:{nom:'Marteau', ic:'🔨', d:'coupe son geste', phase:2, vise:'ennemi', infini:true},
+  marteau:{nom:'Marteau', ic:'🔨', d:'coupe son geste', phase:2, phases:[2, 3], vise:'ennemi', infini:true},
   faux:{nom:'Faux', ic:'🌙', d:'fait saigner', phase:3, vise:'ennemi'},
   /* (Romain, 15 novembre : « la potion qu'on lui pique, j'aimerais bien qu'elle soit infinie, mais que l'animation soit un petit peu
      plus longue, histoire que ça soit pas trop facile ») */
@@ -163,12 +182,15 @@ L.COUPS_RAT = {dagueOuvert:80, dague:4, flecheOuvert:20, fleche:3, lourdeCuir:12
 L.DUREES = {
   fleche:{impact:1.57, fin:2.26}, lourde:{impact:1.97, fin:2.67}, dague:{impact:.71, fin:1.99}, arme:{impact:.71, fin:1.99},
   potion:{impact:2.54, fin:2.75}, herbes:{impact:1.1, fin:1.1}, louche:{impact:1.25, fin:1.72},
-  rune:{impact:.9, fin:1.56}, lune:{impact:.79, fin:1.82}, bouclier:{impact:.77, fin:1.48}, bouclier2:{impact:1.26, fin:1.5}, oeil:{impact:1.3, fin:2.2},
-  gourde:{impact:1.7, fin:2.3}
+  /* (15 novembre, 13 h 54, Romain : « le bouclier jaune, tu augmentes de 50 % le temps d'animation, pour éviter de pouvoir le spammer »,
+     dans tout le donjon : .77 / 1.48 → 1.16 / 2.22 ; le bouclier de chêne sur un seul héros garde l'ancienne durée — chene1 ;
+     « la gourde volée, c'était 1,7 seconde : mets 3 secondes ») */
+  rune:{impact:.9, fin:1.56}, lune:{impact:.79, fin:1.82}, bouclier:{impact:1.16, fin:2.22}, chene1:{impact:.77, fin:1.48}, bouclier2:{impact:1.26, fin:1.5}, oeil:{impact:1.3, fin:2.2},
+  gourde:{impact:3.0, fin:3.6}
 };
 L.MOTS = {
   occupe:'Pas encore !', etourdi:'Étourdi !', attrape:'Attrapé !', sol:'Au sol !', noir:'Dans le noir !', farine:'Dans la farine !', loin:'Trop loin !',
-  fuit:'Il détale !', casse:'Cassé !', insensible:'Insensible !', rien:'Rien du tout', personne:'Personne au sol', debout:'Encore debout', fini:'C\'est fini', cible:'Qui viser ?',
+  fuit:'Il détale !', casse:'Cassé !', insensible:'Insensible !', rien:'Rien du tout', cri:'Seulement son cri !', personne:'Personne au sol', debout:'Encore debout', fini:'C\'est fini', cible:'Qui viser ?',
   impossible:'Impossible !', glisse:'Ça glisse !', vu:'Il voit tout', boucle:'Déjà protégé', tousse:'Il tousse…', tropTard:'Trop tard !',
   clair:'Il fait clair', forme:'En pleine forme', ebloui:'Ébloui !'
 };
@@ -197,15 +219,15 @@ P._poser = function(phase){
   this.h = {};
   D.EXPOSES.forEach(function(h){
     var max = self.p.heros[h].pvMax || D.HEROS[h].pv;
-    self.h[h] = {pv:max, pvMax:max, sol:false, bouclier:null, etourdi:0, attrape:false, saigne:false, saigneT:0, brule:0, bruleT:0, act:null};
+    self.h[h] = {pv:max, pvMax:max, sol:false, bouclier:null, pare:0, etourdi:0, attrape:false, saigne:false, saigneT:0, brule:0, bruleT:0, act:null};
   });
   this.leo = {pv:PH.de, pvMax:L.PV, tl:0, etape:'repos', fin:L.DEBUT, att:null, cibles:[], k:-1, nuage:false, boum:false, tenu:null, tientFin:0,
-    flaque:0, ralenti:0, brule:0, bruleT:0, saigne:0, saigneT:0, auSol:false};
+    flaque:0, ralenti:0, brule:0, bruleT:0, saigne:0, saigneT:0, auSol:false, autre:null, coup:0, coupT:0};
   this.noir = false;                        /* il fait noir (la cape) : jusqu'à la lumière du bâton de lune, rien d'autre */
   this.rats = []; this.nRat = this.nRat || 0; this.vague = 0;
   /* les armes de Léo, ramassées par le Pisteur (Romain : trois coups chacune ; le marteau est cassé en phase 3) */
   this.armes = {};
-  Object.keys(L.ARMES).forEach(function(a){ if(L.ARMES[a].phase === phase) self.armes[a] = L.USAGES; });
+  Object.keys(L.ARMES).forEach(function(a){ if((L.ARMES[a].phases || [L.ARMES[a].phase]).indexOf(phase) >= 0) self.armes[a] = L.USAGES; });
 };
 P.phaseSuivante = function(){
   if(this.resultat !== 'phase') return [];
@@ -316,6 +338,9 @@ P.auto = function(h, geste, G, tirer){
   }
   /* un soin pour un seul (le baume, la gourde) : le plus blessé (en part de sa vie) ; celui qui saigne compte comme blessé */
   if(G.vise === 'heros'){
+    /* (15 novembre, 13 h 54) la gourde pendant la rafale : toujours pour celui que Léo frappe — même s'il n'a encore rien perdu
+       (son bouclier pare les premiers coups, et la gourde met trois secondes : c'est maintenant qu'il faut la lancer) */
+    if(geste === 'l:gourde' && Z.att === 'rafale' && Z.cibles.length && (Z.etape === 'coups' || (this.vu && Z.etape === 'elan')) && c.indexOf(Z.cibles[0]) >= 0) return [Z.cibles[0]];
     var blesses = c.filter(function(x){ return self.h[x].pv < self.h[x].pvMax || self.h[x].saigne; });
     return bas(blesses).slice(0, 1);
   }
@@ -385,7 +410,7 @@ function dureeDe(geste, cibles){
   if(geste === 'rune') return L.DUREES.rune;
   if(geste === 'a:cristal-lune') return L.DUREES.lune;
   if(geste === 'bouclier') return L.DUREES.bouclier;
-  if(geste === 'a:baton-chene') return cibles && cibles.length > 1 ? L.DUREES.bouclier2 : L.DUREES.bouclier;
+  if(geste === 'a:baton-chene') return cibles && cibles.length > 1 ? L.DUREES.bouclier2 : L.DUREES.chene1;
   if(geste === 'oeil') return L.DUREES.oeil;
   return L.DUREES.potion;
 }
@@ -453,6 +478,7 @@ P._pas = function(ev, d){
   if(Z.flaque && t >= Z.flaque){ Z.flaque = 0; ev.push({t:'leo-etat', nom:'flaque', on:false}); }
   if(Z.ralenti && t >= Z.ralenti){ Z.ralenti = 0; ev.push({t:'leo-etat', nom:'ralenti', on:false}); }
   Z.tl += d * (Z.ralenti > t ? L.RALENTI.k : 1);
+  if(Z.etape === 'coups') this._rafale(ev);
   var garde = 0;
   while(Z.tl >= Z.fin && !this.resultat && garde++ < 8) this._leoSuite(ev);
   /* 4. les rats */
@@ -579,7 +605,7 @@ P._effet = function(ev, h, a){
   if(g === 'herbes'){ this.debout().forEach(function(y){ self._soin(ev, y, C.herbes, 'herbes'); }); return; }
   if(g === 'bouclier' || g === 'a:baton-chene'){
     var sorte = g === 'bouclier' ? 'jaune' : 'chene';
-    c.forEach(function(y){ var S = self.h[y]; if(S.sol || (sorte === 'chene' && S.bouclier === 'jaune')) return; S.bouclier = sorte; ev.push({t:'bouclier', heros:y, on:true, sorte:sorte}); });
+    c.forEach(function(y){ var S = self.h[y]; if(S.sol || (sorte === 'chene' && S.bouclier === 'jaune')) return; S.bouclier = sorte; S.pare = 0; ev.push({t:'bouclier', heros:y, on:true, sorte:sorte}); });
     return;
   }
   if(g === 'a:cristal-lune'){
@@ -663,10 +689,11 @@ P._touche = function(ev, h, id, coup){
   if(coup === 'marteau'){
     /* Romain : il ne fait pas de dégâts, il lui coupe son geste (c'est fait pour la gourde) */
     var A = Z.att ? L.ATTAQUES[Z.att] : null;
-    if(A && !A.rapide && (Z.etape === 'prise' || Z.etape === 'elan')){
+    /* (15 novembre, 13 h 54 : en phase 3, sous la potion, le marteau ne coupe plus que son cri) */
+    if(A && !A.rapide && (this.phase < 3 || A.marteau) && (Z.etape === 'prise' || Z.etape === 'elan')){
       ev.push({t:'leo', quoi:'coupe', att:Z.att, par:'marteau'});
       Z.etape = 'sonne'; Z.fin = Z.tl + L.SONNE; Z.att = null; Z.cibles = [];
-    } else ev.push({t:'mot', sur:'leo', texte:L.MOTS.rien});
+    } else ev.push({t:'mot', sur:'leo', texte:this.phase === 3 ? L.MOTS.cri : L.MOTS.rien});
     return;
   }
   if(coup === 'faux'){
@@ -694,7 +721,11 @@ P._toucheRat = function(ev, r, coup){
   }
   /* (Romain, 15 novembre : « quand on utilise le fléau, ça tape deux personnes ; et les rats, ça les fait automatiquement fuir » :
      un rat touché par le fléau détale, cuirassé ou non) */
-  if(coup === 'fleau'){ r.mort = true; ev.push({t:'mot', sur:r.id, texte:L.MOTS.fuit}); ev.push({t:'rat', quoi:'meurt', id:r.id, par:'fleau'}); return; }
+  /* (15 novembre, 13 h 54 : « ceux qui sont avec l'armure, il faut 2 coups de fléau : un pour casser l'armure, l'autre pour les faire fuir ») */
+  if(coup === 'fleau'){
+    if(cuir){ r.nu = true; ev.push({t:'rat', quoi:'nu', id:r.id, par:'fleau'}); return; }
+    r.mort = true; ev.push({t:'mot', sur:r.id, texte:L.MOTS.fuit}); ev.push({t:'rat', quoi:'meurt', id:r.id, par:'fleau'}); return;
+  }
   if(coup === 'crochet'){
     /* Romain : le crochet tue un rat d'un coup ; sur un rat cuirassé, il casse l'armure, et le coup d'après le tue */
     if(cuir){ r.nu = true; ev.push({t:'rat', quoi:'nu', id:r.id, par:'crochet'}); return; }
@@ -746,6 +777,8 @@ P._leoSuite = function(ev){
       return this._leoRepos(ev);
     case 'noirci': ev.push({t:'leo-etat', nom:'noirci', on:false}); return this._leoRepos(ev);
     case 'sonne': return this._leoRepos(ev);
+    case 'coups': this._rafale(ev, true); if(this.resultat) return; return this._leoRetour(ev, 'rafale');
+    case 'porte': return this._frappeAvec(ev);
     case 'retour': return this._leoRepos(ev);
   }
   this._leoRepos(ev);
@@ -793,6 +826,31 @@ P._leoImpact = function(ev, A){
   if(A.cibles === 'tous') cibles = this.debout();
   else Z.cibles.forEach(function(h){ if(!vivant(h) || cibles.indexOf(h) >= 0) h = self._viser(cibles); if(h && cibles.indexOf(h) < 0) cibles.push(h); });
   ev.push({t:'leo', quoi:'impact', att:nom, cibles:cibles.slice()});
+  /* phase 3, la charge : celui qu'il percute tombe, bouclier ou pas (il fallait de l'huile sous ses pieds) */
+  if(A.mortel && A.mortel[this.phase]){
+    cibles.forEach(function(h){
+      var S = self.h[h], n = S.pv;
+      if(S.bouclier){ S.bouclier = null; ev.push({t:'bouclier', heros:h, on:false, casse:true}); }
+      S.pv = 0; ev.push({t:'degats', heros:h, n:n, pv:0, brut:n, bouclier:null, cause:nom, mortel:true});
+      self._tombe(ev, h);
+    });
+    if(this._bilan(ev)) return;
+    return this._leoRetour(ev, nom);
+  }
+  /* la rafale : les coups tombent un par un (P._rafale) */
+  if(A.coups){
+    var hr = cibles[0];
+    if(!hr) return this._leoRetour(ev, nom);
+    Z.cibles = [hr]; Z.coup = 0; Z.coupT = Z.tl + A.pas;
+    Z.etape = 'coups'; Z.fin = Z.tl + A.coups * A.pas;
+    ev.push({t:'leo', quoi:'coups', att:nom, heros:hr, n:A.coups, duree:A.coups * A.pas});
+    return;
+  }
+  /* le cri : aucun bouclier ne l'arrête (seul le marteau le coupe, avant) */
+  if(A.perce){
+    cibles.forEach(function(h){ if(vivant(h)) self._etourdit(ev, h, A.etourdit); });
+    return this._leoRetour(ev, nom);
+  }
   if(A.noir){ this.noir = true; ev.push({t:'noir', on:true}); return this._leoRetour(ev, nom); }
   if(A.rats){
     var libres = [0, 1].filter(function(pl){ return !self.ratsVivants().some(function(r){ return r.place === pl; }); });
@@ -811,17 +869,16 @@ P._leoImpact = function(ev, A){
     return this._leoRetour(ev, nom);
   }
   if(A.saisit){
-    /* phase 3 : il attrape le premier, et frappe le second avec. Le bouclier jaune empêche d'être attrapé : le coup est raté. */
-    var pris = cibles[0], autre = cibles[1];
+    /* phase 3 : il empoigne le premier (aucun dégât), le ramène à sa place… et frappe le second avec (P._frappeAvec).
+       (15 novembre, 13 h 54 : plus rien ne l'empêche d'attraper — le bouclier jaune ne sert à rien ici : il faut de la vie) */
+    var pris = cibles[0];
     if(!pris) return this._leoRetour(ev, nom);
-    if(this.h[pris].bouclier === 'jaune'){
-      this.h[pris].bouclier = null;
-      ev.push({t:'bouclier', heros:pris, on:false, casse:true});
-      ev.push({t:'mot', sur:pris, texte:'Raté !'});
-      return this._leoRetour(ev, nom);
-    }
-    [pris, autre].forEach(function(h){ if(vivant(h)) self._frappe(ev, h, Math.round(self.h[h].pvMax * A.part), {cause:nom}); });
-    return this._leoRetour(ev, nom);
+    this._annuler(ev, pris, 'attrape');
+    this.h[pris].attrape = true; Z.tenu = pris; Z.autre = cibles[1] || null;
+    ev.push({t:'etat', heros:pris, nom:'attrape', on:true});
+    Z.etape = 'porte'; Z.fin = Z.tl + A.porte;
+    ev.push({t:'leo', quoi:'porte', att:nom, heros:pris, autre:Z.autre, duree:A.porte});
+    return;
   }
   var fois = A.fois || 1;
   cibles.forEach(function(h){
@@ -852,11 +909,54 @@ P._leoImpact = function(ev, A){
   this._leoRetour(ev, nom);
 };
 
+/* LA RAFALE, coup par coup (l'horloge de Léo fait foi : le givre la ralentit). Le bouclier jaune pare trois coups entiers, puis
+   casse ; un bouclier de chêne n'en amortit qu'un (de moitié). Sa proie tombée, il s'arrête. */
+P._rafale = function(ev, tout){
+  var Z = this.leo, A = L.ATTAQUES.rafale, h = Z.cibles[0], S = h && this.h[h];
+  while(Z.coup < A.coups && (tout || Z.tl >= Z.coupT - 1e-9) && !this.resultat){
+    if(!S || S.sol){ Z.coup = A.coups; Z.fin = Z.tl; break; }
+    Z.coup++; Z.coupT += A.pas;
+    var brut = Math.round(S.pvMax * A.part) * (Z.coup === A.coups ? A.dernier : 1);
+    ev.push({t:'leo', quoi:'coup', att:'rafale', heros:h, k:Z.coup, n:A.coups});
+    if(S.bouclier === 'jaune'){
+      S.pare = (S.pare || 0) + 1;
+      ev.push({t:'pare', heros:h, k:S.pare, n:A.pare, brut:brut});
+      if(S.pare >= A.pare){ S.bouclier = null; S.pare = 0; ev.push({t:'bouclier', heros:h, on:false, casse:true}); }
+    }
+    else this._frappe(ev, h, brut, {cause:'rafale', coup:Z.coup});
+    this._bilan(ev);
+  }
+};
+/* IL FRAPPE LE SECOND AVEC LE PREMIER : les deux perdent 90 % de la vie qui leur reste (ils survivent toujours)… sauf si l'un des
+   deux avait moins de la moitié de sa vie : alors ils tombent tous les deux. */
+P._frappeAvec = function(ev){
+  var Z = this.leo, A = L.ATTAQUES.attrape, self = this, pris = Z.tenu, autre = Z.autre;
+  Z.tenu = null; Z.autre = null;
+  if(pris && this.h[pris].sol) pris = null;                           /* (tombé entre ses mains : le feu, le sang) */
+  if(pris){ this.h[pris].attrape = false; ev.push({t:'etat', heros:pris, nom:'attrape', on:false}); }
+  if(!pris){ ev.push({t:'leo', quoi:'lache', heros:null, par:'vide'}); return this._leoRetour(ev, 'attrape'); }
+  if(!autre || this.h[autre].sol) autre = this._viser([pris]);
+  if(autre === pris) autre = null;
+  var l = [pris, autre].filter(function(h){ return !!h; });
+  var bas = l.some(function(h){ return self.h[h].pv < self.h[h].pvMax * A.seuil; });
+  ev.push({t:'leo', quoi:'frappe-avec', att:'attrape', pris:pris, autre:autre, mortel:bas});
+  l.forEach(function(h){
+    var S = self.h[h], n = bas ? S.pv : Math.floor(S.pv * A.part);
+    if(S.bouclier){ S.bouclier = null; ev.push({t:'bouclier', heros:h, on:false, casse:true}); }
+    S.pv -= n;
+    ev.push({t:'degats', heros:h, n:n, pv:S.pv, brut:n, bouclier:null, cause:'attrape', mortel:bas});
+    if(S.pv <= 0) self._tombe(ev, h);
+  });
+  if(this._bilan(ev)) return;
+  if(!bas){ this._etourdit(ev, pris, A.sonne.pris); if(autre) this._etourdit(ev, autre, A.sonne.autre); }
+  this._leoRetour(ev, 'attrape');
+};
+
 /* les trois prochaines attaques, pour la rune de l'œil : [{att, nom, ic, enCours}] */
 P._suite = function(){
   var Z = this.leo, ordre = L.ORDRE[this.phase], l = [], k = Z.k, self = this, garde = 0;
   var rats = this.ratsVivants().length;
-  if(Z.att && (Z.etape === 'prise' || Z.etape === 'elan')) l.push({att:Z.att, nom:L.ATTAQUES[Z.att].nom, ic:L.ATTAQUES[Z.att].ic, enCours:true});
+  if(Z.att && (Z.etape === 'prise' || Z.etape === 'elan' || Z.etape === 'coups' || Z.etape === 'porte')) l.push({att:Z.att, nom:L.ATTAQUES[Z.att].nom, ic:L.ATTAQUES[Z.att].ic, enCours:true});
   while(l.length < 3 && garde++ < ordre.length * 2){
     k = (k + 1) % ordre.length;
     var A = L.ATTAQUES[ordre[k]];
@@ -869,7 +969,8 @@ P._suite = function(){
 /* ---------- la photo ---------- */
 P.etat = function(){
   var self = this, Z = this.leo, t = this.t, A = Z.att ? L.ATTAQUES[Z.att] : null, sombre = this.sombre();
-  var o = {phase:this.phase, t:t, fini:this.resultat, noir:sombre, vu:this.vu, heros:{}, rats:[], armes:copie(this.armes)};
+  var o = {phase:this.phase, t:t, fini:this.resultat, noir:sombre, vu:this.vu, heros:{}, rats:[], armes:{}};
+  for(var ka in this.armes) o.armes[ka] = this.armes[ka];
   D.EXPOSES.forEach(function(h){
     var S = self.h[h];
     o.heros[h] = {pv:S.pv, pvMax:S.pvMax, sol:S.sol, bouclier:S.bouclier, etourdi:S.etourdi > t ? S.etourdi - t : 0, attrape:S.attrape, saigne:S.saigne, brule:S.brule > t,
@@ -879,7 +980,8 @@ P.etat = function(){
     reste:Math.max(0, Z.fin - Z.tl), nuage:Z.nuage, tenu:Z.tenu, auSol:Z.auSol, flaque:Z.flaque > t, ralenti:Z.ralenti > t, brule:Z.brule > t, saigne:Z.saigne,
     cache:sombre || Z.nuage,                                          /* intouchable : dans le noir, dans sa farine */
     /* ce que la rune de l'œil montre : sa proie et ce qu'elle va prendre… */
-    vise:this.vu && A && (Z.etape === 'prise' || Z.etape === 'elan') && Z.cibles.length ? {cibles:Z.cibles.slice(), degats:A.part ? null : (A.degats || 0), part:A.part || 0, fois:A.fois || 1} : null,
+    vise:this.vu && A && (Z.etape === 'prise' || Z.etape === 'elan' || Z.etape === 'coups' || Z.etape === 'porte') && Z.cibles.length ? {cibles:Z.etape === 'porte' ? [Z.tenu, Z.autre].filter(function(x){ return !!x; }) : Z.cibles.slice(), degats:A.part ? null : (A.degats || 0), part:A.part || 0, fois:A.coups || A.fois || 1, mortel:!!(A.mortel && A.mortel[this.phase]), perce:!!A.perce} : null,
+    coup:Z.etape === 'coups' ? Z.coup : 0, porte:Z.etape === 'porte' ? {pris:Z.tenu, autre:Z.autre} : null,
     /* … et ses trois prochaines attaques (Romain, 14 novembre : de petites icônes à ses pieds). La première : celle qu'il prépare
        (enCours), sinon la prochaine. */
     suite:this.vu ? this._suite() : null};

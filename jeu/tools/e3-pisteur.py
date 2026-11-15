@@ -140,11 +140,12 @@ def partie(b, joueur, chemin):
     pp = (i or {}).get('params', {})
     verifier(i and i['type'] == 'pistage' and i.get('reessais') is True, f'les traces : le mini-jeu « Suivre les traces », à recommencer autant qu\'on veut ({i and i["type"]})')
     print('   niveau des traces : rang', pp.get('niveau'), '→ joué au niveau', pp.get('niveauEffectif'), '·', pp.get('faux'), 'fausses pistes · cinq doigts :', pp.get('cinq'))
-    verifier(pp.get('faux') == (4 if A else 3) and bool(pp.get('cinq')) == A, 'adulte : quatre fausses pistes, dont Noisette et ses cinq doigts ; enfant : trois, sans Noisette')
+    # (15 novembre, 14 h 26 : « 7 sorties avec 7 chats ») toujours six fausses pistes, Noisette comprise, enfant ou adulte
+    verifier(pp.get('faux') == 6 and bool(pp.get('cinq')), 'les sept chats d\'Odette : six fausses pistes, dont Noisette et ses cinq doigts')
     if A:
         # raté : pas de code, « Réessayer » ; puis réussi
         t = voile(pg)
-        verifier('pas Moustache' in t and pg.locator('#voile .b-donne').count() == 0 and pg.locator('#voile .b-reessai').count() == 1, 'les traces ratées : « Ce n\'était pas Moustache », pas de code, « 🔁 Réessayer »')
+        verifier('pas suivi la bonne trace' in t and pg.locator('#voile .b-donne').count() == 0 and pg.locator('#voile .b-reessai').count() == 1, 'les traces ratées : « Désolé, tu t\'es trompé… tu n\'as pas suivi la bonne trace », pas de code, « 🔁 Réessayer »')
         pg.locator('#voile .b-reessai').click(); pg.wait_for_timeout(900)
         pg.locator('#mj-plein .mj-go').click(); pg.wait_for_timeout(2600)
         pg.evaluate("() => window.__finir(true)"); pg.wait_for_timeout(500)
@@ -198,10 +199,16 @@ def partie(b, joueur, chemin):
         verifier(lieu(pg, 'puits') == [], 'la clé prise : jamais de puits'); fermer(pg)
         verifier(code(pg, 'info:vieux_puits') and lieu(pg, 'puits') == [], 'même avec « Le vieux puits » : pas de puits'); fermer(pg)
     else:
-        verifier('vieux puits' in t, 'la clé ratée : Moustache file vers le vieux puits'); fermer(pg)
+        verifier('file vers la forêt' in t and 'miaulements' in t, 'la clé ratée : des miaulements, Moustache file vers la forêt'); fermer(pg)
+        # (15 novembre, 14 h 28) LES TRACES JUSQU'AU PUITS : le même mini-jeu, dans la forêt ; on n'y perd jamais ; au bout, le puits
+        verifier(lieu(pg, 'puits') == [], 'avant d\'avoir suivi Moustache : pas encore de puits'); fermer(pg)
         pts = lieu(pg, 'clocher')
-        verifier([p['id'] for p in pts] == ['cle'] and pts[0]['off'] is False, 'le clocher : pas de crypte')
-        fermer(pg)
+        verifier([p['id'] for p in pts] == ['cle', 'traces_puits'] and pts[0]['off'] is False, f'le clocher : pas de crypte, mais « Les traces de Moustache » ({[p["id"] for p in pts]})')
+        i = jouer_point(pg, 'clocher', 'traces_puits', True, f'{chemin}-traces-puits')
+        pp = (i or {}).get('params', {})
+        verifier(i and i['type'] == 'pistage' and pp.get('decor') == 'foret' and i.get('reessais') is True, f'le mini-jeu des traces, dans la forêt, à recommencer autant qu\'on veut ({pp.get("decor")})')
+        t = voile(pg)
+        verifier('vieux puits' in t and 'barreaux' in t, 'au bout des traces : le vieux puits, Moustache entre les barreaux'); fermer(pg)
         pts = lieu(pg, 'puits')
         verifier([p['id'] for p in pts] == ['grille'], 'le puits apparaît')
         pg.locator('#voile [data-act=point][data-id=grille]').click(); pg.wait_for_timeout(300)

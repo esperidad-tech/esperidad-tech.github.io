@@ -20,6 +20,7 @@ function css(){
     '.ha.ha-calme .cu-ilot.ha-meche,.ha.ha-calme .cu-ilot.ha-tresse{animation:haVent2 2.4s ease-in-out infinite}' +
     '@keyframes haVent{0%,100%{transform:none}25%{transform:rotate(-1.3deg) skewX(1deg)}75%{transform:rotate(1.1deg) skewX(-1deg)}}' +
     '@keyframes haVent2{0%,100%{transform:none}25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}' +
+    '.ha.ha-tr .cu-ilot,.ha.ha-tr .ha-bulle-boucle,.ha.ha-tr .ha-etinc-boucle{animation:none!important}' +
     '.ha .ha-calme-seul{display:none}.ha.ha-calme .ha-calme-seul{display:block}.ha.ha-calme .cu-ilot.ha-trait{visibility:hidden}' +
     '.ha.ha-calme.ha-corde-vive .cu-ilot.ha-trait{visibility:visible}.ha.ha-calme.ha-corde-vive .ha-corde-fixe{display:none}' +
     '.ha .ha-bulle-boucle{animation:haBulle 1.3s ease-out infinite}.ha.ha-bout .ha-bulle-boucle{animation-duration:.5s}' +
@@ -235,7 +236,16 @@ H._idleOn = function(){
     boucle('tete', 'rotate(-5deg)', 430, 90);
     boucle('brasA', 'rotate(-4deg)', 380, 40); boucle('brasB', 'rotate(4deg)', 410, 60);
     if(this.R0.idle) this.R0.idle.call(this, A, boucle);
+  } else if(window.SALLE && window.SALLE.tempsReel){
+    /* un combat en temps réel (Léo ; Romain, 15 novembre : « ça rame de partout ») : la page refait une image du fil principal
+       à chaque instant, et chaque animation en boucle lui coûte à chaque fois — et une seule pièce qui bouge oblige la carte
+       graphique à garder tout le héros en plusieurs calques (de la mémoire : c'est elle qui fait « quitter » le jeu sur un iPhone).
+       Entre deux gestes, le héros se tient donc immobile : ni souffle, ni petits gestes, ni clignements, ni tissus qui se balancent.
+       (On pianote sans arrêt : il ne reste pas immobile longtemps.) */
+    this.racine.classList.add('ha-tr');
+    return;
   } else {
+    this.racine.classList.remove('ha-tr');
     boucle('torse', 'translate(0px,-1.6px) scale(1.014,1.025)', 1400);
     boucle('tete', 'translate(0px,-1.4px) rotate(-2.4deg)', 1400, 180);
     boucle('brasA', 'rotate(-2.8deg)', 1400, 260); boucle('brasB', 'rotate(3deg)', 1400, 330);
@@ -278,6 +288,11 @@ H._gestes = function(){
 H._actif = function(t){
   if(!this.cuit) return true;
   var c = this.corde, corde = c && (c.mode !== 'libre' || c.fl || c.vib > .25);
+  /* (Romain, 15 novembre : « ça rame de partout », le combat de Léo. En temps réel, les héros agissent sans arrêt : leurs tissus
+     seraient recalculés à chaque image — lire toutes les positions, redessiner les capes, tout repeindre. SALLE.tissusFiges :
+     les tissus restent sur leur balancement tout fait, joué par la carte graphique ; seule la corde de l'arc est calculée.) */
+  /* (sauf pendant que l'Alchimiste verse d'une fiole dans l'autre : le filet de potion se calcule à chaque image, une seconde) */
+  if(window.SALLE && window.SALLE.tissusFiges && !this._verse){ if(!this._dort) this._endormir(); this._corde(corde); return corde ? 'corde' : false; }
   /* une vraie action : tout est recalculé (tissus compris) */
   if(this._occupe || this._verse){ this._calmeDepuis = 0; this._corde(false); if(this._dort) this._reveil(); return true; }
   /* les petits gestes d'attente ne bougent que les bras : ils se jouent sans réveiller les tissus ; seule la corde tirée

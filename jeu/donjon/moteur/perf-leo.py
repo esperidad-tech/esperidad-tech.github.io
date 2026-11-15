@@ -13,7 +13,7 @@ from collections import defaultdict
 from playwright.sync_api import sync_playwright
 
 ICI = os.path.dirname(os.path.abspath(__file__))
-PAGE = 'file://' + os.path.join(ICI, 'sortie', 'index.html')
+PAGE = 'file://' + os.path.join(os.environ.get('DOSSIER') or os.path.join(ICI, 'sortie'), 'index.html')      # DOSSIER=… : un autre donjon construit (celui en ligne, pour comparer)
 args = sys.argv[1:]
 
 
@@ -25,6 +25,8 @@ def opt(nom, defaut, typ=int):
 
 TAUX = opt('--taux', 6); SEC = opt('--sec', 25); SALLE = opt('--salle', None, str)
 JS = opt('--js', None, str)
+ATTAQUE = opt('--attaque', None, str)              # une seule attaque de Léo, en boucle : la fluidité, moment par moment (15 novembre)
+PIANOTE = '--pianote' in args                      # (avec --attaque : le robot pianote quand même sur les icônes)
 ECRAN = opt('--ecran', '1024x768x2', str)          # largeur x hauteur x densité : une petite tablette = 800x480x1
 REPOS = '--repos' in args
 SANS_SON = '--sans-son' in args; PROFIL = '--profil' in args
@@ -33,7 +35,10 @@ PHASE = int(args[0]) if args else 2
 OBJETS = 'objets=sage:cristal-lune,sage:baton-chene,pisteur:fleches-lourdes,pisteur:fleches-argent&potions=toutes&graine=7'
 
 MESURE = """() => { var f = window.__f = {n:0, pire:0, l34:0, l50:0, l100:0, t0:performance.now(), longues:0, tLongues:0, dernier:0, fin:false};
-  function image(t){ if(f.fin) return; if(f.dernier){ var d = t - f.dernier; f.n++; if(d > f.pire) f.pire = d; if(d > 34) f.l34++; if(d > 50) f.l50++; if(d > 100) f.l100++; } f.dernier = t; requestAnimationFrame(image); }
+  f.par = {};
+  function quand(){ try{ var c = DJ.Leo._E().c, Z = c.leo, b = ['sage', 'alchimiste', 'pisteur'].some(function(h){ return c.h[h].brule > 0; }); return (Z.att ? Z.att + ' / ' + Z.etape : Z.etape) + (b ? ' (les héros brûlent)' : ''); }catch(e){ return '?'; } }
+  function image(t){ if(f.fin) return; if(f.dernier){ var d = t - f.dernier; f.n++; if(d > f.pire) f.pire = d; if(d > 34) f.l34++; if(d > 50) f.l50++; if(d > 100) f.l100++;
+      if(window.__parAttaque){ var k = quand(), o = f.par[k] || (f.par[k] = {n:0, t:0, pire:0}); o.n++; o.t += d; if(d > o.pire) o.pire = d; } } f.dernier = t; requestAnimationFrame(image); }
   requestAnimationFrame(image);
   try{ new PerformanceObserver(function(l){ l.getEntries().forEach(function(e){ f.longues++; f.tLongues += e.duration; }); }).observe({entryTypes:['longtask']}); }catch(e){} }"""
 FIN = "() => { var f = window.__f; f.fin = true; f.sec = (performance.now() - f.t0) / 1000; return f; }"
@@ -92,20 +97,30 @@ with sync_playwright() as p:
         pg.wait_for_function("() => window.DJ && DJ.Leo && DJ.Leo.etat() && !DJ.Leo.etat().cine", timeout=120000)
         pg.wait_for_timeout(2500)
         pg.touchscreen.tap(500, 300)                       # (un toucher : le son a le droit de démarrer)
+        # (15 novembre) on attend que les sons du combat soient fabriqués : dans le jeu, c'est pendant l'écran de passage et la cinématique
+        try: pg.wait_for_function("() => !SALLE.Son.bruitsEnCours || !SALLE.Son.bruitsEnCours()", timeout=60000)
+        except Exception: pass
+        pg.wait_for_timeout(800)
     if JS:
         pg.evaluate(JS)
+    if ATTAQUE:
+        # Léo ne fait plus que cette attaque ; les héros gardent leur vie (sans soin : le feu continue de brûler)
+        pg.evaluate("""(att) => { window.__parAttaque = true; var E = DJ.Leo._E(), c = E.c, O = LeoRegles.L.ORDRE[c.phase], k = O.indexOf(att);
+          if(k < 0) throw new Error('pas cette attaque dans cette phase : ' + att);
+          window.__force = setInterval(function(){ var e = DJ.Leo._E(); if(!e || !e.c) return; var c = e.c; if(c.leo.etape === 'repos') c.leo.k = k - 1;
+            ['sage', 'alchimiste', 'pisteur'].forEach(function(h){ var S = c.h[h]; if(!S.sol && S.pv < S.pvMax * .6) S.pv = S.pvMax; }); if(c.phase < 3 && c.leo.pv < 2500) c.leo.pv = 2500; }, 100); }""", ATTAQUE)
     cdp.send('Emulation.setCPUThrottlingRate', {'rate': TAUX})
     if PROFIL:
         cdp.send('Profiler.enable'); cdp.send('Profiler.setSamplingInterval', {'interval': 500}); cdp.send('Profiler.start')
     cdp.send('Performance.enable')
     m0 = {x['name']: x['value'] for x in cdp.send('Performance.getMetrics')['metrics']}
     pg.evaluate(MESURE)
-    if SALLE or REPOS:
+    if SALLE or REPOS or (ATTAQUE and not PIANOTE):
         pg.wait_for_timeout(SEC * 1000)
     else:
         for i in range(int(SEC / .45)):
             pg.evaluate("""(i) => { var E = DJ.Leo._E(), c = E.c; ['sage', 'alchimiste', 'pisteur'].forEach(function(h){ var S = c.h[h]; if(!S.sol && S.pv < S.pvMax * .5) S.pv = S.pvMax; });
-              if(c.leo.pv < 2500 && c.phase < 3) c.leo.pv = 2500; ['sage', 'alchimiste', 'pisteur'].forEach(function(h){ c.h[h].brule = 0; });
+              if(c.leo.pv < 2500 && c.phase < 3) c.leo.pv = 2500; if(!window.__parAttaque) ['sage', 'alchimiste', 'pisteur'].forEach(function(h){ c.h[h].brule = 0; });
               var l = [].filter.call(document.querySelectorAll('#bande .lb-g .carte'), function(x){ return !x.classList.contains('off'); });
               if(l.length){ var x = l[(i * 7) % l.length]; x.dispatchEvent(new Event('pointerdown', {bubbles:true})); x.click(); } }""", i)
             pg.wait_for_timeout(450)
@@ -120,6 +135,11 @@ with sync_playwright() as p:
     autre = d('TaskDuration') - d('ScriptDuration') - d('LayoutDuration') - d('RecalcStyleDuration')
     print('   le fil principal : %.1f s de travail = le JavaScript %.1f s + les styles %.1f s (%d fois) + la mise en page %.1f s (%d fois) + peindre et poser les calques %.1f s ; %d éléments, mémoire du JavaScript %.0f Mo' % (
         d('TaskDuration'), d('ScriptDuration'), d('RecalcStyleDuration'), d('RecalcStyleCount'), d('LayoutDuration'), d('LayoutCount'), autre, m1.get('Nodes', 0), m1.get('JSHeapUsedSize', 0) / 1e6), flush=True)
+    if ATTAQUE:
+        print('   moment par moment (« %s » en boucle) :' % ATTAQUE)
+        for k, o in sorted(f['par'].items(), key=lambda x: -x[1]['t']):
+            if o['t'] > 250:
+                print('     %5.1f images/s  (pire écart %4.0f ms, %4.1f s)  %s' % (1000 * o['n'] / o['t'], o['pire'], o['t'] / 1000, k))
     if prof:
         profil_top(prof)
     print('   erreurs :', errs[:3] or 'aucune')

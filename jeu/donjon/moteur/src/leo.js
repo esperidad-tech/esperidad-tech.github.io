@@ -33,8 +33,23 @@ var AVEUX = [
 ];
 
 /* ====================================================================== 1. PRÉPARER, CONSTRUIRE */
-function preparer(){
-  return Promise.all([DJ.charger.bete('rat'), DJ.charger.bete('ratcuir')]).then(function(){
+/* (15 novembre, 13 h 54 — RAPIDITE.md, R16) les bruitages du combat qui reviennent le plus, fabriqués à l'avance (un par un, en
+   arrière-plan : on n'attend pas la fin pour commencer) */
+var BRUITS = {tous:['swish', 'chairF', 'chairD', 'arc', 'vol', 'leoCharge', 'leoGlisse', 'leoSonne', 'leoMuscles'],
+  1:['leoFleau', 'leoMarteau', 'leoMeule', 'leoCrochet', 'leoCape', 'leoFarine', 'baton', 'cristal'],
+  2:['leoPoing', 'leoSifflet', 'leoSaut', 'leoLancer', 'leoGlou', 'leoFaux', 'baton'],
+  3:['leoPoing', 'leoNaseaux', 'leoRafale', 'leoHurlement', 'leoSouffle', 'leoAttrape', 'leoSaigne', 'leoFaux', 'leoChute']};
+/* les sons d'une phase : fabriqués pendant l'écran de passage (la première) ou pendant la cinématique d'avant (les suivantes) ;
+   ceux de la phase d'avant rendent leur mémoire. Rend une promesse (on peut l'attendre, pas trop longtemps). */
+function sonsPhase(n){
+  try{ if(SALLE.Son && SALLE.Son.preparerBruits) return SALLE.Son.preparerBruits(BRUITS.tous.concat(BRUITS[n] || []), {seuls:true}); }catch(e){}
+  return Promise.resolve(0);
+}
+function preparer(phase){
+  /* (on attend les sons au plus trois secondes : le reste se finit pendant le début du combat) */
+  if(phase && typeof phase === 'object') phase = phaseGardee(phase);                    /* (la partie : la phase gardée) */
+  var sons = Promise.race([sonsPhase(+phase || 1), new Promise(function(ok){ setTimeout(ok, 3000); })]);
+  return Promise.all([sons, DJ.charger.bete('rat'), DJ.charger.bete('ratcuir')]).then(function(){
     return Promise.all([DJ.Combat.cuireHeros(), DJ.Combat.cuireRat(), DJ.charger.image(DJ.charger.scene('leo')), DJ.charger.image(SALLE.img('fumee-a')), DJ.charger.image(SALLE.img('brume-a')),
       /* le nouveau Léo (torse nu) : ses pièces cuites en images (leo-corps.js) */
       window.LeoCorps ? window.LeoCorps.preparer() : null]);
@@ -97,11 +112,8 @@ function construire(){
   E.leo.el.style.zIndex = 3;
   /* la phase 2 (Bible §13.40) : le nouveau Léo, ses gestes calés sur l'horloge des règles, ses effets (leo-p2.js) */
   E.p2 = window.LeoP2 && E.leo.corps ? window.LeoP2.creer({leo:E.leo, fx:fx, sol:q('#sol-fx'), persos:p, Fx:Fx, bruit:bruit, son:son, hCx:hCx, hPt:hPt, LX:LX, SOL:SOL,
-    /* (phase 3, « il attrape un héros ») soulever : le héros empoigné décolle du sol ; balancer : Léo s'en sert pour frapper le voisin */
-    soulever:function(h, on){ var s = slotH(h); if(!s) return; s.style.transition = 'transform .22s cubic-bezier(.3,.6,.4,1)'; s.style.transform = on ? 'translate(34px,-74px) rotate(-16deg)' : ''; },
-    balancer:function(l){ if(!l || l.length < 2){ if(l && l[0]){ var s0 = slotH(l[0]); if(s0){ s0.style.transition = 'transform .2s ease-in'; s0.style.transform = ''; } } return; }
-      var s1 = slotH(l[0]), dx = hCx(l[1]) - hCx(l[0]); s1.style.transition = ''; s1.style.transform = '';
-      try{ s1.animate([{transform:'translate(34px,-74px) rotate(-16deg)'}, {transform:'translate(' + (dx * .4) + 'px,-110px) rotate(-40deg)', offset:.3}, {transform:'translate(' + (dx * .9) + 'px,-6px) rotate(46deg)', offset:.58}, {transform:'translate(' + (dx * .5) + 'px,-40px) rotate(20deg)', offset:.78}, {transform:'translate(0,0) rotate(0)'}], {duration:620, easing:'ease-in-out'}); }catch(x){} }}) : null;
+    /* (phase 3, « il attrape un héros » : le héros est porté par la main de Léo, lâché, et le second envoyé en l'air — leo-p2.js) */
+    slot:slotH}) : null;
   var zl = el('div', 'zone'); zl.id = 'zone-leo'; zl.setAttribute('data-act', 'l-perso'); zl.setAttribute('data-type', 'ennemi'); zl.setAttribute('data-id', 'leo');
   zl.style.cssText = 'left:' + (LX - 100) + 'px;top:70px;width:200px;height:290px';
   hud.appendChild(zl);
@@ -121,6 +133,7 @@ function p2(){ return !!(E && E.p2 && E.c && (E.c.phase === 2 || E.c.phase === 3
 
 /* ====================================================================== 2. LES PHASES */
 function demarrerPhase(n, premiere){
+  sonsPhase(n);
   E.c = LR.combat(E.partie, {phase:n});
   E.ph = E.c.etat();
   E.elan = null; E.cases = null; E.suiteSig = null;
@@ -313,6 +326,7 @@ async function finPhase(res){
   var n = E.c.phase + 1;
   E.partie.faits['leo:phase'] = n; DJ.garder(E.partie);
   son('victoire');
+  sonsPhase(n);                                         /* (les sons de la phase qui vient se fabriquent pendant la cinématique) */
   await (n === 2 ? cine12() : cine23());
   if(!E) return;
   E.saute = false;
@@ -385,6 +399,7 @@ function terminer(res){
   Object.keys(E.rats).forEach(function(id){ try{ E.rats[id].arreter(); }catch(e){} });
   ORDRE.forEach(function(h){ try{ E.A.h[h].arreter(); }catch(e){} });
   DJ.taire(); DJ.fermer();
+  try{ if(SALLE.Son && SALLE.Son.oublierBruits) SALLE.Son.oublierBruits(); }catch(e){}
   SALLE.tempsReel = false; SALLE.tissusFiges = false;
   E = null;
   fin(res);
@@ -416,7 +431,7 @@ function maj(force){
     basc(slot, st, 'saigne', s.saigne); basc(slot, st, 'brule', s.brule); basc(slot, st, 'bj', s.bouclier === 'jaune'); basc(slot, st, 'bc', s.bouclier === 'chene');
     var et = s.etourdi > 0; if(st.etourdi !== et){ st.etourdi = et; try{ if(!s.sol) E.A.h[h]._etoiles(et); }catch(x){} }
     var pr = Z.vise ? Z.vise.cibles.indexOf(h) >= 0 : false;
-    if(st.proie !== pr){ st.proie = pr; slot.classList.toggle('proie', pr); if(pr) q('.l-proie b', slot).textContent = Z.vise.part ? '−' + Math.round(Z.vise.part * 100) + ' %' : Z.vise.degats ? '−' + Z.vise.degats + (Z.vise.fois > 1 ? ' ×' + Z.vise.fois : '') : ''; }
+    if(st.proie !== pr){ st.proie = pr; slot.classList.toggle('proie', pr); if(pr) q('.l-proie b', slot).textContent = Z.vise.mortel ? '☠️' : Z.vise.perce ? '💫' : Z.vise.part ? '−' + Math.round(Z.vise.part * 100) + ' %' + (Z.vise.fois > 1 ? ' ×' + Z.vise.fois : '') : Z.vise.degats ? '−' + Z.vise.degats + (Z.vise.fois > 1 ? ' ×' + Z.vise.fois : '') : ''; }
   });
   var b = mem('#leo-barre'), kz = Math.max(0, Z.pv / Z.pvMax);
   if(E.pvLeo !== Z.pv){ E.pvLeo = Z.pv; q('.barre i', b).style.transform = 'scaleX(' + kz + ')'; q('b', b).textContent = Z.pv; }
@@ -603,6 +618,10 @@ function un(ev){
       slotH(h).classList.remove('sol'); son('coeur'); Fx.chiffre(hCx(h), 170, '+' + ev.pv, 'soin');
       Promise.resolve(E.A.h[h].relever()).catch(function(){}).then(function(){ try{ E.A.h[h].attendre(); }catch(e){} });
       return;
+    case 'pare':
+      /* (la rafale) le bouclier jaune pare un coup entier : « Paré ! » et le compte, sur la bulle */
+      Fx.chiffre(hCx(h) - 4, 150, '🛡️ ' + ev.k + ' / ' + ev.n, 'bleu'); son('absorbe');
+      return;
     case 'bouclier':
       if(ev.on) son('dome');
       else if(ev.casse){ son('absorbe'); Fx.onde(hCx(h), 220, '#ffe9a0', 200, 400); }
@@ -610,7 +629,7 @@ function un(ev){
     case 'etat':
       if(ev.nom === 'etourdi' && ev.on){ mot(hCx(h), 110, L.MOTS.etourdi); }
       if(ev.nom === 'saigne' && ev.on){ mot(hCx(h), 126, 'Il saigne !'); }
-      if(ev.nom === 'attrape') attrape(h, ev.on);
+      if(ev.nom === 'attrape'){ if(E.c.phase === 3){ if(ev.on) mot(hCx(h), 110, L.MOTS.attrape); } else attrape(h, ev.on); }
       return;
     case 'leo': return leo(ev);
     case 'leo-etat': return leoEtat(ev);
@@ -653,7 +672,11 @@ function geste(ev){
   if(g === 'l:gourde'){
     to = hPt(c);
     var go = el('div', 'leo-outil', icArme('gourde')); go.style.left = (hCx('pisteur') - 20) + 'px'; go.style.top = '170px'; fx.appendChild(go);
-    try{ go.animate([{transform:'translate(0,0) scale(1.2)'}, {transform:'translate(' + ((to.x - hCx('pisteur')) / 2) + 'px,-90px) scale(1.5) rotate(180deg)', offset:.5}, {transform:'translate(' + (to.x - hCx('pisteur')) + 'px,-10px) scale(1.2) rotate(360deg)'}], {duration:ev.impact * 1000 / E.vite, easing:'ease-in-out', fill:'both'}); }catch(x){}
+    /* (15 novembre, 13 h 54 : la gourde met 3 secondes — le Pisteur la lève, la débouche, la secoue… puis la lance) */
+    var dxg = to.x - hCx('pisteur');
+    try{ go.animate([{transform:'translate(0px,0px) scale(1.2) rotate(0deg)'}, {transform:'translate(6px,-56px) scale(1.5) rotate(-14deg)', offset:.12}, {transform:'translate(6px,-60px) scale(1.5) rotate(12deg)', offset:.28},
+      {transform:'translate(6px,-56px) scale(1.5) rotate(-12deg)', offset:.44}, {transform:'translate(6px,-60px) scale(1.5) rotate(10deg)', offset:.6}, {transform:'translate(6px,-56px) scale(1.5) rotate(0deg)', offset:.72},
+      {transform:'translate(' + (dxg / 2 + 3).toFixed(0) + 'px,-112px) scale(1.5) rotate(180deg)', offset:.86}, {transform:'translate(' + dxg.toFixed(0) + 'px,-10px) scale(1.2) rotate(360deg)'}], {duration:ev.impact * 1000 / E.vite, easing:'linear', fill:'both'}); }catch(x){}
     setTimeout(function(){ go.remove(); }, ev.impact * 1000 + 60);
     apres(ev.impact, function(){ son('bulles', .5); });
     return;
@@ -708,6 +731,8 @@ function degatsHeros(ev){
   }
   Fx.chiffre(x, 138, '−' + ev.n, ev.n >= 25 ? 'gros' : '');
   if(ev.bouclier) Fx.bulleTexte(x, 296, '🛡️ −' + (ev.brut - ev.n), 'bleu');
+  /* (le héros porté ou envoyé en l'air par Léo bouge déjà : pas de recul par-dessus) */
+  if(ev.cause === 'attrape'){ try{ E.A.h[h]._flash(); }catch(e){} return; }
   frappe(slot, h);
 }
 function frappe(slot, h){
@@ -733,7 +758,7 @@ function degatsEnnemi(ev){
 function soin(ev){
   var h = ev.heros, x = hCx(h);
   son('soin');
-  for(var k = 0; k < 5; k++) (function(k){ var e = el('div', 'etincelle', ev.par === 'herbes' ? '🌿' : '✨'); e.style.left = (x - 40 + k * 20) + 'px'; e.style.top = (240 - (k % 3) * 24) + 'px'; e.style.animationDelay = (k * 60) + 'ms'; fx.appendChild(e); setTimeout(function(){ e.remove(); }, 1200); })(k);
+  for(var k = 0; k < 3; k++) (function(k){ var e = el('div', 'etincelle', ev.par === 'herbes' ? '🌿' : '✨'); e.style.left = (x - 30 + k * 30) + 'px'; e.style.top = (240 - (k % 3) * 24) + 'px'; e.style.animationDelay = (k * 60) + 'ms'; fx.appendChild(e); setTimeout(function(){ e.remove(); }, 1200); })(k);
   if(ev.n > 0) Fx.chiffre(x, 170, '+' + ev.n, 'soin');
 }
 
