@@ -199,7 +199,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .acteur .a-corps, .acteur .a-bouge, .acteur .a-pose, .acteur .a-tremble, .acteur .a-tourne{position:absolute;left:0;top:0;width:100%;height:100%}
 .acteur .a-img{position:absolute;left:0;top:0;width:100%;height:100%}
 .a-img.blanchit{animation:blanchit .32s ease-out}
-@keyframes blanchit{0%{filter:brightness(2.4) saturate(.4)}100%{filter:none}}
+@keyframes blanchit{0%{opacity:.35}100%{opacity:1}}     /* (un clignement, plus de filtre : RAPIDITE.md R19) */
 .a-bouge.secoue{animation:secoue .38s}
 @keyframes secoue{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
 /* héros */
@@ -253,7 +253,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .rat .a-pose.gonfle{animation:gonfle .43s ease-in forwards}
 @keyframes gonfle{0%{transform:none}20%{transform:scale(1.05,.95) translateX(-3px)}40%{transform:scale(1.08,1.05) translateX(3px)}60%{transform:scale(1.12,1.04) translateX(-3px)}80%{transform:scale(1.16,1.12) translateX(3px)}100%{transform:scale(1.22)}}
 .rat .a-pose.eclate{animation:eclate .35s ease-out forwards}
-@keyframes eclate{0%{transform:scale(1.22);opacity:1;filter:brightness(1)}30%{transform:scale(1.45);opacity:1;filter:brightness(3)}100%{transform:scale(1.9);opacity:0;filter:brightness(.2)}}
+@keyframes eclate{0%{transform:scale(1.22);opacity:1}30%{transform:scale(1.45);opacity:1}100%{transform:scale(1.9);opacity:0}}
 .a-flammes{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
 .rat .acteur.brule .a-flammes::before{content:'';position:absolute;left:22%;top:0;width:66%;height:80%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,150,40,.5),rgba(255,90,20,0));animation:lueur .35s ease-in-out infinite alternate}
 .flamme{position:absolute;width:30px;height:48px;margin:-40px 0 0 -15px;transform-origin:50% 90%;animation:flamme .32s ease-in-out infinite alternate,flamme2 .9s ease-in-out infinite}
@@ -267,7 +267,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .dome.nait{animation:dome-nait .6s cubic-bezier(.3,1.5,.6,1) forwards}
 @keyframes dome-nait{0%{opacity:0;transform:scale(.2,.05) translateY(120px)}60%{opacity:1;transform:scale(1.06,1.02)}100%{opacity:1;transform:none}}
 .dome.encaisse{animation:dome-encaisse .3s ease-out;opacity:1}
-@keyframes dome-encaisse{0%{transform:scale(1);filter:brightness(1)}30%{transform:scale(.94,.97);filter:brightness(2.2)}100%{transform:none;filter:none}}
+@keyframes dome-encaisse{0%{transform:scale(1)}30%{transform:scale(.94,.97)}100%{transform:none}}
 .dome.part{animation:dome-part .5s ease-in forwards}
 @keyframes dome-part{0%{opacity:1;transform:none}100%{opacity:0;transform:scale(1.25)}}
 .dome-anneau{position:absolute;left:8%;top:6%;width:84%;height:88%;border-radius:50%;border:3px dashed rgba(191,248,255,.9);animation:tourne-lent 7s linear infinite}
@@ -383,7 +383,8 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .onde-fx{position:absolute;border-radius:50%;border:8px solid;opacity:0}
 .etincelle-fx{width:20px;height:5px;border-radius:3px}
 .goutte-fx{border-radius:50% 50% 50% 50%;border:1.5px solid rgba(36,24,46,.6)}
-.verre-fx{width:9px;height:12px;background:linear-gradient(135deg,#ffffff,#cfe8ff 60%,rgba(200,230,255,.4));clip-path:polygon(50% 0,100% 70%,20% 100%);box-shadow:0 0 6px #fff}
+/* (un éclat de verre : un triangle fait de bordures — avant, un rectangle découpé par clip-path, un masque par éclat ; RAPIDITE.md R19) */
+.verre-fx{width:0;height:0;border-left:4px solid transparent;border-right:5px solid transparent;border-bottom:12px solid #e6f3ff}
 .anneau-gouttes{position:absolute;width:150px;height:150px;border-radius:50%;border:6px solid}
 .touffe-fx{border-radius:50% 60% 40% 55%;background:radial-gradient(circle at 35% 35%,#5a4a5a,#241a2a 70%);border:1.5px solid #120a16}
 .volute{position:absolute;left:0;top:0;will-change:transform,opacity;pointer-events:none}
@@ -409,7 +410,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .orbe{position:absolute;left:0;top:0;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:radial-gradient(closest-side,#fff,#bff8ff 40%,rgba(63,208,255,.6) 70%,rgba(63,208,255,0));box-shadow:0 0 24px #8ff3ff}
 .fleche-vol{position:absolute;left:0;top:0;width:62px;height:14px;margin:-7px 0 0 -54px}
 .fleche-vol svg{display:block;width:100%;height:100%;overflow:visible}
-.fleche-vol.trempee{filter:drop-shadow(0 0 6px #ffb030)}
+.fleche-vol.trempee::before{content:'';position:absolute;left:32px;top:-10px;width:34px;height:34px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,176,48,.6),rgba(255,176,48,0))}
 .feuille-vol{position:absolute;left:0;top:0;font-size:24px;width:30px;height:30px;margin:-15px 0 0 -15px}
 .entaille{position:absolute;width:90px;height:90px;margin:-45px 0 0 -45px;border-radius:50%;border-top:6px solid #fff;border-right:3px solid rgba(255,255,255,.6);animation:entaille .3s ease-out forwards}
 @keyframes entaille{0%{transform:rotate(-80deg) scale(.6);opacity:1}100%{transform:rotate(40deg) scale(1.1);opacity:0}}
@@ -823,14 +824,15 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .leo-points i{width:11px;height:11px;border-radius:50%;background:#3a2e44;border:2px solid var(--encre)}
 .leo-points i.on{background:#ffd36a}
 /* les petits objets qui volent */
-.leo-outil{position:absolute;width:60px;height:60px;margin:-30px 0 0 -30px;pointer-events:none;z-index:40;filter:drop-shadow(0 3px 0 rgba(0,0,0,.6))}
+/* (RAPIDITE.md R19 : plus aucun filtre sur ce qui bouge — l'ombre portée des outils lancés est enlevée) */
+.leo-outil{position:absolute;width:60px;height:60px;margin:-30px 0 0 -30px;pointer-events:none;z-index:40}
 .leo-outil svg{width:60px;height:60px;overflow:visible}
 .leo-meule{position:absolute;width:96px;height:96px;pointer-events:none;z-index:40}
 .leo-cape-vole{position:absolute;width:150px;height:200px;border-radius:40% 40% 30% 30%;background:linear-gradient(#17131f,#0a0810);border:3px solid #1a0e08;pointer-events:none;animation:leoCapeVole 1.3s cubic-bezier(.3,.6,.4,1) both}
 @keyframes leoCapeVole{0%{transform:translate(0,0) rotate(0) scale(1)}100%{transform:translate(190px,-250px) rotate(120deg) scale(.5);opacity:0}}
-.leo-fauche{position:absolute;left:40px;top:150px;width:520px;height:150px;border-radius:50%;border-top:9px solid #eef2f8;border-right:6px solid transparent;border-left:6px solid transparent;filter:drop-shadow(0 0 10px #cfd4de);pointer-events:none;animation:leoFauche .4s ease-out both}
+.leo-fauche{position:absolute;left:40px;top:150px;width:520px;height:150px;border-radius:50%;border-top:9px solid #eef2f8;border-right:6px solid transparent;border-left:6px solid transparent;box-shadow:0 -6px 14px -4px #cfd4de;pointer-events:none;animation:leoFauche .4s ease-out both}
 @keyframes leoFauche{0%{transform:translateX(260px) scaleX(.2);opacity:0}30%{opacity:1}100%{transform:translateX(0) scaleX(1);opacity:0}}
-.leo-souffle{position:absolute;height:120px;pointer-events:none;border-radius:60px 20px 20px 60px;background:linear-gradient(90deg,rgba(255,120,30,0),rgba(255,160,50,.85) 30%,rgba(255,236,150,.95) 80%,#fff);filter:blur(5px);transform-origin:100% 50%;animation:leoSouffle .9s ease-out both}
+.leo-souffle{position:absolute;height:120px;pointer-events:none;border-radius:60px 20px 20px 60px;background:linear-gradient(90deg,rgba(255,120,30,0),rgba(255,160,50,.85) 30%,rgba(255,236,150,.95) 80%,#fff);box-shadow:0 0 18px 6px rgba(255,170,60,.45);transform-origin:100% 50%;animation:leoSouffle .9s ease-out both}
 @keyframes leoSouffle{0%{transform:scaleX(.05);opacity:0}25%{transform:scaleX(1);opacity:1}75%{opacity:.9}100%{opacity:0}}
 .leo-chaine{position:absolute;height:8px;pointer-events:none;border-radius:4px;background:repeating-linear-gradient(90deg,#c9ccd6 0 9px,#5a5f6c 9px 14px);box-shadow:0 2px 0 rgba(0,0,0,.6);transform-origin:100% 50%;animation:leoChaine .36s ease-out both}
 @keyframes leoChaine{0%{transform:scaleX(0)}45%{transform:scaleX(1)}100%{transform:scaleX(0)}}
@@ -6173,16 +6175,26 @@ function ou(el, ref){
 }
 function alea(a, b){ return a + Math.random() * (b - a); }
 /* une gerbe de particules : n, couleur, vitesse, pesanteur, taille, durée */
+/* COMBIEN D'ÉTINCELLES (RAPIDITE.md R19). Chaque étincelle est un élément de plus à créer d'un coup, puis un calque de plus à
+   déplacer à chaque image. Dans un combat en temps réel (Léo), où les sorts s'enchaînent sans attendre : un tiers de moins
+   (à partir de six — on ne touche pas aux petits effets). Sur un appareil qui a déjà fermé la page pendant ce combat
+   (SALLE.leger, noyau.js) : la moitié. Ailleurs (les combats au tour par tour) : rien ne change. */
+function combien(n){
+  var S = window.SALLE || {};
+  if(S.leger) return Math.max(1, Math.ceil(n / 2));
+  if(S.tempsReel && n >= 6) return Math.ceil(n * .67);
+  return n;
+}
 function gerbe(layer, x, y, o){
   o = o || {};
-  var n = o.n || 12, ps = [];
+  var n = combien(o.n || 12), ps = [];
   for(var i = 0; i < n; i++){
     var an = (o.angle !== undefined ? o.angle : 0) + (o.ecart !== undefined ? alea(-o.ecart, o.ecart) : alea(-180, 180));
     var v = alea(o.v0 || 60, o.v1 || 160), vx = Math.cos(an / DEG) * v, vy = Math.sin(an / DEG) * v, g = o.g === undefined ? 300 : o.g;
     var dur = alea(o.d0 || 400, o.d1 || 800), sz = alea(o.t0 || 3, o.t1 || 6), coul = o.c instanceof Array ? o.c[i % o.c.length] : (o.c || '#ffd36a');
     var forme = o.forme || 'rond';
     var css = 'width:' + sz + 'px;height:' + (forme === 'trait' ? sz * 0.35 : sz) + 'px;border-radius:' + (forme === 'carre' ? '1px' : '50%') + ';background:' + coul + ';' + (o.lueur === false ? '' : 'box-shadow:0 0 ' + (sz * 1.4) + 'px ' + coul + ';');
-    if(forme === 'eclat') css = 'width:0;height:0;border-left:' + (sz * 0.45) + 'px solid transparent;border-right:' + (sz * 0.45) + 'px solid transparent;border-bottom:' + sz + 'px solid ' + coul + ';filter:drop-shadow(0 0 2px #fff8);';
+    if(forme === 'eclat') css = 'width:0;height:0;border-left:' + (sz * 0.45) + 'px solid transparent;border-right:' + (sz * 0.45) + 'px solid transparent;border-bottom:' + sz + 'px solid ' + coul + ';';   /* (plus de filtre : R19) */
     if(forme === 'html') css = 'font-size:' + sz + 'px;line-height:1;color:' + coul + ';text-shadow:0 0 6px ' + coul + ';';
     var e = div(layer, css, forme === 'html' ? o.html : '');
     var k = [], rot0 = alea(-180, 180), rotv = alea(-540, 540);
@@ -6203,13 +6215,24 @@ function onde(layer, x, y, o){
   return jouerEl(e, [{transform:place(x, y, 0, o.s0 || 0.2), opacity:o.o0 === undefined ? 1 : o.o0}, {transform:place(x, y, 0, o.s1 || 2.4), opacity:0}],
     {duration:o.d || 500, delay:o.retard || 0, easing:o.e || 'cubic-bezier(.1,.7,.3,1)', fill:'backwards'});
 }
+/* LES LUEURS SANS FILTRE (RAPIDITE.md, R19 — Romain, 15 novembre, 19 h 28 : « il y a encore des sorts qui font des sautes de FPS »).
+   Un « filter » (drop-shadow, blur, brightness) ou un « mix-blend-mode » sur un élément qui bouge oblige le téléphone à refaire le
+   calcul à chaque image, élément par élément — et un sort en lance vingt ou trente à la fois. Ici, la lueur est DESSINÉE une fois :
+   la même forme, plus grande et presque transparente, sous la vraie (ou un rond qui s'efface vers les bords). Ensuite, on ne
+   touche plus qu'à transform et opacity. NE JAMAIS REMETTRE DE FILTRE SUR UN EFFET DE SORT. */
+function lueurForme(d, c, f){ f = f || 1; return '<path d="' + d + '" fill="' + c + '" opacity=".13" transform="scale(' + (1 + .85 * f) + ')"/><path d="' + d + '" fill="' + c + '" opacity=".22" transform="scale(' + (1 + .42 * f) + ')"/>'; }
+function lueurTrait(d, c, ep, f){ f = f || 1; var q = '" fill="none" stroke="' + c + '" stroke-linecap="round" stroke-linejoin="round" stroke-width="'; return '<path d="' + d + q + (ep + 5.2 * f) + '" opacity=".12"/><path d="' + d + q + (ep + 2.6 * f) + '" opacity=".22"/>'; }
+function lueurRonde(c, r, x, y){ var p = '" cx="' + (x || 0) + '" cy="' + (y || 0) + '" fill="' + c + '" opacity="'; return '<circle r="' + r + p + '.09"/><circle r="' + (r * .72) + p + '.13"/><circle r="' + (r * .46) + p + '.17"/>'; }
+/* (pour un élément HTML : un rond de lumière posé dessous, t = son diamètre) */
+function haloCSS(c, t, o){ return '<i style="position:absolute;left:50%;top:50%;width:' + t + 'px;height:' + t + 'px;margin:' + (-t / 2) + 'px 0 0 ' + (-t / 2) + 'px;border-radius:50%;z-index:-1;pointer-events:none;opacity:' + (o || .6) + ';background:radial-gradient(closest-side,' + c + ',transparent)"></i>'; }
+var ETOILE4 = 'M0 -10 Q 1.5 -1.5 10 0 Q 1.5 1.5 0 10 Q -1.5 1.5 -10 0 Q -1.5 -1.5 0 -10 Z';
 /* une petite étoile à 4 branches (scintillement) */
-function etoile4(c, t){ return '<svg viewBox="-10 -10 20 20" style="width:' + t + 'px;height:' + t + 'px;display:block;overflow:visible;filter:drop-shadow(0 0 3px ' + c + ')"><path d="M0 -10 Q 1.5 -1.5 10 0 Q 1.5 1.5 0 10 Q -1.5 1.5 -10 0 Q -1.5 -1.5 0 -10 Z" fill="' + c + '"/><circle r="2" fill="#fff"/></svg>'; }
+function etoile4(c, t){ return '<svg viewBox="-10 -10 20 20" style="width:' + t + 'px;height:' + t + 'px;display:block;overflow:visible">' + lueurForme(ETOILE4, c) + '<path d="' + ETOILE4 + '" fill="' + c + '"/><circle r="2" fill="#fff"/></svg>'; }
 function etoile5(c, t){ return '<svg viewBox="-12 -12 24 24" style="width:' + t + 'px;height:' + t + 'px;display:block;overflow:visible"><path d="M0 -11 L 3.2 -3.6 L 11 -3.4 L 5 1.8 L 7 9.6 L 0 5.2 L -7 9.6 L -5 1.8 L -11 -3.4 L -3.2 -3.6 Z" fill="' + c + '" stroke="#24182e" stroke-width="2" stroke-linejoin="round"/><path d="M-2 -5 L 0 -8" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>'; }
 function scintille(layer, x, y, o){
   o = o || {};
-  var ps = [];
-  for(var i = 0; i < (o.n || 8); i++){
+  var ps = [], nb = combien(o.n || 8);
+  for(var i = 0; i < nb; i++){
     var px = x + alea(-(o.rx || 40), o.rx || 40), py = y + alea(-(o.ry || 40), o.ry || 40), t = alea(o.t0 || 8, o.t1 || 16);
     var e = div(layer, '', etoile4(o.c instanceof Array ? o.c[i % o.c.length] : (o.c || '#ffe9a0'), t));
     ps.push(jouerEl(e, [{transform:place(px, py, 0, 0), opacity:1}, {transform:place(px, py + (o.dy || -10) * 0.5, 45, 1.2), opacity:1, offset:0.4}, {transform:place(px, py + (o.dy || -10), 90, 0), opacity:0}],
@@ -6693,7 +6716,7 @@ H.relever = function(){
     var me = this, g = this.garde();
     this._etoiles(false);
     var W = this.fx.offsetWidth || 200, Hh = this.fx.offsetHeight || 240, cx = W / 2 - 30, sy = Hh * 293 / 300;
-    var col = div(this.fx, 'width:150px;height:260px;border-radius:50% 50% 40% 40%;background:radial-gradient(ellipse at 50% 80%,rgba(255,236,160,.85),rgba(255,200,90,.35) 40%,rgba(255,190,80,0) 70%);mix-blend-mode:screen;filter:blur(2px)');
+    var col = div(this.fx, 'width:150px;height:260px;border-radius:50% 50% 40% 40%;background:radial-gradient(ellipse at 50% 80%,rgba(255,240,180,.8),rgba(255,210,110,.32) 40%,rgba(255,190,80,0) 70%)');     /* (ni fondu ni flou : RAPIDITE.md R19 — une grande lumière « fondue » et floutée, qui bouge, c'est ce qu'un téléphone fait le plus mal) */
     jouerEl(col, [{transform:place(cx + 30, sy - 110, 0, 0.2), opacity:0}, {transform:place(cx + 30, sy - 120, 0, 1), opacity:1, offset:.35}, {transform:place(cx + 30, sy - 120, 0, 1.05), opacity:.9, offset:.7}, {transform:place(cx + 30, sy - 130, 0, 1.2), opacity:0}], {duration:1700, easing:'ease-out'});
     onde(this.fx, cx + 30, sy + 2, {w:150, h:34, c:'#ffd36a', ep:3, s0:0.2, s1:1.3, d:900});
     onde(this.fx, cx + 30, sy + 2, {w:150, h:34, c:'#fff0b0', ep:2, s0:0.2, s1:1.6, d:1100, retard:300});
@@ -6882,7 +6905,7 @@ H._fleche = function(scene, n, t, to, type, opt){
   var L = couche(scene), len = Math.hypot(t.x - n.x, t.y - n.y), k = len / 124;
   var w = div(L, 'width:0;height:0;z-index:3');
   var tr = div(w, 'left:' + (-len - 70 * k) + 'px;top:' + (-2.5 * k) + 'px;width:' + (len * 0.9) + 'px;height:' + (5 * k) + 'px;border-radius:3px;background:linear-gradient(90deg,rgba(255,255,255,0),' +
-    ({feu:'rgba(255,150,50,.75)', huile:'rgba(90,70,40,.5)', colle:'rgba(230,245,210,.7)'}[type] || 'rgba(255,250,220,.6)') + ');filter:blur(1px)');
+    ({feu:'rgba(255,150,50,.75)', huile:'rgba(90,70,40,.5)', colle:'rgba(230,245,210,.7)'}[type] || 'rgba(255,250,220,.6)') + ')');     /* (plus de flou : RAPIDITE.md R19) */
   tr.style.transform = 'none';
   var a = div(w, 'left:' + (-len - 14 * k) + 'px;top:' + (-16 * k) + 'px;width:' + (150 * k) + 'px;height:' + (32 * k) + 'px', FLECHE_SVG(type));
   a.style.transform = 'none';
@@ -6977,7 +7000,10 @@ H.dague = function(scene, to, opt){
 H._lame = function(scene, to){
   var L = couche(scene), id = 'hal' + (++uid);
   var e = div(L, 'width:160px;height:160px', '<svg viewBox="-80 -80 160 160" style="width:100%;height:100%;overflow:visible"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#e8fdff"/><stop offset="1" stop-color="#8ff3ff"/></linearGradient></defs>' +
-    '<path d="M-52 -46 A 70 70 0 0 1 40 50 A 62 62 0 0 0 -52 -46 Z" fill="url(#' + id + ')" style="filter:drop-shadow(0 0 6px #8ff3ff) drop-shadow(0 0 2px #fff)"/>' +
+    /* (la lueur du croissant est dessinée : deux traits larges et presque transparents sous lui — plus de filtre, RAPIDITE.md R19) */
+    '<path d="M-52 -46 A 70 70 0 0 1 40 50 A 62 62 0 0 0 -52 -46 Z" fill="none" stroke="#8ff3ff" stroke-width="15" stroke-linejoin="round" opacity=".12"/>' +
+    '<path d="M-52 -46 A 70 70 0 0 1 40 50 A 62 62 0 0 0 -52 -46 Z" fill="none" stroke="#8ff3ff" stroke-width="7" stroke-linejoin="round" opacity=".22"/>' +
+    '<path d="M-52 -46 A 70 70 0 0 1 40 50 A 62 62 0 0 0 -52 -46 Z" fill="url(#' + id + ')"/>' +
     '<path d="M-44 -40 A 62 62 0 0 1 34 44" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"><animate attributeName="stroke-dashoffset" from="100" to="0" dur="0.12s" fill="freeze"/></path></svg>');
   jouerEl(e, [{transform:place(to.x - 8, to.y - 6, -30, 0.7), opacity:0}, {transform:place(to.x - 4, to.y - 4, 0, 1), opacity:1, offset:.25}, {transform:place(to.x, to.y, 18, 1.08), opacity:0}], {duration:360, easing:'ease-out'});
 };
@@ -7167,7 +7193,8 @@ H.lancer = function(scene, to, couleur, opt){
 };
 H._fioleVole = function(scene, a, to, c, opt){
   if(opt._potion) return this._fioleVole2(scene, a, to, c, opt);     /* (givre, acide, huile, colle : sans filtre, voir m-armes.js) */
-  var L = couche(scene), e = div(L, 'width:26px;height:31px;filter:drop-shadow(0 0 6px ' + c + ')', fioleSVG(c));
+  /* (sa lueur : un rond de lumière dessiné dessous, plus de filtre — RAPIDITE.md R19) */
+  var L = couche(scene), e = div(L, 'width:26px;height:31px', '<div style="position:absolute;left:-13px;top:-10px;width:52px;height:52px;' + tache(c, c) + ';opacity:.5"></div><div style="position:absolute;inset:0">' + fioleSVG(c) + '</div>');
   var dist = Math.hypot(to.x - a.x, to.y - a.y), last = 0;
   return voler(e, a, to, {d:Math.max(420, Math.min(760, dist * 1.3)), haut:120 + dist * 0.26, tourne:620, r0:-20, chaque:function(p){
     var n = performance.now(); if(n - last < 30) return; last = n;
@@ -7247,7 +7274,8 @@ H.herbes = function(scene, to, opt){
 H._feuilles = function(scene, a, to, opt){
   var L = couche(scene), ps = [], dist = Math.hypot(to.x - a.x, to.y - a.y);
   for(var i = 0; i < 11; i++) (function(i){
-    var e = div(L, 'width:' + alea(12, 18) + 'px;height:' + alea(8, 11) + 'px;filter:drop-shadow(0 0 4px #8aff9a) drop-shadow(0 0 1px #fff)', FEUILLE), last = 0;
+    /* (onze feuilles qui volent : chacune avait deux filtres ; leur lueur est maintenant un petit rond vert dessiné dessous — R19) */
+    var e = div(L, 'width:' + alea(12, 18) + 'px;height:' + alea(8, 11) + 'px', '<div style="position:absolute;left:-5px;right:-5px;top:-6px;bottom:-6px;' + tache('#c8ffb8', '#8aff9a') + ';opacity:.45"></div><div style="position:absolute;inset:0">' + FEUILLE + '</div>'), last = 0;
     var b = {x:to.x + alea(-26, 26), y:to.y + alea(-30, 24)};
     ps.push(new Promise(function(res){ setTimeout(res, i * 45); }).then(function(){
       return voler(e, {x:a.x + alea(-12, 12), y:a.y + alea(-12, 12)}, b, {d:alea(480, 760) + dist * 0.3, haut:alea(-30, 120) + dist * 0.12, tourne:alea(-540, 540), ease:function(t){ return t + Math.sin(t * Math.PI * 2) * 0.04; }, chaque:function(p, an, t){
@@ -7328,11 +7356,13 @@ H.cristalFlash = function(fort){
 
 /* des runes (petits signes gravés), en SVG pour ne dépendre d'aucune police */
 var RUNES = ['M-6 8 L 0 -8 L 6 8 M-3 2 L 3 2', 'M-4 -8 L -4 8 M-4 -8 L 5 -3 L -4 2', 'M0 -8 L 0 8 M-6 -4 L 6 4 M6 -4 L -6 4', 'M-6 -6 L 6 6 M-6 6 L 6 -6 M0 -8 L 0 8', 'M-5 -8 L -5 8 M-5 0 L 5 -8 M-5 0 L 5 8', 'M0 -8 L 6 0 L 0 8 L -6 0 Z'];
-function rune(i, c, t){ return '<svg viewBox="-10 -10 20 20" style="width:' + t + 'px;height:' + t + 'px;display:block;overflow:visible;filter:drop-shadow(0 0 3px ' + c + ') drop-shadow(0 0 6px ' + c + ')"><path d="' + RUNES[i % RUNES.length] + '" fill="none" stroke="' + c + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+/* (les lueurs sont dessinées, sans filtre : f-moteur.js, « LES LUEURS SANS FILTRE », RAPIDITE.md R19) */
+function rune(i, c, t){ var d = RUNES[i % RUNES.length]; return '<svg viewBox="-10 -10 20 20" style="width:' + t + 'px;height:' + t + 'px;display:block;overflow:visible">' + lueurTrait(d, c, 2.4) + '<path d="' + d + '" fill="none" stroke="' + c + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
 function cercleRunes(t, id){
-  var s = '<svg viewBox="-60 -60 120 120" style="width:' + t + 'px;height:' + t + 'px;display:block;overflow:visible;filter:drop-shadow(0 0 4px #8ff3ff) drop-shadow(0 0 10px #3fd0ff)">' +
+  var s = '<svg viewBox="-60 -60 120 120" style="width:' + t + 'px;height:' + t + 'px;display:block;overflow:visible">' +
     '<defs><radialGradient id="' + id + '"><stop offset="0" stop-color="#e8fdff" stop-opacity=".55"/><stop offset=".6" stop-color="#3fd0ff" stop-opacity=".15"/><stop offset="1" stop-color="#3fd0ff" stop-opacity="0"/></radialGradient></defs>' +
-    '<circle r="56" fill="url(#' + id + ')"/><circle r="50" fill="none" stroke="#bff8ff" stroke-width="2.4"/><circle r="40" fill="none" stroke="#8ff3ff" stroke-width="1.4" stroke-dasharray="4 5"/>' +
+    '<circle r="56" fill="url(#' + id + ')"/><circle r="50" fill="none" stroke="#3fd0ff" stroke-width="15" opacity=".12"/><circle r="50" fill="none" stroke="#8ff3ff" stroke-width="8" opacity=".22"/>' +
+    '<circle r="50" fill="none" stroke="#bff8ff" stroke-width="2.4"/><circle r="40" fill="none" stroke="#8ff3ff" stroke-width="1.4" stroke-dasharray="4 5"/>' +
     '<g style="transform-origin:0 0;animation:haTourne 1.6s linear infinite">';
   for(var k = 0; k < 8; k++){ var a = k * 45; s += '<g transform="rotate(' + a + ') translate(0 -45) scale(.42)"><path d="' + RUNES[k % RUNES.length] + '" fill="none" stroke="#e8fdff" stroke-width="3" stroke-linecap="round"/></g>'; }
   s += '</g><g style="transform-origin:0 0;animation:haTourneR 2.4s linear infinite"><path d="M0 -30 L 8 -8 L 30 0 L 8 8 L 0 30 L -8 8 L -30 0 L -8 -8 Z" fill="none" stroke="#e8fdff" stroke-width="2"/><circle r="7" fill="#e8fdff"/></g></svg>';
@@ -7386,7 +7416,7 @@ H._appel = function(scene, a, to){
 H._eclair = function(scene, a, to, opt){
   var L = couche(scene), dist = Math.hypot(to.x - a.x, to.y - a.y), ang = Math.atan2(to.y - a.y, to.x - a.x) * DEG;
   /* le rayon : un trait de lumière qui file */
-  var r = div(L, 'width:' + dist + 'px;height:10px;border-radius:6px;transform-origin:0 50%;background:linear-gradient(90deg,rgba(143,243,255,0),rgba(191,248,255,.9) 70%,#fff);filter:blur(1px);box-shadow:0 0 14px #3fd0ff');
+  var r = div(L, 'width:' + dist + 'px;height:10px;border-radius:6px;transform-origin:0 50%;background:linear-gradient(90deg,rgba(143,243,255,0),rgba(191,248,255,.9) 70%,#fff);box-shadow:0 0 14px #3fd0ff');
   jouerEl(r, [{transform:'translate(' + a.x + 'px,' + (a.y - 5) + 'px) rotate(' + ang + 'deg) scaleX(0) scaleY(1)', opacity:1}, {transform:'translate(' + a.x + 'px,' + (a.y - 5) + 'px) rotate(' + ang + 'deg) scaleX(1) scaleY(1)', opacity:1, offset:.45},
     {transform:'translate(' + a.x + 'px,' + (a.y - 5) + 'px) rotate(' + ang + 'deg) scaleX(1) scaleY(.15)', opacity:0}], {duration:420, easing:'ease-out'});
   var o = div(L, 'width:26px;height:26px;border-radius:50%;background:radial-gradient(circle,#fff 0,#fff 30%,#bff8ff 50%,rgba(63,208,255,0) 72%);box-shadow:0 0 18px #8ff3ff,0 0 34px #3fd0ff');
@@ -7396,7 +7426,8 @@ H._eclair = function(scene, a, to, opt){
     gerbe(L, p.x, p.y, {n:2, c:['#e8fdff', CYAN, '#fff'], angle:ang + 180, ecart:40, v0:20, v1:90, g:0, t0:2.5, t1:4.5, d0:250, d1:450});
   }}).then(function(res){
     o.remove();
-    var st = div(L, 'width:120px;height:120px', '<svg viewBox="-60 -60 120 120" style="width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 6px #8ff3ff) drop-shadow(0 0 16px #3fd0ff)"><path d="M0 -58 L 9 -9 L 58 0 L 9 9 L 0 58 L -9 9 L -58 0 L -9 -9 Z" fill="#e8fdff"/><path d="M0 -34 L 6 -6 L 34 0 L 6 6 L 0 34 L -6 6 L -34 0 L -6 -6 Z" fill="#fff" transform="rotate(45)"/><circle r="10" fill="#fff"/></svg>');
+    var ET8 = 'M0 -58 L 9 -9 L 58 0 L 9 9 L 0 58 L -9 9 L -58 0 L -9 -9 Z';
+    var st = div(L, 'width:120px;height:120px', '<svg viewBox="-60 -60 120 120" style="width:100%;height:100%;overflow:visible">' + lueurRonde('#3fd0ff', 46) + lueurForme(ET8, '#8ff3ff', .45) + '<path d="' + ET8 + '" fill="#e8fdff"/><path d="M0 -34 L 6 -6 L 34 0 L 6 6 L 0 34 L -6 6 L -34 0 L -6 -6 Z" fill="#fff" transform="rotate(45)"/><circle r="10" fill="#fff"/></svg>');
     jouerEl(st, [{transform:place(to.x, to.y, 0, 0.1), opacity:1}, {transform:place(to.x, to.y, 20, 1.1), opacity:1, offset:.3}, {transform:place(to.x, to.y, 45, 1.4), opacity:0}], {duration:560, easing:'ease-out'});
     onde(L, to.x, to.y, {css:'background:radial-gradient(circle,#fff,rgba(191,248,255,.7) 35%,rgba(63,208,255,0) 70%)', w:80, s0:0.3, s1:1.6, d:420});
     onde(L, to.x, to.y, {w:60, c:CYAN, ep:3, s0:0.3, s1:2.8, d:600});
@@ -7449,7 +7480,7 @@ function domeChemin(w, h){
 H._dome = function(L, scene, cible, opt){
   var R = scene.getBoundingClientRect(), k = (R.width / (scene.offsetWidth || R.width)) || 1, r = cible.getBoundingClientRect();
   var w = r.width / k * 0.95, h = r.height / k * 0.92, x = (r.left - R.left) / k + r.width / k / 2, yb = (r.bottom - R.top) / k - 4;
-  var id = 'hdm' + (++uid);
+  var id = 'hdm' + (++uid), figer = !!(window.SALLE && window.SALLE.tempsReel);
   var e = document.createElement('div'); e.className = 'ha-dome';
   e.style.cssText = 'left:' + (x - w / 2) + 'px;top:' + (yb - h) + 'px;width:' + w + 'px;height:' + h + 'px;transform-origin:50% 100%';
   var mot6 = '';
@@ -7458,14 +7489,23 @@ H._dome = function(L, scene, cible, opt){
     '<defs><radialGradient id="' + id + '" cx=".5" cy=".95" r=".9"><stop offset="0" stop-color="#3fd0ff" stop-opacity=".05"/><stop offset=".7" stop-color="#8ff3ff" stop-opacity=".18"/><stop offset="1" stop-color="#e8fdff" stop-opacity=".55"/></radialGradient>' +
     '<pattern id="' + id + 'p" width="12" height="10.4" patternUnits="userSpaceOnUse"><path d="M3 0 L 9 0 L 12 5.2 L 9 10.4 L 3 10.4 L 0 5.2 Z" fill="none" stroke="#bff8ff" stroke-width=".5" opacity=".55"/></pattern></defs>' +
     '<path d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100 Z" fill="url(#' + id + ')"/>' +
-    '<path d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100" fill="none" stroke="#bff8ff" stroke-width="2" style="filter:drop-shadow(0 0 3px #8ff3ff)"/>' +
+    /* (les lueurs du contour et du socle sont dessinées — plus de filtre : RAPIDITE.md R19) */
+    '<path d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100" fill="none" stroke="#8ff3ff" stroke-width="8" opacity=".13"/>' +
+    '<path d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100" fill="none" stroke="#8ff3ff" stroke-width="4.6" opacity=".22"/>' +
+    '<path d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100" fill="none" stroke="#bff8ff" stroke-width="2"/>' +
     '<path d="M-36 30 C -26 14 -14 9 -4 8" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>' +
     '<g opacity=".85">' + mot6 + '</g>' +
-    '<ellipse cx="0" cy="100" rx="52" ry="6" fill="none" stroke="#8ff3ff" stroke-width="2" stroke-dasharray="5 4" style="filter:drop-shadow(0 0 4px #3fd0ff)"/></svg>' +
-    /* le motif d'hexagones qui défile (RAPIDITE.md) : un calque à part, animé en entier ; le dôme, lui, n'est jamais repeint */
-    '<div class="ha-hexs" style="position:absolute;inset:0;overflow:hidden;-webkit-clip-path:path(\'' + domeChemin(w, h) + '\');clip-path:path(\'' + domeChemin(w, h) + '\')">' +
+    '<ellipse cx="0" cy="100" rx="52" ry="6" fill="none" stroke="#3fd0ff" stroke-width="9" opacity=".12"/><ellipse cx="0" cy="100" rx="52" ry="6" fill="none" stroke="#3fd0ff" stroke-width="5" opacity=".2"/>' +
+    '<ellipse cx="0" cy="100" rx="52" ry="6" fill="none" stroke="#8ff3ff" stroke-width="2" stroke-dasharray="5 4"/>' +
+    /* en temps réel (Léo) : les hexagones sont dessinés DANS le dôme, une fois, immobiles — plus de calque découpé qui défile sans fin */
+    (figer ? '<path d="M-50 100 C -50 30 -28 4 0 4 C 28 4 50 30 50 100 Z" fill="url(#' + id + 'p)" opacity=".7"/>' : '') + '</svg>' +
+    /* ailleurs : le motif d'hexagones qui défile (RAPIDITE.md) : un calque à part, animé en entier ; le dôme, lui, n'est jamais repeint */
+    (figer ? '' : '<div class="ha-hexs" style="position:absolute;inset:0;overflow:hidden;-webkit-clip-path:path(\'' + domeChemin(w, h) + '\');clip-path:path(\'' + domeChemin(w, h) + '\')">' +
     '<svg viewBox="-55 0 110 114.4" preserveAspectRatio="none" class="ha-hex" style="position:absolute;left:0;top:0;width:100%;height:' + r1(h * 1.1) + 'px;overflow:visible;will-change:transform">' +
-    '<rect x="-55" y="0" width="110" height="114.4" fill="url(#' + id + 'p)" opacity=".7"/></svg></div>' +
+    '<rect x="-55" y="0" width="110" height="114.4" fill="url(#' + id + 'p)" opacity=".7"/></svg></div>') +
+    /* l'éclat du dôme (quand il encaisse, quand il se brise) : un voile de lumière dont on ne change que l'opacité — avant, un
+       filtre de luminosité sur tout le dôme, recalculé à chaque image */
+    '<div class="ha-dome-eclat" style="position:absolute;left:4%;right:4%;top:3%;bottom:3%;border-radius:50% 50% 0 0 / 82% 82% 0 0;opacity:0;pointer-events:none;background:radial-gradient(ellipse at 50% 62%,rgba(255,255,255,.95),rgba(232,253,255,.5) 55%,rgba(232,253,255,.12) 100%)"></div>' +
     '<div class="ha-badge">🛡️ −' + ((opt && opt.pct) || 75) + ' %' + (opt && opt.sansTour ? '' : ' · 1 tour') + '</div>';     /* (le bouclier arrête 75 % : Romain, 11 novembre) */
   /* LE BOUCLIER JAUNE (Romain, 13 novembre) : celui du bâton normal — 75 %, et il arrête les « contrôles ». Le même dôme, doré.
      (opt.sorte === 'jaune' ; les boucliers du bâton de chêne gardent le bleu des runes.) */
@@ -7476,8 +7516,10 @@ H._dome = function(L, scene, cible, opt){
   L.appendChild(e);
   var svg = e.querySelector('svg');
   e.animate([{transform:'scale(.2,0)', opacity:0}, {transform:'scale(1.08,1.1)', opacity:1, offset:.6}, {transform:'scale(.97,.96)', offset:.8}, {transform:'scale(1,1)', opacity:1}], {duration:520, easing:'ease-out'});
-  var vit = svg.animate([{opacity:.85}, {opacity:1}], {duration:900, iterations:Infinity, direction:'alternate', easing:'ease-in-out'});
-  var hex = e.querySelector('.ha-hex'); hex.animate([{transform:'translateY(0px)'}, {transform:'translateY(' + r1(-10.4 * h / 104) + 'px)'}], {duration:1600, iterations:Infinity});
+  /* (en temps réel : un dôme posé ne bouge plus du tout — rien qui tourne sans fin pendant qu'on se bat : R19) */
+  var vit = figer ? {cancel:function(){}} : svg.animate([{opacity:.85}, {opacity:1}], {duration:900, iterations:Infinity, direction:'alternate', easing:'ease-in-out'});
+  var hex = e.querySelector('.ha-hex'); if(hex) hex.animate([{transform:'translateY(0px)'}, {transform:'translateY(' + r1(-10.4 * h / 104) + 'px)'}], {duration:1600, iterations:Infinity});
+  var eclat = e.querySelector('.ha-dome-eclat');
   scintille(L, x, yb - h * 0.5, {n:12, rx:w * 0.45, ry:h * 0.45, c:['#e8fdff', CYAN], etale:400});
   onde(L, x, yb, {w:w * 1.1, h:20, c:CYAN, ep:3, s0:0.3, s1:1.3, d:700});
   var fini = false;
@@ -7485,7 +7527,7 @@ H._dome = function(L, scene, cible, opt){
     el:e,
     absorber:function(n){
       if(fini) return Promise.resolve();
-      svg.animate([{filter:'brightness(2.2)'}, {filter:'brightness(1)'}], {duration:420, easing:'ease-out'});
+      eclat.animate([{opacity:.75}, {opacity:0}], {duration:420, easing:'ease-out'});
       e.animate([{transform:'scale(1,1)'}, {transform:'scale(1.06,.95)', offset:.25}, {transform:'scale(.98,1.03)', offset:.6}, {transform:'scale(1,1)'}], {duration:420});
       onde(L, x, yb - h * 0.55, {css:'background:radial-gradient(circle,rgba(232,253,255,.8),rgba(143,243,255,0) 70%)', w:w * 0.7, s0:0.3, s1:1.5, d:450});
       gerbe(L, x, yb - h * 0.6, {n:10, c:['#fff', CYAN], v0:60, v1:140, g:100, t0:3, t1:5, d0:300, d1:550});
@@ -7496,7 +7538,8 @@ H._dome = function(L, scene, cible, opt){
       gerbe(L, x, yb - h * 0.5, {n:22, c:['#e8fdff', '#bff8ff', CYAN], forme:'eclat', v0:80, v1:220, g:500, t0:7, t1:13, d0:500, d1:850, lueur:false});
       scintille(L, x, yb - h * 0.5, {n:8, rx:w * 0.4, ry:h * 0.4, c:['#e8fdff', CYAN], etale:200});
       vit.cancel();
-      return e.animate([{transform:'scale(1,1)', opacity:1, filter:'brightness(1)'}, {transform:'scale(1.06,1.04)', opacity:1, filter:'brightness(2)', offset:.25}, {transform:'scale(1.15,.7)', opacity:0, filter:'brightness(1)'}], {duration:380, easing:'ease-in', fill:'forwards'})
+      eclat.animate([{opacity:0}, {opacity:.7, offset:.25}, {opacity:0}], {duration:380, easing:'ease-in'});
+      return e.animate([{transform:'scale(1,1)', opacity:1}, {transform:'scale(1.06,1.04)', opacity:1, offset:.25}, {transform:'scale(1.15,.7)', opacity:0}], {duration:380, easing:'ease-in', fill:'forwards'})
         .finished.then(function(){ e.remove(); });
     }
   };
@@ -7538,8 +7581,8 @@ H._runesLivre = function(){
 };
 H._idee = function(){
   var p = this.rep('tete'), id = 'hid' + (++uid);
-  var e = div(this.fx, 'width:46px;height:56px', '<svg viewBox="-23 -30 46 56" style="width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 6px #8ff3ff) drop-shadow(0 0 14px #3fd0ff)">' +
-    '<defs><radialGradient id="' + id + '"><stop offset="0" stop-color="#fff"/><stop offset=".6" stop-color="#bff8ff"/><stop offset="1" stop-color="#3fd0ff"/></radialGradient></defs>' +
+  var e = div(this.fx, 'width:46px;height:56px', '<svg viewBox="-23 -30 46 56" style="width:100%;height:100%;overflow:visible">' +
+    '<defs><radialGradient id="' + id + '"><stop offset="0" stop-color="#fff"/><stop offset=".6" stop-color="#bff8ff"/><stop offset="1" stop-color="#3fd0ff"/></radialGradient></defs>' + lueurRonde('#3fd0ff', 40, 0, -6) +
     '<path d="M0 -26 C 14 -26 20 -14 18 -4 C 16 4 10 8 9 14 L -9 14 C -10 8 -16 4 -18 -4 C -20 -14 -14 -26 0 -26 Z" fill="url(#' + id + ')" stroke="#24182e" stroke-width="2.6"/>' +
     '<path d="M-8 16 L 8 16 M-7 20 L 7 20 M-4 24 L 4 24" stroke="#e8c062" stroke-width="3" stroke-linecap="round"/>' +
     '<path d="M0 -18 L 0 0" stroke="#24182e" stroke-width="5" stroke-linecap="round"/><circle cx="0" cy="7" r="2.8" fill="#24182e"/>' +
@@ -8669,6 +8712,14 @@ function musiqueDesQuePrete(nom){
   MUS.attendue = nom;
   Promise.all(cles.map(function(c){ return PRE.demander(c, true); })).then(function(){ if(MUS.attendue === nom) musique(nom); });
 }
+/* fabriquer une musique à l'avance SANS y passer, et sans attendre que le son soit débloqué par un premier toucher (l'adresse
+   d'essai du combat de Léo : sinon elle se fabriquait au premier toucher, en plein combat). Rend une promesse. */
+function preparerMusique(nom){
+  var cles;
+  if(!PRE.possible) return Promise.resolve();
+  try{ cles = clesDe(nom).filter(function(c){ return !!window.MUSIQUES[c]; }); }catch(e){ return Promise.resolve(); }
+  return Promise.all(cles.map(function(c){ return PRE.demander(c, true); })).catch(function(){});
+}
 function famille(c){ return c.replace(/[A-C]$/, ''); }
 /* la clé d'une musique : son nom s'il n'y en a qu'une (le puits, le fond du donjon), sinon la version choisie */
 function cleMus(f){ return window.MUSIQUES[f] ? f : PRE.cle(f); }
@@ -8717,7 +8768,9 @@ function enCombat(on){
   if(MUS.combat === on) return;
   MUS.combat = on;
   if(!PRE.possible) return;
-  if(on) setTimeout(function(){ if(MUS.combat) PRE.demander('bruitages'); }, 2500);
+  /* (pas dans un combat en temps réel — Léo : il prépare lui-même ses sons AVANT de commencer (Son.preparerBruits) ; fabriquer
+     ceux-ci 2,5 s après le début lui prenait ses premières secondes — RAPIDITE.md R20) */
+  if(on) setTimeout(function(){ if(MUS.combat && !S.tempsReel) PRE.demander('bruitages'); }, 2500);
   else setTimeout(function(){ if(MUS.combat) return; PRE.sfx = {}; PRE.sfxV = {}; delete PRE.attente.bruitages; }, 9000);
 }
 /* la musique fabriquée en direct (l'ancienne façon : seulement si le navigateur ne sait pas fabriquer à l'avance) */
@@ -8899,23 +8952,33 @@ function rendreBruitages(){
 function preparerBruits(ids, o){
   if(!PRE.possible || !window.BRUITAGES) return Promise.resolve(0);
   var jeton = ++PRE.fixeJeton, n = 0;
+  ids = ids || [];
+  /* « id:B » : cette version-là exactement (quand le jeu la demande par son nom — la faux de Léo, version B : sinon la version
+     fabriquée n'était pas celle qu'il jouait, et le son se refaisait en direct) */
+  var noms = ids.map(function(x){ return x.split(':')[0]; });
+  PRE.fixeF = PRE.fixeF || {};
   /* o.seuls : on ne garde que cette liste (une nouvelle phase du combat : les sons de la phase d'avant libèrent leur mémoire) */
-  if(o && o.seuls) Object.keys(PRE.fixeV).forEach(function(id){ if(ids.indexOf(id) < 0){ delete PRE.fixe[id + PRE.fixeV[id]]; delete PRE.fixeV[id]; } });
+  if(o && o.seuls){
+    Object.keys(PRE.fixeV).forEach(function(id){ if(noms.indexOf(id) < 0){ delete PRE.fixe[id + PRE.fixeV[id]]; delete PRE.fixeV[id]; } });
+    Object.keys(PRE.fixeF).forEach(function(cle){ if(noms.indexOf(PRE.fixeF[cle]) < 0){ delete PRE.fixe[cle]; delete PRE.fixeF[cle]; } });
+  }
   PRE.fixeEnCours = true;
-  return (ids || []).reduce(function(p, id){
+  return ids.reduce(function(p, x){
     return p.then(function(){
+      var k = x.split(':'), id = k[0];
       if(jeton !== PRE.fixeJeton || !CHOIX[id] || !CHOIX[id].length) return;
-      var v = PRE.fixeV[id] || tire(CHOIX[id]), cle = id + v;
+      var v = k[1] || PRE.fixeV[id] || tire(CHOIX[id]), cle = id + v;
       if(!window.BRUITAGES[cle] || PRE.fixe[cle]) return;
       return rendreUnBruitage(id, v, null, false, true).then(function(y){
         if(jeton !== PRE.fixeJeton) return;
-        PRE.fixeV[id] = v; PRE.fixe[cle] = {buf:y, pan:0}; n++;
+        if(k[1]) PRE.fixeF[cle] = id; else PRE.fixeV[id] = v;
+        PRE.fixe[cle] = {buf:y, pan:0}; n++;
         return new Promise(function(ok){ setTimeout(ok, 30); });           /* (on laisse respirer la page entre deux sons) */
       }, function(){});
     });
   }, Promise.resolve()).then(function(){ if(jeton === PRE.fixeJeton){ PRE.fixeEnCours = false; window.Moteur.oublier(SR_SFX); } return n; });
 }
-function oublierBruits(){ PRE.fixeJeton++; PRE.fixe = {}; PRE.fixeV = {}; PRE.fixeEnCours = false; }
+function oublierBruits(){ PRE.fixeJeton++; PRE.fixe = {}; PRE.fixeV = {}; PRE.fixeF = {}; PRE.fixeEnCours = false; }
 /* la file d'attente : une chose à la fois, la plus urgente d'abord */
 PRE.demander = function(cle, urgent){
   var f = famille(cle);
@@ -9305,6 +9368,7 @@ S.Son = {
   bruitage:bruitage,
   musique:musique,
   musiqueDesQuePrete:musiqueDesQuePrete,
+  preparerMusique:preparerMusique,
   combat:enCombat,             /* le donjon : un combat commence (true) ou finit (false) — les bruitages lourds sont fabriqués, puis libérés */
   preparer:preparer,
   preparerBruits:preparerBruits, oublierBruits:oublierBruits, bruitsPrets:function(){ return Object.keys(PRE.fixe).length; }, bruitsEnCours:function(){ return !!PRE.fixeEnCours; },
@@ -9398,6 +9462,7 @@ function eclat(x, y, taille, fond, ms){
 function tremble(force, ms, delai){
   ms = ms || 400;
   if(S.tempsReel){
+    if(S.leger) return Promise.resolve();          /* (cet appareil a déjà fermé la page pendant le combat de Léo : plus de secousse — noyau.js, DJ.temoinLeo) */
     var m = Date.now() + (delai || 0);
     if(m < (tremble.jusque || 0)) return Promise.resolve();
     ms = Math.min(ms, 300); force = Math.min(force, 10); tremble.jusque = m + ms + 350;
@@ -17086,8 +17151,32 @@ DJ.temoinCharge = function(on){ try{ if(on) localStorage.setItem(CLE_CHARGE, Str
 DJ.plantagesCharge = function(){ try{ return +localStorage.getItem(CLE_PLANT_CHARGE) || 0; }catch(e){ return 0; } };
 /* de combien réduire les images cuites sur cet appareil (1 : rien) */
 DJ.allegeImages = function(){ var n = DJ.plantagesCharge(); return n >= 2 ? .5 : n === 1 ? .66 : 1; };
+/* LE MÊME FILET POUR LE COMBAT DE LÉO (Romain, 15 novembre, 19 h 28 : « j'ai eu un bug qui a fait retourner au début, quand
+   en phase 3 il attrape quelqu'un et qu'il le jette »). Pas reproduit ici (ni erreur, ni rechargement, en secouant « il attrape »
+   dans tous les sens) : le plus probable est que le téléphone a fermé la page. Pendant le combat, on note donc ce qui se passe
+   (la phase, l'attaque de Léo, le dernier geste) ; quand on quitte la page normalement, la note est effacée. Si elle est encore
+   là au démarrage, la page s'est fermée toute seule : on le compte, on garde OÙ, et sur cet appareil les effets du combat sont
+   allégés (SALLE.leger : deux fois moins d'étincelles, plus de secousse d'écran). Se lit dans la fenêtre « Pause » du combat. */
+var CLE_LEO = 'brumeval-donjon-leo', CLE_PLANT_LEO = 'brumeval-donjon-plantages-leo', CLE_OU_LEO = 'brumeval-donjon-plantage-leo-ou';
+DJ.temoinLeo = function(quoi){ try{ if(quoi) localStorage.setItem(CLE_LEO, String(quoi) + '|' + Date.now()); else localStorage.removeItem(CLE_LEO); }catch(e){} };
+DJ.plantagesLeo = function(){ try{ return +localStorage.getItem(CLE_PLANT_LEO) || 0; }catch(e){ return 0; } };
+DJ.plantageLeoOu = function(){ try{ return localStorage.getItem(CLE_OU_LEO) || ''; }catch(e){ return ''; } };
+/* (quitter la page exprès — fermer l'onglet, recharger, changer d'application — n'est pas un plantage) */
+try{ window.addEventListener('pagehide', function(){ DJ.temoinLeo(false); }); }catch(e){}
+/* la ligne à lire à Romain : la version, et ce que l'appareil a retenu de ses plantages */
+DJ.ligneVersion = function(){
+  var s = 'Version du ' + DJ.VERSION;
+  if(DJ.plantagesLeo()) s += ' · le combat de Léo s\'est fermé tout seul ' + DJ.plantagesLeo() + ' fois (la dernière : ' + (DJ.plantageLeoOu() || '?') + ')';
+  if(DJ.plantages()) s += ' · critiques allégés (' + DJ.plantages() + ')';
+  if(DJ.plantagesCharge()) s += ' · images allégées (' + DJ.plantagesCharge() + ')';
+  return s;
+};
 DJ.verifierTemoin = function(){
   try{
+    var vl = (localStorage.getItem(CLE_LEO) || '').split('|'), tl = +vl[1] || 0;
+    if(tl && Date.now() - tl < 600000){ localStorage.setItem(CLE_PLANT_LEO, String(DJ.plantagesLeo() + 1)); localStorage.setItem(CLE_OU_LEO, vl[0]); }
+    localStorage.removeItem(CLE_LEO);
+    if(DJ.plantagesLeo()) SALLE.leger = true;
     var v = (localStorage.getItem(CLE_TEMOIN) || '').split('|'), t = +v[1] || 0;
     if(t && Date.now() - t < 600000){ localStorage.setItem(CLE_PLANTAGES, String(DJ.plantages() + 1)); localStorage.setItem(CLE_OU, v[0]); }
     localStorage.removeItem(CLE_TEMOIN);
@@ -17132,7 +17221,7 @@ DJ.mesurerCritiqueVrai = function(){
     if(lent) SALLE.critLeger = true;
   }};
 };
-DJ.VERSION = '15/11 à 20 h 18';
+DJ.VERSION = '15/11 à 21 h 23';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
@@ -21509,27 +21598,43 @@ var AVEUX = [
 /* ====================================================================== 1. PRÉPARER, CONSTRUIRE */
 /* (15 novembre, 13 h 54 — RAPIDITE.md, R16) les bruitages du combat qui reviennent le plus, fabriqués à l'avance (un par un, en
    arrière-plan : on n'attend pas la fin pour commencer) */
-var BRUITS = {tous:['swish', 'chairF', 'chairD', 'arc', 'vol', 'leoCharge', 'leoGlisse', 'leoSonne', 'leoMuscles'],
-  1:['leoFleau', 'leoMarteau', 'leoMeule', 'leoCrochet', 'leoCape', 'leoFarine', 'baton', 'cristal'],
-  2:['leoPoing', 'leoSifflet', 'leoSaut', 'leoLancer', 'leoGlou', 'leoFaux', 'baton'],
-  3:['leoPoing', 'leoNaseaux', 'leoRafale', 'leoHurlement', 'leoSouffle', 'leoAttrape', 'leoSaigne', 'leoFaux', 'leoChute']};
+/* (15 novembre, 19 h 28 : la liste est COMPLÈTE — `sautes-leo.py` nomme chaque son encore fabriqué en direct pendant un combat ;
+   il en restait de 6 à 12 par phase : le clic des icônes, les fioles, le pied qui racle, les naseaux, la torche, le sac, le
+   saignement de la phase 2… Si ce robot en nomme un nouveau, l'ajouter ici. « id:B » : cette version-là exactement.) */
+var BRUITS = {tous:['icone', 'swish', 'chairF', 'chairD', 'arc', 'vol', 'baton', 'potHuile', 'leoCharge', 'leoRacle', 'leoNaseaux', 'leoGlisse', 'leoSonne', 'leoMuscles', 'leoTouche'],
+  1:['leoFleau', 'leoMarteau', 'leoMeule', 'leoCrochet', 'leoCape', 'leoFarine', 'leoPoing', 'leoTorches', 'cristal', 'potGivre'],
+  2:['leoPoing', 'leoSifflet', 'leoSaut', 'leoLancer', 'leoSac', 'leoGlou', 'leoBouchon', 'leoAah', 'leoAura', 'leoBrise', 'leoFaux', 'leoFaux:B', 'leoFauxTire', 'leoSaigne'],
+  3:['leoPoing', 'leoRafale', 'leoHurlement', 'leoSouffle', 'leoAttrape', 'leoSaigne', 'leoFaux', 'leoChute', 'potGivre']};
 /* les sons d'une phase : fabriqués pendant l'écran de passage (la première) ou pendant la cinématique d'avant (les suivantes) ;
    ceux de la phase d'avant rendent leur mémoire. Rend une promesse (on peut l'attendre, pas trop longtemps). */
 function sonsPhase(n){
   try{ if(SALLE.Son && SALLE.Son.preparerBruits) return SALLE.Son.preparerBruits(BRUITS.tous.concat(BRUITS[n] || []), {seuls:true}); }catch(e){}
   return Promise.resolve(0);
 }
+/* LE COMBAT NE S'OUVRE PAS TANT QU'IL RESTE QUELQUE CHOSE À FABRIQUER (Romain, 15 novembre, 19 h 28 : « il y a encore des sorts qui
+   font des sautes de FPS »). Mesuré (sautes-leo.py --froid) : les sons et la musique d'une phase, s'ils se fabriquent encore
+   pendant le combat, lui prennent ses quatre premières secondes — 6 à 12 images par seconde au lieu de 40, des images de 300 à
+   470 ms (fabriquer UN son occupe le fil de l'écran jusqu'à 0,4 s sur une machine lente). On attend donc la fin de la
+   fabrication (les bruitages de la phase, et sa musique) — au plus « max » secondes, pour ne jamais rester bloqué. */
+function fabricationFinie(){
+  try{ var S = SALLE.Son, p = S && S.precalcul ? S.precalcul.etat() : null; return !(S && S.bruitsEnCours && S.bruitsEnCours()) && !(p && (p.occupe || (p.file || []).length)); }catch(e){ return true; }
+}
+function sonsPrets(max){
+  var fin = Date.now() + (max || 8) * 1000;
+  return new Promise(function(ok){ (function voir(){ if(fabricationFinie() || Date.now() > fin) ok(); else setTimeout(voir, 150); })(); });
+}
 function preparer(phase){
-  /* (on attend les sons au plus trois secondes : le reste se finit pendant le début du combat) */
   /* le film de l'entrée se télécharge pendant l'écran de passage (la première fois seulement) */
   if(phase && typeof phase === 'object' && !(phase.faits && phase.faits['leo:vu'])) prechargerFilm('entree');
   if(phase && typeof phase === 'object') phase = phaseGardee(phase);                    /* (la partie : la phase gardée) */
-  var sons = Promise.race([sonsPhase(+phase || 1), new Promise(function(ok){ setTimeout(ok, 3000); })]);
-  return Promise.all([sons, DJ.charger.bete('rat'), DJ.charger.bete('ratcuir')]).then(function(){
+  /* les sons et la musique de la phase se fabriquent PENDANT qu'on prépare les images ; on n'ouvre le combat que quand tout est prêt */
+  sonsPhase(+phase || 1);
+  try{ if(SALLE.Son && SALLE.Son.preparerMusique) SALLE.Son.preparerMusique('grand:leo' + Math.max(1, Math.min(3, +phase || 1))); }catch(e){}
+  return Promise.all([DJ.charger.bete('rat'), DJ.charger.bete('ratcuir')]).then(function(){
     return Promise.all([DJ.Combat.cuireHeros(), DJ.Combat.cuireRat(), DJ.charger.image(DJ.charger.scene('leo')), DJ.charger.image(SALLE.img('fumee-a')), DJ.charger.image(SALLE.img('brume-a')),
       /* le nouveau Léo (torse nu) : ses pièces cuites en images (leo-corps.js) */
       window.LeoCorps ? window.LeoCorps.preparer() : null]);
-  }).catch(function(e){ if(window.console) console.warn('Léo', e); });
+  }).then(function(){ return sonsPrets(10); }).catch(function(e){ if(window.console) console.warn('Léo', e); });
 }
 function phaseGardee(p){ var n = +(p.faits && p.faits['leo:phase']) || 1; return Math.max(1, Math.min(3, n)); }
 function lancer(partie, o){
@@ -21637,7 +21742,8 @@ function demarrerPhase(n, premiere){
   /* la première fois qu'on arrive devant lui : il sort de l'ombre. Sinon (un nouvel essai) : on y retourne tout de suite. */
   prechargerFilms(n);
   E.cine = true;
-  (premiere && n === 1 && !E.partie.faits['leo:vu'] ? cineEntree() : cinePret(n)).then(function(){ if(!E) return; E.cine = false; E.saute = false; E.ts = 0; });
+  /* (un nouvel essai après une défaite, une phase reprise : ses sons sont peut-être encore en fabrication — on les attend) */
+  (premiere && n === 1 && !E.partie.faits['leo:vu'] ? cineEntree() : cinePret(n)).then(function(){ return sonsPrets(8); }).then(function(){ if(!E) return; E.cine = false; E.saute = false; E.ts = 0; });
 }
 function remettreHeros(h){
   var A = E.A.h[h], s = slotH(h);
@@ -21836,6 +21942,8 @@ async function finPhase(res){
   /* une phase est gagnée : on la garde tout de suite (Romain : « une sauvegarde automatique à chaque cinématique ») */
   var n = E.c.phase + 1;
   E.partie.faits['leo:phase'] = n; DJ.garder(E.partie);
+  adressePhase(n);
+  DJ.temoinLeo('phase ' + n + ' : le film d\'avant');
   son('victoire');
   sonsPhase(n);                                         /* (les sons de la phase qui vient se fabriquent pendant la cinématique) */
   musiquePhase(n);                                      /* (sa musique aussi : elle part à la fin du film) */
@@ -21852,6 +21960,8 @@ async function finPhase(res){
   maj(true);
   titre(NOMS[n], 'Phase ' + n, 1400);
   await pause(700);
+  await sonsPrets(6);                                   /* (le film passé d'un doigt : les sons de la phase ne sont peut-être pas finis) */
+  if(!E) return;
   E.cine = false; E.saute = false; E.ts = 0;
 }
 function defaite(){
@@ -21906,6 +22016,7 @@ function aveu(){
 }
 function terminer(res){
   if(!E) return;
+  DJ.temoinLeo(false);
   var fin = E.finir;
   E.fini = true; cancelAnimationFrame(E.raf);
   if(E.p2) try{ E.p2.vider(); }catch(e){}
@@ -22090,7 +22201,9 @@ DJ.toucher(function(a, id, b){
   if(a === 'l-pause'){
     if(E.cine || E.fini) return true;
     var t = 'Le combat attend. Léo aussi… mais il n\'aime pas ça.';
-    DJ.fenetre('<h2>Pause</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div><div class="boutons"><button class="sombre" data-act="l-quitter">Retour à la carte</button><button class="aller guide" data-act="fermer">Reprendre ➜</button></div>');
+    /* (la version, et ce que l'appareil a retenu de ses plantages : à l'adresse d'essai, il n'y a pas de « 🎒 Objets » où la lire) */
+    DJ.fenetre('<h2>Pause</h2><div class="ligne">' + t + DJ.lireBtn(t) + '</div><div class="boutons"><button class="sombre" data-act="l-quitter">Retour à la carte</button><button class="aller guide" data-act="fermer">Reprendre ➜</button></div>' +
+      '<div class="ligne petit version">' + esc(DJ.ligneVersion()) + '</div>');
     return true;
   }
   if(a === 'l-encore'){ DJ.fermer(); demarrerPhase(E.c.phase); return true; }
@@ -22112,7 +22225,24 @@ var NOMS_POTION = {givre:1, acide:1, huile:1, colle:1}, SON_POTION = {givre:'pot
 function tard(s, fn){ var e = E; setTimeout(function(){ if(E === e && !E.fini) try{ fn(); }catch(x){ if(window.console) console.error(x); } }, s * 1000 / E.vite); }
 
 function jouer(evs){
-  for(var k = 0; k < evs.length; k++){ try{ un(evs[k]); }catch(e){ if(window.console) console.error('Léo, évènement ' + evs[k].t, e); } }
+  for(var k = 0; k < evs.length; k++){ try{ noter(evs[k]); un(evs[k]); }catch(e){ if(window.console) console.error('Léo, évènement ' + evs[k].t, e); } }
+}
+/* LE TÉMOIN DU COMBAT (noyau.js, DJ.temoinLeo — Romain, 15 novembre, 19 h 28 : « un bug qui a fait retourner au début, quand il
+   attrape quelqu'un et qu'il le jette ») : à chaque moment de Léo et à chaque geste d'un héros, on note où l'on en est. Si la page
+   se ferme toute seule, la note est encore là au démarrage suivant : on sait PENDANT QUOI. (Une ou deux écritures par seconde.) */
+var MOMENTS = {prise:'il se prépare', elan:'il arme son coup', impact:'le coup', coups:'la série de coups', porte:'il le porte', 'frappe-avec':'il le jette sur l\'autre', tient:'il le tient', retour:'il revient'};
+function noter(ev){
+  if(!E || !E.c) return;
+  var N = E.note || (E.note = {leo:'', geste:''}), change = false;
+  if(ev.t === 'leo' && MOMENTS[ev.quoi] && ev.att){ N.leo = ((L.ATTAQUES[ev.att] || {}).nom || ev.att) + ' (' + MOMENTS[ev.quoi] + ')'; N.geste = ''; change = true; }
+  else if(ev.t === 'geste' && ev.heros){ N.geste = ev.heros + ' ' + (ev.geste || ev.g || ''); change = true; }
+  if(change) DJ.temoinLeo('phase ' + E.c.phase + ' : ' + (N.leo || 'au calme') + (N.geste ? ', ' + N.geste : ''));
+}
+/* à l'adresse d'essai (…/donjon/?leo=1), une phase gagnée s'écrit dans l'adresse : si la page se recharge (ou se ferme toute seule),
+   on reprend à cette phase-là, pas au début. (Dans le vrai jeu, la phase est gardée dans la partie.) */
+function adressePhase(n){
+  if(!DJ.essai) return;
+  try{ var u = new URL(location.href); if(u.searchParams.get('leo') != null){ u.searchParams.set('leo', n); history.replaceState(null, '', u.pathname + u.search + u.hash); } }catch(e){}
 }
 function un(ev){
   var h = ev.heros, p, a;
@@ -23526,7 +23656,8 @@ function essaiLeo(P){
     var jeu = q('#jeu'); jeu.innerHTML = '';
     var e = el('div', 'ecran'); e.id = 'essai-fin';
     e.innerHTML = '<div class="pa-nom">' + (res === 'victoire' ? 'Victoire' : 'Retour à la carte') + '</div><button class="aller guide" data-act="essai-encore">Rejouer ↻</button>' +
-      '<div class="essai-phases">' + [1, 2, 3].map(function(n){ return '<button class="aller" data-act="essai-phase-' + n + '">Phase ' + n + '</button>'; }).join('') + '</div>';
+      '<div class="essai-phases">' + [1, 2, 3].map(function(n){ return '<button class="aller" data-act="essai-phase-' + n + '">Phase ' + n + '</button>'; }).join('') + '</div>' +
+      '<div class="ligne petit version">' + DJ.esc(DJ.ligneVersion()) + '</div>';
     jeu.appendChild(e);
   });
   DJ.toucher(function(a){
