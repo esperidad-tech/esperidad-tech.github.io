@@ -856,6 +856,14 @@ i.lp-flam{border-radius:50% 50% 46% 46%/64% 64% 36% 36%;background:radial-gradie
 .lp-annonce b{font-size:25px;font-weight:400}
 .lp-annonce > i{position:absolute;left:10px;right:10px;bottom:5px;height:5px;border-radius:3px;background:rgba(255,255,255,.16);overflow:hidden}
 .lp-annonce u{display:block;width:100%;height:100%;background:#ffb050;transform-origin:0 50%;transform:scaleX(0);will-change:transform;text-decoration:none}
+/* (15 novembre, 13 h 54) l'annonce qui continue pendant l'attaque (le compteur de la rafale, « IL VA FRAPPER ») : en rouge */
+.lp-annonce.coups{border-color:#ff6a5a;color:#fff0e6}.lp-annonce.coups u{background:#ff6a5a}
+.lp-annonce span{display:inline-block;min-width:118px;text-align:center}
+/* l'éclat d'un coup de la rafale : un seul, posé une fois, qui saute près du héros et se rallume (RAPIDITE.md, R18) */
+.lp-eclat-r{position:absolute;left:-55px;top:-55px;width:110px;height:110px;border-radius:50%;background:radial-gradient(closest-side,#fff,rgba(255,225,150,.9) 40%,rgba(255,140,50,0));pointer-events:none;z-index:45;opacity:0;will-change:transform,opacity}
+/* (R10 : au repos, aucune boucle — la flamme et les gouttes posées sur un héros ne bougent plus pendant le combat de Léo ; les
+   chiffres qui s'envolent disent déjà que ça brûle ou que ça saigne) */
+#combat.leo .l-feu, #combat.leo .l-gouttes, #combat.leo .l-gouttes *{animation:none}
 .lp-annonce.vert{border-color:#7dff6a;color:#dcffd0}.lp-annonce.vert u{background:#7dff6a}
 .lp-annonce.rat{border-color:#d8c8a8;color:#f3ead8}.lp-annonce.rat u{background:#d8c8a8}
 /* le saut : la cible au sol, là où il va retomber (l'anneau se resserre jusqu'au choc) */
@@ -1158,7 +1166,8 @@ function Moteur(ctx, opt){
     var fin = t + env[env.length - 1][0], dur = fin - t;
     if(o.vague) x.setPeriodicWave(o.vague); else x.type = o.type || 'sine';
     if(o.courbe) x.frequency.setValueCurveAtTime(o.courbe, t, o.cd || dur);
-    else { x.frequency.setValueAtTime(o.f, t); if(o.pts) o.pts.forEach(function(p){ x.frequency.exponentialRampToValueAtTime(p[1], t + p[0]); }); if(o.f2) x.frequency.exponentialRampToValueAtTime(o.f2, t + (o.gl || dur)); }
+    /* (15 novembre : un son fabriqué à l'avance l'est à 32 000 échantillons par seconde — une note au-dessus de la moitié n'y existe pas) */
+    else { x.frequency.setValueAtTime(Math.min(o.f, ctx.sampleRate / 2 - 60), t); if(o.pts) o.pts.forEach(function(p){ x.frequency.exponentialRampToValueAtTime(p[1], t + p[0]); }); if(o.f2) x.frequency.exponentialRampToValueAtTime(o.f2, t + (o.gl || dur)); }
     if(o.det) x.detune.value = o.det;
     if(o.vib){
       var v = ctx.createOscillator(), vg = g(0); v.frequency.value = o.vib[0];
@@ -3778,169 +3787,6 @@ S.leoJetteA = function(A, P){
 })(window);
 
 
-/* ===== essai/sons/cine.js ===== */
-/* Atelier des sons de Brumeval — LES CINÉMATIQUES (Bible §13.45 ; 15 novembre). La vidéo des cinématiques est muette : le jeu
-   joue ces bruitages à l'instant dit (la liste « sons » de chaque film, jeu/cine/src/films.js), au volume des réglages.
-   Tous NEUFS (🆕) : une seule version (A) chacun, que le jeu joue en attendant que Romain les écoute dans l'Atelier.
-   Mêmes règles que leo.js : une fonction (A : le moteur, P : la prise, P.t : l'instant de départ) qui rend {duree}. */
-(function(G){
-'use strict';
-var S = G.BRUITAGES;
-function h(a, b){ return a + Math.random() * (b - a); }
-function bus(A, P, pan, rev){ return A.bus(P, {rev:rev == null ? .5 : rev, grotte:.4, pan:pan == null ? 0 : pan}); }
-function fouet(A, t, d, o, dest){
-  o = o || {};
-  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:o.f || 500, pts:[[d, o.f2 || 2200]], q:o.q || 1.4}], env:[[0, 0], [d * .55, 1], [d, 0]], g:o.g == null ? 1 : o.g}, dest);
-}
-function voix(A, t, d, o, dest){
-  o = o || {};
-  var f = o.f || 110, env = o.env || [[0, 0], [.05, 1], [d * .7, .85], [d, 0]], g = o.g == null ? .3 : o.g;
-  A.ton(t, {type:'sawtooth', f:f, f2:f * (o.chute || .8), gl:d, env:env, g:g, gigue:o.gigue || 14, trem:[o.rr || 24, o.tr == null ? .8 : o.tr], sat:o.sat || 2,
-    filtres:[{type:'peaking', f:o.f1 || 600, q:1.3, gain:8}, {type:'peaking', f:o.f2 || 1300, q:2, gain:5}, {type:'lowpass', f:o.lp || 2400, q:.7}]}, dest);
-  A.bruit(t, {bp:o.fb || 900, bq:1, env:env, g:g * (o.souffle == null ? .9 : o.souffle), rugueux:.8, rugVit:6}, dest);
-}
-function souffle(A, t, d, g, f, dest){ A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:f || 700, q:.9}], env:[[0, 0], [d * .3, 1], [d, 0]], g:g}, dest); }
-function fer(A, t, f, g, dest){ [1, 2.76, 5.4].forEach(function(m, k){ A.ton(t, {f:f * m, env:[[0, 0], [.003, 1], [.5 - k * .12, 0]], g:(g || .12) / (k + 1)}, dest); }); }
-function bois(A, t, o, dest){ o = o || {}; A.choc(t, {f:o.f || 240, f2:o.f2 || 90, d:o.d || .16, g:o.g == null ? .7 : o.g, sat:3, corps:1.8, corpsF:o.cf || 620}, dest); }
-function lourd(A, t, g, dest){ A.choc(t, {f:110, f2:38, d:.32, g:g == null ? .8 : g, sat:3, corps:1.8, corpsF:240}, dest); A.bruit(t, {coul:'brun', filtres:[{type:'lowpass', f:600}], env:A.perc(.004, .25), g:.3 * (g || .8)}, dest); }
-
-/* les outils qui tombent sur la pierre (le fléau, le marteau, le crochet) */
-S.cineOutilsA = function(A, P){
-  var t = P.t, o = bus(A, P, h(-.3, .3), .45);
-  bois(A, t, {f:300, f2:120, g:.75, d:.12, cf:900}, o); fer(A, t + .01, h(780, 980), .1, o);
-  bois(A, t + .11, {f:260, f2:100, g:.45, d:.1}, o); fer(A, t + .12, h(1100, 1300), .05, o);
-  A.joue(t + .02, A.crepitement(.25, 40), {g:.35, filtres:[{type:'highpass', f:1800}]}, o);
-  return {duree:1.2};
-};
-/* il souffle fort (trois grandes respirations) */
-S.cineSouffleA = function(A, P){
-  var t = P.t, o = bus(A, P, .1, .35);
-  for(var k = 0; k < 3; k++){
-    souffle(A, t + k * 1.1, .45, .55, 900, o);              /* il inspire */
-    souffle(A, t + k * 1.1 + .48, .55, .7, 520, o);          /* il expire */
-    voix(A, t + k * 1.1 + .5, .4, {f:95, chute:.85, g:.06, tr:.2, souffle:1.6}, o);
-  }
-  return {duree:3.6};
-};
-/* un grognement sourd */
-S.cineGrogneA = function(A, P){
-  var t = P.t, o = bus(A, P, .1, .6);
-  voix(A, t, 1.3, {f:72, chute:.92, g:.36, rr:17, tr:.95, sat:3, f1:420, f2:900, lp:1600}, o);
-  return {duree:2};
-};
-/* un pas lourd */
-S.cinePasA = function(A, P){ var t = P.t, o = bus(A, P, .1, .5); lourd(A, t, .7, o); A.joue(t + .02, A.crepitement(.12, 30), {g:.25, filtres:[{type:'bandpass', f:2400}]}, o); return {duree:1}; };
-/* la cape qui s'envole (un grand claquement de tissu) */
-S.cineCapeA = function(A, P){
-  var t = P.t, o = bus(A, P, .5, .4);
-  fouet(A, t, .32, {f:300, f2:1600, g:1.1}, o);
-  for(var k = 0; k < 7; k++) A.bruit(t + .25 + k * .09, {coul:'rose', filtres:[{type:'bandpass', f:h(500, 900), q:1.6}], env:A.perc(.01, .08), g:.5 * (1 - k / 8)}, bus(A, P, .5 + k * .06, .4));
-  return {duree:1.4};
-};
-/* l'onde de choc : un grand coup sourd, la salle qui gronde, des cailloux qui retombent */
-S.cineOndeA = function(A, P){
-  var t = P.t, o = bus(A, P, 0, .7);
-  A.choc(t, {f:80, f2:26, d:.9, g:1.2, sat:4, corps:2, corpsF:180}, o);
-  A.bruit(t, {coul:'brun', filtres:[{type:'lowpass', f:180}], env:[[0, 0], [.08, 1], [2.2, 0]], g:.9, rugueux:.6, rugVit:4}, o);
-  A.joue(t + .35, A.crepitement(1.4, 70), {g:.4, filtres:[{type:'bandpass', f:2600, q:.7}]}, bus(A, P, .4, .5));
-  return {duree:2.8};
-};
-/* il s'essuie la bouche d'un revers de poignet */
-S.cineEssuieA = function(A, P){ var t = P.t, o = bus(A, P, .2, .2); fouet(A, t, .28, {f:1200, f2:2600, q:.8, g:.35}, o); return {duree:.6}; };
-/* il recrache le bouchon */
-S.cineCracheA = function(A, P){
-  var t = P.t, o = bus(A, P, -.3, .35);
-  A.bruit(t, {filtres:[{type:'bandpass', f:1400, q:1.2}], env:A.perc(.005, .09), g:.6}, o);
-  A.ton(t + .02, {f:260, f2:140, gl:.08, env:A.perc(.004, .07), g:.12}, o);
-  [.45, .62, .74].forEach(function(d, k){ bois(A, t + d, {f:900 - k * 80, f2:600, g:.18 - k * .04, d:.04, cf:2400}, bus(A, P, -.6, .35)); });
-  return {duree:1.2};
-};
-/* le cœur qui cogne (deux fois deux coups) */
-S.cineCoeurA = function(A, P){
-  var t = P.t, o = bus(A, P, 0, .25);
-  [0, .26, .9, 1.16].forEach(function(d, k){ A.choc(t + d, {f:62, f2:34, d:.22, g:k % 2 ? .55 : .8, corps:1.4, corpsF:120}, o); });
-  return {duree:2};
-};
-/* la potion monte : un souffle qui grimpe, un grondement, jusqu'à l'éclair */
-S.cineMonteeA = function(A, P){
-  var t = P.t, o = bus(A, P, 0, .6), d = 1.3;
-  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:200, pts:[[d, 4200]], q:1.1}], env:[[0, 0], [d * .9, 1], [d, 0]], g:1}, o);
-  A.ton(t, {type:'sawtooth', f:60, f2:240, gl:d, env:[[0, 0], [d * .8, 1], [d, 0]], g:.16, lp:900, sat:3}, o);
-  A.choc(t + d, {f:140, f2:40, d:.8, g:1, sat:4, corps:2, corpsF:300}, o);
-  A.ton(t + d, {f:1760, f2:1700, gl:1, env:[[0, 0], [.01, 1], [1.4, 0]], g:.08, vib:[5, 12]}, o);
-  return {duree:2.8};
-};
-/* il s'effondre : les genoux, puis les mains */
-S.cineChuteA = function(A, P){ var t = P.t, o = bus(A, P, .1, .5); lourd(A, t, .55, o); lourd(A, t + .32, .4, o); souffle(A, t + .05, .5, .4, 600, o); return {duree:1.4}; };
-/* des pas qui descendent, au loin (l'écho de l'escalier) */
-S.cinePasEchoA = function(A, P){
-  var t = P.t, o = A.bus(P, {rev:.85, grotte:.8, pan:.7});
-  for(var k = 0; k < 4; k++) A.pas(t + k * .42, {f:h(95, 120), bp:h(1300, 1800), g:.22 + k * .06}, o);
-  return {duree:2.6};
-};
-/* la lanterne qui grince en se balançant */
-S.cineLanterneA = function(A, P){
-  var t = P.t, o = bus(A, P, .6, .5);
-  [0, .55, 1.1].forEach(function(d, k){ A.ton(t + d, {type:'triangle', f:1450 + k * 60, f2:1180, gl:.32, env:[[0, 0], [.04, 1], [.35, 0]], g:.05, vib:[9, 25]}, o); });
-  fer(A, t + .2, 1900, .03, o);
-  return {duree:1.8};
-};
-/* un pas sur une marche de pierre (plus clair, plus d'écho) */
-S.cinePasEscalierA = function(A, P){
-  var t = P.t, o = A.bus(P, {rev:.6, grotte:.6, pan:.5});
-  A.pas(t, {f:h(110, 135), bp:h(1700, 2300), g:.6}, o);
-  A.pas(t + .4, {f:h(110, 135), bp:h(1700, 2300), g:.5}, o);
-  return {duree:1.4};
-};
-/* les gardes : la cotte de mailles qui cliquette, le bout des lances sur la pierre */
-S.cineArmureA = function(A, P){
-  var t = P.t, o = bus(A, P, h(.2, .7), .55);
-  A.joue(t, A.crepitement(.5, 90), {g:.32, filtres:[{type:'highpass', f:3200}]}, o);
-  A.modes(t + .05, 2900, [[1, 1, .12], [2.4, .5, .08], [3.9, .3, .05]], {g:.04}, o);
-  A.pas(t + .02, {f:120, bp:1900, g:.4}, o); A.pas(t + .3, {f:115, bp:1800, g:.35}, o);
-  A.choc(t + .18, {f:500, f2:300, d:.05, g:.15, corps:1.2, corpsF:1500}, o);
-  return {duree:1.2};
-};
-/* le gant de cuir qu'on tire, doigt après doigt */
-S.cineGantA = function(A, P){
-  var t = P.t, o = bus(A, P, -.1, .2);
-  for(var k = 0; k < 4; k++){
-    A.bruit(t + k * .42, {coul:'rose', filtres:[{type:'bandpass', f:h(1500, 2400), q:2}], env:[[0, 0], [.08, 1], [.28, 0]], g:.22}, o);
-    A.ton(t + k * .42 + .05, {type:'triangle', f:h(700, 900), f2:h(1100, 1400), gl:.18, env:A.perc(.02, .16), g:.025}, o);
-  }
-  fouet(A, t + 1.7, .3, {f:800, f2:2200, g:.3}, o);
-  return {duree:2.3};
-};
-/* la bague qui brille : un tintement d'argent, froid */
-S.cineBagueA = function(A, P){
-  var t = P.t, o = A.bus(P, {rev:.7, grotte:.3, pan:-.2});
-  [2637, 3520, 4186].forEach(function(f, k){ A.ton(t + k * .07, {f:f, env:[[0, 0], [.004, 1], [1.6 - k * .3, 0]], g:.07 / (k + 1), vib:[6, 6]}, o); });
-  A.ton(t, {f:622, f2:587, gl:1.6, env:[[0, 0], [.02, 1], [1.8, 0]], g:.05}, o);
-  return {duree:2.4};
-};
-/* les lances qui s'abaissent (des souffles d'acier) */
-S.cineLancesA = function(A, P){
-  var t = P.t;
-  [0, .08, .15, .21, .28, .33].forEach(function(d, k){ var o = bus(A, P, -.6 + k * .24, .45); fouet(A, t + d, .22, {f:1400, f2:4200, q:2, g:.35}, o); fer(A, t + d + .2, h(1800, 2600), .03, o); });
-  return {duree:1.4};
-};
-/* les gardes s'élancent : des pas lourds, en désordre, et le métal */
-S.cineGardesA = function(A, P){
-  var t = P.t;
-  for(var k = 0; k < 10; k++){ var o = bus(A, P, h(-.7, .7), .5); lourd(A, t + k * .17 + h(0, .05), .35 + k * .04, o); if(k % 2) A.joue(t + k * .17, A.crepitement(.2, 50), {g:.2, filtres:[{type:'highpass', f:3000}]}, o); }
-  return {duree:2.4};
-};
-/* le coup final (le noir tombe) */
-S.cineCoupA = function(A, P){
-  var t = P.t, o = bus(A, P, 0, .8);
-  A.choc(t, {f:70, f2:28, d:1.2, g:1.2, sat:4, corps:2.2, corpsF:160}, o);
-  fer(A, t + .01, 220, .2, o); fer(A, t + .02, 330, .1, o);
-  A.bruit(t, {coul:'brun', filtres:[{type:'lowpass', f:300}], env:[[0, 0], [.05, 1], [2.4, 0]], g:.6}, o);
-  return {duree:3.2};
-};
-})(window);
-
-
 /* ===== essai/sons/musiques.js ===== */
 /* Atelier des sons de Brumeval — les musiques d'ambiance, fabriquées en direct et sans fin.
    Une musique = des sons continus (bourdon, souffle) + des « voix » qui reviennent à leur rythme
@@ -6447,9 +6293,19 @@ H.tomber = function(){
       {d:220, p:bascule, e:'i'}, {d:170, p:sol, e:'i', f:function(){ me._boum(); }}, {d:150, p:rb, e:'o'}, {d:240, p:sol, e:'b', f:function(){ me.expr('ko'); me.ko = true; me._etoiles(true); }}]).then(function(){ me.ko = true; });
   });
 };
+/* le héros encaisse un coup. (15 novembre, 13 h 54 — Romain : « la rafale de coups, ça fait ramer extrêmement le téléphone » ;
+   RAPIDITE.md, R15.) Avant : un filtre (éclat blanc, puis halo rouge) animé sur le héros ENTIER — la tablette devait l'aplatir et le
+   refaire à chaque image, une demi-seconde, et chaque coup en rajoutait un par-dessus. Maintenant : une lueur rouge posée sur
+   lui une fois pour toutes, dont seule l'opacité bouge ; un nouveau coup relance la même, il ne s'en empile jamais. */
 H._flash = function(){
-  this.svg.animate([{filter:'brightness(1) drop-shadow(0 0 0 rgba(255,60,70,0))'}, {filter:'brightness(2.3) drop-shadow(0 0 2px rgba(255,255,255,.9))', offset:.1},
-    {filter:'brightness(1.08) drop-shadow(0 0 7px rgba(255,50,70,.95))', offset:.3}, {filter:'brightness(1) drop-shadow(0 0 0 rgba(255,60,70,0))'}], {duration:560, easing:'ease-out'});
+  var e = this._coup;
+  if(!e || !e.isConnected){
+    var p = this.rep('tete'), q = this.rep('chevilleB'), h = Math.max(150, Math.abs(q.y - p.y) + 70);
+    e = this._coup = div(this.fx, 'left:0;top:0;width:150px;height:' + r1(h) + 'px;border-radius:50%;opacity:0;pointer-events:none;' +
+      'background:radial-gradient(closest-side,rgba(255,255,255,.85),rgba(255,80,90,.62) 42%,rgba(255,50,70,0));transform:' + place((p.x + q.x) / 2, (p.y + q.y) / 2));
+  }
+  if(this._coupA) try{ this._coupA.cancel(); }catch(x){}
+  this._coupA = e.animate([{opacity:0}, {opacity:1, offset:.12}, {opacity:.55, offset:.35}, {opacity:0}], {duration:420, easing:'ease-out'});
 };
 H._boum = function(){
   var p = this.rep('tete'), q = this.rep('chevilleB');
@@ -7197,13 +7053,17 @@ H.bouclier = function(scene, cible, opt){
     var g = this.garde(), base = {pA:[102, 272], pB:[156, 272]};
     var leve = copie(g, copie(base, {bassin:{y:2}, torse:-4, tete:-12, mB:[150, 74], hB:0, mA:[178, 66], hA:-160}));
     var haut = copie(leve, {bassin:{y:-2}, torse:-6, tete:-14, mB:[150, 66], mA:[180, 60]});
+    /* (Romain, 15 novembre, 13 h 54 : « le bouclier jaune, le temps d'animation du personnage pour le faire, légèrement plus long,
+       pour éviter de pouvoir le spammer […] tu augmentes de 50 % […] sur tout le donjon » — le geste dure 2,22 s au lieu de 1,48 ;
+       le dôme se pose à 1,14 s. Le bouclier de chêne garde sa durée.) */
+    var k = opt.sorte === 'chene' ? 1 : 1.5;
     this.expr('colere');
     return this.jouer([
-      {d:300, p:leve, e:'io', f:function(){ me.cristalFlash(true); me.expr('cri'); var q = me.rep('baton-bas'); onde(me.fx, q.x, q.y, {w:120, h:26, c:CYAN, ep:3, s0:0.2, s1:1.4, d:800}); me._runesMontent(); }},
-      {d:200, p:haut, e:'b'},
-      {d:260, p:haut, e:'lin', f:function(){ bq = me._dome(L, scene, cible, opt); sig(bq); }},
-      {d:420, p:g, e:'io', f:function(){ me.expr('content'); }},
-      {d:300, p:g, e:'lin', f:function(){ me.expr('garde'); }}
+      {d:300 * k, p:leve, e:'io', f:function(){ me.cristalFlash(true); me.expr('cri'); var q = me.rep('baton-bas'); onde(me.fx, q.x, q.y, {w:120, h:26, c:CYAN, ep:3, s0:0.2, s1:1.4, d:800}); me._runesMontent(); }},
+      {d:200 * k, p:haut, e:'b'},
+      {d:260 * k, p:haut, e:'lin', f:function(){ bq = me._dome(L, scene, cible, opt); sig(bq); }},
+      {d:420 * k, p:g, e:'io', f:function(){ me.expr('content'); }},
+      {d:300 * k, p:g, e:'lin', f:function(){ me.expr('garde'); }}
     ]);
   });
   pret = p;
@@ -8390,6 +8250,7 @@ function niveau(cle){ return (window.NIVEAUX || {})[cle] || 1; }
 var critique = {v:null, quand:0};
 function versionDe(id, o){
   if(o.version) return o.version;
+  if(PRE.fixeV[id]) return PRE.fixeV[id];                        /* (un combat en temps réel : sa liste de bruitages, fabriquée à l'avance) */
   if(PRE.sfxV[id]) return PRE.sfxV[id];                          /* pendant un combat : la version fabriquée à l'avance pour ce combat */
   if(!o.partie) return tire(CHOIX[id]);
   var maintenant = Date.now();
@@ -8405,7 +8266,7 @@ function bruitage(id, o){
   if(o.cale != null && fn.moment != null) o.dt = o.cale - fn.moment;     /* on cale l'instant clé du son sur celui de l'animation */
   var t = ctx.currentTime + .02 + Math.max(0, o.dt || 0);
   /* déjà fabriqué à l'avance : on joue l'enregistrement (presque rien à calculer), remis à sa place à gauche ou à droite */
-  var pre = sfxPre && PRE.sfx[cle + (o.partie ? ':' + o.partie : '')];
+  var pre = sfxPre && (PRE.sfx[cle + (o.partie ? ':' + o.partie : '')] || (!o.partie && !o.voix && !o.enrage && !o.un && PRE.fixe[cle]));
   if(pre){
     var src = ctx.createBufferSource(), sortiePre = sfxPre, pan = null; src.buffer = pre.buf;
     if(pre.pan && ctx.createStereoPanner){ pan = ctx.createStereoPanner(); pan.pan.value = pre.pan; pan.connect(sfxPre); sortiePre = pan; }
@@ -8533,7 +8394,7 @@ function programme(){
      (l'explosion C reste en stéréo : son souffle traverse la salle) ; libérés après le combat.
    - Les rats (leur voix change quand ils sont enragés) restent fabriqués en direct. */
 var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-var PRE = {possible:!!(OAC && window.Moteur && window.MUSIQUES), mus:{}, sfx:{}, sfxV:{}, prochain:{}, duree:{}, attente:{}, file:[], occupe:false, pireTache:0, taches:{}, fait:0};
+var PRE = {possible:!!(OAC && window.Moteur && window.MUSIQUES), mus:{}, sfx:{}, sfxV:{}, fixe:{}, fixeV:{}, fixeJeton:0, prochain:{}, duree:{}, attente:{}, file:[], occupe:false, pireTache:0, taches:{}, fait:0};
 var SR_MUS = 16000, SR_SFX = 32000;
 /* la longueur de chaque boucle (en secondes) : un cycle d'accords ; C : le fondu entre la fin et le début ; lin : fondu droit (musique rythmée) ;
    n0 : on fait commencer la musique à cette mesure, pour que la boucle garde les deux airs de la boîte à musique (exploration B) */
@@ -8623,8 +8484,10 @@ function rendreMusique(cle){
   });
 }
 /* un bruitage lourd, seul dans son petit rendu : mono (sans placement), sauf l'explosion C ; puis coupé à la fin du son */
-function rendreUnBruitage(id, v, partie, stereo){
-  var cle = id + v, sr = SR_SFX, d = SFX_DUREE[partie || id] || 6, can = stereo ? 2 : 1, off = new OAC(can, Math.ceil(sr * d), sr), Ao;
+/* court : pour les bruitages d'un combat en temps réel — quatre secondes au plus, et la fin de l'écho coupée plus tôt (en dessous
+   de −56 dB, avec un fondu) : trois fois moins de mémoire, pour la même oreille */
+function rendreUnBruitage(id, v, partie, stereo, court){
+  var cle = id + v, sr = SR_SFX, d = court ? Math.min(4, SFX_DUREE[partie || id] || 4) : SFX_DUREE[partie || id] || 6, can = stereo ? 2 : 1, off = new OAC(can, Math.ceil(sr * d), sr), Ao;
   if(!stereo) try{ off.createStereoPanner = null; }catch(e){}            /* mono : la place gauche/droite est remise en le jouant */
   chrono(function(){
     Ao = window.Moteur(off, {horsLigne:true, brut:true, volume:1});
@@ -8636,8 +8499,9 @@ function rendreUnBruitage(id, v, partie, stereo){
     return chrono(function(){
       var ch = [], c, i, n = x.length, fin = 0;
       for(c = 0; c < can; c++) ch.push(x.getChannelData(c));
-      for(i = n - 1; i > 0 && !fin; i -= 16) for(c = 0; c < can; c++) if(ch[c][i] > 2e-4 || ch[c][i] < -2e-4){ fin = Math.min(n, i + 16); break; }
-      var m = Math.max(1, Math.min(n, fin + Math.floor(sr * .05))), y = off.createBuffer(can, m, sr), fondu = Math.floor(sr * .03);
+      var seuil = court ? 1.6e-3 : 2e-4;
+      for(i = n - 1; i > 0 && !fin; i -= 16) for(c = 0; c < can; c++) if(ch[c][i] > seuil || ch[c][i] < -seuil){ fin = Math.min(n, i + 16); break; }
+      var m = Math.max(1, Math.min(n, fin + Math.floor(sr * (court ? .12 : .05)))), y = off.createBuffer(can, m, sr), fondu = Math.floor(sr * (court ? .14 : .03));
       for(c = 0; c < can; c++){ var dd = y.getChannelData(c), src = ch[c]; dd.set(src.subarray(0, m)); for(i = Math.max(0, m - fondu); i < m; i++) dd[i] *= (m - i) / fondu; }
       return y;
     }, 'decoupe');
@@ -8662,6 +8526,32 @@ function rendreBruitages(){
     });
   }, Promise.resolve()).then(function(){ return true; });
 }
+/* LES BRUITAGES D'UN COMBAT EN TEMPS RÉEL, FABRIQUÉS À L'AVANCE (15 novembre, 13 h 54 — Romain : « ça rame à mort » ; RAPIDITE.md, R16).
+   Contre Léo, un son fabriqué en direct coûte au fil principal au pire moment (seize coups de poing d'affilée, pendant qu'on
+   pianote). Son.preparerBruits(['leoPoing', …]) les enregistre un par un pendant l'écran de passage et le début du combat (une
+   version tirée au sort par son, pour ce combat) ; bruitage() joue ensuite l'enregistrement. Un son pas encore prêt est fabriqué
+   en direct, comme avant. Son.oublierBruits() libère tout à la fin du combat. (Rangés à part de PRE.sfx, que la fin d'un combat
+   ordinaire vide.) */
+function preparerBruits(ids, o){
+  if(!PRE.possible || !window.BRUITAGES) return Promise.resolve(0);
+  var jeton = ++PRE.fixeJeton, n = 0;
+  /* o.seuls : on ne garde que cette liste (une nouvelle phase du combat : les sons de la phase d'avant libèrent leur mémoire) */
+  if(o && o.seuls) Object.keys(PRE.fixeV).forEach(function(id){ if(ids.indexOf(id) < 0){ delete PRE.fixe[id + PRE.fixeV[id]]; delete PRE.fixeV[id]; } });
+  PRE.fixeEnCours = true;
+  return (ids || []).reduce(function(p, id){
+    return p.then(function(){
+      if(jeton !== PRE.fixeJeton || !CHOIX[id] || !CHOIX[id].length) return;
+      var v = PRE.fixeV[id] || tire(CHOIX[id]), cle = id + v;
+      if(!window.BRUITAGES[cle] || PRE.fixe[cle]) return;
+      return rendreUnBruitage(id, v, null, false, true).then(function(y){
+        if(jeton !== PRE.fixeJeton) return;
+        PRE.fixeV[id] = v; PRE.fixe[cle] = {buf:y, pan:0}; n++;
+        return new Promise(function(ok){ setTimeout(ok, 30); });           /* (on laisse respirer la page entre deux sons) */
+      }, function(){});
+    });
+  }, Promise.resolve()).then(function(){ if(jeton === PRE.fixeJeton){ PRE.fixeEnCours = false; window.Moteur.oublier(SR_SFX); } return n; });
+}
+function oublierBruits(){ PRE.fixeJeton++; PRE.fixe = {}; PRE.fixeV = {}; PRE.fixeEnCours = false; }
 /* la file d'attente : une chose à la fois, la plus urgente d'abord */
 PRE.demander = function(cle, urgent){
   var f = famille(cle);
@@ -8702,6 +8592,7 @@ PRE.memoire = function(){
   var o = 0;
   Object.keys(PRE.mus).forEach(function(k){ o += PRE.mus[k].buf.length * PRE.mus[k].buf.numberOfChannels * 4; });
   Object.keys(PRE.sfx).forEach(function(k){ o += PRE.sfx[k].buf.length * PRE.sfx[k].buf.numberOfChannels * 4; });
+  Object.keys(PRE.fixe).forEach(function(k){ o += PRE.fixe[k].buf.length * PRE.fixe[k].buf.numberOfChannels * 4; });
   return Math.round(o / 1e5) / 10;
 };
 /* pour les mesures : fabriquer les trois musiques et les bruitages lourds, et dire quand c'est fini */
@@ -9045,6 +8936,8 @@ S.Son = {
   musiqueDesQuePrete:musiqueDesQuePrete,
   combat:enCombat,             /* le donjon : un combat commence (true) ou finit (false) — les bruitages lourds sont fabriqués, puis libérés */
   preparer:preparer,
+  preparerBruits:preparerBruits, oublierBruits:oublierBruits, bruitsPrets:function(){ return Object.keys(PRE.fixe).length; }, bruitsEnCours:function(){ return !!PRE.fixeEnCours; },
+  bruitsListe:function(){ return Object.keys(PRE.fixe).map(function(k){ return [k, Math.round(PRE.fixe[k].buf.duration * 100) / 100]; }); },
   volume:volume,
   precalcul:{tout:function(){ return PRE.tout(); }, etat:function(){ return PRE.etat(); }, memoire:function(){ return PRE.memoire(); }},
   baisser:baisser,
@@ -9124,10 +9017,21 @@ function eclat(x, y, taille, fond, ms){
   L.fx.appendChild(c);
   anime(c, [{transform:'translate(-50%,-50%) scale(.2)', opacity:1}, {transform:'translate(-50%,-50%) scale(1.6)', opacity:0}], {duration:ms || 500, easing:'ease-out'}).then(function(){ c.remove(); });
 }
+/* (15 novembre, 13 h 54 — RAPIDITE.md, R17) la secousse fait bouger TOUTE la scène (des centaines de pièces). Deux précautions :
+   - chaque image a la même forme (un déplacement puis une rotation), la dernière aussi (plus de « none ») : c'est ce qu'il faut
+     pour que la carte graphique la joue seule, sur Safari comme ailleurs ;
+   - dans un combat en temps réel (S.tempsReel : Léo), jamais deux secousses à la fois ni coup sur coup, jamais plus de 300 ms :
+     une rafale de seize coups ne secoue pas seize fois l'écran, un souffle de feu ne le secoue pas deux secondes. */
 function tremble(force, ms, delai){
-  var s = L.secousse, n = Math.round((ms || 400) / 40), images = [];
-  for(var k = 0; k <= n; k++){ var f = force * (1 - k / n); images.push({transform:k === n ? 'none' : 'translate(' + hasard(-f, f).toFixed(1) + 'px,' + hasard(-f * .7, f * .7).toFixed(1) + 'px) rotate(' + hasard(-f * .05, f * .05).toFixed(2) + 'deg)'}); }
-  return anime(s, images, {duration:ms || 400, delay:delai || 0});
+  ms = ms || 400;
+  if(S.tempsReel){
+    var m = Date.now() + (delai || 0);
+    if(m < (tremble.jusque || 0)) return Promise.resolve();
+    ms = Math.min(ms, 300); force = Math.min(force, 10); tremble.jusque = m + ms + 350;
+  }
+  var s = L.secousse, n = Math.round(ms / 40), images = [];
+  for(var k = 0; k <= n; k++){ var f = k === n ? 0 : force * (1 - k / n); images.push({transform:'translate(' + hasard(-f, f).toFixed(1) + 'px,' + hasard(-f * .7, f * .7).toFixed(1) + 'px) rotate(' + hasard(-f * .05, f * .05).toFixed(2) + 'deg)'}); }
+  return anime(s, images, {duration:ms, delay:delai || 0});
 }
 function onde(x, y, coul, taille, ms){
   var o = el('div', 'onde-fx'); o.style.cssText = 'left:' + x + 'px;top:' + y + 'px;width:' + taille + 'px;height:' + taille + 'px;margin:' + (-taille / 2) + 'px 0 0 ' + (-taille / 2) + 'px;border-color:' + coul + ';box-shadow:0 0 18px ' + coul + ',inset 0 0 18px ' + coul;
@@ -11258,7 +11162,9 @@ L.ATTAQUES = {
   fleau:{nom:'Le fléau', ic:'🌾', arme:'fleau', prise:1.0, elan:1.4, retour:.9, degats:42, cibles:'deux'},                 /* Romain : frappe deux héros, assez fort */
   /* (14 novembre, Romain : « que la position dure assez longtemps pour qu'on ait le temps de mettre de l'huile » — une fiole met
      2,5 s à tomber, une flèche 1,6 s : il se prépare 4,4 s) */
-  charge:{nom:'La charge', ic:'💨', arme:null, prise:1.4, elan:3.0, retour:.8, degats:58, cibles:'un', glisse:5.0},         /* Romain : huile ou colle juste avant → il tombe sur place */
+  /* (15 novembre, 13 h 54, Romain : « en phase 3, ça one shot : il n'y a qu'une seule chose à faire, c'est mettre de l'huile » —
+     mortel:{3:true} : en phase 3, celui qu'il percute tombe, bouclier ou pas) */
+  charge:{nom:'La charge', ic:'💨', arme:null, prise:1.4, elan:3.0, retour:.8, degats:58, cibles:'un', glisse:5.0, mortel:{3:true}},         /* Romain : huile ou colle juste avant → il tombe sur place */
   marteau:{nom:'Le marteau', ic:'🔨', arme:'marteau', prise:1.0, elan:1.4, retour:.9, degats:38, cibles:'un', etourdit:3.0},  /* Romain : dégâts moyens, et il étourdit */
   meule:{nom:'La meule de paille', ic:'meule', arme:'meule', prise:1.2, elan:1.6, retour:1.0, degats:28, cibles:'tous'},       /* Romain : touche tout le monde, un peu moins fort ; rien ne l'arrête */
   crochet:{nom:'Le crochet', ic:'🪝', arme:'crochet', prise:1.4, elan:1.0, retour:.8, degats:58, cibles:'un', attrape:true, tient:7.0, ecrase:46, farine:3.6},   /* Romain : d'abord la farine, puis un coup énorme qui attrape */
@@ -11276,15 +11182,31 @@ L.ATTAQUES = {
   /* (Romain, 15 novembre, la phase 3 refaite : « son gros coup de poing, je veux qu'on sente vraiment qu'il va se préparer » : il arme
      son poing .6 s, le tient .8 s — 1,4 s pour réagir, au lieu d'une demi-seconde) */
   poing3:{nom:'Le coup de poing', ic:'👊', arme:null, prise:.6, elan:.8, retour:.7, degats:30, cibles:'un', rapide:true},    /* Romain : 30, inarrêtable */
-  rafale:{nom:'La rafale de coups', ic:'🥊', arme:null, prise:.8, elan:1.3, retour:1.0, part:.8, cibles:'un'},              /* Romain : environ 80 % de la vie d'un héros */
-  hurlement:{nom:'Le hurlement', ic:'📢', arme:null, prise:.7, elan:1.0, retour:.8, cibles:'tous', etourdit:3.2},           /* Romain : étourdit tout le monde ; le bouclier jaune l'arrête */
-  attrape:{nom:'Il attrape un héros', ic:'✊', arme:null, prise:.5, elan:.9, retour:1.2, part:.7, cibles:'deux', saisit:true},   /* Romain : il attrape un héros et frappe un autre avec — rapide, dur à contrer */
+  /* (15 novembre, 13 h 54, Romain, après son essai : « il suffit d'appuyer sur la gourde et le bouclier et de spammer, c'est pas très
+     intéressant […] si on est arrivé en phase 3, on a commencé à comprendre : il faudrait que ses compétences one shot ».)
+     LA RAFALE : « au lieu de 8 coups, tu fais 16 coups, des coups assez violents […] le bouclier jaune peut absorber 3 coups […] il
+     faut absolument un bouclier jaune et une gourde, au bon moment, sinon le héros se fait défoncer ». Seize coups, un toutes les
+     .4 s (6,4 s en tout), chacun 12 % de la vie du héros (le dernier compte double) : seul, il tombe au 9e ; le bouclier jaune pare
+     les 3 premiers qu'il reçoit ; la gourde (toute la vie, 3 s à boire) doit tomber quand il a encaissé 6 à 8 coups — il faut donc la
+     lancer juste après le premier coup (entre .2 et 1,4 s après : leo-joueurs3.js). Sans bouclier, la gourde seule ne suffit pas. */
+  rafale:{nom:'La rafale de coups', ic:'🥊', arme:null, prise:.8, elan:1.3, retour:1.0, cibles:'un', coups:16, pas:.4, part:.12, dernier:2, pare:3},
+  /* LE CRI : « le marteau pour l'arrêter : c'est la seule chose qui peut arrêter son cri ; s'il fait son cri et que les héros sont
+     étourdis, c'est fini » — perce : aucun bouclier ne l'arrête ; marteau : en phase 3, c'est le seul geste que le marteau coupe ;
+     les trois héros restent étourdis 7 s (il a le temps d'en attraper un, puis de cracher son feu). Il se prépare 2,2 s. */
+  hurlement:{nom:'Le hurlement', ic:'📢', arme:null, prise:1.0, elan:1.2, retour:.8, cibles:'tous', etourdit:7, perce:true, marteau:true},
+  /* IL ATTRAPE : « il saute, il attrape, il revient en arrière, et là il tape quelqu'un […] l'autre valdingue en l'air, étourdi pas
+     longtemps […] ça enlève 90 % des points de vie, en pourcentage, comme ça il reste en vie, mais ça fait flipper […] quand il se
+     fait attraper, il prend pas de dégâts : c'est au deuxième coup […] mais si l'un des deux ou les deux sont en dessous de 50 %,
+     ils meurent instantanément les deux ». porte : le temps où il le porte (c'est là qu'on soigne) ; part : la part de la vie
+     QUI RESTE que le coup enlève ; seuil : en dessous de cette part de sa vie, un héros n'y survit pas — et l'autre non plus. */
+  attrape:{nom:'Il attrape un héros', ic:'✊', arme:null, prise:.5, elan:.9, porte:1.6, retour:1.2, cibles:'deux', saisit:true, part:.9, seuil:.5, sonne:{pris:1.5, autre:.8}},
   souffle:{nom:'Le souffle de feu', ic:'🔥', arme:'potion', prise:1.0, elan:1.2, retour:1.0, degats:22, cibles:'tous', brule:true}   /* Romain : tout le monde brûle ; ça s'arrête tout seul */
 };
 L.SAIGNE = {n:5, pas:.5};                             /* Romain : « 5 par héros, deux fois par seconde » ; il ne s'arrête qu'avec un soin */
 /* (Romain, 15 novembre : « j'aimerais bien que le feu dure à l'infini ; du moment qu'on les soigne, ça s'arrête » : la brûlure du
    souffle ne s'arrête plus toute seule — comme le saignement, n'importe quel soin l'éteint) */
-L.BRULE = {n:5, pas:.5, duree:Infinity};
+/* (15 novembre, 13 h 54, Romain : « le feu, tu mets 15 points par seconde » ; « il faut qu'on ait très très peu de temps pour faire le soin ») */
+L.BRULE = {n:15, pas:1, duree:Infinity};
 L.BOUM = {leo:520, heros:30};                         /* Romain : « 30 points de vie » sur le héros pris dans la farine ; gros dégâts sur Léo */
 L.NOIRCI = 2.2;                                       /* après le BOUM, il titube */
 L.SONNE = 1.5;                                        /* coupé par le marteau, il reste sonné */
@@ -11300,7 +11222,8 @@ L.BARRE = {
   /* (Romain, 15 novembre : « enlève-moi cette flèche de feu, elle sert à rien, alors que la flèche d'acide va enlever les armures » :
      le Pisteur a la flèche d'acide à la place ; le feu de l'Alchimiste reste, pour toucher Léo par-dessus ses rats) */
   2:{pisteur:['dague', 'l:crochet', 'l:fleau', 'l:marteau', 'p:huile', 'p:acide'], alchimiste:['p:huile', 'p:feu', 'p:acide', 'herbes', 'p:baume', 'p:coeur'], sage:['oeil', 'rune', 'bouclier', 'a:baton-chene']},
-  3:{pisteur:['l:faux', 'l:gourde', 'p:givre', 'p:huile'], alchimiste:['p:givre', 'p:huile', 'herbes', 'p:baume', 'p:coeur'], sage:['oeil', 'bouclier', 'a:baton-chene']}
+  /* (15 novembre, 13 h 54 : le marteau revient en phase 3 — c'est la seule chose qui arrête le cri) */
+  3:{pisteur:['l:faux', 'l:gourde', 'l:marteau', 'p:givre', 'p:huile'], alchimiste:['p:givre', 'p:huile', 'herbes', 'p:baume', 'p:coeur'], sage:['oeil', 'bouclier', 'a:baton-chene']}
 };
 L.FLAQUE = 6;                                         /* l'huile ou la colle sous ses pieds tient six secondes */
 L.RALENTI = {k:.55, duree:5};                         /* le givre : tout ce qu'il fait va presque deux fois moins vite, cinq secondes */
@@ -11314,7 +11237,7 @@ L.ARMES = {
      ne s'usent plus — infini:true ; la faux et la gourde de la phase 3 gardent leurs trois coups) */
   crochet:{nom:'Crochet', ic:'🪝', d:'fait très mal', phase:2, vise:'ennemi', infini:true},
   fleau:{nom:'Fléau', ic:'🌾', d:'frappe deux cibles, fait fuir les rats', phase:2, vise:'ennemi', infini:true},
-  marteau:{nom:'Marteau', ic:'🔨', d:'coupe son geste', phase:2, vise:'ennemi', infini:true},
+  marteau:{nom:'Marteau', ic:'🔨', d:'coupe son geste', phase:2, phases:[2, 3], vise:'ennemi', infini:true},
   faux:{nom:'Faux', ic:'🌙', d:'fait saigner', phase:3, vise:'ennemi'},
   /* (Romain, 15 novembre : « la potion qu'on lui pique, j'aimerais bien qu'elle soit infinie, mais que l'animation soit un petit peu
      plus longue, histoire que ça soit pas trop facile ») */
@@ -11335,12 +11258,15 @@ L.COUPS_RAT = {dagueOuvert:80, dague:4, flecheOuvert:20, fleche:3, lourdeCuir:12
 L.DUREES = {
   fleche:{impact:1.57, fin:2.26}, lourde:{impact:1.97, fin:2.67}, dague:{impact:.71, fin:1.99}, arme:{impact:.71, fin:1.99},
   potion:{impact:2.54, fin:2.75}, herbes:{impact:1.1, fin:1.1}, louche:{impact:1.25, fin:1.72},
-  rune:{impact:.9, fin:1.56}, lune:{impact:.79, fin:1.82}, bouclier:{impact:.77, fin:1.48}, bouclier2:{impact:1.26, fin:1.5}, oeil:{impact:1.3, fin:2.2},
-  gourde:{impact:1.7, fin:2.3}
+  /* (15 novembre, 13 h 54, Romain : « le bouclier jaune, tu augmentes de 50 % le temps d'animation, pour éviter de pouvoir le spammer »,
+     dans tout le donjon : .77 / 1.48 → 1.16 / 2.22 ; le bouclier de chêne sur un seul héros garde l'ancienne durée — chene1 ;
+     « la gourde volée, c'était 1,7 seconde : mets 3 secondes ») */
+  rune:{impact:.9, fin:1.56}, lune:{impact:.79, fin:1.82}, bouclier:{impact:1.16, fin:2.22}, chene1:{impact:.77, fin:1.48}, bouclier2:{impact:1.26, fin:1.5}, oeil:{impact:1.3, fin:2.2},
+  gourde:{impact:3.0, fin:3.6}
 };
 L.MOTS = {
   occupe:'Pas encore !', etourdi:'Étourdi !', attrape:'Attrapé !', sol:'Au sol !', noir:'Dans le noir !', farine:'Dans la farine !', loin:'Trop loin !',
-  fuit:'Il détale !', casse:'Cassé !', insensible:'Insensible !', rien:'Rien du tout', personne:'Personne au sol', debout:'Encore debout', fini:'C\'est fini', cible:'Qui viser ?',
+  fuit:'Il détale !', casse:'Cassé !', insensible:'Insensible !', rien:'Rien du tout', cri:'Seulement son cri !', personne:'Personne au sol', debout:'Encore debout', fini:'C\'est fini', cible:'Qui viser ?',
   impossible:'Impossible !', glisse:'Ça glisse !', vu:'Il voit tout', boucle:'Déjà protégé', tousse:'Il tousse…', tropTard:'Trop tard !',
   clair:'Il fait clair', forme:'En pleine forme', ebloui:'Ébloui !'
 };
@@ -11369,15 +11295,15 @@ P._poser = function(phase){
   this.h = {};
   D.EXPOSES.forEach(function(h){
     var max = self.p.heros[h].pvMax || D.HEROS[h].pv;
-    self.h[h] = {pv:max, pvMax:max, sol:false, bouclier:null, etourdi:0, attrape:false, saigne:false, saigneT:0, brule:0, bruleT:0, act:null};
+    self.h[h] = {pv:max, pvMax:max, sol:false, bouclier:null, pare:0, etourdi:0, attrape:false, saigne:false, saigneT:0, brule:0, bruleT:0, act:null};
   });
   this.leo = {pv:PH.de, pvMax:L.PV, tl:0, etape:'repos', fin:L.DEBUT, att:null, cibles:[], k:-1, nuage:false, boum:false, tenu:null, tientFin:0,
-    flaque:0, ralenti:0, brule:0, bruleT:0, saigne:0, saigneT:0, auSol:false};
+    flaque:0, ralenti:0, brule:0, bruleT:0, saigne:0, saigneT:0, auSol:false, autre:null, coup:0, coupT:0};
   this.noir = false;                        /* il fait noir (la cape) : jusqu'à la lumière du bâton de lune, rien d'autre */
   this.rats = []; this.nRat = this.nRat || 0; this.vague = 0;
   /* les armes de Léo, ramassées par le Pisteur (Romain : trois coups chacune ; le marteau est cassé en phase 3) */
   this.armes = {};
-  Object.keys(L.ARMES).forEach(function(a){ if(L.ARMES[a].phase === phase) self.armes[a] = L.USAGES; });
+  Object.keys(L.ARMES).forEach(function(a){ if((L.ARMES[a].phases || [L.ARMES[a].phase]).indexOf(phase) >= 0) self.armes[a] = L.USAGES; });
 };
 P.phaseSuivante = function(){
   if(this.resultat !== 'phase') return [];
@@ -11488,6 +11414,9 @@ P.auto = function(h, geste, G, tirer){
   }
   /* un soin pour un seul (le baume, la gourde) : le plus blessé (en part de sa vie) ; celui qui saigne compte comme blessé */
   if(G.vise === 'heros'){
+    /* (15 novembre, 13 h 54) la gourde pendant la rafale : toujours pour celui que Léo frappe — même s'il n'a encore rien perdu
+       (son bouclier pare les premiers coups, et la gourde met trois secondes : c'est maintenant qu'il faut la lancer) */
+    if(geste === 'l:gourde' && Z.att === 'rafale' && Z.cibles.length && (Z.etape === 'coups' || (this.vu && Z.etape === 'elan')) && c.indexOf(Z.cibles[0]) >= 0) return [Z.cibles[0]];
     var blesses = c.filter(function(x){ return self.h[x].pv < self.h[x].pvMax || self.h[x].saigne; });
     return bas(blesses).slice(0, 1);
   }
@@ -11557,7 +11486,7 @@ function dureeDe(geste, cibles){
   if(geste === 'rune') return L.DUREES.rune;
   if(geste === 'a:cristal-lune') return L.DUREES.lune;
   if(geste === 'bouclier') return L.DUREES.bouclier;
-  if(geste === 'a:baton-chene') return cibles && cibles.length > 1 ? L.DUREES.bouclier2 : L.DUREES.bouclier;
+  if(geste === 'a:baton-chene') return cibles && cibles.length > 1 ? L.DUREES.bouclier2 : L.DUREES.chene1;
   if(geste === 'oeil') return L.DUREES.oeil;
   return L.DUREES.potion;
 }
@@ -11625,6 +11554,7 @@ P._pas = function(ev, d){
   if(Z.flaque && t >= Z.flaque){ Z.flaque = 0; ev.push({t:'leo-etat', nom:'flaque', on:false}); }
   if(Z.ralenti && t >= Z.ralenti){ Z.ralenti = 0; ev.push({t:'leo-etat', nom:'ralenti', on:false}); }
   Z.tl += d * (Z.ralenti > t ? L.RALENTI.k : 1);
+  if(Z.etape === 'coups') this._rafale(ev);
   var garde = 0;
   while(Z.tl >= Z.fin && !this.resultat && garde++ < 8) this._leoSuite(ev);
   /* 4. les rats */
@@ -11751,7 +11681,7 @@ P._effet = function(ev, h, a){
   if(g === 'herbes'){ this.debout().forEach(function(y){ self._soin(ev, y, C.herbes, 'herbes'); }); return; }
   if(g === 'bouclier' || g === 'a:baton-chene'){
     var sorte = g === 'bouclier' ? 'jaune' : 'chene';
-    c.forEach(function(y){ var S = self.h[y]; if(S.sol || (sorte === 'chene' && S.bouclier === 'jaune')) return; S.bouclier = sorte; ev.push({t:'bouclier', heros:y, on:true, sorte:sorte}); });
+    c.forEach(function(y){ var S = self.h[y]; if(S.sol || (sorte === 'chene' && S.bouclier === 'jaune')) return; S.bouclier = sorte; S.pare = 0; ev.push({t:'bouclier', heros:y, on:true, sorte:sorte}); });
     return;
   }
   if(g === 'a:cristal-lune'){
@@ -11835,10 +11765,11 @@ P._touche = function(ev, h, id, coup){
   if(coup === 'marteau'){
     /* Romain : il ne fait pas de dégâts, il lui coupe son geste (c'est fait pour la gourde) */
     var A = Z.att ? L.ATTAQUES[Z.att] : null;
-    if(A && !A.rapide && (Z.etape === 'prise' || Z.etape === 'elan')){
+    /* (15 novembre, 13 h 54 : en phase 3, sous la potion, le marteau ne coupe plus que son cri) */
+    if(A && !A.rapide && (this.phase < 3 || A.marteau) && (Z.etape === 'prise' || Z.etape === 'elan')){
       ev.push({t:'leo', quoi:'coupe', att:Z.att, par:'marteau'});
       Z.etape = 'sonne'; Z.fin = Z.tl + L.SONNE; Z.att = null; Z.cibles = [];
-    } else ev.push({t:'mot', sur:'leo', texte:L.MOTS.rien});
+    } else ev.push({t:'mot', sur:'leo', texte:this.phase === 3 ? L.MOTS.cri : L.MOTS.rien});
     return;
   }
   if(coup === 'faux'){
@@ -11866,7 +11797,11 @@ P._toucheRat = function(ev, r, coup){
   }
   /* (Romain, 15 novembre : « quand on utilise le fléau, ça tape deux personnes ; et les rats, ça les fait automatiquement fuir » :
      un rat touché par le fléau détale, cuirassé ou non) */
-  if(coup === 'fleau'){ r.mort = true; ev.push({t:'mot', sur:r.id, texte:L.MOTS.fuit}); ev.push({t:'rat', quoi:'meurt', id:r.id, par:'fleau'}); return; }
+  /* (15 novembre, 13 h 54 : « ceux qui sont avec l'armure, il faut 2 coups de fléau : un pour casser l'armure, l'autre pour les faire fuir ») */
+  if(coup === 'fleau'){
+    if(cuir){ r.nu = true; ev.push({t:'rat', quoi:'nu', id:r.id, par:'fleau'}); return; }
+    r.mort = true; ev.push({t:'mot', sur:r.id, texte:L.MOTS.fuit}); ev.push({t:'rat', quoi:'meurt', id:r.id, par:'fleau'}); return;
+  }
   if(coup === 'crochet'){
     /* Romain : le crochet tue un rat d'un coup ; sur un rat cuirassé, il casse l'armure, et le coup d'après le tue */
     if(cuir){ r.nu = true; ev.push({t:'rat', quoi:'nu', id:r.id, par:'crochet'}); return; }
@@ -11918,6 +11853,8 @@ P._leoSuite = function(ev){
       return this._leoRepos(ev);
     case 'noirci': ev.push({t:'leo-etat', nom:'noirci', on:false}); return this._leoRepos(ev);
     case 'sonne': return this._leoRepos(ev);
+    case 'coups': this._rafale(ev, true); if(this.resultat) return; return this._leoRetour(ev, 'rafale');
+    case 'porte': return this._frappeAvec(ev);
     case 'retour': return this._leoRepos(ev);
   }
   this._leoRepos(ev);
@@ -11965,6 +11902,31 @@ P._leoImpact = function(ev, A){
   if(A.cibles === 'tous') cibles = this.debout();
   else Z.cibles.forEach(function(h){ if(!vivant(h) || cibles.indexOf(h) >= 0) h = self._viser(cibles); if(h && cibles.indexOf(h) < 0) cibles.push(h); });
   ev.push({t:'leo', quoi:'impact', att:nom, cibles:cibles.slice()});
+  /* phase 3, la charge : celui qu'il percute tombe, bouclier ou pas (il fallait de l'huile sous ses pieds) */
+  if(A.mortel && A.mortel[this.phase]){
+    cibles.forEach(function(h){
+      var S = self.h[h], n = S.pv;
+      if(S.bouclier){ S.bouclier = null; ev.push({t:'bouclier', heros:h, on:false, casse:true}); }
+      S.pv = 0; ev.push({t:'degats', heros:h, n:n, pv:0, brut:n, bouclier:null, cause:nom, mortel:true});
+      self._tombe(ev, h);
+    });
+    if(this._bilan(ev)) return;
+    return this._leoRetour(ev, nom);
+  }
+  /* la rafale : les coups tombent un par un (P._rafale) */
+  if(A.coups){
+    var hr = cibles[0];
+    if(!hr) return this._leoRetour(ev, nom);
+    Z.cibles = [hr]; Z.coup = 0; Z.coupT = Z.tl + A.pas;
+    Z.etape = 'coups'; Z.fin = Z.tl + A.coups * A.pas;
+    ev.push({t:'leo', quoi:'coups', att:nom, heros:hr, n:A.coups, duree:A.coups * A.pas});
+    return;
+  }
+  /* le cri : aucun bouclier ne l'arrête (seul le marteau le coupe, avant) */
+  if(A.perce){
+    cibles.forEach(function(h){ if(vivant(h)) self._etourdit(ev, h, A.etourdit); });
+    return this._leoRetour(ev, nom);
+  }
   if(A.noir){ this.noir = true; ev.push({t:'noir', on:true}); return this._leoRetour(ev, nom); }
   if(A.rats){
     var libres = [0, 1].filter(function(pl){ return !self.ratsVivants().some(function(r){ return r.place === pl; }); });
@@ -11983,17 +11945,16 @@ P._leoImpact = function(ev, A){
     return this._leoRetour(ev, nom);
   }
   if(A.saisit){
-    /* phase 3 : il attrape le premier, et frappe le second avec. Le bouclier jaune empêche d'être attrapé : le coup est raté. */
-    var pris = cibles[0], autre = cibles[1];
+    /* phase 3 : il empoigne le premier (aucun dégât), le ramène à sa place… et frappe le second avec (P._frappeAvec).
+       (15 novembre, 13 h 54 : plus rien ne l'empêche d'attraper — le bouclier jaune ne sert à rien ici : il faut de la vie) */
+    var pris = cibles[0];
     if(!pris) return this._leoRetour(ev, nom);
-    if(this.h[pris].bouclier === 'jaune'){
-      this.h[pris].bouclier = null;
-      ev.push({t:'bouclier', heros:pris, on:false, casse:true});
-      ev.push({t:'mot', sur:pris, texte:'Raté !'});
-      return this._leoRetour(ev, nom);
-    }
-    [pris, autre].forEach(function(h){ if(vivant(h)) self._frappe(ev, h, Math.round(self.h[h].pvMax * A.part), {cause:nom}); });
-    return this._leoRetour(ev, nom);
+    this._annuler(ev, pris, 'attrape');
+    this.h[pris].attrape = true; Z.tenu = pris; Z.autre = cibles[1] || null;
+    ev.push({t:'etat', heros:pris, nom:'attrape', on:true});
+    Z.etape = 'porte'; Z.fin = Z.tl + A.porte;
+    ev.push({t:'leo', quoi:'porte', att:nom, heros:pris, autre:Z.autre, duree:A.porte});
+    return;
   }
   var fois = A.fois || 1;
   cibles.forEach(function(h){
@@ -12024,11 +11985,54 @@ P._leoImpact = function(ev, A){
   this._leoRetour(ev, nom);
 };
 
+/* LA RAFALE, coup par coup (l'horloge de Léo fait foi : le givre la ralentit). Le bouclier jaune pare trois coups entiers, puis
+   casse ; un bouclier de chêne n'en amortit qu'un (de moitié). Sa proie tombée, il s'arrête. */
+P._rafale = function(ev, tout){
+  var Z = this.leo, A = L.ATTAQUES.rafale, h = Z.cibles[0], S = h && this.h[h];
+  while(Z.coup < A.coups && (tout || Z.tl >= Z.coupT - 1e-9) && !this.resultat){
+    if(!S || S.sol){ Z.coup = A.coups; Z.fin = Z.tl; break; }
+    Z.coup++; Z.coupT += A.pas;
+    var brut = Math.round(S.pvMax * A.part) * (Z.coup === A.coups ? A.dernier : 1);
+    ev.push({t:'leo', quoi:'coup', att:'rafale', heros:h, k:Z.coup, n:A.coups});
+    if(S.bouclier === 'jaune'){
+      S.pare = (S.pare || 0) + 1;
+      ev.push({t:'pare', heros:h, k:S.pare, n:A.pare, brut:brut});
+      if(S.pare >= A.pare){ S.bouclier = null; S.pare = 0; ev.push({t:'bouclier', heros:h, on:false, casse:true}); }
+    }
+    else this._frappe(ev, h, brut, {cause:'rafale', coup:Z.coup});
+    this._bilan(ev);
+  }
+};
+/* IL FRAPPE LE SECOND AVEC LE PREMIER : les deux perdent 90 % de la vie qui leur reste (ils survivent toujours)… sauf si l'un des
+   deux avait moins de la moitié de sa vie : alors ils tombent tous les deux. */
+P._frappeAvec = function(ev){
+  var Z = this.leo, A = L.ATTAQUES.attrape, self = this, pris = Z.tenu, autre = Z.autre;
+  Z.tenu = null; Z.autre = null;
+  if(pris && this.h[pris].sol) pris = null;                           /* (tombé entre ses mains : le feu, le sang) */
+  if(pris){ this.h[pris].attrape = false; ev.push({t:'etat', heros:pris, nom:'attrape', on:false}); }
+  if(!pris){ ev.push({t:'leo', quoi:'lache', heros:null, par:'vide'}); return this._leoRetour(ev, 'attrape'); }
+  if(!autre || this.h[autre].sol) autre = this._viser([pris]);
+  if(autre === pris) autre = null;
+  var l = [pris, autre].filter(function(h){ return !!h; });
+  var bas = l.some(function(h){ return self.h[h].pv < self.h[h].pvMax * A.seuil; });
+  ev.push({t:'leo', quoi:'frappe-avec', att:'attrape', pris:pris, autre:autre, mortel:bas});
+  l.forEach(function(h){
+    var S = self.h[h], n = bas ? S.pv : Math.floor(S.pv * A.part);
+    if(S.bouclier){ S.bouclier = null; ev.push({t:'bouclier', heros:h, on:false, casse:true}); }
+    S.pv -= n;
+    ev.push({t:'degats', heros:h, n:n, pv:S.pv, brut:n, bouclier:null, cause:'attrape', mortel:bas});
+    if(S.pv <= 0) self._tombe(ev, h);
+  });
+  if(this._bilan(ev)) return;
+  if(!bas){ this._etourdit(ev, pris, A.sonne.pris); if(autre) this._etourdit(ev, autre, A.sonne.autre); }
+  this._leoRetour(ev, 'attrape');
+};
+
 /* les trois prochaines attaques, pour la rune de l'œil : [{att, nom, ic, enCours}] */
 P._suite = function(){
   var Z = this.leo, ordre = L.ORDRE[this.phase], l = [], k = Z.k, self = this, garde = 0;
   var rats = this.ratsVivants().length;
-  if(Z.att && (Z.etape === 'prise' || Z.etape === 'elan')) l.push({att:Z.att, nom:L.ATTAQUES[Z.att].nom, ic:L.ATTAQUES[Z.att].ic, enCours:true});
+  if(Z.att && (Z.etape === 'prise' || Z.etape === 'elan' || Z.etape === 'coups' || Z.etape === 'porte')) l.push({att:Z.att, nom:L.ATTAQUES[Z.att].nom, ic:L.ATTAQUES[Z.att].ic, enCours:true});
   while(l.length < 3 && garde++ < ordre.length * 2){
     k = (k + 1) % ordre.length;
     var A = L.ATTAQUES[ordre[k]];
@@ -12041,7 +12045,8 @@ P._suite = function(){
 /* ---------- la photo ---------- */
 P.etat = function(){
   var self = this, Z = this.leo, t = this.t, A = Z.att ? L.ATTAQUES[Z.att] : null, sombre = this.sombre();
-  var o = {phase:this.phase, t:t, fini:this.resultat, noir:sombre, vu:this.vu, heros:{}, rats:[], armes:copie(this.armes)};
+  var o = {phase:this.phase, t:t, fini:this.resultat, noir:sombre, vu:this.vu, heros:{}, rats:[], armes:{}};
+  for(var ka in this.armes) o.armes[ka] = this.armes[ka];
   D.EXPOSES.forEach(function(h){
     var S = self.h[h];
     o.heros[h] = {pv:S.pv, pvMax:S.pvMax, sol:S.sol, bouclier:S.bouclier, etourdi:S.etourdi > t ? S.etourdi - t : 0, attrape:S.attrape, saigne:S.saigne, brule:S.brule > t,
@@ -12051,7 +12056,8 @@ P.etat = function(){
     reste:Math.max(0, Z.fin - Z.tl), nuage:Z.nuage, tenu:Z.tenu, auSol:Z.auSol, flaque:Z.flaque > t, ralenti:Z.ralenti > t, brule:Z.brule > t, saigne:Z.saigne,
     cache:sombre || Z.nuage,                                          /* intouchable : dans le noir, dans sa farine */
     /* ce que la rune de l'œil montre : sa proie et ce qu'elle va prendre… */
-    vise:this.vu && A && (Z.etape === 'prise' || Z.etape === 'elan') && Z.cibles.length ? {cibles:Z.cibles.slice(), degats:A.part ? null : (A.degats || 0), part:A.part || 0, fois:A.fois || 1} : null,
+    vise:this.vu && A && (Z.etape === 'prise' || Z.etape === 'elan' || Z.etape === 'coups' || Z.etape === 'porte') && Z.cibles.length ? {cibles:Z.etape === 'porte' ? [Z.tenu, Z.autre].filter(function(x){ return !!x; }) : Z.cibles.slice(), degats:A.part ? null : (A.degats || 0), part:A.part || 0, fois:A.coups || A.fois || 1, mortel:!!(A.mortel && A.mortel[this.phase]), perce:!!A.perce} : null,
+    coup:Z.etape === 'coups' ? Z.coup : 0, porte:Z.etape === 'porte' ? {pris:Z.tenu, autre:Z.autre} : null,
     /* … et ses trois prochaines attaques (Romain, 14 novembre : de petites icônes à ses pieds). La première : celle qu'il prépare
        (enCours), sinon la prochaine. */
     suite:this.vu ? this._suite() : null};
@@ -16262,170 +16268,6 @@ global.AMBIANCE = AMBIANCE;
 })(typeof window !== 'undefined' ? window : this);
 
 
-/* ===== ../src/cine-lecteur.js ===== */
-/* cine-lecteur.js — LE LECTEUR DES CINÉMATIQUES (Bible §13.45), le même dans le donjon (construire.py) et dans le jeu (build.py).
-   Romain, 15 novembre : « des cinématiques de film », en 21:9 avec les bandes noires. Ce sont de vrais petits films, fabriqués
-   d'avance image par image (jeu/cine/ : filmer.py) : ils ne peuvent pas ramer, même sur une vieille tablette.
-   - La vidéo est MUETTE (elle part toute seule partout, même sur iPhone) : les bruitages sont ceux de l'Atelier des sons, joués à
-     l'instant dit (o.infos.sons) par le moteur de son du jeu — le volume des réglages compte.
-   - Les sous-titres sont dans la bande noire du bas (ou sur l'image, en bas, si l'écran est trop allongé) ; chacun a son 🔊 :
-     le toucher arrête le film le temps de la lecture (jamais de lecture toute seule).
-   - « Passer ➜ » en haut à droite.
-   - Si le film n'arrive pas (pas d'internet, un vieux navigateur), CineLecteur.jouer répond 'echec' : on joue l'ancienne scène.
-
-   CineLecteur.precharger(url) -> Promise (le film téléchargé en entier, gardé en mémoire)
-   CineLecteur.jouer({url, infos:{duree, sons:[[t, id]], sousTitres:[[t0, t1, texte, qui]]}, son:function(id), lire:function(texte, qui),
-                      parle:function() -> bool, taire:function(), attente:ms, passer:true}) -> Promise('fini' | 'passe' | 'echec') */
-(function(){
-'use strict';
-var CL = window.CineLecteur = {};
-var CACHE = {};
-var CSS = '.cine-ecran{position:fixed;inset:0;z-index:99990;background:#000;opacity:0;transition:opacity .35s;touch-action:none;-webkit-user-select:none;user-select:none}' +
-  '.cine-ecran.on{opacity:1}.cine-cadre{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#000;overflow:hidden}' +
-  '.cine-cadre video{display:block;width:100%;height:100%;object-fit:cover;background:#000}' +
-  '.cine-st{position:absolute;left:50%;transform:translateX(-50%);width:min(92vw,980px);text-align:center;color:#f4ecd8;font:600 clamp(16px,2.6vw,26px)/1.35 Georgia,serif;' +
-  'text-shadow:0 2px 6px #000,0 0 2px #000;opacity:0;transition:opacity .25s;pointer-events:none;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}' +
-  '.cine-st.on{opacity:1}.cine-st.sur{padding:28px 18px 14px;background:linear-gradient(transparent,rgba(0,0,0,.72))}' +
-  '.cine-qui{display:block;width:100%;font:700 clamp(12px,1.6vw,15px)/1 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#e8b84a;margin-bottom:4px}' +
-  '.cine-lire{pointer-events:auto;flex:none;border:0;border-radius:50%;width:44px;height:44px;font-size:21px;background:rgba(255,255,255,.14);color:#fff;cursor:pointer}' +
-  '.cine-lire:active{transform:scale(.92)}' +
-  '.cine-passer{position:absolute;right:max(14px,env(safe-area-inset-right));top:max(12px,env(safe-area-inset-top));border:1px solid rgba(255,255,255,.35);border-radius:999px;background:rgba(0,0,0,.4);' +
-  'color:#ddd;font:600 15px/1 system-ui,sans-serif;padding:10px 16px;cursor:pointer;z-index:2}' +
-  '.cine-attente{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px;border-radius:50%;background:#e8b84a;animation:cineAtt 1s ease-in-out infinite}' +
-  '@keyframes cineAtt{0%,100%{opacity:.2;transform:scale(.7)}50%{opacity:1;transform:scale(1)}}' +
-  '.cine-go{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:0;border-radius:16px;background:#ffd23f;color:#111;font:800 22px/1 system-ui,sans-serif;padding:18px 28px;cursor:pointer}';
-function style(){ if(document.getElementById('cine-css')) return; var s = document.createElement('style'); s.id = 'cine-css'; s.textContent = CSS; document.head.appendChild(s); }
-function el(tag, cls, html){ var e = document.createElement(tag); if(cls) e.className = cls; if(html != null) e.innerHTML = html; return e; }
-function esc(t){ return String(t).replace(/[&<>"]/g, function(c){ return {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]; }); }
-
-/* télécharger tout le film d'avance (une coupure de réseau au milieu ne le casse plus) */
-CL.precharger = function(url){
-  if(CACHE[url]) return CACHE[url];
-  CACHE[url] = new Promise(function(ok){
-    if(!window.fetch || !window.URL || !URL.createObjectURL || location.protocol === 'file:'){ ok(url); return; }
-    fetch(url).then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); })
-      .then(function(b){ ok(URL.createObjectURL(b)); })
-      .catch(function(){ CACHE[url] = null; ok(url); });
-  });
-  return CACHE[url];
-};
-/* LE SON DANS LE JEU (le donjon a le sien : DJ.bruit) : le moteur de l'Atelier des sons et les bruitages des cinématiques
-   (build.py : SON_DONJON et essai/sons/cine.js), version A, sur un contexte audio à lui. Rien si le son est coupé (Réglages). */
-var ctxJ = null, engJ = null;
-CL.sonJeu = function(id){
-  try{
-    if(window.M && M.S && M.S.options && M.S.options.son === false) return;
-    if(!window.Moteur || !window.BRUITAGES) return;
-    var fn = window.BRUITAGES[id + 'A']; if(typeof fn !== 'function') return;
-    if(!ctxJ){ var AC = window.AudioContext || window.webkitAudioContext; if(!AC) return; ctxJ = new AC(); engJ = window.Moteur(ctxJ, {}); }
-    if(ctxJ.state === 'suspended') ctxJ.resume();
-    var t = ctxJ.currentTime + .02, P = engJ.prise(t, (window.NIVEAUX || {})[id + 'A'] || 1), r = fn(engJ, P) || {duree:1};
-    setTimeout(function(){ try{ P.lacher(); }catch(e){} }, ((r.duree || 1) + 5) * 1000);
-  }catch(e){ if(window.console) console.warn('son de cinématique', id, e); }
-};
-/* (pour les robots : une adresse forcée — ou rien, et le film « n'arrive pas ») */
-CL.essai = null;
-
-CL.jouer = function(o){
-  style();
-  return new Promise(function(fin){
-    var fini = false, raf = 0, video = null, cues = (o.infos && o.infos.sons || []).map(function(c){ return {t:c[0], id:c[1], fait:false}; });
-    var st = (o.infos && o.infos.sousTitres) || [], courant = -1, lecture = null;
-    var ecran = el('div', 'cine-ecran'), cadre = el('div', 'cine-cadre'), sous = el('div', 'cine-st'), att = el('div', 'cine-attente');
-    ecran.appendChild(cadre); ecran.appendChild(sous); ecran.appendChild(att);
-    if(o.passer !== false){ var bp = el('button', 'cine-passer', 'Passer ➜'); bp.setAttribute('data-cine', 'passer'); ecran.appendChild(bp); }
-    (o.parent || document.body).appendChild(ecran);
-    requestAnimationFrame(function(){ ecran.classList.add('on'); });
-    function place(){
-      var W = window.innerWidth, H = window.innerHeight, w = Math.min(W, H * 21 / 9), h = w * 616 / 1440, bande = (H - h) / 2;
-      cadre.style.width = w + 'px'; cadre.style.height = h + 'px';
-      var dedans = bande < 66;
-      sous.classList.toggle('sur', dedans);
-      if(dedans){ sous.style.top = ''; sous.style.bottom = (bande + 6) + 'px'; sous.style.width = Math.min(w, 980) + 'px'; }
-      else { sous.style.bottom = ''; sous.style.top = (bande + h + Math.min(18, bande * .12)) + 'px'; sous.style.width = ''; }
-    }
-    place(); window.addEventListener('resize', place);
-    function terminer(r){
-      if(fini) return; fini = true;
-      cancelAnimationFrame(raf); window.removeEventListener('resize', place);
-      if(lecture) clearInterval(lecture);
-      try{ if(video){ video.pause(); video.removeAttribute('src'); video.load(); } }catch(e){}
-      if(r === 'passe' && o.taire) try{ o.taire(); }catch(e){}
-      ecran.classList.remove('on');
-      setTimeout(function(){ ecran.remove(); }, r === 'echec' ? 0 : 380);
-      fin(r);
-    }
-    ecran.addEventListener('click', function(ev){
-      var b = ev.target.closest && ev.target.closest('[data-cine]'); if(!b) return;
-      ev.stopPropagation();
-      var a = b.getAttribute('data-cine');
-      if(a === 'passer') terminer('passe');
-      if(a === 'lire') ecouter(+b.getAttribute('data-i'));
-      if(a === 'go' && video){ b.remove(); video.play().catch(function(){}); }
-    });
-    /* 🔊 : le film s'arrête le temps de la lecture, puis repart */
-    function ecouter(i){
-      var s = st[i]; if(!s || !video || !o.lire) return;
-      video.pause();
-      try{ o.lire(s[2], s[3]); }catch(e){}
-      var t0 = Date.now(), mini = 600, maxi = 1500 + s[2].length * 95;
-      if(lecture) clearInterval(lecture);
-      lecture = setInterval(function(){
-        var d = Date.now() - t0, parle = o.parle ? o.parle() : false;
-        if((d > mini && !parle) || d > maxi){ clearInterval(lecture); lecture = null; if(!fini) video.play().catch(function(){}); }
-      }, 120);
-    }
-    function image(){
-      if(fini) return;
-      raf = requestAnimationFrame(image);
-      if(!video || video.paused) return;
-      var t = video.currentTime;
-      /* les sons : chacun une fois, à son instant (pas ceux qu'on a sautés) */
-      cues.forEach(function(c){ if(!c.fait && t >= c.t){ c.fait = true; if(t - c.t < .5 && o.son) try{ o.son(c.id); }catch(e){} } });
-      var k = -1;
-      for(var i = 0; i < st.length; i++) if(t >= st[i][0] && t <= st[i][1]){ k = i; break; }
-      if(k !== courant){
-        courant = k;
-        if(k < 0){ sous.classList.remove('on'); }
-        else {
-          var s = st[k], mots = String(s[2]).split(/\s+/).length;
-          sous.innerHTML = (s[3] ? '<span class="cine-qui">' + esc(s[3]) + '</span>' : '') + '<span class="cine-txt">« ' + esc(s[2]) + ' »</span>' +
-            (o.lire ? '<button class="cine-lire" data-cine="lire" data-i="' + k + '" aria-label="Écouter">🔊</button>' : '');
-          sous.classList.add('on');
-        }
-      }
-    }
-    var url = CL.essai != null ? CL.essai : o.url;
-    var delai = setTimeout(function(){ terminer('echec'); }, o.attente || 8000);
-    (url ? CL.precharger(url) : Promise.resolve(null)).then(function(src){
-      if(fini) return;
-      if(!src){ clearTimeout(delai); terminer('echec'); return; }
-      video = document.createElement('video');
-      video.muted = true; video.defaultMuted = true; video.playsInline = true;
-      video.setAttribute('muted', ''); video.setAttribute('playsinline', ''); video.setAttribute('webkit-playsinline', ''); video.setAttribute('preload', 'auto');
-      video.addEventListener('ended', function(){ terminer('fini'); });
-      video.addEventListener('error', function(){ clearTimeout(delai); terminer('echec'); });
-      video.addEventListener('playing', function(){ clearTimeout(delai); att.remove(); });
-      video.src = src;
-      cadre.appendChild(video);
-      var p = video.play();
-      if(p && p.catch) p.catch(function(){
-        /* le navigateur refuse de partir tout seul : un grand bouton jaune */
-        clearTimeout(delai); att.remove();
-        if(!fini && !ecran.querySelector('.cine-go')){ var g = el('button', 'cine-go', '▶ Regarder'); g.setAttribute('data-cine', 'go'); ecran.appendChild(g); }
-      });
-      raf = requestAnimationFrame(image);
-    });
-  });
-};
-})();
-
-
-/* ===== ../cine/sortie/cine-infos.js ===== */
-/* les cinématiques (jeu/cine : infos.py, ne pas modifier à la main) — la durée, les sons, les sous-titres de chaque film */
-window.CINE_INFOS = {"a12":{"duree":13.6,"sons":[[0.62,"cineOutils"],[0.78,"cineOutils"],[1.38,"leoChute"],[1.45,"cineOutils"],[1.9,"cineSouffle"],[3.4,"cineGrogne"],[4.3,"cinePas"],[5.48,"leoDechire"],[5.6,"cineCape"],[7.15,"leoHurlement"],[9.95,"leoMuscles"],[10.05,"cineOnde"],[11.45,"cineGrogne"],[11.5,"cineOnde"]],"sousTitres":[],"octets":2279521},"b23":{"duree":14.2,"sons":[[0.1,"cineSouffle"],[1.6,"cineSouffle"],[2.45,"cineEssuie"],[6.8,"leoSac"],[8.120000000000001,"leoBouchon"],[8.35,"cineCrache"],[8.85,"leoGlou"],[9.15,"leoGlou"],[9.45,"leoGlou"],[10.1,"leoBrise"],[10.25,"cineCoeur"],[10.45,"leoPotion"],[10.9,"cineCoeur"],[11,"cineMontee"],[11.45,"cineCoeur"],[11.98,"leoMuscles"],[12.45,"leoHurlement"],[12.5,"cineOnde"],[12.95,"cineOnde"]],"sousTitres":[[3.55,4.75,"Très bien…","Léo"],[4.95,6.35,"Je n'ai pas le choix.","Léo"]],"octets":2459801},"finLeo":{"duree":41.8,"sons":[[0.05,"cineSouffle"],[0.6,"cineCoeur"],[1.2,"cineCoeur"],[1.85,"cineChute"],[3.2,"cineSouffle"],[28.3,"cineCoeur"]],"sousTitres":[[4.6,7.2,"Assez… Vous avez gagné.","Léo"],[7.6,11,"Meunier… Je n'ai jamais voulu être meunier.","Léo"],[11.3,15.2,"Le maire, lui, m'a promis autre chose. Une vraie place.","Léo"],[15.8,18.7,"C'est lui qui a tout préparé, depuis le début :","Léo"],[18.9,22.1,"la rivière rouge, les fumigènes, la lettre.","Léo"],[22.4,26.3,"Odette, ce n'était pas prévu. Elle a été trop curieuse.","Léo"],[26.9,30.4,"Il descend souvent, tout seul, encore plus bas.","Léo"],[30.7,34.3,"Là-dessous, il y a une ville. Une ville entière, sous Brumeval.","Léo"],[34.8,37.6,"Moi, il ne m'a jamais laissé y aller.","Léo"],[37.8,39.9,"Personne n'y va. Jamais.","Léo"]],"octets":4405987},"finMaire":{"duree":27.2,"sons":[[0.9,"cinePasEcho"],[2.2,"cineLanterne"],[2.7,"cinePasEscalier"],[3.5,"cinePasEscalier"],[4.3,"cinePasEscalier"],[5.1,"cinePasEscalier"],[5.9,"cinePasEscalier"],[6.7,"cinePasEscalier"],[4.4,"cineArmure"],[5.6,"cineArmure"],[6.8,"cineArmure"],[8,"cineArmure"],[8.2,"cinePas"],[9.2,"cinePas"],[10.2,"cinePas"],[9.4,"cineArmure"],[15.1,"cineGant"],[17.3,"cineBague"],[24,"cineCoeur"],[24.8,"cineLances"],[25.2,"cineGardes"],[26.6,"cineCoup"]],"sousTitres":[[11,13.1,"Que s'est-il passé ici ? Léo !","Le maire"],[13.2,14.7,"Qu'avez-vous fait à Léo ?","Le maire"],[18.3,21.4,"Vous êtes allés trop loin. Beaucoup trop loin.","Le maire"],[21.9,23.6,"Monsieur le maire… ?","Silas"],[24,25.7,"Gardes ! Attrapez-les !","Le maire"]],"octets":4334110}};
-
-
 /* ===== moteur/src/allure.js ===== */
 /* allure.js — l'allure des trois héros du donjon, quand elle vient de l'enquête (Romain, 13 novembre : « les codes d'apparence »).
 
@@ -16668,7 +16510,7 @@ DJ.mesurerCritiqueVrai = function(){
     if(lent) SALLE.critLeger = true;
   }};
 };
-DJ.VERSION = '15/11 à 14 h 58';
+DJ.VERSION = '15/11 à 14 h 40';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
@@ -19872,10 +19714,10 @@ var COURBES = {
   io:function(t){ return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; },
   b:function(t){ var c = 1.70158; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); }
 };
-var CACHE = new Map();
+var CACHE = new Map(), CIBLE2 = 0;
 function complet(p, cx){
-  /* x:'cible' : la place devant le héros visé (la charge) */
-  if(p.x === 'cible'){ var q = {}; for(var k in p) q[k] = p[k]; q.x = cx || 0; return LC.complete(q); }
+  /* x:'cible' : la place devant le héros visé (la charge) ; x:'cible2' : devant le second (celui qu'il frappe avec le premier) */
+  if(p.x === 'cible' || p.x === 'cible2'){ var q = {}; for(var k in p) q[k] = p[k]; q.x = (p.x === 'cible2' ? CIBLE2 || cx : cx) || 0; return LC.complete(q); }
   var c = CACHE.get(p); if(!c){ c = LC.complete(p); CACHE.set(p, c); } return c;
 }
 function piste(l, k, cx){
@@ -19931,7 +19773,8 @@ function vider(X){
   var C = corps(X), f3 = !!(C && C.etat.forme === 3);
   if(C){ C.objet('faux', f3 ? null : 'dos'); C.objet('gourde', f3 ? null : 'ceinture'); C.objet('bouchon', true); C.objet('sifflet', 'cou'); C.objet('rat', null); C.visage('colere'); C.devantAr(false); C.main('Av', 'poing'); C.main('Ar', 'poing'); }
   if(X.mareEl){ try{ X.mareEl.remove(); }catch(x){} X.mareEl = null; }
-  if(X.ctx.soulever && X.cibleH){ try{ X.ctx.soulever(X.cibleH, false); }catch(x){} } X.cibleH = null; X.sangT = 0;
+  if(X.porte){ try{ var sp = X.porte.el; sp.style.transform = ''; sp.style.willChange = ''; sp.style.zIndex = ''; }catch(x){} X.porte = null; }
+  X.cibleH = null; X.cibleX2 = 0; X.coupVu = 0; X.sangT = 0;
 }
 function bruit(X, id, o, ancien){ try{ return X.ctx.bruit(id, o || {}, ancien); }catch(e){ return null; } }
 function son(X){ try{ X.ctx.son.apply(null, [].slice.call(arguments, 1)); }catch(e){} }
@@ -19953,7 +19796,9 @@ function image(X, dt, c){
   var k = Math.max(0, Math.min(1, (Z.tl - X.debut) / X.duree));
   X.k = k;
   var p;
-  if((etape === 'prise' || etape === 'elan' || etape === 'retour') && PISTES[att]) { var q0 = poseDe(att, etape, k, X.cibleX); p = LC.melange(q0, q0, 0); }
+  CIBLE2 = X.cibleX2 || 0;
+  if(etape === 'coups' && att === 'rafale' && !PISTES.rafale.coups) PISTES.rafale.coups = pisteCoups();
+  if((etape === 'prise' || etape === 'elan' || etape === 'retour' || etape === 'coups' || etape === 'porte') && PISTES[att] && PISTES[att][etape]) { var q0 = poseDe(att, etape, k, X.cibleX); p = LC.melange(q0, q0, 0); }
   else if(etape === 'sonne') p = sonne(t);
   else if(etape === 'sol') p = auSol(k, t);
   else p = idle(X, t);
@@ -19979,15 +19824,32 @@ function image(X, dt, c){
    On sait ce qui arrive, et quand. (Trois mots au plus : pas de bouton 🔊.) */
 var ANNONCES = {poing3:['👊', 'LE POING'], rafale:['🥊', 'LA RAFALE'], hurlement:['📢', 'LE CRI'], attrape:['✊', 'IL ATTRAPE'], souffle:['🔥', 'LE FEU'],
   sifflet:['🐀', 'IL SIFFLE'], faux:['⚠️', 'LA FAUX'], charge:['⚠️', 'LA CHARGE'], lancer:['🐀', 'UN RAT VOLE'], gourde:['🧪', 'IL BOIT'], saut:['⚠️', 'LE SAUT'], poing:['⚠️', 'LE POING']};
+/* (15 novembre, 13 h 54 — Romain : « pour chaque animation, tu mets à chaque fois un petit curseur qui montre ce qu'il fait. Quand il
+   donne sa volée de coups, tu vois écrit 1, 2, 3 … 16 ») : pendant la rafale, l'annonce reste et compte les coups (« 7 / 16 », la
+   jauge avance d'un cran par coup) ; pendant qu'il porte un héros, « IL VA FRAPPER », et la jauge court jusqu'au coup. */
+var ANNONCES_SUITE = {porte:['✊', 'IL VA FRAPPER']};
 function annoncer(X, etape, att, k){
-  var A = ANNONCES[att], en = !!A && (etape === 'prise' || etape === 'elan'), a = X.annonce;
+  var suite = (etape === 'coups' && att === 'rafale') || (etape === 'porte' && att === 'attrape');
+  var A = ANNONCES[att], en = !!A && (etape === 'prise' || etape === 'elan' || suite), a = X.annonce;
+  if(a && en && a.att === att && suite){
+    /* la suite de la même attaque : le même panneau, son texte et sa jauge changent */
+    if(etape === 'coups'){
+      var NC = (window.LeoRegles && window.LeoRegles.L.ATTAQUES.rafale.coups) || 16, nc = Math.min(NC, X.coupVu || 0);
+      if(a.n !== 1000 + nc){ a.n = 1000 + nc; a.txt.textContent = nc + ' / ' + NC; a.u.style.transform = 'scaleX(' + (nc / NC).toFixed(3) + ')'; if(!a.suite){ a.suite = 1; a.el.classList.add('coups'); } }
+    } else {
+      if(a.suite !== 2){ a.suite = 2; a.txt.textContent = ANNONCES_SUITE.porte[1]; a.el.classList.add('coups'); }
+      var np = Math.round(k * 60); if(a.n !== 2000 + np){ a.n = 2000 + np; a.u.style.transform = 'scaleX(' + (np / 60).toFixed(3) + ')'; }
+    }
+    return;
+  }
+  if(suite && !a) return;
   if(a && (!en || a.att !== att)){ X.annonce = null; var e0 = a.el; anim(e0, [{opacity:1}, {opacity:0}], {duration:160, fill:'forwards'}); retirer(e0, 180); a = null; if(X.cibleSaut && att !== 'saut') finCibleSaut(X); }
   if(!en) return;
   var R = window.LeoRegles && window.LeoRegles.L.ATTAQUES[att], pr = R ? R.prise || 0 : 0, elx = R ? R.elan || 0 : 1, tot = (pr + elx) || 1;
   if(!a){
     var e = el('lp-annonce' + (att === 'gourde' ? ' vert' : att === 'sifflet' || att === 'lancer' ? ' rat' : ''), '<b>' + A[0] + '</b><span>' + A[1] + '</span><i><u></u></i>', calque(X));
     anim(e, [{opacity:0, transform:'translate(-50%,10px) scale(.7)'}, {opacity:1, transform:'translate(-50%,0) scale(1.08)', offset:.7}, {opacity:1, transform:'translate(-50%,0) scale(1)'}], {duration:200, fill:'forwards', easing:'ease-out'});
-    a = X.annonce = {att:att, el:e, u:e.querySelector('u'), n:-1};
+    a = X.annonce = {att:att, el:e, u:e.querySelector('u'), txt:e.querySelector('span'), n:-1, suite:0};
   }
   /* la jauge : où l'on en est entre le début de la préparation et le coup (l'horloge de Léo fait foi, même ralentie par le givre) */
   var n = Math.round(Math.max(0, Math.min(1, (etape === 'prise' ? k * pr : pr + k * elx) / tot)) * 60);
@@ -20002,8 +19864,10 @@ function changer(X, Z, c){
   X.etape = Z.etape; X.att = Z.att;
   var C = corps(X);
   /* (une attaque qui recommence : tout reprend sa place, au cas où une étape aurait été coupée) */
-  if(p3(X)){ if(Z.etape === 'repos' || Z.etape === 'prise'){ C.main('Ar', 'poing'); if(Z.att !== 'attrape') C.main('Av', 'poing'); } /* (le héros empoigné retombe dès que le coup est passé — ou raté : un bouclier jaune l'a protégé) */
-    if(X.ctx.soulever && X.cibleH && (Z.etape === 'retour' || Z.etape === 'repos' || Z.etape === 'sonne')){ if(X.att === 'attrape' || Z.etape !== 'retour') X.ctx.soulever(X.cibleH, false); X.cibleH = null; } }
+  if(p3(X)){ if(Z.etape === 'repos' || Z.etape === 'prise'){ C.main('Ar', 'poing'); if(Z.att !== 'attrape') C.main('Av', 'poing'); }
+    /* (un héros encore porté alors que l'attaque est finie ou coupée : il retombe) */
+    if(X.porte && (Z.etape === 'repos' || Z.etape === 'sonne' || Z.etape === 'sol' || (Z.etape === 'prise' && Z.att !== 'attrape'))) lacher(X);
+    if(Z.etape === 'repos' || Z.etape === 'sonne'){ X.cibleH = null; X.coupVu = 0; } }
   else if(Z.etape === 'repos' || Z.etape === 'prise' && Z.att !== 'faux' && Z.att !== 'gourde'){
     if(C.etat.faux === 'main' && Z.att !== 'faux') C.objet('faux', 'dos');
     if(C.etat.sifflet === 'main' && Z.att !== 'sifflet') C.objet('sifflet', 'cou');
@@ -20041,14 +19905,21 @@ PISTES.poing3 = {
 var BOXE = {torse:6, bas:16, tete:6, bAv:[62, 112, 0], bAr:[72, 112, 0]};
 var DIRECT_A = {x:'cible', torse:26, bas:16, tete:8, bAv:[100, 4, 0], bAr:[44, 120, 0], pAv:[178, 318], pAr:[66, 318]};
 var DIRECT_B = {x:'cible', torse:19, bas:16, tete:8, bAv:[52, 122, 0], bAr:[106, 6, 0], pAv:[178, 318], pAr:[66, 318]};
+var BOXE_C = {x:'cible', torse:14, bas:17, tete:6, bAv:[52, 122, 0], bAr:[66, 120, 0], pAv:[178, 318], pAr:[66, 318]};      /* devant sa proie, les poings armés */
+var CROCHET_FIN = {x:'cible', torse:32, bas:18, tete:10, bAv:[52, 122, 0], bAr:[112, 0, 0], pAv:[178, 318], pAr:[60, 318]};       /* le dernier coup, le plus lourd */
 PISTES.rafale = {
   prise:[[0, pose3({}), 'io'], [.4, pose3(BOXE), 'io'], [1, pose3(BOXE)]],
-  elan:[[0, pose3(BOXE), 'i'], [.16, pose3({x:'cible', torse:18, bas:16, tete:6, bAv:[62, 112, 0], bAr:[72, 112, 0], pAv:[178, 318], pAr:[66, 318]}), 'o'],
-    [.26, pose3(DIRECT_A), 'o'], [.36, pose3(DIRECT_B), 'o'], [.46, pose3(DIRECT_A), 'o'], [.56, pose3(DIRECT_B), 'o'], [.66, pose3(DIRECT_A), 'o'], [.76, pose3(DIRECT_B), 'o'], [.86, pose3(DIRECT_A), 'o'],
-    [1, pose3({x:'cible', torse:32, bas:18, tete:10, bAv:[52, 122, 0], bAr:[112, 0, 0], pAv:[178, 318], pAr:[60, 318]})]],
-  retour:[[0, pose3({x:'cible', torse:32, bas:18, tete:10, bAv:[52, 122, 0], bAr:[112, 0, 0], pAv:[178, 318], pAr:[60, 318]}), 'lin'], [.3, pose3({x:'cible', torse:10, bas:14}), 'io'], [1, pose3({})]]
+  elan:[[0, pose3(BOXE), 'io'], [.5, pose3(BOXE), 'i'], [.84, pose3(BOXE_C), 'o'], [1, pose3(BOXE_C)]],
+  /* coups : fabriquée au premier besoin (pisteCoups), un direct par coup des règles */
+  retour:[[0, pose3(CROCHET_FIN), 'lin'], [.3, pose3({x:'cible', torse:10, bas:14}), 'io'], [1, pose3({})]]
 };
-var RAFALE_COUPS = [.26, .36, .46, .56, .66, .76, .86, .97];
+/* (15 novembre, 13 h 54 : seize coups, comptés par les règles — gauche, droite, gauche, droite… ; chaque direct est tendu au moment
+   exact où les règles frappent ; le seizième est un crochet, plus lourd) */
+function pisteCoups(){
+  var N = (window.LeoRegles && window.LeoRegles.L.ATTAQUES.rafale.coups) || 16, l = [[0, pose3(BOXE_C), 'o']];
+  for(var i = 0; i < N; i++) l.push([(i + 1) / N, pose3(i === N - 1 ? CROCHET_FIN : i % 2 ? DIRECT_B : DIRECT_A), 'o']);
+  return l;
+}
 /* ---------- LE HURLEMENT : il se redresse et aspire tout l'air de la salle (la poitrine gonflée, la tête en arrière)… puis il se
    plie en avant et hurle : les ondes du cri traversent la salle ---------- */
 var INSPIRE = {torse:-18, bas:6, bassin:-4, tete:-26, bAv:[-60, 30, 0], bAr:[-40, 36, 0]};
@@ -20061,13 +19932,20 @@ PISTES.hurlement = {
 };
 /* ---------- IL ATTRAPE UN HÉROS : la main grande ouverte, il fonce, l'empoigne, le soulève… et s'en sert pour frapper le voisin ---------- */
 var GUET = {torse:22, bas:26, bassin:8, tete:8, bAv:[72, 30, 0], bAr:[-30, 60, 0], pAv:[216, 318], pAr:[88, 318]};
+/* (15 novembre, 13 h 54 — Romain : « il saute, il attrape, il revient en arrière, et là, il tape quelqu'un » ; « là, c'est pas clair
+   quand il s'en sert pour frapper un autre ») : il fonce et l'empoigne (elan) ; il revient à sa place en le tenant à bout de bras,
+   arme son coup — tout le monde voit ce qui vient — et l'abat sur le second (porte) ; puis il se redresse (retour). */
+var EMPOIGNE = {x:'cible', torse:-6, bas:8, tete:-8, bAv:[152, 18, 0], bAr:[10, 60, 0], pAv:[190, 318], pAr:[72, 318]};
+var TIENT_HAUT = {torse:-12, bas:8, tete:-8, bAv:[160, 14, 0], bAr:[16, 58, 0]};
+var ARME_JET = {torse:-20, bas:18, bassin:-6, tete:-4, bAv:[178, 22, 0], bAr:[44, 50, 0], pAv:[222, 318], pAr:[92, 318]};
+var ABAT = {x:'cible2', torse:42, bas:24, bassin:10, tete:14, bAv:[58, 8, 0], bAr:[-24, 60, 0], pAv:[184, 318], pAr:[66, 318]};
 PISTES.attrape = {
   prise:[[0, pose3({}), 'io'], [1, pose3(GUET)]],
   elan:[[0, pose3(GUET), 'i'], [.5, pose3({x:'cible', torse:26, bas:22, bassin:8, tete:8, bAv:[86, 12, 0], bAr:[-30, 60, 0], pAv:[190, 318], pAr:[70, 318]}), 'o'],
     [.64, pose3({x:'cible', torse:31, bas:20, bassin:8, tete:10, bAv:[98, 0, 0], bAr:[-34, 60, 0], pAv:[186, 318], pAr:[66, 318]}), 'io'],
-    [1, pose3({x:'cible', torse:-6, bas:8, tete:-8, bAv:[152, 18, 0], bAr:[10, 60, 0], pAv:[190, 318], pAr:[72, 318]})]],
-  retour:[[0, pose3({x:'cible', torse:40, bas:22, bassin:10, tete:12, bAv:[62, 10, 0], bAr:[-20, 60, 0], pAv:[184, 318], pAr:[66, 318]}), 'lin'],
-    [.3, pose3({x:'cible', torse:36, bas:22, bassin:10, tete:12, bAv:[58, 14, 0], bAr:[-20, 60, 0], pAv:[184, 318], pAr:[66, 318]}), 'io'], [1, pose3({})]]
+    [1, pose3(EMPOIGNE)]],
+  porte:[[0, pose3(EMPOIGNE), 'io'], [.4, pose3(TIENT_HAUT), 'io'], [.68, pose3(ARME_JET), 'lin'], [.87, pose3(ARME_JET), 'i'], [1, pose3(ABAT)]],
+  retour:[[0, pose3(ABAT), 'lin'], [.3, pose3(ABAT), 'io'], [1, pose3({})]]
 };
 /* ---------- LE SOUFFLE DE FEU : il aspire (une braise grossit dans sa gorge)… puis se penche et crache un long jet de flammes ---------- */
 var CRACHE = {torse:30, bas:26, bassin:8, tete:10, bAv:[-56, 60, 0], bAr:[-36, 66, 0], pAv:[216, 318], pAr:[86, 318]};
@@ -20077,15 +19955,15 @@ PISTES.souffle = {
   retour:[[0, pose3(CRACHE), 'io'], [.35, pose3({torse:14, bas:16, tete:8}), 'io'], [1, pose3({})]]
 };
 /*§V3*/VISAGES.poing3 = {prise:[[0, 'effort']], elan:[[0, 'effort'], [.84, 'cri']], retour:[[0, 'cri'], [.5, 'rictus']]};
-VISAGES.rafale = {prise:[[0, 'rictus']], elan:[[0, 'effort'], [.2, 'cri']], retour:[[0, 'rictus']]};
+VISAGES.rafale = {prise:[[0, 'rictus']], elan:[[0, 'effort']], coups:[[0, 'cri']], retour:[[0, 'rictus']]};
 VISAGES.hurlement = {prise:[[0, 'souffle']], elan:[[0, 'souffle'], [.1, 'cri']], retour:[[0, 'rictus']]};
-VISAGES.attrape = {prise:[[0, 'rictus']], elan:[[0, 'effort']], retour:[[0, 'cri'], [.4, 'rictus']]};
+VISAGES.attrape = {prise:[[0, 'rictus']], elan:[[0, 'effort']], porte:[[0, 'rictus'], [.66, 'effort'], [.9, 'cri']], retour:[[0, 'cri'], [.4, 'rictus']]};
 VISAGES.souffle = {prise:[[0, 'souffle']], elan:[[0, 'souffle'], [.1, 'cri']], retour:[[0, 'aah'], [.5, 'rictus']]};
 function visage(X, etape, att, k, dt){
   var C = corps(X), v = 'colere';
   if(X.douleur > 0){ X.douleur -= dt; }
   var V2 = VISAGES[att] && VISAGES[att][etape];
-  if((etape === 'prise' || etape === 'elan' || etape === 'retour') && V2){ for(var i = 0; i < V2.length; i++) if(k >= V2[i][0]) v = V2[i][1]; }
+  if((etape === 'prise' || etape === 'elan' || etape === 'retour' || etape === 'coups' || etape === 'porte') && V2){ for(var i = 0; i < V2.length; i++) if(k >= V2[i][0]) v = V2[i][1]; }
   else if(etape === 'sonne' || etape === 'sol') v = 'ko';
   else if(etape === 'repos') v = Math.sin(X.temps * .5) > .82 ? 'rictus' : 'colere';
   if(X.douleur > 0 && v !== 'boit' && v !== 'ko') v = 'douleur';
@@ -20182,8 +20060,7 @@ function reperes(X, etape, att, k, c){
   }
   if(att === 'rafale'){
     if(etape === 'prise' && une(X, 'r0', k, .4)) poussiereTourne(X);
-    if(etape === 'elan' && une(X, 'r1', k, .02)){ vitesse(X); bruit(X, 'leoRafale', {}, ['bong']); }
-    if(etape === 'elan') RAFALE_COUPS.forEach(function(s, i){ if(une(X, 'rc' + i, k, s)) coupRafale(X, i); });
+    if(etape === 'elan' && une(X, 'r1', k, .5)) vitesse(X);
   }
   if(att === 'hurlement'){
     if(etape === 'prise' && une(X, 'h0', k, .05)){ aspire(X, d * .9); bruit(X, 'leoNaseaux', {}, null); }
@@ -20191,7 +20068,8 @@ function reperes(X, etape, att, k, c){
   }
   if(att === 'attrape'){
     if(etape === 'elan' && une(X, 'a1', k, .2)) vitesse(X);
-    if(etape === 'elan' && une(X, 'a2', k, .64)){ C.main('Av', 'poing'); bruit(X, 'leoAttrape', {}, ['bong']); if(X.ctx.soulever && X.cibleH) X.ctx.soulever(X.cibleH, true); }
+    if(etape === 'porte' && une(X, 'a3', k, .6)){ alerte(X, '!', '#ff6a5a'); bruit(X, 'leoMuscles', {}, null); }
+    if(etape === 'porte' && une(X, 'a4', k, .88)) vitesse(X);
   }
   if(att === 'souffle'){
     if(etape === 'prise' && une(X, 's0', k, .05)){ aspire(X, d * .9, 'linear-gradient(90deg,rgba(255,170,60,0),#ffb050)'); braise(X, d); bruit(X, 'leoNaseaux', {}, null); }
@@ -20204,10 +20082,45 @@ function reperes(X, etape, att, k, c){
     if(etape === 'elan' && une(X, 'j1', k, .06)){ decollage(X); bruit(X, 'leoSaut', {cale:d * .88}, ['tombe']); }
   }
 }
+function xDevant(X, h){ var x = h ? X.ctx.hCx(h) : X.ctx.hCx('alchimiste'); return Math.min(-120, (x + 110) - X.ctx.LX); }
 function cibleX(X, Z){
   /* la charge : il fonce jusque devant le héros visé */
-  var h = Z.cibles && Z.cibles[0], x = h ? X.ctx.hCx(h) : X.ctx.hCx('alchimiste');
-  return Math.min(-120, (x + 110) - X.ctx.LX);
+  return xDevant(X, Z.cibles && Z.cibles[0]);
+}
+/* ---------- LE HÉROS PORTÉ (« il attrape ») : il suit la main de Léo, image par image ; lâché, il retombe à sa place ---------- */
+function porter(X, h){
+  var s = X.ctx.slot && X.ctx.slot(h); if(!s) return;
+  var o = X.ctx.hPt(h), t = 0;
+  if(X.porte) lacher(X);
+  X.porte = {h:h, el:s};
+  s.style.transition = 'none'; s.style.willChange = 'transform'; s.style.zIndex = '6';
+  suivre(X, {maj:function(dt){
+    if(!X.porte || X.porte.h !== h) return false;
+    t += dt;
+    var p = sc(X, 'mainAv', 197, 246), u = Math.min(1, t / .16);
+    s.style.transform = 'translate(' + ((p.x - o.x - 6) * u).toFixed(1) + 'px,' + ((p.y - o.y + 38) * u).toFixed(1) + 'px) rotate(' + (-20 * u).toFixed(1) + 'deg)';
+  }});
+}
+function lacher(X){
+  var P = X.porte; if(!P) return; X.porte = null;
+  var s = P.el, de = s.style.transform || 'translate(0px,0px) rotate(0deg)';
+  s.style.transform = ''; s.style.zIndex = '';
+  anim(s, [{transform:de}, {transform:'translate(0px,-26px) rotate(0deg)', offset:.6, easing:'ease-in'}, {transform:'translate(0px,0px) rotate(0deg)'}], {duration:360, easing:'ease-out'});
+  setTimeout(function(){ try{ s.style.willChange = ''; }catch(e){} }, 420);
+}
+/* le second, frappé de plein fouet : « il valdingue en l'air » — il décolle, fait un tour complet, retombe à sa place */
+function valdingue(X, h){
+  var s = X.ctx.slot && X.ctx.slot(h); if(!s) return;
+  anim(s, [{transform:'translate(0px,0px) rotate(0deg)'}, {transform:'translate(-40px,-150px) rotate(-150deg)', offset:.3, easing:'ease-out'}, {transform:'translate(-60px,-178px) rotate(-240deg)', offset:.48, easing:'ease-in'},
+    {transform:'translate(-24px,0px) rotate(-360deg)', offset:.8, easing:'ease-out'}, {transform:'translate(-24px,-12px) rotate(-360deg)', offset:.9, easing:'ease-in'}, {transform:'translate(0px,0px) rotate(-360deg)'}], {duration:900});
+}
+function frappeAvec(X, ev){
+  var ctx = X.ctx, Fx = ctx.Fx, q = ev.autre ? ctx.hPt(ev.autre) : (ev.pris ? ctx.hPt(ev.pris) : {x:300, y:220});
+  lacher(X);
+  if(ev.autre) valdingue(X, ev.autre);
+  Fx.eclat(q.x + 20, q.y, ev.mortel ? 320 : 240, 'radial-gradient(closest-side,#fff,rgba(255,225,150,.95) 32%,rgba(255,110,40,.5) 60%,rgba(255,110,40,0))', 400);
+  Fx.onde(q.x + 10, q.y + 60, '#ffe2b0', 280, 420); Fx.tremble(10, 300); Fx.mot(q.x + 30, Math.max(100, q.y - 124), 'PAF !', 'croc');
+  bruit(X, 'leoPoing', {}, ['bong']);
 }
 
 /* ============================================================================ LES ÉVÈNEMENTS DES RÈGLES */
@@ -20215,6 +20128,12 @@ function evenement(X, ev, c){
   var C = corps(X), ctx = X.ctx;
   if(ev.t === 'leo'){
     if(ev.quoi === 'impact') return impact(X, ev, c);
+    /* la rafale, coup par coup ; le héros empoigné, porté, puis abattu sur son voisin */
+    if(ev.quoi === 'coups'){ X.cibleH = ev.heros; X.coupVu = 0; bruit(X, 'leoRafale', {}, ['bong']); return true; }
+    if(ev.quoi === 'coup'){ X.coupVu = ev.k; coupRafale(X, ev.k, ev.n, ev.heros); return true; }
+    if(ev.quoi === 'porte'){ X.cibleX2 = ev.autre ? xDevant(X, ev.autre) : X.cibleX; porter(X, ev.heros); C.main('Av', 'poing'); bruit(X, 'leoAttrape', {}, ['bong']); return true; }
+    if(ev.quoi === 'frappe-avec'){ frappeAvec(X, ev); return true; }
+    if(ev.quoi === 'lache'){ lacher(X); return true; }
     if(ev.quoi === 'coupe'){ coupe(X, ev); return true; }
     if(ev.quoi === 'glisse'){ glisse(X); return true; }
     if(ev.quoi === 'debout'){ bruit(X, 'leoMuscles', {}, ['tombe']); var pd = sc(X, 'piedAr', 120, 330); ctx.Fx.onde(pd.x + 60, 330, '#d8c8a8', 260, 500); return true; }
@@ -20250,9 +20169,9 @@ function impact(X, ev, c){
     Fx.onde(q3.x + 20, q3.y, '#ffe2b0', 300, 420); Fx.tremble(18, 520); Fx.mot(q3.x + 40, Math.max(100, q3.y - 120), 'PAF !', 'croc');
     return true;
   }
-  if(att === 'rafale'){ var hr = l[0], qr = hr ? ctx.hPt(hr) : {x:300, y:220}; Fx.eclat(qr.x + 26, qr.y, 240, 'radial-gradient(closest-side,#fff,rgba(255,225,150,.9) 35%,rgba(255,120,60,0))', 360); Fx.tremble(14, 420); return true; }
-  if(att === 'hurlement'){ Fx.tremble(16, 520); return true; }
-  if(att === 'attrape'){ if(ctx.balancer) ctx.balancer(l); Fx.tremble(14, 460); C.main('Av', 'ouvert'); setTimeout(function(){ try{ C.main('Av', 'poing'); }catch(e){} }, 500); return true; }
+  if(att === 'rafale') return true;                      /* (les coups arrivent un par un : « coup ») */
+  if(att === 'hurlement'){ Fx.tremble(10, 300); return true; }
+  if(att === 'attrape') return true;                     /* (il l'empoigne : « porte » ; il frappe : « frappe-avec ») */
   if(att === 'souffle'){ return true; }                  /* (les flammes sont déjà là ; les héros prennent feu avec « etat ») */
   return false;
 }
@@ -20476,7 +20395,7 @@ function braise(X, d){
 /* … et le jet de flammes : de VRAIES flammes (l'image de flamme du donjon), une quinzaine, qui partent de sa bouche, grossissent et
    s'éteignent en traversant la salle, l'une derrière l'autre, tant qu'il crache. La carte graphique les joue seule. */
 function jetDeFlammes(X, d){
-  var ctx = X.ctx, m = bouche(X), src = window.SALLE && window.SALLE.img ? window.SALLE.img('flamme') : null, N = 15, vie = 620;
+  var ctx = X.ctx, m = bouche(X), src = window.SALLE && window.SALLE.img ? window.SALLE.img('flamme') : null, N = 10, vie = 620;
   var boite = garde(X, el('lp-jet', '<i class="lp-jet-lueur"></i>', calque(X)));
   var x1 = 30, long = m.x - x1, n = Math.max(1, Math.ceil(d * 1000 / vie));
   var lu = boite.firstChild; lu.style.left = (x1 - 30) + 'px'; lu.style.width = (long + 60) + 'px';
@@ -20495,7 +20414,7 @@ function jetDeFlammes(X, d){
       {duration:vie, delay:u * vie, iterations:n, easing:'linear', fill:'backwards'});
   }
   setTimeout(function(){ try{ boite.remove(); }catch(e){} }, d * 1000 + vie + 80);
-  ctx.Fx.tremble(4, d * 1000);
+  /* (15 novembre, 13 h 54 : plus de secousse d'écran pendant tout le souffle — RAPIDITE.md, R17) */
 }
 /* la fumée qui lui sort de la bouche, après */
 function fumeeBouche(X){
@@ -20504,13 +20423,18 @@ function fumeeBouche(X){
     anim(e, [{transform:'translate(0,0) scale(.4)', opacity:.75}, {transform:'translate(' + hasard(-50, -14).toFixed(0) + 'px,' + hasard(-70, -40).toFixed(0) + 'px) scale(1.7)', opacity:0}], {duration:900, delay:i * 130, easing:'ease-out', fill:'backwards'}); retirer(e, 1500); }
 }
 /* LA RAFALE : chaque coup claque sur le héros (un éclat, un « paf ») */
-function coupRafale(X, n){
-  var ctx = X.ctx, h = X.cibleH, p = h ? ctx.hPt(h) : {x:300, y:220};
-  var x = p.x + 26 + hasard(-12, 12), y = p.y + hasard(-34, 30);
-  ctx.Fx.eclat(x, y, 110, 'radial-gradient(closest-side,#fff,rgba(255,225,150,.9) 40%,rgba(255,140,50,0))', 170);
-  ctx.Fx.etincelles(x, y, 4, null, .8);
-  if(n % 2 === 0) bruit(X, 'leoPoing', {}, ['bong']);
-  ctx.Fx.tremble(4, 110);
+/* (15 novembre, 13 h 54 — Romain : « la rafale de coups, ça fait ramer extrêmement le téléphone » ; RAPIDITE.md, R18) : un coup de
+   la rafale ne fabrique plus rien — le même éclat (posé une fois) saute près du héros et se rallume ; plus d'étincelles, plus de
+   secousse d'écran à chaque coup ; un son un coup sur deux. Seul le dernier coup, le plus lourd, a droit au grand jeu. */
+function coupRafale(X, k, n, h){
+  var ctx = X.ctx, p = h ? ctx.hPt(h) : {x:300, y:220}, dernier = k >= n;
+  var e = X.eclatR;
+  if(!e || !e.isConnected) e = X.eclatR = garde(X, el('lp-eclat-r', null, calque(X)));
+  var x = p.x + 26 + ((k * 37) % 25 - 12), y = p.y + ((k * 53) % 65 - 34);
+  if(X.eclatA) try{ X.eclatA.cancel(); }catch(x0){}
+  X.eclatA = anim(e, [{transform:'translate(' + x + 'px,' + y + 'px) scale(.35)', opacity:1}, {transform:'translate(' + x + 'px,' + y + 'px) scale(' + (dernier ? 2.4 : 1.25) + ')', opacity:0}], {duration:dernier ? 380 : 200, easing:'ease-out'});
+  if(k % 2 === 1 || dernier) bruit(X, 'leoPoing', {}, ['bong']);
+  if(dernier){ ctx.Fx.tremble(10, 300); ctx.Fx.mot(p.x + 40, Math.max(100, p.y - 120), 'PAF !', 'croc'); }
 }
 /* IL SAIGNE : la faux vient de l'entailler — un trait blanc claque sur son torse, le sang gicle, l'entaille reste */
 var PLAIES = [[143, 134], [148, 158], [153, 181]];
@@ -20748,8 +20672,23 @@ var AVEUX = [
 ];
 
 /* ====================================================================== 1. PRÉPARER, CONSTRUIRE */
-function preparer(){
-  return Promise.all([DJ.charger.bete('rat'), DJ.charger.bete('ratcuir')]).then(function(){
+/* (15 novembre, 13 h 54 — RAPIDITE.md, R16) les bruitages du combat qui reviennent le plus, fabriqués à l'avance (un par un, en
+   arrière-plan : on n'attend pas la fin pour commencer) */
+var BRUITS = {tous:['swish', 'chairF', 'chairD', 'arc', 'vol', 'leoCharge', 'leoGlisse', 'leoSonne', 'leoMuscles'],
+  1:['leoFleau', 'leoMarteau', 'leoMeule', 'leoCrochet', 'leoCape', 'leoFarine', 'baton', 'cristal'],
+  2:['leoPoing', 'leoSifflet', 'leoSaut', 'leoLancer', 'leoGlou', 'leoFaux', 'baton'],
+  3:['leoPoing', 'leoNaseaux', 'leoRafale', 'leoHurlement', 'leoSouffle', 'leoAttrape', 'leoSaigne', 'leoFaux', 'leoChute']};
+/* les sons d'une phase : fabriqués pendant l'écran de passage (la première) ou pendant la cinématique d'avant (les suivantes) ;
+   ceux de la phase d'avant rendent leur mémoire. Rend une promesse (on peut l'attendre, pas trop longtemps). */
+function sonsPhase(n){
+  try{ if(SALLE.Son && SALLE.Son.preparerBruits) return SALLE.Son.preparerBruits(BRUITS.tous.concat(BRUITS[n] || []), {seuls:true}); }catch(e){}
+  return Promise.resolve(0);
+}
+function preparer(phase){
+  /* (on attend les sons au plus trois secondes : le reste se finit pendant le début du combat) */
+  if(phase && typeof phase === 'object') phase = phaseGardee(phase);                    /* (la partie : la phase gardée) */
+  var sons = Promise.race([sonsPhase(+phase || 1), new Promise(function(ok){ setTimeout(ok, 3000); })]);
+  return Promise.all([sons, DJ.charger.bete('rat'), DJ.charger.bete('ratcuir')]).then(function(){
     return Promise.all([DJ.Combat.cuireHeros(), DJ.Combat.cuireRat(), DJ.charger.image(DJ.charger.scene('leo')), DJ.charger.image(SALLE.img('fumee-a')), DJ.charger.image(SALLE.img('brume-a')),
       /* le nouveau Léo (torse nu) : ses pièces cuites en images (leo-corps.js) */
       window.LeoCorps ? window.LeoCorps.preparer() : null]);
@@ -20812,11 +20751,8 @@ function construire(){
   E.leo.el.style.zIndex = 3;
   /* la phase 2 (Bible §13.40) : le nouveau Léo, ses gestes calés sur l'horloge des règles, ses effets (leo-p2.js) */
   E.p2 = window.LeoP2 && E.leo.corps ? window.LeoP2.creer({leo:E.leo, fx:fx, sol:q('#sol-fx'), persos:p, Fx:Fx, bruit:bruit, son:son, hCx:hCx, hPt:hPt, LX:LX, SOL:SOL,
-    /* (phase 3, « il attrape un héros ») soulever : le héros empoigné décolle du sol ; balancer : Léo s'en sert pour frapper le voisin */
-    soulever:function(h, on){ var s = slotH(h); if(!s) return; s.style.transition = 'transform .22s cubic-bezier(.3,.6,.4,1)'; s.style.transform = on ? 'translate(34px,-74px) rotate(-16deg)' : ''; },
-    balancer:function(l){ if(!l || l.length < 2){ if(l && l[0]){ var s0 = slotH(l[0]); if(s0){ s0.style.transition = 'transform .2s ease-in'; s0.style.transform = ''; } } return; }
-      var s1 = slotH(l[0]), dx = hCx(l[1]) - hCx(l[0]); s1.style.transition = ''; s1.style.transform = '';
-      try{ s1.animate([{transform:'translate(34px,-74px) rotate(-16deg)'}, {transform:'translate(' + (dx * .4) + 'px,-110px) rotate(-40deg)', offset:.3}, {transform:'translate(' + (dx * .9) + 'px,-6px) rotate(46deg)', offset:.58}, {transform:'translate(' + (dx * .5) + 'px,-40px) rotate(20deg)', offset:.78}, {transform:'translate(0,0) rotate(0)'}], {duration:620, easing:'ease-in-out'}); }catch(x){} }}) : null;
+    /* (phase 3, « il attrape un héros » : le héros est porté par la main de Léo, lâché, et le second envoyé en l'air — leo-p2.js) */
+    slot:slotH}) : null;
   var zl = el('div', 'zone'); zl.id = 'zone-leo'; zl.setAttribute('data-act', 'l-perso'); zl.setAttribute('data-type', 'ennemi'); zl.setAttribute('data-id', 'leo');
   zl.style.cssText = 'left:' + (LX - 100) + 'px;top:70px;width:200px;height:290px';
   hud.appendChild(zl);
@@ -20836,6 +20772,7 @@ function p2(){ return !!(E && E.p2 && E.c && (E.c.phase === 2 || E.c.phase === 3
 
 /* ====================================================================== 2. LES PHASES */
 function demarrerPhase(n, premiere){
+  sonsPhase(n);
   E.c = LR.combat(E.partie, {phase:n});
   E.ph = E.c.etat();
   E.elan = null; E.cases = null; E.suiteSig = null;
@@ -20849,7 +20786,6 @@ function demarrerPhase(n, premiere){
   q('#combat').setAttribute('data-phase', n);
   maj(true);
   /* la première fois qu'on arrive devant lui : il sort de l'ombre. Sinon (un nouvel essai) : on y retourne tout de suite. */
-  prechargerFilms(n);
   E.cine = true;
   (premiere && n === 1 && !E.partie.faits['leo:vu'] ? cineEntree() : cinePret(n)).then(function(){ if(!E) return; E.cine = false; E.saute = false; E.ts = 0; });
 }
@@ -20896,17 +20832,6 @@ async function cinePret(n){
 /* phase 1 → 2 : tout s'arrête, la barre des sorts descend ; il arrache sa cape et sa tunique, les jette hors de l'écran, et montre
    ses muscles — c'est Léo ! Le Pisteur ramasse ses outils (Romain, 14 novembre au soir : leo-p2.js, Bible §13.40). */
 async function cine12(){
-  var r = await film('a12');
-  if(!E) return;
-  if(r !== 'echec'){
-    E.leo.arme(null); nuage(false); noir(false, true); flaque(false);
-    ORDRE.forEach(function(h){ remettreHeros(h); });
-    E.leo.tenue(2); E.leo.visage('colere');
-    q('#leo-barre em').textContent = NOMS[2];
-    ramasser(['crochet', 'fleau', 'marteau']);
-    await pause(1300);
-    return;
-  }
   passer(true);
   E.leo.arme(null); nuage(false); noir(false, true); flaque(false);
   ORDRE.forEach(function(h){ remettreHeros(h); });
@@ -20939,16 +20864,6 @@ async function cine12(){
 }
 /* phase 2 → 3 : il boit la potion volée à Iris, et devient une grosse bête. Le Pisteur ramasse la faux et la gourde. */
 async function cine23(){
-  var r = await film('b23');
-  if(!E) return;
-  if(r !== 'echec'){
-    E.leo.arme(null);
-    if(E.p2) E.p2.vider();
-    E.leo.tenue(3); E.leo.visage('colere');
-    ramasser(['faux', 'gourde']);
-    await pause(1300);
-    return;
-  }
   passer(true);
   E.leo.arme(null);
   if(E.p2) E.p2.vider();
@@ -20996,20 +20911,6 @@ async function cine23(){
   await pause(800);
   passer(false);
 }
-/* LES CINÉMATIQUES EN FILM (Romain, 15 novembre, 12 h 40 : « des cinématiques de film », 21:9, bandes noires ; Bible §13.45) :
-   de vraies petites vidéos fabriquées d'avance (jeu/cine/, jeu/src/cine-lecteur.js), muettes — les bruitages sont ceux de l'Atelier,
-   joués à l'instant dit. Si le film n'arrive pas (pas d'internet…), on joue l'ancienne scène, dessinée en direct. */
-var CINE_URL = '../cine/';
-function film(nom, o){
-  if(!window.CineLecteur || !window.CINE_INFOS || !window.CINE_INFOS[nom]) return Promise.resolve('echec');
-  return window.CineLecteur.jouer({url:CINE_URL + nom + '.mp4', infos:window.CINE_INFOS[nom], passer:!(o && o.passer === false), attente:6000,
-    son:function(id){ bruit(id, {}); },
-    lire:function(t){ DJ.lire(t); }, parle:function(){ try{ return speechSynthesis.speaking; }catch(e){ return false; } }, taire:function(){ DJ.taire(); }});
-}
-function prechargerFilms(n){
-  if(!window.CineLecteur || !window.CINE_INFOS) return;
-  (n <= 1 ? ['a12', 'b23', 'finLeo'] : n <= 2 ? ['b23', 'finLeo'] : ['finLeo']).forEach(function(f){ if(window.CINE_INFOS[f]) window.CineLecteur.precharger(CINE_URL + f + '.mp4'); });
-}
 /* les outils de Léo glissent jusqu'au Pisteur */
 function ramasser(l){
   bruit('leoRamasse', {dt:.35}, ['clic']);
@@ -21028,6 +20929,7 @@ async function finPhase(res){
   var n = E.c.phase + 1;
   E.partie.faits['leo:phase'] = n; DJ.garder(E.partie);
   son('victoire');
+  sonsPhase(n);                                         /* (les sons de la phase qui vient se fabriquent pendant la cinématique) */
   await (n === 2 ? cine12() : cine23());
   if(!E) return;
   E.saute = false;
@@ -21060,11 +20962,6 @@ async function victoire(){
   Object.keys(E.rats).forEach(function(id){ retirerRat(id); });
   nuage(false); flaque(false); noir(false, true);
   E.leo.arme(null); E.leo.teinte(null);
-  var vu = !!E.partie.faits['leo:finVu'];
-  var r = await film('finLeo', {passer:vu});
-  if(!E) return;
-  E.partie.faits['leo:finVu'] = 1; DJ.garder(E.partie);
-  if(r !== 'echec'){ terminer('victoire'); return; }
   bruit('leoChute', {}, ['tombe']);
   await E.leo.vers('genou', 800, 'o');
   /* la potion ne fait plus effet : il redevient Léo */
@@ -21100,6 +20997,7 @@ function terminer(res){
   Object.keys(E.rats).forEach(function(id){ try{ E.rats[id].arreter(); }catch(e){} });
   ORDRE.forEach(function(h){ try{ E.A.h[h].arreter(); }catch(e){} });
   DJ.taire(); DJ.fermer();
+  try{ if(SALLE.Son && SALLE.Son.oublierBruits) SALLE.Son.oublierBruits(); }catch(e){}
   SALLE.tempsReel = false; SALLE.tissusFiges = false;
   E = null;
   fin(res);
@@ -21131,7 +21029,7 @@ function maj(force){
     basc(slot, st, 'saigne', s.saigne); basc(slot, st, 'brule', s.brule); basc(slot, st, 'bj', s.bouclier === 'jaune'); basc(slot, st, 'bc', s.bouclier === 'chene');
     var et = s.etourdi > 0; if(st.etourdi !== et){ st.etourdi = et; try{ if(!s.sol) E.A.h[h]._etoiles(et); }catch(x){} }
     var pr = Z.vise ? Z.vise.cibles.indexOf(h) >= 0 : false;
-    if(st.proie !== pr){ st.proie = pr; slot.classList.toggle('proie', pr); if(pr) q('.l-proie b', slot).textContent = Z.vise.part ? '−' + Math.round(Z.vise.part * 100) + ' %' : Z.vise.degats ? '−' + Z.vise.degats + (Z.vise.fois > 1 ? ' ×' + Z.vise.fois : '') : ''; }
+    if(st.proie !== pr){ st.proie = pr; slot.classList.toggle('proie', pr); if(pr) q('.l-proie b', slot).textContent = Z.vise.mortel ? '☠️' : Z.vise.perce ? '💫' : Z.vise.part ? '−' + Math.round(Z.vise.part * 100) + ' %' + (Z.vise.fois > 1 ? ' ×' + Z.vise.fois : '') : Z.vise.degats ? '−' + Z.vise.degats + (Z.vise.fois > 1 ? ' ×' + Z.vise.fois : '') : ''; }
   });
   var b = mem('#leo-barre'), kz = Math.max(0, Z.pv / Z.pvMax);
   if(E.pvLeo !== Z.pv){ E.pvLeo = Z.pv; q('.barre i', b).style.transform = 'scaleX(' + kz + ')'; q('b', b).textContent = Z.pv; }
@@ -21318,6 +21216,10 @@ function un(ev){
       slotH(h).classList.remove('sol'); son('coeur'); Fx.chiffre(hCx(h), 170, '+' + ev.pv, 'soin');
       Promise.resolve(E.A.h[h].relever()).catch(function(){}).then(function(){ try{ E.A.h[h].attendre(); }catch(e){} });
       return;
+    case 'pare':
+      /* (la rafale) le bouclier jaune pare un coup entier : « Paré ! » et le compte, sur la bulle */
+      Fx.chiffre(hCx(h) - 4, 150, '🛡️ ' + ev.k + ' / ' + ev.n, 'bleu'); son('absorbe');
+      return;
     case 'bouclier':
       if(ev.on) son('dome');
       else if(ev.casse){ son('absorbe'); Fx.onde(hCx(h), 220, '#ffe9a0', 200, 400); }
@@ -21325,7 +21227,7 @@ function un(ev){
     case 'etat':
       if(ev.nom === 'etourdi' && ev.on){ mot(hCx(h), 110, L.MOTS.etourdi); }
       if(ev.nom === 'saigne' && ev.on){ mot(hCx(h), 126, 'Il saigne !'); }
-      if(ev.nom === 'attrape') attrape(h, ev.on);
+      if(ev.nom === 'attrape'){ if(E.c.phase === 3){ if(ev.on) mot(hCx(h), 110, L.MOTS.attrape); } else attrape(h, ev.on); }
       return;
     case 'leo': return leo(ev);
     case 'leo-etat': return leoEtat(ev);
@@ -21368,7 +21270,11 @@ function geste(ev){
   if(g === 'l:gourde'){
     to = hPt(c);
     var go = el('div', 'leo-outil', icArme('gourde')); go.style.left = (hCx('pisteur') - 20) + 'px'; go.style.top = '170px'; fx.appendChild(go);
-    try{ go.animate([{transform:'translate(0,0) scale(1.2)'}, {transform:'translate(' + ((to.x - hCx('pisteur')) / 2) + 'px,-90px) scale(1.5) rotate(180deg)', offset:.5}, {transform:'translate(' + (to.x - hCx('pisteur')) + 'px,-10px) scale(1.2) rotate(360deg)'}], {duration:ev.impact * 1000 / E.vite, easing:'ease-in-out', fill:'both'}); }catch(x){}
+    /* (15 novembre, 13 h 54 : la gourde met 3 secondes — le Pisteur la lève, la débouche, la secoue… puis la lance) */
+    var dxg = to.x - hCx('pisteur');
+    try{ go.animate([{transform:'translate(0px,0px) scale(1.2) rotate(0deg)'}, {transform:'translate(6px,-56px) scale(1.5) rotate(-14deg)', offset:.12}, {transform:'translate(6px,-60px) scale(1.5) rotate(12deg)', offset:.28},
+      {transform:'translate(6px,-56px) scale(1.5) rotate(-12deg)', offset:.44}, {transform:'translate(6px,-60px) scale(1.5) rotate(10deg)', offset:.6}, {transform:'translate(6px,-56px) scale(1.5) rotate(0deg)', offset:.72},
+      {transform:'translate(' + (dxg / 2 + 3).toFixed(0) + 'px,-112px) scale(1.5) rotate(180deg)', offset:.86}, {transform:'translate(' + dxg.toFixed(0) + 'px,-10px) scale(1.2) rotate(360deg)'}], {duration:ev.impact * 1000 / E.vite, easing:'linear', fill:'both'}); }catch(x){}
     setTimeout(function(){ go.remove(); }, ev.impact * 1000 + 60);
     apres(ev.impact, function(){ son('bulles', .5); });
     return;
@@ -21423,6 +21329,8 @@ function degatsHeros(ev){
   }
   Fx.chiffre(x, 138, '−' + ev.n, ev.n >= 25 ? 'gros' : '');
   if(ev.bouclier) Fx.bulleTexte(x, 296, '🛡️ −' + (ev.brut - ev.n), 'bleu');
+  /* (le héros porté ou envoyé en l'air par Léo bouge déjà : pas de recul par-dessus) */
+  if(ev.cause === 'attrape'){ try{ E.A.h[h]._flash(); }catch(e){} return; }
   frappe(slot, h);
 }
 function frappe(slot, h){
@@ -21448,7 +21356,7 @@ function degatsEnnemi(ev){
 function soin(ev){
   var h = ev.heros, x = hCx(h);
   son('soin');
-  for(var k = 0; k < 5; k++) (function(k){ var e = el('div', 'etincelle', ev.par === 'herbes' ? '🌿' : '✨'); e.style.left = (x - 40 + k * 20) + 'px'; e.style.top = (240 - (k % 3) * 24) + 'px'; e.style.animationDelay = (k * 60) + 'ms'; fx.appendChild(e); setTimeout(function(){ e.remove(); }, 1200); })(k);
+  for(var k = 0; k < 3; k++) (function(k){ var e = el('div', 'etincelle', ev.par === 'herbes' ? '🌿' : '✨'); e.style.left = (x - 30 + k * 30) + 'px'; e.style.top = (240 - (k % 3) * 24) + 'px'; e.style.animationDelay = (k * 60) + 'ms'; fx.appendChild(e); setTimeout(function(){ e.remove(); }, 1200); })(k);
   if(ev.n > 0) Fx.chiffre(x, 170, '+' + ev.n, 'soin');
 }
 
@@ -22415,7 +22323,7 @@ function lancerLeo(){
   if(X.sansCombat){ DJ.fermer(); Regles.bossBattu(p, 'leo'); garder(); finDonjon(); return Promise.resolve(); }
   DJ.fermer(); quitterCarte(); X.ecran = 'combat';
   jeu.classList.remove('sur-carte'); jeu.innerHTML = '';
-  return DJ.passage(nomLieu('leo'), function(){ return DJ.Leo.preparer(); }).then(function(){ return DJ.Leo.lancer(p, {vite:X.leoVite}); }).then(function(res){
+  return DJ.passage(nomLieu('leo'), function(){ return DJ.Leo.preparer(p); }).then(function(){ return DJ.Leo.lancer(p, {vite:X.leoVite}); }).then(function(res){
     if(res === 'victoire'){ Regles.bossBattu(p, 'leo'); garder(); finDonjon(); return; }
     garder();
     carte({texte:'Léo attend toujours, tout au fond. Ce que vous avez gagné contre lui reste gagné.'});
@@ -22697,7 +22605,7 @@ function essaiLeo(P){
   (P.objets || '').split(',').forEach(function(x){ var k = x.split(':'); if(k.length === 2 && partie.heros[k[0]] && D.OBJETS[k[1]]) partie.heros[k[0]].objets.push(k[1]); });
   if(P.vu && P.vu !== '0') partie.faits['leo:vu'] = 1;    /* (&vu=0 : avec la cinématique d'entrée) */
   window.PARTIE = partie;
-  DJ.passage('La dernière salle', function(){ return DJ.Leo.preparer(); }).then(function(){ return DJ.Leo.lancer(partie, {phase:+P.phase || 1, vite:+P.leovite || 1}); }).then(function(res){
+  DJ.passage('La dernière salle', function(){ return DJ.Leo.preparer(+P.phase || 1); }).then(function(){ return DJ.Leo.lancer(partie, {phase:+P.phase || 1, vite:+P.leovite || 1}); }).then(function(res){
     window.RESULTAT = res;
     var jeu = q('#jeu'); jeu.innerHTML = '';
     var e = el('div', 'ecran'); e.id = 'essai-fin';
