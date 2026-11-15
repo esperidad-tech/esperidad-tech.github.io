@@ -15,7 +15,7 @@ var section = {id:'mj-gateau', titre:'Gâteau de fête', sous:[
   {id:'gateau-decos', titre:'Une décoration posée', sons:liste([['fruit', 'Un fruit', .25], ['fleur', 'Une fleur', .7], ['bonbon', 'Un bonbon', .25], ['fete', 'Fête', .3], ['farfelu', 'Farfelu', .45],
     ['paillettes', 'Paillettes', .4], ['chantilly', 'Chantilly', .4]])},
   {id:'gateau-gestes', titre:'Gestes et fête', sons:liste([['prend', 'On la soulève', .12], ['tourne', 'Elle tourne', .15], ['poubelle', 'À la poubelle', .4], ['annule', 'Annuler', .2],
-    ['plein', 'Plus de place', .3], ['bravo', 'C’est prêt !', 1.6], ['confetti', 'Confettis', .5]])}
+    ['plein', 'Plus de place', .3], ['grossit', 'Ça grossit', .3], ['rapetisse', 'Ça rapetisse', .25], ['bravo', 'C’est prêt !', 1.6], ['confetti', 'Confettis', .5]])}
 ]};
 var mj = (G.CATALOGUE || []).filter(function(s){ return s.id === 'mj'; })[0];
 if(mj) mj.sous.push(section);
