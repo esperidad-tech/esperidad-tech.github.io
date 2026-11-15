@@ -622,6 +622,16 @@ section('Phase 3 — deux joueurs (leo-joueurs3.js)');
   ok(spam.every(function(x){ return x.fin === 'defaite'; }), 'celui qui ne fait que la gourde et le bouclier jaune, sans arrêt (l\'essai de Romain), perd à chaque fois');
 })();
 
+section('Phase 3 — l\'ordre des attaques (Romain, 15 novembre, 17 h 26 : après « il attrape », une charge, pas le souffle)');
+(function(){
+  var O = L.ORDRE[3], c = combat(3), vus = [], i;
+  for(i = 0; i < O.length; i++) if(O[i] === 'attrape') egal(O[(i + 1) % O.length], 'charge', 'après « il attrape », il enchaîne avec une charge (« comme ça, on a le temps de réagir »)');
+  ok(O.every(function(a, i){ return !(a === 'souffle' && (O[(i + O.length - 1) % O.length] === 'attrape' || O[(i + O.length - 1) % O.length] === 'rafale')); }), 'le souffle de feu ne tombe jamais juste après « il attrape », ni juste après la rafale (des héros presque à sec)');
+  ok(O.indexOf('rafale') >= 0 && O[(O.indexOf('rafale') + 1) % O.length] === 'charge', 'après la rafale aussi, une charge : le temps de remonter celui qui l\'a prise');
+  while(vus.length < 9 && c.t < 200){ c.avancer(.05).forEach(function(e){ if(e.t === 'leo' && e.quoi === 'prise') vus.push(e.att); }); D.ORDRE.forEach(function(h){ c.h[h].pv = c.h[h].pvMax; c.h[h].sol = false; c.h[h].attrape = false; c.h[h].brule = 0; }); c.leo.tenu = null; }
+  egal(vus.slice(0, 9), ['poing3', 'rafale', 'charge', 'hurlement', 'attrape', 'charge', 'souffle', 'poing3', 'rafale'], 'à l\'écran des règles : poing, rafale, charge, cri, il attrape, charge, souffle… et ça recommence');
+})();
+
 section('La défaite');
 (function(){
   var c = combat(1), ev = [];
