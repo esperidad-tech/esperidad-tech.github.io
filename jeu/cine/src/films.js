@@ -65,6 +65,92 @@ function bouchePar(p, t, lignes){
 function versEcran(pt, x, z){ var pr = CAM.projeter(x || 0, 0, z || 0); return [pr.x + pt[0] * pr.s, pr.y + pt[1] * pr.s, pr.s]; }
 
 /* ======================================================================================================== */
+/* FILM 0 — L'ENTRÉE : les héros entrent dans sa salle. L'homme en cape attend au fond, immobile dans l'ombre ; ses yeux
+   s'allument sous le capuchon ; il avance de deux pas lourds jusqu'à la lumière des torches et leur parle. (Romain, 15 novembre,
+   19 h 05 : « une cinématique au moment où Léo arrive dans la salle et il dit : j'attends ce moment depuis longtemps. Vous auriez
+   jamais dû venir ici. Je vais m'occuper de vous. Un truc comme ça. ») En phase 1, on ne sait pas encore que c'est Léo : les
+   sous-titres disent « L'homme en cape », et on ne voit que ses yeux. Les gros plans : les yeux au tiers du haut de l'image
+   (Romain, même message : « un cadrage cinéma, la tête bien placée »). Environ 15 secondes. */
+(function(){
+var T = 15.2, PAS1 = 4.0, PAS2 = 4.95;
+var L = [[6.7, 9.4, 'J\'attends ce moment depuis longtemps.'], [9.85, 12.45, 'Vous n\'auriez jamais dû venir ici.'], [12.6, 14.55, 'Je vais m\'occuper de vous.']];
+var QUI = 'L\'homme en cape';
+var poseE = U.poses(BASE, [
+  [0, {w:[0, -272], t:0, tete:{k:7}, bD:{a:12, c:-12}, bG:{a:12, c:-12}, poingD:'poing', poingG:'poing', balance:0}],
+  [3.5, {tete:{k:5}}, 'io'],
+  /* deux pas lourds vers nous : le corps descend sur chaque pas, la cape suit */
+  [PAS1 - .3, {w:[-4, -266], r:-2, jG:{p:[-70, -4]}, balance:-14}, 'io'],
+  [PAS1, {w:[-2, -262], r:-1, jG:{p:[-64, 0]}, balance:-6}, 'choc'],
+  [PAS2 - .3, {w:[4, -268], r:2, jD:{p:[70, -4]}, balance:14}, 'io'],
+  [PAS2, {w:[2, -262], r:1, jD:{p:[64, 0]}, balance:6}, 'choc'],
+  [5.8, {w:[0, -272], r:0, balance:0, tete:{k:8}}, 'io'],
+  /* le gros plan : il relève la tête vers nous */
+  [6.6, {tete:{k:1}}, 'io'],
+  [9.4, {tete:{k:-1, r:-3}}, 'l'],
+  /* « Vous n'auriez jamais dû venir ici. » : il écarte les bras sous sa cape */
+  [9.65, {tete:{k:2, r:0}}],
+  [10.4, {bD:{a:52, c:-26}, bG:{a:52, c:-26}, poingD:'ouvert', poingG:'ouvert', t:-2, tete:{k:-2}, balance:0}, 'o'],
+  [12.2, {bD:{a:56, c:-30}, bG:{a:56, c:-30}}, 'l'],
+  /* « Je vais m'occuper de vous. » : il se penche vers nous, la tête basse, les poings serrés */
+  [12.35, {bD:{a:20, c:-24}, bG:{a:20, c:-24}, poingD:'poing', poingG:'poing', t:5, tk:.96, tete:{k:9}}],
+  [14.3, {t:7, tk:.95, tete:{k:11}}, 'l'],
+  [14.7, {t:3, tete:{k:6}}, 'o']
+]);
+function pose(t){
+  var p = copie(poseE(t));
+  respire(p, t, t < 6.4 ? .35 : .25, .55, 9);
+  /* il parle : la tête bouge à peine avec les mots */
+  L.forEach(function(l, i){ var b = parle(t, l[0], l[1], i + 4); if(b) p.tete.k += b.o * 2.5; });
+  return p;
+}
+/* les yeux : éteints, puis ils s'allument d'un coup ; ils palpitent quand il parle ; ils flambent à la fin */
+var yeux0 = U.piste([[0, 0], [1.3, 0], [1.65, 1.7, 'o'], [2.4, 1.15, 'io'], [13.9, 1.2], [14.45, 2.2, 'o'], [15.2, 1.8]]);
+function yeux(t){ var v = yeux0(t); L.forEach(function(l, i){ var b = parle(t, l[0], l[1], i + 4); if(b) v += b.o * .6; }); return v; }
+/* il sort de l'ombre : la lumière de face monte quand il avance */
+var lumiere = U.piste([[0, .22], [3.6, .25], [5.6, 1.05, 'io']]);
+var avance = U.piste([[0, -260], [PAS1 - .35, -250], [PAS1, -130, 'o'], [PAS2 - .35, -110], [PAS2, 0, 'o']]);
+var camera = plans([
+  [0, [[0, {x:0, y:-330, z:1740, focus:2000}], [3.6, {x:0, y:-345, z:1560, focus:1820}, 'l']]],
+  /* (il approche : la caméra se relève avec lui, pour garder sa tête dans le tiers du haut) */
+  [3.6, [[3.6, {x:-40, y:-392, z:1060, focus:1310}], [PAS1, {x:-40, y:-400, z:1050, focus:1180}, 'l'], [PAS2, {x:-34, y:-424, z:1030, focus:1030}, 'io'], [6.4, {x:-30, y:-432, z:1000, focus:1000}, 'l']]],
+  /* les gros plans : les yeux (sous le capuchon) au tiers du haut */
+  [6.4, [[6.4, {x:0, y:-488, z:580, focus:580, ouverture:1.1}], [9.6, {x:0, y:-487, z:530, focus:530, ouverture:1.1}, 'l']]],
+  [9.6, [[9.6, {x:30, y:-345, z:1200, focus:1200, tangage:.05}], [12.3, {x:10, y:-352, z:1100, focus:1100, tangage:.05}, 'l']]],
+  [12.3, [[12.3, {x:0, y:-482, z:480, focus:480, ouverture:1.15}], [T, {x:0, y:-484, z:430, focus:430, ouverture:1.15}, 'l']]]
+]);
+var SEC = [[PAS1, 4, .35], [PAS2, 5, .4], [14.45, 6, .7]];
+CINE.films.entree = {
+  nom:'L\'entrée', duree:T,
+  sons:[[.15, 'cinePasEcho'], [.85, 'cinePasEcho'], [1.35, 'leoCape'], [PAS1 - .4, 'cineCape'], [PAS1 - .02, 'cinePas'], [PAS2 - .02, 'cinePas'],
+    [9.75, 'cineCape'], [14.4, 'leoTorches'], [14.55, 'cineGrogne']],
+  sousTitres:L.map(function(l){ return [l[0], l[1], l[2], QUI]; }),
+  etat:function(t){
+    var z = avance(t);
+    return {
+      cam:camera(t), tremble:secousses(SEC, t), flare:t > 14.4 ? 1 + .5 * Math.max(0, 1 - (t - 14.4) / .8) : 1,
+      acteurs:[{type:'leo', x:0, z:z, pose:pose(t), o:{habit:'cape', yeuxCape:yeux(t)},
+        lum:{dx:-280, dy:-600, k:lumiere(t)}, ombreR:170}],
+      devant:function(t){
+        return FX.bouffee(t, PAS1, -64, z, 8, 3, .8) + FX.bouffee(t, PAS2, 64, z, 8, 5, .8) + FX.plafond(t, 14.45, 15.2, 30, 7, [-800, -800, 800, 300]);
+      },
+      lumieres:function(t){
+        /* la lueur des yeux, sous le capuchon (plus forte dans l'ombre) */
+        var y = yeux(t); if(!(y > .05)) return '';
+        var os = LeoFace.dernier.os, pr = CAM.projeter(0, 0, z), s = '';
+        ['oeilD', 'oeilG'].forEach(function(n){
+          var e = LeoFace.point(os, n), x0 = pr.x + (e[0] * .8) * pr.s, y0 = pr.y + (e[1] + 6) * pr.s;
+          s += '<circle cx="' + U.r(x0) + '" cy="' + U.r(y0) + '" r="' + U.r(26 * pr.s) + '" fill="url(#lueurJaune)" opacity="' + U.r(U.clamp(y * .45, 0, 1)) + '"/>';
+        });
+        return s;
+      },
+      fondu:t < .6 ? {k:1 - t / .6} : t > T - .5 ? {k:U.clamp((t - (T - .5)) / .5, 0, 1)} : null
+    };
+  }
+};
+})();
+
+
+/* ======================================================================================================== */
 /* FILM 1 — FIN DE LA PHASE 1 : il tombe à genoux dans sa cape noire, se relève, arrache sa cape : c'est Léo. Il hurle, il bande
    ses muscles. (Romain : « il tombe à terre en cape noire. Et là, d'un coup, il retire sa cape. Et il est énervé, il crie, il bande
    ses muscles. ») Environ 13,6 secondes. */
@@ -125,7 +211,7 @@ function laCape(){
 var yeux = U.piste([[0, .9], [3.2, 1], [3.85, 1.7, 'o'], [5.5, 1.5]]);
 var camera = plans([
   [0, [[0, {x:-10, y:-330, z:1650, focus:1650}], [1.6, {x:0, y:-250, z:1420, focus:1420}, 'io'], [3.4, {x:20, y:-200, z:1150, focus:1150}, 'io'], [5.0, {x:10, y:-330, z:1250, focus:1250}, 'io'], [6.5, {x:0, y:-350, z:1180, focus:1180}, 'io']]],
-  [6.5, [[6.5, {x:0, y:-500, z:560, focus:560, ouverture:1.1}], [8.9, {x:0, y:-496, z:470, focus:470, ouverture:1.1}, 'l']]],
+  [6.5, [[6.5, {x:0, y:-487, z:560, focus:560, ouverture:1.1}], [8.9, {x:0, y:-485, z:470, focus:470, ouverture:1.1}, 'l']]],
   [8.9, [[8.9, {x:0, y:-150, z:2050, focus:2050, tangage:.09}], [11.2, {x:0, y:-170, z:1850, focus:1850, tangage:.085}, 'io']]],
   [11.2, [[11.2, {x:-30, y:-330, z:1050, focus:1050, tangage:.04}], [13.6, {x:0, y:-360, z:900, focus:900, tangage:.03}, 'io']]]
 ]);
@@ -302,10 +388,10 @@ function rougit(t){ if(t < 10.85) return false; if(t >= 11.95) return true; retu
 var grand = U.piste([[10.9, 1], [12.35, 1.07, 'io']]);
 var camera = plans([
   [0, [[0, {x:0, y:-270, z:1260, focus:1260}], [3.2, {x:16, y:-300, z:1120, focus:1120}, 'io']]],
-  [3.2, [[3.2, {x:0, y:-508, z:560, focus:560, ouverture:1.1}], [6.4, {x:0, y:-506, z:500, focus:500, ouverture:1.1}, 'l']]],
+  [3.2, [[3.2, {x:0, y:-463, z:560, focus:560, ouverture:1.1}], [6.4, {x:0, y:-466, z:500, focus:500, ouverture:1.1}, 'l']]],
   [6.4, [[6.4, {x:60, y:-380, z:930, focus:930}], [GP, {x:34, y:-412, z:840, focus:840}, 'io']]],
   /* le gros plan : la tête et le cou, un peu par en dessous */
-  [GP, [[GP, {x:16, y:-500, z:530, focus:530, ouverture:1.2}], [FINGP, {x:10, y:-504, z:490, focus:490, ouverture:1.2}, 'l']]],
+  [GP, [[GP, {x:16, y:-471, z:530, focus:530, ouverture:1.2}], [FINGP, {x:10, y:-478, z:490, focus:490, ouverture:1.2}, 'l']]],
   [FINGP, [[FINGP, {x:40, y:-440, z:880, focus:880}], [10.1, {x:30, y:-440, z:840, focus:840}, 'l']]],
   [10.1, [[10.1, {x:0, y:-380, z:860, focus:860}], [11.95, {x:0, y:-372, z:760, focus:760}, 'l']]],
   [11.95, [[11.95, {x:0, y:-300, z:1580, focus:1580, tangage:.05}], [T, {x:0, y:-330, z:1400, focus:1400, tangage:.05}, 'io']]]
@@ -453,11 +539,11 @@ function pose(t){
 }
 var camera = plans([
   [0, [[0, {x:0, y:-240, z:1250, focus:1250}], [4.4, {x:0, y:-250, z:1080, focus:1080}, 'io']]],
-  [4.4, [[4.4, {x:0, y:-396, z:580, focus:580, ouverture:1.1}], [7.4, {x:0, y:-396, z:540, focus:540, ouverture:1.1}, 'l']]],
+  [4.4, [[4.4, {x:0, y:-344, z:580, focus:580, ouverture:1.1}], [7.4, {x:0, y:-347, z:540, focus:540, ouverture:1.1}, 'l']]],
   [7.4, [[7.4, {x:-40, y:-330, z:840, focus:840}], [15.6, {x:-10, y:-340, z:740, focus:740}, 'l']]],
-  [15.6, [[15.6, {x:10, y:-398, z:560, focus:560, ouverture:1.1}], [26.7, {x:0, y:-398, z:480, focus:480, ouverture:1.1}, 'l']]],
+  [15.6, [[15.6, {x:10, y:-342, z:560, focus:560, ouverture:1.1}], [26.7, {x:0, y:-350, z:480, focus:480, ouverture:1.1}, 'l']]],
   [26.7, [[26.7, {x:60, y:-320, z:920, focus:920}], [34.6, {x:20, y:-350, z:700, focus:700}, 'io']]],
-  [34.6, [[34.6, {x:0, y:-398, z:540, focus:540, ouverture:1.1}], [T, {x:0, y:-398, z:470, focus:470, ouverture:1.1}, 'l']]]
+  [34.6, [[34.6, {x:0, y:-344, z:540, focus:540, ouverture:1.1}], [T, {x:0, y:-351, z:470, focus:470, ouverture:1.1}, 'l']]]
 ]);
 var vap = U.piste([[0, 1.2], [3, .8], [7, .2], [10, 0]]);
 /* la potion ne fait plus effet : au début, c'est encore le Léo de la phase 3 ; il redevient Léo en deux secondes (la peau
@@ -617,7 +703,7 @@ var camera = plans([
        [10.9, {x:1040, y:-360, z:1320, lacet:.2, focus:1560}, 'io']]],
   [10.9, [[10.9, {x:1290, y:-390, z:560, lacet:.12, focus:760}], [14.8, {x:1310, y:-395, z:470, lacet:.1, focus:680}, 'l']]],
   [14.8, [[14.8, {x:1290, y:-390, z:560, lacet:.12, focus:760}]]],
-  [18.1, [[18.1, {x:1388, y:-445, z:200, lacet:0, focus:380, ouverture:1.1}], [21.6, {x:1388, y:-445, z:170, lacet:0, focus:350, ouverture:1.1}, 'l']]],
+  [18.1, [[18.1, {x:1388, y:-433, z:200, lacet:0, focus:380, ouverture:1.1}], [21.6, {x:1388, y:-434, z:170, lacet:0, focus:350, ouverture:1.1}, 'l']]],
   [21.6, [[21.6, {x:1150, y:-410, z:300, lacet:-.1, focus:730, ouverture:1.15}], [23.8, {x:1140, y:-410, z:260, lacet:-.1, focus:690, ouverture:1.15}, 'l']]],
   [23.8, [[23.8, {x:1300, y:-370, z:760, lacet:.08, focus:940}], [T, {x:1300, y:-360, z:860, lacet:.08, focus:700}, 'i2']]]
 ]);

@@ -105,7 +105,9 @@ window.CATALOGUE = [
           /* 15 novembre, 16 h 57 (Romain) : le cri de Léo (une voix fabriquée), et une musique par film (cine-musiques.js) */
           {id:'cineCri', t:'Le cri', v:'ABC'},
           {id:'cineMusA12', t:'Musique phase 1', v:'A', m:1}, {id:'cineMusB23', t:'Musique phase 2', v:'A', m:1},
-          {id:'cineMusFinLeo', t:'Musique Léo parle', v:'A', m:1}, {id:'cineMusFinMaire', t:'Musique du maire', v:'A', m:1}
+          {id:'cineMusFinLeo', t:'Musique Léo parle', v:'A', m:1}, {id:'cineMusFinMaire', t:'Musique du maire', v:'A', m:1},
+          /* 15 novembre, 19 h 05 (Romain) : la cinématique de l'entrée (l'homme en cape sort de l'ombre et parle) */
+          {id:'cineMusEntree', t:'Musique de l\'entrée', v:'A', m:1, neuf:1}
         ]}
       ]}
     ]},

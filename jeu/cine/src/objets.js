@@ -84,6 +84,7 @@ OB.veinesBras = function(k){
 };
 OB.defs = function(){
   return '<linearGradient id="potionForce" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4ffdc"/><stop offset=".35" stop-color="#a6ff6a"/><stop offset="1" stop-color="#1f8a2a"/></linearGradient>' +
+    '<radialGradient id="lueurJaune"><stop offset="0" stop-color="#fff8c0" stop-opacity=".95"/><stop offset=".35" stop-color="#ffd040" stop-opacity=".45"/><stop offset="1" stop-color="#ffaa00" stop-opacity="0"/></radialGradient>' +
     '<radialGradient id="lueurPotion"><stop offset="0" stop-color="#f4ffdc" stop-opacity=".95"/><stop offset=".35" stop-color="#8dff5a" stop-opacity=".45"/><stop offset="1" stop-color="#3fd13a" stop-opacity="0"/></radialGradient>' +
     '<filter id="lueurVeine" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur in="SourceGraphic" stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
 };

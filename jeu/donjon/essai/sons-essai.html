@@ -4953,6 +4953,41 @@ function trem(A, t, f, d, g, dest, o){
 /* un battement sourd (le cœur, des pas lointains) */
 function sourd(A, t, g, dest){ A.tambour(t, {f:62, d:.5, g:g}, dest); }
 
+/* =================== L'ENTRÉE (entree, 15,2 s) : l'homme en cape attend dans l'ombre, ses yeux s'allument, il avance, il parle =================== */
+M.cineMusEntreeA = function(A, P){
+  var I = Instance(A, P), proche = A.bus(P, {grotte:.35}), tamb = A.bus(P, {grotte:.7, g:.9}), loin = A.bus(P, {grotte:1, g:.7}), ech = I.echo(loin, {temps:.42, retour:.45, lp:2200, sortie:.5});
+  a(I, 0, function(t){
+    fond(A, t, [m(26), m(33)], 15, .04, proche, {a:1.4, r:1.2});                                    /* le ré tout en bas, dans le noir */
+    A.bruit(t, {coul:'brun', bp:240, bq:.8, env:[[0, 0], [2, 1], [13, .8], [15, 0]], g:.05}, loin);    /* l'air du souterrain */
+  });
+  a(I, 1.35, function(t){                                                                          /* ses yeux s'allument */
+    [m(38), m(44)].forEach(function(f){ cuivre(A, t, f, 3.2, .045, proche); });                     /* ré et la bémol : ça grince */
+    A.choeur(t, [m(50), m(56)], 3.4, {voyelle:'a', a:.25, r:2, g:.026}, loin);
+    [[0, 62], [.45, 65], [.9, 68], [1.35, 69]].forEach(function(p){ A.harpe(t + .5 + p[0], m(p[1]), {t60:2.2, g:.08, lp:2200}, ech); });
+  });
+  a(I, 2.2, function(t){ [0, 1.15, 2.3].forEach(function(x){ sourd(A, t + x, .12, tamb); }); trem(A, t, m(45), 4, .016, proche, {env:[[0, 0], [3.5, 1], [4, .4]]}); });
+  a(I, 3.98, function(t){ A.tambour(t, {f:52, d:1.1, g:.3}, tamb); });                              /* ses deux pas */
+  a(I, 4.93, function(t){ A.tambour(t, {f:48, d:1.2, g:.34}, tamb); });
+  a(I, 6.5, function(t){                                                                           /* « J'attends ce moment depuis longtemps. » */
+    A.choeur(t, [m(50), m(53), m(57)], 3.2, {voyelle:'ou', a:1, r:1.4, g:.018}, loin);
+    [[0, 62], [.6, 65], [1.2, 68], [1.8, 69], [2.6, 61], [3.0, 62]].forEach(function(p){ A.harpe(t + p[0], m(p[1]), {t60:1.8, g:.07, lp:2000}, ech); });
+  });
+  a(I, 9.7, function(t){                                                                           /* « Vous n'auriez jamais dû venir ici. » */
+    [m(38), m(45), m(50)].forEach(function(f){ cuivre(A, t, f, 2.6, .04, proche); });
+    trem(A, t, m(45), 2.7, .02, proche, {f2:m(46)}); trem(A, t, m(50), 2.7, .016, proche, {f2:m(51)});
+  });
+  a(I, 12.4, function(t){                                                                          /* « Je vais m'occuper de vous. » : le cœur qui accélère, ça monte */
+    [.2, .8, 1.3, 1.7, 1.95, 2.15].forEach(function(x, k){ sourd(A, t + x, .12 + k * .03, tamb); });
+    montee(A, t + 1.05, 1.0, .3, loin);
+  });
+  a(I, 14.45, function(t){                                                                         /* le coup : le combat commence */
+    frappe(A, t, .5, tamb);
+    [m(38), m(39), m(44)].forEach(function(f){ cuivre(A, t, f, 1.6, .05, proche); });
+    A.choeur(t, [m(50), m(51), m(56)], 1.2, {voyelle:'a', a:.05, r:.9, g:.03}, loin);
+  });
+  return I;
+};
+
 /* =================== FIN DE LA PHASE 1 (a12, 13,6 s) : il tombe, arrache sa cape, hurle, bande ses muscles =================== */
 M.cineMusA12A = function(A, P){
   var I = Instance(A, P), proche = A.bus(P, {grotte:.3}), tamb = A.bus(P, {grotte:.6, g:.9}), loin = A.bus(P, {grotte:1, g:.7});
@@ -5335,7 +5370,9 @@ window.CATALOGUE = [
           /* 15 novembre, 16 h 57 (Romain) : le cri de Léo (une voix fabriquée), et une musique par film (cine-musiques.js) */
           {id:'cineCri', t:'Le cri', v:'ABC'},
           {id:'cineMusA12', t:'Musique phase 1', v:'A', m:1}, {id:'cineMusB23', t:'Musique phase 2', v:'A', m:1},
-          {id:'cineMusFinLeo', t:'Musique Léo parle', v:'A', m:1}, {id:'cineMusFinMaire', t:'Musique du maire', v:'A', m:1}
+          {id:'cineMusFinLeo', t:'Musique Léo parle', v:'A', m:1}, {id:'cineMusFinMaire', t:'Musique du maire', v:'A', m:1},
+          /* 15 novembre, 19 h 05 (Romain) : la cinématique de l'entrée (l'homme en cape sort de l'ombre et parle) */
+          {id:'cineMusEntree', t:'Musique de l\'entrée', v:'A', m:1, neuf:1}
         ]}
       ]}
     ]},

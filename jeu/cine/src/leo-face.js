@@ -419,6 +419,11 @@ function capuchon(lueur, uid){
   var s = '<path d="M-58 4 C -66 -36 -56 -104 -26 -136 C -10 -150 10 -150 26 -136 C 56 -104 66 -36 58 4 C 40 -6 -40 -6 -58 4 Z" fill="url(#lfRobe)" stroke="' + O + '" stroke-width="' + OL + '"/>' +
     '<path d="M-28 -18 C -36 -50 -30 -88 0 -98 C 30 -88 36 -50 28 -18 C 16 -10 -16 -10 -28 -18 Z" fill="#030205" stroke="' + O + '" stroke-width="2"/>' +
     '<path d="M-40 -6 C -46 -40 -40 -90 -14 -114 M40 -6 C 46 -40 40 -90 14 -114" fill="none" stroke="#3a3450" stroke-width="2" opacity=".5"/>' +
+    /* (vu de près, dans les gros plans) les plis de l'étoffe, l'ourlet cousu autour de l'ouverture, le bord éclairé par les torches */
+    '<path d="M-50 -2 C -56 -30 -52 -70 -34 -100 M50 -2 C 56 -30 52 -70 34 -100 M-20 -132 C -8 -122 8 -122 20 -132 M-46 -60 C -40 -66 -36 -74 -36 -84 M46 -60 C 40 -66 36 -74 36 -84" fill="none" stroke="#0a0812" stroke-width="2.2" opacity=".55"/>' +
+    '<path d="M-31 -16 C -40 -50 -33 -92 0 -103 C 33 -92 40 -50 31 -16" fill="none" stroke="#4a4262" stroke-width="2.4" opacity=".7"/>' +
+    '<path d="M-34 -14 C -43 -50 -36 -95 0 -107 C 36 -95 43 -50 34 -14" fill="none" stroke="#7a7090" stroke-width="1.1" stroke-dasharray="3 3" opacity=".5"/>' +
+    '<path d="M44 -20 C 52 -50 48 -96 22 -126" fill="none" stroke="#8a6a5a" stroke-width="2" opacity=".35"/>' +
     /* l'agrafe de la cape, au cou */
     '<circle cx="0" cy="2" r="9" fill="url(#lfAcier)" stroke="' + O + '" stroke-width="2"/><circle cx="0" cy="2" r="3.5" fill="#3a3a48"/>';
   var l = lueur == null ? 1 : lueur;
