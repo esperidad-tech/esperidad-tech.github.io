@@ -1,0 +1,63 @@
+{
+ "nom": "L'entrée",
+ "duree": 15.2,
+ "sons": [
+  [
+   0.15,
+   "cinePasEcho"
+  ],
+  [
+   0.85,
+   "cinePasEcho"
+  ],
+  [
+   1.35,
+   "leoCape"
+  ],
+  [
+   3.6,
+   "cineCape"
+  ],
+  [
+   3.98,
+   "cinePas"
+  ],
+  [
+   4.930000000000001,
+   "cinePas"
+  ],
+  [
+   9.75,
+   "cineCape"
+  ],
+  [
+   14.4,
+   "leoTorches"
+  ],
+  [
+   14.55,
+   "cineGrogne"
+  ]
+ ],
+ "sousTitres": [
+  [
+   6.7,
+   9.4,
+   "J'attends ce moment depuis longtemps.",
+   "L'homme en cape"
+  ],
+  [
+   9.85,
+   12.45,
+   "Vous n'auriez jamais dû venir ici.",
+   "L'homme en cape"
+  ],
+  [
+   12.6,
+   14.55,
+   "Je vais m'occuper de vous.",
+   "L'homme en cape"
+  ]
+ ],
+ "fps": 30
+}

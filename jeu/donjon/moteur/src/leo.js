@@ -61,6 +61,8 @@ function sonsPrets(max){
   return new Promise(function(ok){ (function voir(){ if(fabricationFinie() || Date.now() > fin) ok(); else setTimeout(voir, 150); })(); });
 }
 function preparer(phase){
+  /* le film de l'entrée se télécharge pendant l'écran de passage (la première fois seulement) */
+  if(phase && typeof phase === 'object' && !(phase.faits && phase.faits['leo:vu'])) prechargerFilm('entree');
   if(phase && typeof phase === 'object') phase = phaseGardee(phase);                    /* (la partie : la phase gardée) */
   /* les sons et la musique de la phase se fabriquent PENDANT qu'on prépare les images ; on n'ouvre le combat que quand tout est prêt */
   sonsPhase(+phase || 1);
@@ -202,9 +204,20 @@ function passer(on){
   if(!on){ var x = q('.leo-passer', c); if(x) x.remove(); }
 }
 async function cineEntree(){
-  passer(true);
   E.partie.faits['leo:vu'] = 1; DJ.garder(E.partie);
   E.leo.voile(1); E.leo.p.x = 90;
+  /* (Romain, 15 novembre, 19 h 05) le film de l'entrée : l'homme en cape sort de l'ombre et parle — « J'attends ce moment depuis
+     longtemps. Vous n'auriez jamais dû venir ici. Je vais m'occuper de vous. » La première fois seulement : pas de « Passer ». */
+  var r = await film('entree', {passer:false});
+  if(!E) return;
+  if(r !== 'echec'){
+    E.leo.voile(0); E.leo.p.x = 0; E.leo.vers('garde', 1);
+    titre(NOMS[1], null, 2200);
+    await pause(900);
+    return;
+  }
+  /* (sans film : l'ancienne scène, dessinée en direct) */
+  passer(true);
   await pause(500);
   bruit('leoCape', {}, ['magie']);
   for(var k = 0; k <= 10 && !E.saute; k++){ E.leo.voile(1 - k / 10); await pause(70); }
@@ -341,12 +354,13 @@ function film(nom, o){
   }).then(function(r){ if(S.sourdine) S.sourdine(false); return r; });
 }
 function prechargerFilms(n){
+  (n <= 1 ? ['a12', 'b23', 'finLeo'] : n <= 2 ? ['b23', 'finLeo'] : ['finLeo']).forEach(prechargerFilm);
+}
+function prechargerFilm(f){
   if(!window.CineLecteur || !window.CINE_INFOS) return;
-  (n <= 1 ? ['a12', 'b23', 'finLeo'] : n <= 2 ? ['b23', 'finLeo'] : ['finLeo']).forEach(function(f){
-    var I = window.CINE_INFOS[f]; if(!I) return;
-    window.CineLecteur.precharger(CINE_URL + f + '.mp4');
-    if(I.piste && window.CineLecteur.prechargerPiste) window.CineLecteur.prechargerPiste(CINE_URL + f + '.mp3');
-  });
+  var I = window.CINE_INFOS[f]; if(!I) return;
+  window.CineLecteur.precharger(CINE_URL + f + '.mp4');
+  if(I.piste && window.CineLecteur.prechargerPiste) window.CineLecteur.prechargerPiste(CINE_URL + f + '.mp3');
 }
 /* les outils de Léo glissent jusqu'au Pisteur */
 function ramasser(l){
