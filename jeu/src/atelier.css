@@ -526,7 +526,10 @@
 .at-t-chat.at-c-assis .at-c-g-assis,.at-t-chat.at-c-lave .at-c-g-assis,.at-t-chat.at-c-tape .at-c-g-assis,.at-t-chat.at-c-mange .at-c-g-assis,.at-t-chat.at-c-salut .at-c-g-assis{display:inline}
 .at-t-chat.at-c-marche .at-c-g-debout,.at-t-chat.at-c-saute .at-c-g-debout{display:inline}
 .at-t-chat.at-c-dos .at-c-g-dos,.at-t-chat.at-c-pain .at-c-g-pain{display:inline}
-.at-t-chat.at-c-gauche:not(.at-c-dort) > svg{transform:scaleX(-1)}
+/* (16 novembre au soir : Mimi est un pantin, mimi-pantin.js. C'est lui qui la retourne, la fait respirer, cligner des yeux, bouger :
+   les règles .at-c-g-…, .at-c-j…, .at-q…, .at-c-pp, .at-x-… et les @keyframes mi-… ci-dessous ne touchent plus rien — À RETIRER.) */
+.at-t-chat.at-plat::before{display:none}      /* (son ombre est dans son dessin : elle rétrécit quand elle saute) */
+.at-o.at-t-chat{will-change:transform}        /* (son calque à elle : quand elle bouge, on ne repeint qu'elle, pas la pièce derrière — mesuré : tools/perf-mimi.py) */
 .at-t-chat .at-zzz.z2{animation-delay:-1.5s}
 .at-c-j,.at-c-patte,.at-c-patte-b,.at-c-tete,.at-c-corps,.at-c-buste,.at-c-or,.at-c-pp,.at-c-pup,.at-c-moust,.at-c-dos-ar,.at-c-dos-av1,.at-c-dos-av2{transform-box:fill-box}
 .at-c-corps{transform-origin:50% 100%}
@@ -674,7 +677,8 @@
   .at-c-buste,.at-c-or-g,.at-c-or-d,.at-c-moust,.at-q1,.at-q2,.at-q3,.at-c-dos-av1,.at-c-dos-av2,.at-c-dos-ar{animation:none!important}
 }
 /* sa bulle de pensée (ce qu'il demande) : toujours de la même taille à l'écran (≥ 48 px), au-dessus de sa tête */
-.at-bulle{--b:calc((46px + 22px * var(--k,1)) / var(--s,1));position:absolute;left:66%;bottom:80%;width:var(--b);height:var(--b);margin:0 0 0 calc(var(--b) / -2);padding:0;
+.at-c-gauche > .at-bulle{left:38%}
+.at-bulle{--b:calc((46px + 22px * var(--k,1)) / var(--s,1));position:absolute;left:62%;bottom:88%;width:var(--b);height:var(--b);margin:0 0 0 calc(var(--b) / -2);padding:0;
   border-radius:50%;background:#fffdf6;border:calc(3px / var(--s,1)) solid var(--contour,#24182e);box-shadow:0 calc(4px / var(--s,1)) 0 rgba(36,24,46,.3);
   display:grid;place-items:center;pointer-events:auto;cursor:pointer;z-index:2;transform-origin:20% 100%;animation:at-bulle-hop 1.8s ease-in-out infinite}
 .at-bulle span{font-size:calc(var(--b) * .5);line-height:1;pointer-events:none}
@@ -1219,7 +1223,7 @@ html.labo-ouvert, html.labo-ouvert body{overflow:hidden}
 .at-album{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:12px;margin-top:8px}
 .at-photo{margin:0;padding:6px 6px 4px;background:#fffdf6;border:3px solid var(--contour,#24182e);border-radius:8px;box-shadow:0 3px 0 rgba(36,24,46,.3)}
 .at-photo:nth-child(3n+1){transform:rotate(-2deg)}.at-photo:nth-child(3n+2){transform:rotate(1.5deg)}
-.at-photo .at-photo-chat{position:relative!important;left:auto!important;top:auto!important;width:100%;aspect-ratio:114/96;background:linear-gradient(#4a3c6a 0 66%,#7a4f30 66%);border-radius:4px;pointer-events:none}
+.at-photo .at-photo-chat{position:relative!important;left:auto!important;top:auto!important;width:100%;aspect-ratio:170/140;background:linear-gradient(#4a3c6a 0 72%,#7a4f30 72%);border-radius:4px;pointer-events:none}
 .at-photo .at-photo-chat svg{width:88%;height:88%;margin:6% auto 0;display:block}
 .at-photo figcaption{text-align:center;font-weight:800;font-size:.85rem;color:var(--encre);margin-top:4px}
 @media (prefers-reduced-motion: reduce){

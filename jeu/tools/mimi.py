@@ -1,5 +1,6 @@
-"""Mimi, le Tamagotchi refait le 16 novembre (Bible §12.64), dans le vrai jeu, au doigt (Playwright).
-- le nouveau dessin : cinq poses, le bouton 🐾 et le cœur de son bonheur ;
+"""Mimi, le Tamagotchi refait le 16 novembre (Bible §12.65) et son pantin articulé (§12.66), dans le vrai jeu, au doigt (Playwright).
+- le pantin : ses morceaux (cuisse, mollet, pied…), ses poses où il glisse, sa toilette, ses yeux qui suivent le doigt, un bond en plusieurs temps, ses jeux ;
+- le bouton 🐾 et le cœur de son bonheur ;
 - un petit toucher : une réaction tout de suite, au hasard, jamais deux fois la même de suite ; elle ne se soulève plus ;
 - le doigt posé : la tête (frotte, ronronne, puis pétrit), le ventre (sur le dos, elle attrape), la queue (« Pas la queue ! », elle s'en va) ;
 - les planchers : son bonheur ne descend jamais sous 34, ses besoins sous 25 ; une vieille sauvegarde garde un bonheur ;
@@ -54,26 +55,25 @@ def calme(pg, cid, pose='assis'):
     pg.evaluate(f"() => {{ var a = {V}; a._finJouet(); a._reveil('{cid}'); a._dehors('{cid}'); a._pose('{cid}', '{pose}'); }}"); pg.wait_for_timeout(250)
 def boite(pg, cid):
     return pg.evaluate(f"() => {{ var d = document.querySelector('#atelier-ici [data-obj=\"{cid}\"] svg'); if(!d) return null; var r = d.getBoundingClientRect(); return {{x:r.left, y:r.top, w:r.width, h:r.height}}; }}")
-def point(pg, cid, lx, ly):
-    """un point du dessin du chat (en mesures du dessin, 114 × 96), à l'écran ; il tient compte du chat tourné vers la gauche"""
-    r = boite(pg, cid); c = chat(pg, cid)
-    if not r: return None
-    if c and c['gauche'] and c['pose'] != 'dort': lx = 114 - lx
-    return (r['x'] + lx / 114 * r['w'], r['y'] + ly / 96 * r['h'])
+def point(pg, cid, quoi):
+    """un point du pantin de Mimi, à l'écran : 'tete', 'dos', 'ventre', 'queue', 'h' (les hanches), 's' (les épaules)"""
+    q = pg.evaluate(f"() => {V}._ptChat('{cid}', '{quoi}')")
+    return (q[0], q[1]) if q else None
+def pantin(pg, cid): return pg.evaluate(f"() => {V}._pantin('{cid}')")
 def voir_chat(pg, cid):
     """amène le chat au milieu de l'écran (la pièce glisse)"""
     pg.evaluate(f"""() => {{ var a = {V}, p = a._pos('{cid}'); if(p) a._voir(p.x, p.y - 60); }}""")
     pg.wait_for_timeout(400)
-def sur_chat(pg, cid, lx, ly, pose='assis'):
+def sur_chat(pg, cid, quoi, pose='assis'):
     """la pose, une place où on la voit, et un point du dessin qui est bien sur elle (pas caché par un meuble, une bulle)"""
     for i in range(8):
         calme(pg, cid, pose); voir_chat(pg, cid); pg.wait_for_timeout(500)
-        q = point(pg, cid, lx, ly)
+        pg.wait_for_timeout(450); q = point(pg, cid, quoi)
         if q and pg.evaluate(f"() => {{ var e = document.elementFromPoint({q[0]}, {q[1]}), o = e && e.closest('[data-obj]'); return !!o && o.getAttribute('data-obj') === '{cid}' && !e.closest('.at-bulle'); }}"): return q
     return q
 def visible(pg, cid):
-    """une pose est vraiment dessinée (un groupe montré, avec une taille)"""
-    return pg.evaluate(f"() => [].some.call(document.querySelectorAll('#atelier-ici [data-obj=\"{cid}\"] [class^=\"at-c-g-\"]'), function(g){{ var r = g.getBoundingClientRect(); return getComputedStyle(g).display !== 'none' && r.width > 5; }})")
+    """le pantin est vraiment dessiné (il a une taille à l'écran)"""
+    return pg.evaluate(f"() => {{ var g = document.querySelector('#atelier-ici [data-obj=\"{cid}\"] .mi-rac'); if(!g) return false; var r = g.getBoundingClientRect(); return r.width > 20 && r.height > 14; }}")
 def tap(pg, x, y):
     pg.mouse.move(x, y); pg.mouse.down(); pg.wait_for_timeout(60); pg.mouse.up(); pg.wait_for_timeout(120)
 def tenir(pg, x, y, ms, bouge=0):
@@ -108,9 +108,10 @@ with sync_playwright() as p:
     types = pg.evaluate("() => M.S.atelier.objets.map(function(o){ return o.t; })")
     verifier('litiere' in types, 'sa litière est sortie de son carton')
     # --- le dessin ---
-    groupes = pg.evaluate(f"() => ['dort','assis','debout','dos','pain'].map(function(g){{ return !!document.querySelector('#atelier-ici [data-obj=\"{cid}\"] .at-c-g-' + g); }})")
-    verifier(all(groupes), 'le nouveau dessin : cinq poses (en boule, assise, debout, sur le dos, en pain)')
-    verifier(pg.evaluate(f"() => document.querySelectorAll('#atelier-ici [data-obj=\"{cid}\"] .at-c-assis, #atelier-ici [data-obj=\"{cid}\"] .at-q1').length") >= 0, '(la queue en trois morceaux)')
+    morceaux = pg.evaluate(f"() => {{ var d = document.querySelector('#atelier-ici [data-obj=\"{cid}\"]'), n = function(s){{ return d.querySelectorAll(s).length; }}; return {{rac:n('.mi-rac'), queue:n('.mi-queue g[data-m^=q]'), cuisse:n('[data-m=j1c]'), mollet:n('[data-m=j1j]'), pied:n('[data-m=j1p]'), doigts:n('[data-m=j1t]'), bras:n('[data-m=a1b]'), avb:n('[data-m=a1a]'), tete:n('.mi-tete')}}; }}")
+    print('   pantin :', morceaux, pantin(pg, cid))
+    verifier(morceaux['rac'] == 1 and morceaux['tete'] == 1 and pantin(pg, cid) is not None, 'Mimi est un pantin articulé, monté et vivant')
+    verifier(morceaux['queue'] == 6 and morceaux['cuisse'] == 2 and morceaux['mollet'] == 2 and morceaux['pied'] == 2 and morceaux['doigts'] == 2 and morceaux['bras'] == 2 and morceaux['avb'] == 2, 'une patte de derrière : la cuisse, le mollet, le pied, les doigts ; devant : le bras, l\'avant-bras, la main ; la queue en six morceaux')
     bt = pg.evaluate("() => { var b = document.querySelector('#atelier-ici .at-mimi-bt'); if(!b || b.hidden) return null; var r = b.getBoundingClientRect(); return {w:r.width, bh:b.style.getPropertyValue('--bh')}; }")
     verifier(bt is not None and bt['w'] >= 48 and bt['bh'] != '', f'le bouton 🐾, et le cœur de son bonheur autour ({bt})')
     voir_chat(pg, cid); calme(pg, cid); voir_chat(pg, cid)
@@ -118,7 +119,7 @@ with sync_playwright() as p:
     # --- un petit toucher : une réaction tout de suite, au hasard, jamais deux fois la même ---
     reacs = []
     for i in range(7):
-        q = sur_chat(pg, cid, 50, 70)
+        q = sur_chat(pg, cid, 'dos')
         tap(pg, *q)
         c = chat(pg, cid); reacs.append(c['reac'] if c else None)
         pg.wait_for_timeout(700)
@@ -128,7 +129,7 @@ with sync_playwright() as p:
     # --- le doigt posé sur la tête : elle se frotte, ronronne, puis pétrit ---
     pg.wait_for_timeout(2200)        # (les petites suites des réactions d'avant se finissent)
     bh0 = mimi(pg)['bh']
-    q = sur_chat(pg, cid, 68, 30)
+    q = sur_chat(pg, cid, 'tete')
     lacher = tenir(pg, *q, 1200, bouge=3)
     cl1 = classes(pg, cid); z = chat(pg, cid)['caresse']
     if z != 'tete':
@@ -141,7 +142,7 @@ with sync_playwright() as p:
     verifier('at-leve' not in cl2, 'le doigt qu\'on laisse ne la soulève plus')
     verifier(mimi(pg)['bh'] > bh0, f'les gratouilles : son bonheur monte ({bh0} → {mimi(pg)["bh"]})')
     # --- le ventre : sur le dos, elle attrape le doigt ---
-    q = sur_chat(pg, cid, 64, 72)
+    q = sur_chat(pg, cid, 'ventre')
     lacher = tenir(pg, *q, 1600, bouge=2)
     c = chat(pg, cid); cl = classes(pg, cid)
     shot(pg, 'ventre')
@@ -150,7 +151,7 @@ with sync_playwright() as p:
     pg.wait_for_timeout(1500)
     verifier(chat(pg, cid)['pose'] != 'dos', 'le doigt parti : elle se relève')
     # --- la queue : « Pas la queue ! », puis elle s'en va ---
-    q = sur_chat(pg, cid, 9, 74)
+    q = sur_chat(pg, cid, 'queue')
     p0 = pg.evaluate(f"() => {V}._pos('{cid}')")
     lacher = tenir(pg, *q, 600)
     cl = classes(pg, cid)
@@ -159,9 +160,37 @@ with sync_playwright() as p:
     p1 = pg.evaluate(f"() => {V}._pos('{cid}')")
     verifier('at-x-agace' in cl, 'la queue : oreilles en arrière, la queue fouette')
     verifier(abs(p1['x'] - p0['x']) > 30, f'on insiste : elle s\'éloigne un peu ({round(p0["x"])} → {round(p1["x"])})')
-    for po in ['assis', 'marche', 'dort', 'dos', 'pain']:
-        calme(pg, cid, po)
-        verifier(visible(pg, cid), f'la pose « {po} » se dessine vraiment')
+    for po in ['assis', 'marche', 'dort', 'dos', 'pain', 'lave', 'griffe']:
+        calme(pg, cid, po); pg.wait_for_timeout(120)
+        g1 = pantin(pg, cid); pg.wait_for_timeout(900); g2 = pantin(pg, cid)
+        verifier(visible(pg, cid) and g2['nom'] == po and not g2['glisse'], f'la pose « {po} » : le pantin y glisse ({"en cours" if g1["glisse"] else "?"}), puis s\'y tient {g2["gestes"]}')
+    calme(pg, cid, 'lave'); pg.wait_for_timeout(700)
+    verifier('toilette' in pantin(pg, cid)['gestes'], 'elle fait sa toilette (un geste qui tourne)')
+    shot(pg, 'toilette')
+    # --- le pantin : ses yeux suivent le doigt ; un saut en plusieurs temps ; ses jeux ---
+    calme(pg, cid); voir_chat(pg, cid); pg.wait_for_timeout(700)
+    t = point(pg, cid, 'tete')
+    def pupille(): return pg.evaluate(f"() => document.querySelector('#atelier-ici [data-obj=\"{cid}\"] [data-m=pupG]').getAttribute('transform')")
+    pr = pg.evaluate("() => { var p = document.querySelector('#atelier-ici .at-piece').getBoundingClientRect(); return {x:p.left, y:p.top, w:p.width, h:p.height}; }")
+    pg.mouse.move(pr['x'] + 12, max(pr['y'] + 12, t[1] - 90)); pg.wait_for_timeout(500); pa = pupille()
+    pg.mouse.move(pr['x'] + pr['w'] - 12, min(pr['y'] + pr['h'] - 12, t[1] + 60)); pg.wait_for_timeout(500); pb = pupille()
+    verifier(pa != pb, f'ses yeux suivent le doigt ({pa} → {pb})')
+    calme(pg, cid, 'marche'); pg.wait_for_timeout(500)
+    ok = pg.evaluate(f"() => {V}._jouer('{cid}', 'bondir')"); vus = set(); haut = 0
+    y0 = boite(pg, cid)['y']
+    for i in range(34):
+        pg.wait_for_timeout(60)
+        g = pantin(pg, cid); bb = boite(pg, cid)
+        if g and 'saut' in g['gestes']: vus.add('saut')
+        if bb: haut = max(haut, y0 - bb['y'])
+    verifier(ok and 'saut' in vus and haut > 8, f'un bond : elle se ramasse, s\'élance, retombe (le geste « saut », {round(haut)} px de haut)')
+    for jeu, geste in [('galipette', 'galipette'), ('etire', 'etire'), ('cache', 'cache'), ('queue', 'tourne')]:
+        calme(pg, cid); pg.wait_for_timeout(400)
+        pg.evaluate(f"() => {V}._jouer('{cid}', '{jeu}')"); pg.wait_for_timeout(350)
+        g = pantin(pg, cid)
+        verifier(g and geste in g['gestes'], f'son jeu « {jeu} » : le geste « {geste} » ({g["gestes"] if g else None})')
+        if jeu == 'etire': shot(pg, 'etire')
+        pg.wait_for_timeout(1900)
     calme(pg, cid)
     # --- les planchers ---
     r = pg.evaluate(f"""() => {{ var a = {V}, o = M.S.atelier.objets.filter(function(x){{ return x.t === 'chat'; }})[0];
@@ -208,12 +237,12 @@ with sync_playwright() as p:
     pg.evaluate("() => { var a = Atelier._vue(); a._soigner('eau', 5, 'soif'); a._soigner('eau', 5, 'soif'); a._soigner('eau', 5, 'soif'); }")
     verifier(mimi(pg)['tama']['varie'] <= 20, 'toujours le même soin : la variété ne monte pas')
     # --- la brosse, au doigt ---
-    a = sur_chat(pg, cid, 30, 56)
+    a = sur_chat(pg, cid, 'h')
     pg.locator('#atelier-ici .at-mimi-bt').click(force=True); pg.wait_for_timeout(400)
     pg.locator('#atelier-ici [data-mimi="s:brosse"]').click(); pg.wait_for_timeout(400)
     verifier(mimi(pg)['outil'] == 'brosse', 'la brosse est prise')
     pg.evaluate(f"() => {{ M.S.atelier.objets.filter(function(x){{ return x.t === 'chat'; }})[0].b.propre = 40; }}")
-    a = point(pg, cid, 30, 56); bpt = point(pg, cid, 60, 52)
+    a = point(pg, cid, 'h'); bpt = point(pg, cid, 's')
     print('   (sous la brosse :', pg.evaluate(f"() => {{ var e = document.elementFromPoint({a[0]}, {a[1]}); return e ? ((e.closest('[data-obj]') || {{}}).className || e.className) : null; }}"), ')')
     pg.mouse.move(*a); pg.mouse.down()
     for i in range(30):
@@ -251,8 +280,11 @@ with sync_playwright() as p:
             for i in range(14): pg.mouse.move(r0['x'] + r0['w'] * (.3 + .04 * i), r0['y'] + r0['h'] * (.82 - .01 * (i % 3)), steps=3); pg.wait_for_timeout(150)
             pg.wait_for_timeout(900); pg.mouse.up()
         if j == 'carton':
-            pg.wait_for_timeout(3000)
-            dedans = 'at-dans-boite' in classes(pg, cid)
+            dedans = False
+            for i in range(28):            # (elle marche jusqu'au carton, se ramasse, saute : jusqu'à sept secondes)
+                pg.wait_for_timeout(250); dedans = 'at-dans-boite' in classes(pg, cid)
+                if dedans: break
+            pg.wait_for_timeout(500)
             shot(pg, 'carton')
             if pg.locator('#atelier-ici .at-boite').count(): pg.locator('#atelier-ici .at-boite').click(force=True)
             pg.wait_for_timeout(400)
@@ -271,7 +303,7 @@ with sync_playwright() as p:
     pg.locator('#atelier-ici [data-mimi="s:bain"]').click(); pg.wait_for_timeout(3500)
     verifier(mimi(pg)['bain'] and pg.locator('#atelier-ici .at-bain').count() == 1, 'le bain : la baignoire, elle saute dedans')
     voir_chat(pg, cid); pg.wait_for_timeout(600)
-    a = point(pg, cid, 40, 50); bpt = point(pg, cid, 64, 46)
+    a = point(pg, cid, 'h'); bpt = point(pg, cid, 's')
     print('   (sous l\'éponge :', pg.evaluate(f"() => {{ var e = document.elementFromPoint({a[0]}, {a[1]}); return e ? ((e.closest('[data-obj]') || {{}}).className || e.className) : null; }}"), ')')
     pg.mouse.move(*a); pg.mouse.down()
     for i in range(30):

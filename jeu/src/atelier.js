@@ -1223,19 +1223,18 @@ def('etabli', {w:380, h:212, p:110, z:'sol', special:'plantes', profil:true, nf:
      aux jointures, elle est dessinée deux fois avec les mêmes morceaux : tous les contours d'abord, puis toute la fourrure.
    - Léger : pas de filtre, pas de flou, pas de motif ; des traits et des dégradés. Une seule pose est peinte à la fois.
    ========================================================== */
-var CHATS = [
-  ['#f2a65a', '#c4612a', '#fff1dc', '#e6f27a', '#6fae35', '#ffcf96', 1],    /* Mimi : rousse tigrée, yeux verts */
-  ['#b9b3d2', '#736d8e', '#f7f5fc', '#ffe27a', '#de8424', '#dcd8ee', 1],    /* grise-lilas tigrée, yeux d'ambre */
-  ['#4a4060', '#251d38', '#f7f4ff', '#f6f08a', '#adc23a', '#6c6290', 0]     /* noire au plastron blanc, yeux jaunes */
-];
-function defsMimi(){
-  return CHATS.map(function(p, i){
-    return lin('mim' + i, [[p[5], 0], [p[0], 0.5], [sombre(p[0], 0.16), 1]], 1) +
-      lin('mimv' + i, [[p[2], 0], [melange(p[2], p[0], 0.22), 1]], 1) +
-      rad('mimy' + i, [[p[3], 0], [p[4], 1]], 0.5, 0.62, 0.62);
-  }).join('') + rad('mimo', [['#ffd6e0', 0], ['#ef86a3', 1]], 0.5, 0.85, 0.85) + lin('mimn', [['#ffb8c8', 0], ['#e4668a', 1]], 1);
-}
+/* ⚠️ DEPUIS LE 16 NOVEMBRE AU SOIR, MIMI EST UN PANTIN ARTICULÉ (Romain, 18 h 27 : « travaille beaucoup l'animation de Mimi ») :
+   son dessin, son squelette, ses poses et ses gestes sont dans mimi-dessin.js, mimi-pantin.js et mimi-gestes.js (window.MimiPantin).
+   Ici, il ne reste que le lien avec l'atelier : pantinDe, chatMonter, teteChat, accPantin.
+   L'ANCIEN DESSIN (dessinMimi, teteChatAncienne, queueChat, oeilChat… jusqu'à « Objets de la boutique ») NE SERT PLUS : À RETIRER. */
+var MP = window.MimiPantin;
+var CHATS = MP.CHATS;
+function defsMimi(){ return MP.defs(); }
 function idxChat(p){ var i = CHATS.indexOf(p); return i < 0 ? 0 : i; }
+/* ses accessoires, dessinés autour du milieu de sa tête */
+function accPantin(acc){ acc = acc || {}; return {cou:acc.cou && ACC[acc.cou] ? dessinAcc(acc.cou, 0, 0) : '', tete:acc.tete && ACC[acc.tete] ? dessinAcc(acc.tete, 0, 0) : ''}; }
+/* sa tête seule (les petits portraits : la barre de Mimi, la garde-robe, la boutique) ; (cx, cy) : le milieu de la tête */
+function teteChat(p, cx, cy, acc){ return '<g transform="translate(' + f1(cx) + ',' + f1(cy) + ')">' + MP.tete(idxChat(p), accPantin(acc)) + '</g>'; }
 var MC = 3.2;   /* le contour de Mimi : un peu plus fin que les meubles, pour qu'on voie ses détails */
 function PM(d, f, w, x){ return '<path d="' + d + '" fill="' + f + '" stroke="' + K + '" stroke-width="' + (w || MC) + '" stroke-linejoin="round" stroke-linecap="round"' + (x || '') + '/>'; }
 function FM(d, f, x){ return '<path d="' + d + '" fill="' + f + '"' + (x || '') + '/>'; }
@@ -1267,7 +1266,7 @@ function oreilleChat(i, cx, cy, s){
   var poils = 'M' + X(9.4) + ',' + Y(-11) + ' L' + X(11.6) + ',' + Y(-17.4) + ' M' + X(12.4) + ',' + Y(-10.4) + ' L' + X(13.7) + ',' + Y(-18) + ' M' + X(15) + ',' + Y(-9.8) + ' L' + X(15.7) + ',' + Y(-16.2);
   return '<g class="at-c-or at-c-or-' + (s < 0 ? 'g' : 'd') + '">' + PM(ext, G('mim' + i)) + FM(inte, G('mimo')) + T(poils, '#fffaf2', 1.1, ' opacity=".9"') + '</g>';
 }
-function teteChat(p, cx, cy, acc){
+function teteChatAncienne(p, cx, cy, acc){
   acc = acc || {};
   var i = idxChat(p), R = function(l){ return rp(cx, cy, l); };
   var moust = R(['M', -9.6, 5.2, 'C', -14.6, 3.6, -19.4, 3.4, -24, 4.6, 'M', -9.6, 7.4, 'C', -14.6, 7.4, -19.4, 8.2, -23.6, 10.2, 'M', -9.2, 9.4, 'C', -13.6, 11, -17.4, 12.8, -20.6, 15.4,
@@ -1326,8 +1325,8 @@ function coussinets(x, y, a, f){
     [[-3, -1.6], [-1.1, -2.9], [1.1, -2.9], [3, -1.6]].map(function(q){ return '<circle cx="' + f1(x + q[0]) + '" cy="' + f1(y + q[1]) + '" r=".95" fill="#ff9fb6"/>'; }).join('') + '</g>';
 }
 /* Le chat est dessiné de profil (il bouge, il marche, il saute) : il reste une image plate, posée dans la pièce à la bonne taille */
-def('chat', {w:114, h:96, z:'petit', plat:true, nom:'Petit chat', ic:'🐈',
-  d:function(c){ return [N(dessinMimi(CHATS[(c.v || 0) % 3], c.o.acc || {}))]; }});
+def('chat', {w:MP.W, h:MP.H, z:'petit', plat:true, nom:'Petit chat', ic:'🐈',
+  d:function(c){ return [N(MP.dessin(c.v || 0, MP.pose('assis'), accPantin(c.o.acc)))]; }});
 /* Tout le chat : l'ombre, les cinq poses, les « z » du sommeil (une pose est montrée par le CSS) */
 function dessinMimi(p, acc){
   var i = idxChat(p), F = G('mim' + i), V = G('mimv' + i), S = sombre(p[0], 0.2), blanc = !p[6];   /* (la noire a des chaussettes blanches) */
@@ -3361,6 +3360,10 @@ function vue(el, opts){
     _cadeauPret:function(){ var o = chatsTous(V)[0], t = tama(V); if(!o) return false; o.bh = 100; t.pts = CADEAU_PTS; t.cadeaux = {}; return true; },
     _cadeau:function(id){ var o = V.parId[id] || chatsTous(V)[0]; return o ? cadeauChat(V, o, true) : false; },
     _reagir:function(id, r){ var o = V.parId[id]; if(!o) return false; reagir(V, o, r); return true; },
+    /* (le pantin de Mimi, pour les robots : où est sa tête, son dos, son ventre, sa queue à l'écran ; sa pose, ses gestes en cours) */
+    _ptChat:function(id, quoi){ var o = V.parId[id], r = o && pantinDe(V, o); return r ? r.point(quoi) : null; },
+    _pantin:function(id){ var o = V.parId[id], r = o && pantinDe(V, o); return r ? {nom:r.nom, gestes:r.couv.map(function(c){ return c.nom; }), co:r.co, marche:!!r.mar, glisse:!!r.tw} : null; },
+    _geste:function(id, nom, opt){ var o = V.parId[id]; return !!(o && gesteChat(V, o, nom, opt)); },
     _zone:function(id, cx, cy){ var o = V.parId[id]; return o ? zoneChat(V, o, {clientX:cx, clientY:cy}) : null; },
     _pose:function(id, p){ var o = V.parId[id]; if(!o) return false; var st = chatEtat(V, o); if(st.anim) chatArreter(V, o); if(st.t){ clearTimeout(st.t); st.t = null; } chatPose(V, o, p); chatPlanifier(V, o, 30000); return true; },
     _finJouet:function(){ finJouet(V); },
@@ -3385,6 +3388,7 @@ function arreter(V){
   V.timers.forEach(clearTimeout); V.timers = [];
   if(V.defile){ clearInterval(V.defile); V.defile = null; }
   V.nettoie.forEach(function(f){ try{ f(); }catch(e){} }); V.nettoie = [];
+  cles(V.chats).forEach(function(id){ var r = V.chats[id].rig; if(r) r.detruire(); });      /* (les pantins des chats s'arrêtent avec la vue) */
   try{ V.root.getAnimations({subtree:true}).forEach(function(a){ a.cancel(); }); }catch(e){}
   if(V.root.parentNode) V.root.parentNode.removeChild(V.root);
   if(V.attente){ var a = V.attente, cb = V.o.potionFinie; V.attente = null; setTimeout(function(){ try{ if(cb) cb(a.id, a.reussi, a.detail); }catch(e){ console.error(e); } }, 0); }
@@ -3931,6 +3935,7 @@ function placerEl(V, o, force){
   if(force || d._cle !== cle){
     var H = htmlObjet(V, o, c.plat ? null : p.R);
     d.innerHTML = H.html; d._bb = H.bb; d._cle = cle; d._w = c.w; d._h = c.h;
+    if(o.t === 'chat') chatMonter(V, o, d);
   }
   var b = d._bb, bw = b[2] - b[0], bh = b[3] - b[1];
   d.style.left = pX(V, p.x + b[0] - c.w / 2);
@@ -4100,6 +4105,15 @@ function gesteOuDefile(V, e, surToucher, chasse){
 }
 
 function brancher(V){
+  /* (16 novembre au soir) Mimi suit le doigt des yeux, où qu'il soit dans la pièce (Romain : « ses yeux et sa tête suivent ton doigt ») */
+  var vuT = 0;
+  function suivre(e){
+    var n = Date.now();
+    if(V.arrete || n - vuT < 50) return;
+    vuT = n;
+    chatsDe(V).forEach(function(c){ var r = pantinDe(V, c), s = V.chats[c.id]; if(r && s && s.pose !== 'dort' && !s.passe) r.regard(e.clientX, e.clientY, e.pointerType === 'mouse' ? 900 : 1700); });
+  }
+  ecoute(V, V.piece, 'pointerdown', suivre); ecoute(V, V.piece, 'pointermove', suivre);
   /* --- la pièce --- */
   ecoute(V, V.piece, 'pointerdown', function(e){
     if(V.arrete || e.button > 0) return;
@@ -5499,7 +5513,7 @@ function dessinerChaudron(V, prets){
    Sa position du moment n'est pas sauvegardée (seulement sa place à lui,
    quand l'enfant le pose quelque part).
    ========================================================== */
-var CHAT_VITESSE = 135;          /* unités logiques par seconde */
+var CHAT_VITESSE = 100;          /* unités logiques par seconde (au pas ; plus vite, elle trotte, puis elle court : st.vite) */
 var CHAT_SIESTE_TOUCHE = 30000;  /* toucher le chat : il dort 30 secondes */
 var POSES = ['dort', 'assis', 'marche', 'saute', 'lave', 'tape', 'mange', 'salut', 'griffe', 'boule', 'dos', 'pain'];   /* (griffe, boule : à l'arbre à chat, dressé sur ses pattes arrière ; dos, pain : 16 novembre) */
 
@@ -5534,7 +5548,21 @@ function chatPose(V, o, pose){
   st.pose = pose;
   if(!d) return;
   POSES.forEach(function(p){ d.classList.toggle('at-c-' + p, p === pose); });
+  if(st.rig) st.rig.pose(pose);                  /* (le pantin y glisse : jamais d'un coup) */
 }
+/* Son pantin (MimiPantin, mimi-pantin.js) : remonté chaque fois que son dessin est refait (un habit de plus, le retour dans la pièce).
+   Il lit les classes du chat (.at-x-…, .at-c-gauche…) et joue les gestes du même nom : le reste du programme n'a rien à lui dire de plus. */
+function chatMonter(V, o, d){
+  var st = chatEtat(V, o), sv = d.querySelector('svg');
+  if(st.rig){ st.rig.detruire(); st.rig = null; }
+  if(!sv) return;
+  st.rig = MP.monter(sv, {pose:st.pose, gauche:!!st.gauche, hote:d});
+  if(st.butin) st.rig.porter(st.butin);
+}
+function pantinDe(V, o){ var st = V.chats[o.id]; return st && st.rig && !st.rig.mort ? st.rig : null; }
+/* ce qu'elle porte dans la gueule (du SVG ; rien : elle le lâche) — gardé si son dessin est refait */
+function butinChat(V, o, svg){ var st = V.chats[o.id], r = pantinDe(V, o); if(st) st.butin = svg || null; if(r) r.porter(svg || ''); }
+function gesteChat(V, o, nom, opt){ var r = pantinDe(V, o); return r ? r.geste(nom, opt) : null; }
 function chatHabiller(V, o, d){
   var st = chatEtat(V, o);
   d.classList.add('at-c-' + st.pose);
@@ -5565,27 +5593,38 @@ function chatBouger(V, o, pos, mode, fin){
   d.classList.toggle('at-c-gauche', st.gauche);
   chatPose(V, o, mode);
   placerEl(V, o);
-  var k = V.k, tx = (-dx * k).toFixed(1), ty = (-dy * k).toFixed(1), kf, dur;
+  var k = V.k, tx = -dx * k, ty = -dy * k, kf, dur, plan = null, rig = pantinDe(V, o), ech = (p1.s || 1) * MP.ECH;
+  function tr(x, y, s){ return 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + s.toFixed(3) + ')'; }
   d.style.zIndex = Math.round(Math.max(p0.z, p1.z) * 5) + 6;
   if(mode === 'saute'){
-    var arc = (Math.abs(dy) * 0.3 + 46) * k;
-    kf = [{transform:'translate(' + tx + 'px,' + ty + 'px) scale(' + p0.s.toFixed(3) + ')'},
-      {transform:'translate(' + (tx / 2).toFixed(1) + 'px,' + (ty / 2 - arc).toFixed(1) + 'px) scale(' + ((p0.s + p1.s) / 2).toFixed(3) + ')', offset:0.5},
-      {transform:'translate(0,0) scale(' + p1.s.toFixed(3) + ')'}];
-    dur = 620;
+    /* le saut (16 novembre au soir, Romain : « je veux pas que ça soit une seule image ») : elle se ramasse sur place et remue les fesses (pre),
+       vole en cloche (vol), se réceptionne (post) ; le pantin joue ses gestes sur la même horloge. Jamais deux sauts pareils (MP.planSaut). */
+    plan = MP.planSaut(dist, -dy);
+    if(MOINS_MOUV){ plan.pre = 0; plan.post = 0; }
+    var arc = (Math.abs(dy) * 0.3 + 46) * plan.cloche, T = plan.pre + plan.vol + plan.post, i, v;
+    kf = [{transform:tr(tx, ty, p0.s), offset:0}];
+    for(i = 0; i <= 10; i++){ v = i / 10; kf.push({transform:tr(tx * (1 - v), ty * (1 - v) - arc * k * 4 * v * (1 - v), p0.s + (p1.s - p0.s) * v), offset:(plan.pre + plan.vol * v) / T}); }
+    kf.push({transform:tr(0, 0, p1.s), offset:1});
+    dur = T; plan.dx = dx; plan.dy = dy; plan.haut = arc; plan.d = T;
   } else {
-    kf = [{transform:'translate(' + tx + 'px,' + ty + 'px) scale(' + p0.s.toFixed(3) + ')'}, {transform:'translate(0,0) scale(' + p1.s.toFixed(3) + ')'}];
+    kf = [{transform:tr(tx, ty, p0.s)}, {transform:tr(0, 0, p1.s)}];
     dur = Math.max(st.vite > 1 ? 240 : 450, dist / (CHAT_VITESSE * (st.vite || 1)) * 1000);   /* (st.vite : elle court après un jouet) */
   }
-  var a = anim(d, kf, {duration:dur, easing:mode === 'saute' ? 'cubic-bezier(.3,0,.4,1)' : 'linear'});
+  var a = anim(d, kf, {duration:dur, easing:'linear'});
   st.anim = a;
   st.mv = {p0:{x:p0.x, y:p0.y}, p1:{x:p1.x, y:p1.y}, mode:mode, dur:dur};
+  if(rig && a && !MOINS_MOUV){
+    var temps = function(){ return typeof a.currentTime === 'number' ? a.currentTime : null; };
+    if(plan){ plan.temps = temps; rig.saut(plan); }
+    /* la marche : le pantin sait le chemin à faire dans ses mesures à lui, et où on en est : ses pattes ne patinent pas */
+    else rig.marcher({dist:dist / ech, vit:dist / ech / (dur / 1000), prog:function(){ var t = temps(); return t === null ? null : t / dur; }});
+  }
   function fini(){
     if(st.anim !== a) return;
     st.anim = null;
+    if(rig && !plan) rig.arretMarche();
     if(V.arrete) return;
     d.style.zIndex = Math.round(p1.z * 5);
-    if(mode === 'saute') anim(d, [{transform:'scale(' + (p1.s * 1.08).toFixed(3) + ',' + (p1.s * 0.9).toFixed(3) + ')'}, {transform:'scale(' + p1.s.toFixed(3) + ')'}], {duration:200});
     if(fin) fin();
   }
   if(a) a.onfinish = fini; else fini();
@@ -5683,13 +5722,15 @@ function chatAgir(V, o){
     if(now < st.dortJusqua){ chatPlanifier(V, o, st.dortJusqua - now + 30); return; }
     chatPose(V, o, 'assis');                       /* il se réveille et s'étire */
     st.reveil = true;
-    var d = V.elO[o.id];
-    if(d) anim(d, [{transform:'scale(' + d._s + ')'}, {transform:'scale(' + (d._s * 1.12) + ',' + (d._s * 0.9) + ')', offset:0.4}, {transform:'scale(' + d._s + ')'}], {duration:700});
-    chatPlanifier(V, o, 1600);
+    apres(V, 500, function(){ var s2 = V.chats[o.id]; if(s2 && s2.pose === 'assis' && !s2.caresse && !s2.anim){ chatPose(V, o, 'marche'); gesteChat(V, o, 'etire'); } });   /* (elle s'étire pour de bon) */
+    chatPlanifier(V, o, 2900);
     return;
   }
   var suite = function(ms){ chatPose(V, o, 'assis'); chatPlanifier(V, o, ms || (2200 + Math.random() * 2800)); };
   if(tamaAgir(V, o)) return;                      /* ses besoins d'abord (manger, boire, dormir, demander) ; le chaton joue */
+  /* de temps en temps, elle joue toute seule (plus souvent quand elle est heureuse) : un bond, une galipette, sa queue… jamais le même jeu
+     deux fois de suite. Ça ne compte pas pour son besoin de jouer : c'est pour le plaisir de la regarder (Romain, 16 novembre au soir). */
+  if(!o.chaton && !chatSurMeuble(V, o) && Math.random() < 0.07 + bonheur(o) / 900){ chatJoue(V, o, null, true); return; }
   /* l'arbre à chat de la pièce : il y grimpe, il joue avec la boule, il s'y fait les griffes ;
      de temps en temps, il va faire un tour dans l'autre pièce, par l'arche (Romain, 5 novembre, 12 h 31) */
   if(arbreIci(V) && Math.random() < 0.25 && chatArbre(V, o)) return;
@@ -5734,7 +5775,7 @@ function chatAgir(V, o){
     chatPose(V, o, 'lave');
     chatPlanifier(V, o, 3000 + Math.random() * 2000);
   } else if(!chatSieste(V, o)){                   /* une petite sieste (souvent dans un de ses coins) */
-    chatPose(V, o, 'dort');
+    chatSeCoucher(V, o);
     st.dortJusqua = now + 12000 + Math.random() * 9000;
     chatPlanifier(V, o, st.dortJusqua - now + 30);
   }
@@ -5807,13 +5848,12 @@ function chatEndormir(V, o){
   chatPose(V, o, 'dort');
   st.dortJusqua = Date.now() + CHAT_SIESTE_TOUCHE;
   chatPlanifier(V, o, CHAT_SIESTE_TOUCHE + 30);
-  if(d) anim(d, [{transform:'scale(' + d._s + ')'}, {transform:'scale(' + (d._s * 0.86) + ',' + (d._s * 1.1) + ')', offset:0.35}, {transform:'scale(' + d._s + ')'}], {duration:420, easing:'ease-out'});
 }
 function coeursChat(V, o){
   var p = chatPos(V, o);
   for(var i = 0; i < 3; i++){
     var h = document.createElement('span'); h.className = 'at-coeur-vole'; h.textContent = '💜';
-    h.style.left = pX(V, p.x + (i - 1) * 22); h.style.top = pY(V, p.y - 70 * p.s);
+    h.style.left = pX(V, p.x + (i - 1) * 26); h.style.top = pY(V, p.y - 104 * p.s);
     h.style.animationDelay = (i * 0.15) + 's';
     V.calque.appendChild(h);
     (function(h){ apres(V, 1500, function(){ h.remove(); }); })(h);
@@ -5904,7 +5944,6 @@ function arbreBoule(V, o, a){
       [0, 640, 1280].forEach(function(t){
         apres(V, t, function(){
           if(!enJeu(V, o, d, 'boule')) return;
-          if(!MOINS_MOUV) animSvg(V, o, [{transform:'translateY(0)'}, {transform:'translateY(-24%)', offset:0.45}, {transform:'translateY(0)'}], {duration:520, easing:'cubic-bezier(.3,0,.4,1)'});
           apres(V, 220, function(){ if(enJeu(V, o, d, 'boule')){ balancerBoule(V, a, st.gauche ? -1 : 1); son(V, 'tic'); } });
         });
       });
@@ -6534,9 +6573,9 @@ function tamaAgir(V, o){
 function chatonJoue(V, o){
   var r = Math.random(), d = V.elO[o.id], p = chatPos(V, o);
   if(r < 0.35 && d){
-    chatPose(V, o, 'marche'); d.classList.add('at-c-tourne');
-    apres(V, 1700, function(){ d.classList.remove('at-c-tourne'); chatPose(V, o, 'assis'); });
-    chatPlanifier(V, o, 2600);
+    chatPose(V, o, 'marche'); gesteChat(V, o, 'tourne');
+    apres(V, 1850, function(){ chatPose(V, o, 'assis'); });
+    chatPlanifier(V, o, 2800);
     return true;
   }
   var mere = chatsDe(V).filter(function(c){ return !c.chaton; })[0];
@@ -6555,7 +6594,7 @@ function chatSieste(V, o){
   if(!l.length || Math.random() < 0.35) return false;
   var c = l[Math.floor(Math.random() * l.length)], st = chatEtat(V, o);
   chatAller(V, o, c, function(){
-    chatPose(V, o, 'dort');
+    chatSeCoucher(V, o);
     st.dortJusqua = Date.now() + 12000 + Math.random() * 9000;
     chatPlanifier(V, o, st.dortJusqua - Date.now() + 30);
   });
@@ -6803,7 +6842,7 @@ function retourChat(V, o, id){
   st.tenu = false;
   if(d){
     d.classList.remove('at-c-dehors');
-    if(t.dehors){ var sp = document.createElement('span'); sp.className = 'at-c-butin at-c-coffret'; sp.innerHTML = coffretSVG(); d.appendChild(sp); }
+    if(t.dehors) butinChat(V, o, '<svg x="-11" y="-8" width="22" height="20.6" ' + coffretSVG().slice(5));      /* (le coffret, dans sa gueule : il suit sa tête) */
     anim(d, [{opacity:0, transform:'translateY(-' + Math.round(10 * V.k) + 'px) scale(' + (d._s * 0.8) + ')'}, {opacity:1, transform:'scale(' + d._s + ')'}], {duration:480, easing:'ease-out'});
   }
   chatPose(V, o, 'assis');
@@ -6822,7 +6861,7 @@ function poserCoffret(V, o){
   /* (jamais caché derrière quelque chose : de l'autre côté d'elle, sinon une place libre du plancher) */
   if(!V.salle){ var pl = placeLibre(V, [[x, y], [borne(p.x + (st && st.gauche ? 70 : -70), xF(140, y), xF(LARGEUR - 140, y)), y]], 50, 70); x = pl.x; y = pl.y; }
   t.coffret = {c:b.c, x:Math.round(x), y:Math.round(y)};
-  if(o){ var d = V.elO[o.id], sp = d && d.querySelector('.at-c-butin'); if(sp) sp.remove(); if(d) d.classList.remove('at-c-dehors'); if(st && st.tenu && !st.depart) st.tenu = false; }
+  if(o){ var d = V.elO[o.id], sp = d && d.querySelector('.at-c-butin'); if(sp) sp.remove(); butinChat(V, o, null); if(d) d.classList.remove('at-c-dehors'); if(st && st.tenu && !st.depart) st.tenu = false; }
   dessinerCoffret(V, true);
   var tx = (b.nom || PORTEE.mere) + ' a rapporté un petit coffret ! Qu\'est-ce qui peut bien se cacher dedans ?';
   (function montrer(n){ if(V.arrete) return; if(!V.toastEl.hidden && n < 6){ apres(V, 1500, function(){ montrer(n + 1); }); return; } toast(V, '<b>🐈 🎁</b> ' + esc(tx), 6000, tx); })(0);
@@ -6837,7 +6876,7 @@ function livrerButin(V, o){
   t.butin = null;
   var I = INGR[b.ingr] || {nom:b.ingr, ic:'🌿'};
   ajouter(V.etat, b.ingr, 1);
-  if(o){ var d = V.elO[o.id], sp = d && d.querySelector('.at-c-butin'); if(sp) sp.remove(); if(d) d.classList.remove('at-c-dehors'); var st = V.chats[o.id]; if(st && st.tenu && !st.depart) st.tenu = false; }
+  if(o){ var d = V.elO[o.id], sp = d && d.querySelector('.at-c-butin'); if(sp) sp.remove(); butinChat(V, o, null); if(d) d.classList.remove('at-c-dehors'); var st = V.chats[o.id]; if(st && st.tenu && !st.depart) st.tenu = false; }
   if(!V.salle){ dessinerTas(V); placerTas(V); }
   majReperes(V); majSalleBouton(V);
   var tx = (b.nom || PORTEE.mere) + ' t\'a rapporté : ' + I.nom + (b.rare ? ' (un ingrédient rare !)' : '') + '. Il est posé devant la porte, avec la cueillette.';
@@ -6851,14 +6890,14 @@ function livrerButin(V, o){
 
 /* ---------- Ses jeux : une dizaine de mouvements, jamais deux fois le même de suite ---------- */
 var JEUX = ['bondir', 'roule', 'galipette', 'tape', 'cache', 'rond', 'etire', 'saut', 'queue', 'fesses'];
-function svgChat(V, o){ var d = V.elO[o.id]; return d && d.querySelector('svg'); }
-function animSvg(V, o, kf, opt){
-  var sv = svgChat(V, o), st = chatEtat(V, o);
-  if(!sv) return null;
-  var fx = st.gauche ? 'scaleX(-1) ' : '';
-  return anim(sv, kf.map(function(k){ var c = {}; cles(k).forEach(function(x){ c[x] = x === 'transform' ? fx + k[x] : k[x]; }); return c; }), opt);
+/* (plus d'animSvg : tout son corps est animé par son pantin — gesteChat) */
+/* Avant de dormir, elle tourne sur elle-même, le nez par terre (comme les vrais chats), puis se roule en boule */
+function chatSeCoucher(V, o){
+  if(MOINS_MOUV || !pantinDe(V, o) || chatEtat(V, o).pose === 'dort'){ chatPose(V, o, 'dort'); return; }
+  chatPose(V, o, 'marche'); gesteChat(V, o, 'couche');
+  apres(V, 1500, function(){ var s2 = V.chats[o.id]; if(s2 && !s2.tenu && !s2.caresse && !s2.anim && s2.pose === 'marche' && !(V.jouet && V.jouet.o === o)) chatPose(V, o, 'dort'); });
 }
-function chatJoue(V, o, quoi){
+function chatJoue(V, o, quoi, seule){
   var st = chatEtat(V, o), d = V.elO[o.id];
   if(!d || st.tenu || st.depart) return null;
   if(st.anim) chatArreter(V, o);
@@ -6866,24 +6905,21 @@ function chatJoue(V, o, quoi){
   quoi = quoi && quoi !== st.dernierJeu ? quoi : l[Math.floor(Math.random() * l.length)];
   st.dernierJeu = quoi;
   var p = chatPos(V, o), k = V.k, fin = function(ms){ chatPlanifier(V, o, ms || 2600); };
-  donner(o, 'jeu', 8);
+  if(!seule) donner(o, 'jeu', 8);
   if(quoi === 'bondir'){
     var dir = st.gauche ? -1 : 1, c = chatSol(V, p.x + dir * 120, p.y + (Math.random() - 0.5) * 30);
     chatBouger(V, o, c, 'saute', function(){ chatPose(V, o, 'assis'); fin(); });
-  } else if(quoi === 'roule'){            /* il roule sur le dos, les pattes en l'air */
-    chatPose(V, o, 'dort');
-    animSvg(V, o, [{transform:'rotate(0deg)'}, {transform:'translateY(-6%) rotate(-180deg)', offset:0.35}, {transform:'translateY(-6%) rotate(-180deg)', offset:0.7}, {transform:'rotate(-360deg)'}], {duration:1500, easing:'ease-in-out'});
-    apres(V, 1500, function(){ chatPose(V, o, 'assis'); }); fin(2800);
-  } else if(quoi === 'galipette'){        /* une galipette : il saute et fait un tour complet */
-    chatPose(V, o, 'saute');
-    animSvg(V, o, [{transform:'translateY(0) rotate(0deg)'}, {transform:'translateY(-45%) rotate(-180deg)', offset:0.5}, {transform:'translateY(0) rotate(-360deg)'}], {duration:820, easing:'ease-in-out'});
-    apres(V, 820, function(){ chatPose(V, o, 'assis'); }); fin(2200);
+  } else if(quoi === 'roule'){            /* elle se roule sur le dos, les pattes en l'air, et gigote */
+    chatPose(V, o, 'dos'); gesteChat(V, o, 'gigote', {d:1500});
+    apres(V, 1700, function(){ var s1 = V.chats[o.id]; if(s1 && s1.pose === 'dos' && !s1.caresse) chatPose(V, o, 'assis'); }); fin(3000);
+  } else if(quoi === 'galipette'){        /* une galipette : elle saute et fait un tour complet, roulée en boule */
+    chatPose(V, o, 'marche'); gesteChat(V, o, 'galipette');
+    apres(V, 1050, function(){ chatPose(V, o, 'assis'); }); fin(2400);
   } else if(quoi === 'tape'){             /* il tape de la patte */
     chatPose(V, o, 'tape'); apres(V, 1400, function(){ chatPose(V, o, 'assis'); }); fin(2400);
-  } else if(quoi === 'cache'){            /* il se cache… et surgit ! */
-    chatPose(V, o, 'assis');
-    animSvg(V, o, [{transform:'translateY(0) scale(1)', opacity:1}, {transform:'translateY(40%) scale(.4)', opacity:0, offset:0.3}, {transform:'translateY(40%) scale(.4)', opacity:0, offset:0.65}, {transform:'translateY(-18%) scale(1.15)', opacity:1, offset:0.82}, {transform:'translateY(0) scale(1)', opacity:1}], {duration:1900, easing:'ease-in-out'});
-    fin(2800);
+  } else if(quoi === 'cache'){            /* elle s'aplatit, les oreilles couchées… et surgit ! */
+    chatPose(V, o, 'marche'); gesteChat(V, o, 'cache');
+    apres(V, 2050, function(){ chatPose(V, o, 'assis'); }); fin(3000);
   } else if(quoi === 'rond'){             /* il court en rond */
     var r = 70, pts = [[r, 0], [0, r * 0.45], [-r, 0], [0, -r * 0.45], [0, 0]], i = 0;
     (function tour(){
@@ -6891,21 +6927,19 @@ function chatJoue(V, o, quoi){
       var q = pts[i++];
       chatBouger(V, o, chatSol(V, p.x + q[0], p.y + q[1]), 'marche', tour);
     })();
-  } else if(quoi === 'etire'){            /* il s'étire, tout long */
-    chatPose(V, o, 'marche'); d.classList.add('at-c-fige');
-    animSvg(V, o, [{transform:'scale(1,1)'}, {transform:'scale(1.22,.8)', offset:0.4}, {transform:'scale(1.22,.8)', offset:0.7}, {transform:'scale(1,1)'}], {duration:1600, easing:'ease-in-out'});
-    apres(V, 1600, function(){ d.classList.remove('at-c-fige'); chatPose(V, o, 'assis'); }); fin(2600);
-  } else if(quoi === 'saut'){             /* il saute en l'air, sur place */
-    chatPose(V, o, 'saute');
-    animSvg(V, o, [{transform:'translateY(0)'}, {transform:'translateY(-60%)', offset:0.45}, {transform:'translateY(0)'}], {duration:700, easing:'cubic-bezier(.3,0,.4,1)'});
-    apres(V, 700, function(){ chatPose(V, o, 'assis'); }); fin(2000);
-  } else if(quoi === 'queue'){            /* il court après sa queue */
-    chatPose(V, o, 'marche'); d.classList.add('at-c-tourne');
-    apres(V, 1700, function(){ d.classList.remove('at-c-tourne'); chatPose(V, o, 'assis'); }); fin(2600);
-  } else {                                /* il remue les fesses… et bondit sur place */
+  } else if(quoi === 'etire'){            /* elle s'étire : le devant par terre et les fesses en l'air, puis tout en longueur */
+    chatPose(V, o, 'marche'); gesteChat(V, o, 'etire');
+    apres(V, 1950, function(){ chatPose(V, o, 'assis'); }); fin(2900);
+  } else if(quoi === 'saut'){             /* elle bondit en l'air, sur place */
+    chatPose(V, o, 'marche'); gesteChat(V, o, 'bond', {h:15 + Math.random() * 8});
+    apres(V, 860, function(){ chatPose(V, o, 'assis'); }); fin(2200);
+  } else if(quoi === 'queue'){            /* elle court après sa queue */
+    chatPose(V, o, 'marche'); gesteChat(V, o, 'tourne');
+    apres(V, 1850, function(){ chatPose(V, o, 'assis'); }); fin(2800);
+  } else {                                /* elle se tapit, remue les fesses… et bondit sur place */
     chatPose(V, o, 'marche'); d.classList.add('at-c-tapi', 'at-c-fesses');
-    apres(V, 1100, function(){ d.classList.remove('at-c-tapi', 'at-c-fesses'); chatPose(V, o, 'saute'); animSvg(V, o, [{transform:'translateY(0)'}, {transform:'translate(14%,-30%)', offset:0.5}, {transform:'translateY(0)'}], {duration:560}); });
-    apres(V, 1700, function(){ chatPose(V, o, 'assis'); }); fin(2600);
+    apres(V, 1100, function(){ d.classList.remove('at-c-tapi', 'at-c-fesses'); gesteChat(V, o, 'bond', {d:640, h:12}); });
+    apres(V, 1800, function(){ chatPose(V, o, 'assis'); }); fin(2700);
   }
   majHumeur(V, o);
   return quoi;
@@ -6994,7 +7028,7 @@ function chasseDoigt(V, ev){
   var st = chatEtat(V, best);
   if(st.t){ clearTimeout(st.t); st.t = null; }
   if(bd < 70){                                /* il l'a presque : il bondit dessus et tape de la patte */
-    if(!st.anim){ chatPose(V, best, Math.random() < 0.5 ? 'tape' : 'saute'); if(st.pose === 'saute') animSvg(V, best, [{transform:'translateY(0)'}, {transform:'translateY(-35%)', offset:0.5}, {transform:'translateY(0)'}], {duration:480}); }
+    if(!st.anim){ chatPose(V, best, Math.random() < 0.5 ? 'tape' : 'saute'); if(st.pose === 'saute') gesteChat(V, best, 'bond', {d:520, h:11}); }
     donner(best, 'jeu', 3);
     chatPlanifier(V, best, 2200);
     return;
@@ -7219,15 +7253,9 @@ function brillerMimi(V){ var b = V.elMimi; if(!b) return; b.classList.add('at-di
    queue : « Pas la queue ! » — oreilles en arrière, la queue fouette, et au bout d'un moment elle s'éloigne un peu. */
 var ZONE_X = {tete:'at-x-tete at-c-ronron', dos:'at-x-dosg at-c-ronron', queue:'at-x-agace', ventre:''};
 function zoneChat(V, o, ev){
-  var d = V.elO[o.id], sv = d && d.querySelector('svg'), st = chatEtat(V, o);
-  if(!sv) return 'dos';
-  var r = sv.getBoundingClientRect(), lx = (ev.clientX - r.left) / r.width * 114, ly = (ev.clientY - r.top) / r.height * 96, p = st.pose;
-  if(st.gauche && p !== 'dort') lx = 114 - lx;
-  if(p === 'dort') return lx < 54 ? 'tete' : lx > 92 ? 'queue' : 'dos';
-  if(p === 'dos') return lx > 74 ? 'tete' : lx < 22 ? 'queue' : 'ventre';
-  if(p === 'pain') return (lx > 62 && ly < 66) ? 'tete' : (ly > 84 && lx > 20) ? 'queue' : 'dos';
-  if(p === 'marche' || p === 'saute' || p === 'griffe' || p === 'boule') return (lx > 78 && ly < 64) ? 'tete' : lx < 24 ? 'queue' : ly > 66 ? 'ventre' : 'dos';
-  return (lx > 48 && ly < 50) ? 'tete' : lx < 26 ? 'queue' : (lx > 52 && ly >= 52) ? 'ventre' : 'dos';
+  /* (le pantin sait où sont vraiment sa tête, son dos, son ventre et sa queue, dans la pose du moment) */
+  var r = pantinDe(V, o), z = r ? r.zone(ev.clientX, ev.clientY) : null;
+  return z || 'dos';
 }
 function caresseDebut(V, o, ev){
   var st = chatEtat(V, o);
@@ -7243,7 +7271,8 @@ function caresseDebut(V, o, ev){
 function caresseZone(V, o, z){
   var st = chatEtat(V, o), C = st.caresse, d = V.elO[o.id];
   if(!C || !d || z === C.zone) return;
-  ['at-x-tete', 'at-x-dosg', 'at-x-agace', 'at-x-attrape', 'at-x-petrit'].forEach(function(c){ d.classList.remove(c); });
+  ['at-x-tete', 'at-x-dosg', 'at-x-agace', 'at-x-attrape', 'at-x-petrit', 'at-x-mordille'].forEach(function(c){ d.classList.remove(c); });
+  C.mord = 0;
   if(C.zone !== 'tete' && C.zone !== 'dos') d.classList.remove('at-c-ronron');
   C.zone = z; C.tz = Date.now();
   if(st.pose === 'dort'){
@@ -7271,7 +7300,13 @@ function caresseTic(V, o){
   else if(st.pose === 'dort'){ if(z === 'tete' || z === 'dos'){ gain = 0.25; if(now - C.ronron > 1600){ C.ronron = now; sonMimi(V, 'ronron'); } } }
   else if(z === 'tete'){
     gain = gratte ? 0.75 : 0.5;
-    if(dz > 2200 && st.pose === 'assis') d.classList.add('at-x-petrit');
+    if(dz > 2200 && (st.pose === 'assis' || st.pose === 'pain') && !C.mord) d.classList.add('at-x-petrit');
+    /* un très long câlin : elle mordille le doigt, tout doucement, puis le lèche — comme les vrais chats (Romain, 16 novembre au soir) */
+    if(dz > 9000 && !C.mord){
+      C.mord = 1; d.classList.remove('at-x-tete', 'at-x-petrit');
+      expression(V, o, 'at-x-mordille', 2200); flotter(V, o, 'Mmh… miam !'); sonMimi(V, 'grr');
+      apres(V, 2300, function(){ if(chatEtat(V, o).caresse === C && C.zone === 'tete'){ d.classList.add('at-x-tete'); C.tz = Date.now(); C.mord = 0; } });
+    }
     if(now - C.coeur > 1100){ C.coeur = now; coeursChat(V, o); }
     if(now - C.ronron > 1450){ C.ronron = now; sonMimi(V, 'ronron'); }
   } else if(z === 'dos'){
@@ -7302,7 +7337,7 @@ function caresseFin(V, o, fuite){
   if(!C) return;
   st.caresse = null; clearTimeout(st.caresseT);
   if(C.outil) outilLache(V, o);
-  if(d) ['at-x-tete', 'at-x-dosg', 'at-x-agace', 'at-x-attrape', 'at-x-petrit', 'at-c-ronron'].forEach(function(c){ d.classList.remove(c); });
+  if(d) ['at-x-tete', 'at-x-dosg', 'at-x-agace', 'at-x-attrape', 'at-x-petrit', 'at-x-mordille', 'at-c-ronron'].forEach(function(c){ d.classList.remove(c); });
   if(C.gain >= 3) noterSoin(V, o, 'caresse');
   majBarre(V); changer(V);
   if(st.pose === 'dort'){ chatPlanifier(V, o, Math.max(1000, st.dortJusqua - Date.now())); return; }
@@ -7472,7 +7507,7 @@ function prendrePhoto(V){
 }
 function imageMimi(f){
   var x = f.x ? ' ' + esc(f.x) : '';
-  return '<div class="at-o at-t-chat at-plat at-photo-chat at-c-' + esc(f.pose) + x + '"><svg viewBox="0 0 114 96" overflow="visible" aria-hidden="true">' + dessinMimi(CHATS[(f.v || 0) % 3], f.acc || {}) + '</svg></div>';
+  return '<div class="at-o at-t-chat at-plat at-photo-chat at-c-' + esc(f.pose) + x + '"><svg viewBox="0 0 ' + MP.W + ' ' + MP.H + '" overflow="visible" aria-hidden="true">' + MP.image((f.v || 0) % 3, f.pose, f.x || '', accPantin(f.acc)) + '</svg></div>';
 }
 function ouvrirAlbum(V){
   fermerBarre(V);
@@ -7618,7 +7653,7 @@ function jouetTic(V){
     d.classList.add('at-x-joue');
     if(J.id === 'laser'){
       if(dist > 55){ st.vite = 2.4; chatBouger(V, o, chatSol(V, J.pos.x - sx * 34, J.pos.y), 'marche', function(){ st.vite = 1; if(V.jouet) chatPose(V, o, 'tape'); }); }
-      else if(Math.random() < 0.5){ chatPose(V, o, 'saute'); animSvg(V, o, [{transform:'translateY(0)'}, {transform:'translateY(-30%)', offset:0.5}, {transform:'translateY(0)'}], {duration:420}); apres(V, 430, function(){ if(V.jouet) chatPose(V, o, 'tape'); }); }
+      else if(Math.random() < 0.5){ chatPose(V, o, 'saute'); gesteChat(V, o, 'bond', {d:500, h:10}); apres(V, 520, function(){ if(V.jouet) chatPose(V, o, 'tape'); }); }
       else chatPose(V, o, 'tape');
     } else {
       if(dist > 170){ d.classList.remove('at-c-tapi', 'at-c-fesses'); J.tapi = 0; st.vite = 1.3; chatBouger(V, o, chatSol(V, J.pos.x - sx * 130, J.pos.y), 'marche', function(){ st.vite = 1; }); }
@@ -8284,7 +8319,7 @@ window.Atelier = {
   BESOINS_CHAT:BESOINS.map(function(b){ return b.k; }),
   /* Mimi en image, hors de la pièce (l'album photo, les robots) : un <svg> ; pose : 'assis', 'dort', 'marche', 'dos', 'pain'… ; x : des classes .at-x-… */
   imageChat:function(v, pose, x, acc){
-    return '<div class="at-o at-t-chat at-plat at-c-' + (pose || 'assis') + (x ? ' ' + x : '') + '"><svg viewBox="0 0 114 96" overflow="visible" aria-hidden="true">' + dessinMimi(CHATS[(v || 0) % 3], acc || {}) + '</svg></div>';
+    return '<div class="at-o at-t-chat at-plat at-c-' + (pose || 'assis') + (x ? ' ' + x : '') + '"><svg viewBox="0 0 ' + MP.W + ' ' + MP.H + '" overflow="visible" aria-hidden="true">' + MP.image((v || 0) % 3, pose || 'assis', x || '', accPantin(acc)) + '</svg></div>';
   },
   defsHTML:function(){ return svgDefs(); },
   /* (les robots) la vue montée en ce moment, avec ses points d'accès d'essai (_mimi, _cadeau…) */
