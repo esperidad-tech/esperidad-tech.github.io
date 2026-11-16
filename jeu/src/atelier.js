@@ -118,7 +118,7 @@ var CARTONS_SUITE2 = [
   ['tapis_grand', 'pouf', 'lampe_chevet']
 ];
 /* Les affaires du chat (étape 3) : un carton dans l'atelier, dès le début (une fois pour les anciennes sauvegardes : etat.cadeauChat) */
-var CARTON_CHAT = ['panier', 'gamelle', 'eau', 'distributeur'];
+var CARTON_CHAT = ['panier', 'gamelle', 'eau', 'distributeur', 'litiere'];
 /* Un carton qui contient un meuble de la chambre est posé dans la chambre */
 function cartonChambre(l){ return l.some(function(t){ return !!(CAT[t] && CAT[t].chambre); }); }
 function nouveauCarton(e, l, ch){ e.n++; var k = {id:'k' + e.n, t:'carton', reste:l.slice(), ouvert:0}; if(ch === undefined ? cartonChambre(l) : ch) k.ch = 1; e.cartons.push(k); return k; }
@@ -296,6 +296,11 @@ function normaliser(e){
     e.cadeauChat = 1;
     nouveauCarton(e, CARTON_CHAT, 0);
   }
+  /* (16 novembre) la litière de Mimi : une partie déjà commencée la reçoit dans un carton */
+  if(!e.cadeauLitiere){
+    e.cadeauLitiere = 1;
+    if(!e.objets.some(function(o){ return o.t === 'litiere'; }) && !e.cartons.some(function(k){ return (k.reste || []).indexOf('litiere') >= 0; })) nouveauCarton(e, ['litiere'], 0);
+  }
   normaliserChat(e);
   e.objets.forEach(function(o){ if(o.pc !== 1) delete o.pc; });
   e.cartons.forEach(function(k){ if(k.ch !== 1) delete k.ch; });
@@ -326,11 +331,30 @@ function normaliserChat(e){
   if(t.souris !== undefined && typeof t.souris !== 'number') delete t.souris;
   if(t.butin && !(typeof t.butin === 'object' && typeof t.butin.ingr === 'string')) t.butin = null;
   if(t.butin === undefined) t.butin = null;
+  /* (16 novembre) le Tamagotchi : la variété (cachée), les points de soin depuis le dernier cadeau, le coffret, les jouets, les nourritures… */
+  if(typeof t.varie !== 'number' || !(t.varie >= 0)) t.varie = 0;
+  if(typeof t.pts !== 'number' || !(t.pts >= 0)) t.pts = 0;
+  if(!Array.isArray(t.derniers)) t.derniers = [];
+  t.derniers = t.derniers.filter(function(x){ return typeof x === 'string'; }).slice(0, 2);
+  if(!t.cadeaux || typeof t.cadeaux !== 'object') t.cadeaux = {};
+  if(t.dehors && !(typeof t.dehors === 'object' && typeof t.dehors.c === 'string')) t.dehors = null;
+  if(t.coffret && !(typeof t.coffret === 'object' && typeof t.coffret.c === 'string' && typeof t.coffret.x === 'number' && typeof t.coffret.y === 'number')) t.coffret = null;
+  if(t.dehors === undefined) t.dehors = null;
+  if(t.coffret === undefined) t.coffret = null;
+  if(!e.mimi || typeof e.mimi !== 'object') e.mimi = {};
+  var mm = e.mimi, uniq = function(l, ok){ return (Array.isArray(l) ? l : []).filter(function(id, i, a){ return typeof id === 'string' && ok(id) && a.indexOf(id) === i; }); };
+  mm.jouets = uniq(mm.jouets, function(id){ return !!JOUETS[id]; }); if(mm.jouets.indexOf('pelote') < 0) mm.jouets.unshift('pelote');
+  mm.nour = uniq(mm.nour, function(id){ return !!NOURS[id]; }); if(mm.nour.indexOf('croquettes') < 0) mm.nour.unshift('croquettes');
+  mm.soins = uniq(mm.soins, function(id){ return SOINS_SUITE.indexOf(id) >= 0; });
+  mm.neufs = uniq(mm.neufs, function(id){ return !!JOUETS[id] || SOINS_SUITE.indexOf(id) >= 0; });
+  mm.album = (Array.isArray(mm.album) ? mm.album : []).filter(function(f){ return f && typeof f === 'object' && typeof f.pose === 'string'; }).slice(-ALBUM_MAX);
   var meres = 0;
   e.objets.forEach(function(o){
     if(o.t !== 'chat') return;
     if(!o.b || typeof o.b !== 'object') o.b = {};
-    ['faim', 'soif', 'amour', 'jeu', 'dodo'].forEach(function(k){ if(typeof o.b[k] !== 'number' || !(o.b[k] >= 0)) o.b[k] = 80; o.b[k] = Math.max(0, Math.min(100, Math.round(o.b[k]))); });
+    bonheur(o);      /* (avant de toucher aux besoins : une vieille sauvegarde prend son bonheur dans leur moyenne) */
+    delete o.b.dodo;
+    ['faim', 'soif', 'propre', 'amour', 'jeu'].forEach(function(k){ if(typeof o.b[k] !== 'number' || !(o.b[k] >= 0)) o.b[k] = 80; o.b[k] = Math.max(BESOIN_MIN, Math.min(100, Math.round(o.b[k]))); });
     if(o.acc !== undefined){ if(!o.acc || typeof o.acc !== 'object') delete o.acc; else ['cou', 'tete'].concat(cles(o.acc)).forEach(function(k){ var id = o.acc[k]; if(id === undefined) return; if(typeof ACC === 'undefined' || !ACC[id] || ACC[id].slot !== k || e.garde.a.indexOf(id) < 0) delete o.acc[k]; }); }
     if(typeof o.nom !== 'string' || !o.nom) o.nom = o.chaton ? 'Pompon' : (meres++ ? 'Minette' : 'Mimi');
     else if(!o.chaton) meres++;
@@ -1185,69 +1209,199 @@ def('etabli', {w:380, h:212, p:110, z:'sol', special:'plantes', profil:true, nf:
     return [N(s + '</g>')];
   }});
 
-var CHATS = [['#f2a65a', '#d9783c', '#ffe0bf'], ['#b9b3d2', '#7d7799', '#eceaf6'], ['#4a4060', '#2c2440', '#f3f0ff']];
+/* ==========================================================
+   Mimi, dessinée de près (16 novembre ; Romain : « insiste bien sur les textures de Mimi, un dessin joli mais pas trop pesant ;
+   je veux beaucoup de détails, et travaille beaucoup les animations du chat »).
+   - Trois pelages (o.v) : CHATS[v] = [pelage, rayures, ventre, iris clair, iris foncé, reflet, tigrée ?] (0 : Mimi, rousse tigrée).
+   - Le pelage a son dégradé (plus clair en haut : atg-mim0…2), le ventre aussi (atg-mimv…), les yeux (atg-mimy…), l'oreille (atg-mimo),
+     la truffe (atg-mimn) : defsMimi(), posés une fois avec les dégradés de l'atelier.
+   - Cinq poses, une seule visible (CSS .at-c-<pose>) : assise, debout (marche, saut, griffes, boule), en boule (elle dort),
+     sur le dos (pattes en l'air, coussinets roses), couchée « en pain ».
+   - La tête (teteChat) porte toutes ses expressions, montrées par des classes : yeux et pupilles, paupières (clignement, sommeil),
+     yeux fermés contents, gueule ouverte (miaou), bâillement, langue, moustaches, deux oreilles qui bougent chacune de leur côté.
+   - La queue est en trois morceaux emboîtés : chacun tourne autour de son attache (une vraie vague). Pour qu'aucun trait ne se voie
+     aux jointures, elle est dessinée deux fois avec les mêmes morceaux : tous les contours d'abord, puis toute la fourrure.
+   - Léger : pas de filtre, pas de flou, pas de motif ; des traits et des dégradés. Une seule pose est peinte à la fois.
+   ========================================================== */
+var CHATS = [
+  ['#f2a65a', '#c4612a', '#fff1dc', '#e6f27a', '#6fae35', '#ffcf96', 1],    /* Mimi : rousse tigrée, yeux verts */
+  ['#b9b3d2', '#736d8e', '#f7f5fc', '#ffe27a', '#de8424', '#dcd8ee', 1],    /* grise-lilas tigrée, yeux d'ambre */
+  ['#4a4060', '#251d38', '#f7f4ff', '#f6f08a', '#adc23a', '#6c6290', 0]     /* noire au plastron blanc, yeux jaunes */
+];
+function defsMimi(){
+  return CHATS.map(function(p, i){
+    return lin('mim' + i, [[p[5], 0], [p[0], 0.5], [sombre(p[0], 0.16), 1]], 1) +
+      lin('mimv' + i, [[p[2], 0], [melange(p[2], p[0], 0.22), 1]], 1) +
+      rad('mimy' + i, [[p[3], 0], [p[4], 1]], 0.5, 0.62, 0.62);
+  }).join('') + rad('mimo', [['#ffd6e0', 0], ['#ef86a3', 1]], 0.5, 0.85, 0.85) + lin('mimn', [['#ffb8c8', 0], ['#e4668a', 1]], 1);
+}
+function idxChat(p){ var i = CHATS.indexOf(p); return i < 0 ? 0 : i; }
+var MC = 3.2;   /* le contour de Mimi : un peu plus fin que les meubles, pour qu'on voie ses détails */
+function PM(d, f, w, x){ return '<path d="' + d + '" fill="' + f + '" stroke="' + K + '" stroke-width="' + (w || MC) + '" stroke-linejoin="round" stroke-linecap="round"' + (x || '') + '/>'; }
+function FM(d, f, x){ return '<path d="' + d + '" fill="' + f + '"' + (x || '') + '/>'; }
+/* un chemin dont les points sont donnés par rapport à (cx, cy) : ['M', dx, dy, 'C', …] (commandes absolues seulement) */
+function rp(cx, cy, l){
+  var s = '', k = 0;
+  l.forEach(function(v){ if(typeof v === 'string'){ s += (s ? ' ' : '') + v; k = 0; } else { s += k % 2 ? ',' + f1(cy + v) : (k ? ' ' : '') + f1(cx + v); k++; } });
+  return s;
+}
+/* un œil : l'iris (dégradé), la pupille fendue (elle s'ouvre en grand quand Mimi joue : .at-c-pup), deux reflets, le trait du dessus */
+function oeilChat(i, ex, ey){
+  return '<g class="at-c-oeil">' + PM(rp(ex, ey, ['M', -4.8, 0, 'C', -3.8, -4.8, 3.8, -4.8, 4.8, 0, 'C', 3.8, 4.4, -3.8, 4.4, -4.8, 0, 'Z']), G('mimy' + i), 1.5) +
+    '<ellipse class="at-c-pup" cx="' + f1(ex) + '" cy="' + f1(ey + 0.2) + '" rx="1.45" ry="3.6" fill="' + K + '"/>' +
+    '<circle cx="' + f1(ex + 1.5) + '" cy="' + f1(ey - 1.6) + '" r="1.35" fill="#fff"/><circle cx="' + f1(ex - 1.6) + '" cy="' + f1(ey + 1.8) + '" r=".65" fill="#fff" opacity=".85"/>' +
+    T(rp(ex, ey, ['M', -5.1, -0.3, 'C', -3.8, -5.2, 3.8, -5.2, 5.1, -0.3]), K, 2.1) + '</g>';
+}
+/* la paupière : elle descend du haut (CSS : scaleY) ; en bas, le trait de l'œil fermé */
+function paupiereChat(ex, ey, f){
+  return '<g class="at-c-pp">' + FM(rp(ex, ey, ['M', -5.9, 0.4, 'C', -4.6, -6.9, 4.6, -6.9, 5.9, 0.4, 'C', 4.6, 5.4, -4.6, 5.4, -5.9, 0.4, 'Z']), f) +
+    T(rp(ex, ey, ['M', -5, 2.2, 'Q', 0, 5.2, 5, 2.2]), K, 1.9) + '</g>';
+}
+/* une oreille (s : -1 à gauche, 1 à droite) : le dehors en fourrure, le dedans rose, trois poils blancs */
+function oreilleChat(i, cx, cy, s){
+  var X = function(v){ return f1(cx + s * v); }, Y = function(v){ return f1(cy + v); };
+  var ext = 'M' + X(4) + ',' + Y(-13) + ' C' + X(7) + ',' + Y(-20) + ' ' + X(13) + ',' + Y(-27) + ' ' + X(17.5) + ',' + Y(-29.5) +
+    ' C' + X(19.8) + ',' + Y(-24) + ' ' + X(19.8) + ',' + Y(-14) + ' ' + X(16.6) + ',' + Y(-5) + ' Z';
+  var inte = 'M' + X(7.2) + ',' + Y(-13) + ' C' + X(9.2) + ',' + Y(-18) + ' ' + X(13) + ',' + Y(-23) + ' ' + X(16.3) + ',' + Y(-25.4) +
+    ' C' + X(17.3) + ',' + Y(-21) + ' ' + X(17.1) + ',' + Y(-14) + ' ' + X(15.1) + ',' + Y(-8.6) + ' Z';
+  var poils = 'M' + X(9.4) + ',' + Y(-11) + ' L' + X(11.6) + ',' + Y(-17.4) + ' M' + X(12.4) + ',' + Y(-10.4) + ' L' + X(13.7) + ',' + Y(-18) + ' M' + X(15) + ',' + Y(-9.8) + ' L' + X(15.7) + ',' + Y(-16.2);
+  return '<g class="at-c-or at-c-or-' + (s < 0 ? 'g' : 'd') + '">' + PM(ext, G('mim' + i)) + FM(inte, G('mimo')) + T(poils, '#fffaf2', 1.1, ' opacity=".9"') + '</g>';
+}
 function teteChat(p, cx, cy, acc){
   acc = acc || {};
-  return '<g class="at-c-tete">' + '<g class="at-c-oreilles">' +
-    P('M' + (cx - 16) + ',' + (cy - 6) + ' L' + (cx - 18) + ',' + (cy - 24) + ' L' + (cx - 4) + ',' + (cy - 14) + ' Z', p[0], ' stroke-width="4"') +
-    P('M' + (cx + 4) + ',' + (cy - 14) + ' L' + (cx + 18) + ',' + (cy - 24) + ' L' + (cx + 16) + ',' + (cy - 6) + ' Z', p[0], ' stroke-width="4"') +
-    sansTrait(P('M' + (cx - 14) + ',' + (cy - 9) + ' L' + (cx - 15) + ',' + (cy - 19) + ' L' + (cx - 7) + ',' + (cy - 13) + ' Z', '#ff9db4')) +
-    sansTrait(P('M' + (cx + 7) + ',' + (cy - 13) + ' L' + (cx + 15) + ',' + (cy - 19) + ' L' + (cx + 14) + ',' + (cy - 9) + ' Z', '#ff9db4')) + '</g>' +
+  var i = idxChat(p), R = function(l){ return rp(cx, cy, l); };
+  var moust = R(['M', -9.6, 5.2, 'C', -14.6, 3.6, -19.4, 3.4, -24, 4.6, 'M', -9.6, 7.4, 'C', -14.6, 7.4, -19.4, 8.2, -23.6, 10.2, 'M', -9.2, 9.4, 'C', -13.6, 11, -17.4, 12.8, -20.6, 15.4,
+    'M', 9.6, 5.2, 'C', 14.6, 3.6, 19.4, 3.4, 24, 4.6, 'M', 9.6, 7.4, 'C', 14.6, 7.4, 19.4, 8.2, 23.6, 10.2, 'M', 9.2, 9.4, 'C', 13.6, 11, 17.4, 12.8, 20.6, 15.4]);
+  var couvre = function(ex){ return FM(rp(cx + ex, cy - 1.6, ['M', -5.9, 0.4, 'C', -4.6, -6.9, 4.6, -6.9, 5.9, 0.4, 'C', 4.6, 5.4, -4.6, 5.4, -5.9, 0.4, 'Z']), G('mim' + i)); };
+  return '<g class="at-c-tete">' + '<g class="at-c-oreilles">' + oreilleChat(i, cx, cy, -1) + oreilleChat(i, cx, cy, 1) + '</g>' +
     (acc.cou && ACC[acc.cou] ? dessinAcc(acc.cou, cx, cy) : '') +
-    Ell(cx, cy, 19, 16, p[0]) +
-    sansTrait(P('M' + (cx - 8) + ',' + (cy + 6) + ' C' + (cx - 4) + ',' + (cy + 2) + ' ' + (cx + 4) + ',' + (cy + 2) + ' ' + (cx + 8) + ',' + (cy + 6) + ' C' + (cx + 4) + ',' + (cy + 12) + ' ' + (cx - 4) + ',' + (cy + 12) + ' ' + (cx - 8) + ',' + (cy + 6) + ' Z', p[2]) + T('M' + (cx - 8) + ',' + (cy + 6) + ' C' + (cx - 4) + ',' + (cy + 12) + ' ' + (cx + 4) + ',' + (cy + 12) + ' ' + (cx + 8) + ',' + (cy + 6), sombre(p[2], 0.25), 1.5)) +
-    '<g class="at-c-yeux">' + Ell(cx - 7, cy - 1, 3.4, 4.4, K, ' stroke-width="1"') + Ell(cx + 7, cy - 1, 3.4, 4.4, K, ' stroke-width="1"') +
-      '<circle cx="' + (cx - 6) + '" cy="' + (cy - 2.6) + '" r="1.3" fill="#fff"/><circle cx="' + (cx + 8) + '" cy="' + (cy - 2.6) + '" r="1.3" fill="#fff"/></g>' +
-    '<g class="at-c-ferme">' + T('M' + (cx - 10) + ',' + (cy - 1) + ' q3,3 6,0 M' + (cx + 4) + ',' + (cy - 1) + ' q3,3 6,0', K, 2.2) + '</g>' +
-    P('M' + (cx - 2.5) + ',' + (cy + 4) + ' l2.5,2.5 l2.5,-2.5 Z', '#ff8fa8', ' stroke-width="1.5"') +
-    /* sa bouche dit son humeur : contente, ou un peu triste (il demande quelque chose) ; ses paupières tombent s'il a sommeil */
-    '<g class="at-c-bouche">' + T('M' + cx + ',' + (cy + 6.5) + ' q-3,3.5 -6,1 M' + cx + ',' + (cy + 6.5) + ' q3,3.5 6,1', K, 1.6) + '</g>' +
-    '<g class="at-c-moue">' + T('M' + (cx - 5) + ',' + (cy + 10) + ' q5,-4 10,0', K, 1.8) + '</g>' +
-    '<g class="at-c-paupieres">' + ['M' + (cx - 13.2) + ',' + (cy - 0.4) + ' a6.2,6.6 0 0 1 12.4,0 Z', 'M' + (cx + 0.8) + ',' + (cy - 0.4) + ' a6.2,6.6 0 0 1 12.4,0 Z'].map(function(d){ return '<path d="' + d + '" fill="' + p[0] + '" stroke="' + K + '" stroke-width="1.4" stroke-linejoin="round"/>'; }).join('') + '</g>' +
-    T('M' + (cx - 11) + ',' + (cy + 5) + ' l-12,-2 M' + (cx - 11) + ',' + (cy + 8) + ' l-12,2 M' + (cx + 11) + ',' + (cy + 5) + ' l12,-2 M' + (cx + 11) + ',' + (cy + 8) + ' l12,2', K, 1.1) +
+    /* la tête, avec ses touffes de joues */
+    PM(R(['M', -16.5, 1, 'C', -18, -9, -10.5, -16.5, 0, -16.5, 'C', 10.5, -16.5, 18, -9, 16.5, 1, 'L', 20.5, 4.2, 'L', 16.8, 6, 'L', 19.6, 9.4, 'L', 14.6, 10.4,
+      'C', 10, 16.4, -10, 16.4, -14.6, 10.4, 'L', -19.6, 9.4, 'L', -16.8, 6, 'L', -20.5, 4.2, 'Z']), G('mim' + i)) +
+    T(R(['M', -8.4, -13.4, 'C', -4, -15.4, 4, -15.4, 8.4, -13.4]), p[5], 1.5, ' opacity=".8"') +
+    (p[6] ? T(R(['M', -6, -15.6, 'C', -5.4, -12, -4.8, -10, -3.6, -8, 'M', 0, -16.4, 'L', 0, -9.8, 'M', 6, -15.6, 'C', 5.4, -12, 4.8, -10, 3.6, -8]), p[1], 2.1) +
+      T(R(['M', -16.8, 2.4, 'L', -12.4, 3.4, 'M', -17.6, 5.8, 'L', -13.2, 6, 'M', 16.8, 2.4, 'L', 12.4, 3.4, 'M', 17.6, 5.8, 'L', 13.2, 6]), p[1], 1.6) : '') +
+    /* les joues roses, le museau clair et ses petits points, le menton */
+    '<ellipse cx="' + f1(cx - 12.4) + '" cy="' + f1(cy + 6.4) + '" rx="2.8" ry="1.6" fill="#ff7a9c" opacity=".3"/><ellipse cx="' + f1(cx + 12.4) + '" cy="' + f1(cy + 6.4) + '" rx="2.8" ry="1.6" fill="#ff7a9c" opacity=".3"/>' +
+    FM(R(['M', -9.6, 6.4, 'C', -9.6, 2.2, -3.4, 1.4, 0, 4.4, 'C', 3.4, 1.4, 9.6, 2.2, 9.6, 6.4, 'C', 9.6, 11.4, 3.4, 12.4, 0, 10.6, 'C', -3.4, 12.4, -9.6, 11.4, -9.6, 6.4, 'Z']), G('mimv' + i)) +
+    FM(R(['M', -4.2, 10.8, 'C', -3, 14.2, 3, 14.2, 4.2, 10.8, 'Z']), melange(p[2], p[0], 0.3)) +
+    [[-4.2, 6.8], [-6.6, 6], [-5.8, 8.8], [4.2, 6.8], [6.6, 6], [5.8, 8.8]].map(function(q){ return '<circle cx="' + f1(cx + q[0]) + '" cy="' + f1(cy + q[1]) + '" r=".75" fill="' + sombre(p[2], 0.5) + '"/>'; }).join('') +
+    /* les yeux, et tout ce qui peut les cacher : les paupières (clignement, sommeil), les yeux fermés contents (^ ^) */
+    '<g class="at-c-yeux">' + oeilChat(i, cx - 7, cy - 1.6) + oeilChat(i, cx + 7, cy - 1.6) + '</g>' +
+    '<g class="at-c-paupieres">' + paupiereChat(cx - 7, cy - 1.6, G('mim' + i)) + paupiereChat(cx + 7, cy - 1.6, G('mim' + i)) + '</g>' +
+    '<g class="at-c-ferme">' + couvre(-7) + couvre(7) + T(R(['M', -11.4, -0.4, 'Q', -7, -5, -2.6, -0.4, 'M', 2.6, -0.4, 'Q', 7, -5, 11.4, -0.4]), K, 2.2) + '</g>' +
+    /* la truffe, et la bouche dans tous ses états */
+    PM(R(['M', -3.3, 2.8, 'C', -3.3, 1.2, 3.3, 1.2, 3.3, 2.8, 'C', 3.3, 4.4, 1.1, 5.7, 0, 5.9, 'C', -1.1, 5.7, -3.3, 4.4, -3.3, 2.8, 'Z']), G('mimn'), 1.3) +
+    '<ellipse cx="' + f1(cx - 1) + '" cy="' + f1(cy + 2.4) + '" rx="1" ry=".55" fill="#fff" opacity=".8"/>' +
+    '<g class="at-c-bouche">' + T(R(['M', 0, 5.9, 'L', 0, 7.4, 'M', 0, 7.4, 'Q', -2.4, 10.2, -5.2, 8, 'M', 0, 7.4, 'Q', 2.4, 10.2, 5.2, 8]), K, 1.45) + '</g>' +
+    '<g class="at-c-gueule">' + PM(R(['M', -4.2, 7.6, 'C', -4.6, 14.8, 4.6, 14.8, 4.2, 7.6, 'C', 2, 9.4, -2, 9.4, -4.2, 7.6, 'Z']), '#5b1d34', 1.4) +
+      FM(R(['M', -2.6, 12.4, 'C', -2, 10.4, 2, 10.4, 2.6, 12.4, 'C', 1.4, 13.6, -1.4, 13.6, -2.6, 12.4, 'Z']), '#ff8fab') +
+      FM(R(['M', -3.4, 8.4, 'L', -2.6, 10.6, 'L', -1.8, 8.8, 'Z', 'M', 3.4, 8.4, 'L', 2.6, 10.6, 'L', 1.8, 8.8, 'Z']), '#fff') + '</g>' +
+    '<g class="at-c-baille">' + PM(R(['M', -6.4, 7, 'C', -7.6, 19.6, 7.6, 19.6, 6.4, 7, 'C', 3.2, 9.2, -3.2, 9.2, -6.4, 7, 'Z']), '#5b1d34', 1.4) +
+      FM(R(['M', -4.4, 15.4, 'C', -3.4, 11.8, 3.4, 11.8, 4.4, 15.4, 'C', 2.4, 17.4, -2.4, 17.4, -4.4, 15.4, 'Z']), '#ff8fab') +
+      FM(R(['M', -5.2, 8, 'L', -4.2, 11.4, 'L', -3.2, 8.5, 'Z', 'M', 5.2, 8, 'L', 4.2, 11.4, 'L', 3.2, 8.5, 'Z']), '#fff') + '</g>' +
+    '<g class="at-c-langue">' + FM(R(['M', -2, 7.4, 'C', -2.4, 11.8, 2.4, 11.8, 2, 7.4, 'Z']), '#ff8fab') + T(R(['M', 0, 8, 'L', 0, 10]), '#e4668a', 0.9) + '</g>' +
+    /* les moustaches (un trait sombre très léger dessous : on les voit sur tous les fonds) */
+    '<g class="at-c-moust">' + T(moust, K, 1.8, ' opacity=".28"') + T(moust, '#fffdf6', 0.95) + '</g>' +
     (acc.tete && ACC[acc.tete] ? dessinAcc(acc.tete, cx, cy) : '') +
     '</g>';
 }
+/* La queue : trois morceaux emboîtés (m[k] = [chemin, anneaux]) ; pre : le nom de la pose (les attaches sont dans le CSS : .at-qa1…).
+   Contours d'abord, fourrure ensuite : les deux arbres ont les mêmes classes, ils bougent ensemble. Le bout est foncé. */
+function queueChat(p, m, pre, bout){
+  function nid(f){ return '<g class="at-q1 ' + pre + '1">' + f(0) + '<g class="at-q2 ' + pre + '2">' + f(1) + '<g class="at-q3 ' + pre + '3">' + f(2) + '</g></g></g>'; }
+  return '<g class="at-c-queue">' + nid(function(k){ return T(m[k][0], K, 12.4); }) +
+    nid(function(k){ return T(m[k][0], p[0], 7.4) + T(m[k][0], p[5], 2, ' opacity=".55" transform="translate(-.6,-1.1)"') + (m[k][1] ? T(m[k][1], p[1], 2.2) : '') + (k === 2 && bout ? T(bout, p[6] ? p[1] : p[2], 7.2) : ''); }) + '</g>';
+}
+/* une patte qui se pose : le pied et ses doigts */
+function piedChat(x, y, f, rx){
+  rx = rx || 6;
+  return PM('M' + f1(x - rx) + ',' + f1(y + 1.6) + ' C' + f1(x - rx) + ',' + f1(y - 3.6) + ' ' + f1(x + rx) + ',' + f1(y - 3.6) + ' ' + f1(x + rx) + ',' + f1(y + 1.6) + ' Z', f, 2.6) +
+    T('M' + f1(x - rx / 3) + ',' + f1(y + 1.2) + ' L' + f1(x - rx / 3) + ',' + f1(y - 0.8) + ' M' + f1(x + rx / 3) + ',' + f1(y + 1.2) + ' L' + f1(x + rx / 3) + ',' + f1(y - 0.8), K, 1.1, ' opacity=".7"');
+}
+/* un dessous de patte, vu de face (Mimi sur le dos) : le gros coussinet et quatre petits, roses */
+function coussinets(x, y, a, f){
+  return '<g transform="rotate(' + a + ' ' + f1(x) + ' ' + f1(y) + ')">' + '<ellipse cx="' + f1(x) + '" cy="' + f1(y) + '" rx="5.4" ry="4.4" fill="' + f + '" stroke="' + K + '" stroke-width="2.4"/>' +
+    '<ellipse cx="' + f1(x) + '" cy="' + f1(y + 1.2) + '" rx="2.3" ry="1.8" fill="#ff9fb6"/>' +
+    [[-3, -1.6], [-1.1, -2.9], [1.1, -2.9], [3, -1.6]].map(function(q){ return '<circle cx="' + f1(x + q[0]) + '" cy="' + f1(y + q[1]) + '" r=".95" fill="#ff9fb6"/>'; }).join('') + '</g>';
+}
 /* Le chat est dessiné de profil (il bouge, il marche, il saute) : il reste une image plate, posée dans la pièce à la bonne taille */
 def('chat', {w:114, h:96, z:'petit', plat:true, nom:'Petit chat', ic:'🐈',
-  d:function(c){
-    var p = CHATS[c.v % 3], acc = c.o.acc || {};
-    var queue = function(d, cls){ return '<g class="' + cls + '">' + T(d, K, 11) + T(d, p[0], 6) + '</g>'; };
-    var patte = function(x, y, h, coul, cls){ return '<g class="' + cls + '">' + R(x, y, 9, h, 4, coul) + Ell(x + 4.5, y + h - 1, 6, 3.5, p[2], ' stroke-width="2.5"') + '</g>'; };
-    /* roulé en boule, il dort */
-    var dort = '<g class="at-c-g-dort"><g transform="translate(0,20)"><g class="at-respire">' +
-      P('M88,64 C112,62 112,38 98,40 C106,46 104,58 86,58 Z', p[0]) +
-      P('M18,68 C8,48 32,26 62,28 C92,30 102,50 98,68 Z', p[0]) +
-      T('M60,32 C58,40 60,46 64,50 M76,34 C74,42 76,48 80,52 M44,34 C44,40 46,44 50,48', p[1], 4) +
-      P('M10,68 C2,52 12,38 30,40 C46,42 50,58 44,68 Z', p[0]) +
-      P('M13,46 L12,30 L25,40 Z', p[0], ' stroke-width="4"') + P('M33,40 L41,28 L43,46 Z', p[0], ' stroke-width="4"') +
-      P('M15,43 L15,35 L21,40 Z', '#ff9db4', ' stroke-width="0"') +
-      P('M20,62 C24,58 34,58 40,62 C36,67 24,67 20,62 Z', p[2], ' stroke-width="0"') +
-      T('M16,54 q4,3 8,0 M30,54 q4,3 8,0', K, 2.5) + P('M26,59 l3,2 l3,-2 Z', '#ff8fa8', ' stroke-width="1.5"') +
-      (acc.tete && ACC[acc.tete] ? '<g transform="translate(-30,18) rotate(-12 57 18)">' + dessinAcc(acc.tete, 57, 30) + '</g>' : '') + '</g></g></g>';
-    /* assis, de profil (il regarde à droite) : il peut se lécher la patte ou taper un bocal */
-    var assis = '<g class="at-c-g-assis">' + queue('M34,88 C12,90 6,72 16,60 C20,55 26,57 24,63', 'at-c-queue') +
-      '<g class="at-c-ventre">' + Ell(52, 80, 30, 14, p[0]) + Ell(56, 82, 18, 8, p[2], ' stroke-width="0"') + '</g>' +
-      P('M30,91 C24,74 30,52 50,48 C66,46 76,60 76,76 C76,86 70,91 60,91 Z', p[0]) +
-      T('M40,60 C38,70 40,80 44,86 M50,56 C48,64 49,72 52,78', p[1], 4) +
-      P('M60,58 C70,60 72,74 66,86 C60,82 58,70 60,58 Z', p[2], ' stroke-width="0"') +
-      patte(57, 66, 26, p[1], 'at-c-patte-b') + patte(67, 64, 28, p[0], 'at-c-patte') +
-      teteChat(p, 68, 34, acc) + '</g>';
-    /* debout, il marche ou il saute */
-    var debout = '<g class="at-c-g-debout">' + queue('M22,62 C6,54 6,34 16,26', 'at-c-queue') +
-      patte(24, 64, 27, p[1], 'at-c-j at-c-j1') + patte(66, 64, 27, p[1], 'at-c-j at-c-j3') +
-      '<g class="at-c-ventre">' + Ell(54, 70, 34, 12, p[0]) + '</g>' +
-      P('M18,66 C16,52 30,46 54,46 C76,46 90,50 90,62 C90,72 78,74 56,74 C32,74 18,74 18,66 Z', p[0]) +
-      T('M40,48 C38,56 40,64 44,70 M54,47 C52,56 54,64 58,70', p[1], 3.5) +
-      patte(34, 66, 26, p[0], 'at-c-j at-c-j2') + patte(76, 66, 26, p[0], 'at-c-j at-c-j4') +
-      teteChat(p, 92, 46, acc) + '</g>';
-    return [
-      N('<ellipse class="at-c-ombre" cx="58" cy="92" rx="46" ry="5" fill="rgba(0,0,0,.28)"/>'),
-      N('<g class="at-c-corps">' + dort + assis + debout + '</g>'),
-      N('<text class="at-zzz" x="46" y="34" font-size="17" font-weight="700" fill="#bff9ff" text-anchor="middle">z</text>' +
-        '<text class="at-zzz z2" x="56" y="26" font-size="13" font-weight="700" fill="#bff9ff" text-anchor="middle">z</text>')
-    ];
-  }});
+  d:function(c){ return [N(dessinMimi(CHATS[(c.v || 0) % 3], c.o.acc || {}))]; }});
+/* Tout le chat : l'ombre, les cinq poses, les « z » du sommeil (une pose est montrée par le CSS) */
+function dessinMimi(p, acc){
+  var i = idxChat(p), F = G('mim' + i), V = G('mimv' + i), S = sombre(p[0], 0.2), blanc = !p[6];   /* (la noire a des chaussettes blanches) */
+  var raye = function(d, w){ return p[6] ? T(d, p[1], w || 2.4) : T(d, p[1], w || 2.4, ' opacity=".55"'); };
+  var poils = function(d, o){ return T(d, p[5], 1.5, ' opacity="' + (o || 0.7) + '"'); };
+  /* ---- assise, de profil (elle regarde à droite) : elle peut se lécher la patte, taper un bocal, pétrir, manger ---- */
+  var assis = '<g class="at-c-g-assis">' +
+    queueChat(p, [['M33,85 C27,88 20,89 14,87', 'M23.5,85 L23.5,90.8 M17.4,85 L18,90.7'], ['M14,87 C8,85 5,79 6,72', 'M4.8,82.7 L10,80'], ['M6,72 C7,66 10,62 14,60', 'M6.1,63.3 L10.8,66.7']], 'at-qa', 'M12.2,60.8 L14,60') +
+    '<g class="at-c-ventre">' + PM('M24,84 C22,72 34,66 52,68 C70,70 78,78 74,88 C66,92 36,92 24,84 Z', F) + FM('M40,82 C46,76 62,76 68,82 C62,88 46,88 40,82 Z', V) + '</g>' +
+    '<g class="at-c-buste">' + PM('M30,91 C22,90 19,80 21,70 C23,58 32,49 44,46 C52,44 59,41 65,43 C73,48 77,62 75,80 C75,86 73,90 70,91 Z', F) +
+    FM('M27,90 C24,78 29,64 40,62 C50,61 56,70 55,80 C54,86 51,90 47,91 Z', F) + T('M27,86 C24,76 29,64 40,62 C50,61 56,70 55,80', K, 2.4) +
+    raye('M44,48.6 C42,55 43,60 46,64 M52,47.8 C50,54 51,58 54,62 M36,51.6 C33,58 33,62 35,66') + raye('M32,70 C37,67.6 43,68.4 48,71.6 M29.6,77.6 C35,75.6 41,76.4 46,79.4', 2) +
+    poils('M28,58 C34,51 42,48 50,47.6') + T('M23,66 l-2.4,-1 M22.4,72 l-2.6,.2 M23.4,78 l-2.4,1', K, 1.2, ' opacity=".55"') +
+    piedChat(44, 89, F, 9) + '</g>' +
+    /* les pattes de devant sortent de sous le plastron : pas de trait en haut, elles naissent dans la fourrure */
+    '<g class="at-c-patte-b">' + FM('M56,60 C56,71 57,82 57.6,89 L65.4,89 C65.4,81 65,70 64.6,60 Z', S) + T('M56.4,70 C56.8,78 57.2,84 57.6,88.4', K, 2.8) + T('M65,70 C65.2,78 65.4,84 65.4,88.4', K, 2.8) + piedChat(61.5, 89, S, 5.6) + '</g>' +
+    '<g class="at-c-patte">' + FM('M63.4,58 C63.4,70 64.4,81 64.8,89 L74,89 C74,81 73.6,69 72.6,57 Z', blanc ? V : F) + T('M64,70 C64.2,78 64.6,84 64.8,88.4', K, 2.8) + T('M73.4,68 C73.8,77 74,84 74,88.4', K, 2.8) +
+      raye('M64.6,81.6 L73.8,81.2 M64.8,85.4 L73.9,85.2', 1.8) + piedChat(69.4, 89, blanc ? V : F, 6.6) + '</g>' +
+    /* le plastron : une touffe claire et ébouriffée, par-dessus le haut des pattes */
+    FM('M60,46 C68,49.4 72.8,57.4 72.8,67.4 C72.6,72 71.8,75.4 70.4,78 L68.6,74.8 L66.2,77.8 L64.8,74 L61.8,76.2 L61.2,72 L58.2,72.8 L59.4,68.2 L56.4,66.4 L58.8,62.6 L56.6,58.6 L59.2,55 Z', V) +
+    T('M63,56 l-1.4,2.6 M65.8,62 l-1.6,2.4 M66.8,69 l-1.6,2.2', sombre(p[2], 0.25), 1.1) +
+    teteChat(p, 68, 33, acc) + '</g>';
+  /* ---- debout : elle marche, elle saute ; dressée, elle fait ses griffes ou tape la boule ---- */
+  /* une jambe : sans trait en haut (elle sort du corps), ses deux bords, son pied ; dx décale toute la jambe */
+  var jambe = function(cls, d, g, dr, x, f, dx){
+    var t = dx ? ' transform="translate(' + dx + ',0)"' : '';
+    return '<g class="at-c-j ' + cls + '"><g' + t + '>' + FM(d, f) + T(g, K, 2.8) + T(dr, K, 2.8) + piedChat(x, 88, f, 5.6) + '</g></g>';
+  };
+  var arriere = ['M26,58 C24,67 28,74 32,78 L33,88 L41,88 L40.6,78 C44,72 45,64 42,57 Z', 'M26.4,64 C26.8,71 29.6,75.6 32,78 L33,87.4', 'M43.4,62 C43.4,69 42,74 40.6,78 L41,87.4'];
+  var avant = ['M70.6,57 C70.6,67 71.4,78 72,88 L80,88 C80,78 79.6,67 79,57 Z', 'M71,68 C71.2,76 71.6,83 72,87.4', 'M79.4,67 C79.8,76 80,83 80,87.4'];
+  var debout = '<g class="at-c-g-debout">' +
+    jambe('at-c-j1', arriere[0], arriere[1], arriere[2], 37, S, -6) + jambe('at-c-j3', avant[0], avant[1], avant[2], 76, S, -8) +
+    queueChat(p, [['M22,56 C17,52 14,47 13,41', 'M13.5,50.7 L18.5,47.8'], ['M13,41 C12,35 12,30 14,25', 'M9.5,32.5 L15.3,32.8'], ['M14,25 C16,20 20,17 24,17', 'M15.9,17.2 L19.5,21.8']], 'at-qd', 'M22,17.1 L24,17') +
+    '<g class="at-c-ventre">' + PM('M24,66 C26,80 80,82 86,66 Z', F) + '</g>' +
+    PM('M19,63 C15,52 25,45 39,45 C53,44 67,45 79,46 C89,47 93,54 91,63 C89,71 81,73 71,73 C57,74 41,74 31,73 C24,72 20,69 19,63 Z', F) +
+    FM('M33,71.4 C44,73.4 62,73.4 74,71.2 L71.6,68.6 L68,70.2 L65.6,67.6 L61.6,69.4 L58.6,66.8 L54.6,69 L51.4,66.6 L47.8,69 L44.6,67 L41.4,69.4 L38,67.8 L35.6,69.8 Z', V) +
+    T('M21,58 C28,53 38,56 41,64', K, 2.2) + T('M70,50 C75,52 77,58 76,64', K, 1.8, ' opacity=".45"') +
+    raye('M38,45.4 C37.6,50 39,54 41.6,57 M47,44.8 C46.6,50 48,54 50.6,57 M56,44.6 C55.6,50 57,54 59.6,57 M65,44.9 C64.6,50 66,53.6 68.2,56') + raye('M22,64 C26,62 31,63 34,65 M23,69 C27,67.4 31,68 33.4,69.6', 2) +
+    poils('M30,47.6 C44,45.4 62,45.2 78,47.6') +
+    jambe('at-c-j2', arriere[0], arriere[1], arriere[2], 37, F) + jambe('at-c-j4', avant[0], avant[1], avant[2], 76, blanc ? V : F) +
+    teteChat(p, 92, 44, acc) + '</g>';
+  /* ---- en boule, elle dort : la queue enroulée devant, la tête posée sur ses pattes ---- */
+  var dort = '<g class="at-c-g-dort"><g class="at-respire">' +
+    PM('M22,88 C11,78 15,58 38,50 C58,44 86,47 97,61 C105,72 103,84 96,89 C80,91 40,91 22,88 Z', F) +
+    raye('M44,51 C42.4,58 44,64 48,68.6 M57,48 C55.4,55 57,61 61,66 M70,48.6 C68.4,55 70,61 74,65.6 M83,53 C81.6,59 83,64 86.4,68 M94,61 C92.6,65 93.4,69 96,72') +
+    poils('M32,55 C48,47 74,46 92,56', 0.8) + T('M66,88 C64,76 74,66 88,68', K, 2.2, ' opacity=".55"') +
+    PM('M30,90 C29,85 46,84 47,89 Z', blanc ? V : F, 2.6) +
+    '<g transform="rotate(-14 34 68)">' + teteChat(p, 34, 68, acc) + '</g></g>' +
+    queueChat(p, [['M95,82 C88,88 78,90 68,90', 'M81.9,85.4 L83.4,91.1'], ['M68,90 C58,90 48,90 40,89', 'M64,87.2 L64,92.8 M53,87.1 L53,92.7'], ['M40,89 C33,88 27,86 23,82', 'M30.2,89.6 L32.2,84.2']], 'at-qs', 'M24.6,83.4 L23,82') + '</g>';
+  /* ---- sur le dos, les quatre pattes en l'air (on voit ses coussinets) : elle peut attraper le doigt ---- */
+  var dos = '<g class="at-c-g-dos">' +
+    queueChat(p, [['M24,82 C18,84 12,84 8,80', 'M15.3,80.4 L15.3,86.1'], ['M8,80 C5,76 5,71 8,67', 'M2.9,73.5 L8.6,73.5'], ['M8,67 C10,64 13,62 16,62', '']], 'at-qo', 'M14,62.2 L16,62') +
+    '<g class="at-c-dos-ar">' + PM('M30,68 C27,62 24,56 22,50 L28,47 C30,54 33,60 37,66 Z', S) + coussinets(25, 47.6, 24, S) +
+      PM('M36,68 C34,61 33,55 33,49 L40,48 C40,55 41,61 44,67 Z', F) + coussinets(36.5, 47.4, 6, F) + '</g>' +
+    PM('M17,77 C16,68 27,61 44,60 C60,59 72,61 79,67 C84,73 82,83 72,86 C56,89 34,89 22,86 C19,84 17,81 17,77 Z', F) +
+    FM('M24,70 C36,61.6 60,61 74,66 L72.6,68.6 L69.6,67.4 L67.4,70.4 L64,68.8 L61.4,71.6 L58,69.8 L55,72.2 L51.6,70.2 L48,72.2 L44.6,70.2 L41.4,72 L38,70 L35,71.6 L31.6,69.8 L28,71 Z', V) +
+    raye('M28,80 C34,78 40,78 44,80.6 M50,82 C56,80 62,80 66,82.6') + poils('M26,64.6 C40,60.4 58,60 72,63.6', 0.6) +
+    '<g transform="rotate(-22 88 73)">' + teteChat(p, 88, 73, acc) + '</g>' +
+    '<g class="at-c-dos-av">' + '<g class="at-c-dos-av1">' + PM('M55,66 C55,60 55,54 56,48 L62,48 C61,54 61,60 62,66 Z', S) + coussinets(59, 47, -6, S) + '</g>' +
+      '<g class="at-c-dos-av2">' + PM('M62,67 C63,61 65,55 67,50 L73,52 C71,57 69,62 69,68 Z', blanc ? V : F) + coussinets(70.4, 50.4, -24, blanc ? V : F) + '</g></g>' + '</g>';
+  /* ---- couchée « en pain », les pattes rentrées : elle se repose, les yeux mi-clos ---- */
+  var pain = '<g class="at-c-g-pain">' +
+    PM('M18,90 C11,80 20,62 42,58 C58,55 76,58 84,68 C90,76 90,86 84,90 Z', F) +
+    raye('M36,59.6 C35,65 36.4,70 39.4,74 M47,57.6 C46,63 47.4,68 50.4,72 M58,57.4 C57,62.6 58.4,67.4 61.4,71 M26,64 C25,70 26.6,75 29.4,79') +
+    poils('M26,63 C38,57 58,55.6 74,60') +
+    FM('M76,62 C84,66 88,74 87,82 L84.6,80.6 L83,84 L80.4,81.6 L78,84.6 L76.6,80.4 L73.6,81 L74.6,76 L71.6,74.6 L74,70 Z', V) +
+    PM('M67,90 C66,86 76,85 77,89.6 Z', blanc ? V : F, 2.6) + PM('M75,90 C74,85.6 85,85 86,89.6 Z', blanc ? V : F, 2.6) +
+    queueChat(p, [['M24,88 C32,91 42,92 52,91', 'M37.3,88.2 L37.3,93.8'], ['M52,91 C60,90.4 66,89.6 70,88', 'M62.2,87.1 L62.9,92.7'], ['M70,88 C73,87 75,85 76,83', '']], 'at-qp', 'M75.4,84 L76,83') +
+    teteChat(p, 80, 50, acc) + '</g>';
+  return '<ellipse class="at-c-ombre" cx="58" cy="91" rx="46" ry="5" fill="rgba(0,0,0,.28)"/>' +
+    '<g class="at-c-corps">' + dort + assis + debout + dos + pain + '</g>' +
+    '<text class="at-zzz" x="40" y="40" font-size="17" font-weight="700" fill="#bff9ff" text-anchor="middle">z</text>' +
+    '<text class="at-zzz z2" x="50" y="32" font-size="13" font-weight="700" fill="#bff9ff" text-anchor="middle">z</text>';
+}
 
 /* ---------- Objets de la boutique de l'Alchimiste (eux aussi dans la perspective de la pièce) ---------- */
 /* des points le long d'une courbe de Bézier (un tuyau, une anse) */
@@ -2053,6 +2207,33 @@ def('coffre', {w:170, h:118, p:96, z:'sol', deco:true, chambre:true, profil:true
 /* (un dessin sans contour : un reflet, de l'eau) */
 function sansTrait(svg){ return svg.split(' stroke="' + K + '" stroke-width="' + SW + '"').join(''); }
 var GAMELLES = [['#e0443a', '#ff9b8f', '#8a2018'], ['#3d8ef0', '#bcd6ff', '#1f4f9a'], ['#4cbb5c', '#c6f0cc', '#2a7a3a']];
+/* Ce qu'il y a dans la gamelle : des croquettes, de la pâtée, un poisson, des crevettes (la boutique de Mimi) */
+function contenuGamelle(c, cz, nour){
+  if(nour === 'pate'){
+    var s = c.disque(48, cz, 27, 13, '#9a5a34', ' stroke-width="2.5"');
+    [[38, -6], [54, 4], [60, -8], [44, 8], [50, -2]].forEach(function(m, i){ var q = c.Q(48 + m[0] - 48 + 0, 11 - (i % 2), cz + m[1]); s += '<ellipse cx="' + f1(q[0]) + '" cy="' + f1(q[1]) + '" rx="4.4" ry="2.6" fill="' + (i % 2 ? '#c78456' : '#7a4426') + '"/>'; });
+    var h = c.Q(42, 10, cz - 4); return s + '<ellipse cx="' + f1(h[0]) + '" cy="' + f1(h[1]) + '" rx="5" ry="1.6" fill="#fff" opacity=".35"/>';
+  }
+  var a = c.Q(48, 11, cz), b = c.Q(58, 11, cz), k = (b[0] - a[0]) / 10;
+  if(nour === 'poisson'){
+    var X = function(v){ return f1(a[0] + v * k); }, Y = function(v){ return f1(a[1] + v * k * 0.8); };
+    return croquettes(c, 48, cz, 22, 14).split('<ellipse').slice(0, 7).join('<ellipse') +
+      '<path d="M' + X(-14) + ',' + Y(0) + ' C' + X(-8) + ',' + Y(-7) + ' ' + X(6) + ',' + Y(-7) + ' ' + X(11) + ',' + Y(0) + ' C' + X(6) + ',' + Y(7) + ' ' + X(-8) + ',' + Y(7) + ' ' + X(-14) + ',' + Y(0) + ' Z" fill="#a9c8e8" stroke="' + K + '" stroke-width="2"/>' +
+      '<path d="M' + X(10) + ',' + Y(0) + ' L' + X(17) + ',' + Y(-6) + ' L' + X(17) + ',' + Y(6) + ' Z" fill="#7fa6d0" stroke="' + K + '" stroke-width="2" stroke-linejoin="round"/>' +
+      '<circle cx="' + X(-8) + '" cy="' + Y(-1) + '" r="' + f1(1.4 * k) + '" fill="' + K + '"/>' + T('M' + X(-3) + ',' + Y(-4) + ' Q' + X(-1) + ',' + Y(0) + ' ' + X(-3) + ',' + Y(4), '#5f86b0', 1.4) +
+      T('M' + X(-6) + ',' + Y(-4) + ' C' + X(-2) + ',' + Y(-6) + ' ' + X(3) + ',' + Y(-6) + ' ' + X(7) + ',' + Y(-3), '#fff', 1.2, ' opacity=".7"');
+  }
+  if(nour === 'festin'){
+    var t = '';
+    [[-12, -3, 0], [2, -6, 1], [12, 2, 2], [-4, 5, 3], [-16, 6, 4]].forEach(function(m){
+      var cx = a[0] + m[0] * k, cy = a[1] + m[1] * k * 0.8, r = 4.6 * k, rot = m[2] * 70;
+      t += '<g transform="rotate(' + rot + ' ' + f1(cx) + ' ' + f1(cy) + ')"><path d="M' + f1(cx - r) + ',' + f1(cy) + ' A' + f1(r) + ',' + f1(r) + ' 0 1 1 ' + f1(cx + r * 0.2) + ',' + f1(cy + r * 0.95) + '" fill="none" stroke="' + K + '" stroke-width="' + f1(4.6 * k) + '" stroke-linecap="round"/>' +
+        '<path d="M' + f1(cx - r) + ',' + f1(cy) + ' A' + f1(r) + ',' + f1(r) + ' 0 1 1 ' + f1(cx + r * 0.2) + ',' + f1(cy + r * 0.95) + '" fill="none" stroke="#ff9478" stroke-width="' + f1(2.8 * k) + '" stroke-linecap="round"/></g>';
+    });
+    return croquettes(c, 48, cz, 24, 14).split('<ellipse').slice(0, 6).join('<ellipse') + t;
+  }
+  return croquettes(c, 48, cz, 26, 14);
+}
 function croquettes(c, cx, cz, r, y){
   var s = '', n = 0;
   for(var i = 0; i < 14; i++){
@@ -2068,7 +2249,7 @@ def('gamelle', {w:96, h:40, p:80, z:'petit', deco:true, chat:true, nf:3, nom:'Ga
     if(c.fo === 1) s = c.tour(48, cz, [[14, 42], [26, 40], [40, 30]], p[0], p[1]) + c.disque(48, cz, 34, 15, sombre(p[0], 0.35));
     else if(c.fo === 2) s = c.cylindre(48, cz, 42, 12, 40, p[0], p[1], '', 38) + c.disque(48, cz, 34, 13, sombre(p[0], 0.35)) + c.sur(T('M24,26 q6,-6 12,0 M60,26 q6,-6 12,0', '#fff', 3, ' opacity=".7"'), cz - 42);
     else s = c.tour(48, cz, [[14, 44], [22, 44], [34, 36], [40, 34]], p[0], p[1]) + c.disque(48, cz, 36, 15, sombre(p[0], 0.35)) + c.sur(emo(48, 28, 14, '🐾'), cz - 40);
-    if(c.o.plein) s += croquettes(c, 48, cz, 26, 14);
+    if(c.o.plein) s += contenuGamelle(c, cz, c.o.nour);
     return [N(s)];
   }});
 def('eau', {w:96, h:40, p:80, z:'petit', deco:true, chat:true, nf:3, nom:'Gamelle d\'eau', ic:'💧',
@@ -2079,6 +2260,28 @@ def('eau', {w:96, h:40, p:80, z:'petit', deco:true, chat:true, nf:3, nom:'Gamell
     else s = c.tour(48, cz, [[14, 44], [22, 44], [34, 36], [40, 34]], p[0], p[1]);
     s += c.disque(48, cz, 34, 15, c.o.plein ? '#5fb8ff' : sombre(p[0], 0.35), c.o.plein ? ' stroke-width="3"' : '');
     if(c.o.plein) s += sansTrait(c.disque(36, cz - 8, 12, 14.5, 'rgba(255,255,255,.6)', '', 6));
+    return [N(s)];
+  }});
+/* La litière de Mimi (16 novembre) : un bac de sable ; quand elle y est passée, de petits tas (o.sale) — un toucher, et la pelle passe */
+def('litiere', {w:124, h:46, p:96, z:'sol', deco:true, chat:true, nf:3, nom:'Litière', ic:'🪣',
+  d:function(c){
+    var p = palette(c, [['#5fb8ff', '#d6ecff', '#2f6fae'], ['#8fd06a', '#e2f7d0', '#3f8a2a'], ['#ef7fa8', '#ffd0e2', '#9c2f5a']][c.fo]);
+    var s = c.boite(4, 16, 120, 46, 4, c.p - 4, UNI(p[0], p[1], sombre(p[0], 0.25)));
+    s += c.poly([[12, 16, 12], [112, 16, 12], [112, 16, c.p - 12], [12, 16, c.p - 12]], '#ead7a2');
+    for(var i = 0; i < 22; i++){ var q = c.Q(16 + (i * 37) % 92, 16, 16 + (i * 23) % (c.p - 30)); s += '<circle cx="' + f1(q[0]) + '" cy="' + f1(q[1]) + '" r="1.4" fill="' + (i % 3 ? '#cbb47c' : '#f6ead0') + '"/>'; }
+    s += c.ligne([[30, 16, 30], [44, 16, 42], [58, 16, 34]], '#d8c088', 2) + c.ligne([[70, 16, 60], [86, 16, 70], [98, 16, 58]], '#d8c088', 2);
+    if(c.o.sale) [[38, 34], [74, 56], [90, 30]].forEach(function(m){ var q = c.Q(m[0], 15, m[1]); s += '<ellipse cx="' + f1(q[0]) + '" cy="' + f1(q[1]) + '" rx="6.4" ry="3.6" fill="#8a5a2e" stroke="#4a2a14" stroke-width="1.6"/><ellipse cx="' + f1(q[0] - 1.6) + '" cy="' + f1(q[1] - 1.2) + '" rx="2" ry="1" fill="#c08a5a"/>'; });
+    /* la petite pelle, posée contre le bac */
+    s += c.ligne([[118, 30, 14], [124, 2, 4]], K, 6) + c.ligne([[118, 30, 14], [124, 2, 4]], '#c98450', 3) + c.sur(R(112, 30, 14, 12, 3, p[1], ' stroke-width="2.4"'), 4);
+    return [N(s)];
+  }});
+/* Le griffoir (un objet de soin qu'on débloque) : un poteau de corde sur un socle, un plateau, un pompon qui pend */
+def('griffoir', {w:84, h:170, p:84, z:'sol', deco:true, chat:true, nf:3, nom:'Griffoir', ic:'🪵', surf:[{x0:-20, x1:20, y:-156, z:42}],
+  d:function(c){
+    var p = palette(c, [['#c98450', '#f3e7cb', '#7d4626'], ['#9d6ee3', '#d6c4ff', '#5f3fa8'], ['#4cbb5c', '#a6ef93', '#25703c']][c.fo]), cz = c.p / 2;
+    var s = c.boite(2, 152, 82, 170, 2, c.p - 2, UNI(p[0], p[1], sombre(p[0], 0.25))) + c.cylindre(42, cz, 13, 26, 152, '#e2c48e', null);
+    for(var y = 34; y < 150; y += 7) s += c.arcAvant(42, cz, 13.5, y, '#a8854e', 2);
+    s += c.ovale(42, cz, 32, 30, 14, 26, p[0], p[1]) + c.sur(T('M68,24 V50', K, 2.2) + Cir(68, 55, 6, '#ff8fb3') + T('M65,52 l2,2', '#fff', 1.4), 8);
     return [N(s)];
   }});
 def('distributeur', {w:86, h:150, p:76, z:'petit', deco:true, chat:true, nf:3, nom:'Distributeur de croquettes', ic:'🥫',
@@ -2339,7 +2542,7 @@ function svgDefs(){
     rad('cristal', [['#f2feff', 0], ['#8ff3ff', 0.5], ['#3fa9d6', 1]], 0.38, 0.32, 0.7) +
     '<clipPath id="atg-fenetre"><path d="M375,300 V150 A75,75 0 0 1 525,150 V300 Z"/></clipPath>' +
     '<clipPath id="atg-ov"><ellipse cx="73" cy="58" rx="54" ry="39"/></clipPath><clipPath id="atg-rd"><circle cx="73" cy="58" r="43"/></clipPath>' +
-    defsThemes() +
+    defsThemes() + defsMimi() +
     '</defs></svg>';
 }
 
@@ -3084,12 +3287,16 @@ function vue(el, opts){
       '<div class="at-lumiere"></div><div class="at-bords"><i class="g"></i><i class="d"></i><i class="h"></i><i class="b"></i></div>' +
       '<div class="at-reperes"></div><div class="at-tient" hidden></div>' +
       '<button type="button" class="at-coin" data-at="reserve" aria-label="Le carton de rangement"><span class="at-coin-ic" aria-hidden="true">📦</span><b class="at-badge" style="display:none"></b></button>' +
-      '<button type="button" class="at-salle" data-at="salle" aria-label="L\'autre pièce"><span class="at-salle-ic" aria-hidden="true"></span><b class="at-badge" style="display:none"></b></button></div>' +
+      '<button type="button" class="at-salle" data-at="salle" aria-label="L\'autre pièce"><span class="at-salle-ic" aria-hidden="true"></span><b class="at-badge" style="display:none"></b></button>' +
+      /* (16 novembre) Mimi : son bouton (le cœur autour montre son bonheur) */
+      '<button type="button" class="at-mimi-bt" data-at="mimi" aria-label="Les affaires de Mimi" hidden><span class="at-mimi-ic" aria-hidden="true">🐾</span><b class="at-badge" style="display:none"></b></button></div>' +
+    '<div class="at-mimi-barre" hidden></div>' +
     '<div class="at-ouvert" hidden></div><div class="at-grim" hidden></div><div class="at-toast" hidden></div><div class="at-fantomes"></div>';
   el.appendChild(root);
   V.piece = q(V, '.at-piece'); V.monde = q(V, '.at-monde'); V.scene = q(V, '.at-scene'); V.calque = q(V, '.at-calque'); V.ouvertEl = q(V, '.at-ouvert');
   V.grim = q(V, '.at-grim'); V.toastEl = q(V, '.at-toast'); V.fantomes = q(V, '.at-fantomes'); V.tientEl = q(V, '.at-tient'); V.reperes = q(V, '.at-reperes');
   V.fondEl = q(V, '.at-fond-box'); V.halos = q(V, '.at-halos'); V.elReserve = q(V, '.at-coin'); V.elSalle = q(V, '.at-salle');
+  V.elMimi = q(V, '.at-mimi-bt'); V.barreMimi = q(V, '.at-mimi-barre');
   majMoment(V);
 
   if(verifierBoutique(V)) changer(V);
@@ -3115,9 +3322,12 @@ function vue(el, opts){
   if(GUIDE) apres(V, 60, function(){ guideAppliquer(V, true); });
   /* étape 4 : un ingrédient qu'il rapportait quand l'atelier s'est fermé arrive tout de suite ; les cadeaux gagnés aux mini-jeux sont annoncés */
   if(tama(V).butin) apres(V, 1200, function(){ livrerButin(V, chatsTous(V)[0] || null); });
+  /* (16 novembre) Mimi était partie chercher un coffret quand l'atelier s'est fermé : il est là quand même */
+  if(tama(V).dehors) apres(V, 1400, function(){ poserCoffret(V, null); });
+  majBarre(V);
   annoncerAcc(V);
 
-  return {
+  return (V.api = {
     arreter:function(){ arreter(V); },
     maj:function(o2){ maj(V, o2); },
     etat:function(){ return V.etat; },
@@ -3126,7 +3336,7 @@ function vue(el, opts){
     /* pour les bancs d'essai */
     _vb:function(){ return {x0:V.vb.x0, y0:V.vb.y0, w:V.vb.w, h:V.vb.h, k:V.k, pan:{x:V.pan.x, y:V.pan.y}}; },
     _voir:function(x, y){ centrerSur(V, x, y); },
-    _chat:function(id){ var o = chatsDe(V)[0]; var st = o && V.chats[id || o.id]; return st ? {pose:st.pose, dort:st.pose === 'dort', reste:st.dortJusqua ? Math.max(0, st.dortJusqua - Date.now()) : 0, pos:st.pos, tenu:!!st.tenu, chasse:!!st.chasse, depart:!!st.depart, anim:!!st.anim, mv:st.mv ? st.mv.mode || 1 : 0, mode:V.mode} : null; },
+    _chat:function(id){ var o = chatsDe(V)[0]; var st = o && V.chats[id || o.id]; return st ? {pose:st.pose, dort:st.pose === 'dort', reste:st.dortJusqua ? Math.max(0, st.dortJusqua - Date.now()) : 0, pos:st.pos, tenu:!!st.tenu, chasse:!!st.chasse, depart:!!st.depart, anim:!!st.anim, mv:st.mv ? st.mv.mode || 1 : 0, mode:V.mode, reac:st.derniereReac || null, gauche:!!st.gauche, caresse:st.caresse ? st.caresse.zone : null} : null; },
     _sel:function(){ return V.sel; },
     _pos:function(id){ var o = V.parId[id]; if(!o) return null; var p = o.t === 'chat' ? chatPos(V, o) : posObj(V, o), c = catDe(o), F = cadreEl(V.elO[id]); return {x:p.x, y:p.y, s:p.s, w:c.w, h:c.h, cote:o.cote || 0, cadre:F}; },
     _salle:function(){ return V.salle; },
@@ -3145,6 +3355,15 @@ function vue(el, opts){
     _dehors:function(id){ var o = V.parId[id]; if(!o) return false; var st = chatEtat(V, o); st.pos = chatSolVisible(V); placerEl(V, o); var d = V.elO[id]; if(d) d.style.zIndex = Math.round(chatPos(V, o).z * 5); return st.pos; },
     _reveil:function(id){ var o = V.parId[id]; if(!o) return false; var st = chatEtat(V, o); if(st.anim){ var a = st.anim; st.anim = null; try{ a.cancel(); }catch(e){} } if(st.t){ clearTimeout(st.t); st.t = null; } st.dortJusqua = 0; placerEl(V, o); chatPose(V, o, 'assis'); chatPlanifier(V, o, 20000); return true; },
     _bulle:function(id){ var d = V.elO[id], b = d && d.querySelector('.at-bulle'); return b && !b.hidden ? b.getAttribute('data-bulle') : null; },
+    /* (16 novembre) le Tamagotchi de Mimi : son état ; un soin ; mettre les points du cadeau ; réagir ; la zone sous un point de l'écran */
+    _mimi:function(){ var o = chatsTous(V)[0]; return JSON.parse(JSON.stringify({mimi:mimi(V), tama:tama(V), b:o ? o.b : null, bh:o ? bonheur(o) : null, jouet:V.jouet ? V.jouet.id : null, outil:V.outil ? V.outil.t : null, bain:!!V.bain})); },
+    _soigner:function(quoi, gain, k){ var o = chatsTous(V)[0]; if(o) soigner(V, o, quoi, gain || 6, k); return o ? bonheur(o) : null; },
+    _cadeauPret:function(){ var o = chatsTous(V)[0], t = tama(V); if(!o) return false; o.bh = 100; t.pts = CADEAU_PTS; t.cadeaux = {}; return true; },
+    _cadeau:function(id){ var o = V.parId[id] || chatsTous(V)[0]; return o ? cadeauChat(V, o, true) : false; },
+    _reagir:function(id, r){ var o = V.parId[id]; if(!o) return false; reagir(V, o, r); return true; },
+    _zone:function(id, cx, cy){ var o = V.parId[id]; return o ? zoneChat(V, o, {clientX:cx, clientY:cy}) : null; },
+    _pose:function(id, p){ var o = V.parId[id]; if(!o) return false; var st = chatEtat(V, o); if(st.anim) chatArreter(V, o); if(st.t){ clearTimeout(st.t); st.t = null; } chatPose(V, o, p); chatPlanifier(V, o, 30000); return true; },
+    _finJouet:function(){ finJouet(V); },
     /* l'arbre à chat, l'autre pièce (Romain, 5 novembre, 12 h 31) : un jeu à l'arbre tout de suite ('grimpe', 'boule', 'griffe') ;
        aller dans l'autre pièce maintenant ; revenir maintenant ; où il est */
     _arbre:function(id, quoi){ var o = V.parId[id]; if(!o) return null; var st = chatEtat(V, o); if(st.anim || st.tenu) return null; if(st.t){ clearTimeout(st.t); st.t = null; } st.dortJusqua = 0; chatPose(V, o, 'assis'); return chatArbre(V, o, quoi); },
@@ -3153,7 +3372,7 @@ function vue(el, opts){
     _ou:function(id){ var o = V.parId[id], st = o && V.chats[id]; return o ? {salle:salleDe(o), x:o.x, y:o.y, sur:o.sur || null, vu:!!V.elO[id], passe:!!(st && st.passe), pose:st ? st.pose : null, pos:st ? st.pos : null, retour:RETOUR_MEMO[id] ? Math.round(RETOUR_MEMO[id] - Date.now()) : null} : null; },
     _guide:function(){ return guideElements(V).map(function(e){ return e.getAttribute('data-obj') || e.getAttribute('data-tas') || e.getAttribute('data-carton') || e.getAttribute('data-pot') || e.className; }); },
     _flacons:function(){ return (V.elFl || []).map(function(d){ return {k:d._k, n:d._n, cadre:cadreEl(d), neuf:d.classList.contains('at-nouveau')}; }); }
-  };
+  });
 }
 
 function arreter(V){
@@ -3690,7 +3909,7 @@ function elObjet(V, o){
   V.elO[o.id] = d;
   if(o.t === 'chat') chatHabiller(V, o, d);
   placerEl(V, o, true);
-  if(o.t === 'chat') majHumeur(V, o);
+  if(o.t === 'chat'){ majHumeur(V, o); apres(V, 0, function(){ majBarre(V); }); }   /* (elle sort de son carton : son bouton 🐾 apparaît) */
   return d;
 }
 /* Le dessin d'un objet (dans la perspective, là où il est) ; un rangement porte en plus sa petite règle (💧 le verre, 🍃 les choses sèches),
@@ -3887,6 +4106,9 @@ function brancher(V){
     V.dernierPointeur = Date.now(); V.enGeste = true;
     var t = e.target;
     if(t.closest('.at-repere') || t.closest('.at-tient')) return;
+    /* (16 novembre) la plume ou le point rouge : ils suivent le doigt, partout dans la pièce (sauf sur les boutons) */
+    if(V.jouet && V.jouet.doigt && V.mode === 'ranger' && !t.closest('button')){ e.preventDefault(); jouetDoigt(V, e); return; }
+    if(V.barreMimi && !V.barreMimi.hidden && !t.closest('.at-mimi-bt')) fermerBarre(V);
     var obj = t.closest('.at-o'), carton = t.closest('.at-carton'), tas = t.closest('.at-tas'), fixe = t.closest('[data-at]'), surf = t.closest('[data-surf]'), bul = t.closest('.at-bulle-pa');
     e.preventDefault();
     /* les bulles de la paillasse : on touche ailleurs (ni une bulle, ni la paillasse), elles s'en vont */
@@ -3973,6 +4195,8 @@ function brancher(V){
     if(e.target === V.ouvertEl){ fermerOuvert(V); }
   });
 
+  /* --- la barre de Mimi (16 novembre) --- */
+  ecoute(V, V.barreMimi, 'click', function(e){ var b = e.target.closest('[data-mimi]'); if(b) actionBarre(V, b.getAttribute('data-mimi')); });
   /* --- les grands panneaux : la cueillette, le grimoire, le chaudron, les potions, les analyses, le carton du coin --- */
   ecoute(V, V.grim, 'click', function(e){
     var b = e.target.closest('button');
@@ -3981,6 +4205,7 @@ function brancher(V){
     if(e.target === V.grim){ if(Date.now() - (V.grimA || 0) > 450) fermerGrimoire(V); return; }
     if(!b) return;
     if(b.classList.contains('at-fermer')){ fermerGrimoire(V); son(V, 'clic'); return; }
+    if(b.hasAttribute('data-achat')){ acheter(V, b.getAttribute('data-achat')); return; }      /* (la boutique de Mimi) */
     if(b.hasAttribute('data-peindre')){ peindrePanneau(V, b.getAttribute('data-peindre')); return; }
     if(b.hasAttribute('data-lire')){ lire(V, texteRecette(V, b.getAttribute('data-lire'))); return; }
     if(b.classList.contains('at-lire')){ lire(V, b.getAttribute('data-lu') || ''); return; }
@@ -4026,6 +4251,9 @@ function action(V, at, pot){
   else if(at === 'salle') changerSalle(V, 1 - V.salle);
   else if(at === 'flaque') nettoyerFlaque(V);
   else if(at === 'betise') reparerBetise(V, pot);
+  else if(at === 'mimi') ouvrirBarre(V);              /* (16 novembre) la barre de Mimi */
+  else if(at === 'coffret') ouvrirCoffret(V);
+  else if(at === 'jcarton') sortirCarton(V);
 }
 /* Un repère au bord de l'écran a été touché : la pièce glisse jusqu'à la chose */
 function voir(V, cle){
@@ -4045,6 +4273,8 @@ function toucherObjet(V, o, ev){
   /* les affaires du chat : d'abord leur action (remplir la gamelle) ; le tabouret renversé se relève */
   if(o.renverse){ relever(V, o); return; }
   if((o.t === 'gamelle' || o.t === 'eau') && !o.plein){ remplir(V, o); return; }
+  if(o.t === 'litiere' && o.sale){ nettoyerLitiere(V, o); return; }
+  if(o.t === 'griffoir'){ var cg = chatsDe(V).filter(function(x){ var s = V.chats[x.id]; return s && !s.tenu && !s.depart && !s.caresse && !(V.jouet && V.jouet.o === x); })[0]; if(cg && (!V.griffT || Date.now() - V.griffT > 8000)){ V.griffT = Date.now(); var sg = chatEtat(V, cg); if(sg.anim) chatArreter(V, cg); if(sg.t){ clearTimeout(sg.t); sg.t = null; } chatGriffoir(V, cg, o); son(V, 'clic'); return; } }
   if(o.t === 'distributeur' && parDistributeur(V, o)) return;
   if(c.deco){ restyler(V, o); return; }
   son(V, 'clic');
@@ -4133,6 +4363,7 @@ function bullesPaillasse(V, o){
 function bullePaillasse(V, quoi){
   var o = V.parId[V.bullesPa || 'pa'];
   if(!o) return;
+  if(quoi && quoi.indexOf('nour:') === 0){ fermerBullesPa(V); if(o.t === 'gamelle' && !o.plein) remplir(V, o, quoi.slice(5)); return; }   /* (la gamelle de Mimi) */
   if(quoi === 'aller'){
     var sp = catDe(o).special;
     fermerBullesPa(V);
@@ -4186,25 +4417,32 @@ function prendreObjet(V, e, o){
     g = debutGlisseObjet(V, e, o);
     if(ev) g.move(ev);
   }
-  var tm = apres(V, TENIR, function(){ if(etat === 'attente'){ vibrer(12); lever(null); } });
+  /* (16 novembre) Mimi ne se soulève plus : le doigt qu'on laisse sur elle la gratte (tête, dos, ventre, queue : caresseDebut) */
+  var tm = apres(V, TENIR, function(){
+    if(etat !== 'attente') return;
+    if(chat){ etat = 'caresse'; d.classList.remove('at-appui'); caresseDebut(V, o, e); return; }
+    vibrer(12); lever(null);
+  });
   function mv(ev){
     if(ev.pointerId !== id) return;
     var dx = ev.clientX - x0, dy = ev.clientY - y0;
     if(etat === 'attente' && dx * dx + dy * dy >= SEUIL_GESTE * SEUIL_GESTE){
       clearTimeout(tm);
-      if(chat && surChat(ev)){ etat = 'caresse'; d.classList.remove('at-appui'); car.x = ev.clientX; car.y = ev.clientY; }
+      if(chat && surChat(ev)){ etat = 'caresse'; d.classList.remove('at-appui'); car.x = ev.clientX; car.y = ev.clientY; caresseDebut(V, o, ev); }
       else if(glissable){ etat = 'defile'; d.classList.remove('at-appui'); V.root.classList.add('at-defile'); }
+      else if(chat){ etat = 'rien'; d.classList.remove('at-appui'); }
       else lever(ev);
     }
     if(etat === 'caresse'){
       if(surChat(ev)){
-        car.l += Math.hypot(ev.clientX - car.x, ev.clientY - car.y); car.x = ev.clientX; car.y = ev.clientY;
-        while(car.l >= 44){ car.l -= 44; car.n++; caresser(V, o, 1); }
+        var dl = Math.hypot(ev.clientX - car.x, ev.clientY - car.y); car.x = ev.clientX; car.y = ev.clientY;
+        caresseBouge(V, o, ev, dl);
         return;
       }
-      /* le doigt sort du chat */
+      /* le doigt sort du chat : les caresses s'arrêtent */
+      caresseFin(V, o);
       if(glissable){ etat = 'defile'; pan0 = {x:V.pan.x + dx, y:V.pan.y + dy}; V.root.classList.add('at-defile'); }
-      else lever(ev);
+      else etat = 'rien';
     }
     if(etat === 'defile'){ panA(V, pan0.x - dx, pan0.y - dy); chasseDoigt(V, ev); }      /* (le chat suit le doigt qui glisse) */
     else if(etat === 'glisse' && g) g.move(ev);
@@ -4219,7 +4457,7 @@ function prendreObjet(V, e, o){
     if(etat === 'glisse' && g && !annule && dx * dx + dy * dy < SEUIL_GESTE * SEUIL_GESTE && ev.timeStamp - e.timeStamp < TENIR
        && Math.abs(V.pan.x - pan0.x) + Math.abs(V.pan.y - pan0.y) < 1){ g.up(ev, true); etat = 'attente'; }
     if(etat === 'attente'){ if(!annule) toucherObjet(V, o, ev); }
-    else if(etat === 'caresse'){ if(!car.n && !annule) caresser(V, o, 1); }
+    else if(etat === 'caresse'){ caresseFin(V, o); }
     else if(etat === 'defile'){ V.root.classList.remove('at-defile'); chasseFin(V); }
     else if(g) g.up(ev, annule);
   }
@@ -5263,7 +5501,7 @@ function dessinerChaudron(V, prets){
    ========================================================== */
 var CHAT_VITESSE = 135;          /* unités logiques par seconde */
 var CHAT_SIESTE_TOUCHE = 30000;  /* toucher le chat : il dort 30 secondes */
-var POSES = ['dort', 'assis', 'marche', 'saute', 'lave', 'tape', 'mange', 'salut', 'griffe', 'boule'];   /* (griffe, boule : à l'arbre à chat, dressé sur ses pattes arrière) */
+var POSES = ['dort', 'assis', 'marche', 'saute', 'lave', 'tape', 'mange', 'salut', 'griffe', 'boule', 'dos', 'pain'];   /* (griffe, boule : à l'arbre à chat, dressé sur ses pattes arrière ; dos, pain : 16 novembre) */
 
 function chatsDe(V){ return ici(V).filter(function(o){ return o.t === 'chat'; }); }   /* (les chats de la pièce dessinée) */
 function chatEtat(V, o){
@@ -5337,7 +5575,7 @@ function chatBouger(V, o, pos, mode, fin){
     dur = 620;
   } else {
     kf = [{transform:'translate(' + tx + 'px,' + ty + 'px) scale(' + p0.s.toFixed(3) + ')'}, {transform:'translate(0,0) scale(' + p1.s.toFixed(3) + ')'}];
-    dur = Math.max(450, dist / CHAT_VITESSE * 1000);
+    dur = Math.max(st.vite > 1 ? 240 : 450, dist / (CHAT_VITESSE * (st.vite || 1)) * 1000);   /* (st.vite : elle court après un jouet) */
   }
   var a = anim(d, kf, {duration:dur, easing:mode === 'saute' ? 'cubic-bezier(.3,0,.4,1)' : 'linear'});
   st.anim = a;
@@ -5438,6 +5676,8 @@ function chatAgir(V, o){
   var st = chatEtat(V, o);
   if(V.arrete || !V.parId[o.id] || salleDe(o) !== V.salle) return;     /* (un chat de l'autre pièce attend qu'on y aille) */
   if(V.mode !== 'ranger' || V.glisse || st.tenu || st.anim){ chatPlanifier(V, o, 2500); return; }
+  /* (on la caresse, on joue avec elle, elle prend son bain : c'est le jeu qui la mène) */
+  if(st.caresse || (V.jouet && V.jouet.o === o) || (V.bain && V.bain.o === o)){ chatPlanifier(V, o, 1500); return; }
   var now = Date.now();
   if(st.pose === 'dort'){
     if(now < st.dortJusqua){ chatPlanifier(V, o, st.dortJusqua - now + 30); return; }
@@ -5500,22 +5740,65 @@ function chatAgir(V, o){
   }
 }
 
-/* ---------- On le touche : il se roule en boule et dort 30 secondes ---------- */
+/* ---------- Un petit toucher : elle réagit tout de suite, au hasard, jamais deux fois pareil de suite ----------
+   (Romain, 16 novembre : « à chaque fois qu'on appuie sur Mimi, tout de suite, elle réagit à notre doigt, mais de façon aléatoire ;
+   il y a plusieurs trucs juste en appuyant une fois ».) Si elle dort : elle frémit d'une oreille, ou elle se réveille en bâillant. */
+var REACTIONS = ['coeurs', 'miaou', 'oreille', 'cligne', 'penche', 'trille', 'queue', 'eternue', 'roule', 'leche', 'sautille'];
+function expression(V, o, cls, ms){
+  var d = V.elO[o.id];
+  if(!d) return;
+  cls.split(' ').forEach(function(c){ d.classList.add(c); clearTimeout(d['_x' + c]); d['_x' + c] = apres(V, ms, function(){ d.classList.remove(c); }); });
+}
 function chatToucher(V, o){
-  var st = chatEtat(V, o), d = V.elO[o.id], a = st.anim, mv = st.mv;
-  son(V, 'magie');
-  donner(o, 'amour', 10); majHumeur(V, o); changer(V);      /* un câlin */
-  montrerBonheur(V, o);                                       /* sa barre de bonheur (et 🎀 pour l'habiller) */
-  if(a && mv && mv.mode === 'saute'){ st.touche = true; coeursChat(V, o); return; }   /* en l'air : il finit son saut */
-  if(a){
-    /* en marche : il s'arrête là où il est (sa place du moment), sans sauter ailleurs */
-    var f = mv && typeof a.currentTime === 'number' ? borne(a.currentTime / mv.dur, 0, 1) : 1;
-    st.anim = null;
-    try{ a.cancel(); }catch(e){}
-    if(mv) st.pos = {x:mv.p0.x + (mv.p1.x - mv.p0.x) * f, y:mv.p0.y + (mv.p1.y - mv.p0.y) * f, sur:null};
+  var st = chatEtat(V, o), d = V.elO[o.id];
+  if(!d || st.depart || st.tenu) return;
+  /* (un câlin d'un toucher : un tout petit peu de bonheur, pas plus de six fois par minute — on ne remplit pas sa jauge en tapotant) */
+  var now = Date.now();
+  V.taps = (V.taps || []).filter(function(t){ return now - t < 60000; });
+  if(V.taps.length < 6){ V.taps.push(now); donner(o, 'amour', 3); o.bh = Math.min(100, bonheur(o) + 1); majBarre(V); changer(V); }
+  if(st.pose === 'dort'){ reveilChat(V, o); return; }
+  if(st.anim && st.mv && st.mv.mode === 'saute'){ coeursChat(V, o); return; }   /* en l'air : elle finit son saut */
+  if(st.anim) chatArreter(V, o);
+  if(st.t){ clearTimeout(st.t); st.t = null; }
+  var p = st.pose, couche = p === 'dos' || p === 'pain', dressee = p === 'griffe' || p === 'boule';
+  if(dressee){ coeursChat(V, o); sonMimi(V, 'trille'); chatPlanifier(V, o, 2400); return; }
+  if(!couche && p !== 'assis') chatPose(V, o, 'assis');
+  var l = REACTIONS.filter(function(r){
+    if(r === st.derniereReac) return false;
+    if(r === 'roule') return !couche && !chatSurMeuble(V, o);
+    if(r === 'leche' || r === 'sautille') return !couche;
+    return true;
+  });
+  var r = st.derniereReac = l[Math.floor(Math.random() * l.length)];
+  reagir(V, o, r);
+  chatPlanifier(V, o, 2800);
+}
+function reagir(V, o, r){
+  var st = chatEtat(V, o);
+  if(r === 'coeurs'){ coeursChat(V, o); son(V, 'magie'); expression(V, o, 'at-x-clos', 900); }
+  else if(r === 'miaou'){ expression(V, o, 'at-x-miaou', 800); sonMimi(V, 'miaou'); flotter(V, o, 'Miaou !'); }
+  else if(r === 'oreille'){ expression(V, o, 'at-x-oreille', 900); son(V, 'tic'); }
+  else if(r === 'cligne'){ expression(V, o, 'at-x-cligne', 1500); sonMimi(V, 'ronron'); apres(V, 700, function(){ coeursChat(V, o); }); }
+  else if(r === 'penche'){ expression(V, o, 'at-x-penche', 1300); flotter(V, o, '?'); sonMimi(V, 'trille'); }
+  else if(r === 'trille'){ expression(V, o, 'at-x-content at-x-miaou', 500); flotter(V, o, 'Mrrrp ?'); sonMimi(V, 'trille'); }
+  else if(r === 'queue'){ expression(V, o, 'at-x-queue', 1500); son(V, 'tic'); }
+  else if(r === 'eternue'){ expression(V, o, 'at-x-eternue', 700); apres(V, 220, function(){ flotter(V, o, 'Atchoum !'); sonMimi(V, 'atchoum'); }); }
+  else if(r === 'leche'){ expression(V, o, 'at-x-langue at-x-clos', 1300); son(V, 'tic'); }
+  else if(r === 'sautille'){ expression(V, o, 'at-x-content at-x-joue', 700); coeursChat(V, o); sonMimi(V, 'trille'); }
+  else if(r === 'roule'){                                      /* elle se laisse tomber sur le dos… puis se relève */
+    var avant = st.pose;
+    chatPose(V, o, 'dos'); expression(V, o, 'at-x-content', 600); sonMimi(V, 'roule');
+    apres(V, 1900, function(){ var s2 = chatEtat(V, o); if(s2.pose === 'dos' && !s2.caresse && !s2.tenu) chatPose(V, o, avant === 'dos' ? 'assis' : avant); });
   }
-  chatEndormir(V, o);
-  coeursChat(V, o);
+}
+/* Elle dort et on la touche : une oreille frémit (elle dort toujours), ou elle se réveille, bâille et s'étire */
+function reveilChat(V, o){
+  var st = chatEtat(V, o);
+  if(Math.random() < 0.45 && !st.frem){ st.frem = 1; expression(V, o, 'at-x-oreille', 900); son(V, 'tic'); flotter(V, o, 'zzz…'); return; }
+  st.frem = 0; st.dortJusqua = 0;
+  chatPose(V, o, 'assis'); expression(V, o, 'at-x-baille', 1300); sonMimi(V, 'baille');
+  if(st.t){ clearTimeout(st.t); st.t = null; }
+  apres(V, 1400, function(){ if(chatEtat(V, o).pose === 'assis' && !chatEtat(V, o).caresse) chatJoue(V, o, 'etire'); });
 }
 function chatEndormir(V, o){
   var st = chatEtat(V, o), d = V.elO[o.id];
@@ -5748,30 +6031,44 @@ function chatRevient(V, o, force){
 }
 
 /* ==========================================================
-   Le chat, un petit Tamagotchi (étape 3). Romain : « Le chat, c'est un élément très très important. »
-   - Ses besoins : faim 🍗, soif 💧, câlins ❤️, jeu 🧶, sommeil 💤 (0 à 100, gardés sur le chat : o.b).
-     Ils baissent seulement pendant qu'on joue (l'atelier ouvert, l'écran allumé) et un peu à chaque nouveau moment :
-     JAMAIS quand l'appli est fermée. Il ne tombe jamais malade, il ne meurt jamais : il a juste l'air un peu triste et il demande
-     (une bulle au-dessus de lui ; on la touche pour savoir quoi faire).
-   - On lui donne des croquettes (le distributeur ou la gamelle), de l'eau, on le caresse avec le doigt (il ronronne, des cœurs),
-     on joue avec la pelote ; il va dormir dans son panier.
-   - Une petite bêtise environ toutes les 4 minutes de jeu, jamais plus : une fiole par terre, le tabouret renversé, une pelote déroulée.
-     Un toucher remet tout en ordre ; rien n'est jamais perdu.
-   - À partir de l'enquête 4 (PORTEE, des données) : la chatte s'arrondit, un chaton naît (un autre pelage), et quand il a un peu grandi,
-     Mimi part vivre chez Odette, la grand-mère aux sept chats (etat.chezOdette ; Atelier.chezOdette(etat) pour le village).
-   L'état : etat.tama = {jeu (secondes de jeu), betise (le moment de la dernière bêtise), moment, portee:{phase, t}}, etat.betises, etat.chezOdette.
+   Mimi, un vrai petit Tamagotchi (refait le 16 novembre avec Romain ; DESIGN-saison1.md §12.64).
+   Romain : « Il faut pas que ça soit utile. Faut que ça soit un jeu, un jouet. Faut qu'elle soit attachante, et qu'on ait envie
+   de s'occuper d'elle. » — « Certes une petite corvée, mais si derrière t'es récompensé, c'est plutôt cool. »
+   - Rien de ce qu'on fait pour elle ne sert à l'enquête.
+   - Son bonheur (o.bh, de 0 à 100) est la seule jauge qu'on voit (dans la barre de Mimi, 🐾). Il monte quand on s'occupe d'elle ;
+     il redescend doucement pendant qu'on joue, mais jamais sous BH_MIN : elle n'est jamais malheureuse, seulement plus ou moins radieuse.
+   - Ses besoins (o.b : faim 🍗, soif 💧, propreté 🛁, câlins ❤️, jeu 🧶) baissent aussi, jamais sous BESOIN_MIN ; quand l'un est bas,
+     une bulle au-dessus de sa tête le dit (on la touche : le conteur raconte quoi faire, et la chose à toucher brille).
+   - Chaque soin donne du bonheur (plus s'il répond à ce qu'elle demande ; plus avec une meilleure nourriture) : soigner().
+   - La jauge cachée de la variété (tama.varie) monte quand on CHANGE de soin (pas un des deux derniers). Le petit signe :
+     Mimi se roule par terre. Pleine : un nouvel objet de soin (SOINS_SUITE : la brosse, le bain, les friandises, le griffoir, l'appareil photo).
+   - Bien heureuse (bonheur ≥ BH_CADEAU) et assez de soins depuis le dernier cadeau (tama.pts ≥ CADEAU_PTS), au plus un par moment :
+     elle miaule, sort par la chatière et revient avec un petit coffret dans la gueule. Dedans : un nouveau jouet (puis, quand elle les a
+     tous, un habit, puis des friandises). Environ deux par enquête, selon comment on s'occupe d'elle.
+   - Les jouets ne viennent que des coffrets ; le confort (nourritures, paniers, habits) s'achète avec les pièces d'or, à petits prix
+     (la boutique de Mimi : 🐾 puis 🛒).
+   - Une petite bêtise environ toutes les 4 minutes de jeu, jamais plus (une fiole par terre, le tabouret renversé, une pelote déroulée) :
+     un toucher remet tout en ordre ; rien n'est jamais perdu.
+   - Rien ne baisse quand l'appli est fermée.
+   - À partir de l'enquête 4 (PORTEE, des données) : la chatte s'arrondit, un chaton naît, et Mimi part vivre chez Odette
+     (etat.chezOdette ; Atelier.chezOdette(etat) pour le village). ⚠️ À revoir avec Romain avant l'enquête 4 : on lui offre maintenant
+     des jouets et des habits, la voir partir serait une vraie peine.
+   L'état : etat.tama = {jeu, betise, moment, portee, varie, derniers, pts, cadeaux, dehors, coffret, herbe, friand},
+   etat.mimi = {jouets, nour, soins, album}, etat.betises, etat.chezOdette, etat.garde ; sur le chat : o.b, o.bh, o.acc.
    ========================================================== */
 var BESOINS = [
-  {k:'faim', ic:'🍗', baisse:5, dit:'%n a faim ! Donne-lui des croquettes : touche le distributeur ou sa gamelle.'},
-  {k:'soif', ic:'💧', baisse:6, dit:'%n a soif ! Touche sa gamelle d\'eau pour la remplir.'},
-  {k:'amour', ic:'❤️', baisse:5, dit:'%n veut un câlin ! Caresse-le en glissant ton doigt sur lui.'},
-  {k:'jeu', ic:'🧶', baisse:4, dit:'%n veut jouer ! Touche la bulle : voilà une pelote.'},
-  {k:'dodo', ic:'💤', baisse:3, dit:'%n a sommeil… Touche la bulle : il va faire dodo.'}
+  {k:'faim', ic:'🍗', baisse:4},
+  {k:'soif', ic:'💧', baisse:5},
+  {k:'propre', ic:'🛁', baisse:2.5},
+  {k:'amour', ic:'❤️', baisse:4},
+  {k:'jeu', ic:'🧶', baisse:3.5}
 ];
-var DEMANDE = 40, TRISTE = 22;      /* sous 40 il le demande (une bulle) ; sous 22 il a l'air un peu triste */
+var DEMANDE = 42;                    /* sous 42, elle le demande (une bulle) */
+var BESOIN_MIN = 25, BH_MIN = 34, BH_DEPART = 55, BH_BAISSE = 1.2;   /* les planchers ; le bonheur perd 1,2 par minute de jeu */
+var BH_CADEAU = 85, CADEAU_PTS = 70, VARIE_PAS = 20;
 var TIC = 15;                        /* les besoins changent toutes les 15 secondes de jeu */
 var BETISE_MIN = 240;                /* une bêtise au plus toutes les 4 minutes de jeu */
-var PAS_MOMENT = 22;                 /* un nouveau moment de la journée : chaque besoin baisse un peu */
+var PAS_MOMENT = 12;                 /* un nouveau moment de la journée : chaque besoin baisse un peu (jamais sous le plancher) */
 /* Le chaton (des données : il arrive à l'enquête 4) : en secondes de jeu ; un nouveau moment compte pour 120 s */
 var PORTEE = {enquete:4, ronde:150, naissance:240, depart:420, mere:'Mimi', chatons:['Pompon', 'Caramel', 'Noisette']};
 var REPLIQUE_ODETTE = {q:'Comment va %n ?', a:'%n ? Elle est très heureuse ici, avec mes sept chats ! Elle dort sur mon fauteuil, près du feu. Revenez la voir quand vous voulez.'};
@@ -5783,7 +6080,7 @@ function nomChat(o){ return o.nom || (o.chaton ? PORTEE.chatons[0] : PORTEE.mere
 function tailleChat(o, p){ if(o.chaton && o.taille > 0 && o.taille < 1) p.s *= o.taille; return p; }
 function besoins(o){
   if(!o.b || typeof o.b !== 'object') o.b = {};
-  BESOINS.forEach(function(b){ if(typeof o.b[b.k] !== 'number') o.b[b.k] = 80; });
+  BESOINS.forEach(function(b){ if(typeof o.b[b.k] !== 'number' || !(o.b[b.k] >= 0)) o.b[b.k] = 80; if(o.b[b.k] < BESOIN_MIN) o.b[b.k] = BESOIN_MIN; });
   return o.b;
 }
 function besoinUrgent(o){
@@ -5791,9 +6088,16 @@ function besoinUrgent(o){
   BESOINS.forEach(function(x){ if(b[x.k] < DEMANDE && (!pire || b[x.k] < b[pire.k])) pire = x; });
   return pire;
 }
-function humeur(o){
-  var b = besoins(o);
-  return {triste:BESOINS.some(function(x){ return b[x.k] < TRISTE; }), fatigue:b.dodo < 30};
+/* (16 novembre : elle n'est jamais triste ni fatiguée ; elle dort quand elle en a envie) */
+function humeur(o){ return {triste:false, fatigue:false}; }
+/* son bonheur : la seule jauge qu'on voit ; une vieille sauvegarde le prend dans la moyenne de ses anciens besoins */
+function bonheur(o){
+  if(typeof o.bh !== 'number' || !(o.bh >= 0)){
+    var b = o.b || {}, l = ['faim', 'soif', 'amour', 'jeu', 'dodo'].filter(function(k){ return typeof b[k] === 'number'; });
+    o.bh = l.length ? Math.round(l.reduce(function(s, k){ return s + b[k]; }, 0) / l.length) : BH_DEPART;
+  }
+  o.bh = borne(Math.round(o.bh * 10) / 10, BH_MIN, 100);
+  return Math.round(o.bh);
 }
 /* le numéro de l'enquête : donné par le moteur (option enquete), sinon celui de la partie en cours */
 function enqueteNo(V){
@@ -5804,7 +6108,7 @@ function enqueteNo(V){
   if(n > 0 && V.etat.tama && !(t.enq >= n)) t.enq = n;
   return Math.max(n, t.enq || 0, 1);
 }
-function donner(o, k, n){ var b = besoins(o); b[k] = borne(Math.round(b[k] + n), 0, 100); }
+function donner(o, k, n){ var b = besoins(o); if(k === 'dodo') return; b[k] = borne(Math.round((b[k] + n) * 10) / 10, BESOIN_MIN, 100); }
 
 /* ---------- Le temps de jeu ---------- */
 function tamaDemarrer(V){
@@ -5821,21 +6125,18 @@ function tamaTic(V, force){
     var t = tama(V), dt = force || TIC;
     t.jeu += dt;
     chatsTous(V).forEach(function(o){
-      var st = V.chats[o.id], dort = st && st.pose === 'dort' && salleDe(o) === V.salle;
-      BESOINS.forEach(function(x){
-        if(x.k === 'dodo' && dort) donner(o, 'dodo', 30 * dt / 60);
-        else donner(o, x.k, -x.baisse * dt / 60);
-      });
+      BESOINS.forEach(function(x){ donner(o, x.k, -x.baisse * dt / 60); });
+      o.bh = Math.max(BH_MIN, bonheur(o) - BH_BAISSE * dt / 60);
     });
     portee(V, dt);
     if(!V.attenteBetise && !GUIDE && !V.ouvert && V.grim.hidden && t.jeu - t.betise >= BETISE_MIN && Math.random() < (force ? 1 : 0.5)) peutEtreBetise(V);
-    /* étape 4 : bien heureux, il sort par la chatière chercher un ingrédient (au plus une fois par moment) ; une souris passe */
+    /* bien heureuse, elle va chercher un coffret (au plus un par moment) ; une souris passe */
     if(!force && !V.attenteBetise && !GUIDE && !V.o.sansSurprise){      /* (rien de tout ça pendant le guidage du tutoriel ; sansSurprise : les bancs d'essai) */
       var sortants = chatsDe(V).filter(function(c){ return peutSortir(V, c); });
-      if(sortants.length && Math.random() < 0.3) sortieChat(V, sortants[0]);
-      else if(Math.random() < 0.35) sourisPasse(V);
+      if(sortants.length && Math.random() < 0.5) cadeauChat(V, sortants[0]);
+      else if(!V.jouet && Math.random() < 0.3) sourisPasse(V);
     }
-    majHumeurs(V);
+    majHumeurs(V); majBarre(V);
     if(!force && (t.jeu / TIC) % 4 === 0) changer(V);
   }
   if(!force){ clearTimeout(V.tamaT); V.tamaT = apres(V, TIC * 1000, function(){ tamaTic(V); }); }
@@ -5844,7 +6145,7 @@ function tamaTic(V, force){
 function tamaMoment(V){
   var t = tama(V), cle = enqueteNo(V) + ':' + (V.o.moment || 'matin');
   if(t.moment && t.moment !== cle){
-    chatsTous(V).forEach(function(o){ BESOINS.forEach(function(x){ donner(o, x.k, -PAS_MOMENT); }); });
+    chatsTous(V).forEach(function(o){ BESOINS.forEach(function(x){ donner(o, x.k, -PAS_MOMENT); }); o.bh = Math.max(BH_MIN, bonheur(o) - 6); });
     portee(V, 120, true);
   }
   t.moment = cle;
@@ -5872,17 +6173,42 @@ function majHumeurs(V){ chatsDe(V).forEach(function(o){ majHumeur(V, o); }); }
 
 /* ---------- Les affaires du chat ---------- */
 function gamellePleine(V, o, t){ return V.etat.objets.filter(function(g){ return g.t === t && g.plein && salleDe(g) === salleDe(o) && !g.sur; })[0]; }
-function remplir(V, g){
+/* Les nourritures de Mimi : les croquettes sont là dès le début ; les autres s'achètent une fois pour toutes (la boutique de Mimi) */
+var NOURS = {
+  croquettes:{ic:'🥣', nom:'Des croquettes', gain:6, prix:0, dit:'Des croquettes ! Crac, crac.'},
+  pate:{ic:'🥫', nom:'De la pâtée au lapin', gain:10, prix:4, dit:'De la pâtée au lapin, toute fondante !'},
+  poisson:{ic:'🐟', nom:'Du poisson frais', gain:13, prix:6, dit:'Du poisson frais du marché ! Ça sent bon jusqu\'au plafond.'},
+  festin:{ic:'🦐', nom:'Un festin de crevettes', gain:16, prix:9, dit:'Un festin de crevettes ! Digne d\'une reine des chats.'}
+};
+/* Toucher la gamelle vide : si elle a plusieurs nourritures, on choisit (des bulles au-dessus de la gamelle) */
+function remplir(V, g, nour){
+  if(g.t === 'gamelle' && !nour){
+    var l = mimi(V).nour.filter(function(k){ return NOURS[k]; });
+    if(l.length > 1){ bullesNour(V, g, l); return; }
+    nour = 'croquettes';
+  }
   g.plein = 1; g.neuf = 0;
+  if(g.t === 'gamelle') g.nour = nour || 'croquettes';
   redessiner(V, g);
   var d = V.elO[g.id];
   if(d) anim(d, [{transform:'scale(' + d._s + ')'}, {transform:'scale(' + d._s * 1.12 + ',' + d._s * 0.9 + ')', offset:0.4}, {transform:'scale(' + d._s + ')'}], {duration:360});
   son(V, g.t === 'eau' ? 'plouf' : 'gain');
-  var t = g.t === 'eau' ? 'De l\'eau fraîche !' : 'Des croquettes !';
-  toast(V, '<b>' + (g.t === 'eau' ? '💧' : '🍗') + '</b> ' + esc(t), 2000);
+  var N = NOURS[g.nour] || NOURS.croquettes, t = g.t === 'eau' ? 'De l\'eau bien fraîche !' : N.dit;
+  toast(V, '<b>' + (g.t === 'eau' ? '💧' : N.ic) + '</b> ' + esc(t), 2600, t);
   changer(V);
-  /* un chat qui en a besoin arrive tout de suite */
-  chatsDe(V).forEach(function(c){ var u = besoinUrgent(c); if(u && (u.k === 'faim' && g.t === 'gamelle' || u.k === 'soif' && g.t === 'eau')) chatPlanifier(V, c, 400); });
+  /* elle arrive tout de suite si elle a un peu faim (ou soif) */
+  chatsDe(V).forEach(function(c){ var b = besoins(c); if((g.t === 'gamelle' && b.faim < 92) || (g.t === 'eau' && b.soif < 92)) chatPlanifier(V, c, 500); });
+}
+/* les bulles des nourritures, au-dessus de la gamelle (comme celles de la paillasse) */
+function bullesNour(V, g, l){
+  if(V.bullesPa) fermerBullesPa(V);
+  var b = document.createElement('div');
+  b.className = 'at-bulles-pa at-bulles-nour';
+  b.innerHTML = l.map(function(k, i){ return '<button type="button" class="at-bulle-pa' + (i === l.length - 1 ? ' at-bulle-go' : '') + '" data-bulle="nour:' + k + '" style="--i:' + i + '"><span aria-hidden="true">' + NOURS[k].ic + '</span>' + esc(NOURS[k].nom.replace(/^(Des|De la|Du|Un) /, '')) + '</button>'; }).join('');
+  V.calque.appendChild(b); V.bullesPa = g.id;
+  placerBullesPa(V); veilleBullesPa(V);
+  try{ if(window.Brume && Brume.son) Brume.son('pastilles', l.length); else son(V, 'clic'); }catch(e){}
+  rebond(V.elO[g.id]);
 }
 /* Le distributeur : les croquettes tombent dans la gamelle la plus proche (dans la pièce) */
 function parDistributeur(V, dis){
@@ -5907,30 +6233,36 @@ function relever(V, o){
 }
 
 /* ---------- Ce que l'enfant fait pour lui ---------- */
+/* Sa bulle : le conteur dit ce qu'elle voudrait, et la chose à toucher brille un moment */
 function bulleChat(V, o){
   var u = besoinUrgent(o);
   if(!u) return;
-  var t = u.dit.replace('%n', nomChat(o));
-  if(u.k === 'amour'){ caresser(V, o, 5); return; }
-  if(u.k === 'jeu'){ jouerPelote(V, o); toast(V, '<b>🧶</b> ' + esc(nomChat(o) + ' joue avec la pelote !'), 2600); return; }
-  if(u.k === 'dodo'){ var st = chatEtat(V, o); if(!st.tenu){ chatVaDormir(V, o); } toast(V, '<b>💤</b> ' + esc(nomChat(o) + ' va faire dodo.'), 2600); return; }
-  /* faim, soif : on montre quoi toucher (le distributeur, les gamelles brillent) */
-  toast(V, '<b>' + u.ic + '</b> ' + esc(t), 5200, t);
-  var l = ici(V).filter(function(g){ return u.k === 'faim' ? (g.t === 'gamelle' || g.t === 'distributeur') : g.t === 'eau'; });
-  if(!l.length){ var t2 = 'Ouvre le carton des affaires du chat : il y a sa gamelle !'; apres(V, 2600, function(){ toast(V, '<b>📦</b> ' + esc(t2), 4200, t2); }); }
-  l.forEach(function(g){ var d = V.elO[g.id]; if(d){ d.classList.add('at-dispo'); apres(V, 4000, function(){ d.classList.remove('at-dispo'); }); } });
+  var n = nomChat(o), t, cibles = [];
+  if(u.k === 'faim'){ t = n + ' a un petit creux… Son distributeur de croquettes n\'attend que ça. Ou sa gamelle, directement !'; cibles = ['gamelle', 'distributeur']; }
+  else if(u.k === 'soif'){ t = n + ' a la langue toute sèche. Sa gamelle d\'eau est vide comme un désert !'; cibles = ['eau']; }
+  else if(u.k === 'propre'){
+    var lit = ici(V).filter(function(x){ return x.t === 'litiere' && x.sale; })[0];
+    t = lit ? 'Pouah ! La litière de ' + n + ' réclame un bon coup de pelle.' : soinA(V, 'brosse') ? n + ' a le poil en bataille. Sa brosse attend dans sa barre 🐾.' : n + ' fait sa toilette toute seule… mais une litière toute propre lui ferait plaisir.';
+    cibles = ['litiere'];
+  }
+  else if(u.k === 'amour') t = n + ' réclame des gratouilles. Pose ton doigt sur sa tête et gratte doucement : écoute-la ronronner !';
+  else t = n + ' s\'ennuie à mourir… Ses jouets dorment dans sa barre 🐾.';
+  toast(V, '<b>' + u.ic + '</b> ' + esc(t), 6000, t);
+  var l = ici(V).filter(function(g){ return cibles.indexOf(g.t) >= 0; });
+  if(!l.length && (u.k === 'faim' || u.k === 'soif')){ var t2 = 'Ses gamelles dorment encore dans un carton du coin 📦.'; apres(V, 3000, function(){ toast(V, '<b>📦</b> ' + esc(t2), 4200, t2); }); }
+  l.forEach(function(g){ var d = V.elO[g.id]; if(d){ d.classList.add('at-dispo'); apres(V, 4500, function(){ d.classList.remove('at-dispo'); }); } });
+  if(u.k === 'jeu' || (u.k === 'propre' && !l.length)) brillerMimi(V);
   son(V, 'clic');
 }
-/* Caresser : le doigt glisse sur lui (ou un toucher) — il ronronne, des cœurs s'envolent */
+/* Caresser (un câlin donné d'un coup : un toucher sur sa bulle, un robot) — elle ronronne, des cœurs s'envolent */
 function caresser(V, o, n){
-  donner(o, 'amour', 6 * (n || 1));
+  soigner(V, o, 'caresse', 2 * (n || 1), 'amour');
   var d = V.elO[o.id], st = chatEtat(V, o);
   if(chatArreter(V, o)) chatPlanifier(V, o, 2600);
   else if(st.pose !== 'dort' && !st.anim && !st.tenu) chatPlanifier(V, o, 2600);
-  if(d){ d.classList.add('at-c-ronron'); clearTimeout(d._ronron); d._ronron = apres(V, 1400, function(){ d.classList.remove('at-c-ronron'); }); }
-  if(!V.coeurT || Date.now() - V.coeurT > 450){ V.coeurT = Date.now(); coeursChat(V, o); son(V, 'magie'); }
+  if(d){ d.classList.add('at-c-ronron', 'at-x-clos'); clearTimeout(d._ronron); d._ronron = apres(V, 1400, function(){ d.classList.remove('at-c-ronron', 'at-x-clos'); }); }
+  if(!V.coeurT || Date.now() - V.coeurT > 450){ V.coeurT = Date.now(); coeursChat(V, o); sonMimi(V, 'ronron'); }
   majHumeur(V, o);
-  montrerBonheur(V, o, 2600);
   changer(V);
 }
 /* La pelote : elle roule un peu plus loin, le chat lui court après */
@@ -5947,9 +6279,8 @@ function jouerPelote(V, o){
   if(st.t){ clearTimeout(st.t); st.t = null; }
   apres(V, 300, function(){
     chatAller(V, o, {x:x + (x > p.x ? -40 : 40), y:y, sur:null}, function(){
-      donner(o, 'jeu', 100); majHumeur(V, o); changer(V);
+      soigner(V, o, 'jouet', 10, 'jeu');
       chatJoue(V, o);                                   /* un de ses dix jeux (jamais le même deux fois de suite) */
-      montrerBonheur(V, o, 3000);
       apres(V, 700, function(){ b.remove(); coeursChat(V, o); });
     });
   });
@@ -5969,11 +6300,16 @@ function chatVaManger(V, o, g, k){
   chatAller(V, o, chatSol(V, pg.x + cote * 70 * pg.s, pg.y + 6), function(){
     st.gauche = cote > 0; var d = V.elO[o.id]; if(d) d.classList.toggle('at-c-gauche', st.gauche);
     chatPose(V, o, 'mange');
-    son(V, k === 'soif' ? 'plouf' : 'tic');
+    sonMimi(V, k === 'soif' ? 'lape' : 'croque');
+    apres(V, 1500, function(){ if(chatEtat(V, o).pose === 'mange') sonMimi(V, k === 'soif' ? 'lape' : 'croque'); });
     chatPlanifier(V, o, 3600);
     apres(V, 3400, function(){
-      donner(o, k, 100); g.plein = 0; redessiner(V, g); majHumeur(V, o); changer(V);
-      chatPose(V, o, 'lave'); montrerBonheur(V, o, 3000);
+      var N = NOURS[g.nour] || NOURS.croquettes;
+      g.plein = 0; delete g.nour; redessiner(V, g);
+      if(k === 'soif') soigner(V, o, 'eau', 5, 'soif');
+      else { soigner(V, o, 'repas', N.gain, 'faim'); if(N.gain > 6) apres(V, 400, function(){ coeursChat(V, o); }); }
+      chatPose(V, o, 'lave');
+      if(k !== 'soif') apres(V, 200, function(){ var dd = V.elO[o.id]; if(dd){ dd.classList.add('at-x-langue'); apres(V, 1600, function(){ dd.classList.remove('at-x-langue'); }); } });
     });
   });
 }
@@ -6054,6 +6390,7 @@ function dessinBetise(b){
 function dessinerBetises(V, neuf){
   (V.elB || []).forEach(function(e){ e.remove(); });
   V.elB = [];
+  dessinerCoffret(V);     /* (le coffret de Mimi, s'il attend d'être ouvert) */
   V.etat.betises.filter(function(b){ return b.t !== 'tabouret' && (b.pc ? 1 : 0) === V.salle; }).forEach(function(b){
     /* (une zone de toucher d'au moins 120 unités : un doigt d'enfant la touche facilement) */
     var D = dessinBetise(b), bb = D.bb, cx = (bb[0] + bb[2]) / 2, cy = (bb[1] + bb[3]) / 2, hw = Math.max(60, (bb[2] - bb[0]) / 2 + 16), hh = Math.max(60, (bb[3] - bb[1]) / 2 + 16);
@@ -6173,18 +6510,24 @@ function chatArreter(V, o){
 }
 function miaou(V, o){
   var u = besoinUrgent(o);
+  expression(V, o, 'at-x-miaou', 800);
   flotter(V, o, (u ? u.ic + ' ' : '') + 'Miaou !');
-  son(V, 'bulle');
+  sonMimi(V, 'miaou');
 }
+/* Ce qu'elle fait d'elle-même : manger ce qui l'attend, demander, aller à sa litière, faire ses griffes, se poser en petit pain,
+   se rouler par terre, bâiller (16 novembre : plein de petites vies, sans qu'on ait rien à faire) */
 function tamaAgir(V, o){
-  var u = besoinUrgent(o);
-  if(u && Math.random() < 0.75){
-    var g = u.k === 'faim' ? gamellePleine(V, o, 'gamelle') : u.k === 'soif' ? gamellePleine(V, o, 'eau') : null;
-    if(g){ chatVaManger(V, o, g, u.k); return true; }
-    if(u.k === 'dodo'){ chatVaDormir(V, o); return true; }
-    if(Math.random() < 0.45){ chatPose(V, o, 'assis'); miaou(V, o); chatPlanifier(V, o, 4200); return true; }   /* il demande */
-  }
+  var u = besoinUrgent(o), b = besoins(o), gm = gamellePleine(V, o, 'gamelle'), ge = gamellePleine(V, o, 'eau');
+  if(gm && b.faim < 92 && Math.random() < 0.8){ chatVaManger(V, o, gm, 'faim'); return true; }
+  if(ge && b.soif < 92 && Math.random() < 0.8){ chatVaManger(V, o, ge, 'soif'); return true; }
+  if(u && Math.random() < 0.35){ chatPose(V, o, 'assis'); miaou(V, o); chatPlanifier(V, o, 4200); return true; }   /* elle demande */
+  if(!o.chaton && Math.random() < 0.05 && chatLitiere(V, o)) return true;
+  if(Math.random() < 0.07 && chatGriffoir(V, o)) return true;
   if(o.chaton && Math.random() < 0.45) return chatonJoue(V, o);
+  var r = Math.random(), surM = chatSurMeuble(V, o);
+  if(r < 0.07 && !surM){ chatPose(V, o, 'pain'); chatPlanifier(V, o, 6000 + Math.random() * 6000); return true; }
+  if(r < 0.1 && !surM){ reagir(V, o, 'roule'); chatPlanifier(V, o, 2800); return true; }
+  if(r < 0.13){ chatPose(V, o, 'assis'); expression(V, o, 'at-x-baille', 1300); sonMimi(V, 'baille'); chatPlanifier(V, o, 2600); return true; }
   return false;
 }
 /* Les bêtises du chaton : il court après sa queue, il suit sa maman, il bondit sur une ombre */
@@ -6268,43 +6611,10 @@ var ACC = {
 };
 var ACC_RARE = 0.15;
 
-/* ---------- Le bonheur : la moyenne de ses cinq besoins ---------- */
-function bonheur(o){ var b = besoins(o), s = 0; BESOINS.forEach(function(x){ s += b[x.k]; }); return Math.round(s / BESOINS.length); }
-function bonheurHTML(o){
-  var n = bonheur(o);
-  return '<div class="at-bonheur" hidden><span class="at-bonheur-c" aria-hidden="true">' + (n >= BONHEUR_SORTIE ? '💖' : n >= 45 ? '💗' : '🩶') + '</span>' +
-    '<i class="at-bonheur-barre"><b style="width:' + n + '%"></b></i>' +
-    '<button type="button" class="at-bonheur-hab" aria-label="Habiller le chat">🎀</button>' +
-    /* une petite croix à côté : on l'enlève tout de suite (Romain, 5 novembre, 12 h 31) */
-    '<button type="button" class="at-bonheur-x" aria-label="Fermer"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.5,5.5 L14.5,14.5 M14.5,5.5 L5.5,14.5"/></svg></button></div>';
-}
-/* La barre se cache (au bout d'un moment, ou tout de suite avec ✕) ; le chat reprend sa place parmi les meubles */
-function cacherBonheur(V, o){
-  var d = V.elO[o.id], el = d && d.querySelector('.at-bonheur');
-  if(!el) return;
-  clearTimeout(d._bonT);
-  el.hidden = true; d.classList.remove('at-c-bonheur');
-  var st = V.chats[o.id];
-  if(!(st && (st.anim || st.tenu))) d.style.zIndex = Math.round(chatPos(V, o).z * 5);
-}
-function montrerBonheur(V, o, ms){
-  var d = V.elO[o.id];
-  if(!d) return;
-  var el = d.querySelector('.at-bonheur'), n = bonheur(o);
-  if(!el) return;
-  var b = el.querySelector('.at-bonheur-barre b'), c = el.querySelector('.at-bonheur-c');
-  if(b) b.style.width = n + '%';
-  if(c) c.textContent = n >= BONHEUR_SORTIE ? '💖' : n >= 45 ? '💗' : '🩶';
-  el.classList.toggle('plein', n >= BONHEUR_SORTIE);
-  el.hidden = false;
-  d.classList.add('at-c-bonheur');
-  d.style.zIndex = 99000;          /* (au-dessus des meubles qui sont devant lui : on voit la barre, on touche 🎀) */
-  clearTimeout(d._bonT);
-  d._bonT = apres(V, ms || 6500, function(){
-    if(V.elO[o.id] === d) cacherBonheur(V, o);
-    else { el.hidden = true; d.classList.remove('at-c-bonheur'); }
-  });      /* (le temps de toucher 🎀) */
-}
+/* (16 novembre : plus de barre posée sur le chat — le toucher lui fait faire une mimique ; son bonheur est dans la barre de Mimi 🐾) */
+function bonheurHTML(o){ return ''; }
+function cacherBonheur(V, o){}
+function montrerBonheur(V, o){ majBarre(V, true); }
 
 /* ---------- La garde-robe ---------- */
 function garde(e){ if(!e.garde || typeof e.garde !== 'object') normaliserChat(e); return e.garde; }
@@ -6339,7 +6649,7 @@ function annoncerAcc(V){
   if(!l.length) return;
   l.forEach(function(id){ G.annonce.push(id); });
   var chat = chatsTous(V)[0], nom = chat ? nomChat(chat) : PORTEE.mere, rare = l.some(function(id){ return ACC[id].rare; });
-  var t = (rare ? 'Un cadeau rare pour ' : 'Un cadeau pour ') + nom + ' : ' + l.map(articleAcc).join(' et ') + ' ! Touche ' + nom + ', puis 🎀 pour l\'habiller.';
+  var t = (rare ? 'Un cadeau rare pour ' : 'Un cadeau pour ') + nom + ' : ' + l.map(articleAcc).join(' et ') + ' ! Il l\'attend dans sa garde-robe, au fond de sa barre 🐾.';
   apres(V, 900, function(){ toast(V, '<b>🎁 ' + (rare ? '✨' : '🎀') + '</b> ' + esc(t), 6500, t); son(V, rare ? 'magie' : 'gain'); });
   changer(V);
 }
@@ -6400,8 +6710,8 @@ function htmlGarde(V){
   var o = V.parId[V.gardeChat];
   if(!o) return '';
   var G = garde(V.etat), nom = nomChat(o), p = CHATS[(o.v || 0) % 3], neuf = G.neuf.slice();
-  var t = G.a.length ? 'Touche un accessoire pour habiller ' + nom + '. Tu en gagnes un nouveau quand tu réussis un de tes mini-jeux, la première fois pour chacun.' :
-    'La garde-robe est encore vide. Tu gagnes un accessoire pour ' + nom + ' quand tu réussis un de tes mini-jeux, la première fois pour chacun : le chaudron, les bulles, le bon mélange…';
+  var t = G.a.length ? 'La garde-robe de ' + nom + '. Un nouvel habit arrive quand tu réussis un de tes mini-jeux pour la première fois, dans ses coffrets… ou dans sa boutique 🛒.' :
+    'La garde-robe est encore vide. Les habits arrivent quand tu réussis un de tes mini-jeux pour la première fois, dans les coffrets de ' + nom + '… ou dans sa boutique 🛒.';
   var corps = '<div class="at-garde-haut"><span class="at-garde-chat">' + '<svg viewBox="19 -28 76 78" aria-hidden="true">' + teteChat(p, 57, 18, o.acc || {}) + '</svg></span>' +
     '<p class="at-feuille-txt">' + esc(t) + ' ' + lireBtn(t) + '</p></div>';
   [['cou', 'Autour du cou'], ['tete', 'Sur la tête']].forEach(function(sl){
@@ -6436,54 +6746,89 @@ function chatiere(V){
 
 /* ---------- Il sort par la chatière, il revient avec un ingrédient ---------- */
 function momentCle(V){ return tama(V).moment || (enqueteNo(V) + ':' + (V.o.moment || 'matin')); }
+/* (16 novembre) Bien heureuse, elle sort par la chatière et revient avec un petit coffret dans la gueule (Romain : « elle miaule,
+   elle sort dehors, elle va chercher quelque chose, et ensuite elle revient avec un truc dans sa bouche ; elle le pose ; c'est une sorte
+   de petit coffret cadeau ; on appuie dessus et là, pouf, on a un nouveau jouet pour Mimi »). Plus d'ingrédient rapporté : elle ne sert
+   plus à l'enquête (une vieille sauvegarde qui en attendait un le reçoit encore : livrerButin). */
 function peutSortir(V, o){
   var st = V.chats[o.id], t = tama(V);
-  return !V.salle && salleDe(o) === 0 && t.sortie !== momentCle(V) && !t.butin && bonheur(o) >= BONHEUR_SORTIE &&
-    st && !st.tenu && !st.anim && st.pose !== 'dort' && !st.depart && V.mode === 'ranger' && !V.ouvert && V.grim.hidden;
+  return !V.salle && salleDe(o) === 0 && !t.butin && !t.dehors && !t.coffret && !(t.cadeaux[momentCle(V)] >= 1) && bonheur(o) >= BH_CADEAU && t.pts >= CADEAU_PTS &&
+    !!st && !st.tenu && !st.anim && st.pose !== 'dort' && !st.depart && !st.passe && !st.caresse && V.mode === 'ranger' && !V.ouvert && V.grim.hidden && !V.jouet && !V.outil;
 }
-function sortieChat(V, o, force){
+/* ce qu'il y a dans le coffret : un jouet qu'elle n'a pas encore, sinon un habit, sinon des friandises */
+function contenuCoffret(V){
+  var m = mimi(V), l = cles(JOUETS).filter(function(id){ return m.jouets.indexOf(id) < 0; });
+  if(l.length) return 'j:' + l[Math.floor(Math.random() * l.length)];
+  var G = garde(V.etat), a = cles(ACC).filter(function(id){ return G.a.indexOf(id) < 0 && !ACC[id].rare; });
+  if(!a.length) a = cles(ACC).filter(function(id){ return G.a.indexOf(id) < 0; });
+  return a.length ? 'a:' + a[Math.floor(Math.random() * a.length)] : 'f:';
+}
+function cadeauChat(V, o, force){
   var t = tama(V), st = chatEtat(V, o), d = V.elO[o.id];
   if(!d || (!force && !peutSortir(V, o))) return false;
-  var rare = Math.random() < 0.12, l = rare ? BUTIN_RARE : BUTIN, ingr = l[Math.floor(Math.random() * l.length)];
-  if(!INGR[ingr]) ingr = 'trefle';
-  t.sortie = momentCle(V);
-  t.butin = {ingr:ingr, nom:nomChat(o), rare:rare ? 1 : 0};
+  var cle = momentCle(V);
+  t.cadeaux[cle] = (t.cadeaux[cle] || 0) + 1;
+  t.pts = 0;
+  t.dehors = {c:contenuCoffret(V), nom:nomChat(o)};
   changer(V);
   var id = (V.sortieN = (V.sortieN || 0) + 1);
   st.sortieId = id;
-  chatAller(V, o, chatSol(V, PORTE.x + 8, SOL_MIN + 14), function(){
+  if(st.anim) chatArreter(V, o);
+  if(st.t){ clearTimeout(st.t); st.t = null; }
+  /* elle miaule d'abord, pour qu'on la regarde */
+  chatPose(V, o, 'assis'); expression(V, o, 'at-x-miaou', 900); sonMimi(V, 'miaou'); flotter(V, o, 'Miaou !');
+  apres(V, 1200, function(){
     if(st.sortieId !== id || V.arrete) return;
-    var d2 = V.elO[o.id];
-    st.tenu = true; chatPose(V, o, 'marche');
-    chatiere(V);
-    if(d2) anim(d2, [{opacity:1, transform:'scale(' + d2._s + ')'}, {opacity:0, transform:'translateY(-' + Math.round(10 * V.k) + 'px) scale(' + (d2._s * 0.8) + ')'}], {duration:520, easing:'ease-in', fill:'forwards'});
-    apres(V, 520, function(){ var d3 = V.elO[o.id]; if(d3) d3.classList.add('at-c-dehors'); });
-    var tx = nomChat(o) + ' sort par la chatière… Il va chercher quelque chose !';
-    if(V.toastEl.hidden) toast(V, '<b>🐈 🚪</b> ' + esc(tx), 3200, tx);      /* (sans cacher un message plus important) */
-    /* dehors un moment, puis il revient (avec l'ingrédient dans la gueule) */
-    apres(V, 6500 + Math.random() * 2500, function(){ retourChat(V, o, id); });
+    chatAller(V, o, chatSol(V, PORTE.x + 8, SOL_MIN + 14), function(){
+      if(st.sortieId !== id || V.arrete) return;
+      var d2 = V.elO[o.id];
+      st.tenu = true; chatPose(V, o, 'marche');
+      chatiere(V);
+      if(d2) anim(d2, [{opacity:1, transform:'scale(' + d2._s + ')'}, {opacity:0, transform:'translateY(-' + Math.round(10 * V.k) + 'px) scale(' + (d2._s * 0.8) + ')'}], {duration:520, easing:'ease-in', fill:'forwards'});
+      apres(V, 520, function(){ var d3 = V.elO[o.id]; if(d3) d3.classList.add('at-c-dehors'); });
+      var tx = nomChat(o) + ' file par la chatière… Elle mijote quelque chose !';
+      if(V.toastEl.hidden) toast(V, '<b>🐈 🚪</b> ' + esc(tx), 3400, tx);      /* (sans cacher un message plus important) */
+      apres(V, 6500 + Math.random() * 2500, function(){ retourChat(V, o, id); });
+    });
   });
-  /* (quoi qu'il arrive en chemin, l'ingrédient arrive : on ne perd jamais rien) */
-  apres(V, 22000, function(){ livrerButin(V, o); });
+  /* (quoi qu'il arrive en chemin, le coffret arrive : on ne perd jamais rien) */
+  apres(V, 26000, function(){ poserCoffret(V, null); });
   return true;
 }
+function sortieChat(V, o, force){ return cadeauChat(V, o, force); }   /* (l'ancien nom : les robots) */
 function retourChat(V, o, id){
   var st = chatEtat(V, o), d = V.elO[o.id], t = tama(V);
-  if(!V.parId[o.id]){ livrerButin(V, null); return; }
+  if(!V.parId[o.id]){ poserCoffret(V, null); return; }
   chatiere(V);
   st.tenu = false;
   if(d){
     d.classList.remove('at-c-dehors');
-    var b = t.butin && INGR[t.butin.ingr], sp = document.createElement('span');
-    if(b){ sp.className = 'at-c-butin'; sp.textContent = b.ic || '🌿'; d.appendChild(sp); }
+    if(t.dehors){ var sp = document.createElement('span'); sp.className = 'at-c-butin at-c-coffret'; sp.innerHTML = coffretSVG(); d.appendChild(sp); }
     anim(d, [{opacity:0, transform:'translateY(-' + Math.round(10 * V.k) + 'px) scale(' + (d._s * 0.8) + ')'}, {opacity:1, transform:'scale(' + d._s + ')'}], {duration:480, easing:'ease-out'});
   }
   chatPose(V, o, 'assis');
   apres(V, 500, function(){
-    if(st.sortieId !== id) { livrerButin(V, o); return; }
-    var pt = posTas(0, 1);
-    chatAller(V, o, chatSol(V, pt.x + 90, Math.min(solMax(V), pt.y + 24)), function(){ livrerButin(V, o); chatPose(V, o, 'lave'); chatPlanifier(V, o, 3500); });
+    if(st.sortieId !== id){ poserCoffret(V, o); return; }
+    chatAller(V, o, chatSolVisible(V), function(){ poserCoffret(V, o); chatPose(V, o, 'assis'); expression(V, o, 'at-x-content', 600); chatPlanifier(V, o, 3500); });
   });
+}
+/* Elle pose le coffret par terre, devant elle */
+function poserCoffret(V, o){
+  var t = tama(V), b = t.dehors;
+  if(!b) return false;
+  t.dehors = null;
+  var p = o && V.elO[o.id] && salleDe(o) === 0 ? chatPos(V, o) : (V.salle ? {x:600, y:700} : chatSolVisible(V)), st = o ? chatEtat(V, o) : null;
+  var y = borne(p.y + 24, SOL_MIN + 40, SOL_MAX - 20), x = borne(p.x + (st && st.gauche ? -70 : 70), xF(140, y), xF(LARGEUR - 140, y));
+  /* (jamais caché derrière quelque chose : de l'autre côté d'elle, sinon une place libre du plancher) */
+  if(!V.salle){ var pl = placeLibre(V, [[x, y], [borne(p.x + (st && st.gauche ? 70 : -70), xF(140, y), xF(LARGEUR - 140, y)), y]], 50, 70); x = pl.x; y = pl.y; }
+  t.coffret = {c:b.c, x:Math.round(x), y:Math.round(y)};
+  if(o){ var d = V.elO[o.id], sp = d && d.querySelector('.at-c-butin'); if(sp) sp.remove(); if(d) d.classList.remove('at-c-dehors'); if(st && st.tenu && !st.depart) st.tenu = false; }
+  dessinerCoffret(V, true);
+  var tx = (b.nom || PORTEE.mere) + ' a rapporté un petit coffret ! Qu\'est-ce qui peut bien se cacher dedans ?';
+  (function montrer(n){ if(V.arrete) return; if(!V.toastEl.hidden && n < 6){ apres(V, 1500, function(){ montrer(n + 1); }); return; } toast(V, '<b>🐈 🎁</b> ' + esc(tx), 6000, tx); })(0);
+  sonMimi(V, 'coffret');
+  changer(V);
+  return true;
 }
 /* Il pose l'ingrédient avec la cueillette, devant la porte */
 function livrerButin(V, o){
@@ -6677,6 +7022,881 @@ function chatPotion(V, ov){
     el.classList.remove('at-oreilles'); void el.offsetWidth; el.classList.add('at-oreilles');
     clearTimeout(el._t); el._t = apres(V, 1500, function(){ el.classList.remove('at-oreilles'); });
   };
+}
+
+/* ==========================================================
+   Mimi, le Tamagotchi (16 novembre) : ses sons, ses soins, ses caresses, ses jouets, ses coffrets, sa barre, sa boutique, son album.
+   Le récit est en tête de la partie « Mimi, un vrai petit Tamagotchi », plus haut ; les règles chiffrées sont là-bas (BH_…, CADEAU_PTS…).
+   ========================================================== */
+
+/* >>> LES SONS DE MIMI (ce bloc est recopié tel quel dans l'Atelier des sons : donjon/essai/construire-sons.py)
+   Les mêmes briques que le gâteau et le labo ; en plus, une « voix » de chat (une dent de scie qui passe dans deux bouches de filtres)
+   et le ronron (un bruit grave battu une vingtaine de fois par seconde). Tout est doux : on est dans un atelier, pas dans un zoo. */
+function sonsMimi(audio, sortie){
+  function tendre(f, t0, duree, vol, glisse, att, type, filtre){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, o = a.createOscillator(), g = a.createGain();
+    o.type = type || 'sine'; o.frequency.setValueAtTime(f, t); if(glisse) o.frequency.exponentialRampToValueAtTime(glisse, t + duree);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + (att || 0.008)); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    if(filtre){ var lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = filtre; lp.Q.value = 0.5; o.connect(lp); lp.connect(g); } else o.connect(g);
+    g.connect(sortie(a)); o.start(t); o.stop(t + duree + 0.03);
+  }
+  function souffle(t0, duree, vol, f0, f1, q, type){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, n = Math.floor(a.sampleRate * duree), buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
+    for(var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    var s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = buf;
+    f.type = type || 'bandpass'; f.Q.value = q || 0.8; f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1 || f0, t + duree);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + Math.min(.06, duree * .3)); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    s.connect(f); f.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + .02);
+  }
+  function grains(t0, duree, vol, nb, passeHaut){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, sr = a.sampleRate, n = Math.floor(sr * duree), buf = a.createBuffer(1, n, sr), d = buf.getChannelData(0);
+    for(var k = 0; k < nb; k++){ var c = Math.floor(n * Math.random() * .9), l = Math.floor(sr * (.001 + Math.random() * .004)), v = .4 + Math.random() * .6; for(var j = 0; j < l && c + j < n; j++) d[c + j] += (Math.random() * 2 - 1) * v * (1 - j / l); }
+    var s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = buf; f.type = 'highpass'; f.frequency.value = passeHaut || 2400; g.gain.value = vol;
+    s.connect(f); f.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + .02);
+  }
+  /* la voix : la hauteur glisse de f0 à f1 puis f2, la « bouche » s'ouvre de b0 à b1 puis se ferme vers b2 (mi… a… ou) */
+  function voix(t0, duree, f0, f1, f2, b0, b1, b2, vol){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, o = a.createOscillator(), g = a.createGain(), m = a.createGain(), lfo = a.createOscillator(), lg = a.createGain();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(f0, t); o.frequency.linearRampToValueAtTime(f1, t + duree * 0.42); o.frequency.linearRampToValueAtTime(f2, t + duree);
+    lfo.frequency.value = 6.5; lg.gain.value = f1 * 0.014; lfo.connect(lg); lg.connect(o.frequency);
+    [[1, 6], [2.3, 7]].forEach(function(k){
+      var b = a.createBiquadFilter(); b.type = 'bandpass'; b.Q.value = k[1];
+      b.frequency.setValueAtTime(b0 * k[0], t); b.frequency.linearRampToValueAtTime(b1 * k[0], t + duree * 0.42); b.frequency.linearRampToValueAtTime(b2 * k[0], t + duree);
+      o.connect(b); b.connect(m);
+    });
+    m.gain.value = 1.6;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.05); g.gain.setValueAtTime(vol, t + duree * 0.7); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    m.connect(g); g.connect(sortie(a));
+    o.start(t); lfo.start(t); o.stop(t + duree + 0.05); lfo.stop(t + duree + 0.05);
+  }
+  function ronron(t0, duree, vol){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, sr = a.sampleRate, n = Math.floor(sr * duree), buf = a.createBuffer(1, n, sr), d = buf.getChannelData(0);
+    for(var i = 0; i < n; i++){ var x = i / sr, bat = 0.5 + 0.5 * Math.sin(2 * Math.PI * 24 * x), resp = (x * 1.5) % 1 < 0.55 ? 1 : 0.6; d[i] = (Math.random() * 2 - 1) * bat * bat * resp; }
+    var s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = buf; f.type = 'lowpass'; f.frequency.value = 230; f.Q.value = 1.2;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.12); g.gain.setValueAtTime(vol, t + duree - 0.2); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    s.connect(f); f.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + 0.02);
+  }
+  return {
+    /* sa voix */
+    miaou:function(){ var v = Math.random(); voix(0, .62 + v * .12, 430 + v * 60, 640 + v * 80, 400, 700, 1500, 650, .05); },
+    trille:function(){ voix(0, .26, 520, 700, 760, 900, 1200, 1300, .035); tendre(1400, .02, .2, .006, 1700, .01); },   /* « mrrrp ? » */
+    baille:function(){ voix(0, .9, 380, 520, 260, 600, 1100, 400, .03); souffle(.1, .7, .01, 800, 400, .7); },
+    ronron:function(){ ronron(0, 1.3, .09); },
+    grr:function(){ voix(0, .42, 150, 170, 140, 500, 600, 450, .03); },                                                  /* pour jouer, pas pour de vrai */
+    atchoum:function(){ souffle(0, .07, .03, 3000, 2600, 1.2); souffle(.1, .22, .05, 4200, 900, .9); tendre(700, .1, .12, .015, 300, .005); },
+    roule:function(){ souffle(0, .3, .02, 600, 1400, .8); tendre(392, .05, .14, .02, 523, .01, 'triangle', 1800); },    /* elle se roule par terre */
+    /* les repas */
+    croque:function(){ for(var i = 0; i < 4; i++) grains(i * .14, .06, .05, 6, 1800); },
+    lape:function(){ for(var i = 0; i < 4; i++){ tendre(900 + Math.random() * 300, i * .16, .05, .03, 1400, .003); souffle(i * .16, .05, .012, 2400, 2000, 2); } },
+    friandise:function(){ tendre(1175, 0, .06, .03, null, .003, 'triangle', 4000); tendre(1568, .07, .1, .03, null, .003, 'triangle', 4000); grains(.18, .2, .03, 6, 1800); },
+    /* les soins */
+    brosse:function(){ souffle(0, .2, .03, 2600, 4200, 1.4); },
+    mousse:function(){ for(var i = 0; i < 3; i++) tendre(700 + Math.random() * 900, i * .07, .06, .02, 1600 + Math.random() * 600, .004); },
+    secoue:function(){ for(var i = 0; i < 6; i++) souffle(i * .06, .05, .02, 2000, 1400, 1.5); },
+    gratte:function(){ for(var i = 0; i < 3; i++){ souffle(i * .18, .14, .03, 1400, 900, 1); grains(i * .18, .12, .025, 10, 1200); } },   /* la pelle dans la litière */
+    photo:function(){ grains(0, .03, .05, 3, 3000); souffle(.03, .12, .03, 3000, 1200, .8); tendre(2093, .02, .1, .01, null, .003); },
+    /* les cadeaux */
+    coffret:function(){ tendre(180, 0, .12, .07, 120, .004, 'triangle', 600); tendre(1568, .14, .3, .02, null, .006); tendre(2093, .2, .32, .016, null, .006); },
+    ouvre:function(){ grains(0, .1, .03, 8, 2000); [784, 988, 1175, 1568, 1976].forEach(function(f, i){ tendre(f, .08 + i * .07, .32, .04, null, .01, 'triangle', 4000); }); grains(.2, .7, .012, 40, 5000); },
+    debloque:function(){ [523, 659, 784, 1047].forEach(function(f, i){ tendre(f, i * .1, .3, .05, null, .01, 'triangle', 3000); }); tendre(1319, .45, .6, .04, null, .02); grains(.4, .6, .012, 30, 5000); },
+    /* les jouets */
+    laser:function(){ tendre(1760, 0, .08, .012, 2637, .004); },
+    plume:function(){ souffle(0, .22, .02, 900, 2600, .7); },
+    grelot:function(){ for(var i = 0; i < 3; i++){ var t = i * .09 + Math.random() * .03; tendre(2637, t, .2, .018, null, .002); tendre(3520, t + .005, .16, .01, null, .002); } },
+    clef:function(){ for(var i = 0; i < 6; i++) tendre(2400 + (i % 2) * 300, i * .07, .02, .02, null, .002, 'square', 5000); },     /* on remonte la souris */
+    couic:function(){ tendre(1800, 0, .1, .03, 2600, .004); tendre(2600, .1, .08, .02, 1900, .004); },
+    carton:function(){ tendre(140, 0, .14, .07, 100, .004, 'triangle', 500); souffle(0, .12, .02, 900, 500, .8); },
+    herbe:function(){ grains(0, .5, .02, 30, 3000); [659, 880, 1175, 1568].forEach(function(f, i){ tendre(f, .05 + i * .09, .4, .025, f * 1.06, .02); }); }
+  };
+}
+/* <<< LES SONS DE MIMI */
+var ctxMimi = null, SONS_MIMI = null;
+function audioMimi(){
+  try{ if(window.Brume && Brume.sonActif && !Brume.sonActif()) return null; }catch(e){}
+  try{ if(navigator.userActivation && !navigator.userActivation.hasBeenActive) return null; }catch(e){}
+  if(!ctxMimi){ try{ var AC = window.AudioContext || window.webkitAudioContext; ctxMimi = AC ? new AC() : null; }catch(e){ ctxMimi = null; } }
+  if(ctxMimi && ctxMimi.state === 'suspended') try{ ctxMimi.resume(); }catch(e){}
+  return ctxMimi;
+}
+function sonMimi(V, nom){
+  if(V && V.o && V.o.sansSurprise === 'muet') return;
+  try{ if(!SONS_MIMI) SONS_MIMI = sonsMimi(audioMimi, function(a){ return a.destination; }); if(SONS_MIMI[nom]) SONS_MIMI[nom](); }catch(e){}
+}
+
+/* ---------- Les données ---------- */
+var SOINS_SUITE = ['brosse', 'bain', 'friandises', 'griffoir', 'photo'];   /* l'ordre où la jauge de la variété les débloque */
+var SOINS = {
+  brosse:{ic:'brosse', nom:'Brosse', dit:'une brosse toute douce, pour son pelage'},
+  bain:{ic:'🛁', nom:'Bain', dit:'une petite baignoire, et du savon qui mousse'},
+  friandises:{ic:'🍬', nom:'Friandises', dit:'un bocal de friandises'},
+  griffoir:{ic:'🪵', nom:'Griffoir', dit:'un griffoir rien qu\'à elle (il attend dans un carton du coin 📦)'},
+  photo:{ic:'📷', nom:'Photo', dit:'un appareil photo, pour remplir son album'}
+};
+var JOUETS = {
+  pelote:{ic:'🧶', nom:'la pelote de laine', dit:'Une pelote toute douce.'},
+  plume:{ic:'🪶', nom:'la canne à plume', dit:'Elle va bondir comme une tigresse.'},
+  laser:{ic:'🔴', nom:'le petit point rouge', dit:'Le point rouge le plus agaçant du monde !'},
+  souris:{ic:'🐭', nom:'la souris mécanique', dit:'Une souris qui ne mord pas : on la remonte avec sa petite clé.'},
+  grelot:{ic:'🔔', nom:'la balle à grelot', dit:'Ding, ding ! Impossible de faire la sieste à côté.'},
+  carton:{ic:'📦', nom:'le carton à surprises', dit:'Un simple carton… le jouet préféré de tous les chats du monde.'},
+  herbe:{ic:'🌿', nom:'l\'herbe à chat', dit:'Une pincée, et elle devient complètement zinzin.'}
+};
+/* la boutique de Mimi : le confort, à petits prix (les jouets, eux, ne s'achètent pas : ils viennent des coffrets) */
+var BOUTIQUE_MIMI = {
+  coins:[{t:'panier', ic:'🧺', nom:'Un panier de plus', prix:5}, {t:'coussin', ic:'🟣', nom:'Un coussin moelleux', prix:3}, {t:'arbre_chat', ic:'🐈', nom:'Un arbre à chat', prix:9}],
+  habit:3, habitRare:7
+};
+var ALBUM_MAX = 24;
+var LEGENDES = {assis:'Toute sage', dort:'Roulée en boule', dos:'Les pattes en l\'air', pain:'En petit pain', marche:'En promenade', saute:'Hop !', tape:'Paf, la patte !', lave:'La toilette', mange:'Miam'};
+function mimi(V){ var e = V.etat; if(!e.mimi || !Array.isArray(e.mimi.jouets)) normaliserChat(e); return e.mimi; }
+function soinA(V, id){ return mimi(V).soins.indexOf(id) >= 0; }
+function prochainSoin(V){ var m = mimi(V); return SOINS_SUITE.filter(function(id){ return m.soins.indexOf(id) < 0; })[0] || null; }
+function iconeSoin(id){
+  if(id !== 'brosse') return SOINS[id] ? SOINS[id].ic : '';
+  return '<svg viewBox="0 0 32 32" aria-hidden="true" class="at-ic-brosse"><path d="M6,22 L19,9 L24,14 L11,27 Z" fill="#c98450" stroke="#24182e" stroke-width="2.4" stroke-linejoin="round"/><path d="M19,9 L22,4 C24,2 28,2 29,4 C30,6 29,9 27,10 L24,14" fill="#7d4626" stroke="#24182e" stroke-width="2.4" stroke-linejoin="round"/><path d="M9,20 L5,16 M12,17 L8,13 M15,14 L11,10" stroke="#f3e7cb" stroke-width="2" stroke-linecap="round"/></svg>';
+}
+
+/* ---------- Un soin : du bonheur, de la variété, peut-être un cadeau ---------- */
+/* quoi : la famille du soin (repas, eau, caresse, jouet, brosse, bain, friandises, litiere, griffoir) ; gain : le bonheur ;
+   k : le besoin qu'il comble ; n : de combien (100 par défaut : tout) */
+function soigner(V, o, quoi, gain, k, n){
+  if(!o) return;
+  var t = tama(V), u = besoinUrgent(o), plus = gain;
+  if(k){ if(u && u.k === k) plus += 6; donner(o, k, n === undefined ? 100 : n); }
+  o.bh = Math.min(100, bonheur(o) + plus);
+  t.pts += plus;
+  if(plus >= 3) noterSoin(V, o, quoi);
+  majHumeur(V, o); majBarre(V); changer(V);
+  if(!V.o.sansSurprise && !GUIDE) apres(V, 2600, function(){ var c = chatsDe(V).filter(function(x){ return peutSortir(V, x); })[0]; if(c) cadeauChat(V, c); });
+}
+/* la jauge cachée de la variété : elle monte quand le soin n'est pas un des deux derniers ; le petit signe, c'est Mimi qui se roule */
+function noterSoin(V, o, quoi){
+  var t = tama(V), g = String(quoi || '').split(':')[0];
+  if(!g) return;
+  var neuf = t.derniers.indexOf(g) < 0;
+  t.derniers = [g].concat(t.derniers.filter(function(x){ return x !== g; })).slice(0, 2);
+  if(!neuf || !prochainSoin(V)) return;
+  t.varie += VARIE_PAS;
+  signeVarie(V, o);
+  if(t.varie >= 100){ t.varie = 0; apres(V, 1800, function(){ debloquerSoin(V); }); }
+  changer(V);
+}
+function signeVarie(V, o){
+  var st = chatEtat(V, o);
+  etincelles(V, o);
+  if(!V.elO[o.id] || st.anim || st.tenu || st.caresse || V.jouet || V.bain || st.pose === 'dort' || chatSurMeuble(V, o)) return;
+  var avant = st.pose;
+  apres(V, 500, function(){
+    var s2 = chatEtat(V, o);
+    if(s2.anim || s2.tenu || s2.caresse || V.jouet || V.bain) return;
+    chatPose(V, o, 'dos'); expression(V, o, 'at-x-content', 600); sonMimi(V, 'roule');
+    apres(V, 1500, function(){ var s3 = chatEtat(V, o); if(s3.pose === 'dos' && !s3.caresse && !s3.tenu) chatPose(V, o, avant === 'dos' ? 'assis' : avant); });
+  });
+}
+function debloquerSoin(V){
+  var id = prochainSoin(V), m = mimi(V);
+  if(!id) return;
+  m.soins.push(id); m.neufs.push(id);
+  if(id === 'griffoir'){ var av = V.etat.cartons.map(function(k){ return k.id; }); nouveauCarton(V.etat, ['griffoir'], 0); if(!V.salle) dessinerPiece(V, av); }
+  var n = PORTEE.mere, c = chatsTous(V)[0]; if(c) n = nomChat(c);
+  var t = n + ' est si bien chouchoutée qu\'un cadeau est arrivé pour elle : ' + SOINS[id].dit + ' ! ' + (id === 'griffoir' ? '' : 'Il l\'attend dans sa barre 🐾.');
+  toast(V, '<b>🎁 ✨</b> ' + esc(t), 7000, t);
+  sonMimi(V, 'debloque'); brillerMimi(V); majBarre(V);
+  changer(V);
+}
+function brillerMimi(V){ var b = V.elMimi; if(!b) return; b.classList.add('at-dispo'); clearTimeout(V.mimiBrT); V.mimiBrT = apres(V, 5000, function(){ b.classList.remove('at-dispo'); }); }
+
+/* ---------- Le doigt posé sur elle : des mimiques selon l'endroit (Romain : « quand on laisse le doigt et qu'on gratte plutôt vers
+   la tête ou plutôt vers la queue, elle fait des mimiques différentes ») ----------
+   tête : elle se frotte contre le doigt, ferme les yeux, ronronne ; au bout de deux secondes, elle pétrit.
+   dos : elle se cambre, la queue frissonne. ventre : elle se roule sur le dos… et attrape le doigt (un jeu, jamais pour de vrai).
+   queue : « Pas la queue ! » — oreilles en arrière, la queue fouette, et au bout d'un moment elle s'éloigne un peu. */
+var ZONE_X = {tete:'at-x-tete at-c-ronron', dos:'at-x-dosg at-c-ronron', queue:'at-x-agace', ventre:''};
+function zoneChat(V, o, ev){
+  var d = V.elO[o.id], sv = d && d.querySelector('svg'), st = chatEtat(V, o);
+  if(!sv) return 'dos';
+  var r = sv.getBoundingClientRect(), lx = (ev.clientX - r.left) / r.width * 114, ly = (ev.clientY - r.top) / r.height * 96, p = st.pose;
+  if(st.gauche && p !== 'dort') lx = 114 - lx;
+  if(p === 'dort') return lx < 54 ? 'tete' : lx > 92 ? 'queue' : 'dos';
+  if(p === 'dos') return lx > 74 ? 'tete' : lx < 22 ? 'queue' : 'ventre';
+  if(p === 'pain') return (lx > 62 && ly < 66) ? 'tete' : (ly > 84 && lx > 20) ? 'queue' : 'dos';
+  if(p === 'marche' || p === 'saute' || p === 'griffe' || p === 'boule') return (lx > 78 && ly < 64) ? 'tete' : lx < 24 ? 'queue' : ly > 66 ? 'ventre' : 'dos';
+  return (lx > 48 && ly < 50) ? 'tete' : lx < 26 ? 'queue' : (lx > 52 && ly >= 52) ? 'ventre' : 'dos';
+}
+function caresseDebut(V, o, ev){
+  var st = chatEtat(V, o);
+  if(st.depart || st.tenu || st.caresse) return;
+  if(st.anim) chatArreter(V, o);
+  if(st.t){ clearTimeout(st.t); st.t = null; }
+  if(/^(marche|saute|tape|lave|mange|salut)$/.test(st.pose)) chatPose(V, o, 'assis');
+  st.caresse = {zone:null, t0:Date.now(), tz:Date.now(), gain:0, coeur:0, ronron:0, dist:0, n:0, outil:V.outil ? V.outil.t : null};
+  if(st.caresse.outil){ outilBouge(V, o, ev, 0); }
+  else caresseZone(V, o, zoneChat(V, o, ev));
+  caresseTic(V, o);
+}
+function caresseZone(V, o, z){
+  var st = chatEtat(V, o), C = st.caresse, d = V.elO[o.id];
+  if(!C || !d || z === C.zone) return;
+  ['at-x-tete', 'at-x-dosg', 'at-x-agace', 'at-x-attrape', 'at-x-petrit'].forEach(function(c){ d.classList.remove(c); });
+  if(C.zone !== 'tete' && C.zone !== 'dos') d.classList.remove('at-c-ronron');
+  C.zone = z; C.tz = Date.now();
+  if(st.pose === 'dort'){
+    if(z === 'ventre'){ st.dortJusqua = 0; chatPose(V, o, 'dos'); expression(V, o, 'at-x-baille', 900); sonMimi(V, 'baille'); }
+    else if(z === 'queue'){ d.classList.remove('at-c-ronron'); expression(V, o, 'at-x-queue', 1400); return; }
+    else { d.classList.add('at-c-ronron'); return; }
+  }
+  if(z === 'ventre' && st.pose !== 'dos'){ chatPose(V, o, 'dos'); sonMimi(V, 'roule'); }
+  if(z === 'queue'){ flotter(V, o, 'Pas la queue !'); sonMimi(V, 'grr'); }
+  if(ZONE_X[z]) ZONE_X[z].split(' ').forEach(function(c){ d.classList.add(c); });
+}
+function caresseBouge(V, o, ev, dl){
+  var C = chatEtat(V, o).caresse;
+  if(!C) return;
+  if(C.outil){ outilBouge(V, o, ev, dl); return; }
+  caresseZone(V, o, zoneChat(V, o, ev));
+  C.dist += dl;
+}
+function caresseTic(V, o){
+  var st = chatEtat(V, o), C = st.caresse, d = V.elO[o.id], t = tama(V);
+  if(!C || V.arrete || !d) return;
+  var now = Date.now(), dz = now - C.tz, z = C.zone, gain = 0, gratte = C.dist > 30;
+  C.dist = 0;
+  if(C.outil){ /* (la brosse, le bain : outilBouge fait tout) */ }
+  else if(st.pose === 'dort'){ if(z === 'tete' || z === 'dos'){ gain = 0.25; if(now - C.ronron > 1600){ C.ronron = now; sonMimi(V, 'ronron'); } } }
+  else if(z === 'tete'){
+    gain = gratte ? 0.75 : 0.5;
+    if(dz > 2200 && st.pose === 'assis') d.classList.add('at-x-petrit');
+    if(now - C.coeur > 1100){ C.coeur = now; coeursChat(V, o); }
+    if(now - C.ronron > 1450){ C.ronron = now; sonMimi(V, 'ronron'); }
+  } else if(z === 'dos'){
+    gain = gratte ? 0.6 : 0.4;
+    if(now - C.coeur > 1600){ C.coeur = now; coeursChat(V, o); }
+    if(now - C.ronron > 1450){ C.ronron = now; sonMimi(V, 'ronron'); }
+  } else if(z === 'ventre'){
+    gain = 0.3;
+    if(dz > 700 && !d.classList.contains('at-x-attrape')){ d.classList.add('at-x-attrape'); flotter(V, o, 'Grrr !'); sonMimi(V, 'grr'); C.ronron = now; }
+    else if(dz > 700 && now - C.ronron > 1400){ C.ronron = now; sonMimi(V, 'grr'); }
+  } else if(z === 'queue' && dz > 1500 && !C.fuite){ C.fuite = 1; fuirQueue(V, o); return; }
+  if(gain && C.gain < 14){ C.gain += gain; donner(o, z === 'ventre' ? 'jeu' : 'amour', gain * 5); o.bh = Math.min(100, bonheur(o) + gain); t.pts += gain; if(!(C.n++ % 5)) majBarre(V); }
+  st.caresseT = apres(V, 400, function(){ caresseTic(V, o); });
+}
+/* on insiste sur la queue : elle s'en va un peu plus loin, et se rassoit en regardant ailleurs (elle n'est pas fâchée pour de vrai) */
+function fuirQueue(V, o){
+  var st = chatEtat(V, o), p = chatPos(V, o);
+  caresseFin(V, o, true);
+  expression(V, o, 'at-x-agace', 1600);
+  if(chatSurMeuble(V, o)){ chatPlanifier(V, o, 1500); return; }
+  /* (contre un mur, elle part de l'autre côté) */
+  var c = chatSol(V, p.x + (st.gauche ? 120 : -120), p.y + 10);
+  if(Math.abs(c.x - p.x) < 70) c = chatSol(V, p.x + (st.gauche ? -120 : 120), p.y + 10);
+  chatAller(V, o, c, function(){ chatPose(V, o, 'assis'); expression(V, o, 'at-x-queue', 1200); chatPlanifier(V, o, 3000); });
+}
+function caresseFin(V, o, fuite){
+  var st = chatEtat(V, o), C = st.caresse, d = V.elO[o.id];
+  if(!C) return;
+  st.caresse = null; clearTimeout(st.caresseT);
+  if(C.outil) outilLache(V, o);
+  if(d) ['at-x-tete', 'at-x-dosg', 'at-x-agace', 'at-x-attrape', 'at-x-petrit', 'at-c-ronron'].forEach(function(c){ d.classList.remove(c); });
+  if(C.gain >= 3) noterSoin(V, o, 'caresse');
+  majBarre(V); changer(V);
+  if(st.pose === 'dort'){ chatPlanifier(V, o, Math.max(1000, st.dortJusqua - Date.now())); return; }
+  if(fuite) return;
+  if(st.pose === 'dos' && !V.bain) apres(V, 1100, function(){ var s2 = chatEtat(V, o); if(s2.pose === 'dos' && !s2.caresse && !s2.tenu){ chatPose(V, o, 'assis'); sonMimi(V, 'roule'); } });
+  chatPlanifier(V, o, 2600);
+}
+
+/* ---------- La brosse et le bain : un outil qu'on passe avec le doigt ---------- */
+/* une petite chose qui s'envole là où est le doigt (des poils, de la mousse, des gouttes) */
+function particule(V, ev, cls, txt, ms){
+  var r = V.root.getBoundingClientRect(), p = document.createElement('i');
+  p.className = 'at-part ' + cls; if(txt) p.textContent = txt;
+  p.style.left = (ev.clientX - r.left + (Math.random() - 0.5) * 20).toFixed(0) + 'px'; p.style.top = (ev.clientY - r.top + (Math.random() - 0.5) * 16).toFixed(0) + 'px';
+  p.style.setProperty('--dx', ((Math.random() - 0.5) * 70).toFixed(0) + 'px');
+  V.root.appendChild(p);
+  apres(V, ms || 900, function(){ p.remove(); });
+}
+function curseurOutil(V, ev){
+  if(!V.outil) return;
+  var r = V.root.getBoundingClientRect(), c = V.curseur;
+  if(!c){ c = V.curseur = document.createElement('div'); c.className = 'at-curseur at-curseur-' + V.outil.t; c.innerHTML = V.outil.t === 'brosse' ? iconeSoin('brosse') : '<span>🧽</span>'; V.root.appendChild(c); }
+  c.style.left = (ev.clientX - r.left).toFixed(0) + 'px'; c.style.top = (ev.clientY - r.top).toFixed(0) + 'px';
+}
+function outilLache(V){ if(V.curseur){ V.curseur.remove(); V.curseur = null; } }
+function prendreBrosse(V){
+  var o = chatJoueur(V);
+  if(!o) return;
+  V.outil = {t:'brosse', n:0, l:0};
+  V.root.classList.add('at-outil');
+  var t = 'La brosse est prête ! Passe-la doucement sur le dos de ' + nomChat(o) + ', dans le sens du poil.';
+  toast(V, '<b>' + iconeSoin('brosse') + '</b> ' + esc(t), 6000, t);
+  clearTimeout(V.outilT); V.outilT = apres(V, 25000, function(){ if(V.outil && V.outil.t === 'brosse') poserOutil(V); });
+}
+function poserOutil(V){ V.outil = null; V.root.classList.remove('at-outil'); outilLache(V); clearTimeout(V.outilT); }
+function outilBouge(V, o, ev, dl){
+  var O = V.outil, d = V.elO[o.id];
+  if(!O || !d) return;
+  curseurOutil(V, ev);
+  O.l += dl;
+  if(O.l < 34) return;      /* (un coup de brosse, un coup d'éponge : 34 points de glisser) */
+  O.l = 0; O.n++;
+  if(O.t === 'brosse'){
+    particule(V, ev, 'at-part-poil', '', 1100); particule(V, ev, 'at-part-poil', '', 1100);
+    sonMimi(V, 'brosse');
+    d.classList.add('at-x-dosg', 'at-c-ronron', 'at-x-clos');
+    if(O.n % 3 === 0) coeursChat(V, o);
+    if(O.n >= 9) finBrosse(V, o);
+  } else if(O.t === 'bain' && V.bain){
+    particule(V, ev, 'at-part-mousse', '', 1500); particule(V, ev, 'at-part-mousse', '', 1500);
+    sonMimi(V, 'mousse');
+    V.bain.n++; V.bain.dernier = Date.now();
+    if(V.bain.el) V.bain.el.style.setProperty('--mousse', Math.min(1, V.bain.n / 8).toFixed(2));
+    if(V.bain.n >= 8) sortieBain(V, true);
+  }
+}
+function finBrosse(V, o){
+  poserOutil(V);
+  var d = V.elO[o.id], st = chatEtat(V, o);
+  if(st.caresse) st.caresse.outil = null;
+  apres(V, 900, function(){ if(d) ['at-x-dosg', 'at-c-ronron', 'at-x-clos'].forEach(function(c){ d.classList.remove(c); }); });
+  soigner(V, o, 'brosse', 10, 'propre');
+  var t = 'Quel pelage ! ' + nomChat(o) + ' brille comme un sou neuf.';
+  toast(V, '<b>✨</b> ' + esc(t), 4200, t);
+  if(Math.random() < 0.35) apres(V, 1600, function(){ expression(V, o, 'at-x-eternue', 700); var t2 = 'Beurk… une boule de poils ! Bon, ça arrive aux meilleurs chats.'; apres(V, 300, function(){ flotter(V, o, 'Hrrk !'); sonMimi(V, 'atchoum'); toast(V, '<b>🐈 🧶</b> ' + esc(t2), 4200, t2); }); });
+}
+/* Le bain : une petite baignoire se pose, elle y saute (l'air pas convaincu), on frotte : de la mousse ; huit coups, et elle bondit dehors
+   et s'ébroue. Sans frotter pendant quinze secondes, elle file toute seule (rien n'est perdu). */
+function demarrerBain(V){
+  var o = chatJoueur(V);
+  if(!o || V.bain) return;
+  if(chatSurMeuble(V, o)){ chatAller(V, o, chatSolVisible(V), function(){ demarrerBain(V); }); return; }
+  var p = chatPos(V, o), y = borne(p.y + 6, SOL_MIN + 50, solMax(V) - 20), x = borne(p.x + 90, solXmin(V, y) + 120, solXmax(V, y) - 120);
+  /* (une place dégagée, où on la voit et où le doigt la trouve : rien devant, pas même une gamelle) */
+  var pl = placeLibre(V, [[x, y], [borne(p.x - 90, solXmin(V, y) + 120, solXmax(V, y) - 120), y]], 90, 120);
+  x = pl.x; y = pl.y;
+  var s = echelleSol(y), el = document.createElement('div');
+  el.className = 'at-bain';
+  el.innerHTML = '<svg viewBox="0 0 160 90" aria-hidden="true"><ellipse cx="80" cy="84" rx="70" ry="7" fill="rgba(0,0,0,.25)"/>' +
+    '<path class="at-bain-mousse" d="M18,40 C14,24 34,20 40,28 C44,14 66,14 70,26 C76,12 100,14 102,28 C110,16 132,20 134,34 C146,30 150,44 142,48 L18,48 Z" fill="#fff" stroke="#24182e" stroke-width="3"/>' +
+    '<path d="M10,40 H150 C150,66 136,80 112,80 H48 C24,80 10,66 10,40 Z" fill="#e8f4ff" stroke="#24182e" stroke-width="4" stroke-linejoin="round"/>' +
+    '<path d="M18,46 H142" stroke="#8fc6e8" stroke-width="5" stroke-linecap="round"/><path d="M28,56 C40,52 52,52 60,56" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none"/>' +
+    '<path d="M36,80 l-4,8 M124,80 l4,8" stroke="#24182e" stroke-width="5" stroke-linecap="round"/><path d="M36,80 l-4,8 M124,80 l4,8" stroke="#f5c542" stroke-width="2.6" stroke-linecap="round"/></svg>';
+  el.style.left = pX(V, x); el.style.top = pY(V, y); el.style.width = pW(V, 160 * s);
+  el.style.zIndex = Math.round(posObj(V, {t:'chat', x:x, y:y, sur:null}).z * 5) + 4;
+  V.scene.appendChild(el);
+  anim(el, [{transform:'translate(-50%,-100%) scale(.3)', opacity:0}, {transform:'translate(-50%,-100%) scale(1.06)', opacity:1, offset:.7}, {transform:'translate(-50%,-100%) scale(1)'}], {duration:420, easing:'ease-out'});
+  sonMimi(V, 'carton');
+  V.bain = {o:o, el:el, n:0, dernier:Date.now()};
+  V.outil = {t:'bain', n:0, l:0};
+  V.root.classList.add('at-outil');
+  var st = chatEtat(V, o);
+  if(st.t){ clearTimeout(st.t); st.t = null; }
+  chatAller(V, o, chatSol(V, x - 40 * s, y + 2), function(){
+    if(!V.bain) return;
+    chatBouger(V, o, chatSol(V, x, y - 4), 'saute', function(){
+      var d = V.elO[o.id];
+      if(!V.bain || !d) return;
+      st.gauche = false; d.classList.remove('at-c-gauche');
+      chatPose(V, o, 'assis'); d.classList.add('at-x-agace', 'at-dans-bain'); d.style.zIndex = parseInt(el.style.zIndex, 10) - 1;
+      flotter(V, o, 'Mmmrrr…');
+      var t = nomChat(o) + ' est dans son bain… l\'air pas du tout convaincu. Frotte-la doucement pour faire mousser !';
+      toast(V, '<b>🛁</b> ' + esc(t), 6000, t);
+      veilleBain(V);
+    });
+  });
+}
+function veilleBain(V){ clearTimeout(V.bainT); V.bainT = apres(V, 1500, function(){ if(!V.bain) return; if(Date.now() - V.bain.dernier > 15000) sortieBain(V, false); else veilleBain(V); }); }
+function sortieBain(V, propre){
+  var B = V.bain;
+  if(!B) return;
+  V.bain = null; clearTimeout(V.bainT);
+  poserOutil(V);
+  var o = B.o, d = V.elO[o.id], st = chatEtat(V, o);
+  if(st.caresse) st.caresse.outil = null;
+  if(d) d.classList.remove('at-x-agace', 'at-dans-bain');
+  var p = chatPos(V, o);
+  chatBouger(V, o, chatSol(V, p.x - 120, p.y + 14), 'saute', function(){
+    expression(V, o, 'at-x-secoue', 900); sonMimi(V, 'secoue');
+    var F = cadreObjet(V, o.id);
+    if(F) for(var i = 0; i < 7; i++){ var g = document.createElement('i'); g.className = 'at-goutte'; g.style.left = pX(V, F.x + (Math.random() - 0.5) * F.w * 0.8); g.style.top = pY(V, F.y - F.h * (0.3 + Math.random() * 0.5)); g.style.setProperty('--dx', ((Math.random() - 0.5) * 80).toFixed(0) + 'px'); V.calque.appendChild(g); (function(g){ apres(V, 900, function(){ g.remove(); }); })(g); }
+    if(propre){
+      apres(V, 900, function(){ chatPose(V, o, 'pain'); expression(V, o, 'at-c-ronron', 2200); coeursChat(V, o); chatPlanifier(V, o, 4500); });
+      soigner(V, o, 'bain', 14, 'propre');
+      var t = 'Toute propre, toute douce ! ' + nomChat(o) + ' fait semblant d\'être fâchée… mais elle ronronne.';
+      toast(V, '<b>🛁 ✨</b> ' + esc(t), 5000, t);
+    } else {
+      chatPose(V, o, 'assis'); chatPlanifier(V, o, 2600);
+      var t2 = nomChat(o) + ' a sauté hors de la baignoire, toute mouillée ! On réessaiera plus tard.';
+      toast(V, '<b>🛁 💨</b> ' + esc(t2), 4500, t2);
+    }
+  });
+  anim(B.el, [{opacity:1}, {opacity:0, transform:'translate(-50%,-100%) scale(.6)'}], {duration:600, delay:500, fill:'forwards'});
+  apres(V, 1200, function(){ B.el.remove(); });
+}
+/* Les friandises : elle donne la patte, puis croque (pas plus d'une fois toutes les 90 secondes) */
+function donnerFriandise(V){
+  var o = chatJoueur(V), t = tama(V), now = Date.now();
+  if(!o) return;
+  if(t.friand && now - t.friand < 90000 && now > t.friand){ var tx = 'Encore ? Gare au petit ventre tout rond ! ' + nomChat(o) + ' en aura une autre tout à l\'heure.'; toast(V, '<b>🍬</b> ' + esc(tx), 4200, tx); return; }
+  t.friand = now;
+  if(chatSurMeuble(V, o)){ chatAller(V, o, chatSolVisible(V), function(){ friandiseSuite(V, o); }); return; }
+  friandiseSuite(V, o);
+}
+function friandiseSuite(V, o){
+  chatPose(V, o, 'assis'); expression(V, o, 'at-x-joue', 900); flotter(V, o, '🍬'); sonMimi(V, 'trille');
+  apres(V, 700, function(){ chatPose(V, o, 'salut'); });
+  apres(V, 1600, function(){ chatPose(V, o, 'mange'); sonMimi(V, 'friandise'); });
+  apres(V, 2900, function(){ chatPose(V, o, 'lave'); expression(V, o, 'at-x-langue', 1200); coeursChat(V, o); soigner(V, o, 'friandises', 8, 'faim', 15); chatPlanifier(V, o, 3000); });
+}
+
+/* ---------- L'appareil photo et l'album ---------- */
+function prendrePhoto(V){
+  var o = chatsDe(V)[0];
+  if(!o){ var t = 'Pas de modèle dans cette pièce ! Va voir de l\'autre côté de l\'arche.'; toast(V, '<b>📷</b> ' + esc(t), 3800, t); return; }
+  fermerBarre(V);
+  var st = chatEtat(V, o), d = V.elO[o.id], pose = st.pose === 'griffe' || st.pose === 'boule' ? 'marche' : st.pose, m = mimi(V);
+  var x = d ? ['at-x-miaou', 'at-x-baille', 'at-x-clos', 'at-x-penche', 'at-x-langue', 'at-x-tete', 'at-x-attrape', 'at-x-agace', 'at-x-joue'].filter(function(c){ return d.classList.contains(c); }) : [];
+  if(d && d.classList.contains('at-c-ronron')) x.push('at-x-clos');
+  m.album.push({pose:pose, x:x.join(' '), v:(o.v || 0) % 3, acc:o.acc ? JSON.parse(JSON.stringify(o.acc)) : {}, e:enqueteNo(V)});
+  if(m.album.length > ALBUM_MAX) m.album.shift();
+  var f = document.createElement('div'); f.className = 'at-flash'; V.root.appendChild(f); apres(V, 500, function(){ f.remove(); });
+  sonMimi(V, 'photo');
+  var t2 = 'Clic ! Une photo de plus dans l\'album de ' + nomChat(o) + '. ' + (m.album.length >= ALBUM_MAX ? 'Il est plein : les plus vieilles laissent leur place.' : (ALBUM_MAX - m.album.length) + ' places encore.');
+  toast(V, '<b>📷</b> ' + esc(t2), 4200, t2);
+  changer(V);
+}
+function imageMimi(f){
+  var x = f.x ? ' ' + esc(f.x) : '';
+  return '<div class="at-o at-t-chat at-plat at-photo-chat at-c-' + esc(f.pose) + x + '"><svg viewBox="0 0 114 96" overflow="visible" aria-hidden="true">' + dessinMimi(CHATS[(f.v || 0) % 3], f.acc || {}) + '</svg></div>';
+}
+function ouvrirAlbum(V){
+  fermerBarre(V);
+  var m = mimi(V), c = chatsTous(V)[0], n = c ? nomChat(c) : PORTEE.mere;
+  var t = m.album.length ? 'L\'album de ' + n + '. Chaque photo est un petit souvenir : les poses rares sont les plus belles !' : 'L\'album est encore vide. Prends ' + n + ' en photo quand elle fait quelque chose de drôle : sur le dos, en petit pain, en train de miauler…';
+  var corps = '<p class="at-feuille-txt">' + esc(t) + ' ' + lireBtn(t) + '</p><div class="at-album">' + m.album.slice().reverse().map(function(f){
+    var leg = LEGENDES[f.pose] || ''; if(/miaou/.test(f.x)) leg = 'Miaou !'; else if(/baille/.test(f.x)) leg = 'Le grand bâillement'; else if(/attrape/.test(f.x)) leg = 'Attrapé !'; else if(/tete/.test(f.x)) leg = 'Les gratouilles';
+    return '<figure class="at-photo">' + imageMimi(f) + '<figcaption>' + esc(leg) + '</figcaption></figure>';
+  }).join('') + '</div>';
+  ouvrirCalque(V, 'at-cal-album', feuille('at-f-album', '<span class="at-f-ic">📒</span><h3>L\'album de ' + esc(n) + '</h3>', corps));
+  son(V, 'page');
+}
+
+/* ---------- La litière et le griffoir ---------- */
+function nettoyerLitiere(V, l){
+  var d = V.elO[l.id], o = chatsTous(V).filter(function(c){ return salleDe(c) === salleDe(l); })[0];
+  sonMimi(V, 'gratte');
+  if(d) anim(d, [0, -3, 3, -2, 2, 0].map(function(a){ return {transform:'scale(' + d._s + ') rotate(' + a + 'deg)'}; }), {duration:700});
+  apres(V, 650, function(){
+    delete l.sale; redessiner(V, l); etincelles(V, l);
+    var t = 'Hop, la pelle passe : une litière toute propre, ça sent bon le sable chaud !';
+    toast(V, '<b>🪣 ✨</b> ' + esc(t), 3800, t);
+    if(o) soigner(V, o, 'litiere', 6, 'propre', 45); else changer(V);
+  });
+}
+/* elle y va de temps en temps (on ne la voit pas faire : elle gratte, c'est tout) */
+function chatLitiere(V, o){
+  var l = ici(V).filter(function(x){ return x.t === 'litiere' && !x.sale && !x.sur; })[0];
+  if(!l) return false;
+  var pl = posObj(V, l);
+  chatAller(V, o, chatSol(V, pl.x, pl.y - 18), function(){
+    chatPose(V, o, 'assis'); sonMimi(V, 'gratte');
+    apres(V, 1800, function(){ if(!V.parId[l.id]) return; l.sale = 1; redessiner(V, l); donner(o, 'propre', -40); majHumeur(V, o); changer(V); chatBouger(V, o, chatSol(V, pl.x + 110, pl.y + 20), 'saute', function(){ chatPose(V, o, 'lave'); chatPlanifier(V, o, 3200); }); });
+  });
+  return true;
+}
+function chatGriffoir(V, o, g){
+  g = g || ici(V).filter(function(x){ return x.t === 'griffoir' && !x.sur; })[0];
+  if(!g) return false;
+  var pg = posObj(V, g), y = Math.min(solMax(V), pg.y + 12), droite = pg.x > 600, c = chatSol(V, pg.x + (droite ? 36 : -36) * pg.s, y);
+  chatAller(V, o, c, function(){
+    var d = V.elO[o.id], st = chatEtat(V, o);
+    if(!d) return;
+    st.gauche = droite ? true : false; d.classList.toggle('at-c-gauche', st.gauche);
+    chatPose(V, o, 'griffe'); chatPlanifier(V, o, 3600);
+    [250, 1050, 1850].forEach(function(t){ apres(V, t, function(){ if(enJeu(V, o, d, 'griffe')){ griffures(V, g, pg.x, pg.y - 70 * pg.s, pg.s); sonMimi(V, 'gratte'); } }); });
+    apres(V, 2600, function(){ if(enJeu(V, o, d, 'griffe')){ chatPose(V, o, 'lave'); soigner(V, o, 'griffoir', 6, 'jeu', 25); } });
+  });
+  return true;
+}
+
+/* ---------- Les jouets (ils ne viennent que des coffrets) ---------- */
+/* le chat avec qui on joue (et s'il n'est pas dans cette pièce, il arrive) */
+function chatJoueur(V){
+  var l = chatsTous(V).filter(function(c){ var st = V.chats[c.id]; return !(st && st.depart); });
+  if(!l.length){ var t0 = 'Pas de chat ici… Ses affaires attendent sagement.'; toast(V, '<b>🐈</b> ' + esc(t0), 3200, t0); return null; }
+  var o = l.filter(function(c){ return salleDe(c) === V.salle; })[0];
+  if(!o){ o = l[0]; var t = nomChat(o) + ' est de l\'autre côté de l\'arche. Elle arrive en trottinant !'; toast(V, '<b>🐈 💨</b> ' + esc(t), 3800, t); chatRevient(V, o, true); return null; }
+  var st = chatEtat(V, o), d = V.elO[o.id];
+  if(!d || st.tenu || st.passe || tama(V).dehors){ var t2 = nomChat(o) + ' est occupée… Patience, elle revient tout de suite.'; toast(V, '<b>🐈</b> ' + esc(t2), 3200, t2); return null; }
+  if(st.caresse) caresseFin(V, o);
+  if(st.anim) chatArreter(V, o);
+  if(st.t){ clearTimeout(st.t); st.t = null; }
+  if(st.pose === 'dort'){ st.dortJusqua = 0; chatPose(V, o, 'assis'); expression(V, o, 'at-x-baille', 900); }
+  return o;
+}
+function jouer(V, id){
+  var m = mimi(V);
+  if(!JOUETS[id] || m.jouets.indexOf(id) < 0) return;
+  fermerBarre(V);
+  if(V.jouet) finJouet(V, true);
+  if(V.bain) return;
+  var o = chatJoueur(V);
+  if(!o) return;
+  m.neufs = m.neufs.filter(function(x){ return x !== id; });
+  changer(V);
+  if(id === 'pelote'){ jouerPelote(V, o); return; }
+  if(id === 'herbe'){ jouerHerbe(V, o); return; }
+  V.jouet = {id:id, o:o, fin:Date.now() + (id === 'carton' ? 9000 : 14000), bouge:Date.now(), doigt:id === 'plume' || id === 'laser'};
+  if(id === 'plume' || id === 'laser') jouetDoigtDebut(V, o);
+  else if(id === 'souris') jouerSouris(V, o);
+  else if(id === 'grelot') jouerGrelot(V, o, 0);
+  else if(id === 'carton') jouerCarton(V, o);
+}
+function finJouet(V, coupe){
+  var J = V.jouet;
+  if(!J) return;
+  V.jouet = null; clearTimeout(V.jouetT);
+  if(J.el){ var e = J.el; anim(e, [{opacity:1}, {opacity:0}], {duration:400, fill:'forwards'}); apres(V, 420, function(){ e.remove(); }); }
+  if(J.boite){ var b = J.boite; anim(b, [{opacity:1}, {opacity:0}], {duration:500, delay:400, fill:'forwards'}); apres(V, 950, function(){ b.remove(); }); }
+  var o = J.o, d = V.elO[o.id], st = chatEtat(V, o);
+  st.vite = 1;
+  if(d) d.classList.remove('at-x-joue', 'at-c-tapi', 'at-c-fesses', 'at-dans-boite');
+  if(coupe) return;
+  soigner(V, o, 'jouet:' + J.id, J.id === 'carton' ? 9 : 10, 'jeu');
+  if(st.anim){ chatPlanifier(V, o, 2600); return; }
+  chatPose(V, o, 'assis'); expression(V, o, 'at-x-content', 600); coeursChat(V, o); chatPlanifier(V, o, 3000);
+}
+/* (le doigt dans la pièce : un point du plancher) */
+function pointPiece(V, ev){
+  var r = V.piece.getBoundingClientRect(), wx = V.vb.x0 + (ev.clientX - r.left + V.pan.x) / V.k, wy = V.vb.y0 + (ev.clientY - r.top + V.pan.y) / V.k;
+  return chatSol(V, wx, Math.max(wy, SOL_MIN + 20));
+}
+/* La plume et le point rouge : ils suivent le doigt, n'importe où sur le plancher ; Mimi les chasse */
+function jouetDoigtDebut(V, o){
+  var J = V.jouet, p = chatPos(V, o), st = chatEtat(V, o), el = document.createElement('div');
+  el.className = 'at-jouet at-jouet-' + J.id;
+  el.innerHTML = J.id === 'laser' ? '<i></i>' : '<svg viewBox="0 0 60 140" aria-hidden="true"><path d="M30,0 L30,80" stroke="#7d4626" stroke-width="3"/><path d="M30,78 C18,92 16,116 30,138 C44,116 42,92 30,78 Z" fill="#ff8fb3" stroke="#24182e" stroke-width="2.6"/><path d="M30,84 L30,134 M30,96 l-7,6 M30,108 l-8,7 M30,96 l7,6 M30,108 l8,7 M30,120 l-6,6 M30,120 l6,6" stroke="#c94a7c" stroke-width="1.6" fill="none"/></svg>';
+  V.calque.appendChild(el);
+  J.el = el;
+  posJouet(V, chatSol(V, p.x + (st.gauche ? -200 : 200), p.y + 30));
+  var t = J.id === 'laser' ? 'Le point rouge est là ! Promène ton doigt sur le plancher, et regarde-la devenir folle.' : 'La plume danse au bout de sa ficelle. Fais-la voler sur le plancher… et arrête-toi d\'un coup !';
+  toast(V, '<b>' + JOUETS[J.id].ic + '</b> ' + esc(t), 5000, t);
+  sonMimi(V, J.id === 'laser' ? 'laser' : 'plume');
+  expression(V, o, 'at-x-joue', 1500);
+  jouetTic(V);
+}
+function posJouet(V, pt, seul){
+  var J = V.jouet;
+  if(!J || !J.el) return;
+  J.pos = pt; if(!seul) J.bouge = Date.now();
+  J.el.style.left = pX(V, pt.x); J.el.style.top = pY(V, pt.y);
+  J.el.style.setProperty('--s', echelleSol(pt.y).toFixed(3));
+  J.el.style.zIndex = 99000;
+}
+function jouetDoigt(V, e){
+  var id = e.pointerId;
+  posJouet(V, pointPiece(V, e));
+  function mv(ev){ if(ev.pointerId !== id || !V.jouet) return; posJouet(V, pointPiece(V, ev)); if(V.jouet.id === 'plume' && Math.random() < 0.08) sonMimi(V, 'plume'); }
+  function up(ev){ if(ev.pointerId !== id) return; fin(); }
+  function fin(){ window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); V.suivis = V.suivis.filter(function(f){ return f !== fin; }); }
+  window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  V.suivis.push(fin);
+}
+function jouetTic(V){
+  var J = V.jouet;
+  if(!J || V.arrete) return;
+  var o = J.o, st = chatEtat(V, o), d = V.elO[o.id], now = Date.now();
+  if(now > J.fin || !d || salleDe(o) !== V.salle){ finJouet(V); return; }
+  if(J.id === 'laser' && now - J.bouge > 2200){ J.bouge = now; posJouet(V, chatSolVisible(V), true); sonMimi(V, 'laser'); }
+  if(J.doigt && J.pos && !st.anim && !st.tenu){
+    var p = chatPos(V, o), dx = J.pos.x - p.x, dy = J.pos.y - p.y, dist = Math.hypot(dx, dy), sx = dx < 0 ? -1 : 1;
+    d.classList.add('at-x-joue');
+    if(J.id === 'laser'){
+      if(dist > 55){ st.vite = 2.4; chatBouger(V, o, chatSol(V, J.pos.x - sx * 34, J.pos.y), 'marche', function(){ st.vite = 1; if(V.jouet) chatPose(V, o, 'tape'); }); }
+      else if(Math.random() < 0.5){ chatPose(V, o, 'saute'); animSvg(V, o, [{transform:'translateY(0)'}, {transform:'translateY(-30%)', offset:0.5}, {transform:'translateY(0)'}], {duration:420}); apres(V, 430, function(){ if(V.jouet) chatPose(V, o, 'tape'); }); }
+      else chatPose(V, o, 'tape');
+    } else {
+      if(dist > 170){ d.classList.remove('at-c-tapi', 'at-c-fesses'); J.tapi = 0; st.vite = 1.3; chatBouger(V, o, chatSol(V, J.pos.x - sx * 130, J.pos.y), 'marche', function(){ st.vite = 1; }); }
+      else if(!J.tapi){ J.tapi = now; st.gauche = dx < 0; d.classList.toggle('at-c-gauche', st.gauche); chatPose(V, o, 'marche'); d.classList.add('at-c-tapi', 'at-c-fesses'); }
+      else if(now - J.tapi > 900 && now - J.bouge > 400){
+        d.classList.remove('at-c-tapi', 'at-c-fesses'); J.tapi = 0; st.vite = 1.2;
+        chatBouger(V, o, chatSol(V, J.pos.x - sx * 18, J.pos.y), 'saute', function(){ st.vite = 1; if(!V.jouet) return; chatPose(V, o, 'tape'); sonMimi(V, 'plume'); if(Math.random() < 0.5) flotter(V, o, 'Attrapée !'); });
+      }
+    }
+  }
+  V.jouetT = apres(V, 330, function(){ jouetTic(V); });
+}
+/* La souris mécanique : on la remonte (cric-cric), elle file en zigzag, Mimi la poursuit et finit par l'attraper */
+function jouerSouris(V, o){
+  var J = V.jouet, p = chatPos(V, o), el = document.createElement('div');
+  el.className = 'at-souris at-souris-meca';
+  el.innerHTML = dessinSouris().replace('#b9b3c8', '#9fa6b8').replace('#b9b3c8', '#9fa6b8').replace('</svg>', '<path d="M14,10 v-6 M10,4 h8" stroke="#f5c542" stroke-width="3" stroke-linecap="round"/></svg>');
+  var pts = [], y = borne(p.y + 30, SOL_MIN + 40, solMax(V) - 20);
+  for(var i = 0; i < 4; i++){ var yy = borne(y + (i % 2 ? -60 : 50), SOL_MIN + 40, solMax(V) - 20); pts.push(chatSol(V, (i % 2 ? solXmin(V, yy) + 140 + Math.random() * 120 : solXmax(V, yy) - 140 - Math.random() * 120), yy)); }
+  var dep = chatSol(V, p.x + 90, y);
+  el.style.left = pX(V, dep.x); el.style.top = pY(V, dep.y); el.style.width = 'calc(' + (40 * echelleSol(y)).toFixed(1) + 'px * var(--k) * 1.7)'; el.style.zIndex = 99000;
+  V.calque.appendChild(el); J.el = el;
+  sonMimi(V, 'clef');
+  var t = 'Cric, cric, cric… on remonte la souris mécanique ! Et la voilà partie.';
+  toast(V, '<b>🐭</b> ' + esc(t), 4000, t);
+  var st = chatEtat(V, o);
+  chatPose(V, o, 'marche'); var d = V.elO[o.id]; if(d) d.classList.add('at-c-tapi', 'at-x-joue');
+  (function etape(i, de){
+    if(V.jouet !== J) return;
+    if(i >= pts.length){
+      /* la fin : elle bondit dessus */
+      var dd = V.elO[o.id]; if(dd) dd.classList.remove('at-c-tapi');
+      st.vite = 1.3;
+      chatBouger(V, o, chatSol(V, de.x - 26, de.y), 'saute', function(){
+        st.vite = 1; if(V.jouet !== J) return;
+        chatPose(V, o, 'tape'); sonMimi(V, 'couic'); flotter(V, o, 'Attrapée !');
+        anim(el, [{transform:'translate(-50%,-100%) rotate(0)'}, {transform:'translate(-50%,-100%) rotate(180deg) scaleY(.8)'}], {duration:400, fill:'forwards'});
+        apres(V, 1500, function(){ if(V.jouet === J) finJouet(V); });
+      });
+      return;
+    }
+    var a = pts[i], dur = 1100 + Math.random() * 300;
+    el.classList.toggle('g', a.x < de.x);
+    anim(el, [{left:pX(V, de.x), top:pY(V, de.y)}, {left:pX(V, a.x), top:pY(V, a.y)}], {duration:dur, easing:'linear', fill:'forwards'});
+    apres(V, 280, function(){ var dd = V.elO[o.id]; if(dd) dd.classList.remove('at-c-tapi'); if(V.jouet !== J) return; st.vite = 1.9; if(st.anim) chatArreter(V, o); chatAller(V, o, chatSol(V, a.x - (a.x > de.x ? 60 : -60), a.y), function(){ st.vite = 1; }); });
+    apres(V, dur, function(){ etape(i + 1, a); });
+  })(0, dep);
+}
+/* La balle à grelot : elle roule, ding-ding ; Mimi court, la tape, elle repart (trois fois) */
+function balleSVG(){ return '<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="#ff8fb3" stroke="#24182e" stroke-width="3"/><path d="M5,16 C14,22 26,22 35,16 M8,28 C16,24 24,24 32,28" stroke="#fff3c4" stroke-width="3" fill="none"/><circle cx="20" cy="20" r="5" fill="#f5c542" stroke="#24182e" stroke-width="2"/><circle cx="14" cy="12" r="3" fill="#fff" opacity=".7"/></svg>'; }
+function jouerGrelot(V, o, n){
+  var J = V.jouet;
+  if(V.jouet !== J || !J) return;
+  var p = chatPos(V, o), st = chatEtat(V, o);
+  if(!J.el){ var el = document.createElement('div'); el.className = 'at-balle'; el.innerHTML = balleSVG(); el.style.zIndex = 99000; V.calque.appendChild(el); J.el = el; J.pos = chatSol(V, p.x + 50, p.y + 6); el.style.left = pX(V, J.pos.x); el.style.top = pY(V, J.pos.y); }
+  if(n >= 3){ apres(V, 600, function(){ if(V.jouet === J) finJouet(V); }); return; }
+  var y = borne(J.pos.y + (Math.random() - 0.5) * 120, SOL_MIN + 40, solMax(V) - 20), x = J.pos.x > 600 ? solXmin(V, y) + 160 + Math.random() * 200 : solXmax(V, y) - 160 - Math.random() * 200, a = chatSol(V, x, y);
+  var e = J.el, de = J.pos, tours = (a.x - de.x) / 40 * 57;
+  e.style.width = 'calc(' + (26 * echelleSol(a.y)).toFixed(1) + 'px * var(--k) * 1.7)';
+  anim(e, [{left:pX(V, de.x), top:pY(V, de.y), transform:'translate(-50%,-100%) rotate(0deg)'}, {left:pX(V, a.x), top:pY(V, a.y), transform:'translate(-50%,-100%) rotate(' + tours.toFixed(0) + 'deg)'}], {duration:1000, easing:'cubic-bezier(.2,.7,.4,1)', fill:'forwards'});
+  J.pos = a; sonMimi(V, 'grelot');
+  expression(V, o, 'at-x-joue', 1800);
+  apres(V, 250, function(){
+    if(V.jouet !== J) return;
+    st.vite = 1.9; if(st.anim) chatArreter(V, o);
+    chatAller(V, o, chatSol(V, a.x - (a.x > p.x ? 46 : -46), a.y), function(){
+      st.vite = 1; if(V.jouet !== J) return;
+      chatPose(V, o, 'tape');
+      apres(V, 500, function(){ jouerGrelot(V, o, n + 1); });
+    });
+  });
+}
+/* Le carton : elle saute dedans, on ne voit plus que ses oreilles ; un toucher sur le carton (ou un peu de patience) : coucou ! */
+/* (le carton est bas : quand elle est dedans, sa tête dépasse — deux oreilles, deux yeux qui guettent) */
+function cartonSVG(){ return '<svg viewBox="-8 0 166 58" aria-hidden="true"><path d="M8,14 L-6,2 L-4,24 L8,34 Z M142,14 L156,2 L154,24 L142,34 Z" fill="#d29b5c" stroke="#24182e" stroke-width="3" stroke-linejoin="round"/><path d="M8,14 H142 V54 H8 Z" fill="#e2b47a" stroke="#24182e" stroke-width="4" stroke-linejoin="round"/><path d="M8,14 H142" stroke="#a87240" stroke-width="5"/><path d="M60,28 h30 M66,36 h18" stroke="#a87240" stroke-width="3" stroke-linecap="round"/><text x="75" y="50" font-size="12" text-anchor="middle">🐾</text></svg>'; }
+function jouerCarton(V, o){
+  var J = V.jouet, p = chatPos(V, o), y = borne(p.y + 20, SOL_MIN + 50, solMax(V) - 20), x = borne(p.x + 130, solXmin(V, y) + 120, solXmax(V, y) - 120);
+  var pl = placeLibre(V, [[x, y], [borne(p.x - 130, solXmin(V, y) + 120, solXmax(V, y) - 120), y]], 90, 110);
+  x = pl.x; y = pl.y;
+  var s = echelleSol(y), b = document.createElement('div');
+  b.className = 'at-fixe at-touche at-boite'; b.setAttribute('data-at', 'jcarton'); b.setAttribute('role', 'button'); b.setAttribute('aria-label', 'Le carton');
+  b.innerHTML = cartonSVG();
+  b.style.left = pX(V, x); b.style.top = pY(V, y); b.style.width = pW(V, 166 * s);
+  b.style.zIndex = Math.round(posObj(V, {t:'chat', x:x, y:y, sur:null}).z * 5) + 4;
+  V.scene.appendChild(b); J.boite = b; J.pos = {x:x, y:y};
+  anim(b, [{transform:'translate(-50%,-100%) scale(.2)', opacity:0}, {transform:'translate(-50%,-100%) scale(1.08)', opacity:1, offset:.7}, {transform:'translate(-50%,-100%) scale(1)'}], {duration:450, easing:'ease-out'});
+  sonMimi(V, 'carton');
+  var t = 'Un carton ! Elle n\'a d\'yeux que pour lui…';
+  toast(V, '<b>📦</b> ' + esc(t), 3200, t);
+  var st = chatEtat(V, o);
+  chatAller(V, o, chatSol(V, x - 110 * s, y), function(){
+    if(V.jouet !== J) return;
+    expression(V, o, 'at-x-joue', 900);
+    chatBouger(V, o, chatSol(V, x, y - 6), 'saute', function(){
+      var d = V.elO[o.id];
+      if(V.jouet !== J || !d) return;
+      chatPose(V, o, 'assis'); d.classList.add('at-dans-boite'); d.style.zIndex = parseInt(b.style.zIndex, 10) - 1;
+      sonMimi(V, 'carton'); J.dedans = Date.now();
+      apres(V, 4200, function(){ if(V.jouet === J && J.dedans) sortirCarton(V); });
+    });
+  });
+}
+function sortirCarton(V){
+  var J = V.jouet;
+  if(!J || J.id !== 'carton') return;
+  if(!J.dedans){ son(V, 'clic'); return; }
+  J.dedans = 0;
+  var o = J.o, d = V.elO[o.id], p = chatPos(V, o);
+  if(d) d.classList.remove('at-dans-boite');
+  flotter(V, o, 'Coucou !'); sonMimi(V, 'trille'); expression(V, o, 'at-x-content', 600);
+  chatBouger(V, o, chatSol(V, p.x - 120, p.y + 16), 'saute', function(){ chatPose(V, o, 'assis'); apres(V, 1200, function(){ if(V.jouet === J) finJouet(V); }); });
+}
+/* L'herbe à chat : une pincée, et elle se roule, file dans tous les sens, puis se pose, ravie (une fois par moment) */
+function jouerHerbe(V, o){
+  var t = tama(V), cle = momentCle(V);
+  if(t.herbe === cle){ var tx = 'Elle en a déjà eu tout à l\'heure. L\'herbe à chat, c\'est une fois de temps en temps !'; toast(V, '<b>🌿</b> ' + esc(tx), 4200, tx); return; }
+  t.herbe = cle;
+  var F = cadreObjet(V, o.id);
+  if(F) for(var i = 0; i < 9; i++){ var f = document.createElement('i'); f.className = 'at-feuille-herbe'; f.textContent = '🌿'; f.style.left = pX(V, F.x + (Math.random() - 0.5) * F.w); f.style.top = pY(V, F.y - F.h * 1.2); f.style.setProperty('--dx', ((Math.random() - 0.5) * 60).toFixed(0) + 'px'); f.style.animationDelay = (i * 0.06).toFixed(2) + 's'; V.calque.appendChild(f); (function(f){ apres(V, 1600, function(){ f.remove(); }); })(f); }
+  sonMimi(V, 'herbe');
+  var tx2 = 'Une pincée d\'herbe à chat… et ' + nomChat(o) + ' devient complètement zinzin !';
+  toast(V, '<b>🌿</b> ' + esc(tx2), 4500, tx2);
+  V.jouet = {id:'herbe', o:o, fin:Date.now() + 15000};
+  var J = V.jouet;
+  apres(V, 700, function(){ if(V.jouet !== J) return; chatPose(V, o, 'dos'); expression(V, o, 'at-x-content at-x-clos', 1800); sonMimi(V, 'roule'); });
+  apres(V, 2600, function(){ if(V.jouet !== J) return; chatPose(V, o, 'assis'); chatJoue(V, o, 'rond'); });
+  apres(V, 6200, function(){ if(V.jouet !== J) return; chatPose(V, o, 'dos'); expression(V, o, 'at-x-attrape', 1400); sonMimi(V, 'grr'); });
+  apres(V, 8000, function(){ if(V.jouet !== J) return; chatPose(V, o, 'pain'); expression(V, o, 'at-c-ronron', 3000); sonMimi(V, 'ronron'); });
+  apres(V, 11000, function(){ if(V.jouet === J){ soigner(V, o, 'jouet:herbe', 14, 'jeu'); V.jouet = null; coeursChat(V, o); chatPlanifier(V, o, 3500); } });
+}
+
+/* Une place du plancher où rien ne cache une chose de demi-largeur l et de hauteur h (en mesures du plancher, à l'échelle de l'endroit) :
+   on essaie les places proposées, puis des places libres au hasard ; à défaut, la première. Les petits objets comptent aussi. */
+function placeLibre(V, l, dl, h){
+  function cache(x, y){
+    var s = echelleSol(y), bx = [x - dl * s, y - h * s, x + dl * s, y], aire = (bx[2] - bx[0]) * (bx[3] - bx[1]);
+    return ici(V).some(function(o){
+      if(o.sur || o.t === 'chat' || o.t === 'tapis' || o.cote) return false;
+      var c = catDe(o); if(c.z === 'mur' || c.z === 'tapis') return false;
+      var p = posObj(V, o); if(p.y <= y) return false;
+      var b = boite(o, p), w = Math.min(bx[2], b[2]) - Math.max(bx[0], b[0]), hh = Math.min(bx[3], b[3]) - Math.max(bx[1], b[1]);
+      return w > 0 && hh > 0 && w * hh > aire * 0.06;
+    });
+  }
+  for(var i = 0; i < l.length; i++) if(!cache(l[i][0], l[i][1])) return {x:l[i][0], y:l[i][1]};
+  for(var k = 0; k < 14; k++){ var q = chatSolVisible(V), x = borne(q.x, solXmin(V, q.y) + dl + 30, solXmax(V, q.y) - dl - 30); if(!cache(x, q.y)) return {x:x, y:q.y}; }
+  return {x:l[0][0], y:l[0][1]};
+}
+/* ---------- Le coffret qu'elle rapporte ---------- */
+function coffretSVG(){
+  return '<svg viewBox="0 0 64 60" aria-hidden="true"><ellipse cx="32" cy="56" rx="26" ry="4" fill="rgba(0,0,0,.25)"/>' +
+    '<path d="M8,26 H56 V54 H8 Z" fill="#9d6ee3" stroke="#24182e" stroke-width="3" stroke-linejoin="round"/><path d="M8,26 H56 V32 H8 Z" fill="#7d4fc8"/>' +
+    '<path d="M28,26 H36 V54 H28 Z" fill="#f5c542" stroke="#24182e" stroke-width="2.4"/>' +
+    '<g class="at-cof-couv"><path d="M4,16 H60 V27 H4 Z" fill="#b796ff" stroke="#24182e" stroke-width="3" stroke-linejoin="round"/><path d="M27,16 H37 V27 H27 Z" fill="#f5c542" stroke="#24182e" stroke-width="2.4"/>' +
+    '<path d="M32,16 C24,4 12,6 16,12 C18,16 26,16 32,16 C38,16 46,16 48,12 C52,6 40,4 32,16 Z" fill="#ffd36a" stroke="#24182e" stroke-width="2.6" stroke-linejoin="round"/><circle cx="32" cy="15" r="3.4" fill="#f5b945" stroke="#24182e" stroke-width="2"/></g>' +
+    '<path d="M12,34 l3,3 M50,38 l-3,3" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".6"/></svg>';
+}
+function dessinerCoffret(V, neuf){
+  if(V.elCoffret){ V.elCoffret.remove(); V.elCoffret = null; }
+  var c = tama(V).coffret;
+  if(!c || V.salle) return;
+  var s = echelleSol(c.y), d = document.createElement('div');
+  d.className = 'at-fixe at-touche at-coffret'; d.setAttribute('data-at', 'coffret'); d.setAttribute('role', 'button'); d.setAttribute('aria-label', 'Ouvrir le coffret de Mimi');
+  d.innerHTML = coffretSVG();
+  d.style.left = pX(V, c.x); d.style.top = pY(V, c.y); d.style.width = pW(V, 84 * s);
+  d.style.zIndex = Math.round(posObj(V, {t:'chat', x:c.x, y:c.y, sur:null}).z * 5) + 2;
+  V.scene.appendChild(d); V.elCoffret = d;
+  if(neuf) anim(d, [{transform:'translate(-50%,-100%) translateY(-60%) scale(.6)', opacity:0}, {transform:'translate(-50%,-100%) scale(1.1,.88)', opacity:1, offset:.7}, {transform:'translate(-50%,-100%)'}], {duration:500, easing:'ease-in'});
+}
+function ouvrirCoffret(V){
+  var t = tama(V), c = t.coffret, el = V.elCoffret;
+  if(!c) return;
+  t.coffret = null; V.elCoffret = null;
+  if(el){ el.classList.add('ouvert'); el.removeAttribute('data-at'); apres(V, 1500, function(){ el.remove(); }); }
+  sonMimi(V, 'ouvre');
+  var m = mimi(V), k = c.c.charAt(0), id = c.c.slice(2), tx, ic;
+  if(k === 'j' && JOUETS[id]){
+    if(m.jouets.indexOf(id) < 0) m.jouets.push(id);
+    if(m.neufs.indexOf(id) < 0) m.neufs.push(id);
+    ic = JOUETS[id].ic; tx = 'Dans le coffret : ' + JOUETS[id].nom + ' ! ' + JOUETS[id].dit + ' Il l\'attend dans sa barre 🐾.';
+    brillerMimi(V);
+  } else if(k === 'a' && ACC[id]){
+    var G = garde(V.etat);
+    if(G.a.indexOf(id) < 0){ G.a.push(id); G.neuf.push(id); G.annonce.push(id); }
+    ic = '🎀'; tx = 'Dans le coffret : ' + articleAcc(id) + ' ! Il attend dans sa garde-robe 🎀, dans sa barre 🐾.';
+  } else {
+    chatsTous(V).forEach(function(o){ o.bh = Math.min(100, bonheur(o) + 10); });
+    ic = '🍬'; tx = 'Des friandises ! Elle en garde une pour toi… ah non, finalement, elle les mange toutes.';
+  }
+  if(el){ var r = V.root.getBoundingClientRect(), b = el.getBoundingClientRect(); for(var i = 0; i < 8; i++) particule(V, {clientX:b.left + b.width / 2, clientY:b.top + b.height * 0.3}, 'at-part-etoile', i % 2 ? '✦' : '✧', 1100); }
+  toast(V, '<b>🎁 ' + ic + '</b> ' + esc(tx), 7000, tx);
+  majBarre(V); changer(V);
+}
+
+/* ---------- La barre de Mimi (🐾, en bas de l'écran) : son bonheur, ses jouets, ses soins, sa boutique, sa garde-robe, son album ----------
+   Pas un écran à part (Romain : « j'ai pas envie qu'il y ait d'écran exprès pour Mimi ») : une rangée de boutons par-dessus la pièce.
+   Le petit cœur du bouton 🐾 montre son bonheur en permanence. */
+function majBarre(V, flash){
+  var b = V.elMimi, c = chatsTous(V)[0];
+  if(!b) return;
+  var n = c ? bonheur(c) : 0, m = mimi(V);
+  b.style.setProperty('--bh', n);
+  b.classList.toggle('plein', n >= BH_CADEAU);
+  var nb = m.neufs.length + garde(V.etat).neuf.length, badge = b.querySelector('.at-badge');
+  if(badge){ badge.textContent = nb ? '✨' : ''; badge.style.display = nb ? '' : 'none'; }
+  b.hidden = !c;
+  if(V.barreMimi && !V.barreMimi.hidden) V.barreMimi.innerHTML = htmlBarre(V);
+  if(flash){ b.classList.remove('at-flash-bt'); void b.offsetWidth; b.classList.add('at-flash-bt'); }
+}
+function htmlBarre(V){
+  var c = chatsTous(V)[0], m = mimi(V), G = garde(V.etat), n = c ? bonheur(c) : 0, nom = c ? nomChat(c) : PORTEE.mere;
+  var bt = function(at, ic, txt, neuf, x){ return '<button type="button" class="at-mb-bt' + (x || '') + '" data-mimi="' + at + '"><span class="at-mb-ic" aria-hidden="true">' + ic + '</span><small>' + esc(txt) + '</small>' + (neuf ? '<i class="at-mb-neuf" aria-label="nouveau">✨</i>' : '') + '</button>'; };
+  var s = '<div class="at-mb-tete"><span class="at-mb-chat">' + (c ? '<svg viewBox="19 -28 76 78" aria-hidden="true">' + teteChat(CHATS[(c.v || 0) % 3], 57, 18, c.acc || {}) + '</svg>' : '') + '</span>' +
+    '<span class="at-mb-jauge"><b>' + esc(nom) + '</b><i class="at-mb-barre"><b style="width:' + n + '%"></b></i></span>' +
+    '<button type="button" class="at-rond at-mb-x" data-mimi="x" aria-label="Fermer">✖</button></div><div class="at-mb-l">';
+  s += '<span class="at-mb-g">Jouer</span>' + m.jouets.map(function(id){ return bt('j:' + id, JOUETS[id].ic, JOUETS[id].nom.replace(/^(la |le |l')/, '').replace(/^\w/, function(x){ return x.toUpperCase(); }), m.neufs.indexOf(id) >= 0, ' at-mb-jouet'); }).join('');
+  if(m.soins.length) s += '<span class="at-mb-g">Soins</span>' + m.soins.filter(function(id){ return id !== 'griffoir'; }).map(function(id){ return bt('s:' + id, iconeSoin(id), SOINS[id].nom, m.neufs.indexOf(id) >= 0); }).join('');
+  s += '<span class="at-mb-g">Ses affaires</span>' + bt('garde', '🎀', 'Habits', G.neuf.length > 0) + bt('shop', '🛒', 'Boutique') + (soinA(V, 'photo') ? bt('album', '📒', 'Album') : '');
+  return s + '</div>';
+}
+function ouvrirBarre(V){
+  if(!V.barreMimi) return;
+  if(!V.barreMimi.hidden){ fermerBarre(V); son(V, 'clic'); return; }
+  V.barreMimi.innerHTML = htmlBarre(V);
+  V.barreMimi.hidden = false;
+  anim(V.barreMimi, [{transform:'translate(-50%,20px)', opacity:0}, {transform:'translate(-50%,0)', opacity:1}], {duration:260, easing:'cubic-bezier(.3,1.3,.5,1)'});
+  try{ if(window.Brume && Brume.son) Brume.son('pastilles', 3); else son(V, 'clic'); }catch(e){}
+}
+function fermerBarre(V){ if(V.barreMimi) V.barreMimi.hidden = true; }
+function actionBarre(V, a){
+  if(V.mode !== 'ranger' || V.arrete) return;
+  if(a === 'x'){ fermerBarre(V); son(V, 'clic'); return; }
+  if(a.indexOf('j:') === 0){ jouer(V, a.slice(2)); return; }
+  if(a === 's:brosse'){ fermerBarre(V); mimi(V).neufs = mimi(V).neufs.filter(function(x){ return x !== 'brosse'; }); prendreBrosse(V); majBarre(V); return; }
+  if(a === 's:bain'){ fermerBarre(V); mimi(V).neufs = mimi(V).neufs.filter(function(x){ return x !== 'bain'; }); demarrerBain(V); majBarre(V); return; }
+  if(a === 's:friandises'){ fermerBarre(V); mimi(V).neufs = mimi(V).neufs.filter(function(x){ return x !== 'friandises'; }); donnerFriandise(V); majBarre(V); return; }
+  if(a === 's:photo'){ mimi(V).neufs = mimi(V).neufs.filter(function(x){ return x !== 'photo'; }); prendrePhoto(V); majBarre(V); return; }
+  if(a === 'garde'){ fermerBarre(V); var c = chatsTous(V)[0]; if(c) ouvrirGarde(V, c.id); return; }
+  if(a === 'shop'){ fermerBarre(V); ouvrirBoutique(V); return; }
+  if(a === 'album'){ ouvrirAlbum(V); return; }
+}
+
+/* ---------- La boutique de Mimi : le confort, payé en pièces d'or (le moteur donne la bourse : opts.bourse) ---------- */
+function bourse(V){ var b = V.o.bourse; try{ return b && typeof b.lire === 'function' ? b.lire() : null; }catch(e){ return null; } }
+function ouvrirBoutique(V){ ouvrirCalque(V, 'at-cal-boutique', htmlBoutique(V)); son(V, 'page'); }
+function htmlBoutique(V){
+  var m = mimi(V), G = garde(V.etat), or = bourse(V), c = chatsTous(V)[0], nom = c ? nomChat(c) : PORTEE.mere;
+  var t = 'La boutique de ' + nom + '. Ici, tout est pour elle : de bons petits plats, des coins douillets, des habits. Ses jouets, eux, ne s\'achètent pas : c\'est elle qui les rapporte !';
+  var art = function(ach, ic, nom2, prix, a, rare){
+    return '<button type="button" class="at-ach' + (a ? ' a' : '') + (rare ? ' rare' : '') + '" data-achat="' + ach + '"' + (a ? ' disabled' : '') + '><span class="at-ach-ic" aria-hidden="true">' + ic + '</span><small>' + esc(nom2) + '</small><b>' + (a ? '✔ À elle' : '🪙 ' + prix) + '</b></button>';
+  };
+  var corps = '<p class="at-feuille-txt">' + esc(t) + ' ' + lireBtn(t) + '</p>' + (or === null ? '<p class="at-ach-ferme">La boutique n\'ouvre que pendant une enquête.</p>' : '<p class="at-ach-or">👛 ' + or + ' pièce' + (or > 1 ? 's' : '') + ' d\'or</p>');
+  corps += '<div class="at-ach-g"><b>Ses petits plats</b><div class="at-ach-l">' + cles(NOURS).filter(function(k){ return NOURS[k].prix; }).map(function(k){ var N = NOURS[k]; return art('n:' + k, N.ic, N.nom.replace(/^(Des|De la|Du|Un) /, ''), N.prix, m.nour.indexOf(k) >= 0); }).join('') + '</div></div>';
+  corps += '<div class="at-ach-g"><b>Ses coins douillets</b><div class="at-ach-l">' + BOUTIQUE_MIMI.coins.map(function(x){ return art('c:' + x.t, x.ic, x.nom, x.prix, false); }).join('') + '</div></div>';
+  var hab = cles(ACC).filter(function(id){ return G.a.indexOf(id) < 0; });
+  corps += '<div class="at-ach-g"><b>Ses habits</b><div class="at-ach-l">' + (hab.length ? hab.map(function(id){ return art('h:' + id, vignetteAcc(id, c ? c.v : 0), ACC[id].nom, ACC[id].rare ? BOUTIQUE_MIMI.habitRare : BOUTIQUE_MIMI.habit, false, ACC[id].rare); }).join('') : '<p class="at-feuille-txt">Elle a déjà tous les habits du monde !</p>') + '</div></div>';
+  return feuille('at-f-boutique', '<span class="at-f-ic">🛒</span><h3>La boutique de ' + esc(nom) + '</h3>', corps);
+}
+function acheter(V, ach){
+  var k = ach.charAt(0), id = ach.slice(2), m = mimi(V), G = garde(V.etat), prix = 0, nom = '';
+  if(k === 'n' && NOURS[id] && m.nour.indexOf(id) < 0){ prix = NOURS[id].prix; nom = NOURS[id].nom.toLowerCase(); }
+  else if(k === 'c'){ var x = BOUTIQUE_MIMI.coins.filter(function(y){ return y.t === id; })[0]; if(!x) return; prix = x.prix; nom = x.nom.toLowerCase(); }
+  else if(k === 'h' && ACC[id] && G.a.indexOf(id) < 0){ prix = ACC[id].rare ? BOUTIQUE_MIMI.habitRare : BOUTIQUE_MIMI.habit; nom = articleAcc(id); }
+  else return;
+  var or = bourse(V);
+  if(or === null){ var t0 = 'La boutique n\'ouvre que pendant une enquête.'; toast(V, '<b>🛒</b> ' + esc(t0), 3000, t0); return; }
+  if(or < prix){ var t1 = 'Il te manque ' + (prix - or) + ' pièce' + (prix - or > 1 ? 's' : '') + ' d\'or. Les missions en rapportent !'; toast(V, '<b>👛</b> ' + esc(t1), 4000, t1); son(V, 'ko'); return; }
+  var ok = false; try{ ok = V.o.bourse.payer(prix); }catch(e){ ok = false; }
+  if(!ok) return;
+  if(k === 'n') m.nour.push(id);
+  else if(k === 'h'){ G.a.push(id); G.neuf.push(id); G.annonce.push(id); }
+  else { var av = V.etat.cartons.map(function(c){ return c.id; }); nouveauCarton(V.etat, [id]); dessinerPiece(V, av); }
+  sonMimi(V, 'ouvre');
+  var c = chatsTous(V)[0], nm = c ? nomChat(c) : PORTEE.mere;
+  var t = k === 'n' ? 'Et voilà : ' + nom + ' ! La prochaine fois que tu rempliras sa gamelle, tu pourras choisir.' : k === 'h' ? 'Et voilà : ' + nom + ' pour ' + nm + ' ! Il l\'attend dans sa garde-robe 🎀.' : 'Et voilà : ' + nom + ' ! Il arrive dans un carton, au coin de la pièce 📦.';
+  V.grim.innerHTML = htmlBoutique(V);
+  toast(V, '<b>🛒 ✨</b> ' + esc(t), 5000, t);
+  majBarre(V); changer(V);
 }
 
 /* ==========================================================
@@ -7062,6 +8282,13 @@ window.Atelier = {
   repliqueOdette:repliqueOdette,
   PORTEE:PORTEE,
   BESOINS_CHAT:BESOINS.map(function(b){ return b.k; }),
+  /* Mimi en image, hors de la pièce (l'album photo, les robots) : un <svg> ; pose : 'assis', 'dort', 'marche', 'dos', 'pain'… ; x : des classes .at-x-… */
+  imageChat:function(v, pose, x, acc){
+    return '<div class="at-o at-t-chat at-plat at-c-' + (pose || 'assis') + (x ? ' ' + x : '') + '"><svg viewBox="0 0 114 96" overflow="visible" aria-hidden="true">' + dessinMimi(CHATS[(v || 0) % 3], acc || {}) + '</svg></div>';
+  },
+  defsHTML:function(){ return svgDefs(); },
+  /* (les robots) la vue montée en ce moment, avec ses points d'accès d'essai (_mimi, _cadeau…) */
+  _vue:function(){ var l = VUES.filter(function(V){ return !V.arrete; }); return l.length ? l[l.length - 1].api || null : null; },
   /* la fin du message « Potion réussie : … » du moteur : où est la potion (son flacon, devant la porte) */
   OU_POTIONS:' ! Son flacon est posé par terre, devant la porte.'
 };

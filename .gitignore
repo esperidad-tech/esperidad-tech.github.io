@@ -51,3 +51,6 @@ jeu/test/visee-*.png
 jeu/test/e3-film/
 jeu/test/jardin/
 jeu/pub/plans
+
+# les captures du robot de Mimi, tools/mimi.py (refaites à chaque fois)
+jeu/test/mimi/
