@@ -7125,9 +7125,15 @@ function poserCoffret(V, o){
   if(!b) return false;
   t.dehors = null;
   var p = o && V.elO[o.id] && salleDe(o) === 0 ? chatPos(V, o) : (V.salle ? {x:600, y:700} : chatSolVisible(V)), st = o ? chatEtat(V, o) : null;
-  var y = borne(p.y + 24, SOL_MIN + 40, SOL_MAX - 20), x = borne(p.x + (st && st.gauche ? -70 : 70), xF(140, y), xF(LARGEUR - 140, y));
-  /* (jamais caché derrière quelque chose : de l'autre côté d'elle, sinon une place libre du plancher) */
-  if(!V.salle){ var pl = placeLibre(V, [[x, y], [borne(p.x + (st && st.gauche ? 70 : -70), xF(140, y), xF(LARGEUR - 140, y)), y]], 50, 70); x = pl.x; y = pl.y; }
+  /* à côté d'elle, assez loin pour qu'elle ne soit pas assise dessus (elle est une fois et demie plus grande depuis le pantin, et le
+     grand coffret est plus large : à 70, sa tête le cachait à moitié et on la touchait, elle, au lieu du coffret — vu sur un téléphone) */
+  var ec = (b.g ? 134 : 110) * echelleSol(p.y), sg = st && st.gauche ? -1 : 1, y = borne(p.y + 24, SOL_MIN + 40, SOL_MAX - 20);
+  var xa = borne(p.x + sg * ec, xF(140, y), xF(LARGEUR - 140, y)), xb = borne(p.x - sg * ec, xF(140, y), xF(LARGEUR - 140, y)), x = xa;
+  /* (jamais caché derrière quelque chose, jamais collé à elle contre un mur : de l'autre côté d'elle, sinon une place libre du plancher) */
+  if(!V.salle){
+    var cand = [[xa, y], [xb, y]].filter(function(q){ return Math.abs(q[0] - p.x) > ec * 0.82; });
+    var pl = placeLibre(V, cand.length ? cand : [[xa, y]], b.g ? 66 : 50, b.g ? 92 : 70); x = pl.x; y = pl.y;
+  }
   t.coffret = {c:b.c, x:Math.round(x), y:Math.round(y)};
   if(b.g) t.coffret.g = 1;
   if(o){ var d = V.elO[o.id], sp = d && d.querySelector('.at-c-butin'); if(sp) sp.remove(); butinChat(V, o, null); if(d){ d.classList.remove('at-c-dehors'); chatReparait(d); } if(st && st.tenu && !st.depart) st.tenu = false; }
