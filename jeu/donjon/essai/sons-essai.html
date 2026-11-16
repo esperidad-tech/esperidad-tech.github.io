@@ -1272,6 +1272,10 @@ function sonsMimi(audio, sortie){
     coffret:function(){ tendre(180, 0, .12, .07, 120, .004, 'triangle', 600); tendre(1568, .14, .3, .02, null, .006); tendre(2093, .2, .32, .016, null, .006); },
     ouvre:function(){ grains(0, .1, .03, 8, 2000); [784, 988, 1175, 1568, 1976].forEach(function(f, i){ tendre(f, .08 + i * .07, .32, .04, null, .01, 'triangle', 4000); }); grains(.2, .7, .012, 40, 5000); },
     debloque:function(){ [523, 659, 784, 1047].forEach(function(f, i){ tendre(f, i * .1, .3, .05, null, .01, 'triangle', 3000); }); tendre(1319, .45, .6, .04, null, .02); grains(.4, .6, .012, 30, 5000); },
+    /* (étape 2) un cœur gagné : deux notes rondes qui montent ; une envie exaucée : un petit carillon ; le grand cadeau : une fanfare */
+    coeur:function(){ tendre(659, 0, .22, .05, null, .012, 'triangle', 2600); tendre(988, .16, .42, .05, null, .012, 'triangle', 3200); tendre(1976, .2, .3, .012, null, .01); },
+    envie:function(){ [1319, 1568, 2093, 2637].forEach(function(f, i){ tendre(f, i * .055, .26, .028, null, .006); }); grains(.12, .4, .01, 22, 6000); },
+    fanfare:function(){ [523, 523, 659, 784, 1047].forEach(function(f, i){ tendre(f, [0, .13, .26, .39, .56][i], i === 4 ? .7 : .16, .055, null, .01, 'triangle', 3400); tendre(f * 2, [0, .13, .26, .39, .56][i], i === 4 ? .6 : .12, .014, null, .008); }); grains(.56, .8, .014, 46, 5600); },
     /* les jouets */
     laser:function(){ tendre(1760, 0, .08, .012, 2637, .004); },
     plume:function(){ souffle(0, .22, .02, 900, 2600, .7); },
@@ -6071,7 +6075,9 @@ var section = {id:'mj-mimi', titre:'Mimi à l’atelier', sous:[
     ['brosse', 'La brosse', .25], ['mousse', 'Mousse du bain', .3], ['secoue', 'Elle s’ébroue', .4], ['gratte', 'La litière', .6], ['photo', 'Clic, la photo', .2]])},
   {id:'mimi-cadeaux', titre:'Coffrets et jouets', sons:liste([['coffret', 'Le coffret posé', .55], ['ouvre', 'Le coffret s’ouvre', .9], ['debloque', 'Un nouveau soin', 1.1],
     ['laser', 'Le laser', .1], ['plume', 'La plume', .25], ['grelot', 'Balle à grelot', .4], ['clef', 'Remonter la souris', .45], ['couic', 'Couic !', .2],
-    ['carton', 'Le carton', .2], ['herbe', 'L’herbe à chat', .6]])}
+    ['carton', 'Le carton', .2], ['herbe', 'L’herbe à chat', .6]])},
+  /* (étape 2, 16 novembre au soir : les cœurs, les envies, le grand cadeau) */
+  {id:'mimi-coeurs', titre:'Cœurs et envies', sons:liste([['coeur', 'Un cœur gagné', .65], ['envie', 'Une envie exaucée', .6], ['fanfare', 'Le grand cadeau', 1.4]])}
 ]};
 var mj = (G.CATALOGUE || []).filter(function(s){ return s.id === 'mj'; })[0];
 if(mj) mj.sous.push(section);
