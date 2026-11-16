@@ -394,11 +394,14 @@ PP.dessiner = function(dt){
    ========================================================== */
 M.monter = function(svg, o){ return new Pantin(svg, o); };
 M.pantins = function(){ return PANTINS.slice(); };
-/* Mimi en image fixe : une pose, des classes de mimiques (« at-x-miaou at-x-clos »), ses accessoires */
-M.image = function(v, pose, classes, acc){
+/* Mimi en image fixe : une pose, des classes de mimiques (« at-x-miaou at-x-clos »), ses accessoires ;
+   plus (l'album photo) : {g, u} — un geste arrêté en route (« etire », à 0,26) ; {allure, phi} — une foulée arrêtée (« course ») */
+M.image = function(v, pose, classes, acc, plus){
   var base = M.BASES[pose] || pose, P = M.pose(base), b = M.BOUCLES[pose];
   var l = (b ? [b] : []).concat((classes || '').split(/\s+/).map(function(c){ return M.CLASSES[c]; }).filter(function(g){ return !!g; }));
   l.forEach(function(g){ var G2 = M.GESTES[g]; if(G2) G2.f(P, G2.d ? 0.5 : 0.45, 0.45, {o:{}, m:{}, fixe:1}, null); });
+  if(plus && plus.g && M.GESTES[plus.g]) M.GESTES[plus.g].f(P, plus.u === undefined ? 0.5 : plus.u, 0.45, {o:{}, m:{}, fixe:1}, null);
+  if(plus && plus.allure && M.ALLURES[plus.allure]) M.pas(P, plus.phi === undefined ? 0.3 : plus.phi, 1, M.ALLURES[plus.allure]);
   if(/(^|\s)at-c-gauche(\s|$)/.test(classes || '')) P.co = -1;
   return M.dessin(v, P, acc || {});
 };

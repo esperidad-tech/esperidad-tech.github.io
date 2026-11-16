@@ -1130,7 +1130,15 @@ html.labo-ouvert, html.labo-ouvert body{overflow:hidden}
 .at-mimi-bt:active{transform:scale(.92)}
 .at-mimi-bt.at-dispo{animation:mi-appel .9s ease-in-out infinite}
 .at-mimi-bt.at-flash-bt{animation:mi-bt .45s ease-out}
-.at-mode-prep .at-mimi-bt,.at-mode-prep .at-mimi-barre{display:none!important}
+.at-mode-prep .at-mimi-bt,.at-mode-prep .at-mimi-barre,.at-mode-prep .at-photo-bt{display:none!important}
+/* l'appareil photo, à côté du bouton 🐾 ; dessous, où en est l'album (« 3/15 ») */
+.at-photo-bt{position:absolute;left:158px;bottom:14px;z-index:8;width:56px;height:56px;padding:0;border-radius:50%;border:3px solid var(--contour,#24182e);
+  background:#fff6e6;display:grid;place-items:center;cursor:pointer;pointer-events:auto;touch-action:manipulation;box-shadow:0 5px 0 rgba(36,24,46,.55)}
+.at-photo-bt[hidden]{display:none}
+.at-photo-ic{font-size:1.6rem;line-height:1;pointer-events:none}
+.at-photo-n{position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);padding:1px 6px;border-radius:9px;background:#24182e;color:#fff;font-style:normal;font-weight:800;font-size:.68rem;line-height:1.25;white-space:nowrap;pointer-events:none}
+.at-photo-bt:active{transform:scale(.92)}
+.at-photo-bt.at-flash-bt{animation:mi-bt .45s ease-out}
 @keyframes mi-appel{0%,100%{box-shadow:0 5px 0 rgba(36,24,46,.55), 0 0 0 0 rgba(255,211,106,.9)}50%{box-shadow:0 5px 0 rgba(36,24,46,.55), 0 0 0 10px rgba(255,211,106,0)}}
 @keyframes mi-bt{40%{transform:scale(1.14)}}
 /* la barre : par-dessus le bas de la pièce, jamais un écran à part */
@@ -1239,12 +1247,20 @@ html.labo-ouvert, html.labo-ouvert body{overflow:hidden}
 .at-ach.a{opacity:.65;cursor:default;border-style:dashed}
 .at-ach.rare{background:linear-gradient(160deg,#fff6c8,#ffe1f0)}
 /* l'album photo */
-.at-album{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:12px;margin-top:8px}
+.at-album{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:12px;margin-top:8px;padding:2px 5px}
 .at-photo{margin:0;padding:6px 6px 4px;background:#fffdf6;border:3px solid var(--contour,#24182e);border-radius:8px;box-shadow:0 3px 0 rgba(36,24,46,.3)}
 .at-photo:nth-child(3n+1){transform:rotate(-2deg)}.at-photo:nth-child(3n+2){transform:rotate(1.5deg)}
 .at-photo .at-photo-chat{position:relative!important;left:auto!important;top:auto!important;width:100%;aspect-ratio:170/140;background:linear-gradient(#4a3c6a 0 72%,#7a4f30 72%);border-radius:4px;pointer-events:none}
 .at-photo .at-photo-chat svg{width:88%;height:88%;margin:6% auto 0;display:block}
 .at-photo figcaption{text-align:center;font-weight:800;font-size:.85rem;color:var(--encre);margin-top:4px}
+.at-photo .at-photo-chat{overflow:hidden}
+.at-photo.rare{border-color:#e0a52c;box-shadow:0 0 0 2px rgba(255,211,106,.6),0 3px 0 rgba(36,24,46,.3)}
+/* une pose qu'on n'a pas encore : un cadre vide, sans rien dire de plus */
+.at-photo-vide{background:#efe6d2;border-style:dashed;box-shadow:none}
+.at-photo-vide .at-photo-chat{display:grid;place-items:center;background:rgba(53,40,27,.1)}
+.at-photo-vide .at-photo-chat span{font-size:2.2rem;font-weight:800;color:rgba(53,40,27,.35)}
+.at-photo-vide figcaption{color:rgba(53,40,27,.4)}
+.at-album-n{margin:6px 0 0;font-weight:800;font-size:1.05rem;color:var(--encre,#35281b)}
 @media (prefers-reduced-motion: reduce){
   .at-coffret > svg,.at-jouet-laser i,.at-jouet-plume svg,.at-mb-neuf,.at-mimi-bt.at-dispo{animation:none!important}
 }
