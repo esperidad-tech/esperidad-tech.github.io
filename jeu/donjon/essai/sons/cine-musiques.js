@@ -335,4 +335,102 @@ M.cineMusCheneA = function(A, P){
   });
   return I;
 };
+
+/* =================== LA PUB DE 30 SECONDES (jeu/pub ; Romain, 16 novembre : « une musique un peu fun, vraiment bien travaillée […] bien rythmé ») ===================
+   120 à la minute : UN TEMPS = 0,5 s, UNE MESURE = 2 s ; le montage coupe sur les temps (jeu/pub/pub.js).
+     mesures 1-2   (0 → 4 s)     la table : un ukulélé égrené, des claquements de doigts, puis le roulement et la montée (la plongée dans la tablette)
+     mesures 3-7   (4 → 14 s)    LE REFRAIN (do, sol, la mineur, fa, do) : le marimba, le ukulélé à contretemps, la basse qui rebondit, les mains
+     mesures 8-9   (14 → 18 s)   le mystère (la mineur, mi) : à mi-vitesse, le motif de l'homme en cape à la harpe, les cordes qui tremblent
+     mesures 10-11 (18 → 22 s)   le donjon (la mineur, sol) : la grosse caisse sur tous les temps, la basse au galop, les cuivres
+     mesure 12     (22 → 24 s)   la rafale : quatre « hé ! » sur les quatre mots, le roulement, la gamme qui grimpe
+     mesure 13     (24 → 26 s)   la fête : le refrain une octave au-dessus, sifflé
+     mesures 14-15 (26 → fin)    le titre : le grand accord, quatre notes qui montent, et « ta-dam » */
+M.cineMusPubA = function(A, P){
+  var I = Instance(A, P), G = 1.0, sec = A.bus(P, {grotte:.05, g:G}), tamb = A.bus(P, {grotte:.09, g:G * .72}), loin = A.bus(P, {grotte:.3, g:G * .85}), ech = I.echo(loin, {temps:.375, retour:.35, lp:2600, sortie:.4});
+  function kick(t, g){ A.tambour(t, {f:58, d:.22, g:(g || 1) * .34}, tamb); }
+  function clap(t, g){ g = (g || 1) * .1; [0, .011, .024].forEach(function(x, k){ A.bruit(t + x, {coul:'blanc', filtres:[{type:'bandpass', f:1500 + k * 320, q:.9}], env:A.perc(.001, .08 + k * .025), g:g}, tamb); }); }
+  function chat(t, g){ A.bruit(t, {coul:'blanc', hp:7200, env:A.perc(.001, .032), g:(g || 1) * .03}, tamb); }
+  function caisse(t, g){ A.bruit(t, {coul:'blanc', filtres:[{type:'bandpass', f:1900, q:.7}], env:A.perc(.002, .1), g:g}, tamb); A.ton(t, {f:190, f2:140, gl:.08, env:A.perc(.002, .08), g:g * .5}, tamb); }
+  function mar(t, n, g){ var f = m(n); g = g || 1; A.ton(t, {type:'sine', f:f, env:A.perc(.002, .34), g:g * .12}, sec); A.ton(t, {type:'sine', f:f * 4, env:A.perc(.001, .06), g:g * .022}, sec); A.ton(t, {type:'triangle', f:f * 2, env:A.perc(.002, .13), g:g * .014}, sec); }
+  function uke(t, notes, g, long){ notes.forEach(function(n, k){ A.harpe(t + k * .013, m(n), {t60:long || .5, g:(g || 1) * .06, lp:3400}, sec); }); }
+  function basse(t, n, d, g){ g = g || 1; A.ton(t, {type:'triangle', f:m(n), env:[[0, 0], [.008, 1], [d * .5, .6], [d, 0]], g:g * .15, filtres:[{type:'lowpass', f:650}]}, sec); A.ton(t, {type:'sine', f:m(n), env:[[0, 0], [.008, 1], [d, 0]], g:g * .09}, sec); }
+  function siffle(t, n, g){ var f = m(n); A.ton(t, {type:'sine', f:f * .98, f2:f, gl:.05, env:[[0, 0], [.03, 1], [.16, .8], [.24, 0]], g:(g || 1) * .034, vib:[6, f * .012], vibRetard:.07}, loin); }
+  function hey(t, g){ A.choeur(t, [m(72), m(76), m(79)], .3, {voyelle:'a', a:.015, r:.2, g:(g || 1) * .034}, loin); }
+  var ACC = {C:[60, 64, 67, 72], G:[59, 62, 67, 74], Am:[57, 60, 64, 69], F:[57, 60, 65, 72], E:[56, 59, 64, 68]}, BAS = {C:36, G:31, Am:33, F:29, E:28};
+  function mesure(t, acc, o){                                     /* une mesure du refrain : grosse caisse, mains, charleston, ukulélé à contretemps, basse */
+    o = o || {};
+    for(var b = 0; b < 4; b++){
+      var tb = t + b * .5;
+      if(o.quatre || b % 2 === 0) kick(tb, o.k);
+      if(o.mains || b % 2 === 1) clap(tb, o.c);
+      chat(tb, .7); chat(tb + .25, 1.25); if(o.double){ chat(tb + .125, .6); chat(tb + .375, .6); }
+      if(!o.sansUke) uke(tb + .25, ACC[acc], o.u);
+      if(o.galop){ basse(tb, BAS[acc], .2, 1); basse(tb + .25, BAS[acc], .14, .75); basse(tb + .375, BAS[acc] + 12, .1, .7); }
+      else { basse(tb, BAS[acc], .22, 1); basse(tb + .25, BAS[acc] + 12, .16, .7); }
+    }
+  }
+  function air(t, notes, g, joue){ notes.forEach(function(n, k){ if(n) (joue || mar)(t + k * .25, n, g); }); }
+
+  /* --- la table (0 → 4 s) --- */
+  a(I, 0, function(t){
+    [60, 64, 67, 72, 67, 64, 60, 64].forEach(function(n, k){ A.harpe(t + .02 + k * .25, m(n), {t60:.9, g:.1, lp:3000}, sec); chat(t + k * .25, k % 2 ? 1.2 : .7); });
+    kick(t, .6); kick(t + 1, .6); basse(t, 36, .5, .9); clap(t + .5, .55); clap(t + 1.5, .55); mar(t + .5, 84, .6); mar(t + 1.5, 86, .6);
+  });
+  a(I, 2, function(t){
+    [59, 62, 67, 74, 67, 62, 59, 62].forEach(function(n, k){ A.harpe(t + k * .25, m(n), {t60:.9, g:.1, lp:3000}, sec); chat(t + k * .25, k % 2 ? 1.2 : .7); });
+    basse(t, 31, .5, .9); clap(t + .5, .6); mar(t + .5, 88, .6); kick(t, .7); kick(t + .5, .7);
+    for(var k = 0; k < 8; k++) caisse(t + 1 + k * .125, .025 + k * .012);                                /* le roulement */
+    kick(t + 1, .8); kick(t + 1.5, .9); kick(t + 1.75, 1);
+    montee(A, t + .8, 1.2, .3, loin);
+    [72, 74, 76, 77, 79, 81, 83, 84].forEach(function(n, k){ mar(t + 1 + k * .125, n, .45 + k * .06); });   /* la gamme : on plonge */
+  });
+  /* --- LE REFRAIN (4 → 14 s) --- */
+  a(I, 4, function(t){ frappe(A, t, .26, tamb); hey(t, 1.1); mesure(t, 'C'); air(t, [76, 76, 79, 76, 72, 0, 76, 79]); uke(t, ACC.C, 1.3, 1.4); });
+  a(I, 6, function(t){ mesure(t, 'G'); air(t, [74, 74, 79, 74, 71, 0, 74, 79]); });
+  a(I, 8, function(t){ mesure(t, 'Am'); air(t, [72, 72, 76, 72, 69, 0, 72, 76]); air(t, [84, 0, 0, 0, 81, 0, 0, 0], .5, siffle); });
+  a(I, 10, function(t){ mesure(t, 'F', {double:1}); air(t, [69, 72, 77, 81, 79, 77, 76, 74]); air(t, [81, 0, 0, 0, 79, 0, 76, 74], .8, siffle); });
+  a(I, 12, function(t){
+    mesure(t, 'C', {double:1}); air(t, [72, 76, 79, 84, 83, 79, 74, 0]); air(t, [84, 0, 0, 0, 83, 0, 0, 0], .8, siffle);
+    [[1.5, 130], [1.625, 130], [1.75, 105], [1.875, 84]].forEach(function(x){ A.tambour(t + x[0], {f:x[1], d:.2, g:.26}, tamb); });   /* la descente de toms : on change de monde */
+  });
+  /* --- LE MYSTÈRE (14 → 18 s) : à mi-vitesse --- */
+  a(I, 14, function(t){
+    frappe(A, t, .2, tamb); fond(A, t, [m(33), m(45)], 4, .026, sec, {a:.2, r:.5});
+    trem(A, t + .1, m(69), 3.9, .011, sec, {env:[[0, 0], [.4, .7], [3.3, 1], [3.9, 0]]}); trem(A, t + .1, m(64), 3.9, .011, sec, {env:[[0, 0], [.4, .7], [3.3, 1], [3.9, 0]]});
+    for(var k = 0; k < 16; k++) chat(t + k * .25, k % 2 ? .9 : .5);
+    [0, 2].forEach(function(x){ kick(t + x, 1); A.tambour(t + x + 1, {f:92, d:.4, g:.24}, tamb); clap(t + x + 1, .7); kick(t + x + 1.75, .7); });
+    [[.5, 69], [1, 72], [1.5, 75], [2, 76]].forEach(function(n){ A.harpe(t + n[0], m(n[1]), {t60:1.6, g:.085, lp:2600}, ech); });        /* son motif (celui de l'entrée du donjon) */
+    [[2.5, 81], [2.75, 84], [3, 87], [3.25, 88]].forEach(function(n){ A.harpe(t + n[0], m(n[1]), {t60:1.2, g:.06, lp:3000}, ech); });
+    basse(t, 33, .9, 1); basse(t + 2, 28, .9, 1);
+    cuivre(A, t + 2, m(40), 2, .045, sec); cuivre(A, t + 2, m(47), 2, .035, sec);
+    for(var q = 0; q < 8; q++) caisse(t + 3 + q * .125, .02 + q * .011);
+    montee(A, t + 2.9, 1.1, .26, loin);
+  });
+  /* --- LE DONJON (18 → 22 s) --- */
+  function coup(t, notes, g){ notes.forEach(function(n){ cuivre(A, t, m(n), .45, g, sec); }); }
+  a(I, 18, function(t){ frappe(A, t, .28, tamb); mesure(t, 'Am', {quatre:1, galop:1, double:1, u:.8}); air(t, [69, 72, 76, 72, 69, 72, 76, 81]); coup(t, [45, 52, 57], .05); coup(t + .75, [45, 52, 57], .04); coup(t + 1.5, [48, 52, 57], .04); });
+  a(I, 20, function(t){ mesure(t, 'G', {quatre:1, galop:1, double:1, u:.8}); air(t, [67, 71, 74, 71, 67, 71, 74, 79]); coup(t, [43, 50, 55], .05); coup(t + .75, [43, 50, 55], .04); coup(t + 1.5, [47, 50, 55], .04); });
+  /* --- LA RAFALE (22 → 24 s) : quatre mots, quatre « hé ! » --- */
+  a(I, 22, function(t){
+    ['F', 'F', 'G', 'G'].forEach(function(c, b){ var tb = t + b * .5; hey(tb, 1.15); kick(tb, 1); kick(tb + .25, .8); clap(tb, 1); uke(tb, ACC[c], 1.3, .6); basse(tb, BAS[c], .22, 1); basse(tb + .25, BAS[c] + 12, .16, .8); });
+    for(var k = 0; k < 16; k++) caisse(t + k * .125, .018 + k * .008);
+    [72, 74, 76, 77, 79, 81, 83, 84, 86, 88, 89, 91].forEach(function(n, k){ mar(t + .5 + k * .125, n, .5 + k * .04); });
+    montee(A, t + .8, 1.2, .3, loin);
+  });
+  /* --- LA FÊTE (24 → 26 s) --- */
+  a(I, 24, function(t){ frappe(A, t, .26, tamb); mesure(t, 'C', {quatre:1, mains:1, double:1}); air(t, [88, 88, 91, 88, 84, 0, 88, 91]); air(t, [88, 0, 91, 0, 84, 0, 88, 91], .9, siffle); hey(t + 1, 1.1); hey(t + 1.5, 1.1); });
+  /* --- LE TITRE (26 → fin) --- */
+  a(I, 26, function(t){
+    frappe(A, t, .34, tamb); kick(t, 1.2); clap(t, 1.1);
+    uke(t, [48, 55, 60, 64, 67, 72], 1.5, 2.6); [36, 43, 48, 52].forEach(function(n){ cuivre(A, t, m(n), 1.7, .04, sec); });
+    A.choeur(t, [m(72), m(76), m(79)], 1.6, {voyelle:'a', a:.03, r:1, g:.03}, loin); basse(t, 36, 1.4, 1.1);
+    [[.5, 72], [.75, 76], [1, 79], [1.25, 84]].forEach(function(n){ mar(t + n[0], n[1], 1); siffle(t + n[0], n[1] + 12, .8); });
+    chat(t + .5, 1); chat(t + .75, 1); chat(t + 1, 1); chat(t + 1.25, 1); clap(t + 1.5, .8);
+    /* « ta-dam » */
+    kick(t + 2, 1.1); clap(t + 2, 1); uke(t + 2, ACC.G, 1.5, .5); basse(t + 2, 31, .3, 1.1); [43, 50, 55].forEach(function(n){ cuivre(A, t + 2, m(n), .4, .04, sec); });
+    kick(t + 2.5, 1.3); clap(t + 2.5, 1.1); uke(t + 2.5, [48, 55, 60, 64, 67, 72], 1.6, 2.2); basse(t + 2.5, 36, 1.1, 1.2); [36, 48, 52, 55].forEach(function(n){ cuivre(A, t + 2.5, m(n), 1.1, .045, sec); });
+    A.ton(t + 2.5, {type:'sine', f:m(96), env:A.perc(.002, 1.2), g:.03}, loin); A.ton(t + 2.5, {type:'sine', f:m(84), env:A.perc(.002, 1.2), g:.04}, loin); hey(t + 2.5, 1.2);
+  });
+  return I;
+};
 })(window);
