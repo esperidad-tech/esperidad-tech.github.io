@@ -74,21 +74,30 @@ function rareLibre(G, lieu){
 }
 /* Les trouvailles d'une enquête, d'après ce que le Pisteur a fait (P.vus, P.bonus).
    Renvoie [{ids:[…], genre:'rare'|'paquet'|'bonus'}] ; sec = seulement noter comme faites (ancienne sauvegarde). */
+/* (Romain, 16 novembre : « j'ai l'impression qu'ils gagnent des objets en faisant rien, en se baladant dans les onglets ») chaque
+   trouvaille dit maintenant POURQUOI on la gagne : « pour l'oie de Gaspard », « pour ta mission »… (pour, montré sur la carte et lu
+   par le 🔊). pq.pour : le texte d'un paquet ; sinon le nom du point qui l'ouvre. */
+function pourPoint(p){ var n = String((p && (p.carteNom || p.nom)) || '').trim(); return n ? 'pour ' + n.charAt(0).toLowerCase() + n.slice(1) : ''; }
+function pourPaquet(eId, pq){
+  if(pq.pour) return pq.pour;
+  var k = vusDe(pq.quand)[0], m = k && /^pisteur:([^:]+):(.+)$/.exec(k);
+  return m ? pourPoint(pointDe(eId, m[1], m[2])) : 'pour ta découverte';
+}
 function traiter(eId, P, G, sec){
   var T = tableDe(eId), tous = (Gd.TROUVAILLES.tous && Gd.TROUVAILLES.tous.paquets) || [], l = [], vus = (P && P.vus) || {};
-  function ajoute(cle, ids, genre){
+  function ajoute(cle, ids, genre, pour){
     if(G.f[cle]) return;
     G.f[cle] = 1;
     if(sec) return;
     var n = ids.filter(function(id){ return id && donner(G, id); });
-    if(n.length) l.push({ids:n, genre:genre});
+    if(n.length) l.push({ids:n, genre:genre, pour:pour || ''});
   }
   /* 3. les découvertes importantes : un paquet */
   var dansPaquet = {};
   [[eId, T.paquets], ['tous', tous]].forEach(function(x){
     x[1].forEach(function(pq){
       vusDe(pq.quand).forEach(function(k){ dansPaquet[k] = 1; });
-      if(condOk(pq.quand, P)) ajoute(x[0] + ':k:' + pq.id, pq.items, 'paquet');
+      if(condOk(pq.quand, P)) ajoute(x[0] + ':k:' + pq.id, pq.items, 'paquet', pourPaquet(x[0] === 'tous' ? eId : x[0], pq));
     });
   });
   /* 2. un mini-jeu gagné : un rare (sauf si ce point ouvre un paquet) */
@@ -101,10 +110,10 @@ function traiter(eId, P, G, sec){
     if(G.f[cle]) return;
     var id = T.mj[m[1] + ':' + m[2]];
     if(!id || G.a[id] || !Gd.ITEMS[id]) id = rareLibre(G, m[1]);
-    ajoute(cle, [id], 'rare');
+    ajoute(cle, [id], 'rare', pourPoint(p));
   });
   /* 4. une mission bonus gagnée : un vêtement */
-  M.cle(T.bonus).forEach(function(b){ if(P && P.bonus && P.bonus[b] === 'ok') ajoute(eId + ':b:' + b, [T.bonus[b]], 'bonus'); });
+  M.cle(T.bonus).forEach(function(b){ if(P && P.bonus && P.bonus[b] === 'ok') ajoute(eId + ':b:' + b, [T.bonus[b]], 'bonus', 'pour ta mission bonus'); });
   return l;
 }
 function etatGarde(S){
@@ -200,8 +209,10 @@ function suivante(){
   var ids = (x.ids || []).filter(function(id){ return Gd.ITEMS[id]; });
   if(!ids.length){ suivante(); return; }
   var its = ids.map(function(id){ return Gd.ITEMS[id]; }), paquet = ids.length > 1, rare = its.some(function(it){ return it.rare; });
-  var t = 'Tu as trouvé ' + liste(its.map(function(it){ return Gd.nomComplet(it); })) + ' !';
+  var t = 'Tu as trouvé ' + liste(its.map(function(it){ return Gd.nomComplet(it); })) + ' !';
   var titre = paquet ? '🎁 Un paquet : ' + ids.length + ' trouvailles !' : rare ? '✨ Un vêtement rare !' : '👕 Pour ta garde-robe';
+  /* (16 novembre) pourquoi : « Bravo, pour l'oie de Gaspard ! » — dit avant le reste (x.pour, traiter) */
+  if(x.pour) t = 'Bravo, ' + x.pour + ' ! ' + t;
   var el = document.createElement('div');
   el.className = 'gr-trouve' + (rare ? ' rare' : '') + (paquet ? ' paquet' : '');
   el.setAttribute('role', 'status');

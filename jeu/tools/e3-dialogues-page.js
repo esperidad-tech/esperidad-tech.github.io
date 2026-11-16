@@ -40,6 +40,7 @@ function page(E, D, sous){
     if(q.besoin) h += '<div class="r metier">Apparaît avec : ' + e(besoin(q.besoin)) + '.</div>';
     if(q.ment) h += '<div class="mens">🤥 Mensonge d\'abord : <span class="dit">« ' + e(q.a) + ' »</span></div><div class="verite">✅ Démasqué : <span class="dit">« ' + e(q.vrai) + ' »</span></div>';
     else h += '<div class="r"><span class="dit">« ' + e(q.a) + ' »</span></div>';
+    if(q.prix) h += '<div class="r metier">🪙 Puis « Accepter » (' + q.prix + ' pièces d\'or) ou « Refuser ». Accepté : <span class="dit">« ' + e(q.paye) + ' »</span></div>';
     const codes = liste(q.donne).concat(liste(q.donneVrai));
     const tags = (q.besoin ? tag('t-neuf', '✨ Question qui apparaît') : '') + codes.map(c => tag('t-code', '🔐 Code ' + nomCode(c))).join('');
     if(tags) h += '<div class="tags">' + tags + '</div>';

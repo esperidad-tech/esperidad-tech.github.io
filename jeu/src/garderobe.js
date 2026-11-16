@@ -266,7 +266,9 @@ var DEPART = ['capuche_foret', 'bandeau_simple', 'cache_cou', 'tunique_lin', 'pa
    4. Une mission bonus gagnée : un vêtement (bonus[id]).
    Conditions des paquets (quand) : {vu:'pisteur:lieu:point'} (réussi), {explore:'lieu'} (première fouille), {bonus:'id'}, {et:[…]}, {ou:[…]}.
    « tous » : valable dans n'importe quelle enquête (une seule fois). Une enquête future peut ajouter E.garderobe = {mj, paquets, bonus}.
-   Total E1 → E3 si tout est gagné : 8 + 8 + 9 = 25 vêtements (12 rares) ; il en reste plus de 120 pour la suite. */
+   Total E1 → E3 si tout est gagné : 8 + 8 + 11 = 27 vêtements (environ 14 rares) ; il en reste plus de 110 pour la suite.
+   (16 novembre) Chaque trouvaille dit pourquoi on la gagne (cabane.js : « Bravo, pour l'oie de Gaspard ! ») ; un paquet peut le dire
+   lui-même (pour:'pour ta mission de la fête'). Elle arrive avec la réussite, même quand la carte reste affichée (moteur-actions.js). */
 var TROUVAILLES = {
   tous:{paquets:[   /* les sous-sols des enquêtes suivantes */
     {id:'salle_coeur', quand:{explore:'salle_coeur'}, items:['capuche_etoiles', 'grande_cape', 'medaillon']},
@@ -290,13 +292,20 @@ var TROUVAILLES = {
     ],
     bonus:{cerfvolant:'bonnet_trappeur'}
   },
-  3:{   /* Le moulin */
-    mj:{'moulin:farine':'foulard_vent', 'moulin:guet':'fleches_follet', 'pont:poursuite':'carquois_cristal'},
+  /* La lettre d'Odette (16 novembre, Romain : « il faut vraiment qu'ils gagnent des choses quand il agit […] et dès qu'il a réussi, la
+     récompense, c'est aussi des objets »). L'ancienne table (« Le moulin », une enquête 3 abandonnée) ne touchait plus aucun point du jeu :
+     les mini-jeux donnaient un rare pris au hasard, et rien ne récompensait la mission de la fête ni la découverte de la crypte.
+     · un mini-jeu réussi : un rare choisi pour lui (la clé d'Anselme et les traces jusqu'au puits ne se gagnent jamais toutes les deux) ;
+     · les traces de Moustache jusqu'à la crypte (l'indice clé) : un paquet ; la mission de la fête rendue au maire : un paquet ;
+     · le gâteau du concours : un vêtement. */
+  3:{
+    mj:{'place:banderoles':'carquois_cristal', 'boulangerie:oie':'foulard_vent', 'herboristerie:jardin':'gants_lucioles',
+      'mairie:lettre':'voile_brume', 'clocher:cle':'arc_lune', 'clocher:traces_puits':'carquois_etoiles'},
     paquets:[
-      {id:'tunnel', quand:{explore:'tunnel_moulin'}, items:['lunettes_explo', 'casque_eclaireur']},                       /* le passage secret sous le pont */
-      {id:'coffre', quand:{vu:'pisteur:tunnel_moulin:coffre'}, items:['brassards_runes', 'arbalete_legere', 'pantalon_poches']}   /* le coffre à runes ouvert */
+      {id:'crypte', quand:{vu:'pisteur:L2:traces'}, items:['lunettes_explo', 'masque_chat', 'fleches_follet']},   /* les traces de Moustache mènent à la crypte */
+      {id:'fete', quand:{vu:'pisteur:mairie:mission'}, items:['brassards_runes', 'pantalon_poches', 'arbalete_legere'], pour:'pour ta mission de la fête'}
     ],
-    bonus:{girouette:'fleches_cuivre'}
+    bonus:{gateau_pisteur:'fleches_cuivre'}
   }
 };
 /* Pour un mini-jeu sans rare désigné : les rares qui vont avec le lieu (puis n'importe quel rare pas encore trouvé) */

@@ -423,8 +423,8 @@ def partie_enquete(b):
     t = livre('donjon')
     verifier('Le morceau déchiré est recollé' in t and 'rune de lumière' in t, 'la page du plan dit où on en est')
     # la porte : le Pisteur lui dicte le code
-    t = livre('porte')
-    verifier('Le Pisteur la trouvera-t-il' in t and pg.locator(ACT + '[data-act=ouvrir-page]').count() == 0, f'« La porte des Fondateurs » : fermée sans le code ({t[:50]})')
+    # (16 novembre, Romain : « il faut la faire apparaître vraiment quand on est devant ») sans le code, la page n'existe pas
+    verifier('porte' not in pages(), f'« La porte des Fondateurs » : pas de page sans le code ({pages()})')
     t = code(pg, 'info:odette_porte', True)
     verifier(pg.evaluate("() => !!M.P().recus['info:odette_porte']") and 'Odette' in t, 'le code de la porte se tape dans l\'enquête'); fermer(pg)
     livre('porte')

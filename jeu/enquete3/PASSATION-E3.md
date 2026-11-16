@@ -1,6 +1,13 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 16 novembre, 17 h 30)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 16 novembre, 21 h)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 16 novembre (21 h) : LA LOGIQUE DE L'ENQUÊTE 3 EST À REPRENDRE — EN DISCUSSION AVEC ROMAIN (Bible §13.56)
+
+- **Romain a joué jusqu'à la nuit** (19 h 48) et dit franchement ce qui ne va pas : **rien ne doit arriver par magie dans le Grand Livre du Sage**. Aujourd'hui l'herbier et le plan des Fondateurs y sont dès le matin, le plan des souterrains arrive à la nuit, la page de la porte des Fondateurs dévoilait tout. **Le plan des Fondateurs ne sert à rien** une fois déchiffré. **Rien n'annonce le combat** : pourquoi des potions de combat, d'où viennent les tenues ? Il veut une suite logique où chacun a sa part : le Barde apprend des choses qui donnent des pistes au Pisteur ; le Pisteur seul ne trouve rien, mais avec les autres il débloque ; le Sage analyse ce qu'on lui apporte. **L'enquête 3, pour lui, c'est « plutôt des jeux de piste, des combats, des trucs rigolos » ; l'enquête 4 sera une vraie enquête** (elle commencera peut-être par sortir de prison).
+- **Ses idées, et la proposition de Claude, sont au §13.56** : le matin, la fête du maire pour occuper tout le monde + le mystère d'Odette (une rumeur → la pierre de Tim sur le plan de sa maison → un mini-jeu du Pisteur chez elle → le plan des Fondateurs et ses énigmes incomplètes) ; l'après-midi, se préparer (des bêtes derrière la grille de la crypte, l'herbier confié par Iris au Barde, Anselme et Bertille l'après-midi seulement, Mélusine qui coud les tenues par remords — **pas contre le silence des héros**, avis de Claude) ; la nuit, le plan des souterrains gravé à l'entrée, rangé dans la bibliothèque des plans, sur l'écran normal, qui fait comprendre les énigmes du matin.
+- **Ce qui est déjà fait le même soir** (bugs et demandes claires, pas encore en ligne : Bible §13.56) : la fête de la nuit qui bloquait tout, les vêtements du Pisteur, Fortuné (trois pièces d'or, Accepter / Refuser), « Pas encore… Il reste un mystère à éclaircir. », la page de la porte cachée jusqu'au code.
+- **Pour la conception** : attendre le go de Romain sur les cinq questions du §13.56 ; **remplacer plutôt qu'ajouter** (l'enquête 3 est déjà la plus longue) ; en deux chantiers (le matin ; puis l'après-midi et la nuit, qui touche le donjon).
 
 ## Nouveau depuis le 16 novembre (17 h 11) : L'ENCRE D'IRIS (LA CHAÎNE DU SCÉNARIO EST COMPLÈTE) ET LA MOUSSE LUMINEUSE (Bible §13.54 et §13.55) — EN LIGNE (l'encre : commit 176d86b du site, version 20261116-1511 ; la mousse : commit a532fcd, version 20261116-1610 ; le donjon : commit 82311d7)
 

@@ -166,7 +166,10 @@ M.render = function(){
   try{ if(M.prevoirFilms) M.prevoirFilms(); }catch(e){ console.error(e); } /* une cinématique de ce moment : on la télécharge d'avance */
   /* l'onglet Carte, et rien n'y change (carte-jeu.js, M.carteInchangee) : on garde la carte telle quelle, seuls le bandeau, les onglets
      et la fenêtre se redessinent (Romain, 5 novembre, 17 h 01 : plus d'image qui saute quand on touche ce qui brille) */
-  if(garderCarte()){ majEntete(); rendreModal(); if(UI.garderDefilement) window.scrollTo(0, haut); UI.garderDefilement = false; return; }
+  /* (16 novembre, Romain : « quand je vais dans l'onglet Code, d'un coup, je gagne un skin ») la carte gardée ne remontait pas la cabane :
+     un vêtement gagné sur la carte (un mini-jeu réussi) n'apparaissait qu'au prochain onglet. On le vérifie ici aussi : il arrive avec
+     la réussite (cabane.js, M.verifierGarde). */
+  if(garderCarte()){ majEntete(); rendreModal(); try{ if(M.verifierGarde) M.verifierGarde(); }catch(e){ console.error(e); } if(UI.garderDefilement) window.scrollTo(0, haut); UI.garderDefilement = false; return; }
   try{ if(M.demonterLiege) M.demonterLiege(); }catch(e){ console.error(e); } /* tableau de liège du Barde (liege.js) */
   try{ if(M.demonterCabane) M.demonterCabane(); }catch(e){ console.error(e); } /* cabane du Pisteur (cabane.js) */
   app.innerHTML = M.vue();
@@ -343,7 +346,7 @@ function contenuModal(m){
     case 'barde-sac': return M.sacBarde ? M.sacBarde() : '';
     case 'pisteur-sac': return M.sacPisteurHTML ? M.sacPisteurHTML() : '';   /* le sac du Pisteur, ouvert depuis sa cabane (moteur-roles.js, cabane.js) */   /* le sac du Barde, ouvert depuis son tableau de liège (liege.js) */
     case 'reserve': return reserveModal();
-    case 'confirmer': return '<h2>' + esc(m.titre) + '</h2><p>' + esc(m.t || '') + '</p>' + (m.t ? lire(m.titre + ' ' + m.t) : '') + '<div class="b-rangee"><button class="btn second" data-act="fermer">Non</button><button class="btn ' + (m.danger ? 'danger' : '') + '" data-act="confirmer-oui">' + esc(m.oui || 'Oui') + '</button></div>';
+    case 'confirmer': return '<h2>' + esc(m.titre) + '</h2><p>' + esc(m.t || '') + '</p>' + (m.t ? lire(m.titre + ' ' + m.t) : '') + '<div class="b-rangee"><button class="btn second" data-act="' + (m.nonAct || 'fermer') + '"' + (m.nonId ? ' data-id="' + esc(m.nonId) + '"' : '') + '>' + esc(m.non || 'Non') + '</button><button class="btn ' + (m.danger ? 'danger' : '') + '" data-act="confirmer-oui">' + esc(m.oui || 'Oui') + '</button></div>';
     case 'boire-mj': return boireModal(m);
     case 'auto-mj': return autoModal(m);
     case 'besoin': return '<div class="b-info-modal"><div class="b-grand-ic">🔒</div><h2>' + esc(m.titre) + '</h2><p>' + esc(m.t) + '</p>' + lire(m.t) + M.besoinHTML(m.besoin, M.role()) + '<button class="btn" data-act="lieu" data-id="' + m.retourId + '">← Retour</button></div>';

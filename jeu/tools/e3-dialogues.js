@@ -104,6 +104,7 @@ function texte(E, D){
       p((i + 1) + '. **' + q.q + '**' + (q.besoin ? ' — 🔒 s\'ouvre avec : ' + besoin(q.besoin) : '') + ' _(' + quand(q) + ')_');
       p('   - ' + (q.ment ? '🤥 ' : '') + '« ' + q.a + ' »' + (q.donne ? ' → donne ' + liste(q.donne).map(nomCode).join(' et ') : ''));
       if(q.ment) p('   - 🔍 démasqué : « ' + q.vrai + ' »' + (q.donneVrai ? ' → donne ' + liste(q.donneVrai).map(nomCode).join(' et ') : ''));
+      if(q.prix) p('   - 🪙 puis « Accepter » (' + q.prix + ' pièces d\'or) ou « Refuser » (rien ne change, on peut redemander). Accepté : « ' + q.paye + ' »');
     });
     if(E.impatience && E.impatience[id]) p('- **Tout demandé** : « ' + E.impatience[id] + ' »');
     Object.keys(N.occupe || {}).forEach(m => { if(m === 'nuit' && E.fete && E.fete.gens[id]) return; p('- **Occupé, ' + MOM[m] + '** : ' + liste(N.occupe[m]).join(' — puis, si on revient : ')); });

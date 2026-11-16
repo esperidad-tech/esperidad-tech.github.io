@@ -142,7 +142,9 @@ E[3] = {
     {id:'fortune', nom:'Fortuné', pnj:true}, {id:'victor', nom:'Victor', pnj:true}, {id:'basile', nom:'Basile', pnj:true}, {id:'gaspard', nom:'Gaspard', pnj:true},
     {id:'anselme', nom:'Anselme', pnj:true}, {id:'levoisin', nom:'Le voisin', pnj:true}]},
   ordreAccusation:['ou', 'qui', 'quoi'],
-  accuser:{besoin:[{code:'info:leo_battu'}], avant:'Pas encore… Il manque quelqu\'un : l\'homme en cape. Tes amis doivent d\'abord le trouver, tout au fond des souterrains.'},
+  /* (Romain, 16 novembre, 19 h 48 : « il ne faut pas donner tous ces indices […] il ne faut pas dévoiler le suspense ». Avant : « Il manque
+     quelqu'un : l'homme en cape. Tes amis doivent d'abord le trouver, tout au fond des souterrains. ») */
+  accuser:{besoin:[{code:'info:leo_battu'}], avant:'Pas encore… Il reste un mystère à éclaircir.'},
   solution:{qui:'melusine', ou:'clocher', quoi:'leo'},
 
   /* ---------- Le Barde (barde.js) ----------
@@ -951,9 +953,13 @@ E[3] = {
         note:'Fortuné : il vend une vieille clé couverte de runes, trouvée au-delà de la brume.'},
       /* (Romain, 16 novembre, 8 h 07) une fois son mensonge démasqué (la pièce d'or toute neuve) : on lui emprunte la pièce, et
          l'Alchimiste l'analyse — la même que celles de Bastien, à l'enquête 2 (labo : la fiche piece_pain, tout pareil). Toujours en dernier. */
+      /* (Romain, 16 novembre, 19 h 48 : « il sourit de toutes ses dents : mais bien sûr, ça fera trois pièces d'or. Et là, accepter ou
+         refuser. Est-ce qu'on dépense trois pièces pour une seule pièce ? ») prix : avant la réponse, une fenêtre « Accepter / Refuser » ;
+         accepter coûte 3 pièces d'or du héros, refuser ne change rien (on peut redemander plus tard). barde.js, question(). */
       {q:'Est-ce que je peux vous emprunter cette pièce ?', g:'h', moments:MA_, secret:true, besoin:[{vu:'verite:fortune:2'}], obj:'piece_pain',
-        a:'Il sourit de toutes ses dents : « Mais bien sûr ! Prends-en soin : cette pièce-là, elle en vaut trois ! »',
-        note:'Fortuné t\'a prêté la pièce d\'or toute neuve de la nuit. L\'Alchimiste pourra l\'analyser.'}
+        a:'Il sourit de toutes ses dents : « Mais bien sûr ! Ça fera trois pièces d\'or. »',
+        prix:3, paye:'Tu lui donnes trois pièces d\'or. Il te tend la sienne, toute neuve.',
+        note:'Fortuné t\'a vendu la pièce d\'or toute neuve de la nuit, pour trois pièces d\'or. L\'Alchimiste pourra l\'analyser.'}
     ]},
     /* le matin, il ramone près du clocher ; l'après-midi, sur les toits de la ruelle des Brumes */
     tim:{ou:{matin:'clocher', apresmidi:'ruelle'}, salut:'Salut ! Attention, ça tombe !', questions:[
@@ -1221,8 +1227,11 @@ E[3] = {
     {id:'aventurier', titre:'Le carnet de l\'aventurier', ic:'📓', visibleSi:[{vu:'donjon:carnet'}],
       get html(){ return window.M && window.M.carnetAventurierHTML ? window.M.carnetAventurierHTML() : ''; }},
     /* (obligatoire, livre.js : dès que le Sage a le code de la porte, son Grand Livre s'ouvre tout seul sur cette page, le bouton jaune palpite) */
-    {id:'porte', titre:'La porte des Fondateurs', ic:'🚪', moments:['nuit'], horsMoment:'Une page blanche. Elle s\'écrira cette nuit.', besoin:[{code:'info:odette_porte'}], bouton:'Tourner la page', obligatoire:true,
-      avant:'Tout au fond des souterrains, il y aurait une grande porte ronde. Le Pisteur la trouvera-t-il ?',
+    /* (Romain, 16 novembre, 19 h 48 : « la porte des Fondateurs, avec tout dévoilé avant qu'on ait pu faire quoi que ce soit […] il faut
+       la faire apparaître vraiment quand on est devant ») la page n'existe plus avant le code du Pisteur (visibleSi) : plus de « page
+       blanche qui s'écrira cette nuit », plus de « tout au fond des souterrains, une grande porte ronde ». */
+    {id:'porte', titre:'La porte des Fondateurs', ic:'🚪', visibleSi:[{code:'info:odette_porte'}], besoin:[{code:'info:odette_porte'}], bouton:'Tourner la page', obligatoire:true,
+      avant:'Tes amis sont devant une grande porte ronde. Ton Grand Livre en parle peut-être…',
       t:'Une porte ronde, scellée. Quatre signes gravés : l\'œil, le chaudron, la lyre et l\'étoile. « Seuls les quatre, ensemble, l\'ouvriront. » Odette est là, derrière, sous le clocher. Mais cette porte ne s\'ouvrira pas cette nuit…',
       note:'Odette est sous le clocher, derrière la porte aux quatre signes : l\'œil, le chaudron, la lyre et l\'étoile.'}
   ],

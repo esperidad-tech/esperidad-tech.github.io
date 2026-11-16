@@ -607,6 +607,24 @@ function question(el){
       M.son('ko'); M.sauver(); if(vexeLache(id)) return; M.render(); return;
     }
   }
+  /* q.prix (enquête 3, Fortuné et sa pièce ; Romain, 16 novembre : « Accepter ou refuser. Est-ce qu'on dépense trois pièces pour une
+     seule pièce ? ») : sa réponse d'abord, puis « Accepter / Refuser ». Accepter paie avec l'or du héros et continue (l'objet, son code ;
+     q.paye : le récit de l'échange) ; refuser ne coûte rien, et la question reste à poser. */
+  if(q.prix && el.dataset.paye !== '1'){
+    var prix = +q.prix;
+    UI.confirmer = function(){
+      var S = M.S;
+      if((S.or || 0) < prix){ M.son('ko'); M.ouvrir({type:'info', ic:'🪙', titre:'Pas assez d\'or', t:'Il te faut ' + prix + ' pièces d\'or : tu n\'en as que ' + (S.or || 0) + '. Reviens le voir plus tard !'}); return; }
+      S.or -= prix; M.son('gain');
+      question({dataset:{p:id, i:String(i), paye:'1'}});
+    };
+    M.son('clic');
+    /* (« Refuser » ramène à sa conversation : nonAct) */
+    /* (sa bourse à lui : M.S.or, pas « l'argent du maire » du marché aux fleurs, marche.js) */
+    var bourse = M.S.or || 0;
+    M.ouvrir({type:'confirmer', titre:nom(id), t:q.a + ' Dans ta bourse : ' + bourse + (bourse > 1 ? ' pièces' : ' pièce') + ' d\'or.', oui:'🪙 Accepter (' + prix + ' pièces)', non:'Refuser', nonAct:'parler', nonId:id});
+    return;
+  }
   if(parVisite() && uneVisite(id) && !nouvelleQ(id, i)){ var v3 = visiteDe(id); if(v3) v3.n = (v3.n || 0) + 1; }   /* elle compte dans ses n questions du moment */
   P.vus['barde:' + id + ':' + i] = 'ok';
   poserDerniere(id, i);
@@ -627,7 +645,7 @@ function question(el){
   M.son('clic'); M.sauver();
   if(potionRep && apresVerite(id, [i])){ UI.bd.joue = true; return; }   /* une vérité qui donne un objet (la pierre de Tim) */
   if(q.rassemble && rassemblement(id, q)) return;   /* le troisième villageois convaincu : toute la troupe part au Vieux Chêne */
-  if(code){ UI.bd.joue = true; var plusieurs = Array.isArray(code); M.decouvrir({ic:(D.PNJ[id] || {}).ic, titre:q.titreDonne || nom(id) + ' te donne quelque chose', t:q.a, code:plusieurs ? null : code, codes:plusieurs ? code : null, retour:'parler', retourId:id}); return; }
+  if(code){ UI.bd.joue = true; var plusieurs = Array.isArray(code); M.decouvrir({ic:(D.PNJ[id] || {}).ic, titre:q.titreDonne || nom(id) + ' te donne quelque chose', t:q.paye || q.a, code:plusieurs ? null : code, codes:plusieurs ? code : null, retour:'parler', retourId:id}); return; }
   M.render();
 }
 /* ---------- Le rassemblement (E.rassemblement, enquête 2) : convaincre n villageois (questions q.rassemble, le bon argument) ---------- */

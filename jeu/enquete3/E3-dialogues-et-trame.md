@@ -140,7 +140,8 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
 4. **D'où venez-vous, avec votre carriole ?** _(le matin et l'après-midi)_
    - « De partout ! Regarde cette vieille clé couverte de runes, trouvée au-delà de la brume. Personne n'en veut. »
 5. **Est-ce que je peux vous emprunter cette pièce ?** — 🔒 s'ouvre avec : Fortuné démasqué (question 3) _(le matin et l'après-midi)_
-   - « Il sourit de toutes ses dents : « Mais bien sûr ! Prends-en soin : cette pièce-là, elle en vaut trois ! » »
+   - « Il sourit de toutes ses dents : « Mais bien sûr ! Ça fera trois pièces d'or. » »
+   - 🪙 puis « Accepter » (3 pièces d'or) ou « Refuser » (rien ne change, on peut redemander). Accepté : « Tu lui donnes trois pièces d'or. Il te tend la sienne, toute neuve. »
 - **Tout demandé** : « Les questions, c'est gratuit… mais pas illimité ! »
 
 ### 🧒 Tim — le petit ramoneur

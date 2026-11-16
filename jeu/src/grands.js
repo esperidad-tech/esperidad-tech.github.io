@@ -421,6 +421,23 @@ if(lb0) M.lieuBarde = function(lieu){
   try{ var f = feteHTML(lieu); if(f) s = f + s.replace(/<p class="doux">Il n'y a personne ici en ce moment\.[\s\S]*?<\/p>/, ''); }catch(e){ console.error(e); }
   return s;
 };
+/* (Romain, 16 novembre, 19 h 48 : « Quand il clique sur le groupement au niveau de la fête, il y a des icônes qui s'affichent un peu
+   bizarrement et on ne peut pas cliquer dessus » — toute la nuit était bloquée) la place, touchée sur la carte, s'ouvrait dans une bulle
+   de la carte, où rien ne prend le doigt sauf les pastilles (moteur.css, #voile.b-voile-bulle) : les onze visages de la fête étaient
+   morts. La fête s'ouvre donc toujours en grande fenêtre, comme une conversation. (Les robots ouvraient la place sans toucher la carte :
+   ils ne le voyaient pas. tools/e3-fete-carte.py touche pour de vrai.) */
+var lieu0 = A.lieu;
+A.lieu = function(el){
+  var id = el && el.dataset && el.dataset.id, P = M.P();
+  if(id && P && P.etape === 'jeu' && feteIci(id)){
+    P.vus['lieu:' + id + ':' + P.moment] = 1;
+    if(M.compterOccupes) M.compterOccupes(id);
+    UI.modal = null;   /* (une bulle de la même place, encore ouverte : M.ouvrir la garderait en bulle) */
+    M.son('page'); M.ouvrir({type:'lieu', id:id});
+    return;
+  }
+  return lieu0.apply(this, arguments);
+};
 
 /* ==========================================================
    Retenir le maire (à la fête, pendant le donjon)
