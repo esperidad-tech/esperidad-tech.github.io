@@ -155,8 +155,32 @@ DJ.temoinCharge = function(on){ try{ if(on) localStorage.setItem(CLE_CHARGE, Str
 DJ.plantagesCharge = function(){ try{ return +localStorage.getItem(CLE_PLANT_CHARGE) || 0; }catch(e){ return 0; } };
 /* de combien réduire les images cuites sur cet appareil (1 : rien) */
 DJ.allegeImages = function(){ var n = DJ.plantagesCharge(); return n >= 2 ? .5 : n === 1 ? .66 : 1; };
+/* LE MÊME FILET POUR LE COMBAT DE LÉO (Romain, 15 novembre, 19 h 28 : « j'ai eu un bug qui a fait retourner au début, quand
+   en phase 3 il attrape quelqu'un et qu'il le jette »). Pas reproduit ici (ni erreur, ni rechargement, en secouant « il attrape »
+   dans tous les sens) : le plus probable est que le téléphone a fermé la page. Pendant le combat, on note donc ce qui se passe
+   (la phase, l'attaque de Léo, le dernier geste) ; quand on quitte la page normalement, la note est effacée. Si elle est encore
+   là au démarrage, la page s'est fermée toute seule : on le compte, on garde OÙ, et sur cet appareil les effets du combat sont
+   allégés (SALLE.leger : deux fois moins d'étincelles, plus de secousse d'écran). Se lit dans la fenêtre « Pause » du combat. */
+var CLE_LEO = 'brumeval-donjon-leo', CLE_PLANT_LEO = 'brumeval-donjon-plantages-leo', CLE_OU_LEO = 'brumeval-donjon-plantage-leo-ou';
+DJ.temoinLeo = function(quoi){ try{ if(quoi) localStorage.setItem(CLE_LEO, String(quoi) + '|' + Date.now()); else localStorage.removeItem(CLE_LEO); }catch(e){} };
+DJ.plantagesLeo = function(){ try{ return +localStorage.getItem(CLE_PLANT_LEO) || 0; }catch(e){ return 0; } };
+DJ.plantageLeoOu = function(){ try{ return localStorage.getItem(CLE_OU_LEO) || ''; }catch(e){ return ''; } };
+/* (quitter la page exprès — fermer l'onglet, recharger, changer d'application — n'est pas un plantage) */
+try{ window.addEventListener('pagehide', function(){ DJ.temoinLeo(false); }); }catch(e){}
+/* la ligne à lire à Romain : la version, et ce que l'appareil a retenu de ses plantages */
+DJ.ligneVersion = function(){
+  var s = 'Version du ' + DJ.VERSION;
+  if(DJ.plantagesLeo()) s += ' · le combat de Léo s\'est fermé tout seul ' + DJ.plantagesLeo() + ' fois (la dernière : ' + (DJ.plantageLeoOu() || '?') + ')';
+  if(DJ.plantages()) s += ' · critiques allégés (' + DJ.plantages() + ')';
+  if(DJ.plantagesCharge()) s += ' · images allégées (' + DJ.plantagesCharge() + ')';
+  return s;
+};
 DJ.verifierTemoin = function(){
   try{
+    var vl = (localStorage.getItem(CLE_LEO) || '').split('|'), tl = +vl[1] || 0;
+    if(tl && Date.now() - tl < 600000){ localStorage.setItem(CLE_PLANT_LEO, String(DJ.plantagesLeo() + 1)); localStorage.setItem(CLE_OU_LEO, vl[0]); }
+    localStorage.removeItem(CLE_LEO);
+    if(DJ.plantagesLeo()) SALLE.leger = true;
     var v = (localStorage.getItem(CLE_TEMOIN) || '').split('|'), t = +v[1] || 0;
     if(t && Date.now() - t < 600000){ localStorage.setItem(CLE_PLANTAGES, String(DJ.plantages() + 1)); localStorage.setItem(CLE_OU, v[0]); }
     localStorage.removeItem(CLE_TEMOIN);

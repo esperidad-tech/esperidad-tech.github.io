@@ -156,7 +156,14 @@ section('Phase 1 — la farine, le crochet, le BOUM');
   c = combat(1); auCrochet(c); jusque(c, leo('impact', 'crochet'));
   pris = c.etat().leo.tenu; autre = pris === 'pisteur' ? 'alchimiste' : 'pisteur'; pvPris = c.h[pris].pv; pvLeo = c.leo.pv;
   ev = geste(c, autre, 'p:feu', 'leo');
-  ok(trouve(ev, 'boum') && c.leo.pv === pvLeo - L.BOUM.leo && c.h[pris].pv === pvPris - L.BOUM.heros && !c.h[pris].attrape, 'le feu avec le héros encore dedans : BOUM, il en sort, mais il prend ' + L.BOUM.heros + ' (Romain)');
+  ok(trouve(ev, 'boum') && c.leo.pv === pvLeo - L.BOUM.leo && c.h[pris].pv === 0 && c.h[pris].sol && !c.h[pris].attrape && !c.etat().leo.tenu, 'le feu avec le héros encore dedans : BOUM sur Léo, et le héros tombe (Romain, 16 novembre : « ça one shot le personnage qui est dans le nuage »)');
+  /* même avec un bouclier */
+  c = combat(1); auCrochet(c); jusque(c, leo('impact', 'crochet'));
+  pris = c.etat().leo.tenu; autre = pris === 'pisteur' ? 'alchimiste' : 'pisteur';
+  c.h[pris].bouclier = 'jaune'; pvLeo = c.leo.pv;
+  ev = geste(c, autre, 'p:feu', 'leo');
+  ok(trouve(ev, 'boum') && c.h[pris].pv === 0 && c.h[pris].sol && !c.h[pris].bouclier, 'même derrière un bouclier, le héros pris dans la farine tombe');
+  ok(!c.resultat, 'un héros tombé ne fait pas perdre tant que les autres sont debout');
   /* personne ne le libère */
   c = combat(1); auCrochet(c); jusque(c, leo('impact', 'crochet'));
   pris = c.etat().leo.tenu; pvPris = c.h[pris].pv;

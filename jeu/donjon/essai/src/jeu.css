@@ -186,7 +186,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .acteur .a-corps, .acteur .a-bouge, .acteur .a-pose, .acteur .a-tremble, .acteur .a-tourne{position:absolute;left:0;top:0;width:100%;height:100%}
 .acteur .a-img{position:absolute;left:0;top:0;width:100%;height:100%}
 .a-img.blanchit{animation:blanchit .32s ease-out}
-@keyframes blanchit{0%{filter:brightness(2.4) saturate(.4)}100%{filter:none}}
+@keyframes blanchit{0%{opacity:.35}100%{opacity:1}}     /* (un clignement, plus de filtre : RAPIDITE.md R19) */
 .a-bouge.secoue{animation:secoue .38s}
 @keyframes secoue{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
 /* héros */
@@ -240,7 +240,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .rat .a-pose.gonfle{animation:gonfle .43s ease-in forwards}
 @keyframes gonfle{0%{transform:none}20%{transform:scale(1.05,.95) translateX(-3px)}40%{transform:scale(1.08,1.05) translateX(3px)}60%{transform:scale(1.12,1.04) translateX(-3px)}80%{transform:scale(1.16,1.12) translateX(3px)}100%{transform:scale(1.22)}}
 .rat .a-pose.eclate{animation:eclate .35s ease-out forwards}
-@keyframes eclate{0%{transform:scale(1.22);opacity:1;filter:brightness(1)}30%{transform:scale(1.45);opacity:1;filter:brightness(3)}100%{transform:scale(1.9);opacity:0;filter:brightness(.2)}}
+@keyframes eclate{0%{transform:scale(1.22);opacity:1}30%{transform:scale(1.45);opacity:1}100%{transform:scale(1.9);opacity:0}}
 .a-flammes{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
 .rat .acteur.brule .a-flammes::before{content:'';position:absolute;left:22%;top:0;width:66%;height:80%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,150,40,.5),rgba(255,90,20,0));animation:lueur .35s ease-in-out infinite alternate}
 .flamme{position:absolute;width:30px;height:48px;margin:-40px 0 0 -15px;transform-origin:50% 90%;animation:flamme .32s ease-in-out infinite alternate,flamme2 .9s ease-in-out infinite}
@@ -254,7 +254,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .dome.nait{animation:dome-nait .6s cubic-bezier(.3,1.5,.6,1) forwards}
 @keyframes dome-nait{0%{opacity:0;transform:scale(.2,.05) translateY(120px)}60%{opacity:1;transform:scale(1.06,1.02)}100%{opacity:1;transform:none}}
 .dome.encaisse{animation:dome-encaisse .3s ease-out;opacity:1}
-@keyframes dome-encaisse{0%{transform:scale(1);filter:brightness(1)}30%{transform:scale(.94,.97);filter:brightness(2.2)}100%{transform:none;filter:none}}
+@keyframes dome-encaisse{0%{transform:scale(1)}30%{transform:scale(.94,.97)}100%{transform:none}}
 .dome.part{animation:dome-part .5s ease-in forwards}
 @keyframes dome-part{0%{opacity:1;transform:none}100%{opacity:0;transform:scale(1.25)}}
 .dome-anneau{position:absolute;left:8%;top:6%;width:84%;height:88%;border-radius:50%;border:3px dashed rgba(191,248,255,.9);animation:tourne-lent 7s linear infinite}
@@ -370,7 +370,8 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .onde-fx{position:absolute;border-radius:50%;border:8px solid;opacity:0}
 .etincelle-fx{width:20px;height:5px;border-radius:3px}
 .goutte-fx{border-radius:50% 50% 50% 50%;border:1.5px solid rgba(36,24,46,.6)}
-.verre-fx{width:9px;height:12px;background:linear-gradient(135deg,#ffffff,#cfe8ff 60%,rgba(200,230,255,.4));clip-path:polygon(50% 0,100% 70%,20% 100%);box-shadow:0 0 6px #fff}
+/* (un éclat de verre : un triangle fait de bordures — avant, un rectangle découpé par clip-path, un masque par éclat ; RAPIDITE.md R19) */
+.verre-fx{width:0;height:0;border-left:4px solid transparent;border-right:5px solid transparent;border-bottom:12px solid #e6f3ff}
 .anneau-gouttes{position:absolute;width:150px;height:150px;border-radius:50%;border:6px solid}
 .touffe-fx{border-radius:50% 60% 40% 55%;background:radial-gradient(circle at 35% 35%,#5a4a5a,#241a2a 70%);border:1.5px solid #120a16}
 .volute{position:absolute;left:0;top:0;will-change:transform,opacity;pointer-events:none}
@@ -396,7 +397,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .orbe{position:absolute;left:0;top:0;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:radial-gradient(closest-side,#fff,#bff8ff 40%,rgba(63,208,255,.6) 70%,rgba(63,208,255,0));box-shadow:0 0 24px #8ff3ff}
 .fleche-vol{position:absolute;left:0;top:0;width:62px;height:14px;margin:-7px 0 0 -54px}
 .fleche-vol svg{display:block;width:100%;height:100%;overflow:visible}
-.fleche-vol.trempee{filter:drop-shadow(0 0 6px #ffb030)}
+.fleche-vol.trempee::before{content:'';position:absolute;left:32px;top:-10px;width:34px;height:34px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,176,48,.6),rgba(255,176,48,0))}
 .feuille-vol{position:absolute;left:0;top:0;font-size:24px;width:30px;height:30px;margin:-15px 0 0 -15px}
 .entaille{position:absolute;width:90px;height:90px;margin:-45px 0 0 -45px;border-radius:50%;border-top:6px solid #fff;border-right:3px solid rgba(255,255,255,.6);animation:entaille .3s ease-out forwards}
 @keyframes entaille{0%{transform:rotate(-80deg) scale(.6);opacity:1}100%{transform:rotate(40deg) scale(1.1);opacity:0}}

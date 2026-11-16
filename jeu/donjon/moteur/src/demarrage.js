@@ -63,7 +63,8 @@ function essaiLeo(P){
     var jeu = q('#jeu'); jeu.innerHTML = '';
     var e = el('div', 'ecran'); e.id = 'essai-fin';
     e.innerHTML = '<div class="pa-nom">' + (res === 'victoire' ? 'Victoire' : 'Retour à la carte') + '</div><button class="aller guide" data-act="essai-encore">Rejouer ↻</button>' +
-      '<div class="essai-phases">' + [1, 2, 3].map(function(n){ return '<button class="aller" data-act="essai-phase-' + n + '">Phase ' + n + '</button>'; }).join('') + '</div>';
+      '<div class="essai-phases">' + [1, 2, 3].map(function(n){ return '<button class="aller" data-act="essai-phase-' + n + '">Phase ' + n + '</button>'; }).join('') + '</div>' +
+      '<div class="ligne petit version">' + DJ.esc(DJ.ligneVersion()) + '</div>';
     jeu.appendChild(e);
   });
   DJ.toucher(function(a){

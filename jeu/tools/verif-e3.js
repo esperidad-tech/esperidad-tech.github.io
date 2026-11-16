@@ -210,8 +210,8 @@ module.exports = function verifierE3(E, SRC, D){
   /* ---------- 1. le chemin parfait ---------- */
   const parfait = jouer(ROLES), sp = solutions(parfait);
   dit(juste(sp), `Avec toute l'équipe, tout réussi : ${resume(sp)}`);
-  const leo = parfait.codes.has('info:leo_la') && parfait.codes.has('info:leo_battu') && parfait.faits.has('fete:aide:farinel') && parfait.faits.has('fete:aide:iris');
-  dit(leo, 'le chemin parfait va jusqu\'au bout : l\'homme en cape, l\'aide de Farinel et d\'Iris à la fête, « Léo a parlé »');
+  const leo = parfait.codes.has('info:leo_la') && parfait.codes.has('info:leo_battu') && parfait.faits.has('fete:aide:farinel') && parfait.faits.has('fete:aide:iris') && parfait.faits.has('fete:aide:silas');
+  dit(leo, 'le chemin parfait va jusqu\'au bout : l\'homme en cape, l\'aide de Farinel, d\'Iris et de Silas à la fête, « Léo a parlé »');
   dit(!E.accuser || (E.accuser.besoin || []).every(c => !c.code || parfait.codes.has(c.code)), 'le Sage reçoit ce qu\'il lui faut pour accuser (E.accuser.besoin)');
   /* (12 novembre au soir ; Romain, 21 h 44) un grand dialogue ne s'ouvre qu'une fois tout demandé : sa question porte {toutDit} */
   const sansTout = [];

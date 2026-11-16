@@ -954,7 +954,16 @@ R.mordre = function(o){
 R.touche = function(){
   var self = this, j = this._debutAction(), mode = this._mode(), base = this._base();
   var T = 620;
-  this.el.animate([{filter: 'brightness(1)'}, {offset: .08, filter: 'brightness(3.2) saturate(0)'}, {offset: .28, filter: 'brightness(2.2) saturate(.2)'}, {filter: 'brightness(1)'}], {duration: 360, easing: 'ease-out'});
+  /* (RAPIDITE.md R19 — avant : un filtre de luminosité sur tout le rat, c'est-à-dire sur tous ses calques, refait à chaque image.
+     Maintenant : un éclat blanc posé sur lui une fois, dont seule l'opacité bouge ; un nouveau coup relance le même.) */
+  var ec = this._eclatCoup;
+  if(!ec || !ec.isConnected){
+    ec = this._eclatCoup = document.createElement('div');
+    ec.style.cssText = 'position:absolute;left:8%;top:4%;width:84%;height:92%;border-radius:50%;pointer-events:none;opacity:0;z-index:9;background:radial-gradient(closest-side,rgba(255,255,255,.95),rgba(255,255,255,.55) 45%,rgba(255,255,255,0))';
+    this.el.appendChild(ec);
+  }
+  if(this._eclatCoupA) try{ this._eclatCoupA.cancel(); }catch(x){}
+  this._eclatCoupA = ec.animate([{opacity: 0}, {offset: .08, opacity: 1}, {offset: .28, opacity: .6}, {opacity: 0}], {duration: 360, easing: 'ease-out'});
   this._cri(1.1);
   var k = [
     {t: 0, p: {}},

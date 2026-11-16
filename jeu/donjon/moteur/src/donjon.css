@@ -332,14 +332,15 @@
 .leo-points i{width:11px;height:11px;border-radius:50%;background:#3a2e44;border:2px solid var(--encre)}
 .leo-points i.on{background:#ffd36a}
 /* les petits objets qui volent */
-.leo-outil{position:absolute;width:60px;height:60px;margin:-30px 0 0 -30px;pointer-events:none;z-index:40;filter:drop-shadow(0 3px 0 rgba(0,0,0,.6))}
+/* (RAPIDITE.md R19 : plus aucun filtre sur ce qui bouge — l'ombre portée des outils lancés est enlevée) */
+.leo-outil{position:absolute;width:60px;height:60px;margin:-30px 0 0 -30px;pointer-events:none;z-index:40}
 .leo-outil svg{width:60px;height:60px;overflow:visible}
 .leo-meule{position:absolute;width:96px;height:96px;pointer-events:none;z-index:40}
 .leo-cape-vole{position:absolute;width:150px;height:200px;border-radius:40% 40% 30% 30%;background:linear-gradient(#17131f,#0a0810);border:3px solid #1a0e08;pointer-events:none;animation:leoCapeVole 1.3s cubic-bezier(.3,.6,.4,1) both}
 @keyframes leoCapeVole{0%{transform:translate(0,0) rotate(0) scale(1)}100%{transform:translate(190px,-250px) rotate(120deg) scale(.5);opacity:0}}
-.leo-fauche{position:absolute;left:40px;top:150px;width:520px;height:150px;border-radius:50%;border-top:9px solid #eef2f8;border-right:6px solid transparent;border-left:6px solid transparent;filter:drop-shadow(0 0 10px #cfd4de);pointer-events:none;animation:leoFauche .4s ease-out both}
+.leo-fauche{position:absolute;left:40px;top:150px;width:520px;height:150px;border-radius:50%;border-top:9px solid #eef2f8;border-right:6px solid transparent;border-left:6px solid transparent;box-shadow:0 -6px 14px -4px #cfd4de;pointer-events:none;animation:leoFauche .4s ease-out both}
 @keyframes leoFauche{0%{transform:translateX(260px) scaleX(.2);opacity:0}30%{opacity:1}100%{transform:translateX(0) scaleX(1);opacity:0}}
-.leo-souffle{position:absolute;height:120px;pointer-events:none;border-radius:60px 20px 20px 60px;background:linear-gradient(90deg,rgba(255,120,30,0),rgba(255,160,50,.85) 30%,rgba(255,236,150,.95) 80%,#fff);filter:blur(5px);transform-origin:100% 50%;animation:leoSouffle .9s ease-out both}
+.leo-souffle{position:absolute;height:120px;pointer-events:none;border-radius:60px 20px 20px 60px;background:linear-gradient(90deg,rgba(255,120,30,0),rgba(255,160,50,.85) 30%,rgba(255,236,150,.95) 80%,#fff);box-shadow:0 0 18px 6px rgba(255,170,60,.45);transform-origin:100% 50%;animation:leoSouffle .9s ease-out both}
 @keyframes leoSouffle{0%{transform:scaleX(.05);opacity:0}25%{transform:scaleX(1);opacity:1}75%{opacity:.9}100%{opacity:0}}
 .leo-chaine{position:absolute;height:8px;pointer-events:none;border-radius:4px;background:repeating-linear-gradient(90deg,#c9ccd6 0 9px,#5a5f6c 9px 14px);box-shadow:0 2px 0 rgba(0,0,0,.6);transform-origin:100% 50%;animation:leoChaine .36s ease-out both}
 @keyframes leoChaine{0%{transform:scaleX(0)}45%{transform:scaleX(1)}100%{transform:scaleX(0)}}

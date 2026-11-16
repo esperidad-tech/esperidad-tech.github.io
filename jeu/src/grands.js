@@ -353,7 +353,10 @@ A['gd-fete'] = function(el){
   var id = el.dataset.id, f = F(), x = f && f.gens[id], P = M.P(), Rt = R(); if(!x || !barde() || !M.momentOk(f.moments)) return;
   if(Rt && id === Rt.pnj && retenirDispo()){ M.son('porte'); M.ouvrir({type:'grand', g:'retenir', classe:'b-feuille-conv gd-fenetre'}); return; }
   P.fete = P.fete || {vus:{}, n:0};
-  if(aide(id)){ P.fete.vus[id] = 1; M.son('clic'); M.sauver(); M.ouvrir({type:'grand', vue:'fete', qui:id, aide:true, classe:'b-feuille-conv'}); return; }
+  /* (16 novembre) le Barde qui ne lui avait encore jamais parlé à la fête entend d'abord sa phrase de la fête, et sa note (celle de
+     Silas, « le maire ouvre le bal », sert au maire inquiet) : avant, elle était perdue */
+  if(aide(id)){ var prem = !P.fete.vus[id]; P.fete.vus[id] = 1; if(prem && x.note) M.noter(x.note, (D.PNJ[id] || {}).ic);
+    M.son('clic'); M.sauver(); M.ouvrir({type:'grand', vue:'fete', qui:id, aide:true, prem:prem && !!x.t, classe:'b-feuille-conv'}); return; }
   if(!Rt || id !== Rt.pnj) P.fete.n++;
   var premiere = !P.fete.vus[id]; P.fete.vus[id] = 1;
   if(filetActif(id) && !P.vus['fete:filet:' + id]){ P.vus['fete:filet:' + id] = 1; donner(x.filet.code, x.filet.note, (D.PNJ[id] || {}).ic); }
@@ -362,9 +365,11 @@ A['gd-fete'] = function(el){
   M.ouvrir({type:'grand', vue:'fete', qui:id, classe:'b-feuille-conv'});
 };
 function aideVueHTML(m){
-  var id = m.qui, a = aide(id), st = aideEtat(id);
-  var h = '<div class="ma-feuille gd-feuille">' + tete(id) + ligne(cite(a.t), id) + '<div class="gd-aide">';
+  var id = m.qui, a = aide(id), st = aideEtat(id), x = (F() || {gens:{}}).gens[id] || {};
+  var h = '<div class="ma-feuille gd-feuille">' + tete(id) + ligne(cite(m.prem && x.t ? x.t + ' ' + a.t : a.t), id) + '<div class="gd-aide">';   /* (une seule réplique par fenêtre : ligne) */
   a.questions.forEach(function(Q, k){
+    /* Q.apres = n : cette question n'apparaît qu'une fois la question n posée (Silas : « Il a des points faibles ? ») */
+    if(Q.apres != null && !st[Q.apres]) return;
     if(st[k]) h += '<div class="gd-aide-rep"><p class="gd-aide-q">' + esc(Q.q) + '</p><p class="ma-dit">' + esc(cite(Q.r)) + ' ' + lire(cite(Q.r), id) + '</p></div>';
     else h += '<button class="b-question bd-boite bd-a-poser" data-act="gd-aide" data-id="' + id + '" data-k="' + k + '"><b>' + esc(Q.q) + '</b></button>';
   });

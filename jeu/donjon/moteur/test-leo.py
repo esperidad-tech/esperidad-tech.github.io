@@ -478,6 +478,54 @@ def test_phase1(nav):
     ctx.close()
 
 
+def test_filet(nav):
+    print('— 16. Le filet du 15 novembre au soir (Romain, 19 h 28 et 21 h 14 : « ça bug et ça quitte […] s\'il faut qu\'on se retape tout, c\'est pas possible ») : plus de filtre sur les sorts, tous les sons prêts, la phase dans l\'adresse, le témoin')
+    ctx, pg, errs = ouvrir(nav, '?leo=2')
+    pg.wait_for_timeout(300)
+    e = pg.evaluate("""() => { var S = SALLE.Son, p = S.precalcul.etat(); return {bruits:S.bruitsPrets(), enCours:S.bruitsEnCours(), occupe:p.occupe, file:p.file.length, liste:S.bruitsListe().map(function(x){ return x[0]; })}; }""")
+    verifie(e['bruits'] >= 24 and not e['enCours'] and not e['occupe'] and not e['file'], f'quand le combat s\'ouvre, tous ses sons sont fabriqués et plus rien ne se fabrique ({e["bruits"]} sons ; en cours : {e["enCours"]}, {e["occupe"]}, {e["file"]})')
+    verifie('leoFauxB' in e['liste'] and any(x.startswith('icone') for x in e['liste']) and any(x.startswith('potHuile') for x in e['liste']), 'dont le clic des icônes, la fiole d\'huile et la faux de Léo dans la version que le jeu joue (B)')
+    # des sorts des trois héros en même temps (Romain : « un combo des 3 ») : aucun élément filtré, fondu ou masqué n\'apparaît dans la scène
+    pg.evaluate("""() => { window.__filtres = {}; window.__sc = setInterval(function(){ var l = document.querySelectorAll('#monde *');
+      for(var i = 0; i < l.length; i++){ if(l[i].classList && l[i].classList.contains('cu')) continue;      /* (les pièces cuites des héros : deux sont découpées, depuis toujours — ce ne sont pas des effets de sort) */
+        var cs = getComputedStyle(l[i]); if((cs.filter && cs.filter !== 'none') || (cs.mixBlendMode && cs.mixBlendMode !== 'normal') || (cs.clipPath && cs.clipPath !== 'none')) window.__filtres[(l[i].className || l[i].tagName) + ' ' + cs.filter + ' ' + cs.mixBlendMode + ' ' + cs.clipPath] = 1; } }, 80); }""")
+    pg.wait_for_function("() => DJ.Leo.etat().photo.heros.pisteur.libre", timeout=20000)
+    for trio in [[('sage', 'bouclier'), ('alchimiste', 'herbes'), ('pisteur', 'dague')], [('sage', 'oeil'), ('alchimiste', 'p:huile'), ('pisteur', 'p:acide')], [('sage', 'rune'), ('alchimiste', 'p:feu'), ('pisteur', 'l:marteau')], [('sage', 'bouclier'), ('alchimiste', 'p:baume'), ('pisteur', 'l:fleau')]]:
+        pg.evaluate("() => { var c = DJ.Leo._E().c; ['sage', 'alchimiste', 'pisteur'].forEach(function(h){ var S = c.h[h]; S.sol = false; S.pv = Math.round(S.pvMax * .6); S.bouclier = null; }); c.leo.pv = 5500; }")
+        for h, g in trio:
+            c = pg.query_selector('#bande .lb-g .carte[data-h="%s"][data-id="%s"]' % (h, g))
+            if c and 'off' not in (c.get_attribute('class') or ''): c.tap(force=True)
+        pg.wait_for_timeout(2600)
+    f = pg.evaluate("() => { clearInterval(window.__sc); return Object.keys(window.__filtres); }")
+    verifie(f == [], f'les trois héros lancent leurs sorts en même temps, quatre fois : aucun filtre, aucun fondu, aucun masque dans la scène {f[:4]}')
+    # la phase gagnée s'écrit dans l'adresse : une page qui se recharge (ou qui se ferme toute seule) reprend à cette phase
+    pg.evaluate("() => { var c = DJ.Leo._E().c; ['sage', 'alchimiste', 'pisteur'].forEach(function(h){ c.h[h].sol = false; c.h[h].pv = c.h[h].pvMax; c.h[h].act = null; }); c.leo.pv = 3001; DJ.Leo.agir('pisteur', 'dague', 'leo'); }")
+    pg.wait_for_function("() => /[?&]leo=3/.test(location.search)", timeout=30000)
+    verifie(True, f'la phase 2 gagnée : l\'adresse d\'essai devient {pg.evaluate("() => location.search")}')
+    # le témoin : pendant le combat, l'appareil note où l'on en est ; quitter la page exprès l'efface
+    pg.wait_for_function("() => DJ.Leo.etat() && DJ.Leo.etat().phase === 3 && !DJ.Leo.etat().cine", timeout=120000)
+    pg.wait_for_function("() => (localStorage.getItem('brumeval-donjon-leo') || '').indexOf('phase 3') === 0", timeout=30000)
+    t = pg.evaluate("() => localStorage.getItem('brumeval-donjon-leo')")
+    verifie('phase 3 : ' in t, f'pendant le combat, le témoin dit où l\'on en est (« {t.split("|")[0]} »)')
+    pg.reload(); pg.wait_for_function("() => window.DJ && DJ.Leo && DJ.Leo.etat() && !DJ.Leo.etat().cine", timeout=120000)
+    e = pg.evaluate("() => ({phase:DJ.Leo.etat().phase, n:DJ.plantagesLeo(), leger:!!SALLE.leger})")
+    verifie(e['phase'] == 3 and e['n'] == 0 and not e['leger'], f'la page rechargée exprès : on reprend à la phase 3, et ce n\'est pas compté comme un plantage ({e})')
+    # la page fermée toute seule (le témoin est resté) : compté, dit dans « Pause », et les effets sont allégés
+    pg.evaluate("() => { window.removeEventListener('pagehide', function(){}); localStorage.setItem('brumeval-donjon-leo-essai', '1'); }")
+    ctx2 = nav.new_context(viewport={'width': 1024, 'height': 768}, device_scale_factor=1, has_touch=True, is_mobile=True, storage_state={'cookies': [], 'origins': []})
+    ctx2.close()
+    pg.add_init_script("try{ if(!sessionStorage.getItem('une-fois')){ sessionStorage.setItem('une-fois', '1'); localStorage.setItem('brumeval-donjon-leo', 'phase 3 : La charge (il arme son coup), sage bouclier|' + Date.now()); } }catch(e){}")
+    pg.goto(PAGE + '?leo=3'); pg.wait_for_function("() => window.DJ && DJ.Leo && DJ.Leo.etat() && !DJ.Leo.etat().cine", timeout=120000)
+    e = pg.evaluate("() => ({n:DJ.plantagesLeo(), ou:DJ.plantageLeoOu(), leger:!!SALLE.leger})")
+    verifie(e['n'] == 1 and 'La charge' in e['ou'] and e['leger'], f'la page fermée toute seule en plein combat : comptée, avec ce qui se passait, et les effets sont allégés ({e})')
+    pg.tap('[data-act=l-pause]', force=True); pg.wait_for_timeout(400)
+    v = pg.evaluate("() => { var e = document.querySelector('.version'); return e ? e.textContent : ''; }")
+    verifie('Version du' in v and 'fermé tout seul 1 fois' in v and 'La charge' in v, f'la fenêtre « Pause » donne la version et le plantage ({v[:150]})')
+    pg.evaluate("() => { ['brumeval-donjon-plantages-leo', 'brumeval-donjon-plantage-leo-ou', 'brumeval-donjon-leo'].forEach(function(k){ localStorage.removeItem(k); }); }")
+    verifie(errs == [], f'aucune erreur {errs[:3]}')
+    ctx.close()
+
+
 with sync_playwright() as p:
     nav = p.chromium.launch()
     seul = os.environ.get('SEUL')
@@ -485,6 +533,7 @@ with sync_playwright() as p:
     if not seul or seul == 'adresse': test_adresse(nav)
     if not seul or seul == 'phase3': test_phase3(nav)
     if not seul or seul == 'phase1': test_phase1(nav)
+    if not seul or seul == 'filet': test_filet(nav)
     nav.close()
 print(f'\n{len(OK)} vérifications réussies' + (f', {len(ERREURS)} échecs' if ERREURS else ' — tout est bon'))
 for e in ERREURS: print('  ✗', e)

@@ -69,6 +69,7 @@ function eclat(x, y, taille, fond, ms){
 function tremble(force, ms, delai){
   ms = ms || 400;
   if(S.tempsReel){
+    if(S.leger) return Promise.resolve();          /* (cet appareil a déjà fermé la page pendant le combat de Léo : plus de secousse — noyau.js, DJ.temoinLeo) */
     var m = Date.now() + (delai || 0);
     if(m < (tremble.jusque || 0)) return Promise.resolve();
     ms = Math.min(ms, 300); force = Math.min(force, 10); tremble.jusque = m + ms + 350;

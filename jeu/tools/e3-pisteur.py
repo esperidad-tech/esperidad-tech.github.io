@@ -89,7 +89,7 @@ def partie(b, joueur, chemin):
     pts = lieu(pg, 'place')
     verifier([p['id'] for p in pts] == ['banderoles'], f'la place, le matin : les banderoles ({pts})')
     i = jouer_point(pg, 'place', 'banderoles', True, f'{chemin}-banderoles')
-    verifier(i and i['type'] == 'visee' and i['params'].get('niveauEffectif') == 9, f'les banderoles : le nouveau tir à l\'arc (visée), niveau 9 ({i and i["type"]}, {i and i["params"].get("niveauEffectif")})')
+    verifier(i and i['type'] == 'visee' and i['params'].get('niveauEffectif') == 8, f'les banderoles : le nouveau tir à l\'arc (visée), niveau 8 (Romain, 16 novembre) ({i and i["type"]}, {i and i["params"].get("niveauEffectif")})')
     verifier('décoration' in voile(pg), 'les banderoles réussies : « Ça, c\'est de la décoration ! »')
     fermer(pg)
     pts = lieu(pg, 'boulangerie')
@@ -119,6 +119,31 @@ def partie(b, joueur, chemin):
     fermer(pg)
     for l in ['clocher', 'mairie', 'puits']:
         verifier(lieu(pg, l) == [], f'{l}, le matin : rien pour le Pisteur'); fermer(pg)
+    # LES EMPREINTES DU JARDIN D'IRIS (16 novembre, Bible §13.52) : « Suivre la piste », en ville, de petites empreintes d'enfant et les
+    # sabots d'Iris au départ ; elles se perdent dans la rue des Lanternes ; niveau 7, autant d'essais qu'on veut ; au bout :
+    # 3 carreaux, et le code « Des pieds d'enfant » pour le Sage. Partie A : dès le matin (ratées une fois) ; partie B : l'après-midi.
+    def jardin(quand, rater):
+        pts = lieu(pg, 'herboristerie')
+        verifier([p['id'] for p in pts] == ['jardin'] and pts[0]['off'] is False, f'l\'herboristerie, {quand} : le jardin d\'Iris ({pts})')
+        i = jouer_point(pg, 'herboristerie', 'jardin', not rater, f'{chemin}-jardin')
+        pp = (i or {}).get('params', {})
+        verifier(i and i['type'] == 'traces' and pp.get('decor') == 'ville' and pp.get('suspect') == 'enfant' and pp.get('compagnon') == 'sabot' and pp.get('arrivee') == 'lanterne',
+                 f'le jardin : « Suivre la piste », en ville, des pieds d\'enfant, les sabots d\'Iris au départ, la rue des Lanternes au bout ({i and i["type"]}, {pp.get("decor")}, {pp.get("suspect")}, {pp.get("compagnon")}, {pp.get("arrivee")})')
+        verifier(pp.get('niveauEffectif') == 7 and i.get('reessais') is True, f'le jardin : niveau 7, à recommencer autant qu\'on veut ({pp.get("niveauEffectif")})')
+        if rater:
+            t = voile(pg)
+            verifier('perdu la piste' in t and pg.locator('#voile .b-donne').count() == 0 and pg.locator('#voile .b-reessai').count() == 1, 'le jardin raté : « Tu as perdu la piste… », pas de code, « 🔁 Réessayer »')
+            pg.locator('#voile .b-reessai').click(); pg.wait_for_timeout(900)
+            pg.locator('#mj-plein .mj-go').click(); pg.wait_for_timeout(2600)
+            pg.evaluate("() => window.__finir(true)"); pg.wait_for_timeout(500)
+        t = voile(pg)
+        verifier('3 carreaux' in t and 'rue des Lanternes' in t and 'pieds d\'enfant' in t, 'le jardin réussi : « … 3 carreaux. Des pieds d\'enfant ! », vers la rue des Lanternes')
+        verifier(pg.locator('#voile .b-donne').count() == 1 and 'Sage' in t, 'le code « Des pieds d\'enfant », pour le Sage')
+        verifier(not any(n in t for n in ['Mélusine', 'Tim', 'Margot', 'encre']), 'le jardin : aucun nom, et pas un mot de l\'encre (c\'est le Barde qui le sait)')
+        pg.screenshot(path=f'{OUT}/{chemin}-jardin-code.png')
+        fermer(pg)
+        verifier(pg.evaluate("() => !!M.P().donnes && !!M.P().donnes['info:pieds_enfant'] || !!(M.P().vus || {})['pisteur:herboristerie:jardin']"), 'le jardin : c\'est noté')
+    if A: jardin('le matin', True)
     m = pg.evaluate("() => (M.etapesMission() || []).map(function(x){ return !!(x.fait && x.fait.some(M.condMission)); })")
     print('   missions :', m)
 
@@ -127,6 +152,7 @@ def partie(b, joueur, chemin):
     verifier(code(pg, 'moment:1') and pg.evaluate("() => M.momentId() === 'apresmidi'"), 'le code de l\'après-midi')
     verifier(lieu(pg, 'place') == [], 'la place, l\'après-midi : rien (les traces partent de chez Odette)')
     fermer(pg)
+    if not A: jardin('l\'après-midi', False)
     # LES TRACES DE MOUSTACHE (13 novembre) : devant chez Odette (L2), avec le code du Barde ; le nouveau mini-jeu « pistage » ;
     # autant d'essais qu'on veut ; plus de code « six doigts »
     verifier(lieu(pg, 'L2') == [] and pg.evaluate("() => Object.keys(M.bullesMaisons()).length") == 0, 'chez Odette, sans le code du Barde : rien, et pas de bulle sur sa maison')
@@ -179,6 +205,7 @@ def partie(b, joueur, chemin):
     print(' nuit')
     verifier(code(pg, 'moment:2') and pg.evaluate("() => M.momentId() === 'nuit'"), 'le code de la nuit')
     verifier(lieu(pg, 'clocher') == [], 'le clocher sans « La clé est au clou » : rien'); fermer(pg)
+    verifier(lieu(pg, 'herboristerie') == [], 'l\'herboristerie, la nuit : plus rien (le jardin se voit le matin et l\'après-midi)'); fermer(pg)
     verifier(lieu(pg, 'puits') == [], 'le puits, au début de la nuit : rien'); fermer(pg)
     verifier(code(pg, 'info:cle_clou'), 'le code « La clé est au clou » (du Barde)')
     pts = lieu(pg, 'clocher')

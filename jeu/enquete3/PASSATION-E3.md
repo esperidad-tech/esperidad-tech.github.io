@@ -1,6 +1,35 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 20 h 35)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 16 novembre, 7 h 50)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 16 novembre (7 h 50) : LES EMPREINTES DE PIEDS D'ENFANT DU JARDIN D'IRIS, LES BANDEROLES AU NIVEAU 8 (Bible §13.52) — EN LIGNE (16 novembre, 7 h 47 ; commit 85790a3 du site, version 20261116-0647, dans les Réglages « 16/11 à 07 h 23 » ; publication de GitHub vérifiée)
+
+- **À lire : Bible §13.52.** Romain, 6 h 43 : « Je te laisse faire : les empreintes de pas d'enfant, le nouveau tir de banderoles niveau 8 […] la réplique de Margot accusée […] » ; 6 h 44 : « Tu as mon go et mets en ligne une fois fini. »
+- **L'étape 8 de son scénario est construite** (« l'étape 9 » de la liste plus bas) : **le Pisteur**, à l'herboristerie, le matin ou l'après-midi, suit de petites empreintes dans le jardin d'Iris (« Suivre la piste », avec les sabots d'Iris au départ ; niveau 7, autant d'essais qu'on veut). Elles se perdent dans la rue des Lanternes. Il mesure : **3 carreaux, des pieds d'enfant**, et donne **un code nouveau au Sage, « Des pieds d'enfant »**.
+- **Le Sage** n'a rien de nouveau : la taille des pieds de chacun est dans « Les habitants » depuis l'enquête 1. 3 carreaux : **Tim, Mélusine, Odette**. Margot : 4.
+- **Qui prouve quoi, maintenant** : les écritures (l'Alchimiste) → Mélusine ou Margot ; les empreintes (le Pisteur et le Sage) → Tim ou Mélusine ; les deux → Mélusine ; son aveu (le Barde) le confirme. **Rien ne dépend des empreintes** : le Barde peut toujours accuser les deux femmes.
+- **Rien ne les annonce** (ni mission, ni signe sur la carte) : le Barde dit à voix haute qu'on a volé de l'encre chez Iris.
+- **Les banderoles : niveau 8** (le nouveau tir était déjà dans l'enquête depuis le 13 novembre, au niveau 9). **La réplique de Margot accusée est gardée.**
+- **Les codes** : aucun n'a changé ; un de plus dans l'enquête 3 (530), déjà gelé. **Aucun dialogue n'a changé.**
+- **Reste de la chaîne du scénario, pas construit** : l'encre de la lettre comparée à celle d'Iris, chez l'Alchimiste (son labo montre encore du pollen de lavande). Les pas d'homme derrière l'atelier de Mélusine ne seront pas faits (ce sont les traces de Moustache qui mènent à la crypte).
+- **⚠️ POUR LA CONCEPTION, EN DISCUSSION AVEC ROMAIN, RIEN N'EST CONSTRUIT (Bible §13.52, fin)** :
+  - **la plante lumineuse** — il veut de vraies plantes « qui ont un effet similaire », une analyse intéressante, et peut-être des plantes qui ne sont qu'un ingrédient à mélanger au chaudron. Recherche faite (faits vérifiés, sources dans la Bible) : la mousse lumineuse (elle renvoie la lumière, ne la fabrique pas ; grottes et fentes de rocher), le bois lumineux (un champignon, une vraie lumière froide), la panelle (arrête le sang, mais ne brille pas en Europe), le millepertuis (l'huile rouge des brûlures, faite au soleil), l'écorce de marronnier (lueur bleue sous la lumière noire). **Avis de Claude : la mousse lumineuse, ingrédient du chaudron, avec une analyse au labo. Attendre son choix.**
+  - **Mimi** — « il faut rendre le Tamagotchi plus intéressant ». Proposé : une seule jauge (la complicité), des tours à apprendre, et ce que la complicité débloque (« chaud ou froid » pour une plante cachée, un ingrédient rapporté). **Attendre son choix.**
+- **À faire valider par Romain** : neuf décisions de Claude (Bible §13.52), surtout le niveau 7, « rien ne les annonce », et la piste qui ne mène chez personne.
+
+## Nouveau depuis le 16 novembre (6 h 55) : L'AIDE DU BARDE PENDANT LE COMBAT DE LÉO — FARINEL, IRIS ET SILAS (Bible §13.51) — EN LIGNE (le jeu : commit cee5b6b du site, version 20261116-0551 ; le donjon : commit 8ba3847, version « 16/11 à 6 h 25 »)
+
+- Conçue à la voix avec Romain, phrase par phrase (5 h 42 → 6 h 06), go à 6 h 09. **Les répliques sont celles de Romain : ne pas les changer sans lui** (elles sont au §13.51 et dans `E3-dialogues-et-trame.md`, refait par l'outil).
+- **Toujours le même code** (« L'homme en cape est là ! ») ; à la fête, trois « ❗ » au lieu de deux. **Farinel** : il n'a jamais appris à se battre à Léo (« je fais de la farine, pas la guerre ») ; le fléau, la faux (saigner, soigner tout de suite), la farine (le feu : BOUM sur celui qui est dedans), le crochet (on en sort avec l'huile). **Iris** : la potion de force (sauf s'il saigne ; elle fait cracher du feu, une brûlure qui ne s'éteint qu'avec un soin), la gourde qui ne se vide jamais. **Silas, le maître d'armes de Léo** : il se vante, puis « Des points faibles ? Aucun ! Bon… Peut-être un ou deux » : la charge (une flaque, puis une lame quand il est à terre), sauter / boire / crier (un coup sur la tête), « il attrape » (le plus faible).
+- **Personne ne dit** (voulu par Romain) : le marteau chez Farinel, le crochet contre le cuir des rats, la rafale, le noir.
+- **Une règle du combat change** : le feu dans la farine fait tomber le héros que Léo y tient (avant : −30). Il faut d'abord le sortir avec l'huile.
+- **Pour la conception** : Silas, garde du maire, a entraîné Léo, l'homme de main du maire. Ça colle avec la fin (il descend avec le maire), et ça le rend un peu suspect avant.
+
+## Nouveau depuis le 15 novembre (21 h 45) : LÉO, LES À-COUPS DES SORTS ET LA PAGE QUI SE FERME (Bible §13.50) — EN LIGNE (15 novembre, 21 h 40 ; commit d8148bc du site ; version « 15/11 à 21 h 23 », à lire dans la fenêtre « Pause » du combat ; publication de GitHub vérifiée)
+
+- Romain : des sorts font des sautes d'images, et deux fois la page s'est fermée toute seule en phase 3 (« ça bug et ça quitte »). Pas reproduit ici ; les effets des sorts sont refaits sans les calculs qu'un téléphone fait mal, les sons sont tous prêts avant le combat.
+- **Pour la conception** : rien ne change dans les règles. **Si la page se ferme pendant Léo, on reprend au début de la phase où l'on était** (dans le vrai jeu, c'était déjà le cas ; à l'adresse d'essai aussi maintenant). Une famille ne refait donc jamais les trois phases.
+- **Rien n'a changé dans l'histoire, les dialogues ni les codes.**
 
 ## Nouveau depuis le 15 novembre (20 h 27) : LA CINÉMATIQUE DE L'ENTRÉE CHEZ LÉO (Bible §13.45) — EN LIGNE (commit 847fe1d du site ; le donjon : version « 15/11 à 20 h 18 »)
 
@@ -267,14 +296,14 @@
 - **À décider avec Romain (§14.3)** : qui lève la brume dans l'histoire, et si l'enquête 3 (ou la suivante) ouvre une première zone. Lever une zone reste à construire (§14.5, « Ce qui reste »).
 - ~~Attention, mise en ligne faite à part~~ : depuis 13 h 11, l'oie au niveau 9 et l'établi des plantes refait sont en ligne aussi (version 20261112-1210).
 
-## Nouveau depuis le 12 novembre (13 h 26) : le nouveau mini-jeu des banderoles est construit et en ligne dans la salle (14 h 44), pas encore dans l'enquête
+## Nouveau depuis le 12 novembre (13 h 26) : le nouveau mini-jeu des banderoles est construit et en ligne dans la salle (14 h 44), pas encore dans l'enquête — ⚠️ DÉPASSÉ : il est DANS l'enquête 3 depuis le 13 novembre (Bible §13.32, niveau 9), au niveau 8 depuis le 16 novembre (Bible §13.52)
 
 - Le détail : **Bible §13.24**. Sur son « Commence la création. », le tir que Romain a décrit (façon « Archery » de « 2 Player Games ») est construit : un mini-jeu neuf, type `visee`. La place en fête vue par les yeux du Pisteur, cinq anneaux de bois au bout de perches ; on en touche un, on pose le doigt en bas, l'arc se bande, le viseur suit le doigt avec du retard, le vent pousse la flèche, elle doit passer dans le trou. 5 anneaux, 7 flèches ; seuls la taille du trou et le vent changent avec le niveau.
 - **En ligne depuis 14 h 44** (accord de Romain à 14 h 42 ; version 20261112-1343). Il se joue dans la salle : https://esperidad-tech.github.io/brumeval/salle.html#jeu=visee&n=5 .
 - **Romain l'a essayé à 15 h 08 ; ses retours sont faits et en ligne depuis 16 h 36 (Bible §13.27 ; version 20261112-1535)** : des confettis passent derrière l'anneau dans le sens du vent, d'autant plus vite qu'il est fort (« c'est les confettis qui vont tout faire ») ; le vent souffle dans tous les sens, de 1 à 4 (de 1 à 12 au niveau 10) ; le bras tremble, le curseur dérive tout seul ; la flèche est en vraie perspective (on la voit de derrière, elle tourne, passe l'anneau et retombe derrière lui) ; deux sons refaits.
 - **Romain l'a réessayé à 16 h 51 ; ce deuxième tour de retours est fait et en ligne depuis 18 h 11 (Bible §13.29 ; version 20261112-1710 ; il ne l'a pas encore essayé)** : le vent ne dépasse plus 10 ; le viseur ne tremble plus, il glisse tout seul, lentement et loin, le plus souvent vers le bas ; l'arc et la main sont redessinés, vus de derrière comme la flèche ; les confettis sont bien moins nombreux, pliés, de formes et de tailles variées, avec des volutes et des loopings ; trois sons pour la corde qui se tend, trois pour la corde lâchée, tirés au hasard. La partie s'arrêtait déjà dès qu'il manque des flèches (au troisième raté) : lui demander où il l'a vue continuer. **Troisième essai à 18 h 28, retouché et en ligne à 18 h 49 (version 20261112-1748)** : au niveau 10 le trou est encore un peu plus petit, le viseur glisse un peu plus fort, le son de la corde qui se tend est refait.
-- **Pas encore dans l'enquête 3** : le point des banderoles lance toujours l'ancien tir de côté. Avec le go de Romain : `mj:'visee'` dans `e3.js`, à un niveau qu'il choisit ; relire alors les phrases de Basile et du maire, et adapter `e3-pisteur.py`.
-- À lui demander : deux ratés permis (7 flèches) ou aucun ; le niveau dans l'enquête.
+- ~~**Pas encore dans l'enquête 3** : le point des banderoles lance toujours l'ancien tir de côté.~~ **Fait le 13 novembre** (`mj:'visee'` dans `e3.js`, niveau 9 ; Bible §13.32) ; **niveau 8 depuis le 16 novembre** (Romain, 6 h 43 ; Bible §13.52).
+- À lui demander : deux ratés permis (7 flèches) ou aucun.
 
 ## Depuis le 12 novembre (8 h 56) : l'oie au niveau 9, les banderoles à refaire
 

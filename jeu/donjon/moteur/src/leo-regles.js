@@ -138,7 +138,8 @@ L.SAIGNE = {n:5, pas:.5};                             /* Romain : « 5 par héro
    souffle ne s'arrête plus toute seule — comme le saignement, n'importe quel soin l'éteint) */
 /* (15 novembre, 13 h 54, Romain : « le feu, tu mets 15 points par seconde » ; « il faut qu'on ait très très peu de temps pour faire le soin ») */
 L.BRULE = {n:15, pas:1, duree:Infinity};
-L.BOUM = {leo:520, heros:30};                         /* Romain : « 30 points de vie » sur le héros pris dans la farine ; gros dégâts sur Léo */
+L.BOUM = {leo:520, heros:30, mortel:true};            /* gros dégâts sur Léo ; le héros encore pris dans la farine : mortel (Romain, 16 novembre ;
+                                                         avant, « 30 points de vie », qui ne servent plus que si mortel est faux) */
 L.NOIRCI = 2.2;                                       /* après le BOUM, il titube */
 L.SONNE = 1.5;                                        /* coupé par le marteau, il reste sonné */
 L.ECLAIR = 1.2;                                       /* Romain, 14 novembre : la lumière du bâton de lune coupe son attaque ; il reste ébloui « au moins une seconde » */
@@ -593,11 +594,18 @@ P._boum = function(ev){
   ev.push({t:'boum', n:L.BOUM.leo});
   ev.push({t:'leo-etat', nom:'nuage', on:false, par:'feu'});
   if(h){
-    /* Romain : le héros pris dans la farine se prend 30 — et il en sort */
+    /* (Romain, 16 novembre, 5 h 59 : « si on met du feu dans le nuage, ça one shot le personnage qui est dans le nuage » ; avant : 30)
+       le héros encore pris dans la farine tombe, bouclier ou pas : il fallait d'abord l'en sortir avec l'huile */
     Z.tenu = null; this.h[h].attrape = false;
     ev.push({t:'etat', heros:h, nom:'attrape', on:false});
     ev.push({t:'leo', quoi:'lache', heros:h, par:'feu'});
-    this._perd(ev, h, L.BOUM.heros, 'boum');
+    if(L.BOUM.mortel && this.h[h].pv > 0){
+      var S = this.h[h], n = S.pv;
+      if(S.bouclier){ S.bouclier = null; ev.push({t:'bouclier', heros:h, on:false, casse:true}); }
+      S.pv = 0; ev.push({t:'degats', heros:h, n:n, pv:0, brut:n, bouclier:null, cause:'boum', mortel:true, coule:true});
+      this._tombe(ev, h);
+    }
+    else this._perd(ev, h, L.BOUM.heros, 'boum');
   }
   this._blesseLeo(ev, L.BOUM.leo, 'boum');
   if(this.resultat) return;

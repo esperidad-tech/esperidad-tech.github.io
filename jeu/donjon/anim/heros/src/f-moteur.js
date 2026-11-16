@@ -87,16 +87,26 @@ function ou(el, ref){
 }
 function alea(a, b){ return a + Math.random() * (b - a); }
 /* une gerbe de particules : n, couleur, vitesse, pesanteur, taille, durée */
+/* COMBIEN D'ÉTINCELLES (RAPIDITE.md R19). Chaque étincelle est un élément de plus à créer d'un coup, puis un calque de plus à
+   déplacer à chaque image. Dans un combat en temps réel (Léo), où les sorts s'enchaînent sans attendre : un tiers de moins
+   (à partir de six — on ne touche pas aux petits effets). Sur un appareil qui a déjà fermé la page pendant ce combat
+   (SALLE.leger, noyau.js) : la moitié. Ailleurs (les combats au tour par tour) : rien ne change. */
+function combien(n){
+  var S = window.SALLE || {};
+  if(S.leger) return Math.max(1, Math.ceil(n / 2));
+  if(S.tempsReel && n >= 6) return Math.ceil(n * .67);
+  return n;
+}
 function gerbe(layer, x, y, o){
   o = o || {};
-  var n = o.n || 12, ps = [];
+  var n = combien(o.n || 12), ps = [];
   for(var i = 0; i < n; i++){
     var an = (o.angle !== undefined ? o.angle : 0) + (o.ecart !== undefined ? alea(-o.ecart, o.ecart) : alea(-180, 180));
     var v = alea(o.v0 || 60, o.v1 || 160), vx = Math.cos(an / DEG) * v, vy = Math.sin(an / DEG) * v, g = o.g === undefined ? 300 : o.g;
     var dur = alea(o.d0 || 400, o.d1 || 800), sz = alea(o.t0 || 3, o.t1 || 6), coul = o.c instanceof Array ? o.c[i % o.c.length] : (o.c || '#ffd36a');
     var forme = o.forme || 'rond';
     var css = 'width:' + sz + 'px;height:' + (forme === 'trait' ? sz * 0.35 : sz) + 'px;border-radius:' + (forme === 'carre' ? '1px' : '50%') + ';background:' + coul + ';' + (o.lueur === false ? '' : 'box-shadow:0 0 ' + (sz * 1.4) + 'px ' + coul + ';');
-    if(forme === 'eclat') css = 'width:0;height:0;border-left:' + (sz * 0.45) + 'px solid transparent;border-right:' + (sz * 0.45) + 'px solid transparent;border-bottom:' + sz + 'px solid ' + coul + ';filter:drop-shadow(0 0 2px #fff8);';
+    if(forme === 'eclat') css = 'width:0;height:0;border-left:' + (sz * 0.45) + 'px solid transparent;border-right:' + (sz * 0.45) + 'px solid transparent;border-bottom:' + sz + 'px solid ' + coul + ';';   /* (plus de filtre : R19) */
     if(forme === 'html') css = 'font-size:' + sz + 'px;line-height:1;color:' + coul + ';text-shadow:0 0 6px ' + coul + ';';
     var e = div(layer, css, forme === 'html' ? o.html : '');
     var k = [], rot0 = alea(-180, 180), rotv = alea(-540, 540);
@@ -117,13 +127,24 @@ function onde(layer, x, y, o){
   return jouerEl(e, [{transform:place(x, y, 0, o.s0 || 0.2), opacity:o.o0 === undefined ? 1 : o.o0}, {transform:place(x, y, 0, o.s1 || 2.4), opacity:0}],
     {duration:o.d || 500, delay:o.retard || 0, easing:o.e || 'cubic-bezier(.1,.7,.3,1)', fill:'backwards'});
 }
+/* LES LUEURS SANS FILTRE (RAPIDITE.md, R19 — Romain, 15 novembre, 19 h 28 : « il y a encore des sorts qui font des sautes de FPS »).
+   Un « filter » (drop-shadow, blur, brightness) ou un « mix-blend-mode » sur un élément qui bouge oblige le téléphone à refaire le
+   calcul à chaque image, élément par élément — et un sort en lance vingt ou trente à la fois. Ici, la lueur est DESSINÉE une fois :
+   la même forme, plus grande et presque transparente, sous la vraie (ou un rond qui s'efface vers les bords). Ensuite, on ne
+   touche plus qu'à transform et opacity. NE JAMAIS REMETTRE DE FILTRE SUR UN EFFET DE SORT. */
+function lueurForme(d, c, f){ f = f || 1; return '<path d="' + d + '" fill="' + c + '" opacity=".13" transform="scale(' + (1 + .85 * f) + ')"/><path d="' + d + '" fill="' + c + '" opacity=".22" transform="scale(' + (1 + .42 * f) + ')"/>'; }
+function lueurTrait(d, c, ep, f){ f = f || 1; var q = '" fill="none" stroke="' + c + '" stroke-linecap="round" stroke-linejoin="round" stroke-width="'; return '<path d="' + d + q + (ep + 5.2 * f) + '" opacity=".12"/><path d="' + d + q + (ep + 2.6 * f) + '" opacity=".22"/>'; }
+function lueurRonde(c, r, x, y){ var p = '" cx="' + (x || 0) + '" cy="' + (y || 0) + '" fill="' + c + '" opacity="'; return '<circle r="' + r + p + '.09"/><circle r="' + (r * .72) + p + '.13"/><circle r="' + (r * .46) + p + '.17"/>'; }
+/* (pour un élément HTML : un rond de lumière posé dessous, t = son diamètre) */
+function haloCSS(c, t, o){ return '<i style="position:absolute;left:50%;top:50%;width:' + t + 'px;height:' + t + 'px;margin:' + (-t / 2) + 'px 0 0 ' + (-t / 2) + 'px;border-radius:50%;z-index:-1;pointer-events:none;opacity:' + (o || .6) + ';background:radial-gradient(closest-side,' + c + ',transparent)"></i>'; }
+var ETOILE4 = 'M0 -10 Q 1.5 -1.5 10 0 Q 1.5 1.5 0 10 Q -1.5 1.5 -10 0 Q -1.5 -1.5 0 -10 Z';
 /* une petite étoile à 4 branches (scintillement) */
-function etoile4(c, t){ return '<svg viewBox="-10 -10 20 20" style="width:' + t + 'px;height:' + t + 'px;display:block;overflow:visible;filter:drop-shadow(0 0 3px ' + c + ')"><path d="M0 -10 Q 1.5 -1.5 10 0 Q 1.5 1.5 0 10 Q -1.5 1.5 -10 0 Q -1.5 -1.5 0 -10 Z" fill="' + c + '"/><circle r="2" fill="#fff"/></svg>'; }
+function etoile4(c, t){ return '<svg viewBox="-10 -10 20 20" style="width:' + t + 'px;height:' + t + 'px;display:block;overflow:visible">' + lueurForme(ETOILE4, c) + '<path d="' + ETOILE4 + '" fill="' + c + '"/><circle r="2" fill="#fff"/></svg>'; }
 function etoile5(c, t){ return '<svg viewBox="-12 -12 24 24" style="width:' + t + 'px;height:' + t + 'px;display:block;overflow:visible"><path d="M0 -11 L 3.2 -3.6 L 11 -3.4 L 5 1.8 L 7 9.6 L 0 5.2 L -7 9.6 L -5 1.8 L -11 -3.4 L -3.2 -3.6 Z" fill="' + c + '" stroke="#24182e" stroke-width="2" stroke-linejoin="round"/><path d="M-2 -5 L 0 -8" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>'; }
 function scintille(layer, x, y, o){
   o = o || {};
-  var ps = [];
-  for(var i = 0; i < (o.n || 8); i++){
+  var ps = [], nb = combien(o.n || 8);
+  for(var i = 0; i < nb; i++){
     var px = x + alea(-(o.rx || 40), o.rx || 40), py = y + alea(-(o.ry || 40), o.ry || 40), t = alea(o.t0 || 8, o.t1 || 16);
     var e = div(layer, '', etoile4(o.c instanceof Array ? o.c[i % o.c.length] : (o.c || '#ffe9a0'), t));
     ps.push(jouerEl(e, [{transform:place(px, py, 0, 0), opacity:1}, {transform:place(px, py + (o.dy || -10) * 0.5, 45, 1.2), opacity:1, offset:0.4}, {transform:place(px, py + (o.dy || -10), 90, 0), opacity:0}],
