@@ -478,3 +478,8 @@ Romain a joué l'enquête 3 avec sa famille, donjon compris, et a dicté ses cor
 - **Le témoin** (`noyau.js`) : `DJ.temoinLeo(texte | false)`, `DJ.plantagesLeo()`, `DJ.plantageLeoOu()`, `DJ.ligneVersion()` ; posé par `noter(ev)` dans `leo.js` (une ou deux écritures par seconde), effacé par `terminer` et par `pagehide` ; `DJ.verifierTemoin()` compte et allume `SALLE.leger`. Pour remettre un appareil à zéro (console) : `['brumeval-donjon-plantages-leo', 'brumeval-donjon-plantage-leo-ou'].forEach(function(k){ localStorage.removeItem(k); })`.
 - **L'adresse d'essai** : `adressePhase(n)` réécrit `?leo=<n>` quand une phase est gagnée (`DJ.essai` seulement).
 - **Les robots** : `sautes-leo.py <phase> [--fois 2] [--froid] [--seul <mot>]` (`DOSSIER=<un donjon construit>` pour comparer) ; `test-leo.py`, section 16 (`SEUL=filet`).
+
+### 9.24 Le 16 novembre : le feu dans la farine est mortel pour le héros tenu (Bible §13.51)
+
+- `L.BOUM = {leo:520, heros:30, mortel:true}` (`leo-regles.js`) : dans `P._boum`, le héros que Léo tient dans sa farine (le crochet, phase 1) perd toute sa vie, bouclier ou pas (`degats` avec `mortel:true`, puis `_tombe`) ; `mortel:false` rend l'ancienne règle (−30). Léo prend toujours 520.
+- `test-leo.js` : deux vérifications de plus (207). La simulation (`leo-sim.js`) : la phase 1 un peu plus dure pour les joueurs moyens et lents.

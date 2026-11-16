@@ -1,6 +1,14 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 21 h 45)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 16 novembre, 6 h 55)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 16 novembre (6 h 55) : L'AIDE DU BARDE PENDANT LE COMBAT DE LÉO — FARINEL, IRIS ET SILAS (Bible §13.51) — EN LIGNE (le jeu : commit cee5b6b du site, version 20261116-0551 ; le donjon : commit 8ba3847, version « 16/11 à 6 h 25 »)
+
+- Conçue à la voix avec Romain, phrase par phrase (5 h 42 → 6 h 06), go à 6 h 09. **Les répliques sont celles de Romain : ne pas les changer sans lui** (elles sont au §13.51 et dans `E3-dialogues-et-trame.md`, refait par l'outil).
+- **Toujours le même code** (« L'homme en cape est là ! ») ; à la fête, trois « ❗ » au lieu de deux. **Farinel** : il n'a jamais appris à se battre à Léo (« je fais de la farine, pas la guerre ») ; le fléau, la faux (saigner, soigner tout de suite), la farine (le feu : BOUM sur celui qui est dedans), le crochet (on en sort avec l'huile). **Iris** : la potion de force (sauf s'il saigne ; elle fait cracher du feu, une brûlure qui ne s'éteint qu'avec un soin), la gourde qui ne se vide jamais. **Silas, le maître d'armes de Léo** : il se vante, puis « Des points faibles ? Aucun ! Bon… Peut-être un ou deux » : la charge (une flaque, puis une lame quand il est à terre), sauter / boire / crier (un coup sur la tête), « il attrape » (le plus faible).
+- **Personne ne dit** (voulu par Romain) : le marteau chez Farinel, le crochet contre le cuir des rats, la rafale, le noir.
+- **Une règle du combat change** : le feu dans la farine fait tomber le héros que Léo y tient (avant : −30). Il faut d'abord le sortir avec l'huile.
+- **Pour la conception** : Silas, garde du maire, a entraîné Léo, l'homme de main du maire. Ça colle avec la fin (il descend avec le maire), et ça le rend un peu suspect avant.
 
 ## Nouveau depuis le 15 novembre (21 h 45) : LÉO, LES À-COUPS DES SORTS ET LA PAGE QUI SE FERME (Bible §13.50) — EN LIGNE (15 novembre, 21 h 40 ; commit d8148bc du site ; version « 15/11 à 21 h 23 », à lire dans la fenêtre « Pause » du combat ; publication de GitHub vérifiée)
 

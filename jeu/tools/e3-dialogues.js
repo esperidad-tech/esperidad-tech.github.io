@@ -160,7 +160,7 @@ function texte(E, D){
     aides.forEach(id => {
       const a = E.fete.gens[id].aide;
       p('**' + nom(id) + '** — « ' + a.t + ' »', '');
-      a.questions.forEach(q => p('- « ' + q.q + ' » → « ' + q.r + ' »'));
+      a.questions.forEach(q => p((q.apres != null ? '  - (une fois « ' + a.questions[q.apres].q + ' » posée) ' : '- ') + '« ' + q.q + ' » → « ' + q.r + ' »'));
       if(a.note) p('- Dans le Carnet : ' + a.note);
       p('');
     });

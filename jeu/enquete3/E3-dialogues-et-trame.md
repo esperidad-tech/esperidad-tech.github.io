@@ -415,19 +415,31 @@ Chacun dit une réplique, autant de fois qu'on veut.
 
 Quand le Pisteur entre dans la dernière salle, il donne le code « L'homme en cape est là ! » (pour barde). À la fête, ces villageois portent alors un « ❗ » : ils ont de nouvelles questions. Le Barde lit les réponses à voix haute pendant que le Pisteur se bat, et il peut les relire.
 
-**Iris** — « Une potion ? Oh… Il faut que je te dise quelque chose. »
+**Silas** — « Tiens, le Barde. Tu cherches un bon conseil ? »
 
-- « On t'a volé autre chose que ton encre ? » → « Oui… Ma potion de force ! J'y travaille depuis des années. »
-- « Que fait cette potion ? » → « Celui qui la boit ne sent plus aucun coup. Sauf s'il saigne : là, elle ne peut plus rien. »
-- Dans le Carnet : Iris, à la fête : on lui a volé sa potion de force. Celui qui la boit ne sent plus les coups… sauf s'il saigne.
+- « C'est vous qui avez entraîné Léo ? » → « Évidemment ! Il fonce comme un taureau, saute comme un chat et frappe en rafale. Et son cri… à faire trembler les murs ! »
+  - (une fois « C'est vous qui avez entraîné Léo ? » posée) « Il a des points faibles ? » → « Des points faibles ? Mon élève ? Aucun ! Bon… Peut-être un ou deux. »
+  - (une fois « Il a des points faibles ? » posée) « Quand il fonce ? » → « Il ne regarde jamais ses pieds. Une flaque bien glissante, et il s'étale. Une fois à terre, frappe-le avec une lame : là, il souffre vraiment. »
+  - (une fois « Il a des points faibles ? » posée) « Quand il saute, boit ou crie ? » → « Il lui faut un instant pour s'y préparer. Un bon coup sur la tête à ce moment-là, et tout s'arrête. »
+  - (une fois « Il a des points faibles ? » posée) « Et s'il attrape quelqu'un ? » → « Il prend toujours le plus faible. Ne laisse jamais un ami à moitié de ses forces. »
+- Dans le Carnet : Silas, à la fête : c'est lui qui a entraîné Léo. Quand il fonce, il ne regarde pas ses pieds (une flaque, et il s'étale ; à terre, une lame lui fait très mal) ; avant de sauter, boire ou crier, un coup sur la tête arrête tout ; il attrape le plus faible.
 
-**Farinel** — « Hein ? Mes outils ? Qui a touché à mes outils ?! »
+**Iris** — « Tu as l'air soucieux… Il se passe quelque chose ? »
 
-- « À quoi sert ton gros marteau ? » → « À caler la meule. Un coup sur la tête, et tu vois des étoiles : tu lâches tout ! »
-- « Et ta faux ? » → « Elle coupe le blé… et les doigts ! Une coupure de faux, ça saigne longtemps. »
-- « Et ce crochet ? » → « Il chasse les rats du grenier. Il perce même le cuir le plus dur ! »
-- « Et la farine ? » → « Un meunier ne laisse jamais une flamme près de sa farine. Jamais ! »
-- Dans le Carnet : Farinel, à la fête : son marteau assomme, sa faux fait saigner longtemps, son crochet chasse les rats et perce le cuir. Et jamais de flamme près de la farine !
+- « On t'a volé autre chose que ton encre ? » → « Oui… Ma potion de force, et ma gourde de soin. »
+- « Que fait la potion de force ? » → « Celui qui la boit ne sent plus aucun coup. Sauf s'il saigne : là, elle ne peut plus rien. »
+- « Elle a d'autres effets ? » → « Elle brûle de l'intérieur. Trop forte, elle fait cracher du feu, et une brûlure pareille ne s'éteint qu'avec un soin. »
+- « Et la gourde ? » → « Une gorgée, et on est comme neuf. Elle ne se vide jamais : à qui la tient, elle sert sans fin. »
+- Dans le Carnet : Iris, à la fête : on lui a volé sa potion de force (on ne sent plus les coups, sauf si on saigne ; elle fait cracher du feu, et sa brûlure ne s'éteint qu'avec un soin) et sa gourde de soin, qui ne se vide jamais.
+
+**Farinel** — « Hein ? Quoi ? Je ne dormais pas ! … Qu'est-ce que tu veux savoir, l'ami ? »
+
+- « C'est toi qui as appris à Léo à se battre ? » → « À se battre ? Moi ? Je suis meunier, mon garçon. Je fais de la farine, pas la guerre ! »
+- « Et ce fléau ? » → « Il bat le blé et chasse les rats du grenier. Un bon coup, et toute la bande détale. »
+- « Et la faux ? » → « Elle coupe le blé… et les doigts. Une entaille de faux saigne sans s'arrêter : on la soigne tout de suite. »
+- « Et la farine ? » → « Dans un nuage de farine, on ne voit plus rien. Qu'une flamme le touche, et BOUM : celui qui est dedans n'en ressort pas ! »
+- « Et ce crochet ? » → « Une fois accroché, impossible de s'en défaire… Sauf avec un filet d'huile : là, on glisse dehors comme une anguille ! »
+- Dans le Carnet : Farinel, à la fête : son fléau fait détaler les rats, sa faux fait saigner (on soigne tout de suite), une flamme dans la farine fait BOUM sur celui qui est dedans, et l'huile fait glisser hors du crochet.
 
 ## 5. Les écoutes aux portes (talent « Tendre l'oreille »)
 
