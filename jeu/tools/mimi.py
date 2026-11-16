@@ -75,6 +75,12 @@ def sur_chat(pg, cid, quoi, pose='assis'):
 def visible(pg, cid):
     """le pantin est vraiment dessiné (il a une taille à l'écran)"""
     return pg.evaluate(f"() => {{ var g = document.querySelector('#atelier-ici [data-obj=\"{cid}\"] .mi-rac'); if(!g) return false; var r = g.getBoundingClientRect(); return r.width > 20 && r.height > 14; }}")
+def ouvrir_barre(pg):
+    """la barre de Mimi, ouverte pour de bon (le bouton 🐾 l'ouvre et la referme : on ne le touche que si elle est fermée)"""
+    for i in range(4):
+        if pg.evaluate("() => { var b = document.querySelector('#atelier-ici .at-mimi-barre'); return !!b && !b.hidden; }"): break
+        pg.locator('#atelier-ici .at-mimi-bt').click(force=True); pg.wait_for_timeout(350)
+    pg.wait_for_timeout(100)
 def tap(pg, x, y):
     pg.mouse.move(x, y); pg.mouse.down(); pg.wait_for_timeout(60); pg.mouse.up(); pg.wait_for_timeout(120)
 def tenir(pg, x, y, ms, bouge=0):
@@ -205,7 +211,7 @@ with sync_playwright() as p:
     # --- la boutique : la pâtée ; la gamelle demande quoi servir ---
     pg.evaluate("() => { M.S.or = 20; M.sauver(); }")
     calme(pg, cid)
-    pg.locator('#atelier-ici .at-mimi-bt').click(force=True); pg.wait_for_timeout(500)
+    ouvrir_barre(pg)
     verifier(pg.locator('#atelier-ici .at-mimi-barre:not([hidden])').count() == 1, 'le bouton 🐾 ouvre la barre de Mimi (pas un écran à part)')
     tailles = pg.evaluate("() => [].map.call(document.querySelectorAll('#atelier-ici .at-mb-bt'), function(b){ var r = b.getBoundingClientRect(); return Math.min(r.width, r.height); })")
     verifier(tailles and min(tailles) >= 48, f'ses boutons font au moins 48 points ({min(tailles) if tailles else None})')
@@ -245,7 +251,7 @@ with sync_playwright() as p:
     verifier(mimi(pg)['tama']['varie'] <= 20, 'toujours le même soin : la variété ne monte pas')
     # --- la brosse, au doigt ---
     a = sur_chat(pg, cid, 'h')
-    pg.locator('#atelier-ici .at-mimi-bt').click(force=True); pg.wait_for_timeout(400)
+    ouvrir_barre(pg)
     pg.locator('#atelier-ici [data-mimi="s:brosse"]').click(); pg.wait_for_timeout(400)
     verifier(mimi(pg)['outil'] == 'brosse', 'la brosse est prise')
     pg.evaluate(f"() => {{ M.S.atelier.objets.filter(function(x){{ return x.t === 'chat'; }})[0].b.propre = 40; }}")
@@ -279,7 +285,7 @@ with sync_playwright() as p:
     pg.evaluate("() => { M.S.atelier.mimi.jouets = ['pelote','plume','laser','souris','grelot','carton','herbe']; }")
     for j in ['plume', 'laser', 'souris', 'grelot', 'carton', 'herbe', 'pelote']:
         calme(pg, cid); voir_chat(pg, cid)
-        pg.locator('#atelier-ici .at-mimi-bt').click(force=True); pg.wait_for_timeout(300)
+        ouvrir_barre(pg)
         pg.locator(f'#atelier-ici [data-mimi="j:{j}"]').click(); pg.wait_for_timeout(500)
         if j in ('plume', 'laser'):
             r0 = pg.evaluate("() => { var p = document.querySelector('#atelier-ici .at-piece').getBoundingClientRect(); return {x:p.left, y:p.top, w:p.width, h:p.height}; }")
@@ -306,7 +312,7 @@ with sync_playwright() as p:
     # --- le bain ---
     pg.evaluate("() => { M.S.atelier.mimi.soins = ['brosse','bain','friandises','griffoir','photo']; M.S.atelier.objets.filter(function(x){ return x.t === 'chat'; })[0].b.propre = 30; }")
     calme(pg, cid); voir_chat(pg, cid)
-    pg.locator('#atelier-ici .at-mimi-bt').click(force=True); pg.wait_for_timeout(300)
+    ouvrir_barre(pg)
     pg.locator('#atelier-ici [data-mimi="s:bain"]').click(); pg.wait_for_timeout(3500)
     verifier(mimi(pg)['bain'] and pg.locator('#atelier-ici .at-bain').count() == 1, 'le bain : la baignoire, elle saute dedans')
     voir_chat(pg, cid); pg.wait_for_timeout(600)
@@ -320,18 +326,18 @@ with sync_playwright() as p:
     verifier(not m['bain'] and m['b']['propre'] >= 99, f'on frotte : de la mousse, puis elle bondit dehors, toute propre ({m["b"]["propre"]})')
     # --- les friandises ---
     calme(pg, cid)
-    pg.locator('#atelier-ici .at-mimi-bt').click(force=True); pg.wait_for_timeout(300)
+    ouvrir_barre(pg)
     pg.locator('#atelier-ici [data-mimi="s:friandises"]').click(); pg.wait_for_timeout(3600)
     verifier('friandises' in mimi(pg)['tama']['derniers'], 'les friandises : elle donne la patte, puis croque')
-    pg.locator('#atelier-ici .at-mimi-bt').click(force=True); pg.wait_for_timeout(300)
+    ouvrir_barre(pg)
     pg.locator('#atelier-ici [data-mimi="s:friandises"]').click(); pg.wait_for_timeout(300)
     verifier('ventre' in toast(pg), 'pas deux fois de suite : « gare au petit ventre tout rond »')
     # --- la photo et l'album ---
     calme(pg, cid, 'dos')
-    pg.locator('#atelier-ici .at-mimi-bt').click(force=True); pg.wait_for_timeout(300)
+    ouvrir_barre(pg)
     pg.locator('#atelier-ici [data-mimi="s:photo"]').click(); pg.wait_for_timeout(600)
     verifier(len(mimi(pg)['mimi']['album']) == 1 and mimi(pg)['mimi']['album'][0]['pose'] == 'dos', 'une photo : elle va dans l\'album (sur le dos)')
-    pg.locator('#atelier-ici .at-mimi-bt').click(force=True); pg.wait_for_timeout(300)
+    ouvrir_barre(pg)
     pg.locator('#atelier-ici [data-mimi="album"]').click(); pg.wait_for_timeout(600)
     verifier(pg.locator('#atelier-ici .at-album .at-photo').count() == 1, 'l\'album montre la photo')
     shot(pg, 'album')
@@ -410,7 +416,7 @@ with sync_playwright() as p:
     e = pg.evaluate(f"() => {V}._coeurs()")
     verifier(e['c']['env'] == 2 and pg.evaluate(f"() => {V}._envie()") is None, f'son envie de gratouilles : exaucée au bout de quelques secondes ({e["c"]["env"]})')
     # --- la feuille des cœurs ---
-    pg.locator('#atelier-ici .at-mimi-bt').click(force=True); pg.wait_for_timeout(400)
+    ouvrir_barre(pg)
     verifier(pg.locator('#atelier-ici .at-mb-coeurs b.on').count() == 4, 'la barre de Mimi montre ses quatre cœurs')
     shot(pg, 'barre-coeurs')
     pg.locator('#atelier-ici [data-mimi=coeurs]').click(); pg.wait_for_timeout(500)
