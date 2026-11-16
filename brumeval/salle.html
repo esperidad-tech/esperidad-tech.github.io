@@ -3546,7 +3546,9 @@ html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc
 .gt-vote .gt-montrer{min-height:44px;padding:6px 18px}
 /* le gâteau en grand, sur tout l'écran, avec sa petite croix */
 .gt-grand{position:fixed;inset:0;z-index:300;background:radial-gradient(ellipse at 50% 55%, #3a3360 0%, #191d3a 62%, #0b0e22 100%);display:flex;align-items:center;justify-content:center;animation:b-apparait .25s ease-out;touch-action:none}
-.gt-grand-svg{width:100%;height:100%;padding:max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));box-sizing:border-box;display:block;pointer-events:none}
+.gt-grand-svg{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+/* derrière le gâteau en grand : la place en fête, floue comme dans le jeu (Romain, 16 novembre) */
+.gt-grand-fond{filter:blur(3px) saturate(.8);transform:scale(1.04);transform-origin:50% 100%}   /* (un peu plus grande : le flou ne laisse pas de bord sombre) */
 .gt-grand-x{position:absolute;top:max(12px, env(safe-area-inset-top));right:max(12px, env(safe-area-inset-right));width:52px;height:52px;border-radius:50%;border:3px solid #24182e;background:#fffaf0;color:#24182e;font:800 1.5rem/1 inherit;cursor:pointer;box-shadow:0 4px 0 #24182e, 0 6px 16px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
 .gt-grand-x:active{transform:translateY(3px);box-shadow:0 1px 0 #24182e}
 .gt-etroit .gt-final-dit{order:0;flex:1 1 100%}
@@ -31431,8 +31433,7 @@ var DIT = {
   tropPetit:'Plus petit, même une fourmi ne le verrait pas !',
   fini:'Dong ! Les dix minutes sont passées. Gaspard emporte le gâteau… en courant !',
   /* le vote (13 novembre) : à voix haute, autour de la table */
-  note:'Montre ton gâteau à tes amis. Quelle note sur 20 lui donnent-ils ?',
-  rang:'pour ton gâteau ! Comparez vos notes : quelle est ta place ?'
+  rang:'Montrez vos gâteaux et votez tous ensemble. Alors, quelle est ta place ?'
 };
 /* les quatre places du concours, et ce qu'elles rapportent (Romain, 13 novembre : 5, 4, 3 et 2 pièces) */
 var RANGS = [{ic:'🥇', nom:'1er', or:5}, {ic:'🥈', nom:'2e', or:4}, {ic:'🥉', nom:'3e', or:3}, {ic:'🎖️', nom:'4e', or:2}];
@@ -31922,30 +31923,21 @@ function jouer(zone, params, fin){
     }
     /* LE VOTE (Romain, 13 novembre) : les tablettes ne se parlent pas — on vote à voix haute, autour de la table. Chacun touche la note
        sur 20 que les autres donnent à son gâteau ; puis, les notes comparées, sa place : 1er, 2e, 3e ou 4e (5, 4, 3 ou 2 pièces d'or). */
-    function voter(note){
+    /* (Romain, 16 novembre : « je ne veux plus de notes, ça fait deux systèmes de notation » : plus de note sur 20, on élit tout de suite
+       qui est 1er, 2e, 3e et 4e) */
+    function voter(){
       final.classList.add('gt-en-vote');
-      var h, t;
-      if(!note){
-        t = DIT.note;
-        h = '<div class="gt-vote"><div class="gt-final-dit gt-vote-q"><p>' + esc(t) + '</p></div>' + BOUTON_GRAND + '<div class="gt-notes" role="group" aria-label="La note sur 20">';
-        for(var n = 1; n <= 20; n++) h += '<button type="button" class="gt-note" data-n="' + n + '">' + n + '</button>';
-        h += '</div></div>';
-      } else {
-        t = DIT.rang;
-        h = '<div class="gt-vote"><div class="gt-final-dit gt-vote-q"><p><b class="gt-ma-note">' + note + ' sur 20</b> ' + esc(t) + '</p></div>' + BOUTON_GRAND + '<div class="gt-rangs" role="group" aria-label="Ta place au concours">' +
-          RANGS.map(function(r, i){ return '<button type="button" class="gt-rang" data-r="' + (i + 1) + '"><span aria-hidden="true">' + r.ic + '</span><b>' + r.nom + '</b></button>'; }).join('') +
-          '</div><button type="button" class="btn second petit gt-renoter">← Changer la note</button></div>';
-      }
-      final.innerHTML = h;
-      final.querySelector('.gt-vote-q').appendChild(MJ.boutonLire((note ? note + ' sur 20. ' : '') + t));
+      var t = DIT.rang;
+      final.innerHTML = '<div class="gt-vote"><div class="gt-final-dit gt-vote-q"><p>' + esc(t) + '</p></div>' + BOUTON_GRAND + '<div class="gt-rangs" role="group" aria-label="Ta place au concours">' +
+        RANGS.map(function(r, i){ return '<button type="button" class="gt-rang" data-r="' + (i + 1) + '"><span aria-hidden="true">' + r.ic + '</span><b>' + r.nom + '</b></button>'; }).join('') +
+        '</div></div>';
+      final.querySelector('.gt-vote-q').appendChild(MJ.boutonLire(t));
       mesurer();
-      [].forEach.call(final.querySelectorAll('.gt-note'), function(b){ b.addEventListener('click', function(){ if(arrete) return; U.stop(); U.son('clic'); voter(+b.getAttribute('data-n')); }); });
       [].forEach.call(final.querySelectorAll('.gt-rang'), function(b){ b.addEventListener('click', function(){
         if(arrete) return; U.stop();
         var rang = +b.getAttribute('data-r'), or = RANGS[rang - 1].or;
-        fin({reussi:true, score:1, message:'Bravo !', detail:'Tu as gagné ' + or + ' pièces d\'or.', gateau:R, note:note, rang:rang, or:or});
+        fin({reussi:true, score:1, message:'Bravo !', detail:'Tu as gagné ' + or + ' pièces d\'or.', gateau:R, rang:rang, or:or});
       }); });
-      var bn = final.querySelector('.gt-renoter'); if(bn) bn.addEventListener('click', function(){ U.stop(); U.son('clic'); voter(); });
     }
     montrer();
     confettis(); if(tempsFini) U.son('cloche'); son('bravo'); apres(1500, function(){ if(enFete) son('confetti'); });
@@ -31971,15 +31963,27 @@ function jouer(zone, params, fin){
       }catch(e){}
     });
     if(!bb) bb = {x0:0, y0:DY, x1:640, y1:DY + HAUT_VUE};
-    var m = Math.max(bb.x1 - bb.x0, bb.y1 - bb.y0) * .05;
-    var vb = [bb.x0 - m, bb.y0 - DY - m, bb.x1 - bb.x0 + 2 * m, bb.y1 - bb.y0 + 2 * m].map(f1).join(' ');
+    /* (Romain, 16 novembre : « que la nappe soit en bas de l'écran », « qu'on ne voie jamais le bleu sous la nappe », « le fond flou de
+       la ville ») : le cadre a la forme de l'écran ; son bas est toujours sur la nappe (un peu sous le pied du plat), le gâteau tient
+       dedans avec un peu d'air au-dessus et sur les côtés ; derrière, la place en fête, floue comme dans le jeu. La place et la nappe
+       sont dessinées très loin de chaque côté et très haut (fond(), table()) : quelle que soit la forme de l'écran, il n'y a pas de vide. */
+    var hote = racine.closest('#mj-plein, #sl-plein') || document.body;
+    var W = window.innerWidth || hote.clientWidth || 640, H = window.innerHeight || hote.clientHeight || 640, a = Math.max(.3, Math.min(4, W / H));
+    var m = Math.max(bb.x1 - bb.x0, bb.y1 - bb.y0) * .06;
+    var bas = 640, haut = Math.min(bb.y0 - m - 40, 470);   /* (en monde : le pied du plat est à 596 ; la nappe va jusqu'à 808) */
+    var h = Math.max(bas - haut, (bb.x1 - bb.x0 + 2 * m) / a), w = h * a, cx = (bb.x0 + bb.x1) / 2;
+    var vb = [cx - w / 2, bas - h - DY, w, h].map(f1).join(' ');
     var copie = monde.cloneNode(true);
     [].forEach.call(copie.querySelectorAll('.gt-prise, .gt-sel'), function(n){ n.parentNode.removeChild(n); });   /* (les zones à toucher, la sélection) */
-    grand = U.html('<div class="gt-grand" role="dialog" aria-label="Le gâteau en grand"><svg class="gt-grand-svg" viewBox="' + vb + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>' +
+    var fondSvg = racine.querySelector('.gt-fond');
+    grand = U.html('<div class="gt-grand" role="dialog" aria-label="Le gâteau en grand">' +
+      '<svg class="gt-grand-svg gt-grand-fond" viewBox="' + vb + '" preserveAspectRatio="xMidYMax slice" aria-hidden="true"></svg>' +
+      '<svg class="gt-grand-svg" viewBox="' + vb + '" preserveAspectRatio="xMidYMax slice" aria-hidden="true"></svg>' +
       '<button type="button" class="gt-grand-x" aria-label="Fermer">✕</button></div>');
-    grand.firstChild.appendChild(copie);
+    if(fondSvg) [].forEach.call(fondSvg.childNodes, function(n){ grand.children[0].appendChild(n.cloneNode(true)); });
+    grand.children[1].appendChild(copie);
     grand.querySelector('.gt-grand-x').addEventListener('click', function(ev){ ev.stopPropagation(); U.son('clic'); fermerGrand(); });
-    (racine.closest('#mj-plein, #sl-plein') || document.body).appendChild(grand);
+    hote.appendChild(grand);
     document.addEventListener('keydown', toucheGrand);
   }
   final.addEventListener('click', function(ev){ var b = ev.target.closest ? ev.target.closest('.gt-montrer') : null; if(b && !arrete) ouvrirGrand(); });
@@ -34037,9 +34041,36 @@ function sonsVisee(audio, sortie){
     accroche:function(){ souffle(0, .16, .03, 900, 2000, .7); [784, 988, 1175].forEach(function(n, i){ tendre(n, .06 + i * .07, .16, .032, null, .006, 'triangle', 3000); }); },    /* la banderole se tend entre deux anneaux */
     fete:function(){ [523, 659, 784, 1047, 1319, 1568].forEach(function(n, i){ tendre(n, i * .09, .3, .055, null, .01, 'triangle', 3000); }); tendre(1047, .6, .9, .04, null, .02); tendre(1319, .6, .9, .03, null, .02); tendre(1568, .6, .9, .024, null, .02);
       for(var i = 0; i < 6; i++){ var n = 700 + Math.random() * 900; tendre(n, .7 + i * .09, .06, .02, n * 1.5, .005); } },                                                      /* la place est décorée ! */
-    vide:function(){ tendre(330, 0, .16, .05, 262, .01, 'triangle', 1000); tendre(220, .16, .3, .05, 165, .01, 'triangle', 800); }                                               /* plus de flèches */
+    vide:function(){ tendre(330, 0, .16, .05, 262, .01, 'triangle', 1000); tendre(220, .16, .3, .05, 165, .01, 'triangle', 800); },                                              /* plus de flèches */
+    /* LA PETITE MUSIQUE DE LA FÊTE (Romain, 16 novembre : « une petite musique un peu festive ») : une polka de village, huit mesures
+       qui tournent en boucle — la flûte, l'accordéon sur les contretemps, la basse « poum-pa », un tambourin. Douce : on doit toujours
+       entendre l'arc. mesure(i, t0) joue la mesure i (0 à 7) dans t0 secondes ; musique() joue les huit d'un coup (pour l'Atelier). */
+    mesure:function(i, t0){ jouerMesure(i % 8, t0 || 0); },
+    musique:function(){ for(var i = 0; i < 8; i++) jouerMesure(i, i * MESURE); }
   };
+  function jouerMesure(i, t0){
+    var c = POLKA.accords[i], r = POLKA.basses[i], q = 0;
+    /* la basse et l'accordéon : poum (la note du bas), pa (l'accord), poum (la quinte), pa */
+    [r, null, r + 7, null].forEach(function(b, k){
+      var t = t0 + k * CROCHE;
+      if(b !== null) tendre(130.81 * Math.pow(2, b / 12), t, CROCHE * .9, .07, null, .01, 'triangle', 700);
+      else { c.forEach(function(n){ tendre(261.63 * Math.pow(2, n / 12), t, CROCHE * .75, .012, null, .012, 'sawtooth', 1500); }); souffle(t, .06, .012, 7000, 9000, 1.2, 'highpass', .003); }
+    });
+    /* la flûte */
+    POLKA.air[i].forEach(function(n){
+      if(n[0] !== null) tendre(523.25 * Math.pow(2, n[0] / 12), t0 + q * CROCHE, n[1] * CROCHE * .9, .04, null, .02, 'triangle', 3200);
+      q += n[1];
+    });
+  }
 }
+/* la polka : en demi-tons au-dessus du do (la flûte, l'accord), la note du bas de chaque mesure ; une croche = 0,2 s (132 à la noire) */
+var CROCHE = .2, MESURE = 4 * CROCHE;
+var POLKA = {
+  air:[[[4, 1], [7, 1], [12, 1], [7, 1]], [[9, 1], [7, 1], [5, 1], [4, 1]], [[2, 1], [4, 1], [5, 1], [7, 1]], [[4, 2], [0, 2]],
+       [[4, 1], [7, 1], [12, 1], [14, 1]], [[17, 1], [16, 1], [14, 1], [12, 1]], [[11, 1], [14, 1], [7, 1], [11, 1]], [[12, 3], [null, 1]]],
+  accords:[[0, 4, 7], [5, 9, 12], [7, 11, 14], [0, 4, 7], [0, 4, 7], [5, 9, 12], [7, 11, 14], [0, 4, 7]],
+  basses:[0, 5, -5, 0, 0, 5, -5, 0]
+};
 /* <<< LES SONS DE LA VISÉE */
 var ctxA = null;
 function audio(){
@@ -34072,7 +34103,7 @@ var ARC_DJ = (function(){
         ver = ['A', 'B', 'C'][Math.floor(Math.random() * 3)];
         var x = window.BRUITAGES_ARC[ver], t = E.ctx.currentTime + .02;
         prise = E.prise(t, NIV[ver]);
-        x.tendre(E, t, E.bus(prise, {rev:x.rev, pan:0}));
+        x.tendre(E, t, E.bus(prise, {rev:0, pan:0}));   /* (Romain, 16 novembre : « enlève l'écho ») : sur la place, pas l'écho de la cave du donjon */
         return true;
       }catch(e){ prise = null; return false; }
     },
@@ -34082,7 +34113,7 @@ var ARC_DJ = (function(){
         var x = window.BRUITAGES_ARC[ver], t = E.ctx.currentTime + .01;
         if(prise && prise.couper) prise.couper(t, .02);     /* le grincement s'arrête net : la corde est partie */
         var p2 = E.prise(t, NIV[ver]);
-        x.lacher(E, t, E.bus(p2, {rev:x.rev, pan:0}));
+        x.lacher(E, t, E.bus(p2, {rev:0, pan:0}));
         prise = null;
         return true;
       }catch(e){ return false; }
@@ -34494,6 +34525,19 @@ function jouer(el, p, fin){
   cuT.setAttribute('stroke-dasharray', f(TOUR)); cuT.setAttribute('stroke-dashoffset', f(TOUR));
 
   function plusTard(ms, fn){ var t = setTimeout(function(){ if(!arrete) fn(); }, ms); minuteurs.push(t); return t; }
+  /* la petite musique de la fête (Romain, 16 novembre) : une mesure à la fois, posée juste avant qu'elle ne commence. Le minuteur est
+     celui des mini-jeux : en pause, il s'arrête, et la musique se tait à la fin de la mesure (moins d'une seconde) ; elle reprend après. */
+  var mesureN = 0, mesureT = 0, tMus = null;
+  minuteurs.push({clear:function(){ clearTimeout(tMus); }});
+  (function musique(){
+    if(arrete) return;
+    var a = audio();
+    if(a){
+      if(mesureT < a.currentTime + .03) mesureT = a.currentTime + .08;
+      while(mesureT < a.currentTime + .35){ SONS.mesure(mesureN++, mesureT - a.currentTime); mesureT += MESURE; }
+    }
+    tMus = setTimeout(musique, 120);
+  })();
   function anim(duree, pas, fini){
     var arret = U.boucle(function(dt, t){
       if(arrete) return false;
@@ -34842,7 +34886,7 @@ function jouer(el, p, fin){
     choisir:choisir
   };
   return {arreter:function(){
-    arrete = true; boucles.forEach(function(b){ try{ b(); }catch(e){} }); minuteurs.forEach(function(t){ clearTimeout(t); });
+    arrete = true; boucles.forEach(function(b){ try{ b(); }catch(e){} }); minuteurs.forEach(function(t){ if(t && t.clear) t.clear(); else clearTimeout(t); });
     ARC_DJ.taire();
     if(ro) ro.disconnect(); else window.removeEventListener('resize', mesurer);
   }};
