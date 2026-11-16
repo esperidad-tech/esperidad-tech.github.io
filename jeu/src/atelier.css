@@ -1117,7 +1117,7 @@
 html.labo-ouvert, html.labo-ouvert body{overflow:hidden}
 
 /* ==========================================================
-   Mimi, le Tamagotchi (16 novembre) : son bouton 🐾 (le cœur autour = son bonheur), sa barre, ses coffrets, ses jouets, ses soins,
+   Mimi, le Tamagotchi (16 novembre) : son bouton 🐾 (au-dessus : sa jauge de bonheur), sa barre, ses coffrets, ses jouets, ses soins,
    sa boutique, son album. Rien que des transform et des opacités pour ce qui bouge.
    ========================================================== */
 .at-mimi-bt{position:absolute;left:84px;bottom:10px;z-index:8;width:64px;height:64px;padding:0;border-radius:50%;border:3px solid var(--contour,#24182e);
@@ -1126,7 +1126,7 @@ html.labo-ouvert, html.labo-ouvert body{overflow:hidden}
 .at-mimi-bt::before{content:'';position:absolute;inset:3px;border-radius:50%;background:conic-gradient(#ff6f9f calc(var(--bh,50) * 1%), #e9e2ff 0)}
 .at-mimi-bt.plein::before{background:conic-gradient(#ffb02e calc(var(--bh,50) * 1%), #e9e2ff 0)}
 .at-mimi-ic{position:relative;width:46px;height:46px;border-radius:50%;background:#fff6e6;display:grid;place-items:center;font-size:1.7rem;line-height:1;pointer-events:none}
-.at-mimi-bt .at-badge{position:absolute;right:-6px;top:-6px}
+.at-mimi-bt .at-badge{position:absolute;right:-14px;top:auto;bottom:-6px;min-width:30px;height:30px;font-size:1rem}   /* (en bas à droite : jamais sur sa jauge) */
 .at-mimi-bt:active{transform:scale(.92)}
 .at-mimi-bt.at-dispo{animation:mi-appel .9s ease-in-out infinite}
 .at-mimi-bt.at-flash-bt{animation:mi-bt .45s ease-out}
@@ -1145,65 +1145,25 @@ html.labo-ouvert, html.labo-ouvert body{overflow:hidden}
 .at-mb-barre{display:block;height:14px;border-radius:8px;background:#e9e2ff;border:2.5px solid var(--contour,#24182e);overflow:hidden}
 .at-mb-barre b{display:block;height:100%;background:linear-gradient(90deg,#ff8fb3,#ff5f95);border-radius:6px;transition:width .5s ease-out}
 .at-mb-x{flex:none}
-/* (étape 2) ses cinq cœurs : au-dessus du bouton 🐾 (toujours sous les yeux), dans la barre (un bouton : la feuille des cœurs) ; son envie */
-.at-mimi-coeurs{position:absolute;left:50%;bottom:calc(100% + 1px);transform:translateX(-50%);display:flex;gap:1px;padding:2px 5px 3px;border-radius:10px;
-  background:#fff6e6;border:2.5px solid var(--contour,#24182e);font-style:normal;pointer-events:none;white-space:nowrap}
-.at-mimi-coeurs b,.at-mb-coeurs b,.at-co-rang b{font-weight:400;line-height:1;color:#d9cfe6;transition:color .3s, transform .3s}
-.at-mimi-coeurs b{font-size:13px}
-.at-mimi-coeurs b.on,.at-mb-coeurs b.on,.at-co-rang b.on{color:#ff3d6e}
+/* (la jauge seule, 16 novembre, 22 h 22) sa jauge de bonheur : au-dessus du bouton 🐾, toujours sous les yeux — la seule jauge qu'on voit.
+   Rose ; dorée quand elle est pleine (elle va filer chercher un coffret). */
+.at-mimi-jauge{position:absolute;left:50%;bottom:calc(100% + 3px);transform:translateX(-50%);display:block;width:78px;height:15px;border-radius:9px;
+  background:#e9e2ff;border:2.5px solid var(--contour,#24182e);overflow:hidden;pointer-events:none;box-shadow:0 2px 0 rgba(36,24,46,.35)}
+.at-mimi-jauge b{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ff8fb3,#ff5f95);transform-origin:0 50%;transform:scaleX(0);transition:transform .6s ease-out}
+.at-mimi-bt.plein .at-mimi-jauge b{background:linear-gradient(90deg,#ffc94a,#ff9b2e)}
 .at-mb-barre.plein b{background:linear-gradient(90deg,#ffc94a,#ff9b2e)}
-.at-mb-coeurs{flex:none;display:flex;align-items:center;gap:2px;min-height:48px;padding:4px 10px;border-radius:16px;border:3px solid var(--contour,#24182e);background:#fff;
-  font:inherit;cursor:pointer;touch-action:manipulation;box-shadow:0 3px 0 rgba(36,24,46,.4)}
-.at-mb-coeurs b{font-size:1.45rem}
-.at-mb-coeurs b.on{transform:scale(1.08)}
-.at-mb-coeurs:active,.at-mb-envie:active{transform:scale(.94)}
-.at-mb-envie{flex:none;display:flex;align-items:center;gap:3px;min-height:48px;padding:4px 10px;border-radius:16px;border:3px solid #e0a52c;background:#fff8dc;
-  font:inherit;font-size:1.4rem;line-height:1;cursor:pointer;touch-action:manipulation;animation:mi-envie 1.6s ease-in-out infinite}
-@keyframes mi-envie{0%,100%{box-shadow:0 0 0 0 rgba(255,190,60,.7)}50%{box-shadow:0 0 0 7px rgba(255,190,60,0)}}
 @keyframes mi-halo{0%,100%{opacity:.45;transform:translate(-50%,-50%) scale(.9)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}}
-.at-mb-envie > span{font-size:1rem;opacity:.75}
-.at-mb-envie svg{width:28px;height:28px}
 /* sa bulle quand c'est une envie (pas un besoin qui presse) : dorée, avec une petite étoile */
 .at-bulle.at-envie{background:#fff8dc;border-color:#e0a52c;box-shadow:0 0 0 calc(2px / var(--s,1)) rgba(255,211,106,.55), 0 calc(3px / var(--s,1)) 0 rgba(36,24,46,.35)}
 .at-bulle.at-envie i{background:#fff8dc;border-color:#e0a52c}
 .at-bulle.at-envie::after{content:'✦';position:absolute;right:-6%;top:-12%;font-size:calc(var(--b) * .3);line-height:1;color:#ffb02e;text-shadow:0 0 2px #fff;animation:at-scint 1.3s ease-in-out infinite;pointer-events:none}
 .at-bulle span svg{width:calc(var(--b) * .56);height:calc(var(--b) * .56);display:block}
-/* la feuille « Les cinq cœurs » */
-.at-co-intro{flex-wrap:nowrap;align-items:center}
-.at-co-intro > span{flex:1;min-width:0}
-.at-co-intro > .at-lire{flex:none}
-.at-f-coeurs .at-feuille-corps{gap:8px}
-.at-co-jauges{display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center;padding:6px 10px;border-radius:14px;background:#fff;border:3px solid rgba(53,40,27,.2)}
-.at-co-j{flex:1 1 200px;display:flex;align-items:center;gap:8px;min-width:0}
-.at-co-j2{flex:0 0 auto}
-.at-co-j > b{flex:none;font-size:1.4rem;line-height:1;color:#ff3d6e;font-weight:400}
-.at-co-j .at-mb-barre{flex:1}
-.at-co-j small{flex:none;font-weight:800;font-size:.85rem;color:#9a7650}
-.at-co-rang{display:flex;gap:3px;font-style:normal}
-.at-co-rang b{font-size:1.5rem}
-.at-co-l{display:flex;flex-direction:column;gap:6px}
-.at-co-ligne{display:flex;align-items:center;gap:10px;padding:5px 10px;border-radius:16px;background:#fff;border:3px solid rgba(53,40,27,.2)}
-.at-co-ligne.fait{background:#fff0f5;border-color:#ff8fb3}
-.at-co-coeur{flex:none;font-size:2.1rem;line-height:1;font-weight:400;color:#d9cfe6}
-.at-co-ligne.fait .at-co-coeur{color:#ff3d6e}
-.at-co-quoi{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
-.at-co-quoi > b{font-size:1.08rem;color:var(--encre,#35281b)}
-.at-co-chips{display:flex;gap:6px;flex-wrap:wrap}
-.at-co-c{position:relative;display:flex;align-items:center;gap:5px;padding:3px 26px 3px 8px;border-radius:999px;background:#f3ecdc;border:2.5px solid rgba(53,40,27,.22);min-height:34px}
-.at-co-c.ok{background:#dff5dc;border-color:#4cae5a}
-.at-co-ic{font-size:1.2rem;line-height:1;display:grid;place-items:center}
-.at-co-ic svg{width:22px;height:22px}
-.at-co-c small{font-size:.86rem;font-weight:800;line-height:1.1}
-.at-co-c > i{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:14px;height:14px;border-radius:50%;border:2px solid rgba(53,40,27,.3);font-style:normal;font-size:.7rem;line-height:11px;text-align:center;color:#fff}
-.at-co-c.ok > i{background:#4cae5a;border-color:#2f7d3b}
-.at-co-manque{font-weight:800;font-size:.8rem;color:#9a7650}
-.at-co-ligne > .at-lire{flex:none}
 /* le grand coffret doré */
 .at-coffret-grand > svg{filter:none;animation-duration:1.3s}
 .at-coffret-grand::before{content:'';position:absolute;left:50%;top:55%;width:150%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
   background:radial-gradient(circle,rgba(255,224,138,.75) 0,rgba(255,224,138,0) 62%);pointer-events:none;animation:mi-halo 1.5s ease-in-out infinite}
 .at-coffret-grand > svg{position:relative}
-@media (prefers-reduced-motion:reduce){.at-mb-envie,.at-coffret-grand::before,.at-bulle.at-envie::after{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.at-coffret-grand::before,.at-bulle.at-envie::after{animation:none!important}}
 .at-mb-l{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 4px;touch-action:pan-x;scrollbar-width:thin}
 .at-mb-g{flex:none;align-self:center;writing-mode:vertical-rl;transform:rotate(180deg);font-weight:800;font-size:.78rem;color:#9a7650;letter-spacing:.04em}
 .at-mb-bt{position:relative;flex:none;width:72px;min-height:78px;padding:6px 2px 4px;border-radius:16px;border:3px solid rgba(53,40,27,.25);background:#fff;font:inherit;color:inherit;

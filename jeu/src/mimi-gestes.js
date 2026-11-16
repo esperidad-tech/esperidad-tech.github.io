@@ -89,6 +89,8 @@ function suite(c, t, n, dmin, dmax, pause){
   return s;
 }
 
+M.TOILETTES = 8;                  /* ses façons de faire sa toilette (le geste « toilette ») */
+var TQ = M.TOILETTE_QUEUE = [26, -6, -10, -16, -24, -28];      /* sa queue ramenée devant elle, le bout relevé (elle se la lèche) */
 /* ---------- Les poses composées : une pose de base, et un geste qui tourne ---------- */
 M.BASES = {marche:'debout', saute:'debout', lave:'assis', tape:'assis', salut:'assis', griffe:'dresse', boule:'dresse'};
 M.BOUCLES = {lave:'toilette', tape:'tape', mange:'croque', salut:'salut', griffe:'griffe', boule:'boule'};
@@ -197,9 +199,10 @@ var GS = M.GESTES = {
   }},
 
   /* --- ce qu'elle fait dans une pose (les gestes des poses composées) --- */
-  /* sa toilette, assise : quatre façons, l'une après l'autre (Romain : « on peut la voir faire sa toilette, mais avec des vraies animations ») */
+  /* sa toilette, assise : huit façons, l'une après l'autre, jamais deux fois la même de suite (Romain : « on peut la voir faire sa toilette,
+     mais avec des vraies animations » ; puis, le 16 novembre à 22 h 22 : « il faut mettre plein d'animations sur se laver ») */
   toilette:{ent:0.2, sor:0.25, f:function(P, u, t, c){
-    var s = c.fixe ? {i:0, k:1, tt:0.5} : suite(c, t, 4, 2.4, 3.6, 0.35), k = eio(s.k), tt = s.tt, lk = S(tt, 3.1), hx0 = P.sx + P.tx, hy0 = P.sy + P.ty;
+    var s = c.fixe ? {i:0, k:1, tt:0.5} : suite(c, t, M.TOILETTES, 2.4, 3.6, 0.35), k = eio(s.k), tt = s.tt, lk = S(tt, 3.1), hx0 = P.sx + P.tx, hy0 = P.sy + P.ty, i;
     if(k <= 0) return;
     if(s.i === 0){                 /* elle se lèche la patte */
       P.ty += (4.2 + 0.8 * lk) * k; P.tx -= 3 * k; P.ta += 22 * k; P.lx = vers(P.lx, 0.8, k); P.ly = vers(P.ly, 0.5, k); P.lt = 1.8 * k;
@@ -213,10 +216,34 @@ var GS = M.GESTES = {
     } else if(s.i === 2){          /* elle se lèche le flanc */
       P.tx -= 15.5 * k; P.ty += (9.5 + 0.7 * lk) * k; P.ta += 40 * k; P.lx = vers(P.lx, -0.9, k); P.arc += 1.2 * k; P.sx -= 1.5 * k;
       P.la = (0.85 + 0.3 * lk) * k; if(k > 0.5) P.yc = 1;
-    } else {                       /* la patte de derrière en l'air */
+    } else if(s.i === 3){          /* la patte de derrière en l'air */
       P.sx -= 4 * k; P.sy += 3.5 * k; P.hx -= k; P.a1x += 1.5 * k;
       P.j1x = vers(P.j1x, -4.5, k); P.j1y = vers(P.j1y, -40, k); P.j1p = vers(P.j1p, -86, k); P.j1q = vers(P.j1q, -100, k); if(k > 0.5) P.j1f = 1;
       P.tx -= 1.5 * k; P.ty += (20.5 + 0.7 * lk) * k; P.ta += 36 * k; P.lx = vers(P.lx, -0.5, k); P.la = (0.85 + 0.3 * lk) * k; if(k > 0.5) P.yc = 1;
+    } else if(s.i === 4){          /* elle se lèche le poitrail : le menton rentré, à petits coups de langue */
+      P.tx -= 5.5 * k; P.ty += (9.5 + 0.9 * lk) * k; P.ta += 50 * k; P.lx = vers(P.lx, 0.1, k); P.ly = vers(P.ly, 0.9, k);
+      P.sy += 1.2 * k; P.arc += 0.8 * k; P.og -= 6 * k; P.od += 6 * k;
+      P.la = (0.85 + 0.3 * lk) * k; if(k > 0.5) P.yc = 1;
+    } else if(s.i === 5){          /* elle se débarbouille : les deux pattes de devant frottent le museau, l'une après l'autre */
+      var fr = S(tt, 2.3);
+      P.sy -= 2.2 * k; P.sx -= 2 * k; P.ta += (16 + 5 * fr) * k; P.ty += (4.5 + 1.5 * fr) * k; P.tx -= 1.5 * k;
+      P.a1x = vers(P.a1x, hx0 + 8 + 1.2 * fr, k); P.a1y = vers(P.a1y, hy0 + 19 + 5.5 * fr, k); P.a1q = vers(P.a1q, -96, k);
+      P.a2x = vers(P.a2x, hx0 + 13.5 - 1.2 * fr, k); P.a2y = vers(P.a2y, hy0 + 19 - 5.5 * fr, k); P.a2q = vers(P.a2q, -96, k);
+      P.od += 12 * Math.max(0, fr) * k; P.og -= 8 * Math.max(0, -fr) * k; P.mo -= 5 * k; P.la = 0.8 * Math.max(0, fr) * k; if(k > 0.5) P.yc = 1;
+    } else if(s.i === 6){          /* elle se lèche la queue : elle la ramène devant elle, la tient d'une patte, et la lisse de la langue */
+      P.q0 += ang(TQ[0] - P.q0) * k; for(i = 1; i < 6; i++) P['q' + i] = vers(P['q' + i], TQ[i] + (i === 5 ? 8 * lk : 0), k);
+      P.qa = vers(P.qa, 1.2, k); if(k > 0.5) P.qd = 1;
+      P.sy += 4.5 * k; P.sx += 1 * k; P.arc += 1.6 * k; P.tx -= 5 * k; P.ty += (17 + 0.8 * lk) * k; P.ta += 46 * k; P.lx = vers(P.lx, 0.2, k); P.ly = vers(P.ly, 0.9, k);
+      P.a1x = vers(P.a1x, 22, k); P.a1y = vers(P.a1y, -6.5, k); P.a1q = vers(P.a1q, 24, k);
+      P.la = (0.85 + 0.3 * lk) * k; if(k > 0.5) P.yc = 1;
+    } else {                       /* elle se gratte derrière l'oreille avec la patte de derrière, très vite… et s'arrête, l'air de rien */
+      var on = tt % 1.5 < 1.05 ? 1 : 0, gr = S(tt, 7) * on;
+      P.sx -= 4.5 * k; P.sy += 4 * k; P.hx -= k; P.a1x += 1.5 * k;
+      P.tx -= 1 * k; P.ty += (16 + 0.7 * gr) * k; P.ta += (10 + 2.5 * gr) * k; P.lx = vers(P.lx, -0.3, k);
+      P.j1x = vers(P.j1x, -11.5 + 2 * gr, k); P.j1y = vers(P.j1y, -41 - 2.5 * gr, k); P.j1p = vers(P.j1p, -84, k); P.j1q = vers(P.j1q, -70 + 30 * gr, k); if(k > 0.5) P.j1f = 1;
+      P.og -= 20 * k; P.oa = Math.max(P.oa, 0.5 * k); P.od += 10 * Math.abs(gr) * k; P.mo += 4 * gr * k;
+      if(k > 0.5){ if(on) P.yc = 1; else P.yo = Math.min(P.yo, 0.7); }
+      for(i = 4; i < 6; i++) P['q' + i] += 6 * gr * k;
     }
   }},
   /* assise, elle tape devant elle du bout de la patte */
