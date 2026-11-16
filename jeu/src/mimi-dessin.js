@@ -40,12 +40,32 @@ function sombre(c, t){ return mel(c, '#1c1230', t); }
 function clair(c, t){ return mel(c, '#ffffff', t); }
 M.outils = {f1:f1, f2:f2, borne:borne, mel:mel, sombre:sombre, clair:clair};
 
-/* Trois pelages : [pelage, rayures, ventre, iris clair, iris foncé, reflet, tigrée ?] (0 : Mimi, rousse tigrée) */
+/* Ses pelages : [pelage, rayures, ventre, iris clair, iris foncé, reflet, tigrée ?] (0 : Mimi, rousse tigrée). Les trois premiers sont
+   ceux de toujours ; les suivants se gagnent (16 novembre, Romain : « lui changer la couleur, des yeux […] plusieurs skins avec des rayures,
+   sans rayures, plusieurs couleurs […] des récompenses »). Un chat est dessiné avec un NUMÉRO : son pelage, plus 100 × (ses yeux + 1)
+   s'il a changé d'yeux (YEUX) — 3 : blanche, ses yeux à elle ; 203 : blanche aux yeux ambre. */
 var CHATS = M.CHATS = [
   ['#f2a65a', '#c4612a', '#fff1dc', '#e6f27a', '#6fae35', '#ffcf96', 1],
   ['#b9b3d2', '#736d8e', '#f7f5fc', '#ffe27a', '#de8424', '#dcd8ee', 1],
-  ['#4a4060', '#251d38', '#f7f4ff', '#f6f08a', '#adc23a', '#6c6290', 0]
+  ['#4a4060', '#251d38', '#f7f4ff', '#f6f08a', '#adc23a', '#6c6290', 0],
+  ['#fbf5ea', '#d8cbb4', '#ffffff', '#c4ecff', '#3f9fe0', '#ffffff', 0],
+  ['#f6dcae', '#d6a35e', '#fffaf0', '#ffe9a0', '#c98a2c', '#fff0d2', 1],
+  ['#94603f', '#5e3823', '#f6e3c8', '#f2e27a', '#9aa832', '#bd8c66', 1],
+  ['#8fa6c9', '#5f7396', '#eef3fb', '#ffd97a', '#e08a24', '#c3d2ea', 0],
+  ['#ffb3d1', '#e56fa2', '#fff0f6', '#c8f0ff', '#58b6e8', '#ffd9e8', 1]
 ];
+M.PELAGES = ['Rousse tigrée', 'Grise tigrée', 'Noire aux pattes blanches', 'Blanche comme neige', 'Crème tigrée', 'Chocolat', 'Bleu gris', 'Rose bonbon'];
+/* Ses yeux, quand elle en change : [iris clair, iris foncé, leur nom] */
+var YEUX = M.YEUX = [
+  ['#c4ecff', '#3f9fe0', 'Bleus'],
+  ['#ffe27a', '#de8424', 'Ambre'],
+  ['#c9f59a', '#3fa04a', 'Vert émeraude'],
+  ['#e6ccff', '#8a55d6', 'Violets'],
+  ['#f1d6a0', '#a4692a', 'Noisette']
+];
+/* le numéro d'un chat → son pelage, ses yeux (-1 : ceux de son pelage) ; et l'inverse */
+M.peau = function(v){ v = Math.max(0, Math.round(+v || 0)); var y = Math.floor(v / 100); return {p:(v % 100) % CHATS.length, y:y > 0 ? (y - 1) % YEUX.length : -1}; };
+M.numero = function(p, y){ return ((+p || 0) % CHATS.length) + (y >= 0 ? 100 * ((y % YEUX.length) + 1) : 0); };
 /* Ses dégradés (posés une fois, avec ceux de l'atelier) : le corps (clair en haut), le ventre, la tête, l'œil, l'oreille, la truffe */
 M.defs = function(){
   function st(l){ return l.map(function(s){ return '<stop offset="' + s[1] + '" stop-color="' + s[0] + '"/>'; }).join(''); }
@@ -56,7 +76,8 @@ M.defs = function(){
       lin('mimv' + i, [[p[2], 0], [mel(p[2], p[0], 0.28), 1]]) +
       rad('mimt' + i, [[p[5], 0], [p[0], 0.55], [sombre(p[0], 0.13), 1]], 0.5, 0.3, 0.78) +
       rad('mimy' + i, [[clair(p[3], 0.35), 0], [p[3], 0.4], [p[4], 1]], 0.5, 0.72, 0.72);
-  }).join('') + rad('mimo', [['#ffd6e0', 0], ['#ef86a3', 1]], 0.5, 0.85, 0.85) + lin('mimn', [['#ffb8c8', 0], ['#e4668a', 1]]);
+  }).join('') + YEUX.map(function(y, j){ return rad('mimz' + j, [[clair(y[0], 0.35), 0], [y[0], 0.4], [y[1], 1]], 0.5, 0.72, 0.72); }).join('') +
+    rad('mimo', [['#ffd6e0', 0], ['#ef86a3', 1]], 0.5, 0.85, 0.85) + lin('mimn', [['#ffb8c8', 0], ['#e4668a', 1]]);
 };
 
 /* ---------- Les briques du dessin ---------- */
@@ -243,8 +264,8 @@ M.ik = ik; M.lisse = lisse;
    ========================================================== */
 M.couleurs = couleurs;
 function couleurs(v){
-  var i = ((v || 0) % CHATS.length + CHATS.length) % CHATS.length, p = CHATS[i], tig = !!p[6];
-  return {i:i, p:p, tig:tig, F:'url(#atg-mim' + i + ')', U:p[0], S:sombre(p[0], 0.22), V:'url(#atg-mimv' + i + ')', Vu:p[2], R:p[1], L:p[5],
+  var pe = M.peau(v), i = pe.p, p = CHATS[i], tig = !!p[6];
+  return {i:i, p:p, tig:tig, yg:'url(#atg-mim' + (pe.y >= 0 ? 'z' + pe.y : 'y' + i) + ')', yf:pe.y >= 0 ? YEUX[pe.y][1] : p[4], F:'url(#atg-mim' + i + ')', U:p[0], S:sombre(p[0], 0.22), V:'url(#atg-mimv' + i + ')', Vu:p[2], R:p[1], L:p[5],
     pat:tig ? mel(p[0], p[2], 0.45) : p[2], patS:tig ? sombre(mel(p[0], p[2], 0.45), 0.2) : sombre(p[2], 0.14), ro:tig ? 1 : 0.5};
 }
 /* le bout d'une patte : de côté (posée, les doigts devant), et de face (on voit les coussinets roses) */
@@ -334,7 +355,7 @@ function tete(c, at, acc){
   }
   function oeil(ex, slot){
     var E = function(l){ return rp(ex, -1, l); }, forme = E(['M', -5.6, 0, 'C', -4.5, -5.8, 4.5, -5.8, 5.6, 0, 'C', 4.5, 5.2, -4.5, 5.2, -5.6, 0, 'Z']);
-    return PF(forme, 'url(#atg-mimy' + i + ')') + PF(E(['M', -5.6, 0, 'C', -4.5, -5.8, 4.5, -5.8, 5.6, 0, 'C', 3, -2.6, -3, -2.6, -5.6, 0, 'Z']), p[4], ' opacity=".34"') +
+    return PF(forme, c.yg) + PF(E(['M', -5.6, 0, 'C', -4.5, -5.8, 4.5, -5.8, 5.6, 0, 'C', 3, -2.6, -3, -2.6, -5.6, 0, 'Z']), c.yf, ' opacity=".34"') +
       '<g' + at(slot) + '><ellipse cx="0" cy="0.1" rx="1.6" ry="3.8" fill="' + K + '"/></g>' +
       '<g' + at('ref') + '><circle cx="' + f1(ex + 1.7) + '" cy="-2.7" r="1.55" fill="#fff"/><circle cx="' + f1(ex - 1.8) + '" cy="1" r=".75" fill="#fff" opacity=".85"/></g>' +
       PT(forme, K, 1.3) + PT(E(['M', -5.9, -0.3, 'C', -4.5, -6.2, 4.5, -6.2, 5.9, -0.3]), K, 2.3);

@@ -362,7 +362,15 @@ function normaliserChat(e){
   mm.soins = uniq(mm.soins, function(id){ return SOINS_SUITE.indexOf(id) >= 0; });
   if(mm.soins.indexOf('photo') < 0) mm.soins.push('photo');      /* (l'appareil photo : à tout le monde, tout de suite) */
   mm.neufs = uniq(mm.neufs, function(id){ return !!JOUETS[id] || SOINS_SUITE.indexOf(id) >= 0; });
-  mm.album = (Array.isArray(mm.album) ? mm.album : []).filter(function(f){ return f && typeof f === 'object' && typeof f.pose === 'string'; }).slice(-ALBUM_MAX);
+  /* (l'album à compléter) une photo par pose (k : PHOTOS) ; un album d'avant garde une photo de chaque pose qu'il avait déjà */
+  mm.album = (Array.isArray(mm.album) ? mm.album : []).filter(function(f){ return f && typeof f === 'object' && (typeof f.k === 'string' || typeof f.pose === 'string'); });
+  mm.album.forEach(function(f){ if(typeof f.k !== 'string') f.k = /miaou/.test(f.x || '') ? 'miaou' : /baille/.test(f.x || '') ? 'baille' : f.pose === 'saute' ? 'saut' : f.pose === 'tape' ? 'assis' : f.pose; delete f.pose; delete f.x; });
+  mm.album = mm.album.filter(function(f, i, l){ return PHOTOS.some(function(P){ return P.k === f.k; }) && f.k !== 'gros' && l.map(function(g){ return g.k; }).indexOf(f.k) === i; });
+  /* (les pelages et les yeux gagnés : des numéros de MimiPantin.CHATS et de MimiPantin.YEUX) */
+  if(!mm.peaux || typeof mm.peaux !== 'object') mm.peaux = {};
+  var MPn = window.MimiPantin;
+  ['p', 'y'].forEach(function(k){ var nb = MPn ? (k === 'p' ? MPn.CHATS.length : MPn.YEUX.length) : 0; mm.peaux[k] = (Array.isArray(mm.peaux[k]) ? mm.peaux[k] : []).filter(function(x, i, l){ return typeof x === 'number' && x >= 0 && x === Math.floor(x) && x < nb && l.indexOf(x) === i; }); });
+  if(mm.peauNeuve !== 1) delete mm.peauNeuve;
   var meres = 0;
   e.objets.forEach(function(o){
     if(o.t !== 'chat') return;
@@ -1228,7 +1236,8 @@ def('etabli', {w:380, h:212, p:110, z:'sol', special:'plantes', profil:true, nf:
 /* ==========================================================
    Mimi, dessinée de près (16 novembre ; Romain : « insiste bien sur les textures de Mimi, un dessin joli mais pas trop pesant ;
    je veux beaucoup de détails, et travaille beaucoup les animations du chat »).
-   - Trois pelages (o.v) : CHATS[v] = [pelage, rayures, ventre, iris clair, iris foncé, reflet, tigrée ?] (0 : Mimi, rousse tigrée).
+   - Ses pelages et ses yeux (o.v : un numéro — le pelage, plus 100 × (les yeux + 1) si elle en a changé : MimiPantin.peau, vChat) :
+     CHATS[pelage] = [pelage, rayures, ventre, iris clair, iris foncé, reflet, tigrée ?] (0 : Mimi, rousse tigrée) ; MimiPantin.YEUX.
    - Le pelage a son dégradé (plus clair en haut : atg-mim0…2), le ventre aussi (atg-mimv…), les yeux (atg-mimy…), l'oreille (atg-mimo),
      la truffe (atg-mimn) : defsMimi(), posés une fois avec les dégradés de l'atelier.
    - Cinq poses, une seule visible (CSS .at-c-<pose>) : assise, debout (marche, saut, griffes, boule), en boule (elle dort),
@@ -1247,10 +1256,13 @@ var MP = window.MimiPantin;
 var CHATS = MP.CHATS;
 function defsMimi(){ return MP.defs(); }
 function idxChat(p){ var i = CHATS.indexOf(p); return i < 0 ? 0 : i; }
+/* le numéro d'un chat, remis d'aplomb (son pelage, ses yeux : MimiPantin.peau) — jamais « % 3 » : il y a plus de trois pelages maintenant */
+function vChat(v){ var q = MP.peau(v); return MP.numero(q.p, q.y); }
 /* ses accessoires, dessinés autour du milieu de sa tête */
 function accPantin(acc){ acc = acc || {}; return {cou:acc.cou && ACC[acc.cou] ? dessinAcc(acc.cou, 0, 0) : '', tete:acc.tete && ACC[acc.tete] ? dessinAcc(acc.tete, 0, 0) : ''}; }
 /* sa tête seule (les petits portraits : la barre de Mimi, la garde-robe, la boutique) ; (cx, cy) : le milieu de la tête */
-function teteChat(p, cx, cy, acc){ return '<g transform="translate(' + f1(cx) + ',' + f1(cy) + ')">' + MP.tete(idxChat(p), accPantin(acc)) + '</g>'; }
+/* (p : le numéro du chat — ou, pour l'ancien dessin, sa palette) */
+function teteChat(p, cx, cy, acc){ return '<g transform="translate(' + f1(cx) + ',' + f1(cy) + ')">' + MP.tete(Array.isArray(p) ? idxChat(p) : vChat(p), accPantin(acc)) + '</g>'; }
 var MC = 3.2;   /* le contour de Mimi : un peu plus fin que les meubles, pour qu'on voie ses détails */
 function PM(d, f, w, x){ return '<path d="' + d + '" fill="' + f + '" stroke="' + K + '" stroke-width="' + (w || MC) + '" stroke-linejoin="round" stroke-linecap="round"' + (x || '') + '/>'; }
 function FM(d, f, x){ return '<path d="' + d + '" fill="' + f + '"' + (x || '') + '/>'; }
@@ -1342,7 +1354,7 @@ function coussinets(x, y, a, f){
 }
 /* Le chat est dessiné de profil (il bouge, il marche, il saute) : il reste une image plate, posée dans la pièce à la bonne taille */
 def('chat', {w:MP.W, h:MP.H, z:'petit', plat:true, nom:'Petit chat', ic:'🐈',
-  d:function(c){ return [N(MP.dessin(c.v || 0, MP.pose('assis'), accPantin(c.o.acc)))]; }});
+  d:function(c){ return [N(MP.dessin(vChat(c.v), MP.pose('assis'), accPantin(c.o.acc)))]; }});
 /* Tout le chat : l'ombre, les cinq poses, les « z » du sommeil (une pose est montrée par le CSS) */
 function dessinMimi(p, acc){
   var i = idxChat(p), F = G('mim' + i), V = G('mimv' + i), S = sombre(p[0], 0.2), blanc = !p[6];   /* (la noire a des chaussettes blanches) */
@@ -3304,14 +3316,16 @@ function vue(el, opts){
       '<button type="button" class="at-coin" data-at="reserve" aria-label="Le carton de rangement"><span class="at-coin-ic" aria-hidden="true">📦</span><b class="at-badge" style="display:none"></b></button>' +
       '<button type="button" class="at-salle" data-at="salle" aria-label="L\'autre pièce"><span class="at-salle-ic" aria-hidden="true"></span><b class="at-badge" style="display:none"></b></button>' +
       /* (16 novembre) Mimi : son bouton, et au-dessus sa jauge de bonheur, toujours sous les yeux (la seule jauge qu'on voit) */
-      '<button type="button" class="at-mimi-bt" data-at="mimi" aria-label="Les affaires de Mimi" hidden><span class="at-mimi-ic" aria-hidden="true">🐾</span><i class="at-mimi-jauge" aria-hidden="true"><b></b></i><b class="at-badge" style="display:none"></b></button></div>' +
+      '<button type="button" class="at-mimi-bt" data-at="mimi" aria-label="Les affaires de Mimi" hidden><span class="at-mimi-ic" aria-hidden="true">🐾</span><i class="at-mimi-jauge" aria-hidden="true"><b></b></i><b class="at-badge" style="display:none"></b></button>' +
+      /* (l'appareil photo, à côté : Romain, 16 novembre, 21 h 18 — « une petite caméra » ; dessous, où en est l'album) */
+      '<button type="button" class="at-photo-bt" data-at="photo" aria-label="Prendre Mimi en photo" hidden><span class="at-photo-ic" aria-hidden="true">📷</span><i class="at-photo-n" aria-hidden="true"></i></button></div>' +
     '<div class="at-mimi-barre" hidden></div>' +
     '<div class="at-ouvert" hidden></div><div class="at-grim" hidden></div><div class="at-toast" hidden></div><div class="at-fantomes"></div>';
   el.appendChild(root);
   V.piece = q(V, '.at-piece'); V.monde = q(V, '.at-monde'); V.scene = q(V, '.at-scene'); V.calque = q(V, '.at-calque'); V.ouvertEl = q(V, '.at-ouvert');
   V.grim = q(V, '.at-grim'); V.toastEl = q(V, '.at-toast'); V.fantomes = q(V, '.at-fantomes'); V.tientEl = q(V, '.at-tient'); V.reperes = q(V, '.at-reperes');
   V.fondEl = q(V, '.at-fond-box'); V.halos = q(V, '.at-halos'); V.elReserve = q(V, '.at-coin'); V.elSalle = q(V, '.at-salle');
-  V.elMimi = q(V, '.at-mimi-bt'); V.barreMimi = q(V, '.at-mimi-barre');
+  V.elMimi = q(V, '.at-mimi-bt'); V.barreMimi = q(V, '.at-mimi-barre'); V.elPhoto = q(V, '.at-photo-bt');
   majMoment(V);
 
   if(verifierBoutique(V)) changer(V);
@@ -4268,6 +4282,7 @@ function brancher(V){
     if(b.hasAttribute('data-pot-voir')){ V.potSel = b.getAttribute('data-pot-voir'); son(V, 'clic'); dessinerPotions(V); return; }
     if(b.hasAttribute('data-res')){ sortirReserve(V, +b.getAttribute('data-res')); return; }
     if(b.hasAttribute('data-acc')){ habiller(V, b.getAttribute('data-acc'), b.getAttribute('data-slot')); return; }
+    if(b.hasAttribute('data-peau')){ changerPeau(V, b.getAttribute('data-peau')); return; }
     /* data-act (donner-potion, vendre, analyser) : c'est le moteur qui s'en occupe (clic global) */
   });
   /* --- la bulle : son 🔊 lit l'explication (jamais toute seule) ; 🎨 repeint le chaudron --- */
@@ -4294,6 +4309,7 @@ function action(V, at, pot){
   else if(at === 'flaque') nettoyerFlaque(V);
   else if(at === 'betise') reparerBetise(V, pot);
   else if(at === 'mimi') ouvrirBarre(V);              /* (16 novembre) la barre de Mimi */
+  else if(at === 'photo') prendrePhoto(V);            /* l'appareil photo, à côté du 🐾 */
   else if(at === 'coffret') ouvrirCoffret(V);
   else if(at === 'jcarton') sortirCarton(V);
 }
@@ -5673,8 +5689,16 @@ function chatSol(V, x, y){
   y = borne(y, SOL_MIN + 20, solMax(V));
   return {x:borne(x, solXmin(V, y) + 50, solXmax(V, y) - 50), y:y, sur:null};
 }
-/* Assis là, serait-il caché derrière le chaudron, l'établi ou un grand meuble ? (on ne choisit pas ces places-là) */
+/* Sous les boutons du bas de l'écran (le lit, 🐾 et 📷 à gauche ; le carton 📦 à droite) ? Là, on ne pourrait ni bien la voir ni la toucher.
+   (Là où est la vue en ce moment : sur un téléphone, la pièce glisse sous les boutons.) */
+function sousBoutons(V, x, y){
+  if(!V.k || !V.vw || !V.pan || !V.vb) return false;
+  var sx = (x - V.vb.x0) * V.k - V.pan.x, sy = (y - V.vb.y0) * V.k - V.pan.y;
+  return sy > V.vh - 104 && (sx < 236 || sx > V.vw - 96);
+}
+/* Assis là, serait-il caché derrière le chaudron, l'établi ou un grand meuble — ou sous les boutons ? (on ne choisit pas ces places-là) */
 function chatCache(V, x, y){
+  if(sousBoutons(V, x, y)) return true;
   var s = echelleSol(y), cx0 = x - 45 * s, cx1 = x + 45 * s, cy0 = y - 80 * s, aire = (cx1 - cx0) * (y - cy0);
   var bx = [];
   ici(V).forEach(function(o){
@@ -6151,7 +6175,13 @@ function chatRevient(V, o, force){
    - Chaque soin donne du bonheur (plus s'il répond à ce qu'elle demande ; plus avec une meilleure nourriture) : soigner().
    - Les jouets et les objets de soin (la brosse, le bain, les friandises, le griffoir) ne viennent que des coffrets ; les nourritures,
      les coins douillets et les habits viennent des coffrets ou s'achètent avec les pièces d'or, à petits prix (la boutique de Mimi :
-     🐾 puis 🛒). L'appareil photo est à tout le monde.
+     🐾 puis 🛒).
+   - L'APPAREIL PHOTO 📷 a son bouton, à côté du 🐾 ; L'ALBUM EST À COMPLÉTER : quinze poses (PHOTOS), une photo par pose ; une pose déjà
+     prise : « Dommage, c'était la même ! » ; des poses rares (au galop, en plein saut, l'étirement, coucou) ; le gros plan viendra avec
+     son chantier. À tant de photos, un cadeau (PHOTOS_CADEAUX) : un pelage ou des yeux de plus.
+   - SES PELAGES ET SES YEUX (MimiPantin.CHATS, YEUX ; etat.mimi.peaux) se gagnent : avec l'album, et dans les coffrets (ils sont dans
+     ses familles). On en change dans sa garde-robe 🎀 (changerPeau). Sur le chat : o.v = son pelage + 100 × (ses yeux + 1) (vChat).
+   (DESIGN-saison1.md §12.70.)
    - Une petite bêtise environ toutes les 4 minutes de jeu, jamais plus (une fiole par terre, le tabouret renversé, une pelote déroulée) :
      un toucher remet tout en ordre ; rien n'est jamais perdu.
    - Rien ne baisse quand l'appli est fermée.
@@ -6160,7 +6190,8 @@ function chatRevient(V, o, force){
      des jouets et des habits, la voir partir serait une vraie peine.
    L'état : etat.tama = {jeu, betise, moment, portee, cadeaux, dehors:{c, nom, g}, coffret:{c, x, y, g}, herbe, friand,
      v:3, las:{soin:crans}, fam:{famille:1}, recus:[codes], envie:{k, n, d}, envieT, envieAvant},
-   etat.mimi = {jouets, nour, soins, album}, etat.betises, etat.chezOdette, etat.garde ; sur le chat : o.b, o.bh, o.acc.
+   etat.mimi = {jouets, nour, soins, neufs, album:[{k, v, acc, e}], peaux:{p, y}, peauNeuve}, etat.betises, etat.chezOdette, etat.garde ;
+   sur le chat : o.b, o.bh, o.acc, o.v (son pelage et ses yeux).
    ========================================================== */
 var BESOINS = [
   {k:'faim', ic:'🍗', baisse:4},
@@ -6287,15 +6318,16 @@ function lasse(V, fam){
 function lasser(V, fam){ var l = tama(V).las; l[fam] = Math.min(LASSE.length - 1, (l[fam] || 0) + 1); }
 
 /* --- ses cinq familles d'affaires (cachées : rien ne s'affiche nulle part). Ce que les coffrets apportent, tiré au hasard dans une famille.
-   Un code = ce que ouvrirCoffret() sait donner : j: un jouet, n: une nourriture, s: un objet de soin, a: un habit, c: un coin douillet.
+   Un code = ce que ouvrirCoffret() sait donner : j: un jouet, n: une nourriture, s: un objet de soin, a: un habit, c: un coin douillet,
+   p: un pelage, y: des yeux (les numéros de MimiPantin.CHATS et YEUX ; les autres pelages et yeux se gagnent avec l'album : PHOTOS_CADEAUX).
    d : les d premières choses de la liste viennent d'abord, dans l'ordre (les objets de soin : ils ouvrent de nouveaux jeux) ; le reste, au hasard.
    fin : ce que le conteur dit quand la famille est complète. Tout ce qui existe est dans une famille, et une seule (vérifié par tools/mimi.py). --- */
 var FAMILLES = [
-  {k:'ventre', l:['s:friandises', 'n:pate', 'n:poisson', 'n:festin'], fin:'Son garde-manger est complet !'},
+  {k:'ventre', l:['s:friandises', 'n:pate', 'n:poisson', 'n:festin', 'p:5'], fin:'Son garde-manger est complet !'},
   {k:'recre', l:['j:plume', 'j:laser', 'j:souris', 'j:grelot', 'j:carton', 'j:herbe'], fin:'Sa caisse à jouets est complète !'},
-  {k:'belle', d:2, l:['s:brosse', 's:bain', 'a:noeud_rose', 'a:noeud_bleu', 'a:fleurs', 'a:clochette'], fin:'Elle a tout ce qu\'il faut pour se faire belle !'},
-  {k:'reine', d:2, l:['s:griffoir', 'c:coussin', 'a:perles', 'a:arc', 'a:couronne', 'a:mage'], fin:'Elle a tout ce qu\'il faut pour vivre comme une reine !'},
-  {k:'envies', l:['a:collier_rouge', 'a:collier_bleu', 'a:collier_vert', 'a:noeud_pap_violet', 'a:noeud_pap_jaune', 'a:foulard', 'a:sorciere', 'a:beret', 'a:fete'], fin:'Sa garde-robe de tous les jours est complète !'}
+  {k:'belle', d:2, l:['s:brosse', 's:bain', 'a:noeud_rose', 'a:noeud_bleu', 'a:fleurs', 'a:clochette', 'p:4', 'y:2'], fin:'Elle a tout ce qu\'il faut pour se faire belle !'},
+  {k:'reine', d:2, l:['s:griffoir', 'c:coussin', 'a:perles', 'a:arc', 'a:couronne', 'a:mage', 'p:3'], fin:'Elle a tout ce qu\'il faut pour vivre comme une reine !'},
+  {k:'envies', l:['a:collier_rouge', 'a:collier_bleu', 'a:collier_vert', 'a:noeud_pap_violet', 'a:noeud_pap_jaune', 'a:foulard', 'a:sorciere', 'a:beret', 'a:fete', 'p:6', 'y:4'], fin:'Sa garde-robe de tous les jours est complète !'}
 ];
 function aChezElle(e, t){      /* (posé dans une pièce, encore dans un carton, ou rangé dans la réserve) */
   return e.objets.some(function(o){ return o.t === t; }) || e.cartons.some(function(k){ return (k.reste || []).indexOf(t) >= 0; }) || e.reserve.some(function(x){ return x.t === t; });
@@ -6307,6 +6339,8 @@ function aDeja(V, code){
   if(k === 's') return !SOINS[id] || m.soins.indexOf(id) >= 0;
   if(k === 'a') return !ACC[id] || garde(e).a.indexOf(id) >= 0;
   if(k === 'c') return tama(V).recus.indexOf(code) >= 0 || aChezElle(e, id);
+  if(k === 'p') return !CHATS[+id] || m.peaux.p.indexOf(+id) >= 0;
+  if(k === 'y') return !MP.YEUX[+id] || m.peaux.y.indexOf(+id) >= 0;
   return true;
 }
 function familleReste(V, F){ return F.l.filter(function(c){ return !aDeja(V, c); }); }
@@ -6487,7 +6521,8 @@ function envieSigne(V, o){
     return 'reine';
   }
   /* les câlins */
-  var c0 = centreVue(V), devant = chatSol(V, c0.x + (Math.random() - 0.5) * 240, solMax(V) - 30);
+  var c0 = centreVue(V), devant = chatSol(V, c0.x + (Math.random() - 0.5) * 240, solMax(V) - 30), ess;
+  for(ess = 1; ess < 6 && sousBoutons(V, devant.x, devant.y); ess++) devant = chatSol(V, c0.x + (Math.random() - 0.5) * 240, solMax(V) - 30 - 26 * ess);      /* (jamais sous les boutons) */
   var doux = function(){
     var r = Math.random();
     if(r < 0.3){ chatPose(V, o, 'assis'); expression(V, o, 'at-x-cligne', 1500); sonMimi(V, 'ronron'); }
@@ -6814,7 +6849,7 @@ function portee(V, dt, moment){
 function naissance(V, mere){
   var pm = chatPos(V, mere), n = chatsTous(V).filter(function(o){ return o.chaton; }).length;
   V.etat.n++;
-  var c = {id:'o' + V.etat.n, t:'chat', x:pm.x + 70, y:Math.min(solMax(V), pm.y + 30), f:0, v:(mere.v + 1) % 3, st:0, sur:null, chaton:1, taille:0.68, nom:PORTEE.chatons[n % PORTEE.chatons.length], b:{faim:90, soif:90, amour:60, jeu:50, dodo:90}};
+  var c = {id:'o' + V.etat.n, t:'chat', x:pm.x + 70, y:Math.min(solMax(V), pm.y + 30), f:0, v:(MP.peau(mere.v).p + 1) % 3, st:0, sur:null, chaton:1, taille:0.68, nom:PORTEE.chatons[n % PORTEE.chatons.length], b:{faim:90, soif:90, amour:60, jeu:50, dodo:90}};
   if(mere.pc === 1) c.pc = 1;
   if(mere.sur){ c.x = 600; c.y = 760; }
   mere.ronde = 0;
@@ -6888,8 +6923,9 @@ function tamaAgir(V, o){
   if(gm && (b.faim < 92 || envieDe(V, 'repas')) && Math.random() < 0.8){ chatVaManger(V, o, gm, 'faim'); return true; }
   if(ge && (b.soif < 92 || envieDe(V, 'eau')) && Math.random() < 0.8){ chatVaManger(V, o, ge, 'soif'); return true; }
   if(u && Math.random() < 0.35){ chatPose(V, o, 'assis'); miaou(V, o); chatPlanifier(V, o, 4200); return true; }   /* elle demande */
-  /* (la jauge seule) elle a une envie : le plus souvent, ce qu'elle fait la montre — tant qu'on ne l'a pas trouvée, même après sa bulle */
-  if(!u && V.etat.tama.envie && Math.random() < ENVIE_SIGNE && envieSigne(V, o)) return true;
+  /* (la jauge seule) elle a une envie : le plus souvent, ce qu'elle fait la montre — tant qu'on ne l'a pas trouvée ; une fois sa bulle
+     sortie, deux fois moins souvent (elle l'a dit : inutile de courir partout pendant quatre minutes) */
+  if(!u && V.etat.tama.envie && Math.random() < (envieDite(V) ? ENVIE_SIGNE / 2 : ENVIE_SIGNE) && envieSigne(V, o)) return true;
   if(!o.chaton && Math.random() < 0.05 && chatLitiere(V, o)) return true;
   if(Math.random() < 0.07 && chatGriffoir(V, o)) return true;
   if(o.chaton && Math.random() < 0.45) return chatonJoue(V, o);
@@ -7064,26 +7100,39 @@ function dessinAcc(id, cx, cy){
 function accDe(o, slot){ var a = o && o.acc && o.acc[slot]; return a && ACC[a] ? a : null; }
 /* La petite image d'un accessoire (dans la garde-robe) : sur une tête de chat */
 function vignetteAcc(id, v){
-  var p = CHATS[(v || 0) % 3], a = ACC[id];
-  return '<svg viewBox="19 -28 76 78" aria-hidden="true">' + teteChat(p, 57, 18, {cou:a && a.slot === 'cou' ? id : null, tete:a && a.slot === 'tete' ? id : null}) + '</svg>';
+  var a = ACC[id];
+  return '<svg viewBox="19 -28 76 78" aria-hidden="true">' + teteChat(vChat(v), 57, 18, {cou:a && a.slot === 'cou' ? id : null, tete:a && a.slot === 'tete' ? id : null}) + '</svg>';
 }
 function ouvrirGarde(V, oid){
   var o = V.parId[oid] || chatsDe(V)[0];
   if(!o) return;
   V.gardeChat = o.id;
   ouvrirCalque(V, 'at-cal-garde', htmlGarde(V));
-  var G = garde(V.etat); if(G.neuf.length){ G.neuf = []; changer(V); }
+  var G = garde(V.etat); if(G.neuf.length || mimi(V).peauNeuve){ G.neuf = []; delete mimi(V).peauNeuve; changer(V); majBarre(V); }
   son(V, 'page');
 }
 function dessinerGarde(V){ if(!V.parId[V.gardeChat]){ fermerGrimoire(V); return; } V.grim.innerHTML = htmlGarde(V); }
 function htmlGarde(V){
   var o = V.parId[V.gardeChat];
   if(!o) return '';
-  var G = garde(V.etat), nom = nomChat(o), p = CHATS[(o.v || 0) % 3], neuf = G.neuf.slice();
+  var G = garde(V.etat), nom = nomChat(o), p = vChat(o.v), neuf = G.neuf.slice();
   var t = G.a.length ? 'La garde-robe de ' + nom + '. Un nouvel habit arrive quand tu réussis un de tes mini-jeux pour la première fois, dans ses coffrets… ou dans sa boutique 🛒.' :
     'La garde-robe est encore vide. Les habits arrivent quand tu réussis un de tes mini-jeux pour la première fois, dans les coffrets de ' + nom + '… ou dans sa boutique 🛒.';
+  if(!o.chaton) t += ' Ses pelages et ses yeux, eux, se gagnent avec ses photos 📷 et dans ses coffrets.';
   var corps = '<div class="at-garde-haut"><span class="at-garde-chat">' + '<svg viewBox="19 -28 76 78" aria-hidden="true">' + teteChat(p, 57, 18, o.acc || {}) + '</svg></span>' +
     '<p class="at-feuille-txt">' + esc(t) + ' ' + lireBtn(t) + '</p></div>';
+  /* (16 novembre) son pelage et ses yeux : ceux qu'elle a gagnés (ses photos, ses coffrets) ; le sien est toujours là */
+  if(!o.chaton){
+    var q = MP.peau(o.v), PX = mimi(V).peaux, mesP = [q.p].concat(PX.p).filter(function(x, i, l){ return l.indexOf(x) === i; }).sort(function(a, b){ return a - b; });
+    var resteP = CHATS.length - mesP.length, resteY = MP.YEUX.length - PX.y.length, vg = function(v){ return '<svg viewBox="19 -28 76 78" aria-hidden="true">' + teteChat(v, 57, 18, {}) + '</svg>'; };
+    var verrou = function(n){ return n > 0 ? '<span class="at-garde-it at-garde-verrou" aria-label="À gagner"><span class="at-garde-rien">🔒</span><small>' + n + ' à gagner</small></span>' : ''; };
+    corps += '<div class="at-garde-slot"><b>Son pelage</b><div class="at-garde-l">' + mesP.map(function(i){
+      return '<button type="button" class="at-garde-it' + (q.p === i ? ' on' : '') + '" data-peau="p:' + i + '" aria-label="' + esc(MP.PELAGES[i]) + '">' + vg(MP.numero(i, q.y)) + '<small>' + esc(MP.PELAGES[i]) + '</small></button>'; }).join('') + verrou(resteP) + '</div></div>';
+    corps += '<div class="at-garde-slot"><b>Ses yeux</b><div class="at-garde-l">' +
+      '<button type="button" class="at-garde-it' + (q.y < 0 ? ' on' : '') + '" data-peau="y:-1" aria-label="Ses yeux à elle">' + vg(MP.numero(q.p, -1)) + '<small>Les siens</small></button>' +
+      PX.y.slice().sort(function(a, b){ return a - b; }).map(function(j){
+        return '<button type="button" class="at-garde-it' + (q.y === j ? ' on' : '') + '" data-peau="y:' + j + '" aria-label="' + esc(MP.YEUX[j][2]) + '">' + vg(MP.numero(q.p, j)) + '<small>' + esc(MP.YEUX[j][2]) + '</small></button>'; }).join('') + verrou(resteY) + '</div></div>';
+  }
   [['cou', 'Autour du cou'], ['tete', 'Sur la tête']].forEach(function(sl){
     var porte = accDe(o, sl[0]), mes = G.a.filter(function(id){ return ACC[id].slot === sl[0]; }), tous = cles(ACC).filter(function(id){ return ACC[id].slot === sl[0]; });
     corps += '<div class="at-garde-slot"><b>' + esc(sl[1]) + '</b><div class="at-garde-l">' +
@@ -7093,6 +7142,28 @@ function htmlGarde(V){
       '</div></div>';
   });
   return feuille('at-f-garde', '<span class="at-f-ic">🎀</span><h3>La garde-robe de ' + esc(nom) + '</h3>', corps);
+}
+/* Elle change de pelage (« p:3 ») ou d'yeux (« y:1 » ; « y:-1 » : les siens) — seulement ceux qu'elle a gagnés ; le sien n'est jamais perdu */
+function changerPeau(V, code){
+  var o = V.parId[V.gardeChat];
+  if(!o || o.chaton) return;
+  var k = String(code).charAt(0), i = parseInt(String(code).slice(2), 10), q = MP.peau(o.v), PX = mimi(V).peaux;
+  if(k === 'p'){ if(!(i >= 0 && i < CHATS.length) || (i !== q.p && PX.p.indexOf(i) < 0)) return; if(PX.p.indexOf(q.p) < 0) PX.p.push(q.p); q.p = i; }
+  else if(k === 'y'){ if(!(i === -1 || PX.y.indexOf(i) >= 0)) return; q.y = i; }
+  else return;
+  o.v = MP.numero(q.p, q.y);
+  redessiner(V, o); majHumeur(V, o);
+  coeursChat(V, o, '✨');
+  son(V, 'magie');
+  changer(V); majBarre(V);
+  dessinerGarde(V);
+}
+/* un pelage ou des yeux de plus (une récompense : ses photos, ses coffrets) ; rend ce que le conteur en dit */
+function donnerPeau(V, code){
+  var k = String(code).charAt(0), i = parseInt(String(code).slice(2), 10), m = mimi(V);
+  if(k === 'p' && CHATS[i]){ if(m.peaux.p.indexOf(i) < 0) m.peaux.p.push(i); m.peauNeuve = 1; return 'un nouveau pelage (« ' + MP.PELAGES[i] + ' »)'; }
+  if(k === 'y' && MP.YEUX[i]){ if(m.peaux.y.indexOf(i) < 0) m.peaux.y.push(i); m.peauNeuve = 1; return 'de nouveaux yeux (« ' + MP.YEUX[i][2] + ' »)'; }
+  return '';
 }
 function habiller(V, id, slot){
   var o = V.parId[V.gardeChat];
@@ -7414,7 +7485,7 @@ function chatPotion(V, ov){
   return null;   /* (Romain, 5 novembre, 15 h 58 : plus de chat dans le mini-jeu du chaudron) */
   var o = chatsTous(V).filter(function(c){ return !V.chats[c.id] || !V.chats[c.id].depart; })[0];
   if(!o || bonheur(o) < 45 || tama(V).butin) return null;
-  var p = CHATS[(o.v || 0) % 3], el = document.createElement('div');
+  var p = vChat(o.v), el = document.createElement('div');
   el.className = 'at-mj-chat';
   el.setAttribute('aria-hidden', 'true');
   el.innerHTML = '<svg viewBox="19 -28 76 78">' + teteChat(p, 57, 18, o.acc || {}) + '</svg><span class="at-mj-chat-n">' + esc(nomChat(o)) + '</span>';
@@ -7557,8 +7628,30 @@ var BOUTIQUE_MIMI = {
   coins:[{t:'panier', ic:'🧺', nom:'Un panier de plus', prix:5}, {t:'coussin', ic:'🟣', nom:'Un coussin moelleux', prix:3}, {t:'arbre_chat', ic:'🐈', nom:'Un arbre à chat', prix:9}],
   habit:3, habitRare:7
 };
-var ALBUM_MAX = 24;
-var LEGENDES = {assis:'Toute sage', dort:'Roulée en boule', dos:'Les pattes en l\'air', pain:'En petit pain', marche:'En promenade', saute:'Hop !', tape:'Paf, la patte !', lave:'La toilette', mange:'Miam'};
+/* L'ALBUM À COMPLÉTER (Romain, 16 novembre, 21 h 18 : « un compteur, une photo sur 15 » ; les doubles : « dommage, c'était la même » ;
+   « des animations rares à prendre en photo » ; le gros plan, la plus rare ; « toutes les photos : un très gros cadeau »).
+   Une photo par pose. r : sa rareté (1 : elle la prend tout le temps ; 3 : il faut être là au bon moment ; 4 : le gros plan — il arrivera
+   avec son chantier : d'ici là, l'album s'arrête à 14 sur 15). pose, x, g, allure, tr : comment la redessiner dans l'album (MimiPantin.image). */
+var PHOTOS = [
+  {k:'assis', nom:'Toute sage', r:1, pose:'assis'},
+  {k:'marche', nom:'En promenade', r:1, pose:'marche'},
+  {k:'dort', nom:'Roulée en boule', r:1, pose:'dort'},
+  {k:'lave', nom:'La toilette', r:1, pose:'lave'},
+  {k:'mange', nom:'Miam', r:1, pose:'mange'},
+  {k:'pain', nom:'En petit pain', r:2, pose:'pain'},
+  {k:'dos', nom:'Les pattes en l\'air', r:2, pose:'dos'},
+  {k:'miaou', nom:'Miaou !', r:2, pose:'assis', x:'at-x-miaou'},
+  {k:'baille', nom:'Le grand bâillement', r:2, pose:'assis', x:'at-x-baille'},
+  {k:'griffe', nom:'Les griffes', r:2, pose:'griffe'},
+  {k:'etire', nom:'Le grand étirement', r:3, pose:'marche', g:'etire', u:0.26},
+  {k:'salut', nom:'Coucou !', r:3, pose:'salut'},
+  {k:'saut', nom:'Hop !', r:3, pose:'marche', g:'bond', u:0.52},
+  {k:'galop', nom:'Ventre à terre', r:3, pose:'marche', allure:'course', phi:0.62, tr:'translate(36 28) scale(.78)'},      /* (elle est toute en longueur : un peu plus petite, pour tenir dans le cadre) */
+  {k:'gros', nom:'Le gros plan', r:4}
+];
+/* ce que l'album rapporte : à tant de photos, un pelage (p:) ou des yeux (y:) de plus ; l'album complet : le très gros cadeau */
+var PHOTOS_CADEAUX = {3:['y:0'], 6:['p:1'], 9:['y:1'], 12:['p:2'], 15:['p:7', 'y:3']};
+function photoDe(k){ return PHOTOS.filter(function(P){ return P.k === k; })[0] || null; }
 function mimi(V){ var e = V.etat; if(!e.mimi || !Array.isArray(e.mimi.jouets)) normaliserChat(e); return e.mimi; }
 function soinA(V, id){ return mimi(V).soins.indexOf(id) >= 0; }
 function iconeSoin(id){
@@ -7850,32 +7943,59 @@ function friandiseSuite(V, o){
 }
 
 /* ---------- L'appareil photo et l'album ---------- */
+/* la pose qu'elle prend en ce moment (une clé de PHOTOS) : la plus rare d'abord */
+function clichePhoto(V, o){
+  var st = chatEtat(V, o), d = V.elO[o.id], r = pantinDe(V, o), a = function(c){ return !!d && d.classList.contains(c); }, f = function(g){ return !!r && r.fait(g); };
+  if(r && r.mar && r.all === 'course') return 'galop';
+  if((st.anim && st.mv && st.mv.mode === 'saute') || f('bond') || f('galipette')) return 'saut';
+  if(st.pose === 'salut') return 'salut';
+  if(f('etire')) return 'etire';
+  if(st.pose === 'griffe' || st.pose === 'boule') return 'griffe';
+  if(a('at-x-baille')) return 'baille';
+  if(a('at-x-miaou')) return 'miaou';
+  if(st.pose === 'dos' || st.pose === 'pain' || st.pose === 'mange' || st.pose === 'lave' || st.pose === 'dort') return st.pose;
+  return st.pose === 'marche' || st.pose === 'saute' ? 'marche' : 'assis';
+}
 function prendrePhoto(V){
-  var o = chatsDe(V)[0];
-  if(!o){ var t = 'Pas de modèle dans cette pièce ! Va voir de l\'autre côté de l\'arche.'; toast(V, '<b>📷</b> ' + esc(t), 3800, t); return; }
+  if(V.mode !== 'ranger' || V.arrete) return;
+  var o = chatsDe(V)[0], st = o ? chatEtat(V, o) : null;
+  if(!o || !V.elO[o.id] || st.depart || V.elO[o.id].classList.contains('at-c-dehors') || st.passe){ var t = 'Pas de modèle devant l\'appareil ! Elle n\'est pas dans cette pièce.'; toast(V, '<b>📷</b> ' + esc(t), 3800, t); son(V, 'ko'); return; }
   fermerBarre(V);
-  var st = chatEtat(V, o), d = V.elO[o.id], pose = st.pose === 'griffe' || st.pose === 'boule' ? 'marche' : st.pose, m = mimi(V);
-  var x = d ? ['at-x-miaou', 'at-x-baille', 'at-x-clos', 'at-x-penche', 'at-x-langue', 'at-x-tete', 'at-x-attrape', 'at-x-agace', 'at-x-joue'].filter(function(c){ return d.classList.contains(c); }) : [];
-  if(d && d.classList.contains('at-c-ronron')) x.push('at-x-clos');
-  m.album.push({pose:pose, x:x.join(' '), v:(o.v || 0) % 3, acc:o.acc ? JSON.parse(JSON.stringify(o.acc)) : {}, e:enqueteNo(V)});
-  if(m.album.length > ALBUM_MAX) m.album.shift();
+  var m = mimi(V), k = clichePhoto(V, o), P = photoDe(k), deja = m.album.some(function(f){ return f.k === k; }), n = m.album.length, T = PHOTOS.length;
   var f = document.createElement('div'); f.className = 'at-flash'; V.root.appendChild(f); apres(V, 500, function(){ f.remove(); });
   sonMimi(V, 'photo');
-  var t2 = 'Clic ! Une photo de plus dans l\'album de ' + nomChat(o) + '. ' + (m.album.length >= ALBUM_MAX ? 'Il est plein : les plus vieilles laissent leur place.' : (ALBUM_MAX - m.album.length) + ' places encore.');
-  toast(V, '<b>📷</b> ' + esc(t2), 4200, t2);
-  changer(V);
+  if(deja){
+    var td = 'Dommage, c\'était la même ! « ' + P.nom + ' », elle est déjà dans l\'album. ' + n + ' sur ' + T + '.';
+    toast(V, '<b>📷 🙈</b> ' + esc(td), 4200, td);
+    return;
+  }
+  m.album.push({k:k, v:vChat(o.v), acc:o.acc ? JSON.parse(JSON.stringify(o.acc)) : {}, e:enqueteNo(V)});
+  n++;
+  var t2 = 'Clic ! « ' + P.nom + ' » : une nouvelle photo dans l\'album de ' + nomChat(o) + (P.r >= 3 ? ' — et une pose rare !' : ' !') + ' ' + n + ' sur ' + T + '.';
+  /* (à tant de photos : un pelage, des yeux… — l'album complet : le très gros cadeau) */
+  var cad = (PHOTOS_CADEAUX[n] || []).map(function(c){ return donnerPeau(V, c); }).filter(function(x){ return !!x; });
+  if(cad.length){
+    t2 += (n >= T ? ' L\'album est complet ! Pour ' + nomChat(o) + ', le plus beau des cadeaux : ' : ' Et un cadeau pour ' + nomChat(o) + ' : ') + cad.join(' et ') + ', dans sa garde-robe 🎀.';
+    apres(V, 300, function(){ sonMimi(V, n >= T ? 'fanfare' : 'debloque'); }); brillerMimi(V);
+  }
+  toast(V, '<b>📷 ' + (cad.length ? '🎁' : '✨') + '</b> ' + esc(t2), cad.length ? 8000 : 4600, t2);
+  if(V.elPhoto){ V.elPhoto.classList.remove('at-flash-bt'); void V.elPhoto.offsetWidth; V.elPhoto.classList.add('at-flash-bt'); }
+  majBarre(V); changer(V);
 }
 function imageMimi(f){
-  var x = f.x ? ' ' + esc(f.x) : '';
-  return '<div class="at-o at-t-chat at-plat at-photo-chat at-c-' + esc(f.pose) + x + '"><svg viewBox="0 0 ' + MP.W + ' ' + MP.H + '" overflow="visible" aria-hidden="true">' + MP.image((f.v || 0) % 3, f.pose, f.x || '', accPantin(f.acc)) + '</svg></div>';
+  var P = photoDe(f.k) || PHOTOS[0], x = P.x ? ' ' + P.x : '';
+  return '<div class="at-o at-t-chat at-plat at-photo-chat at-c-' + esc(P.pose || 'assis') + x + '"><svg viewBox="0 0 ' + MP.W + ' ' + MP.H + '" overflow="visible" aria-hidden="true">' + (P.tr ? '<g transform="' + P.tr + '">' : '') + MP.image(vChat(f.v), P.pose || 'assis', P.x || '', accPantin(f.acc), P) + (P.tr ? '</g>' : '') + '</svg></div>';
 }
 function ouvrirAlbum(V){
   fermerBarre(V);
-  var m = mimi(V), c = chatsTous(V)[0], n = c ? nomChat(c) : PORTEE.mere;
-  var t = m.album.length ? 'L\'album de ' + n + '. Chaque photo est un petit souvenir : les poses rares sont les plus belles !' : 'L\'album est encore vide. Prends ' + n + ' en photo quand elle fait quelque chose de drôle : sur le dos, en petit pain, en train de miauler…';
-  var corps = '<p class="at-feuille-txt">' + esc(t) + ' ' + lireBtn(t) + '</p><div class="at-album">' + m.album.slice().reverse().map(function(f){
-    var leg = LEGENDES[f.pose] || ''; if(/miaou/.test(f.x)) leg = 'Miaou !'; else if(/baille/.test(f.x)) leg = 'Le grand bâillement'; else if(/attrape/.test(f.x)) leg = 'Attrapé !'; else if(/tete/.test(f.x)) leg = 'Les gratouilles';
-    return '<figure class="at-photo">' + imageMimi(f) + '<figcaption>' + esc(leg) + '</figcaption></figure>';
+  var m = mimi(V), c = chatsTous(V)[0], n = c ? nomChat(c) : PORTEE.mere, nb = m.album.length, T = PHOTOS.length;
+  var t = nb >= T ? 'L\'album de ' + n + ' est complet. Quelle star !' :
+    nb ? 'L\'album de ' + n + ' : ' + nb + ' photo' + (nb > 1 ? 's' : '') + ' sur ' + T + '. Une seule photo par pose : guette ce qu\'elle fait, et clic ! Les poses rares ne durent qu\'un instant.' :
+    'L\'album est encore vide : ' + T + ' poses à photographier. L\'appareil photo 📷 est à côté du bouton 🐾. Guette ce que fait ' + n + ', et clic !';
+  var corps = '<p class="at-feuille-txt">' + esc(t) + ' ' + lireBtn(t) + '</p><p class="at-album-n" aria-hidden="true">📷 ' + nb + ' sur ' + T + '</p><div class="at-album">' + PHOTOS.map(function(P){
+    var f = m.album.filter(function(g){ return g.k === P.k; })[0];
+    return f ? '<figure class="at-photo' + (P.r >= 3 ? ' rare' : '') + '">' + imageMimi(f) + '<figcaption>' + esc(P.nom) + '</figcaption></figure>'
+      : '<figure class="at-photo at-photo-vide" aria-label="Une pose à photographier"><div class="at-photo-chat"><span aria-hidden="true">?</span></div><figcaption aria-hidden="true">· · ·</figcaption></figure>';
   }).join('') + '</div>';
   ouvrirCalque(V, 'at-cal-album', feuille('at-f-album', '<span class="at-f-ic">📒</span><h3>L\'album de ' + esc(n) + '</h3>', corps));
   son(V, 'page');
@@ -8224,6 +8344,9 @@ function ouvrirCoffret(V){
     if(t.recus.indexOf(code) < 0) t.recus.push(code);
     av = V.etat.cartons.map(function(q){ return q.id; }); nouveauCarton(V.etat, [id]); dessinerPiece(V, av);
     ic = X.ic; tx = dans + X.nom.toLowerCase() + ' ! Il arrive dans un carton, au coin de la pièce 📦.';
+  } else if((k === 'p' && CHATS[+id]) || (k === 'y' && MP.YEUX[+id])){
+    ic = k === 'p' ? '🎨' : '👀'; tx = dans + donnerPeau(V, code) + ' ! ' + (k === 'p' ? 'Il l\'attend' : 'Ils l\'attendent') + ' dans sa garde-robe 🎀, dans sa barre 🐾.';
+    brillerMimi(V);
   } else {
     chatsTous(V).forEach(function(o){ bhPlus(o, 5); });
     ic = '🍬'; tx = 'Des friandises ! Elle en garde une pour toi… ah non, finalement, elle les mange toutes.';
@@ -8247,22 +8370,25 @@ function majBarre(V, flash){
   b.classList.toggle('plein', !!c && bhPlein(c));
   if(ja && ja._n !== n){ ja._n = n; ja.style.transform = 'scaleX(' + (n / 100).toFixed(2) + ')'; }
   b.setAttribute('aria-label', 'Les affaires de Mimi. Son bonheur : ' + n + ' sur 100');
-  var nb = m.neufs.length + garde(V.etat).neuf.length, badge = b.querySelector('.at-badge');
+  var nb = m.neufs.length + garde(V.etat).neuf.length + (m.peauNeuve === 1 ? 1 : 0), badge = b.querySelector('.at-badge');
   if(badge){ badge.textContent = nb ? '✨' : ''; badge.style.display = nb ? '' : 'none'; }
   b.hidden = !c;
+  /* l'appareil photo, et où en est l'album (« 3 sur 15 ») */
+  if(V.elPhoto){ V.elPhoto.hidden = !c; var pn = V.elPhoto.querySelector('.at-photo-n'), tn = m.album.length + '/' + PHOTOS.length; if(pn && pn._t !== tn){ pn._t = tn; pn.textContent = tn; } V.elPhoto.setAttribute('aria-label', 'Prendre ' + (c ? nomChat(c) : PORTEE.mere) + ' en photo. Son album : ' + m.album.length + ' sur ' + PHOTOS.length); }
   if(V.barreMimi && !V.barreMimi.hidden) V.barreMimi.innerHTML = htmlBarre(V);
   if(flash){ b.classList.remove('at-flash-bt'); void b.offsetWidth; b.classList.add('at-flash-bt'); }
 }
 function htmlBarre(V){
   var c = chatsTous(V)[0], m = mimi(V), G = garde(V.etat), n = c ? bonheur(c) : 0, nom = c ? nomChat(c) : PORTEE.mere;
   var bt = function(at, ic, txt, neuf, x){ return '<button type="button" class="at-mb-bt' + (x || '') + '" data-mimi="' + at + '"><span class="at-mb-ic" aria-hidden="true">' + ic + '</span><small>' + esc(txt) + '</small>' + (neuf ? '<i class="at-mb-neuf" aria-label="nouveau">✨</i>' : '') + '</button>'; };
-  var s = '<div class="at-mb-tete"><span class="at-mb-chat">' + (c ? '<svg viewBox="19 -28 76 78" aria-hidden="true">' + teteChat(CHATS[(c.v || 0) % 3], 57, 18, c.acc || {}) + '</svg>' : '') + '</span>' +
+  var s = '<div class="at-mb-tete"><span class="at-mb-chat">' + (c ? '<svg viewBox="19 -28 76 78" aria-hidden="true">' + teteChat(vChat(c.v), 57, 18, c.acc || {}) + '</svg>' : '') + '</span>' +
     '<span class="at-mb-jauge"><b>' + esc(nom) + '</b><i class="at-mb-barre' + (c && bhPlein(c) ? ' plein' : '') + '"><b style="width:' + n + '%"></b></i></span>' +
     /* (la jauge seule : ni cœurs ni envie ici — son envie se devine à ce qu'elle fait, puis sa bulle la dit) */
     '<button type="button" class="at-rond at-mb-x" data-mimi="x" aria-label="Fermer">✖</button></div><div class="at-mb-l">';
   s += '<span class="at-mb-g">Jouer</span>' + m.jouets.map(function(id){ return bt('j:' + id, JOUETS[id].ic, JOUETS[id].nom.replace(/^(la |le |l')/, '').replace(/^\w/, function(x){ return x.toUpperCase(); }), m.neufs.indexOf(id) >= 0, ' at-mb-jouet'); }).join('');
-  if(m.soins.length) s += '<span class="at-mb-g">Soins</span>' + m.soins.filter(function(id){ return id !== 'griffoir'; }).map(function(id){ return bt('s:' + id, iconeSoin(id), SOINS[id].nom, m.neufs.indexOf(id) >= 0); }).join('');
-  s += '<span class="at-mb-g">Ses affaires</span>' + bt('garde', '🎀', 'Habits', G.neuf.length > 0) + bt('shop', '🛒', 'Boutique') + (soinA(V, 'photo') ? bt('album', '📒', 'Album') : '');
+  var soins = m.soins.filter(function(id){ return id !== 'griffoir' && id !== 'photo'; });      /* (l'appareil photo a son bouton, à côté du 🐾) */
+  if(soins.length) s += '<span class="at-mb-g">Soins</span>' + soins.map(function(id){ return bt('s:' + id, iconeSoin(id), SOINS[id].nom, m.neufs.indexOf(id) >= 0); }).join('');
+  s += '<span class="at-mb-g">Ses affaires</span>' + bt('garde', '🎀', 'Habits', G.neuf.length > 0 || m.peauNeuve === 1) + bt('shop', '🛒', 'Boutique') + bt('album', '📒', 'Album');
   return s + '</div>';
 }
 function ouvrirBarre(V){
@@ -8281,7 +8407,6 @@ function actionBarre(V, a){
   if(a === 's:brosse'){ fermerBarre(V); mimi(V).neufs = mimi(V).neufs.filter(function(x){ return x !== 'brosse'; }); prendreBrosse(V); majBarre(V); return; }
   if(a === 's:bain'){ fermerBarre(V); mimi(V).neufs = mimi(V).neufs.filter(function(x){ return x !== 'bain'; }); demarrerBain(V); majBarre(V); return; }
   if(a === 's:friandises'){ fermerBarre(V); mimi(V).neufs = mimi(V).neufs.filter(function(x){ return x !== 'friandises'; }); donnerFriandise(V); majBarre(V); return; }
-  if(a === 's:photo'){ mimi(V).neufs = mimi(V).neufs.filter(function(x){ return x !== 'photo'; }); prendrePhoto(V); majBarre(V); return; }
   if(a === 'garde'){ fermerBarre(V); var c = chatsTous(V)[0]; if(c) ouvrirGarde(V, c.id); return; }
   if(a === 'shop'){ fermerBarre(V); ouvrirBoutique(V); return; }
   if(a === 'album'){ ouvrirAlbum(V); return; }
@@ -8711,7 +8836,7 @@ window.Atelier = {
   BESOINS_CHAT:BESOINS.map(function(b){ return b.k; }),
   /* Mimi en image, hors de la pièce (l'album photo, les robots) : un <svg> ; pose : 'assis', 'dort', 'marche', 'dos', 'pain'… ; x : des classes .at-x-… */
   imageChat:function(v, pose, x, acc){
-    return '<div class="at-o at-t-chat at-plat at-c-' + (pose || 'assis') + (x ? ' ' + x : '') + '"><svg viewBox="0 0 ' + MP.W + ' ' + MP.H + '" overflow="visible" aria-hidden="true">' + MP.image((v || 0) % 3, pose || 'assis', x || '', accPantin(acc)) + '</svg></div>';
+    return '<div class="at-o at-t-chat at-plat at-c-' + (pose || 'assis') + (x ? ' ' + x : '') + '"><svg viewBox="0 0 ' + MP.W + ' ' + MP.H + '" overflow="visible" aria-hidden="true">' + MP.image(vChat(v), pose || 'assis', x || '', accPantin(acc)) + '</svg></div>';
   },
   defsHTML:function(){ return svgDefs(); },
   /* (les robots) la vue montée en ce moment, avec ses points d'accès d'essai (_mimi, _cadeau…) */

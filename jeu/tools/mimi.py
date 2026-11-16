@@ -6,7 +6,9 @@
 - les planchers : son bonheur ne descend jamais sous 8, ses besoins sous 25 ; une vieille sauvegarde repart de 30 au plus ;
 - la jauge seule (§12.69) : la lassitude ; les cinq familles cachées et ce que les coffrets apportent ; l'envie cachée une minute, son manège, puis sa bulle dorée ; « Pile poil ! » ; la barre pleine : un coffret, autant de fois qu'on la remplit ; le coffret doré d'une famille complète ;
 - la boutique (des pièces d'or) : la pâtée, puis la gamelle qui demande quoi servir ; un habit ;
-- les objets de soin viennent des coffrets : la brosse ; la brosse au doigt ; le bain ; les friandises ; l'appareil photo et l'album ;
+- les objets de soin viennent des coffrets : la brosse ; la brosse au doigt ; le bain ; les friandises ;
+- l'appareil photo à côté du 🐾 et l'album à compléter (§12.70) : une photo par pose, « Dommage, c'était la même ! », le compteur, les cadres vides ;
+  à trois photos, des yeux en cadeau ; un pelage dans un coffret ; la garde-robe : son pelage, ses yeux, et elle change pour de bon ;
 - le coffret : elle sort par la chatière, revient, le pose ; on l'ouvre : une chose de plus, et son bonheur redescend ; les sept jouets, chacun joué ;
 - la litière : sale, un toucher la nettoie ;
 - aucun message d'erreur.
@@ -347,16 +349,79 @@ with sync_playwright() as p:
     ouvrir_barre(pg)
     pg.locator('#atelier-ici [data-mimi="s:friandises"]').click(); pg.wait_for_timeout(300)
     verifier('ventre' in toast(pg), 'pas deux fois de suite : « gare au petit ventre tout rond »')
-    # --- la photo et l'album ---
-    calme(pg, cid, 'dos')
+    # --- l'appareil photo (à côté du 🐾) et l'album à compléter : une photo par pose ---
+    CHATJS = "M.S.atelier.objets.filter(function(x){ return x.t === 'chat'; })[0]"
+    pg.wait_for_timeout(6500)      # (la friandise d'avant a encore son mot à dire : dans trois secondes elle se lèche, puis elle a une idée — on attend que ce soit passé)
+    pg.evaluate("() => { M.S.atelier.mimi.album = []; M.S.atelier.mimi.peaux = {p:[], y:[]}; Atelier._vue()._humeur(); }")
+    bt = pg.evaluate("() => { var b = document.querySelector('#atelier-ici .at-photo-bt'), p = document.querySelector('#atelier-ici .at-mimi-bt'); if(!b || b.hidden) return null; var r = b.getBoundingClientRect(), q = p.getBoundingClientRect(); return {w:Math.round(r.width), acote:r.left >= q.right - 2 && r.left - q.right < 30 && Math.abs((r.top + r.bottom) / 2 - (q.top + q.bottom) / 2) < 12, dedans:r.right <= innerWidth && r.bottom <= innerHeight}; }")
+    verifier(bt is not None and bt['w'] >= 48 and bt['acote'] and bt['dedans'], f'l\'appareil photo : un bouton à côté du 🐾 ({bt})')
+    def photo(pose, x=None):
+        calme(pg, cid, pose)
+        if x: pg.evaluate(f"() => {{ document.querySelector('#atelier-ici [data-obj=\"{cid}\"]').classList.add('{x}'); }}")
+        pg.locator('#atelier-ici .at-photo-bt').click(); pg.wait_for_timeout(450)
+        if x: pg.evaluate(f"() => {{ document.querySelector('#atelier-ici [data-obj=\"{cid}\"]').classList.remove('{x}'); }}")
+        return toast(pg)
+    t1 = photo('dos')
+    al = mimi(pg)['mimi']['album']
+    verifier(len(al) == 1 and al[0]['k'] == 'dos' and 'nouvelle photo' in t1 and '1 sur 15' in t1, f'une photo, sur le dos : elle va dans l\'album ({t1[:80]})')
+    t2 = photo('dos')
+    verifier(len(mimi(pg)['mimi']['album']) == 1 and 'Dommage' in t2 and 'la même' in t2, f'la même pose : « Dommage, c\'était la même ! », rien de plus dans l\'album ({t2[:70]})')
+    np1 = pg.evaluate("() => document.querySelector('#atelier-ici .at-photo-n').textContent")
+    verifier(np1 == '1/15', f'sous l\'appareil : où en est l\'album ({np1})')
+    t3 = photo('pain')
+    t4 = photo('assis', 'at-x-miaou')
+    m = mimi(pg)
+    verifier([f['k'] for f in m['mimi']['album']] == ['dos', 'pain', 'miaou'] and m['mimi']['peaux']['y'] == [0] and 'cadeau' in t4 and 'yeux' in t4, f'trois photos : un cadeau, de nouveaux yeux ({t4[:120]})')
+    shot(pg, 'photo-cadeau')
     ouvrir_barre(pg)
-    pg.locator('#atelier-ici [data-mimi="s:photo"]').click(); pg.wait_for_timeout(600)
-    verifier(len(mimi(pg)['mimi']['album']) == 1 and mimi(pg)['mimi']['album'][0]['pose'] == 'dos', 'une photo : elle va dans l\'album (sur le dos)')
-    ouvrir_barre(pg)
+    verifier(pg.locator('#atelier-ici [data-mimi="s:photo"]').count() == 0, 'plus de « Photo » dans ses soins : l\'appareil a son bouton')
     pg.locator('#atelier-ici [data-mimi="album"]').click(); pg.wait_for_timeout(600)
-    verifier(pg.locator('#atelier-ici .at-album .at-photo').count() == 1, 'l\'album montre la photo')
+    f = pg.evaluate("() => { var A = document.querySelector('#atelier-ici .at-album'); if(!A) return null; return {cadres:A.querySelectorAll('.at-photo').length, vides:A.querySelectorAll('.at-photo-vide').length, images:A.querySelectorAll('.at-photo:not(.at-photo-vide) svg').length, n:(document.querySelector('#atelier-ici .at-album-n') || {}).textContent, large:A.scrollWidth <= A.clientWidth + 10}; }")
+    verifier(f is not None and f['cadres'] == 15 and f['vides'] == 12 and f['images'] == 3 and '3 sur 15' in f['n'] and f['large'], f'l\'album : quinze cadres, trois photos, douze cadres vides, « 3 sur 15 » ({f})')
     shot(pg, 'album')
     pg.evaluate("() => { var g = document.querySelector('#atelier-ici .at-grim .at-fermer'); if(g) g.click(); }"); pg.wait_for_timeout(300)
+    # (une pose rare : au galop)
+    calme(pg, cid); voir_chat(pg, cid)
+    p0 = chat(pg, cid)['pos']
+    pg.evaluate(f"() => {V}._va('{cid}', {p0['x'] + (300 if p0['x'] < 600 else -300)}, {p0['y']}, 4.2)"); pg.wait_for_timeout(320)
+    pg.locator('#atelier-ici .at-photo-bt').click(); pg.wait_for_timeout(450)
+    tg = toast(pg); al = [f['k'] for f in mimi(pg)['mimi']['album']]
+    verifier('galop' in al and 'rare' in tg, f'au galop : « Ventre à terre », une pose rare ({tg[:80]})')
+    calme(pg, cid)
+    # --- son pelage, ses yeux : dans sa garde-robe ; elle change pour de bon ---
+    pg.evaluate("() => { M.S.atelier.mimi.peaux.p = [3]; }")
+    DESSIN = f"() => {{ var d = document.querySelector('#atelier-ici [data-obj=\"{cid}\"] svg'); var h = d ? d.innerHTML : ''; return {{v:{CHATJS}.v, blanc:h.indexOf('atg-mim3') >= 0, roux:h.indexOf('atg-mim0)') >= 0, bleus:h.indexOf('atg-mimz0') >= 0}}; }}"
+    pg.evaluate(f"() => {V}._garde('{cid}')"); pg.wait_for_timeout(500)
+    g = pg.evaluate("() => { var l = [].map.call(document.querySelectorAll('#atelier-ici [data-peau]'), function(b){ return b.getAttribute('data-peau') + (b.classList.contains('on') ? '*' : ''); }); return {l:l, verrous:document.querySelectorAll('#atelier-ici .at-garde-verrou').length}; }")
+    verifier(g['l'] == ['p:0*', 'p:3', 'y:-1*', 'y:0'] and g['verrous'] >= 2, f'sa garde-robe : son pelage (le sien, et la blanche gagnée), ses yeux (les siens, et les bleus) ; le reste est à gagner ({g})')
+    shot(pg, 'garde-peaux')
+    pg.locator('#atelier-ici [data-peau="p:3"]').click(); pg.wait_for_timeout(500)
+    pg.locator('#atelier-ici [data-peau="y:0"]').click(); pg.wait_for_timeout(500)
+    d1 = pg.evaluate(DESSIN)
+    verifier(d1 == {'v': 103, 'blanc': True, 'roux': False, 'bleus': True}, f'on touche : la voilà blanche comme neige, aux yeux bleus ({d1})')
+    shot(pg, 'garde-blanche')
+    pg.evaluate("() => { var g = document.querySelector('#atelier-ici .at-grim .at-fermer'); if(g) g.click(); }"); pg.wait_for_timeout(300)
+    voir_chat(pg, cid); pg.wait_for_timeout(300); shot(pg, 'blanche')
+    pg.evaluate(f"() => {V}._garde('{cid}')"); pg.wait_for_timeout(400)
+    g = pg.evaluate("() => [].map.call(document.querySelectorAll('#atelier-ici [data-peau]'), function(b){ return b.getAttribute('data-peau') + (b.classList.contains('on') ? '*' : ''); })")
+    verifier(g == ['p:0', 'p:3*', 'y:-1', 'y:0*'], f'son pelage roux n\'est pas perdu : elle peut y revenir ({g})')
+    pg.locator('#atelier-ici [data-peau="p:0"]').click(); pg.wait_for_timeout(400)
+    pg.locator('#atelier-ici [data-peau="y:-1"]').click(); pg.wait_for_timeout(400)
+    d2 = pg.evaluate(DESSIN)
+    verifier(d2 == {'v': 0, 'blanc': False, 'roux': True, 'bleus': False}, f'et la revoilà rousse, avec ses yeux à elle ({d2})')
+    pg.evaluate("() => { var g = document.querySelector('#atelier-ici .at-grim .at-fermer'); if(g) g.click(); }"); pg.wait_for_timeout(300)
+    # (un pelage dans un coffret)
+    calme(pg, cid)
+    ok = pg.evaluate(f"() => Atelier._vue()._cadeau('{cid}', 'p:4')")
+    t0 = time.time()
+    while time.time() - t0 < 34 and not mimi(pg)['tama'].get('coffret'): pg.wait_for_timeout(500)
+    pg.wait_for_timeout(600)
+    pg.evaluate("() => { var c = M.S.atelier.tama.coffret; if(c) Atelier._vue()._voir(c.x, c.y); }"); pg.wait_for_timeout(500)
+    cq = pg.evaluate("() => { var e = document.querySelector('#atelier-ici .at-coffret svg'); if(!e) return null; var r = e.getBoundingClientRect(); return {x:r.left + r.width / 2, y:r.top + r.height * .6}; }")
+    if cq: tap(pg, cq['x'], cq['y']); pg.wait_for_timeout(700)
+    m = mimi(pg)
+    verifier(ok and 4 in m['mimi']['peaux']['p'] and 'pelage' in toast(pg) and m['mimi'].get('peauNeuve') == 1, f'un coffret apporte un pelage ({toast(pg)[:90]})')
+    pg.evaluate(f"() => {{ {CHATJS}.bh = 30; }}")
     # --- la litière ---
     lid = pg.evaluate("() => (M.S.atelier.objets.filter(function(o){ return o.t === 'litiere'; })[0] || {}).id")
     if lid:
@@ -383,7 +448,7 @@ with sync_playwright() as p:
     shot(pg, 'jauge')
     ouvrir_barre(pg)
     nb = pg.locator('#atelier-ici [data-mimi=coeurs], #atelier-ici [data-mimi=envie]').count()
-    verifier(nb == 0 and pg.locator('#atelier-ici .at-mb-barre').count() == 1 and pg.locator('#atelier-ici [data-mimi="s:photo"]').count() == 1, 'dans sa barre : son bonheur, ses affaires, l\'appareil photo ; ni cœurs ni envie')
+    verifier(nb == 0 and pg.locator('#atelier-ici .at-mb-barre').count() == 1 and pg.locator('#atelier-ici [data-mimi="album"]').count() == 1, 'dans sa barre : son bonheur, ses affaires, son album ; ni cœurs ni envie')
     shot(pg, 'barre')
     pg.locator('#atelier-ici [data-mimi=x]').click(); pg.wait_for_timeout(300)
     # --- la lassitude : refaire la même chose rapporte de moins en moins ; ça s'oublie avec le temps de jeu ---
@@ -394,15 +459,15 @@ with sync_playwright() as p:
     pg.evaluate(f"""() => {{ var o = {CHAT}; M.S.atelier.tama.las = {{}}; o.bh = 15; Object.keys(o.b).forEach(function(k){{ o.b[k] = 100; }}); }}""")
     # --- ses cinq familles (cachées) : tout ce qui existe est dans une famille, une seule ; ce que les coffrets apportent ---
     f = pg.evaluate(f"""() => {{ var e = M.S.atelier, g = JSON.stringify([e.mimi.jouets, e.mimi.nour, e.mimi.soins, e.garde.a, e.tama.recus]);
-      e.mimi.jouets = ['pelote']; e.mimi.nour = ['croquettes']; e.mimi.soins = ['photo']; e.garde.a = []; e.tama.recus = [];
+      e.mimi.jouets = ['pelote']; e.mimi.nour = ['croquettes']; e.mimi.soins = ['photo']; e.garde.a = []; e.tama.recus = []; var px = e.mimi.peaux; e.mimi.peaux = {{p:[], y:[]}};
       var coussins = e.objets.filter(function(o){{ return o.t === 'coussin'; }}).length + e.cartons.filter(function(k){{ return (k.reste || []).indexOf('coussin') >= 0; }}).length;
       var r = {V}._familles().reste, v = JSON.parse(g);
-      e.mimi.jouets = v[0]; e.mimi.nour = v[1]; e.mimi.soins = v[2]; e.garde.a = v[3]; e.tama.recus = v[4];
+      e.mimi.jouets = v[0]; e.mimi.nour = v[1]; e.mimi.soins = v[2]; e.garde.a = v[3]; e.tama.recus = v[4]; e.mimi.peaux = px;
       return {{reste:r, coussins:coussins}}; }}""")
     tout = [c for k in f['reste'] for c in f['reste'][k]]
-    attendu = ['j:' + x for x in ['plume', 'laser', 'souris', 'grelot', 'carton', 'herbe']] + ['n:' + x for x in ['pate', 'poisson', 'festin']] + ['s:' + x for x in ['brosse', 'bain', 'friandises', 'griffoir']] + ['a:' + x for x in HABITS] + ([] if f['coussins'] else ['c:coussin'])
+    attendu = ['j:' + x for x in ['plume', 'laser', 'souris', 'grelot', 'carton', 'herbe']] + ['n:' + x for x in ['pate', 'poisson', 'festin']] + ['s:' + x for x in ['brosse', 'bain', 'friandises', 'griffoir']] + ['a:' + x for x in HABITS] + ['p:3', 'p:4', 'p:5', 'p:6', 'y:2', 'y:4'] + ([] if f['coussins'] else ['c:coussin'])
     verifier(sorted(f['reste'].keys()) == ['belle', 'envies', 'recre', 'reine', 'ventre'] and sorted(tout) == sorted(attendu) and len(set(tout)) == len(tout),
-        f'cinq familles ; chaque jouet, plat, objet de soin et habit est dans une famille, une seule ({ {k: len(v) for k, v in f["reste"].items()} })')
+        f'cinq familles ; chaque jouet, plat, objet de soin et habit est dans une famille, une seule — et quatre pelages, deux couleurs d\'yeux ({ {k: len(v) for k, v in f["reste"].items()} })')
     f = pg.evaluate(f"() => {V}._familles()")
     l = pg.evaluate(f"() => {{ var a = {V}, l = []; for(var i = 0; i < 60; i++) l.push(a._contenu()); return l; }}")
     reste = [c for k in f['reste'] for c in f['reste'][k]]
@@ -410,7 +475,7 @@ with sync_playwright() as p:
     o = pg.evaluate(f"""() => {{ var e = M.S.atelier, a = {V}, g = e.mimi.soins, r = [];
       [['photo'], ['brosse', 'photo'], ['brosse', 'bain', 'photo']].forEach(function(l){{ e.mimi.soins = l; var vus = {{}}; for(var i = 0; i < 80; i++){{ var c = a._contenu().c; if(a._familles().reste.belle.indexOf(c) >= 0) vus[c] = 1; }} r.push(Object.keys(vus)); }});
       e.mimi.soins = g; return r; }}""")
-    verifier(o[0] == ['s:brosse'] and o[1] == ['s:bain'] and len(o[2]) > 1 and all(x[:2] == 'a:' for x in o[2]), f'« toute belle » : d\'abord la brosse, puis le bain, puis ses habits au hasard ({o[0]}, {o[1]}, {len(o[2])} habits)')
+    verifier(o[0] == ['s:brosse'] and o[1] == ['s:bain'] and len(o[2]) > 1 and all(x[:2] in ('a:', 'p:', 'y:') for x in o[2]), f'« toute belle » : d\'abord la brosse, puis le bain, puis le reste au hasard ({o[0]}, {o[1]}, {len(o[2])} autres)')
     # --- les envies : d'abord cachée (ni bulle, ni rien dans sa barre) ; on la devine à ce qu'elle fait ---
     l = pg.evaluate(f"() => {V}._enviesPossibles()")
     verifier('caresse' in l and 'jouet:pelote' in l and 'dodo' in l and 'bain' in l, f'ce dont elle peut avoir envie ({l})')
@@ -489,7 +554,7 @@ with sync_playwright() as p:
     # (toutes ses familles sont complètes, sauf le ventre plein, où il ne manque que le festin : le coffret sera doré)
     pg.evaluate(f"""() => {{ var e = M.S.atelier, a = {V};
       e.mimi.jouets = ['pelote', 'plume', 'laser', 'souris', 'grelot', 'carton', 'herbe']; e.mimi.soins = ['brosse', 'bain', 'friandises', 'griffoir', 'photo'];
-      e.mimi.nour = ['croquettes', 'pate', 'poisson']; e.garde.a = {json.dumps(HABITS)}; e.tama.recus = ['c:coussin']; e.tama.fam = {{}}; a._tama(15); }}""")
+      e.mimi.nour = ['croquettes', 'pate', 'poisson']; e.garde.a = {json.dumps(HABITS)}; e.tama.recus = ['c:coussin']; e.mimi.peaux = {{p:[3, 4, 5, 6], y:[0, 2, 4]}}; e.tama.fam = {{}}; a._tama(15); }}""")
     f = pg.evaluate(f"() => {V}._familles()")
     verifier(f['fam'] == {'recre': 1, 'belle': 1, 'reine': 1, 'envies': 1} and f['reste']['ventre'] == ['n:festin'], f'quatre familles complètes (notées, sans bruit), il ne manque que le festin ({f["fam"]}, {f["reste"]["ventre"]})')
     calme(pg, cid); voir_chat(pg, cid)
