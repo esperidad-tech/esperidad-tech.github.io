@@ -341,6 +341,18 @@ function normaliserChat(e){
   if(t.coffret && !(typeof t.coffret === 'object' && typeof t.coffret.c === 'string' && typeof t.coffret.x === 'number' && typeof t.coffret.y === 'number')) t.coffret = null;
   if(t.dehors === undefined) t.dehors = null;
   if(t.coffret === undefined) t.coffret = null;
+  /* (16 novembre au soir, étape 2) les cœurs, les envies, la lassitude. Une sauvegarde d'avant repart d'un bonheur modeste :
+     Romain : « j'ai joué 2 secondes et elle est déjà au maximum […] quand on arrive au maximum, ça doit être une vraie réussite » */
+  var avantCoeurs = t.v !== 2;
+  t.v = 2;
+  if(avantCoeurs) t.pts = 0;
+  if(!t.las || typeof t.las !== 'object') t.las = {};
+  cles(t.las).forEach(function(k){ if(!(t.las[k] > 0)) delete t.las[k]; });
+  t.c = coeursPropres(t.c);
+  if(!(t.envie && typeof t.envie === 'object' && typeof t.envie.k === 'string' && typeof t.envie.n === 'number')) t.envie = null;
+  if(typeof t.envieT !== 'number') t.envieT = t.jeu + 20;
+  if(t.envieAvant !== undefined && typeof t.envieAvant !== 'string') delete t.envieAvant;
+  if(t.grands !== undefined && !(t.grands >= 0)) delete t.grands;
   if(!e.mimi || typeof e.mimi !== 'object') e.mimi = {};
   var mm = e.mimi, uniq = function(l, ok){ return (Array.isArray(l) ? l : []).filter(function(id, i, a){ return typeof id === 'string' && ok(id) && a.indexOf(id) === i; }); };
   mm.jouets = uniq(mm.jouets, function(id){ return !!JOUETS[id]; }); if(mm.jouets.indexOf('pelote') < 0) mm.jouets.unshift('pelote');
@@ -353,6 +365,7 @@ function normaliserChat(e){
     if(o.t !== 'chat') return;
     if(!o.b || typeof o.b !== 'object') o.b = {};
     bonheur(o);      /* (avant de toucher aux besoins : une vieille sauvegarde prend son bonheur dans leur moyenne) */
+    if(avantCoeurs) o.bh = Math.min(o.bh, BH_APRES);
     delete o.b.dodo;
     ['faim', 'soif', 'propre', 'amour', 'jeu'].forEach(function(k){ if(typeof o.b[k] !== 'number' || !(o.b[k] >= 0)) o.b[k] = 80; o.b[k] = Math.max(BESOIN_MIN, Math.min(100, Math.round(o.b[k]))); });
     if(o.acc !== undefined){ if(!o.acc || typeof o.acc !== 'object') delete o.acc; else ['cou', 'tete'].concat(cles(o.acc)).forEach(function(k){ var id = o.acc[k]; if(id === undefined) return; if(typeof ACC === 'undefined' || !ACC[id] || ACC[id].slot !== k || e.garde.a.indexOf(id) < 0) delete o.acc[k]; }); }
@@ -3288,7 +3301,7 @@ function vue(el, opts){
       '<button type="button" class="at-coin" data-at="reserve" aria-label="Le carton de rangement"><span class="at-coin-ic" aria-hidden="true">📦</span><b class="at-badge" style="display:none"></b></button>' +
       '<button type="button" class="at-salle" data-at="salle" aria-label="L\'autre pièce"><span class="at-salle-ic" aria-hidden="true"></span><b class="at-badge" style="display:none"></b></button>' +
       /* (16 novembre) Mimi : son bouton (le cœur autour montre son bonheur) */
-      '<button type="button" class="at-mimi-bt" data-at="mimi" aria-label="Les affaires de Mimi" hidden><span class="at-mimi-ic" aria-hidden="true">🐾</span><b class="at-badge" style="display:none"></b></button></div>' +
+      '<button type="button" class="at-mimi-bt" data-at="mimi" aria-label="Les affaires de Mimi" hidden><span class="at-mimi-ic" aria-hidden="true">🐾</span><i class="at-mimi-coeurs" aria-hidden="true"></i><b class="at-badge" style="display:none"></b></button></div>' +
     '<div class="at-mimi-barre" hidden></div>' +
     '<div class="at-ouvert" hidden></div><div class="at-grim" hidden></div><div class="at-toast" hidden></div><div class="at-fantomes"></div>';
   el.appendChild(root);
@@ -3357,8 +3370,15 @@ function vue(el, opts){
     /* (16 novembre) le Tamagotchi de Mimi : son état ; un soin ; mettre les points du cadeau ; réagir ; la zone sous un point de l'écran */
     _mimi:function(){ var o = chatsTous(V)[0]; return JSON.parse(JSON.stringify({mimi:mimi(V), tama:tama(V), b:o ? o.b : null, bh:o ? bonheur(o) : null, jouet:V.jouet ? V.jouet.id : null, outil:V.outil ? V.outil.t : null, bain:!!V.bain})); },
     _soigner:function(quoi, gain, k){ var o = chatsTous(V)[0]; if(o) soigner(V, o, quoi, gain || 6, k); return o ? bonheur(o) : null; },
-    _cadeauPret:function(){ var o = chatsTous(V)[0], t = tama(V); if(!o) return false; o.bh = 100; t.pts = CADEAU_PTS; t.cadeaux = {}; return true; },
-    _cadeau:function(id){ var o = V.parId[id] || chatsTous(V)[0]; return o ? cadeauChat(V, o, true) : false; },
+    _cadeauPret:function(){ var o = chatsTous(V)[0], t = tama(V); if(!o) return false; o.bh = BH_COFFRET + 5; t.pts = CADEAU_PTS; t.cadeaux = {}; return true; },
+    _cadeau:function(id, quoi){ var o = V.parId[id] || chatsTous(V)[0]; return o ? cadeauChat(V, o, quoi || 'petit') : false; },
+    /* (étape 2) les cœurs, les envies, la lassitude */
+    _coeurs:function(){ var o = chatsTous(V)[0]; if(o) coeursMaj(V, o); return {h:tama(V).c.h.slice(), n:nbCoeurs(V), c:JSON.parse(JSON.stringify(tama(V).c)), bh:o ? o.bh : null, grand:o ? grandPret(V, o) : false, las:JSON.parse(JSON.stringify(tama(V).las))}; },
+    _envie:function(k){ var t = tama(V); if(k === null){ t.envie = null; } else if(k){ t.envie = {k:k, n:t.jeu}; } majHumeurs(V); majBarre(V); return t.envie ? t.envie.k : null; },
+    _enviesPossibles:function(){ return enviesPossibles(V, true); },
+    _lasse:function(fam){ return lasse(V, fam); },
+    _dodo:function(id){ var o = V.parId[id] || chatsTous(V)[0]; return o ? dodoCoin(V, o) : false; },
+    _poserSur:function(id, meuble){ var o = V.parId[id], p = V.parId[meuble]; if(!o || !p) return false; chatSaisi(V, o); o.sur = {o:p.id, k:0, dx:0}; placerEl(V, o); chatLache(V, o); return true; },   /* (comme si on la portait dessus) */
     _reagir:function(id, r){ var o = V.parId[id]; if(!o) return false; reagir(V, o, r); return true; },
     /* (le pantin de Mimi, pour les robots : où est sa tête, son dos, son ventre, sa queue à l'écran ; sa pose, ses gestes en cours) */
     _ptChat:function(id, quoi){ var o = V.parId[id], r = o && pantinDe(V, o); return r ? r.point(quoi) : null; },
@@ -3923,7 +3943,7 @@ function htmlObjet(V, o, R){
   var c = catDe(o), D = dessinObjet(o, R), b = D.bb, att = 0;
   return {bb:b, html:'<svg viewBox="' + [b[0], b[1], b[2] - b[0], b[3] - b[1]].map(f1).join(' ') + '" overflow="visible" aria-hidden="true">' + D.svg + '</svg>' +
     (c.cases ? '<span class="at-regle ' + (c.verre ? 'at-regle-v' : 'at-regle-s') + '" aria-hidden="true">' + (c.verre ? '💧' : '🍃') + '</span>' : '') +
-    (att ? '<b class="at-badge">' + att + '</b>' : '') + (c.special === 'chaudron' ? videsHTML(V) : '') + (o.t === 'chat' ? bulleHTML(o) + bonheurHTML(o) : '')};
+    (att ? '<b class="at-badge">' + att + '</b>' : '') + (c.special === 'chaudron' ? videsHTML(V) : '') + (o.t === 'chat' ? bulleHTML(o, V) + bonheurHTML(o) : '')};
 }
 /* Placer un objet : son ancre (le milieu du bas de sa face avant) à sa place ; son cadre suit son dessin.
    Il se redessine quand sa place dans la pièce change (la perspective n'est pas la même partout). */
@@ -5796,7 +5816,7 @@ function chatToucher(V, o){
   /* (un câlin d'un toucher : un tout petit peu de bonheur, pas plus de six fois par minute — on ne remplit pas sa jauge en tapotant) */
   var now = Date.now();
   V.taps = (V.taps || []).filter(function(t){ return now - t < 60000; });
-  if(V.taps.length < 6){ V.taps.push(now); donner(o, 'amour', 3); o.bh = Math.min(100, bonheur(o) + 1); majBarre(V); changer(V); }
+  if(V.taps.length < 6){ V.taps.push(now); donner(o, 'amour', 3); bhPlus(o, 0.3); majBarre(V); changer(V); }
   if(st.pose === 'dort'){ reveilChat(V, o); return; }
   if(st.anim && st.mv && st.mv.mode === 'saute'){ coeursChat(V, o); return; }   /* en l'air : elle finit son saut */
   if(st.anim) chatArreter(V, o);
@@ -5849,10 +5869,10 @@ function chatEndormir(V, o){
   st.dortJusqua = Date.now() + CHAT_SIESTE_TOUCHE;
   chatPlanifier(V, o, CHAT_SIESTE_TOUCHE + 30);
 }
-function coeursChat(V, o){
+function coeursChat(V, o, ic){
   var p = chatPos(V, o);
   for(var i = 0; i < 3; i++){
-    var h = document.createElement('span'); h.className = 'at-coeur-vole'; h.textContent = '💜';
+    var h = document.createElement('span'); h.className = 'at-coeur-vole'; h.textContent = ic || '💜';
     h.style.left = pX(V, p.x + (i - 1) * 26); h.style.top = pY(V, p.y - 104 * p.s);
     h.style.animationDelay = (i * 0.15) + 's';
     V.calque.appendChild(h);
@@ -5877,6 +5897,22 @@ function chatLache(V, o){
   var st = chatEtat(V, o);
   st.tenu = false;
   st.pos = null;
+  /* (étape 2) posée dans un de ses coins douillets (son panier, un coussin, l'arbre à chat…) : elle pétrit un peu, tourne sur elle-même
+     et s'endort. C'est comme ça qu'on lui offre « une sieste douillette » (son quatrième cœur, ou son envie du moment). */
+  var par = o.sur && V.parId[o.sur.o];
+  if(par && DODO_ICI.test(par.t) && st.pose !== 'dort' && !o.chaton && !st.depart){
+    chatPose(V, o, 'assis'); expression(V, o, 'at-x-petrit at-c-ronron', 1300); sonMimi(V, 'ronron');
+    chatPlanifier(V, o, 20000);
+    apres(V, 1350, function(){
+      var s2 = V.chats[o.id];
+      if(!s2 || s2.tenu || s2.caresse || s2.anim || s2.depart || s2.pose !== 'assis' || (V.jouet && V.jouet.o === o)) return;
+      chatSeCoucher(V, o);
+      s2.dortJusqua = Date.now() + 14000 + Math.random() * 6000;
+      chatPlanifier(V, o, s2.dortJusqua - Date.now() + 30);
+      apres(V, 1800, function(){ dodoCoin(V, o); });
+    });
+    return;
+  }
   if(st.pose !== 'dort') chatPose(V, o, 'assis');
   chatPlanifier(V, o, st.pose === 'dort' ? Math.max(1000, st.dortJusqua - Date.now()) : 3500);
 }
@@ -6074,16 +6110,26 @@ function chatRevient(V, o, force){
    Romain : « Il faut pas que ça soit utile. Faut que ça soit un jeu, un jouet. Faut qu'elle soit attachante, et qu'on ait envie
    de s'occuper d'elle. » — « Certes une petite corvée, mais si derrière t'es récompensé, c'est plutôt cool. »
    - Rien de ce qu'on fait pour elle ne sert à l'enquête.
-   - Son bonheur (o.bh, de 0 à 100) est la seule jauge qu'on voit (dans la barre de Mimi, 🐾). Il monte quand on s'occupe d'elle ;
-     il redescend doucement pendant qu'on joue, mais jamais sous BH_MIN : elle n'est jamais malheureuse, seulement plus ou moins radieuse.
+   - DEUX JAUGES (étape 2, 16 novembre au soir ; Romain : « la barre de bonheur et la barre des cœurs. Quand on arrive à avoir [les deux]
+     à fond, là, on a une surprise. Et après, hop, ça redescend » ; « quand on arrive au maximum, ça doit être une vraie réussite ») :
+     · son bonheur (o.bh, de 0 à 100 ; le tour du bouton 🐾, la barre rose) : il part de bas (BH_DEPART), les soins rapportent deux fois
+       moins qu'avant (GAIN_K) et refaire la même chose rapporte de moins en moins (tama.las, LASSE : la lassitude s'oublie avec le
+       temps de jeu et à chaque nouveau moment). Ce qui rapporte le plus : ses envies ;
+     · ses cinq cœurs (tama.c, COEURS) : chacun a ses conditions, en images dans « Les cinq cœurs » (🐾 puis les cœurs) ; un cœur gagné
+       reste gagné jusqu'au grand cadeau ;
+     · ses envies (tama.envie, ENVIES) : une bulle de pensée dorée au-dessus d'elle (un poisson, le laser, un bain, son panier…) ; lui
+       donner pile ça rapporte ENVIE_GAIN de bonheur et compte pour le cinquième cœur ; une envie passe toute seule (ENVIE_DUREE) ;
+     · cinq cœurs ET le bonheur à 100 : LE GRAND CADEAU (cadeauChat(V, o, false, true) : elle fait la folle, sort, et revient avec un
+       coffret doré) ; quand on l'ouvre, les cœurs repartent de zéro et le bonheur redescend à BH_APRES.
+     Le bonheur redescend doucement pendant qu'on joue, jamais sous BH_MIN : elle n'est jamais malheureuse.
    - Ses besoins (o.b : faim 🍗, soif 💧, propreté 🛁, câlins ❤️, jeu 🧶) baissent aussi, jamais sous BESOIN_MIN ; quand l'un est bas,
      une bulle au-dessus de sa tête le dit (on la touche : le conteur raconte quoi faire, et la chose à toucher brille).
    - Chaque soin donne du bonheur (plus s'il répond à ce qu'elle demande ; plus avec une meilleure nourriture) : soigner().
    - La jauge cachée de la variété (tama.varie) monte quand on CHANGE de soin (pas un des deux derniers). Le petit signe :
      Mimi se roule par terre. Pleine : un nouvel objet de soin (SOINS_SUITE : la brosse, le bain, les friandises, le griffoir, l'appareil photo).
-   - Bien heureuse (bonheur ≥ BH_CADEAU) et assez de soins depuis le dernier cadeau (tama.pts ≥ CADEAU_PTS), au plus un par moment :
-     elle miaule, sort par la chatière et revient avec un petit coffret dans la gueule. Dedans : un nouveau jouet (puis, quand elle les a
-     tous, un habit, puis des friandises). Environ deux par enquête, selon comment on s'occupe d'elle.
+   - Le PETIT coffret : assez heureuse (bonheur ≥ BH_COFFRET) et assez de soins depuis le dernier (tama.pts ≥ CADEAU_PTS), au plus un
+     par moment : elle miaule, sort par la chatière et revient avec un petit coffret dans la gueule. Dedans : un nouveau jouet (puis,
+     quand elle les a tous, un habit, puis des friandises).
    - Les jouets ne viennent que des coffrets ; le confort (nourritures, paniers, habits) s'achète avec les pièces d'or, à petits prix
      (la boutique de Mimi : 🐾 puis 🛒).
    - Une petite bêtise environ toutes les 4 minutes de jeu, jamais plus (une fiole par terre, le tabouret renversé, une pelote déroulée) :
@@ -6092,7 +6138,8 @@ function chatRevient(V, o, force){
    - À partir de l'enquête 4 (PORTEE, des données) : la chatte s'arrondit, un chaton naît, et Mimi part vivre chez Odette
      (etat.chezOdette ; Atelier.chezOdette(etat) pour le village). ⚠️ À revoir avec Romain avant l'enquête 4 : on lui offre maintenant
      des jouets et des habits, la voir partir serait une vraie peine.
-   L'état : etat.tama = {jeu, betise, moment, portee, varie, derniers, pts, cadeaux, dehors, coffret, herbe, friand},
+   L'état : etat.tama = {jeu, betise, moment, portee, varie, derniers, pts, cadeaux, dehors, coffret, herbe, friand,
+     v:2, las:{famille:crans}, c:{m, b, br, ba, fe, dd, env, j:[jouets], h:[5 cœurs]}, envie:{k, n}, envieT, grands},
    etat.mimi = {jouets, nour, soins, album}, etat.betises, etat.chezOdette, etat.garde ; sur le chat : o.b, o.bh, o.acc.
    ========================================================== */
 var BESOINS = [
@@ -6103,8 +6150,12 @@ var BESOINS = [
   {k:'jeu', ic:'🧶', baisse:3.5}
 ];
 var DEMANDE = 42;                    /* sous 42, elle le demande (une bulle) */
-var BESOIN_MIN = 25, BH_MIN = 34, BH_DEPART = 55, BH_BAISSE = 1.2;   /* les planchers ; le bonheur perd 1,2 par minute de jeu */
-var BH_CADEAU = 85, CADEAU_PTS = 70, VARIE_PAS = 20;
+var BESOIN_MIN = 25, BH_MIN = 8, BH_DEPART = 15, BH_BAISSE = 0.6;   /* les planchers ; le bonheur perd 0,6 par minute de jeu */
+var GAIN_K = 0.5;                    /* (étape 2) chaque soin rapporte deux fois moins de bonheur qu'avant… */
+var LASSE = [1, 0.5, 0.25, 0.1], LASSE_OUBLI = 150;   /* …et de moins en moins si on refait le même (un cran s'oublie en 2 min 30 de jeu) */
+var BH_COFFRET = 50, CADEAU_PTS = 22, VARIE_PAS = 20;  /* le petit coffret : à moitié heureuse, et assez de soins depuis le dernier */
+var BH_APRES = 30;                   /* après le grand cadeau, son bonheur redescend là ; une sauvegarde d'avant l'étape 2 aussi */
+var ENVIE_GAIN = 12, ENVIE_PAUSE = 45, ENVIE_DUREE = 240, ENVIES_COEUR = 3;   /* ses envies (en secondes de jeu) */
 var TIC = 15;                        /* les besoins changent toutes les 15 secondes de jeu */
 var BETISE_MIN = 240;                /* une bêtise au plus toutes les 4 minutes de jeu */
 var PAS_MOMENT = 12;                 /* un nouveau moment de la journée : chaque besoin baisse un peu (jamais sous le plancher) */
@@ -6133,11 +6184,15 @@ function humeur(o){ return {triste:false, fatigue:false}; }
 function bonheur(o){
   if(typeof o.bh !== 'number' || !(o.bh >= 0)){
     var b = o.b || {}, l = ['faim', 'soif', 'amour', 'jeu', 'dodo'].filter(function(k){ return typeof b[k] === 'number'; });
-    o.bh = l.length ? Math.round(l.reduce(function(s, k){ return s + b[k]; }, 0) / l.length) : BH_DEPART;
+    /* (seule une très vieille sauvegarde — elle avait encore le besoin « dodo » — le prend dans ses besoins ; un chat tout neuf part de BH_DEPART) */
+    o.bh = l.length && typeof b.dodo === 'number' ? Math.round(l.reduce(function(s, k){ return s + b[k]; }, 0) / l.length) : BH_DEPART;
   }
-  o.bh = borne(Math.round(o.bh * 10) / 10, BH_MIN, 100);
+  o.bh = borne(Math.round(o.bh * 100) / 100, BH_MIN, 100);
   return Math.round(o.bh);
 }
+/* (étape 2) un peu plus (ou un peu moins) de bonheur, sans arrondir en route : les tout petits gains d'une caresse comptent pour de bon */
+function bhPlus(o, x){ bonheur(o); o.bh = borne(Math.round((o.bh + x) * 100) / 100, BH_MIN, 100); return o.bh; }
+function bhPlein(o){ bonheur(o); return o.bh >= 99.5; }
 /* le numéro de l'enquête : donné par le moteur (option enquete), sinon celui de la partie en cours */
 function enqueteNo(V){
   var n = 0, t = V.etat.tama || {};
@@ -6165,16 +6220,20 @@ function tamaTic(V, force){
     t.jeu += dt;
     chatsTous(V).forEach(function(o){
       BESOINS.forEach(function(x){ donner(o, x.k, -x.baisse * dt / 60); });
-      o.bh = Math.max(BH_MIN, bonheur(o) - BH_BAISSE * dt / 60);
+      bhPlus(o, -BH_BAISSE * dt / 60);
     });
+    /* (étape 2) la lassitude s'oublie peu à peu ; une envie passe, une autre vient */
+    cles(t.las).forEach(function(k){ t.las[k] -= dt / LASSE_OUBLI; if(!(t.las[k] > 0.01)) delete t.las[k]; });
+    envieTic(V);
     portee(V, dt);
     if(!V.attenteBetise && !GUIDE && !V.ouvert && V.grim.hidden && t.jeu - t.betise >= BETISE_MIN && Math.random() < (force ? 1 : 0.5)) peutEtreBetise(V);
     /* bien heureuse, elle va chercher un coffret (au plus un par moment) ; une souris passe */
     if(!force && !V.attenteBetise && !GUIDE && !V.o.sansSurprise){      /* (rien de tout ça pendant le guidage du tutoriel ; sansSurprise : les bancs d'essai) */
       var sortants = chatsDe(V).filter(function(c){ return peutSortir(V, c); });
-      if(sortants.length && Math.random() < 0.5) cadeauChat(V, sortants[0]);
+      if(sortants.length && (grandPret(V, sortants[0]) || Math.random() < 0.5)) cadeauChat(V, sortants[0]);
       else if(!V.jouet && Math.random() < 0.3) sourisPasse(V);
     }
+    var c0 = chatsTous(V)[0]; if(c0) coeursMaj(V, c0);      /* (la litière nettoyée par un autre chemin, une vieille sauvegarde…) */
     majHumeurs(V); majBarre(V);
     if(!force && (t.jeu / TIC) % 4 === 0) changer(V);
   }
@@ -6184,28 +6243,179 @@ function tamaTic(V, force){
 function tamaMoment(V){
   var t = tama(V), cle = enqueteNo(V) + ':' + (V.o.moment || 'matin');
   if(t.moment && t.moment !== cle){
-    chatsTous(V).forEach(function(o){ BESOINS.forEach(function(x){ donner(o, x.k, -PAS_MOMENT); }); o.bh = Math.max(BH_MIN, bonheur(o) - 6); });
+    chatsTous(V).forEach(function(o){ BESOINS.forEach(function(x){ donner(o, x.k, -PAS_MOMENT); }); bhPlus(o, -4); });
+    /* (étape 2) un nouveau moment : elle a tout oublié de ce qui la lassait, et son envie d'avant est passée */
+    t.las = {};
+    if(t.envie){ t.envie = null; t.envieT = t.jeu + 15; }
     portee(V, 120, true);
   }
   t.moment = cle;
 }
 
+/* ==========================================================
+   (étape 2) Ses cinq cœurs, ses envies, la lassitude — voir le grand commentaire plus haut.
+   ========================================================== */
+/* --- la lassitude : refaire le même soin rapporte de moins en moins (LASSE), et ça s'oublie avec le temps de jeu --- */
+function familleSoin(quoi){ var g = String(quoi || ''); return g.indexOf('repas') === 0 ? 'repas' : g; }
+function lasse(V, fam){
+  var n = borne(tama(V).las[fam] || 0, 0, LASSE.length - 1), i = Math.floor(n), f = n - i, a = LASSE[i], b = LASSE[Math.min(LASSE.length - 1, i + 1)];
+  return a + (b - a) * f;
+}
+function lasser(V, fam){ var l = tama(V).las; l[fam] = Math.min(LASSE.length - 1, (l[fam] || 0) + 1); }
+
+/* --- les cœurs : cinq, chacun avec ses conditions (l : [clé, image, deux ou trois mots]) ; « dit » : ce que le conteur en dit (🔊) --- */
+var COEURS = [
+  {nom:'Le ventre plein', dit:'Le premier cœur, c\'est le ventre plein : un bon repas, de l\'eau fraîche, et une litière toute propre.',
+    l:[['m', '🍗', 'Elle a mangé'], ['b', '💧', 'Elle a bu'], ['lit', '🪣', 'Litière propre']]},
+  {nom:'La récré', dit:'Le deuxième cœur, c\'est la récré : deux jouets différents. Pas deux fois le même, petit malin !',
+    l:[['j1', '🧶', 'Un jouet'], ['j2', '🪶', 'Un autre jouet']]},
+  {nom:'Toute belle', dit:'Le troisième cœur, c\'est la beauté : un bon coup de brosse, et un bain qui mousse.',
+    l:[['br', 'brosse', 'Brossée'], ['ba', '🛁', 'Baignée']]},
+  {nom:'Comme une reine', dit:'Le quatrième cœur, c\'est la vie de reine : un bon petit plat de sa boutique, et une sieste dans son coin douillet.',
+    l:[['fe', '🐟', 'Un bon plat'], ['dd', '🧺', 'Une sieste douillette']]},
+  {nom:'Ses envies', dit:'Le cinquième cœur, ce sont ses envies : trois fois, lui offrir pile ce dont elle rêve. Sa bulle dorée dit tout.',
+    l:[['e1', '💭', 'Une envie'], ['e2', '💭', 'Deux envies'], ['e3', '💭', 'Trois envies']]}
+];
+function coeursPropres(c){
+  c = c && typeof c === 'object' ? c : {};
+  var r = {m:c.m ? 1 : 0, b:c.b ? 1 : 0, br:c.br ? 1 : 0, ba:c.ba ? 1 : 0, fe:c.fe ? 1 : 0, dd:c.dd ? 1 : 0, env:c.env > 0 ? Math.min(9, Math.round(c.env)) : 0};
+  r.j = (Array.isArray(c.j) ? c.j : []).filter(function(id, i, l){ return typeof id === 'string' && !!JOUETS[id] && l.indexOf(id) === i; });
+  r.h = [0, 1, 2, 3, 4].map(function(i){ return Array.isArray(c.h) && c.h[i] ? 1 : 0; });
+  return r;
+}
+function litierePropre(V){ return V.etat.objets.some(function(x){ return x.t === 'litiere' && !x.sale; }); }
+function condCoeur(V, k){
+  var c = tama(V).c;
+  if(k === 'lit') return litierePropre(V);
+  if(k === 'j1' || k === 'j2') return c.j.length >= +k.charAt(1);
+  if(k.charAt(0) === 'e') return c.env >= +k.charAt(1);
+  return !!c[k];
+}
+function nbCoeurs(V){ return tama(V).c.h.reduce(function(s, x){ return s + (x ? 1 : 0); }, 0); }
+function rangCoeurs(n){ var s = ''; for(var i = 0; i < 5; i++) s += i < n ? '❤️' : '🤍'; return s; }
+/* ce qu'un soin coche (quoi : « repas:poisson », « eau », « jouet:laser », « brosse », « bain », « dodo ») */
+function noterCoeur(V, quoi){
+  var c = tama(V).c, p = String(quoi || '').split(':');
+  if(p[0] === 'repas'){ c.m = 1; if(p[1] && p[1] !== 'croquettes' && NOURS[p[1]]) c.fe = 1; }
+  else if(p[0] === 'eau') c.b = 1;
+  else if(p[0] === 'jouet'){ if(JOUETS[p[1]] && c.j.indexOf(p[1]) < 0) c.j.push(p[1]); }
+  else if(p[0] === 'brosse') c.br = 1;
+  else if(p[0] === 'bain') c.ba = 1;
+  else if(p[0] === 'dodo') c.dd = 1;
+}
+/* un cœur dont toutes les conditions sont remplies est gagné, et le reste jusqu'au grand cadeau */
+function coeursMaj(V, o){
+  var t = tama(V), c = t.c, neufs = [];
+  if(t.dehors && t.dehors.g || t.coffret && t.coffret.g) return false;      /* (le grand cadeau est en route : on ne touche plus à rien) */
+  COEURS.forEach(function(C, i){ if(!c.h[i] && C.l.every(function(x){ return condCoeur(V, x[0]); })){ c.h[i] = 1; neufs.push(i); } });
+  if(!neufs.length) return false;
+  changer(V); majBarre(V, true);
+  var n = nbCoeurs(V), nom = o ? nomChat(o) : PORTEE.mere, C0 = COEURS[neufs[neufs.length - 1]];
+  var tx = n >= 5 ? 'Cinq cœurs ! ' + nom + ' est soignée comme une reine.' + (o && bhPlein(o) ? '' : ' Il ne manque plus que son bonheur, tout en haut…')
+    : 'Un cœur de plus pour ' + nom + ' : « ' + C0.nom + ' » !';
+  /* (un peu après : le soin qui vient de finir a souvent son petit mot à dire d'abord ; et si un message est à l'écran, celui-ci attend son tour) */
+  var no = (V.coeurNo = (V.coeurNo || 0) + 1);
+  apres(V, 2200, function(){
+    if(V.arrete) return;
+    sonMimi(V, 'coeur'); brillerMimi(V);
+    if(o && V.elO[o.id] && salleDe(o) === V.salle){ coeursChat(V, o, '❤️'); expression(V, o, 'at-x-content', 700); }
+    /* (si un autre cœur a été gagné entre-temps, c'est lui qui parlera) */
+    (function montrer(k){ if(V.arrete || V.coeurNo !== no) return; if(!V.toastEl.hidden && k < 5){ apres(V, 1500, function(){ montrer(k + 1); }); return; } toast(V, '<b>' + rangCoeurs(n) + '</b> ' + esc(tx), 5200, tx); })(0);
+  });
+  return true;
+}
+/* les deux jauges à fond : le grand cadeau peut partir */
+function grandPret(V, o){ return !!o && nbCoeurs(V) >= 5 && bhPlein(o); }
+
+/* --- ses envies : une bulle de pensée dorée ; lui offrir pile ça rapporte gros, et compte pour le cinquième cœur ---
+   k : ce que soigner() reçoit quand on le fait (« repas:poisson », « jouet:laser », « bain »…), ou « caresse », ou « dodo » */
+function envieInfo(V, k){
+  var p = String(k || '').split(':'), n = chatsTous(V)[0], nom = n ? nomChat(n) : PORTEE.mere;
+  if(p[0] === 'repas' && NOURS[p[1]]){
+    var a = mimi(V).nour.indexOf(p[1]) >= 0, N = NOURS[p[1]].nom.replace(/^Des /, 'de ').replace(/^De la /, 'de ').replace(/^Du /, 'de ').replace(/^Un /, 'd\'un ');
+    return {ic:NOURS[p[1]].ic, dit:nom + ' rêve ' + N.replace(/^de ([aeiouâéèêh])/, 'd\'$1') + '…' + (a ? ' Sa gamelle n\'attend que ça !' : ' Il y en a dans sa boutique 🛒, contre quelques pièces d\'or.'), cibles:['gamelle'], barre:!a};
+  }
+  if(p[0] === 'eau') return {ic:'💧', dit:nom + ' rêve d\'une grande lampée d\'eau bien fraîche.', cibles:['eau']};
+  if(p[0] === 'jouet' && JOUETS[p[1]]) return {ic:JOUETS[p[1]].ic, dit:nom + ' ne pense qu\'à une chose : ' + JOUETS[p[1]].nom + ' ! Elle l\'attend dans sa barre 🐾.', barre:true};
+  if(p[0] === 'caresse') return {ic:'✋', dit:nom + ' rêve de gratouilles derrière les oreilles. Longtemps. Très longtemps.'};
+  if(p[0] === 'brosse') return {ic:iconeSoin('brosse'), dit:nom + ' rêve d\'un bon coup de brosse. Sa brosse attend dans sa barre 🐾.', barre:true};
+  if(p[0] === 'bain') return {ic:'🛁', dit:'Incroyable : ' + nom + ' rêve d\'un bain ! Vite, avant qu\'elle change d\'avis. Il est dans sa barre 🐾.', barre:true};
+  if(p[0] === 'friandises') return {ic:'🍬', dit:nom + ' rêve d\'une friandise. Une toute petite. Bon, une moyenne. Le bocal est dans sa barre 🐾.', barre:true};
+  if(p[0] === 'griffoir') return {ic:'🪵', dit:nom + ' a les griffes qui la démangent… Son griffoir lui fait de l\'œil !', cibles:['griffoir']};
+  if(p[0] === 'dodo') return {ic:'🧺', dit:nom + ' rêve de son coin douillet… Si quelqu\'un voulait bien la porter jusque-là !', cibles:['panier', 'coussin', 'pouf', 'arbre_chat']};
+  return null;
+}
+/* tout ce dont elle peut avoir envie en ce moment (jamais la même deux fois de suite ; parfois un plat qu'elle n'a pas encore) */
+function enviesPossibles(V, toutes){
+  var m = mimi(V), t = tama(V), l = ['caresse', 'eau'];
+  m.nour.forEach(function(k){ if(NOURS[k]) l.push('repas:' + k); });
+  m.jouets.forEach(function(id){ if(JOUETS[id] && !(id === 'herbe' && t.herbe === momentCle(V))) l.push('jouet:' + id); });
+  ['brosse', 'bain', 'friandises'].forEach(function(id){ if(soinA(V, id)) l.push(id); });
+  if(V.etat.objets.some(function(x){ return x.t === 'griffoir'; })) l.push('griffoir');
+  if(V.etat.objets.some(function(x){ return DODO_ICI.test(x.t) && x.t !== 'coffre' && x.t !== 'lit'; })) l.push('dodo');
+  /* (pendant une enquête, la boutique est ouverte : une fois sur cinq, un plat qu'elle n'a pas encore goûté) */
+  var pas = cles(NOURS).filter(function(k){ return m.nour.indexOf(k) < 0; });
+  if(toutes) return l.concat(pas.length && bourse(V) !== null ? ['repas:' + pas[0]] : []);      /* (les robots : tout, sans le hasard) */
+  if(pas.length && bourse(V) !== null && Math.random() < 0.2) return ['repas:' + pas[0]];
+  return l.filter(function(k){ return k !== t.envieAvant; });
+}
+function envieDe(V, debut){ var e = V.etat.tama && V.etat.tama.envie; return !!e && e.k.indexOf(debut) === 0; }
+function envieTic(V){
+  var t = tama(V), o = chatsTous(V)[0];
+  if(!o || o.chaton || GUIDE || V.o.sansSurprise) return;
+  if(t.envie && t.jeu - t.envie.n >= ENVIE_DUREE){ t.envie = null; t.envieT = t.jeu + ENVIE_PAUSE; }      /* (elle est passée : sans rancune) */
+  if(t.envie || t.jeu < t.envieT || (t.dehors && t.dehors.g) || (t.coffret && t.coffret.g)) return;
+  var l = enviesPossibles(V);
+  if(!l.length) return;
+  t.envie = {k:l[Math.floor(Math.random() * l.length)], n:t.jeu};
+  changer(V);
+  if(V.elO[o.id] && salleDe(o) === V.salle && !chatEtat(V, o).anim){ sonMimi(V, 'trille'); expression(V, o, 'at-x-penche', 900); }
+}
+function envieEst(V, quoi){
+  var e = tama(V).envie;
+  return !!e && (e.k === quoi || (e.k === 'jouet:pelote' && quoi === 'jouet'));
+}
+/* pile ce qu'elle voulait ! */
+function envieFaite(V, o){
+  var t = tama(V);
+  if(!t.envie) return false;
+  t.envieAvant = t.envie.k; t.envie = null; t.envieT = t.jeu + ENVIE_PAUSE + Math.floor(Math.random() * 3) * TIC;
+  t.c.env = Math.min(9, t.c.env + 1);
+  bhPlus(o, ENVIE_GAIN); t.pts += ENVIE_GAIN;
+  sonMimi(V, 'envie');
+  if(V.elO[o.id] && salleDe(o) === V.salle){
+    flotter(V, o, '💖 Pile ça !');
+    coeursChat(V, o, '💖'); apres(V, 350, function(){ coeursChat(V, o, '✨'); });
+    etincelles(V, o);
+  }
+  majHumeur(V, o); majBarre(V, true); changer(V);
+  return true;
+}
+
 /* ---------- L'humeur : sa tête, sa bulle ---------- */
-function bulleHTML(o){
+/* ce que dit sa bulle : un besoin qui presse d'abord (la bulle blanche) ; sinon son envie du moment (la bulle dorée, étape 2) */
+function bulleDe(V, o){
   var u = besoinUrgent(o);
-  return '<button type="button" class="at-bulle"' + (u ? ' data-bulle="' + u.k + '"' : ' hidden') + ' aria-label="Ce que veut le chat"><span>' + (u ? u.ic : '') + '</span><i></i><i></i></button>';
+  if(u) return {k:u.k, ic:u.ic, envie:false};
+  var t = V && V.etat && V.etat.tama, e = t && t.envie && !o.chaton ? envieInfo(V, t.envie.k) : null;
+  return e ? {k:'envie', ic:e.ic, envie:true} : null;
+}
+function bulleHTML(o, V){
+  var u = bulleDe(V, o);
+  return '<button type="button" class="at-bulle' + (u && u.envie ? ' at-envie' : '') + '"' + (u ? ' data-bulle="' + u.k + '"' : ' hidden') + ' aria-label="Ce que veut le chat"><span>' + (u ? u.ic : '') + '</span><i></i><i></i></button>';
 }
 function majHumeur(V, o){
   var d = V.elO[o.id];
   if(!d) return;
-  var h = humeur(o), u = besoinUrgent(o), b = d.querySelector('.at-bulle');
+  var h = humeur(o), u = bulleDe(V, o), b = d.querySelector('.at-bulle');
   d.classList.toggle('at-c-triste', h.triste);
   d.classList.toggle('at-c-fatigue', h.fatigue);
   d.classList.toggle('at-c-ronde', !!o.ronde);
   d.classList.toggle('at-chaton', !!o.chaton);
   if(b){
     b.hidden = !u;
-    if(u){ b.setAttribute('data-bulle', u.k); b.querySelector('span').textContent = u.ic; }
+    b.classList.toggle('at-envie', !!(u && u.envie));
+    if(u){ var sp = b.querySelector('span'), cle = u.k + '|' + u.ic; b.setAttribute('data-bulle', u.k); if(sp._cle !== cle){ sp._cle = cle; sp.innerHTML = u.ic; } }
   }
 }
 function majHumeurs(V){ chatsDe(V).forEach(function(o){ majHumeur(V, o); }); }
@@ -6236,7 +6446,7 @@ function remplir(V, g, nour){
   toast(V, '<b>' + (g.t === 'eau' ? '💧' : N.ic) + '</b> ' + esc(t), 2600, t);
   changer(V);
   /* elle arrive tout de suite si elle a un peu faim (ou soif) */
-  chatsDe(V).forEach(function(c){ var b = besoins(c); if((g.t === 'gamelle' && b.faim < 92) || (g.t === 'eau' && b.soif < 92)) chatPlanifier(V, c, 500); });
+  chatsDe(V).forEach(function(c){ var b = besoins(c); if((g.t === 'gamelle' && (b.faim < 92 || envieDe(V, 'repas'))) || (g.t === 'eau' && (b.soif < 92 || envieDe(V, 'eau')))) chatPlanifier(V, c, 500); });
 }
 /* les bulles des nourritures, au-dessus de la gamelle (comme celles de la paillasse) */
 function bullesNour(V, g, l){
@@ -6273,9 +6483,17 @@ function relever(V, o){
 
 /* ---------- Ce que l'enfant fait pour lui ---------- */
 /* Sa bulle : le conteur dit ce qu'elle voudrait, et la chose à toucher brille un moment */
+function bulleEnvie(V, o){
+  var t = tama(V), e = t.envie ? envieInfo(V, t.envie.k) : null;
+  if(!e) return;
+  toast(V, '<b>💭 ' + e.ic + '</b> ' + esc(e.dit), 6500, e.dit);
+  (e.cibles || []).forEach(function(c){ ici(V).filter(function(g){ return g.t === c; }).forEach(function(g){ var d = V.elO[g.id]; if(d){ d.classList.add('at-dispo'); apres(V, 4500, function(){ d.classList.remove('at-dispo'); }); } }); });
+  if(e.barre) brillerMimi(V);
+  son(V, 'clic');
+}
 function bulleChat(V, o){
   var u = besoinUrgent(o);
-  if(!u) return;
+  if(!u){ bulleEnvie(V, o); return; }
   var n = nomChat(o), t, cibles = [];
   if(u.k === 'faim'){ t = n + ' a un petit creux… Son distributeur de croquettes n\'attend que ça. Ou sa gamelle, directement !'; cibles = ['gamelle', 'distributeur']; }
   else if(u.k === 'soif'){ t = n + ' a la langue toute sèche. Sa gamelle d\'eau est vide comme un désert !'; cibles = ['eau']; }
@@ -6318,7 +6536,7 @@ function jouerPelote(V, o){
   if(st.t){ clearTimeout(st.t); st.t = null; }
   apres(V, 300, function(){
     chatAller(V, o, {x:x + (x > p.x ? -40 : 40), y:y, sur:null}, function(){
-      soigner(V, o, 'jouet', 10, 'jeu');
+      soigner(V, o, 'jouet:pelote', 10, 'jeu');
       chatJoue(V, o);                                   /* un de ses dix jeux (jamais le même deux fois de suite) */
       apres(V, 700, function(){ b.remove(); coeursChat(V, o); });
     });
@@ -6328,7 +6546,7 @@ function chatVaDormir(V, o){
   var pn = ici(V).filter(function(x){ return x.t === 'panier' && !x.sur && !x.cote; })[0], st = chatEtat(V, o);
   if(st.anim){ var a = st.anim; st.anim = null; try{ a.cancel(); }catch(e){} }
   if(st.t){ clearTimeout(st.t); st.t = null; }
-  var dodo = function(){ chatPose(V, o, 'dort'); st.dortJusqua = Date.now() + 25000; chatPlanifier(V, o, 25030); majHumeur(V, o); };
+  var dodo = function(){ chatPose(V, o, 'dort'); st.dortJusqua = Date.now() + 25000; chatPlanifier(V, o, 25030); majHumeur(V, o); dodoCoin(V, o); };
   if(!pn){ dodo(); return; }
   var pp = posObj(V, pn);
   chatAller(V, o, {sur:{o:pn.id, k:0, dx:0}, depart:{x:pp.x + 90, y:Math.min(solMax(V), pp.y + 20)}}, dodo);
@@ -6343,10 +6561,10 @@ function chatVaManger(V, o, g, k){
     apres(V, 1500, function(){ if(chatEtat(V, o).pose === 'mange') sonMimi(V, k === 'soif' ? 'lape' : 'croque'); });
     chatPlanifier(V, o, 3600);
     apres(V, 3400, function(){
-      var N = NOURS[g.nour] || NOURS.croquettes;
+      var nid = NOURS[g.nour] ? g.nour : 'croquettes', N = NOURS[nid];
       g.plein = 0; delete g.nour; redessiner(V, g);
       if(k === 'soif') soigner(V, o, 'eau', 5, 'soif');
-      else { soigner(V, o, 'repas', N.gain, 'faim'); if(N.gain > 6) apres(V, 400, function(){ coeursChat(V, o); }); }
+      else { soigner(V, o, 'repas:' + nid, N.gain, 'faim'); if(N.gain > 6) apres(V, 400, function(){ coeursChat(V, o); }); }
       chatPose(V, o, 'lave');
       if(k !== 'soif') apres(V, 200, function(){ var dd = V.elO[o.id]; if(dd){ dd.classList.add('at-x-langue'); apres(V, 1600, function(){ dd.classList.remove('at-x-langue'); }); } });
     });
@@ -6557,8 +6775,9 @@ function miaou(V, o){
    se rouler par terre, bâiller (16 novembre : plein de petites vies, sans qu'on ait rien à faire) */
 function tamaAgir(V, o){
   var u = besoinUrgent(o), b = besoins(o), gm = gamellePleine(V, o, 'gamelle'), ge = gamellePleine(V, o, 'eau');
-  if(gm && b.faim < 92 && Math.random() < 0.8){ chatVaManger(V, o, gm, 'faim'); return true; }
-  if(ge && b.soif < 92 && Math.random() < 0.8){ chatVaManger(V, o, ge, 'soif'); return true; }
+  /* (elle y va si elle a un peu faim… ou si c'est son envie du moment, même le ventre plein) */
+  if(gm && (b.faim < 92 || envieDe(V, 'repas')) && Math.random() < 0.8){ chatVaManger(V, o, gm, 'faim'); return true; }
+  if(ge && (b.soif < 92 || envieDe(V, 'eau')) && Math.random() < 0.8){ chatVaManger(V, o, ge, 'soif'); return true; }
   if(u && Math.random() < 0.35){ chatPose(V, o, 'assis'); miaou(V, o); chatPlanifier(V, o, 4200); return true; }   /* elle demande */
   if(!o.chaton && Math.random() < 0.05 && chatLitiere(V, o)) return true;
   if(Math.random() < 0.07 && chatGriffoir(V, o)) return true;
@@ -6597,6 +6816,7 @@ function chatSieste(V, o){
     chatSeCoucher(V, o);
     st.dortJusqua = Date.now() + 12000 + Math.random() * 9000;
     chatPlanifier(V, o, st.dortJusqua - Date.now() + 30);
+    apres(V, 1800, function(){ dodoCoin(V, o); });      /* (étape 2 : une sieste dans son coin, ça compte) */
   });
   return true;
 }
@@ -6791,9 +7011,24 @@ function momentCle(V){ return tama(V).moment || (enqueteNo(V) + ':' + (V.o.momen
    plus à l'enquête (une vieille sauvegarde qui en attendait un le reçoit encore : livrerButin). */
 function peutSortir(V, o){
   var st = V.chats[o.id], t = tama(V);
-  return !V.salle && salleDe(o) === 0 && !t.butin && !t.dehors && !t.coffret && !(t.cadeaux[momentCle(V)] >= 1) && bonheur(o) >= BH_CADEAU && t.pts >= CADEAU_PTS &&
+  /* (étape 2) le grand cadeau : cinq cœurs et le bonheur à fond, quand on veut ; le petit coffret : au plus un par moment */
+  var petit = !(t.cadeaux[momentCle(V)] >= 1) && bonheur(o) >= BH_COFFRET && t.pts >= CADEAU_PTS;
+  return !V.salle && salleDe(o) === 0 && !t.butin && !t.dehors && !t.coffret && (petit || grandPret(V, o)) &&
     !!st && !st.tenu && !st.anim && st.pose !== 'dort' && !st.depart && !st.passe && !st.caresse && V.mode === 'ranger' && !V.ouvert && V.grim.hidden && !V.jouet && !V.outil;
 }
+/* ce qu'il y a dans le GRAND coffret (étape 2 ; à l'étape 3, ce sera d'abord une nouvelle pièce de son parc à chat) :
+   un habit rare, sinon un jouet qu'elle n'a pas, sinon un habit, sinon un festin de friandises */
+function contenuGrand(V){
+  var G = garde(V.etat), m = mimi(V), pris = function(id){ return G.a.indexOf(id) < 0; };
+  var r = cles(ACC).filter(function(id){ return pris(id) && ACC[id].rare; });
+  if(r.length) return 'a:' + r[Math.floor(Math.random() * r.length)];
+  var j = cles(JOUETS).filter(function(id){ return m.jouets.indexOf(id) < 0; });
+  if(j.length) return 'j:' + j[Math.floor(Math.random() * j.length)];
+  var a = cles(ACC).filter(pris);
+  return a.length ? 'a:' + a[Math.floor(Math.random() * a.length)] : 'f:';
+}
+/* une pluie de cœurs au-dessus d'elle (le grand cadeau) */
+function pluieCoeurs(V, o){ ['💖', '❤️', '✨'].forEach(function(ic, i){ apres(V, i * 260, function(){ if(V.elO[o.id]) coeursChat(V, o, ic); }); }); }
 /* ce qu'il y a dans le coffret : un jouet qu'elle n'a pas encore, sinon un habit, sinon des friandises */
 function contenuCoffret(V){
   var m = mimi(V), l = cles(JOUETS).filter(function(id){ return m.jouets.indexOf(id) < 0; });
@@ -6805,18 +7040,30 @@ function contenuCoffret(V){
 function cadeauChat(V, o, force){
   var t = tama(V), st = chatEtat(V, o), d = V.elO[o.id];
   if(!d || (!force && !peutSortir(V, o))) return false;
-  var cle = momentCle(V);
-  t.cadeaux[cle] = (t.cadeaux[cle] || 0) + 1;
+  var cle = momentCle(V), grand = force === 'grand' || (force !== 'petit' && grandPret(V, o));
+  if(grand) t.grands = (t.grands || 0) + 1;
+  else t.cadeaux[cle] = (t.cadeaux[cle] || 0) + 1;
   t.pts = 0;
-  t.dehors = {c:contenuCoffret(V), nom:nomChat(o)};
+  t.dehors = grand ? {c:contenuGrand(V), nom:nomChat(o), g:1} : {c:contenuCoffret(V), nom:nomChat(o)};
+  if(grand) t.envie = null;
   changer(V);
   var id = (V.sortieN = (V.sortieN || 0) + 1);
   st.sortieId = id;
   if(st.anim) chatArreter(V, o);
   if(st.t){ clearTimeout(st.t); st.t = null; }
-  /* elle miaule d'abord, pour qu'on la regarde */
-  chatPose(V, o, 'assis'); expression(V, o, 'at-x-miaou', 900); sonMimi(V, 'miaou'); flotter(V, o, 'Miaou !');
-  apres(V, 1200, function(){
+  if(grand){
+    /* LE GRAND CADEAU : elle fait la folle (une galipette, sa queue, des cœurs partout), puis elle file */
+    chatPose(V, o, 'assis'); expression(V, o, 'at-x-content at-x-joue', 1200); sonMimi(V, 'fanfare'); flotter(V, o, '💖 Miaou !');
+    pluieCoeurs(V, o); majHumeur(V, o);
+    var tg = 'Cinq cœurs, et du bonheur jusqu\'au bout des moustaches ! ' + nomChat(o) + ' file chercher un cadeau pas comme les autres…';
+    toast(V, '<b>❤️❤️❤️❤️❤️</b> ' + esc(tg), 6500, tg);
+    apres(V, 800, function(){ if(st.sortieId !== id || V.arrete || st.tenu) return; chatPose(V, o, 'marche'); gesteChat(V, o, 'galipette'); });
+    apres(V, 2000, function(){ if(st.sortieId !== id || V.arrete || st.tenu) return; gesteChat(V, o, 'tourne'); pluieCoeurs(V, o); });
+  } else {
+    /* elle miaule d'abord, pour qu'on la regarde */
+    chatPose(V, o, 'assis'); expression(V, o, 'at-x-miaou', 900); sonMimi(V, 'miaou'); flotter(V, o, 'Miaou !');
+  }
+  apres(V, grand ? 4000 : 1200, function(){
     if(st.sortieId !== id || V.arrete) return;
     chatAller(V, o, chatSol(V, PORTE.x + 8, SOL_MIN + 14), function(){
       if(st.sortieId !== id || V.arrete) return;
@@ -6826,12 +7073,12 @@ function cadeauChat(V, o, force){
       if(d2) anim(d2, [{opacity:1, transform:'scale(' + d2._s + ')'}, {opacity:0, transform:'translateY(-' + Math.round(10 * V.k) + 'px) scale(' + (d2._s * 0.8) + ')'}], {duration:520, easing:'ease-in', fill:'forwards'});
       apres(V, 520, function(){ var d3 = V.elO[o.id]; if(d3) d3.classList.add('at-c-dehors'); });
       var tx = nomChat(o) + ' file par la chatière… Elle mijote quelque chose !';
-      if(V.toastEl.hidden) toast(V, '<b>🐈 🚪</b> ' + esc(tx), 3400, tx);      /* (sans cacher un message plus important) */
+      if(V.toastEl.hidden && !grand) toast(V, '<b>🐈 🚪</b> ' + esc(tx), 3400, tx);      /* (sans cacher un message plus important) */
       apres(V, 6500 + Math.random() * 2500, function(){ retourChat(V, o, id); });
     });
   });
   /* (quoi qu'il arrive en chemin, le coffret arrive : on ne perd jamais rien) */
-  apres(V, 26000, function(){ poserCoffret(V, null); });
+  apres(V, grand ? 32000 : 26000, function(){ poserCoffret(V, null); });
   return true;
 }
 function sortieChat(V, o, force){ return cadeauChat(V, o, force); }   /* (l'ancien nom : les robots) */
@@ -6842,7 +7089,7 @@ function retourChat(V, o, id){
   st.tenu = false;
   if(d){
     d.classList.remove('at-c-dehors');
-    if(t.dehors) butinChat(V, o, '<svg x="-11" y="-8" width="22" height="20.6" ' + coffretSVG().slice(5));      /* (le coffret, dans sa gueule : il suit sa tête) */
+    if(t.dehors) butinChat(V, o, (t.dehors.g ? '<svg x="-13" y="-10" width="26" height="24.4" ' : '<svg x="-11" y="-8" width="22" height="20.6" ') + coffretSVG(t.dehors.g).slice(5));      /* (le coffret, dans sa gueule : il suit sa tête) */
     anim(d, [{opacity:0, transform:'translateY(-' + Math.round(10 * V.k) + 'px) scale(' + (d._s * 0.8) + ')'}, {opacity:1, transform:'scale(' + d._s + ')'}], {duration:480, easing:'ease-out'});
   }
   chatPose(V, o, 'assis');
@@ -6861,10 +7108,12 @@ function poserCoffret(V, o){
   /* (jamais caché derrière quelque chose : de l'autre côté d'elle, sinon une place libre du plancher) */
   if(!V.salle){ var pl = placeLibre(V, [[x, y], [borne(p.x + (st && st.gauche ? 70 : -70), xF(140, y), xF(LARGEUR - 140, y)), y]], 50, 70); x = pl.x; y = pl.y; }
   t.coffret = {c:b.c, x:Math.round(x), y:Math.round(y)};
+  if(b.g) t.coffret.g = 1;
   if(o){ var d = V.elO[o.id], sp = d && d.querySelector('.at-c-butin'); if(sp) sp.remove(); butinChat(V, o, null); if(d) d.classList.remove('at-c-dehors'); if(st && st.tenu && !st.depart) st.tenu = false; }
   dessinerCoffret(V, true);
-  var tx = (b.nom || PORTEE.mere) + ' a rapporté un petit coffret ! Qu\'est-ce qui peut bien se cacher dedans ?';
-  (function montrer(n){ if(V.arrete) return; if(!V.toastEl.hidden && n < 6){ apres(V, 1500, function(){ montrer(n + 1); }); return; } toast(V, '<b>🐈 🎁</b> ' + esc(tx), 6000, tx); })(0);
+  var tx = b.g ? (b.nom || PORTEE.mere) + ' a rapporté un grand coffret doré ! Celui-là, elle ne le sort pas tous les jours…'
+    : (b.nom || PORTEE.mere) + ' a rapporté un petit coffret ! Qu\'est-ce qui peut bien se cacher dedans ?';
+  (function montrer(n){ if(V.arrete) return; if(!V.toastEl.hidden && n < 6){ apres(V, 1500, function(){ montrer(n + 1); }); return; } toast(V, '<b>🐈 ' + (b.g ? '👑' : '🎁') + '</b> ' + esc(tx), 6000, tx); })(0);
   sonMimi(V, 'coffret');
   changer(V);
   return true;
@@ -6961,15 +7210,18 @@ function sourisPasse(V, force){
   if(!chats.length) return false;
   var o = chats[Math.floor(Math.random() * chats.length)], st = chatEtat(V, o), pc = chatPos(V, o);
   t.souris = t.jeu;
-  /* elle traverse le plancher, à la hauteur du chat, d'un bord à l'autre (là où on le voit) */
-  var y = borne(pc.y + (Math.random() < 0.5 ? -40 : 40), SOL_MIN + 30, solMax(V) - 10), versD = pc.x > 600 ? false : true;
+  /* elle traverse le plancher d'un bord à l'autre (là où on le voit), toujours un peu DERRIÈRE le chat, et dessinée à sa vraie
+     profondeur, avec les meubles (Romain, 16 novembre, 19 h 56 : « la souris, c'est une image qui est posée et elle passe par-dessus
+     le chat. Ça, c'est bizarre. Il vaut mieux qu'elle passe derrière ») */
+  var y = borne(pc.y - 36, SOL_MIN + 30, solMax(V) - 10), versD = pc.x > 600 ? false : true;
   var x0 = versD ? Math.max(solXmin(V, y) + 20, pc.x - 520) : Math.min(solXmax(V, y) - 20, pc.x + 520), x1 = versD ? Math.min(solXmax(V, y) - 20, pc.x + 560) : Math.max(solXmin(V, y) + 20, pc.x - 560);
   var s = echelleSol(y), m = document.createElement('div'), dur = 4600;
   m.className = 'at-souris' + (versD ? '' : ' g');
   m.innerHTML = dessinSouris();
   m.style.width = 'calc(' + (40 * s).toFixed(1) + 'px * var(--k) * 1.7)';
-  m.style.zIndex = Math.round((1000 + y) * 5);
-  V.calque.appendChild(m);
+  var dch = V.elO[o.id], zc = dch ? +dch.style.zIndex || 0 : 0, zm = Math.round(posObj(V, {t:'chat', x:pc.x, y:y, sur:null}).z * 5) - 2;
+  m.style.zIndex = zc ? Math.min(zm, zc - 1) : zm;
+  V.scene.appendChild(m);
   V.souris = m;
   var am = anim(m, [{left:pX(V, x0), top:pY(V, y)}, {left:pX(V, x1), top:pY(V, y)}], {duration:dur, easing:'linear', fill:'forwards'});
   son(V, 'tic');
@@ -7139,6 +7391,10 @@ function sonsMimi(audio, sortie){
     coffret:function(){ tendre(180, 0, .12, .07, 120, .004, 'triangle', 600); tendre(1568, .14, .3, .02, null, .006); tendre(2093, .2, .32, .016, null, .006); },
     ouvre:function(){ grains(0, .1, .03, 8, 2000); [784, 988, 1175, 1568, 1976].forEach(function(f, i){ tendre(f, .08 + i * .07, .32, .04, null, .01, 'triangle', 4000); }); grains(.2, .7, .012, 40, 5000); },
     debloque:function(){ [523, 659, 784, 1047].forEach(function(f, i){ tendre(f, i * .1, .3, .05, null, .01, 'triangle', 3000); }); tendre(1319, .45, .6, .04, null, .02); grains(.4, .6, .012, 30, 5000); },
+    /* (étape 2) un cœur gagné : deux notes rondes qui montent ; une envie exaucée : un petit carillon ; le grand cadeau : une fanfare */
+    coeur:function(){ tendre(659, 0, .22, .05, null, .012, 'triangle', 2600); tendre(988, .16, .42, .05, null, .012, 'triangle', 3200); tendre(1976, .2, .3, .012, null, .01); },
+    envie:function(){ [1319, 1568, 2093, 2637].forEach(function(f, i){ tendre(f, i * .055, .26, .028, null, .006); }); grains(.12, .4, .01, 22, 6000); },
+    fanfare:function(){ [523, 523, 659, 784, 1047].forEach(function(f, i){ tendre(f, [0, .13, .26, .39, .56][i], i === 4 ? .7 : .16, .055, null, .01, 'triangle', 3400); tendre(f * 2, [0, .13, .26, .39, .56][i], i === 4 ? .6 : .12, .014, null, .008); }); grains(.56, .8, .014, 46, 5600); },
     /* les jouets */
     laser:function(){ tendre(1760, 0, .08, .012, 2637, .004); },
     plume:function(){ souffle(0, .22, .02, 900, 2600, .7); },
@@ -7201,13 +7457,27 @@ function iconeSoin(id){
    k : le besoin qu'il comble ; n : de combien (100 par défaut : tout) */
 function soigner(V, o, quoi, gain, k, n){
   if(!o) return;
-  var t = tama(V), u = besoinUrgent(o), plus = gain;
-  if(k){ if(u && u.k === k) plus += 6; donner(o, k, n === undefined ? 100 : n); }
-  o.bh = Math.min(100, bonheur(o) + plus);
+  var t = tama(V), u = besoinUrgent(o), fam = familleSoin(quoi), brut = gain;
+  if(k){ if(u && u.k === k) brut += 6; donner(o, k, n === undefined ? 100 : n); }
+  /* (étape 2) deux fois moins de bonheur qu'avant, et de moins en moins si on refait le même soin */
+  var plus = Math.round(brut * GAIN_K * lasse(V, fam) * 100) / 100;
+  lasser(V, fam);
+  bhPlus(o, plus);
   t.pts += plus;
-  if(plus >= 3) noterSoin(V, o, quoi);
+  if(brut >= 3) noterSoin(V, o, quoi);
+  noterCoeur(V, quoi);
+  if(envieEst(V, quoi)) envieFaite(V, o);
   majHumeur(V, o); majBarre(V); changer(V);
+  coeursMaj(V, o);
   if(!V.o.sansSurprise && !GUIDE) apres(V, 2600, function(){ var c = chatsDe(V).filter(function(x){ return peutSortir(V, x); })[0]; if(c) cadeauChat(V, c); });
+}
+/* Une sieste dans un de ses coins douillets (toute seule, ou parce qu'on l'y a portée) : un peu de bonheur, et ça compte pour son quatrième cœur */
+function dodoCoin(V, o){
+  var st = V.chats[o.id], sur = st && st.pos ? st.pos.sur : o.sur, par = sur && V.parId[sur.o];
+  if(!st || st.pose !== 'dort' || !par || !DODO_ICI.test(par.t) || o.chaton || st.dodoVu === st.dortJusqua) return false;
+  st.dodoVu = st.dortJusqua;
+  soigner(V, o, 'dodo', 6);
+  return true;
 }
 /* la jauge cachée de la variété : elle monte quand le soin n'est pas un des deux derniers ; le petit signe, c'est Mimi qui se roule */
 function noterSoin(V, o, quoi){
@@ -7263,7 +7533,7 @@ function caresseDebut(V, o, ev){
   if(st.anim) chatArreter(V, o);
   if(st.t){ clearTimeout(st.t); st.t = null; }
   if(/^(marche|saute|tape|lave|mange|salut)$/.test(st.pose)) chatPose(V, o, 'assis');
-  st.caresse = {zone:null, t0:Date.now(), tz:Date.now(), gain:0, coeur:0, ronron:0, dist:0, n:0, outil:V.outil ? V.outil.t : null};
+  st.caresse = {zone:null, t0:Date.now(), tz:Date.now(), gain:0, coeur:0, ronron:0, dist:0, n:0, outil:V.outil ? V.outil.t : null, k:lasse(V, 'caresse')};
   if(st.caresse.outil){ outilBouge(V, o, ev, 0); }
   else caresseZone(V, o, zoneChat(V, o, ev));
   caresseTic(V, o);
@@ -7318,7 +7588,10 @@ function caresseTic(V, o){
     if(dz > 700 && !d.classList.contains('at-x-attrape')){ d.classList.add('at-x-attrape'); flotter(V, o, 'Grrr !'); sonMimi(V, 'grr'); C.ronron = now; }
     else if(dz > 700 && now - C.ronron > 1400){ C.ronron = now; sonMimi(V, 'grr'); }
   } else if(z === 'queue' && dz > 1500 && !C.fuite){ C.fuite = 1; fuirQueue(V, o); return; }
-  if(gain && C.gain < 14){ C.gain += gain; donner(o, z === 'ventre' ? 'jeu' : 'amour', gain * 5); o.bh = Math.min(100, bonheur(o) + gain); t.pts += gain; if(!(C.n++ % 5)) majBarre(V); }
+  /* (étape 2 : deux fois moins de bonheur qu'avant, et de moins en moins si on enchaîne les câlins — C.k, la lassitude au début du câlin) */
+  if(gain && C.gain < 12){ var g2 = gain * GAIN_K * (C.k === undefined ? 1 : C.k); C.gain += gain; donner(o, z === 'ventre' ? 'jeu' : 'amour', gain * 5); bhPlus(o, g2); t.pts += g2; if(!(C.n++ % 5)) majBarre(V); }
+  /* son envie du moment, c'était des gratouilles : au bout de quatre bonnes secondes, c'est gagné */
+  if(!C.env && C.gain >= 6 && (z === 'tete' || z === 'dos') && envieEst(V, 'caresse')){ C.env = 1; envieFaite(V, o); coeursMaj(V, o); }
   st.caresseT = apres(V, 400, function(){ caresseTic(V, o); });
 }
 /* on insiste sur la queue : elle s'en va un peu plus loin, et se rassoit en regardant ailleurs (elle n'est pas fâchée pour de vrai) */
@@ -7338,7 +7611,7 @@ function caresseFin(V, o, fuite){
   st.caresse = null; clearTimeout(st.caresseT);
   if(C.outil) outilLache(V, o);
   if(d) ['at-x-tete', 'at-x-dosg', 'at-x-agace', 'at-x-attrape', 'at-x-petrit', 'at-x-mordille', 'at-c-ronron'].forEach(function(c){ d.classList.remove(c); });
-  if(C.gain >= 3) noterSoin(V, o, 'caresse');
+  if(C.gain >= 3){ noterSoin(V, o, 'caresse'); lasser(V, 'caresse'); }
   majBarre(V); changer(V);
   if(st.pose === 'dort'){ chatPlanifier(V, o, Math.max(1000, st.dortJusqua - Date.now())); return; }
   if(fuite) return;
@@ -7803,7 +8076,11 @@ function placeLibre(V, l, dl, h){
   return {x:l[0][0], y:l[0][1]};
 }
 /* ---------- Le coffret qu'elle rapporte ---------- */
-function coffretSVG(){
+/* (grand : le coffret doré du grand cadeau — le même, en or, au ruban rouge, avec deux étoiles) */
+function coffretSVG(grand){
+  if(grand) return coffretSVG().replace(/#f5c542/g, '#e0443a').replace('#ffd36a', '#ff7b6b').replace('#f5b945', '#c92f2f')
+    .replace('#9d6ee3', '#f5c542').replace('#7d4fc8', '#e0a52c').replace('#b796ff', '#ffe08a')
+    .replace('</svg>', '<path d="M51,2 l1.7,4.3 4.3,1.7 -4.3,1.7 -1.7,4.3 -1.7,-4.3 -4.3,-1.7 4.3,-1.7 Z M11,40 l1.1,2.9 2.9,1.1 -2.9,1.1 -1.1,2.9 -1.1,-2.9 -2.9,-1.1 2.9,-1.1 Z" fill="#fffbe6" stroke="#24182e" stroke-width="1.2" stroke-linejoin="round"/></svg>');
   return '<svg viewBox="0 0 64 60" aria-hidden="true"><ellipse cx="32" cy="56" rx="26" ry="4" fill="rgba(0,0,0,.25)"/>' +
     '<path d="M8,26 H56 V54 H8 Z" fill="#9d6ee3" stroke="#24182e" stroke-width="3" stroke-linejoin="round"/><path d="M8,26 H56 V32 H8 Z" fill="#7d4fc8"/>' +
     '<path d="M28,26 H36 V54 H28 Z" fill="#f5c542" stroke="#24182e" stroke-width="2.4"/>' +
@@ -7816,9 +8093,9 @@ function dessinerCoffret(V, neuf){
   var c = tama(V).coffret;
   if(!c || V.salle) return;
   var s = echelleSol(c.y), d = document.createElement('div');
-  d.className = 'at-fixe at-touche at-coffret'; d.setAttribute('data-at', 'coffret'); d.setAttribute('role', 'button'); d.setAttribute('aria-label', 'Ouvrir le coffret de Mimi');
-  d.innerHTML = coffretSVG();
-  d.style.left = pX(V, c.x); d.style.top = pY(V, c.y); d.style.width = pW(V, 84 * s);
+  d.className = 'at-fixe at-touche at-coffret' + (c.g ? ' at-coffret-grand' : ''); d.setAttribute('data-at', 'coffret'); d.setAttribute('role', 'button'); d.setAttribute('aria-label', 'Ouvrir le coffret de Mimi');
+  d.innerHTML = coffretSVG(c.g);
+  d.style.left = pX(V, c.x); d.style.top = pY(V, c.y); d.style.width = pW(V, (c.g ? 112 : 84) * s);
   d.style.zIndex = Math.round(posObj(V, {t:'chat', x:c.x, y:c.y, sur:null}).z * 5) + 2;
   V.scene.appendChild(d); V.elCoffret = d;
   if(neuf) anim(d, [{transform:'translate(-50%,-100%) translateY(-60%) scale(.6)', opacity:0}, {transform:'translate(-50%,-100%) scale(1.1,.88)', opacity:1, offset:.7}, {transform:'translate(-50%,-100%)'}], {duration:500, easing:'ease-in'});
@@ -7829,22 +8106,30 @@ function ouvrirCoffret(V){
   t.coffret = null; V.elCoffret = null;
   if(el){ el.classList.add('ouvert'); el.removeAttribute('data-at'); apres(V, 1500, function(){ el.remove(); }); }
   sonMimi(V, 'ouvre');
-  var m = mimi(V), k = c.c.charAt(0), id = c.c.slice(2), tx, ic;
+  var m = mimi(V), k = c.c.charAt(0), id = c.c.slice(2), tx, ic, dans = c.g ? 'Dans le grand coffret doré : ' : 'Dans le coffret : ';
   if(k === 'j' && JOUETS[id]){
     if(m.jouets.indexOf(id) < 0) m.jouets.push(id);
     if(m.neufs.indexOf(id) < 0) m.neufs.push(id);
-    ic = JOUETS[id].ic; tx = 'Dans le coffret : ' + JOUETS[id].nom + ' ! ' + JOUETS[id].dit + ' Il l\'attend dans sa barre 🐾.';
+    ic = JOUETS[id].ic; tx = dans + JOUETS[id].nom + ' ! ' + JOUETS[id].dit + ' Il l\'attend dans sa barre 🐾.';
     brillerMimi(V);
   } else if(k === 'a' && ACC[id]){
     var G = garde(V.etat);
     if(G.a.indexOf(id) < 0){ G.a.push(id); G.neuf.push(id); G.annonce.push(id); }
-    ic = '🎀'; tx = 'Dans le coffret : ' + articleAcc(id) + ' ! Il attend dans sa garde-robe 🎀, dans sa barre 🐾.';
+    ic = '🎀'; tx = dans + articleAcc(id) + ' ! Il attend dans sa garde-robe 🎀, dans sa barre 🐾.';
   } else {
-    chatsTous(V).forEach(function(o){ o.bh = Math.min(100, bonheur(o) + 10); });
+    chatsTous(V).forEach(function(o){ bhPlus(o, 5); });
     ic = '🍬'; tx = 'Des friandises ! Elle en garde une pour toi… ah non, finalement, elle les mange toutes.';
   }
-  if(el){ var r = V.root.getBoundingClientRect(), b = el.getBoundingClientRect(); for(var i = 0; i < 8; i++) particule(V, {clientX:b.left + b.width / 2, clientY:b.top + b.height * 0.3}, 'at-part-etoile', i % 2 ? '✦' : '✧', 1100); }
-  toast(V, '<b>🎁 ' + ic + '</b> ' + esc(tx), 7000, tx);
+  if(c.g){
+    /* le grand cadeau est ouvert : les cœurs repartent de zéro, le bonheur redescend (Romain : « dès qu'on a la surprise, hop, ça redescend ») */
+    t.c = coeursPropres(null);
+    chatsTous(V).forEach(function(o){ bonheur(o); o.bh = Math.min(o.bh, BH_APRES); });
+    t.envie = null; t.envieT = t.jeu + 30;
+    tx += ' Et hop : ses cinq cœurs sont à regagner !';
+    apres(V, 250, function(){ sonMimi(V, 'fanfare'); });
+  }
+  if(el){ var r = V.root.getBoundingClientRect(), b = el.getBoundingClientRect(); for(var i = 0; i < (c.g ? 18 : 8); i++) particule(V, {clientX:b.left + b.width / 2, clientY:b.top + b.height * 0.3}, 'at-part-etoile', i % 2 ? '✦' : '✧', c.g ? 1500 : 1100); }
+  toast(V, '<b>' + (c.g ? '👑 ' : '🎁 ') + ic + '</b> ' + esc(tx), c.g ? 9000 : 7000, tx);
   majBarre(V); changer(V);
 }
 
@@ -7854,9 +8139,12 @@ function ouvrirCoffret(V){
 function majBarre(V, flash){
   var b = V.elMimi, c = chatsTous(V)[0];
   if(!b) return;
-  var n = c ? bonheur(c) : 0, m = mimi(V);
+  var n = c ? bonheur(c) : 0, m = mimi(V), h = tama(V).c.h, ce = b.querySelector('.at-mimi-coeurs');
   b.style.setProperty('--bh', n);
-  b.classList.toggle('plein', n >= BH_CADEAU);
+  b.classList.toggle('plein', !!c && bhPlein(c));
+  /* (étape 2) ses cinq cœurs, au-dessus du bouton : toujours sous les yeux */
+  if(ce){ var cle = h.join(''); if(ce._cle !== cle){ ce._cle = cle; ce.innerHTML = h.map(function(x){ return '<b' + (x ? ' class="on"' : '') + '>♥</b>'; }).join(''); } }
+  b.setAttribute('aria-label', 'Les affaires de Mimi : ' + nbCoeurs(V) + ' cœur' + (nbCoeurs(V) > 1 ? 's' : '') + ' sur 5');
   var nb = m.neufs.length + garde(V.etat).neuf.length, badge = b.querySelector('.at-badge');
   if(badge){ badge.textContent = nb ? '✨' : ''; badge.style.display = nb ? '' : 'none'; }
   b.hidden = !c;
@@ -7867,7 +8155,10 @@ function htmlBarre(V){
   var c = chatsTous(V)[0], m = mimi(V), G = garde(V.etat), n = c ? bonheur(c) : 0, nom = c ? nomChat(c) : PORTEE.mere;
   var bt = function(at, ic, txt, neuf, x){ return '<button type="button" class="at-mb-bt' + (x || '') + '" data-mimi="' + at + '"><span class="at-mb-ic" aria-hidden="true">' + ic + '</span><small>' + esc(txt) + '</small>' + (neuf ? '<i class="at-mb-neuf" aria-label="nouveau">✨</i>' : '') + '</button>'; };
   var s = '<div class="at-mb-tete"><span class="at-mb-chat">' + (c ? '<svg viewBox="19 -28 76 78" aria-hidden="true">' + teteChat(CHATS[(c.v || 0) % 3], 57, 18, c.acc || {}) + '</svg>' : '') + '</span>' +
-    '<span class="at-mb-jauge"><b>' + esc(nom) + '</b><i class="at-mb-barre"><b style="width:' + n + '%"></b></i></span>' +
+    '<span class="at-mb-jauge"><b>' + esc(nom) + '</b><i class="at-mb-barre' + (c && bhPlein(c) ? ' plein' : '') + '"><b style="width:' + n + '%"></b></i></span>' +
+    /* (étape 2) son envie du moment (on la touche : le conteur la raconte) et ses cinq cœurs (on les touche : la feuille des cœurs) */
+    (function(){ var e = tama(V).envie ? envieInfo(V, tama(V).envie.k) : null; return e ? '<button type="button" class="at-mb-envie" data-mimi="envie" aria-label="Son envie du moment"><span aria-hidden="true">💭</span>' + e.ic + '</button>' : ''; })() +
+    '<button type="button" class="at-mb-coeurs" data-mimi="coeurs" aria-label="Ses cinq cœurs : ' + nbCoeurs(V) + ' sur 5">' + tama(V).c.h.map(function(x){ return '<b' + (x ? ' class="on"' : '') + ' aria-hidden="true">♥</b>'; }).join('') + '</button>' +
     '<button type="button" class="at-rond at-mb-x" data-mimi="x" aria-label="Fermer">✖</button></div><div class="at-mb-l">';
   s += '<span class="at-mb-g">Jouer</span>' + m.jouets.map(function(id){ return bt('j:' + id, JOUETS[id].ic, JOUETS[id].nom.replace(/^(la |le |l')/, '').replace(/^\w/, function(x){ return x.toUpperCase(); }), m.neufs.indexOf(id) >= 0, ' at-mb-jouet'); }).join('');
   if(m.soins.length) s += '<span class="at-mb-g">Soins</span>' + m.soins.filter(function(id){ return id !== 'griffoir'; }).map(function(id){ return bt('s:' + id, iconeSoin(id), SOINS[id].nom, m.neufs.indexOf(id) >= 0); }).join('');
@@ -7886,6 +8177,8 @@ function fermerBarre(V){ if(V.barreMimi) V.barreMimi.hidden = true; }
 function actionBarre(V, a){
   if(V.mode !== 'ranger' || V.arrete) return;
   if(a === 'x'){ fermerBarre(V); son(V, 'clic'); return; }
+  if(a === 'coeurs'){ fermerBarre(V); ouvrirCoeurs(V); return; }
+  if(a === 'envie'){ var ce = chatsTous(V)[0]; if(ce) bulleEnvie(V, ce); return; }
   if(a.indexOf('j:') === 0){ jouer(V, a.slice(2)); return; }
   if(a === 's:brosse'){ fermerBarre(V); mimi(V).neufs = mimi(V).neufs.filter(function(x){ return x !== 'brosse'; }); prendreBrosse(V); majBarre(V); return; }
   if(a === 's:bain'){ fermerBarre(V); mimi(V).neufs = mimi(V).neufs.filter(function(x){ return x !== 'bain'; }); demarrerBain(V); majBarre(V); return; }
@@ -7894,6 +8187,30 @@ function actionBarre(V, a){
   if(a === 'garde'){ fermerBarre(V); var c = chatsTous(V)[0]; if(c) ouvrirGarde(V, c.id); return; }
   if(a === 'shop'){ fermerBarre(V); ouvrirBoutique(V); return; }
   if(a === 'album'){ ouvrirAlbum(V); return; }
+}
+
+/* ---------- (étape 2) La feuille « Les cinq cœurs » : l'objectif, en images (Romain : « si on n'a pas d'objectif… ») ----------
+   Un cœur par ligne : son nom, ses conditions (une image, deux ou trois mots, ✔ quand c'est fait), et le conteur qui le raconte (🔊). */
+function ouvrirCoeurs(V){ ouvrirCalque(V, 'at-cal-coeurs', htmlCoeurs(V)); son(V, 'page'); }
+function htmlCoeurs(V){
+  var c = chatsTous(V)[0], nom = c ? nomChat(c) : PORTEE.mere, t = tama(V), n = nbCoeurs(V), bh = c ? bonheur(c) : 0;
+  var intro = 'Cinq cœurs, et son bonheur tout en haut : ce jour-là, ' + nom + ' file chercher un cadeau pas comme les autres. Ensuite, tout recommence !';
+  var corps = '<p class="at-feuille-txt at-co-intro"><span>' + esc(intro) + '</span>' + lireBtn(intro) + '</p>';
+  corps += '<div class="at-co-jauges"><span class="at-co-j"><b aria-hidden="true">😺</b><i class="at-mb-barre' + (c && bhPlein(c) ? ' plein' : '') + '"><b style="width:' + bh + '%"></b></i><small>Bonheur</small></span>' +
+    '<span class="at-co-j at-co-j2"><i class="at-co-rang" aria-hidden="true">' + t.c.h.map(function(x){ return '<b' + (x ? ' class="on"' : '') + '>♥</b>'; }).join('') + '</i><small>' + n + ' sur 5</small></span></div>';
+  corps += '<div class="at-co-l">' + COEURS.map(function(C, i){
+    var fait = !!t.c.h[i];
+    var chips = C.l.map(function(x){
+      var ok = fait || condCoeur(V, x[0]);
+      return '<span class="at-co-c' + (ok ? ' ok' : '') + '"><span class="at-co-ic" aria-hidden="true">' + (x[1] === 'brosse' ? iconeSoin('brosse') : x[1]) + '</span><small>' + esc(x[2]) + '</small><i aria-hidden="true">' + (ok ? '✔' : '') + '</i></span>';
+    }).join('');
+    /* (la brosse ou le bain pas encore arrivés : le conteur le dit, pour qu'on ne les cherche pas) */
+    var dit = C.dit, manque = i === 2 && !fait ? ['brosse', 'bain'].filter(function(id){ return !soinA(V, id); }) : [];
+    if(manque.length) dit += manque.length > 1 ? ' La brosse et le bain ne sont pas encore arrivés : varie les soins, ils viendront.' : (manque[0] === 'bain' ? ' Le bain n\'est pas encore arrivé' : ' La brosse n\'est pas encore arrivée') + ' : varie les soins, ' + (manque[0] === 'bain' ? 'il' : 'elle') + ' viendra.';
+    return '<div class="at-co-ligne' + (fait ? ' fait' : '') + '"><b class="at-co-coeur" aria-hidden="true">♥</b><div class="at-co-quoi"><b>' + esc(C.nom) + '</b><div class="at-co-chips">' + chips + '</div>' +
+      (manque.length ? '<small class="at-co-manque">🔒 ' + (manque.length > 1 ? 'Pas encore arrivés' : 'Pas encore là') + '</small>' : '') + '</div>' + lireBtn(dit) + '</div>';
+  }).join('') + '</div>';
+  return feuille('at-f-coeurs', '<span class="at-f-ic">💖</span><h3>Les cinq cœurs de ' + esc(nom) + '</h3>', corps);
 }
 
 /* ---------- La boutique de Mimi : le confort, payé en pièces d'or (le moteur donne la bourse : opts.bourse) ---------- */

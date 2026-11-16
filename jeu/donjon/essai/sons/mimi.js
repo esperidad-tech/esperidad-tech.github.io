@@ -15,7 +15,9 @@ var section = {id:'mj-mimi', titre:'Mimi à l’atelier', sous:[
     ['brosse', 'La brosse', .25], ['mousse', 'Mousse du bain', .3], ['secoue', 'Elle s’ébroue', .4], ['gratte', 'La litière', .6], ['photo', 'Clic, la photo', .2]])},
   {id:'mimi-cadeaux', titre:'Coffrets et jouets', sons:liste([['coffret', 'Le coffret posé', .55], ['ouvre', 'Le coffret s’ouvre', .9], ['debloque', 'Un nouveau soin', 1.1],
     ['laser', 'Le laser', .1], ['plume', 'La plume', .25], ['grelot', 'Balle à grelot', .4], ['clef', 'Remonter la souris', .45], ['couic', 'Couic !', .2],
-    ['carton', 'Le carton', .2], ['herbe', 'L’herbe à chat', .6]])}
+    ['carton', 'Le carton', .2], ['herbe', 'L’herbe à chat', .6]])},
+  /* (étape 2, 16 novembre au soir : les cœurs, les envies, le grand cadeau) */
+  {id:'mimi-coeurs', titre:'Cœurs et envies', sons:liste([['coeur', 'Un cœur gagné', .65], ['envie', 'Une envie exaucée', .6], ['fanfare', 'Le grand cadeau', 1.4]])}
 ]};
 var mj = (G.CATALOGUE || []).filter(function(s){ return s.id === 'mj'; })[0];
 if(mj) mj.sous.push(section);
