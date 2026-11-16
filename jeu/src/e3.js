@@ -119,6 +119,8 @@ E[3] = {
       {ic:'👥', t:'Lis « Les habitants » à toute l\'équipe.', fait:[{lu:'habitants'}]},
       {ic:'🖼️', t:'Peins le tableau d\'Odette et de ses chats, à la mairie.', fait:[{fini:'sage:mairie:tableau'}]},
       {ic:'🌿', t:'Lis l\'herbier à l\'Alchimiste, dans ton Grand Livre : un indice pour chaque plante, et le moment de la cueillir.', fait:[{lu:'herbier'}]},
+      /* (16 novembre) le secret d'Odette : elle n'arrive qu'avec le papier (e.si, mission.js) ; rien n'y dit quoi faire de la pierre */
+      {si:[{code:'obj:papier_odette'}], ic:'📜', t:'Odette a laissé un papier couvert de signes. Fais-le parler, dans ton Grand Livre.', fait:[{vu:'pierre:maison'}]},
       {piste:true, t:'Quand toute l\'équipe a tout fait, donne le code du moment suivant (page ⏭️ Les codes des moments).'},
       {libre:true, ic:'🔍', t:'Écoute l\'équipe, puis accuse : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ]
@@ -512,6 +514,12 @@ E[3] = {
     /* (le carnet n'a pas de fiche au labo : il n'est que pour le Sage, qui le compare à la lettre et y trouve le plan) */
     carnet:{nom:'Le carnet d\'Odette', ic:'📓', pour:'sage', dire:'Le carnet d\'Odette : donne ce code au Sage.',
       recu:{sage:'Une nouvelle page s\'est glissée dans ton Grand Livre : le carnet d\'Odette, écrit de sa main.'}},
+    /* (16 novembre, le secret d'Odette) le papier que le voisin gardait pour elle (le Barde → le Sage), et le vieux plan de la cachette,
+       sous les dalles de sa maison (le Pisteur → le Sage). Ni l'un ni l'autre ne nomme le maire ; le plan ne dit pas « souterrains ». */
+    papier_odette:{nom:'Le papier d\'Odette', ic:'📜', pour:'sage', dire:'Des signes secrets ? Le Sage saura peut-être les lire : donne-lui ce code.',
+      recu:{sage:'Une nouvelle page s\'est glissée dans ton Grand Livre : le papier d\'Odette, couvert de signes.'}},
+    vieux_plan:{nom:'Le vieux plan d\'Odette', ic:'🗺️', pour:'sage', dire:'Un très vieux plan, roulé dans un étui de cuir. Le Sage saura le lire : donne-lui ce code.',
+      recu:{sage:'Une nouvelle page s\'est glissée dans ton Grand Livre : le vieux plan d\'Odette.'}},
     /* (16 novembre) la pièce que Fortuné prête au Barde : le même objet du labo que la pièce de la boulangerie de l'enquête 2 */
     piece_pain:{nom:'La pièce d\'or de Fortuné', ic:'🪙', pour:'alchimiste', dire:'L\'Alchimiste saura la faire parler : donne-lui ce code.'},
     /* (16 novembre, 15 h) le fond de flacon d'encre qu'Iris donne au Barde : l'Alchimiste le compare à l'encre de la lettre (labo : encre_iris) */
@@ -644,6 +652,23 @@ E[3] = {
        · Niveau : celui de l'enquête (enfant 3 : trois fausses pistes ; adulte 6 : quatre, dont Noisette et ses cinq doigts). */
     L2:{
       pisteur:{points:[
+        /* L'INTÉRIEUR DE LA MAISON D'ODETTE (16 novembre, le secret d'Odette ; interieur.js). Le matin : une visite, dans l'ombre (« Rien…
+           pour l'instant » : on a hâte d'être à l'après-midi). L'après-midi : le soleil réveille les neuf dalles ; trois dalles dans le
+           bon ordre — celui que le Sage a lu sur le plan d'Odette avec la pierre de Tim, et qu'il dit à voix haute — et la cachette
+           s'ouvre : le vieux plan (un code objet pour le Sage). Sans le Sage : 504 ordres possibles. On essaie autant qu'on veut. */
+        {id:'maison', ic:'🏠', nom:'La maison d\'Odette', moments:['matin'], mj:'interieur', essaisInfinis:true, sansTrouvaille:true,
+          params:{maison:'odette', moment:'matin', visite:true},
+          avant:'La porte d\'Odette n\'est jamais fermée à clé. Tu pousses le battant, sans bruit…', bouton:'🏠 Entrer chez Odette',
+          t:'Une maison bien rangée, et pas un chat. Ce matin, tout est dans l\'ombre : le soleil est de l\'autre côté. Il n\'entrera par la fenêtre que cet après-midi.'},
+        /* oral : ce qu'un équipier doit lui avoir dit À VOIX HAUTE pour qu'il y arrive (pas de code — la règle de Romain, 16 novembre : « un
+           code, ça sert à donner un objet, ou à activer un truc sur l'appareil de l'autre ; tout le reste se dit »). Le jeu ne le lit pas :
+           c'est le vérificateur (tools/verif-e3.js) qui s'en sert, pour que la logique de l'enquête reste vérifiée de bout en bout. */
+        {id:'cachette', ic:'☀️', nom:'Chez Odette, au soleil', moments:['apresmidi'], mj:'interieur', essaisInfinis:true, obj:'vieux_plan',
+          oral:[{vu:'pierre:maison'}],
+          params:{maison:'odette', moment:'apresmidi', lait:true},
+          avant:'Le soleil de l\'après-midi entre enfin chez Odette. Sur le plancher, de vieilles dalles se mettent à briller…', bouton:'☀️ Entrer chez Odette',
+          t:'Sous la dalle du milieu, un étui de cuir. Dedans, un très vieux plan, roulé serré : des couloirs, des couloirs… Odette le cachait bien !',
+          rate:'Les dalles gardent leur secret. Trois dalles, dans le bon ordre… Le Sage a peut-être de quoi le trouver.'},
         {id:'traces', ic:'🐾', nom:'Les traces de Moustache', mj:'pistage', essaisInfinis:true,
           besoin:[{code:'info:traces_moustache'}], visibleSi:[{code:'info:traces_moustache'}],
           donne:'info:crypte_fermee',
@@ -985,7 +1010,12 @@ E[3] = {
       {q:Q_NUIT, g:'e', moments:M_, a:'Ses chats ont miaulé toute la nuit. Tous sont chez moi, sauf Moustache, le gros gris : disparu !',
         note:'Le voisin : les chats d\'Odette ont miaulé toute la nuit. Tous sont chez lui, sauf Moustache, le gros gris, qui a disparu.'},
       {q:'Vous gardez sa maison ?', g:'e', moments:M_, a:'Elle n\'est jamais fermée : Odette ne ferme rien. Si tu retrouves sa canne, va la lui poser.',
-        note:'Le voisin : la maison d\'Odette n\'est jamais fermée. Si tu retrouves sa canne, va la lui poser.'}
+        note:'Le voisin : la maison d\'Odette n\'est jamais fermée. Si tu retrouves sa canne, va la lui poser.'},
+      /* [4] (16 novembre, le nouveau fil : « rien n'arrive par magie dans le Grand Livre ») le papier d'Odette, pour le Sage : au dos, le
+         plan de sa maison (pierres.js). Romain : « le papier d'Odette donné par le voisin le matin, oui, ça me va ». */
+      {q:'Odette vous a laissé quelque chose ?', g:'e', moments:M_, obj:'papier_odette',
+        a:'« Si je disparais, donne ce papier à qui viendra me chercher. » Voilà ce qu\'elle m\'a dit, le mois dernier. Tiens. Il est couvert de petits signes : moi, je n\'y comprends rien.',
+        note:'Le voisin : Odette lui avait confié un papier couvert de signes, « pour qui viendra me chercher » (code pour le Sage).'}
     ]},
     /* la maison d'Odette, au 2, rue des Lanternes : une visite, sans questions ; deux codes d'un coup. (12 novembre au soir) Dès le matin
        (le voisin dit qu'elle n'est jamais fermée, et la lettre demande de rapporter la canne), et encore la nuit (un filet). */
@@ -1169,6 +1199,17 @@ E[3] = {
     farinel:{apresmidi:'« Encore de la farine renversée… Atchoum ! »'}
   },
   /* la maison d'Odette, pour le Pisteur, l'Alchimiste et le Sage */
+  /* (16 novembre) les pierres du Sage : sa poche, sous les plans de son Grand Livre, et « Les objets magiques » (pierres.js ; les plans où
+     on les pose : E.plansPierre, écrit par pierres.js). La pierre de Tim vient de l'enquête 2 : il l'a toujours sur lui. */
+  pierres:[
+    {id:'tim', nom:'La pierre de Tim', t:'Tim l\'avait ramassée au fond du trou du Vieux Chêne, devant une porte couverte de runes. Tu ne t\'en sépares plus. Elle est froide… presque toujours.'}
+  ],
+  /* les plans où une pierre se pose : la pierre qu'il attend, et la page du Grand Livre où il est (les dessins et les phrases : pierres.js).
+     Ce que ça donne : le fait « pierre:<plan> » (P.vus), que le vérificateur connaît (tools/verif-e3.js). */
+  plansPierre:{
+    maison:{pierre:'tim', page:'papier'},
+    vieuxplan:{pierre:'rune', page:'vieuxplan'}
+  },
   absentTexte:{odette:'Odette n\'est pas chez elle. Le maire dit qu\'elle est chez sa sœur…'},
   absentPourTous:true,   /* (le Barde, lui, entre chez Odette pour poser la canne : pnj.voisin, à tous les moments depuis le 12 novembre au soir) */
   /* ---------- Le Grand Livre du Sage (livre.js ; E3-actions-des-roles.md §3, étape 3) ---------- */
@@ -1202,14 +1243,25 @@ E[3] = {
       get html(){ return window.M && window.M.vraieLettreHTML ? window.M.vraieLettreHTML() : ''; }},
     {id:'carnet', titre:'Le carnet d\'Odette', ic:'📓', visibleSi:[{code:'obj:carnet'}],
       get html(){ return window.M && window.M.carnetOdetteHTML ? window.M.carnetOdetteHTML() : ''; }},
-    /* le plan des Fondateurs : l'alphabet secret. (Romain, 13 novembre : « pas de minuteur » — sansTemps, mj-sage-codes.js ; « il peut
-       apparaître dès le matin dans le livre » — plus besoin du carnet d'Odette : un vieux parchemin glissé dans le Grand Livre.) */
-    {id:'plan', titre:'Le plan des Fondateurs', ic:'🗺️', mj:'alphabet', params:{message:'LE CHEMIN DES FONDATEURS', sansTemps:true}, bouton:'Déchiffrer le vieux parchemin',
+    /* LE SECRET D'ODETTE (16 novembre ; il remplace « Le plan des Fondateurs », qui sortait de nulle part — Romain : « il faut que quelqu'un
+       l'apporte »). pierres.js :
+       · le papier d'Odette (le voisin → le Barde → un code objet) : l'alphabet secret, sans minuteur ; au dos, le plan de sa maison, où
+         le Sage pose la pierre de Tim (sa poche) : trois signes, dans un ordre, à dire au Pisteur ;
+       · le vieux plan d'Odette (la cachette → le Pisteur → un code objet) : des couloirs sans nom, une petite cloche au départ, des
+         signes qu'on ne sait pas lire. Il attend une autre pierre : la nuit.
+       · le tableau d'Odette, une fois peint : on peut le revoir (le chat de pierre sur la fenêtre, le rayon, les runes de la pierre). */
+    {id:'tableauodette', titre:'Le tableau d\'Odette', ic:'🖼️', visibleSi:[{vu:'sage:mairie:tableau'}],
+      get html(){ return window.M && window.M.tableauOdetteHTML ? window.M.tableauOdetteHTML() : ''; }},
+    {id:'papier', titre:'Le papier d\'Odette', ic:'📜', visibleSi:[{code:'obj:papier_odette'}], mj:'alphabet', params:{message:'LE CHAT QUI DORT TE MONTRERA LE CHEMIN', sansTemps:true}, bouton:'Déchiffrer le papier',
       ouvrePartiel:true, partiel:true,
-      avant:'Entre deux pages de ton Grand Livre, un vieux parchemin plié, couvert de signes. Qu\'est-ce qu\'il dit ?',
-      t:'« LE CHEMIN DES FONDATEURS » : un très vieux plan, plein de couloirs. Tu le gardes dans ton Grand Livre.',
-      note:'Dans le Grand Livre, un très vieux plan : « Le chemin des Fondateurs ».',
-      rate:'Les signes sont à moitié effacés… Tu as quand même reconnu un plan, plein de couloirs. Tu le gardes dans ton Grand Livre.'},
+      avant:'Le papier que le voisin gardait pour Odette, plié en quatre. En haut, une ligne qu\'on peut lire : « Quand le soleil de l\'après-midi entrera chez moi… » La suite est écrite en petits signes.',
+      t:'« Quand le soleil de l\'après-midi entrera chez moi, le chat qui dort te montrera le chemin. » Et au dos du papier, Odette a dessiné sa maison…',
+      note:'Le papier d\'Odette : « Quand le soleil de l\'après-midi entrera chez moi, le chat qui dort te montrera le chemin. » Au dos, le plan de sa maison.',
+      rate:'Les signes dansent devant tes yeux…',
+      tPartiel:'Tu reconnais quand même quelques mots : « le chat qui dort », « le chemin ». Et au dos du papier, Odette a dessiné sa maison.',
+      get html(){ return window.M && window.M.papierOdetteHTML ? window.M.papierOdetteHTML() : ''; }},
+    {id:'vieuxplan', titre:'Le vieux plan d\'Odette', ic:'🗺️', visibleSi:[{code:'obj:vieux_plan'}],
+      get html(){ return window.M && window.M.vieuxPlanHTML ? window.M.vieuxPlanHTML() : ''; }},
     /* LA TENUE DE COMBAT (Romain, 13 novembre) : avec le code du Pisteur « On va dans la crypte ». Le Sage y retrouve son héros en
        tenue et son code d'allure pour le Pisteur (descente.js, M.tenueHTML) — la fenêtre s'ouvre toute seule quand il tape le code. */
     {id:'tenue', titre:'Ma tenue de combat', ic:'🛡️', visibleSi:[{code:'info:on_descend'}],

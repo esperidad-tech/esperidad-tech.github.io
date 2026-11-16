@@ -44,7 +44,9 @@ module.exports = function verifierE3(E, SRC, D){
         const cle = `${role}:${l}:${p.id}`, prod = liste(p.donne).concat(liste(p.donneAussi)).concat(p.obj ? ['obj:' + p.obj] : []), f = p.plante ? ['plante:' + p.plante] : [];
         /* (le gâteau est une création libre : on ne le rate jamais ; p.essaisInfinis : on recommence autant qu'on veut, il finit toujours par réussir) */
         const ratable = !!p.mj && p.mj !== 'gateau' && !p.essaisInfinis;
-        aj({cle, role, moments:p.moments, besoins:[p.besoin, p.visibleSi].filter(Boolean), sauf:p.cacheSi, produit:prod, faits:f, ratable, mj:p.mj,
+        /* (16 novembre) p.oral : ce qu'un équipier doit lui avoir dit à voix haute (la cachette d'Odette : l'ordre des trois signes, que
+           le Sage lit sur son plan) — pas de code, mais la logique reste vérifiée */
+        aj({cle, role, moments:p.moments, besoins:[p.besoin, p.visibleSi, p.oral].filter(Boolean), sauf:p.cacheSi, produit:prod, faits:f, ratable, mj:p.mj,
           rate:p.ouvrePartiel ? {produit:prod, faits:f} : {produit:[], faits:[]}});
         (p.variantes || []).forEach((v, k) => { if(v.recoit || v.donne || v.obj) aj({cle:`${cle}:v${k}`, role, moments:p.moments, besoins:[[{vu:cle}]].concat(v.si ? [v.si] : []), produit:liste(v.recoit).concat(liste(v.donne)), filet:true}); });
       });
@@ -108,6 +110,12 @@ module.exports = function verifierE3(E, SRC, D){
     /* (13 novembre) p.visibleSi : la page n'existe qu'avec ce code (la lettre, le carnet) ; p.quand : son bouton attend ce moment (le Livre d'or) */
     aj({cle:`sage:page:${p.id}`, role:'sage', moments:p.moments || p.quand, besoins:[p.besoin, p.visibleSi].filter(Boolean), produit:prod, faits:f, ratable:!!p.mj, mj:p.mj, rate:p.ouvrePartiel || p.partiel ? {produit:prod, faits:f} : {produit:[], faits:[]}});
   });
+  /* (16 novembre) les pierres du Sage (pierres.js) : poser la bonne pierre sur un plan de son Grand Livre — il lui faut la page du plan,
+     et la pierre (E.pierres ; p.si : ce qu'il faut pour l'avoir). Le plan parle : le fait « pierre:<plan> ». */
+  for(const id of Object.keys(E.plansPierre || {})){
+    const X = E.plansPierre[id], Pi = (E.pierres || []).find(p => p.id === X.pierre);
+    if(Pi) aj({cle:`sage:pierre:${id}`, role:'sage', besoins:[[{vu:'page:' + X.page}]].concat(Pi.si ? [Pi.si] : []), faits:['pierre:' + id]});
+  }
   /* les analyses du labo (à la main : la lettre a besoin des écritures du Livre d'or — labo.js, CFG.livredor) */
   for(const id of Object.keys(E.analyses || {})){
     const A = E.analyses[id];
@@ -307,6 +315,13 @@ module.exports = function verifierE3(E, SRC, D){
   const souleve = jouer(ROLES, null, ['pisteur:clocher:tirer', 'pisteur:clocher:pousser']);
   const jamais = ids.filter(c => !parfait.codes.has(c) && !toutJ.codes.has(c) && !souleve.codes.has(c) && !['info:copie', 'info:leo_dit1', 'info:leo_dit2'].includes(c));
   dit(!jamais.length, jamais.length ? 'des codes qu\'aucune partie ne fait apparaître (ni tout réussi, ni tout raté, ni la grille soulevée) : ' + jamais.join(', ') : 'Chaque code apparaît dans une partie (tout réussi, tout raté, ou la grille soulevée)');
+
+  /* (16 novembre) le secret d'Odette : la cachette ne s'ouvre pas sans le Sage (l'ordre des trois signes), ni sans le Barde (le papier) */
+  if(E.lieux.L2 && ((E.lieux.L2.pisteur || {}).points || []).some(p => p.id === 'cachette')){
+    const sansS = jouer(['barde', 'pisteur', 'alchimiste']), sansB = jouer(['pisteur', 'sage', 'alchimiste']);
+    dit(parfait.codes.has('obj:vieux_plan') && parfait.faits.has('pierre:maison'), 'le secret d\'Odette : le papier (le Barde), la pierre de Tim sur le plan (le Sage), la cachette (le Pisteur), le vieux plan (le Sage)');
+    dit(!sansS.codes.has('obj:vieux_plan') && !sansB.codes.has('obj:vieux_plan'), 'sans le Sage, ou sans le Barde, la cachette d\'Odette ne s\'ouvre pas');
+  }
 
   /* ---------- 5. les missions du Carnet ---------- */
   const connus = new Set([...cles, ...R.flatMap(r => r.faits.concat(r.rate.faits))]);

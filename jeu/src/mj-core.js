@@ -394,6 +394,9 @@ MJ.lancer = function(el, type, params, fin, options){
       if(dejaFini) return; dejaFini = true;
       res = res || {};
       if(enCours && enCours.arreter) try{ enCours.arreter(); }catch(e){}
+      /* res.direct (16 novembre, la visite d'une maison : interieur.js) : pas d'écran « Bravo » ni « Raté » — on a seulement regardé,
+         ou on est ressorti ; la suite se dit dans la fenêtre du jeu */
+      if(res.direct){ if(fini) return; fini = true; U.stop(); fin(Object.assign({}, res, {reussi:!!res.reussi, score:res.score === undefined ? (res.reussi ? 1 : 0) : res.score, erreurs:res.erreurs || 0, essais:essais, detail:res.detail || ''})); return; }
       resultat(res);
     }) || null;
   }

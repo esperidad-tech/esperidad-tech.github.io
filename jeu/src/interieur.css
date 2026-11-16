@@ -1,0 +1,84 @@
+/* L'INTÉRIEUR DES MAISONS, vu de dessus (interieur.js) — 16 novembre
+   La pièce est une pile de calques (.in-piece) : seuls l'opacité et la position bougent, jamais le dessin lui-même (RAPIDITE.md). */
+.in-jeu{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;position:relative}
+.in-cadre{flex:1;min-height:0;min-width:0;display:flex;align-items:center;justify-content:center}
+.in-piece{position:relative;flex:none;width:300px;height:400px;--in-u:.5px;border-radius:10px;overflow:hidden;box-shadow:0 0 0 2px #2c2118, 0 10px 30px rgba(0,0,0,.55);-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.in-piece > svg{position:absolute;display:block;overflow:hidden}
+.in-piece > svg, .in-grains, .in-feu{pointer-events:none}
+.in-piece > svg.in-vie{pointer-events:auto}
+.in-fond{transform:translateZ(0)}
+/* le soleil : le calque entier respire, tout doucement (un nuage qui passe) */
+.in-rayons{animation:in-respire 7s ease-in-out infinite;will-change:opacity}
+@keyframes in-respire{0%,100%{opacity:1}50%{opacity:.8}}
+/* les signes dorés : le calque entier palpite */
+.in-ors{animation:in-palpite 2.6s ease-in-out infinite;will-change:opacity}
+@keyframes in-palpite{0%,100%{opacity:.62}50%{opacity:1}}
+.in-ouvert .in-or[data-k="4"]{opacity:0}
+/* la poussière */
+.in-grains, .in-feu{position:absolute;inset:0;overflow:hidden}
+.in-grains i{position:absolute;border-radius:50%;background:#fff6d0;opacity:0;animation:in-grain 9s linear infinite;will-change:transform, opacity}
+@keyframes in-grain{0%{opacity:0;transform:translate(0,0)}18%{opacity:.85}55%{opacity:.5}82%{opacity:.8}100%{opacity:0;transform:translate(calc(var(--in-u)*34), calc(var(--in-u)*-46))}}
+/* la braise */
+.in-feu b{position:absolute;border-radius:50%;background:radial-gradient(closest-side, rgba(255,176,74,.5), rgba(255,138,42,.2) 48%, rgba(255,138,42,0));animation:in-feu 3.4s ease-in-out infinite;will-change:opacity}
+.in-ombre .in-feu b{background:radial-gradient(closest-side, rgba(255,176,74,.62), rgba(255,138,42,.26) 48%, rgba(255,138,42,0))}
+.in-feu i{position:absolute;border-radius:50%;background:radial-gradient(closest-side, #fff3c4, #ffb44a 55%, rgba(255,150,50,0));animation:in-etincelle 1.7s ease-in-out infinite;will-change:opacity}
+@keyframes in-feu{0%,100%{opacity:.55}30%{opacity:1}62%{opacity:.7}80%{opacity:.95}}
+@keyframes in-etincelle{0%,100%{opacity:.15}50%{opacity:1}}
+/* les dalles */
+.in-touche, .in-regard{cursor:pointer}
+.in-enfonce, .in-or-fixe{opacity:0;transition:opacity .14s}
+.in-bas-d .in-enfonce, .in-bas-d .in-or-fixe{opacity:1}
+.in-bonne .in-enfonce{stroke:#fffbe0;fill:rgba(255,210,100,.3)}
+.in-j-visite .in-touche{cursor:default}
+/* la dalle de la cachette glisse sous sa voisine */
+.in-glisse-g{transition:transform 1.5s cubic-bezier(.5,0,.3,1)}
+.in-ouvert .in-glisse-g{transform:translate(64px,0)}
+.in-eclat-tube{position:absolute;border-radius:50%;background:radial-gradient(closest-side, rgba(255,246,200,.95), rgba(255,210,110,.45) 45%, rgba(255,210,110,0));opacity:0;pointer-events:none}
+.in-ouvert .in-eclat-tube{animation:in-eclat 1.5s 1.3s ease-in-out infinite}
+@keyframes in-eclat{0%,100%{opacity:0;transform:scale(.6)}50%{opacity:.9;transform:scale(1.25)}}
+/* le mauvais ordre : la pièce tremble */
+.in-secoue .in-piece{animation:in-secoue .42s}
+@keyframes in-secoue{0%,100%{transform:translate(0,0)}20%{transform:translate(-5px,2px)}40%{transform:translate(5px,-2px)}60%{transform:translate(-4px,0)}80%{transform:translate(3px,1px)}}
+/* le bas : ce que le Pisteur remarque, et la sortie */
+.in-bas{flex:none;display:flex;flex-direction:column;gap:8px}
+.in-bulle{margin:0;min-height:3.9em;box-sizing:border-box;padding:9px 12px;border-radius:14px;background:#fbf3dc;color:#2c2118;border:2px solid #2c2118;font-size:1rem;line-height:1.3;display:flex;align-items:center;gap:8px;text-align:left}
+.in-bulle .mj-lire-mini{flex:none;margin-left:auto}
+.in-bulle.in-neuf{animation:in-neuf .3s ease-out}
+@keyframes in-neuf{from{opacity:.3;transform:translateY(5px)}to{opacity:1;transform:none}}
+.in-actions{display:flex;align-items:center;gap:10px}
+.in-actions .in-sortir{margin-left:auto;flex:none}
+.in-pris{display:flex;gap:6px}
+.in-pris-c{width:40px;height:40px;border-radius:8px;border:2px dashed rgba(255,224,138,.5);display:flex;align-items:center;justify-content:center;background:rgba(255,224,138,.06)}
+.in-pris-c.on{border-style:solid;border-color:#ffd36b;background:#4a3320}
+/* la tablette couchée : la pièce à gauche, le texte à droite */
+@media (orientation:landscape) and (min-width:700px){
+  .in-jeu{flex-direction:row;gap:18px;justify-content:center}
+  .in-cadre{flex:0 0 auto;height:100%;aspect-ratio:3/4}
+  .in-bas{flex:1 1 0;max-width:460px;justify-content:center;gap:14px}
+  .in-bulle{min-height:6em;font-size:1.1rem;align-items:flex-start}
+  .in-actions{flex-wrap:wrap}
+}
+/* l'explication en images */
+.in-demo{width:100%;height:100%;display:block;border-radius:12px}
+.in-demo-main{animation:in-main-d 5.4s ease-in-out infinite}
+.in-demo-on{opacity:0}
+.in-demo-d1 .in-demo-on{animation:in-d1 5.4s linear infinite}
+.in-demo-d2 .in-demo-on{animation:in-d2 5.4s linear infinite}
+.in-demo-d3 .in-demo-on{animation:in-d3 5.4s linear infinite}
+@keyframes in-main-d{0%{transform:translate(150px,400px)}14%,22%{transform:translate(150px,184px)}36%,44%{transform:translate(217px,251px)}58%,66%{transform:translate(83px,318px)}86%,100%{transform:translate(150px,400px)}}
+@keyframes in-d1{0%,17%{opacity:0}20%,82%{opacity:1}88%,100%{opacity:0}}
+@keyframes in-d2{0%,39%{opacity:0}42%,82%{opacity:1}88%,100%{opacity:0}}
+@keyframes in-d3{0%,61%{opacity:0}64%,82%{opacity:1}88%,100%{opacity:0}}
+.in-demo-visite .in-demo-main{animation:in-main-v 4.6s ease-in-out infinite}
+.in-demo-bulle{opacity:0;animation:in-bulle-v 4.6s linear infinite}
+@keyframes in-main-v{0%{transform:translate(240px,410px)}28%,80%{transform:translate(160px,300px)}100%{transform:translate(240px,410px)}}
+@keyframes in-bulle-v{0%,30%{opacity:0}36%,80%{opacity:1}88%,100%{opacity:0}}
+.in-fige *, .in-fige{animation-play-state:paused!important}
+@media (prefers-reduced-motion: reduce){
+  .in-rayons, .in-ors, .in-grains i, .in-feu b, .in-feu i, .in-secoue .in-piece, .in-bulle.in-neuf{animation:none}
+  .in-grains i{opacity:.6}
+  .in-glisse-g{transition-duration:.01s}
+  .in-demo-main, .in-demo-on, .in-demo-bulle{animation:none}
+  .in-demo-d1 .in-demo-on, .in-demo-bulle{opacity:1}
+  .in-demo-main{transform:translate(150px,184px)}
+}

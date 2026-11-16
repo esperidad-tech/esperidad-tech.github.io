@@ -55,3 +55,4 @@ jeu/pub/plans
 
 # les captures du robot de Mimi, tools/mimi.py (refaites à chaque fois)
 jeu/test/mimi/
+jeu/test/e3-secret/

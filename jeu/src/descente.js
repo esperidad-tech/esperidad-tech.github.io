@@ -254,8 +254,9 @@ window.addEventListener('message', function(e){
 });
 /* la page « Le plan des souterrains » du Grand Livre (e3.js : un getter html qui appelle ceci) */
 M.donjonPageSage = function(){
-  var P = M.P(), C = dj(), aPlan = !!(P && P.pages && P.pages.plan);
-  var t = (aPlan ? 'Le plan des Fondateurs te sert enfin : il montre les souterrains, salle par salle.' : 'Entre deux pages de ton Grand Livre, un vieux plan que tu n\'avais jamais vu : des souterrains, sous le village.') +
+  /* (16 novembre) le vieux plan d'Odette (la cachette de sa maison) a remplacé « Le plan des Fondateurs » */
+  var P = M.P(), C = dj(), aPlan = !!(P && P.recus && P.recus['obj:vieux_plan']);
+  var t = (aPlan ? 'Le vieux plan d\'Odette te sert enfin : il montre les souterrains, salle par salle.' : 'Entre deux pages de ton Grand Livre, un vieux plan que tu n\'avais jamais vu : des souterrains, sous le village.') +
     ' Le Pisteur, lui, n\'y verra que de la brume. C\'est toi qui dis le chemin, à voix haute !';
   var l = [];
   l.push(C['page:dechiree'] ? ['✅', 'Le morceau déchiré est recollé.'] : ['✂️', 'Il manque un coin à ce plan : quelqu\'un l\'a déchiré.']);
