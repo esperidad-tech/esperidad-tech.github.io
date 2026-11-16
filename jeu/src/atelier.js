@@ -351,6 +351,7 @@ function normaliserChat(e){
   if(!t.fam || typeof t.fam !== 'object') t.fam = {};
   cles(t.fam).forEach(function(k){ if(t.fam[k] !== 1) delete t.fam[k]; });
   t.recus = (Array.isArray(t.recus) ? t.recus : []).filter(function(x, i, l){ return typeof x === 'string' && l.indexOf(x) === i; });
+  t.parc = (Array.isArray(t.parc) ? t.parc : []).filter(function(x, i, l){ return typeof x === 'string' && l.indexOf(x) === i; });      /* (les morceaux du parc à chat déjà arrivés) */
   if(!(t.envie && typeof t.envie === 'object' && typeof t.envie.k === 'string' && typeof t.envie.n === 'number')) t.envie = null;
   if(t.envie && t.envie.d !== 1) delete t.envie.d;
   if(typeof t.envieT !== 'number') t.envieT = t.jeu + 20;
@@ -2351,6 +2352,89 @@ def('panier', {w:150, h:70, p:120, z:'sol', deco:true, chat:true, nf:3, nom:'Pan
   }});
 
 /* ==========================================================
+   LE PARC À CHAT (17 novembre ; DESIGN-saison1.md §12.66, point 3, et §12.71). Cinq morceaux, qui ne s'achètent pas : un par famille
+   d'affaires complète (tama.fam, PARC, parcDonner). Mimi y joue toute seule (chatParc) : elle rampe dans le tunnel, dort dans le hamac,
+   tape la souris sur ressort, se cache dans la cabane (sa tête à la porte), grimpe au toboggan et glisse.
+   Trois formes chacun, toutes les couleurs (on les touche : elles changent), dans la perspective de la pièce.
+   ========================================================== */
+def('tunnel_chat', {w:214, h:78, p:84, z:'sol', deco:true, chat:true, parc:true, nf:3, nom:'Tunnel', ic:'🐛', surf:[{x0:-56, x1:56, y:-74, z:42}],
+  d:function(c){
+    var p = palette(c, [['#f2a65a', '#fff1dc', '#c4612a'], ['#9d6ee3', '#e3d4ff', '#5f3fa8'], ['#4cbb5c', '#e4f9d4', '#25703c']][c.fo]), cz = c.p / 2, y = 42, r = 34, s = '', i;
+    var xs = [18, 54, 90, 126, 162, 194], noir = '#2a1d14', Z = function(x){ return cz + 16 - (x - 18) / 176 * 34; };
+    /* cinq anneaux de toile, posés un peu en biais : le bout de gauche part vers le fond, celui de droite vient vers nous — on voit
+       son ouverture (le noir du dedans). Dessinés du plus loin au plus près. */
+    for(i = 0; i < 5; i++) s += c.tube([xs[i], y, Z(xs[i])], [xs[i + 1], y, Z(xs[i + 1])], r, i % 2 ? p[1] : p[0], i === 0 ? noir : null, i === 4 ? noir : null);
+    /* (la chenille : deux antennes au bout ; le tunnel à pois) */
+    if(c.fo === 2) s += c.ligne([[180, 12, Z(180) - 10], [188, -10, Z(188) - 10]], K, 3) + c.boule(188, -12, Z(188) - 10, 5, p[2]) + c.ligne([[176, 12, Z(176) + 12], [182, -10, Z(182) + 12]], K, 3) + c.boule(182, -12, Z(182) + 12, 5, p[2]);
+    if(c.fo === 1) for(i = 0; i < 4; i++) s += c.boule(38 + i * 40, 26 + (i % 2) * 16, Z(38 + i * 40) - r + 4, 6, '#ffffff');
+    return [N(s)];
+  }});
+def('hamac_chat', {w:190, h:122, p:92, z:'sol', deco:true, chat:true, parc:true, nf:3, nom:'Hamac', ic:'🛏️', surf:[{x0:-26, x1:26, y:-44, z:46}],
+  d:function(c){
+    var p = palette(c, [['#ff8fb3', '#ffd9e8', '#c9507e'], ['#5fb8ff', '#d6efff', '#2f7fc4'], ['#ffd36a', '#fff3c4', '#c98a2c']][c.fo]), cz = c.p / 2, bois = UNI('#c98450', '#e8b98a', '#7d4626'), s = '', i;
+    var zf = cz - 26, zb = cz + 26, Y = function(x){ var u = (x - 95) / 80; return 30 + 54 * (1 - u * u); }, xs = [];
+    for(i = 0; i <= 10; i++) xs.push(15 + i * 16);
+    /* le pied : une traverse par terre et deux patins, deux montants penchés vers le dehors */
+    s += c.boite(20, 114, 34, 122, 10, c.p - 10, bois) + c.boite(156, 114, 170, 122, 10, c.p - 10, bois) + c.boite(22, 112, 168, 120, cz - 5, cz + 5, bois);
+    s += c.tube([27, 116, cz], [13, 22, cz], 6, '#c98450', null, '#e8b98a') + c.tube([163, 116, cz], [177, 22, cz], 6, '#c98450', null, '#e8b98a');
+    /* la toile : le bord du fond, le creux (des bandes, du fond vers nous), le bord de devant ; les cordes */
+    s += c.ligne(xs.map(function(x){ return [x, Y(x), zb]; }), K, 9) + c.ligne(xs.map(function(x){ return [x, Y(x), zb]; }), p[2], 5);
+    for(i = 0; i < 10; i++) s += c.poly([[xs[i], Y(xs[i]), zb], [xs[i + 1], Y(xs[i + 1]), zb], [xs[i + 1], Y(xs[i + 1]), zf], [xs[i], Y(xs[i]), zf]], c.fo === 2 ? (i % 2 ? p[1] : p[0]) : (i === 4 || i === 5 ? p[1] : p[0]), ' stroke-width="1.5" stroke="' + (c.fo === 2 ? K : 'none') + '"');
+    s += c.ligne(xs.map(function(x){ return [x, Y(x), zf]; }), K, 10) + c.ligne(xs.map(function(x){ return [x, Y(x), zf]; }), p[2], 6);
+    s += c.ligne([[13, 22, cz], [15, 30, zf]], K, 3) + c.ligne([[13, 22, cz], [15, 30, zb]], K, 3) + c.ligne([[177, 22, cz], [175, 30, zf]], K, 3) + c.ligne([[177, 22, cz], [175, 30, zb]], K, 3);
+    if(c.fo === 1) s += c.boule(95, 100, zf - 2, 6, '#ffd36a') + c.ligne([[95, 86, zf], [95, 95, zf - 2]], K, 2.5);      /* (un pompon sous le hamac) */
+    return [N(s)];
+  }});
+def('ressort_souris', {w:84, h:128, p:64, z:'sol', deco:true, chat:true, parc:true, nf:3, nom:'Souris sur ressort', ic:'🐭',
+  d:function(c){
+    var p = palette(c, [['#b9b3d2', '#f0edff', '#736d8e'], ['#f2a65a', '#fff1dc', '#c4612a'], ['#8fd4c0', '#e0fff6', '#3f8f7a']][c.fo]), cz = c.p / 2, i, r = 'M42,114';
+    for(i = 0; i < 6; i++) r += ' L' + (i % 2 ? 53 : 31) + ',' + (106 - i * 9) + '';
+    r += ' L42,52';
+    var souris = P('M24,38 C24,24 34,16 44,16 C56,16 64,26 64,38 C64,48 54,54 42,54 C32,54 24,48 24,38 Z', p[0]) +
+      Cir(30, 20, 8, p[0]) + Cir(30, 20, 4, '#ff9fb6', ' stroke="none"') + Cir(56, 18, 8, p[0]) + Cir(56, 18, 4, '#ff9fb6', ' stroke="none"') +
+      Cir(37, 35, 2.6, K, ' stroke="none"') + Cir(51, 35, 2.6, K, ' stroke="none"') + P('M41,42 L47,42 L44,46 Z', '#ff7a9a', ' stroke-width="1.5"') +
+      T('M36,44 L22,42 M36,46 L23,50 M52,44 L66,42 M52,46 L65,50', K, 1.4) + T('M62,46 C74,50 76,60 68,64', p[2], 3);
+    if(c.fo === 2) souris += P('M38,14 L44,2 L50,14 Z', '#ffd36a', ' stroke-width="2.5"');      /* (un petit chapeau pointu) */
+    return [N(c.ovale(42, cz, 30, 24, 116, 128, '#c98450', '#e8b98a')), N('<g class="at-ressort">' + c.sur(T(r, K, 7) + T(r, '#d5d9e2', 3.5) + souris, cz) + '</g>')];
+  }});
+def('cabane_chat', {w:164, h:158, p:112, z:'sol', deco:true, chat:true, parc:true, nf:3, nom:'Cabane', ic:'🏠',
+  d:function(c){
+    var p = palette(c, [['#f3e7cb', '#e0443a', '#8a2018'], ['#e3d4ff', '#9d6ee3', '#5f3fa8'], ['#d9f2ff', '#3d8ef0', '#1f5aa8']][c.fo]), z0 = 10, z1 = c.p - 10, s = '';
+    var mur = c.ti ? clair(p[0], 0.55) : p[0], toit = c.ti ? p[0] : p[1], bord = c.ti ? p[2] : p[2], g = [[10, 72], [82, 12], [154, 72]];
+    s += c.boite(16, 70, 148, 158, z0, z1, UNI(mur, mur, sombre(mur, 0.16)));
+    s += c.poly([[16, 72, z0], [82, 16, z0], [148, 72, z0]], mur);
+    /* le toit à deux pentes (on ne dessine que celles qu'on voit), qui dépasse un peu devant */
+    s += c.plan([[g[0][0], g[0][1], z0 - 6], [g[1][0], g[1][1], z0 - 6], [g[1][0], g[1][1], z1 + 4], [g[0][0], g[0][1], z1 + 4]], [-0.64, -0.77, 0], toit);
+    s += c.plan([[g[2][0], g[2][1], z0 - 6], [g[1][0], g[1][1], z0 - 6], [g[1][0], g[1][1], z1 + 4], [g[2][0], g[2][1], z1 + 4]], [0.64, -0.77, 0], sombre(toit, 0.12));
+    s += c.ligne([[g[0][0], g[0][1], z0 - 6], [g[1][0], g[1][1], z0 - 6], [g[2][0], g[2][1], z0 - 6]], K, 11) + c.ligne([[g[0][0], g[0][1], z0 - 6], [g[1][0], g[1][1], z0 - 6], [g[2][0], g[2][1], z0 - 6]], bord, 6);
+    /* la porte ronde (du noir : le dedans) ; si Mimi est dedans, sa tête à la porte (o.dedans : son numéro, ses habits) */
+    var de = c.o && c.o.dedans, porte = P('M56,158 V116 C56,92 108,92 108,116 V158 Z', '#2a1d14', ' stroke-width="4"');
+    if(de) porte += '<g transform="translate(82,133) scale(.76)">' + MP.tete(vChat(de.v), accPantin(de.acc)) + '</g>';
+    porte += c.fo === 1 ? P('M82,50 l5.5,10.5 l11.5,1.5 l-8.5,8 l2,11.5 l-10.5,-5.5 l-10.5,5.5 l2,-11.5 l-8.5,-8 l11.5,-1.5 Z', '#ffd36a', ' stroke-width="3"') :
+      c.fo === 2 ? Cir(82, 62, 11, '#bff3ff', ' stroke-width="4"') + T('M82,51 V73 M71,62 H93', K, 2.5) :
+      P('M82,74 C68,64 66,52 74,50 C79,49 82,54 82,56 C82,54 85,49 90,50 C98,52 96,64 82,74 Z', '#ff7fa3', ' stroke-width="3"');
+    s += c.sur(porte, z0);
+    return [N(s)];
+  }});
+def('toboggan_chat', {w:232, h:152, p:84, z:'sol', deco:true, chat:true, parc:true, nf:3, nom:'Toboggan', ic:'🛝', surf:[{x0:-106, x1:-58, y:-108, z:42}],
+  d:function(c){
+    var p = palette(c, [['#5fb8ff', '#d6efff', '#2f7fc4'], ['#ff7a59', '#ffe0d6', '#c9432a'], ['#b796ff', '#efe6ff', '#6a48c4']][c.fo]), z0 = 14, z1 = c.p - 14, bois = UNI('#c98450', '#e8b98a', '#7d4626'), s = '', y;
+    var A = [66, 44], B = [224, 148];      /* la glissière : du bord de la plateforme jusqu'au sol */
+    function bord(z){ return c.poly([[A[0], A[1] - 12, z], [B[0], B[1] - 12, z], [B[0], B[1], z], [A[0], A[1], z]], p[0]); }
+    s += c.boite(8, 50, 18, 152, z1 - 8, z1, bois) + c.boite(56, 50, 66, 152, z1 - 8, z1, bois) + bord(z1);
+    s += c.poly([[A[0], A[1], z0], [B[0], B[1], z0], [B[0], B[1], z1], [A[0], A[1], z1]], p[1]);
+    s += c.ligne([[A[0] + 20, A[1] + 13, z0 + 14], [B[0] - 30, B[1] - 20, z0 + 14]], '#fff', 4, ' opacity=".7"');
+    s += c.boite(4, 40, 68, 50, z0, z1, UNI(p[0], p[1], sombre(p[0], 0.2)));
+    s += c.boite(8, 50, 18, 152, z0, z0 + 8, bois) + c.boite(56, 50, 66, 152, z0, z0 + 8, bois);
+    for(y = 72; y < 150; y += 22) s += c.ligne([[6, y, z0 + 4], [6, y, z1 - 4]], K, 8) + c.ligne([[6, y, z0 + 4], [6, y, z1 - 4]], '#e8b98a', 4);      /* (l'échelle, sur le côté) */
+    s += bord(z0);
+    /* (un petit drapeau ; une étoile ; un nuage au bout) */
+    if(c.fo === 0) s += c.ligne([[12, 40, z0 + 4], [12, 8, z0 + 4]], K, 4) + c.sur(P('M14,8 L40,16 L14,24 Z', '#ffd36a', ' stroke-width="3"'), z0 + 4);
+    if(c.fo === 1) s += c.sur(P('M36,10 l4,8 l9,1 l-6.5,6 l1.5,9 l-8,-4.5 l-8,4.5 l1.5,-9 l-6.5,-6 l9,-1 Z', '#ffd36a', ' stroke-width="3"'), z0);
+    return [N(s)];
+  }});
+
+/* ==========================================================
    Le vrai matériel d'alchimiste (étape 2) : de la décoration, pour se faire un petit laboratoire.
    Grand alambic, cornues, mortier et pilon, balance, sablier, astrolabe, boule de cristal ;
    au mur : une étagère à fioles, un râtelier d'outils, une carte du ciel (et les herbes séchées).
@@ -3380,6 +3464,9 @@ function vue(el, opts){
     _peutSortir:function(id){ var o = V.parId[id]; return o ? peutSortir(V, o) : false; },
     _souris:function(){ return sourisPasse(V, true); },
     _jouer:function(id, quoi){ var o = V.parId[id]; return o ? chatJoue(V, o, quoi) : null; },
+    /* (le parc à chat) les morceaux qu'on lui doit arrivent ; elle va jouer avec un morceau (quoi : son type) */
+    _parcDonner:function(){ return parcDonner(V, true); },
+    _parc:function(id, quoi){ var o = V.parId[id] || chatsTous(V)[0]; return o ? chatParc(V, o, quoi) : null; },
     _garde:function(id){ ouvrirGarde(V, id); },
     _dehors:function(id){ var o = V.parId[id]; if(!o) return false; var st = chatEtat(V, o); st.pos = chatSolVisible(V); placerEl(V, o); var d = V.elO[id]; if(d) d.style.zIndex = Math.round(chatPos(V, o).z * 5); return st.pos; },
     _reveil:function(id){ var o = V.parId[id]; if(!o) return false; var st = chatEtat(V, o); if(st.anim){ var a = st.anim; st.anim = null; try{ a.cancel(); }catch(e){} } if(st.t){ clearTimeout(st.t); st.t = null; } st.dortJusqua = 0; placerEl(V, o); chatPose(V, o, 'assis'); chatPlanifier(V, o, 20000); return true; },
@@ -4332,6 +4419,7 @@ function toucherObjet(V, o, ev){
   if(o.renverse){ relever(V, o); return; }
   if((o.t === 'gamelle' || o.t === 'eau') && !o.plein){ remplir(V, o); return; }
   if(o.t === 'litiere' && o.sale){ nettoyerLitiere(V, o); return; }
+  if(o.t === 'cabane_chat' && o.dedans){ var cc = chatsTous(V).filter(function(x){ var s = V.chats[x.id]; return s && s.cabane === o.id; })[0]; if(cc){ cabaneSortir(V, cc, o); return; } }      /* (on frappe à sa porte : elle sort) */
   if(o.t === 'griffoir'){ var cg = chatsDe(V).filter(function(x){ var s = V.chats[x.id]; return s && !s.tenu && !s.depart && !s.caresse && !(V.jouet && V.jouet.o === x); })[0]; if(cg && (!V.griffT || Date.now() - V.griffT > 8000)){ V.griffT = Date.now(); var sg = chatEtat(V, cg); if(sg.anim) chatArreter(V, cg); if(sg.t){ clearTimeout(sg.t); sg.t = null; } chatGriffoir(V, cg, o); son(V, 'clic'); return; } }
   if(o.t === 'distributeur' && parDistributeur(V, o)) return;
   if(c.deco){ restyler(V, o); return; }
@@ -5798,6 +5886,7 @@ function chatAgir(V, o){
   /* l'arbre à chat de la pièce : il y grimpe, il joue avec la boule, il s'y fait les griffes ;
      de temps en temps, il va faire un tour dans l'autre pièce, par l'arche (Romain, 5 novembre, 12 h 31) */
   if(arbreIci(V) && Math.random() < 0.25 && chatArbre(V, o)) return;
+  if(Math.random() < 0.3 && chatParc(V, o)) return;      /* son parc à chat : le tunnel, le hamac, la souris sur ressort, la cabane, le toboggan */
   if(Math.random() < PASSAGE.chance && peutPasser(V, o)){ chatPasse(V, o); return; }
   var r = Math.random() * (st.reveil ? 0.87 : 1);   /* pas de sieste juste après s'être réveillé */
   st.reveil = false;
@@ -6150,6 +6239,129 @@ function chatRevient(V, o, force){
 }
 
 /* ==========================================================
+   Ce que Mimi fait dans son parc à chat (17 novembre ; les morceaux : def('tunnel_chat')… ; leur arrivée : PARC, parcDonner).
+   quoi : un type de morceau (les robots) ; sinon un morceau de la pièce au hasard, pas deux fois le même de suite.
+   ========================================================== */
+function parcBouge(V, g, angles, ms, delai){
+  var el = V.elO[g.id];
+  if(el) anim(el, angles.map(function(a){ return {transform:'scale(' + el._s + ') rotate(' + a + 'deg)'}; }), {duration:ms || 800, delay:delai || 0});
+}
+function chatParc(V, o, quoi){
+  var st = chatEtat(V, o);
+  if(o.chaton || !V.elO[o.id] || st.tenu || st.anim || st.depart || salleDe(o) !== V.salle) return null;
+  var tous = ici(V).filter(function(g){ return CAT[g.t] && CAT[g.t].parc && !g.sur && !g.cote && !g.dedans && (!quoi || g.t === quoi); });
+  var l = tous.filter(function(g){ return g.id !== st.dernierParc; });
+  if(!l.length) l = tous;
+  if(!l.length) return null;
+  var g = l[Math.floor(Math.random() * l.length)], pg = posObj(V, g), s = pg.s, p = chatPos(V, o);
+  var sol = function(dx, dy){ return chatSol(V, pg.x + dx * s, Math.min(solMax(V), Math.max(SOL_MIN + 20, pg.y + dy))); };
+  var fin = function(ms){ chatPlanifier(V, o, ms); };
+  var la = function(){ var s2 = V.chats[o.id]; return !!s2 && !s2.tenu && !s2.caresse && !s2.depart && !!V.parId[g.id] && !!V.elO[o.id] && salleDe(g) === V.salle; };
+  var face = function(x){ st.gauche = x < chatPos(V, o).x; var d2 = V.elO[o.id]; if(d2) d2.classList.toggle('at-c-gauche', st.gauche); };
+  st.dernierParc = g.id;
+  if(g.t === 'tunnel_chat'){
+    /* elle s'aplatit, s'engouffre par le bout du fond et ressort par l'autre, celui qui vient vers nous (elle passe derrière la toile :
+       on ne la voit plus, on voit le tunnel gigoter) */
+    chatAller(V, o, sol(-132, -8), function(){
+      if(!la()) return fin(1500);
+      var d = V.elO[o.id]; d.classList.add('at-c-tapi');
+      parcBouge(V, g, [0, -2, 2, -1.5, 1.5, 0], 1100, 500); sonMimi(V, 'gratte');
+      chatBouger(V, o, sol(132, -10), 'marche', function(){
+        var d2 = V.elO[o.id]; if(d2) d2.classList.remove('at-c-tapi');
+        chatBouger(V, o, sol(140, 16), 'marche', function(){ face(pg.x); chatPose(V, o, 'assis'); expression(V, o, 'at-x-content', 600); fin(2600); });
+      });
+    });
+    return g.t;
+  }
+  if(g.t === 'hamac_chat'){
+    /* elle saute dedans, le hamac se balance, elle s'y roule en boule */
+    chatAller(V, o, {sur:{o:g.id, k:0, dx:0}, depart:{x:pg.x - 78 * s, y:Math.min(solMax(V), pg.y + 22)}}, function(){
+      if(!la()) return fin(1500);
+      parcBouge(V, g, [0, -4, 3.5, -2.5, 2, -1, 0], 1800);
+      chatSeCoucher(V, o);
+      st.dortJusqua = Date.now() + 10000 + Math.random() * 8000;
+      chatPlanifier(V, o, st.dortJusqua - Date.now() + 30);
+    });
+    return g.t;
+  }
+  if(g.t === 'ressort_souris'){
+    /* elle s'assoit à côté et tape la souris, qui se balance au bout de son ressort */
+    var cote = p.x < pg.x ? -1 : 1;
+    chatAller(V, o, sol(cote * 64, 8), function(){
+      if(!la()) return fin(1500);
+      face(pg.x); chatPose(V, o, 'tape');
+      [350, 1150].forEach(function(ms){ apres(V, ms, function(){ var el = V.elO[g.id]; if(!el || !la()) return; el.classList.remove('at-ressort-bat'); void el.offsetWidth; el.classList.add('at-ressort-bat'); son(V, 'tic'); }); });
+      apres(V, 2000, function(){ var s2 = V.chats[o.id]; if(s2 && s2.pose === 'tape' && !s2.tenu && !s2.anim && !s2.caresse) chatPose(V, o, 'assis'); });
+      fin(3200);
+    });
+    return g.t;
+  }
+  if(g.t === 'cabane_chat'){
+    /* elle entre dans sa cabane : on ne voit plus que sa tête, à la porte ; au bout d'un moment (ou si on frappe), elle ressort et s'étire */
+    chatAller(V, o, sol(0, 18), function(){
+      if(!la() || g.dedans) return fin(1500);
+      var d = V.elO[o.id];
+      st.tenu = true; st.cabane = g.id; d.classList.add('at-c-dehors');
+      g.dedans = {v:o.v || 0, acc:o.acc ? JSON.parse(JSON.stringify(o.acc)) : {}};
+      redessiner(V, g); parcBouge(V, g, [0, -1.5, 1.5, -1, 0], 600); sonMimi(V, 'roule');
+      apres(V, 6000 + Math.random() * 5000, function(){ cabaneSortir(V, o, g); });
+    });
+    return g.t;
+  }
+  if(g.t === 'toboggan_chat'){
+    /* elle grimpe sur la plateforme, s'assoit en haut… et glisse jusqu'en bas */
+    chatAller(V, o, {sur:{o:g.id, k:0, dx:-82}, depart:{x:pg.x - 136 * s, y:Math.min(solMax(V), pg.y + 20)}}, function(){
+      if(!la()) return fin(1500);
+      st.gauche = false; var d = V.elO[o.id]; if(d) d.classList.remove('at-c-gauche');
+      chatPose(V, o, 'assis'); expression(V, o, 'at-x-joue', 900);
+      fin(7000);
+      apres(V, 1000, function(){
+        var s2 = V.chats[o.id];
+        if(!la() || s2.anim || s2.pose !== 'assis' || !chatSurMeuble(V, o)) return;
+        if(s2.t){ clearTimeout(s2.t); s2.t = null; }
+        sonMimi(V, 'roule');
+        chatGlisser(V, o, sol(136, 12), function(){ chatPose(V, o, 'assis'); expression(V, o, 'at-x-content', 700); coeursChat(V, o, '✨'); fin(2600); });
+      });
+    });
+    return g.t;
+  }
+  return null;
+}
+function cabaneSortir(V, o, g){
+  var st = V.chats[o.id];
+  if(!st || st.cabane !== g.id) return;
+  st.cabane = null; st.tenu = false;
+  delete g.dedans;
+  if(V.parId[g.id] && V.elO[g.id]){ redessiner(V, g); parcBouge(V, g, [0, 1.5, -1.5, 0], 500); }
+  var d = V.elO[o.id];
+  if(!d || V.arrete) return;
+  /* (la cabane a pu être déplacée pendant qu'elle était dedans : elle ressort devant sa porte, là où elle est maintenant) */
+  if(V.parId[g.id] && salleDe(g) === salleDe(o) && !g.sur){ var pg = posObj(V, g); st.pos = chatSol(V, pg.x, Math.min(solMax(V), pg.y + 18 )); placerEl(V, o); d.style.zIndex = Math.round(chatPos(V, o).z * 5); }
+  d.classList.remove('at-c-dehors'); chatReparait(d);
+  chatPose(V, o, 'marche'); gesteChat(V, o, 'etire');
+  apres(V, 1950, function(){ var s2 = V.chats[o.id]; if(s2 && s2.pose === 'marche' && !s2.tenu && !s2.anim && !s2.caresse) chatPose(V, o, 'assis'); });
+  chatPlanifier(V, o, 3400);
+  changer(V);
+}
+/* Elle glisse, assise, d'où elle est jusqu'à « pos » (le toboggan) : de plus en plus vite */
+function chatGlisser(V, o, pos, fin){
+  var d = V.elO[o.id], st = chatEtat(V, o);
+  if(!d || V.arrete){ if(fin) fin(); return; }
+  var p0 = chatPos(V, o);
+  st.pos = pos;
+  var p1 = chatPos(V, o), k = V.k, dur = 700;
+  st.gauche = p1.x < p0.x; d.classList.toggle('at-c-gauche', st.gauche);
+  chatPose(V, o, 'assis'); placerEl(V, o);
+  d.style.zIndex = Math.round(Math.max(p0.z, p1.z) * 5) + 6;
+  function tr(x, y, s){ return 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + s.toFixed(3) + ')'; }
+  var a = anim(d, [{transform:tr((p0.x - p1.x) * k, (p0.y - p1.y) * k, p0.s)}, {transform:tr(0, 0, p1.s)}], {duration:dur, easing:'cubic-bezier(.45,0,.9,.55)'});
+  st.anim = a;
+  st.mv = {p0:{x:p0.x, y:p0.y}, p1:{x:p1.x, y:p1.y}, mode:'saute', dur:dur};      /* (comme un saut : on ne l'arrête pas en route) */
+  function fini(){ if(st.anim !== a) return; st.anim = null; if(V.arrete) return; d.style.zIndex = Math.round(p1.z * 5); if(fin) fin(); }
+  if(a) a.onfinish = fini; else fini();
+}
+
+/* ==========================================================
    Mimi, un vrai petit Tamagotchi (refait le 16 novembre avec Romain ; DESIGN-saison1.md §12.64).
    Romain : « Il faut pas que ça soit utile. Faut que ça soit un jeu, un jouet. Faut qu'elle soit attachante, et qu'on ait envie
    de s'occuper d'elle. » — « Certes une petite corvée, mais si derrière t'es récompensé, c'est plutôt cool. »
@@ -6214,7 +6426,7 @@ var PAS_MOMENT = 12;                 /* un nouveau moment de la journée : chaqu
 /* Le chaton (des données : il arrive à l'enquête 4) : en secondes de jeu ; un nouveau moment compte pour 120 s */
 var PORTEE = {enquete:4, ronde:150, naissance:240, depart:420, mere:'Mimi', chatons:['Pompon', 'Caramel', 'Noisette']};
 var REPLIQUE_ODETTE = {q:'Comment va %n ?', a:'%n ? Elle est très heureuse ici, avec mes sept chats ! Elle dort sur mon fauteuil, près du feu. Revenez la voir quand vous voulez.'};
-var DODO_ICI = /^(panier|lit|pouf|coussin|arbre_chat|coffre)$/;   /* ses coins pour dormir */
+var DODO_ICI = /^(panier|lit|pouf|coussin|arbre_chat|coffre|hamac_chat)$/;   /* ses coins pour dormir */
 
 function tama(V){ if(!V.etat.tama || !Array.isArray(V.etat.betises)) normaliserChat(V.etat); return V.etat.tama; }
 function chatsTous(V){ return V.etat.objets.filter(function(o){ return o.t === 'chat'; }); }
@@ -6260,6 +6472,9 @@ function donner(o, k, n){ var b = besoins(o); if(k === 'dodo') return; b[k] = bo
 function tamaDemarrer(V){
   tama(V);
   famillesMaj(V, false);      /* (une sauvegarde d'avant « la jauge seule » : ses familles déjà complètes sont notées, sans bruit) */
+  /* (personne n'est dans la cabane au début : la vue vient d'être montée) ; les morceaux du parc qu'on lui doit arrivent */
+  V.etat.objets.forEach(function(g){ if(g.dedans) delete g.dedans; });
+  apres(V, 4500, function(){ parcDonner(V, true); });
   chatsTous(V).forEach(function(o){ besoins(o); if(!o.nom) o.nom = nomChat(o); });
   clearTimeout(V.tamaT);
   V.tamaT = apres(V, TIC * 1000, function(){ tamaTic(V); });
@@ -6351,11 +6566,29 @@ function famillesMaj(V, dit){
   if(!neuves.length) return neuves;
   neuves.forEach(function(F){ t.fam[F.k] = 1; });
   changer(V);
+  apres(V, 3600, function(){ parcDonner(V, true); });      /* (une famille complète : un morceau de son parc à chat arrive) */
   if(dit && !V.arrete){
     var tx = neuves.map(function(F){ return F.fin; }).join(' ');
     (function montrer(n){ if(V.arrete) return; if(!V.toastEl.hidden && n < 6){ apres(V, 1500, function(){ montrer(n + 1); }); return; } toast(V, '<b>👑 ✨</b> ' + esc(tx), 6000, tx); sonMimi(V, 'fanfare'); })(0);
   }
   return neuves;
+}
+/* LE PARC À CHAT : ses morceaux, dans l'ordre où ils arrivent — un par famille complète (peu importe laquelle). Ils ne s'achètent pas.
+   tama.parc : ceux qui sont déjà arrivés (dans un carton, au coin de l'atelier). */
+var PARC = ['tunnel_chat', 'hamac_chat', 'ressort_souris', 'cabane_chat', 'toboggan_chat'];
+function parcDonner(V, dit){
+  var t = tama(V), du = PARC.slice(0, Math.min(PARC.length, cles(t.fam).length)).filter(function(x){ return t.parc.indexOf(x) < 0; });
+  if(!du.length || V.arrete) return [];
+  var av = V.etat.cartons.map(function(k){ return k.id; });
+  du.forEach(function(x){ t.parc.push(x); nouveauCarton(V.etat, [x], 0); });
+  if(!V.salle) dessinerPiece(V, av);
+  changer(V);
+  if(dit){
+    var c = chatsTous(V)[0], nom = c ? nomChat(c) : PORTEE.mere, quoi = du.map(function(x){ return CAT[x].nom.toLowerCase(); });
+    var tx = 'Un grand colis pour le parc à chat de ' + nom + ' : ' + (du.length > 1 ? quoi.slice(0, -1).join(', ') + ' et ' + quoi[quoi.length - 1] : (/^[aeiouh]/.test(quoi[0]) ? 'un ' : quoi[0] === 'cabane' || quoi[0] === 'souris sur ressort' ? 'une ' : 'un ') + quoi[0]) + ' ! ' + (du.length > 1 ? 'Ils attendent dans leurs cartons' : 'Il attend dans son carton') + ', au coin de la pièce 📦.';
+    (function montrer(n){ if(V.arrete) return; if(!V.toastEl.hidden && n < 8){ apres(V, 1500, function(){ montrer(n + 1); }); return; } toast(V, '<b>📦 🐈</b> ' + esc(tx), 7000, tx); sonMimi(V, 'debloque'); })(0);
+  }
+  return du;
 }
 /* Ce qu'il y aura dans le coffret : une chose qu'elle n'a pas, d'une famille tirée au hasard (parmi celles où il reste quelque chose).
    g : c'est la dernière de sa famille — le coffret est doré. Elle a tout : des friandises. */
@@ -6492,6 +6725,7 @@ function envieSigne(V, o){
   }
   if(f === 'recre'){
     if(!sol){ chatAller(V, o, chatSolVisible(V), function(){ chatJoue(V, o, null, true); }); return 'recre'; }
+    if(Math.random() < 0.4 && chatParc(V, o)) return 'recre';      /* (son parc à chat, s'il y en a un morceau dans la pièce) */
     if(Math.random() < 0.55){      /* elle file de l'autre côté de la pièce, ventre à terre… et joue en arrivant */
       var c = centreVue(V), dx = (p.x < c.x ? 1 : -1) * (260 + Math.random() * 160);
       st.vite = 3.8;
@@ -6507,7 +6741,7 @@ function envieSigne(V, o){
     return 'belle';
   }
   if(f === 'reine'){
-    var coins = ['panier', 'coussin', 'pouf', 'arbre_chat'];
+    var coins = ['panier', 'coussin', 'pouf', 'arbre_chat', 'hamac_chat'];
     var gr = une(t.envie.k === 'griffoir' ? ['griffoir'] : coins) || une(coins.concat(['griffoir', 'lit']));
     if(!gr){ chatPose(V, o, 'assis'); expression(V, o, 'at-x-baille', 1300); sonMimi(V, 'baille'); suite(2800); return 'reine'; }
     pres(gr, function(){
