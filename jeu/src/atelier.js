@@ -331,11 +331,9 @@ function normaliserChat(e){
   if(t.souris !== undefined && typeof t.souris !== 'number') delete t.souris;
   if(t.butin && !(typeof t.butin === 'object' && typeof t.butin.ingr === 'string')) t.butin = null;
   if(t.butin === undefined) t.butin = null;
-  /* (16 novembre) le Tamagotchi : la variété (cachée), les points de soin depuis le dernier cadeau, le coffret, les jouets, les nourritures… */
-  if(typeof t.varie !== 'number' || !(t.varie >= 0)) t.varie = 0;
-  if(typeof t.pts !== 'number' || !(t.pts >= 0)) t.pts = 0;
-  if(!Array.isArray(t.derniers)) t.derniers = [];
-  t.derniers = t.derniers.filter(function(x){ return typeof x === 'string'; }).slice(0, 2);
+  /* (16 novembre) le Tamagotchi : le coffret, les jouets, les nourritures… (la jauge cachée de la variété et les points de soin
+     n'existent plus depuis « la jauge seule » : une vieille sauvegarde les oublie) */
+  delete t.varie; delete t.pts; delete t.derniers;
   if(!t.cadeaux || typeof t.cadeaux !== 'object') t.cadeaux = {};
   if(t.dehors && !(typeof t.dehors === 'object' && typeof t.dehors.c === 'string')) t.dehors = null;
   if(t.coffret && !(typeof t.coffret === 'object' && typeof t.coffret.c === 'string' && typeof t.coffret.x === 'number' && typeof t.coffret.y === 'number')) t.coffret = null;
@@ -343,21 +341,26 @@ function normaliserChat(e){
   if(t.coffret === undefined) t.coffret = null;
   /* (16 novembre au soir, étape 2) les cœurs, les envies, la lassitude. Une sauvegarde d'avant repart d'un bonheur modeste :
      Romain : « j'ai joué 2 secondes et elle est déjà au maximum […] quand on arrive au maximum, ça doit être une vraie réussite » */
-  var avantCoeurs = t.v !== 2;
-  t.v = 2;
-  if(avantCoeurs) t.pts = 0;
+  var avantCoeurs = !(t.v >= 2);
+  /* (16 novembre, 22 h 22 : « la jauge seule ») les cinq cœurs n'existent plus ; à leur place, cinq familles d'affaires, cachées
+     (t.fam : celles qui sont complètes ; t.recus : les coins douillets déjà rapportés dans un coffret) ; une envie garde « d » : elle l'a dite */
+  t.v = 3;
+  delete t.c; delete t.grands;
   if(!t.las || typeof t.las !== 'object') t.las = {};
   cles(t.las).forEach(function(k){ if(!(t.las[k] > 0)) delete t.las[k]; });
-  t.c = coeursPropres(t.c);
+  if(!t.fam || typeof t.fam !== 'object') t.fam = {};
+  cles(t.fam).forEach(function(k){ if(t.fam[k] !== 1) delete t.fam[k]; });
+  t.recus = (Array.isArray(t.recus) ? t.recus : []).filter(function(x, i, l){ return typeof x === 'string' && l.indexOf(x) === i; });
   if(!(t.envie && typeof t.envie === 'object' && typeof t.envie.k === 'string' && typeof t.envie.n === 'number')) t.envie = null;
+  if(t.envie && t.envie.d !== 1) delete t.envie.d;
   if(typeof t.envieT !== 'number') t.envieT = t.jeu + 20;
   if(t.envieAvant !== undefined && typeof t.envieAvant !== 'string') delete t.envieAvant;
-  if(t.grands !== undefined && !(t.grands >= 0)) delete t.grands;
   if(!e.mimi || typeof e.mimi !== 'object') e.mimi = {};
   var mm = e.mimi, uniq = function(l, ok){ return (Array.isArray(l) ? l : []).filter(function(id, i, a){ return typeof id === 'string' && ok(id) && a.indexOf(id) === i; }); };
   mm.jouets = uniq(mm.jouets, function(id){ return !!JOUETS[id]; }); if(mm.jouets.indexOf('pelote') < 0) mm.jouets.unshift('pelote');
   mm.nour = uniq(mm.nour, function(id){ return !!NOURS[id]; }); if(mm.nour.indexOf('croquettes') < 0) mm.nour.unshift('croquettes');
   mm.soins = uniq(mm.soins, function(id){ return SOINS_SUITE.indexOf(id) >= 0; });
+  if(mm.soins.indexOf('photo') < 0) mm.soins.push('photo');      /* (l'appareil photo : à tout le monde, tout de suite) */
   mm.neufs = uniq(mm.neufs, function(id){ return !!JOUETS[id] || SOINS_SUITE.indexOf(id) >= 0; });
   mm.album = (Array.isArray(mm.album) ? mm.album : []).filter(function(f){ return f && typeof f === 'object' && typeof f.pose === 'string'; }).slice(-ALBUM_MAX);
   var meres = 0;
@@ -3300,8 +3303,8 @@ function vue(el, opts){
       '<div class="at-reperes"></div><div class="at-tient" hidden></div>' +
       '<button type="button" class="at-coin" data-at="reserve" aria-label="Le carton de rangement"><span class="at-coin-ic" aria-hidden="true">📦</span><b class="at-badge" style="display:none"></b></button>' +
       '<button type="button" class="at-salle" data-at="salle" aria-label="L\'autre pièce"><span class="at-salle-ic" aria-hidden="true"></span><b class="at-badge" style="display:none"></b></button>' +
-      /* (16 novembre) Mimi : son bouton (le cœur autour montre son bonheur) */
-      '<button type="button" class="at-mimi-bt" data-at="mimi" aria-label="Les affaires de Mimi" hidden><span class="at-mimi-ic" aria-hidden="true">🐾</span><i class="at-mimi-coeurs" aria-hidden="true"></i><b class="at-badge" style="display:none"></b></button></div>' +
+      /* (16 novembre) Mimi : son bouton, et au-dessus sa jauge de bonheur, toujours sous les yeux (la seule jauge qu'on voit) */
+      '<button type="button" class="at-mimi-bt" data-at="mimi" aria-label="Les affaires de Mimi" hidden><span class="at-mimi-ic" aria-hidden="true">🐾</span><i class="at-mimi-jauge" aria-hidden="true"><b></b></i><b class="at-badge" style="display:none"></b></button></div>' +
     '<div class="at-mimi-barre" hidden></div>' +
     '<div class="at-ouvert" hidden></div><div class="at-grim" hidden></div><div class="at-toast" hidden></div><div class="at-fantomes"></div>';
   el.appendChild(root);
@@ -3370,14 +3373,17 @@ function vue(el, opts){
     /* (16 novembre) le Tamagotchi de Mimi : son état ; un soin ; mettre les points du cadeau ; réagir ; la zone sous un point de l'écran */
     _mimi:function(){ var o = chatsTous(V)[0]; return JSON.parse(JSON.stringify({mimi:mimi(V), tama:tama(V), b:o ? o.b : null, bh:o ? bonheur(o) : null, jouet:V.jouet ? V.jouet.id : null, outil:V.outil ? V.outil.t : null, bain:!!V.bain})); },
     _soigner:function(quoi, gain, k){ var o = chatsTous(V)[0]; if(o) soigner(V, o, quoi, gain || 6, k); return o ? bonheur(o) : null; },
-    _cadeauPret:function(){ var o = chatsTous(V)[0], t = tama(V); if(!o) return false; o.bh = BH_COFFRET + 5; t.pts = CADEAU_PTS; t.cadeaux = {}; return true; },
-    _cadeau:function(id, quoi){ var o = V.parId[id] || chatsTous(V)[0]; return o ? cadeauChat(V, o, quoi || 'petit') : false; },
-    /* (étape 2) les cœurs, les envies, la lassitude */
-    _coeurs:function(){ var o = chatsTous(V)[0]; if(o) coeursMaj(V, o); return {h:tama(V).c.h.slice(), n:nbCoeurs(V), c:JSON.parse(JSON.stringify(tama(V).c)), bh:o ? o.bh : null, grand:o ? grandPret(V, o) : false, las:JSON.parse(JSON.stringify(tama(V).las))}; },
-    _envie:function(k){ var t = tama(V); if(k === null){ t.envie = null; } else if(k){ t.envie = {k:k, n:t.jeu}; } majHumeurs(V); majBarre(V); return t.envie ? t.envie.k : null; },
+    _cadeauPret:function(){ var o = chatsTous(V)[0]; if(!o) return false; o.bh = 100; majBarre(V); return true; },
+    /* (code : ce qu'il y aura dedans, « j:laser », « s:brosse »… ; rien : tiré au hasard dans une de ses familles) */
+    _cadeau:function(id, code){ var o = V.parId[id] || chatsTous(V)[0]; return o ? cadeauChat(V, o, true, code) : false; },
+    /* (la jauge seule) ses familles (cachées), ses envies (cachées une minute), la lassitude */
+    _familles:function(){ var o = chatsTous(V)[0], r = {}; FAMILLES.forEach(function(F){ r[F.k] = familleReste(V, F); }); return {fam:JSON.parse(JSON.stringify(tama(V).fam)), reste:r, bh:o ? o.bh : null, las:JSON.parse(JSON.stringify(tama(V).las))}; },
+    _contenu:function(){ return contenuCoffret(V); },
+    _envie:function(k, dite){ var t = tama(V); if(k === null){ t.envie = null; } else if(k){ t.envie = {k:k, n:t.jeu}; if(dite) t.envie.d = 1; } majHumeurs(V); majBarre(V); return t.envie ? {k:t.envie.k, d:envieDite(V), f:familleEnvie(t.envie.k)} : null; },
+    _envieSigne:function(id){ var o = V.parId[id] || chatsTous(V)[0]; return o ? envieSigne(V, o) : false; },
     _enviesPossibles:function(){ return enviesPossibles(V, true); },
     _lasse:function(fam){ return lasse(V, fam); },
-    _dodo:function(id){ var o = V.parId[id] || chatsTous(V)[0]; return o ? dodoCoin(V, o) : false; },
+    _dodo:function(id){ var o = V.parId[id] || chatsTous(V)[0]; return o ? dodoCoin(V, o, true) : false; },
     _poserSur:function(id, meuble){ var o = V.parId[id], p = V.parId[meuble]; if(!o || !p) return false; chatSaisi(V, o); o.sur = {o:p.id, k:0, dx:0}; placerEl(V, o); chatLache(V, o); return true; },   /* (comme si on la portait dessus) */
     _reagir:function(id, r){ var o = V.parId[id]; if(!o) return false; reagir(V, o, r); return true; },
     /* (le pantin de Mimi, pour les robots : où est sa tête, son dos, son ventre, sa queue à l'écran ; sa pose, ses gestes en cours) */
@@ -5760,6 +5766,7 @@ function chatAgir(V, o){
     return;
   }
   var suite = function(ms){ chatPose(V, o, 'assis'); chatPlanifier(V, o, ms || (2200 + Math.random() * 2800)); };
+  st.vite = 1;                                    /* (une course interrompue : elle repart au pas) */
   if(tamaAgir(V, o)) return;                      /* ses besoins d'abord (manger, boire, dormir, demander) ; le chaton joue */
   /* de temps en temps, elle joue toute seule (plus souvent quand elle est heureuse) : un bond, une galipette, sa queue… jamais le même jeu
      deux fois de suite. Ça ne compte pas pour son besoin de jouer : c'est pour le plaisir de la regarder (Romain, 16 novembre au soir). */
@@ -5911,7 +5918,7 @@ function chatLache(V, o){
   st.tenu = false;
   st.pos = null;
   /* (étape 2) posée dans un de ses coins douillets (son panier, un coussin, l'arbre à chat…) : elle pétrit un peu, tourne sur elle-même
-     et s'endort. C'est comme ça qu'on lui offre « une sieste douillette » (son quatrième cœur, ou son envie du moment). */
+     et s'endort. C'est comme ça qu'on lui offre « une sieste douillette » (si c'est son envie du moment : pile poil). */
   var par = o.sur && V.parId[o.sur.o];
   if(par && DODO_ICI.test(par.t) && st.pose !== 'dort' && !o.chaton && !st.depart){
     chatPose(V, o, 'assis'); expression(V, o, 'at-x-petrit at-c-ronron', 1300); sonMimi(V, 'ronron');
@@ -5922,7 +5929,7 @@ function chatLache(V, o){
       chatSeCoucher(V, o);
       s2.dortJusqua = Date.now() + 14000 + Math.random() * 6000;
       chatPlanifier(V, o, s2.dortJusqua - Date.now() + 30);
-      apres(V, 1800, function(){ dodoCoin(V, o); });
+      apres(V, 1800, function(){ dodoCoin(V, o, true); });
     });
     return;
   }
@@ -6123,36 +6130,36 @@ function chatRevient(V, o, force){
    Romain : « Il faut pas que ça soit utile. Faut que ça soit un jeu, un jouet. Faut qu'elle soit attachante, et qu'on ait envie
    de s'occuper d'elle. » — « Certes une petite corvée, mais si derrière t'es récompensé, c'est plutôt cool. »
    - Rien de ce qu'on fait pour elle ne sert à l'enquête.
-   - DEUX JAUGES (étape 2, 16 novembre au soir ; Romain : « la barre de bonheur et la barre des cœurs. Quand on arrive à avoir [les deux]
-     à fond, là, on a une surprise. Et après, hop, ça redescend » ; « quand on arrive au maximum, ça doit être une vraie réussite ») :
-     · son bonheur (o.bh, de 0 à 100 ; le tour du bouton 🐾, la barre rose) : il part de bas (BH_DEPART), les soins rapportent deux fois
-       moins qu'avant (GAIN_K) et refaire la même chose rapporte de moins en moins (tama.las, LASSE : la lassitude s'oublie avec le
-       temps de jeu et à chaque nouveau moment). Ce qui rapporte le plus : ses envies ;
-     · ses cinq cœurs (tama.c, COEURS) : chacun a ses conditions, en images dans « Les cinq cœurs » (🐾 puis les cœurs) ; un cœur gagné
-       reste gagné jusqu'au grand cadeau ;
-     · ses envies (tama.envie, ENVIES) : une bulle de pensée dorée au-dessus d'elle (un poisson, le laser, un bain, son panier…) ; lui
-       donner pile ça rapporte ENVIE_GAIN de bonheur et compte pour le cinquième cœur ; une envie passe toute seule (ENVIE_DUREE) ;
-     · cinq cœurs ET le bonheur à 100 : LE GRAND CADEAU (cadeauChat(V, o, false, true) : elle fait la folle, sort, et revient avec un
-       coffret doré) ; quand on l'ouvre, les cœurs repartent de zéro et le bonheur redescend à BH_APRES.
-     Le bonheur redescend doucement pendant qu'on joue, jamais sous BH_MIN : elle n'est jamais malheureuse.
+   - UNE SEULE JAUGE À L'ÉCRAN : SON BONHEUR (16 novembre, 21 h 18 et 22 h 22, Romain : « la jauge de bonheur, les 5 cœurs, tout ça,
+     c'est caché. On garde juste la jauge de bonheur » ; « c'est un peu trop facile de remplir la liste » ; DESIGN-saison1.md §12.69).
+     · son bonheur (o.bh, de 0 à 100 ; la barre au-dessus du bouton 🐾, toujours sous les yeux) : il part de bas (BH_DEPART), les soins
+       rapportent peu (GAIN_K) et refaire la même chose rapporte de moins en moins (tama.las, LASSE : la lassitude s'oublie avec le
+       temps de jeu et à chaque nouveau moment). Ce qui rapporte le plus : ses envies. Il redescend doucement pendant qu'on joue,
+       jamais sous BH_MIN : elle n'est jamais malheureuse ;
+     · LA BARRE PLEINE : elle file par la chatière et rapporte un coffret (cadeauChat) ; on l'ouvre : le bonheur redescend à BH_APRES,
+       et on recommence. Pas de limite par moment (Romain : « je veux qu'on puisse jouer avec Mimi tout le temps ») ;
+     · dans le coffret : une chose qu'elle n'a pas encore, tirée au hasard dans une de ses CINQ FAMILLES (FAMILLES : le ventre plein,
+       la récré, toute belle, comme une reine, ses envies). Les familles ne s'affichent nulle part. La dernière chose d'une famille
+       arrive dans un coffret doré ; une famille complète (tama.fam) vaudra un morceau du parc à chat (le chantier d'après) ;
+     · SES ENVIES (tama.envie) : elle ne la dit pas tout de suite. Pendant ENVIE_CACHEE secondes de jeu, on la devine à ce qu'elle
+       fait (envieSigne : elle tourne autour de sa gamelle, joue toute seule, n'en finit pas de se laver, pétrit son panier, vient
+       réclamer des câlins…) ; ensuite sa bulle dorée la montre. Lui donner pile ça : « Pile poil ! », ENVIE_GAIN de bonheur si on
+       a deviné, ENVIE_GAIN_DITE si elle a dû le dire. Autre chose : elle est contente (le gain du soin), sans plus. Une envie passe
+       toute seule (ENVIE_DUREE).
    - Ses besoins (o.b : faim 🍗, soif 💧, propreté 🛁, câlins ❤️, jeu 🧶) baissent aussi, jamais sous BESOIN_MIN ; quand l'un est bas,
      une bulle au-dessus de sa tête le dit (on la touche : le conteur raconte quoi faire, et la chose à toucher brille).
    - Chaque soin donne du bonheur (plus s'il répond à ce qu'elle demande ; plus avec une meilleure nourriture) : soigner().
-   - La jauge cachée de la variété (tama.varie) monte quand on CHANGE de soin (pas un des deux derniers). Le petit signe :
-     Mimi se roule par terre. Pleine : un nouvel objet de soin (SOINS_SUITE : la brosse, le bain, les friandises, le griffoir, l'appareil photo).
-   - Le PETIT coffret : assez heureuse (bonheur ≥ BH_COFFRET) et assez de soins depuis le dernier (tama.pts ≥ CADEAU_PTS), au plus un
-     par moment : elle miaule, sort par la chatière et revient avec un petit coffret dans la gueule. Dedans : un nouveau jouet (puis,
-     quand elle les a tous, un habit, puis des friandises).
-   - Les jouets ne viennent que des coffrets ; le confort (nourritures, paniers, habits) s'achète avec les pièces d'or, à petits prix
-     (la boutique de Mimi : 🐾 puis 🛒).
+   - Les jouets et les objets de soin (la brosse, le bain, les friandises, le griffoir) ne viennent que des coffrets ; les nourritures,
+     les coins douillets et les habits viennent des coffrets ou s'achètent avec les pièces d'or, à petits prix (la boutique de Mimi :
+     🐾 puis 🛒). L'appareil photo est à tout le monde.
    - Une petite bêtise environ toutes les 4 minutes de jeu, jamais plus (une fiole par terre, le tabouret renversé, une pelote déroulée) :
      un toucher remet tout en ordre ; rien n'est jamais perdu.
    - Rien ne baisse quand l'appli est fermée.
    - À partir de l'enquête 4 (PORTEE, des données) : la chatte s'arrondit, un chaton naît, et Mimi part vivre chez Odette
      (etat.chezOdette ; Atelier.chezOdette(etat) pour le village). ⚠️ À revoir avec Romain avant l'enquête 4 : on lui offre maintenant
      des jouets et des habits, la voir partir serait une vraie peine.
-   L'état : etat.tama = {jeu, betise, moment, portee, varie, derniers, pts, cadeaux, dehors, coffret, herbe, friand,
-     v:2, las:{famille:crans}, c:{m, b, br, ba, fe, dd, env, j:[jouets], h:[5 cœurs]}, envie:{k, n}, envieT, grands},
+   L'état : etat.tama = {jeu, betise, moment, portee, cadeaux, dehors:{c, nom, g}, coffret:{c, x, y, g}, herbe, friand,
+     v:3, las:{soin:crans}, fam:{famille:1}, recus:[codes], envie:{k, n, d}, envieT, envieAvant},
    etat.mimi = {jouets, nour, soins, album}, etat.betises, etat.chezOdette, etat.garde ; sur le chat : o.b, o.bh, o.acc.
    ========================================================== */
 var BESOINS = [
@@ -6166,9 +6173,10 @@ var DEMANDE = 42;                    /* sous 42, elle le demande (une bulle) */
 var BESOIN_MIN = 25, BH_MIN = 8, BH_DEPART = 15, BH_BAISSE = 0.6;   /* les planchers ; le bonheur perd 0,6 par minute de jeu */
 var GAIN_K = 0.5;                    /* (étape 2) chaque soin rapporte deux fois moins de bonheur qu'avant… */
 var LASSE = [1, 0.5, 0.25, 0.1], LASSE_OUBLI = 150;   /* …et de moins en moins si on refait le même (un cran s'oublie en 2 min 30 de jeu) */
-var BH_COFFRET = 50, CADEAU_PTS = 22, VARIE_PAS = 20;  /* le petit coffret : à moitié heureuse, et assez de soins depuis le dernier */
-var BH_APRES = 30;                   /* après le grand cadeau, son bonheur redescend là ; une sauvegarde d'avant l'étape 2 aussi */
-var ENVIE_GAIN = 12, ENVIE_PAUSE = 45, ENVIE_DUREE = 240, ENVIES_COEUR = 3;   /* ses envies (en secondes de jeu) */
+var BH_APRES = 30;                   /* le coffret ouvert, son bonheur redescend là ; une sauvegarde d'avant l'étape 2 aussi */
+/* ses envies (en secondes de jeu) : cachée une minute (on la devine à ce qu'elle fait), puis sa bulle la dit ; devinée, elle rapporte plus */
+var ENVIE_CACHEE = 60, ENVIE_GAIN = 16, ENVIE_GAIN_DITE = 10, ENVIE_PAUSE = 30, ENVIE_DUREE = 240;
+var ENVIE_SIGNE = 0.7;               /* tant qu'elle a une envie : sept fois sur dix, ce qu'elle fait la montre */
 var TIC = 15;                        /* les besoins changent toutes les 15 secondes de jeu */
 var BETISE_MIN = 240;                /* une bêtise au plus toutes les 4 minutes de jeu */
 var PAS_MOMENT = 12;                 /* un nouveau moment de la journée : chaque besoin baisse un peu (jamais sous le plancher) */
@@ -6220,6 +6228,7 @@ function donner(o, k, n){ var b = besoins(o); if(k === 'dodo') return; b[k] = bo
 /* ---------- Le temps de jeu ---------- */
 function tamaDemarrer(V){
   tama(V);
+  famillesMaj(V, false);      /* (une sauvegarde d'avant « la jauge seule » : ses familles déjà complètes sont notées, sans bruit) */
   chatsTous(V).forEach(function(o){ besoins(o); if(!o.nom) o.nom = nomChat(o); });
   clearTimeout(V.tamaT);
   V.tamaT = apres(V, TIC * 1000, function(){ tamaTic(V); });
@@ -6240,13 +6249,13 @@ function tamaTic(V, force){
     envieTic(V);
     portee(V, dt);
     if(!V.attenteBetise && !GUIDE && !V.ouvert && V.grim.hidden && t.jeu - t.betise >= BETISE_MIN && Math.random() < (force ? 1 : 0.5)) peutEtreBetise(V);
-    /* bien heureuse, elle va chercher un coffret (au plus un par moment) ; une souris passe */
+    /* sa barre est pleine : elle va chercher un coffret (autant de fois qu'on la remplit) ; sinon, parfois, une souris passe */
     if(!force && !V.attenteBetise && !GUIDE && !V.o.sansSurprise){      /* (rien de tout ça pendant le guidage du tutoriel ; sansSurprise : les bancs d'essai) */
       var sortants = chatsDe(V).filter(function(c){ return peutSortir(V, c); });
-      if(sortants.length && (grandPret(V, sortants[0]) || Math.random() < 0.5)) cadeauChat(V, sortants[0]);
+      if(sortants.length) cadeauChat(V, sortants[0]);
       else if(!V.jouet && Math.random() < 0.3) sourisPasse(V);
     }
-    var c0 = chatsTous(V)[0]; if(c0) coeursMaj(V, c0);      /* (la litière nettoyée par un autre chemin, une vieille sauvegarde…) */
+    famillesMaj(V, !force);      /* (un habit gagné à un mini-jeu, acheté… : une famille peut se compléter par un autre chemin) */
     majHumeurs(V); majBarre(V);
     if(!force && (t.jeu / TIC) % 4 === 0) changer(V);
   }
@@ -6266,82 +6275,74 @@ function tamaMoment(V){
 }
 
 /* ==========================================================
-   (étape 2) Ses cinq cœurs, ses envies, la lassitude — voir le grand commentaire plus haut.
+   La lassitude, ses cinq familles (cachées), ses envies (cachées une minute) — voir le grand commentaire plus haut.
    ========================================================== */
-/* --- la lassitude : refaire le même soin rapporte de moins en moins (LASSE), et ça s'oublie avec le temps de jeu --- */
-function familleSoin(quoi){ var g = String(quoi || ''); return g.indexOf('repas') === 0 ? 'repas' : g; }
+/* --- la lassitude : refaire le même soin rapporte de moins en moins (LASSE), et ça s'oublie avec le temps de jeu ---
+   (« dodo:seule », « griffoir:seule » : ce qu'elle fait d'elle-même ; ça lasse pareil, mais ce n'est jamais « pile son envie ») */
+function familleSoin(quoi){ var g = String(quoi || '').replace(/:seule$/, ''); return g.indexOf('repas') === 0 ? 'repas' : g; }
 function lasse(V, fam){
   var n = borne(tama(V).las[fam] || 0, 0, LASSE.length - 1), i = Math.floor(n), f = n - i, a = LASSE[i], b = LASSE[Math.min(LASSE.length - 1, i + 1)];
   return a + (b - a) * f;
 }
 function lasser(V, fam){ var l = tama(V).las; l[fam] = Math.min(LASSE.length - 1, (l[fam] || 0) + 1); }
 
-/* --- les cœurs : cinq, chacun avec ses conditions (l : [clé, image, deux ou trois mots]) ; « dit » : ce que le conteur en dit (🔊) --- */
-var COEURS = [
-  {nom:'Le ventre plein', dit:'Le premier cœur, c\'est le ventre plein : un bon repas, de l\'eau fraîche, et une litière toute propre.',
-    l:[['m', '🍗', 'Elle a mangé'], ['b', '💧', 'Elle a bu'], ['lit', '🪣', 'Litière propre']]},
-  {nom:'La récré', dit:'Le deuxième cœur, c\'est la récré : deux jouets différents. Pas deux fois le même, petit malin !',
-    l:[['j1', '🧶', 'Un jouet'], ['j2', '🪶', 'Un autre jouet']]},
-  {nom:'Toute belle', dit:'Le troisième cœur, c\'est la beauté : un bon coup de brosse, et un bain qui mousse.',
-    l:[['br', 'brosse', 'Brossée'], ['ba', '🛁', 'Baignée']]},
-  {nom:'Comme une reine', dit:'Le quatrième cœur, c\'est la vie de reine : un bon petit plat de sa boutique, et une sieste dans son coin douillet.',
-    l:[['fe', '🐟', 'Un bon plat'], ['dd', '🧺', 'Une sieste douillette']]},
-  {nom:'Ses envies', dit:'Le cinquième cœur, ce sont ses envies : trois fois, lui offrir pile ce dont elle rêve. Sa bulle dorée dit tout.',
-    l:[['e1', '💭', 'Une envie'], ['e2', '💭', 'Deux envies'], ['e3', '💭', 'Trois envies']]}
+/* --- ses cinq familles d'affaires (cachées : rien ne s'affiche nulle part). Ce que les coffrets apportent, tiré au hasard dans une famille.
+   Un code = ce que ouvrirCoffret() sait donner : j: un jouet, n: une nourriture, s: un objet de soin, a: un habit, c: un coin douillet.
+   d : les d premières choses de la liste viennent d'abord, dans l'ordre (les objets de soin : ils ouvrent de nouveaux jeux) ; le reste, au hasard.
+   fin : ce que le conteur dit quand la famille est complète. Tout ce qui existe est dans une famille, et une seule (vérifié par tools/mimi.py). --- */
+var FAMILLES = [
+  {k:'ventre', l:['s:friandises', 'n:pate', 'n:poisson', 'n:festin'], fin:'Son garde-manger est complet !'},
+  {k:'recre', l:['j:plume', 'j:laser', 'j:souris', 'j:grelot', 'j:carton', 'j:herbe'], fin:'Sa caisse à jouets est complète !'},
+  {k:'belle', d:2, l:['s:brosse', 's:bain', 'a:noeud_rose', 'a:noeud_bleu', 'a:fleurs', 'a:clochette'], fin:'Elle a tout ce qu\'il faut pour se faire belle !'},
+  {k:'reine', d:2, l:['s:griffoir', 'c:coussin', 'a:perles', 'a:arc', 'a:couronne', 'a:mage'], fin:'Elle a tout ce qu\'il faut pour vivre comme une reine !'},
+  {k:'envies', l:['a:collier_rouge', 'a:collier_bleu', 'a:collier_vert', 'a:noeud_pap_violet', 'a:noeud_pap_jaune', 'a:foulard', 'a:sorciere', 'a:beret', 'a:fete'], fin:'Sa garde-robe de tous les jours est complète !'}
 ];
-function coeursPropres(c){
-  c = c && typeof c === 'object' ? c : {};
-  var r = {m:c.m ? 1 : 0, b:c.b ? 1 : 0, br:c.br ? 1 : 0, ba:c.ba ? 1 : 0, fe:c.fe ? 1 : 0, dd:c.dd ? 1 : 0, env:c.env > 0 ? Math.min(9, Math.round(c.env)) : 0};
-  r.j = (Array.isArray(c.j) ? c.j : []).filter(function(id, i, l){ return typeof id === 'string' && !!JOUETS[id] && l.indexOf(id) === i; });
-  r.h = [0, 1, 2, 3, 4].map(function(i){ return Array.isArray(c.h) && c.h[i] ? 1 : 0; });
-  return r;
+function aChezElle(e, t){      /* (posé dans une pièce, encore dans un carton, ou rangé dans la réserve) */
+  return e.objets.some(function(o){ return o.t === t; }) || e.cartons.some(function(k){ return (k.reste || []).indexOf(t) >= 0; }) || e.reserve.some(function(x){ return x.t === t; });
 }
-function litierePropre(V){ return V.etat.objets.some(function(x){ return x.t === 'litiere' && !x.sale; }); }
-function condCoeur(V, k){
-  var c = tama(V).c;
-  if(k === 'lit') return litierePropre(V);
-  if(k === 'j1' || k === 'j2') return c.j.length >= +k.charAt(1);
-  if(k.charAt(0) === 'e') return c.env >= +k.charAt(1);
-  return !!c[k];
-}
-function nbCoeurs(V){ return tama(V).c.h.reduce(function(s, x){ return s + (x ? 1 : 0); }, 0); }
-function rangCoeurs(n){ var s = ''; for(var i = 0; i < 5; i++) s += i < n ? '❤️' : '🤍'; return s; }
-/* ce qu'un soin coche (quoi : « repas:poisson », « eau », « jouet:laser », « brosse », « bain », « dodo ») */
-function noterCoeur(V, quoi){
-  var c = tama(V).c, p = String(quoi || '').split(':');
-  if(p[0] === 'repas'){ c.m = 1; if(p[1] && p[1] !== 'croquettes' && NOURS[p[1]]) c.fe = 1; }
-  else if(p[0] === 'eau') c.b = 1;
-  else if(p[0] === 'jouet'){ if(JOUETS[p[1]] && c.j.indexOf(p[1]) < 0) c.j.push(p[1]); }
-  else if(p[0] === 'brosse') c.br = 1;
-  else if(p[0] === 'bain') c.ba = 1;
-  else if(p[0] === 'dodo') c.dd = 1;
-}
-/* un cœur dont toutes les conditions sont remplies est gagné, et le reste jusqu'au grand cadeau */
-function coeursMaj(V, o){
-  var t = tama(V), c = t.c, neufs = [];
-  if(t.dehors && t.dehors.g || t.coffret && t.coffret.g) return false;      /* (le grand cadeau est en route : on ne touche plus à rien) */
-  COEURS.forEach(function(C, i){ if(!c.h[i] && C.l.every(function(x){ return condCoeur(V, x[0]); })){ c.h[i] = 1; neufs.push(i); } });
-  if(!neufs.length) return false;
-  changer(V); majBarre(V, true);
-  var n = nbCoeurs(V), nom = o ? nomChat(o) : PORTEE.mere, C0 = COEURS[neufs[neufs.length - 1]];
-  var tx = n >= 5 ? 'Cinq cœurs ! ' + nom + ' est soignée comme une reine.' + (o && bhPlein(o) ? '' : ' Il ne manque plus que son bonheur, tout en haut…')
-    : 'Un cœur de plus pour ' + nom + ' : « ' + C0.nom + ' » !';
-  /* (un peu après : le soin qui vient de finir a souvent son petit mot à dire d'abord ; et si un message est à l'écran, celui-ci attend son tour) */
-  var no = (V.coeurNo = (V.coeurNo || 0) + 1);
-  apres(V, 2200, function(){
-    if(V.arrete) return;
-    sonMimi(V, 'coeur'); brillerMimi(V);
-    if(o && V.elO[o.id] && salleDe(o) === V.salle){ coeursChat(V, o, '❤️'); expression(V, o, 'at-x-content', 700); }
-    /* (si un autre cœur a été gagné entre-temps, c'est lui qui parlera) */
-    (function montrer(k){ if(V.arrete || V.coeurNo !== no) return; if(!V.toastEl.hidden && k < 5){ apres(V, 1500, function(){ montrer(k + 1); }); return; } toast(V, '<b>' + rangCoeurs(n) + '</b> ' + esc(tx), 5200, tx); })(0);
-  });
+function aDeja(V, code){
+  var k = code.charAt(0), id = code.slice(2), m = mimi(V), e = V.etat;
+  if(k === 'j') return !JOUETS[id] || m.jouets.indexOf(id) >= 0;
+  if(k === 'n') return !NOURS[id] || m.nour.indexOf(id) >= 0;
+  if(k === 's') return !SOINS[id] || m.soins.indexOf(id) >= 0;
+  if(k === 'a') return !ACC[id] || garde(e).a.indexOf(id) >= 0;
+  if(k === 'c') return tama(V).recus.indexOf(code) >= 0 || aChezElle(e, id);
   return true;
 }
-/* les deux jauges à fond : le grand cadeau peut partir */
-function grandPret(V, o){ return !!o && nbCoeurs(V) >= 5 && bhPlein(o); }
+function familleReste(V, F){ return F.l.filter(function(c){ return !aDeja(V, c); }); }
+/* Une famille vient de se compléter (par un coffret, un achat, un habit gagné à un mini-jeu) : on le note (tama.fam) — le parc à chat
+   lui devra un morceau (le chantier d'après). dit : le conteur l'annonce (un coffret doré le dit lui-même). */
+function famillesMaj(V, dit){
+  var t = tama(V), neuves = FAMILLES.filter(function(F){ return !t.fam[F.k] && !familleReste(V, F).length; });
+  if(!neuves.length) return neuves;
+  neuves.forEach(function(F){ t.fam[F.k] = 1; });
+  changer(V);
+  if(dit && !V.arrete){
+    var tx = neuves.map(function(F){ return F.fin; }).join(' ');
+    (function montrer(n){ if(V.arrete) return; if(!V.toastEl.hidden && n < 6){ apres(V, 1500, function(){ montrer(n + 1); }); return; } toast(V, '<b>👑 ✨</b> ' + esc(tx), 6000, tx); sonMimi(V, 'fanfare'); })(0);
+  }
+  return neuves;
+}
+/* Ce qu'il y aura dans le coffret : une chose qu'elle n'a pas, d'une famille tirée au hasard (parmi celles où il reste quelque chose).
+   g : c'est la dernière de sa famille — le coffret est doré. Elle a tout : des friandises. */
+function contenuCoffret(V){
+  var l = FAMILLES.map(function(F){ return {F:F, r:familleReste(V, F)}; }).filter(function(x){ return x.r.length; });
+  if(!l.length) return {c:'f:'};
+  var x = l[Math.floor(Math.random() * l.length)], dab = x.F.l.slice(0, x.F.d || 0).filter(function(c){ return x.r.indexOf(c) >= 0; });
+  var r = {c:dab.length ? dab[0] : x.r[Math.floor(Math.random() * x.r.length)]};
+  if(x.r.length === 1) r.g = 1;
+  return r;
+}
 
-/* --- ses envies : une bulle de pensée dorée ; lui offrir pile ça rapporte gros, et compte pour le cinquième cœur ---
+/* --- ses envies : d'abord cachée (on la devine à ce qu'elle fait : envieSigne), puis dite par une bulle de pensée dorée ;
+   lui offrir pile ça rapporte gros ---
    k : ce que soigner() reçoit quand on le fait (« repas:poisson », « jouet:laser », « bain »…), ou « caresse », ou « dodo » */
+/* la famille d'une envie : c'est elle que son manège montre (pas l'envie elle-même) */
+function familleEnvie(k){
+  return {repas:'ventre', eau:'ventre', friandises:'ventre', jouet:'recre', brosse:'belle', bain:'belle', dodo:'reine', griffoir:'reine', caresse:'calin'}[String(k || '').split(':')[0]] || null;
+}
+/* elle l'a dite (sa bulle dorée est là) ? */
+function envieDite(V){ var e = V.etat.tama && V.etat.tama.envie; return !!e && e.d === 1; }
 function envieInfo(V, k){
   var p = String(k || '').split(':'), n = chatsTous(V)[0], nom = n ? nomChat(n) : PORTEE.mere;
   if(p[0] === 'repas' && NOURS[p[1]]){
@@ -6360,8 +6361,11 @@ function envieInfo(V, k){
 }
 /* tout ce dont elle peut avoir envie en ce moment (jamais la même deux fois de suite ; parfois un plat qu'elle n'a pas encore) */
 function enviesPossibles(V, toutes){
-  var m = mimi(V), t = tama(V), l = ['caresse', 'eau'];
-  m.nour.forEach(function(k){ if(NOURS[k]) l.push('repas:' + k); });
+  var m = mimi(V), t = tama(V), l = ['caresse'];
+  /* (jamais ce qui l'attend déjà dans sa gamelle : elle irait le manger toute seule, et « pile poil » sans qu'on ait rien fait) */
+  var pleines = V.etat.objets.filter(function(g){ return (g.t === 'gamelle' || g.t === 'eau') && g.plein; });
+  if(toutes || !pleines.some(function(g){ return g.t === 'eau'; })) l.push('eau');
+  m.nour.forEach(function(k){ if(NOURS[k] && (toutes || !pleines.some(function(g){ return g.t === 'gamelle' && (g.nour || 'croquettes') === k; }))) l.push('repas:' + k); });
   m.jouets.forEach(function(id){ if(JOUETS[id] && !(id === 'herbe' && t.herbe === momentCle(V))) l.push('jouet:' + id); });
   ['brosse', 'bain', 'friandises'].forEach(function(id){ if(soinA(V, id)) l.push(id); });
   if(V.etat.objets.some(function(x){ return x.t === 'griffoir'; })) l.push('griffoir');
@@ -6373,16 +6377,31 @@ function enviesPossibles(V, toutes){
   return l.filter(function(k){ return k !== t.envieAvant; });
 }
 function envieDe(V, debut){ var e = V.etat.tama && V.etat.tama.envie; return !!e && e.k.indexOf(debut) === 0; }
+/* une nouvelle envie : d'abord une famille au hasard (pas celle d'avant, si on a le choix : son manège change), puis une envie dedans */
+function envieNouvelle(V){
+  var l = enviesPossibles(V), fams = {}, avant = familleEnvie(tama(V).envieAvant);
+  if(!l.length) return null;
+  l.forEach(function(k){ var f = familleEnvie(k); if(f) (fams[f] = fams[f] || []).push(k); });
+  var ks = cles(fams);
+  if(ks.length > 1) ks = ks.filter(function(f){ return f !== avant; });
+  if(!ks.length) return null;
+  var lf = fams[ks[Math.floor(Math.random() * ks.length)]];
+  return lf[Math.floor(Math.random() * lf.length)];
+}
 function envieTic(V){
   var t = tama(V), o = chatsTous(V)[0];
   if(!o || o.chaton || GUIDE || V.o.sansSurprise) return;
-  if(t.envie && t.jeu - t.envie.n >= ENVIE_DUREE){ t.envie = null; t.envieT = t.jeu + ENVIE_PAUSE; }      /* (elle est passée : sans rancune) */
-  if(t.envie || t.jeu < t.envieT || (t.dehors && t.dehors.g) || (t.coffret && t.coffret.g)) return;
-  var l = enviesPossibles(V);
-  if(!l.length) return;
-  t.envie = {k:l[Math.floor(Math.random() * l.length)], n:t.jeu};
+  if(t.envie && t.jeu - t.envie.n >= ENVIE_DUREE){ t.envie = null; t.envieT = t.jeu + ENVIE_PAUSE; majHumeur(V, o); }      /* (elle est passée : sans rancune) */
+  /* (on n'a pas deviné : au bout d'une minute, sa bulle le dit) */
+  if(t.envie && !t.envie.d && t.jeu - t.envie.n >= ENVIE_CACHEE){
+    t.envie.d = 1; changer(V); majHumeur(V, o);
+    if(V.elO[o.id] && salleDe(o) === V.salle && !chatEtat(V, o).anim){ sonMimi(V, 'trille'); expression(V, o, 'at-x-penche', 900); }
+  }
+  if(t.envie || t.jeu < t.envieT || t.dehors || t.coffret) return;
+  var k = envieNouvelle(V);
+  if(!k) return;
+  t.envie = {k:k, n:t.jeu};      /* (elle ne dit rien : c'est ce qu'elle va faire, à sa prochaine idée, qui la trahit — tamaAgir, envieSigne) */
   changer(V);
-  if(V.elO[o.id] && salleDe(o) === V.salle && !chatEtat(V, o).anim){ sonMimi(V, 'trille'); expression(V, o, 'at-x-penche', 900); }
 }
 function envieEst(V, quoi){
   var e = tama(V).envie;
@@ -6392,25 +6411,102 @@ function envieEst(V, quoi){
 function envieFaite(V, o){
   var t = tama(V);
   if(!t.envie) return false;
+  var devinee = !t.envie.d;
   t.envieAvant = t.envie.k; t.envie = null; t.envieT = t.jeu + ENVIE_PAUSE + Math.floor(Math.random() * 3) * TIC;
-  t.c.env = Math.min(9, t.c.env + 1);
-  bhPlus(o, ENVIE_GAIN); t.pts += ENVIE_GAIN;
+  bhPlus(o, devinee ? ENVIE_GAIN : ENVIE_GAIN_DITE);      /* (devinée avant qu'elle le dise : ça rapporte plus) */
   sonMimi(V, 'envie');
   if(V.elO[o.id] && salleDe(o) === V.salle){
-    flotter(V, o, '💖 Pile ça !');
+    flotter(V, o, '💖 Pile poil !');
     coeursChat(V, o, '💖'); apres(V, 350, function(){ coeursChat(V, o, '✨'); });
     etincelles(V, o);
   }
   majHumeur(V, o); majBarre(V, true); changer(V);
   return true;
 }
+/* --- Son envie se devine à ce qu'elle fait (Romain, 16 novembre, 22 h 22 : « on voit son envie par rapport à l'endroit ou ce qu'elle
+   fait, ce qu'elle montre »). Un manège par famille (ce que la fonction rend, un mot, sert aux robots) :
+   · le ventre : elle tourne autour de sa gamelle (de son eau, de sa litière), s'assoit devant, se lèche les babines, nous regarde ;
+   · la récré : elle joue toute seule, file ventre à terre d'un bout à l'autre de la pièce ;
+   · toute belle : elle n'en finit pas de se laver (huit façons : la toilette du pantin, mimi-gestes.js) ;
+   · comme une reine : elle va à son coin douillet (ou à son griffoir), le pétrit, bâille, s'étire à côté — sans s'y installer ;
+   · les câlins : elle vient tout devant, s'assoit face à nous, cligne des yeux, fait coucou de la patte, se roule sur le dos.
+   Le manège montre la famille, pas la chose : reste à trouver laquelle. --- */
+function envieSigne(V, o){
+  var t = tama(V), st = chatEtat(V, o), f = t.envie ? familleEnvie(t.envie.k) : null;
+  if(!f || !V.elO[o.id] || o.chaton || st.tenu || st.depart || st.pose === 'dort') return false;
+  var p = chatPos(V, o), sol = !chatSurMeuble(V, o), suite = function(ms){ chatPlanifier(V, o, ms); };
+  var libre = function(pose){ var s = V.chats[o.id]; return !!s && s.pose === pose && !s.tenu && !s.anim && !s.caresse && !s.depart; };
+  var face = function(x){ st.gauche = x < chatPos(V, o).x; var d2 = V.elO[o.id]; if(d2) d2.classList.toggle('at-c-gauche', st.gauche); };
+  /* une de ses affaires, dans la pièce ; elle va tout près (du côté le plus proche ; de l'autre si elle y est déjà : elle tourne autour), tournée vers elle */
+  var une = function(types){ var l = ici(V).filter(function(g){ return types.indexOf(g.t) >= 0 && !g.sur && !g.cote; }); return l.length ? l[Math.floor(Math.random() * l.length)] : null; };
+  var pres = function(g, puis){
+    var pg = posObj(V, g), y = Math.min(solMax(V), pg.y + 10), cote = p.x < pg.x ? -1 : 1;
+    if(sol && Math.abs(p.x - (pg.x + cote * 82 * pg.s)) < 34 && Math.abs(p.y - y) < 40) cote = -cote;
+    chatAller(V, o, chatSol(V, pg.x + cote * 82 * pg.s, y), function(){ face(pg.x); chatPose(V, o, 'assis'); puis(pg); });
+  };
+  if(f === 'ventre'){
+    var g = une(t.envie.k === 'eau' ? ['eau'] : Math.random() < 0.3 ? ['litiere'] : ['gamelle']) || une(['gamelle', 'eau', 'litiere', 'distributeur']);
+    if(!g) return false;
+    pres(g, function(){
+      var r = Math.random();
+      if(r < 0.4) expression(V, o, 'at-x-langue', 1300);
+      else if(r < 0.75){ expression(V, o, 'at-x-penche', 1300); sonMimi(V, 'trille'); }
+      else { expression(V, o, 'at-x-miaou', 800); sonMimi(V, 'miaou'); }
+      suite(2300 + Math.random() * 1500);
+    });
+    return 'ventre';
+  }
+  if(f === 'recre'){
+    if(!sol){ chatAller(V, o, chatSolVisible(V), function(){ chatJoue(V, o, null, true); }); return 'recre'; }
+    if(Math.random() < 0.55){      /* elle file de l'autre côté de la pièce, ventre à terre… et joue en arrivant */
+      var c = centreVue(V), dx = (p.x < c.x ? 1 : -1) * (260 + Math.random() * 160);
+      st.vite = 3.8;
+      chatAller(V, o, chatSol(V, p.x + dx, borne(p.y + (Math.random() - 0.5) * 160, SOL_MIN + 50, solMax(V) - 10)), function(){ st.vite = 1; chatJoue(V, o, null, true); });
+      return 'recre';
+    }
+    chatJoue(V, o, null, true);
+    return 'recre';
+  }
+  if(f === 'belle'){
+    chatPose(V, o, 'lave');
+    suite(5200 + Math.random() * 2800);
+    return 'belle';
+  }
+  if(f === 'reine'){
+    var coins = ['panier', 'coussin', 'pouf', 'arbre_chat'];
+    var gr = une(t.envie.k === 'griffoir' ? ['griffoir'] : coins) || une(coins.concat(['griffoir', 'lit']));
+    if(!gr){ chatPose(V, o, 'assis'); expression(V, o, 'at-x-baille', 1300); sonMimi(V, 'baille'); suite(2800); return 'reine'; }
+    pres(gr, function(){
+      var r = Math.random();
+      if(gr.t === 'griffoir'){ chatPose(V, o, 'tape'); apres(V, 1500, function(){ if(libre('tape')) chatPose(V, o, 'assis'); }); }
+      else if(r < 0.45){ expression(V, o, 'at-x-petrit', 1700); sonMimi(V, 'ronron'); }
+      else if(r < 0.75){ expression(V, o, 'at-x-baille', 1300); sonMimi(V, 'baille'); }
+      else { chatPose(V, o, 'marche'); gesteChat(V, o, 'etire'); apres(V, 1950, function(){ if(libre('marche')) chatPose(V, o, 'assis'); }); }
+      suite(2900 + Math.random() * 1500);
+    });
+    return 'reine';
+  }
+  /* les câlins */
+  var c0 = centreVue(V), devant = chatSol(V, c0.x + (Math.random() - 0.5) * 240, solMax(V) - 30);
+  var doux = function(){
+    var r = Math.random();
+    if(r < 0.3){ chatPose(V, o, 'assis'); expression(V, o, 'at-x-cligne', 1500); sonMimi(V, 'ronron'); }
+    else if(r < 0.55){ chatPose(V, o, 'salut'); apres(V, 1700, function(){ if(libre('salut')) chatPose(V, o, 'assis'); }); }
+    else if(r < 0.8){ chatPose(V, o, 'dos'); gesteChat(V, o, 'gigote', {d:1700}); sonMimi(V, 'roule'); apres(V, 2100, function(){ if(libre('dos')) chatPose(V, o, 'assis'); }); }
+    else { chatPose(V, o, 'assis'); expression(V, o, 'at-x-penche', 1300); sonMimi(V, 'trille'); }
+    suite(3000 + Math.random() * 1500);
+  };
+  if(sol && Math.abs(p.y - devant.y) < 60 && Math.abs(p.x - c0.x) < 280) doux(); else chatAller(V, o, devant, doux);
+  return 'calin';
+}
 
 /* ---------- L'humeur : sa tête, sa bulle ---------- */
-/* ce que dit sa bulle : un besoin qui presse d'abord (la bulle blanche) ; sinon son envie du moment (la bulle dorée, étape 2) */
+/* ce que dit sa bulle : un besoin qui presse d'abord (la bulle blanche) ; sinon son envie du moment, quand elle a fini par la dire
+   (la bulle dorée : au bout d'une minute ; avant, c'est à nous de deviner) */
 function bulleDe(V, o){
   var u = besoinUrgent(o);
   if(u) return {k:u.k, ic:u.ic, envie:false};
-  var t = V && V.etat && V.etat.tama, e = t && t.envie && !o.chaton ? envieInfo(V, t.envie.k) : null;
+  var t = V && V.etat && V.etat.tama, e = t && t.envie && t.envie.d === 1 && !o.chaton ? envieInfo(V, t.envie.k) : null;
   return e ? {k:'envie', ic:e.ic, envie:true} : null;
 }
 function bulleHTML(o, V){
@@ -6792,6 +6888,8 @@ function tamaAgir(V, o){
   if(gm && (b.faim < 92 || envieDe(V, 'repas')) && Math.random() < 0.8){ chatVaManger(V, o, gm, 'faim'); return true; }
   if(ge && (b.soif < 92 || envieDe(V, 'eau')) && Math.random() < 0.8){ chatVaManger(V, o, ge, 'soif'); return true; }
   if(u && Math.random() < 0.35){ chatPose(V, o, 'assis'); miaou(V, o); chatPlanifier(V, o, 4200); return true; }   /* elle demande */
+  /* (la jauge seule) elle a une envie : le plus souvent, ce qu'elle fait la montre — tant qu'on ne l'a pas trouvée, même après sa bulle */
+  if(!u && V.etat.tama.envie && Math.random() < ENVIE_SIGNE && envieSigne(V, o)) return true;
   if(!o.chaton && Math.random() < 0.05 && chatLitiere(V, o)) return true;
   if(Math.random() < 0.07 && chatGriffoir(V, o)) return true;
   if(o.chaton && Math.random() < 0.45) return chatonJoue(V, o);
@@ -7024,61 +7122,39 @@ function momentCle(V){ return tama(V).moment || (enqueteNo(V) + ':' + (V.o.momen
    plus à l'enquête (une vieille sauvegarde qui en attendait un le reçoit encore : livrerButin). */
 function peutSortir(V, o){
   var st = V.chats[o.id], t = tama(V);
-  /* (étape 2) le grand cadeau : cinq cœurs et le bonheur à fond, quand on veut ; le petit coffret : au plus un par moment */
-  var petit = !(t.cadeaux[momentCle(V)] >= 1) && bonheur(o) >= BH_COFFRET && t.pts >= CADEAU_PTS;
-  return !V.salle && salleDe(o) === 0 && !t.butin && !t.dehors && !t.coffret && (petit || grandPret(V, o)) &&
+  /* (la jauge seule) sa barre de bonheur est pleine : elle peut y aller — autant de fois qu'on la remplit, sans limite par moment */
+  return !V.salle && salleDe(o) === 0 && !t.butin && !t.dehors && !t.coffret && bhPlein(o) &&
     !!st && !st.tenu && !st.anim && st.pose !== 'dort' && !st.depart && !st.passe && !st.caresse && V.mode === 'ranger' && !V.ouvert && V.grim.hidden && !V.jouet && !V.outil;
 }
-/* ce qu'il y a dans le GRAND coffret (étape 2 ; à l'étape 3, ce sera d'abord une nouvelle pièce de son parc à chat) :
-   un habit rare, sinon un jouet qu'elle n'a pas, sinon un habit, sinon un festin de friandises */
-function contenuGrand(V){
-  var G = garde(V.etat), m = mimi(V), pris = function(id){ return G.a.indexOf(id) < 0; };
-  var r = cles(ACC).filter(function(id){ return pris(id) && ACC[id].rare; });
-  if(r.length) return 'a:' + r[Math.floor(Math.random() * r.length)];
-  var j = cles(JOUETS).filter(function(id){ return m.jouets.indexOf(id) < 0; });
-  if(j.length) return 'j:' + j[Math.floor(Math.random() * j.length)];
-  var a = cles(ACC).filter(pris);
-  return a.length ? 'a:' + a[Math.floor(Math.random() * a.length)] : 'f:';
-}
-/* une pluie de cœurs au-dessus d'elle (le grand cadeau) */
+/* une pluie de cœurs au-dessus d'elle (sa barre est pleine) */
 function pluieCoeurs(V, o){ ['💖', '❤️', '✨'].forEach(function(ic, i){ apres(V, i * 260, function(){ if(V.elO[o.id]) coeursChat(V, o, ic); }); }); }
-/* ce qu'il y a dans le coffret : un jouet qu'elle n'a pas encore, sinon un habit, sinon des friandises */
-function contenuCoffret(V){
-  var m = mimi(V), l = cles(JOUETS).filter(function(id){ return m.jouets.indexOf(id) < 0; });
-  if(l.length) return 'j:' + l[Math.floor(Math.random() * l.length)];
-  var G = garde(V.etat), a = cles(ACC).filter(function(id){ return G.a.indexOf(id) < 0 && !ACC[id].rare; });
-  if(!a.length) a = cles(ACC).filter(function(id){ return G.a.indexOf(id) < 0; });
-  return a.length ? 'a:' + a[Math.floor(Math.random() * a.length)] : 'f:';
-}
-function cadeauChat(V, o, force){
+/* force : sans regarder si elle peut (les robots) ; code : ce qu'il y aura dedans (les robots ; sinon contenuCoffret) */
+function cadeauChat(V, o, force, code){
   var t = tama(V), st = chatEtat(V, o), d = V.elO[o.id];
   if(!d || (!force && !peutSortir(V, o))) return false;
-  var cle = momentCle(V), grand = force === 'grand' || (force !== 'petit' && grandPret(V, o));
-  if(grand) t.grands = (t.grands || 0) + 1;
-  else t.cadeaux[cle] = (t.cadeaux[cle] || 0) + 1;
-  t.pts = 0;
-  t.dehors = grand ? {c:contenuGrand(V), nom:nomChat(o), g:1} : {c:contenuCoffret(V), nom:nomChat(o)};
-  if(grand) t.envie = null;
+  var cle = momentCle(V), ct = code ? {c:code} : contenuCoffret(V), grand = !!ct.g;
+  if(code){ var Fc = FAMILLES.filter(function(F){ return F.l.indexOf(code) >= 0; })[0]; grand = !!Fc && familleReste(V, Fc).join() === code; }
+  t.cadeaux[cle] = (t.cadeaux[cle] || 0) + 1;
+  t.dehors = {c:ct.c, nom:nomChat(o)};
+  if(grand) t.dehors.g = 1;
+  t.envie = null; t.envieT = t.jeu + ENVIE_PAUSE;      /* (son envie du moment est passée : elle a mieux à faire) */
   changer(V);
   var id = (V.sortieN = (V.sortieN || 0) + 1);
   st.sortieId = id;
   if(st.anim) chatArreter(V, o);
   if(st.t){ clearTimeout(st.t); st.t = null; }
-  if(grand){
-    /* LE GRAND CADEAU : elle fait la folle (une galipette, sa queue, des cœurs partout), puis elle file */
-    chatPose(V, o, 'assis'); expression(V, o, 'at-x-content at-x-joue', 1200); sonMimi(V, 'fanfare'); flotter(V, o, '💖 Miaou !');
-    pluieCoeurs(V, o); majHumeur(V, o);
-    var tg = 'Cinq cœurs, et du bonheur jusqu\'au bout des moustaches ! ' + nomChat(o) + ' file chercher un cadeau pas comme les autres…';
-    toast(V, '<b>❤️❤️❤️❤️❤️</b> ' + esc(tg), 6500, tg);
-    apres(V, 800, function(){ if(st.sortieId !== id || V.arrete || st.tenu) return; chatPose(V, o, 'marche'); gesteChat(V, o, 'galipette'); });
-    apres(V, 2000, function(){ if(st.sortieId !== id || V.arrete || st.tenu) return; gesteChat(V, o, 'tourne'); pluieCoeurs(V, o); });
-  } else {
-    /* elle miaule d'abord, pour qu'on la regarde */
-    chatPose(V, o, 'assis'); expression(V, o, 'at-x-miaou', 900); sonMimi(V, 'miaou'); flotter(V, o, 'Miaou !');
-  }
-  apres(V, grand ? 4000 : 1200, function(){
+  /* SA BARRE EST PLEINE : elle miaule, des cœurs partout, une galipette… et elle file (plus longtemps pour un coffret doré) */
+  chatPose(V, o, 'assis'); expression(V, o, 'at-x-content at-x-joue', 1200); sonMimi(V, grand ? 'fanfare' : 'miaou'); flotter(V, o, '💖 Miaou !');
+  pluieCoeurs(V, o); majHumeur(V, o); majBarre(V, true);
+  var tg = 'Du bonheur jusqu\'au bout des moustaches ! ' + nomChat(o) + ' file chercher quelque chose…';
+  toast(V, '<b>💖 🐈</b> ' + esc(tg), 5200, tg);
+  apres(V, 800, function(){ if(st.sortieId !== id || V.arrete || st.tenu) return; chatPose(V, o, 'marche'); gesteChat(V, o, 'galipette'); });
+  if(grand) apres(V, 2000, function(){ if(st.sortieId !== id || V.arrete || st.tenu) return; gesteChat(V, o, 'tourne'); pluieCoeurs(V, o); });
+  apres(V, grand ? 4000 : 2000, function(){
     if(st.sortieId !== id || V.arrete) return;
+    st.vite = 2.4;                                 /* (elle file : au trot) */
     chatAller(V, o, chatSol(V, PORTE.x + 8, SOL_MIN + 14), function(){
+      st.vite = 1;
       if(st.sortieId !== id || V.arrete) return;
       var d2 = V.elO[o.id];
       st.tenu = true; chatPose(V, o, 'marche');
@@ -7086,12 +7162,13 @@ function cadeauChat(V, o, force){
       if(d2) anim(d2, [{opacity:1, transform:'scale(' + d2._s + ')'}, {opacity:0, transform:'translateY(-' + Math.round(10 * V.k) + 'px) scale(' + (d2._s * 0.8) + ')'}], {duration:520, easing:'ease-in', fill:'forwards'});
       apres(V, 520, function(){ var d3 = V.elO[o.id]; if(d3) d3.classList.add('at-c-dehors'); });
       var tx = nomChat(o) + ' file par la chatière… Elle mijote quelque chose !';
-      if(V.toastEl.hidden && !grand) toast(V, '<b>🐈 🚪</b> ' + esc(tx), 3400, tx);      /* (sans cacher un message plus important) */
+      if(V.toastEl.hidden) toast(V, '<b>🐈 🚪</b> ' + esc(tx), 3400, tx);      /* (sans cacher un message plus important) */
       apres(V, 6500 + Math.random() * 2500, function(){ retourChat(V, o, id); });
     });
   });
-  /* (quoi qu'il arrive en chemin, le coffret arrive : on ne perd jamais rien) */
-  apres(V, grand ? 32000 : 26000, function(){ poserCoffret(V, null); });
+  /* (quoi qu'il arrive en chemin, le coffret arrive : on ne perd jamais rien — mais seulement celui de CETTE sortie-ci : depuis qu'elle
+     peut repartir aussitôt sa barre pleine, ce filet-là ne doit pas poser le coffret de la sortie suivante pendant qu'elle est encore dehors) */
+  apres(V, grand ? 32000 : 28000, function(){ if(st.sortieId === id && tama(V).dehors) poserCoffret(V, V.parId[o.id] && V.elO[o.id] ? o : null); });
   return true;
 }
 function sortieChat(V, o, force){ return cadeauChat(V, o, force); }   /* (l'ancien nom : les robots) */
@@ -7132,7 +7209,18 @@ function poserCoffret(V, o){
   /* (jamais caché derrière quelque chose, jamais collé à elle contre un mur : de l'autre côté d'elle, sinon une place libre du plancher) */
   if(!V.salle){
     var cand = [[xa, y], [xb, y]].filter(function(q){ return Math.abs(q[0] - p.x) > ec * 0.82; });
-    var pl = placeLibre(V, cand.length ? cand : [[xa, y]], b.g ? 66 : 50, b.g ? 92 : 70); x = pl.x; y = pl.y;
+    var pl = placeLibre(V, cand.length ? cand : [[xa, y]], b.g ? 66 : 50, b.g ? 92 : 70, o ? {x:p.x, y:p.y, r:ec * 0.8} : null); x = pl.x; y = pl.y;
+    /* (malgré tout, il est derrière elle : elle fait deux pas de côté, pour qu'on le voie et qu'on puisse le toucher) */
+    if(o && st && !st.depart && Math.abs(x - p.x) < ec * 0.8 && y < p.y + 30 && y > p.y - ec * 1.2){
+      var cx = x, cy = y, pas = (p.x >= x ? 1 : -1) * ec * 1.3;
+      apres(V, 700, function(){
+        var s2 = V.chats[o.id];
+        if(!s2 || s2.tenu || s2.anim || s2.caresse || s2.depart || !V.elO[o.id] || !tama(V).coffret) return;
+        var c2 = chatSol(V, cx + pas, Math.min(solMax(V), cy + 26));
+        if(Math.abs(c2.x - cx) < ec * 0.8) c2 = chatSol(V, cx - pas, Math.min(solMax(V), cy + 26));
+        chatAller(V, o, c2, function(){ chatPose(V, o, 'assis'); chatPlanifier(V, o, 3000); });
+      });
+    }
   }
   t.coffret = {c:b.c, x:Math.round(x), y:Math.round(y)};
   if(b.g) t.coffret.g = 1;
@@ -7339,7 +7427,7 @@ function chatPotion(V, ov){
 
 /* ==========================================================
    Mimi, le Tamagotchi (16 novembre) : ses sons, ses soins, ses caresses, ses jouets, ses coffrets, sa barre, sa boutique, son album.
-   Le récit est en tête de la partie « Mimi, un vrai petit Tamagotchi », plus haut ; les règles chiffrées sont là-bas (BH_…, CADEAU_PTS…).
+   Le récit est en tête de la partie « Mimi, un vrai petit Tamagotchi », plus haut ; les règles chiffrées sont là-bas (BH_…, ENVIE_…, FAMILLES).
    ========================================================== */
 
 /* >>> LES SONS DE MIMI (ce bloc est recopié tel quel dans l'Atelier des sons : donjon/essai/construire-sons.py)
@@ -7447,7 +7535,7 @@ function sonMimi(V, nom){
 }
 
 /* ---------- Les données ---------- */
-var SOINS_SUITE = ['brosse', 'bain', 'friandises', 'griffoir', 'photo'];   /* l'ordre où la jauge de la variété les débloque */
+var SOINS_SUITE = ['brosse', 'bain', 'friandises', 'griffoir', 'photo'];   /* ses objets de soin (ils arrivent par les coffrets : FAMILLES ; l'appareil photo est à tout le monde) */
 var SOINS = {
   brosse:{ic:'brosse', nom:'Brosse', dit:'une brosse toute douce, pour son pelage'},
   bain:{ic:'🛁', nom:'Bain', dit:'une petite baignoire, et du savon qui mousse'},
@@ -7473,73 +7561,39 @@ var ALBUM_MAX = 24;
 var LEGENDES = {assis:'Toute sage', dort:'Roulée en boule', dos:'Les pattes en l\'air', pain:'En petit pain', marche:'En promenade', saute:'Hop !', tape:'Paf, la patte !', lave:'La toilette', mange:'Miam'};
 function mimi(V){ var e = V.etat; if(!e.mimi || !Array.isArray(e.mimi.jouets)) normaliserChat(e); return e.mimi; }
 function soinA(V, id){ return mimi(V).soins.indexOf(id) >= 0; }
-function prochainSoin(V){ var m = mimi(V); return SOINS_SUITE.filter(function(id){ return m.soins.indexOf(id) < 0; })[0] || null; }
 function iconeSoin(id){
   if(id !== 'brosse') return SOINS[id] ? SOINS[id].ic : '';
   return '<svg viewBox="0 0 32 32" aria-hidden="true" class="at-ic-brosse"><path d="M6,22 L19,9 L24,14 L11,27 Z" fill="#c98450" stroke="#24182e" stroke-width="2.4" stroke-linejoin="round"/><path d="M19,9 L22,4 C24,2 28,2 29,4 C30,6 29,9 27,10 L24,14" fill="#7d4626" stroke="#24182e" stroke-width="2.4" stroke-linejoin="round"/><path d="M9,20 L5,16 M12,17 L8,13 M15,14 L11,10" stroke="#f3e7cb" stroke-width="2" stroke-linecap="round"/></svg>';
 }
 
-/* ---------- Un soin : du bonheur, de la variété, peut-être un cadeau ---------- */
-/* quoi : la famille du soin (repas, eau, caresse, jouet, brosse, bain, friandises, litiere, griffoir) ; gain : le bonheur ;
+/* ---------- Un soin : du bonheur ; si c'était pile son envie, bien plus ; et si sa barre est pleine, elle file chercher un coffret ---------- */
+/* quoi : le soin (repas:<nourriture>, eau, caresse, jouet:<jouet>, brosse, bain, friandises, litiere, griffoir, dodo) ; gain : le bonheur ;
    k : le besoin qu'il comble ; n : de combien (100 par défaut : tout) */
 function soigner(V, o, quoi, gain, k, n){
   if(!o) return;
-  var t = tama(V), u = besoinUrgent(o), fam = familleSoin(quoi), brut = gain;
+  var u = besoinUrgent(o), fam = familleSoin(quoi), brut = gain;
   if(k){ if(u && u.k === k) brut += 6; donner(o, k, n === undefined ? 100 : n); }
   /* (étape 2) deux fois moins de bonheur qu'avant, et de moins en moins si on refait le même soin */
   var plus = Math.round(brut * GAIN_K * lasse(V, fam) * 100) / 100;
   lasser(V, fam);
   bhPlus(o, plus);
-  t.pts += plus;
-  if(brut >= 3) noterSoin(V, o, quoi);
-  noterCoeur(V, quoi);
   if(envieEst(V, quoi)) envieFaite(V, o);
   majHumeur(V, o); majBarre(V); changer(V);
-  coeursMaj(V, o);
-  if(!V.o.sansSurprise && !GUIDE) apres(V, 2600, function(){ var c = chatsDe(V).filter(function(x){ return peutSortir(V, x); })[0]; if(c) cadeauChat(V, c); });
+  peutEtreCadeau(V);
 }
-/* Une sieste dans un de ses coins douillets (toute seule, ou parce qu'on l'y a portée) : un peu de bonheur, et ça compte pour son quatrième cœur */
-function dodoCoin(V, o){
+/* sa barre est pleine ? Un instant plus tard (le temps de finir ce qu'elle fait), elle file chercher un coffret */
+function peutEtreCadeau(V){
+  if(V.o.sansSurprise || GUIDE) return;
+  apres(V, 2600, function(){ var c = chatsDe(V).filter(function(x){ return peutSortir(V, x); })[0]; if(c) cadeauChat(V, c); });
+}
+/* Une sieste dans un de ses coins douillets : un peu de bonheur. portee : c'est nous qui l'y avons portée (si c'était son envie :
+   pile poil) ; toute seule, ça ne compte pas pour son envie. */
+function dodoCoin(V, o, portee){
   var st = V.chats[o.id], sur = st && st.pos ? st.pos.sur : o.sur, par = sur && V.parId[sur.o];
   if(!st || st.pose !== 'dort' || !par || !DODO_ICI.test(par.t) || o.chaton || st.dodoVu === st.dortJusqua) return false;
   st.dodoVu = st.dortJusqua;
-  soigner(V, o, 'dodo', 6);
+  soigner(V, o, portee ? 'dodo' : 'dodo:seule', 6);
   return true;
-}
-/* la jauge cachée de la variété : elle monte quand le soin n'est pas un des deux derniers ; le petit signe, c'est Mimi qui se roule */
-function noterSoin(V, o, quoi){
-  var t = tama(V), g = String(quoi || '').split(':')[0];
-  if(!g) return;
-  var neuf = t.derniers.indexOf(g) < 0;
-  t.derniers = [g].concat(t.derniers.filter(function(x){ return x !== g; })).slice(0, 2);
-  if(!neuf || !prochainSoin(V)) return;
-  t.varie += VARIE_PAS;
-  signeVarie(V, o);
-  if(t.varie >= 100){ t.varie = 0; apres(V, 1800, function(){ debloquerSoin(V); }); }
-  changer(V);
-}
-function signeVarie(V, o){
-  var st = chatEtat(V, o);
-  etincelles(V, o);
-  if(!V.elO[o.id] || st.anim || st.tenu || st.caresse || V.jouet || V.bain || st.pose === 'dort' || chatSurMeuble(V, o)) return;
-  var avant = st.pose;
-  apres(V, 500, function(){
-    var s2 = chatEtat(V, o);
-    if(s2.anim || s2.tenu || s2.caresse || V.jouet || V.bain) return;
-    chatPose(V, o, 'dos'); expression(V, o, 'at-x-content', 600); sonMimi(V, 'roule');
-    apres(V, 1500, function(){ var s3 = chatEtat(V, o); if(s3.pose === 'dos' && !s3.caresse && !s3.tenu) chatPose(V, o, avant === 'dos' ? 'assis' : avant); });
-  });
-}
-function debloquerSoin(V){
-  var id = prochainSoin(V), m = mimi(V);
-  if(!id) return;
-  m.soins.push(id); m.neufs.push(id);
-  if(id === 'griffoir'){ var av = V.etat.cartons.map(function(k){ return k.id; }); nouveauCarton(V.etat, ['griffoir'], 0); if(!V.salle) dessinerPiece(V, av); }
-  var n = PORTEE.mere, c = chatsTous(V)[0]; if(c) n = nomChat(c);
-  var t = n + ' est si bien chouchoutée qu\'un cadeau est arrivé pour elle : ' + SOINS[id].dit + ' ! ' + (id === 'griffoir' ? '' : 'Il l\'attend dans sa barre 🐾.');
-  toast(V, '<b>🎁 ✨</b> ' + esc(t), 7000, t);
-  sonMimi(V, 'debloque'); brillerMimi(V); majBarre(V);
-  changer(V);
 }
 function brillerMimi(V){ var b = V.elMimi; if(!b) return; b.classList.add('at-dispo'); clearTimeout(V.mimiBrT); V.mimiBrT = apres(V, 5000, function(){ b.classList.remove('at-dispo'); }); }
 
@@ -7621,9 +7675,9 @@ function caresseTic(V, o){
     else if(dz > 700 && now - C.ronron > 1400){ C.ronron = now; sonMimi(V, 'grr'); }
   } else if(z === 'queue' && dz > 1500 && !C.fuite){ C.fuite = 1; fuirQueue(V, o); return; }
   /* (étape 2 : deux fois moins de bonheur qu'avant, et de moins en moins si on enchaîne les câlins — C.k, la lassitude au début du câlin) */
-  if(gain && C.gain < 12){ var g2 = gain * GAIN_K * (C.k === undefined ? 1 : C.k); C.gain += gain; donner(o, z === 'ventre' ? 'jeu' : 'amour', gain * 5); bhPlus(o, g2); t.pts += g2; if(!(C.n++ % 5)) majBarre(V); }
+  if(gain && C.gain < 12){ var g2 = gain * GAIN_K * (C.k === undefined ? 1 : C.k); C.gain += gain; donner(o, z === 'ventre' ? 'jeu' : 'amour', gain * 5); bhPlus(o, g2); if(!(C.n++ % 5)) majBarre(V); }
   /* son envie du moment, c'était des gratouilles : au bout de quatre bonnes secondes, c'est gagné */
-  if(!C.env && C.gain >= 6 && (z === 'tete' || z === 'dos') && envieEst(V, 'caresse')){ C.env = 1; envieFaite(V, o); coeursMaj(V, o); }
+  if(!C.env && C.gain >= 6 && (z === 'tete' || z === 'dos') && envieEst(V, 'caresse')){ C.env = 1; envieFaite(V, o); }
   st.caresseT = apres(V, 400, function(){ caresseTic(V, o); });
 }
 /* on insiste sur la queue : elle s'en va un peu plus loin, et se rassoit en regardant ailleurs (elle n'est pas fâchée pour de vrai) */
@@ -7643,8 +7697,9 @@ function caresseFin(V, o, fuite){
   st.caresse = null; clearTimeout(st.caresseT);
   if(C.outil) outilLache(V, o);
   if(d) ['at-x-tete', 'at-x-dosg', 'at-x-agace', 'at-x-attrape', 'at-x-petrit', 'at-x-mordille', 'at-c-ronron'].forEach(function(c){ d.classList.remove(c); });
-  if(C.gain >= 3){ noterSoin(V, o, 'caresse'); lasser(V, 'caresse'); }
+  if(C.gain >= 3) lasser(V, 'caresse');
   majBarre(V); changer(V);
+  peutEtreCadeau(V);      /* (les câlins aussi peuvent finir de remplir sa barre) */
   if(st.pose === 'dort'){ chatPlanifier(V, o, Math.max(1000, st.dortJusqua - Date.now())); return; }
   if(fuite) return;
   if(st.pose === 'dos' && !V.bain) apres(V, 1100, function(){ var s2 = chatEtat(V, o); if(s2.pose === 'dos' && !s2.caresse && !s2.tenu){ chatPose(V, o, 'assis'); sonMimi(V, 'roule'); } });
@@ -7850,6 +7905,7 @@ function chatLitiere(V, o){
   return true;
 }
 function chatGriffoir(V, o, g){
+  var seule = !g;      /* (elle y va d'elle-même : ce n'est pas nous qui lui offrons — ça ne peut pas être « pile son envie ») */
   g = g || ici(V).filter(function(x){ return x.t === 'griffoir' && !x.sur; })[0];
   if(!g) return false;
   var pg = posObj(V, g), y = Math.min(solMax(V), pg.y + 12), droite = pg.x > 600, c = chatSol(V, pg.x + (droite ? 36 : -36) * pg.s, y);
@@ -7859,7 +7915,7 @@ function chatGriffoir(V, o, g){
     st.gauche = droite ? true : false; d.classList.toggle('at-c-gauche', st.gauche);
     chatPose(V, o, 'griffe'); chatPlanifier(V, o, 3600);
     [250, 1050, 1850].forEach(function(t){ apres(V, t, function(){ if(enJeu(V, o, d, 'griffe')){ griffures(V, g, pg.x, pg.y - 70 * pg.s, pg.s); sonMimi(V, 'gratte'); } }); });
-    apres(V, 2600, function(){ if(enJeu(V, o, d, 'griffe')){ chatPose(V, o, 'lave'); soigner(V, o, 'griffoir', 6, 'jeu', 25); } });
+    apres(V, 2600, function(){ if(enJeu(V, o, d, 'griffe')){ chatPose(V, o, 'lave'); soigner(V, o, seule ? 'griffoir:seule' : 'griffoir', 6, 'jeu', 25); } });
   });
   return true;
 }
@@ -8092,8 +8148,10 @@ function jouerHerbe(V, o){
 
 /* Une place du plancher où rien ne cache une chose de demi-largeur l et de hauteur h (en mesures du plancher, à l'échelle de l'endroit) :
    on essaie les places proposées, puis des places libres au hasard ; à défaut, la première. Les petits objets comptent aussi. */
-function placeLibre(V, l, dl, h){
+/* ev : {x, y, r} — pas derrière ça (Mimi, assise là : elle cacherait ce qu'on pose) */
+function placeLibre(V, l, dl, h, ev){
   function cache(x, y){
+    if(ev && Math.abs(x - ev.x) < ev.r && y < ev.y + 30 && y > ev.y - ev.r * 1.3) return true;
     var s = echelleSol(y), bx = [x - dl * s, y - h * s, x + dl * s, y], aire = (bx[2] - bx[0]) * (bx[3] - bx[1]);
     return ici(V).some(function(o){
       if(o.sur || o.t === 'chat' || o.t === 'tapis' || o.cote) return false;
@@ -8138,7 +8196,12 @@ function ouvrirCoffret(V){
   t.coffret = null; V.elCoffret = null;
   if(el){ el.classList.add('ouvert'); el.removeAttribute('data-at'); apres(V, 1500, function(){ el.remove(); }); }
   sonMimi(V, 'ouvre');
-  var m = mimi(V), k = c.c.charAt(0), id = c.c.slice(2), tx, ic, dans = c.g ? 'Dans le grand coffret doré : ' : 'Dans le coffret : ';
+  /* (entre-temps, on a pu l'acheter à la boutique, ou le gagner à un mini-jeu : alors le coffret apporte autre chose) */
+  var code = c.c;
+  if(code !== 'f:' && aDeja(V, code)) code = contenuCoffret(V).c;
+  var m = mimi(V), k = code.charAt(0), id = code.slice(2), tx, ic, dans = c.g ? 'Dans le grand coffret doré : ' : 'Dans le coffret : ', av;
+  /* le coffret est ouvert : son bonheur redescend (Romain : « dès qu'on a la surprise, hop, ça redescend »), et on recommence */
+  chatsTous(V).forEach(function(o){ bonheur(o); o.bh = Math.min(o.bh, BH_APRES); });
   if(k === 'j' && JOUETS[id]){
     if(m.jouets.indexOf(id) < 0) m.jouets.push(id);
     if(m.neufs.indexOf(id) < 0) m.neufs.push(id);
@@ -8148,18 +8211,26 @@ function ouvrirCoffret(V){
     var G = garde(V.etat);
     if(G.a.indexOf(id) < 0){ G.a.push(id); G.neuf.push(id); G.annonce.push(id); }
     ic = '🎀'; tx = dans + articleAcc(id) + ' ! Il attend dans sa garde-robe 🎀, dans sa barre 🐾.';
+  } else if(k === 'n' && NOURS[id]){
+    if(m.nour.indexOf(id) < 0) m.nour.push(id);
+    ic = NOURS[id].ic; tx = dans + NOURS[id].nom.toLowerCase() + ' ! La prochaine fois que tu rempliras sa gamelle, tu pourras choisir.';
+  } else if(k === 's' && SOINS[id]){
+    if(m.soins.indexOf(id) < 0){ m.soins.push(id); m.neufs.push(id); }
+    if(id === 'griffoir'){ av = V.etat.cartons.map(function(q){ return q.id; }); nouveauCarton(V.etat, ['griffoir'], 0); if(!V.salle) dessinerPiece(V, av); }
+    ic = iconeSoin(id); tx = dans + SOINS[id].dit + ' !' + (id === 'griffoir' ? '' : id === 'friandises' ? ' Il l\'attend dans sa barre 🐾.' : ' Elle l\'attend dans sa barre 🐾.');
+    brillerMimi(V);
+  } else if(k === 'c' && BOUTIQUE_MIMI.coins.some(function(x){ return x.t === id; })){
+    var X = BOUTIQUE_MIMI.coins.filter(function(x){ return x.t === id; })[0];
+    if(t.recus.indexOf(code) < 0) t.recus.push(code);
+    av = V.etat.cartons.map(function(q){ return q.id; }); nouveauCarton(V.etat, [id]); dessinerPiece(V, av);
+    ic = X.ic; tx = dans + X.nom.toLowerCase() + ' ! Il arrive dans un carton, au coin de la pièce 📦.';
   } else {
     chatsTous(V).forEach(function(o){ bhPlus(o, 5); });
     ic = '🍬'; tx = 'Des friandises ! Elle en garde une pour toi… ah non, finalement, elle les mange toutes.';
   }
-  if(c.g){
-    /* le grand cadeau est ouvert : les cœurs repartent de zéro, le bonheur redescend (Romain : « dès qu'on a la surprise, hop, ça redescend ») */
-    t.c = coeursPropres(null);
-    chatsTous(V).forEach(function(o){ bonheur(o); o.bh = Math.min(o.bh, BH_APRES); });
-    t.envie = null; t.envieT = t.jeu + 30;
-    tx += ' Et hop : ses cinq cœurs sont à regagner !';
-    apres(V, 250, function(){ sonMimi(V, 'fanfare'); });
-  }
+  /* c'était la dernière chose d'une de ses familles : le conteur le dit (et le parc à chat lui devra un morceau : tama.fam) */
+  var faites = famillesMaj(V, false);
+  if(faites.length){ tx += ' ' + faites.map(function(F){ return F.fin; }).join(' '); apres(V, 250, function(){ sonMimi(V, 'fanfare'); }); }
   if(el){ var r = V.root.getBoundingClientRect(), b = el.getBoundingClientRect(); for(var i = 0; i < (c.g ? 18 : 8); i++) particule(V, {clientX:b.left + b.width / 2, clientY:b.top + b.height * 0.3}, 'at-part-etoile', i % 2 ? '✦' : '✧', c.g ? 1500 : 1100); }
   toast(V, '<b>' + (c.g ? '👑 ' : '🎁 ') + ic + '</b> ' + esc(tx), c.g ? 9000 : 7000, tx);
   majBarre(V); changer(V);
@@ -8167,16 +8238,15 @@ function ouvrirCoffret(V){
 
 /* ---------- La barre de Mimi (🐾, en bas de l'écran) : son bonheur, ses jouets, ses soins, sa boutique, sa garde-robe, son album ----------
    Pas un écran à part (Romain : « j'ai pas envie qu'il y ait d'écran exprès pour Mimi ») : une rangée de boutons par-dessus la pièce.
-   Le petit cœur du bouton 🐾 montre son bonheur en permanence. */
+   Au-dessus du bouton 🐾 : sa jauge de bonheur, toujours sous les yeux (la seule jauge qu'on voit ; le tour du bouton la montre aussi). */
 function majBarre(V, flash){
   var b = V.elMimi, c = chatsTous(V)[0];
   if(!b) return;
-  var n = c ? bonheur(c) : 0, m = mimi(V), h = tama(V).c.h, ce = b.querySelector('.at-mimi-coeurs');
+  var n = c ? bonheur(c) : 0, m = mimi(V), ja = b.querySelector('.at-mimi-jauge b');
   b.style.setProperty('--bh', n);
   b.classList.toggle('plein', !!c && bhPlein(c));
-  /* (étape 2) ses cinq cœurs, au-dessus du bouton : toujours sous les yeux */
-  if(ce){ var cle = h.join(''); if(ce._cle !== cle){ ce._cle = cle; ce.innerHTML = h.map(function(x){ return '<b' + (x ? ' class="on"' : '') + '>♥</b>'; }).join(''); } }
-  b.setAttribute('aria-label', 'Les affaires de Mimi : ' + nbCoeurs(V) + ' cœur' + (nbCoeurs(V) > 1 ? 's' : '') + ' sur 5');
+  if(ja && ja._n !== n){ ja._n = n; ja.style.transform = 'scaleX(' + (n / 100).toFixed(2) + ')'; }
+  b.setAttribute('aria-label', 'Les affaires de Mimi. Son bonheur : ' + n + ' sur 100');
   var nb = m.neufs.length + garde(V.etat).neuf.length, badge = b.querySelector('.at-badge');
   if(badge){ badge.textContent = nb ? '✨' : ''; badge.style.display = nb ? '' : 'none'; }
   b.hidden = !c;
@@ -8188,9 +8258,7 @@ function htmlBarre(V){
   var bt = function(at, ic, txt, neuf, x){ return '<button type="button" class="at-mb-bt' + (x || '') + '" data-mimi="' + at + '"><span class="at-mb-ic" aria-hidden="true">' + ic + '</span><small>' + esc(txt) + '</small>' + (neuf ? '<i class="at-mb-neuf" aria-label="nouveau">✨</i>' : '') + '</button>'; };
   var s = '<div class="at-mb-tete"><span class="at-mb-chat">' + (c ? '<svg viewBox="19 -28 76 78" aria-hidden="true">' + teteChat(CHATS[(c.v || 0) % 3], 57, 18, c.acc || {}) + '</svg>' : '') + '</span>' +
     '<span class="at-mb-jauge"><b>' + esc(nom) + '</b><i class="at-mb-barre' + (c && bhPlein(c) ? ' plein' : '') + '"><b style="width:' + n + '%"></b></i></span>' +
-    /* (étape 2) son envie du moment (on la touche : le conteur la raconte) et ses cinq cœurs (on les touche : la feuille des cœurs) */
-    (function(){ var e = tama(V).envie ? envieInfo(V, tama(V).envie.k) : null; return e ? '<button type="button" class="at-mb-envie" data-mimi="envie" aria-label="Son envie du moment"><span aria-hidden="true">💭</span>' + e.ic + '</button>' : ''; })() +
-    '<button type="button" class="at-mb-coeurs" data-mimi="coeurs" aria-label="Ses cinq cœurs : ' + nbCoeurs(V) + ' sur 5">' + tama(V).c.h.map(function(x){ return '<b' + (x ? ' class="on"' : '') + ' aria-hidden="true">♥</b>'; }).join('') + '</button>' +
+    /* (la jauge seule : ni cœurs ni envie ici — son envie se devine à ce qu'elle fait, puis sa bulle la dit) */
     '<button type="button" class="at-rond at-mb-x" data-mimi="x" aria-label="Fermer">✖</button></div><div class="at-mb-l">';
   s += '<span class="at-mb-g">Jouer</span>' + m.jouets.map(function(id){ return bt('j:' + id, JOUETS[id].ic, JOUETS[id].nom.replace(/^(la |le |l')/, '').replace(/^\w/, function(x){ return x.toUpperCase(); }), m.neufs.indexOf(id) >= 0, ' at-mb-jouet'); }).join('');
   if(m.soins.length) s += '<span class="at-mb-g">Soins</span>' + m.soins.filter(function(id){ return id !== 'griffoir'; }).map(function(id){ return bt('s:' + id, iconeSoin(id), SOINS[id].nom, m.neufs.indexOf(id) >= 0); }).join('');
@@ -8209,8 +8277,6 @@ function fermerBarre(V){ if(V.barreMimi) V.barreMimi.hidden = true; }
 function actionBarre(V, a){
   if(V.mode !== 'ranger' || V.arrete) return;
   if(a === 'x'){ fermerBarre(V); son(V, 'clic'); return; }
-  if(a === 'coeurs'){ fermerBarre(V); ouvrirCoeurs(V); return; }
-  if(a === 'envie'){ var ce = chatsTous(V)[0]; if(ce) bulleEnvie(V, ce); return; }
   if(a.indexOf('j:') === 0){ jouer(V, a.slice(2)); return; }
   if(a === 's:brosse'){ fermerBarre(V); mimi(V).neufs = mimi(V).neufs.filter(function(x){ return x !== 'brosse'; }); prendreBrosse(V); majBarre(V); return; }
   if(a === 's:bain'){ fermerBarre(V); mimi(V).neufs = mimi(V).neufs.filter(function(x){ return x !== 'bain'; }); demarrerBain(V); majBarre(V); return; }
@@ -8219,30 +8285,6 @@ function actionBarre(V, a){
   if(a === 'garde'){ fermerBarre(V); var c = chatsTous(V)[0]; if(c) ouvrirGarde(V, c.id); return; }
   if(a === 'shop'){ fermerBarre(V); ouvrirBoutique(V); return; }
   if(a === 'album'){ ouvrirAlbum(V); return; }
-}
-
-/* ---------- (étape 2) La feuille « Les cinq cœurs » : l'objectif, en images (Romain : « si on n'a pas d'objectif… ») ----------
-   Un cœur par ligne : son nom, ses conditions (une image, deux ou trois mots, ✔ quand c'est fait), et le conteur qui le raconte (🔊). */
-function ouvrirCoeurs(V){ ouvrirCalque(V, 'at-cal-coeurs', htmlCoeurs(V)); son(V, 'page'); }
-function htmlCoeurs(V){
-  var c = chatsTous(V)[0], nom = c ? nomChat(c) : PORTEE.mere, t = tama(V), n = nbCoeurs(V), bh = c ? bonheur(c) : 0;
-  var intro = 'Cinq cœurs, et son bonheur tout en haut : ce jour-là, ' + nom + ' file chercher un cadeau pas comme les autres. Ensuite, tout recommence !';
-  var corps = '<p class="at-feuille-txt at-co-intro"><span>' + esc(intro) + '</span>' + lireBtn(intro) + '</p>';
-  corps += '<div class="at-co-jauges"><span class="at-co-j"><b aria-hidden="true">😺</b><i class="at-mb-barre' + (c && bhPlein(c) ? ' plein' : '') + '"><b style="width:' + bh + '%"></b></i><small>Bonheur</small></span>' +
-    '<span class="at-co-j at-co-j2"><i class="at-co-rang" aria-hidden="true">' + t.c.h.map(function(x){ return '<b' + (x ? ' class="on"' : '') + '>♥</b>'; }).join('') + '</i><small>' + n + ' sur 5</small></span></div>';
-  corps += '<div class="at-co-l">' + COEURS.map(function(C, i){
-    var fait = !!t.c.h[i];
-    var chips = C.l.map(function(x){
-      var ok = fait || condCoeur(V, x[0]);
-      return '<span class="at-co-c' + (ok ? ' ok' : '') + '"><span class="at-co-ic" aria-hidden="true">' + (x[1] === 'brosse' ? iconeSoin('brosse') : x[1]) + '</span><small>' + esc(x[2]) + '</small><i aria-hidden="true">' + (ok ? '✔' : '') + '</i></span>';
-    }).join('');
-    /* (la brosse ou le bain pas encore arrivés : le conteur le dit, pour qu'on ne les cherche pas) */
-    var dit = C.dit, manque = i === 2 && !fait ? ['brosse', 'bain'].filter(function(id){ return !soinA(V, id); }) : [];
-    if(manque.length) dit += manque.length > 1 ? ' La brosse et le bain ne sont pas encore arrivés : varie les soins, ils viendront.' : (manque[0] === 'bain' ? ' Le bain n\'est pas encore arrivé' : ' La brosse n\'est pas encore arrivée') + ' : varie les soins, ' + (manque[0] === 'bain' ? 'il' : 'elle') + ' viendra.';
-    return '<div class="at-co-ligne' + (fait ? ' fait' : '') + '"><b class="at-co-coeur" aria-hidden="true">♥</b><div class="at-co-quoi"><b>' + esc(C.nom) + '</b><div class="at-co-chips">' + chips + '</div>' +
-      (manque.length ? '<small class="at-co-manque">🔒 ' + (manque.length > 1 ? 'Pas encore arrivés' : 'Pas encore là') + '</small>' : '') + '</div>' + lireBtn(dit) + '</div>';
-  }).join('') + '</div>';
-  return feuille('at-f-coeurs', '<span class="at-f-ic">💖</span><h3>Les cinq cœurs de ' + esc(nom) + '</h3>', corps);
 }
 
 /* ---------- La boutique de Mimi : le confort, payé en pièces d'or (le moteur donne la bourse : opts.bourse) ---------- */
@@ -8281,6 +8323,7 @@ function acheter(V, ach){
   V.grim.innerHTML = htmlBoutique(V);
   toast(V, '<b>🛒 ✨</b> ' + esc(t), 5000, t);
   majBarre(V); changer(V);
+  apres(V, 1200, function(){ famillesMaj(V, true); });      /* (un achat peut compléter une de ses familles) */
 }
 
 /* ==========================================================

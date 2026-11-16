@@ -1,13 +1,13 @@
 """Mimi, le Tamagotchi refait le 16 novembre (Bible §12.65) et son pantin articulé (§12.66), dans le vrai jeu, au doigt (Playwright).
 - le pantin : ses morceaux (cuisse, mollet, pied…), ses poses où il glisse, sa toilette, ses yeux qui suivent le doigt, un bond en plusieurs temps, ses jeux ;
-- le bouton 🐾 et le cœur de son bonheur ;
+- le bouton 🐾 et, au-dessus, sa jauge de bonheur (la seule jauge qu'on voit) ;
 - un petit toucher : une réaction tout de suite, au hasard, jamais deux fois la même de suite ; elle ne se soulève plus ;
 - le doigt posé : la tête (frotte, ronronne, puis pétrit), le ventre (sur le dos, elle attrape), la queue (« Pas la queue ! », elle s'en va) ;
 - les planchers : son bonheur ne descend jamais sous 8, ses besoins sous 25 ; une vieille sauvegarde repart de 30 au plus ;
-- l'étape 2 (§12.67) : la lassitude, les cinq cœurs un par un, la sieste dans le panier, l'envie (la bulle dorée), le grand cadeau et le coffret doré ;
+- la jauge seule (§12.69) : la lassitude ; les cinq familles cachées et ce que les coffrets apportent ; l'envie cachée une minute, son manège, puis sa bulle dorée ; « Pile poil ! » ; la barre pleine : un coffret, autant de fois qu'on la remplit ; le coffret doré d'une famille complète ;
 - la boutique (des pièces d'or) : la pâtée, puis la gamelle qui demande quoi servir ; un habit ;
-- la variété : cinq soins différents → la brosse ; la brosse au doigt ; le bain ; les friandises ; l'appareil photo et l'album ;
-- le coffret : elle sort par la chatière, revient, le pose ; on l'ouvre : un jouet ; les sept jouets, chacun joué ;
+- les objets de soin viennent des coffrets : la brosse ; la brosse au doigt ; le bain ; les friandises ; l'appareil photo et l'album ;
+- le coffret : elle sort par la chatière, revient, le pose ; on l'ouvre : une chose de plus, et son bonheur redescend ; les sept jouets, chacun joué ;
 - la litière : sale, un toucher la nettoie ;
 - aucun message d'erreur.
    BRUMEVAL_DIST=<dossier construit> python3 tools/mimi.py [iphone]"""
@@ -206,8 +206,8 @@ with sync_playwright() as p:
     verifier(pg.evaluate(f"() => document.querySelector('#atelier-ici [data-obj=\"{cid}\"]').className.indexOf('at-c-triste') < 0"), 'elle n\'est jamais triste')
     vieux = pg.evaluate("() => { var e = Atelier.etatNeuf(); var c = {id:'o99', t:'chat', x:600, y:700, v:0, b:{faim:60, soif:80, amour:40, jeu:20, dodo:100}}; e.objets.push(c); Atelier.normaliser(e); return {bh:c.bh, b:c.b, mimi:e.mimi}; }")
     verifier(vieux['bh'] == 30 and 'dodo' not in vieux['b'] and vieux['b']['propre'] == 80 and vieux['mimi']['jouets'] == ['pelote'], f'une vieille sauvegarde : son bonheur repart de 30 au plus ({vieux["bh"]}), la pelote')
-    neuf = pg.evaluate("() => { var e = Atelier.etatNeuf(); var c = {id:'o98', t:'chat', x:600, y:700, v:0}; e.objets.push(c); Atelier.normaliser(e); return {bh:c.bh, c:e.tama.c, v:e.tama.v}; }")
-    verifier(neuf['bh'] == 15 and neuf['c']['h'] == [0, 0, 0, 0, 0] and neuf['v'] == 2, f'un chat tout neuf : un bonheur de 15, aucun cœur ({neuf})')
+    neuf = pg.evaluate("() => { var e = Atelier.etatNeuf(); var c = {id:'o98', t:'chat', x:600, y:700, v:0}; e.objets.push(c); Atelier.normaliser(e); return {bh:c.bh, c:e.tama.c === undefined, fam:e.tama.fam, v:e.tama.v, soins:e.mimi.soins}; }")
+    verifier(neuf['bh'] == 15 and neuf['c'] and neuf['fam'] == {} and neuf['v'] == 3 and neuf['soins'] == ['photo'], f'un chat tout neuf : un bonheur de 15, plus de cœurs, aucune famille complète, l\'appareil photo ({neuf})')
     # --- la boutique : la pâtée ; la gamelle demande quoi servir ---
     pg.evaluate("() => { M.S.or = 20; M.sauver(); }")
     calme(pg, cid)
@@ -242,13 +242,20 @@ with sync_playwright() as p:
     shot(pg, 'gamelle')
     if nb: pg.locator('#atelier-ici [data-bulle="nour:pate"]').click(); pg.wait_for_timeout(400)
     verifier(pg.evaluate(f"() => {{ var g = M.S.atelier.objets.filter(function(o){{ return o.id === '{gid}'; }})[0]; return g.plein && g.nour; }}") == 'pate', 'la pâtée est dans la gamelle')
-    # --- la variété : cinq soins différents → la brosse ---
-    pg.evaluate("() => { var a = Atelier._vue(); a._soigner('eau', 5, 'soif'); a._soigner('repas', 6, 'faim'); a._soigner('caresse', 4, 'amour'); a._soigner('jouet', 10, 'jeu'); a._soigner('eau', 5, 'soif'); }")
-    pg.wait_for_timeout(2400)
+    # --- les objets de soin viennent des coffrets (plus de jauge cachée de la variété) : celui-ci apporte la brosse ---
     m = mimi(pg)
-    verifier('brosse' in m['mimi']['soins'], f'cinq soins différents : un nouvel objet de soin arrive, la brosse ({m["mimi"]["soins"]})')
-    pg.evaluate("() => { var a = Atelier._vue(); a._soigner('eau', 5, 'soif'); a._soigner('eau', 5, 'soif'); a._soigner('eau', 5, 'soif'); }")
-    verifier(mimi(pg)['tama']['varie'] <= 20, 'toujours le même soin : la variété ne monte pas')
+    verifier('brosse' not in m['mimi']['soins'] and 'varie' not in m['tama'] and 'pts' not in m['tama'], f'pas encore de brosse ; la jauge cachée de la variété n\'existe plus ({m["mimi"]["soins"]})')
+    calme(pg, cid)
+    ok = pg.evaluate(f"() => Atelier._vue()._cadeau('{cid}', 's:brosse')")
+    t0 = time.time()
+    while time.time() - t0 < 34 and not mimi(pg)['tama'].get('coffret'): pg.wait_for_timeout(500)
+    pg.wait_for_timeout(600)
+    pg.evaluate("() => { var c = M.S.atelier.tama.coffret; if(c) Atelier._vue()._voir(c.x, c.y); }"); pg.wait_for_timeout(500)
+    cq = pg.evaluate("() => { var e = document.querySelector('#atelier-ici .at-coffret svg'); if(!e) return null; var r = e.getBoundingClientRect(); return {x:r.left + r.width / 2, y:r.top + r.height * .6}; }")
+    if cq: tap(pg, cq['x'], cq['y']); pg.wait_for_timeout(700)
+    m = mimi(pg)
+    verifier(ok and 'brosse' in m['mimi']['soins'] and 'brosse' in toast(pg), f'un coffret apporte la brosse ({m["mimi"]["soins"]} ; {toast(pg)[:70]})')
+    shot(pg, 'coffret-brosse')
     # --- la brosse, au doigt ---
     a = sur_chat(pg, cid, 'h')
     ouvrir_barre(pg)
@@ -277,13 +284,18 @@ with sync_playwright() as p:
     verifier(vu is not None and vu['op'] == '1' and vu['vis'] == 'visible', f'et on la voit de nouveau (elle ne reste pas invisible après sa sortie) ({vu})')
     pg.evaluate("() => { var c = M.S.atelier.tama.coffret; if(c) Atelier._vue()._voir(c.x, c.y); }"); pg.wait_for_timeout(500)
     shot(pg, 'coffret')
-    j0 = len(m['mimi']['jouets'])
+    COMPTE = "() => { var e = M.S.atelier; return e.mimi.jouets.length + e.mimi.nour.length + e.mimi.soins.length + e.garde.a.length + e.tama.recus.length; }"
+    j0 = pg.evaluate(COMPTE)
     cq = pg.evaluate("() => { var r = document.querySelector('#atelier-ici .at-coffret svg').getBoundingClientRect(); var x = r.left + r.width / 2, y = r.top + r.height * .6, e = document.elementFromPoint(x, y); return {x:x, y:y, sur:!!(e && e.closest('.at-coffret'))}; }")
     verifier(cq['sur'], 'le coffret se voit et se touche (rien devant)')
     tap(pg, cq['x'], cq['y']); pg.wait_for_timeout(700)
     m = mimi(pg)
-    verifier(len(m['mimi']['jouets']) == j0 + 1 and not m['tama'].get('coffret'), f'on l\'ouvre : un nouveau jouet ({m["mimi"]["jouets"]})')
-    verifier(pg.evaluate("() => Atelier._vue()._peutSortir(Atelier._vue()._mimi && (M.S.atelier.objets.filter(function(o){ return o.t === 'chat'; })[0].id))") is False, 'pas un deuxième coffret dans le même moment')
+    verifier(pg.evaluate(COMPTE) == j0 + 1 and not m['tama'].get('coffret'), f'on l\'ouvre : une chose de plus pour elle ({toast(pg)[:70]})')
+    verifier(m['bh'] == 30, f'et son bonheur redescend à 30 ({m["bh"]})')
+    verifier(pg.evaluate(f"() => Atelier._vue()._peutSortir('{cid}')") is False, 'sa barre n\'est plus pleine : elle ne repart pas')
+    calme(pg, cid)
+    verifier(pg.evaluate(f"() => {{ var a = Atelier._vue(); a._cadeauPret(); return a._peutSortir('{cid}'); }}") is True, 'sa barre de nouveau pleine, dans le même moment : elle peut repartir (pas de limite)')
+    pg.evaluate("() => { M.S.atelier.objets.filter(function(x){ return x.t === 'chat'; })[0].bh = 30; }")
     # --- les sept jouets ---
     pg.evaluate("() => { M.S.atelier.mimi.jouets = ['pelote','plume','laser','souris','grelot','carton','herbe']; }")
     for j in ['plume', 'laser', 'souris', 'grelot', 'carton', 'herbe', 'pelote']:
@@ -331,7 +343,7 @@ with sync_playwright() as p:
     calme(pg, cid)
     ouvrir_barre(pg)
     pg.locator('#atelier-ici [data-mimi="s:friandises"]').click(); pg.wait_for_timeout(3600)
-    verifier('friandises' in mimi(pg)['tama']['derniers'], 'les friandises : elle donne la patte, puis croque')
+    verifier('friandises' in mimi(pg)['tama']['las'], 'les friandises : elle donne la patte, puis croque')
     ouvrir_barre(pg)
     pg.locator('#atelier-ici [data-mimi="s:friandises"]').click(); pg.wait_for_timeout(300)
     verifier('ventre' in toast(pg), 'pas deux fois de suite : « gare au petit ventre tout rond »')
@@ -352,121 +364,179 @@ with sync_playwright() as p:
         shot(pg, 'litiere-sale')
         pg.locator(f'#atelier-ici [data-obj="{lid}"]').click(force=True); pg.wait_for_timeout(1200)
         verifier(not pg.evaluate(f"() => M.S.atelier.objets.filter(function(o){{ return o.id === '{lid}'; }})[0].sale"), 'la litière sale : un toucher, la pelle passe')
-    # ============ ÉTAPE 2 (§12.67) : les deux jauges, les cinq cœurs, les envies, le grand cadeau ============
+    # ============ LA JAUGE SEULE (§12.69) : la barre de bonheur, les familles et les envies cachées, le coffret quand la barre est pleine ============
     CHAT = "M.S.atelier.objets.filter(function(x){ return x.t === 'chat'; })[0]"
+    HABITS = ['collier_rouge', 'collier_bleu', 'collier_vert', 'clochette', 'noeud_pap_violet', 'noeud_pap_jaune', 'foulard', 'noeud_rose', 'noeud_bleu', 'sorciere', 'beret', 'fete', 'fleurs', 'perles', 'arc', 'couronne', 'mage']
     pg.evaluate("() => { var g = document.querySelector('#atelier-ici .at-grim .at-fermer'); if(g) g.click(); }"); pg.wait_for_timeout(300)
     calme(pg, cid); voir_chat(pg, cid)
     pg.evaluate(f"""() => {{ var a = {V}, t = M.S.atelier.tama, o = {CHAT};
-      t.c = {{m:0, b:0, br:0, ba:0, fe:0, dd:0, env:0, j:[], h:[0, 0, 0, 0, 0]}}; t.las = {{}}; t.envie = null; t.envieT = 1e9; t.coffret = null; t.dehors = null; t.pts = 0;
+      t.las = {{}}; t.envie = null; t.envieT = 1e9; t.coffret = null; t.dehors = null; t.fam = {{}};
       o.bh = 15; Object.keys(o.b).forEach(function(k){{ o.b[k] = 100; }}); a._envie(null); }}""")
+    pg.wait_for_timeout(900)
+    # --- à l'écran : la jauge de bonheur, et rien d'autre (ni cœurs, ni liste, ni envie) ---
+    j = pg.evaluate("""() => { var b = document.querySelector('#atelier-ici .at-mimi-bt'), ja = b && b.querySelector('.at-mimi-jauge'); if(!ja) return null;
+      var r = ja.getBoundingClientRect(), f = ja.querySelector('b').getBoundingClientRect(), bt = b.getBoundingClientRect();
+      return {l:Math.round(r.width), h:Math.round(r.height), rempli:Math.round(f.width / (r.width * ja.clientWidth / ja.offsetWidth) * 100), dessus:r.bottom <= bt.top + 2, dedans:r.top >= 0 && r.left >= 0 && r.right <= innerWidth,
+        coeurs:document.querySelectorAll('#atelier-ici .at-mimi-coeurs, #atelier-ici .at-mb-coeurs, #atelier-ici .at-co-ligne').length}; }""")
+    verifier(j is not None and j['l'] >= 60 and j['h'] >= 12 and j['dessus'] and j['dedans'] and 11 <= j['rempli'] <= 19, f'au-dessus du bouton 🐾 : sa jauge de bonheur, toujours là, remplie à 15 sur 100 ({j})')
+    verifier(j is not None and j['coeurs'] == 0, 'plus aucun cœur à l\'écran')
+    shot(pg, 'jauge')
+    ouvrir_barre(pg)
+    nb = pg.locator('#atelier-ici [data-mimi=coeurs], #atelier-ici [data-mimi=envie]').count()
+    verifier(nb == 0 and pg.locator('#atelier-ici .at-mb-barre').count() == 1 and pg.locator('#atelier-ici [data-mimi="s:photo"]').count() == 1, 'dans sa barre : son bonheur, ses affaires, l\'appareil photo ; ni cœurs ni envie')
+    shot(pg, 'barre')
+    pg.locator('#atelier-ici [data-mimi=x]').click(); pg.wait_for_timeout(300)
     # --- la lassitude : refaire la même chose rapporte de moins en moins ; ça s'oublie avec le temps de jeu ---
     r = pg.evaluate(f"""() => {{ var a = {V}, o = {CHAT}, l = []; for(var i = 0; i < 4; i++){{ var b0 = o.bh; a._soigner('griffoir', 10, 'jeu'); l.push(Math.round((o.bh - b0) * 100) / 100); }} return l; }}""")
     verifier(r == [5, 2.5, 1.25, 0.5], f'le même soin quatre fois de suite : de moins en moins de bonheur ({r})')
     r = pg.evaluate(f"""() => {{ var a = {V}; for(var i = 0; i < 10; i++) a._tama(15); return a._lasse('griffoir'); }}""")
     verifier(abs(r - 0.25) < 0.02, f'deux minutes et demie de jeu plus tard : un cran de lassitude oublié ({r})')
-    pg.evaluate(f"""() => {{ var o = {CHAT}; M.S.atelier.tama.las = {{}}; o.bh = 15; Object.keys(o.b).forEach(function(k){{ o.b[k] = 100; }}); M.S.atelier.objets.forEach(function(x){{ if(x.t === 'litiere') delete x.sale; }}); }}""")
-    # --- les cœurs, un par un ---
-    e = pg.evaluate(f"() => {{ var a = {V}; a._soigner('repas:croquettes', 6, 'faim'); return a._coeurs(); }}")
-    verifier(e['h'] == [0, 0, 0, 0, 0], 'elle a mangé, mais pas encore bu : pas de cœur')
-    e = pg.evaluate(f"() => {{ var a = {V}; a._soigner('eau', 5, 'soif'); return a._coeurs(); }}")
-    verifier(e['h'] == [1, 0, 0, 0, 0], f'mangé, bu, la litière propre : le premier cœur ({e["h"]})')
-    t0 = time.time()
-    while time.time() - t0 < 9 and 'cœur' not in toast(pg): pg.wait_for_timeout(300)      # (il attend son tour si un autre message est à l'écran)
-    verifier('cœur' in toast(pg), f'le conteur l\'annonce ({toast(pg)[:60]})')
-    nb = pg.evaluate("() => document.querySelectorAll('#atelier-ici .at-mimi-coeurs b.on').length")
-    verifier(nb == 1, f'le bouton 🐾 montre un cœur sur cinq ({nb})')
-    shot(pg, 'un-coeur')
-    e = pg.evaluate(f"() => {{ var a = {V}; a._soigner('jouet:pelote', 10, 'jeu'); a._soigner('jouet:pelote', 10, 'jeu'); return a._coeurs(); }}")
-    verifier(e['h'][1] == 0, 'deux fois la pelote : pas de deuxième cœur')
-    e = pg.evaluate(f"() => {{ var a = {V}; a._soigner('jouet:plume', 10, 'jeu'); return a._coeurs(); }}")
-    verifier(e['h'][1] == 1, 'un autre jouet : le deuxième cœur')
-    e = pg.evaluate(f"() => {{ var a = {V}; a._soigner('brosse', 10, 'propre'); a._soigner('bain', 14, 'propre'); return a._coeurs(); }}")
-    verifier(e['h'][2] == 1, 'brossée et baignée : le troisième cœur')
-    e = pg.evaluate(f"() => {{ var a = {V}; a._soigner('repas:pate', 10, 'faim'); return a._coeurs(); }}")
-    verifier(e['c']['fe'] == 1 and e['h'][3] == 0, 'un bon plat : la moitié du quatrième cœur')
+    pg.evaluate(f"""() => {{ var o = {CHAT}; M.S.atelier.tama.las = {{}}; o.bh = 15; Object.keys(o.b).forEach(function(k){{ o.b[k] = 100; }}); }}""")
+    # --- ses cinq familles (cachées) : tout ce qui existe est dans une famille, une seule ; ce que les coffrets apportent ---
+    f = pg.evaluate(f"""() => {{ var e = M.S.atelier, g = JSON.stringify([e.mimi.jouets, e.mimi.nour, e.mimi.soins, e.garde.a, e.tama.recus]);
+      e.mimi.jouets = ['pelote']; e.mimi.nour = ['croquettes']; e.mimi.soins = ['photo']; e.garde.a = []; e.tama.recus = [];
+      var coussins = e.objets.filter(function(o){{ return o.t === 'coussin'; }}).length + e.cartons.filter(function(k){{ return (k.reste || []).indexOf('coussin') >= 0; }}).length;
+      var r = {V}._familles().reste, v = JSON.parse(g);
+      e.mimi.jouets = v[0]; e.mimi.nour = v[1]; e.mimi.soins = v[2]; e.garde.a = v[3]; e.tama.recus = v[4];
+      return {{reste:r, coussins:coussins}}; }}""")
+    tout = [c for k in f['reste'] for c in f['reste'][k]]
+    attendu = ['j:' + x for x in ['plume', 'laser', 'souris', 'grelot', 'carton', 'herbe']] + ['n:' + x for x in ['pate', 'poisson', 'festin']] + ['s:' + x for x in ['brosse', 'bain', 'friandises', 'griffoir']] + ['a:' + x for x in HABITS] + ([] if f['coussins'] else ['c:coussin'])
+    verifier(sorted(f['reste'].keys()) == ['belle', 'envies', 'recre', 'reine', 'ventre'] and sorted(tout) == sorted(attendu) and len(set(tout)) == len(tout),
+        f'cinq familles ; chaque jouet, plat, objet de soin et habit est dans une famille, une seule ({ {k: len(v) for k, v in f["reste"].items()} })')
+    f = pg.evaluate(f"() => {V}._familles()")
+    l = pg.evaluate(f"() => {{ var a = {V}, l = []; for(var i = 0; i < 60; i++) l.push(a._contenu()); return l; }}")
+    reste = [c for k in f['reste'] for c in f['reste'][k]]
+    verifier(all(x['c'] in reste for x in l) and len(set(x['c'] for x in l)) >= 6, f'dans un coffret : toujours une chose qu\'elle n\'a pas, tirée dans ses familles ({sorted(set(x["c"] for x in l))[:8]}…)')
+    o = pg.evaluate(f"""() => {{ var e = M.S.atelier, a = {V}, g = e.mimi.soins, r = [];
+      [['photo'], ['brosse', 'photo'], ['brosse', 'bain', 'photo']].forEach(function(l){{ e.mimi.soins = l; var vus = {{}}; for(var i = 0; i < 80; i++){{ var c = a._contenu().c; if(a._familles().reste.belle.indexOf(c) >= 0) vus[c] = 1; }} r.push(Object.keys(vus)); }});
+      e.mimi.soins = g; return r; }}""")
+    verifier(o[0] == ['s:brosse'] and o[1] == ['s:bain'] and len(o[2]) > 1 and all(x[:2] == 'a:' for x in o[2]), f'« toute belle » : d\'abord la brosse, puis le bain, puis ses habits au hasard ({o[0]}, {o[1]}, {len(o[2])} habits)')
+    # --- les envies : d'abord cachée (ni bulle, ni rien dans sa barre) ; on la devine à ce qu'elle fait ---
+    l = pg.evaluate(f"() => {V}._enviesPossibles()")
+    verifier('caresse' in l and 'jouet:pelote' in l and 'dodo' in l and 'bain' in l, f'ce dont elle peut avoir envie ({l})')
+    BULLE = f"() => {{ var b = document.querySelector('#atelier-ici [data-obj=\"{cid}\"] .at-bulle'); return b && !b.hidden ? {{k:b.getAttribute('data-bulle'), envie:b.classList.contains('at-envie'), ic:b.textContent}} : null; }}"
+    calme(pg, cid); voir_chat(pg, cid)
+    e = pg.evaluate(f"() => {V}._envie('jouet:laser')"); pg.wait_for_timeout(300)
+    verifier(e == {'k': 'jouet:laser', 'd': False, 'f': 'recre'} and pg.evaluate(BULLE) is None, f'une envie toute neuve : elle ne la dit pas (pas de bulle) ({e})')
+    # (son manège, famille par famille)
+    lieux = pg.evaluate("() => { var a = Atelier._vue(), r = {}; M.S.atelier.objets.forEach(function(o){ if(['gamelle', 'eau', 'litiere', 'distributeur', 'panier', 'coussin', 'pouf', 'arbre_chat', 'griffoir', 'lit'].indexOf(o.t) >= 0){ var p = a._pos(o.id); (r[o.t] = r[o.t] || []).push([p.x, p.y]); } }); return r; }")
+    def pres_de(types, d=150):
+        c = chat(pg, cid)['pos'] or {}
+        return any(abs(c.get('x', 1e9) - x) < d and abs(c.get('y', 1e9) - y) < 90 for t in types for (x, y) in lieux.get(t, []))
+    def manege(k, fam, attente=6.5, quoi=None):
+        calme(pg, cid); voir_chat(pg, cid)
+        pg.evaluate(f"() => {{ {V}._envie('{k}'); }}")
+        s = pg.evaluate(f"() => {V}._envieSigne('{cid}')")
+        t0 = time.time(); ok = False
+        while time.time() - t0 < attente and not ok:
+            pg.wait_for_timeout(300); ok = quoi() if quoi else True
+        voir_chat(pg, cid); pg.wait_for_timeout(350); shot(pg, 'signe-' + fam)
+        verifier(s == fam and ok and pg.evaluate(BULLE) is None, f'envie « {k} » : son manège montre « {fam} », sans bulle ({s}, {chat(pg, cid)["pose"]})')
+    manege('repas:croquettes', 'ventre', quoi=lambda: not chat(pg, cid)['anim'] and pres_de(['gamelle', 'eau', 'litiere', 'distributeur']))
+    manege('brosse', 'belle', quoi=lambda: chat(pg, cid)['pose'] == 'lave')
+    g = pantin(pg, cid)
+    verifier(g and 'toilette' in g['gestes'], f'toute belle : elle fait sa toilette ({g["gestes"] if g else None})')
+    manege('dodo', 'reine', quoi=lambda: not chat(pg, cid)['anim'] and pres_de(['panier', 'coussin', 'pouf', 'arbre_chat', 'griffoir', 'lit']) and not chat(pg, cid)['dort'])
+    manege('caresse', 'calin', quoi=lambda: not chat(pg, cid)['anim'])
+    manege('jouet:laser', 'recre', attente=1.2)
+    # (une minute de jeu sans qu'on trouve : sa bulle dorée le dit)
+    calme(pg, cid); voir_chat(pg, cid)
+    e = pg.evaluate(f"() => {{ var a = {V}; a._envie('jouet:laser'); for(var i = 0; i < 3; i++) a._tama(15); return a._envie(); }}")
+    verifier(e['d'] is False and pg.evaluate(BULLE) is None, 'quarante-cinq secondes : toujours rien')
+    e = pg.evaluate(f"() => {{ var a = {V}; a._tama(15); return a._envie(); }}"); pg.wait_for_timeout(300)
+    bu = pg.evaluate(BULLE)
+    verifier(e['d'] is True and bu is not None and bu['k'] == 'envie' and bu['envie'] and '🔴' in bu['ic'], f'une minute : sa bulle dorée la dit ({bu})')
+    shot(pg, 'envie')
+    pg.evaluate(f"() => {{ var b = document.querySelector('#atelier-ici [data-obj=\"{cid}\"] .at-bulle'); if(b) b.click(); }}"); pg.wait_for_timeout(400)
+    verifier('point rouge' in toast(pg), f'on touche la bulle : le conteur raconte son envie ({toast(pg)[:70]})')
+    # (pile poil : devinée, elle rapporte plus que dite)
+    r = pg.evaluate(f"""() => {{ var a = {V}, o = {CHAT}; M.S.atelier.tama.las = {{}}; o.bh = 20; a._envie('jouet:laser');
+      var b0 = o.bh; a._soigner('jouet:grelot', 10, 'jeu'); var b1 = o.bh, e1 = a._envie(); a._soigner('jouet:laser', 10, 'jeu'); var b2 = o.bh, e2 = a._envie();
+      var fl = [].map.call(document.querySelectorAll('#atelier-ici .at-flotte'), function(x){{ return x.textContent; }}).join('|');
+      M.S.atelier.tama.las = {{}}; a._envie('jouet:plume', true); a._soigner('jouet:plume', 10, 'jeu');
+      return {{autre:Math.round((b1 - b0) * 100) / 100, devinee:Math.round((b2 - b1) * 100) / 100, dite:Math.round((o.bh - b2) * 100) / 100, reste:e1 && e1.k, apres:e2, fl:fl, fin:a._envie()}}; }}""")
+    verifier(r['reste'] == 'jouet:laser' and r['autre'] == 5 and r['apres'] is None and r['fin'] is None, f'un autre jouet de la même famille : elle est contente, sans plus, et l\'envie reste ; le bon : elle est exaucée ({r})')
+    verifier(r['devinee'] == 21 and r['dite'] == 15, f'devinée avant qu\'elle le dise : 16 de bonheur en plus ; après sa bulle : 10 ({r["devinee"]}, {r["dite"]})')
+    verifier('Pile poil' in r['fl'] and 'Pile ça' not in r['fl'], f'« Pile poil ! » ({r["fl"]})')
+    pg.wait_for_timeout(500); shot(pg, 'pile-poil')
+    # (ce qu'elle fait d'elle-même ne compte pas : il faut que ce soit nous)
+    r = pg.evaluate(f"""() => {{ var a = {V}; M.S.atelier.tama.las = {{}}; a._envie('griffoir'); a._soigner('griffoir:seule', 6, 'jeu'); var e1 = a._envie(); a._soigner('griffoir', 6, 'jeu'); return {{seule:e1 && e1.k, nous:a._envie(), las:a._lasse('griffoir')}}; }}""")
+    verifier(r['seule'] == 'griffoir' and r['nous'] is None and r['las'] <= 0.25, f'elle fait ses griffes toute seule : ce n\'est pas « pile poil » ; quand c\'est nous qui l\'y invitons, si ({r})')
+    # (des gratouilles : au bout de quatre bonnes secondes sur la tête)
+    pg.evaluate(f"() => {{ {CHAT}.bh = 20; {V}._envie('caresse'); M.S.atelier.tama.las = {{}}; }}"); pg.wait_for_timeout(300)
+    calme(pg, cid); q = sur_chat(pg, cid, 'tete')
+    lacher = tenir(pg, *q, 5600, bouge=3)
+    lacher(); pg.wait_for_timeout(400)
+    verifier(pg.evaluate(f"() => {V}._envie()") is None, 'son envie de gratouilles : exaucée au bout de quelques secondes')
     # (une sieste douillette : on la porte dans son panier ; elle pétrit, tourne sur elle-même, s'endort)
     pid = pg.evaluate("() => (M.S.atelier.objets.filter(function(o){ return o.t === 'panier'; })[0] || {}).id || null")
     verifier(pid is not None, 'son panier est là')
     if pid:
-        pg.evaluate(f"() => {{ var a = {V}; a._reveil('{cid}'); a._poserSur('{cid}', '{pid}'); var p = a._pos('{pid}'); a._voir(p.x, p.y - 40); }}")
+        pg.evaluate(f"() => {{ var a = {V}; M.S.atelier.tama.las = {{}}; {CHAT}.bh = 20; a._reveil('{cid}'); a._envie('dodo'); a._poserSur('{cid}', '{pid}'); var p = a._pos('{pid}'); a._voir(p.x, p.y - 40); }}")
         pg.wait_for_timeout(900); shot(pg, 'panier-petrit')
-        t0 = time.time(); e = None
-        while time.time() - t0 < 9:
-            pg.wait_for_timeout(500); e = pg.evaluate(f"() => {V}._coeurs()")
-            if e['c']['dd']: break
+        t0 = time.time(); e = 1
+        while time.time() - t0 < 9 and e is not None:
+            pg.wait_for_timeout(500); e = pg.evaluate(f"() => {V}._envie()")
         c = chat(pg, cid)
-        verifier(e['c']['dd'] == 1 and c['dort'], f'portée dans son panier : elle s\'y endort ({round(time.time() - t0, 1)} s)')
-        verifier(e['h'][3] == 1, 'un bon plat et une sieste douillette : le quatrième cœur')
+        verifier(e is None and c['dort'], f'son envie de sieste : portée dans son panier, elle s\'y endort, pile poil ({round(time.time() - t0, 1)} s)')
         shot(pg, 'panier-dort')
-    # --- les envies : la bulle dorée ; pile ce qu'elle voulait ---
+    # --- la barre pleine : elle file chercher un coffret, toute seule ; on l'ouvre : la barre redescend ---
     calme(pg, cid); voir_chat(pg, cid)
-    l = pg.evaluate(f"() => {V}._enviesPossibles()")
-    verifier('caresse' in l and 'jouet:pelote' in l and 'dodo' in l and 'bain' in l, f'ce dont elle peut avoir envie ({l})')
-    pg.evaluate(f"() => {{ {V}._envie('jouet:laser'); }}"); pg.wait_for_timeout(300)
-    bu = pg.evaluate(f"() => {{ var b = document.querySelector('#atelier-ici [data-obj=\"{cid}\"] .at-bulle'); return b && !b.hidden ? {{k:b.getAttribute('data-bulle'), envie:b.classList.contains('at-envie'), ic:b.textContent}} : null; }}")
-    verifier(bu is not None and bu['k'] == 'envie' and bu['envie'] and '🔴' in bu['ic'], f'une envie : une bulle dorée au-dessus d\'elle ({bu})')
-    shot(pg, 'envie')
-    pg.evaluate(f"() => {{ var b = document.querySelector('#atelier-ici [data-obj=\"{cid}\"] .at-bulle'); if(b) b.click(); }}"); pg.wait_for_timeout(400)
-    verifier('point rouge' in toast(pg), f'on touche la bulle : le conteur raconte son envie ({toast(pg)[:70]})')
-    r = pg.evaluate(f"""() => {{ var a = {V}, o = {CHAT}, b0 = o.bh; a._soigner('jouet:grelot', 10, 'jeu'); var b1 = o.bh; var e1 = a._envie(); a._soigner('jouet:laser', 10, 'jeu'); return {{autre:Math.round((b1 - b0) * 100) / 100, pile:Math.round((o.bh - b1) * 100) / 100, reste:e1, apres:a._envie(), env:a._coeurs().c.env}}; }}""")
-    verifier(r['reste'] == 'jouet:laser' and r['autre'] == 5 and r['pile'] == 17 and r['apres'] is None and r['env'] == 1, f'un autre jouet : peu ; pile celui qu\'elle voulait : beaucoup, et l\'envie est exaucée ({r})')
-    pg.wait_for_timeout(500); shot(pg, 'envie-faite')
-    # (des gratouilles : au bout de quatre bonnes secondes sur la tête)
-    pg.evaluate(f"() => {{ {V}._envie('caresse'); M.S.atelier.tama.las = {{}}; }}"); pg.wait_for_timeout(2600)
-    calme(pg, cid); q = sur_chat(pg, cid, 'tete')
-    lacher = tenir(pg, *q, 5600, bouge=3)
-    lacher(); pg.wait_for_timeout(400)
-    e = pg.evaluate(f"() => {V}._coeurs()")
-    verifier(e['c']['env'] == 2 and pg.evaluate(f"() => {V}._envie()") is None, f'son envie de gratouilles : exaucée au bout de quelques secondes ({e["c"]["env"]})')
-    # --- la feuille des cœurs ---
-    ouvrir_barre(pg)
-    verifier(pg.locator('#atelier-ici .at-mb-coeurs b.on').count() == 4, 'la barre de Mimi montre ses quatre cœurs')
-    shot(pg, 'barre-coeurs')
-    pg.locator('#atelier-ici [data-mimi=coeurs]').click(); pg.wait_for_timeout(500)
-    f = pg.evaluate("() => { var F = document.querySelector('#atelier-ici .at-f-coeurs'); if(!F) return null; return {lignes:F.querySelectorAll('.at-co-ligne').length, faits:F.querySelectorAll('.at-co-ligne.fait').length, ok:F.querySelectorAll('.at-co-c.ok').length, lire:F.querySelectorAll('.at-lire').length, large:F.scrollWidth <= F.clientWidth + 1}; }")
-    verifier(f is not None and f['lignes'] == 5 and f['faits'] == 4 and f['ok'] == 11 and f['lire'] == 6 and f['large'], f'la feuille « Les cinq cœurs » : cinq lignes, quatre gagnées, deux envies cochées, un 🔊 par ligne ({f})')
-    shot(pg, 'feuille-coeurs')
-    pg.evaluate("() => { var g = document.querySelector('#atelier-ici .at-grim .at-fermer'); if(g) g.click(); }"); pg.wait_for_timeout(300)
-    # --- le cinquième cœur, puis le bonheur à fond : le grand cadeau ---
-    calme(pg, cid); voir_chat(pg, cid)
-    print('   (son bonheur après tout ça, sans tricher :', pg.evaluate(f"() => {CHAT}.bh"), ')')
-    e = pg.evaluate(f"() => {{ var a = {V}; {CHAT}.bh = 60; a._envie('eau'); a._soigner('eau', 5, 'soif'); return a._coeurs(); }}")
-    verifier(e['h'] == [1, 1, 1, 1, 1] and not e['grand'], f'trois envies : le cinquième cœur ; mais le bonheur n\'est pas à fond ({e["bh"]}) : pas encore de grand cadeau')
-    verifier(pg.evaluate(f"() => {V}._peutSortir('{cid}')") is False, 'cinq cœurs sans le bonheur : elle ne part pas')
+    pg.evaluate(f"() => {{ var a = {V}; M.S.atelier.tama.las = {{}}; {CHAT}.bh = 60; a._envie(null); a._soigner('eau', 5, 'soif'); }}")
+    verifier(pg.evaluate(f"() => {V}._peutSortir('{cid}')") is False, 'sa barre à moitié pleine : elle ne part pas')
     pg.wait_for_timeout(3000)
     verifier(not mimi(pg)['tama'].get('dehors'), 'et elle n\'est pas partie')
-    rares0 = pg.evaluate("() => M.S.atelier.garde.a.slice()")
-    # (le dernier soin qui remplit sa barre : elle part d'elle-même, sans qu'on demande rien)
+    # (toutes ses familles sont complètes, sauf le ventre plein, où il ne manque que le festin : le coffret sera doré)
+    pg.evaluate(f"""() => {{ var e = M.S.atelier, a = {V};
+      e.mimi.jouets = ['pelote', 'plume', 'laser', 'souris', 'grelot', 'carton', 'herbe']; e.mimi.soins = ['brosse', 'bain', 'friandises', 'griffoir', 'photo'];
+      e.mimi.nour = ['croquettes', 'pate', 'poisson']; e.garde.a = {json.dumps(HABITS)}; e.tama.recus = ['c:coussin']; e.tama.fam = {{}}; a._tama(15); }}""")
+    f = pg.evaluate(f"() => {V}._familles()")
+    verifier(f['fam'] == {'recre': 1, 'belle': 1, 'reine': 1, 'envies': 1} and f['reste']['ventre'] == ['n:festin'], f'quatre familles complètes (notées, sans bruit), il ne manque que le festin ({f["fam"]}, {f["reste"]["ventre"]})')
     calme(pg, cid); voir_chat(pg, cid)
-    e = pg.evaluate(f"() => {{ var a = {V}; {CHAT}.bh = 97; a._soigner('jouet:carton', 10, 'jeu'); return a._coeurs(); }}")
-    verifier(e['grand'] is True, f'cinq cœurs et le bonheur à fond : le grand cadeau est prêt ({e["bh"]})')
-    t0 = time.time(); parti = False
+    pg.evaluate(f"() => {{ var a = {V}; M.S.atelier.tama.las = {{}}; M.S.atelier.tama.envie = null; {CHAT}.bh = 97; a._soigner('jouet:carton', 10, 'jeu'); }}")
+    pg.wait_for_timeout(900)
+    plein = pg.evaluate("() => { var b = document.querySelector('#atelier-ici .at-mimi-bt'), ja = b.querySelector('.at-mimi-jauge'), r = ja.getBoundingClientRect(), f = ja.querySelector('b').getBoundingClientRect(); return {plein:b.classList.contains('plein'), rempli:Math.round(f.width / (r.width * ja.clientWidth / ja.offsetWidth) * 100)}; }")
+    verifier(plein['plein'] and plein['rempli'] >= 97, f'sa jauge est pleine, et dorée ({plein})')
+    t0 = time.time(); parti = None
     while time.time() - t0 < 6 and not parti:
-        pg.wait_for_timeout(300); d = mimi(pg)['tama'].get('dehors'); parti = bool(d and d.get('g') == 1)
-    verifier(parti, f'elle fait la folle, puis file chercher le grand cadeau, toute seule ({round(time.time() - t0, 1)} s)')
-    pg.wait_for_timeout(1200); shot(pg, 'grand-cadeau-fete')
+        pg.wait_for_timeout(300); parti = mimi(pg)['tama'].get('dehors')
+    verifier(bool(parti) and parti.get('c') == 'n:festin' and parti.get('g') == 1, f'la barre pleine : elle file chercher un coffret, toute seule ({round(time.time() - t0, 1)} s ; {parti})')
+    verifier('moustaches' in toast(pg), f'le conteur le dit ({toast(pg)[:70]})')
+    pg.wait_for_timeout(700); shot(pg, 'barre-pleine')
     t0 = time.time()
     while time.time() - t0 < 36 and not mimi(pg)['tama'].get('coffret'): pg.wait_for_timeout(500)
     m = mimi(pg)
-    verifier(bool(m['tama'].get('coffret')) and m['tama']['coffret'].get('g') == 1 and pg.locator('#atelier-ici .at-coffret-grand').count() == 1, f'elle revient avec un grand coffret doré ({round(time.time() - t0)} s)')
+    verifier(bool(m['tama'].get('coffret')) and m['tama']['coffret'].get('g') == 1 and pg.locator('#atelier-ici .at-coffret-grand').count() == 1, f'la dernière chose d\'une famille : elle revient avec un grand coffret doré ({round(time.time() - t0)} s)')
     pg.wait_for_timeout(700)
     vu = pg.evaluate(f"""() => {{ var d = document.querySelector('#atelier-ici [data-obj="{cid}"]'); if(!d) return null; var c = getComputedStyle(d); return {{op:c.opacity, vis:c.visibility}}; }}""")
     verifier(vu is not None and vu['op'] == '1' and vu['vis'] == 'visible', f'et on la voit, à côté de son grand coffret (elle ne reste pas invisible) ({vu})')
-    e = pg.evaluate(f"() => {V}._coeurs()")
-    verifier(e['h'] == [1, 1, 1, 1, 1], 'tant qu\'il n\'est pas ouvert, les cinq cœurs restent')
+    verifier(m['bh'] >= 99, f'tant qu\'il n\'est pas ouvert, sa barre reste pleine ({m["bh"]})')
     pg.evaluate("() => { var c = M.S.atelier.tama.coffret; if(c) Atelier._vue()._voir(c.x, c.y); }"); pg.wait_for_timeout(500)
     shot(pg, 'grand-coffret')
     cq = pg.evaluate("() => { var r = document.querySelector('#atelier-ici .at-coffret svg').getBoundingClientRect(); var x = r.left + r.width / 2, y = r.top + r.height * .6, e = document.elementFromPoint(x, y); return {x:x, y:y, sur:!!(e && e.closest('.at-coffret'))}; }")
     verifier(cq['sur'], 'le grand coffret se voit et se touche')
     tap(pg, cq['x'], cq['y']); pg.wait_for_timeout(800)
-    m = mimi(pg); e = pg.evaluate(f"() => {V}._coeurs()")
-    rares = [x for x in pg.evaluate("() => M.S.atelier.garde.a.slice()") if x not in rares0]
-    verifier(not m['tama'].get('coffret') and len(rares) == 1 and rares[0] in ('perles', 'arc', 'couronne', 'mage'), f'on l\'ouvre : un habit rare ({rares})')
-    verifier(e['h'] == [0, 0, 0, 0, 0] and e['c']['env'] == 0 and m['bh'] == 30, f'et hop, tout redescend : plus un cœur, le bonheur à 30 ({e["h"]}, {m["bh"]})')
-    verifier('regagner' in toast(pg), f'le conteur le dit ({toast(pg)[-60:]})')
+    m = mimi(pg); f = pg.evaluate(f"() => {V}._familles()")
+    verifier(not m['tama'].get('coffret') and 'festin' in m['mimi']['nour'] and f['fam'].get('ventre') == 1, f'on l\'ouvre : le festin ; sa famille « le ventre plein » est complète ({f["fam"]})')
+    verifier('garde-manger est complet' in toast(pg), f'le conteur le dit ({toast(pg)[-70:]})')
+    verifier(m['bh'] == 30, f'et hop, son bonheur redescend à 30 ({m["bh"]})')
+    pg.wait_for_timeout(800)
+    vide = pg.evaluate("() => { var b = document.querySelector('#atelier-ici .at-mimi-bt'), ja = b.querySelector('.at-mimi-jauge'), r = ja.getBoundingClientRect(), f = ja.querySelector('b').getBoundingClientRect(); return {plein:b.classList.contains('plein'), rempli:Math.round(f.width / (r.width * ja.clientWidth / ja.offsetWidth) * 100)}; }")
+    verifier(not vide['plein'] and 26 <= vide['rempli'] <= 34, f'sa jauge le montre ({vide})')
     shot(pg, 'grand-ouvert')
-    nb = pg.evaluate("() => document.querySelectorAll('#atelier-ici .at-mimi-coeurs b.on').length")
-    verifier(nb == 0, 'le bouton 🐾 : les cinq cœurs sont vides')
+    # (elle a tout : les coffrets apportent des friandises ; et sa barre de nouveau pleine, elle repart — dans le même moment)
+    verifier(pg.evaluate(f"() => {V}._contenu()") == {'c': 'f:'}, 'elle a tout : dans le prochain coffret, des friandises')
+    calme(pg, cid); voir_chat(pg, cid)
+    pg.evaluate(f"() => {{ var a = {V}; M.S.atelier.tama.las = {{}}; {CHAT}.bh = 97; a._soigner('jouet:plume', 10, 'jeu'); }}")
+    t0 = time.time(); parti = None
+    while time.time() - t0 < 6 and not parti:
+        pg.wait_for_timeout(300); parti = mimi(pg)['tama'].get('dehors')
+    verifier(bool(parti) and not parti.get('g'), f'sa barre de nouveau pleine, dans le même moment : elle repart aussitôt ({round(time.time() - t0, 1)} s ; {parti})')
+    t0 = time.time()
+    while time.time() - t0 < 36 and not mimi(pg)['tama'].get('coffret'): pg.wait_for_timeout(500)
+    verifier(bool(mimi(pg)['tama'].get('coffret')), f'et elle rapporte encore un coffret ({round(time.time() - t0)} s)')
+    nb = pg.evaluate("() => document.querySelectorAll('#atelier-ici .at-mimi-coeurs, #atelier-ici .at-mb-coeurs, #atelier-ici .at-co-ligne, #atelier-ici .at-mb-envie').length")
+    verifier(nb == 0, 'du début à la fin : ni cœurs, ni liste, ni envie affichée')
     verifier(all('Touche' not in t for t in pg.evaluate("() => window.__lus || []")), 'aucun texte lu ne dit « Touche … »')
     b.close()
 print('ERREURS', erreurs)
