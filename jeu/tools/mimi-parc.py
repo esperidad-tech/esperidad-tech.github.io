@@ -82,6 +82,15 @@ with sync_playwright() as p:
     pg.evaluate(f"""() => {{ var d = document.querySelector('#atelier-ici [data-obj="{o['id']}"]'); var r = d.getBoundingClientRect(); var x = r.left + r.width / 2, y = r.top + r.height * .45; ['pointerdown', 'pointerup', 'click'].forEach(function(n){{ d.dispatchEvent(new PointerEvent(n, {{bubbles:true, clientX:x, clientY:y, pointerId:1, isPrimary:true}})); }}); }}""")
     pg.wait_for_timeout(500)
     print('   (la cabane, style :', o['st'], '→', objet(pg, 'cabane_chat')['st'], ')')
+    # (le mode d'essai du jeu : un bouton 🧪 dans sa barre donne tout d'un coup — ici tout est déjà là, il ne casse rien)
+    for i in range(4):
+        if pg.evaluate("() => { var b = document.querySelector('#atelier-ici .at-mimi-barre'); return !!b && !b.hidden; }"): break
+        pg.locator('#atelier-ici .at-mimi-bt').click(force=True); pg.wait_for_timeout(350)
+    nb = pg.locator('#atelier-ici [data-mimi="essai"]').count()
+    if nb: pg.locator('#atelier-ici [data-mimi="essai"]').click(); pg.wait_for_timeout(500)
+    m = pg.evaluate("() => { var e = M.S.atelier; return {j:e.mimi.jouets.length, s:e.mimi.soins.length, a:e.garde.a.length, p:e.mimi.peaux.p.length, fam:Object.keys(e.tama.fam).length}; }")
+    verifier(nb == 1 and m == {'j': 7, 's': 5, 'a': 17, 'p': 4, 'fam': 5} and 'Essai' in toast(pg), f'en mode d\'essai : le bouton 🧪 donne toutes ses affaires ({m})')
+    cartons(pg); pg.wait_for_timeout(600)
     # --- le tunnel : elle le traverse, cachée derrière la toile ---
     calme(pg, cid); o = objet(pg, 'tunnel_chat'); voir(pg, o)
     r = pg.evaluate(f"() => {V}._parc('{cid}', 'tunnel_chat')")

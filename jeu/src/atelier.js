@@ -6590,6 +6590,27 @@ function parcDonner(V, dit){
   }
   return du;
 }
+/* (Le mode d'essai du jeu seulement : « #test » dans l'adresse.) Toutes ses affaires d'un coup : ses cinq familles sont complètes, les
+   morceaux de son parc arrivent. Pour essayer le parc, les pelages et les habits sans jouer des heures. L'album, lui, reste à faire. */
+function toutDonner(V){
+  var m = mimi(V), G = garde(V.etat), t = tama(V), av = V.etat.cartons.map(function(k){ return k.id; });
+  FAMILLES.forEach(function(F){ F.l.forEach(function(code){
+    var k = code.charAt(0), id = code.slice(2);
+    if(aDeja(V, code)) return;
+    if(k === 'j') m.jouets.push(id);
+    else if(k === 'n') m.nour.push(id);
+    else if(k === 's'){ m.soins.push(id); if(id === 'griffoir') nouveauCarton(V.etat, ['griffoir'], 0); }
+    else if(k === 'a') G.a.push(id);
+    else if(k === 'c'){ t.recus.push(code); nouveauCarton(V.etat, [id]); }
+    else if(k === 'p') m.peaux.p.push(+id);
+    else if(k === 'y') m.peaux.y.push(+id);
+  }); });
+  if(!V.salle) dessinerPiece(V, av);
+  famillesMaj(V, false);
+  var tx = 'Essai : toutes ses affaires sont là. Les morceaux de son parc à chat arrivent dans leurs cartons…';
+  toast(V, '<b>🧪</b> ' + esc(tx), 5000, tx);
+  majBarre(V); changer(V);
+}
 /* Ce qu'il y aura dans le coffret : une chose qu'elle n'a pas, d'une famille tirée au hasard (parmi celles où il reste quelque chose).
    g : c'est la dernière de sa famille — le coffret est doré. Elle a tout : des friandises. */
 function contenuCoffret(V){
@@ -8622,7 +8643,9 @@ function htmlBarre(V){
   s += '<span class="at-mb-g">Jouer</span>' + m.jouets.map(function(id){ return bt('j:' + id, JOUETS[id].ic, JOUETS[id].nom.replace(/^(la |le |l')/, '').replace(/^\w/, function(x){ return x.toUpperCase(); }), m.neufs.indexOf(id) >= 0, ' at-mb-jouet'); }).join('');
   var soins = m.soins.filter(function(id){ return id !== 'griffoir' && id !== 'photo'; });      /* (l'appareil photo a son bouton, à côté du 🐾) */
   if(soins.length) s += '<span class="at-mb-g">Soins</span>' + soins.map(function(id){ return bt('s:' + id, iconeSoin(id), SOINS[id].nom, m.neufs.indexOf(id) >= 0); }).join('');
-  s += '<span class="at-mb-g">Ses affaires</span>' + bt('garde', '🎀', 'Habits', G.neuf.length > 0 || m.peauNeuve === 1) + bt('shop', '🛒', 'Boutique') + bt('album', '📒', 'Album');
+  s += '<span class="at-mb-g">Ses affaires</span>' + bt('garde', '🎀', 'Habits', G.neuf.length > 0 || m.peauNeuve === 1) + bt('shop', '🛒', 'Boutique') + bt('album', '📒', 'Album') +
+    /* (le mode d'essai du jeu — « #test » dans l'adresse : toutes ses affaires d'un coup, pour voir son parc sans jouer des heures) */
+    (window.M && M.modeDev && M.modeDev() ? bt('essai', '🧪', 'Essai : tout') : '');
   return s + '</div>';
 }
 function ouvrirBarre(V){
@@ -8644,6 +8667,7 @@ function actionBarre(V, a){
   if(a === 'garde'){ fermerBarre(V); var c = chatsTous(V)[0]; if(c) ouvrirGarde(V, c.id); return; }
   if(a === 'shop'){ fermerBarre(V); ouvrirBoutique(V); return; }
   if(a === 'album'){ ouvrirAlbum(V); return; }
+  if(a === 'essai'){ fermerBarre(V); toutDonner(V); return; }
 }
 
 /* ---------- La boutique de Mimi : le confort, payé en pièces d'or (le moteur donne la bourse : opts.bourse) ---------- */
