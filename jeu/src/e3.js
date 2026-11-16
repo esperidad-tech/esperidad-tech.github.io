@@ -427,8 +427,13 @@ E[3] = {
      Au microscope, du pollen de lavande (une fausse piste : tout le village en a) ; au test des couleurs, de l'encre de noix de galle
      (celle des colporteurs) ; à la loupe, l'écriture — avec le Livre d'or du Sage posé sur la paillasse (le code « Les écritures
      du village »), on compare : seule Mélusine a les trois signes de la lettre. */
-  labo:['lettre'],
+  labo:['lettre', 'piece_pain'],
   analyses:{
+    /* (Romain, 16 novembre, 8 h 07) la pièce de Fortuné : la même analyse que la pièce de la boulangerie de l'enquête 2 (sa fiche au labo,
+       piece_pain : l'or, la fêlure, la farine) ; elle ne donne pas de code, elle raconte */
+    piece_pain:{
+      t:'Sous ta loupe : de l\'or vrai, tout neuf. Sous la couronne, une toute petite fêlure en forme d\'éclair… exactement comme les pièces de Bastien, dans l\'affaire de la rivière rouge ! Elle sort du même moule, de la même bourse. Et dans les creux… de la farine.',
+      note:'Analyse de la pièce de Fortuné : de l\'or tout neuf, la même petite fêlure en éclair que les pièces de Bastien (enquête 2) : la même bourse. De la farine dans les creux.'},
     lettre:{donne:'info:ecriture',
       t:'La lettre d\'Odette, de près : des « M » qui piquent, des « t » barrés d\'une vague, un petit rond sur les « i ». Dans le Livre d\'or, DEUX personnes écrivent comme ça : Mélusine… et Margot ! Laquelle des deux ? Sur le papier, du pollen de lavande et de l\'encre de noix de galle.',
       note:'Analyse de la lettre : deux écritures lui ressemblent, celle de Mélusine et celle de Margot (des « M » qui piquent, des « t » en vague, un rond sur les « i »). Du pollen de lavande, de l\'encre de noix de galle.'}
@@ -485,7 +490,9 @@ E[3] = {
       recu:{sage:'Une nouvelle page s\'est glissée dans ton Grand Livre : la lettre, telle qu\'elle est écrite.'}},
     /* (le carnet n'a pas de fiche au labo : il n'est que pour le Sage, qui le compare à la lettre et y trouve le plan) */
     carnet:{nom:'Le carnet d\'Odette', ic:'📓', pour:'sage', dire:'Le carnet d\'Odette : donne ce code au Sage.',
-      recu:{sage:'Une nouvelle page s\'est glissée dans ton Grand Livre : le carnet d\'Odette, écrit de sa main.'}}
+      recu:{sage:'Une nouvelle page s\'est glissée dans ton Grand Livre : le carnet d\'Odette, écrit de sa main.'}},
+    /* (16 novembre) la pièce que Fortuné prête au Barde : le même objet du labo que la pièce de la boulangerie de l'enquête 2 */
+    piece_pain:{nom:'La pièce d\'or de Fortuné', ic:'🪙', pour:'alchimiste', dire:'L\'Alchimiste saura la faire parler : donne-lui ce code.'}
   },
   /* Les codes de l'enquête 3 (E3-actions-des-roles.md §4). Neufs : ils seront gelés à l'ouverture de l'enquête aux joueurs (codes-fixes.js).
      Étape 1 : ceux que le Barde donne ou reçoit le matin et l'après-midi. */
@@ -911,7 +918,12 @@ E[3] = {
         note:'Fortuné dit qu\'il n\'a rien vendu ni rien vu, cette nuit.', noteVrai:'Fortuné a avoué : cette nuit, il a vendu du papier, payé avec une pièce d\'or toute neuve. Il n\'a pas vu qui.'},
       /* (dès cette réponse, la vieille clé rouillée entrera dans la boutique du Barde : 320 pièces, § 13.9 — à brancher avec les objets) */
       {q:'D\'où venez-vous, avec votre carriole ?', g:'h', moments:MA_, a:'De partout ! Regarde cette vieille clé couverte de runes, trouvée au-delà de la brume. Personne n\'en veut.',
-        note:'Fortuné : il vend une vieille clé couverte de runes, trouvée au-delà de la brume.'}
+        note:'Fortuné : il vend une vieille clé couverte de runes, trouvée au-delà de la brume.'},
+      /* (Romain, 16 novembre, 8 h 07) une fois son mensonge démasqué (la pièce d'or toute neuve) : on lui emprunte la pièce, et
+         l'Alchimiste l'analyse — la même que celles de Bastien, à l'enquête 2 (labo : la fiche piece_pain, tout pareil). Toujours en dernier. */
+      {q:'Est-ce que je peux vous emprunter cette pièce ?', g:'h', moments:MA_, secret:true, besoin:[{vu:'verite:fortune:2'}], obj:'piece_pain',
+        a:'Il sourit de toutes ses dents : « Mais bien sûr ! Prends-en soin : cette pièce-là, elle en vaut trois ! »',
+        note:'Fortuné t\'a prêté la pièce d\'or toute neuve de la nuit. L\'Alchimiste pourra l\'analyser.'}
     ]},
     /* le matin, il ramone près du clocher ; l'après-midi, sur les toits de la ruelle des Brumes */
     tim:{ou:{matin:'clocher', apresmidi:'ruelle'}, salut:'Salut ! Attention, ça tombe !', questions:[

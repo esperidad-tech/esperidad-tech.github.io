@@ -365,6 +365,8 @@ M.feuilleConv = function(id){
   var s = '<div class="bd-conv">';
   s += '<div class="bd-tete"><div class="bd-nom"><h2>' + esc(x.nom) + '</h2><span class="doux">' + esc(x.metier) + '</span></div>' +
     (tHaut ? '<p class="bd-dit-haut' + (bd ? ' bd-' + bd.mode : '') + '"><span id="bd-texte">' + texteEcrit(tHaut) + '</span>' + lire(tHaut, id) + '</p>' : '') +
+    /* (Romain, 16 novembre, 8 h 08, toutes les enquêtes) accusé à tort : on précise dessous qu'il disait la vérité */
+    (vexe && accuseAMoment(id) ? '<p class="bd-verite-dite">(' + esc(nom(id)) + ' disait la vérité.)</p>' : '') +
     '<div class="bd-visage' + (vexe ? ' vexe' : '') + '" id="bd-visage">' + visage(id) + '</div></div>';
   /* (Romain, 22 h 46 : plus de « 🤫 Ton secret » ici. Les signes ne sont QUE sur le tableau de liège : un petit bouton pour y aller et revenir.) */
   var tableauHTML = M.role() === 'barde' && M.liegeHTML ? '<button class="btn petit second bd-tableau" data-act="bd-tableau" data-p="' + id + '">📌 Mon tableau</button>' : '';

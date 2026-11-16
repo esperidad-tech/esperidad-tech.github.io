@@ -73,7 +73,7 @@ module.exports = function verifierE3(E, SRC, D){
           rate:{produit:liste(X.echec && X.echec.code), faits:fin}});
         return;
       }
-      aj({cle, role:'barde', moments:q.moments, besoins:[q.besoin].filter(Boolean), sauf:q.cacheSi, produit:liste(q.donne)});
+      aj({cle, role:'barde', moments:q.moments, besoins:[q.besoin].filter(Boolean), sauf:q.cacheSi, produit:liste(q.donne).concat(q.obj ? ['obj:' + q.obj] : [])});   /* (16 novembre) une question qui donne un objet : la pièce de Fortuné */
       /* un mensonge démasqué (🤥 sous la dernière réponse) : on peut le manquer */
       if(q.ment) aj({cle:`${cle}:verite`, role:'barde', moments:q.moments, besoins:[[{vu:cle}]], produit:liste(q.donneVrai), faits:[`verite:${id}:${i}`], ratable:true, mensonge:true});
     });

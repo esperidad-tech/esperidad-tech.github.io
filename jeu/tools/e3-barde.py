@@ -209,6 +209,10 @@ with sync_playwright() as p:
     pg.wait_for_timeout(5000)
     verifier('pièce d\'or toute neuve' in dedans(pg), 'Fortuné démasqué : du papier, payé avec une pièce d\'or toute neuve')
     poser(pg, 'fortune', 3)
+    # (16 novembre) démasqué, il prête sa pièce : une question de plus, et le code pour l'Alchimiste
+    poser(pg, 'fortune', 4); pg.wait_for_timeout(3500)
+    m = modal(pg)
+    verifier(m and m.get('code') == 'obj:piece_pain' and 'en vaut trois' in (m.get('t') or ''), 'Fortuné prête sa pièce : « elle en vaut trois », un code pour l\'Alchimiste')
     fermer(pg)
     # Victor : un code pour le Sage, puis son idée
     ev(pg, 'lieu', {'id': 'poste'}); ev(pg, 'parler', {'id': 'victor'})

@@ -66,6 +66,7 @@
 .bd-boite.bd-choix{border:2px solid var(--c-barde);background:rgba(255,143,179,.05)}
 .bd-boite.bd-choix .bd-boite-in{display:flex;flex-direction:column;gap:8px}
 /* sous le nom : la réplique qui n'est pas une réponse (salut, « Encore toi ? », merci pour la potion…) */
+.bd-verite-dite{margin:-2px 0 0;text-align:center;font-size:.92rem;font-weight:700;color:#7ee08a}
 .bd-dit-haut{margin:0;max-width:34em;text-align:center;font-style:italic;font-size:1rem;line-height:1.35;color:var(--lune);display:flex;gap:6px;align-items:center;justify-content:center}
 .bd-dit-haut.bd-accuse,.bd-dit-haut.bd-vexe{color:#ffb3a0}
 .bd-potion-btn{width:100%}
