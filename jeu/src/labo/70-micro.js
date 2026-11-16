@@ -58,12 +58,7 @@ function genItems(d){
     100:[]
   };
   /* ===== L'enquête 3 ===== */
-  /* la lettre d'Odette : deux grains jaunes pris dans les fils du papier, qu'on devine de loin et qu'on attrape à ×40 */
-  if(d === 'lettre') return {
-    10:[{t:'pollen_l', x:380, y:340, r:3.6, min:40, ref:'ql1'}, {t:'pollen_l', x:690, y:650, r:3.2, min:40, ref:'ql2'}],
-    40:[{t:'pollen_l', x:330, y:300, r:22, id:'ql1'}, {t:'pollen_l', x:720, y:690, r:19, id:'ql2'}],
-    100:[]
-  };
+  /* la lettre d'Odette : rien à prélever (16 novembre : le pollen de lavande est retiré) — on y regarde le papier et son encre */
   return {10:[], 40:[], 100:[]};
 }
 function centre10(u){ return {x:40 + u*920, y:500 + 190*Math.sin(u*Math.PI*3) + 50*Math.sin(u*Math.PI*7)}; }
@@ -207,7 +202,7 @@ function fabriquerScene(scene, z){
   var g = c.createRadialGradient(500,500,40,500,500,720); g.addColorStop(0,'#fdf8ea'); g.addColorStop(1,'#e2d6bb'); c.fillStyle = g; c.fillRect(0,0,MW,MW);
   if(scene === 'poils') scenePoils(c, z, Rn);
   else if(scene === 'plume') scenePlume(c, z, Rn);
-  else if(scene === 'goutte') sceneGoutte(c, z, Rn, couleurLiq(SC.d));
+  else if(scene === 'goutte' || scene === 'encre') sceneGoutte(c, z, Rn, couleurLiq(SC.d));   /* (encre : la goutte d'encre d'Iris, enquête 3 — la même vue, sans les phrases de la goutte de rivière) */
   else if(scene === 'poudre') scenePoudre(c, z, Rn);
   else if(scene === 'piece') scenePiece(c, z, SC.d);
   else if(scene === 'papier') scenePapier(c, z, Rn);

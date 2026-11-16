@@ -249,7 +249,7 @@ if(CFG){
   /* (enquête 3) le Livre d'or de la fête est sur la paillasse (le code « Les écritures du village » du Sage) ; avec la lettre d'Odette
      sur le cuir, le carnet de teintures gagne une page : l'encre de noix de galle */
   LIVREDOR = !!CFG.livredor;
-  if(CUIRS.indexOf('lettre') >= 0 && !TEINTES.some(function(t){ return t.k === 'galle'; })) TEINTES.push(TEINTE_GALLE);
+  if((CUIRS.indexOf('lettre') >= 0 || CUIRS.indexOf('encre_iris') >= 0) && !TEINTES.some(function(t){ return t.k === 'galle'; })) TEINTES.push(TEINTE_GALLE);   /* (16 novembre : ou avec le flacon d'encre d'Iris) */
   if(CFG.style) for(var kS in ST) if(typeof CFG.style[kS] === 'number') ST[kS] = CFG.style[kS];
   if(Array.isArray(CFG.chat) && CFG.chat.length === 3) CHAT = CFG.chat;
   if(JEU){ SON.actif = CFG.son !== false; SANS_MIMI = !CFG.mimi; document.body.classList.add('jeu'); }

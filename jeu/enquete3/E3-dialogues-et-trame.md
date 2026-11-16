@@ -2,7 +2,7 @@
 
 > 🔒 **VERROUILLÉ PAR ROMAIN LE 12 NOVEMBRE 2026 À 21 H 44.** Ce fichier est le **miroir exact** de ce que dit le jeu. Il est écrit par `node jeu/tools/e3-dialogues.js`, à partir de `jeu/src/e3.js`. **On ne le modifie jamais à la main**, et on n'y recolle aucun ancien dialogue. Pour changer une réplique : le « go » de Romain, puis `e3.js`, puis relancer l'outil. `node jeu/tools/verif.js 3` met une croix si ce fichier et le jeu ne disent plus la même chose.
 >
-> **Changements faits depuis, chacun avec le « go » de Romain** : 13 novembre (Farinel et Iris à la fête ; plus de « Retenir le maire » ni de scène de Léo) ; 14 novembre, 10 h 29 (le maire inquiet, à la fête : le grand dialogue « amis », Bible §13.36) ; 14 novembre, 11 h 44 (le maire vient tout seul, sur des minuteurs cachés ; avec le bruit, il ne pose pas de question : Bible §13.38) ; 16 novembre, 6 h 09 (l'aide pendant le combat de Léo refaite avec Romain : Farinel, Iris et Silas, Bible §13.51).
+> **Changements faits depuis, chacun avec le « go » de Romain** : 13 novembre (Farinel et Iris à la fête ; plus de « Retenir le maire » ni de scène de Léo) ; 14 novembre, 10 h 29 (le maire inquiet, à la fête : le grand dialogue « amis », Bible §13.36) ; 14 novembre, 11 h 44 (le maire vient tout seul, sur des minuteurs cachés ; avec le bruit, il ne pose pas de question : Bible §13.38) ; 16 novembre, 6 h 09 (l'aide pendant le combat de Léo refaite avec Romain : Farinel, Iris et Silas, Bible §13.51) ; 16 novembre, 8 h 07 (Fortuné prête sa pièce d'or, Bible §13.53) ; 16 novembre, 15 h (Iris donne un fond de flacon de son encre, pour l'Alchimiste : Bible §13.54 — la question et la réponse sont de Claude, à valider).
 >
 > **Ne font plus foi** (anciens dialogues, à ne plus jamais reprendre) : la version 2 du 11 novembre (`jeu/archives/E3-dialogues-et-trame-11-novembre.md`), celle du 6 novembre (`jeu/archives/E3-dialogues-et-trame-6-novembre.md`), le document du 5 novembre (https://claude.ai/artifact/969HCVUYL6F1BToNqhE2Lo), les pages « La lettre d'Odette » (https://claude.ai/artifact/8tDtVAQEffoXqrxCvPhkfC) et « Dialogues du Barde » du 11 novembre (https://claude.ai/artifact/7e9Wm974Ux8D5Ta5Xcr3Ft), et « les 3 questions communes » du 12 novembre à 17 h (https://claude.ai/artifact/D3Ss7fQdWkCZCBvJjVtw4P).
 >
@@ -193,6 +193,8 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
    - « Cette nuit, on m'a volé un flacon de mon encre ! Je la fabrique moi-même, avec des noix de galle. »
 4. **Vos plantes servent à quoi ?** _(le matin)_
    - « À soigner, à teindre, à parfumer. La pensée sauvage pousse même dans la brume ! »
+5. **Il vous reste un peu de cette encre ?** — 🔒 s'ouvre avec : la question 3 de Iris posée _(le matin)_
+   - « Elle fouille dans son tablier : « Un fond de flacon, c'est tout ce qu'il me reste. Tiens, prends-le ! » »
 - **Tout demandé** : « Mes fleurs vont faner si je bavarde ! »
 - **Occupé, l'après-midi** : « Chut ! Je fais les couronnes de ce soir. » — puis, si on revient : « Si c'est pour des fleurs, d'accord. Sinon, à ce soir ! »
 
@@ -522,7 +524,7 @@ Les dialogues du Barde suivent le nouveau scénario. Depuis le 13 novembre (Bibl
 
 - **Le Pisteur** : la clé prise à la ceinture d'Anselme (le dessin du mini-jeu la montre encore au clou). (Fait le 16 novembre, Bible §13.52 : les empreintes de pieds d'enfant, dans le jardin d'Iris — une piste à suivre, 3 carreaux, et le code « Des pieds d'enfant » pour le Sage. Les pas d'homme derrière l'atelier de Mélusine ne seront pas faits : depuis le 13 novembre, ce sont les traces de Moustache qui mènent à la crypte. Fait le 14 novembre, Bible §13.36 et §13.38 : le bruit de la grille donne un code au Barde, et le maire inquiet vient le trouver tout seul, sur des minuteurs cachés.)
 - **Le Sage** : plus rien. (La taille des pieds de chacun est dans son registre depuis l'enquête 1, en carreaux : Tim, Mélusine et Odette ont des pieds de 3 carreaux, Margot de 4. Fait le 13 novembre : le Livre d'or, dans son Grand Livre, laisse deux suspectes, Mélusine ou Margot ; le Barde les accuse toutes les deux, une seule ment.)
-- **L'Alchimiste** : comparer l'encre de la lettre avec celle d'Iris ; le labo montre encore du pollen de lavande.
+- **L'Alchimiste** : plus rien. (Fait le 16 novembre, Bible §13.54 : Iris donne au Barde un fond de flacon de son encre ; l'Alchimiste la compare à celle de la lettre — la même — et donne le code « La même encre » au Sage. Le pollen de lavande est retiré du labo.)
 - **Le donjon** : le code de la Grosse Marie, gardé en réserve, n'est plus donné par personne. (Fait le 13 novembre, Bible §13.33 : Léo, le boss final ; « Retenir le maire » et la scène provisoire de Léo sont retirés ; la fin est celle décidée par Romain — Odette reste derrière la porte.)
 - **La Grosse Marie et la brume** (l'Alchimiste qui cueille pendant que la brume recule) : à décider avec la tisane d'Anselme, validée le 12 novembre à 15 h 39.
 - La quatrième écoute de la fête (« au pied du mât »), qui dépend de la grille.

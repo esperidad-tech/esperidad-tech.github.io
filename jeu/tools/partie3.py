@@ -208,7 +208,9 @@ def partie(nav, base):
     # (12 novembre au soir) il pose toutes ses questions aux sept villageois du matin : sa mission, et ce qui ouvrira le maire
     tout_demander(B, ['levoisin', 'gaspard', 'victor', 'iris', 'margot', 'tim', 'fortune']); B.fermer()
     verifier(B.js("() => { M.render(); return !!M.P().mission.faits[1]; }"), 'le Barde a tout demandé aux sept villageois du matin : sa mission se coche')
-    verifier(set(livrer(T, B)) == {'info:poste', 'info:chale'}, 'le Barde a donné au Sage : la poste, « Odette… sans sa canne »')
+    # (16 novembre, §13.54) Iris, une fois le vol raconté : sa question de plus, et un fond de flacon de son encre pour l'Alchimiste
+    verifier(set(livrer(T, B)) == {'info:poste', 'info:chale', 'obj:encre_iris'}, 'le Barde a donné au Sage : la poste, « Odette… sans sa canne » ; à l\'Alchimiste : l\'encre d\'Iris')
+    verifier(A.js("() => !!M.P().recus['obj:encre_iris']"), 'l\'Alchimiste a reçu le flacon d\'encre d\'Iris')
     # le Sage : le tableau, le Livre d'or, l'herbier, les premiers doutes
     verifier(S.jouer('mairie', 'tableau') == 'runes', 'le Sage peint le tableau d\'Odette (Assembler les runes)'); S.fermer()
     S.page('habitants')
@@ -298,8 +300,19 @@ def partie(nav, base):
     f = next((x for x in A.pg.frames if x.parent_frame is not None), None)
     f.wait_for_function('() => !!window.__labo', timeout=8000)
     verifier(f.evaluate("() => window.__labo.cuirs().indexOf('lettre') >= 0") and A.js("() => !!M.P().recus['info:ecritures']"), 'l\'Alchimiste : la lettre est sur sa paillasse, et il a le Livre d\'or')
-    f.evaluate("() => { window.__labo.finir('lettre'); window.__labo.quitter(); }"); A.pg.wait_for_timeout(900); A.fermer()
-    verifier(set(livrer(T, A)) == {'info:ecriture'}, 'l\'Alchimiste a donné au Barde et au Sage : « Deux écritures » (Mélusine ou Margot)')
+    # (16 novembre, Bible §13.54) le flacon d'encre d'Iris, reçu du Barde le matin, est là aussi. Ici : l'encre d'Iris D'ABORD (toute seule,
+    # elle ne donne pas de code), puis la lettre, qui donne alors DEUX codes dans la même fenêtre : « Deux écritures » et « La même encre ».
+    # (L'autre ordre — la lettre, puis l'encre — est joué au doigt par e3-alchimiste.py.)
+    verifier(f.evaluate("() => window.__labo.cuirs().indexOf('encre_iris') >= 0"), 'le flacon d\'encre d\'Iris est sur sa paillasse, à côté de la lettre')
+    f.evaluate("() => { window.__labo.finir('encre_iris'); }"); A.pg.wait_for_timeout(600)
+    f.evaluate("() => { window.__labo.finir('lettre'); window.__labo.quitter(); }"); A.pg.wait_for_timeout(900)
+    # (la deuxième fiche arrive quand on ferme la première pour de vrai — M.fermer, le ✕ — pas en vidant la fenêtre comme A.fermer())
+    t1 = A.texte(); n1 = A.pg.locator('#voile .b-donne').count(); A.js("() => { M.fermer(); }"); A.pg.wait_for_timeout(900)
+    t2 = A.texte(); n2 = A.pg.locator('#voile .b-donne').count(); A.fermer(); A.pg.wait_for_timeout(500)
+    verifier('encre d\'Iris' in t1 and 'Garde-la bien' in t1 and n1 == 0, f'l\'encre d\'Iris, analysée la première : ce qu\'elle est, et pas de code ({n1})')
+    verifier('comme l\'encre d\'Iris' in t2 and 'Margot' in t2 and n2 == 2, f'la lettre, analysée ensuite : les deux écritures, « exactement comme l\'encre d\'Iris », et deux codes dans la même fenêtre ({n2})')
+    verifier(set(livrer(T, A)) == {'info:ecriture', 'info:meme_encre'}, 'l\'Alchimiste a donné : « Deux écritures » au Barde et au Sage, « La même encre » au Sage')
+    verifier(S.js("() => !!M.P().recus['info:meme_encre']") and not B.js("() => !!M.P().recus['info:meme_encre']"), 'le Sage a « La même encre » (pas le Barde)')
     # (13 novembre) le Barde peut poser la même accusation à Margot : elle dit vrai
     B.carte(); B.ev('lieu', {'id': 'taverne'}); B.ev('parler', {'id': 'margot'}); B.pg.wait_for_timeout(500)
     im = B.js("() => { var q = M.E().pnj.margot.questions; for(var i = 0; i < q.length; i++) if(/écrit la lettre/.test(q[i].q)) return i; return -1; }")

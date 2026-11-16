@@ -112,6 +112,9 @@ module.exports = function verifierE3(E, SRC, D){
   for(const id of Object.keys(E.analyses || {})){
     const A = E.analyses[id];
     aj({cle:`alchimiste:analyse:${id}`, role:'alchimiste', besoins:[[{code:'obj:' + id}]].concat(A.besoin ? [A.besoin] : []).concat(id === 'lettre' ? [[{code:'info:ecritures'}]] : []), produit:liste(A.donne)});
+    /* (16 novembre) une variante qui donne un code de plus (v.donne, v.donneAussi) : la deuxième des deux analyses, la lettre et
+       l'encre d'Iris, donne « La même encre » — elle compte quand l'analyse est faite et que sa condition (si) est là */
+    (A.variantes || []).forEach((v, k) => { const pr = liste(v.donne).concat(liste(v.donneAussi)); if(pr.length) aj({cle:`alchimiste:analyse:${id}:v${k}`, role:'alchimiste', besoins:[[{vu:`alchimiste:analyse:${id}`}]].concat(v.si ? [v.si] : []), produit:pr, filet:true}); });
   }
   /* un code qui apporte une plante (I.plante : « Le gui », cueilli par le Pisteur, arrive sur l'établi de l'Alchimiste) */
   for(const id of Object.keys(E.infos || {})){ const I = E.infos[id]; if(I.plante) liste(I.pour).forEach(role => aj({cle:`${role}:recu:${id}`, role, besoins:[[{code:'info:' + id}]], faits:['plante:' + I.plante]})); }

@@ -1463,7 +1463,17 @@ A.bonus = function(el){
    (ex. : la poudre du pot noir, enquête 2 : avant et après le rassemblement). Relu à chaque fois : la table d'analyse suit l'enquête. */
 M.texteAnalyse = function(An){
   var v = An && (An.variantes || []).filter(function(x){ return M.besoinOk(x.si); })[0];
-  return v ? Object.assign({}, An, {t:v.t || An.t, note:v.note || An.note, donne:v.donne || An.donne}) : An;   /* (une variante peut donner son code : les pièces jumelles) */
+  /* (16 novembre, enquête 3) donneAussi : un deuxième code dans la même fenêtre (la lettre, analysée après l'encre d'Iris : « Deux
+     écritures » et « La même encre ») — M.codesAnalyse en fait la liste */
+  return v ? Object.assign({}, An, {t:v.t || An.t, note:v.note || An.note, donne:v.donne || An.donne, donneAussi:v.donneAussi || An.donneAussi}) : An;   /* (une variante peut donner son code : les pièces jumelles) */
+};
+/* Les codes que donne une analyse, pour M.decouvrir : {code} s'il n'y en a qu'un, {codes:[…]} s'il y en a deux */
+M.codesAnalyse = function(An){
+  var l = (An && An.donne ? [An.donne] : []).concat(An && An.donneAussi ? [].concat(An.donneAussi) : []);
+  /* (16 novembre) le code d'une analyse est gardé dans « 🔢 Les codes donnés » du Carnet, comme celui d'un lieu : depuis que l'ardoise du
+     labo est enlevée (13 novembre), on ne le retrouvait plus nulle part une fois la fenêtre fermée */
+  var P = M.P(); if(P && P.objets) l.forEach(function(c){ if(c.indexOf('obj:') !== 0) P.objets['_' + c] = true; });
+  return l.length > 1 ? {code:null, codes:l} : {code:l[0] || null};
 };
 A.analyser = function(el){
   var P = M.P(), E = M.E(), id = el.dataset.id, An = M.texteAnalyse((E.analyses || {})[id]);
@@ -1481,8 +1491,9 @@ A.analyser = function(el){
     }
     P.analyses[id] = detail ? 2 : 1;
     if(detail) M.noter(An.detail.note, '🔍');
+    var cds = M.codesAnalyse(An);
     M.sauver();
-    M.decouvrir({ic:E.objets[id].ic, titre:'Analyse : ' + E.objets[id].nom, t:An.t + (detail ? ' Et ce n\'est pas tout : ' + An.detail.t : ''), note:An.note, code:An.donne || null});
+    M.decouvrir(Object.assign({ic:E.objets[id].ic, titre:'Analyse : ' + E.objets[id].nom, t:An.t + (detail ? ' Et ce n\'est pas tout : ' + An.detail.t : ''), note:An.note}, cds));
   }
   if(An.mj) M.lancerMJ(An.mj, E.niveau, An.params, {titre:'Analyse : ' + E.objets[id].nom, ic:E.objets[id].ic, avant:An.avant, bouton:An.bouton, sansIntro:gratuit}, function(res){
     if(res.reussi) fini();

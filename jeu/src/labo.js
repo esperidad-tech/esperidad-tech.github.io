@@ -72,8 +72,9 @@ function fini(id){
   P.analyses[id] = detail ? 2 : 1;
   if(An.note) M.noter(An.note, E.objets[id].ic);
   if(detail) M.noter(An.detail.note, '🔍');
+  var cds = M.codesAnalyse(An);   /* (16 novembre : parfois deux codes — la lettre après l'encre d'Iris ; et ils sont gardés dans le Carnet) */
   M.sauver();
-  aMontrer.push({ic:E.objets[id].ic, titre:'Analyse : ' + E.objets[id].nom, t:An.t + (detail ? ' Et ce n\'est pas tout : ' + An.detail.t : ''), code:An.donne || null});
+  aMontrer.push(Object.assign({ic:E.objets[id].ic, titre:'Analyse : ' + E.objets[id].nom, t:An.t + (detail ? ' Et ce n\'est pas tout : ' + An.detail.t : '')}, cds));
 }
 /* Une trouvaille en plus (pas obligatoire) : une petite note au Carnet, une seule fois (E.laboNotes = {noir:'…', or:'…'}) */
 function trouve(id){

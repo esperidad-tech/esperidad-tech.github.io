@@ -424,10 +424,14 @@ E[3] = {
   recettes:['verite'],
   carteIngredients:true,
   /* ---------- Le labo de l'Alchimiste (labo.js ; les fiches : src/labo/30-donnees.js) : la lettre d'Odette ----------
-     Au microscope, du pollen de lavande (une fausse piste : tout le village en a) ; au test des couleurs, de l'encre de noix de galle
-     (celle des colporteurs) ; à la loupe, l'écriture — avec le Livre d'or du Sage posé sur la paillasse (le code « Les écritures
-     du village »), on compare : seule Mélusine a les trois signes de la lettre. */
-  labo:['lettre', 'piece_pain'],
+     À la loupe, l'écriture — avec le Livre d'or du Sage posé sur la paillasse (le code « Les écritures du village »), on compare :
+     Mélusine et Margot ont les trois signes de la lettre ; au test des couleurs, de l'encre de noix de galle.
+     (16 novembre, Romain, 15 h : « oui » aux deux — le pollen de lavande est retiré, la lavande n'est plus une piste ; et l'étape 6 de son
+     scénario est construite : Iris donne au Barde un fond de flacon de son encre (pnj.iris, sa dernière question), le Barde le passe à
+     l'Alchimiste par un code, et le labo compare — la même bande noire que l'encre de la lettre. La DEUXIÈME des deux analyses
+     (la lettre, l'encre d'Iris) raconte la comparaison et donne le code « La même encre », pour le Sage : comme les deux pièces d'or de
+     l'enquête 2. Si c'est la lettre, elle donne deux codes dans la même fenêtre : donneAussi (moteur-actions.js, M.texteAnalyse).) */
+  labo:['lettre', 'piece_pain', 'encre_iris'],
   analyses:{
     /* (Romain, 16 novembre, 8 h 07) la pièce de Fortuné : la même analyse que la pièce de la boulangerie de l'enquête 2 (sa fiche au labo,
        piece_pain : l'or, la fêlure, la farine) ; elle ne donne pas de code, elle raconte */
@@ -435,11 +439,20 @@ E[3] = {
       t:'Sous ta loupe : de l\'or vrai, tout neuf. Sous la couronne, une toute petite fêlure en forme d\'éclair… exactement comme les pièces de Bastien, dans l\'affaire de la rivière rouge ! Elle sort du même moule, de la même bourse. Et dans les creux… de la farine.',
       note:'Analyse de la pièce de Fortuné : de l\'or tout neuf, la même petite fêlure en éclair que les pièces de Bastien (enquête 2) : la même bourse. De la farine dans les creux.'},
     lettre:{donne:'info:ecriture',
-      t:'La lettre d\'Odette, de près : des « M » qui piquent, des « t » barrés d\'une vague, un petit rond sur les « i ». Dans le Livre d\'or, DEUX personnes écrivent comme ça : Mélusine… et Margot ! Laquelle des deux ? Sur le papier, du pollen de lavande et de l\'encre de noix de galle.',
-      note:'Analyse de la lettre : deux écritures lui ressemblent, celle de Mélusine et celle de Margot (des « M » qui piquent, des « t » en vague, un rond sur les « i »). Du pollen de lavande, de l\'encre de noix de galle.'}
+      t:'La lettre d\'Odette, de près : des « M » qui piquent, des « t » barrés d\'une vague, un petit rond sur les « i ». Dans le Livre d\'or, DEUX personnes écrivent comme ça : Mélusine… et Margot ! Laquelle des deux ? Sur le papier, de l\'encre de noix de galle.',
+      note:'Analyse de la lettre : deux écritures lui ressemblent, celle de Mélusine et celle de Margot (des « M » qui piquent, des « t » en vague, un rond sur les « i »). De l\'encre de noix de galle.',
+      variantes:[{si:[{analyse:'encre_iris'}], donneAussi:'info:meme_encre',
+        t:'La lettre d\'Odette, de près : des « M » qui piquent, des « t » barrés d\'une vague, un petit rond sur les « i ». Dans le Livre d\'or, DEUX personnes écrivent comme ça : Mélusine… et Margot ! Laquelle des deux ? Et son encre : une seule bande noire, tout en bas… exactement comme l\'encre d\'Iris. C\'est la même !',
+        note:'Analyse de la lettre : deux écritures lui ressemblent, celle de Mélusine et celle de Margot (des « M » qui piquent, des « t » en vague, un rond sur les « i »). Son encre est la même que celle d\'Iris : la lettre a été écrite avec l\'encre volée.'}]},
+    /* (16 novembre) le fond de flacon d'Iris : toute seule, son encre ne dit que ce qu'elle est ; après la lettre, elle dit que c'est la même */
+    encre_iris:{
+      t:'L\'encre d\'Iris, sur la bandelette : une seule bande noire, tout en bas. De l\'encre de noix de galle : elle ne se sépare pas en couleurs. Garde-la bien : une encre, ça se compare.',
+      note:'Analyse de l\'encre d\'Iris : de l\'encre de noix de galle (une seule bande noire, tout en bas de la bandelette).',
+      variantes:[{si:[{analyse:'lettre'}], donne:'info:meme_encre',
+        t:'L\'encre d\'Iris, sur la bandelette : une seule bande noire, tout en bas… exactement comme l\'encre de la lettre. C\'est la même ! La lettre a été écrite avec l\'encre volée chez Iris.',
+        note:'L\'encre de la lettre et celle d\'Iris sont les mêmes : la lettre a été écrite avec l\'encre volée chez Iris.'}]}
   },
   laboNotes:{
-    pollen_l:'Sur la lettre : du pollen de lavande, comme les sachets d\'Iris. Mais tout le village en a !',
     /* (12 novembre au soir : plus « l'encre des colporteurs » — Iris dit au Barde qu'on lui a volé son encre, faite de noix de galle) */
     encre_l:'L\'encre de la lettre : une encre noire, faite avec des noix de galle, ces petites boules qui poussent sur les chênes.'},
   /* ---------- L'établi des plantes (plantes.js ; E3-atelier-des-plantes.md) : les sept potions de la nuit, faites de vraies plantes ---------- */
@@ -492,7 +505,9 @@ E[3] = {
     carnet:{nom:'Le carnet d\'Odette', ic:'📓', pour:'sage', dire:'Le carnet d\'Odette : donne ce code au Sage.',
       recu:{sage:'Une nouvelle page s\'est glissée dans ton Grand Livre : le carnet d\'Odette, écrit de sa main.'}},
     /* (16 novembre) la pièce que Fortuné prête au Barde : le même objet du labo que la pièce de la boulangerie de l'enquête 2 */
-    piece_pain:{nom:'La pièce d\'or de Fortuné', ic:'🪙', pour:'alchimiste', dire:'L\'Alchimiste saura la faire parler : donne-lui ce code.'}
+    piece_pain:{nom:'La pièce d\'or de Fortuné', ic:'🪙', pour:'alchimiste', dire:'L\'Alchimiste saura la faire parler : donne-lui ce code.'},
+    /* (16 novembre, 15 h) le fond de flacon d'encre qu'Iris donne au Barde : l'Alchimiste le compare à l'encre de la lettre (labo : encre_iris) */
+    encre_iris:{nom:'L\'encre d\'Iris', ic:'🖋️', pour:'alchimiste', dire:'L\'Alchimiste saura la faire parler : donne-lui ce code.'}
   },
   /* Les codes de l'enquête 3 (E3-actions-des-roles.md §4). Neufs : ils seront gelés à l'ouverture de l'enquête aux joueurs (codes-fixes.js).
      Étape 1 : ceux que le Barde donne ou reçoit le matin et l'après-midi. */
@@ -580,6 +595,12 @@ E[3] = {
     pieds_enfant:{nom:'Des pieds d\'enfant', ic:'👣', pour:'sage', de:'pisteur', savoir:true, tard:true,
       t:'Cette nuit, quelqu\'un est passé par le jardin d\'Iris, sous la fenêtre de son atelier. Le Pisteur a mesuré ses empreintes dans la terre : 3 carreaux. Des pieds d\'enfant ! Elles filaient vers la rue des Lanternes.',
       dire:'Des pieds d\'enfant ? Le Sage doit le savoir : donne-lui ce code.'},
+    /* LA MÊME ENCRE (16 novembre, 15 h, Bible §13.54 ; l'étape 6 du scénario : « Alchimiste, code pour le Sage ») : l'Alchimiste a comparé
+       l'encre de la lettre à celle d'Iris. C'est ce qui relie le vol chez Iris (et donc les empreintes du jardin) à la lettre. Une
+       information (savoir) ; le texte ne dit pas qui. tard:true : rangé tout à la fin, aucun autre code ne bouge. */
+    meme_encre:{nom:'La même encre', ic:'🖋️', pour:'sage', de:'alchimiste', savoir:true, tard:true,
+      t:'L\'Alchimiste a comparé l\'encre de la lettre à celle d\'Iris : c\'est la même, une encre noire de noix de galle. La lettre a été écrite avec l\'encre volée chez Iris, cette nuit.',
+      dire:'La même encre ? Le Sage doit le savoir : donne-lui ce code.'},
     /* (étape 6) le donjon : la porte aux quatre signes (le code du donjon « Un chat gratte à la porte », porte:odette) */
     odette_porte:{nom:'Odette est derrière la porte', ic:'🚪', pour:'sage', de:'pisteur',
       t:'Tout au fond des souterrains, Moustache gratte au bas d\'une grande porte ronde. Tu colles l\'oreille… Une voix étouffée : « Moustache ? Mon gros gris, c\'est toi ? » Odette est là, vivante, derrière la porte !',
@@ -993,7 +1014,13 @@ E[3] = {
       {q:Q_NUIT, g:'e', moments:M_, a:'Cette nuit, on m\'a volé un flacon de mon encre ! Je la fabrique moi-même, avec des noix de galle.',
         note:'Iris : cette nuit, on lui a volé un flacon de son encre. Elle la fabrique elle-même, avec des noix de galle.'},
       {q:'Vos plantes servent à quoi ?', g:'h', moments:M_, a:'À soigner, à teindre, à parfumer. La pensée sauvage pousse même dans la brume !',
-        note:'Iris : la pensée sauvage pousse même dans la brume.'}
+        note:'Iris : la pensée sauvage pousse même dans la brume.'},
+      /* (Romain, 16 novembre, 15 h : « oui » à l'encre d'Iris — l'étape 6 de son scénario : « Iris donne un échantillon de son encre ») une fois
+         le vol raconté, on lui demande un peu de son encre : un code pour l'Alchimiste, qui la compare à celle de la lettre. Comme la
+         pièce de Fortuné : toujours en dernier. La question et la réponse sont de Claude : à faire valider par Romain. */
+      {q:'Il vous reste un peu de cette encre ?', g:'h', moments:M_, secret:true, besoin:[{vu:'barde:iris:2'}], obj:'encre_iris',
+        a:'Elle fouille dans son tablier : « Un fond de flacon, c\'est tout ce qu\'il me reste. Tiens, prends-le ! »',
+        note:'Iris t\'a donné un fond de flacon de son encre. L\'Alchimiste pourra l\'analyser.'}
     ]},
     /* un peu sourd, il parle fort (il ne ment jamais) */
     /* (Romain, 13 novembre) la nuit, son visage est posé sur le toit du clocher : on voit qu'il n'est pas à la fête, prêt à sonner (pose : carte-jeu.js) */
@@ -1253,8 +1280,10 @@ E[3] = {
     {sources:['alchimiste:analyse:lettre'], qui:['iris', 'victor', 'fortune', 'gaspard', 'tim', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
     {sources:[['barde:melusine:4:verite', 'barde:fete:melusine']], qui:['margot', 'iris', 'victor', 'fortune', 'gaspard', 'tim', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
     /* (16 novembre, Bible §13.52) les empreintes du jardin d'Iris (le Pisteur) et la taille des pieds dans le registre (le Sage) :
-       3 carreaux — seuls Tim et Mélusine. Avec l'écriture (Mélusine ou Margot), il ne reste que Mélusine, avant même son aveu. */
-    {sources:['pisteur:herboristerie:jardin', 'sage:page:habitants'], qui:['margot', 'iris', 'victor', 'fortune', 'gaspard', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
+       3 carreaux — seuls Tim et Mélusine. Avec l'écriture (Mélusine ou Margot), il ne reste que Mélusine, avant même son aveu.
+       (16 novembre, 15 h, §13.54) Ce qui relie ces empreintes à la lettre : l'encre — celle d'Iris et celle de la lettre, comparées au
+       labo (l'Alchimiste, avec le flacon que le Barde a reçu d'Iris). Sans elle, les empreintes ne disent que « quelqu'un a volé de l'encre ». */
+    {sources:['pisteur:herboristerie:jardin', 'sage:page:habitants', 'alchimiste:analyse:encre_iris', 'alchimiste:analyse:lettre'], qui:['margot', 'iris', 'victor', 'fortune', 'gaspard', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
     /* OÙ : la porte aux quatre signes, au fond du donjon (le Pisteur, avec les potions de l'Alchimiste, et la clé ou le puits du Barde) */
     {sources:['donjon:fini'], ou:['puits', 'moulin', 'chene', 'soeur', 'mairie', 'taverne', 'lavoir', 'foret', 'herboristerie']},
     /* QUI SOUS LA CAPE (13 novembre) : au fond du donjon, Léo arrache sa cape */

@@ -253,6 +253,11 @@ with sync_playwright() as p:
     verifier('volé un flacon' in td and 'noix de galle' in td, 'Iris : on lui a volé un flacon de son encre')
     toutes('iris', (0, 1, 3))
     shot(pg, 'iris-questions')
+    # (16 novembre, 15 h) le vol raconté, une question de plus : Iris donne un fond de flacon de son encre, un code pour l'Alchimiste
+    poser(pg, 'iris', 4); pg.wait_for_timeout(3500)
+    m = modal(pg)
+    verifier(m and m.get('code') == 'obj:encre_iris' and 'fond de flacon' in (m.get('t') or ''), 'Iris donne un fond de flacon de son encre : un code pour l\'Alchimiste')
+    shot(pg, 'iris-encre')
     fermer(pg)
     # Margot : des ragots sur tout le monde (personne n'est montré du doigt)
     ev(pg, 'lieu', {'id': 'taverne'}); ev(pg, 'parler', {'id': 'margot'})

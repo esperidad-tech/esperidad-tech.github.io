@@ -197,13 +197,17 @@ var OBJETS = {
 
   /* ===== L'enquête 3 : la lettre d'Odette, une feuille de papier (forme:'papier') =====
      à la loupe, son écriture, à comparer aux douze du Livre d'or (il faut le code « Les écritures du village » du Sage : CFG.livredor) ;
-     au microscope, des grains de pollen de lavande (une fausse piste : tout le village en a) ; l'eau chaude fait couler un peu
-     d'encre : au test des couleurs, de l'encre de noix de galle, celle des colporteurs (elle ne se sépare pas) */
+     l'eau chaude fait couler un peu d'encre : au test des couleurs, de l'encre de noix de galle (elle ne se sépare pas).
+     (16 novembre, Romain : « plus de lavande » — le pollen de lavande, une fausse piste du premier scénario, est retiré ; le microscope
+     ne montre plus que le papier et ses fils.) */
   /* bons (13 novembre) : plusieurs bonnes réponses — n'importe laquelle des deux écritures qui ressemblent ; le labo annonce les deux */
-  lettre:{forme:'papier', tiroir:'ecritures', bon:'melusine', bons:ECRITURES.bons, scene:'papier', requis:['lettre', 'pollen_l', 'encre_l'],
+  lettre:{forme:'papier', tiroir:'ecritures', bon:'melusine', bons:ECRITURES.bons, scene:'papier', requis:['lettre', 'encre_l'],
     savoir:'Chacun forme ses lettres à sa façon : une écriture se reconnaît comme un visage.'},
-  pollen_l:{de:'lettre', nom:'le grain jaune', tiroir:'grains', bon:'pollenlav', coul:'#e8c84a', savoir:'Du pollen de lavande, comme dans les sachets d\'Iris… Mais tout le village en a !'},
-  encre_l:{de:'lettre', nom:'l\'eau noircie', liquide:true, coul:'#2a2a32', cibles:['galle'], savoir:'L\'encre de noix de galle ne se sépare pas en couleurs. On la fait avec de petites boules qui poussent sur les chênes.'}
+  encre_l:{de:'lettre', nom:'l\'eau noircie', liquide:true, coul:'#2a2a32', cibles:['galle'], savoir:'L\'encre de noix de galle ne se sépare pas en couleurs. On la fait avec de petites boules qui poussent sur les chênes.'},
+  /* (16 novembre, l'étape 6 du scénario de Romain) le fond de flacon d'encre qu'Iris donne au Barde : un flacon sur le cuir, comme ceux de
+     l'enquête 2. Au test des couleurs : la même bande noire, tout en bas, que l'encre de la lettre — c'est la même encre. */
+  encre_iris:{forme:'flacon', liquide:true, cibles:['galle'], coul:'#2a2a32', scene:'encre', requis:['encre_iris'],
+    savoir:'Pour comparer deux encres, on compare leurs bandelettes : mêmes bandes, même encre.'}
 };
 /* Ce que l'Alchimiste a reçu, dans l'ordre d'arrivée : chacun à sa place numérotée sur le carré de cuir (quatre places) */
 var CUIRS = ['fil', 'poils', 'plume'];
@@ -270,8 +274,9 @@ var REA = {
   /* l'enquête 3 : la lettre (de vraies réactions : l'encre de noix de galle tient à l'eau froide, et pâlit avec un acide) */
   lettre:rea({eau:{t:'L\'eau froide ne fait rien à l\'encre : elle tient bon.'}, chaude:{t:'L\'eau chaude fait couler un peu d\'encre : de l\'eau noircie !', cree:'encre_l'},
     vinaigre:{t:'Là où tombe le vinaigre, l\'encre pâlit un peu.'}, flamme:{t:'Le coin du papier roussit… Stop ! C\'est une preuve.'}}),
-  pollen_l:rea({eau:{t:'Le grain flotte.'}, chaude:{t:'Le grain flotte.'}, flamme:{t:'Pfuit ! Il brûle en un éclair.'}}),
-  encre_l:rea({eau:{t:'Elle devient plus pâle.'}, vinaigre:{t:'Le noir pâlit : cette encre n\'aime pas l\'acide.', fx:'vire', c:'#8a8a94'}, flamme:{t:'L\'eau s\'évapore et laisse un anneau noir.'}})
+  encre_l:rea({eau:{t:'Elle devient plus pâle.'}, vinaigre:{t:'Le noir pâlit : cette encre n\'aime pas l\'acide.', fx:'vire', c:'#8a8a94'}, flamme:{t:'L\'eau s\'évapore et laisse un anneau noir.'}}),
+  /* l'encre d'Iris : les mêmes réactions que l'encre de la lettre (c'est la même) */
+  encre_iris:rea({eau:{t:'Elle devient plus pâle.'}, vinaigre:{t:'Le noir pâlit : cette encre n\'aime pas l\'acide.', fx:'vire', c:'#8a8a94'}, flamme:{t:'L\'eau s\'évapore et laisse un anneau noir.'}})
 };
 /* Le test des couleurs, comme dans un vrai labo : une goutte du liquide sur une bandelette de papier buvard, le pied dans un peu d'alcool.
    L'alcool monte dans le papier et emporte les couleurs, chacune à sa vitesse : la teinture se sépare en bandes.
