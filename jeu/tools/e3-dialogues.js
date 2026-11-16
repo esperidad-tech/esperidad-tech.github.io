@@ -48,7 +48,7 @@ function texte(E, D){
   p('# Enquête 3 « La lettre d\'Odette » — les dialogues du Barde (version 3, 12 novembre 2026 au soir)', '');
   p('> 🔒 **VERROUILLÉ PAR ROMAIN LE 12 NOVEMBRE 2026 À 21 H 44.** Ce fichier est le **miroir exact** de ce que dit le jeu. Il est écrit par `node jeu/tools/e3-dialogues.js`, à partir de `jeu/src/e3.js`. **On ne le modifie jamais à la main**, et on n\'y recolle aucun ancien dialogue. Pour changer une réplique : le « go » de Romain, puis `e3.js`, puis relancer l\'outil. `node jeu/tools/verif.js 3` met une croix si ce fichier et le jeu ne disent plus la même chose.');
   p('>');
-  p('> **Changements faits depuis, chacun avec le « go » de Romain** : 13 novembre (Farinel et Iris à la fête ; plus de « Retenir le maire » ni de scène de Léo) ; 14 novembre, 10 h 29 (le maire inquiet, à la fête : le grand dialogue « amis », Bible §13.36) ; 14 novembre, 11 h 44 (le maire vient tout seul, sur des minuteurs cachés ; avec le bruit, il ne pose pas de question : Bible §13.38).');
+  p('> **Changements faits depuis, chacun avec le « go » de Romain** : 13 novembre (Farinel et Iris à la fête ; plus de « Retenir le maire » ni de scène de Léo) ; 14 novembre, 10 h 29 (le maire inquiet, à la fête : le grand dialogue « amis », Bible §13.36) ; 14 novembre, 11 h 44 (le maire vient tout seul, sur des minuteurs cachés ; avec le bruit, il ne pose pas de question : Bible §13.38) ; 16 novembre, 6 h 09 (l\'aide pendant le combat de Léo refaite avec Romain : Farinel, Iris et Silas, Bible §13.51).');
   p('>');
   p('> **Ne font plus foi** (anciens dialogues, à ne plus jamais reprendre) : la version 2 du 11 novembre (`jeu/archives/E3-dialogues-et-trame-11-novembre.md`), celle du 6 novembre (`jeu/archives/E3-dialogues-et-trame-6-novembre.md`), le document du 5 novembre (https://claude.ai/artifact/969HCVUYL6F1BToNqhE2Lo), les pages « La lettre d\'Odette » (https://claude.ai/artifact/8tDtVAQEffoXqrxCvPhkfC) et « Dialogues du Barde » du 11 novembre (https://claude.ai/artifact/7e9Wm974Ux8D5Ta5Xcr3Ft), et « les 3 questions communes » du 12 novembre à 17 h (https://claude.ai/artifact/D3Ss7fQdWkCZCBvJjVtw4P).');
   p('>');
@@ -160,7 +160,7 @@ function texte(E, D){
     aides.forEach(id => {
       const a = E.fete.gens[id].aide;
       p('**' + nom(id) + '** — « ' + a.t + ' »', '');
-      a.questions.forEach(q => p('- « ' + q.q + ' » → « ' + q.r + ' »'));
+      a.questions.forEach(q => p((q.apres != null ? '  - (une fois « ' + a.questions[q.apres].q + ' » posée) ' : '- ') + '« ' + q.q + ' » → « ' + q.r + ' »'));
       if(a.note) p('- Dans le Carnet : ' + a.note);
       p('');
     });
@@ -183,7 +183,7 @@ function texte(E, D){
 
   p('## 7. Ce qui n\'est PAS encore construit (le reste du nouveau scénario)', '');
   p('Les dialogues du Barde suivent le nouveau scénario. Depuis le 13 novembre (Bible §13.32 et §13.34), le Sage, l\'Alchimiste et le Pisteur aussi, en partie. Ce qui reste, tant que Romain n\'a pas donné son « go » :', '');
-  p('- **Le Pisteur** : la clé prise à la ceinture d\'Anselme (le dessin du mini-jeu la montre encore au clou). (Fait le 16 novembre, Bible §13.51 : les empreintes de pieds d\'enfant, dans le jardin d\'Iris — une piste à suivre, 3 carreaux, et le code « Des pieds d\'enfant » pour le Sage. Les pas d\'homme derrière l\'atelier de Mélusine ne seront pas faits : depuis le 13 novembre, ce sont les traces de Moustache qui mènent à la crypte. Fait le 14 novembre, Bible §13.36 et §13.38 : le bruit de la grille donne un code au Barde, et le maire inquiet vient le trouver tout seul, sur des minuteurs cachés.)');
+  p('- **Le Pisteur** : la clé prise à la ceinture d\'Anselme (le dessin du mini-jeu la montre encore au clou). (Fait le 16 novembre, Bible §13.52 : les empreintes de pieds d\'enfant, dans le jardin d\'Iris — une piste à suivre, 3 carreaux, et le code « Des pieds d\'enfant » pour le Sage. Les pas d\'homme derrière l\'atelier de Mélusine ne seront pas faits : depuis le 13 novembre, ce sont les traces de Moustache qui mènent à la crypte. Fait le 14 novembre, Bible §13.36 et §13.38 : le bruit de la grille donne un code au Barde, et le maire inquiet vient le trouver tout seul, sur des minuteurs cachés.)');
   p('- **Le Sage** : plus rien. (La taille des pieds de chacun est dans son registre depuis l\'enquête 1, en carreaux : Tim, Mélusine et Odette ont des pieds de 3 carreaux, Margot de 4. Fait le 13 novembre : le Livre d\'or, dans son Grand Livre, laisse deux suspectes, Mélusine ou Margot ; le Barde les accuse toutes les deux, une seule ment.)');
   p('- **L\'Alchimiste** : comparer l\'encre de la lettre avec celle d\'Iris ; le labo montre encore du pollen de lavande.');
   p('- **Le donjon** : le code de la Grosse Marie, gardé en réserve, n\'est plus donné par personne. (Fait le 13 novembre, Bible §13.33 : Léo, le boss final ; « Retenir le maire » et la scène provisoire de Léo sont retirés ; la fin est celle décidée par Romain — Odette reste derrière la porte.)');

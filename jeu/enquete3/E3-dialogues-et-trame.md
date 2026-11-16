@@ -2,7 +2,7 @@
 
 > 🔒 **VERROUILLÉ PAR ROMAIN LE 12 NOVEMBRE 2026 À 21 H 44.** Ce fichier est le **miroir exact** de ce que dit le jeu. Il est écrit par `node jeu/tools/e3-dialogues.js`, à partir de `jeu/src/e3.js`. **On ne le modifie jamais à la main**, et on n'y recolle aucun ancien dialogue. Pour changer une réplique : le « go » de Romain, puis `e3.js`, puis relancer l'outil. `node jeu/tools/verif.js 3` met une croix si ce fichier et le jeu ne disent plus la même chose.
 >
-> **Changements faits depuis, chacun avec le « go » de Romain** : 13 novembre (Farinel et Iris à la fête ; plus de « Retenir le maire » ni de scène de Léo) ; 14 novembre, 10 h 29 (le maire inquiet, à la fête : le grand dialogue « amis », Bible §13.36) ; 14 novembre, 11 h 44 (le maire vient tout seul, sur des minuteurs cachés ; avec le bruit, il ne pose pas de question : Bible §13.38).
+> **Changements faits depuis, chacun avec le « go » de Romain** : 13 novembre (Farinel et Iris à la fête ; plus de « Retenir le maire » ni de scène de Léo) ; 14 novembre, 10 h 29 (le maire inquiet, à la fête : le grand dialogue « amis », Bible §13.36) ; 14 novembre, 11 h 44 (le maire vient tout seul, sur des minuteurs cachés ; avec le bruit, il ne pose pas de question : Bible §13.38) ; 16 novembre, 6 h 09 (l'aide pendant le combat de Léo refaite avec Romain : Farinel, Iris et Silas, Bible §13.51).
 >
 > **Ne font plus foi** (anciens dialogues, à ne plus jamais reprendre) : la version 2 du 11 novembre (`jeu/archives/E3-dialogues-et-trame-11-novembre.md`), celle du 6 novembre (`jeu/archives/E3-dialogues-et-trame-6-novembre.md`), le document du 5 novembre (https://claude.ai/artifact/969HCVUYL6F1BToNqhE2Lo), les pages « La lettre d'Odette » (https://claude.ai/artifact/8tDtVAQEffoXqrxCvPhkfC) et « Dialogues du Barde » du 11 novembre (https://claude.ai/artifact/7e9Wm974Ux8D5Ta5Xcr3Ft), et « les 3 questions communes » du 12 novembre à 17 h (https://claude.ai/artifact/D3Ss7fQdWkCZCBvJjVtw4P).
 >
@@ -415,19 +415,31 @@ Chacun dit une réplique, autant de fois qu'on veut.
 
 Quand le Pisteur entre dans la dernière salle, il donne le code « L'homme en cape est là ! » (pour barde). À la fête, ces villageois portent alors un « ❗ » : ils ont de nouvelles questions. Le Barde lit les réponses à voix haute pendant que le Pisteur se bat, et il peut les relire.
 
-**Iris** — « Une potion ? Oh… Il faut que je te dise quelque chose. »
+**Silas** — « Tiens, le Barde. Tu cherches un bon conseil ? »
 
-- « On t'a volé autre chose que ton encre ? » → « Oui… Ma potion de force ! J'y travaille depuis des années. »
-- « Que fait cette potion ? » → « Celui qui la boit ne sent plus aucun coup. Sauf s'il saigne : là, elle ne peut plus rien. »
-- Dans le Carnet : Iris, à la fête : on lui a volé sa potion de force. Celui qui la boit ne sent plus les coups… sauf s'il saigne.
+- « C'est vous qui avez entraîné Léo ? » → « Évidemment ! Il fonce comme un taureau, saute comme un chat et frappe en rafale. Et son cri… à faire trembler les murs ! »
+  - (une fois « C'est vous qui avez entraîné Léo ? » posée) « Il a des points faibles ? » → « Des points faibles ? Mon élève ? Aucun ! Bon… Peut-être un ou deux. »
+  - (une fois « Il a des points faibles ? » posée) « Quand il fonce ? » → « Il ne regarde jamais ses pieds. Une flaque bien glissante, et il s'étale. Une fois à terre, frappe-le avec une lame : là, il souffre vraiment. »
+  - (une fois « Il a des points faibles ? » posée) « Quand il saute, boit ou crie ? » → « Il lui faut un instant pour s'y préparer. Un bon coup sur la tête à ce moment-là, et tout s'arrête. »
+  - (une fois « Il a des points faibles ? » posée) « Et s'il attrape quelqu'un ? » → « Il prend toujours le plus faible. Ne laisse jamais un ami à moitié de ses forces. »
+- Dans le Carnet : Silas, à la fête : c'est lui qui a entraîné Léo. Quand il fonce, il ne regarde pas ses pieds (une flaque, et il s'étale ; à terre, une lame lui fait très mal) ; avant de sauter, boire ou crier, un coup sur la tête arrête tout ; il attrape le plus faible.
 
-**Farinel** — « Hein ? Mes outils ? Qui a touché à mes outils ?! »
+**Iris** — « Tu as l'air soucieux… Il se passe quelque chose ? »
 
-- « À quoi sert ton gros marteau ? » → « À caler la meule. Un coup sur la tête, et tu vois des étoiles : tu lâches tout ! »
-- « Et ta faux ? » → « Elle coupe le blé… et les doigts ! Une coupure de faux, ça saigne longtemps. »
-- « Et ce crochet ? » → « Il chasse les rats du grenier. Il perce même le cuir le plus dur ! »
-- « Et la farine ? » → « Un meunier ne laisse jamais une flamme près de sa farine. Jamais ! »
-- Dans le Carnet : Farinel, à la fête : son marteau assomme, sa faux fait saigner longtemps, son crochet chasse les rats et perce le cuir. Et jamais de flamme près de la farine !
+- « On t'a volé autre chose que ton encre ? » → « Oui… Ma potion de force, et ma gourde de soin. »
+- « Que fait la potion de force ? » → « Celui qui la boit ne sent plus aucun coup. Sauf s'il saigne : là, elle ne peut plus rien. »
+- « Elle a d'autres effets ? » → « Elle brûle de l'intérieur. Trop forte, elle fait cracher du feu, et une brûlure pareille ne s'éteint qu'avec un soin. »
+- « Et la gourde ? » → « Une gorgée, et on est comme neuf. Elle ne se vide jamais : à qui la tient, elle sert sans fin. »
+- Dans le Carnet : Iris, à la fête : on lui a volé sa potion de force (on ne sent plus les coups, sauf si on saigne ; elle fait cracher du feu, et sa brûlure ne s'éteint qu'avec un soin) et sa gourde de soin, qui ne se vide jamais.
+
+**Farinel** — « Hein ? Quoi ? Je ne dormais pas ! … Qu'est-ce que tu veux savoir, l'ami ? »
+
+- « C'est toi qui as appris à Léo à se battre ? » → « À se battre ? Moi ? Je suis meunier, mon garçon. Je fais de la farine, pas la guerre ! »
+- « Et ce fléau ? » → « Il bat le blé et chasse les rats du grenier. Un bon coup, et toute la bande détale. »
+- « Et la faux ? » → « Elle coupe le blé… et les doigts. Une entaille de faux saigne sans s'arrêter : on la soigne tout de suite. »
+- « Et la farine ? » → « Dans un nuage de farine, on ne voit plus rien. Qu'une flamme le touche, et BOUM : celui qui est dedans n'en ressort pas ! »
+- « Et ce crochet ? » → « Une fois accroché, impossible de s'en défaire… Sauf avec un filet d'huile : là, on glisse dehors comme une anguille ! »
+- Dans le Carnet : Farinel, à la fête : son fléau fait détaler les rats, sa faux fait saigner (on soigne tout de suite), une flamme dans la farine fait BOUM sur celui qui est dedans, et l'huile fait glisser hors du crochet.
 
 ## 5. Les écoutes aux portes (talent « Tendre l'oreille »)
 
@@ -506,7 +518,7 @@ Quand le Pisteur entre dans la dernière salle, il donne le code « L'homme en c
 
 Les dialogues du Barde suivent le nouveau scénario. Depuis le 13 novembre (Bible §13.32 et §13.34), le Sage, l'Alchimiste et le Pisteur aussi, en partie. Ce qui reste, tant que Romain n'a pas donné son « go » :
 
-- **Le Pisteur** : la clé prise à la ceinture d'Anselme (le dessin du mini-jeu la montre encore au clou). (Fait le 16 novembre, Bible §13.51 : les empreintes de pieds d'enfant, dans le jardin d'Iris — une piste à suivre, 3 carreaux, et le code « Des pieds d'enfant » pour le Sage. Les pas d'homme derrière l'atelier de Mélusine ne seront pas faits : depuis le 13 novembre, ce sont les traces de Moustache qui mènent à la crypte. Fait le 14 novembre, Bible §13.36 et §13.38 : le bruit de la grille donne un code au Barde, et le maire inquiet vient le trouver tout seul, sur des minuteurs cachés.)
+- **Le Pisteur** : la clé prise à la ceinture d'Anselme (le dessin du mini-jeu la montre encore au clou). (Fait le 16 novembre, Bible §13.52 : les empreintes de pieds d'enfant, dans le jardin d'Iris — une piste à suivre, 3 carreaux, et le code « Des pieds d'enfant » pour le Sage. Les pas d'homme derrière l'atelier de Mélusine ne seront pas faits : depuis le 13 novembre, ce sont les traces de Moustache qui mènent à la crypte. Fait le 14 novembre, Bible §13.36 et §13.38 : le bruit de la grille donne un code au Barde, et le maire inquiet vient le trouver tout seul, sur des minuteurs cachés.)
 - **Le Sage** : plus rien. (La taille des pieds de chacun est dans son registre depuis l'enquête 1, en carreaux : Tim, Mélusine et Odette ont des pieds de 3 carreaux, Margot de 4. Fait le 13 novembre : le Livre d'or, dans son Grand Livre, laisse deux suspectes, Mélusine ou Margot ; le Barde les accuse toutes les deux, une seule ment.)
 - **L'Alchimiste** : comparer l'encre de la lettre avec celle d'Iris ; le labo montre encore du pollen de lavande.
 - **Le donjon** : le code de la Grosse Marie, gardé en réserve, n'est plus donné par personne. (Fait le 13 novembre, Bible §13.33 : Léo, le boss final ; « Retenir le maire » et la scène provisoire de Léo sont retirés ; la fin est celle décidée par Romain — Odette reste derrière la porte.)

@@ -1,4 +1,4 @@
-"""Le mini-jeu des empreintes du jardin d'Iris (enquête 3, Bible §13.51), DANS le jeu : un robot suit les petites empreintes jusqu'au bout.
+"""Le mini-jeu des empreintes du jardin d'Iris (enquête 3, Bible §13.52), DANS le jeu : un robot suit les petites empreintes jusqu'au bout.
 Vérifie : les arrivées de l'histoire (la rue des Lanternes pour la bonne piste, les plates-bandes pour les sabots d'Iris), le niveau 7,
 la consigne du lieu (« les sabots d'Iris »), aucune erreur de page, la partie gagnée. Le même robot que tools/massif.py (enquête 1).
 Captures dans jeu/test/jardin/ (départ, mélange des traces, arrivée, fin).

@@ -18,7 +18,7 @@
    (q.besoin : {toutDit:[…]}, barde.js). Pas refait ce soir-là : les trois autres rôles (les empreintes chez Iris, l'encre, la pointure, la
    grille à soulever) et le donjon (Léo en chef des monstres) — leurs textes suivent encore l'ancien fil, sans le contredire.
    (Faits depuis : la grille et le donjon, les 13 et 14 novembre ; LES EMPREINTES DU JARDIN D'IRIS, le 16 novembre — lieux.herboristerie,
-   infos.pieds_enfant, Bible § 13.51 ; la taille des pieds était déjà dans le registre du Sage, en carreaux, depuis l'enquête 1.
+   infos.pieds_enfant, Bible § 13.52 ; la taille des pieds était déjà dans le registre du Sage, en carreaux, depuis l'enquête 1.
    Reste : l'encre de la lettre comparée à celle d'Iris, chez l'Alchimiste.)
    ========================================================== */
 (function(){
@@ -83,7 +83,7 @@ E[3] = {
       {des:2, si:[{code:'info:crypte_fermee'}], ic:'🗝️', t:'La crypte est fermée, et Anselme a la seule clé. Quand tu sauras tout ce qu\'il faut, va le voir au clocher, la nuit.', fait:[{vu:'grand:cle:fini'}]},
       /* (13 novembre, Bible §13.33 : « Retenir le maire » est retiré — le Barde, maintenant, apporte des indices pour le donjon) elle
          n'arrive qu'avec le code du Pisteur, « L'homme en cape est là ! » ; à la fête, Farinel et Iris portent alors un « ❗ » */
-      {des:2, si:[{code:'info:leo_la'}], ic:'🎉', t:'Tes amis se battent, tout au fond ! À la fête, quelqu\'un saura peut-être les aider.', fait:[{et:[{vu:'fete:aide:farinel'}, {vu:'fete:aide:iris'}]}]},
+      {des:2, si:[{code:'info:leo_la'}], ic:'🎉', t:'Tes amis se battent, tout au fond ! À la fête, quelqu\'un saura peut-être les aider.', fait:[{et:[{vu:'fete:aide:farinel'}, {vu:'fete:aide:iris'}, {vu:'fete:aide:silas'}]}]},
       /* (14 novembre, 11 h 44, Bible §13.38) plus de mission pour le maire inquiet : il vient tout seul, sur un minuteur CACHÉ — une
          mission l'annoncerait un quart d'heure à l'avance */
       {piste:true, t:'Regarde bien les visages : plusieurs villageois vont te mentir.'},
@@ -361,7 +361,14 @@ E[3] = {
     gens:{
       gaspard:{t:'Sept chats en pâte d\'amande sur le gâteau ! Il me faudra des bras pour le porter.', note:'Gaspard, à la fête : il lui faudra des bras pour porter son gâteau.'},
       margot:{t:'Le discours du maire ? Vingt minutes ! Il adore qu\'on le lui réclame.', note:'Margot, à la fête : le maire adore qu\'on lui réclame son discours.'},
-      silas:{t:'Chaque année, c\'est le maire qui ouvre le bal. Personne ne danse avant lui !', note:'Silas, à la fête : c\'est le maire qui ouvre le bal. Personne ne danse avant lui.'},
+      silas:{t:'Chaque année, c\'est le maire qui ouvre le bal. Personne ne danse avant lui !', note:'Silas, à la fête : c\'est le maire qui ouvre le bal. Personne ne danse avant lui.',
+        aide:{si:'info:leo_la', t:'Tiens, le Barde. Tu cherches un bon conseil ?', questions:[
+          {q:'C\'est vous qui avez entraîné Léo ?', r:'Évidemment ! Il fonce comme un taureau, saute comme un chat et frappe en rafale. Et son cri… à faire trembler les murs !'},
+          {q:'Il a des points faibles ?', apres:0, r:'Des points faibles ? Mon élève ? Aucun ! Bon… Peut-être un ou deux.'},
+          {q:'Quand il fonce ?', apres:1, r:'Il ne regarde jamais ses pieds. Une flaque bien glissante, et il s\'étale. Une fois à terre, frappe-le avec une lame : là, il souffre vraiment.'},
+          {q:'Quand il saute, boit ou crie ?', apres:1, r:'Il lui faut un instant pour s\'y préparer. Un bon coup sur la tête à ce moment-là, et tout s\'arrête.'},
+          {q:'Et s\'il attrape quelqu\'un ?', apres:1, r:'Il prend toujours le plus faible. Ne laisse jamais un ami à moitié de ses forces.'}],
+          note:'Silas, à la fête : c\'est lui qui a entraîné Léo. Quand il fonce, il ne regarde pas ses pieds (une flaque, et il s\'étale ; à terre, une lame lui fait très mal) ; avant de sauter, boire ou crier, un coup sur la tête arrête tout ; il attrape le plus faible.'}},
       victor:{t:'Je danse ! Enfin, j\'essaie.'},
       tim:{t:'Chut ! Je suis monté en haut du mât des lampions.'},
       melusine:{t:'Je n\'écrirai plus jamais pour personne…',
@@ -372,18 +379,25 @@ E[3] = {
       /* L'AIDE POUR LE DONJON (13 novembre, Bible §13.33) : dès que le Barde a tapé « L'homme en cape est là ! », Farinel et Iris portent
          un « ❗ » et ont de nouvelles questions (grands.js). Le Barde lit les réponses à voix haute pendant que le Pisteur se bat.
          La règle de Romain : deux phrases courtes au plus ; ils disent ce que fait l'outil, jamais la parade toute crue. */
+      /* (Romain, 16 novembre, 5 h 42 → 6 h 09, Bible §13.51) trois villageois : Farinel (ses outils : le fléau, la faux, la farine, le
+         crochet et l'huile), Iris (ses potions : la potion de force, son feu, la gourde), Silas (le maître d'armes qui a entraîné Léo :
+         il se vante, puis donne ses points faibles — une question « apres » n'apparaît qu'une fois la question n° apres posée).
+         Personne ne dit : le crochet contre le cuir des rats, la rafale, le noir. */
       iris:{t:'J\'ai tressé une couronne pour Odette. Je la poserai sur sa porte… quand elle reviendra.',
-        aide:{si:'info:leo_la', t:'Une potion ? Oh… Il faut que je te dise quelque chose.', questions:[
-          {q:'On t\'a volé autre chose que ton encre ?', r:'Oui… Ma potion de force ! J\'y travaille depuis des années.'},
-          {q:'Que fait cette potion ?', r:'Celui qui la boit ne sent plus aucun coup. Sauf s\'il saigne : là, elle ne peut plus rien.'}],
-          note:'Iris, à la fête : on lui a volé sa potion de force. Celui qui la boit ne sent plus les coups… sauf s\'il saigne.'}},
+        aide:{si:'info:leo_la', t:'Tu as l\'air soucieux… Il se passe quelque chose ?', questions:[
+          {q:'On t\'a volé autre chose que ton encre ?', r:'Oui… Ma potion de force, et ma gourde de soin.'},
+          {q:'Que fait la potion de force ?', r:'Celui qui la boit ne sent plus aucun coup. Sauf s\'il saigne : là, elle ne peut plus rien.'},
+          {q:'Elle a d\'autres effets ?', r:'Elle brûle de l\'intérieur. Trop forte, elle fait cracher du feu, et une brûlure pareille ne s\'éteint qu\'avec un soin.'},
+          {q:'Et la gourde ?', r:'Une gorgée, et on est comme neuf. Elle ne se vide jamais : à qui la tient, elle sert sans fin.'}],
+          note:'Iris, à la fête : on lui a volé sa potion de force (on ne sent plus les coups, sauf si on saigne ; elle fait cracher du feu, et sa brûlure ne s\'éteint qu\'avec un soin) et sa gourde de soin, qui ne se vide jamais.'}},
       farinel:{t:'Je ne dors pas, je repose mes yeux !',
-        aide:{si:'info:leo_la', t:'Hein ? Mes outils ? Qui a touché à mes outils ?!', questions:[
-          {q:'À quoi sert ton gros marteau ?', r:'À caler la meule. Un coup sur la tête, et tu vois des étoiles : tu lâches tout !'},
-          {q:'Et ta faux ?', r:'Elle coupe le blé… et les doigts ! Une coupure de faux, ça saigne longtemps.'},
-          {q:'Et ce crochet ?', r:'Il chasse les rats du grenier. Il perce même le cuir le plus dur !'},
-          {q:'Et la farine ?', r:'Un meunier ne laisse jamais une flamme près de sa farine. Jamais !'}],
-          note:'Farinel, à la fête : son marteau assomme, sa faux fait saigner longtemps, son crochet chasse les rats et perce le cuir. Et jamais de flamme près de la farine !'}},
+        aide:{si:'info:leo_la', t:'Hein ? Quoi ? Je ne dormais pas ! … Qu\'est-ce que tu veux savoir, l\'ami ?', questions:[
+          {q:'C\'est toi qui as appris à Léo à se battre ?', r:'À se battre ? Moi ? Je suis meunier, mon garçon. Je fais de la farine, pas la guerre !'},
+          {q:'Et ce fléau ?', r:'Il bat le blé et chasse les rats du grenier. Un bon coup, et toute la bande détale.'},
+          {q:'Et la faux ?', r:'Elle coupe le blé… et les doigts. Une entaille de faux saigne sans s\'arrêter : on la soigne tout de suite.'},
+          {q:'Et la farine ?', r:'Dans un nuage de farine, on ne voit plus rien. Qu\'une flamme le touche, et BOUM : celui qui est dedans n\'en ressort pas !'},
+          {q:'Et ce crochet ?', r:'Une fois accroché, impossible de s\'en défaire… Sauf avec un filet d\'huile : là, on glisse dehors comme une anguille !'}],
+          note:'Farinel, à la fête : son fléau fait détaler les rats, sa faux fait saigner (on soigne tout de suite), une flamme dans la farine fait BOUM sur celui qui est dedans, et l\'huile fait glisser hors du crochet.'}},
       basile:{t:'Les lampions tiennent ! Je n\'en reviens pas moi-même.'},
       fortune:{t:'Dernières lanternes ! Deux pour le prix de trois !'},
       /* (14 novembre, 11 h 44, Bible §13.38) on ne va plus chercher le maire à la fête pour sa grande conversation : il vient tout seul,
@@ -550,7 +564,7 @@ E[3] = {
     puits_ouvert:{nom:'Le puits est ouvert', ic:'🕳️', pour:'barde', de:'pisteur', tard:true,
       t:'Les barreaux du vieux puits ont fondu : tes amis descendent sous la terre. À la fête, personne n\'a rien entendu.',
       dire:'Le Barde doit le savoir : donne-lui ce code.'},
-    /* LES EMPREINTES DU JARDIN D'IRIS (16 novembre, Bible §13.51 ; lieux.herboristerie) : le Pisteur les a suivies et mesurées. Une
+    /* LES EMPREINTES DU JARDIN D'IRIS (16 novembre, Bible §13.52 ; lieux.herboristerie) : le Pisteur les a suivies et mesurées. Une
        information pour le Sage (savoir), qui a la taille des pieds de chacun dans « Les habitants ». Le texte ne conclut rien, et ne
        parle pas de l'encre : c'est le Barde qui sait qu'on en a volé chez Iris. tard:true : rangé tout à la fin, aucun autre code ne bouge. */
     pieds_enfant:{nom:'Des pieds d\'enfant', ic:'👣', pour:'sage', de:'pisteur', savoir:true, tard:true,
@@ -764,7 +778,7 @@ E[3] = {
     lavoir:{alchimiste:{cueillir:[{ingr:'brume', n:2, min:2, moments:['matin']}, {ingr:'eau', n:2}]}},
     /* LES EMPREINTES DE PIEDS D'ENFANT, DANS LE JARDIN D'IRIS (l'étape 8 du scénario de Romain du 12 novembre — « Dans le jardin d'Iris, des
        empreintes de pieds d'enfant. Dans le registre, seuls Tim et Mélusine chaussent si petit ; Tim est un garçon, Margot chausse
-       grand » ; son go le 16 novembre, 6 h 43 : « je te laisse faire : les empreintes de pas d'enfant » ; Bible §13.51).
+       grand » ; son go le 16 novembre, 6 h 43 : « je te laisse faire : les empreintes de pas d'enfant » ; Bible §13.52).
        Cette nuit, Mélusine s'est glissée dans l'atelier d'Iris par le jardin, pour voler un flacon d'encre (Iris le dit au Barde, le
        matin : pnj.iris [2] ; à voix haute, pas de code — le Pisteur vient voir de lui-même).
        · Le mini-jeu : « Suivre la piste » (mj-pisteur-alchi.js), habillé pour ce lieu, comme le massif de la mairie à l'enquête 1 : au
@@ -1222,7 +1236,7 @@ E[3] = {
     /* (13 novembre) l'écriture ne laisse plus que deux suspectes, Mélusine et Margot ; c'est l'aveu qui désigne Mélusine */
     {sources:['alchimiste:analyse:lettre'], qui:['iris', 'victor', 'fortune', 'gaspard', 'tim', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
     {sources:[['barde:melusine:4:verite', 'barde:fete:melusine']], qui:['margot', 'iris', 'victor', 'fortune', 'gaspard', 'tim', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
-    /* (16 novembre, Bible §13.51) les empreintes du jardin d'Iris (le Pisteur) et la taille des pieds dans le registre (le Sage) :
+    /* (16 novembre, Bible §13.52) les empreintes du jardin d'Iris (le Pisteur) et la taille des pieds dans le registre (le Sage) :
        3 carreaux — seuls Tim et Mélusine. Avec l'écriture (Mélusine ou Margot), il ne reste que Mélusine, avant même son aveu. */
     {sources:['pisteur:herboristerie:jardin', 'sage:page:habitants'], qui:['margot', 'iris', 'victor', 'fortune', 'gaspard', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
     /* OÙ : la porte aux quatre signes, au fond du donjon (le Pisteur, avec les potions de l'Alchimiste, et la clé ou le puits du Barde) */

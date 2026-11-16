@@ -1138,7 +1138,7 @@ var ARRIVEES_HISTOIRE = {
   /* le potager de Basile : des rangs de choux (enquête 1, les grosses bottes du jardinier) */
   potager:'<rect x="-18" y="-14" width="36" height="28" rx="4" fill="#6b4a2e" stroke="' + CONTOUR + '" stroke-width="3"/>' + cabouV(-10, -5) + cabouV(0, -5) + cabouV(10, -5) + cabouV(-10, 6) + cabouV(0, 6) + cabouV(10, 6),
   /* la rue des Lanternes : un de ses réverbères, et des pas dans tous les sens sur les pavés (enquête 3, les petites empreintes du jardin
-     d'Iris — 16 novembre, Bible §13.51) : tout le village y a marché ce matin, la piste s'y perd. Elle ne mène chez personne. */
+     d'Iris — 16 novembre, Bible §13.52) : tout le village y a marché ce matin, la piste s'y perd. Elle ne mène chez personne. */
   lanterne:'<rect x="-19" y="-11" width="38" height="26" rx="5" fill="#8c8aa0" stroke="' + CONTOUR + '" stroke-width="3"/>' +
     '<path d="M-19,-2 H19 M-19,6 H19 M-10,-11 V-2 M1,-11 V-2 M-4,-2 V6 M8,-2 V6 M-12,6 V15 M-1,6 V15 M10,6 V15" stroke="#6d6b82" stroke-width="1.5"/>' +
     [[-13, -6, 20], [-6, 1, -35], [-14, 8, 70], [-2, 10, 160], [3, -6, 110], [-8, -8, 200], [4, 3, -80]].map(function(q){ return '<g transform="translate(' + q[0] + ',' + q[1] + ') rotate(' + q[2] + ')" fill="#4a3a2a" opacity=".75"><ellipse cx="0" cy="-1.3" rx="1.5" ry="2.1"/><ellipse cx="0" cy="2.2" rx="1.1" ry="1.1"/></g>'; }).join('') +

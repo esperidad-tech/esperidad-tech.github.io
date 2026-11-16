@@ -1,6 +1,14 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 15 novembre, 21 h 45)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 16 novembre, 6 h 55)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 16 novembre (6 h 55) : L'AIDE DU BARDE PENDANT LE COMBAT DE LÉO — FARINEL, IRIS ET SILAS (Bible §13.51) — EN LIGNE (le jeu : commit cee5b6b du site, version 20261116-0551 ; le donjon : commit 8ba3847, version « 16/11 à 6 h 25 »)
+
+- Conçue à la voix avec Romain, phrase par phrase (5 h 42 → 6 h 06), go à 6 h 09. **Les répliques sont celles de Romain : ne pas les changer sans lui** (elles sont au §13.51 et dans `E3-dialogues-et-trame.md`, refait par l'outil).
+- **Toujours le même code** (« L'homme en cape est là ! ») ; à la fête, trois « ❗ » au lieu de deux. **Farinel** : il n'a jamais appris à se battre à Léo (« je fais de la farine, pas la guerre ») ; le fléau, la faux (saigner, soigner tout de suite), la farine (le feu : BOUM sur celui qui est dedans), le crochet (on en sort avec l'huile). **Iris** : la potion de force (sauf s'il saigne ; elle fait cracher du feu, une brûlure qui ne s'éteint qu'avec un soin), la gourde qui ne se vide jamais. **Silas, le maître d'armes de Léo** : il se vante, puis « Des points faibles ? Aucun ! Bon… Peut-être un ou deux » : la charge (une flaque, puis une lame quand il est à terre), sauter / boire / crier (un coup sur la tête), « il attrape » (le plus faible).
+- **Personne ne dit** (voulu par Romain) : le marteau chez Farinel, le crochet contre le cuir des rats, la rafale, le noir.
+- **Une règle du combat change** : le feu dans la farine fait tomber le héros que Léo y tient (avant : −30). Il faut d'abord le sortir avec l'huile.
+- **Pour la conception** : Silas, garde du maire, a entraîné Léo, l'homme de main du maire. Ça colle avec la fin (il descend avec le maire), et ça le rend un peu suspect avant.
 
 ## Nouveau depuis le 15 novembre (21 h 45) : LÉO, LES À-COUPS DES SORTS ET LA PAGE QUI SE FERME (Bible §13.50) — EN LIGNE (15 novembre, 21 h 40 ; commit d8148bc du site ; version « 15/11 à 21 h 23 », à lire dans la fenêtre « Pause » du combat ; publication de GitHub vérifiée)
 
@@ -273,13 +281,13 @@
 - **À décider avec Romain (§14.3)** : qui lève la brume dans l'histoire, et si l'enquête 3 (ou la suivante) ouvre une première zone. Lever une zone reste à construire (§14.5, « Ce qui reste »).
 - ~~Attention, mise en ligne faite à part~~ : depuis 13 h 11, l'oie au niveau 9 et l'établi des plantes refait sont en ligne aussi (version 20261112-1210).
 
-## Nouveau depuis le 12 novembre (13 h 26) : le nouveau mini-jeu des banderoles est construit et en ligne dans la salle (14 h 44), pas encore dans l'enquête — ⚠️ DÉPASSÉ : il est DANS l'enquête 3 depuis le 13 novembre (Bible §13.32, niveau 9), au niveau 8 depuis le 16 novembre (Bible §13.51)
+## Nouveau depuis le 12 novembre (13 h 26) : le nouveau mini-jeu des banderoles est construit et en ligne dans la salle (14 h 44), pas encore dans l'enquête — ⚠️ DÉPASSÉ : il est DANS l'enquête 3 depuis le 13 novembre (Bible §13.32, niveau 9), au niveau 8 depuis le 16 novembre (Bible §13.52)
 
 - Le détail : **Bible §13.24**. Sur son « Commence la création. », le tir que Romain a décrit (façon « Archery » de « 2 Player Games ») est construit : un mini-jeu neuf, type `visee`. La place en fête vue par les yeux du Pisteur, cinq anneaux de bois au bout de perches ; on en touche un, on pose le doigt en bas, l'arc se bande, le viseur suit le doigt avec du retard, le vent pousse la flèche, elle doit passer dans le trou. 5 anneaux, 7 flèches ; seuls la taille du trou et le vent changent avec le niveau.
 - **En ligne depuis 14 h 44** (accord de Romain à 14 h 42 ; version 20261112-1343). Il se joue dans la salle : https://esperidad-tech.github.io/brumeval/salle.html#jeu=visee&n=5 .
 - **Romain l'a essayé à 15 h 08 ; ses retours sont faits et en ligne depuis 16 h 36 (Bible §13.27 ; version 20261112-1535)** : des confettis passent derrière l'anneau dans le sens du vent, d'autant plus vite qu'il est fort (« c'est les confettis qui vont tout faire ») ; le vent souffle dans tous les sens, de 1 à 4 (de 1 à 12 au niveau 10) ; le bras tremble, le curseur dérive tout seul ; la flèche est en vraie perspective (on la voit de derrière, elle tourne, passe l'anneau et retombe derrière lui) ; deux sons refaits.
 - **Romain l'a réessayé à 16 h 51 ; ce deuxième tour de retours est fait et en ligne depuis 18 h 11 (Bible §13.29 ; version 20261112-1710 ; il ne l'a pas encore essayé)** : le vent ne dépasse plus 10 ; le viseur ne tremble plus, il glisse tout seul, lentement et loin, le plus souvent vers le bas ; l'arc et la main sont redessinés, vus de derrière comme la flèche ; les confettis sont bien moins nombreux, pliés, de formes et de tailles variées, avec des volutes et des loopings ; trois sons pour la corde qui se tend, trois pour la corde lâchée, tirés au hasard. La partie s'arrêtait déjà dès qu'il manque des flèches (au troisième raté) : lui demander où il l'a vue continuer. **Troisième essai à 18 h 28, retouché et en ligne à 18 h 49 (version 20261112-1748)** : au niveau 10 le trou est encore un peu plus petit, le viseur glisse un peu plus fort, le son de la corde qui se tend est refait.
-- ~~**Pas encore dans l'enquête 3** : le point des banderoles lance toujours l'ancien tir de côté.~~ **Fait le 13 novembre** (`mj:'visee'` dans `e3.js`, niveau 9 ; Bible §13.32) ; **niveau 8 depuis le 16 novembre** (Romain, 6 h 43 ; Bible §13.51).
+- ~~**Pas encore dans l'enquête 3** : le point des banderoles lance toujours l'ancien tir de côté.~~ **Fait le 13 novembre** (`mj:'visee'` dans `e3.js`, niveau 9 ; Bible §13.32) ; **niveau 8 depuis le 16 novembre** (Romain, 6 h 43 ; Bible §13.52).
 - À lui demander : deux ratés permis (7 flèches) ou aucun.
 
 ## Depuis le 12 novembre (8 h 56) : l'oie au niveau 9, les banderoles à refaire

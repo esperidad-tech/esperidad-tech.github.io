@@ -119,7 +119,7 @@ def partie(b, joueur, chemin):
     fermer(pg)
     for l in ['clocher', 'mairie', 'puits']:
         verifier(lieu(pg, l) == [], f'{l}, le matin : rien pour le Pisteur'); fermer(pg)
-    # LES EMPREINTES DU JARDIN D'IRIS (16 novembre, Bible §13.51) : « Suivre la piste », en ville, de petites empreintes d'enfant et les
+    # LES EMPREINTES DU JARDIN D'IRIS (16 novembre, Bible §13.52) : « Suivre la piste », en ville, de petites empreintes d'enfant et les
     # sabots d'Iris au départ ; elles se perdent dans la rue des Lanternes ; niveau 7, autant d'essais qu'on veut ; au bout :
     # 3 carreaux, et le code « Des pieds d'enfant » pour le Sage. Partie A : dès le matin (ratées une fois) ; partie B : l'après-midi.
     def jardin(quand, rater):
