@@ -1650,6 +1650,26 @@ M.prevoirFilms = function(){
     try{ window.CineLecteur.precharger('cine/' + f.nom + '.mp4'); if(window.CINE_INFOS[f.nom].piste) window.CineLecteur.prechargerPiste('cine/' + f.nom + '.mp3'); }catch(e){}
   });
 };
+/* LA PUB AU LANCEMENT (Romain, 16 novembre : « au tout début du jeu, quand on lance l'appli, ça lance cette cinématique » ; Bible §12.64).
+   La PREMIÈRE fois sur un appareil : une porte (le titre, « ▶️ Voir le film », « Passer ➜ ») — il faut un toucher, sans lui le navigateur
+   ne laisse pas sortir le son — puis le film de 30 secondes (jeu/pub), puis l'accueil. Ensuite, on arrive tout droit à l'accueil, et le
+   film se revoit par « 🎬 Le film » (A.pub). Les robots d'essai ne voient pas la porte (sauf window.BRUMEVAL_AVEC_PUB). */
+M.pubVue = function(){ try{ return localStorage.getItem('brumeval-pub') === '1'; }catch(e){ return true; } };
+M.pubNoter = function(){ try{ localStorage.setItem('brumeval-pub', '1'); }catch(e){} };
+M.pubLancement = function(){
+  if(M.pubVue() || !window.CINE_INFOS || !window.CINE_INFOS.pub || !window.CineLecteur || !M.pubPorteHTML) return;
+  if(navigator.webdriver && !window.BRUMEVAL_AVEC_PUB) return;
+  if(/[?&](retour|jeton)=/.test(location.search)) return;                     /* on revient du donjon : pas maintenant */
+  var p = document.createElement('div'); p.id = 'pub-porte'; p.className = 'b-pub-porte'; p.innerHTML = M.pubPorteHTML();
+  document.body.appendChild(p);
+  try{ window.CineLecteur.precharger('cine/pub.mp4'); if(window.CINE_INFOS.pub.piste && location.protocol !== 'file:') window.CineLecteur.prechargerPiste('cine/pub.mp3'); }catch(e){}
+  p.addEventListener('click', function(ev){
+    var b = ev.target.closest('[data-pub]'); if(!b) return;
+    ev.stopPropagation(); M.pubNoter(); p.remove();
+    if(b.dataset.pub === 'voir'){ try{ audioReveil(); }catch(e){} M.jouerFilm('pub', function(){}); }
+  });
+};
+A.pub = function(){ M.jouerFilm('pub', function(){}); };
 A['fin-suite'] = function(){
   var P = M.P(), E = M.E();
   if(!P || !E || !P.fin){ UI.ecran = 'accueil'; M.render(); return; }
@@ -1748,6 +1768,7 @@ function demarrer(){
   if(rb > 0) M.ouvrir({type:'info', ic:'👛', titre:'Fortuné te rend ton or',
     t:'Fortuné a repris certains objets de sa boutique : ils ne servaient à rien pour l\'instant. Il te rend ' + rb + ' pièces d\'or. À toi de choisir autre chose !'});
   try{ M.rateQuitte(); }catch(e){ console.error(e); }   /* un mini-jeu laissé ouvert quand on a quitté : raté */
+  try{ M.pubLancement(); }catch(e){ console.error(e); } /* la première fois sur cet appareil : le film de présentation */
   /* le service worker : la version GitHub, et un serveur local pour les essais (Jouer sans internet, heros.js) */
   if('serviceWorker' in navigator && ((location.protocol === 'https:' && /github\.io$/.test(location.hostname)) || /^(localhost|127\.0\.0\.1)$/.test(location.hostname))){
     navigator.serviceWorker.register('sw.js').catch(function(){});

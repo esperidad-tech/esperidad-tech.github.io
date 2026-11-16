@@ -1,6 +1,10 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 16 novembre, 8 h 45)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 16 novembre, 16 h 10)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 16 novembre (15 h 52) : LA PUB DU JEU, AU PREMIER LANCEMENT, MONTRE L'HOMME EN CAPE ET SON COMBAT (Bible §12.64) — EN LIGNE (commits 97d4660, ec0aeda, d066308 du site ; version 20261116-1451)
+
+Ce n'est pas l'enquête 3, mais ça compte pour elle : **la première fois qu'on ouvre le jeu sur un appareil, il propose une pub de 30 secondes** (demandée par Romain le 16 novembre : « ma petite pub », pour vendre le jeu). On y voit, parmi le reste : **une seconde de l'homme en cape qui craque son allumette derrière le Vieux Chêne, une seconde de lui à l'entrée du donjon, et deux secondes et demie du combat contre lui** (trois héros face à un homme en capuche, un sort de feu). **Jamais son nom, jamais son visage** ; la barre du combat où son nom est écrit est cachée. La règle « Léo n'est nommé qu'à la nuit de l'enquête 3 » tient donc. Mais **un joueur tout neuf sait, avant même l'enquête 1, qu'il y a un homme en cape, un pot de fumée et un combat contre lui au bout** : à garder en tête pour la suite (enquêtes 4 et après), et à dire à Romain s'il veut garder la surprise — Claude le lui a signalé (Bible §12.64, « À valider », point 2).
 
 ## Nouveau depuis le 16 novembre (8 h 37) : LE RASSEMBLEMENT DE L'ENQUÊTE 2 EST UN FILM, ET IL MONTRE L'HOMME EN CAPE (Bible §12.63) — EN LIGNE (commits 838073e, ebff275 et 5aec86f du site ; version 20261116-0736)
 

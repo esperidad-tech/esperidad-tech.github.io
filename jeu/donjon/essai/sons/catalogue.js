@@ -113,7 +113,10 @@ window.CATALOGUE = [
           {id:'cineVent', t:'Vent de nuit', v:'A', neuf:1}, {id:'cineHibou', t:'La chouette', v:'A', neuf:1}, {id:'cineAllumette', t:'L\'allumette', v:'A', neuf:1}, {id:'cineMeche', t:'La mèche brûle', v:'A', neuf:1},
           {id:'cinePffft', t:'Le fumigène part', v:'A', neuf:1}, {id:'cineOh', t:'« Oh ! »', v:'A', neuf:1}, {id:'cineToux', t:'Quelqu\'un tousse', v:'A', neuf:1}, {id:'cineCourse', t:'Ils accourent', v:'A', neuf:1},
           {id:'cineFouleFuit', t:'La fuite', v:'A', neuf:1},
-          {id:'cineMusChene', t:'Musique du rassemblement', v:'A', m:1, neuf:1}
+          {id:'cineMusChene', t:'Musique du rassemblement', v:'A', m:1, neuf:1},
+          /* 16 novembre (Romain) : la pub de 30 secondes (jeu/pub) */
+          {id:'pubPop', t:'Pub : pop', v:'A', neuf:1}, {id:'pubWhoosh', t:'Pub : fffiou', v:'A', neuf:1}, {id:'pubPlongee', t:'Pub : la plongée', v:'A', neuf:1}, {id:'pubTada', t:'Pub : le titre', v:'A', neuf:1},
+          {id:'cineMusPub', t:'Musique de pub', v:'A', m:1, neuf:1}
         ]}
       ]}
     ]},

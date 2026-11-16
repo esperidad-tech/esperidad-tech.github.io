@@ -108,8 +108,15 @@ function vueQuiJoue(retour){
     '</div><p class="doux petit centre">Chaque joueur a son héros. Sur une tablette partagée, chacun choisit le sien.</p></section></main>';
 }
 function titreJeu(){
-  return '<header class="b-titre">' + lanterne() + '<div><p class="sur-titre">Un jeu d\'enquête à quatre écrans</p><h1>Les Enquêteurs de Brumeval</h1></div></header>';
+  /* « 🎬 Le film » : la pub de 30 secondes (jeu/pub ; Bible §12.64), à revoir quand on veut */
+  var film = window.CINE_INFOS && window.CINE_INFOS.pub && window.CineLecteur ? '<button class="btn second petit b-film" data-act="pub">🎬 Le film</button>' : '';
+  return '<header class="b-titre">' + lanterne() + '<div><p class="sur-titre">Un jeu d\'enquête à quatre écrans</p><h1>Les Enquêteurs de Brumeval</h1></div>' + film + '</header>';
 }
+/* la porte du premier lancement (M.pubLancement, moteur-actions.js) : le titre, un bouton jaune pour voir le film, un autre pour passer */
+M.pubPorteHTML = function(){
+  return '<div class="b-pub-carte">' + lanterne() + '<h1>Les Enquêteurs de Brumeval</h1>' +
+    '<button class="btn b-aller b-pub-go" data-pub="voir">▶️ Voir le film</button><button class="btn second petit" data-pub="passer">Passer ➜</button></div>';
+};
 
 /* Voix naturelles : la proposition du village, une seule fois (version installée seulement ; ensuite, c'est dans les Réglages : M.voixHTML) */
 M.carteVoix = function(){

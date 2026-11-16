@@ -494,6 +494,7 @@ M.ecranMenu = function(){
       (M.S.heros ? '<button class="btn second" data-act="ecran" data-e="heros">🧝 Mon héros</button>' : '') +
       (M.S.calepin && M.S.calepin.length && M.S.heros && M.S.heros.role === 'sage' ? '<button class="btn second" data-act="calepin">📔 Calepin</button>' : '') +   /* (le calepin des enquêtes passées : au Sage, Romain, 14 h 15) */
       '<button class="btn second" data-act="aide">❓ Comment jouer</button>' +
+      (window.CINE_INFOS && window.CINE_INFOS.pub && window.CineLecteur ? '<button class="btn second" data-act="pub">🎬 Le film</button>' : '') +   /* la pub de 30 secondes, à revoir de partout (Bible §12.64) */
       '<button class="btn second" data-act="ecran" data-e="reglages">⚙️ Réglages</button>' +
       '<button class="btn second" data-act="changer-joueur">👥 Changer de joueur</button>' +
       (M.peutInstaller() ? '<button class="btn second" data-act="installer">📲 Installer le jeu</button>' : '') +

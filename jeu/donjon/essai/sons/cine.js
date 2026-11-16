@@ -383,4 +383,36 @@ S.cineFouleFuitA = function(A, P){
   for(var c = 0; c < 5; c++) A.bruit(t + h(.1, d - .6), {coul:'rose', filtres:[{type:'bandpass', f:h(500, 900), q:1.3}], env:A.perc(.03, .18), g:.25}, dehors(A, P, h(-.7, .7)));
   return {duree:d + .4};
 };
+
+/* =================== LA PUB (jeu/pub, 16 novembre) : les petits bruits du montage =================== */
+/* un mot qui surgit : « pop ! » */
+S.pubPopA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.08});
+  A.ton(t, {type:'sine', f:420, f2:1250, gl:.07, env:A.perc(.002, .13), g:.3}, o); A.ton(t + .005, {type:'triangle', f:840, f2:2300, gl:.06, env:A.perc(.002, .07), g:.1}, o);
+  A.bruit(t, {coul:'blanc', hp:5000, env:A.perc(.001, .03), g:.08}, o);
+  return {duree:.25};
+};
+/* une image chasse l'autre : « fffiou » */
+S.pubWhooshA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.12, pan:h(-.3, .3)});
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:500, pts:[[.16, 3600], [.34, 900]], q:1.1}], env:[[0, 0], [.14, 1], [.36, 0]], g:.9}, o);
+  A.bruit(t + .03, {coul:'blanc', filtres:[{type:'bandpass', f:2400, pts:[[.14, 7000], [.3, 2000]], q:1.6}], env:[[0, 0], [.12, 1], [.3, 0]], g:.18}, o);
+  return {duree:.45};
+};
+/* la caméra plonge dans la tablette : ça monte, ça aspire, « tchac » */
+S.pubPlongeeA = function(A, P){
+  var t = P.t, d = 1.15, o = A.bus(P, {rev:.2});
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:240, pts:[[d, 5200]], q:1.4}], env:[[0, 0], [d * .85, 1], [d, .2], [d + .12, 0]], g:.5}, o);
+  A.ton(t, {type:'sine', f:140, f2:1500, gl:d, env:[[0, 0], [d * .9, 1], [d, 0]], g:.07, vib:[11, 14]}, o);
+  A.choc(t + d, {f:150, f2:50, d:.3, g:.42, sat:2, bruit:.4}, o); A.bruit(t + d, {coul:'blanc', hp:3000, env:A.perc(.001, .25), g:.16}, o);
+  return {duree:d + .5};
+};
+S.pubPlongeeA.moment = 1.15;
+/* le titre arrive : des étincelles */
+S.pubTadaA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.4});
+  [1568, 1976, 2349, 3136, 2637, 3520, 4186].forEach(function(f, k){ A.ton(t + k * .045, {type:'sine', f:f, env:A.perc(.002, .5 - k * .03), g:.12}, o); });
+  A.bruit(t, {coul:'blanc', hp:6500, env:[[0, 0], [.01, 1], [.5, .2], [1, 0]], g:.1, rugueux:.5, rugVit:30}, o);
+  return {duree:1.2};
+};
 })(window);

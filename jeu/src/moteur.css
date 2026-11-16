@@ -32,6 +32,13 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 /* Titre */
 .b-titre{display:flex;align-items:center;gap:14px;padding-top:8px}
 .b-titre h1{font-size:clamp(1.8rem,6vw,2.7rem)}
+/* « 🎬 Le film » (la pub de 30 secondes) dans le titre, et la porte du premier lancement (M.pubLancement) */
+.b-titre .b-film{margin-left:auto;flex:none;white-space:nowrap}
+.b-hub-simple .b-titre .b-film{display:none}
+.b-pub-porte{position:fixed;left:0;top:0;right:0;bottom:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 120%, #3a4bb0 0%, #1a2360 42%, #0b1030 100%)}
+.b-pub-carte{display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;padding:24px}
+.b-pub-carte h1{font-size:clamp(1.9rem,7vw,3.2rem);line-height:1.1}
+.b-pub-carte .b-pub-go{font-size:1.25rem;padding:14px 30px}
 .b-lanterne{width:72px;flex:none;overflow:visible}
 .b-halo{animation:b-lueur 3s ease-in-out infinite}
 .b-flamme{transform-origin:40px 60px;transform-box:view-box;animation:b-flamme 1.2s ease-in-out infinite alternate}

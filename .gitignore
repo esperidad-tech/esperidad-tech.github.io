@@ -50,3 +50,4 @@ jeu/test/visee-*.png
 # les captures du test du film du cachot, tools/e3-film.py (refaites à chaque fois)
 jeu/test/e3-film/
 jeu/test/jardin/
+jeu/pub/plans
