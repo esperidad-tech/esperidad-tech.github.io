@@ -431,7 +431,8 @@ E[3] = {
      l'Alchimiste par un code, et le labo compare — la même bande noire que l'encre de la lettre. La DEUXIÈME des deux analyses
      (la lettre, l'encre d'Iris) raconte la comparaison et donne le code « La même encre », pour le Sage : comme les deux pièces d'or de
      l'enquête 2. Si c'est la lettre, elle donne deux codes dans la même fenêtre : donneAussi (moteur-actions.js, M.texteAnalyse).) */
-  labo:['lettre', 'piece_pain', 'encre_iris'],
+  /* (16 novembre, §13.55) mousse : le brin de mousse lumineuse que le Pisteur envoie du donjon (son code « plante:lumiere », descente.js) */
+  labo:['lettre', 'piece_pain', 'encre_iris', 'mousse'],
   analyses:{
     /* (Romain, 16 novembre, 8 h 07) la pièce de Fortuné : la même analyse que la pièce de la boulangerie de l'enquête 2 (sa fiche au labo,
        piece_pain : l'or, la fêlure, la farine) ; elle ne donne pas de code, elle raconte */
@@ -450,7 +451,12 @@ E[3] = {
       note:'Analyse de l\'encre d\'Iris : de l\'encre de noix de galle (une seule bande noire, tout en bas de la bandelette).',
       variantes:[{si:[{analyse:'lettre'}], donne:'info:meme_encre',
         t:'L\'encre d\'Iris, sur la bandelette : une seule bande noire, tout en bas… exactement comme l\'encre de la lettre. C\'est la même ! La lettre a été écrite avec l\'encre volée chez Iris.',
-        note:'L\'encre de la lettre et celle d\'Iris sont les mêmes : la lettre a été écrite avec l\'encre volée chez Iris.'}]}
+        note:'L\'encre de la lettre et celle d\'Iris sont les mêmes : la lettre a été écrite avec l\'encre volée chez Iris.'}]},
+    /* (16 novembre, §13.55) la mousse lumineuse du donjon : une vraie plante (Schistostega pennata, « l'or des lutins »). Tout ce qui est
+       dit ici est vrai ; elle ne donne pas de code (c'est le chaudron du donjon qui donne la recette du baume). */
+    mousse:{
+      t:'La mousse lumineuse, de près : de toutes petites frondes plates, comme des plumes, sur un tapis de fils verts. Au microscope, ces fils sont faits de cellules rondes comme des billes de verre : de petites loupes ! Elles rassemblent la moindre lueur… et en renvoient un éclat vert doré. Cette mousse ne fabrique pas de lumière : elle renvoie celle qu\'elle reçoit. On l\'appelle « l\'or des lutins ».',
+      note:'Analyse de la mousse lumineuse : elle ne fabrique pas de lumière, elle renvoie celle qu\'elle reçoit (ses cellules sont rondes comme de petites loupes). On l\'appelle « l\'or des lutins ».'}
   },
   laboNotes:{
     /* (12 novembre au soir : plus « l'encre des colporteurs » — Iris dit au Barde qu'on lui a volé son encre, faite de noix de galle) */
@@ -507,7 +513,10 @@ E[3] = {
     /* (16 novembre) la pièce que Fortuné prête au Barde : le même objet du labo que la pièce de la boulangerie de l'enquête 2 */
     piece_pain:{nom:'La pièce d\'or de Fortuné', ic:'🪙', pour:'alchimiste', dire:'L\'Alchimiste saura la faire parler : donne-lui ce code.'},
     /* (16 novembre, 15 h) le fond de flacon d'encre qu'Iris donne au Barde : l'Alchimiste le compare à l'encre de la lettre (labo : encre_iris) */
-    encre_iris:{nom:'L\'encre d\'Iris', ic:'🖋️', pour:'alchimiste', dire:'L\'Alchimiste saura la faire parler : donne-lui ce code.'}
+    encre_iris:{nom:'L\'encre d\'Iris', ic:'🖋️', pour:'alchimiste', dire:'L\'Alchimiste saura la faire parler : donne-lui ce code.'},
+    /* (16 novembre, §13.55) le brin de mousse lumineuse du donjon : il arrive tout seul sur la paillasse quand l'Alchimiste tape le code
+       du donjon « plante:lumiere » (descente.js). donjon:true : personne ne donne son code dans l'enquête (tools/verif-e3.js). */
+    mousse:{nom:'La mousse lumineuse', ic:'🌿', pour:'alchimiste', donjon:true, dire:'Un brin de mousse lumineuse, pour l\'Alchimiste.'}
   },
   /* Les codes de l'enquête 3 (E3-actions-des-roles.md §4). Neufs : ils seront gelés à l'ouverture de l'enquête aux joueurs (codes-fixes.js).
      Étape 1 : ceux que le Barde donne ou reçoit le matin et l'après-midi. */

@@ -356,7 +356,7 @@ var CODES = {
   'sauve:4':        {code:['coeur','lune','flamme'],     de:'sage',       a:'pisteur',    nom:'Page blanche trouvée'},
   /* les plantes rares : le Pisteur les trouve, l'Alchimiste les cuisine au chaudron */
   'plante:givre':   {code:['poisson','lune','etoile'],   de:'pisteur',    a:'alchimiste', nom:'Fleur de givre'},
-  'plante:lumiere': {code:['arbre','soleil','cloche'],   de:'pisteur',    a:'alchimiste', nom:'Herbes lumineuses'},
+  'plante:lumiere': {code:['arbre','soleil','cloche'],   de:'pisteur',    a:'alchimiste', nom:'Mousse lumineuse'},
   /* les recettes sorties du chaudron : l'Alchimiste les affiche, le Pisteur les tape au feu de camp (ou hors combat) */
   'recette:givre':  {code:['champi','coeur','cle'],      de:'alchimiste', a:'pisteur',    nom:'Recette : Givre'},
   'recette:baumelum':{code:['chat','arbre','lune'],      de:'alchimiste', a:'pisteur',    nom:'Recette : Baume lumineux'},
@@ -2322,7 +2322,7 @@ var RECETTES = {
   coeur:{nom:'Cœur vaillant', long:'Il relève un ami tombé au sol.', coul:'#ff5a7a'},
   /* gagnées au chaudron */
   givre:{nom:'Givre', long:'Un froid magique : il gèle tout, même l’eau.', coul:'#9fe6ff', code:'recette:givre', plante:'givre'},
-  baumelum:{nom:'Baume lumineux', long:'Il soigne toute l’équipe d’un coup.', coul:'#8fffc8', code:'recette:baumelum', plante:'lumiere'}
+  baumelum:{nom:'Baume lumineux', long:'Il soigne toute l’équipe d’un coup. Et il brille dans le noir !', coul:'#8fffc8', code:'recette:baumelum', plante:'lumiere'}
 };
 var DEPART = ['feu', 'fumigene', 'huile', 'colle', 'acide', 'baume', 'coeur'];
 var PLANTES = {
@@ -2330,9 +2330,14 @@ var PLANTES = {
     arrivee:'Le Pisteur t’envoie la fleur de givre. Elle ne fond jamais… Elle sera parfaite dans ton chaudron.',
     ingr:[{id:'eau', e:'💧', n:'Eau de source', c:'#5aa9ff'}, {id:'givre', e:'❄️', n:'Fleur de givre', c:'#bff4ff'}, {id:'lune', e:'✨', n:'Poussière de lune', c:'#eef0ff'}],
     leurres:[{id:'miel', e:'🍯', n:'Miel', c:'#f3c13e'}, {id:'menthe', e:'🌿', n:'Menthe', c:'#3fcf9a'}]},
-  lumiere:{code:'plante:lumiere', nom:'Les herbes lumineuses', court:'les herbes lumineuses', recette:'baumelum',
-    arrivee:'Le Pisteur t’envoie des herbes lumineuses, cueillies sous la lune. Elles brillent encore !',
-    ingr:[{id:'miel', e:'🍯', n:'Miel des ruches', c:'#f3c13e'}, {id:'herbes', e:'🌱', n:'Herbes lumineuses', c:'#7affc0'}, {id:'lavande', e:'🪻', n:'Lavande', c:'#a77bf0'}],
+  /* (16 novembre, Romain : « des plantes dans la réalité », « juste un ingrédient qui, mélangé à d'autres dans le chaudron, donnera une
+     potion ») la mousse lumineuse, Schistostega pennata, « l'or des lutins » : une vraie petite mousse des grottes, qui ne fabrique pas
+     de lumière mais renvoie celle qu'elle reçoit. Elle ne soigne pas : dans le baume, elle fait briller ; ce sont le miel et le souci
+     qui soignent (deux vrais remèdes de toujours). Les identifiants (lumiere, herbes, baumelum) et les codes ne changent pas. */
+  lumiere:{code:'plante:lumiere', nom:'La mousse lumineuse', court:'la mousse lumineuse', recette:'baumelum',
+    arrivee:'Le Pisteur t’envoie de la mousse lumineuse, cueillie au fond du puits d’aération. Dans le noir, elle renvoie la moindre lueur !',
+    vrai:'C’est vrai : cette mousse existe ! Elle ne fabrique pas de lumière, elle la renvoie. Le miel et le souci, eux, soignent pour de vrai.',
+    ingr:[{id:'miel', e:'🍯', n:'Miel des ruches', c:'#f3c13e'}, {id:'herbes', e:'🌱', n:'Mousse lumineuse', c:'#7affc0'}, {id:'souci', e:'🌼', n:'Fleurs de souci', c:'#f2a020'}],
     leurres:[{id:'eau', e:'💧', n:'Eau', c:'#5aa9ff'}, {id:'champi', e:'🍄', n:'Champignon', c:'#ff7a5a'}]}
 };
 var PLANTE_DE_CODE = {'plante:givre':'givre', 'plante:lumiere':'lumiere'};
@@ -2354,9 +2359,13 @@ function dessinPlante(id){
     return '<svg viewBox="-50 -50 100 110" class="plante-svg" aria-hidden="true"><circle r="46" fill="#bff4ff" opacity=".18"/><path d="M0 22 C -4 34 -2 44 0 56 M0 36 q -10 -4 -14 -12 M0 44 q 9 -3 13 -10" fill="none" stroke="#5aa08a" stroke-width="3.5" stroke-linecap="round"/>' +
       '<g transform="translate(0 0)">' + p + '<circle r="7" fill="#9fe8ff" stroke="#3a6a90" stroke-width="2"/></g></svg>';
   }
-  var t = ''; for(var i = 0; i < 7; i++){ var a = -90 + (i - 3) * 18, x = Math.cos(a * Math.PI / 180) * 34, y = Math.sin(a * Math.PI / 180) * 34 + 40;
-    t += '<path d="M0 40 Q ' + (x * .4) + ' ' + (y * .6 + 10) + ' ' + x + ' ' + y + '" fill="none" stroke="#2e8a5e" stroke-width="4" stroke-linecap="round"/><circle cx="' + x + '" cy="' + y + '" r="5" fill="#b8ffe0" stroke="#2e8a5e" stroke-width="1.5"/>'; }
-  return '<svg viewBox="-50 -30 100 90" class="plante-svg" aria-hidden="true"><circle cy="20" r="44" fill="#7affc0" opacity=".16"/>' + t + '<ellipse cx="0" cy="44" rx="18" ry="6" fill="#5a3a20"/></svg>';
+  /* la mousse lumineuse : un coussin vert sur sa pierre, de toutes petites frondes plates, des éclats vert doré */
+  var t = '<path d="M-36 44 C -36 24 -20 12 0 12 C 20 12 36 24 36 44 Z" fill="#2f7a48" stroke="#1f4a30" stroke-width="2.5" stroke-linejoin="round"/>';
+  for(var i = 0; i < 9; i++){ var x = -30 + i * 7.5, h = 13 + ((i * 7) % 5) * 2.5, b = 38 - Math.abs(i - 4) * 1.2;
+    t += '<path d="M' + x + ' ' + b + ' L ' + x + ' ' + (b - h) + '" stroke="#bdf0a8" stroke-width="1.6" stroke-linecap="round"/>';
+    for(var k = 1; k <= 4; k++){ var yy = b - h * k / 4.4; t += '<path d="M' + (x - 3.5) + ' ' + (yy + 2) + ' L ' + x + ' ' + yy + ' L ' + (x + 3.5) + ' ' + (yy + 2) + '" fill="none" stroke="#7ad08a" stroke-width="1.5" stroke-linecap="round"/>'; } }
+  [[-20, 26], [-4, 18], [12, 22], [24, 32], [-28, 36], [3, 32]].forEach(function(p){ t += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="2.4" fill="#f4ffb0"/>'; });
+  return '<svg viewBox="-50 -30 100 90" class="plante-svg" aria-hidden="true"><circle cy="24" r="44" fill="#d8ff8a" opacity=".16"/><ellipse cx="0" cy="45" rx="42" ry="7" fill="#5a4a38"/>' + t + '</svg>';
 }
 /* le chaudron (repère 400 × 380, comme le mini-jeu du jeu) */
 function chaudronSVG(){
@@ -2610,6 +2619,7 @@ function finir(p, r){
   var lay = q('#cuisine');
   var res = el('div', 'resultat');
   res.innerHTML = '<div class="res-carte"><p class="sur">Nouvelle recette !</p><div class="res-fiole">' + fiole(r.coul) + '</div><h2>' + esc(r.nom) + '</h2>' + dit(r.long, 'res-dit') +
+    (p.vrai ? dit(p.vrai, 'res-dit res-vrai') : '') +   /* (16 novembre) « C'est vrai ! » : ce qui est vrai dans la nature (la mousse lumineuse) */
     PG.codeGrand(r.code) + dit('Montre ce code au Pisteur. Il le tapera au feu de camp, pour la mettre dans le sac.', 'res-dit') +
     '<div class="rangee"><button type="button" class="aller" data-ranger>Ranger dans mon livre</button></div></div>';
   lay.appendChild(res);

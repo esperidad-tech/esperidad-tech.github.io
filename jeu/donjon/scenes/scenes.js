@@ -1005,16 +1005,21 @@ A.sacoche = function(){ return art('sa', 88, 72, function(d){
     /* l'emblème de l'Alchimiste : un petit alambic doré */
     C(44, 35, 6.5, 'none', ' stroke="#e8c062" stroke-width="2"') + L('M44 28.5 L 44 24 M44 24 L 52 22', '#e8c062', 2) + L('M40 33 q 4 -3 8 0', '#e8c062', 1.2, op(0.7)) +
     L('M70 30 Q 74 38 72 46', '#ffffff', 2, op(0.3)); }); };
-/* les herbes lumineuses (plante rare : pour l'Alchimiste) */
+/* la mousse lumineuse (plante rare : pour l'Alchimiste). 16 novembre, Romain : « des plantes dans la réalité » — c'est une vraie mousse,
+   Schistostega pennata, « l'or des lutins » : elle vit là où n'entre qu'un filet de jour (ici, le puits d'aération) et renvoie sa
+   lumière en éclats vert doré. L'identifiant reste « herbes ». */
 A.herbes = function(){ return art('he', 76, 78, function(d){
-  var s = E(38, 72, 24, 6, '#1a2a14', ' stroke="' + O + '" stroke-width="2"') + E(38, 70, 18, 3, '#3a5a2a');
-  var g = d.lin([[0, '#c8fff0'], [0.5, '#4ad0a0'], [1, '#1a6a4a']]);
-  [[-40, 46, -1], [-22, 56, 1], [-6, 62, -1], [8, 60, 1], [24, 54, -1], [40, 44, 1], [-30, 34, 1], [32, 36, -1]].forEach(function(f){
-    var a = f[0] * Math.PI / 180, l = f[1], x2 = 38 + Math.sin(a) * l, y2 = 70 - Math.cos(a) * l, cx = 38 + Math.sin(a) * l * 0.4 + f[2] * 6, cy = 70 - Math.cos(a) * l * 0.55;
-    s += L('M38 70 Q ' + r1(cx) + ' ' + r1(cy) + ' ' + r1(x2) + ' ' + r1(y2), '#2a6a4a', 2.4);
-    s += '<g transform="translate(' + r1(x2) + ' ' + r1(y2) + ') rotate(' + r1(f[0]) + ')">' + P('M0 6 C -7 0 -6 -12 0 -18 C 6 -12 7 0 0 6 Z', g, ' stroke-width="2"') + L('M0 4 L 0 -14', '#2a8a6a', 1.2) + '</g>';
-    s += C(x2 + Math.sin(a) * 18, y2 - Math.cos(a) * 18, 5, d.halo('#ffffff', 0.9)) + C(x2 + Math.sin(a) * 18, y2 - Math.cos(a) * 18, 2, '#ffffff');
-  });
+  var s = E(38, 72, 31, 6, '#1a2a14', ' stroke="' + O + '" stroke-width="2"');
+  var g = d.lin([[0, '#d8ff9a'], [0.45, '#5ac878'], [1, '#1f6a40']]);
+  /* le coussin : trois bosses de mousse */
+  s += P('M9 72 C 6 54 19 43 30 48 C 33 35 50 33 55 46 C 65 43 72 56 67 72 Z', g, ' stroke-width="2.2"');
+  /* de toutes petites frondes plates, comme des plumes */
+  [[18, 60, -14], [27, 52, -6], [37, 46, 0], [47, 48, 8], [57, 57, 14], [25, 66, -10], [50, 65, 10], [38, 61, 2]].forEach(function(f){
+    var q = '<g transform="translate(' + f[0] + ' ' + f[1] + ') rotate(' + f[2] + ')">' + L('M0 7 L 0 -7', '#eaffc8', 1.3);
+    for(var k = 0; k < 4; k++) q += L('M-3.6 ' + (6 - k * 3.6) + ' L 0 ' + (4 - k * 3.6) + ' L 3.6 ' + (6 - k * 3.6), '#c8f8a8', 1.2);
+    s += q + '</g>'; });
+  /* l'éclat vert doré : la lumière du puits, renvoyée */
+  [[22, 54], [34, 41], [49, 43], [60, 60], [31, 64], [44, 57]].forEach(function(p){ s += C(p[0], p[1], 5, d.halo('#f4ffb0', 0.9)) + C(p[0], p[1], 1.8, '#ffffff'); });
   return s; }); };
 /* les deux carquois de la réserve */
 A.carquois = function(sorte){ if(sorte === 'normal') return A.carquoisNormal(); return art('cq', 56, 116, function(d){
@@ -1360,7 +1365,7 @@ SALLES.galerie = function(){ return {nom: 'La galerie effondrée', type: 'cul-de
   ]}; };
 SALLES.aeration = function(){ return {nom: 'Le puits d\'aération', type: 'cul-de-sac', ambiance: 'un rai de lumière verte et dorée, des plantes qui poussent',
   elements: [
-    objet({id: 'herbes', nom: 'Des herbes lumineuses', svg: A.herbes(), x: 670, y: SOL - 118, w: 76, h: 78, lueur: '#7affc0', pour: 'alchimiste', code: 'herbes-lumineuses', flotte: false}),
+    objet({id: 'herbes', nom: 'De la mousse lumineuse', svg: A.herbes(), x: 670, y: SOL - 118, w: 76, h: 78, lueur: '#7affc0', pour: 'alchimiste', code: 'herbes-lumineuses', flotte: false}),
     objet({id: 'sacoche', nom: 'La sacoche', svg: A.sacoche(), x: 812, y: SOL - 132, w: 88, h: 72, sol: true, lueur: '#ffd36a', pour: 'alchimiste'}),
     {id: 'ambiance-feuilles', type: 'particules', effet: 'feuilles', svg: A.feuille(), zone: {x: 640, y: 40, w: 140, h: 270}, n: 4, x: 640, y: 40, w: 0, h: 0, z: 9},
     poussiere(620, 50, 190, 260, 6, '#fbffd0'),

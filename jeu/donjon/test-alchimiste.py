@@ -11,7 +11,7 @@ from outils_test import Bilan, contexte, page, capture, regles, muet, mesurer_gl
 
 VITE = '--vite' in sys.argv
 CODES = {'plante:givre': ['poisson', 'lune', 'etoile'], 'plante:lumiere': ['arbre', 'soleil', 'cloche'], 'sauve:1': ['lune', 'cle', 'arbre'], 'faux': ['chat', 'chat', 'chat']}
-RECETTE = {'givre': ['eau', 'givre', 'lune'], 'lumiere': ['miel', 'herbes', 'lavande']}
+RECETTE = {'givre': ['eau', 'givre', 'lune'], 'lumiere': ['miel', 'herbes', 'souci']}   # (16 novembre : la mousse lumineuse — son identifiant reste « herbes » —, le miel et le souci)
 CODE_RECETTE = {'givre': 'recette:givre', 'lumiere': 'recette:baumelum'}
 b = Bilan('Alchimiste')
 

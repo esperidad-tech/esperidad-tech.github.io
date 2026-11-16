@@ -21,7 +21,7 @@ var jeu;
 var PHRASES = {
   puits:'L\'entrée des souterrains. Trois passages s\'enfoncent dans la brume… Par où aller ?',
   galerie:'Des éboulis, rien que des éboulis… Et quelque chose qui brille !',
-  aeration:'Un rayon de lune tombe par une grille. Des herbes y poussent, là où rien ne devrait pousser.',
+  aeration:'Un rayon de lune tombe par une grille. Sur la pierre, une mousse le renvoie en éclats vert doré.',   /* (16 novembre : la mousse lumineuse, une vraie plante des grottes) */
   reserve:'Une vieille réserve. Un coffre attend là, depuis bien longtemps.',
   givre:'Brrr ! Il fait froid ici. Une fleur de givre brille au fond.',
   bibliotheque:'Des livres qui flottent sur l\'eau qui luit. Les Fondateurs lisaient beaucoup.',

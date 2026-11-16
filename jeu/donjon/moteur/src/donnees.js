@@ -156,7 +156,8 @@ D.OBJETS = {
   'bourse':{nom:'Bourse de pièces', pour:null, or:true, d:'De l\'or pour la boutique.'},
   /* les objets à code : la tablette du Pisteur montre le code, un autre joueur le tape */
   'fleur-givre':{nom:'Fleur de givre', pour:'alchimiste', code:'plante:givre', d:'Une plante rare, pour le chaudron de l\'Alchimiste.'},
-  'herbes':{nom:'Herbes lumineuses', pour:'alchimiste', code:'plante:lumiere', d:'Une plante rare, pour le chaudron de l\'Alchimiste.'},
+  /* (16 novembre) la mousse lumineuse, une vraie plante des grottes (« l'or des lutins ») ; l'identifiant reste « herbes », le code ne change pas */
+  'herbes':{nom:'Mousse lumineuse', pour:'alchimiste', code:'plante:lumiere', d:'Une mousse rare, pour le chaudron de l\'Alchimiste.'},
   'page-dechiree':{nom:'Page déchirée', pour:'sage', code:'page:dechiree', d:'Le morceau qui manque au plan du Sage.'},
   'page-blanche':{nom:'Page blanche', pour:'sage', code:'page:blanche', d:'Une page de plus pour le Grand Livre du Sage.'},
   /* la rune de lumière du Sage (Romain, 10 novembre : « la rune, il la trouve dans une salle, par exemple au fond du puits »).

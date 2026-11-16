@@ -87,7 +87,10 @@ var ECH = {
     frene:{nom:'frêne', f:'compose', c:'#6fa04a'},
     trefle:{nom:'trèfle', f:'trefle', c:'#4fa04a'},
     sapin:{nom:'sapin', f:'aiguilles', c:'#2a5a3a'},
-    fougere:{nom:'fougère', f:'fronde', c:'#4a8a4a'}
+    fougere:{nom:'fougère', f:'fronde', c:'#4a8a4a'},
+    /* (enquête 3, le donjon) la mousse lumineuse, Schistostega pennata : elle n'entre dans le casier des feuilles que quand son brin
+       est sur le cuir (90-main.js) — rien ne change pour les analyses des enquêtes 1 et 2 */
+    mousselum:{nom:'mousse lumineuse', f:'mousse', c:'#7ad08a'}
   },
   grains:{
     suie:{nom:'suie'}, charbon:{nom:'charbon de bois'}, poudre:{nom:'poudre noire'}, poivre:{nom:'poivre moulu'}, pavot:{nom:'graines de pavot'}, limaille:{nom:'limaille de fer'},
@@ -207,7 +210,13 @@ var OBJETS = {
   /* (16 novembre, l'étape 6 du scénario de Romain) le fond de flacon d'encre qu'Iris donne au Barde : un flacon sur le cuir, comme ceux de
      l'enquête 2. Au test des couleurs : la même bande noire, tout en bas, que l'encre de la lettre — c'est la même encre. */
   encre_iris:{forme:'flacon', liquide:true, cibles:['galle'], coul:'#2a2a32', scene:'encre', requis:['encre_iris'],
-    savoir:'Pour comparer deux encres, on compare leurs bandelettes : mêmes bandes, même encre.'}
+    savoir:'Pour comparer deux encres, on compare leurs bandelettes : mêmes bandes, même encre.'},
+  /* (16 novembre, Bible §13.55) le brin de mousse lumineuse que le Pisteur envoie du donjon : une vraie mousse des grottes (Schistostega
+     pennata, « l'or des lutins »). À la loupe : de petites frondes plates, à retrouver dans le casier des feuilles ; au microscope
+     (voirMicro : on y revient quand on veut) : des fils verts, puis des cellules rondes comme des billes de verre ; à la bougie : elle
+     renvoie un éclat vert doré. Tout ce qui est écrit est vrai. */
+  mousse:{forme:'tas', couls:['#2f7a48', '#9fe8a0', '#f4ffb0', '#7ad08a'], tiroir:'feuilles', bon:'mousselum', coul:'#7ad08a', scene:'mousse', voirMicro:true, voirFlamme:true, requis:['mousse'],
+    savoir:'Une mousse n\'a ni fleurs ni graines : elle se sème avec une poussière très fine, les spores.'}
 };
 /* Ce que l'Alchimiste a reçu, dans l'ordre d'arrivée : chacun à sa place numérotée sur le carré de cuir (quatre places) */
 var CUIRS = ['fil', 'poils', 'plume'];
@@ -276,7 +285,10 @@ var REA = {
     vinaigre:{t:'Là où tombe le vinaigre, l\'encre pâlit un peu.'}, flamme:{t:'Le coin du papier roussit… Stop ! C\'est une preuve.'}}),
   encre_l:rea({eau:{t:'Elle devient plus pâle.'}, vinaigre:{t:'Le noir pâlit : cette encre n\'aime pas l\'acide.', fx:'vire', c:'#8a8a94'}, flamme:{t:'L\'eau s\'évapore et laisse un anneau noir.'}}),
   /* l'encre d'Iris : les mêmes réactions que l'encre de la lettre (c'est la même) */
-  encre_iris:rea({eau:{t:'Elle devient plus pâle.'}, vinaigre:{t:'Le noir pâlit : cette encre n\'aime pas l\'acide.', fx:'vire', c:'#8a8a94'}, flamme:{t:'L\'eau s\'évapore et laisse un anneau noir.'}})
+  encre_iris:rea({eau:{t:'Elle devient plus pâle.'}, vinaigre:{t:'Le noir pâlit : cette encre n\'aime pas l\'acide.', fx:'vire', c:'#8a8a94'}, flamme:{t:'L\'eau s\'évapore et laisse un anneau noir.'}}),
+  /* la mousse lumineuse (de vraies réactions : une mousse boit l'eau comme une éponge ; celle-ci renvoie la lumière qu'on lui donne) */
+  mousse:rea({eau:{t:'Elle boit l\'eau comme une éponge : une mousse n\'a pas de racines.'}, chaude:{t:'Elle boit l\'eau comme une éponge.'},
+    flamme:{t:'Tu approches la bougie… La mousse s\'allume d\'un éclat vert doré ! Elle ne fabrique pas de lumière : elle renvoie celle de la flamme.'}})
 };
 /* Le test des couleurs, comme dans un vrai labo : une goutte du liquide sur une bandelette de papier buvard, le pied dans un peu d'alcool.
    L'alcool monte dans le papier et emporte les couleurs, chacune à sa vitesse : la teinture se sépare en bandes.
@@ -314,7 +326,10 @@ var SAVOIR_MICRO = {
   poudre:{40:'Des grains noirs… et, mêlés à eux, des grains rouges.'},
   piece:{10:'Une couronne, et tout autour, une ronde de petites étoiles.', 40:'Sous la couronne, une toute petite fêlure en forme d\'éclair : le moule qui a frappé la pièce était fêlé.'},
   /* l'enquête 3 */
-  papier:{40:'Le papier est fait de petits fils emmêlés : l\'encre s\'est glissée entre eux.'}
+  papier:{40:'Le papier est fait de petits fils emmêlés : l\'encre s\'est glissée entre eux.'},
+  /* la mousse lumineuse (enquête 3, le donjon) */
+  mousse:{10:'Sous la mousse, un tapis de fils verts très fins.', 40:'Ces fils sont faits de cellules rondes comme des billes de verre : de toutes petites loupes !',
+    100:'Chaque petite loupe rassemble la lumière sur ses grains verts, tout au fond… et en renvoie un peu. C\'est ça, l\'éclat de la mousse.'}
 };
 
 /* ============ État ============

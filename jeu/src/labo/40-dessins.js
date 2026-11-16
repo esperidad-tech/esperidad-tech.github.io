@@ -131,6 +131,15 @@ function dessinerFeuille(c, w, h, e, seed, s){
   s = s || 1; var cx = w/2, cy = h/2, i, t, r, px, py; c.lineJoin = 'round'; c.lineCap = 'round';
   c.fillStyle = e.c; c.strokeStyle = 'rgba(0,0,0,.32)'; c.lineWidth = 1.5*s;
   var veine = e.f === 'lierre' ? 'rgba(230,240,200,.65)' : 'rgba(255,255,255,.42)';
+  /* (enquête 3, le donjon) la mousse lumineuse : un petit coussin, et de toutes petites frondes plates, comme des plumes (un centimètre en vrai) */
+  if(e.f === 'mousse'){ var Rm = rng((seed || 7) + 3);
+    c.fillStyle = '#2f7a48'; c.beginPath(); c.ellipse(cx, cy + 22*s, 48*s, 9*s, 0, 0, 6.283); c.fill(); c.stroke();
+    for(i = 0; i < 7; i++){ var bx = cx - 36*s + i*12*s, ht = (30 + Rm()*14)*s, inc = (i - 3)*.1 + (Rm() - .5)*.16;
+      c.save(); c.translate(bx, cy + 20*s); c.rotate(inc); c.strokeStyle = '#3a7a44'; c.lineWidth = 1.6*s; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, -ht); c.stroke();
+      for(t = 0; t < 7; t++){ var yy = -ht*(.24 + .76*t/6), ll = (8 - Math.abs(t - 3)*1.2)*s; [1,-1].forEach(function(sd){ c.fillStyle = t % 2 ? e.c : '#c4f2ae'; c.beginPath(); c.ellipse(sd*ll*.55, yy, ll*.55, 2.3*s, sd*-.5, 0, 6.283); c.fill(); }); }
+      c.restore(); }
+    c.fillStyle = 'rgba(244,255,176,.95)'; for(i = 0; i < 6; i++) rond(c, cx - 38*s + Rm()*76*s, cy + 18*s + Rm()*8*s, 1.8*s);
+    return; }
   if(e.f === 'profil'){
     var ax = cx - 52*s, ay = cy + 5*s, bx = cx + 52*s, by = cy - 5*s, Lx = Math.hypot(bx - ax, by - ay), tx = (bx - ax)/Lx, ty = (by - ay)/Lx, nx = -ty, ny = tx, haut = [], bas = [];
     for(i=0;i<=100;i++){ var x = i/100, wv;

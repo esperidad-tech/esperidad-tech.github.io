@@ -71,6 +71,7 @@ function utilisable(outil){
   if(outil === 'loupe') return !o.liquide && !fait;
   if(outil === 'micro') return cuir && !!o.scene && (microReste() || !!o.voirMicro);   /* (les pièces : on revient toujours voir la fêlure) */
   if(outil === 'test') return !!o.liquide && !fait;
+  if(outil === 'flamme' && o.voirFlamme) return cuir;   /* (la mousse lumineuse : on peut toujours l'approcher de la bougie, pour la voir renvoyer sa lumière) */
   return !fait || (cuir && aCreer(t));       /* les bocaux, la bougie : tant qu'on cherche (ou tant que l'eau chaude peut encore faire déteindre) */
 }
 function majOutils(){
@@ -250,6 +251,8 @@ if(CFG){
      sur le cuir, le carnet de teintures gagne une page : l'encre de noix de galle */
   LIVREDOR = !!CFG.livredor;
   if((CUIRS.indexOf('lettre') >= 0 || CUIRS.indexOf('encre_iris') >= 0) && !TEINTES.some(function(t){ return t.k === 'galle'; })) TEINTES.push(TEINTE_GALLE);   /* (16 novembre : ou avec le flacon d'encre d'Iris) */
+  /* (16 novembre) avec le brin de mousse lumineuse sur le cuir (enquête 3, le donjon), le casier des feuilles gagne une mousse */
+  if(CUIRS.indexOf('mousse') >= 0) ['facile', 'difficile'].forEach(function(nv){ if(LISTES[nv].feuilles.indexOf('mousselum') < 0) LISTES[nv].feuilles.push('mousselum'); });
   if(CFG.style) for(var kS in ST) if(typeof CFG.style[kS] === 'number') ST[kS] = CFG.style[kS];
   if(Array.isArray(CFG.chat) && CFG.chat.length === 3) CHAT = CFG.chat;
   if(JEU){ SON.actif = CFG.son !== false; SANS_MIMI = !CFG.mimi; document.body.classList.add('jeu'); }

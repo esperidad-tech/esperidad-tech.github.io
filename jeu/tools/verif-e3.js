@@ -276,7 +276,9 @@ module.exports = function verifierE3(E, SRC, D){
   /* ---------- 4. les codes ---------- */
   /* (12 novembre au soir) un code « en réserve » (I.reserve : « La Grosse Marie », gardé pour le donjon, que plus personne ne donne tant que
      Romain n'a pas décidé de la suite) n'est pas vérifié ici */
-  const ids = Object.keys(E.objets || {}).map(k => 'obj:' + k).concat(Object.keys(E.infos || {}).filter(k => !E.infos[k].reserve).map(k => 'info:' + k));
+  /* (16 novembre) un objet qui arrive par le donjon (O.donjon : le brin de mousse lumineuse, posé sur la paillasse par le code du donjon
+     « plante:lumiere », descente.js) : personne ne donne son code dans l'enquête, il n'est pas vérifié ici non plus */
+  const ids = Object.keys(E.objets || {}).filter(k => !E.objets[k].donjon).map(k => 'obj:' + k).concat(Object.keys(E.infos || {}).filter(k => !E.infos[k].reserve).map(k => 'info:' + k));
   const enReserve = Object.keys(E.infos || {}).filter(k => E.infos[k].reserve);
   if(enReserve.length) console.log(`  · en réserve (plus donné par personne pour l'instant) : ${enReserve.map(k => 'info:' + k).join(', ')}`);
   const donneurs = {}, lecteurs = {};

@@ -22,7 +22,7 @@ var CODES = {
   'sauve:4':        {code:['coeur','lune','flamme'],     de:'sage',       a:'pisteur',    nom:'Page blanche trouvée'},
   /* les plantes rares : le Pisteur les trouve, l'Alchimiste les cuisine au chaudron */
   'plante:givre':   {code:['poisson','lune','etoile'],   de:'pisteur',    a:'alchimiste', nom:'Fleur de givre'},
-  'plante:lumiere': {code:['arbre','soleil','cloche'],   de:'pisteur',    a:'alchimiste', nom:'Herbes lumineuses'},
+  'plante:lumiere': {code:['arbre','soleil','cloche'],   de:'pisteur',    a:'alchimiste', nom:'Mousse lumineuse'},
   /* les recettes sorties du chaudron : l'Alchimiste les affiche, le Pisteur les tape au feu de camp (ou hors combat) */
   'recette:givre':  {code:['champi','coeur','cle'],      de:'alchimiste', a:'pisteur',    nom:'Recette : Givre'},
   'recette:baumelum':{code:['chat','arbre','lune'],      de:'alchimiste', a:'pisteur',    nom:'Recette : Baume lumineux'},

@@ -197,6 +197,26 @@ function scenePapier(c, z, Rn){
     for(i = 0; i < (z === 40 ? 70 : 34); i++){ var u = Rn(), cote = Rn() < .5 ? -1 : 1, bx = -100 + u*1200, by = y0 + 160 - u*320 + cote*w*.5, bl = (z === 40 ? 14 : 44)*(.4 + Rn());
       c.beginPath(); c.moveTo(bx, by); c.lineTo(bx + (Rn() - .5)*bl, by + cote*bl); c.stroke(); } }
 }
+/* (enquête 3, le donjon — 16 novembre) La mousse lumineuse au microscope. C'est vrai : sous la mousse, un tapis de fils verts très fins
+   (×10) ; de près, ces fils sont des chapelets de cellules rondes comme des billes de verre (×40), qui rassemblent la lumière sur
+   leurs grains verts, tassés au fond de la cellule (×100), et en renvoient une partie : l'éclat vert doré de « l'or des lutins ». */
+function sceneMousse(c, z, Rn){
+  var i, k, x, y, r, a, n;
+  function cellule(x, y, r){
+    var gg = c.createRadialGradient(x - r*.3, y - r*.35, r*.06, x, y, r); gg.addColorStop(0, 'rgba(255,255,236,.98)'); gg.addColorStop(.4, 'rgba(196,236,150,.9)'); gg.addColorStop(1, 'rgba(112,178,92,.92)');
+    c.fillStyle = gg; rond(c, x, y, r); c.strokeStyle = 'rgba(40,90,50,.85)'; c.lineWidth = Math.max(1, r*.07); c.beginPath(); c.arc(x, y, r, 0, 6.283); c.stroke();
+    if(r > 20){ c.fillStyle = '#2f8a3a'; for(var q = 0; q < 6; q++) rond(c, x + r*.26 + (Rn() - .5)*r*.42, y + r*.34 + (Rn() - .5)*r*.34, r*.13);   /* les grains verts, tassés au fond */
+      c.fillStyle = 'rgba(255,255,255,.85)'; rond(c, x - r*.34, y - r*.38, r*.11); }
+  }
+  if(z === 10){
+    for(i = 0; i < 30; i++){ x = Rn()*MW; y = Rn()*MW; a = Rn()*6.283; n = 10 + Math.floor(Rn()*9);
+      for(k = 0; k < n; k++){ cellule(x, y, 8 + Rn()*3); a += (Rn() - .5)*.7; x += Math.cos(a)*17; y += Math.sin(a)*17; } }
+    return;
+  }
+  var R = z === 40 ? 58 : 150, nb = z === 40 ? 24 : 9;
+  for(i = 0; i < nb; i++){ x = Rn()*MW; y = Rn()*MW; a = Rn()*6.283; n = z === 40 ? 9 : 5;
+    for(k = 0; k < n; k++){ cellule(x, y, R*(.86 + Rn()*.14)); a += (Rn() - .5)*.5; x += Math.cos(a)*R*1.86; y += Math.sin(a)*R*1.86; } }
+}
 function fabriquerScene(scene, z){
   var cv = document.createElement('canvas'); cv.width = MW*SDPR; cv.height = MW*SDPR; var c = cv.getContext('2d'); c.scale(SDPR, SDPR); var Rn = rng(z*97 + (scene === 'fibres' ? 0 : scene.length*131));
   var g = c.createRadialGradient(500,500,40,500,500,720); g.addColorStop(0,'#fdf8ea'); g.addColorStop(1,'#e2d6bb'); c.fillStyle = g; c.fillRect(0,0,MW,MW);
@@ -204,6 +224,7 @@ function fabriquerScene(scene, z){
   else if(scene === 'plume') scenePlume(c, z, Rn);
   else if(scene === 'goutte' || scene === 'encre') sceneGoutte(c, z, Rn, couleurLiq(SC.d));   /* (encre : la goutte d'encre d'Iris, enquête 3 — la même vue, sans les phrases de la goutte de rivière) */
   else if(scene === 'poudre') scenePoudre(c, z, Rn);
+  else if(scene === 'mousse') sceneMousse(c, z, Rn);
   else if(scene === 'piece') scenePiece(c, z, SC.d);
   else if(scene === 'papier') scenePapier(c, z, Rn);
   else {
