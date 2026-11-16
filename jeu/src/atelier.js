@@ -7082,6 +7082,13 @@ function cadeauChat(V, o, force){
   return true;
 }
 function sortieChat(V, o, force){ return cadeauChat(V, o, force); }   /* (l'ancien nom : les robots) */
+/* ⚠️ Elle est sortie par la chatière en s'effaçant, et cet effacement « reste » (fill:'forwards') : au retour, il faut l'enlever,
+   sinon ELLE RESTE INVISIBLE (elle est là, elle bouge, on ne la voit plus) — le défaut était en ligne depuis le 16 novembre, 16 h 44 ;
+   trouvé et corrigé le soir même en regardant les images du robot. */
+function chatReparait(d){
+  if(!d || !d.getAnimations) return;
+  try{ d.getAnimations().forEach(function(a){ var f = a.effect && a.effect.getTiming ? a.effect.getTiming().fill : ''; if(a.playState === 'finished' && (f === 'forwards' || f === 'both')) a.cancel(); }); }catch(e){}
+}
 function retourChat(V, o, id){
   var st = chatEtat(V, o), d = V.elO[o.id], t = tama(V);
   if(!V.parId[o.id]){ poserCoffret(V, null); return; }
@@ -7089,6 +7096,7 @@ function retourChat(V, o, id){
   st.tenu = false;
   if(d){
     d.classList.remove('at-c-dehors');
+    chatReparait(d);
     if(t.dehors) butinChat(V, o, (t.dehors.g ? '<svg x="-13" y="-10" width="26" height="24.4" ' : '<svg x="-11" y="-8" width="22" height="20.6" ') + coffretSVG(t.dehors.g).slice(5));      /* (le coffret, dans sa gueule : il suit sa tête) */
     anim(d, [{opacity:0, transform:'translateY(-' + Math.round(10 * V.k) + 'px) scale(' + (d._s * 0.8) + ')'}, {opacity:1, transform:'scale(' + d._s + ')'}], {duration:480, easing:'ease-out'});
   }
@@ -7109,7 +7117,7 @@ function poserCoffret(V, o){
   if(!V.salle){ var pl = placeLibre(V, [[x, y], [borne(p.x + (st && st.gauche ? 70 : -70), xF(140, y), xF(LARGEUR - 140, y)), y]], 50, 70); x = pl.x; y = pl.y; }
   t.coffret = {c:b.c, x:Math.round(x), y:Math.round(y)};
   if(b.g) t.coffret.g = 1;
-  if(o){ var d = V.elO[o.id], sp = d && d.querySelector('.at-c-butin'); if(sp) sp.remove(); butinChat(V, o, null); if(d) d.classList.remove('at-c-dehors'); if(st && st.tenu && !st.depart) st.tenu = false; }
+  if(o){ var d = V.elO[o.id], sp = d && d.querySelector('.at-c-butin'); if(sp) sp.remove(); butinChat(V, o, null); if(d){ d.classList.remove('at-c-dehors'); chatReparait(d); } if(st && st.tenu && !st.depart) st.tenu = false; }
   dessinerCoffret(V, true);
   var tx = b.g ? (b.nom || PORTEE.mere) + ' a rapporté un grand coffret doré ! Celui-là, elle ne le sort pas tous les jours…'
     : (b.nom || PORTEE.mere) + ' a rapporté un petit coffret ! Qu\'est-ce qui peut bien se cacher dedans ?';
@@ -7125,7 +7133,7 @@ function livrerButin(V, o){
   t.butin = null;
   var I = INGR[b.ingr] || {nom:b.ingr, ic:'🌿'};
   ajouter(V.etat, b.ingr, 1);
-  if(o){ var d = V.elO[o.id], sp = d && d.querySelector('.at-c-butin'); if(sp) sp.remove(); butinChat(V, o, null); if(d) d.classList.remove('at-c-dehors'); var st = V.chats[o.id]; if(st && st.tenu && !st.depart) st.tenu = false; }
+  if(o){ var d = V.elO[o.id], sp = d && d.querySelector('.at-c-butin'); if(sp) sp.remove(); butinChat(V, o, null); if(d){ d.classList.remove('at-c-dehors'); chatReparait(d); } var st = V.chats[o.id]; if(st && st.tenu && !st.depart) st.tenu = false; }
   if(!V.salle){ dessinerTas(V); placerTas(V); }
   majReperes(V); majSalleBouton(V);
   var tx = (b.nom || PORTEE.mere) + ' t\'a rapporté : ' + I.nom + (b.rare ? ' (un ingrédient rare !)' : '') + '. Il est posé devant la porte, avec la cueillette.';
