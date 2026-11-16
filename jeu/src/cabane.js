@@ -105,7 +105,7 @@ function traiter(eId, P, G, sec){
     var m = /^pisteur:([^:]+):(.+)$/.exec(k);
     if(!m || vus[k] !== 'ok' || dansPaquet[k]) return;
     var p = pointDe(eId, m[1], m[2]);
-    if(!p || !p.mj) return;   /* 1. une découverte ordinaire : rien */
+    if(!p || !p.mj || p.sansTrouvaille) return;   /* 1. une découverte ordinaire : rien (sansTrouvaille : une simple visite, la maison d'Odette le matin) */
     var cle = eId + ':m:' + m[1] + ':' + m[2];
     if(G.f[cle]) return;
     var id = T.mj[m[1] + ':' + m[2]];

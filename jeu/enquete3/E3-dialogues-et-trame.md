@@ -171,6 +171,8 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
    - « Ses chats ont miaulé toute la nuit. Tous sont chez moi, sauf Moustache, le gros gris : disparu ! »
 4. **Vous gardez sa maison ?** _(le matin)_
    - « Elle n'est jamais fermée : Odette ne ferme rien. Si tu retrouves sa canne, va la lui poser. »
+5. **Odette vous a laissé quelque chose ?** _(le matin)_
+   - « « Si je disparais, donne ce papier à qui viendra me chercher. » Voilà ce qu'elle m'a dit, le mois dernier. Tiens. Il est couvert de petits signes : moi, je n'y comprends rien. »
 - **Tout demandé** : « Les chats ont encore faim… Excuse-moi. »
 - **Occupé, l'après-midi** : « Les chats me griffent les mollets, ils ont faim ! Repasse plus tard. » — puis, si on revient : « Je surveille la maison d'Odette. Repasse ce soir. »
 - **Occupé, la nuit** : « Je veille sur la maison d'Odette. Rien ne m'échappe ! » — puis, si on revient : « Toujours rien… Enfin, je crois. Je n'ai pas dormi, hein ! »

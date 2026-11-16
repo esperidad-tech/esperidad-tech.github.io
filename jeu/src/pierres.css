@@ -1,0 +1,51 @@
+/* LES PIERRES DU SAGE, et les plans où on les pose (pierres.js) — 16 novembre */
+.pp{margin:6px 0 12px}
+.pp-plan{position:relative;max-width:min(340px, 31vh);margin:0 auto;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.pp-plan.pp-large{max-width:460px}
+.pp-dessin{display:block;width:100%;height:auto;filter:none}
+.pp-plume{font-family:'Brush Script MT','Segoe Script','Bradley Hand',cursive;font-size:17px;font-style:italic;fill:#4a3320}
+.pp-rang{font:700 10px/1 system-ui,sans-serif;fill:#ffe08a}
+.pp-citation{font-style:italic}
+/* la pierre posée sur le plan */
+.pp-pose{position:absolute;transform:translate(-50%,-62%);padding:0;border:0;background:none;line-height:0;touch-action:none;cursor:grab;-webkit-tap-highlight-color:transparent;animation:pp-pose .28s cubic-bezier(.3,1.5,.5,1)}
+.pp-pose.pp-fixe{pointer-events:none;cursor:default}
+@keyframes pp-pose{from{transform:translate(-50%,-110%) scale(1.25);opacity:.4}to{transform:translate(-50%,-62%) scale(1);opacity:1}}
+.pp-svg{display:block;overflow:visible}
+.pp-runes{stroke:#3d3a36}
+.pp-froid .pp-pose .pp-runes{stroke:#4a5a78}
+.pp-tiede .pp-pose .pp-runes{stroke:#ffb347}
+.pp-tiede .pp-pose{filter:drop-shadow(0 0 7px rgba(255,170,60,.85))}
+.pp-parle .pp-fixe .pp-runes{stroke:#ff6a1a}
+.pp-parle .pp-fixe{filter:drop-shadow(0 0 9px rgba(255,140,40,.95));animation:pp-brule 1.8s ease-in-out infinite}
+@keyframes pp-brule{0%,100%{opacity:1}50%{opacity:.72}}
+.pp-or-case{animation:pp-case 2.2s ease-in-out infinite}
+@keyframes pp-case{0%,100%{opacity:.72}40%{opacity:1}}
+.pp-or-rayon{animation:pp-brule 3s ease-in-out infinite}
+/* ce que dit le plan */
+.pp-dit{margin:6px 0 0}
+.pp-dit .lv-texte{margin:0}
+.pp-trois{display:flex;align-items:center;justify-content:center;gap:6px;margin:4px 0 8px}
+.pp-trois b{font-size:1.5rem;color:#8a6a3a}
+.pp-trois-c{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 8px 5px;min-width:74px;border-radius:12px;background:#ffd36b;border:3px solid #b9770e;box-shadow:0 3px 0 #8a5a12}
+.pp-trois-c i{position:absolute;left:-8px;top:-8px;width:24px;height:24px;border-radius:50%;background:#24182e;color:#ffe08a;font:700 .9rem/24px system-ui,sans-serif;text-align:center;font-style:normal}
+.pp-trois-c small{font-weight:700;color:#3a2208;font-size:.82rem}
+/* la poche */
+.pp-poche{margin:8px auto 0;max-width:340px;padding:5px 8px 8px;border-radius:14px;background:#7a4a26;border:2px solid #35281b;box-shadow:inset 0 0 0 2px #7a4a26, inset 0 0 0 3.5px rgba(239,220,174,.55)}
+.pp-poche > b{display:block;color:#f6e7bd;font-size:.82rem;letter-spacing:.02em;margin:0 0 4px 4px}
+.pp-poche-l{display:flex;flex-wrap:wrap;gap:8px}
+.pp-pierre{display:flex;align-items:center;gap:8px;padding:4px 12px 4px 8px;border-radius:12px;border:2px solid #35281b;background:#efdcae;color:#35281b;font:inherit;font-weight:700;font-size:.95rem;touch-action:none;cursor:grab;-webkit-tap-highlight-color:transparent;transition:transform .15s, box-shadow .15s}
+.pp-pierre .pp-svg{animation:pp-saute 2.4s ease-in-out infinite}
+.pp-pierre.pp-main{background:#ffe08a;box-shadow:0 0 0 4px #ffc93c, 0 6px 14px rgba(0,0,0,.35);transform:translateY(-3px)}
+.pp-pierre.pp-main .pp-svg, .pp-pierre.pp-sortie .pp-svg{animation:none}
+.pp-pierre.pp-sortie{opacity:.55}
+@keyframes pp-saute{0%,70%,100%{transform:none}80%{transform:translateY(-5px) rotate(-6deg)}90%{transform:translateY(0) rotate(4deg)}}
+.pp-vide{color:#f6e7bd;font-size:.9rem;opacity:.8;padding:4px}
+/* la pierre qu'on fait glisser */
+.pp-fantome{position:fixed;left:0;top:0;z-index:9999;pointer-events:none;filter:drop-shadow(0 10px 8px rgba(0,0,0,.4));will-change:transform}
+html.pp-glisse, html.pp-glisse *{user-select:none;-webkit-user-select:none}
+/* dans « Les objets magiques » */
+.pp-objet .pp-svg{flex:none}
+/* le tableau d'Odette, à revoir */
+.pp-tableau{max-width:340px;margin:6px auto 10px;border-radius:6px;overflow:hidden;box-shadow:0 6px 16px rgba(0,0,0,.35)}
+.pp-tableau svg{display:block;width:100%;height:auto}
+@media (prefers-reduced-motion: reduce){ .pp-pose, .pp-parle .pp-fixe, .pp-or-case, .pp-or-rayon, .pp-pierre .pp-svg{animation:none} }

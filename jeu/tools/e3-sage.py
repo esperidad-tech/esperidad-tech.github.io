@@ -103,7 +103,7 @@ with sync_playwright() as p:
     verifier('Magnifique' in texte(pg), 'réussi : « Magnifique ! On l\'accrochera au-dessus du gâteau. »')
     fermer(pg)
     L = liste()
-    verifier(not any(x in L for x in ['doutes', 'fausse', 'chats', 'qui', 'vraielettre', 'carnet']) and all(x in L for x in ['tableau', 'herbier', 'livredor', 'plan', 'bibliotheque']),
+    verifier(not any(x in L for x in ['doutes', 'fausse', 'chats', 'qui', 'vraielettre', 'carnet']) and all(x in L for x in ['tableau', 'herbier', 'livredor', 'bibliotheque']) and 'plan' not in L,
              f'le Grand Livre : plus de « Une drôle de lettre », « La lettre et le carnet », « Qui a écrit la lettre ? » ; la lettre et le carnet n\'y sont pas encore ({L})')
     # le Livre d'or, le matin
     t = page(pg, 'livredor')
@@ -130,17 +130,8 @@ with sync_playwright() as p:
     verifier(pg.locator('#livre-ici .lv-page.on .lv-bib-passe').count() == 2 and 'Les vieux chemins' in t and 'Le plan du moulin' in t and 'bûcherons' not in t, 'la bibliothèque : les deux plans de l\'enquête 2, repliés')
     pg.locator('#livre-ici .lv-page.on .lv-bib-passe [data-act=bib-plier]').first.click(); pg.wait_for_timeout(300)
     verifier('bûcherons' in texte(pg, '#livre-ici .lv-page.on'), 'un plan se déplie : ce qu\'on y avait trouvé')
-    # le plan des Fondateurs : dès le matin, sans sablier
-    page(pg, 'plan'); pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page][data-id=plan]').click(); pg.wait_for_timeout(300)
-    if pg.locator('#voile [data-act=mj-go]').count(): pg.locator('#voile [data-act=mj-go]').click(); pg.wait_for_timeout(900)
-    if pg.locator('#mj-plein .mj-go').count(): pg.locator('#mj-plein .mj-go').click(); pg.wait_for_timeout(4200)
-    pg.screenshot(path=f'{OUT}/A-plan-jeu.png')
-    info = pg.evaluate("() => window.__mjCourant ? {type:window.__mjCourant.type, params:window.__mjCourant.params} : null")
-    verifier(info and info['type'] == 'alphabet' and 'FONDATEURS' in info['params'].get('message', '') and info['params'].get('sansTemps'), 'le plan, dès le matin : l\'alphabet secret, « LE CHEMIN DES FONDATEURS », sans minuteur')
-    verifier(pg.evaluate("() => { var s = document.querySelector('#mj-plein .mjs-sablier'); return !s || s.hidden; }"), 'pas de sablier à l\'écran')
-    pg.evaluate("() => window.__finir(true)"); pg.wait_for_timeout(400); fermer(pg)
-    t = page(pg, 'plan')
-    verifier('CHEMIN DES FONDATEURS' in t and 'puits' not in t.lower() and 'crypte' not in t.lower() and 'carnet' not in t.lower(), 'le plan entre dans le Grand Livre (rien sur le puits ni la crypte)')
+    # (16 novembre, Bible §13.57) plus de « plan des Fondateurs » sorti de nulle part : le papier d'Odette vient du voisin (tools/e3-secret.py)
+    verifier(pg.evaluate("() => !M.E().pages.some(function(p){ return p.id === 'plan'; })") and 'papier' not in liste(), 'plus de « plan des Fondateurs » ; pas de papier d\'Odette sans le code du Barde')
 
     print('— Partie A : l\'après-midi')
     apresmidi(pg); pg.wait_for_timeout(2600)

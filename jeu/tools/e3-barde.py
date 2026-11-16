@@ -292,7 +292,7 @@ with sync_playwright() as p:
     ev(pg, 'frapper', {'id': 'L1'})
     m = modal(pg)
     verifier(m and m['type'] == 'conv' and m['id'] == 'levoisin', 'le voisin d\'Odette ouvre sa porte')
-    toutes('levoisin', (0, 1, 2, 3)); pg.wait_for_timeout(2600)
+    toutes('levoisin', (0, 1, 2, 3, 4)); pg.wait_for_timeout(300); fermer(pg); ev(pg, 'frapper', {'id': 'L1'}); pg.wait_for_timeout(2600)   # (16 novembre) la cinquième question : le papier d'Odette (un code : sa fenêtre se ferme, on revient chez lui)
     td = dedans(pg)
     verifier('pas de sœur' in td and 'jamais fermée' in td, 'le voisin : Odette n\'a pas de sœur ; sa maison n\'est jamais fermée')
     shot(pg, 'voisin')

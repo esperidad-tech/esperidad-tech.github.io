@@ -303,6 +303,8 @@ var TROUVAILLES = {
       'mairie:lettre':'voile_brume', 'clocher:cle':'arc_lune', 'clocher:traces_puits':'carquois_etoiles'},
     paquets:[
       {id:'crypte', quand:{vu:'pisteur:L2:traces'}, items:['lunettes_explo', 'masque_chat', 'fleches_follet']},   /* les traces de Moustache mènent à la crypte */
+      /* (16 novembre, le secret d'Odette) la cachette sous les dalles, chez Odette, au soleil de l'après-midi */
+      {id:'cachette', quand:{vu:'pisteur:L2:cachette'}, items:['amulette_pierre', 'brassards_graves', 'fleches_lumiere'], pour:'pour la cachette d\'Odette'},
       {id:'fete', quand:{vu:'pisteur:mairie:mission'}, items:['brassards_runes', 'pantalon_poches', 'arbalete_legere'], pour:'pour ta mission de la fête'}
     ],
     bonus:{gateau_pisteur:'fleches_cuivre'}
