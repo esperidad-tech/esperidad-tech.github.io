@@ -97,6 +97,8 @@ function monterAtelier(){
       try{ if(atelierMonte && atelierMonte.maj) atelierMonte.maj({fioles:S.fioles, potions:S.potions}); }catch(e){}
     },
     son:M.son, lire:M.lire,
+    /* (16 novembre) la boutique de Mimi, dans l'atelier : le confort du chat se paie en pièces d'or (atelier.js, acheter) */
+    bourse:{lire:function(){ return S.or || 0; }, payer:function(n){ if(!(n > 0) || (S.or || 0) < n) return false; S.or -= n; M.son('gain'); M.sauver(); try{ var o = document.querySelector('.b-or'); if(o) o.textContent = o.textContent.replace(/\d+/, S.or); }catch(e){} return true; }},
     /* (le chaudron se met aussi en pause tout seul quand on change d'onglet : on était dans l'atelier, l'onglet du rôle) */
     surPause:function(pt, r){ M.pauseMJ({partie:pt, hote:'atelier', ic:(r && r.ic) || '🧪', titre:'Le chaudron' + (r && r.nom ? ' : ' + r.nom : ''), ecran:'enquete', onglet:'role'}); }
   });

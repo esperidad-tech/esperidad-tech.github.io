@@ -1,6 +1,10 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 16 novembre, 16 h 10)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 16 novembre, 16 h 45)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 16 novembre (16 h 45) : MIMI EST UN JOUET, PAS UNE AIDE POUR L'ENQUÊTE (Bible §12.65) — EN LIGNE (commit 7d1a3d7 du site, version 20261116-1541)
+
+Romain a tranché la question ouverte du §13.52 : **Mimi ne sert pas à l'enquête** (« il faut pas que ça soit utile, faut que ça soit un jeu, un jouet »). La proposition de Claude (une jauge de complicité, des tours, « chaud ou froid » pour les plantes cachées, Mimi qui reconnaît les traces de Moustache) est **abandonnée**. Ce qui est construit : un Tamagotchi dans l'atelier de l'Alchimiste (réactions au doigt, jauge de bonheur, coffrets cadeaux qui donnent des jouets, soins, boutique à petits prix). **Pour la conception des enquêtes suivantes** : ne pas donner à Mimi un rôle d'indice sans en reparler avec Romain ; et **à l'enquête 4, Mimi part chez Odette et un chaton arrive** (prévu avant ce chantier) — à décider avec lui : le chaton garde-t-il les jouets et les soins gagnés ?
 
 ## Nouveau depuis le 16 novembre (15 h 52) : LA PUB DU JEU, AU PREMIER LANCEMENT, MONTRE L'HOMME EN CAPE ET SON COMBAT (Bible §12.64) — EN LIGNE (commits 97d4660, ec0aeda, d066308 du site ; version 20261116-1451)
 
