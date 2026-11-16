@@ -15,7 +15,9 @@ var section = {id:'mj-visee', titre:'Tir aux anneaux', sous:[
   {id:'visee-arc', titre:'Arc et flèche', sons:liste([['choisir', 'Anneau visé', .25], ['banderA', 'Corde tendue A', .8], ['banderB', 'Corde tendue B', .8], ['banderC', 'Corde tendue C', .8],
     ['tic', 'Le minuteur presse', .05], ['lacherA', 'Corde lâchée A', .25], ['lacherB', 'Corde lâchée B', .3], ['lacherC', 'Corde lâchée C', .2], ['vol', 'La flèche file', 1]])},
   {id:'visee-arrivee', titre:'L’arrivée', sons:liste([['dedans', 'Dans l’anneau', .65], ['bois', 'Dans le bois', .5], ['acote', 'À côté', .55],
-    ['accroche', 'Banderole tendue', .45], ['fete', 'Place décorée !', 1.6], ['vide', 'Plus de flèches', .5]])}
+    ['accroche', 'Banderole tendue', .45], ['fete', 'Place décorée !', 1.6], ['vide', 'Plus de flèches', .5]])},
+  /* (Romain, 16 novembre : « une petite musique un peu festive ») : la polka qui tourne pendant le mini-jeu ; ici, un tour entier */
+  {id:'visee-musique', titre:'Musique', sons:liste([['musique', 'La polka', 6.5]])}
 ]};
 var mj = (G.CATALOGUE || []).filter(function(s){ return s.id === 'mj'; })[0];
 if(mj) mj.sous.push(section);

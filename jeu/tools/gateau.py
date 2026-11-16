@@ -245,10 +245,9 @@ with sync_playwright() as p:
     t0 = temps(pg); pg.wait_for_timeout(800); verifier(.4 < t0 - temps(pg) < 1.4, 'et le temps repart')
     # (13 novembre) « Vote » : la note sur 20, puis la place (1er : 5 pièces… 4e : 2), puis « Bravo, tu as gagné N pièces d'or »
     clic(pg, '.gt-pret'); pg.wait_for_timeout(300); clic(pg, '.gt-fete'); pg.wait_for_timeout(500)
-    verifier(pg.locator('.gt-note').count() == 20, '« Vote » : vingt bulles, de 1 à 20')
-    d = pg.evaluate(DEDANS); verifier(not d['dehors'] and not d['defile'], f'les vingt notes tiennent dans l\'écran {d if d["dehors"] or d["defile"] else ""}')
-    clic(pg, '.gt-note[data-n="18"]'); pg.wait_for_timeout(400)
-    verifier(pg.locator('.gt-rang').count() == 4, 'puis quatre places : 1er, 2e, 3e, 4e')
+    verifier(pg.locator('.gt-note').count() == 0 and 'sur 20' not in pg.inner_text('.gt-final'), '« Vote » : plus de note sur 20 (Romain, 16 novembre)')
+    d = pg.evaluate(DEDANS); verifier(not d['dehors'] and not d['defile'], f'les places tiennent dans l\'écran {d if d["dehors"] or d["defile"] else ""}')
+    verifier(pg.locator('.gt-rang').count() == 4, 'tout de suite les quatre places : 1er, 2e, 3e, 4e')
     clic(pg, '.gt-rang[data-r="1"]'); pg.wait_for_timeout(700)
     verifier('Bravo' in pg.inner_text('.mj-resultat') and '5 pièces' in pg.inner_text('.mj-resultat'), 'premier : « Bravo ! Tu as gagné 5 pièces d\'or. »')
     clic(pg, '.mj-continuer'); pg.wait_for_timeout(300)
@@ -314,11 +313,11 @@ with sync_playwright() as p:
         verifier(pg.evaluate("() => !M.mjPause && !MJT.enPause()") and pg.locator('#mj-plein .gt-ic').count() == 14 and len(etat(pg)['decos']) == 1 and t0 - temps(pg) < 1.5, 'on reprend (« 3, 2, 1 ») : le gâteau est toujours là, le temps repart')
     else: verifier(False, 'le bouton pause')
     clic(pg, '.gt-pret'); pg.wait_for_timeout(300); clic(pg, '.gt-fete'); pg.wait_for_timeout(400)
-    clic(pg, '.gt-note[data-n="12"]'); pg.wait_for_timeout(400); clic(pg, '.gt-rang[data-r="3"]'); pg.wait_for_timeout(700)
+    clic(pg, '.gt-rang[data-r="3"]'); pg.wait_for_timeout(700)
     clic(pg, '.mj-continuer'); pg.wait_for_timeout(400)
     r = pg.evaluate("() => window.__fin")
-    verifier(bool(r) and r.get('reussi') and r['gateau']['etages'] == 2 and r['gateau']['chats'] == 1 and r['gateau']['parDeco'].get('moustache') == 1 and r.get('note') == 12 and r.get('rang') == 3 and r.get('or') == 3,
-             f'la fin : réussi, avec le résumé du gâteau (2 étages, 1 chat), la note 12, la troisième place, 3 pièces ({r and [r.get("note"), r.get("rang"), r.get("or")]})')
+    verifier(bool(r) and r.get('reussi') and r['gateau']['etages'] == 2 and r['gateau']['chats'] == 1 and r['gateau']['parDeco'].get('moustache') == 1 and r.get('note') is None and r.get('rang') == 3 and r.get('or') == 3,
+             f'la fin : réussi, avec le résumé du gâteau (2 étages, 1 chat), plus de note, la troisième place, 3 pièces ({r and [r.get("note"), r.get("rang"), r.get("or")]})')
     verifier(pg.evaluate("() => document.getElementById('mj-plein').hidden"), 'le mini-jeu se referme')
     pg.context.close()
     b.close()

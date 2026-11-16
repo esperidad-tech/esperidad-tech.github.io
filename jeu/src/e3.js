@@ -445,6 +445,9 @@ E[3] = {
      (c'est elle qui demande à Anselme) ; la brume revient à l'enquête suivante. ---------- */
   /* (Romain, 13 novembre ; revient) les quatre plantes d'au-delà de la brume cueillies : au moment suivant, la brume se réinstalle */
   brume:{zones:['n', 'o'], si:[{vu:'alchimiste:clocher:bertille'}], revient:true},
+  /* (Romain, 16 novembre, 8 h 00) la carte de l'Alchimiste n'a aucun visage (carte-jeu.js, SANS_GENS)… sauf Anselme : c'est à lui qu'elle
+     demande de sonner Bertille, et qu'elle porte sa tisane */
+  carteGens:{alchimiste:['anselme']},
   /* ---------- Le donjon (descente.js ; jeu/donjon/, en ligne dans brumeval/donjon/) : une page par tablette. Le Barde n'en a pas :
      pendant ce temps, il fait la fête (et il aide ceux du donjon : Farinel et Iris, E.fete). ---------- */
   donjon:{pages:{pisteur:'donjon/index.html', sage:'donjon/sage.html', alchimiste:'donjon/alchimiste.html'}, tenue:'donjon/tenue.html', portraits:'donjon/i/portrait-'},
@@ -617,11 +620,12 @@ E[3] = {
         /* (Romain, 13 novembre : « le mini-jeu des banderoles n'est pas à jour. Il faut mettre […] l'arc qu'on bande en vue un peu 3D,
            c'est le dernier jeu qu'on a fait. Et tu le mets au niveau 9 ») le tir aux anneaux (mj-visee.js).
            (Romain, 16 novembre, 6 h 43 : « le nouveau tir de banderoles, niveau 8 ») niveau 8 pour tout le monde */
-        {id:'banderoles', ic:'🎏', nom:'Les banderoles de la fête', moments:M_, mj:'visee', mjNiveauFixe:8,
+        /* (Romain, 16 novembre, 7 h 58 : « répétable à l'infini, jusqu'à ce qu'on réussisse ») essaisInfinis */
+        {id:'banderoles', ic:'🎏', nom:'Les banderoles de la fête', moments:M_, mj:'visee', mjNiveauFixe:8, essaisInfinis:true,
           avant:'Le maire veut des banderoles partout sur la place ! Vise les anneaux : chaque flèche emporte sa guirlande de petits drapeaux.',
           bouton:'🏹 Accrocher les banderoles',
           t:'Les petits drapeaux claquent au vent, d\'un toit à l\'autre. Basile lève le nez : « Ça, c\'est de la décoration ! »',
-          rate:'Une guirlande s\'emmêle, puis une autre… Le maire soupire : « Bon. On fera sans. »',
+          rate:'Une guirlande s\'emmêle, puis une autre… Le maire te tend un nouveau carquois : « Allez, on recommence ! »',
           ferme:'Les banderoles restent dans leur panier.'}
       ]},
       alchimiste:{cueillir:[{ingr:'eau', n:2}]}
