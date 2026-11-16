@@ -221,6 +221,12 @@ def partie(nav, base):
     # le Pisteur : les banderoles et l'oie
     verifier(P.jouer('place', 'banderoles') == 'visee', 'le Pisteur accroche les banderoles (le nouveau tir à l\'arc)'); P.fermer()
     verifier(P.jouer('boulangerie', 'oie') == 'poursuite', 'le Pisteur rattrape l\'oie (course-poursuite)'); P.fermer()
+    # (16 novembre, Bible §13.51) les empreintes du jardin d'Iris : le Pisteur les suit et les mesure, et donne « Des pieds d'enfant » au
+    # Sage, qui a la taille des pieds de chacun dans « Les habitants » (3 carreaux : Odette, Mélusine et Tim ; Margot : 4)
+    verifier(P.jouer('herboristerie', 'jardin') == 'traces' and '3 carreaux' in P.texte(), 'le Pisteur suit les petites empreintes du jardin d\'Iris : 3 carreaux, des pieds d\'enfant'); P.fermer()
+    verifier(livrer(T, P) == ['info:pieds_enfant'], 'le code « Des pieds d\'enfant » passe du Pisteur au Sage')
+    th = S.page('habitants')
+    verifier(th.count('pieds de 3 carreaux') == 3 and 'Mélusine Dufil · la couturière 🏠 4, rue des Lanternes · 👣 pieds de 3 carreaux' in ' '.join(th.split()) and 'Margot' in th, 'le registre du Sage : trois habitants ont des pieds de 3 carreaux (Odette, Mélusine, Tim), dont deux rue des Lanternes… et la troisième aussi')
     # l'Alchimiste : le gâteau, les sept plantes
     verifier(A.jouer('boulangerie', 'gateau', {'gateau': {'etages': 3}}) == 'gateau', 'l\'Alchimiste fait le gâteau de la fête'); A.fermer()
     # (12 novembre, Bible §13.26 et §13.28) les plantes : des endroits cachés de la carte ; l'herbier du Sage ne donne que des indices. Le matin, au

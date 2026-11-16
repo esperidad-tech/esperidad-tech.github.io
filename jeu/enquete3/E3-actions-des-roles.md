@@ -1,5 +1,13 @@
 # Enquête 3 « La lettre d'Odette » — le Pisteur, l'Alchimiste et le Sage ; tous les codes ; qui prouve quoi (version 2, 11 novembre 2026)
 
+> **⚠️ 16 NOVEMBRE (Bible §13.51, qui fait foi ; go de Romain à 6 h 43 et 6 h 44) — les empreintes de pieds d'enfant, et les banderoles au niveau 8 :**
+> - **Le Pisteur, à l'herboristerie, le matin ou l'après-midi : « 👣 Le jardin d'Iris »** (`pisteur:herboristerie:jardin`). Rien ne l'annonce : le Barde dit à voix haute qu'on a volé de l'encre chez Iris. Le mini-jeu « Suivre la piste », en ville : de petites empreintes d'enfant, mêlées au départ aux sabots d'Iris ; elles se perdent dans la rue des Lanternes. Niveau 7, autant d'essais qu'on veut.
+> - **Ce qu'il apprend** : « 3 carreaux. Des pieds d'enfant ! », et **un code nouveau pour le Sage, « Des pieds d'enfant »** (`pieds_enfant`, une information).
+> - **Le Sage** : dans « Les habitants », la taille des pieds de chacun (elle y est depuis l'enquête 1). 3 carreaux : Tim, Mélusine, Odette. Margot : 4.
+> - **Qui prouve quoi** : les écritures (l'Alchimiste) laissent Mélusine et Margot ; les empreintes (le Pisteur et le Sage) laissent Tim et Mélusine ; les deux ensemble : Mélusine. Son aveu (le Barde) le confirme. Rien ne dépend des empreintes : sans elles, le Barde accuse encore les deux.
+> - **Les banderoles : niveau 8** (le nouveau tir à l'arc, branché depuis le 13 novembre).
+> - **Les codes** : aucun n'a changé, un de plus (530).
+>
 > **⚠️ 14 NOVEMBRE, 12 H 40 (Bible §13.38, qui fait foi ; go de Romain à 11 h 44) — le maire inquiet vient tout seul, sur des minuteurs cachés. Ce qui suit REMPLACE, dans le bloc du dessous, la façon dont le maire arrive chez le Barde :**
 > - **Dès que le Barde entre le code du Pisteur** (`grille_silence`, `grille_bruit` ou `puits_ouvert`) : **un minuteur caché de 15 minutes**. Rien ne l'annonce (ni mission, ni « 🎭 » sur le maire).
 > - **Au bout du temps, la fenêtre du maire s'ouvre toute seule**, avec un petit son, par-dessus tout.

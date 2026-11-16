@@ -1136,13 +1136,23 @@ var ARRIVEES_HISTOIRE = {
     '<rect x="-2.8" y="-1" width="5.6" height="5" rx="1" fill="#e0b54c" stroke="' + CONTOUR + '" stroke-width="1.2"/><path d="M-1.7,-1 v-2.2 a1.7,1.7 0 0 1 3.4,0 v2.2" fill="none" stroke="#e0b54c" stroke-width="1.3"/>' +
     '<path d="M-15,8 h30 l-2,4 h-26 z M-17,12 h34 l-2,4 h-30 z" fill="#c9c4d6" stroke="' + CONTOUR + '" stroke-width="1.8" stroke-linejoin="round"/></g>',
   /* le potager de Basile : des rangs de choux (enquête 1, les grosses bottes du jardinier) */
-  potager:'<rect x="-18" y="-14" width="36" height="28" rx="4" fill="#6b4a2e" stroke="' + CONTOUR + '" stroke-width="3"/>' + cabouV(-10, -5) + cabouV(0, -5) + cabouV(10, -5) + cabouV(-10, 6) + cabouV(0, 6) + cabouV(10, 6)
+  potager:'<rect x="-18" y="-14" width="36" height="28" rx="4" fill="#6b4a2e" stroke="' + CONTOUR + '" stroke-width="3"/>' + cabouV(-10, -5) + cabouV(0, -5) + cabouV(10, -5) + cabouV(-10, 6) + cabouV(0, 6) + cabouV(10, 6),
+  /* la rue des Lanternes : un de ses réverbères, et des pas dans tous les sens sur les pavés (enquête 3, les petites empreintes du jardin
+     d'Iris — 16 novembre, Bible §13.51) : tout le village y a marché ce matin, la piste s'y perd. Elle ne mène chez personne. */
+  lanterne:'<rect x="-19" y="-11" width="38" height="26" rx="5" fill="#8c8aa0" stroke="' + CONTOUR + '" stroke-width="3"/>' +
+    '<path d="M-19,-2 H19 M-19,6 H19 M-10,-11 V-2 M1,-11 V-2 M-4,-2 V6 M8,-2 V6 M-12,6 V15 M-1,6 V15 M10,6 V15" stroke="#6d6b82" stroke-width="1.5"/>' +
+    [[-13, -6, 20], [-6, 1, -35], [-14, 8, 70], [-2, 10, 160], [3, -6, 110], [-8, -8, 200], [4, 3, -80]].map(function(q){ return '<g transform="translate(' + q[0] + ',' + q[1] + ') rotate(' + q[2] + ')" fill="#4a3a2a" opacity=".75"><ellipse cx="0" cy="-1.3" rx="1.5" ry="2.1"/><ellipse cx="0" cy="2.2" rx="1.1" ry="1.1"/></g>'; }).join('') +
+    '<ellipse cx="12" cy="12" rx="6" ry="2.4" fill="#0d0b18" opacity=".3"/><path d="M12,12 V-13" stroke="' + CONTOUR + '" stroke-width="4.6" stroke-linecap="round"/><path d="M12,12 V-13" stroke="#5a5672" stroke-width="2.2" stroke-linecap="round"/>' +
+    '<circle cx="12" cy="-19" r="9" fill="#ffe08a" opacity=".3"/><path d="M7.5,-14 L8.5,-24 H15.5 L16.5,-14 Z" fill="#ffd27a" stroke="' + CONTOUR + '" stroke-width="2" stroke-linejoin="round"/>' +
+    '<path d="M6.5,-24 H17.5 L14.5,-28 H9.5 Z" fill="#5a5672" stroke="' + CONTOUR + '" stroke-width="1.8" stroke-linejoin="round"/><path d="M12,-22 V-16" stroke="#e0a030" stroke-width="1.6" stroke-linecap="round"/>'
 };
 MJ.enregistrer('traces', {
   nom:'Suivre la piste', role:'pisteur', ic:'👣',
   consigne:function(p){ if(p && p.suspect === 'poussiere') return 'Retiens bien la trace du départ : une fine poussière brune, en tout petits grains. Puis guide ton héros du doigt sur CETTE trace jusqu\'au bout, sans la confondre avec la terre, les feuilles mortes et les champignons à chapeau !';
     if(p && p.suspect === 'chat') return p.chercher ? 'Retiens bien la trace de patte. Puis cherche où commencent ses traces, au milieu de toutes les autres : tu as ' + p.chercher + ' secondes avant que tout se mette à avancer. Ensuite, guide le Pisteur du doigt sur SA piste jusqu\'au bout !' :
       'Retiens bien la trace de patte du départ, puis guide le Pisteur du doigt sur SA piste jusqu\'à son arrivée. Attention : au village, il y a plein de chats !';
+    /* (16 novembre) params.consigne : la consigne d'un mini-jeu habillé pour un lieu (enquête 3, le jardin d'Iris : ses sabots, pas des bottes) */
+    if(p && p.consigne) return p.consigne;
     if(p && p.compagnon) return 'Au départ, des petites traces et de grosses bottes se mélangent. Retiens bien les petites, puis guide le Pisteur du doigt sur LEUR piste jusqu\'au bout !';
     return p && p.vehicule === 'charrette' ?'Retiens bien les traces du départ : deux traits de roues et les pieds de celui qui pousse la charrette. Puis guide le Pisteur du doigt sur CETTE piste jusqu\'à son arrivée, sans la perdre de vue !' :
     'Retiens bien l\'empreinte du départ, puis guide le Pisteur du doigt sur SA piste jusqu\'à son arrivée, sans jamais la perdre de vue !'; },

@@ -17,6 +17,9 @@
    deux questions par visite (la moitié du village est occupée à chaque moment) ; un grand dialogue ne s'ouvre qu'une fois tout demandé
    (q.besoin : {toutDit:[…]}, barde.js). Pas refait ce soir-là : les trois autres rôles (les empreintes chez Iris, l'encre, la pointure, la
    grille à soulever) et le donjon (Léo en chef des monstres) — leurs textes suivent encore l'ancien fil, sans le contredire.
+   (Faits depuis : la grille et le donjon, les 13 et 14 novembre ; LES EMPREINTES DU JARDIN D'IRIS, le 16 novembre — lieux.herboristerie,
+   infos.pieds_enfant, Bible § 13.51 ; la taille des pieds était déjà dans le registre du Sage, en carreaux, depuis l'enquête 1.
+   Reste : l'encre de la lettre comparée à celle d'Iris, chez l'Alchimiste.)
    ========================================================== */
 (function(){
 'use strict';
@@ -547,6 +550,12 @@ E[3] = {
     puits_ouvert:{nom:'Le puits est ouvert', ic:'🕳️', pour:'barde', de:'pisteur', tard:true,
       t:'Les barreaux du vieux puits ont fondu : tes amis descendent sous la terre. À la fête, personne n\'a rien entendu.',
       dire:'Le Barde doit le savoir : donne-lui ce code.'},
+    /* LES EMPREINTES DU JARDIN D'IRIS (16 novembre, Bible §13.51 ; lieux.herboristerie) : le Pisteur les a suivies et mesurées. Une
+       information pour le Sage (savoir), qui a la taille des pieds de chacun dans « Les habitants ». Le texte ne conclut rien, et ne
+       parle pas de l'encre : c'est le Barde qui sait qu'on en a volé chez Iris. tard:true : rangé tout à la fin, aucun autre code ne bouge. */
+    pieds_enfant:{nom:'Des pieds d\'enfant', ic:'👣', pour:'sage', de:'pisteur', savoir:true, tard:true,
+      t:'Cette nuit, quelqu\'un est passé par le jardin d\'Iris, sous la fenêtre de son atelier. Le Pisteur a mesuré ses empreintes dans la terre : 3 carreaux. Des pieds d\'enfant ! Elles filaient vers la rue des Lanternes.',
+      dire:'Des pieds d\'enfant ? Le Sage doit le savoir : donne-lui ce code.'},
     /* (étape 6) le donjon : la porte aux quatre signes (le code du donjon « Un chat gratte à la porte », porte:odette) */
     odette_porte:{nom:'Odette est derrière la porte', ic:'🚪', pour:'sage', de:'pisteur',
       t:'Tout au fond des souterrains, Moustache gratte au bas d\'une grande porte ronde. Tu colles l\'oreille… Une voix étouffée : « Moustache ? Mon gros gris, c\'est toi ? » Odette est là, vivante, derrière la porte !',
@@ -592,8 +601,9 @@ E[3] = {
     place:{
       pisteur:{intro:'La place des Lanternes. Tout le village prépare la fête !', points:[
         /* (Romain, 13 novembre : « le mini-jeu des banderoles n'est pas à jour. Il faut mettre […] l'arc qu'on bande en vue un peu 3D,
-           c'est le dernier jeu qu'on a fait. Et tu le mets au niveau 9 ») le tir aux anneaux (mj-visee.js), niveau 9 pour tout le monde */
-        {id:'banderoles', ic:'🎏', nom:'Les banderoles de la fête', moments:M_, mj:'visee', mjNiveauFixe:9,
+           c'est le dernier jeu qu'on a fait. Et tu le mets au niveau 9 ») le tir aux anneaux (mj-visee.js).
+           (Romain, 16 novembre, 6 h 43 : « le nouveau tir de banderoles, niveau 8 ») niveau 8 pour tout le monde */
+        {id:'banderoles', ic:'🎏', nom:'Les banderoles de la fête', moments:M_, mj:'visee', mjNiveauFixe:8,
           avant:'Le maire veut des banderoles partout sur la place ! Vise les anneaux : chaque flèche emporte sa guirlande de petits drapeaux.',
           bouton:'🏹 Accrocher les banderoles',
           t:'Les petits drapeaux claquent au vent, d\'un toit à l\'autre. Basile lève le nez : « Ça, c\'est de la décoration ! »',
@@ -752,7 +762,35 @@ E[3] = {
     foret:{alchimiste:{cueillir:[{ingr:'champignon', n:2, moments:['nuit'], annonce:'Les champignons, c\'est à la tombée de la nuit qu\'on les cueille le mieux. Reviens cette nuit !'}]}},
     clairiere:{alchimiste:{cueillir:[{ingr:'trefle', n:2}]}},
     lavoir:{alchimiste:{cueillir:[{ingr:'brume', n:2, min:2, moments:['matin']}, {ingr:'eau', n:2}]}},
-    herboristerie:{alchimiste:{cueillir:[{ingr:'lavande', n:2}, {ingr:'pensee', n:2}]}},
+    /* LES EMPREINTES DE PIEDS D'ENFANT, DANS LE JARDIN D'IRIS (l'étape 8 du scénario de Romain du 12 novembre — « Dans le jardin d'Iris, des
+       empreintes de pieds d'enfant. Dans le registre, seuls Tim et Mélusine chaussent si petit ; Tim est un garçon, Margot chausse
+       grand » ; son go le 16 novembre, 6 h 43 : « je te laisse faire : les empreintes de pas d'enfant » ; Bible §13.51).
+       Cette nuit, Mélusine s'est glissée dans l'atelier d'Iris par le jardin, pour voler un flacon d'encre (Iris le dit au Barde, le
+       matin : pnj.iris [2] ; à voix haute, pas de code — le Pisteur vient voir de lui-même).
+       · Le mini-jeu : « Suivre la piste » (mj-pisteur-alchi.js), habillé pour ce lieu, comme le massif de la mairie à l'enquête 1 : au
+         départ, les sabots d'Iris marchent avec les petites empreintes (compagnon), puis s'en vont vers ses plates-bandes ; les petites
+         sortent du jardin et filent jusqu'à la rue des Lanternes, où elles se perdent (arrivee 'lanterne') : ce matin, tout le village y
+         a marché pour aller écouter le maire lire la lettre (le scénario de Romain : « des dizaines de pieds piétinent : il n'y a plus
+         aucune trace à suivre »). Elles ne mènent chez personne : dans cette rue habitent le voisin, Odette, Mélusine, Victor et Tim.
+       · Ce qu'on apprend : la taille. 3 carreaux — la mesure du registre du Sage depuis l'enquête 1 (D.PNJ.pied, livre.js : « 👣 pieds
+         de 3 carreaux »). Seuls Tim, Mélusine (et Odette, l'absente) ont d'aussi petits pieds ; Margot, l'autre suspecte du Livre d'or, 4.
+       · Le code « Des pieds d'enfant », pour le Sage (une information : savoir ; rien ne conclut à sa place — il a son registre).
+       · Le matin et l'après-midi ; on recommence autant qu'on veut (c'est une preuve, comme les traces de Moustache) ; niveau 7 pour
+         tout le monde (décision de Claude, à régler avec Romain). Rien ne l'annonce : ni mission, ni signe sur la carte. Et rien n'en
+         dépend : sans elles, le Barde départage encore Mélusine et Margot en les accusant toutes les deux. */
+    herboristerie:{
+      pisteur:{intro:'L\'herboristerie d\'Iris. Derrière la boutique, son petit jardin, plein de pots et de plates-bandes.', points:[
+        {id:'jardin', ic:'👣', nom:'Le jardin d\'Iris', moments:MA_, mj:'traces', mjNiveauFixe:7, essaisInfinis:true,
+          params:{decor:'ville', suspect:'enfant', compagnon:'sabot', compagnonTxt:'Les sabots d\'Iris…', arrivee:'lanterne', arriveeTxt:'La rue des Lanternes !',
+            departTitre:'Retiens bien ces petites empreintes', departNom:'De tout petits pieds', departTxt:'Au départ, les sabots d\'Iris marchent avec elles. Ne suis que les petites !',
+            consigne:'Au départ, de petites empreintes et les sabots d\'Iris se mélangent. Retiens bien les petites, puis guide le Pisteur du doigt sur LEUR piste jusqu\'au bout !'},
+          donne:'info:pieds_enfant',
+          avant:'Sous la fenêtre de l\'atelier, la terre du jardin est toute piétinée. Des empreintes fraîches : quelqu\'un est passé par là, cette nuit ! Où mènent-elles ?',
+          bouton:'👣 Suivre les empreintes',
+          t:'Les petites empreintes filent jusqu\'à la rue des Lanternes… et s\'y perdent : ce matin, tout le village y a marché pour aller écouter le maire. Mais tu les as mesurées : 3 carreaux. Des pieds d\'enfant !',
+          rate:'Tu as perdu la piste… Retourne au jardin : les empreintes y sont encore.'}
+      ]},
+      alchimiste:{cueillir:[{ingr:'lavande', n:2}, {ingr:'pensee', n:2}]}},
     potager:{alchimiste:{cueillir:[{ingr:'miel', n:2}, {ingr:'menthe', n:2}]}},
     lisiere:{alchimiste:{cueillir:[{ingr:'baies', n:3}]}},
     puits:{
@@ -823,7 +861,7 @@ E[3] = {
         note:'Margot : le maire déteste qu\'on dise qu\'il cache des choses.'},
       /* [4] (13 novembre) la même accusation que chez Mélusine, avec le code « Deux écritures » de l'Alchimiste : le Livre d'or désigne
          deux femmes, le Barde les interroge toutes les deux. Margot dit vrai (aucun signe sur son visage) ; Mélusine ment.
-         NOUVELLE RÉPLIQUE, écrite par Claude : à valider par Romain. */
+         Réplique écrite par Claude le 13 novembre ; gardée telle quelle par Romain le 16 novembre (6 h 43 : « je te laisse faire »). */
       {q:'C\'est vous qui avez écrit la lettre.', g:'e', moments:A_, besoin:[{code:'info:ecriture'}], a:'Moi ? Je n\'écris que mes ardoises, à la craie. Et avec des fautes !',
         note:'Margot dit qu\'elle n\'écrit que ses ardoises, à la craie.'}
     ]},
@@ -1184,6 +1222,9 @@ E[3] = {
     /* (13 novembre) l'écriture ne laisse plus que deux suspectes, Mélusine et Margot ; c'est l'aveu qui désigne Mélusine */
     {sources:['alchimiste:analyse:lettre'], qui:['iris', 'victor', 'fortune', 'gaspard', 'tim', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
     {sources:[['barde:melusine:4:verite', 'barde:fete:melusine']], qui:['margot', 'iris', 'victor', 'fortune', 'gaspard', 'tim', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
+    /* (16 novembre, Bible §13.51) les empreintes du jardin d'Iris (le Pisteur) et la taille des pieds dans le registre (le Sage) :
+       3 carreaux — seuls Tim et Mélusine. Avec l'écriture (Mélusine ou Margot), il ne reste que Mélusine, avant même son aveu. */
+    {sources:['pisteur:herboristerie:jardin', 'sage:page:habitants'], qui:['margot', 'iris', 'victor', 'fortune', 'gaspard', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
     /* OÙ : la porte aux quatre signes, au fond du donjon (le Pisteur, avec les potions de l'Alchimiste, et la clé ou le puits du Barde) */
     {sources:['donjon:fini'], ou:['puits', 'moulin', 'chene', 'soeur', 'mairie', 'taverne', 'lavoir', 'foret', 'herboristerie']},
     /* QUI SOUS LA CAPE (13 novembre) : au fond du donjon, Léo arrache sa cape */
