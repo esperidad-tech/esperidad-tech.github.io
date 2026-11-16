@@ -80,7 +80,9 @@ with sync_playwright() as p:
     pg.tap('.cine-st [data-cine=lire]', force=True); pg.wait_for_timeout(250)
     verifier(pg.evaluate("() => document.querySelector('.cine-ecran video').paused && window.__lus.length === 1"), '🔊 : le film s\'arrête, la réplique est lue')
     I = pg.evaluate("() => CINE_INFOS.chene")
-    verifier(all(len(s[2].split()) <= 7 and (s[1] - s[0]) >= 1.2 + .3 * len(s[2].split()) for s in I['sousTitres']), 'des enfants lisent : des phrases courtes, chacune reste au moins 1,2 s + 0,3 s par mot')
+    mots = lambda t: len([m for m in t.replace('\u2019', "'").split() if any(c.isalpha() for c in m)])
+    lent = [(s[2], mots(s[2]), round(s[1] - s[0], 1)) for s in I['sousTitres'] if mots(s[2]) > 6 or (s[1] - s[0]) < 1.2 + .3 * mots(s[2])]
+    verifier(not lent, f'des enfants lisent : six mots au plus par réplique, et chacune reste au moins 1,2 s + 0,3 s par mot ({lent})')
     verifier(not any('Léo' in s[2] or 'Léo' in (s[3] or '') or 'Leo' in (s[3] or '') for s in I['sousTitres']), 'le nom de Léo n\'est écrit nulle part dans le film')
     fin_du_film(pg)
     d = pg.evaluate("() => { var m = M.UI.modal || {}; return {type:m.type, titre:m.titre, code:m.code, texte:(document.querySelector('#voile') || {}).innerText || ''}; }")
