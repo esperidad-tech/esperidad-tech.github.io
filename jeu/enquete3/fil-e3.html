@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enquête 3 — le fil de la journée</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Macondo&family=Andika:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --fond:#171427; --carte:#221d38; --carte2:#2b2546; --trait:#3b3360; --texte:#efe9ff; --doux:#b9b0d6;
+  --barde:#ff8fb3; --pisteur:#5fcf86; --sage:#6cb6ff; --alchimiste:#b48cff; --or:#ffd36b; --neuf:#ffcf4d;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--fond);color:var(--texte);font:16px/1.45 Andika, system-ui, sans-serif;-webkit-text-size-adjust:100%}
+header{padding:22px 16px 10px;max-width:1180px;margin:0 auto}
+h1{font-family:Macondo, serif;font-weight:400;font-size:clamp(26px,5vw,38px);margin:0 0 6px;color:var(--or)}
+.chapo{color:var(--doux);margin:0 0 12px;max-width:760px}
+.legende{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px}
+.legende span{display:inline-flex;align-items:center;gap:6px;background:var(--carte);border:1px solid var(--trait);border-radius:999px;padding:4px 10px 4px 4px;font-size:14px}
+nav{position:sticky;top:0;z-index:5;background:rgba(23,20,39,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--trait)}
+nav .in{max-width:1180px;margin:0 auto;display:flex;gap:6px;padding:8px 12px;overflow-x:auto}
+nav a{flex:none;color:var(--texte);text-decoration:none;background:var(--carte);border:1px solid var(--trait);border-radius:999px;padding:6px 14px;font-weight:700;font-size:14px}
+nav a.on{background:var(--or);color:#1b1730;border-color:var(--or)}
+main{max-width:1180px;margin:0 auto;padding:0 12px 60px}
+section.moment{padding-top:18px}
+.moment-titre{display:flex;align-items:center;gap:12px;margin:10px 4px 6px}
+.moment-titre .ic{font-size:30px}
+.moment-titre h2{font-family:Macondo, serif;font-weight:400;font-size:clamp(24px,4.5vw,32px);margin:0}
+.moment-titre p{margin:0;color:var(--doux);font-size:14px}
+.fils{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:start;margin-top:10px}
+.fil{background:var(--carte);border:1px solid var(--trait);border-radius:18px;padding:14px 12px 12px}
+.fil h3{margin:0 0 10px;font-size:17px;display:flex;align-items:center;gap:8px}
+.fil h3 small{font-weight:400;color:var(--doux);font-size:13px}
+.etape{position:relative;display:flex;gap:10px;align-items:flex-start;background:var(--carte2);border-radius:14px;padding:10px 10px 10px 8px;border-left:4px solid var(--c)}
+.etape + .fleche{display:flex;align-items:center;justify-content:center;flex-direction:column;margin:2px 0;color:var(--doux);font-size:13px;text-align:center}
+.fleche .f{font-size:18px;line-height:1;color:var(--or)}
+.fleche .don{display:inline-block;margin:2px 0 1px;background:#1b1730;border:1px dashed var(--or);color:var(--or);border-radius:999px;padding:2px 10px;font-weight:700}
+.badge{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:18px;background:var(--c);box-shadow:0 0 0 3px rgba(0,0,0,.25) inset}
+.etape .t{flex:1;min-width:0}
+.etape .t b{color:var(--c)}
+.etape .q{font-style:italic;color:#fff3d6}
+.neuf{display:inline-block;font-size:11px;font-weight:700;background:var(--neuf);color:#2a2000;border-radius:6px;padding:0 6px;margin-left:6px;vertical-align:2px}
+.parallele{margin:8px 0 0;color:var(--doux);font-size:13px;text-align:center}
+.profile{margin-top:16px;border:2px solid var(--or);border-radius:20px;padding:14px;background:linear-gradient(180deg, rgba(255,211,107,.10), rgba(255,211,107,.02))}
+.profile h3{margin:0 0 10px;font-family:Macondo, serif;font-weight:400;font-size:22px;color:var(--or)}
+.profile ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.profile li{display:flex;gap:10px;align-items:flex-start;background:var(--carte);border-radius:14px;padding:10px;border-left:4px solid var(--c)}
+.profile li em{font-style:normal;color:var(--or);font-weight:700}
+.regle{margin-top:14px;background:var(--carte);border:1px solid var(--trait);border-radius:16px;padding:12px 14px;color:var(--doux);font-size:14px}
+.regle b{color:var(--texte)}
+table{width:100%;border-collapse:separate;border-spacing:0;margin-top:10px;background:var(--carte);border:1px solid var(--trait);border-radius:16px;overflow:hidden;font-size:15px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--trait);vertical-align:top}
+th{background:var(--carte2);color:var(--doux);font-weight:700;font-size:13px}
+tr:last-child td{border-bottom:0}
+td .mini{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--c);font-size:13px;margin-right:4px;vertical-align:-6px}
+.retires{margin-top:10px;color:var(--doux);font-size:14px}
+.retires s{color:#d9a0a0}
+footer{max-width:1180px;margin:0 auto;padding:0 16px 40px;color:var(--doux);font-size:13px}
+@media (max-width:560px){ body{font-size:15px} .fil{padding:12px 10px} .badge{width:30px;height:30px;font-size:16px} th,td{padding:8px 7px;font-size:14px} }
+</style>
+</head>
+<body>
+<header>
+  <h1>Enquête 3 — le fil de la journée</h1>
+  <p class="chapo">La règle : chaque moment se finit sur ce que chacun a hâte de faire au moment suivant. Rien n'arrive par magie dans le Grand Livre du Sage : chaque page vient de quelqu'un. Les flèches dorées montrent ce qui passe d'un héros à l'autre.</p>
+  <div class="legende" id="legende"></div>
+</header>
+<nav><div class="in">
+  <a href="#matin">🌅 Le matin</a><a href="#apres-midi">☀️ L'après-midi</a><a href="#nuit">🌙 La nuit</a><a href="#grand-livre">📜 D'où vient chaque page</a>
+</div></nav>
+<main id="contenu"></main>
+<footer>Proposition du 16 novembre au soir, d'après les idées de Romain. Rien de ce qui porte « 🆕 » n'est construit. Le papier d'Odette et son plan ne nomment jamais le maire : sinon sa bague, à la fin, ne surprend plus personne.</footer>
+<script>
+var R = {
+  barde:{ic:'🎻', nom:'Barde', c:'var(--barde)'},
+  pisteur:{ic:'🏹', nom:'Pisteur', c:'var(--pisteur)'},
+  sage:{ic:'📜', nom:'Sage', c:'var(--sage)'},
+  alchimiste:{ic:'⚗️', nom:'Alchimiste', c:'var(--alchimiste)'},
+  tous:{ic:'👥', nom:'Tous', c:'var(--or)'}
+};
+/* une étape : [rôle, texte (HTML court), nouveau ?, ce qui passe au suivant (facultatif)] */
+var MOMENTS = [
+ {id:'matin', ic:'🌅', titre:'Le matin', sous:'La fête du maire occupe tout le monde… mais quelque chose cloche.', fils:[
+  {titre:'La fausse lettre', ic:'✉️', etapes:[
+    ['barde', '<b>Le marché aux fleurs</b> : Fortuné, Iris, Basile. Mission du maire : dix bouquets.'],
+    ['barde', '<b>Tim</b> : <span class="q">« J\'ai vu Odette marcher vite… sans sa canne ! »</span>', false, 'code → 📜 Sage'],
+    ['sage', 'Une page de plus dans son tableau : Odette n\'a peut-être pas écrit cette lettre.'],
+    ['barde', '<b>Victor</b> : la lettre n\'est pas passée par la poste. <span class="q">« Il faudrait la comparer avec un papier écrit par Odette… Le maire la garde dans son bureau. La mairie ouvre cet après-midi. »</span>', true, 'code → 📜 Sage'],
+    ['barde', '<b>Chez Odette</b> : il pose sa canne. Sur la table, son carnet, de son écriture.', false, 'code → 📜 Sage (« Le carnet d\'Odette »)'],
+    ['barde', '<b>Iris</b> : <span class="q">« On m\'a volé de l\'encre cette nuit ! »</span> Elle lui donne un fond de flacon.', false, 'à voix haute → 🏹 · code → ⚗️'],
+    ['pisteur', '<b>Le jardin d\'Iris</b> : de petites empreintes, 3 carreaux. Des pieds d\'enfant !', false, 'code → 📜 Sage (sa liste des pointures)'],
+    ['barde', '<b>Fortuné</b>, démasqué : il a vendu du papier cette nuit, payé avec une pièce d\'or toute neuve. Sa pièce ? <span class="q">« Ça fera trois pièces d\'or. »</span>', false, 'code → ⚗️'],
+    ['alchimiste', '<b>Au labo</b> : l\'encre d\'Iris (<span class="q">« une encre, ça se compare »</span>) ; la pièce de Fortuné (de la farine, la même bourse que Bastien).'],
+    ['barde', '<b>La mairie est fermée</b> : <span class="q">« Le maire prépare sa fête. Revenez cet après-midi ! »</span> Mélusine aussi : <span class="q">« Repasse cet après-midi. »</span>', true]
+  ]},
+  {titre:'Le secret d\'Odette', ic:'🗝️', neuf:true, etapes:[
+    ['barde', '<b>Le voisin d\'en face</b> : <span class="q">« Odette m\'a dit : si je disparais, donne ce papier à qui viendra me chercher. »</span> Il est couvert de signes.', true, 'code → 📜 Sage'],
+    ['sage', '<b>Le tableau d\'Odette</b> (sa mission pour le maire) : dans un coin, les mêmes signes que sur la pierre de Tim. Odette connaissait l\'écriture des Fondateurs.', true],
+    ['sage', '<b>Il déchiffre le papier</b> (l\'alphabet secret) : <span class="q">« Quand le soleil de l\'après-midi entrera chez moi, le chat qui dort te montrera le chemin. »</span>', true],
+    ['sage', '<b>Il prend la pierre de Tim</b> dans son Grand Livre et la pose sur le plan de la maison d\'Odette : un endroit brille, et trois signes s\'allument dans un ordre.', true, 'à voix haute → 🏹 : « cet après-midi, chez Odette »']
+  ]},
+  {titre:'Les bêtes', ic:'🐀', neuf:true, etapes:[
+    ['barde', '<b>Gaspard</b> : <span class="q">« Cette nuit, des rats grands comme des chats ont éventré mes sacs de farine. Avec des yeux rouges ! »</span>', true],
+    ['alchimiste', '<b>Le gâteau, chez Gaspard</b> : sur un sac éventré, un poil. Au labo : un rat énorme… et une boue noire qu\'on ne trouve que sous terre.', true],
+    ['pisteur', '<b>En courant après l\'oie</b> : un gros chat gris file sous la grille de l\'église, et disparaît.', true]
+  ]},
+  {titre:'La fête du maire', ic:'🎉', etapes:[
+    ['pisteur', '<b>Les banderoles, l\'oie de Gaspard</b>.'],
+    ['tous', '<b>Le concours de gâteaux</b>, chacun le sien, en même temps.'],
+    ['barde', '<b>Anselme dort</b> : sur la porte du clocher, <span class="q">« SONNEUR ENDORMI. Revenez cet après-midi. »</span>', true]
+  ]}
+ ], profile:{titre:'Ce qui se profile pour l\'après-midi', l:[
+    ['barde', 'Demander la lettre au maire <em>cet après-midi</em>. Revoir Mélusine et Anselme <em>cet après-midi</em>. Et ces rats aux yeux rouges, d\'où sortent-ils ?'],
+    ['sage', 'Recevoir la lettre <em>cet après-midi</em> et la comparer au carnet. Le Pisteur doit ouvrir la cachette d\'Odette <em>cet après-midi</em>.'],
+    ['pisteur', 'La cachette chez Odette, quand le soleil de <em>l\'après-midi</em> entrera. Et où est passé ce chat gris ?'],
+    ['alchimiste', 'Comparer l\'encre avec celle de la lettre <em>cet après-midi</em>. Monter voir Anselme <em>cet après-midi</em>. Et ce rat énorme…']
+ ]}},
+ {id:'apres-midi', ic:'☀️', titre:'L\'après-midi', sous:'On saute sur ce qu\'on attendait… et un plan se forme pour la nuit.', fils:[
+  {titre:'Le secret d\'Odette', ic:'🗝️', neuf:true, etapes:[
+    ['pisteur', '<b>Chez Odette</b>, un mini-jeu vu de dessus : le rayon de soleil, le chat qui dort, les trois signes dans l\'ordre du Sage… une cachette s\'ouvre. Sans le Sage, il ne trouve rien.', true, 'code → 📜 Sage'],
+    ['sage', '<b>Le plan des Fondateurs</b> : des couloirs sans noms, une mise en garde (<span class="q">« Sous la ville veillent les gardiens de la brume »</span>) et des énigmes dont on ne sait pas encore où elles servent (<span class="q">« Trois, un, deux, comme l\'eau qui tourne… »</span>).', true]
+  ]},
+  {titre:'Les bêtes', ic:'🐀', neuf:true, etapes:[
+    ['barde', '<b>Chez Odette</b> : le bol de lait de midi est renversé. Des traces toutes fraîches filent dehors.', true, 'code → 🏹 Pisteur'],
+    ['pisteur', '<b>Les traces de Moustache</b> jusqu\'à la crypte. On reste devant la grille : des grognements, des yeux rouges, un rat énorme se jette sur les barreaux. La grille est fermée à clé.', true, 'code pour tous → « Des bêtes sous l\'église »'],
+    ['barde', '<b>Iris</b>, avec ce code : <span class="q">« Des bêtes ? Les Fondateurs savaient s\'en protéger. Odette m\'empruntait ce vieil herbier : prends-le. »</span>', true, 'code → 📜 Sage'],
+    ['sage', '<b>L\'herbier des Fondateurs</b> : il lit les indices à voix haute.', true, 'à voix haute → ⚗️'],
+    ['alchimiste', '<b>Anselme est réveillé</b> : sa tisane, Bertille, la brume recule. Elle cueille les plantes et commence les potions contre les bêtes.', true]
+  ]},
+  {titre:'La fausse lettre', ic:'✉️', etapes:[
+    ['barde', '<b>Le maire</b> (grande conversation) prête la lettre. Raté : le Pisteur va la prendre en cachette.', false, 'code → 📜 et ⚗️'],
+    ['sage', '<b>Il rend le tableau au maire</b>, qui lui confie le Livre d\'or de la fête.', true, 'code → ⚗️'],
+    ['alchimiste', '<b>Au labo</b> : la lettre et le Livre d\'or → deux écritures possibles, Mélusine ou Margot ; puis la même encre que celle d\'Iris.', false, 'codes → 🎻 et 📜'],
+    ['sage', '<b>La lettre et le carnet</b> côte à côte ; les pieds d\'enfant : Tim ou Mélusine. Il ne reste qu\'elle.'],
+    ['barde', '<b>Mélusine</b>, accusée, avoue : un homme en cape l\'a forcée. Puis, honteuse : <span class="q">« Je vais vous coudre de quoi vous protéger. Ce sera prêt ce soir. »</span>', true, 'code → 📜 Sage']
+  ]},
+  {titre:'La clé (le plan)', ic:'🔔', neuf:true, etapes:[
+    ['pisteur', '<b>Devant la grille</b>, sur la porte de l\'église, une affiche : <span class="q">« Ce soir, la Grosse Marie ouvrira la fête ! »</span>', true],
+    ['barde', '<b>Anselme</b> : <span class="q">« J\'AI LA SEULE CLÉ. ELLE NE QUITTE JAMAIS MA CEINTURE. Ce soir, je sonne la Grosse Marie ! »</span>', true],
+    ['barde', '<b>Basile</b> : <span class="q">« Il ne prête rien… sauf à qui l\'aide à sonner. »</span> <b>Silas</b> : <span class="q">« Quand il sonne, il ferme les yeux pour compter les coups. Et sa grille grince : lui, il la soulève. »</span>', true, 'à voix haute → 🏹'],
+    ['tous', '<b>Le plan</b> : cette nuit, pendant qu\'Anselme sonne, le Pisteur lui prend la clé. C\'est le seul moment.', true]
+  ]}
+ ], profile:{titre:'Ce qui se profile pour la nuit', l:[
+    ['barde', 'Aider Anselme à sonner <em>cette nuit</em>, occuper le maire à la fête, et récupérer les tenues de Mélusine.'],
+    ['pisteur', 'Prendre la clé pendant qu\'Anselme sonne <em>cette nuit</em>, soulever la grille sans bruit… et affronter les rats aux yeux rouges.'],
+    ['sage', 'Trouver le plan des souterrains <em>cette nuit</em>, pour comprendre les énigmes du plan des Fondateurs. Et savoir qui est l\'homme en cape.'],
+    ['alchimiste', 'Finir les sept potions avant <em>la nuit</em> : c\'est ce qui permet de descendre avec les autres.']
+ ]}},
+ {id:'nuit', ic:'🌙', titre:'La nuit', sous:'Le plan s\'exécute.', fils:[
+  {titre:'Entrer', ic:'🔑', etapes:[
+    ['barde', '<b>À la fête</b>, Mélusine lui donne les tenues.', true, 'codes → 🏹 📜 ⚗️'],
+    ['barde', '<b>Il aide Anselme à sonner</b> la Grosse Marie (grande conversation). Raté : Tim montre le vieux puits.', false, 'code → 🏹 Pisteur'],
+    ['pisteur', '<b>Il se cache dans le clocher</b> et prend la clé pendant que ça sonne. La grille : il la soulève, sans bruit.', false, 'code → 📜 et ⚗️ · code → 🎻 (le maire inquiet)'],
+    ['alchimiste', '<b>Les sept potions sont prêtes</b>.', false, 'code → 🏹 (le sac)']
+  ]},
+  {titre:'Sous la ville', ic:'🕯️', etapes:[
+    ['pisteur', '<b>À l\'entrée des souterrains</b>, un plan gravé dans la pierre.', true, 'code → 📜 Sage'],
+    ['sage', '<b>Le plan des souterrains</b> se range dans sa bibliothèque des plans, sur l\'écran normal ; on le fait glisser du doigt. À côté du plan des Fondateurs, les énigmes trouvent leur place : il guide les autres.', true],
+    ['pisteur', '<b>Le donjon</b> : les rats aux yeux rouges, Bourbe… et Moustache qui gratte à une porte ronde : Odette est derrière.', false, 'code → 📜 (la porte des Fondateurs)'],
+    ['pisteur', '<b>L\'homme en cape</b>.', false, 'code → 🎻 Barde'],
+    ['barde', '<b>Farinel, Iris et Silas</b> lui donnent leurs conseils : il les lit à voix haute pendant le combat.'],
+    ['pisteur', '<b>Léo battu parle</b>.', false, 'code → 📜 Sage'],
+    ['sage', '<b>Les trois accusations</b>. Puis le maire, sa bague, et le cachot.']
+  ]}
+ ]}
+];
+var SOURCES = [
+  ['Les habitants (et leurs pointures)', [], 'déjà dans son livre depuis l\'enquête 1', '—'],
+  ['Le papier d\'Odette', ['barde'], 'le voisin d\'en face', 'matin', true],
+  ['Le carnet d\'Odette', ['barde'], 'chez Odette, en posant sa canne', 'matin'],
+  ['Le plan de la maison d\'Odette', ['sage'], 'sa bibliothèque des plans, avec la pierre de Tim (enquête 2)', 'matin', true],
+  ['La lettre', ['barde', 'pisteur'], 'le maire, ou en cachette', 'après-midi'],
+  ['Le Livre d\'or', ['sage'], 'le maire, quand il rend le tableau', 'après-midi', true],
+  ['Le plan des Fondateurs', ['pisteur'], 'la cachette d\'Odette', 'après-midi', true],
+  ['L\'herbier', ['barde'], 'Iris', 'après-midi', true],
+  ['Ma tenue de combat', ['barde'], 'Mélusine, à la fête', 'nuit', true],
+  ['Le plan des souterrains', ['pisteur'], 'gravé à l\'entrée des souterrains', 'nuit', true],
+  ['Le carnet de l\'aventurier', ['pisteur'], 'dans le donjon', 'nuit'],
+  ['La porte des Fondateurs', ['pisteur'], 'devant la porte ronde', 'nuit'],
+  ['Les accusations', ['pisteur'], '« Léo a parlé »', 'nuit']
+];
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function badge(r){ var x = R[r]; return '<span class="badge" style="--c:' + x.c + '" title="' + x.nom + '">' + x.ic + '</span>'; }
+function neuf(){ return '<span class="neuf">🆕</span>'; }
+var h = '';
+MOMENTS.forEach(function(M){
+  h += '<section class="moment" id="' + M.id + '"><div class="moment-titre"><span class="ic">' + M.ic + '</span><div><h2>' + M.titre + '</h2><p>' + esc(M.sous) + '</p></div></div><div class="fils">';
+  M.fils.forEach(function(F){
+    h += '<div class="fil"><h3>' + F.ic + ' ' + esc(F.titre) + (F.neuf ? neuf() : '') + '</h3>';
+    F.etapes.forEach(function(e, i){
+      var x = R[e[0]];
+      h += '<div class="etape" style="--c:' + x.c + '">' + badge(e[0]) + '<div class="t">' + e[1] + (e[2] ? neuf() : '') + '</div></div>';
+      if(i < F.etapes.length - 1 || e[3]) h += '<div class="fleche">' + (e[3] ? '<span class="don">' + esc(e[3]) + '</span>' : '') + (i < F.etapes.length - 1 ? '<span class="f">↓</span>' : '') + '</div>';
+    });
+    h += '</div>';
+  });
+  h += '</div>';
+  if(M.profile){
+    h += '<div class="profile"><h3>⏳ ' + esc(M.profile.titre) + '</h3><ul>';
+    M.profile.l.forEach(function(p){ h += '<li style="--c:' + R[p[0]].c + '">' + badge(p[0]) + '<span>' + p[1] + '</span></li>'; });
+    h += '</ul></div>';
+  }
+  h += '</section>';
+});
+h += '<section class="moment" id="grand-livre"><div class="moment-titre"><span class="ic">📜</span><div><h2>Le Grand Livre du Sage : d\'où vient chaque page</h2><p>Plus rien n\'y tombe du ciel.</p></div></div>';
+h += '<table><thead><tr><th>La page</th><th>Qui l\'apporte</th><th>Quand</th></tr></thead><tbody>';
+SOURCES.forEach(function(s){
+  var qui = s[1].map(function(r){ return '<span class="mini" style="--c:' + R[r].c + '">' + R[r].ic + '</span>'; }).join('') + esc(s[2]);
+  h += '<tr><td>' + esc(s[0]) + (s[4] ? neuf() : '') + '</td><td>' + qui + '</td><td>' + esc(s[3]) + '</td></tr>';
+});
+h += '</tbody></table>';
+h += '<p class="retires">Retirés : <s>le plan des Fondateurs glissé dans le livre dès le matin</s>, <s>l\'herbier dès le matin</s>, <s>la page du plan des souterrains à heure fixe</s>, <s>la page de la porte qui disait tout d\'avance</s> (déjà fait).</p>';
+h += '<div class="regle"><b>Pour le Sage, une poche à objets dans le Grand Livre.</b> La pierre de Tim (et les objets magiques à venir) se prend du doigt et se pose sur un plan, sur l\'écran normal du téléphone ou de la tablette, sans le tourner. C\'est le premier morceau à construire.</div>';
+h += '</section>';
+document.getElementById('contenu').innerHTML = h;
+document.getElementById('legende').innerHTML = ['barde', 'pisteur', 'sage', 'alchimiste'].map(function(r){ return '<span>' + badge(r) + R[r].nom + '</span>'; }).join('') + '<span style="padding-left:10px">' + neuf() + ' à construire</span>';
+/* le bouton du moment affiché s'allume */
+var liens = [].slice.call(document.querySelectorAll('nav a'));
+function marquer(){
+  var y = window.scrollY + 90, on = null;
+  ['matin', 'apres-midi', 'nuit', 'grand-livre'].forEach(function(id){ var e = document.getElementById(id); if(e && e.offsetTop <= y) on = id; });
+  liens.forEach(function(a){ a.classList.toggle('on', a.getAttribute('href') === '#' + on); });
+}
+window.addEventListener('scroll', marquer, {passive:true}); marquer();
+</script>
+</body>
+</html>
