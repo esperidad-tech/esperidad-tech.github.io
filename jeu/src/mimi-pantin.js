@@ -30,7 +30,7 @@ function vers(a, b, t){ return a + (b - a) * t; }
 M.maths = {eio:eio, eo:eo, seg:seg, pic:pic, frac:frac, vers:vers, copie:copie, ang:angle};
 
 var PANTINS = [], RAF = 0, IMG = 0;
-M.CADENCE = [29, 31];          /* le temps le plus court entre deux dessins (ms), quand elle bouge / au calme : 30 dessins par seconde sur un écran qui en affiche 60 */
+M.CADENCE = [29, 62, 96];      /* le temps le plus court entre deux dessins (ms) : quand elle bouge (30 par seconde), au calme (15 : elle respire, sa queue se balance), endormie (10) */
 function boucle(now){
   RAF = 0; IMG++;
   for(var i = PANTINS.length - 1; i >= 0; i--) PANTINS[i].image(now);
@@ -187,11 +187,12 @@ PP.local = function(cx, cy){
     return [p.x, p.y];
   }catch(e){ return null; }
 };
+/* (le doigt bouge bien plus souvent qu'on ne la redessine : on note seulement où il est ; la place du doigt dans ses mesures à elle
+   est calculée une fois par dessin, pas à chaque mouvement du doigt — c'est ce calcul qui coûtait, sous le doigt) */
 PP.regard = function(cx, cy, ms){
-  var p = this.local(cx, cy);
-  if(!p) return;
-  this.reg.cx = p[0]; this.reg.cy = p[1]; this.reg.jusqu = this.t + (ms || 1400) / 1000;
-  this.reveiller();
+  this.reg.px = cx; this.reg.py = cy; this.reg.frais = true; this.reg.jusqu = this.t + (ms || 1400) / 1000;
+  if(this.vite < 3) this.vite = 3;
+  lancer();
 };
 PP.sansRegard = function(){ this.reg.jusqu = 0; };
 /* ---------- Où le doigt la touche-t-il ? 'tete', 'queue', 'ventre', 'dos' (ou null : à côté) ---------- */
@@ -248,12 +249,14 @@ PP.image = function(now){
   this.hors = 0;
   if(document.hidden){ this.t0 = now; return; }
   /* On ne la redessine pas plus souvent qu'il ne faut (Romain, 16 novembre, 19 h 56 : « sans que ça rame […] jamais en dessous de
-     24 images secondes ») : 30 fois par seconde, qu'elle bouge ou qu'elle respire au calme (c'était 60 quand elle bougeait). Son déplacement
+     24 images secondes ») : 30 fois par seconde quand elle bouge (c'était 60), 15 quand elle ne fait que respirer, 10 quand elle dort —
+     un clin d'œil, une oreille qui frémit, un regard la repassent à 30 le temps qu'il faut. Moins on la redessine, plus il reste de temps
+     pour tout le reste de l'écran de l'Alchimiste. Son déplacement
      dans la pièce, lui, est fait par le navigateur à chaque image de l'écran : il reste parfaitement lisse. Sur un appareil lent,
      qui n'affiche que 30 images par seconde ou moins, elle est redessinée à chacune. */
   this.lireClasses();
   var ecart = this.t0 ? now - this.t0 : 1000;
-  if(ecart < (this.vite > 0 ? M.CADENCE[0] : M.CADENCE[1])) return;
+  if(ecart < (this.vite > 0 ? M.CADENCE[0] : this.F.zz > 0.5 ? M.CADENCE[2] : M.CADENCE[1])) return;
   if(this.vite > 0) this.vite--;
   var dt = this.t0 ? Math.min(0.08, ecart / 1000) : 0.016;
   this.t0 = now;
@@ -336,6 +339,7 @@ PP.dessiner = function(dt){
   if(ol.k > 0.01){ F.lx = vers(F.lx, ol.x, ol.k); F.ly = vers(F.ly, ol.y, ol.k); F.ta += ol.x * 5 * ol.k; this.vite = Math.max(this.vite, 2); }
   /* 5. le regard */
   var rg = this.reg, veut = t < rg.jusqu ? 1 : 0;
+  if(rg.frais){ rg.frais = false; var pl = this.local(rg.px, rg.py); if(pl){ rg.cx = pl[0]; rg.cy = pl[1]; } else veut = 0; }
   rg.w += (veut - rg.w) * Math.min(1, dt * 7);
   if(rg.w > 0.01){
     var hd = this.R._tete, tx0 = hd ? hd[0] : F.sx + F.tx, ty0 = hd ? hd[1] : F.sy + F.ty, ddx = rg.cx - tx0, ddy = rg.cy - ty0, ar = -F.ta * Math.PI / 180;

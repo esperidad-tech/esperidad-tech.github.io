@@ -7579,8 +7579,13 @@ function caresseBouge(V, o, ev, dl){
   var C = chatEtat(V, o).caresse;
   if(!C) return;
   if(C.outil){ outilBouge(V, o, ev, dl); return; }
-  caresseZone(V, o, zoneChat(V, o, ev));
   C.dist += dl;
+  /* (le doigt bouge des dizaines de fois par seconde : savoir ce qu'il touche — la tête, le dos… — dix fois par seconde suffit,
+     et c'est ce calcul-là qui coûte : Romain, « sans que ça rame ») */
+  var now = Date.now();
+  if(C.tzone && now - C.tzone < 90) return;
+  C.tzone = now;
+  caresseZone(V, o, zoneChat(V, o, ev));
 }
 function caresseTic(V, o){
   var st = chatEtat(V, o), C = st.caresse, d = V.elO[o.id], t = tama(V);
