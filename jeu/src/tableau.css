@@ -4,6 +4,7 @@
    ========================================================== */
 .tb-zone{display:flex;flex-direction:column;gap:10px}
 .tb-boite{overflow-x:auto;margin:0 -6px;padding:8px 6px 4px;-webkit-overflow-scrolling:touch}
+.tb-grilles{display:flex;flex-direction:column;gap:14px}
 .tb-grille{display:grid;grid-template-columns:66px repeat(var(--n), minmax(var(--w, 48px), 1fr));gap:4px;min-width:min-content}
 .tb-coin{display:flex;justify-content:space-between;align-items:flex-end;padding:4px 6px;font-size:1.15rem;opacity:.55}
 .tb-col,.tb-ligne,.tb-case,.tb-puce{position:relative;appearance:none;font:inherit;color:var(--encre);cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -20,6 +21,15 @@
 .tb-case.tb-v{color:#2f9e44;background:rgba(47,158,68,.18);border-style:solid;border-color:rgba(47,158,68,.6)}
 .tb-case.tb-grise{background:rgba(36,24,46,.13);border-style:solid;opacity:.6}
 .tb-case:active,.tb-col:active,.tb-ligne:active,.tb-puce:active{transform:scale(.94)}
+
+/* Un téléphone debout : le tableau coupé en deux (tableau.js, etroit) ; tout tient en largeur, plus rien ne glisse de côté */
+.tb-coupe .tb-boite{overflow:visible}
+.tb-coupe .tb-grille{grid-template-columns:60px repeat(var(--n), minmax(44px, 1fr));min-width:0}
+.tb-coupe .tb-col{min-height:60px}
+.tb-coupe .tb-ligne,.tb-coupe .tb-case{min-height:52px}
+.tb-coupe .tb-por{width:34px;height:34px}
+.tb-coupe .tb-col small,.tb-coupe .tb-ligne small{font-size:.66rem;overflow-wrap:normal;hyphens:manual}
+.tb-coupe .tb-case{min-width:0}
 
 /* Un suspect, un lieu ou un choix barré : grisé, avec un grand ✗ ; « sûr » : bordure verte et ✓ */
 .tb-m{position:absolute;font-style:normal;font-weight:900;line-height:1;pointer-events:none}

@@ -304,9 +304,14 @@ function contenu(ou, w, h){
          seulement ce qui pousse (et les missions bonus). Une enquête peut en ajouter d'autres (E.carteSansGens). Au tutoriel de l'enquête 1,
          seulement si l'étape ne demande pas de toucher une maison (T.maisons : jamais pour l'Alchimiste) */
       var sansGens = (SANS_GENS.indexOf(role) >= 0 || (E.carteSansGens || []).indexOf(role) >= 0) && !(T && T.maisons && T.maisons.length);
+      /* (Romain, 16 novembre, 8 h 00 : « pour l'Alchimiste, on a besoin de voir le portrait d'Anselme à l'enquête 3 ») E.carteGens[rôle] :
+         ceux qu'un rôle sans gens voit quand même, parce qu'il a affaire à eux (enquête 3 : Anselme, pour la brume et sa tisane) */
+      var gardes = sansGens ? ((E.carteGens || {})[role] || []) : [];
       var hab = sansGens ? {} : habitants(E), vis = {};
+      if(gardes.length){ var tous = habitants(E); M.cle(tous).forEach(function(k){ if(gardes.indexOf(tous[k].id || tous[k].pid) >= 0) hab[k] = tous[k]; }); }
       /* où est chacun, dans toutes les enquêtes (dès l'enquête 1 : la position de chacun remplace le marqueur « à qui parler » du tutoriel) */
       var PR = sansGens ? {marqueurs:[], chez:{}, absents:{}, bulles:{}} : presences(E, hab);
+      if(gardes.length){ PR = presences(E, hab); PR.marqueurs = PR.marqueurs.filter(function(mq){ return gardes.indexOf(mq.visage) >= 0; }); }
       /* (un villageois sur un lieu qu'on ne peut pas encore toucher : on le voit, mais son visage ne se touche pas) */
       PR.marqueurs.forEach(function(mq){
         if(mq.lieu && (caches.indexOf(mq.lieu) >= 0 || (T && T.ouverts.indexOf(mq.lieu) < 0) || (guide && actifs.indexOf(mq.lieu) < 0 && verrous.indexOf(mq.lieu) < 0))) mq.act = null;

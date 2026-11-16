@@ -45,6 +45,20 @@ function choixDim(E, d){ return (E[d] && E[d].choix) || []; }
 /* « Le Vieux Chêne » → « Vieux Chêne » (moins large dans l'en-tête de colonne) */
 function court(nom){ var s = String(nom || '').replace(/^(Le |La |Les |L')/, ''); return s.charAt(0).toUpperCase() + s.slice(1); }
 
+/* Un écran étroit (un téléphone debout) : le tableau entier n'y tient pas. Quand l'écran passe d'étroit à large
+   (on tourne le téléphone), le tableau ouvert se refait sur place, sans rien d'autre. */
+var ETROIT = '(max-width: 640px)', mq = null;
+function etroit(){ try{ return window.matchMedia(ETROIT).matches; }catch(e){ return (window.innerWidth || 1000) <= 640; } }
+try{
+  mq = window.matchMedia(ETROIT);
+  var refaire = function(){
+    [].forEach.call(document.querySelectorAll('.tb-zone'), function(z){
+      try{ var d = document.createElement('div'); d.innerHTML = M.tableauHTML(); if(d.firstChild) z.parentNode.replaceChild(d.firstChild, z); }catch(e){}
+    });
+  };
+  if(mq.addEventListener) mq.addEventListener('change', refaire); else if(mq.addListener) mq.addListener(refaire);
+}catch(e){}
+
 /* La page, pour l'onglet du Grand Livre */
 M.pageTableau = function(){ return {id:'tableau', titre:'Mon tableau d\'enquête', ic:'📋', tableau:true}; };
 
@@ -54,9 +68,19 @@ function tableauHTML(E, src, lecture){
   var bt = lecture ? 'span' : 'button';
   function attr(act, data){ if(lecture) return ''; return ' type="button" data-act="' + act + '"' + Object.keys(data).map(function(k){ return ' data-' + k + '="' + esc(data[k]) + '"'; }).join(''); }
   var s = '';
+  /* (Romain, 16 novembre : « c'est trop large pour un téléphone », et glisser de côté tourne la page du Grand Livre)
+     Sur un écran étroit, quand il y a plus de cinq lieux, le tableau est coupé en deux tableaux l'un sous l'autre
+     (enquête 3 : 5 + 5 lieux ; enquête 2 : 4 + 3), chacun avec tous les personnages : rien ne déborde, on ne fait
+     que descendre. Les marques sont les mêmes dans les deux (rafraichir met à jour tous les boutons du même nom). */
   if(qui.length && ou.length){
-    /* (enquête 3 : dix lieux) beaucoup de colonnes : un peu plus larges, pour que leurs noms tiennent ; le tableau glisse de côté */
-    s += '<div class="tb-boite"><div class="tb-grille" style="--n:' + ou.length + (ou.length > 6 ? ';--w:60px' : '') + '">' +
+    var morceaux = [ou];
+    if(etroit() && ou.length > 5){ var m = Math.ceil(ou.length / 2); morceaux = [ou.slice(0, m), ou.slice(m)]; }
+    s += '<div class="tb-grilles' + (morceaux.length > 1 ? ' tb-coupe' : '') + '">';
+    morceaux.forEach(function(cols){ s += grilleHTML(cols); });
+    s += '</div>';
+  }
+  function grilleHTML(ou){
+    var s = '<div class="tb-boite"><div class="tb-grille" style="--n:' + ou.length + '">' +
       '<div class="tb-coin" aria-hidden="true"><span>📍</span><span>👤</span></div>';
     ou.forEach(function(c){
       var v = etatDim(src, 'ou', c.id);
@@ -71,7 +95,7 @@ function tableauHTML(E, src, lecture){
         s += '<' + bt + ' class="tb-case tb-' + (v || 'vide') + (grise ? ' tb-grise' : '') + '"' + attr('tab-case', {k:k}) + ' aria-label="' + esc(nomQui(id) + ', ' + c.nom) + '">' + marque(v) + '</' + bt + '>';
       });
     });
-    s += '</div></div>';
+    return s + '</div></div>';
   }
   /* Les autres questions : une petite rangée chacune */
   EN_PLUS.forEach(function(d){

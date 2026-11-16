@@ -318,8 +318,7 @@ var DIT = {
   tropPetit:'Plus petit, même une fourmi ne le verrait pas !',
   fini:'Dong ! Les dix minutes sont passées. Gaspard emporte le gâteau… en courant !',
   /* le vote (13 novembre) : à voix haute, autour de la table */
-  note:'Montre ton gâteau à tes amis. Quelle note sur 20 lui donnent-ils ?',
-  rang:'pour ton gâteau ! Comparez vos notes : quelle est ta place ?'
+  rang:'Montrez vos gâteaux et votez tous ensemble. Alors, quelle est ta place ?'
 };
 /* les quatre places du concours, et ce qu'elles rapportent (Romain, 13 novembre : 5, 4, 3 et 2 pièces) */
 var RANGS = [{ic:'🥇', nom:'1er', or:5}, {ic:'🥈', nom:'2e', or:4}, {ic:'🥉', nom:'3e', or:3}, {ic:'🎖️', nom:'4e', or:2}];
@@ -809,30 +808,21 @@ function jouer(zone, params, fin){
     }
     /* LE VOTE (Romain, 13 novembre) : les tablettes ne se parlent pas — on vote à voix haute, autour de la table. Chacun touche la note
        sur 20 que les autres donnent à son gâteau ; puis, les notes comparées, sa place : 1er, 2e, 3e ou 4e (5, 4, 3 ou 2 pièces d'or). */
-    function voter(note){
+    /* (Romain, 16 novembre : « je ne veux plus de notes, ça fait deux systèmes de notation » : plus de note sur 20, on élit tout de suite
+       qui est 1er, 2e, 3e et 4e) */
+    function voter(){
       final.classList.add('gt-en-vote');
-      var h, t;
-      if(!note){
-        t = DIT.note;
-        h = '<div class="gt-vote"><div class="gt-final-dit gt-vote-q"><p>' + esc(t) + '</p></div>' + BOUTON_GRAND + '<div class="gt-notes" role="group" aria-label="La note sur 20">';
-        for(var n = 1; n <= 20; n++) h += '<button type="button" class="gt-note" data-n="' + n + '">' + n + '</button>';
-        h += '</div></div>';
-      } else {
-        t = DIT.rang;
-        h = '<div class="gt-vote"><div class="gt-final-dit gt-vote-q"><p><b class="gt-ma-note">' + note + ' sur 20</b> ' + esc(t) + '</p></div>' + BOUTON_GRAND + '<div class="gt-rangs" role="group" aria-label="Ta place au concours">' +
-          RANGS.map(function(r, i){ return '<button type="button" class="gt-rang" data-r="' + (i + 1) + '"><span aria-hidden="true">' + r.ic + '</span><b>' + r.nom + '</b></button>'; }).join('') +
-          '</div><button type="button" class="btn second petit gt-renoter">← Changer la note</button></div>';
-      }
-      final.innerHTML = h;
-      final.querySelector('.gt-vote-q').appendChild(MJ.boutonLire((note ? note + ' sur 20. ' : '') + t));
+      var t = DIT.rang;
+      final.innerHTML = '<div class="gt-vote"><div class="gt-final-dit gt-vote-q"><p>' + esc(t) + '</p></div>' + BOUTON_GRAND + '<div class="gt-rangs" role="group" aria-label="Ta place au concours">' +
+        RANGS.map(function(r, i){ return '<button type="button" class="gt-rang" data-r="' + (i + 1) + '"><span aria-hidden="true">' + r.ic + '</span><b>' + r.nom + '</b></button>'; }).join('') +
+        '</div></div>';
+      final.querySelector('.gt-vote-q').appendChild(MJ.boutonLire(t));
       mesurer();
-      [].forEach.call(final.querySelectorAll('.gt-note'), function(b){ b.addEventListener('click', function(){ if(arrete) return; U.stop(); U.son('clic'); voter(+b.getAttribute('data-n')); }); });
       [].forEach.call(final.querySelectorAll('.gt-rang'), function(b){ b.addEventListener('click', function(){
         if(arrete) return; U.stop();
         var rang = +b.getAttribute('data-r'), or = RANGS[rang - 1].or;
-        fin({reussi:true, score:1, message:'Bravo !', detail:'Tu as gagné ' + or + ' pièces d\'or.', gateau:R, note:note, rang:rang, or:or});
+        fin({reussi:true, score:1, message:'Bravo !', detail:'Tu as gagné ' + or + ' pièces d\'or.', gateau:R, rang:rang, or:or});
       }); });
-      var bn = final.querySelector('.gt-renoter'); if(bn) bn.addEventListener('click', function(){ U.stop(); U.son('clic'); voter(); });
     }
     montrer();
     confettis(); if(tempsFini) U.son('cloche'); son('bravo'); apres(1500, function(){ if(enFete) son('confetti'); });
@@ -858,15 +848,27 @@ function jouer(zone, params, fin){
       }catch(e){}
     });
     if(!bb) bb = {x0:0, y0:DY, x1:640, y1:DY + HAUT_VUE};
-    var m = Math.max(bb.x1 - bb.x0, bb.y1 - bb.y0) * .05;
-    var vb = [bb.x0 - m, bb.y0 - DY - m, bb.x1 - bb.x0 + 2 * m, bb.y1 - bb.y0 + 2 * m].map(f1).join(' ');
+    /* (Romain, 16 novembre : « que la nappe soit en bas de l'écran », « qu'on ne voie jamais le bleu sous la nappe », « le fond flou de
+       la ville ») : le cadre a la forme de l'écran ; son bas est toujours sur la nappe (un peu sous le pied du plat), le gâteau tient
+       dedans avec un peu d'air au-dessus et sur les côtés ; derrière, la place en fête, floue comme dans le jeu. La place et la nappe
+       sont dessinées très loin de chaque côté et très haut (fond(), table()) : quelle que soit la forme de l'écran, il n'y a pas de vide. */
+    var hote = racine.closest('#mj-plein, #sl-plein') || document.body;
+    var W = window.innerWidth || hote.clientWidth || 640, H = window.innerHeight || hote.clientHeight || 640, a = Math.max(.3, Math.min(4, W / H));
+    var m = Math.max(bb.x1 - bb.x0, bb.y1 - bb.y0) * .06;
+    var bas = 640, haut = Math.min(bb.y0 - m - 40, 470);   /* (en monde : le pied du plat est à 596 ; la nappe va jusqu'à 808) */
+    var h = Math.max(bas - haut, (bb.x1 - bb.x0 + 2 * m) / a), w = h * a, cx = (bb.x0 + bb.x1) / 2;
+    var vb = [cx - w / 2, bas - h - DY, w, h].map(f1).join(' ');
     var copie = monde.cloneNode(true);
     [].forEach.call(copie.querySelectorAll('.gt-prise, .gt-sel'), function(n){ n.parentNode.removeChild(n); });   /* (les zones à toucher, la sélection) */
-    grand = U.html('<div class="gt-grand" role="dialog" aria-label="Le gâteau en grand"><svg class="gt-grand-svg" viewBox="' + vb + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>' +
+    var fondSvg = racine.querySelector('.gt-fond');
+    grand = U.html('<div class="gt-grand" role="dialog" aria-label="Le gâteau en grand">' +
+      '<svg class="gt-grand-svg gt-grand-fond" viewBox="' + vb + '" preserveAspectRatio="xMidYMax slice" aria-hidden="true"></svg>' +
+      '<svg class="gt-grand-svg" viewBox="' + vb + '" preserveAspectRatio="xMidYMax slice" aria-hidden="true"></svg>' +
       '<button type="button" class="gt-grand-x" aria-label="Fermer">✕</button></div>');
-    grand.firstChild.appendChild(copie);
+    if(fondSvg) [].forEach.call(fondSvg.childNodes, function(n){ grand.children[0].appendChild(n.cloneNode(true)); });
+    grand.children[1].appendChild(copie);
     grand.querySelector('.gt-grand-x').addEventListener('click', function(ev){ ev.stopPropagation(); U.son('clic'); fermerGrand(); });
-    (racine.closest('#mj-plein, #sl-plein') || document.body).appendChild(grand);
+    hote.appendChild(grand);
     document.addEventListener('keydown', toucheGrand);
   }
   final.addEventListener('click', function(ev){ var b = ev.target.closest ? ev.target.closest('.gt-montrer') : null; if(b && !arrete) ouvrirGrand(); });

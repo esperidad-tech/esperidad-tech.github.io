@@ -165,9 +165,36 @@ function sonsVisee(audio, sortie){
     accroche:function(){ souffle(0, .16, .03, 900, 2000, .7); [784, 988, 1175].forEach(function(n, i){ tendre(n, .06 + i * .07, .16, .032, null, .006, 'triangle', 3000); }); },    /* la banderole se tend entre deux anneaux */
     fete:function(){ [523, 659, 784, 1047, 1319, 1568].forEach(function(n, i){ tendre(n, i * .09, .3, .055, null, .01, 'triangle', 3000); }); tendre(1047, .6, .9, .04, null, .02); tendre(1319, .6, .9, .03, null, .02); tendre(1568, .6, .9, .024, null, .02);
       for(var i = 0; i < 6; i++){ var n = 700 + Math.random() * 900; tendre(n, .7 + i * .09, .06, .02, n * 1.5, .005); } },                                                      /* la place est décorée ! */
-    vide:function(){ tendre(330, 0, .16, .05, 262, .01, 'triangle', 1000); tendre(220, .16, .3, .05, 165, .01, 'triangle', 800); }                                               /* plus de flèches */
+    vide:function(){ tendre(330, 0, .16, .05, 262, .01, 'triangle', 1000); tendre(220, .16, .3, .05, 165, .01, 'triangle', 800); },                                              /* plus de flèches */
+    /* LA PETITE MUSIQUE DE LA FÊTE (Romain, 16 novembre : « une petite musique un peu festive ») : une polka de village, huit mesures
+       qui tournent en boucle — la flûte, l'accordéon sur les contretemps, la basse « poum-pa », un tambourin. Douce : on doit toujours
+       entendre l'arc. mesure(i, t0) joue la mesure i (0 à 7) dans t0 secondes ; musique() joue les huit d'un coup (pour l'Atelier). */
+    mesure:function(i, t0){ jouerMesure(i % 8, t0 || 0); },
+    musique:function(){ for(var i = 0; i < 8; i++) jouerMesure(i, i * MESURE); }
   };
+  function jouerMesure(i, t0){
+    var c = POLKA.accords[i], r = POLKA.basses[i], q = 0;
+    /* la basse et l'accordéon : poum (la note du bas), pa (l'accord), poum (la quinte), pa */
+    [r, null, r + 7, null].forEach(function(b, k){
+      var t = t0 + k * CROCHE;
+      if(b !== null) tendre(130.81 * Math.pow(2, b / 12), t, CROCHE * .9, .07, null, .01, 'triangle', 700);
+      else { c.forEach(function(n){ tendre(261.63 * Math.pow(2, n / 12), t, CROCHE * .75, .012, null, .012, 'sawtooth', 1500); }); souffle(t, .06, .012, 7000, 9000, 1.2, 'highpass', .003); }
+    });
+    /* la flûte */
+    POLKA.air[i].forEach(function(n){
+      if(n[0] !== null) tendre(523.25 * Math.pow(2, n[0] / 12), t0 + q * CROCHE, n[1] * CROCHE * .9, .04, null, .02, 'triangle', 3200);
+      q += n[1];
+    });
+  }
 }
+/* la polka : en demi-tons au-dessus du do (la flûte, l'accord), la note du bas de chaque mesure ; une croche = 0,2 s (132 à la noire) */
+var CROCHE = .2, MESURE = 4 * CROCHE;
+var POLKA = {
+  air:[[[4, 1], [7, 1], [12, 1], [7, 1]], [[9, 1], [7, 1], [5, 1], [4, 1]], [[2, 1], [4, 1], [5, 1], [7, 1]], [[4, 2], [0, 2]],
+       [[4, 1], [7, 1], [12, 1], [14, 1]], [[17, 1], [16, 1], [14, 1], [12, 1]], [[11, 1], [14, 1], [7, 1], [11, 1]], [[12, 3], [null, 1]]],
+  accords:[[0, 4, 7], [5, 9, 12], [7, 11, 14], [0, 4, 7], [0, 4, 7], [5, 9, 12], [7, 11, 14], [0, 4, 7]],
+  basses:[0, 5, -5, 0, 0, 5, -5, 0]
+};
 /* <<< LES SONS DE LA VISÉE */
 var ctxA = null;
 function audio(){
@@ -200,7 +227,7 @@ var ARC_DJ = (function(){
         ver = ['A', 'B', 'C'][Math.floor(Math.random() * 3)];
         var x = window.BRUITAGES_ARC[ver], t = E.ctx.currentTime + .02;
         prise = E.prise(t, NIV[ver]);
-        x.tendre(E, t, E.bus(prise, {rev:x.rev, pan:0}));
+        x.tendre(E, t, E.bus(prise, {rev:0, pan:0}));   /* (Romain, 16 novembre : « enlève l'écho ») : sur la place, pas l'écho de la cave du donjon */
         return true;
       }catch(e){ prise = null; return false; }
     },
@@ -210,7 +237,7 @@ var ARC_DJ = (function(){
         var x = window.BRUITAGES_ARC[ver], t = E.ctx.currentTime + .01;
         if(prise && prise.couper) prise.couper(t, .02);     /* le grincement s'arrête net : la corde est partie */
         var p2 = E.prise(t, NIV[ver]);
-        x.lacher(E, t, E.bus(p2, {rev:x.rev, pan:0}));
+        x.lacher(E, t, E.bus(p2, {rev:0, pan:0}));
         prise = null;
         return true;
       }catch(e){ return false; }
@@ -622,6 +649,19 @@ function jouer(el, p, fin){
   cuT.setAttribute('stroke-dasharray', f(TOUR)); cuT.setAttribute('stroke-dashoffset', f(TOUR));
 
   function plusTard(ms, fn){ var t = setTimeout(function(){ if(!arrete) fn(); }, ms); minuteurs.push(t); return t; }
+  /* la petite musique de la fête (Romain, 16 novembre) : une mesure à la fois, posée juste avant qu'elle ne commence. Le minuteur est
+     celui des mini-jeux : en pause, il s'arrête, et la musique se tait à la fin de la mesure (moins d'une seconde) ; elle reprend après. */
+  var mesureN = 0, mesureT = 0, tMus = null;
+  minuteurs.push({clear:function(){ clearTimeout(tMus); }});
+  (function musique(){
+    if(arrete) return;
+    var a = audio();
+    if(a){
+      if(mesureT < a.currentTime + .03) mesureT = a.currentTime + .08;
+      while(mesureT < a.currentTime + .35){ SONS.mesure(mesureN++, mesureT - a.currentTime); mesureT += MESURE; }
+    }
+    tMus = setTimeout(musique, 120);
+  })();
   function anim(duree, pas, fini){
     var arret = U.boucle(function(dt, t){
       if(arrete) return false;
@@ -970,7 +1010,7 @@ function jouer(el, p, fin){
     choisir:choisir
   };
   return {arreter:function(){
-    arrete = true; boucles.forEach(function(b){ try{ b(); }catch(e){} }); minuteurs.forEach(function(t){ clearTimeout(t); });
+    arrete = true; boucles.forEach(function(b){ try{ b(); }catch(e){} }); minuteurs.forEach(function(t){ if(t && t.clear) t.clear(); else clearTimeout(t); });
     ARC_DJ.taire();
     if(ro) ro.disconnect(); else window.removeEventListener('resize', mesurer);
   }};
