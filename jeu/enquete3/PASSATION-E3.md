@@ -1,6 +1,21 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 16 novembre, 6 h 55)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 16 novembre, 7 h 50)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 16 novembre (7 h 50) : LES EMPREINTES DE PIEDS D'ENFANT DU JARDIN D'IRIS, LES BANDEROLES AU NIVEAU 8 (Bible §13.52) — EN LIGNE (16 novembre, 7 h 47 ; commit 85790a3 du site, version 20261116-0647, dans les Réglages « 16/11 à 07 h 23 » ; publication de GitHub vérifiée)
+
+- **À lire : Bible §13.52.** Romain, 6 h 43 : « Je te laisse faire : les empreintes de pas d'enfant, le nouveau tir de banderoles niveau 8 […] la réplique de Margot accusée […] » ; 6 h 44 : « Tu as mon go et mets en ligne une fois fini. »
+- **L'étape 8 de son scénario est construite** (« l'étape 9 » de la liste plus bas) : **le Pisteur**, à l'herboristerie, le matin ou l'après-midi, suit de petites empreintes dans le jardin d'Iris (« Suivre la piste », avec les sabots d'Iris au départ ; niveau 7, autant d'essais qu'on veut). Elles se perdent dans la rue des Lanternes. Il mesure : **3 carreaux, des pieds d'enfant**, et donne **un code nouveau au Sage, « Des pieds d'enfant »**.
+- **Le Sage** n'a rien de nouveau : la taille des pieds de chacun est dans « Les habitants » depuis l'enquête 1. 3 carreaux : **Tim, Mélusine, Odette**. Margot : 4.
+- **Qui prouve quoi, maintenant** : les écritures (l'Alchimiste) → Mélusine ou Margot ; les empreintes (le Pisteur et le Sage) → Tim ou Mélusine ; les deux → Mélusine ; son aveu (le Barde) le confirme. **Rien ne dépend des empreintes** : le Barde peut toujours accuser les deux femmes.
+- **Rien ne les annonce** (ni mission, ni signe sur la carte) : le Barde dit à voix haute qu'on a volé de l'encre chez Iris.
+- **Les banderoles : niveau 8** (le nouveau tir était déjà dans l'enquête depuis le 13 novembre, au niveau 9). **La réplique de Margot accusée est gardée.**
+- **Les codes** : aucun n'a changé ; un de plus dans l'enquête 3 (530), déjà gelé. **Aucun dialogue n'a changé.**
+- **Reste de la chaîne du scénario, pas construit** : l'encre de la lettre comparée à celle d'Iris, chez l'Alchimiste (son labo montre encore du pollen de lavande). Les pas d'homme derrière l'atelier de Mélusine ne seront pas faits (ce sont les traces de Moustache qui mènent à la crypte).
+- **⚠️ POUR LA CONCEPTION, EN DISCUSSION AVEC ROMAIN, RIEN N'EST CONSTRUIT (Bible §13.52, fin)** :
+  - **la plante lumineuse** — il veut de vraies plantes « qui ont un effet similaire », une analyse intéressante, et peut-être des plantes qui ne sont qu'un ingrédient à mélanger au chaudron. Recherche faite (faits vérifiés, sources dans la Bible) : la mousse lumineuse (elle renvoie la lumière, ne la fabrique pas ; grottes et fentes de rocher), le bois lumineux (un champignon, une vraie lumière froide), la panelle (arrête le sang, mais ne brille pas en Europe), le millepertuis (l'huile rouge des brûlures, faite au soleil), l'écorce de marronnier (lueur bleue sous la lumière noire). **Avis de Claude : la mousse lumineuse, ingrédient du chaudron, avec une analyse au labo. Attendre son choix.**
+  - **Mimi** — « il faut rendre le Tamagotchi plus intéressant ». Proposé : une seule jauge (la complicité), des tours à apprendre, et ce que la complicité débloque (« chaud ou froid » pour une plante cachée, un ingrédient rapporté). **Attendre son choix.**
+- **À faire valider par Romain** : neuf décisions de Claude (Bible §13.52), surtout le niveau 7, « rien ne les annonce », et la piste qui ne mène chez personne.
 
 ## Nouveau depuis le 16 novembre (6 h 55) : L'AIDE DU BARDE PENDANT LE COMBAT DE LÉO — FARINEL, IRIS ET SILAS (Bible §13.51) — EN LIGNE (le jeu : commit cee5b6b du site, version 20261116-0551 ; le donjon : commit 8ba3847, version « 16/11 à 6 h 25 »)
 
