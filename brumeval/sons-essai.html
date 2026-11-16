@@ -1197,6 +1197,93 @@ function sonsPistage(audio, sortie){
 }
 
 return sonsPistage(audio, function(){ return SORTIE; });
+},
+mimi:function(audio, SORTIE){
+function sonsMimi(audio, sortie){
+  function tendre(f, t0, duree, vol, glisse, att, type, filtre){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, o = a.createOscillator(), g = a.createGain();
+    o.type = type || 'sine'; o.frequency.setValueAtTime(f, t); if(glisse) o.frequency.exponentialRampToValueAtTime(glisse, t + duree);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + (att || 0.008)); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    if(filtre){ var lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = filtre; lp.Q.value = 0.5; o.connect(lp); lp.connect(g); } else o.connect(g);
+    g.connect(sortie(a)); o.start(t); o.stop(t + duree + 0.03);
+  }
+  function souffle(t0, duree, vol, f0, f1, q, type){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, n = Math.floor(a.sampleRate * duree), buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
+    for(var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    var s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = buf;
+    f.type = type || 'bandpass'; f.Q.value = q || 0.8; f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1 || f0, t + duree);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + Math.min(.06, duree * .3)); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    s.connect(f); f.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + .02);
+  }
+  function grains(t0, duree, vol, nb, passeHaut){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, sr = a.sampleRate, n = Math.floor(sr * duree), buf = a.createBuffer(1, n, sr), d = buf.getChannelData(0);
+    for(var k = 0; k < nb; k++){ var c = Math.floor(n * Math.random() * .9), l = Math.floor(sr * (.001 + Math.random() * .004)), v = .4 + Math.random() * .6; for(var j = 0; j < l && c + j < n; j++) d[c + j] += (Math.random() * 2 - 1) * v * (1 - j / l); }
+    var s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = buf; f.type = 'highpass'; f.frequency.value = passeHaut || 2400; g.gain.value = vol;
+    s.connect(f); f.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + .02);
+  }
+  /* la voix : la hauteur glisse de f0 à f1 puis f2, la « bouche » s'ouvre de b0 à b1 puis se ferme vers b2 (mi… a… ou) */
+  function voix(t0, duree, f0, f1, f2, b0, b1, b2, vol){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, o = a.createOscillator(), g = a.createGain(), m = a.createGain(), lfo = a.createOscillator(), lg = a.createGain();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(f0, t); o.frequency.linearRampToValueAtTime(f1, t + duree * 0.42); o.frequency.linearRampToValueAtTime(f2, t + duree);
+    lfo.frequency.value = 6.5; lg.gain.value = f1 * 0.014; lfo.connect(lg); lg.connect(o.frequency);
+    [[1, 6], [2.3, 7]].forEach(function(k){
+      var b = a.createBiquadFilter(); b.type = 'bandpass'; b.Q.value = k[1];
+      b.frequency.setValueAtTime(b0 * k[0], t); b.frequency.linearRampToValueAtTime(b1 * k[0], t + duree * 0.42); b.frequency.linearRampToValueAtTime(b2 * k[0], t + duree);
+      o.connect(b); b.connect(m);
+    });
+    m.gain.value = 1.6;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.05); g.gain.setValueAtTime(vol, t + duree * 0.7); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    m.connect(g); g.connect(sortie(a));
+    o.start(t); lfo.start(t); o.stop(t + duree + 0.05); lfo.stop(t + duree + 0.05);
+  }
+  function ronron(t0, duree, vol){
+    var a = audio(); if(!a) return;
+    var t = a.currentTime + t0, sr = a.sampleRate, n = Math.floor(sr * duree), buf = a.createBuffer(1, n, sr), d = buf.getChannelData(0);
+    for(var i = 0; i < n; i++){ var x = i / sr, bat = 0.5 + 0.5 * Math.sin(2 * Math.PI * 24 * x), resp = (x * 1.5) % 1 < 0.55 ? 1 : 0.6; d[i] = (Math.random() * 2 - 1) * bat * bat * resp; }
+    var s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = buf; f.type = 'lowpass'; f.frequency.value = 230; f.Q.value = 1.2;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.12); g.gain.setValueAtTime(vol, t + duree - 0.2); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    s.connect(f); f.connect(g); g.connect(sortie(a)); s.start(t); s.stop(t + duree + 0.02);
+  }
+  return {
+    /* sa voix */
+    miaou:function(){ var v = Math.random(); voix(0, .62 + v * .12, 430 + v * 60, 640 + v * 80, 400, 700, 1500, 650, .05); },
+    trille:function(){ voix(0, .26, 520, 700, 760, 900, 1200, 1300, .035); tendre(1400, .02, .2, .006, 1700, .01); },   /* « mrrrp ? » */
+    baille:function(){ voix(0, .9, 380, 520, 260, 600, 1100, 400, .03); souffle(.1, .7, .01, 800, 400, .7); },
+    ronron:function(){ ronron(0, 1.3, .09); },
+    grr:function(){ voix(0, .42, 150, 170, 140, 500, 600, 450, .03); },                                                  /* pour jouer, pas pour de vrai */
+    atchoum:function(){ souffle(0, .07, .03, 3000, 2600, 1.2); souffle(.1, .22, .05, 4200, 900, .9); tendre(700, .1, .12, .015, 300, .005); },
+    roule:function(){ souffle(0, .3, .02, 600, 1400, .8); tendre(392, .05, .14, .02, 523, .01, 'triangle', 1800); },    /* elle se roule par terre */
+    /* les repas */
+    croque:function(){ for(var i = 0; i < 4; i++) grains(i * .14, .06, .05, 6, 1800); },
+    lape:function(){ for(var i = 0; i < 4; i++){ tendre(900 + Math.random() * 300, i * .16, .05, .03, 1400, .003); souffle(i * .16, .05, .012, 2400, 2000, 2); } },
+    friandise:function(){ tendre(1175, 0, .06, .03, null, .003, 'triangle', 4000); tendre(1568, .07, .1, .03, null, .003, 'triangle', 4000); grains(.18, .2, .03, 6, 1800); },
+    /* les soins */
+    brosse:function(){ souffle(0, .2, .03, 2600, 4200, 1.4); },
+    mousse:function(){ for(var i = 0; i < 3; i++) tendre(700 + Math.random() * 900, i * .07, .06, .02, 1600 + Math.random() * 600, .004); },
+    secoue:function(){ for(var i = 0; i < 6; i++) souffle(i * .06, .05, .02, 2000, 1400, 1.5); },
+    gratte:function(){ for(var i = 0; i < 3; i++){ souffle(i * .18, .14, .03, 1400, 900, 1); grains(i * .18, .12, .025, 10, 1200); } },   /* la pelle dans la litière */
+    photo:function(){ grains(0, .03, .05, 3, 3000); souffle(.03, .12, .03, 3000, 1200, .8); tendre(2093, .02, .1, .01, null, .003); },
+    /* les cadeaux */
+    coffret:function(){ tendre(180, 0, .12, .07, 120, .004, 'triangle', 600); tendre(1568, .14, .3, .02, null, .006); tendre(2093, .2, .32, .016, null, .006); },
+    ouvre:function(){ grains(0, .1, .03, 8, 2000); [784, 988, 1175, 1568, 1976].forEach(function(f, i){ tendre(f, .08 + i * .07, .32, .04, null, .01, 'triangle', 4000); }); grains(.2, .7, .012, 40, 5000); },
+    debloque:function(){ [523, 659, 784, 1047].forEach(function(f, i){ tendre(f, i * .1, .3, .05, null, .01, 'triangle', 3000); }); tendre(1319, .45, .6, .04, null, .02); grains(.4, .6, .012, 30, 5000); },
+    /* les jouets */
+    laser:function(){ tendre(1760, 0, .08, .012, 2637, .004); },
+    plume:function(){ souffle(0, .22, .02, 900, 2600, .7); },
+    grelot:function(){ for(var i = 0; i < 3; i++){ var t = i * .09 + Math.random() * .03; tendre(2637, t, .2, .018, null, .002); tendre(3520, t + .005, .16, .01, null, .002); } },
+    clef:function(){ for(var i = 0; i < 6; i++) tendre(2400 + (i % 2) * 300, i * .07, .02, .02, null, .002, 'square', 5000); },     /* on remonte la souris */
+    couic:function(){ tendre(1800, 0, .1, .03, 2600, .004); tendre(2600, .1, .08, .02, 1900, .004); },
+    carton:function(){ tendre(140, 0, .14, .07, 100, .004, 'triangle', 500); souffle(0, .12, .02, 900, 500, .8); },
+    herbe:function(){ grains(0, .5, .02, 30, 3000); [659, 880, 1175, 1568].forEach(function(f, i){ tendre(f, .05 + i * .09, .4, .025, f * 1.06, .02); }); }
+  };
+}
+
+return sonsMimi(audio, function(){ return SORTIE; });
 }
 };
 /* Atelier des sons de Brumeval — le moteur.
@@ -5962,6 +6049,29 @@ var section = {id:'mj-pistage', titre:'Traces de Moustache', sous:[
   {id:'pistage-chats', titre:'Les sept chats', sons:liste([['m_moustache', 'Moustache', .8], ['m_biscotte', 'Biscotte', .35], ['m_pompon', 'Pompon', .65], ['m_caramel', 'Caramel', .6],
     ['m_mistigri', 'Mistigri', .55], ['m_noisette', 'Noisette', .7], ['m_grisette', 'Grisette', 1.05]])},
   {id:'pistage-autres', titre:'Rues et forêt', sons:liste([['fuite', 'Moustache file', .65], ['course', 'Un chat passe', .65], ['pigeons', 'Les pigeons s’envolent', .6], ['hibou', 'Le hibou', 1.4]])}
+]};
+var mj = (G.CATALOGUE || []).filter(function(s){ return s.id === 'mj'; })[0];
+if(mj) mj.sous.push(section);
+})(window);
+
+/* Atelier des sons de Brumeval — les sons de Mimi à l'atelier (le Tamagotchi de Mimi, refait le 16 novembre 2026).
+   Leur code vient tel quel du jeu (jeu/src/atelier.js, la fabrique sonsMimi, recopiée par construire-sons.py dans
+   EXTRAITS.mimi) : ce qu'on entend ici est ce qu'on entend dans l'atelier.
+   Ils sont NEUFS : Romain ne les a pas encore écoutés. Ils sont donc marqués 🆕 (neuf:1), pas ✅ ;
+   il coche ceux qu'il garde, et touche 🔁 « à refaire » sur ceux qu'il veut changer. */
+(function(G){
+'use strict';
+var X = G.EXISTANTS = G.EXISTANTS || {}, E = G.EXTRAITS || {};
+function mimi(nom, duree){ return {chemin:'jeu', duree:duree, joue:function(J, S){ E.mimi(function(){ return J.ctx; }, S)[nom](); }}; }
+function liste(l){ return l.map(function(e){ X['mm_' + e[0]] = mimi(e[0], e[2]); return {id:'mm_' + e[0], t:e[1], x:1, neuf:1}; }); }
+var section = {id:'mj-mimi', titre:'Mimi à l’atelier', sous:[
+  {id:'mimi-voix', titre:'Sa voix', sons:liste([['miaou', 'Miaou', .8], ['trille', 'Mrrrp ?', .5], ['baille', 'Elle bâille', 1], ['ronron', 'Ronron', 1.4],
+    ['grr', 'Grr pour jouer', .5], ['atchoum', 'Atchoum', .4], ['roule', 'Elle se roule', .4]])},
+  {id:'mimi-soins', titre:'Repas et soins', sons:liste([['croque', 'Elle croque', .6], ['lape', 'Elle lape', .7], ['friandise', 'Une friandise', .45],
+    ['brosse', 'La brosse', .25], ['mousse', 'Mousse du bain', .3], ['secoue', 'Elle s’ébroue', .4], ['gratte', 'La litière', .6], ['photo', 'Clic, la photo', .2]])},
+  {id:'mimi-cadeaux', titre:'Coffrets et jouets', sons:liste([['coffret', 'Le coffret posé', .55], ['ouvre', 'Le coffret s’ouvre', .9], ['debloque', 'Un nouveau soin', 1.1],
+    ['laser', 'Le laser', .1], ['plume', 'La plume', .25], ['grelot', 'Balle à grelot', .4], ['clef', 'Remonter la souris', .45], ['couic', 'Couic !', .2],
+    ['carton', 'Le carton', .2], ['herbe', 'L’herbe à chat', .6]])}
 ]};
 var mj = (G.CATALOGUE || []).filter(function(s){ return s.id === 'mj'; })[0];
 if(mj) mj.sous.push(section);
