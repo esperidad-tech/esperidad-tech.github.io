@@ -7,7 +7,7 @@ sortie, scen = sys.argv[1], sys.argv[2]
 cols = int(sys.argv[3]) if len(sys.argv) > 3 and sys.argv[3] else 6
 t = int(sys.argv[4]) if len(sys.argv) > 4 and sys.argv[4] else 220
 v = int(sys.argv[5]) if len(sys.argv) > 5 else 0
-js = ''.join(open(SRC + f, encoding='utf-8').read() for f in ['mimi-dessin.js', 'mimi-pantin.js', 'mimi-gestes.js'])
+js = ''.join(open(SRC + f, encoding='utf-8').read() for f in ['mimi-dessin.js', 'mimi-vues.js', 'mimi-pantin.js', 'mimi-gestes.js'])
 html = '<!DOCTYPE html><meta charset="utf-8"><body style="margin:0;background:#3a2f55"><script>' + js + '</script><div id="g"></div><div id="vif" style="position:absolute;left:-999px;top:0;width:340px"></div>'
 with sync_playwright() as p:
     b = p.chromium.launch()

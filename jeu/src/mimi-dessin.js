@@ -181,8 +181,31 @@ M.resoudre = function(P, R){
   /* ---- le cou, la tête ---- */
   var tcx = sx + P.tx, tcy = sy + P.ty, ta = P.ta * RAD, ct = Math.cos(ta), stn = Math.sin(ta);
   R['cou:d'] = 'M' + f1(sx + qN[2] * 2 + qN[4] * 3) + ',' + f1(sy + qN[3] * 2 + qN[5] * 3) + ' L' + f1(tcx - 3 * ct - 7 * stn) + ',' + f1(tcy - 3 * stn + 7 * ct);
-  R.tete = 'translate(' + f1(tcx) + ',' + f1(tcy) + ') rotate(' + f1(P.ta) + ')';
-  var lx = borne(P.lx, -1, 1), ly = borne(P.ly, -1, 1);
+  M.resoudreTete(P, R, tcx, tcy, P.ta, P.lx, P.ly, false, false);
+
+  /* ---- tout le pantin : sa place, son côté (co : 1 à droite, -1 à gauche), un tour sur lui-même (rr) ---- */
+  var co = P.co < 0 ? -1 : 1, bcx = (hx + sx) / 2, bcy = (hy + sy) / 2;      /* (plus jamais « à plat » : elle se retourne par ses autres vues, mimi-vues.js) */
+  R.rac = 'translate(' + M.X0 + ',' + M.Y0 + ') scale(' + f2(M.ECH * co) + ',' + M.ECH + ') translate(' + f1(P.rx) + ',' + f1(P.ry) + ')' + (P.rr ? ' rotate(' + f1(P.rr) + ' ' + f1(bcx) + ' ' + f1(bcy) + ')' : '');
+  var haut = Math.max(0, -P.ry), ko = Math.max(0.35, 1 - haut / 110);
+  R.ombre = 'translate(' + f1(M.X0 + M.ECH * co * (bcx + P.rx)) + ',' + f1(M.Y0 + 1.5) + ') scale(' + f2((0.62 + len / 105) * ko * M.ECH) + ',' + f2(ko * M.ECH) + ')';
+  R['ombre:o'] = f2(0.3 * ko);
+  R['zzz:v'] = P.zz > 0.5 ? 'inline' : 'none';
+  R._qd = P.qd > 0.5 ? 1 : 0;
+  R._h = [hx, hy]; R._s = [sx, sy];
+  R._ventre = flip;
+  return R;
+};
+
+/* La tête (la même dans toutes les vues) : son milieu (tcx, tcy), penchée de taDeg, où elle regarde (lx, ly : -1 … 1).
+   dos : on la voit de derrière (le visage est caché, on montre sa nuque) ; tq : de trois-quarts dos (une joue et ses moustaches dépassent). */
+M.resoudreTete = function(P, R, tcx, tcy, taDeg, lx, ly, dos, tq){
+  var ta = taDeg * RAD, ct = Math.cos(ta), stn = Math.sin(ta);
+  R.tete = 'translate(' + f1(tcx) + ',' + f1(tcy) + ') rotate(' + f1(taDeg) + ')';
+  lx = borne(lx, -1, 1); ly = borne(ly, -1, 1);
+  R['face:v'] = dos ? 'none' : 'inline';
+  R['nuque:v'] = dos ? 'inline' : 'none';
+  R['nuqm:v'] = dos && tq ? 'inline' : 'none';
+  R.nuq = 'translate(' + f2(dos ? lx * 3.4 : 0) + ',0)';
   R.vis = 'translate(' + f2(lx * 2.3) + ',' + f2(ly * 1.5) + ')';
   R.mus = 'translate(' + f2(lx * 1) + ',' + f2(ly * 0.6) + ')';
   R.ors = 'translate(' + f2(-lx * 1.1) + ',' + f2(-ly * 0.5) + ')';
@@ -209,26 +232,16 @@ M.resoudre = function(P, R){
   R.mouG = 'rotate(' + f1(P.mo) + ' -9.6 6.6)';
   R.mouD = 'rotate(' + f1(-P.mo) + ' 9.6 6.6)';
   R['joue:o'] = f2(0.26 + 0.5 * borne(P.jo, 0, 1));
-
-  /* ---- tout le pantin : sa place, son côté (co : 1 à droite, -1 à gauche), un tour sur lui-même (rr) ---- */
-  var co = P.co, bcx = (hx + sx) / 2, bcy = (hy + sy) / 2;
-  if(Math.abs(co) < 0.3) co = co < 0 ? -0.3 : 0.3;                 /* (de profil : jamais tout à fait plate) */
-  R.rac = 'translate(' + M.X0 + ',' + M.Y0 + ') scale(' + f2(M.ECH * co) + ',' + M.ECH + ') translate(' + f1(P.rx) + ',' + f1(P.ry) + ')' + (P.rr ? ' rotate(' + f1(P.rr) + ' ' + f1(bcx) + ' ' + f1(bcy) + ')' : '');
-  var haut = Math.max(0, -P.ry), ko = Math.max(0.35, 1 - haut / 110);
-  R.ombre = 'translate(' + f1(M.X0 + M.ECH * co * (bcx + P.rx)) + ',' + f1(M.Y0 + 1.5) + ') scale(' + f2((0.62 + len / 105) * ko * M.ECH) + ',' + f2(ko * M.ECH) + ')';
-  R['ombre:o'] = f2(0.3 * ko);
-  R['zzz:v'] = P.zz > 0.5 ? 'inline' : 'none';
-  R._qd = P.qd > 0.5 ? 1 : 0;
   R._tete = [tcx, tcy];
   R._gueule = [tcx + (lx * 3.3) * ct - (9 + ly * 2) * stn, tcy + (lx * 3.3) * stn + (9 + ly * 2) * ct];
-  R._h = [hx, hy]; R._s = [sx, sy];
-  R._ventre = flip;
   return R;
 };
+M.ik = ik; M.lisse = lisse;
 
 /* ==========================================================
    Le dessin complet, dans la pose P (v : son pelage ; acc : {cou, tete} : le dessin de ses accessoires, autour de (0, 0) = le milieu de sa tête)
    ========================================================== */
+M.couleurs = couleurs;
 function couleurs(v){
   var i = ((v || 0) % CHATS.length + CHATS.length) % CHATS.length, p = CHATS[i], tig = !!p[6];
   return {i:i, p:p, tig:tig, F:'url(#atg-mim' + i + ')', U:p[0], S:sombre(p[0], 0.22), V:'url(#atg-mimv' + i + ')', Vu:p[2], R:p[1], L:p[5],
@@ -241,9 +254,16 @@ var TOUFFE = 'M10.4,1.4 L14.4,3.4 L11.2,5.2 L13.6,8.2 L9.6,8.6 L10.6,11.8 L6.4,1
 var FACE = 'M-3.6,0.4 C-3.6,-3.2 -0.6,-5.2 2,-5.2 C4.8,-5.2 7.4,-3.2 7.4,0.4 C7.4,3.6 5,5.6 2,5.6 C-1,5.6 -3.6,3.6 -3.6,0.4 Z';
 function coussins(){ return '<ellipse cx="2" cy="1.7" rx="2.5" ry="1.9" fill="#ff9fb6"/>' + [[-1.4, -1.4], [0.8, -3], [3.2, -3], [5.4, -1.4]].map(function(q){ return '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="1.05" fill="#ff9fb6"/>'; }).join(''); }
 
-M.dessin = function(v, P, acc){
+M.dessin = function(v, P, acc, iv){
   acc = acc || {};
-  var c = couleurs(v), p = c.p, R = M.resoudre(P), cont = '', rempl = '';
+  var c = couleurs(v), p = c.p, R = {}, cont = '', rempl = '';
+  /* ses autres vues (mimi-vues.js) : leurs morceaux sont là aussi, cachés tant qu'elle est de profil.
+     iv (0 … 7, facultatif) : la dessiner tout de suite dans cette vue-là (les images fixes, les planches d'essai). */
+  var V = iv !== undefined && iv !== null && M.VUES ? M.VUES[((iv % 8) + 8) % 8] : null, autre = !!V && V.nom !== 'profil';
+  if(V) P.co = V.co;
+  if(autre){ M.resoudre(P, R); M.resoudreVue(P, V, R); }
+  else { if(M.resoudreVue) M.resoudreVue(P, M.VUES[2], R); M.resoudre(P, R); }
+  R['pf:v'] = autre ? 'none' : 'inline'; R['vu:v'] = autre ? 'inline' : 'none';
   function at(slot){
     var k = slot.indexOf(':'), typ = k < 0 ? 't' : slot.slice(k + 1), val = R[slot];
     return ' data-m="' + slot + '"' + (typ === 't' ? ' transform="' + val + '"' : typ === 'd' ? ' d="' + val + '"' : typ === 'v' ? ' display="' + val + '"' : ' opacity="' + val + '"');
@@ -268,7 +288,7 @@ M.dessin = function(v, P, acc){
   }
   /* --- les pattes de l'autre côté (plus sombres) --- */
   patteAr('j2', c.S, c.patS, 0); patteAv('a2', c.S, c.patS, 0);
-  var loin = '<g class="mi-loin">' + cont + rempl + '</g>';
+  var loin = '<g class="mi-loin"' + at('pf:v') + '>' + cont + rempl + '</g>';
   /* --- la queue : six morceaux, des anneaux, le bout foncé --- */
   cont = ''; rempl = '';
   var rq = [4.1, 4.05, 3.9, 3.7, 3.4, 3.1, 2.5], iq;
@@ -276,7 +296,7 @@ M.dessin = function(v, P, acc){
     mor('q' + iq, os(rq[iq], rq[iq + 1], LG.q), iq === 5 ? (c.tig ? c.R : c.Vu) : c.U,
       (iq < 5 ? raie('M' + f1(-rq[iq] + 1.3) + ',3.8 L' + f1(rq[iq] - 1.3) + ',3.8', 2.3) : '') + PT('M' + f1(rq[iq] - 1.6) + ',0.6 L' + f1(rq[iq + 1] - 1.4) + ',' + f1(LG.q - 0.6), c.L, 1.2, ' opacity=".5"'));
   }
-  var queue = '<g class="mi-queue">' + cont + rempl + '</g>';
+  var queue = '<g class="mi-queue"' + at('pf:v') + '>' + cont + rempl + '</g>';
   /* --- de ce côté-ci : le corps, le cou, les deux pattes --- */
   cont = '<path' + at('torse:d') + ' fill="' + K + '" stroke="' + K + '" stroke-width="' + (2 * EP) + '" stroke-linejoin="round"/>' +
     '<path' + at('cou:d') + ' fill="none" stroke="' + K + '" stroke-width="' + f1(15 + 2 * EP) + '" stroke-linecap="round"/>' +
@@ -291,9 +311,11 @@ M.dessin = function(v, P, acc){
     '<g' + at('plas') + '>' + PF(TOUFFE, c.V) + '<g' + at('plas:o') + '>' + PF('M3.4,-8.6 C9.4,-8 12.8,-3 12.4,2.6 C12,7.4 9.6,10.6 6.2,12.2 L6.6,9.2 L3.6,10.6 L4.6,7.4 L1.6,7.8 L3.4,4.4 L0.8,2.8 L3.4,0.4 L1.6,-2.6 L4.2,-4.6 Z', c.V) +
       PT('M6.6,-3 l-1.5,2.2 M8.2,2 l-1.7,2 M7.2,7 l-1.6,1.8', sombre(p[2], 0.25), 1) + '</g></g>';
   patteAr('j1', c.U, c.pat, 1); patteAv('a1', c.U, c.pat, 1);
-  var pres = '<g class="mi-pres">' + cont + rempl + '</g>';
+  var pres = '<g class="mi-pres"' + at('pf:v') + '>' + cont + rempl + '</g>';
+  var vues = M.vuesSVG ? M.vuesSVG(c, at) : {vl:'', vq:'', vc:''};
   return '<g class="mi-ombre"' + at('ombre') + '><ellipse' + at('ombre:o') + ' cx="0" cy="0" rx="30" ry="4" fill="#000"/></g>' +
-    '<g class="mi-rac"' + at('rac') + '>' + loin + (R._qd ? pres + queue : queue + pres) + tete(c, at, acc) + '</g>' +
+    '<g class="mi-rac"' + at('rac') + '>' + loin + (R._qd ? pres + queue : queue + pres) +
+      (autre && (V.nom === 'tqd' || V.nom === 'dos') ? vues.vl + tete(c, at, acc) + vues.vc + vues.vq : vues.vq + vues.vl + vues.vc + tete(c, at, acc)) + '</g>' +
     '<g' + at('zzz:v') + '><text class="at-zzz" x="' + (M.X0 + 34) + '" y="' + (M.Y0 - 70) + '" font-size="22" font-weight="700" fill="#bff9ff" text-anchor="middle">z</text>' +
     '<text class="at-zzz z2" x="' + (M.X0 + 50) + '" y="' + (M.Y0 - 84) + '" font-size="17" font-weight="700" fill="#bff9ff" text-anchor="middle">z</text></g>';
 };
@@ -307,7 +329,8 @@ function tete(c, at, acc){
     var inte = 'M' + X(7) + ',-13 C' + X(9) + ',-18.4 ' + X(13) + ',-23.6 ' + X(16.5) + ',-26 C' + X(17.6) + ',-21 ' + X(17.4) + ',-14 ' + X(15.2) + ',-8.4 Z';
     var pointe = 'M' + X(14.2) + ',-27 C' + X(15.6) + ',-28.4 ' + X(16.8) + ',-29.6 ' + X(17.8) + ',-30.4 C' + X(19) + ',-27.6 ' + X(19.6) + ',-24.6 ' + X(19.8) + ',-21.6 Z';
     var poils = 'M' + X(9.2) + ',-10.8 L' + X(11.4) + ',-17.8 M' + X(12.2) + ',-10.2 L' + X(13.6) + ',-18.4 M' + X(14.8) + ',-9.6 L' + X(15.6) + ',-16.6';
-    return '<g' + at(slot) + '>' + PC(ext, FT) + PF(pointe, c.R, c.tig ? '' : ' opacity=".6"') + PF(inte, 'url(#atg-mimo)') + PT(poils, '#fffaf2', 1.1, ' opacity=".9"') + PT(ext, K, MC) + '</g>';
+    /* (de dos, on ne voit pas l'intérieur rose de l'oreille : face:v) */
+    return '<g' + at(slot) + '>' + PC(ext, FT) + PF(pointe, c.R, c.tig ? '' : ' opacity=".6"') + '<g' + at('face:v') + '>' + PF(inte, 'url(#atg-mimo)') + PT(poils, '#fffaf2', 1.1, ' opacity=".9"') + '</g>' + PT(ext, K, MC) + '</g>';
   }
   function oeil(ex, slot){
     var E = function(l){ return rp(ex, -1, l); }, forme = E(['M', -5.6, 0, 'C', -4.5, -5.8, 4.5, -5.8, 5.6, 0, 'C', 4.5, 5.2, -4.5, 5.2, -5.6, 0, 'Z']);
@@ -332,7 +355,18 @@ function tete(c, at, acc){
       'C', 10, 16.4, -10, 16.4, -14.6, 10.4, 'L', -19.7, 9.4, 'L', -16.9, 6, 'L', -20.6, 4.2, 'Z']), FT) +
     PT(R(['M', -8.4, -13.4, 'C', -4, -15.4, 4, -15.4, 8.4, -13.4]), p[5], 1.5, ' opacity=".8"') +
     (c.tig ? PT(R(['M', -16.9, 2.4, 'L', -12.6, 3.4, 'M', -17.7, 5.8, 'L', -13.4, 6, 'M', 16.9, 2.4, 'L', 12.6, 3.4, 'M', 17.7, 5.8, 'L', 13.4, 6]), p[1], 1.6) : '') +
-    '<g' + at('vis') + '>' +
+    /* sa nuque (quand on la voit de dos) : les rayures du crâne qui descendent, un peu de poil au bas du cou ;
+       de trois-quarts dos : une joue, le bout du nez et ses moustaches dépassent du côté où elle va */
+    '<g' + at('nuque:v') + '><g' + at('nuq') + '>' +
+      PF(R(['M', -1.6, -16.3, 'L', 0, -2.4, 'L', 1.6, -16.3, 'Z', 'M', -7.6, -15, 'C', -6.8, -10, -5.8, -6.2, -4.2, -3, 'C', -4.8, -6.6, -5.2, -10.6, -5.4, -15.7, 'Z',
+        'M', 7.6, -15, 'C', 6.8, -10, 5.8, -6.2, 4.2, -3, 'C', 4.8, -6.6, 5.2, -10.6, 5.4, -15.7, 'Z']), p[1], c.tig ? '' : ' opacity=".45"') +
+      PT(R(['M', -6.4, 5.6, 'L', -3.6, 9.2, 'L', -1, 6.2, 'M', 1, 6.2, 'L', 3.6, 9.2, 'L', 6.4, 5.6]), sombre(p[0], 0.3), 1.2, ' opacity=".5"') + '</g>' +
+      '<g' + at('nuqm:v') + '>' + PC(R(['M', 14.6, 1.2, 'C', 19.2, 0.4, 22.6, 3.2, 21.8, 6.6, 'C', 21, 9.6, 17.4, 10.4, 14.4, 8.8, 'Z']), c.V, 1.6) +
+        '<circle cx="21.4" cy="4.2" r="1.3" fill="#e4668a"/>' +
+        PT(R(['M', 18.6, 6.2, 'C', 22, 5, 25, 4.6, 28, 5.2, 'M', 18.6, 7.6, 'C', 22, 8, 24.6, 9, 27, 10.8]), K, 1.8, ' opacity=".28"') +
+        PT(R(['M', 18.6, 6.2, 'C', 22, 5, 25, 4.6, 28, 5.2, 'M', 18.6, 7.6, 'C', 22, 8, 24.6, 9, 27, 10.8]), '#fffdf6', 0.95) + '</g>' +
+    '</g>' +
+    '<g' + at('face:v') + '><g' + at('vis') + '>' +
       /* le « M » des chats tigrés, les sourcils */
       (c.tig ? PF(R(['M', -6.9, -15.4, 'C', -6, -12, -5.2, -10, -3.9, -8.2, 'C', -4.2, -10.6, -4.6, -13, -4.9, -15.9, 'Z', 'M', -1.1, -16.3, 'L', 0, -9.6, 'L', 1.1, -16.3, 'Z',
         'M', 6.9, -15.4, 'C', 6, -12, 5.2, -10, 3.9, -8.2, 'C', 4.2, -10.6, 4.6, -13, 4.9, -15.9, 'Z']), p[1]) : '') +
@@ -357,7 +391,7 @@ function tete(c, at, acc){
         '<g' + at('mouG') + '>' + PT(moust(-1), K, 1.8, ' opacity=".28"') + PT(moust(-1), '#fffdf6', 0.95) + '</g>' +
         '<g' + at('mouD') + '>' + PT(moust(1), K, 1.8, ' opacity=".28"') + PT(moust(1), '#fffdf6', 0.95) + '</g>' +
       '</g>' +
-    '</g>' +
+    '</g></g>' +
     (acc.tete || '') +
     '</g>';
 }

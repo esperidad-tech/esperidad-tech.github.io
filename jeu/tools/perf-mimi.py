@@ -1,6 +1,7 @@
 """La fluidité de Mimi (le pantin, mimi-pantin.js) dans l'atelier, processeur ralenti (×6 par défaut : une vieille tablette).
-On mesure les images par seconde, l'écart le plus long entre deux images et les images en retard, dans quatre situations :
-au calme (assise), en marche (elle court en rond), en jeu (un bond, une galipette, elle s'étire), sous le doigt (un câlin sur la tête).
+On mesure les images par seconde, l'écart le plus long entre deux images et les images en retard, dans six situations :
+au calme (assise), en marche (elle court en rond), dans ses autres vues (de dos, de face, en biais), au galop, en jeu (un bond, une galipette,
+elle s'étire), sous le doigt (un câlin sur la tête).
    BRUMEVAL_DIST=<dossier construit> python3 tools/perf-mimi.py [--taux 6] [--ecran 1024x768x2]
 (sous le verrou des robots : flock /tmp/brumeval-pw.lock …)"""
 import os, sys, json
@@ -50,6 +51,16 @@ with sync_playwright() as p:
     calme(); pg.evaluate(MESURE)
     for i in range(2): js("a._jouer(cid, 'rond')"); pg.wait_for_timeout(2600); js("a._pose(cid, 'assis')")
     res['en marche'] = pg.evaluate(FIN)
+    # (ses autres vues, §12.68 : elle s'éloigne — de dos —, revient — de face —, en biais ; puis au galop, d'un bord à l'autre)
+    if pg.evaluate(f"() => !!{V}._va"):
+        calme(); js("a._voir(600, 700)"); pg.wait_for_timeout(400); pg.evaluate(MESURE)
+        for x, y in [(620, 590), (600, 830), (900, 640), (420, 820)]:
+            js(f"a._va(cid, {x}, {y}, 1)"); pg.wait_for_timeout(1900)
+        res['de dos, de face, en biais'] = pg.evaluate(FIN)
+        calme(); js("a._voir(600, 700)"); pg.wait_for_timeout(400); pg.evaluate(MESURE)
+        for x, y in [(250, 780), (950, 770), (300, 700), (900, 800)]:
+            js(f"a._va(cid, {x}, {y}, 4.2)"); pg.wait_for_timeout(1500)
+        res['au galop'] = pg.evaluate(FIN)
     calme(); pg.evaluate(MESURE)
     for jeu, ms in [('bondir', 1700), ('galipette', 1400), ('etire', 2100), ('saut', 1100)]:
         js("a._pose(cid, 'assis')"); js(f"a._jouer(cid, '{jeu}')"); pg.wait_for_timeout(ms)

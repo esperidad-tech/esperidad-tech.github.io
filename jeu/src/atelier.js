@@ -3382,7 +3382,9 @@ function vue(el, opts){
     _reagir:function(id, r){ var o = V.parId[id]; if(!o) return false; reagir(V, o, r); return true; },
     /* (le pantin de Mimi, pour les robots : où est sa tête, son dos, son ventre, sa queue à l'écran ; sa pose, ses gestes en cours) */
     _ptChat:function(id, quoi){ var o = V.parId[id], r = o && pantinDe(V, o); return r ? r.point(quoi) : null; },
-    _pantin:function(id){ var o = V.parId[id], r = o && pantinDe(V, o); return r ? {nom:r.nom, gestes:r.couv.map(function(c){ return c.nom; }), co:r.co, marche:!!r.mar, glisse:!!r.tw} : null; },
+    _pantin:function(id){ var o = V.parId[id], r = o && pantinDe(V, o); return r ? {nom:r.nom, gestes:r.couv.map(function(c){ return c.nom; }), co:r.co, marche:!!r.mar, glisse:!!r.tw, cap:r.cap, capV:r.capV, vue:r.vueNom, allure:r.mar ? r.all : null} : null; },
+    /* (les robots : la faire aller quelque part sur le plancher — au pas, ou plus vite) */
+    _va:function(id, x, y, vite){ var o = V.parId[id]; if(!o) return false; var st = chatEtat(V, o); if(st.anim) chatArreter(V, o); if(st.t){ clearTimeout(st.t); st.t = null; } st.vite = vite || 1; chatBouger(V, o, chatSol(V, x, y), 'marche', function(){ st.vite = 1; chatPose(V, o, 'assis'); chatPlanifier(V, o, 30000); }); return true; },
     _geste:function(id, nom, opt){ var o = V.parId[id]; return !!(o && gesteChat(V, o, nom, opt)); },
     _zone:function(id, cx, cy){ var o = V.parId[id]; return o ? zoneChat(V, o, {clientX:cx, clientY:cy}) : null; },
     _pose:function(id, p){ var o = V.parId[id]; if(!o) return false; var st = chatEtat(V, o); if(st.anim) chatArreter(V, o); if(st.t){ clearTimeout(st.t); st.t = null; } chatPose(V, o, p); chatPlanifier(V, o, 30000); return true; },
@@ -5533,7 +5535,14 @@ function dessinerChaudron(V, prets){
    Sa position du moment n'est pas sauvegardée (seulement sa place à lui,
    quand l'enfant le pose quelque part).
    ========================================================== */
-var CHAT_VITESSE = 100;          /* unités logiques par seconde (au pas ; plus vite, elle trotte, puis elle court : st.vite) */
+/* (16 novembre, 19 h 56, Romain : « elle va un peu trop lentement. Et quand elle court, c'est encore pire ») : au pas, 135 par seconde
+   (c'était 100) ; st.vite la multiplie : vers 2, elle trotte ; au-delà de 3, elle galope (elle traverse l'atelier en moins de deux secondes). */
+var CHAT_VITESSE = 135;          /* unités logiques par seconde, au pas */
+/* Le plancher est vu d'un peu au-dessus : ce qui s'éloigne monte peu à l'écran. Un pas vers le fond de la pièce avance donc moins,
+   à l'écran, qu'un pas de côté : c'est ce qui l'empêche de patiner quand elle monte ou descend (Romain : « je veux pas qu'elle patine
+   dans le vide pour remonter »). */
+var CHAT_PROF = 0.42;
+function chatProfondeur(p){ return p.z >= 600 ? borne(p.z - 1000, SOL_MIN - 40, SOL_MAX + 60) : SOL_MIN - 20; }   /* (sur une étagère du mur : tout au fond) */
 var CHAT_SIESTE_TOUCHE = 30000;  /* toucher le chat : il dort 30 secondes */
 var POSES = ['dort', 'assis', 'marche', 'saute', 'lave', 'tape', 'mange', 'salut', 'griffe', 'boule', 'dos', 'pain'];   /* (griffe, boule : à l'arbre à chat, dressé sur ses pattes arrière ; dos, pain : 16 novembre) */
 
@@ -5609,11 +5618,15 @@ function chatBouger(V, o, pos, mode, fin){
   st.pos = pos;
   var p1 = chatPos(V, o), dx = p1.x - p0.x, dy = p1.y - p0.y, dist = Math.hypot(dx, dy);
   if(dist < 3){ placerEl(V, o); if(fin) fin(); return; }
-  if(Math.abs(dx) > 2) st.gauche = dx < 0;
+  if(Math.abs(dx) > 2 + Math.abs(dy) * 0.2) st.gauche = dx < 0;      /* (presque tout droit vers le fond ou vers nous : elle garde son côté) */
   d.classList.toggle('at-c-gauche', st.gauche);
   chatPose(V, o, mode);
   placerEl(V, o);
   var k = V.k, tx = -dx * k, ty = -dy * k, kf, dur, plan = null, rig = pantinDe(V, o), ech = (p1.s || 1) * MP.ECH;
+  /* sa direction (une des huit vues du pantin : de dos si elle s'éloigne, de face si elle vient vers nous) et le vrai chemin à faire
+     (la profondeur compte plus qu'elle ne se voit à l'écran) */
+  var dprof = (mode === 'saute' ? chatProfondeur(p1) - chatProfondeur(p0) : dy) / CHAT_PROF, vrai = Math.hypot(dx, dprof);
+  var dir = Math.abs(dx) + Math.abs(dprof) < 14 ? undefined : MP.direction(dx, dprof);
   function tr(x, y, s){ return 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + s.toFixed(3) + ')'; }
   d.style.zIndex = Math.round(Math.max(p0.z, p1.z) * 5) + 6;
   if(mode === 'saute'){
@@ -5625,10 +5638,10 @@ function chatBouger(V, o, pos, mode, fin){
     kf = [{transform:tr(tx, ty, p0.s), offset:0}];
     for(i = 0; i <= 10; i++){ v = i / 10; kf.push({transform:tr(tx * (1 - v), ty * (1 - v) - arc * k * 4 * v * (1 - v), p0.s + (p1.s - p0.s) * v), offset:(plan.pre + plan.vol * v) / T}); }
     kf.push({transform:tr(0, 0, p1.s), offset:1});
-    dur = T; plan.dx = dx; plan.dy = dy; plan.haut = arc; plan.d = T;
+    dur = T; plan.dx = dx; plan.dy = dy; plan.haut = arc; plan.d = T; plan.dir = dir;
   } else {
     kf = [{transform:tr(tx, ty, p0.s)}, {transform:tr(0, 0, p1.s)}];
-    dur = Math.max(st.vite > 1 ? 240 : 450, dist / (CHAT_VITESSE * (st.vite || 1)) * 1000);   /* (st.vite : elle court après un jouet) */
+    dur = Math.max(st.vite > 1 ? 200 : 380, vrai / (CHAT_VITESSE * (st.vite || 1)) * 1000);   /* (st.vite : elle court après un jouet) */
   }
   var a = anim(d, kf, {duration:dur, easing:'linear'});
   st.anim = a;
@@ -5637,7 +5650,7 @@ function chatBouger(V, o, pos, mode, fin){
     var temps = function(){ return typeof a.currentTime === 'number' ? a.currentTime : null; };
     if(plan){ plan.temps = temps; rig.saut(plan); }
     /* la marche : le pantin sait le chemin à faire dans ses mesures à lui, et où on en est : ses pattes ne patinent pas */
-    else rig.marcher({dist:dist / ech, vit:dist / ech / (dur / 1000), prog:function(){ var t = temps(); return t === null ? null : t / dur; }});
+    else rig.marcher({dist:vrai / ech, vit:vrai / ech / (dur / 1000), dir:dir, prog:function(){ var t = temps(); return t === null ? null : t / dur; }});
   }
   function fini(){
     if(st.anim !== a) return;
@@ -7933,7 +7946,7 @@ function jouetTic(V){
     var p = chatPos(V, o), dx = J.pos.x - p.x, dy = J.pos.y - p.y, dist = Math.hypot(dx, dy), sx = dx < 0 ? -1 : 1;
     d.classList.add('at-x-joue');
     if(J.id === 'laser'){
-      if(dist > 55){ st.vite = 2.4; chatBouger(V, o, chatSol(V, J.pos.x - sx * 34, J.pos.y), 'marche', function(){ st.vite = 1; if(V.jouet) chatPose(V, o, 'tape'); }); }
+      if(dist > 55){ st.vite = dist > 150 ? 4.2 : 2.2; chatBouger(V, o, chatSol(V, J.pos.x - sx * 34, J.pos.y), 'marche', function(){ st.vite = 1; if(V.jouet) chatPose(V, o, 'tape'); }); }
       else if(Math.random() < 0.5){ chatPose(V, o, 'saute'); gesteChat(V, o, 'bond', {d:500, h:10}); apres(V, 520, function(){ if(V.jouet) chatPose(V, o, 'tape'); }); }
       else chatPose(V, o, 'tape');
     } else {
@@ -7979,7 +7992,7 @@ function jouerSouris(V, o){
     var a = pts[i], dur = 1100 + Math.random() * 300;
     el.classList.toggle('g', a.x < de.x);
     anim(el, [{left:pX(V, de.x), top:pY(V, de.y)}, {left:pX(V, a.x), top:pY(V, a.y)}], {duration:dur, easing:'linear', fill:'forwards'});
-    apres(V, 280, function(){ var dd = V.elO[o.id]; if(dd) dd.classList.remove('at-c-tapi'); if(V.jouet !== J) return; st.vite = 1.9; if(st.anim) chatArreter(V, o); chatAller(V, o, chatSol(V, a.x - (a.x > de.x ? 60 : -60), a.y), function(){ st.vite = 1; }); });
+    apres(V, 280, function(){ var dd = V.elO[o.id]; if(dd) dd.classList.remove('at-c-tapi'); if(V.jouet !== J) return; st.vite = 2.6; if(st.anim) chatArreter(V, o); chatAller(V, o, chatSol(V, a.x - (a.x > de.x ? 60 : -60), a.y), function(){ st.vite = 1; }); });
     apres(V, dur, function(){ etape(i + 1, a); });
   })(0, dep);
 }
@@ -7999,7 +8012,7 @@ function jouerGrelot(V, o, n){
   expression(V, o, 'at-x-joue', 1800);
   apres(V, 250, function(){
     if(V.jouet !== J) return;
-    st.vite = 1.9; if(st.anim) chatArreter(V, o);
+    st.vite = 3.6; if(st.anim) chatArreter(V, o);
     chatAller(V, o, chatSol(V, a.x - (a.x > p.x ? 46 : -46), a.y), function(){
       st.vite = 1; if(V.jouet !== J) return;
       chatPose(V, o, 'tape');

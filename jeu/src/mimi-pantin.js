@@ -30,6 +30,7 @@ function vers(a, b, t){ return a + (b - a) * t; }
 M.maths = {eio:eio, eo:eo, seg:seg, pic:pic, frac:frac, vers:vers, copie:copie, ang:angle};
 
 var PANTINS = [], RAF = 0, IMG = 0;
+M.CADENCE = [29, 31];          /* le temps le plus court entre deux dessins (ms), quand elle bouge / au calme : 30 dessins par seconde sur un écran qui en affiche 60 */
 function boucle(now){
   RAF = 0; IMG++;
   for(var i = PANTINS.length - 1; i >= 0; i--) PANTINS[i].image(now);
@@ -51,9 +52,13 @@ function Pantin(svg, o){
     moi.att[s] = typ === 't' ? 'transform' : typ === 'd' ? 'd' : typ === 'v' ? 'display' : 'opacity';
   });
   this.rac = svg.querySelector('.mi-rac'); this.gQueue = svg.querySelector('.mi-queue'); this.gPres = svg.querySelector('.mi-pres'); this.gTete = svg.querySelector('.mi-tete');
+  this.gVl = svg.querySelector('.mi-vl'); this.gVq = svg.querySelector('.mi-vq'); this.gVc = svg.querySelector('.mi-vc');
   this.nom = o.pose || 'assis';
   this.P = M.pose(M.BASES[this.nom] || this.nom);
-  this.co = this.coV = o.gauche ? -1 : 1;
+  /* sa direction (0 … 7, MimiPantin.VUES) : cap, là où elle est tournée ; capV, là où elle veut être tournée ; dir : la direction de sa marche
+     ou de son saut (null : à l'arrêt, elle se remet de profil, du côté gauche ou droit que dit atelier.js) */
+  this.gauche = !!o.gauche; this.cap = this.capV = this.gauche ? 4 : 0; this.capT = 0; this.dir = null; this.vueNom = 'profil';
+  this.co = this.gauche ? -1 : 1;
   this.tw = null; this.couv = []; this.boucles = {}; this.cls = ''; this.clsG = {};
   this.t = 0; this.t0 = 0; this.vite = 0; this.phi = 0; this.mar = null; this.marW = 0; this.all = 'pas';
   this.q = null; this.reg = {x:0, y:0, w:0, cx:0, cy:0, jusqu:0};
@@ -90,15 +95,35 @@ PP.pose = function(nom, o){
     var dx = Math.abs(cible[pt[0]] - de[pt[0]]), sol = Math.abs(de[pt[1]] - pt[2]) < 1.2 && Math.abs(cible[pt[1]] - pt[2]) < 1.2;
     if(sol && dx > 2.4){ pas[pt[0]] = [0.06 + n * 0.14, 0.5 + n * 0.14, Math.min(4.2, 1.6 + dx * 0.22), pt[1]]; n++; }
   });
-  this.tw = {a:de, b:cible, t:0, d:dur / 1000, pas:pas};
+  /* (une pose qui n'est pas debout se prend de profil : elle finit d'abord de se tourner — attend) */
+  var debout = base === 'debout';
+  if(!debout && this.dir !== null) this.vers(null);
+  this.tw = {a:de, b:cible, t:0, d:dur / 1000, pas:pas, attend:!debout};
   this.reveiller();
   return dur;
 };
-/* tourner la tête de l'autre côté : tout le dessin se retourne, vite, en passant par le profil */
+/* se tourner de l'autre côté (à l'arrêt) : elle passe par ses vues de trois-quarts et de face, une image après l'autre
+   (Romain, 16 novembre, 19 h 56 : « il faut vraiment faire des dessins pour chaque étape et elle se retourne en 3 images ») */
 PP.cote = function(gauche, net){
-  this.coV = gauche ? -1 : 1;
-  if(net || MOINS) this.co = this.coV;
+  this.gauche = !!gauche;
+  if(this.dir === null) this.capV = this.gauche ? 4 : 0;
+  if(net || MOINS) this.cap = this.capV;
   this.reveiller();
+};
+/* se tourner vers une direction (0 … 7), ou revenir de profil (null) */
+PP.vers = function(dir){
+  this.dir = dir === undefined || dir === null ? null : ((Math.round(dir) % 8) + 8) % 8;
+  this.capV = this.dir === null ? (this.gauche ? 4 : 0) : this.dir;
+  if(MOINS) this.cap = this.capV;
+  this.reveiller();
+};
+PP.deProfil = function(){ return this.cap === 0 || this.cap === 4; };
+/* les calques des autres vues, dans l'ordre : de dos, la tête est derrière le corps et la queue devant */
+PP.ranger = function(nom){
+  var r = this.rac;
+  if(!r || !this.gVc) return;
+  (nom === 'tqd' || nom === 'dos' ? [this.gVl, this.gTete, this.gVc, this.gVq] : [this.gVq, this.gVl, this.gVc, this.gTete]).forEach(function(g){ if(g) r.appendChild(g); });
+  this.qd = -1;
 };
 
 /* ---------- Les gestes ---------- */
@@ -126,7 +151,8 @@ PP.sansGestes = function(){ this.couv.forEach(function(c){ c.cible = 0; if(c.d) 
 /* ---------- Marcher : le chemin à faire (dans ses mesures à elle), et où on en est (0 … 1) ---------- */
 PP.marcher = function(o){
   this.mar = {dist:o.dist, prog:o.prog, fait:0, fini:false};
-  this.all = o.vit > 122 ? 'course' : o.vit > 78 ? 'trot' : 'pas';
+  this.all = o.vit > M.SEUILS[1] ? 'course' : o.vit > M.SEUILS[0] ? 'trot' : 'pas';
+  if(o.dir !== undefined) this.vers(o.dir);          /* (elle se tourne vers là où elle va : de dos si elle s'éloigne, de face si elle vient) */
   this.reveiller();
 };
 PP.arretMarche = function(){ if(this.mar) this.mar.fini = true; };
@@ -144,6 +170,11 @@ PP.saut = function(o){
   this.sansGestes();
   if(this.nom !== 'saute'){ this.nom = 'saute'; this.tw = {a:copie(this.P), b:M.pose('debout'), t:0, d:0.16, pas:{}}; }
   this.mar = null;
+  if(o.dir !== undefined){
+    var moi = this, f0 = o.fin || null;
+    this.vers(o.dir);
+    o.fin = function(){ if(moi.dir === o.dir && !moi.mar) moi.vers(null); if(f0) f0(); };
+  }
   return this.geste('saut', o);
 };
 
@@ -169,7 +200,7 @@ PP.zone = function(cx, cy){
   if(!p || !R._tete) return null;
   var x = p[0], y = p[1], i, d;
   if(Math.hypot(x - R._tete[0], y - R._tete[1]) < 19) return 'tete';
-  var hx = this.F.hx, hy = this.F.hy, sx = this.F.sx, sy = this.F.sy, ux = sx - hx, uy = sy - hy, l = Math.hypot(ux, uy) || 1;
+  var hx = R._h[0], hy = R._h[1], sx = R._s[0], sy = R._s[1], ux = sx - hx, uy = sy - hy, l = Math.hypot(ux, uy) || 1;
   ux /= l; uy /= l;
   var al = (x - hx) * ux + (y - hy) * uy, tr = (x - hx) * uy - (y - hy) * ux;     /* le long du dos ; tr > 0 : du côté du dos */
   var dansCorps = al > -15 && al < l + 12 && Math.abs(tr) < 17;
@@ -185,8 +216,8 @@ PP.point = function(quoi){
   var R = this.R, F = this.F, q = R['_' + quoi];
   if(quoi === 'queue') q = R._q && R._q[4];
   else if(quoi === 'dos' || quoi === 'ventre'){
-    var ux = F.sx - F.hx, uy = F.sy - F.hy, l = Math.hypot(ux, uy) || 1, k = quoi === 'dos' ? 7 : -8;
-    q = [(F.hx + F.sx) / 2 + uy / l * k, (F.hy + F.sy) / 2 - ux / l * k];
+    var H = R._h, S = R._s, ux = S[0] - H[0], uy = S[1] - H[1], l = Math.hypot(ux, uy) || 1, k = quoi === 'dos' ? 7 : -8;
+    q = [(H[0] + S[0]) / 2 + uy / l * k, (H[1] + S[1]) / 2 - ux / l * k];
   }
   if(!q) return null;
   try{ var m = this.rac.getScreenCTM(), p = this.svg.createSVGPoint(); p.x = q[0]; p.y = q[1]; p = p.matrixTransform(m); return [p.x, p.y]; }catch(e){ return null; }
@@ -207,7 +238,7 @@ PP.lireClasses = function(){
     else if(!la[g] && moi.clsG[g]){ delete moi.clsG[g]; moi.sans(g); }
   });
   var gauche = /(^|\s)at-c-gauche(\s|$)/.test(s);
-  if((gauche ? -1 : 1) !== this.coV) this.cote(gauche);
+  if(gauche !== this.gauche) this.cote(gauche);
 };
 
 /* ---------- Une image ---------- */
@@ -215,12 +246,16 @@ PP.image = function(now){
   if(this.mort || M.figer) return;
   if(!this.svg.isConnected){ if(++this.hors > 240) this.detruire(); return; }
   this.hors = 0;
-  var dt = this.t0 ? Math.min(0.05, (now - this.t0) / 1000) : 0.016;
   if(document.hidden){ this.t0 = now; return; }
-  /* au calme : une image sur deux (elle respire, sa queue se balance : pas besoin de plus) */
+  /* On ne la redessine pas plus souvent qu'il ne faut (Romain, 16 novembre, 19 h 56 : « sans que ça rame […] jamais en dessous de
+     24 images secondes ») : 30 fois par seconde, qu'elle bouge ou qu'elle respire au calme (c'était 60 quand elle bougeait). Son déplacement
+     dans la pièce, lui, est fait par le navigateur à chaque image de l'écran : il reste parfaitement lisse. Sur un appareil lent,
+     qui n'affiche que 30 images par seconde ou moins, elle est redessinée à chacune. */
   this.lireClasses();
+  var ecart = this.t0 ? now - this.t0 : 1000;
+  if(ecart < (this.vite > 0 ? M.CADENCE[0] : M.CADENCE[1])) return;
   if(this.vite > 0) this.vite--;
-  else if(IMG % 2){ return; }
+  var dt = this.t0 ? Math.min(0.08, ecart / 1000) : 0.016;
   this.t0 = now;
   this.dessiner(dt);
 };
@@ -230,7 +265,7 @@ PP.dessiner = function(dt){
   this.t += dt; t = this.t;
   /* 1. la pose glisse vers la pose demandée */
   if(tw){
-    tw.t += dt;
+    if(!(tw.attend && this.cap !== this.capV)) tw.t += dt;          /* (elle finit de se tourner, puis elle s'assoit, se couche…) */
     var u = Math.min(1, tw.t / tw.d), e = eio(u);
     P = this.P;
     for(k in tw.b) P[k] = k === 'q0' ? tw.a[k] + angle(tw.b[k] - tw.a[k]) * e : tw.a[k] + (tw.b[k] - tw.a[k]) * e;
@@ -252,13 +287,15 @@ PP.dessiner = function(dt){
     this.phi += Math.max(0, fait - mar.fait) / M.ALLURES[this.all].L;
     mar.fait = fait;
     this.marW = mar.fini ? Math.max(0, this.marW - dt / 0.16) : Math.min(1, this.marW + dt / 0.13);
-    if(mar.fini && this.marW <= 0) this.mar = null;
+    if(mar.fini && this.marW <= 0){ this.mar = null; if(this.dir !== null && !this.fait('saut')) this.vers(null); }
     this.vite = Math.max(this.vite, 3);
   } else this.marW = 0;
   if(this.marW > 0) M.pas(F, this.phi, this.marW, M.ALLURES[this.all]);
   /* 3. les gestes, fondus */
+  var tourne = this.cap !== this.capV && !!this.tw && this.tw.attend;
   for(i = 0; i < this.couv.length; i++){
     c = this.couv[i];
+    if(tourne && this.bPose && c === this.boucles[this.bPose]) continue;      /* (sa toilette, son repas… attendent qu'elle ait fini de se tourner) */
     c.t += dt;
     if(c.d && c.t >= c.d - c.sor) c.cible = 0;
     c.w = c.cible ? Math.min(1, c.w + (c.ent ? dt / c.ent : 1)) : Math.max(0, c.w - (c.sor ? dt / c.sor : 1));
@@ -272,7 +309,7 @@ PP.dessiner = function(dt){
     else {
       var av = copie(F, c._av || (c._av = {}));
       c.f(F, c.d ? c.t / c.d : c.t, c.t, c, this);
-      for(k in av) if(F[k] !== av[k]) F[k] = av[k] + (F[k] - av[k]) * c.w;
+      for(k in av) if(F[k] !== av[k] && k !== 'vue') F[k] = av[k] + (F[k] - av[k]) * c.w;      /* (un tour sur elle-même ne se « fond » pas : c'est une vue ou une autre) */
     }
     this.vite = Math.max(this.vite, 3);
   }
@@ -301,7 +338,7 @@ PP.dessiner = function(dt){
   var rg = this.reg, veut = t < rg.jusqu ? 1 : 0;
   rg.w += (veut - rg.w) * Math.min(1, dt * 7);
   if(rg.w > 0.01){
-    var tx0 = F.sx + F.tx, ty0 = F.sy + F.ty, ddx = rg.cx - tx0, ddy = rg.cy - ty0, ar = -F.ta * Math.PI / 180;
+    var hd = this.R._tete, tx0 = hd ? hd[0] : F.sx + F.tx, ty0 = hd ? hd[1] : F.sy + F.ty, ddx = rg.cx - tx0, ddy = rg.cy - ty0, ar = -F.ta * Math.PI / 180;
     var lxx = borne((ddx * Math.cos(ar) - ddy * Math.sin(ar)) / 42, -1, 1), lyy = borne((ddx * Math.sin(ar) + ddy * Math.cos(ar)) / 42, -1, 1);
     rg.x += (lxx - rg.x) * Math.min(1, dt * 11); rg.y += (lyy - rg.y) * Math.min(1, dt * 11);
     F.lx = vers(F.lx, rg.x, rg.w); F.ly = vers(F.ly, rg.y, rg.w);
@@ -309,13 +346,23 @@ PP.dessiner = function(dt){
     if(rg.w > 0.02 && rg.w < 0.98) this.vite = Math.max(this.vite, 2);
     if(Math.abs(lxx - rg.x) + Math.abs(lyy - rg.y) > 0.02) this.vite = Math.max(this.vite, 2);
   }
-  /* 6. son côté */
-  if(this.co !== this.coV){
-    var pasC = dt / 0.17 * 2;
-    this.co = this.coV > this.co ? Math.min(this.coV, this.co + pasC) : Math.max(this.coV, this.co - pasC);
+  /* 6. sa direction : d'une vue à la suivante, une image après l'autre (jamais d'image retournée à plat) */
+  if(this.cap !== this.capV){
+    this.capT -= dt;
+    if(this.capT <= 0){ this.cap = ((this.cap + M.pasDeVue(this.cap, this.capV)) % 8 + 8) % 8; this.capT = M.DUREE_VUE; }
     this.vite = Math.max(this.vite, 3);
-  }
-  F.co = this.co * F.co;
+    /* (sur place, elle piétine un peu en tournant : une patte, puis l'autre) */
+    if(this.marW <= 0 && !MOINS){
+      this.capPh = (this.capPh || 0) + dt * 6.5;
+      var pz = Math.sin(TAU * this.capPh), pz2 = Math.sin(TAU * this.capPh + 1.6);
+      F.a1y -= 2.6 * Math.max(0, pz); F.a2y -= 2.6 * Math.max(0, -pz); F.j1y -= 2.2 * Math.max(0, -pz2); F.j2y -= 2.2 * Math.max(0, pz2);
+      F.hy += 0.5 * Math.abs(pz2); F.sy += 0.5 * Math.abs(pz);
+    }
+  } else this.capT = 0;
+  /* (un geste peut la faire tourner sur elle-même : F.vue, en huitièmes de tour) */
+  var iv = ((this.cap + Math.round(F.vue || 0)) % 8 + 8) % 8, V = M.VUES[iv], prof = V.nom === 'profil';
+  this.co = F.co = V.co;
+  if(!prof && !MOINS) F.ql += 12 * Math.sin(TAU * 0.45 * t + 1) + (this.marW > 0 ? 10 * Math.sin(TAU * this.phi) * this.marW : 0);
   /* 7. la queue suit avec un peu de retard (la base ferme, le bout souple) */
   if(!this.q){ this.q = []; for(i = 0; i < 6; i++) this.q[i] = F['q' + i]; }
   for(i = 0; i < 6; i++){
@@ -324,7 +371,8 @@ PP.dessiner = function(dt){
     F['q' + i] = this.q[i];
   }
   /* 8. on écrit */
-  var R = M.resoudre(F, this.R), els = this.els, vu = this.vu, att = this.att, l, val, n, j;
+  var R = prof ? M.resoudre(F, this.R) : M.resoudreVue(F, V, this.R), els = this.els, vu = this.vu, att = this.att, l, val, n, j;
+  if(V.nom !== this.vueNom){ this.vueNom = V.nom; R['pf:v'] = prof ? 'inline' : 'none'; R['vu:v'] = prof ? 'none' : 'inline'; this.ranger(V.nom); }
   for(k in els){
     val = R[k];
     if(val === undefined || val === vu[k]) continue;

@@ -8,7 +8,7 @@ poses = (sys.argv[2] if len(sys.argv) > 2 and sys.argv[2] else 'debout,assis,pai
 vs = [int(x) for x in (sys.argv[3] if len(sys.argv) > 3 and sys.argv[3] else '0').split(',')]
 t = int(sys.argv[4]) if len(sys.argv) > 4 and sys.argv[4] else 300
 plus = sys.argv[5] if len(sys.argv) > 5 else ''
-js = ''.join(open(SRC + f, encoding='utf-8').read() for f in ['mimi-dessin.js', 'mimi-pantin.js', 'mimi-gestes.js'] if os.path.exists(SRC + f))
+js = ''.join(open(SRC + f, encoding='utf-8').read() for f in ['mimi-dessin.js', 'mimi-vues.js', 'mimi-pantin.js', 'mimi-gestes.js'] if os.path.exists(SRC + f))
 html = '<!DOCTYPE html><meta charset="utf-8"><body style="margin:0;background:#3a2f55"><script>' + js + '</script><div id="g"></div>'
 with sync_playwright() as p:
     b = p.chromium.launch()

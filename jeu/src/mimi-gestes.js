@@ -11,6 +11,8 @@
      q0 : la direction de la queue à son attache (-90 : vers le haut, 180 : vers l'arrière) ; q1…q5 : comme elle s'enroule ;
      qa, qv : comme elle se balance (combien, à quelle vitesse) ; qd : la queue passe devant le corps (1)
      rx, ry, rr : tout le corps déplacé, tourné ; co : son côté (1 à droite) ; zz : les « z » du sommeil
+     vue : un tour sur elle-même, en huitièmes de tour (un geste : elle court après sa queue) ; ql : la queue qui se balance sur le côté ;
+     hz, sz : les hanches, les épaules décalées sur le côté (le déhanché de la marche) — ces trois-là ne se voient que dans les autres vues (mimi-vues.js)
    ========================================================== */
 (function(G){
 'use strict';
@@ -23,7 +25,7 @@ var DEBOUT = {
   a1x:17.5, a1y:-3.5, a1q:0, a1f:0, a2x:22, a2y:-3.5, a2q:0, a2f:0,
   j1x:-19, j1y:-1.8, j1p:62, j1q:0, j1f:0, j2x:-14, j2y:-1.8, j2p:62, j2q:0, j2f:0,
   q0:-128, q1:14, q2:14, q3:12, q4:10, q5:8, qa:5, qv:0.32, qd:0,
-  rx:0, ry:0, rr:0, co:1, zz:0
+  rx:0, ry:0, rr:0, co:1, zz:0, vue:0, ql:0, hz:0, sz:0
 };
 var POSES = M.POSES = {
   debout:{},
@@ -101,16 +103,21 @@ M.CLASSES = {'at-x-clos':'clos', 'at-x-miaou':'miaou', 'at-x-baille':'baille', '
    L : la longueur d'une foulée ; b : la part du temps où une patte est posée ; dec : le décalage des pattes (j1, a1, j2, a2).
    Au pas : les quatre pattes l'une après l'autre ; au trot : deux par deux, en diagonale ; à la course : les deux de derrière, puis les deux de devant.
    ========================================================== */
+/* (16 novembre, 19 h 56, Romain : « elle fait plein de petits pas et elle va un peu trop lentement. Et quand elle court, c'est encore pire ».
+   De plus grandes foulées, à la mesure de ses pattes : au pas, une foulée fait sa longueur ; au galop, trois fois plus, avec un temps en l'air.
+   Une patte posée recule exactement d'autant que le corps avance (b × L) : elle ne patine plus.) */
 M.ALLURES = {
-  pas:{L:21, b:0.62, hav:3.6, har:3, bob:0.65, dec:[0, 0.25, 0.5, 0.75]},
-  trot:{L:29, b:0.5, hav:5.4, har:4.4, bob:1.5, dec:[0, 0.5, 0.5, 0], bas:1},
-  course:{L:48, b:0.34, hav:7.5, har:6.5, bob:2.8, dec:[0, 0.5, 0.09, 0.59], vol:1}
+  pas:{L:40, b:0.62, hav:4.4, har:3.6, bob:0.75, dec:[0, 0.25, 0.5, 0.75]},
+  trot:{L:54, b:0.46, hav:6.2, har:5.2, bob:1.7, dec:[0, 0.5, 0.5, 0], bas:1},
+  course:{L:120, b:0.22, hav:9, har:8, bob:3.4, dec:[0, 0.52, 0.1, 0.62], vol:1}
 };
+M.SEUILS = [118, 235];            /* sa vitesse (dans ses mesures à elle, par seconde) : au-delà, elle trotte ; au-delà, elle galope */
+M.DUREE_VUE = 0.066;              /* un demi-tour : chaque dessin reste deux images (66 millièmes de seconde) */
 M.pas = function(F, phi, w, A){
   function patte(pre, dec, arr){
-    var u = frac(phi + dec), cx = F[pre + 'x'], x, lev = 0, s, sol = arr ? -1.8 : -3.5;
-    if(u < A.b){ s = u / A.b; x = cx + A.L * (0.5 - s); }
-    else { s = (u - A.b) / (1 - A.b); x = cx - A.L / 2 + A.L * eio(s); lev = Math.sin(Math.PI * s); }
+    var u = frac(phi + dec), cx = F[pre + 'x'], x, lev = 0, s, sol = arr ? -1.8 : -3.5, app = A.L * A.b;      /* (app : le chemin que fait le corps pendant que la patte est posée) */
+    if(u < A.b){ s = u / A.b; x = cx + app * (0.5 - s); }
+    else { s = (u - A.b) / (1 - A.b); x = cx - app / 2 + app * eio(s); lev = Math.sin(Math.PI * s); }
     F[pre + 'x'] = vers(cx, x, w);
     F[pre + 'y'] = vers(F[pre + 'y'], sol - lev * (arr ? A.har : A.hav), w);
     if(arr){
@@ -122,6 +129,7 @@ M.pas = function(F, phi, w, A){
   var a2 = 2 * TAU * phi, i;
   F.hy += A.bob * Math.cos(a2 + 0.6) * w; F.sy += A.bob * Math.cos(a2 + 2.3) * w;
   F.ty += A.bob * 0.6 * Math.cos(a2 + 3.8) * w; F.ta += 1.6 * Math.sin(a2 + 1) * w;
+  F.hz += 1.9 * Math.sin(TAU * phi + 0.4) * w; F.sz -= 1.3 * Math.sin(TAU * phi + 0.4) * w;      /* (le déhanché : il se voit de face et de dos) */
   for(i = 1; i < 6; i++) F['q' + i] += 3.2 * Math.sin(TAU * phi - i * 0.7) * w;
   if(A.bas){ F.tx += 1.6 * w; F.ty += 1.8 * w; F.hy += 0.8 * w; F.sy += 0.8 * w; }
   if(A.vol){                                 /* la course : le dos se plie et se déplie, elle décolle entre deux foulées */
@@ -232,7 +240,9 @@ var GS = M.GESTES = {
     var monte = -o.dy > 40;
     if(T < pre){                     /* elle se ramasse, vise, remue les fesses, s'écrase encore un peu… */
       var a = T / pre, cr = eio(seg(a, 0, 0.3)), wig = o.fesses ? seg(a, 0.3, 0.86) : 0, dip = eio(seg(a, 0.84, 1));
-      P.hy += 6 * cr + 2.5 * dip; P.sy += 6.5 * cr + 1.5 * dip; P.sx += 1.5 * cr; P.hx += cr; P.arc += 1.2 * cr; P.ty += 2 * cr;
+      /* (elle se ramasse pour de bon : le derrière bas, les pattes de derrière sous elle, la tête qui reste haute et fixe ce qu'elle vise) */
+      P.hy += 8.5 * cr + 2.5 * dip; P.sy += 7 * cr + 1.5 * dip; P.sx += 0.5 * cr; P.hx += 2.5 * cr; P.arc += 2.2 * cr; P.ty -= 2.5 * cr;
+      P.j1x += 5 * cr; P.j2x += 5 * cr; P.j1p -= 22 * cr; P.j2p -= 22 * cr;
       if(wig > 0 && wig < 1){ var sw = Math.sin(TAU * o.fesses * wig); P.hx += 2 * sw; P.hy -= Math.abs(sw); P.q4 += 12 * sw; P.q5 += 16 * sw; }
       P.pu = vers(P.pu, 1, cr); P.ly = vers(P.ly, monte ? -0.8 : 0, cr); P.lx = vers(P.lx, 0.9, cr); P.og += 7 * cr; P.od -= 7 * cr; P.ta -= (monte ? 10 : 2) * cr;
       P.q0 += ang(170 - P.q0) * cr * 0.8; P.qa = 3; P.qv = 3;
@@ -299,7 +309,7 @@ var GS = M.GESTES = {
   /* elle court après sa queue : deux tours sur elle-même */
   tourne:{d:1800, ent:0.12, sor:0.14, f:function(P, u){
     var k = Math.min(1, u / 0.12, (1 - u) / 0.12), i;
-    P.co *= vif(Math.cos(TAU * 2 * eio(u)));
+    P.vue += 16 * eio(u);                            /* (deux tours sur elle-même, vue après vue) */
     P.tx -= 9 * k; P.ty += 7 * k; P.ta += 24 * k; P.lx = vers(P.lx, -0.9, k); P.arc += 3 * k; P.hx += 3 * k; P.sx -= 3 * k;
     P.q0 += ang(-50 - P.q0) * k; for(i = 1; i < 6; i++) P['q' + i] = vers(P['q' + i], 21, k);
     P.ry -= 2.5 * Math.abs(Math.sin(TAU * 4 * u)) * k; P.a1y -= 2.4 * Math.max(0, Math.sin(TAU * 8 * u)) * k; P.a2y -= 2.4 * Math.max(0, -Math.sin(TAU * 8 * u)) * k;
@@ -308,7 +318,7 @@ var GS = M.GESTES = {
   /* avant de se coucher : un tour sur elle-même, le nez par terre, à petits pas */
   couche:{d:1500, ent:0.15, sor:0.15, f:function(P, u){
     var k = Math.min(1, u / 0.15, (1 - u) / 0.15), s = Math.sin(TAU * 5 * u), s2 = Math.sin(TAU * 5 * u + 1.5);
-    P.co *= vif(Math.cos(TAU * eio(u)));
+    P.vue += 8 * eio(u);                             /* (un tour sur elle-même, vue après vue) */
     P.hy += 3 * k; P.sy += 6 * k; P.ty += 7 * k; P.tx += 1.5 * k; P.ta += 14 * k; P.ly = vers(P.ly, 0.8, k); P.yo = Math.min(P.yo, 1 - 0.4 * k);
     P.a1y -= 2.2 * Math.max(0, s) * k; P.a2y -= 2.2 * Math.max(0, -s) * k; P.j1y -= 1.8 * Math.max(0, s2) * k; P.j2y -= 1.8 * Math.max(0, -s2) * k;
     P.q0 += ang(160 - P.q0) * k * 0.6;
