@@ -2,6 +2,18 @@
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
+
+## 17 novembre — LE NOUVEAU FIL SE CONSTRUIT, ÉTAPE PAR ÉTAPE (go de Romain, 16 novembre, 22 h 40)
+
+Le fil validé : Bible §13.56 (« deuxième version ») et `fil-e3.html`. Quatre étapes, chacune mise en ligne après ses essais :
+
+1. **Le secret d'Odette — FAIT (Bible §13.57)** : le papier du voisin (Barde → Sage), le plan de la maison au dos, la poche et la pierre de Tim du Sage, l'ordre des trois signes dit à voix haute, la maison d'Odette vue de dessus pour le Pisteur (le matin dans l'ombre, l'après-midi la cachette), le vieux plan d'Odette (Pisteur → Sage). « Le plan des Fondateurs » est retiré.
+2. **Les codes dits à voix haute, la fausse lettre** : à faire.
+3. **Les bêtes, le plan de la clé** : à faire.
+4. **La nuit** : à faire.
+
+À savoir avant de continuer : un point de e3.js peut porter `oral:[…]` (ce qu'un équipier doit lui avoir dit à voix haute) — le jeu ne le lit pas, `tools/verif-e3.js` si ; les dialogues du Barde changés par le nouveau fil ont le go de Romain : après chaque changement, `node jeu/tools/e3-dialogues.js` puis `e3-dialogues-page.js`.
+
 ## Nouveau depuis le 16 novembre (21 h) : LA LOGIQUE DE L'ENQUÊTE 3 EST À REPRENDRE — EN DISCUSSION AVEC ROMAIN (Bible §13.56)
 
 - **Romain a joué jusqu'à la nuit** (19 h 48) et dit franchement ce qui ne va pas : **rien ne doit arriver par magie dans le Grand Livre du Sage**. Aujourd'hui l'herbier et le plan des Fondateurs y sont dès le matin, le plan des souterrains arrive à la nuit, la page de la porte des Fondateurs dévoilait tout. **Le plan des Fondateurs ne sert à rien** une fois déchiffré. **Rien n'annonce le combat** : pourquoi des potions de combat, d'où viennent les tenues ? Il veut une suite logique où chacun a sa part : le Barde apprend des choses qui donnent des pistes au Pisteur ; le Pisteur seul ne trouve rien, mais avec les autres il débloque ; le Sage analyse ce qu'on lui apporte. **L'enquête 3, pour lui, c'est « plutôt des jeux de piste, des combats, des trucs rigolos » ; l'enquête 4 sera une vraie enquête** (elle commencera peut-être par sortir de prison).
