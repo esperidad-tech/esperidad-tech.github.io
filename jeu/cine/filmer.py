@@ -29,7 +29,9 @@ with sync_playwright() as p:
     errs = []
     pg.on('pageerror', lambda e: errs.append(str(e)))
     pg.goto('file://' + os.path.join(ICI, 'page.html'))
-    info = pg.evaluate('(n) => { var F = CINE.films[n]; return {nom:F.nom, duree:F.duree, sons:F.sons || [], sousTitres:F.sousTitres || []}; }', film)
+    info = pg.evaluate('(n) => { var F = CINE.films[n]; return {nom:F.nom, duree:F.duree, sons:F.sons || [], sousTitres:F.sousTitres || [], ailleurs:F.ailleurs || null}; }', film)
+    # un film dont l'image se fait ailleurs (la pub : jeu/pub/filmer-pub.py) n'est inscrit ici que pour sa bande-son : on ne le filme pas (on écraserait sa vidéo)
+    if info.pop('ailleurs'): print('« %s » ne se filme pas ici : son image se fait dans %s (voir film-%s.js).' % (film, pg.evaluate('(n) => CINE.films[n].ailleurs', film), film)); sys.exit(1)
     fin = float(a) if a else info['duree']
     n = int(round((fin - de) * fps))
     k0, k1 = 0, n

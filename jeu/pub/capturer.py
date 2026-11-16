@@ -78,8 +78,17 @@ def donjon(b, nom, h, duree, attente, clip, geste=None):
     # (on ne garde que la scène : la bande des sorts et la barre du haut sont cachées — le nom du chef n'apparaît pas dans la pub)
     d.evaluate("() => { ['bande', 'haut'].forEach(function(i){ var c = document.getElementById(i); if(c) c.style.visibility = 'hidden'; }); }")
     lent(d, .2); filmer(d, nom, duree, clip); d.context.close()
+def cine(b):
+    """les quatre extraits de cinématiques : 40 images (1,33 s) prises dans les films déjà faits (jeu/cine/sortie), sans navigateur.
+       L'homme en cape n'est jamais nommé et on ne voit jamais son visage (le nom de Léo ne sort pas avant la nuit de l'enquête 3)."""
+    import subprocess
+    C = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'cine', 'sortie')
+    for nom, film, t in [('cine-marche', 'chene', 4.0), ('cine-allumette', 'chene', 19.55), ('cine-fumee', 'chene', 25.2), ('cine-cape', 'entree', 5.8)]:
+        d = os.path.join(PLANS, nom); os.makedirs(d, exist_ok=True)
+        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-ss', str(t), '-i', os.path.join(C, film + '.mp4'), '-frames:v', '40', '-start_number', '0', '-q:v', '2', os.path.join(d, '%04d.jpg')], check=True)
+        print(nom, len(os.listdir(d)), 'images')
 PLANS_ = {
-    'accueil': accueil, 'heros': les_heros, 'carte': carte, 'tables': tables, 'gateau': gateau,
+    'accueil': accueil, 'heros': les_heros, 'carte': carte, 'tables': tables, 'gateau': gateau, 'cine': cine,
     'pistage': lambda b: mini(b, 'pistage', '#jeu=pistage&n=6&v=apresmidi', 1.6, tenir=(.5, .2)),
     'cachette': lambda b: mini(b, 'cachette', '#jeu=cachette&n=6', 1.4, attente=5000),
     'visee': lambda b: mini(b, 'visee', '#jeu=visee&n=5', .6),
