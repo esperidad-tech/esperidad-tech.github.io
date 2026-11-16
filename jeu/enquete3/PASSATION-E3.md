@@ -1,6 +1,10 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 16 novembre, 7 h 50)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 16 novembre, 8 h 45)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 16 novembre (8 h 37) : LE RASSEMBLEMENT DE L'ENQUÊTE 2 EST UN FILM, ET IL MONTRE L'HOMME EN CAPE (Bible §12.63) — EN LIGNE (commits 838073e, ebff275 et 5aec86f du site ; version 20261116-0736)
+
+Ce n'est pas l'enquête 3, mais ça compte pour elle : **à la nuit de l'enquête 2, les joueurs voient maintenant un homme en cape allumer un pot de fumigène derrière le Vieux Chêne, puis deux yeux dans l'ombre qui s'en vont** (un film d'une minute, demandé par Romain le 16 novembre à 6 h 28). On ne voit jamais son visage et **son nom n'est écrit nulle part** : la règle de l'enquête 3 (« Léo n'est nommé qu'à la nuit ») tient toujours. Mais **les joueurs arrivent à l'enquête 3 en ayant déjà vu l'homme en cape à l'œuvre** : quand Mélusine parle de lui, ils le reconnaîtront. Sa musique (quatre notes de harpe : ré, fa, la bémol, la) est la même dans ce film et à l'entrée du donjon. À garder en tête pour les enquêtes suivantes ; à valider par Romain (il peut demander de couper ces deux plans).
 
 ## Nouveau depuis le 16 novembre (7 h 50) : LES EMPREINTES DE PIEDS D'ENFANT DU JARDIN D'IRIS, LES BANDEROLES AU NIVEAU 8 (Bible §13.52) — EN LIGNE (16 novembre, 7 h 47 ; commit 85790a3 du site, version 20261116-0647, dans les Réglages « 16/11 à 07 h 23 » ; publication de GitHub vérifiée)
 

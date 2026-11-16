@@ -215,4 +215,124 @@ M.cineMusFinMaireA = function(A, P){
   });
   return I;
 };
+
+/* =================== LE RASSEMBLEMENT AU VIEUX CHÊNE (chene, 61,8 s ; Bible §12.63 ; Romain, 16 novembre : « une musique de révolte
+   puis, quand la fumée arrive, une musique de stress ») ===================
+   0 → 12 s     LA RÉVOLTE : une marche (tambours, cors, cordes graves) ; Silas barre le chemin (elle retient son souffle), on passe (le coup)
+   12 → 24,7 s  LE CHÊNE, puis L'HOMME EN CAPE : presque rien (une harpe, un fond grave), puis les cordes qui tremblent, le cœur, ça monte
+   24,7 s       PFFFT : le grand coup
+   24,7 → 58 s  LE STRESS : les cordes graves qui galopent, le tambour qui cogne, les aigus qui grincent ; elle se fait PETITE sous les
+                répliques (38 → 55 s : des enfants lisent), puis repart pour la fuite
+   58 → fin     les yeux dans l'ombre : le motif de l'homme en cape (le même qu'à l'entrée du donjon : ré, fa, la bémol, la)
+   On est dehors : presque pas d'écho. */
+M.cineMusCheneA = function(A, P){
+  var I = Instance(A, P), proche = A.bus(P, {grotte:.1}), tamb = A.bus(P, {grotte:.22, g:.9}), loin = A.bus(P, {grotte:.5, g:.7}), ech = I.echo(loin, {temps:.42, retour:.4, lp:2200, sortie:.45});
+  function caisse(t, g){ A.bruit(t, {coul:'blanc', filtres:[{type:'bandpass', f:1900, q:.7}], env:A.perc(.002, .11), g:g}, tamb); A.ton(t, {f:190, f2:140, gl:.08, env:A.perc(.002, .09), g:g * .5}, tamb); }
+  function ra(t, g){ [0, .083, .166].forEach(function(x, k){ caisse(t + x, g * (.55 + k * .2)); }); }                      /* ra-ta-ta */
+  function corde(t, n, d, g){ A.archet(t, m(n), d, {a:.02, r:d * .5, g:g, lp:1500}, proche); }                               /* une note courte, à l'archet */
+  function cor(t, n, d, g){ cuivre(A, t, m(n), d, g, proche); A.ton(t, {type:'triangle', f:m(n), env:[[0, 0], [.08, 1], [d * .7, .8], [d, 0]], g:g * .7, vib:[5, m(n) * .004], vibRetard:.3}, proche); }
+  function coup(t, notes, d, g){ notes.forEach(function(n){ cuivre(A, t, m(n), d, g, proche); }); }
+
+  /* ---------------- LA RÉVOLTE (un temps = 0,5 s) ---------------- */
+  a(I, 0, function(t){
+    for(var k = 0; k < 13; k++){                                                                      /* la marche : 0 → 6,5 s */
+      var x = k * .5, f = Math.min(1, .35 + k * .12);
+      if(k % 2 === 0) A.tambour(t + x, {f:68, d:.55, g:.3 * f}, tamb); else caisse(t + x, .11 * f);
+      if(k % 4 === 3) ra(t + x + .25, .08 * f);
+    }
+    /* les cordes graves : ré ré fa ré | ré ré la ré | si♭ si♭ ré si♭ | la… */
+    [38, 38, 41, 38, 38, 38, 45, 38, 34, 34, 38, 34, 33, 33, 37, 33, 38, 38, 41, 38, 38, 38, 45, 38, 34, 34].forEach(function(n, k){ corde(t + k * .25, n, .2, .03 * Math.min(1, .4 + k * .08)); });
+    fond(A, t, [m(26), m(38)], 6.8, .03, proche, {a:1, r:.6});
+    /* les cors : la, ré, fa… mi, ré, LA (le cri de Gaspard) sol, fa */
+    [[1.0, 45, .5], [1.5, 50, .5], [2.0, 53, 1.0], [3.0, 52, .5], [3.5, 50, .5], [4.0, 57, 1.5], [5.5, 55, .5], [6.0, 53, .7]].forEach(function(n){ cor(t + n[0], n[1], n[2] + .12, .05); });
+    A.choeur(t + 3.9, [m(57), m(62), m(65)], 2.4, {voyelle:'a', a:.25, r:1.2, g:.022}, loin);        /* « Tous au Vieux Chêne ! » : le village avec lui */
+  });
+  a(I, 6.6, function(t){                                                                              /* Silas barre le chemin : la marche retient son souffle */
+    trem(A, t, m(57), 3.8, .016, proche, {env:[[0, 0], [.3, .6], [3.2, 1], [3.8, 0]]});
+    trem(A, t + .2, m(58), 3.6, .013, proche, {env:[[0, 0], [.3, .5], [3, 1], [3.6, 0]]});
+    fond(A, t, [m(26), m(33)], 3.9, .035, proche, {a:.4, r:.5});
+    [.4, 1.4, 2.4, 2.9, 3.4].forEach(function(x, k){ sourd(A, t + x, .13 + k * .02, tamb); });
+    cuivre(A, t + .1, m(39), 1.6, .035, proche);                                                      /* mi bémol : non ! */
+    ra(t + 3.3, .1); ra(t + 3.55, .13);
+  });
+  a(I, 10.4, function(t){                                                                             /* on passe ! */
+    frappe(A, t, .42, tamb);
+    coup(t, [38, 45, 50, 53], 1.5, .05);
+    A.choeur(t, [m(62), m(65), m(69)], 1.5, {voyelle:'a', a:.06, r:1, g:.026}, loin);
+    [.5, .75, 1.0, 1.25].forEach(function(x, k){ if(k % 2) caisse(t + x, .12); else A.tambour(t + x, {f:68, d:.4, g:.3}, tamb); });
+    [38, 38, 41, 45, 50].forEach(function(n, k){ corde(t + .5 + k * .2, n, .18, .034); });
+    A.tambour(t + 1.55, {f:55, d:1.4, g:.36}, tamb);                                                  /* et on arrive : le chêne */
+  });
+
+  /* ---------------- LE CHÊNE SOUS LA LUNE, PUIS L'HOMME EN CAPE ---------------- */
+  a(I, 12.0, function(t){
+    fond(A, t, [m(26), m(33)], 12.8, .034, proche, {a:1.5, r:.5});
+    A.choeur(t + .3, [m(50), m(57)], 4.2, {voyelle:'ou', a:1.4, r:1.8, g:.016}, loin);
+    [[.5, 62], [1.1, 69], [1.7, 74], [2.6, 72], [3.2, 69]].forEach(function(n){ A.harpe(t + n[0], m(n[1]), {t60:2.4, g:.07, lp:2400}, ech); });
+  });
+  a(I, 16.2, function(t){                                                                             /* derrière le chêne : quelqu'un */
+    trem(A, t, m(57), 8.5, .02, proche, {env:[[0, 0], [1.5, .35], [6.2, .7], [8.4, 1], [8.5, 0]]});
+    trem(A, t + 1.3, m(58), 7.2, .016, proche, {env:[[0, 0], [1.5, .3], [5, .7], [7.1, 1], [7.2, 0]]});
+    [.6, 1.9, 3.1, 4.2, 5.2, 6.1, 6.8, 7.4, 7.85, 8.2].forEach(function(x, k){ sourd(A, t + x, .1 + k * .016, tamb); });   /* le cœur, de plus en plus vite */
+    [[1.4, 62], [1.85, 65], [2.3, 68], [2.75, 69]].forEach(function(n){ A.harpe(t + n[0], m(n[1]), {t60:2, g:.06, lp:2000}, ech); });      /* son motif */
+    cuivre(A, t + 3.7, m(38), 2.2, .03, proche); cuivre(A, t + 3.7, m(44), 2.2, .026, proche);        /* l'allumette : ré et la bémol, ça grince */
+    trem(A, t + 6.1, m(69), 2.4, .014, proche, {f2:m(75), env:[[0, 0], [2.2, 1], [2.4, 0]]});          /* la mèche brûle : ça monte, ça monte… */
+    trem(A, t + 6.1, m(62), 2.4, .014, proche, {f2:m(68), env:[[0, 0], [2.2, 1], [2.4, 0]]});
+    montee(A, t + 7.3, 1.2, .3, loin);
+  });
+
+  /* ---------------- PFFFT ! ET LE STRESS (un temps = 0,4 s) ---------------- */
+  var OST = [38, 38, 39, 38, 38, 38, 41, 39];                                                         /* ré ré mi♭ ré | ré ré fa mi♭ : ça galope */
+  function galop(t, d, g, haut){ for(var k = 0; k * .2 < d - .05; k++) corde(t + k * .2, OST[k % 8] + (haut || 0), .15, g * (k % 4 === 0 ? 1.25 : 1)); }
+  function cogne(t, d, g, double){ for(var k = 0; k * .4 < d - .05; k++){ A.tambour(t + k * .4, {f:k % 4 === 0 ? 56 : 66, d:.42, g:g * (k % 4 === 0 ? 1.2 : .8)}, tamb); if(double) caisse(t + k * .4 + .2, g * .3); } }
+  function grince(t, d, g, n){ trem(A, t, m(n || 74), d, g, proche, {env:[[0, 0], [.25, .8], [d * .8, 1], [d, 0]], lp:2200}); trem(A, t, m((n || 74) + 1), d, g * .8, proche, {env:[[0, 0], [.25, .8], [d * .8, 1], [d, 0]], lp:2200}); }
+  a(I, 24.7, function(t){                                                                             /* PFFFT : la fumée rouge */
+    frappe(A, t, .55, tamb);
+    coup(t, [38, 39, 44], 2.2, .055);
+    A.choeur(t, [m(62), m(63), m(68)], 2.2, {voyelle:'a', a:.06, r:1.6, g:.03}, loin);
+    fond(A, t, [m(26), m(33)], 13.6, .036, proche, {a:.3, r:.6});
+    galop(t + .8, 3.3, .03); cogne(t + .8, 3.3, .2);
+    grince(t + .8, 3.3, .012);
+  });
+  a(I, 28.8, function(t){                                                                             /* les villageois pétrifiés */
+    coup(t, [38, 44, 51], 1.8, .05); A.tambour(t, {f:52, d:1.3, g:.4}, tamb);
+    galop(t + .4, 4.6, .026); cogne(t + .4, 4.6, .15);
+    grince(t + .2, 4.8, .013, 75);
+    A.choeur(t + 2.4, [m(57), m(63)], 2.6, {voyelle:'o', a:.6, r:1.2, g:.018}, loin);
+  });
+  a(I, 33.8, function(t){                                                                             /* le maire accourt : plus vite, plus fort */
+    coup(t, [38, 45], 1.2, .045);
+    galop(t, 4.4, .034); galop(t, 4.4, .02, 12); cogne(t, 4.4, .22, true);
+    grince(t, 4.4, .014, 74);
+    [[.4, 50], [1.2, 51], [2.0, 53], [2.8, 56], [3.6, 57]].forEach(function(n){ cor(t + n[0], n[1], .7, .034); });      /* les cors montent avec lui */
+    montee(A, t + 3.4, 1.0, .22, loin);
+  });
+  a(I, 38.2, function(t){                                                                             /* Silas et le maire parlent : la musique se fait petite (on lit) */
+    coup(t, [38, 39, 44], 1.6, .045); A.tambour(t, {f:52, d:1.2, g:.36}, tamb);
+    fond(A, t, [m(26), m(33)], 16.8, .03, proche, {a:.4, r:.8});
+    galop(t + .4, 16.2, .017);
+    for(var k = 0; k < 20; k++) sourd(A, t + .4 + k * .8, .11, tamb);                                   /* le cœur */
+    trem(A, t + .4, m(69), 6.6, .009, proche, {env:[[0, 0], [1, 1], [6, 1], [6.6, 0]]});
+    trem(A, t + 7, m(70), 6.8, .01, proche, {env:[[0, 0], [1, 1], [6.2, 1], [6.8, 0]]});
+    A.choeur(t + 11, [m(50), m(56)], 2.9, {voyelle:'ou', a:.8, r:1.2, g:.02}, loin);                   /* « La zone est condamnée. » : froid */
+    cuivre(A, t + 11, m(38), 2.6, .03, proche);
+  });
+  a(I, 52.0, function(t){ coup(t, [38, 45, 50], 1.4, .045); A.tambour(t, {f:54, d:1.1, g:.34}, tamb); });        /* « Rentrez chez vous ! » */
+  a(I, 54.8, function(t){                                                                             /* tout le monde s'enfuit */
+    coup(t, [38, 39, 44], 1.4, .05);
+    galop(t, 3.2, .034); galop(t, 3.2, .022, 12); cogne(t, 3.2, .24, true);
+    grince(t, 3.2, .015, 75);
+    montee(A, t + 2.1, 1.2, .3, loin);
+    frappe(A, t + 3.38, .4, tamb);
+  });
+  /* ---------------- LES YEUX DANS L'OMBRE ---------------- */
+  a(I, 58.2, function(t){
+    fond(A, t, [m(26), m(33)], 3.6, .04, proche, {a:.3, r:1.6});
+    A.choeur(t + .2, [m(50), m(56)], 3.2, {voyelle:'ou', a:.6, r:1.8, g:.022}, loin);
+    [[.5, 62], [.95, 65], [1.4, 68], [1.85, 69]].forEach(function(n){ A.harpe(t + n[0], m(n[1]), {t60:2.2, g:.085, lp:2200}, ech); });   /* son motif : c'est lui */
+    [.4, 1.5, 2.6].forEach(function(x){ sourd(A, t + x, .13, tamb); });
+    A.tambour(t + 2.75, {f:48, d:1.2, g:.26}, tamb);
+  });
+  return I;
+};
 })(window);

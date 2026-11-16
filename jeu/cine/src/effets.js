@@ -45,8 +45,8 @@ FX.torche = function(x, y, z, t, k, defs){
 };
 
 /* la poussière qui flotte dans l'air (elle brille près des torches) : un nuage de points dans une boîte du monde */
-FX.poussiere = function(t, boite, n, graine){
-  var R = U.hasard(graine || 3), s = '';
+FX.poussiere = function(t, boite, n, graine, coul){
+  var R = U.hasard(graine || 3), s = '', SRC = FX.sources || PLATEAU.TORCHES;
   for(var i = 0; i < n; i++){
     var x0 = U.lerp(boite[0], boite[3], R()), y0 = U.lerp(boite[1], boite[4], R()), z0 = U.lerp(boite[2], boite[5], R());
     var x = x0 + U.bruit(t * .21 + i, i) * 40, y = y0 + U.bruit(t * .17 + i * 2, i + 50) * 30 + ((t * 6 + R() * 400) % 400) - 200, z = z0 + U.bruit(t * .19 + i * 3, i + 90) * 30;
@@ -55,9 +55,9 @@ FX.poussiere = function(t, boite, n, graine){
     var f = CAM.flou(p.d), r = Math.max(.5, 1.6 * p.s) + f * .45, op = .12 + .5 * R();
     /* plus brillante près d'une torche */
     var pres = 0;
-    PLATEAU.TORCHES.forEach(function(tq){ var dd = Math.hypot(tq[0] - x, tq[1] - y, tq[2] - z); pres = Math.max(pres, 1 - dd / 700); });
+    SRC.forEach(function(tq){ var dd = Math.hypot(tq[0] - x, tq[1] - y, tq[2] - z); pres = Math.max(pres, 1 - dd / 700); });
     op *= .35 + pres * 1.4; if(f > 6) op *= 6 / f;
-    s += '<circle cx="' + U.r(p.x) + '" cy="' + U.r(p.y) + '" r="' + U.r(r) + '" fill="#ffd9a0" opacity="' + U.r(U.clamp(op, 0, .9)) + '"/>';
+    s += '<circle cx="' + U.r(p.x) + '" cy="' + U.r(p.y) + '" r="' + U.r(r) + '" fill="' + (coul || '#ffd9a0') + '" opacity="' + U.r(U.clamp(op, 0, .9)) + '"/>';
   }
   return s;
 };
@@ -139,6 +139,8 @@ FX.defs = function(){
   return d;
 };
 /* un groupe flouté de f pixels d'écran (à mettre AUTOUR d'un groupe déjà placé : le flou est compté sur l'écran) */
-FX.flouDebut = function(f){ var k = Math.round(f * 2); return k >= 1 ? '<g filter="url(#fl' + Math.min(90, k) + ')">' : '<g>'; };
+/* (le plateau du chêne : FX.ecran) le flou passe par le style, pas par un filtre SVG : un filtre de flou autour d'un filtre de lumière
+   laissait parfois, sur un personnage à moitié hors de l'image, un carré noir dans le coin haut-gauche (un défaut du navigateur) */
+FX.flouDebut = function(f){ var k = Math.round(f * 2); return k < 1 ? '<g>' : FX.ecran ? '<g style="filter:blur(' + Math.min(90, k) / 2 + 'px)">' : '<g filter="url(#fl' + Math.min(90, k) + ')">'; };
 FX.flouFin = function(){ return '</g>'; };
 })();

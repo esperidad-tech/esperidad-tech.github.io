@@ -107,7 +107,13 @@ window.CATALOGUE = [
           {id:'cineMusA12', t:'Musique phase 1', v:'A', m:1}, {id:'cineMusB23', t:'Musique phase 2', v:'A', m:1},
           {id:'cineMusFinLeo', t:'Musique Léo parle', v:'A', m:1}, {id:'cineMusFinMaire', t:'Musique du maire', v:'A', m:1},
           /* 15 novembre, 19 h 05 (Romain) : la cinématique de l'entrée (l'homme en cape sort de l'ombre et parle) */
-          {id:'cineMusEntree', t:'Musique de l\'entrée', v:'A', m:1, neuf:1}
+          {id:'cineMusEntree', t:'Musique de l\'entrée', v:'A', m:1, neuf:1},
+          /* 16 novembre (Romain) : la cinématique du rassemblement au Vieux Chêne (enquête 2, la nuit) — on est dehors : presque pas d'écho */
+          {id:'cineFoule', t:'La foule marche', v:'A', neuf:1}, {id:'cineClameur', t:'« Ouais ! »', v:'A', neuf:1}, {id:'cineFoulePasse', t:'La foule passe', v:'A', neuf:1}, {id:'cineBarriere', t:'La barrière tombe', v:'A', neuf:1},
+          {id:'cineVent', t:'Vent de nuit', v:'A', neuf:1}, {id:'cineHibou', t:'La chouette', v:'A', neuf:1}, {id:'cineAllumette', t:'L\'allumette', v:'A', neuf:1}, {id:'cineMeche', t:'La mèche brûle', v:'A', neuf:1},
+          {id:'cinePffft', t:'Le fumigène part', v:'A', neuf:1}, {id:'cineOh', t:'« Oh ! »', v:'A', neuf:1}, {id:'cineToux', t:'Quelqu\'un tousse', v:'A', neuf:1}, {id:'cineCourse', t:'Ils accourent', v:'A', neuf:1},
+          {id:'cineFouleFuit', t:'La fuite', v:'A', neuf:1},
+          {id:'cineMusChene', t:'Musique du rassemblement', v:'A', m:1, neuf:1}
         ]}
       ]}
     ]},

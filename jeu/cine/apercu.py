@@ -17,6 +17,8 @@ with sync_playwright() as p:
     if js: pg.evaluate(js)
     for t in temps:
         pg.evaluate('([n, t]) => { CINE.image(n, t); }', [film, t])
+        # (une image lourde — beaucoup de fumée — n'est pas toujours peinte quand la photo part : on laisse passer deux rafraîchissements)
+        pg.evaluate('() => new Promise(function(r){ requestAnimationFrame(function(){ requestAnimationFrame(r); }); })')
         pg.screenshot(path=os.path.join(sortie, '%s-%05.2f.png' % (film, t)))
         print(os.path.join(sortie, '%s-%05.2f.png' % (film, t)))
     if errs: print('ERREURS', errs[:5])

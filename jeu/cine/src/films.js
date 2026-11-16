@@ -763,4 +763,6 @@ CINE.films.essai = {duree:4, etat:function(t){
   return {cam:q.cam || {x:0, y:-300, z:1900, focus:1900}, acteurs:[{type:'leo', x:0, z:0, pose:U.melange(BASE, q.pose || {}, 1), o:q.o || {}}].concat(q.plus || [])};
 }};
 CINE.BASE = BASE;
+/* les outils communs, pour les films écrits dans un autre fichier (film-chene.js) */
+CINE.O = {plans:plans, secousses:secousses, fondu:fondu, respire:respire, tremble:tremble, cligne:cligne, copie:copie, parle:parle, bouchePar:bouchePar, versEcran:versEcran, BASE:BASE, V0:V0};
 })();

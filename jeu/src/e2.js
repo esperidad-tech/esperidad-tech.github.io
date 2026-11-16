@@ -42,6 +42,9 @@ function choix(bon, autres, pos){ var l = autres.map(function(q){ return {q:q, v
 E[2] = {
   id:2, titre:'La rivière rouge', niveau:2,
   moments:['matin', 'apresmidi', 'nuit'],
+  /* la cinématique du rassemblement (Romain, 16 novembre ; jeu/cine : le film « chene », une minute) : téléchargée d'avance dès que la nuit
+     tombe (M.prevoirFilms), jouée au Sage quand il rassemble le village et aux autres quand ils tapent son code (film:'chene', plus bas) */
+  films:[{nom:'chene', moments:['nuit']}],
   /* Pas de points d'action (comme l'enquête 1 : M.sansActions, moteur-base.js). Ce qui limite : un lieu ne donne qu'une chose
      par moment, les moments des villageois, et une seule visite par moment pour certains d'entre eux (uneVisite, barde.js). */
   sansActions:true,
@@ -240,7 +243,7 @@ E[2] = {
     crypte:{nom:'La crypte du clocher', ic:'🗝️', pour:['sage', 'barde'], de:'pisteur',
       t:'La nuit, le Pisteur a suivi l\'homme en cape noire sorti de la porte cachée du moulin : il est entré dans la crypte du clocher avec une clé, et a refermé à clé derrière lui.',
       dire:'Un mystère pour plus tard… Le Sage et le Barde voudront le savoir : donne ce code au Sage ou au Barde.'},
-    rassemblement:{nom:'Le récit du rassemblement', ic:'📣', illu:'rassemblement', pour:'tous', t:'Cette nuit, le Sage a emmené tout le village au Vieux Chêne. De gros rochers bouchent le trou. Soudain, une épaisse fumée rouge est sortie de sous les branches ! Le maire est arrivé en courant, avec Silas. Silas a crié : « Ce sont des vapeurs toxiques ! Elles montent des sous-sols ! » Et le maire : « Reculez ! Ne respirez pas ça ! La zone est condamnée. Rentrez chez vous ! » Tout le monde est rentré en toussant.'}
+    rassemblement:{nom:'Le récit du rassemblement', ic:'📣', illu:'rassemblement', film:'chene', pour:'tous', t:'Cette nuit, le Sage a emmené tout le village au Vieux Chêne. De gros rochers bouchent le trou. Soudain, une épaisse fumée rouge est sortie de sous les branches ! Le maire est arrivé en courant, avec Silas. Silas a crié : « Ce sont des vapeurs toxiques ! Elles montent des sous-sols ! » Et le maire : « Reculez ! Ne respirez pas ça ! La zone est condamnée. Rentrez chez vous ! » Tout le monde est rentré en toussant.'}
   },
   lieux:{
     foret:{
@@ -710,7 +713,7 @@ E[2] = {
        La scène animée (illu, regles.js), puis le code du récit pour les autres tablettes. Le texte tient même si l'équipe n'a encore rien trouvé. */
     {id:'rassemblement', titre:'Rassembler le village', ic:'📣', moments:['nuit'], obligatoire:true,
       horsMoment:'Le village ne se rassemblera que la nuit, quand tout le monde sera rentré chez soi.',
-      avant:'La nuit tombe sur Brumeval. Tout le village se demande ce qui se passe au Vieux Chêne, que le maire a fermé… Prends ta lanterne, frappe à toutes les portes, et emmène tout le monde là-bas !', bouton:'Rassembler le village', boutonIc:'📣 ', illu:'rassemblement',
+      avant:'La nuit tombe sur Brumeval. Tout le village se demande ce qui se passe au Vieux Chêne, que le maire a fermé… Prends ta lanterne, frappe à toutes les portes, et emmène tout le monde là-bas !', bouton:'Rassembler le village', boutonIc:'📣 ', illu:'rassemblement', film:'chene',
       t:'Tu frappes à toutes les portes, ta lanterne à la main… et tout le village te suit ! Silas veut vous arrêter, mais vous êtes bien trop nombreux. Au Vieux Chêne, de gros rochers bouchent le trou. Derrière un buisson, quelqu\'un se sauve en courant… Soudain, PFFFT ! Une épaisse fumée rouge sort de sous les branches ! Le maire arrive en courant, en bonnet de nuit, avec Silas sur ses talons. Silas crie : « Ce sont des vapeurs toxiques ! Elles montent des sous-sols ! » Et le maire : « Reculez ! Ne respirez pas ça ! La zone est condamnée. Rentrez chez vous ! » Tout le monde s\'enfuit en toussant. Raconte tout à l\'équipe : donne-leur ce code !',
       /* le maire ne ment jamais (Romain, 5 novembre, 8 h 59) : c'est Silas qui parle des vapeurs toxiques (il le croit, comme l'« éboulement ») */
       note:'Le rassemblement (la nuit) : au Vieux Chêne, une fumée rouge est sortie de sous les branches. Silas a crié : « Ce sont des vapeurs toxiques ! Elles montent des sous-sols ! » Le maire : « La zone est condamnée. Rentrez chez vous ! » Quelqu\'un s\'est sauvé derrière un buisson.', donne:'info:rassemblement'}
