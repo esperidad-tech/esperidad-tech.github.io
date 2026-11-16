@@ -1,5 +1,12 @@
 # Enquête 3 « La lettre d'Odette » — le Pisteur, l'Alchimiste et le Sage ; tous les codes ; qui prouve quoi (version 2, 11 novembre 2026)
 
+> **⚠️ 16 NOVEMBRE, 17 H 11 (Bible §13.54 et §13.55, qui font foi ; go de Romain à 15 h) — l'encre d'Iris, plus de lavande au labo, la mousse lumineuse :**
+> - **Le Barde, chez Iris, le matin** : une fois le vol raconté, une question de plus (« Il vous reste un peu de cette encre ? ») → **un code pour l'Alchimiste, « L'encre d'Iris »** (`obj:encre_iris`).
+> - **L'Alchimiste, au labo** : le flacon sur le cuir, le test des couleurs (une seule bande noire : la noix de galle). **La deuxième des deux analyses — la lettre, l'encre d'Iris — donne « La même encre »** (`meme_encre`, une information, pour le Sage). La lettre n'a plus de pollen de lavande : son analyse demande l'écriture (la loupe, avec le Livre d'or) et l'encre (l'eau chaude, puis le test des couleurs).
+> - **Qui prouve quoi** : l'encre relie le vol chez Iris à la lettre ; la preuve des empreintes (le Pisteur, le Sage) demande donc aussi les deux analyses de l'Alchimiste, et le flacon du Barde. Rien n'en dépend.
+> - **Le donjon** : les « herbes lumineuses » du puits d'aération sont **la mousse lumineuse** (une vraie plante). Le même code du donjon, pour l'Alchimiste : un brin se pose sur sa paillasse d'analyse (rien d'obligatoire, pas de code), et le chaudron du donjon la mélange au miel et au souci → le baume lumineux (le même code de recette, pour le Pisteur).
+> - **Les codes** : aucun n'a changé, trois de plus (534).
+>
 > **⚠️ 16 NOVEMBRE (Bible §13.52, qui fait foi ; go de Romain à 6 h 43 et 6 h 44) — les empreintes de pieds d'enfant, et les banderoles au niveau 8 :**
 > - **Le Pisteur, à l'herboristerie, le matin ou l'après-midi : « 👣 Le jardin d'Iris »** (`pisteur:herboristerie:jardin`). Rien ne l'annonce : le Barde dit à voix haute qu'on a volé de l'encre chez Iris. Le mini-jeu « Suivre la piste », en ville : de petites empreintes d'enfant, mêlées au départ aux sabots d'Iris ; elles se perdent dans la rue des Lanternes. Niveau 7, autant d'essais qu'on veut.
 > - **Ce qu'il apprend** : « 3 carreaux. Des pieds d'enfant ! », et **un code nouveau pour le Sage, « Des pieds d'enfant »** (`pieds_enfant`, une information).

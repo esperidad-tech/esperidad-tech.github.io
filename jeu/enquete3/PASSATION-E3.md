@@ -1,6 +1,17 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 16 novembre, 16 h 45)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 16 novembre, 17 h 30)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## Nouveau depuis le 16 novembre (17 h 11) : L'ENCRE D'IRIS (LA CHAÎNE DU SCÉNARIO EST COMPLÈTE) ET LA MOUSSE LUMINEUSE (Bible §13.54 et §13.55) — EN LIGNE (l'encre : commit 176d86b du site, version 20261116-1511 ; la mousse : commit a532fcd, version 20261116-1610 ; le donjon : commit 82311d7)
+
+- **Go de Romain à 15 h** : « Oui, tu peux faire les 3 points. Et tu peux mettre en ligne. » (le troisième point, Mimi, est parti dans une autre conversation : section du dessous).
+- **L'encre d'Iris — l'étape 6 du scénario est construite.** Le matin, une fois le vol raconté, le Barde demande à Iris « Il vous reste un peu de cette encre ? » : elle lui donne un fond de flacon, **un code pour l'Alchimiste**. Au labo, la bandelette de l'encre d'Iris et celle de l'encre de la lettre ont la même bande noire : **la deuxième des deux analyses donne le code « La même encre », pour le Sage** (« La lettre a été écrite avec l'encre volée chez Iris, cette nuit. »). C'est ce qui relie les empreintes du jardin d'Iris à la lettre. **La question et la réponse d'Iris sont de Claude : à valider par Romain.**
+- **Les onze étapes du scénario du 12 novembre sont maintenant toutes dans le jeu**, sauf deux écarts voulus : l'étape 10 (les pas d'homme derrière l'atelier de Mélusine) est remplacée par les traces de Moustache (13 novembre) ; et l'accusation de Mélusine s'ouvre avec « Deux écritures » (le code de l'Alchimiste), pas avec un code du Sage.
+- **Plus de lavande au labo** : le pollen trouvé sur la lettre est retiré.
+- **La mousse lumineuse** remplace les « herbes lumineuses » du donjon (le puits d'aération). C'est une vraie plante (« l'or des lutins ») : elle ne fabrique pas de lumière, elle la renvoie ; elle ne soigne pas. L'Alchimiste en regarde un brin au labo (la loupe, le microscope, la bougie : rien d'obligatoire, pas de code), puis la mélange au miel et au souci dans le chaudron du donjon : le baume lumineux, qui soigne 15 points à chacun, comme avant. **Romain n'a pas choisi entre ce baume et « la lampe froide » (la mousse et l'huile de lin, une lumière qui ne ferait pas exploser la farine de Léo) : la lampe n'est pas construite ; à lui de dire s'il la veut.**
+- **Pour la conception** : c'est le modèle de « la plante qui n'est qu'un ingrédient » que Romain a demandé — une vraie plante, ce qu'elle fait pour de vrai appris au labo, et un mélange au chaudron où ce sont d'autres ingrédients qui soignent. Le mélange se fait encore dans l'ancien chaudron du donjon (trois bocaux à choisir), pas sur l'établi des plantes.
+- **Les codes** : aucun n'a changé ; trois de plus, gelés (534) : « L'encre d'Iris », « La même encre », et le brin de mousse (que personne ne donne).
+- **À faire valider par Romain** : cinq décisions pour l'encre (§13.54), cinq pour la mousse (§13.55).
 
 ## Nouveau depuis le 16 novembre (16 h 45) : MIMI EST UN JOUET, PAS UNE AIDE POUR L'ENQUÊTE (Bible §12.65) — EN LIGNE (commit 7d1a3d7 du site, version 20261116-1541)
 
