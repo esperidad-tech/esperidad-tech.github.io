@@ -44,6 +44,7 @@ G.defs = function(){
   d += '<pattern id="gMailles" width="6" height="5" patternUnits="userSpaceOnUse"><circle cx="3" cy="2.5" r="2.1" fill="none" stroke="#2a2e36" stroke-width=".9" opacity=".7"/></pattern>';
   d += rad('gLanterne', ['#fff8d0', '#ffd27a', '#ff9a30', 'rgba(255,140,40,0)'], .5, .5, .5);
   d += rad('insertLueur', ['rgba(255,200,120,.18)', 'rgba(20,10,30,.55)'], .55, .45, .75);
+  (G.DEFS_PLUS || []).forEach(function(fn){ d += fn(); });
   return d;
 };
 
@@ -84,6 +85,7 @@ function visage(T, v, o, uid){
       s += '<clipPath id="' + id + '"><path d="' + forme + '"/></clipPath><path d="' + forme + '" fill="#fbf6ee"/><g clip-path="url(#' + id + ')"><circle cx="' + f(lx) + '" cy="' + f(ly) + '" r="4.2" fill="' + T.iris + '"/><circle cx="' + f(lx) + '" cy="' + f(ly) + '" r="1.9" fill="#0a0a10"/><circle cx="' + f(lx + 1.3) + '" cy="' + f(ly - 1.4) + '" r="1.1" fill="#fff"/></g>';
     }
     s += '<path d="M' + f(inX - sg * .5) + ' ' + f(cy + .3) + ' C ' + f(inX + sg * 3) + ' ' + f(cy - hIn) + ' ' + f(outX - sg * 4) + ' ' + f(cy - hOut) + ' ' + f(outX + sg * 1.4) + ' ' + f(cy + .4) + '" fill="none" stroke="' + O + '" stroke-width="2.4" stroke-linecap="round"/>';
+    if(T.cils && op > .2) s += '<path d="M' + f(outX) + ' ' + f(cy - 1) + ' l ' + f(sg * 5) + ' -4 M' + f(outX - sg * 3) + ' ' + f(cy - hOut * .7) + ' l ' + f(sg * 3.5) + ' -4.5" fill="none" stroke="' + O + '" stroke-width="1.8" stroke-linecap="round"/>';
     if(T.plisse) s += '<path d="M' + f(outX + sg * 1) + ' ' + f(cy + 1) + ' l ' + f(sg * 5) + ' -2 M' + f(outX + sg * 1) + ' ' + f(cy + 3) + ' l ' + f(sg * 5) + ' 2" stroke="' + T.trait + '" stroke-width="1.1" opacity=".7"/>';
     /* le sourcil */
     var bInY = cy - 9 + col * 5 - peur * 6 - tri * 6, bOutY = cy - 12 - col * 2 - peur * 5 + tri * 3;
@@ -94,6 +96,11 @@ function visage(T, v, o, uid){
   if(T.nez === 'bec'){
     s += '<path d="M' + f(-3 + nx) + ' -70 C ' + f(-2 + nx) + ' -62 ' + f(4 + nx) + ' -54 ' + f(12 + nx) + ' -44 C ' + f(15 + nx) + ' -38 ' + f(10 + nx) + ' -33 ' + f(3 + nx) + ' -36 C ' + f(-2 + nx) + ' -34 ' + f(-8 + nx) + ' -36 ' + f(-9 + nx) + ' -41 C ' + f(-9 + nx) + ' -44 ' + f(-6 + nx) + ' -45 ' + f(-4 + nx) + ' -44" fill="' + P[1] + '" stroke="' + O + '" stroke-width="2.2" stroke-linejoin="round"/>' +
       '<ellipse cx="' + f(4 + nx) + '" cy="-52" rx="2.4" ry="5" fill="#fff" opacity=".45" transform="rotate(-30 ' + f(4 + nx) + ' -52)"/>';
+  } else if(T.nez === 'rond'){
+    s += '<path d="M' + f(-3 + nx) + ' -62 C ' + f(-5 + nx) + ' -54 ' + f(-11 + nx) + ' -50 ' + f(-10 + nx) + ' -44 C ' + f(-9 + nx) + ' -38 ' + f(-3 + nx) + ' -38 ' + f(nx) + ' -40 C ' + f(3 + nx) + ' -38 ' + f(9 + nx) + ' -38 ' + f(10 + nx) + ' -44 C ' + f(11 + nx) + ' -48 ' + f(8 + nx) + ' -51 ' + f(6 + nx) + ' -52" fill="' + P[1] + '" stroke="' + O + '" stroke-width="2" stroke-linejoin="round"/>' +
+      '<ellipse cx="' + f(-2 + nx) + '" cy="-46" rx="3" ry="2" fill="#fff" opacity=".4"/>';
+  } else if(T.nez === 'fin'){
+    s += '<path d="M' + f(-1 + nx) + ' -62 C ' + f(-2 + nx) + ' -54 ' + f(-5 + nx) + ' -49 ' + f(-5 + nx) + ' -46 C ' + f(-5 + nx) + ' -43 ' + f(-2 + nx) + ' -42 ' + f(nx) + ' -43 C ' + f(2 + nx) + ' -42 ' + f(5 + nx) + ' -43 ' + f(5 + nx) + ' -46" fill="none" stroke="' + T.trait + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
   } else {
     s += '<path d="M' + f(-2 + nx) + ' -64 C ' + f(-4 + nx) + ' -56 ' + f(-8 + nx) + ' -50 ' + f(-8 + nx) + ' -46 C ' + f(-8 + nx) + ' -42 ' + f(-3 + nx) + ' -41 ' + f(nx) + ' -42 C ' + f(3 + nx) + ' -41 ' + f(8 + nx) + ' -42 ' + f(8 + nx) + ' -46" fill="' + P[1] + '" stroke="' + O + '" stroke-width="2" stroke-linejoin="round"/>';
   }
@@ -115,6 +122,7 @@ function visage(T, v, o, uid){
   if(T.barbe) s += '<path d="M' + f(-l + 2) + ' -46 C ' + f(-l + 2) + ' ' + f(-26 + jaw) + ' -14 ' + f(-6 + jaw) + ' 0 ' + f(-4 + jaw) + ' C 14 ' + f(-6 + jaw) + ' ' + f(l - 2) + ' ' + f(-26 + jaw) + ' ' + f(l - 2) + ' -46 C ' + f(l - 10) + ' -36 ' + f(l - 16) + ' -30 12 -24 C 6 -20 -6 -20 -12 -24 C ' + f(-l + 16) + ' -30 ' + f(-l + 10) + ' -36 ' + f(-l + 2) + ' -46 Z" fill="' + T.poil + '" stroke="' + O + '" stroke-width="2"/>';
   if(T.favoris) [1, -1].forEach(function(sg){ s += '<path d="M' + f(sg * (l - 1)) + ' -78 C ' + f(sg * (l + 5)) + ' -64 ' + f(sg * (l + 4)) + ' -44 ' + f(sg * (l - 4)) + ' -34 C ' + f(sg * (l - 10)) + ' -42 ' + f(sg * (l - 8)) + ' -60 ' + f(sg * (l - 6)) + ' -76 Z" fill="' + T.poil + '" stroke="' + O + '" stroke-width="1.8"/>'; });
   if(T.touffes) [1, -1].forEach(function(sg){ s += '<path d="M' + f(sg * (l - 6)) + ' ' + f(-h * .8) + ' C ' + f(sg * (l + 10)) + ' ' + f(-h * .9) + ' ' + f(sg * (l + 16)) + ' ' + f(-h * .66) + ' ' + f(sg * (l + 10)) + ' ' + f(-h * .52) + ' C ' + f(sg * (l + 16)) + ' ' + f(-h * .46) + ' ' + f(sg * (l + 10)) + ' ' + f(-h * .36) + ' ' + f(sg * (l + 2)) + ' ' + f(-h * .4) + ' C ' + f(sg * (l - 2)) + ' ' + f(-h * .5) + ' ' + f(sg * (l - 4)) + ' ' + f(-h * .66) + ' ' + f(sg * (l - 6)) + ' ' + f(-h * .8) + ' Z" fill="' + T.poil + '" stroke="' + O + '" stroke-width="2"/>'; });
+  if(T.plus) s += T.plus(v, {dx:dx, jaw:jaw, ht:ht, l:l, h:h});
   if(T.cheveux) s += '<path d="M' + f(-l - 1) + ' ' + f(-h * .66) + ' C ' + f(-l - 2) + ' ' + f(-h - 8) + ' ' + f(l + 2) + ' ' + f(-h - 8) + ' ' + f(l + 1) + ' ' + f(-h * .66) + ' C ' + f(l - 8) + ' ' + f(-h * .82) + ' ' + f(-l + 8) + ' ' + f(-h * .82) + ' ' + f(-l - 1) + ' ' + f(-h * .66) + ' Z" fill="' + T.poil + '" stroke="' + O + '" stroke-width="2.2"/>';
   return s;
 }
@@ -165,8 +173,21 @@ function piecesMaire(o){
       var nue = cote === 'D' ? (o.gants == null ? 1 : o.gants) < .75 : (o.gants == null ? 1 : o.gants) < .25;
       return mainHumaine(type, nue ? 'url(#gPeauMaireX)' : 'url(#gGant)', nue && o.bague && cote === 'D');
     },
-    tete:'maire'
+    tete:'maire',
+    /* (le rassemblement, la nuit) son bonnet de nuit : la pointe retombe sur le côté et se balance (o.bonnet : son balancement) */
+    chapeau:o.bonnet == null ? null : function(){ return bonnetNuit(o.bonnet); }
   };
+}
+function bonnetNuit(b){
+  var bx = 44 + b * 16, by = -84 + Math.abs(b) * 6;
+  return '<g transform="translate(0 -20)">' + bonnet0(b, bx, by) + '</g>';
+}
+function bonnet0(b, bx, by){
+  return '<path d="M-37 -70 C -41 -104 -22 -124 0 -126 C 22 -124 39 -108 37 -70 C 20 -60 -20 -60 -37 -70 Z" fill="#ece6f2" stroke="' + O + '" stroke-width="' + OL + '"/>' +
+    '<path d="M6 -124 C 30 -128 48 -116 ' + f(bx + 4) + ' ' + f(by - 18) + ' C ' + f(bx + 8) + ' ' + f(by - 8) + ' ' + f(bx + 4) + ' ' + f(by) + ' ' + f(bx) + ' ' + f(by + 4) + ' C ' + f(bx - 10) + ' ' + f(by - 14) + ' 34 -100 22 -96 Z" fill="#e2dbea" stroke="' + O + '" stroke-width="' + OL + '" stroke-linejoin="round"/>' +
+    '<path d="M-20 -112 C -8 -106 8 -106 22 -112 M-28 -98 C -10 -92 10 -92 30 -98" fill="none" stroke="#b8a8d0" stroke-width="3"/>' +
+    '<path d="M-38 -76 C -20 -66 20 -66 38 -76 L 38 -66 C 20 -56 -20 -56 -38 -66 Z" fill="#ffffff" stroke="' + O + '" stroke-width="2.2"/>' +
+    '<circle cx="' + f(bx) + '" cy="' + f(by + 12) + '" r="11" fill="#ffffff" stroke="' + O + '" stroke-width="2.2"/><path d="M' + f(bx - 5) + ' ' + f(by + 8) + ' l 3 3 M' + f(bx + 3) + ' ' + f(by + 7) + ' l 3 4 M' + f(bx - 2) + ' ' + f(by + 15) + ' l 4 2" stroke="#c8c0d8" stroke-width="1.6"/>';
 }
 function piecesSilas(){
   return {
@@ -223,7 +244,8 @@ function mainHumaine(type, peau, bague){
   return s;
 }
 /* les chapeaux : le képi de Silas, le casque des gardes (repère : la tête) */
-function kepi(){ return '<path d="M-30 -84 C -32 -104 -28 -122 -24 -126 L 24 -126 C 28 -122 32 -104 30 -84 Z" fill="url(#gVert)" stroke="' + O + '" stroke-width="' + OL + '"/><path d="M-34 -86 C -20 -78 20 -78 34 -86 L 36 -80 C 20 -70 -20 -70 -36 -80 Z" fill="#1a2a1a" stroke="' + O + '" stroke-width="2"/><circle cx="0" cy="-106" r="5" fill="url(#gOr)" stroke="' + O + '" stroke-width="1.6"/>'; }
+function kepi(o){ var a = (o && o.kepi) || 0; return '<g transform="rotate(' + f(a) + ' 0 -84)">' + kepi0() + '</g>'; }
+function kepi0(){ return '<path d="M-30 -84 C -32 -104 -28 -122 -24 -126 L 24 -126 C 28 -122 32 -104 30 -84 Z" fill="url(#gVert)" stroke="' + O + '" stroke-width="' + OL + '"/><path d="M-34 -86 C -20 -78 20 -78 34 -86 L 36 -80 C 20 -70 -20 -70 -36 -80 Z" fill="#1a2a1a" stroke="' + O + '" stroke-width="2"/><circle cx="0" cy="-106" r="5" fill="url(#gOr)" stroke="' + O + '" stroke-width="1.6"/>'; }
 function casque(){ return '<path d="M-30 -80 C -34 -108 -18 -124 0 -124 C 18 -124 34 -108 30 -80 Z" fill="url(#gAcier)" stroke="' + O + '" stroke-width="' + OL + '"/><path d="M-50 -82 C -30 -76 30 -76 50 -82 L 46 -72 C 26 -66 -26 -66 -46 -72 Z" fill="url(#gAcierX)" stroke="' + O + '" stroke-width="2.2"/><path d="M0 -124 L 0 -82" stroke="#6a7484" stroke-width="3"/><ellipse cx="-12" cy="-108" rx="7" ry="4" fill="#fff" opacity=".6"/>'; }
 /* la lanterne du maire (repère : la main ; elle pend sous la poignée) ; k : allumée */
 G.lanterne = function(k){
@@ -244,8 +266,10 @@ function bouclier(){ return '<g><circle r="64" fill="url(#gBouclier)" stroke="' 
 G.dessin = function(type, p, o){
   o = o || {};
   var D = G.D[type], os = PT.os(D, p), uid = 'G' + (++idn), v = p.v || {};
-  var Pc = type === 'maire' ? piecesMaire(o) : type === 'silas' ? piecesSilas(o) : piecesGarde(o);
+  var Pc = type === 'maire' ? piecesMaire(o) : type === 'silas' ? piecesSilas(o) : type === 'garde' ? piecesGarde(o) : G.AUTRES[type](o, p);
   var s = '';
+  /* (les villageois : gens-village.js) ce qui passe derrière tout le corps — de longs cheveux, un châle */
+  if(Pc.derriere) s += Pc.derriere(os, p);
   ['G', 'D'].forEach(function(c){
     s += PT.piece(os['c' + c], Pc.cuisse(c));
     s += PT.piece(os['t' + c], Pc.tibia(c));
@@ -256,10 +280,19 @@ G.dessin = function(type, p, o){
     var la = o.lance || {}, m = os.mD, an = U.lerp(0, -38, la.bas || 0) + (la.a || 0);
     s += '<g transform="translate(' + f(M.pt(m, 0, 22)[0]) + ' ' + f(M.pt(m, 0, 22)[1]) + ') rotate(' + f(an) + ') scale(1 ' + f(1 - .5 * (la.bas || 0)) + ')">' + lance() + '</g>';
   }
-  var unBras = function(c){
-    var b = p['b' + c] || {};
-    return PT.piece(os['b' + c], Pc.brasHaut(c)) + PT.piece(os['a' + c], Pc.avantBras(c)) + PT.piece(os['m' + c], Pc.main(p['poing' + c] || 'poing', c));
+  /* ce qu'une main tient (o.tient = {D:'lanterne' | 'torche' | 'rouleau' …, G:…} : G.OBJETS) : dessiné avec la main */
+  /* (un objet tenu est posé au creux de la main, avec SON angle à lui — une lanterne pend, une torche est levée — pas celui du bras) */
+  var tenu = function(c){
+    var n = o.tient && o.tient[c], ob = n && G.OBJETS[n]; if(!ob) return '';
+    var h = M.pt(os['m' + c], 0, 20);
+    return '<g transform="translate(' + f(h[0]) + ' ' + f(h[1]) + ') rotate(' + f(ob.angle ? ob.angle(o, c, p) : 0) + ')">' + ob.dessin(o, c, p) + '</g>';
   };
+  var unBras = function(c){
+    var b = p['b' + c] || {}, obj = tenu(c), dessous = obj && G.OBJETS[o.tient[c]].dessous;
+    return PT.piece(os['b' + c], Pc.brasHaut(c)) + PT.piece(os['a' + c], Pc.avantBras(c)) + (dessous ? obj : '') + PT.piece(os['m' + c], Pc.main(p['poing' + c] || 'poing', c)) + (dessous ? '' : obj);
+  };
+  /* la jupe (les femmes) : par-dessus les jambes */
+  if(Pc.jupe) s += Pc.jupe(os, p);
   ['G', 'D'].forEach(function(c){ if(!(p['b' + c] || {}).devant) s += unBras(c); });
   s += PT.piece(os.bassin, Pc.bassin());
   s += PT.piece(os.buste, Pc.buste());
@@ -269,9 +302,9 @@ G.dessin = function(type, p, o){
     var bm = M.pt(os.aG, 0, 40);
     s += '<g transform="translate(' + f(bm[0] - 6) + ' ' + f(bm[1]) + ')">' + bouclier() + '</g>';
   }
-  var T = Pc.tete === 'garde' ? teteGarde(Pc.k) : TETES[Pc.tete];
+  var T = Pc.tete === 'garde' ? teteGarde(Pc.k) : typeof Pc.tete === 'object' ? Pc.tete : TETES[Pc.tete];
   var te = p.tete || {};
-  s += PT.piece(os.tete, visage(T, Object.assign({ht:te.ht || 0}, v), o, uid) + (Pc.kepi ? kepi() : '') + (Pc.casque ? casque() : ''));
+  s += PT.piece(os.tete, (Pc.sousTete ? Pc.sousTete(v, te) : '') + visage(T, Object.assign({ht:te.ht || 0}, v), o, uid) + (Pc.kepi ? kepi(o) : '') + (Pc.casque ? casque() : '') + (Pc.chapeau ? Pc.chapeau(v, te, p) : ''));
   /* la lanterne, dans la main droite */
   if(type === 'maire' && o.lanterne != null) s += PT.piece(M.mul(M.tr(M.pt(os.mD, 0, 18)[0], M.pt(os.mD, 0, 18)[1]), M.id()), G.lanterne(o.lanterne));
   G.dernier = {os:os, uid:uid, type:type};
@@ -349,8 +382,15 @@ G.insertGants = function(k, e, t){
   }
   return s;
 };
+/* pour les villageois (gens-village.js) */
+G.AUTRES = {}; G.OBJETS = {}; G.DEFS_PLUS = [];
+G._ = {visage:visage, mainHumaine:mainHumaine, lin:lin, rad:rad, X:X, O:O, OL:OL, f:f, C:C};
+/* une lanterne pend sous la main (elle se balance : pose.pend, en degrés) */
+G.OBJETS.lanterne = {dessin:function(o){ return '<g transform="translate(0 -22)">' + G.lanterne(o.lanterne == null ? 1 : o.lanterne) + '</g>'; }, angle:function(o, c, p){ return (p.pend || 0) * (c === 'G' ? -1 : 1); }};
 G.point = function(os, nom){
   if(nom === 'lanterne'){ var h = M.pt(os.mD, 0, 18); return [h[0], h[1] + 66]; }
+  if(nom === 'lanterneG'){ var h2 = M.pt(os.mG, 0, 18); return [h2[0], h2[1] + 66]; }
+  if(nom === 'bouche') return M.pt(os.tete, 0, -30);
   if(nom === 'mainD') return M.pt(os.mD, 0, 22);
   if(nom === 'mainG') return M.pt(os.mG, 0, 22);
   if(nom === 'tete') return M.pt(os.tete, 0, -60);

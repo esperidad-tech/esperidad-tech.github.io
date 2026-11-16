@@ -235,4 +235,152 @@ S.cineCriC = function(A, P){
   return {duree:2.9};
 };
 S.cineCriC.moment = .45;
+
+/* =================== LE RASSEMBLEMENT AU VIEUX CHÊNE (le film « chene », Bible §12.63 ; 16 novembre) ===================
+   On est DEHORS, la nuit : presque pas d'écho (rien de la grotte), des pas dans la terre et l'herbe, des voix de village. */
+/* GD : la force du son en cours (réglée en tête de chaque son, d'après les mesures : la foule doit passer au-dessus de la marche) */
+var GD = 1;
+function dehors(A, P, pan, rev){ return A.bus(P, {g:GD, rev:rev == null ? .16 : rev, pan:pan == null ? 0 : pan}); }
+function pasTerre(A, t, g, dest){ A.choc(t, {f:h(70, 95), f2:38, d:.07, g:.3 * g, sat:1.6, bruit:.5}, dest); A.bruit(t, {coul:'rose', bp:h(500, 1100), bq:.8, env:A.perc(.002, .06), g:.26 * g}, dest); }
+/* une voix de villageois (une syllabe, sans paroles) : o = {f, d, voyelle, monte (1 = tout droit), g} */
+function gens(A, t, o, dest){
+  var f = o.f || 180, d = o.d || .4, F = A.FORMANTS[o.voyelle || 'a'];
+  F.forEach(function(fm){
+    A.ton(t, {type:'sawtooth', f:f, f2:f * (o.monte || 1), gl:d, det:h(-12, 12), env:o.env || [[0, 0], [.04, 1], [d * .6, .8], [d, 0]], g:(o.g == null ? .1 : o.g) * fm[1], gigue:8, vib:[5.5, f * .01],
+      filtres:[{type:'bandpass', f:fm[0], q:fm[2] * .55}]}, dest);
+  });
+  A.bruit(t, {coul:'rose', bp:1400, bq:.7, env:o.env || [[0, 0], [.04, 1], [d * .6, .8], [d, 0]], g:(o.g == null ? .1 : o.g) * .35}, dest);
+}
+/* la foule en marche : beaucoup de pas dans la terre, un brouhaha, le feu des torches qui ronfle */
+S.cineFouleA = function(A, P){
+  GD = 3;
+  var t = P.t, d = 3.4;
+  for(var k = 0; k < 34; k++) pasTerre(A, t + h(0, d - .2), h(.35, .8), dehors(A, P, h(-.8, .8)));
+  for(var v = 0; v < 12; v++) gens(A, t + h(.1, d - .5), {f:h(110, 240), d:h(.18, .4), voyelle:['a', 'o', 'ou'][v % 3], monte:h(.9, 1.12), g:.035}, dehors(A, P, h(-.7, .7), .25));
+  A.bruit(t, {coul:'brun', bp:320, bq:.7, env:[[0, 0], [.5, 1], [d - .6, .9], [d, 0]], g:.16, rugueux:.5, rugVit:11}, dehors(A, P, 0, .2));
+  return {duree:d + .3};
+};
+/* la foule répond : « OUAIS ! » (des voix d'hommes et de femmes, ensemble) */
+S.cineClameurA = function(A, P){
+  GD = 4;
+  var t = P.t;
+  [[118, 0], [132, .03], [150, .06], [176, .02], [220, .05], [262, .08], [294, .04], [196, .07]].forEach(function(v, k){
+    gens(A, t + v[1] + h(0, .04), {f:v[0] * h(.97, 1.03), d:h(.75, 1.05), voyelle:k % 3 ? 'a' : 'o', monte:1.1, g:.085, env:[[0, 0], [.07, 1], [.45, .85], [1, 0]]}, dehors(A, P, -.7 + k * .2, .3));
+  });
+  for(var k = 0; k < 6; k++) pasTerre(A, t + .1 + k * .13 + h(0, .04), .6, dehors(A, P, h(-.6, .6)));
+  return {duree:1.6};
+};
+/* la foule passe en force : des pas pressés, des épaules, un « hé ! » */
+S.cineFoulePasseA = function(A, P){
+  GD = 2.6;
+  var t = P.t;
+  for(var k = 0; k < 20; k++) pasTerre(A, t + k * .075 + h(0, .05), h(.5, .95), dehors(A, P, h(-.7, .7)));
+  for(var c = 0; c < 4; c++) A.bruit(t + .1 + c * .3, {coul:'rose', filtres:[{type:'bandpass', f:h(500, 900), q:1.3}], env:A.perc(.03, .16), g:.3}, dehors(A, P, h(-.5, .5)));
+  gens(A, t + .25, {f:150, d:.3, voyelle:'a', monte:1.15, g:.08}, dehors(A, P, -.3, .25));
+  gens(A, t + .7, {f:205, d:.28, voyelle:'o', monte:1.1, g:.07}, dehors(A, P, .4, .25));
+  gens(A, t + 1.0, {f:128, d:.34, voyelle:'a', monte:.9, g:.07}, dehors(A, P, .1, .25));
+  return {duree:1.9};
+};
+/* la barrière de bois qui tombe dans l'herbe */
+S.cineBarriereA = function(A, P){
+  GD = 1;
+  var t = P.t, o = dehors(A, P, .15, .2);
+  bois(A, t, {f:330, f2:120, g:.8, d:.13, cf:800}, o);
+  bois(A, t + .16, {f:250, f2:95, g:.7, d:.16, cf:560}, o); bois(A, t + .24, {f:420, f2:160, g:.4, d:.08, cf:1100}, o);
+  A.choc(t + .2, {f:95, f2:40, d:.22, g:.5, sat:2, corps:1.5, corpsF:220}, o);
+  A.bruit(t + .2, {coul:'rose', bp:900, bq:.6, env:A.perc(.01, .3), g:.3}, o);
+  [.42, .55, .64].forEach(function(x, k){ bois(A, t + x, {f:h(280, 380), f2:130, g:.28 - k * .07, d:.06, cf:900}, o); });
+  return {duree:1.2};
+};
+/* le vent de la nuit dans les feuilles du chêne */
+S.cineVentA = function(A, P){
+  GD = 1.7;
+  var t = P.t, d = 4;
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:420, pts:[[d * .45, 900], [d, 380]], q:.7}], env:[[0, 0], [d * .4, 1], [d * .7, .6], [d, 0]], g:.22}, dehors(A, P, -.3, .25));
+  A.bruit(t + .4, {coul:'blanc', filtres:[{type:'bandpass', f:3200, pts:[[d * .5, 5200], [d - .4, 2800]], q:.9}], env:[[0, 0], [d * .45, 1], [d - .4, 0]], g:.035, rugueux:.5, rugVit:7}, dehors(A, P, .4, .25));
+  return {duree:d + .2};
+};
+/* une chouette, au loin : « hou… hou-hou » */
+S.cineHibouA = function(A, P){
+  GD = 1.6;
+  var t = P.t, o = A.bus(P, {g:GD, rev:.6, pan:-.5});
+  [[0, .5, 392], [.85, .22, 380], [1.12, .55, 372]].forEach(function(n){
+    A.ton(t + n[0], {type:'sine', f:n[2], f2:n[2] * .94, gl:n[1], env:[[0, 0], [.06, 1], [n[1] * .7, .8], [n[1], 0]], g:.05, vib:[6, 5]}, o);
+    A.ton(t + n[0], {type:'sine', f:n[2] * 2, f2:n[2] * 1.88, gl:n[1], env:[[0, 0], [.06, 1], [n[1], 0]], g:.008}, o);
+  });
+  return {duree:2.2};
+};
+/* l'allumette : elle gratte, elle s'enflamme */
+S.cineAllumetteA = function(A, P){
+  GD = 3;
+  var t = P.t, o = dehors(A, P, .1, .12);
+  A.bruit(t, {coul:'blanc', filtres:[{type:'bandpass', f:3800, pts:[[.16, 5200]], q:1.2}], env:[[0, 0], [.02, .7], [.15, 1], [.18, 0]], g:.42, rugueux:.9, rugVit:38}, o);
+  A.bruit(t + .16, {coul:'rose', filtres:[{type:'bandpass', f:900, pts:[[.12, 2600], [.6, 1200]], q:.8}], env:[[0, 0], [.05, 1], [.22, .45], [.75, 0]], g:.5}, o);
+  A.joue(t + .2, A.crepitement(.5, 26), {g:.16, filtres:[{type:'highpass', f:2600}]}, o);
+  return {duree:1.1};
+};
+/* la mèche qui brûle : elle fuse, elle crépite, de plus en plus fort */
+S.cineMecheA = function(A, P){
+  GD = 2.4;
+  var t = P.t, d = 2.45, o = dehors(A, P, .2, .1);
+  A.bruit(t, {coul:'blanc', filtres:[{type:'bandpass', f:4200, pts:[[d, 6400]], q:1.1}], env:[[0, 0], [.08, .5], [d - .1, 1], [d, 0]], g:.2, rugueux:.8, rugVit:46}, o);
+  A.joue(t, A.crepitement(d, 70), {g:.3, filtres:[{type:'highpass', f:3000}]}, o);
+  A.joue(t + d * .5, A.crepitement(d * .5, 110), {g:.28, filtres:[{type:'highpass', f:2200}]}, o);
+  return {duree:d + .1};
+};
+/* PFFFT ! le fumigène part : un grand souffle qui crache, puis qui siffle longtemps */
+S.cinePffftA = function(A, P){
+  GD = 1;
+  var t = P.t, o = dehors(A, P, 0, .3), c = dehors(A, P, -.4, .3), d = dehors(A, P, .4, .3);
+  A.choc(t, {f:120, f2:38, d:.5, g:.9, sat:3, corps:2, corpsF:200}, o);
+  A.bruit(t, {coul:'blanc', filtres:[{type:'bandpass', f:700, pts:[[.25, 3400], [1.6, 1500], [4, 900]], q:.7}], env:[[0, 0], [.03, 1], [.5, .75], [1.8, .4], [4.2, 0]], g:.75}, o);
+  A.bruit(t + .02, {coul:'rose', filtres:[{type:'bandpass', f:300, pts:[[.3, 900], [3, 420]], q:.8}], env:[[0, 0], [.05, 1], [1.2, .5], [3.4, 0]], g:.7}, c);
+  A.bruit(t + .05, {coul:'blanc', hp:5200, env:[[0, 0], [.04, 1], [.9, .35], [3.6, 0]], g:.14, rugueux:.6, rugVit:30}, d);
+  A.joue(t + .05, A.crepitement(1.4, 90), {g:.3, filtres:[{type:'highpass', f:2400}]}, o);
+  return {duree:4.4};
+};
+S.cinePffftA.moment = .03;
+/* tout le village retient son souffle : « OH ! » */
+S.cineOhA = function(A, P){
+  GD = 5;
+  var t = P.t;
+  for(var k = 0; k < 5; k++) inspire(A, t + h(0, .08), h(.28, .4), .3, dehors(A, P, -.6 + k * .3, .2));
+  [[196, 0], [247, .04], [294, .02], [330, .06], [147, .05], [370, .08]].forEach(function(v, k){
+    gens(A, t + .22 + v[1], {f:v[0], d:h(.4, .6), voyelle:'o', monte:.86, g:.075, env:[[0, 0], [.03, 1], [.2, .7], [.55, 0]]}, dehors(A, P, -.7 + k * .28, .3));
+  });
+  return {duree:1.2};
+};
+/* quelqu'un tousse dans la fumée (trois petites toux sèches) */
+S.cineTouxA = function(A, P){
+  GD = 3.4;
+  var t = P.t, o = dehors(A, P, h(-.5, .5), .2), f = h(140, 230);
+  [0, .26, .5].forEach(function(x, k){
+    var g = [.9, 1, .7][k];
+    A.bruit(t + x, {coul:'rose', filtres:[{type:'bandpass', f:h(800, 1100), q:.9}, {type:'peaking', f:2400, q:1.2, gain:6}], env:[[0, 0], [.012, 1], [.07, .5], [.17, 0]], g:.55 * g, rugueux:.8, rugVit:60}, o);
+    gens(A, t + x, {f:f * (1 + k * .05), d:.13, voyelle:'a', monte:.8, g:.06 * g, env:[[0, 0], [.01, 1], [.13, 0]]}, o);
+  });
+  return {duree:1};
+};
+/* deux hommes qui arrivent en courant (de loin, de plus en plus près), essoufflés */
+S.cineCourseA = function(A, P){
+  GD = 1.8;
+  var t = P.t, d = 4.2, n = 26;
+  for(var k = 0; k < n; k++){
+    var x = k / n, o = A.bus(P, {g:GD, rev:.3 - .18 * x, pan:(k % 2 ? .25 : -.15) * (1 - x * .5)});
+    pasTerre(A, t + x * d + h(0, .02), .35 + .85 * x, o);
+    if(k % 4 === 3) souffle(A, t + x * d + .05, .2, .1 + .22 * x, 800, o);
+  }
+  return {duree:d + .4};
+};
+/* tout le monde recule et s'enfuit : des pas dans tous les sens, des cris étouffés */
+S.cineFouleFuitA = function(A, P){
+  GD = 2.5;
+  var t = P.t, d = 3.3;
+  for(var k = 0; k < 44; k++){ var x = Math.pow(h(0, 1), .8); pasTerre(A, t + x * d, h(.4, .9) * (1 - x * .45), A.bus(P, {g:GD, rev:.16 + .3 * x, pan:h(-.9, .9)})); }
+  [[.15, 262, 'a'], [.5, 175, 'o'], [.9, 330, 'a'], [1.4, 147, 'o'], [1.9, 247, 'a'], [2.5, 196, 'o']].forEach(function(v, k){
+    gens(A, t + v[0], {f:v[1], d:h(.3, .5), voyelle:v[2], monte:h(1.05, 1.25), g:.06 * (1 - k * .1)}, A.bus(P, {g:GD, rev:.25 + k * .06, pan:h(-.8, .8)}));
+  });
+  for(var c = 0; c < 5; c++) A.bruit(t + h(.1, d - .6), {coul:'rose', filtres:[{type:'bandpass', f:h(500, 900), q:1.3}], env:A.perc(.03, .18), g:.25}, dehors(A, P, h(-.7, .7)));
+  return {duree:d + .4};
+};
 })(window);

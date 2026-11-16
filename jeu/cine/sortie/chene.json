@@ -1,0 +1,147 @@
+{
+ "nom": "Le rassemblement au Vieux Chêne",
+ "duree": 61.8,
+ "sons": [
+  [
+   0.15,
+   "cineFoule"
+  ],
+  [
+   3.05,
+   "cineClameur"
+  ],
+  [
+   6.75,
+   "cineLanterne"
+  ],
+  [
+   9.3,
+   "cineFoulePasse"
+  ],
+  [
+   10.48,
+   "cineBarriere"
+  ],
+  [
+   12.1,
+   "cineVent"
+  ],
+  [
+   13.3,
+   "cineHibou"
+  ],
+  [
+   16.4,
+   "cineVent"
+  ],
+  [
+   19,
+   "cineCape"
+  ],
+  [
+   19.84,
+   "cineAllumette"
+  ],
+  [
+   22.3,
+   "cineMeche"
+  ],
+  [
+   23.1,
+   "cineCape"
+  ],
+  [
+   24.7,
+   "cinePffft"
+  ],
+  [
+   28.92,
+   "cineOh"
+  ],
+  [
+   32.95,
+   "cineToux"
+  ],
+  [
+   33.9,
+   "cineCourse"
+  ],
+  [
+   38.300000000000004,
+   "cineSouffle"
+  ],
+  [
+   40.6,
+   "cineSouffle"
+  ],
+  [
+   55,
+   "cineFouleFuit"
+  ],
+  [
+   55.099999999999994,
+   "cineToux"
+  ],
+  [
+   55.949999999999996,
+   "cineToux"
+  ],
+  [
+   56.9,
+   "cineToux"
+  ],
+  [
+   58.5,
+   "cineVent"
+  ],
+  [
+   60,
+   "cineCape"
+  ]
+ ],
+ "sousTitres": [
+  [
+   2.5,
+   5.4,
+   "Tous au Vieux Chêne !",
+   "Gaspard"
+  ],
+  [
+   7,
+   10.3,
+   "Halte ! Le chemin est fermé !",
+   "Silas"
+  ],
+  [
+   38.6,
+   41.8,
+   "Ce sont des vapeurs toxiques !",
+   "Silas"
+  ],
+  [
+   42.1,
+   45.3,
+   "Elles montent des sous-sols !",
+   "Silas"
+  ],
+  [
+   45.6,
+   48.8,
+   "Reculez ! Ne respirez pas ça !",
+   "Le maire"
+  ],
+  [
+   49.2,
+   52,
+   "La zone est condamnée.",
+   "Le maire"
+  ],
+  [
+   52.3,
+   54.7,
+   "Rentrez chez vous !",
+   "Le maire"
+  ]
+ ],
+ "fps": 30
+}

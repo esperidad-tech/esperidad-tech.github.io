@@ -65,7 +65,7 @@ PLATEAU.construire = function(racine){
   monde.id = 'monde';
   monde.style.cssText = 'position:absolute;left:' + W / 2 + 'px;top:' + H / 2 + 'px;width:0;height:0;transform-style:preserve-3d';
   vue.appendChild(monde); racine.appendChild(vue);
-  PLATEAU.monde = monde;
+  PLATEAU.monde = monde; PLATEAU.vue = vue;
 
   /* le mur du fond, avec la grande arche */
   var mw = MUR_X1 - MUR_X0;

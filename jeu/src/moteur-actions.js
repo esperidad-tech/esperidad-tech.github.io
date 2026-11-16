@@ -161,6 +161,7 @@ M.render = function(){
     else { try{ atelierMonte.arreter(); }catch(e){} atelierMonte = null; }
   }
   try{ if(M.majMission) M.majMission(); }catch(e){ console.error(e); } /* missions de base validées (mission.js) */
+  try{ if(M.prevoirFilms) M.prevoirFilms(); }catch(e){ console.error(e); } /* une cinématique de ce moment : on la télécharge d'avance */
   /* l'onglet Carte, et rien n'y change (carte-jeu.js, M.carteInchangee) : on garde la carte telle quelle, seuls le bandeau, les onglets
      et la fenêtre se redessinent (Romain, 5 novembre, 17 h 01 : plus d'image qui saute quand on touche ce qui brille) */
   if(garderCarte()){ majEntete(); rendreModal(); if(UI.garderDefilement) window.scrollTo(0, haut); UI.garderDefilement = false; return; }
@@ -708,7 +709,10 @@ function traiterCode(seq){
       A.parler({dataset:{id:I.convBarde}});
       return;
     }
-    M.ouvrir({type:'info', ic:nn.ic, illu:I.illu, titre:'Tu as reçu : ' + nn.nom, t:(I.t || '') + (I.pnj && M.surQui ? ' C\'est noté sur ' + M.surQui(id) + ', dans ton Carnet 📒.' : '') + (M.codePourTous(id) ? ' ' + ouvertPourMoi(id) : '')});
+    /* I.film : ceux qui tapent ce code voient la cinématique, eux aussi (le récit du rassemblement, e2.js), puis la fenêtre habituelle */
+    M.jouerFilm(I.film, function(){
+      M.ouvrir({type:'info', ic:nn.ic, illu:I.illu, titre:'Tu as reçu : ' + nn.nom, t:(I.t || '') + (I.pnj && M.surQui ? ' C\'est noté sur ' + M.surQui(id) + ', dans ton Carnet 📒.' : '') + (M.codePourTous(id) ? ' ' + ouvertPourMoi(id) : '')});
+    });
   }
 }
 /* Un plan ou un passage : ce qu'il ouvre pour moi, ou qui va s'en servir */
@@ -1540,7 +1544,10 @@ A['ouvrir-page'] = function(el){
     P.pages[p.id] = true; M.consommerBesoin(p.besoin);
     if(p.donne) P.objets['_' + p.donne] = true;
     M.sauver();
-    M.decouvrir({ic:p.ic, illu:p.illu || null, titre:p.titre, t:p.t, note:p.note, code:p.donne || null});   /* illu : une petite scène animée (regles.js) */
+    /* p.film : la scène en cinématique d'abord (le rassemblement au Vieux Chêne, e2.js : 'chene'), puis la fenêtre habituelle (le texte, son 🔊, le code) */
+    M.jouerFilm(p.film, function(){
+      M.decouvrir({ic:p.ic, illu:p.illu || null, titre:p.titre, t:p.t, note:p.note, code:p.donne || null});   /* illu : une petite scène animée (regles.js) */
+    });
   }
   if(p.mj) M.lancerMJ(p.mj, E.niveau, p.params, {titre:p.titre, ic:p.ic, avant:p.avant, bouton:p.bouton ? (p.boutonIc || '') + p.bouton : null, sansIntro:gratuit || !!p.avant}, function(res){   /* p.avant : la page du Grand Livre explique déjà, avec son bouton jaune (livre.js) */
     if(res.reussi) ouvrir();
@@ -1603,6 +1610,33 @@ M.jouerFilmFin = function(){
     P2.fin.filmFait = true;
     if(r !== 'echec' && P2.fin.slide < E2.fin.film.remplace) P2.fin.slide = E2.fin.film.remplace;
     M.sauver(); M.render();
+  });
+};
+/* UNE CINÉMATIQUE AU MILIEU D'UNE ENQUÊTE (Romain, 16 novembre : le rassemblement au Vieux Chêne, enquête 2 ; Bible §12.63).
+   M.jouerFilm(nom, apres) : le film (avec « Passer ➜ »), puis apres(). Pas de nom, pas de lecteur, le film n'arrive pas : apres() tout de
+   suite — la fenêtre s'ouvre comme avant, avec sa petite scène dessinée (regles.js), et rien n'est perdu. */
+M.jouerFilm = function(nom, apres){
+  var I = nom && window.CINE_INFOS && window.CINE_INFOS[nom];
+  if(!I || !window.CineLecteur || UI.film){ apres(); return; }
+  UI.film = true;
+  var QUI = {'Le maire':'grosbec', 'Silas':'silas', 'Gaspard':'gaspard'}, fait = false;
+  function suite(){ if(fait) return; fait = true; UI.film = false; apres(); }
+  try{
+    window.CineLecteur.jouer({url:'cine/' + nom + '.mp4', piste:I.piste ? 'cine/' + nom + '.mp3' : null, infos:I, passer:true, attente:20000,
+      audio:function(){ return M.audioCtx ? M.audioCtx() : null; }, volume:function(){ return M.S && M.S.options && M.S.options.son === false ? 0 : 1; },
+      son:window.CineLecteur.sonJeu, lire:function(t, qui){ M.lire(t, {qui:QUI[qui] || null}); }, parle:function(){ return !!M.parle; }, taire:function(){ try{ M.stop(); }catch(e){} }
+    }).then(suite, suite);
+  }catch(e){ console.error(e); suite(); }
+};
+/* le film est gros (une minute) : on le télécharge d'avance, dès que son moment arrive (E.films : [{nom, moments}] ; appelé à chaque affichage) */
+M.prevoirFilms = function(){
+  var E = M.E(), L = E && E.films;
+  if(!L || !M.P() || !window.CineLecteur || !window.CINE_INFOS || location.protocol === 'file:') return;
+  UI.filmsPrevus = UI.filmsPrevus || {};
+  L.forEach(function(f){
+    if(UI.filmsPrevus[f.nom] || !window.CINE_INFOS[f.nom] || (f.moments && !M.momentOk(f.moments))) return;
+    UI.filmsPrevus[f.nom] = 1;
+    try{ window.CineLecteur.precharger('cine/' + f.nom + '.mp4'); if(window.CINE_INFOS[f.nom].piste) window.CineLecteur.prechargerPiste('cine/' + f.nom + '.mp3'); }catch(e){}
   });
 };
 A['fin-suite'] = function(){
