@@ -13087,7 +13087,9 @@ function lieu(id, o){
   LIEUX[id] = o; ORDRE.push(id);
 }
 /* dans l'ordre du chemin long (CONCEPTION §7) */
-lieu('puits',        {nom:'Le fond du puits', ic:'🪢', type:'depart', x:1200, y:750, v1:1, scene:'puits', sauvegarde:true});
+/* (Romain, 17 novembre, 23 h 13 : « si on n'est pas arrivé par le puits, il ne faut pas écrire le fond du puits ») le même nom que dans le
+   donjon (moteur/src/donnees.js : « L'entrée des souterrains », depuis le 13 novembre) : on y arrive par le puits OU par la crypte. */
+lieu('puits',        {nom:'L’entrée des souterrains', ic:'🕯️', type:'depart', x:1200, y:750, v1:1, scene:'puits', sauvegarde:true});
 lieu('galerie',      {nom:'La galerie effondrée', ic:'🪨', type:'objets', culDeSac:true, x:990, y:755, forme:{t:'rr', x:990, y:755, w:150, h:64, r:14}, scene:'galerie', objets:['bourse']});
 lieu('aeration',     {nom:'Le puits d’aération', ic:'🌬️', type:'objets', culDeSac:true, x:1200, y:560, forme:{t:'cercle', x:1200, y:560, r:46}, scene:'aeration', signe:'etoile', objets:['sacoche', 'herbes'], codes:['plante:lumiere']});
 lieu('rats',         {nom:'La salle des rats', ic:'🐀', type:'combat', x:1440, y:752, v1:1, decor:'rats', monstres:['rat', 'rat', 'rat']});
@@ -15862,7 +15864,7 @@ function objet(o){ o.type = o.type || 'objet'; o.zone = o.zone || zoneDe(o.x, o.
 function poussiere(x, y, w, h, n, c, effet){ return {id: 'ambiance-' + (effet || 'poussiere') + '-' + x, type: 'particules', effet: effet || 'poussiere', zone: {x: x, y: y, w: w, h: h}, n: n, couleur: c, x: x, y: y, w: 0, h: 0, z: 9}; }
 function halo(id, x, y, w, h, c, force, duree){ return {id: id, type: 'deco', anim: 'pulse', lueur: c, force: force, x: x, y: y, w: w, h: h, duree: duree || 3000, z: 1}; }
 
-SALLES.puits = function(){ return {nom: 'Le fond du puits', type: 'depart', ambiance: 'la lune tout en haut, la corde, trois couloirs (ouest, nord, est)',
+SALLES.puits = function(){ return {nom: 'L\'entrée des souterrains', type: 'depart', ambiance: 'la lune tout en haut, la corde, trois couloirs (ouest, nord, est)',
   sorties: {ouest: {x: 46, y: 250}, nord: {x: 600, y: 250}, est: {x: 858, y: 250}},
   elements: [
     {id: 'corde', type: 'deco', anim: 'balance', amplitude: 1.1, duree: 4600, svg: A.corde(SOL + 4), x: 598, y: -2, w: 24, h: SOL + 4, pivot: [12, 0], z: 3},
@@ -17608,7 +17610,7 @@ DJ.mesurerCritiqueVrai = function(){
     if(lent) SALLE.critLeger = true;
   }};
 };
-DJ.VERSION = '17/11 à 23 h 27';
+DJ.VERSION = '17/11 à 23 h 45';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
