@@ -4099,7 +4099,7 @@ function placerEl(V, o, force){
   d.style.height = pH(V, bh);
   d.style.transformOrigin = ((c.w / 2 - b[0]) / bw * 100).toFixed(2) + '% ' + ((c.h - b[1]) / bh * 100).toFixed(2) + '%';
   d.style.setProperty('--s', p.s.toFixed(3));
-  d.style.zIndex = Math.round(p.z * 5);
+  d.style.zIndex = V.bain && V.bain.o === o && V.bain.dedans && V.bain.z ? V.bain.z : Math.round(p.z * 5);      /* (dans son baquet : sa place à lui) */
   d._s = p.s; d._p = p;
   if(o.id === 'pa' && V.elPaSigne) majSignePa(V);   /* (la paillasse bouge : son signe la suit) */
   if(o.id === 'et' && V.elEtSigne) majSigneEt(V);   /* (l'établi aussi) */
@@ -8372,8 +8372,9 @@ function demarrerBain(V){
       st.gauche = false; d.classList.remove('at-c-gauche');
       chatPose(V, o, 'assis'); d.classList.add('at-x-agace', 'at-dans-bain');
       V.bain.dedans = true;
-      var zc = parseInt(d.style.zIndex, 10) || z0;
-      dos.style.zIndex = zc - 1; el.style.zIndex = zc + 1;
+      /* (elle et son baquet gardent, dans l'ordre du dessin, la place du baquet — celle que placeLibre a vérifiée : posée un peu
+         plus au fond, au creux du baquet, elle passait derrière un meuble que le baquet, lui, devançait ; vu au téléphone, 17 novembre) */
+      V.bain.z = z0; d.style.zIndex = z0; dos.style.zIndex = z0 - 1; el.style.zIndex = z0 + 1;
       /* plouf ! des gouttes, l'eau qui tremble */
       son(V, 'plouf'); flotter(V, o, 'Plouf !');
       el.classList.add('at-plouf'); dos.classList.add('at-plouf'); apres(V, 700, function(){ el.classList.remove('at-plouf'); dos.classList.remove('at-plouf'); });
