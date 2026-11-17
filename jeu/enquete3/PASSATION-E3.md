@@ -8,7 +8,7 @@
 Le fil validé : Bible §13.56 (« deuxième version ») et `fil-e3.html`. Quatre étapes, chacune mise en ligne après ses essais :
 
 1. **Le secret d'Odette — FAIT (Bible §13.57)** : le papier du voisin (Barde → Sage), le plan de la maison au dos, la poche et la pierre de Tim du Sage, l'ordre des trois signes dit à voix haute, la maison d'Odette vue de dessus pour le Pisteur (le matin dans l'ombre, l'après-midi la cachette), le vieux plan d'Odette (Pisteur → Sage). « Le plan des Fondateurs » est retiré.
-2. **Les codes dits à voix haute, la fausse lettre** : à faire.
+2. **Les codes dits à voix haute, la fausse lettre — FAIT (Bible §13.58)** : Victor, Tim et les pieds d'enfant se disent ; le maire confie le Livre d'or au Sage (le tableau rendu) ; le Sage compare les écritures dans son Grand Livre (deux essais) et donne « L'écriture de Mélusine » au Barde ; au labo, la lettre ne parle plus que par son encre, sans code. Reste de cette étape : Mélusine « Revenez me voir cette nuit » (avec l'étape 4), Anselme endormi le matin (avec l'étape 3).
 3. **Les bêtes, le plan de la clé** : à faire.
 4. **La nuit** : à faire.
 
