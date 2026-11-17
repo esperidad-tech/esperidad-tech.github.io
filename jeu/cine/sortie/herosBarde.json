@@ -1,0 +1,63 @@
+{
+ "nom": "Le film du Barde",
+ "duree": 29.8,
+ "sons": [
+  [
+   0.5,
+   "pubPop"
+  ],
+  [
+   1,
+   "pubPop"
+  ],
+  [
+   5.95,
+   "pubWhoosh"
+  ],
+  [
+   8.45,
+   "pubWhoosh"
+  ],
+  [
+   11.95,
+   "pubWhoosh"
+  ],
+  [
+   15.95,
+   "pubWhoosh"
+  ],
+  [
+   19.45,
+   "pubWhoosh"
+  ],
+  [
+   22,
+   "pubPop"
+  ],
+  [
+   22.5,
+   "pubPop"
+  ],
+  [
+   23,
+   "pubPop"
+  ],
+  [
+   23.5,
+   "pubPop"
+  ],
+  [
+   23.95,
+   "pubWhoosh"
+  ],
+  [
+   24.55,
+   "cineClameur"
+  ],
+  [
+   26.25,
+   "pubTada"
+  ]
+ ],
+ "sousTitres": []
+}
