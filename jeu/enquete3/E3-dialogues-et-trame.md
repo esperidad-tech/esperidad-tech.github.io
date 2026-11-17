@@ -524,7 +524,7 @@ Quand le Pisteur entre dans la dernière salle, il donne le code « L'homme en c
 - 💡 Le plan ! Cette nuit, aide Anselme à sonner la Grosse Marie. Pendant qu'il compte les coups, les yeux fermés, le Pisteur lui prend sa clé. Dis-le à tes amis !
 - 🎉 Tes amis se battent, tout au fond ! À la fête, quelqu'un saura peut-être les aider. _(arrive la nuit)_
 - 💡 Regarde bien les visages : plusieurs villageois vont te mentir.
-- 🔍 Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?
+- 🔍 Cherchez ensemble : qu'est-il arrivé à Odette ?
 
 ## 7. Ce qui n'est PAS encore construit (le reste du nouveau scénario)
 

@@ -163,7 +163,6 @@ M.descenteHTML = function(m){
     /* (13 novembre, Bible §13.33) Léo est battu, il a parlé : le code pour le Sage — c'est lui qui ouvre les accusations */
     t = 'Vous voilà remontés du donjon ! Sous la cape noire : Léo, l\'apprenti du meunier. Battu, il a tout dit. Place aux accusations !';
     s += '<div class="b-grand-ic">🕯️</div><h2>Le donjon est fini</h2><p>' + esc(t) + '</p>' + lire(t);
-    if(P.vus['donjon:porte']) s += codeDonne('info:odette_porte');
     s += codeDonne('info:leo_battu');
     return s + '<button class="btn" data-act="fermer">D\'accord</button></div>';
   }
@@ -231,7 +230,6 @@ function portrait(m){ var C = cfg(), base = C && C.portraits; return base ? '<im
 var CADRE_PLAN = 'donjon-plan-cadre';
 function planAdresse(nouveau){
   var C = cfg(), P = M.P(), c = Object.keys(dj()).filter(function(k){ return POUR_DONJON[k.split(':')[0]] === 'sage'; });
-  if(P.recus['info:odette_porte']) c.push('porte:odette');
   return C.pages.sage + '?enquete=' + P.id + '&jeton=' + encodeURIComponent(jeton()) + '&dans=jeu&codes=' + encodeURIComponent(c.join(',')) + (nouveau ? '&nouveau=' + encodeURIComponent(nouveau) : '');
 }
 M.planOuvert = function(){ return !!document.getElementById(CADRE_PLAN); };
@@ -433,8 +431,9 @@ function relire(){
     var d = json(CLE_PISTEUR);
     if(d && d.jeton === P.donjonJeton && d.faits){
       if(d.faits['code:porte:odette'] && !P.vus['donjon:porte']){
-        P.vus['donjon:porte'] = 1; P.objets['_info:odette_porte'] = true; change = true;
-        M.noter('Dans le donjon : un gros chat gris gratte au bas d\'une grande porte ronde, marquée de quatre signes.', '🐈');
+        /* (17 novembre, 7 h 12) plus de code « Odette est derrière la porte » : ça se dit à voix haute */
+        P.vus['donjon:porte'] = 1; change = true;
+        M.noter('Dans le donjon : Moustache gratte au bas d\'une grande porte ronde, marquée de quatre signes. Derrière, la voix d\'Odette : elle est vivante ! (À dire à voix haute.)', '🐈');
       }
       /* (13 novembre, Bible §13.33) en entrant dans la dernière salle : le code pour le Barde ; Léo battu : il parle, le code pour le Sage */
       if(d.faits['code:leo:salle'] && !P.vus['donjon:leo_la']){
@@ -447,21 +446,12 @@ function relire(){
       }
     }
   }
-  if(role === 'sage' && P.vus['donjon:ouvert:sage'] && !P.recus['info:odette_porte']){
-    var s = json(CLE_SAGE);
-    if(s && s.codes && s.codes['porte:odette'] && lu(CLE_JETON + 'sage') === P.donjonJeton){
-      P.recus['info:odette_porte'] = true; change = true; aMontrer = true;
-      var I = (enquete().infos || {}).odette_porte || {};
-      M.noter('Reçu : ' + (I.nom || 'Odette est derrière la porte') + '. ' + (I.t || ''), I.ic || '🚪');
-    }
-  }
   if(change) M.sauver();
 }
 function montrer(){
   if(!aMontrer || (M.UI && M.UI.modal)) return;
   var P = M.P(), role = M.role(); aMontrer = false;
   if(role === 'pisteur') M.ouvrir({type:'descente', vue:'fin'});
-  else if(role === 'sage'){ var I = enquete().infos.odette_porte; M.son('gain'); M.ouvrir({type:'info', ic:I.ic, titre:'Tu as reçu : ' + I.nom, t:I.t}); }
 }
 var render0 = M.render;
 M.render = function(){

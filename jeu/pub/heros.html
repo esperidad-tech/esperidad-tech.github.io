@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><title>Les films des héros — Les Enquêteurs de Brumeval</title>
+<style>
+html,body{margin:0;background:#000;overflow:hidden}
+#film{position:absolute;left:0;top:0;width:1440px;height:616px;overflow:hidden;background:#0b1030;font-family:'Lilita One','Andika',sans-serif;--role:#ffd84a}
+.plan{position:absolute;left:0;top:0;width:1440px;height:616px;overflow:hidden;transform-origin:50% 50%}
+.plan img.fond{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover}
+.plan i{position:absolute;left:0;top:0;right:0;bottom:0;background:#05071a;opacity:0}
+.plan .tab{position:absolute;border:10px solid #0a0c18;outline:3px solid #2b3157;border-radius:26px;overflow:hidden;background:#0b1030;box-shadow:0 22px 0 rgba(5,7,26,.5), 0 0 60px rgba(0,0,0,.6), 0 0 0 5px var(--role);transform-origin:50% 50%;box-sizing:border-box}
+.plan .tab img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover}
+#titres{position:absolute;left:0;top:0;width:1440px;height:616px}
+#cartes{position:absolute;left:0;top:0;right:0;bottom:0}
+#fondHeros{position:absolute;left:0;top:0;right:0;bottom:0;background:radial-gradient(ellipse at 50% 115%, #3a4bb0 0%, #1a2360 42%, #0b1030 100%)}
+#ciel{position:absolute;left:0;top:0;width:100%;height:100%}
+.carte{position:absolute;left:0;top:0;width:236px;height:380px;border:6px solid;border-radius:22px;overflow:hidden;background:#0b1030;box-shadow:0 14px 0 rgba(5,7,26,.55), 0 0 44px rgba(255,216,74,.18);transform-origin:50% 60%}
+.carte img{position:absolute;left:0;top:0;width:100%;height:326px;object-fit:cover;object-position:50% 16%}
+.carte b{position:absolute;left:0;right:0;bottom:0;height:54px;line-height:54px;text-align:center;font:400 34px 'Lilita One';background:#141a3a;letter-spacing:1px}
+.carte.grande{width:356px;height:524px;border-width:8px;border-radius:30px;box-shadow:0 18px 0 rgba(5,7,26,.55), 0 0 70px var(--role)}
+.carte.grande img{height:100%;object-position:50% 30%}
+#fx{position:absolute;left:0;top:0;right:0;bottom:0}
+#fx div{position:absolute;left:0;top:0;right:0;bottom:0}
+#fx .flash{background:#fff7d6}
+#fx .noir{background:#000}
+#fx .vignette{background:radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 58%, rgba(3,4,16,.5) 100%)}
+#fx .balai{left:0;top:-40px;right:auto;bottom:auto;width:150px;height:700px;background:linear-gradient(90deg,#fff6c9 0 14%,var(--role) 14% 100%);box-shadow:0 0 30px var(--role)}
+</style></head><body><div id="film"><div class="plan" id="pA"><img class="fond"><i></i><div class="tab"><img></div></div><div class="plan" id="pB"><img class="fond"><i></i><div class="tab"><img></div></div><div id="cartes"></div><svg id="titres" viewBox="0 0 1440 616"></svg><div id="fx"></div></div>
+<script src="heros.js"></script></body></html>

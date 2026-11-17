@@ -162,7 +162,8 @@ M.render = function(){
     if(pt && pt.enPause && pt.enPause()) parquerAtelier();   /* (aussi pendant le « 3, 2, 1 » de la reprise) */
     else { try{ atelierMonte.arreter(); }catch(e){} atelierMonte = null; }
   }
-  try{ if(M.majMission) M.majMission(); }catch(e){ console.error(e); } /* missions de base validées (mission.js) */
+  try{ if(M.majMission) M.majMission(); }catch(e){ console.error(e); }
+  try{ if(M.majAccusations) M.majAccusations(); }catch(e){ console.error(e); }   /* (17 novembre) une question de l'accusation vient d'arriver chez le Sage */ /* missions de base validées (mission.js) */
   try{ if(M.prevoirFilms) M.prevoirFilms(); }catch(e){ console.error(e); } /* une cinématique de ce moment : on la télécharge d'avance */
   /* l'onglet Carte, et rien n'y change (carte-jeu.js, M.carteInchangee) : on garde la carte telle quelle, seuls le bandeau, les onglets
      et la fenêtre se redessinent (Romain, 5 novembre, 17 h 01 : plus d'image qui saute quand on touche ce qui brille) */
@@ -802,6 +803,20 @@ function passerMoment(n){
 function dims(){ var E = M.E(); return (E.ordreAccusation || ['qui', 'ou', 'quoi', 'pourquoi']).filter(function(d){ return E[d]; }); }   /* POURQUOI : l'enquête 2 */
 M.dimsAccusation = dims;
 /* (enquête 3) E.accuser.besoin : ce qu'il faut avoir reçu pour accuser (« Léo a parlé ») ; sans E.accuser : on accuse quand on veut */
+/* (Romain, 17 novembre, 7 h 50) les questions de l'accusation arrivent au fur et à mesure : E[d].des = ce que le Sage doit avoir reçu (une
+   condition suffit ; sans « des » : la question est là dès le début, comme dans les enquêtes 1 et 2). */
+M.questionOuverte = function(d){ var E = M.E(), Q = E && E[d]; return !!Q && (!Q.des || M.besoinOk(Q.des)); };
+M.questionsOuvertes = function(){ return dims().filter(M.questionOuverte); };
+/* une question vient d'arriver chez le Sage : « Tes accusations sont à jour ! », une ligne dans son Carnet, et l'étoile sur la page */
+M.majAccusations = function(){
+  var E = M.E(), P = M.P(); if(!E || !P || M.role() !== 'sage' || P.etape !== 'jeu') return;
+  if(!dims().some(function(d){ return E[d] && E[d].des; })) return;
+  var vues = P.accVues = P.accVues || [], neuves = M.questionsOuvertes().filter(function(d){ return vues.indexOf(d) < 0; });
+  if(!neuves.length) return;
+  neuves.forEach(function(d){ vues.push(d); if(M.noter) M.noter('Une nouvelle question dans tes accusations : « ' + E[d].titre + ' »', '⚖️'); });
+  P.accNeuf = true; M.sauver();
+  setTimeout(function(){ try{ M.toast('⚖️ Tes accusations sont à jour !'); if(M.son) M.son('gain'); }catch(e){} }, 1500);
+};
 M.peutAccuser = function(){ var E = M.E(); return !(E && E.accuser && E.accuser.besoin) || M.besoinOk(E.accuser.besoin); };
 function accusationModal(m){
   var E = M.E(), P = M.P(), d = m.etape;
@@ -1643,7 +1658,7 @@ M.jouerFilm = function(nom, apres){
   if(!I || !window.CineLecteur || UI.film){ apres(); return; }
   UI.film = true;
   var QUI = {'Le maire':'grosbec', 'Silas':'silas', 'Gaspard':'gaspard'}, fait = false;
-  function suite(){ if(fait) return; fait = true; UI.film = false; apres(); }
+  function suite(r){ if(fait) return; fait = true; UI.film = false; apres(r); }   /* r : 'fini', 'passe' ou 'echec' (le film n'est pas arrivé) */
   try{
     window.CineLecteur.jouer({url:'cine/' + nom + '.mp4', piste:I.piste ? 'cine/' + nom + '.mp3' : null, infos:I, passer:true, attente:20000,
       audio:function(){ return M.audioCtx ? M.audioCtx() : null; }, volume:function(){ return M.S && M.S.options && M.S.options.son === false ? 0 : 1; },
@@ -1682,6 +1697,39 @@ M.pubLancement = function(){
   });
 };
 A.pub = function(){ M.jouerFilm('pub', function(){}); };
+/* LES FILMS DES HÉROS (Romain, 17 novembre : « Les 4 cinématiques, tu les mets en jeu au moment de choisir les héros. Je veux qu'on voit
+   les 4 films avec un joli petit icône et que ça aide à faire son choix au début » ; Bible §12.72). Sur « Choisis ton rôle » (vueCreation,
+   moteur-ecrans.js), chaque héros a sa pastille jaune « ▶ Le film » : son film de 30 secondes (jeu/pub/heros.js), avec « Passer ➜ ».
+   Puis on revient au choix : la carte du héros s'allume un instant, sa pastille garde un ✓. Regarder un film ne choisit pas le héros. */
+var FILMS_ROLES = {pisteur:'herosPisteur', alchimiste:'herosAlchimiste', barde:'herosBarde', sage:'herosSage'};
+M.filmsRoles = function(){
+  if(!window.CineLecteur || !window.CINE_INFOS) return null;
+  var l = {}, n = 0;
+  Object.keys(FILMS_ROLES).forEach(function(r){ if(window.CINE_INFOS[FILMS_ROLES[r]]){ l[r] = FILMS_ROLES[r]; n++; } });
+  return n ? l : null;
+};
+/* chaque film pèse environ 5 Mo : dès que l'écran du choix s'affiche, on les télécharge d'avance, un après l'autre (une seule fois) */
+M.prevoirFilmsRoles = function(){
+  var l = M.filmsRoles(), CL = window.CineLecteur;
+  if(!l || UI.filmsRolesPrevus || location.protocol === 'file:') return;
+  UI.filmsRolesPrevus = true;
+  Object.keys(l).reduce(function(suite, r){
+    return suite.then(function(){ return CL.precharger('cine/' + l[r] + '.mp4'); })
+      .then(function(){ return window.CINE_INFOS[l[r]].piste ? CL.prechargerPiste('cine/' + l[r] + '.mp3') : null; })
+      .catch(function(){});
+  }, Promise.resolve());
+};
+A['film-role'] = function(el){
+  var r = el.dataset.r, l = M.filmsRoles();
+  if(!l || !l[r]) return;
+  M.jouerFilm(l[r], function(fin){
+    if(fin === 'fini' || fin === 'passe'){ UI.filmsVus = UI.filmsVus || {}; UI.filmsVus[r] = 1; }
+    if(UI.ecran !== 'creation' || UI.creaEtape !== 1) return;
+    UI.filmRevu = r; M.render(); UI.filmRevu = null;
+    var c = document.querySelector('.b-role-case[data-r="' + r + '"]');
+    if(c && c.scrollIntoView) try{ c.scrollIntoView({block:'nearest', behavior:'smooth'}); }catch(e){}
+  });
+};
 A['fin-suite'] = function(){
   var P = M.P(), E = M.E();
   if(!P || !E || !P.fin){ UI.ecran = 'accueil'; M.render(); return; }

@@ -69,23 +69,22 @@ M.livreDorHTML = function(p){
 
 /* ---------- 🔍 Comparer les écritures (17 novembre : le Sage, plus l'Alchimiste) ----------
    La lettre en haut (et le carnet d'Odette, s'il l'a : sa vraie écriture), les douze mots du Livre d'or dessous : chacun est un bouton.
-   Le Sage désigne une main ; « Tu en es sûr ? » ; deux essais (essais.js, la clé « sage:ecriture »). Mélusine : le code pour le Barde.
-   Rien, à l'écran, ne dit quelles lettres regarder : il compare de ses yeux. */
-var K_EC = 'sage:ecriture', MAXI = 2;   /* deux essais, quel que soit le réglage des mini-jeux (un seul à l'enquête 3) : on compare de petites lettres sur un petit écran */
-function nbRates(){ return M.nbEchecs ? M.nbEchecs(K_EC) : 0; }
+   Le Sage désigne une main ; « Tu en es sûr ? ». Mélusine : le code pour le Barde.
+   Rien, à l'écran, ne dit quelles lettres regarder : il compare de ses yeux.
+   (Romain, 17 novembre, 7 h 10 : « qu'il n'y ait pas d'essai, que ce soit infini ») Il se trompe autant qu'il veut : rien n'est compté,
+   rien ne se ferme. Une partie en cours où la page s'était fermée (deux ratés, P.vus = 'rate') se rouvre toute seule. */
+var K_EC = 'sage:ecriture';
 M.quiEcritHTML = function(){
-  var P = M.P(), fait = !!(P && P.vus[K_EC] === 'ok'), ferme = !fait && nbRates() >= MAXI, reste = MAXI - nbRates();
+  var P = M.P(), fait = !!(P && P.vus[K_EC] === 'ok');
   var s = '<div class="ec-compare"><div class="ec-feuille ec-compare-l"><small>La lettre</small>' + EC.lettre.l.map(function(l){ return '<span>' + M.ecrit(l, EC.fausse) + '</span>'; }).join('') + '</div>';
   if(P && P.recus['obj:carnet']) s += '<div class="ec-feuille ec-compare-l ec-compare-o"><small>Le carnet d\'Odette</small><span>' + M.ecrit('Mes sept amours,', EC.odette) + '</span><span>' + M.ecrit('par Odette', EC.odette) + '</span></div>';
   s += '</div>';
   var t = fait ? 'C\'est la main de Mélusine qui a écrit la lettre. Le Barde a ton code : à lui de la faire parler.'
-    : ferme ? 'Les écritures se brouillent devant tes yeux : tu ne sais plus. Il faudra trouver autrement…'
-    : 'Une main du village a écrit cette lettre. Laquelle ? Compare-la aux mots du Livre d\'or, lettre par lettre, puis désigne-la. ' + (reste > 1 ? 'Tu n\'as droit qu\'à deux essais.' : 'C\'est ton dernier essai.');
+    : 'Une main du village a écrit cette lettre. Laquelle ? Compare-la aux mots du Livre d\'or, lettre par lettre, puis désigne-la.';
   s += '<p class="lv-texte">' + esc(t) + ' ' + lire(t) + '</p>';
-  s += '<div class="ec-or' + (fait || ferme ? ' ec-or-fini' : ' ec-or-choix') + '">' + EC.ordre.map(function(id){
+  s += '<div class="ec-or' + (fait ? ' ec-or-fini' : ' ec-or-choix') + '">' + EC.ordre.map(function(id){
     var m = motDor(id);
     if(fait) return id === 'melusine' ? m.replace('class="ec-or-mot"', 'class="ec-or-mot ec-or-bon"') : m;
-    if(ferme) return m;
     return '<button type="button" class="ec-or-b" data-act="ec-designer" data-id="' + esc(id) + '">' + m + '</button>';
   }).join('') + '</div>';
   if(fait){ var c = 'info:cest_melusine', nc = M.nomCode(c), td = M.texteDonne(c);
@@ -94,11 +93,11 @@ M.quiEcritHTML = function(){
 };
 if(M.A) M.A['ec-designer'] = function(el){
   var P = M.P(), id = el.dataset.id, e = EC.ech[id];
-  if(!P || !e || P.vus[K_EC] === 'ok' || nbRates() >= MAXI) return;
-  var dernier = nbRates() >= MAXI - 1, nom = e.nom.charAt(0).toUpperCase() + e.nom.slice(1);
+  if(!P || !e || P.vus[K_EC] === 'ok') return;
+  var nom = e.nom.charAt(0).toUpperCase() + e.nom.slice(1);
   M.UI.confirmer = function(){ juger(id); };
   M.son('clic');
-  M.ouvrir({type:'confirmer', titre:'Tu en es sûr ?', t:nom + ' aurait écrit la lettre ? ' + (dernier ? 'Attention : c\'est ton dernier essai.' : 'Réfléchis bien : tu n\'as que deux essais.'), oui:'Oui, c\'est cette main-là', non:'Je regarde encore'});
+  M.ouvrir({type:'confirmer', titre:'Tu en es sûr ?', t:nom + ' aurait écrit la lettre ?', oui:'Oui, c\'est cette main-là', non:'Je regarde encore'});
 };
 function juger(id){
   var P = M.P(), e = EC.ech[id]; if(!P || !e) return;
@@ -110,10 +109,8 @@ function juger(id){
     M.decouvrir({ic:'🧵', titre:'La même main !', t:t, code:'info:cest_melusine'});
     return;
   }
-  var n = M.echec ? M.echec(K_EC) : MAXI, fin = n >= MAXI;
-  var tr = (EC.bons.indexOf(id) >= 0 ? 'Son écriture ressemble beaucoup à celle de la lettre… mais ce n\'est pas elle.' : 'Non : en regardant mieux, ces lettres-là ne se ressemblent pas.') +
-    (fin ? ' Les écritures se brouillent devant tes yeux : tu ne sais plus. Il faudra trouver autrement…' : ' Il te reste un essai.');
-  if(fin) P.vus[K_EC] = 'rate';
+  var tr = (EC.bons.indexOf(id) >= 0 ? 'Son écriture ressemble beaucoup à celle de la lettre… mais ce n\'est pas elle.' : 'Non : en regardant mieux, ces lettres-là ne se ressemblent pas.') + ' Cherche encore !';
+  if(P.vus[K_EC] === 'rate') delete P.vus[K_EC];
   M.son('ko'); M.sauver();
   M.decouvrir({ic:'💨', titre:'Ce n\'est pas cette main-là', t:tr, rate:true});
 }

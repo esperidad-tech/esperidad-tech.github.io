@@ -439,10 +439,10 @@ D.CHEMIN = ['rats', 'canaux', 'toiles', 'atelier', 'ossuaire', 'bassin'];
 /* ===================================================================== 8. LES LIEUX (ids de carte.js) : ce qu'on y trouve
    objets : à prendre en les touchant. coffre : deux objets, on n'en prend qu'un. combat : l'id dans D.COMBATS. */
 D.LIEUX = {
-  puits:{nom:'L\'entrée des souterrains', depart:true, objets:['carnet']},      /* (Romain, 13 novembre : plus « le fond du puits » — on y arrive aussi par la crypte) */             /* le carnet de l'aventurier attend à l'entrée (Romain, 11 novembre) */
+  puits:{nom:'L\'entrée des souterrains', depart:true, objets:['carnet', 'rune']},   /* (17 novembre) la pierre de rune aussi */      /* (Romain, 13 novembre : plus « le fond du puits » — on y arrive aussi par la crypte) */             /* le carnet de l'aventurier attend à l'entrée (Romain, 11 novembre) */
   /* Romain, 11 novembre (8 h 45) : la rune du Sage n'est plus dans la première salle, mais dans la deuxième — pour que rien ne
      dépende de l'entrée (le puits aujourd'hui, la crypte dans l'enquête 3) */
-  galerie:{nom:'La galerie effondrée', objets:['bourse', 'rune']},
+  galerie:{nom:'La galerie effondrée', objets:['bourse']},
   aeration:{nom:'Le puits d\'aération', objets:['herbes']},            /* (la sacoche est retirée : plus de sac à remplir, Romain, 10 novembre) */
   rats:{nom:'La salle des rats', combat:'rats'},
   reserve:{nom:'La réserve', objets:['fleches-argent', 'fleches-lourdes']},      /* deux carquois dans un coffre : on prend ce que les mains peuvent porter */
@@ -461,7 +461,9 @@ D.LIEUX = {
   ossuaire:{nom:'L\'ossuaire', combat:'ossuaire'},
   camp:{nom:'Le feu de camp', repos:true},
   bassin:{nom:'Le grand bassin', combat:'bassin'},
-  porte4:{nom:'La porte aux quatre signes', donne:'porte:odette', pour:'sage'},
+  /* (Romain, 17 novembre, 7 h 12 : « on a assez de codes comme ça ») plus de code pour le Sage devant la porte : le Pisteur entend la voix
+     d'Odette et le dit à voix haute. marque : le moteur note seulement qu'il y est passé (l'enquête le lit : descente.js). */
+  porte4:{nom:'La porte aux quatre signes', marque:'porte:odette'},
   /* LÉO, le boss final (Bible §13.33, 13 novembre) : en entrant, le Pisteur reçoit un code pour le Barde (à la fête, Farinel et Iris
      ont des choses à lui dire) ; le combat est à part (leo-regles.js, en temps réel) ; Léo battu : il parle, un code pour le Sage
      (« Léo a parlé » : place aux accusations), et le donjon est fini. Plus de « Léo s'est enfui », plus de maire à retenir. */

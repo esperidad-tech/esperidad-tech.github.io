@@ -315,9 +315,11 @@ if(E3){
     vieuxplan:{pierre:'rune', h:180, large:true, zone:{x:150, y:90, r:400}, repos:{x:268, y:152}, ic:'🗺️', dessin:vieuxPlan,
       t:'La pierre de rune chauffe dans ta main… Les vieux signes se rallument, un à un ! Regarde le plan de tout près, et promène-la partout : elle réveille l\'encre cachée.',
       note:'La pierre de rune réveille l\'encre cachée du vieux plan : à promener partout, en le regardant de tout près.',
-      avant:'Ici et là, de l\'encre passée : des signes qu\'on ne sait plus lire.',
+      avant:'Ici et là, de l\'encre passée : des signes qu\'on ne sait plus lire. Pour l\'instant…',
       sansPierre:'Les signes restent muets… « Ils ne parlent qu\'à la pierre qui les garde. »',
-      autre:'{pierre} reste froide. Ce n\'est pas elle qui garde ces signes-là…'}
+      /* (Romain, 17 novembre, 7 h 47 : « on ne peut pas interagir avec […] il ne se passe rien ») l'après-midi, ce plan ne peut pas encore parler :
+         la page le dit maintenant en clair */
+      autre:'{pierre} reste froide. Ce n\'est pas elle qui garde ces signes-là… Il en faut une autre, bien plus vieille. Tu ne l\'as pas encore : garde ce plan pour cette nuit !'}
   };
   /* (e3.js garde, pour chaque plan, sa pierre et sa page : le vérificateur les lit sans navigateur) */
   E3.plansPierre = E3.plansPierre || {};

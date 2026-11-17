@@ -156,11 +156,17 @@
 .mjs-roue .r-ext{fill:#f6e8c6;stroke:#8a6a3a;stroke-width:1.5}
 .mjs-roue .r-clair{font-family:var(--f-titre);font-size:15px;fill:var(--mjs-encre);text-anchor:middle;dominant-baseline:central}
 .mjs-roue .r-trait{stroke:rgba(138,106,58,.55);stroke-width:1}
-.mjs-roue-int{transition:transform .3s cubic-bezier(.3,1.2,.6,1)}
+/* (17 novembre) la roue tourne par l'attribut « transform » du dessin (mj-sage-codes.js, brancherRoue) : plus de transformation CSS ici */
 .mjs-roue .r-int{fill:#2c3d74;stroke:#c9a75a;stroke-width:2}
 .mjs-roue .r-trait-int{stroke:rgba(201,167,90,.4);stroke-width:1}
 .mjs-roue .r-chif{font-family:"Andika","Trebuchet MS",sans-serif;font-weight:700;font-size:14.5px;fill:#bff9ff;text-anchor:middle;dominant-baseline:central;
-  transform-box:fill-box;transform-origin:center;transition:transform .3s cubic-bezier(.3,1.2,.6,1)}
+  }
+/* les deux lettres de l'indice : un rond jaune sur chaque anneau, à mettre face à face ; calée : ils passent au vert */
+.mjs-roue .r-ind{fill:#ffd23f;stroke:#7a5200;stroke-width:1.6}
+.mjs-roue .r-ind-int{fill:#ffd23f}
+.mjs-roue .r-ind-int + .r-chif{fill:#2a1a00}
+.mjs-roue.calee .r-ind{fill:#7be08a;stroke:#1d6b2c}
+.mjs-roue.calee .r-int{stroke:#7be08a;stroke-width:3}
 .mjs-roue .r-chif.eff{fill:rgba(191,249,255,.35)}
 .mjs-roue .r-moyeu{fill:#1a2550;stroke:#c9a75a;stroke-width:2}
 .mjs-roue .r-centre{font-size:24px;text-anchor:middle;dominant-baseline:central}

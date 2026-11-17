@@ -1044,6 +1044,7 @@ function entrer(p, lieu){
     return ev;
   }
   if(L.donne){ p.faits['code:' + L.donne] = 1; ev.push({t:'code-objet', objet:null, code:L.donne, pour:L.pour}); }
+  if(L.marque) p.faits['code:' + L.marque] = 1;   /* un lieu qui compte pour l'enquête, sans code à donner (la porte aux quatre signes) */
   ev.push({t:'scene', lieu:lieu, contenu:contenu(p, lieu)});
   if(L.boucle) ev.push({t:'boucle', vers:L.boucle});
   if(L.boss && !p.faits['combat:' + lieu]) ev.push({t:'boss', lieu:lieu});

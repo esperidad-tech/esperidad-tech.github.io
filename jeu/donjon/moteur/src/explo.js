@@ -744,12 +744,15 @@ function repos(e){
 /* ---------- Moustache devant la porte aux quatre signes ---------- */
 function sceneChat(e, encore){
   X.occupe = true;
-  /* Romain, 11 novembre (19 h 21) : « il ne faut pas dire qu'il y a Odette derrière, il faut juste montrer qu'il y a le chat.
-     Et après, quand le Sage tape le code, là, sur sa fenêtre, on entend la voix d'Odette qui lui répond. Et quand le chat
-     miaule, ce serait bien de lui faire un miaulement. » */
+  /* (Romain, 17 novembre, 7 h 12 : « on a assez de codes comme ça ») plus de code pour le Sage : le chat gratte, il miaule (son idée du
+     11 novembre), et la voix d'Odette répond derrière la porte. Le Pisteur le dit à voix haute à ses amis. */
   conte('Un gros chat gris gratte au bas de la grande porte. Miaou !');
   setTimeout(function(){ son('miaou'); }, 500); setTimeout(function(){ son('miaou', 1.1); }, 1800);
-  Promise.resolve(e && e.scene ? e.scene() : null).catch(function(){}).then(function(){ X.occupe = false; codeDuLieu(); majRepartir(); });
+  Promise.resolve(e && e.scene ? e.scene() : null).catch(function(){}).then(function(){
+    X.occupe = false;
+    if(!encore) conte('Derrière la porte, une petite voix : « Moustache ? C\'est toi, mon gros gris ? » Odette est là, vivante ! Dis-le vite à tes amis !');
+    codeDuLieu(); majRepartir();
+  });
 }
 /* ---------- LÉO, le boss final (leo.js) ---------- */
 /* en entrant : le code pour le Barde (là-haut, Farinel et Iris ont des choses à lui dire) ; puis le combat */
