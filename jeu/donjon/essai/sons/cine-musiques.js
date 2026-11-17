@@ -476,7 +476,6 @@ M.cineMusPuitsA = function(A, P){
   });
   return I;
 };
-=======
 /* =================== LES QUATRE FILMS DES HÉROS (jeu/pub/heros.js ; Romain, 17 novembre : « un peu le même style avec le même rythme » que la pub) ===================
    La même musique de fête que la pub (120 à la minute, un temps = 0,5 s, les mêmes instruments), mais UN AIR PAR HÉROS, dans son ton, joué par
    son instrument : le Pisteur siffle et court (do), l'Alchimiste fait des bulles au marimba (ré), le Barde chante au luth (fa), le Sage égrène
