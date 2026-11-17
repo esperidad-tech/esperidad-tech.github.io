@@ -17068,7 +17068,8 @@ global.AMBIANCE = AMBIANCE;
 /* ===== ../src/cine-lecteur.js ===== */
 /* cine-lecteur.js — LE LECTEUR DES CINÉMATIQUES (Bible §13.45), le même dans le donjon (construire.py) et dans le jeu (build.py).
    Romain, 15 novembre : « des cinématiques de film », en 21:9 avec les bandes noires. Ce sont de vrais petits films, fabriqués
-   d'avance image par image (jeu/cine/ : filmer.py) : ils ne peuvent pas ramer, même sur une vieille tablette.
+   d'avance image par image (jeu/cine/ : filmer.py) : la vidéo est légère. Mais sur Chrome, la page du dessous pouvait empêcher
+   l'écran de se rafraîchir (17 novembre) : pendant un film, elle est cachée et ses animations en pause (cacherDessous).
    - La vidéo est MUETTE (elle part toute seule partout, même sur iPhone). LE SON (Romain, 15 novembre, 16 h 57 : une musique) :
      la BANDE-SON du film (o.piste : sortie/<film>.mp3, jeu/cine/bande-son.py — les bruitages de l'Atelier des sons et la musique
      du film, mélangés d'avance) est jouée avec la vidéo sur le contexte audio du jeu (o.audio), déjà débloqué par un toucher ;
@@ -17154,6 +17155,35 @@ CL.sonJeu = function(id){
     setTimeout(function(){ try{ P.lacher(); }catch(e){} }, ((r.duree || 1) + 5) * 1000);
   }catch(e){ if(window.console) console.warn('son de cinématique', id, e); }
 };
+/* LA SCÈNE DU DESSOUS SE TAIT PENDANT LE FILM (Romain, 17 novembre, sur Chrome : le film du puits « rame à mort » ; le film de la fin du
+   donjon est resté figé sur sa première image alors qu'il se jouait (le jeu a continué, l'écran ne s'est pas rafraîchi). Le fichier
+   est léger et il est déjà en mémoire : c'est la page du dessous (brume, flaques, personnages, filtres) qui empêchait Chrome de
+   redessiner). Tant que le film passe : tout ce qui est posé dans <body> à côté de l'écran du film est caché (visibility:hidden : la
+   mise en page et les défilements ne bougent pas, rien n'est dessiné), et les animations en cours (CSS et Web Animations) sont
+   mises en pause. Ça revient comme avant à la fin du film (ou s'il n'arrive pas). Rend la fonction qui remet tout. */
+function cacherDessous(ecran){
+  var caches = [], figees = [];
+  try{
+    Array.prototype.forEach.call(document.body.children, function(e){
+      if(e === ecran || e.contains(ecran)) return;
+      caches.push([e, e.style.getPropertyValue('visibility'), e.style.getPropertyPriority('visibility')]);
+      e.style.setProperty('visibility', 'hidden', 'important');        /* (important : une règle du jeu ne peut pas le rallumer) */
+    });
+  }catch(x){}
+  try{
+    if(document.getAnimations) document.getAnimations().forEach(function(a){
+      var cible = a.effect && a.effect.target;
+      if(a.playState !== 'running' || !cible || ecran.contains(cible)) return;
+      /* (un élément qui a « transition:.3s » se cache en fondu : ce fondu-là, on le finit tout de suite, sinon il resterait visible à moitié) */
+      if(a.transitionProperty === 'visibility'){ try{ a.finish(); }catch(x){} return; }
+      a.pause(); figees.push(a);
+    });
+  }catch(x){}
+  return function(){
+    caches.forEach(function(c){ try{ if(c[1]) c[0].style.setProperty('visibility', c[1], c[2]); else c[0].style.removeProperty('visibility'); }catch(x){} });
+    figees.forEach(function(a){ try{ if(a.playState === 'paused') a.play(); }catch(x){} });   /* (une animation annulée entre-temps reste annulée) */
+  };
+}
 /* (pour les robots : une adresse forcée — ou rien, et le film « n'arrive pas ») */
 CL.essai = null;
 /* (pour les robots : ce que fait le dernier film — la bande-son est-elle là, joue-t-elle, combien de bruitages un par un) */
@@ -17189,6 +17219,7 @@ CL.jouer = function(o){
     ecran.appendChild(cadre); ecran.appendChild(sous); ecran.appendChild(att);
     if(o.passer !== false){ var bp = el('button', 'cine-passer', 'Passer ➜'); bp.setAttribute('data-cine', 'passer'); ecran.appendChild(bp); }
     (o.parent || document.body).appendChild(ecran);
+    var rendre = cacherDessous(ecran);                   /* la scène du dessous se tait (rendue à la fin, dans terminer) */
     requestAnimationFrame(function(){ ecran.classList.add('on'); });
     function place(){
       var W = window.innerWidth, H = window.innerHeight, w = Math.min(W, H * 21 / 9), h = w * 616 / 1440, bande = (H - h) / 2;
@@ -17201,6 +17232,7 @@ CL.jouer = function(o){
     place(); window.addEventListener('resize', place);
     function terminer(r){
       if(fini) return; fini = true;
+      try{ rendre(); }catch(x){}                          /* la scène du dessous revient (le film se fond en noir par-dessus) */
       cancelAnimationFrame(raf); window.removeEventListener('resize', place);
       if(lecture) clearInterval(lecture);
       bandeStop(true);
@@ -17576,7 +17608,7 @@ DJ.mesurerCritiqueVrai = function(){
     if(lent) SALLE.critLeger = true;
   }};
 };
-DJ.VERSION = '17/11 à 12 h 01';
+DJ.VERSION = '17/11 à 23 h 27';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
