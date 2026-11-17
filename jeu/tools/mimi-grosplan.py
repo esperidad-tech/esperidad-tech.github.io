@@ -95,7 +95,7 @@ with sync_playwright() as p:
     verifier(t is not None, f'… et disparaît par le bas ({t} s)')
     t0 = time.time()
     verifier('at-c-dehors' in classes(pg, cid), 'dans la pièce, on ne la voit plus')
-    verifier(pg.locator('#atelier-ici .at-gp .at-gp-svg').count() == 1, 'la grosse tête est là (un dessin à part)')
+    verifier(pg.locator('#atelier-ici .at-gp .at-gp-svg').count() == 3 and pg.locator('#atelier-ici .at-gp .at-gp-tete [data-g="tete"]').count() == 1, 'la grosse tête est là (un dessin à part, en trois couches : le corps, la tête, les pattes)')
     verifier(pg.evaluate("() => !!document.querySelector('.at-gp-actif')"), 'l\'atelier le sait (at-gp-actif)')
     verifier(not visible(pg, '#atelier-ici .at-mimi-bt') and not visible(pg, '#atelier-ici .at-salle') and not visible(pg, '#atelier-ici .at-coin'), 'les boutons du bas se cachent (🛏️ 🐾 📦)')
     ph = cadre(pg, '#atelier-ici .at-photo-bt'); vp = pg.viewport_size
