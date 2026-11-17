@@ -48,6 +48,8 @@ function dessinerGrain(c, w, h, k, seed, s){
   else if(k === 'ardoise'){ c.fillStyle = '#4a5564'; c.beginPath(); c.moveTo(cx - 42*s, cy - 6*s); c.lineTo(cx - 4*s, cy - 28*s); c.lineTo(cx + 40*s, cy - 12*s); c.lineTo(cx + 30*s, cy + 22*s); c.lineTo(cx - 22*s, cy + 28*s); c.closePath(); c.fill();
     c.fillStyle = '#687688'; c.beginPath(); c.moveTo(cx - 36*s, cy - 6*s); c.lineTo(cx - 4*s, cy - 24*s); c.lineTo(cx + 32*s, cy - 11*s); c.lineTo(cx + 2*s, cy + 2*s); c.closePath(); c.fill();
     c.strokeStyle = 'rgba(20,26,36,.5)'; c.lineWidth = 1*s; for(i=0;i<5;i++){ c.beginPath(); c.moveTo(cx - 24*s + i*3*s, cy + 6*s + i*5*s); c.lineTo(cx + 30*s - i*2*s, cy + 2*s + i*5*s); c.stroke(); } }
+  else if(k === 'terrecave'){ for(i=0;i<5;i++) blob(c, cx + (Rn()-.5)*44*s, cy + (Rn()-.5)*26*s, (13 + Rn()*8)*s, Rn, ['#1e1816','#2a221e','#181210'][i%3], 8);   /* (enquête 3) noire, en mottes mouillées : des reflets d'eau, pas une racine */
+    c.fillStyle = 'rgba(160,185,215,.55)'; for(i=0;i<9;i++) rond(c, cx + (Rn()-.5)*58*s, cy + (Rn()-.5)*36*s, (1 + Rn()*1.5)*s); }
   else if(k === 'terre'){ blob(c, cx, cy, 38*s, Rn, '#7a5230', 11); c.fillStyle = '#b08a5a'; for(i=0;i<22;i++) rond(c, cx + (Rn()-.5)*56*s, cy + (Rn()-.5)*44*s, (1 + Rn()*2.4)*s);
     c.fillStyle = '#9a96a8'; for(i=0;i<4;i++) rond(c, cx + (Rn()-.5)*50*s, cy + (Rn()-.5)*40*s, (3 + Rn()*3)*s); c.strokeStyle = '#d8c39a'; c.lineWidth = 1.5*s; c.beginPath(); c.moveTo(cx - 40*s, cy + 10*s); c.quadraticCurveTo(cx, cy - 10*s, cx + 44*s, cy + 6*s); c.stroke(); }
   else if(k === 'argile'){ blob(c, cx, cy, 38*s, Rn, '#b87a4a', 14); c.fillStyle = 'rgba(255,230,200,.3)'; c.beginPath(); c.ellipse(cx - 8*s, cy - 10*s, 20*s, 9*s, -.3, 0, 6.283); c.fill();

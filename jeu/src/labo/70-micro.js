@@ -58,6 +58,12 @@ function genItems(d){
     100:[]
   };
   /* ===== L'enquête 3 ===== */
+  /* (17 novembre) le poil du sac de farine : une miette de terre noire qu'on voit tout de suite ; le brin vert qui brille, caché, à ×40 */
+  if(d === 'sac_farine') return {
+    10:[{t:'terre_g', x:300, y:640, r:15}, {t:'terre_g', x:760, y:300, r:11}, {t:'mousse_g', x:650, y:560, r:5, min:40, ref:'mg1'}],
+    40:[{t:'mousse_g', x:600, y:520, r:36, id:'mg1'}, {t:'terre_g', x:260, y:300, r:26}],
+    100:[]
+  };
   /* la lettre d'Odette : rien à prélever (16 novembre : le pollen de lavande est retiré) — on y regarde le papier et son encre */
   return {10:[], 40:[], 100:[]};
 }
@@ -75,8 +81,9 @@ function fibre(c, pt, w, col, pas){
 function poil(c, pt, w, blanc, o){
   var raw = [], k, i; for(k = 0; k <= 160; k++){ var p = pt(k/160); raw.push([p.x, p.y]); } var pts = normales(raw), acc, q, h;
   c.lineCap = 'round';
-  c.strokeStyle = blanc ? '#8f897b' : '#07070a'; c.lineWidth = w + Math.max(2, w*.07); chemin(c, pts, 0);
-  c.strokeStyle = blanc ? '#f3efe4' : '#24242c'; c.lineWidth = w; chemin(c, pts, 0);
+  /* (o.col, o.bord : une autre couleur que le noir — le poil gris-brun du sac de farine, enquête 3) */
+  c.strokeStyle = o.bord || (blanc ? '#8f897b' : '#07070a'); c.lineWidth = w + Math.max(2, w*.07); chemin(c, pts, 0);
+  c.strokeStyle = o.col || (blanc ? '#f3efe4' : '#24242c'); c.lineWidth = w; chemin(c, pts, 0);
   c.strokeStyle = blanc ? 'rgba(120,110,90,.25)' : 'rgba(0,0,0,.4)'; c.lineWidth = w*.2; chemin(c, pts, w*.35);
   if(o.moelle){
     c.lineCap = 'butt'; c.strokeStyle = blanc ? 'rgba(104,92,72,.5)' : 'rgba(128,128,160,.3)'; c.lineWidth = w*.5; chemin(c, pts, 0);
@@ -106,6 +113,22 @@ function scenePoils(c, z, Rn){
     poil(c, function(u){ return {x:-80 + u*1160, y:300 + 110*Math.sin(u*Math.PI)}; }, 170, true, {moelle:true, ecailles:54});
     poil(c, function(u){ return {x:-80 + u*1160, y:740 - 80*Math.sin(u*Math.PI*1.2)}; }, 150, false, {moelle:true, ecailles:50});
     poil(c, function(u){ return {x:220 + u*460, y:-80 + u*1160}; }, 120, true, {moelle:true, ecailles:44});
+  }
+}
+/* (enquête 3, 17 novembre) Le poil du sac de farine : de la farine partout, et de gros poils raides, gris-brun (×10) ; quatre poils et
+   leur large canal (×40) ; un seul poil, énorme, ses écailles (×100). */
+function scenePoilRat(c, z, Rn){
+  var i, COL = '#6e5f52', BORD = '#2a221c';
+  for(i = 0; i < (z === 10 ? 300 : z === 40 ? 110 : 34); i++){ var fx = Rn()*MW, fy = Rn()*MW, fr = (z === 10 ? 3.2 : z === 40 ? 10 : 28)*(.5 + Rn());
+    c.fillStyle = 'rgba(255,253,246,' + (.55 + Rn()*.4).toFixed(2) + ')'; rond(c, fx, fy, fr); c.fillStyle = 'rgba(176,162,132,.3)'; rond(c, fx + fr*.25, fy + fr*.25, fr*.4); }
+  if(z === 10){ c.lineCap = 'round';
+    for(i = 0; i < 7; i++){ var y0 = 170 + Rn()*660, y1 = y0 + (Rn() - .5)*260, lw = 9 + Rn()*4;
+      c.beginPath(); c.moveTo(-40, y0); c.quadraticCurveTo(500 + (Rn() - .5)*200, (y0 + y1)/2 + (Rn() - .5)*110, 1040, y1);
+      c.strokeStyle = BORD; c.lineWidth = lw + 2.6; c.stroke(); c.strokeStyle = COL; c.lineWidth = lw; c.stroke(); }
+  } else if(z === 40){
+    for(i = 0; i < 4; i++){ (function(y0, a1, w){ poil(c, function(u){ return {x:-60 + u*1120, y:y0 + a1*Math.sin(u*Math.PI)}; }, w, false, {moelle:true, col:COL, bord:BORD}); })(150 + i*235 + (Rn() - .5)*60, (Rn() - .5)*150, 64 + Rn()*18); }
+  } else {
+    poil(c, function(u){ return {x:-80 + u*1160, y:500 + 120*Math.sin(u*Math.PI)}; }, 330, false, {moelle:true, ecailles:72, col:COL, bord:BORD});
   }
 }
 /* La plume : la tige et ses barbes (×10), les barbes et leurs barbules (×40), les barbules et leurs petits crochets (×100) */
@@ -221,6 +244,7 @@ function fabriquerScene(scene, z){
   var cv = document.createElement('canvas'); cv.width = MW*SDPR; cv.height = MW*SDPR; var c = cv.getContext('2d'); c.scale(SDPR, SDPR); var Rn = rng(z*97 + (scene === 'fibres' ? 0 : scene.length*131));
   var g = c.createRadialGradient(500,500,40,500,500,720); g.addColorStop(0,'#fdf8ea'); g.addColorStop(1,'#e2d6bb'); c.fillStyle = g; c.fillRect(0,0,MW,MW);
   if(scene === 'poils') scenePoils(c, z, Rn);
+  else if(scene === 'poilrat') scenePoilRat(c, z, Rn);
   else if(scene === 'plume') scenePlume(c, z, Rn);
   else if(scene === 'goutte' || scene === 'encre') sceneGoutte(c, z, Rn, couleurLiq(SC.d));   /* (encre : la goutte d'encre d'Iris, enquête 3 — la même vue, sans les phrases de la goutte de rivière) */
   else if(scene === 'poudre') scenePoudre(c, z, Rn);
@@ -259,6 +283,9 @@ function dessinerItem(c, it, x, y, t){
   else if(it.t === 'or'){ var gr = c.createLinearGradient(x - it.r, y - it.r, x + it.r, y + it.r); gr.addColorStop(0,'#fff3b0'); gr.addColorStop(.5,'#f2c040'); gr.addColorStop(1,'#b07a1c'); blob(c, x, y, it.r, Rn, gr, 12);
     var sc = (Math.sin(t/260) + 1)/2; c.fillStyle = 'rgba(255,255,255,' + (.4 + .6*sc) + ')'; c.font = (14 + 8*sc) + 'px sans-serif'; c.textAlign = 'center'; c.fillText('✦', x + it.r*.6, y - it.r*.5); }
   else if(it.t === 'feuil'){ dessinerBoutFeuille(c, x, y, it.r, .5); }
+  /* (enquête 3, 17 novembre) le sac de farine : la miette de terre noire, mouillée (des reflets d'eau), et le brin de mousse qui brille */
+  else if(it.t === 'terre_g'){ blob(c, x, y, it.r, Rn, '#1e1816', 8); c.fillStyle = 'rgba(160,185,215,.5)'; for(i = 0; i < 5; i++) rond(c, x + (Rn()-.5)*it.r, y + (Rn()-.5)*it.r, Math.max(.8, it.r*.09)); }
+  else if(it.t === 'mousse_g'){ dessinerBrinMousse(c, x, y, it.r, t); }
   else if(it.t === 'bardane'){ dessinerBardane(c, x, y, it.r, Rn); }
   else if(it.t === 'pollen' || it.t === 'pollen_l'){ dessinerPollen(c, x, y, it.r, 'lav'); }
   /* l'enquête 2 */
@@ -287,6 +314,18 @@ function dessinerDaphnie(c, x, y, t){
   c.beginPath(); c.moveTo(24, 10); c.lineTo(34, 20); c.stroke();
   c.fillStyle = 'rgba(200,140,60,.6)'; c.beginPath(); c.ellipse(6, 4, 10, 6, .2, 0, 6.283); c.fill();
   c.fillStyle = '#141018'; rond(c, -14, -6, 4);
+  c.restore();
+}
+/* (enquête 3, 17 novembre) Un brin de mousse lumineuse : une petite tige, ses frondes plates des deux côtés, et une lueur vert doré qui respire */
+function dessinerBrinMousse(c, x, y, r, t){
+  var lu = (Math.sin((t || 0)/420) + 1)/2, i;
+  c.save(); c.translate(x, y);
+  var g = c.createRadialGradient(0, 0, r*.2, 0, 0, r*2.2); g.addColorStop(0, 'rgba(214,255,170,' + (.3 + .3*lu).toFixed(2) + ')'); g.addColorStop(1, 'rgba(214,255,170,0)'); c.fillStyle = g; rond(c, 0, 0, r*2.2);
+  if(r <= 8){ c.fillStyle = '#9fe8a0'; rond(c, 0, 0, Math.max(2.2, r*.6)); c.restore(); return; }
+  c.rotate(-.5); c.lineCap = 'round'; c.strokeStyle = '#2f7a48'; c.lineWidth = Math.max(1.4, r*.09); c.beginPath(); c.moveTo(-r, r*.2); c.quadraticCurveTo(0, -r*.15, r, -r*.2); c.stroke();
+  for(i = 0; i < 8; i++){ var u = i/7, px = -r*.9 + 1.8*r*u, py = r*.2 - r*.42*u + Math.sin(u*Math.PI)*r*.08;
+    [1, -1].forEach(function(sd){ c.fillStyle = sd > 0 ? '#9fe8a0' : '#7ad08a'; c.strokeStyle = '#2f7a48'; c.lineWidth = Math.max(.8, r*.03); c.beginPath(); c.ellipse(px + r*.06, py + sd*r*.27, r*.24, r*.1, sd*1.05, 0, 6.283); c.fill(); c.stroke(); }); }
+  c.fillStyle = 'rgba(244,255,176,' + (.5 + .5*lu).toFixed(2) + ')'; rond(c, r*.3, -r*.36, r*.07); rond(c, -r*.4, r*.34, r*.06);
   c.restore();
 }
 /* Un bout de feuille déchiré : un bord en vagues (les lobes), un bord déchiré, des nervures */

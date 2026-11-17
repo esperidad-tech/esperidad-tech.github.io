@@ -292,7 +292,8 @@ module.exports = function verifierE3(E, SRC, D){
      Romain n'a pas décidé de la suite) n'est pas vérifié ici */
   /* (16 novembre) un objet qui arrive par le donjon (O.donjon : le brin de mousse lumineuse, posé sur la paillasse par le code du donjon
      « plante:lumiere », descente.js) : personne ne donne son code dans l'enquête, il n'est pas vérifié ici non plus */
-  const ids = Object.keys(E.objets || {}).filter(k => !E.objets[k].donjon).map(k => 'obj:' + k).concat(Object.keys(E.infos || {}).filter(k => !E.infos[k].reserve).map(k => 'info:' + k));
+  /* (17 novembre) O.sansCode : un objet que son propre rôle ramasse (la pincée du sac éventré, pour l'Alchimiste) — pas de code à donner */
+  const ids = Object.keys(E.objets || {}).filter(k => !E.objets[k].donjon && !E.objets[k].sansCode).map(k => 'obj:' + k).concat(Object.keys(E.infos || {}).filter(k => !E.infos[k].reserve).map(k => 'info:' + k));
   const enReserve = Object.keys(E.infos || {}).filter(k => E.infos[k].reserve);
   if(enReserve.length) console.log(`  · en réserve (plus donné par personne pour l'instant) : ${enReserve.map(k => 'info:' + k).join(', ')}`);
   const donneurs = {}, lecteurs = {};
@@ -329,6 +330,15 @@ module.exports = function verifierE3(E, SRC, D){
     const sansS = jouer(['barde', 'pisteur', 'alchimiste']), sansB = jouer(['pisteur', 'sage', 'alchimiste']);
     dit(parfait.codes.has('obj:vieux_plan') && parfait.faits.has('pierre:maison'), 'le secret d\'Odette : le papier (le Barde), la pierre de Tim sur le plan (le Sage), la cachette (le Pisteur), le vieux plan (le Sage)');
     dit(!sansS.codes.has('obj:vieux_plan') && !sansB.codes.has('obj:vieux_plan'), 'sans le Sage, ou sans le Barde, la cachette d\'Odette ne s\'ouvre pas');
+  }
+  /* (17 novembre, étape 3) la pincée du sac éventré : l'Alchimiste la ramasse chez Gaspard (p.recoit), le labo sait l'analyser (E.labo,
+     et sa fiche dans src/labo/30-donnees.js), et l'analyse a son texte — sans code (« Dis-le à tes amis ! ») et sans dire « souterrain » */
+  if((E.objets || {}).sac_farine){
+    const ptsB = ((E.lieux.boulangerie || {}).alchimiste || {}).points || [], A = (E.analyses || {}).sac_farine || {};
+    const labo = fs.readFileSync(path.join(__dirname, '..', 'src', 'labo', '30-donnees.js'), 'utf8');
+    dit(ptsB.some(p => liste(p.recoit).includes('obj:sac_farine')) && (E.labo || []).includes('sac_farine') && /\n\s*sac_farine:\{forme/.test(labo) && /terre_g:\{de:'sac_farine'/.test(labo) && /mousse_g:\{de:'sac_farine'/.test(labo)
+      && !!A.t && !A.donne && /Dis-le à tes amis/.test(A.t) && !/souterrain|donjon|crypte/i.test(A.t + ' ' + (A.note || '')),
+      'la pincée du sac éventré : ramassée chez Gaspard, analysée au labo (le poil de rat, la terre de cave, la mousse lumineuse), dite à voix haute — sans code, sans « souterrain »');
   }
 
   /* ---------- 5. les missions du Carnet ---------- */

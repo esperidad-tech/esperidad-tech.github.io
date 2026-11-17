@@ -39,7 +39,10 @@ var ECH = {
     blaireau:{nom:'blaireau', n:8, col:'#f0ece0', bandes:['#f0ece0','#2a2622','#f0ece0'], amp:1.5, f:.03, l:1, lw:2.4},
     souris:{nom:'souris', n:20, col:'#9a8f86', amp:1.5, f:.14, l:.33, lw:.9},
     vache:{nom:'vache', n:10, col:'#6a3f22', amp:2, f:.06, l:.6, lw:2},
-    loup:{nom:'loup', n:10, col:'#77736c', bout:'#2a2622', amp:3, f:.05, l:.95, lw:1.8}
+    loup:{nom:'loup', n:10, col:'#77736c', bout:'#2a2622', amp:3, f:.05, l:.95, lw:1.8},
+    /* (enquête 3, 17 novembre) le rat : il n'entre dans le casier des poils que quand le poil du sac de farine est sur le cuir (90-main.js) —
+       rien ne change pour les analyses des enquêtes 1 et 2 */
+    rat:{nom:'rat', n:15, col:'#6e5f52', bout:'#b8a58c', amp:1.6, f:.1, l:.42, lw:1.3}
   },
   plumes:{
     corbeau:{nom:'corbeau', col:'#1b1d2b', lustre:'#4a6aa8', larg:.86},
@@ -98,7 +101,9 @@ var ECH = {
     tuile:{nom:'tuile'}, brique:{nom:'brique'}, sable:{nom:'sable'}, sel:{nom:'sel'}, cendre:{nom:'cendre'}, farine:{nom:'farine'},
     or:{nom:'feuille d\'or'}, laiton:{nom:'laiton'}, mica:{nom:'mica'}, verre:{nom:'verre pilé'}, vertdegris:{nom:'vert-de-gris'}, soufre:{nom:'soufre'},
     /* ce qui s'accroche et ce qui voyage : une graine à crochets, et trois pollens (chaque plante a le sien, avec sa forme à elle) */
-    bardane:{nom:'graine de bardane'}, pollenlav:{nom:'pollen de lavande'}, pollenpin:{nom:'pollen de pin'}, pollenpis:{nom:'pollen de pissenlit'}
+    bardane:{nom:'graine de bardane'}, pollenlav:{nom:'pollen de lavande'}, pollenpin:{nom:'pollen de pin'}, pollenpis:{nom:'pollen de pissenlit'},
+    /* (enquête 3, 17 novembre) la terre de cave : comme le rat, elle n'entre dans le casier des grains qu'avec le poil du sac de farine */
+    terrecave:{nom:'terre de cave'}
   }
 };
 /* Ce qu'il y a dans chaque casier : l'enquête 1, puis « plus difficile » (encore plus d'échantillons) */
@@ -211,6 +216,15 @@ var OBJETS = {
      l'enquête 2. Au test des couleurs : la même bande noire, tout en bas, que l'encre de la lettre — c'est la même encre. */
   encre_iris:{forme:'flacon', liquide:true, cibles:['galle'], coul:'#2a2a32', scene:'encre', requis:['encre_iris'],
     savoir:'Pour comparer deux encres, on compare leurs bandelettes : mêmes bandes, même encre.'},
+  /* ===== (17 novembre, étape 3 du nouveau fil, Bible §13.59) CE QUE L'ALCHIMISTE RAMASSE SUR UN SAC DE FARINE ÉVENTRÉ, CHEZ GASPARD =====
+     Sur le cuir : une pincée de farine, avec un gros poil dedans. À la loupe : un poil de rat (court, raide, gris-brun)… mais énorme.
+     Au microscope : une miette de terre noire, mouillée (une terre de cave : ni racine ni brin d'herbe), et, à ×40, un petit brin vert
+     qui brille (la mousse lumineuse des grottes, la même que celle du donjon). Rien ne dit « souterrain » ni « donjon » : seulement que
+     ces rats vivent là où le soleil n'entre jamais. Tout ce qui est écrit est vrai (les rats ont des puces ; la farine bleuit à l'iode). */
+  sac_farine:{forme:'tas', couls:['#f4efe2', '#e6dcc6', '#5a4c40', '#f4efe2', '#2a2420'], tiroir:'poils', bon:'rat', coul:'#6e5f52', scene:'poilrat', bete:'puce', requis:['sac_farine', 'terre_g', 'mousse_g'],
+    savoir:'Un poil de rat : court, raide, gris-brun. Mais celui-ci est trois fois plus gros que la normale !'},
+  terre_g:{de:'sac_farine', nom:'la miette noire', tiroir:'grains', bon:'terrecave', coul:'#221c1a', savoir:'Une terre noire et mouillée, sans une racine ni un brin d\'herbe : elle n\'a jamais vu le soleil.'},
+  mousse_g:{de:'sac_farine', nom:'le brin vert', tiroir:'feuilles', bon:'mousselum', coul:'#7ad08a', savoir:'La mousse lumineuse ne pousse que dans le noir : au fond des grottes et des vieilles caves.'},
   /* (16 novembre, Bible §13.55) le brin de mousse lumineuse que le Pisteur envoie du donjon : une vraie mousse des grottes (Schistostega
      pennata, « l'or des lutins »). À la loupe : de petites frondes plates, à retrouver dans le casier des feuilles ; au microscope
      (voirMicro : on y revient quand on veut) : des fils verts, puis des cellules rondes comme des billes de verre ; à la bougie : elle
@@ -286,6 +300,13 @@ var REA = {
   encre_l:rea({eau:{t:'Elle devient plus pâle.'}, vinaigre:{t:'Le noir pâlit : cette encre n\'aime pas l\'acide.', fx:'vire', c:'#8a8a94'}, flamme:{t:'L\'eau s\'évapore et laisse un anneau noir.'}}),
   /* l'encre d'Iris : les mêmes réactions que l'encre de la lettre (c'est la même) */
   encre_iris:rea({eau:{t:'Elle devient plus pâle.'}, vinaigre:{t:'Le noir pâlit : cette encre n\'aime pas l\'acide.', fx:'vire', c:'#8a8a94'}, flamme:{t:'L\'eau s\'évapore et laisse un anneau noir.'}}),
+  /* (17 novembre) le poil du sac de farine, sa miette de terre et son brin de mousse (de vraies réactions, comme les autres) */
+  sac_farine:rea({eau:{t:'La farine se mouille et colle ; l\'eau glisse sur le gros poil.'}, chaude:{t:'La farine épaissit, comme une sauce.'},
+    iode:{t:'L\'iode devient bleu-noir sur la farine : il y a de l\'amidon.', fx:'vire', c:'#1e2050'}, flamme:{t:'Le poil grésille et sent le cheveu brûlé : c\'est un poil de bête.'}}),
+  terre_g:rea({eau:{t:'Ça fait une boue très noire.'}, chaude:{t:'Ça fait une boue très noire.'}, vinaigre:{t:'De toutes petites bulles : il y a du calcaire là-dedans.', fx:'bulles'},
+    flamme:{t:'Elle fume un peu et devient grise : elle était toute mouillée.'}}),
+  mousse_g:rea({eau:{t:'Il boit l\'eau comme une éponge : une mousse n\'a pas de racines.'}, chaude:{t:'Il boit l\'eau comme une éponge.'},
+    flamme:{t:'Tu approches la bougie… Le brin s\'allume d\'un éclat vert doré ! Il renvoie la lumière de la flamme.'}}),
   /* la mousse lumineuse (de vraies réactions : une mousse boit l'eau comme une éponge ; celle-ci renvoie la lumière qu'on lui donne) */
   mousse:rea({eau:{t:'Elle boit l\'eau comme une éponge : une mousse n\'a pas de racines.'}, chaude:{t:'Elle boit l\'eau comme une éponge.'},
     flamme:{t:'Tu approches la bougie… La mousse s\'allume d\'un éclat vert doré ! Elle ne fabrique pas de lumière : elle renvoie celle de la flamme.'}})
@@ -327,6 +348,8 @@ var SAVOIR_MICRO = {
   piece:{10:'Une couronne, et tout autour, une ronde de petites étoiles.', 40:'Sous la couronne, une toute petite fêlure en forme d\'éclair : le moule qui a frappé la pièce était fêlé.'},
   /* l'enquête 3 */
   papier:{40:'Le papier est fait de petits fils emmêlés : l\'encre s\'est glissée entre eux.'},
+  /* (17 novembre) le poil du sac de farine */
+  poilrat:{10:'De la farine partout… et de gros poils raides, gris-brun.', 40:'Au milieu de chaque poil, un canal très large : c\'est un poil de bête, pas un cheveu.', 100:'Les écailles pointent toujours vers le bout du poil.'},
   /* la mousse lumineuse (enquête 3, le donjon) */
   mousse:{10:'Sous la mousse, un tapis de fils verts très fins.', 40:'Ces fils sont faits de cellules rondes comme des billes de verre : de toutes petites loupes !',
     100:'Chaque petite loupe rassemble la lumière sur ses grains verts, tout au fond… et en renvoie un peu. C\'est ça, l\'éclat de la mousse.'}

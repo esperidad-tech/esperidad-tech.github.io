@@ -448,7 +448,7 @@ E[3] = {
      (la lettre, l'encre d'Iris) raconte la comparaison et donne le code « La même encre », pour le Sage : comme les deux pièces d'or de
      l'enquête 2. Si c'est la lettre, elle donne deux codes dans la même fenêtre : donneAussi (moteur-actions.js, M.texteAnalyse).) */
   /* (16 novembre, §13.55) mousse : le brin de mousse lumineuse que le Pisteur envoie du donjon (son code « plante:lumiere », descente.js) */
-  labo:['lettre', 'piece_pain', 'encre_iris', 'mousse'],
+  labo:['lettre', 'piece_pain', 'encre_iris', 'mousse', 'sac_farine'],
   analyses:{
     /* (Romain, 16 novembre, 8 h 07) la pièce de Fortuné : la même analyse que la pièce de la boulangerie de l'enquête 2 (sa fiche au labo,
        piece_pain : l'or, la fêlure, la farine) ; elle ne donne pas de code, elle raconte */
@@ -470,6 +470,11 @@ E[3] = {
       variantes:[{si:[{analyse:'lettre'}],
         t:'L\'encre d\'Iris, sur la bandelette : une seule bande noire, tout en bas… exactement comme l\'encre de la lettre. C\'est la même ! La lettre a été écrite avec l\'encre volée chez Iris. Dis-le à tes amis !',
         note:'L\'encre de la lettre et celle d\'Iris sont les mêmes : la lettre a été écrite avec l\'encre volée chez Iris. À dire à l\'équipe !'}]},
+    /* (17 novembre, étape 3 : « ces rats vivent sous terre », sans jamais dire « souterrain » ni « donjon ») la pincée du sac éventré :
+       pas de code, l'Alchimiste le dit à voix haute */
+    sac_farine:{
+      t:'Sous ta loupe : un poil de rat… mais énorme, trois fois plus gros que la normale ! Avec lui, une terre noire et mouillée, sans une racine : une terre de cave, qui n\'a jamais vu le soleil. Et ce brin vert qui brille, c\'est de la mousse lumineuse : elle ne pousse que dans le noir. Ces rats-là vivent sous terre ! Dis-le à tes amis !',
+      note:'Analyse de la pincée du sac éventré : un poil de rat énorme, une terre de cave qui n\'a jamais vu le soleil, et de la mousse lumineuse, qui ne pousse que dans le noir. Ces rats vivent sous terre. À dire à l\'équipe !'},
     /* (16 novembre, §13.55) la mousse lumineuse du donjon : une vraie plante (Schistostega pennata, « l'or des lutins »). Tout ce qui est
        dit ici est vrai ; elle ne donne pas de code (c'est le chaudron du donjon qui donne la recette du baume). */
     mousse:{
@@ -542,6 +547,9 @@ E[3] = {
     piece_pain:{nom:'La pièce d\'or de Fortuné', ic:'🪙', pour:'alchimiste', dire:'L\'Alchimiste saura la faire parler : donne-lui ce code.'},
     /* (16 novembre, 15 h) le fond de flacon d'encre qu'Iris donne au Barde : l'Alchimiste le compare à l'encre de la lettre (labo : encre_iris) */
     encre_iris:{nom:'L\'encre d\'Iris', ic:'🖋️', pour:'alchimiste', dire:'L\'Alchimiste saura la faire parler : donne-lui ce code.'},
+    /* (17 novembre, étape 3) la pincée de farine du sac éventré : l'Alchimiste la ramasse lui-même chez Gaspard (lieux.boulangerie,
+       p.recoit) et l'analyse au labo. sansCode:true : personne ne donne son code (tools/verif-e3.js). */
+    sac_farine:{nom:'La pincée du sac éventré', ic:'🌾', pour:'alchimiste', sansCode:true, dire:'Une pincée de farine, pour l\'Alchimiste.'},
     /* (16 novembre, §13.55) le brin de mousse lumineuse du donjon : il arrive tout seul sur la paillasse quand l'Alchimiste tape le code
        du donjon « plante:lumiere » (descente.js). donjon:true : personne ne donne son code dans l'enquête (tools/verif-e3.js). */
     mousse:{nom:'La mousse lumineuse', ic:'🌿', pour:'alchimiste', donjon:true, dire:'Un brin de mousse lumineuse, pour l\'Alchimiste.'}
@@ -750,7 +758,13 @@ E[3] = {
           disparait:[{vu:'alchimiste:mairie:gateau'}],
           avant:'Gaspard te confie le haut de son gâteau ! Attends tes amis : commencez vos gâteaux en même temps, ce sera plus rigolo. Dix minutes… puis élisez le plus beau !',
           bouton:'🎂 Faire le gâteau',
-          t:'Ton gâteau part sur la grande table de la fête.'}
+          t:'Ton gâteau part sur la grande table de la fête.'},
+        /* (17 novembre, étape 3 du nouveau fil : « les bêtes ») LES SACS ÉVENTRÉS : Gaspard a dit au Barde que des rats grands comme des
+           chats ont crevé ses sacs cette nuit. L'Alchimiste y ramasse de quoi chercher : l'échantillon arrive sur sa paillasse (p.recoit ;
+           sa fiche : src/labo/30-donnees.js, sac_farine). Le matin de l'Alchimiste, c'est le gâteau et le labo. */
+        {id:'sac', ic:'🌾', nom:'Les sacs éventrés', carteIc:'🌾', carteNom:'Les sacs éventrés', recoit:'obj:sac_farine',
+          t:'Derrière le four, trois sacs de farine crevés. « Cette nuit ! Des rats grands comme des chats ! » gémit Gaspard. Sur le plus gros sac, tu ramasses une pincée de farine : dedans, un drôle de poil, une miette noire, un petit brin vert qui brille… Tout ça file sur ta paillasse.',
+          note:'Chez Gaspard : sur un sac de farine éventré, un drôle de poil, une miette noire et un petit brin vert qui brille. À regarder de près, sur la paillasse.'}
       ]}
     },
     /* LES CUEILLETTES DE L'ALCHIMISTE NE SONT PLUS ICI (Romain, 12 novembre, 12 h 52 ; Bible §13.26) : les sept plantes poussent à sept endroits

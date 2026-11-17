@@ -253,6 +253,8 @@ if(CFG){
   if((CUIRS.indexOf('lettre') >= 0 || CUIRS.indexOf('encre_iris') >= 0) && !TEINTES.some(function(t){ return t.k === 'galle'; })) TEINTES.push(TEINTE_GALLE);   /* (16 novembre : ou avec le flacon d'encre d'Iris) */
   /* (16 novembre) avec le brin de mousse lumineuse sur le cuir (enquête 3, le donjon), le casier des feuilles gagne une mousse */
   if(CUIRS.indexOf('mousse') >= 0) ['facile', 'difficile'].forEach(function(nv){ if(LISTES[nv].feuilles.indexOf('mousselum') < 0) LISTES[nv].feuilles.push('mousselum'); });
+  /* (17 novembre) avec le poil du sac de farine sur le cuir : un rat dans les poils, une terre de cave dans les grains, la mousse dans les feuilles */
+  if(CUIRS.indexOf('sac_farine') >= 0) ['facile', 'difficile'].forEach(function(nv){ [['poils', 'rat'], ['grains', 'terrecave'], ['feuilles', 'mousselum']].forEach(function(q){ if(LISTES[nv][q[0]].indexOf(q[1]) < 0) LISTES[nv][q[0]].push(q[1]); }); });
   if(CFG.style) for(var kS in ST) if(typeof CFG.style[kS] === 'number') ST[kS] = CFG.style[kS];
   if(Array.isArray(CFG.chat) && CFG.chat.length === 3) CHAT = CFG.chat;
   if(JEU){ SON.actif = CFG.son !== false; SANS_MIMI = !CFG.mimi; document.body.classList.add('jeu'); }
