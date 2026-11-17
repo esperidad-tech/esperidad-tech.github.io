@@ -1,4 +1,4 @@
-"""Les habits rigolos de Mimi (mimi-habits.js ; Bible §12.73 ; Romain, 17 novembre : « une vingtaine de nouveaux habits assez originaux
+"""Les habits rigolos de Mimi (mimi-habits.js ; Bible §12.74 ; Romain, 17 novembre : « une vingtaine de nouveaux habits assez originaux
 avec des petites animations. Fais attention à ne pas casser les animations de Mimi […] ou à cacher certaines choses un peu trop »),
 dans le vrai jeu (Playwright) :
 - les données : une vingtaine d'habits, chacun dans la garde-robe et dans une famille de coffrets, une seule ; aucun dans la boutique ;

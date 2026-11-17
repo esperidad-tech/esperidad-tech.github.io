@@ -1,7 +1,7 @@
 /* ==========================================================
    LES HABITS RIGOLOS DE MIMI (Romain, 17 novembre, 07 h 07 : « une vingtaine de nouveaux habits assez originaux avec des petites
    animations. Fais attention à ne pas casser les animations de Mimi à cause des habits ou à cacher certaines choses un peu trop […]
-   il faut que ça soit des petits trucs rigolos, originaux. ») — DESIGN-saison1.md §12.73.
+   il faut que ça soit des petits trucs rigolos, originaux. ») — DESIGN-saison1.md §12.74.
 
    Un habit = du SVG dessiné autour de (0, 0), LE MILIEU DE SA TÊTE, comme les accessoires d'avant (atelier.js, dessinAcc) :
    il est rangé dans le groupe de sa tête, il la suit donc partout (elle se penche, elle dort, elle court) sans rien demander au pantin.
