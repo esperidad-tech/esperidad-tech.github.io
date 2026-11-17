@@ -50,3 +50,15 @@
   .ec-or{grid-template-columns:repeat(auto-fill, minmax(128px, 1fr));padding:8px;gap:6px}
   .ec-or-mot{font-size:1.24rem}
 }
+
+/* 🔍 Comparer les écritures (17 novembre : le Sage) : la lettre (et le carnet) en haut, les douze mots du Livre d'or, chacun un bouton */
+.ec-compare{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 10px}
+.ec-compare-l{flex:1 1 200px;display:flex;flex-direction:column;gap:2px;padding:10px 12px;font-size:1.42rem}
+.ec-compare-l small{font-family:var(--f-texte, inherit);font-size:.74rem;font-weight:700;letter-spacing:.02em;color:rgba(53,40,27,.72)}
+.ec-compare-o{background:#f6efe0}
+.ec-or-b{display:block;padding:0;margin:0;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;border-radius:8px;-webkit-tap-highlight-color:transparent}
+.ec-or-b .ec-or-mot{height:100%;box-sizing:border-box;border:2px solid rgba(90,64,40,.25);border-radius:8px;background:#fffaf0;transition:transform .12s, box-shadow .12s}
+.ec-or-b:active .ec-or-mot{transform:scale(.97)}
+.ec-or-b:focus-visible .ec-or-mot{box-shadow:0 0 0 3px #ffc93c}
+.ec-or-bon{border:3px solid #b9770e!important;border-radius:8px;background:#ffe9a8;box-shadow:0 0 0 3px #ffc93c}
+.ec-or-fini .ec-or-mot:not(.ec-or-bon){opacity:.6}

@@ -7,6 +7,18 @@ REPO=${REPO:-/home/claude/esperidad-tech.github.io}
 # Nouvelle session : donner ses lignes d'attribution sans toucher à ce fichier :
 #   BRUMEVAL_COAUTEUR="Claude … <noreply@anthropic.com>" BRUMEVAL_SESSION="https://claude.ai/code/session_…" bash deploy/deployer.sh …
 # (sans ces variables : les lignes écrites plus bas, à remplacer par celles de la session en cours).
+# GARDE-FOU (17 novembre) : plusieurs conversations travaillent sur les mêmes sources. Si la branche brumeval-sources de GitHub a des
+# commits que ce dossier n'a pas, le jeu qu'on s'apprête à mettre en ligne a été construit SANS eux : il effacerait le travail des autres
+# (c'est arrivé : la mise en ligne 7c7f2e6 a retiré dix minutes l'album de Mimi). On s'arrête ; il faut : git pull, reconstruire, retester.
+# (BRUMEVAL_SANS_GARDE=1 pour passer outre, en connaissance de cause.)
+if [ -z "$BRUMEVAL_SANS_GARDE" ]; then
+  git -C "$S" fetch -q origin brumeval-sources 2>/dev/null || true
+  MANQUE=$(git -C "$S" log --oneline HEAD..origin/brumeval-sources 2>/dev/null | head -5)
+  if [ -n "$MANQUE" ]; then
+    echo "ARRÊT : GitHub (brumeval-sources) a des commits que ce dossier n'a pas. Le jeu construit ici ne les contient pas :"; echo "$MANQUE"
+    echo "→ git pull --no-rebase --no-edit origin brumeval-sources, puis reconstruire, retester, et relancer."; exit 3
+  fi
+fi
 D=$REPO/brumeval
 V=$(date -u +%Y%m%d-%H%M)
 cp "$1" $D/index.html

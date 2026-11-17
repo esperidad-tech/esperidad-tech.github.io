@@ -45,7 +45,7 @@ function calme(){ try{ return window.matchMedia && matchMedia('(prefers-reduced-
 var RANG = {tableau:0, lettre:0.5, habitants:1, recettes:2, mystere:3, fondateurs:4, carte:5, moulin:5,
   /* enquête 2 */ lettres:10, livreor:11, blanche:12, secret:14, plans:15, nuancier:16,
   /* enquête 3 (13 novembre) : l'herbier, le Livre d'or, la lettre, le carnet d'Odette, le plan des Fondateurs */ herbier:6, livredor:7, vraielettre:8, carnet:9, plan:10,
-  /* enquête 3 (16 novembre, le secret d'Odette : pierres.js) */ tableauodette:5.4, papier:5.6, vieuxplan:9.5,
+  /* enquête 3 (16 novembre, le secret d'Odette : pierres.js) */ tableauodette:5.4, papier:5.6, vieuxplan:9.5, quiecrit:8.5,
   /* enquête 3, la nuit : la tenue de combat, puis les pages du donjon */ tenue:20, donjon:21, sauvegardes:22, aventurier:23, porte:24,
   /* toutes les enquêtes */ bibliotheque:80, objets:81, archives:82,
   codes:90, actions:91, accusation:99};

@@ -61,15 +61,62 @@ function motDor(id){
 }
 M.livreDorSignes = function(){ return EC.ordre.filter(function(id){ return M.momentId() !== 'matin' || !EC.ech[id].tard; }); };
 M.livreDorHTML = function(p){
-  var P = M.P(), matin = M.momentId() === 'matin', donne = !!(P && P.pages && P.pages[p.id]);
-  var t0 = 'Le Livre d\'or de la fête. Chacun y écrit un petit mot pour Odette, de sa main.';
-  var s = '<p class="lv-texte">' + esc(t0) + ' ' + lire(t0) + '</p><div class="ec-or">' + M.livreDorSignes().map(motDor).join('') + '</div>';
-  if(donne) return s;   /* (le code, juste après : livre.js) */
-  if(matin){ var t1 = 'Tout le monde n\'a pas encore signé.'; return s + '<p class="lv-texte ec-or-attente">✒️ ' + esc(t1) + ' ' + lire(t1) + '</p>'; }
-  var t2 = 'Tout le monde a signé !';
-  return s + '<p class="lv-texte ec-or-attente">✒️ ' + esc(t2) + '</p>' +
-    '<button class="btn grand b-aller lv-ouvrir" data-act="ouvrir-page" data-id="' + esc(p.id) + '">📖 ' + esc(p.bouton || 'Donner ce livre à l\'Alchimiste') + '</button>';
+  /* (17 novembre) le maire l'a confié au Sage, l'après-midi : tout le monde a signé. Plus de bouton « Donner ce livre à l'Alchimiste » :
+     c'est le Sage qui compare (la page « Comparer les écritures », plus bas). */
+  var t0 = 'Le Livre d\'or de la fête, que le maire t\'a confié. Chacun y a écrit un petit mot pour Odette, de sa main.';
+  return '<p class="lv-texte">' + esc(t0) + ' ' + lire(t0) + '</p><div class="ec-or">' + EC.ordre.map(motDor).join('') + '</div>';
 };
+
+/* ---------- 🔍 Comparer les écritures (17 novembre : le Sage, plus l'Alchimiste) ----------
+   La lettre en haut (et le carnet d'Odette, s'il l'a : sa vraie écriture), les douze mots du Livre d'or dessous : chacun est un bouton.
+   Le Sage désigne une main ; « Tu en es sûr ? » ; deux essais (essais.js, la clé « sage:ecriture »). Mélusine : le code pour le Barde.
+   Rien, à l'écran, ne dit quelles lettres regarder : il compare de ses yeux. */
+var K_EC = 'sage:ecriture', MAXI = 2;   /* deux essais, quel que soit le réglage des mini-jeux (un seul à l'enquête 3) : on compare de petites lettres sur un petit écran */
+function nbRates(){ return M.nbEchecs ? M.nbEchecs(K_EC) : 0; }
+M.quiEcritHTML = function(){
+  var P = M.P(), fait = !!(P && P.vus[K_EC] === 'ok'), ferme = !fait && nbRates() >= MAXI, reste = MAXI - nbRates();
+  var s = '<div class="ec-compare"><div class="ec-feuille ec-compare-l"><small>La lettre</small>' + EC.lettre.l.map(function(l){ return '<span>' + M.ecrit(l, EC.fausse) + '</span>'; }).join('') + '</div>';
+  if(P && P.recus['obj:carnet']) s += '<div class="ec-feuille ec-compare-l ec-compare-o"><small>Le carnet d\'Odette</small><span>' + M.ecrit('Mes sept amours,', EC.odette) + '</span><span>' + M.ecrit('par Odette', EC.odette) + '</span></div>';
+  s += '</div>';
+  var t = fait ? 'C\'est la main de Mélusine qui a écrit la lettre. Le Barde a ton code : à lui de la faire parler.'
+    : ferme ? 'Les écritures se brouillent devant tes yeux : tu ne sais plus. Il faudra trouver autrement…'
+    : 'Une main du village a écrit cette lettre. Laquelle ? Compare-la aux mots du Livre d\'or, lettre par lettre, puis désigne-la. ' + (reste > 1 ? 'Tu n\'as droit qu\'à deux essais.' : 'C\'est ton dernier essai.');
+  s += '<p class="lv-texte">' + esc(t) + ' ' + lire(t) + '</p>';
+  s += '<div class="ec-or' + (fait || ferme ? ' ec-or-fini' : ' ec-or-choix') + '">' + EC.ordre.map(function(id){
+    var m = motDor(id);
+    if(fait) return id === 'melusine' ? m.replace('class="ec-or-mot"', 'class="ec-or-mot ec-or-bon"') : m;
+    if(ferme) return m;
+    return '<button type="button" class="ec-or-b" data-act="ec-designer" data-id="' + esc(id) + '">' + m + '</button>';
+  }).join('') + '</div>';
+  if(fait){ var c = 'info:cest_melusine', nc = M.nomCode(c), td = M.texteDonne(c);
+    s += '<div class="b-donne"><p>' + nc.ic + ' <b>' + esc(nc.nom) + '</b> : ' + esc(td) + ' ' + lire(nc.nom + ' : ' + td) + '</p>' + M.codeHTML(M.code(c)) + '</div>'; }
+  return s;
+};
+if(M.A) M.A['ec-designer'] = function(el){
+  var P = M.P(), id = el.dataset.id, e = EC.ech[id];
+  if(!P || !e || P.vus[K_EC] === 'ok' || nbRates() >= MAXI) return;
+  var dernier = nbRates() >= MAXI - 1, nom = e.nom.charAt(0).toUpperCase() + e.nom.slice(1);
+  M.UI.confirmer = function(){ juger(id); };
+  M.son('clic');
+  M.ouvrir({type:'confirmer', titre:'Tu en es sûr ?', t:nom + ' aurait écrit la lettre ? ' + (dernier ? 'Attention : c\'est ton dernier essai.' : 'Réfléchis bien : tu n\'as que deux essais.'), oui:'Oui, c\'est cette main-là', non:'Je regarde encore'});
+};
+function juger(id){
+  var P = M.P(), e = EC.ech[id]; if(!P || !e) return;
+  if(id === 'melusine'){
+    P.vus[K_EC] = 'ok'; P.objets['_info:cest_melusine'] = true;
+    var t = 'Les mêmes lettres, trait pour trait : c\'est la main de Mélusine, la couturière, qui a écrit la lettre d\'Odette !';
+    M.noter('En comparant la lettre au Livre d\'or : c\'est l\'écriture de Mélusine (code pour le Barde).', '🔍');
+    M.son('magie'); M.sauver();
+    M.decouvrir({ic:'🧵', titre:'La même main !', t:t, code:'info:cest_melusine'});
+    return;
+  }
+  var n = M.echec ? M.echec(K_EC) : MAXI, fin = n >= MAXI;
+  var tr = (EC.bons.indexOf(id) >= 0 ? 'Son écriture ressemble beaucoup à celle de la lettre… mais ce n\'est pas elle.' : 'Non : en regardant mieux, ces lettres-là ne se ressemblent pas.') +
+    (fin ? ' Les écritures se brouillent devant tes yeux : tu ne sais plus. Il faudra trouver autrement…' : ' Il te reste un essai.');
+  if(fin) P.vus[K_EC] = 'rate';
+  M.son('ko'); M.sauver();
+  M.decouvrir({ic:'💨', titre:'Ce n\'est pas cette main-là', t:tr, rate:true});
+}
 
 /* ---------- ✉️ La lettre d'Odette (la vraie feuille : « à la manière d'Odette ») ---------- */
 M.vraieLettreHTML = function(){

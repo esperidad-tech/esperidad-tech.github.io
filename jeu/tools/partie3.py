@@ -209,7 +209,7 @@ def partie(nav, base):
     tout_demander(B, ['levoisin', 'gaspard', 'victor', 'iris', 'margot', 'tim', 'fortune']); B.fermer()
     verifier(B.js("() => { M.render(); return !!M.P().mission.faits[1]; }"), 'le Barde a tout demandé aux sept villageois du matin : sa mission se coche')
     # (16 novembre, §13.54) Iris, une fois le vol raconté : sa question de plus, et un fond de flacon de son encre pour l'Alchimiste
-    verifier(set(livrer(T, B)) == {'info:poste', 'info:chale', 'obj:encre_iris', 'obj:papier_odette'}, 'le Barde a donné au Sage : la poste, « Odette… sans sa canne », le papier d\'Odette ; à l\'Alchimiste : l\'encre d\'Iris')
+    verifier(set(livrer(T, B)) == {'obj:encre_iris', 'obj:papier_odette'}, 'le Barde a donné au Sage : le papier d\'Odette ; à l\'Alchimiste : l\'encre d\'Iris (la poste et « sans sa canne » se disent à voix haute)')
     # (16 novembre, Bible §13.57) LE SECRET D'ODETTE, le matin : le Sage déchiffre le papier que le voisin gardait, puis pose la pierre de Tim
     # sur le plan de la maison, au dos — trois signes, dans un ordre, qu'il dit au Pisteur à voix haute (pas de code)
     S.ouvrir_page('papier')
@@ -240,16 +240,15 @@ def partie(nav, base):
     th = S.page('herbier'); S.pg.locator('#livre-ici .lv-page.on .b-lire').first.click(); S.pg.wait_for_timeout(200)
     verifier(S.pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and 'bruyère' in th and 'Rond des Sorcières' not in th, 'le Sage lit l\'herbier à voix haute : sept plantes, un indice et un moment pour chacune (plus de code, plus de nom de lieu : Bible §13.28)')
     # (13 novembre) plus de page « Une drôle de lettre » : les codes du Barde sont des informations, le Sage conclut tout seul
-    verifier(S.js("() => !!M.P().recus['info:poste'] && !!M.P().recus['info:chale']"), 'le Sage a reçu les deux premiers doutes du Barde (la poste, « Odette… sans sa canne »)')
-    tl = S.page('livredor')
-    verifier('pas encore signé' in tl and S.pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page]').count() == 0 and not list(livrer(T, S)), 'le Livre d\'or, le matin : tout le monde n\'a pas encore signé — le Sage n\'a rien à donner')
+    verifier(S.js("() => !M.P().recus['info:poste'] && !M.P().recus['info:chale']"), '(17 novembre) les deux premiers doutes du Barde ne sont plus des codes')
+    verifier(S.js("() => !M.P().pages.livredor") and 'Livre d\'or' not in S.page('tableau') and not list(livrer(T, S)), '(17 novembre) le matin : pas de Livre d\'or dans le Grand Livre (le maire le confiera l\'après-midi) — le Sage n\'a rien à donner')
     # le Pisteur : les banderoles et l'oie
     verifier(P.jouer('place', 'banderoles') == 'visee', 'le Pisteur accroche les banderoles (le nouveau tir à l\'arc)'); P.fermer()
     verifier(P.jouer('boulangerie', 'oie') == 'poursuite', 'le Pisteur rattrape l\'oie (course-poursuite)'); P.fermer()
     # (16 novembre, Bible §13.52) les empreintes du jardin d'Iris : le Pisteur les suit et les mesure, et donne « Des pieds d'enfant » au
     # Sage, qui a la taille des pieds de chacun dans « Les habitants » (3 carreaux : Odette, Mélusine et Tim ; Margot : 4)
     verifier(P.jouer('herboristerie', 'jardin') == 'traces' and '3 carreaux' in P.texte(), 'le Pisteur suit les petites empreintes du jardin d\'Iris : 3 carreaux, des pieds d\'enfant'); P.fermer()
-    verifier(livrer(T, P) == ['info:pieds_enfant'], 'le code « Des pieds d\'enfant » passe du Pisteur au Sage')
+    verifier(livrer(T, P) == [], '(17 novembre) plus de code « Des pieds d\'enfant » : le Pisteur le dit à voix haute')
     th = S.page('habitants')
     verifier(th.count('pieds de 3 carreaux') == 3 and 'Mélusine Dufil · la couturière 🏠 4, rue des Lanternes · 👣 pieds de 3 carreaux' in ' '.join(th.split()) and 'Margot' in th, 'le registre du Sage : trois habitants ont des pieds de 3 carreaux (Odette, Mélusine, Tim), dont deux rue des Lanternes… et la troisième aussi')
     # l'Alchimiste : le gâteau, les sept plantes
@@ -305,12 +304,11 @@ def partie(nav, base):
     verifier(set(livrer(T, B)) == {'obj:lettre', 'obj:carnet', 'info:traces_moustache'}, 'le Barde a donné : la lettre (Sage, Alchimiste), le carnet (Sage), les traces de Moustache (Pisteur)')
     # le Sage (13 novembre) : le Livre d'or, quand tout le monde a signé → l'Alchimiste ; la lettre et le carnet d'Odette, deux nouvelles
     # pages (aucune ne conclut à sa place) ; le plan des Fondateurs
-    S.ouvrir_page('livredor'); S.fermer()
     S.page('vraielettre'); nl = S.pg.locator('#livre-ici .lv-page.on .ec-lettre').count()
     S.page('carnet'); nc = S.pg.locator('#livre-ici .lv-page.on .ec-chat').count()
     verifier(nl == 1 and nc == 7, f'le Sage : deux nouvelles pages dans son Grand Livre, la lettre et le carnet d\'Odette avec ses sept chats ({nl}, {nc})')
     verifier(S.js("() => !M.E().pages.some(function(p){ return p.id === 'plan'; })"), '(16 novembre) plus de « plan des Fondateurs » sorti de nulle part')
-    verifier(list(livrer(T, S)) == ['info:ecritures'], 'le Sage a donné à l\'Alchimiste : les écritures du village (et plus de code « six doigts » : il le dit à voix haute)')
+    verifier(list(livrer(T, S)) == [], '(17 novembre) le Sage ne donne plus « Les écritures du village » à l\'Alchimiste : c\'est lui qui compare')
     # (16 novembre) LE SECRET D'ODETTE, l'après-midi : le soleil entre chez Odette ; le Pisteur enfonce les trois dalles dans l'ordre que
     # le Sage lui a dit (de vrais appuis, dans le vrai mini-jeu) ; la cachette s'ouvre : le vieux plan, pour le Sage
     if P.point('L2', 'cachette'):
@@ -332,7 +330,7 @@ def partie(nav, base):
     A.js("() => { M.UI.modal = null; M.P().onglet = 'role'; M.render(); M.ouvrirLabo(); }"); A.pg.wait_for_timeout(1800)
     f = next((x for x in A.pg.frames if x.parent_frame is not None), None)
     f.wait_for_function('() => !!window.__labo', timeout=8000)
-    verifier(f.evaluate("() => window.__labo.cuirs().indexOf('lettre') >= 0") and A.js("() => !!M.P().recus['info:ecritures']"), 'l\'Alchimiste : la lettre est sur sa paillasse, et il a le Livre d\'or')
+    verifier(f.evaluate("() => window.__labo.cuirs().indexOf('lettre') >= 0") and f.evaluate("() => !document.querySelector('#gLivreDor')"), 'l\'Alchimiste : la lettre est sur sa paillasse (plus de Livre d\'or au labo)')
     # (16 novembre, Bible §13.54) le flacon d'encre d'Iris, reçu du Barde le matin, est là aussi. Ici : l'encre d'Iris D'ABORD (toute seule,
     # elle ne donne pas de code), puis la lettre, qui donne alors DEUX codes dans la même fenêtre : « Deux écritures » et « La même encre ».
     # (L'autre ordre — la lettre, puis l'encre — est joué au doigt par e3-alchimiste.py.)
@@ -343,9 +341,16 @@ def partie(nav, base):
     t1 = A.texte(); n1 = A.pg.locator('#voile .b-donne').count(); A.js("() => { M.fermer(); }"); A.pg.wait_for_timeout(900)
     t2 = A.texte(); n2 = A.pg.locator('#voile .b-donne').count(); A.fermer(); A.pg.wait_for_timeout(500)
     verifier('encre d\'Iris' in t1 and 'Garde-la bien' in t1 and n1 == 0, f'l\'encre d\'Iris, analysée la première : ce qu\'elle est, et pas de code ({n1})')
-    verifier('comme l\'encre d\'Iris' in t2 and 'Margot' in t2 and n2 == 2, f'la lettre, analysée ensuite : les deux écritures, « exactement comme l\'encre d\'Iris », et deux codes dans la même fenêtre ({n2})')
-    verifier(set(livrer(T, A)) == {'info:ecriture', 'info:meme_encre'}, 'l\'Alchimiste a donné : « Deux écritures » au Barde et au Sage, « La même encre » au Sage')
-    verifier(S.js("() => !!M.P().recus['info:meme_encre']") and not B.js("() => !!M.P().recus['info:meme_encre']"), 'le Sage a « La même encre » (pas le Barde)')
+    verifier('comme l\'encre d\'Iris' in t2 and 'Margot' not in t2 and 'Dis-le à tes amis' in t2 and n2 == 0, f'la lettre, analysée ensuite : « exactement comme l\'encre d\'Iris… Dis-le à tes amis ! », sans nom et sans code ({n2})')
+    verifier(list(livrer(T, A)) == [], '(17 novembre) l\'Alchimiste n\'a plus de code à donner pour la lettre : il le dit à voix haute')
+    # (17 novembre, Bible §13.58) LE SAGE COMPARE LES ÉCRITURES : il rend le tableau, le maire lui confie le Livre d'or ; avec la lettre,
+    # la page « Comparer les écritures » ; il désigne Mélusine (un vrai toucher, « Tu en es sûr ? ») : un code pour le Barde
+    S.point('mairie', 'rendu'); verifier('Livre d\'or' in S.texte(), 'le Sage rend le tableau : le maire lui confie le Livre d\'or'); S.fermer()
+    S.page('quiecrit')
+    bm = S.pg.locator('#livre-ici .lv-page.on [data-act=ec-designer][data-id=melusine]')
+    verifier(bm.count() == 1 and S.pg.locator('#livre-ici .lv-page.on [data-act=ec-designer]').count() == 12, 'le Sage : « Comparer les écritures », la lettre et les douze mots du Livre d\'or')
+    bm.scroll_into_view_if_needed(); bm.click(); S.pg.wait_for_timeout(300); S.pg.locator('#voile [data-act=confirmer-oui]').click(); S.pg.wait_for_timeout(400); S.fermer()
+    verifier(livrer(T, S) == ['info:cest_melusine'] and B.js("() => !!M.P().recus['info:cest_melusine']"), 'le Sage désigne Mélusine : le code « L\'écriture de Mélusine » passe au Barde')
     # (13 novembre) le Barde peut poser la même accusation à Margot : elle dit vrai
     B.carte(); B.ev('lieu', {'id': 'taverne'}); B.ev('parler', {'id': 'margot'}); B.pg.wait_for_timeout(500)
     im = B.js("() => { var q = M.E().pnj.margot.questions; for(var i = 0; i < q.length; i++) if(/écrit la lettre/.test(q[i].q)) return i; return -1; }")
@@ -356,7 +361,7 @@ def partie(nav, base):
     B.carte(); B.ev('lieu', {'id': 'atelier'}); B.ev('parler', {'id': 'melusine'}); B.pg.wait_for_timeout(600)
     B.ev('question', {'p': 'melusine', 'i': str(iq)}); B.ev('bd-ment', {'p': 'melusine', 'i': str(iq)}); B.fermer()
     verifier(livrer(T, B) == ['info:aveu'], 'le Barde a donné au Sage : l\'aveu de Mélusine')
-    verifier(S.js("() => !!M.P().recus['info:aveu'] && !!M.P().recus['info:ecriture']"), 'le Sage a reçu « Deux écritures » et l\'aveu de Mélusine (plus de page « Qui a écrit la lettre ? »)')
+    verifier(S.js("() => !!M.P().recus['info:aveu']"), 'le Sage a reçu l\'aveu de Mélusine')
     # chacun rend sa mission au maire
     S.point('mairie', 'rendu'); S.fermer()
     P.point('mairie', 'mission'); P.fermer()
