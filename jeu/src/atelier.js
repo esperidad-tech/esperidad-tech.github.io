@@ -8222,7 +8222,7 @@ function brosseBouge(V, o, ev, dl){
   if(pr > 0){ O.bon += pr; O.mal = Math.max(0, O.mal - pr); if(O.bon > 8) O.debut = 0; }
   else if(pr < 0){
     O.mal += -pr;
-    if(O.mal > 22){
+    if(O.mal > 16){
       O.mal = 0;
       particule(V, ev, 'at-part-herisse', '', 800);
       /* (un coup de brosse qui commence à l'envers : elle n'aime pas — pas plus d'une fois toutes les deux secondes et demie) */
@@ -8806,33 +8806,51 @@ function jouerHerbe(V, o){
    on essaie les places proposées, puis des places libres au hasard ; à défaut, la première. Les petits objets comptent aussi. */
 /* ev : {x, y, r} — pas derrière ça (Mimi, assise là : elle cacherait ce qu'on pose) */
 function placeLibre(V, l, dl, h, ev){
+  /* (17 novembre) la cueillette, les flacons de devant la porte et leur « Nouveau ! » : leurs vraies places à l'écran (rien de posé
+     dessus ni dessous — leurs bulles passent devant ce qui est plus au fond : le baquet s'y est retrouvé caché, sur un téléphone ; une
+     grande zone fixe, d'abord, était trop large : sur un téléphone, elle ne laissait plus une place libre à l'écran) */
+  var tas = V.salle || !V.piece || !V.pan ? [] : (V.elTas || []).concat(V.elFl || [], V.elPlP ? [V.elPlP] : [], V.elNeuf ? [V.elNeuf] : []).map(function(e){
+    if(!e || e.hidden || !e.isConnected) return null;
+    var r = e.getBoundingClientRect();
+    if(!r.width || !r.height) return null;
+    var a = versMonde(V, r.left, r.top), b = versMonde(V, r.right, r.bottom);
+    return [a.x - 10, a.y - 10, b.x + 10, b.y + 10];
+  }).filter(Boolean);
   /* combien la chose posée là serait cachée (0 : pas du tout ; 1 : interdit) */
   function cache(x, y){
     if(ev && Math.abs(x - ev.x) < ev.r && y < ev.y + 30 && y > ev.y - ev.r * 2.6) return 1;      /* (ni derrière elle, ni sous sa bulle) */
     var s = echelleSol(y), bx = [x - dl * s, y - h * s, x + dl * s, y], aire = (bx[2] - bx[0]) * (bx[3] - bx[1]), pire = 0;
-    /* (17 novembre) ni sur la cueillette et les flacons, devant la porte de l'atelier (leurs bulles passent devant tout : le baquet s'y
-       est retrouvé caché, sur un téléphone), ni sous les boutons du bas de l'écran */
-    if(!V.salle && inter(bx, [TAS.x - 230, TAS.y - 130, TAS.x + 230, TAS.y + FLACONS.dy + TAS.dy + 30]) > aire * 0.06) return 1;
+    var zb = Math.round(posObj(V, {t:'chat', x:x, y:y, sur:null}).z * 5);      /* (sa place dans l'ordre du dessin, à elle, là) */
+    /* (ni sur la cueillette et les flacons, ni sous les boutons du bas de l'écran) */
+    for(var i = 0; i < tas.length; i++) if(inter(bx, tas[i]) > aire * 0.04) return 1;
     if(sousBoutons(V, x, y) || sousBoutons(V, x - dl * s * 0.8, y) || sousBoutons(V, x + dl * s * 0.8, y)) return 1;
     /* (les cartons pas encore ouverts cachent aussi : ils sont tout devant — vu avec les colis du parc à chat, sur un téléphone) */
     boitesCartons(V).forEach(function(b){ if(b[3] > y) pire = Math.max(pire, inter(bx, b) / aire); });
     ici(V).forEach(function(o){
       if(o.sur || o.t === 'chat' || o.t === 'tapis' || o.cote) return;
       var c = catDe(o); if(c.z === 'mur' || c.z === 'tapis') return;
-      var p = posObj(V, o); if(p.y <= y) return;
+      /* (devant ou derrière, c'est l'ordre du dessin qui le dit — z —, pas le pied de l'objet : le chaudron et la paillasse, très
+         profonds, passent devant ce qui est posé un peu plus bas que leurs pieds ; le baquet s'est retrouvé derrière eux, Mimi dedans,
+         invisible — vu par tools/mimi.py, 17 novembre) */
+      var p = posObj(V, o); if(Math.round(p.z * 5) < zb - 2) return;
       pire = Math.max(pire, inter(bx, boite(o, p)) / aire);
     });
     return pire > 0.06 ? Math.min(1, pire) : 0;
   }
-  for(var i = 0; i < l.length; i++) if(!cache(l[i][0], l[i][1])) return {x:l[i][0], y:l[i][1]};
+  /* (17 novembre : pas à moitié hors de l'écran non plus — sur un téléphone, le baquet s'est posé au bord gauche, coupé en deux) */
+  function horsVue(x, y){
+    if(!(V.k && V.pan && V.vb && V.vw)) return false;
+    var s = echelleSol(y), ex = function(u){ return (u - V.vb.x0) * V.k - V.pan.x; }, ey = function(u){ return (u - V.vb.y0) * V.k - V.pan.y; };
+    return ex(x - dl * s) < 6 || ex(x + dl * s) > V.vw - 6 || ey(y - h * s) < 60 || ey(y) > V.vh - 6;
+  }
+  for(var i = 0; i < l.length; i++) if(!cache(l[i][0], l[i][1]) && !horsVue(l[i][0], l[i][1])) return {x:l[i][0], y:l[i][1]};
   /* (pas de place là : la place libre la plus proche de ce qu'on voulait, parmi celles qu'on voit à l'écran — sur un téléphone, la
      pièce est plus large que lui ; 17 novembre : une grille sur tout le plancher, plus des essais au hasard ; s'il n'y a vraiment
      rien de libre, la moins cachée) */
   var mieux = null;
   function essai(x, y){
-    var c = cache(x, y), sx = V.k && V.pan && V.vb ? (x - V.vb.x0) * V.k - V.pan.x : 100, sy = V.k && V.pan && V.vb ? (y - V.vb.y0) * V.k - V.pan.y : 100;
-    var dehors = V.vw && (sx < 40 || sx > V.vw - 40 || sy < 90 || sy > V.vh - 10);
-    var sc = c * 6000 + (dehors ? 3000 : 0) + Math.hypot(x - l[0][0], y - l[0][1]);
+    var c = cache(x, y);
+    var sc = c * 6000 + (horsVue(x, y) ? 3000 : 0) + Math.hypot(x - l[0][0], y - l[0][1]);
     if(c < 1 && (!mieux || sc < mieux.sc)) mieux = {x:x, y:y, sc:sc};
   }
   var y0 = SOL_MIN + 50, y1 = solMax(V) - 16;

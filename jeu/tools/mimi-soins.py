@@ -131,8 +131,9 @@ with sync_playwright() as p:
     def flottes(): return pg.evaluate("() => [].map.call(document.querySelectorAll('#atelier-ici .at-flotte'), function(x){ return x.textContent; })")
     def coups(): return pg.evaluate("() => { var v = Atelier._vue(); return v._outil ? v._outil() : null; }")
     # (à rebrousse-poil : de la queue vers la tête)
-    pg.mouse.move(*hanches); pg.mouse.down()
-    pg.mouse.move(tete[0] + (tete[0] - hanches[0]) * 0.6, tete[1] + (tete[1] - hanches[1]) * 0.6, steps=8); pg.wait_for_timeout(120)
+    dx, dy = tete[0] - hanches[0], tete[1] - hanches[1]
+    pg.mouse.move(hanches[0] - dx * 0.4, hanches[1] - dy * 0.4); pg.mouse.down()
+    pg.mouse.move(tete[0] + dx * 0.5, tete[1] + dy * 0.5, steps=10); pg.wait_for_timeout(120)
     f1 = flottes(); cl = classes(pg, cid)
     shot(pg, 'brosse-rebours', cadre_sel(pg, f'#atelier-ici [data-obj="{cid}"]'))
     pg.mouse.up(); pg.wait_for_timeout(300)
