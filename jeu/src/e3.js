@@ -443,19 +443,21 @@ E[3] = {
     piece_pain:{
       t:'Sous ta loupe : de l\'or vrai, tout neuf. Sous la couronne, une toute petite fêlure en forme d\'éclair… exactement comme les pièces de Bastien, dans l\'affaire de la rivière rouge ! Elle sort du même moule, de la même bourse. Et dans les creux… de la farine.',
       note:'Analyse de la pièce de Fortuné : de l\'or tout neuf, la même petite fêlure en éclair que les pièces de Bastien (enquête 2) : la même bourse. De la farine dans les creux.'},
-    lettre:{donne:'info:ecriture',
-      t:'La lettre d\'Odette, de près : des « M » qui piquent, des « t » barrés d\'une vague, un petit rond sur les « i ». Dans le Livre d\'or, DEUX personnes écrivent comme ça : Mélusine… et Margot ! Laquelle des deux ? Sur le papier, de l\'encre de noix de galle.',
-      note:'Analyse de la lettre : deux écritures lui ressemblent, celle de Mélusine et celle de Margot (des « M » qui piquent, des « t » en vague, un rond sur les « i »). De l\'encre de noix de galle.',
-      variantes:[{si:[{analyse:'encre_iris'}], donneAussi:'info:meme_encre',
-        t:'La lettre d\'Odette, de près : des « M » qui piquent, des « t » barrés d\'une vague, un petit rond sur les « i ». Dans le Livre d\'or, DEUX personnes écrivent comme ça : Mélusine… et Margot ! Laquelle des deux ? Et son encre : une seule bande noire, tout en bas… exactement comme l\'encre d\'Iris. C\'est la même !',
-        note:'Analyse de la lettre : deux écritures lui ressemblent, celle de Mélusine et celle de Margot (des « M » qui piquent, des « t » en vague, un rond sur les « i »). Son encre est la même que celle d\'Iris : la lettre a été écrite avec l\'encre volée.'}]},
+    /* (17 novembre, le nouveau fil) l'Alchimiste ne compare plus les écritures (c'est le Sage, dans son Grand Livre) : au labo, la lettre
+       ne parle que par son encre, et l'encre d'Iris dit que c'est la même. Plus de code : elle le dit à voix haute. */
+    lettre:{
+      t:'L\'encre de la lettre, sur la bandelette : une seule bande noire, tout en bas. De l\'encre de noix de galle : elle ne se sépare pas en couleurs. Une encre, ça se compare…',
+      note:'Analyse de la lettre : de l\'encre de noix de galle (une seule bande noire, tout en bas de la bandelette).',
+      variantes:[{si:[{analyse:'encre_iris'}],
+        t:'L\'encre de la lettre, sur la bandelette : une seule bande noire, tout en bas… exactement comme l\'encre d\'Iris. C\'est la même ! La lettre a été écrite avec l\'encre volée chez Iris, cette nuit. Dis-le à tes amis !',
+        note:'L\'encre de la lettre et celle d\'Iris sont les mêmes : la lettre a été écrite avec l\'encre volée chez Iris. À dire à l\'équipe !'}]},
     /* (16 novembre) le fond de flacon d'Iris : toute seule, son encre ne dit que ce qu'elle est ; après la lettre, elle dit que c'est la même */
     encre_iris:{
       t:'L\'encre d\'Iris, sur la bandelette : une seule bande noire, tout en bas. De l\'encre de noix de galle : elle ne se sépare pas en couleurs. Garde-la bien : une encre, ça se compare.',
       note:'Analyse de l\'encre d\'Iris : de l\'encre de noix de galle (une seule bande noire, tout en bas de la bandelette).',
-      variantes:[{si:[{analyse:'lettre'}], donne:'info:meme_encre',
-        t:'L\'encre d\'Iris, sur la bandelette : une seule bande noire, tout en bas… exactement comme l\'encre de la lettre. C\'est la même ! La lettre a été écrite avec l\'encre volée chez Iris.',
-        note:'L\'encre de la lettre et celle d\'Iris sont les mêmes : la lettre a été écrite avec l\'encre volée chez Iris.'}]},
+      variantes:[{si:[{analyse:'lettre'}],
+        t:'L\'encre d\'Iris, sur la bandelette : une seule bande noire, tout en bas… exactement comme l\'encre de la lettre. C\'est la même ! La lettre a été écrite avec l\'encre volée chez Iris. Dis-le à tes amis !',
+        note:'L\'encre de la lettre et celle d\'Iris sont les mêmes : la lettre a été écrite avec l\'encre volée chez Iris. À dire à l\'équipe !'}]},
     /* (16 novembre, §13.55) la mousse lumineuse du donjon : une vraie plante (Schistostega pennata, « l'or des lutins »). Tout ce qui est
        dit ici est vrai ; elle ne donne pas de code (c'est le chaudron du donjon qui donne la recette du baume). */
     mousse:{
@@ -533,11 +535,11 @@ E[3] = {
   infos:{
     /* savoir:true — une information à retenir : elle n'ouvre rien (les pages qui en tiraient la conclusion à la place du Sage sont
        retirées, Romain, 13 novembre : « ça donne la solution ») */
-    poste:{nom:'La lettre n\'est pas passée par la poste', ic:'✉️', pour:'sage', de:'barde', savoir:true,
+    poste:{nom:'La lettre n\'est pas passée par la poste', ic:'✉️', pour:'sage', de:'barde', savoir:true, reserve:true,
       t:'Victor, le facteur, n\'a pas apporté la lettre d\'Odette : elle n\'a ni timbre ni tampon. Et en vingt ans, Odette n\'a jamais envoyé une seule lettre.',
       dire:'Une lettre sans timbre ? Le Sage doit le savoir : donne-lui ce code.'},
     /* (12 novembre au soir : il remplace « Le capuchon vers le clocher » — c'est Mélusine qui a déposé la lettre, déguisée en Odette) */
-    chale:{nom:'Odette… sans sa canne', ic:'🧣', pour:'sage', de:'barde', savoir:true,
+    chale:{nom:'Odette… sans sa canne', ic:'🧣', pour:'sage', de:'barde', savoir:true, reserve:true,
       t:'À l\'aube, du haut des toits, Tim a cru voir Odette, dans son châle à chats, glisser la lettre sous la porte de la mairie. Mais elle marchait vite… et sans canne !',
       dire:'Odette, sans sa canne ? Le Sage doit le savoir : donne-lui ce code.'},
     /* (la lettre et le carnet sont des objets : E.objets, plus haut ; l'Alchimiste pose la lettre sur sa paillasse) */
@@ -546,7 +548,12 @@ E[3] = {
       dire:'Des traces toutes fraîches ! Le Pisteur saura les suivre, depuis chez Odette : donne-lui ce code.'},
     /* (Romain, 13 novembre : « ça accusait deux femmes, et après on devait trouver laquelle était la bonne » ; Bible §13.31, étape 8)
        le Livre d'or laisse DEUX suspectes. Le Barde les interroge toutes les deux : une seule ment (pnj.melusine [4], pnj.margot [4]). */
-    ecriture:{nom:'Deux écritures', ic:'🖋️', pour:['barde', 'sage'], de:'alchimiste', savoir:true,
+    /* (17 novembre) c'est le Sage qui compare, dans son Grand Livre : « Deux écritures », « Les écritures du village » et « La même
+       encre » ne sont plus donnés par personne (en réserve : leurs symboles ne resserviront pas). Le seul code : celui du Sage au Barde. */
+    cest_melusine:{nom:'L\'écriture de Mélusine', ic:'🧵', pour:'barde', de:'sage', pnj:'melusine',
+      t:'Le Sage a comparé la lettre au Livre d\'or de la fête : c\'est la main de Mélusine, la couturière, qui a écrit la lettre !',
+      dire:'Le Barde doit aller lui parler : donne-lui ce code.'},
+    ecriture:{nom:'Deux écritures', ic:'🖋️', pour:['barde', 'sage'], de:'alchimiste', savoir:true, reserve:true,
       t:'L\'Alchimiste a comparé la lettre au Livre d\'or de la fête : des « M » qui piquent, des « t » en vague, un petit rond sur les « i »… Deux femmes écrivent comme ça : Mélusine et Margot. Laquelle des deux ?',
       dire:'Le Barde et le Sage doivent le savoir : donne-leur ce code.'},
     crypte_fermee:{nom:'La crypte est fermée', ic:'🗝️', pour:'barde', de:'pisteur', pnj:'anselme',
@@ -554,7 +561,7 @@ E[3] = {
       /* (Romain, 13 novembre : « Anselme, le sonneur de cloche, pourra peut-être vous aider. Donne ce code au Barde. ») */
       dire:'Anselme, le sonneur de cloches, pourra peut-être vous aider. Donne ce code au Barde.'},
     /* (étape 3, le Sage) */
-    ecritures:{nom:'Les écritures du village', ic:'📖', pour:'alchimiste', de:'sage',
+    ecritures:{nom:'Les écritures du village', ic:'📖', pour:'alchimiste', de:'sage', reserve:true,
       t:'Le Livre d\'or de la fête t\'attend dans ton labo : tout le village y a écrit un petit mot pour Odette, chacun de sa main. Glisse la lettre sous ta loupe : le Livre d\'or s\'ouvrira, et tu compareras les écritures.',
       dire:'L\'Alchimiste pourra comparer les écritures : donne-lui ce code.'},
     /* (12 novembre : plus de code « L'herbier » — le Sage lit l'herbier à voix haute, l'Alchimiste cherche sur sa carte ; Bible §13.26) */
@@ -611,13 +618,13 @@ E[3] = {
     /* LES EMPREINTES DU JARDIN D'IRIS (16 novembre, Bible §13.52 ; lieux.herboristerie) : le Pisteur les a suivies et mesurées. Une
        information pour le Sage (savoir), qui a la taille des pieds de chacun dans « Les habitants ». Le texte ne conclut rien, et ne
        parle pas de l'encre : c'est le Barde qui sait qu'on en a volé chez Iris. tard:true : rangé tout à la fin, aucun autre code ne bouge. */
-    pieds_enfant:{nom:'Des pieds d\'enfant', ic:'👣', pour:'sage', de:'pisteur', savoir:true, tard:true,
+    pieds_enfant:{nom:'Des pieds d\'enfant', ic:'👣', pour:'sage', de:'pisteur', savoir:true, reserve:true, tard:true,
       t:'Cette nuit, quelqu\'un est passé par le jardin d\'Iris, sous la fenêtre de son atelier. Le Pisteur a mesuré ses empreintes dans la terre : 3 carreaux. Des pieds d\'enfant ! Elles filaient vers la rue des Lanternes.',
       dire:'Des pieds d\'enfant ? Le Sage doit le savoir : donne-lui ce code.'},
     /* LA MÊME ENCRE (16 novembre, 15 h, Bible §13.54 ; l'étape 6 du scénario : « Alchimiste, code pour le Sage ») : l'Alchimiste a comparé
        l'encre de la lettre à celle d'Iris. C'est ce qui relie le vol chez Iris (et donc les empreintes du jardin) à la lettre. Une
        information (savoir) ; le texte ne dit pas qui. tard:true : rangé tout à la fin, aucun autre code ne bouge. */
-    meme_encre:{nom:'La même encre', ic:'🖋️', pour:'sage', de:'alchimiste', savoir:true, tard:true,
+    meme_encre:{nom:'La même encre', ic:'🖋️', pour:'sage', de:'alchimiste', savoir:true, tard:true, reserve:true,
       t:'L\'Alchimiste a comparé l\'encre de la lettre à celle d\'Iris : c\'est la même, une encre noire de noix de galle. La lettre a été écrite avec l\'encre volée chez Iris, cette nuit.',
       dire:'La même encre ? Le Sage doit le savoir : donne-lui ce code.'},
     /* (étape 6) le donjon : la porte aux quatre signes (le code du donjon « Un chat gratte à la porte », porte:odette) */
@@ -759,9 +766,11 @@ E[3] = {
         /* rendre le tableau : 5 pièces d'or. (13 novembre : plus de lettre accrochée sous le tableau — si le Barde ne l'obtient pas, le
            Pisteur va la chercher, autant de fois qu'il faut : « pas besoin de subterfuges », Romain) */
         {id:'rendu', ic:'🎉', nom:'Rendre le tableau au maire', moments:A_, or:5, visibleSi:[{vu:'sage:mairie:tableau'}],
-          t:'Le maire : « Magnifique ! Ce soir, tout le monde à la fête ! »'},
+          /* (17 novembre, le nouveau fil) en échange, le maire lui confie le Livre d'or de la fête : il n'est plus dans le Grand Livre dès le
+             matin (« rien n'arrive par magie »), et c'est le Sage qui compare les écritures, plus l'Alchimiste */
+          t:'Le maire : « Magnifique ! Ce soir, tout le monde à la fête ! Tenez, gardez-moi donc le Livre d\'or : tout le village y a écrit un mot pour Odette. »'},
         {id:'sanstableau', ic:'🏛️', nom:'Passer voir le maire', moments:A_, visibleSi:[{rate:'sage:mairie:tableau'}],
-          t:'Le maire : « Pas de tableau ? Tant pis, les lampions feront l\'affaire. Ce soir, tout le monde à la fête ! »'}
+          t:'Le maire : « Pas de tableau ? Tant pis, les lampions feront l\'affaire. Rendez-vous utile : gardez-moi le Livre d\'or, tout le village y a écrit un mot pour Odette. »'}
       ]},
       /* l'Alchimiste (étape 4) : porter le gâteau au maire, l'après-midi (5 pièces d'or) */
       alchimiste:{intro:'La mairie. Le maire attend son gâteau en regardant sa montre.', points:[
@@ -863,13 +872,14 @@ E[3] = {
     herboristerie:{
       pisteur:{intro:'L\'herboristerie d\'Iris. Derrière la boutique, son petit jardin, plein de pots et de plates-bandes.', points:[
         {id:'jardin', ic:'👣', nom:'Le jardin d\'Iris', moments:MA_, mj:'traces', mjNiveauFixe:7, essaisInfinis:true,
-          params:{decor:'ville', suspect:'enfant', compagnon:'sabot', compagnonTxt:'Les sabots d\'Iris…', arrivee:'lanterne', arriveeTxt:'La rue des Lanternes !',
+          params:{decor:'ville', suspect:'enfant', compagnon:'sabot', compagnonTxt:'Les sabots d\'Iris…', arrivee:'lanterne', arriveeTxt:'La place des Lanternes !',
             departTitre:'Retiens bien ces petites empreintes', departNom:'De tout petits pieds', departTxt:'Au départ, les sabots d\'Iris marchent avec elles. Ne suis que les petites !',
             consigne:'Au départ, de petites empreintes et les sabots d\'Iris se mélangent. Retiens bien les petites, puis guide le Pisteur du doigt sur LEUR piste jusqu\'au bout !'},
-          donne:'info:pieds_enfant',
+          /* (17 novembre) plus de code « Des pieds d'enfant » : le Pisteur le dit à voix haute (le Sage a la taille des pieds de chacun dans
+             « Les habitants ») ; et la piste ne finit plus rue des Lanternes — Romain : « ça grille Mélusine » — mais sur la place */
           avant:'Sous la fenêtre de l\'atelier, la terre du jardin est toute piétinée. Des empreintes fraîches : quelqu\'un est passé par là, cette nuit ! Où mènent-elles ?',
           bouton:'👣 Suivre les empreintes',
-          t:'Les petites empreintes filent jusqu\'à la rue des Lanternes… et s\'y perdent : ce matin, tout le village y a marché pour aller écouter le maire. Mais tu les as mesurées : 3 carreaux. Des pieds d\'enfant !',
+          t:'Les petites empreintes filent jusqu\'à la place des Lanternes… et s\'y perdent : ce matin, tout le village l\'a piétinée pour écouter le maire. Mais tu les as mesurées : 3 carreaux. Des pieds d\'enfant ! Dis-le à tes amis.',
           rate:'Tu as perdu la piste… Retourne au jardin : les empreintes y sont encore.'}
       ]},
       alchimiste:{cueillir:[{ingr:'lavande', n:2}, {ingr:'pensee', n:2}]}},
@@ -904,7 +914,7 @@ E[3] = {
     /* le maire ne ment jamais (il ne dit pas tout). Le matin, il attend ses fleurs ; l'après-midi, il les compte (marche.retour), puis ses
        questions. Le grand dialogue de la lettre ne s'ouvre qu'une fois tout demandé aux villageois du matin, et à lui (toutDit). */
     grosbec:{ou:{apresmidi:'mairie'}, carte:{matin:'mairie'},
-      occupe:{matin:['« Mes fleurs d\'abord, Barde ! Nous parlerons cet après-midi. »', '« Dix bouquets, pas un de moins ! Allez, allez ! »']},
+      occupe:{matin:['« La mairie est fermée : je prépare ma fête ! Revenez cet après-midi. »', '« Dix bouquets, pas un de moins ! Allez, allez ! »']},
       salut:'', questions:[
       {q:Q_LETTRE, g:'h', moments:A_, a:'Une merveilleuse nouvelle ! Je l\'ai trouvée sous ma porte ce matin.',
         note:'Le maire : il a trouvé la lettre sous sa porte, ce matin.'},
@@ -944,14 +954,16 @@ E[3] = {
       /* [4] (13 novembre) la même accusation que chez Mélusine, avec le code « Deux écritures » de l'Alchimiste : le Livre d'or désigne
          deux femmes, le Barde les interroge toutes les deux. Margot dit vrai (aucun signe sur son visage) ; Mélusine ment.
          Réplique écrite par Claude le 13 novembre ; gardée telle quelle par Romain le 16 novembre (6 h 43 : « je te laisse faire »). */
-      {q:'C\'est vous qui avez écrit la lettre.', g:'e', moments:A_, besoin:[{code:'info:ecriture'}], a:'Moi ? Je n\'écris que mes ardoises, à la craie. Et avec des fautes !',
+      {q:'C\'est vous qui avez écrit la lettre.', g:'e', moments:A_, besoin:[{code:'info:cest_melusine'}], a:'Moi ? Je n\'écris que mes ardoises, à la craie. Et avec des fautes !',
         note:'Margot dit qu\'elle n\'écrit que ses ardoises, à la craie.'}
     ]},
     victor:{ou:{matin:'poste'}, carte:{apresmidi:'poste'},
       occupe:{apresmidi:['« Cent invitations à distribuer : pas une minute ! »', '« Quatre-vingt-dix-neuf… Non ! Tu m\'as fait perdre le compte ! »']},
       salut:'Bonjour ! Une lettre pour toi ? Ah non…', questions:[
-      {q:Q_LETTRE, g:'e', moments:M_, donne:'info:poste', a:'Ni timbre ni tampon : elle n\'est pas passée par la poste. Et en vingt ans, Odette n\'a jamais envoyé une seule lettre.',
-        note:'Victor : la lettre d\'Odette n\'a ni timbre ni tampon, elle n\'est pas passée par la poste. Et en vingt ans, Odette n\'a jamais envoyé une seule lettre (code pour le Sage).'},
+      /* (17 novembre, la règle des codes de Romain : « un code, ça sert à donner un objet, ou à activer un truc sur l'appareil de l'autre »)
+         plus de code « La lettre n'est pas passée par la poste » : le Barde le dit à voix haute */
+      {q:Q_LETTRE, g:'e', moments:M_, a:'Ni timbre ni tampon : elle n\'est pas passée par la poste. Et en vingt ans, Odette n\'a jamais envoyé une seule lettre.',
+        note:'Victor : la lettre d\'Odette n\'a ni timbre ni tampon, elle n\'est pas passée par la poste. Et en vingt ans, Odette n\'a jamais envoyé une seule lettre. À dire au Sage !'},
       {q:Q_ODETTE, g:'h', moments:M_, a:'Odette ? Je la connais à peine.', ment:true,
         vrai:'Bon… je l\'évite. Ses chats me suivent partout en miaulant, et j\'ai peur des chats.',
         note:'Victor dit qu\'il connaît à peine Odette.', noteVrai:'Victor a avoué : il évite Odette. Ses chats le suivent partout en miaulant, et il a peur des chats.'},
@@ -961,8 +973,8 @@ E[3] = {
         note:'Victor : le maire recompte ses papiers chaque soir. Gare à qui en emprunte un !'},
       /* une question de plus, dès qu'il a répondu sur la lettre : l'idée de comparer les écritures (Romain, 20 h 04 : « ce serait bien qu'il
          y ait quelqu'un qui émette l'hypothèse de récupérer la lettre et de la comparer avec son écriture ») */
-      {q:'Comment savoir si c\'est vraiment Odette qui l\'a écrite ?', g:'e', moments:M_, besoin:[{vu:'barde:victor:0'}], a:'Il faudrait comparer avec quelque chose qu\'elle a écrit elle-même. Un papier à elle, chez elle…',
-        note:'Victor : pour savoir si Odette a écrit la lettre, il faudrait la comparer avec quelque chose qu\'elle a écrit elle-même. Un papier à elle, chez elle…'}
+      {q:'Comment savoir si c\'est vraiment Odette qui l\'a écrite ?', g:'e', moments:M_, besoin:[{vu:'barde:victor:0'}], a:'Il faudrait la comparer avec un papier écrit de sa main. Mais la lettre, le maire la garde dans son bureau… et la mairie n\'ouvre que cet après-midi.',
+        note:'Victor : pour savoir si Odette a écrit la lettre, il faudrait la comparer avec un papier écrit de sa main. Le maire garde la lettre dans son bureau ; la mairie n\'ouvre que cet après-midi.'}
     ]},
     /* après le marchandage, c'est un villageois comme les autres (pas de salut : il vient de te vendre des fleurs) */
     fortune:{ou:{matin:'place', apresmidi:'place'}, salut:'', questions:[
@@ -993,9 +1005,9 @@ E[3] = {
       {q:Q_ODETTE_TU, g:'h', moments:MA_, a:'Elle me donne des biscuits pour Pirate. Et elle me gronde quand je marche sur ses toits !',
         note:'Tim : Odette lui donne des biscuits pour son chien, Pirate.'},
       /* (c'est Mélusine qui a déposé la lettre, dans un châle comme celui d'Odette : Romain, 18 h 15) */
-      {q:Q_NUIT, g:'e', moments:MA_, a:'Rien ! Je dormais, comme tout le monde.', ment:true, donneVrai:'info:chale',
+      {q:Q_NUIT, g:'e', moments:MA_, a:'Rien ! Je dormais, comme tout le monde.', ment:true,   /* (17 novembre) plus de code « Odette… sans sa canne » : à voix haute */
         vrai:'Bon… j\'étais sur les toits, à l\'aube. J\'ai vu Odette, dans son châle à chats, glisser la lettre à la mairie… mais elle marchait vite, et sans canne.',
-        note:'Tim dit que cette nuit, il dormait, comme tout le monde.', noteVrai:'Tim a avoué : à l\'aube, il a vu « Odette », dans son châle à chats, glisser la lettre à la mairie. Mais elle marchait vite, et sans canne (code pour le Sage).'},
+        note:'Tim dit que cette nuit, il dormait, comme tout le monde.', noteVrai:'Tim a avoué : à l\'aube, il a vu « Odette », dans son châle à chats, glisser la lettre à la mairie. Mais elle marchait vite, et sans canne. À dire au Sage !'},
       {q:'Ça fait quoi, d\'être ramoneur ?', g:'h', moments:MA_, a:'Je vois tout le village d\'en haut ! Et dans une cheminée, j\'ai trouvé une pièce avec une lanterne dessinée.',
         note:'Tim : dans une cheminée, il a trouvé une pièce avec une lanterne dessinée.'}
     ]},
@@ -1042,7 +1054,7 @@ E[3] = {
          nouveau fil, ce sera celui du Sage — l'écriture et la pointure). Démasquée : son aveu, et le code pour le Sage (le filet : la nuit,
          à la fête). La seule vérité de plus de 30 mots : c'est le tournant de l'enquête. NE PAS DÉPLACER : E.faits, les missions et le
          grand dialogue d'Anselme citent « verite:melusine:4 ». */
-      {q:'C\'est vous qui avez écrit la lettre.', g:'e', moments:A_, besoin:[{code:'info:ecriture'}], a:'Moi ? Je sais à peine écrire mon nom !', ment:true, donneVrai:'info:aveu',
+      {q:'C\'est vous qui avez écrit la lettre.', g:'e', moments:A_, besoin:[{code:'info:cest_melusine'}], a:'Moi ? Je sais à peine écrire mon nom !', ment:true, donneVrai:'info:aveu',
         vrai:'C\'est moi… Un homme en cape m\'a forcée à l\'écrire et à la déposer. Je n\'ai pas vu son visage. Il est venu ici, cette nuit : il a peut-être laissé des traces…',
         note:'Mélusine dit qu\'elle sait à peine écrire son nom.', noteVrai:'Mélusine a avoué : un homme en cape l\'a forcée à écrire la lettre et à la déposer. Elle n\'a pas vu son visage. Il est venu chez elle cette nuit : il a peut-être laissé des traces (code pour le Sage).'}
     ]},
@@ -1056,8 +1068,8 @@ E[3] = {
         note:'Iris : elle n\'a pas fait attention à la lettre.'},
       {q:Q_ODETTE, g:'h', moments:M_, a:'Elle m\'achète de la camomille pour dormir… et elle ne dort jamais !',
         note:'Iris : Odette lui achète de la camomille pour dormir… et elle ne dort jamais.'},
-      {q:Q_NUIT, g:'e', moments:M_, a:'Cette nuit, on m\'a volé un flacon de mon encre ! Je la fabrique moi-même, avec des noix de galle.',
-        note:'Iris : cette nuit, on lui a volé un flacon de son encre. Elle la fabrique elle-même, avec des noix de galle.'},
+      {q:Q_NUIT, g:'e', moments:M_, a:'Cette nuit, on m\'a volé un flacon de mon encre ! Mon jardin est plein de traces : envoie-moi ton ami le Pisteur, il saura les lire.',
+        note:'Iris : cette nuit, on lui a volé un flacon de son encre. Son jardin est plein de traces : elle demande le Pisteur. À lui dire !'},
       {q:'Vos plantes servent à quoi ?', g:'h', moments:M_, a:'À soigner, à teindre, à parfumer. La pensée sauvage pousse même dans la brume !',
         note:'Iris : la pensée sauvage pousse même dans la brume.'},
       /* (Romain, 16 novembre, 15 h : « oui » à l'encre d'Iris — l'étape 6 de son scénario : « Iris donne un échantillon de son encre ») une fois
@@ -1231,9 +1243,14 @@ E[3] = {
        L'après-midi, un gros bouton jaune : tout le monde a signé, donne ce livre à l'Alchimiste »). La page : ecritures.js
        (M.livreDorHTML) ; les mots et les écritures : ecritures-donnees.js (les mêmes qu'au labo). quand : le bouton n'existe que
        l'après-midi et la nuit (moteur-actions.js, « ouvrir-page »). */
-    {id:'livredor', titre:'Le Livre d\'or de la fête', ic:'📖', type:'livredor', quand:['apresmidi', 'nuit'], donne:'info:ecritures',
-      bouton:'Donner ce livre à l\'Alchimiste',
-      t:'Tout le village a signé. Tu confies le Livre d\'or à l\'Alchimiste : avec sa loupe, il saura comparer les écritures.'},
+    /* (17 novembre, le nouveau fil ; Romain, 16 novembre, 22 h 14 : « c'est le Sage qui compare les écritures, avec une petite interface
+       d'analyse dans le Grand Livre, qui donne un code au Barde ») Le Livre d'or n'existe dans le livre qu'une fois confié par le maire
+       (le tableau rendu, l'après-midi). « Comparer les écritures » : avec la lettre ET le Livre d'or — la lettre en haut, les douze mots
+       du village dessous ; le Sage désigne une main. Deux essais (essais.js). Mélusine : le code « L'écriture de Mélusine » pour le
+       Barde, qui rouvre sa porte. Raté deux fois : le filet de la fête, la nuit. (ecritures.js : M.livreDorHTML, M.quiEcritHTML) */
+    {id:'livredor', titre:'Le Livre d\'or de la fête', ic:'📖', type:'livredor', visibleSi:[{vu:'sage:mairie:rendu'}, {vu:'sage:mairie:sanstableau'}]},
+    {id:'quiecrit', titre:'Comparer les écritures', ic:'🔍', visibleSi:[{et:[{code:'obj:lettre'}, {ou:[{vu:'sage:mairie:rendu'}, {vu:'sage:mairie:sanstableau'}]}]}],
+      get html(){ return window.M && window.M.quiEcritHTML ? window.M.quiEcritHTML() : ''; }},
     /* LA LETTRE et LE CARNET (Romain, 13 novembre : les pages « Une drôle de lettre », « La lettre et le carnet » et « Qui a écrit la
        lettre ? » sont retirées — « ça donne la solution »). À la place, deux pages qui n'apparaissent qu'avec le code du Barde
        (visibleSi, livre.js) et qui ne concluent rien : la vraie lettre, écrite « à la manière d'Odette », et le carnet, écrit de sa
@@ -1347,7 +1364,8 @@ E[3] = {
     /* QUI : l'écriture de la lettre (l'Alchimiste, au labo, avec le Livre d'or du Sage), ou l'aveu de Mélusine (le Barde : démasquée
        l'après-midi, ou le filet, la nuit, à la fête) */
     /* (13 novembre) l'écriture ne laisse plus que deux suspectes, Mélusine et Margot ; c'est l'aveu qui désigne Mélusine */
-    {sources:['alchimiste:analyse:lettre'], qui:['iris', 'victor', 'fortune', 'gaspard', 'tim', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
+    /* (17 novembre) l'écriture, comparée par le Sage dans son Grand Livre (la lettre et le Livre d'or) : il désigne Mélusine */
+    {sources:['sage:ecriture'], qui:['margot', 'iris', 'victor', 'fortune', 'gaspard', 'tim', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
     {sources:[['barde:melusine:4:verite', 'barde:fete:melusine']], qui:['margot', 'iris', 'victor', 'fortune', 'gaspard', 'tim', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
     /* (16 novembre, Bible §13.52) les empreintes du jardin d'Iris (le Pisteur) et la taille des pieds dans le registre (le Sage) :
        3 carreaux — seuls Tim et Mélusine. Avec l'écriture (Mélusine ou Margot), il ne reste que Mélusine, avant même son aveu.

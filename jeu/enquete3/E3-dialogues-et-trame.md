@@ -105,7 +105,7 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
    - « Rien vu. Mais ici, tout se sait : Basile parle à ses choux, Victor a peur des chats, Fortuné vend des cailloux peints… et Mélusine a du tissu tout neuf ! »
 4. **Le maire vient souvent à la taverne ?** _(le matin et l'après-midi)_
    - « Chaque soir, pour son cidre. Il déteste qu'on dise qu'il cache des choses : il devient tout rouge ! »
-5. **C'est vous qui avez écrit la lettre.** — 🔒 s'ouvre avec : le code « Deux écritures » (pour barde, sage) _(l'après-midi)_
+5. **C'est vous qui avez écrit la lettre.** — 🔒 s'ouvre avec : le code « L'écriture de Mélusine » (pour barde) _(l'après-midi)_
    - « Moi ? Je n'écris que mes ardoises, à la craie. Et avec des fautes ! »
 - **Tout demandé** : « Tu poses plus de questions que mes clients ne boivent de cidre ! »
 
@@ -114,7 +114,7 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
 - **Où et quand** : le matin : poste
 - **Bonjour** : « Bonjour ! Une lettre pour toi ? Ah non… »
 1. **Que pensez-vous de la lettre d'Odette ?** _(le matin)_
-   - « Ni timbre ni tampon : elle n'est pas passée par la poste. Et en vingt ans, Odette n'a jamais envoyé une seule lettre. » → donne « La lettre n'est pas passée par la poste » (pour sage)
+   - « Ni timbre ni tampon : elle n'est pas passée par la poste. Et en vingt ans, Odette n'a jamais envoyé une seule lettre. »
 2. **Vous connaissez bien Odette ?** _(le matin)_
    - 🤥 « Odette ? Je la connais à peine. »
    - 🔍 démasqué : « Bon… je l'évite. Ses chats me suivent partout en miaulant, et j'ai peur des chats. »
@@ -123,7 +123,7 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
 4. **Votre tournée se passe bien ?** _(le matin)_
    - « Le maire me confie tous ses papiers. Il les recompte chaque soir : gare à qui en emprunte un ! »
 5. **Comment savoir si c'est vraiment Odette qui l'a écrite ?** — 🔒 s'ouvre avec : la question 1 de Victor posée _(le matin)_
-   - « Il faudrait comparer avec quelque chose qu'elle a écrit elle-même. Un papier à elle, chez elle… »
+   - « Il faudrait la comparer avec un papier écrit de sa main. Mais la lettre, le maire la garde dans son bureau… et la mairie n'ouvre que cet après-midi. »
 - **Tout demandé** : « Trois cents lettres à distribuer ! Une autre fois. »
 - **Occupé, l'après-midi** : « Cent invitations à distribuer : pas une minute ! » — puis, si on revient : « Quatre-vingt-dix-neuf… Non ! Tu m'as fait perdre le compte ! »
 
@@ -154,7 +154,7 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
    - « Elle me donne des biscuits pour Pirate. Et elle me gronde quand je marche sur ses toits ! »
 3. **Il s'est passé quelque chose de bizarre, cette nuit ?** _(le matin et l'après-midi)_
    - 🤥 « Rien ! Je dormais, comme tout le monde. »
-   - 🔍 démasqué : « Bon… j'étais sur les toits, à l'aube. J'ai vu Odette, dans son châle à chats, glisser la lettre à la mairie… mais elle marchait vite, et sans canne. » → donne « Odette… sans sa canne » (pour sage)
+   - 🔍 démasqué : « Bon… j'étais sur les toits, à l'aube. J'ai vu Odette, dans son châle à chats, glisser la lettre à la mairie… mais elle marchait vite, et sans canne. »
 4. **Ça fait quoi, d'être ramoneur ?** _(le matin et l'après-midi)_
    - « Je vois tout le village d'en haut ! Et dans une cheminée, j'ai trouvé une pièce avec une lanterne dessinée. »
 - **Tout demandé** : « Ma cheminée m'attend ! Salut ! »
@@ -193,7 +193,7 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
 2. **Vous connaissez bien Odette ?** _(le matin)_
    - « Elle m'achète de la camomille pour dormir… et elle ne dort jamais ! »
 3. **Il s'est passé quelque chose de bizarre, cette nuit ?** _(le matin)_
-   - « Cette nuit, on m'a volé un flacon de mon encre ! Je la fabrique moi-même, avec des noix de galle. »
+   - « Cette nuit, on m'a volé un flacon de mon encre ! Mon jardin est plein de traces : envoie-moi ton ami le Pisteur, il saura les lire. »
 4. **Vos plantes servent à quoi ?** _(le matin)_
    - « À soigner, à teindre, à parfumer. La pensée sauvage pousse même dans la brume ! »
 5. **Il vous reste un peu de cette encre ?** — 🔒 s'ouvre avec : la question 3 de Iris posée _(le matin)_
@@ -216,7 +216,7 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
    - « Les fêtes, c'est ma fierté ! Un village heureux ne pose pas de questions. »
 5. 🎭 **« Je voudrais vous parler de la lettre… »** — le grand dialogue « lettre » (§3), l'après-midi. Il n'apparaît que quand : tout demandé à Le voisin, Gaspard, Victor, Iris, Margot, Tim, Fortuné, Grosbec (ceux à qui on peut parler à ce moment-là).
 - **Tout demandé** : « J'ai une fête à organiser, moi ! Repassez plus tard. »
-- **Occupé, le matin** : « Mes fleurs d'abord, Barde ! Nous parlerons cet après-midi. » — puis, si on revient : « Dix bouquets, pas un de moins ! Allez, allez ! »
+- **Occupé, le matin** : « La mairie est fermée : je prépare ma fête ! Revenez cet après-midi. » — puis, si on revient : « Dix bouquets, pas un de moins ! Allez, allez ! »
 
 ### 👩‍🦰 Mélusine Dufil — la couturière
 
@@ -231,7 +231,7 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
    - 🔍 démasqué : « Bon… j'ai veillé à la bougie. Ne me demande pas pourquoi. »
 4. **Qu'est-ce que vous cousez pour la fête ?** _(l'après-midi)_
    - « Une banderole par chat d'Odette : Moustache, Biscotte, Pompon, Caramel, Mistigri, Noisette, Grisette. »
-5. **C'est vous qui avez écrit la lettre.** — 🔒 s'ouvre avec : le code « Deux écritures » (pour barde, sage) _(l'après-midi)_
+5. **C'est vous qui avez écrit la lettre.** — 🔒 s'ouvre avec : le code « L'écriture de Mélusine » (pour barde) _(l'après-midi)_
    - 🤥 « Moi ? Je sais à peine écrire mon nom ! »
    - 🔍 démasqué : « C'est moi… Un homme en cape m'a forcée à l'écrire et à la déposer. Je n'ai pas vu son visage. Il est venu ici, cette nuit : il a peut-être laissé des traces… » → donne « L'aveu de Mélusine » (pour sage)
 - **Tout demandé** : « Laisse-moi coudre, je t'en prie… »

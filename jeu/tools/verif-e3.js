@@ -110,6 +110,9 @@ module.exports = function verifierE3(E, SRC, D){
     /* (13 novembre) p.visibleSi : la page n'existe qu'avec ce code (la lettre, le carnet) ; p.quand : son bouton attend ce moment (le Livre d'or) */
     aj({cle:`sage:page:${p.id}`, role:'sage', moments:p.moments || p.quand, besoins:[p.besoin, p.visibleSi].filter(Boolean), produit:prod, faits:f, ratable:!!p.mj, mj:p.mj, rate:p.ouvrePartiel || p.partiel ? {produit:prod, faits:f} : {produit:[], faits:[]}});
   });
+  /* (17 novembre) le Sage compare les écritures dans son Grand Livre (ecritures.js) : il lui faut la lettre (le code du Barde) et le
+     Livre d'or (confié par le maire quand il rend le tableau, ou passe le voir). Deux essais : ça se rate. */
+  if((E.infos || {}).cest_melusine) aj({cle:'sage:ecriture', role:'sage', moments:E.moments.slice(1), besoins:[[{vu:'page:quiecrit'}]], produit:['info:cest_melusine'], faits:['sage:ecriture'], ratable:true, rate:{produit:[], faits:[]}});
   /* (16 novembre) les pierres du Sage (pierres.js) : poser la bonne pierre sur un plan de son Grand Livre — il lui faut la page du plan,
      et la pierre (E.pierres ; p.si : ce qu'il faut pour l'avoir). Le plan parle : le fait « pierre:<plan> ». */
   for(const id of Object.keys(E.plansPierre || {})){
@@ -119,7 +122,7 @@ module.exports = function verifierE3(E, SRC, D){
   /* les analyses du labo (à la main : la lettre a besoin des écritures du Livre d'or — labo.js, CFG.livredor) */
   for(const id of Object.keys(E.analyses || {})){
     const A = E.analyses[id];
-    aj({cle:`alchimiste:analyse:${id}`, role:'alchimiste', besoins:[[{code:'obj:' + id}]].concat(A.besoin ? [A.besoin] : []).concat(id === 'lettre' ? [[{code:'info:ecritures'}]] : []), produit:liste(A.donne)});
+    aj({cle:`alchimiste:analyse:${id}`, role:'alchimiste', besoins:[[{code:'obj:' + id}]].concat(A.besoin ? [A.besoin] : []), produit:liste(A.donne)});   /* (17 novembre) la lettre n'a plus besoin du Livre d'or : au labo, seule son encre parle */
     /* (16 novembre) une variante qui donne un code de plus (v.donne, v.donneAussi) : la deuxième des deux analyses, la lettre et
        l'encre d'Iris, donne « La même encre » — elle compte quand l'analyse est faite et que sa condition (si) est là */
     (A.variantes || []).forEach((v, k) => { const pr = liste(v.donne).concat(liste(v.donneAussi)); if(pr.length) aj({cle:`alchimiste:analyse:${id}:v${k}`, role:'alchimiste', besoins:[[{vu:`alchimiste:analyse:${id}`}]].concat(v.si ? [v.si] : []), produit:pr, filet:true}); });

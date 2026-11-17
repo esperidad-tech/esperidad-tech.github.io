@@ -103,22 +103,18 @@ with sync_playwright() as p:
     verifier('Magnifique' in texte(pg), 'réussi : « Magnifique ! On l\'accrochera au-dessus du gâteau. »')
     fermer(pg)
     L = liste()
-    verifier(not any(x in L for x in ['doutes', 'fausse', 'chats', 'qui', 'vraielettre', 'carnet']) and all(x in L for x in ['tableau', 'herbier', 'livredor', 'bibliotheque']) and 'plan' not in L,
+    verifier(not any(x in L for x in ['doutes', 'fausse', 'chats', 'qui', 'vraielettre', 'carnet']) and all(x in L for x in ['tableau', 'herbier', 'bibliotheque']) and 'plan' not in L and 'livredor' not in L,
              f'le Grand Livre : plus de « Une drôle de lettre », « La lettre et le carnet », « Qui a écrit la lettre ? » ; la lettre et le carnet n\'y sont pas encore ({L})')
-    # le Livre d'or, le matin
-    t = page(pg, 'livredor')
-    verifier(pg.locator('#livre-ici .lv-page.on .ec-or-mot').count() == 8 and 'pas encore signé' in t and pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page]').count() == 0 and '_info:ecritures' not in objets(pg),
-             'le Livre d\'or, le matin : huit petits mots, « Tout le monde n\'a pas encore signé », pas de bouton, pas de code')
-    verifier('Mélusine' not in t and 'Margot' not in t and 'Gaspard' in t, 'le matin : ni Mélusine ni Margot n\'ont encore signé')
-    shot(pg, 'A-livredor-matin')
+    # (17 novembre, le nouveau fil) le Livre d'or n'est plus dans le Grand Livre le matin : le maire le confie au Sage l'après-midi,
+    # quand il rend le tableau (tools/e3-ecritures.py)
+    verifier('livredor' not in liste(), 'le matin : pas de Livre d\'or dans le Grand Livre')
     t = page(pg, 'herbier')
     verifier(pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and pg.locator('#livre-ici .lv-page.on .lv-herbier .b-lire').count() == 14, 'l\'herbier : sept planches, « Où ? » et « Quand ? », chaque texte avec son 🔊 (12 novembre, Bible §13.26)')
     verifier('_info:herbier' not in objets(pg) and 'Rond des Sorcières' not in t and 'Cinq Pierres' not in t and 'incantations' in t and 'bruyère' in t and 'patte de loup' in t and 'épouvantail' in t and 'donjon' not in t.lower(),
              'plus de code : le Sage lit des indices (plus le nom des lieux : Bible §13.28), l\'Alchimiste cherche sur sa carte ; pas un mot du donjon')
     shot(pg, 'A-herbier')
     # les codes du Barde : des informations, plus de page qui conclut
-    code(pg, 'info:poste'); code(pg, 'info:chale')
-    verifier(pg.evaluate("() => !!M.P().recus['info:poste'] && !!M.P().recus['info:chale']") and 'doutes' not in liste(), 'les codes de Victor et de Tim : reçus, notés ; aucune page ne conclut à la place du Sage')
+    verifier(pg.evaluate("() => ['poste', 'chale', 'pieds_enfant'].every(function(k){ return M.E().infos[k].reserve; })") and 'doutes' not in liste(), '(17 novembre) Victor, Tim et les pieds d\'enfant : plus de codes (dits à voix haute) ; aucune page ne conclut à la place du Sage')
     # le tableau d'enquête : tous les personnages, dix lieux
     page(pg, 'tableau')
     verifier(pg.locator('#livre-ici .lv-page.on .tb-ligne').count() == 14 and pg.locator('#livre-ici .lv-page.on .tb-col').count() == 10, 'mon tableau d\'enquête : quatorze personnages, dix lieux')
@@ -136,17 +132,7 @@ with sync_playwright() as p:
     print('— Partie A : l\'après-midi')
     apresmidi(pg); pg.wait_for_timeout(2600)
     verifier(pg.evaluate("() => M.momentId()") == 'apresmidi', 'l\'après-midi')
-    t = page(pg, 'livredor')
-    verifier(pg.locator('#livre-ici .lv-page.on .ec-or-mot').count() == 12 and 'Tout le monde a signé' in t and pg.locator('#livre-ici .lv-page.on .btn.b-aller[data-act=ouvrir-page]').count() == 1,
-             'le Livre d\'or, l\'après-midi : douze petits mots, « Tout le monde a signé ! », et le gros bouton jaune')
-    verifier(pg.evaluate("() => { var c = function(id){ var l = [].filter.call(document.querySelectorAll('#livre-ici .lv-page.on .ec-or-mot'), function(f){ return f.querySelector('figcaption').textContent === id; })[0]; return l ? [l.querySelectorAll('.ec-vague').length > 0, l.querySelectorAll('.pt-rond').length > 0] : null; }; return JSON.stringify([c('Mélusine'), c('Margot'), c('Gaspard')]); }") == '[[true,true],[true,true],[false,false]]',
-             'Mélusine et Margot ont les mêmes signes (la vague des « t », le rond des « i ») ; Gaspard, non')
-    shot(pg, 'A-livredor-aprem')
-    pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page]').click(); pg.wait_for_timeout(400)
-    verifier('Alchimiste' in texte(pg) and '_info:ecritures' in objets(pg) and pg.locator('#voile .b-donne, #voile .b-code').count() >= 1, 'le bouton : le code « Les écritures du village » pour l\'Alchimiste')
-    fermer(pg)
-    t = page(pg, 'livredor')
-    verifier(pg.locator('#livre-ici .lv-page.on .b-donne').count() == 1 and pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page]').count() == 0, 'ensuite : la page garde le code, plus de bouton')
+    verifier('livredor' not in liste(), 'l\'après-midi, avant d\'avoir rendu le tableau : toujours pas de Livre d\'or')
     # la lettre et le carnet : deux pages qui apparaissent avec les codes du Barde
     code(pg, 'obj:lettre'); code(pg, 'obj:carnet')
     L = liste()
@@ -168,8 +154,9 @@ with sync_playwright() as p:
     pg.locator('#voile [data-act=point][data-id=rendu]').click(); pg.wait_for_timeout(250)
     verifier(pg.evaluate("() => M.S.or || 0") == or0 + 5 and 'accroche sous' not in texte(pg), '5 pièces d\'or ; plus de lettre accrochée sous le tableau')
     fermer(pg)
-    code(pg, 'info:ecriture'); code(pg, 'info:aveu')
-    verifier(pg.evaluate("() => !!M.P().recus['info:ecriture'] && !!M.P().recus['info:aveu']") and 'qui' not in liste(), '« Deux écritures » et l\'aveu : reçus ; plus de page « Qui a écrit la lettre ? »')
+    code(pg, 'info:aveu')
+    L2 = liste()
+    verifier(pg.evaluate("() => !!M.P().recus['info:aveu']") and 'livredor' in L2 and 'quiecrit' in L2, 'l\'aveu : reçu ; le tableau rendu : le Livre d\'or et « Comparer les écritures » sont dans le Grand Livre')
     pg.close()
 
     print('— Partie B : le tableau raté')

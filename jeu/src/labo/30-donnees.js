@@ -204,7 +204,7 @@ var OBJETS = {
      (16 novembre, Romain : « plus de lavande » — le pollen de lavande, une fausse piste du premier scénario, est retiré ; le microscope
      ne montre plus que le papier et ses fils.) */
   /* bons (13 novembre) : plusieurs bonnes réponses — n'importe laquelle des deux écritures qui ressemblent ; le labo annonce les deux */
-  lettre:{forme:'papier', tiroir:'ecritures', bon:'melusine', bons:ECRITURES.bons, scene:'papier', requis:['lettre', 'encre_l'],
+  lettre:{forme:'papier', tiroir:'ecritures', bon:'melusine', bons:ECRITURES.bons, scene:'papier', requis:['encre_l'],   /* (17 novembre) l'écriture, c'est le Sage qui la compare, dans son Grand Livre : ici, seule l'encre compte */
     savoir:'Chacun forme ses lettres à sa façon : une écriture se reconnaît comme un visage.'},
   encre_l:{de:'lettre', nom:'l\'eau noircie', liquide:true, coul:'#2a2a32', cibles:['galle'], savoir:'L\'encre de noix de galle ne se sépare pas en couleurs. On la fait avec de petites boules qui poussent sur les chênes.'},
   /* (16 novembre, l'étape 6 du scénario de Romain) le fond de flacon d'encre qu'Iris donne au Barde : un flacon sur le cuir, comme ceux de

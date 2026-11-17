@@ -26,7 +26,7 @@ with sync_playwright() as p:
           return {niveau:pt.mjNiveauFixe, infini:!!pt.essaisInfinis, donne:pt.donne, moments:pt.moments, consigne:MJ.TYPES.traces.consigne(prm)}; }""")
         if not pt: echecs.append('le point « jardin » de l\'herboristerie n\'existe pas'); pg.close(); break
         if essai == 0:
-            if pt['niveau'] != 7 or not pt['infini'] or pt['donne'] != 'info:pieds_enfant' or pt['moments'] != ['matin', 'apresmidi']: echecs.append(f'le point a changé : {pt}')
+            if pt['niveau'] != 7 or not pt['infini'] or pt['donne'] is not None or pt['moments'] != ['matin', 'apresmidi']: echecs.append(f'le point a changé : {pt}')
             if 'sabots d\'Iris' not in pt['consigne'] or 'bottes' in pt['consigne']: echecs.append(f'la consigne ne parle pas des sabots d\'Iris : {pt["consigne"]}')
         pg.wait_for_timeout(1200)
         if essai == 0: pg.screenshot(path=os.path.join(OUT, f'regles{SUF}.png'))
