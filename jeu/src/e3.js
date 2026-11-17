@@ -520,7 +520,7 @@ E[3] = {
      quand ses sept potions sont prêtes (« on a besoin des sept potions pour descendre ») : il remplace le code du sac (plus de sac:<n>).
      2 rôles × 2 × 6 peaux × 9 cheveux = 216 codes, à la fin de la liste. */
   /* (étape 7) et les codes de fin qui portent la variante de la scène finale (E.finVariante : la dizaine ; l'unité : les erreurs) */
-  codesPlus:(function(){ var l = [], i; [1, 2].forEach(function(v){ for(i = 0; i < 4; i++) l.push('victoire:' + (10 * v + i)); }); for(i = 0; i < 1296; i++) l.push('allure:' + i); return l; })(),   /* (432 : les 216 du Sage et de l'Alchimiste, puis ceux du Pisteur et du Barde, pour le cachot de la fin ; 17 novembre : 864 de plus pour l'âge — 432 à 863 les enfants, 864 à 1295 les âgés) */
+  codesPlus:(function(){ var l = [], i; [1, 2].forEach(function(v){ for(i = 0; i < 4; i++) l.push('victoire:' + (10 * v + i)); }); for(i = 0; i < 1296; i++) l.push('allure:' + i); for(i = 0; i < 224; i++) l.push('visage:' + i); return l; })(),   /* (432 : les 216 du Sage et de l'Alchimiste, puis ceux du Pisteur et du Barde, pour le cachot de la fin ; 17 novembre : 864 de plus pour l'âge — 432 à 863 les enfants, 864 à 1295 les âgés ; puis les 224 codes du visage, le deuxième code : la coiffure, les yeux, la barbe — descente.js, M.visageCode) */
   /* Le registre du Sage (livre.js) */
   registre:{
     odette:{maison:'L2', note:'Elle vit avec ses sept chats. Elle ne sort jamais sans sa canne.'},

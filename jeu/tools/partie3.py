@@ -466,10 +466,10 @@ def partie(nav, base):
     # « On va dans la crypte » → le Sage et l'Alchimiste : leur tenue, leur code
     seq = P.js("() => M.code('info:on_descend')")
     t = S.taper(seq, garder=True); passes.append(('pisteur', 'info:on_descend', 'sage'))
-    verifier('tenue de combat' in t and 'Dans la tenue de Mélusine' in t and 'Montre ce code au Pisteur' in t, 'le Pisteur → le Sage : « On va dans la crypte » — sa tenue (celle de Mélusine), son code')
+    verifier('tenue de combat' in t and 'Dans la tenue de Mélusine' in t and 'Montre ces deux codes au Pisteur' in t, 'le Pisteur → le Sage : « On va dans la crypte » — sa tenue (celle de Mélusine), son code')
     seqS = S.js("() => M.code(M.allureCode())"); S.shot('tenue'); S.fermer()
     t = A.taper(seq, garder=True); passes.append(('pisteur', 'info:on_descend', 'alchimiste'))
-    verifier('sept potions à la ceinture' in t and 'Montre ce code au Pisteur' in t, 'le Pisteur → l\'Alchimiste : sa tenue, et son code (les sept potions sont prêtes)'); A.fermer()
+    verifier('sept potions à la ceinture' in t and 'Montre ces deux codes au Pisteur' in t, 'le Pisteur → l\'Alchimiste : sa tenue, et son code (les sept potions sont prêtes)'); A.fermer()
     P.donnes |= {'info:on_descend'}
     t = P.taper(seqS, garder=True); passes.append(('sage', 'allure', 'pisteur'))
     verifier('Le Sage est prêt' in t, 'le Sage → le Pisteur : son code d\'allure'); P.fermer()
@@ -610,9 +610,11 @@ def partie(nav, base):
                 # (13 novembre) au cachot : chacun tape le code d'apparence de ses amis — les quatre héros apparaissent
                 avant = t.pg.locator('.b-prison-ombre.connu').count()
                 for r2, t2 in T.items():
-                    if r2 == r or t.js("(x) => !!(M.P().allures || {})[x]", r2): continue
-                    for sym in t2.js("() => M.code(M.allureCodeFin())"): t.pg.locator(f'.b-fin-slide .b-prison-codes [data-act=sym][data-s="{sym}"]').click(); t.pg.wait_for_timeout(120)
-                    t.pg.wait_for_timeout(600)
+                    if r2 == r or t.js("(x) => !!((M.P().allures || {})[x] || {}).vu", r2): continue
+                    # (17 novembre) ses deux codes, l'un après l'autre : sa tenue, puis son visage
+                    for cle in ("() => M.code(M.allureCodeFin())", "() => M.code(M.visageCode())"):
+                        for sym in t2.js(cle): t.pg.locator(f'.b-fin-slide .b-prison-codes [data-act=sym][data-s="{sym}"]').click(); t.pg.wait_for_timeout(120)
+                        t.pg.wait_for_timeout(600)
                 cachots[r] = (avant, t.pg.locator('.b-prison-ombre.connu').count(), t.pg.locator('.b-fin-slide .b-prison-codes').count())
                 t.pg.wait_for_timeout(1200); t.shot('cachot')
             if i == 5 and r == 'sage': t.shot('fin-mot')

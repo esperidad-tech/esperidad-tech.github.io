@@ -30,6 +30,12 @@ function lire(texte, base){
     if(v[3] && YX[v[3]]) r[h].ir = YX[v[3]];
     /* l'âge (17 novembre) : « enf » ou « age » en fin de texte ; sans lui, un adulte */
     r[h].age = v.indexOf('enf') >= 3 ? 'enfant' : v.indexOf('age') >= 3 ? 'age' : 'adulte';
+    /* la coiffure et la barbe (17 novembre, le code du visage) : « c-tresses », « b-courte » ; les yeux peuvent venir après l'âge */
+    v.slice(3).forEach(function(t){
+      if(t.indexOf('c-') === 0) r[h].coiffure = t.slice(2);
+      else if(t.indexOf('b-') === 0) r[h].barbe = t.slice(2);
+      else if(YX[t]) r[h].ir = YX[t];
+    });
   });
   return r;
 }
