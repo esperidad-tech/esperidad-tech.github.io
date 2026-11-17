@@ -286,7 +286,7 @@ with sync_playwright() as p:
     verifier(vu is not None and vu['op'] == '1' and vu['vis'] == 'visible', f'et on la voit de nouveau (elle ne reste pas invisible après sa sortie) ({vu})')
     pg.evaluate("() => { var c = M.S.atelier.tama.coffret; if(c) Atelier._vue()._voir(c.x, c.y); }"); pg.wait_for_timeout(500)
     shot(pg, 'coffret')
-    COMPTE = "() => { var e = M.S.atelier; return e.mimi.jouets.length + e.mimi.nour.length + e.mimi.soins.length + e.garde.a.length + e.tama.recus.length; }"
+    COMPTE = "() => { var e = M.S.atelier; return e.mimi.jouets.length + e.mimi.nour.length + e.mimi.soins.length + e.garde.a.length + e.tama.recus.length + e.mimi.peaux.p.length + e.mimi.peaux.y.length; }"
     j0 = pg.evaluate(COMPTE)
     cq = pg.evaluate("() => { var r = document.querySelector('#atelier-ici .at-coffret svg').getBoundingClientRect(); var x = r.left + r.width / 2, y = r.top + r.height * .6, e = document.elementFromPoint(x, y); return {x:x, y:y, sur:!!(e && e.closest('.at-coffret'))}; }")
     verifier(cq['sur'], 'le coffret se voit et se touche (rien devant)')

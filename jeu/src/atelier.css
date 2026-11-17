@@ -1131,6 +1131,10 @@ html.labo-ouvert, html.labo-ouvert body{overflow:hidden}
 .at-mimi-bt.at-dispo{animation:mi-appel .9s ease-in-out infinite}
 .at-mimi-bt.at-flash-bt{animation:mi-bt .45s ease-out}
 .at-mode-prep .at-mimi-bt,.at-mode-prep .at-mimi-barre,.at-mode-prep .at-photo-bt{display:none!important}
+/* le parc à chat : la souris au bout de son ressort se balance quand Mimi la tape (elle tourne autour du pied du ressort) */
+.at-ressort{transform-box:fill-box;transform-origin:50% 100%}
+.at-ressort-bat .at-ressort{animation:mi-ressort .75s ease-out}
+@keyframes mi-ressort{0%{transform:rotate(0)}18%{transform:rotate(-16deg)}40%{transform:rotate(12deg)}62%{transform:rotate(-7deg)}82%{transform:rotate(3deg)}100%{transform:rotate(0)}}
 /* l'appareil photo, à côté du bouton 🐾 ; dessous, où en est l'album (« 3/15 ») */
 .at-photo-bt{position:absolute;left:158px;bottom:14px;z-index:8;width:56px;height:56px;padding:0;border-radius:50%;border:3px solid var(--contour,#24182e);
   background:#fff6e6;display:grid;place-items:center;cursor:pointer;pointer-events:auto;touch-action:manipulation;box-shadow:0 5px 0 rgba(36,24,46,.55)}
