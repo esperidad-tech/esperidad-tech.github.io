@@ -68,9 +68,13 @@ with sync_playwright() as p:
 
     print('— Le Barde')
     pg = debut(b, 'barde', TAB)
-    for n in (0, 1):
-        moment(pg, n); carte(pg)
-        verifier(ob(pg) == {'lieux': [], 'maisons': []}, f'moment {n} : rien d\'obligatoire pour lui ({ob(pg)})')
+    moment(pg, 0); carte(pg)
+    verifier(ob(pg) == {'lieux': [], 'maisons': ['L2']} and ronds(pg)['maisons'] == 1, f'le matin : le rond jaune sur la maison d\'Odette (poser sa canne) ({ob(pg)}, {ronds(pg)})')
+    shot(pg, 'barde-matin')
+    vu(pg, 'barde:voisin:0'); carte(pg)
+    verifier(ob(pg) == {'lieux': [], 'maisons': []} and ronds(pg)['maisons'] == 0, f'la canne posée : le rond jaune s\'en va ({ob(pg)}, {ronds(pg)})')
+    moment(pg, 1); carte(pg)
+    verifier(ob(pg) == {'lieux': [], 'maisons': []}, f'l\'après-midi : rien d\'obligatoire pour lui ({ob(pg)})')
     moment(pg, 2); carte(pg)
     verifier(ob(pg) == {'lieux': [], 'maisons': []}, f'la nuit, sans le code du Pisteur : pas de rond ({ob(pg)})')
     recu(pg, 'info:crypte_fermee'); carte(pg)

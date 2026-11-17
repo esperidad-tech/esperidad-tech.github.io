@@ -1002,6 +1002,12 @@ E[3] = {
        questions. Le grand dialogue de la lettre ne s'ouvre qu'une fois tout demandé aux villageois du matin, et à lui (toutDit). */
     grosbec:{ou:{apresmidi:'mairie'}, carte:{matin:'mairie'},
       occupe:{matin:['« La mairie est fermée : je prépare ma fête ! Revenez cet après-midi. »', '« Dix bouquets, pas un de moins ! Allez, allez ! »']},
+      /* vexeDonne (17 novembre ; Romain, 20 h 16) : accusé à tort (« Mensonge ? »), le maire ferme sa porte jusqu'au moment suivant, et la
+         grande conversation de la lettre (l'après-midi seulement) ne se tient plus : sans elle, personne ne donnait « La lettre est sur le
+         bureau du maire » et le Pisteur ne voyait jamais le point de la lettre. Fâché, il le donne quand même (rien si la conversation a eu lieu). */
+      vexeDonne:{info:'lettre_bureau', deja:'grand:lettre:fini', moments:A_,
+        a:'Et n\'essayez même pas de me demander la lettre d\'Odette !',
+        note:'Le maire, fâché : « N\'essayez même pas de me demander la lettre d\'Odette ! » Elle reste sur son bureau (code pour le Pisteur).'},
       salut:'', questions:[
       {q:Q_LETTRE, g:'h', moments:A_, a:'Une merveilleuse nouvelle ! Je l\'ai trouvée sous ma porte ce matin.',
         note:'Le maire : il a trouvé la lettre sous sa porte, ce matin.'},
@@ -1125,7 +1131,9 @@ E[3] = {
       /* (17 novembre, étape 3 du nouveau fil) plus de code « Les traces de Moustache » : le Pisteur les voit lui-même, chez Odette,
          l'après-midi ; le Barde, qui voit le lait renversé, le lui dit s'il n'y a pas pensé */
       /* (17 novembre) le matin, plus de lait renversé ni de traces : c'est le bol de midi qui se renverse (le Pisteur le voit l'après-midi) */
-      {q:'Poser la canne d\'Odette', donne:['obj:carnet'], titreDonne:'Chez Odette',
+      /* oblige:true (17 novembre ; Romain, 20 h 16 : « la maison d'Odette avec un petit rond jaune pour pas qu'il oublie d'y aller ») :
+         le rond jaune sur la maison d'Odette (L2), dès le matin, tant que la canne n'est pas posée */
+      {q:'Poser la canne d\'Odette', oblige:true, donne:['obj:carnet'], titreDonne:'Chez Odette',
         a:'Tu poses la canne contre la porte. Sur la table, le carnet d\'Odette : un chat à chaque page, avec ses traces de pattes, et son écriture penchée.',
         note:'Chez Odette : tu as posé sa canne contre la porte. Sur la table, son carnet : un chat à chaque page, avec ses traces de pattes, et son écriture penchée.'},
       /* [1] (17 novembre, étape 3 du nouveau fil : « la maison d'Odette brille aussi sur sa carte : il voit le lait renversé, et le dit
