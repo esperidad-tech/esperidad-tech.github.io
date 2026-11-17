@@ -1927,6 +1927,48 @@ Romain a joué les enquêtes 1 et 2 avec les enfants. Ses retours (dictés) : (a
 
 **Vérifié** : `tools/mimi-parc.py` : **15 vérifications sur tablette, 15 sur téléphone, toutes bonnes** (rien tant qu'aucune famille n'est complète ; une famille : le tunnel dans un carton ; cinq familles : les cinq morceaux, une seule fois ; sortis des cartons, ils sont dans la pièce ; le bouton d'essai 🧪 ; le tunnel traversé ; le hamac : elle y dort ; la souris qui se balance ; la cabane : sa tête à la porte, pas de photo, on frappe et elle ressort ; le toboggan : en haut, puis en bas). `tools/mimi.py` : 124 sur tablette, 124 sur téléphone. Les images du robot regardées ; les cinq morceaux, dans leurs formes, regardés en planche hors du jeu (`tools/objets-planche.js`). `rapide.sh`, `partie2.py`, `mimi-marche.py` (tablette), `bulles-paillasse.py` ; les codes identiques à ceux en ligne (avec ceux de l'enquête 3 d'1 h 35). **Pas vérifié** : sur une vraie tablette ; `tuto-atelier.py` et la marche sur téléphone n'ont pas été relancés sur la toute dernière construction (ils passaient sur celle d'avant les trois corrections de placement) ; les robots de l'enquête 3 ne sont pas relancés par cette conversation (le programme de l'enquête 3 n'est pas touché).
 
+### 12.72 Quatre films de 30 secondes, un par héros (Romain, 17 novembre, 07 h 52) — FABRIQUÉS ET VÉRIFIÉS EN IMAGES, ENVOYÉS À ROMAIN ; PAS DANS LE JEU, PAS EN LIGNE, PAS SUR GITHUB (17 novembre, 09 h 30)
+
+**Ce que Romain a demandé** (dicté) : « 4 cinématiques, un pour chaque personnage », « un peu le même style avec le même rythme » que la pub (§12.64), « toujours fun, avec un montage sympa », « vraiment de haute qualité », « tu montres tout ce qu'on peut faire avec les personnages », « en maximum 30 secondes », « tu donnes vraiment envie de jouer le personnage » : à quoi il sert, ce qu'il va devoir faire.
+
+**Ce qui est fait.** Quatre films de 29,8 secondes (1440 × 616, 30 images par seconde), montés comme la pub : des images filmées dans le vrai jeu par des robots, une musique à 120 à la minute, des coupes sur les temps. Le même découpage pour les quatre :
+- 0 à 2 s : le héros arrive (sa carte, son nom, sa devise, une phrase) ;
+- 2 à 4 s : chez lui, avec un ruban jaune qui dit à quoi il sert ;
+- 4 à 22 s : ce qu'il fait, un ruban jaune par action ;
+- 22 à 24 s : quatre mots en rafale ;
+- 24 à 26 s : les quatre cartes, la sienne en avant, « L'ÉQUIPE COMPTE SUR TOI ! » ;
+- 26 à 29,8 s : « JOUE LE PISTEUR ! » (ou l'Alchimiste, le Barde, le Sage), « Les Enquêteurs de Brumeval », « ET TOI, QUEL HÉROS ES-TU ? ».
+
+**Le Pisteur** — « ACTION ET RÉFLEXES », « LES YEUX ET LES JAMBES DE L'ÉQUIPE » : sa cabane ; SUIS LES TRACES (le pistage) ; COURS, SAUTE, ESQUIVE ! (l'oie) ; VISE… ET TIRE ! (l'arc) ; FAUFILE-TOI SANS ÊTRE VU (la cachette, dans la forêt) ; FOUILLE CHAQUE RECOIN (la maison d'Odette vue de dessus) ; PASSE TES TROUVAILLES À L'ÉQUIPE (un code) ; LA NUIT : DANS LE DONJON, FRAPPE FORT ! (l'arc, puis un coup critique). Les mots : DES PISTES, DES COURSES, DES FLÈCHES, DE L'ACTION !
+
+**L'Alchimiste** — « MÉMOIRE ET PRÉCISION », « LE SAVANT DE L'ÉQUIPE » : son atelier ; CUEILLE LES PLANTES CACHÉES ; REÇOIS LES TROUVAILLES DE TES AMIS (il tape un code) ; ANALYSE-LES DANS TON LABO (la loupe, le microscope) ; PRÉPARE DES POTIONS (le chaudron, l'établi) ; INVENTE LE GÂTEAU DE LA FÊTE ; CHOUCHOUTE MIMI, TON CHAT (le toboggan) ; LA NUIT : DANS LE DONJON, LANCE TES POTIONS ! Les mots : DES PLANTES, DES ANALYSES, DES POTIONS, DE LA SCIENCE !
+
+**Le Barde** — « ÉCOUTE ET STRATÉGIE », « LA VOIX ET LES OREILLES DE L'ÉQUIPE » : son tableau de liège ; VA VOIR LES HABITANTS (la carte) ; POSE LES BONNES QUESTIONS (Gaspard) ; DÉMASQUE LES MENTEURS (Farinel et sa sieste) ; ÉPINGLE TES PISTES ; MARCHANDE COMME UN CHEF (Fortuné) ; PARTAGE LES INDICES AVEC L'ÉQUIPE (un code) ; LA NUIT : FAIS PARLER TOUT LE VILLAGE (la fête). Les mots : DES SECRETS, DES RAGOTS, DES MENSONGES, DU BAGOU !
+
+**Le Sage** — « LOGIQUE · CHEF D'ENQUÊTE », « LA MÉMOIRE ET LE CHEF DE L'ÉQUIPE » : le Grand Livre ; GARDE LE GRAND LIVRE ; DÉCHIFFRE LES MESSAGES SECRETS (l'alphabet) ; RECONSTITUE LES CARTES (les runes) ; SUPERPOSE LES VIEUX PLANS ; RASSEMBLE LES INDICES DE TOUS (un code) ; C'EST TOI QUI DONNES L'HEURE ; À LA FIN, C'EST TOI QUI ACCUSES ; LA NUIT : DANS LE DONJON, PROTÈGE TES AMIS (la rune de lumière, le bouclier). Les mots : DES CODES, DES PLANS, DES PREUVES, DE LA LOGIQUE !
+
+**Rien n'est dévoilé.** Les dalles de chez Odette sont jouées dans un mauvais ordre ; l'accusation montre les suspects sans en désigner un ; le mensonge montré est celui de Farinel sur sa sieste (sans rapport avec une enquête) ; ni le nom ni le visage de Léo ; le message déchiffré (« REGARDE EN HAUT ») est un message d'entraînement du mini-jeu, pas un indice.
+
+**Les fichiers** (tout est dans `jeu/pub/`, à côté de la pub) :
+- `outils_heros.py` et `capturer-heros.py` : les robots qui jouent et filment les plans, au ralenti, dans `/tmp/pub/plans/<plan>/` (`python3 capturer-heros.py [plan …] [--planches]`) ;
+- `heros.html` et `heros.js` : le montage (la table `FILMS`, un film par héros, choisi par `?film=`) ;
+- `filmer-heros.py` : filme le montage image par image et fabrique le mp4 (`python3 filmer-heros.py <film> [--part i/N] [--monter] [--planche] [--grand]`) ;
+- `sons-heros.py` : écrit `jeu/cine/src/film-heros.js` (les bruitages calés sur le montage) ;
+- `tourner-heros.sh` : fait tout d'un coup (les bruitages, les quatre films, la bande-son) ; une douzaine de minutes ;
+- la musique : `musiqueHeros()` et quatre airs (`cineMusHerosPisteurA`, `…AlchimisteA`, `…BardeA`, `…SageA`) dans `jeu/donjon/essai/sons/cine-musiques.js`, inscrits dans `catalogue.js` et dans `jeu/cine/bande-son.py` ;
+- les films : `jeu/cine/sortie/herosPisteur.mp4`, `.mp3`, `.json` (et Alchimiste, Barde, Sage) ; les copies à regarder, avec le son : `/tmp/cine/apercus/heros<Héros>-avec-son.mp4`.
+
+**Ce qui n'est pas fait, dit franchement.**
+1. **Les films ne sont pas dans le jeu.** Romain n'a pas dit où les mettre. Proposition de Claude, sans réponse pour l'instant : un bouton 🎬 sur chaque héros à l'écran « Choisis ton rôle ». Rien ne se branche sans son « go ».
+2. **Rien n'est sur GitHub.** Dans cette conversation, le droit d'écrire sur GitHub a été refusé à Claude. Les sources des films sont enregistrées en local (un commit qui n'est pas parti) et dans le projet : `claude/films-des-heros-correctif.md` (à appliquer avec `git apply` sur la branche `brumeval-sources`, puis relancer `tourner-heros.sh` pour refaire les films).
+3. **Personne n'a écouté la musique** : elle est écrite note par note et seulement mesurée (aussi forte que celle de la pub). C'est Romain qui dira si elle plaît.
+4. **Rien n'a été essayé sur une vraie tablette.**
+5. Le plan le plus faible : « FOUILLE CHAQUE RECOIN » du Pisteur (la pièce est petite dans l'image).
+
+**Décisions de Claude, à faire valider par Romain** : (1) les mots des rubans, les devises et les quatre mots de chaque film ; (2) les actions choisies et leur ordre ; (3) le format large de la pub (21:9) ; (4) les quatre musiques (le même air, joué autrement pour chaque héros) ; (5) l'endroit où mettre les films dans le jeu.
+
+**Vérifié** : les quatre films font bien 29,8 secondes ; une planche de 60 images par film regardée en entier (les rubans sont entiers, les textes lisibles, pas d'image noire ni figée) ; huit images regardées en grand ; le son : −17 dB en moyenne, −1,5 dB au plus fort, comme la pub.
+
 ## 13. Enquête 3 — La lettre d'Odette
 
 > ⚠️ **LE SCÉNARIO A CHANGÉ LE 12 NOVEMBRE AU SOIR (§13.31, à lire d'abord).** Romain l'a réécrit : c'est Mélusine qui a écrit ET déposé la lettre, forcée par un homme en cape ; l'homme en cape est Léo, et **son nom n'est dit nulle part avant la nuit** ; plus de lavande, plus de « minuit », plus de Léo froussard. **Les dialogues du Barde sont refaits et verrouillés** (`jeu/enquete3/E3-dialogues-et-trame.md`, version 3, écrit par un outil à partir du jeu). Les §13.1 à §13.29 décrivent l'ancien fil : ils restent vrais pour ce qui est construit chez le Pisteur, l'Alchimiste, le Sage et dans le donjon, **pas pour l'histoire ni pour les dialogues du Barde**.
