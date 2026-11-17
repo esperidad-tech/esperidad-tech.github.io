@@ -152,6 +152,10 @@ class Tablette:
     def missions(self):
         return self.pg.evaluate("() => { M.majMission && M.majMission(); return (M.etapesMission() || []).filter(function(x){ return !x.libre && !x.piste; }).map(function(x){ return [x.t, !!(x.fait && x.fait.some(M.condMission))]; }); }")
 
+    def missions_vues(self):
+        """les missions qu'on voit vraiment dans le Carnet (pas celles qui attendent un moment — des — ou une condition — si)"""
+        return self.pg.evaluate("() => { M.majMission && M.majMission(); var P = M.P(); return (M.etapesMission() || []).filter(function(x){ return !x.libre && !x.piste && !(x.des !== undefined && (P.moment || 0) < x.des) && !(x.si && !x.si.some(M.condMission)); }).map(function(x){ return x.t; }); }")
+
     def shot(self, nom):
         n[0] += 1; self.pg.wait_for_timeout(350); self.pg.screenshot(path=f'{OUT}/{n[0]:02d}-{self.role}-{nom}.png')
 
@@ -258,31 +262,49 @@ def partie(nav, base):
     verifier(CU.cueillir(A.pg, 'oseille') is not None, 'l\'Alchimiste cueille l\'oseille, dans le village')
     verifier(CU.cueillir(A.pg, 'souci') is None and CU.cueillir(A.pg, 'lin') is None, 'le souci et le lin : pas avant l\'après-midi')
     verifier(CU.cueillir(A.pg, 'gui') is None and CU.cueillir(A.pg, 'melisse') is None, 'le gui et la mélisse : au-delà de la brume, hors d\'atteinte')
-    verifier('Bertille' in (CU.bertille(A.pg) or ''), 'l\'Alchimiste monte voir Anselme : il veut une tisane de mélisse, il sonne Bertille, la brume recule au nord et à l\'ouest')
-    verifier(all(CU.cueillir(A.pg, k) for k in CU.LOIN), 'l\'Alchimiste cueille la mélisse, le pied-de-loup, la vesse-de-loup et le gui')
-    verifier('CITRON' in (CU.tisane(A.pg) or ''), 'l\'Alchimiste rapporte de la mélisse à Anselme, pour sa tisane')
+    # (17 novembre, étape 3 du nouveau fil) le matin, Anselme dort : pas de Bertille, la brume reste ; les missions des plantes et des
+    # potions n'arrivent que l'après-midi
+    verifier(A.lieu('clocher') == ['endormi'] and CU.bertille(A.pg) is None, 'l\'Alchimiste monte au clocher, le matin : Anselme dort, pas de Bertille')
+    A.point('clocher', 'endormi'); verifier('SONNEUR ENDORMI' in A.texte() and 'CET APRÈS-MIDI' in A.texte(), 'sur la porte : « SONNEUR ENDORMI. REVENEZ CET APRÈS-MIDI. »'); A.fermer()
+    ma = A.missions_vues()
+    verifier(len(ma) == 1 and 'gâteau' in ma[0], f'les missions de l\'Alchimiste, le matin : le gâteau, et rien sur les plantes ni les potions ({ma})')
+    verifier(all(not t.js("() => !!M.afficheIci('clocher')") for t in T.values()), 'le matin : pas d\'affiche sur la porte de l\'église')
     verifier(livrer(T, A) == [], 'aucun code à donner pour les plantes (plus de gui du pommier pour le Pisteur)')
-    # l'établi : les cinq potions du matin, geste par geste
+    # l'établi, le matin : avec l'oseille seule, une potion (l'acide), geste par geste
     A.js("() => { M.UI.modal = null; M.P().onglet = 'role'; M.render(); }"); A.pg.wait_for_timeout(800)
     ET.vite(A.pg); ET.ouvrir(A.pg); ET.fermer_intro(A.pg)
     R = ET.recettes(A.pg)
-    for pid in ('feu', 'fumigene', 'colle', 'acide', 'coeur'):
+    for pid in ('acide',):
         if not ET.faire(A.pg, pid, R): echecs.append('l\'établi : la potion ' + pid + ' n\'est pas faite'); print('  ✗ potion', pid, ET.etat(A.pg))
         ET.continuer(A.pg)
     fi = A.js("() => Object.keys(M.P().vus).filter(function(k){ return k.indexOf('fiole:') === 0; }).length")
-    verifier(fi == 5, f'l\'Alchimiste a préparé cinq potions le matin ({fi})')
+    verifier(fi == 1, f'l\'Alchimiste a préparé une potion le matin, avec l\'oseille ({fi})')
     ET.quitter(A.pg); A.fermer()
     moment(T, 1, 'apresmidi')
 
     # ======================================================================== L'APRÈS-MIDI
     print('— L\'APRÈS-MIDI')
-    # l'Alchimiste : le souci et le lin (pas avant l'après-midi), puis l'huile et le baume : les sept potions
+    # (17 novembre, étape 3) l'affiche sur la porte de l'église : sur la carte des quatre, et chacun la lit
+    for t in T.values():
+        t.carte(); av = t.js("() => M.infosCarte().marqueurs.some(function(q){ return q.ic === '📜' && q.lieu === 'clocher'; })")
+        t.ev('lieu', {'id': 'clocher'}); nb = t.pg.locator('#voile [data-act=affiche]').count()
+        if nb: t.pg.locator('#voile [data-act=affiche]').first.click(force=True); t.pg.wait_for_timeout(300)
+        tx = t.texte(); t.fermer()
+        ap = t.js("() => M.infosCarte().marqueurs.some(function(q){ return q.ic === '📜' && q.lieu === 'clocher'; })")
+        verifier(av and nb == 1 and 'LA GROSSE MARIE OUVRIRA LA FÊTE' in tx and not ap, f'{t.nom} : l\'affiche de l\'église est sur sa carte, il la lit (« Cette nuit, la Grosse Marie ouvrira la fête ! »), son icône s\'en va')
+    # l'Alchimiste, l'après-midi : Anselme est réveillé. Bertille, la brume recule : la mélisse, le pied-de-loup, la vesse-de-loup, le gui ;
+    # la mélisse d'Anselme ; le souci et le lin ; puis les six autres potions
+    ma = A.missions_vues()
+    verifier(len(ma) == 4 and any('sept plantes' in m for m in ma) and any('sept potions' in m for m in ma), f'l\'après-midi : les missions des plantes et des potions arrivent ({len(ma)})')
+    verifier('Bertille' in (CU.bertille(A.pg) or ''), 'l\'Alchimiste monte voir Anselme, réveillé : il veut une tisane de mélisse, il sonne Bertille, la brume recule au nord et à l\'ouest')
+    verifier(all(CU.cueillir(A.pg, k) for k in CU.LOIN), 'l\'Alchimiste cueille la mélisse, le pied-de-loup, la vesse-de-loup et le gui')
+    verifier('CITRON' in (CU.tisane(A.pg) or ''), 'l\'Alchimiste rapporte de la mélisse à Anselme, pour sa tisane')
     verifier(all(CU.cueillir(A.pg, k) for k in ('souci', 'lin')), 'l\'Alchimiste cueille le souci et le lin, l\'après-midi')
     pl = A.js("() => Object.keys(M.P().vus).filter(function(k){ return k.indexOf('plante:') === 0; }).length")
     verifier(pl == 7, f'l\'Alchimiste a cueilli ses sept plantes ({pl})')
     A.js("() => { M.UI.modal = null; M.P().onglet = 'role'; M.render(); }"); A.pg.wait_for_timeout(800)
     ET.vite(A.pg); ET.ouvrir(A.pg)
-    for pid in ('huile', 'baume'):
+    for pid in ('feu', 'fumigene', 'colle', 'coeur', 'huile', 'baume'):
         if not ET.faire(A.pg, pid, R): echecs.append('l\'établi : la potion ' + pid + ' n\'est pas faite'); print('  ✗ potion', pid, ET.etat(A.pg))
         ET.continuer(A.pg)
     fi = A.js("() => Object.keys(M.P().vus).filter(function(k){ return k.indexOf('fiole:') === 0; }).length")
@@ -330,6 +352,19 @@ def partie(nav, base):
     B.ev('question', {'p': 'iris', 'i': '5'}); B.pg.wait_for_timeout(300)
     verifier('chassent la nuit' in B.texte(), 'Iris : « …ces bêtes dorment le jour, et chassent la nuit » — elle prête l\'herbier'); B.fermer()
     verifier(livrer(T, B, seulement=['obj:herbier']) == ['obj:herbier'], 'le code « Le vieil herbier » passe du Barde au Sage')
+    # (17 novembre, étape 3) avec le même code, Anselme refuse sa clé ; avec Basile et Silas (déjà entendus), « 💡 Le plan » s'écrit dans
+    # le Carnet du Barde, avec un code pour le Pisteur : chez lui, sa mission de la nuit s'affiche
+    verifier(not B.js("() => !!M.P().objets['_info:plan_nuit']"), 'pas de plan tant qu\'Anselme n\'a pas refusé sa clé')
+    B.carte(); B.ev('lieu', {'id': 'clocher'}); B.ev('parler', {'id': 'anselme'}); B.pg.wait_for_timeout(300)
+    B.ev('question', {'p': 'anselme', 'i': '4'}); B.pg.wait_for_timeout(300)
+    verifier(B.js("() => M.P().vus['barde:anselme:4'] === 'ok' && /JAMAIS JE NE PRÊTE MA CLÉ/.test(M.E().pnj.anselme.questions[4].a)"), 'Anselme : « JAMAIS JE NE PRÊTE MA CLÉ ! »'); B.fermer()
+    B.js("() => { M.P().onglet = 'carnet'; M.P().mission.plie = false; M.render(); }"); B.pg.wait_for_timeout(300)
+    verifier('Le plan ! Cette nuit, aide Anselme à sonner la Grosse Marie' in B.texte('#app') and B.pg.locator('.b-missions .b-mi-code .b-sym').count() >= 3, '« 💡 Le plan » est dans le Carnet du Barde, avec son code')
+    B.shot('le-plan')
+    mp0 = P.missions_vues()
+    verifier(livrer(T, B, seulement=['info:plan_nuit']) == ['info:plan_nuit'], 'le code « Le plan de la nuit » passe du Barde au Pisteur')
+    mp1 = P.missions_vues()
+    verifier(not any('Le plan de la nuit' in m for m in mp0) and any('Le plan de la nuit' in m and 'clé' in m for m in mp1), 'chez le Pisteur, sa mission de la nuit s\'affiche avec le code — pas avant')
     th = S.page('herbier'); S.pg.locator('#livre-ici .lv-page.on .b-lire').first.click(); S.pg.wait_for_timeout(200)
     verifier(S.pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and 'bruyère' in th and 'Rond des Sorcières' not in th, 'le Sage lit l\'herbier à voix haute : sept plantes, un indice et un moment pour chacune (plus de code, plus de nom de lieu : Bible §13.28)')
     # l'Alchimiste : la lettre au labo (avec le Livre d'or du Sage)
@@ -380,7 +415,7 @@ def partie(nav, base):
     idx = B.js("() => M.E().pnj.anselme.questions.map(function(q){ return q.grand || ''; })")
     verifier('gm' not in idx, 'plus de grand dialogue de la Grosse Marie')
     B.carte(); B.ev('parler', {'id': 'anselme'})
-    verifier(B.pg.locator('#voile .gd-q').count() == 0, 'le Barde, chez Anselme : il reste une question (« Qu\'y a-t-il sous le clocher ? »), son grand dialogue attend')
+    # (17 novembre, étape 3) il a déjà tout demandé à Anselme l'après-midi (son refus fait partie du plan) : la nuit, le grand dialogue est là
     tout_demander(B, ['anselme']); B.ev('parler', {'id': 'anselme'})
     verifier(B.pg.locator('#voile .gd-q.gd-neuve').count() == 1, 'l\'aveu de Mélusine, la crypte fermée, tout demandé : le grand dialogue d\'Anselme arrive')
     B.ev('question', {'p': 'anselme', 'i': str(idx.index('cle'))}); B.pg.wait_for_timeout(400)

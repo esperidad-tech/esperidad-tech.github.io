@@ -61,7 +61,9 @@ E[3] = {
     sage:'Peins le tableau d\'Odette et de ses chats.'},
   missions:{
     pisteur:'Accroche les banderoles de la fête et rattrape l\'oie de Gaspard. Et ouvre l\'œil : cette lettre est bizarre…',
-    alchimiste:'Fais le haut du gâteau de la fête, chez Gaspard. Puis cueille les plantes de la vallée, et prépare tes potions.',
+    /* (17 novembre, étape 3 du nouveau fil) plus de plantes ni de potions dès le matin : elles arrivent l'après-midi, quand Iris a dit
+       pourquoi (« préparez-vous, et beaucoup »), que le Sage a l'herbier et qu'Anselme est réveillé. Le matin : le gâteau, et le labo. */
+    alchimiste:'Fais le haut du gâteau de la fête, chez Gaspard. Puis file à ton labo : tes amis vont t\'apporter de quoi chercher.',
     barde:'Achète les fleurs de la fête avec les pièces du maire. Puis interroge le village : pose toutes tes questions à ceux qui ont le temps de te répondre. Les autres, ce sera pour plus tard !',
     sage:'Peins le tableau d\'Odette et de ses chats. Lis ton Grand Livre à l\'équipe, donne le code de chaque moment, et accuse quand toute l\'équipe est d\'accord.'
   },
@@ -113,13 +115,15 @@ E[3] = {
       /* (12 novembre, Bible §13.26 et §13.28) les sept plantes sont cachées sur la carte (D.PLANTES, cueillette.js) : l'herbier du Sage ne donne
          que des indices ; quatre poussent au-delà de la brume, qu'Anselme repousse un peu avec Bertille, sa petite cloche (lieux.clocher, E.brume).
          En échange, il veut de la mélisse pour sa tisane : la troisième mission n'arrive qu'après Bertille (e.si, mission.js). */
-      {ic:'🌿', t:'Cueille les sept plantes de la vallée. Elles se cachent bien : l\'herbier du Sage te mettra sur la piste.',
+      /* (17 novembre) les trois missions des plantes et des potions n'arrivent que l'après-midi (des:1) : le matin, Anselme dort, le Sage
+         n'a pas encore l'herbier, et personne n'a dit pourquoi il faudrait des potions */
+      {des:1, ic:'🌿', t:'Cueille les sept plantes de la vallée. Elles se cachent bien : l\'herbier du Sage te mettra sur la piste.',
         fait:[{et:[{vu:'plante:oseille'}, {vu:'plante:souci'}, {vu:'plante:melisse'}, {vu:'plante:lin'}, {vu:'plante:lycopode'}, {vu:'plante:vesse'}, {vu:'plante:gui'}]}]},
-      {ic:'🔔', t:'Des plantes poussent au-delà de la brume. Anselme, au clocher, pourra peut-être t\'aider.', fait:[{vu:'alchimiste:clocher:bertille'}]},
+      {des:1, ic:'🔔', t:'Des plantes poussent au-delà de la brume. Anselme, au clocher, pourra peut-être t\'aider.', fait:[{vu:'alchimiste:clocher:bertille'}]},
       {si:[{vu:'alchimiste:clocher:bertille'}], ic:'🍵', t:'Rapporte de la mélisse à Anselme, pour sa tisane. Une promesse est une promesse !', fait:[{vu:'alchimiste:clocher:tisane'}]},
       /* (Romain, 13 novembre : « on en dit trop ») plus de mission « Analyse la lettre » (le signe « À analyser ! » de la paillasse suffit),
          « Prépare les sept potions sur ton établi » sans « de la nuit », et plus de mission de la nuit */
-      {ic:'🧪', t:'Prépare les sept potions, sur ton établi.',
+      {des:1, ic:'🧪', t:'Prépare les sept potions, sur ton établi.',
         fait:[{et:[{vu:'fiole:feu'}, {vu:'fiole:fumigene'}, {vu:'fiole:huile'}, {vu:'fiole:colle'}, {vu:'fiole:acide'}, {vu:'fiole:baume'}, {vu:'fiole:coeur'}]}]},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
