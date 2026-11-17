@@ -8078,6 +8078,7 @@ function zoneChat(V, o, ev){
 function caresseDebut(V, o, ev){
   var st = chatEtat(V, o);
   if(st.depart || st.tenu || st.caresse) return;
+  if(V.bain && !V.bain.dedans) return;      /* (elle va à son baquet : on ne l'arrête pas en chemin) */
   if(st.anim) chatArreter(V, o);
   if(st.t){ clearTimeout(st.t); st.t = null; }
   if(/^(marche|saute|tape|lave|mange|salut)$/.test(st.pose)) chatPose(V, o, 'assis');
@@ -8250,7 +8251,7 @@ function outilBouge(V, o, ev, dl){
   O.l += dl;
   if(O.l < 34) return;      /* (un coup de brosse, un coup d'éponge : 34 points de glisser) */
   O.l = 0; O.n++;
-  if(O.t === 'bain' && V.bain){
+  if(O.t === 'bain' && V.bain && V.bain.dedans){
     particule(V, ev, 'at-part-mousse', '', 1500); particule(V, ev, 'at-part-mousse', '', 1500);
     sonMimi(V, 'mousse');
     V.bain.n++; V.bain.dernier = Date.now();
@@ -8367,6 +8368,7 @@ function demarrerBain(V){
       if(!V.bain || !d) return;
       st.gauche = false; d.classList.remove('at-c-gauche');
       chatPose(V, o, 'assis'); d.classList.add('at-x-agace', 'at-dans-bain');
+      V.bain.dedans = true;
       var zc = parseInt(d.style.zIndex, 10) || z0;
       dos.style.zIndex = zc - 1; el.style.zIndex = zc + 1;
       /* plouf ! des gouttes, l'eau qui tremble */
@@ -8804,38 +8806,42 @@ function jouerHerbe(V, o){
    on essaie les places proposées, puis des places libres au hasard ; à défaut, la première. Les petits objets comptent aussi. */
 /* ev : {x, y, r} — pas derrière ça (Mimi, assise là : elle cacherait ce qu'on pose) */
 function placeLibre(V, l, dl, h, ev){
+  /* combien la chose posée là serait cachée (0 : pas du tout ; 1 : interdit) */
   function cache(x, y){
-    if(ev && Math.abs(x - ev.x) < ev.r && y < ev.y + 30 && y > ev.y - ev.r * 2.6) return true;      /* (ni derrière elle, ni sous sa bulle) */
-    var s = echelleSol(y), bx = [x - dl * s, y - h * s, x + dl * s, y], aire = (bx[2] - bx[0]) * (bx[3] - bx[1]);
+    if(ev && Math.abs(x - ev.x) < ev.r && y < ev.y + 30 && y > ev.y - ev.r * 2.6) return 1;      /* (ni derrière elle, ni sous sa bulle) */
+    var s = echelleSol(y), bx = [x - dl * s, y - h * s, x + dl * s, y], aire = (bx[2] - bx[0]) * (bx[3] - bx[1]), pire = 0;
     /* (17 novembre) ni sur la cueillette et les flacons, devant la porte de l'atelier (leurs bulles passent devant tout : le baquet s'y
        est retrouvé caché, sur un téléphone), ni sous les boutons du bas de l'écran */
-    if(!V.salle && inter(bx, [TAS.x - 230, TAS.y - 130, TAS.x + 230, TAS.y + FLACONS.dy + TAS.dy + 30]) > aire * 0.06) return true;
-    if(sousBoutons(V, x, y) || sousBoutons(V, x - dl * s * 0.8, y) || sousBoutons(V, x + dl * s * 0.8, y)) return true;
+    if(!V.salle && inter(bx, [TAS.x - 230, TAS.y - 130, TAS.x + 230, TAS.y + FLACONS.dy + TAS.dy + 30]) > aire * 0.06) return 1;
+    if(sousBoutons(V, x, y) || sousBoutons(V, x - dl * s * 0.8, y) || sousBoutons(V, x + dl * s * 0.8, y)) return 1;
     /* (les cartons pas encore ouverts cachent aussi : ils sont tout devant — vu avec les colis du parc à chat, sur un téléphone) */
-    if(boitesCartons(V).some(function(b){
-      if(b[3] <= y) return false;
-      var w = Math.min(bx[2], b[2]) - Math.max(bx[0], b[0]), hh = Math.min(bx[3], b[3]) - Math.max(bx[1], b[1]);
-      return w > 0 && hh > 0 && w * hh > aire * 0.06;
-    })) return true;
-    return ici(V).some(function(o){
-      if(o.sur || o.t === 'chat' || o.t === 'tapis' || o.cote) return false;
-      var c = catDe(o); if(c.z === 'mur' || c.z === 'tapis') return false;
-      var p = posObj(V, o); if(p.y <= y) return false;
-      var b = boite(o, p), w = Math.min(bx[2], b[2]) - Math.max(bx[0], b[0]), hh = Math.min(bx[3], b[3]) - Math.max(bx[1], b[1]);
-      return w > 0 && hh > 0 && w * hh > aire * 0.06;
+    boitesCartons(V).forEach(function(b){ if(b[3] > y) pire = Math.max(pire, inter(bx, b) / aire); });
+    ici(V).forEach(function(o){
+      if(o.sur || o.t === 'chat' || o.t === 'tapis' || o.cote) return;
+      var c = catDe(o); if(c.z === 'mur' || c.z === 'tapis') return;
+      var p = posObj(V, o); if(p.y <= y) return;
+      pire = Math.max(pire, inter(bx, boite(o, p)) / aire);
     });
+    return pire > 0.06 ? Math.min(1, pire) : 0;
   }
   for(var i = 0; i < l.length; i++) if(!cache(l[i][0], l[i][1])) return {x:l[i][0], y:l[i][1]};
-  /* (pas de place là : la place libre la plus proche de ce qu'on voulait — et de préférence une qu'on voit à l'écran : sur un
-     téléphone, la pièce est plus large que lui) */
-  var mieux = null, d0 = 0;
-  for(var k = 0; k < 16; k++){
-    var q = chatSolVisible(V), x = borne(q.x, solXmin(V, q.y) + dl + 30, solXmax(V, q.y) - dl - 30);
-    if(cache(x, q.y)) continue;
-    var sx = V.k && V.pan && V.vb ? (x - V.vb.x0) * V.k - V.pan.x : 100, dd = Math.hypot(x - l[0][0], q.y - l[0][1]) + (V.vw && (sx < 30 || sx > V.vw - 30) ? 1500 : 0);
-    if(!mieux || dd < d0){ mieux = {x:x, y:q.y}; d0 = dd; }
+  /* (pas de place là : la place libre la plus proche de ce qu'on voulait, parmi celles qu'on voit à l'écran — sur un téléphone, la
+     pièce est plus large que lui ; 17 novembre : une grille sur tout le plancher, plus des essais au hasard ; s'il n'y a vraiment
+     rien de libre, la moins cachée) */
+  var mieux = null;
+  function essai(x, y){
+    var c = cache(x, y), sx = V.k && V.pan && V.vb ? (x - V.vb.x0) * V.k - V.pan.x : 100, sy = V.k && V.pan && V.vb ? (y - V.vb.y0) * V.k - V.pan.y : 100;
+    var dehors = V.vw && (sx < 40 || sx > V.vw - 40 || sy < 90 || sy > V.vh - 10);
+    var sc = c * 6000 + (dehors ? 3000 : 0) + Math.hypot(x - l[0][0], y - l[0][1]);
+    if(c < 1 && (!mieux || sc < mieux.sc)) mieux = {x:x, y:y, sc:sc};
   }
-  return mieux || {x:l[0][0], y:l[0][1]};
+  var y0 = SOL_MIN + 50, y1 = solMax(V) - 16;
+  for(var gy = 0; gy <= 6; gy++) for(var gx = 0; gx <= 10; gx++){
+    var y = y0 + (y1 - y0) * gy / 6, xa = solXmin(V, y) + dl + 30, xb = solXmax(V, y) - dl - 30;
+    if(xb > xa) essai(xa + (xb - xa) * gx / 10, y);
+  }
+  for(var k = 0; k < 16; k++){ var q = chatSolVisible(V); essai(borne(q.x, solXmin(V, q.y) + dl + 30, solXmax(V, q.y) - dl - 30), q.y); }
+  return mieux ? {x:mieux.x, y:mieux.y} : {x:l[0][0], y:l[0][1]};
 }
 /* ---------- Le coffret qu'elle rapporte ---------- */
 /* (grand : le coffret doré du grand cadeau — le même, en or, au ruban rouge, avec deux étoiles) */
