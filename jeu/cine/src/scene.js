@@ -11,14 +11,14 @@ var W = 1440, H = 616;
 var PLT = null;
 CINE.plateau = function(){ return PLT; };
 CINE.preparer = function(nom){
-  var P = nom === 'chene' ? window.PLATEAU_CHENE : window.PLATEAU;
+  var P = nom === 'chene' ? window.PLATEAU_CHENE : nom === 'descente' ? window.PLATEAU_DESCENTE : window.PLATEAU;
   if(!P.pret){
     P.construire(document.getElementById('film'));
     /* le décor passe sous les dessins */
     var f = document.getElementById('film'); f.insertBefore(P.vue, f.firstChild);
     P.pret = true;
   }
-  if(PLT !== P){ [window.PLATEAU, window.PLATEAU_CHENE].forEach(function(q){ if(q && q.vue) q.vue.style.display = q === P ? '' : 'none'; }); PLT = P; }
+  if(PLT !== P){ [window.PLATEAU, window.PLATEAU_CHENE, window.PLATEAU_DESCENTE].forEach(function(q){ if(q && q.vue) q.vue.style.display = q === P ? '' : 'none'; }); PLT = P; }
   CINE.pret = true;
 };
 

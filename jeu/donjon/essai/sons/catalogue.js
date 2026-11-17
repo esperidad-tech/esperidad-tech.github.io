@@ -117,6 +117,9 @@ window.CATALOGUE = [
           /* 16 novembre (Romain) : la pub de 30 secondes (jeu/pub) */
           {id:'pubPop', t:'Pub : pop', v:'A', neuf:1}, {id:'pubWhoosh', t:'Pub : fffiou', v:'A', neuf:1}, {id:'pubPlongee', t:'Pub : la plongée', v:'A', neuf:1}, {id:'pubTada', t:'Pub : le titre', v:'A', neuf:1},
           {id:'cineMusPub', t:'Musique de pub', v:'A', m:1, neuf:1},
+          /* 17 novembre (Romain) : les deux descentes du donjon (escalier de la crypte, corde du puits) */
+          {id:'cineGrille', t:'La grille rouillée', v:'A', neuf:1}, {id:'cineGoutte', t:'Une goutte', v:'A', neuf:1}, {id:'cineCorde', t:'La corde glisse', v:'A', neuf:1}, {id:'cineLueur', t:'La lueur bleue', v:'A', neuf:1},
+          {id:'cineMusEscalier', t:'Musique de l\'escalier', v:'A', m:1, neuf:1}, {id:'cineMusPuits', t:'Musique du puits', v:'A', m:1, neuf:1},
           /* 17 novembre (Romain) : les quatre films des héros (jeu/pub/heros.js) — la musique de la pub, un air et un instrument par héros */
           {id:'cineMusHerosPisteur', t:'Film du Pisteur', v:'A', m:1, neuf:1}, {id:'cineMusHerosAlchimiste', t:'Film de l\'Alchimiste', v:'A', m:1, neuf:1},
           {id:'cineMusHerosBarde', t:'Film du Barde', v:'A', m:1, neuf:1}, {id:'cineMusHerosSage', t:'Film du Sage', v:'A', m:1, neuf:1}

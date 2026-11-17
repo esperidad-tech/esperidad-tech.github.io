@@ -434,6 +434,48 @@ M.cineMusPubA = function(A, P){
   return I;
 };
 
+/* =================== LES DEUX DESCENTES (escalier et puits, 24 s chacune ; Bible §13.62 ; Romain, 17 novembre) ============   Presque rien : un fond grave qui s'installe, des gouttes de harpe très loin, un cœur lent. Dans la dernière partie, la lueur du fond :
+   trois notes claires (la, ré, fa) — le motif de l'homme en cape, en tout petit. On est sous terre : beaucoup d'écho. */
+M.cineMusEscalierA = function(A, P){
+  var I = Instance(A, P), proche = A.bus(P, {grotte:.5}), loin = A.bus(P, {grotte:1, g:.7}), ech = I.echo(loin, {temps:.5, retour:.45, lp:2000, sortie:.5});
+  a(I, 0, function(t){
+    fond(A, t, [m(26), m(38)], 12, .03, proche, {a:3, r:3});
+    [3.2, 6.4, 9.6].forEach(function(x){ sourd(A, t + x, .12, loin); sourd(A, t + x + .45, .08, loin); });
+    [[4.5, 69], [8.2, 65], [10.4, 62]].forEach(function(n){ A.harpe(t + n[0], m(n[1]), {t60:2.2, g:.05, lp:2200}, ech); });
+  });
+  a(I, 12, function(t){
+    fond(A, t, [m(26), m(33), m(41)], 12, .034, proche, {a:3, r:4});
+    trem(A, t + 1, m(57), 8, .012, proche, {env:[[0, 0], [3, .6], [7, 1], [8, 0]]});
+    trem(A, t + 2, m(62), 7, .01, proche, {env:[[0, 0], [3, .6], [6, 1], [7, 0]]});
+    [1, 2.4, 3.8, 5.2, 6.6].forEach(function(x, k){ sourd(A, t + x, .1 + k * .015, loin); });
+    [[7.0, 69], [7.8, 74], [8.6, 77]].forEach(function(n){ A.harpe(t + n[0], m(n[1]), {t60:2.6, g:.06, lp:2800}, ech); });
+    A.choeur(t + 7.4, [m(69), m(74), m(77)], 4, {voyelle:'o', a:1.5, r:2, g:.016}, loin);
+  });
+  return I;
+};
+M.cineMusPuitsA = function(A, P){
+  var I = Instance(A, P), proche = A.bus(P, {grotte:.4}), loin = A.bus(P, {grotte:1, g:.7}), ech = I.echo(loin, {temps:.55, retour:.45, lp:2000, sortie:.5});
+  a(I, 0, function(t){
+    fond(A, t, [m(26), m(33)], 8, .03, proche, {a:2.5, r:2.5});
+    A.harpe(t + 1.5, m(62), {t60:2.4, g:.05, lp:2200}, ech);
+    A.harpe(t + 3.0, m(57), {t60:2.4, g:.045, lp:2200}, ech);
+    montee(A, t + 4.1, 1.6, .12, loin);
+    sourd(A, t + 5.4, .16, loin);
+  });
+  a(I, 6, function(t){
+    fond(A, t, [m(26), m(38), m(45)], 12, .034, proche, {a:2, r:4});
+    for(var k = 0; k < 8; k++) sourd(A, t + 1 + k * 1.1, .07 + k * .012, loin);
+    trem(A, t + 3, m(64), 8, .011, proche, {env:[[0, 0], [3, .6], [7, 1], [8, 0]]});
+    trem(A, t + 3, m(65), 8, .009, proche, {env:[[0, 0], [3, .6], [7, 1], [8, 0]]});
+    A.tambour(t + 10.2, {f:50, d:1.2, g:.18}, loin);
+  });
+  a(I, 18, function(t){
+    [[.6, 69], [1.4, 74], [2.2, 77], [3.2, 81]].forEach(function(n){ A.harpe(t + n[0], m(n[1]), {t60:2.8, g:.055, lp:3000}, ech); });
+    A.choeur(t + .8, [m(69), m(74), m(77)], 4, {voyelle:'o', a:1.2, r:2, g:.016}, loin);
+    fond(A, t, [m(26), m(33)], 6, .026, proche, {a:1.5, r:3});
+  });
+  return I;
+};
 /* =================== LES QUATRE FILMS DES HÉROS (jeu/pub/heros.js ; Romain, 17 novembre : « un peu le même style avec le même rythme » que la pub) ===================
    La même musique de fête que la pub (120 à la minute, un temps = 0,5 s, les mêmes instruments), mais UN AIR PAR HÉROS, dans son ton, joué par
    son instrument : le Pisteur siffle et court (do), l'Alchimiste fait des bulles au marimba (ré), le Barde chante au luth (fa), le Sage égrène

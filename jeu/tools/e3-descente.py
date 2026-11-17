@@ -285,7 +285,7 @@ def partie_enquete(b):
     vu = pg.evaluate("(l) => { var o = {}; l.forEach(function(k){ o[k] = M.code(k).join('-'); }); return o; }", list(att.keys()))
     verifier(vu == att, f'les quatre codes partagés ont les symboles du donjon ({vu})')
     verifier(pg.evaluate("() => { var c = M.codesEnquete(M.E()), vus = {}, n = 0; Object.keys(c.parId).forEach(function(id){ var k = c.parId[id].join('-'); if(vus[k]) n++; vus[k] = 1; }); return n; }") == 0, 'aucun code de l\'enquête 3 n\'est en double (les codes du donjon et les 432 codes d\'allure compris)')
-    verifier(pg.evaluate("() => { for(var n = 0; n < 432; n++){ var a = M.allureDe(n); if(M.allureNumero(a.role, a) !== n) return false; } return !!M.code('allure:431') && !M.code('allure:432') && !M.code('sac:5') && !M.code('info:maire_retenu') && !M.code('info:leo_attrape') && !M.code('info:leo_enfui'); }"), 'les 432 codes d\'allure se lisent et s\'écrivent ; plus de code du sac, du maire retenu, de « Léo attrapé / enfui »')
+    verifier(pg.evaluate("() => { for(var n = 0; n < 1296; n++){ var a = M.allureDe(n); if(M.allureNumero(a.role, a) !== n) return false; } return !!M.code('allure:431') && !!M.code('allure:1295') && !M.code('allure:1296') && !M.code('sac:5') && !M.code('info:maire_retenu') && !M.code('info:leo_attrape') && !M.code('info:leo_enfui'); }"), 'les 1296 codes d\'allure (432 × trois âges) se lisent et s\'écrivent ; plus de code du sac, du maire retenu, de « Léo attrapé / enfui »')
     pg.context.close()
 
     # ---------- tirer, pousser : le bruit
