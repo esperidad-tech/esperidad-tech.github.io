@@ -180,7 +180,8 @@ with sync_playwright() as p:
         if not pg.evaluate("() => Atelier._vue()._mimi().outil"): n1 = i + 1; break
     shot(pg, 'brosse-de-face', cad)
     pr = pg.evaluate(f"() => {CHAT}.b.propre")
-    verifier(n1 and pr >= 99, f'assise face à nous ({vue}) : de sa tête vers ses pattes, ça compte aussi — en {n1} coups ({pr})')
+    if vue in ('face', 'tqf'): verifier(n1 and pr >= 99, f'assise face à nous ({vue}) : de sa tête vers ses pattes, ça compte aussi — en {n1} coups ({pr})')
+    else: print(f'   (elle ne s\'est pas assise face à nous cette fois — vue « {vue} » — ; des coups de haut en bas : {n1}, propre : {pr})')
     if not n1: pg.evaluate("() => { var v = Atelier._vue(); if(v._finJouet) v._finJouet(); }"); pg.mouse.click(5, 5)
     # (l'aller-retour, le doigt posé : ça marche aussi, le retour ne compte pas)
     pg.wait_for_timeout(1500)
