@@ -1802,7 +1802,7 @@ def('bougies', {w:74, h:88, p:56, z:'petit', deco:true, nf:3, nom:'Bougies', ic:
   }});
 
 var COUSSINS = ['#9d6ee3', '#ef7fa8', '#5fcf86'];
-def('coussin', {w:126, h:66, p:110, z:'sol', deco:true, nf:3, nom:'Coussin', ic:'🟣',
+def('coussin', {w:126, h:66, p:110, z:'sol', deco:true, nf:3, nom:'Coussin', ic:'🟣', surf:[{x0:-22, x1:22, y:-42, z:55}],     /* (17 novembre : Mimi peut s'y coucher) */
   d:function(c){
     var p = palette(c, [COUSSINS[c.fo], clair(COUSSINS[c.fo], 0.5), sombre(COUSSINS[c.fo], 0.35)]), cz = c.p / 2;
     if(c.fo === 2){        /* un cœur debout */
@@ -3128,11 +3128,29 @@ function surfaceSous(V, o, x, y){
   }
   return best;
 }
+/* (17 novembre) Mimi qu'on porte : lâchée sur un de ses coins douillets (son panier, un coussin, le hamac…), ou tout près, elle s'y
+   retrouve — on n'a pas à viser le creux du panier au millimètre. x, y : là où sont ses pattes. */
+function coinSous(V, o, x, y){
+  var best = null;
+  ici(V).forEach(function(p){
+    if(p === o || p.sur || !DODO_ICI.test(p.t)) return;
+    var cp = catDe(p);
+    if(!cp.surf) return;
+    var pp = posObj(V, p), b = boite(p, pp);
+    if(x < b[0] - 40 || x > b[2] + 40 || y < b[1] - 10 || y > b[3] + 70) return;      /* (elle est à moitié dessus : ça suffit) */
+    var cx = ctx3d(pp.R, true);
+    cp.surf.forEach(function(sf, k){
+      var m = cx.Q(cp.w / 2 + (sf.x0 + sf.x1) / 2, cp.h + sf.y, sf.z !== undefined ? sf.z : (cp.p || 40) / 2), dd = Math.hypot(x - m[0], (y - m[1]) * 0.7);
+      if(!best || dd < best.dd) best = {oid:p.id, k:k, dx:Math.round((sf.x0 + sf.x1) / 10) * 5, dd:dd};
+    });
+  });
+  return best;
+}
 /* Pose un objet à l'endroit lâché : sur un meuble (un petit objet), sur un mur, ou par terre */
 function resoudre(V, o, x, y){
   var c = catDe(o);
   if(c.z === 'petit'){
-    var sf = surfaceSous(V, o, x, y);
+    var sf = surfaceSous(V, o, x, y) || (o.t === 'chat' ? coinSous(V, o, x, y) : null);
     if(sf){ o.sur = {o:sf.oid, k:sf.k, dx:sf.dx}; o.cote = 0; delete o.pz; delete o.py; return; }
   }
   if(c.z === 'mur') poserMur(V, o, x, y);
@@ -3239,7 +3257,7 @@ function surSurface(V, o){
   V.etat.objets.forEach(function(p){
     if(p === o || p.sur || salleDe(p) !== salleDe(o)) return;
     var cp = catDe(p);
-    if(!cp.surf || cp.special === 'grimoire' || p.t === 'chat') return;
+    if(!cp.surf || cp.special === 'grimoire' || p.t === 'chat' || p.t === 'coussin') return;      /* (le coussin : c'est pour Mimi) */
     cp.surf.forEach(function(sf, k){
       var pris = V.etat.objets.filter(function(x){ return x.sur && x.sur.o === p.id && x.sur.k === k; }).map(function(x){ var cx = catDe(x).w * 0.66; return [x.sur.dx - cx / 2, x.sur.dx + cx / 2]; });
       for(var dx = sf.x0 + w / 2; dx <= sf.x1 - w / 2 + 0.1; dx += 10){
@@ -3468,6 +3486,7 @@ function vue(el, opts){
     _parcDonner:function(){ return parcDonner(V, true); },
     _parc:function(id, quoi){ var o = V.parId[id] || chatsTous(V)[0]; return o ? chatParc(V, o, quoi) : null; },
     _garde:function(id){ ouvrirGarde(V, id); },
+    _acheter:function(a){ acheter(V, a); return true; },      /* (les robots : un achat dans la boutique de Mimi, sans passer par ses boutons) */
     _dehors:function(id){ var o = V.parId[id]; if(!o) return false; var st = chatEtat(V, o); st.pos = chatSolVisible(V); placerEl(V, o); var d = V.elO[id]; if(d) d.style.zIndex = Math.round(chatPos(V, o).z * 5); return st.pos; },
     _reveil:function(id){ var o = V.parId[id]; if(!o) return false; var st = chatEtat(V, o); if(st.anim){ var a = st.anim; st.anim = null; try{ a.cancel(); }catch(e){} } if(st.t){ clearTimeout(st.t); st.t = null; } st.dortJusqua = 0; placerEl(V, o); chatPose(V, o, 'assis'); chatPlanifier(V, o, 20000); return true; },
     _bulle:function(id){ var d = V.elO[id], b = d && d.querySelector('.at-bulle'); return b && !b.hidden ? b.getAttribute('data-bulle') : null; },
@@ -4194,6 +4213,7 @@ function jetonHTML(k, n, de, on, extra){
    - la cueillette posée devant la porte : on la glisse directement dans un rangement.
    ========================================================== */
 var SEUIL_GESTE = 9;     /* en pixels : en dessous, c'est un toucher ; au-dessus, un glisser */
+var PORTER_LOIN = 30;    /* en pixels : le doigt qui caressait Mimi et s'éloigne d'autant de son pelage l'emmène (on la porte) */
 var TENIR = 260;         /* en millisecondes : appuyer et garder le doigt, le meuble se soulève */
 function suivre(V, e, cb, seuil){
   var id = e.pointerId, x0 = e.clientX, y0 = e.clientY, bouge = false, s = seuil === undefined ? SEUIL_GESTE : seuil, s2 = s * s;
@@ -4556,6 +4576,8 @@ function prendreObjet(V, e, o){
   /* le chat : le doigt qui glisse sur lui le caresse (il ronronne) ; s'il sort du chat, la pièce défile (ou, sur un grand écran, on le déplace) */
   var chat = o.t === 'chat', car = {l:0, n:0, x:x0, y:y0};
   function surChat(ev){ var r = d.getBoundingClientRect(), mx = r.width * 0.25 + 12, my = r.height * 0.25 + 12; return ev.clientX > r.left - mx && ev.clientX < r.right + mx && ev.clientY > r.top - my && ev.clientY < r.bottom + my; }
+  /* le doigt est-il parti pour de bon ? (à plus d'un bon bout de doigt de son pelage : le pantin sait où elle est vraiment) */
+  function loinChat(ev){ var r = pantinDe(V, o), ec = r ? r.ecart(ev.clientX, ev.clientY) : null; return ec === null ? !surChat(ev) : ec > PORTER_LOIN; }
   d.classList.add('at-appui');
   function lever(ev){
     etat = 'glisse';
@@ -4563,7 +4585,9 @@ function prendreObjet(V, e, o){
     g = debutGlisseObjet(V, e, o);
     if(ev) g.move(ev);
   }
-  /* (16 novembre) Mimi ne se soulève plus : le doigt qu'on laisse sur elle la gratte (tête, dos, ventre, queue : caresseDebut) */
+  /* (16 novembre) le doigt qu'on laisse sur elle la gratte (tête, dos, ventre, queue : caresseDebut) : il ne la soulève pas.
+     (17 novembre, Romain : « elle demande qu'on la porte vers son panier. Mais on ne peut plus la porter. ») Le doigt posé sur elle
+     qui s'en va pour de bon (à plus d'un bout de doigt de son pelage : PORTER_LOIN) l'emmène : on la porte, on la lâche où on veut (chatPortable, chatPortee). */
   var tm = apres(V, TENIR, function(){
     if(etat !== 'attente') return;
     if(chat){ etat = 'caresse'; d.classList.remove('at-appui'); caresseDebut(V, o, e); return; }
@@ -4576,10 +4600,13 @@ function prendreObjet(V, e, o){
       clearTimeout(tm);
       if(chat && surChat(ev)){ etat = 'caresse'; d.classList.remove('at-appui'); car.x = ev.clientX; car.y = ev.clientY; caresseDebut(V, o, ev); }
       else if(glissable){ etat = 'defile'; d.classList.remove('at-appui'); V.root.classList.add('at-defile'); }
-      else if(chat){ etat = 'rien'; d.classList.remove('at-appui'); }
+      else if(chat && !chatPortable(V, o)){ etat = 'rien'; d.classList.remove('at-appui'); }
       else lever(ev);
     }
     if(etat === 'caresse'){
+      /* le doigt s'en va pour de bon : les caresses s'arrêtent et on l'emmène — sauf si c'est elle qui est partie (« Pas la queue ! »),
+         ou si elle est occupée ailleurs */
+      if(chatEtat(V, o).caresse && chatPortable(V, o) && loinChat(ev)){ caresseFin(V, o); lever(ev); return; }
       if(surChat(ev)){
         var dl = Math.hypot(ev.clientX - car.x, ev.clientY - car.y); car.x = ev.clientX; car.y = ev.clientY;
         caresseBouge(V, o, ev, dl);
@@ -4656,7 +4683,7 @@ function debutGlisseObjet(V, e, o){
     if(vx || vy){ if(!auBord) auBord = Date.now(); if(Date.now() - auBord > 280){ panPar(V, vx, vy); poser(dernier); } }
     else auBord = 0;
   }
-  if(chat) chatSaisi(V, o);
+  if(chat){ chatSaisi(V, o); chatPortee(V, o); }
   els.forEach(function(x){ x.classList.add('at-leve'); });
   d.style.zIndex = 99000;
   enf.forEach(function(c, i){ var x = V.elO[c.id]; if(x) x.style.zIndex = 99001 + i; });
@@ -6030,8 +6057,24 @@ function chatSaisi(V, o){
   }
   st.tenu = true;
 }
-function chatLache(V, o){
+/* Peut-on l'emmener, là, tout de suite ? Pas quand elle est occupée ailleurs (elle sort, elle passe, elle est dans sa cabane : st.tenu),
+   ni avec la brosse en main, dans son bain ou en plein jeu. */
+function chatPortable(V, o){
   var st = chatEtat(V, o);
+  return !st.tenu && !st.depart && !st.passe && !st.cabane && !st.chasse && !V.outil && !V.bain && !V.jouet && !GUIDE && V.mode === 'ranger' && !V.arrete;
+}
+/* On la soulève : une sieste s'arrête là (un petit bâillement), elle se laisse porter, les yeux tout ronds */
+function chatPortee(V, o){
+  var st = chatEtat(V, o), d = V.elO[o.id], dort = st.pose === 'dort';
+  st.dortJusqua = 0; st.reveil = false;
+  if(st.pose !== 'assis') chatPose(V, o, 'assis');
+  if(d) d.classList.add('at-c-portee');
+  if(dort){ expression(V, o, 'at-x-baille', 900); sonMimi(V, 'baille'); }
+  else sonMimi(V, 'trille');
+}
+function chatLache(V, o){
+  var st = chatEtat(V, o), dp = V.elO[o.id];
+  if(dp) dp.classList.remove('at-c-portee');
   st.tenu = false;
   st.pos = null;
   /* (étape 2) posée dans un de ses coins douillets (son panier, un coussin, l'arbre à chat…) : elle pétrit un peu, tourne sur elle-même
@@ -6043,6 +6086,7 @@ function chatLache(V, o){
     apres(V, 1350, function(){
       var s2 = V.chats[o.id];
       if(!s2 || s2.tenu || s2.caresse || s2.anim || s2.depart || s2.pose !== 'assis' || (V.jouet && V.jouet.o === o)) return;
+      if(s2.pos || !o.sur || o.sur.o !== par.id) return;      /* (entre-temps, on l'a reprise et posée ailleurs) */
       chatSeCoucher(V, o);
       s2.dortJusqua = Date.now() + 14000 + Math.random() * 6000;
       chatPlanifier(V, o, s2.dortJusqua - Date.now() + 30);
@@ -6648,7 +6692,7 @@ function envieInfo(V, k){
   if(p[0] === 'bain') return {ic:'🛁', dit:'Incroyable : ' + nom + ' rêve d\'un bain ! Vite, avant qu\'elle change d\'avis. Il est dans sa barre 🐾.', barre:true};
   if(p[0] === 'friandises') return {ic:'🍬', dit:nom + ' rêve d\'une friandise. Une toute petite. Bon, une moyenne. Le bocal est dans sa barre 🐾.', barre:true};
   if(p[0] === 'griffoir') return {ic:'🪵', dit:nom + ' a les griffes qui la démangent… Son griffoir lui fait de l\'œil !', cibles:['griffoir']};
-  if(p[0] === 'dodo') return {ic:'🧺', dit:nom + ' rêve de son coin douillet… Si quelqu\'un voulait bien la porter jusque-là !', cibles:['panier', 'coussin', 'pouf', 'arbre_chat']};
+  if(p[0] === 'dodo') return {ic:'🧺', dit:nom + ' rêve de son coin douillet… mais y aller à pattes, quelle fatigue ! Un doigt posé sur elle, on l\'emmène : elle se laisse porter comme une reine.', cibles:['panier', 'coussin', 'pouf', 'arbre_chat', 'hamac_chat']};
   return null;
 }
 /* tout ce dont elle peut avoir envie en ce moment (jamais la même deux fois de suite ; parfois un plat qu'elle n'a pas encore) */
@@ -7375,8 +7419,8 @@ function htmlGarde(V){
   var o = V.parId[V.gardeChat];
   if(!o) return '';
   var G = garde(V.etat), nom = nomChat(o), p = vChat(o.v), neuf = G.neuf.slice();
-  var t = G.a.length ? 'La garde-robe de ' + nom + '. Un nouvel habit arrive quand tu réussis un de tes mini-jeux pour la première fois, dans ses coffrets… ou dans sa boutique 🛒.' :
-    'La garde-robe est encore vide. Les habits arrivent quand tu réussis un de tes mini-jeux pour la première fois, dans les coffrets de ' + nom + '… ou dans sa boutique 🛒.';
+  var t = G.a.length ? 'La garde-robe de ' + nom + '. Ses habits ne s\'achètent pas : il en arrive un dans ses coffrets, ou quand tu réussis un de tes mini-jeux pour la première fois.' :
+    'La garde-robe est encore vide. Les habits ne s\'achètent pas : ils arrivent dans les coffrets de ' + nom + ', ou quand tu réussis un de tes mini-jeux pour la première fois.';
   if(!o.chaton) t += ' Ses pelages et ses yeux, eux, se gagnent avec ses photos 📷 et dans ses coffrets.';
   var corps = '<div class="at-garde-haut"><span class="at-garde-chat">' + '<svg viewBox="19 -28 76 78" aria-hidden="true">' + teteChat(p, 57, 18, o.acc || {}) + '</svg></span>' +
     '<p class="at-feuille-txt">' + esc(t) + ' ' + lireBtn(t) + '</p></div>';
@@ -7882,10 +7926,11 @@ var JOUETS = {
   carton:{ic:'📦', nom:'le carton à surprises', dit:'Un simple carton… le jouet préféré de tous les chats du monde.'},
   herbe:{ic:'🌿', nom:'l\'herbe à chat', dit:'Une pincée, et elle devient complètement zinzin.'}
 };
-/* la boutique de Mimi : le confort, à petits prix (les jouets, eux, ne s'achètent pas : ils viennent des coffrets) */
+/* la boutique de Mimi : le confort, à petits prix (les jouets, eux, ne s'achètent pas : ils viennent des coffrets).
+   (17 novembre, 07 h 07, Romain : « Enlève aussi tous les objets d'apparence de Mimi dans la boutique. La boutique c'est racheter autre
+   chose, les autres objets quoi, pas cela. » Plus un seul habit ici : ils se gagnent — ses coffrets, les mini-jeux.) */
 var BOUTIQUE_MIMI = {
-  coins:[{t:'panier', ic:'🧺', nom:'Un panier de plus', prix:5}, {t:'coussin', ic:'🟣', nom:'Un coussin moelleux', prix:3}, {t:'arbre_chat', ic:'🐈', nom:'Un arbre à chat', prix:9}],
-  habit:3, habitRare:7
+  coins:[{t:'panier', ic:'🧺', nom:'Un panier de plus', prix:5}, {t:'coussin', ic:'🟣', nom:'Un coussin moelleux', prix:3}, {t:'arbre_chat', ic:'🐈', nom:'Un arbre à chat', prix:9}]
 };
 /* L'ALBUM À COMPLÉTER (Romain, 16 novembre, 21 h 18 : « un compteur, une photo sur 15 » ; les doubles : « dommage, c'était la même » ;
    « des animations rares à prendre en photo » ; le gros plan, la plus rare ; « toutes les photos : un très gros cadeau »).
@@ -8693,22 +8738,19 @@ function bourse(V){ var b = V.o.bourse; try{ return b && typeof b.lire === 'func
 function ouvrirBoutique(V){ ouvrirCalque(V, 'at-cal-boutique', htmlBoutique(V)); son(V, 'page'); }
 function htmlBoutique(V){
   var m = mimi(V), G = garde(V.etat), or = bourse(V), c = chatsTous(V)[0], nom = c ? nomChat(c) : PORTEE.mere;
-  var t = 'La boutique de ' + nom + '. Ici, tout est pour elle : de bons petits plats, des coins douillets, des habits. Ses jouets, eux, ne s\'achètent pas : c\'est elle qui les rapporte !';
+  var t = 'La boutique de ' + nom + '. Ici, tout est pour elle : de bons petits plats, des coins douillets. Ses jouets et ses habits, eux, ne s\'achètent pas : c\'est elle qui les rapporte !';
   var art = function(ach, ic, nom2, prix, a, rare){
     return '<button type="button" class="at-ach' + (a ? ' a' : '') + (rare ? ' rare' : '') + '" data-achat="' + ach + '"' + (a ? ' disabled' : '') + '><span class="at-ach-ic" aria-hidden="true">' + ic + '</span><small>' + esc(nom2) + '</small><b>' + (a ? '✔ À elle' : '🪙 ' + prix) + '</b></button>';
   };
   var corps = '<p class="at-feuille-txt">' + esc(t) + ' ' + lireBtn(t) + '</p>' + (or === null ? '<p class="at-ach-ferme">La boutique n\'ouvre que pendant une enquête.</p>' : '<p class="at-ach-or">👛 ' + or + ' pièce' + (or > 1 ? 's' : '') + ' d\'or</p>');
   corps += '<div class="at-ach-g"><b>Ses petits plats</b><div class="at-ach-l">' + cles(NOURS).filter(function(k){ return NOURS[k].prix; }).map(function(k){ var N = NOURS[k]; return art('n:' + k, N.ic, N.nom.replace(/^(Des|De la|Du|Un) /, ''), N.prix, m.nour.indexOf(k) >= 0); }).join('') + '</div></div>';
   corps += '<div class="at-ach-g"><b>Ses coins douillets</b><div class="at-ach-l">' + BOUTIQUE_MIMI.coins.map(function(x){ return art('c:' + x.t, x.ic, x.nom, x.prix, false); }).join('') + '</div></div>';
-  var hab = cles(ACC).filter(function(id){ return G.a.indexOf(id) < 0; });
-  corps += '<div class="at-ach-g"><b>Ses habits</b><div class="at-ach-l">' + (hab.length ? hab.map(function(id){ return art('h:' + id, vignetteAcc(id, c ? c.v : 0), ACC[id].nom, ACC[id].rare ? BOUTIQUE_MIMI.habitRare : BOUTIQUE_MIMI.habit, false, ACC[id].rare); }).join('') : '<p class="at-feuille-txt">Elle a déjà tous les habits du monde !</p>') + '</div></div>';
   return feuille('at-f-boutique', '<span class="at-f-ic">🛒</span><h3>La boutique de ' + esc(nom) + '</h3>', corps);
 }
 function acheter(V, ach){
   var k = ach.charAt(0), id = ach.slice(2), m = mimi(V), G = garde(V.etat), prix = 0, nom = '';
   if(k === 'n' && NOURS[id] && m.nour.indexOf(id) < 0){ prix = NOURS[id].prix; nom = NOURS[id].nom.toLowerCase(); }
   else if(k === 'c'){ var x = BOUTIQUE_MIMI.coins.filter(function(y){ return y.t === id; })[0]; if(!x) return; prix = x.prix; nom = x.nom.toLowerCase(); }
-  else if(k === 'h' && ACC[id] && G.a.indexOf(id) < 0){ prix = ACC[id].rare ? BOUTIQUE_MIMI.habitRare : BOUTIQUE_MIMI.habit; nom = articleAcc(id); }
   else return;
   var or = bourse(V);
   if(or === null){ var t0 = 'La boutique n\'ouvre que pendant une enquête.'; toast(V, '<b>🛒</b> ' + esc(t0), 3000, t0); return; }
@@ -8716,11 +8758,10 @@ function acheter(V, ach){
   var ok = false; try{ ok = V.o.bourse.payer(prix); }catch(e){ ok = false; }
   if(!ok) return;
   if(k === 'n') m.nour.push(id);
-  else if(k === 'h'){ G.a.push(id); G.neuf.push(id); G.annonce.push(id); }
   else { var av = V.etat.cartons.map(function(c){ return c.id; }); nouveauCarton(V.etat, [id]); dessinerPiece(V, av); }
   sonMimi(V, 'ouvre');
   var c = chatsTous(V)[0], nm = c ? nomChat(c) : PORTEE.mere;
-  var t = k === 'n' ? 'Et voilà : ' + nom + ' ! La prochaine fois que tu rempliras sa gamelle, tu pourras choisir.' : k === 'h' ? 'Et voilà : ' + nom + ' pour ' + nm + ' ! Il l\'attend dans sa garde-robe 🎀.' : 'Et voilà : ' + nom + ' ! Il arrive dans un carton, au coin de la pièce 📦.';
+  var t = k === 'n' ? 'Et voilà : ' + nom + ' ! La prochaine fois que tu rempliras sa gamelle, tu pourras choisir.' : 'Et voilà : ' + nom + ' ! Il arrive dans un carton, au coin de la pièce 📦.';
   V.grim.innerHTML = htmlBoutique(V);
   toast(V, '<b>🛒 ✨</b> ' + esc(t), 5000, t);
   majBarre(V); changer(V);

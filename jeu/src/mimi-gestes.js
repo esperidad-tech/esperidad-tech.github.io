@@ -98,7 +98,7 @@ M.BOUCLES = {lave:'toilette', tape:'tape', mange:'croque', salut:'salut', griffe
 M.CLASSES = {'at-x-clos':'clos', 'at-x-miaou':'miaou', 'at-x-baille':'baille', 'at-x-langue':'langue', 'at-x-cligne':'cligne', 'at-x-penche':'penche',
   'at-x-oreille':'oreille', 'at-x-queue':'queue', 'at-x-eternue':'eternue', 'at-x-joue':'joue', 'at-x-content':'content', 'at-x-tete':'calinTete',
   'at-x-dosg':'calinDos', 'at-x-agace':'agace', 'at-x-attrape':'attrape', 'at-x-petrit':'petrit', 'at-x-secoue':'secoue', 'at-x-mordille':'mordille',
-  'at-c-ronron':'ronron', 'at-c-tapi':'tapi', 'at-c-fesses':'fesses', 'at-c-fatigue':'fatigue', 'at-c-ronde':'ronde'};
+  'at-c-ronron':'ronron', 'at-c-portee':'portee', 'at-c-tapi':'tapi', 'at-c-fesses':'fesses', 'at-c-fatigue':'fatigue', 'at-c-ronde':'ronde'};
 
 /* ==========================================================
    La marche. Chaque patte : posée (elle recule sous le corps), puis levée (elle revient devant, en cloche).
@@ -254,6 +254,18 @@ var GS = M.GESTES = {
   }},
   croque:{f:function(P, u, t){ P.ty += 1.3 * Math.abs(S(t, 2.3)); P.bo = Math.max(P.bo, 0.3 * Math.max(0, S(t, 4.6))); P.ta += 2 * S(t, 2.3); }},
   /* elle dit au revoir de la patte */
+  /* (17 novembre) on la porte : tenue sous les bras, elle pend de tout son long — les pattes de devant ballantes, celles de derrière
+     qui pédalent un peu dans le vide, la queue qui pend, les yeux tout ronds */
+  portee:{ent:0.16, sor:0.22, f:function(P, u, t){
+    var k = mont(t, 0.2), s = S(t, 0.85), s2 = S(t, 1.7, 1);
+    P.hx = vers(P.hx, -3 + 1.4 * s, k); P.hy = vers(P.hy, -16, k); P.sx = vers(P.sx, 5, k); P.sy = vers(P.sy, -41, k); P.arc = vers(P.arc, 1.2, k); P.vent = vers(P.vent, 3.2, k);
+    P.tx = vers(P.tx, 5.5, k); P.ty = vers(P.ty, -18, k); P.ta += 4 * s * k;
+    P.a1x = vers(P.a1x, 16 + 0.8 * s2, k); P.a1y = vers(P.a1y, -26, k); P.a2x = vers(P.a2x, 20 - 0.8 * s2, k); P.a2y = vers(P.a2y, -25, k);
+    P.j1x = vers(P.j1x, -5 + 2.2 * s2, k); P.j1y = vers(P.j1y, 3.5 - 1.2 * s2, k); P.j1p = vers(P.j1p, 46, k);
+    P.j2x = vers(P.j2x, 1 - 2.2 * s2, k); P.j2y = vers(P.j2y, 3.5 + 1.2 * s2, k); P.j2p = vers(P.j2p, 46, k);
+    P.q0 = P.q0 + ang(112 - P.q0) * k; P.q1 = vers(P.q1, 5, k); P.q2 = vers(P.q2, 6, k); P.q3 = vers(P.q3, 8, k); P.q4 = vers(P.q4, 12, k); P.q5 = vers(P.q5, 16, k); P.qa = vers(P.qa, 10, k); P.qv = vers(P.qv, 0.5, k);
+    P.ry -= 6 * k; P.pu = vers(P.pu, 0.95, k); P.og -= 9 * k; P.od += 9 * k; P.mo += 5 * k;
+  }},
   salut:{ent:0.25, sor:0.25, f:function(P, u, t){ var k = mont(t, 0.25); P.a1x = vers(P.a1x, 31, k); P.a1y = vers(P.a1y, -38, k); P.a1q = vers(P.a1q, -70 + 24 * S(t, 2.3), k); if(k > 0.5){ P.a1f = 1; P.yc = 1; } P.ta += 8 * k; P.jo = Math.max(P.jo, 0.6); }},
   /* dressée, elle fait ses griffes : une patte descend, l'autre remonte */
   griffe:{ent:0.2, sor:0.2, f:function(P, u, t){ var k = mont(t, 0.2), s = S(t, 1.5), a = 0.5 + 0.5 * s; P.a1y += 9 * a * k; P.a2y += 9 * (1 - a) * k; P.a1q += 14 * a * k; P.a2q += 14 * (1 - a) * k; P.sy += 1.2 * s * k; P.ta -= 5 * k; P.pu = vers(P.pu, 0.7, k); }},

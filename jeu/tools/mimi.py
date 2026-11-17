@@ -1,11 +1,11 @@
 """Mimi, le Tamagotchi refait le 16 novembre (Bible §12.65) et son pantin articulé (§12.66), dans le vrai jeu, au doigt (Playwright).
 - le pantin : ses morceaux (cuisse, mollet, pied…), ses poses où il glisse, sa toilette, ses yeux qui suivent le doigt, un bond en plusieurs temps, ses jeux ;
 - le bouton 🐾 et, au-dessus, sa jauge de bonheur (la seule jauge qu'on voit) ;
-- un petit toucher : une réaction tout de suite, au hasard, jamais deux fois la même de suite ; elle ne se soulève plus ;
+- un petit toucher : une réaction tout de suite, au hasard, jamais deux fois la même de suite ; il ne la soulève pas (la porter : mimi-porter.py) ;
 - le doigt posé : la tête (frotte, ronronne, puis pétrit), le ventre (sur le dos, elle attrape), la queue (« Pas la queue ! », elle s'en va) ;
 - les planchers : son bonheur ne descend jamais sous 8, ses besoins sous 25 ; une vieille sauvegarde repart de 30 au plus ;
 - la jauge seule (§12.69) : la lassitude ; les cinq familles cachées et ce que les coffrets apportent ; l'envie cachée une minute, son manège, puis sa bulle dorée ; « Pile poil ! » ; la barre pleine : un coffret, autant de fois qu'on la remplit ; le coffret doré d'une famille complète ;
-- la boutique (des pièces d'or) : la pâtée, puis la gamelle qui demande quoi servir ; un habit ;
+- la boutique (des pièces d'or) : la pâtée, puis la gamelle qui demande quoi servir ; plus un seul habit (17 novembre) ;
 - les objets de soin viennent des coffrets : la brosse ; la brosse au doigt ; le bain ; les friandises ;
 - l'appareil photo à côté du 🐾 et l'album à compléter (§12.70) : une photo par pose, « Dommage, c'était la même ! », le compteur, les cadres vides ;
   à trois photos, des yeux en cadeau ; un pelage dans un coffret ; la garde-robe : son pelage, ses yeux, et elle change pour de bon ;
@@ -148,7 +148,7 @@ with sync_playwright() as p:
     lacher(); pg.wait_for_timeout(400)
     verifier(z == 'tete' and 'at-x-tete' in cl1 and 'at-c-ronron' in cl1, f'le doigt posé sur la tête : elle se frotte et ronronne ({z})')
     verifier('at-x-petrit' in cl2, 'au bout de deux secondes : elle pétrit')
-    verifier('at-leve' not in cl2, 'le doigt qu\'on laisse ne la soulève plus')
+    verifier('at-leve' not in cl2, 'le doigt qu\'on laisse sur elle ne la soulève pas')
     verifier(mimi(pg)['bh'] > bh0, f'les gratouilles : son bonheur monte ({bh0} → {mimi(pg)["bh"]})')
     # --- le ventre : sur le dos, elle attrape le doigt ---
     q = sur_chat(pg, cid, 'ventre')
@@ -223,10 +223,10 @@ with sync_playwright() as p:
     shot(pg, 'boutique')
     pg.locator('#atelier-ici [data-achat="n:pate"]').click(); pg.wait_for_timeout(400)
     verifier(pg.evaluate("() => M.S.or") == 16 and 'pate' in mimi(pg)['mimi']['nour'], 'la pâtée achetée : 4 pièces d\'or')
-    hab = pg.evaluate("() => { var b = document.querySelector('#atelier-ici [data-achat^=\"h:\"]'); return b ? b.getAttribute('data-achat') : null; }")
-    if hab:
-        pg.locator(f'#atelier-ici [data-achat="{hab}"]').click(); pg.wait_for_timeout(400)
-        verifier(hab[2:] in pg.evaluate("() => M.S.atelier.garde.a"), f'un habit acheté ({hab[2:]})')
+    # (17 novembre, Romain : plus un seul habit dans la boutique — ils se gagnent)
+    bq = pg.evaluate("() => { var f = document.querySelector('#atelier-ici .at-f-boutique'); return {hab:document.querySelectorAll('#atelier-ici [data-achat^=\"h:\"]').length, titres:[].map.call(f.querySelectorAll('.at-ach-g > b'), function(b){ return b.textContent; }), art:f.querySelectorAll('[data-achat]').length}; }")
+    verifier(bq['hab'] == 0 and bq['titres'] == ['Ses petits plats', 'Ses coins douillets'] and bq['art'] >= 5, f'la boutique : ses petits plats, ses coins douillets — plus un seul habit ({bq})')
+    verifier(pg.evaluate(f"() => {{ var a = {V}, n = M.S.atelier.garde.a.length; a._acheter('h:beret'); return M.S.atelier.garde.a.length === n && M.S.atelier.garde.a.indexOf('beret') < 0; }}"), 'un habit ne s\'achète plus, même en trichant')
     pg.evaluate("() => { M.S.or = 1; }")
     pg.locator('#atelier-ici [data-achat="n:poisson"]').click(); pg.wait_for_timeout(300)
     verifier('pièce' in toast(pg) and 'poisson' not in mimi(pg)['mimi']['nour'], f'pas assez de pièces : rien n\'est acheté ({toast(pg)[:50]})')

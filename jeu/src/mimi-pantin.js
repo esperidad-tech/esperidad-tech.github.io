@@ -210,6 +210,17 @@ PP.zone = function(cx, cy){
   if(this.F.bu > 0.5) return 'ventre';
   return tr * 1 > -3 ? 'dos' : 'ventre';
 };
+/* (17 novembre) À quelle distance de son pelage est ce point de l'écran, en pixels de l'écran ? 0 : sur elle (la tête, le corps, la queue).
+   Pour savoir si le doigt qui la caressait est parti pour de bon : alors on l'emmène. */
+PP.ecart = function(cx, cy){
+  var p = this.local(cx, cy), R = this.R;
+  if(!p || !R._tete || !R._h || !R._s) return null;
+  var x = p[0], y = p[1], d = Math.hypot(x - R._tete[0], y - R._tete[1]) - 19, i;
+  var hx = R._h[0], hy = R._h[1], ux = R._s[0] - hx, uy = R._s[1] - hy, t = borne(((x - hx) * ux + (y - hy) * uy) / (ux * ux + uy * uy || 1), 0, 1);
+  d = Math.min(d, Math.hypot(x - hx - ux * t, y - hy - uy * t) - 17);
+  for(i = 2; R._q && i < R._q.length; i++) d = Math.min(d, Math.hypot(x - R._q[i][0], y - R._q[i][1]) - 8.5);
+  try{ var m = this.rac.getScreenCTM(); return Math.max(0, d) * (m ? Math.hypot(m.a, m.b) : 1); }catch(e){ return null; }
+};
 /* ce qu'elle porte dans la gueule (du SVG, autour de (0, 0) = sa bouche) ; rien : elle le lâche */
 PP.porter = function(svg){ var g = this.els.butin && this.els.butin[0]; if(g) g.innerHTML = svg ? '<g transform="translate(0,11)">' + svg + '</g>' : ''; };
 /* un point du pantin, à l'écran : 'tete', 'gueule' → [clientX, clientY] */
