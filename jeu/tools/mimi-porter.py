@@ -78,27 +78,56 @@ def glisser(pg, a, b, pas=18, ms=22):
 def dessus(pg, oid, x, y):
     """ce point de l'écran est-il bien SUR ce meuble (et pas sous un bouton de l'écran, ni sous un autre meuble) ?"""
     return pg.evaluate("([id, x, y]) => { var e = document.elementFromPoint(x, y), o = e && e.closest('[data-obj]'); return !!o && o.getAttribute('data-obj') === id && !e.closest('button'); }", [oid, x, y])
-def porter(pg, cid, oid, dx=0, dy=0, photo=None, loin=False):
+def libre(pg, x, y):
+    """là, on peut lâcher le doigt : bien dans la pièce, ni sur un bouton de l'écran, ni sur le bouton de la chambre ou l'arche
+    (lâchée là, elle changerait de pièce — c'est voulu dans le jeu, pas dans ce robot)"""
+    e = ecran(pg)
+    # (à moins de 44 points du bord de l'écran, la pièce défile pendant qu'on porte : le meuble glisserait sous le doigt)
+    if not (e['x'] + 64 < x < e['x'] + e['w'] - 64 and e['y'] + 64 < y < e['y'] + e['h'] - 64): return False
+    return not pg.evaluate("""([x, y]) => [[0, 0], [14, 0], [-14, 0], [0, 14], [0, -14]].some(function(d){ return document.elementsFromPoint(x + d[0], y + d[1]).some(function(e){
+      return (e.tagName === 'BUTTON' && !e.closest('[data-obj]')) || (e.closest && (e.closest('.at-arche') || e.closest('.at-salle') || e.closest('.at-coin'))); }); })""", [x, y])
+def porter(pg, cid, oid, dx=0, dy=0, photo=None, loin=False, bords=None):
     """le doigt posé sur son dos, puis qui s'en va jusqu'au meuble oid ; on lâche. Le meuble est d'abord amené au milieu de l'écran
     (pas sous les boutons du bas : lâchée sur le bouton 🛏️, elle partirait dans la chambre), et Mimi posée quelque part à l'écran.
     loin (au téléphone) : le meuble est hors de l'écran — le doigt va au bord, la pièce défile, on arrive au meuble.
-    Renvoie ce qu'on a vu juste avant de lâcher : soulevée ? la pièce a défilé ?"""
+    bords : plusieurs endroits du meuble où lâcher (des décalages depuis son milieu) — le premier qui est libre à l'écran.
+    Renvoie ce qu'on a vu juste avant de lâcher : soulevée ? la pièce a défilé ? (echec : aucune place pour faire le geste)"""
+    off = [dx, dy]
     def cible():
         c = cadre(pg, oid)
-        return None if not c else (c['x'] + c['w'] / 2 + dx, c['y'] + c['h'] * 0.45 + dy)
+        return None if not c else (c['x'] + c['w'] / 2 + off[0], c['y'] + c['h'] * 0.45 + off[1])
+    # (Mimi va s'asseoir à côté du meuble, à une distance choisie — pas au hasard : sinon, un coup sur dix, elle est déjà dessus,
+    #  ou derrière le chaudron, et c'est le robot qui se trompe, pas le jeu)
     q = t = None
-    for i in range(8):
-        voir(pg, oid, dy=120)
-        pg.evaluate(f"() => {{ var a = {V}; a._finJouet(); a._reveil('{cid}'); a._dehors('{cid}'); a._pose('{cid}', 'assis'); }}"); pg.wait_for_timeout(1000)
-        if loin:      # (la vue repart vers elle, du côté opposé au meuble : il sort de l'écran)
-            e = ecran(pg); c = cadre(pg, oid); pc = pg.evaluate(f"() => {V}._pos('{cid}')"); po = pg.evaluate(f"() => {V}._pos('{oid}')")
-            pg.evaluate(f"() => {V}._voir({pc['x'] + (-260 if po['x'] > pc['x'] else 260)}, {pc['y'] - 60})"); pg.wait_for_timeout(500)
+    po = pg.evaluate(f"() => {V}._pos('{oid}')")
+    for sg, d in ((1, 230), (-1, 230), (1, 300), (-1, 300), (1, 170), (-1, 170), (1, 360), (-1, 360)) if not loin else ((1, 520), (-1, 520), (1, 420), (-1, 420)):
+        if po['x'] < 600: sg = sg
+        else: sg = -sg
+        x, y = po['x'] + sg * d, po['y'] + 34
+        pg.evaluate(f"() => {{ var a = {V}; a._finJouet(); a._reveil('{cid}'); a._va('{cid}', {x}, {y}, 2); }}")
+        attendre(pg, lambda: not chat(pg, cid)['anim'], 6)
+        pg.evaluate(f"() => {V}._pose('{cid}', 'assis')"); pg.wait_for_timeout(500)
+        pc = pg.evaluate(f"() => {V}._pos('{cid}')")
+        if abs(pc['x'] - po['x']) < d * 0.6: continue      # (un mur, un meuble : elle n'a pas pu aller jusque-là)
+        if loin: pg.evaluate(f"() => {V}._voir({pc['x'] + (40 if pc['x'] > po['x'] else -40)}, {pc['y'] - 70})")
+        else: pg.evaluate(f"() => {V}._voir({(pc['x'] + po['x']) / 2}, {po['y'] - 20})")      # (le meuble au milieu de l'écran, en hauteur aussi : loin des boutons du bas)
+        pg.wait_for_timeout(900)
         q = point(pg, cid, 'dos'); t = cible()
         sur_elle = q and pg.evaluate(f"() => {{ var e = document.elementFromPoint({q[0]}, {q[1]}), o = e && e.closest('[data-obj]'); return !!o && o.getAttribute('data-obj') === '{cid}' && !e.closest('.at-bulle'); }}")
         if not (sur_elle and t): continue
         if loin: break
-        if (abs(t[0] - q[0]) > 130 or abs(t[1] - q[1]) > 130) and dessus(pg, oid, t[0] - dx * 0.5, t[1]): break      # (un vrai trajet, et le meuble est bien sous le doigt à l'arrivée)
-    vu = {'levee': False, 'portee': False, 'defile': False, 'tenu': False}
+        trouve = False
+        for b in (bords or [(dx, dy)]):      # (le meuble est bien sous le doigt à l'arrivée : ni bouton, ni autre meuble devant)
+            off[:] = [b[0], b[1]]; t = cible()
+            # (et un vrai trajet : le doigt doit bien s'éloigner d'elle — à moins de trente points de son pelage, ce sont des gratouilles)
+            loin_d_elle = t and abs(t[0] - q[0]) + abs(t[1] - q[1]) > 150
+            if t and loin_d_elle and libre(pg, *t) and dessus(pg, oid, t[0] - off[0] * 0.5, t[1] - off[1] * 0.5): trouve = True; break
+        if trouve: break
+        t = None
+    vu = {'levee': False, 'portee': False, 'defile': False, 'tenu': False, 'echec': False, 'bouton': False}
+    if not q or not t:
+        print('   (le robot n\'a pas trouvé de place pour faire le geste)', flush=True); vu['echec'] = True
+        return vu
     pg.mouse.move(*q); pg.mouse.down(); pg.wait_for_timeout(140)
     e = ecran(pg)
     def dedans(t): return t and e['x'] + 30 < t[0] < e['x'] + e['w'] - 30 and e['y'] + 30 < t[1] < e['y'] + e['h'] - 30
@@ -121,7 +150,7 @@ def porter(pg, cid, oid, dx=0, dy=0, photo=None, loin=False):
     if abs(t2[0] - t[0]) + abs(t2[1] - t[1]) > 4: glisser(pg, t, t2, pas=6); t = t2
     pg.wait_for_timeout(350)
     cl = classes(pg, cid); vu['levee'] = 'at-leve' in cl; vu['portee'] = 'at-c-portee' in cl; vu['tenu'] = chat(pg, cid)['tenu']
-    vu['bouton'] = pg.evaluate("([x, y]) => { var l = document.elementsFromPoint(x, y); return l.some(function(e){ return e.tagName === 'BUTTON' && !e.closest('[data-obj]'); }); }", [t[0], t[1]])
+    vu['bouton'] = not libre(pg, *t); vu['off'] = [round(off[0]), round(off[1])]; vu['t'] = [round(t[0]), round(t[1])]
     if photo: shot(pg, photo)
     pg.mouse.up(); pg.wait_for_timeout(350)
     return vu
@@ -224,7 +253,7 @@ with sync_playwright() as p:
         shot(pg, 'bulle-panier')
         pg.wait_for_timeout(1200)
     else: verifier(False, 'sa bulle au panier est là')
-    vu = porter(pg, cid, pid, photo='vers-panier')
+    vu = porter(pg, cid, pid, photo='vers-panier', bords=[(0, 0), (0, -0.25 * cadre(pg, pid)['h']), (0, 0.2 * cadre(pg, pid)['h'])])
     print('   en route :', vu)
     verifier(vu['levee'] and vu['tenu'], 'on la porte vers son panier')
     pg.wait_for_timeout(500)
@@ -263,18 +292,19 @@ with sync_playwright() as p:
     pg.mouse.up(); pg.wait_for_timeout(1200)
     verifier(sur(pg, cid) is None and chat(pg, cid)['pose'] == 'assis', f'lâchée par terre, loin du panier : elle reste par terre ({sur(pg, cid)})')
     pc = cadre(pg, pid); zc = cadre(pg, zid)
-    cote = -1 if zc and zc['x'] + zc['w'] / 2 > pc['x'] + pc['w'] / 2 else 1      # (du côté où il n'y a pas le coussin)
-    vu = porter(pg, cid, pid, dx=cote * (pc['w'] * 0.5 - 2), dy=pc['h'] * 0.3)
+    cote = -1 if zc and zc['x'] + zc['w'] / 2 > pc['x'] + pc['w'] / 2 else 1      # (du côté où il n'y a pas le coussin d'abord)
+    vu = porter(pg, cid, pid, bords=[(sg * (pc['w'] * 0.5 - 2), k * pc['h']) for sg in (cote, -cote) for k in (0.3, 0.05, -0.2)])
     pg.wait_for_timeout(500)
-    if sur(pg, cid) != pid: print('   (au bord :', vu, cote, pc, pg.evaluate(f"() => {{ var a = {V}; return [a._pos('{cid}'), a._pos('{pid}'), a._k ? a._k() : null]; }}"), cadre(pg, cid), ')'); shot(pg, 'debug-bord')
+    if sur(pg, cid) != pid: print('   (AU BORD :', vu, 'décalage', vu.get('off'), 'doigt', vu.get('t'), cote, pc, pg.evaluate(f"() => {{ var a = {V}; return [a._pos('{cid}'), a._pos('{pid}'), a._k ? a._k() : null]; }}"), cadre(pg, cid), ')'); shot(pg, 'debug-bord')
     verifier(sur(pg, cid) == pid, f'lâchée au bord du panier (pas dans le creux) : elle s\'y retrouve quand même ({sur(pg, cid)})')
     d = attendre(pg, lambda: chat(pg, cid)['dort'], 6)
     verifier(d is not None, f'… et s\'y endort ({d} s)')
 
     # --- le coussin aussi ---
     pg.evaluate(f"() => {{ var a = {V}; M.S.atelier.tama.las = {{}}; a._reveil('{cid}'); a._envie('dodo', true); }}")
-    vu = porter(pg, cid, zid, photo='vers-coussin')
+    vu = porter(pg, cid, zid, photo='vers-coussin', bords=[(0, 0), (0, -0.25 * cadre(pg, zid)['h']), (0, 0.2 * cadre(pg, zid)['h'])])
     pg.wait_for_timeout(500)
+    if sur(pg, cid) != zid: print('   (pas sur le coussin :', vu, pg.evaluate(f"() => {{ var a = {V}; return [a._pos('{cid}'), a._pos('{zid}'), a._pos('{pid}')].map(function(p){{ return p ? [Math.round(p.x), Math.round(p.y)] : null; }}); }}"), chat(pg, cid), ')', flush=True); shot(pg, 'pas-sur-le-coussin')
     verifier(sur(pg, cid) == zid, f'portée sur un coussin : elle y est ({sur(pg, cid)})')
     d = attendre(pg, lambda: chat(pg, cid)['dort'], 6)
     d2 = attendre(pg, lambda: pg.evaluate(f"() => {V}._envie()") is None, 6)
@@ -294,6 +324,12 @@ with sync_playwright() as p:
         c = chat(pg, cid); cl = classes(pg, cid)
         pg.mouse.up(); pg.wait_for_timeout(300)
         verifier('at-leve' not in cl and not c['tenu'], 'la brosse en main : le doigt qui s\'en va ne la soulève pas')
+        # (on finit le coup de brosse, comme un joueur : la brosse se range toute seule — sinon elle resterait en main pour le bain)
+        q = sur_chat(pg, cid, 'dos', bouger=False); q2 = point(pg, cid, 'h') or (q[0] - 40, q[1])
+        pg.mouse.move(*q); pg.mouse.down()
+        for i in range(16):
+            pg.mouse.move(*(q2 if i % 2 == 0 else q), steps=4); pg.wait_for_timeout(70)
+        pg.mouse.up(); pg.wait_for_timeout(1200)
     else:
         print('   (la brosse : bouton pas trouvé)', ok)
     # --- le bain : on frotte encore quand elle bondit dehors — on ne la rattrape pas en plein saut, et elle finit toute propre ---
@@ -303,6 +339,8 @@ with sync_playwright() as p:
     pg.evaluate("() => { var b = document.querySelector('#atelier-ici .at-mimi-bt'); if(b && document.querySelector('#atelier-ici .at-mimi-barre').hidden) b.dispatchEvent(new MouseEvent('click', {bubbles:true})); }"); pg.wait_for_timeout(400)
     pg.evaluate("() => { var b = document.querySelector('#atelier-ici .at-mimi-barre [data-mimi=\"s:bain\"]'); if(b) b.dispatchEvent(new MouseEvent('click', {bubbles:true})); }"); pg.wait_for_timeout(3600)
     if pg.evaluate("() => !!document.querySelector('#atelier-ici .at-bain')"):
+        d = attendre(pg, lambda: 'at-dans-bain' in classes(pg, cid), 8)      # (on frotte quand elle est DANS la baignoire)
+        if d is None: print('   (elle n\'est pas entrée dans la baignoire :', classes(pg, cid), chat(pg, cid), ')', flush=True)
         voir(pg, cid); pg.wait_for_timeout(600)
         a = point(pg, cid, 'h'); bpt = point(pg, cid, 's'); levee = False
         pg.mouse.move(*a); pg.mouse.down()
