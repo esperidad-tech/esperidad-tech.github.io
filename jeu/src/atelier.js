@@ -8528,6 +8528,11 @@ function placeLibre(V, l, dl, h, ev){
   function cache(x, y){
     if(ev && Math.abs(x - ev.x) < ev.r && y < ev.y + 30 && y > ev.y - ev.r * 1.3) return true;
     var s = echelleSol(y), bx = [x - dl * s, y - h * s, x + dl * s, y], aire = (bx[2] - bx[0]) * (bx[3] - bx[1]);
+    /* (les cartons pas encore ouverts cachent aussi : ils sont tout devant — vu avec les colis du parc à chat, sur un téléphone) */
+    if(cartonsIci(V).some(function(k, i){
+      var tk = CARTON_TAILLE[k.t] || CARTON_TAILLE.carton, pk = POS_CARTONS[i % POS_CARTONS.length], sk = echelleSol(Math.min(pk[1], SOL_MAX));
+      return pk[1] > y - 6 && Math.abs(pk[0] - x) < tk[0] / 2 * sk + dl * s && y > pk[1] - tk[1] * sk - 8;
+    })) return true;
     return ici(V).some(function(o){
       if(o.sur || o.t === 'chat' || o.t === 'tapis' || o.cote) return false;
       var c = catDe(o); if(c.z === 'mur' || c.z === 'tapis') return false;
