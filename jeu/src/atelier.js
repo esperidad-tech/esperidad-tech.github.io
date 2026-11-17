@@ -368,7 +368,7 @@ function normaliserChat(e){
   /* (l'album à compléter) une photo par pose (k : PHOTOS) ; un album d'avant garde une photo de chaque pose qu'il avait déjà */
   mm.album = (Array.isArray(mm.album) ? mm.album : []).filter(function(f){ return f && typeof f === 'object' && (typeof f.k === 'string' || typeof f.pose === 'string'); });
   mm.album.forEach(function(f){ if(typeof f.k !== 'string') f.k = /miaou/.test(f.x || '') ? 'miaou' : /baille/.test(f.x || '') ? 'baille' : f.pose === 'saute' ? 'saut' : f.pose === 'tape' ? 'assis' : f.pose; delete f.pose; delete f.x; });
-  mm.album = mm.album.filter(function(f, i, l){ return PHOTOS.some(function(P){ return P.k === f.k; }) && f.k !== 'gros' && l.map(function(g){ return g.k; }).indexOf(f.k) === i; });
+  mm.album = mm.album.filter(function(f, i, l){ return PHOTOS.some(function(P){ return P.k === f.k; }) && l.map(function(g){ return g.k; }).indexOf(f.k) === i; });
   /* (les pelages et les yeux gagnés : des numéros de MimiPantin.CHATS et de MimiPantin.YEUX) */
   if(!mm.peaux || typeof mm.peaux !== 'object') mm.peaux = {};
   var MPn = window.MimiPantin;
@@ -3511,6 +3511,8 @@ function vue(el, opts){
     _poserSur:function(id, meuble){ var o = V.parId[id], p = V.parId[meuble]; if(!o || !p) return false; chatSaisi(V, o); o.sur = {o:p.id, k:0, dx:0}; placerEl(V, o); chatLache(V, o); return true; },   /* (comme si on la portait dessus) */
     _reagir:function(id, r){ var o = V.parId[id]; if(!o) return false; reagir(V, o, r); return true; },
     /* (le pantin de Mimi, pour les robots : où est sa tête, son dos, son ventre, sa queue à l'écran ; sa pose, ses gestes en cours) */
+    _gros:function(){ return grosPlan(V, true); },
+    _grosEtat:function(){ var G = V.gros; return G ? {phase:G.phase, E:G.E ? JSON.parse(JSON.stringify(G.E)) : null, gain:G.car ? G.car.gain : 0, lech:!!G.lech, t:tama(V).grosT, jeu:tama(V).jeu} : {phase:null, t:tama(V).grosT, jeu:tama(V).jeu}; },
     _ptChat:function(id, quoi){ var o = V.parId[id], r = o && pantinDe(V, o); return r ? r.point(quoi) : null; },
     _pantin:function(id){ var o = V.parId[id], r = o && pantinDe(V, o); return r ? {nom:r.nom, gestes:r.couv.map(function(c){ return c.nom; }), co:r.co, marche:!!r.mar, glisse:!!r.tw, cap:r.cap, capV:r.capV, vue:r.vueNom, allure:r.mar ? r.all : null} : null; },
     /* (les robots : la faire aller quelque part sur le plancher — au pas, ou plus vite) */
@@ -6562,6 +6564,7 @@ function tamaTic(V, force){
     if(!force && !V.attenteBetise && !GUIDE && !V.o.sansSurprise){      /* (rien de tout ça pendant le guidage du tutoriel ; sansSurprise : les bancs d'essai) */
       var sortants = chatsDe(V).filter(function(c){ return peutSortir(V, c); });
       if(sortants.length) cadeauChat(V, sortants[0]);
+      else if(grosPlan(V)){ /* (le gros plan, §12.76) */ }
       else if(!V.jouet && Math.random() < 0.3) sourisPasse(V);
     }
     famillesMaj(V, !force);      /* (un habit gagné à un mini-jeu, acheté… : une famille peut se compléter par un autre chemin) */
@@ -7996,8 +7999,8 @@ var BOUTIQUE_MIMI = {
 };
 /* L'ALBUM À COMPLÉTER (Romain, 16 novembre, 21 h 18 : « un compteur, une photo sur 15 » ; les doubles : « dommage, c'était la même » ;
    « des animations rares à prendre en photo » ; le gros plan, la plus rare ; « toutes les photos : un très gros cadeau »).
-   Une photo par pose. r : sa rareté (1 : elle la prend tout le temps ; 3 : il faut être là au bon moment ; 4 : le gros plan — il arrivera
-   avec son chantier : d'ici là, l'album s'arrête à 14 sur 15). pose, x, g, allure, tr : comment la redessiner dans l'album (MimiPantin.image). */
+   Une photo par pose. r : sa rareté (1 : elle la prend tout le temps ; 3 : il faut être là au bon moment ; 4 : le gros plan — elle vient
+   tout près de nous de temps en temps, §12.76 : la photo la plus rare, et son cadeau à part, GROS_CADEAU). pose, x, g, allure, tr : comment la redessiner dans l'album (MimiPantin.image). */
 var PHOTOS = [
   {k:'assis', nom:'Toute sage', r:1, pose:'assis'},
   {k:'marche', nom:'En promenade', r:1, pose:'marche'},
@@ -8494,10 +8497,12 @@ function clichePhoto(V, o){
 }
 function prendrePhoto(V){
   if(V.mode !== 'ranger' || V.arrete) return;
-  var o = chatsDe(V)[0], st = o ? chatEtat(V, o) : null;
-  if(!o || !V.elO[o.id] || st.depart || V.elO[o.id].classList.contains('at-c-dehors') || st.passe){ var t = 'Pas de modèle devant l\'appareil ! Elle n\'est pas dans cette pièce.'; toast(V, '<b>📷</b> ' + esc(t), 3800, t); son(V, 'ko'); return; }
+  /* (le gros plan : c'est elle, tout près — la photo la plus rare) */
+  var G = V.gros, gros = !!(G && G.el && (G.phase === 'monte' || G.phase === 'la'));
+  var o = gros ? G.o : chatsDe(V)[0], st = o ? chatEtat(V, o) : null;
+  if(!gros && (!o || !V.elO[o.id] || st.depart || V.elO[o.id].classList.contains('at-c-dehors') || st.passe)){ var t = 'Pas de modèle devant l\'appareil ! Elle n\'est pas dans cette pièce.'; toast(V, '<b>📷</b> ' + esc(t), 3800, t); son(V, 'ko'); return; }
   fermerBarre(V);
-  var m = mimi(V), k = clichePhoto(V, o), P = photoDe(k), deja = m.album.some(function(f){ return f.k === k; }), n = m.album.length, T = PHOTOS.length;
+  var m = mimi(V), k = gros ? 'gros' : clichePhoto(V, o), P = photoDe(k), deja = m.album.some(function(f){ return f.k === k; }), n = m.album.length, T = PHOTOS.length;
   var f = document.createElement('div'); f.className = 'at-flash'; V.root.appendChild(f); apres(V, 500, function(){ f.remove(); });
   sonMimi(V, 'photo');
   if(deja){
@@ -8507,18 +8512,24 @@ function prendrePhoto(V){
   }
   m.album.push({k:k, v:vChat(o.v), acc:o.acc ? JSON.parse(JSON.stringify(o.acc)) : {}, e:enqueteNo(V)});
   n++;
-  var t2 = 'Clic ! « ' + P.nom + ' » : une nouvelle photo dans l\'album de ' + nomChat(o) + (P.r >= 3 ? ' — et une pose rare !' : ' !') + ' ' + n + ' sur ' + T + '.';
+  var t2 = 'Clic ! « ' + P.nom + ' » : une nouvelle photo dans l\'album de ' + nomChat(o) + (k === 'gros' ? ' — la plus rare de toutes !' : P.r >= 3 ? ' — et une pose rare !' : ' !') + ' ' + n + ' sur ' + T + '.';
   /* (à tant de photos : un pelage, des yeux… — l'album complet : le très gros cadeau) */
   var cad = (PHOTOS_CADEAUX[n] || []).map(function(c){ return donnerPeau(V, c); }).filter(function(x){ return !!x; });
+  /* (la photo du gros plan rapporte, en plus, son cadeau à part : des yeux vairons, un bleu, un doré) */
+  var vair = k === 'gros' && m.peaux.y.indexOf(+GROS_CADEAU.slice(2)) < 0 ? donnerPeau(V, GROS_CADEAU) : '';
+  if(vair){ t2 += ' Pour la photo la plus rare, un cadeau à part : ' + vair + ', un œil bleu et un œil doré, comme certains vrais chats ! Dans sa garde-robe 🎀.'; if(!cad.length){ apres(V, 300, function(){ sonMimi(V, 'debloque'); }); brillerMimi(V); } }
   if(cad.length){
     t2 += (n >= T ? ' L\'album est complet ! Pour ' + nomChat(o) + ', le plus beau des cadeaux : ' : ' Et un cadeau pour ' + nomChat(o) + ' : ') + cad.join(' et ') + ', dans sa garde-robe 🎀.';
     apres(V, 300, function(){ sonMimi(V, n >= T ? 'fanfare' : 'debloque'); }); brillerMimi(V);
   }
-  toast(V, '<b>📷 ' + (cad.length ? '🎁' : '✨') + '</b> ' + esc(t2), cad.length ? 8000 : 4600, t2);
+  toast(V, '<b>📷 ' + (cad.length || vair ? '🎁' : '✨') + '</b> ' + esc(t2), cad.length || vair ? 8000 : 4600, t2);
   if(V.elPhoto){ V.elPhoto.classList.remove('at-flash-bt'); void V.elPhoto.offsetWidth; V.elPhoto.classList.add('at-flash-bt'); }
   majBarre(V); changer(V);
 }
 function imageMimi(f){
+  /* (le gros plan : sa grosse tête, mimi-gros.js, tout étonnée, la tête un peu penchée) */
+  if(f.k === 'gros') return '<div class="at-photo-chat at-photo-gp">' + MP.grosImage(vChat(f.v), accPantin(f.acc), {pup:0.95, tilt:8, ly:0.1})
+    .replace('viewBox="' + MP.GROS_VB + '"', 'viewBox="-30 -42 60 60" preserveAspectRatio="xMidYMax slice"') + '</div>';
   var P = photoDe(f.k) || PHOTOS[0], x = P.x ? ' ' + P.x : '';
   return '<div class="at-o at-t-chat at-plat at-photo-chat at-c-' + esc(P.pose || 'assis') + x + '"><svg viewBox="0 0 ' + MP.W + ' ' + MP.H + '" overflow="visible" aria-hidden="true">' + (P.tr ? '<g transform="' + P.tr + '">' : '') + MP.image(vChat(f.v), P.pose || 'assis', P.x || '', accPantin(f.acc), P) + (P.tr ? '</g>' : '') + '</svg></div>';
 }
@@ -8535,6 +8546,319 @@ function ouvrirAlbum(V){
   }).join('') + '</div>';
   ouvrirCalque(V, 'at-cal-album', feuille('at-f-album', '<span class="at-f-ic">📒</span><h3>L\'album de ' + esc(n) + '</h3>', corps));
   son(V, 'page');
+}
+
+/* ==========================================================
+   LE GROS PLAN (Romain, 16 novembre, 20 h 00 → 20 h 14 ; Bible §12.67 et §12.76). De temps en temps (la première fois entre 6 et
+   9 minutes de jeu, puis toutes les 12 à 18 minutes : « assez rarement […] peut-être les 15 minutes »), elle descend tout en bas de la
+   pièce et sort de l'écran par en bas… puis elle grimpe au bord de l'écran, tout près de nous : une patte s'accroche, puis l'autre,
+   elle glisse, elle galère ; ses oreilles arrivent, puis sa tête ; elle regarde partout, tout étonnée. Une seule chose à faire : lui
+   caresser la tête (elle pousse contre le doigt, ferme les yeux, ronronne, et lèche l'écran pour dire qu'elle est contente). Un simple
+   toucher, ou si on la laisse : elle regarde en bas et saute. Puis elle revient dans la pièce, vue de dos.
+   Sa tête est dessinée exprès, en grand (mimi-gros.js : MimiPantin.gros, grosRig). C'est la photo la plus rare de l'album, et la
+   première rapporte un cadeau à part : des yeux vairons (GROS_CADEAU).
+   V.gros : {o, phase:'va' (elle descend) | 'saute' | 'monte' | 'la' | 'part', el, svg, rig, E, t0, …} ; tama.grosT : quand (en secondes
+   de jeu) elle pourra revenir.
+   ========================================================== */
+var GROS_PREMIER = [360, 540], GROS_ENTRE = [720, 1080];      /* (en secondes de jeu : tama.jeu) */
+var GROS_ATTEND = 7000, GROS_APRES = 5000, GROS_MAX = 90000;  /* (personne ne la caresse : elle repart ; après la dernière caresse ; au plus) */
+var GROS_CADEAU = 'y:5';                                      /* (des yeux vairons : MimiPantin.YEUX[5]) */
+/* la montée : [instant (s), réglages] ; entre deux instants qui nomment un réglage, il glisse en douceur (rig.E : voir mimi-gros.js) */
+var GROS_KF = [
+  [0, {monte:0, patG:30, patD:30, griG:0.4, griD:0.4, pup:0.95, lx:0, ly:-0.5, orG:0, orD:0, tilt:0, dx:0, pau:0, mou:0}],
+  [0.3, {patG:30}], [0.6, {patG:0, griG:1}],                  /* une patte s'accroche au bord… */
+  [0.95, {patD:30}], [1.25, {patD:0, griD:1}],                /* … puis l'autre */
+  [1.55, {patG:0, griG:1}], [1.85, {patG:8, griG:0.25}], [2.15, {patG:8}], [2.45, {patG:0, griG:1}],     /* elle glisse ! … rattrapée */
+  [2.55, {monte:0}], [3.05, {monte:0.2}],                     /* les oreilles arrivent */
+  [3.15, {orG:0, orD:0}], [3.3, {orG:12, orD:-4}], [3.45, {orG:-4, orD:11}], [3.6, {orG:0, orD:0}],     /* elles écoutent */
+  [3.85, {monte:0.2, patG:0, patD:0}], [4.4, {monte:0.54, patG:-2.5, patD:-2.5}],    /* ça pousse… */
+  [4.65, {monte:0.45, patG:1, patD:1}],                       /* … ça retombe un peu… */
+  [5.2, {monte:1, patG:0, patD:0, ly:0}],                     /* … hop ! toute la tête */
+  [5.5, {lx:0, ly:0}], [5.9, {lx:-0.85, ly:-0.12}], [6.35, {lx:-0.85}],    /* elle regarde partout, tout étonnée */
+  [6.65, {lx:0.85, ly:-0.18}], [7.1, {lx:0.85}], [7.45, {lx:0, ly:0.1, tilt:0}],
+  [7.85, {tilt:10, pup:1}],                                   /* puis nous, la tête penchée */
+  [7.95, {pau:0}], [8.07, {pau:1}], [8.21, {pau:0}],          /* un clignement */
+  [8.75, {tilt:6}]
+];
+var GROS_FIN = 8.75, GROS_PRET = 5.2;      /* (la fin de la montée ; à partir de quand on peut la caresser) */
+var GROS_PISTES = (function(){
+  var P = {};
+  GROS_KF.forEach(function(k){ for(var c in k[1]) (P[c] = P[c] || []).push([k[0], k[1][c]]); });
+  return P;
+})();
+function grosPiste(c, s){
+  var l = GROS_PISTES[c];
+  if(!l) return null;
+  if(s <= l[0][0]) return l[0][1];
+  for(var i = 1; i < l.length; i++) if(s < l[i][0]){ var a = l[i - 1], b = l[i], u = (s - a[0]) / (b[0] - a[0]); u = u * u * (3 - 2 * u); return a[1] + (b[1] - a[1]) * u; }
+  return l[l.length - 1][1];
+}
+/* elle peut venir ? (le chat, ou null) — rien pendant le tutoriel, un jeu, le bain, une feuille ouverte… et pas si elle dort */
+function grosPeut(V){
+  var t = tama(V);
+  if(V.gros || GUIDE || V.o.tutoriel || V.arrete || V.mode !== 'ranger' || V.glisse || V.ouvert || !V.grim.hidden || V.jouet || V.outil || V.bain || t.dehors || V.attenteBetise) return null;
+  var o = chatsDe(V).filter(function(c){ return !c.chaton; })[0], st = o && V.chats[o.id];
+  if(!o || !V.elO[o.id] || !st || st.tenu || st.anim || st.caresse || st.depart || st.passe || st.cabane || st.chasse || st.pose === 'dort') return null;
+  return o;
+}
+function grosPret(V){
+  /* (pas pendant les parties des robots — navigator.webdriver — : vingt secondes sans elle, au beau milieu, les ferait trébucher ;
+     tools/mimi-grosplan.py l'autorise exprès : window.BRUMEVAL_GROS_AUTO) */
+  try{ if(navigator.webdriver && !window.BRUMEVAL_GROS_AUTO) return null; }catch(e){}
+  var t = tama(V);
+  if(!(t.grosT > 0)) t.grosT = t.jeu + GROS_PREMIER[0] + Math.random() * (GROS_PREMIER[1] - GROS_PREMIER[0]);
+  return t.jeu >= t.grosT ? grosPeut(V) : null;
+}
+/* c'est parti (force : tout de suite — les robots, le mode d'essai) */
+function grosPlan(V, force){
+  var o = force ? grosPeut(V) : grosPret(V);
+  if(!o) return false;
+  var t = tama(V), st = chatEtat(V, o);
+  t.grosT = t.jeu + GROS_ENTRE[0] + Math.random() * (GROS_ENTRE[1] - GROS_ENTRE[0]);
+  if(st.t){ clearTimeout(st.t); st.t = null; }
+  fermerBarre(V);
+  var G = V.gros = {id:(V.grosN = (V.grosN || 0) + 1), o:o, phase:'va'};
+  /* elle descend tout en bas de ce qu'on voit, vers nous (de face) — sur un téléphone, le bas de l'écran peut être au-dessus du bord
+     du plancher : elle y va quand même, et sort de l'écran */
+  var c = centreVue(V), bas = V.vb.y0 + (V.pan.y + V.vh) / V.k;
+  var y = Math.min(solMax(V) - 4, bas + 30), x = borne(c.x + (Math.random() - 0.5) * 100, solXmin(V, y) + 90, solXmax(V, y) - 90);
+  st.vite = 1.5;
+  chatAller(V, o, chatSol(V, x, y), function(){
+    st.vite = 1;
+    if(V.gros !== G || V.arrete) return;
+    grosSaute(V, G);
+  });
+  /* (quelque chose l'arrête en chemin — on la caresse, on la porte… : tant pis, elle reviendra dans deux minutes) */
+  apres(V, 14000, function(){ if(V.gros === G && G.phase === 'va'){ V.gros = null; st.vite = 1; t.grosT = Math.min(t.grosT, t.jeu + 120); } });
+  return true;
+}
+/* hop : elle saute par le bas de l'écran */
+function grosSaute(V, G){
+  var o = G.o, st = chatEtat(V, o), d = V.elO[o.id];
+  if(!d || st.tenu || st.caresse){ V.gros = null; return; }
+  G.phase = 'saute';
+  st.tenu = true;
+  chatPose(V, o, 'marche');
+  anim(d, [{transform:'scale(' + d._s + ')', opacity:1}, {transform:'translateY(' + Math.round(-14 * V.k) + 'px) scale(' + d._s + ')', opacity:1, offset:0.3},
+    {transform:'translateY(' + Math.round(150 * V.k) + 'px) scale(' + (d._s * 1.12) + ')', opacity:0}], {duration:560, easing:'ease-in', fill:'forwards'});
+  apres(V, 560, function(){ d.classList.add('at-c-dehors'); });
+  apres(V, 1500 + Math.random() * 900, function(){ grosMonte(V, G); });
+}
+/* la grosse tête, au bord du bas de l'écran */
+function grosMonte(V, G){
+  if(V.gros !== G || V.arrete) return;
+  var o = G.o, el = document.createElement('div');
+  el.className = 'at-gp';
+  el.innerHTML = '<i class="at-gp-ombre" aria-hidden="true"></i><svg class="at-gp-svg" viewBox="-36 -46 72 70" preserveAspectRatio="xMidYMax meet" role="img" aria-label="' +
+    esc(nomChat(o)) + ', tout près, tout près">' + MP.gros(vChat(o.v), accPantin(o.acc)) + '</svg>';
+  V.root.appendChild(el);
+  V.root.classList.add('at-gp-actif');
+  G.el = el; G.svg = el.querySelector('svg'); G.rig = MP.grosRig(G.svg); G.E = G.rig.E;
+  G.phase = 'monte'; G.t0 = performance.now(); G.vu = 0; G.der = 0; G.cl = 0; G.or = 0; G.reg = 0; G.lech = 0;
+  for(var c in GROS_PISTES) G.E[c] = grosPiste(c, 0);
+  G.rig.appliquer(0);
+  apres(V, 30, function(){ el.classList.add('at-vu'); });
+  apres(V, 560, function(){ if(V.gros === G) sonMimi(V, 'gratte'); });
+  apres(V, 1250, function(){ if(V.gros === G) sonMimi(V, 'gratte'); });
+  apres(V, 2450, function(){ if(V.gros === G) sonMimi(V, 'gratte'); });
+  apres(V, 5500, function(){ if(V.gros === G && G.phase !== 'part') sonMimi(V, 'trille'); });
+  /* le doigt : sur sa tête, on la caresse ; un simple toucher, elle repart */
+  function dedans(ev){ var e = document.elementFromPoint(ev.clientX, ev.clientY); return !!e && !!e.closest && !!e.closest('.at-gp [data-g="tete"], .at-gp [data-g="patG"], .at-gp [data-g="patD"]'); }
+  G.svg.addEventListener('pointerdown', function(ev){
+    if(V.gros !== G || G.phase === 'part' || !dedans(ev)) return;
+    ev.preventDefault(); ev.stopPropagation();
+    try{ (ev.target && ev.target.setPointerCapture ? ev.target : G.svg).setPointerCapture(ev.pointerId); }catch(e){}
+    G.doigt = {id:ev.pointerId, x:ev.clientX, y:ev.clientY, t:Date.now(), dist:0, car:false};
+    G.fx = ev.clientX; G.fy = ev.clientY;
+  });
+  /* (ses yeux suivent le doigt, où qu'il soit dans la pièce) */
+  G.suivre = function(ev){ G.fx = ev.clientX; G.fy = ev.clientY; G.fv = Date.now(); };
+  V.root.addEventListener('pointermove', G.suivre);
+  G.svg.addEventListener('pointermove', function(ev){
+    if(V.gros !== G) return;
+    G.suivre(ev);
+    var D = G.doigt;
+    if(!D || D.id !== ev.pointerId) return;
+    D.dist += Math.hypot(ev.clientX - D.x, ev.clientY - D.y); D.x = ev.clientX; D.y = ev.clientY;
+    if(!D.car && (D.dist > 10 || Date.now() - D.t > 320)) grosCaresse(V, G, true);
+    if(D.car) G.car.dist += 1;
+  });
+  function lache(ev){
+    var D = G.doigt;
+    if(V.gros !== G || !D || D.id !== ev.pointerId) return;
+    G.doigt = null;
+    if(D.car) grosCaresse(V, G, false);
+    /* un simple toucher : « Oh ! », elle redescend tout de suite (Romain : « ou alors on clique dessus, et là, elle redescend direct ») */
+    else if(Date.now() - D.t < 320 && D.dist < 12 && performance.now() - G.t0 > GROS_PRET * 1000) grosPart(V, G, 'toucher');
+  }
+  G.svg.addEventListener('pointerup', lache);
+  G.svg.addEventListener('pointercancel', lache);
+  grosBoucle(V, G);
+}
+/* une caresse commence (oui) ou finit (non) */
+function grosCaresse(V, G, oui){
+  var o = G.o;
+  if(oui){
+    if(G.phase !== 'la' && !(G.phase === 'monte' && performance.now() - G.t0 > GROS_PRET * 1000)) return;
+    if(G.phase === 'monte'){ G.phase = 'la'; G.vu = Date.now(); }
+    G.doigt.car = true;
+    G.car = {t0:Date.now(), tic:0, dist:0, gain:G.car ? G.car.gain : 0, k:G.car ? G.car.k : lasse(V, 'caresse'), env:G.car ? G.car.env : 0, coeur:0, ronron:0};
+    sonMimi(V, 'ronron');
+  } else {
+    G.der = Date.now();
+    if(G.car){ G.car.fin = Date.now(); }
+  }
+}
+/* les bonheurs d'une caresse, quatre fois par seconde (comme les gratouilles dans la pièce : caresseTic) */
+function grosGain(V, G){
+  var C = G.car, o = G.o, now = Date.now();
+  if(!C || C.fin || now - C.tic < 400) return;
+  C.tic = now;
+  var gain = C.dist > 2 ? 0.75 : 0.5; C.dist = 0;
+  if(C.gain < 14){ C.gain += gain; donner(o, 'amour', gain * 5); bhPlus(o, gain * GAIN_K * (C.k === undefined ? 1 : C.k)); }
+  if(!C.env && C.gain >= 6 && envieEst(V, 'caresse')){ C.env = 1; envieFaite(V, o); }
+  if(now - C.coeur > 950){ C.coeur = now; grosCoeur(V, G); }
+  if(now - C.ronron > 1450){ C.ronron = now; sonMimi(V, 'ronron'); }
+}
+/* un point de sa tête (unités du dessin) → l'écran (dans V.root) */
+function grosEcran(V, G, x, y){
+  var m = G.svg.getScreenCTM(), r = V.root.getBoundingClientRect();
+  if(!m) return null;
+  return {x:m.a * x + m.c * y + m.e - r.left, y:m.b * x + m.d * y + m.f - r.top, k:Math.hypot(m.a, m.b)};
+}
+function grosCoeur(V, G){
+  var E = G.E, p = grosEcran(V, G, E.dx + (Math.random() - 0.5) * 18, (1 - E.monte) * 64 - 28);
+  if(!p) return;
+  var c = document.createElement('i'); c.className = 'at-gp-coeur'; c.textContent = Math.random() < 0.7 ? '💖' : '✨';
+  c.style.left = p.x.toFixed(0) + 'px'; c.style.top = p.y.toFixed(0) + 'px'; c.style.setProperty('--dx', ((Math.random() - 0.5) * 60).toFixed(0) + 'px');
+  G.el.appendChild(c);
+  apres(V, 1400, function(){ c.remove(); });
+}
+/* elle lèche l'écran : la langue, et une petite trace mouillée sur la vitre, qui sèche */
+function grosLeche(V, G){
+  G.lech = performance.now();
+  sonMimi(V, 'lape');
+  apres(V, 330, function(){
+    if(V.gros !== G) return;
+    var p = grosEcran(V, G, G.E.dx * 0.6, 19);
+    if(!p) return;
+    var l = document.createElement('i'); l.className = 'at-gp-lech';
+    l.style.left = p.x.toFixed(0) + 'px'; l.style.top = p.y.toFixed(0) + 'px'; l.style.width = (p.k * 11).toFixed(0) + 'px'; l.style.height = (p.k * 7).toFixed(0) + 'px';
+    G.el.appendChild(l);
+    var m = document.createElement('i'); m.className = 'at-gp-mot'; m.textContent = 'Slurp !';
+    m.style.left = (p.x + p.k * 12).toFixed(0) + 'px'; m.style.top = (p.y - p.k * 16).toFixed(0) + 'px';
+    G.el.appendChild(m);
+    apres(V, 2600, function(){ l.remove(); });
+    apres(V, 1300, function(){ m.remove(); });
+  });
+}
+/* elle repart (pourquoi : 'toucher', 'seule', 'fin') : elle regarde en bas… et saute */
+function grosPart(V, G, pourquoi){
+  if(V.gros !== G || G.phase === 'part') return;
+  G.phase = 'part'; G.tp = performance.now(); G.pourquoi = pourquoi;
+  G.dep = {}; ['monte', 'patG', 'patD', 'tilt', 'dx', 'lx', 'ly', 'clos', 'ronron', 'orG', 'orD', 'mou', 'langue', 'pup'].forEach(function(c){ G.dep[c] = G.E[c]; });
+  if(G.car && !G.car.fin) G.car.fin = Date.now();
+  if(pourquoi === 'toucher') sonMimi(V, 'trille');
+}
+/* l'image d'après (une trentaine de fois par seconde, rien de plus : « sans que ça rame ») */
+function grosBoucle(V, G){
+  if(V.gros !== G || V.arrete) return;
+  requestAnimationFrame(function(now){
+    if(V.gros !== G || V.arrete) return;
+    if(now - (G.img || 0) < 30){ grosBoucle(V, G); return; }
+    var dt = Math.min(0.1, (now - (G.img || now)) / 1000); G.img = now;
+    var E = G.E, s = (now - G.t0) / 1000, t = Date.now(), vers = function(c, v, k){ E[c] += (v - E[c]) * Math.min(1, dt * k); };
+    /* (on a quitté l'atelier, ouvert une feuille, changé de mode : elle s'en va) */
+    if(G.phase !== 'part' && (V.mode !== 'ranger' || V.ouvert || !V.grim.hidden || V.salle !== salleDe(G.o))) grosPart(V, G, 'fin');
+    /* (le doigt posé sur sa tête, sans bouger : au bout d'un tiers de seconde, c'est une caresse aussi) */
+    if(G.doigt && !G.doigt.car && t - G.doigt.t > 320) grosCaresse(V, G, true);
+    if(G.phase === 'monte'){
+      for(var c in GROS_PISTES) E[c] = grosPiste(c, s);
+      if(s >= GROS_FIN){ G.phase = 'la'; G.vu = t; }
+    } else if(G.phase === 'la'){
+      var C = G.car && !G.car.fin ? G.car : null;
+      if(C){
+        /* on la caresse : elle penche la tête contre le doigt, ferme les yeux, ronronne, les oreilles un peu de côté */
+        var q = G.fx !== undefined ? grosDessin(G, G.fx, G.fy) : null, fx = q ? borne(q.x, -22, 22) : 0;
+        vers('tilt', borne(fx * 0.8, -16, 16), 5); vers('dx', borne(fx * 0.09, -2.4, 2.4), 4);
+        vers('clos', t - C.t0 > 350 ? 1 : 0, 6); vers('pau', E.clos > 0.4 ? 1 : 0, 12);      /* (les yeux fermés de plaisir : l'œil dessous se ferme aussi) */ vers('ronron', 1, 3); vers('orG', 9, 4); vers('orD', 9, 4); vers('mou', 5, 4);
+        vers('lx', 0, 4); vers('ly', 0, 4); vers('pup', 0.7, 2);
+        grosGain(V, G);
+        if(t - C.t0 > 2400 && (!G.lech || now - G.lech > 5600) && !E.langue) grosLeche(V, G);
+      } else {
+        /* toute seule : elle cligne, bouge une oreille, regarde le doigt (ou autour d'elle), penche un peu la tête */
+        vers('clos', 0, 5); vers('ronron', 0, 2); vers('orG', G.orC || 0, 7); vers('orD', G.orC2 || 0, 7); vers('mou', Math.sin(s * 1.3) * 1.5, 3); vers('dx', 0, 3);
+        if(t > G.cl){ G.cl = t + 2600 + Math.random() * 2400; G.cli = now; }
+        E.pau = G.cli && now - G.cli < 260 ? Math.sin(Math.PI * (now - G.cli) / 260) : 0;
+        if(t > G.or){ G.or = t + 2600 + Math.random() * 3600; var u = Math.random(); G.orC = u < 0.4 ? 12 : u < 0.6 ? -5 : 0; G.orC2 = u < 0.4 ? -3 : u < 0.8 ? 11 : 0; apres(V, 260, function(){ G.orC = 0; G.orC2 = 0; }); }
+        var suit = G.fv && t - G.fv < 2500 ? grosDessin(G, G.fx, G.fy) : null;
+        if(suit){ vers('lx', borne(suit.x / 18, -1, 1), 7); vers('ly', borne((suit.y + 4) / 16, -1, 1), 7); }
+        else {
+          if(t > G.reg){ G.reg = t + 1400 + Math.random() * 2200; var w = Math.random(); G.rx = w < 0.55 ? 0 : (Math.random() - 0.5) * 1.7; G.ry = w < 0.55 ? 0.1 : (Math.random() - 0.6) * 0.8; G.rt = w < 0.55 ? (Math.random() < 0.5 ? 7 : -7) : 0; }
+          vers('lx', G.rx || 0, 5); vers('ly', G.ry || 0, 5); vers('tilt', G.rt || 0, 2.5);
+        }
+        vers('pup', suit ? 0.85 : 0.6, 2);
+        /* personne ne la caresse : elle s'en va (sept secondes après son arrivée, cinq après la dernière caresse) */
+        var der = G.der || G.vu;
+        if(!G.doigt && t - der > (G.der ? GROS_APRES : GROS_ATTEND)) grosPart(V, G, 'seule');
+      }
+      if(t - G.vu > GROS_MAX && !C) grosPart(V, G, 'fin');
+      /* la langue : sortie, puis rentrée, en trois quarts de seconde */
+      E.langue = G.lech && now - G.lech < 760 ? Math.sin(Math.PI * (now - G.lech) / 760) : 0;
+      E.monte = 1 + E.langue * 0.05;
+    } else if(G.phase === 'part'){
+      /* elle regarde en bas (un tiers de seconde)… hop, elle se laisse tomber, les pattes lâchent juste après */
+      var u = (now - G.tp) / 1000, D0 = G.dep, ea = function(a, b){ var w = borne((u - a) / (b - a), 0, 1); return w * w * (3 - 2 * w); };
+      var r = ea(0, 0.35);
+      ['tilt', 'dx', 'clos', 'ronron', 'langue', 'mou'].forEach(function(c){ E[c] = D0[c] * (1 - r); });
+      E.lx = D0.lx * (1 - r); E.ly = D0.ly + (1 - D0.ly) * r; E.orG = D0.orG + (-5 - D0.orG) * r; E.orD = D0.orD + (-5 - D0.orD) * r; E.pup = D0.pup + (0.55 - D0.pup) * r; E.pau = 0;
+      var f = borne((u - 0.4) / 0.3, 0, 1);
+      E.monte = u < 0.4 ? D0.monte + 0.06 * ea(0.3, 0.4) : (D0.monte + 0.06) * (1 - f * f);
+      E.patG = D0.patG + (30 - D0.patG) * ea(0.55, 0.8); E.patD = D0.patD + (30 - D0.patD) * ea(0.6, 0.85);
+      if(u > 0.95){ grosFini(V, G); return; }
+    }
+    G.rig.appliquer(s);
+    grosBoucle(V, G);
+  });
+}
+/* le doigt (écran) → les unités de sa tête (0, 0 : le milieu de sa tête, quand elle est montée) */
+function grosDessin(G, cx, cy){
+  var m = G.svg.getScreenCTM();
+  if(!m) return null;
+  var i = m.inverse();
+  return {x:i.a * cx + i.c * cy + i.e - G.E.dx, y:i.b * cx + i.d * cy + i.f + 2 - (1 - G.E.monte) * 64};
+}
+/* elle a disparu par en bas : on enlève la grosse tête, et elle revient dans la pièce, de dos */
+function grosFini(V, G){
+  if(G.suivre) V.root.removeEventListener('pointermove', G.suivre);
+  if(G.el){ G.el.classList.remove('at-vu'); var el = G.el; apres(V, 400, function(){ el.remove(); }); }
+  V.root.classList.remove('at-gp-actif');
+  G.phase = 'fini';
+  var C = G.car;
+  if(C && C.gain >= 3) lasser(V, 'caresse');
+  majBarre(V); changer(V);
+  apres(V, 900 + Math.random() * 600, function(){ grosRevient(V, G); });
+}
+function grosRevient(V, G){
+  if(V.gros !== G) return;
+  V.gros = null;
+  var o = G.o, st = V.chats[o.id], d = V.elO[o.id];
+  if(st) st.tenu = false;
+  if(!d || !st || !V.parId[o.id] || V.arrete) return;
+  var c = centreVue(V), bas = V.vb.y0 + (V.pan.y + V.vh) / V.k, y = Math.min(solMax(V) - 4, bas + 10);
+  var x = borne(c.x + (Math.random() - 0.5) * 160, solXmin(V, y) + 90, solXmax(V, y) - 90);
+  st.pos = chatSol(V, x, y); placerEl(V, o);
+  d.classList.remove('at-c-dehors'); chatReparait(d);
+  chatPose(V, o, 'marche');
+  /* elle remonte par le bas de l'écran… et repart dans la pièce, de dos (elle s'éloigne de nous) */
+  anim(d, [{transform:'translateY(' + Math.round(120 * V.k) + 'px) scale(' + d._s + ')'}, {transform:'scale(' + d._s + ')'}], {duration:420, easing:'ease-out'});
+  apres(V, 400, function(){
+    var s2 = V.chats[o.id];
+    if(!s2 || s2.tenu || s2.caresse || s2.anim) return;
+    var y2 = borne(y - 200 - Math.random() * 140, SOL_MIN + 40, y - 140), q = chatSol(V, borne(x + (Math.random() - 0.5) * 220, solXmin(V, y2) + 60, solXmax(V, y2) - 60), y2);
+    chatAller(V, o, q, function(){ chatPose(V, o, 'assis'); expression(V, o, 'at-x-content', 900); chatPlanifier(V, o, 3200); });
+  });
+  peutEtreCadeau(V);
 }
 
 /* ---------- La litière et le griffoir ---------- */
@@ -8966,7 +9290,7 @@ function htmlBarre(V){
   if(soins.length) s += '<span class="at-mb-g">Soins</span>' + soins.map(function(id){ return bt('s:' + id, iconeSoin(id), SOINS[id].nom, m.neufs.indexOf(id) >= 0); }).join('');
   s += '<span class="at-mb-g">Ses affaires</span>' + bt('garde', '🎀', 'Habits', G.neuf.length > 0 || m.peauNeuve === 1) + bt('shop', '🛒', 'Boutique') + bt('album', '📒', 'Album') +
     /* (le mode d'essai du jeu — « #test » dans l'adresse : toutes ses affaires d'un coup, pour voir son parc sans jouer des heures) */
-    (window.M && M.modeDev && M.modeDev() ? bt('essai', '🧪', 'Essai : tout') : '');
+    (window.M && M.modeDev && M.modeDev() ? bt('essai', '🧪', 'Essai : tout') + bt('essai-gros', '🧪', 'Essai : gros plan') : '');
   return s + '</div>';
 }
 function ouvrirBarre(V){
@@ -8989,6 +9313,7 @@ function actionBarre(V, a){
   if(a === 'shop'){ fermerBarre(V); ouvrirBoutique(V); return; }
   if(a === 'album'){ ouvrirAlbum(V); return; }
   if(a === 'essai'){ fermerBarre(V); toutDonner(V); return; }
+  if(a === 'essai-gros'){ fermerBarre(V); if(!grosPlan(V, true)){ var tg = 'Pas maintenant : elle est occupée (ou elle dort).'; toast(V, '<b>🧪</b> ' + esc(tg), 3200, tg); } return; }
 }
 
 /* ---------- La boutique de Mimi : le confort, payé en pièces d'or (le moteur donne la bourse : opts.bourse) ---------- */

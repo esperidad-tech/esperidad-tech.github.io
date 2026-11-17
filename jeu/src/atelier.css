@@ -1331,6 +1331,24 @@ html.labo-ouvert, html.labo-ouvert body{overflow:hidden}
 .at-photo-vide .at-photo-chat span{font-size:2.2rem;font-weight:800;color:rgba(53,40,27,.35)}
 .at-photo-vide figcaption{color:rgba(53,40,27,.4)}
 .at-album-n{margin:6px 0 0;font-weight:800;font-size:1.05rem;color:var(--encre,#35281b)}
+/* (17 novembre) LE GROS PLAN (Bible §12.76 ; mimi-gros.js) : sa grosse tête au bord du bas de l'écran. Rien ne bouge en CSS dans le dessin
+   (c'est atelier.js, grosBoucle, qui le règle) ; pendant ce temps, les boutons du bas se cachent, et l'appareil photo monte à droite. */
+.at-gp{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden}
+.at-gp-svg{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;touch-action:none}
+.at-gp-svg [data-g="tete"],.at-gp-svg [data-g="patG"],.at-gp-svg [data-g="patD"]{pointer-events:visiblePainted}
+.at-gp-ombre{position:absolute;left:0;right:0;bottom:0;height:80%;background:radial-gradient(ellipse 62% 80% at 50% 100%,rgba(18,10,30,.45),rgba(18,10,30,0) 72%);opacity:0;transition:opacity .6s}
+.at-gp.at-vu .at-gp-ombre{opacity:1}
+.at-gp-actif .at-salle,.at-gp-actif .at-mimi-bt,.at-gp-actif .at-coin,.at-gp-actif .at-mimi-barre,.at-gp-actif .at-tient{visibility:hidden}
+.at-gp-actif .at-photo-bt{left:auto;right:14px;bottom:auto;top:30%;width:64px;height:64px}
+.at-gp-coeur{position:absolute;z-index:2;font-size:30px;line-height:1;transform:translate(-50%,-50%);pointer-events:none;animation:at-gp-coeur 1.4s ease-out forwards}
+@keyframes at-gp-coeur{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}15%{opacity:1;transform:translate(-50%,-70%) scale(1.1)}100%{opacity:0;transform:translate(calc(-50% + var(--dx,0px)),-260%) scale(.9)}}
+.at-gp-lech{position:absolute;z-index:3;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+  background:radial-gradient(ellipse at 42% 36%,rgba(255,255,255,.8),rgba(225,242,255,.42) 42%,rgba(205,232,255,.16) 66%,rgba(205,232,255,0) 71%);animation:at-gp-lech 2.6s ease-in forwards}
+@keyframes at-gp-lech{0%{opacity:0;transform:translate(-50%,-50%) scale(.5,.3)}12%{opacity:1;transform:translate(-50%,-50%) scale(1)}70%{opacity:.7}100%{opacity:0;transform:translate(-50%,-50%) scale(1.05,.9)}}
+.at-gp-mot{position:absolute;z-index:3;transform:translate(-50%,-50%);font-weight:900;font-size:1.35rem;color:#fff;text-shadow:0 2px 0 #24182e,0 0 4px #24182e;white-space:nowrap;pointer-events:none;animation:at-gp-mot 1.3s ease-out forwards}
+@keyframes at-gp-mot{0%{opacity:0;transform:translate(-50%,-30%) scale(.6)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}100%{opacity:0;transform:translate(-50%,-140%) scale(1)}}
+.at-photo .at-photo-gp svg{width:100%;height:100%;margin:0}
+@media (prefers-reduced-motion:reduce){.at-gp-coeur,.at-gp-lech,.at-gp-mot{animation-duration:.01s}}
 @media (prefers-reduced-motion: reduce){
   .at-coffret > svg,.at-jouet-laser i,.at-jouet-plume svg,.at-mb-neuf,.at-mimi-bt.at-dispo{animation:none!important}
 }

@@ -1,7 +1,7 @@
 """La fluidité de Mimi (le pantin, mimi-pantin.js) dans l'atelier, processeur ralenti (×6 par défaut : une vieille tablette).
 On mesure les images par seconde, l'écart le plus long entre deux images et les images en retard, dans six situations :
 au calme (assise), en marche (elle court en rond), dans ses autres vues (de dos, de face, en biais), au galop, en jeu (un bond, une galipette,
-elle s'étire), sous le doigt (un câlin sur la tête).
+elle s'étire), sous le doigt (un câlin sur la tête) ; et le gros plan (§12.76 : la montée, une caresse).
    BRUMEVAL_DIST=<dossier construit> python3 tools/perf-mimi.py [--taux 6] [--ecran 1024x768x2]
 (sous le verrou des robots : flock /tmp/brumeval-pw.lock …)"""
 import os, sys, json
@@ -72,6 +72,18 @@ with sync_playwright() as p:
     for i in range(30): pg.mouse.move(r[0] + (3 if i % 2 else -3), r[1] + (2 if i % 2 else -2)); pg.wait_for_timeout(100)
     pg.mouse.up()
     res['sous le doigt'] = pg.evaluate(FIN)
+    # (17 novembre) le gros plan (§12.76) : sa grosse tête qui monte, puis une caresse au doigt
+    if pg.evaluate(f"() => !!{V}._gros"):
+        calme(); pg.wait_for_timeout(400); js("a._gros()")
+        for i in range(160):
+            if (pg.evaluate(f"() => {V}._grosEtat().phase") or '') == 'monte': break
+            pg.wait_for_timeout(100)
+        pg.evaluate(MESURE); pg.wait_for_timeout(8500); res['gros plan : la montée'] = pg.evaluate(FIN)
+        t = pg.evaluate("() => { var t = document.querySelector('#atelier-ici .at-gp [data-g=\"tete\"]'); if(!t) return null; var r = t.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height * 0.3]; }")
+        if t:
+            pg.evaluate(MESURE); pg.mouse.move(t[0], t[1]); pg.mouse.down()
+            for i in range(30): pg.mouse.move(t[0] + (40 if i % 2 else -40), t[1] + (6 if i % 2 else -6), steps=3); pg.wait_for_timeout(100)
+            pg.mouse.up(); res['gros plan : une caresse'] = pg.evaluate(FIN)
     print(json.dumps({'ecran': ECRAN, 'taux': TAUX, 'mesures': res}, ensure_ascii=False, indent=1))
     print('ERREURS', err)
     b.close()

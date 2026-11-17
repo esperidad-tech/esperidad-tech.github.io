@@ -61,7 +61,9 @@ var YEUX = M.YEUX = [
   ['#ffe27a', '#de8424', 'Ambre'],
   ['#c9f59a', '#3fa04a', 'Vert émeraude'],
   ['#e6ccff', '#8a55d6', 'Violets'],
-  ['#f1d6a0', '#a4692a', 'Noisette']
+  ['#f1d6a0', '#a4692a', 'Noisette'],
+  /* (17 novembre) le cadeau de la photo la plus rare, le gros plan : des yeux vairons — un bleu, un doré (le 4e et le 5e : l'autre œil) */
+  ['#c4ecff', '#3f9fe0', 'Vairons', '#ffe27a', '#de8424']
 ];
 /* le numéro d'un chat → son pelage, ses yeux (-1 : ceux de son pelage) ; et l'inverse */
 M.peau = function(v){ v = Math.max(0, Math.round(+v || 0)); var y = Math.floor(v / 100); return {p:(v % 100) % CHATS.length, y:y > 0 ? (y - 1) % YEUX.length : -1}; };
@@ -76,7 +78,7 @@ M.defs = function(){
       lin('mimv' + i, [[p[2], 0], [mel(p[2], p[0], 0.28), 1]]) +
       rad('mimt' + i, [[p[5], 0], [p[0], 0.55], [sombre(p[0], 0.13), 1]], 0.5, 0.3, 0.78) +
       rad('mimy' + i, [[clair(p[3], 0.35), 0], [p[3], 0.4], [p[4], 1]], 0.5, 0.72, 0.72);
-  }).join('') + YEUX.map(function(y, j){ return rad('mimz' + j, [[clair(y[0], 0.35), 0], [y[0], 0.4], [y[1], 1]], 0.5, 0.72, 0.72); }).join('') +
+  }).join('') + YEUX.map(function(y, j){ return rad('mimz' + j, [[clair(y[0], 0.35), 0], [y[0], 0.4], [y[1], 1]], 0.5, 0.72, 0.72) + (y[3] ? rad('mimz' + j + 'b', [[clair(y[3], 0.35), 0], [y[3], 0.4], [y[4], 1]], 0.5, 0.72, 0.72) : ''); }).join('') +
     rad('mimo', [['#ffd6e0', 0], ['#ef86a3', 1]], 0.5, 0.85, 0.85) + lin('mimn', [['#ffb8c8', 0], ['#e4668a', 1]]);
 };
 
@@ -265,7 +267,9 @@ M.ik = ik; M.lisse = lisse;
 M.couleurs = couleurs;
 function couleurs(v){
   var pe = M.peau(v), i = pe.p, p = CHATS[i], tig = !!p[6];
-  return {i:i, p:p, tig:tig, yg:'url(#atg-mim' + (pe.y >= 0 ? 'z' + pe.y : 'y' + i) + ')', yf:pe.y >= 0 ? YEUX[pe.y][1] : p[4], F:'url(#atg-mim' + i + ')', U:p[0], S:sombre(p[0], 0.22), V:'url(#atg-mimv' + i + ')', Vu:p[2], R:p[1], L:p[5],
+  var Y2 = pe.y >= 0 && YEUX[pe.y][3];      /* (des yeux vairons : l'autre œil a sa couleur) */
+  return {i:i, p:p, tig:tig, yg:'url(#atg-mim' + (pe.y >= 0 ? 'z' + pe.y : 'y' + i) + ')', yf:pe.y >= 0 ? YEUX[pe.y][1] : p[4],
+    yg2:Y2 ? 'url(#atg-mimz' + pe.y + 'b)' : null, yf2:Y2 ? YEUX[pe.y][4] : null, F:'url(#atg-mim' + i + ')', U:p[0], S:sombre(p[0], 0.22), V:'url(#atg-mimv' + i + ')', Vu:p[2], R:p[1], L:p[5],
     pat:tig ? mel(p[0], p[2], 0.45) : p[2], patS:tig ? sombre(mel(p[0], p[2], 0.45), 0.2) : sombre(p[2], 0.14), ro:tig ? 1 : 0.5};
 }
 /* le bout d'une patte : de côté (posée, les doigts devant), et de face (on voit les coussinets roses) */
@@ -355,7 +359,8 @@ function tete(c, at, acc){
   }
   function oeil(ex, slot){
     var E = function(l){ return rp(ex, -1, l); }, forme = E(['M', -5.6, 0, 'C', -4.5, -5.8, 4.5, -5.8, 5.6, 0, 'C', 4.5, 5.2, -4.5, 5.2, -5.6, 0, 'Z']);
-    return PF(forme, c.yg) + PF(E(['M', -5.6, 0, 'C', -4.5, -5.8, 4.5, -5.8, 5.6, 0, 'C', 3, -2.6, -3, -2.6, -5.6, 0, 'Z']), c.yf, ' opacity=".34"') +
+    var autre = slot === 'pupD' && c.yg2;
+    return PF(forme, autre ? c.yg2 : c.yg) + PF(E(['M', -5.6, 0, 'C', -4.5, -5.8, 4.5, -5.8, 5.6, 0, 'C', 3, -2.6, -3, -2.6, -5.6, 0, 'Z']), autre ? c.yf2 : c.yf, ' opacity=".34"') +
       '<g' + at(slot) + '><ellipse cx="0" cy="0.1" rx="1.6" ry="3.8" fill="' + K + '"/></g>' +
       '<g' + at('ref') + '><circle cx="' + f1(ex + 1.7) + '" cy="-2.7" r="1.55" fill="#fff"/><circle cx="' + f1(ex - 1.8) + '" cy="1" r=".75" fill="#fff" opacity=".85"/></g>' +
       PT(forme, K, 1.3) + PT(E(['M', -5.9, -0.3, 'C', -4.5, -6.2, 4.5, -6.2, 5.9, -0.3]), K, 2.3);

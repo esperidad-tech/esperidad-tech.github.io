@@ -66,3 +66,5 @@ jeu/test/mimi-porter/
 jeu/test/mimi-habits/
 # les captures du robot des soins, tools/mimi-soins.py (refaites à chaque fois)
 jeu/test/mimi-soins/
+# les captures du robot du gros plan, tools/mimi-grosplan.py (refaites à chaque fois)
+jeu/test/mimi-grosplan/
