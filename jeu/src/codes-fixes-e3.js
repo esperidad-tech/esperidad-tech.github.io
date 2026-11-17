@@ -111,7 +111,7 @@ var G = {
 'info:traces_moustache':'chat-etoile-cloche', 'info:vieux_puits':'cle-champi-flamme',
 'moment:1':'cle-champi-soleil', 'moment:2':'etoile-arbre-soleil',
 'obj:carnet':'flamme-cloche-champi', 'obj:encre_iris':'lune-arbre-soleil', 'obj:herbier':'coeur-poisson-champi', 'obj:lettre':'flamme-poisson-chapeau', 'obj:mousse':'cloche-champi-arbre',
-'obj:papier_odette':'cle-lune-flamme', 'obj:piece_pain':'chat-poisson-chat', 'obj:vieux_plan':'chapeau-cle-poisson',
+'obj:papier_odette':'cle-lune-flamme', 'obj:piece_pain':'chat-poisson-chat', 'obj:sac_farine':'flamme-etoile-lune', 'obj:vieux_plan':'chapeau-cle-poisson',
 'plaide:1':'arbre-arbre-flamme',
 'pot:clarte':'etoile-lune-flamme', 'pot:coeur':'champi-chat-chapeau', 'pot:eclairante':'cle-flamme-cloche', 'pot:fumigene':'coeur-cle-lune', 'pot:hydromel':'etoile-flamme-soleil',
 'pot:invisibilite':'etoile-arbre-cloche', 'pot:lumiere':'flamme-poisson-arbre', 'pot:rapidite':'lune-lune-flamme', 'pot:revelatrice':'arbre-soleil-cle', 'pot:verite':'arbre-champi-arbre',
