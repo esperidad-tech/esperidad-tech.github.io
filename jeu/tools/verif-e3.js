@@ -277,6 +277,13 @@ module.exports = function verifierE3(E, SRC, D){
   dit(cleOk.faits.has('pisteur:clocher:descendre') && !cleOk.faits.has('pisteur:puits:grille'), 'la clé prise : on descend par la crypte, et le puits ne s\'ouvre jamais');
   dit(cleRatee.faits.has('pisteur:puits:descendre') && !cleRatee.faits.has('pisteur:clocher:descendre'), 'la clé ratée par le Pisteur : on descend par le puits, avec l\'acide du sac');
   dit(anselmeRate.faits.has('pisteur:puits:descendre') && anselmeRate.codes.has('info:vieux_puits'), 'Anselme raté par le Barde : « Le vieux puits », et on descend par le puits');
+  /* (17 novembre) les chemins secrets du Pisteur (E.chemins, carte-jeu.js) : le code est une information pour le Pisteur, et le chemin mène
+     à un lieu où ce code fait apparaître quelque chose (sinon le sentier s'ouvrirait sur un lieu vide) */
+  (E.chemins || []).forEach(c => {
+    const I = (E.infos || {})[String(c.code || '').split(':')[1]], L = (E.lieux || {})[c.vers];
+    dit(!!I && [].concat(I.pour || []).includes('pisteur') && !!L && !!L.pisteur && (L.pisteur.points || []).some(p => JSON.stringify(p.visibleSi || []).includes(c.code)) && (c.pts || []).length > 1,
+      'Le chemin secret « ' + c.nom + ' » : son code est pour le Pisteur, et il mène à un lieu où ce code montre quelque chose');
+  });
   dit(R.some(r => r.cle === 'alchimiste:cueillir:' + RECETTES.acide.plante && !r.besoins.length && !r.moments), 'l\'acide de la grille du puits : sa plante se cueille à tout moment, sans rien demander à personne');
   /* (14 novembre, Bible §13.36 et §13.38) LE MAIRE INQUIET : en ouvrant le passage, le Pisteur a un code pour le Barde — tirer ou pousser :
      « La grille a hurlé » ; soulever : « La grille s'ouvre sans bruit » ; le puits : « Le puits est ouvert ». Dans les trois cas, un
