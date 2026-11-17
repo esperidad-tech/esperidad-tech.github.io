@@ -2,6 +2,8 @@
 
 À lire en entier par la nouvelle conversation avant de toucher à quoi que ce soit.
 
+**17 novembre, 20 h 27 — EN LIGNE (commit 860fe06 du site, version 20261117-1927 ; Bible §13.63 ; `PASSATION-E3.md`)** : enquête 3, le maire accusé à tort (« Mensonge ? ») donne quand même le code « La lettre est sur le bureau du maire » en s'en allant fâché (sans quoi le Pisteur ne voyait jamais le point de la lettre) ; le Barde a le rond jaune sur la maison d'Odette dès le matin. Nouveau test : `jeu/tools/e3-maire-vexe.py`. Aucun code n'a bougé.
+
 ## Le projet en deux lignes
 Jeu d'enquête coopératif sur 4 tablettes (Pisteur, Alchimiste, Barde, Sage) pour la famille de Romain : **depuis le 7 novembre, pour sa fille et ses cousins (11 ans, bientôt 12), avec Romain, Siham et sa sœur** ; « à partir de 10 ans », mais « niveau 13 ans » : un peu de frayeur permise, pas obligé de faire enfantin (Bible §12.49 ; avant : les jumeaux Naïm et Alicia, 8 ans). Tout est en français. Saison 1 = 10 enquêtes (E10 = un grand combat). E1 et E2 sont jouables ; **E3 est finie de construire le 12 novembre (les 8 étapes, Bible §13.15 à §13.20)** ; **elle est OUVERTE AUX JOUEURS depuis le 14 novembre à 14 h 20 (Bible §13.39) : à l'adresse normale, on y arrive en finissant l'enquête 2 ; ses codes sont gelés.** (Avant, elle était fermée : on ne l'essayait qu'avec « #test ». Le Mode test des Réglages, lui, reste réservé à « #test ».)
 - Le jeu en ligne : https://esperidad-tech.github.io/brumeval/ (dépôt `esperidad-tech/esperidad-tech.github.io`, branche `main`, dossier `brumeval/`)
