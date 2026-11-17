@@ -141,16 +141,47 @@ with sync_playwright() as p:
     verifier(pg.evaluate(f"() => {CHAT}.b.propre") < 40, 'à rebrousse-poil : ça ne compte pas')
     # (dans le sens du poil : de la tête vers la queue, en levant le doigt entre deux coups)
     n0 = 0
+    print('   (sa vue :', pg.evaluate(f"() => ({V}._pantin('{cid}') || {{}}).vue"), ', épaules → hanches :', round(((hanches[0] - tete[0]) ** 2 + (hanches[1] - tete[1]) ** 2) ** 0.5), 'points )')
     for i in range(14):
         tete, hanches = point(pg, cid, 's'), point(pg, cid, 'h')
         dx, dy = hanches[0] - tete[0], hanches[1] - tete[1]
-        pg.mouse.move(tete[0] - dx * 0.4, tete[1] - dy * 0.4); pg.mouse.down()
-        pg.mouse.move(hanches[0] + dx * 0.3, hanches[1] + dy * 0.3, steps=6); pg.wait_for_timeout(90)
+        # (un vrai coup de brosse, d'au moins 80 points : vue de face, ses épaules et ses hanches sont tout près l'une de l'autre à l'écran)
+        ln = max(1, (dx * dx + dy * dy) ** 0.5); L = max(ln * 1.7, 80); ux, uy = dx / ln, dy / ln; mx, my = (tete[0] + hanches[0]) / 2, (tete[1] + hanches[1]) / 2
+        pg.mouse.move(mx - ux * L / 2, my - uy * L / 2); pg.mouse.down()
+        pg.mouse.move(mx + ux * L / 2, my + uy * L / 2, steps=6); pg.wait_for_timeout(90)
         if i == 4: shot(pg, 'brosse-sens', cadre_sel(pg, f'#atelier-ici [data-obj="{cid}"]'))
         pg.mouse.up(); pg.wait_for_timeout(140)
         if not pg.evaluate("() => Atelier._vue()._mimi().outil"): n0 = i + 1; break
     pr = pg.evaluate(f"() => {CHAT}.b.propre")
     verifier(n0 and pr >= 99, f'dans le sens du poil : en {n0} coups de brosse, un pelage tout propre, la brosse se range ({pr})')
+    # (vue de face — elle vient vers nous et s'assoit, face à nous — : de sa tête vers son ventre, ça compte aussi)
+    pg.wait_for_timeout(1500)
+    pg.evaluate(f"() => {{ {CHAT}.b.propre = 30; }}")
+    calme(pg, cid)
+    # (elle remonte vers le fond, puis revient tout droit vers nous : elle s'assoit face à nous)
+    pg.evaluate(f"() => {V}._va('{cid}', 600, 600)")
+    attendre(pg, lambda: not pg.evaluate(f"() => {V}._chat('{cid}').anim"), 8); pg.wait_for_timeout(400)
+    pg.evaluate(f"() => {V}._va('{cid}', 600, 800)")
+    attendre(pg, lambda: not pg.evaluate(f"() => {V}._chat('{cid}').anim"), 8); pg.wait_for_timeout(500)
+    voir(pg, cid); pg.wait_for_timeout(500)
+    barre(pg, 's:brosse'); pg.wait_for_timeout(500)
+    tete, hanches = point(pg, cid, 's'), point(pg, cid, 'h')
+    vue = pg.evaluate(f"() => ({V}._pantin('{cid}') || {{}}).vue")
+    print('   (de face ? sa vue :', vue, ', épaules', [round(v) for v in tete], 'hanches', [round(v) for v in hanches], ')')
+    cad = cadre_sel(pg, f'#atelier-ici [data-obj="{cid}"]')
+    n1 = 0
+    for i in range(14):
+        # (un coup de brosse tout droit vers le bas, sur elle : du haut de sa tête jusqu'à ses pattes)
+        tete, hanches = point(pg, cid, 's'), point(pg, cid, 'h')
+        mx = (tete[0] + hanches[0]) / 2
+        pg.mouse.move(mx, tete[1] - 22); pg.mouse.down()
+        pg.mouse.move(mx, hanches[1] + 34, steps=6); pg.wait_for_timeout(90)
+        pg.mouse.up(); pg.wait_for_timeout(140)
+        if not pg.evaluate("() => Atelier._vue()._mimi().outil"): n1 = i + 1; break
+    shot(pg, 'brosse-de-face', cad)
+    pr = pg.evaluate(f"() => {CHAT}.b.propre")
+    verifier(n1 and pr >= 99, f'assise face à nous ({vue}) : de sa tête vers ses pattes, ça compte aussi — en {n1} coups ({pr})')
+    if not n1: pg.evaluate("() => { var v = Atelier._vue(); if(v._finJouet) v._finJouet(); }"); pg.mouse.click(5, 5)
     # (l'aller-retour, le doigt posé : ça marche aussi, le retour ne compte pas)
     pg.wait_for_timeout(1500)
     pg.evaluate(f"() => {{ {CHAT}.b.propre = 30; }}")

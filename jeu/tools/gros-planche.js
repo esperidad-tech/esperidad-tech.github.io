@@ -16,8 +16,8 @@ scen.forEach(sc => {
   const v = +(o.v || 0), acc = {cou:'', tete:''};
   (o.acc || '').split(',').filter(x => x).forEach(id => { const h = M.HABITS[id]; if(h){ if(h.slot === 'cou') acc.cou += M.habit(id); else acc.tete += M.habit(id); } });
   const d = W.document.createElement('div');
-  const vb = o.vb || '-36 -44 72 64';
-  d.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vb + '">' + M.gros(v, acc) + '<rect x="-60" y="20" width="120" height="60" fill="#2b2238"/></svg>';
+  const vb = o.vb || '-36 -46 72 70';      /* (comme dans le jeu : le bas de l'écran en y = 24 ; les griffes s'y accrochent) */
+  d.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vb + '">' + M.gros(v, acc) + '<rect x="-60" y="24" width="120" height="60" fill="#2b2238"/></svg>';
   const svg = d.querySelector('svg'), r = M.grosRig(svg);
   const E = {}; ['monte', 'tilt', 'pup', 'pau', 'clos', 'orG', 'orD', 'mou', 'gueule', 'langue', 'patG', 'patD', 'griG', 'griD'].forEach(k => { if(o[k] !== undefined) E[k] = +o[k]; });
   if(o.regard){ const q = o.regard.split(',').map(Number); E.lx = q[0]; E.ly = q[1]; }

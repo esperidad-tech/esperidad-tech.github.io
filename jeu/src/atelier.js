@@ -9159,7 +9159,9 @@ function placeLibre(V, l, dl, h, ev){
       var p = posObj(V, o); if(Math.round(p.z * 5) < zb - 2) return;
       pire = Math.max(pire, inter(bx, boite(o, p)) / aire);
     });
-    return pire > 0.06 ? Math.min(1, pire) : 0;
+    /* (rien du tout devant : à 6 % près, le chaudron cachait encore les hanches de Mimi, assise au bord du baquet — vu par
+       tools/mimi-soins.py, 17 novembre ; le reste du baquet se voyait, elle non) */
+    return pire > 0.015 ? Math.min(1, pire) : 0;
   }
   /* (17 novembre : pas à moitié hors de l'écran non plus — sur un téléphone, le baquet s'est posé au bord gauche, coupé en deux) */
   function horsVue(x, y){
