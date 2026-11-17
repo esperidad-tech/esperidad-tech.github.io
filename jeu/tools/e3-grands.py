@@ -333,8 +333,10 @@ with sync_playwright() as p:
     choisir(pg, 1)
     verifier('ME PRESSE PAS' in texte(pg) and 'je monte sonner' in texte(pg), 'on le presse : il n\'entend plus rien, puis « Bon, je monte sonner, moi »')
     verifier('_info:vieux_puits' in objets(pg) and '_info:cle_clou' not in objets(pg), 'raté : le code « Le vieux puits »')
+    # (17 novembre, le nouveau fil) raté : le Barde demande à Tim s'il connaît un autre passage (le bouton), Tim montre le sentier du vieux puits
+    verifier('Tu connais un autre passage' in pg.locator('#voile [data-act=gd-suite]').inner_text(), 'raté : le bouton « Tim ! Tu connais un autre passage ? »')
     pg.locator('#voile [data-act=gd-suite]').click(); pg.wait_for_timeout(250)
-    verifier('vieux puits' in texte(pg), 'Tim, depuis les toits')
+    verifier('vieux puits' in texte(pg) and 'petit sentier' in texte(pg), 'Tim, depuis les toits : Moustache a filé par un petit sentier, jusqu\'au vieux puits')
     shot(pg, 'B-tim-puits')
     pg.locator('#voile [data-act=gd-retour]').click(); pg.wait_for_timeout(300)
     fermer(pg)

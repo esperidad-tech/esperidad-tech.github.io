@@ -107,7 +107,7 @@ E[3] = {
          grillé. Il faut les enlever. ») plus de missions de la nuit : ni le sac, ni le donjon — on les découvre en jouant */
       /* (17 novembre, étape 3 du nouveau fil) sauf une, que le Pisteur ne voit qu'avec le code du Barde, « Le plan de la nuit » : c'est
          l'équipe qui a trouvé le plan, la mission ne fait que le lui rappeler */
-      {si:[{code:'info:plan_nuit'}], ic:'🗝️', t:'Le plan de la nuit : quand la Grosse Marie sonnera, monte au clocher sans te faire voir, et prends la clé à la ceinture d\'Anselme.', fait:[{fini:'pisteur:clocher:cle'}]},
+      {si:[{code:'info:plan_nuit'}], ic:'🗝️', t:'Le plan de la nuit : quand la Grosse Marie sonnera, monte au clocher sans te faire voir, et prends la clé à la ceinture d\'Anselme.', fait:[{fini:'pisteur:clocher:cle'}, {vu:'pisteur:puits:acide'}]   /* (ou par le puits, si le Barde a raté Anselme) */},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
     /* (étape 4) le gâteau (une création libre : on ne le rate jamais), les sept plantes, la lettre au labo, les sept potions de la nuit */
@@ -324,7 +324,9 @@ E[3] = {
           {q:'VOTRE PÈRE A SONNÉ TOUTE UNE NUIT POUR SILAS. ODETTE AUSSI EST PERDUE.', r:'Il essuie une larme. « Alors on sonne pour Odette. Monte, mon petit ! »', bon:true}]}
       ],
       reussi:{bouton:'🔔 Monter avec Anselme', titre:'La Grosse Marie sonne', t:'Vous tirez la corde ensemble : DONG… DONG… Anselme ferme les yeux et compte les coups. Sa clé pend à sa ceinture…', code:'info:cle_clou'},
-      echec:{bouton:'🏠 Qui m\'appelle ?', qui:'tim', titre:'Tim, depuis les toits', t:'« Psst, Barde ! Moustache vient de filer dans le vieux puits, entre les barreaux ! »', code:'info:vieux_puits'},
+      /* (17 novembre, le nouveau fil, la nuit) raté : le Barde demande à Tim, perché sur les toits, s'il connaît un autre passage. Tim montre
+         le sentier du vieux puits : son code le trace sur le tableau des chemins secrets du Pisteur (E.chemins, plus bas). */
+      echec:{bouton:'🙋 « Tim ! Tu connais un autre passage ? »', qui:'tim', titre:'Tim, depuis les toits', t:'« Un autre passage ? Regarde, là-bas ! Moustache vient de filer par un petit sentier, jusqu\'au vieux puits… Il s\'est glissé entre les barreaux ! »', code:'info:vieux_puits'},
       resume:{ok:'Tu as aidé Anselme à sonner la Grosse Marie. Sa clé pendait à sa ceinture…', rate:'Anselme est monté sonner tout seul, sa clé à la ceinture.'}},
     /* LE MAIRE INQUIET, À LA FÊTE (Romain, 14 novembre, 10 h 29, Bible §13.36 : « j'aimerais bien qu'on remette à la fin le maire inquiet,
        qui demande au Barde où sont ses amis »).
@@ -621,7 +623,7 @@ E[3] = {
       t:'Le Barde aide Anselme à sonner la Grosse Marie. DONG… DONG… Anselme ferme les yeux et compte les coups. Sa clé pend à sa ceinture…',
       dire:'C\'est le moment de la lui prendre ! Donne ce code au Pisteur.'},
     vieux_puits:{nom:'Le vieux puits', ic:'🕳️', pour:'pisteur', de:'barde',
-      t:'Tim l\'a vu depuis les toits : Moustache vient de filer dans le vieux puits, entre les barreaux de la grille !',
+      t:'Tim l\'a vu depuis les toits : Moustache a filé par un petit sentier, jusqu\'au vieux puits, et il s\'est glissé entre les barreaux de la grille ! Ce sentier est maintenant sur ton tableau des chemins secrets.',
       dire:'Le Pisteur doit y aller : donne-lui ce code.'},
     /* (étape 2, les grands dialogues du Barde) */
     /* (13 novembre) il remplace « La copie de la lettre » : le Barde n'a pas eu la lettre → le Pisteur va la chercher */
@@ -690,6 +692,14 @@ E[3] = {
      L'Alchimiste ajoutera ses cueillettes à ces lieux (étape 4). Un seul essai par mini-jeu (essais.js) ; un filet (ouvrePartiel)
      seulement pour ce qui est indispensable. Niveaux (rang de l'enquête 3 + mjNiveau, puis la courbe
      enfant / adulte, mj-core.js) : la clé d'Anselme, rang 7 (enfant 9, adulte 8) ; les traces, rang 3 (plus bas : lieux.L2). */
+  /* LE SENTIER DE MOUSTACHE (17 novembre, le nouveau fil, la nuit : « Tim montre le vieux puits, qui s'affiche sur le tableau des chemins
+     secrets du Pisteur »). Un chemin secret en surface, comme le chemin des bûcherons de l'enquête 2 (carte-jeu.js, E.chemins) : le code
+     de Tim, tapé par le Pisteur, l'emmène à son tableau, où le sentier se trace ; le toucher l'emmène au vieux puits. Il part de derrière
+     la taverne, longe le bois à l'ouest du village, et arrive au puits (Carte.LIEUX.puits, 112 × 345) par le sud. */
+  chemins:[
+    {id:'moustache', nom:'Le sentier de Moustache', ic:'🐈', code:'info:vieux_puits', vers:'puits', etiquette:[232, 560],
+      pts:[[262,702],[214,640],[166,566],[128,486],[110,410],[112,372]]}
+  ],
   lieux:{
     /* LES TRACES DE MOUSTACHE (Romain, 13 novembre : « ce mini-jeu est à refaire […] tu le fais démarrer depuis chez Odette, pas sur la
        place » ; « le Pisteur au centre de l'image, la caméra le suit ; il doit trouver les bonnes traces et aller jusqu'à l'église. S'il

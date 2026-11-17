@@ -364,7 +364,7 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
 
 - **Après un mauvais choix** : « Bon, je monte sonner, moi. » (et c'est fini)
 - **Réussi** : bouton « 🔔 Monter avec Anselme » → « La Grosse Marie sonne » : Vous tirez la corde ensemble : DONG… DONG… Anselme ferme les yeux et compte les coups. Sa clé pend à sa ceinture… → code « La Grosse Marie sonne » (pour pisteur)
-- **Raté** : bouton « 🏠 Qui m'appelle ? » → « Tim, depuis les toits » : « Psst, Barde ! Moustache vient de filer dans le vieux puits, entre les barreaux ! » → code « Le vieux puits » (pour pisteur)
+- **Raté** : bouton « 🙋 « Tim ! Tu connais un autre passage ? » » → « Tim, depuis les toits » : « Un autre passage ? Regarde, là-bas ! Moustache vient de filer par un petit sentier, jusqu'au vieux puits… Il s'est glissé entre les barreaux ! » → code « Le vieux puits » (pour pisteur)
 - Dans le Carnet (ok) : Tu as aidé Anselme à sonner la Grosse Marie. Sa clé pendait à sa ceinture…
 - Dans le Carnet (rate) : Anselme est monté sonner tout seul, sa clé à la ceinture.
 
