@@ -5784,11 +5784,15 @@ function sousBoutons(V, x, y){
   var sx = (x - V.vb.x0) * V.k - V.pan.x, sy = (y - V.vb.y0) * V.k - V.pan.y;
   return sy > V.vh - 104 && (sx < 236 || sx > V.vw - 96);
 }
-/* Assis là, serait-il caché derrière le chaudron, l'établi ou un grand meuble — ou sous les boutons ? (on ne choisit pas ces places-là) */
+/* Les cartons pas encore ouverts de la pièce : leurs boîtes [x0, y0, x1, y1]. Ils sont posés tout devant : ils cachent ce qui est derrière eux. */
+function boitesCartons(V){
+  return cartonsIci(V).map(function(k, i){ var tk = CARTON_TAILLE[k.t] || CARTON_TAILLE.carton, pk = POS_CARTONS[i % POS_CARTONS.length]; return [pk[0] - tk[0] / 2, pk[1] - tk[1], pk[0] + tk[0] / 2, pk[1]]; });
+}
+/* Assis là, serait-il caché derrière le chaudron, l'établi, un grand meuble ou un carton — ou sous les boutons ? (on ne choisit pas ces places-là) */
 function chatCache(V, x, y){
   if(sousBoutons(V, x, y)) return true;
   var s = echelleSol(y), cx0 = x - 45 * s, cx1 = x + 45 * s, cy0 = y - 80 * s, aire = (cx1 - cx0) * (y - cy0);
-  var bx = [];
+  var bx = boitesCartons(V).filter(function(b){ return b[3] > y; });
   ici(V).forEach(function(o){
     if(o.sur || o.t === 'chat' || o.t === 'tapis') return;
     var c = catDe(o);
@@ -8529,9 +8533,10 @@ function placeLibre(V, l, dl, h, ev){
     if(ev && Math.abs(x - ev.x) < ev.r && y < ev.y + 30 && y > ev.y - ev.r * 1.3) return true;
     var s = echelleSol(y), bx = [x - dl * s, y - h * s, x + dl * s, y], aire = (bx[2] - bx[0]) * (bx[3] - bx[1]);
     /* (les cartons pas encore ouverts cachent aussi : ils sont tout devant — vu avec les colis du parc à chat, sur un téléphone) */
-    if(cartonsIci(V).some(function(k, i){
-      var tk = CARTON_TAILLE[k.t] || CARTON_TAILLE.carton, pk = POS_CARTONS[i % POS_CARTONS.length], sk = echelleSol(Math.min(pk[1], SOL_MAX));
-      return pk[1] > y - 6 && Math.abs(pk[0] - x) < tk[0] / 2 * sk + dl * s && y > pk[1] - tk[1] * sk - 8;
+    if(boitesCartons(V).some(function(b){
+      if(b[3] <= y) return false;
+      var w = Math.min(bx[2], b[2]) - Math.max(bx[0], b[0]), hh = Math.min(bx[3], b[3]) - Math.max(bx[1], b[1]);
+      return w > 0 && hh > 0 && w * hh > aire * 0.06;
     })) return true;
     return ici(V).some(function(o){
       if(o.sur || o.t === 'chat' || o.t === 'tapis' || o.cote) return false;
