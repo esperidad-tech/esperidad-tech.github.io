@@ -117,7 +117,7 @@ with sync_playwright() as p:
     nuit_sage(pg)
     pg.evaluate("() => { M.UI.modal = null; M.A.accuser(); }"); pg.wait_for_timeout(250)
     t = texte(pg)
-    verifier('Pas encore' in t and 'homme en cape' in t and pg.locator('#voile [data-act=acc-choix]').count() == 0 and not sans_son(pg), f'sans « Léo a parlé », le Sage ne peut pas accuser : « Pas encore… » (avec son 🔊) ({t[:60]})')
+    verifier('Pas encore' in t and 'mystère' in t and 'homme en cape' not in t and pg.locator('#voile [data-act=acc-choix]').count() == 0 and not sans_son(pg), f'sans « Léo a parlé », le Sage ne peut pas accuser : « Pas encore… » (avec son 🔊) ({t[:60]})')
     fermer(pg)
     t = code(pg, 'info:leo_battu', True)
     verifier('Léo a parlé' in t and 'apprenti du meunier' in t and 'le maire qui a tout préparé' in t and 'ville entière' in t and 'Place aux accusations' in t and not sans_son(pg), f'le Sage reçoit « Léo a parlé » : ce que Léo a dit, « Place aux accusations ! » ({t[:50]})')

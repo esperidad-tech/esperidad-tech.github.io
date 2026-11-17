@@ -1316,8 +1316,9 @@ E[3] = {
        cueillir » ; « je ne veux pas qu'il parle de donjon »). Une planche par plante : où elle vit pour de vrai, UN INDICE (plus l'endroit précis
        depuis 15 h 37 : « il faut que ça soit un jeu de recherche », Bible §13.28), le moment. Tout vient de D.PLANTES (donnees.js) ; la page est
        dessinée par cueillette.js (M.herbierHTML). Plus de code : le Sage lit à voix haute, l'Alchimiste cherche sur sa carte. */
-    {id:'herbier', titre:'L\'herbier des Fondateurs', ic:'🌿', type:'herbier', visibleSi:[{code:'obj:herbier'}, {moment:'nuit'}],
-      t:'Sept plantes séchées, très anciennes. Sous chacune, les Fondateurs ont laissé un indice, et le moment de la cueillir. Lis-les à voix haute à l\'Alchimiste : à vous de deviner où chercher !'},
+    /* (17 novembre) c'est « le vieil herbier » qu'Iris prête au Barde (plus « l'herbier des Fondateurs », qui était là dès le matin) */
+    {id:'herbier', titre:'Le vieil herbier', ic:'🌿', type:'herbier', visibleSi:[{code:'obj:herbier'}, {moment:'nuit'}],
+      t:'Le vieil herbier d\'Iris : sept plantes séchées, très anciennes. Sous chacune, quelqu\'un a laissé un indice, et le moment de la cueillir. Lis-les à voix haute à l\'Alchimiste : à vous de deviner où chercher !'},
     /* (13 novembre) la potion de vérité se prépare encore à l'enquête 3 : sa recette secrète, à dicter à l'Alchimiste s'il ne l'a pas déjà
        dans son grimoire (comme à l'enquête 2) */
     {id:'recettes', titre:'Les recettes', ic:'🧪',

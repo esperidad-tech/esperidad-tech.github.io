@@ -153,7 +153,8 @@ with sync_playwright() as p:
     mi = pg.evaluate("() => M.etapesMission().map(function(m){ return m.t; })")
     verifier(any('sept plantes' in t and 'herbier du Sage' in t for t in mi) and any('Anselme' in t and 'brume' in t and 'peut-être' in t for t in mi), 'ses missions : les sept plantes (l\'herbier du Sage), et « Anselme pourra peut-être t\'aider » pour la brume')
     tc = carnet(pg)
-    verifier('sept plantes' in tc and 'Rapporte de la mélisse' not in tc, f'la mission de la tisane d\'Anselme n\'est pas encore dans le Carnet (elle arrive après Bertille) ({tc[:60]})')
+    # (17 novembre, étape 3) le matin de l'Alchimiste est léger : ses missions des plantes n'arrivent que l'après-midi (Anselme dort le matin)
+    verifier('sept plantes' not in tc and 'Rapporte de la mélisse' not in tc, f'le matin : ni les sept plantes, ni la tisane d\'Anselme dans le Carnet (elles arrivent l\'après-midi) ({tc[:60]})')
     zoomer(pg)
     # L'ENDROIT À TOUCHER EST EXACTEMENT LE ROND QUI S'AFFICHE (Romain, 15 h 37) : pas plus grand, au même endroit
     for pid in ronds(pg):
@@ -197,7 +198,16 @@ with sync_playwright() as p:
     print('— Bertille : la brume recule, au nord et à l\'ouest')
     pg.evaluate("() => { M.UI.modal = null; M.render(); M.A.lieu({dataset:{id:'clocher'}, closest:function(){ return null; }}); }"); pg.wait_for_timeout(300)
     pts = pg.evaluate("() => [].map.call(document.querySelectorAll('#voile [data-act=point]'), function(b){ return b.dataset.id; })")
-    verifier(pts == ['bertille'], f'au clocher : monter voir Anselme (et pas encore de mélisse à lui porter) ({pts})')
+    verifier(pts == ['endormi'], f'le matin, au clocher : Anselme dort (un écriteau) ({pts})')
+    pg.locator('#voile [data-act=point][data-id=endormi]').click(); pg.wait_for_timeout(400)
+    verifier('REVENEZ CET APRÈS-MIDI' in texte(pg) and pg.evaluate("() => M.brumeLevee().length") == 0, 'l\'écriteau : « SONNEUR ENDORMI. REVENEZ CET APRÈS-MIDI. » ; la brume ne bouge pas')
+    fermer(pg)
+    # l'après-midi : Anselme est réveillé
+    moment(pg, 1)
+    verifier('sept plantes' in carnet(pg), 'l\'après-midi : la mission des sept plantes arrive dans le Carnet')
+    pg.evaluate("() => { M.UI.modal = null; M.render(); M.A.lieu({dataset:{id:'clocher'}, closest:function(){ return null; }}); }"); pg.wait_for_timeout(300)
+    pts = pg.evaluate("() => [].map.call(document.querySelectorAll('#voile [data-act=point]'), function(b){ return b.dataset.id; })")
+    verifier(pts == ['bertille'], f'l\'après-midi, au clocher : monter voir Anselme (et pas encore de mélisse à lui porter) ({pts})')
     pg.locator('#voile [data-act=point][data-id=bertille]').click(); pg.wait_for_timeout(400)
     t = texte(pg)
     verifier('Bertille' in t and 'DING' in t and 'tisane de mélisse' in t and 'derrière la brume' in t and pg.locator('#voile .b-lire').count() >= 1, f'la scène d\'Anselme (il veut une tisane de mélisse, qui ne pousse plus que derrière la brume), avec son 🔊 ({t[:90]})')
@@ -280,15 +290,18 @@ with sync_playwright() as p:
     # ======================================================================== le Barde : dès le matin, Anselme fait appeler l'Alchimiste
     print('— Le Barde : Anselme fait appeler l\'Alchimiste')
     bd = debut(b, 'Barde', 'barde')
-    bd.evaluate("() => { M.UI.modal = null; M.render(); M.A.lieu({dataset:{id:'clocher'}, closest:function(){ return null; }}); }"); bd.wait_for_timeout(300)
-    t = texte(bd)
-    verifier('VA ME CHERCHER L\'ALCHIMISTE' in t and 'SERVICE' in t, f'le matin, au clocher : « Va me chercher l\'Alchimiste : j\'ai un service à lui demander ! » ({t[:120]})')
+    bd.evaluate("() => { M.UI.modal = null; M.P().moment = 1; M.sauver(); M.render(); M.A.lieu({dataset:{id:'clocher'}, closest:function(){ return null; }}); }"); bd.wait_for_timeout(300)
+    bd.locator('#voile [data-act=parler][data-id=anselme]').click(); bd.wait_for_timeout(300)
+    t = bd.evaluate("() => (M.UI.bd && M.UI.bd.t) || ''")   # (le salut s'écrit lettre par lettre : on lit la phrase entière)
+    verifier('VA ME CHERCHER L\'ALCHIMISTE' in t and 'SERVICE' in t, f'l\'après-midi, au clocher : « Va me chercher l\'Alchimiste : j\'ai un service à lui demander ! » ({t[:120]})')
+    bd.evaluate("() => { M.UI.modal = null; M.P().moment = 0; M.sauver(); M.render(); }"); bd.wait_for_timeout(200); carte(bd)
     verifier(ronds(bd) == [], 'le Barde : aucun endroit caché sur sa carte')
     # ======================================================================== le Sage : l'herbier
-    print('— Le Sage : l\'herbier des Fondateurs')
+    print('— Le Sage : le vieil herbier')
     sg = debut(b, 'Sage', 'sage')
     verifier(ronds(sg) == [], 'le Sage : aucun endroit caché sur sa carte')
-    sg.evaluate("() => { M.P().onglet = 'role'; M.UI.modal = null; M.render(); M.livreAller('herbier', true); }"); sg.wait_for_timeout(500)
+    # (17 novembre, étape 3) l'herbier n'arrive dans le Grand Livre qu'avec le code du Barde (Iris le prête)
+    sg.evaluate("() => { M.P().recus['obj:herbier'] = true; M.sauver(); M.P().onglet = 'role'; M.UI.modal = null; M.render(); M.livreAller('herbier', true); }"); sg.wait_for_timeout(500)
     h = sg.evaluate("""() => { var u = document.querySelector('#livre-ici .lv-page.on .lv-herbier'); if(!u) return null;
       return {n:u.children.length, plantes:[].map.call(u.children, function(li){ return li.dataset.plante; }), dessins:u.querySelectorAll('.lv-herb-planche svg').length,
         lire:u.querySelectorAll('.b-lire').length, ou:u.querySelectorAll('.lv-herb-ou').length, quand:u.querySelectorAll('.lv-herb-quand').length, t:u.innerText.replace(/\\s+/g, ' '),
