@@ -345,10 +345,12 @@ with sync_playwright() as p:
         if d is None: print('   (elle n\'est pas entrée dans la baignoire :', classes(pg, cid), chat(pg, cid), ')', flush=True)
         voir(pg, cid); pg.wait_for_timeout(600)
         a = point(pg, cid, 'h'); bpt = point(pg, cid, 's'); levee = False
+        print('   (sous le doigt, pour frotter :', pg.evaluate(f"() => {{ var e = document.elementFromPoint({a[0]}, {a[1]}); return e ? ((e.closest('[data-obj]') || {{}}).className || e.className || e.tagName) : null; }}"), [round(v) for v in a], ')', flush=True)
         pg.mouse.move(*a); pg.mouse.down()
         for i in range(44):
             pg.mouse.move(*(bpt if i % 2 == 0 else a), steps=4); pg.wait_for_timeout(60)
             if 'at-leve' in classes(pg, cid) or chat(pg, cid)['tenu']: levee = True
+            if i == 6: shot(pg, 'bain')
         pg.mouse.up(); pg.wait_for_timeout(2400)
         pr = pg.evaluate(f"() => {CHAT}.b.propre")
         verifier(not levee, 'le bain : on frotte encore quand elle bondit dehors — elle n\'est pas rattrapée en plein saut')
