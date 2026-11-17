@@ -2854,11 +2854,17 @@ html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc
 .mjs-roue .r-ext{fill:#f6e8c6;stroke:#8a6a3a;stroke-width:1.5}
 .mjs-roue .r-clair{font-family:var(--f-titre);font-size:15px;fill:var(--mjs-encre);text-anchor:middle;dominant-baseline:central}
 .mjs-roue .r-trait{stroke:rgba(138,106,58,.55);stroke-width:1}
-.mjs-roue-int{transition:transform .3s cubic-bezier(.3,1.2,.6,1)}
+/* (17 novembre) la roue tourne par l'attribut « transform » du dessin (mj-sage-codes.js, brancherRoue) : plus de transformation CSS ici */
 .mjs-roue .r-int{fill:#2c3d74;stroke:#c9a75a;stroke-width:2}
 .mjs-roue .r-trait-int{stroke:rgba(201,167,90,.4);stroke-width:1}
 .mjs-roue .r-chif{font-family:"Andika","Trebuchet MS",sans-serif;font-weight:700;font-size:14.5px;fill:#bff9ff;text-anchor:middle;dominant-baseline:central;
-  transform-box:fill-box;transform-origin:center;transition:transform .3s cubic-bezier(.3,1.2,.6,1)}
+  }
+/* les deux lettres de l'indice : un rond jaune sur chaque anneau, à mettre face à face ; calée : ils passent au vert */
+.mjs-roue .r-ind{fill:#ffd23f;stroke:#7a5200;stroke-width:1.6}
+.mjs-roue .r-ind-int{fill:#ffd23f}
+.mjs-roue .r-ind-int + .r-chif{fill:#2a1a00}
+.mjs-roue.calee .r-ind{fill:#7be08a;stroke:#1d6b2c}
+.mjs-roue.calee .r-int{stroke:#7be08a;stroke-width:3}
 .mjs-roue .r-chif.eff{fill:rgba(191,249,255,.35)}
 .mjs-roue .r-moyeu{fill:#1a2550;stroke:#c9a75a;stroke-width:2}
 .mjs-roue .r-centre{font-size:24px;text-anchor:middle;dominant-baseline:central}
@@ -22327,9 +22333,14 @@ function cleRoue(P){
   var st = 360 / 26, s = '<div class="mjs-roue"><button type="button" class="mjs-rbtn" data-r="-1" aria-label="Tourner vers la gauche">⟲</button>' +
     '<svg class="mjs-roue-svg" viewBox="-112 -112 224 224" role="img" aria-label="La roue de César">' +
     '<circle r="110" class="r-bord"/><circle r="106" class="r-ext"/>';
+  /* (Romain, 17 novembre, 7 h 30 : « je crois qu'il y a un bug sur la roue de César ») Sur un téléphone tenu droit, rien ne disait quelle
+     lettre va dedans et laquelle va dehors : une fois sur deux, on calait la roue à l'envers, et le message ne voulait plus rien dire.
+     Les deux lettres de l'indice portent maintenant un rond jaune, une sur chaque anneau : on les met face à face (r-ind). */
+  var iClair = ABC.indexOf(P.indice), iCode = (iClair + P.k) % 26;
   var i, a, a2;
   for(i = 0; i < 26; i++){
     a = (i * st - 90) * Math.PI / 180; a2 = ((i + .5) * st - 90) * Math.PI / 180;
+    if(i === iClair) s += '<circle class="r-ind r-ind-ext" cx="' + f1(Math.cos(a) * 92) + '" cy="' + f1(Math.sin(a) * 92) + '" r="11.5"/>';
     s += '<text class="r-clair" x="' + f1(Math.cos(a) * 92) + '" y="' + f1(Math.sin(a) * 92) + '">' + ABC[i] + '</text>';
     s += '<path class="r-trait" d="M' + f1(Math.cos(a2) * 79) + ' ' + f1(Math.sin(a2) * 79) + 'L' + f1(Math.cos(a2) * 105) + ' ' + f1(Math.sin(a2) * 105) + '"/>';
   }
@@ -22337,22 +22348,46 @@ function cleRoue(P){
   for(i = 0; i < 26; i++){
     a = (i * st - 90) * Math.PI / 180; a2 = ((i + .5) * st - 90) * Math.PI / 180;
     s += '<path class="r-trait-int" d="M' + f1(Math.cos(a2) * 48) + ' ' + f1(Math.sin(a2) * 48) + 'L' + f1(Math.cos(a2) * 77) + ' ' + f1(Math.sin(a2) * 77) + '"/>';
+    if(i === iCode) s += '<circle class="r-ind r-ind-int" cx="' + f1(Math.cos(a) * 64) + '" cy="' + f1(Math.sin(a) * 64) + '" r="11"/>';
     s += '<text class="r-chif' + (P.effRoue[i] ? ' eff' : '') + '" x="' + f1(Math.cos(a) * 64) + '" y="' + f1(Math.sin(a) * 64) + '">' + (P.effRoue[i] ? '·' : ABC[i]) + '</text>';
   }
   s += '</g><circle r="46" class="r-moyeu"/><text class="r-centre">✋</text></svg>' +
     '<button type="button" class="mjs-rbtn" data-r="1" aria-label="Tourner vers la droite">⟳</button></div>';
   var ch = ABC[(ABC.indexOf(P.indice) + P.k) % 26];
-  return '<p class="mjs-indice">🔎 Indice : le <b>' + P.indice + '</b> s\'écrit <b>' + ch + '</b>.<span class="mjs-indice-plus"> Tourne la roue pour mettre le <b>' + ch + '</b> du dedans sous le <b>' + P.indice + '</b> du dehors.</span></p>' + s;
+  return '<p class="mjs-indice">🔎 Indice : le <b>' + P.indice + '</b> s\'écrit <b>' + ch + '</b>. Tourne la roue : mets les deux ronds jaunes face à face.</p>' + s;
 }
 function brancherRoue(pan, P){
   var st = 360 / 26, g = pan.querySelector('.mjs-roue-int'), svg = pan.querySelector('.mjs-roue-svg');
   var txts = Array.prototype.slice.call(g.querySelectorAll('.r-chif'));
   var depart = (P.k + U.randInt(4, 21)) % 26, angle = -depart * st, drag = null;
+  /* (17 novembre) la roue tourne par l'attribut « transform » du dessin, chaque lettre autour de son propre centre : le même résultat dans
+     tous les navigateurs (avant : des transformations CSS avec « transform-box », fragiles sur les lettres d'un dessin dans Safari).
+     Le glissement vers le cran se fait à la main (requestAnimationFrame), plus par une transition CSS. */
+  var centres = txts.map(function(t){ return t.getAttribute('x') + ' ' + t.getAttribute('y'); }), montre = angle, cadre = 0, boite = pan.querySelector('.mjs-roue');
+  var calme = false; try{ calme = window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(er){}
+  function dessiner(a){
+    montre = a;
+    g.setAttribute('transform', 'rotate(' + f2(a) + ')');
+    txts.forEach(function(t, i){ t.setAttribute('transform', 'rotate(' + f2(-a) + ' ' + centres[i] + ')'); });
+  }
   function poser(a, anim){
     angle = a;
-    g.style.transition = anim ? '' : 'none'; g.style.transform = 'rotate(' + f2(a) + 'deg)';
-    txts.forEach(function(t){ t.style.transition = anim ? '' : 'none'; t.style.transform = 'rotate(' + f2(-a) + 'deg)'; });
-    pan.dataset.rot = ((Math.round(-a / st) % 26) + 26) % 26;
+    var rot = ((Math.round(-a / st) % 26) + 26) % 26;
+    pan.dataset.rot = rot;
+    /* calée sur l'indice (les deux ronds jaunes face à face) : ils passent au vert, le cadenas du milieu s'ouvre */
+    var calee = rot === P.k && Math.abs(a / st - Math.round(a / st)) < .01, avant = boite.classList.contains('calee');
+    boite.classList.toggle('calee', calee);
+    var c = boite.querySelector('.r-centre'); if(c) c.textContent = calee ? '🔓' : '✋';
+    if(calee && !avant && anim) U.son('ok');
+    if(cadre){ cancelAnimationFrame(cadre); cadre = 0; }
+    if(!anim || calme || !window.requestAnimationFrame){ dessiner(a); return; }
+    var de = montre, t0 = 0;
+    cadre = requestAnimationFrame(function pas(t){
+      if(!t0) t0 = t;
+      var k = Math.min(1, (t - t0) / 240), e = 1 - Math.pow(1 - k, 3);
+      dessiner(de + (a - de) * e);
+      cadre = k < 1 ? requestAnimationFrame(pas) : 0;
+    });
   }
   function caler(){ poser(Math.round(angle / st) * st, true); }
   poser(angle, false);
