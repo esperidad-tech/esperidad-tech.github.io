@@ -4029,6 +4029,35 @@ Romain, à la voix, avec un « fais ces modifications et mets-les en ligne ». A
 
 **La mise en ligne.** Avant : toute la suite sur le jeu fusionné avec le travail de la conversation de Mimi (`rapide.sh`, `verif.js 3`, `e3-donjon-codes.js`, `e3-secret.py`, `e3-sage.py`, `e3-pisteur.py`, `e3-barde.py`, `e3-grands.py`, `e3-descente.py`, `e3-fete-carte.py` sur tablette et sur iPhone, `partie3.py` — 132 vérifications —, `partie2.py`) ; les codes comparés au jeu en ligne : enquête 1, 57, enquête 2, 69, aucun changé ; enquête 3, 534 → 536, aucun changé, deux nouveaux (`obj:papier_odette`, `obj:vieux_plan`), **gelés** (`tools/geler-e3.py`). **Une faute** : la première mise en ligne (0 h 28, 7c7f2e6) était construite sur des sources tirées une heure plus tôt ; elle a retiré dix minutes l'album de Mimi, mis en ligne entre-temps par l'autre conversation. Réparé à 0 h 38 (083b7f0). **`deploy/deployer.sh` refuse maintenant de mettre en ligne si GitHub a des commits de sources que le dossier n'a pas.**
 
+### 13.58 LE NOUVEAU FIL, ÉTAPE 2 : LES CODES DITS À VOIX HAUTE, ET LE SAGE QUI COMPARE LES ÉCRITURES (go de Romain du 16 novembre, 22 h 40, pour tout le nouveau fil) — @@ETAT2@@
+
+**La règle de Romain** (16 novembre, 22 h 14) : « Concrètement, le code, ça sert à donner un objet. Ou alors activer un truc sur l'appareil de l'autre. » Tout le reste se dit à voix haute. Et : « c'est le Sage qui compare les écritures, avec une petite interface d'analyse dans le Grand Livre, qui donne un code au Barde ».
+
+**Six codes ne sont plus donnés par personne** (ils restent dans la table, `reserve:true` : leurs symboles ne resserviront jamais à autre chose) :
+- « La lettre n'est pas passée par la poste » (Victor) et « Odette… sans sa canne » (Tim démasqué) : le Barde les dit ; la note de son Carnet finit par « À dire au Sage ! ».
+- « Des pieds d'enfant » (le jardin d'Iris) : le Pisteur le dit (« 3 carreaux. Des pieds d'enfant ! Dis-le à tes amis. »).
+- « Les écritures du village » (Sage → Alchimiste), « Deux écritures » et « La même encre » (Alchimiste → Barde et Sage) : voir plus bas.
+
+**Un code neuf, le seul de cette étape : « L'écriture de Mélusine »** (`info:cest_melusine`, du Sage au Barde). Il débloque quelque chose chez le Barde : la question « C'est vous qui avez écrit la lettre. », chez Mélusine (elle ment, puis avoue) et chez Margot (elle dit vrai : la réplique validée le 13 novembre est gardée).
+
+**Ce qui change, rôle par rôle.**
+- **Le Barde.** Victor, son idée : « Il faudrait la comparer avec un papier écrit de sa main. Mais la lettre, le maire la garde dans son bureau… et la mairie n'ouvre que cet après-midi. » Iris : « Cette nuit, on m'a volé un flacon de mon encre ! Mon jardin est plein de traces : envoie-moi ton ami le Pisteur, il saura les lire. » (plus de « noix de galle » dans sa bouche : c'est le labo qui le dit). Le maire, le matin : « La mairie est fermée : je prépare ma fête ! Revenez cet après-midi. »
+- **Le Pisteur.** La piste du jardin d'Iris ne finit plus rue des Lanternes (Romain : « ça grille Mélusine », elle y habite) : elle se perd **sur la place des Lanternes**, piétinée par tout le village.
+- **Le Sage.** **Le Livre d'or n'est plus dans son Grand Livre le matin** (« rien n'arrive par magie ») : **le maire le lui confie quand il rend le tableau**, l'après-midi (ou quand il passe le voir sans tableau). Avec le Livre d'or ET la lettre (le code du Barde), une page neuve, **« Comparer les écritures »** (`ecritures.js`, `M.quiEcritHTML`) : la lettre en haut (et, s'il a le carnet, la vraie écriture d'Odette à côté), les douze mots du village dessous, chacun un bouton. Il désigne une main ; « Tu en es sûr ? » ; **deux essais** (son propre compteur : les mini-jeux de l'enquête 3 n'en ont qu'un, mais on compare ici de petites lettres sur un petit écran). **Rien à l'écran ne dit quelles lettres regarder.** Mélusine : « La même main ! », et le code pour le Barde. Margot : « Son écriture ressemble beaucoup… mais ce n'est pas elle. » Un autre : « ces lettres-là ne se ressemblent pas ». Deux ratés : la page se ferme (« Il faudra trouver autrement… ») — reste le filet de la fête, la nuit, où Mélusine craque.
+- **L'Alchimiste.** Au labo, la lettre ne parle plus que par **son encre** (l'eau chaude, la bandelette : la noix de galle) ; plus de Livre d'or sur la paillasse, plus d'écritures à comparer sous la loupe, **plus aucun code**. Avec le flacon d'Iris : « exactement comme l'encre d'Iris. C'est la même ! […] Dis-le à tes amis ! »
+
+**Qui prouve quoi, maintenant** (`E.faits`) : QUI — le Sage, en comparant (il désigne Mélusine) ; ou l'aveu de Mélusine (le Barde, avec le code du Sage ; ou le filet de la fête). Les empreintes (3 carreaux : Tim, Mélusine, Odette ; Margot : 4) départagent Mélusine et Margot **avant** de désigner : c'est ce qui évite de gâcher un essai.
+
+**Les raccourcis cherchés.**
+- *Désigner au hasard.* Douze mains, deux essais. Deux se ressemblent : un joueur qui a vu les deux et choisit au hasard a une chance sur deux au premier essai, et trouve forcément au second. C'est voulu : les pieds d'enfant servent à ne pas gâcher le premier.
+- *Accuser Mélusine sans le Sage.* Impossible : sa question n'existe pas sans le code. L'ancien code « Deux écritures » ne l'ouvre plus (vérifié).
+- *Passer par le labo.* Impossible : il ne donne plus ni nom ni code.
+- *Ce qui reste discutable.* Si le Sage rate ses deux essais, le Barde ne peut plus accuser Mélusine l'après-midi : l'aveu n'arrive que la nuit, à la fête. L'enquête se résout quand même (vérifié : « un seul raté à la fois, l'enquête se résout toujours »).
+
+**Décisions de Claude, à faire valider par Romain** : toutes les phrases nouvelles (Victor, Iris, le maire, les deux phrases du maire qui confie le Livre d'or, les textes de la page) ; deux essais ; le nom du code ; le Barde peut encore accuser Margot avec ce code ; **Mélusine ne dit pas encore « Revenez me voir cette nuit »** (ce sera avec les tenues, étape 4) ; **Anselme n'est pas encore endormi le matin** (étape 3, avec Bertille l'après-midi).
+
+**Les robots.** `tools/e3-ecritures.py` (neuf : le Sage sur téléphone et sur tablette, le Barde). `e3-alchimiste.py`, `e3-barde.py`, `e3-sage.py`, `e3-pisteur.py`, `jardin.py`, `partie3.py`, `verif-e3.js` mis à jour. **`E3-dialogues-et-trame.md` régénéré.** **Jamais essayé sur une vraie tablette.**
+
 ## 14. La grande carte et la brume (chantier ouvert le 12 novembre) — DANS LE JEU ET EN LIGNE DEPUIS LE 12 NOVEMBRE À 12 H 06 (§14.5) ; depuis l'après-midi, deux zones se lèvent dans l'enquête 3 pour l'Alchimiste (§14.7)
 
 **À lire d'abord : le §14.5** (ce qui est dans le jeu), **puis le §14.7** (les deux premières zones levées). Les §14.1 à §14.4 racontent le modèle du matin ; ils restent vrais pour les lieux, les zones et les questions à décider.
