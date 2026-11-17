@@ -338,6 +338,9 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .b-note-ajoutee{font-size:.85rem;color:var(--mousse);font-weight:700}
 .b-donne{background:rgba(245,185,69,.1);border:2px dashed var(--or);border-radius:18px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
 .b-code{display:flex;gap:10px;justify-content:center}
+/* un code obligatoire (Romain, 17 novembre : « avec un rond jaune, pour éviter qu'un des quatre oublie ») : l'anneau jaune qui respire */
+.b-code.b-code-oblige{width:fit-content;max-width:100%;margin:8px auto;padding:8px 12px;border-radius:20px;box-shadow:0 0 0 4px rgba(255,211,106,.8), 0 0 18px rgba(255,211,106,.6);animation:b-jaune-pouls 1.3s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.b-code.b-code-oblige{animation:none}}
 .b-sym{display:flex;flex-direction:column;align-items:center;gap:2px;width:76px;padding:10px 4px;border-radius:16px;background:var(--parchemin);color:var(--encre);border:3px solid var(--encre);box-shadow:0 4px 0 var(--encre-2);animation:b-sym-pop .45s cubic-bezier(.2,.9,.3,1.4) both}
 .b-sym span{font-size:2.2rem;line-height:1}
 .b-sym small{font-weight:700;font-size:.75rem}

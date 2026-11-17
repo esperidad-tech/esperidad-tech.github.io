@@ -1352,15 +1352,15 @@ SALLES.puits = function(){ return {nom: 'Le fond du puits', type: 'depart', ambi
     {id: 'corde', type: 'deco', anim: 'balance', amplitude: 1.1, duree: 4600, svg: A.corde(SOL + 4), x: 598, y: -2, w: 24, h: SOL + 4, pivot: [12, 0], z: 3},
     /* le carnet de l'aventurier (Romain, 11 novembre : « un livre à l'entrée du puits ») : posé par terre, bien visible */
     objet({id: 'carnet', nom: 'Un vieux carnet', svg: A.livre('#6b4a2a'), x: 468, y: SOL - 30, w: 60, h: 30, sol: true, lueur: '#ffe8a8', pour: 'sage', code: 'carnet'}),
+    /* la pierre de rune du Sage (Romain, 17 novembre, 7 h 12 : à l'entrée, avec le carnet — le nouveau fil ; elle était dans la galerie
+       effondrée depuis le 11 novembre, cachée parmi les éboulis). Sans elle, le vieux plan ne dit rien : elle se voit, comme le carnet. */
+    objet({id: 'rune', nom: 'Une pierre gravée', svg: A.pierreRune(), x: 716, y: SOL - 31, w: 60, h: 40, sol: true, lueur: '#9ff6ff', pour: 'sage', code: 'rune'}),
     poussiere(530, 40, 170, 250, 8, '#eef4ff'),
     poussiere(700, 30, 220, 300, 3, '#bfe0ff', 'gouttes')
   ]}; };
 SALLES.galerie = function(){ return {nom: 'La galerie effondrée', type: 'cul-de-sac', ambiance: 'des poutres cassées, un éboulis ; des lichens ambrés',
   elements: [
     objet({id: 'bourse', nom: 'Une bourse de pièces', svg: A.bourse(), x: 636, y: SOL - 44, w: 72, h: 58, sol: true, lueur: '#ffd36a', pour: null, effet: 'or'}),
-    /* la pierre de rune du Sage (Romain, 11 novembre : dans la deuxième salle, plus à l'entrée) : une pierre parmi les éboulis,
-       sans lueur ni étoiles — il faut chercher */
-    objet({id: 'rune', nom: 'Une pierre gravée', svg: A.pierreRune(), x: 800, y: SOL - 31, w: 60, h: 40, sol: true, brille: false, discret: true, lueur: '#9ff6ff', pour: 'sage', code: 'rune'}),
     poussiere(640, 40, 170, 280, 7, '#eef4ff')
   ]}; };
 SALLES.aeration = function(){ return {nom: 'Le puits d\'aération', type: 'cul-de-sac', ambiance: 'un rai de lumière verte et dorée, des plantes qui poussent',

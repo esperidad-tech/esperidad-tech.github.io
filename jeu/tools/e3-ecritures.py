@@ -1,6 +1,6 @@
 """Enquête 3 : LE SAGE COMPARE LES ÉCRITURES (17 novembre ; Bible §13.58) — Playwright.
 Le Livre d'or n'est plus dans le Grand Livre le matin : le maire le confie au Sage quand il rend le tableau. « Comparer les écritures »
-n'existe qu'avec la lettre ET le Livre d'or : la lettre en haut, douze mots à toucher, « Tu en es sûr ? », deux essais. Mélusine : le code
+n'existe qu'avec la lettre ET le Livre d'or : la lettre en haut, douze mots à toucher, « Tu en es sûr ? », autant d'essais qu'il veut (Romain, 17 novembre). Mélusine : le code
 « L'écriture de Mélusine » pour le Barde, qui ouvre son accusation. Deux ratés : la page se ferme (le filet de la fête reste).
    BRUMEVAL_DIST=<dossier construit> python3 tools/e3-ecritures.py
 (les outils sont ceux de tools/e3-secret.py)"""
@@ -41,21 +41,28 @@ with sync_playwright() as p:
     code(pg, 'obj:lettre')
     verifier('quiecrit' in pages(pg), 'avec la lettre : la page « Comparer les écritures »')
     t = page(pg, 'quiecrit'); shot(pg, 'comparer')
-    verifier(pg.locator('#livre-ici .lv-page.on [data-act=ec-designer]').count() == 12 and 'deux essais' in t and pg.locator('#livre-ici .lv-page.on .ec-compare-l').count() == 1, 'la lettre en haut, douze mots à désigner, « deux essais » (pas de carnet : une seule feuille)')
+    verifier(pg.locator('#livre-ici .lv-page.on [data-act=ec-designer]').count() == 12 and 'essai' not in t and pg.locator('#livre-ici .lv-page.on .ec-compare-l').count() == 1, 'la lettre en haut, douze mots à désigner, et plus un mot sur des essais (pas de carnet : une seule feuille)')
     verifier(not any(x in t for x in ['« M »', '« t »', '« i »', 'pointu', 'vague']), 'rien ne dit quelles lettres regarder')
     t = designer(pg, 'gaspard', oui=False)
-    verifier('Tu en es sûr' in t and 'Gaspard' in t, '« Tu en es sûr ? Gaspard aurait écrit la lettre ? »')
+    verifier('Tu en es sûr' in t and 'Gaspard' in t and 'essai' not in t, '« Tu en es sûr ? Gaspard aurait écrit la lettre ? » (sans parler d\'essais)')
     pg.locator('#voile .btn.second').first.click(); pg.wait_for_timeout(300)
-    verifier(pg.evaluate("() => M.nbEchecs('sage:ecriture')") == 0, '« Je regarde encore » : rien n\'est compté')
+    # (Romain, 17 novembre, 7 h 10) plus d'essais : il se trompe autant qu'il veut, rien ne se ferme
     designer(pg, 'gaspard'); t = texte(pg)
-    verifier('ne se ressemblent pas' in t and 'Il te reste un essai' in t and pg.locator('#voile .b-donne').count() == 0, f'Gaspard : « {t[:90]} »')
+    verifier('ne se ressemblent pas' in t and 'Cherche encore' in t and 'essai' not in t and pg.locator('#voile .b-donne').count() == 0, f'Gaspard : « {t[:90]} »')
     fermer(pg)
-    verifier('dernier essai' in page(pg, 'quiecrit'), 'la page prévient : « C\'est ton dernier essai. »')
     designer(pg, 'margot'); t = texte(pg)
-    verifier('ressemble beaucoup' in t and 'tu ne sais plus' in t and pg.locator('#voile .b-donne').count() == 0, f'Margot : « {t[:110]} »')
+    verifier('ressemble beaucoup' in t and 'Cherche encore' in t and pg.locator('#voile .b-donne').count() == 0, f'Margot : « {t[:110]} »')
     fermer(pg)
-    t = page(pg, 'quiecrit'); shot(pg, 'ferme')
-    verifier(pg.locator('#livre-ici .lv-page.on [data-act=ec-designer]').count() == 0 and 'Il faudra trouver autrement' in t and pg.evaluate("() => !M.P().objets['_info:cest_melusine']"), 'deux ratés : plus rien à toucher, pas de code (reste le filet de la fête)')
+    for q in ['iris', 'victor', 'gaspard', 'margot']:
+        designer(pg, q); fermer(pg)
+    t = page(pg, 'quiecrit'); shot(pg, 'encore')
+    verifier(pg.locator('#livre-ici .lv-page.on [data-act=ec-designer]').count() == 12 and 'trouver autrement' not in t and pg.evaluate("() => M.P().vus['sage:ecriture'] !== 'rate' && !M.P().objets['_info:cest_melusine']"), 'six erreurs : les douze mots sont toujours là, rien ne s\'est fermé')
+    # une partie en cours où la page s'était fermée (deux ratés, avant ce changement) : elle se rouvre
+    pg.evaluate("() => { M.P().vus['sage:ecriture'] = 'rate'; M.sauver(); M.render(); }"); pg.wait_for_timeout(200)
+    t = page(pg, 'quiecrit')
+    verifier(pg.locator('#livre-ici .lv-page.on [data-act=ec-designer]').count() == 12, 'une partie en cours, fermée après deux ratés : la page est rouverte')
+    designer(pg, 'melusine'); t = texte(pg)
+    verifier('la main de Mélusine' in t and pg.evaluate("() => M.P().vus['sage:ecriture'] === 'ok' && !!M.P().objets['_info:cest_melusine']"), 'et Mélusine, enfin : le code pour le Barde')
     pg.context.close()
 
     print('— Le Sage (tablette) : avec le carnet d\'Odette ; il désigne Mélusine')

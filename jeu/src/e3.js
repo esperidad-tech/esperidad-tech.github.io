@@ -673,7 +673,9 @@ E[3] = {
       t:'L\'Alchimiste a comparé l\'encre de la lettre à celle d\'Iris : c\'est la même, une encre noire de noix de galle. La lettre a été écrite avec l\'encre volée chez Iris, cette nuit.',
       dire:'La même encre ? Le Sage doit le savoir : donne-lui ce code.'},
     /* (étape 6) le donjon : la porte aux quatre signes (le code du donjon « Un chat gratte à la porte », porte:odette) */
-    odette_porte:{nom:'Odette est derrière la porte', ic:'🚪', pour:'sage', de:'pisteur', savoir:true,   /* (17 novembre) une chose à savoir : sa page du Grand Livre est retirée */
+    /* (Romain, 17 novembre, 7 h 12 : « on a assez de codes comme ça ») plus personne ne donne ce code : devant la porte, le Pisteur entend
+       la voix d'Odette et le dit à voix haute. Ses symboles restent en réserve. */
+    odette_porte:{nom:'Odette est derrière la porte', ic:'🚪', pour:'sage', de:'pisteur', reserve:true,
       t:'Tout au fond des souterrains, Moustache gratte au bas d\'une grande porte ronde. Tu colles l\'oreille… Une voix étouffée : « Moustache ? Mon gros gris, c\'est toi ? » Odette est là, vivante, derrière la porte !',
       dire:'Un gros chat gris gratte à la porte aux quatre signes : donne ce code au Sage.'},
     /* LÉO, LE BOSS FINAL DU DONJON (13 novembre, Bible §13.33). Deux codes du Pisteur, que le donjon affiche lui-même (descente.js les
@@ -696,6 +698,15 @@ E[3] = {
      secrets du Pisteur »). Un chemin secret en surface, comme le chemin des bûcherons de l'enquête 2 (carte-jeu.js, E.chemins) : le code
      de Tim, tapé par le Pisteur, l'emmène à son tableau, où le sentier se trace ; le toucher l'emmène au vieux puits. Il part de derrière
      la taverne, longe le bois à l'ouest du village, et arrive au puits (Carte.LIEUX.puits, 112 × 345) par le sud. */
+  /* LES PASSAGES OBLIGATOIRES (Romain, 17 novembre, 7 h 10 : « les codes où il n'y a qu'une seule passerelle […] il faut les mettre avec un
+     rond jaune pour éviter qu'un des quatre personnages oublie. […] montre-le explicitement sur la carte, de façon gratuite. C'est valable
+     pour les quatre personnages. »). Ce sont les étapes sans lesquelles personne ne descend : le vérificateur les calcule (tools/verif-e3.js,
+     « les passages obligatoires ») et contrôle que chacune est marquée.
+       · Sur la carte : un point de lieu ou une question du Barde marqués oblige:true → le rond jaune de leur lieu (ou de leur maison),
+         tant que c'est faisable et pas fait (M.obligesCarte, moteur-roles.js ; carte.js).
+       · Les codes : ceux de cette liste ont un anneau jaune partout où ils sont dessinés (M.codeHTML, moteur-ecrans.js).
+     Les sept plantes de l'Alchimiste sont obligatoires aussi, mais leur cachette est l'énigme de l'herbier : pas de rond jaune dessus. */
+  codesObliges:['info:crypte_fermee', 'info:cle_clou', 'info:vieux_puits', 'info:on_descend', 'allure:'],   /* (« allure: » : tous les codes d'allure — celui de l'Alchimiste est aussi son sac de potions) */
   chemins:[
     {id:'moustache', nom:'Le sentier de Moustache', ic:'🐈', code:'info:vieux_puits', vers:'puits', etiquette:[232, 560],
       pts:[[262,702],[214,640],[166,566],[128,486],[110,410],[112,372]]}
@@ -733,7 +744,7 @@ E[3] = {
            voit lui-même (et encore la nuit). Au bout : Moustache cherche Odette à la grille, et des yeux rouges derrière les barreaux —
            ce qui annonce les bêtes (Romain : « rien n'annonce le combat »). Le code, lui, ne change pas d'identité (info:crypte_fermee) :
            il s'appelle maintenant « Odette est sous l'église », et rouvre Iris (l'herbier) et Anselme chez le Barde. */
-        {id:'traces', ic:'🐾', nom:'Les traces de Moustache', moments:['apresmidi', 'nuit'], mj:'pistage', essaisInfinis:true,
+        {oblige:true, id:'traces', ic:'🐾', nom:'Les traces de Moustache', moments:['apresmidi', 'nuit'], mj:'pistage', essaisInfinis:true,
           donne:'info:crypte_fermee',
           avant:'Le bol de lait de midi est renversé, et des pattes blanches filent dehors : les chats d\'Odette sont partis, chacun de son côté ! Suis celles de Moustache… si tu sais les reconnaître.',
           bouton:'🐾 Suivre les traces',
@@ -861,7 +872,7 @@ E[3] = {
         /* (17 novembre) le matin, Anselme dort : rien à faire au clocher avant l'après-midi */
         {id:'endormi', ic:'💤', nom:'Monter voir Anselme', moments:M_,
           t:'Sur la porte du clocher, un écriteau : « SONNEUR ENDORMI. REVENEZ CET APRÈS-MIDI. » Derrière la porte, ça ronfle comme une cloche fêlée.'},
-        {id:'bertille', ic:'🔔', nom:'Monter voir Anselme', moments:AN_, disparait:[{brumeFinie:true}],
+        {oblige:true, id:'bertille', ic:'🔔', nom:'Monter voir Anselme', moments:AN_, disparait:[{brumeFinie:true}],
           t:'« AH, TE VOILÀ ! » Anselme bâille à s\'en décrocher la mâchoire. « J\'ai dormi toute la matinée… et très mal ! Mes cloches me résonnent dans la tête. Il me faudrait une tisane de mélisse… mais la mélisse ne pousse plus que derrière la brume. » Il attrape la plus petite corde. « Bertille est toute menue : elle ne repousse la brume qu\'un petit peu. Ça suffira. Tu m\'en rapportes ? » DING ! DING ! DING ! Par la lucarne, tu vois la brume reculer, au nord et à l\'ouest.',
           note:'Anselme a sonné Bertille, sa plus petite cloche : la brume a reculé un peu, au nord et à l\'ouest du village. En échange, il veut de la mélisse pour sa tisane.'},
         {id:'tisane', ic:'🍵', nom:'Porter la mélisse à Anselme', moments:AN_, or:3, visibleSi:[{vu:'plante:melisse'}], disparait:[{vu:'alchimiste:clocher:tisane'}],
@@ -873,7 +884,7 @@ E[3] = {
         /* (decor 'clocher' : la nef, la sacristie, et tout en haut la Grosse Marie, Anselme et le Barde, la clé au clou — Romain, 21 h 21)
            (12 novembre au soir : dans l'histoire, la clé est maintenant à la ceinture d'Anselme — les textes le disent ; le dessin de la
            dernière pièce, dans mj-cachette.js, montre encore la clé au clou : à reprendre avec le Pisteur) */
-        {id:'cle', ic:'🗝️', nom:'La clé d\'Anselme', moments:['nuit'], mj:'cachette', mjNiveau:4, params:{decor:'clocher'},
+        {oblige:true, id:'cle', ic:'🗝️', nom:'La clé d\'Anselme', moments:['nuit'], mj:'cachette', mjNiveau:4, params:{decor:'clocher'},
           besoin:[{code:'info:cle_clou'}], visibleSi:[{code:'info:cle_clou'}],
           avant:'Les cloches sonnent ! Là-haut, Anselme compte les coups, les yeux fermés. Traverse l\'église et monte tout en haut du clocher sans te faire voir. Un seul essai !',
           bouton:'🫥 Se faufiler',
@@ -885,7 +896,7 @@ E[3] = {
            précisément, il ne peut pas perdre […] sinon on va se retrouver bloqué »). Le même mini-jeu que chez Odette (mj-pistage.js), dans
            son décor « forêt » : on n'y perd jamais (près d'un mauvais chat, il file, et on rebrousse chemin), et on le recommence autant
            qu'on veut. Au bout, la grille du vieux puits apparaît (lieux.puits). La nuit seulement (comme la clé). */
-        {id:'traces_puits', ic:'🐾', nom:'Les traces de Moustache', moments:['nuit'], mj:'pistage', essaisInfinis:true, params:{decor:'foret', moment:'nuit'},
+        {oblige:true, id:'traces_puits', ic:'🐾', nom:'Les traces de Moustache', moments:['nuit'], mj:'pistage', essaisInfinis:true, params:{decor:'foret', moment:'nuit'},
           visibleSi:[{rate:'pisteur:clocher:cle'}], cacheSi:[{vu:'pisteur:clocher:cle'}],
           avant:'Des miaulements, partout dans la nuit ! Moustache a filé vers la forêt… mais ce n\'est pas le seul chat dehors. Suis ses traces, et seulement les siennes.',
           bouton:'🐾 Suivre Moustache',
@@ -898,22 +909,22 @@ E[3] = {
            Chacun des trois gestes donne le code du départ, « On va dans la crypte », pour le Sage et l'Alchimiste (infos.on_descend),
            ET un code pour le Barde (donneAussi ; Romain, 14 novembre, Bible §13.36) : « La grille a hurlé » (tirer, pousser) ou « La
            grille s'ouvre sans bruit » (soulever). Chez le Barde, il fait venir le maire à la fête (grands.amis). */
-        {id:'crypte', ic:'🗝️', nom:'La grille de la crypte', moments:['nuit'], besoin:[{vu:'pisteur:clocher:cle'}], visibleSi:[{vu:'pisteur:clocher:cle'}],
+        {oblige:true, id:'crypte', ic:'🗝️', nom:'La grille de la crypte', moments:['nuit'], besoin:[{vu:'pisteur:clocher:cle'}], visibleSi:[{vu:'pisteur:clocher:cle'}],
           t:'La clé tourne : clac ! La grille est déverrouillée. Elle est lourde, et toute rouillée… Comment vas-tu l\'ouvrir ?', choix:['tirer', 'pousser', 'soulever']},
-        {id:'tirer', ic:'💥', nom:'Tirer la grille', choixTxt:'Tirer', moments:['nuit'], visibleSi:[{vu:'pisteur:clocher:crypte'}],
+        {obligeUn:'grille', id:'tirer', ic:'💥', nom:'Tirer la grille', choixTxt:'Tirer', moments:['nuit'], visibleSi:[{vu:'pisteur:clocher:crypte'}],
           cacheSi:[{vu:'pisteur:clocher:pousser'}, {vu:'pisteur:clocher:soulever'}], donne:'info:on_descend', donneAussi:'info:grille_bruit',
           t:'Tu tires de toutes tes forces. CRIIIIIC ! Un énorme bruit s\'est entendu dans tout le village ! La grille est ouverte… mais pour la discrétion, c\'est raté.',
           note:'La grille de la crypte a grincé : un énorme bruit s\'est entendu dans tout le village.', choix:['descendre']},
-        {id:'pousser', ic:'💥', nom:'Pousser la grille', choixTxt:'Pousser', moments:['nuit'], visibleSi:[{vu:'pisteur:clocher:crypte'}],
+        {obligeUn:'grille', id:'pousser', ic:'💥', nom:'Pousser la grille', choixTxt:'Pousser', moments:['nuit'], visibleSi:[{vu:'pisteur:clocher:crypte'}],
           cacheSi:[{vu:'pisteur:clocher:tirer'}, {vu:'pisteur:clocher:soulever'}], donne:'info:on_descend', donneAussi:'info:grille_bruit',
           t:'Tu pousses de toutes tes forces. CRIIIIIC ! Un énorme bruit s\'est entendu dans tout le village ! La grille est ouverte… mais pour la discrétion, c\'est raté.',
           note:'La grille de la crypte a grincé : un énorme bruit s\'est entendu dans tout le village.', choix:['descendre']},
-        {id:'soulever', ic:'🤫', nom:'Soulever la grille', choixTxt:'Soulever', moments:['nuit'], visibleSi:[{vu:'pisteur:clocher:crypte'}],
+        {obligeUn:'grille', id:'soulever', ic:'🤫', nom:'Soulever la grille', choixTxt:'Soulever', moments:['nuit'], visibleSi:[{vu:'pisteur:clocher:crypte'}],
           cacheSi:[{vu:'pisteur:clocher:tirer'}, {vu:'pisteur:clocher:pousser'}], donne:'info:on_descend', donneAussi:'info:grille_silence',
           t:'Tu soulèves un peu la grille, tout doucement. Le portail s\'ouvre sans bruit, et vous pénétrez dans la crypte. Moustache file devant toi.',
           note:'La grille de la crypte s\'est ouverte sans un bruit.', choix:['descendre']},
         /* (étape 6) la descente : la fenêtre du donjon (descente.js) ; il lui faut les codes du Sage et de l'Alchimiste */
-        {id:'descendre', ic:'🕯️', nom:'Descendre sous le clocher', choixTxt:'🕯️ Descendre', moments:['nuit'],
+        {oblige:true, id:'descendre', ic:'🕯️', nom:'Descendre sous le clocher', choixTxt:'🕯️ Descendre', moments:['nuit'],
           visibleSi:[{vu:'pisteur:clocher:tirer'}, {vu:'pisteur:clocher:pousser'}, {vu:'pisteur:clocher:soulever'}], descente:'crypte'}
       ]}
     },
@@ -959,14 +970,14 @@ E[3] = {
         /* seulement si la clé d'Anselme est ratée (et ses traces suivies jusqu'ici, au clocher : traces_puits — 15 novembre), ou avec « Le
            vieux puits » du Barde ; jamais si la clé a été prise.
            (L'acide de l'Alchimiste, qui fait fondre les barreaux, arrive avec son code, quand ses sept potions sont prêtes : descente.js.) */
-        {id:'grille', ic:'🕳️', nom:'La grille du vieux puits', moments:['nuit'], visibleSi:[{vu:'pisteur:clocher:traces_puits'}, {code:'info:vieux_puits'}], cacheSi:[{vu:'pisteur:clocher:cle'}],
+        {oblige:true, id:'grille', ic:'🕳️', nom:'La grille du vieux puits', moments:['nuit'], visibleSi:[{vu:'pisteur:clocher:traces_puits'}, {code:'info:vieux_puits'}], cacheSi:[{vu:'pisteur:clocher:cle'}],
           t:'Une vieille grille rouillée. Moustache passe entre les barreaux… toi, non. Il faudrait de quoi ronger toute cette rouille !'},
         /* (étape 6) l'acide de l'Alchimiste (son code, tapé par le Pisteur : P.vus['sac:acide'], descente.js) fait fondre les barreaux */
-        {id:'acide', ic:'🧪', nom:'Verser l\'acide sur la grille', moments:['nuit'], visibleSi:[{vu:'pisteur:puits:grille'}], besoin:[{vu:'sac:acide'}],
+        {oblige:true, id:'acide', ic:'🧪', nom:'Verser l\'acide sur la grille', moments:['nuit'], visibleSi:[{vu:'pisteur:puits:grille'}], besoin:[{vu:'sac:acide'}],
           alt:'Tu n\'as rien pour ronger la rouille. L\'Alchimiste a ce qu\'il faut… quand ses sept potions seront prêtes ! Demande-lui son code, et tape-le dans ton onglet Code.',
           donne:'info:on_descend', donneAussi:'info:puits_ouvert',   /* (14 novembre) et un code pour le Barde : le maire, à la fête (grands.amis) */
           t:'Tu verses l\'acide de l\'Alchimiste. Pssshhh ! Les barreaux fondent comme du sucre. Tout en bas, deux yeux brillent : Moustache t\'attend.', choix:['descendre']},
-        {id:'descendre', ic:'🕯️', nom:'Descendre au fond du puits', choixTxt:'🕯️ Descendre', moments:['nuit'], visibleSi:[{vu:'pisteur:puits:acide'}], descente:'puits'}
+        {oblige:true, id:'descendre', ic:'🕯️', nom:'Descendre au fond du puits', choixTxt:'🕯️ Descendre', moments:['nuit'], visibleSi:[{vu:'pisteur:puits:acide'}], descente:'puits'}
       ]}
     }
   },
@@ -1194,7 +1205,7 @@ E[3] = {
       /* [5] le grand dialogue (E.grands.cle), la nuit, quand il monte sonner l'ouverture de la fête. Il ne s'ouvre que quand tout est prêt
          (Romain : « pour Anselme, il faut débloquer pas mal de choses ») : l'aveu de Mélusine (démasquée l'après-midi, ou le filet de la
          fête), le code « La crypte est fermée », et tout demandé à Anselme, à Basile et à Silas. */
-      {q:'Anselme, je voudrais vous demander quelque chose…', g:'r', moments:N_, grand:'cle',
+      {q:'Anselme, je voudrais vous demander quelque chose…', g:'r', moments:N_, grand:'cle', oblige:true,
         besoin:[{et:[{ou:[{vu:'verite:melusine:4'}, {vu:'fete:filet:melusine'}]}, {code:'info:crypte_fermee'}, {toutDit:['anselme', 'basile', 'silas']}]}]}
     ]},
     /* (il ment une fois : sa nuit. « Elle a appris à lire à mon apprenti » : une graine, qu'on ne comprend qu'après le donjon) */
@@ -1342,8 +1353,8 @@ E[3] = {
     /* (17 novembre, le nouveau fil ; Romain, 16 novembre, 22 h 14 : « c'est le Sage qui compare les écritures, avec une petite interface
        d'analyse dans le Grand Livre, qui donne un code au Barde ») Le Livre d'or n'existe dans le livre qu'une fois confié par le maire
        (le tableau rendu, l'après-midi). « Comparer les écritures » : avec la lettre ET le Livre d'or — la lettre en haut, les douze mots
-       du village dessous ; le Sage désigne une main. Deux essais (essais.js). Mélusine : le code « L'écriture de Mélusine » pour le
-       Barde, qui rouvre sa porte. Raté deux fois : le filet de la fête, la nuit. (ecritures.js : M.livreDorHTML, M.quiEcritHTML) */
+       du village dessous ; le Sage désigne une main, autant de fois qu'il veut (Romain, 17 novembre, 7 h 10 : plus d'essais comptés). Mélusine : le code « L'écriture de Mélusine » pour le
+       Barde, qui rouvre sa porte. Pas fait : le filet de la fête, la nuit. (ecritures.js : M.livreDorHTML, M.quiEcritHTML) */
     {id:'livredor', titre:'Le Livre d\'or de la fête', ic:'📖', type:'livredor', visibleSi:[{vu:'sage:mairie:rendu'}, {vu:'sage:mairie:sanstableau'}]},
     {id:'quiecrit', titre:'Comparer les écritures', ic:'🔍', visibleSi:[{et:[{code:'obj:lettre'}, {ou:[{vu:'sage:mairie:rendu'}, {vu:'sage:mairie:sanstableau'}]}]}],
       get html(){ return window.M && window.M.quiEcritHTML ? window.M.quiEcritHTML() : ''; }},

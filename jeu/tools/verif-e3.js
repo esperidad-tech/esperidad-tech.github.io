@@ -114,7 +114,7 @@ module.exports = function verifierE3(E, SRC, D){
   });
   /* (17 novembre) le Sage compare les écritures dans son Grand Livre (ecritures.js) : il lui faut la lettre (le code du Barde) et le
      Livre d'or (confié par le maire quand il rend le tableau, ou passe le voir). Deux essais : ça se rate. */
-  if((E.infos || {}).cest_melusine) aj({cle:'sage:ecriture', role:'sage', moments:E.moments.slice(1), besoins:[[{vu:'page:quiecrit'}]], produit:['info:cest_melusine'], faits:['sage:ecriture'], ratable:true, rate:{produit:[], faits:[]}});
+  if((E.infos || {}).cest_melusine) aj({cle:'sage:ecriture', role:'sage', moments:E.moments.slice(1), besoins:[[{vu:'page:quiecrit'}]], produit:['info:cest_melusine'], faits:['sage:ecriture']});   /* (17 novembre, 7 h 10) plus d'essais comptés : on ne peut plus le rater */
   /* (16 novembre) les pierres du Sage (pierres.js) : poser la bonne pierre sur un plan de son Grand Livre — il lui faut la page du plan,
      et la pierre (E.pierres ; p.si : ce qu'il faut pour l'avoir). Le plan parle : le fait « pierre:<plan> ». */
   for(const id of Object.keys(E.plansPierre || {})){
@@ -151,7 +151,7 @@ module.exports = function verifierE3(E, SRC, D){
       aj({cle:'alchimiste:tenue', role:'alchimiste', moments:NUIT, besoins:[[{code:'info:on_descend'}]]});
       aj({cle:'allure:sage:recu', role:'pisteur', moments:NUIT, besoins:[[{code:'allure:sage'}]]});
     }
-    aj({cle:'donjon:fini', role:'pisteur', moments:NUIT, besoins:[entrees, [{vu:'sac:recu'}]].concat((E.infos || {}).on_descend ? [[{vu:'allure:sage:recu'}]] : []), produit:['info:odette_porte'], donjon:true});
+    aj({cle:'donjon:fini', role:'pisteur', moments:NUIT, besoins:[entrees, [{vu:'sac:recu'}]].concat((E.infos || {}).on_descend ? [[{vu:'allure:sage:recu'}]] : []), produit:[], donjon:true});
     aj({cle:'donjon:ouvert:sage', role:'sage', moments:NUIT, besoins:[[{vu:'page:donjon'}]]});
     aj({cle:'donjon:ouvert:alchimiste', role:'alchimiste', moments:NUIT});
   }
@@ -272,6 +272,24 @@ module.exports = function verifierE3(E, SRC, D){
     : fatals.length ? 'un oubli bloque l\'enquête : ' + fatals.join(', ') : `Un oubli à la fois (${oublis.length} cas : le papier du voisin, la cachette, l'herbier d'Iris, le plan du Barde, les tenues de Mélusine…) : l'enquête se résout toujours`);
   const sansTraces = jouer(ROLES, null, ['pisteur:L2:traces']);
   dit(!sansTraces.faits.has('donjon:fini'), 'le fil principal : sans les traces de Moustache jusqu\'à la grille, on ne descend pas (voulu : c\'est elles qui disent où est Odette)');
+  /* LES PASSAGES OBLIGATOIRES (Romain, 17 novembre, 7 h 10 : « s'il y a vraiment des passages obligatoires pour que tout avance, montre-le
+     explicitement sur la carte »). Le vérificateur les CALCULE : une étape est obligatoire si, quand personne ne la fait jamais, on ne
+     descend pas (ou l'enquête ne se résout pas). Celles qui sont un point de lieu ou un grand dialogue doivent être marquées oblige:true
+     dans e3.js (le rond jaune de la carte, M.obligesCarte) ; les codes qu'elles donnent doivent être dans E.codesObliges (l'anneau jaune).
+     Les cueillettes et les potions de l'Alchimiste, obligatoires aussi, n'ont pas de rond : leur cachette est l'énigme de l'herbier.
+     Pour voir la liste : GOULOTS=1 node tools/verif.js 3 */
+  const obliges = R.filter(r => { const j = jouer(ROLES, null, [r.cle]); return !juste(solutions(j)) || !j.faits.has('donjon:fini'); });
+  if(process.env.GOULOTS) obliges.forEach(r => console.log('GOULOT', r.role, (r.moments || []).join('/'), r.cle, '→', (r.produit || []).join(' ')));
+  const pointDe = k => { const m = /^(pisteur|sage|alchimiste):([^:]+):([^:]+)$/.exec(k); if(!m) return null; const L = (E.lieux[m[2]] || {})[m[1]]; return (L && (L.points || []).find(p => p.id === m[3])) || null; };
+  const sansRond = obliges.filter(r => {
+    const p = pointDe(r.cle); if(p) return !p.oblige;
+    const g = /^grand:(.+)$/.exec(r.cle); if(g) return !Object.values(E.pnj || {}).some(N => (N.questions || []).some(q => q.grand === g[1] && q.oblige));
+    return false;
+  }).map(r => r.cle);
+  const codesSansAnneau = [...new Set(obliges.flatMap(r => r.produit || []).filter(c => /^info:/.test(c)))].filter(c => !(E.codesObliges || []).includes(c));
+  dit(obliges.length > 0 && !sansRond.length && !codesSansAnneau.length, sansRond.length ? 'des passages obligatoires n\'ont pas leur rond jaune sur la carte (oblige:true manque) : ' + sansRond.join(', ')
+    : codesSansAnneau.length ? 'des codes obligatoires n\'ont pas leur anneau jaune (E.codesObliges) : ' + codesSansAnneau.join(', ')
+    : `Les passages obligatoires (${obliges.length} étapes sans lesquelles on ne descend pas) : ceux de la carte ont leur rond jaune, leurs codes ont l'anneau jaune`);
   /* et les deux entrées du donjon : la crypte quand la clé est prise, le puits (et l'acide) quand elle est ratée */
   const cleOk = jouer(ROLES), cleRatee = jouer(ROLES, r => r.cle === 'pisteur:clocher:cle'), anselmeRate = jouer(ROLES, r => r.cle === 'grand:cle');
   dit(cleOk.faits.has('pisteur:clocher:descendre') && !cleOk.faits.has('pisteur:puits:grille'), 'la clé prise : on descend par la crypte, et le puits ne s\'ouvre jamais');
@@ -319,7 +337,7 @@ module.exports = function verifierE3(E, SRC, D){
   if(enReserve.length) console.log(`  · en réserve (plus donné par personne pour l'instant) : ${enReserve.map(k => 'info:' + k).join(', ')}`);
   const donneurs = {}, lecteurs = {};
   R.forEach(r => r.produit.concat(r.rate.produit).forEach(c => (donneurs[c] = donneurs[c] || new Set()).add(r.role)));
-  ['info:odette_porte', 'info:leo_la', 'info:leo_battu'].forEach(c => (donneurs[c] = donneurs[c] || new Set()).add('pisteur'));   /* (le donjon : descente.js) */
+  ['info:leo_la', 'info:leo_battu'].forEach(c => (donneurs[c] = donneurs[c] || new Set()).add('pisteur'));   /* (le donjon : descente.js) */
   (E.accuser && E.accuser.besoin || []).forEach(c => { if(c.code) (lecteurs[c.code] = lecteurs[c.code] || new Set()).add('sage'); });   /* (ce qui ouvre les accusations) */
   if(E.grands.lettre && E.grands.lettre.piege) (donneurs[E.grands.lettre.piege.code] = donneurs[E.grands.lettre.piege.code] || new Set()).add('barde');
   const mauvais = [];

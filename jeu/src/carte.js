@@ -961,7 +961,9 @@ function lieuxInteractifs(p, o, niveau, geo){
     var id = G.id, L = LIEUX[id], entree = G.entree;
     var verrou = verrous.indexOf(id) >= 0;
     var clic = verrou || !actifs || actifs.indexOf(id) >= 0 || (sansAides && !entree);
-    var actif = actifs && actifs.indexOf(id) >= 0 && !(sansAides && !entree);
+    /* (17 novembre) o.obliges.lieux : un passage obligatoire attend ici → le rond jaune, même sans les aides (dès l'enquête 2) */
+    var oblige = !!(o.obliges && o.obliges.lieux && o.obliges.lieux.indexOf(id) >= 0);
+    var actif = (actifs && actifs.indexOf(id) >= 0 && !(sansAides && !entree)) || (oblige && !verrou);
     var calme = actif && ouverts.indexOf(id) >= 0;   /* déjà ouvert à ce moment-ci (classe ca-calme) ; son rond palpite quand même, comme partout (Romain, 5 novembre, 23 h 06 : plus de rond jaune immobile) */
     var neuf = apparus.indexOf(id) >= 0;
     var act = clic ? ' data-act="lieu" data-id="' + id + '"' : '';
@@ -1278,6 +1280,12 @@ function marqueurs(p, o, geo){
   });
   /* (13 novembre) o.bullesMaison = {maison:'🐾'} : il reste quelque chose à faire dans cette maison, que son habitant soit là ou non
      (les traces de Moustache, devant chez Odette) : la même petite bulle, sur le rond de la maison */
+  /* (17 novembre) o.obliges.maisons : un passage obligatoire attend dans cette maison → le même rond jaune qui palpite, autour de son rond */
+  ((o.obliges || {}).maisons || []).forEach(function(k){
+    if(!MAISONS[k]) return;
+    var m = posMedaillon(k);
+    sortie.dessus += '<circle class="ca-pulse ca-oblige" cx="' + f(m.x) + '" cy="' + f(m.y) + '" r="' + f(Math.max(m.r + 14, 48)) + '" fill="#ffd27a" fill-opacity=".16" stroke="#ffd27a" stroke-width="8" pointer-events="none"/>';
+  });
   Object.keys(o.bullesMaison || {}).forEach(function(k){
     if(!MAISONS[k] || ((o.bullesChez || {})[k] && (o.presents || {})[k])) return;
     var m = posMedaillon(k);

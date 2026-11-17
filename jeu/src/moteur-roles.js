@@ -381,6 +381,54 @@ M.pointsMaison = function(maison){
   if(!E || !E.lieux || !E.lieux[maison] || (role !== 'pisteur' && role !== 'sage')) return [];
   return M.pointsVisibles(maison, role);
 };
+/* LES PASSAGES OBLIGATOIRES SUR LA CARTE (Romain, 17 novembre, 7 h 10 : « s'il y a vraiment des passages obligatoires pour que tout avance,
+   montre-le explicitement sur la carte, de façon gratuite. C'est valable pour les quatre personnages. »)
+   {lieux:[ids], maisons:[ids]} : là où attend, pour CE rôle et à CE moment, une étape marquée oblige:true (un point de lieu, une question
+   du Barde), faisable (son besoin est rempli) et pas encore faite. La carte y pose son rond jaune (carte-jeu.js → carte.js, o.obliges). */
+M.obligesCarte = function(){
+  var E = M.E(), P = M.P(), role = M.role(), o = {lieux:[], maisons:[]};
+  if(!E || !P) return o;
+  function poser(id){ if(!id) return; var l = /^[LFB]\d$/.test(id) ? o.maisons : o.lieux; if(l.indexOf(id) < 0) l.push(id); }
+  /* où est ce villageois maintenant (à la fête, la nuit : sur la place) */
+  function ouPnj(pid){
+    var N = (E.pnj || {})[pid] || {}, mid = M.momentId(), F = E.fete;
+    return (N.ou && N.ou[mid]) || (F && F.gens && F.gens[pid] && M.momentOk(F.moments) ? F.lieu : null);
+  }
+  /* ce qui manque pour qu'une condition soit remplie : les villageois à voir d'abord ; null = rien à faire pour ce joueur (il attend un code) */
+  function manque(c){
+    if(M.uneCondition(c)) return [];
+    var l = [], i, m;
+    if(c.et){ for(i = 0; i < c.et.length; i++){ m = manque(c.et[i]); if(m === null) return null; l = l.concat(m); } return l; }
+    if(c.ou){ var attend = true; c.ou.forEach(function(x){ var mm = manque(x); if(mm !== null){ attend = false; l = l.concat(mm); } }); return attend ? null : l; }
+    if(c.toutDit) return c.toutDit.filter(function(pid){ return !M.toutDit([pid]); });
+    if(c.vu){ m = /^(?:verite|barde|fete:filet|fete:don):([a-z_]+)/.exec(c.vu); return m ? [m[1]] : null; }
+    return null;
+  }
+  try{
+    M.cle(E.lieux || {}).forEach(function(id){
+      var pts = M.pointsVisibles(id, role);
+      pts.forEach(function(p){
+        if(!p || (p.besoin && !M.besoinOk(p.besoin))) return;
+        if(p.oblige && !P.vus[role + ':' + id + ':' + p.id]) poser(id);
+        /* p.obligeUn:'<groupe>' : un seul des points de ce groupe suffit (tirer, pousser ou soulever la grille de la crypte) */
+        if(p.obligeUn && !pts.some(function(x){ return x.obligeUn === p.obligeUn && P.vus[role + ':' + id + ':' + x.id]; })) poser(id);
+      });
+    });
+    if(role === 'barde') M.cle(E.pnj || {}).forEach(function(id){
+      var N = E.pnj[id], ou = N.ou && N.ou[M.momentId()]; if(!ou) return;
+      (N.questions || []).forEach(function(q, i){
+        if(!q.oblige || !M.momentOk(q.moments)) return;
+        var st = q.grand ? (P.grands || {})[q.grand] : null;
+        if(q.grand ? (st && st.fini && st.fini !== 'encore') : P.vus['barde:' + id + ':' + i]) return;
+        if(!q.besoin || M.besoinOk(q.besoin)){ poser(ou); return; }
+        /* la question n'est pas encore ouverte : le rond se pose chez ceux qu'il faut voir d'abord (rien, s'il attend le code d'un ami) */
+        var l = []; q.besoin.forEach(function(c){ var m = manque(c); if(m) l = l.concat(m); });
+        l.forEach(function(pid){ poser(ouPnj(pid)); });
+      });
+    });
+  }catch(e){ console.error(e); }
+  return o;
+};
 /* la petite bulle posée sur une maison de la carte quand il reste quelque chose à y faire (carte-jeu.js → carte.js, o.bullesMaison) */
 M.bullesMaisons = function(){
   var E = M.E(), P = M.P(), role = M.role(), o = {};

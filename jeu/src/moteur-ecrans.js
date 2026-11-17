@@ -28,8 +28,16 @@ function pnjImg(id, humeur){
 }
 M.pnjImg = pnjImg;
 /* Un code : seulement les dessins (Romain : « les dessins suffisent ») ; le nom reste pour les lecteurs d'écran et au survol */
+/* (Romain, 17 novembre, 7 h 10) un code OBLIGATOIRE pour que l'enquête avance (E.codesObliges : un id, ou un début d'id qui finit par « : »)
+   porte l'anneau jaune qui respire, partout où il est dessiné : on ne l'oublie pas */
+M.codeOblige = function(seq){
+  var E = M.E(), l = E && E.codesObliges; if(!l || !l.length || !seq || !M.idDuCode) return false;
+  var id = M.idDuCode(seq); if(!id) return false;
+  return l.some(function(x){ return x === id || (x.charAt(x.length - 1) === ':' && id.indexOf(x) === 0); });
+};
 function codeHTML(seq, grand){
-  return '<div class="b-code' + (grand ? ' grand' : '') + '">' + seq.map(function(s, i){
+  var ob = false; try{ ob = M.codeOblige(seq); }catch(e){}
+  return '<div class="b-code' + (grand ? ' grand' : '') + (ob ? ' b-code-oblige' : '') + '"' + (ob ? ' title="Un code à ne pas oublier"' : '') + '>' + seq.map(function(s, i){
     return '<div class="b-sym" role="img" aria-label="' + D.SYM[s].n + '" title="' + D.SYM[s].n + '" style="animation-delay:' + (i * .12) + 's"><span aria-hidden="true">' + D.SYM[s].e + '</span></div>';
   }).join('') + '</div>';
 }

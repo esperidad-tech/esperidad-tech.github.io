@@ -434,7 +434,7 @@ var PLAN = {
      la révèle), 'piege' (à l'encre rouge), 'coin' (sur la page déchirée, complétée par le code page:dechiree).
      x, y : le centre ; lignes : le texte (en MAJUSCULES pour les notes codées : les espaces restent des espaces) */
   /* Romain, 10 novembre : « les mots à décoder doivent servir à débloquer les aventuriers ». Chaque note sert donc :
-       rune    (codée)  où trouver la rune de lumière du Sage : sans elle, pas d'encre invisible ;
+       bourse  (codée)  la bourse de pièces de la galerie effondrée (avant le 17 novembre : où trouver la rune, qui est maintenant à l'entrée) ;
        oeil    (codée)  quelle porte pousser, dans la salle aux trois portes ;
        dalles  (codée)  le chemin du couloir aux dalles : N B B, N B N (noire, blanche, blanche, noire, blanche, noire) ;
        roue    (encre)  le passage secret des canaux à la salle de la lune, et l'ordre pour tourner la roue ;
@@ -442,8 +442,9 @@ var PLAN = {
        fleur   (encre)  la fleur de givre (pour l'Alchimiste).
      passage : l'id du couloir secret que l'encre dessine en pointillés. crane : un petit crâne rouge à côté de la note. */
   notes:[
-    /* (13 novembre) la pierre de rune est dans la galerie effondrée depuis le 11 novembre : la note le dit enfin, et ne parle plus du puits */
-    {id:'rune', type:'code', x:px(178), y:py(128), lignes:['LA RUNE DORT', 'DANS LA GALERIE'], pres:'galerie', dit:'La rune dort dans la galerie'},
+    /* (17 novembre, 7 h 12) la pierre de rune est à l'entrée, avec le carnet : la note de la galerie parle maintenant de ce qui y reste,
+       la bourse de pièces (« les mots à décoder doivent servir » : elle paie le marchand) */
+    {id:'bourse', type:'code', x:px(178), y:py(128), lignes:['UNE BOURSE DORT', 'DANS LA GALERIE'], pres:'galerie', dit:'Une bourse dort dans la galerie'},
     {id:'oeil', type:'code', x:px(886), y:py(230), lignes:['PRENDS', 'L OEIL'], pres:'portes', dit:'Prends l’œil'},
     {id:'dalles', type:'code', x:px(722), y:py(236), lignes:['NBB NBN'], pres:'dalles', dit:'N B B, N B N', crane:{x:px(662), y:py(234)}},
     {id:'roue', type:'encre', x:1655, y:1050, lignes:['la roue : 3 à droite,', '1 à gauche, 2 à droite'], pres:'canaux', passage:'c5',
