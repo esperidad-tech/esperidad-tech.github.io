@@ -316,7 +316,8 @@ with sync_playwright() as p:
                 if dedans: break
             pg.wait_for_timeout(500)
             shot(pg, 'carton')
-            if pg.locator('#atelier-ici .at-boite').count(): pg.locator('#atelier-ici .at-boite').click(force=True)
+            # (le carton est parfois posé hors de l'écran du téléphone : on le touche là où il est, sans passer par la souris du robot)
+            pg.evaluate("() => { var d = document.querySelector('#atelier-ici .at-boite'); if(!d) return; var r = d.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2; ['pointerdown', 'pointerup', 'click'].forEach(function(n){ d.dispatchEvent(new PointerEvent(n, {bubbles:true, clientX:x, clientY:y, pointerId:1, isPrimary:true})); }); }")
             pg.wait_for_timeout(400)
             verifier(dedans, 'le carton : elle saute dedans')
         else:
