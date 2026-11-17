@@ -238,7 +238,7 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
    - « Une banderole par chat d'Odette : Moustache, Biscotte, Pompon, Caramel, Mistigri, Noisette, Grisette. »
 5. **C'est vous qui avez écrit la lettre.** — 🔒 s'ouvre avec : le code « L'écriture de Mélusine » (pour barde) _(l'après-midi)_
    - 🤥 « Moi ? Je sais à peine écrire mon nom ! »
-   - 🔍 démasqué : « C'est moi… Un homme en cape m'a forcée à l'écrire et à la déposer. Je n'ai pas vu son visage. Il est venu ici, cette nuit : il a peut-être laissé des traces… » → donne « L'aveu de Mélusine » (pour sage)
+   - 🔍 démasqué : « C'est moi… Un homme en cape m'a forcée à l'écrire et à la déposer. Je n'ai pas vu son visage. Pardon… Je vais vous coudre de quoi vous protéger. Revenez me voir cette nuit ! » → donne « L'aveu de Mélusine » (pour sage)
 - **Tout demandé** : « Laisse-moi coudre, je t'en prie… »
 - **Occupé, le matin** : « Pas maintenant ! Je viens de coudre ma manche à la banderole de Pompon… » — puis, si on revient : « Encore toi ? Attention à mes épingles ! Repasse cet après-midi. »
 

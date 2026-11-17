@@ -201,7 +201,7 @@ with sync_playwright() as p:
     t = code(pg, 'obj:vieux_plan')
     verifier('vieux plan' in t, 'le code du Pisteur : « Le vieux plan d\'Odette »')
     t = page(pg, 'vieuxplan'); shot(pg, 'sage-vieuxplan')
-    verifier('pas un seul nom' in t and 'petite cloche' in t and 'la pierre qui les garde' in t, 'la page : des couloirs sans nom, la petite cloche, la note d\'Odette')
+    verifier('plus un seul nom' in t and 'petite cloche' in t and 'la pierre qui les garde' in t, 'la page : des couloirs sans nom, la petite cloche, la note d\'Odette')
     verifier(not any(x in t.lower() for x in ['souterrain', 'donjon', 'crypte', 'maire', 'fondateur']), 'ni « souterrains », ni « donjon », ni « crypte », ni le maire, ni les Fondateurs')
     verifier(pg.evaluate("() => document.querySelectorAll('.pp[data-pp=vieuxplan] .pp-dessin path').length > 20"), 'le plan est dessiné (les couloirs du dessous)')
     r = centre(pg, '.pp[data-pp=vieuxplan] .pp-pierre[data-pp-pierre=tim]')
@@ -209,10 +209,16 @@ with sync_playwright() as p:
     toucher_plan(pg, 'vieuxplan', .5, .5)
     e = etat_pp(pg, 'vieuxplan'); shot(pg, 'sage-vieuxplan-tim')
     verifier(not e['parle'] and 'La pierre de Tim reste froide' in e['dit'], f'la pierre de Tim sur le vieux plan : « {e["dit"][:80]} »')
-    # la nuit : le texte de la page du donjon
+    # (17 novembre, étape 4) la nuit : plus de page « Le plan des souterrains » ; le vieux plan reste muet jusqu'au départ (le code du
+    # Pisteur, « On va dans la crypte ») ; alors il se regarde de tout près, depuis sa page
     pg.evaluate("() => { M.P().moment = M.E().moments.length - 1; M.sauver(); M.render(); }")
-    t = page(pg, 'donjon')
-    verifier('Le vieux plan d\'Odette te sert enfin' in t and 'Fondateurs' not in t, 'la nuit : « Le vieux plan d\'Odette te sert enfin »')
+    verifier('donjon' not in pages(pg), 'la nuit : plus de page « Le plan des souterrains » arrivée toute seule')
+    t = page(pg, 'vieuxplan')
+    verifier(pg.locator('#livre-ici .lv-page.on [data-act=ds-plan]').count() == 0 and 'plus un seul nom' in t and 'souterrain' not in t.lower(), 'la nuit, avant le départ : le vieux plan reste muet (pas de bouton, pas un mot des souterrains)')
+    code(pg, 'info:on_descend'); fermer(pg)
+    t = page(pg, 'vieuxplan')
+    verifier('étui de cuir' in t and 'Le Pisteur a ouvert le passage' in t and 'Fondateurs' not in t and pg.locator('#livre-ici .lv-page.on [data-act=ds-plan]').count() == 1, f'le Pisteur a ouvert le passage : le vieux plan d\'Odette se regarde de tout près ({t[-120:]})')
+    shot(pg, 'sage-vieuxplan-depart')
     pg.context.close()
 
     # ---------------------------------------------------------------- le Pisteur

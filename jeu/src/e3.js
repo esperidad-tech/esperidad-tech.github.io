@@ -86,7 +86,8 @@ E[3] = {
          phrases qui le font — le refus d'Anselme (sa clé à la ceinture), Basile (il ne prête rien, sauf à qui l'aide à sonner), et Silas
          deux fois (la grille grince, lui la soulève ; il sonne les yeux fermés). Avec son code pour le Pisteur (e.code, mission.js) :
          chez lui, sa mission de la nuit s'affiche. Même place dans la liste que l'ancienne mission de la clé (les cases cochées tiennent). */
-      {si:[{et:[{vu:'barde:anselme:4'}, {vu:'barde:basile:3'}, {vu:'barde:silas:2'}, {vu:'barde:silas:3'}]}], ic:'💡', code:'info:plan_nuit',
+      /* (le filet) la nuit, avec le code du Pisteur, il s'écrit de toute façon : Basile et Silas sont à la fête, on ne peut plus leur parler */
+      {si:[{et:[{vu:'barde:anselme:4'}, {vu:'barde:basile:3'}, {vu:'barde:silas:2'}, {vu:'barde:silas:3'}]}, {et:[{moment:'nuit'}, {code:'info:crypte_fermee'}]}], ic:'💡', code:'info:plan_nuit',
         t:'Le plan ! Cette nuit, aide Anselme à sonner la Grosse Marie. Pendant qu\'il compte les coups, les yeux fermés, le Pisteur lui prend sa clé. Dis-le à tes amis !', fait:[{vu:'grand:cle:fini'}]},
       /* (13 novembre, Bible §13.33 : « Retenir le maire » est retiré — le Barde, maintenant, apporte des indices pour le donjon) elle
          n'arrive qu'avec le code du Pisteur, « L'homme en cape est là ! » ; à la fête, Farinel et Iris portent alors un « ❗ » */
@@ -391,7 +392,13 @@ E[3] = {
         /* le filet : son aveu n'a pas été obtenu l'après-midi */
         /* (Romain, 13 novembre : pas « je n'en peux plus » — « c'est trop dur de garder le secret, j'ai besoin de me confier ») */
         filet:{sauf:'info:aveu', t:'C\'est trop dur de garder ce secret… J\'ai besoin de me confier. C\'est moi qui ai écrit la lettre ! Un homme en cape m\'y a forcée. Je n\'ai pas vu son visage.', code:'info:aveu',
-          note:'Mélusine a craqué, à la fête : c\'est elle qui a écrit la lettre, forcée par un homme en cape. Elle n\'a pas vu son visage (code pour le Sage).'}},
+          note:'Mélusine a craqué, à la fête : c\'est elle qui a écrit la lettre, forcée par un homme en cape. Elle n\'a pas vu son visage (code pour le Sage).'},
+        /* (17 novembre, étape 4 du nouveau fil) LES TENUES : une fois qu'elle a avoué (l'après-midi, ou ici par le filet), elle porte un
+           « ❗ » à la fête et donne au Barde trois tenues, cousues par remords : un code objet pour le Pisteur, le Sage et l'Alchimiste
+           (x.don, grands.js). C'est d'elle que viennent les tenues de combat (« pourquoi des tenues ? », Romain, 16 novembre). */
+        don:{obj:'tenues', si:[{vu:'verite:melusine:4'}, {vu:'fete:filet:melusine'}], titre:'Les tenues de Mélusine',
+          t:'Les voilà : trois tenues, bien solides. J\'y ai cousu toute ma honte… Là où vous allez, il en faudra. Soyez prudents !',
+          note:'Mélusine, à la fête : trois tenues solides, cousues pour le Pisteur, le Sage et l\'Alchimiste (un code pour eux).'}},
       /* L'AIDE POUR LE DONJON (13 novembre, Bible §13.33) : dès que le Barde a tapé « L'homme en cape est là ! », Farinel et Iris portent
          un « ❗ » et ont de nouvelles questions (grands.js). Le Barde lit les réponses à voix haute pendant que le Pisteur se bat.
          La règle de Romain : deux phrases courtes au plus ; ils disent ce que fait l'outil, jamais la parade toute crue. */
@@ -547,6 +554,12 @@ E[3] = {
     piece_pain:{nom:'La pièce d\'or de Fortuné', ic:'🪙', pour:'alchimiste', dire:'L\'Alchimiste saura la faire parler : donne-lui ce code.'},
     /* (16 novembre, 15 h) le fond de flacon d'encre qu'Iris donne au Barde : l'Alchimiste le compare à l'encre de la lettre (labo : encre_iris) */
     encre_iris:{nom:'L\'encre d\'Iris', ic:'🖋️', pour:'alchimiste', dire:'L\'Alchimiste saura la faire parler : donne-lui ce code.'},
+    /* (17 novembre, étape 4) les trois tenues que Mélusine donne au Barde, à la fête (E.fete.gens.melusine.don) : pas obligatoires pour
+       descendre (personne ne reste bloqué), mais c'est d'elle que vient la tenue de combat (descente.js) */
+    tenues:{nom:'Les tenues de Mélusine', ic:'🧵', pour:['pisteur', 'sage', 'alchimiste'], dire:'Une tenue pour le Pisteur, une pour le Sage, une pour l\'Alchimiste : donne-leur ce code.',
+      recu:{pisteur:'Une tenue solide, cousue par Mélusine : capuche verte et cuir épais. Elle t\'attend pour cette nuit.',
+        sage:'Une nouvelle page s\'est glissée dans ton Grand Livre : ta tenue, cousue par Mélusine.',
+        alchimiste:'Une tenue solide, cousue par Mélusine : capuche violette, et une ceinture à sept poches… pour sept fioles.'}},
     /* (17 novembre, étape 3) la pincée de farine du sac éventré : l'Alchimiste la ramasse lui-même chez Gaspard (lieux.boulangerie,
        p.recoit) et l'analyse au labo. sansCode:true : personne ne donne son code (tools/verif-e3.js). */
     sac_farine:{nom:'La pincée du sac éventré', ic:'🌾', pour:'alchimiste', sansCode:true, dire:'Une pincée de farine, pour l\'Alchimiste.'},
@@ -591,7 +604,7 @@ E[3] = {
       dire:'L\'Alchimiste pourra comparer les écritures : donne-lui ce code.'},
     /* (12 novembre : plus de code « L'herbier » — le Sage lit l'herbier à voix haute, l'Alchimiste cherche sur sa carte ; Bible §13.26) */
     aveu:{nom:'L\'aveu de Mélusine', ic:'🧵', pour:'sage', de:'barde', savoir:true,
-      t:'Mélusine a avoué : c\'est elle qui a écrit la lettre, et qui l\'a glissée sous la porte de la mairie. Un homme en cape l\'y a forcée ; elle n\'a pas vu son visage. Il est venu chez elle cette nuit : il a peut-être laissé des traces…',
+      t:'Mélusine a avoué : c\'est elle qui a écrit la lettre, et qui l\'a glissée sous la porte de la mairie. Un homme en cape l\'y a forcée ; elle n\'a pas vu son visage.',
       dire:'C\'est une preuve pour le Sage : donne-lui ce code.'},
     /* (étape 5, le Pisteur) ce qu'il reçoit et ce qu'il donne ; ceux du Sage, de l'Alchimiste et des grands dialogues du Barde
        arriveront avec leurs étapes : en attendant, ils se tapent comme les autres codes */
@@ -658,7 +671,7 @@ E[3] = {
       t:'L\'Alchimiste a comparé l\'encre de la lettre à celle d\'Iris : c\'est la même, une encre noire de noix de galle. La lettre a été écrite avec l\'encre volée chez Iris, cette nuit.',
       dire:'La même encre ? Le Sage doit le savoir : donne-lui ce code.'},
     /* (étape 6) le donjon : la porte aux quatre signes (le code du donjon « Un chat gratte à la porte », porte:odette) */
-    odette_porte:{nom:'Odette est derrière la porte', ic:'🚪', pour:'sage', de:'pisteur',
+    odette_porte:{nom:'Odette est derrière la porte', ic:'🚪', pour:'sage', de:'pisteur', savoir:true,   /* (17 novembre) une chose à savoir : sa page du Grand Livre est retirée */
       t:'Tout au fond des souterrains, Moustache gratte au bas d\'une grande porte ronde. Tu colles l\'oreille… Une voix étouffée : « Moustache ? Mon gros gris, c\'est toi ? » Odette est là, vivante, derrière la porte !',
       dire:'Un gros chat gris gratte à la porte aux quatre signes : donne ce code au Sage.'},
     /* LÉO, LE BOSS FINAL DU DONJON (13 novembre, Bible §13.33). Deux codes du Pisteur, que le donjon affiche lui-même (descente.js les
@@ -1112,8 +1125,10 @@ E[3] = {
          à la fête). La seule vérité de plus de 30 mots : c'est le tournant de l'enquête. NE PAS DÉPLACER : E.faits, les missions et le
          grand dialogue d'Anselme citent « verite:melusine:4 ». */
       {q:'C\'est vous qui avez écrit la lettre.', g:'e', moments:A_, besoin:[{code:'info:cest_melusine'}], a:'Moi ? Je sais à peine écrire mon nom !', ment:true, donneVrai:'info:aveu',
-        vrai:'C\'est moi… Un homme en cape m\'a forcée à l\'écrire et à la déposer. Je n\'ai pas vu son visage. Il est venu ici, cette nuit : il a peut-être laissé des traces…',
-        note:'Mélusine dit qu\'elle sait à peine écrire son nom.', noteVrai:'Mélusine a avoué : un homme en cape l\'a forcée à écrire la lettre et à la déposer. Elle n\'a pas vu son visage. Il est venu chez elle cette nuit : il a peut-être laissé des traces (code pour le Sage).'}
+        /* (17 novembre, étape 4 du nouveau fil : « Mélusine : revenez me voir cette nuit ») plus de « il a peut-être laissé des traces »
+           (une piste qui ne menait nulle part) : honteuse, elle promet de coudre de quoi les protéger — les tenues, à la fête (E.fete) */
+        vrai:'C\'est moi… Un homme en cape m\'a forcée à l\'écrire et à la déposer. Je n\'ai pas vu son visage. Pardon… Je vais vous coudre de quoi vous protéger. Revenez me voir cette nuit !',
+        note:'Mélusine dit qu\'elle sait à peine écrire son nom.', noteVrai:'Mélusine a avoué : un homme en cape l\'a forcée à écrire la lettre et à la déposer. Elle n\'a pas vu son visage (code pour le Sage). Elle va vous coudre de quoi vous protéger : retourne la voir cette nuit !'}
     ]},
     /* le matin : ses fleurs (marche.js : le bouton « 🌸 » dans sa conversation et sur sa pastille), et ses quatre questions — on lui a volé
        un flacon d'encre, cette nuit (Romain, 18 h 19). L'après-midi, elle est occupée par ses couronnes (elle vend encore, s'il reste des pièces). */
@@ -1281,7 +1296,10 @@ E[3] = {
   /* (16 novembre) les pierres du Sage : sa poche, sous les plans de son Grand Livre, et « Les objets magiques » (pierres.js ; les plans où
      on les pose : E.plansPierre, écrit par pierres.js). La pierre de Tim vient de l'enquête 2 : il l'a toujours sur lui. */
   pierres:[
-    {id:'tim', nom:'La pierre de Tim', t:'Tim l\'avait ramassée au fond du trou du Vieux Chêne, devant une porte couverte de runes. Tu ne t\'en sépares plus. Elle est froide… presque toujours.'}
+    {id:'tim', nom:'La pierre de Tim', t:'Tim l\'avait ramassée au fond du trou du Vieux Chêne, devant une porte couverte de runes. Tu ne t\'en sépares plus. Elle est froide… presque toujours.'},
+    /* (17 novembre, étape 4) la pierre de rune : le Pisteur la trouve là-dessous, la nuit (le code du donjon « rune:lumiere », descente.js :
+       P.vus['donjon:rune']) ; elle se pose sur le vieux plan d'Odette, comme la pierre de Tim sur le plan de la maison */
+    {id:'rune', nom:'La pierre de rune', si:[{vu:'donjon:rune'}], t:'Le Pisteur l\'a trouvée parmi les éboulis, sous la ville : une pierre gravée, tiède comme un petit soleil. Elle réveille l\'encre que les vieux plans cachent.'}
   ],
   /* les plans où une pierre se pose : la pierre qu'il attend, et la page du Grand Livre où il est (les dessins et les phrases : pierres.js).
      Ce que ça donne : le fait « pierre:<plan> » (P.vus), que le vérificateur connaît (tools/verif-e3.js). */
@@ -1344,11 +1362,15 @@ E[3] = {
       rate:'Les signes dansent devant tes yeux…',
       tPartiel:'Tu reconnais quand même quelques mots : « le chat qui dort », « le chemin ». Et au dos du papier, Odette a dessiné sa maison.',
       get html(){ return window.M && window.M.papierOdetteHTML ? window.M.papierOdetteHTML() : ''; }},
-    {id:'vieuxplan', titre:'Le vieux plan d\'Odette', ic:'🗺️', visibleSi:[{code:'obj:vieux_plan'}],
+    /* (17 novembre, étape 4) la nuit, c'est ici que le plan se regarde de tout près (pierres.js, M.vieuxPlanHTML) ; le filet : sans la
+       cachette d'Odette, la page arrive avec le code du départ (« On va dans la crypte ») */
+    {id:'vieuxplan', ic:'🗺️', visibleSi:[{code:'obj:vieux_plan'}, {code:'info:on_descend'}],
+      /* (le filet : sans la cachette d'Odette, ce n'est pas « le vieux plan d'Odette » mais celui que le Sage a recopié en haut de l'escalier) */
+      get titre(){ var Mx = typeof window !== 'undefined' && window.M, Px = Mx && Mx.P ? Mx.P() : null; return Px && Px.recus && !Px.recus['obj:vieux_plan'] && Px.recus['info:on_descend'] ? 'Le plan gravé dans la pierre' : 'Le vieux plan d\'Odette'; },
       get html(){ return window.M && window.M.vieuxPlanHTML ? window.M.vieuxPlanHTML() : ''; }},
     /* LA TENUE DE COMBAT (Romain, 13 novembre) : avec le code du Pisteur « On va dans la crypte ». Le Sage y retrouve son héros en
        tenue et son code d'allure pour le Pisteur (descente.js, M.tenueHTML) — la fenêtre s'ouvre toute seule quand il tape le code. */
-    {id:'tenue', titre:'Ma tenue de combat', ic:'🛡️', visibleSi:[{code:'info:on_descend'}],
+    {id:'tenue', titre:'Ma tenue de combat', ic:'🛡️', visibleSi:[{code:'info:on_descend'}, {code:'obj:tenues'}],   /* (17 novembre) ou avec les tenues de Mélusine : sans le code d'allure, qui attend le départ */
       get html(){ return window.M && window.M.tenueHTML ? window.M.tenueHTML(true) : ''; }},
     /* LE DONJON DANS LE GRAND LIVRE (Romain, 13 novembre : « le carnet de l'aventurier, le plan, les pages de sauvegarde, le plan déchiré :
        des pages du Grand Livre, pas une interface à part » ; descente.js).
@@ -1356,20 +1378,14 @@ E[3] = {
        · les pages de sauvegarde : avec le code du départ (« elles apparaissent quand le Pisteur donne le code du départ ») ; deux pages,
          une de plus avec le code « Une page blanche » ; un code utilisé se barre ;
        · le carnet de l'aventurier : avec son code (chapeau, arbre, poisson), ou page par page avec les codes d'étude des monstres. */
-    {id:'donjon', titre:'Le plan des souterrains', ic:'🗺️', moments:['nuit'], horsMoment:'Sous le village, il y aurait de vieux souterrains… Cette page servira cette nuit.',
-      get html(){ return window.M && window.M.donjonPageSage ? window.M.donjonPageSage() : ''; }},
+    /* (17 novembre, étape 4 du nouveau fil : « rien n'arrive par magie dans le Grand Livre ») PLUS DE PAGE « Le plan des souterrains », qui
+       arrivait toute seule la nuit (et disait dès le matin « il y aurait de vieux souterrains ») : le plan, c'est le vieux plan d'Odette */
     {id:'sauvegardes', titre:'Les pages de sauvegarde', ic:'📜', visibleSi:[{code:'info:on_descend'}],
       get html(){ return window.M && window.M.sauvegardesHTML ? window.M.sauvegardesHTML() : ''; }},
     {id:'aventurier', titre:'Le carnet de l\'aventurier', ic:'📓', visibleSi:[{vu:'donjon:carnet'}],
-      get html(){ return window.M && window.M.carnetAventurierHTML ? window.M.carnetAventurierHTML() : ''; }},
-    /* (obligatoire, livre.js : dès que le Sage a le code de la porte, son Grand Livre s'ouvre tout seul sur cette page, le bouton jaune palpite) */
-    /* (Romain, 16 novembre, 19 h 48 : « la porte des Fondateurs, avec tout dévoilé avant qu'on ait pu faire quoi que ce soit […] il faut
-       la faire apparaître vraiment quand on est devant ») la page n'existe plus avant le code du Pisteur (visibleSi) : plus de « page
-       blanche qui s'écrira cette nuit », plus de « tout au fond des souterrains, une grande porte ronde ». */
-    {id:'porte', titre:'La porte des Fondateurs', ic:'🚪', visibleSi:[{code:'info:odette_porte'}], besoin:[{code:'info:odette_porte'}], bouton:'Tourner la page', obligatoire:true,
-      avant:'Tes amis sont devant une grande porte ronde. Ton Grand Livre en parle peut-être…',
-      t:'Une porte ronde, scellée. Quatre signes gravés : l\'œil, le chaudron, la lyre et l\'étoile. « Seuls les quatre, ensemble, l\'ouvriront. » Odette est là, derrière, sous le clocher. Mais cette porte ne s\'ouvrira pas cette nuit…',
-      note:'Odette est sous le clocher, derrière la porte aux quatre signes : l\'œil, le chaudron, la lyre et l\'étoile.'}
+      get html(){ return window.M && window.M.carnetAventurierHTML ? window.M.carnetAventurierHTML() : ''; }}
+    /* (17 novembre, étape 4 ; Romain, 16 novembre : « C'est quoi la porte des Fondateurs ? On s'en fout ») PLUS DE PAGE « La porte des
+       Fondateurs » : le code du Pisteur, « Odette est derrière la porte », dit tout ce qu'il y a à dire (sa fenêtre « Tu as reçu »). */
   ],
   /* ---------- La fin : dans la crypte, le maire, la bague, le cachot (décidée par Romain le 13 novembre, 18 h 06 ; Bible §13.33) ----------
      La même pour toute l'équipe (plus de variante : Léo est toujours là, battu). L'ordre : Léo battu parle (dans le donjon) ; « Place

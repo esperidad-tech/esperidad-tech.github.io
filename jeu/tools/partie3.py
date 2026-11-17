@@ -425,6 +425,20 @@ def partie(nav, base):
 
     # ======================================================================== LA NUIT
     print('— LA NUIT')
+    # (17 novembre, étape 4 du nouveau fil) À LA FÊTE, MÉLUSINE DONNE LES TENUES au Barde (elle a avoué l'après-midi : « Revenez me voir
+    # cette nuit ! ») : un code objet pour le Pisteur, le Sage et l'Alchimiste. Pas obligatoire pour descendre.
+    verifier('Revenez me voir cette nuit' in B.js("() => M.P().carnet.map(function(n){ return n.t; }).join(' | ')") or 'retourne la voir cette nuit' in B.js("() => M.P().carnet.map(function(n){ return n.t; }).join(' | ')"), 'le Carnet du Barde s\'en souvient : retourner voir Mélusine cette nuit')
+    B.carte(); B.ev('lieu', {'id': 'place'}); B.pg.wait_for_timeout(300)
+    verifier(B.pg.locator('#voile .gd-fete-tete.gd-appel[data-id=melusine]').count() == 1, 'à la fête, Mélusine porte un « ❗ » : elle a quelque chose à donner')
+    B.ev('gd-fete', {'id': 'melusine'}); B.pg.wait_for_timeout(400)
+    verifier('trois tenues' in B.texte() and B.pg.locator('#voile [data-act=gd-fete-don]').count() == 1, 'Mélusine : « Les voilà : trois tenues, bien solides… »')
+    B.pg.locator('#voile [data-act=gd-fete-don]').click(); B.pg.wait_for_timeout(400)
+    verifier('Les tenues de Mélusine' in B.texte() and B.pg.locator('#voile .b-donne').count() == 1, 'la suite : « Les tenues de Mélusine », et leur code'); B.shot('tenues'); B.fermer()
+    verifier(livrer(T, B, seulement=['obj:tenues']) == ['obj:tenues'] and all(T[r].js("() => !!M.P().recus['obj:tenues']") for r in ('pisteur', 'sage', 'alchimiste')), 'le code « Les tenues de Mélusine » passe du Barde au Pisteur, au Sage et à l\'Alchimiste')
+    tt = S.page('tenue')
+    verifier('Mélusine a tenu parole' in tt and S.pg.locator('#livre-ici .lv-page.on .ds-moncode').count() == 0, 'le Sage : sa page « Ma tenue de combat », cousue par Mélusine — sans son code d\'allure, qui attend le départ')
+    B.carte(); B.ev('lieu', {'id': 'place'}); B.pg.wait_for_timeout(300)
+    verifier(B.pg.locator('#voile .gd-fete-tete.gd-appel[data-id=melusine]').count() == 0, 'les tenues données : plus de « ❗ » sur Mélusine'); B.fermer()
     # le Barde : la clé d'Anselme
     idx = B.js("() => M.E().pnj.anselme.questions.map(function(q){ return q.grand || ''; })")
     verifier('gm' not in idx, 'plus de grand dialogue de la Grosse Marie')
@@ -447,12 +461,12 @@ def partie(nav, base):
     P.point('clocher', 'crypte'); P.pg.locator('#voile .b-choix-point [data-id=soulever]').click(); P.pg.wait_for_timeout(300)
     verifier('sans bruit' in P.texte() and 'info:on_descend' in P.a_donner(), 'le Pisteur soulève la grille : pas un bruit, et il a le code du départ')
     P.pg.locator('#voile .b-choix-point [data-id=descendre]').click(); P.pg.wait_for_timeout(300)
-    verifier('tenue de combat' in P.texte() and 'On a besoin des sept potions pour descendre' in P.texte() and P.pg.locator('#voile [data-act=ds-aller]').count() == 0, 'le Pisteur, devant l\'escalier : la tenue de combat, et les deux codes qu\'il attend')
+    verifier('tenue de combat' in P.texte() and 'La tenue de Mélusine' in P.texte() and 'On a besoin des sept potions pour descendre' in P.texte() and P.pg.locator('#voile [data-act=ds-aller]').count() == 0, 'le Pisteur, devant l\'escalier : la tenue de combat (celle de Mélusine), et les deux codes qu\'il attend')
     P.fermer()
     # « On va dans la crypte » → le Sage et l'Alchimiste : leur tenue, leur code
     seq = P.js("() => M.code('info:on_descend')")
     t = S.taper(seq, garder=True); passes.append(('pisteur', 'info:on_descend', 'sage'))
-    verifier('tenue de combat' in t and 'Montre ce code au Pisteur' in t, 'le Pisteur → le Sage : « On va dans la crypte » — sa tenue, son code')
+    verifier('tenue de combat' in t and 'Dans la tenue de Mélusine' in t and 'Montre ce code au Pisteur' in t, 'le Pisteur → le Sage : « On va dans la crypte » — sa tenue (celle de Mélusine), son code')
     seqS = S.js("() => M.code(M.allureCode())"); S.shot('tenue'); S.fermer()
     t = A.taper(seq, garder=True); passes.append(('pisteur', 'info:on_descend', 'alchimiste'))
     verifier('sept potions à la ceinture' in t and 'Montre ce code au Pisteur' in t, 'le Pisteur → l\'Alchimiste : sa tenue, et son code (les sept potions sont prêtes)'); A.fermer()
@@ -487,9 +501,12 @@ def partie(nav, base):
     # le Sage : ses pages du donjon sont dans son Grand Livre ; son plan s'ouvre DANS le jeu
     S.page('sauvegardes')
     verifier(S.pg.locator('#livre-ici .lv-page.on .ds-blanche').count() == 2, 'le Sage : deux pages de sauvegarde dans son Grand Livre')
-    S.page('donjon'); S.pg.locator('#livre-ici .lv-page.on [data-act=ds-plan]').click(); S.pg.wait_for_timeout(2500)
+    # (17 novembre, étape 4) plus de page « Le plan des souterrains » : le plan se regarde depuis la page du vieux plan d'Odette
+    tv = S.page('vieuxplan')
+    verifier('Le Pisteur a ouvert le passage' in tv and S.js("() => !M.E().pages.some(function(p){ return p.id === 'donjon' || p.id === 'porte'; })"), 'le Sage : le vieux plan d\'Odette se regarde maintenant de tout près (plus de page « Le plan des souterrains »)')
+    S.pg.locator('#livre-ici .lv-page.on [data-act=ds-plan]').click(); S.pg.wait_for_timeout(2500)
     plan = S.pg.frame_locator('#donjon-plan-cadre')
-    verifier(S.pg.locator('#donjon-plan-cadre').count() == 1 and plan.locator('#b-fermer').is_visible(), 'le Sage ouvre le plan des souterrains, dans le jeu')
+    verifier(S.pg.locator('#donjon-plan-cadre').count() == 1 and plan.locator('#b-fermer').is_visible() and 'vieux plan, de tout près' in plan.locator('#bulle').inner_text(), 'le Sage ouvre le plan, dans le jeu : « Le vieux plan, de tout près ! »')
     plan.locator('#b-fermer').click(); S.pg.wait_for_timeout(500)
     verifier(S.pg.locator('#donjon-plan-cadre').count() == 0 and S.js("() => M.UI.ecran") == 'enquete', 'il le referme : il est toujours dans l\'enquête')
     # le Pisteur descend : le vrai donjon
@@ -565,10 +582,9 @@ def partie(nav, base):
     l = livrer(T, P)
     verifier(sorted(l) == ['info:leo_battu', 'info:odette_porte'], f'le Pisteur a donné au Sage : Odette est derrière la porte, Léo a parlé ({l})')
     # le Sage : la porte des Fondateurs, puis les trois accusations (OÙ, QUI a écrit, QUI sous la cape)
+    # (17 novembre, étape 4) plus de page « La porte des Fondateurs » : le code a tout dit (« Odette est là, vivante, derrière la porte ! »)
     S.js("() => { M.UI.ecran = 'enquete'; M.P().onglet = 'carte'; M.UI.modal = null; M.render(); M.P().onglet = 'role'; M.render(); }"); S.pg.wait_for_timeout(400)
-    verifier(S.pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page][data-id=porte]').count() == 1, 'le Grand Livre du Sage s\'ouvre tout seul sur « La porte des Fondateurs »')
-    S.ouvrir_page('porte'); S.fermer()
-    verifier('Quatre signes' in S.page('porte'), 'le Sage : la porte aux quatre signes, Odette derrière')
+    verifier(S.pg.locator('#livre-ici .lv-page[data-id=porte]').count() == 0 and S.js("() => !!M.P().recus['info:odette_porte']"), 'le Sage sait qu\'Odette est derrière la porte ; plus de page « La porte des Fondateurs »')
     S.js("() => { M.UI.modal = null; M.A.accuser(); }"); S.pg.wait_for_timeout(250)
     verifier('OÙ est Odette' in S.texte(), 'le Sage accuse : la première question, « OÙ est Odette ? »')
     S.pg.locator('#voile [data-act=acc-choix][data-k=ou][data-v=clocher]').click(); S.pg.wait_for_timeout(200)

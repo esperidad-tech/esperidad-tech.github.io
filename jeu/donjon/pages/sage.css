@@ -179,3 +179,18 @@
 /* (13 novembre) le plan montré DANS le jeu (un cadre par-dessus le Grand Livre du Sage, jeu/src/descente.js) : les codes, le Grand Livre
    et « recommencer » sont dans le jeu ; ici, il reste la grille, le zoom, la rune et « Refermer » */
 body.dans-jeu #b-livre, body.dans-jeu #b-code, body.dans-jeu #b-nouveau{display:none}
+
+/* ---------- DEBOUT (17 novembre, Romain : « une interface claire sur un téléphone tenu droit, sans le tourner ») ----------
+   Les outils passent en haut, sur une ligne ; la grille de l'alphabet se range dessous, à droite ; le plan garde toute la largeur.
+   (sage.js : mesurerBords pose « debout » sur le corps de la page et recalcule la place.) */
+body.debout #barre{top:max(8px, env(safe-area-inset-top, 0px));bottom:auto;left:var(--gauche);right:var(--droite);flex-direction:row;justify-content:center;gap:6px}
+body.debout .outil{width:62px;min-height:56px;border-radius:16px;padding:4px 3px}
+body.debout .outil .ic{font-size:23px}
+body.debout .outil small{font-size:10.5px}
+body.debout .zooms{flex-direction:row;gap:6px}
+body.debout .zooms button{width:46px;height:46px;font-size:22px}
+body.debout #b-nouveau{margin-top:0}
+body.debout .carte-grille{top:calc(max(8px, env(safe-area-inset-top, 0px)) + 70px);right:var(--droite);width:min(230px, 62vw);padding:4px 6px}
+body.debout .carte-grille h3{font-size:14px;margin-bottom:2px}
+body.debout #bas{right:var(--droite)}
+body.debout #rune{width:60px;height:60px;font-size:26px}

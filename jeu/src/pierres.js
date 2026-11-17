@@ -239,7 +239,8 @@ function troisSignes(){
 /* LE VIEUX PLAN D'ODETTE : les couloirs du dessous, sans un nom (la carte du donjon, donjon/carte.js : CARTE_DONJON). Une petite cloche
    au départ ; les signes gravés ; là où il y a quelque chose d'écrit, de l'encre passée qu'on ne sait pas lire ; un coin déchiré.
    Rien n'y dit « souterrains » (Romain, 16 novembre). 300 × 180. */
-function vieuxPlan(){
+/* (17 novembre) revele : la pierre de rune est posée — l'encre passée se rallume, bleue */
+function vieuxPlan(revele){
   var C = window.CARTE_DONJON, k = 'vp' + (++uid), w = 300, h = 180;
   var s = '<svg class="pp-dessin pp-vieux" viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="Un très vieux plan : des couloirs, des salles, pas un seul nom">' + parchemin(w, h, k);
   if(!C) return s + '</svg>';
@@ -254,7 +255,8 @@ function vieuxPlan(){
   (C.PLAN.signes || []).forEach(function(g){ if(g.porte || !C.SIGNES[g.s]) return; s += '<g transform="translate(' + g.x + ' ' + g.y + ') scale(' + n(g.t / 17) + ')"><path d="' + C.SIGNES[g.s] + '" fill="none" stroke="' + ENCRE + '" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>'; });
   /* de l'encre passée : des lignes qu'on ne sait pas lire */
   (C.PLAN.notes || []).forEach(function(nt, i){
-    for(var j = 0; j < Math.min(2, (nt.lignes || []).length); j++){ var y = nt.y + j * 30, d = 'M' + (nt.x - 70) + ' ' + y; for(var q = 0; q < 7; q++) d += 'q10 ' + ((q + i + j) % 2 ? -14 : 14) + ' 20 0'; s += '<path d="' + d + '" fill="none" stroke="rgba(74,51,32,.34)" stroke-width="5" stroke-linecap="round"/>'; }
+    for(var j = 0; j < Math.min(2, (nt.lignes || []).length); j++){ var y = nt.y + j * 30, d = 'M' + (nt.x - 70) + ' ' + y; for(var q = 0; q < 7; q++) d += 'q10 ' + ((q + i + j) % 2 ? -14 : 14) + ' 20 0'; if(revele) s += '<path d="' + d + '" fill="none" stroke="rgba(143,243,255,.5)" stroke-width="13" stroke-linecap="round"/>';
+      s += '<path d="' + d + '" fill="none" stroke="' + (revele ? '#05607c' : 'rgba(74,51,32,.34)') + '" stroke-width="5" stroke-linecap="round"/>'; }
   });
   /* la petite cloche, au départ */
   var D0 = C.LIEUX.puits;
@@ -271,10 +273,18 @@ M.papierOdetteHTML = function(){
   var t = partiel ? 'Les signes sont à moitié effacés. Tu as quand même reconnu des mots : « soleil de l\'après-midi », « le chat qui dort », « le chemin ».' : T_PAPIER;
   return '<p class="lv-texte' + (partiel ? '' : ' pp-citation') + '">' + esc(t) + ' ' + lire(t) + '</p>' + bloc('maison');
 };
+/* (17 novembre, étape 4 du nouveau fil) LA NUIT, c'est sur cette page que le plan se regarde de tout près (M.donjonPlanBloc, descente.js :
+   le plan qui glisse et se zoome, par-dessus le jeu) : plus de page « Le plan des souterrains » arrivée toute seule. Et la pierre de rune que
+   le Pisteur trouve là-dessous (E.pierres) se pose ici, comme la pierre de Tim le matin : l'encre cachée se réveille.
+   Le filet : la cachette d'Odette jamais ouverte — la page arrive quand même avec le code du départ (« On va dans la crypte ») : en haut de
+   l'escalier, un plan gravé dans la pierre, que le Sage recopie. */
 M.vieuxPlanHTML = function(){
-  var t = 'Un très vieux plan, roulé dans un étui de cuir, sous une dalle de la maison d\'Odette. Des couloirs, des salles… et pas un seul nom. Au départ, quelqu\'un a dessiné une petite cloche. Un coin a été déchiré.';
+  var P = M.P(), a = !!(P && P.recus && P.recus['obj:vieux_plan']);
+  var t = a ? 'Un très vieux plan, roulé dans un étui de cuir, sous une dalle de la maison d\'Odette. Des couloirs, des salles… L\'encre a tant pâli qu\'on n\'y lit plus un seul nom. Au départ, quelqu\'un a dessiné une petite cloche. Un coin a été déchiré.'
+    : 'En haut de l\'escalier, un plan est gravé dans la pierre. Tu l\'as recopié dans ton Grand Livre : des couloirs, des salles, des signes à demi effacés. Un coin manque.';
   var t2 = 'Dans la marge, de l\'écriture penchée d\'Odette : « Les signes ne parlent qu\'à la pierre qui les garde. »';
-  return '<p class="lv-texte">' + esc(t) + ' ' + lire(t) + '</p>' + bloc('vieuxplan') + '<p class="lv-texte pp-citation">' + esc(t2) + ' ' + lire(t2) + '</p>';
+  return '<p class="lv-texte">' + esc(t) + ' ' + lire(t) + '</p>' + bloc('vieuxplan') + (a ? '<p class="lv-texte pp-citation">' + esc(t2) + ' ' + lire(t2) + '</p>' : '') +
+    (M.donjonPlanBloc ? M.donjonPlanBloc() : '');
 };
 M.tableauOdetteHTML = function(){
   var t = 'Le tableau que tu as peint pour la fête : Odette dans sa maison, avec ses sept chats. Le maire l\'accrochera au-dessus du gâteau. Regarde-le bien…';
@@ -302,7 +312,9 @@ if(E3){
         return 'Sur le plan de la maison d\'Odette, la pierre de Tim a allumé trois signes, dans l\'ordre : ' + o.join(', ') + '. À dire au Pisteur, pour cet après-midi.';
       }},
     /* le vieux plan d'Odette : il attend une autre pierre (la nuit) */
-    vieuxplan:{pierre:'rune', h:180, large:true, zone:{x:150, y:90, r:400}, ic:'🗺️', dessin:vieuxPlan,
+    vieuxplan:{pierre:'rune', h:180, large:true, zone:{x:150, y:90, r:400}, repos:{x:268, y:152}, ic:'🗺️', dessin:vieuxPlan,
+      t:'La pierre de rune chauffe dans ta main… Les vieux signes se rallument, un à un ! Regarde le plan de tout près, et promène-la partout : elle réveille l\'encre cachée.',
+      note:'La pierre de rune réveille l\'encre cachée du vieux plan : à promener partout, en le regardant de tout près.',
       avant:'Ici et là, de l\'encre passée : des signes qu\'on ne sait plus lire.',
       sansPierre:'Les signes restent muets… « Ils ne parlent qu\'à la pierre qui les garde. »',
       autre:'{pierre} reste froide. Ce n\'est pas elle qui garde ces signes-là…'}

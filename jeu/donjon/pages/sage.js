@@ -126,9 +126,23 @@ function majOdette(){ var g = coinEl && coinEl.querySelector('.coeur-odette'); i
 var Z = {z:.5, tx:0, ty:0, zMin:.3, zMax:2.4};
 var BARRE = 96, BAS = 76, HAUT = 0;
 /* la place prise par la barre d'outils (à droite) et par la rune et le conteur (en bas) */
-function mesurerBords(){ var b = q('#barre'), r = b ? b.getBoundingClientRect() : null, ba = q('#bas'), rb = ba ? ba.getBoundingClientRect() : null;
-  if(r && r.width) BARRE = Math.max(0, window.innerWidth - r.left) + 6; if(rb && rb.height) BAS = Math.max(0, window.innerHeight - rb.top) + 4;
-  var g = q('#grille'); HAUT = g && !g.hidden ? g.getBoundingClientRect().bottom + 8 : 0; }
+/* (17 novembre) DEBOUT (un téléphone tenu droit, une tablette debout) : les outils passent en haut, sur une ligne (sage.css, body.debout) ;
+   le plan garde toute la largeur. On ne demande plus de tourner l'écran (Romain : « sans rotation »). */
+function debout(){ return window.innerHeight > window.innerWidth * 1.05; }
+function mesurerBords(){
+  document.body.classList.toggle('debout', debout());
+  var b = q('#barre'), r = b ? b.getBoundingClientRect() : null, ba = q('#bas'), rb = ba ? ba.getBoundingClientRect() : null;
+  if(rb && rb.height) BAS = Math.max(0, window.innerHeight - rb.top) + 4;
+  var g = q('#grille'); HAUT = g && !g.hidden ? g.getBoundingClientRect().bottom + 8 : 0;
+  if(debout()){ BARRE = 0; if(r && r.height) HAUT = Math.max(HAUT, r.bottom + 6); }
+  else if(r && r.width) BARRE = Math.max(0, window.innerWidth - r.left) + 6;
+}
+/* le zoom du début : couché, tout le plan ; debout, tout le plan serait minuscule — on s'approche, et on se pose sur l'entrée */
+function zoomDebut(){
+  var d = dims(), f0 = zoomFit();
+  if(!debout()) return f0;
+  return Math.max(f0, Math.min(.62, (d.h - HAUT - BAS) / PV.h * .9));
+}
 function dims(){ var r = table.getBoundingClientRect(); return {w:r.width, h:r.height}; }
 function zoomFit(){ var d = dims(); return Math.min((d.w - BARRE - 8) / PV.w, d.h / PV.h); }
 function borner(){
@@ -557,14 +571,15 @@ function demarrer(){
   S = mem.lire(null); if(!S || S.v !== 1) S = neuf();
   if(S.grille === null) S.grille = window.innerWidth >= 900;
   var neufs = codesDuJeu(); if(DANS){ document.body.classList.add('dans-jeu'); garder(); }
-  PG.orientation();
+  PG.orientation({debout:true});
   table = q('#table'); couche = q('#couche'); runeEl = q('#rune'); curseur = q('#curseur'); bulleEl = q('#bulle');
   q('#grille .cle').innerHTML = PS.cle();
   window.SAGE = {monstre:pageMonstre, etat:function(){ return S; }, zoom:function(){ return {z:Z.z, tx:Z.tx, ty:Z.ty, fit:zoomFit(), pv:PV}; }, reveler:reveler, notes:NOTES_ENCRE, versMonde:versMonde, zoomer:zoomer, centrerSur:centrerSur};
   construirePlan();
   majGrille();
   mesurerBords();
-  Z.z = zoomFit(); borner(); poser();
+  Z.z = zoomDebut(); borner(); poser();
+  if(debout()){ var en = C.ETIQ && C.ETIQ.puits; if(en){ var d0 = dims(); Z.tx = (d0.w - BARRE) / 2 - (en[0] - PV.x) * Z.z; Z.ty = HAUT + (d0.h - HAUT - BAS) / 2 - (en[1] - PV.y) * Z.z; borner(); poser(); } }
   gestes(); rune(); majRune(false);
   majBadge(); majGrille();
   q('#b-livre').addEventListener('click', function(){ PG.son('page'); livre(); });
@@ -577,8 +592,9 @@ function demarrer(){
   window.addEventListener('resize', function(){ mesurerBords(); var f0 = zoomFit(); if(Z.z < f0) Z.z = f0; Z.zMin = Math.min(.3, f0); borner(); poser(); });
   Z.zMin = Math.min(.3, zoomFit());
   if(DANS && PARAMS.nouveau && neufs[PARAMS.nouveau]){ S.debut = false; garder(); setTimeout(function(){ arrivee(PARAMS.nouveau); }, 500); }
-  else if(S.debut && !S.codes['rune:lumiere']){ conte('Le vieux plan des Fondateurs ! Il glisse sous ton doigt, et il s’approche à deux doigts. Ils y ont laissé des notes, dans leur drôle d’alphabet…'); S.debut = false; garder(); }
-  else conte(DANS ? 'Le plan des Fondateurs. Il glisse sous ton doigt, et il s’approche à deux doigts.' : 'Le plan des Fondateurs t’attend. Le Grand Livre aussi.');
+  /* (17 novembre) dans le jeu, ce plan est « le vieux plan d'Odette » (trouvé dans la cachette de sa maison : rien n'arrive par magie) */
+  else if(S.debut && !S.codes['rune:lumiere']){ conte(DANS ? 'Le vieux plan, de tout près ! Il glisse sous ton doigt, et il s’approche à deux doigts. Quelqu’un y a laissé des notes, dans un drôle d’alphabet…' : 'Le vieux plan des Fondateurs ! Il glisse sous ton doigt, et il s’approche à deux doigts. Ils y ont laissé des notes, dans leur drôle d’alphabet…'); S.debut = false; garder(); }
+  else conte(DANS ? 'Le vieux plan, de tout près. Il glisse sous ton doigt, et il s’approche à deux doigts.' : 'Le plan des Fondateurs t’attend. Le Grand Livre aussi.');
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', demarrer); else demarrer();
 })();

@@ -127,9 +127,11 @@ PAGE.memoire = function(cle){
 };
 
 /* ================= la tablette debout : « tourne-la » ================= */
-PAGE.orientation = function(){
-  var t = q('#tourne');
-  function maj(){ if(t) t.hidden = !(window.innerHeight > window.innerWidth * 1.05); }
+/* (17 novembre, Romain : « une interface claire sur un téléphone tenu droit, sans le tourner ») o.debout : cette page se lit aussi debout
+   (le plan du Sage) — on ne demande jamais de tourner ; elle range elle-même ses outils (sage.js, body.debout) */
+PAGE.orientation = function(o){
+  var t = q('#tourne'), debout = !!(o && o.debout);
+  function maj(){ if(t) t.hidden = debout || !(window.innerHeight > window.innerWidth * 1.05); }
   maj();
   window.addEventListener('resize', maj);
   window.addEventListener('orientationchange', function(){ setTimeout(maj, 200); });

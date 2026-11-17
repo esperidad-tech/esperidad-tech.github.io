@@ -257,6 +257,15 @@ function filetActif(id){
   return !(P.objets['_' + x.filet.sauf] || (P.recus && P.recus[x.filet.sauf]));
 }
 var FETE_TXT = 'Tout le village danse sous les lampions. Chacun a un mot à te glisser à l\'oreille !';
+/* LE DON (17 novembre, étape 4 du nouveau fil) : E.fete.gens.<pnj>.don = {obj, si:[conditions], titre, t, note} — à la fête, ce villageois
+   a quelque chose à donner au Barde (Mélusine : les tenues), une fois ses conditions vraies. Il porte un « ❗ » tant que ce n'est pas donné.
+   Après son filet, s'il en a un (elle avoue d'abord, elle donne ensuite). P.vus['fete:don:<pnj>'] : donné. */
+function don(id){
+  var f = F(), x = f && f.gens[id], P = M.P(); if(!x || !x.don || !P) return null;
+  if(P.vus['fete:don:' + id]) return null;
+  if(filetActif(id) && !P.vus['fete:filet:' + id]) return null;   /* (le filet d'abord) */
+  return !x.don.si || M.besoinOk(x.don.si) ? x.don : null;
+}
 /* L'AIDE POUR LE DONJON (13 novembre, Bible §13.33) : E.fete.gens.<pnj>.aide = {si:'info:…', t, questions:[{q, r}], note}. Dès que le
    Barde a le code (le Pisteur vient d'entrer chez Léo), ce villageois porte un « ❗ » : il a de nouvelles questions. Le Barde les pose,
    lit les réponses à voix haute à ceux qui se battent, et peut les relire autant qu'il veut (le villageois reste ouvert).
@@ -342,7 +351,7 @@ function feteHTML(lieu){
   if(cherche) ids = [Rt.pnj].concat(ids.filter(function(id){ return id !== Rt.pnj; }));
   ids.forEach(function(id){
     if(!D.PNJ[id]) return;
-    var ai = aide(id), appel = (cherche && id === Rt.pnj) || (!!ai && !aideFinie(id)), vu = !!vus[id] && !appel && !ai;
+    var ai = aide(id), appel = (cherche && id === Rt.pnj) || (!!ai && !aideFinie(id)) || !!don(id), vu = !!vus[id] && !appel && !ai;
     /* (la règle du Barde, Romain, 13 novembre : celui qui a tout dit passe au rouge, et on ne peut plus le toucher) */
     h += '<button type="button" class="gd-fete-tete' + (appel ? ' gd-appel' : '') + (vu ? ' vu' : '') + '"' + (vu ? ' disabled aria-label="' + esc(nom(id) + ' : rien de plus à dire') + '"' : ' data-act="gd-fete" data-id="' + id + '" aria-label="' + esc((appel ? (ai ? 'Quelque chose à te dire : ' : 'Il te cherche : ') : 'Parler à ') + nom(id)) + '"') + '>' +
       '<span class="b-gens-img">' + M.pnjImg(id) + '</span>' + (appel ? '<i class="gd-fete-badge gd-fete-appel">❗</i>' : '') + '<b>' + esc(nom(id)) + '</b></button>';
@@ -353,6 +362,10 @@ A['gd-fete'] = function(el){
   var id = el.dataset.id, f = F(), x = f && f.gens[id], P = M.P(), Rt = R(); if(!x || !barde() || !M.momentOk(f.moments)) return;
   if(Rt && id === Rt.pnj && retenirDispo()){ M.son('porte'); M.ouvrir({type:'grand', g:'retenir', classe:'b-feuille-conv gd-fenetre'}); return; }
   P.fete = P.fete || {vus:{}, n:0};
+  /* (17 novembre) il a quelque chose à donner (Mélusine : les tenues) : sa réplique, puis « ✨ La suite » → l'objet et son code */
+  var dn = don(id);
+  if(dn){ P.fete.vus[id] = 1; P.vus['fete:don:' + id] = 1; donner('obj:' + dn.obj, dn.note, (D.PNJ[id] || {}).ic);
+    M.son('clic'); M.sauver(); M.ouvrir({type:'grand', vue:'fete', qui:id, don:true, classe:'b-feuille-conv'}); return; }
   /* (16 novembre) le Barde qui ne lui avait encore jamais parlé à la fête entend d'abord sa phrase de la fête, et sa note (celle de
      Silas, « le maire ouvre le bal », sert au maire inquiet) : avant, elle était perdue */
   if(aide(id)){ var prem = !P.fete.vus[id]; P.fete.vus[id] = 1; if(prem && x.note) M.noter(x.note, (D.PNJ[id] || {}).ic);
@@ -384,11 +397,17 @@ A['gd-aide'] = function(el){
 function feteVueHTML(m){
   if(m.aide && aide(m.qui)) return aideVueHTML(m);
   var f = F(), id = m.qui, x = f.gens[id], fil = P_vus('fete:filet:' + id) && x.filet;
+  if(m.don && x.don) return '<div class="ma-feuille gd-feuille">' + tete(id) + ligne(cite(x.don.t), id) + '<button class="btn grand b-aller" data-act="gd-fete-don" data-id="' + id + '">✨ La suite</button></div>';
   var h = '<div class="ma-feuille gd-feuille">' + tete(id) + ligne(cite(fil ? x.filet.t : x.t), id);
   if(fil) return h + '<button class="btn grand b-aller" data-act="gd-fete-code" data-id="' + id + '">✨ La suite</button></div>';
   return h + '<button class="btn grand" data-act="fermer">D\'accord</button></div>';
 }
 function P_vus(k){ var P = M.P(); return !!(P && P.vus && P.vus[k]); }
+A['gd-fete-don'] = function(el){
+  var id = el.dataset.id, x = (F() || {gens:{}}).gens[id]; if(!x || !x.don) return;
+  var O = (M.E().objets || {})[x.don.obj] || {};
+  M.decouvrir({ic:O.ic || (D.PNJ[id] || {}).ic, titre:x.don.titre || O.nom || nom(id), t:cite(x.don.t), code:'obj:' + x.don.obj});
+};
 A['gd-fete-code'] = function(el){
   var id = el.dataset.id, x = (F() || {gens:{}}).gens[id]; if(!x || !x.filet) return;
   M.decouvrir({ic:(D.PNJ[id] || {}).ic, titre:nom(id) + ' craque', t:cite(x.filet.t), code:x.filet.code});

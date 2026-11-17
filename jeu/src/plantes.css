@@ -64,3 +64,5 @@ button.ds-page{cursor:pointer}
 .ds-bete-page .ds-croquis{width:150px;height:150px;border-radius:12px;background:#f3e7cb}
 .ds-recit{text-align:left;width:100%;margin:4px 0!important}
 .ds-plan-notes{margin-top:8px}
+/* (17 novembre) la nuit, au bas de la page « Le vieux plan d'Odette » : regarder le plan de tout près (descente.js, M.donjonPlanBloc) */
+.ds-plan-nuit{margin-top:14px;padding-top:12px;border-top:2px dashed rgba(138,106,58,.55)}

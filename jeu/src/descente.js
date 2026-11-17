@@ -124,10 +124,17 @@ function monCodeHTML(){
   return id ? '<div class="b-donne ds-moncode"><p>🛡️ ' + esc(t) + ' ' + lire(t) + '</p>' + M.codeHTML(M.code(id), true) + '</div>' : '';
 }
 /* ---------- Le Sage et l'Alchimiste : la fenêtre de la tenue de combat (ils ont tapé « On va dans la crypte ») ---------- */
+/* (17 novembre, étape 4 du nouveau fil) les tenues viennent de Mélusine (le code du Barde, « Les tenues de Mélusine », E.objets.tenues) :
+   avec lui, les textes le disent. Sans lui, on descend quand même (personne ne reste bloqué). Avant le départ (« On va dans la crypte »),
+   la page « Ma tenue de combat » du Sage montre la tenue, sans son code d'allure. */
+function aTenues(){ var P = M.P(); return !!(P && P.recus && P.recus['obj:tenues']); }
+function parti(){ var P = M.P(); return !!(P && P.recus && P.recus['info:on_descend']); }
 function tenueTexte(){
-  var role = M.role(), po = potions(), reste = po.sur - po.n;
-  if(role === 'sage') return {ok:true, t:'Capuche bleue, grimoire à la ceinture, bâton de cristal : te voilà prêt pour les souterrains ! Le Pisteur vous emmène tous les trois sur sa tablette.'};
-  if(reste <= 0) return {ok:true, t:'Capuche violette, lunettes sur le front, et tes sept potions à la ceinture : te voilà prêt pour les souterrains ! Le Pisteur vous emmène tous les trois sur sa tablette.'};
+  var role = M.role(), po = potions(), reste = po.sur - po.n, mel = aTenues();
+  if(!parti() && role !== 'pisteur') return {ok:false, t:role === 'sage' ? 'Mélusine a tenu parole : capuche bleue, cuir épais, et une poche pour ton grimoire. Ta tenue attend le grand départ.'
+    : 'Mélusine a tenu parole : capuche violette, cuir épais, et une ceinture à sept poches. Ta tenue attend le grand départ.'};
+  if(role === 'sage') return {ok:true, t:(mel ? 'Dans la tenue de Mélusine — capuche bleue' : 'Capuche bleue') + ', grimoire à la ceinture, bâton de cristal : te voilà prêt pour les souterrains ! Le Pisteur vous emmène tous les trois sur sa tablette.'};
+  if(reste <= 0) return {ok:true, t:(mel ? 'Dans la tenue de Mélusine — capuche violette' : 'Capuche violette') + ', lunettes sur le front, et tes sept potions à la ceinture : te voilà prêt pour les souterrains ! Le Pisteur vous emmène tous les trois sur sa tablette.'};
   return {ok:false, t:'Ta tenue est prête… mais pas tes potions ! Il t\'en manque ' + (reste > 1 ? reste : 'une') + '. On a besoin des sept potions pour descendre : file à ton établi. Quand la dernière sera prête, ton code pour le Pisteur t\'y attendra.'};
 }
 M.tenueHTML = function(dansLivre){
@@ -135,7 +142,7 @@ M.tenueHTML = function(dansLivre){
   if(!dansLivre) s += '<h2>' + esc(TITRE_TENUE) + '</h2>';
   s += '<p' + (dansLivre ? ' class="lv-texte"' : '') + '>' + esc(x.t) + ' ' + lire(dansLivre ? x.t : TITRE_TENUE + ' ' + x.t) + '</p>';
   if(x.ok) s += monCodeHTML();
-  if(!dansLivre && role === 'sage'){ var t2 = 'Ton Grand Livre a de nouvelles pages, pour le donjon.'; s += '<p class="ds-suite">' + esc(t2) + ' ' + lire(t2) + '</p>'; }
+  if(!dansLivre && role === 'sage'){ var t2 = 'Dans ton Grand Livre : le vieux plan se regarde maintenant de tout près, et des pages de sauvegarde t\'attendent.'; s += '<p class="ds-suite">' + esc(t2) + ' ' + lire(t2) + '</p>'; }
   return s;
 };
 /* ---------- Le Pisteur : la fenêtre de la descente ---------- */
@@ -171,7 +178,7 @@ M.descenteHTML = function(m){
   }
   /* il manque un équipier : on s'habille, on donne le code du départ, on attend les deux codes */
   if(!(okS && okA)){
-    t = 'Un escalier de pierre s\'enfonce dans le noir… Pas si vite ! On ne descend pas là-dessous en chemise. Capuche verte, arc et dague : te voilà prêt.';
+    t = 'Un escalier de pierre s\'enfonce dans le noir… Pas si vite ! On ne descend pas là-dessous en chemise. ' + (aTenues() ? 'La tenue de Mélusine, sa capuche verte, ton arc et ta dague' : 'Capuche verte, arc et dague') + ' : te voilà prêt.';
     return s + tenueCadre(['pisteur']) + '<h2>' + esc(TITRE_TENUE) + '</h2><p>' + esc(t) + ' ' + lire(TITRE_TENUE + ' ' + t) + '</p>' +
       codeDonne('info:on_descend', 'Donne ce code au Sage et à l\'Alchimiste : ils s\'équipent, et chacun te montrera son code.') +
       '<ul class="ds-prets">' +
@@ -252,19 +259,23 @@ window.addEventListener('message', function(e){
   if(m.type === 'fermer') M.fermerPlan();
   else if(m.type === 'lire'){ if(m.t) M.lire(String(m.t)); }
 });
-/* la page « Le plan des souterrains » du Grand Livre (e3.js : un getter html qui appelle ceci) */
-M.donjonPageSage = function(){
-  /* (16 novembre) le vieux plan d'Odette (la cachette de sa maison) a remplacé « Le plan des Fondateurs » */
-  var P = M.P(), C = dj(), aPlan = !!(P && P.recus && P.recus['obj:vieux_plan']);
-  var t = (aPlan ? 'Le vieux plan d\'Odette te sert enfin : il montre les souterrains, salle par salle.' : 'Entre deux pages de ton Grand Livre, un vieux plan que tu n\'avais jamais vu : des souterrains, sous le village.') +
-    ' Le Pisteur, lui, n\'y verra que de la brume. C\'est toi qui dis le chemin, à voix haute !';
+/* AU DÉPART, au bas de la page « Le vieux plan d'Odette » du Grand Livre (pierres.js, M.vieuxPlanHTML) : le plan se regarde de tout près
+   (17 novembre, étape 4 du nouveau fil : la page « Le plan des souterrains », qui arrivait toute seule la nuit, n'existe plus).
+   Seulement quand le Pisteur a ouvert le passage (le code du départ, « On va dans la crypte », que le Sage tape de toute façon pour
+   s'équiper : les pages de sauvegarde arrivent au même moment). Avant : rien — le vieux plan reste muet (« on ne sait pas ce que c'est,
+   ni où ça mène »), et le Sage ne lit pas le donjon à l'avance. */
+M.donjonPlanBloc = function(){
+  var P = M.P(); if(!P || !cfg() || M.role() !== 'sage' || !(P.recus && P.recus['info:on_descend'])) return '';
+  var C = dj(), posee = !!P.vus['pierre:vieuxplan'];
+  var t = 'Le Pisteur a ouvert le passage : ce vieux plan, c\'est celui de ce qu\'il y a là-dessous ! Déroule-le en grand, et regarde-le de tout près. Le Pisteur, lui, ne verra que de la brume : c\'est toi qui dis le chemin, à voix haute !';
   var l = [];
-  l.push(C['page:dechiree'] ? ['✅', 'Le morceau déchiré est recollé.'] : ['✂️', 'Il manque un coin à ce plan : quelqu\'un l\'a déchiré.']);
-  if(C['rune:lumiere']) l.push(['✨', 'Ta rune de lumière t\'attend sur le plan : promène-la sur le vieux papier.']);
-  return '<p class="lv-texte">' + esc(t) + ' ' + lire(t) + '</p>' +
+  l.push(C['page:dechiree'] ? ['✅', 'Le morceau déchiré est recollé.'] : ['✂️', 'Il manque un coin à ce plan.']);
+  if(C['rune:lumiere']) l.push(posee ? ['✨', 'Ta pierre de rune t\'attend sur le plan : promène-la sur le vieux papier.'] : ['🪨', 'Tu as une pierre de rune dans ta poche : pose-la sur le plan, juste au-dessus.']);
+  return '<div class="ds-plan-nuit"><p class="lv-texte">' + esc(t) + ' ' + lire(t) + '</p>' +
     '<ul class="lv-lignes ds-plan-notes">' + l.map(function(x){ return '<li><span class="lv-lignes-ic" aria-hidden="true">' + x[0] + '</span><p>' + esc(x[1]) + '</p>' + lire(x[1]) + '</li>'; }).join('') + '</ul>' +
-    '<button class="btn grand b-aller lv-ouvrir" data-act="ds-plan">🗺️ Regarder le plan</button>';
+    '<button class="btn grand b-aller lv-ouvrir" data-act="ds-plan"' + (posee ? ' data-nouveau="rune:lumiere"' : '') + '>🔎 Regarder le plan de tout près</button></div>';
 };
+M.donjonPageSage = M.donjonPlanBloc;   /* (l'ancien nom) */
 
 /* --- les pages de sauvegarde --- */
 function pagesSauve(){ return [1, 2].concat(dj()['page:blanche'] ? [4] : []); }
@@ -323,9 +334,11 @@ var VUES = {
     s += L.map(function(t){ return '<p class="ds-recit">' + esc(t) + ' ' + lire(t) + '</p>'; }).join('') + '</div>';
     return s + '<button class="btn grand b-aller" data-act="fermer">' + (m.nouveau ? 'C\'est noté' : 'Refermer la page') + '</button>';
   },
+  /* (17 novembre, étape 4) la pierre de rune rejoint la poche du Sage (E.pierres) : il la pose sur le vieux plan, dans son Grand Livre —
+     le même geste que le matin avec la pierre de Tim */
   rune:function(){
-    return fen('✨', 'Une rune apparaît !', 'La pierre que le Pisteur a trouvée se met à briller… Une rune apparaît ! C\'est une rune de lumière : promène-la sur ton plan, elle réveille l\'encre que les Fondateurs y ont cachée.',
-      '<button class="btn grand b-aller" data-act="ds-plan" data-nouveau="rune:lumiere">🗺️ Regarder le plan</button>' + PLUS_TARD);
+    return fen('🪨', 'Une pierre de rune !', 'La pierre que le Pisteur a trouvée se met à briller dans ta main… Une rune de lumière ! Elle rejoint ta poche. Pose-la sur le vieux plan, dans ton Grand Livre : on verra bien ce qu\'elle réveille.',
+      '<button class="btn grand b-aller" data-act="ds-livre" data-id="vieuxplan">📖 Ouvrir le Grand Livre</button>' + PLUS_TARD);
   },
   coin:function(){
     return fen('📜', 'Le morceau perdu du plan', 'Le Pisteur a trouvé le morceau déchiré de ton plan, dans la bibliothèque engloutie. Pose-le à sa place : les bords se recollent tout seuls…',
@@ -388,7 +401,7 @@ M.codeDonjon = function(id){
     if(!CARNET().livre[quoi]){ delete C[court]; return false; }
     P.vus['donjon:carnet'] = 1; vue = {vue:'bete', m:quoi, nouveau:!deja}; note = ['Le carnet de l\'aventurier, à la page : ' + (CARNET().noms[quoi] || quoi) + '.', '📓'];
   }
-  else if(court === 'rune:lumiere'){ vue = {vue:'rune'}; note = ['Une rune de lumière : elle réveille l\'encre cachée du plan des souterrains.', '✨']; }
+  else if(court === 'rune:lumiere'){ P.vus['donjon:rune'] = 1; vue = {vue:'rune'}; note = ['Une pierre de rune, dans ta poche : à poser sur le vieux plan, dans ton Grand Livre.', '🪨']; }
   else if(court === 'page:dechiree'){ vue = {vue:'coin'}; note = ['Le morceau déchiré du plan des souterrains est retrouvé.', '📜']; }
   else if(court === 'page:blanche'){ vue = {vue:'blanche'}; note = ['Une page blanche de plus dans ton Grand Livre : une sauvegarde de plus.', '✨']; }
   else if(court === 'plante:givre'){ if(M.recevoirPlanteRare) M.recevoirPlanteRare('givre'); vue = {vue:'givre'}; note = ['Le Pisteur t\'a envoyé une fleur de givre : elle t\'attend sur ton établi.', '❄️']; }
