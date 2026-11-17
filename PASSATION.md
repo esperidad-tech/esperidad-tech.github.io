@@ -2,6 +2,8 @@
 
 À lire en entier par la nouvelle conversation avant de toucher à quoi que ce soit.
 
+**17 novembre, 21 h 16 — EN LIGNE (commit 426e083 du site, version 20261117-2016 ; Bible §13.64)** : enquête 3, retours de Romain du soir : plus de message « d'autres écritures » à la loupe de l'Alchimiste ; le Sage est emmené sur « Comparer les écritures » quand le maire lui confie le Livre d'or ; Mélusine et Margot ouvrent la question « les empreintes font combien de carreaux ? » (3 = Mélusine) ; un villageois fâché reparle dès qu'une question s'ouvre chez lui (`E.vexeRouvre`, `barde.js`). **Ouvert (question de Romain à 20 h 46, pas de go) : un seul code « tenue + visage » pour la descente — voir la fin du §13.64.** Aucun code n'a bougé (57, 69, 1629). Les sources ont été fusionnées avec celles de la conversation de 20 h 27 avant la mise en ligne.
+
 **17 novembre, 20 h 27 — EN LIGNE (commit 860fe06 du site, version 20261117-1927 ; Bible §13.63 ; `PASSATION-E3.md`)** : enquête 3, le maire accusé à tort (« Mensonge ? ») donne quand même le code « La lettre est sur le bureau du maire » en s'en allant fâché (sans quoi le Pisteur ne voyait jamais le point de la lettre) ; le Barde a le rond jaune sur la maison d'Odette dès le matin. Nouveau test : `jeu/tools/e3-maire-vexe.py`. Aucun code n'a bougé.
 
 ## Le projet en deux lignes
