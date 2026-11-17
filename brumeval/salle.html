@@ -35842,7 +35842,7 @@ M.destinataire = function(id){
   if(t === 'suite' || t === 'defaite') return 'tous-sauf-sage';
   if(t === 'aide') return D.ROLES[x] ? x : 'tous';
   /* (enquête 3) le code d'allure du Sage ou de l'Alchimiste (descente.js) ; à la fin de l'histoire, au cachot : celui de n'importe qui, pour tous */
-  if(t === 'allure'){ var Pa = M.P(); return Pa && Pa.etape === 'fin' ? 'tous' : 'pisteur'; }
+  if(t === 'allure' || t === 'visage'){ var Pa = M.P(); return Pa && Pa.etape === 'fin' ? 'tous' : 'pisteur'; }   /* (17 novembre : visage, le deuxième code) */
   if(t === 'sac') return 'pisteur';
   if(t === 'donjon') return x === 'plante' ? 'alchimiste' : (x === 'sauve' || x === 'recette') ? 'pisteur' : 'sage';   /* (enquête 3) un code du donjon : descente.js, M.codeDonjon */
   return 'tous';
@@ -35858,6 +35858,7 @@ M.nomCode = function(id){
   if(t === 'defaite') return {ic:'🌫️', nom:'Défaite'};
   if(t === 'sac') return {ic:'🎒', nom:'Le sac de l\'Alchimiste'};
   if(t === 'allure') return {ic:'🛡️', nom:'La tenue de combat'};
+  if(t === 'visage') return {ic:'💇', nom:'Le visage'};
   /* (enquête 3) un code du donjon qu'un joueur de l'enquête garde pour un équipier : le givre de l'Alchimiste, que le Pisteur tape DANS le donjon */
   if(t === 'donjon') return x === 'recette' && p[2] === 'givre' ? {ic:'❄️', nom:'Le givre (à taper dans le donjon)'} : x === 'sauve' ? {ic:'📜', nom:'Un sort de sauvegarde (à taper dans le donjon)'} : {ic:'🕯️', nom:'Un code du donjon'};
   return {ic:'🏆', nom:'Victoire'};
