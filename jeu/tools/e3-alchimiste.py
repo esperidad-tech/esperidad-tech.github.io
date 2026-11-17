@@ -321,6 +321,10 @@ with sync_playwright() as p:
         c = etat()['coupes']; clic('#coupe' + str(c.index(t))); pg.wait_for_timeout(400)
     f = ouvrir()
     verifier(f.evaluate("() => window.__labo.cuirs()") == ['lettre'] and f.locator('#gLivreDor').count() == 0, 'la lettre est sur le cuir ; pas de Livre d\'or sur la paillasse')
+    # (Romain, 17 novembre, 23 h 13 : « sur la lettre, il y a toujours marqué en cours, 1 / 2 trouvés […] mettre 1 sur 1 quand on a trouvé
+    # l'encre, et 0 sur 1 sinon ») la lettre n'a plus qu'une chose à trouver ici, son encre : « 0 / 1 » d'abord
+    etiq = lambda: f.evaluate("() => document.querySelector('#echD-lettre').textContent.replace(/\\s+/g, ' ')")
+    verifier('0 / 1 trouvé' in etiq() and 'En cours' not in etiq() and '✅' not in etiq(), f'l\'étiquette de la lettre, avant : « 0 / 1 trouvé » ({etiq()})')
     shot(pg, 'labo-lettre')
     clic('#ech-lettre'); pg.wait_for_timeout(400); clic('#gLoupe'); pg.wait_for_timeout(1900)
     # (17 novembre, Romain : « il y a encore marqué “il faut d'autres écritures pour comparer” ») plus aucun message : l'Alchimiste ne compare plus les écritures
@@ -345,6 +349,8 @@ with sync_playwright() as p:
     verifier(f.locator('[data-temoin]').count() == 10 and f.locator('[data-temoin="galle"]').count() == 1, 'le carnet de teintures a une page de plus : la noix de galle')
     clic('[data-temoin="galle"]'); pg.wait_for_timeout(2600); shot(pg, 'test-galle'); clic('#bFermer'); pg.wait_for_timeout(900)
     verifier(etat()['trouves'].get('encre_l') and etat()['finis'].get('lettre'), 'l\'encre de noix de galle : l\'analyse de la lettre est bouclée')
+    verifier('✅' in etiq() and 'noix de' in etiq() and 'galle' in etiq() and 'trouvé' not in etiq() and 'En cours' not in etiq() and 'Mélusine' not in etiq() and 'Margot' not in etiq() and 'écriture' not in etiq(),
+             f'l\'encre trouvée : le signe validé ✅ et « noix de galle » sur l\'étiquette de la lettre — ni « 1 / 2 », ni le nom des deux écritures ({etiq()})')
     shot(pg, 'labo-fini')
     f.evaluate("() => window.__labo.quitter()"); pg.wait_for_timeout(800)
     t = texte(pg)
@@ -396,8 +402,10 @@ with sync_playwright() as p:
     shot(pg, 'sac')
     # (13 novembre) le code des sept potions est le CODE D'ALLURE de l'Alchimiste (descente.js) : plus de code du sac
     moi = pg.evaluate("() => M.allureCode()"); seq7 = pg.evaluate("(id) => M.code(id)", moi); bits = pg.evaluate("() => M.sacBits()")
-    verifier(bits == 127 and len(seq7) == 3 and moi.startswith('allure:') and fr.locator('#sacCode .formes').inner_text() == pg.evaluate("(q) => q.map(function(s){ return DONNEES.SYM[s].e; }).join('')", seq7),
-             f'sept potions : l\'établi montre le code d\'allure de l\'Alchimiste ({moi}, {seq7})')
+    # (17 novembre, 22 h, Bible §13.65) le code de l'établi est maintenant « Les sept potions » (info:sac_pret), plus le code d'allure
+    seqP = pg.evaluate("() => M.code('info:sac_pret')")
+    verifier(bits == 127 and len(seq7) == 3 and moi.startswith('allure:') and fr.locator('#sacCode .formes').inner_text() == pg.evaluate("(q) => q.map(function(s){ return DONNEES.SYM[s].e; }).join('')", seqP),
+             f'sept potions : l\'établi montre le code « Les sept potions » ({seqP})')
     ET.quitter(pg)
     verifier(signe(pg) == '', 'le code est montré : le signe s\'en va')
     t = code(pg, moi)

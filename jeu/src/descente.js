@@ -144,7 +144,12 @@ function lookTxt(){
   return l.join(',');
 }
 M.donjonLook = lookTxt;
-function pretADescendre(){ var P = M.P(), a = (P && P.allures) || {}; return !!(a.sage && a.alchimiste && P.sac && P.sac.length); }
+/* (Romain, 17 novembre, 23 h 13 : « l'Alchimiste a les yeux marron alors que son personnage a les yeux bleus ; le Sage, ça a l'air ok ».)
+   Un ami n'est « prêt » que quand son code de SIX symboles est tapé (a.vu : son visage est là). Avant, un ami dont le Pisteur avait
+   tapé l'ancien code d'allure à trois symboles (sans visage : celui de l'après-midi, d'avant 22 h) passait pour prêt : son bouton
+   « 🔢 Le code de… » ne s'affichait plus, et il descendait avec les yeux et la coiffure du héros par défaut. */
+function amiPret(a){ return !!(a && a.vu); }
+function pretADescendre(){ var P = M.P(), a = (P && P.allures) || {}; return !!(amiPret(a.sage) && amiPret(a.alchimiste) && P.sac && P.sac.length); }
 M.donjonPret = pretADescendre;
 /* les héros en tenue de combat : la petite page du donjon, dans un cadre (pas de texte, pas de son, rien à toucher) */
 function tenueCadre(qui){
@@ -251,7 +256,7 @@ M.descenteHTML = function(m){
     s += codeDonne('info:leo_battu');
     return s + '<button class="btn" data-act="fermer">D\'accord</button></div>';
   }
-  var al = P.allures || {}, okS = !!al.sage, okA = !!(al.alchimiste && sac.length), ouvert = !!P.vus['donjon:entree'];
+  var al = P.allures || {}, codeA = amiPret(al.alchimiste), okS = amiPret(al.sage), okA = !!(codeA && sac.length), ouvert = !!P.vus['donjon:entree'];
   /* (17 novembre) les sept potions viennent de arriver dans le sac : rien d'autre (pas de tenue, pas de donjon : on est encore l'après-midi) */
   if(m.vue === 'potions'){
     t = 'L\'Alchimiste a fini ses sept potions : les voilà dans ton sac. Elles te serviront sûrement… plus tard.';
@@ -264,8 +269,10 @@ M.descenteHTML = function(m){
     var qui = m.role === 'sage' ? 'Le Sage' : 'L\'Alchimiste';
     t = (m.role === 'sage' ? 'Voilà le Sage dans sa tenue de combat.' : 'Voilà l\'Alchimiste dans sa tenue de combat' + (sac.length ? ', ses sept potions à la ceinture.' : '.')) + ' C\'est bien ton équipier ? Sinon, retape son code.';
     s += tenueCadre([m.role]) + '<h2>' + qui + ' est prêt !</h2>' + (m.role === 'alchimiste' ? fioles(sac) : '') + '<p>' + esc(t) + ' ' + lire(qui + ' est prêt ! ' + t) + '</p>';
-    if(ouvert && okS && okA) return s + '<button class="btn grand b-aller" data-act="ds-voir">🕯️ Voir la descente</button><button class="btn second" data-act="fermer">Plus tard</button></div>';
-    return s + '<button class="btn grand b-aller" data-act="fermer">D\'accord</button></div>';
+    /* (17 novembre, 23 h 30) « Sinon, retape son code » : le bouton pour le faire est là (avant, plus aucun moyen une fois le code tapé) */
+    var retaper = '<button class="btn second" data-act="ds-six" data-role="' + m.role + '">🔢 Retaper son code</button>';
+    if(ouvert && okS && okA) return s + '<button class="btn grand b-aller" data-act="ds-voir">🕯️ Voir la descente</button>' + retaper + '<button class="btn second" data-act="fermer">Plus tard</button></div>';
+    return s + '<button class="btn grand b-aller" data-act="fermer">D\'accord</button>' + retaper + '</div>';
   }
   /* il manque un équipier : on s'habille, on donne le code du départ, on attend les deux codes */
   if(!(okS && okA)){
@@ -274,9 +281,9 @@ M.descenteHTML = function(m){
       codeDonne('info:on_descend', 'Donne ce code au Sage et à l\'Alchimiste : ils s\'équipent, et chacun te montrera son code.') +
       '<ul class="ds-prets">' +
         lignePret(okS, '📖', okS ? 'Le Sage est prêt.' : 'Il te manque le code du Sage.') +
-        lignePret(okA, '⚗️', okA ? 'L\'Alchimiste est prêt, avec ses sept potions.' : (al.alchimiste ? 'Il te manque ses sept potions : l\'Alchimiste a un code pour ça, quand elles sont toutes prêtes.' : 'Il te manque le code de l\'Alchimiste.' + (sac.length ? '' : ' Et on a besoin des sept potions pour descendre.'))) +
+        lignePret(okA, '⚗️', okA ? 'L\'Alchimiste est prêt, avec ses sept potions.' : (codeA ? 'Il te manque ses sept potions : l\'Alchimiste a un code pour ça, quand elles sont toutes prêtes.' : 'Il te manque le code de l\'Alchimiste.' + (sac.length ? '' : ' Et on a besoin des sept potions pour descendre.'))) +
       '</ul>' + (okS ? '' : '<button class="btn grand b-aller" data-act="ds-six" data-role="sage">🔢 Le code du Sage</button>') +
-      (al.alchimiste ? '' : '<button class="btn grand b-aller" data-act="ds-six" data-role="alchimiste">🔢 Le code de l\'Alchimiste</button>') + '</div>';   /* (on referme avec ✕ : la fenêtre tient dans l'écran d'une tablette) */
+      (codeA ? '' : '<button class="btn grand b-aller" data-act="ds-six" data-role="alchimiste">🔢 Le code de l\'Alchimiste</button>') + '</div>';   /* (on referme avec ✕ : la fenêtre tient dans l'écran d'une tablette) */
   }
   var n = sac.length, deja = !!P.vus['donjon:parti'];
   t = deja ? 'Le donjon t\'attend, là où tu l\'as laissé. Les trois héros descendent ensemble, sur ta tablette.'
@@ -339,7 +346,8 @@ M.fermerPlan = function(){
 };
 A['ds-plan'] = function(el){
   var P = M.P(); if(!P || M.role() !== 'sage' || !cfg() || M.planOuvert()) return;
-  var u = planAdresse(el && el.dataset ? el.dataset.nouveau : '');
+  var nouveau = el && el.dataset ? el.dataset.nouveau : '', u = planAdresse(nouveau);
+  if(nouveau === 'rune:lumiere') P.vus['donjon:rune:plan'] = 1;   /* (la scène de la rune qui apparaît : une seule fois) */
   P.vus['donjon:ouvert:sage'] = 1; M.sauver(); if(M.stop) M.stop(); M.son('page');
   M.UI.modal = null;
   if(window.BRUMEVAL_SANS_DONJON){ window.__donjonVers = u; M.render(); return; }
@@ -362,18 +370,43 @@ window.addEventListener('message', function(e){
    Seulement quand le Pisteur a ouvert le passage (le code du départ, « On va dans la crypte », que le Sage tape de toute façon pour
    s'équiper : les pages de sauvegarde arrivent au même moment). Avant : rien — le vieux plan reste muet (« on ne sait pas ce que c'est,
    ni où ça mène »), et le Sage ne lit pas le donjon à l'avance. */
-M.donjonPlanBloc = function(){
+/* (Romain, 17 novembre, 23 h 13 : « sur le Sage, j'ai pas le plan des galeries […] on peut poser la pierre sur le plan, mais ça sert à rien
+   […] le plan, on peut pas zoomer dedans […] quand je clique sur le plan, il se passe rien ».) Le bouton jaune était tout en bas de la
+   page, hors de l'écran : il fallait faire défiler pour le trouver. Maintenant :
+   · M.donjonPlanBouton : le bouton jaune est JUSTE SOUS le petit plan (pierres.js le met là), avec le rond jaune tant que le Sage n'a
+     pas encore déroulé le plan (ou pas encore depuis que sa pierre de rune y est posée) ;
+   · toucher le petit plan lui-même le déroule aussi en grand (pierres.js, PLANS.vieuxplan.ouvrir) ;
+   · M.donjonPlanBloc : au bas de la page, il ne reste que les explications. */
+M.donjonPlanOuvrable = function(){
   /* (et seulement la nuit : les codes ne changent pas d'une partie à l'autre — un joueur qui connaît déjà celui du départ ne doit pas
      pouvoir dérouler le plan dès le matin) */
-  var P = M.P(); if(!P || !cfg() || M.role() !== 'sage' || !nuit() || !(P.recus && P.recus['info:on_descend'])) return '';
-  var C = dj(), posee = !!P.vus['pierre:vieuxplan'];
-  var t = 'Le Pisteur a ouvert le passage : ce vieux plan, c\'est celui de ce qu\'il y a là-dessous ! Déroule-le en grand, et regarde-le de tout près. Le Pisteur, lui, ne verra que de la brume : c\'est toi qui dis le chemin, à voix haute !';
+  var P = M.P(); return !!(P && cfg() && M.role() === 'sage' && nuit() && P.recus && P.recus['info:on_descend']);
+};
+/* la petite scène « Une rune apparaît ! » ne se joue qu'une fois sur le grand plan (P.vus['donjon:rune:plan']) */
+function runeAMontrer(){ var P = M.P(); return !!(P && P.vus['pierre:vieuxplan'] && dj()['rune:lumiere'] && !P.vus['donjon:rune:plan']); }
+M.donjonPlanOuvrir = function(){
+  if(!M.donjonPlanOuvrable() || M.planOuvert()) return false;
+  A['ds-plan']({dataset:{nouveau:runeAMontrer() ? 'rune:lumiere' : ''}});
+  return true;
+};
+/* où : 'sous' (juste sous le dessin) ou 'apres' (après la poche). Tant que la pierre de rune attend dans la poche, c'est elle qu'on doit
+   voir d'abord : le bouton passe après la poche, sans rond jaune (toucher le plan le déroule toujours). */
+M.donjonPlanBouton = function(ou){
+  if(!M.donjonPlanOuvrable()) return '';
+  var P = M.P(), attend = !!(dj()['rune:lumiere'] && !P.vus['pierre:vieuxplan']);
+  if((ou === 'apres') !== attend) return '';
+  var neuf = runeAMontrer(), guide = !attend && (neuf || !P.vus['donjon:ouvert:sage']);
+  return '<div class="ds-plan-bouton"><button class="btn grand b-aller lv-ouvrir' + (guide ? ' b-guide' : '') + '" data-act="ds-plan"' + (neuf ? ' data-nouveau="rune:lumiere"' : '') + '>🔎 Regarder le plan de tout près</button></div>';
+};
+M.donjonPlanBloc = function(){
+  if(!M.donjonPlanOuvrable()) return '';
+  var P = M.P(), C = dj(), posee = !!P.vus['pierre:vieuxplan'];
+  var t = 'Le Pisteur a ouvert le passage : ce vieux plan, c\'est celui de ce qu\'il y a là-dessous ! Le Pisteur, lui, ne verra que de la brume : c\'est toi qui dis le chemin, à voix haute !';
   var l = [];
   l.push(C['page:dechiree'] ? ['✅', 'Le morceau déchiré est recollé.'] : ['✂️', 'Il manque un coin à ce plan.']);
-  if(C['rune:lumiere']) l.push(posee ? ['✨', 'Ta pierre de rune t\'attend sur le plan : promène-la sur le vieux papier.'] : ['🪨', 'Tu as une pierre de rune dans ta poche : pose-la sur le plan, juste au-dessus.']);
+  if(C['rune:lumiere']) l.push(posee ? ['✨', 'Ta pierre de rune t\'attend sur le plan déroulé : là, elle se promène partout.'] : ['🪨', 'Tu as une pierre de rune dans ta poche : pose-la sur le plan, juste au-dessus.']);
   return '<div class="ds-plan-nuit"><p class="lv-texte">' + esc(t) + ' ' + lire(t) + '</p>' +
-    '<ul class="lv-lignes ds-plan-notes">' + l.map(function(x){ return '<li><span class="lv-lignes-ic" aria-hidden="true">' + x[0] + '</span><p>' + esc(x[1]) + '</p>' + lire(x[1]) + '</li>'; }).join('') + '</ul>' +
-    '<button class="btn grand b-aller lv-ouvrir" data-act="ds-plan"' + (posee ? ' data-nouveau="rune:lumiere"' : '') + '>🔎 Regarder le plan de tout près</button></div>';
+    '<ul class="lv-lignes ds-plan-notes">' + l.map(function(x){ return '<li><span class="lv-lignes-ic" aria-hidden="true">' + x[0] + '</span><p>' + esc(x[1]) + '</p>' + lire(x[1]) + '</li>'; }).join('') + '</ul></div>';
 };
 M.donjonPageSage = M.donjonPlanBloc;   /* (l'ancien nom) */
 

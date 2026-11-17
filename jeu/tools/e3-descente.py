@@ -157,6 +157,14 @@ def allure(pg, role, sexe='f', peau='p5', cheveux='noir'):
     """le code d'allure d'un équipier (comme il s'affiche chez lui), vu depuis cette tablette"""
     return pg.evaluate("([r, a]) => 'allure:' + M.allureNumero(r, a)", [role, {'sexe': sexe, 'peau': peau, 'cheveux': cheveux}])
 
+def six(pg, role, a):
+    """(17 novembre, 23 h 30) le code à SIX symboles d'un ami (tenue ET visage), tapé par le Pisteur sur l'écran du départ : la fenêtre
+    de la descente doit être ouverte, avec son bouton « 🔢 Le code de… » (ou « 🔢 Retaper son code »)"""
+    pg.locator(f'#voile [data-act=ds-six][data-role={role}]').first.click(); pg.wait_for_timeout(300)
+    seq = pg.evaluate("([r, a]) => { var n = M.allureNumero(r, a) * 224 + M.visageNumero(a), o = DONNEES.ORDRE_SYM, s = [], i; for(i = 0; i < 6; i++){ s.unshift(o[n % 12]); n = Math.floor(n / 12); } return s; }", [role, a])
+    for x in seq: ev(pg, 'd6-sym', {'s': x}); pg.wait_for_timeout(60)
+    pg.wait_for_timeout(500)
+
 def tenue_prete(pg, attente=20000):
     """la petite page de la tenue (un cadre dans la fenêtre) : on attend que ses héros soient là ; rend « qui » (ou '')"""
     for _ in range(int(attente / 250)):
@@ -361,8 +369,21 @@ def partie_enquete(b):
     shot(pg, 'puits-acide')
     point(pg, 'descendre')
     t = texte(pg)
+    # (Romain, 17 novembre, 23 h 13 : « l'Alchimiste a les yeux marron alors que son personnage a les yeux bleus ») un ami dont le Pisteur
+    # n'a tapé que l'ANCIEN code d'allure à trois symboles (sans visage) n'est plus « prêt » : son bouton « 🔢 Le code de… » reste là
+    verifier('Il te manque le code du Sage' in t and 'Il te manque le code de l\'Alchimiste' in t and pg.locator('#voile [data-act=ds-aller]').count() == 0 and pg.locator('#voile [data-act=ds-six]').count() == 2,
+             'l\'ancien code à trois symboles de l\'Alchimiste ne suffit plus : la fenêtre demande encore le code à six symboles des deux amis')
+    six(pg, 'alchimiste', {'sexe': 'm', 'peau': 'p2', 'cheveux': 'brun', 'age': 'adulte', 'coiffure': 'boucles', 'yeux': 'bleu', 'barbe': ''})
+    t = texte(pg); a = pg.evaluate("() => M.P().allures.alchimiste")
+    verifier('L\'Alchimiste est prêt' in t and a.get('yeux') == 'bleu' and a.get('vu') and 'a:m.p2.brun.bleu' in pg.evaluate("() => M.donjonLook()"), f'son code à six symboles : ses yeux bleus partent au donjon ({pg.evaluate("() => M.donjonLook()")})')
+    verifier(pg.locator('#voile [data-act=ds-six][data-role=alchimiste]').count() == 1 and 'Retaper son code' in t, '« Sinon, retape son code » : le bouton « 🔢 Retaper son code » est là')
+    six(pg, 'alchimiste', {'sexe': 'm', 'peau': 'p2', 'cheveux': 'brun', 'age': 'adulte', 'coiffure': 'boucles', 'yeux': 'gris', 'barbe': ''})
+    verifier(pg.evaluate("() => M.P().allures.alchimiste.yeux") == 'gris', 'retapé : le héros change (des yeux gris)')
+    six(pg, 'alchimiste', {'sexe': 'm', 'peau': 'p2', 'cheveux': 'brun', 'age': 'adulte', 'coiffure': 'boucles', 'yeux': 'bleu', 'barbe': ''})
+    fermer(pg)
+    lieu(pg, 'puits'); point(pg, 'descendre'); t = texte(pg)
     verifier('Il te manque le code du Sage' in t and 'L\'Alchimiste est prêt' in t and pg.locator('#voile [data-act=ds-aller]').count() == 0, 'la fenêtre de la tenue : il manque le Sage')
-    code(pg, allure(pg, 'sage'))
+    six(pg, 'sage', {'sexe': 'f', 'peau': 'p5', 'cheveux': 'noir', 'age': 'adulte', 'coiffure': 'tresses', 'yeux': 'ambre', 'barbe': ''}); fermer(pg)
     lieu(pg, 'puits'); point(pg, 'descendre')
     verifier(pg.locator('#voile .pl-fiole.pl-pleine').count() == 7 and pg.locator('#voile [data-act=ds-aller]').count() == 1, 'les deux codes tapés : la fenêtre de la descente, sept potions')
     pg.locator('#voile [data-act=ds-aller]').click(); pg.wait_for_timeout(300)
@@ -460,6 +481,18 @@ def partie_enquete(b):
     tp = texte(pg, '#livre-ici .lv-page.on')
     verifier(pg.evaluate("() => window.__pp.etat('vieuxplan').parle") and 'se rallument' in tp and pg.locator(ACT + '.pp-poche').count() == 0, f'la pierre de rune posée sur le vieux plan : « Les vieux signes se rallument… » ({tp[:60]})')
     shot(pg, 'sage-rune-posee')
+    # (Romain, 17 novembre, 23 h 13 : « j'ai pas le plan des galeries […] quand je clique sur le plan, il se passe rien ») le bouton jaune
+    # est juste sous le dessin, à l'écran sans faire défiler, avec le rond jaune ; et toucher le petit plan le déroule aussi
+    geo = pg.evaluate("() => { var b = document.querySelector('#livre-ici .lv-page.on [data-act=ds-plan]').getBoundingClientRect(), p = document.querySelector('#livre-ici .lv-page.on .pp-plan').getBoundingClientRect(), d = document.querySelector('#livre-ici .lv-page.on .pp-dit').getBoundingClientRect(); return {b:[b.top, b.bottom], plan:p.bottom, dit:d.top, h:innerHeight}; }")
+    verifier(geo['plan'] <= geo['b'][0] <= geo['dit'] and geo['b'][1] < geo['h'] - 110 and pg.locator(ACT + '[data-act=ds-plan].b-guide').count() == 1 and pg.locator(ACT + '.pp-plan .pp-loupe').count() == 1,
+             f'la pierre posée : le bouton jaune « Regarder le plan de tout près » est juste sous le dessin, à l\'écran, avec le rond jaune ; une loupe sur le plan ({geo})')
+    verifier('promène-la partout' not in tp and 'Déroule ce plan en grand' in tp, 'le texte ne dit plus de promener la pierre sur le petit dessin : « Déroule ce plan en grand »')
+    pg.evaluate("() => { window.__donjonVers = ''; }")
+    r = pg.evaluate("() => { var r = document.querySelector('#livre-ici .lv-page.on .pp-plan').getBoundingClientRect(); return [r.left + r.width * .35, r.top + r.height * .5]; }")
+    pg.mouse.click(r[0], r[1]); pg.wait_for_timeout(300)
+    verifier('nouveau=rune%3Alumiere' in vers(pg) and 'dans=jeu' in vers(pg), f'toucher le petit plan le déroule en grand, avec la rune ({vers(pg)[-60:]})')
+    verifier(pg.locator(ACT + '[data-act=ds-plan].b-guide').count() == 0 and not pg.evaluate("() => document.querySelector('#livre-ici .lv-page.on [data-act=ds-plan]').dataset.nouveau"), 'le plan déroulé une fois : plus de rond jaune, et la scène de la rune ne se rejoue pas')
+    pg.evaluate("() => { delete M.P().vus['donjon:rune:plan']; M.render(); }"); pg.wait_for_timeout(200)
     pg.locator(ACT + '[data-act=ds-plan]').click(); pg.wait_for_timeout(300)
     u = urllib.parse.parse_qs(vers(pg).split('?')[1])
     verifier(u.get('nouveau') == ['rune:lumiere'] and 'rune:lumiere' in u.get('codes', [''])[0].split(',') and u.get('dans') == ['jeu'], f'le plan s\'ouvre avec la rune ({u.get("codes")})')
@@ -580,7 +613,13 @@ def partie_vraie(b):
         verifier(pg.locator('#voile iframe.ds-tenue').count() == 1 and tenue_prete(pg) == 'pisteur', 'la fenêtre de la tenue montre pour de vrai le Pisteur en tenue de combat (la petite page du donjon)')
         pg.screenshot(path=f'{OUT}/v0-tenue-pisteur.png')
         fermer(pg)
-        code(pg, allure(pg, 'sage', 'm', 'p6', 'blond')); code(pg, allure(pg, 'alchimiste', 'f', 'p2', 'rose'))
+        # (17 novembre, 23 h 30) comme chez Romain : l'ancien code à trois symboles de l'Alchimiste d'abord (ses potions, pas son visage),
+        # puis les deux codes à six symboles — l'Alchimiste a les yeux bleus
+        code(pg, allure(pg, 'alchimiste', 'f', 'p2', 'rose'))
+        lieu(pg, 'clocher'); point(pg, 'descendre'); pg.wait_for_timeout(400)
+        six(pg, 'sage', {'sexe': 'm', 'peau': 'p6', 'cheveux': 'blond', 'age': 'adulte', 'coiffure': 'milong', 'yeux': 'gris', 'barbe': ''}); fermer(pg)
+        lieu(pg, 'clocher'); point(pg, 'descendre'); pg.wait_for_timeout(400)
+        six(pg, 'alchimiste', {'sexe': 'f', 'peau': 'p2', 'cheveux': 'rose', 'age': 'adulte', 'coiffure': 'chignon', 'yeux': 'bleu', 'barbe': ''}); fermer(pg)
         lieu(pg, 'clocher'); point(pg, 'descendre'); pg.wait_for_timeout(400)
         verifier(tenue_prete(pg) == 'sage,alchimiste,pisteur', 'la fenêtre de la descente montre les trois héros en tenue')
         pg.screenshot(path=f'{OUT}/v0-descente-trois.png')
@@ -591,6 +630,7 @@ def partie_vraie(b):
         verifier(P['enquete'] == 3 and P['jeton'] == j and P['entree'] == 'crypte' and len(P['recettes']) == 7, f'le donjon s\'ouvre pour de vrai : une partie neuve, le jeton, la crypte, sept potions ({P["recettes"]})')
         L = pg.evaluate("() => { var A = DonjonAllure, L = DJ.LOOK; return {sage:[L.sage.fille, L.sage.pe === A.PE.p6, L.sage.ch === A.CH.blond, !!L.sage.lunettes], alchimiste:[L.alchimiste.fille, L.alchimiste.pe === A.PE.p2, L.alchimiste.ch === A.CH.rose], pisteur:[L.pisteur.fille, !!L.pisteur.pe]}; }")
         verifier(L['sage'] == [False, True, True, True] and L['alchimiste'] == [True, True, True] and 's:m.p6.blond' in (P['look'] or ''), f'les trois héros ont l\'allure des joueurs ({P["look"]})')
+        verifier(pg.evaluate("() => DJ.LOOK.alchimiste.ir === DonjonAllure.YX.bleu && DJ.LOOK.sage.ir === DonjonAllure.YX.gris") and 'a:f.p2.rose.bleu' in (P['look'] or ''), 'dans le donjon, l\'Alchimiste a bien ses yeux bleus (et le Sage ses yeux gris)')
         pg.wait_for_timeout(1200)
         verifier(pg.evaluate("() => { var st = document.querySelector('#dj-css-heros-look'); return !!st && (st.textContent.match(/data:image\\/png/g) || []).length; }") == 3, 'leurs petites têtes sont refaites à leur allure (trois photos)')
         t = pg.evaluate("() => document.querySelector('#conteur') ? document.querySelector('#conteur').textContent : ''")
