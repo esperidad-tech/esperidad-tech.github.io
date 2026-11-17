@@ -1,6 +1,8 @@
-# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 17 novembre, 14 h 40)
+# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 17 novembre, 23 h 40)
 
 À lire en entier par la nouvelle conversation avant de toucher à quoi que ce soit.
+
+**17 novembre, 23 h 40 — EN LIGNE (commits 3c65950 (donjon) et b9ff998 (jeu) du site, version 20261117-2239 ; Bible §13.66)** : les films qui ramaient (le puits) ou restaient figés sur leur première image (la fin du donjon) sur le Chrome de Romain : pendant un film, `cacherDessous` (`jeu/src/cine-lecteur.js`, le même lecteur dans le jeu et le donjon) cache la scène du dessous (`visibility:hidden !important`) et met ses animations en pause, puis remet tout à la fin. Nouveau test : `jeu/tools/cine-dessous.py`. **Pas prouvé que ça règle son problème (jamais reproduit) : lui faire rejouer le film du puits et celui de la fin du donjon.** Aucun code n'a bougé (57 / 69 / 1630).
 
 **17 novembre, soir (22 h) — EN LIGNE (Bible §13.65)** : enquête 3, trois chantiers de Romain : (1) le code « Les sept potions » (`info:sac_pret`, nouveau, gelé) remplace le code d'allure de l'après-midi : plus de tenue ni de donjon dévoilés ; (2) l'écran de descente du Pisteur : un code de SIX symboles par ami (tenue + visage, calculé, `M.tenueCode6` / `decoderTenue6`, boutons `ds-six`, `d6-sym`) ; (3) le Sage trouve deux mains pareilles (Margot et Mélusine) et donne le code gelé `info:cest_melusine` au Barde, qui juge au mensonge ; la page « Comparer les écritures » s'ouvre quand lettre + Livre d'or sont réunis ; (4) les tenues de Mélusine (quatre, la sienne comprise) à prendre à la fête avant de parler à Anselme. Codes : 57 / 69 / 1630.
 
