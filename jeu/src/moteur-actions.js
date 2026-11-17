@@ -1274,6 +1274,13 @@ A.explorer = function(el){
   P.vus['explore:' + el.dataset.id] = P.moment;
   M.son('pas'); M.sauver(); M.ouvrir({type:'lieu', id:el.dataset.id});
 };
+/* (enquête 3, 17 novembre) lire l'affiche sur la porte d'un lieu (L.affiche, M.afficheIci) : les quatre rôles la lisent, elle ne donne rien */
+A.affiche = function(el){
+  var P = M.P(), l = el.dataset.id, af = M.afficheIci && M.afficheIci(l);
+  if(!P || !af) return;
+  P.vus['affiche:' + l + ':' + P.moment] = 1; M.sauver();
+  M.decouvrir({ic:af.ic || '📜', titre:af.nom || 'Une affiche', t:af.t, retour:'lieu', retourId:l});
+};
 A.point = function(el){
   var role = M.role(), l = el.dataset.l, id = el.dataset.id, P = M.P(), E = M.E();
   var p = M.pointsVisibles(l, role).filter(function(x){ return x.id === id; })[0];

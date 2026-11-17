@@ -80,7 +80,12 @@ E[3] = {
       /* la nuit (des:2) */
       /* (13 novembre : « les missions de la nuit sont trop grillées ») elles n'arrivent que quand le Barde sait de quoi elles parlent
          (e.si, mission.js) : la clé avec le code du Pisteur « La crypte est fermée », la fête une fois Anselme vu */
-      {des:2, si:[{code:'info:crypte_fermee'}], ic:'🗝️', t:'La crypte est fermée, et Anselme a la seule clé. Quand tu sauras tout ce qu\'il faut, va le voir au clocher, la nuit.', fait:[{vu:'grand:cle:fini'}]},
+      /* (17 novembre, étape 3 du nouveau fil) « 💡 LE PLAN » : il s'écrit tout seul dans le Carnet du Barde quand il a entendu les quatre
+         phrases qui le font — le refus d'Anselme (sa clé à la ceinture), Basile (il ne prête rien, sauf à qui l'aide à sonner), et Silas
+         deux fois (la grille grince, lui la soulève ; il sonne les yeux fermés). Avec son code pour le Pisteur (e.code, mission.js) :
+         chez lui, sa mission de la nuit s'affiche. Même place dans la liste que l'ancienne mission de la clé (les cases cochées tiennent). */
+      {si:[{et:[{vu:'barde:anselme:4'}, {vu:'barde:basile:3'}, {vu:'barde:silas:2'}, {vu:'barde:silas:3'}]}], ic:'💡', code:'info:plan_nuit',
+        t:'Le plan ! Cette nuit, aide Anselme à sonner la Grosse Marie. Pendant qu\'il compte les coups, les yeux fermés, le Pisteur lui prend sa clé. Dis-le à tes amis !', fait:[{vu:'grand:cle:fini'}]},
       /* (13 novembre, Bible §13.33 : « Retenir le maire » est retiré — le Barde, maintenant, apporte des indices pour le donjon) elle
          n'arrive qu'avec le code du Pisteur, « L'homme en cape est là ! » ; à la fête, Farinel et Iris portent alors un « ❗ » */
       {des:2, si:[{code:'info:leo_la'}], ic:'🎉', t:'Tes amis se battent, tout au fond ! À la fête, quelqu\'un saura peut-être les aider.', fait:[{et:[{vu:'fete:aide:farinel'}, {vu:'fete:aide:iris'}, {vu:'fete:aide:silas'}]}]},
@@ -97,6 +102,9 @@ E[3] = {
       {ic:'🏛️', t:'L\'après-midi, va rendre ta mission au maire.', fait:[{vu:'pisteur:mairie:mission'}, {et:[{rate:'pisteur:place:banderoles'}, {rate:'pisteur:boulangerie:oie'}]}]},
       /* (Romain, 13 novembre : « quand on passe la nuit, il y a des missions qui se mettent à jour et, pour le Pisteur, c'est trop
          grillé. Il faut les enlever. ») plus de missions de la nuit : ni le sac, ni le donjon — on les découvre en jouant */
+      /* (17 novembre, étape 3 du nouveau fil) sauf une, que le Pisteur ne voit qu'avec le code du Barde, « Le plan de la nuit » : c'est
+         l'équipe qui a trouvé le plan, la mission ne fait que le lui rappeler */
+      {si:[{code:'info:plan_nuit'}], ic:'🗝️', t:'Le plan de la nuit : quand la Grosse Marie sonnera, monte au clocher sans te faire voir, et prends la clé à la ceinture d\'Anselme.', fait:[{fini:'pisteur:clocher:cle'}]},
       {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
     ],
     /* (étape 4) le gâteau (une création libre : on ne le rate jamais), les sept plantes, la lettre au labo, les sept potions de la nuit */
@@ -579,6 +587,11 @@ E[3] = {
     /* (12 novembre : plus de codes « Le gui du pommier » ni « Le gui » — le gui est dans le Vieux verger, au-delà de la brume, sur le pommier
        à l'échelle : l'Alchimiste y grimpe elle-même ; Bible §13.26) */
     /* (12 novembre au soir : le code garde son nom de code, cle_clou, mais Anselme ne pend plus sa clé au clou — elle est à sa ceinture) */
+    /* (17 novembre) « Le plan de la nuit » : le Barde l'a dans son Carnet avec « 💡 Le plan » (E.etapes.barde) ; chez le Pisteur, il
+       affiche sa mission de la nuit */
+    plan_nuit:{nom:'Le plan de la nuit', ic:'💡', pour:'pisteur', de:'barde',
+      t:'Le Barde a un plan ! Anselme ne prête jamais sa clé : elle ne quitte pas sa ceinture. Mais cette nuit, il sonnera la Grosse Marie, les yeux fermés, pour compter les coups… Ce sera le moment de la lui prendre.',
+      dire:'Le Pisteur a un rôle dans ce plan : donne-lui ce code.'},
     cle_clou:{nom:'La Grosse Marie sonne', ic:'🔔', pour:'pisteur', de:'barde',
       t:'Le Barde aide Anselme à sonner la Grosse Marie. DONG… DONG… Anselme ferme les yeux et compte les coups. Sa clé pend à sa ceinture…',
       dire:'C\'est le moment de la lui prendre ! Donne ce code au Pisteur.'},
@@ -787,6 +800,10 @@ E[3] = {
       ]}
     },
     clocher:{
+      /* (17 novembre, étape 3 du nouveau fil : « l'affiche est vue par les quatre ») l'après-midi, une affiche sur la porte de l'église, sur
+         la carte de chacun (L.affiche, moteur-roles.js). Elle dit QUAND Anselme sonnera : c'est une pièce du plan de la nuit. */
+      affiche:{moments:A_, ic:'📜', nom:'Une affiche',
+        t:'Sur la porte de l\'église, une affiche toute fraîche : « CETTE NUIT, LA GROSSE MARIE OUVRIRA LA FÊTE ! »'},
       /* (12 novembre, Bible §13.26) L'ALCHIMISTE ET BERTILLE : des plantes poussent au-delà de la brume. Anselme sonne Bertille, la plus petite de
          ses trois cloches (« Bertille, Gontran et la Grosse Marie », pnj.anselme) : elle repousse la brume « un petit peu » — au nord et à l'ouest
          (E.brume). La Grosse Marie, elle, sonne l'ouverture de la fête, la nuit : c'est l'affaire du Barde (grands.cle). À tout moment de la journée.
@@ -800,11 +817,14 @@ E[3] = {
       alchimiste:{intro:'Le clocher. Tout là-haut, Anselme veille sur ses trois cloches : Bertille, Gontran et la Grosse Marie.', points:[
         /* (Romain, 13 novembre ; disparait : regles.js) les quatre plantes d'au-delà de la brume cueillies : plus rien à demander à
            Anselme pour la cloche ; la mélisse rapportée : plus rien à lui dire sur sa tisane */
-        {id:'bertille', ic:'🔔', nom:'Monter voir Anselme', disparait:[{brumeFinie:true}],
-          t:'« AH, TE VOILÀ ! » Anselme bâille à s\'en décrocher la mâchoire. « Mes cloches me résonnent dans la tête : je ne dors plus ! Il me faudrait une tisane de mélisse… mais la mélisse ne pousse plus que derrière la brume. » Il attrape la plus petite corde. « Bertille est toute menue : elle ne repousse la brume qu\'un petit peu. Ça suffira. Tu m\'en rapportes ? » DING ! DING ! DING ! Par la lucarne, tu vois la brume reculer, au nord et à l\'ouest.',
+        /* (17 novembre) le matin, Anselme dort : rien à faire au clocher avant l'après-midi */
+        {id:'endormi', ic:'💤', nom:'Monter voir Anselme', moments:M_,
+          t:'Sur la porte du clocher, un écriteau : « SONNEUR ENDORMI. REVENEZ CET APRÈS-MIDI. » Derrière la porte, ça ronfle comme une cloche fêlée.'},
+        {id:'bertille', ic:'🔔', nom:'Monter voir Anselme', moments:AN_, disparait:[{brumeFinie:true}],
+          t:'« AH, TE VOILÀ ! » Anselme bâille à s\'en décrocher la mâchoire. « J\'ai dormi toute la matinée… et très mal ! Mes cloches me résonnent dans la tête. Il me faudrait une tisane de mélisse… mais la mélisse ne pousse plus que derrière la brume. » Il attrape la plus petite corde. « Bertille est toute menue : elle ne repousse la brume qu\'un petit peu. Ça suffira. Tu m\'en rapportes ? » DING ! DING ! DING ! Par la lucarne, tu vois la brume reculer, au nord et à l\'ouest.',
           note:'Anselme a sonné Bertille, sa plus petite cloche : la brume a reculé un peu, au nord et à l\'ouest du village. En échange, il veut de la mélisse pour sa tisane.'},
-        {id:'tisane', ic:'🍵', nom:'Porter la mélisse à Anselme', or:3, visibleSi:[{vu:'plante:melisse'}], disparait:[{vu:'alchimiste:clocher:tisane'}],
-          t:'Tu lui tends une belle poignée de mélisse. Il froisse une feuille sous son nez. « ÇA SENT LE CITRON ! » Ce soir, une bonne tisane, et il dormira comme un loir. « Garde le reste pour toi. Et merci ! »',
+        {id:'tisane', ic:'🍵', nom:'Porter la mélisse à Anselme', moments:AN_, or:3, visibleSi:[{vu:'plante:melisse'}], disparait:[{vu:'alchimiste:clocher:tisane'}],
+          t:'Tu lui tends une belle poignée de mélisse. Il froisse une feuille sous son nez. « ÇA SENT LE CITRON ! » Cette nuit, après la fête, une bonne tisane, et il dormira comme un loir. « Garde le reste pour toi. Et merci ! »',
           note:'Anselme a sa mélisse. En tisane, elle calme et elle aide à dormir.'}
       ]},
       pisteur:{intro:'Le clocher. Tout là-haut dort la Grosse Marie, la plus vieille cloche du village.', points:[
@@ -1045,9 +1065,15 @@ E[3] = {
     voisin:{ou:{matin:'L2', apresmidi:'L2', nuit:'L2'}, salut:'La maison d\'Odette. La porte n\'est toujours pas fermée à clé…', questions:[
       /* (17 novembre, étape 3 du nouveau fil) plus de code « Les traces de Moustache » : le Pisteur les voit lui-même, chez Odette,
          l'après-midi ; le Barde, qui voit le lait renversé, le lui dit s'il n'y a pas pensé */
+      /* (17 novembre) le matin, plus de lait renversé ni de traces : c'est le bol de midi qui se renverse (le Pisteur le voit l'après-midi) */
       {q:'Poser la canne d\'Odette', donne:['obj:carnet'], titreDonne:'Chez Odette',
-        a:'Tu poses la canne contre la porte. Sur la table, le carnet d\'Odette : un chat à chaque page, et son écriture penchée. Par terre, du lait renversé… et de petites traces de pattes qui filent dehors !',
-        note:'Chez Odette : tu as posé sa canne contre la porte. Sur la table, son carnet, de son écriture penchée. Par terre, du lait renversé, et de petites traces de pattes qui filent dehors.'}
+        a:'Tu poses la canne contre la porte. Sur la table, le carnet d\'Odette : un chat à chaque page, avec ses traces de pattes, et son écriture penchée.',
+        note:'Chez Odette : tu as posé sa canne contre la porte. Sur la table, son carnet : un chat à chaque page, avec ses traces de pattes, et son écriture penchée.'},
+      /* [1] (17 novembre, étape 3 du nouveau fil : « la maison d'Odette brille aussi sur sa carte : il voit le lait renversé, et le dit
+         au Pisteur s'il n'y a pas pensé ») l'après-midi et la nuit, sans code : une phrase à dire à voix haute */
+      {q:'Jeter un œil chez Odette', moments:AN_,
+        a:'Dans la cuisine, le bol de lait de midi est renversé. Par terre, de petites traces de pattes toutes fraîches filent dehors ! Les traces, c\'est l\'affaire du Pisteur : dis-le-lui !',
+        note:'Chez Odette, l\'après-midi : le bol de lait de midi est renversé, et de petites traces de pattes toutes fraîches filent dehors. À dire au Pisteur !'}
     ]},
     /* occupée le matin ; l'après-midi, dans son atelier, elle coud les banderoles (elle ment) */
     melusine:{ou:{apresmidi:'atelier'}, carte:{matin:'atelier'},
@@ -1102,7 +1128,10 @@ E[3] = {
     anselme:{ou:{apresmidi:'clocher', nuit:'clocher'}, carte:{matin:'clocher'}, pose:{nuit:[660, 500]},
       /* (Romain, 12 novembre, 15 h 39) le matin, il fait appeler l'Alchimiste par le Barde : il a un service à lui demander (sa tisane de mélisse,
          lieux.clocher). Dit à voix haute, sans code : l'Alchimiste peut monter au clocher dès le matin, avec ou sans ce message. */
-      occupe:{matin:['« AH, LE BARDE ! VA ME CHERCHER L\'ALCHIMISTE : J\'AI UN SERVICE À LUI DEMANDER ! » DONG !', '« L\'AL-CHI-MISTE ! PAS LE FLEURISTE ! DIS-LUI DE MONTER ME VOIR ! » DONG !']},
+      /* (17 novembre, étape 3 du nouveau fil : « à la fin du matin, on a envie de passer à l'après-midi ») le matin, il dort : un écriteau
+         sur la porte. C'est l'après-midi qu'il fait appeler l'Alchimiste (son bonjour), et qu'il sonne Bertille pour elle. */
+      occupe:{matin:['Sur la porte du clocher, un écriteau : « SONNEUR ENDORMI. REVENEZ CET APRÈS-MIDI. » Derrière, ça ronfle.', '« RRRON… PSCHHH… » L\'écriteau n\'a pas bougé : « REVENEZ CET APRÈS-MIDI. »']},
+      saluts:{apresmidi:'AH, LE BARDE ! VA ME CHERCHER L\'ALCHIMISTE : J\'AI UN SERVICE À LUI DEMANDER ! ET TOI, QUE VEUX-TU ?'},
       salut:'HEIN ? AH, C\'EST TOI !', questions:[
       /* (l'après-midi et la nuit : il est au clocher aux deux moments) */
       {q:Q_LETTRE, g:'h', moments:AN_, a:'LA LETTRE ? LE MAIRE PARLE TROP BAS, JE N\'AI RIEN ENTENDU !',
@@ -1114,9 +1143,11 @@ E[3] = {
         note:'Anselme : cette nuit, une lanterne est descendue dans la crypte. La grille était fermée à clé… et il a la seule clé !'},
       {q:'Sonner les cloches, c\'est dur ?', g:'r', moments:AN_, a:'Parle-moi FORT et LEN-TE-MENT. Et ne me presse jamais : quand on me presse, je n\'entends plus rien !',
         note:'Anselme : il faut lui parler fort et lentement, et ne jamais le presser.'},
-      /* [4] avec le code du Pisteur « La crypte est fermée ». Il ne parle plus de sa clé (Romain, 21 h 31 : « on s'en fiche ») */
-      {q:'Qu\'y a-t-il sous le clocher ?', g:'h', moments:AN_, besoin:[{code:'info:crypte_fermee'}], a:'LA CRYPTE DES FONDATEURS. Personne n\'y descend, jamais !',
-        note:'Anselme : sous le clocher, la crypte des Fondateurs. « Personne n\'y descend, jamais ! »'},
+      /* [4] avec le code du Pisteur « Odette est sous l'église ». (17 novembre, étape 3 du nouveau fil, Romain le 16 au soir : « Anselme
+         refuse ») il dit non, et pourquoi le plan de la nuit passe par lui : la seule entrée, c'est sa grille, et sa clé est à sa ceinture */
+      {q:'Odette est sous l\'église ! Vous nous ouvrez la grille ?', g:'h', moments:AN_, besoin:[{code:'info:crypte_fermee'}],
+        a:'ODETTE, LÀ-DESSOUS ? JAMAIS JE NE PRÊTE MA CLÉ ! C\'EST DANGEREUX, ET C\'EST INTERDIT. LA SEULE ENTRÉE, C\'EST MA GRILLE, ET MA CLÉ NE QUITTE JAMAIS MA CEINTURE !',
+        note:'Anselme : « Jamais je ne prête ma clé ! » La seule entrée, c\'est sa grille, et sa clé ne quitte jamais sa ceinture.'},
       /* [5] le grand dialogue (E.grands.cle), la nuit, quand il monte sonner l'ouverture de la fête. Il ne s'ouvre que quand tout est prêt
          (Romain : « pour Anselme, il faut débloquer pas mal de choses ») : l'aveu de Mélusine (démasquée l'après-midi, ou le filet de la
          fête), le code « La crypte est fermée », et tout demandé à Anselme, à Basile et à Silas. */
@@ -1150,8 +1181,8 @@ E[3] = {
          pousser. Le geste lui-même est à construire chez le Pisteur, à l'entrée du donjon. */
       {q:Q_NUIT, g:'e', moments:A_, a:'Pendant ma ronde, la grille du clocher a grincé : on l\'entend à des kilomètres ! Anselme, lui, la soulève un peu, et elle ne dit rien.',
         note:'Silas : cette nuit, la grille du clocher a grincé. On l\'entend à des kilomètres ! Anselme, lui, la soulève un peu, et elle ne dit rien.'},
-      {q:'Pourquoi êtes-vous devenu garde ?', g:'r', moments:A_, a:'Petit, je me suis perdu trois jours dans la brume. Le père d\'Anselme m\'a retrouvé en sonnant toute la nuit.',
-        note:'Silas : petit, il s\'est perdu trois jours dans la brume. Le père d\'Anselme l\'a retrouvé en sonnant toute la nuit.'}
+      {q:'Pourquoi êtes-vous devenu garde ?', g:'r', moments:A_, a:'Petit, je me suis perdu trois jours dans la brume. Le père d\'Anselme m\'a retrouvé en sonnant toute la nuit. Anselme sonne comme lui : les yeux fermés, pour compter les coups.',
+        note:'Silas : petit, il s\'est perdu trois jours dans la brume. Le père d\'Anselme l\'a retrouvé en sonnant toute la nuit. Anselme sonne comme lui : les yeux fermés, pour compter les coups.'}
     ]},
     /* sur la place, sur son échelle : le matin, il vend ses fleurs (marche.js), puis il est occupé ; l'après-midi, ses questions (il ne ment jamais) */
     basile:{ou:{apresmidi:'place'}, carte:{matin:'place'},

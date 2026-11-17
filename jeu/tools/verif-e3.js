@@ -119,6 +119,9 @@ module.exports = function verifierE3(E, SRC, D){
     const X = E.plansPierre[id], Pi = (E.pierres || []).find(p => p.id === X.pierre);
     if(Pi) aj({cle:`sage:pierre:${id}`, role:'sage', besoins:[[{vu:'page:' + X.page}]].concat(Pi.si ? [Pi.si] : []), faits:['pierre:' + id]});
   }
+  /* (17 novembre) une mission du Carnet qui porte un code (e.code, mission.js : « 💡 Le plan » du Barde) : elle arrive quand ses
+     conditions sont vraies (e.si), avec son code à donner */
+  ROLES.forEach(role => (E.etapes[role] || []).forEach((e, i) => { if(e.code) aj({cle:`mission:${role}:${i}`, role, moments:e.des ? E.moments.slice(e.des) : null, besoins:[e.si].filter(Boolean), produit:[e.code]}); }));
   /* les analyses du labo (à la main : la lettre a besoin des écritures du Livre d'or — labo.js, CFG.livredor) */
   for(const id of Object.keys(E.analyses || {})){
     const A = E.analyses[id];
@@ -302,6 +305,8 @@ module.exports = function verifierE3(E, SRC, D){
   R.forEach(r => { r.besoins.flat().forEach(c => lire(c, r.role, r.cle)); (r.sauf || []).forEach(c => lire(c, r.role, r.cle)); });
   for(const l of Object.keys(E.lieux)) for(const role of ['pisteur', 'sage', 'alchimiste']) ((E.lieux[l][role] || {}).points || []).forEach(p => { ((p.facileSi || {}).si || []).forEach(c => lire(c, role, `${role}:${l}:${p.id}`)); (p.variantes || []).forEach(v => (v.si || []).forEach(c => lire(c, role, `${role}:${l}:${p.id}`))); });
   (E.pages || []).forEach(p => (p.variantes || []).forEach(v => (v.si || []).forEach(c => lire(c, 'sage', 'sage:page:' + p.id))));
+  /* (17 novembre) un code peut aussi faire arriver une mission dans le Carnet de celui qui le reçoit (e.si : « Le plan de la nuit ») */
+  ROLES.forEach(role => (E.etapes[role] || []).forEach((e, i) => (e.si || []).forEach(c => lire(c, role, `mission:${role}:${i}`))));
   dit(!mauvais.length, mauvais.length ? 'un code attendu par quelqu\'un qui ne peut pas le recevoir : ' + mauvais.join(' ; ') : 'Chaque code attendu quelque part est bien pour celui qui l\'attend');
   const sansDonneur = ids.filter(c => !donneurs[c]);
   dit(!sansDonneur.length, sansDonneur.length ? 'des codes que personne ne donne : ' + sansDonneur.join(', ') : `Les ${ids.length} codes de l'enquête ont tous quelqu'un qui les donne`);

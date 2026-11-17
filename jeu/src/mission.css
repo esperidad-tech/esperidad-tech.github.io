@@ -53,3 +53,9 @@
 .b-missions.plie{padding-bottom:12px}
 .b-missions.plie h3{margin:0}
 .b-missions.plie .b-mi-fleche{transform:rotate(-90deg)}
+
+/* (enquête 3, 17 novembre) une mission qui porte un code à donner (« 💡 Le plan » du Barde) : ses dessins sous le texte */
+.b-mi-code{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:2px}
+.b-mi-code small{font-size:.8rem;font-weight:700;color:var(--or-pale)}
+.b-mi-code .b-code{gap:6px;justify-content:flex-start;flex-wrap:nowrap}
+.b-mi-code .b-sym{width:50px;padding:5px 2px;border-radius:12px;animation:none;box-shadow:0 3px 0 var(--encre-2)}

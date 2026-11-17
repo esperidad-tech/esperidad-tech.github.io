@@ -151,6 +151,18 @@ with sync_playwright() as p:
     for k in CU.LOIN:
         verifier(CU.cueillir(pg, k) is None and not pg.evaluate(f"() => M.plantes().{k} || 0"), f'{k} : au-delà de la brume, hors d\'atteinte sans Bertille')
     verifier(CU.tisane(pg) is None, 'pas de mélisse à porter à Anselme tant qu\'on n\'en a pas')
+    # (17 novembre, étape 3 du nouveau fil) le matin, Anselme dort : un écriteau sur la porte du clocher, pas de Bertille avant l'après-midi
+    pts = lieu(pg, 'clocher')
+    verifier(pts == ['endormi'], f'le clocher, le matin : un seul point, « Monter voir Anselme » ({pts})')
+    pg.locator('#voile [data-act=point][data-id=endormi]').first.click(force=True); pg.wait_for_timeout(300)
+    tx = texte(pg)
+    verifier('SONNEUR ENDORMI' in tx and 'CET APRÈS-MIDI' in tx and pg.evaluate("() => M.brumeLevee().length") == 0, f'Anselme dort : « SONNEUR ENDORMI. REVENEZ CET APRÈS-MIDI. », la brume ne bouge pas ({tx[:90]})')
+    fermer(pg)
+    verifier(CU.bertille(pg) is None, 'pas de Bertille le matin')
+    # ======================================================================== l'après-midi : Anselme est réveillé
+    print('— L\'après-midi : Anselme est réveillé, Bertille, les cueillettes')
+    code(pg, 'moment:1')
+    verifier(pg.evaluate("() => M.momentId()") == 'apresmidi', 'l\'après-midi')
     t = CU.bertille(pg)
     verifier(t is not None and 'Bertille' in t and 'tisane de mélisse' in t and pg.evaluate("() => M.brumeLevee().join()") == 'n,o', 'au clocher : Anselme veut une tisane de mélisse, il sonne Bertille, la brume du nord et de l\'ouest recule')
     for k, mot in [('melisse', 'mélisse'), ('lycopode', 'lycopode'), ('vesse', 'vesse-de-loup')]:
@@ -171,12 +183,10 @@ with sync_playwright() as p:
     or0 = pg.evaluate("() => M.S.or")
     t = CU.tisane(pg)
     verifier(t is not None and 'CITRON' in t and pg.evaluate("() => M.S.or") == or0 + 3 and pg.evaluate("() => M.plantes().melisse") == 1 and pg.evaluate("() => !!M.P().vus['alchimiste:clocher:tisane']"), f'la mélisse rapportée à Anselme : trois pièces d\'or, et la plante reste à l\'Alchimiste ({(t or "")[:60]})')
-    # (le souci et le lin : l'après-midi ; le robot avance l'heure le temps de les cueillir, pour faire les sept potions d'une traite)
-    pg.evaluate("() => { M.P().moment = 1; }")
+    # (le souci et le lin : l'après-midi aussi)
     for k, mot in [('souci', 'souci'), ('lin', 'lin')]:
         t = CU.cueillir(pg, k)
         verifier(t is not None and mot in t and pg.evaluate(f"() => M.plantes().{k}") == 1, f'{mot}, l\'après-midi : cueilli')
-    pg.evaluate("() => { M.P().moment = 0; M.sauver(); M.render(); }")
     verifier(pg.evaluate("() => ['oseille','souci','melisse','lin','lycopode','vesse','gui'].every(function(k){ return !!M.P().vus['plante:' + k]; })"), 'les sept plantes sont cueillies')
     # ======================================================================== l'établi
     print('— L\'établi des plantes')
@@ -284,8 +294,6 @@ with sync_playwright() as p:
     verifier('Les sept potions sont prêtes' in notes and 'acide' in notes and 'donjon' not in notes.lower() and 'monstre' not in notes.lower(), 'au Carnet : les potions prêtes, sans un mot du donjon')
     # ======================================================================== l'après-midi : la lettre au labo
     print('— L\'après-midi : la lettre au labo')
-    code(pg, 'moment:1')
-    verifier(pg.evaluate("() => M.momentId()") == 'apresmidi', 'l\'après-midi')
     t = code(pg, 'obj:lettre')
     verifier('lettre' in t.lower(), 'le code « La lettre d\'Odette »')
     F = {}

@@ -16,6 +16,7 @@
      lu (page du Grand Livre ouverte), dictee (recette secrète complète dans le grimoire), ou [une des conditions].
    Une mission validée le reste (on ne recule jamais).
    (enquête 3) e.des : le n° du moment où la mission arrive (2 : la nuit). Avant, elle n'est pas dans la liste : elle gâcherait la surprise.
+   (enquête 3, 17 novembre) e.code : un code à donner, dessiné sous le texte de la mission (« 💡 Le plan » du Barde → le Pisteur).
    (enquête 3, 12 novembre) e.si : [conditions] — la mission n'arrive que quand l'une est vraie (la tisane d'Anselme, après Bertille). Les
    enquêtes 1 et 2 n'ont ni l'un ni l'autre : rien ne change pour elles.
    ========================================================== */
@@ -90,6 +91,8 @@ M.majMission = function(){
     if(pasEncore(e)) return;
     /* (e.des, e.si) une mission qui vient d'arriver : la pastille 🎯 de l'onglet Carnet le dit */
     if(tardive(e) && !e.libre && !e.piste){ Mi.arrivees = Mi.arrivees || {}; if(!Mi.arrivees[i]){ Mi.arrivees[i] = 1; arrivees++; } }
+    /* (enquête 3, 17 novembre) e.code : la mission arrive avec un code à donner (« 💡 Le plan » du Barde) — rangé avec ses autres codes */
+    if(e.code && /^info:/.test(e.code) && !P.objets['_' + e.code]){ P.objets['_' + e.code] = true; M.sauver(); }
     if(!Mi.faits[i] && faite(e, i, Mi)){ Mi.faits[i] = 1; Mi.coches[i] = 1; nouvelles.push(e); }   /* validée : sa case se coche (on peut la décocher) */
   });
   if(arrivees){ Mi.nonLus = (Mi.nonLus || 0) + arrivees; M.sauver(); if(!nouvelles.length) setTimeout(function(){ M.toast(arrivees > 1 ? '🎯 De nouvelles missions dans ton Carnet !' : '🎯 Une nouvelle mission dans ton Carnet !'); }, 900); }
@@ -133,6 +136,15 @@ M.missionDonne = function(code){
   P.donnes = P.donnes || {}; P.donnes[code] = 1; M.sauver();
 };
 
+/* (enquête 3, 17 novembre) une mission qui porte un code (e.code) : ses dessins sous le texte, et pour qui il est */
+function codeMission(e){
+  if(!e.code || !M.code || !M.codeHTML) return '';
+  try{
+    var d = M.destinataire(e.code), R = D.ROLES[d];
+    return '<div class="b-mi-code"><small>Le code' + (R ? ', pour ' + esc(R.le) : '') + ' :</small>' + M.codeHTML(M.code(e.code)) + '</div>';
+  }catch(err){ console.error(err); return ''; }
+}
+
 /* ---------- La section « 🎯 Mes missions » du Carnet ---------- */
 M.sectionMissions = function(){
   var P = M.P(); if(!P || P.etape !== 'jeu') return '';
@@ -159,7 +171,7 @@ M.sectionMissions = function(){
     if(M.tutoClasse) cls += M.tutoClasse(e, i);   /* le tutoriel (tuto.js) : l'étape en cours, celles à venir */
     /* chaque ligne a sa case, que le joueur coche ou décoche lui-même (en plus du ✅ automatique) */
     s += '<li class="' + cls + (coche ? ' coche' : '') + '"><button type="button" class="b-mi-case' + (coche ? ' on' : '') + '" data-act="mission-coche" data-i="' + i + '" aria-pressed="' + coche + '" aria-label="Cocher">' + (coche ? '✓' : '') + '</button>' +
-      '<span class="b-mi-ic">' + (e.ic || (e.piste ? '💡' : e.libre ? '🔍' : '🎯')) + '</span><div class="b-mi-corps"><p>' + (e.piste ? '<b>Piste :</b> ' + esc(e.t) : esc(e.t)) + '</p>' + (M.tutoLigne ? M.tutoLigne(e, i) : '') + '</div>' +
+      '<span class="b-mi-ic">' + (e.ic || (e.piste ? '💡' : e.libre ? '🔍' : '🎯')) + '</span><div class="b-mi-corps"><p>' + (e.piste ? '<b>Piste :</b> ' + esc(e.t) : esc(e.t)) + '</p>' + codeMission(e) + (M.tutoLigne ? M.tutoLigne(e, i) : '') + '</div>' +
       (fait ? '<span class="b-mi-ok">✅<small>validé</small></span>' : '') +
       M.lireBtn(t) + '</li>';
   });

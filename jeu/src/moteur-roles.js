@@ -127,8 +127,15 @@ M.verrouLieu = function(lieu){
   if(L.verrou.roles && L.verrou.roles.indexOf(M.role()) < 0) return null;
   return M.besoinOk(L.verrou.besoin) ? null : L.verrou;
 };
+/* (enquête 3, 17 novembre) L.affiche : {moments, ic, nom, t} — une affiche sur la porte d'un lieu. Les QUATRE rôles la voient : son icône
+   sur leur carte tant qu'ils ne l'ont pas lue, et son texte (avec 🔊) en haut de la fenêtre du lieu. Elle ne donne rien : elle se lit. */
+M.afficheIci = function(lieu){   /* (son texte : A.affiche) */
+  var E = M.E(), L = E && E.lieux && E.lieux[lieu], a = L && L.affiche;
+  return a && M.momentOk(a.moments) ? a : null;
+};
 M.aQuelqueChose = function(lieu){
   var role = M.role();
+  if(M.afficheIci(lieu)) return true;
   if(M.bonusIci(lieu).length) return true;
   if(role === 'pisteur' || role === 'sage') return M.pointsVisibles(lieu, role).length > 0;
   if(role === 'alchimiste') return M.lieuxAlchimiste().indexOf(lieu) >= 0;
@@ -154,6 +161,11 @@ M.infosCarte = function(){
   /* (plus de marqueurs « qui est là » pour le Barde : depuis le 5 novembre, 8 h 59, la carte montre à tout le monde où est chacun, carte-jeu.js) */
   (E.bonus || []).forEach(function(b){
     if(b.role === role && M.momentOk(b.moments) && !P.bonus[b.id] && !M.bonusCache(b)) marqueurs.push({lieu:b.lieu, ic:M.icBonus(b), label:b.label || 'Mission bonus', act:'lieu', id:b.lieu, classe:'bonus'});
+  });
+  /* (enquête 3, 17 novembre) une affiche sur la porte d'un lieu : son icône sur la carte de chacun, tant qu'il ne l'a pas lue */
+  M.cle(E.lieux).forEach(function(id){
+    var af = M.afficheIci(id);
+    if(af && !P.vus['affiche:' + id + ':' + P.moment]) marqueurs.push({lieu:id, ic:af.ic || '📜', label:af.nom || 'Une affiche', act:'lieu', id:id, classe:'bonus'});
   });
   /* (enquête 3) un point de lieu peut aussi avoir son icône sur la carte (p.carteIc, p.carteNom), tant qu'il n'est pas fait :
      le gâteau de l'Alchimiste, comme celui des trois autres (des missions bonus) — Romain, 12 novembre, 21 h 34 */
@@ -196,6 +208,13 @@ M.feuilleLieu = function(lieu){
     s += '<div class="b-verrou"><p>🔒 ' + esc(vt) + '</p>' + lire(vt) + (vb ? M.besoinHTML(v.besoin, role) : '') + '</div>';
     return s + bonusHTML(lieu);
   }
+  /* (enquête 3, 17 novembre) l'affiche sur la porte : pour les quatre rôles, tout en haut — un bouton, comme un point du lieu (A.affiche,
+     moteur-actions.js : son texte s'ouvre, avec 🔊) ; lue, son icône quitte la carte */
+  var af = M.afficheIci(lieu);
+  if(af){
+    var afLue = !!P.vus['affiche:' + lieu + ':' + P.moment];
+    s += '<div class="b-points b-points-affiche"><button class="b-point' + (afLue ? ' vu' : '') + '" data-act="affiche" data-id="' + lieu + '"><span class="b-point-ic">' + (af.ic || '📜') + '</span><b>' + esc(af.nom || 'Une affiche') + '</b>' + (afLue ? '<small>✔</small>' : '') + '</button></div>';
+  }
   if(role === 'pisteur' || role === 'sage'){
     var pts = M.pointsVisibles(lieu, role), R = L[role] || {};
     var cle = 'explore:' + lieu;
@@ -216,7 +235,7 @@ M.feuilleLieu = function(lieu){
         else if(P.vus[cle] !== P.moment) s += M.fouilleGratuite && M.fouilleGratuite(lieu) ? '<button class="btn second" data-act="explorer" data-id="' + lieu + '">🔦 Fouiller à nouveau · gratuit</button>' :
           '<p class="doux petit">Pour revenir chercher ici, il faudra une nouvelle action.</p><button class="btn second" data-act="explorer" data-id="' + lieu + '"' + (M.peutAgir() ? '' : ' disabled') + '>' + (role === 'pisteur' ? '🔍 Explorer' : '👁️ Observer') + ' à nouveau · 1 action</button>';
       }
-    } else if(!M.bonusIci(lieu).length) s += '<p class="doux">Rien de spécial ici pour l\'instant. ' + lire('Rien de spécial ici pour l\'instant.') + '</p>';   /* (dès l'enquête 2, tous les lieux se touchent : carte-jeu.js) */
+    } else if(!M.bonusIci(lieu).length && !af) s += '<p class="doux">Rien de spécial ici pour l\'instant. ' + lire('Rien de spécial ici pour l\'instant.') + '</p>';   /* (dès l'enquête 2, tous les lieux se touchent : carte-jeu.js) */
   }
   /* (enquête 3) l'Alchimiste a aussi des choses à faire dans certains lieux (le gâteau de la fête, le vieux pommier, la poussière des
      vesses-de-loup) : ses points, comme ceux du Pisteur, mais sans « Explorer » avant (elle sait pourquoi elle vient) */
@@ -240,7 +259,7 @@ M.feuilleLieu = function(lieu){
     var annonces = ((L.alchimiste || {}).cueillir || []).filter(function(x){ return x.annonce && !M.momentOk(x.moments) && D.INGR[x.ingr]; });
     if(deja) s += '<p class="b-recolte">✅ Déjà récolté</p>';
     else if(!pousse.length && annonces.length){ annonces.forEach(function(x){ var ta = x.annonce === true ? D.INGR[x.ingr].nom + ' : ce n\'est pas le bon moment pour les cueillir. Reviens plus tard !' : x.annonce; s += '<p class="b-recolte b-recolte-tard">' + D.INGR[x.ingr].ic + ' ' + esc(ta) + ' ' + lire(ta) + '</p>'; }); }
-    else if(!pousse.length){ if(!ptsA.length) s += '<p class="b-recolte">🍂 Rien à trouver</p>'; }   /* (un lieu où elle a autre chose à faire : pas de « rien à trouver ») */
+    else if(!pousse.length){ if(!ptsA.length && !af) s += '<p class="b-recolte">🍂 Rien à trouver</p>'; }   /* (un lieu où elle a autre chose à faire : pas de « rien à trouver ») */
     else if(!cueillable.length){
       var il = []; pousse.forEach(function(x){ M.texteBesoin(x.besoin, role).forEach(function(b){ if(il.indexOf(b.ic + ' ' + b.nom) < 0) il.push(b.ic + ' ' + b.nom); }); });
       s += '<p class="b-recolte">🔒 Il te faut : ' + esc(il.join(', ') || 'le bon matériel') + '</p>';

@@ -184,7 +184,9 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
 - **Où et quand** : le matin : chez Odette, 2, rue des Lanternes · l'après-midi : chez Odette, 2, rue des Lanternes · la nuit : chez Odette, 2, rue des Lanternes
 - **Bonjour** : « La maison d'Odette. La porte n'est toujours pas fermée à clé… »
 1. **Poser la canne d'Odette** _(quand on peut lui parler)_
-   - « Tu poses la canne contre la porte. Sur la table, le carnet d'Odette : un chat à chaque page, et son écriture penchée. Par terre, du lait renversé… et de petites traces de pattes qui filent dehors ! » → donne « Le carnet d'Odette » (pour sage)
+   - « Tu poses la canne contre la porte. Sur la table, le carnet d'Odette : un chat à chaque page, avec ses traces de pattes, et son écriture penchée. » → donne « Le carnet d'Odette » (pour sage)
+2. **Jeter un œil chez Odette** _(l'après-midi et la nuit)_
+   - « Dans la cuisine, le bol de lait de midi est renversé. Par terre, de petites traces de pattes toutes fraîches filent dehors ! Les traces, c'est l'affaire du Pisteur : dis-le-lui ! »
 
 ### 👩‍🌾 Iris Lavandin — l'herboriste
 
@@ -252,11 +254,11 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
    - « CETTE NUIT, UNE LANTERNE EST DESCENDUE DANS LA CRYPTE. La grille était fermée à clé… C'est bizarre : j'ai la SEULE clé ! »
 4. **Sonner les cloches, c'est dur ?** _(l'après-midi et la nuit)_
    - « Parle-moi FORT et LEN-TE-MENT. Et ne me presse jamais : quand on me presse, je n'entends plus rien ! »
-5. **Qu'y a-t-il sous le clocher ?** — 🔒 s'ouvre avec : le code « Odette est sous l'église » (pour barde) _(l'après-midi et la nuit)_
-   - « LA CRYPTE DES FONDATEURS. Personne n'y descend, jamais ! »
+5. **Odette est sous l'église ! Vous nous ouvrez la grille ?** — 🔒 s'ouvre avec : le code « Odette est sous l'église » (pour barde) _(l'après-midi et la nuit)_
+   - « ODETTE, LÀ-DESSOUS ? JAMAIS JE NE PRÊTE MA CLÉ ! C'EST DANGEREUX, ET C'EST INTERDIT. LA SEULE ENTRÉE, C'EST MA GRILLE, ET MA CLÉ NE QUITTE JAMAIS MA CEINTURE ! »
 6. 🎭 **« Anselme, je voudrais vous demander quelque chose… »** — le grand dialogue « cle » (§3), la nuit. Il n'apparaît que quand : (Mélusine démasquée (question 5) OU Mélusine a craqué à la fête) ET le code « Odette est sous l'église » (pour barde) ET tout demandé à Anselme, Basile, Silas (ceux à qui on peut parler à ce moment-là).
 - **Tout demandé** : « ASSEZ ! TU VAS ME CASSER LES OREILLES… ENFIN, CE QU'IL EN RESTE ! »
-- **Occupé, le matin** : « AH, LE BARDE ! VA ME CHERCHER L'ALCHIMISTE : J'AI UN SERVICE À LUI DEMANDER ! » DONG ! — puis, si on revient : « L'AL-CHI-MISTE ! PAS LE FLEURISTE ! DIS-LUI DE MONTER ME VOIR ! » DONG !
+- **Occupé, le matin** : Sur la porte du clocher, un écriteau : « SONNEUR ENDORMI. REVENEZ CET APRÈS-MIDI. » Derrière, ça ronfle. — puis, si on revient : « RRRON… PSCHHH… » L'écriteau n'a pas bougé : « REVENEZ CET APRÈS-MIDI. »
 
 ### 🧑‍🌾 Aimé Farinel — le meunier
 
@@ -285,7 +287,7 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
 3. **Il s'est passé quelque chose de bizarre, cette nuit ?** _(l'après-midi)_
    - « Pendant ma ronde, la grille du clocher a grincé : on l'entend à des kilomètres ! Anselme, lui, la soulève un peu, et elle ne dit rien. »
 4. **Pourquoi êtes-vous devenu garde ?** _(l'après-midi)_
-   - « Petit, je me suis perdu trois jours dans la brume. Le père d'Anselme m'a retrouvé en sonnant toute la nuit. »
+   - « Petit, je me suis perdu trois jours dans la brume. Le père d'Anselme m'a retrouvé en sonnant toute la nuit. Anselme sonne comme lui : les yeux fermés, pour compter les coups. »
 - **Tout demandé** : « Un garde ne bavarde pas pendant son service. Circulez ! »
 - **Occupé, le matin** : « Halte ! Mission secrète. Si secrète que même moi, je ne la connais pas. » — puis, si on revient : « Chut ! Je surveille une fourmi très suspecte. »
 
@@ -519,7 +521,7 @@ Quand le Pisteur entre dans la dernière salle, il donne le code « L'homme en c
 - 🗣️ L'après-midi : d'autres villageois ont enfin le temps. Pose-leur toutes tes questions ! _(arrive l'après-midi)_
 - ✉️ Le maire garde la lettre pour lui. Quand tu auras tout demandé à tout le monde, va lui en parler… avec les bons mots. _(arrive l'après-midi)_
 - 🧵 Quelqu'un a écrit cette lettre. Quand l'équipe saura qui, fais-lui dire la vérité. _(arrive l'après-midi)_
-- 🗝️ La crypte est fermée, et Anselme a la seule clé. Quand tu sauras tout ce qu'il faut, va le voir au clocher, la nuit. _(arrive la nuit)_
+- 💡 Le plan ! Cette nuit, aide Anselme à sonner la Grosse Marie. Pendant qu'il compte les coups, les yeux fermés, le Pisteur lui prend sa clé. Dis-le à tes amis !
 - 🎉 Tes amis se battent, tout au fond ! À la fête, quelqu'un saura peut-être les aider. _(arrive la nuit)_
 - 💡 Regarde bien les visages : plusieurs villageois vont te mentir.
 - 🔍 Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?
