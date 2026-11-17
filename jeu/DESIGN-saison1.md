@@ -36,7 +36,7 @@ Ce document est la référence du jeu. **Le chapitre 0 dit en une page à quoi r
 
 **Les plantages (§12.62).** Le jeu tient une boîte noire : s'il s'est fermé tout seul sur un appareil, les Réglages le disent en bas (quand, où, les derniers boutons touchés). C'est la ligne à demander à Romain.
 
-**Les films.** Des cinématiques fabriquées d'avance, en 21:9, avec « Passer ➜ » : celles de Léo dans le donjon (§13.45), le rassemblement au Vieux Chêne dans l'enquête 2 (§12.63), et **la pub du jeu en 30 secondes (§12.64)**, que le jeu propose la première fois qu'on l'ouvre sur un appareil (un bouton jaune « ▶️ Voir le film ») et qu'on revoit par « 🎬 Le film » (à côté du titre, ou dans le menu ☰).
+**Les films.** Des cinématiques fabriquées d'avance, en 21:9, avec « Passer ➜ » : celles de Léo dans le donjon (§13.45), le rassemblement au Vieux Chêne dans l'enquête 2 (§12.63), et **la pub du jeu en 30 secondes (§12.64)**, que le jeu propose la première fois qu'on l'ouvre sur un appareil (un bouton jaune « ▶️ Voir le film ») et qu'on revoit par « 🎬 Le film » (à côté du titre, ou dans le menu ☰). **Et un film de 30 secondes par héros (§12.72)**, pour aider à choisir son rôle : la pastille jaune « ▶ Le film » sous chaque héros, à l'écran « Choisis ton rôle ».
 
 **Les règles de Romain, toujours.** Tout en français simple. Jamais de lecture vocale automatique : un bouton 🔊 pour tout texte de plus de 3 mots. Boutons jaunes avec texte noir pour aller ou lancer. Les aides sont racontées par un conteur (jamais « Touche … »), le bouton à toucher porte le rond jaune animé. Pas trop d'indices, jamais une réponse trahie par le texte, peu de minuteurs, pas de points d'action. Ce qui est en discussion ne se construit pas sans son « go ».
 
@@ -1926,6 +1926,61 @@ Romain a joué les enquêtes 1 et 2 avec les enfants. Ses retours (dictés) : (a
 **Décisions de Claude, à faire valider par Romain** : (1) lesquels des huit morceaux d'abord, et leur ordre d'arrivée ; (2) leurs dessins et leurs trois formes ; (3) le bouton d'essai 🧪.
 
 **Vérifié** : `tools/mimi-parc.py` : **15 vérifications sur tablette, 15 sur téléphone, toutes bonnes** (rien tant qu'aucune famille n'est complète ; une famille : le tunnel dans un carton ; cinq familles : les cinq morceaux, une seule fois ; sortis des cartons, ils sont dans la pièce ; le bouton d'essai 🧪 ; le tunnel traversé ; le hamac : elle y dort ; la souris qui se balance ; la cabane : sa tête à la porte, pas de photo, on frappe et elle ressort ; le toboggan : en haut, puis en bas). `tools/mimi.py` : 124 sur tablette, 124 sur téléphone. Les images du robot regardées ; les cinq morceaux, dans leurs formes, regardés en planche hors du jeu (`tools/objets-planche.js`). `rapide.sh`, `partie2.py`, `mimi-marche.py` (tablette), `bulles-paillasse.py` ; les codes identiques à ceux en ligne (avec ceux de l'enquête 3 d'1 h 35). **Pas vérifié** : sur une vraie tablette ; `tuto-atelier.py` et la marche sur téléphone n'ont pas été relancés sur la toute dernière construction (ils passaient sur celle d'avant les trois corrections de placement) ; les robots de l'enquête 3 ne sont pas relancés par cette conversation (le programme de l'enquête 3 n'est pas touché).
+
+### 12.72 Quatre films de 30 secondes, un par héros, sur l'écran « Choisis ton rôle » (Romain, 17 novembre, 07 h 52, puis 09 h 43) — CONSTRUIT, VÉRIFIÉ, EN LIGNE (17 novembre, 10 h 04 ; commits 6251cf1 (les films), 0187864 (l'Atelier des sons) et afb94d3 (le jeu) du site ; version 20261117-0904 ; publication de GitHub vérifiée)
+
+**Ce que Romain a demandé** (dicté) : « 4 cinématiques, un pour chaque personnage », « un peu le même style avec le même rythme » que la pub (§12.64), « toujours fun, avec un montage sympa », « vraiment de haute qualité », « tu montres tout ce qu'on peut faire avec les personnages », « en maximum 30 secondes », « tu donnes vraiment envie de jouer le personnage » : à quoi il sert, ce qu'il va devoir faire.
+
+**Ce qui est fait.** Quatre films de 29,8 secondes (1440 × 616, 30 images par seconde), montés comme la pub : des images filmées dans le vrai jeu par des robots, une musique à 120 à la minute, des coupes sur les temps. Le même découpage pour les quatre :
+- 0 à 2 s : le héros arrive (sa carte, son nom, sa devise, une phrase) ;
+- 2 à 4 s : chez lui, avec un ruban jaune qui dit à quoi il sert ;
+- 4 à 22 s : ce qu'il fait, un ruban jaune par action ;
+- 22 à 24 s : quatre mots en rafale ;
+- 24 à 26 s : les quatre cartes, la sienne en avant, « L'ÉQUIPE COMPTE SUR TOI ! » ;
+- 26 à 29,8 s : « JOUE LE PISTEUR ! » (ou l'Alchimiste, le Barde, le Sage), « Les Enquêteurs de Brumeval », « ET TOI, QUEL HÉROS ES-TU ? ».
+
+**Le Pisteur** — « ACTION ET RÉFLEXES », « LES YEUX ET LES JAMBES DE L'ÉQUIPE » : sa cabane ; SUIS LES TRACES (le pistage) ; COURS, SAUTE, ESQUIVE ! (l'oie) ; VISE… ET TIRE ! (l'arc) ; FAUFILE-TOI SANS ÊTRE VU (la cachette, dans la forêt) ; FOUILLE CHAQUE RECOIN (la maison d'Odette vue de dessus) ; PASSE TES TROUVAILLES À L'ÉQUIPE (un code) ; LA NUIT : DANS LE DONJON, FRAPPE FORT ! (l'arc, puis un coup critique). Les mots : DES PISTES, DES COURSES, DES FLÈCHES, DE L'ACTION !
+
+**L'Alchimiste** — « MÉMOIRE ET PRÉCISION », « LE SAVANT DE L'ÉQUIPE » : son atelier ; CUEILLE LES PLANTES CACHÉES ; REÇOIS LES TROUVAILLES DE TES AMIS (il tape un code) ; ANALYSE-LES DANS TON LABO (la loupe, le microscope) ; PRÉPARE DES POTIONS (le chaudron, l'établi) ; INVENTE LE GÂTEAU DE LA FÊTE ; CHOUCHOUTE MIMI, TON CHAT (le toboggan) ; LA NUIT : DANS LE DONJON, LANCE TES POTIONS ! Les mots : DES PLANTES, DES ANALYSES, DES POTIONS, DE LA SCIENCE !
+
+**Le Barde** — « ÉCOUTE ET STRATÉGIE », « LA VOIX ET LES OREILLES DE L'ÉQUIPE » : son tableau de liège ; VA VOIR LES HABITANTS (la carte) ; POSE LES BONNES QUESTIONS (Gaspard) ; DÉMASQUE LES MENTEURS (Farinel et sa sieste) ; ÉPINGLE TES PISTES ; MARCHANDE COMME UN CHEF (Fortuné) ; PARTAGE LES INDICES AVEC L'ÉQUIPE (un code) ; LA NUIT : FAIS PARLER TOUT LE VILLAGE (la fête). Les mots : DES SECRETS, DES RAGOTS, DES MENSONGES, DU BAGOU !
+
+**Le Sage** — « LOGIQUE · CHEF D'ENQUÊTE », « LA MÉMOIRE ET LE CHEF DE L'ÉQUIPE » : le Grand Livre ; GARDE LE GRAND LIVRE ; DÉCHIFFRE LES MESSAGES SECRETS (l'alphabet) ; RECONSTITUE LES CARTES (les runes) ; SUPERPOSE LES VIEUX PLANS ; RASSEMBLE LES INDICES DE TOUS (un code) ; C'EST TOI QUI DONNES L'HEURE ; À LA FIN, C'EST TOI QUI ACCUSES ; LA NUIT : DANS LE DONJON, PROTÈGE TES AMIS (la rune de lumière, le bouclier). Les mots : DES CODES, DES PLANS, DES PREUVES, DE LA LOGIQUE !
+
+**Rien n'est dévoilé.** Les dalles de chez Odette sont jouées dans un mauvais ordre ; l'accusation montre les suspects sans en désigner un ; le mensonge montré est celui de Farinel sur sa sieste (sans rapport avec une enquête) ; ni le nom ni le visage de Léo ; le message déchiffré (« REGARDE EN HAUT ») est un message d'entraînement du mini-jeu, pas un indice.
+
+**Les fichiers** (tout est dans `jeu/pub/`, à côté de la pub) :
+- `outils_heros.py` et `capturer-heros.py` : les robots qui jouent et filment les plans, au ralenti, dans `/tmp/pub/plans/<plan>/` (`python3 capturer-heros.py [plan …] [--planches]`) ;
+- `heros.html` et `heros.js` : le montage (la table `FILMS`, un film par héros, choisi par `?film=`) ;
+- `filmer-heros.py` : filme le montage image par image et fabrique le mp4 (`python3 filmer-heros.py <film> [--part i/N] [--monter] [--planche] [--grand]`) ;
+- `sons-heros.py` : écrit `jeu/cine/src/film-heros.js` (les bruitages calés sur le montage) ;
+- `tourner-heros.sh` : fait tout d'un coup (les bruitages, les quatre films, la bande-son) ; une douzaine de minutes ;
+- la musique : `musiqueHeros()` et quatre airs (`cineMusHerosPisteurA`, `…AlchimisteA`, `…BardeA`, `…SageA`) dans `jeu/donjon/essai/sons/cine-musiques.js`, inscrits dans `catalogue.js` et dans `jeu/cine/bande-son.py` ;
+- les films : `jeu/cine/sortie/herosPisteur.mp4`, `.mp3`, `.json` (et Alchimiste, Barde, Sage) ; les copies à regarder, avec le son : `/tmp/cine/apercus/heros<Héros>-avec-son.mp4`.
+
+**Dans le jeu (Romain, 17 novembre, 9 h 43 : « Les 4 cinématiques, tu les mets en jeu au moment de choisir les héros. Je veux qu'on voit les 4 films avec un joli petit icône et que ça aide à faire son choix au début. Donc c'est juste après l'animatique d'introduction. Là tu mets les 4 choix et vas-y, tu as mon go et tu peux mettre en ligne une fois que c'est fait. »).** L'écran « Créer mon héros › Choisis ton rôle » (le premier écran après « ✨ Créer mon héros », donc juste après le film d'introduction de la première ouverture, §12.64) :
+- **sous le texte de chaque héros, une pastille jaune à lettres noires « ▶ Le film »** (un rond nuit avec un triangle jaune, puis « Le film ») ; un reflet passe dessus de temps en temps, une pastille à la fois ;
+- **c'est un bouton à part, posé sur la carte** : le toucher joue le film du héros (le lecteur des films du jeu, `M.jouerFilm`, avec « Passer ➜ » et la bande-son) **sans choisir le héros** ; toucher la carte, elle, choisit toujours le héros (comme avant) ;
+- **au retour du film**, on est toujours sur le choix : la carte du héros s'allume un instant (sa couleur), sa pastille garde un **✓** (seulement si le film a vraiment joué ; ce ✓ s'oublie quand on ferme le jeu) ;
+- **deux héros par rangée** sur une tablette (avant : trois, puis un tout seul en dessous), un par rangée sur un téléphone debout ;
+- dès que l'écran s'affiche, les quatre films (5 Mo chacun) se téléchargent d'avance, un après l'autre (`M.prevoirFilmsRoles`) ; sans internet, le lecteur attend 20 secondes au plus (avec « Passer ➜ »), puis revient au choix, sans ✓ ;
+- sans les films (la fiche `CINE_INFOS` ne les connaît pas) : l'écran d'avant, sans pastille.
+- Code : `vueCreation` (`moteur-ecrans.js`), `M.filmsRoles`, `M.prevoirFilmsRoles`, `A['film-role']` (`moteur-actions.js`), `.b-role-case`, `.b-role-film` (`moteur.css`) ; `M.jouerFilm` passe maintenant à sa suite le résultat du film (`'fini'`, `'passe'` ou `'echec'`), ce qui ne change rien pour les autres films.
+- En ligne : les films dans `brumeval/cine/` du site (`herosPisteur.mp4` et `.mp3`, etc.), copiés depuis `jeu/cine/sortie/` ; `deploy/deployer.sh` ne les copie pas : **à refaire à la main si on refait un film**. Les quatre musiques sont dans l'Atelier des sons (Léo › Cinématiques, 🆕) : https://esperidad-tech.github.io/brumeval/sons-essai.html
+- Aucun code ne change (57, 69, 541 : identiques à ceux d'avant).
+
+**Ce qui n'est pas fait, dit franchement.**
+1. **Personne n'a écouté la musique** : elle est écrite note par note et seulement mesurée (aussi forte que celle de la pub). C'est Romain qui dira si elle plaît (Atelier des sons, ou dans le jeu).
+2. **Rien n'a été essayé sur une vraie tablette ni sur un vrai téléphone.**
+3. **Sur un téléphone tenu debout, le film est petit** (le format large des films, 21:9, comme la pub et toutes les cinématiques).
+4. Le plan le plus faible : « FOUILLE CHAQUE RECOIN » du Pisteur (la pièce est petite dans l'image).
+5. **Les tablettes de la famille ont déjà leurs héros** : elles ne voient l'écran du choix que pour un nouveau héros (« 👥 Changer de joueur » › « Nouveau héros »). Les films ne sont nulle part ailleurs dans le jeu (pas dans le menu ☰) : à proposer à Romain s'il le veut.
+
+**Décisions de Claude, à faire valider par Romain** : (1) les mots des rubans, les devises et les quatre mots de chaque film ; (2) les actions choisies et leur ordre ; (3) le format large de la pub (21:9) ; (4) les quatre musiques (le même air, joué autrement pour chaque héros) ; (5) la pastille « ▶ Le film » sous le texte (plutôt qu'une petite image du film) ; (6) deux héros par rangée sur tablette ; (7) le ✓ et la carte qui s'allume au retour.
+
+**Vérifié** : les quatre films font bien 29,8 secondes ; une planche de 60 images par film regardée en entier (les rubans sont entiers, les textes lisibles, pas d'image noire ni figée) ; huit images regardées en grand ; le son : −17 dB en moyenne, −1,5 dB au plus fort, comme la pub. Dans le jeu : **`tools/films-heros.py` (nouveau, 21 vérifications : quatre pastilles jaunes à lettres noires, dans leurs cartes, sous le texte, deux héros par rangée ; chaque pastille joue le bon film avec « Passer ➜ » sans choisir le héros ; retour au choix, ✓, la carte qui s'allume ; la carte choisit toujours le héros, « ← Retour » garde les ✓, le héros se crée comme avant ; téléphone debout, couché, petit téléphone de 320 points ; sans les films : l'écran d'avant ; un film absent : retour au choix sans ✓)**, `rapide.sh` (verif.js et la partie complète de l'enquête 1 à quatre tablettes), `partie2.py`, `tools/pub-lancement.py` (18 sur 18), les codes (identiques à ceux en ligne), le jeu publié comparé à celui d'avant (seules les lignes de ce chantier changent), l'Atelier des sons (`test-page.py` : 58 sur 59, le raté d'avant ; rien de retiré).
+
+**Les fichiers de l'écran du choix.** Changés : `jeu/src/moteur-ecrans.js`, `moteur-actions.js`, `moteur.css`, `.gitignore` (les captures de `jeu/test/films-heros/`). Nouveau : `jeu/tools/films-heros.py`.
 
 ## 13. Enquête 3 — La lettre d'Odette
 

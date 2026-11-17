@@ -119,7 +119,10 @@ window.CATALOGUE = [
           {id:'cineMusPub', t:'Musique de pub', v:'A', m:1, neuf:1},
           /* 17 novembre (Romain) : les deux descentes du donjon (escalier de la crypte, corde du puits) */
           {id:'cineGrille', t:'Descente : la grille rouillée', v:'A', neuf:1}, {id:'cineGoutte', t:'Descente : une goutte', v:'A', neuf:1}, {id:'cineCorde', t:'Descente : la corde dans les gants', v:'A', neuf:1}, {id:'cineLueur', t:'Descente : la lueur du fond', v:'A', neuf:1},
-          {id:'cineMusEscalier', t:'Musique de l\'escalier', v:'A', m:1, neuf:1}, {id:'cineMusPuits', t:'Musique du puits', v:'A', m:1, neuf:1}
+          {id:'cineMusEscalier', t:'Musique de l\'escalier', v:'A', m:1, neuf:1}, {id:'cineMusPuits', t:'Musique du puits', v:'A', m:1, neuf:1},
+          /* 17 novembre (Romain) : les quatre films des héros (jeu/pub/heros.js) — la musique de la pub, un air et un instrument par héros */
+          {id:'cineMusHerosPisteur', t:'Film du Pisteur', v:'A', m:1, neuf:1}, {id:'cineMusHerosAlchimiste', t:'Film de l\'Alchimiste', v:'A', m:1, neuf:1},
+          {id:'cineMusHerosBarde', t:'Film du Barde', v:'A', m:1, neuf:1}, {id:'cineMusHerosSage', t:'Film du Sage', v:'A', m:1, neuf:1}
         ]}
       ]}
     ]},

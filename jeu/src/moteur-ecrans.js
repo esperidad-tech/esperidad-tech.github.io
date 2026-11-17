@@ -206,13 +206,23 @@ function vueCreation(){
   if(et === 1){
     var anc = M.S && M.S.ancien && M.S.ancien.heros;
     if(anc) s += '<section class="b-carte-verre centre"><p>' + esc('Tu peux reprendre le même héros qu\'avant : même rôle, même apparence.') + ' ' + lire('Tu peux reprendre le même héros qu\'avant : même rôle, même apparence.') + '</p><button class="btn magie" data-act="crea-meme">🔁 Reprendre la même apparence (' + esc(anc.nom || '') + ')</button></section>';
-    s += '<p class="b-consigne">Choisis ton rôle. Chaque joueur prend un rôle différent ! ' + lire('Choisis ton rôle. Chaque joueur prend un rôle différent !') + '</p><div class="b-roles">';
+    /* les films des héros (Romain, 17 novembre : « les 4 cinématiques […] au moment de choisir les héros […] avec un joli petit icône,
+       et que ça aide à faire son choix » ; Bible §12.72) : sous le texte de chaque héros, une pastille jaune « ▶ Le film » — un bouton
+       à part, pour que regarder le film ne choisisse pas le héros. Deux héros par rangée (avec-films). Sans les films : comme avant. */
+    var films = M.filmsRoles ? M.filmsRoles() : null, vus = UI.filmsVus || {};
+    if(films && M.prevoirFilmsRoles) setTimeout(M.prevoirFilmsRoles, 0);
+    s += '<p class="b-consigne">Choisis ton rôle. Chaque joueur prend un rôle différent ! ' + lire('Choisis ton rôle. Chaque joueur prend un rôle différent !') + '</p><div class="b-roles' + (films ? ' avec-films' : '') + '">';
     ['pisteur', 'alchimiste', 'barde', 'sage'].forEach(function(r){
       var R = D.ROLES[r], h = Object.assign(window.Persos ? Persos.defaut(r, c.sexe || 'f') : {role:r}, {niveau:3, talents:[], equip:[]});
       if(c.role === r) h = Object.assign({}, h, c, {role:r, niveau:3});
-      s += '<button class="b-role' + (c.role === r ? ' choisi' : '') + '" data-act="crea-role" data-r="' + r + '" style="--c:' + R.c + '">' +
+      var nomR = c.sexe === 'm' ? R.m : R.f;
+      s += '<div class="b-role-case' + (UI.filmRevu === r ? ' revu' : '') + '" data-r="' + r + '" style="--c:' + R.c + '">' +
+        '<button class="b-role' + (c.role === r ? ' choisi' : '') + '" data-act="crea-role" data-r="' + r + '" style="--c:' + R.c + '">' +
         '<div class="b-role-img">' + portrait('buste', c.role === r, false, h) + '</div>' +
-        '<div class="b-role-txt"><b>' + R.ic + ' ' + (c.sexe === 'm' ? R.m : R.f) + '</b><span class="b-tag">' + R.tag + '</span><p>' + esc(R.desc) + '</p></div></button>';
+        '<div class="b-role-txt"><b>' + R.ic + ' ' + nomR + '</b><span class="b-tag">' + R.tag + '</span><p>' + esc(R.desc) + '</p></div></button>' +
+        (films && films[r] ? '<button class="b-role-film b-aller' + (vus[r] ? ' vu' : '') + '" data-act="film-role" data-r="' + r + '" aria-label="' + esc('Le film : ' + nomR) + '">' +
+          '<svg viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="12" fill="#141a3a"/><path d="M10.4 7.8v10.4l8.4-5.2z" fill="#ffd84a"/></svg>' +
+          '<span>Le film</span>' + (vus[r] ? '<b class="b-film-vu" aria-hidden="true">✓</b>' : '') + '</button>' : '') + '</div>';
     });
     s += '</div>';   /* toucher un rôle passe directement à l'étape suivante (Romain, 4 novembre) */
   } else if(et === 2){

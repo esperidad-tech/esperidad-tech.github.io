@@ -90,6 +90,26 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .b-role-img svg{width:100%;height:auto;display:block}
 .b-role-txt b{font-family:var(--f-titre);font-weight:400;font-size:1.3rem;color:var(--or-pale);display:block}
 .b-role-txt p{font-size:.9rem;color:var(--brume)}
+/* les films des héros (Romain, 17 novembre ; Bible §12.72) : deux héros par rangée ; sous le texte de chacun, la pastille jaune « ▶ Le film »
+   (un bouton à part, posé sur la carte : 2 de bord + 10 de marge + 110 de portrait + 10 d'écart = 132) ; un reflet passe dessus de temps
+   en temps, une carte à la fois ; ✓ quand le film a été vu ; la carte du héros s'allume au retour du film */
+.b-roles.avec-films{grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr))}
+.b-role-case{position:relative;display:flex;border-radius:20px}
+.b-role-case>.b-role{flex:1;min-width:0}
+.b-roles.avec-films .b-role-txt{padding-bottom:48px}
+.b-role-film{position:absolute;left:132px;bottom:12px;display:inline-flex;align-items:center;gap:7px;min-height:42px;padding:5px 15px 5px 6px;border-radius:999px;border:2px solid #24182e;
+  font-family:var(--f-texte);font-size:1rem;line-height:1;cursor:pointer;overflow:hidden;z-index:1;transition:transform .08s, box-shadow .08s}
+.b-role-film svg{width:28px;height:28px;flex:none;display:block}
+.b-role-film span{position:relative}
+.b-role-film .b-film-vu{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin-left:2px;border-radius:50%;background:#1f7a3a;color:#fff;font-size:.75rem}
+.b-role-film::before{content:'';position:absolute;top:0;bottom:0;left:-70%;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.7),transparent);transform:skewX(-20deg);animation:b-film-reflet 8s ease-in-out infinite;pointer-events:none}
+.b-role-case:nth-child(2) .b-role-film::before{animation-delay:2s}
+.b-role-case:nth-child(3) .b-role-film::before{animation-delay:4s}
+.b-role-case:nth-child(4) .b-role-film::before{animation-delay:6s}
+@keyframes b-film-reflet{0%{left:-70%}12%,100%{left:140%}}
+.b-role-case.revu{animation:b-role-revu 1.6s ease-out}
+@keyframes b-role-revu{0%,30%{box-shadow:0 0 0 4px var(--c), 0 0 34px var(--c)}100%{box-shadow:0 0 0 0 transparent}}
+@media (prefers-reduced-motion:reduce){.b-role-film::before{animation:none;display:none}.b-role-case.revu{animation:none}}
 .b-tag{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--c);font-weight:700}
 .b-crea-grille{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px;align-items:start}
 @media (max-width:700px){.b-crea-grille{grid-template-columns:1fr}}

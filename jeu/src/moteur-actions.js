@@ -1658,7 +1658,7 @@ M.jouerFilm = function(nom, apres){
   if(!I || !window.CineLecteur || UI.film){ apres(); return; }
   UI.film = true;
   var QUI = {'Le maire':'grosbec', 'Silas':'silas', 'Gaspard':'gaspard'}, fait = false;
-  function suite(){ if(fait) return; fait = true; UI.film = false; apres(); }
+  function suite(r){ if(fait) return; fait = true; UI.film = false; apres(r); }   /* r : 'fini', 'passe' ou 'echec' (le film n'est pas arrivé) */
   try{
     window.CineLecteur.jouer({url:'cine/' + nom + '.mp4', piste:I.piste ? 'cine/' + nom + '.mp3' : null, infos:I, passer:true, attente:20000,
       audio:function(){ return M.audioCtx ? M.audioCtx() : null; }, volume:function(){ return M.S && M.S.options && M.S.options.son === false ? 0 : 1; },
@@ -1697,6 +1697,39 @@ M.pubLancement = function(){
   });
 };
 A.pub = function(){ M.jouerFilm('pub', function(){}); };
+/* LES FILMS DES HÉROS (Romain, 17 novembre : « Les 4 cinématiques, tu les mets en jeu au moment de choisir les héros. Je veux qu'on voit
+   les 4 films avec un joli petit icône et que ça aide à faire son choix au début » ; Bible §12.72). Sur « Choisis ton rôle » (vueCreation,
+   moteur-ecrans.js), chaque héros a sa pastille jaune « ▶ Le film » : son film de 30 secondes (jeu/pub/heros.js), avec « Passer ➜ ».
+   Puis on revient au choix : la carte du héros s'allume un instant, sa pastille garde un ✓. Regarder un film ne choisit pas le héros. */
+var FILMS_ROLES = {pisteur:'herosPisteur', alchimiste:'herosAlchimiste', barde:'herosBarde', sage:'herosSage'};
+M.filmsRoles = function(){
+  if(!window.CineLecteur || !window.CINE_INFOS) return null;
+  var l = {}, n = 0;
+  Object.keys(FILMS_ROLES).forEach(function(r){ if(window.CINE_INFOS[FILMS_ROLES[r]]){ l[r] = FILMS_ROLES[r]; n++; } });
+  return n ? l : null;
+};
+/* chaque film pèse environ 5 Mo : dès que l'écran du choix s'affiche, on les télécharge d'avance, un après l'autre (une seule fois) */
+M.prevoirFilmsRoles = function(){
+  var l = M.filmsRoles(), CL = window.CineLecteur;
+  if(!l || UI.filmsRolesPrevus || location.protocol === 'file:') return;
+  UI.filmsRolesPrevus = true;
+  Object.keys(l).reduce(function(suite, r){
+    return suite.then(function(){ return CL.precharger('cine/' + l[r] + '.mp4'); })
+      .then(function(){ return window.CINE_INFOS[l[r]].piste ? CL.prechargerPiste('cine/' + l[r] + '.mp3') : null; })
+      .catch(function(){});
+  }, Promise.resolve());
+};
+A['film-role'] = function(el){
+  var r = el.dataset.r, l = M.filmsRoles();
+  if(!l || !l[r]) return;
+  M.jouerFilm(l[r], function(fin){
+    if(fin === 'fini' || fin === 'passe'){ UI.filmsVus = UI.filmsVus || {}; UI.filmsVus[r] = 1; }
+    if(UI.ecran !== 'creation' || UI.creaEtape !== 1) return;
+    UI.filmRevu = r; M.render(); UI.filmRevu = null;
+    var c = document.querySelector('.b-role-case[data-r="' + r + '"]');
+    if(c && c.scrollIntoView) try{ c.scrollIntoView({block:'nearest', behavior:'smooth'}); }catch(e){}
+  });
+};
 A['fin-suite'] = function(){
   var P = M.P(), E = M.E();
   if(!P || !E || !P.fin){ UI.ecran = 'accueil'; M.render(); return; }

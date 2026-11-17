@@ -434,8 +434,7 @@ M.cineMusPubA = function(A, P){
   return I;
 };
 
-/* =================== LES DEUX DESCENTES (escalier et puits, 24 s chacune ; Bible §13.62 ; Romain, 17 novembre) ===================
-   Presque rien : un fond grave qui s'installe, des gouttes de harpe très loin, un cœur lent. Dans la dernière partie, la lueur du fond :
+/* =================== LES DEUX DESCENTES (escalier et puits, 24 s chacune ; Bible §13.62 ; Romain, 17 novembre) ============   Presque rien : un fond grave qui s'installe, des gouttes de harpe très loin, un cœur lent. Dans la dernière partie, la lueur du fond :
    trois notes claires (la, ré, fa) — le motif de l'homme en cape, en tout petit. On est sous terre : beaucoup d'écho. */
 M.cineMusEscalierA = function(A, P){
   var I = Instance(A, P), proche = A.bus(P, {grotte:.5}), loin = A.bus(P, {grotte:1, g:.7}), ech = I.echo(loin, {temps:.5, retour:.45, lp:2000, sortie:.5});
@@ -477,4 +476,139 @@ M.cineMusPuitsA = function(A, P){
   });
   return I;
 };
+=======
+/* =================== LES QUATRE FILMS DES HÉROS (jeu/pub/heros.js ; Romain, 17 novembre : « un peu le même style avec le même rythme » que la pub) ===================
+   La même musique de fête que la pub (120 à la minute, un temps = 0,5 s, les mêmes instruments), mais UN AIR PAR HÉROS, dans son ton, joué par
+   son instrument : le Pisteur siffle et court (do), l'Alchimiste fait des bulles au marimba (ré), le Barde chante au luth (fa), le Sage égrène
+   sa harpe et sa cloche (la). Le même découpage pour les quatre, celui du montage :
+     mesure 1      (0 → 2 s)     le héros arrive : un grand coup, son nom (0,5 s), sa devise (1 s)
+     mesure 2      (2 → 4 s)     chez lui : l'accord égrené, le roulement, la gamme qui monte
+     mesures 3-7   (4 → 14 s)    LE REFRAIN (do, sol, la mineur, fa, do, dans le ton du héros) : son air
+     mesures 8-9   (14 → 18 s)   le pont, à mi-vitesse : son instrument tout seul sur une nappe, puis le roulement
+     mesures 10-11 (18 → 22 s)   la nuit (la mineur, sol) : la grosse caisse sur tous les temps, la basse au galop, les cuivres — pour le Barde, la fête
+     mesure 12     (22 → 24 s)   la rafale : quatre « hé ! » sur les quatre mots
+     mesure 13     (24 → 26 s)   l'équipe : le refrain une octave au-dessus
+     mesures 14-15 (26 → fin)    « Joue le… ! » : le grand accord, quatre notes qui montent, et « ta-dam » */
+function musiqueHeros(o){
+  return function(A, P){
+    var I = Instance(A, P), G = 1.0, TR = o.tr || 0, sec = A.bus(P, {grotte:.05, g:G}), tamb = A.bus(P, {grotte:.09, g:G * .72}), loin = A.bus(P, {grotte:.3, g:G * .85}), ech = I.echo(loin, {temps:.375, retour:.35, lp:2600, sortie:.4});
+    function n_(n){ return m(n + TR); }
+    function kick(t, g){ A.tambour(t, {f:58, d:.22, g:(g || 1) * .34}, tamb); }
+    function clap(t, g){ g = (g || 1) * .1; [0, .011, .024].forEach(function(x, k){ A.bruit(t + x, {coul:'blanc', filtres:[{type:'bandpass', f:1500 + k * 320, q:.9}], env:A.perc(.001, .08 + k * .025), g:g}, tamb); }); }
+    function chat(t, g){ A.bruit(t, {coul:'blanc', hp:7200, env:A.perc(.001, .032), g:(g || 1) * .03}, tamb); }
+    function caisse(t, g){ A.bruit(t, {coul:'blanc', filtres:[{type:'bandpass', f:1900, q:.7}], env:A.perc(.002, .1), g:g}, tamb); A.ton(t, {f:190, f2:140, gl:.08, env:A.perc(.002, .08), g:g * .5}, tamb); }
+    function mar(t, n, g){ var f = n_(n); g = g || 1; A.ton(t, {type:'sine', f:f, env:A.perc(.002, .34), g:g * .12}, sec); A.ton(t, {type:'sine', f:f * 4, env:A.perc(.001, .06), g:g * .022}, sec); A.ton(t, {type:'triangle', f:f * 2, env:A.perc(.002, .13), g:g * .014}, sec); }
+    function uke(t, notes, g, long){ notes.forEach(function(n, k){ A.harpe(t + k * .013, n_(n), {t60:long || .5, g:(g || 1) * .06, lp:3400}, sec); }); }
+    function basse(t, n, d, g){ g = g || 1; A.ton(t, {type:'triangle', f:n_(n), env:[[0, 0], [.008, 1], [d * .5, .6], [d, 0]], g:g * .15, filtres:[{type:'lowpass', f:650}]}, sec); A.ton(t, {type:'sine', f:n_(n), env:[[0, 0], [.008, 1], [d, 0]], g:g * .09}, sec); }
+    function siffle(t, n, g){ var f = n_(n); A.ton(t, {type:'sine', f:f * .98, f2:f, gl:.05, env:[[0, 0], [.03, 1], [.16, .8], [.24, 0]], g:(g || 1) * .034, vib:[6, f * .012], vibRetard:.07}, loin); }
+    function hey(t, g){ A.choeur(t, [n_(72), n_(76), n_(79)], .3, {voyelle:'a', a:.015, r:.2, g:(g || 1) * .034}, loin); }
+    /* les instruments des héros */
+    function luth(t, n, g){ g = g || 1; A.harpe(t, n_(n), {t60:.7, g:g * .11, lp:3000}, sec); A.harpe(t + .008, n_(n - 12), {t60:.5, g:g * .05, lp:1800}, sec); }                        /* le luth du Barde : la note et son octave grave */
+    function harpe(t, n, g){ A.harpe(t, n_(n), {t60:1.5, g:(g || 1) * .1, lp:3600}, ech); }                                                                                          /* la harpe du Sage, avec son écho */
+    function cloche(t, n, g){ var f = n_(n); g = (g || 1) * .03; A.ton(t, {type:'sine', f:f, env:A.perc(.002, 1.1), g:g}, loin); A.ton(t, {type:'sine', f:f * 2.76, env:A.perc(.002, .5), g:g * .35}, loin); A.ton(t, {type:'sine', f:f * 5.4, env:A.perc(.001, .2), g:g * .16}, loin); }
+    function bulle(t, n, g){ var f = n_(n); A.ton(t, {type:'sine', f:f * .7, f2:f * 1.5, gl:.09, env:A.perc(.004, .12), g:(g || 1) * .05}, loin); }                                    /* une bulle du chaudron : « bloup » */
+    function pizz(t, n, g){ A.harpe(t, n_(n), {t60:.28, g:(g || 1) * .1, lp:2400}, sec); }                                                                                           /* une corde pincée, sèche : les pas du Pisteur */
+    var ACC = {C:[60, 64, 67, 72], G:[59, 62, 67, 74], Am:[57, 60, 64, 69], F:[57, 60, 65, 72]}, BAS = {C:36, G:31, Am:33, F:29};
+    function mesure(t, acc, q){                                     /* une mesure du refrain : grosse caisse, mains, charleston, ukulélé à contretemps, basse */
+      q = q || {};
+      for(var b = 0; b < 4; b++){
+        var tb = t + b * .5;
+        if(q.quatre || b % 2 === 0) kick(tb, q.k);
+        if(q.mains || b % 2 === 1) clap(tb, q.c);
+        chat(tb, .7); chat(tb + .25, 1.25); if(q.double){ chat(tb + .125, .6); chat(tb + .375, .6); }
+        if(!q.sansUke) uke(tb + .25, ACC[acc], q.u);
+        if(q.galop){ basse(tb, BAS[acc], .2, 1); basse(tb + .25, BAS[acc], .14, .75); basse(tb + .375, BAS[acc] + 12, .1, .7); }
+        else { basse(tb, BAS[acc], .22, 1); basse(tb + .25, BAS[acc] + 12, .16, .7); }
+      }
+    }
+    var JOUE = {mar:mar, siffle:siffle, luth:luth, harpe:harpe, cloche:cloche, bulle:bulle, pizz:pizz};
+    function air(t, notes, g, joue, oct){ notes.forEach(function(n, k){ if(n) JOUE[joue || o.voix](t + k * .25, n + (oct || 0), g); }); }
+    function doubleAir(t, notes, g){ air(t, notes, g); if(o.voix2) air(t, notes.map(function(n, k){ return o.rare && k % 2 ? 0 : n; }), (g || 1) * (o.g2 || .7), o.voix2, o.oct2 == null ? 12 : o.oct2); }
+
+    /* --- le héros arrive (0 → 2 s) --- */
+    a(I, 0, function(t){
+      frappe(A, t, .26, tamb); kick(t, 1); basse(t, BAS.C, .5, 1);
+      hey(t + .5, 1.1); uke(t + .5, [48, 55, 60, 64, 67, 72], 1.4, 1.6); kick(t + .5, 1); clap(t + .5, .9);                                  /* son nom */
+      kick(t + 1, .9); clap(t + 1, .8); air(t + 1, [84, 88, 91], .9, o.voix2 || o.voix); basse(t + 1, BAS.G, .4, .9);                       /* sa devise */
+      [0, .25, .5, .75].forEach(function(x, k){ chat(t + 1 + x, k % 2 ? 1.2 : .7); }); kick(t + 1.5, .8); clap(t + 1.75, .6); air(t + 1.5, [79, 76], .7);
+    });
+    /* --- chez lui (2 → 4 s) --- */
+    a(I, 2, function(t){
+      [59, 62, 67, 74, 67, 62, 59, 62].forEach(function(n, k){ A.harpe(t + k * .25, n_(n), {t60:.9, g:.1, lp:3000}, sec); chat(t + k * .25, k % 2 ? 1.2 : .7); });
+      basse(t, BAS.G, .5, .9); clap(t + .5, .6); kick(t, .7); kick(t + .5, .7); air(t, [0, 0, 86, 0], .6);
+      for(var k = 0; k < 8; k++) caisse(t + 1 + k * .125, .025 + k * .012);                                /* le roulement */
+      kick(t + 1, .8); kick(t + 1.5, .9); kick(t + 1.75, 1);
+      montee(A, t + .8, 1.2, .3, loin);
+      [72, 74, 76, 77, 79, 81, 83, 84].forEach(function(n, k){ mar(t + 1 + k * .125, n, .45 + k * .06); });   /* la gamme : c'est parti */
+    });
+    /* --- LE REFRAIN (4 → 14 s) : l'air du héros --- */
+    a(I, 4, function(t){ frappe(A, t, .26, tamb); hey(t, 1.1); mesure(t, 'C', o.batt); doubleAir(t, o.air[0]); uke(t, ACC.C, 1.3, 1.4); });
+    a(I, 6, function(t){ mesure(t, 'G', o.batt); doubleAir(t, o.air[1]); });
+    a(I, 8, function(t){ mesure(t, 'Am', o.batt); doubleAir(t, o.air[2]); });
+    a(I, 10, function(t){ var q = {double:1}; if(o.batt) Object.keys(o.batt).forEach(function(k){ q[k] = o.batt[k]; }); mesure(t, 'F', q); doubleAir(t, o.air[3]); });
+    a(I, 12, function(t){
+      var q = {double:1}; if(o.batt) Object.keys(o.batt).forEach(function(k){ q[k] = o.batt[k]; }); mesure(t, 'C', q); doubleAir(t, o.air[4]);
+      [[1.5, 130], [1.625, 130], [1.75, 105], [1.875, 84]].forEach(function(x){ A.tambour(t + x[0], {f:x[1], d:.2, g:.26}, tamb); });   /* la descente de toms */
+    });
+    /* --- LE PONT (14 → 18 s), à mi-vitesse : l'instrument du héros, presque seul --- */
+    a(I, 14, function(t){
+      frappe(A, t, .18, tamb);
+      A.choeur(t, [n_(57), n_(60), n_(64)], 2, {voyelle:'ou', a:.2, r:.5, g:.02}, loin); A.choeur(t + 2, [n_(57), n_(60), n_(65)], 2, {voyelle:'ou', a:.2, r:.5, g:.02}, loin);
+      for(var k = 0; k < 16; k++) chat(t + k * .25, k % 2 ? .9 : .5);
+      [0, 2].forEach(function(x){ kick(t + x, 1); clap(t + x + 1, .7); kick(t + x + 1.75, .7); });
+      basse(t, BAS.Am, .9, 1); basse(t + 1, BAS.Am + 12, .4, .7); basse(t + 2, BAS.F, .9, 1); basse(t + 3, BAS.F + 12, .4, .7);
+      uke(t + .5, ACC.Am, .9, .9); uke(t + 1.5, ACC.Am, .9, .9); uke(t + 2.5, ACC.F, .9, .9);
+      o.pont.forEach(function(p){ JOUE[o.voixPont || o.voix](t + p[0], p[1], 1.1); if(o.voix2) JOUE[o.voix2](t + p[0], p[1] + 12, .6); });
+      for(var q = 0; q < 8; q++) caisse(t + 3 + q * .125, .02 + q * .011);
+      montee(A, t + 2.9, 1.1, .26, loin);
+    });
+    /* --- LA NUIT (18 → 22 s) : le donjon — ou la fête, pour le Barde --- */
+    function coup(t, notes, g){ notes.forEach(function(n){ cuivre(A, t, n_(n), .45, g, sec); }); }
+    if(o.fete){
+      a(I, 18, function(t){ frappe(A, t, .26, tamb); mesure(t, 'F', {quatre:1, mains:1, double:1}); doubleAir(t, [81, 84, 81, 77, 81, 84, 89, 0]); hey(t + 1, 1); hey(t + 1.5, 1); });
+      a(I, 20, function(t){ mesure(t, 'G', {quatre:1, mains:1, double:1}); doubleAir(t, [79, 83, 79, 74, 79, 83, 86, 0]); hey(t + 1, 1); hey(t + 1.5, 1); });
+    } else {
+      a(I, 18, function(t){ frappe(A, t, .28, tamb); mesure(t, 'Am', {quatre:1, galop:1, double:1, u:.8}); air(t, [69, 72, 76, 72, 69, 72, 76, 81]); coup(t, [45, 52, 57], .05); coup(t + .75, [45, 52, 57], .04); coup(t + 1.5, [48, 52, 57], .04); });
+      a(I, 20, function(t){ mesure(t, 'G', {quatre:1, galop:1, double:1, u:.8}); air(t, [67, 71, 74, 71, 67, 71, 74, 79]); coup(t, [43, 50, 55], .05); coup(t + .75, [43, 50, 55], .04); coup(t + 1.5, [47, 50, 55], .04); });
+    }
+    /* --- LA RAFALE (22 → 24 s) : quatre mots, quatre « hé ! » --- */
+    a(I, 22, function(t){
+      ['F', 'F', 'G', 'G'].forEach(function(c, b){ var tb = t + b * .5; hey(tb, 1.15); kick(tb, 1); kick(tb + .25, .8); clap(tb, 1); uke(tb, ACC[c], 1.3, .6); basse(tb, BAS[c], .22, 1); basse(tb + .25, BAS[c] + 12, .16, .8); });
+      for(var k = 0; k < 16; k++) caisse(t + k * .125, .018 + k * .008);
+      [72, 74, 76, 77, 79, 81, 83, 84, 86, 88, 89, 91].forEach(function(n, k){ mar(t + .5 + k * .125, n, .5 + k * .04); });
+      montee(A, t + .8, 1.2, .3, loin);
+    });
+    /* --- L'ÉQUIPE (24 → 26 s) : le refrain du héros, une octave au-dessus --- */
+    a(I, 24, function(t){ frappe(A, t, .26, tamb); mesure(t, 'C', {quatre:1, mains:1, double:1}); air(t, o.air[0], 1, 'mar', 12); air(t, o.air[0], .9, 'siffle', 12); hey(t + 1, 1.1); hey(t + 1.5, 1.1); });
+    /* --- « JOUE LE… ! » (26 → fin) --- */
+    a(I, 26, function(t){
+      frappe(A, t, .34, tamb); kick(t, 1.2); clap(t, 1.1);
+      uke(t, [48, 55, 60, 64, 67, 72], 1.5, 2.6); [36, 43, 48, 52].forEach(function(n){ cuivre(A, t, n_(n), 1.7, .04, sec); });
+      A.choeur(t, [n_(72), n_(76), n_(79)], 1.6, {voyelle:'a', a:.03, r:1, g:.03}, loin); basse(t, BAS.C, 1.4, 1.1);
+      [[.5, 72], [.75, 76], [1, 79], [1.25, 84]].forEach(function(n){ JOUE[o.voix](t + n[0], n[1], 1); siffle(t + n[0], n[1] + 12, .8); });
+      chat(t + .5, 1); chat(t + .75, 1); chat(t + 1, 1); chat(t + 1.25, 1); clap(t + 1.5, .8);
+      /* « ta-dam » */
+      kick(t + 2, 1.1); clap(t + 2, 1); uke(t + 2, ACC.G, 1.5, .5); basse(t + 2, BAS.G, .3, 1.1); [43, 50, 55].forEach(function(n){ cuivre(A, t + 2, n_(n), .4, .04, sec); });
+      kick(t + 2.5, 1.3); clap(t + 2.5, 1.1); uke(t + 2.5, [48, 55, 60, 64, 67, 72], 1.6, 2.2); basse(t + 2.5, BAS.C, 1.1, 1.2); [36, 48, 52, 55].forEach(function(n){ cuivre(A, t + 2.5, n_(n), 1.1, .045, sec); });
+      A.ton(t + 2.5, {type:'sine', f:n_(96), env:A.perc(.002, 1.2), g:.03}, loin); A.ton(t + 2.5, {type:'sine', f:n_(84), env:A.perc(.002, 1.2), g:.04}, loin); hey(t + 2.5, 1.2);
+    });
+    return I;
+  };
+}
+/* le Pisteur (do) : il court — des cordes pincées, et l'air sifflé par-dessus ; la basse au galop */
+M.cineMusHerosPisteurA = musiqueHeros({tr:0, voix:'pizz', voix2:'siffle', oct2:12, batt:{galop:1},
+  air:[[72, 76, 79, 76, 84, 0, 79, 76], [74, 79, 83, 79, 86, 0, 83, 79], [72, 76, 81, 76, 84, 0, 81, 76], [77, 81, 84, 81, 79, 77, 76, 74], [72, 0, 76, 79, 84, 84, 0, 0]],
+  pont:[[0, 76], [.5, 72], [1, 69], [1.5, 72], [2, 77], [2.5, 72], [3, 69]]});
+/* l'Alchimiste (ré) : ça bout — le marimba qui rebondit, des bulles par-dessus */
+M.cineMusHerosAlchimisteA = musiqueHeros({tr:2, voix:'mar', voix2:'bulle', oct2:12, rare:1, g2:1,
+  air:[[79, 0, 76, 0, 79, 81, 79, 76], [74, 0, 71, 0, 74, 76, 74, 71], [76, 0, 72, 0, 76, 77, 76, 72], [77, 0, 81, 0, 84, 81, 77, 76], [79, 76, 72, 76, 79, 84, 0, 0]],
+  pont:[[0, 81], [.25, 84], [.5, 88], [1.5, 84], [2, 81], [2.25, 84], [2.5, 89], [3, 84]]});
+/* le Barde (fa) : il chante — le luth, et l'air sifflé ; la nuit, pour lui, c'est la fête */
+M.cineMusHerosBardeA = musiqueHeros({tr:5, voix:'luth', voix2:'siffle', oct2:12, rare:1, fete:1,
+  air:[[76, 77, 79, 0, 79, 81, 79, 76], [74, 76, 79, 0, 83, 81, 79, 74], [72, 74, 76, 0, 81, 79, 76, 72], [77, 79, 81, 0, 84, 83, 81, 79], [79, 76, 79, 84, 0, 84, 0, 0]],
+  pont:[[0, 76], [.5, 77], [1, 76], [1.5, 72], [2, 77], [2.5, 81], [3, 79]]});
+/* le Sage (la) : il réfléchit — la harpe égrenée et son écho, une cloche sur les temps forts */
+M.cineMusHerosSageA = musiqueHeros({tr:-3, voix:'harpe', voix2:'cloche', oct2:12, rare:1, g2:1,
+  air:[[72, 76, 79, 76, 84, 79, 76, 79], [71, 74, 79, 74, 86, 79, 74, 79], [69, 72, 76, 72, 84, 76, 72, 76], [69, 72, 77, 72, 81, 77, 84, 81], [72, 76, 79, 84, 88, 0, 84, 0]],
+  pont:[[0, 81], [.5, 76], [1, 72], [1.5, 76], [2, 81], [2.5, 77], [3, 72], [3.5, 77]]});
 })(window);
