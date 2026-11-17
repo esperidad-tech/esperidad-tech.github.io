@@ -105,12 +105,38 @@ M.allureDe = function(n){
 /* mon code d'allure pour le cachot de la fin (les quatre rôles) */
 M.allureCodeFin = function(){ return 'allure:' + M.allureNumero(M.role(), M.allureMoi()); };
 M.allureMoi = function(){
-  var h = (M.S && M.S.heros) || {};
-  return {sexe:h.sexe === 'm' ? 'm' : 'f', age:AGES_A.indexOf(h.age) >= 0 ? h.age : 'adulte', peau:PEAUX_A.indexOf(h.peau) >= 0 ? h.peau : 'p1', cheveux:CHEV_A.indexOf(h.cheveux) >= 0 ? h.cheveux : 'brun', yeux:h.yeux || ''};
+  var h = (M.S && M.S.heros) || {}, sx = h.sexe === 'm' ? 'm' : 'f';
+  return {sexe:sx, age:AGES_A.indexOf(h.age) >= 0 ? h.age : 'adulte', peau:PEAUX_A.indexOf(h.peau) >= 0 ? h.peau : 'p1', cheveux:CHEV_A.indexOf(h.cheveux) >= 0 ? h.cheveux : 'brun', yeux:h.yeux || '',
+    coiffure:COIFF_A[sx].indexOf(h.coiffure) >= 0 ? h.coiffure : '', barbe:BARBE_A.indexOf(h.barbe) > 0 ? h.barbe : ''};
 };
 /* mon code d'allure (le Sage, l'Alchimiste) */
 M.allureCode = function(){ var role = M.role(); return ROLES_A.indexOf(role) >= 0 ? 'allure:' + M.allureNumero(role, M.allureMoi()) : null; };
-function allureTxt(a){ return (a.sexe === 'm' ? 'm' : 'f') + '.' + a.peau + '.' + a.cheveux + (a.yeux && /^[a-z]+$/.test(a.yeux) ? '.' + a.yeux : '') + (a.age === 'enfant' ? '.enf' : a.age === 'age' ? '.age' : ''); }
+/* LE VISAGE (Romain, 17 novembre : « tout ce qui est dans l'écran de création, sauf les habits […] pour qu'on retrouve son personnage ») :
+   la coiffure, les yeux et la barbe ne tiennent pas dans le code d'allure (trois symboles) ; ils ont un DEUXIÈME code, montré juste à
+   côté : visage:<n>, n = coiffure (0 à 7, dans la liste de son sexe : persos.js, COIFFURES) + 8 × yeux (0 à 6) + 56 × barbe (0 à 3) :
+   224 codes, sans le rôle — il habille le héros dont on a tapé le code d'allure juste avant (P.allureDernier). Il n'est pas obligatoire :
+   sans lui, le héros garde la coiffure et les yeux du héros de ce rôle. */
+var COIFF_A = {f:['queue', 'tresses', 'carre', 'longs', 'chignon', 'couettes', 'courte', 'tresse_c'], m:['epis', 'court', 'meche', 'boucles', 'arriere', 'catogan', 'milong', 'degarni']};
+var YEUX_A = ['vert', 'bleu', 'marron', 'noisette', 'gris', 'violet', 'ambre'], BARBE_A = ['aucune', 'courte', 'longue', 'moustache'];
+M.visageNumero = function(a){
+  var l = COIFF_A[a.sexe === 'm' ? 'm' : 'f'];
+  return Math.max(0, l.indexOf(a.coiffure)) + 8 * Math.max(0, YEUX_A.indexOf(a.yeux)) + 56 * Math.max(0, BARBE_A.indexOf(a.barbe));
+};
+M.visageDe = function(n, sexe){
+  n = Math.max(0, Math.min(223, Math.floor(+n) || 0));
+  var c = n % 8, y = Math.floor(n / 8) % 7, b = Math.floor(n / 56);
+  return {coiffure:COIFF_A[sexe === 'm' ? 'm' : 'f'][c], yeux:YEUX_A[y], barbe:BARBE_A[b]};
+};
+M.visageCode = function(){ return 'visage:' + M.visageNumero(M.allureMoi()); };
+function allureTxt(a){ return (a.sexe === 'm' ? 'm' : 'f') + '.' + a.peau + '.' + a.cheveux + (a.yeux && /^[a-z]+$/.test(a.yeux) ? '.' + a.yeux : '') + (a.age === 'enfant' ? '.enf' : a.age === 'age' ? '.age' : '') +
+  (a.coiffure && /^[a-z_]+$/.test(a.coiffure) ? '.c-' + a.coiffure : '') + (a.barbe && /^[a-z]+$/.test(a.barbe) && a.barbe !== 'aucune' ? '.b-' + a.barbe : ''); }
+/* le code d'allure d'un équipier, reçu : son héros (le visage d'avant est gardé, s'il va avec : même sexe) */
+function allureRecue(P, a){
+  var av = P.allures && P.allures[a.role], n = {sexe:a.sexe, peau:a.peau, cheveux:a.cheveux, age:a.age};
+  if(av && av.vu && av.sexe === a.sexe){ n.coiffure = av.coiffure; n.yeux = av.yeux; n.barbe = av.barbe; n.vu = true; }
+  P.allures = P.allures || {}; P.allures[a.role] = n; P.allureDernier = a.role;
+  return n;
+}
 /* l'allure à passer au donjon et à la petite page de la tenue : moi, et (le Pisteur) ceux dont j'ai tapé le code */
 function lookTxt(){
   var P = M.P(), role = M.role(), a = (P && P.allures) || {}, l = [role.charAt(0) + ':' + allureTxt(M.allureMoi())];
@@ -129,9 +155,14 @@ function tenueCadre(qui){
 function potions(){ return M.potionsPretes ? M.potionsPretes() : {n:0, sur:7}; }
 var TITRE_TENUE = 'Il est temps d\'enfiler notre tenue de combat !';
 /* mon code d'allure, à montrer au Pisteur */
+/* (17 novembre) et, juste à côté, le code de mon visage (la coiffure, les yeux, la barbe) */
+M.deuxCodesHTML = function(id1, gros){
+  return '<div class="ds-deux"><div class="ds-un"><b>1 · ' + esc('Ma tenue') + '</b>' + M.codeHTML(M.code(id1), gros) + '</div>' +
+    '<div class="ds-un"><b>2 · ' + esc('Mon visage') + '</b>' + M.codeHTML(M.code(M.visageCode()), gros) + '</div></div>';
+};
 function monCodeHTML(){
-  var id = M.allureCode(), t = 'Montre ce code au Pisteur : il te reconnaîtra dans le donjon.';
-  return id ? '<div class="b-donne ds-moncode"><p>🛡️ ' + esc(t) + ' ' + lire(t) + '</p>' + M.codeHTML(M.code(id), true) + '</div>' : '';
+  var id = M.allureCode(), t = 'Montre ces deux codes au Pisteur, l\'un après l\'autre : ta tenue, puis ton visage. Il te reconnaîtra dans le donjon.';
+  return id ? '<div class="b-donne ds-moncode"><p>🛡️ ' + esc(t) + ' ' + lire(t) + '</p>' + M.deuxCodesHTML(id, true) + '</div>' : '';
 }
 /* ---------- Le Sage et l'Alchimiste : la fenêtre de la tenue de combat (ils ont tapé « On va dans la crypte ») ---------- */
 /* (17 novembre, étape 4 du nouveau fil) les tenues viennent de Mélusine (le code du Barde, « Les tenues de Mélusine », E.objets.tenues) :
@@ -180,8 +211,12 @@ M.descenteHTML = function(m){
   /* il vient de taper le code d'un équipier : le voilà, dans sa tenue (« c'est bien lui ? ») */
   if(m.vue === 'recu' && al[m.role]){
     var qui = m.role === 'sage' ? 'Le Sage' : 'L\'Alchimiste';
-    t = (m.role === 'sage' ? 'Voilà le Sage dans sa tenue de combat.' : 'Voilà l\'Alchimiste dans sa tenue de combat, ses sept potions à la ceinture.') + ' C\'est bien ton équipier ? Sinon, retape son code.';
+    t = m.visage ? 'Coiffure, yeux' + (al[m.role].barbe && al[m.role].barbe !== 'aucune' ? ', barbe' : '') + ' : ' + (m.role === 'sage' ? 'le Sage' : 'l\'Alchimiste') + ' a retrouvé son visage. C\'est bien ton équipier ? Sinon, retape ses deux codes.'
+      : (m.role === 'sage' ? 'Voilà le Sage dans sa tenue de combat.' : 'Voilà l\'Alchimiste dans sa tenue de combat, ses sept potions à la ceinture.') +
+        (al[m.role].vu ? ' C\'est bien ton équipier ? Sinon, retape son code.' : ' Tape aussi son deuxième code, celui de son visage : sa coiffure, ses yeux.');
     s += tenueCadre([m.role]) + '<h2>' + qui + ' est prêt !</h2>' + (m.role === 'alchimiste' ? fioles(sac) : '') + '<p>' + esc(t) + ' ' + lire(qui + ' est prêt ! ' + t) + '</p>';
+    if(!al[m.role].vu) return s + '<button class="btn grand b-aller" data-act="ds-code">🔢 Son deuxième code</button>' +
+      (ouvert && okS && okA ? '<button class="btn second" data-act="ds-voir">🕯️ Voir la descente</button>' : '<button class="btn second" data-act="fermer">Plus tard</button>') + '</div>';
     if(ouvert && okS && okA) return s + '<button class="btn grand b-aller" data-act="ds-voir">🕯️ Voir la descente</button><button class="btn second" data-act="fermer">Plus tard</button></div>';
     return s + '<button class="btn grand b-aller" data-act="fermer">D\'accord</button></div>';
   }
@@ -548,15 +583,30 @@ M.codeSpecial = function(t, x, id){
   if(t === 'allure' && P && P.etape === 'fin'){
     var af = M.allureDe(x);
     if(af.role === M.role()){ M.son('clic'); M.toast('C\'est ton code à toi ! Tape celui d\'un ami.'); M.render(); return true; }
-    P.allures = P.allures || {}; P.allures[af.role] = {sexe:af.sexe, peau:af.peau, cheveux:af.cheveux, age:af.age};
+    allureRecue(P, af);
     M.son('gain'); M.sauver(); M.UI.modal = null; M.render();
+    return true;
+  }
+  /* le code du visage (la coiffure, les yeux, la barbe) : il habille le héros dont on vient de taper le code d'allure */
+  if(t === 'visage' && P && (P.etape === 'fin' || cfg())){
+    var qui = P.allureDernier, ah = qui && P.allures && P.allures[qui];
+    if(!ah){
+      M.son('ko');
+      M.ouvrir({type:'info', ic:'💇', titre:'Le visage de qui ?', t:'Ce code habille un ami… mais lequel ? Tape d\'abord son premier code, celui de sa tenue, puis celui-ci.'});
+      return true;
+    }
+    var vz = M.visageDe(x, ah.sexe);
+    ah.coiffure = vz.coiffure; ah.yeux = vz.yeux; ah.barbe = vz.barbe; ah.vu = true;
+    M.son('gain'); M.sauver();
+    if(P.etape === 'fin'){ M.UI.modal = null; M.render(); }
+    else M.ouvrir({type:'descente', vue:'recu', role:qui, visage:true});
     return true;
   }
   /* le code d'allure d'un équipier, tapé par le Pisteur : son héros, tel qu'on le verra dans le donjon. Celui de l'Alchimiste apporte
      aussi ses sept potions (il ne l'a que quand elles sont toutes prêtes : plantes.js, M.sacTout). */
   if(t === 'allure' && cfg()){
-    var a = M.allureDe(x), av = P.allures && P.allures[a.role], deja = !!(av && allureTxt(av) === allureTxt(a));
-    P.allures = P.allures || {}; P.allures[a.role] = {sexe:a.sexe, peau:a.peau, cheveux:a.cheveux, age:a.age}; P.recus['allure:' + a.role] = true;
+    var a = M.allureDe(x), av = P.allures && P.allures[a.role], deja = !!(av && av.sexe === a.sexe && av.peau === a.peau && av.cheveux === a.cheveux && av.age === a.age);
+    allureRecue(P, a); P.recus['allure:' + a.role] = true;
     if(a.role === 'alchimiste' && M.sacTout) M.sacTout();
     if(!deja) M.noter(a.role === 'sage' ? 'Le Sage a enfilé sa tenue de combat.' : 'L\'Alchimiste a enfilé sa tenue de combat. Ses sept potions sont prêtes.', '🛡️');
     M.son('gain'); M.sauver();

@@ -559,7 +559,9 @@ function prisonHTML(o){
   var al = (M.P() && M.P().allures) || {};
   var ombre = function(r, i){
     var a = al[r], h = window.Persos && Persos.defaut ? Persos.defaut(r, a ? a.sexe : (i % 2 ? 'm' : 'f')) : {role:r};
-    if(a) Object.assign(h, {sexe:a.sexe, peau:a.peau, cheveux:a.cheveux}, a.age ? {age:a.age} : {});
+    if(a) Object.assign(h, {sexe:a.sexe, peau:a.peau, cheveux:a.cheveux}, a.age ? {age:a.age} : {},
+      /* (17 novembre) et son visage, si on a tapé son deuxième code : la coiffure, les yeux, la barbe */
+      a.vu ? {coiffure:a.coiffure, yeux:a.yeux, barbe:a.age === 'enfant' || a.sexe !== 'm' ? 'aucune' : a.barbe} : {});
     return '<div class="b-prison-ombre o' + i + (a ? ' connu' : '') + '" data-role="' + r + '">' + portrait('pied', false, false, Object.assign(h, {role:r, niveau:3, talents:[], equip:[]})) + '</div>';
   };
   return '<div class="b-prison" role="img" aria-label="Les quatre enquêteurs au cachot, derrière les barreaux">' +
@@ -572,11 +574,12 @@ function prisonHTML(o){
 }
 /* Sous le cachot : mon code d'apparence, à montrer aux amis, et le pavé pour taper les leurs. Tant qu'il manque quelqu'un. */
 function prisonCodesHTML(){
-  var P = M.P(), moi = M.role(), al = (P && P.allures) || {}, manque = ['pisteur', 'alchimiste', 'barde', 'sage'].filter(function(r){ return r !== moi && !al[r]; });
+  /* (17 novembre) deux codes par ami : sa tenue, puis son visage — on garde le pavé tant qu'un visage manque */
+  var P = M.P(), moi = M.role(), al = (P && P.allures) || {}, manque = ['pisteur', 'alchimiste', 'barde', 'sage'].filter(function(r){ return r !== moi && !(al[r] && (al[r].vu || !M.visageCode)); });
   if(!M.allureCodeFin) return '';
   if(!manque.length){ var tb = 'Vous voilà réunis… derrière les barreaux.'; return '<p class="b-prison-codes-ok">' + esc(tb) + ' ' + lire(tb) + '</p>'; }
-  var t = 'Montre ton code à tes amis, et tape les leurs : ils apparaîtront à côté de toi.';
-  return '<section class="b-prison-codes"><p>' + esc(t) + ' ' + lire(t) + '</p><div class="b-prison-moncode"><b>Ton code</b>' + M.codeHTML(M.code(M.allureCodeFin())) + '</div>' + padHTML() + '</section>';
+  var t = 'Montre tes deux codes à tes amis, et tape les leurs, l\'un après l\'autre : la tenue, puis le visage. Ils apparaîtront à côté de toi.';
+  return '<section class="b-prison-codes"><p>' + esc(t) + ' ' + lire(t) + '</p><div class="b-prison-moncode">' + (M.deuxCodesHTML ? M.deuxCodesHTML(M.allureCodeFin()) : '<b>Ton code</b>' + M.codeHTML(M.code(M.allureCodeFin()))) + '</div>' + padHTML() + '</section>';
 }
 /* ---------- Défaite ---------- */
 function vueDefaite(){
