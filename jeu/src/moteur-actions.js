@@ -162,7 +162,8 @@ M.render = function(){
     if(pt && pt.enPause && pt.enPause()) parquerAtelier();   /* (aussi pendant le « 3, 2, 1 » de la reprise) */
     else { try{ atelierMonte.arreter(); }catch(e){} atelierMonte = null; }
   }
-  try{ if(M.majMission) M.majMission(); }catch(e){ console.error(e); } /* missions de base validées (mission.js) */
+  try{ if(M.majMission) M.majMission(); }catch(e){ console.error(e); }
+  try{ if(M.majAccusations) M.majAccusations(); }catch(e){ console.error(e); }   /* (17 novembre) une question de l'accusation vient d'arriver chez le Sage */ /* missions de base validées (mission.js) */
   try{ if(M.prevoirFilms) M.prevoirFilms(); }catch(e){ console.error(e); } /* une cinématique de ce moment : on la télécharge d'avance */
   /* l'onglet Carte, et rien n'y change (carte-jeu.js, M.carteInchangee) : on garde la carte telle quelle, seuls le bandeau, les onglets
      et la fenêtre se redessinent (Romain, 5 novembre, 17 h 01 : plus d'image qui saute quand on touche ce qui brille) */
@@ -802,6 +803,20 @@ function passerMoment(n){
 function dims(){ var E = M.E(); return (E.ordreAccusation || ['qui', 'ou', 'quoi', 'pourquoi']).filter(function(d){ return E[d]; }); }   /* POURQUOI : l'enquête 2 */
 M.dimsAccusation = dims;
 /* (enquête 3) E.accuser.besoin : ce qu'il faut avoir reçu pour accuser (« Léo a parlé ») ; sans E.accuser : on accuse quand on veut */
+/* (Romain, 17 novembre, 7 h 50) les questions de l'accusation arrivent au fur et à mesure : E[d].des = ce que le Sage doit avoir reçu (une
+   condition suffit ; sans « des » : la question est là dès le début, comme dans les enquêtes 1 et 2). */
+M.questionOuverte = function(d){ var E = M.E(), Q = E && E[d]; return !!Q && (!Q.des || M.besoinOk(Q.des)); };
+M.questionsOuvertes = function(){ return dims().filter(M.questionOuverte); };
+/* une question vient d'arriver chez le Sage : « Tes accusations sont à jour ! », une ligne dans son Carnet, et l'étoile sur la page */
+M.majAccusations = function(){
+  var E = M.E(), P = M.P(); if(!E || !P || M.role() !== 'sage' || P.etape !== 'jeu') return;
+  if(!dims().some(function(d){ return E[d] && E[d].des; })) return;
+  var vues = P.accVues = P.accVues || [], neuves = M.questionsOuvertes().filter(function(d){ return vues.indexOf(d) < 0; });
+  if(!neuves.length) return;
+  neuves.forEach(function(d){ vues.push(d); if(M.noter) M.noter('Une nouvelle question dans tes accusations : « ' + E[d].titre + ' »', '⚖️'); });
+  P.accNeuf = true; M.sauver();
+  setTimeout(function(){ try{ M.toast('⚖️ Tes accusations sont à jour !'); if(M.son) M.son('gain'); }catch(e){} }, 1500);
+};
 M.peutAccuser = function(){ var E = M.E(); return !(E && E.accuser && E.accuser.besoin) || M.besoinOk(E.accuser.besoin); };
 function accusationModal(m){
   var E = M.E(), P = M.P(), d = m.etape;

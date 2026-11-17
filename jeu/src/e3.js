@@ -95,7 +95,7 @@ E[3] = {
       /* (14 novembre, 11 h 44, Bible §13.38) plus de mission pour le maire inquiet : il vient tout seul, sur un minuteur CACHÉ — une
          mission l'annoncerait un quart d'heure à l'avance */
       {piste:true, t:'Regarde bien les visages : plusieurs villageois vont te mentir.'},
-      {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
+      {libre:true, ic:'🔍', t:'Cherchez ensemble : qu\'est-il arrivé à Odette ?'}
     ],
     /* (étape 5) une mission de fête ratée compte comme faite (fini : un seul essai) ; rendre sa mission au maire, l'après-midi,
        se coche aussi quand les deux sont ratées (il n'y a alors rien à rendre) */
@@ -108,7 +108,7 @@ E[3] = {
       /* (17 novembre, étape 3 du nouveau fil) sauf une, que le Pisteur ne voit qu'avec le code du Barde, « Le plan de la nuit » : c'est
          l'équipe qui a trouvé le plan, la mission ne fait que le lui rappeler */
       {si:[{code:'info:plan_nuit'}], ic:'🗝️', t:'Le plan de la nuit : quand la Grosse Marie sonnera, monte au clocher sans te faire voir, et prends la clé à la ceinture d\'Anselme.', fait:[{fini:'pisteur:clocher:cle'}, {vu:'pisteur:puits:acide'}]   /* (ou par le puits, si le Barde a raté Anselme) */},
-      {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
+      {libre:true, ic:'🔍', t:'Cherchez ensemble : qu\'est-il arrivé à Odette ?'}
     ],
     /* (étape 4) le gâteau (une création libre : on ne le rate jamais), les sept plantes, la lettre au labo, les sept potions de la nuit */
     alchimiste:[
@@ -126,7 +126,7 @@ E[3] = {
          « Prépare les sept potions sur ton établi » sans « de la nuit », et plus de mission de la nuit */
       {des:1, ic:'🧪', t:'Prépare les sept potions, sur ton établi.',
         fait:[{et:[{vu:'fiole:feu'}, {vu:'fiole:fumigene'}, {vu:'fiole:huile'}, {vu:'fiole:colle'}, {vu:'fiole:acide'}, {vu:'fiole:baume'}, {vu:'fiole:coeur'}]}]},
-      {libre:true, ic:'🔍', t:'Cherchez ensemble : QUI a écrit cette lettre, et OÙ est Odette ?'}
+      {libre:true, ic:'🔍', t:'Cherchez ensemble : qu\'est-il arrivé à Odette ?'}
     ],
     sage:[
       {ic:'👥', t:'Lis « Les habitants » à toute l\'équipe.', fait:[{lu:'habitants'}]},
@@ -135,14 +135,21 @@ E[3] = {
       /* (16 novembre) le secret d'Odette : elle n'arrive qu'avec le papier (e.si, mission.js) ; rien n'y dit quoi faire de la pierre */
       {si:[{code:'obj:papier_odette'}], ic:'📜', t:'Odette a laissé un papier couvert de signes. Fais-le parler, dans ton Grand Livre.', fait:[{vu:'pierre:maison'}]},
       {piste:true, t:'Quand toute l\'équipe a tout fait, donne le code du moment suivant (page ⏭️ Les codes des moments).'},
-      {libre:true, ic:'🔍', t:'Écoute l\'équipe, puis accuse : QUI a écrit cette lettre, et OÙ est Odette ?'}
+      {libre:true, ic:'🔍', t:'Écoute l\'équipe : tes accusations arriveront au fur et à mesure. À la fin, accuse !'}
     ]
   },
   /* (Romain, 13 novembre : « dans Mon tableau d'enquête, il faut une dizaine de lieux — au clocher, au puits, pas “au fond du puits”,
      au moulin, au Vieux Chêne, et six autres — et tous les personnages ») le tableau et l'accusation offrent les mêmes choix :
      rien ne désigne plus la réponse d'avance. court : le nom dans l'en-tête de colonne du tableau (tableau.js). */
-  qui:{titre:'QUI a écrit la fausse lettre ?', choix:['melusine', 'margot', 'iris', 'victor', 'fortune', 'gaspard', 'tim', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
-  ou:{titre:'OÙ est Odette ?', choix:[
+  /* LES ACCUSATIONS ARRIVENT AU FUR ET À MESURE (Romain, 17 novembre, 7 h 50 : « au début, il n'y a rien. On ne peut pas faire d'accusation
+     au début. […] elles arrivent au fur et à mesure que des codes arrivent. […] Et tu le dis au Sage : "les accusations sont à jour". »)
+     des : ce que le Sage doit avoir reçu pour que la question existe (une condition suffit). Une question par moment, si tout va bien :
+       · le matin, avec le papier d'Odette (le Barde) : OÙ est Odette ?
+       · l'après-midi, avec la lettre (le Pisteur) : QUI a écrit la fausse lettre ?
+       · la nuit, avec « Léo a parlé » (le Pisteur, après le donjon) : QUI se cachait sous la cape noire ?
+     Filets : le vieux plan et « On descend » ouvrent aussi OÙ ; « Léo a parlé » ouvre tout (c'est lui qui permet d'accuser). */
+  qui:{titre:'QUI a écrit la fausse lettre ?', des:[{code:'obj:lettre'}, {code:'info:leo_battu'}], choix:['melusine', 'margot', 'iris', 'victor', 'fortune', 'gaspard', 'tim', 'basile', 'silas', 'levoisin', 'farinel', 'leo', 'anselme', 'grosbec']},
+  ou:{titre:'OÙ est Odette ?', des:[{code:'obj:papier_odette'}, {code:'obj:vieux_plan'}, {code:'info:on_descend'}, {code:'info:leo_battu'}], choix:[
     {id:'clocher', nom:'Au clocher', court:'Clocher', ic:'🔔'}, {id:'puits', nom:'Au puits', court:'Puits', ic:'💧'},
     {id:'moulin', nom:'Au moulin', court:'Moulin', ic:'🌾'}, {id:'chene', nom:'Au Vieux Chêne', court:'Vieux Chêne', ic:'🌳'},
     {id:'soeur', nom:'Chez sa sœur', court:'Chez sa sœur', ic:'🏡'}, {id:'mairie', nom:'À la mairie', court:'Mairie', ic:'🏛️'},
@@ -152,7 +159,7 @@ E[3] = {
      tableau du Sage (horsTableau) : on ne le découvre qu'au fond du donjon, quand il arrache sa cape. L'ordre des trois questions
      (ordreAccusation) : OÙ, QUI a écrit, QUI sous la cape. Et le Sage n'accuse qu'une fois Léo battu (accuser.besoin : le code du
      Pisteur, « Léo a parlé ») : Romain, « Bravo ! Vous avez résolu l'enquête n° 3. Place aux accusations ! » */
-  quoi:{titre:'QUI se cachait sous la cape noire ?', icQ:'🧥', horsTableau:true, choix:[
+  quoi:{titre:'QUI se cachait sous la cape noire ?', icQ:'🧥', horsTableau:true, des:[{code:'info:leo_battu'}], choix:[
     {id:'farinel', nom:'Farinel', pnj:true}, {id:'silas', nom:'Silas', pnj:true}, {id:'leo', nom:'Léo', pnj:true}, {id:'grosbec', nom:'Grosbec', pnj:true},
     {id:'fortune', nom:'Fortuné', pnj:true}, {id:'victor', nom:'Victor', pnj:true}, {id:'basile', nom:'Basile', pnj:true}, {id:'gaspard', nom:'Gaspard', pnj:true},
     {id:'anselme', nom:'Anselme', pnj:true}, {id:'levoisin', nom:'Le voisin', pnj:true}]},

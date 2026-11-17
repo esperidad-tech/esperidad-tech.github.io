@@ -493,7 +493,14 @@ var IC_Q = {qui:'👤', ou:'📍', quoi:'🤝', pourquoi:'❓'};
 function icQ(E, d){ return (E[d] && E[d].icQ) || IC_Q[d]; }
 function accusation(E, P){
   var dims = (E.ordreAccusation || ['qui', 'ou', 'quoi', 'pourquoi']).filter(function(d){ return E[d] && E[d].titre; });
-  var t = 'Parlez-en tous ensemble. Quand toute l\'équipe est d\'accord, accuse !';
+  /* (Romain, 17 novembre, 7 h 50) les questions arrivent au fur et à mesure (E[d].des, M.questionOuverte) : au début, il n'y a rien */
+  var toutes = dims.length; dims = dims.filter(function(d){ return !M.questionOuverte || M.questionOuverte(d); });
+  if(P && P.accNeuf){ P.accNeuf = false; M.sauver(); }
+  if(!dims.length){
+    var t0 = 'Rien à accuser pour l\'instant. Les questions arriveront avec les découvertes de l\'équipe : ouvre l\'œil !';
+    return '<div class="lv-acc-haut"><div class="lv-balance" aria-hidden="true">⚖️</div><p class="lv-intro">' + esc(t0) + ' ' + lire(t0) + '</p></div>';
+  }
+  var t = dims.length < toutes ? 'Voici ce qu\'il faut trouver, pour l\'instant. D\'autres questions viendront… Parlez-en tous ensemble !' : 'Parlez-en tous ensemble. Quand toute l\'équipe est d\'accord, accuse !';
   var q = dims.map(function(d){ return E[d].titre; }).join(' ');
   var s = '<div class="lv-acc-haut"><div class="lv-balance" aria-hidden="true">⚖️</div><p class="lv-intro">' + esc(t) + ' ' + lire(t + ' ' + q) + '</p></div>';
   s += '<ul class="lv-questions">' + dims.map(function(d){ return '<li><span aria-hidden="true">' + icQ(E, d) + '</span><b>' + esc(E[d].titre) + '</b></li>'; }).join('') + '</ul>';
@@ -501,6 +508,7 @@ function accusation(E, P){
   s += '<button class="btn grand lv-accuser" data-act="accuser">⚖️ Accuser</button>';
   s += M.coeursHTML ? M.coeursHTML() : '';
   /* les suspects : ceux que le Sage a barrés dans son tableau sont grisés (ils restent choisissables à l'accusation) */
+  if(dims.indexOf('qui') < 0) return s;   /* les suspects : seulement quand la question « QUI a écrit » est arrivée */
   s += '<div class="lv-suspects">' + ((E.qui && E.qui.choix) || []).map(function(id){
     var raye = (P.raye || []).indexOf(id) >= 0 || !!(M.tableauRaye && M.tableauRaye('qui', id));
     return '<span class="lv-suspect' + (raye ? ' raye' : '') + '"><span class="lv-suspect-img">' + portrait(id) + '</span><small>' + esc((D.PNJ[id] || {}).court || id) + '</small></span>';
