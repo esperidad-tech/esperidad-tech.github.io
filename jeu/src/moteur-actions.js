@@ -699,6 +699,12 @@ function traiterCode(seq){
     var quoi = role === 'alchimiste' ? 'Tu peux l\'analyser dans ton atelier.' : role === 'barde' ? 'Tu peux le montrer aux habitants.' : role === 'sage' ? 'Regarde ton Grand Livre.' : 'Regarde ton sac.';
     if(M.codePourTous(id)) quoi = ouvertPourMoi(id);
     var Ob = (E.objets || {})[x]; if(Ob && Ob.recu && Ob.recu[role]) quoi = Ob.recu[role];   /* (enquête 3) ce que cet objet change pour ce rôle : « une nouvelle page dans ton Grand Livre » */
+    /* (17 novembre) la lettre arrive chez le Sage alors qu'il a déjà le Livre d'or : la page « Comparer les écritures » vient d'être créée
+       (il lui faut les DEUX), le « D'accord » l'y emmène tout droit (livre.js, ouvrir-livre) */
+    if(x === 'lettre' && role === 'sage' && (P.vus['sage:mairie:rendu'] || P.vus['sage:mairie:sanstableau'])){
+      M.decouvrir({ic:nn.ic, titre:'Tu as reçu : ' + nn.nom, t:quoi, retour:'ouvrir-livre', retourId:'quiecrit'});
+      return;
+    }
     M.ouvrir({type:'info', ic:nn.ic, titre:'Tu as reçu : ' + nn.nom, t:quoi});
   } else {
     var I = E.infos[x];

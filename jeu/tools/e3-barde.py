@@ -424,7 +424,7 @@ with sync_playwright() as p:
     m = modal(pg)
     verifier(m and m['type'] == 'decouverte' and m.get('code') == 'info:aveu', 'démasquée : son aveu, et le code pour le Sage')
     # (17 novembre, étape 4) plus de « il a peut-être laissé des traces » (une piste qui ne menait nulle part) : elle promet les tenues
-    verifier('homme en cape' in texte(pg) and 'laissé des traces' not in texte(pg) and 'vous coudre de quoi vous protéger' in texte(pg) and 'Revenez me voir cette nuit' in texte(pg) and 'Léo' not in texte(pg), 'un homme en cape ; « Je vais vous coudre de quoi vous protéger. Revenez me voir cette nuit ! » ; aucun nom')
+    verifier('homme en cape' in texte(pg) and 'laissé des traces' not in texte(pg) and 'tenues de combat' in texte(pg) and 'Revenez me voir cette nuit' in texte(pg) and 'Léo' not in texte(pg), 'un homme en cape ; « Je vais vous coudre de quoi vous protéger. Revenez me voir cette nuit ! » ; aucun nom')
     shot(pg, 'melusine-aveu')
     fermer(pg)
     verifier(mission(5), 'la mission « fais-lui dire la vérité » se coche')

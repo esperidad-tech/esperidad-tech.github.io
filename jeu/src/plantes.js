@@ -107,7 +107,8 @@ function style(){
    M.allureCode) : tapé par le Pisteur, il dit à quoi ressemble son héros dans le donjon ET que les sept potions sont du voyage. */
 function sacFiche(){
   if(faites().length < ORDRE.length || !M.allureCode) return null;
-  try{ var id = M.allureCode(), c = id && M.code(id); return c ? {formes:c.map(function(s){ return D.SYM[s].e; })} : null; }catch(e){ return null; }
+  /* (17 novembre) un code à lui, « Les sept potions » (e3.js, E.infos.sac_pret) : plus d'allure dans ce code, avant le départ */
+  try{ var c = M.code('info:sac_pret'); return c ? {formes:c.map(function(s){ return D.SYM[s].e; })} : null; }catch(e){ return null; }
 }
 M.potionsPretes = function(){ return {n:faites().length, sur:ORDRE.length}; };
 /* (le Pisteur a tapé le code de l'Alchimiste) les sept potions sont dans son sac ; l'acide pour la grille du puits : P.vus['sac:acide'] */

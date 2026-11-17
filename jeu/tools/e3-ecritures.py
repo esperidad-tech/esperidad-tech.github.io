@@ -32,8 +32,9 @@ def sage_pret(b, vue):
     ev(pg, 'lieu', {'id': 'mairie'}); pg.wait_for_timeout(200)
     pg.locator('#voile [data-act=point][data-id=rendu]').first.click(); pg.wait_for_timeout(300)
     pg.locator('#voile [data-act=ouvrir-livre]').first.click(); pg.wait_for_timeout(500)
-    verifier(pg.evaluate("() => M.P().onglet") == 'role' and pg.evaluate("() => M.livrePage()") == 'livredor' and pg.locator('#livre-ici').count() == 1,
-             'D\'accord : le Grand Livre s\'ouvre tout de suite, sur le Livre d\'or (sans la lettre, la page pour comparer n\'existe pas encore)')
+    # (17 novembre, 21 h 46) sans la lettre, la page pour comparer n'est pas créée : « D'accord » ne mène nulle part de spécial (retour à la mairie)
+    verifier(pg.evaluate("() => M.P().onglet") != 'role' and pg.evaluate("() => !M.P().vus['sage:ecriture']"),
+             'D\'accord, sans la lettre : la page pour comparer n\'existe pas encore, le jeu n\'ouvre pas le Grand Livre')
     fermer(pg)
     return pg
 
@@ -45,8 +46,15 @@ with sync_playwright() as p:
     verifier('livredor' in L and 'quiecrit' not in L, 'le Livre d\'or est dans le Grand Livre ; sans la lettre, rien à comparer')
     t = page(pg, 'livredor'); shot(pg, 'livredor')
     verifier(pg.locator('#livre-ici .lv-page.on .ec-or-mot').count() == 12 and pg.locator('#livre-ici .lv-page.on [data-act=ouvrir-page]').count() == 0 and 'Alchimiste' not in t, 'le Livre d\'or : douze mots, plus de bouton « Donner ce livre à l\'Alchimiste »')
-    code(pg, 'obj:lettre')
-    verifier('quiecrit' in pages(pg), 'avec la lettre : la page « Comparer les écritures »')
+    pg.evaluate("() => { M.P().onglet = 'carte'; M.render(); }"); pg.wait_for_timeout(150)
+    # (17 novembre, 21 h 46) la lettre arrive alors qu'il a déjà le Livre d'or : la page vient d'être créée, « D'accord » l'y emmène
+    seq = pg.evaluate("() => M.code('obj:lettre')")
+    pg.evaluate("() => { M.UI.modal = null; M.P().onglet = 'code'; M.render(); }"); pg.wait_for_timeout(150)
+    for s in seq: ev(pg, 'sym', {'s': s})
+    pg.wait_for_timeout(450)
+    pg.locator('#voile [data-act=ouvrir-livre]').first.click(); pg.wait_for_timeout(500)
+    verifier('quiecrit' in pages(pg) and pg.evaluate("() => M.livrePage()") == 'quiecrit',
+             'la lettre arrive (Livre d\'or déjà là) : la page « Comparer les écritures » est créée, et le jeu y emmène tout droit')
     # (17 novembre) le maire confie le Livre d'or alors que le Sage a déjà la lettre : « D'accord » l'emmène sur la page pour comparer
     pg.evaluate("() => { M.P().onglet = 'carte'; M.render(); }"); pg.wait_for_timeout(150)
     ev(pg, 'lieu', {'id': 'mairie'}); pg.wait_for_timeout(200)
@@ -64,17 +72,6 @@ with sync_playwright() as p:
     designer(pg, 'gaspard'); t = texte(pg)
     verifier('ne se ressemblent pas' in t and 'Cherche encore' in t and 'essai' not in t and pg.locator('#voile .b-donne').count() == 0, f'Gaspard : « {t[:90]} »')
     fermer(pg)
-    # (17 novembre, Romain : « Mélusine et Margot, les deux écritures fonctionnent ») les deux mains qui se ressemblent ouvrent la même question
-    designer(pg, 'margot'); t = texte(pg)
-    verifier('Deux mains pareilles' in t and 'combien de carreaux' in t and pg.locator('#voile [data-act=ec-pointure]').count() == 5 and 'pas elle' not in t and pg.locator('#voile .b-donne').count() == 0, f'Margot : la question des empreintes (« {t[:90]} »)')
-    pg.locator('#voile [data-act=ec-pointure][data-n=non]').click(); pg.wait_for_timeout(300); t = texte(pg)
-    verifier('autre preuve' in t and pg.evaluate("() => M.P().vus['sage:ecriture'] !== 'ok'"), '« Je ne sais pas encore » : il lui faut une autre preuve, rien n\'est validé')
-    fermer(pg)
-    designer(pg, 'melusine'); t = texte(pg)
-    verifier('Deux mains pareilles' in t and pg.evaluate("() => M.P().vus['sage:ecriture'] !== 'ok'"), 'Mélusine aussi ouvre la même question (l\'écriture seule ne tranche pas)')
-    pg.locator('#voile [data-act=ec-pointure][data-n="4"]').click(); pg.wait_for_timeout(300); t = texte(pg)
-    verifier('ne colle pas' in t and pg.evaluate("() => M.P().vus['sage:ecriture'] !== 'ok'"), 'une mauvaise taille : « Ça ne colle pas », rien n\'est validé')
-    fermer(pg)
     for q in ['iris', 'victor', 'gaspard']:
         designer(pg, q); fermer(pg)
     t = page(pg, 'quiecrit'); shot(pg, 'encore')
@@ -83,8 +80,10 @@ with sync_playwright() as p:
     pg.evaluate("() => { M.P().vus['sage:ecriture'] = 'rate'; M.sauver(); M.render(); }"); pg.wait_for_timeout(200)
     t = page(pg, 'quiecrit')
     verifier(pg.locator('#livre-ici .lv-page.on [data-act=ec-designer]').count() == 12, 'une partie en cours, fermée après deux ratés : la page est rouverte')
-    designer(pg, 'margot'); pg.locator('#voile [data-act=ec-pointure][data-n="3"]').click(); pg.wait_for_timeout(400); t = texte(pg)
-    verifier('la main de Mélusine' in t and pg.evaluate("() => M.P().vus['sage:ecriture'] === 'ok' && !!M.P().objets['_info:cest_melusine'] && M.P().vus['sage:pointure'] === 1"), 'trois carreaux, en ayant touché Margot : c\'est Mélusine, et le code pour le Barde')
+    # (17 novembre, 21 h 46, Romain : « le Sage découvre deux écritures similaires et les donne au Barde ») Margot ou Mélusine : le même résultat
+    designer(pg, 'margot'); t = texte(pg)
+    verifier('Deux mains pareilles' in t and 'Margot' in t and 'Mélusine' in t and pg.locator('#voile .b-donne').count() == 1 and 'Barde' in t
+             and pg.evaluate("() => M.P().vus['sage:ecriture'] === 'ok' && !!M.P().objets['_info:cest_melusine']"), f'Margot touchée : deux mains pareilles, un code pour le Barde (« {t[:90]} »)')
     pg.context.close()
 
     print('— Le Sage (tablette) : avec le carnet d\'Odette ; il désigne Mélusine')
@@ -92,13 +91,12 @@ with sync_playwright() as p:
     code(pg, 'obj:lettre'); code(pg, 'obj:carnet')
     t = page(pg, 'quiecrit'); shot(pg, 'comparer-tab')
     verifier(pg.locator('#livre-ici .lv-page.on .ec-compare-l').count() == 2 and 'Le carnet d\'Odette' in t, 'avec le carnet : la vraie écriture d\'Odette à côté de la lettre')
-    designer(pg, 'melusine'); shot(pg, 'pointure')
-    pg.locator('#voile [data-act=ec-pointure][data-n="3"]').click(); pg.wait_for_timeout(400); t = texte(pg); shot(pg, 'melusine')
-    verifier('la main de Mélusine' in t and pg.locator('#voile .b-donne').count() == 1 and 'Barde' in t, f'Mélusine : la même main, et un code pour le Barde (« {t[:80]} »)')
-    verifier(pg.evaluate("() => M.P().vus['sage:ecriture'] === 'ok' && !!M.P().objets['_info:cest_melusine'] && M.destinataire('info:cest_melusine') === 'barde'"), 'le code « L\'écriture de Mélusine » est à donner, au Barde')
+    designer(pg, 'melusine'); t = texte(pg); shot(pg, 'melusine')
+    verifier('Deux mains pareilles' in t and pg.locator('#voile .b-donne').count() == 1 and 'Barde' in t, f'Mélusine touchée : la même chose, deux mains pareilles et un code pour le Barde (« {t[:80]} »)')
+    verifier(pg.evaluate("() => M.P().vus['sage:ecriture'] === 'ok' && !!M.P().objets['_info:cest_melusine'] && M.destinataire('info:cest_melusine') === 'barde'"), 'le code « Deux écritures pareilles » est à donner, au Barde')
     fermer(pg)
     t = page(pg, 'quiecrit'); shot(pg, 'trouve')
-    verifier(pg.locator('#livre-ici .lv-page.on [data-act=ec-designer]').count() == 0 and pg.locator('#livre-ici .lv-page.on .ec-or-bon').count() == 1 and pg.locator('#livre-ici .lv-page.on .b-donne').count() == 1, 'la page garde le mot de Mélusine entouré, et le code à redonner')
+    verifier(pg.locator('#livre-ici .lv-page.on [data-act=ec-designer]').count() == 0 and pg.locator('#livre-ici .lv-page.on .ec-or-bon').count() == 2 and pg.locator('#livre-ici .lv-page.on .b-donne').count() == 1, 'la page garde les mots de Mélusine ET de Margot entourés, et le code à redonner')
     seq = pg.evaluate("() => M.code('info:cest_melusine')")
     pg.context.close()
 

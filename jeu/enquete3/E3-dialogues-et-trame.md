@@ -107,7 +107,7 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
    - « Rien vu. Mais ici, tout se sait : Basile parle à ses choux, Victor a peur des chats, Fortuné vend des cailloux peints… et Mélusine a du tissu tout neuf ! »
 4. **Le maire vient souvent à la taverne ?** _(le matin et l'après-midi)_
    - « Chaque soir, pour son cidre. Il déteste qu'on dise qu'il cache des choses : il devient tout rouge ! »
-5. **C'est vous qui avez écrit la lettre.** — 🔒 s'ouvre avec : le code « L'écriture de Mélusine » (pour barde) _(l'après-midi)_
+5. **C'est vous qui avez écrit la lettre.** — 🔒 s'ouvre avec : le code « Deux écritures pareilles » (pour barde) _(l'après-midi)_
    - « Moi ? Je n'écris que mes ardoises, à la craie. Et avec des fautes ! »
 - **Tout demandé** : « Tu poses plus de questions que mes clients ne boivent de cidre ! »
 
@@ -236,9 +236,9 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
    - 🔍 démasqué : « Bon… j'ai veillé à la bougie. Ne me demande pas pourquoi. »
 4. **Qu'est-ce que vous cousez pour la fête ?** _(l'après-midi)_
    - « Une banderole par chat d'Odette : Moustache, Biscotte, Pompon, Caramel, Mistigri, Noisette, Grisette. »
-5. **C'est vous qui avez écrit la lettre.** — 🔒 s'ouvre avec : le code « L'écriture de Mélusine » (pour barde) _(l'après-midi)_
+5. **C'est vous qui avez écrit la lettre.** — 🔒 s'ouvre avec : le code « Deux écritures pareilles » (pour barde) _(l'après-midi)_
    - 🤥 « Moi ? Je sais à peine écrire mon nom ! »
-   - 🔍 démasqué : « C'est moi… Un homme en cape m'a forcée à l'écrire et à la déposer. Je n'ai pas vu son visage. Pardon… Je vais vous coudre de quoi vous protéger. Revenez me voir cette nuit ! » → donne « L'aveu de Mélusine » (pour sage)
+   - 🔍 démasqué : « C'est moi… Un homme en cape m'a forcée à l'écrire et à la déposer. Je n'ai pas vu son visage. Pardon… Pour m'excuser, je vous couds des tenues de combat. Revenez me voir cette nuit, à la fête : elles seront prêtes ! » → donne « L'aveu de Mélusine » (pour sage)
 - **Tout demandé** : « Laisse-moi coudre, je t'en prie… »
 - **Occupé, le matin** : « Pas maintenant ! Je viens de coudre ma manche à la banderole de Pompon… » — puis, si on revient : « Encore toi ? Attention à mes épingles ! Repasse cet après-midi. »
 
@@ -256,7 +256,7 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
    - « Parle-moi FORT et LEN-TE-MENT. Et ne me presse jamais : quand on me presse, je n'entends plus rien ! »
 5. **Odette est sous l'église ! Vous nous ouvrez la grille ?** — 🔒 s'ouvre avec : le code « Odette est sous l'église » (pour barde) _(l'après-midi et la nuit)_
    - « ODETTE, LÀ-DESSOUS ? JAMAIS JE NE PRÊTE MA CLÉ ! C'EST DANGEREUX, ET C'EST INTERDIT. LA SEULE ENTRÉE, C'EST MA GRILLE, ET MA CLÉ NE QUITTE JAMAIS MA CEINTURE ! »
-6. 🎭 **« Anselme, je voudrais vous demander quelque chose… »** — le grand dialogue « cle » (§3), la nuit. Il n'apparaît que quand : (Mélusine démasquée (question 5) OU Mélusine a craqué à la fête) ET le code « Odette est sous l'église » (pour barde) ET tout demandé à Anselme, Basile, Silas (ceux à qui on peut parler à ce moment-là).
+6. 🎭 **« Anselme, je voudrais vous demander quelque chose… »** — le grand dialogue « cle » (§3), la nuit. Il n'apparaît que quand : (Mélusine démasquée (question 5) OU Mélusine a craqué à la fête) ET fete:don:melusine ET le code « Odette est sous l'église » (pour barde) ET tout demandé à Anselme, Basile, Silas (ceux à qui on peut parler à ce moment-là).
 - **Tout demandé** : « ASSEZ ! TU VAS ME CASSER LES OREILLES… ENFIN, CE QU'IL EN RESTE ! »
 - **Occupé, le matin** : Sur la porte du clocher, un écriteau : « SONNEUR ENDORMI. REVENEZ CET APRÈS-MIDI. » Derrière, ça ronfle. — puis, si on revient : « RRRON… PSCHHH… » L'écriteau n'a pas bougé : « REVENEZ CET APRÈS-MIDI. »
 

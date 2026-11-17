@@ -160,10 +160,54 @@ M.deuxCodesHTML = function(id1, gros){
   return '<div class="ds-deux"><div class="ds-un"><b>1 · ' + esc('Ma tenue') + '</b>' + M.codeHTML(M.code(id1), gros) + '</div>' +
     '<div class="ds-un"><b>2 · ' + esc('Mon visage') + '</b>' + M.codeHTML(M.code(M.visageCode()), gros) + '</div></div>';
 };
-function monCodeHTML(){
-  var id = M.allureCode(), t = 'Montre ces deux codes au Pisteur, l\'un après l\'autre : ta tenue, puis ton visage. Il te reconnaîtra dans le donjon.';
-  return id ? '<div class="b-donne ds-moncode"><p>🛡️ ' + esc(t) + ' ' + lire(t) + '</p>' + M.deuxCodesHTML(id, true) + '</div>' : '';
+/* (17 novembre, 21 h 46, Romain : « avant d'entrer dans le donjon, une interface spéciale où le Pisteur tape un code de six symboles pour
+   l'Alchimiste et pour le Sage ») UN SEUL code de six symboles pour le héros en entier : tenue (allure : 1296) ET visage (224), soit
+   1296 × 224 = 290 304 codes sur les 2 985 984 de six symboles parmi douze. Calculé, pas gelé dans une table : rôle, sexe, âge, peau, cheveux
+   dans les 1296 premiers, la coiffure, les yeux et la barbe dans les 224 autres. (L'allure à trois symboles reste pour le cachot de la fin.) */
+function symOrdre(){ return D.ORDRE_SYM; }
+M.tenueCode6 = function(){
+  var a = M.allureMoi(), n = M.allureNumero(M.role(), a) * 224 + M.visageNumero(a), o = symOrdre(), r = [], i;
+  for(i = 0; i < 6; i++){ r.unshift(o[n % o.length]); n = Math.floor(n / o.length); }
+  return r;
+};
+function decoder6(seq){
+  var o = symOrdre(), n = 0, i;
+  for(i = 0; i < seq.length; i++){ var k = o.indexOf(seq[i]); if(k < 0) return null; n = n * o.length + k; }
+  var al = Math.floor(n / 224); if(al > 1295) return null;
+  var a = M.allureDe(al); if(ROLES_A.indexOf(a.role) < 0) return null;
+  return {a:a, v:n % 224};
 }
+M.decoderTenue6 = decoder6;
+function monCodeHTML(){
+  var role = M.role(), t = 'Montre ce code au Pisteur : c\'est toute ta tenue et ton visage. Il te reconnaîtra dans le donjon.';
+  return ROLES_A.indexOf(role) >= 0 ? '<div class="b-donne ds-moncode"><p>🛡️ ' + esc(t) + ' ' + lire(t) + '</p><div class="ds-un">' + M.codeHTML(M.tenueCode6(), true).replace('class="b-code grand"', 'class="b-code grand b-code-oblige" title="Un code à ne pas oublier"') + '</div></div>' : '';   /* (le code à ne pas oublier : l'anneau jaune) */
+}
+/* le Pisteur, à son écran de départ : le code de six symboles d'un ami (modal {type:'descente', vue:'six', role, seq:[], err}) */
+function sixHTML(m){
+  var qui = m.role === 'sage' ? 'du Sage' : 'de l\'Alchimiste', seq = m.seq || [], t = 'Demande à ' + (m.role === 'sage' ? 'le Sage' : 'l\'Alchimiste') + ' de te montrer son code : six dessins. Tape-les dans l\'ordre.';
+  return '<h2>Le code ' + qui + '</h2><p>' + esc(m.err || t) + ' ' + lire(m.err || t) + '</p>' +
+    '<div class="b-saisie ds-six">' + [0, 1, 2, 3, 4, 5].map(function(i){ return '<div class="b-case' + (seq[i] ? ' pleine' : '') + '">' + (seq[i] ? D.SYM[seq[i]].e : '') + '</div>'; }).join('') + '</div>' +
+    '<div class="b-pave">' + symOrdre().map(function(k){ return '<button data-act="d6-sym" data-s="' + k + '" aria-label="' + D.SYM[k].n + '" title="' + D.SYM[k].n + '"><span aria-hidden="true">' + D.SYM[k].e + '</span></button>'; }).join('') + '</div>' +
+    '<div class="b-rangee centre"><button class="btn second" data-act="d6-efface"' + (seq.length ? '' : ' disabled') + '>⌫ Effacer</button><button class="btn second" data-act="fermer">Plus tard</button></div>';
+}
+A['ds-six'] = function(el){ M.son('clic'); M.ouvrir({type:'descente', vue:'six', role:el.dataset.role === 'sage' ? 'sage' : 'alchimiste', seq:[]}); };
+A['d6-sym'] = function(el){
+  var m = M.UI.modal, P = M.P(); if(!m || m.vue !== 'six' || !P) return;
+  m.seq = m.seq || []; if(m.seq.length >= 6) return;
+  m.err = ''; m.seq.push(el.dataset.s); M.son('tic');
+  if(m.seq.length < 6){ M.render(); return; }
+  var r = decoder6(m.seq);
+  if(!r || r.a.role !== m.role){
+    M.son('ko'); m.seq = []; m.err = r ? 'Ce code est celui de l\'autre ami. Regarde bien qui te le montre !' : 'Ce code ne marche pas. Regarde bien les six dessins, et recommence.'; M.render(); return;
+  }
+  var n = allureRecue(P, r.a), vz = M.visageDe(r.v, r.a.sexe);
+  n.coiffure = vz.coiffure; n.yeux = vz.yeux; n.barbe = vz.barbe; n.vu = true;
+  P.recus['allure:' + r.a.role] = true;
+  M.noter(r.a.role === 'sage' ? 'Le Sage est en tenue de combat : son code est tapé.' : 'L\'Alchimiste est en tenue de combat : son code est tapé.', '🛡️');
+  M.son('gain'); M.sauver();
+  M.ouvrir({type:'descente', vue:'recu', role:r.a.role});
+};
+A['d6-efface'] = function(){ var m = M.UI.modal; if(!m || m.vue !== 'six') return; m.seq = (m.seq || []).slice(0, -1); M.son('clic'); M.render(); };
 /* ---------- Le Sage et l'Alchimiste : la fenêtre de la tenue de combat (ils ont tapé « On va dans la crypte ») ---------- */
 /* (17 novembre, étape 4 du nouveau fil) les tenues viennent de Mélusine (le code du Barde, « Les tenues de Mélusine », E.objets.tenues) :
    avec lui, les textes le disent. Sans lui, on descend quand même (personne ne reste bloqué). Avant le départ (« On va dans la crypte »),
@@ -208,15 +252,18 @@ M.descenteHTML = function(m){
     return s + '<button class="btn" data-act="fermer">D\'accord</button></div>';
   }
   var al = P.allures || {}, okS = !!al.sage, okA = !!(al.alchimiste && sac.length), ouvert = !!P.vus['donjon:entree'];
+  /* (17 novembre) les sept potions viennent de arriver dans le sac : rien d'autre (pas de tenue, pas de donjon : on est encore l'après-midi) */
+  if(m.vue === 'potions'){
+    t = 'L\'Alchimiste a fini ses sept potions : les voilà dans ton sac. Elles te serviront sûrement… plus tard.';
+    return s + '<div class="b-grand-ic">🧪</div><h2>Les sept potions !</h2>' + fioles(sac) + '<p>' + esc(t) + ' ' + lire(t) + '</p><button class="btn grand b-aller" data-act="fermer">D\'accord</button></div>';
+  }
+  /* il faut le code de six symboles de l'ami */
+  if(m.vue === 'six') return s + sixHTML(m) + '</div>';
   /* il vient de taper le code d'un équipier : le voilà, dans sa tenue (« c'est bien lui ? ») */
   if(m.vue === 'recu' && al[m.role]){
     var qui = m.role === 'sage' ? 'Le Sage' : 'L\'Alchimiste';
-    t = m.visage ? 'Coiffure, yeux' + (al[m.role].barbe && al[m.role].barbe !== 'aucune' ? ', barbe' : '') + ' : ' + (m.role === 'sage' ? 'le Sage' : 'l\'Alchimiste') + ' a retrouvé son visage. C\'est bien ton équipier ? Sinon, retape ses deux codes.'
-      : (m.role === 'sage' ? 'Voilà le Sage dans sa tenue de combat.' : 'Voilà l\'Alchimiste dans sa tenue de combat, ses sept potions à la ceinture.') +
-        (al[m.role].vu ? ' C\'est bien ton équipier ? Sinon, retape son code.' : ' Tape aussi son deuxième code, celui de son visage : sa coiffure, ses yeux.');
+    t = (m.role === 'sage' ? 'Voilà le Sage dans sa tenue de combat.' : 'Voilà l\'Alchimiste dans sa tenue de combat' + (sac.length ? ', ses sept potions à la ceinture.' : '.')) + ' C\'est bien ton équipier ? Sinon, retape son code.';
     s += tenueCadre([m.role]) + '<h2>' + qui + ' est prêt !</h2>' + (m.role === 'alchimiste' ? fioles(sac) : '') + '<p>' + esc(t) + ' ' + lire(qui + ' est prêt ! ' + t) + '</p>';
-    if(!al[m.role].vu) return s + '<button class="btn grand b-aller" data-act="ds-code">🔢 Son deuxième code</button>' +
-      (ouvert && okS && okA ? '<button class="btn second" data-act="ds-voir">🕯️ Voir la descente</button>' : '<button class="btn second" data-act="fermer">Plus tard</button>') + '</div>';
     if(ouvert && okS && okA) return s + '<button class="btn grand b-aller" data-act="ds-voir">🕯️ Voir la descente</button><button class="btn second" data-act="fermer">Plus tard</button></div>';
     return s + '<button class="btn grand b-aller" data-act="fermer">D\'accord</button></div>';
   }
@@ -227,8 +274,9 @@ M.descenteHTML = function(m){
       codeDonne('info:on_descend', 'Donne ce code au Sage et à l\'Alchimiste : ils s\'équipent, et chacun te montrera son code.') +
       '<ul class="ds-prets">' +
         lignePret(okS, '📖', okS ? 'Le Sage est prêt.' : 'Il te manque le code du Sage.') +
-        lignePret(okA, '⚗️', okA ? 'L\'Alchimiste est prêt, avec ses sept potions.' : 'On a besoin des sept potions pour descendre. Quand elles seront toutes prêtes, l\'Alchimiste aura son code.') +
-      '</ul><button class="btn grand b-aller" data-act="ds-code">🔢 Taper un code</button></div>';   /* (on referme avec ✕ : la fenêtre tient dans l'écran d'une tablette) */
+        lignePret(okA, '⚗️', okA ? 'L\'Alchimiste est prêt, avec ses sept potions.' : (al.alchimiste ? 'Il te manque ses sept potions : l\'Alchimiste a un code pour ça, quand elles sont toutes prêtes.' : 'Il te manque le code de l\'Alchimiste.' + (sac.length ? '' : ' Et on a besoin des sept potions pour descendre.'))) +
+      '</ul>' + (okS ? '' : '<button class="btn grand b-aller" data-act="ds-six" data-role="sage">🔢 Le code du Sage</button>') +
+      (al.alchimiste ? '' : '<button class="btn grand b-aller" data-act="ds-six" data-role="alchimiste">🔢 Le code de l\'Alchimiste</button>') + '</div>';   /* (on referme avec ✕ : la fenêtre tient dans l'écran d'une tablette) */
   }
   var n = sac.length, deja = !!P.vus['donjon:parti'];
   t = deja ? 'Le donjon t\'attend, là où tu l\'as laissé. Les trois héros descendent ensemble, sur ta tablette.'
@@ -577,6 +625,14 @@ M.codeSpecial = function(t, x, id){
   if(I && I.tenue && cfg()){
     if(!P.recus[id]){ P.recus[id] = true; M.noter('Reçu : ' + I.nom + '. ' + (I.t || ''), I.ic); M.son('gain'); M.sauver(); } else M.son('clic');
     M.ouvrir({type:'descente', vue:'tenue'});
+    return true;
+  }
+  /* « Les sept potions » (E.infos.sac_pret), tapé par le Pisteur : les sept potions entrent dans son sac, sans rien dire de tenue ni de donjon */
+  if(t === 'info' && x === 'sac_pret' && P && cfg() && M.role() === 'pisteur'){
+    if(!P.recus[id]){ P.recus[id] = true; M.noter('Les sept potions de l\'Alchimiste sont dans ton sac.', '🧪'); M.son('gain'); } else M.son('clic');
+    if(M.sacTout) M.sacTout();
+    M.sauver();
+    M.ouvrir({type:'descente', vue:'potions'});
     return true;
   }
   /* AU CACHOT, à la fin de l'histoire : le code d'allure d'un ami, tapé sous l'image — son héros apparaît à côté du mien */

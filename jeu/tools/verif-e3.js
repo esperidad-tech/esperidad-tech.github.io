@@ -137,8 +137,8 @@ module.exports = function verifierE3(E, SRC, D){
   /* l'établi : une plante, une potion (plantes.js) ; le sac, la nuit (à la main : plantes.js) */
   for(const k of Object.keys(RECETTES)) aj({cle:'fiole:' + k, role:'alchimiste', besoins:[[{vu:'plante:' + RECETTES[k].plante}]].concat(RECETTES[k].avant ? [[{vu:'fiole:' + RECETTES[k].avant}]] : [])});
   /* (13 novembre) « sac » : le code d'allure de l'Alchimiste — il ne l'a qu'avec ses sept potions, et il les met dans le sac du Pisteur */
-  aj({cle:'alchimiste:sac', role:'alchimiste', moments:NUIT, besoins:Object.keys(RECETTES).map(k => [{vu:'fiole:' + k}]), produit:['sac']});   /* (Romain, 12 novembre, 12 h 45 : le code n'est donné qu'une fois les SEPT potions faites) */
-  aj({cle:'sac:recu', role:'pisteur', moments:NUIT, besoins:[[{code:'sac'}]]});
+  aj({cle:'alchimiste:sac', role:'alchimiste', moments:NUIT, besoins:Object.keys(RECETTES).map(k => [{vu:'fiole:' + k}]), produit:['info:sac_pret']});   /* (Romain, 12 novembre, 12 h 45 : le code n'est donné qu'une fois les SEPT potions faites) */
+  aj({cle:'sac:recu', role:'pisteur', moments:NUIT, besoins:[[{code:'info:sac_pret'}]]});   /* (17 novembre) « Les sept potions » : un vrai code, sans allure */
   for(const k of Object.keys(RECETTES)) aj({cle:'sac:' + k, role:'pisteur', moments:NUIT, besoins:[[{vu:'sac:recu'}], [{vu:'fiole:' + k}]]});
   /* le donjon (à la main : descente.js) : une entrée, et les deux codes d'allure — celui de l'Alchimiste (« sac » : ses sept potions) et
      celui du Sage, qu'il n'a qu'avec le code du départ du Pisteur (info:on_descend, donné quand l'entrée s'ouvre) ; au bout, la porte
@@ -265,7 +265,7 @@ module.exports = function verifierE3(E, SRC, D){
      quand même, et on descend. Ce n'est PAS le cas du fil principal (les traces de Moustache jusqu'à la grille : sans elles, personne ne
      sait où est Odette — c'est voulu, et la maison d'Odette porte une bulle sur la carte du Pisteur tant qu'il ne les a pas suivies). */
   const oublis = ['barde:levoisin:4', 'sage:page:papier', 'sage:pierre:maison', 'pisteur:L2:maison', 'pisteur:L2:cachette', 'sage:page:vieuxplan', 'barde:iris:5', 'sage:page:herbier',
-    'mission:barde:6', 'barde:fete:don:melusine', 'sage:ecriture', 'alchimiste:boulangerie:sac', 'alchimiste:analyse:sac_farine', 'barde:voisin:1', 'barde:gaspard:4', 'sage:mairie:rendu', 'alchimiste:analyse:encre_iris'];
+    'mission:barde:6', /* (17 novembre, 22 h 08 : les tenues de Mélusine ne sont plus un oubli permis — Anselme s'ouvre après) */ 'sage:ecriture', 'alchimiste:boulangerie:sac', 'alchimiste:analyse:sac_farine', 'barde:voisin:1', 'barde:gaspard:4', 'sage:mairie:rendu', 'alchimiste:analyse:encre_iris'];
   const inconnus = oublis.filter(k => !cles.has(k));
   const fatals = oublis.filter(k => cles.has(k)).filter(k => { const r = jouer(ROLES, null, [k]); return !juste(solutions(r)) || !r.faits.has('donjon:fini'); });
   dit(!inconnus.length && !fatals.length, inconnus.length ? 'des oublis à vérifier ne sont plus dans l\'enquête (liste à mettre à jour) : ' + inconnus.join(', ')

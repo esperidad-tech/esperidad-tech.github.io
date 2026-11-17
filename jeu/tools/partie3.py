@@ -428,10 +428,13 @@ def partie(nav, base):
     # (17 novembre, étape 4 du nouveau fil) À LA FÊTE, MÉLUSINE DONNE LES TENUES au Barde (elle a avoué l'après-midi : « Revenez me voir
     # cette nuit ! ») : un code objet pour le Pisteur, le Sage et l'Alchimiste. Pas obligatoire pour descendre.
     verifier('Revenez me voir cette nuit' in B.js("() => M.P().carnet.map(function(n){ return n.t; }).join(' | ')") or 'retourne la voir cette nuit' in B.js("() => M.P().carnet.map(function(n){ return n.t; }).join(' | ')"), 'le Carnet du Barde s\'en souvient : retourner voir Mélusine cette nuit')
+    # (17 novembre, 22 h 08) avant les tenues, Anselme ne peut pas encore être interrogé : la nuit commence chez Mélusine
+    B.carte(); B.ev('parler', {'id': 'anselme'}); B.pg.wait_for_timeout(300)
+    verifier(B.pg.locator('#voile .gd-q').count() == 0, 'avant les tenues de combat : la grande question d\'Anselme n\'est pas encore là'); B.fermer()
     B.carte(); B.ev('lieu', {'id': 'place'}); B.pg.wait_for_timeout(300)
     verifier(B.pg.locator('#voile .gd-fete-tete.gd-appel[data-id=melusine]').count() == 1, 'à la fête, Mélusine porte un « ❗ » : elle a quelque chose à donner')
     B.ev('gd-fete', {'id': 'melusine'}); B.pg.wait_for_timeout(400)
-    verifier('trois tenues' in B.texte() and B.pg.locator('#voile [data-act=gd-fete-don]').count() == 1, 'Mélusine : « Les voilà : trois tenues, bien solides… »')
+    verifier('tenues de combat' in B.texte() and 'quatre tenues' in B.texte() and B.pg.locator('#voile [data-act=gd-fete-don]').count() == 1, 'Mélusine : « Pour m\'excuser, je vous ai préparé des tenues de combat… quatre tenues »')
     B.pg.locator('#voile [data-act=gd-fete-don]').click(); B.pg.wait_for_timeout(400)
     verifier('Les tenues de Mélusine' in B.texte() and B.pg.locator('#voile .b-donne').count() == 1, 'la suite : « Les tenues de Mélusine », et leur code'); B.shot('tenues'); B.fermer()
     verifier(livrer(T, B, seulement=['obj:tenues']) == ['obj:tenues'] and all(T[r].js("() => !!M.P().recus['obj:tenues']") for r in ('pisteur', 'sage', 'alchimiste')), 'le code « Les tenues de Mélusine » passe du Barde au Pisteur, au Sage et à l\'Alchimiste')
@@ -453,28 +456,36 @@ def partie(nav, base):
     # l'Alchimiste : ses sept potions, son code (le code d'allure : 13 novembre, plus de code du sac)
     A.js("() => { M.UI.modal = null; M.P().onglet = 'role'; M.render(); }"); A.pg.wait_for_timeout(800)
     ET.vite(A.pg); fra = ET.ouvrir(A.pg); ET.sac(A.pg)
-    seqA = A.js("() => M.code(M.allureCode())")
+    seqA = A.js("() => M.code('info:sac_pret')")   # (17 novembre) le code des sept potions : sans allure
     verifier(A.js("() => M.sacBits()") == 127 and fra.locator('#sacCode').count() == 1 and fra.locator('.carte [data-donjon]').count() == 0, 'l\'Alchimiste : les sept potions sont prêtes, son code pour le Pisteur')
     A.shot('sac'); ET.quitter(A.pg)
+    # (17 novembre, 22 h 08) le Pisteur tape le code des sept potions : rien que les potions, pas un mot de tenue ni de donjon
+    t = P.taper(seqA, garder=True); passes.append(('alchimiste', 'info:sac_pret', 'pisteur'))
+    verifier('Les sept potions' in t and 'tenue' not in t and 'donjon' not in t and P.js("() => (M.P().sac || []).length") == 7, 'l\'Alchimiste → le Pisteur : « Les sept potions », sans tenue ni donjon'); P.fermer()
     # le Pisteur : la clé d'Anselme, la grille de la crypte (il la soulève), le code du départ
     verifier(P.jouer('clocher', 'cle') == 'cachette', 'le Pisteur prend la clé d\'Anselme (se cacher dans le clocher)'); P.fermer()
     P.point('clocher', 'crypte'); P.pg.locator('#voile .b-choix-point [data-id=soulever]').click(); P.pg.wait_for_timeout(300)
     verifier('sans bruit' in P.texte() and 'info:on_descend' in P.a_donner(), 'le Pisteur soulève la grille : pas un bruit, et il a le code du départ')
     P.pg.locator('#voile .b-choix-point [data-id=descendre]').click(); P.pg.wait_for_timeout(300)
-    verifier('tenue de combat' in P.texte() and 'La tenue de Mélusine' in P.texte() and 'On a besoin des sept potions pour descendre' in P.texte() and P.pg.locator('#voile [data-act=ds-aller]').count() == 0, 'le Pisteur, devant l\'escalier : la tenue de combat (celle de Mélusine), et les deux codes qu\'il attend')
+    verifier('tenue de combat' in P.texte() and 'La tenue de Mélusine' in P.texte() and 'Il te manque le code du Sage' in P.texte() and P.pg.locator('#voile [data-act=ds-six]').count() == 2 and P.pg.locator('#voile [data-act=ds-aller]').count() == 0, 'le Pisteur, devant l\'escalier : la tenue de combat (celle de Mélusine), et les deux codes à six symboles qu\'il attend')
     P.fermer()
     # « On va dans la crypte » → le Sage et l'Alchimiste : leur tenue, leur code
     seq = P.js("() => M.code('info:on_descend')")
     t = S.taper(seq, garder=True); passes.append(('pisteur', 'info:on_descend', 'sage'))
-    verifier('tenue de combat' in t and 'Dans la tenue de Mélusine' in t and 'Montre ces deux codes au Pisteur' in t, 'le Pisteur → le Sage : « On va dans la crypte » — sa tenue (celle de Mélusine), son code')
-    seqS = S.js("() => M.code(M.allureCode())"); S.shot('tenue'); S.fermer()
+    verifier('tenue de combat' in t and 'Dans la tenue de Mélusine' in t and 'Montre ce code au Pisteur' in t, 'le Pisteur → le Sage : « On va dans la crypte » — sa tenue (celle de Mélusine), son code')
+    seqS = S.js("() => M.tenueCode6()"); S.shot('tenue'); S.fermer()
     t = A.taper(seq, garder=True); passes.append(('pisteur', 'info:on_descend', 'alchimiste'))
-    verifier('sept potions à la ceinture' in t and 'Montre ces deux codes au Pisteur' in t, 'le Pisteur → l\'Alchimiste : sa tenue, et son code (les sept potions sont prêtes)'); A.fermer()
+    verifier('sept potions à la ceinture' in t and 'Montre ce code au Pisteur' in t, 'le Pisteur → l\'Alchimiste : sa tenue, et son code (les sept potions sont prêtes)'); A.fermer()
     P.donnes |= {'info:on_descend'}
-    t = P.taper(seqS, garder=True); passes.append(('sage', 'allure', 'pisteur'))
-    verifier('Le Sage est prêt' in t, 'le Sage → le Pisteur : son code d\'allure'); P.fermer()
-    t = P.taper(seqA, garder=True); passes.append(('alchimiste', 'allure', 'pisteur'))
-    verifier('L\'Alchimiste est prêt' in t and P.js("() => (M.P().sac || []).length") == 7, 'l\'Alchimiste → le Pisteur : son code d\'allure, et ses sept potions'); P.fermer()
+    seqA6 = A.js("() => M.tenueCode6()")
+    def six(role, seq):
+        P.pg.evaluate("(r) => { M.UI.modal = null; M.A['ds-six']({dataset:{role:r}}); }", role)
+        for sy in seq: P.pg.evaluate("(sy) => M.A['d6-sym']({dataset:{s:sy}})", sy); P.pg.wait_for_timeout(60)
+        P.pg.wait_for_timeout(500); return P.texte()
+    t = six('sage', seqS); passes.append(('sage', 'tenue6', 'pisteur'))
+    verifier('Le Sage est prêt' in t, 'le Sage → le Pisteur : son code à six symboles (tenue et visage)'); P.fermer()
+    t = six('alchimiste', seqA6); passes.append(('alchimiste', 'tenue6', 'pisteur'))
+    verifier('L\'Alchimiste est prêt' in t and P.js("() => (M.P().sac || []).length") == 7, 'l\'Alchimiste → le Pisteur : son code à six symboles ; ses sept potions sont déjà dans le sac'); P.fermer()
     # (14 novembre, Bible §13.36 et §13.38) LE MAIRE INQUIET : la grille soulevée donne aussi un code au Barde. Un minuteur caché démarre
     # (15 minutes) : le maire vient alors tout seul, par-dessus tout, et demande où sont ses amis — le discours, le bal, le gâteau ; après
     # chaque bonne réponse, 5 minutes, et il revient. Le robot n'attend pas : il avance l'heure du minuteur (grands.amis.quand).

@@ -83,7 +83,11 @@ with sync_playwright() as p:
     shot(pg, 'barde-nuit-avant')
     pg.evaluate("() => { var P = M.P(), E = M.E(); P.vus['fete:filet:melusine'] = 1; (E.pnj.anselme.questions || []).forEach(function(q, i){ if(!q.grand) P.vus['barde:anselme:' + i] = 1; }); M.sauver(); M.render(); }"); carte(pg)
     o = ob(pg)
-    verifier(o['lieux'] == ['clocher'] and 'clocher' in ronds(pg)['lieux'], f'Mélusine a avoué, Anselme a tout dit : le rond jaune sur le clocher seul (aider Anselme à sonner) ({o}, {ronds(pg)})')
+    # (17 novembre, 22 h 08) avant de parler à Anselme, le Barde va chercher les tenues de combat chez Mélusine (la fête) : le rond reste sur la place
+    verifier('place' in o['lieux'], f'les tenues de Mélusine pas encore prises : le rond jaune reste sur la fête ({o})')
+    pg.evaluate("() => { M.P().vus['fete:don:melusine'] = 1; M.sauver(); M.render(); }"); carte(pg)
+    o = ob(pg)
+    verifier(o['lieux'] == ['clocher'] and 'clocher' in ronds(pg)['lieux'], f'Mélusine a avoué, les tenues prises, Anselme a tout dit : le rond jaune sur le clocher seul (aider Anselme à sonner) ({o}, {ronds(pg)})')
     shot(pg, 'barde-nuit')
     pg.evaluate("() => { var P = M.P(); P.grands = P.grands || {}; P.grands.cle = {e:9, vus:{}, r:'', fini:'ok', essais:1, ok:1}; M.sauver(); M.render(); }"); carte(pg)
     verifier(ob(pg)['lieux'] == [], 'la Grosse Marie a sonné : le rond s\'en va')

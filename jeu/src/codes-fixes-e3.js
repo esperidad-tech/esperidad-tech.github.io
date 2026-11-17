@@ -281,7 +281,7 @@ var G = {
 'info:crypte_fermee':'poisson-flamme-chapeau', 'info:ecriture':'soleil-lune-coeur', 'info:ecritures':'etoile-champi-cle', 'info:grille_bruit':'lune-chapeau-etoile',
 'info:grille_silence':'lune-chat-champi', 'info:lettre_bureau':'soleil-cle-cloche', 'info:meme_encre':'soleil-poisson-soleil', 'info:on_descend':'poisson-chapeau-cloche',
 'info:pieds_enfant':'lune-chat-etoile', 'info:plan_nuit':'soleil-lune-arbre', 'info:poste':'chat-poisson-arbre', 'info:puits_ouvert':'soleil-cle-lune',
-'info:traces_moustache':'chat-etoile-cloche', 'info:vieux_puits':'cle-champi-flamme',
+'info:sac_pret':'poisson-champi-chat', 'info:traces_moustache':'chat-etoile-cloche', 'info:vieux_puits':'cle-champi-flamme',
 'moment:1':'cle-champi-soleil', 'moment:2':'etoile-arbre-soleil',
 'obj:carnet':'flamme-cloche-champi', 'obj:encre_iris':'lune-arbre-soleil', 'obj:herbier':'coeur-poisson-champi', 'obj:lettre':'flamme-poisson-chapeau', 'obj:mousse':'cloche-champi-arbre',
 'obj:papier_odette':'cle-lune-flamme', 'obj:piece_pain':'chat-poisson-chat', 'obj:sac_farine':'flamme-etoile-lune', 'obj:tenues':'soleil-chat-cle', 'obj:vieux_plan':'chapeau-cle-poisson',

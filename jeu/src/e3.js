@@ -408,8 +408,8 @@ E[3] = {
            « ❗ » à la fête et donne au Barde trois tenues, cousues par remords : un code objet pour le Pisteur, le Sage et l'Alchimiste
            (x.don, grands.js). C'est d'elle que viennent les tenues de combat (« pourquoi des tenues ? », Romain, 16 novembre). */
         don:{obj:'tenues', si:[{vu:'verite:melusine:4'}, {vu:'fete:filet:melusine'}], titre:'Les tenues de Mélusine',
-          t:'Les voilà : trois tenues, bien solides. J\'y ai cousu toute ma honte… Là où vous allez, il en faudra. Soyez prudents !',
-          note:'Mélusine, à la fête : trois tenues solides, cousues pour le Pisteur, le Sage et l\'Alchimiste (un code pour eux).'}},
+          t:'Pour m\'excuser, je vous ai préparé des tenues de combat : les voilà, quatre tenues bien solides, une pour chacun de vous, et une pour toi, Barde. J\'y ai cousu toute ma honte… Là où vous allez, il en faudra. Soyez prudents !',
+          note:'Mélusine, à la fête : quatre tenues de combat solides, pour s\'excuser. La tienne est prête ; pour le Pisteur, le Sage et l\'Alchimiste, donne-leur le code. Maintenant, tu peux parler à Anselme.'}},
       /* L'AIDE POUR LE DONJON (13 novembre, Bible §13.33) : dès que le Barde a tapé « L'homme en cape est là ! », Farinel et Iris portent
          un « ❗ » et ont de nouvelles questions (grands.js). Le Barde lit les réponses à voix haute pendant que le Pisteur se bat.
          La règle de Romain : deux phrases courtes au plus ; ils disent ce que fait l'outil, jamais la parade toute crue. */
@@ -598,9 +598,18 @@ E[3] = {
        le Livre d'or laisse DEUX suspectes. Le Barde les interroge toutes les deux : une seule ment (pnj.melusine [4], pnj.margot [4]). */
     /* (17 novembre) c'est le Sage qui compare, dans son Grand Livre : « Deux écritures », « Les écritures du village » et « La même
        encre » ne sont plus donnés par personne (en réserve : leurs symboles ne resserviront pas). Le seul code : celui du Sage au Barde. */
-    cest_melusine:{nom:'L\'écriture de Mélusine', ic:'🧵', pour:'barde', de:'sage', pnj:'melusine',
-      t:'Le Sage a comparé la lettre au Livre d\'or de la fête : c\'est la main de Mélusine, la couturière, qui a écrit la lettre !',
-      dire:'Le Barde doit aller lui parler : donne-lui ce code.'},
+    /* (17 novembre, 21 h 46, Romain : « le Sage découvre deux écritures similaires et les donne au Barde ; ça active deux dialogues, Margot et
+       Mélusine ; le Barde juge en regardant qui ment ») le même code (gelé), une autre histoire : deux mains pareilles, pas une coupable */
+    cest_melusine:{nom:'Deux écritures pareilles', ic:'🧵', pour:'barde', de:'sage',
+      pnj:{melusine:'Le Sage a comparé la lettre au Livre d\'or : son écriture ressemble à celle de la lettre… comme celle de Margot. Laquelle des deux ment ?',
+           margot:'Le Sage a comparé la lettre au Livre d\'or : son écriture ressemble à celle de la lettre… comme celle de Mélusine. Laquelle des deux ment ?'},
+      t:'Le Sage a comparé la lettre au Livre d\'or de la fête : deux mains écrivent comme ça, Mélusine la couturière et Margot de la taverne. Une seule a écrit la lettre. Laquelle des deux ment ?',
+      dire:'Le Barde doit aller leur parler à toutes les deux : donne-lui ce code.'},
+    /* (17 novembre, 21 h 46, Romain : « l'après-midi, on ne sait pas encore s'il y a un donjon : pas de tenue de combat ») le code des sept
+       potions : l'Alchimiste le donne au Pisteur quand elles sont toutes prêtes. Rien que les potions (descente.js, codeSpecial) : l'allure et
+       le visage se donnent plus tard, au départ, en un seul code de six symboles. */
+    sac_pret:{nom:'Les sept potions', ic:'🧪', pour:'pisteur', de:'alchimiste', t:'L\'Alchimiste a fini ses sept potions : les voilà dans ton sac.',
+      dire:'Les sept potions sont prêtes. Donne ce code au Pisteur : il le tape dans son onglet Code.'},
     ecriture:{nom:'Deux écritures', ic:'🖋️', pour:['barde', 'sage'], de:'alchimiste', savoir:true, reserve:true,
       t:'L\'Alchimiste a comparé la lettre au Livre d\'or de la fête : des « M » qui piquent, des « t » en vague, un petit rond sur les « i »… Deux femmes écrivent comme ça : Mélusine et Margot. Laquelle des deux ?',
       dire:'Le Barde et le Sage doivent le savoir : donne-leur ce code.'},
@@ -715,7 +724,7 @@ E[3] = {
          tant que c'est faisable et pas fait (M.obligesCarte, moteur-roles.js ; carte.js).
        · Les codes : ceux de cette liste ont un anneau jaune partout où ils sont dessinés (M.codeHTML, moteur-ecrans.js).
      Les sept plantes de l'Alchimiste sont obligatoires aussi, mais leur cachette est l'énigme de l'herbier : pas de rond jaune dessus. */
-  codesObliges:['info:crypte_fermee', 'info:cle_clou', 'info:vieux_puits', 'info:on_descend', 'allure:'],   /* (« allure: » : tous les codes d'allure — celui de l'Alchimiste est aussi son sac de potions) */
+  codesObliges:['info:crypte_fermee', 'info:cle_clou', 'info:vieux_puits', 'info:on_descend', 'info:sac_pret', 'allure:'],   /* (17 novembre : « info:sac_pret » = les sept potions ; « allure: » : les codes d'allure, au cachot de la fin) */
   chemins:[
     {id:'moustache', nom:'Le sentier de Moustache', ic:'🐈', code:'info:vieux_puits', vers:'puits', etiquette:[232, 560],
       pts:[[262,702],[214,640],[166,566],[128,486],[110,410],[112,372]]}
@@ -847,11 +856,11 @@ E[3] = {
         /* (13 novembre) le Livre d'or n'est plus un point de la mairie : c'est une page du Grand Livre (E.pages, « livredor ») */
         /* rendre le tableau : 5 pièces d'or. (13 novembre : plus de lettre accrochée sous le tableau — si le Barde ne l'obtient pas, le
            Pisteur va la chercher, autant de fois qu'il faut : « pas besoin de subterfuges », Romain) */
-        {id:'rendu', ic:'🎉', nom:'Rendre le tableau au maire', moments:A_, or:5, visibleSi:[{vu:'sage:mairie:tableau'}], ouvreLivre:['quiecrit', 'livredor'],
+        {id:'rendu', ic:'🎉', nom:'Rendre le tableau au maire', moments:A_, or:5, visibleSi:[{vu:'sage:mairie:tableau'}], ouvreLivre:['quiecrit'],
           /* (17 novembre, le nouveau fil) en échange, le maire lui confie le Livre d'or de la fête : il n'est plus dans le Grand Livre dès le
              matin (« rien n'arrive par magie »), et c'est le Sage qui compare les écritures, plus l'Alchimiste */
           t:'Le maire : « Magnifique ! Ce soir, tout le monde à la fête ! Tenez, gardez-moi donc le Livre d\'or : tout le village y a écrit un mot pour Odette. »'},
-        {id:'sanstableau', ic:'🏛️', nom:'Passer voir le maire', moments:A_, visibleSi:[{rate:'sage:mairie:tableau'}], ouvreLivre:['quiecrit', 'livredor'],
+        {id:'sanstableau', ic:'🏛️', nom:'Passer voir le maire', moments:A_, visibleSi:[{rate:'sage:mairie:tableau'}], ouvreLivre:['quiecrit'],
           t:'Le maire : « Pas de tableau ? Tant pis, les lampions feront l\'affaire. Rendez-vous utile : gardez-moi le Livre d\'or, tout le village y a écrit un mot pour Odette. »'}
       ]},
       /* l'Alchimiste (étape 4) : porter le gâteau au maire, l'après-midi (5 pièces d'or) */
@@ -1165,8 +1174,8 @@ E[3] = {
       {q:'C\'est vous qui avez écrit la lettre.', g:'e', moments:A_, besoin:[{code:'info:cest_melusine'}], a:'Moi ? Je sais à peine écrire mon nom !', ment:true, donneVrai:'info:aveu',
         /* (17 novembre, étape 4 du nouveau fil : « Mélusine : revenez me voir cette nuit ») plus de « il a peut-être laissé des traces »
            (une piste qui ne menait nulle part) : honteuse, elle promet de coudre de quoi les protéger — les tenues, à la fête (E.fete) */
-        vrai:'C\'est moi… Un homme en cape m\'a forcée à l\'écrire et à la déposer. Je n\'ai pas vu son visage. Pardon… Je vais vous coudre de quoi vous protéger. Revenez me voir cette nuit !',
-        note:'Mélusine dit qu\'elle sait à peine écrire son nom.', noteVrai:'Mélusine a avoué : un homme en cape l\'a forcée à écrire la lettre et à la déposer. Elle n\'a pas vu son visage (code pour le Sage). Elle va vous coudre de quoi vous protéger : retourne la voir cette nuit !'}
+        vrai:'C\'est moi… Un homme en cape m\'a forcée à l\'écrire et à la déposer. Je n\'ai pas vu son visage. Pardon… Pour m\'excuser, je vous couds des tenues de combat. Revenez me voir cette nuit, à la fête : elles seront prêtes !',
+        note:'Mélusine dit qu\'elle sait à peine écrire son nom.', noteVrai:'Mélusine a avoué : un homme en cape l\'a forcée à écrire la lettre et à la déposer. Elle n\'a pas vu son visage (code pour le Sage). Pour s\'excuser, elle vous coud des tenues de combat : retourne la voir cette nuit, à la fête, avant de parler à Anselme !'}
     ]},
     /* le matin : ses fleurs (marche.js : le bouton « 🌸 » dans sa conversation et sur sa pastille), et ses quatre questions — on lui a volé
        un flacon d'encre, cette nuit (Romain, 18 h 19). L'après-midi, elle est occupée par ses couronnes (elle vend encore, s'il reste des pièces). */
@@ -1223,7 +1232,9 @@ E[3] = {
          (Romain : « pour Anselme, il faut débloquer pas mal de choses ») : l'aveu de Mélusine (démasquée l'après-midi, ou le filet de la
          fête), le code « La crypte est fermée », et tout demandé à Anselme, à Basile et à Silas. */
       {q:'Anselme, je voudrais vous demander quelque chose…', g:'r', moments:N_, grand:'cle', oblige:true,
-        besoin:[{et:[{ou:[{vu:'verite:melusine:4'}, {vu:'fete:filet:melusine'}]}, {code:'info:crypte_fermee'}, {toutDit:['anselme', 'basile', 'silas']}]}]}
+        /* (17 novembre, 22 h 08, Romain : « le Barde doit d'abord aller chercher les tenues de combat chez Mélusine, avant de parler à Anselme ») il faut
+           qu'il ait pris les tenues (fete:don:melusine) : le reste de la nuit ne bouge pas */
+        besoin:[{et:[{ou:[{vu:'verite:melusine:4'}, {vu:'fete:filet:melusine'}]}, {vu:'fete:don:melusine'}, {code:'info:crypte_fermee'}, {toutDit:['anselme', 'basile', 'silas']}]}]}
     ]},
     /* (il ment une fois : sa nuit. « Elle a appris à lire à mon apprenti » : une graine, qu'on ne comprend qu'après le donjon) */
     farinel:{ou:{apresmidi:'moulin'}, carte:{matin:'moulin'},
