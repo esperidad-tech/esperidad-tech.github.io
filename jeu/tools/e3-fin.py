@@ -172,7 +172,7 @@ with sync_playwright() as p:
     d = diapo(pg)
     verifier(d['pave'] == 0 and 'réunis' in pg.inner_text('.b-fin-slide'), 'les quatre héros sont là : plus de pavé, « Vous voilà réunis… derrière les barreaux. »')
     al = pg.evaluate("() => M.P().allures")
-    verifier(al['pisteur'] == {'sexe': 'f', 'peau': 'p2', 'cheveux': 'roux'} and al['barde'] == {'sexe': 'f', 'peau': 'p4', 'cheveux': 'blond'} and al['alchimiste']['sexe'] == 'm', f'chacun avec sa peau et ses cheveux ({al})')
+    verifier(al['pisteur'] == {'sexe': 'f', 'peau': 'p2', 'cheveux': 'roux', 'age': 'adulte'} and al['barde'] == {'sexe': 'f', 'peau': 'p4', 'cheveux': 'blond', 'age': 'adulte'} and al['alchimiste']['sexe'] == 'm', f'chacun avec sa peau et ses cheveux ({al})')
     shot(pg, 'cachot-quatre', 1200)
     pg.locator('[data-act=fin-suite]').click(); pg.wait_for_timeout(300)
     D.append(diapo(pg)); shot(pg, 'sage-6', 800)

@@ -4827,6 +4827,42 @@ S.pubTadaA = function(A, P){
   A.bruit(t, {coul:'blanc', hp:6500, env:[[0, 0], [.01, 1], [.5, .2], [1, 0]], g:.1, rugueux:.5, rugVit:30}, o);
   return {duree:1.2};
 };
+
+/* ---------------------------------------------------------------- 17 novembre (Romain) : les deux descentes (jeu/cine/src/film-descente.js ; Bible §13.62) — NEUFS, à écouter */
+/* la grille de la crypte : le fer rouillé qui grince longtemps, puis le « clong » quand elle bute */
+S.cineGrilleA = function(A, P){
+  var t = P.t, o = bus(A, P, 0, .6);
+  A.ton(t, {type:'sawtooth', f:260, f2:540, gl:1.5, env:[[0, 0], [.2, 1], [1.3, .85], [1.8, 0]], g:.05, gigue:30, trem:[19, .9], sat:2, filtres:[{type:'bandpass', f:1400, q:3}, {type:'lowpass', f:2600, q:.7}]}, o);
+  A.ton(t + 1.0, {type:'sawtooth', f:610, f2:300, gl:1.3, env:[[0, 0], [.15, 1], [1.0, .7], [1.4, 0]], g:.04, gigue:26, trem:[23, .9], sat:2, filtres:[{type:'bandpass', f:1900, q:4}]}, o);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:900, pts:[[1.6, 2200]], q:1.6}], env:[[0, 0], [.4, 1], [1.7, .5], [2.3, 0]], g:.2, rugueux:.9, rugVit:21}, o);
+  lourd(A, t + 2.35, .8, o); fer(A, t + 2.35, 430, .22, o);
+  return {duree:4};
+};
+/* une goutte qui tombe dans le noir, très loin : « plic… » et son écho */
+S.cineGoutteA = function(A, P){
+  var t = P.t, o = bus(A, P, h(-.6, .6), .9), f = h(1500, 2100);
+  A.ton(t, {type:'sine', f:f, f2:f * .42, gl:.07, env:A.perc(.002, .16), g:.12}, o);
+  A.ton(t + .26, {type:'sine', f:f * .96, f2:f * .4, gl:.07, env:A.perc(.002, .14), g:.05}, o);
+  A.ton(t + .55, {type:'sine', f:f * .9, f2:f * .38, gl:.07, env:A.perc(.002, .12), g:.025}, o);
+  return {duree:1.6};
+};
+/* la corde qui file entre les mains gantées : ça frotte, ça couine un peu */
+S.cineCordeA = function(A, P){
+  var t = P.t, o = bus(A, P, 0, .5);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:700, pts:[[.5, 1500], [.9, 900]], q:1.2}], env:[[0, 0], [.12, 1], [.55, .8], [.9, 0]], g:.34, rugueux:.7, rugVit:24}, o);
+  A.ton(t + .08, {type:'triangle', f:1800, f2:1250, gl:.7, env:[[0, 0], [.1, 1], [.7, 0]], g:.012, vib:[12, 40]}, o);
+  A.pas(t + .75, {f:90, bp:900, g:.2}, o);
+  return {duree:1.1};
+};
+/* au fond, une lueur qui chante tout bas : un accord de verre, de plus en plus clair */
+S.cineLueurA = function(A, P){
+  var t = P.t, o = bus(A, P, 0, .9);
+  [[220, .05], [330, .045], [440.5, .04], [660, .03], [880, .02]].forEach(function(n, k){
+    A.ton(t + k * .35, {type:'sine', f:n[0], env:[[0, 0], [1.6, 1], [3.2, .8], [4.4, 0]], g:n[1], vib:[4.5 + k * .3, n[0] * .004]}, o);
+  });
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:500, pts:[[4, 1400]], q:.8}], env:[[0, 0], [2, 1], [4.2, 0]], g:.06}, o);
+  return {duree:4.6};
+};
 })(window);
 
 /* Atelier des sons de Brumeval — les musiques du donjon complet (proposées le 9 novembre, à valider par Romain).
@@ -5649,6 +5685,48 @@ M.cineMusPubA = function(A, P){
   return I;
 };
 
+/* =================== LES DEUX DESCENTES (escalier et puits, 24 s chacune ; Bible §13.62 ; Romain, 17 novembre) ============   Presque rien : un fond grave qui s'installe, des gouttes de harpe très loin, un cœur lent. Dans la dernière partie, la lueur du fond :
+   trois notes claires (la, ré, fa) — le motif de l'homme en cape, en tout petit. On est sous terre : beaucoup d'écho. */
+M.cineMusEscalierA = function(A, P){
+  var I = Instance(A, P), proche = A.bus(P, {grotte:.5}), loin = A.bus(P, {grotte:1, g:.7}), ech = I.echo(loin, {temps:.5, retour:.45, lp:2000, sortie:.5});
+  a(I, 0, function(t){
+    fond(A, t, [m(26), m(38)], 12, .03, proche, {a:3, r:3});
+    [3.2, 6.4, 9.6].forEach(function(x){ sourd(A, t + x, .12, loin); sourd(A, t + x + .45, .08, loin); });
+    [[4.5, 69], [8.2, 65], [10.4, 62]].forEach(function(n){ A.harpe(t + n[0], m(n[1]), {t60:2.2, g:.05, lp:2200}, ech); });
+  });
+  a(I, 12, function(t){
+    fond(A, t, [m(26), m(33), m(41)], 12, .034, proche, {a:3, r:4});
+    trem(A, t + 1, m(57), 8, .012, proche, {env:[[0, 0], [3, .6], [7, 1], [8, 0]]});
+    trem(A, t + 2, m(62), 7, .01, proche, {env:[[0, 0], [3, .6], [6, 1], [7, 0]]});
+    [1, 2.4, 3.8, 5.2, 6.6].forEach(function(x, k){ sourd(A, t + x, .1 + k * .015, loin); });
+    [[7.0, 69], [7.8, 74], [8.6, 77]].forEach(function(n){ A.harpe(t + n[0], m(n[1]), {t60:2.6, g:.06, lp:2800}, ech); });
+    A.choeur(t + 7.4, [m(69), m(74), m(77)], 4, {voyelle:'o', a:1.5, r:2, g:.016}, loin);
+  });
+  return I;
+};
+M.cineMusPuitsA = function(A, P){
+  var I = Instance(A, P), proche = A.bus(P, {grotte:.4}), loin = A.bus(P, {grotte:1, g:.7}), ech = I.echo(loin, {temps:.55, retour:.45, lp:2000, sortie:.5});
+  a(I, 0, function(t){
+    fond(A, t, [m(26), m(33)], 8, .03, proche, {a:2.5, r:2.5});
+    A.harpe(t + 1.5, m(62), {t60:2.4, g:.05, lp:2200}, ech);
+    A.harpe(t + 3.0, m(57), {t60:2.4, g:.045, lp:2200}, ech);
+    montee(A, t + 4.1, 1.6, .12, loin);
+    sourd(A, t + 5.4, .16, loin);
+  });
+  a(I, 6, function(t){
+    fond(A, t, [m(26), m(38), m(45)], 12, .034, proche, {a:2, r:4});
+    for(var k = 0; k < 8; k++) sourd(A, t + 1 + k * 1.1, .07 + k * .012, loin);
+    trem(A, t + 3, m(64), 8, .011, proche, {env:[[0, 0], [3, .6], [7, 1], [8, 0]]});
+    trem(A, t + 3, m(65), 8, .009, proche, {env:[[0, 0], [3, .6], [7, 1], [8, 0]]});
+    A.tambour(t + 10.2, {f:50, d:1.2, g:.18}, loin);
+  });
+  a(I, 18, function(t){
+    [[.6, 69], [1.4, 74], [2.2, 77], [3.2, 81]].forEach(function(n){ A.harpe(t + n[0], m(n[1]), {t60:2.8, g:.055, lp:3000}, ech); });
+    A.choeur(t + .8, [m(69), m(74), m(77)], 4, {voyelle:'o', a:1.2, r:2, g:.016}, loin);
+    fond(A, t, [m(26), m(33)], 6, .026, proche, {a:1.5, r:3});
+  });
+  return I;
+};
 /* =================== LES QUATRE FILMS DES HÉROS (jeu/pub/heros.js ; Romain, 17 novembre : « un peu le même style avec le même rythme » que la pub) ===================
    La même musique de fête que la pub (120 à la minute, un temps = 0,5 s, les mêmes instruments), mais UN AIR PAR HÉROS, dans son ton, joué par
    son instrument : le Pisteur siffle et court (do), l'Alchimiste fait des bulles au marimba (ré), le Barde chante au luth (fa), le Sage égrène
@@ -6035,6 +6113,9 @@ window.CATALOGUE = [
           /* 16 novembre (Romain) : la pub de 30 secondes (jeu/pub) */
           {id:'pubPop', t:'Pub : pop', v:'A', neuf:1}, {id:'pubWhoosh', t:'Pub : fffiou', v:'A', neuf:1}, {id:'pubPlongee', t:'Pub : la plongée', v:'A', neuf:1}, {id:'pubTada', t:'Pub : le titre', v:'A', neuf:1},
           {id:'cineMusPub', t:'Musique de pub', v:'A', m:1, neuf:1},
+          /* 17 novembre (Romain) : les deux descentes du donjon (escalier de la crypte, corde du puits) */
+          {id:'cineGrille', t:'La grille rouillée', v:'A', neuf:1}, {id:'cineGoutte', t:'Une goutte', v:'A', neuf:1}, {id:'cineCorde', t:'La corde glisse', v:'A', neuf:1}, {id:'cineLueur', t:'La lueur bleue', v:'A', neuf:1},
+          {id:'cineMusEscalier', t:'Musique de l\'escalier', v:'A', m:1, neuf:1}, {id:'cineMusPuits', t:'Musique du puits', v:'A', m:1, neuf:1},
           /* 17 novembre (Romain) : les quatre films des héros (jeu/pub/heros.js) — la musique de la pub, un air et un instrument par héros */
           {id:'cineMusHerosPisteur', t:'Film du Pisteur', v:'A', m:1, neuf:1}, {id:'cineMusHerosAlchimiste', t:'Film de l\'Alchimiste', v:'A', m:1, neuf:1},
           {id:'cineMusHerosBarde', t:'Film du Barde', v:'A', m:1, neuf:1}, {id:'cineMusHerosSage', t:'Film du Sage', v:'A', m:1, neuf:1}
