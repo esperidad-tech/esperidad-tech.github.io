@@ -8547,8 +8547,16 @@ function placeLibre(V, l, dl, h, ev){
     });
   }
   for(var i = 0; i < l.length; i++) if(!cache(l[i][0], l[i][1])) return {x:l[i][0], y:l[i][1]};
-  for(var k = 0; k < 14; k++){ var q = chatSolVisible(V), x = borne(q.x, solXmin(V, q.y) + dl + 30, solXmax(V, q.y) - dl - 30); if(!cache(x, q.y)) return {x:x, y:q.y}; }
-  return {x:l[0][0], y:l[0][1]};
+  /* (pas de place là : la place libre la plus proche de ce qu'on voulait — et de préférence une qu'on voit à l'écran : sur un
+     téléphone, la pièce est plus large que lui) */
+  var mieux = null, d0 = 0;
+  for(var k = 0; k < 16; k++){
+    var q = chatSolVisible(V), x = borne(q.x, solXmin(V, q.y) + dl + 30, solXmax(V, q.y) - dl - 30);
+    if(cache(x, q.y)) continue;
+    var sx = V.k && V.pan && V.vb ? (x - V.vb.x0) * V.k - V.pan.x : 100, dd = Math.hypot(x - l[0][0], q.y - l[0][1]) + (V.vw && (sx < 30 || sx > V.vw - 30) ? 1500 : 0);
+    if(!mieux || dd < d0){ mieux = {x:x, y:q.y}; d0 = dd; }
+  }
+  return mieux || {x:l[0][0], y:l[0][1]};
 }
 /* ---------- Le coffret qu'elle rapporte ---------- */
 /* (grand : le coffret doré du grand cadeau — le même, en or, au ruban rouge, avec deux étoiles) */
