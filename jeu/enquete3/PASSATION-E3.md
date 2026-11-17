@@ -3,6 +3,16 @@
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
 
+## 17 novembre, minuit — LES RETOURS DE ROMAIN DE 23 H 13 : L'ÉTIQUETTE DE LA LETTRE AU LABO, LE PLAN DU SAGE, « L'ENTRÉE DES SOUTERRAINS », LES YEUX DE L'ALCHIMISTE — EN LIGNE (Bible §13.67 ; commits 6da46a7 (le jeu) et 377fac5 (le donjon) du site, version 20261117-2325)
+
+(Entre 20 h 27 et ici : les §13.64, §13.65 et §13.66 de la Bible — pas recopiés dans ce fichier.)
+- **La lettre au labo** : son étiquette dit « À analyser — 0 / 1 trouvé », puis ✅ « noix de galle » (plus « En cours… 1 / 2 trouvés » pour toujours). Elle ne dit jamais le nom des deux écritures : c'est le travail du Sage.
+- **Le plan du Sage, la nuit** : le bouton jaune « 🔎 Regarder le plan de tout près » est juste sous le dessin du vieux plan (il était en bas de page, hors de l'écran : Romain ne l'a jamais trouvé) ; toucher le petit plan le déroule aussi ; le texte de la pierre de rune posée dit « Déroule ce plan en grand : là, ta pierre se promène partout ».
+- **Pour la conception — le texte du vieux plan a changé** : « **Sur l'une des salles**, quelqu'un a dessiné une petite cloche » (plus « Au départ » : faux quand on descend par le puits, et la tablette du Sage ne sait pas par où le Pisteur est entré). Le filet : « Le Pisteur a trouvé un plan gravé dans la pierre, à l'entrée du passage » (plus « En haut de l'escalier »). Dans le donjon, la salle de départ s'appelle « L'entrée des souterrains » sur la carte du Pisteur aussi.
+- **Ouvert, pas de go** : la cloche reste dessinée sur la salle où l'on arrive, même par le puits. Idée de Claude : un petit puits dessiné à côté (un indice de plus l'après-midi). À décider avec Romain.
+- **Le code à six symboles est exigé pour chaque ami** avant de descendre (l'ancien code à trois symboles ne suffit plus : c'est lui qui laissait l'Alchimiste avec les yeux par défaut) ; « 🔢 Retaper son code » dans la fenêtre « … est prêt ! ».
+- Aucun code n'a bougé (57 / 69 / 1630).
+
 ## 17 novembre, 20 h 27 — LE MAIRE VEXÉ DONNE QUAND MÊME LE CODE DE LA LETTRE ; LE ROND JAUNE CHEZ ODETTE LE MATIN — EN LIGNE (Bible §13.63 ; commit 860fe06 du site, version 20261117-1927)
 
 - Trou trouvé pendant une partie de Romain : traité de menteur l'après-midi, le maire se vexe pour tout le moment, et la grande conversation de la lettre (l'après-midi seulement) ne se tient plus. Or `info:lettre_bureau` (pour le Pisteur : le point « La lettre, en cachette ») ne vient que d'elle. **Réparé** : fâché, le maire dit « Et n'essayez même pas de me demander la lettre d'Odette ! » et donne ce code (`vexeDonne`, `e3.js`). Aucun code nouveau.
