@@ -256,6 +256,19 @@ def partie(nav, base):
     verifier(th.count('pieds de 3 carreaux') == 3 and 'Mélusine Dufil · la couturière 🏠 4, rue des Lanternes · 👣 pieds de 3 carreaux' in ' '.join(th.split()) and 'Margot' in th, 'le registre du Sage : trois habitants ont des pieds de 3 carreaux (Odette, Mélusine, Tim), dont deux rue des Lanternes… et la troisième aussi')
     # l'Alchimiste : le gâteau, les sept plantes
     verifier(A.jouer('boulangerie', 'gateau', {'gateau': {'etages': 3}}) == 'gateau', 'l\'Alchimiste fait le gâteau de la fête'); A.fermer()
+    # (17 novembre, étape 3 : « les bêtes ») les sacs éventrés de Gaspard : une pincée pour la paillasse, sans code ; au labo, le matin :
+    # un poil de rat énorme, une terre de cave, la mousse lumineuse — « Ces rats-là vivent sous terre ! Dis-le à tes amis ! »
+    # (l'analyse au doigt, geste par geste : tools/e3-labo-sac.py)
+    A.point('boulangerie', 'sac')
+    verifier('ta paillasse' in A.texte() and A.js("() => !!M.P().recus['obj:sac_farine']") and A.pg.locator('#voile .b-donne').count() == 0, 'l\'Alchimiste ramasse une pincée sur un sac éventré : elle part sur sa paillasse, sans code'); A.fermer()
+    A.js("() => { M.UI.modal = null; M.P().onglet = 'role'; M.render(); M.ouvrirLabo(); }"); A.pg.wait_for_timeout(1800)
+    fs = next((x for x in A.pg.frames if x.parent_frame is not None), None)
+    fs.wait_for_function('() => !!window.__labo', timeout=8000)
+    verifier(fs.evaluate("() => window.__labo.cuirs()") == ['sac_farine'], 'le matin, sur sa paillasse : la pincée du sac éventré')
+    fs.evaluate("() => { window.__labo.finir('sac_farine'); window.__labo.quitter(); }"); A.pg.wait_for_timeout(900)
+    ts = A.texte()
+    verifier('poil de rat' in ts and 'vivent sous terre' in ts and 'Dis-le à tes amis' in ts and A.pg.locator('#voile .b-donne').count() == 0 and 'souterrain' not in ts.lower(), 'au labo : un poil de rat énorme, une terre de cave, la mousse lumineuse — « Ces rats-là vivent sous terre ! Dis-le à tes amis ! », sans code')
+    A.fermer(); A.pg.wait_for_timeout(400)
     # (12 novembre, Bible §13.26 et §13.28) les plantes : des endroits cachés de la carte ; l'herbier du Sage ne donne que des indices. Le matin, au
     # village : l'oseille. Anselme veut une tisane de mélisse et sonne Bertille, la brume recule : la mélisse, le pied-de-loup, la vesse-de-loup,
     # le gui ; on rapporte de la mélisse à Anselme. Le souci et le lin : pas avant l'après-midi.

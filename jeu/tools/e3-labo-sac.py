@@ -41,9 +41,12 @@ def labo(pg, role_vue):
 
 with sync_playwright() as p:
     b = p.chromium.launch()
-    for nom_vue, vue in (('tablette', TAB), ('telephone', {'width': 844, 'height': 390})):
+    VUES = (('tablette', TAB), ('telephone', {'width': 844, 'height': 390}))
+    if os.environ.get('UNE_VUE'): VUES = VUES[:1]
+    for nom_vue, vue in VUES:
         print(f'— L\'Alchimiste, {nom_vue}')
         pg = debut(b, 'alchimiste', vue)
+        pg.on('pageerror', lambda e: print('     PAGEERROR', (getattr(e, 'stack', None) or str(e))[:900]))
         # ---------- chez Gaspard
         mq = lambda: pg.evaluate("() => M.infosCarte().marqueurs.filter(function(q){ return q.lieu === 'boulangerie'; }).map(function(q){ return q.ic; }).join('')")
         verifier('🌾' in mq() and '🎂' in mq(), f'sur sa carte, à la boulangerie : le gâteau et les sacs éventrés ({mq()})')
@@ -78,8 +81,9 @@ with sync_playwright() as p:
         verifier(not etat()['trouves'].get('sac_farine') and (etat()['barres'].get('sac_farine') or {}).get('poils:souris'), 'la souris : ce n\'est pas elle (barrée)')
         clic('[data-ech="poils:rat"]'); pg.wait_for_timeout(2800)
         verifier(etat()['trouves'].get('sac_farine') and not etat()['finis'].get('sac_farine'), 'le rat : reconnu ; l\'analyse n\'est pas bouclée (il reste la terre et la mousse)')
-        tb = f.evaluate("() => document.body.innerText.replace(/\\s+/g, ' ')")
-        verifier('trois fois plus gros' in tb or 'trois fois plus gros' in bulle(), f'« Mais celui-ci est trois fois plus gros que la normale ! » ({bulle()[:60]})')
+        pg.wait_for_timeout(2200)
+        tb = f.evaluate("() => { var e = document.querySelector('#hudBoite .savoir'); return e ? e.textContent : ''; }")
+        verifier('trois fois plus gros' in tb and f.locator('#hudBoite .savoir .lire, #hudBoite .savoir button').count() >= 1, f'ce que la loupe apprend : « Mais celui-ci est trois fois plus gros que la normale ! », avec son 🔊 ({tb[:70]})')
         shot(pg, f'{nom_vue}-4-rat')
         clic('#bFermer'); pg.wait_for_timeout(1000)
         # le microscope : la miette noire à ×10 ; le brin vert, trop petit à ×10, pris à ×40
@@ -132,7 +136,7 @@ with sync_playwright() as p:
     pg.goto(URL.replace('index.html#test', 'labo.html'))
     try:
         pg.wait_for_function('() => !!window.__labo', timeout=8000)
-        L = pg.evaluate("() => { var l = []; try{ ['facile', 'difficile'].forEach(function(nv){ ['poils', 'grains', 'feuilles'].forEach(function(k){ (LISTES[nv][k] || []).forEach(function(x){ l.push(x); }); }); }); }catch(e){ return null; } return l; }")
+        L = pg.evaluate("() => { var l = [], LI = window.__labo.listes(); ['facile', 'difficile'].forEach(function(nv){ ['poils', 'grains', 'feuilles'].forEach(function(k){ (LI[nv][k] || []).forEach(function(x){ l.push(x); }); }); }); return l; }")
         verifier(L is not None and 'rat' not in L and 'terrecave' not in L and 'mousselum' not in L, f'sans la pincée sur le cuir : ni rat, ni terre de cave, ni mousse dans les casiers ({None if L is None else len(L)})')
     except Exception as e:
         verifier(False, f'le labo seul ne s\'ouvre pas ({e})')

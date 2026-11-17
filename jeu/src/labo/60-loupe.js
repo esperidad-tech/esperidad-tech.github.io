@@ -119,7 +119,9 @@ function majBas(){
       return '<button type="button" class="ech' + (barres[id] ? ' barre' : '') + (bon ? ' ok' : '') + '" data-ech="' + id + '"' + (fait || barres[id] ? ' disabled' : '') + '><canvas></canvas><span class="nm">' + ECH[S.casier][r].nom + '</span>' + (bon ? '<span class="marque">✅</span>' : (barres[id] ? '<span class="marque">❌</span>' : '')) + '</button>'; }).join('') + '</div>';
   }
   z.innerHTML = h;
-  requestAnimationFrame(function(){ $$('.ech canvas').forEach(function(cv){ var rr = prep(cv), id = cv.parentNode.dataset.ech.split(':'); fondCuir(rr.ctx, rr.w, rr.h); dessinerRef(rr.ctx, rr.w, rr.h, id[0], id[1], 31 + id[1].length, rr.h/66*({fils:.9, grains:.74, poils:.85, petales:.8}[id[0]] || 1)); }); });
+  /* (17 novembre) un échantillon en train de voler vers la loupe (volVers : une copie, sans « data-ech ») n'est pas à redessiner : sans ce
+     garde-fou, une erreur dans la console quand le casier se redessine pendant le vol */
+  requestAnimationFrame(function(){ $$('.ech canvas').forEach(function(cv){ if(!cv.parentNode || !cv.parentNode.dataset.ech) return; var rr = prep(cv), id = cv.parentNode.dataset.ech.split(':'); fondCuir(rr.ctx, rr.w, rr.h); dessinerRef(rr.ctx, rr.w, rr.h, id[0], id[1], 31 + id[1].length, rr.h/66*({fils:.9, grains:.74, poils:.85, petales:.8}[id[0]] || 1)); }); });
 }
 /* Ce qu'on voit dans le verre : l'échantillon, bien net ; ou l'échantillon et celui du tiroir posé juste à côté, sous le même verre */
 function rendVerre(a){
