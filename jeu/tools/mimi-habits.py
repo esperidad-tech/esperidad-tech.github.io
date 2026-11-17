@@ -1,7 +1,8 @@
 """Les habits rigolos de Mimi (mimi-habits.js ; Bible §12.74 ; Romain, 17 novembre : « une vingtaine de nouveaux habits assez originaux
 avec des petites animations. Fais attention à ne pas casser les animations de Mimi […] ou à cacher certaines choses un peu trop »),
 dans le vrai jeu (Playwright) :
-- les données : une vingtaine d'habits, chacun dans la garde-robe et dans une famille de coffrets, une seule ; aucun dans la boutique ;
+- les données : une vingtaine d'habits, chacun dans la garde-robe ; aucun dans les coffrets, aucun dans la boutique ;
+- le travail de l'Alchimiste (Bible §12.75) : une analyse finie, une potion finie : un habit de la malle, et le conteur le dit ; trois au plus d'un coup ;
 - la garde-robe : trois endroits (autour du cou, sur la tête, sur le museau) ; on en met un de chaque en même temps ;
 - chaque habit, mis au doigt dans la garde-robe : il est sur elle dans la pièce, et il a au moins un morceau QUI BOUGE pour de bon
   (on regarde son dessin changer au fil du temps) — sans toucher au pantin ;
@@ -105,7 +106,7 @@ with sync_playwright() as p:
     verifier(18 <= len(ids) <= 24, f'une vingtaine d\'habits rigolos ({len(ids)})')
     verifier(set(D['slots']) == {'cou', 'tete', 'nez'}, f'trois endroits : le cou ({D["slots"].count("cou")}), la tête ({D["slots"].count("tete")}), le museau ({D["slots"].count("nez")})')
     verifier(D['acc'] == len(ids) and not D['vides'], f'chacun est dans la garde-robe du jeu, avec son dessin ({D["acc"]} ; {D["total"]} habits en tout)')
-    verifier(all(len(x) == 1 for x in D['fam']), f'chacun est dans une famille de coffrets, une seule ({sorted(set(sum(D["fam"], [])))})')
+    verifier(all(len(x) == 0 for x in D['fam']) and 'rigolo' not in D['familles'], f'aucun n\'est dans les coffrets : ils viennent du travail de l\'Alchimiste ({D["familles"]})')
     verifier(all(a and a.split(' ')[0] in ('un', 'une', 'des') for a in D['art']), 'chacun a son nom avec son article, pour le conteur')
 
     # --- la boutique : pas un seul habit ---
@@ -116,21 +117,28 @@ with sync_playwright() as p:
     verifier(bq is not None and bq['hab'] == 0 and 'Ses habits' not in bq['titres'], f'la boutique : plus un seul habit ({bq and bq["titres"]})')
     shot(pg, 'boutique'); fermer(pg)
 
-    # --- un coffret : un habit rigolo en sort, le conteur le dit bien ---
+    # --- le travail de l'Alchimiste : une analyse finie → un habit de la malle, et le conteur le dit ---
     calme(pg, cid)
-    pg.evaluate(f"() => {{ var a = {V}; a._cadeau('{cid}', 'a:grenouille'); }}")
-    t0 = time.time()
-    while time.time() - t0 < 36 and not pg.evaluate("() => !!M.S.atelier.tama.coffret"): pg.wait_for_timeout(500)
-    pg.wait_for_timeout(600)
-    pg.evaluate(f"() => {{ var c = M.S.atelier.tama.coffret; if(c) {V}._voir(c.x, c.y); }}"); pg.wait_for_timeout(500)
-    cq = pg.evaluate("() => { var e = document.querySelector('#atelier-ici .at-coffret svg'); if(!e) return null; var r = e.getBoundingClientRect(); return {x:r.left + r.width / 2, y:r.top + r.height * .6}; }")
-    if cq:
-        pg.mouse.move(cq['x'], cq['y']); pg.mouse.down(); pg.wait_for_timeout(60); pg.mouse.up(); pg.wait_for_timeout(800)
-        t = pg.evaluate("() => { var t = document.querySelector('#atelier-ici .at-toast'); return t && !t.hidden ? t.textContent : ''; }").replace('\u00a0', ' ')      # (le jeu met une espace insécable devant « ! »)
-        print('   le conteur :', t)
-        verifier('grenouille' in pg.evaluate("() => M.S.atelier.garde.a") and 'une grenouille qui se prend pour un chapeau ! Elle attend dans sa garde-robe' in t, 'un coffret donne un habit rigolo ; le conteur : « une grenouille qui se prend pour un chapeau ! Elle attend dans sa garde-robe »')
-        shot(pg, 'coffret-grenouille'); pg.wait_for_timeout(1500)
-    else: verifier(False, 'le coffret arrive')
+    a0 = pg.evaluate("() => M.S.atelier.garde.a.length")
+    r0 = pg.evaluate(f"() => {V}._travaux()")
+    verifier(r0 == [], f'pas de travail fini : rien ({r0})')
+    pg.evaluate("() => { var P = M.P(); P.analyses = P.analyses || {}; P.analyses.eau_riviere = 1; window.__lus = []; }")
+    r1 = pg.evaluate(f"() => {V}._travaux()")
+    pg.wait_for_timeout(700)
+    t = pg.evaluate("() => { var t = document.querySelector('#atelier-ici .at-toast'); return t && !t.hidden ? t.textContent : ''; }").replace('\u00a0', ' ')
+    print('   le conteur :', t)
+    verifier(len(r1) == 1 and r1[0] in ids and pg.evaluate("() => M.S.atelier.garde.a.length") == a0 + 1, f'une analyse finie : un habit de la malle ({r1})')
+    verifier('Beau travail' in t and 'malle à déguisements' in t and 'garde-robe' in t, 'le conteur le dit')
+    shot(pg, 'malle-un')
+    r2 = pg.evaluate(f"() => {V}._travaux()")
+    verifier(r2 == [], f'la même analyse ne compte qu\'une fois ({r2})')
+    pg.evaluate("() => { var P = M.P(); ['eau_lavoir', 'poudre', 'colorant', 'piece_pain'].forEach(function(k){ P.analyses[k] = 1; }); P.vus = P.vus || {}; P.vus['fiole:sommeil'] = 1; }")
+    r3 = pg.evaluate(f"() => {V}._travaux()")
+    pg.wait_for_timeout(1700)
+    verifier(len(r3) == 3, f'cinq travaux d\'un coup : trois habits, pas plus ({r3})')
+    verifier(pg.evaluate(f"() => {V}._travaux()") == [], 'les autres sont comptés quand même')
+    pg.evaluate("() => { var P = M.P(); ['eau_riviere', 'eau_lavoir', 'poudre', 'colorant', 'piece_pain'].forEach(function(k){ delete P.analyses[k]; }); delete P.vus['fiole:sommeil']; }")
+    pg.wait_for_timeout(5500)
 
     # --- la garde-robe : trois endroits ; tout y est quand on a tout ---
     pg.evaluate("() => { M.S.atelier.garde.a = Object.keys(Atelier.ACCESSOIRES); M.S.atelier.garde.neuf = []; }")

@@ -89,8 +89,8 @@ with sync_playwright() as p:
     nb = pg.locator('#atelier-ici [data-mimi="essai"]').count()
     if nb: pg.locator('#atelier-ici [data-mimi="essai"]').click(); pg.wait_for_timeout(500)
     m = pg.evaluate("() => { var e = M.S.atelier; return {j:e.mimi.jouets.length, s:e.mimi.soins.length, a:e.garde.a.length, p:e.mimi.peaux.p.length, fam:Object.keys(e.tama.fam).length}; }")
-    tous = pg.evaluate("() => Object.keys(Atelier.ACCESSOIRES).length")      # (17 novembre : les habits rigolos en plus, et leur famille, la sixième)
-    verifier(nb == 1 and tous >= 38 and m == {'j': 7, 's': 5, 'a': tous, 'p': 4, 'fam': 6} and 'Essai' in toast(pg), f'en mode d\'essai : le bouton 🧪 donne toutes ses affaires ({m})')
+    tous = pg.evaluate("() => Object.keys(Atelier.ACCESSOIRES).length")      # (17 novembre : les habits rigolos en plus — ceux de la malle)
+    verifier(nb == 1 and tous >= 38 and m == {'j': 7, 's': 5, 'a': tous, 'p': 4, 'fam': 5} and 'Essai' in toast(pg), f'en mode d\'essai : le bouton 🧪 donne toutes ses affaires ({m})')
     cartons(pg); pg.wait_for_timeout(600)
     # --- le tunnel : elle le traverse, cachée derrière la toile ---
     calme(pg, cid); o = objet(pg, 'tunnel_chat'); voir(pg, o)

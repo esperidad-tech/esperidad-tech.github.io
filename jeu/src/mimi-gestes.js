@@ -98,7 +98,7 @@ M.BOUCLES = {lave:'toilette', tape:'tape', mange:'croque', salut:'salut', griffe
 M.CLASSES = {'at-x-clos':'clos', 'at-x-miaou':'miaou', 'at-x-baille':'baille', 'at-x-langue':'langue', 'at-x-cligne':'cligne', 'at-x-penche':'penche',
   'at-x-oreille':'oreille', 'at-x-queue':'queue', 'at-x-eternue':'eternue', 'at-x-joue':'joue', 'at-x-content':'content', 'at-x-tete':'calinTete',
   'at-x-dosg':'calinDos', 'at-x-agace':'agace', 'at-x-attrape':'attrape', 'at-x-petrit':'petrit', 'at-x-secoue':'secoue', 'at-x-mordille':'mordille',
-  'at-c-ronron':'ronron', 'at-c-portee':'portee', 'at-c-tapi':'tapi', 'at-c-fesses':'fesses', 'at-c-fatigue':'fatigue', 'at-c-ronde':'ronde'};
+  'at-c-ronron':'ronron', 'at-c-portee':'portee', 'at-dans-bain':'bain', 'at-c-tapi':'tapi', 'at-c-fesses':'fesses', 'at-c-fatigue':'fatigue', 'at-c-ronde':'ronde'};
 
 /* ==========================================================
    La marche. Chaque patte : posée (elle recule sous le corps), puis levée (elle revient devant, en cloche).
@@ -266,6 +266,8 @@ var GS = M.GESTES = {
     P.q0 = P.q0 + ang(112 - P.q0) * k; P.q1 = vers(P.q1, 5, k); P.q2 = vers(P.q2, 6, k); P.q3 = vers(P.q3, 8, k); P.q4 = vers(P.q4, 12, k); P.q5 = vers(P.q5, 16, k); P.qa = vers(P.qa, 10, k); P.qv = vers(P.qv, 0.5, k);
     P.ry -= 6 * k; P.pu = vers(P.pu, 0.95, k); P.og -= 9 * k; P.od += 9 * k; P.mo += 5 * k;
   }},
+  /* (17 novembre) dans son baquet : la queue bien en l'air, hors de l'eau (comme les vrais chats), le bout en crochet */
+  bain:{ent:0.3, sor:0.3, f:function(P, u, t){ var k = mont(t, 0.35); P.q0 = P.q0 + ang(-150 - P.q0) * k; P.q1 = vers(P.q1, 10, k); P.q2 = vers(P.q2, 12, k); P.q3 = vers(P.q3, 16, k); P.q4 = vers(P.q4, 24, k); P.q5 = vers(P.q5, 30, k); P.qa = vers(P.qa, 4, k); P.qv = vers(P.qv, 0.6, k); P.qd = 0; }},
   salut:{ent:0.25, sor:0.25, f:function(P, u, t){ var k = mont(t, 0.25); P.a1x = vers(P.a1x, 31, k); P.a1y = vers(P.a1y, -38, k); P.a1q = vers(P.a1q, -70 + 24 * S(t, 2.3), k); if(k > 0.5){ P.a1f = 1; P.yc = 1; } P.ta += 8 * k; P.jo = Math.max(P.jo, 0.6); }},
   /* dressée, elle fait ses griffes : une patte descend, l'autre remonte */
   griffe:{ent:0.2, sor:0.2, f:function(P, u, t){ var k = mont(t, 0.2), s = S(t, 1.5), a = 0.5 + 0.5 * s; P.a1y += 9 * a * k; P.a2y += 9 * (1 - a) * k; P.a1q += 14 * a * k; P.a2q += 14 * (1 - a) * k; P.sy += 1.2 * s * k; P.ta -= 5 * k; P.pu = vers(P.pu, 0.7, k); }},

@@ -1252,12 +1252,38 @@ html.labo-ouvert, html.labo-ouvert body{overflow:hidden}
 .at-souris-meca{z-index:99000}
 .at-boite{pointer-events:auto;cursor:pointer;transform:translate(-50%,-100%)}
 .at-bain{pointer-events:none;transform:translate(-50%,-100%)}
-.at-bain-mousse{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(calc(.12 + var(--mousse, 0) * .88));transition:transform .3s ease-out}
+/* le baquet (17 novembre) : deux morceaux, le fond derrière Mimi, le devant devant elle (svgBaquet) */
+.at-baquet{position:absolute;pointer-events:none;transform:translate(-50%,-100%)}
+.at-baquet > svg{display:block;width:100%;height:auto}
+.at-baquet .at-bain-mousse{transform:scale(calc(.03 + var(--bain-mousse, 0) * .97));transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+.at-canard{transform-box:fill-box;transform-origin:50% 100%;animation:mi-canard 2.6s ease-in-out infinite}
+@keyframes mi-canard{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-1.2px) rotate(4deg)}}
+.at-vapeur{animation:mi-vapeur 3.3s ease-in-out infinite;opacity:0}
+@keyframes mi-vapeur{0%{opacity:0;transform:translateY(5px)}40%{opacity:1}100%{opacity:0;transform:translateY(-12px)}}
+.at-bain-bulles circle{transform-box:fill-box;transform-origin:center;animation:mi-bulle-bain 2.4s ease-out infinite}
+@keyframes mi-bulle-bain{0%{opacity:0;transform:translateY(2px) scale(.5)}20%{opacity:1}100%{opacity:0;transform:translateY(-16px) scale(1.2)}}
+.at-plouf .at-baquet-eau{transform-box:fill-box;transform-origin:50% 50%;animation:mi-plouf .6s ease-out}
+@keyframes mi-plouf{0%{transform:scale(1)}25%{transform:scale(1.06,.7)}55%{transform:scale(.97,1.12)}80%{transform:scale(1.02,.95)}100%{transform:scale(1)}}
+.at-flaque-eau{position:absolute;pointer-events:none;transform:translate(-50%,-50%);animation:mi-flaque 6.5s ease-in forwards}
+.at-flaque-eau > svg{display:block;width:100%;height:auto}
+@keyframes mi-flaque{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}8%{opacity:1;transform:translate(-50%,-50%) scale(1)}70%{opacity:.9}100%{opacity:0;transform:translate(-50%,-50%) scale(.7)}}
+.at-curseur.at-curseur-brosse{width:76px;height:48px;transform:translate(-40%,-78%) rotate(-12deg)}
+.at-curseur.at-curseur-bain{width:58px;height:48px;transform:translate(-50%,-60%) rotate(-10deg)}
+@media (prefers-reduced-motion: reduce){.at-canard,.at-vapeur,.at-bain-bulles circle,.at-plouf .at-baquet-eau{animation:none!important}.at-vapeur{opacity:.4}}
+.at-bain-mousse{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(calc(.12 + var(--bain-mousse, 0) * .88));transition:transform .3s ease-out}
 @keyframes mi-laser{from{transform:scale(.85)}to{transform:scale(1.15)}}
 @keyframes mi-plume{from{transform:rotate(-12deg)}to{transform:rotate(12deg)}}
 /* les petites choses qui s'envolent : les poils de la brosse, la mousse du bain, les étoiles du coffret, les gouttes, l'herbe */
 .at-part{position:absolute;z-index:70;pointer-events:none;font-style:normal;line-height:1;transform:translate(-50%,-50%)}
 .at-part-poil{width:11px;height:6px;border-radius:50%;background:#f6c999;border:1.5px solid #b8652e;animation:mi-poil 1.1s ease-out forwards}
+.at-part-brille{width:22px;height:9px;border-radius:50%;border-top:3px solid #fffbe8;background:none;animation:mi-brille .9s ease-out forwards}
+@keyframes mi-brille{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}30%{opacity:1;transform:translate(-50%,-60%) scale(1.15)}100%{opacity:0;transform:translate(calc(-50% + var(--dx,0px) * .3),-90%) scale(.9)}}
+.at-part-herisse{width:14px;height:14px;background:#e39a4e;clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);animation:mi-herisse .8s ease-out forwards}
+@keyframes mi-herisse{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}25%{opacity:1;transform:translate(-50%,-70%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-150%) scale(.8) rotate(40deg)}}
+.at-part-miette{width:6px;height:5px;border-radius:40%;background:#c47a35;border:1px solid #7a4626;animation:mi-miette .9s ease-in forwards}
+@keyframes mi-miette{0%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0;transform:translate(calc(-50% + var(--dx,0px) * .5),40px) rotate(160deg)}}
+.at-biscuit{position:absolute;pointer-events:none;transform:translate(-50%,-50%)}
+.at-biscuit > svg{display:block;width:100%;height:auto;filter:none}
 .at-part-mousse{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#fff 0 30%,#dff2ff 55%,#a7d6f4);border:1.5px solid #6aa8d0;animation:mi-mousse 1.5s ease-out forwards}
 .at-part-etoile{color:#ffd36a;font-size:24px;text-shadow:0 0 6px #fff6a8;animation:mi-etoile 1.1s ease-out forwards}
 .at-goutte{position:absolute;width:8px;height:11px;border-radius:50% 50% 50% 50%/62% 62% 38% 38%;background:#8fd0ff;border:1.5px solid #3d8ef0;pointer-events:none;z-index:99001;animation:mi-goutte .9s ease-out forwards}

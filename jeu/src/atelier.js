@@ -327,6 +327,8 @@ function normaliserChat(e){
   ['a', 'neuf', 'annonce'].forEach(function(k){ if(!Array.isArray(e.garde[k])) e.garde[k] = []; e.garde[k] = e.garde[k].filter(function(id, i, l){ return typeof ACC !== 'undefined' && ACC[id] && l.indexOf(id) === i; }); });
   e.garde.neuf = e.garde.neuf.filter(function(id){ return e.garde.a.indexOf(id) >= 0; });
   if(!e.garde.mj || typeof e.garde.mj !== 'object') e.garde.mj = {};
+  if(!Array.isArray(e.garde.trav)) e.garde.trav = [];
+  e.garde.trav = e.garde.trav.filter(function(k, i, l){ return typeof k === 'string' && l.indexOf(k) === i; }).slice(-600);
   if(t.sortie !== undefined && typeof t.sortie !== 'string') delete t.sortie;
   if(t.souris !== undefined && typeof t.souris !== 'number') delete t.souris;
   if(t.butin && !(typeof t.butin === 'object' && typeof t.butin.ingr === 'string')) t.butin = null;
@@ -3457,6 +3459,7 @@ function vue(el, opts){
   if(tama(V).dehors) apres(V, 1400, function(){ poserCoffret(V, null); });
   majBarre(V);
   annoncerAcc(V);
+  apres(V, 1500, function(){ travauxMaj(V); });
 
   return (V.api = {
     arreter:function(){ arreter(V); },
@@ -3486,7 +3489,8 @@ function vue(el, opts){
     _parcDonner:function(){ return parcDonner(V, true); },
     _parc:function(id, quoi){ var o = V.parId[id] || chatsTous(V)[0]; return o ? chatParc(V, o, quoi) : null; },
     _garde:function(id){ ouvrirGarde(V, id); },
-    _acheter:function(a){ acheter(V, a); return true; },      /* (les robots : un achat dans la boutique de Mimi, sans passer par ses boutons) */
+    _acheter:function(a){ acheter(V, a); return true; },
+    _travaux:function(plus){ return travauxMaj(V, plus); },      /* (les robots : compter les travaux de l'Alchimiste maintenant) */      /* (les robots : un achat dans la boutique de Mimi, sans passer par ses boutons) */
     _dehors:function(id){ var o = V.parId[id]; if(!o) return false; var st = chatEtat(V, o); st.pos = chatSolVisible(V); placerEl(V, o); var d = V.elO[id]; if(d) d.style.zIndex = Math.round(chatPos(V, o).z * 5); return st.pos; },
     _reveil:function(id){ var o = V.parId[id]; if(!o) return false; var st = chatEtat(V, o); if(st.anim){ var a = st.anim; st.anim = null; try{ a.cancel(); }catch(e){} } if(st.t){ clearTimeout(st.t); st.t = null; } st.dortJusqua = 0; placerEl(V, o); chatPose(V, o, 'assis'); chatPlanifier(V, o, 20000); return true; },
     _bulle:function(id){ var d = V.elO[id], b = d && d.querySelector('.at-bulle'); return b && !b.hidden ? b.getAttribute('data-bulle') : null; },
@@ -3549,6 +3553,7 @@ function maj(V, o2){
   if(V.o.etat && V.o.etat !== V.etat) V.etat = V.o.etat;
   normaliser(V.etat); poserEtabli(V.etat, !!V.o.etabli);
   INGR = V.o.ingr || DD().INGR || INGR;
+  apres(V, 600, function(){ travauxMaj(V); });
   majMoment(V);
   tamaMoment(V);
   var avantK = cles(V.elK);
@@ -6600,7 +6605,6 @@ var FAMILLES = [
   {k:'recre', l:['j:plume', 'j:laser', 'j:souris', 'j:grelot', 'j:carton', 'j:herbe'], fin:'Sa caisse à jouets est complète !'},
   {k:'belle', d:2, l:['s:brosse', 's:bain', 'a:noeud_rose', 'a:noeud_bleu', 'a:fleurs', 'a:clochette', 'p:4', 'y:2'], fin:'Elle a tout ce qu\'il faut pour se faire belle !'},
   {k:'reine', d:2, l:['s:griffoir', 'c:coussin', 'a:perles', 'a:arc', 'a:couronne', 'a:mage', 'p:3'], fin:'Elle a tout ce qu\'il faut pour vivre comme une reine !'},
-  {k:'rigolo', l:cles(MP.HABITS || {}).map(function(id){ return 'a:' + id; }), fin:'Sa malle à déguisements déborde : elle a tous les habits rigolos du monde !'},
   {k:'envies', l:['a:collier_rouge', 'a:collier_bleu', 'a:collier_vert', 'a:noeud_pap_violet', 'a:noeud_pap_jaune', 'a:foulard', 'a:sorciere', 'a:beret', 'a:fete', 'p:6', 'y:4'], fin:'Sa garde-robe de tous les jours est complète !'}
 ];
 function aChezElle(e, t){      /* (posé dans une pièce, encore dans un carton, ou rangé dans la réserve) */
@@ -6653,6 +6657,7 @@ function parcDonner(V, dit){
    morceaux de son parc arrivent. Pour essayer le parc, les pelages et les habits sans jouer des heures. L'album, lui, reste à faire. */
 function toutDonner(V){
   var m = mimi(V), G = garde(V.etat), t = tama(V), av = V.etat.cartons.map(function(k){ return k.id; });
+  cles(MP.HABITS || {}).forEach(function(id){ if(G.a.indexOf(id) < 0) G.a.push(id); });      /* (la malle à déguisements) */
   FAMILLES.forEach(function(F){ F.l.forEach(function(code){
     var k = code.charAt(0), id = code.slice(2);
     if(aDeja(V, code)) return;
@@ -7369,6 +7374,44 @@ function mjGagne(S, type){
 function attendAcc(id){ var t = articleAcc(id); return /^des /.test(t) ? (/^des (antennes|oreilles|lunettes)/.test(t) ? 'Elles attendent' : 'Ils attendent') : /^une /.test(t) ? 'Elle attend' : 'Il attend'; }
 function nomAcc(id){ var a = ACC[id]; return a ? a.nom.charAt(0).toLowerCase() + a.nom.slice(1) : ''; }
 function articleAcc(id){ var a = ACC[id]; if(!a) return ''; if(a.art) return a.art; return (/^(Couronne|Petit foulard)/.test(a.nom) ? (a.nom.indexOf('Couronne') === 0 ? 'une ' : 'un ') : /^(Collier|Nœud|Chapeau|Béret)/.test(a.nom) ? 'un ' : 'un ') + nomAcc(id); }
+/* LES HABITS GAGNÉS PAR LE TRAVAIL DE L'ALCHIMISTE (17 novembre ; Bible §12.66, point 4 : « les habits gagnés par le travail de
+   l'Alchimiste (une analyse ou une potion finie) » ; Romain, le 16 : « l'Alchimiste a quasiment plus de mini-jeux »). Chaque analyse
+   finie, chaque potion finie (au chaudron, ou à l'établi des plantes) : Mimi fouille sa malle à déguisements et en sort un des habits
+   rigolos (mimi-habits.js), tant qu'il en reste. Ils ne viennent plus de ses coffrets. etat.garde.trav : les travaux déjà comptés.
+   Pas pendant le guidage du tutoriel (ses bulles passeraient devant) : ce qui n'est pas donné l'est à la prochaine ouverture. */
+var MALLE_MAX = 3;      /* au plus trois d'un coup (le travail d'avant cette version : compté, mais pas tout récompensé) */
+function travauxFaits(V){
+  var l = [];
+  try{
+    var P = window.M && M.P ? M.P() : null, E = window.M && M.E ? M.E() : null;
+    if(!P || !E) return l;
+    cles(P.analyses || {}).forEach(function(id){ if(P.analyses[id]) l.push('an:' + E.id + ':' + id); });
+    cles(P.vus || {}).forEach(function(k){ if(k.indexOf('fiole:') === 0) l.push('fi:' + E.id + ':' + k.slice(6)); });
+  }catch(e){}
+  return l;
+}
+function malleReste(G){ return cles(MP.HABITS || {}).filter(function(id){ return G.a.indexOf(id) < 0; }); }
+/* des travaux neufs : un habit de la malle pour chacun (au plus MALLE_MAX), et le conteur le dit. plus : des clés en plus (le chaudron) */
+function travauxMaj(V, plus){
+  if(GUIDE || V.o.tutoriel) return [];
+  var G = garde(V.etat), neufs = travauxFaits(V).concat(plus || []).filter(function(k){ return G.trav.indexOf(k) < 0; });
+  if(!neufs.length) return [];
+  var dons = [];
+  neufs.forEach(function(k){
+    G.trav.push(k);
+    var l = malleReste(G);
+    if(!l.length || dons.length >= MALLE_MAX) return;
+    var id = l[Math.floor(Math.random() * l.length)];
+    G.a.push(id); G.neuf.push(id); G.annonce.push(id); dons.push(id);
+  });
+  changer(V);
+  if(dons.length){
+    var c = chatsTous(V)[0], nom = c ? nomChat(c) : PORTEE.mere, quoi = dons.map(articleAcc);
+    var t = 'Beau travail d\'Alchimiste ! Pour fêter ça, ' + nom + ' a fouillé sa malle à déguisements : ' + (quoi.length > 1 ? quoi.slice(0, -1).join(', ') + ' et ' + quoi[quoi.length - 1] + ' ! Ils attendent' : quoi[0] + ' ! ' + attendAcc(dons[0])) + ' dans sa garde-robe 🎀.';
+    (function montrer(n){ if(V.arrete) return; if(!V.toastEl.hidden && n < 8){ apres(V, 1500, function(){ montrer(n + 1); }); return; } toast(V, '<b>🧳 ✨</b> ' + esc(t), 7000, t); son(V, 'magie'); majBarre(V); })(0);
+  }
+  return dons;
+}
 /* Les nouveautés gagnées pendant les mini-jeux : annoncées une fois, à l'ouverture de l'atelier */
 function annoncerAcc(V){
   var G = garde(V.etat), l = G.neuf.filter(function(id){ return G.annonce.indexOf(id) < 0; });
@@ -7979,7 +8022,15 @@ function mimi(V){ var e = V.etat; if(!e.mimi || !Array.isArray(e.mimi.jouets)) n
 function soinA(V, id){ return mimi(V).soins.indexOf(id) >= 0; }
 function iconeSoin(id){
   if(id !== 'brosse') return SOINS[id] ? SOINS[id].ic : '';
-  return '<svg viewBox="0 0 32 32" aria-hidden="true" class="at-ic-brosse"><path d="M6,22 L19,9 L24,14 L11,27 Z" fill="#c98450" stroke="#24182e" stroke-width="2.4" stroke-linejoin="round"/><path d="M19,9 L22,4 C24,2 28,2 29,4 C30,6 29,9 27,10 L24,14" fill="#7d4626" stroke="#24182e" stroke-width="2.4" stroke-linejoin="round"/><path d="M9,20 L5,16 M12,17 L8,13 M15,14 L11,10" stroke="#f3e7cb" stroke-width="2" stroke-linecap="round"/></svg>';
+  /* (17 novembre) une vraie brosse : le dos en bois verni, le coussin rouge, les poils, le manche ; tenue poils en bas */
+  return '<svg viewBox="0 0 64 40" aria-hidden="true" class="at-ic-brosse">' +
+    '<path d="M38,15 C46,12 56,10 61,12 C63,13 63,17 61,18 C56,20 46,20 38,20 Z" fill="#a0602f" stroke="#24182e" stroke-width="2.2" stroke-linejoin="round"/>' +
+    '<path d="M44,14 C50,13 55,12.6 58,13.4" stroke="#d9a06a" stroke-width="1.6" fill="none" stroke-linecap="round"/>' +
+    '<path d="M3,17 C3,9 13,7 23,7 C33,7 41,9 41,17 C41,21 36,22 22,22 C9,22 3,21 3,17 Z" fill="#c98450" stroke="#24182e" stroke-width="2.2" stroke-linejoin="round"/>' +
+    '<path d="M9,12 C14,9.6 24,9.4 32,10.6" stroke="#ecc28c" stroke-width="1.8" fill="none" stroke-linecap="round"/>' +
+    '<path d="M6,21 L38,21 L37,25 L7,25 Z" fill="#c8403a" stroke="#24182e" stroke-width="2" stroke-linejoin="round"/>' +
+    '<path d="M9,25 v8 M13,25 v9 M17,25 v8 M21,25 v9 M25,25 v8 M29,25 v9 M33,25 v8" stroke="#24182e" stroke-width="2.4" stroke-linecap="round"/>' +
+    '<path d="M9,25 v8 M13,25 v9 M17,25 v8 M21,25 v9 M25,25 v8 M29,25 v9 M33,25 v8" stroke="#f3e7cb" stroke-width="1.1" stroke-linecap="round"/></svg>';
 }
 
 /* ---------- Un soin : du bonheur ; si c'était pile son envie, bien plus ; et si sa barre est pleine, elle file chercher un coffret ---------- */
@@ -8135,13 +8186,18 @@ function particule(V, ev, cls, txt, ms){
 function curseurOutil(V, ev){
   if(!V.outil) return;
   var r = V.root.getBoundingClientRect(), c = V.curseur;
-  if(!c){ c = V.curseur = document.createElement('div'); c.className = 'at-curseur at-curseur-' + V.outil.t; c.innerHTML = V.outil.t === 'brosse' ? iconeSoin('brosse') : '<span>🧽</span>'; V.root.appendChild(c); }
+  if(!c){ c = V.curseur = document.createElement('div'); c.className = 'at-curseur at-curseur-' + V.outil.t; c.innerHTML = V.outil.t === 'brosse' ? iconeSoin('brosse') : EPONGE; V.root.appendChild(c); }
   c.style.left = (ev.clientX - r.left).toFixed(0) + 'px'; c.style.top = (ev.clientY - r.top).toFixed(0) + 'px';
 }
+/* l'éponge du bain : jaune, trouée, sa face verte qui gratte, de la mousse dessus */
+var EPONGE = '<svg viewBox="0 0 44 36" aria-hidden="true"><path d="M5,13 Q5,7 11,7 L35,7 Q40,7 40,12 L40,17 L5,17 Z" fill="#4cbb5c" stroke="#24182e" stroke-width="2.2" stroke-linejoin="round"/>' +
+  '<path d="M5,17 L40,17 L40,25 Q40,31 34,31 L11,31 Q5,31 5,25 Z" fill="#ffd84a" stroke="#24182e" stroke-width="2.2" stroke-linejoin="round"/>' +
+  '<circle cx="12" cy="23" r="1.9" fill="#e3ad25"/><circle cx="20" cy="26.5" r="1.4" fill="#e3ad25"/><circle cx="27" cy="22.5" r="2.1" fill="#e3ad25"/><circle cx="34" cy="26" r="1.5" fill="#e3ad25"/>' +
+  '<circle cx="14" cy="6" r="4.4" fill="#ffffff" stroke="#a9d3ee" stroke-width="1.2"/><circle cx="21" cy="4.6" r="5" fill="#ffffff" stroke="#a9d3ee" stroke-width="1.2"/><circle cx="28" cy="6.4" r="3.8" fill="#ffffff" stroke="#a9d3ee" stroke-width="1.2"/></svg>';
 function outilLache(V){ if(V.curseur){ V.curseur.remove(); V.curseur = null; } }
 function prendreBrosse(V){
   var o = chatJoueur(V);
-  if(!o) return;
+  if(!o || V.bain) return;      /* (pas pendant son bain) */
   V.outil = {t:'brosse', n:0, l:0};
   V.root.classList.add('at-outil');
   var t = 'La brosse est prête ! Passe-la doucement sur le dos de ' + nomChat(o) + ', dans le sens du poil.';
@@ -8149,24 +8205,58 @@ function prendreBrosse(V){
   clearTimeout(V.outilT); V.outilT = apres(V, 25000, function(){ if(V.outil && V.outil.t === 'brosse') poserOutil(V); });
 }
 function poserOutil(V){ V.outil = null; V.root.classList.remove('at-outil'); outilLache(V); clearTimeout(V.outilT); }
+/* LA BROSSE, DANS LE SENS DU POIL (17 novembre ; Romain, le 16 : « la brosse, elle est pas très bien faite » ; Bible §12.66, point 4 :
+   « une vraie brosse, à passer dans le sens du poil »). Ce qui compte : le chemin du doigt le long de son dos, de sa tête vers sa queue
+   (l'axe épaules → hanches du pantin). Dans ce sens, 34 points font un bon coup de brosse : des poils, un éclat, elle ronronne, les yeux
+   fermés. L'aller-retour marche (le retour ne compte pas, c'est tout). Mais un coup de brosse qui COMMENCE à rebrousse-poil (de sa queue
+   vers sa tête) : « Frrr ! », les oreilles en arrière, le poil qui se hérisse ; et au troisième, le conteur explique. */
+function brosseBouge(V, o, ev, dl){
+  var O = V.outil, d = V.elO[o.id], r = pantinDe(V, o), now = Date.now();
+  if(dl === 0 || O.px === undefined){ O.px = ev.clientX; O.py = ev.clientY; O.bon = 0; O.mal = 0; O.debut = 1; O.axe = 0; }
+  /* (l'axe de son dos : relu trois fois par seconde, pas à chaque mouvement du doigt) */
+  if(r && (!O.axe || now - O.axeT > 330)){ var a = r.point('s'), b = r.point('h'); if(a && b){ var lx = b[0] - a[0], ly = b[1] - a[1], ln = Math.hypot(lx, ly) || 1; O.axe = [lx / ln, ly / ln]; O.axeT = now; } }
+  var sx = ev.clientX - O.px, sy = ev.clientY - O.py; O.px = ev.clientX; O.py = ev.clientY;
+  if(!O.axe || !(sx || sy)) return;
+  var pr = sx * O.axe[0] + sy * O.axe[1];
+  if(pr > 0){ O.bon += pr; O.mal = Math.max(0, O.mal - pr); if(O.bon > 8) O.debut = 0; }
+  else if(pr < 0){
+    O.mal += -pr;
+    if(O.mal > 22){
+      O.mal = 0;
+      particule(V, ev, 'at-part-herisse', '', 800);
+      /* (un coup de brosse qui commence à l'envers : elle n'aime pas — pas plus d'une fois toutes les deux secondes et demie) */
+      if(O.debut && now - (O.grrT || 0) > 2500){
+        O.grrT = now; O.rebours = (O.rebours || 0) + 1;
+        expression(V, o, 'at-x-agace', 900); flotter(V, o, 'Frrr !'); sonMimi(V, 'grr');
+        d.classList.remove('at-x-dosg', 'at-c-ronron', 'at-x-clos');
+        if(O.rebours === 3){ var t = nomChat(o) + ' grogne : à rebrousse-poil, elle déteste ! Une brosse, ça va de sa tête vers sa queue. Comme son poil.'; toast(V, '<b>' + iconeSoin('brosse') + ' 😾</b> ' + esc(t), 6000, t); }
+      }
+      O.debut = 0;
+    }
+  }
+  if(O.bon < 34) return;
+  O.bon = 0; O.n++;
+  particule(V, ev, 'at-part-poil', '', 1100); particule(V, ev, 'at-part-poil', '', 1100); particule(V, ev, 'at-part-brille', '', 900);
+  sonMimi(V, 'brosse');
+  d.classList.add('at-x-dosg', 'at-c-ronron', 'at-x-clos');
+  if(O.n % 3 === 0){ coeursChat(V, o); sonMimi(V, 'ronron'); }
+  if(O.n >= 9) finBrosse(V, o);
+}
 function outilBouge(V, o, ev, dl){
   var O = V.outil, d = V.elO[o.id];
   if(!O || !d) return;
   curseurOutil(V, ev);
+  if(O.t === 'brosse'){ brosseBouge(V, o, ev, dl); return; }
   O.l += dl;
   if(O.l < 34) return;      /* (un coup de brosse, un coup d'éponge : 34 points de glisser) */
   O.l = 0; O.n++;
-  if(O.t === 'brosse'){
-    particule(V, ev, 'at-part-poil', '', 1100); particule(V, ev, 'at-part-poil', '', 1100);
-    sonMimi(V, 'brosse');
-    d.classList.add('at-x-dosg', 'at-c-ronron', 'at-x-clos');
-    if(O.n % 3 === 0) coeursChat(V, o);
-    if(O.n >= 9) finBrosse(V, o);
-  } else if(O.t === 'bain' && V.bain){
+  if(O.t === 'bain' && V.bain){
     particule(V, ev, 'at-part-mousse', '', 1500); particule(V, ev, 'at-part-mousse', '', 1500);
     sonMimi(V, 'mousse');
     V.bain.n++; V.bain.dernier = Date.now();
-    if(V.bain.el) V.bain.el.style.setProperty('--mousse', Math.min(1, V.bain.n / 8).toFixed(2));
+    /* (à la quatrième, la mousse lui chatouille le nez : atchoum !) */
+    if(V.bain.n === 4){ expression(V, o, 'at-x-eternue', 700); apres(V, 250, function(){ if(V.bain) flotter(V, o, 'Atchoum !'); sonMimi(V, 'atchoum'); }); }
+    if(V.bain.el) V.bain.el.style.setProperty('--bain-mousse', Math.min(1, V.bain.n / 8).toFixed(2));
     if(V.bain.n >= 8) sortieBain(V, true);
   }
 }
@@ -8182,41 +8272,110 @@ function finBrosse(V, o){
 }
 /* Le bain : une petite baignoire se pose, elle y saute (l'air pas convaincu), on frotte : de la mousse ; huit coups, et elle bondit dehors
    et s'ébroue. Sans frotter pendant quinze secondes, elle file toute seule (rien n'est perdu). */
+/* LE BAQUET (17 novembre ; Romain, le 16 : « Le bain, on voit même pas de bain ») : un vrai baquet de bois cerclé de fer, bas et large,
+   plein d'eau tiède : un canard qui flotte, un peu de vapeur. Il est en DEUX morceaux, pour qu'elle soit vraiment DEDANS : le fond (derrière
+   elle : l'intérieur, l'eau, le canard, la vapeur, le bord du fond) et le devant (devant elle : la paroi et ses cercles, le bord de devant,
+   l'eau qui la cache jusqu'à la poitrine, la mousse qui monte quand on frotte). viewBox 0 0 180 94 ; le sol : (90, 92).
+   BAQUET.pied : ses pattes sont posées au fond du baquet, 13 unités au-dessus du sol (là, l'eau lui arrive à la poitrine). */
+var BAQUET = {w:180, h:94, sol:92, pied:13};
+function svgBaquet(face){
+  var K2 = K, r1 = function(v){ return Math.round(v * 10) / 10; };
+  function pt(cx, cy, rx, ry, a){ return [r1(cx + rx * Math.cos(a)), r1(cy + ry * Math.sin(a))]; }
+  function P2(d, f, w, x){ return '<path d="' + d + '" fill="' + f + '" stroke="' + K2 + '" stroke-width="' + (w || 2.4) + '" stroke-linejoin="round" stroke-linecap="round"' + (x || '') + '/>'; }
+  var s = '<svg viewBox="0 0 180 94" overflow="visible" aria-hidden="true">';
+  if(!face){
+    /* l'intérieur (le bois plus sombre), ses douelles ; l'eau ; le canard ; la vapeur ; le bord du fond */
+    s += P2('M17,47 A73,12 0 0 1 163,47 A73,12 0 0 1 17,47 Z', '#7a4626', 2);
+    [196, 214, 232, 250, 268, 286, 304, 322, 340].forEach(function(g){ var a = pt(90, 47, 73, 12, g * Math.PI / 180); s += '<path d="M' + a[0] + ',' + a[1] + ' L' + r1(a[0] + (90 - a[0]) * 0.07) + ',54" stroke="#5c3219" stroke-width="1.4"/>'; });
+    s += '<g class="at-baquet-eau"><path d="M20,52 A70,10 0 0 1 160,52 A70,10 0 0 1 20,52 Z" fill="#8fd0ff" stroke="#4f9fd6" stroke-width="1.6"/>' +
+      '<path d="M44,49 Q62,46 80,48 M102,47 Q118,45 134,48" stroke="#e6f6ff" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".9"/></g>';
+    s += '<g class="at-canard"><ellipse cx="136" cy="51" rx="9" ry="2.4" fill="#5aa8d8" opacity=".5"/>' +
+      P2('M128,49 C127,43 133,41 138,43 C141,40 146,40 147,45 C150,45 151,48 148,50 C142,53 132,53 128,49 Z', '#ffd84a', 1.6) +
+      P2('M146,42.6 L151.6,43.6 L147,45.4 Z', '#ff9a3c', 1.1) + '<circle cx="143.6" cy="42.4" r="1" fill="' + K2 + '"/>' +
+      '<path d="M131,47 Q134,45.4 137,46.6" stroke="#e8b52c" stroke-width="1.3" fill="none"/></g>';
+    s += '<g class="at-vapeur"><path d="M62,40 C58,34 66,30 62,24 C59,20 63,16 61,12" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" opacity=".55"/></g>' +
+      '<g class="at-vapeur" style="animation-delay:1.1s"><path d="M104,38 C100,32 108,28 104,22 C101,18 105,14 103,10" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" opacity=".55"/></g>' +
+      '<g class="at-vapeur" style="animation-delay:2.2s"><path d="M84,36 C80,30 88,26 84,20" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" opacity=".45"/></g>';
+    s += P2('M8,46 A82,16 0 0 1 172,46 L163,47 A73,12 0 0 0 17,47 Z', '#e3b47c', 2.2);
+    return s + '</svg>';
+  }
+  /* le devant : les douelles (plus sombres sur les côtés), le contour, deux cercles de fer et leurs rivets ; l'eau du devant ; la mousse ; le bord */
+  var N = 10, i, fonce = [154, 93, 51], clair = [214, 153, 96];
+  for(i = 0; i < N; i++){
+    var a0 = i / N * Math.PI, a1 = (i + 1) / N * Math.PI, m = Math.sin((a0 + a1) / 2), c = fonce.map(function(v, k){ return Math.round(v + (clair[k] - v) * m); });
+    var h0 = pt(90, 46, 82, 16, a0), h1 = pt(90, 46, 82, 16, a1), b1 = pt(90, 80, 74, 12, a1), b0 = pt(90, 80, 74, 12, a0);
+    s += '<path d="M' + h0 + ' L' + h1 + ' L' + b1 + ' L' + b0 + ' Z" fill="rgb(' + c.join(',') + ')" stroke="#6e3f22" stroke-width="1"/>';
+  }
+  s += '<path d="M8,46 L16,80 A74,12 0 0 0 164,80 L172,46" fill="none" stroke="' + K2 + '" stroke-width="3" stroke-linejoin="round"/>';
+  [0.24, 0.76].forEach(function(t){
+    var cy = 46 + 34 * t, rx = 82 - 8 * t, ry = 16 - 4 * t, d = 'M' + r1(90 - rx) + ',' + r1(cy) + ' A' + r1(rx) + ',' + r1(ry) + ' 0 0 0 ' + r1(90 + rx) + ',' + r1(cy);
+    s += '<path d="' + d + '" fill="none" stroke="' + K2 + '" stroke-width="7.4"/><path d="' + d + '" fill="none" stroke="#7d8794" stroke-width="4.6"/>' +
+      '<path d="' + d + '" fill="none" stroke="#b9c2cc" stroke-width="1.2" transform="translate(0,-1.2)"/>';
+    [0.32, 0.5, 0.68].forEach(function(f){ var q = pt(90, cy, rx, ry, f * Math.PI); s += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="1.5" fill="#545c66"/>'; });
+  });
+  /* l'eau devant elle (elle y est jusqu'à la poitrine), la mousse qui monte quand on frotte (--bain-mousse ; pas « --mousse » : c'est déjà une couleur du jeu, base.css), des bulles qui montent */
+  s += '<path class="at-baquet-eau" d="M20,52 A70,10 0 0 0 160,52 Z" fill="#7cc4f0" opacity=".93"/>';
+  [[52, 54, 1], [70, 58, 1.2], [92, 59, 1.35], [112, 58, 1.15], [130, 54, 1], [80, 50, 0.9], [104, 50, 0.95]].forEach(function(q, k){
+    var x = q[0], y = q[1], z = q[2];
+    s += '<g class="at-bain-mousse" style="transition-delay:' + (k * 0.04).toFixed(2) + 's">' +
+      ['-6,0,5', '0,-3,6', '6,0,5', '2,2.5,4'].map(function(c){ var v = c.split(','); return '<circle cx="' + r1(x + v[0] * z) + '" cy="' + r1(y + v[1] * z) + '" r="' + r1(v[2] * z) + '" fill="#ffffff" stroke="#a9d3ee" stroke-width="1.2"/>'; }).join('') +
+      '<circle cx="' + r1(x - 2 * z) + '" cy="' + r1(y - 4 * z) + '" r="' + r1(1.6 * z) + '" fill="#e4f4ff"/></g>';
+  });
+  s += '<g class="at-bain-bulles"><circle cx="60" cy="52" r="2.4" fill="none" stroke="#e6f6ff" stroke-width="1.2"/><circle cx="118" cy="51" r="1.8" fill="none" stroke="#e6f6ff" stroke-width="1.1" style="animation-delay:.9s"/><circle cx="96" cy="53" r="2" fill="none" stroke="#e6f6ff" stroke-width="1.1" style="animation-delay:1.7s"/></g>';
+  s += P2('M8,46 A82,16 0 0 0 172,46 L163,47 A73,12 0 0 1 17,47 Z', '#e3b47c', 2.2) +
+    '<path d="M20,50 A74,13 0 0 0 160,50" fill="none" stroke="#f3d3a4" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>';
+  return s + '</svg>';
+}
+/* une petite flaque par terre, qui sèche toute seule (quand elle sort du bain et s'ébroue) */
+function flaqueEau(V, x, y, z){
+  var s = echelleSol(y), el = document.createElement('div');
+  el.className = 'at-flaque-eau';
+  el.innerHTML = '<svg viewBox="0 0 40 14" aria-hidden="true"><path d="M3,8 C2,3 12,1 20,2 C30,1 39,4 37,8 C36,12 26,13 18,12 C9,13 4,12 3,8 Z" fill="#8fd0ff" stroke="#4f9fd6" stroke-width="1.4" opacity=".75"/><path d="M10,6 Q15,4.6 20,5.4" stroke="#ffffff" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>';
+  el.style.left = pX(V, x); el.style.top = pY(V, y); el.style.width = pW(V, (26 + Math.random() * 18) * s);
+  el.style.zIndex = z;
+  V.scene.appendChild(el);
+  apres(V, 6500, function(){ el.remove(); });
+}
 function demarrerBain(V){
   var o = chatJoueur(V);
   if(!o || V.bain) return;
   if(chatSurMeuble(V, o)){ chatAller(V, o, chatSolVisible(V), function(){ demarrerBain(V); }); return; }
   var p = chatPos(V, o), y = borne(p.y + 6, SOL_MIN + 50, solMax(V) - 20), x = borne(p.x + 90, solXmin(V, y) + 120, solXmax(V, y) - 120);
   /* (une place dégagée, où on la voit et où le doigt la trouve : rien devant, pas même une gamelle) */
-  var pl = placeLibre(V, [[x, y], [borne(p.x - 90, solXmin(V, y) + 120, solXmax(V, y) - 120), y]], 90, 120);
+  var pl = placeLibre(V, [[x, y], [borne(p.x - 90, solXmin(V, y) + 120, solXmax(V, y) - 120), y]], 100, 120);
   x = pl.x; y = pl.y;
-  var s = echelleSol(y), el = document.createElement('div');
-  el.className = 'at-bain';
-  el.innerHTML = '<svg viewBox="0 0 160 90" aria-hidden="true"><ellipse cx="80" cy="84" rx="70" ry="7" fill="rgba(0,0,0,.25)"/>' +
-    '<path class="at-bain-mousse" d="M18,40 C14,24 34,20 40,28 C44,14 66,14 70,26 C76,12 100,14 102,28 C110,16 132,20 134,34 C146,30 150,44 142,48 L18,48 Z" fill="#fff" stroke="#24182e" stroke-width="3"/>' +
-    '<path d="M10,40 H150 C150,66 136,80 112,80 H48 C24,80 10,66 10,40 Z" fill="#e8f4ff" stroke="#24182e" stroke-width="4" stroke-linejoin="round"/>' +
-    '<path d="M18,46 H142" stroke="#8fc6e8" stroke-width="5" stroke-linecap="round"/><path d="M28,56 C40,52 52,52 60,56" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none"/>' +
-    '<path d="M36,80 l-4,8 M124,80 l4,8" stroke="#24182e" stroke-width="5" stroke-linecap="round"/><path d="M36,80 l-4,8 M124,80 l4,8" stroke="#f5c542" stroke-width="2.6" stroke-linecap="round"/></svg>';
-  el.style.left = pX(V, x); el.style.top = pY(V, y); el.style.width = pW(V, 160 * s);
-  el.style.zIndex = Math.round(posObj(V, {t:'chat', x:x, y:y, sur:null}).z * 5) + 4;
-  V.scene.appendChild(el);
-  anim(el, [{transform:'translate(-50%,-100%) scale(.3)', opacity:0}, {transform:'translate(-50%,-100%) scale(1.06)', opacity:1, offset:.7}, {transform:'translate(-50%,-100%) scale(1)'}], {duration:420, easing:'ease-out'});
+  var s = echelleSol(y), dos = document.createElement('div'), el = document.createElement('div');
+  dos.className = 'at-baquet at-bain-dos'; dos.innerHTML = svgBaquet(false);
+  el.className = 'at-baquet at-bain'; el.innerHTML = svgBaquet(true);
+  var z0 = Math.round(posObj(V, {t:'chat', x:x, y:y, sur:null}).z * 5);
+  [dos, el].forEach(function(e, k){ e.style.left = pX(V, x); e.style.top = pY(V, y); e.style.width = pW(V, BAQUET.w * s); e.style.zIndex = z0 + k; V.scene.appendChild(e);
+    anim(e, [{transform:'translate(-50%,-100%) scale(.3)', opacity:0}, {transform:'translate(-50%,-100%) scale(1.06)', opacity:1, offset:.7}, {transform:'translate(-50%,-100%) scale(1)'}], {duration:420, easing:'ease-out'}); });
   sonMimi(V, 'carton');
-  V.bain = {o:o, el:el, n:0, dernier:Date.now()};
+  V.bain = {o:o, el:el, dos:dos, n:0, dernier:Date.now(), x:x, y:y};
+  poserOutil(V);      /* (la brosse qu'on avait en main se range : l'éponge prend sa place) */
   V.outil = {t:'bain', n:0, l:0};
   V.root.classList.add('at-outil');
   var st = chatEtat(V, o);
   if(st.t){ clearTimeout(st.t); st.t = null; }
-  chatAller(V, o, chatSol(V, x - 40 * s, y + 2), function(){
+  var t0 = nomChat(o) + ' regarde le baquet… puis toi… puis le baquet. Elle a compris. Elle n\'est pas d\'accord.';
+  toast(V, '<b>🛁</b> ' + esc(t0), 4500, t0);
+  chatAller(V, o, chatSol(V, x - 95 * s, y + 4), function(){
     if(!V.bain) return;
-    chatBouger(V, o, chatSol(V, x, y - 4), 'saute', function(){
+    /* hop, dedans : ses pattes au fond du baquet (on ne les voit plus), l'eau jusqu'à la poitrine */
+    chatBouger(V, o, chatSol(V, x, y - BAQUET.pied * s), 'saute', function(){
       var d = V.elO[o.id];
       if(!V.bain || !d) return;
       st.gauche = false; d.classList.remove('at-c-gauche');
-      chatPose(V, o, 'assis'); d.classList.add('at-x-agace', 'at-dans-bain'); d.style.zIndex = parseInt(el.style.zIndex, 10) - 1;
-      flotter(V, o, 'Mmmrrr…');
-      var t = nomChat(o) + ' est dans son bain… l\'air pas du tout convaincu. Frotte-la doucement pour faire mousser !';
-      toast(V, '<b>🛁</b> ' + esc(t), 6000, t);
+      chatPose(V, o, 'assis'); d.classList.add('at-x-agace', 'at-dans-bain');
+      var zc = parseInt(d.style.zIndex, 10) || z0;
+      dos.style.zIndex = zc - 1; el.style.zIndex = zc + 1;
+      /* plouf ! des gouttes, l'eau qui tremble */
+      son(V, 'plouf'); flotter(V, o, 'Plouf !');
+      el.classList.add('at-plouf'); dos.classList.add('at-plouf'); apres(V, 700, function(){ el.classList.remove('at-plouf'); dos.classList.remove('at-plouf'); });
+      var F = cadreObjet(V, o.id);
+      if(F) for(var i = 0; i < 8; i++){ var g = document.createElement('i'); g.className = 'at-goutte'; g.style.left = pX(V, x + (Math.random() - 0.5) * 120 * s); g.style.top = pY(V, y - (52 + Math.random() * 20) * s); g.style.setProperty('--dx', ((Math.random() - 0.5) * 90).toFixed(0) + 'px'); V.calque.appendChild(g); (function(g){ apres(V, 950, function(){ g.remove(); }); })(g); }
+      var t = nomChat(o) + ' est dans son baquet, l\'air pas du tout convaincu. Frotte-la doucement pour faire mousser !';
+      apres(V, 600, function(){ if(V.bain) toast(V, '<b>🛁</b> ' + esc(t), 6000, t); });
       veilleBain(V);
     });
   });
@@ -8230,11 +8389,13 @@ function sortieBain(V, propre){
   var o = B.o, d = V.elO[o.id], st = chatEtat(V, o);
   if(st.caresse) st.caresse.outil = null;
   if(d) d.classList.remove('at-x-agace', 'at-dans-bain');
-  var p = chatPos(V, o);
-  chatBouger(V, o, chatSol(V, p.x - 120, p.y + 14), 'saute', function(){
+  var p = chatPos(V, o), yb = B.y || p.y, s = echelleSol(yb), sens = p.x < (solXmin(V, yb) + solXmax(V, yb)) / 2 ? 1 : -1;
+  /* elle bondit hors du baquet, en avant, du côté où il y a de la place, et s'ébroue : des gouttes partout, des petites flaques qui sèchent */
+  chatBouger(V, o, chatSol(V, p.x + sens * 125 * s, yb + 26 * s), 'saute', function(){
     expression(V, o, 'at-x-secoue', 900); sonMimi(V, 'secoue');
-    var F = cadreObjet(V, o.id);
-    if(F) for(var i = 0; i < 7; i++){ var g = document.createElement('i'); g.className = 'at-goutte'; g.style.left = pX(V, F.x + (Math.random() - 0.5) * F.w * 0.8); g.style.top = pY(V, F.y - F.h * (0.3 + Math.random() * 0.5)); g.style.setProperty('--dx', ((Math.random() - 0.5) * 80).toFixed(0) + 'px'); V.calque.appendChild(g); (function(g){ apres(V, 900, function(){ g.remove(); }); })(g); }
+    var F = cadreObjet(V, o.id), q = chatPos(V, o), zf = Math.round(q.z * 5) - 2;
+    if(F) for(var i = 0; i < 9; i++){ var g = document.createElement('i'); g.className = 'at-goutte'; g.style.left = pX(V, F.x + (Math.random() - 0.5) * F.w * 0.9); g.style.top = pY(V, F.y - F.h * (0.3 + Math.random() * 0.5)); g.style.setProperty('--dx', ((Math.random() - 0.5) * 90).toFixed(0) + 'px'); V.calque.appendChild(g); (function(g){ apres(V, 950, function(){ g.remove(); }); })(g); }
+    [[-34, 4], [26, 8], [-6, 14]].forEach(function(f, k){ apres(V, 250 + k * 120, function(){ flaqueEau(V, q.x + f[0] * s, q.y + f[1] * s, zf); }); });
     if(propre){
       apres(V, 900, function(){ chatPose(V, o, 'pain'); expression(V, o, 'at-c-ronron', 2200); coeursChat(V, o); chatPlanifier(V, o, 4500); });
       soigner(V, o, 'bain', 14, 'propre');
@@ -8242,27 +8403,77 @@ function sortieBain(V, propre){
       toast(V, '<b>🛁 ✨</b> ' + esc(t), 5000, t);
     } else {
       chatPose(V, o, 'assis'); chatPlanifier(V, o, 2600);
-      var t2 = nomChat(o) + ' a sauté hors de la baignoire, toute mouillée ! On réessaiera plus tard.';
+      var t2 = nomChat(o) + ' a sauté hors du baquet, toute mouillée ! On réessaiera plus tard.';
       toast(V, '<b>🛁 💨</b> ' + esc(t2), 4500, t2);
     }
   });
-  anim(B.el, [{opacity:1}, {opacity:0, transform:'translate(-50%,-100%) scale(.6)'}], {duration:600, delay:500, fill:'forwards'});
-  apres(V, 1200, function(){ B.el.remove(); });
+  [B.el, B.dos].forEach(function(e){ if(!e) return; anim(e, [{opacity:1}, {opacity:0, transform:'translate(-50%,-100%) scale(.6)'}], {duration:600, delay:700, fill:'forwards'}); });
+  apres(V, 1400, function(){ B.el.remove(); if(B.dos) B.dos.remove(); });
 }
 /* Les friandises : elle donne la patte, puis croque (pas plus d'une fois toutes les 90 secondes) */
 function donnerFriandise(V){
   var o = chatJoueur(V), t = tama(V), now = Date.now();
-  if(!o) return;
+  if(!o || V.bain) return;      /* (pas pendant son bain) */
   if(t.friand && now - t.friand < 90000 && now > t.friand){ var tx = 'Encore ? Gare au petit ventre tout rond ! ' + nomChat(o) + ' en aura une autre tout à l\'heure.'; toast(V, '<b>🍬</b> ' + esc(tx), 4200, tx); return; }
   t.friand = now;
   if(chatSurMeuble(V, o)){ chatAller(V, o, chatSolVisible(V), function(){ friandiseSuite(V, o); }); return; }
   friandiseSuite(V, o);
 }
+/* LA FRIANDISE QU'ON VOIT VOLER (17 novembre ; Romain, le 16 : « Les friandises, quand on les lance, on les voit pas ») : un petit
+   biscuit en forme de poisson part du bouton 🐾, vole en cloche en tournant ; elle le suit des yeux, bondit et l'attrape au vol (« Crac ! »),
+   croque, se lèche les babines. Une fois sur quatre, elle le rate : il rebondit par terre devant elle ; elle se tapit, remue les fesses…
+   et lui saute dessus. */
+var BISCUIT = '<svg viewBox="0 0 30 18" aria-hidden="true"><path d="M2.5,9 C6.5,2 16,1 21,5.6 L27.4,1.6 L26,9 L27.4,16.4 L21,12.4 C16,17 6.5,16 2.5,9 Z" fill="#d98a3d" stroke="#24182e" stroke-width="1.8" stroke-linejoin="round"/>' +
+  '<circle cx="8.6" cy="8" r="1.4" fill="#24182e"/><path d="M13,5.6 Q15.4,9 13,12.4 M17,6.6 Q18.8,9 17,11.4" stroke="#a5602a" stroke-width="1.3" fill="none" stroke-linecap="round"/><path d="M6,6 Q9,4 12,4.4" stroke="#f3c48c" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg>';
+/* un point de l'écran → la pièce (unités du monde) */
+function versMonde(V, cx, cy){ var r = V.piece.getBoundingClientRect(); return {x:(cx - r.left + V.pan.x) / V.k + V.vb.x0, y:(cy - r.top + V.pan.y) / V.k + V.vb.y0}; }
 function friandiseSuite(V, o){
-  chatPose(V, o, 'assis'); expression(V, o, 'at-x-joue', 900); flotter(V, o, '🍬'); sonMimi(V, 'trille');
-  apres(V, 700, function(){ chatPose(V, o, 'salut'); });
-  apres(V, 1600, function(){ chatPose(V, o, 'mange'); sonMimi(V, 'friandise'); });
-  apres(V, 2900, function(){ chatPose(V, o, 'lave'); expression(V, o, 'at-x-langue', 1200); coeursChat(V, o); soigner(V, o, 'friandises', 8, 'faim', 15); chatPlanifier(V, o, 3000); });
+  var st = chatEtat(V, o), r = pantinDe(V, o), d = V.elO[o.id];
+  chatPose(V, o, 'assis'); expression(V, o, 'at-x-joue', 900); sonMimi(V, 'trille');
+  var bt = V.elMimi && V.elMimi.getBoundingClientRect(), te = r && r.point('tete'), p = chatPos(V, o), s = p.s || 1;
+  if(!bt || !te || !d || MOINS_MOUV){ friandiseManger(V, o, true); return; }
+  var dep = versMonde(V, bt.left + bt.width / 2, bt.top + bt.height / 2), tete = versMonde(V, te[0], te[1]);
+  var rate = Math.random() < 0.25, sens = st.gauche ? -1 : 1;
+  /* l'arrivée : juste au-dessus de sa tête, là où sera sa gueule au sommet du bond — ou par terre, devant elle */
+  var arr = rate ? {x:p.x + sens * 70 * s, y:p.y + 10 * s} : {x:tete.x + sens * 8 * s, y:tete.y - 26 * s};
+  var b = document.createElement('div'); b.className = 'at-biscuit'; b.innerHTML = BISCUIT;
+  b.style.width = pW(V, 30 * s); b.style.zIndex = 99050;
+  V.calque.appendChild(b);
+  var T = rate ? 1000 : 860, haut = 150 + Math.abs(arr.x - dep.x) * 0.15, kf = [];
+  for(var i = 0; i <= 14; i++){ var u = i / 14, x = dep.x + (arr.x - dep.x) * u, y = dep.y + (arr.y - dep.y) * u - haut * 4 * u * (1 - u); kf.push({left:pX(V, x), top:pY(V, y), transform:'translate(-50%,-50%) rotate(' + Math.round(u * 540) + 'deg)', offset:u}); }
+  if(rate){ kf.forEach(function(k){ k.offset = k.offset * 0.72; });
+    [[0.82, 18], [0.9, 0], [0.95, 6], [1, 0]].forEach(function(q){ kf.push({left:pX(V, arr.x + sens * q[0] * 10 * s), top:pY(V, arr.y - q[1] * s), transform:'translate(-50%,-50%) rotate(' + (540 + q[0] * 90) + 'deg)', offset:q[0]}); }); }
+  var a = anim(b, kf, {duration:T, easing:'linear', fill:'forwards'});
+  sonMimi(V, 'friandise');
+  if(r){ var regarde = function(){ var q = b.getBoundingClientRect(); if(q.width) r.regard(q.left + q.width / 2, q.top + q.height / 2, 400); }; for(var k = 1; k <= 6; k++) apres(V, k * T / 7, regarde); }
+  if(!rate){
+    /* elle bondit, la gueule ouverte, et l'attrape au sommet */
+    apres(V, T - 430, function(){ if(chatEtat(V, o).tenu) return; gesteChat(V, o, 'bond', {h:24}); expression(V, o, 'at-x-miaou', 520); });
+    apres(V, T, function(){
+      b.remove();
+      if(chatEtat(V, o).tenu){ friandiseManger(V, o, false); return; }
+      flotter(V, o, 'Crac !'); sonMimi(V, 'croque');
+      var q = r.point('tete'); if(q) for(var m = 0; m < 4; m++) particule(V, {clientX:q[0] + sens * 10, clientY:q[1] + 12}, 'at-part-miette', '', 900);
+      apres(V, 450, function(){ friandiseManger(V, o, false); });
+    });
+    return;
+  }
+  /* ratée : elle se tapit, remue les fesses… et lui saute dessus */
+  apres(V, T * 0.75, function(){ if(chatEtat(V, o).tenu) return; expression(V, o, 'at-c-tapi at-c-fesses', 1150); flotter(V, o, 'Oups…'); });
+  apres(V, T + 1050, function(){
+    if(chatEtat(V, o).tenu){ b.remove(); return; }
+    chatBouger(V, o, chatSol(V, arr.x - sens * 18 * s, arr.y + 2 * s), 'saute', function(){
+      b.remove(); flotter(V, o, 'Attrapée !'); sonMimi(V, 'croque');
+      friandiseManger(V, o, true);
+    });
+  });
+}
+/* elle croque, se lèche les babines ; ça compte comme une friandise (soigner) — par terre : penchée sur sa friandise */
+function friandiseManger(V, o, parTerre){
+  if(parTerre){ chatPose(V, o, 'mange'); sonMimi(V, 'friandise'); }
+  else { chatPose(V, o, 'assis'); gesteChat(V, o, 'croque'); apres(V, 1200, function(){ var r = pantinDe(V, o); if(r) r.sans('croque'); }); }
+  soigner(V, o, 'friandises', 8, 'faim', 15);
+  apres(V, parTerre ? 1300 : 1250, function(){ chatPose(V, o, 'lave'); expression(V, o, 'at-x-langue', 1200); coeursChat(V, o); chatPlanifier(V, o, 3000); });
 }
 
 /* ---------- L'appareil photo et l'album ---------- */
@@ -8596,6 +8807,10 @@ function placeLibre(V, l, dl, h, ev){
   function cache(x, y){
     if(ev && Math.abs(x - ev.x) < ev.r && y < ev.y + 30 && y > ev.y - ev.r * 2.6) return true;      /* (ni derrière elle, ni sous sa bulle) */
     var s = echelleSol(y), bx = [x - dl * s, y - h * s, x + dl * s, y], aire = (bx[2] - bx[0]) * (bx[3] - bx[1]);
+    /* (17 novembre) ni sur la cueillette et les flacons, devant la porte de l'atelier (leurs bulles passent devant tout : le baquet s'y
+       est retrouvé caché, sur un téléphone), ni sous les boutons du bas de l'écran */
+    if(!V.salle && inter(bx, [TAS.x - 230, TAS.y - 130, TAS.x + 230, TAS.y + FLACONS.dy + TAS.dy + 30]) > aire * 0.06) return true;
+    if(sousBoutons(V, x, y) || sousBoutons(V, x - dl * s * 0.8, y) || sousBoutons(V, x + dl * s * 0.8, y)) return true;
     /* (les cartons pas encore ouverts cachent aussi : ils sont tout devant — vu avec les colis du parc à chat, sur un téléphone) */
     if(boitesCartons(V).some(function(b){
       if(b[3] <= y) return false;
@@ -9131,6 +9346,8 @@ function finPreparation(V, rid, res){
   if(nv.length) brillerFlacons(V, nv);
   /* (étape 4) le chaudron est un mini-jeu de l'Alchimiste : la première réussite donne un accessoire au chat */
   if(res.reussi && gagnerAcc(V.etat, 'chaudron')){ changer(V); annoncerAcc(V); }
+  /* (17 novembre) une potion finie au chaudron, c'est du travail d'Alchimiste : un habit de la malle de Mimi */
+  if(res.reussi) apres(V, 2600, function(){ travauxMaj(V, ['ch:' + enqueteNo(V) + ':' + rid + ':' + Date.now()]); });
   /* un petit effet sur le chaudron de la pièce */
   if(V.elO.ch){
     V.elO.ch.classList.add(res.reussi ? 'at-chp-ok' : 'at-chp-rate');

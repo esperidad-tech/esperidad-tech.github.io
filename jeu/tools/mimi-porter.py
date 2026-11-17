@@ -325,11 +325,13 @@ with sync_playwright() as p:
         pg.mouse.up(); pg.wait_for_timeout(300)
         verifier('at-leve' not in cl and not c['tenu'], 'la brosse en main : le doigt qui s\'en va ne la soulève pas')
         # (on finit le coup de brosse, comme un joueur : la brosse se range toute seule — sinon elle resterait en main pour le bain)
-        q = sur_chat(pg, cid, 'dos', bouger=False); q2 = point(pg, cid, 'h') or (q[0] - 40, q[1])
-        pg.mouse.move(*q); pg.mouse.down()
-        for i in range(16):
-            pg.mouse.move(*(q2 if i % 2 == 0 else q), steps=4); pg.wait_for_timeout(70)
-        pg.mouse.up(); pg.wait_for_timeout(1200)
+        for i in range(14):      # (de sa tête vers sa queue : dans le sens du poil)
+            if not pg.evaluate("() => Atelier._vue()._mimi().outil"): break
+            t1, h1 = point(pg, cid, 's'), point(pg, cid, 'h')
+            pg.mouse.move(t1[0] - (h1[0] - t1[0]) * 0.4, t1[1] - (h1[1] - t1[1]) * 0.4); pg.mouse.down()
+            pg.mouse.move(h1[0] + (h1[0] - t1[0]) * 0.3, h1[1] + (h1[1] - t1[1]) * 0.3, steps=6); pg.wait_for_timeout(90)
+            pg.mouse.up(); pg.wait_for_timeout(140)
+        pg.wait_for_timeout(1200)
     else:
         print('   (la brosse : bouton pas trouvé)', ok)
     # --- le bain : on frotte encore quand elle bondit dehors — on ne la rattrape pas en plein saut, et elle finit toute propre ---
