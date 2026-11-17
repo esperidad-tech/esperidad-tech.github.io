@@ -1260,7 +1260,7 @@ function idxChat(p){ var i = CHATS.indexOf(p); return i < 0 ? 0 : i; }
 /* le numéro d'un chat, remis d'aplomb (son pelage, ses yeux : MimiPantin.peau) — jamais « % 3 » : il y a plus de trois pelages maintenant */
 function vChat(v){ var q = MP.peau(v); return MP.numero(q.p, q.y); }
 /* ses accessoires, dessinés autour du milieu de sa tête */
-function accPantin(acc){ acc = acc || {}; return {cou:acc.cou && ACC[acc.cou] ? dessinAcc(acc.cou, 0, 0) : '', tete:acc.tete && ACC[acc.tete] ? dessinAcc(acc.tete, 0, 0) : ''}; }
+function accPantin(acc){ acc = acc || {}; var un = function(k){ return acc[k] && ACC[acc[k]] && ACC[acc[k]].slot === k ? dessinAcc(acc[k], 0, 0) : ''; }; return {cou:un('cou'), tete:un('nez') + un('tete')}; }
 /* sa tête seule (les petits portraits : la barre de Mimi, la garde-robe, la boutique) ; (cx, cy) : le milieu de la tête */
 /* (p : le numéro du chat — ou, pour l'ancien dessin, sa palette) */
 function teteChat(p, cx, cy, acc){ return '<g transform="translate(' + f1(cx) + ',' + f1(cy) + ')">' + MP.tete(Array.isArray(p) ? idxChat(p) : vChat(p), accPantin(acc)) + '</g>'; }
@@ -4577,7 +4577,9 @@ function prendreObjet(V, e, o){
   var chat = o.t === 'chat', car = {l:0, n:0, x:x0, y:y0};
   function surChat(ev){ var r = d.getBoundingClientRect(), mx = r.width * 0.25 + 12, my = r.height * 0.25 + 12; return ev.clientX > r.left - mx && ev.clientX < r.right + mx && ev.clientY > r.top - my && ev.clientY < r.bottom + my; }
   /* le doigt est-il parti pour de bon ? (à plus d'un bon bout de doigt de son pelage : le pantin sait où elle est vraiment) */
-  function loinChat(ev){ var r = pantinDe(V, o), ec = r ? r.ecart(ev.clientX, ev.clientY) : null; return ec === null ? !surChat(ev) : ec > PORTER_LOIN; }
+  /* (dix fois par seconde au plus : c'est une mesure qui coûte, et le doigt bouge bien plus souvent — « sans que ça rame ») */
+  var loinT = 0;
+  function loinChat(ev){ var now = Date.now(); if(now - loinT < 90) return false; loinT = now; var r = pantinDe(V, o), ec = r ? r.ecart(ev.clientX, ev.clientY) : null; return ec === null ? !surChat(ev) : ec > PORTER_LOIN; }
   d.classList.add('at-appui');
   function lever(ev){
     etat = 'glisse';
@@ -4604,9 +4606,9 @@ function prendreObjet(V, e, o){
       else lever(ev);
     }
     if(etat === 'caresse'){
-      /* le doigt s'en va pour de bon : les caresses s'arrêtent et on l'emmène — sauf si c'est elle qui est partie (« Pas la queue ! »),
-         ou si elle est occupée ailleurs */
-      if(chatEtat(V, o).caresse && chatPortable(V, o) && loinChat(ev)){ caresseFin(V, o); lever(ev); return; }
+      /* le doigt s'en va pour de bon : les caresses s'arrêtent et on l'emmène — sauf si c'est ELLE qui est partie (« Pas la queue ! »,
+         le bond hors du bain alors qu'on frotte encore : ce serait la rattraper en plein saut), ou si elle est occupée ailleurs */
+      if(loinChat(ev) && chatPortable(V, o, true)){ caresseFin(V, o); lever(ev); return; }
       if(surChat(ev)){
         var dl = Math.hypot(ev.clientX - car.x, ev.clientY - car.y); car.x = ev.clientX; car.y = ev.clientY;
         caresseBouge(V, o, ev, dl);
@@ -6059,9 +6061,14 @@ function chatSaisi(V, o){
 }
 /* Peut-on l'emmener, là, tout de suite ? Pas quand elle est occupée ailleurs (elle sort, elle passe, elle est dans sa cabane : st.tenu),
    ni avec la brosse en main, dans son bain ou en plein jeu. */
-function chatPortable(V, o){
+/* caressee : le doigt la caressait et s'éloigne — il faut alors que ce soit bien LUI qui s'en aille : elle n'a pas bougé depuis le
+   début des caresses (C.ou), et elle n'est pas en train de bondir ou de marcher toute seule. */
+function chatPortable(V, o, caressee){
   var st = chatEtat(V, o);
-  return !st.tenu && !st.depart && !st.passe && !st.cabane && !st.chasse && !V.outil && !V.bain && !V.jouet && !GUIDE && V.mode === 'ranger' && !V.arrete;
+  if(st.tenu || st.depart || st.passe || st.cabane || st.chasse || V.outil || V.bain || V.jouet || GUIDE || V.mode !== 'ranger' || V.arrete) return false;
+  if(!caressee) return !st.anim;
+  var C = st.caresse, p = C && C.ou ? chatPos(V, o) : null;
+  return !!p && !st.anim && Math.abs(p.x - C.ou.x) + Math.abs(p.y - C.ou.y) < 8;
 }
 /* On la soulève : une sieste s'arrête là (un petit bâillement), elle se laisse porter, les yeux tout ronds */
 function chatPortee(V, o){
@@ -6590,6 +6597,7 @@ var FAMILLES = [
   {k:'recre', l:['j:plume', 'j:laser', 'j:souris', 'j:grelot', 'j:carton', 'j:herbe'], fin:'Sa caisse à jouets est complète !'},
   {k:'belle', d:2, l:['s:brosse', 's:bain', 'a:noeud_rose', 'a:noeud_bleu', 'a:fleurs', 'a:clochette', 'p:4', 'y:2'], fin:'Elle a tout ce qu\'il faut pour se faire belle !'},
   {k:'reine', d:2, l:['s:griffoir', 'c:coussin', 'a:perles', 'a:arc', 'a:couronne', 'a:mage', 'p:3'], fin:'Elle a tout ce qu\'il faut pour vivre comme une reine !'},
+  {k:'rigolo', l:cles(MP.HABITS || {}).map(function(id){ return 'a:' + id; }), fin:'Sa malle à déguisements déborde : elle a tous les habits rigolos du monde !'},
   {k:'envies', l:['a:collier_rouge', 'a:collier_bleu', 'a:collier_vert', 'a:noeud_pap_violet', 'a:noeud_pap_jaune', 'a:foulard', 'a:sorciere', 'a:beret', 'a:fete', 'p:6', 'y:4'], fin:'Sa garde-robe de tous les jours est complète !'}
 ];
 function aChezElle(e, t){      /* (posé dans une pièce, encore dans un carton, ou rangé dans la réserve) */
@@ -7319,6 +7327,10 @@ var ACC = {
   mage:{slot:'tete', f:'sorciere', c:'#2c3572', nom:'Chapeau de magicien étoilé', rare:true, etoiles:true}
 };
 var ACC_RARE = 0.15;
+/* (17 novembre) les habits rigolos (mimi-habits.js) : une vingtaine de plus, avec leurs petites animations ; h : dessiné par MimiPantin.habit ;
+   art : son nom avec son article, pour le conteur ; pl : au pluriel (« des lunettes ») */
+cles(MP.HABITS || {}).forEach(function(id){ var h = MP.HABITS[id]; ACC[id] = {slot:h.slot, f:'habit', c:'#fff', nom:h.nom, art:h.art, pl:h.pl, h:1}; });
+var ACC_OU = MP.HABITS_OU || [['cou', 'Autour du cou'], ['tete', 'Sur la tête']];
 
 /* (16 novembre : plus de barre posée sur le chat — le toucher lui fait faire une mimique ; son bonheur est dans la barre de Mimi 🐾) */
 function bonheurHTML(o){ return ''; }
@@ -7350,8 +7362,10 @@ function mjGagne(S, type){
     return id ? {id:id, nom:ACC[id].nom, rare:!!ACC[id].rare} : null;
   }catch(er){ return null; }
 }
+/* « Il attend », « Elle attend », « Elles attendent »… : selon l'habit */
+function attendAcc(id){ var t = articleAcc(id); return /^des /.test(t) ? (/^des (antennes|oreilles|lunettes)/.test(t) ? 'Elles attendent' : 'Ils attendent') : /^une /.test(t) ? 'Elle attend' : 'Il attend'; }
 function nomAcc(id){ var a = ACC[id]; return a ? a.nom.charAt(0).toLowerCase() + a.nom.slice(1) : ''; }
-function articleAcc(id){ var a = ACC[id]; if(!a) return ''; return (/^(Couronne|Petit foulard)/.test(a.nom) ? (a.nom.indexOf('Couronne') === 0 ? 'une ' : 'un ') : /^(Collier|Nœud|Chapeau|Béret)/.test(a.nom) ? 'un ' : 'un ') + nomAcc(id); }
+function articleAcc(id){ var a = ACC[id]; if(!a) return ''; if(a.art) return a.art; return (/^(Couronne|Petit foulard)/.test(a.nom) ? (a.nom.indexOf('Couronne') === 0 ? 'une ' : 'un ') : /^(Collier|Nœud|Chapeau|Béret)/.test(a.nom) ? 'un ' : 'un ') + nomAcc(id); }
 /* Les nouveautés gagnées pendant les mini-jeux : annoncées une fois, à l'ouverture de l'atelier */
 function annoncerAcc(V){
   var G = garde(V.etat), l = G.neuf.filter(function(id){ return G.annonce.indexOf(id) < 0; });
@@ -7367,6 +7381,7 @@ function couleurAcc(a){ return a.c === 'arc' ? 'url(#atg-arc)' : a.c; }
 function dessinAcc(id, cx, cy){
   var a = ACC[id];
   if(!a) return '';
+  if(a.h){ var hb = MP.habit(id); return cx || cy ? '<g transform="translate(' + f1(cx) + ',' + f1(cy) + ')">' + hb + '</g>' : hb; }
   var c = couleurAcc(a), s = '', f1c = function(v){ return f1(v); };
   if(a.slot === 'cou'){
     var d = 'M' + f1c(cx - 15) + ',' + f1c(cy + 10) + ' Q' + f1c(cx) + ',' + f1c(cy + 21) + ' ' + f1c(cx + 15) + ',' + f1c(cy + 10);
@@ -7404,7 +7419,8 @@ function accDe(o, slot){ var a = o && o.acc && o.acc[slot]; return a && ACC[a] ?
 /* La petite image d'un accessoire (dans la garde-robe) : sur une tête de chat */
 function vignetteAcc(id, v){
   var a = ACC[id];
-  return '<svg viewBox="19 -28 76 78" aria-hidden="true">' + teteChat(vChat(v), 57, 18, {cou:a && a.slot === 'cou' ? id : null, tete:a && a.slot === 'tete' ? id : null}) + '</svg>';
+  var seul = {}; if(a) seul[a.slot] = id;
+  return '<svg viewBox="19 -28 76 78" aria-hidden="true">' + teteChat(vChat(v), 57, 18, seul) + '</svg>';
 }
 function ouvrirGarde(V, oid){
   var o = V.parId[oid] || chatsDe(V)[0];
@@ -7436,7 +7452,7 @@ function htmlGarde(V){
       PX.y.slice().sort(function(a, b){ return a - b; }).map(function(j){
         return '<button type="button" class="at-garde-it' + (q.y === j ? ' on' : '') + '" data-peau="y:' + j + '" aria-label="' + esc(MP.YEUX[j][2]) + '">' + vg(MP.numero(q.p, j)) + '<small>' + esc(MP.YEUX[j][2]) + '</small></button>'; }).join('') + verrou(resteY) + '</div></div>';
   }
-  [['cou', 'Autour du cou'], ['tete', 'Sur la tête']].forEach(function(sl){
+  ACC_OU.forEach(function(sl){
     var porte = accDe(o, sl[0]), mes = G.a.filter(function(id){ return ACC[id].slot === sl[0]; }), tous = cles(ACC).filter(function(id){ return ACC[id].slot === sl[0]; });
     corps += '<div class="at-garde-slot"><b>' + esc(sl[1]) + '</b><div class="at-garde-l">' +
       '<button type="button" class="at-garde-it' + (!porte ? ' on' : '') + '" data-acc="" data-slot="' + sl[0] + '" aria-label="Rien"><span class="at-garde-rien">✖</span><small>Rien</small></button>' +
@@ -8011,7 +8027,7 @@ function caresseDebut(V, o, ev){
   if(st.anim) chatArreter(V, o);
   if(st.t){ clearTimeout(st.t); st.t = null; }
   if(/^(marche|saute|tape|lave|mange|salut)$/.test(st.pose)) chatPose(V, o, 'assis');
-  st.caresse = {zone:null, t0:Date.now(), tz:Date.now(), gain:0, coeur:0, ronron:0, dist:0, n:0, outil:V.outil ? V.outil.t : null, k:lasse(V, 'caresse')};
+  st.caresse = {zone:null, t0:Date.now(), tz:Date.now(), gain:0, coeur:0, ronron:0, dist:0, n:0, outil:V.outil ? V.outil.t : null, k:lasse(V, 'caresse'), ou:chatPos(V, o)};
   if(st.caresse.outil){ outilBouge(V, o, ev, 0); }
   else caresseZone(V, o, zoneChat(V, o, ev));
   caresseTic(V, o);
@@ -8648,7 +8664,7 @@ function ouvrirCoffret(V){
   } else if(k === 'a' && ACC[id]){
     var G = garde(V.etat);
     if(G.a.indexOf(id) < 0){ G.a.push(id); G.neuf.push(id); G.annonce.push(id); }
-    ic = '🎀'; tx = dans + articleAcc(id) + ' ! Il attend dans sa garde-robe 🎀, dans sa barre 🐾.';
+    ic = '🎀'; tx = dans + articleAcc(id) + ' ! ' + attendAcc(id) + ' dans sa garde-robe 🎀, dans sa barre 🐾.';
   } else if(k === 'n' && NOURS[id]){
     if(m.nour.indexOf(id) < 0) m.nour.push(id);
     ic = NOURS[id].ic; tx = dans + NOURS[id].nom.toLowerCase() + ' ! La prochaine fois que tu rempliras sa gamelle, tu pourras choisir.';

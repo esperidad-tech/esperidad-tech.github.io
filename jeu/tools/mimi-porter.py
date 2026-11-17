@@ -9,7 +9,7 @@ plus la porter. Du coup, on ne peut pas réussir ce qu'elle demande. »). Le rob
 - le coussin aussi est un coin douillet ;
 - endormie, on la soulève : elle se réveille ;
 - au téléphone, le panier hors de l'écran : au bord, la pièce défile, on arrive au panier ;
-- la brosse en main : le doigt qui déborde ne la soulève pas ;
+- la brosse en main : le doigt qui déborde ne la soulève pas ; le bain : on frotte encore quand elle bondit dehors, on ne la rattrape pas ;
 - aucun message d'erreur.
    BRUMEVAL_DIST=<dossier construit> python3 tools/mimi-porter.py [iphone]"""
 import sys, os, time
@@ -271,6 +271,24 @@ with sync_playwright() as p:
         verifier('at-leve' not in cl and not c['tenu'], 'la brosse en main : le doigt qui s\'en va ne la soulève pas')
     else:
         print('   (la brosse : bouton pas trouvé)', ok)
+    # --- le bain : on frotte encore quand elle bondit dehors — on ne la rattrape pas en plein saut, et elle finit toute propre ---
+    # (c'est le robot de Mimi, au téléphone, qui l'a vu : le doigt « loin d'elle » la soulevait au moment où ELLE s'en allait)
+    pg.evaluate(f"() => {{ var a = {V}; a._finJouet(); {CHAT}.b.propre = 30; }}")
+    calme(pg, cid); voir(pg, cid)
+    pg.evaluate("() => { var b = document.querySelector('#atelier-ici .at-mimi-bt'); if(b && document.querySelector('#atelier-ici .at-mimi-barre').hidden) b.dispatchEvent(new MouseEvent('click', {bubbles:true})); }"); pg.wait_for_timeout(400)
+    pg.evaluate("() => { var b = document.querySelector('#atelier-ici .at-mimi-barre [data-mimi=\"s:bain\"]'); if(b) b.dispatchEvent(new MouseEvent('click', {bubbles:true})); }"); pg.wait_for_timeout(3600)
+    if pg.evaluate("() => !!document.querySelector('#atelier-ici .at-bain')"):
+        voir(pg, cid); pg.wait_for_timeout(600)
+        a = point(pg, cid, 'h'); bpt = point(pg, cid, 's'); levee = False
+        pg.mouse.move(*a); pg.mouse.down()
+        for i in range(44):
+            pg.mouse.move(*(bpt if i % 2 == 0 else a), steps=4); pg.wait_for_timeout(60)
+            if 'at-leve' in classes(pg, cid) or chat(pg, cid)['tenu']: levee = True
+        pg.mouse.up(); pg.wait_for_timeout(2400)
+        pr = pg.evaluate(f"() => {CHAT}.b.propre")
+        verifier(not levee, 'le bain : on frotte encore quand elle bondit dehors — elle n\'est pas rattrapée en plein saut')
+        verifier(pr >= 99 and not pg.evaluate("() => !!document.querySelector('#atelier-ici .at-bain')"), f'… et elle en sort toute propre ({pr})')
+    else: verifier(False, 'le bain arrive')
     print('ERREURS :', erreurs[:6])
     verifier(not erreurs, 'aucun message d\'erreur')
     b.close()

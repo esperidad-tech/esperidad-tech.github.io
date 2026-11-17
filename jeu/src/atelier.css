@@ -963,6 +963,46 @@
 /* les accessoires rares brillent */
 .at-acc-brille{animation:at-acc-brille 2.2s ease-in-out infinite}
 @keyframes at-acc-brille{0%,100%{filter:none}50%{filter:brightness(1.35) drop-shadow(0 0 2px #fff6a8)}}
+/* LES HABITS RIGOLOS DE MIMI (mimi-habits.js ; Romain, 17 novembre : « avec des petites animations ») : chaque animation ne touche qu'un
+   morceau de l'habit, jamais le pantin. Par à-coups : entre deux, rien ne bouge (rien à redessiner). Que des déplacements et des fondus. */
+.mi-habit [class^="mi-h-"]{transform-box:fill-box;transform-origin:50% 50%}
+.mi-habit .mi-h-helice{animation:mi-h-helice 3.8s linear infinite}
+@keyframes mi-h-helice{0%,58%{transform:scaleX(1)}63%{transform:scaleX(-1)}68%{transform:scaleX(1)}73%{transform:scaleX(-1)}78%{transform:scaleX(1)}84%{transform:scaleX(-1)}91%,100%{transform:scaleX(1)}}
+.mi-habit .mi-h-ressort,.mi-habit .mi-h-pompon{transform-origin:50% 100%;animation:mi-h-ressort 3.4s ease-in-out infinite}
+.mi-habit .mi-h-pompon{animation-duration:4.2s}
+@keyframes mi-h-ressort{0%,58%,100%{transform:rotate(0)}64%{transform:rotate(-13deg)}72%{transform:rotate(10deg)}80%{transform:rotate(-6deg)}88%{transform:rotate(3deg)}94%{transform:rotate(-1deg)}}
+.mi-habit .mi-h-plume{transform-origin:8% 100%;animation:mi-h-plume 4.4s ease-in-out infinite}
+.mi-habit .mi-h-pan{transform-origin:25% 0;animation:mi-h-plume 3.8s ease-in-out infinite}
+@keyframes mi-h-plume{0%,60%,100%{transform:rotate(0)}70%{transform:rotate(10deg)}82%{transform:rotate(-6deg)}92%{transform:rotate(2deg)}}
+.mi-habit .mi-h-souffle{transform-origin:50% 100%;animation:mi-h-souffle 3.6s ease-in-out infinite}
+@keyframes mi-h-souffle{0%,64%,100%{transform:scale(1)}76%{transform:scale(1.07,.92)}88%{transform:scale(.97,1.06)}}
+.mi-habit .mi-h-oreille{transform-origin:50% 100%;animation:mi-h-oreille 5s ease-in-out infinite}
+@keyframes mi-h-oreille{0%,52%,100%{transform:rotate(0)}60%{transform:rotate(58deg)}66%{transform:rotate(49deg)}72%,84%{transform:rotate(58deg)}93%{transform:rotate(-6deg)}}
+.mi-habit .mi-h-flotte{animation:mi-h-flotte 3.2s ease-in-out infinite}
+@keyframes mi-h-flotte{0%,56%,100%{transform:translateY(0)}72%{transform:translateY(-2.4px)}86%{transform:translateY(.8px)}}
+.mi-habit .mi-h-brille{animation:mi-h-brille 3s ease-in-out infinite}
+@keyframes mi-h-brille{0%,55%,100%{transform:scale(.2);opacity:0}70%{transform:scale(1.15);opacity:1}85%{transform:scale(.7);opacity:.8}}
+.mi-habit .mi-h-coucou{animation:mi-h-coucou 6s ease-in-out infinite}
+@keyframes mi-h-coucou{0%,56%,100%{transform:translateY(13px)}63%{transform:translateY(0)}68%{transform:translateY(1.6px)}73%,85%{transform:translateY(0)}91%{transform:translateY(13px)}}
+.mi-habit .mi-h-coucou2{animation:mi-h-coucou2 4.6s ease-in-out infinite}
+@keyframes mi-h-coucou2{0%,50%,100%{transform:translateY(5px)}58%{transform:translateY(0)}64%{transform:translateY(-1.6px)}70%{transform:translateY(0)}76%{transform:translateY(-1.6px)}82%{transform:translateY(0)}90%{transform:translateY(5px)}}
+.mi-habit .mi-h-gonfle{transform-origin:50% 0;animation:mi-h-gonfle 3.4s ease-in-out infinite}
+@keyframes mi-h-gonfle{0%,58%,100%{transform:scale(1)}68%{transform:scale(1.6,2)}78%{transform:scale(1)}86%{transform:scale(1.5,1.8)}94%{transform:scale(1)}}
+.mi-habit .mi-h-goutte{animation:mi-h-goutte 1.8s steps(4) infinite}
+@keyframes mi-h-goutte{0%{transform:translateY(0);opacity:0}15%{transform:translateY(1.4px);opacity:1}80%{transform:translateY(7.4px);opacity:1}100%{transform:translateY(9.4px);opacity:0}}
+.mi-habit .mi-h-flamme{transform-origin:50% 100%;animation:mi-h-flamme .9s steps(1) infinite}
+@keyframes mi-h-flamme{0%{transform:scale(1)}25%{transform:scale(.86,1.12) rotate(-5deg)}50%{transform:scale(1.08,.92)}75%{transform:scale(.9,1.1) rotate(5deg)}}
+.mi-habit .mi-h-fleur{animation:mi-h-fleur 4.2s ease-in-out infinite}
+@keyframes mi-h-fleur{0%,60%,100%{transform:scale(1)}70%{transform:scale(1.3)}80%{transform:scale(.94)}}
+.mi-habit .mi-h-pendule{transform-origin:50% 0;animation:mi-h-pendule 4s ease-in-out infinite}
+@keyframes mi-h-pendule{0%,50%,100%{transform:rotate(0)}60%{transform:rotate(11deg)}72%{transform:rotate(-8deg)}84%{transform:rotate(5deg)}93%{transform:rotate(-2deg)}}
+.mi-habit .mi-h-lampe{animation:mi-h-lampe 1.75s steps(1) infinite}
+@keyframes mi-h-lampe{0%{opacity:1}50%{opacity:.35}}
+.mi-habit .mi-h-reflet{animation:mi-h-reflet 4.5s ease-in-out infinite}
+@keyframes mi-h-reflet{0%,70%,100%{opacity:0}78%,88%{opacity:.95}}
+.mi-habit .mi-h-pouet{animation:mi-h-pouet 4s ease-in-out infinite}
+@keyframes mi-h-pouet{0%,62%,100%{transform:scale(1)}68%{transform:scale(1.32,.76)}76%{transform:scale(.9,1.14)}84%{transform:scale(1.06,.96)}}
+@media (prefers-reduced-motion: reduce){.mi-habit [class^="mi-h-"]{animation:none!important}}
 /* la garde-robe du chat */
 .at-f-garde .at-garde-haut{display:flex;align-items:center;gap:12px}
 .at-garde-chat{flex:none;width:110px;height:110px;border-radius:22px;background:#fff8e6;border:3px solid var(--contour);display:grid;place-items:center}

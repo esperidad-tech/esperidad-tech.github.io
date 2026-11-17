@@ -7,7 +7,7 @@ const SRC = path.join(__dirname, '..', 'src');
 const sortie = process.argv[2], types = (process.argv[3] || '').split(','), T = +(process.argv[4] || 260), NF = +(process.argv[5] || 3);
 const dom = new JSDOM('<!DOCTYPE html><body></body>', {runScripts:'outside-only'});
 const W = dom.window; W.requestAnimationFrame = () => 0;
-['mimi-dessin.js', 'mimi-vues.js', 'mimi-pantin.js', 'mimi-gestes.js'].forEach(f => W.eval(fs.readFileSync(path.join(SRC, f), 'utf8')));
+['mimi-dessin.js', 'mimi-vues.js', 'mimi-pantin.js', 'mimi-gestes.js', 'mimi-habits.js'].forEach(f => W.eval(fs.readFileSync(path.join(SRC, f), 'utf8')));
 let a = fs.readFileSync(path.join(SRC, 'atelier.js'), 'utf8');
 if(a.indexOf('window.Atelier = {') < 0) throw new Error('atelier.js : « window.Atelier = { » introuvable');
 a = a.replace('window.Atelier = {', 'window.Atelier = { _svgObjet:svgObjet, _defs:svgDefs,');

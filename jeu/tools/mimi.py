@@ -433,6 +433,7 @@ with sync_playwright() as p:
     # ============ LA JAUGE SEULE (§12.69) : la barre de bonheur, les familles et les envies cachées, le coffret quand la barre est pleine ============
     CHAT = "M.S.atelier.objets.filter(function(x){ return x.t === 'chat'; })[0]"
     HABITS = ['collier_rouge', 'collier_bleu', 'collier_vert', 'clochette', 'noeud_pap_violet', 'noeud_pap_jaune', 'foulard', 'noeud_rose', 'noeud_bleu', 'sorciere', 'beret', 'fete', 'fleurs', 'perles', 'arc', 'couronne', 'mage']
+    RIGOLOS = pg.evaluate("() => Object.keys(MimiPantin.HABITS)")      # (17 novembre : les habits rigolos, la sixième famille — mimi-habits.py)
     pg.evaluate("() => { var g = document.querySelector('#atelier-ici .at-grim .at-fermer'); if(g) g.click(); }"); pg.wait_for_timeout(300)
     calme(pg, cid); voir_chat(pg, cid)
     pg.evaluate(f"""() => {{ var a = {V}, t = M.S.atelier.tama, o = {CHAT};
@@ -466,9 +467,9 @@ with sync_playwright() as p:
       e.mimi.jouets = v[0]; e.mimi.nour = v[1]; e.mimi.soins = v[2]; e.garde.a = v[3]; e.tama.recus = v[4]; e.mimi.peaux = px;
       return {{reste:r, coussins:coussins}}; }}""")
     tout = [c for k in f['reste'] for c in f['reste'][k]]
-    attendu = ['j:' + x for x in ['plume', 'laser', 'souris', 'grelot', 'carton', 'herbe']] + ['n:' + x for x in ['pate', 'poisson', 'festin']] + ['s:' + x for x in ['brosse', 'bain', 'friandises', 'griffoir']] + ['a:' + x for x in HABITS] + ['p:3', 'p:4', 'p:5', 'p:6', 'y:2', 'y:4'] + ([] if f['coussins'] else ['c:coussin'])
-    verifier(sorted(f['reste'].keys()) == ['belle', 'envies', 'recre', 'reine', 'ventre'] and sorted(tout) == sorted(attendu) and len(set(tout)) == len(tout),
-        f'cinq familles ; chaque jouet, plat, objet de soin et habit est dans une famille, une seule — et quatre pelages, deux couleurs d\'yeux ({ {k: len(v) for k, v in f["reste"].items()} })')
+    attendu = ['j:' + x for x in ['plume', 'laser', 'souris', 'grelot', 'carton', 'herbe']] + ['n:' + x for x in ['pate', 'poisson', 'festin']] + ['s:' + x for x in ['brosse', 'bain', 'friandises', 'griffoir']] + ['a:' + x for x in HABITS + RIGOLOS] + ['p:3', 'p:4', 'p:5', 'p:6', 'y:2', 'y:4'] + ([] if f['coussins'] else ['c:coussin'])
+    verifier(sorted(f['reste'].keys()) == ['belle', 'envies', 'recre', 'reine', 'rigolo', 'ventre'] and len(RIGOLOS) >= 18 and sorted(tout) == sorted(attendu) and len(set(tout)) == len(tout),
+        f'six familles (la sixième : les habits rigolos) ; chaque jouet, plat, objet de soin et habit est dans une famille, une seule — et quatre pelages, deux couleurs d\'yeux ({ {k: len(v) for k, v in f["reste"].items()} })')
     f = pg.evaluate(f"() => {V}._familles()")
     l = pg.evaluate(f"() => {{ var a = {V}, l = []; for(var i = 0; i < 60; i++) l.push(a._contenu()); return l; }}")
     reste = [c for k in f['reste'] for c in f['reste'][k]]
@@ -555,9 +556,9 @@ with sync_playwright() as p:
     # (toutes ses familles sont complètes, sauf le ventre plein, où il ne manque que le festin : le coffret sera doré)
     pg.evaluate(f"""() => {{ var e = M.S.atelier, a = {V};
       e.mimi.jouets = ['pelote', 'plume', 'laser', 'souris', 'grelot', 'carton', 'herbe']; e.mimi.soins = ['brosse', 'bain', 'friandises', 'griffoir', 'photo'];
-      e.mimi.nour = ['croquettes', 'pate', 'poisson']; e.garde.a = {json.dumps(HABITS)}; e.tama.recus = ['c:coussin']; e.mimi.peaux = {{p:[3, 4, 5, 6], y:[0, 2, 4]}}; e.tama.fam = {{}}; a._tama(15); }}""")
+      e.mimi.nour = ['croquettes', 'pate', 'poisson']; e.garde.a = {json.dumps(HABITS)}.concat(Object.keys(MimiPantin.HABITS)); e.tama.recus = ['c:coussin']; e.mimi.peaux = {{p:[3, 4, 5, 6], y:[0, 2, 4]}}; e.tama.fam = {{}}; a._tama(15); }}""")
     f = pg.evaluate(f"() => {V}._familles()")
-    verifier(f['fam'] == {'recre': 1, 'belle': 1, 'reine': 1, 'envies': 1} and f['reste']['ventre'] == ['n:festin'], f'quatre familles complètes (notées, sans bruit), il ne manque que le festin ({f["fam"]}, {f["reste"]["ventre"]})')
+    verifier(f['fam'] == {'recre': 1, 'belle': 1, 'reine': 1, 'envies': 1, 'rigolo': 1} and f['reste']['ventre'] == ['n:festin'], f'cinq familles complètes (notées, sans bruit), il ne manque que le festin ({f["fam"]}, {f["reste"]["ventre"]})')
     calme(pg, cid); voir_chat(pg, cid)
     pg.evaluate(f"() => {{ var a = {V}; M.S.atelier.tama.las = {{}}; M.S.atelier.tama.envie = null; {CHAT}.bh = 97; a._soigner('jouet:carton', 10, 'jeu'); }}")
     pg.wait_for_timeout(900)

@@ -60,3 +60,5 @@ jeu/test/e3-ecritures/
 jeu/test/e3-labo-sac/
 # les captures du robot « porter Mimi », tools/mimi-porter.py (refaites à chaque fois)
 jeu/test/mimi-porter/
+# les captures du robot des habits rigolos, tools/mimi-habits.py (refaites à chaque fois)
+jeu/test/mimi-habits/
