@@ -4608,8 +4608,11 @@ function prendreObjet(V, e, o){
     if(etat === 'caresse'){
       /* le doigt s'en va pour de bon : les caresses s'arrêtent et on l'emmène — sauf si c'est ELLE qui est partie (« Pas la queue ! »,
          le bond hors du bain alors qu'on frotte encore : ce serait la rattraper en plein saut), ou si elle est occupée ailleurs */
-      if(loinChat(ev) && chatPortable(V, o, true)){ caresseFin(V, o); lever(ev); return; }
-      if(surChat(ev)){
+      /* (sorti de sa zone de caresses, il est forcément loin : pas besoin de mesurer — un doigt rapide passe de « sur elle » à
+         « dehors » entre deux mesures, et elle restait par terre : vu par le robot, au téléphone) */
+      var dedans = surChat(ev);
+      if((!dedans || loinChat(ev)) && chatPortable(V, o, true)){ caresseFin(V, o); lever(ev); return; }
+      if(dedans){
         var dl = Math.hypot(ev.clientX - car.x, ev.clientY - car.y); car.x = ev.clientX; car.y = ev.clientY;
         caresseBouge(V, o, ev, dl);
         return;

@@ -75,30 +75,43 @@ def glisser(pg, a, b, pas=18, ms=22):
     for i in range(1, pas + 1):
         pg.mouse.move(a[0] + (b[0] - a[0]) * i / pas, a[1] + (b[1] - a[1]) * i / pas); pg.wait_for_timeout(ms)
 
-def porter(pg, cid, oid, dx=0, dy=0, photo=None):
-    """le doigt posé sur son dos, puis qui s'en va jusqu'au meuble oid (au téléphone : par le bord de l'écran, la pièce défile) ; on lâche.
+def dessus(pg, oid, x, y):
+    """ce point de l'écran est-il bien SUR ce meuble (et pas sous un bouton de l'écran, ni sous un autre meuble) ?"""
+    return pg.evaluate("([id, x, y]) => { var e = document.elementFromPoint(x, y), o = e && e.closest('[data-obj]'); return !!o && o.getAttribute('data-obj') === id && !e.closest('button'); }", [oid, x, y])
+def porter(pg, cid, oid, dx=0, dy=0, photo=None, loin=False):
+    """le doigt posé sur son dos, puis qui s'en va jusqu'au meuble oid ; on lâche. Le meuble est d'abord amené au milieu de l'écran
+    (pas sous les boutons du bas : lâchée sur le bouton 🛏️, elle partirait dans la chambre), et Mimi posée quelque part à l'écran.
+    loin (au téléphone) : le meuble est hors de l'écran — le doigt va au bord, la pièce défile, on arrive au meuble.
     Renvoie ce qu'on a vu juste avant de lâcher : soulevée ? la pièce a défilé ?"""
     def cible():
         c = cadre(pg, oid)
         return None if not c else (c['x'] + c['w'] / 2 + dx, c['y'] + c['h'] * 0.45 + dy)
-    for i in range(6):
-        q = sur_chat(pg, cid, 'dos'); t = cible()
-        if t and q and (abs(t[0] - q[0]) > 130 or abs(t[1] - q[1]) > 130): break      # (pas collée au meuble : il faut un vrai trajet)
+    q = t = None
+    for i in range(8):
+        voir(pg, oid, dy=120)
+        pg.evaluate(f"() => {{ var a = {V}; a._finJouet(); a._reveil('{cid}'); a._dehors('{cid}'); a._pose('{cid}', 'assis'); }}"); pg.wait_for_timeout(1000)
+        if loin:      # (la vue repart vers elle, du côté opposé au meuble : il sort de l'écran)
+            e = ecran(pg); c = cadre(pg, oid); pc = pg.evaluate(f"() => {V}._pos('{cid}')"); po = pg.evaluate(f"() => {V}._pos('{oid}')")
+            pg.evaluate(f"() => {V}._voir({pc['x'] + (-260 if po['x'] > pc['x'] else 260)}, {pc['y'] - 60})"); pg.wait_for_timeout(500)
+        q = point(pg, cid, 'dos'); t = cible()
+        sur_elle = q and pg.evaluate(f"() => {{ var e = document.elementFromPoint({q[0]}, {q[1]}), o = e && e.closest('[data-obj]'); return !!o && o.getAttribute('data-obj') === '{cid}' && !e.closest('.at-bulle'); }}")
+        if not (sur_elle and t): continue
+        if loin: break
+        if (abs(t[0] - q[0]) > 130 or abs(t[1] - q[1]) > 130) and dessus(pg, oid, t[0] - dx * 0.5, t[1]): break      # (un vrai trajet, et le meuble est bien sous le doigt à l'arrivée)
     vu = {'levee': False, 'portee': False, 'defile': False, 'tenu': False}
     pg.mouse.move(*q); pg.mouse.down(); pg.wait_for_timeout(140)
     e = ecran(pg)
     def dedans(t): return t and e['x'] + 30 < t[0] < e['x'] + e['w'] - 30 and e['y'] + 30 < t[1] < e['y'] + e['h'] - 30
     ici = q
-    t = cible()
     if not dedans(t):
         # (le meuble n'est pas à l'écran : le doigt va au bord, de son côté, et attend que la pièce défile)
-        bord = (e['x'] + e['w'] - 16 if t[0] > e['x'] + e['w'] / 2 else e['x'] + 16, min(max(q[1], e['y'] + 120), e['y'] + e['h'] - 160))
+        bord = (e['x'] + e['w'] - 16 if t[0] > e['x'] + e['w'] / 2 else e['x'] + 16, min(max(q[1], e['y'] + 150), e['y'] + e['h'] - 260))
         glisser(pg, ici, bord); ici = bord
         t0 = time.time()
         while time.time() - t0 < 9:
             pg.mouse.move(bord[0], bord[1] + (1 if int((time.time() - t0) * 10) % 2 else -1)); pg.wait_for_timeout(120)
             t = cible()
-            if t and e['x'] + 70 < t[0] < e['x'] + e['w'] - 70: break
+            if t and e['x'] + 90 < t[0] < e['x'] + e['w'] - 90: break
         vu['defile'] = True
     mi = (ici[0] + (t[0] - ici[0]) * 0.55, ici[1] + (t[1] - ici[1]) * 0.55 - 30)
     glisser(pg, ici, mi); pg.wait_for_timeout(300)
@@ -108,6 +121,7 @@ def porter(pg, cid, oid, dx=0, dy=0, photo=None):
     if abs(t2[0] - t[0]) + abs(t2[1] - t[1]) > 4: glisser(pg, t, t2, pas=6); t = t2
     pg.wait_for_timeout(350)
     cl = classes(pg, cid); vu['levee'] = 'at-leve' in cl; vu['portee'] = 'at-c-portee' in cl; vu['tenu'] = chat(pg, cid)['tenu']
+    vu['bouton'] = pg.evaluate("([x, y]) => { var l = document.elementsFromPoint(x, y); return l.some(function(e){ return e.tagName === 'BUTTON' && !e.closest('[data-obj]'); }); }", [t[0], t[1]])
     if photo: shot(pg, photo)
     pg.mouse.up(); pg.wait_for_timeout(350)
     return vu
@@ -119,6 +133,8 @@ def par_terre(pg, q, coins, loin=120):
     for d in ((200 * sg, -10), (270 * sg, -10), (140 * sg, -10), (-200 * sg, -10), (-140 * sg, -10), (120 * sg, -150), (-120 * sg, -150), (0, -190), (120 * sg, 150), (-120 * sg, 150)):
         x, y = q[0] + d[0], q[1] + d[1]
         if not (e['x'] + 60 < x < e['x'] + e['w'] - 60 and e['y'] + 150 < y < e['y'] + e['h'] - 150): continue
+        # (ni sur un bouton de l'écran, ni sur l'arche de la chambre : lâchée là, elle changerait de pièce)
+        if pg.evaluate("([x, y]) => document.elementsFromPoint(x, y).some(function(e){ return e.tagName === 'BUTTON' || (e.closest && (e.closest('.at-arche') || e.closest('.at-salle'))); })", [x, y]): continue
         if all(c is None or x < c['x'] - loin or x > c['x'] + c['w'] + loin or y < c['y'] - 150 or y > c['y'] + c['h'] + 170 for c in cs): return (x, y)
     return (q[0] + 200 * sg, q[1] - 10)
 
@@ -194,12 +210,11 @@ with sync_playwright() as p:
 
     # --- son envie de sieste : la bulle, le conteur, et on la porte jusqu'à son panier ---
     pg.evaluate(f"() => {{ var a = {V}; M.S.atelier.tama.las = {{}}; {CHAT}.bh = 20; a._envie('dodo', true); window.__lus = []; }}"); pg.wait_for_timeout(300)
-    calme(pg, cid); voir(pg, cid); pg.wait_for_timeout(500)
     bul = None
     for i in range(10):
-        bul = pg.evaluate(f"() => {{ var d = document.querySelector('#atelier-ici [data-obj=\"{cid}\"] .at-bulle'); if(!d || d.hidden) return null; var r = d.getBoundingClientRect(); return r.width > 4 ? [r.left + r.width / 2, r.top + r.height / 2] : null; }}")
-        if bul: break
-        pg.wait_for_timeout(300)
+        calme(pg, cid); voir(pg, cid); pg.wait_for_timeout(600)
+        bul = pg.evaluate(f"() => {{ var d = document.querySelector('#atelier-ici [data-obj=\"{cid}\"] .at-bulle'); if(!d || d.hidden) return null; var r = d.getBoundingClientRect(); if(r.width < 4) return null; var x = r.left + r.width / 2, y = r.top + r.height / 2, e = document.elementFromPoint(x, y); return e && e.closest('.at-bulle') === d ? [x, y] : null; }}")
+        if bul: break      # (sa bulle est bien sous le doigt : pas derrière le chaudron, pas sous un bouton)
     if not bul: print('   (pas de bulle :', classes(pg, cid), pg.evaluate(f"() => {{ var d = document.querySelector('#atelier-ici [data-obj=\"{cid}\"] .at-bulle'); return d ? d.outerHTML.slice(0, 200) : null; }}"), pg.evaluate(f"() => {V}._envie()"), ')')
     if bul:
         pg.mouse.move(*bul); pg.mouse.down(); pg.wait_for_timeout(60); pg.mouse.up(); pg.wait_for_timeout(500)
@@ -212,7 +227,6 @@ with sync_playwright() as p:
     vu = porter(pg, cid, pid, photo='vers-panier')
     print('   en route :', vu)
     verifier(vu['levee'] and vu['tenu'], 'on la porte vers son panier')
-    if TEL: verifier(True, f'(la pièce a défilé : {vu["defile"]})')
     pg.wait_for_timeout(500)
     verifier(sur(pg, cid) == pid, f'lâchée sur son panier : elle y est ({sur(pg, cid)})')
     shot(pg, 'panier-petrit')
@@ -226,6 +240,17 @@ with sync_playwright() as p:
     verifier(pile[0], '« Pile poil ! » s\'envole au-dessus d\'elle')
     shot(pg, 'panier-dort')
 
+    # --- au téléphone : le panier est hors de l'écran — le doigt au bord, la pièce défile, on y arrive ---
+    if TEL:
+        pg.evaluate(f"() => {{ var a = {V}; M.S.atelier.tama.las = {{}}; a._reveil('{cid}'); a._envie('dodo', true); }}")
+        vu = porter(pg, cid, pid, loin=True, photo='au-bord')
+        print('   au bord de l\'écran :', vu)
+        pg.wait_for_timeout(500)
+        if vu['bouton']: print('   (le panier s\'est arrêté sous un bouton de l\'écran : pas de verdict)')
+        else:
+            verifier(vu['defile'] and vu['levee'], 'le panier hors de l\'écran : le doigt au bord, la pièce défile, elle est toujours dans nos bras')
+            verifier(sur(pg, cid) == pid, f'… et lâchée sur son panier, elle y est ({sur(pg, cid)})')
+        attendre(pg, lambda: chat(pg, cid)['dort'], 6)
     # --- endormie, on la soulève : elle se réveille ; lâchée un peu à côté du panier : elle s'y retrouve ---
     verifier(chat(pg, cid)['dort'], '(elle dort dans son panier)')
     voir(pg, cid); pg.wait_for_timeout(500)
