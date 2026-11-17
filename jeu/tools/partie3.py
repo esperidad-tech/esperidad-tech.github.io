@@ -237,8 +237,7 @@ def partie(nav, base):
     # le Sage : le tableau, le Livre d'or, l'herbier, les premiers doutes
     verifier(S.jouer('mairie', 'tableau') == 'runes', 'le Sage peint le tableau d\'Odette (Assembler les runes)'); S.fermer()
     S.page('habitants')
-    th = S.page('herbier'); S.pg.locator('#livre-ici .lv-page.on .b-lire').first.click(); S.pg.wait_for_timeout(200)
-    verifier(S.pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and 'bruyère' in th and 'Rond des Sorcières' not in th, 'le Sage lit l\'herbier à voix haute : sept plantes, un indice et un moment pour chacune (plus de code, plus de nom de lieu : Bible §13.28)')
+    verifier(S.js("() => !M.P().recus['obj:herbier']") and 'herbier' not in S.js("() => [].map.call(document.querySelectorAll('#livre-ici .lv-page'), function(x){ return x.dataset.id || ''; })"), '(17 novembre) le matin : pas d\'herbier dans le Grand Livre (Iris le prêtera)')
     # (13 novembre) plus de page « Une drôle de lettre » : les codes du Barde sont des informations, le Sage conclut tout seul
     verifier(S.js("() => !M.P().recus['info:poste'] && !M.P().recus['info:chale']"), '(17 novembre) les deux premiers doutes du Barde ne sont plus des codes')
     verifier(S.js("() => !M.P().pages.livredor") and 'Livre d\'or' not in S.page('tableau') and not list(livrer(T, S)), '(17 novembre) le matin : pas de Livre d\'or dans le Grand Livre (le maire le confiera l\'après-midi) — le Sage n\'a rien à donner')
@@ -301,7 +300,7 @@ def partie(nav, base):
     tout_demander(B, ['melusine', 'anselme', 'silas', 'basile', 'farinel']); B.fermer()
     verifier(B.js("() => { M.render(); return !!M.P().mission.faits[3]; }"), 'le Barde a tout demandé aux villageois de l\'après-midi : sa mission se coche')
     B.carte(); B.ev('frapper', {'id': 'L2'}); B.ev('question', {'p': 'voisin', 'i': '0'}); B.fermer()
-    verifier(set(livrer(T, B)) == {'obj:lettre', 'obj:carnet', 'info:traces_moustache'}, 'le Barde a donné : la lettre (Sage, Alchimiste), le carnet (Sage), les traces de Moustache (Pisteur)')
+    verifier(set(livrer(T, B)) == {'obj:lettre', 'obj:carnet'}, 'le Barde a donné : la lettre (Sage, Alchimiste), le carnet (Sage) — (17 novembre) plus de code pour les traces de Moustache')
     # le Sage (13 novembre) : le Livre d'or, quand tout le monde a signé → l'Alchimiste ; la lettre et le carnet d'Odette, deux nouvelles
     # pages (aucune ne conclut à sa place) ; le plan des Fondateurs
     S.page('vraielettre'); nl = S.pg.locator('#livre-ici .lv-page.on .ec-lettre').count()
@@ -325,7 +324,14 @@ def partie(nav, base):
     verifier('petite cloche' in tv and 'souterrain' not in tv.lower(), 'le Sage : une nouvelle page, le vieux plan d\'Odette (des couloirs sans nom, une petite cloche)')
     # le Pisteur : les traces de Moustache, depuis chez Odette, jusqu'à la crypte
     verifier(P.jouer('L2', 'traces') == 'pistage', 'le Pisteur suit les pattes de Moustache, depuis chez Odette (le nouveau mini-jeu)'); P.fermer()
-    verifier(livrer(T, P) == ['info:crypte_fermee'], 'le Pisteur a donné au Barde : la crypte est fermée')
+    verifier(livrer(T, P) == ['info:crypte_fermee'] and B.js("() => M.nomCode('info:crypte_fermee').nom") == 'Odette est sous l\'église', 'le Pisteur a donné au Barde : « Odette est sous l\'église »')
+    # (17 novembre, étape 3) avec ce code, Iris prête son vieil herbier au Barde : un code objet pour le Sage, qui le lit à voix haute
+    B.carte(); B.ev('lieu', {'id': 'herboristerie'}); B.ev('parler', {'id': 'iris'}); B.pg.wait_for_timeout(400)
+    B.ev('question', {'p': 'iris', 'i': '5'}); B.pg.wait_for_timeout(300)
+    verifier('chassent la nuit' in B.texte(), 'Iris : « …ces bêtes dorment le jour, et chassent la nuit » — elle prête l\'herbier'); B.fermer()
+    verifier(livrer(T, B, seulement=['obj:herbier']) == ['obj:herbier'], 'le code « Le vieil herbier » passe du Barde au Sage')
+    th = S.page('herbier'); S.pg.locator('#livre-ici .lv-page.on .b-lire').first.click(); S.pg.wait_for_timeout(200)
+    verifier(S.pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and 'bruyère' in th and 'Rond des Sorcières' not in th, 'le Sage lit l\'herbier à voix haute : sept plantes, un indice et un moment pour chacune (plus de code, plus de nom de lieu : Bible §13.28)')
     # l'Alchimiste : la lettre au labo (avec le Livre d'or du Sage)
     A.js("() => { M.UI.modal = null; M.P().onglet = 'role'; M.render(); M.ouvrirLabo(); }"); A.pg.wait_for_timeout(1800)
     f = next((x for x in A.pg.frames if x.parent_frame is not None), None)

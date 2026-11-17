@@ -158,9 +158,9 @@ def partie(b, joueur, chemin):
     # (16 novembre, Bible §13.57) chez Odette, il y a maintenant sa maison à fouiller (le matin : 🏠 ; l'après-midi : ☀️, la cachette —
     # tools/e3-secret.py) ; les traces de Moustache, elles, attendent toujours le code du Barde
     pts0 = [p['id'] for p in lieu(pg, 'L2')]
-    verifier('traces' not in pts0 and pts0 == ['cachette'] and pg.evaluate("() => M.bullesMaisons().L2") == '☀️', f'chez Odette, sans le code du Barde : la maison au soleil, mais pas les traces ({pts0})')
+    verifier(pts0 == ['cachette', 'traces'] and pg.evaluate("() => M.bullesMaisons().L2") == '☀️', f'(17 novembre) chez Odette, l\'après-midi, sans aucun code : la maison au soleil, et les traces de Moustache ({pts0})')
     fermer(pg)
-    verifier(code(pg, 'info:traces_moustache'), 'le code « Les traces de Moustache » (du Barde)')
+    verifier(pg.evaluate("() => !!M.E().infos.traces_moustache.reserve"), '(17 novembre) le code « Les traces de Moustache » n\'est plus donné par personne : le Pisteur voit le lait renversé lui-même')
     verifier(pg.evaluate("() => !M.E().infos.six_doigts"), 'plus de code « Moustache a six doigts »')
     pg.evaluate("() => { M.P().vus['pisteur:L2:cachette'] = 'ok'; M.sauver(); M.render(); }")   # (la cachette est faite : reste la piste)
     verifier(pg.evaluate("() => M.bullesMaisons().L2") == '🐾', 'une petite bulle 🐾 se pose sur la maison d\'Odette')
@@ -180,7 +180,7 @@ def partie(b, joueur, chemin):
         pg.locator('#mj-plein .mj-go').click(); pg.wait_for_timeout(2600)
         pg.evaluate("() => window.__finir(true)"); pg.wait_for_timeout(500)
     t = voile(pg)
-    verifier('entrée de la crypte' in t and 'fermée à clé' in t, 'les traces réussies : « … à l\'entrée de la crypte. Mais sa grille est fermée à clé ! »')
+    verifier('grille de la crypte' in t and 'fermée à clé' in t and 'yeux rouges' in t and 'il appelle Odette' in t, 'les traces réussies : Moustache appelle Odette à la grille de la crypte ; des yeux rouges ; elle est fermée à clé')
     verifier(pg.locator('#voile .b-donne').count() == 1 and 'Anselme' in t and 'Barde' in t, 'le code « La crypte est fermée » : « Anselme, le sonneur de cloches, pourra peut-être vous aider. Donne ce code au Barde. »')
     fermer(pg)
     verifier(pg.evaluate("() => Object.keys(M.bullesMaisons()).length") == 0, 'la bulle 🐾 s\'en va')

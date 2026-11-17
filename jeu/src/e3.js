@@ -118,7 +118,7 @@ E[3] = {
     sage:[
       {ic:'👥', t:'Lis « Les habitants » à toute l\'équipe.', fait:[{lu:'habitants'}]},
       {ic:'🖼️', t:'Peins le tableau d\'Odette et de ses chats, à la mairie.', fait:[{fini:'sage:mairie:tableau'}]},
-      {ic:'🌿', t:'Lis l\'herbier à l\'Alchimiste, dans ton Grand Livre : un indice pour chaque plante, et le moment de la cueillir.', fait:[{lu:'herbier'}]},
+      {si:[{code:'obj:herbier'}, {moment:'nuit'}], ic:'🌿', t:'Lis l\'herbier à l\'Alchimiste, dans ton Grand Livre : un indice pour chaque plante, et le moment de la cueillir.', fait:[{lu:'herbier'}]},
       /* (16 novembre) le secret d'Odette : elle n'arrive qu'avec le papier (e.si, mission.js) ; rien n'y dit quoi faire de la pierre */
       {si:[{code:'obj:papier_odette'}], ic:'📜', t:'Odette a laissé un papier couvert de signes. Fais-le parler, dans ton Grand Livre.', fait:[{vu:'pierre:maison'}]},
       {piste:true, t:'Quand toute l\'équipe a tout fait, donne le code du moment suivant (page ⏭️ Les codes des moments).'},
@@ -518,6 +518,10 @@ E[3] = {
       recu:{sage:'Une nouvelle page s\'est glissée dans ton Grand Livre : le carnet d\'Odette, écrit de sa main.'}},
     /* (16 novembre, le secret d'Odette) le papier que le voisin gardait pour elle (le Barde → le Sage), et le vieux plan de la cachette,
        sous les dalles de sa maison (le Pisteur → le Sage). Ni l'un ni l'autre ne nomme le maire ; le plan ne dit pas « souterrains ». */
+    /* (17 novembre) l'herbier : Iris le prête au Barde (avec le code du Pisteur), pour le Sage. La nuit, s'il n'est jamais arrivé, il est
+       dans le Grand Livre quand même (le filet : sans ses indices, les sept plantes sont introuvables). */
+    herbier:{nom:'Le vieil herbier', ic:'🌿', pour:'sage', dire:'Un herbier plein d\'indices : le Sage les lira à voix haute. Donne-lui ce code.',
+      recu:{sage:'Une nouvelle page s\'est glissée dans ton Grand Livre : le vieil herbier d\'Iris.'}},
     papier_odette:{nom:'Le papier d\'Odette', ic:'📜', pour:'sage', dire:'Des signes secrets ? Le Sage saura peut-être les lire : donne-lui ce code.',
       recu:{sage:'Une nouvelle page s\'est glissée dans ton Grand Livre : le papier d\'Odette, couvert de signes.'}},
     vieux_plan:{nom:'Le vieux plan d\'Odette', ic:'🗺️', pour:'sage', dire:'Un très vieux plan, roulé dans un étui de cuir. Le Sage saura le lire : donne-lui ce code.',
@@ -543,7 +547,7 @@ E[3] = {
       t:'À l\'aube, du haut des toits, Tim a cru voir Odette, dans son châle à chats, glisser la lettre sous la porte de la mairie. Mais elle marchait vite… et sans canne !',
       dire:'Odette, sans sa canne ? Le Sage doit le savoir : donne-lui ce code.'},
     /* (la lettre et le carnet sont des objets : E.objets, plus haut ; l'Alchimiste pose la lettre sur sa paillasse) */
-    traces_moustache:{nom:'Les traces de Moustache', ic:'🐾', pour:'pisteur', de:'barde',
+    traces_moustache:{nom:'Les traces de Moustache', ic:'🐾', pour:'pisteur', de:'barde', reserve:true,
       t:'Devant chez Odette, du lait renversé… et des petites traces de pattes qui filent dans les rues. Moustache, le gros chat gris, est passé par là. Les autres chats aussi !',
       dire:'Des traces toutes fraîches ! Le Pisteur saura les suivre, depuis chez Odette : donne-lui ce code.'},
     /* (Romain, 13 novembre : « ça accusait deux femmes, et après on devait trouver laquelle était la bonne » ; Bible §13.31, étape 8)
@@ -556,10 +560,11 @@ E[3] = {
     ecriture:{nom:'Deux écritures', ic:'🖋️', pour:['barde', 'sage'], de:'alchimiste', savoir:true, reserve:true,
       t:'L\'Alchimiste a comparé la lettre au Livre d\'or de la fête : des « M » qui piquent, des « t » en vague, un petit rond sur les « i »… Deux femmes écrivent comme ça : Mélusine et Margot. Laquelle des deux ?',
       dire:'Le Barde et le Sage doivent le savoir : donne-leur ce code.'},
-    crypte_fermee:{nom:'La crypte est fermée', ic:'🗝️', pour:'barde', de:'pisteur', pnj:'anselme',
-      t:'Le Pisteur a suivi les traces de Moustache jusqu\'à l\'église : elles passent sous la grille de la crypte, au pied du clocher. La grille est fermée à clé.',
-      /* (Romain, 13 novembre : « Anselme, le sonneur de cloche, pourra peut-être vous aider. Donne ce code au Barde. ») */
-      dire:'Anselme, le sonneur de cloches, pourra peut-être vous aider. Donne ce code au Barde.'},
+    /* (17 novembre) le même code qu'avant (« La crypte est fermée » : mêmes dessins), sous un nouveau nom. Chez le Barde, il rouvre
+       Anselme (sa clé) et Iris (l'herbier, qu'elle prête pour préparer la descente). */
+    crypte_fermee:{nom:'Odette est sous l\'église', ic:'🗝️', pour:'barde', de:'pisteur', pnj:'anselme',
+      t:'Le Pisteur a suivi Moustache jusqu\'à la grille de la crypte, sous l\'église : le chat appelle Odette, elle est là-dessous ! Mais la grille est fermée à clé… et derrière, des bêtes aux yeux rouges.',
+      dire:'Iris, l\'herboriste, et Anselme, le sonneur de cloches, pourront peut-être vous aider. Donne ce code au Barde.'},
     /* (étape 3, le Sage) */
     ecritures:{nom:'Les écritures du village', ic:'📖', pour:'alchimiste', de:'sage', reserve:true,
       t:'Le Livre d\'or de la fête t\'attend dans ton labo : tout le village y a écrit un petit mot pour Odette, chacun de sa main. Glisse la lettre sous ta loupe : le Livre d\'or s\'ouvrira, et tu compareras les écritures.',
@@ -676,12 +681,15 @@ E[3] = {
           avant:'Le soleil de l\'après-midi entre enfin chez Odette. Sur le plancher, de vieilles dalles se mettent à briller…', bouton:'☀️ Entrer chez Odette',
           t:'Sous la dalle du milieu, un étui de cuir. Dedans, un très vieux plan, roulé serré : des couloirs, des couloirs… Odette le cachait bien !',
           rate:'Les dalles gardent leur secret. Trois dalles, dans le bon ordre… Le Sage a peut-être de quoi le trouver.'},
-        {id:'traces', ic:'🐾', nom:'Les traces de Moustache', mj:'pistage', essaisInfinis:true,
-          besoin:[{code:'info:traces_moustache'}], visibleSi:[{code:'info:traces_moustache'}],
+        /* (17 novembre, étape 3 du nouveau fil) plus de code du Barde : l'après-midi, le bol de lait de midi est renversé, le Pisteur le
+           voit lui-même (et encore la nuit). Au bout : Moustache cherche Odette à la grille, et des yeux rouges derrière les barreaux —
+           ce qui annonce les bêtes (Romain : « rien n'annonce le combat »). Le code, lui, ne change pas d'identité (info:crypte_fermee) :
+           il s'appelle maintenant « Odette est sous l'église », et rouvre Iris (l'herbier) et Anselme chez le Barde. */
+        {id:'traces', ic:'🐾', nom:'Les traces de Moustache', moments:['apresmidi', 'nuit'], mj:'pistage', essaisInfinis:true,
           donne:'info:crypte_fermee',
-          avant:'Du lait renversé devant la porte d\'Odette, et des pattes partout : ses chats ont filé, chacun de son côté ! Suis celles de Moustache… si tu sais les reconnaître.',
+          avant:'Le bol de lait de midi est renversé, et des pattes blanches filent dehors : les chats d\'Odette sont partis, chacun de son côté ! Suis celles de Moustache… si tu sais les reconnaître.',
           bouton:'🐾 Suivre les traces',
-          t:'Les traces arrivent sous l\'église, à l\'entrée de la crypte. Mais sa grille est fermée à clé !',
+          t:'Les traces mènent à la grille de la crypte, sous l\'église. Moustache gratte les barreaux et miaule vers le noir : il appelle Odette, elle est là-dessous ! Soudain, un grognement… deux yeux rouges… un rat énorme se jette sur la grille ! Elle est fermée à clé. Dis-le à tes amis !',
           /* (15 novembre, 14 h 26 : « Désolé, tu t'es trompé, tu n'as pas suivi la bonne trace ») */
           rate:'Désolé, tu t\'es trompé : ce n\'était pas Moustache. Tu n\'as pas suivi la bonne trace.'}
       ]}
@@ -938,7 +946,10 @@ E[3] = {
       {q:Q_NUIT, g:'e', moments:M_, a:'Hier soir, une femme, un fichu sur la tête, m\'a demandé une plume de mes oies. Il faisait noir : je n\'ai pas vu son visage.',
         note:'Gaspard : hier soir, une femme, un fichu sur la tête, lui a demandé une plume de ses oies. Il n\'a pas vu son visage.'},
       {q:'Votre four tourne fort, aujourd\'hui ?', g:'r', moments:M_, a:'Le maire m\'a commandé le plus gros gâteau de ma vie. Il est si fier de ses fêtes !',
-        note:'Gaspard : le maire est très fier de ses fêtes.'}
+        note:'Gaspard : le maire est très fier de ses fêtes.'},
+      /* [4] (17 novembre ; Romain, 16 novembre, 20 h 58 : « il pourrait parler de rats avec des yeux rouges, Gaspard ») */
+      {q:'Et ces sacs de farine éventrés ?', g:'e', moments:M_, a:'Des rats ! Cette nuit, dans ma réserve : grands comme des chats… avec des yeux rouges !',
+        note:'Gaspard : cette nuit, des rats grands comme des chats, aux yeux rouges, ont éventré ses sacs de farine.'}
     ]},
     margot:{ou:{matin:'taverne', apresmidi:'taverne'}, salut:'Bienvenue au Chaudron fêlé ! Ce soir, c\'est la fête !', questions:[
       {q:Q_LETTRE, g:'e', moments:MA_, a:'Une bien belle lettre ! Odette me parle souvent de sa sœur.', ment:true,
@@ -1032,7 +1043,9 @@ E[3] = {
     /* la maison d'Odette, au 2, rue des Lanternes : une visite, sans questions ; deux codes d'un coup. (12 novembre au soir) Dès le matin
        (le voisin dit qu'elle n'est jamais fermée, et la lettre demande de rapporter la canne), et encore la nuit (un filet). */
     voisin:{ou:{matin:'L2', apresmidi:'L2', nuit:'L2'}, salut:'La maison d\'Odette. La porte n\'est toujours pas fermée à clé…', questions:[
-      {q:'Poser la canne d\'Odette', donne:['obj:carnet', 'info:traces_moustache'], titreDonne:'Chez Odette',
+      /* (17 novembre, étape 3 du nouveau fil) plus de code « Les traces de Moustache » : le Pisteur les voit lui-même, chez Odette,
+         l'après-midi ; le Barde, qui voit le lait renversé, le lui dit s'il n'y a pas pensé */
+      {q:'Poser la canne d\'Odette', donne:['obj:carnet'], titreDonne:'Chez Odette',
         a:'Tu poses la canne contre la porte. Sur la table, le carnet d\'Odette : un chat à chaque page, et son écriture penchée. Par terre, du lait renversé… et de petites traces de pattes qui filent dehors !',
         note:'Chez Odette : tu as posé sa canne contre la porte. Sur la table, son carnet, de son écriture penchée. Par terre, du lait renversé, et de petites traces de pattes qui filent dehors.'}
     ]},
@@ -1060,8 +1073,9 @@ E[3] = {
     ]},
     /* le matin : ses fleurs (marche.js : le bouton « 🌸 » dans sa conversation et sur sa pastille), et ses quatre questions — on lui a volé
        un flacon d'encre, cette nuit (Romain, 18 h 19). L'après-midi, elle est occupée par ses couronnes (elle vend encore, s'il reste des pièces). */
-    iris:{ou:{matin:'herboristerie'}, carte:{apresmidi:'herboristerie'},
-      occupe:{apresmidi:['« Chut ! Je fais les couronnes de ce soir. »', '« Si c\'est pour des fleurs, d\'accord. Sinon, à ce soir ! »']},
+    /* (17 novembre) l'après-midi, elle n'est plus « occupée » : elle n'a rien de plus à dire… jusqu'au code du Pisteur (« Odette est sous
+       l'église »), qui lui donne une question : l'herbier */
+    iris:{ou:{matin:'herboristerie', apresmidi:'herboristerie'}, saluts:{apresmidi:'Chut… je tresse les couronnes de ce soir. Qu\'y a-t-il ?'},
       /* (son bonjour marche aussi quand le Barde vient de la fâcher au marché : fâchée, elle ne vend plus, mais elle répond encore) */
       salut:'Ah, c\'est toi ! Attention à mes pots, ils sèchent.', questions:[
       {q:Q_LETTRE, g:'h', moments:M_, a:'Je n\'ai pas fait attention, je pensais à mes fleurs.',
@@ -1077,7 +1091,11 @@ E[3] = {
          pièce de Fortuné : toujours en dernier. La question et la réponse sont de Claude : à faire valider par Romain. */
       {q:'Il vous reste un peu de cette encre ?', g:'h', moments:M_, secret:true, besoin:[{vu:'barde:iris:2'}], obj:'encre_iris',
         a:'Elle fouille dans son tablier : « Un fond de flacon, c\'est tout ce qu\'il me reste. Tiens, prends-le ! »',
-        note:'Iris t\'a donné un fond de flacon de son encre. L\'Alchimiste pourra l\'analyser.'}
+        note:'Iris t\'a donné un fond de flacon de son encre. L\'Alchimiste pourra l\'analyser.'},
+      /* [5] (17 novembre, le nouveau fil : « l'herbier, c'est quelque chose que quelqu'un doit lui apporter ») avec le code du Pisteur */
+      {q:'Odette est sous l\'église, avec des bêtes aux yeux rouges !', g:'e', moments:A_, secret:true, besoin:[{code:'info:crypte_fermee'}], obj:'herbier',
+        a:'Vous voulez descendre là-dessous ? Alors préparez-vous, et beaucoup : ces bêtes dorment le jour, et chassent la nuit. Tiens : Odette m\'empruntait souvent ce vieil herbier. Prends-le.',
+        note:'Iris : les bêtes de sous l\'église dorment le jour et chassent la nuit. Elle t\'a prêté son vieil herbier (code pour le Sage).'}
     ]},
     /* un peu sourd, il parle fort (il ne ment jamais) */
     /* (Romain, 13 novembre) la nuit, son visage est posé sur le toit du clocher : on voit qu'il n'est pas à la fête, prêt à sonner (pose : carte-jeu.js) */
@@ -1231,7 +1249,7 @@ E[3] = {
        cueillir » ; « je ne veux pas qu'il parle de donjon »). Une planche par plante : où elle vit pour de vrai, UN INDICE (plus l'endroit précis
        depuis 15 h 37 : « il faut que ça soit un jeu de recherche », Bible §13.28), le moment. Tout vient de D.PLANTES (donnees.js) ; la page est
        dessinée par cueillette.js (M.herbierHTML). Plus de code : le Sage lit à voix haute, l'Alchimiste cherche sur sa carte. */
-    {id:'herbier', titre:'L\'herbier des Fondateurs', ic:'🌿', type:'herbier',
+    {id:'herbier', titre:'L\'herbier des Fondateurs', ic:'🌿', type:'herbier', visibleSi:[{code:'obj:herbier'}, {moment:'nuit'}],
       t:'Sept plantes séchées, très anciennes. Sous chacune, les Fondateurs ont laissé un indice, et le moment de la cueillir. Lis-les à voix haute à l\'Alchimiste : à vous de deviner où chercher !'},
     /* (13 novembre) la potion de vérité se prépare encore à l'enquête 3 : sa recette secrète, à dicter à l'Alchimiste s'il ne l'a pas déjà
        dans son grimoire (comme à l'enquête 2) */

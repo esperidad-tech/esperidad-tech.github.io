@@ -103,11 +103,14 @@ with sync_playwright() as p:
     verifier('Magnifique' in texte(pg), 'réussi : « Magnifique ! On l\'accrochera au-dessus du gâteau. »')
     fermer(pg)
     L = liste()
-    verifier(not any(x in L for x in ['doutes', 'fausse', 'chats', 'qui', 'vraielettre', 'carnet']) and all(x in L for x in ['tableau', 'herbier', 'bibliotheque']) and 'plan' not in L and 'livredor' not in L,
+    verifier(not any(x in L for x in ['doutes', 'fausse', 'chats', 'qui', 'vraielettre', 'carnet']) and all(x in L for x in ['tableau', 'bibliotheque']) and 'plan' not in L and 'livredor' not in L and 'herbier' not in L,
              f'le Grand Livre : plus de « Une drôle de lettre », « La lettre et le carnet », « Qui a écrit la lettre ? » ; la lettre et le carnet n\'y sont pas encore ({L})')
     # (17 novembre, le nouveau fil) le Livre d'or n'est plus dans le Grand Livre le matin : le maire le confie au Sage l'après-midi,
     # quand il rend le tableau (tools/e3-ecritures.py)
     verifier('livredor' not in liste(), 'le matin : pas de Livre d\'or dans le Grand Livre')
+    # (17 novembre, étape 3) l'herbier n'est plus dans le Grand Livre dès le matin : Iris le prête au Barde (un code objet)
+    verifier('herbier' not in liste(), 'le matin, sans le code du Barde : pas d\'herbier dans le Grand Livre')
+    code(pg, 'obj:herbier')
     t = page(pg, 'herbier')
     verifier(pg.locator('#livre-ici .lv-page.on .lv-herbier > li').count() == 7 and pg.locator('#livre-ici .lv-page.on .lv-herbier .b-lire').count() == 14, 'l\'herbier : sept planches, « Où ? » et « Quand ? », chaque texte avec son 🔊 (12 novembre, Bible §13.26)')
     verifier('_info:herbier' not in objets(pg) and 'Rond des Sorcières' not in t and 'Cinq Pierres' not in t and 'incantations' in t and 'bruyère' in t and 'patte de loup' in t and 'épouvantail' in t and 'donjon' not in t.lower(),

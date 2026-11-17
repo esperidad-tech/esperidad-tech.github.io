@@ -89,6 +89,8 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
    - « Hier soir, une femme, un fichu sur la tête, m'a demandé une plume de mes oies. Il faisait noir : je n'ai pas vu son visage. »
 4. **Votre four tourne fort, aujourd'hui ?** _(le matin)_
    - « Le maire m'a commandé le plus gros gâteau de ma vie. Il est si fier de ses fêtes ! »
+5. **Et ces sacs de farine éventrés ?** _(le matin)_
+   - « Des rats ! Cette nuit, dans ma réserve : grands comme des chats… avec des yeux rouges ! »
 - **Tout demandé** : « Ma pâte va retomber ! Repasse plus tard. »
 - **Occupé, l'après-midi** : « Pas maintenant, j'ai sept étages de gâteau qui penchent ! » — puis, si on revient : « Si je lâche ma poche à douille, tout s'écroule ! »
 
@@ -182,11 +184,11 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
 - **Où et quand** : le matin : chez Odette, 2, rue des Lanternes · l'après-midi : chez Odette, 2, rue des Lanternes · la nuit : chez Odette, 2, rue des Lanternes
 - **Bonjour** : « La maison d'Odette. La porte n'est toujours pas fermée à clé… »
 1. **Poser la canne d'Odette** _(quand on peut lui parler)_
-   - « Tu poses la canne contre la porte. Sur la table, le carnet d'Odette : un chat à chaque page, et son écriture penchée. Par terre, du lait renversé… et de petites traces de pattes qui filent dehors ! » → donne « Le carnet d'Odette » (pour sage) et « Les traces de Moustache » (pour pisteur)
+   - « Tu poses la canne contre la porte. Sur la table, le carnet d'Odette : un chat à chaque page, et son écriture penchée. Par terre, du lait renversé… et de petites traces de pattes qui filent dehors ! » → donne « Le carnet d'Odette » (pour sage)
 
 ### 👩‍🌾 Iris Lavandin — l'herboriste
 
-- **Où et quand** : le matin : herboristerie
+- **Où et quand** : le matin : herboristerie · l'après-midi : herboristerie
 - **Bonjour** : « Ah, c'est toi ! Attention à mes pots, ils sèchent. »
 1. **Que pensez-vous de la lettre d'Odette ?** _(le matin)_
    - « Je n'ai pas fait attention, je pensais à mes fleurs. »
@@ -198,8 +200,9 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
    - « À soigner, à teindre, à parfumer. La pensée sauvage pousse même dans la brume ! »
 5. **Il vous reste un peu de cette encre ?** — 🔒 s'ouvre avec : la question 3 de Iris posée _(le matin)_
    - « Elle fouille dans son tablier : « Un fond de flacon, c'est tout ce qu'il me reste. Tiens, prends-le ! » »
+6. **Odette est sous l'église, avec des bêtes aux yeux rouges !** — 🔒 s'ouvre avec : le code « Odette est sous l'église » (pour barde) _(l'après-midi)_
+   - « Vous voulez descendre là-dessous ? Alors préparez-vous, et beaucoup : ces bêtes dorment le jour, et chassent la nuit. Tiens : Odette m'empruntait souvent ce vieil herbier. Prends-le. »
 - **Tout demandé** : « Mes fleurs vont faner si je bavarde ! »
-- **Occupé, l'après-midi** : « Chut ! Je fais les couronnes de ce soir. » — puis, si on revient : « Si c'est pour des fleurs, d'accord. Sinon, à ce soir ! »
 
 ## 2.2 Ceux qui répondent dès l'après-midi
 
@@ -249,9 +252,9 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
    - « CETTE NUIT, UNE LANTERNE EST DESCENDUE DANS LA CRYPTE. La grille était fermée à clé… C'est bizarre : j'ai la SEULE clé ! »
 4. **Sonner les cloches, c'est dur ?** _(l'après-midi et la nuit)_
    - « Parle-moi FORT et LEN-TE-MENT. Et ne me presse jamais : quand on me presse, je n'entends plus rien ! »
-5. **Qu'y a-t-il sous le clocher ?** — 🔒 s'ouvre avec : le code « La crypte est fermée » (pour barde) _(l'après-midi et la nuit)_
+5. **Qu'y a-t-il sous le clocher ?** — 🔒 s'ouvre avec : le code « Odette est sous l'église » (pour barde) _(l'après-midi et la nuit)_
    - « LA CRYPTE DES FONDATEURS. Personne n'y descend, jamais ! »
-6. 🎭 **« Anselme, je voudrais vous demander quelque chose… »** — le grand dialogue « cle » (§3), la nuit. Il n'apparaît que quand : (Mélusine démasquée (question 5) OU Mélusine a craqué à la fête) ET le code « La crypte est fermée » (pour barde) ET tout demandé à Anselme, Basile, Silas (ceux à qui on peut parler à ce moment-là).
+6. 🎭 **« Anselme, je voudrais vous demander quelque chose… »** — le grand dialogue « cle » (§3), la nuit. Il n'apparaît que quand : (Mélusine démasquée (question 5) OU Mélusine a craqué à la fête) ET le code « Odette est sous l'église » (pour barde) ET tout demandé à Anselme, Basile, Silas (ceux à qui on peut parler à ce moment-là).
 - **Tout demandé** : « ASSEZ ! TU VAS ME CASSER LES OREILLES… ENFIN, CE QU'IL EN RESTE ! »
 - **Occupé, le matin** : « AH, LE BARDE ! VA ME CHERCHER L'ALCHIMISTE : J'AI UN SERVICE À LUI DEMANDER ! » DONG ! — puis, si on revient : « L'AL-CHI-MISTE ! PAS LE FLEURISTE ! DIS-LUI DE MONTER ME VOIR ! » DONG !
 
