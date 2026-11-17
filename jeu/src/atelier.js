@@ -8530,7 +8530,7 @@ function jouerHerbe(V, o){
 /* ev : {x, y, r} — pas derrière ça (Mimi, assise là : elle cacherait ce qu'on pose) */
 function placeLibre(V, l, dl, h, ev){
   function cache(x, y){
-    if(ev && Math.abs(x - ev.x) < ev.r && y < ev.y + 30 && y > ev.y - ev.r * 1.3) return true;
+    if(ev && Math.abs(x - ev.x) < ev.r && y < ev.y + 30 && y > ev.y - ev.r * 2.6) return true;      /* (ni derrière elle, ni sous sa bulle) */
     var s = echelleSol(y), bx = [x - dl * s, y - h * s, x + dl * s, y], aire = (bx[2] - bx[0]) * (bx[3] - bx[1]);
     /* (les cartons pas encore ouverts cachent aussi : ils sont tout devant — vu avec les colis du parc à chat, sur un téléphone) */
     if(boitesCartons(V).some(function(b){
