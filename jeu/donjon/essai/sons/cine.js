@@ -415,4 +415,40 @@ S.pubTadaA = function(A, P){
   A.bruit(t, {coul:'blanc', hp:6500, env:[[0, 0], [.01, 1], [.5, .2], [1, 0]], g:.1, rugueux:.5, rugVit:30}, o);
   return {duree:1.2};
 };
+
+/* ---------------------------------------------------------------- 17 novembre (Romain) : les deux descentes (jeu/cine/src/film-descente.js ; Bible §13.62) — NEUFS, à écouter */
+/* la grille de la crypte : le fer rouillé qui grince longtemps, puis le « clong » quand elle bute */
+S.cineGrilleA = function(A, P){
+  var t = P.t, o = bus(A, P, 0, .6);
+  A.ton(t, {type:'sawtooth', f:260, f2:540, gl:1.5, env:[[0, 0], [.2, 1], [1.3, .85], [1.8, 0]], g:.05, gigue:30, trem:[19, .9], sat:2, filtres:[{type:'bandpass', f:1400, q:3}, {type:'lowpass', f:2600, q:.7}]}, o);
+  A.ton(t + 1.0, {type:'sawtooth', f:610, f2:300, gl:1.3, env:[[0, 0], [.15, 1], [1.0, .7], [1.4, 0]], g:.04, gigue:26, trem:[23, .9], sat:2, filtres:[{type:'bandpass', f:1900, q:4}]}, o);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:900, pts:[[1.6, 2200]], q:1.6}], env:[[0, 0], [.4, 1], [1.7, .5], [2.3, 0]], g:.2, rugueux:.9, rugVit:21}, o);
+  lourd(A, t + 2.35, .8, o); fer(A, t + 2.35, 430, .22, o);
+  return {duree:4};
+};
+/* une goutte qui tombe dans le noir, très loin : « plic… » et son écho */
+S.cineGoutteA = function(A, P){
+  var t = P.t, o = bus(A, P, h(-.6, .6), .9), f = h(1500, 2100);
+  A.ton(t, {type:'sine', f:f, f2:f * .42, gl:.07, env:A.perc(.002, .16), g:.12}, o);
+  A.ton(t + .26, {type:'sine', f:f * .96, f2:f * .4, gl:.07, env:A.perc(.002, .14), g:.05}, o);
+  A.ton(t + .55, {type:'sine', f:f * .9, f2:f * .38, gl:.07, env:A.perc(.002, .12), g:.025}, o);
+  return {duree:1.6};
+};
+/* la corde qui file entre les mains gantées : ça frotte, ça couine un peu */
+S.cineCordeA = function(A, P){
+  var t = P.t, o = bus(A, P, 0, .5);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:700, pts:[[.5, 1500], [.9, 900]], q:1.2}], env:[[0, 0], [.12, 1], [.55, .8], [.9, 0]], g:.34, rugueux:.7, rugVit:24}, o);
+  A.ton(t + .08, {type:'triangle', f:1800, f2:1250, gl:.7, env:[[0, 0], [.1, 1], [.7, 0]], g:.012, vib:[12, 40]}, o);
+  A.pas(t + .75, {f:90, bp:900, g:.2}, o);
+  return {duree:1.1};
+};
+/* au fond, une lueur qui chante tout bas : un accord de verre, de plus en plus clair */
+S.cineLueurA = function(A, P){
+  var t = P.t, o = bus(A, P, 0, .9);
+  [[220, .05], [330, .045], [440.5, .04], [660, .03], [880, .02]].forEach(function(n, k){
+    A.ton(t + k * .35, {type:'sine', f:n[0], env:[[0, 0], [1.6, 1], [3.2, .8], [4.4, 0]], g:n[1], vib:[4.5 + k * .3, n[0] * .004]}, o);
+  });
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:500, pts:[[4, 1400]], q:.8}], env:[[0, 0], [2, 1], [4.2, 0]], g:.06}, o);
+  return {duree:4.6};
+};
 })(window);

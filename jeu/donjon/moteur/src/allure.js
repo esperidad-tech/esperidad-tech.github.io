@@ -28,6 +28,8 @@ function lire(texte, base){
     if(PE[v[1]]) r[h].pe = PE[v[1]];
     if(CH[v[2]]) r[h].ch = CH[v[2]];
     if(v[3] && YX[v[3]]) r[h].ir = YX[v[3]];
+    /* l'âge (17 novembre) : « enf » ou « age » en fin de texte ; sans lui, un adulte */
+    r[h].age = v.indexOf('enf') >= 3 ? 'enfant' : v.indexOf('age') >= 3 ? 'age' : 'adulte';
   });
   return r;
 }

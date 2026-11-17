@@ -27,7 +27,7 @@ APERCUS = '/tmp/cine/apercus'
 SR = 44100
 LARG, HAUT_IMG, HAUT = 1440, 616, 810          # l'image en 21:9, dans un écran 16:9 (deux bandes noires de 97 points)
 BANDE = (HAUT - HAUT_IMG) // 2
-MUSIQUE = {'entree': 'cineMusEntree', 'a12': 'cineMusA12', 'b23': 'cineMusB23', 'finLeo': 'cineMusFinLeo', 'finMaire': 'cineMusFinMaire', 'chene': 'cineMusChene', 'pub': 'cineMusPub'}
+MUSIQUE = {'entree': 'cineMusEntree', 'a12': 'cineMusA12', 'b23': 'cineMusB23', 'finLeo': 'cineMusFinLeo', 'finMaire': 'cineMusFinMaire', 'chene': 'cineMusChene', 'pub': 'cineMusPub', 'escalier': 'cineMusEscalier', 'puits': 'cineMusPuits'}
 GAIN_MUSIQUE = 1.4                               # la musique sous les bruitages (environ 10 dB en dessous)
 
 

@@ -549,7 +549,7 @@ function prisonHTML(o){
   var al = (M.P() && M.P().allures) || {};
   var ombre = function(r, i){
     var a = al[r], h = window.Persos && Persos.defaut ? Persos.defaut(r, a ? a.sexe : (i % 2 ? 'm' : 'f')) : {role:r};
-    if(a) Object.assign(h, {sexe:a.sexe, peau:a.peau, cheveux:a.cheveux});
+    if(a) Object.assign(h, {sexe:a.sexe, peau:a.peau, cheveux:a.cheveux}, a.age ? {age:a.age} : {});
     return '<div class="b-prison-ombre o' + i + (a ? ' connu' : '') + '" data-role="' + r + '">' + portrait('pied', false, false, Object.assign(h, {role:r, niveau:3, talents:[], equip:[]})) + '</div>';
   };
   return '<div class="b-prison" role="img" aria-label="Les quatre enquêteurs au cachot, derrière les barreaux">' +

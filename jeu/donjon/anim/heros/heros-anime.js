@@ -106,8 +106,11 @@ var OS = {
   JA:{hanche:SQ.cuisseA, l1:50, l2:50}, JB:{hanche:SQ.cuisseB, l1:50, l2:50}
 };
 /* une pièce articulée : <g data-j> (la pose) qui contient <g data-i> (l'attente), même pivot */
+var ECHELLE_TETE = 1;   /* enfant : tête plus grosse par rapport au corps (posée par fabAge) */
 function J(nom, contenu, x){
   var p = SQ[nom] || x, o = 'transform-origin:' + p[0] + 'px ' + p[1] + 'px';
+  if(nom === 'tete' && ECHELLE_TETE !== 1 && contenu.indexOf('data-souple') < 0)
+    contenu = '<g transform="translate(124 98) scale(' + ECHELLE_TETE + ') translate(-124 -98)">' + contenu + '</g>';
   return '<g class="haJ" data-j="' + nom + '" style="' + o + '"><g class="haJ" data-i="' + nom + '" style="' + o + '">' + contenu + '</g></g>';
 }
 /* un segment de membre, vertical au repos, arrondi aux deux bouts (les jointures restent pleines) */
@@ -1137,6 +1140,12 @@ function css(){
 var ROLES = {};
 var FX = {etoiles:function(){}};
 
+function fabAge(role, lk, grain){
+  ECHELLE_TETE = lk && lk.age === 'enfant' ? 1.16 : 1;
+  try{ return ROLES[role].fab(lk, grain); } finally { ECHELLE_TETE = 1; }
+}
+/* la taille du corps selon l'âge : enfant plus petit, personne âgée un peu moins grande (adulte : inchangé) */
+var ECHELLE_CORPS = {enfant:.84, age:.94};
 /* ============ un héros ============ */
 function Heros(cont, role, lk){
   css();
@@ -1147,6 +1156,7 @@ function Heros(cont, role, lk){
   if(getComputedStyle(cont).position === 'static') cont.style.position = 'relative';
   this.racine = document.createElement('div'); this.racine.className = 'ha ha-' + role;
   this.boite = document.createElement('div'); this.boite.className = 'ha-boite';
+  if(ECHELLE_CORPS[this.lk.age]){ this.racine.style.transformOrigin = '50% 100%'; this.racine.style.transform = 'scale(' + ECHELLE_CORPS[this.lk.age] + ')'; }
   this.fx = document.createElement('div'); this.fx.className = 'ha-fx';
   this.racine.appendChild(this.boite); this.racine.appendChild(this.fx);
   cont.appendChild(this.racine);
@@ -1219,7 +1229,7 @@ function preparerUn(role, lk, o){
   var l = fusionLk(role, lk), cle = cleModele(role, l);
   if(MODELES[cle]) return MODELES[cle].promesse;
   var Cu = window.Cuire;
-  var spec = ROLES[role].fab(l, HerosAnime.grain), h = Cu.hote(250, 300);
+  var spec = fabAge(role, l, HerosAnime.grain), h = Cu.hote(250, 300);
   h.innerHTML = spec.svg;
   var svg = h.firstElementChild; svg.style.cssText = 'display:block;width:250px;height:300px';
   var M = MODELES[cle] = {souples:spec.souples};
@@ -3348,7 +3358,7 @@ function photo(role, lk, k){
   k = k || 2;
   return new Promise(function(ok){
     try{
-      var spec = ROLES[role].fab(fusionLk(role, lk), false);
+      var spec = fabAge(role, fusionLk(role, lk), false);
       /* (le dessin est écrit pour une page : on le fait relire par le navigateur, qui le rend en vrai SVG, bien formé) */
       var h = document.createElement('div'); h.innerHTML = spec.svg;
       var el = h.firstElementChild; el.setAttribute('width', 250); el.setAttribute('height', 300);

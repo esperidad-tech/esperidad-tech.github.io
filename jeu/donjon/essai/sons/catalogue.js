@@ -116,7 +116,10 @@ window.CATALOGUE = [
           {id:'cineMusChene', t:'Musique du rassemblement', v:'A', m:1, neuf:1},
           /* 16 novembre (Romain) : la pub de 30 secondes (jeu/pub) */
           {id:'pubPop', t:'Pub : pop', v:'A', neuf:1}, {id:'pubWhoosh', t:'Pub : fffiou', v:'A', neuf:1}, {id:'pubPlongee', t:'Pub : la plongée', v:'A', neuf:1}, {id:'pubTada', t:'Pub : le titre', v:'A', neuf:1},
-          {id:'cineMusPub', t:'Musique de pub', v:'A', m:1, neuf:1}
+          {id:'cineMusPub', t:'Musique de pub', v:'A', m:1, neuf:1},
+          /* 17 novembre (Romain) : les deux descentes du donjon (escalier de la crypte, corde du puits) */
+          {id:'cineGrille', t:'Descente : la grille rouillée', v:'A', neuf:1}, {id:'cineGoutte', t:'Descente : une goutte', v:'A', neuf:1}, {id:'cineCorde', t:'Descente : la corde dans les gants', v:'A', neuf:1}, {id:'cineLueur', t:'Descente : la lueur du fond', v:'A', neuf:1},
+          {id:'cineMusEscalier', t:'Musique de l\'escalier', v:'A', m:1, neuf:1}, {id:'cineMusPuits', t:'Musique du puits', v:'A', m:1, neuf:1}
         ]}
       ]}
     ]},

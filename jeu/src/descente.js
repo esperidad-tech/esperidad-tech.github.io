@@ -69,7 +69,11 @@ A['ds-aller'] = function(){
   try{ sessionStorage.setItem(CLE_RETOUR, P.donjonJeton); }catch(e){}
   noterDepart(P.donjonJeton);
   M.UI.modal = null;
-  window.location.href = u;
+  /* la descente en film (Romain, 17 novembre ; Bible §13.62) : l'escalier sous le clocher, ou la corde du puits, puis le donjon. Le film est
+     pris sur la tablette du Pisteur (c'est lui qui sait par où on descend) ; pas de film (pas arrivé, pas de lecteur) : on part tout de suite. */
+  var film = role === 'pisteur' ? ({crypte:'escalier', puits:'puits'})[P.vus['donjon:entree']] : null;
+  function partir(){ window.location.href = u; }
+  if(film && M.jouerFilm) M.jouerFilm(film, partir); else partir();
 };
 A['ds-code'] = function(){ var P = M.P(); M.UI.modal = null; P.onglet = 'code'; M.UI.saisie = []; M.sauver(); M.render(); window.scrollTo(0, 0); };
 
@@ -82,25 +86,31 @@ var PEAUX_A = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'], CHEV_A = ['brun', 'chatain',
    le Pisteur et le Barde ont un code d'allure eux aussi — allure:216 … allure:431, ajoutés APRÈS les 216 premiers (ceux du Sage et de
    l'Alchimiste ne bougent pas). Ils ne servent qu'à la fin, sur l'image du cachot (moteur-ecrans.js, prisonHTML). */
 var ROLES_B = ['pisteur', 'barde'];
+/* L'ÂGE (Romain, 17 novembre : « l'âge dans les codes de l'allure et redessiner les héros en enfant et en adulte ») : les codes neufs
+   s'ajoutent APRÈS les 432 (qui ne bougent pas : ce sont les adultes) — allure:432 … 863 pour un enfant, allure:864 … 1295 pour un âgé,
+   dans le même ordre que les adultes. Un héros adulte garde donc son code d'avant. */
+var AGES_A = ['adulte', 'enfant', 'age'];
 M.allureNumero = function(role, a){
   var base = 2 * ((a.sexe === 'm' ? 1 : 0) + 2 * (Math.max(0, PEAUX_A.indexOf(a.peau)) + 6 * Math.max(0, CHEV_A.indexOf(a.cheveux))));
-  return ROLES_B.indexOf(role) >= 0 ? 216 + ROLES_B.indexOf(role) + base : Math.max(0, ROLES_A.indexOf(role)) + base;
+  var n = ROLES_B.indexOf(role) >= 0 ? 216 + ROLES_B.indexOf(role) + base : Math.max(0, ROLES_A.indexOf(role)) + base;
+  return n + 432 * Math.max(0, AGES_A.indexOf(a.age));
 };
 M.allureDe = function(n){
-  n = Math.max(0, Math.min(431, Math.floor(+n) || 0));
+  n = Math.max(0, Math.min(1295, Math.floor(+n) || 0));
+  var ag = Math.floor(n / 432); n -= 432 * ag;
   var roles = n >= 216 ? ROLES_B : ROLES_A; if(n >= 216) n -= 216;
   var r = n % 2; n = (n - r) / 2; var sx = n % 2; n = (n - sx) / 2; var pe = n % 6, ch = (n - pe) / 6;
-  return {role:roles[r], sexe:sx ? 'm' : 'f', peau:PEAUX_A[pe], cheveux:CHEV_A[ch]};
+  return {role:roles[r], sexe:sx ? 'm' : 'f', peau:PEAUX_A[pe], cheveux:CHEV_A[ch], age:AGES_A[ag]};
 };
 /* mon code d'allure pour le cachot de la fin (les quatre rôles) */
 M.allureCodeFin = function(){ return 'allure:' + M.allureNumero(M.role(), M.allureMoi()); };
 M.allureMoi = function(){
   var h = (M.S && M.S.heros) || {};
-  return {sexe:h.sexe === 'm' ? 'm' : 'f', peau:PEAUX_A.indexOf(h.peau) >= 0 ? h.peau : 'p1', cheveux:CHEV_A.indexOf(h.cheveux) >= 0 ? h.cheveux : 'brun', yeux:h.yeux || ''};
+  return {sexe:h.sexe === 'm' ? 'm' : 'f', age:AGES_A.indexOf(h.age) >= 0 ? h.age : 'adulte', peau:PEAUX_A.indexOf(h.peau) >= 0 ? h.peau : 'p1', cheveux:CHEV_A.indexOf(h.cheveux) >= 0 ? h.cheveux : 'brun', yeux:h.yeux || ''};
 };
 /* mon code d'allure (le Sage, l'Alchimiste) */
 M.allureCode = function(){ var role = M.role(); return ROLES_A.indexOf(role) >= 0 ? 'allure:' + M.allureNumero(role, M.allureMoi()) : null; };
-function allureTxt(a){ return (a.sexe === 'm' ? 'm' : 'f') + '.' + a.peau + '.' + a.cheveux + (a.yeux && /^[a-z]+$/.test(a.yeux) ? '.' + a.yeux : ''); }
+function allureTxt(a){ return (a.sexe === 'm' ? 'm' : 'f') + '.' + a.peau + '.' + a.cheveux + (a.yeux && /^[a-z]+$/.test(a.yeux) ? '.' + a.yeux : '') + (a.age === 'enfant' ? '.enf' : a.age === 'age' ? '.age' : ''); }
 /* l'allure à passer au donjon et à la petite page de la tenue : moi, et (le Pisteur) ceux dont j'ai tapé le code */
 function lookTxt(){
   var P = M.P(), role = M.role(), a = (P && P.allures) || {}, l = [role.charAt(0) + ':' + allureTxt(M.allureMoi())];
@@ -201,6 +211,13 @@ if(A.point){
     if(p && p.descente && M.pointsVisibles(l, role).some(function(x){ return x.id === id; })){
       P.vus['explore:' + l] = P.moment; P.vus[role + ':' + l + ':' + id] = 'ok'; P.vus['donjon:entree'] = p.descente;
       M.son('page'); M.sauver();
+      /* le film de cette descente se télécharge déjà (on ne l'aura pas attendu quand on appuiera sur « Descendre ») */
+      try{
+        var fd = ({crypte:'escalier', puits:'puits'})[p.descente];
+        if(fd && role === 'pisteur' && window.CineLecteur && window.CINE_INFOS && window.CINE_INFOS[fd] && location.protocol !== 'file:'){
+          window.CineLecteur.precharger('cine/' + fd + '.mp4'); if(window.CINE_INFOS[fd].piste) window.CineLecteur.prechargerPiste('cine/' + fd + '.mp3');
+        }
+      }catch(e){}
       M.ouvrir({type:'descente', retourId:l});
       return;
     }
@@ -531,7 +548,7 @@ M.codeSpecial = function(t, x, id){
   if(t === 'allure' && P && P.etape === 'fin'){
     var af = M.allureDe(x);
     if(af.role === M.role()){ M.son('clic'); M.toast('C\'est ton code à toi ! Tape celui d\'un ami.'); M.render(); return true; }
-    P.allures = P.allures || {}; P.allures[af.role] = {sexe:af.sexe, peau:af.peau, cheveux:af.cheveux};
+    P.allures = P.allures || {}; P.allures[af.role] = {sexe:af.sexe, peau:af.peau, cheveux:af.cheveux, age:af.age};
     M.son('gain'); M.sauver(); M.UI.modal = null; M.render();
     return true;
   }
@@ -539,7 +556,7 @@ M.codeSpecial = function(t, x, id){
      aussi ses sept potions (il ne l'a que quand elles sont toutes prêtes : plantes.js, M.sacTout). */
   if(t === 'allure' && cfg()){
     var a = M.allureDe(x), av = P.allures && P.allures[a.role], deja = !!(av && allureTxt(av) === allureTxt(a));
-    P.allures = P.allures || {}; P.allures[a.role] = {sexe:a.sexe, peau:a.peau, cheveux:a.cheveux}; P.recus['allure:' + a.role] = true;
+    P.allures = P.allures || {}; P.allures[a.role] = {sexe:a.sexe, peau:a.peau, cheveux:a.cheveux, age:a.age}; P.recus['allure:' + a.role] = true;
     if(a.role === 'alchimiste' && M.sacTout) M.sacTout();
     if(!deja) M.noter(a.role === 'sage' ? 'Le Sage a enfilé sa tenue de combat.' : 'L\'Alchimiste a enfilé sa tenue de combat. Ses sept potions sont prêtes.', '🛡️');
     M.son('gain'); M.sauver();
