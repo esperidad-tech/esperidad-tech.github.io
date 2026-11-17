@@ -172,7 +172,27 @@ function salut(id){
 function cleSalut(id){ var N = (M.E().pnj || {})[id] || {}, mid = M.momentId(); return 'salut:' + id + ':' + (N.saluts && N.saluts[mid] ? mid : '*'); }
 /* (une phrase, ou deux à l'enquête 3 : la deuxième quand on revient — moteur-roles.js, M.phraseOccupe) */
 function occupe(id){ if(M.phraseOccupe) return M.phraseOccupe(id); var E = M.E(), N = (E && E.pnj && E.pnj[id]) || {}; return (N.occupe && N.occupe[M.momentId()]) || null; }
-function estVexe(id){ var P = M.P(); return !!(P && P.vexe && P.vexe[id] === P.moment); }
+function estVexe(id){
+  var P = M.P(); if(!(P && P.vexe && P.vexe[id] === P.moment)) return false;
+  /* (17 novembre, Romain : « on donne le code au Barde, et on ne peut pas parler à Mélusine : elle reste en rouge… ce n'est pas normal ») E.vexeRouvre
+     (enquête 3) : un villageois fâché reparle dès qu'une question s'ouvre chez lui après sa colère (un code d'un équipier). Les questions
+     ouvertes au moment de la colère : P.vexeOuvertes[id] ; sans elles (une partie déjà en cours), celles qui n'attendent aucun code. */
+  var E = M.E(); if(E && E.vexeRouvre){
+    var avant = P.vexeOuvertes && P.vexeOuvertes[id];
+    if(!avant) avant = questions(id).map(function(q, i){ return q.besoin ? -1 : i; }).filter(function(i){ return i >= 0; });
+    if(questionsOuvertes(id).some(function(i){ return avant.indexOf(i) < 0; })) return false;
+  }
+  return true;
+}
+/* les questions qu'on peut poser maintenant à ce villageois (leurs numéros) */
+function questionsOuvertes(id){
+  return questions(id).map(function(q, i){ return !cachee(id, q) && (!q.besoin || M.besoinOk(q.besoin)) ? i : -1; }).filter(function(i){ return i >= 0; });
+}
+/* il se vexe : on note aussi ce qui était ouvert à ce moment-là (estVexe) */
+function sevexe(id){
+  var P = M.P(); P.vexe = P.vexe || {}; P.vexe[id] = P.moment;
+  P.vexeOuvertes = P.vexeOuvertes || {}; P.vexeOuvertes[id] = questionsOuvertes(id);
+}
 /* vexé parce qu'accusé à tort (« Mensonge ? » sur une vérité) : P.vexeAccuse {pnj:moment} */
 function accuseAMoment(id){ var P = M.P(); return !!(P && P.vexeAccuse && P.vexeAccuse[id] === P.moment); }
 /* la potion de vérité (enquête 2) : bue par un seul villageois de l'enquête (P.potionBue) */
@@ -341,7 +361,8 @@ function mentEncorePossible(id, i){ return mentNonVu(id, i) && derniere(id) === 
 function preparer(id){
   /* N.noteSalut : ce que dit sa phrase d'accueil s'inscrit aussi dans le Carnet, une seule fois (Iris, enquête 2 : Bible §13.10) */
   try{ var P0 = M.P(), N0 = ((M.E() || {}).pnj || {})[id] || {}; if(N0.noteSalut && P0 && !estVexe(id) && !P0.vus['salut-note:' + id]){ P0.vus['salut-note:' + id] = 1; M.noter(N0.noteSalut, (D.PNJ[id] || {}).ic); } }catch(e){ console.error(e); }
-  if(UI.bd && UI.bd.p === id && UI.bd.m === M.P().moment) return;
+  /* (17 novembre) la colère gardée à l'écran (« Je ne te parle plus ! ») ne reste pas quand elle s'est rouverte (E.vexeRouvre : un code est arrivé) */
+  if(UI.bd && UI.bd.p === id && UI.bd.m === M.P().moment && !((UI.bd.mode === 'vexe' || UI.bd.mode === 'accuse') && !estVexe(id))) return;
   UI.bd = estVexe(id) ? {p:id, mode:'vexe', t:(M.P().vexeTxt || {})[id] || texteVexe(id), m:M.P().moment, joue:true} : {p:id, mode:'salut', t:salut(id), m:M.P().moment};
   /* le salut est dit : la prochaine visite n'en aura plus (E.salutUneFois) ; « occupé » n'est pas un salut */
   try{ var E1 = M.E(), P1 = M.P(); if(E1 && E1.salutUneFois && UI.bd.mode === 'salut' && UI.bd.t && !occupe(id)){ P1.vus[cleSalut(id)] = 1; M.sauver(); } }catch(e){ console.error(e); }
@@ -600,7 +621,7 @@ function question(el){
     if(M.fxVrai('charmeur')) charme = true;   /* Charmeur : les maladroites ne vexent plus */
     else {
       P.vus['maladroit:' + id + ':' + i + ':' + kc] = 1;
-      P.vexe = P.vexe || {}; P.vexe[id] = P.moment;
+      sevexe(id);
       P.vexeTxt = P.vexeTxt || {}; P.vexeTxt[id] = texteVexe(id, c);
       UI.bd = {p:id, mode:'vexe', t:P.vexeTxt[id], m:P.moment};
       M.noter((M.E() || {}).vexeNeutre ? nom(id) + ' n\'a rien voulu dire quand tu as dit : « ' + c.q + ' ».' : nom(id) + ' s\'est vexé' + (FEM[id] ? 'e' : '') + ' : « ' + c.q + ' », ce n\'était pas la bonne façon de demander.', (M.E() || {}).vexeNeutre ? '🤔' : '😤');
@@ -721,7 +742,7 @@ A['bd-ment'] = function(el){
   }
   /* Romain (4 novembre, 22 h 43) : pas de deuxième chance. Accusé à tort, il se vexe, la discussion s'arrête tout de suite,
      et il reste fermé jusqu'au moment suivant (« du nouveau » ne rouvre pas la porte d'un vexé ; pas de pardon). */
-  P.vexe = P.vexe || {}; P.vexe[id] = P.moment;
+  sevexe(id);
   P.vexeAccuse = P.vexeAccuse || {}; P.vexeAccuse[id] = P.moment;
   P.vexeTxt = P.vexeTxt || {}; P.vexeTxt[id] = VEXE_ACCUSE;
   M.noter(nom(id) + ' disait la vérité, et tu l\'as traité' + (FEM[id] ? 'e' : '') + ' de menteu' + (FEM[id] ? 'se' : 'r') + ' : ' + il(id) + ' ne te parle plus pour ce moment.', '😠');

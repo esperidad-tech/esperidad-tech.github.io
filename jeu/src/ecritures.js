@@ -99,8 +99,32 @@ if(M.A) M.A['ec-designer'] = function(el){
   M.son('clic');
   M.ouvrir({type:'confirmer', titre:'Tu en es sûr ?', t:nom + ' aurait écrit la lettre ?', oui:'Oui, c\'est cette main-là', non:'Je regarde encore'});
 };
+/* (17 novembre, Romain : « Mélusine et Margot, les deux écritures fonctionnent ») Deux mains ont les trois signes : l'écriture seule ne tranche
+   pas. Tant que le Sage n'a pas prouvé qu'il connaît les empreintes du jardin d'Iris (le Pisteur les dit à voix haute : 3 carreaux ; la pointure
+   de chacun est dans « Les habitants »), toucher l'une ou l'autre ouvre la même fenêtre : « combien de carreaux ? ». Bonne réponse : c'est
+   Mélusine, quelle que soit la main touchée. */
+var POINTURE_VRAIE = 3;
+M.pointureHTML = function(m){
+  var t = 'Ces deux mains se ressemblent trop pour trancher : il te faut une autre preuve. Les empreintes du jardin d\'Iris, trouvées par le Pisteur : elles faisaient combien de carreaux ?';
+  return '<div class="b-info-modal"><div class="b-grand-ic">👣</div><h2>Deux mains pareilles</h2><p>' + esc(t) + '</p>' + lire(t) +
+    '<div class="b-rangee">' + [2, 3, 4, 5].map(function(n){ return '<button class="btn" data-act="ec-pointure" data-n="' + n + '">' + n + ' carreaux</button>'; }).join('') + '</div>' +
+    '<button class="btn second" data-act="ec-pointure" data-n="non">Je ne sais pas encore</button></div>';
+};
+if(M.A) M.A['ec-pointure'] = function(el){
+  var P = M.P(), n = el.dataset.n; if(!P || P.vus[K_EC] === 'ok') return;
+  M.UI.modal = null;
+  if(n === 'non'){
+    M.son('clic');
+    M.decouvrir({ic:'🤔', titre:'Il te faut une autre preuve', t:'Demande à tes amis ce qu\'ils ont trouvé cette nuit : une trace, un indice de plus. Et reviens quand tu pourras trancher.', rate:true});
+    return;
+  }
+  if(+n === POINTURE_VRAIE){ P.vus['sage:pointure'] = 1; juger('melusine'); return; }
+  M.son('ko'); M.sauver();
+  M.decouvrir({ic:'💨', titre:'Ça ne colle pas', t:'Les empreintes du jardin ne font pas cette taille. Redemande au Pisteur ce qu\'il a mesuré !', rate:true});
+};
 function juger(id){
   var P = M.P(), e = EC.ech[id]; if(!P || !e) return;
+  if(EC.bons.indexOf(id) >= 0 && !P.vus['sage:pointure'] && P.vus[K_EC] !== 'ok'){ M.son('clic'); M.ouvrir({type:'pointure', id:id}); return; }
   if(id === 'melusine'){
     P.vus[K_EC] = 'ok'; P.objets['_info:cest_melusine'] = true;
     var t = 'Les mêmes lettres, trait pour trait : c\'est la main de Mélusine, la couturière, qui a écrit la lettre d\'Odette !';

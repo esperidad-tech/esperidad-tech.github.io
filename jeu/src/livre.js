@@ -979,6 +979,16 @@ if(M.A){
     vuPage({id:id});
     M.son('feuille'); M.render();
   };
+  /* (17 novembre) « D'accord » d'une fenêtre dont le point a p.ouvreLivre (le maire confie le Livre d'or au Sage) : le Grand Livre s'ouvre tout de
+     suite sur la première des pages listées (data-id : « quiecrit,livredor ») qui existe dans son livre ; sinon, retour au lieu (la mairie) */
+  M.A['ouvrir-livre'] = function(el){
+    var P = M.P(), L = pagesDuLivre(), id = null;
+    String(el.dataset.id || '').split(',').forEach(function(x){ if(!id && indexDe(L, x) >= 0) id = x; });
+    UI.modal = null;
+    if(!id || !P){ if(M.A.lieu) M.A.lieu({dataset:{id:'mairie'}}); else M.render(); return; }
+    M.son('page');
+    if(P.onglet !== 'role' || !M.livreAller(id, true)){ P.onglet = 'role'; UI.livrePage = id; M.sauver(); M.render(); }
+  };
   /* Le Sage passe au moment suivant : s'il y a une page obligatoire à ce moment (le rassemblement, la nuit), le livre s'y ouvre */
   var passer0 = M.A['passer-moment'];
   if(passer0) M.A['passer-moment'] = function(){

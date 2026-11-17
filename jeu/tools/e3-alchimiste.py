@@ -6,7 +6,7 @@ L'établi (refait le 12 novembre : un cadre, src/etabli/, tools/etabli_outils.py
 touché les mains vides, une mauvaise partie, un mauvais outil, l'huile de lin encore vide, puis les sept potions, geste par geste, au
 doigt ; la carte « C'est vrai ! » ; le grimoire (sept pages, chaque texte avec son 🔊) ; le sac ; on quitte au milieu d'une potion et on
 la retrouve.
-L'après-midi : la lettre au labo — sans le Livre d'or (« Il te faudrait d'autres écritures… »), puis avec : une mauvaise écriture, celle de
+L'après-midi : la lettre au labo — sans le Livre d'or (plus aucun message : « Il te faudrait d'autres écritures… » est retiré le 17 novembre), puis avec : une mauvaise écriture, celle de
 Mélusine, le pollen au microscope, l'eau chaude et l'encre de noix de galle → le code « L'écriture de Mélusine » ; le gâteau au maire.
 La nuit : « 🎒 Ton sac ! », le code du sac ; un Pisteur le tape : il reçoit les sept potions (et un sac de trois potions : trois).
 Enfin : pas d'établi dans l'atelier d'une enquête 2.
@@ -323,7 +323,8 @@ with sync_playwright() as p:
     verifier(f.evaluate("() => window.__labo.cuirs()") == ['lettre'] and f.locator('#gLivreDor').count() == 0, 'la lettre est sur le cuir ; pas de Livre d\'or sur la paillasse')
     shot(pg, 'labo-lettre')
     clic('#ech-lettre'); pg.wait_for_timeout(400); clic('#gLoupe'); pg.wait_for_timeout(1900)
-    verifier('autres écritures' in bulle() and f.evaluate("() => document.querySelector('#bLivreDor').hidden"), f'à la loupe, sans le Livre d\'or : « Il te faudrait d\'autres écritures pour comparer… » ({bulle()[:40]})')
+    # (17 novembre, Romain : « il y a encore marqué “il faut d'autres écritures pour comparer” ») plus aucun message : l'Alchimiste ne compare plus les écritures
+    verifier('écritures' not in bulle() and 'comparer' not in bulle() and f.evaluate("() => document.querySelector('#bLivreDor').hidden"), f'à la loupe, la lettre ne dit plus « Il te faudrait d\'autres écritures pour comparer… » ({bulle()[:40]})')
     shot(pg, 'loupe-sans-livre')
     clic('#tir-g .facade'); pg.wait_for_timeout(600)
     verifier(etat()['tiroir'] is None, 'les tiroirs ne s\'ouvrent pas pour une écriture')

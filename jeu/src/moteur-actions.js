@@ -359,6 +359,7 @@ function contenuModal(m){
     case 'porte': return M.porteHTML ? M.porteHTML(m) : '';   /* 👂 écouter aux portes (barde.js) */
     case 'marche': return M.marcheHTML ? M.marcheHTML(m) : '';   /* 💐 le marché aux fleurs du Barde (enquête 3, marche.js) */
     case 'descente': return M.descenteHTML ? M.descenteHTML(m) : '';   /* 🕯️ la descente dans le donjon (enquête 3, descente.js) */
+    case 'pointure': return M.pointureHTML ? M.pointureHTML(m) : '';   /* 👣 deux mains qui se ressemblent : les empreintes du jardin d'Iris (enquête 3, ecritures.js) */
     case 'plantes': return M.plantesHTML ? M.plantesHTML(m) : '';   /* 🎒 le sac de l'Alchimiste, reçu par le Pisteur (enquête 3, plantes.js) */
     case 'grand': return M.grandHTML ? M.grandHTML(m) : '';   /* 🗨️ les grands dialogues du Barde, la fête, retenir le maire (enquête 3, grands.js) */
     case 'cachette': return M.cachetteHTML ? M.cachetteHTML(m) : '';   /* 🌿 un endroit caché où pousse une plante, trouvé par l'Alchimiste sur la carte (cueillette.js) */
@@ -1306,7 +1307,7 @@ A.point = function(el){
     var v = M.pointsVisibles(l, role), c = (p.choix || []).map(function(id){ return v.filter(function(x){ return x.id === id && !P.vus[role + ':' + l + ':' + x.id]; })[0]; }).filter(Boolean);
     return c.length ? c.map(function(x){ return {l:l, id:x.id, t:x.choixTxt || x.nom}; }) : null;
   }
-  if(P.vus[k] === 'ok'){ M.ouvrir({type:'decouverte', ic:p.ic, titre:p.nom, t:P.vus[k + ':partiel'] ? (p.rate || p.t) : p.t, retour:'lieu', retourId:l, choix:choix()}); return; }
+  if(P.vus[k] === 'ok'){ M.ouvrir({type:'decouverte', ic:p.ic, titre:p.nom, t:P.vus[k + ':partiel'] ? (p.rate || p.t) : p.t, retour:p.ouvreLivre ? 'ouvrir-livre' : 'lieu', retourId:p.ouvreLivre ? p.ouvreLivre.join(',') : l, choix:choix()}); return; }
   if(p.mj && !p.essaisInfinis && M.ferme && M.ferme(k)){ M.ouvrir({type:'decouverte', ic:'🔒', titre:p.nom, t:M.texteEchec(p, M.MAX_ESSAIS), rate:true, retour:'lieu', retourId:l}); return; }   /* raté deux fois : fermé (essais.js) ; p.essaisInfinis (l'oie de l'enquête 3) : jamais fermé */
   if(P.vus['explore:' + l] !== P.moment) return;
   if(p.besoin && !M.besoinOk(p.besoin)){
@@ -1329,7 +1330,9 @@ A.point = function(el){
        mission réussie, et on revient à la carte */
     if(orMJ){ M.S.or += orMJ; M.son('gain'); M.sauver(); M.decouvrir({ic:'🪙', titre:'Mission réussie : +' + orMJ + (orMJ > 1 ? ' pièces' : ' pièce') + ' d\'or !', t:p.t, note:p.note, code:code}); return; }
     M.sauver();
-    M.decouvrir({ic:p.ic, titre:p.nom, t:p.t, note:p.note, code:codes ? null : code, codes:codes, retour:'lieu', retourId:l, choix:choix()});
+    /* (17 novembre, Romain : « dès qu'il reçoit le Livre d'or, hop, il se retrouve directement sur la page où on compare les écritures »)
+       p.ouvreLivre : la fenêtre finit sur « D'accord », qui ouvre le Grand Livre sur la première de ces pages qui existe (livre.js, ouvrir-livre) */
+    M.decouvrir({ic:p.ic, titre:p.nom, t:p.t, note:p.note, code:codes ? null : code, codes:codes, retour:p.ouvreLivre ? 'ouvrir-livre' : 'lieu', retourId:p.ouvreLivre ? p.ouvreLivre.join(',') : l, choix:choix()});
   }
   if(p.mj){
     /* l'explication avant (p.avant, p.bouton) ; « Plus tard » ramène au lieu : rien n'est encore dépensé ; p.mjNiveauFixe : un niveau fixe (Silas, e2.js) */

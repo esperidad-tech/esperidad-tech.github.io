@@ -192,6 +192,8 @@ E[3] = {
   ecouteMaisons:true,   /* avec « Tendre l'oreille », une maison où il y a quelque chose à écouter montre sa feuille (« Frapper », « Écouter aux portes ») */
   potionAveu:true,
   vexeNeutre:true,
+  /* (17 novembre, Romain) un villageois fâché reparle dès qu'une question s'ouvre chez lui (le code « L'écriture de Mélusine » : barde.js, estVexe) */
+  vexeRouvre:true,
   veriteUnique:true,
   tics:TICS,
   /* au début de l'enquête, les étiquettes des menteurs qui manquent sur le liège s'épinglent toutes seules (E3-dialogues-et-trame.md §0) */
@@ -845,11 +847,11 @@ E[3] = {
         /* (13 novembre) le Livre d'or n'est plus un point de la mairie : c'est une page du Grand Livre (E.pages, « livredor ») */
         /* rendre le tableau : 5 pièces d'or. (13 novembre : plus de lettre accrochée sous le tableau — si le Barde ne l'obtient pas, le
            Pisteur va la chercher, autant de fois qu'il faut : « pas besoin de subterfuges », Romain) */
-        {id:'rendu', ic:'🎉', nom:'Rendre le tableau au maire', moments:A_, or:5, visibleSi:[{vu:'sage:mairie:tableau'}],
+        {id:'rendu', ic:'🎉', nom:'Rendre le tableau au maire', moments:A_, or:5, visibleSi:[{vu:'sage:mairie:tableau'}], ouvreLivre:['quiecrit', 'livredor'],
           /* (17 novembre, le nouveau fil) en échange, le maire lui confie le Livre d'or de la fête : il n'est plus dans le Grand Livre dès le
              matin (« rien n'arrive par magie »), et c'est le Sage qui compare les écritures, plus l'Alchimiste */
           t:'Le maire : « Magnifique ! Ce soir, tout le monde à la fête ! Tenez, gardez-moi donc le Livre d\'or : tout le village y a écrit un mot pour Odette. »'},
-        {id:'sanstableau', ic:'🏛️', nom:'Passer voir le maire', moments:A_, visibleSi:[{rate:'sage:mairie:tableau'}],
+        {id:'sanstableau', ic:'🏛️', nom:'Passer voir le maire', moments:A_, visibleSi:[{rate:'sage:mairie:tableau'}], ouvreLivre:['quiecrit', 'livredor'],
           t:'Le maire : « Pas de tableau ? Tant pis, les lampions feront l\'affaire. Rendez-vous utile : gardez-moi le Livre d\'or, tout le village y a écrit un mot pour Odette. »'}
       ]},
       /* l'Alchimiste (étape 4) : porter le gâteau au maire, l'après-midi (5 pièces d'or) */
