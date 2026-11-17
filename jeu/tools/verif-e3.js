@@ -260,6 +260,18 @@ module.exports = function verifierE3(E, SRC, D){
   dit(juste(tout), `Tout raté (${ratables.length} mini-jeux, grands dialogues et mensonges manqués) : ${resume(tout)}`);
   const bloquants = ratables.filter(x => !juste(solutions(jouer(ROLES, r => r.cle === x.cle)))).map(x => x.cle);
   dit(!bloquants.length, bloquants.length ? `un seul raté bloque l'enquête : ${bloquants.join(', ')}` : `Un seul raté à la fois (${ratables.length} cas) : l'enquête se résout toujours`);
+  /* (17 novembre, Romain : « que toute la logique fonctionne […] pas de bug de logique par rapport au scénario ») LES OUBLIS : ce qu'un
+     joueur peut ne jamais faire sans que ce soit un raté (il n'y pense pas, il passe à côté). Un oubli à la fois : l'enquête se résout
+     quand même, et on descend. Ce n'est PAS le cas du fil principal (les traces de Moustache jusqu'à la grille : sans elles, personne ne
+     sait où est Odette — c'est voulu, et la maison d'Odette porte une bulle sur la carte du Pisteur tant qu'il ne les a pas suivies). */
+  const oublis = ['barde:levoisin:4', 'sage:page:papier', 'sage:pierre:maison', 'pisteur:L2:maison', 'pisteur:L2:cachette', 'sage:page:vieuxplan', 'barde:iris:5', 'sage:page:herbier',
+    'mission:barde:6', 'barde:fete:don:melusine', 'sage:ecriture', 'alchimiste:boulangerie:sac', 'alchimiste:analyse:sac_farine', 'barde:voisin:1', 'barde:gaspard:4', 'sage:mairie:rendu', 'alchimiste:analyse:encre_iris'];
+  const inconnus = oublis.filter(k => !cles.has(k));
+  const fatals = oublis.filter(k => cles.has(k)).filter(k => { const r = jouer(ROLES, null, [k]); return !juste(solutions(r)) || !r.faits.has('donjon:fini'); });
+  dit(!inconnus.length && !fatals.length, inconnus.length ? 'des oublis à vérifier ne sont plus dans l\'enquête (liste à mettre à jour) : ' + inconnus.join(', ')
+    : fatals.length ? 'un oubli bloque l\'enquête : ' + fatals.join(', ') : `Un oubli à la fois (${oublis.length} cas : le papier du voisin, la cachette, l'herbier d'Iris, le plan du Barde, les tenues de Mélusine…) : l'enquête se résout toujours`);
+  const sansTraces = jouer(ROLES, null, ['pisteur:L2:traces']);
+  dit(!sansTraces.faits.has('donjon:fini'), 'le fil principal : sans les traces de Moustache jusqu\'à la grille, on ne descend pas (voulu : c\'est elles qui disent où est Odette)');
   /* et les deux entrées du donjon : la crypte quand la clé est prise, le puits (et l'acide) quand elle est ratée */
   const cleOk = jouer(ROLES), cleRatee = jouer(ROLES, r => r.cle === 'pisteur:clocher:cle'), anselmeRate = jouer(ROLES, r => r.cle === 'grand:cle');
   dit(cleOk.faits.has('pisteur:clocher:descendre') && !cleOk.faits.has('pisteur:puits:grille'), 'la clé prise : on descend par la crypte, et le puits ne s\'ouvre jamais');

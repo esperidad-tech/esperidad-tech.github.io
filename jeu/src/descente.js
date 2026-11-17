@@ -265,7 +265,9 @@ window.addEventListener('message', function(e){
    s'équiper : les pages de sauvegarde arrivent au même moment). Avant : rien — le vieux plan reste muet (« on ne sait pas ce que c'est,
    ni où ça mène »), et le Sage ne lit pas le donjon à l'avance. */
 M.donjonPlanBloc = function(){
-  var P = M.P(); if(!P || !cfg() || M.role() !== 'sage' || !(P.recus && P.recus['info:on_descend'])) return '';
+  /* (et seulement la nuit : les codes ne changent pas d'une partie à l'autre — un joueur qui connaît déjà celui du départ ne doit pas
+     pouvoir dérouler le plan dès le matin) */
+  var P = M.P(); if(!P || !cfg() || M.role() !== 'sage' || !nuit() || !(P.recus && P.recus['info:on_descend'])) return '';
   var C = dj(), posee = !!P.vus['pierre:vieuxplan'];
   var t = 'Le Pisteur a ouvert le passage : ce vieux plan, c\'est celui de ce qu\'il y a là-dessous ! Déroule-le en grand, et regarde-le de tout près. Le Pisteur, lui, ne verra que de la brume : c\'est toi qui dis le chemin, à voix haute !';
   var l = [];

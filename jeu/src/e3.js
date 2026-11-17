@@ -1364,9 +1364,9 @@ E[3] = {
       get html(){ return window.M && window.M.papierOdetteHTML ? window.M.papierOdetteHTML() : ''; }},
     /* (17 novembre, étape 4) la nuit, c'est ici que le plan se regarde de tout près (pierres.js, M.vieuxPlanHTML) ; le filet : sans la
        cachette d'Odette, la page arrive avec le code du départ (« On va dans la crypte ») */
-    {id:'vieuxplan', ic:'🗺️', visibleSi:[{code:'obj:vieux_plan'}, {code:'info:on_descend'}],
+    {id:'vieuxplan', ic:'🗺️', visibleSi:[{code:'obj:vieux_plan'}, {et:[{code:'info:on_descend'}, {moment:'nuit'}]}],
       /* (le filet : sans la cachette d'Odette, ce n'est pas « le vieux plan d'Odette » mais celui que le Sage a recopié en haut de l'escalier) */
-      get titre(){ var Mx = typeof window !== 'undefined' && window.M, Px = Mx && Mx.P ? Mx.P() : null; return Px && Px.recus && !Px.recus['obj:vieux_plan'] && Px.recus['info:on_descend'] ? 'Le plan gravé dans la pierre' : 'Le vieux plan d\'Odette'; },
+      get titre(){ var Mx = typeof window !== 'undefined' && window.M, Px = Mx && Mx.P ? Mx.P() : null; return Px && Px.recus && !Px.recus['obj:vieux_plan'] ? 'Le plan gravé dans la pierre' : 'Le vieux plan d\'Odette'; },
       get html(){ return window.M && window.M.vieuxPlanHTML ? window.M.vieuxPlanHTML() : ''; }},
     /* LA TENUE DE COMBAT (Romain, 13 novembre) : avec le code du Pisteur « On va dans la crypte ». Le Sage y retrouve son héros en
        tenue et son code d'allure pour le Pisteur (descente.js, M.tenueHTML) — la fenêtre s'ouvre toute seule quand il tape le code. */
