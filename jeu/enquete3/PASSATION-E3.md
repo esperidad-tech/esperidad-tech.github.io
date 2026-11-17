@@ -3,6 +3,13 @@
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
 
+## 17 novembre, 20 h 27 — LE MAIRE VEXÉ DONNE QUAND MÊME LE CODE DE LA LETTRE ; LE ROND JAUNE CHEZ ODETTE LE MATIN — EN LIGNE (Bible §13.63 ; commit 860fe06 du site, version 20261117-1927)
+
+- Trou trouvé pendant une partie de Romain : traité de menteur l'après-midi, le maire se vexe pour tout le moment, et la grande conversation de la lettre (l'après-midi seulement) ne se tient plus. Or `info:lettre_bureau` (pour le Pisteur : le point « La lettre, en cachette ») ne vient que d'elle. **Réparé** : fâché, le maire dit « Et n'essayez même pas de me demander la lettre d'Odette ! » et donne ce code (`vexeDonne`, `e3.js`). Aucun code nouveau.
+- **Le Barde a un rond jaune sur la maison d'Odette dès le matin** (« Poser la canne d'Odette », `oblige:true`), jusqu'à ce que la canne soit posée.
+- Essais : `e3-maire-vexe.py` (nouveau), `e3-obliges.py` (mis à jour), `e3-grands.py`, `rapide.sh`, `partie2.py` : tout vert. **À faire valider par Romain** : voir Bible §13.63.
+- **Pour la conception** : un code qui ne vient que d'un grand dialogue d'un seul moment est un trou possible si le villageois se vexe ; `verif-e3.js` ne le teste pas.
+
 ## 17 novembre — LE NOUVEAU FIL SE CONSTRUIT, ÉTAPE PAR ÉTAPE (go de Romain, 16 novembre, 22 h 40)
 
 Le fil validé : Bible §13.56 (« deuxième version ») et `fil-e3.html`. Quatre étapes, chacune mise en ligne après ses essais :
