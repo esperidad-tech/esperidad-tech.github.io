@@ -1335,6 +1335,7 @@ html.labo-ouvert, html.labo-ouvert body{overflow:hidden}
    (c'est atelier.js, grosBoucle, qui le règle) ; pendant ce temps, les boutons du bas se cachent, et l'appareil photo monte à droite. */
 .at-gp{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden}
 .at-gp-svg{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;touch-action:none}
+.at-gp-corps,.at-gp-tete{will-change:transform}      /* (elles bougent d'un bloc : la carte graphique s'en charge) */
 .at-gp-svg [data-g="tete"],.at-gp-svg [data-g="patG"],.at-gp-svg [data-g="patD"]{pointer-events:visiblePainted}
 .at-gp-ombre{position:absolute;left:0;right:0;bottom:0;height:80%;background:radial-gradient(ellipse 62% 80% at 50% 100%,rgba(18,10,30,.45),rgba(18,10,30,0) 72%);opacity:0;transition:opacity .6s}
 .at-gp.at-vu .at-gp-ombre{opacity:1}

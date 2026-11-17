@@ -7649,6 +7649,7 @@ function poserCoffret(V, o){
   if(!V.salle){
     var cand = [[xa, y], [xb, y]].filter(function(q){ return Math.abs(q[0] - p.x) > ec * 0.82; });
     var pl = placeLibre(V, cand.length ? cand : [[xa, y]], b.g ? 66 : 50, b.g ? 92 : 70, o ? {x:p.x, y:p.y, r:ec * 0.8} : null); x = pl.x; y = pl.y;
+    if(pl.hors) allerVers(V, x, y - 50);      /* (la seule place libre est hors de l'écran : la pièce glisse jusqu'au coffret) */
     /* (malgré tout, il est derrière elle : elle fait deux pas de côté, pour qu'on le voie et qu'on puisse le toucher) */
     if(o && st && !st.depart && Math.abs(x - p.x) < ec * 0.8 && y < p.y + 30 && y > p.y - ec * 1.2){
       var cx = x, cy = y, pas = (p.x >= x ? 1 : -1) * ec * 1.3;
@@ -8348,6 +8349,7 @@ function demarrerBain(V){
   /* (une place dégagée, où on la voit et où le doigt la trouve : rien devant, pas même une gamelle) */
   var pl = placeLibre(V, [[x, y], [borne(p.x - 90, solXmin(V, y) + 120, solXmax(V, y) - 120), y]], 100, 120);
   x = pl.x; y = pl.y;
+  if(pl.hors) allerVers(V, x, y - 60);      /* (la seule place libre est hors de l'écran : la pièce glisse jusqu'à lui) */
   var s = echelleSol(y), dos = document.createElement('div'), el = document.createElement('div');
   dos.className = 'at-baquet at-bain-dos'; dos.innerHTML = svgBaquet(false);
   el.className = 'at-baquet at-bain'; el.innerHTML = svgBaquet(true);
@@ -8650,11 +8652,22 @@ function grosMonte(V, G){
   if(V.gros !== G || V.arrete) return;
   var o = G.o, el = document.createElement('div');
   el.className = 'at-gp';
-  el.innerHTML = '<i class="at-gp-ombre" aria-hidden="true"></i><svg class="at-gp-svg" viewBox="-36 -46 72 70" preserveAspectRatio="xMidYMax meet" role="img" aria-label="' +
-    esc(nomChat(o)) + ', tout près, tout près">' + MP.gros(vChat(o.v), accPantin(o.acc)) + '</svg>';
+  /* (en trois couches, l'une sur l'autre : le corps, la tête, les pattes — la tête et le corps bougent d'un bloc, sans être redessinés :
+     grosRig, R.couches) */
+  var vb = 'viewBox="-36 -46 72 70" preserveAspectRatio="xMidYMax meet"';
+  el.innerHTML = '<i class="at-gp-ombre" aria-hidden="true"></i><svg class="at-gp-svg at-gp-corps" ' + vb + ' aria-hidden="true"></svg><svg class="at-gp-svg at-gp-tete" ' + vb +
+    ' aria-hidden="true"></svg><svg class="at-gp-svg at-gp-pattes" ' + vb + ' role="img" aria-label="' + esc(nomChat(o)) + ', tout près, tout près"></svg>';
+  var tmp = document.createElement('div'), L = el.querySelectorAll('svg');
+  tmp.innerHTML = '<svg>' + MP.gros(vChat(o.v), accPantin(o.acc)) + '</svg>';
+  Array.prototype.slice.call(tmp.firstChild.childNodes).forEach(function(n){
+    var dg = n.getAttribute ? n.getAttribute('data-g') : null;
+    (dg === 'tete' ? L[1] : dg === 'patG' || dg === 'patD' ? L[2] : L[0]).appendChild(n);
+  });
   V.root.appendChild(el);
   V.root.classList.add('at-gp-actif');
-  G.el = el; G.svg = el.querySelector('svg'); G.rig = MP.grosRig(G.svg); G.E = G.rig.E;
+  G.el = el; G.svg = L[2]; G.rig = MP.grosRig(el); G.E = G.rig.E;
+  G.rig.couches = {corps:L[0], tete:L[1]};
+  grosMesure(G);
   G.phase = 'monte'; G.t0 = performance.now(); G.vu = 0; G.der = 0; G.cl = 0; G.or = 0; G.reg = 0; G.lech = 0;
   for(var c in GROS_PISTES) G.E[c] = grosPiste(c, 0);
   G.rig.appliquer(0);
@@ -8665,17 +8678,17 @@ function grosMonte(V, G){
   apres(V, 5500, function(){ if(V.gros === G && G.phase !== 'part') sonMimi(V, 'trille'); });
   /* le doigt : sur sa tête, on la caresse ; un simple toucher, elle repart */
   function dedans(ev){ var e = document.elementFromPoint(ev.clientX, ev.clientY); return !!e && !!e.closest && !!e.closest('.at-gp [data-g="tete"], .at-gp [data-g="patG"], .at-gp [data-g="patD"]'); }
-  G.svg.addEventListener('pointerdown', function(ev){
+  el.addEventListener('pointerdown', function(ev){
     if(V.gros !== G || G.phase === 'part' || !dedans(ev)) return;
     ev.preventDefault(); ev.stopPropagation();
-    try{ (ev.target && ev.target.setPointerCapture ? ev.target : G.svg).setPointerCapture(ev.pointerId); }catch(e){}
+    try{ (ev.target && ev.target.setPointerCapture ? ev.target : el).setPointerCapture(ev.pointerId); }catch(e){}
     G.doigt = {id:ev.pointerId, x:ev.clientX, y:ev.clientY, t:Date.now(), dist:0, car:false};
     G.fx = ev.clientX; G.fy = ev.clientY;
   });
   /* (ses yeux suivent le doigt, où qu'il soit dans la pièce) */
   G.suivre = function(ev){ G.fx = ev.clientX; G.fy = ev.clientY; G.fv = Date.now(); };
   V.root.addEventListener('pointermove', G.suivre);
-  G.svg.addEventListener('pointermove', function(ev){
+  el.addEventListener('pointermove', function(ev){
     if(V.gros !== G) return;
     G.suivre(ev);
     var D = G.doigt;
@@ -8692,9 +8705,20 @@ function grosMonte(V, G){
     /* un simple toucher : « Oh ! », elle redescend tout de suite (Romain : « ou alors on clique dessus, et là, elle redescend direct ») */
     else if(Date.now() - D.t < 320 && D.dist < 12 && performance.now() - G.t0 > GROS_PRET * 1000) grosPart(V, G, 'toucher');
   }
-  G.svg.addEventListener('pointerup', lache);
-  G.svg.addEventListener('pointercancel', lache);
+  el.addEventListener('pointerup', lache);
+  el.addEventListener('pointercancel', lache);
   grosBoucle(V, G);
+}
+/* la taille d'une unité du dessin à l'écran, et le menton (le pivot de la tête), pour les couches (relu deux fois par seconde : l'écran
+   peut tourner) */
+function grosMesure(G){
+  var r = G.svg.getBoundingClientRect(), W = r.width, H = r.height;
+  G.mesT = Date.now();
+  if(!W || !H || !G.rig.couches) return;
+  var k = Math.min(W / 72, H / 70), ox = (W - 72 * k) / 2, oy = H - 70 * k;
+  if(G.rig.k === k) return;
+  G.rig.k = k;
+  G.rig.couches.tete.style.transformOrigin = (ox + 36 * k).toFixed(1) + 'px ' + (oy + 60 * k).toFixed(1) + 'px';      /* (le menton : (0, 14) dans le dessin) */
 }
 /* une caresse commence (oui) ou finit (non) */
 function grosCaresse(V, G, oui){
@@ -8769,6 +8793,7 @@ function grosBoucle(V, G){
     if(now - (G.img || 0) < 30){ grosBoucle(V, G); return; }
     var dt = Math.min(0.1, (now - (G.img || now)) / 1000); G.img = now;
     var E = G.E, s = (now - G.t0) / 1000, t = Date.now(), vers = function(c, v, k){ E[c] += (v - E[c]) * Math.min(1, dt * k); };
+    if(t - (G.mesT || 0) > 500) grosMesure(G);
     /* (on a quitté l'atelier, ouvert une feuille, changé de mode : elle s'en va) */
     if(G.phase !== 'part' && (V.mode !== 'ranger' || V.ouvert || !V.grim.hidden || V.salle !== salleDe(G.o))) grosPart(V, G, 'fin');
     /* (le doigt posé sur sa tête, sans bouger : au bout d'un tiers de seconde, c'est une caresse aussi) */
@@ -9075,6 +9100,7 @@ function jouerCarton(V, o){
   var J = V.jouet, p = chatPos(V, o), y = borne(p.y + 20, SOL_MIN + 50, solMax(V) - 20), x = borne(p.x + 130, solXmin(V, y) + 120, solXmax(V, y) - 120);
   var pl = placeLibre(V, [[x, y], [borne(p.x - 130, solXmin(V, y) + 120, solXmax(V, y) - 120), y]], 90, 110);
   x = pl.x; y = pl.y;
+  if(pl.hors) allerVers(V, x, y - 60);
   var s = echelleSol(y), b = document.createElement('div');
   b.className = 'at-fixe at-touche at-boite'; b.setAttribute('data-at', 'jcarton'); b.setAttribute('role', 'button'); b.setAttribute('aria-label', 'Le carton');
   b.innerHTML = cartonSVG();
@@ -9176,9 +9202,11 @@ function placeLibre(V, l, dl, h, ev){
      rien de libre, la moins cachée) */
   var mieux = null;
   function essai(x, y){
-    var c = cache(x, y);
-    var sc = c * 6000 + (horsVue(x, y) ? 3000 : 0) + Math.hypot(x - l[0][0], y - l[0][1]);
-    if(c < 1 && (!mieux || sc < mieux.sc)) mieux = {x:x, y:y, sc:sc};
+    var c = cache(x, y), hv = horsVue(x, y);
+    /* (17 novembre : mieux vaut une place libre juste hors de l'écran — on y fait glisser la pièce : allerVers — qu'une place à moitié
+       cachée : au téléphone, le grand coffret s'est posé derrière les cartons pas encore ouverts) */
+    var sc = c * 8000 + (hv ? 400 : 0) + Math.hypot(x - l[0][0], y - l[0][1]);
+    if(c < 1 && (!mieux || sc < mieux.sc)) mieux = {x:x, y:y, sc:sc, hors:hv};
   }
   var y0 = SOL_MIN + 50, y1 = solMax(V) - 16;
   for(var gy = 0; gy <= 6; gy++) for(var gx = 0; gx <= 10; gx++){
@@ -9186,7 +9214,7 @@ function placeLibre(V, l, dl, h, ev){
     if(xb > xa) essai(xa + (xb - xa) * gx / 10, y);
   }
   for(var k = 0; k < 16; k++){ var q = chatSolVisible(V); essai(borne(q.x, solXmin(V, q.y) + dl + 30, solXmax(V, q.y) - dl - 30), q.y); }
-  return mieux ? {x:mieux.x, y:mieux.y} : {x:l[0][0], y:l[0][1]};
+  return mieux ? {x:mieux.x, y:mieux.y, hors:mieux.hors} : {x:l[0][0], y:l[0][1]};
 }
 /* ---------- Le coffret qu'elle rapporte ---------- */
 /* (grand : le coffret doré du grand cadeau — le même, en or, au ruban rouge, avec deux étoiles) */

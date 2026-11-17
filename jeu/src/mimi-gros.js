@@ -142,11 +142,23 @@ M.grosRig = function(svg){
   var E = {monte:1, tilt:0, dx:0, lx:0, ly:0, pup:0.35, pau:0, clos:0, orG:0, orD:0, mou:0, gueule:0, langue:0, ronron:0, patG:0, patD:0, griG:1, griD:1};
   var vu = {};
   function met(k, at, v){ var e = g[k]; if(!e) return; var c = k + '|' + at; if(vu[c] === v) return; vu[c] = v; e.setAttribute(at, v); }
+  function cs(e, k, v){ if(!e) return; var c = '#' + k; if(vu[c] === v) return; vu[c] = v; e.style.transform = v; }
   function f(v){ return (Math.round(v * 100) / 100).toString(); }
-  return {E:E, g:g, appliquer:function(t){
-    var y = (1 - E.monte) * 64 - 2 + (E.ronron ? Math.sin(t * 46) * 0.18 * E.ronron : 0);
-    met('tete', 'transform', 'translate(' + f(E.dx) + ',' + f(y) + ') rotate(' + f(E.tilt) + ',0,16)');
-    met('corps', 'transform', 'translate(' + f(E.dx * 0.6) + ',' + f(y) + ')');
+  function fa(v){ return (Math.round(v * 4) / 4).toString(); }      /* (les angles, au quart de degré : moins d'images à redessiner) */
+  var R = {E:E, g:g, couches:null, appliquer:function(t){
+    var mt = (1 - E.monte) * 64, ron = E.ronron ? Math.sin(t * 46) * 0.18 * E.ronron : 0;
+    /* EN COUCHES (le jeu : R.couches = {corps, tete} — deux <svg> posés l'un sur l'autre, R.k = la taille d'une unité en pixels, R.pivot =
+       le menton à l'écran) : la tête et le corps se déplacent et la tête penche par une transformation CSS de leur couche entière — la carte
+       graphique s'en charge, rien n'est redessiné (une caresse faisait tout redessiner, la grosse tête entière, trente fois par seconde) */
+    if(R.couches && R.k){
+      var k = R.k;
+      cs(R.couches.tete, 'tete', 'translate(' + (E.dx * k).toFixed(1) + 'px,' + ((mt + ron) * k).toFixed(1) + 'px) rotate(' + fa(E.tilt) + 'deg)');
+      cs(R.couches.corps, 'corps', 'translate(' + (E.dx * 0.6 * k).toFixed(1) + 'px,' + ((mt + ron) * k).toFixed(1) + 'px)');
+    } else {
+      var y = mt - 2 + ron;
+      met('tete', 'transform', 'translate(' + f(E.dx) + ',' + f(y) + ') rotate(' + f(E.tilt) + ',0,16)');
+      met('corps', 'transform', 'translate(' + f(E.dx * 0.6) + ',' + f(y) + ')');
+    }
     met('patG', 'transform', 'translate(-13.5,' + f(20 + E.patG) + ')');
     met('patD', 'transform', 'translate(13.5,' + f(20 + E.patD) + ')');
     met('griG', 'transform', 'scale(1,' + f(Math.max(0.01, E.griG)) + ')');
@@ -159,16 +171,17 @@ M.grosRig = function(svg){
       met('oeil' + c, 'transform', 'translate(0,-1.2) scale(1,' + f(sy) + ') translate(0,1.2)');
       met('clos' + c, 'opacity', f(E.clos));
     });
-    met('orG', 'transform', 'rotate(' + f(-E.orG) + ',-9.6,-14)');
-    met('orD', 'transform', 'rotate(' + f(E.orD) + ',9.6,-14)');
-    met('mouG', 'transform', 'rotate(' + f(E.mou) + ',-8.4,9.6)');
-    met('mouD', 'transform', 'rotate(' + f(-E.mou) + ',8.4,9.6)');
+    met('orG', 'transform', 'rotate(' + fa(-E.orG) + ',-9.6,-14)');
+    met('orD', 'transform', 'rotate(' + fa(E.orD) + ',9.6,-14)');
+    met('mouG', 'transform', 'rotate(' + fa(E.mou) + ',-8.4,9.6)');
+    met('mouD', 'transform', 'rotate(' + fa(-E.mou) + ',8.4,9.6)');
     var ouv = Math.max(E.gueule, E.langue > 0.02 ? 1 : 0);
     met('bouche', 'opacity', ouv > 0.5 ? '0' : '1');
     met('gueule', 'opacity', E.gueule > 0.5 && E.langue < 0.02 ? '1' : '0');
     met('langue', 'opacity', E.langue > 0.02 ? '1' : '0');
     met('langue', 'transform', 'translate(0,9.6) scale(1,' + f(Math.max(0.05, E.langue)) + ') translate(0,-9.6)');
   }};
+  return R;
 };
 /* une image fixe (l'album) : la même scène, un regard et des yeux au choix */
 M.grosImage = function(v, acc, E){
