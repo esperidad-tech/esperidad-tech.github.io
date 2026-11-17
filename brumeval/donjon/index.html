@@ -4207,6 +4207,42 @@ S.pubTadaA = function(A, P){
   A.bruit(t, {coul:'blanc', hp:6500, env:[[0, 0], [.01, 1], [.5, .2], [1, 0]], g:.1, rugueux:.5, rugVit:30}, o);
   return {duree:1.2};
 };
+
+/* ---------------------------------------------------------------- 17 novembre (Romain) : les deux descentes (jeu/cine/src/film-descente.js ; Bible §13.62) — NEUFS, à écouter */
+/* la grille de la crypte : le fer rouillé qui grince longtemps, puis le « clong » quand elle bute */
+S.cineGrilleA = function(A, P){
+  var t = P.t, o = bus(A, P, 0, .6);
+  A.ton(t, {type:'sawtooth', f:260, f2:540, gl:1.5, env:[[0, 0], [.2, 1], [1.3, .85], [1.8, 0]], g:.05, gigue:30, trem:[19, .9], sat:2, filtres:[{type:'bandpass', f:1400, q:3}, {type:'lowpass', f:2600, q:.7}]}, o);
+  A.ton(t + 1.0, {type:'sawtooth', f:610, f2:300, gl:1.3, env:[[0, 0], [.15, 1], [1.0, .7], [1.4, 0]], g:.04, gigue:26, trem:[23, .9], sat:2, filtres:[{type:'bandpass', f:1900, q:4}]}, o);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:900, pts:[[1.6, 2200]], q:1.6}], env:[[0, 0], [.4, 1], [1.7, .5], [2.3, 0]], g:.2, rugueux:.9, rugVit:21}, o);
+  lourd(A, t + 2.35, .8, o); fer(A, t + 2.35, 430, .22, o);
+  return {duree:4};
+};
+/* une goutte qui tombe dans le noir, très loin : « plic… » et son écho */
+S.cineGoutteA = function(A, P){
+  var t = P.t, o = bus(A, P, h(-.6, .6), .9), f = h(1500, 2100);
+  A.ton(t, {type:'sine', f:f, f2:f * .42, gl:.07, env:A.perc(.002, .16), g:.12}, o);
+  A.ton(t + .26, {type:'sine', f:f * .96, f2:f * .4, gl:.07, env:A.perc(.002, .14), g:.05}, o);
+  A.ton(t + .55, {type:'sine', f:f * .9, f2:f * .38, gl:.07, env:A.perc(.002, .12), g:.025}, o);
+  return {duree:1.6};
+};
+/* la corde qui file entre les mains gantées : ça frotte, ça couine un peu */
+S.cineCordeA = function(A, P){
+  var t = P.t, o = bus(A, P, 0, .5);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:700, pts:[[.5, 1500], [.9, 900]], q:1.2}], env:[[0, 0], [.12, 1], [.55, .8], [.9, 0]], g:.34, rugueux:.7, rugVit:24}, o);
+  A.ton(t + .08, {type:'triangle', f:1800, f2:1250, gl:.7, env:[[0, 0], [.1, 1], [.7, 0]], g:.012, vib:[12, 40]}, o);
+  A.pas(t + .75, {f:90, bp:900, g:.2}, o);
+  return {duree:1.1};
+};
+/* au fond, une lueur qui chante tout bas : un accord de verre, de plus en plus clair */
+S.cineLueurA = function(A, P){
+  var t = P.t, o = bus(A, P, 0, .9);
+  [[220, .05], [330, .045], [440.5, .04], [660, .03], [880, .02]].forEach(function(n, k){
+    A.ton(t + k * .35, {type:'sine', f:n[0], env:[[0, 0], [1.6, 1], [3.2, .8], [4.4, 0]], g:n[1], vib:[4.5 + k * .3, n[0] * .004]}, o);
+  });
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:500, pts:[[4, 1400]], q:.8}], env:[[0, 0], [2, 1], [4.2, 0]], g:.06}, o);
+  return {duree:4.6};
+};
 })(window);
 
 
@@ -5440,8 +5476,11 @@ var OS = {
   JA:{hanche:SQ.cuisseA, l1:50, l2:50}, JB:{hanche:SQ.cuisseB, l1:50, l2:50}
 };
 /* une pièce articulée : <g data-j> (la pose) qui contient <g data-i> (l'attente), même pivot */
+var ECHELLE_TETE = 1;   /* enfant : tête plus grosse par rapport au corps (posée par fabAge) */
 function J(nom, contenu, x){
   var p = SQ[nom] || x, o = 'transform-origin:' + p[0] + 'px ' + p[1] + 'px';
+  if(nom === 'tete' && ECHELLE_TETE !== 1 && contenu.indexOf('data-souple') < 0)
+    contenu = '<g transform="translate(124 98) scale(' + ECHELLE_TETE + ') translate(-124 -98)">' + contenu + '</g>';
   return '<g class="haJ" data-j="' + nom + '" style="' + o + '"><g class="haJ" data-i="' + nom + '" style="' + o + '">' + contenu + '</g></g>';
 }
 /* un segment de membre, vertical au repos, arrondi aux deux bouts (les jointures restent pleines) */
@@ -6471,6 +6510,12 @@ function css(){
 var ROLES = {};
 var FX = {etoiles:function(){}};
 
+function fabAge(role, lk, grain){
+  ECHELLE_TETE = lk && lk.age === 'enfant' ? 1.16 : 1;
+  try{ return ROLES[role].fab(lk, grain); } finally { ECHELLE_TETE = 1; }
+}
+/* la taille du corps selon l'âge : enfant plus petit, personne âgée un peu moins grande (adulte : inchangé) */
+var ECHELLE_CORPS = {enfant:.84, age:.94};
 /* ============ un héros ============ */
 function Heros(cont, role, lk){
   css();
@@ -6481,6 +6526,7 @@ function Heros(cont, role, lk){
   if(getComputedStyle(cont).position === 'static') cont.style.position = 'relative';
   this.racine = document.createElement('div'); this.racine.className = 'ha ha-' + role;
   this.boite = document.createElement('div'); this.boite.className = 'ha-boite';
+  if(ECHELLE_CORPS[this.lk.age]){ this.racine.style.transformOrigin = '50% 100%'; this.racine.style.transform = 'scale(' + ECHELLE_CORPS[this.lk.age] + ')'; }
   this.fx = document.createElement('div'); this.fx.className = 'ha-fx';
   this.racine.appendChild(this.boite); this.racine.appendChild(this.fx);
   cont.appendChild(this.racine);
@@ -6553,7 +6599,7 @@ function preparerUn(role, lk, o){
   var l = fusionLk(role, lk), cle = cleModele(role, l);
   if(MODELES[cle]) return MODELES[cle].promesse;
   var Cu = window.Cuire;
-  var spec = ROLES[role].fab(l, HerosAnime.grain), h = Cu.hote(250, 300);
+  var spec = fabAge(role, l, HerosAnime.grain), h = Cu.hote(250, 300);
   h.innerHTML = spec.svg;
   var svg = h.firstElementChild; svg.style.cssText = 'display:block;width:250px;height:300px';
   var M = MODELES[cle] = {souples:spec.souples};
@@ -8682,7 +8728,7 @@ function photo(role, lk, k){
   k = k || 2;
   return new Promise(function(ok){
     try{
-      var spec = ROLES[role].fab(fusionLk(role, lk), false);
+      var spec = fabAge(role, fusionLk(role, lk), false);
       /* (le dessin est écrit pour une page : on le fait relire par le navigateur, qui le rend en vrai SVG, bien formé) */
       var h = document.createElement('div'); h.innerHTML = spec.svg;
       var el = h.firstElementChild; el.setAttribute('width', 250); el.setAttribute('height', 300);
@@ -17151,7 +17197,7 @@ CL.jouer = function(o){
 
 /* ===== ../cine/sortie/cine-infos.js ===== */
 /* les cinématiques (jeu/cine : infos.py, ne pas modifier à la main) — la durée, les sons, les sous-titres de chaque film */
-window.CINE_INFOS = {"a12":{"duree":13.6,"sons":[[0.62,"cineOutils"],[0.78,"cineOutils"],[1.38,"leoChute"],[1.45,"cineOutils"],[1.9,"cineSouffle"],[3.4,"cineGrogne"],[4.3,"cinePas"],[5.48,"leoDechire"],[5.6,"cineCape"],[6.85,"cineCri"],[9.95,"leoMuscles"],[10.05,"cineOnde"],[11.45,"cineGrogne"],[11.5,"cineOnde"]],"sousTitres":[],"octets":2291741,"piste":1},"b23":{"duree":14.2,"sons":[[0.1,"cineSouffle"],[1.6,"cineSouffle"],[2.45,"cineEssuie"],[6.8,"leoSac"],[8.120000000000001,"leoBouchon"],[8.35,"cineCrache"],[8.85,"leoGlou"],[9.15,"leoGlou"],[9.45,"leoGlou"],[10.1,"leoBrise"],[10.25,"cineCoeur"],[10.45,"leoPotion"],[10.9,"cineCoeur"],[11,"cineMontee"],[11.45,"cineCoeur"],[11.98,"leoMuscles"],[12.15,"cineCri"],[12.5,"cineOnde"],[12.95,"cineOnde"]],"sousTitres":[[3.55,4.75,"Très bien…","Léo"],[4.95,6.35,"Je n'ai pas le choix.","Léo"]],"octets":2618280,"piste":1},"chene":{"duree":61.8,"sons":[[0.15,"cineFoule"],[3.05,"cineClameur"],[6.75,"cineLanterne"],[9.3,"cineFoulePasse"],[10.48,"cineBarriere"],[12.1,"cineVent"],[13.3,"cineHibou"],[16.4,"cineVent"],[19,"cineCape"],[19.84,"cineAllumette"],[22.3,"cineMeche"],[23.1,"cineCape"],[24.7,"cinePffft"],[28.92,"cineOh"],[32.95,"cineToux"],[33.9,"cineCourse"],[38.300000000000004,"cineSouffle"],[40.6,"cineSouffle"],[55,"cineFouleFuit"],[55.099999999999994,"cineToux"],[55.949999999999996,"cineToux"],[56.9,"cineToux"],[58.5,"cineVent"],[60,"cineCape"]],"sousTitres":[[2.5,5.4,"Tous au Vieux Chêne !","Gaspard"],[7,10.3,"Halte ! Le chemin est fermé !","Silas"],[38.6,41.8,"Ce sont des vapeurs toxiques !","Silas"],[42.1,45.3,"Elles montent des sous-sols !","Silas"],[45.6,48.8,"Reculez ! Ne respirez pas ça !","Le maire"],[49.2,52,"La zone est condamnée.","Le maire"],[52.3,54.7,"Rentrez chez vous !","Le maire"]],"octets":9863213,"piste":1},"entree":{"duree":15.2,"sons":[[0.15,"cinePasEcho"],[0.85,"cinePasEcho"],[1.35,"leoCape"],[3.6,"cineCape"],[3.98,"cinePas"],[4.930000000000001,"cinePas"],[9.75,"cineCape"],[14.4,"leoTorches"],[14.55,"cineGrogne"]],"sousTitres":[[6.7,9.4,"J'attends ce moment depuis longtemps.","L'homme en cape"],[9.85,12.45,"Vous n'auriez jamais dû venir ici.","L'homme en cape"],[12.6,14.55,"Je vais m'occuper de vous.","L'homme en cape"]],"octets":1713149,"piste":1},"finLeo":{"duree":41.8,"sons":[[0.05,"cineSouffle"],[0.6,"cineCoeur"],[1.2,"cineCoeur"],[1.85,"cineChute"],[3.2,"cineSouffle"],[28.3,"cineCoeur"]],"sousTitres":[[4.6,7.2,"Assez… Vous avez gagné.","Léo"],[7.6,11,"Meunier… Je n'ai jamais voulu être meunier.","Léo"],[11.3,15.2,"Le maire, lui, m'a promis autre chose. Une vraie place.","Léo"],[15.8,18.7,"C'est lui qui a tout préparé, depuis le début :","Léo"],[18.9,22.1,"la rivière rouge, les fumigènes, la lettre.","Léo"],[22.4,26.3,"Odette, ce n'était pas prévu. Elle a été trop curieuse.","Léo"],[26.9,30.4,"Il descend souvent, tout seul, encore plus bas.","Léo"],[30.7,34.3,"Là-dessous, il y a une ville. Une ville entière, sous Brumeval.","Léo"],[34.8,37.6,"Moi, il ne m'a jamais laissé y aller.","Léo"],[37.8,39.9,"Personne n'y va. Jamais.","Léo"]],"octets":4428675,"piste":1},"finMaire":{"duree":27.2,"sons":[[0.9,"cinePasEcho"],[2.2,"cineLanterne"],[2.7,"cinePasEscalier"],[3.5,"cinePasEscalier"],[4.3,"cinePasEscalier"],[5.1,"cinePasEscalier"],[5.9,"cinePasEscalier"],[6.7,"cinePasEscalier"],[4.4,"cineArmure"],[5.6,"cineArmure"],[6.8,"cineArmure"],[8,"cineArmure"],[8.2,"cinePas"],[9.2,"cinePas"],[10.2,"cinePas"],[9.4,"cineArmure"],[15.1,"cineGant"],[17.3,"cineBague"],[24,"cineCoeur"],[24.8,"cineLances"],[25.2,"cineGardes"],[26.6,"cineCoup"]],"sousTitres":[[11,13.1,"Que s'est-il passé ici ? Léo !","Le maire"],[13.2,14.7,"Qu'avez-vous fait à Léo ?","Le maire"],[18.3,21.4,"Vous êtes allés trop loin. Beaucoup trop loin.","Le maire"],[21.9,23.6,"Monsieur le maire… ?","Silas"],[24,25.7,"Gardes ! Attrapez-les !","Le maire"]],"octets":4349088,"piste":1},"pub":{"duree":29.8,"sons":[[0.5,"pubPop"],[1.5,"pubPop"],[2.5,"pubPop"],[2.85,"pubPlongee"],[4,"pubTada"],[5.95,"pubWhoosh"],[7.95,"pubWhoosh"],[8.95,"pubWhoosh"],[9.95,"pubWhoosh"],[11.95,"pubWhoosh"],[12.95,"pubWhoosh"],[14.05,"cineClameur"],[15.25,"cineAllumette"],[16,"cinePffft"],[17,"cineCape"],[20.45,"pubWhoosh"],[22,"pubPop"],[22.5,"pubPop"],[23,"pubPop"],[23.5,"pubPop"],[23.95,"pubWhoosh"],[25,"cineClameur"],[26,"pubTada"]],"sousTitres":[],"octets":5141448,"piste":1}};
+window.CINE_INFOS = {"a12":{"duree":13.6,"sons":[[0.62,"cineOutils"],[0.78,"cineOutils"],[1.38,"leoChute"],[1.45,"cineOutils"],[1.9,"cineSouffle"],[3.4,"cineGrogne"],[4.3,"cinePas"],[5.48,"leoDechire"],[5.6,"cineCape"],[6.85,"cineCri"],[9.95,"leoMuscles"],[10.05,"cineOnde"],[11.45,"cineGrogne"],[11.5,"cineOnde"]],"sousTitres":[],"octets":2291741,"piste":1},"b23":{"duree":14.2,"sons":[[0.1,"cineSouffle"],[1.6,"cineSouffle"],[2.45,"cineEssuie"],[6.8,"leoSac"],[8.120000000000001,"leoBouchon"],[8.35,"cineCrache"],[8.85,"leoGlou"],[9.15,"leoGlou"],[9.45,"leoGlou"],[10.1,"leoBrise"],[10.25,"cineCoeur"],[10.45,"leoPotion"],[10.9,"cineCoeur"],[11,"cineMontee"],[11.45,"cineCoeur"],[11.98,"leoMuscles"],[12.15,"cineCri"],[12.5,"cineOnde"],[12.95,"cineOnde"]],"sousTitres":[[3.55,4.75,"Très bien…","Léo"],[4.95,6.35,"Je n'ai pas le choix.","Léo"]],"octets":2618280,"piste":1},"chene":{"duree":61.8,"sons":[[0.15,"cineFoule"],[3.05,"cineClameur"],[6.75,"cineLanterne"],[9.3,"cineFoulePasse"],[10.48,"cineBarriere"],[12.1,"cineVent"],[13.3,"cineHibou"],[16.4,"cineVent"],[19,"cineCape"],[19.84,"cineAllumette"],[22.3,"cineMeche"],[23.1,"cineCape"],[24.7,"cinePffft"],[28.92,"cineOh"],[32.95,"cineToux"],[33.9,"cineCourse"],[38.300000000000004,"cineSouffle"],[40.6,"cineSouffle"],[55,"cineFouleFuit"],[55.099999999999994,"cineToux"],[55.949999999999996,"cineToux"],[56.9,"cineToux"],[58.5,"cineVent"],[60,"cineCape"]],"sousTitres":[[2.5,5.4,"Tous au Vieux Chêne !","Gaspard"],[7,10.3,"Halte ! Le chemin est fermé !","Silas"],[38.6,41.8,"Ce sont des vapeurs toxiques !","Silas"],[42.1,45.3,"Elles montent des sous-sols !","Silas"],[45.6,48.8,"Reculez ! Ne respirez pas ça !","Le maire"],[49.2,52,"La zone est condamnée.","Le maire"],[52.3,54.7,"Rentrez chez vous !","Le maire"]],"octets":9863213,"piste":1},"entree":{"duree":15.2,"sons":[[0.15,"cinePasEcho"],[0.85,"cinePasEcho"],[1.35,"leoCape"],[3.6,"cineCape"],[3.98,"cinePas"],[4.930000000000001,"cinePas"],[9.75,"cineCape"],[14.4,"leoTorches"],[14.55,"cineGrogne"]],"sousTitres":[[6.7,9.4,"J'attends ce moment depuis longtemps.","L'homme en cape"],[9.85,12.45,"Vous n'auriez jamais dû venir ici.","L'homme en cape"],[12.6,14.55,"Je vais m'occuper de vous.","L'homme en cape"]],"octets":1713149,"piste":1},"escalier":{"duree":24,"sons":[[0.9,"cineGrille"],[3.1,"cineLanterne"],[0.2,"cineVent"],[9,"cineVent"],[14.5,"cineVent"],[6,"cineGoutte"],[11.5,"cineGoutte"],[16.8,"cineGoutte"],[19.2,"cineLueur"],[3.6,"cinePasEscalier"],[4.4,"cinePasEscalier"],[5.2,"cinePasEscalier"],[6,"cinePasEscalier"],[6.8,"cinePasEscalier"],[7.6,"cinePasEscalier"],[8.4,"cinePasEscalier"],[9.200000000000001,"cinePasEscalier"],[10.000000000000002,"cinePasEscalier"],[10.800000000000002,"cinePasEscalier"],[11.600000000000003,"cinePasEscalier"],[12.400000000000004,"cinePasEscalier"],[13.200000000000005,"cinePasEscalier"],[14.000000000000005,"cinePasEscalier"],[14.800000000000006,"cinePasEscalier"],[15.600000000000007,"cinePasEscalier"],[16.400000000000006,"cinePasEscalier"],[17.200000000000006,"cinePasEscalier"],[18.000000000000007,"cinePasEscalier"],[18.800000000000008,"cinePasEscalier"],[19.60000000000001,"cinePasEscalier"]],"sousTitres":[[1.2,4.3,"La grille grince… puis cède.","Le conteur"],[6.4,9.8,"Marche après marche, le jour s'éloigne.","Le conteur"],[12.8,16.2,"Des signes bleus s'éveillent.","Le conteur"],[19,22.4,"Tout en bas, une lueur attend.","Le conteur"]],"octets":4565605,"piste":1},"finLeo":{"duree":41.8,"sons":[[0.05,"cineSouffle"],[0.6,"cineCoeur"],[1.2,"cineCoeur"],[1.85,"cineChute"],[3.2,"cineSouffle"],[28.3,"cineCoeur"]],"sousTitres":[[4.6,7.2,"Assez… Vous avez gagné.","Léo"],[7.6,11,"Meunier… Je n'ai jamais voulu être meunier.","Léo"],[11.3,15.2,"Le maire, lui, m'a promis autre chose. Une vraie place.","Léo"],[15.8,18.7,"C'est lui qui a tout préparé, depuis le début :","Léo"],[18.9,22.1,"la rivière rouge, les fumigènes, la lettre.","Léo"],[22.4,26.3,"Odette, ce n'était pas prévu. Elle a été trop curieuse.","Léo"],[26.9,30.4,"Il descend souvent, tout seul, encore plus bas.","Léo"],[30.7,34.3,"Là-dessous, il y a une ville. Une ville entière, sous Brumeval.","Léo"],[34.8,37.6,"Moi, il ne m'a jamais laissé y aller.","Léo"],[37.8,39.9,"Personne n'y va. Jamais.","Léo"]],"octets":4428675,"piste":1},"finMaire":{"duree":27.2,"sons":[[0.9,"cinePasEcho"],[2.2,"cineLanterne"],[2.7,"cinePasEscalier"],[3.5,"cinePasEscalier"],[4.3,"cinePasEscalier"],[5.1,"cinePasEscalier"],[5.9,"cinePasEscalier"],[6.7,"cinePasEscalier"],[4.4,"cineArmure"],[5.6,"cineArmure"],[6.8,"cineArmure"],[8,"cineArmure"],[8.2,"cinePas"],[9.2,"cinePas"],[10.2,"cinePas"],[9.4,"cineArmure"],[15.1,"cineGant"],[17.3,"cineBague"],[24,"cineCoeur"],[24.8,"cineLances"],[25.2,"cineGardes"],[26.6,"cineCoup"]],"sousTitres":[[11,13.1,"Que s'est-il passé ici ? Léo !","Le maire"],[13.2,14.7,"Qu'avez-vous fait à Léo ?","Le maire"],[18.3,21.4,"Vous êtes allés trop loin. Beaucoup trop loin.","Le maire"],[21.9,23.6,"Monsieur le maire… ?","Silas"],[24,25.7,"Gardes ! Attrapez-les !","Le maire"]],"octets":4349088,"piste":1},"herosAlchimiste":{"duree":29.8,"sons":[[0.5,"pubPop"],[1,"pubPop"],[5.95,"pubWhoosh"],[7.95,"pubWhoosh"],[9.95,"pubWhoosh"],[10.95,"pubWhoosh"],[11.95,"pubWhoosh"],[15.95,"pubWhoosh"],[20.45,"pubWhoosh"],[22,"pubPop"],[22.5,"pubPop"],[23,"pubPop"],[23.5,"pubPop"],[23.95,"pubWhoosh"],[24.55,"cineClameur"],[26.25,"pubTada"]],"sousTitres":[],"octets":5845427,"piste":1},"herosBarde":{"duree":29.8,"sons":[[0.5,"pubPop"],[1,"pubPop"],[5.95,"pubWhoosh"],[8.45,"pubWhoosh"],[11.95,"pubWhoosh"],[15.95,"pubWhoosh"],[19.45,"pubWhoosh"],[22,"pubPop"],[22.5,"pubPop"],[23,"pubPop"],[23.5,"pubPop"],[23.95,"pubWhoosh"],[24.55,"cineClameur"],[26.25,"pubTada"]],"sousTitres":[],"octets":4408339,"piste":1},"herosPisteur":{"duree":29.8,"sons":[[0.5,"pubPop"],[1,"pubPop"],[6.45,"pubWhoosh"],[8.95,"pubWhoosh"],[11.95,"pubWhoosh"],[15.95,"pubWhoosh"],[20.45,"pubWhoosh"],[22,"pubPop"],[22.5,"pubPop"],[23,"pubPop"],[23.5,"pubPop"],[23.95,"pubWhoosh"],[24.55,"cineClameur"],[26.25,"pubTada"]],"sousTitres":[],"octets":6244905,"piste":1},"herosSage":{"duree":29.8,"sons":[[0.5,"pubPop"],[1,"pubPop"],[5.95,"pubWhoosh"],[8.45,"pubWhoosh"],[10.45,"pubWhoosh"],[11.95,"pubWhoosh"],[15.95,"pubWhoosh"],[20.45,"pubWhoosh"],[22,"pubPop"],[22.5,"pubPop"],[23,"pubPop"],[23.5,"pubPop"],[23.95,"pubWhoosh"],[24.55,"cineClameur"],[26.25,"pubTada"]],"sousTitres":[],"octets":5160945,"piste":1},"pub":{"duree":29.8,"sons":[[0.5,"pubPop"],[1.5,"pubPop"],[2.5,"pubPop"],[2.85,"pubPlongee"],[4,"pubTada"],[5.95,"pubWhoosh"],[7.95,"pubWhoosh"],[8.95,"pubWhoosh"],[9.95,"pubWhoosh"],[11.95,"pubWhoosh"],[12.95,"pubWhoosh"],[14.05,"cineClameur"],[15.25,"cineAllumette"],[16,"cinePffft"],[17,"cineCape"],[20.45,"pubWhoosh"],[22,"pubPop"],[22.5,"pubPop"],[23,"pubPop"],[23.5,"pubPop"],[23.95,"pubWhoosh"],[25,"cineClameur"],[26,"pubTada"]],"sousTitres":[],"octets":5141448,"piste":1},"puits":{"duree":24,"sons":[[0.3,"cineVent"],[0.8,"cineMeche"],[2,"cineMeche"],[3.2,"cineMeche"],[6,"cineCape"],[7.6,"cineCorde"],[8.5,"cineCorde"],[9.4,"cineCorde"],[10.3,"cineCorde"],[11.2,"cineCorde"],[12.1,"cineCorde"],[13,"cineCorde"],[13.9,"cineCorde"],[14.8,"cineCorde"],[15.7,"cineCorde"],[9,"cineGoutte"],[14.2,"cineGoutte"],[16.8,"cineChute"],[17.4,"cinePasEcho"],[18.6,"cineLueur"],[19.6,"cinePasEcho"],[20.4,"cinePasEcho"],[21.2,"cinePasEcho"]],"sousTitres":[[1,4.2,"La grille du puits a fondu.","Le conteur"],[6.8,10.1,"La corde file entre vos mains.","Le conteur"],[12.9,16.2,"Là-haut, la nuit rétrécit.","Le conteur"],[18.8,22.2,"En bas, un passage brille.","Le conteur"]],"octets":4723750,"piste":1}};
 
 
 /* ===== moteur/src/allure.js ===== */
@@ -17185,6 +17231,8 @@ function lire(texte, base){
     if(PE[v[1]]) r[h].pe = PE[v[1]];
     if(CH[v[2]]) r[h].ch = CH[v[2]];
     if(v[3] && YX[v[3]]) r[h].ir = YX[v[3]];
+    /* l'âge (17 novembre) : « enf » ou « age » en fin de texte ; sans lui, un adulte */
+    r[h].age = v.indexOf('enf') >= 3 ? 'enfant' : v.indexOf('age') >= 3 ? 'age' : 'adulte';
   });
   return r;
 }
@@ -17420,7 +17468,7 @@ DJ.mesurerCritiqueVrai = function(){
     if(lent) SALLE.critLeger = true;
   }};
 };
-DJ.VERSION = '17/11 à 7 h 17';
+DJ.VERSION = '17/11 à 10 h 08';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
