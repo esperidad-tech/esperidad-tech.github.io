@@ -119,7 +119,12 @@ window.CATALOGUE = [
           {id:'cineMusPub', t:'Musique de pub', v:'A', m:1, neuf:1},
           /* 17 novembre (Romain) : les deux descentes du donjon (escalier de la crypte, corde du puits) */
           {id:'cineGrille', t:'La grille rouillée', v:'A', neuf:1}, {id:'cineGoutte', t:'Une goutte', v:'A', neuf:1}, {id:'cineCorde', t:'La corde glisse', v:'A', neuf:1}, {id:'cineLueur', t:'La lueur bleue', v:'A', neuf:1},
-          {id:'cineMusEscalier', t:'Musique de l\'escalier', v:'A', m:1, neuf:1}, {id:'cineMusPuits', t:'Musique du puits', v:'A', m:1, neuf:1},
+          {id:'cineMusEscalier', t:'Musique de crypte', v:'A', m:1, neuf:1}, {id:'cineMusPuits', t:'Musique du puits', v:'A', m:1, neuf:1},
+          /* 18 novembre (Romain) : les deux descentes refaites en 2D — les pas, la torche qui brûle, la corde, les bêtes, la clé d'Anselme, la pierre de rune */
+          {id:'cineTorche', t:'La torche brûle', v:'A', neuf:1}, {id:'cineSouffleFeu', t:'La flamme passe', v:'A', neuf:1}, {id:'cinePasPierre', t:'Pas, pierre', v:'A', neuf:1}, {id:'cinePasHerbe', t:'Pas, herbe', v:'A', neuf:1},
+          {id:'cineEtoffe', t:'Une étoffe', v:'A', neuf:1}, {id:'cineChuteTorche', t:'La torche tombe', v:'A', neuf:1}, {id:'cineCordeGrince', t:'La corde grince', v:'A', neuf:1}, {id:'cineAtterrit', t:'Il atterrit', v:'A', neuf:1},
+          {id:'cineBetes', t:'Les bêtes détalent', v:'A', neuf:1}, {id:'cineCouinement', t:'Un couinement', v:'A', neuf:1}, {id:'cineCleEntre', t:'La clé entre', v:'A', neuf:1}, {id:'cineCleTourne', t:'La clé tourne', v:'A', neuf:1},
+          {id:'cineVentCave', t:'Vent de cave', v:'A', neuf:1}, {id:'cineRune', t:'La rune chante', v:'A', neuf:1}, {id:'cineEclat', t:'Un éclat', v:'A', neuf:1}, {id:'cineHm', t:'« Hm ? »', v:'A', neuf:1},
           /* 17 novembre (Romain) : les quatre films des héros (jeu/pub/heros.js) — la musique de la pub, un air et un instrument par héros */
           {id:'cineMusHerosPisteur', t:'Film du Pisteur', v:'A', m:1, neuf:1}, {id:'cineMusHerosAlchimiste', t:'Film de l\'Alchimiste', v:'A', m:1, neuf:1},
           {id:'cineMusHerosBarde', t:'Film du Barde', v:'A', m:1, neuf:1}, {id:'cineMusHerosSage', t:'Film du Sage', v:'A', m:1, neuf:1},

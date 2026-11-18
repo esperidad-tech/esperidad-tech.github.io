@@ -434,48 +434,96 @@ M.cineMusPubA = function(A, P){
   return I;
 };
 
-/* =================== LES DEUX DESCENTES (escalier et puits, 24 s chacune ; Bible §13.62 ; Romain, 17 novembre) ============   Presque rien : un fond grave qui s'installe, des gouttes de harpe très loin, un cœur lent. Dans la dernière partie, la lueur du fond :
-   trois notes claires (la, ré, fa) — le motif de l'homme en cape, en tout petit. On est sous terre : beaucoup d'écho. */
-M.cineMusEscalierA = function(A, P){
-  var I = Instance(A, P), proche = A.bus(P, {grotte:.5}), loin = A.bus(P, {grotte:1, g:.7}), ech = I.echo(loin, {temps:.5, retour:.45, lp:2000, sortie:.5});
-  a(I, 0, function(t){
-    fond(A, t, [m(26), m(38)], 12, .03, proche, {a:3, r:3});
-    [3.2, 6.4, 9.6].forEach(function(x){ sourd(A, t + x, .12, loin); sourd(A, t + x + .45, .08, loin); });
-    [[4.5, 69], [8.2, 65], [10.4, 62]].forEach(function(n){ A.harpe(t + n[0], m(n[1]), {t60:2.2, g:.05, lp:2200}, ech); });
-  });
-  a(I, 12, function(t){
-    fond(A, t, [m(26), m(33), m(41)], 12, .034, proche, {a:3, r:4});
-    trem(A, t + 1, m(57), 8, .012, proche, {env:[[0, 0], [3, .6], [7, 1], [8, 0]]});
-    trem(A, t + 2, m(62), 7, .01, proche, {env:[[0, 0], [3, .6], [6, 1], [7, 0]]});
-    [1, 2.4, 3.8, 5.2, 6.6].forEach(function(x, k){ sourd(A, t + x, .1 + k * .015, loin); });
-    [[7.0, 69], [7.8, 74], [8.6, 77]].forEach(function(n){ A.harpe(t + n[0], m(n[1]), {t60:2.6, g:.06, lp:2800}, ech); });
-    A.choeur(t + 7.4, [m(69), m(74), m(77)], 4, {voyelle:'o', a:1.5, r:2, g:.016}, loin);
-  });
-  return I;
-};
-M.cineMusPuitsA = function(A, P){
-  var I = Instance(A, P), proche = A.bus(P, {grotte:.4}), loin = A.bus(P, {grotte:1, g:.7}), ech = I.echo(loin, {temps:.55, retour:.45, lp:2000, sortie:.5});
-  a(I, 0, function(t){
-    fond(A, t, [m(26), m(33)], 8, .03, proche, {a:2.5, r:2.5});
-    A.harpe(t + 1.5, m(62), {t60:2.4, g:.05, lp:2200}, ech);
-    A.harpe(t + 3.0, m(57), {t60:2.4, g:.045, lp:2200}, ech);
-    montee(A, t + 4.1, 1.6, .12, loin);
-    sourd(A, t + 5.4, .16, loin);
-  });
-  a(I, 6, function(t){
-    fond(A, t, [m(26), m(38), m(45)], 12, .034, proche, {a:2, r:4});
-    for(var k = 0; k < 8; k++) sourd(A, t + 1 + k * 1.1, .07 + k * .012, loin);
-    trem(A, t + 3, m(64), 8, .011, proche, {env:[[0, 0], [3, .6], [7, 1], [8, 0]]});
-    trem(A, t + 3, m(65), 8, .009, proche, {env:[[0, 0], [3, .6], [7, 1], [8, 0]]});
-    A.tambour(t + 10.2, {f:50, d:1.2, g:.18}, loin);
-  });
-  a(I, 18, function(t){
-    [[.6, 69], [1.4, 74], [2.2, 77], [3.2, 81]].forEach(function(n){ A.harpe(t + n[0], m(n[1]), {t60:2.8, g:.055, lp:3000}, ech); });
-    A.choeur(t + .8, [m(69), m(74), m(77)], 4, {voyelle:'o', a:1.2, r:2, g:.016}, loin);
-    fond(A, t, [m(26), m(33)], 6, .026, proche, {a:1.5, r:3});
-  });
-  return I;
-};
+/* =================== LES DEUX DESCENTES, REFAITES EN 2D (18 novembre ; jeu/cine/src/film-descente*.js ; Bible §13.68) ===================
+   Romain : « une musique un peu mystérieuse, inquiétante, mais aussi un petit peu rythmée ». En ré mineur : un petit moteur de cordes
+   pincées (ré – la – ré – la – fa – la – ré – la), à 100 à la minute, qui part et s'arrête avec les héros ; un battement sourd ; un air
+   de quatre notes au célesta, dont la dernière sonne faux exprès (sol dièse, do dièse) ; des cordes qui tremblent quand ça se tend ;
+   un chœur dans la grande salle ; trois cloches de verre pour la pierre de rune ; et le moteur qui repart, plus décidé, sur « Allons-y ».
+   o = les instants du film (jeu/cine/src/film-descente-3.js : assembler) ; la même fin pour les deux (o.fin : le plan « regard »). */
+function descente(o){
+  return function(A, P){
+    var I = Instance(A, P), proche = A.bus(P, {grotte:.35, g:1.6}), tamb = A.bus(P, {grotte:.7, g:1.45}), loin = A.bus(P, {grotte:1, g:1.1}), ech = I.echo(loin, {temps:.45, retour:.42, lp:2400, sortie:.5});
+    var CR = .3, MOTIF = [38, 45, 50, 45, 41, 45, 50, 45], MOTIF2 = [38, 45, 50, 45, 43, 46, 50, 46];
+    /* le moteur : des cordes pincées, graves ; t0 → t1 ; f : sa force ; v : 2 = la deuxième mesure monte (plus décidé) */
+    function moteur(t, t0, t1, f, v){
+      for(var k = 0, x = t0; x < t1 - .05; k++, x += CR){
+        var mo = v === 2 && Math.floor(k / 8) % 2 ? MOTIF2 : MOTIF, n = mo[k % 8], dq = U_inv(t0, t0 + 1.2, x) * (1 - U_inv(t1 - 1.2, t1, x) * .6);
+        A.harpe(t + x, m(n), {t60:.9, g:.085 * f * dq * (k % 4 === 0 ? 1.25 : k % 2 ? .7 : 1), lp:1500}, proche);
+        if(k % 8 === 0) sourd(A, t + x, .13 * f * dq, tamb);
+        if(k % 8 === 4) sourd(A, t + x, .07 * f * dq, tamb);
+        if(v === 2 && k % 2 === 0) A.bruit(t + x, {coul:'blanc', hp:5200, env:A.perc(.002, .05), g:.012 * f * dq}, proche);
+      }
+    }
+    /* l'air du mystère : quatre notes, la dernière fausse ; puis sa réponse */
+    function air(t, x, g, rep){ (rep ? [[0, 76], [.6, 77], [1.2, 74], [1.8, 73]] : [[0, 74], [.6, 77], [1.2, 81], [1.8, 80]]).forEach(function(n){ A.harpe(t + x + n[0], m(n[1]), {t60:2.2, g:g, lp:3200}, ech); A.ton(t + x + n[0], {type:'sine', f:m(n[1] + 12), env:A.perc(.004, .9), g:g * .22}, ech); }); }
+    function tension(t, x, d, g){ trem(A, t + x, m(57), d, g, proche, {env:[[0, 0], [d * .75, 1], [d, 0]]}); trem(A, t + x, m(58), d, g * .8, proche, {env:[[0, 0], [d * .75, 1], [d, 0]]}); }
+    a(I, 0, function(t){
+      /* le fond : le ré tout en bas, tout le long, et l'air de la nuit ou du souterrain */
+      fond(A, t, [m(26), m(33)], o.duree, .026, proche, {a:2.5, r:2.5});
+      A.bruit(t, {coul:'brun', bp:220, bq:.8, env:[[0, 0], [3, 1], [o.duree - 2, .8], [o.duree, 0]], g:.035}, loin);
+      o.debut(t, {A:A, moteur:moteur, air:air, tension:tension, proche:proche, tamb:tamb, loin:loin, ech:ech});
+      /* LA FIN COMMUNE (f : le Pisteur regarde à ses pieds) */
+      var f = o.fin;
+      A.harpe(t + f + 1.3, m(62), {t60:2.6, g:.06, lp:2400}, ech); A.harpe(t + f + 2.0, m(61), {t60:2.6, g:.05, lp:2400}, ech);          /* il baisse les yeux : deux notes qui descendent */
+      /* le carnet dans le noir : presque rien ; puis la torche l'éclaire — l'air, en clair, et un accord chaud */
+      sourd(A, t + f + 3.6, .1, tamb); sourd(A, t + f + 4.75, .08, tamb);
+      tension(t, f + 4.0, 2.1, .008);
+      air(t, f + 6.1, .06, 0);
+      A.choeur(t + f + 6.0, [m(50), m(57), m(62)], 3.4, {voyelle:'o', a:1.2, r:1.6, g:.016}, loin);
+      /* la pierre de rune : trois cloches de verre, un chœur plus haut */
+      var r = f + 8.4;
+      [[0, 86], [.5, 81], [1.0, 89], [1.9, 86], [2.5, 93]].forEach(function(n){ A.cloche(t + r + n[0], m(n[1]), {d:2.6, rapport:3.5, indice:.5, g:.02}, ech); });
+      A.choeur(t + r + .2, [m(62), m(69), m(74)], 4.2, {voyelle:'ou', a:1.4, r:1.8, g:.014}, loin);
+      /* le Sage se demande ce que c'est : l'air, sa réponse */
+      air(t, r + 4.3, .05, 1);
+      tension(t, r + 6.0, 2.3, .009);
+      /* « Allons-y. Odette doit être par là. » : le moteur repart, plus décidé ; un cuivre qui monte ; un dernier coup, au noir */
+      var al = f + 16.6;
+      moteur(t, al + .3, al + 4.9, 1.15, 2);
+      [[.9, 38, 1.4], [2.1, 41, 1.3], [3.3, 45, 1.7]].forEach(function(n){ cuivre(A, t + al + n[0], m(n[1]), n[2], .034, proche); cuivre(A, t + al + n[0], m(n[1] + 12), n[2], .016, loin); });
+      air(t, al + 1.5, .045, 0);
+      montee(A, t + al + 3.7, 1.1, .1, loin);
+      frappe(A, t + al + 4.85, .3, tamb);
+      A.choeur(t + al + 3.4, [m(50), m(57), m(62), m(65)], 2.4, {voyelle:'a', a:.9, r:1, g:.016}, loin);
+    });
+    return I;
+  };
+}
+function A_(K){ return K.A; }
+function U_inv(a, b, v){ return b === a ? 0 : Math.max(0, Math.min(1, (v - a) / (b - a))); }
+/* LE PUITS (49,8 s) : la clairière 0 → 7 ; la margelle 7 → 11,6 (la torche lâchée à 8,9) ; la corde 11,6 → 15 ; le conduit 15 → 20,6 ;
+   le fond du puits 20,6 → 28 (il se pose à 23,2, les bêtes détalent ; il relève la torche à 25) ; la fin commune à 28 */
+M.cineMusPuitsA = descente({duree:49.8, fin:28, debut:function(t, K){
+  K.moteur(t, .4, 5.6, .8);                                                         /* ils marchent vers le puits */
+  K.air(t, 2.6, .05, 0);
+  K.tension(t, 7.2, 1.8, .009);                                                     /* il se penche sur le noir */
+  montee(A_(K), t + 8.2, .8, .07, K.loin);
+  sourd(A_(K), t + 10.35, .2, K.tamb);                                              /* la torche touche le fond, très loin */
+  K.air(t, 9.5, .04, 1);
+  K.moteur(t, 11.9, 20.2, .7);                                                      /* la corde : le moteur, tout doux, jusqu'en bas */
+  [15.4, 17.8].forEach(function(x){ A_(K).harpe(t + x, m(69), {t60:2.4, g:.04, lp:2600}, K.ech); A_(K).harpe(t + x + .6, m(68), {t60:2.4, g:.035, lp:2600}, K.ech); });
+  K.tension(t, 21.2, 2.2, .01);                                                     /* le fond : ça se tend jusqu'à ce qu'il se pose */
+  frappe(A_(K), t + 23.25, .16, K.tamb);
+  A_(K).choeur(t + 23.4, [m(50), m(53), m(57)], 4.4, {voyelle:'ou', a:1, r:2, g:.016}, K.loin);
+  K.air(t, 25.2, .055, 0);                                                          /* la torche se lève : la salle apparaît */
+}});
+/* LA CRYPTE (52 s) : la clé 0 → 6,8 (elle tourne à 2,1 ; la porte s'ouvre à 3,7) ; l'escalier 6,8 → 13 ; le couloir aux arches 13 → 22 ;
+   les niches 22 → 25,6 ; la salle 25,6 → 30,2 ; la fin commune à 30,2 */
+M.cineMusEscalierA = descente({duree:52, fin:30.2, debut:function(t, K){
+  K.tension(t, .3, 1.9, .008);                                                      /* la clé */
+  sourd(A_(K), t + 2.5, .16, K.tamb);
+  K.air(t, 3.9, .05, 0);                                                            /* la porte s'ouvre sur le noir */
+  montee(A_(K), t + 5.6, 1.1, .07, K.loin);
+  K.moteur(t, 7.0, 12.8, .75);                                                      /* l'escalier */
+  K.air(t, 9.4, .04, 1);
+  K.moteur(t, 13.1, 25.4, .9);                                                      /* le couloir aux arches, les niches : le moteur ne s'arrête pas */
+  [14.8, 19.6].forEach(function(x){ K.air(t, x, .045, x > 16 ? 1 : 0); });
+  K.tension(t, 22.1, 3.3, .011);                                                    /* les crânes ; les yeux dans le trou */
+  A_(K).choeur(t + 22.2, [m(50), m(56)], 3.2, {voyelle:'a', a:1, r:1.4, g:.014}, K.loin);
+  frappe(A_(K), t + 25.6, .14, K.tamb);                                             /* la salle */
+  A_(K).choeur(t + 25.8, [m(50), m(53), m(57)], 4, {voyelle:'ou', a:1, r:2, g:.016}, K.loin);
+  K.air(t, 27.4, .05, 0);
+}});
 /* =================== LES QUATRE FILMS DES HÉROS (jeu/pub/heros.js ; Romain, 17 novembre : « un peu le même style avec le même rythme » que la pub) ===================
    La même musique de fête que la pub (120 à la minute, un temps = 0,5 s, les mêmes instruments), mais UN AIR PAR HÉROS, dans son ton, joué par
    son instrument : le Pisteur siffle et court (do), l'Alchimiste fait des bulles au marimba (ré), le Barde chante au luth (fa), le Sage égrène

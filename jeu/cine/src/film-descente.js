@@ -1,259 +1,307 @@
-/* film-descente.js — LES DEUX DESCENTES DU DONJON (Bible §13.62 ; Romain, 17 novembre : « les deux cinématiques de l'entrée du donjon »).
-   Deux films de 24 s, tournés « à la place des héros » (on ne les voit pas : chacun a le sien sur sa tablette). On ne voit que le dos
-   de deux amis qui descendent devant nous (silhouettes à capuche, bleue pour le Sage, violette pour l'Alchimiste).
-   - « escalier » : sous le clocher, la grille de la crypte grince, l'escalier de pierre, les runes bleues qui s'éveillent, la lueur
-     froide d'une porte tout en bas ;
-   - « puits » : la grille du puits a fondu, on descend à la corde le long d'un puits rond, on lève les yeux (la nuit, la lune, un ami
-     qui se penche), on touche le fond, une petite galerie qui brille.
-   Le conteur parle dans les sous-titres. Plateau : plateau-descente.js (zones 'escalier' et 'puits'). */
+/* film-descente.js — LES DEUX FILMS DE LA DESCENTE DANS LE DONJON, REFAITS EN 2D (Bible §13.68 ; Romain, 18 novembre, 00 h 02 :
+   « pas de 3D […] de la 2D, avec des jolies profondeurs de champ […] les éclairages, c'est vraiment la clé […] des cadrages dignes
+   des films […] des pantins très détaillés »). Le Pisteur les voit en touchant « 🕯️ Descendre » (descente.js), selon son entrée.
+
+   « puits »    : la forêt la nuit, les trois héros au vieux puits ; la torche lâchée dans le noir ; la corde ; le fond du puits.
+   « escalier » : la clé d'Anselme dans la porte de la crypte ; l'escalier ; le couloir aux arches ; les niches ; la salle.
+   Puis, LA MÊME FIN pour les deux (le Pisteur regarde à ses pieds, le carnet dans le noir, la torche l'éclaire, la pierre de rune
+   qui luit, le Sage se baisse, « Allons-y. Odette doit être par là. »).
+
+   Tout est fait de calques peints (multiplan.js, decors-film.js) ; les héros sont les vrais pantins du donjon (heros-film.js).
+   Ce fichier : les décors (DEC.*), les plans (un par cadrage), et les deux films (leurs plans bout à bout, leurs sons). */
 (function(){
 'use strict';
-var U = window.CU, FX = window.CFX, FC = window.CFXC, PD = window.PLATEAU_DESCENTE, E_ = PD.ESC, PUI = PD.PUITS;
-var HW = E_.HW, PZ = E_.PZ, PY = E_.PY, NS = E_.NS, BAS = E_.BAS, YB = E_.YB, ZEND = E_.ZEND, SL = E_.SL;
-var PP = 1600, QUI = 'Le conteur';
-function lisse(a, b, x){ return U.clamp((x - a) / (b - a), 0, 1); }
-function dou(a, b, x){ var k = lisse(a, b, x); return k * k * (3 - 2 * k); }
-function mix(a, b, k){ return a + (b - a) * k; }
+var U = window.CU, MP = window.MP, HF = window.HF, DF = window.DF, CINE = window.CINE;
+var CHAUD = [255, 168, 92], LAMPE = [255, 204, 128], FROID = [120, 196, 255], LUNE = [124, 150, 226], RUNE = [110, 240, 255];
+function r2(v){ return Math.round(v * 100) / 100; }
+function K(a, b, t){ return U.lisse(U.inv(a, b, t)); }                    /* de 0 à 1 entre a et b, en douceur */
+function fenetre(t, a, b, m){ m = m || .3; return Math.min(U.inv(a, a + m, t), 1 - U.inv(b - m, b, t)); }
 
-/* les définitions de dessin communes aux deux films */
-function defs(){
-  return FC.defs() +
-    '<radialGradient id="vigD"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".78"/></radialGradient>' +
-    '<filter id="flGrille" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="3.2"/></filter>' +
-    '<filter id="flMain" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="1.2"/></filter>' +
-    '<radialGradient id="ciel"><stop offset="0" stop-color="#27427a"/><stop offset=".6" stop-color="#14264c"/><stop offset="1" stop-color="#0a1226"/></radialGradient>' +
-    '<radialGradient id="lunD"><stop offset="0" stop-color="#fffbe8"/><stop offset=".7" stop-color="#e8ecff"/><stop offset="1" stop-color="#b8c8f0"/></radialGradient>' +
-    '<radialGradient id="cristal"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#8fe6ff"/><stop offset="1" stop-color="#2a7ab0" stop-opacity="0"/></radialGradient>';
+/* ---------------------------------------------------------------- LES LUMIÈRES QUE LES HÉROS PORTENT
+   Chaque image : où est la flamme de la torche, la lampe, le cristal (à l'écran), d'où part la lumière ; et leur dessin (calque « fx »). */
+function porteurs(S, tl, E, o){
+  o = o || {};
+  var cam = S.cam, lum = [], fx = '', H = S.H || {}, t = S.t;
+  function monde(p){ return MP.monde(p.x, p.y, 1000, cam); }
+  if(H.p && !H.p.P.cache && !H.p.P.sansTorche){
+    var p = HF.ou(H.p, 'flamme'), w = monde(p), v = MP.vacille(t, 1), kt = (o.torche == null ? 1 : o.torche);
+    lum.push({x:w.x + U.bruit(t * 13, 3) * 3, y:w.y - 20, d:960, c:CHAUD, k:2.7 * v * kt, r:o.rTorche || 260, z:o.zTorche || 125});
+    fx += MP.halo(w.x, w.y - 18, 250 * v, 'Chaud', .66 * kt) + MP.flamme(w.x, w.y + 4, 15 * (H.p.ech || 1), t, 1) + MP.halo(w.x, w.y - 14, 32, 'Chaud', .9 * kt);
+    S.torche = w;
+  }
+  if(H.a && !H.a.P.cache && !H.a.P.sansLanterne){
+    var p2 = HF.ou(H.a, 'lampe'), w2 = monde(p2), v2 = 1 + .05 * U.fbm(t * 5, 21, 2), kl = (o.lampe == null ? 1 : o.lampe);
+    lum.push({x:w2.x, y:w2.y, d:965, c:LAMPE, k:1.9 * v2 * kl, r:o.rLampe || 200, z:o.zLampe || 96});
+    fx += MP.halo(w2.x, w2.y, 150 * v2, 'Chaud', .5 * kl) + MP.halo(w2.x, w2.y, 15, 'Blanc', .8 * kl);
+    S.lampe = w2;
+  }
+  if(H.s && !H.s.P.cache){
+    var p3 = HF.ou(H.s, 'cristal'), w3 = monde(p3), v3 = 1 + .1 * Math.sin(t * 2.3) + .04 * U.fbm(t * 4, 31, 2), kc = (o.cristal == null ? 1 : o.cristal);
+    lum.push({x:w3.x, y:w3.y, d:965, c:FROID, k:1.7 * v3 * kc, r:o.rCristal || 190, z:o.zCristal || 90});
+    fx += MP.halo(w3.x, w3.y, 130 * v3, 'Froid', .6 * kc) + MP.halo(w3.x, w3.y, 13, 'Blanc', .9 * kc);
+    S.cristal = w3;
+  }
+  /* le rond de lumière au sol, sous chaque lumière portée (o.sol : la hauteur du sol ; o.solC : les calques du sol) */
+  if(o.sol != null) lum.slice().forEach(function(L){ lum.push({x:L.x, y:o.sol + 16, d:1000, c:L.c, k:L.k * .5, r:300, z:70, seul:o.solC || ['sol'], rim:0}); });
+  return {lum:lum, fx:fx};
 }
-
-/* ------------------------------------------------------------ un ami, vu de dos (silhouette à capuche) */
-function ami(p, o){
-  var s = p.s * (o.h || 1) * .52, c = o.coul, ph = o.ph || 0, lit = U.clamp(o.lit == null ? .2 : o.lit, 0, 1);
-  var bal = Math.sin(ph * Math.PI), pas = Math.abs(bal), g = '<g transform="translate(' + U.r(p.x + bal * 3 * s) + ' ' + U.r(p.y - pas * 5 * s) + ') scale(' + U.r(s) + ')">';
-  var j = Math.floor(ph), cote = (j % 2) ? 1 : -1;
-  /* les pieds */
-  g += '<ellipse cx="' + (-22 * cote) + '" cy="-3" rx="20" ry="9" fill="#0a0a10"/><ellipse cx="' + (22 * cote) + '" cy="' + U.r(-3 - pas * 16) + '" rx="20" ry="9" fill="#0a0a10"/>';
-  /* la cape */
-  g += '<path d="M-50 -250 C -62 -170 -82 -80 -86 -14 C -40 -2 40 -2 86 -14 C 82 -80 62 -170 50 -250 Z" fill="' + c + '"/>';
-  g += '<path d="M0 -250 C 4 -170 -2 -80 2 -8" fill="none" stroke="rgba(0,0,0,.4)" stroke-width="3"/>';
-  /* les épaules et la capuche */
-  g += '<path d="M-62 -232 C -60 -262 -34 -270 0 -272 C 34 -270 60 -262 62 -232 C 40 -240 -40 -240 -62 -232 Z" fill="' + c + '"/>';
-  g += '<path d="M-38 -250 C -44 -300 -22 -334 0 -346 C 22 -334 44 -300 38 -250 C 20 -240 -20 -240 -38 -250 Z" fill="' + c + '"/>';
-  g += '<path d="M-38 -250 C -44 -300 -22 -334 0 -346 C 22 -334 44 -300 38 -250 C 20 -240 -20 -240 -38 -250 Z" fill="url(#lunD)" opacity="' + U.r(.1 + lit * .16) + '"/>';
-  /* le liseré froid (la lueur de la porte, devant eux, éclaire leurs contours) */
-  g += '<path d="M-86 -14 C -82 -80 -62 -170 -50 -250 C -44 -300 -22 -334 0 -346 C 22 -334 44 -300 50 -250 C 62 -170 82 -80 86 -14" fill="none" stroke="#8fe6ff" stroke-width="4" opacity="' + U.r(.55 * lit) + '"/>';
-  g += o.accessoire ? o.accessoire(bal, pas) : '';
-  return g + '</g>';
+/* un trajet à pied : on marche à la vitesse v depuis X0, on ralentit et on s'arrête en Xa (les deux pieds posés) */
+function trajet(t, X0, v, Xa, dur){
+  dur = dur || .9;
+  var df = v * dur / 2, t1 = (Xa - df - X0) / v;
+  if(t <= t1) return X0 + v * t;
+  var u = U.clamp((t - t1) / dur, 0, 1);
+  return Xa - df * (1 - u) * (1 - u);
 }
-function sage(bal){
-  /* le bâton à cristal, planté à droite, qui luit */
-  var x = 96 + bal * 8;
-  return '<path d="M' + x + ' -4 L ' + x + ' -330" stroke="#3a2a1a" stroke-width="8" stroke-linecap="round"/>' +
-    '<circle cx="' + x + '" cy="-338" r="54" fill="url(#cristal)" opacity=".9"/><circle cx="' + x + '" cy="-338" r="12" fill="#e8fcff"/>';
+/* les bras de celui qui porte quelque chose en marchant : la main proche tenue haut (la torche, la lanterne) ou sur le bâton */
+function porte(pose, role, t, o){
+  o = o || {};
+  delete pose.brasB; delete pose.avantBrasB; delete pose.mainB;
+  var b = U.fbm(t * 1.3, role.length, 2) * 3;
+  if(role === 'pisteur'){ pose.mB = [(o.mx || 178) + b, (o.my || 116) + b * .6 + Math.sin(t * 6.6) * 1.5]; pose.hB = o.h == null ? -76 : o.h; }
+  if(role === 'alchimiste'){ pose.mB = [(o.mx || 170) + b, (o.my || 124) + Math.sin(t * 6.6 + 1) * 1.5]; pose.hB = -60; }
+  if(role === 'sage'){ pose.mB = [(o.mx || 152) + b * .4, (o.my || 148)]; pose.hB = o.h == null ? 3 : o.h; }
+  return pose;
 }
-function alchimiste(bal){
-  /* la lanterne à la main gauche, la sacoche à la ceinture */
-  var x = 112 + bal * 6;
-  return '<rect x="-84" y="-140" width="46" height="40" rx="8" fill="#3a2410"/><path d="M' + x + ' -170 L ' + x + ' -216" stroke="#2a2a2a" stroke-width="4"/>' +
-    '<rect x="' + (x - 14) + '" y="-170" width="28" height="36" rx="4" fill="#ffcf7a"/><circle cx="' + x + '" cy="-152" r="62" fill="url(#haloChaud)" opacity=".8"/>';
-}
-
-/* la lanterne qu'on porte (en bas à gauche de l'image : le bras, la lanterne qui se balance) */
-function lanterne(t, k){
-  var sw = Math.sin(t * 2.1) * 6, bob = Math.sin(t * 3.1) * 4, x = 232 + sw, y = 470 + bob, fl = FX.lueur(t, 7);
-  return '<g opacity="' + U.r(k) + '"><path d="M' + (x - 150) + ' 640 C ' + (x - 90) + ' 590 ' + (x - 30) + ' 540 ' + x + ' ' + (y - 44) + '" stroke="#1a1410" stroke-width="42" stroke-linecap="round" fill="none" filter="url(#flMain)"/>' +
-    '<path d="M' + x + ' ' + (y - 70) + ' L ' + x + ' ' + (y - 40) + '" stroke="#222" stroke-width="5"/>' +
-    '<rect x="' + (x - 30) + '" y="' + (y - 40) + '" width="60" height="78" rx="9" fill="#3a2a16" stroke="#111" stroke-width="5"/>' +
-    '<rect x="' + (x - 20) + '" y="' + (y - 30) + '" width="40" height="58" rx="5" fill="#ffd486" opacity="' + U.r(.85 * fl) + '"/>' +
-    '<path d="M' + (x - 30) + ' ' + (y - 40) + ' L ' + x + ' ' + (y - 62) + ' L ' + (x + 30) + ' ' + (y - 40) + ' Z" fill="#2a1e10" stroke="#111" stroke-width="4"/></g>';
-}
-function halo(t, k, x, y){
-  var fl = FX.lueur(t, 5);
-  return '<circle cx="' + U.r(x) + '" cy="' + U.r(y) + '" r="' + U.r(430 * fl) + '" fill="url(#haloChaud)" opacity="' + U.r(.55 * k) + '"/>' +
-    '<circle cx="' + U.r(x) + '" cy="' + U.r(y) + '" r="' + U.r(110 * fl) + '" fill="url(#coeurChaud)" opacity="' + U.r(.8 * k) + '"/>';
-}
-function vignette(){ return '<rect width="1440" height="616" fill="url(#vigD)"/>'; }
-
-/* ================================================================== L'ESCALIER */
-var TE = 24, E0 = 3.0, E1 = 22.6, VE = 162;
-var LIGNES_E = [[1.2, 4.3, 'La grille grince… puis cède.', QUI], [6.4, 9.8, 'Marche après marche, le jour s\'éloigne.', QUI],
-  [12.8, 16.2, 'Des signes bleus s\'éveillent.', QUI], [19.0, 22.4, 'Tout en bas, une lueur attend.', QUI]];
-/* la vitesse : elle monte doucement, tient, puis retombe ; la distance = son intégrale */
-function vit(t){ return VE * dou(E0, E0 + 1.6, t) * (1 - dou(19.0, E1, t)); }
-function dist(t){ var d = 0, dt = .02; for(var x = 0; x < t; x += dt) d += vit(Math.min(x + dt / 2, t)) * Math.min(dt, t - x); return d; }
-function sol(z){            /* la hauteur lissée du sol sous la caméra */
-  var a = 0, n = 0; for(var q = -150; q <= 150; q += 30){ var zz = z + q; a += zz > 0 ? 0 : Math.min(YB, -zz * SL); n++; }
-  return a / n;
-}
-function solMarche(z){ if(z > 0) return 0; var i = Math.floor(-z / PZ); return i >= NS ? YB : i * PY; }
-
-function grille(t){
-  /* deux battants de fer rouillé qui coulissent (au premier plan, flous) : ils s'ouvrent de 1,0 à 3,4 s */
-  var k = dou(1.0, 3.4, t) ; if(k >= 1) return '';
-  var o = k * 640 + (t > .9 && t < 3.4 ? Math.sin(t * 40) * 2 * (1 - k) : 0), s = '<g filter="url(#flGrille)" opacity="' + U.r(1 - dou(3.0, 3.4, t)) + '">';
-  [-1, 1].forEach(function(sd){
-    var x0 = sd < 0 ? -o : 720 + o;
-    s += '<g transform="translate(' + U.r(x0) + ' 0)"><rect x="0" y="-20" width="720" height="660" fill="rgba(60,30,14,.0)"/>';
-    for(var i = 0; i < 9; i++) s += '<rect x="' + (14 + i * 80) + '" y="-20" width="22" height="660" fill="#40281a"/><rect x="' + (14 + i * 80) + '" y="-20" width="7" height="660" fill="#7a5030" opacity=".7"/>';
-    [60, 300, 560].forEach(function(y){ s += '<rect x="0" y="' + y + '" width="720" height="26" fill="#352216"/><rect x="0" y="' + y + '" width="720" height="7" fill="#80583a" opacity=".6"/>'; });
-    s += '</g>';
+/* les bêtes qui détalent : des petites boules de poils sombres, deux yeux rouges, une queue. Une bête : {x0, y (le sol), t0 (elle part),
+   vers (+1 / −1), v (sa vitesse), g, d (profondeur : pour sa taille), fin (où elle disparaît : un trou)}.
+   Rend {corps (calque éclairé), yeux (calque de lumière)} en unités du monde. */
+function betes(liste, tl, o){
+  o = o || {};
+  var corps = '', yeux = '';
+  liste.forEach(function(b, i){
+    var dt = tl - b.t0, s = b.s || 1, x = b.x0, y = b.y, cours = dt > 0, op = 1;
+    if(cours){
+      var dist = b.v * (dt + .5 * dt * dt * 2.2) * .5; x = b.x0 + b.vers * Math.min(dist, Math.abs((b.fin == null ? b.x0 + b.vers * 900 : b.fin) - b.x0));
+      if(b.fin != null && Math.abs(x - b.fin) < 2) op = 0;
+      op *= 1 - U.inv(b.dure || 2.2, (b.dure || 2.2) + .25, dt);
+    }
+    if(b.sol) y = b.sol(x) + 2;
+    if(op <= 0) return;
+    var saut = cours ? Math.abs(Math.sin(dt * 21 + i)) * 4 * s : 0, et = cours ? 1.25 : 1, sens = cours ? b.vers : (b.regarde || 1);
+    /* avant de partir : elle lève la tête, ses yeux clignent */
+    var cl = !cours && ((tl * .9 + i * .37) % 2.6) < .12 ? 0 : 1;
+    corps += '<g transform="translate(' + r2(x) + ' ' + r2(y - saut) + ') scale(' + r2(sens * s) + ' ' + s + ')" opacity="' + r2(op) + '">' +
+      '<path d="M-14 -2 Q -34 -8 -40 4 Q -44 12 -34 12" fill="none" stroke="#17121a" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<ellipse cx="0" cy="-8" rx="' + r2(15 * et) + '" ry="' + r2(9.5 / et) + '" fill="#231c28" stroke="#0a070c" stroke-width="2"/>' +
+      '<ellipse cx="' + r2(13 * et) + '" cy="-9" rx="8" ry="6.4" fill="#2a2230" stroke="#0a070c" stroke-width="2"/>' +
+      '<path d="M' + r2(10 * et) + ' -15 l -3 -6 l 6 2 Z M' + r2(15 * et) + ' -15 l 1 -7 l 5 4 Z" fill="#2a2230" stroke="#0a070c" stroke-width="1.6"/>' +
+      (cours ? '<path d="M-8 0 l ' + r2(-6 * Math.sin(dt * 40)) + ' 4 M8 0 l ' + r2(6 * Math.sin(dt * 40)) + ' 4" stroke="#0a070c" stroke-width="2.4" stroke-linecap="round"/>' : '') + '</g>';
+    if(cl) yeux += MP.halo(x + sens * s * 15 * et, y - saut - 10 * s, 9 * s, 'Rouge', .55 * op) + '<circle cx="' + r2(x + sens * s * 13.5 * et) + '" cy="' + r2(y - saut - 10.5 * s) + '" r="' + r2(1.7 * s) + '" fill="#ff5a3a" opacity="' + r2(op) + '"/><circle cx="' + r2(x + sens * s * 18 * et) + '" cy="' + r2(y - saut - 10 * s) + '" r="' + r2(1.5 * s) + '" fill="#ff5a3a" opacity="' + r2(op) + '"/>';
   });
-  return s + '</g>';
+  return {corps:corps, yeux:yeux};
 }
-
-CINE.films.escalier = {
-  nom:'L\'escalier de la crypte', plateau:'descente', duree:TE, defs:defs,
-  sons:[[.9, 'cineGrille'], [3.1, 'cineLanterne'], [.2, 'cineVent'], [9.0, 'cineVent'], [14.5, 'cineVent'], [6.0, 'cineGoutte'], [11.5, 'cineGoutte'], [16.8, 'cineGoutte'], [19.2, 'cineLueur']]
-    .concat((function(){ var a = []; for(var x = 3.6; x < 20.0; x += .8) a.push([x, 'cinePasEscalier']); return a; })()),
-  sousTitres:LIGNES_E,
-  etat:function(t){
-    var d = dist(t), z = 380 - d, fz = sol(z), ph = d / PZ, bob = Math.abs(Math.sin(ph * Math.PI)) * 7 * dou(E0, E0 + 2, t) * (vit(t) / VE);
-    var cy = fz - 175 + bob, pente = dou(100, -300, -z + 0) , tang = -.04 - .27 * dou(60, -260, z) * (1 - dou(-BAS + 300, -BAS - 100, z));
-    var cam = {x:Math.sin(t * .8) * 4, y:cy, z:z, lacet:Math.sin(t * .35) * .012, tangage:tang, focus:750, ouverture:.22};
-    var torches = [];
-    [[500, 0], [8, 1], [18, -1], [27, 1]].forEach(function(q, i){
-      var zz = i === 0 ? 500 : -q[0] * PZ, yy = i === 0 ? -330 : q[0] * PY - 330, sd = i === 0 ? 1 : q[1];
-      torches.push([sd * (HW - 14), yy, zz]);
-    });
-    torches.push([-(HW - 14), YB - 330, -BAS - 500]);
-    var runes = dou(3.5, 12, t) * .95;
-    var porte = dou(15, 22, t), lampe = [cam.x - 100, cam.y + 80, cam.z - 50];
-    var acteurs = [];
-    [[800, 1100, 0], [1250, 1400, 1]].forEach(function(q, i){
-      var lim = i ? -3050 : -3300, hz = Math.max(Math.min(380 - dist(Math.max(0, t - .0)) - q[0], 380 - q[0]), lim);
-      var marche = vit(t) / VE, pH = (dist(t) + i * 40) / PZ;
-      var zH = i === 0 ? Math.max(z - 800, lim) : Math.max(z - 1250, lim + 150);
-      zH = Math.min(zH, 380 - 800 + (i ? -450 : 0));
-      var yH = solMarche(zH);
-      acteurs.push({type:'libre', x:(i ? 60 : -50), y:yH, z:zH, boite:[260, 420], dessin:function(p){
-        return ami(p, {coul:i ? '#5a34a0' : '#2c4aa0', h:i ? 1.08 : .95, ph:pH * marche, lit:porte * .7 + .45, accessoire:i ? alchimiste : sage});
-      }});
-    });
-    var E = {zone:'escalier', cam:cam, torches:torches, lampe:lampe, rayon:900, ambiance:.2, runes:runes, acteurs:acteurs,
-      poussiere:120, poussiereBoite:[cam.x - 300, cam.y - 500, cam.z - 1400, cam.x + 300, cam.y + 100, cam.z + 100], tremble:0,
-      lumieres:function(){
-        return halo(t, dou(2.4, 3.6, t), 250, 500) + FC.lumiere(t, 0, YB - 280, ZEND + 60, {sorte:'Lune', r:520, k:porte * 1.1, coeur:0});
-      },
-      devant:function(){ return lanterne(t, dou(2.2, 3.4, t)) + grille(t); },
-      avant:function(){ return vignette(); },
-      fondu:null};
-    if(t < .6) E.fondu = {k:1 - t / .6};
-    else if(t > 22.8) E.fondu = {k:U.clamp((t - 22.8) / 1.1, 0, 1)};
-    return E;
-  }
-};
-
-/* ================================================================== LE PUITS */
-var TP = 24, A8 = PUI.A, YT = PUI.YT, YW = PUI.YW;
-var LIGNES_P = [[1.0, 4.2, 'La grille du puits a fondu.', QUI], [6.8, 10.1, 'La corde file entre vos mains.', QUI],
-  [12.9, 16.2, 'Là-haut, la nuit rétrécit.', QUI], [18.8, 22.2, 'En bas, un passage brille.', QUI]];
-function pv(x, y, z){ return CAM.vue(x, y, z); }
-/* un polygone du monde, rogné contre le plan de la caméra, puis projeté ; rend le texte des points */
-function polyMonde(pts){
-  var v = pts.map(function(q){ return pv(q[0], q[1], q[2]); }), out = [], n = v.length, i;
-  for(i = 0; i < n; i++){
-    var a = v[i], b = v[(i + 1) % n], ia = a.z < -10, ib = b.z < -10;
-    if(ia) out.push(a);
-    if(ia !== ib){ var k = (-10 - a.z) / (b.z - a.z); out.push({x:a.x + (b.x - a.x) * k, y:a.y + (b.y - a.y) * k, z:-10}); }
-  }
-  return out.map(function(q){ var d = -q.z; return U.r(CAM.W / 2 + q.x * PP / d) + ',' + U.r(CAM.H / 2 + q.y * PP / d); }).join(' ');
-}
-function corde(yHaut, yBas, ep){
-  var s = [], n = 48;
-  for(var i = 0; i <= n; i++){
-    var y = yHaut + (yBas - yHaut) * i / n, v = pv(0, y, 0);
-    s.push(v.z < -15 ? [CAM.W / 2 + v.x * PP / -v.z, CAM.H / 2 + v.y * PP / -v.z, PP / -v.z] : null);
-  }
-  var r = '';
-  for(i = 0; i < n; i++){
-    var a = s[i], b = s[i + 1]; if(!a || !b) continue;
-    var w = Math.max(2, ep * (a[2] + b[2]) / 2);
-    r += '<line x1="' + U.r(a[0]) + '" y1="' + U.r(a[1]) + '" x2="' + U.r(b[0]) + '" y2="' + U.r(b[1]) + '" stroke="#8a6c40" stroke-width="' + U.r(w) + '"/>';
-    if(i % 2) r += '<line x1="' + U.r(a[0]) + '" y1="' + U.r(a[1]) + '" x2="' + U.r(b[0]) + '" y2="' + U.r(b[1]) + '" stroke="#3a2a14" stroke-width="' + U.r(w * .7) + '" opacity=".55"/>';
-  }
-  return r;
-}
-function ciel(t, k){
-  /* l'ouverture du puits vue d'en bas : le ciel de nuit, des étoiles, la lune, un ami qui se penche */
-  var oct = []; for(var i = 0; i < 8; i++){ var th = i * Math.PI / 4 + Math.PI / 8, r = A8 / Math.cos(Math.PI / 8); oct.push([r * Math.cos(th), YT, r * Math.sin(th)]); }
-  var pts = polyMonde(oct); if(!pts) return '';
-  var R = U.hasard(77), s = '<clipPath id="ouv"><polygon points="' + pts + '"/></clipPath><polygon points="' + pts + '" fill="url(#ciel)"/><g clip-path="url(#ouv)">';
-  for(var q = 0; q < 40; q++){ var sx = (R() - .5) * 500, sz = (R() - .5) * 500, pr = CAM.projeter(sx, YT - 4000, sz); s += '<circle cx="' + U.r(pr.x) + '" cy="' + U.r(pr.y) + '" r="' + U.r(1 + R() * 1.6) + '" fill="#fff" opacity="' + U.r(.4 + R() * .5) + '"/>'; }
-  var lu = CAM.projeter(-90, YT - 4000, 40);
-  s += '<circle cx="' + U.r(lu.x) + '" cy="' + U.r(lu.y) + '" r="' + U.r(34 * lu.s * 6) + '" fill="url(#lunD)"/>';
-  /* la tête d'un ami qui se penche au bord : une capuche sombre, un liseré de lune */
-  var hp = CAM.projeter(A8 * .8, YT - 20, 40), sc = hp.s * 1.1, ap = k;
-  s += '<g transform="translate(' + U.r(hp.x) + ' ' + U.r(hp.y) + ') scale(' + U.r(sc) + ')" opacity="' + U.r(ap) + '"><path d="M-90 40 C -80 -60 -40 -110 0 -120 C 40 -110 80 -60 90 40 Z" fill="#101a3a"/><path d="M-90 40 C -80 -60 -40 -110 0 -120 C 40 -110 80 -60 90 40" fill="none" stroke="#a8c4ff" stroke-width="4" opacity=".7"/></g>';
-  return s + '</g>';
-}
-function mains(t, rythme){
-  /* deux mains gantées qui se relaient sur la corde (en bas de l'image) */
-  var ph = (t * rythme) % 1, a = Math.sin(ph * Math.PI * 2), s = '';
-  [[640, 0], [760, .5]].forEach(function(m, i){
-    var u = ((t * rythme + m[1]) % 1), y = 360 + u * 250, op = u < .08 || u > .94 ? .0 : 1;
-    s += '<g opacity="' + op + '" filter="url(#flMain)"><rect x="' + (m[0] - 30) + '" y="' + y + '" width="64" height="84" rx="26" fill="#2a2018" stroke="#0e0a08" stroke-width="5"/>' +
-      '<path d="M' + (m[0] - 30) + ' ' + (y + 30) + ' h64 M' + (m[0] - 30) + ' ' + (y + 52) + ' h64" stroke="#0e0a08" stroke-width="3"/><path d="M' + (m[0] + 2) + ' ' + (y + 84) + ' l' + (i ? 40 : -40) + ' 190" stroke="#2a2018" stroke-width="56" stroke-linecap="round" opacity=".9"/></g>';
+/* des yeux rouges dans le noir (dans un trou, au fond d'une arche) : ils clignent, puis s'éteignent quand la lumière arrive (t1) */
+function yeuxNoir(liste, tl){
+  var s = '';
+  liste.forEach(function(e, i){
+    var k = fenetre(tl, e[2] == null ? -1 : e[2], e[3] == null ? 1e9 : e[3], .18), cl = ((tl * 1.1 + i * .61) % 2.3) < .1 ? 0 : 1, ec = e[4] || 7, r = e[5] || 2;
+    if(k <= 0 || !cl) return;
+    s += MP.halo(e[0], e[1], r * 5, 'Rouge', .5 * k) + '<circle cx="' + r2(e[0] - ec / 2) + '" cy="' + e[1] + '" r="' + r + '" fill="#ff4a2a" opacity="' + r2(k) + '"/><circle cx="' + r2(e[0] + ec / 2) + '" cy="' + r2(e[1] + .4) + '" r="' + r + '" fill="#ff4a2a" opacity="' + r2(k) + '"/>';
   });
   return s;
 }
-function ypuits(t){
-  /* la descente : la hauteur de la caméra */
-  if(t < 4.5) return -520;
-  if(t < 6) return mix(-520, -150, dou(4.5, 6, t));
-  if(t < 16.5) return mix(-150, 2125, dou(6, 16.5, t) * .5 + lisse(6, 16.5, t) * .5);
-  return 2125;
-}
-CINE.films.puits = {
-  nom:'Le puits', plateau:'descente', duree:TP, defs:defs,
-  sons:[[.3, 'cineVent'], [.8, 'cineMeche'], [2.0, 'cineMeche'], [3.2, 'cineMeche'], [6.0, 'cineCape'], [7.6, 'cineCorde'], [8.5, 'cineCorde'], [9.4, 'cineCorde'], [10.3, 'cineCorde'], [11.2, 'cineCorde'],
-    [12.1, 'cineCorde'], [13.0, 'cineCorde'], [13.9, 'cineCorde'], [14.8, 'cineCorde'], [15.7, 'cineCorde'], [9.0, 'cineGoutte'], [14.2, 'cineGoutte'], [16.8, 'cineChute'], [17.4, 'cinePasEcho'],
-    [18.6, 'cineLueur'], [19.6, 'cinePasEcho'], [20.4, 'cinePasEcho'], [21.2, 'cinePasEcho']],
-  sousTitres:LIGNES_P,
-  etat:function(t){
-    var y = ypuits(t), hautK = dou(4.5, 6, t), cam, haut = t < 4.5;
-    var reg = dou(10.5, 11.6, t) * (1 - dou(12.6, 13.6, t));
-    var tang;
-    if(t < 4.5) tang = -.52 - .04 * Math.sin(t * .6);
-    else if(t < 6) tang = mix(-.52, -.22, dou(4.5, 6, t));
-    else tang = -.22 + reg * 1.45 + (dou(16.5, 18.5, t) * .22);
-    var cx = mix(0, 40, hautK), cz = mix(700, 170, hautK), lacet = 0;
-    if(t > 16.5){ var k = dou(17.4, 19.6, t); lacet = k * Math.PI / 2; cx = 40 + dou(19.0, 22.5, t) * (A8 + 240 - 40); cz = 170 - dou(17.5, 19.6, t) * 170; }
-    if(t > 16.5) y = 2125;
-    var tr = t > 16.9 && t < 17.4 ? .8 * (1 - (t - 16.9) / .5) : 0;
-    cam = {x:cx + Math.sin(t * 1.1) * 4, y:y, z:cz, lacet:lacet, tangage:t > 16.5 ? mix(-.22 + 0, 0, dou(17.2, 19.6, t)) : tang, focus:t > 16.5 ? 500 : mix(900, 700, hautK), ouverture:t > 16.5 ? .2 : .7};
-    var sources = [[0, y - 80, 0]];
-    var E = {zone:'puits', haut:t < 7.5, cam:cam, lampe:[cam.x - 60, cam.y + 40, cam.z + 20], lumiere:1.5, rayon:900, ambiance:t > 17 ? .32 : .22, torches:[], runes:0, tremble:tr,
-      froid:{cible:[A8 + 900, YW - 190, 115], k:.15 * dou(17, 22, t)},
-      poussiere:90, poussiereBoite:[cam.x - 300, cam.y - 400, cam.z - 600, cam.x + 300, cam.y + 200, cam.z + 100], sources:sources,
-      lumieres:function(){
-        var s = halo(t, t > 2 ? dou(4.5, 6, t) * .8 + .15 : .15, 260, 560);
-        if(t < 4.5) s += FC.lumiere(t, 0, YT - 120, 0, {sorte:'Lune', r:260, k:.6, coeur:0});
-        if(t > 17.5) s += FC.lumiere(t, A8 + 900, YW - 190, 0, {sorte:'Lune', r:300, k:dou(17.5, 22, t) * .55, coeur:0});
-        return s;
-      },
-      devant:function(){
-        var s = '';
-        if(t < 6.5){
-          /* au-dessus du puits : la poutre, la corde qui part vers le noir, les restes fumants de la grille */
-          s += '<polyline fill="none" stroke="#3a2a18" stroke-width="' + U.r(26 * CAM.projeter(0, -560, 0).s) + '" points="' + [-300, 300].map(function(xx){ var q = CAM.projeter(xx, -560, 0); return U.r(q.x) + ',' + U.r(q.y); }).join(' ') + '"/>';
-          s += corde(-560, YT + 400, 3.4);
-        } else {
-          if(t < 17) s += corde(-560, YW, 3.4);
-        }
-        if(t > 9.5 && t < 14.5) s += ciel(t, dou(11.2, 12.2, t) * (1 - dou(13.0, 13.8, t)));
-        else if(t > 9.5 && t < 16) s += '';
-        if(t > 6.2 && t < 16.6) s += mains(t, 1 / .9);
-        if(t > 16.5) s += lanterne(t, 1);
-        else if(t > 6) s += lanterne(t, dou(6, 7, t));
-        return s;
-      },
-      acteurs:[], avant:function(){ return vignette(); }, fondu:null};
-    /* un ami qui attend au fond, de dos, devant l'arche */
-    if(t > 16.4) E.acteurs.push({type:'libre', x:A8 + 160, y:YW, z:60, boite:[260, 420], dessin:function(p){ return ami(p, {coul:'#3b2260', h:1.08, ph:0, lit:.8, accessoire:alchimiste}); }});
-    if(t > 19.6) E.acteurs.push({type:'libre', x:A8 + 560, y:YW, z:-30, boite:[260, 420], dessin:function(p){ return ami(p, {coul:'#1f3070', h:.95, ph:(t - 19.6) * 1.4, lit:1, accessoire:sage}); }});
-    if(t < .6) E.fondu = {k:1 - t / .6};
-    else if(t > 22.0) E.fondu = {k:U.clamp((t - 22.0) / 1.5, 0, 1)};
-    return E;
-  }
+var DEC = {}, PLANS = {};
+
+/* ================================================================== LE DÉCOR 1 : LA FORÊT, LA NUIT, LE VIEUX PUITS
+   Le sol (les pieds des héros) est en y = 150 ; le puits en x = 260. */
+var SOL_F = 150, PX = 260;
+DEC.foret = function(S, e){
+  var T = window.CTC, R = U.hasard(4), i;
+  /* le ciel, la lune derrière les arbres */
+  var ciel = S.couche('ciel', {d:9000, net:1, flou:1.5});
+  ciel.poser(T.ciel({w:1900, h:900, graine:3, lune:[1330, 250, 46]}), -950, -450);
+  ciel.poser(T.lune(46), -950 + 1330 - 46 * 1.5, -450 + 250 - 46 * 1.5);
+  /* la forêt au loin, dans la brume */
+  var loin = S.couche('loin', {d:4200});
+  loin.poser(T.foret({w:2300, h:560, graine:11, n:34, hMin:.5, hMax:.96, brume:[70, 96, 150], brumeK:.75, lune:1}), -1150, -330);
+  /* une rangée d'arbres, plus près : des troncs sombres, leurs feuillages */
+  var moy = S.couche('moyen', {d:2300, lum:'lum', sc:3, lumK:.5, ambK:.8});
+  moy.poser(MP.toile(2600, 900, 1, function(g, w, h){
+    g.translate(1300, 560);
+    for(i = 0; i < 13; i++){ var x = -1250 + i * 205 + (R() - .5) * 120; DF.tronc(g, x, 60 + R() * 20, 44 + R() * 40, 620 + R() * 200, {graine:20 + i, ton:[58, 56, 62], penche:(R() - .5) * .12}); }
+    for(i = 0; i < 60; i++) T.touffe(g, -1300 + R() * 2600, -520 + R() * 190, 60 + R() * 70, [[16, 24, 30], [26, 42, 48], [40, 62, 66], [80, 110, 124]], R);
+    for(i = 0; i < 26; i++) T.touffe(g, -1300 + R() * 2600, 30 + R() * 40, 40 + R() * 46, [[14, 22, 26], [24, 40, 42], [36, 58, 58], [70, 100, 110]], R);
+  }), -1300, -560);
+  /* la brume entre les arbres */
+  var br = S.couche('brume', {d:1800, ecran:1, op:.5});
+  br.poser(T.brume({w:2800, h:620, graine:5, c:[120, 150, 215], a:.1}), -1400, -330);
+  /* les rayons de lune qui tombent entre les arbres (de la lumière : un calque « écran ») */
+  var ray = S.couche('rayons', {d:1500, ecran:1, flou:3});
+  ray.poser(MP.toile(2600, 900, .5, function(g, w, h){
+    g.filter = 'blur(14px)';
+    var Rr = U.hasard(8);
+    for(i = 0; i < 9; i++){
+      var x1 = 500 + Rr() * 2100, lg = 50 + Rr() * 120, dx = -520 - Rr() * 80, a = .05 + Rr() * .09;
+      var gr = g.createLinearGradient(x1, 0, x1 + dx, 900); gr.addColorStop(0, 'rgba(150,180,255,' + a + ')'); gr.addColorStop(.6, 'rgba(150,180,255,' + a * .6 + ')'); gr.addColorStop(1, 'rgba(150,180,255,0)');
+      g.fillStyle = gr; g.beginPath(); g.moveTo(x1, -20); g.lineTo(x1 + lg, -20); g.lineTo(x1 + lg * 1.8 + dx, 900); g.lineTo(x1 + dx - lg * .6, 900); g.closePath(); g.fill();
+    }
+  }), -1300, -520);
+  S.rayons = ray;
+  /* les gros arbres juste derrière la clairière, les buissons */
+  var pres = S.couche('pres', {d:1260, lum:'lum', sc:4, lumK:.9});
+  pres.poser(MP.toile(2400, 1000, e, function(g, w, h){
+    g.translate(1200, 700);
+    [[-830, 150, .05], [-470, 110, -.03], [70, 170, .02], [560, 124, -.04], [930, 160, .06]].forEach(function(q, k){
+      DF.tronc(g, q[0], 150, q[1], 900, {graine:60 + k, ton:[92, 78, 66], penche:q[2], noeuds:3});
+      var Rb = U.hasard(90 + k); for(var b = 0; b < 3; b++) DF.branche(g, q[0] + (Rb() - .5) * 30, -200 - Rb() * 360, 150 + Rb() * 130, (Rb() < .5 ? Math.PI : 0) + (Rb() - .5) * 1.2, 13, [70, 60, 52], Rb);
+    });
+    for(i = 0; i < 26; i++) T.touffe(g, -1200 + R() * 2400, -640 + R() * 150, 80 + R() * 80, [[22, 36, 30], [40, 70, 52], [66, 108, 78], [130, 170, 140]], R);
+    for(i = 0; i < 22; i++) T.touffe(g, -1200 + R() * 2400, 110 + R() * 50, 46 + R() * 50, [[20, 34, 28], [38, 66, 48], [60, 100, 70], [120, 160, 126]], R);
+    DF.herbes(g, -1200, 172, 2400, {graine:7, n:70, haut:54, ton:[64, 104, 64]});
+  }), -1200, -700);
+  /* le sol de la clairière */
+  var sol = S.couche('sol', {d:1000, lum:'lum', sc:3.5});
+  sol.poser(MP.toile(2600, 250, e, function(g, w, h){ g.translate(1300, 0); DF.solForet(g, -1300, 0, 2600, 250, {graine:3, terre:[PX - 380, PX + 300]}); DF.gravats(g, PX - 230, 30, 520, 16, U.hasard(9), [128, 124, 126]); }), -1300, SOL_F - 22);
+  /* le puits : le fond (l'ouverture, les montants, le treuil), puis les héros, puis le devant */
+  var pd = S.couche('puitsD', {d:1000, lum:'lum', sc:4, zone:[PX - 250, SOL_F - 340, PX + 250, SOL_F + 100]});
+  pd.poser(MP.toile(420, 420, e * 1.25, function(g){ g.translate(210, 330); DF.puits(g, 'derriere'); }), PX - 210, SOL_F - 330);
+  var act = S.couche('act', {d:1000, lum:'alpha', sc:4.5, spec:.3});
+  var pf = S.couche('puitsF', {d:1000, lum:'lum', sc:4, zone:[PX - 130, SOL_F - 120, PX + 130, SOL_F + 30]});
+  pf.poser(MP.toile(420, 420, e * 1.25, function(g){ g.translate(210, 330); DF.puits(g, 'devant'); }), PX - 210, SOL_F - 330);
+  S.fx = S.couche('fx', {d:1000, ecran:1});
+  /* les herbes de devant */
+  var dev = S.couche('devant', {d:860, lum:'lum', sc:3, lumK:.8});
+  dev.poser(MP.toile(2800, 260, e, function(g, w, h){ g.translate(1400, 250);
+    DF.herbes(g, -1400, 6, 2800, {graine:17, n:90, haut:96, ton:[58, 96, 58], fougere:.5});
+    var Rr = U.hasard(33); for(i = 0; i < 9; i++) DF.gravats(g, -1400 + Rr() * 2700, 4, 80, 2, Rr, [110, 108, 104]); }), -1400, SOL_F + 96 - 250 + 60);
+  /* le premier plan : un gros tronc à gauche, une branche feuillue en haut à droite — tout près, tout flous, à contre-jour */
+  var pp = S.couche('premier', {d:470, lum:'lum', sc:2, lumK:.5, ambK:1.1});
+  pp.poser(MP.toile(1500, 1200, .6, function(g, w, h){ g.translate(750, 900);
+    DF.tronc(g, -420, 300, 280, 1300, {graine:5, ton:[60, 52, 46], penche:.05, noeuds:2});
+    var Rf = U.hasard(71); for(i = 0; i < 16; i++) T.touffe(g, 60 + Rf() * 620, -830 + Rf() * 190, 70 + Rf() * 80, [[12, 20, 18], [22, 38, 30], [34, 56, 42], [70, 100, 80]], Rf);
+    DF.branche(g, 720, -700, 520, Math.PI + .25, 26, [44, 38, 34], Rf);
+  }), -750 - 560, -900);
+  S.act = act; S.solC = sol; S.pd = pd;
+  S.H = {a:HF.creer(S, act, 'alchimiste'), s:HF.creer(S, act, 'sage'), p:HF.creer(S, act, 'pisteur')};
 };
+/* les lucioles de la clairière (des ronds de lumière flous, à toutes les profondeurs) */
+function lucioles(t, cam, n, k){
+  var R = U.hasard(19), s = '';
+  for(var i = 0; i < n; i++){
+    var d = 500 + R() * 2600, X = -1300 + R() * 2600 + Math.sin(t * (.2 + R() * .3) + i) * 60, Y = -260 + R() * 420 + Math.cos(t * (.25 + R() * .3) + i * 2) * 40, ph = R() * 9, p = MP.ecran(X, Y, d, cam);
+    var cl = Math.pow(.5 + .5 * Math.sin(t * (.9 + R()) + ph), 3);
+    if(p.x < -60 || p.x > 1500 || p.y < -60 || p.y > 680) continue;
+    s += MP.bokeh(p.x, p.y, 2.2 * Math.max(.5, p.s), MP.flou(d, cam), '#d8ff9a', cl * (k || .9));
+  }
+  return s;
+}
+function ambForet(){ return [30, 40, 76]; }
+/* la lune : une grande lumière froide, en haut à gauche, devant (elle donne le sens du relief à tout le décor) */
+function lune(k){ return {x:700, y:-900, d:300, c:LUNE, k:(k || 1) * .5, r:1500, z:800, rim:.9, e:1}; }
+
+/* ---- PLAN 1 : la clairière, vue d'ensemble — ils arrivent au puits (7 s) */
+var VM = 96;
+function marcheVers(a, role, tl, X0, Xa, o){
+  o = o || {};
+  var X = trajet(tl, X0, o.v || VM, Xa), opt = {x0:Xa - .55 * 54, torse:o.torse, tete:o.tete, bas:o.bas, pente:o.pente}, m = HF.marche(X, o.sol || function(){ return SOL_F; }, opt);
+  var arrive = U.inv(Xa - 26, Xa, X), re = Math.sin(tl * 2 + role.length);
+  porte(m.pose, role, tl, o.porte);
+  /* arrêté : il respire */
+  m.pose.torse = (typeof m.pose.torse === 'number' ? m.pose.torse : 0) + arrive * re * .8;
+  return {X:X, y:m.y, pose:m.pose, arrive:arrive};
+}
+PLANS.clairiere = {id:'clairiere', cle:'foret', duree:7,
+  monter:function(S){ DEC.foret(S, 1.25); },
+  etat:function(S, tl){
+    var k = U.tresLisse(tl / 7);
+    return {cam:{x:U.lerp(-150, 40, k), y:U.lerp(-52, -30, k), zoom:U.lerp(.8, .97, k), z:0, focus:1000, ap:1.25}, amb:ambForet(), fondu:1 - K(0, 1.1, tl), poussiere:{n:90, k:.5, fond:.05, c:'#a8c0ff'}};
+  },
+  acteurs:function(S, tl){
+    var H = S.H;
+    var p = marcheVers(H.p, 'pisteur', tl, -470, PX - 168, {porte:{my:116 - 14 * K(4.6, 6, tl), mx:178 + 6 * K(4.6, 6, tl)}});
+    p.pose.tete = -5 + 9 * K(4.4, 5.6, tl);
+    HF.poser(H.p, {x:p.X, y:p.y, pose:p.pose, cligne:HF.cligne(tl, 1), regard:[1.2 * K(4.4, 5.4, tl), 1.5 * K(4.4, 5.4, tl)], sourcils:'garde'});
+    var s = marcheVers(H.s, 'sage', tl, -650, PX - 318, {torse:3});
+    s.pose.tete = -3 - 6 * K(5.2, 6.4, tl);
+    HF.poser(H.s, {x:s.X, y:s.y, pose:s.pose, cligne:HF.cligne(tl, 2), sourcils:tl > 5 ? 'souci' : 'garde'});
+    var a = marcheVers(H.a, 'alchimiste', tl, -850, PX - 470, {});
+    HF.poser(H.a, {x:a.X, y:a.y, pose:a.pose, cligne:HF.cligne(tl, 3)});
+  },
+  dessin:function(S, tl, E){
+    var P = porteurs(S, tl, E, {sol:SOL_F}), H = S.H;
+    S.fx.svg(P.fx);
+    S.solC.svg([H.p, H.s, H.a].map(function(a){ return HF.ombre(a.x, SOL_F + 4, 64, .7); }).join(''));
+    return {lum:P.lum.concat([lune()]), air:lucioles(S.t, S.cam, 46)};
+  }};
+
+/* ---- PLAN 2 : à la margelle — le Pisteur se penche, regarde le noir, et lâche sa torche dans le puits (4,6 s) */
+function auBord(S, tl, o){
+  /* les trois héros arrêtés près du puits, comme à la fin du plan 1 (les mêmes pieds) */
+  var H = S.H, r = {};
+  [['p', 'pisteur', PX - 168], ['s', 'sage', PX - 318], ['a', 'alchimiste', PX - 470]].forEach(function(q){
+    var X = (o && o[q[0]]) || q[2], m = HF.marche(X, function(){ return SOL_F; }, {x0:X - .55 * 54, torse:q[0] === 's' ? 3 : 6});
+    porte(m.pose, q[1], tl, {});
+    r[q[0]] = {x:X, y:SOL_F, pose:m.pose};
+  });
+  return r;
+}
+PLANS.margelle = {id:'margelle', cle:'foret', duree:4.6,
+  monter:function(S){ DEC.foret(S, 1.25); },
+  etat:function(S, tl){
+    var k = U.tresLisse(tl / 4.6);
+    return {cam:{x:PX - 150 + 30 * k, y:SOL_F - 172 + 8 * k, zoom:U.lerp(1.5, 1.66, k), focus:1000, ap:1.5}, amb:ambForet(), poussiere:{n:80, k:.5, fond:.05, c:'#a8c0ff'}};
+  },
+  acteurs:function(S, tl){
+    var H = S.H, B = auBord(S, tl), lache = 1.9, re = Math.sin(tl * 2.1);
+    /* le Pisteur : penché au-dessus du trou, la torche à bout de bras ; il regarde en bas, il ouvre la main */
+    var pen = K(0, 1.1, tl), p = B.p.pose, ap = K(lache + .5, lache + 1.6, tl);
+    p.bassin = {x:8 * pen, y:10 + re * .6, r:2 * pen}; p.torse = 6 + 20 * pen - 8 * ap + re * .6; p.tete = -5 + 26 * pen - 10 * ap;
+    p.mB = [178 + 36 * pen - 12 * ap, 116 - 6 * pen + 34 * ap]; p.hB = -76 + 50 * pen + 30 * K(lache - .25, lache, tl);
+    p.mA = [150 + 12 * pen, 150]; p.hA = -20;
+    HF.poser(H.p, {x:B.p.x, y:B.p.y, pose:p, cligne:HF.cligne(tl, 1), regard:[1.5 * pen, 2.6 * pen * (1 - ap * .6)], sourcils:tl < lache + .7 ? 'garde' : 'souci', sansTorche:tl >= lache});
+    var s = B.s.pose; s.tete = -3 + 12 * K(lache, lache + .8, tl); s.torse = 3 + 5 * K(lache, lache + .9, tl);
+    HF.poser(H.s, {x:B.s.x, y:B.s.y, pose:s, cligne:HF.cligne(tl, 2), sourcils:'souci', regard:[1.5, 1.5 * K(lache, lache + .6, tl)], bouche:tl > lache + .3 && tl < lache + 1.5 ? 'o' : 'neutre'});
+    var a = B.a.pose; a.mB = [170 + 8 * K(1, 2.4, tl), 124 - 18 * K(1, 2.4, tl)]; a.tete = -5 + 8 * K(lache, lache + 1, tl);
+    HF.poser(H.a, {x:B.a.x, y:B.a.y, pose:a, cligne:HF.cligne(tl, 3), regard:[1.5, .8]});
+  },
+  dessin:function(S, tl, E){
+    var lache = 1.9, P = porteurs(S, tl, E, {sol:SOL_F}), H = S.H, dt = tl - lache, s = '', lum = P.lum.concat([lune()]), fx = P.fx;
+    if(dt >= 0){
+      /* la torche tombe : elle tourne, elle file dans le noir ; sa lumière remonte du trou, de plus en plus faible */
+      var ch = {x:PX - 34, y:SOL_F - 198}, y = ch.y + 20 * dt + 520 * dt * dt, x = ch.x + 26 * dt, bord = SOL_F - DF.PUITS.haut + 4, v = MP.vacille(S.t, 1);
+      if(y < bord + 40){
+        s += '<g transform="translate(' + r2(x) + ' ' + r2(y) + ') rotate(' + r2(-60 + 420 * dt) + ')"><path d="M-40 0 L 6 0" stroke="#24182e" stroke-width="9" stroke-linecap="round"/><path d="M-40 0 L 6 0" stroke="#7a4e2a" stroke-width="5" stroke-linecap="round"/><ellipse cx="12" cy="0" rx="11" ry="8" fill="#3a2a22" stroke="#24182e" stroke-width="3"/></g>';
+        if(y < bord) fx += MP.halo(x, y, 200 * v, 'Chaud', .55) + MP.flamme(x, y, 11, S.t, 1, {penche:-.6}) ;
+        lum.push({x:x, y:Math.min(y, bord), d:985, c:CHAUD, k:2.5 * v, r:260, z:120});
+      }
+      var prof = Math.max(0, y - bord), kk = 2.6 / (1 + prof / 300) + .5;
+      lum.push({x:PX, y:bord - 10, d:1000, c:CHAUD, k:kk * v * U.inv(bord - 60, bord, y), r:240, z:110, e:1.4});
+      fx += MP.halo(PX, bord + 6, 150 + 60 * v, 'Chaud', U.clamp(kk * .32, 0, .7) * U.inv(bord - 30, bord + 20, y));
+    }
+    S.pd.svg(s);
+    S.fx.svg(fx);
+    S.solC.svg([H.p, H.s, H.a].map(function(a){ return HF.ombre(a.x, SOL_F + 4, 64, .7); }).join(''));
+    return {lum:lum, air:lucioles(S.t, S.cam, 46)};
+  }};
+
+/* ---- PLAN 3 : la corde — le Pisteur s'enfonce dans le puits ; l'Alchimiste l'éclaire d'en haut (3,4 s) */
+PLANS.cordeHaut = {id:'cordeHaut', cle:'foret', duree:3.4,
+  monter:function(S){ DEC.foret(S, 1.25); },
+  etat:function(S, tl){
+    var k = U.tresLisse(tl / 3.4);
+    return {cam:{x:PX - 96 - 10 * k, y:SOL_F - 142 + 30 * k, zoom:U.lerp(1.3, 1.42, k), focus:1000, ap:1.4}, amb:ambForet(), poussiere:{n:80, k:.5, fond:.05, c:'#a8c0ff'}};
+  },
+  acteurs:function(S, tl){
+    var H = S.H, B = auBord(S, tl, {a:PX - 176, s:PX - 330}), Y = SOL_F + 66 + 64 * tl;
+    H.p.sansSol = 1;
+    HF.poser(H.p, {x:PX - 37, y:Y, pose:HF.corde(Y, {tete:14}), cligne:HF.cligne(tl, 1), regard:[.5, 2.4], sansTorche:1});
+    /* (ce qui est sous le sol ne se voit pas : il est dans le puits) */
+    H.p.boite.style.clipPath = 'inset(-300px -300px ' + r2(Y - (SOL_F - DF.PUITS.haut + 20)) + 'px -300px)';
+    var a = B.a.pose; a.torse = 6 + 12 * K(0, 1, tl); a.tete = -5 + 22 * K(.2, 1.2, tl); a.mB = [196, 112 + 8 * K(0, 1, tl)]; a.bassin = {x:6, y:10};
+    HF.poser(H.a, {x:B.a.x, y:B.a.y, pose:a, cligne:HF.cligne(tl, 3), regard:[1.2, 2.4]});
+    var s = B.s.pose; s.tete = -3 + 12 * K(0, 1, tl);
+    HF.poser(H.s, {x:B.s.x, y:B.s.y, pose:s, cligne:HF.cligne(tl, 2), sourcils:'souci', regard:[1.5, 1.6]});
+  },
+  dessin:function(S, tl, E){
+    var P = porteurs(S, tl, E, {sol:SOL_F}), H = S.H, v = MP.vacille(S.t, 1), bord = SOL_F - DF.PUITS.haut + 4;
+    S.pd.svg(DF.corde(PX, SOL_F - DF.PUITS.mont + 40, SOL_F + 10));
+    S.fx.svg(P.fx + MP.halo(PX, bord + 6, 130 + 30 * v, 'Chaud', .2));
+    S.solC.svg([H.s, H.a].map(function(a){ return HF.ombre(a.x, SOL_F + 4, 64, .7); }).join(''));
+    return {lum:P.lum.concat([lune(), {x:PX, y:bord - 6, d:1000, c:CHAUD, k:.5 * v, r:240, z:100, e:1.4}]), air:lucioles(S.t, S.cam, 46)};
+  }};
+
+/* ce que les autres fichiers du film reprennent */
+CINE.DESC = {PLANS:PLANS, DEC:DEC, porteurs:porteurs, trajet:trajet, porte:porte, betes:betes, yeuxNoir:yeuxNoir, K:K, fenetre:fenetre, r2:r2, marcheVers:marcheVers,
+  CHAUD:CHAUD, LAMPE:LAMPE, FROID:FROID, LUNE:LUNE, RUNE:RUNE};
 })();
