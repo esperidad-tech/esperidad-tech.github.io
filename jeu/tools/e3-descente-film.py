@@ -1,4 +1,4 @@
-"""Enquête 3 : les deux films de la descente du donjon (l'escalier de la crypte, la corde du puits ; Bible §13.62) — sur une tablette, avec la vraie vidéo
+"""Enquête 3 : les deux films de la descente du donjon (la crypte, le puits ; Bible §13.62, refaits en 2D le 18 novembre : §13.68) — sur une tablette, avec la vraie vidéo
    (copiée dans <dossier construit>/cine/ ; sans elle, le robot vérifie que les quatre images d'avant restent).
   - la fin commence : le film part tout seul, en 21:9 entre deux bandes noires, avec « Passer ➜ » ; ses bruitages (le moteur de son
     de l'Atelier, dans le jeu) ; les sous-titres du maire et de Silas, avec leur 🔊 ; jamais de lecture toute seule ;
@@ -53,10 +53,12 @@ with sync_playwright() as p:
             verifier(os.path.exists(f), f'{nom}.{ext} existe (jeu/cine/sortie)')
             if os.path.exists(f): shutil.copy(f, os.path.join(DIST, 'cine', nom + '.' + ext))
     pg = debut(b, 'Pisteur', 'pisteur')
-    verifier(pg.evaluate("() => !!CINE_INFOS.escalier && !!CINE_INFOS.puits && CINE_INFOS.escalier.duree > 20 && CINE_INFOS.puits.duree > 20"), 'le jeu connaît les deux films (cine-infos)')
+    verifier(pg.evaluate("() => !!CINE_INFOS.escalier && !!CINE_INFOS.puits && CINE_INFOS.escalier.duree > 40 && CINE_INFOS.puits.duree > 40 && CINE_INFOS.escalier.sousTitres.length === 1 && CINE_INFOS.puits.sousTitres[0][3] === 'Le Pisteur'"), 'le jeu connaît les deux films refaits (cine-infos : leur durée, la réplique du Pisteur)')
     verifier(pg.evaluate("() => String(M.A['ds-aller']).indexOf('jouerFilm') > 0 && String(M.A['ds-aller']).indexOf('escalier') > 0 && String(M.A['ds-aller']).indexOf('puits') > 0"), 'le bouton « Descendre » du Pisteur passe par le film')
-    for nom, t_st, mot in (('escalier', 6.0, None), ('puits', 11.0, None)):
+    for nom in ('escalier', 'puits'):
         print('— ' + nom)
+        # (depuis le 18 novembre, chaque film n'a qu'une réplique, à la fin : « Allons-y. Odette doit être par là. » — on va la chercher dans sa fiche)
+        t_st = pg.evaluate("(n) => CINE_INFOS[n].sousTitres[0][0] + .8", nom)
         jouer(pg, nom)
         r = pg.evaluate("""() => { var c = document.querySelector('.cine-cadre').getBoundingClientRect();
           return {ratio:c.width / c.height, passer:!!document.querySelector('[data-cine=passer]')}; }""")

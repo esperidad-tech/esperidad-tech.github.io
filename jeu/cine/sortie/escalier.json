@@ -1,152 +1,434 @@
 {
- "nom": "L'escalier de la crypte",
- "duree": 24,
+ "nom": "La crypte",
+ "duree": 52.000000000000014,
  "sons": [
   [
-   0.9,
-   "cineGrille"
-  ],
-  [
-   3.1,
+   0.2,
    "cineLanterne"
   ],
   [
-   0.2,
-   "cineVent"
+   1.45,
+   "cineCleEntre"
   ],
   [
-   9,
-   "cineVent"
+   2.05,
+   "cineCleTourne"
   ],
   [
-   14.5,
-   "cineVent"
+   2.95,
+   "cineCleEntre"
   ],
   [
-   6,
-   "cineGoutte"
+   3.7,
+   "cineGrille"
   ],
   [
-   11.5,
-   "cineGoutte"
-  ],
-  [
-   16.8,
-   "cineGoutte"
-  ],
-  [
-   19.2,
-   "cineLueur"
-  ],
-  [
-   3.6,
-   "cinePasEscalier"
-  ],
-  [
-   4.4,
-   "cinePasEscalier"
-  ],
-  [
-   5.2,
-   "cinePasEscalier"
-  ],
-  [
-   6,
-   "cinePasEscalier"
+   5.9,
+   "cineVentCave"
   ],
   [
    6.8,
+   "cineTorche"
+  ],
+  [
+   6.9,
    "cinePasEscalier"
   ],
   [
-   7.6,
+   7.7,
+   "cineGoutte"
+  ],
+  [
+   7.72,
    "cinePasEscalier"
   ],
   [
-   8.4,
+   8.3,
+   "cineBetes"
+  ],
+  [
+   8.54,
    "cinePasEscalier"
   ],
   [
-   9.200000000000001,
+   9,
+   "cineLanterne"
+  ],
+  [
+   9.36,
    "cinePasEscalier"
   ],
   [
-   10.000000000000002,
+   10.18,
    "cinePasEscalier"
   ],
   [
-   10.800000000000002,
+   10.2,
+   "cineTorche"
+  ],
+  [
+   10.4,
+   "cineCouinement"
+  ],
+  [
+   11,
    "cinePasEscalier"
   ],
   [
-   11.600000000000003,
+   11.2,
+   "cineGoutte"
+  ],
+  [
+   11.82,
    "cinePasEscalier"
   ],
   [
-   12.400000000000004,
+   12.64,
    "cinePasEscalier"
   ],
   [
-   13.200000000000005,
-   "cinePasEscalier"
+   13,
+   "cineTorche"
   ],
   [
-   14.000000000000005,
-   "cinePasEscalier"
+   13.1,
+   "cinePasPierre"
   ],
   [
-   14.800000000000006,
-   "cinePasEscalier"
+   13.2,
+   "cineVentCave"
   ],
   [
-   15.600000000000007,
-   "cinePasEscalier"
+   13.38,
+   "cinePasPierre"
   ],
   [
-   16.400000000000006,
-   "cinePasEscalier"
+   13.66,
+   "cinePasPierre"
   ],
   [
-   17.200000000000006,
-   "cinePasEscalier"
+   14.22,
+   "cinePasPierre"
   ],
   [
-   18.000000000000007,
-   "cinePasEscalier"
+   14.22,
+   "cinePasPierre"
   ],
   [
-   18.800000000000008,
-   "cinePasEscalier"
+   14.3,
+   "cineBetes"
   ],
   [
-   19.60000000000001,
-   "cinePasEscalier"
+   14.78,
+   "cinePasPierre"
+  ],
+  [
+   15.06,
+   "cinePasPierre"
+  ],
+  [
+   15.34,
+   "cinePasPierre"
+  ],
+  [
+   15.4,
+   "cineGoutte"
+  ],
+  [
+   15.9,
+   "cinePasPierre"
+  ],
+  [
+   15.9,
+   "cinePasPierre"
+  ],
+  [
+   16.1,
+   "cineCouinement"
+  ],
+  [
+   16.46,
+   "cinePasPierre"
+  ],
+  [
+   16.6,
+   "cineTorche"
+  ],
+  [
+   16.74,
+   "cinePasPierre"
+  ],
+  [
+   17.02,
+   "cinePasPierre"
+  ],
+  [
+   17.4,
+   "cineBetes"
+  ],
+  [
+   17.58,
+   "cinePasPierre"
+  ],
+  [
+   17.58,
+   "cinePasPierre"
+  ],
+  [
+   17.9,
+   "cineLanterne"
+  ],
+  [
+   18.14,
+   "cinePasPierre"
+  ],
+  [
+   18.42,
+   "cinePasPierre"
+  ],
+  [
+   18.6,
+   "cineGoutte"
+  ],
+  [
+   18.7,
+   "cinePasPierre"
+  ],
+  [
+   19.2,
+   "cineCouinement"
+  ],
+  [
+   19.26,
+   "cinePasPierre"
+  ],
+  [
+   19.26,
+   "cinePasPierre"
+  ],
+  [
+   19.82,
+   "cinePasPierre"
+  ],
+  [
+   20,
+   "cineTorche"
+  ],
+  [
+   20.1,
+   "cinePasPierre"
+  ],
+  [
+   20.3,
+   "cineBetes"
+  ],
+  [
+   20.38,
+   "cinePasPierre"
+  ],
+  [
+   20.94,
+   "cinePasPierre"
+  ],
+  [
+   20.94,
+   "cinePasPierre"
+  ],
+  [
+   21.5,
+   "cinePasPierre"
+  ],
+  [
+   21.78,
+   "cinePasPierre"
+  ],
+  [
+   22,
+   "cineTorche"
+  ],
+  [
+   22.1,
+   "cinePasPierre"
+  ],
+  [
+   22.5,
+   "cineSouffleFeu"
+  ],
+  [
+   22.66,
+   "cinePasPierre"
+  ],
+  [
+   23,
+   "cineCouinement"
+  ],
+  [
+   23.22,
+   "cinePasPierre"
+  ],
+  [
+   23.78,
+   "cinePasPierre"
+  ],
+  [
+   23.9,
+   "cineBetes"
+  ],
+  [
+   24.34,
+   "cinePasPierre"
+  ],
+  [
+   24.5,
+   "cineGoutte"
+  ],
+  [
+   24.9,
+   "cinePasPierre"
+  ],
+  [
+   25.6,
+   "cineTorche"
+  ],
+  [
+   25.7,
+   "cinePasPierre"
+  ],
+  [
+   26,
+   "cinePasPierre"
+  ],
+  [
+   26.200000000000003,
+   "cineBetes"
+  ],
+  [
+   26.26,
+   "cinePasPierre"
+  ],
+  [
+   26.82,
+   "cinePasPierre"
+  ],
+  [
+   26.84,
+   "cinePasPierre"
+  ],
+  [
+   27.3,
+   "cineCouinement"
+  ],
+  [
+   27.38,
+   "cinePasPierre"
+  ],
+  [
+   27.68,
+   "cinePasPierre"
+  ],
+  [
+   27.700000000000003,
+   "cineBetes"
+  ],
+  [
+   27.94,
+   "cinePasPierre"
+  ],
+  [
+   28.5,
+   "cinePasPierre"
+  ],
+  [
+   28.52,
+   "cinePasPierre"
+  ],
+  [
+   28.900000000000002,
+   "cineGoutte"
+  ],
+  [
+   29.06,
+   "cinePasPierre"
+  ],
+  [
+   29.36,
+   "cinePasPierre"
+  ],
+  [
+   30.200000000000003,
+   "cineTorche"
+  ],
+  [
+   31.400000000000002,
+   "cineEtoffe"
+  ],
+  [
+   34.50000000000001,
+   "cineSouffleFeu"
+  ],
+  [
+   34.900000000000006,
+   "cineTorche"
+  ],
+  [
+   36.7,
+   "cineEclat"
+  ],
+  [
+   38.60000000000001,
+   "cineRune"
+  ],
+  [
+   38.70000000000001,
+   "cineTorche"
+  ],
+  [
+   42.60000000000001,
+   "cineTorche"
+  ],
+  [
+   42.80000000000001,
+   "cineRune"
+  ],
+  [
+   43.80000000000001,
+   "cineHm"
+  ],
+  [
+   44.60000000000001,
+   "cineEtoffe"
+  ],
+  [
+   46.80000000000001,
+   "cineTorche"
+  ],
+  [
+   46.90000000000001,
+   "cineEtoffe"
+  ],
+  [
+   47.10000000000001,
+   "cineRune"
+  ],
+  [
+   50.42,
+   "cinePasPierre"
+  ],
+  [
+   50.92,
+   "cinePasPierre"
+  ],
+  [
+   51.42,
+   "cinePasPierre"
   ]
  ],
  "sousTitres": [
   [
-   1.2,
-   4.3,
-   "La grille grince… puis cède.",
-   "Le conteur"
-  ],
-  [
-   6.4,
-   9.8,
-   "Marche après marche, le jour s'éloigne.",
-   "Le conteur"
-  ],
-  [
-   12.8,
-   16.2,
-   "Des signes bleus s'éveillent.",
-   "Le conteur"
-  ],
-  [
-   19,
-   22.4,
-   "Tout en bas, une lueur attend.",
-   "Le conteur"
+   47.35,
+   50.8,
+   "Allons-y. Odette doit être par là.",
+   "Le Pisteur"
   ]
  ],
  "fps": 30

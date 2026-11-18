@@ -331,7 +331,7 @@ function pas(sons, id, t0, t1, ecart){ for(var t = t0; t < t1 - .05; t += ecart)
 /* les sons de la fin commune (f : le début du plan « regard ») */
 function sonsFin(S, p){
   var f = debut(p, 'regard'), c = debut(p, 'carnet'), r = debut(p, 'rune'), s = debut(p, 'sage'), a = debut(p, 'allons');
-  S.push([f, 'cineTorche'], [f + 1.2, 'cineEtoffe'], [c, 'cineTorche'], [c + 1.1, 'cineSouffleFeu'], [c + 3.3, 'cineEclat'], [r, 'cineRune'], [r + .1, 'cineTorche'], [s, 'cineTorche'], [s + .2, 'cineRune'], [s + 1.2, 'cineHm'], [s + 2.0, 'cineEtoffe'],
+  S.push([f, 'cineTorche'], [f + 1.2, 'cineEtoffe'], [c + 1.5, 'cineTorche'], [c + 1.1, 'cineSouffleFeu'], [c + 3.3, 'cineEclat'], [r, 'cineRune'], [r + .1, 'cineTorche'], [s, 'cineTorche'], [s + .2, 'cineRune'], [s + 1.2, 'cineHm'], [s + 2.0, 'cineEtoffe'],
     [a, 'cineTorche'], [a + .1, 'cineEtoffe'], [a + .3, 'cineRune']);
   pas(S, 'cinePasPierre', a + 3.62, a + 5.1, .5);
   return S;

@@ -442,7 +442,7 @@ M.cineMusPubA = function(A, P){
    o = les instants du film (jeu/cine/src/film-descente-3.js : assembler) ; la même fin pour les deux (o.fin : le plan « regard »). */
 function descente(o){
   return function(A, P){
-    var I = Instance(A, P), proche = A.bus(P, {grotte:.35}), tamb = A.bus(P, {grotte:.7, g:.9}), loin = A.bus(P, {grotte:1, g:.7}), ech = I.echo(loin, {temps:.45, retour:.42, lp:2400, sortie:.5});
+    var I = Instance(A, P), proche = A.bus(P, {grotte:.35, g:1.6}), tamb = A.bus(P, {grotte:.7, g:1.45}), loin = A.bus(P, {grotte:1, g:1.1}), ech = I.echo(loin, {temps:.45, retour:.42, lp:2400, sortie:.5});
     var CR = .3, MOTIF = [38, 45, 50, 45, 41, 45, 50, 45], MOTIF2 = [38, 45, 50, 45, 43, 46, 50, 46];
     /* le moteur : des cordes pincées, graves ; t0 → t1 ; f : sa force ; v : 2 = la deuxième mesure monte (plus décidé) */
     function moteur(t, t0, t1, f, v){
