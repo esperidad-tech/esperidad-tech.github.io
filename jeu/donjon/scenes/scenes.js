@@ -1346,7 +1346,7 @@ function objet(o){ o.type = o.type || 'objet'; o.zone = o.zone || zoneDe(o.x, o.
 function poussiere(x, y, w, h, n, c, effet){ return {id: 'ambiance-' + (effet || 'poussiere') + '-' + x, type: 'particules', effet: effet || 'poussiere', zone: {x: x, y: y, w: w, h: h}, n: n, couleur: c, x: x, y: y, w: 0, h: 0, z: 9}; }
 function halo(id, x, y, w, h, c, force, duree){ return {id: id, type: 'deco', anim: 'pulse', lueur: c, force: force, x: x, y: y, w: w, h: h, duree: duree || 3000, z: 1}; }
 
-SALLES.puits = function(){ return {nom: 'Le fond du puits', type: 'depart', ambiance: 'la lune tout en haut, la corde, trois couloirs (ouest, nord, est)',
+SALLES.puits = function(){ return {nom: 'L\'entrée des souterrains', type: 'depart', ambiance: 'la lune tout en haut, la corde, trois couloirs (ouest, nord, est)',
   sorties: {ouest: {x: 46, y: 250}, nord: {x: 600, y: 250}, est: {x: 858, y: 250}},
   elements: [
     {id: 'corde', type: 'deco', anim: 'balance', amplitude: 1.1, duree: 4600, svg: A.corde(SOL + 4), x: 598, y: -2, w: 24, h: SOL + 4, pivot: [12, 0], z: 3},

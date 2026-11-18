@@ -287,25 +287,30 @@ function deuxLignes(nom){
    vraiment quand on a tout vu ; s'il manque des choses, il faut bien montrer qu'il y a encore des choses à voir »), un grand ✅ dessus et son nom
    sur une étiquette verte. Avant : une loupe 🔎 et « 2 / 5 », ce qui a été reconnu sur tout ce qu'on peut en tirer (l'échantillon, et tout ce
    qui vient de lui : ce que la pince prélève, le liquide de l'eau chaude), sur une étiquette orange. */
-function aVoir(d){ var l = [d]; for(var k in OBJETS) if(OBJETS[k].de === d) l.push(k); return l; }
+/* (Romain, 17 novembre au soir : « sur la lettre, il y a toujours marqué en cours, 1 / 2 trouvés, alors que j'ai tout fait : mettre 1 sur 1
+   quand on a trouvé l'encre, et 0 sur 1 sinon ».) L'échantillon lui-même ne compte que s'il est à reconnaître ICI : la lettre d'Odette n'a
+   plus que son encre (requis:['encre_l']) — son écriture, c'est le Sage qui la compare. Elle montre donc « 0 / 1 » dès le début, puis le ✅
+   avec le nom de l'encre (jamais celui des deux écritures : ce serait donner la réponse du Sage). */
+function seCompte(d){ var rq = OBJETS[d].requis; return !rq || rq.indexOf(d) >= 0; }
+function aVoir(d){ var l = seCompte(d) ? [d] : []; for(var k in OBJETS) if(OBJETS[k].de === d) l.push(k); return l; }
 function vusDe(d){ return aVoir(d).filter(function(k){ return !!S.trouves[k]; }).length; }
 function toutVu(d){ return vusDe(d) >= aVoir(d).length; }
 function dessinerLame(){
   CUIRS.forEach(function(t, n){
     var g = $('#echD-' + t); if(!g) return; var q = posEch(n), x = q.x, y = q.y, fait = !!S.trouves[t], att = !!ATTENTE[t] && !fait && !S.finis[t], s = '';
-    var nv = vusDe(t), nt = aVoir(t).length, tout = nv >= nt, enCours = !tout && nv > 0;
+    var nv = vusDe(t), nt = aVoir(t).length, tout = nv >= nt, enCours = !tout && (nv > 0 || !seCompte(t));
     s += '<g transform="rotate(-5 ' + x + ' ' + (y - 46) + ')"><rect x="' + (x - 20) + '" y="' + (y - 55) + '" width="44" height="22" rx="3" fill="rgba(40,20,8,.3)"/>' + R(x - 22, y - 58, 44, 22, 3, tout ? '#c9f2cd' : enCours ? '#ffe2b8' : '#fff6d8', ' stroke-width="2.2"') + txt(x, y - 46.5, 14, 'n° ' + (n + 1)) + '</g>';
     s += '<g' + (tout ? ' opacity=".5"' : (att ? ' opacity=".4"' : '')) + '><ellipse cx="' + x + '" cy="' + (y + 5) + '" rx="17" ry="3.5" fill="rgba(40,20,8,.28)"/>' + petitEch(t, x, y) + '</g>';
-    if(tout){ var l = deuxLignes(nomTrouve(t)), h = l.length > 1 ? 30 : 19;
+    if(tout){ var l = deuxLignes(nomTrouve(seCompte(t) ? t : OBJETS[t].requis[0])), h = l.length > 1 ? 30 : 19;
       s += '<text x="' + x + '" y="' + (y - 4) + '" font-size="34" text-anchor="middle" dominant-baseline="central">✅</text>' +
         '<rect x="' + (x - 39) + '" y="' + (y + 20) + '" width="78" height="' + h + '" rx="5" fill="#eaffea" stroke="#2f8a3e" stroke-width="2.4"/>' +
         l.map(function(m, k){ return txt(x, y + 30 + k*12, l.length > 1 ? 12.5 : 14, m, ' fill="#1f5a2a"'); }).join(''); }
     else if(enCours){
-      var l2 = fait ? deuxLignes(nomTrouve(t)) : ['En cours…'], h2 = (l2.length > 1 ? 30 : 19) + 15;
+      var l2 = fait ? deuxLignes(nomTrouve(t)) : [nv > 0 ? 'En cours…' : 'À analyser'], h2 = (l2.length > 1 ? 30 : 19) + 15;
       s += '<text x="' + (x + 17) + '" y="' + (y - 15) + '" font-size="22" text-anchor="middle" dominant-baseline="central">🔎</text>' +
         '<rect x="' + (x - 39) + '" y="' + (y + 20) + '" width="78" height="' + h2 + '" rx="5" fill="#fff0d8" stroke="#d27a12" stroke-width="2.4" stroke-dasharray="5 3"/>' +
         l2.map(function(m, k){ return txt(x, y + 30 + k*12, l2.length > 1 ? 12.5 : 14, m, ' fill="#7a3f06"'); }).join('') +
-        txt(x, y + 30 + l2.length * 12 + 2, 13, nv + ' / ' + nt + ' trouvés', ' fill="#a8560a"'); }
+        txt(x, y + 30 + l2.length * 12 + 2, 13, nv + ' / ' + nt + (nt > 1 ? ' trouvés' : ' trouvé'), ' fill="#a8560a"'); }
     /* pas encore son tour (le tutoriel suit sa trame) : il est pâle, avec un petit sablier */
     if(att) s += '<text x="' + (x + 15) + '" y="' + (y - 14) + '" font-size="17" text-anchor="middle" dominant-baseline="central">⏳</text>';
     g.innerHTML = s;

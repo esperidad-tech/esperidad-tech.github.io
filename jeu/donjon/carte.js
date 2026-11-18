@@ -220,7 +220,9 @@ function lieu(id, o){
   LIEUX[id] = o; ORDRE.push(id);
 }
 /* dans l'ordre du chemin long (CONCEPTION §7) */
-lieu('puits',        {nom:'Le fond du puits', ic:'🪢', type:'depart', x:1200, y:750, v1:1, scene:'puits', sauvegarde:true});
+/* (Romain, 17 novembre, 23 h 13 : « si on n'est pas arrivé par le puits, il ne faut pas écrire le fond du puits ») le même nom que dans le
+   donjon (moteur/src/donnees.js : « L'entrée des souterrains », depuis le 13 novembre) : on y arrive par le puits OU par la crypte. */
+lieu('puits',        {nom:'L’entrée des souterrains', ic:'🕯️', type:'depart', x:1200, y:750, v1:1, scene:'puits', sauvegarde:true});
 lieu('galerie',      {nom:'La galerie effondrée', ic:'🪨', type:'objets', culDeSac:true, x:990, y:755, forme:{t:'rr', x:990, y:755, w:150, h:64, r:14}, scene:'galerie', objets:['bourse']});
 lieu('aeration',     {nom:'Le puits d’aération', ic:'🌬️', type:'objets', culDeSac:true, x:1200, y:560, forme:{t:'cercle', x:1200, y:560, r:46}, scene:'aeration', signe:'etoile', objets:['sacoche', 'herbes'], codes:['plante:lumiere']});
 lieu('rats',         {nom:'La salle des rats', ic:'🐀', type:'combat', x:1440, y:752, v1:1, decor:'rats', monstres:['rat', 'rat', 'rat']});

@@ -61,11 +61,16 @@ function bloc(id){
   var S = etat(id), fait = parle(id), l = pierresDe(E), s = '';
   var classe = fait ? ' pp-parle' : S.chaleur ? ' pp-' + S.chaleur : '';
   s += '<div class="pp' + classe + '" data-pp="' + esc(id) + '">';
-  s += '<div class="pp-plan' + (Pl.large ? ' pp-large' : '') + '" data-pp-plan="' + esc(id) + '">' + Pl.dessin(fait);
+  /* (17 novembre, 23 h 30) un plan qui se déroule en grand (Pl.ouvrable : le vieux plan, la nuit) porte une petite loupe, en haut à droite */
+  var grand = !!(Pl.ouvrable && Pl.ouvrable());
+  s += '<div class="pp-plan' + (Pl.large ? ' pp-large' : '') + (grand ? ' pp-grand' : '') + '" data-pp-plan="' + esc(id) + '">' + Pl.dessin(fait) + (grand ? '<span class="pp-loupe" aria-hidden="true">🔎</span>' : '');
   if(S.pierre && !fait) s += '<button type="button" class="pp-pose" data-pp-pose="' + esc(S.pierre) + '" style="left:' + n(S.x * 100) + '%;top:' + n(S.y * 100) + '%" aria-label="' + esc((pierre(E, S.pierre) || {}).nom || 'La pierre') + ', posée sur le plan">' + pierreSVG(S.pierre, 54) + '</button>';
   /* le plan a parlé : la pierre reste posée à côté (Pl.repos), sans cacher ce qu'elle a allumé */
   if(fait && Pl.zone){ var rp = Pl.repos || Pl.zone; s += '<span class="pp-pose pp-fixe" style="left:' + n(rp.x / 300 * 100) + '%;top:' + n(rp.y / Pl.h * 100) + '%" aria-hidden="true">' + pierreSVG(Pl.pierre, 44) + '</span>'; }
   s += '</div>';
+  /* (17 novembre, 23 h 30) juste sous le dessin, avant le texte et la poche : ce que le plan propose (Pl.sous — le vieux plan, la nuit : le
+     bouton jaune « 🔎 Regarder le plan de tout près », qu'on doit voir sans faire défiler la page) */
+  if(Pl.sous) s += Pl.sous();
   var dit = fait ? Pl.t : (S.dit || Pl.avant);
   s += '<div class="pp-dit" aria-live="polite">' + (fait && Pl.signes ? Pl.signes() : '') + '<p class="lv-texte">' + esc(dit) + ' ' + lire(dit) + '</p></div>';
   if(!fait){
@@ -74,6 +79,7 @@ function bloc(id){
       return '<button type="button" class="pp-pierre' + (S.main === p.id ? ' pp-main' : '') + (sortie ? ' pp-sortie' : '') + '" data-pp-pierre="' + esc(p.id) + '">' + pierreSVG(p.id, 46) + '<span>' + esc(p.nom) + '</span></button>';
     }).join('') : '<span class="pp-vide">Rien pour l\'instant.</span>') + '</div></div>';
   }
+  if(Pl.apres) s += Pl.apres();   /* (après la poche : le bouton du plan, tant que la pierre de rune attend d'être posée) */
   return s + '</div>';
 }
 function redessiner(id){
@@ -162,8 +168,12 @@ document.addEventListener('click', function(e){
   if(UI.ppBloque && Date.now() - UI.ppBloque < 350){ UI.ppBloque = 0; return; }
   if(e.target.closest('button.pp-pose')) return;
   var id = plan.dataset.ppPlan, S = etat(id), E = M.E(), Pl = planDe(E, id);
-  if(!Pl || parle(id)) return;
-  var pid = S.main || S.pierre;
+  if(!Pl) return;
+  var pid = parle(id) ? null : (S.main || S.pierre);
+  /* (Romain, 17 novembre, 23 h 13 : « quand je clique sur le plan, il se passe rien ») sans pierre à poser, toucher un plan qui se déroule
+     en grand (le vieux plan, la nuit) l'ouvre : c'est là qu'on le lit, qu'on le zoome, et qu'on y promène la pierre de rune */
+  if(!pid && Pl.ouvrir && Pl.ouvrir()){ e.stopPropagation(); return; }
+  if(parle(id)) return;
   if(!pid){
     S.dit = Pl.sansPierre || 'Le plan ne dit rien de plus… Il lui manque quelque chose.'; M.son('tic'); redessiner(id); return;
   }
@@ -280,10 +290,15 @@ M.papierOdetteHTML = function(){
    l'escalier, un plan gravé dans la pierre, que le Sage recopie. */
 M.vieuxPlanHTML = function(){
   var P = M.P(), a = !!(P && P.recus && P.recus['obj:vieux_plan']);
-  var t = a ? 'Un très vieux plan, roulé dans un étui de cuir, sous une dalle de la maison d\'Odette. Des couloirs, des salles… L\'encre a tant pâli qu\'on n\'y lit plus un seul nom. Au départ, quelqu\'un a dessiné une petite cloche. Un coin a été déchiré.'
-    : 'En haut de l\'escalier, un plan est gravé dans la pierre. Tu l\'as recopié dans ton Grand Livre : des couloirs, des salles, des signes à demi effacés. Un coin manque.';
+  /* (Romain, 17 novembre, 23 h 13 : « au départ, quelqu'un a dessiné une petite cloche : si on rentre par le puits, c'est faux ».) La
+     tablette du Sage ne sait pas par où le Pisteur est descendu (le même code du départ pour la crypte et pour le puits) : le texte ne
+     dit donc plus « au départ ». La cloche reste sur une salle : c'est toujours l'indice de l'après-midi (« il y a quelque chose sous
+     le clocher »). */
+  var t = a ? 'Un très vieux plan, roulé dans un étui de cuir, sous une dalle de la maison d\'Odette. Des couloirs, des salles… L\'encre a tant pâli qu\'on n\'y lit plus un seul nom. Sur l\'une des salles, quelqu\'un a dessiné une petite cloche. Un coin a été déchiré.'
+    : 'Le Pisteur a trouvé un plan gravé dans la pierre, à l\'entrée du passage. Tu l\'as recopié dans ton Grand Livre : des couloirs, des salles, des signes à demi effacés. Un coin manque.';
   var t2 = 'Dans la marge, de l\'écriture penchée d\'Odette : « Les signes ne parlent qu\'à la pierre qui les garde. »';
-  return '<p class="lv-texte">' + esc(t) + ' ' + lire(t) + '</p>' + bloc('vieuxplan') + (a ? '<p class="lv-texte pp-citation">' + esc(t2) + ' ' + lire(t2) + '</p>' : '') +
+  /* le bouton jaune « 🔎 Regarder le plan de tout près » : juste sous le dessin (PLANS.vieuxplan.sous ; avant, tout en bas de la page, hors de l'écran) */
+  return '<p class="lv-texte">' + esc(t) + ' ' + lire(t) + '</p>' + bloc('vieuxplan') + (a ?'<p class="lv-texte pp-citation">' + esc(t2) + ' ' + lire(t2) + '</p>' : '') +
     (M.donjonPlanBloc ? M.donjonPlanBloc() : '');
 };
 M.tableauOdetteHTML = function(){
@@ -313,8 +328,14 @@ if(E3){
       }},
     /* le vieux plan d'Odette : il attend une autre pierre (la nuit) */
     vieuxplan:{pierre:'rune', h:180, large:true, zone:{x:150, y:90, r:400}, repos:{x:268, y:152}, ic:'🗺️', dessin:vieuxPlan,
-      t:'La pierre de rune chauffe dans ta main… Les vieux signes se rallument, un à un ! Regarde le plan de tout près, et promène-la partout : elle réveille l\'encre cachée.',
-      note:'La pierre de rune réveille l\'encre cachée du vieux plan : à promener partout, en le regardant de tout près.',
+      /* (17 novembre, 23 h 30) le texte disait « promène-la partout » sur ce petit dessin, où rien ne bouge : il dit maintenant où ça se passe
+         (le plan déroulé en grand : le bouton jaune juste dessous, ou un doigt sur le plan) */
+      t:'La pierre de rune chauffe dans ta main… Les vieux signes se rallument, un à un ! Mais ils sont minuscules. Déroule ce plan en grand : là, ta pierre se promène partout, et elle réveille l\'encre cachée.',
+      note:'La pierre de rune réveille l\'encre cachée du vieux plan : à promener partout, sur le plan déroulé en grand.',
+      ouvrable:function(){ return !!(M.donjonPlanOuvrable && M.donjonPlanOuvrable()); },
+      ouvrir:function(){ return !!(M.donjonPlanOuvrir && M.donjonPlanOuvrir()); },
+      sous:function(){ return M.donjonPlanBouton ? M.donjonPlanBouton('sous') : ''; },
+      apres:function(){ return M.donjonPlanBouton ? M.donjonPlanBouton('apres') : ''; },
       avant:'Ici et là, de l\'encre passée : des signes qu\'on ne sait plus lire. Pour l\'instant…',
       sansPierre:'Les signes restent muets… « Ils ne parlent qu\'à la pierre qui les garde. »',
       /* (Romain, 17 novembre, 7 h 47 : « on ne peut pas interagir avec […] il ne se passe rien ») l'après-midi, ce plan ne peut pas encore parler :
