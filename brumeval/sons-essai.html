@@ -4863,6 +4863,414 @@ S.cineLueurA = function(A, P){
   A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:500, pts:[[4, 1400]], q:.8}], env:[[0, 0], [2, 1], [4.2, 0]], g:.06}, o);
   return {duree:4.6};
 };
+
+/* ---------------------------------------------------------------- 18 novembre (Romain, 00 h 02) : les deux descentes REFAITES en 2D (jeu/cine/src/film-descente*.js ; Bible §13.68)
+   « des sons de ce qu'ils font : les bruits de pas, la torche qui brûle… » — NEUFS, à écouter */
+/* (un bus à son niveau : les niveaux ci-dessous ont été réglés à la mesure, le 18 novembre — personne n'a encore écouté) */
+function busG(A, P, pan, rev, g){ return A.bus(P, {g:g, rev:rev == null ? .5 : rev, grotte:.4, pan:pan == null ? 0 : pan}); }
+/* la torche qui brûle (3,6 s, rejouée bout à bout) : la flamme qui ronfle et bat, des crépitements */
+S.cineTorcheA = function(A, P){
+  var t = P.t, d = 3.8, o = busG(A, P, .15, .3, 0.42);
+  A.bruit(t, {coul:'brun', filtres:[{type:'lowpass', f:520, q:.7}], env:[[0, 0], [.25, 1], [d - .4, 1], [d, 0]], g:.32, rugueux:.75, rugVit:13}, o);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:900, pts:[[d * .5, 1300], [d, 800]], q:.8}], env:[[0, 0], [.3, 1], [d - .4, .9], [d, 0]], g:.07, rugueux:.9, rugVit:19}, o);
+  A.joue(t + .1, A.crepitement(d - .3, 9), {g:.2, filtres:[{type:'highpass', f:1900}]}, o);
+  return {duree:d};
+};
+/* une étoffe qui bouge (une cape, une manche) */
+S.cineEtoffeA = function(A, P){
+  var t = P.t, o = busG(A, P, h(-.2, .2, 1.8), .3);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:1500, pts:[[.3, 700]], q:.8}], env:[[0, 0], [.07, 1], [.2, .5], [.42, 0]], g:.2, rugueux:.5, rugVit:30}, o);
+  return {duree:.5};
+};
+/* la flamme qui passe (la torche qu'on déplace vite) */
+S.cineSouffleFeuA = function(A, P){
+  var t = P.t, o = bus(A, P, -.2, .4);
+  A.bruit(t, {coul:'brun', filtres:[{type:'bandpass', f:260, pts:[[.35, 820], [.9, 340]], q:.9}], env:[[0, 0], [.3, 1], [.9, 0]], g:.5, rugueux:.6, rugVit:22}, o);
+  A.joue(t + .15, A.crepitement(.5, 30), {g:.14, filtres:[{type:'highpass', f:2400}]}, o);
+  return {duree:1};
+};
+/* un petit éclat de lumière sur du laiton */
+S.cineEclatA = function(A, P){
+  var t = P.t, o = busG(A, P, .2, .9, 1.4);
+  [[3136, 0], [4186, .07], [5274, .16]].forEach(function(n){ A.ton(t + n[1], {type:'sine', f:n[0], env:A.perc(.004, .7), g:.022}, o); });
+  return {duree:1.2};
+};
+/* la pierre de rune : elle chante tout bas, un accord de verre un peu faux, qui bat */
+S.cineRuneA = function(A, P){
+  var t = P.t, d = 3.8, o = busG(A, P, .1, .9, 0.7);
+  [[293.7, .05], [440, .04], [587.3, .034], [622.3, .018], [880, .016]].forEach(function(n, k){
+    A.ton(t + k * .12, {type:'sine', f:n[0], det:h(-4, 4), env:[[0, 0], [.9, 1], [d - 1.2, .85], [d, 0]], g:n[1], vib:[3.4 + k * .4, n[0] * .003], trem:[2.4, .35]}, o);
+  });
+  A.bruit(t, {coul:'blanc', filtres:[{type:'bandpass', f:5200, q:3}], env:[[0, 0], [1.2, 1], [d, 0]], g:.012}, o);
+  return {duree:d + .2};
+};
+/* « hm ? » : une petite voix intriguée */
+S.cineHmA = function(A, P){
+  var t = P.t, o = busG(A, P, .15, .35, 0.6);
+  voix(A, t, .34, {f:232, chute:1.3, g:.09, f1:420, f2:1100, lp:1700, souffle:.25, gigue:5, tr:.2, sat:1.2, env:[[0, 0], [.06, 1], [.24, .8], [.34, 0]]}, o);
+  return {duree:.5};
+};
+/* un pas sur la pierre (un seul : le film les place un par un) */
+S.cinePasPierreA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.5, grotte:.55, pan:h(-.25, .35)});
+  A.pas(t, {f:h(92, 122), bp:h(1300, 2000), g:h(.36, .48)}, o);
+  return {duree:.7};
+};
+/* un pas dans l'herbe, la nuit : sourd, des brins froissés */
+S.cinePasHerbeA = function(A, P){
+  GD = 1.5;
+  var t = P.t, o = dehors(A, P, h(-.3, .3), .15);
+  A.pas(t, {f:h(70, 90), bp:h(600, 900), g:.34}, o);
+  A.bruit(t + .01, {coul:'blanc', filtres:[{type:'bandpass', f:h(2600, 3600), q:.8}], env:[[0, 0], [.02, 1], [.16, 0]], g:.07, rugueux:.8, rugVit:40}, o);
+  return {duree:.5};
+};
+/* la torche lâchée dans le puits : elle file en sifflant, cogne tout en bas, loin, et roule */
+S.cineChuteTorcheA = function(A, P){
+  var t = P.t, o = busG(A, P, .2, .5, 0.7), loin = A.bus(P, {rev:1, grotte:1, pan:.2, g:.6});
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:1700, pts:[[1.1, 260]], q:1.3}], env:[[0, 0], [.1, 1], [.6, .5], [1.2, 0]], g:.34, rugueux:.6, rugVit:26}, o);
+  bois(A, t + 1.42, {f:210, f2:80, g:.5, d:.16, cf:520}, loin); bois(A, t + 1.66, {f:260, f2:110, g:.28, d:.1, cf:700}, loin); bois(A, t + 1.82, {f:300, f2:120, g:.16, d:.08, cf:800}, loin);
+  A.joue(t + 1.45, A.crepitement(.6, 30), {g:.12, filtres:[{type:'highpass', f:2200}]}, loin);
+  return {duree:2.8};
+};
+/* la corde et le treuil qui grincent sous le poids */
+S.cineCordeGrinceA = function(A, P){
+  var t = P.t, o = busG(A, P, -.1, .45, 2.8);
+  A.ton(t, {type:'sawtooth', f:150, f2:210, gl:.9, env:[[0, 0], [.15, 1], [.8, .8], [1.2, 0]], g:.045, gigue:22, trem:[15, .9], sat:2, filtres:[{type:'bandpass', f:820, q:2.6}, {type:'lowpass', f:1800, q:.7}]}, o);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:620, pts:[[1, 980]], q:1.6}], env:[[0, 0], [.3, 1], [1.2, 0]], g:.12, rugueux:.9, rugVit:17}, o);
+  return {duree:1.5};
+};
+/* une petite bête qui couine */
+S.cineCouinementA = function(A, P){
+  var t = P.t, o = busG(A, P, h(-.6, .6, 2.8), .7);
+  [0, .09, .2].forEach(function(d, k){ var f = h(3000, 3700); A.ton(t + d, {type:'triangle', f:f, f2:f * h(1.15, 1.35), gl:.05, env:[[0, 0], [.008, 1], [.05, .7], [.07, 0]], g:.03 - k * .006}, o); });
+  return {duree:.6};
+};
+/* des petites pattes qui détalent sur la pierre, un couinement */
+S.cineBetesA = function(A, P){
+  var t = P.t, d = 1.3, o = busG(A, P, h(-.5, .5, 4), .6);
+  A.joue(t, A.crepitement(d, 46), {g:.26, filtres:[{type:'bandpass', f:2300, q:1.2}], env:[[0, 0], [.08, 1], [d * .6, .7], [d, 0]]}, o);
+  A.joue(t + .1, A.crepitement(d - .3, 30), {g:.14, filtres:[{type:'highpass', f:3600}]}, A.bus(P, {g:4, rev:.7, grotte:.8, pan:h(-.8, .8)}));
+  var f = h(3100, 3600); A.ton(t + .12, {type:'triangle', f:f, f2:f * 1.25, gl:.05, env:[[0, 0], [.008, 1], [.06, 0]], g:.022}, o);
+  return {duree:d + .2};
+};
+/* il se laisse tomber sur les dalles : les deux pieds, l'étoffe */
+S.cineAtterritA = function(A, P){
+  var t = P.t, o = busG(A, P, 0, .55, 0.4);
+  lourd(A, t, .62, o); A.pas(t + .06, {f:105, bp:1500, g:.4}, o);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:1100, pts:[[.3, 600]], q:.8}], env:[[0, 0], [.04, 1], [.34, 0]], g:.16}, o);
+  return {duree:.9};
+};
+/* la clé glisse dans la serrure : du fer qui frotte, un petit « tic » */
+S.cineCleEntreA = function(A, P){
+  var t = P.t, o = busG(A, P, .2, .4, 1.6);
+  A.bruit(t, {coul:'blanc', filtres:[{type:'bandpass', f:3300, pts:[[.3, 4300]], q:2}], env:[[0, 0], [.04, 1], [.26, .6], [.32, 0]], g:.1, rugueux:.9, rugVit:48}, o);
+  fer(A, t + .3, h(1500, 1800), .05, o);
+  return {duree:.8};
+};
+/* la clé tourne : le pêne recule — « clac… clonk » */
+S.cineCleTourneA = function(A, P){
+  var t = P.t, o = busG(A, P, .2, .55, 0.55);
+  A.bruit(t, {coul:'blanc', filtres:[{type:'bandpass', f:2400, q:2}], env:[[0, 0], [.03, .7], [.2, .5], [.24, 0]], g:.07, rugueux:.9, rugVit:36}, o);
+  bois(A, t + .24, {f:330, f2:150, g:.5, d:.07, cf:1100}, o); fer(A, t + .24, 900, .1, o);
+  lourd(A, t + .46, .6, o); fer(A, t + .46, 520, .14, o);
+  return {duree:1.3};
+};
+/* l'air froid qui monte d'en bas : un souffle grave, une plainte lointaine */
+S.cineVentCaveA = function(A, P){
+  var t = P.t, d = 4.2, o = A.bus(P, {g:.8, rev:.9, grotte:1, pan:0});
+  A.bruit(t, {coul:'brun', filtres:[{type:'bandpass', f:210, pts:[[d * .5, 340], [d, 190]], q:.9}], env:[[0, 0], [d * .4, 1], [d * .75, .6], [d, 0]], g:.34}, o);
+  A.ton(t + .5, {type:'sine', f:176, f2:190, gl:d - 1, env:[[0, 0], [1.4, 1], [d - 1.2, .6], [d - .5, 0]], g:.016, vib:[.8, 5]}, o);
+  return {duree:d + .2};
+};
+/* =================== LES TROIS FILMS DU DÉBUT DES ENQUÊTES (jeu/cine/src/film-debut1/2/3.js ; Bible §13.69 ; 18 novembre) — NEUFS, à écouter ===================
+   Romain : « une cinématique à chaque début d'enquête, comme un générique d'épisode ». On est au village : dehors (presque pas d'écho),
+   ou dans le bureau du maire (une petite pièce feutrée). */
+function piece(A, P, pan, g){ return A.bus(P, {g:g == null ? 1 : g, rev:.22, pan:pan == null ? 0 : pan}); }
+/* un oiseau : quelques notes très aiguës qui glissent */
+function oiseau(A, t, f, n, g, dest){
+  for(var k = 0; k < n; k++){ var f1 = f * h(.9, 1.15), d = h(.05, .11);
+    A.ton(t + k * h(.1, .16), {type:'sine', f:f1, f2:f1 * h(.75, 1.45), gl:d, env:[[0, 0], [.008, 1], [d, 0]], g:g}, dest); }
+}
+/* des battements d'ailes : des petits claquements de plumes, de plus en plus loin */
+function ailes(A, t, n, g, pan, P, vit){
+  for(var k = 0; k < n; k++){ var x = k / n;
+    A.bruit(t + k * (vit || .085) + h(0, .02), {coul:'rose', filtres:[{type:'bandpass', f:h(700, 1500), q:1.1}], env:A.perc(.008, .05), g:g * (1 - x * .7)}, A.bus(P, {g:GD, rev:.12 + .3 * x, pan:pan + x * .5})); }
+}
+
+/* ---------- ENQUÊTE 1 : « La Lanterne d'Or » ---------- */
+/* la nuit dans le bureau : presque rien — un souffle très grave, un grillon très loin */
+S.cineNuitA = function(A, P){
+  GD = 1.6;
+  var t = P.t, d = 5.6, o = dehors(A, P, 0, .3);
+  A.bruit(t, {coul:'brun', filtres:[{type:'lowpass', f:260}], env:[[0, 0], [1.2, 1], [d - 1.4, 1], [d, 0]], g:.2}, o);
+  for(var k = 0; k < 9; k++){ var tt = t + .5 + k * .56 + h(0, .05);
+    for(var j = 0; j < 3; j++) A.ton(tt + j * .045, {type:'sine', f:4300, env:[[0, 0], [.004, 1], [.03, 0]], g:.006, trem:[60, .9]}, dehors(A, P, -.6, .5)); }
+  return {duree:d + .2};
+};
+/* la pendule : tic… tac… (huit battements) */
+S.cineTicTacA = function(A, P){
+  var t = P.t, o = piece(A, P, .5, 1.5);
+  for(var k = 0; k < 8; k++){ var tt = t + k * .5, f = k % 2 ? 1500 : 1900;
+    A.ton(tt, {type:'square', f:f, env:A.perc(.001, .018), g:.035, filtres:[{type:'bandpass', f:f, q:6}]}, o);
+    A.choc(tt, {f:420, f2:260, d:.03, g:.12, sat:1.5, corps:1.2, corpsF:900}, o); }
+  return {duree:4.2};
+};
+/* la Lanterne d'Or : une lumière qui chante — un accord de verre, des poussières d'or qui tintent */
+S.cineLanterneOrA = function(A, P){
+  var t = P.t, o = A.bus(P, {g:1.5, rev:.8, pan:0});
+  [[523.3, .04], [659.3, .034], [784, .03], [1046.5, .02]].forEach(function(n, k){
+    A.ton(t + k * .22, {type:'sine', f:n[0], env:[[0, 0], [.9, 1], [2.2, .7], [3.4, 0]], g:n[1], vib:[4.6 + k * .4, n[0] * .003]}, o); });
+  for(var k = 0; k < 9; k++) A.cloche(t + .5 + h(0, 2.2), [2093, 2637, 3136, 3520][k % 4] * h(.99, 1.01), {d:.7, g:.012, rapport:2.76, indice:.6}, o);
+  return {duree:3.8};
+};
+/* la fenêtre : le loquet qu'on soulève, puis les battants qui grincent en s'ouvrant */
+S.cineFenetreA = function(A, P){
+  var t = P.t, o = piece(A, P, .2, 1.6);
+  fer(A, t, 1250, .07, o); bois(A, t + .02, {f:520, f2:240, g:.3, d:.05, cf:1400}, o);
+  A.ton(t + .2, {type:'sawtooth', f:330, f2:520, gl:1.0, env:[[0, 0], [.15, 1], [.8, .8], [1.2, 0]], g:.028, gigue:28, trem:[21, .9], sat:2, filtres:[{type:'bandpass', f:1500, q:3}, {type:'lowpass', f:2800, q:.7}]}, o);
+  A.bruit(t + .2, {coul:'rose', filtres:[{type:'bandpass', f:800, pts:[[1, 1600]], q:1.4}], env:[[0, 0], [.3, 1], [1.2, 0]], g:.08, rugueux:.8, rugVit:18}, o);
+  bois(A, t + 1.25, {f:300, f2:130, g:.3, d:.09, cf:700}, o);
+  return {duree:1.8};
+};
+/* une main prend l'anneau de la Lanterne : un petit tintement de métal, un froissement d'étoffe */
+S.cinePriseA = function(A, P){
+  var t = P.t, o = piece(A, P, 0, 1.6);
+  fouet(A, t, .22, {f:900, f2:2000, q:.9, g:.18}, o);
+  A.cloche(t + .18, 1760, {d:.5, g:.035, rapport:2.4, indice:.8}, o); A.cloche(t + .26, 2349, {d:.4, g:.02, rapport:2.4, indice:.8}, o);
+  return {duree:.9};
+};
+/* la lumière s'en va : le chant de verre glisse vers le grave et s'éteint, un souffle l'emporte */
+S.cineLueurPartA = function(A, P){
+  var t = P.t, o = A.bus(P, {g:1.5, rev:.8, pan:.3});
+  [[784, .034], [1046.5, .026], [1318.5, .018]].forEach(function(n, k){
+    A.ton(t + k * .05, {type:'sine', f:n[0], f2:n[0] * .5, gl:1.8, env:[[0, 0], [.1, 1], [1.2, .5], [2, 0]], g:n[1], vib:[5, n[0] * .004]}, o); });
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:1800, pts:[[1.6, 420]], q:.9}], env:[[0, 0], [.3, 1], [1.8, 0]], g:.1}, o);
+  return {duree:2.2};
+};
+/* des pas légers et rapides sur les pavés, qui s'éloignent (on ne sait pas qui court) */
+S.cineCourseLegereA = function(A, P){
+  GD = 2.2;
+  var t = P.t, n = 15;
+  for(var k = 0; k < n; k++){ var x = k / n, o = A.bus(P, {g:GD, rev:.2 + .5 * x, pan:.15 - x * .3});
+    A.pas(t + k * .155 + h(0, .012), {f:h(150, 185), bp:h(2200, 3000), g:.5 * (1 - x * .72)}, o); }
+  return {duree:2.8};
+};
+/* la nuit passe très vite : la pendule s'emballe, un grand souffle monte, puis la lumière du matin (un accord clair) */
+S.cineTempsPasseA = function(A, P){
+  var t = P.t, o = piece(A, P, .4, 1.4), o2 = A.bus(P, {g:1.5, rev:.7, pan:0}), tt = 0, pas = .34;
+  for(var k = 0; k < 38 && tt < 3.3; k++){ var f = k % 2 ? 1500 : 1900;
+    A.ton(t + tt, {type:'square', f:f, env:A.perc(.001, .015), g:.03, filtres:[{type:'bandpass', f:f, q:6}]}, o); tt += pas; pas = Math.max(.045, pas * .9); }
+  A.bruit(t + .3, {coul:'rose', filtres:[{type:'bandpass', f:300, pts:[[3.2, 2400]], q:.8}], env:[[0, 0], [2.9, 1], [3.5, 0]], g:.13}, o2);
+  [[392, .03], [493.9, .028], [587.3, .026], [784, .02]].forEach(function(n, k){
+    A.ton(t + 3.1 + k * .07, {type:'sine', f:n[0], env:[[0, 0], [.35, 1], [1.2, .6], [2.2, 0]], g:n[1], vib:[4.8, n[0] * .003]}, o2); });
+  return {duree:5.5};
+};
+/* les oiseaux du matin : trois ou quatre petits chants qui se répondent */
+S.cineOiseauxA = function(A, P){
+  GD = 1.5;
+  var t = P.t;
+  [[.0, 3100, 4, -.5], [.45, 4200, 3, .4], [1.0, 2700, 5, .1], [1.7, 3800, 3, -.3], [2.2, 4500, 4, .6], [2.9, 3000, 4, -.1]].forEach(function(q){
+    oiseau(A, t + q[0] + h(0, .08), q[1], q[2], .016, A.bus(P, {g:GD, rev:.35, pan:q[3]})); });
+  return {duree:3.8};
+};
+/* la porte du bureau : la poignée, le pêne, les gonds */
+S.cinePorteBureauA = function(A, P){
+  var t = P.t, o = piece(A, P, -.3, 1.6);
+  fer(A, t, 900, .08, o); bois(A, t + .08, {f:260, f2:120, g:.45, d:.1, cf:640}, o);
+  A.ton(t + .2, {type:'sawtooth', f:210, f2:300, gl:.7, env:[[0, 0], [.1, 1], [.55, .7], [.8, 0]], g:.022, gigue:22, trem:[17, .9], sat:2, filtres:[{type:'bandpass', f:1100, q:3}]}, o);
+  return {duree:1.2};
+};
+/* le maire arrive en chantonnant : « hm-hm, hm-hmm… » (content de sa journée) */
+S.cineFredonneA = function(A, P){
+  GD = 2.2;
+  var t = P.t, o = piece(A, P, -.2, GD);
+  [[0, 196, .2], [.26, 246.9, .2], [.52, 293.7, .34], [.98, 246.9, .2], [1.24, 293.7, .5]].forEach(function(n){
+    gens(A, t + n[0], {f:n[1] * .5, d:n[2], voyelle:'ou', monte:1, g:.1, env:[[0, 0], [.04, 1], [n[2] * .7, .8], [n[2], 0]]}, o); });
+  return {duree:2};
+};
+/* trois pas sur le parquet du bureau */
+S.cinePasParquetA = function(A, P){
+  var t = P.t, o = piece(A, P, -.1, 1.5);
+  [0, .42, .84].forEach(function(x, k){ bois(A, t + x, {f:h(170, 210), f2:80, g:.5, d:.1, cf:h(420, 560)}, o); A.bruit(t + x, {bp:1500, bq:.9, env:A.perc(.001, .04), g:.1}, o);
+    if(k === 1) A.ton(t + x + .03, {type:'sawtooth', f:480, f2:560, gl:.14, env:[[0, 0], [.03, 1], [.16, 0]], g:.008, gigue:20, filtres:[{type:'bandpass', f:1700, q:4}]}, o); });
+  return {duree:1.4};
+};
+/* la stupeur : il retient son souffle d'un coup — et un coup sourd, comme le cœur qui tombe */
+S.cineStupeurA = function(A, P){
+  GD = 2.4;
+  var t = P.t, o = piece(A, P, 0, GD);
+  inspire(A, t, .34, .5, o);
+  gens(A, t + .04, {f:140, d:.3, voyelle:'o', monte:1.25, g:.05, env:[[0, 0], [.03, 1], [.3, 0]]}, o);
+  A.choc(t + .42, {f:90, f2:36, d:.5, g:.7, sat:2.4, corps:1.6, corpsF:200}, A.bus(P, {g:GD, rev:.6, pan:0}));
+  return {duree:1.3};
+};
+/* les pigeons s'envolent du toit, d'un seul coup */
+S.cineEnvolA = function(A, P){
+  GD = 2.2;
+  var t = P.t;
+  ailes(A, t, 16, .34, -.5, P, .07); ailes(A, t + .12, 14, .3, .1, P, .08); ailes(A, t + .3, 12, .24, -.1, P, .09);
+  for(var k = 0; k < 3; k++) A.ton(t + .1 + k * .35, {type:'sine', f:h(420, 520), f2:h(330, 380), gl:.2, env:[[0, 0], [.04, 1], [.22, 0]], g:.014, trem:[26, .8]}, dehors(A, P, h(-.5, .5), .4));
+  return {duree:2.2};
+};
+
+/* ---------- ENQUÊTE 2 : « La rivière rouge » ---------- */
+/* la rivière qui coule devant le lavoir : un courant doux, des petits clapotis */
+S.cineRiviereA = function(A, P){
+  GD = 1.5;
+  var t = P.t, d = 7, o = dehors(A, P, 0, .2);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:900, q:.6}, {type:'lowpass', f:2600}], env:[[0, 0], [1.2, 1], [d - 1.5, 1], [d, 0]], g:.07, rugueux:.4, rugVit:3}, o);
+  A.joue(t + .2, A.eau(d - .6, 16, {fmin:500, fmax:2200}), {g:.3, env:[[0, 0], [1, 1], [d - 2, 1], [d - .6, 0]]}, dehors(A, P, -.3, .25));
+  return {duree:d + .2};
+};
+/* le coq du village : « co-co-ri-coooo ! », au loin */
+S.cineCoqA = function(A, P){
+  GD = 1.6;
+  var t = P.t, o = A.bus(P, {g:GD, rev:.5, pan:.5});
+  [[0, .13, 520, 560], [.17, .13, 600, 640], [.34, .2, 700, 780], [.58, .9, 880, 560]].forEach(function(n, k){
+    A.ton(t + n[0], {type:'sawtooth', f:n[2], f2:n[3], gl:n[1], env:[[0, 0], [.02, 1], [n[1] * .7, .85], [n[1], 0]], g:.03, gigue:18, trem:[k === 3 ? 34 : 0, .5], sat:2,
+      filtres:[{type:'bandpass', f:1500, q:1.6}, {type:'peaking', f:2600, q:2, gain:6}]}, o); });
+  return {duree:2};
+};
+/* le drap plongé dans l'eau : « plouf », puis l'eau qui se referme et le linge qu'on frotte */
+S.cineLingeA = function(A, P){
+  GD = 1.8;
+  var t = P.t, o = dehors(A, P, .1, .2);
+  A.choc(t, {f:150, f2:60, d:.16, g:.4, sat:1.6}, o);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:1300, pts:[[.5, 600]], q:.8}], env:[[0, 0], [.02, 1], [.25, .5], [.7, 0]], g:.34}, o);
+  A.joue(t + .05, A.eau(1.4, 40, {fmin:500, fmax:2600}), {g:.5, env:[[0, 1], [.5, .7], [1.4, 0]]}, o);
+  fouet(A, t + .8, .3, {f:500, f2:1100, q:.8, g:.2}, o); fouet(A, t + 1.2, .3, {f:1100, f2:500, q:.8, g:.18}, o);
+  return {duree:1.9};
+};
+/* le drap ruisselle : beaucoup de gouttes, puis de moins en moins */
+S.cineGouttesA = function(A, P){
+  GD = 1.8;
+  var t = P.t, o = dehors(A, P, 0, .25);
+  A.joue(t, A.eau(1.2, 55, {fmin:700, fmax:3000}), {g:.45, env:[[0, 1], [.5, .6], [1.2, 0]]}, o);
+  for(var k = 0; k < 14; k++) A.goutte(t + .2 + Math.pow(k / 14, 1.6) * 2.4 + h(0, .04), {f:h(900, 1700), g:.07 * (1 - k / 20)}, dehors(A, P, h(-.3, .3), .3));
+  return {duree:3};
+};
+/* elle sursaute : un souffle coupé net */
+S.cineSursautA = function(A, P){
+  GD = 2.6;
+  var t = P.t, o = dehors(A, P, 0, .15);
+  inspire(A, t, .26, .55, o);
+  gens(A, t + .02, {f:330, d:.22, voyelle:'a', monte:1.3, g:.05, env:[[0, 0], [.02, 1], [.22, 0]]}, o);
+  return {duree:.7};
+};
+/* le cri de la lavandière : « AAAH ! » (une voix de femme, qui monte) */
+S.cineCriFemmeA = function(A, P){
+  GD = 2.6;
+  var t = P.t, o = A.bus(P, {g:GD, rev:.35, pan:0});
+  gens(A, t, {f:392, d:.95, voyelle:'a', monte:1.32, g:.12, env:[[0, 0], [.05, 1], [.55, .9], [.95, 0]]}, o);
+  gens(A, t + .01, {f:396, d:.9, voyelle:'a', monte:1.3, g:.06, env:[[0, 0], [.05, 1], [.5, .9], [.9, 0]]}, o);
+  A.bruit(t, {coul:'rose', bp:2600, bq:1, env:[[0, 0], [.05, 1], [.9, 0]], g:.03, rugueux:.6, rugVit:30}, o);
+  return {duree:1.4};
+};
+/* le seau de bois lâché sur le quai : il cogne, il rebondit, il roule un peu */
+S.cineSeauA = function(A, P){
+  GD = 1.8;
+  var t = P.t, o = dehors(A, P, .4, .2);
+  bois(A, t, {f:260, f2:110, g:.9, d:.16, cf:480}, o); A.choc(t, {f:120, f2:55, d:.2, g:.4, sat:2}, o);
+  [.24, .42, .55, .64].forEach(function(x, k){ bois(A, t + x, {f:h(280, 340), f2:130, g:.55 - k * .12, d:.09, cf:h(500, 640)}, o); });
+  A.bruit(t + .7, {coul:'brun', filtres:[{type:'bandpass', f:300, q:1}], env:[[0, 0], [.1, 1], [.6, 0]], g:.2, rugueux:.9, rugVit:14}, o);
+  fer(A, t + .01, 640, .05, o);
+  return {duree:1.5};
+};
+/* le village murmure, inquiet : des voix basses qui se mêlent, sans paroles */
+S.cineMurmureA = function(A, P){
+  GD = 3.2;
+  var t = P.t, d = 4.6;
+  for(var v = 0; v < 30; v++){ var tt = t + h(0, d - .5), x = (tt - t) / d, env = Math.sin(Math.PI * Math.min(1, x * 1.15)) * .9 + .1;
+    gens(A, tt, {f:h(105, 250), d:h(.14, .34), voyelle:['ou', 'o', 'a', 'ou'][v % 4], monte:h(.88, 1.08), g:.03 * env}, dehors(A, P, h(-.8, .8), .25)); }
+  A.bruit(t, {coul:'rose', bp:700, bq:.6, env:[[0, 0], [.8, 1], [d - 1, .9], [d, 0]], g:.03, rugueux:.7, rugVit:9}, dehors(A, P, 0, .2));
+  return {duree:d + .2};
+};
+
+/* ---------- ENQUÊTE 3 : « La lettre d'Odette » ---------- */
+/* l'aube sur la place : un vent très doux, deux ou trois oiseaux qui s'éveillent */
+S.cineAubeA = function(A, P){
+  GD = 1.5;
+  var t = P.t, d = 5.6;
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:500, pts:[[d * .5, 800], [d, 450]], q:.6}], env:[[0, 0], [1.4, 1], [d - 1.6, .8], [d, 0]], g:.07}, dehors(A, P, -.2, .25));
+  [[.9, 3300, 3, .5], [2.3, 4100, 4, -.4], [3.6, 2900, 3, .2], [4.5, 3700, 3, -.6]].forEach(function(q){ oiseau(A, t + q[0], q[1], q[2], .012, A.bus(P, {g:GD, rev:.4, pan:q[3]})); });
+  return {duree:d + .2};
+};
+/* la grande porte de la mairie : le verrou, les deux vantaux lourds qui s'ouvrent */
+S.cinePorteMairieA = function(A, P){
+  GD = 2;
+  var t = P.t, o = A.bus(P, {g:GD, rev:.35, pan:0});
+  fer(A, t, 520, .12, o); lourd(A, t + .05, .5, o);
+  A.ton(t + .25, {type:'sawtooth', f:150, f2:230, gl:1.1, env:[[0, 0], [.2, 1], [.9, .8], [1.3, 0]], g:.03, gigue:24, trem:[13, .9], sat:2, filtres:[{type:'bandpass', f:800, q:2.4}, {type:'lowpass', f:2000, q:.7}]}, o);
+  A.bruit(t + .25, {coul:'brun', filtres:[{type:'bandpass', f:340, q:1}], env:[[0, 0], [.3, 1], [1.3, 0]], g:.2, rugueux:.9, rugVit:10}, o);
+  lourd(A, t + 1.5, .4, o);
+  return {duree:2.2};
+};
+/* une lettre qu'on déplie : le papier craque */
+S.cinePapierA = function(A, P){
+  GD = 2;
+  var t = P.t, o = dehors(A, P, 0, .12);
+  A.joue(t, A.crepitement(.5, 70), {g:.3, filtres:[{type:'highpass', f:2200}]}, o);
+  fouet(A, t + .05, .2, {f:2400, f2:4200, q:.7, g:.14}, o); fouet(A, t + .42, .24, {f:3600, f2:2000, q:.7, g:.12}, o);
+  A.joue(t + .5, A.crepitement(.35, 50), {g:.2, filtres:[{type:'highpass', f:2600}]}, o);
+  return {duree:1.1};
+};
+/* tout le village souffle de soulagement : « aaah… » */
+S.cineSoupirA = function(A, P){
+  GD = 4;
+  var t = P.t;
+  for(var k = 0; k < 6; k++) expire(A, t + h(0, .12), h(.6, .9), .3, dehors(A, P, -.7 + k * .28, .2));
+  [[196, 0], [247, .05], [294, .02], [165, .07], [330, .04]].forEach(function(v, k){
+    gens(A, t + .05 + v[1], {f:v[0], d:h(.7, .95), voyelle:'a', monte:.8, g:.06, env:[[0, 0], [.08, 1], [.4, .6], [.9, 0]]}, dehors(A, P, -.6 + k * .3, .3)); });
+  return {duree:1.5};
+};
+/* « HOURRA ! » : tout le village crie de joie, des mains qui claquent */
+S.cineHourraA = function(A, P){
+  GD = 4.5;
+  var t = P.t;
+  [[131, 0], [147, .04], [175, .02], [196, .06], [233, .03], [262, .07], [294, .01], [330, .05], [392, .08], [440, .04]].forEach(function(v, k){
+    gens(A, t + v[1] + h(0, .05), {f:v[0] * h(.97, 1.03), d:h(1.1, 1.6), voyelle:k % 3 ? 'a' : 'o', monte:1.18, g:.08, env:[[0, 0], [.08, 1], [.8, .9], [1.5, 0]]}, dehors(A, P, -.8 + k * .18, .3)); });
+  for(var c = 0; c < 22; c++) A.bruit(t + .3 + h(0, 1.6), {coul:'blanc', filtres:[{type:'bandpass', f:h(1400, 2400), q:1.4}], env:A.perc(.002, .035), g:.3}, dehors(A, P, h(-.8, .8), .2));
+  return {duree:2.4};
+};
+/* la fête commence : des applaudissements, des rires, des « youhou ! », des pieds qui dansent */
+S.cineFeteA = function(A, P){
+  GD = 3.6;
+  var t = P.t, d = 4.4;
+  for(var c = 0; c < 90; c++){ var x = h(0, 1); A.bruit(t + x * (d - .4), {coul:'blanc', filtres:[{type:'bandpass', f:h(1300, 2600), q:1.4}], env:A.perc(.002, .03), g:.24 * (1 - x * .5)}, dehors(A, P, h(-.9, .9), .2)); }
+  [[.2, 330, 1.5], [.9, 247, 1.4], [1.5, 440, 1.6], [2.2, 294, 1.3], [2.9, 392, 1.5], [3.4, 220, 1.3]].forEach(function(v, k){
+    gens(A, t + v[0], {f:v[1], d:h(.3, .5), voyelle:k % 2 ? 'ou' : 'a', monte:v[2], g:.06}, dehors(A, P, h(-.7, .7), .3)); });
+  /* un rire : « ha-ha-ha-ha » */
+  for(var r2 = 0; r2 < 5; r2++) gens(A, t + 1.1 + r2 * .15, {f:280 - r2 * 12, d:.1, voyelle:'a', monte:.9, g:.05, env:[[0, 0], [.015, 1], [.1, 0]]}, dehors(A, P, -.4, .25));
+  for(var p2 = 0; p2 < 14; p2++) pasTerre(A, t + h(.2, d - .4), h(.4, .8), dehors(A, P, h(-.8, .8)));
+  return {duree:d + .2};
+};
+/* les cloches du clocher sonnent la fête : un carillon clair, à toute volée */
+S.cineClocheJoieA = function(A, P){
+  GD = 1.6;
+  var t = P.t, o = A.bus(P, {g:GD, rev:.75, pan:.4});
+  [392, 493.9, 587.3, 392, 659.3, 587.3, 493.9, 784, 587.3, 493.9, 392, 587.3].forEach(function(f, k){
+    A.cloche(t + k * .36 + h(0, .03), f, {d:2.4, g:.05, rapport:3.5, indice:1.6}, o); A.cloche(t + k * .36, f * 2.01, {d:1.2, g:.012, rapport:2.76, indice:.8}, o); });
+  return {duree:6.6};
+};
+/* la fête, de loin (on est au ras des pavés, avec le chat) : un brouhaha joyeux, étouffé */
+S.cineFeteLoinA = function(A, P){
+  GD = 2.4;
+  var t = P.t, d = 3.6;
+  for(var c = 0; c < 46; c++) A.bruit(t + h(0, d - .3), {coul:'blanc', filtres:[{type:'bandpass', f:h(1000, 1600), q:1.2}, {type:'lowpass', f:1800}], env:A.perc(.003, .035), g:.14}, A.bus(P, {g:GD, rev:.6, pan:h(-.7, .7)}));
+  for(var v = 0; v < 12; v++) gens(A, t + h(0, d - .5), {f:h(150, 330), d:h(.2, .4), voyelle:['a', 'o', 'ou'][v % 3], monte:h(1.05, 1.3), g:.022}, A.bus(P, {g:GD, rev:.6, pan:h(-.7, .7)}));
+  return {duree:d + .3};
+};
+/* Moustache : « miaou ? » (un petit miaulement qui monte, puis redescend) */
+S.cineMiaouA = function(A, P){
+  GD = 2.6;
+  var t = P.t, o = dehors(A, P, .1, .18), d = .62;
+  [[1, .05], [2, .03], [3, .012]].forEach(function(m){
+    A.ton(t, {type:'sawtooth', f:520 * m[0], pts:null, f2:760 * m[0], gl:d * .45, env:[[0, 0], [.06, 1], [d * .5, .9], [d, 0]], g:m[1] * .5, vib:[7, 9 * m[0]], vibRetard:.2,
+      filtres:[{type:'bandpass', f:1400, pts:[[d * .45, 2300], [d, 1100]], q:2.2}]}, o);
+    A.ton(t + d * .45, {type:'sawtooth', f:760 * m[0], f2:540 * m[0], gl:d * .55, env:[[0, 0], [.03, 1], [d * .35, .7], [d * .55, 0]], g:m[1] * .5, vib:[7, 9 * m[0]],
+      filtres:[{type:'bandpass', f:2300, pts:[[d * .55, 1100]], q:2.2}]}, o); });
+  return {duree:.9};
+};
 })(window);
 
 /* Atelier des sons de Brumeval — les musiques du donjon complet (proposées le 9 novembre, à valider par Romain).
@@ -5685,48 +6093,96 @@ M.cineMusPubA = function(A, P){
   return I;
 };
 
-/* =================== LES DEUX DESCENTES (escalier et puits, 24 s chacune ; Bible §13.62 ; Romain, 17 novembre) ============   Presque rien : un fond grave qui s'installe, des gouttes de harpe très loin, un cœur lent. Dans la dernière partie, la lueur du fond :
-   trois notes claires (la, ré, fa) — le motif de l'homme en cape, en tout petit. On est sous terre : beaucoup d'écho. */
-M.cineMusEscalierA = function(A, P){
-  var I = Instance(A, P), proche = A.bus(P, {grotte:.5}), loin = A.bus(P, {grotte:1, g:.7}), ech = I.echo(loin, {temps:.5, retour:.45, lp:2000, sortie:.5});
-  a(I, 0, function(t){
-    fond(A, t, [m(26), m(38)], 12, .03, proche, {a:3, r:3});
-    [3.2, 6.4, 9.6].forEach(function(x){ sourd(A, t + x, .12, loin); sourd(A, t + x + .45, .08, loin); });
-    [[4.5, 69], [8.2, 65], [10.4, 62]].forEach(function(n){ A.harpe(t + n[0], m(n[1]), {t60:2.2, g:.05, lp:2200}, ech); });
-  });
-  a(I, 12, function(t){
-    fond(A, t, [m(26), m(33), m(41)], 12, .034, proche, {a:3, r:4});
-    trem(A, t + 1, m(57), 8, .012, proche, {env:[[0, 0], [3, .6], [7, 1], [8, 0]]});
-    trem(A, t + 2, m(62), 7, .01, proche, {env:[[0, 0], [3, .6], [6, 1], [7, 0]]});
-    [1, 2.4, 3.8, 5.2, 6.6].forEach(function(x, k){ sourd(A, t + x, .1 + k * .015, loin); });
-    [[7.0, 69], [7.8, 74], [8.6, 77]].forEach(function(n){ A.harpe(t + n[0], m(n[1]), {t60:2.6, g:.06, lp:2800}, ech); });
-    A.choeur(t + 7.4, [m(69), m(74), m(77)], 4, {voyelle:'o', a:1.5, r:2, g:.016}, loin);
-  });
-  return I;
-};
-M.cineMusPuitsA = function(A, P){
-  var I = Instance(A, P), proche = A.bus(P, {grotte:.4}), loin = A.bus(P, {grotte:1, g:.7}), ech = I.echo(loin, {temps:.55, retour:.45, lp:2000, sortie:.5});
-  a(I, 0, function(t){
-    fond(A, t, [m(26), m(33)], 8, .03, proche, {a:2.5, r:2.5});
-    A.harpe(t + 1.5, m(62), {t60:2.4, g:.05, lp:2200}, ech);
-    A.harpe(t + 3.0, m(57), {t60:2.4, g:.045, lp:2200}, ech);
-    montee(A, t + 4.1, 1.6, .12, loin);
-    sourd(A, t + 5.4, .16, loin);
-  });
-  a(I, 6, function(t){
-    fond(A, t, [m(26), m(38), m(45)], 12, .034, proche, {a:2, r:4});
-    for(var k = 0; k < 8; k++) sourd(A, t + 1 + k * 1.1, .07 + k * .012, loin);
-    trem(A, t + 3, m(64), 8, .011, proche, {env:[[0, 0], [3, .6], [7, 1], [8, 0]]});
-    trem(A, t + 3, m(65), 8, .009, proche, {env:[[0, 0], [3, .6], [7, 1], [8, 0]]});
-    A.tambour(t + 10.2, {f:50, d:1.2, g:.18}, loin);
-  });
-  a(I, 18, function(t){
-    [[.6, 69], [1.4, 74], [2.2, 77], [3.2, 81]].forEach(function(n){ A.harpe(t + n[0], m(n[1]), {t60:2.8, g:.055, lp:3000}, ech); });
-    A.choeur(t + .8, [m(69), m(74), m(77)], 4, {voyelle:'o', a:1.2, r:2, g:.016}, loin);
-    fond(A, t, [m(26), m(33)], 6, .026, proche, {a:1.5, r:3});
-  });
-  return I;
-};
+/* =================== LES DEUX DESCENTES, REFAITES EN 2D (18 novembre ; jeu/cine/src/film-descente*.js ; Bible §13.68) ===================
+   Romain : « une musique un peu mystérieuse, inquiétante, mais aussi un petit peu rythmée ». En ré mineur : un petit moteur de cordes
+   pincées (ré – la – ré – la – fa – la – ré – la), à 100 à la minute, qui part et s'arrête avec les héros ; un battement sourd ; un air
+   de quatre notes au célesta, dont la dernière sonne faux exprès (sol dièse, do dièse) ; des cordes qui tremblent quand ça se tend ;
+   un chœur dans la grande salle ; trois cloches de verre pour la pierre de rune ; et le moteur qui repart, plus décidé, sur « Allons-y ».
+   o = les instants du film (jeu/cine/src/film-descente-3.js : assembler) ; la même fin pour les deux (o.fin : le plan « regard »). */
+function descente(o){
+  return function(A, P){
+    var I = Instance(A, P), proche = A.bus(P, {grotte:.35, g:1.6}), tamb = A.bus(P, {grotte:.7, g:1.45}), loin = A.bus(P, {grotte:1, g:1.1}), ech = I.echo(loin, {temps:.45, retour:.42, lp:2400, sortie:.5});
+    var CR = .3, MOTIF = [38, 45, 50, 45, 41, 45, 50, 45], MOTIF2 = [38, 45, 50, 45, 43, 46, 50, 46];
+    /* le moteur : des cordes pincées, graves ; t0 → t1 ; f : sa force ; v : 2 = la deuxième mesure monte (plus décidé) */
+    function moteur(t, t0, t1, f, v){
+      for(var k = 0, x = t0; x < t1 - .05; k++, x += CR){
+        var mo = v === 2 && Math.floor(k / 8) % 2 ? MOTIF2 : MOTIF, n = mo[k % 8], dq = U_inv(t0, t0 + 1.2, x) * (1 - U_inv(t1 - 1.2, t1, x) * .6);
+        A.harpe(t + x, m(n), {t60:.9, g:.085 * f * dq * (k % 4 === 0 ? 1.25 : k % 2 ? .7 : 1), lp:1500}, proche);
+        if(k % 8 === 0) sourd(A, t + x, .13 * f * dq, tamb);
+        if(k % 8 === 4) sourd(A, t + x, .07 * f * dq, tamb);
+        if(v === 2 && k % 2 === 0) A.bruit(t + x, {coul:'blanc', hp:5200, env:A.perc(.002, .05), g:.012 * f * dq}, proche);
+      }
+    }
+    /* l'air du mystère : quatre notes, la dernière fausse ; puis sa réponse */
+    function air(t, x, g, rep){ (rep ? [[0, 76], [.6, 77], [1.2, 74], [1.8, 73]] : [[0, 74], [.6, 77], [1.2, 81], [1.8, 80]]).forEach(function(n){ A.harpe(t + x + n[0], m(n[1]), {t60:2.2, g:g, lp:3200}, ech); A.ton(t + x + n[0], {type:'sine', f:m(n[1] + 12), env:A.perc(.004, .9), g:g * .22}, ech); }); }
+    function tension(t, x, d, g){ trem(A, t + x, m(57), d, g, proche, {env:[[0, 0], [d * .75, 1], [d, 0]]}); trem(A, t + x, m(58), d, g * .8, proche, {env:[[0, 0], [d * .75, 1], [d, 0]]}); }
+    a(I, 0, function(t){
+      /* le fond : le ré tout en bas, tout le long, et l'air de la nuit ou du souterrain */
+      fond(A, t, [m(26), m(33)], o.duree, .026, proche, {a:2.5, r:2.5});
+      A.bruit(t, {coul:'brun', bp:220, bq:.8, env:[[0, 0], [3, 1], [o.duree - 2, .8], [o.duree, 0]], g:.035}, loin);
+      o.debut(t, {A:A, moteur:moteur, air:air, tension:tension, proche:proche, tamb:tamb, loin:loin, ech:ech});
+      /* LA FIN COMMUNE (f : le Pisteur regarde à ses pieds) */
+      var f = o.fin;
+      A.harpe(t + f + 1.3, m(62), {t60:2.6, g:.06, lp:2400}, ech); A.harpe(t + f + 2.0, m(61), {t60:2.6, g:.05, lp:2400}, ech);          /* il baisse les yeux : deux notes qui descendent */
+      /* le carnet dans le noir : presque rien ; puis la torche l'éclaire — l'air, en clair, et un accord chaud */
+      sourd(A, t + f + 3.6, .1, tamb); sourd(A, t + f + 4.75, .08, tamb);
+      tension(t, f + 4.0, 2.1, .008);
+      air(t, f + 6.1, .06, 0);
+      A.choeur(t + f + 6.0, [m(50), m(57), m(62)], 3.4, {voyelle:'o', a:1.2, r:1.6, g:.016}, loin);
+      /* la pierre de rune : trois cloches de verre, un chœur plus haut */
+      var r = f + 8.4;
+      [[0, 86], [.5, 81], [1.0, 89], [1.9, 86], [2.5, 93]].forEach(function(n){ A.cloche(t + r + n[0], m(n[1]), {d:2.6, rapport:3.5, indice:.5, g:.02}, ech); });
+      A.choeur(t + r + .2, [m(62), m(69), m(74)], 4.2, {voyelle:'ou', a:1.4, r:1.8, g:.014}, loin);
+      /* le Sage se demande ce que c'est : l'air, sa réponse */
+      air(t, r + 4.3, .05, 1);
+      tension(t, r + 6.0, 2.3, .009);
+      /* « Allons-y. Odette doit être par là. » : le moteur repart, plus décidé ; un cuivre qui monte ; un dernier coup, au noir */
+      var al = f + 16.6;
+      moteur(t, al + .3, al + 4.9, 1.15, 2);
+      [[.9, 38, 1.4], [2.1, 41, 1.3], [3.3, 45, 1.7]].forEach(function(n){ cuivre(A, t + al + n[0], m(n[1]), n[2], .034, proche); cuivre(A, t + al + n[0], m(n[1] + 12), n[2], .016, loin); });
+      air(t, al + 1.5, .045, 0);
+      montee(A, t + al + 3.7, 1.1, .1, loin);
+      frappe(A, t + al + 4.85, .3, tamb);
+      A.choeur(t + al + 3.4, [m(50), m(57), m(62), m(65)], 2.4, {voyelle:'a', a:.9, r:1, g:.016}, loin);
+    });
+    return I;
+  };
+}
+function A_(K){ return K.A; }
+function U_inv(a, b, v){ return b === a ? 0 : Math.max(0, Math.min(1, (v - a) / (b - a))); }
+/* LE PUITS (49,8 s) : la clairière 0 → 7 ; la margelle 7 → 11,6 (la torche lâchée à 8,9) ; la corde 11,6 → 15 ; le conduit 15 → 20,6 ;
+   le fond du puits 20,6 → 28 (il se pose à 23,2, les bêtes détalent ; il relève la torche à 25) ; la fin commune à 28 */
+M.cineMusPuitsA = descente({duree:49.8, fin:28, debut:function(t, K){
+  K.moteur(t, .4, 5.6, .8);                                                         /* ils marchent vers le puits */
+  K.air(t, 2.6, .05, 0);
+  K.tension(t, 7.2, 1.8, .009);                                                     /* il se penche sur le noir */
+  montee(A_(K), t + 8.2, .8, .07, K.loin);
+  sourd(A_(K), t + 10.35, .2, K.tamb);                                              /* la torche touche le fond, très loin */
+  K.air(t, 9.5, .04, 1);
+  K.moteur(t, 11.9, 20.2, .7);                                                      /* la corde : le moteur, tout doux, jusqu'en bas */
+  [15.4, 17.8].forEach(function(x){ A_(K).harpe(t + x, m(69), {t60:2.4, g:.04, lp:2600}, K.ech); A_(K).harpe(t + x + .6, m(68), {t60:2.4, g:.035, lp:2600}, K.ech); });
+  K.tension(t, 21.2, 2.2, .01);                                                     /* le fond : ça se tend jusqu'à ce qu'il se pose */
+  frappe(A_(K), t + 23.25, .16, K.tamb);
+  A_(K).choeur(t + 23.4, [m(50), m(53), m(57)], 4.4, {voyelle:'ou', a:1, r:2, g:.016}, K.loin);
+  K.air(t, 25.2, .055, 0);                                                          /* la torche se lève : la salle apparaît */
+}});
+/* LA CRYPTE (52 s) : la clé 0 → 6,8 (elle tourne à 2,1 ; la porte s'ouvre à 3,7) ; l'escalier 6,8 → 13 ; le couloir aux arches 13 → 22 ;
+   les niches 22 → 25,6 ; la salle 25,6 → 30,2 ; la fin commune à 30,2 */
+M.cineMusEscalierA = descente({duree:52, fin:30.2, debut:function(t, K){
+  K.tension(t, .3, 1.9, .008);                                                      /* la clé */
+  sourd(A_(K), t + 2.5, .16, K.tamb);
+  K.air(t, 3.9, .05, 0);                                                            /* la porte s'ouvre sur le noir */
+  montee(A_(K), t + 5.6, 1.1, .07, K.loin);
+  K.moteur(t, 7.0, 12.8, .75);                                                      /* l'escalier */
+  K.air(t, 9.4, .04, 1);
+  K.moteur(t, 13.1, 25.4, .9);                                                      /* le couloir aux arches, les niches : le moteur ne s'arrête pas */
+  [14.8, 19.6].forEach(function(x){ K.air(t, x, .045, x > 16 ? 1 : 0); });
+  K.tension(t, 22.1, 3.3, .011);                                                    /* les crânes ; les yeux dans le trou */
+  A_(K).choeur(t + 22.2, [m(50), m(56)], 3.2, {voyelle:'a', a:1, r:1.4, g:.014}, K.loin);
+  frappe(A_(K), t + 25.6, .14, K.tamb);                                             /* la salle */
+  A_(K).choeur(t + 25.8, [m(50), m(53), m(57)], 4, {voyelle:'ou', a:1, r:2, g:.016}, K.loin);
+  K.air(t, 27.4, .05, 0);
+}});
 /* =================== LES QUATRE FILMS DES HÉROS (jeu/pub/heros.js ; Romain, 17 novembre : « un peu le même style avec le même rythme » que la pub) ===================
    La même musique de fête que la pub (120 à la minute, un temps = 0,5 s, les mêmes instruments), mais UN AIR PAR HÉROS, dans son ton, joué par
    son instrument : le Pisteur siffle et court (do), l'Alchimiste fait des bulles au marimba (ré), le Barde chante au luth (fa), le Sage égrène
@@ -5861,6 +6317,212 @@ M.cineMusHerosBardeA = musiqueHeros({tr:5, voix:'luth', voix2:'siffle', oct2:12,
 M.cineMusHerosSageA = musiqueHeros({tr:-3, voix:'harpe', voix2:'cloche', oct2:12, rare:1, g2:1,
   air:[[72, 76, 79, 76, 84, 79, 76, 79], [71, 74, 79, 74, 86, 79, 74, 79], [69, 72, 76, 72, 84, 76, 72, 76], [69, 72, 77, 72, 81, 77, 84, 81], [72, 76, 79, 84, 88, 0, 84, 0]],
   pont:[[0, 81], [.5, 76], [1, 72], [1.5, 76], [2, 81], [2.5, 77], [3, 72], [3.5, 77]]});
+/* =================== LES TROIS FILMS DU DÉBUT DES ENQUÊTES (film-debut1/2/3.js ; Bible §13.69 ; 18 novembre) — NEUVES, à écouter ===================
+   Le village, dehors ou dans le bureau du maire : presque pas d'écho. Chaque enquête a son petit air (quelques notes qu'on retient), qu'on
+   entend doucement au début du film et en entier sur le titre. */
+function village(A, P, I, G){
+  G = G || 1;
+  var V = {sec:A.bus(P, {grotte:.05, g:G}), tamb:A.bus(P, {grotte:.1, g:G * .8}), loin:A.bus(P, {grotte:.34, g:G * .9})};
+  V.ech = I.echo(V.loin, {temps:.38, retour:.34, lp:2600, sortie:.4});
+  V.harpe = function(t, n, g, long){ A.harpe(t, m(n), {t60:long || 1.8, g:(g || 1) * .075, lp:3200}, V.ech); };
+  V.cel = function(t, n, g){ var f = m(n); g = g || 1; A.ton(t, {type:'sine', f:f, env:A.perc(.002, .9), g:g * .05}, V.ech); A.ton(t, {type:'sine', f:f * 3, env:A.perc(.001, .22), g:g * .008}, V.ech); A.cloche(t, f * 2, {d:.8, g:g * .008, rapport:2.76, indice:.5}, V.ech); };
+  V.pizz = function(t, n, g){ A.harpe(t, m(n), {t60:.34, g:(g || 1) * .1, lp:1800, eclat:.3}, V.sec); };
+  V.flute = function(t, n, d, g){ var f = m(n); g = (g || 1) * .04; A.ton(t, {type:'sine', f:f * .985, f2:f, gl:.06, env:[[0, 0], [.06, 1], [Math.max(.07, d - .08), .85], [d, 0]], g:g, vib:[5.4, f * .007], vibRetard:.18}, V.loin); A.ton(t, {type:'triangle', f:f * 2, env:[[0, 0], [.06, 1], [d, 0]], g:g * .12}, V.loin); A.bruit(t, {bp:f * 2, bq:3, env:[[0, 0], [.03, 1], [.12, .25], [d, 0]], g:g * .5}, V.loin); };
+  V.basson = function(t, n, d, g){ var f = m(n); g = (g || 1) * .06; A.ton(t, {type:'sawtooth', f:f, env:[[0, 0], [.02, 1], [d * .6, .7], [d, 0]], g:g, filtres:[{type:'lowpass', f:520, q:1.2}, {type:'peaking', f:480, q:2, gain:5}]}, V.sec); };
+  V.basse = function(t, n, d, g){ g = g || 1; A.ton(t, {type:'triangle', f:m(n), env:[[0, 0], [.008, 1], [d * .5, .6], [d, 0]], g:g * .13, filtres:[{type:'lowpass', f:600}]}, V.sec); };
+  V.cordes = function(t, notes, d, g, o){ o = o || {}; A.nappe(t, notes.map(m), d, {a:o.a || 1.2, r:o.r || 1.4, g:(g || 1) * .02, lp:o.lp || 1400, lp1:o.lp1 || 500}, V.loin); };
+  V.voix = function(t, notes, d, g, voy, o){ o = o || {}; A.choeur(t, notes.map(m), d, {voyelle:voy || 'ou', a:o.a || .8, r:o.r || 1.2, g:(g || 1) * .02}, V.loin); };
+  V.trem = function(t, n, d, g, o){ trem(A, t, m(n), d, (g || 1) * .018, V.sec, o); };
+  V.clap = function(t, g){ g = (g || 1) * .09; [0, .011, .024].forEach(function(x, k){ A.bruit(t + x, {coul:'blanc', filtres:[{type:'bandpass', f:1500 + k * 320, q:.9}], env:A.perc(.001, .08 + k * .02), g:g}, V.tamb); }); };
+  V.tambourin = function(t, g){ A.bruit(t, {coul:'blanc', hp:5200, env:A.perc(.001, .09), g:(g || 1) * .035}, V.tamb); A.cloche(t, 3900, {d:.14, g:(g || 1) * .006, rapport:1.9, indice:1.2}, V.tamb); };
+  V.kick = function(t, g){ A.tambour(t, {f:60, d:.24, g:(g || 1) * .3}, V.tamb); };
+  V.timb = function(t, g, f){ A.tambour(t, {f:f || 73, d:.9, g:(g || 1) * .26}, V.tamb); };
+  V.violon = function(t, n, d, g){ A.archet(t, m(n), d, {a:.03, r:Math.min(.08, d * .4), g:(g || 1) * .03, lp:3000}, V.sec); };
+  V.cuivre = function(t, notes, d, g){ notes.forEach(function(n){ cuivre(A, t, m(n), d, (g || 1) * .04, V.sec); }); };
+  return V;
+}
+
+/* ---------- ENQUÊTE 1, « La Lanterne d'Or » (debut1, 40,2 s). L'air de la Lanterne : la ré fa mi | ré la si♭ la (une boîte à musique).
+   0 → 6,2    le bureau, la nuit : l'air, tout doux (un célesta, la harpe)
+   6,2 → 15,2 l'ombre à la fenêtre, la main : des cordes pincées à pas de loup, les cordes qui tremblent ; la Lanterne s'en va (l'air descend)
+   15,2 → 19,8 la fuite : les cordes pincées courent, de plus en plus loin
+   19,8 → 24,4 la nuit passe : la harpe monte, de plus en plus vite ; le matin (ré majeur)
+   24,4 → 28,8 le maire entre, tout content : une petite marche au basson — qui s'arrête net
+   28,8 → 32,6 son visage : un roulement qui monte, un accord qui grince
+   32,6 → 37   la panique : à gauche ? à droite ? « C'est une catastrophe ! » : le grand coup, la caméra s'envole
+   37 → fin    le titre : l'air en entier, et l'accord clair */
+M.cineMusDebut1A = function(A, P){
+  var I = Instance(A, P), V = village(A, P, I, 1);
+  var AIR = [69, 74, 77, 76, 74, 69, 70, 69];
+  a(I, .5, function(t){
+    V.cordes(t, [50, 57, 62], 6, .8, {a:2, r:2});
+    AIR.forEach(function(n, k){ V.cel(t + .6 + k * .6, n + 12, 1); if(k % 2 === 0) V.harpe(t + .6 + k * .6, [50, 57, 53, 57][k / 2], .7, 2.4); });
+  });
+  a(I, 6.2, function(t){                                                                            /* l'ombre : à pas de loup */
+    fond(A, t, [m(38)], 9, .03, V.sec, {a:1, r:1.5});
+    [[.3, 50], [.9, 53], [1.5, 50], [2.1, 56], [2.7, 50], [3.3, 53], [3.9, 57], [4.5, 56], [5.1, 50], [5.5, 53], [5.9, 56], [6.3, 57]].forEach(function(q){ V.pizz(t + q[0], q[1], .9); });
+    V.trem(t + 1.9, 69, 2.4, 1, {f2:m(70)}); V.trem(t + 1.9, 62, 2.4, .8);                           /* la fenêtre s'ouvre */
+  });
+  a(I, 11.5, function(t){                                                                           /* la main soulève la Lanterne : la harpe monte… */
+    [62, 65, 69, 74, 77, 81].forEach(function(n, k){ V.harpe(t + k * .09, n, .8, 1.4); });
+    [[.9, 81], [1.35, 77], [1.8, 76], [2.25, 74], [2.7, 69], [3.15, 65]].forEach(function(q, k){ V.cel(t + q[0], q[1], 1 - k * .12); });   /* …et la lumière s'en va */
+    V.pizz(t + 3.5, 38, 1.2);
+  });
+  a(I, 15.2, function(t){                                                                           /* la fuite : les cordes courent et s'éloignent */
+    for(var k = 0; k < 24; k++){ var g = 1 - k / 26; V.pizz(t + k * .17, [50, 57, 53, 57, 50, 57, 55, 57][k % 8], g); if(k % 4 === 0) V.basse(t + k * .17, 38, .3, g); }
+    [[.4, 74], [.74, 77], [1.08, 76], [1.76, 74], [2.1, 69]].forEach(function(q, k){ V.flute(t + q[0], q[1], .3, 1 - k * .1); });
+    V.cordes(t + 2.6, [50, 57, 65], 3.2, .7, {a:1.2, r:1.6});
+  });
+  a(I, 19.8, function(t){                                                                           /* la nuit passe : de plus en plus vite, de plus en plus clair */
+    var tt = .1, pas = .3, G2 = [50, 57, 62, 66, 69, 74, 78, 81, 86], k = 0;
+    while(tt < 3.9){ V.harpe(t + tt, G2[k % G2.length] + (k % G2.length < 3 && tt < 1.6 ? 0 : 0), .5 + tt * .12, 1.2); tt += pas; pas = Math.max(.07, pas * .93); k++; }
+    V.cordes(t + 1.2, [50, 57, 62, 66], 4.4, 1, {a:2.6, r:1.2, lp:2400});
+    V.voix(t + 3.5, [62, 66, 69], 2.2, 1, 'a', {a:.9, r:1});
+  });
+  a(I, 24.5, function(t){                                                                           /* le maire, tout content : pom, pom, pom… */
+    [[0, 41], [.36, 48], [.72, 41], [1.08, 48], [1.44, 43], [1.8, 48], [2.16, 41], [2.52, 48]].forEach(function(q){ V.basson(t + q[0], q[1], .26, 1); });
+    [[.18, [65, 69]], [.54, [65, 69]], [.9, [65, 69]], [1.26, [64, 67]], [1.62, [64, 70]], [1.98, [64, 70]], [2.34, [65, 69]]].forEach(function(q){ q[1].forEach(function(n){ V.pizz(t + q[0], n, .6); }); });
+    [[.0, 72, .3], [.36, 77, .3], [.72, 81, .5], [1.44, 79, .3], [1.8, 76, .3], [2.16, 77, .5]].forEach(function(q){ V.flute(t + q[0], q[1], q[2], 1); });
+    V.basson(t + 2.95, 37, .9, 1.3); V.trem(t + 2.95, 61, 1.2, .8);                                 /* …il voit : la marche s'arrête net, sur une fausse note */
+  });
+  a(I, 28.8, function(t){                                                                           /* son visage : ça monte */
+    for(var k = 0; k < 22; k++) A.tambour(t + .2 + k * .13, {f:68, d:.2, g:.03 + k * .008}, V.tamb);
+    V.trem(t + .3, 62, 3.4, 1.2, {f2:m(63)}); V.trem(t + .3, 68, 3.4, 1, {f2:m(69)});
+    V.cuivre(t + 1.2, [38, 44, 50], 2.5, 1);                                                        /* « Elle a disparu ! » */
+    montee(A, t + 2.8, .95, .22, V.loin);
+  });
+  a(I, 32.6, function(t){                                                                           /* la panique : à gauche ? à droite ? */
+    frappe(A, t, .32, V.tamb);
+    for(var k = 0; k < 14; k++){ V.pizz(t + .1 + k * .14, [62, 65, 62, 68][k % 4] + (k > 7 ? 2 : 0), 1); if(k % 2 === 0) V.basse(t + .1 + k * .14, k > 7 ? 40 : 38, .12, 1); }
+    [[.55, 81, 82], [1.45, 82, 84]].forEach(function(q){ V.flute(t + q[0], q[1], .16, 1.1); V.flute(t + q[0] + .18, q[2], .3, 1.1); });   /* deux petites questions */
+    V.cuivre(t + 2.1, [38, 45, 50], 2.2, 1.2);                                                      /* « C'est une catastrophe ! » */
+    for(var r = 0; r < 9; r++) A.tambour(t + 2.15 + r * .09, {f:70, d:.16, g:.06 + r * .014}, V.tamb);
+    frappe(A, t + 3.0, .5, V.tamb);                                                                 /* la caméra s'envole */
+    V.voix(t + 3.0, [62, 65, 69], 2.4, 1.3, 'a', {a:.06, r:1.6});
+    [50, 57, 62, 65, 69, 74, 77, 81, 86].forEach(function(n, k){ V.harpe(t + 3.05 + k * .07, n, .8, 1.6); });
+  });
+  a(I, 37.05, function(t){                                                                          /* le titre : l'air en entier */
+    V.cordes(t, [50, 57, 62, 65], 3.3, 1.3, {a:.3, r:1.6, lp:2200});
+    AIR.slice(0, 6).forEach(function(n, k){ V.cel(t + .1 + k * .26, n + 12, 1.3); V.harpe(t + .1 + k * .26, n, .9, 1.6); });
+    var tf = t + 1.78;
+    [50, 57, 62, 66, 69, 74].forEach(function(n, k){ V.harpe(tf + k * .03, n, 1, 2.6); });           /* l'accord clair (ré majeur) */
+    V.cel(tf, 86, 1.4); V.cel(tf + .16, 90, 1.2); V.timb(tf, .9, 73); V.voix(tf, [62, 66, 69], 1.6, 1.2, 'a', {a:.05, r:1.3});
+  });
+  return I;
+};
+
+/* ---------- ENQUÊTE 2, « La rivière rouge » (debut2, 38,6 s). L'air de la rivière : do fa la sol fa ré do (une flûte, le matin) —
+   puis le même, en mineur et tout en bas, quand l'eau est rouge.
+   0 → 14,8    l'aube au lavoir : la flûte, la harpe qui coule
+   14,8 → 18,8 le drap sort de l'eau : la flûte reste sur une note, un accord froid
+   18,8 → 23,6 son visage, son cri : les cordes tremblent et montent
+   23,6 → 33,4 la rivière rouge, vue d'en haut ; le village accourt : des coups sourds, les voix, les cordes qui courent
+   33,4 → fin  les visages ; le titre : l'air en mineur, la cloche, le dernier coup */
+M.cineMusDebut2A = function(A, P){
+  var I = Instance(A, P), V = village(A, P, I, 1);
+  function coule(t, acc, n, g){ for(var k = 0; k < n; k++) V.harpe(t + k * .3, acc[k % acc.length], g || .6, 1.6); }
+  a(I, .4, function(t){
+    V.cordes(t, [53, 60, 65], 14.2, .7, {a:2.5, r:2.5});
+    coule(t + .3, [53, 60, 65, 69, 65, 60], 12, .5); coule(t + 3.9, [50, 57, 62, 65, 62, 57], 12, .5); coule(t + 7.5, [46, 53, 58, 62, 58, 53], 12, .5); coule(t + 11.1, [48, 55, 60, 64, 60, 55], 10, .5);
+    [[1.2, 72, .5], [1.8, 77, .5], [2.4, 81, .9], [3.6, 79, .5], [4.2, 77, .5], [4.8, 74, .9], [6.0, 72, 1.4],
+     [8.2, 74, .5], [8.8, 77, .5], [9.4, 82, .9], [10.6, 81, .5], [11.2, 79, .5], [11.8, 76, .9], [13.0, 77, 1.2]].forEach(function(q){ V.flute(t + q[0], q[1], q[2], 1); });
+  });
+  a(I, 14.8, function(t){                                                                           /* le drap sort… rouge */
+    V.flute(t + .1, 76, 2.2, .8);
+    V.trem(t + 1.4, 49, 2.8, 1.2); V.trem(t + 1.9, 56, 2.3, 1);
+    V.cordes(t + 1.9, [50, 56, 61], 3, 1, {a:.6, r:1.4, lp:1000});
+    V.cel(t + 2.0, 85, .9); V.cel(t + 2.5, 80, .8); V.cel(t + 3.0, 73, .7);
+  });
+  a(I, 18.8, function(t){                                                                           /* son visage : ça monte jusqu'au cri */
+    fond(A, t, [m(38)], 5, .035, V.sec, {a:.8, r:.6});
+    V.trem(t, 62, 4.8, 1.1, {f2:m(65)}); V.trem(t + .6, 68, 4.2, 1, {f2:m(70)}); V.trem(t + 1.6, 74, 3.2, .9, {f2:m(77)});
+    for(var k = 0; k < 9; k++) V.timb(t + .9 + k * .44, .25 + k * .07, 62);
+    montee(A, t + 3.7, 1.05, .26, V.loin);
+  });
+  a(I, 23.6, function(t){                                                                           /* LA RIVIÈRE ROUGE */
+    frappe(A, t, .5, V.tamb);
+    V.cuivre(t, [38, 45, 50, 53], 3.4, 1.2);
+    V.voix(t + .1, [50, 53, 57], 5.2, 1.3, 'ou', {a:.3, r:2});
+    [[.9, 62], [1.5, 65], [2.1, 69], [2.7, 67], [3.3, 65], [3.9, 62]].forEach(function(q){ V.harpe(t + q[0], q[1], 1, 2.2); V.basson(t + q[0], q[1] - 24, .5, .7); });   /* l'air, en mineur */
+    [1.2, 2.4, 3.6, 4.8].forEach(function(x){ V.timb(t + x, .6, 58); });
+  });
+  a(I, 29.0, function(t){                                                                           /* le village accourt */
+    for(var k = 0; k < 26; k++){ V.pizz(t + k * .165, [50, 57, 53, 57, 50, 58, 53, 57][k % 8], .8); if(k % 4 === 0) V.basse(t + k * .165, 38, .3, 1); }
+    V.cordes(t, [50, 57, 62, 65], 4.6, 1, {a:1, r:1.2});
+    V.trem(t + 2.6, 69, 2, .9, {f2:m(70)});
+  });
+  a(I, 33.4, function(t){ V.voix(t, [50, 55, 58], 2, 1.1, 'ou', {a:.4, r:.9}); V.timb(t + .2, .5, 58); V.timb(t + 1.1, .6, 58); });   /* les visages */
+  a(I, 35.25, function(t){                                                                          /* le titre */
+    frappe(A, t, .42, V.tamb);
+    V.cordes(t, [38, 50, 57, 62], 3.2, 1.4, {a:.2, r:1.6, lp:1800});
+    [[.1, 62], [.45, 65], [.8, 69], [1.15, 67], [1.5, 65], [1.85, 62]].forEach(function(q){ V.cel(t + q[0], q[1] + 12, 1.2); V.harpe(t + q[0], q[1], 1, 1.8); });
+    A.cloche(t + 2.2, m(50), {d:2.6, g:.06}, V.loin); V.timb(t + 2.2, 1, 55); V.voix(t + 2.2, [50, 57], 1.1, 1.2, 'ou', {a:.05, r:.9});
+  });
+  return I;
+};
+
+/* ---------- ENQUÊTE 3, « La lettre d'Odette » (debut3, 37,2 s). L'air d'Odette : la do fa mi ré do la (tendre) ; la danse du village (ré majeur).
+   0 → 5,2     le village attend : les cordes retenues, un cœur qui bat
+   5,2 → 14    le maire sort, la lettre : l'air d'Odette, tout doux (célesta, harpe)
+   14 → 20,8   « Odette va bien ! » : le grand accord, le soulagement qui monte
+   20,8 → 30,2 « Grande fête cette nuit ! » : la fanfare, puis la danse (violon, mains, tambourin)
+   30,2 → 33,2 le chat : la danse s'éloigne ; trois notes graves — quelque chose cloche
+   33,2 → fin  le titre : l'air d'Odette… qui finit sur une question */
+M.cineMusDebut3A = function(A, P){
+  var I = Instance(A, P), V = village(A, P, I, 1);
+  var ODETTE = [69, 72, 77, 76, 74, 72, 69];
+  a(I, .3, function(t){
+    V.cordes(t, [50, 57, 62], 5.4, 1, {a:2, r:1.4, lp:1100});
+    V.trem(t + 1, 65, 4, .7); [1.0, 2.2, 3.4, 4.4].forEach(function(x){ sourd(A, t + x, .09, V.tamb); sourd(A, t + x + .28, .06, V.tamb); });
+  });
+  a(I, 5.2, function(t){                                                                            /* la porte s'ouvre : l'espoir */
+    [50, 57, 62, 65, 69].forEach(function(n, k){ V.harpe(t + .5 + k * .16, n, .8, 2); });
+    V.cordes(t + 1, [53, 60, 65], 3.6, .9, {a:1.2, r:1.2});
+  });
+  a(I, 9.5, function(t){                                                                            /* la lettre : l'air d'Odette */
+    V.cordes(t, [53, 60, 65, 69], 4.8, .8, {a:1.2, r:1.6});
+    ODETTE.forEach(function(n, k){ V.cel(t + .3 + k * .55, n + 12, 1.1); if(k % 2 === 0) V.harpe(t + .3 + k * .55, [53, 57, 58, 53][k / 2], .7, 2.4); });
+  });
+  a(I, 14.2, function(t){                                                                           /* « Odette va bien ! » */
+    [53, 60, 65, 69, 72, 77].forEach(function(n, k){ V.harpe(t + .45 + k * .035, n, 1, 2.6); });
+    V.voix(t + .45, [65, 69, 72], 2.8, 1.2, 'a', {a:.15, r:1.6}); V.timb(t + .45, .7, 65);
+    V.cordes(t + .45, [53, 60, 65, 69], 6.2, 1.2, {a:.4, r:1.2, lp:2400});
+    for(var k = 0; k < 16; k++) V.tambourin(t + 3.3 + k * .2, .4 + k * .06);                         /* le soulagement gagne tout le monde */
+    [[3.3, 69], [3.7, 72], [4.1, 74], [4.5, 77], [4.9, 79], [5.3, 81], [5.7, 84], [6.1, 86]].forEach(function(q){ V.harpe(t + q[0], q[1], .8, 1.2); });
+    montee(A, t + 5.6, .95, .2, V.loin);
+  });
+  a(I, 20.8, function(t){                                                                           /* « Grande fête cette nuit, sur la place ! » : la fanfare */
+    frappe(A, t, .36, V.tamb);
+    [[0, [62, 66, 69], .32], [.36, [62, 66, 69], .16], [.54, [62, 66, 69], .16], [.72, [64, 67, 71], .34], [1.08, [66, 69, 74], .9]].forEach(function(q){ V.cuivre(t + q[0], q[1].map(function(n){ return n - 12; }), q[2] + .15, 1.1); q[1].forEach(function(n){ V.pizz(t + q[0], n, .8); }); });
+    V.voix(t + 1.08, [62, 66, 69], 2.6, 1, 'a', {a:.1, r:1.6});
+    for(var k = 0; k < 12; k++) A.tambour(t + 2.4 + k * .13, {f:74, d:.18, g:.05 + k * .012}, V.tamb);
+  });
+  a(I, 25.0, function(t){                                                                           /* LA DANSE (132 à la minute : un temps = 0,4545 s) */
+    var T = .4545, ACC = [[50, 57, 62, 66], [55, 59, 62, 67], [57, 61, 64, 69], [50, 57, 62, 66], [47, 54, 59, 62], [55, 59, 62, 67], [57, 61, 64, 69], [50, 57, 62, 66]];
+    var DANSE = [[74, 78, 81, 78], [79, 83, 86, 83], [81, 85, 88, 85], [86, 81, 78, 74], [78, 74, 71, 74], [79, 83, 86, 83], [88, 85, 81, 85], [86, 0, 86, 0]];
+    for(var me = 0; me < 6; me++){
+      var loin = me >= 5 ? .35 : 1;                                                                 /* (à 30,2 s on est au ras des pavés, avec le chat : la danse s'éloigne) */
+      for(var b = 0; b < 2; b++){ var tb = t + (me * 2 + b) * T;
+        V.kick(tb, .9 * loin); V.clap(tb + T / 2, .9 * loin); V.tambourin(tb + T / 4, .8 * loin); V.tambourin(tb + T * 3 / 4, loin);
+        V.basse(tb, ACC[me][0] - 12, .3, loin); ACC[me].slice(1).forEach(function(n){ V.pizz(tb + T / 2, n, .55 * loin); });
+        [0, 1].forEach(function(q){ var n = DANSE[me][b * 2 + q]; if(n) V.violon(tb + q * T / 2, n, T / 2 * .92, 1.1 * loin); });
+      }
+    }
+  });
+  a(I, 30.5, function(t){                                                                           /* le chat : quelque chose cloche */
+    fond(A, t, [m(38)], 3.4, .03, V.sec, {a:.6, r:1});
+    [[.3, 50], [.95, 51], [1.6, 50]].forEach(function(q){ V.basson(t + q[0], q[1], .5, 1.2); V.harpe(t + q[0], q[1] + 12, .7, 1.4); });
+    V.trem(t + 1.4, 68, 1.6, .8);
+  });
+  a(I, 33.25, function(t){                                                                          /* le titre : l'air d'Odette… et une question */
+    V.cordes(t, [53, 60, 65], 2.2, 1.2, {a:.2, r:.9, lp:2200});
+    ODETTE.slice(0, 5).forEach(function(n, k){ V.cel(t + .1 + k * .3, n + 12, 1.3); V.harpe(t + .1 + k * .3, n, .9, 1.6); });
+    var tf = t + 1.7;
+    V.cordes(tf, [49, 56, 61, 65], 2.2, 1.2, {a:.15, r:1.5, lp:1600});                               /* l'accord qui ne finit pas (il manque quelque chose : la vraie Odette) */
+    V.cel(tf, 85, 1.3); V.cel(tf + .3, 80, 1.1); V.timb(tf, .7, 55); V.voix(tf, [61, 65, 68], 1.6, 1, 'ou', {a:.1, r:1.3});
+  });
+  return I;
+};
 })(window);
 
 /* Atelier des sons de Brumeval — les sons DÉJÀ dans le jeu, joués à l'identique.
@@ -6115,10 +6777,26 @@ window.CATALOGUE = [
           {id:'cineMusPub', t:'Musique de pub', v:'A', m:1, neuf:1},
           /* 17 novembre (Romain) : les deux descentes du donjon (escalier de la crypte, corde du puits) */
           {id:'cineGrille', t:'La grille rouillée', v:'A', neuf:1}, {id:'cineGoutte', t:'Une goutte', v:'A', neuf:1}, {id:'cineCorde', t:'La corde glisse', v:'A', neuf:1}, {id:'cineLueur', t:'La lueur bleue', v:'A', neuf:1},
-          {id:'cineMusEscalier', t:'Musique de l\'escalier', v:'A', m:1, neuf:1}, {id:'cineMusPuits', t:'Musique du puits', v:'A', m:1, neuf:1},
+          {id:'cineMusEscalier', t:'Musique de crypte', v:'A', m:1, neuf:1}, {id:'cineMusPuits', t:'Musique du puits', v:'A', m:1, neuf:1},
+          /* 18 novembre (Romain) : les deux descentes refaites en 2D — les pas, la torche qui brûle, la corde, les bêtes, la clé d'Anselme, la pierre de rune */
+          {id:'cineTorche', t:'La torche brûle', v:'A', neuf:1}, {id:'cineSouffleFeu', t:'La flamme passe', v:'A', neuf:1}, {id:'cinePasPierre', t:'Pas, pierre', v:'A', neuf:1}, {id:'cinePasHerbe', t:'Pas, herbe', v:'A', neuf:1},
+          {id:'cineEtoffe', t:'Une étoffe', v:'A', neuf:1}, {id:'cineChuteTorche', t:'La torche tombe', v:'A', neuf:1}, {id:'cineCordeGrince', t:'La corde grince', v:'A', neuf:1}, {id:'cineAtterrit', t:'Il atterrit', v:'A', neuf:1},
+          {id:'cineBetes', t:'Les bêtes détalent', v:'A', neuf:1}, {id:'cineCouinement', t:'Un couinement', v:'A', neuf:1}, {id:'cineCleEntre', t:'La clé entre', v:'A', neuf:1}, {id:'cineCleTourne', t:'La clé tourne', v:'A', neuf:1},
+          {id:'cineVentCave', t:'Vent de cave', v:'A', neuf:1}, {id:'cineRune', t:'La rune chante', v:'A', neuf:1}, {id:'cineEclat', t:'Un éclat', v:'A', neuf:1}, {id:'cineHm', t:'« Hm ? »', v:'A', neuf:1},
           /* 17 novembre (Romain) : les quatre films des héros (jeu/pub/heros.js) — la musique de la pub, un air et un instrument par héros */
           {id:'cineMusHerosPisteur', t:'Film du Pisteur', v:'A', m:1, neuf:1}, {id:'cineMusHerosAlchimiste', t:'Film de l\'Alchimiste', v:'A', m:1, neuf:1},
-          {id:'cineMusHerosBarde', t:'Film du Barde', v:'A', m:1, neuf:1}, {id:'cineMusHerosSage', t:'Film du Sage', v:'A', m:1, neuf:1}
+          {id:'cineMusHerosBarde', t:'Film du Barde', v:'A', m:1, neuf:1}, {id:'cineMusHerosSage', t:'Film du Sage', v:'A', m:1, neuf:1},
+          /* 18 novembre (Romain : « une cinématique à chaque début d'enquête ») : les trois films du début (film-debut1/2/3.js ; Bible §13.69) — tous neufs, à écouter */
+          {id:'cineMusDebut1', t:'Musique début E1', v:'A', m:1, neuf:1}, {id:'cineMusDebut2', t:'Musique début E2', v:'A', m:1, neuf:1}, {id:'cineMusDebut3', t:'Musique début E3', v:'A', m:1, neuf:1},
+          {id:'cineNuit', t:'La nuit, dedans', v:'A', neuf:1}, {id:'cineTicTac', t:'La pendule', v:'A', neuf:1}, {id:'cineLanterneOr', t:'La Lanterne d\'Or', v:'A', neuf:1}, {id:'cineFenetre', t:'La fenêtre', v:'A', neuf:1},
+          {id:'cinePrise', t:'La main', v:'A', neuf:1}, {id:'cineLueurPart', t:'La lumière part', v:'A', neuf:1}, {id:'cineCourseLegere', t:'Pas légers', v:'A', neuf:1}, {id:'cineTempsPasse', t:'La nuit passe', v:'A', neuf:1},
+          {id:'cineOiseaux', t:'Oiseaux du matin', v:'A', neuf:1}, {id:'cinePorteBureau', t:'Porte du bureau', v:'A', neuf:1}, {id:'cineFredonne', t:'Le maire chantonne', v:'A', neuf:1}, {id:'cinePasParquet', t:'Pas, parquet', v:'A', neuf:1},
+          {id:'cineStupeur', t:'La stupeur', v:'A', neuf:1}, {id:'cineEnvol', t:'Les pigeons', v:'A', neuf:1},
+          {id:'cineRiviere', t:'La rivière', v:'A', neuf:1}, {id:'cineCoq', t:'Le coq', v:'A', neuf:1}, {id:'cineLinge', t:'Le drap plongé', v:'A', neuf:1}, {id:'cineGouttes', t:'Le drap ruisselle', v:'A', neuf:1},
+          {id:'cineSursaut', t:'Elle sursaute', v:'A', neuf:1}, {id:'cineCriFemme', t:'Le cri', v:'A', neuf:1}, {id:'cineSeau', t:'Le seau tombe', v:'A', neuf:1}, {id:'cineMurmure', t:'Le village murmure', v:'A', neuf:1},
+          {id:'cineAube', t:'L\'aube', v:'A', neuf:1}, {id:'cinePorteMairie', t:'La grande porte', v:'A', neuf:1}, {id:'cinePapier', t:'La lettre', v:'A', neuf:1}, {id:'cineSoupir', t:'Le soulagement', v:'A', neuf:1},
+          {id:'cineHourra', t:'Hourra !', v:'A', neuf:1}, {id:'cineFete', t:'La fête commence', v:'A', neuf:1}, {id:'cineClocheJoie', t:'Les cloches', v:'A', neuf:1}, {id:'cineFeteLoin', t:'La fête, loin', v:'A', neuf:1},
+          {id:'cineMiaou', t:'Moustache', v:'A', neuf:1}
         ]}
       ]}
     ]},
