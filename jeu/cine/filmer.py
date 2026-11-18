@@ -29,7 +29,16 @@ with sync_playwright() as p:
     errs = []
     pg.on('pageerror', lambda e: errs.append(str(e)))
     pg.goto('file://' + os.path.join(ICI, 'page.html'))
-    info = pg.evaluate('(n) => { var F = CINE.films[n]; return {nom:F.nom, duree:F.duree, sons:F.sons || [], sousTitres:F.sousTitres || [], ailleurs:F.ailleurs || null}; }', film)
+    info = pg.evaluate('(n) => { var F = CINE.films[n]; return {nom:F.nom, duree:F.duree, sons:F.sons || [], sousTitres:F.sousTitres || [], ailleurs:F.ailleurs || null, rendu:F.rendu || null}; }', film)
+    # les films en calques peints (multiplan.js : les descentes du donjon, Bible §13.68) : le navigateur est relancé « image à la demande »
+    # (chaque image n'est peinte qu'une fois, au moment de la photo : deux fois plus vite ; les images sont les mêmes au point près)
+    cdp = None
+    if info.pop('rendu') == 'multiplan':
+        nav.close()
+        nav = p.chromium.launch(args=['--enable-begin-frame-control', '--run-all-compositor-stages-before-draw', '--disable-new-content-rendering-timeout'])
+        ctx = nav.new_context(viewport={'width': 1440, 'height': 616}); pg = ctx.new_page(); cdp = ctx.new_cdp_session(pg)
+        pg.on('pageerror', lambda e: errs.append(str(e)))
+        pg.goto('file://' + os.path.join(ICI, 'page.html'), wait_until='load')
     # un film dont l'image se fait ailleurs (la pub : jeu/pub/filmer-pub.py) n'est inscrit ici que pour sa bande-son : on ne le filme pas (on écraserait sa vidéo)
     if info.pop('ailleurs'): print('« %s » ne se filme pas ici : son image se fait dans %s (voir film-%s.js).' % (film, pg.evaluate('(n) => CINE.films[n].ailleurs', film), film)); sys.exit(1)
     fin = float(a) if a else info['duree']
@@ -41,6 +50,12 @@ with sync_playwright() as p:
         if saute and os.path.exists(os.path.join(IM, '%05d.jpg' % k)): continue
         t = de + k / fps
         pg.evaluate('([n, t]) => { CINE.image(n, t); }', [film, t])
+        if cdp:
+            import base64
+            r = cdp.send('HeadlessExperimental.beginFrame', {'screenshot': {'format': 'jpeg', 'quality': 94}})
+            open(os.path.join(IM, '_%05d.jpg' % k), 'wb').write(base64.b64decode(r['screenshotData'])); os.replace(os.path.join(IM, '_%05d.jpg' % k), os.path.join(IM, '%05d.jpg' % k))
+            if k % 60 == 0: print('  image %d / %d (%.0f s)' % (k, n, time.time() - t0), flush=True)
+            continue
         # (une image lourde — beaucoup de fumée — n'est pas toujours peinte quand la photo part : on laisse passer deux rafraîchissements)
         pg.evaluate('() => new Promise(function(r){ requestAnimationFrame(function(){ requestAnimationFrame(r); }); })')
         pg.screenshot(path=os.path.join(IM, '_%05d.jpg' % k), type='jpeg', quality=94); os.replace(os.path.join(IM, '_%05d.jpg' % k), os.path.join(IM, '%05d.jpg' % k))

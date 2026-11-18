@@ -11,14 +11,14 @@ var W = 1440, H = 616;
 var PLT = null;
 CINE.plateau = function(){ return PLT; };
 CINE.preparer = function(nom){
-  var P = nom === 'chene' ? window.PLATEAU_CHENE : nom === 'descente' ? window.PLATEAU_DESCENTE : window.PLATEAU;
+  var P = nom === 'chene' ? window.PLATEAU_CHENE : window.PLATEAU;
   if(!P.pret){
     P.construire(document.getElementById('film'));
     /* le décor passe sous les dessins */
     var f = document.getElementById('film'); f.insertBefore(P.vue, f.firstChild);
     P.pret = true;
   }
-  if(PLT !== P){ [window.PLATEAU, window.PLATEAU_CHENE, window.PLATEAU_DESCENTE].forEach(function(q){ if(q && q.vue) q.vue.style.display = q === P ? '' : 'none'; }); PLT = P; }
+  if(PLT !== P){ [window.PLATEAU, window.PLATEAU_CHENE].forEach(function(q){ if(q && q.vue) q.vue.style.display = q === P ? '' : 'none'; }); PLT = P; }
   CINE.pret = true;
 };
 
@@ -86,6 +86,14 @@ function acteur(a, k, defs){
 /* ---------------------------------------------------------------- UNE IMAGE */
 CINE.image = function(nom, t){
   var F = CINE.films[nom];
+  /* les films en 2D, faits de calques peints (multiplan.js : les deux descentes du donjon) : un autre banc, rien du décor en 3D */
+  var calques = ['vue3d', 'vueChene', 'persos', 'lumieres', 'avant', 'voile'];
+  if(F.rendu === 'multiplan'){
+    [].forEach.call(document.getElementById('film').children, function(e){ if(e.id !== 'mp' && e.tagName !== 'svg' || calques.indexOf(e.id) >= 0) e.style.visibility = 'hidden'; });
+    window.MP.montrer(); window.CINE_T = t;
+    return window.MP.image(F, t);
+  }
+  if(window.MP){ window.MP.cacher(); [].forEach.call(document.getElementById('film').children, function(e){ e.style.visibility = ''; }); }
   CINE.preparer(F.plateau);
   window.CINE_T = t;
   var crypte = PLT === window.PLATEAU;
