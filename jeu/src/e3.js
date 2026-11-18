@@ -41,6 +41,9 @@ var M_ = ['matin'], A_ = ['apresmidi'], N_ = ['nuit'], MA_ = ['matin', 'apresmid
 
 E[3] = {
   id:3, titre:'La lettre d\'Odette', niveau:3,
+  /* le film du début (Romain, 18 novembre : « une cinématique à chaque début d'enquête, comme un générique d'épisode » ; jeu/cine/src/film-debut3.js ;
+     Bible §13.69) : il part tout seul la première fois qu'on ouvre l'enquête, avant la lettre (M.jouerFilmDebut, moteur-actions.js) */
+  filmDebut:'debut3',
   /* OUVERTE AUX JOUEURS depuis le 14 novembre (Romain, 13 h 57 : « l'adresse sans le test, on puisse aussi aller jusqu'à l'enquête numéro 3 ») :
      plus de « enEcriture:true » ici (c'est lui qui faisait dire au village « en cours d'écriture » sans #test : M.enEcriture, moteur-base.js).
      Ses codes sont gelés depuis ce jour-là : src/codes-fixes-e3.js. */

@@ -262,7 +262,9 @@ function bouclier(){ return '<g><circle r="64" fill="url(#gBouclier)" stroke="' 
   '<g transform="translate(0 -30) scale(.9)" stroke="' + O + '" stroke-width="1.4"><path d="M-8 -12 L 8 -12 L 11 -6 L 9 10 L -9 10 L -11 -6 Z" fill="url(#gOr)"/><path d="M-4 -6 L 4 -6 L 5 6 L -5 6 Z" fill="#fff4c0"/></g>' +
   '<path d="M-40 -34 C -20 -52 20 -52 40 -34" fill="none" stroke="#fff" stroke-width="3" opacity=".35"/></g>'; }
 
-/* ====================================================================== LE PERSONNAGE ENTIER */
+/* ====================================================================== LE PERSONNAGE ENTIER
+   (Bible §13.69) pose.teteDessin(T, v, o, uid) : un AUTRE DESSIN de sa tête (de trois quarts, de profil : gens-debut.js), à la place du
+   visage de face — quand il tourne la tête, on change de dessin, on ne fait pas glisser ses traits. */
 G.dessin = function(type, p, o){
   o = o || {};
   var D = G.D[type], os = PT.os(D, p), uid = 'G' + (++idn), v = p.v || {};
@@ -304,7 +306,7 @@ G.dessin = function(type, p, o){
   }
   var T = Pc.tete === 'garde' ? teteGarde(Pc.k) : typeof Pc.tete === 'object' ? Pc.tete : TETES[Pc.tete];
   var te = p.tete || {};
-  s += PT.piece(os.tete, (Pc.sousTete ? Pc.sousTete(v, te) : '') + visage(T, Object.assign({ht:te.ht || 0}, v), o, uid) + (Pc.kepi ? kepi(o) : '') + (Pc.casque ? casque() : '') + (Pc.chapeau ? Pc.chapeau(v, te, p) : ''));
+  s += PT.piece(os.tete, (Pc.sousTete ? Pc.sousTete(v, te) : '') + (p.teteDessin ? p.teteDessin(T, v, o, uid) : visage(T, Object.assign({ht:te.ht || 0}, v), o, uid)) + (Pc.kepi ? kepi(o) : '') + (Pc.casque ? casque() : '') + (Pc.chapeau ? Pc.chapeau(v, te, p) : ''));
   /* la lanterne, dans la main droite */
   if(type === 'maire' && o.lanterne != null) s += PT.piece(M.mul(M.tr(M.pt(os.mD, 0, 18)[0], M.pt(os.mD, 0, 18)[1]), M.id()), G.lanterne(o.lanterne));
   G.dernier = {os:os, uid:uid, type:type};

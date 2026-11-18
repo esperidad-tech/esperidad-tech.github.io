@@ -165,6 +165,7 @@ M.render = function(){
   try{ if(M.majMission) M.majMission(); }catch(e){ console.error(e); }
   try{ if(M.majAccusations) M.majAccusations(); }catch(e){ console.error(e); }   /* (17 novembre) une question de l'accusation vient d'arriver chez le Sage */ /* missions de base validées (mission.js) */
   try{ if(M.prevoirFilms) M.prevoirFilms(); }catch(e){ console.error(e); } /* une cinématique de ce moment : on la télécharge d'avance */
+  try{ if(M.prevoirFilmDebut) M.prevoirFilmDebut(); }catch(e){ console.error(e); } /* … et le film du début de la prochaine enquête, dès l'accueil */
   /* l'onglet Carte, et rien n'y change (carte-jeu.js, M.carteInchangee) : on garde la carte telle quelle, seuls le bandeau, les onglets
      et la fenêtre se redessinent (Romain, 5 novembre, 17 h 01 : plus d'image qui saute quand on touche ce qui brille) */
   /* (16 novembre, Romain : « quand je vais dans l'onglet Code, d'un coup, je gagne un skin ») la carte gardée ne remontait pas la cabane :
@@ -1126,6 +1127,8 @@ function nouvelleEnquete(id){
   }
   UI.ecran = 'enquete'; UI.modal = null; UI.saisie = []; UI.padSuite = false;
   M.sauver(); M.render(); window.scrollTo(0, 0);
+  /* le film du début de l'enquête (18 novembre, Bible §13.69) : il passe devant la lettre, qui attend derrière lui */
+  try{ if(M.jouerFilmDebut) M.jouerFilmDebut(); }catch(e){ console.error(e); }
   M.lireAuto(E.lettre);
 }
 
@@ -1666,6 +1669,7 @@ M.jouerFilm = function(nom, apres){
   var I = nom && window.CINE_INFOS && window.CINE_INFOS[nom];
   if(!I || !window.CineLecteur || UI.film){ apres(); return; }
   UI.film = true;
+  /* (« La lavandière » du film de l'enquête 2 n'est personne du village : la voix de la narratrice, une femme) */
   var QUI = {'Le maire':'grosbec', 'Silas':'silas', 'Gaspard':'gaspard'}, fait = false;
   function suite(r){ if(fait) return; fait = true; UI.film = false; apres(r); }   /* r : 'fini', 'passe' ou 'echec' (le film n'est pas arrivé) */
   try{
@@ -1685,6 +1689,43 @@ M.prevoirFilms = function(){
     UI.filmsPrevus[f.nom] = 1;
     try{ window.CineLecteur.precharger('cine/' + f.nom + '.mp4'); if(window.CINE_INFOS[f.nom].piste) window.CineLecteur.prechargerPiste('cine/' + f.nom + '.mp3'); }catch(e){}
   });
+};
+/* LE FILM DU DÉBUT D'UNE ENQUÊTE (Romain, 18 novembre : « une cinématique à chaque début d'enquête, comme un générique d'épisode » ; « qu'on
+   puisse la passer » ; Bible §13.69). E.filmDebut : 'debut1', 'debut2', 'debut3' (jeu/cine/src/film-debut*.js, 40 secondes chacun).
+   - Il part TOUT SEUL la première fois qu'on ouvre l'enquête (nouvelleEnquete : on vient de toucher un bouton, le son peut sortir), avec
+     « Passer ➜ » ; la lettre du maire attend derrière lui. P.filmDebut est noté AVANT : une page rechargée ne le relance pas.
+   - Il n'arrive pas (pas de wifi) : la lettre, tout de suite, comme avant.
+   - Il se revoit par « 🎬 Revoir le film », à côté du bouton de la lettre (vueLettre, moteur-ecrans.js).
+   - Il est téléchargé d'avance dès l'accueil (M.prevoirFilmDebut, appelé à chaque affichage).
+   Les robots d'essai ne le voient pas partir tout seul (sauf window.BRUMEVAL_AVEC_FILM_DEBUT). Il ne touche à aucun code. */
+M.filmDebut = function(E){
+  E = E || M.E();
+  var n = E && E.filmDebut;
+  return n && window.CineLecteur && window.CINE_INFOS && window.CINE_INFOS[n] ? n : null;
+};
+M.jouerFilmDebut = function(revoir){
+  var P = M.P(), n = M.filmDebut();
+  if(!P || !n || UI.film) return false;
+  if(!revoir){
+    if(P.filmDebut || (navigator.webdriver && !window.BRUMEVAL_AVEC_FILM_DEBUT)) return false;
+    P.filmDebut = 1; M.sauver();
+  }
+  try{ M.stop(); }catch(e){}
+  M.jouerFilm(n, function(){ if(M.P() && UI.ecran === 'enquete' && M.P().etape === 'lettre'){ UI.garderDefilement = true; M.render(); } });
+  return true;
+};
+A['film-debut'] = function(){ M.jouerFilmDebut(true); };
+M.prevoirFilmDebut = function(){
+  var S = M.S, CL = window.CineLecteur;
+  if(!S || !S.heros || !CL || !window.CINE_INFOS || location.protocol === 'file:') return;
+  if(navigator.webdriver && !window.BRUMEVAL_AVEC_FILM_DEBUT) return;
+  /* la prochaine enquête (on est à l'accueil, ou à la fin de celle d'avant) — ou celle qu'on vient d'ouvrir (la lettre) */
+  var P = S.e, id = P && P.etape === 'lettre' ? P.id : (!P || P.etape === 'fin') ? S.prochaine : 0, n = id && M.filmDebut(window.ENQUETES[id]);
+  if(!n || (P && P.id === id && P.filmDebut && P.etape !== 'lettre')) return;
+  UI.filmsPrevus = UI.filmsPrevus || {};
+  if(UI.filmsPrevus[n]) return;
+  UI.filmsPrevus[n] = 1;
+  try{ CL.precharger('cine/' + n + '.mp4'); if(window.CINE_INFOS[n].piste) CL.prechargerPiste('cine/' + n + '.mp3'); }catch(e){}
 };
 /* LA PUB AU LANCEMENT (Romain, 16 novembre : « au tout début du jeu, quand on lance l'appli, ça lance cette cinématique » ; Bible §12.64).
    La PREMIÈRE fois sur un appareil : une porte (le titre, « ▶️ Voir le film », « Passer ➜ ») — il faut un toucher, sans lui le navigateur

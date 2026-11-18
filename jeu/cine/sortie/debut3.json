@@ -1,0 +1,89 @@
+{
+ "nom": "La lettre d'Odette — le début",
+ "duree": 37.2,
+ "sons": [
+  [
+   0.1,
+   "cineAube"
+  ],
+  [
+   0.6,
+   "cineMurmure"
+  ],
+  [
+   5.25,
+   "cinePorteMairie"
+  ],
+  [
+   6.5,
+   "cinePapier"
+  ],
+  [
+   9.7,
+   "cinePapier"
+  ],
+  [
+   17.65,
+   "cineSoupir"
+  ],
+  [
+   18.5,
+   "cineHourra"
+  ],
+  [
+   22.7,
+   "cineHourra"
+  ],
+  [
+   25.1,
+   "cineFete"
+  ],
+  [
+   25.9,
+   "cineClocheJoie"
+  ],
+  [
+   26,
+   "cineEnvol"
+  ],
+  [
+   27.6,
+   "cineClocheJoie"
+  ],
+  [
+   30.4,
+   "cineFeteLoin"
+  ],
+  [
+   33.55,
+   "cineMiaou"
+  ]
+ ],
+ "sousTitres": [
+  [
+   6.3,
+   9.4,
+   "Mes amis ! J'ai reçu une lettre !",
+   "Le maire"
+  ],
+  [
+   10,
+   13.8,
+   "Je vais très bien… Signé : Odette.",
+   "Le maire"
+  ],
+  [
+   14.7,
+   17.2,
+   "Odette va bien !",
+   "Le maire"
+  ],
+  [
+   21.2,
+   24.8,
+   "Grande fête cette nuit !",
+   "Le maire"
+  ]
+ ],
+ "fps": 30
+}

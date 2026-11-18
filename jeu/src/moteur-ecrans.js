@@ -375,11 +375,13 @@ function ong(id, ic, nom, n){
 
 function vueLettre(){
   var E = M.E(), role = M.role(), R = D.ROLES[role];
+  /* (18 novembre, Bible §13.69) le film du début de l'enquête se revoit d'ici (trois mots : pas besoin de 🔊) */
+  var revoir = M.filmDebut && M.filmDebut() ? '<button class="btn second petit b-revoir-film" data-act="film-debut">🎬 Revoir le film</button>' : '';
   if(E.id === 1){   /* le tutoriel : seulement la lettre du maire, puis on commence (Romain, 4 novembre) */
     return '<main class="b-page b-lettre-page b-ecran-fixe"><p class="sur-titre centre">Enquête ' + E.id + '</p><h1 class="centre">' + esc(E.titre) + '</h1>' +
       '<article class="parchemin b-lettre"><div class="b-lettre-maire">' + M.pnjImg('grosbec', 'content') + '</div><p class="b-lettre-date">Brumeval, ' + D.MOMENTS[E.moments[0]].nom.toLowerCase() + '</p>' +
       '<p>' + esc(E.lettre) + '</p><p class="b-signature">' + esc(E.signature || 'Monsieur Grosbec, maire de Brumeval') + '</p>' + lire(E.lettre, 'grosbec') + '</article>' +
-      '<div class="b-bas"><button class="btn grand b-guide" data-act="commencer">🔍 Commencer l\'enquête</button></div></main>';
+      '<div class="b-bas b-bas-film">' + revoir + '<button class="btn grand b-guide" data-act="commencer">🔍 Commencer l\'enquête</button></div></main>';
   }
   /* Enquête 3 (E.lettreLue, Bible § 13.6) : ce n'est pas une lettre du maire, mais la lettre « d'Odette » qu'il lit sur la place, à l'aube ;
      dessous, ce qu'il annonce ; puis l'écran des missions du maire (vueMissionsMaire). Même mise en page que la lettre et son affiche. */
@@ -389,7 +391,7 @@ function vueLettre(){
       '<article class="parchemin b-lettre"><div class="b-lettre-maire">' + M.pnjImg('grosbec', 'content') + '</div><p class="b-lettre-date">' + esc(L.titre) + '</p>' +
       '<p>« ' + esc(E.lettre) + ' »</p>' + lire(E.lettre, 'grosbec') + '</article>' +
       '<article class="parchemin b-lettre b-affiche"><p class="sur-titre centre">📣 Le maire</p><p class="centre"><b>« ' + esc(L.apres) + ' »</b></p>' + lire(L.apres, 'grosbec') + '</article>' +
-      '<div class="b-bas"><button class="btn grand b-aller b-guide" data-act="' + (E.missionsMaire ? 'lettre-suite' : 'commencer') + '">➡️ La suite</button></div></main>';
+      '<div class="b-bas b-bas-film">' + revoir + '<button class="btn grand b-aller b-guide" data-act="' + (E.missionsMaire ? 'lettre-suite' : 'commencer') + '">➡️ La suite</button></div></main>';
   }
   /* b-ecran-fixe : tout tient dans l'écran, sans défiler (Romain, 5 novembre, 21 h 46 ; moteur-actions.js, M.ecranFixe) */
   return '<main class="b-page b-lettre-page b-ecran-fixe' + (E.affiche ? ' b-avec-affiche' : '') + '"><p class="sur-titre centre">Enquête ' + E.id + '</p><h1 class="centre">' + esc(E.titre) + '</h1>' +
@@ -398,7 +400,7 @@ function vueLettre(){
     (E.affiche ? '<article class="parchemin b-lettre b-affiche"><p class="sur-titre centre">📜 ' + esc(E.affiche.titre || 'Affiche') + '</p><p class="centre"><b>' + esc(E.affiche.t) + '</b></p>' + lire((E.affiche.titre ? E.affiche.titre + ' : ' : '') + E.affiche.t, 'grosbec') + '</article>' : '') +   /* l'affiche du maire (enquête 2) */
     /* Simplifié pour toutes les enquêtes (Romain, 4 novembre, 20 h 49) : la lettre, l'affiche, et « Commencer l'enquête ».
        Plus de mission, de règles ni de code ici : la mission est en haut du Carnet. */
-    '<div class="b-bas"><button class="btn grand b-guide" data-act="commencer">🔍 Commencer l\'enquête</button></div></main>';
+    '<div class="b-bas b-bas-film">' + revoir + '<button class="btn grand b-guide" data-act="commencer">🔍 Commencer l\'enquête</button></div></main>';
 }
 /* L'écran des missions du maire (enquête 3, Bible § 13.6) : juste après la lettre, pour tous. Une ligne par rôle (la sienne en couleur),
    chacune avec son 🔊, et le bouton jaune. Plein écran fixe, comme la lettre. */

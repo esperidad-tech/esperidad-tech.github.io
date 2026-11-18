@@ -1,0 +1,107 @@
+{
+ "nom": "La rivière rouge — le début",
+ "duree": 38.6,
+ "sons": [
+  [
+   0.1,
+   "cineRiviere"
+  ],
+  [
+   0.4,
+   "cineOiseaux"
+  ],
+  [
+   2.3,
+   "cineCoq"
+  ],
+  [
+   4.6,
+   "cineRiviere"
+  ],
+  [
+   6.1,
+   "cineOiseaux"
+  ],
+  [
+   8.2,
+   "cineLinge"
+  ],
+  [
+   9.1,
+   "cineLinge"
+  ],
+  [
+   10.5,
+   "cineRiviere"
+  ],
+  [
+   10.65,
+   "cineLinge"
+  ],
+  [
+   12,
+   "cineGouttes"
+  ],
+  [
+   17,
+   "cineSursaut"
+  ],
+  [
+   18.85,
+   "cineCriFemme"
+  ],
+  [
+   19,
+   "cineRiviere"
+  ],
+  [
+   20.85,
+   "cineSeau"
+  ],
+  [
+   23.700000000000003,
+   "cineCourse"
+  ],
+  [
+   25,
+   "cineCourse"
+  ],
+  [
+   26.200000000000003,
+   "cineOh"
+  ],
+  [
+   27.5,
+   "cineOh"
+  ],
+  [
+   28,
+   "cineRiviere"
+  ],
+  [
+   29.3,
+   "cineMurmure"
+  ],
+  [
+   31.4,
+   "cineMurmure"
+  ],
+  [
+   33.5,
+   "cineRiviere"
+  ],
+  [
+   35.8,
+   "cineVent"
+  ]
+ ],
+ "sousTitres": [
+  [
+   19.7,
+   23.3,
+   "La rivière… Elle est toute rouge !",
+   "La lavandière"
+  ]
+ ],
+ "fps": 30
+}

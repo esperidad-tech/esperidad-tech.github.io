@@ -41,6 +41,9 @@ function choix(bon, autres, pos){ var l = autres.map(function(q){ return {q:q, v
 
 E[2] = {
   id:2, titre:'La rivière rouge', niveau:2,
+  /* le film du début (Romain, 18 novembre : « une cinématique à chaque début d'enquête, comme un générique d'épisode » ; jeu/cine/src/film-debut2.js ;
+     Bible §13.69) : il part tout seul la première fois qu'on ouvre l'enquête, avant la lettre (M.jouerFilmDebut, moteur-actions.js) */
+  filmDebut:'debut2',
   moments:['matin', 'apresmidi', 'nuit'],
   /* la cinématique du rassemblement (Romain, 16 novembre ; jeu/cine : le film « chene », une minute) : téléchargée d'avance dès que la nuit
      tombe (M.prevoirFilms), jouée au Sage quand il rassemble le village et aux autres quand ils tapent son code (film:'chene', plus bas) */

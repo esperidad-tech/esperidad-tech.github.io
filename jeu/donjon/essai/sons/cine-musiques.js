@@ -610,4 +610,210 @@ M.cineMusHerosBardeA = musiqueHeros({tr:5, voix:'luth', voix2:'siffle', oct2:12,
 M.cineMusHerosSageA = musiqueHeros({tr:-3, voix:'harpe', voix2:'cloche', oct2:12, rare:1, g2:1,
   air:[[72, 76, 79, 76, 84, 79, 76, 79], [71, 74, 79, 74, 86, 79, 74, 79], [69, 72, 76, 72, 84, 76, 72, 76], [69, 72, 77, 72, 81, 77, 84, 81], [72, 76, 79, 84, 88, 0, 84, 0]],
   pont:[[0, 81], [.5, 76], [1, 72], [1.5, 76], [2, 81], [2.5, 77], [3, 72], [3.5, 77]]});
+/* =================== LES TROIS FILMS DU DÉBUT DES ENQUÊTES (film-debut1/2/3.js ; Bible §13.69 ; 18 novembre) — NEUVES, à écouter ===================
+   Le village, dehors ou dans le bureau du maire : presque pas d'écho. Chaque enquête a son petit air (quelques notes qu'on retient), qu'on
+   entend doucement au début du film et en entier sur le titre. */
+function village(A, P, I, G){
+  G = G || 1;
+  var V = {sec:A.bus(P, {grotte:.05, g:G}), tamb:A.bus(P, {grotte:.1, g:G * .8}), loin:A.bus(P, {grotte:.34, g:G * .9})};
+  V.ech = I.echo(V.loin, {temps:.38, retour:.34, lp:2600, sortie:.4});
+  V.harpe = function(t, n, g, long){ A.harpe(t, m(n), {t60:long || 1.8, g:(g || 1) * .075, lp:3200}, V.ech); };
+  V.cel = function(t, n, g){ var f = m(n); g = g || 1; A.ton(t, {type:'sine', f:f, env:A.perc(.002, .9), g:g * .05}, V.ech); A.ton(t, {type:'sine', f:f * 3, env:A.perc(.001, .22), g:g * .008}, V.ech); A.cloche(t, f * 2, {d:.8, g:g * .008, rapport:2.76, indice:.5}, V.ech); };
+  V.pizz = function(t, n, g){ A.harpe(t, m(n), {t60:.34, g:(g || 1) * .1, lp:1800, eclat:.3}, V.sec); };
+  V.flute = function(t, n, d, g){ var f = m(n); g = (g || 1) * .04; A.ton(t, {type:'sine', f:f * .985, f2:f, gl:.06, env:[[0, 0], [.06, 1], [Math.max(.07, d - .08), .85], [d, 0]], g:g, vib:[5.4, f * .007], vibRetard:.18}, V.loin); A.ton(t, {type:'triangle', f:f * 2, env:[[0, 0], [.06, 1], [d, 0]], g:g * .12}, V.loin); A.bruit(t, {bp:f * 2, bq:3, env:[[0, 0], [.03, 1], [.12, .25], [d, 0]], g:g * .5}, V.loin); };
+  V.basson = function(t, n, d, g){ var f = m(n); g = (g || 1) * .06; A.ton(t, {type:'sawtooth', f:f, env:[[0, 0], [.02, 1], [d * .6, .7], [d, 0]], g:g, filtres:[{type:'lowpass', f:520, q:1.2}, {type:'peaking', f:480, q:2, gain:5}]}, V.sec); };
+  V.basse = function(t, n, d, g){ g = g || 1; A.ton(t, {type:'triangle', f:m(n), env:[[0, 0], [.008, 1], [d * .5, .6], [d, 0]], g:g * .13, filtres:[{type:'lowpass', f:600}]}, V.sec); };
+  V.cordes = function(t, notes, d, g, o){ o = o || {}; A.nappe(t, notes.map(m), d, {a:o.a || 1.2, r:o.r || 1.4, g:(g || 1) * .02, lp:o.lp || 1400, lp1:o.lp1 || 500}, V.loin); };
+  V.voix = function(t, notes, d, g, voy, o){ o = o || {}; A.choeur(t, notes.map(m), d, {voyelle:voy || 'ou', a:o.a || .8, r:o.r || 1.2, g:(g || 1) * .02}, V.loin); };
+  V.trem = function(t, n, d, g, o){ trem(A, t, m(n), d, (g || 1) * .018, V.sec, o); };
+  V.clap = function(t, g){ g = (g || 1) * .09; [0, .011, .024].forEach(function(x, k){ A.bruit(t + x, {coul:'blanc', filtres:[{type:'bandpass', f:1500 + k * 320, q:.9}], env:A.perc(.001, .08 + k * .02), g:g}, V.tamb); }); };
+  V.tambourin = function(t, g){ A.bruit(t, {coul:'blanc', hp:5200, env:A.perc(.001, .09), g:(g || 1) * .035}, V.tamb); A.cloche(t, 3900, {d:.14, g:(g || 1) * .006, rapport:1.9, indice:1.2}, V.tamb); };
+  V.kick = function(t, g){ A.tambour(t, {f:60, d:.24, g:(g || 1) * .3}, V.tamb); };
+  V.timb = function(t, g, f){ A.tambour(t, {f:f || 73, d:.9, g:(g || 1) * .26}, V.tamb); };
+  V.violon = function(t, n, d, g){ A.archet(t, m(n), d, {a:.03, r:Math.min(.08, d * .4), g:(g || 1) * .03, lp:3000}, V.sec); };
+  V.cuivre = function(t, notes, d, g){ notes.forEach(function(n){ cuivre(A, t, m(n), d, (g || 1) * .04, V.sec); }); };
+  return V;
+}
+
+/* ---------- ENQUÊTE 1, « La Lanterne d'Or » (debut1, 40,2 s). L'air de la Lanterne : la ré fa mi | ré la si♭ la (une boîte à musique).
+   0 → 6,2    le bureau, la nuit : l'air, tout doux (un célesta, la harpe)
+   6,2 → 15,2 l'ombre à la fenêtre, la main : des cordes pincées à pas de loup, les cordes qui tremblent ; la Lanterne s'en va (l'air descend)
+   15,2 → 19,8 la fuite : les cordes pincées courent, de plus en plus loin
+   19,8 → 24,4 la nuit passe : la harpe monte, de plus en plus vite ; le matin (ré majeur)
+   24,4 → 28,8 le maire entre, tout content : une petite marche au basson — qui s'arrête net
+   28,8 → 32,6 son visage : un roulement qui monte, un accord qui grince
+   32,6 → 37   la panique : à gauche ? à droite ? « C'est une catastrophe ! » : le grand coup, la caméra s'envole
+   37 → fin    le titre : l'air en entier, et l'accord clair */
+M.cineMusDebut1A = function(A, P){
+  var I = Instance(A, P), V = village(A, P, I, 1);
+  var AIR = [69, 74, 77, 76, 74, 69, 70, 69];
+  a(I, .5, function(t){
+    V.cordes(t, [50, 57, 62], 6, .8, {a:2, r:2});
+    AIR.forEach(function(n, k){ V.cel(t + .6 + k * .6, n + 12, 1); if(k % 2 === 0) V.harpe(t + .6 + k * .6, [50, 57, 53, 57][k / 2], .7, 2.4); });
+  });
+  a(I, 6.2, function(t){                                                                            /* l'ombre : à pas de loup */
+    fond(A, t, [m(38)], 9, .03, V.sec, {a:1, r:1.5});
+    [[.3, 50], [.9, 53], [1.5, 50], [2.1, 56], [2.7, 50], [3.3, 53], [3.9, 57], [4.5, 56], [5.1, 50], [5.5, 53], [5.9, 56], [6.3, 57]].forEach(function(q){ V.pizz(t + q[0], q[1], .9); });
+    V.trem(t + 1.9, 69, 2.4, 1, {f2:m(70)}); V.trem(t + 1.9, 62, 2.4, .8);                           /* la fenêtre s'ouvre */
+  });
+  a(I, 11.5, function(t){                                                                           /* la main soulève la Lanterne : la harpe monte… */
+    [62, 65, 69, 74, 77, 81].forEach(function(n, k){ V.harpe(t + k * .09, n, .8, 1.4); });
+    [[.9, 81], [1.35, 77], [1.8, 76], [2.25, 74], [2.7, 69], [3.15, 65]].forEach(function(q, k){ V.cel(t + q[0], q[1], 1 - k * .12); });   /* …et la lumière s'en va */
+    V.pizz(t + 3.5, 38, 1.2);
+  });
+  a(I, 15.2, function(t){                                                                           /* la fuite : les cordes courent et s'éloignent */
+    for(var k = 0; k < 24; k++){ var g = 1 - k / 26; V.pizz(t + k * .17, [50, 57, 53, 57, 50, 57, 55, 57][k % 8], g); if(k % 4 === 0) V.basse(t + k * .17, 38, .3, g); }
+    [[.4, 74], [.74, 77], [1.08, 76], [1.76, 74], [2.1, 69]].forEach(function(q, k){ V.flute(t + q[0], q[1], .3, 1 - k * .1); });
+    V.cordes(t + 2.6, [50, 57, 65], 3.2, .7, {a:1.2, r:1.6});
+  });
+  a(I, 19.8, function(t){                                                                           /* la nuit passe : de plus en plus vite, de plus en plus clair */
+    var tt = .1, pas = .3, G2 = [50, 57, 62, 66, 69, 74, 78, 81, 86], k = 0;
+    while(tt < 3.9){ V.harpe(t + tt, G2[k % G2.length] + (k % G2.length < 3 && tt < 1.6 ? 0 : 0), .5 + tt * .12, 1.2); tt += pas; pas = Math.max(.07, pas * .93); k++; }
+    V.cordes(t + 1.2, [50, 57, 62, 66], 4.4, 1, {a:2.6, r:1.2, lp:2400});
+    V.voix(t + 3.5, [62, 66, 69], 2.2, 1, 'a', {a:.9, r:1});
+  });
+  a(I, 24.5, function(t){                                                                           /* le maire, tout content : pom, pom, pom… */
+    [[0, 41], [.36, 48], [.72, 41], [1.08, 48], [1.44, 43], [1.8, 48], [2.16, 41], [2.52, 48]].forEach(function(q){ V.basson(t + q[0], q[1], .26, 1); });
+    [[.18, [65, 69]], [.54, [65, 69]], [.9, [65, 69]], [1.26, [64, 67]], [1.62, [64, 70]], [1.98, [64, 70]], [2.34, [65, 69]]].forEach(function(q){ q[1].forEach(function(n){ V.pizz(t + q[0], n, .6); }); });
+    [[.0, 72, .3], [.36, 77, .3], [.72, 81, .5], [1.44, 79, .3], [1.8, 76, .3], [2.16, 77, .5]].forEach(function(q){ V.flute(t + q[0], q[1], q[2], 1); });
+    V.basson(t + 2.95, 37, .9, 1.3); V.trem(t + 2.95, 61, 1.2, .8);                                 /* …il voit : la marche s'arrête net, sur une fausse note */
+  });
+  a(I, 28.8, function(t){                                                                           /* son visage : ça monte */
+    for(var k = 0; k < 22; k++) A.tambour(t + .2 + k * .13, {f:68, d:.2, g:.03 + k * .008}, V.tamb);
+    V.trem(t + .3, 62, 3.4, 1.2, {f2:m(63)}); V.trem(t + .3, 68, 3.4, 1, {f2:m(69)});
+    V.cuivre(t + 1.2, [38, 44, 50], 2.5, 1);                                                        /* « Elle a disparu ! » */
+    montee(A, t + 2.8, .95, .22, V.loin);
+  });
+  a(I, 32.6, function(t){                                                                           /* la panique : à gauche ? à droite ? */
+    frappe(A, t, .32, V.tamb);
+    for(var k = 0; k < 14; k++){ V.pizz(t + .1 + k * .14, [62, 65, 62, 68][k % 4] + (k > 7 ? 2 : 0), 1); if(k % 2 === 0) V.basse(t + .1 + k * .14, k > 7 ? 40 : 38, .12, 1); }
+    [[.55, 81, 82], [1.45, 82, 84]].forEach(function(q){ V.flute(t + q[0], q[1], .16, 1.1); V.flute(t + q[0] + .18, q[2], .3, 1.1); });   /* deux petites questions */
+    V.cuivre(t + 2.1, [38, 45, 50], 2.2, 1.2);                                                      /* « C'est une catastrophe ! » */
+    for(var r = 0; r < 9; r++) A.tambour(t + 2.15 + r * .09, {f:70, d:.16, g:.06 + r * .014}, V.tamb);
+    frappe(A, t + 3.0, .5, V.tamb);                                                                 /* la caméra s'envole */
+    V.voix(t + 3.0, [62, 65, 69], 2.4, 1.3, 'a', {a:.06, r:1.6});
+    [50, 57, 62, 65, 69, 74, 77, 81, 86].forEach(function(n, k){ V.harpe(t + 3.05 + k * .07, n, .8, 1.6); });
+  });
+  a(I, 37.05, function(t){                                                                          /* le titre : l'air en entier */
+    V.cordes(t, [50, 57, 62, 65], 3.3, 1.3, {a:.3, r:1.6, lp:2200});
+    AIR.slice(0, 6).forEach(function(n, k){ V.cel(t + .1 + k * .26, n + 12, 1.3); V.harpe(t + .1 + k * .26, n, .9, 1.6); });
+    var tf = t + 1.78;
+    [50, 57, 62, 66, 69, 74].forEach(function(n, k){ V.harpe(tf + k * .03, n, 1, 2.6); });           /* l'accord clair (ré majeur) */
+    V.cel(tf, 86, 1.4); V.cel(tf + .16, 90, 1.2); V.timb(tf, .9, 73); V.voix(tf, [62, 66, 69], 1.6, 1.2, 'a', {a:.05, r:1.3});
+  });
+  return I;
+};
+
+/* ---------- ENQUÊTE 2, « La rivière rouge » (debut2, 38,6 s). L'air de la rivière : do fa la sol fa ré do (une flûte, le matin) —
+   puis le même, en mineur et tout en bas, quand l'eau est rouge.
+   0 → 14,8    l'aube au lavoir : la flûte, la harpe qui coule
+   14,8 → 18,8 le drap sort de l'eau : la flûte reste sur une note, un accord froid
+   18,8 → 23,6 son visage, son cri : les cordes tremblent et montent
+   23,6 → 33,4 la rivière rouge, vue d'en haut ; le village accourt : des coups sourds, les voix, les cordes qui courent
+   33,4 → fin  les visages ; le titre : l'air en mineur, la cloche, le dernier coup */
+M.cineMusDebut2A = function(A, P){
+  var I = Instance(A, P), V = village(A, P, I, 1);
+  function coule(t, acc, n, g){ for(var k = 0; k < n; k++) V.harpe(t + k * .3, acc[k % acc.length], g || .6, 1.6); }
+  a(I, .4, function(t){
+    V.cordes(t, [53, 60, 65], 14.2, .7, {a:2.5, r:2.5});
+    coule(t + .3, [53, 60, 65, 69, 65, 60], 12, .5); coule(t + 3.9, [50, 57, 62, 65, 62, 57], 12, .5); coule(t + 7.5, [46, 53, 58, 62, 58, 53], 12, .5); coule(t + 11.1, [48, 55, 60, 64, 60, 55], 10, .5);
+    [[1.2, 72, .5], [1.8, 77, .5], [2.4, 81, .9], [3.6, 79, .5], [4.2, 77, .5], [4.8, 74, .9], [6.0, 72, 1.4],
+     [8.2, 74, .5], [8.8, 77, .5], [9.4, 82, .9], [10.6, 81, .5], [11.2, 79, .5], [11.8, 76, .9], [13.0, 77, 1.2]].forEach(function(q){ V.flute(t + q[0], q[1], q[2], 1); });
+  });
+  a(I, 14.8, function(t){                                                                           /* le drap sort… rouge */
+    V.flute(t + .1, 76, 2.2, .8);
+    V.trem(t + 1.4, 49, 2.8, 1.2); V.trem(t + 1.9, 56, 2.3, 1);
+    V.cordes(t + 1.9, [50, 56, 61], 3, 1, {a:.6, r:1.4, lp:1000});
+    V.cel(t + 2.0, 85, .9); V.cel(t + 2.5, 80, .8); V.cel(t + 3.0, 73, .7);
+  });
+  a(I, 18.8, function(t){                                                                           /* son visage : ça monte jusqu'au cri */
+    fond(A, t, [m(38)], 5, .035, V.sec, {a:.8, r:.6});
+    V.trem(t, 62, 4.8, 1.1, {f2:m(65)}); V.trem(t + .6, 68, 4.2, 1, {f2:m(70)}); V.trem(t + 1.6, 74, 3.2, .9, {f2:m(77)});
+    for(var k = 0; k < 9; k++) V.timb(t + .9 + k * .44, .25 + k * .07, 62);
+    montee(A, t + 3.7, 1.05, .26, V.loin);
+  });
+  a(I, 23.6, function(t){                                                                           /* LA RIVIÈRE ROUGE */
+    frappe(A, t, .5, V.tamb);
+    V.cuivre(t, [38, 45, 50, 53], 3.4, 1.2);
+    V.voix(t + .1, [50, 53, 57], 5.2, 1.3, 'ou', {a:.3, r:2});
+    [[.9, 62], [1.5, 65], [2.1, 69], [2.7, 67], [3.3, 65], [3.9, 62]].forEach(function(q){ V.harpe(t + q[0], q[1], 1, 2.2); V.basson(t + q[0], q[1] - 24, .5, .7); });   /* l'air, en mineur */
+    [1.2, 2.4, 3.6, 4.8].forEach(function(x){ V.timb(t + x, .6, 58); });
+  });
+  a(I, 29.0, function(t){                                                                           /* le village accourt */
+    for(var k = 0; k < 26; k++){ V.pizz(t + k * .165, [50, 57, 53, 57, 50, 58, 53, 57][k % 8], .8); if(k % 4 === 0) V.basse(t + k * .165, 38, .3, 1); }
+    V.cordes(t, [50, 57, 62, 65], 4.6, 1, {a:1, r:1.2});
+    V.trem(t + 2.6, 69, 2, .9, {f2:m(70)});
+  });
+  a(I, 33.4, function(t){ V.voix(t, [50, 55, 58], 2, 1.1, 'ou', {a:.4, r:.9}); V.timb(t + .2, .5, 58); V.timb(t + 1.1, .6, 58); });   /* les visages */
+  a(I, 35.25, function(t){                                                                          /* le titre */
+    frappe(A, t, .42, V.tamb);
+    V.cordes(t, [38, 50, 57, 62], 3.2, 1.4, {a:.2, r:1.6, lp:1800});
+    [[.1, 62], [.45, 65], [.8, 69], [1.15, 67], [1.5, 65], [1.85, 62]].forEach(function(q){ V.cel(t + q[0], q[1] + 12, 1.2); V.harpe(t + q[0], q[1], 1, 1.8); });
+    A.cloche(t + 2.2, m(50), {d:2.6, g:.06}, V.loin); V.timb(t + 2.2, 1, 55); V.voix(t + 2.2, [50, 57], 1.1, 1.2, 'ou', {a:.05, r:.9});
+  });
+  return I;
+};
+
+/* ---------- ENQUÊTE 3, « La lettre d'Odette » (debut3, 37,2 s). L'air d'Odette : la do fa mi ré do la (tendre) ; la danse du village (ré majeur).
+   0 → 5,2     le village attend : les cordes retenues, un cœur qui bat
+   5,2 → 14    le maire sort, la lettre : l'air d'Odette, tout doux (célesta, harpe)
+   14 → 20,8   « Odette va bien ! » : le grand accord, le soulagement qui monte
+   20,8 → 30,2 « Grande fête cette nuit ! » : la fanfare, puis la danse (violon, mains, tambourin)
+   30,2 → 33,2 le chat : la danse s'éloigne ; trois notes graves — quelque chose cloche
+   33,2 → fin  le titre : l'air d'Odette… qui finit sur une question */
+M.cineMusDebut3A = function(A, P){
+  var I = Instance(A, P), V = village(A, P, I, 1);
+  var ODETTE = [69, 72, 77, 76, 74, 72, 69];
+  a(I, .3, function(t){
+    V.cordes(t, [50, 57, 62], 5.4, 1, {a:2, r:1.4, lp:1100});
+    V.trem(t + 1, 65, 4, .7); [1.0, 2.2, 3.4, 4.4].forEach(function(x){ sourd(A, t + x, .09, V.tamb); sourd(A, t + x + .28, .06, V.tamb); });
+  });
+  a(I, 5.2, function(t){                                                                            /* la porte s'ouvre : l'espoir */
+    [50, 57, 62, 65, 69].forEach(function(n, k){ V.harpe(t + .5 + k * .16, n, .8, 2); });
+    V.cordes(t + 1, [53, 60, 65], 3.6, .9, {a:1.2, r:1.2});
+  });
+  a(I, 9.5, function(t){                                                                            /* la lettre : l'air d'Odette */
+    V.cordes(t, [53, 60, 65, 69], 4.8, .8, {a:1.2, r:1.6});
+    ODETTE.forEach(function(n, k){ V.cel(t + .3 + k * .55, n + 12, 1.1); if(k % 2 === 0) V.harpe(t + .3 + k * .55, [53, 57, 58, 53][k / 2], .7, 2.4); });
+  });
+  a(I, 14.2, function(t){                                                                           /* « Odette va bien ! » */
+    [53, 60, 65, 69, 72, 77].forEach(function(n, k){ V.harpe(t + .45 + k * .035, n, 1, 2.6); });
+    V.voix(t + .45, [65, 69, 72], 2.8, 1.2, 'a', {a:.15, r:1.6}); V.timb(t + .45, .7, 65);
+    V.cordes(t + .45, [53, 60, 65, 69], 6.2, 1.2, {a:.4, r:1.2, lp:2400});
+    for(var k = 0; k < 16; k++) V.tambourin(t + 3.3 + k * .2, .4 + k * .06);                         /* le soulagement gagne tout le monde */
+    [[3.3, 69], [3.7, 72], [4.1, 74], [4.5, 77], [4.9, 79], [5.3, 81], [5.7, 84], [6.1, 86]].forEach(function(q){ V.harpe(t + q[0], q[1], .8, 1.2); });
+    montee(A, t + 5.6, .95, .2, V.loin);
+  });
+  a(I, 20.8, function(t){                                                                           /* « Grande fête cette nuit, sur la place ! » : la fanfare */
+    frappe(A, t, .36, V.tamb);
+    [[0, [62, 66, 69], .32], [.36, [62, 66, 69], .16], [.54, [62, 66, 69], .16], [.72, [64, 67, 71], .34], [1.08, [66, 69, 74], .9]].forEach(function(q){ V.cuivre(t + q[0], q[1].map(function(n){ return n - 12; }), q[2] + .15, 1.1); q[1].forEach(function(n){ V.pizz(t + q[0], n, .8); }); });
+    V.voix(t + 1.08, [62, 66, 69], 2.6, 1, 'a', {a:.1, r:1.6});
+    for(var k = 0; k < 12; k++) A.tambour(t + 2.4 + k * .13, {f:74, d:.18, g:.05 + k * .012}, V.tamb);
+  });
+  a(I, 25.0, function(t){                                                                           /* LA DANSE (132 à la minute : un temps = 0,4545 s) */
+    var T = .4545, ACC = [[50, 57, 62, 66], [55, 59, 62, 67], [57, 61, 64, 69], [50, 57, 62, 66], [47, 54, 59, 62], [55, 59, 62, 67], [57, 61, 64, 69], [50, 57, 62, 66]];
+    var DANSE = [[74, 78, 81, 78], [79, 83, 86, 83], [81, 85, 88, 85], [86, 81, 78, 74], [78, 74, 71, 74], [79, 83, 86, 83], [88, 85, 81, 85], [86, 0, 86, 0]];
+    for(var me = 0; me < 6; me++){
+      var loin = me >= 5 ? .35 : 1;                                                                 /* (à 30,2 s on est au ras des pavés, avec le chat : la danse s'éloigne) */
+      for(var b = 0; b < 2; b++){ var tb = t + (me * 2 + b) * T;
+        V.kick(tb, .9 * loin); V.clap(tb + T / 2, .9 * loin); V.tambourin(tb + T / 4, .8 * loin); V.tambourin(tb + T * 3 / 4, loin);
+        V.basse(tb, ACC[me][0] - 12, .3, loin); ACC[me].slice(1).forEach(function(n){ V.pizz(tb + T / 2, n, .55 * loin); });
+        [0, 1].forEach(function(q){ var n = DANSE[me][b * 2 + q]; if(n) V.violon(tb + q * T / 2, n, T / 2 * .92, 1.1 * loin); });
+      }
+    }
+  });
+  a(I, 30.5, function(t){                                                                           /* le chat : quelque chose cloche */
+    fond(A, t, [m(38)], 3.4, .03, V.sec, {a:.6, r:1});
+    [[.3, 50], [.95, 51], [1.6, 50]].forEach(function(q){ V.basson(t + q[0], q[1], .5, 1.2); V.harpe(t + q[0], q[1] + 12, .7, 1.4); });
+    V.trem(t + 1.4, 68, 1.6, .8);
+  });
+  a(I, 33.25, function(t){                                                                          /* le titre : l'air d'Odette… et une question */
+    V.cordes(t, [53, 60, 65], 2.2, 1.2, {a:.2, r:.9, lp:2200});
+    ODETTE.slice(0, 5).forEach(function(n, k){ V.cel(t + .1 + k * .3, n + 12, 1.3); V.harpe(t + .1 + k * .3, n, .9, 1.6); });
+    var tf = t + 1.7;
+    V.cordes(tf, [49, 56, 61, 65], 2.2, 1.2, {a:.15, r:1.5, lp:1600});                               /* l'accord qui ne finit pas (il manque quelque chose : la vraie Odette) */
+    V.cel(tf, 85, 1.3); V.cel(tf + .3, 80, 1.1); V.timb(tf, .7, 55); V.voix(tf, [61, 65, 68], 1.6, 1, 'ou', {a:.1, r:1.3});
+  });
+  return I;
+};
 })(window);

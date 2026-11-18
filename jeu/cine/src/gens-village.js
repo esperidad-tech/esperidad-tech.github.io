@@ -39,7 +39,12 @@ var V = G.VILLAGEOIS = {
     haut:'#e8d8b0', manches:'retroussees', bas:'#3f5f9a', salopette:'#3f5f9a', bottes:'#3a2c20', joues:.22},
   farinel:{corps:'rond', peau:'p2', poil:'blond', iris:'bleu', nez:'rond', cheveux:'boucles', coiffe:'bonnet', haut:'#d8ccb0', manches:'longues', bas:'#8a7a5e', tablier:'#efe8d6', bottes:'#5a4630', farine:true, joues:.4},
   melusine:{corps:'femme', peau:'p1', poil:'roux', iris:'vert', nez:'fin', cheveux:'chignon', haut:'#2f7a5a', chemise:'#f4e6d0', manches:'longues', jupe:'#286a4e', echarpe:'#d03a3a', metre:true, joues:.25, bottes:'#3a2a22'},
-  fortune:{corps:'normal', peau:'p4', poil:'noir', iris:'ambre', nez:'droit', barbeFrisee:true, coiffe:'plume', cheveux:'court', haut:'#c8302a', manches:'longues', gilet:'#f2c040', bas:'#4a3a4a', bottes:'#2a2228', joues:.2}
+  fortune:{corps:'normal', peau:'p4', poil:'noir', iris:'ambre', nez:'droit', barbeFrisee:true, coiffe:'plume', cheveux:'court', haut:'#c8302a', manches:'longues', gilet:'#f2c040', bas:'#4a3a4a', bottes:'#2a2228', joues:.2},
+  /* (les films de début d'enquête, Bible §13.69) Victor le facteur, Anselme le sonneur, et deux lavandières (elles n'ont pas de nom) */
+  victor:{corps:'normal', peau:'p3', poil:'brun', iris:'marron', nez:'droit', barbeCourte:true, coiffe:'facteur', cheveux:'court', haut:'#2f4f9a', chemise:'#e8eef8', manches:'longues', bas:'#26386a', bottes:'#2a2228', joues:.2},
+  anselme:{corps:'normal', peau:'p2', poil:'blanc', iris:'gris', nez:'rond', cheveux:'court', sourcilE:5.6, haut:'#6a4a3a', chemise:'#e8dcc0', manches:'longues', bas:'#4a3a2e', bottes:'#3a2a20', joues:.3},
+  lavandiere:{corps:'femme', peau:'p2', poil:'chatain', iris:'bleu', nez:'fin', cheveux:'chignon', coiffe:'fichu', fichu:'#f4efe2', haut:'#5a7aa8', chemise:'#f4ecd8', manches:'bouffantes', jupe:'#48648c', tablier:'#f6f1e4', joues:.5, bottes:'#4a3a2a'},
+  lavandiere2:{corps:'femme', peau:'p3', poil:'noir', iris:'marron', nez:'fin', cheveux:'chignon', coiffe:'fichu', fichu:'#c8503a', haut:'#8a6a3e', chemise:'#f4ecd8', manches:'bouffantes', jupe:'#6a5236', tablier:'#f6f1e4', joues:.4, bottes:'#3a2a22'}
 };
 Object.keys(V).forEach(function(n){ G.D[n] = CORPS[V[n].corps]; });
 
@@ -181,6 +186,7 @@ function pieces(nom, o){
   };
   /* le chapeau */
   P.chapeau = !s.coiffe ? null : function(){
+    if(o.sansCoiffe) return '';   /* (Bible §13.69) il a lancé son chapeau en l'air */
     if(s.coiffe === 'toque') return '<path d="M-32 -84 C -52 -96 -52 -132 -26 -138 C -22 -160 22 -160 26 -138 C 52 -132 52 -96 32 -84 Z" fill="url(#gvBlanc)" stroke="' + O + '" stroke-width="' + OL + '"/>' +
       '<path d="M-20 -134 C -18 -120 -20 -104 -22 -92 M0 -148 C 2 -126 0 -106 0 -92 M20 -134 C 18 -120 20 -104 22 -92" fill="none" stroke="#c8c0b0" stroke-width="2"/>' +
       '<path d="M-34 -86 C -20 -78 20 -78 34 -86 L 34 -70 C 20 -62 -20 -62 -34 -70 Z" fill="#ffffff" stroke="' + O + '" stroke-width="2.2"/>';
@@ -191,7 +197,13 @@ function pieces(nom, o){
     if(s.coiffe === 'bonnet') return '<path d="M-36 -78 C -44 -108 -26 -128 4 -128 C 34 -128 46 -112 40 -92 C 46 -84 40 -74 36 -78 C 20 -88 -20 -88 -36 -78 Z" fill="#efe8d6" stroke="' + O + '" stroke-width="' + OL + '"/>' +
       '<path d="M-24 -116 C -10 -108 10 -108 28 -116 M-32 -98 C -12 -90 12 -90 36 -98" fill="none" stroke="#c8bea4" stroke-width="2.4"/>' +
       '<path d="M-38 -80 C -20 -70 20 -70 38 -80 L 38 -70 C 20 -60 -20 -60 -38 -70 Z" fill="#fbf6e8" stroke="' + O + '" stroke-width="2.2"/>' + farine([[-14, -104, 3], [12, -118, 2.4], [24, -100, 3]]);
-    if(s.coiffe === 'plume') return '<path d="M26 -104 C 44 -150 80 -164 96 -150 C 84 -132 60 -112 34 -96 Z" fill="#f4f0e0" stroke="' + O + '" stroke-width="2.2"/><path d="M30 -102 C 50 -130 72 -146 92 -150" fill="none" stroke="#b8b0a0" stroke-width="1.8"/>' +
+    /* (Bible §13.69) la casquette bleue du facteur, à visière de cuir ; le fichu noué d'une lavandière */
+    if(s.coiffe === 'facteur') return '<path d="M-33 -84 C -36 -108 -28 -122 0 -124 C 28 -122 36 -108 33 -84 C 20 -76 -20 -76 -33 -84 Z" fill="#2f4f9a" stroke="' + O + '" stroke-width="' + OL + '"/>' +
+      '<path d="M-33 -90 C -20 -82 20 -82 33 -90 L 33 -82 C 20 -74 -20 -74 -33 -82 Z" fill="#c0302a" stroke="' + O + '" stroke-width="1.6"/>' +
+      '<path d="M-36 -82 C -20 -70 20 -70 36 -82 C 30 -66 -30 -66 -36 -82 Z" fill="#1a1a22" stroke="' + O + '" stroke-width="2"/><circle cx="0" cy="-104" r="5.5" fill="url(#gOr)" stroke="' + O + '" stroke-width="1.4"/>';
+    if(s.coiffe === 'fichu') return '<path d="M' + f(-l - 5) + ' ' + f(-h * .56) + ' C ' + f(-l - 9) + ' ' + f(-h - 12) + ' ' + f(l + 9) + ' ' + f(-h - 12) + ' ' + f(l + 5) + ' ' + f(-h * .56) + ' C ' + f(l - 2) + ' ' + f(-h * .78) + ' ' + f(l * .4) + ' ' + f(-h * .92) + ' 0 ' + f(-h * .9) + ' C ' + f(-l * .4) + ' ' + f(-h * .92) + ' ' + f(-l + 2) + ' ' + f(-h * .78) + ' ' + f(-l - 5) + ' ' + f(-h * .56) + ' Z" fill="' + (s.fichu || '#f4efe2') + '" stroke="' + O + '" stroke-width="' + OL + '"/>' +
+      '<path d="M' + f(-l * .7) + ' ' + f(-h * .98) + ' C ' + f(-l * .2) + ' ' + f(-h - 2) + ' ' + f(l * .3) + ' ' + f(-h - 2) + ' ' + f(l * .8) + ' ' + f(-h * .96) + ' M' + f(-l - 3) + ' ' + f(-h * .72) + ' C ' + f(-l * .6) + ' ' + f(-h * .92) + ' ' + f(-l * .2) + ' ' + f(-h * .98) + ' 0 ' + f(-h * .98) + '" fill="none" stroke="' + vers(s.fichu || '#f4efe2', -.3) + '" stroke-width="1.8" opacity=".8"/>';
+    if(s.coiffe === 'plume') return'<path d="M26 -104 C 44 -150 80 -164 96 -150 C 84 -132 60 -112 34 -96 Z" fill="#f4f0e0" stroke="' + O + '" stroke-width="2.2"/><path d="M30 -102 C 50 -130 72 -146 92 -150" fill="none" stroke="#b8b0a0" stroke-width="1.8"/>' +
       '<ellipse cx="0" cy="-82" rx="62" ry="13" fill="#b82a26" stroke="' + O + '" stroke-width="' + OL + '"/>' +
       '<path d="M-32 -84 C -36 -110 -24 -122 0 -122 C 24 -122 36 -110 32 -84 C 20 -76 -20 -76 -32 -84 Z" fill="#c8302a" stroke="' + O + '" stroke-width="' + OL + '"/>' +
       '<path d="M-32 -92 C -20 -84 20 -84 32 -92 L 32 -85 C 20 -77 -20 -77 -32 -85 Z" fill="#f2c040" stroke="' + O + '" stroke-width="1.6"/>';

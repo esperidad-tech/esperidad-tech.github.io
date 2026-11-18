@@ -12,6 +12,9 @@ var ALT_FORET = 'La forêt est immense et toute sombre. Sans plan, tu vas te per
 
 E[1] = {
   id:1, titre:'La Lanterne d\'Or', niveau:1,
+  /* le film du début (Romain, 18 novembre : « une cinématique à chaque début d'enquête, comme un générique d'épisode » ; jeu/cine/src/film-debut1.js ;
+     Bible §13.69) : il part tout seul la première fois qu'on ouvre l'enquête, avant la lettre (M.jouerFilmDebut, moteur-actions.js) */
+  filmDebut:'debut1',
   moments:['matin', 'apresmidi', 'soir'],
   /* Pas de points d'action dans cette enquête (Romain, 4 novembre, 14 h 13 ; M.sansActions, moteur-base.js) : ce qui limite, c'est le tutoriel,
      et « un lieu ou un villageois ne donne qu'une chose par moment ». Les enquêtes 2 et 3 gardent leurs actions. */

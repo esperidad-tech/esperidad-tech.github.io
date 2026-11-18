@@ -1,0 +1,117 @@
+{
+ "nom": "La Lanterne d'Or — le début",
+ "duree": 40.2,
+ "sons": [
+  [
+   0.1,
+   "cineNuit"
+  ],
+  [
+   0.3,
+   "cineTicTac"
+  ],
+  [
+   1.6,
+   "cineLanterneOr"
+  ],
+  [
+   4.2,
+   "cineTicTac"
+  ],
+  [
+   6.3,
+   "cineNuit"
+  ],
+  [
+   6.6000000000000005,
+   "cineTicTac"
+  ],
+  [
+   8.15,
+   "cineFenetre"
+  ],
+  [
+   8.8,
+   "cineVent"
+  ],
+  [
+   10.5,
+   "cineLanterneOr"
+  ],
+  [
+   11.35,
+   "cinePrise"
+  ],
+  [
+   12.600000000000001,
+   "cineLueurPart"
+  ],
+  [
+   15.25,
+   "cineCourseLegere"
+  ],
+  [
+   15.399999999999999,
+   "cineNuit"
+  ],
+  [
+   17.5,
+   "cineCourseLegere"
+  ],
+  [
+   19.900000000000002,
+   "cineTempsPasse"
+  ],
+  [
+   22.7,
+   "cineOiseaux"
+  ],
+  [
+   24.549999999999997,
+   "cinePorteBureau"
+  ],
+  [
+   25.299999999999997,
+   "cineFredonne"
+  ],
+  [
+   25.4,
+   "cinePasParquet"
+  ],
+  [
+   26.4,
+   "cinePasParquet"
+  ],
+  [
+   29.25,
+   "cineStupeur"
+  ],
+  [
+   32.65,
+   "cineFenetre"
+  ],
+  [
+   35.2,
+   "cineEnvol"
+  ],
+  [
+   36,
+   "cineOiseaux"
+  ]
+ ],
+ "sousTitres": [
+  [
+   29.5,
+   32.55,
+   "La Lanterne d'Or… Elle a disparu !",
+   "Le maire"
+  ],
+  [
+   34.7,
+   36.95,
+   "C'est une catastrophe !",
+   "Le maire"
+  ]
+ ],
+ "fps": 30
+}

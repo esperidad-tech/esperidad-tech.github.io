@@ -29,7 +29,8 @@ LARG, HAUT_IMG, HAUT = 1440, 616, 810          # l'image en 21:9, dans un écran
 BANDE = (HAUT - HAUT_IMG) // 2
 MUSIQUE = {'entree': 'cineMusEntree', 'a12': 'cineMusA12', 'b23': 'cineMusB23', 'finLeo': 'cineMusFinLeo', 'finMaire': 'cineMusFinMaire', 'chene': 'cineMusChene', 'pub': 'cineMusPub',
            'herosPisteur': 'cineMusHerosPisteur', 'herosAlchimiste': 'cineMusHerosAlchimiste', 'herosBarde': 'cineMusHerosBarde', 'herosSage': 'cineMusHerosSage',
-           'escalier': 'cineMusEscalier', 'puits': 'cineMusPuits'}
+           'escalier': 'cineMusEscalier', 'puits': 'cineMusPuits',
+           'debut1': 'cineMusDebut1', 'debut2': 'cineMusDebut2', 'debut3': 'cineMusDebut3'}
 GAIN_MUSIQUE = 1.4                               # la musique sous les bruitages (environ 10 dB en dessous)
 
 

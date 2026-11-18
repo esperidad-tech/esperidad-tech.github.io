@@ -735,6 +735,9 @@ html.b-fixe #app{min-height:0}
 .b-ecran-fixe .b-affiche > p + p{margin-top:calc(4px * var(--serre))}
 .b-ecran-fixe .b-affiche > .b-lire{grid-column:2;grid-row:1 / 3;position:static;margin:0}
 .b-ecran-fixe .b-bas{padding-top:0}
+/* (18 novembre) la lettre : « 🎬 Revoir le film » à côté du bouton jaune */
+.b-bas-film{gap:10px;flex-wrap:wrap;align-items:center}
+.b-bas-film .b-revoir-film{order:2;white-space:nowrap}
 /* téléphone couché : la lettre à gauche, l'affiche et le bouton à droite */
 @media (orientation: landscape) and (max-height: 600px){
   .b-lettre-page.b-ecran-fixe{display:grid;max-width:1100px;grid-template-columns:minmax(0, 1.45fr) minmax(0, 1fr);grid-template-rows:auto auto minmax(0, 1fr) minmax(0, 1fr);

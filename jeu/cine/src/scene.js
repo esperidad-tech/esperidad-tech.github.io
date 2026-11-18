@@ -11,14 +11,14 @@ var W = 1440, H = 616;
 var PLT = null;
 CINE.plateau = function(){ return PLT; };
 CINE.preparer = function(nom){
-  var P = nom === 'chene' ? window.PLATEAU_CHENE : nom === 'descente' ? window.PLATEAU_DESCENTE : window.PLATEAU;
+  var P = nom === 'chene' ? window.PLATEAU_CHENE : nom === 'descente' ? window.PLATEAU_DESCENTE : nom === 'village' ? window.PLATEAU_VILLAGE : window.PLATEAU;
   if(!P.pret){
     P.construire(document.getElementById('film'));
     /* le décor passe sous les dessins */
     var f = document.getElementById('film'); f.insertBefore(P.vue, f.firstChild);
     P.pret = true;
   }
-  if(PLT !== P){ [window.PLATEAU, window.PLATEAU_CHENE, window.PLATEAU_DESCENTE].forEach(function(q){ if(q && q.vue) q.vue.style.display = q === P ? '' : 'none'; }); PLT = P; }
+  if(PLT !== P){ [window.PLATEAU, window.PLATEAU_CHENE, window.PLATEAU_DESCENTE, window.PLATEAU_VILLAGE].forEach(function(q){ if(q && q.vue) q.vue.style.display = q === P ? '' : 'none'; }); PLT = P; }
   CINE.pret = true;
 };
 
@@ -66,6 +66,9 @@ function acteur(a, k, defs){
   if(FX.ecran && (p.x + 420 * p.s < -80 || p.x - 420 * p.s > 1520 || p.y - 760 * p.s > 700 || p.y + 40 * p.s < -80)) return '';
   var dessin = a.type === 'leo' ? LeoFace.dessin(a.pose, a.o) : Gens.dessin(a.type, a.pose, a.o);
   a.os = a.type === 'leo' ? LeoFace.dernier.os : Gens.dernier.os; a.proj = p;
+  /* (le plateau du village, Bible §13.69) LES MATIÈRES : chaque pièce d'habit, la peau, les cheveux reçoivent leur grain (la laine, le lin,
+     le cuir…), posé dans le repère de la pièce — il suit le bras qui bouge (effets-village.js, FV.texturer) */
+  if(FX.village && window.CFXV && a.matieres !== false) dessin = window.CFXV.texturer(dessin);
   var f = CAM.flou(p.d) + (a.flouPlus || 0), id = 'lum' + k;
   var l = a.lum || {};
   /* la lumière, à l'écran : par défaut, devant lui, un peu à gauche et au-dessus (la lanterne des héros, derrière la caméra) */
@@ -78,6 +81,12 @@ function acteur(a, k, defs){
   defs.push(filtreLumiere(id, {x:lp.x, y:lp.y, z:(l.z || 170) * Math.max(.4, p.s), c:l.c, k:l.k, dc:l.dc, h:Math.max(2, 7 * p.s), rims:rims}));
   var s = '';
   if(a.ombre !== false) s += ombre(a.x, a.z, (a.ombreR || 150) * (a.ombreK || 1), 60, a.ombreOp);
+  /* (le plateau du village) L'OMBRE LONGUE du soleil bas : la silhouette du personnage, couchée sur le sol — a.ombreLongue = {vx, vz (où elle
+     tombe, pour une hauteur de 1), op, flou} */
+  if(FX.village && a.ombreLongue){
+    var ol = a.ombreLongue, q1 = CAM.projeter(a.x + ol.vx * 100, 0, a.z + ol.vz * 100), q0 = CAM.projeter(a.x, 0, a.z), ech = p.s * (a.echelle || 1);
+    s += '<g style="filter:blur(' + U.r((ol.flou == null ? 5 : ol.flou) * Math.max(.3, p.s) + f * .5) + 'px)" opacity="' + U.r(ol.op == null ? .42 : ol.op) + '"><g filter="url(#ombreNoire)"><g transform="matrix(' + U.r(ech) + ' 0 ' + U.r(-(q1.x - q0.x) / 100) + ' ' + U.r(-(q1.y - q0.y) / 100) + ' ' + U.r(q0.x) + ' ' + U.r(q0.y) + ')">' + dessin + '</g></g></g>';
+  }
   if(a.dessous) s += a.dessous(p);
   s += (PLT === PLATEAU && a.z < PLATEAU.MUR_Z - 4 ? '<g clip-path="url(#archeVue)">' : FX.ecran ? '<g class="ac" data-f="' + U.r(f) + '">' : '<g>') + FX.flouDebut(f) + '<g filter="url(#' + id + ')"' + (a.op != null ? ' opacity="' + U.r(a.op) + '"' : '') + '><g transform="translate(' + U.r(p.x) + ' ' + U.r(p.y) + ') scale(' + U.r(p.s * (a.echelle || 1)) + ')">' + dessin + (a.plus ? a.plus(p) : '') + '</g></g>' + FX.flouFin() + '</g>';
   return s;
@@ -90,6 +99,7 @@ CINE.image = function(nom, t){
   window.CINE_T = t;
   var crypte = PLT === window.PLATEAU;
   FX.ecran = !crypte;
+  FX.village = PLT === window.PLATEAU_VILLAGE;
   var E = F.etat(t);
   /* la caméra */
   Object.assign(CAM, {x:0, y:-300, z:1800, lacet:0, tangage:0, focus:1800, ouverture:1}, E.cam);
@@ -131,7 +141,8 @@ CINE.image = function(nom, t){
   /* le fondu (au noir, au blanc) */
   if(E.fondu) avant += '<rect width="' + W + '" height="' + H + '" fill="' + (E.fondu.c || '#000') + '" opacity="' + U.r(U.clamp(E.fondu.k, 0, 1)) + '"/>';
   var base = '<defs><radialGradient id="ombreSol"><stop offset="0" stop-color="#000" stop-opacity=".75"/><stop offset=".6" stop-color="#000" stop-opacity=".35"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>' +
-    FX.defs() + LeoFace.defs() + (window.Gens ? Gens.defs() : '') + (window.Accessoires ? Accessoires.defs() : '') + (window.ObjetsCine ? ObjetsCine.defs() : '') + (F.defs ? F.defs() : '') + defs.join('') + '</defs>';
+    FX.defs() + LeoFace.defs() + (window.Gens ? Gens.defs() : '') + (window.Accessoires ? Accessoires.defs() : '') + (window.ObjetsCine ? ObjetsCine.defs() : '') + (F.defs ? F.defs() : '') + defs.join('') +
+    (FX.village ? '<filter id="ombreNoire" x="-30%" y="-30%" width="160%" height="160%"><feColorMatrix type="matrix" values="0 0 0 0 0.03  0 0 0 0 0.03  0 0 0 0 0.08  0 0 0 1 0"/></filter>' : '') + '</defs>';
   document.getElementById('persos').innerHTML = base + persos;
   /* (le plateau du chêne) ce qui porte un filtre (un flou, une lumière) et dont RIEN n'est dans l'image est enlevé : le navigateur
      laissait sinon un carré noir dans le coin haut-gauche de l'image (un personnage tout contre la caméra, une barrière sous le cadre…) */
@@ -142,6 +153,10 @@ CINE.image = function(nom, t){
   });
   document.getElementById('lumieres').innerHTML = '<defs>' + FX.defs() + (window.ObjetsCine ? ObjetsCine.defs() : '') + (F.defs ? F.defs() : '') + '</defs>' + lum;
   document.getElementById('avant').innerHTML = base + avant;
+  /* (le plateau du village) LA CARTE DES LUMIÈRES : une couche qui MULTIPLIE toute l'image (le décor et les personnages) — l'ambiance de
+     l'heure (E.ambiance : [r, v, b]) et, dedans, les endroits éclairés (E.lampes(t) : des ronds et des formes de lumière) */
+  var lm = document.getElementById('lumap');
+  if(lm) lm.innerHTML = FX.village && E.ambiance ? '<defs>' + FX.defs() + (F.defs ? F.defs() : '') + '</defs><rect width="' + W + '" height="' + H + '" fill="rgb(' + E.ambiance.map(Math.round).join(',') + ')"/>' + (E.lampes ? E.lampes(t) : '') : '';
   return E;
 };
 })();
