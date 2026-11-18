@@ -1,0 +1,153 @@
+{
+ "duree": 24,
+ "sons": [
+  [
+   0.9,
+   "cineGrille"
+  ],
+  [
+   3.1,
+   "cineLanterne"
+  ],
+  [
+   0.2,
+   "cineVent"
+  ],
+  [
+   9,
+   "cineVent"
+  ],
+  [
+   14.5,
+   "cineVent"
+  ],
+  [
+   6,
+   "cineGoutte"
+  ],
+  [
+   11.5,
+   "cineGoutte"
+  ],
+  [
+   16.8,
+   "cineGoutte"
+  ],
+  [
+   19.2,
+   "cineLueur"
+  ],
+  [
+   3.6,
+   "cinePasEscalier"
+  ],
+  [
+   4.4,
+   "cinePasEscalier"
+  ],
+  [
+   5.2,
+   "cinePasEscalier"
+  ],
+  [
+   6,
+   "cinePasEscalier"
+  ],
+  [
+   6.8,
+   "cinePasEscalier"
+  ],
+  [
+   7.6,
+   "cinePasEscalier"
+  ],
+  [
+   8.4,
+   "cinePasEscalier"
+  ],
+  [
+   9.200000000000001,
+   "cinePasEscalier"
+  ],
+  [
+   10.000000000000002,
+   "cinePasEscalier"
+  ],
+  [
+   10.800000000000002,
+   "cinePasEscalier"
+  ],
+  [
+   11.600000000000003,
+   "cinePasEscalier"
+  ],
+  [
+   12.400000000000004,
+   "cinePasEscalier"
+  ],
+  [
+   13.200000000000005,
+   "cinePasEscalier"
+  ],
+  [
+   14.000000000000005,
+   "cinePasEscalier"
+  ],
+  [
+   14.800000000000006,
+   "cinePasEscalier"
+  ],
+  [
+   15.600000000000007,
+   "cinePasEscalier"
+  ],
+  [
+   16.400000000000006,
+   "cinePasEscalier"
+  ],
+  [
+   17.200000000000006,
+   "cinePasEscalier"
+  ],
+  [
+   18.000000000000007,
+   "cinePasEscalier"
+  ],
+  [
+   18.800000000000008,
+   "cinePasEscalier"
+  ],
+  [
+   19.60000000000001,
+   "cinePasEscalier"
+  ]
+ ],
+ "sousTitres": [
+  [
+   1.2,
+   4.3,
+   "La grille grince… puis cède.",
+   "Le conteur"
+  ],
+  [
+   6.4,
+   9.8,
+   "Marche après marche, le jour s'éloigne.",
+   "Le conteur"
+  ],
+  [
+   12.8,
+   16.2,
+   "Des signes bleus s'éveillent.",
+   "Le conteur"
+  ],
+  [
+   19,
+   22.4,
+   "Tout en bas, une lueur attend.",
+   "Le conteur"
+  ]
+ ],
+ "octets": 4565605,
+ "piste": 1
+}

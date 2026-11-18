@@ -131,13 +131,13 @@ window.CATALOGUE = [
           /* 18 novembre (Romain : « une cinématique à chaque début d'enquête ») : les trois films du début (film-debut1/2/3.js ; Bible §13.69) — tous neufs, à écouter */
           {id:'cineMusDebut1', t:'Musique début E1', v:'A', m:1, neuf:1}, {id:'cineMusDebut2', t:'Musique début E2', v:'A', m:1, neuf:1}, {id:'cineMusDebut3', t:'Musique début E3', v:'A', m:1, neuf:1},
           {id:'cineNuit', t:'La nuit, dedans', v:'A', neuf:1}, {id:'cineTicTac', t:'La pendule', v:'A', neuf:1}, {id:'cineLanterneOr', t:'La Lanterne d\'Or', v:'A', neuf:1}, {id:'cineFenetre', t:'La fenêtre', v:'A', neuf:1},
-          {id:'cinePrise', t:'La main la prend', v:'A', neuf:1}, {id:'cineLueurPart', t:'La lumière s\'en va', v:'A', neuf:1}, {id:'cineCourseLegere', t:'Pas légers', v:'A', neuf:1}, {id:'cineTempsPasse', t:'La nuit passe', v:'A', neuf:1},
+          {id:'cinePrise', t:'La main', v:'A', neuf:1}, {id:'cineLueurPart', t:'La lumière part', v:'A', neuf:1}, {id:'cineCourseLegere', t:'Pas légers', v:'A', neuf:1}, {id:'cineTempsPasse', t:'La nuit passe', v:'A', neuf:1},
           {id:'cineOiseaux', t:'Oiseaux du matin', v:'A', neuf:1}, {id:'cinePorteBureau', t:'Porte du bureau', v:'A', neuf:1}, {id:'cineFredonne', t:'Le maire chantonne', v:'A', neuf:1}, {id:'cinePasParquet', t:'Pas, parquet', v:'A', neuf:1},
           {id:'cineStupeur', t:'La stupeur', v:'A', neuf:1}, {id:'cineEnvol', t:'Les pigeons', v:'A', neuf:1},
-          {id:'cineRiviere', t:'La rivière', v:'A', neuf:1}, {id:'cineCoq', t:'Le coq', v:'A', neuf:1}, {id:'cineLinge', t:'Le drap dans l\'eau', v:'A', neuf:1}, {id:'cineGouttes', t:'Le drap ruisselle', v:'A', neuf:1},
+          {id:'cineRiviere', t:'La rivière', v:'A', neuf:1}, {id:'cineCoq', t:'Le coq', v:'A', neuf:1}, {id:'cineLinge', t:'Le drap plongé', v:'A', neuf:1}, {id:'cineGouttes', t:'Le drap ruisselle', v:'A', neuf:1},
           {id:'cineSursaut', t:'Elle sursaute', v:'A', neuf:1}, {id:'cineCriFemme', t:'Le cri', v:'A', neuf:1}, {id:'cineSeau', t:'Le seau tombe', v:'A', neuf:1}, {id:'cineMurmure', t:'Le village murmure', v:'A', neuf:1},
-          {id:'cineAube', t:'L\'aube', v:'A', neuf:1}, {id:'cinePorteMairie', t:'Porte de la mairie', v:'A', neuf:1}, {id:'cinePapier', t:'La lettre', v:'A', neuf:1}, {id:'cineSoupir', t:'Le soulagement', v:'A', neuf:1},
-          {id:'cineHourra', t:'Hourra !', v:'A', neuf:1}, {id:'cineFete', t:'La fête commence', v:'A', neuf:1}, {id:'cineClocheJoie', t:'Les cloches', v:'A', neuf:1}, {id:'cineFeteLoin', t:'La fête, de loin', v:'A', neuf:1},
+          {id:'cineAube', t:'L\'aube', v:'A', neuf:1}, {id:'cinePorteMairie', t:'La grande porte', v:'A', neuf:1}, {id:'cinePapier', t:'La lettre', v:'A', neuf:1}, {id:'cineSoupir', t:'Le soulagement', v:'A', neuf:1},
+          {id:'cineHourra', t:'Hourra !', v:'A', neuf:1}, {id:'cineFete', t:'La fête commence', v:'A', neuf:1}, {id:'cineClocheJoie', t:'Les cloches', v:'A', neuf:1}, {id:'cineFeteLoin', t:'La fête, loin', v:'A', neuf:1},
           {id:'cineMiaou', t:'Moustache', v:'A', neuf:1}
         ]}
       ]}

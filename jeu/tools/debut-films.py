@@ -106,7 +106,8 @@ with sync_playwright() as p:
         verifier(d['defile'] <= 2, f'la lettre tient toujours dans l\'écran, sans défiler ({d["defile"]})')
         verifier(len([m for m in d['revoir'].split() if any(c.isalpha() for c in m)]) <= 3, '« Revoir le film » : trois mots, pas besoin de 🔊')
         pg.reload(); pg.wait_for_timeout(1500)
-        verifier(not pg.query_selector('.cine-ecran') and pg.evaluate("() => M.P().etape === 'lettre' && M.P().filmDebut === 1"), 'la page rechargée : le film ne repart pas tout seul')
+        if pg.locator('[data-act=reprendre]').count(): pg.click('[data-act=reprendre]'); pg.wait_for_timeout(900)   # (le jeu rouvre au village : on reprend l'enquête)
+        verifier(not pg.query_selector('.cine-ecran') and pg.evaluate("() => M.P().etape === 'lettre' && M.P().filmDebut === 1 && !!document.querySelector('.b-lettre-page')"), 'la page rechargée, l\'enquête reprise : la lettre, et le film ne repart pas tout seul')
         pg.tap('[data-act=film-debut]'); film_en_cours(pg, .5)
         verifier(True, '« 🎬 Revoir le film » : il repart')
         pg.tap('[data-cine=passer]', force=True)
@@ -148,7 +149,8 @@ with sync_playwright() as p:
     b = p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
     U = 'http://127.0.0.1:%d/index.html#test' % srv.server_address[1]
     pg = tablette(b, 'Site', 'sage', 2, U)
-    verifier(pg.evaluate("() => !!(M.UI.filmsPrevus || {}).debut2 && !(M.UI.filmsPrevus || {}).debut1 && !(M.UI.filmsPrevus || {}).debut3"), 'à l\'accueil, avant l\'enquête 2 : son film (et lui seul) est demandé d\'avance')
+    # (ce robot est passé par l'accueil d'un héros tout neuf — prochaine enquête : la 1 — avant de sauter à l'enquête 2 : le film 1 a été demandé lui aussi)
+    verifier(pg.evaluate("() => !!(M.UI.filmsPrevus || {}).debut2 && !(M.UI.filmsPrevus || {}).debut3"), 'à l\'accueil, avant l\'enquête 2 : son film est demandé d\'avance ; pas celui de l\'enquête 3')
     pg.click('[data-act=nouvelle-enquete]')
     film_en_cours(pg, 1.5)
     a = pg.evaluate("""() => { var v = document.querySelector('.cine-ecran video'), l = performance.getEntriesByType('resource').map(function(e){ return e.name.split('/').pop(); });
