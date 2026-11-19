@@ -245,7 +245,10 @@ function pli(){ var cx = PV.x + PV.w / 2, cy = PV.y + PV.h / 2;
 function bordBrule(pts){ var d = U.polyD(pts), s = ''; [[30, .07], [20, .09], [11, .12], [5, .16]].forEach(function(q){ s += '<path d="' + d + '" fill="none" stroke="#5a3414" stroke-width="' + q[0] + '" opacity="' + q[1] + '"/>'; });
   return s + '<path d="' + d + '" fill="none" stroke="#3a1e0a" stroke-width="4" opacity=".55"/>'; }
 
-function svg(){
+/* (Romain, 19 novembre, 9 h 41) o.jour : le vieux plan regardé AVANT la nuit — rien ne doit dire ce que c'est : ni les noms à la plume,
+   ni le titre, ni le petit crâne. Les signes et les notes codées restent (on peut s'amuser à déchiffrer sans comprendre à quoi ça sert). */
+function svg(o){
+  var JOUR = !!(o && o.jour);
   var x0 = PV.x, y0 = PV.y, w = PV.w, h = PV.h;
   var bord = U.polyD(BORDS.principal), bordC = U.polyD(BORDS.coin);
   /* ======== LE PRINCIPAL ======== */
@@ -264,7 +267,7 @@ function svg(){
   /* les signes au lieu des noms (et les mêmes sur les trois portes) */
   P.signes.forEach(function(sg){ p += signe(sg.s, sg.x, sg.y, sg.t); });
   /* les noms à la plume */
-  P.noms.forEach(function(n){ if(!n.coin) p += texte(n.x, n.y, n.l, n.t); });
+  if(!JOUR) P.noms.forEach(function(n){ if(!n.coin) p += texte(n.x, n.y, n.l, n.t); });
   /* les notes codées, le piège noté */
   P.notes.forEach(function(n){
     if(n.type === 'code'){
@@ -273,7 +276,7 @@ function svg(){
         L('M' + f(n.x - lw / 2 + 5) + ' ' + f(n.y + hh / 2 + 5) + ' q' + f(lw / 2) + ' 7 ' + f(lw - 10) + ' 0', ENC2, 1.4, ' opacity=".7"') + code(n.x, n.y, n.lignes, t, ROUGE) + '</g>';
       /* la traduction au crayon (apparaît quand le Sage l'a déchiffrée) */
       p += '<g class="traduction" data-trad="' + n.id + '" style="display:none">' + texte(n.x, n.y + hh / 2 + 22, [n.dit], 22, CRAYON, ' font-style="italic"') + '</g>';
-      if(n.crane) p += crane(n.crane.x, n.crane.y, 11 * K1, ROUGE);          /* un danger : le petit crâne rouge à côté de la note */
+      if(n.crane && !JOUR) p += crane(n.crane.x, n.crane.y, 11 * K1, ROUGE);          /* un danger : le petit crâne rouge à côté de la note */
     }
   });
   /* la rose des vents, le titre */
@@ -281,8 +284,8 @@ function svg(){
   var tc = [[40, 30], [246, 30], [238, 46], [246, 62], [40, 62], [48, 46]].map(function(q){ return [(q[0] - 36.5) * K1 + 765, (q[1] - 22) * K1 + 429]; });
   p += '<path d="' + U.polyD(tc) + '" fill="' + SOLC + '" stroke="' + ENC + '" stroke-width="2.2"/>' +
     L('M' + f(tc[5][0]) + ' ' + f(tc[0][1] + 7) + ' H' + f(tc[2][0]) + ' M' + f(tc[5][0]) + ' ' + f(tc[4][1] - 7) + ' H' + f(tc[2][0]), ENC2, 1.1, ' opacity=".7"') +
-    '<text x="' + f(P.titre.x) + '" y="' + f(P.titre.y) + '" text-anchor="middle" dominant-baseline="central" font-size="' + f(19 * K1) + '" font-family="' + POLICE + '" fill="' + ENC + '">' + P.titre.t + '</text>' +
-    texte(P.titre.x, P.titre.sy, [P.titre.sous], 11.5 * K1, ENC2);
+    (JOUR ? '' : '<text x="' + f(P.titre.x) + '" y="' + f(P.titre.y) + '" text-anchor="middle" dominant-baseline="central" font-size="' + f(19 * K1) + '" font-family="' + POLICE + '" fill="' + ENC + '">' + P.titre.t + '</text>' +
+    texte(P.titre.x, P.titre.sy, [P.titre.sous], 11.5 * K1, ENC2));
   p += '<rect x="' + f(x0) + '" y="' + f(y0) + '" width="' + f(w) + '" height="' + f(h) + '" fill="url(#pbrule)"/>' + bordBrule(BORDS.principal);
   s += '<g clip-path="url(#pparch)">' + p + '</g>';
   /* la place du morceau perdu (sur la table) */

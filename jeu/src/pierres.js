@@ -188,6 +188,7 @@ function planSous(x, y){ var el = document.elementFromPoint(x, y); return el && 
 function fraction(plan, x, y){ var r = plan.getBoundingClientRect(); return {x:(x - r.left) / r.width, y:(y - r.top) / r.height}; }
 function prendre(id, pid){
   var S = etat(id), Pi = pierre(M.E(), pid), Pl = planDe(M.E(), id);
+  if(Pl && Pl.poseDirecte && !parle(id)){ poser(id, pid, S.pierre === pid ? S.x : Pl.poseDirecte.x, S.pierre === pid ? S.y : Pl.poseDirecte.y); return; }
   S.main = pid; if(!S.pierre){ S.chaleur = ''; S.dit = (Pi ? Pi.nom : 'La pierre') + (Pl && Pl.promene ? ' est dans ta main. Promène-la sur le papier !' : ' est dans ta main. Où vas-tu la poser ?'); }
   M.son('clic'); redessiner(id);
 }
@@ -421,7 +422,10 @@ if(E3){
       sansPierre:'Les signes restent muets… « Ils ne parlent qu\'à la pierre qui les garde. »',
       /* (Romain, 17 novembre, 7 h 47 : « on ne peut pas interagir avec […] il ne se passe rien ») l'après-midi, ce plan ne peut pas encore parler :
          la page le dit maintenant en clair */
-      autre:'{pierre} reste froide. Ce n\'est pas elle qui garde ces signes-là… Il en faut une autre, bien plus vieille. Tu ne l\'as pas encore : garde ce plan pour cette nuit !'}
+      autre:'{pierre} reste froide, partout où tu la promènes. Ce n\'est pas elle qui garde ces signes-là…',
+      /* (Romain, 19 novembre, 9 h 41) toucher une pierre de la poche la pose tout de suite sur ce plan : on voit qu'on peut la promener
+         (la faire glisser), et qu'ici, elle ne fait rien */
+      poseDirecte:{x:.5, y:.5}}
   };
   /* (e3.js garde, pour chaque plan, sa pierre et sa page : le vérificateur les lit sans navigateur) */
   E3.plansPierre = E3.plansPierre || {};

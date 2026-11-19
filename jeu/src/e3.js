@@ -405,8 +405,9 @@ E[3] = {
       melusine:{t:'Je n\'écrirai plus jamais pour personne…',
         /* le filet : son aveu n'a pas été obtenu l'après-midi */
         /* (Romain, 13 novembre : pas « je n'en peux plus » — « c'est trop dur de garder le secret, j'ai besoin de me confier ») */
-        filet:{sauf:'info:aveu', t:'C\'est trop dur de garder ce secret… J\'ai besoin de me confier. C\'est moi qui ai écrit la lettre ! Un homme en cape m\'y a forcée. Je n\'ai pas vu son visage.', code:'info:aveu',
-          note:'Mélusine a craqué, à la fête : c\'est elle qui a écrit la lettre, forcée par un homme en cape. Elle n\'a pas vu son visage (code pour le Sage).'},
+        /* (19 novembre) plus de code : saufVu (elle a déjà avoué l'après-midi) remplace sauf:'info:aveu' */
+        filet:{saufVu:'verite:melusine:4', t:'C\'est trop dur de garder ce secret… J\'ai besoin de me confier. C\'est moi qui ai écrit la lettre ! Un homme en cape m\'y a forcée. Je n\'ai pas vu son visage.',
+          note:'Mélusine a craqué, à la fête : c\'est elle qui a écrit la lettre, forcée par un homme en cape. Elle n\'a pas vu son visage. À dire au Sage !'},
         /* (17 novembre, étape 4 du nouveau fil) LES TENUES : une fois qu'elle a avoué (l'après-midi, ou ici par le filet), elle porte un
            « ❗ » à la fête et donne au Barde trois tenues, cousues par remords : un code objet pour le Pisteur, le Sage et l'Alchimiste
            (x.don, grands.js). C'est d'elle que viennent les tenues de combat (« pourquoi des tenues ? », Romain, 16 novembre). */
@@ -626,7 +627,7 @@ E[3] = {
       t:'Le Livre d\'or de la fête t\'attend dans ton labo : tout le village y a écrit un petit mot pour Odette, chacun de sa main. Glisse la lettre sous ta loupe : le Livre d\'or s\'ouvrira, et tu compareras les écritures.',
       dire:'L\'Alchimiste pourra comparer les écritures : donne-lui ce code.'},
     /* (12 novembre : plus de code « L'herbier » — le Sage lit l'herbier à voix haute, l'Alchimiste cherche sur sa carte ; Bible §13.26) */
-    aveu:{nom:'L\'aveu de Mélusine', ic:'🧵', pour:'sage', de:'barde', savoir:true,
+    aveu:{nom:'L\'aveu de Mélusine', ic:'🧵', pour:'sage', de:'barde', savoir:true, reserve:true,   /* (19 novembre : plus donné, l'aveu se dit à voix haute ; ses symboles ne bougent pas) */
       t:'Mélusine a avoué : c\'est elle qui a écrit la lettre, et qui l\'a glissée sous la porte de la mairie. Un homme en cape l\'y a forcée ; elle n\'a pas vu son visage.',
       dire:'C\'est une preuve pour le Sage : donne-lui ce code.'},
     /* (étape 5, le Pisteur) ce qu'il reçoit et ce qu'il donne ; ceux du Sage, de l'Alchimiste et des grands dialogues du Barde
@@ -1177,11 +1178,17 @@ E[3] = {
          nouveau fil, ce sera celui du Sage — l'écriture et la pointure). Démasquée : son aveu, et le code pour le Sage (le filet : la nuit,
          à la fête). La seule vérité de plus de 30 mots : c'est le tournant de l'enquête. NE PAS DÉPLACER : E.faits, les missions et le
          grand dialogue d'Anselme citent « verite:melusine:4 ». */
-      {q:'C\'est vous qui avez écrit la lettre.', g:'e', moments:A_, besoin:[{code:'info:cest_melusine'}], a:'Moi ? Je sais à peine écrire mon nom !', ment:true, donneVrai:'info:aveu',
+      {q:'C\'est vous qui avez écrit la lettre.', g:'e', moments:A_, besoin:[{code:'info:cest_melusine'}], a:'Moi ? Je sais à peine écrire mon nom !', ment:true,   /* (Romain, 19 novembre, 10 h 18) plus de code « L'aveu de Mélusine » : il ne servait qu'à savoir — à dire au Sage */
         /* (17 novembre, étape 4 du nouveau fil : « Mélusine : revenez me voir cette nuit ») plus de « il a peut-être laissé des traces »
            (une piste qui ne menait nulle part) : honteuse, elle promet de coudre de quoi les protéger — les tenues, à la fête (E.fete) */
-        vrai:'C\'est moi… Un homme en cape m\'a forcée à l\'écrire et à la déposer. Je n\'ai pas vu son visage. Pardon… Pour m\'excuser, je vous couds des tenues de combat. Revenez me voir cette nuit, à la fête : elles seront prêtes !',
-        note:'Mélusine dit qu\'elle sait à peine écrire son nom.', noteVrai:'Mélusine a avoué : un homme en cape l\'a forcée à écrire la lettre et à la déposer. Elle n\'a pas vu son visage (code pour le Sage). Pour s\'excuser, elle vous coud des tenues de combat : retourne la voir cette nuit, à la fête, avant de parler à Anselme !'}
+        /* (Romain, 19 novembre, 10 h 13 : « les tenues de combat, ça sort de nulle part ») elle demande ce qu'elle peut faire ; c'est le
+           Barde qui demande les tenues (la question [5], juste dessous) */
+        vrai:'C\'est moi… Un homme en cape m\'a forcée à l\'écrire et à la déposer. Je n\'ai pas vu son visage. Pardon… Est-ce que je peux faire quelque chose pour vous, pour me faire pardonner ?',
+        note:'Mélusine dit qu\'elle sait à peine écrire son nom.', noteVrai:'Mélusine a avoué : un homme en cape l\'a forcée à écrire la lettre et à la déposer. Elle n\'a pas vu son visage. À dire au Sage !'},
+      /* [5] (Romain, 19 novembre, 10 h 13) après l'aveu : les tenues, demandées par le Barde (à la fête, la nuit, elle les donne : E.fete) */
+      {q:'Pouvez-vous nous coudre des tenues de combat ?', g:'e', moments:A_, besoin:[{vu:'verite:melusine:4'}],
+        a:'Oui, bien sûr ! Je m\'y mets tout de suite. Revenez me voir cette nuit, à la fête : elles seront prêtes !',
+        note:'Mélusine coud des tenues de combat pour l\'équipe : retourne la voir cette nuit, à la fête, avant de parler à Anselme !'}
     ]},
     /* le matin : ses fleurs (marche.js : le bouton « 🌸 » dans sa conversation et sur sa pastille), et ses quatre questions — on lui a volé
        un flacon d'encre, cette nuit (Romain, 18 h 19). L'après-midi, elle est occupée par ses couronnes (elle vend encore, s'il reste des pièces). */
