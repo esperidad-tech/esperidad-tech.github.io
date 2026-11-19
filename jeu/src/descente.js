@@ -227,6 +227,10 @@ function tenueTexte(){
   if(reste <= 0) return {ok:true, t:(mel ? 'Dans la tenue de Mélusine — capuche violette' : 'Capuche violette') + ', lunettes sur le front, et tes sept potions à la ceinture : te voilà prêt pour les souterrains ! Le Pisteur vous emmène tous les trois sur sa tablette.'};
   return {ok:false, t:'Ta tenue est prête… mais pas tes potions ! Il t\'en manque ' + (reste > 1 ? reste : 'une') + '. On a besoin des sept potions pour descendre : file à ton établi. Quand la dernière sera prête, ton code pour le Pisteur t\'y attendra.'};
 }
+M.tenueFenetre = function(t){
+  var role = M.role(); if(!cfg() || ROLES_A.concat(['pisteur']).indexOf(role) < 0) return false;
+  M.son('gain'); M.ouvrir({type:'descente', vue:'tenueMel', t:t}); return true;
+};
 M.tenueHTML = function(dansLivre){
   var role = M.role(), x = tenueTexte(), s = tenueCadre([role]);
   if(!dansLivre) s += '<h2>' + esc(TITRE_TENUE) + '</h2>';
@@ -244,6 +248,8 @@ function codeDonne(id, autre){
 function lignePret(ok, ic, t){ return '<li class="' + (ok ? 'ds-ok' : 'ds-attend') + '"><span aria-hidden="true">' + (ok ? '✅' : '⏳') + ' ' + ic + '</span><span>' + esc(t) + ' ' + lire(t) + '</span></li>'; }
 M.descenteHTML = function(m){
   var P = M.P(), role = M.role(), sac = P.sac || [], t, s = '<div class="b-info-modal ds-fenetre">';
+  /* (Romain, 19 novembre, 10 h 22) les tenues de Mélusine, reçues : son héros à lui (son visage, sa peau, son âge…) dans sa tenue de combat */
+  if(m.vue === 'tenueMel') return s + VUES.tenueMel(m) + '</div>';
   /* le Sage, l'Alchimiste : ce qu'un code du donjon leur apporte (plus bas) ; sinon leur tenue de combat, et leur code pour le Pisteur */
   if(role !== 'pisteur'){
     var vue = m.vue && VUES[m.vue] ? VUES[m.vue](m) : null;
@@ -473,6 +479,13 @@ A['ds-livre'] = function(el){
 function fen(ic, titre, t, boutons){ return '<div class="b-grand-ic">' + ic + '</div><h2>' + esc(titre) + '</h2><p>' + esc(t) + ' ' + lire(titre + '. ' + t) + '</p>' + boutons; }
 var PLUS_TARD = '<button class="btn second" data-act="fermer">Plus tard</button>';
 var VUES = {
+  /* (Romain, 19 novembre, 10 h 22 : « quand on tape ce code, une fenêtre avec le personnage avec la tenue […] tu modifies pas le personnage
+     […] la tête, les yeux, la coiffure, la couleur de peau, l'âge […] un bouton super, ok ») le Pisteur, le Sage, l'Alchimiste */
+  tenueMel:function(m){
+    var role = M.role(), t = m.t || 'Mélusine a tenu parole : ta tenue de combat est prête.';
+    return tenueCadre([role]) + '<h2>' + esc('Ta tenue de combat') + '</h2><p>' + esc(t) + ' ' + lire('Ta tenue de combat. ' + t) + '</p>' +
+      '<button class="btn grand b-aller" data-act="fermer">👍 Super, OK !</button>';
+  },
   'carnet-recu':function(){
     return fen('📓', 'Un vieux carnet', 'Un vieux carnet, trouvé à l\'entrée du donjon. Quelqu\'un est passé par ici avant vous : un aventurier, qui a tout noté. Chaque monstre qu\'il a croisé a sa page. Tu le gardes dans ton Grand Livre.',
       '<button class="btn grand b-aller" data-act="ds-livre" data-id="aventurier">📖 Ouvrir le carnet</button>' + PLUS_TARD);
