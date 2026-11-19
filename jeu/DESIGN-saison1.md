@@ -4569,6 +4569,24 @@ Quatre choses que Romain a vues en jouant (dictées à la voix) ; il a demandé 
 - **Le Sage forcé, l'après-midi** : les trois points du Sage à la mairie (le tableau, le rendre, passer voir le maire s'il est raté) ont `oblige:['apresmidi']` → le rond jaune sur la mairie tant qu'il n'a pas le Livre d'or. **`E.carteForcee`** (`[{role:'sage', moments:['apresmidi'], lieu:'mairie', dire}]`, nouveau ; `M.carteForcee`, `moteur-roles.js`) : tant que ce rond attend, **sur la carte, seule la mairie se touche** (les autres lieux, maisons et visages : « Pas maintenant ! Le maire t'attend à la mairie, avec ton tableau ! ») ; **la carte s'ouvre d'elle-même une fois** à ce moment (`carte-jeu.js`). Le Grand Livre, le Carnet et les codes restent libres. Le matin : rien de forcé.
 - Robots : `e3-obliges.py` (le Sage : matin libre, l'après-midi forcé, un autre lieu refusé, la mairie ouverte, le tableau raté → toujours la mairie, le maire vu → libre), `e3-ecritures.py`, `partie3.py` (les deux mains).
 
+### 13.80 LE DÉPART DU PISTEUR : UNE SEULE FENÊTRE, DEUX BOUTONS QUI SE VALIDENT UN PAR UN, « DESCENDRE » EN DESSOUS ; LES SIX SYMBOLES TIENNENT SUR UN TÉLÉPHONE (Romain, 19 novembre, 10 h 38 et 10 h 42 : « je pense que les 6 symboles, ils dépassent de l'écran […] fais-moi ça et mets en ligne » ; « une interface un peu plus travaillée, que le Pisteur il soit pas obligé de sans arrêt revenir au puits ») — EN LIGNE
+
+**Le bug.** Les six cases du Pisteur (84 px, écart 12 px = 564 px) et le code du Sage / de l'Alchimiste (six symboles de 90 px = 590 px) ne tenaient dans aucun téléphone en hauteur : sur un iPhone de 390 px de large, les cases allaient de −87 à 477 px. Mesuré avec Playwright avant et après (`/home/claude/outils/six-telephone.py`, perdu avec la session ; refait en dix lignes : 6 tailles, de 320 × 568 à 844 × 390).
+
+**Les six symboles** (`plantes.css`, `.ds-six`, `.ds-moncode`) : les cases et les symboles rétrécissent avec l'écran (`flex:1 1 0`, carrées, `clamp()` sur l'écart et la taille du dessin). Vérifié sur iPhone SE, Android 360, iPhone 390, grand iPhone, et les deux téléphones couchés : tout rentre. Valable pour le Sage, l'Alchimiste et le Pisteur (les trois utilisent les mêmes règles).
+
+**La fenêtre du départ** (`descente.js`, `M.descenteHTML`) : plus d'écran « Voilà le Sage dans sa tenue, c'est bien ton équipier ? » ni de « D'accord » qui refermait tout et renvoyait au puits. Une seule fenêtre :
+- deux boutons jaunes, « 🔢 Le code du Sage » et « 🔢 Le code de l'Alchimiste » ;
+- on touche l'un, on tape les six symboles, et **on revient tout de suite à cette fenêtre** : son bouton est vert, « ✅ 📖 Le Sage est prêt », **désactivé** (on ne peut plus le toucher) ; l'autre attend ;
+- quand les deux sont validés (et les sept potions dans le sac) : « Tout est prêt ! » et **« 🕯️ Descendre dans le donjon »** apparaît juste dessous ; la petite page de la tenue montre déjà les amis validés ;
+- l'Alchimiste dont le code est tapé mais qui n'a pas ses potions : bouton brun « ⏳ Son code est tapé » (désactivé), et la phrase « Il te manque ses sept potions… » ;
+- **« ✏️ Corriger un code »** (choix de Claude, pour ne pas bloquer quelqu'un qui s'est trompé de héros — Romain avait demandé un « Retaper son code » le 17 novembre) rend les deux boutons de nouveau touchables, avec « Retaper le code… ». **À dire à Romain** : il peut le retirer.
+- l'ancienne vue `recu` ne sert plus que pour le code du visage (`vue:'recu', visage:true`).
+La fenêtre défile sur un petit téléphone : « Descendre » est tout en bas (vérifié sur quatre tailles).
+
+**Robots** : `e3-descente.py` (169 vérifications, mises à jour pour le nouveau parcours : « Le code du Sage » au lieu de « Il te manque le code du Sage », bouton validé et bloqué, « Corriger un code », l'assistant `six()` passe par « Corriger » si besoin) et `partie3.py` mis à jour ; `rapide.sh`, `partie2.py`, `partie3.py` verts. **`partie3.py` a raté une fois la cueillette de l'Alchimiste (mélisse, pied-de-loup…) sur la même version, puis passé en entier à la relance** : un aléa de plus, sans rapport.
+**Aucun code n'a bougé (57 / 69 / 1630).** Jamais essayé sur une vraie tablette ni un vrai téléphone.
+
 ## 14. La grande carte et la brume (chantier ouvert le 12 novembre) — DANS LE JEU ET EN LIGNE DEPUIS LE 12 NOVEMBRE À 12 H 06 (§14.5) ; depuis l'après-midi, deux zones se lèvent dans l'enquête 3 pour l'Alchimiste (§14.7)
 
 **À lire d'abord : le §14.5** (ce qui est dans le jeu), **puis le §14.7** (les deux premières zones levées). Les §14.1 à §14.4 racontent le modèle du matin ; ils restent vrais pour les lieux, les zones et les questions à décider.
