@@ -81,9 +81,15 @@ with sync_playwright() as p:
     t = page(pg, 'quiecrit')
     verifier(pg.locator('#livre-ici .lv-page.on [data-act=ec-designer]').count() == 12, 'une partie en cours, fermée après deux ratés : la page est rouverte')
     # (17 novembre, 21 h 46, Romain : « le Sage découvre deux écritures similaires et les donne au Barde ») Margot ou Mélusine : le même résultat
+    # (19 novembre, 10 h 10) une seule bonne main ne suffit plus : la même main, « est-ce la seule ? », pas encore de code
     designer(pg, 'margot'); t = texte(pg)
+    verifier('La même main' in t and 'Margot' in t and 'Mélusine' not in t and pg.locator('#voile .b-donne').count() == 0
+             and pg.evaluate("() => M.P().vus['sage:ecriture'] !== 'ok' && !M.P().objets['_info:cest_melusine']"), f'(19 novembre) Margot seule : la même main, mais pas encore de code (« {t[:90]} »)')
+    fermer(pg)
+    verifier(pg.locator('#livre-ici .lv-page.on [data-act=ec-designer]').count() == 11 and pg.locator('#livre-ici .lv-page.on .ec-or-trouve').count() == 1, '(19 novembre) le mot de Margot reste entouré, on cherche l\'autre')
+    designer(pg, 'melusine'); t = texte(pg)
     verifier('Deux mains pareilles' in t and 'Margot' in t and 'Mélusine' in t and pg.locator('#voile .b-donne').count() == 1 and 'Barde' in t
-             and pg.evaluate("() => M.P().vus['sage:ecriture'] === 'ok' && !!M.P().objets['_info:cest_melusine']"), f'Margot touchée : deux mains pareilles, un code pour le Barde (« {t[:90]} »)')
+             and pg.evaluate("() => M.P().vus['sage:ecriture'] === 'ok' && !!M.P().objets['_info:cest_melusine']"), f'puis Mélusine : deux mains pareilles, un code pour le Barde (« {t[:90]} »)')
     pg.context.close()
 
     print('— Le Sage (tablette) : avec le carnet d\'Odette ; il désigne Mélusine')
@@ -91,7 +97,7 @@ with sync_playwright() as p:
     code(pg, 'obj:lettre'); code(pg, 'obj:carnet')
     t = page(pg, 'quiecrit'); shot(pg, 'comparer-tab')
     verifier(pg.locator('#livre-ici .lv-page.on .ec-compare-l').count() == 2 and 'Le carnet d\'Odette' in t, 'avec le carnet : la vraie écriture d\'Odette à côté de la lettre')
-    designer(pg, 'melusine'); t = texte(pg); shot(pg, 'melusine')
+    designer(pg, 'melusine'); fermer(pg); designer(pg, 'margot'); t = texte(pg); shot(pg, 'melusine')
     verifier('Deux mains pareilles' in t and pg.locator('#voile .b-donne').count() == 1 and 'Barde' in t, f'Mélusine touchée : la même chose, deux mains pareilles et un code pour le Barde (« {t[:80]} »)')
     verifier(pg.evaluate("() => M.P().vus['sage:ecriture'] === 'ok' && !!M.P().objets['_info:cest_melusine'] && M.destinataire('info:cest_melusine') === 'barde'"), 'le code « Deux écritures pareilles » est à donner, au Barde')
     fermer(pg)

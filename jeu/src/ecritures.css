@@ -62,3 +62,4 @@
 .ec-or-b:focus-visible .ec-or-mot{box-shadow:0 0 0 3px #ffc93c}
 .ec-or-bon{border:3px solid #b9770e!important;border-radius:8px;background:#ffe9a8;box-shadow:0 0 0 3px #ffc93c}
 .ec-or-fini .ec-or-mot:not(.ec-or-bon){opacity:.6}
+.ec-or-trouve{cursor:default}

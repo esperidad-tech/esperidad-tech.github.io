@@ -613,4 +613,16 @@ if(M.A){
     setTimeout(function(){ if(!fini){ fini = true; fin(); } }, DUREE + 1500);   /* filet : l'onglet caché, rien ne bouge (requestAnimationFrame en pause) */
   };
 }
+/* (19 novembre) LA CARTE FORCÉE (M.carteForcee, moteur-roles.js) : la première fois, à ce moment, la carte s'ouvre d'elle-même */
+var rendreForce0 = M.render;
+M.render = function(){
+  try{
+    var f = M.carteForcee && M.carteForcee(), P = M.P();
+    if(f && P && !P.vus['force:' + f.role + ':' + f.lieu + ':' + P.moment] && !M.UI.modal && M.UI.ecran === 'enquete'){
+      P.vus['force:' + f.role + ':' + f.lieu + ':' + P.moment] = 1; P.onglet = 'carte'; M.sauver();
+      setTimeout(function(){ M.toast('🟡 ' + f.dire); }, 600);
+    }
+  }catch(e){ console.error(e); }
+  return rendreForce0.apply(this, arguments);
+};
 })();

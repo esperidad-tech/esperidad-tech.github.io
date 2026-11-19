@@ -413,6 +413,9 @@ def partie(nav, base):
     bm = S.pg.locator('#livre-ici .lv-page.on [data-act=ec-designer][data-id=melusine]')
     verifier(bm.count() == 1 and S.pg.locator('#livre-ici .lv-page.on [data-act=ec-designer]').count() == 12, 'le Sage : « Comparer les écritures », la lettre et les douze mots du Livre d\'or')
     bm.scroll_into_view_if_needed(); bm.click(); S.pg.wait_for_timeout(300); S.pg.locator('#voile [data-act=confirmer-oui]').click(); S.pg.wait_for_timeout(400); S.fermer()
+    # (19 novembre) il faut les deux mains : Margot aussi
+    bg = S.pg.locator('#livre-ici .lv-page.on [data-act=ec-designer][data-id=margot]')
+    bg.scroll_into_view_if_needed(); bg.click(); S.pg.wait_for_timeout(300); S.pg.locator('#voile [data-act=confirmer-oui]').click(); S.pg.wait_for_timeout(400); S.fermer()
     verifier(livrer(T, S) == ['info:cest_melusine'] and B.js("() => !!M.P().recus['info:cest_melusine']"), 'le Sage désigne Mélusine : le code « L\'écriture de Mélusine » passe au Barde')
     # (13 novembre) le Barde peut poser la même accusation à Margot : elle dit vrai
     B.carte(); B.ev('lieu', {'id': 'taverne'}); B.ev('parler', {'id': 'margot'}); B.pg.wait_for_timeout(500)
