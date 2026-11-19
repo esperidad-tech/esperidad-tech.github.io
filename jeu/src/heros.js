@@ -153,6 +153,7 @@ M.modalPerso = function(m){
   if(m.quoi === 'charger') return chargerHTML(m);
   if(m.quoi === 'installer') return guideInstaller();
   if(m.quoi === 'horsligne') return horsLigneHTML();
+  if(m.quoi === 'films') return filmsHTML();
   return '';
 };
 
@@ -476,6 +477,72 @@ function horsLigneHTML(){
     '<button class="btn" data-act="fermer">D\'accord</button></div>';
   return s + '</div>';
 }
+/* ==========================================================
+   🎬 Télécharger les films (Romain, 19 novembre : « un bouton téléchargement où on pourrait télécharger toutes les cinématiques
+   d'un coup ») : tous les films et leurs bandes-son rangés dans la tablette (CineLecteur.telechargerTout, boîte « brumeval-films »).
+   Ensuite, chaque film part de là, sans internet. Un film refait est retéléchargé en retouchant le bouton.
+   ========================================================== */
+var FI = {etat:null, enCours:null, fait:0, total:0, echecs:[], erreur:''};
+M.FI = FI;
+M.filmsPossible = function(){ return !!(window.CineLecteur && CineLecteur.telechargerTout && window.CINE_INFOS && window.caches && location.protocol !== 'file:' && window.isSecureContext !== false); };
+M.verifierFilms = function(){
+  if(!M.filmsPossible()) return Promise.resolve(null);
+  return CineLecteur.etatFilms().then(function(e){ FI.etat = e; return e; }, function(){ return null; });
+};
+function filmsPrets(){ return !!(FI.etat && FI.etat.total && FI.etat.n === FI.etat.total); }
+function surFilms(){ if((UI.modal && UI.modal.quoi === 'films') || (UI.ecran === 'menu' && !UI.modal)) M.render(); }
+function majBarreFilms(){
+  var b = document.getElementById('fi-barre'), t = document.getElementById('fi-txt');
+  if(b) b.value = FI.total ? Math.round(FI.fait * 100 / FI.total) : 0;
+  if(t) t.textContent = FI.fait + ' / ' + (FI.total || '…');
+}
+function lancerFilms(){
+  if(FI.enCours) return FI.enCours;
+  FI.fait = 0; FI.total = 0; FI.echecs = []; FI.erreur = '';
+  FI.enCours = CineLecteur.telechargerTout(function(p){ FI.fait = p.fait; FI.total = p.total; majBarreFilms(); }).then(function(r){
+    FI.enCours = null; FI.echecs = r.echecs || [];
+    return M.verifierFilms().then(function(){
+      if(!FI.echecs.length && filmsPrets()) M.son('victoire'); else { FI.erreur = 'manque'; M.son('ko'); }
+      surFilms();
+    });
+  }).catch(function(e){ FI.enCours = null; FI.erreur = (e && e.message) || 'erreur'; M.son('ko'); surFilms(); });
+  return FI.enCours;
+}
+M.lancerFilms = lancerFilms;
+A.films = function(){ M.son('page'); M.ouvrir({type:'perso', quoi:'films'}); M.verifierFilms().then(surFilms); };
+A['films-telecharger'] = function(){ lancerFilms(); M.render(); };
+function poidsFilms(){
+  var I = window.CINE_INFOS || {}, o = 0;
+  Object.keys(I).forEach(function(n){ o += (I[n].octets || 0) * (I[n].piste ? 1.1 : 1); });
+  return Math.max(10, Math.round(o / 1e7) * 10);
+}
+function filmsHTML(){
+  var s = '<div class="hr-hl hr-films"><h2>🎬 Les films</h2>', nb = Object.keys(window.CINE_INFOS || {}).length;
+  if(FI.enCours){
+    var t0 = 'Le conteur range les bobines dans la tablette. Ne ferme pas le jeu.';
+    s += '<p>' + esc(t0) + ' ' + lire(t0) + '</p><div class="hr-hl-prog"><progress id="fi-barre" max="100" value="' + (FI.total ? Math.round(FI.fait * 100 / FI.total) : 0) + '"></progress><small id="fi-txt">' + FI.fait + ' / ' + (FI.total || '…') + '</small></div>';
+    return s + '</div>';
+  }
+  if(filmsPrets()){
+    var t1 = 'Les ' + nb + ' films sont dans la tablette. Ils partent tout de suite, même sans internet.';
+    s += '<p class="hr-hl-ok">✅ ' + esc(t1) + ' ' + lire(t1) + '</p>';
+  } else if(FI.erreur){
+    var t2 = FI.erreur === 'manque' ? 'Quelques bobines ne sont pas arrivées. Vérifie le wifi, puis réessaie.' : 'Ça n\'a pas marché. Vérifie le wifi, puis réessaie.';
+    s += '<p class="hr-hl-ko">⚠️ ' + esc(t2) + ' ' + lire(t2) + '</p>';
+  } else {
+    var t3 = 'Range tous les films dans la tablette, une bonne fois. Ensuite, ils partent tout de suite, sans attendre internet.';
+    s += '<p>' + esc(t3) + ' ' + lire(t3) + '</p>';
+    if(FI.etat && FI.etat.n) s += '<p class="doux">📦 ' + FI.etat.n + ' / ' + FI.etat.total + '</p>';
+  }
+  var t4 = 'Environ ' + poidsFilms() + ' Mo : mieux vaut le wifi.';
+  if(!filmsPrets()) s += '<p class="doux petit">📶 ' + esc(t4) + ' ' + lire(t4) + '</p>';
+  s += '<div class="b-rangee centre">' +
+    (filmsPrets() ? '<button class="btn second" data-act="films-telecharger">🔄 Mettre à jour</button><button class="btn second" data-act="fermer">D\'accord</button>'
+      : '<button class="btn" data-act="films-telecharger">📥 Télécharger les films</button><button class="btn second" data-act="fermer">Plus tard</button>') +
+    '</div>';
+  return s + '</div>';
+}
+setTimeout(function(){ M.verifierFilms().then(function(){ if(UI.ecran === 'menu' && !UI.modal) M.render(); }); }, 600);
 /* 📴 tout petit, en haut au milieu, quand il n'y a plus d'internet (ça ne bloque rien) */
 function majReseau(){
   var el = document.getElementById('hr-reseau');
@@ -500,6 +567,7 @@ M.ecranMenu = function(){
       (M.peutInstaller() ? '<button class="btn second" data-act="installer">📲 Installer le jeu</button>' : '') +
       (M.peutPleinEcran() ? '<button class="btn second" data-act="plein-ecran">⛶ ' + (plein ? 'Quitter le plein écran' : 'Plein écran') + '</button>' : '') +
       (M.horsLignePossible() ? '<button class="btn second' + (HL.pret ? ' hr-hl-pret' : '') + '" data-act="hors-ligne">' + (HL.enCours ? '📥 Jouer sans internet…' : HL.pret ? '✅ Prêt sans internet' : '📥 Jouer sans internet') + '</button>' : '') +
+      (M.filmsPossible() ? '<button class="btn second' + (filmsPrets() ? ' hr-hl-pret' : '') + '" data-act="films">' + (FI.enCours ? '🎬 Films : ' + FI.fait + ' / ' + (FI.total || '…') : filmsPrets() ? '✅ Films téléchargés' : '🎬 Télécharger les films') + '</button>' : '') +   /* Romain, 19 novembre */
       '<button class="btn second" data-act="sauvegarder">💾 Sauvegarder</button>' +
       chargerBouton('📂 Charger') +
       '<button class="btn second" data-act="ecran" data-e="legendes">📖 Livre des Légendes</button>' +

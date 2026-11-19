@@ -8,10 +8,14 @@ var FICHIERS = ['./', './index.html', './salle.html', './manifest.webmanifest', 
 /* jsDelivr : le moteur des voix (vits-web) et ce qu'il importe ; cdnjs : le moteur ONNX ; Google : les polices */
 var HOTES = ['cdn.jsdelivr.net', 'cdnjs.cloudflare.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 self.addEventListener('install', function(e){ e.waitUntil(caches.open(CACHE).then(function(c){ return c.addAll(FICHIERS); }).then(function(){ return self.skipWaiting(); })); });
-self.addEventListener('activate', function(e){ e.waitUntil(caches.keys().then(function(l){ return Promise.all(l.filter(function(k){ return k !== CACHE && k !== EXT && /^brumeval-/.test(k); }).map(function(k){ return caches.delete(k); })); }).then(function(){ return self.clients.claim(); })); });
+/* FILMS : la boîte des films téléchargés (« 🎬 Télécharger les films », cine-lecteur.js) ; le jeu la lit lui-même : on ne l'efface jamais */
+var FILMS = 'brumeval-films';
+self.addEventListener('activate', function(e){ e.waitUntil(caches.keys().then(function(l){ return Promise.all(l.filter(function(k){ return k !== CACHE && k !== EXT && k !== FILMS && /^brumeval-/.test(k); }).map(function(k){ return caches.delete(k); })); }).then(function(){ return self.clients.claim(); })); });
 function aGarder(url){
   var u = new URL(url);
-  if(u.origin === self.location.origin) return u.pathname.indexOf('/brumeval/') === 0 && u.pathname.indexOf('/brumeval/voix/') !== 0;
+  /* (les films, /brumeval/cine/ : jamais ici — Romain, 19 novembre. Avant, chaque film passait par ici, était redemandé en entier et recopié
+     dans la boîte de la version : 100 Mo recopiés à chaque mise à jour, et le navigateur ne pouvait plus lire un film morceau par morceau) */
+  if(u.origin === self.location.origin) return u.pathname.indexOf('/brumeval/') === 0 && u.pathname.indexOf('/brumeval/voix/') !== 0 && u.pathname.indexOf('/brumeval/cine/') !== 0;
   return HOTES.indexOf(u.hostname) >= 0;   /* jamais Hugging Face (les modèles des voix sont dans l'OPFS) */
 }
 function boite(url){ return new URL(url).origin === self.location.origin ? CACHE : EXT; }

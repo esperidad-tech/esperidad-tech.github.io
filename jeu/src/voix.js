@@ -386,10 +386,16 @@ function vouloir(v, phrase, prio){
   pomper();
   return pr;
 }
+/* PENDANT UN FILM (cine-lecteur.js, Romain, 19 novembre : films figés sur leur première image, saccadés) : le moteur ne fabrique que ce
+   qu'on a demandé en touchant 🔊 (priorités 3 et 4) ; la mesure et les phrases préparées d'avance attendent la fin du film. */
+function filmEnCours(){ try{ return !!(window.CineLecteur && (window.CineLecteur.enCours || window.CineLecteur.ailleurs)); }catch(e){ return false; } }
+var attenteFilm = null;
+function apresFilm(fn){ if(!attenteFilm) attenteFilm = setTimeout(function(){ attenteFilm = null; fn(); }, 1500); }
 function pomper(){
   if(enCours || !file.length) return;
   var m = 0, i;
   for(i = 1; i < file.length; i++) if(file[i].prio > file[m].prio) m = i;   /* la plus pressée ; à égalité, la plus ancienne */
+  if(file[m].prio < 3 && filmEnCours()){ apresFilm(pomper); return; }
   var j = enCours = file.splice(m, 1)[0];
   chargerVoix(j.v).then(function(){ j.t1 = Date.now(); return demander({t:'dire', id:j.v, texte:j.p}); }).then(function(r){
     var e = ranger(j.k, r);
@@ -679,6 +685,7 @@ function scan(){
   scanT = null;
   var md = mode();
   if(!(md === 'rapide' || (appareilMuet && md !== 'panne' && md !== 'absent')) || document.hidden || miniJeu() || !window.M) return;
+  if(filmEnCours()){ demanderScan(1500); return; }   /* (pendant un film : rien, on repasse après) */
   var l = document.querySelectorAll('.b-lire[data-act="lire"], [data-lire]'), lect = (M.UI && M.UI.lectures) || [];
   /* plus l'appareil est rapide, plus on prépare de textes : 8 au mieux, 2 pour un appareil tout juste « rapide » */
   var haut = window.innerHeight, large = window.innerWidth, max = Math.max(1, Math.min(8, Math.round(0.8 / (vif.r || mesure.r || 1))));
@@ -735,7 +742,7 @@ V.prechauffer = function(){
 var demarre = false;
 function etalonner(){
   if(!V.pret || etalon || mode() !== 'inconnu') return;
-  if(document.hidden || miniJeu()){ setTimeout(etalonner, 5000); return; }
+  if(document.hidden || miniJeu() || filmEnCours()){ setTimeout(etalonner, 5000); return; }
   etalon = [];
   var i = 0;
   (function suite(e){
@@ -758,8 +765,9 @@ function etalonner(){
 /* Appareil rapide : les deux voix restent prêtes (celle du conteur d'abord, celle des hommes un peu après) et l'écran est préparé d'avance */
 function chauffer(){
   if(!V.pret || mode() !== 'rapide') return;
+  if(filmEnCours()){ setTimeout(chauffer, 3000); return; }   /* (charger une voix pendant un film le ferait ramer) */
   chargerVoix(F).then(function(){
-    setTimeout(function(){ if(V.pret && mode() === 'rapide' && !voixW[H]) chargerVoix(H).catch(rien); }, 2500);
+    setTimeout(function h(){ if(filmEnCours()){ setTimeout(h, 3000); return; } if(V.pret && mode() === 'rapide' && !voixW[H]) chargerVoix(H).catch(rien); }, 2500);
   }, rien);
   surveillerEcran();
 }

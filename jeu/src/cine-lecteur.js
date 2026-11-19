@@ -36,17 +36,81 @@ var CSS = '.cine-ecran{position:fixed;inset:0;z-index:99990;background:#000;opac
   'color:#ddd;font:600 15px/1 system-ui,sans-serif;padding:10px 16px;cursor:pointer;z-index:2}' +
   '.cine-attente{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px;border-radius:50%;background:#e8b84a;animation:cineAtt 1s ease-in-out infinite}' +
   '@keyframes cineAtt{0%,100%{opacity:.2;transform:scale(.7)}50%{opacity:1;transform:scale(1)}}' +
+  '.cine-ailleurs{position:fixed;inset:0;z-index:99980;background:#000;display:flex;align-items:center;justify-content:center;font-size:44px}' +
+  '.cine-ailleurs span{animation:cineAtt 2s ease-in-out infinite}' +
   '.cine-go{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:0;border-radius:16px;background:#ffd23f;color:#111;font:800 22px/1 system-ui,sans-serif;padding:18px 28px;cursor:pointer}';
 function style(){ if(document.getElementById('cine-css')) return; var s = document.createElement('style'); s.id = 'cine-css'; s.textContent = CSS; document.head.appendChild(s); }
 function el(tag, cls, html){ var e = document.createElement(tag); if(cls) e.className = cls; if(html != null) e.innerHTML = html; return e; }
 function esc(t){ return String(t).replace(/[&<>"]/g, function(c){ return {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]; }); }
 
-/* télécharger tout le film d'avance (une coupure de réseau au milieu ne le casse plus) */
+/* LES FILMS TÉLÉCHARGÉS (Romain, 19 novembre : « un bouton téléchargement où on pourrait télécharger toutes les cinématiques d'un coup ») :
+   « 🎬 Télécharger les films » (menu ☰, heros.js) range chaque film et sa bande-son dans la boîte « brumeval-films » du navigateur
+   (Cache Storage, gardée d'une version du jeu à l'autre ; le service worker ne l'efface pas et ne touche plus aux films).
+   Chaque fichier y est rangé sous son adresse suivie de « ?v=<octets du film> » (CINE_INFOS) : un film refait (autre taille) n'est
+   plus pris dans la boîte, il revient d'internet, et « Télécharger les films » le remplace. */
+var FILMS = CL.BOITE = 'brumeval-films';
+function nomFilm(url){ var m = /([^\/?#]+)\.(mp4|mp3)(?:[?#]|$)/.exec(String(url)); return m ? m[1] : null; }
+CL.cle = function(url){
+  var n = nomFilm(url), I = n && window.CINE_INFOS && window.CINE_INFOS[n];
+  try{ var a = new URL(url, location.href); a.search = ''; a.hash = ''; return a.href + (I && I.octets ? '?v=' + I.octets : ''); }catch(e){ return url; }
+};
+function boite(){ try{ return window.caches && location.protocol !== 'file:' ? caches.open(FILMS) : Promise.resolve(null); }catch(e){ return Promise.resolve(null); } }
+function dansLaBoite(url){
+  return boite().then(function(c){ return c ? c.match(CL.cle(url)) : null; }).then(function(r){ return r && r.ok ? r : null; }, function(){ return null; });
+}
+/* la liste des fichiers des films (adresses relatives au jeu : base 'cine/' dans le jeu) */
+CL.fichiers = function(base){
+  base = base || 'cine/';
+  var I = window.CINE_INFOS || {}, l = [];
+  Object.keys(I).forEach(function(n){ l.push(base + n + '.mp4'); if(I[n].piste) l.push(base + n + '.mp3'); });
+  return l;
+};
+/* combien de fichiers sont déjà dans la boîte -> Promise({n, total}) */
+CL.etatFilms = function(base){
+  var l = CL.fichiers(base);
+  return boite().then(function(c){
+    if(!c) return {n:0, total:l.length, impossible:true};
+    return Promise.all(l.map(function(u){ return c.match(CL.cle(u)).then(function(r){ return !!r; }, function(){ return false; }); }))
+      .then(function(ok){ return {n:ok.filter(Boolean).length, total:l.length}; });
+  }, function(){ return {n:0, total:l.length, impossible:true}; });
+};
+/* tout télécharger (deux fichiers à la fois) ; progres({fait, total, octets}) ; -> Promise({faits, echecs}) ; les vieilles versions s'en vont */
+CL.telechargerTout = function(progres, base){
+  var l = CL.fichiers(base), faits = 0, echecs = [], octets = 0, i = 0;
+  function dire(){ try{ if(progres) progres({fait:faits + echecs.length, total:l.length, octets:octets}); }catch(e){} }
+  try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function(){}); }catch(e){}
+  return boite().then(function(c){
+    if(!c) throw new Error('pas de stockage');
+    dire();
+    function un(u){
+      var k = CL.cle(u);
+      return c.match(k).then(function(r){
+        if(r) return r.blob().then(function(b){ octets += b.size; });
+        return fetch(u, {cache:'reload'}).then(function(r){
+          if(!r.ok) throw new Error('HTTP ' + r.status);
+          return r.blob();
+        }).then(function(b){
+          octets += b.size;
+          return c.put(k, new Response(b, {headers:{'Content-Type':/\.mp3$/.test(u) ? 'audio/mpeg' : 'video/mp4', 'Content-Length':String(b.size)}}));
+        });
+      }).then(function(){ faits++; }, function(){ echecs.push(u); }).then(dire);
+    }
+    function suivant(){ if(i >= l.length) return Promise.resolve(); return un(l[i++]).then(suivant); }
+    return Promise.all([suivant(), suivant()]).then(function(){
+      /* les fichiers d'une vieille version (un film refait) : effacés */
+      var bonnes = {}; l.forEach(function(u){ bonnes[CL.cle(u)] = 1; });
+      return c.keys().then(function(ks){ return Promise.all(ks.filter(function(q){ return !bonnes[q.url]; }).map(function(q){ return c.delete(q); })); }).catch(function(){});
+    }).then(function(){ return {faits:faits, echecs:echecs, total:l.length, octets:octets}; });
+  });
+};
+/* télécharger tout le film d'avance (une coupure de réseau au milieu ne le casse plus) ; s'il est dans la boîte des films : pris là, sans internet */
 CL.precharger = function(url){
   if(CACHE[url]) return CACHE[url];
   CACHE[url] = new Promise(function(ok){
     if(!window.fetch || !window.URL || !URL.createObjectURL || location.protocol === 'file:'){ ok(url); return; }
-    fetch(url).then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); })
+    dansLaBoite(url).then(function(r){
+      return r || fetch(url).then(function(r){ if(!r.ok) throw new Error(r.status); return r; });
+    }).then(function(r){ return r.blob(); })
       .then(function(b){ ok(URL.createObjectURL(b)); })
       .catch(function(){ CACHE[url] = null; ok(url); });
   });
@@ -58,7 +122,8 @@ CL.prechargerPiste = function(url){
   if(PISTES[url]) return PISTES[url];
   PISTES[url] = new Promise(function(ok){
     if(!window.fetch || location.protocol === 'file:'){ ok(null); return; }
-    fetch(url).then(function(r){ if(!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+    dansLaBoite(url).then(function(r){ return r || fetch(url).then(function(r){ if(!r.ok) throw new Error(r.status); return r; }); })
+      .then(function(r){ return r.arrayBuffer(); })
       .then(function(b){ ok(b); })
       .catch(function(){ PISTES[url] = null; ok(null); });
   });
@@ -121,8 +186,45 @@ CL.essai = null;
 /* (pour les robots : ce que fait le dernier film — la bande-son est-elle là, joue-t-elle, combien de bruitages un par un) */
 CL.dernier = {};
 
+/* un film passe-t-il ? (voix.js : pendant un film, le moteur des voix ne prépare rien d'avance — Romain, 19 novembre : les films figés
+   sur leur première image, saccadés. Le calcul des voix et le chargement de leurs modèles (60 Mo) prenaient l'appareil pendant le film.) */
+CL.enCours = false;
+/* LES AUTRES FENÊTRES DU MÊME APPAREIL SE TAISENT PENDANT UN FILM (Romain, 19 novembre, 8 h 25 : il essaie le jeu avec quatre fenêtres
+   côte à côte sur un seul ordinateur ; un film seul rame, mais deux films à la fois dans deux fenêtres ne rament plus — parce que deux
+   fenêtres sur quatre se taisent alors). Un film qui part le dit aux autres fenêtres du jeu (BroadcastChannel, même appareil seulement) :
+   elles se couvrent de noir avec un 🎬 (le jeu du dessous caché, ses animations en pause, ses voix en attente), jusqu'à la fin du film
+   (ou sa durée plus 5 secondes, si la fenêtre du film est fermée en route). Sur des tablettes séparées, rien ne change. */
+CL.ailleurs = false;
+var canal = null, moi = Math.random().toString(36).slice(2), autres = {}, voile = null, rendreVoile = null;
+try{ if(window.BroadcastChannel) canal = new BroadcastChannel('brumeval-cine'); }catch(e){ canal = null; }
+function dire(m){ try{ if(canal) canal.postMessage(m); }catch(e){} }
+function majVoile(){
+  var n = Object.keys(autres).length;
+  CL.ailleurs = n > 0;
+  if(n && !CL.enCours && !voile && document.body){
+    style();
+    voile = el('div', 'cine-ailleurs', '<span>🎬</span>');
+    voile.setAttribute('aria-label', 'Un film passe sur un autre écran');
+    document.body.appendChild(voile);
+    rendreVoile = cacherDessous(voile);
+  } else if((!n || CL.enCours) && voile){
+    try{ if(rendreVoile) rendreVoile(); }catch(e){}
+    voile.remove(); voile = null; rendreVoile = null;
+  }
+}
+if(canal) canal.onmessage = function(ev){
+  var m = ev.data || {};
+  if(!m.id || m.id === moi) return;
+  if(autres[m.id]){ clearTimeout(autres[m.id]); delete autres[m.id]; }
+  if(m.t === 'film') autres[m.id] = setTimeout(function(){ delete autres[m.id]; majVoile(); }, ((+m.duree || 60) + 5) * 1000);
+  majVoile();
+};
+window.addEventListener('pagehide', function(){ if(CL.enCours) dire({t:'fin', id:moi}); });
 CL.jouer = function(o){
   style();
+  CL.enCours = true;
+  majVoile();                                            /* (le voile d'un autre film s'en va : c'est notre film qui passe) */
+  dire({t:'film', id:moi, duree:(o.infos && o.infos.duree) || 60});
   return new Promise(function(fin){
     var fini = false, raf = 0, video = null, cues = (o.infos && o.infos.sons || []).map(function(c){ return {t:c[0], id:c[1], fait:false}; });
     var st = (o.infos && o.infos.sousTitres) || [], courant = -1, lecture = null, ecrit = -1, plein = {};
@@ -164,6 +266,9 @@ CL.jouer = function(o){
     place(); window.addEventListener('resize', place);
     function terminer(r){
       if(fini) return; fini = true;
+      CL.enCours = false;
+      dire({t:'fin', id:moi});
+      setTimeout(majVoile, 400);                         /* (un autre film passe encore ailleurs : le voile revient, après notre fondu) */
       try{ rendre(); }catch(x){}                          /* la scène du dessous revient (le film se fond en noir par-dessus) */
       cancelAnimationFrame(raf); window.removeEventListener('resize', place);
       if(lecture) clearInterval(lecture);
