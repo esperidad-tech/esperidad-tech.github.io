@@ -198,7 +198,7 @@ def lancer(b, vue, nom):
     verifier(pg.locator(PAGE + ' .vp-loupe').count() == 0, 'la loupe se referme')
     # tout reste au fil des moments : l'après-midi, la page la garde
     pg.evaluate("() => { M.P().moment = 1; M.sauver(); }")
-    page(pg, 'vieuxplan')
+    page(pg, 'vieuxplan'); page(pg, 'vieuxplan')   # (la première fois l'après-midi, la carte s'ouvre d'elle-même vers la mairie : E.carteForcee, §13.79)
     verifier(set(etat(pg)['revelees']) == {'roue', 'oeil'} and etat(pg)['lu'] == ['dalles'] and pg.locator(PAGE + ' [data-vp].vp-jour').count() == 1, 'l\'après-midi : toujours là, toujours sans noms ; ce qui est réveillé le reste')
     # ------------------------------------------------------------------ la nuit
     pg.evaluate("() => { M.P().moment = 2; M.sauver(); }")
