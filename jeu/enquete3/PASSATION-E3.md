@@ -1,6 +1,15 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 19 novembre, 10 h 30)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 19 novembre, 12 h 45)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## 19 novembre, 12 h 45 — LE VIEUX PLAN D'ODETTE EST LA PAGE DU GRAND LIVRE ; LES DEUX PIERRES Y RÉVEILLENT L'ENCRE CACHÉE — EN LIGNE (Bible §13.86 ; commits 96ddf8a et 6b75bb6 du site, version 20261119-1142)
+
+- **Le Sage** : dès qu'il a le code « Le vieux plan d'Odette », la page **est** le grand plan, du matin à la nuit. Il le fait glisser, il l'approche. **Avant le départ, rien ne dit ce que c'est** (ni noms, ni titre, ni toiles d'araignée, ni tombes, ni feu de camp) ; la nuit, une fois le passage ouvert, les noms des salles apparaissent.
+- **Une seule note codée** : le chemin des dalles, « N B B, N B N ». Les notes « Une bourse dort dans la galerie » et « Prends l'œil » ne sont plus codées : elles sont devenues de l'encre cachée.
+- **L'encre cachée, deux pierres** : on prend une pierre dans la poche et on la promène sur le plan ; l'encre de cette pierre apparaît là où elle passe. **La pierre de Tim** (dès le matin) : la roue des canaux (3 à droite, 1 à gauche, 2 à droite) et son passage secret ; « prends l'œil ». **La pierre de rune** (trouvée là-dessous, la nuit) : **tout ce qu'il faut prendre dans les salles** — la bourse d'or, la mousse qui luit, les deux carquois, la fleur de givre, le bâton de lune et le bâton de chêne (et le coin du plan), l'amulette de vie, la page blanche sous les os.
+- **Pour la conception** : le Sage sait maintenant, dès le matin, comment tourner la roue (s'il pense à promener la pierre de Tim sur ce plan) ; la nuit, il peut dire au Pisteur, salle par salle, ce qu'il y a à prendre. Si une enquête future cache des objets dans un donjon, **ce modèle « une pierre = une sorte d'encre » se réutilise** : il suffit d'ajouter des notes dans `E.vieuxPlan.encres`.
+- **Supprimés** (Romain) : « un très vieux plan, roulé dans un étui de cuir… », la phrase d'Odette dans la marge, « Le Pisteur a ouvert le passage… », le bouton « Regarder le plan de tout près », la fenêtre du plan par-dessus le jeu.
+- **À faire valider par Romain** : qui réveille quoi (Tim les mécanismes, la rune les objets) ; les textes de l'encre (écrits par Claude).
 
 ## 19 novembre, 10 h 30 — LE SECRET D'ODETTE REFAIT : PLUS AUCUN SIGNE, LE SOLEIL MONTRE L'ORDRE — EN LIGNE (Bible §13.75 ; commit 180890f du site, version 20261119-0923)
 
