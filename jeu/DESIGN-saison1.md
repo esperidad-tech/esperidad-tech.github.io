@@ -4545,7 +4545,7 @@ Quatre choses que Romain a vues en jouant (dictées à la voix) ; il a demandé 
   5. ✅ **FAIT, EN LIGNE (§13.79)** — Le Sage, l'après-midi : le forcer (la carte, le rond jaune, seul endroit touchable) à faire le tableau s'il ne l'a pas fait (réussi ou raté), puis à le rendre au maire (qui donne le Livre d'or). Le matin : rien de forcé.
   6. ✅ **FAIT, EN LIGNE (§13.84)** — Le labo de l'Alchimiste : toucher un tiroir l'analyse directement (la loupe s'y pose ; la loupe marche toujours).
   7. ✅ **À MOITIÉ (§13.84) : il ne miaule plus ; le nouveau chat sur la paillasse et ses mimiques : PAS FAIT** — Le labo : le chat ne miaule plus pendant l'analyse ; le nouveau chat (le pantin de Mimi) saute parfois sur la paillasse pour gêner, avec des mimiques (content, il ronronne).
-  8. La musique des banderoles du Pisteur : trois couplets au lieu d'un qui tourne en boucle.
+  8. ✅ **FAIT, EN LIGNE (§13.85)** — La musique des banderoles du Pisteur : trois couplets au lieu d'un qui tourne en boucle.
 
 ### 13.77 MÉLUSINE AVOUE, PUIS DEMANDE CE QU'ELLE PEUT FAIRE ; C'EST LE BARDE QUI DEMANDE LES TENUES ; PLUS DE CODE « L'AVEU DE MÉLUSINE » (Romain, 19 novembre, 10 h 13 : « les tenues de combat, ça sort de nulle part […] Est-ce qu'il y a quelque chose que je peux faire pour vous pour m'excuser ? Et dessous […] Peux-tu nous coudre des tenues de combat ? […] Fais-moi cette modif et mets-la en ligne » ; 10 h 18 : « ce code, je sais pas à quoi il sert. Donc s'il sert juste à donner une information qu'il pourrait donner à l'oral, bah tu peux l'enlever ») — EN LIGNE (19 novembre, vers 11 h : commit cfd7529 du site, version 20261119-1002)
 
@@ -4626,6 +4626,11 @@ La fenêtre défile sur un petit téléphone : « Descendre » est tout en bas (
 - **Mimi au labo ne miaule plus** (`src/labo/20-chat.js` : les deux `son('miaou')` retirés ; ses petites bulles « Mraou ! » et son ronron restent).
 - **PAS FAIT** : remplacer le vieux dessin du chat du labo par le nouveau pantin de Mimi (`mimi-pantin.js` : ses couleurs, ses habits, ses mimiques — content, ronronne) qui saute parfois sur la paillasse. Le labo est une page à part (dans un cadre) : il faut y embarquer le pantin et lui passer la Mimi du joueur. À faire en un chantier à part.
 - Robot neuf : `tools/labo-tiroir.py`. `labo-guide.py`, `labo-jeu.py`, `e3-alchimiste.py` : verts.
+
+### 13.85 LA MUSIQUE DES BANDEROLES : TROIS COUPLETS (Romain, 19 novembre, 9 h 20 : « elle tourne un peu trop en boucle. Il faudrait rajouter d'autres couplets […] l'équivalent de 3 couplets » ; 11 h 04 : « continuer et mettre en ligne ») — EN LIGNE (19 novembre, vers 12 h 40 : commit d0b9af1 du site, version 20261119-1133)
+
+- `src/mj-visee.js`, `POLKA` : **24 mesures au lieu de 8** (environ 19 secondes avant de recommencer, au lieu de 6). Le premier couplet ne change pas ; le deuxième part vers le fa, monte, et revient au do ; le troisième reprend le premier air avec des petites notes qui sautillent (des demi-croches) et une fin qui rebondit. Les mêmes instruments (la flûte, l'accordéon, la basse « poum-pa »), aussi doux. `mesure(i)` et `musique()` lisent la longueur de l'air. **Composé par Claude, jamais écouté** : à faire écouter à Romain.
+- Robot : `tools/visee.py` vert.
 
 ## 14. La grande carte et la brume (chantier ouvert le 12 novembre) — DANS LE JEU ET EN LIGNE DEPUIS LE 12 NOVEMBRE À 12 H 06 (§14.5) ; depuis l'après-midi, deux zones se lèvent dans l'enquête 3 pour l'Alchimiste (§14.7)
 
