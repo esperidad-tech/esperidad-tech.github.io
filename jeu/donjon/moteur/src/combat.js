@@ -957,8 +957,16 @@ async function geste(ev, evs){
   }
   return false;
 }
-/* ---------- le critique : localisé autour de la bête (Romain, 9 novembre, 16 h 37) ---------- */
+/* ---------- le critique : localisé autour de la bête (Romain, 9 novembre, 16 h 37) ----------
+   19 NOVEMBRE (Romain, 10 h 48) : « quand le Pisteur prend sa dague, ou n'importe quelle arme, et que ça fait un critique et
+   tue la bestiole : l'animation plus rapide […] il grossit pas, il explose direct […] dès qu'il a mis le coup de dague, tout
+   de suite l'animation se fait, faut pas qu'il y ait de délai […] pof, la fumée qui apparaît et tous les morceaux qui partent
+   en lambeaux […] et fais attention à ce que ça fasse pas [baisser] les FPS ». Donc, pour TOUTES les bêtes : plus
+   d'aspiration ni d'attente ; au coup, le son (le claquement et l'explosion ensemble), la bête qui éclate (son module ne la
+   fait plus gonfler), le gros « CRITIQUE ! », le chiffre, UNE secousse ; et le combat reprend dès que la fumée est partie
+   (≈ 1 s ; avant : 2,2 s pour un rat, 3,5 à 6 s pour les autres). Rien de plus à l'écran qu'avant, et moins longtemps. */
 /* dt : dans combien de secondes (programmé d'avance sur l'horloge du son, pour rester calé sur l'image) */
+var CRIT_SOUFFLE = .04;       /* l'explosion du son part un souffle après le claquement (leurs deux attaques ne s'additionnent pas) */
 function sonCritique(nom, dt){
   var plusTard = function(n){ setTimeout(function(){ son(n); }, (dt || 0) * 1000); };
   if(nom === 'aspire'){ if(!bruit('ratCritique', {partie:'avant', dt:dt})) plusTard('aspire'); return; }
@@ -980,40 +988,40 @@ async function critique(l, i, ctx){
     if(Fx.texteCritique) Fx.texteCritique(c.x, c.y);
     Fx.chiffre(c.x + 6, c.y + 40, '−' + ev.n, 'crit'); Fx.etincelles(c.x, c.y, 14);
     a.el.style.visibility = 'hidden'; a.mort = true;
-    await attendre(1200);
+    await attendre(800);
     return i + 1;
   }
   if(meurt && a.rat){
-    /* le rat : son module fait tout autour de lui (temps suspendu, fumée noire, morceaux, cendres) */
+    /* le rat : son module fait tout autour de lui, AU COUP (fumée noire, morceaux, cendres) */
     retirerHud(a.id); liberer(a);
-    /* le témoin : il dit si la page s'est fermée en plein critique (lu au redémarrage, affiché en bas de « Objets ») ;
-       et on compte les images en retard : si le critique rame sur cet appareil, les suivants sont allégés */
-    var vt = SALLE.vitesse || 1, tm = [setTimeout(function(){ DJ.temoinCritique('explosion'); }, 1020 / vt)];
-    DJ.temoinCritique('debut');
+    /* le témoin : il dit si la page s'est fermée en plein critique (lu au redémarrage, affiché en bas de « Objets ») */
+    DJ.temoinCritique('explosion');
     var mesure = DJ.mesurerCritique();
     await Fx.critique(c.x, c.y, ev.n, function(o){ return a.exploser(fx, o); }, sonCritique, {});
     mesure.fin();
-    tm.forEach(clearTimeout); DJ.temoinCritique(false);
+    DJ.temoinCritique(false);
     return i + 1;
   }
-  sonCritique('aspire');
   if(meurt){
+    /* les autres bêtes : tout part au coup, ensemble — le son, la bête qui éclate (son module), le texte, le chiffre, la secousse */
     retirerHud(a.id); liberer(a);
     DJ.temoinCritique('bete');
-    var p = a.acteur.exploser(fx), boom = p && p.boom ? Promise.resolve(p.boom) : attendre(420);
+    sonCritique('boum'); sonCritique('explosion', CRIT_SOUFFLE);
+    var p = a.acteur.exploser(fx);
     a.mort = true;
-    await Promise.race([boom, attendre(1400)]);
-    sonCritique('boum'); Fx.tremble(7, 300);
+    /* (le module pose sa fumée dans l'instant qui suit, sans qu'aucune image ne passe : on le laisse faire d'abord, pour que
+       le chiffre soit posé APRÈS la fumée, donc par-dessus elle — jaune sur noir, il se lit) */
+    await Promise.race([Promise.resolve(p && p.boom).catch(function(){}), attendre(120)]);
+    Fx.tremble(8, 300);
     if(Fx.texteCritique) Fx.texteCritique(c.x, c.y);
     Fx.chiffre(c.x + 6, c.y + 40, '−' + ev.n, 'crit');
-    setTimeout(function(){ sonCritique('explosion'); Fx.tremble(5, 240); }, 600 / (SALLE.vitesse || 1));
-    await Promise.race([Promise.resolve(p).catch(function(){}), attendre(4200)]);
+    /* on repart dès que la fumée est partie (≈ 0,9 s ; 1,2 s pour les deux élites, 1,7 s pour Bourbe) */
+    await Promise.race([Promise.resolve(p).catch(function(){}), attendre(2600)]);
     DJ.temoinCritique(false);
     a.el.classList.add('restes');
     return i + 1;
   }
-  /* un critique qui ne tue pas (un élite, le boss) : le même gros « CRITIQUE ! », et la bête encaisse */
-  await attendre(260);
+  /* un critique qui ne tue pas (un élite, le boss) : le même gros « CRITIQUE ! », et la bête encaisse — au coup, lui aussi */
   sonCritique('boum'); Fx.tremble(8, 320);
   if(Fx.texteCritique) Fx.texteCritique(c.x, c.y);
   Fx.chiffre(c.x + 6, c.y + 40, '−' + ev.n, 'crit');

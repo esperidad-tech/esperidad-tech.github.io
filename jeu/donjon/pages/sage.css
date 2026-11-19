@@ -95,18 +95,27 @@
 .loupe{width:min(860px,100%)}
 .loupe-corps{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;justify-content:center}
 .loupe-mots{display:flex;flex-direction:column;gap:8px;align-items:center}
-.loupe-ligne{display:flex;gap:4px}
-.loupe-esp{width:22px}
+.loupe-ligne{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 22px}
+.loupe-mot{display:flex;gap:4px}
 .loupe-l{position:relative;width:48px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:3px 0;border-radius:10px}
 .loupe-l .glyphes{width:40px;height:40px}
 .loupe-l b{width:44px;height:44px;border-radius:10px;border:2px dashed #8a6a3a;background:rgba(255,255,255,.4);display:grid;place-items:center;font-family:var(--f-titre);font-weight:400;font-size:26px;color:#1f3a6a}
 .loupe-l.choisi b{border:3px solid var(--or);background:#fffaf0;box-shadow:0 0 0 2px var(--encre)}
 .loupe-cle{width:300px;max-width:100%;background:rgba(255,250,240,.6);border:2px solid #8a6a3a;border-radius:10px;padding:5px}
-.clavier{display:grid;grid-template-columns:repeat(14,1fr);gap:5px}
-.clavier button{min-height:46px;min-width:44px;border-radius:10px;background:#3b2414;color:#f3e7cb;font-family:var(--f-titre);font-size:22px;box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.clavier{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:5px}
+.clavier button{min-height:46px;min-width:0;border-radius:10px;background:#3b2414;color:#f3e7cb;font-family:var(--f-titre);font-size:22px;box-shadow:0 2px 0 rgba(0,0,0,.35)}
 .clavier button:active{transform:translateY(2px)}
 .clavier .eff{background:#6a2a1a}
 .loupe-msg{min-height:0}
+/* (19 novembre) un téléphone tenu droit : 14 touches de 44 px (700 px) ne tiennent pas ; le clavier passe sur 7 colonnes, les signes rétrécissent un peu */
+@media (max-width:700px){
+  .clavier{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+  .loupe-ligne{gap:6px 14px}
+  .loupe-mot{gap:2px}
+  .loupe-l{width:clamp(30px, 9.4vw, 44px)}
+  .loupe-l .glyphes{width:clamp(28px, 8.4vw, 36px);height:clamp(28px, 8.4vw, 36px)}
+  .loupe-l b{width:clamp(28px, 8.6vw, 40px);height:clamp(32px, 9.4vw, 42px);font-size:20px}
+}
 
 /* ---------- le carnet de l'aventurier : le croquis du monstre et son récit ---------- */
 .livre-betes{border-top:2px dashed rgba(107,84,52,.45);padding-top:8px;display:flex;flex-direction:column;gap:8px}

@@ -282,7 +282,8 @@ var BOUCLE = {exploA:{L:44}, exploB:{L:32, n0:7}, exploC:{L:48}, combatA:{L:32 *
   /* Léo : une musique par phase (Romain, 15 novembre, 18 h 29) */
   leo1A:{L:128 * 60 / 76, C:1.5, lin:true}, leo2A:{L:128 * 60 / 104, C:1.5, lin:true}, leo3A:{L:96 * 60 / 66, C:1.5, lin:true}};
 /* les bruitages lourds : [id, morceau, place à gauche (−) ou à droite (+), stéréo] — une version par combat */
-var SFX_PRE = {arc:[[null, -.35]], ratCritique:[['avant', .35], ['impact', .35], ['explosion', .35]], victoire:[[null, 0]], fuite:[[null, -.5]]};
+/* (19 novembre : le critique n'a plus de temps suspendu — son morceau « avant », l'aspiration, n'est plus joué : on ne le fabrique plus) */
+var SFX_PRE = {arc:[[null, -.35]], ratCritique:[['impact', .35], ['explosion', .35]], victoire:[[null, 0]], fuite:[[null, -.5]]};
 var SFX_DUREE = {arc:3.5, victoire:6.5, fuite:8, avant:3.5, impact:5.5, explosion:8.5};
 /* la version d'une musique : celle qui est (ou sera) prête ; tirée au hasard la première fois */
 PRE.cle = function(fam){

@@ -18,7 +18,7 @@
      special('eclosion', o)    le cocon brûle, gonfle, éclate ; deux œufs tombent (vers o.vers = [{x,y},{x,y}] écran, sinon à ses pieds).
                                La Promise donne les deux points d'atterrissage (écran) : le moteur y crée deux « petitearaignee » (leur entrer() part du même œuf).
      tousser()                 trois quintes ; fuir() / mourir() : elle remonte son fil à toute vitesse et disparaît dans le noir
-     exploser(scene)           elle se tord, gonfle, éclate en brume noire ; restent une carcasse aux pattes repliées, le fil cassé qui pend et le cocon roussi.
+     exploser(scene)           elle éclate tout de suite en brume noire (19 novembre : elle ne gonfle plus) ; restent une carcasse aux pattes repliées, le fil cassé qui pend et le cocon roussi.
                                La Promise a .boom (le moment où elle éclate).
    États : etat(nom, on) — enrage, brule, colle, ebloui, gele, ouvert, dos, cible, et les siens : haut, oeufs-brulent. etatCourant(), ancre(nom), arreter().
    Le point faible : son ventre (on le voit quand elle est sur le dos).
@@ -747,18 +747,18 @@ B._boum = function(scene, o){
   var anims = [], D = (o.duree || 1);
   /* le cœur brûlant (orange, pas blanc), puis l'onde de choc */
   var c1 = el('<circle r="' + f1(50 * u) + '" fill="url(#' + fl + 'c)"/>');
-  c1.animate([{transform: T(cx, cy, .15), opacity: 1}, {offset: .35, transform: T(cx, cy, 1), opacity: 1}, {transform: T(cx, cy, 1.4), opacity: 0}], {duration: 420, easing: 'ease-out', fill: 'forwards'}).finished.then(oter(c1), oter(c1));
+  c1.animate([{transform: T(cx, cy, .15), opacity: 1}, {offset: .35, transform: T(cx, cy, 1), opacity: 1}, {transform: T(cx, cy, 1.4), opacity: 0}], {duration: 320, easing: 'ease-out', fill: 'forwards'}).finished.then(oter(c1), oter(c1));
   var c2 = el('<circle r="' + f1(40 * u) + '" fill="none" stroke="#2a1c3c" stroke-width="' + f1(10 * u) + '" opacity=".85"/><circle r="' + f1(40 * u) + '" fill="none" stroke="#d8c8f0" stroke-width="' + f1(2.4 * u) + '"/>');
-  c2.animate([{transform: T(cx, cy, .2), opacity: 1}, {transform: T(cx, cy, 3.2), opacity: 0}], {duration: 650, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'forwards'}).finished.then(oter(c2), oter(c2));
+  c2.animate([{transform: T(cx, cy, .2), opacity: 1}, {transform: T(cx, cy, 3.2), opacity: 0}], {duration: 460, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'forwards'}).finished.then(oter(c2), oter(c2));
   /* le nuage de brume noire : de grosses volutes qui jaillissent, restent, puis se dissipent en montant */
-  var nb = o.brume || 11;
+  var nb = o.brume || 8;      /* (19 novembre : 8 volutes au lieu de 11, comme le Gardien — la fumée ne dure plus que 0,9 s, et c'est moins de dessin à l'instant du coup) */
   for(var n = 0; n < nb; n++){
     var a = (n / nb) * Math.PI * 2 + hasard(-.3, .3), d = n % 3 === 0 ? .25 : hasard(.5, 1), r = hasard(28, 46) * u, x = Math.cos(a) * d * 64 * u, y = Math.sin(a) * d * 30 * u - 8 * u;
     var g = el('<circle r="' + f1(r) + '" fill="url(#' + fl + 'b' + (n % 3) + ')"/><circle cx="' + f1(-r * .25) + '" cy="' + f1(-r * .3) + '" r="' + f1(r * .7) + '" fill="url(#' + fl + 'l' + (n % 2) + ')"/>');
     var dx = x * 1.7 + hasard(-14, 14) * u, dy = y * 1.4 - hasard(10, 40) * u;
     anims.push(g.animate([{transform: T(cx, cy, .1), opacity: 0}, {offset: .05, opacity: 1, transform: T(cx + x, cy + y, .9)},
       {offset: .5, opacity: .95, transform: T(cx + dx, cy + dy, 1.4)}, {transform: T(cx + dx * 1.3 + hasard(-20, 20) * u, cy + dy * 1.2 - 40 * u, 2), opacity: 0}],
-      {duration: hasard(2500, 3200) * D, easing: 'cubic-bezier(.12,.75,.3,1)', fill: 'forwards'}));
+      {duration: hasard(880, 1000) * D, easing: 'cubic-bezier(.3,.5,.6,1)', fill: 'forwards'}));     /* (19 novembre : 2,5 à 3,2 s avant, avec une courbe qui laissait une longue traîne ; maintenant : aussi noire qu'avant pendant 0,3 s, partie en 0,9 s) */
   }
   /* des étincelles */
   for(var s = 0; s < 7; s++){
@@ -1572,25 +1572,23 @@ R._s_eclosion = function(o){
 };
 
 /* =====================================================================
-   G. La mort par critique : elle se tord, gonfle, éclate en brume noire ; restent une carcasse aux pattes repliées et le fil cassé qui pend
+   G. La mort par critique : elle éclate tout de suite en brume noire (19 novembre : elle ne se tord plus, ne gonfle plus) ; restent une carcasse aux pattes repliées et le fil cassé qui pend
    ===================================================================== */
 R.exploser = function(scene){
   var self = this, j = this._debutAction(), boomOk, boomP = new Promise(function(r){ boomOk = r; });
   if(this.etat.brule) this._e_brule(false);
   this._eteindreEtoiles('etoiles');
   this._pulser('yeuxRage', false);
-  var k = [{t: 0, p: {}}];
-  for(var i = 1; i <= 10; i++) k.push({t: i / 11, p: avec(gigote(i), {abdo: {sx: 1 + i * .025, sy: 1 + i * .03}, tourne: {x: i % 2 ? 3 : -3}, ceph: {a: i % 2 ? 6 : -6}, chelG: {a: 20}, chelD: {a: -20}}), e: 'linear'});
-  k.push({t: 1, p: {abdo: {sx: 1.3, sy: 1.35}}, e: 'ease-in'});
-  [160, 360, 560].forEach(function(t){ self._minuteur(function(){ var c = self._pt('centre'); self._bouffee([c[0] + hasard(-50, 50), c[1] + hasard(-40, 30)], {r: 12, coul: '#1a1222', op: .85, dx: hasard(-20, 20), dy: -30, duree: 600, s1: 2.2}); }, t); });
-  var p = this._seq(k, 820).fini.then(function(){
+  /* (19 novembre, Romain : « il grossit pas, il explose direct […] faut pas qu'il y ait de délai […] beaucoup plus rapide ».
+     Avant : elle se tordait et gonflait 0,8 s, puis la fumée restait 3 s. Maintenant : le BOUM tout de suite, la fumée ≈ 0,9 s.) */
+  var p = Promise.resolve().then(function(){
     var c0 = self._pt('centre'), dosA = self.etat.dos;
     var boum = self._boum(scene, {ref: 'centre', x: 300, y: 172, u: 1, extra: function(el, cx, cy, u, T){
       /* trois bouts de pattes projetés */
       for(var t = 0; t < 3; t++){
         var at = -Math.PI * (.15 + t * .35), vt = hasard(70, 120) * u, rt = hasard(-500, 500), lg = 16 * u;
         var pa = el(L('M0 0 Q ' + f1(lg * .5) + ' ' + f1(-lg * .4) + ' ' + f1(lg) + ' ' + f1(-lg * .1), '#24182e', 5 * u) + L('M0 0 Q ' + f1(lg * .5) + ' ' + f1(-lg * .4) + ' ' + f1(lg) + ' ' + f1(-lg * .1), '#5a4240', 2.6 * u));
-        pa.animate([{transform: T(cx, cy, 1, 0), opacity: 1}, {offset: .45, transform: T(cx + Math.cos(at) * vt, cy + Math.sin(at) * vt, 1, rt * .5), opacity: 1}, {transform: T(cx + Math.cos(at) * vt * 1.4, cy + Math.sin(at) * vt * .3 + 60 * u, 1, rt), opacity: 0}], {duration: hasard(1300, 1800), easing: 'cubic-bezier(.2,.6,.6,1)', fill: 'forwards'}).finished.then(oter(pa), oter(pa));
+        pa.animate([{transform: T(cx, cy, 1, 0), opacity: 1}, {offset: .45, transform: T(cx + Math.cos(at) * vt, cy + Math.sin(at) * vt, 1, rt * .5), opacity: 1}, {transform: T(cx + Math.cos(at) * vt * 1.4, cy + Math.sin(at) * vt * .3 + 60 * u, 1, rt), opacity: 0}], {duration: hasard(750, 1000), easing: 'cubic-bezier(.2,.6,.6,1)', fill: 'forwards'}).finished.then(oter(pa), oter(pa));
       }
     }});
     boomOk();
@@ -1605,7 +1603,7 @@ R.exploser = function(scene){
     /* le cocon, roussi, tombe au sol */
     if(!self.etat.eclos) self._fondu('coconChaud', 1, 0);
     var dc = self._detacher(['cocon']);
-    var cv = self._voler(dc.g, dc.c, [dc.c[0] + 20, SOLA - 30], {haut: 20, rot: 70, duree: 1000, rebond: 8});
+    var cv = self._voler(dc.g, dc.c, [dc.c[0] + 20, SOLA - 30], {haut: 20, rot: 70, duree: 700, rebond: 8});
     cv.finished.then(function(){ try{ cv.commitStyles(); cv.cancel(); }catch(e){} }, function(){});
     self._flammes('cocon', null); clearTimeout(self.fx.fumeeCocon);
     self.J.coconFil.style.opacity = 0;
@@ -1619,7 +1617,7 @@ R.exploser = function(scene){
       P('M' + f1(cx - 84) + ' ' + f1(cy) + ' C ' + f1(cx - 82) + ' ' + f1(cy - 42) + ' ' + f1(cx - 10) + ' ' + f1(cy - 46) + ' ' + f1(cx - 4) + ' ' + f1(cy) + ' Z', self.G.cendre) +
       F(rond(cx + 24, cy - 22, 3) + rond(cx + 44, cy - 14, 2.4) + rond(cx - 30, cy - 16, 2.6) + rond(cx + 10, cy - 8, 2), '#2a2228', ' opacity=".8"') + L('M' + f1(cx + 6) + ' ' + f1(cy - 30) + ' C ' + f1(cx + 24) + ' ' + f1(cy - 40) + ' ' + f1(cx + 50) + ' ' + f1(cy - 38) + ' ' + f1(cx + 64) + ' ' + f1(cy - 26), '#b8aab0', 1.8, ' opacity=".6"') +
       '<g class="' + PX + '-lueur">' + F(rond(cx + 30, cy - 30, 2.4) + rond(cx - 20, cy - 20, 2), '#ff9a40') + '</g>' + F(rond(cx - 74, cy - 2, 5) + rond(cx + 88, cy - 2, 4) + rond(cx + 100, cy - 1, 3), '#6a6070', ' opacity=".7"'));
-    carc.animate([{opacity: 0, transform: 'translate(' + cx + 'px,' + cy + 'px) scale(.3) translate(' + (-cx) + 'px,' + (-cy) + 'px)'}, {offset: .55, opacity: 0}, {opacity: 1, transform: 'translate(' + cx + 'px,' + cy + 'px) scale(1) translate(' + (-cx) + 'px,' + (-cy) + 'px)'}], {duration: 1500, easing: 'ease-out', fill: 'forwards'});
+    carc.animate([{opacity: 0, transform: 'translate(' + cx + 'px,' + cy + 'px) scale(.3) translate(' + (-cx) + 'px,' + (-cy) + 'px)'}, {offset: .3, opacity: 0}, {opacity: 1, transform: 'translate(' + cx + 'px,' + cy + 'px) scale(1) translate(' + (-cx) + 'px,' + (-cy) + 'px)'}], {duration: 650, easing: 'ease-out', fill: 'forwards'});
     (function fumet(n){ if(n <= 0) return; self._bouffee([cx + hasard(-30, 30), cy - 30], {r: 7, coul: '#5a5260', op: .5, dx: hasard(-6, 14), dy: -56, duree: 1700, s1: 2.4}); setTimeout(function(){ fumet(n - 1); }, 450); })(8);
     self._couperBoucles();
     self.mort = true;

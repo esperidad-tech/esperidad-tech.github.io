@@ -706,6 +706,7 @@ function traiterCode(seq){
       M.decouvrir({ic:nn.ic, titre:'Tu as reçu : ' + nn.nom, t:quoi, retour:'ouvrir-livre', retourId:'quiecrit'});
       return;
     }
+    if(x === 'tenues' && M.tenueFenetre && M.tenueFenetre(quoi)) return;   /* (19 novembre) les tenues de Mélusine : son héros en tenue (descente.js) */
     M.ouvrir({type:'info', ic:nn.ic, titre:'Tu as reçu : ' + nn.nom, t:quoi});
   } else {
     var I = E.infos[x];

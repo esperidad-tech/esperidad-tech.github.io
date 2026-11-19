@@ -199,7 +199,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .acteur .a-corps, .acteur .a-bouge, .acteur .a-pose, .acteur .a-tremble, .acteur .a-tourne{position:absolute;left:0;top:0;width:100%;height:100%}
 .acteur .a-img{position:absolute;left:0;top:0;width:100%;height:100%}
 .a-img.blanchit{animation:blanchit .32s ease-out}
-@keyframes blanchit{0%{filter:brightness(2.4) saturate(.4)}100%{filter:none}}
+@keyframes blanchit{0%{opacity:.35}100%{opacity:1}}     /* (un clignement, plus de filtre : RAPIDITE.md R19) */
 .a-bouge.secoue{animation:secoue .38s}
 @keyframes secoue{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
 /* héros */
@@ -253,7 +253,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .rat .a-pose.gonfle{animation:gonfle .43s ease-in forwards}
 @keyframes gonfle{0%{transform:none}20%{transform:scale(1.05,.95) translateX(-3px)}40%{transform:scale(1.08,1.05) translateX(3px)}60%{transform:scale(1.12,1.04) translateX(-3px)}80%{transform:scale(1.16,1.12) translateX(3px)}100%{transform:scale(1.22)}}
 .rat .a-pose.eclate{animation:eclate .35s ease-out forwards}
-@keyframes eclate{0%{transform:scale(1.22);opacity:1;filter:brightness(1)}30%{transform:scale(1.45);opacity:1;filter:brightness(3)}100%{transform:scale(1.9);opacity:0;filter:brightness(.2)}}
+@keyframes eclate{0%{transform:scale(1.22);opacity:1}30%{transform:scale(1.45);opacity:1}100%{transform:scale(1.9);opacity:0}}
 .a-flammes{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
 .rat .acteur.brule .a-flammes::before{content:'';position:absolute;left:22%;top:0;width:66%;height:80%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,150,40,.5),rgba(255,90,20,0));animation:lueur .35s ease-in-out infinite alternate}
 .flamme{position:absolute;width:30px;height:48px;margin:-40px 0 0 -15px;transform-origin:50% 90%;animation:flamme .32s ease-in-out infinite alternate,flamme2 .9s ease-in-out infinite}
@@ -267,7 +267,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .dome.nait{animation:dome-nait .6s cubic-bezier(.3,1.5,.6,1) forwards}
 @keyframes dome-nait{0%{opacity:0;transform:scale(.2,.05) translateY(120px)}60%{opacity:1;transform:scale(1.06,1.02)}100%{opacity:1;transform:none}}
 .dome.encaisse{animation:dome-encaisse .3s ease-out;opacity:1}
-@keyframes dome-encaisse{0%{transform:scale(1);filter:brightness(1)}30%{transform:scale(.94,.97);filter:brightness(2.2)}100%{transform:none;filter:none}}
+@keyframes dome-encaisse{0%{transform:scale(1)}30%{transform:scale(.94,.97)}100%{transform:none}}
 .dome.part{animation:dome-part .5s ease-in forwards}
 @keyframes dome-part{0%{opacity:1;transform:none}100%{opacity:0;transform:scale(1.25)}}
 .dome-anneau{position:absolute;left:8%;top:6%;width:84%;height:88%;border-radius:50%;border:3px dashed rgba(191,248,255,.9);animation:tourne-lent 7s linear infinite}
@@ -383,7 +383,8 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .onde-fx{position:absolute;border-radius:50%;border:8px solid;opacity:0}
 .etincelle-fx{width:20px;height:5px;border-radius:3px}
 .goutte-fx{border-radius:50% 50% 50% 50%;border:1.5px solid rgba(36,24,46,.6)}
-.verre-fx{width:9px;height:12px;background:linear-gradient(135deg,#ffffff,#cfe8ff 60%,rgba(200,230,255,.4));clip-path:polygon(50% 0,100% 70%,20% 100%);box-shadow:0 0 6px #fff}
+/* (un éclat de verre : un triangle fait de bordures — avant, un rectangle découpé par clip-path, un masque par éclat ; RAPIDITE.md R19) */
+.verre-fx{width:0;height:0;border-left:4px solid transparent;border-right:5px solid transparent;border-bottom:12px solid #e6f3ff}
 .anneau-gouttes{position:absolute;width:150px;height:150px;border-radius:50%;border:6px solid}
 .touffe-fx{border-radius:50% 60% 40% 55%;background:radial-gradient(circle at 35% 35%,#5a4a5a,#241a2a 70%);border:1.5px solid #120a16}
 .volute{position:absolute;left:0;top:0;will-change:transform,opacity;pointer-events:none}
@@ -409,7 +410,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 .orbe{position:absolute;left:0;top:0;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:radial-gradient(closest-side,#fff,#bff8ff 40%,rgba(63,208,255,.6) 70%,rgba(63,208,255,0));box-shadow:0 0 24px #8ff3ff}
 .fleche-vol{position:absolute;left:0;top:0;width:62px;height:14px;margin:-7px 0 0 -54px}
 .fleche-vol svg{display:block;width:100%;height:100%;overflow:visible}
-.fleche-vol.trempee{filter:drop-shadow(0 0 6px #ffb030)}
+.fleche-vol.trempee::before{content:'';position:absolute;left:32px;top:-10px;width:34px;height:34px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,176,48,.6),rgba(255,176,48,0))}
 .feuille-vol{position:absolute;left:0;top:0;font-size:24px;width:30px;height:30px;margin:-15px 0 0 -15px}
 .entaille{position:absolute;width:90px;height:90px;margin:-45px 0 0 -45px;border-radius:50%;border-top:6px solid #fff;border-right:3px solid rgba(255,255,255,.6);animation:entaille .3s ease-out forwards}
 @keyframes entaille{0%{transform:rotate(-80deg) scale(.6);opacity:1}100%{transform:rotate(40deg) scale(1.1);opacity:0}}
@@ -5750,7 +5751,7 @@ window.HerosAnime = HerosAnime;
 
 
 /* ===== les niveaux des sons (sons/niveaux.json) ===== */
-window.NIVEAUX = {"amuletteA":2.018,"amuletteB":1.466,"araiCriA":0.688,"araiCriB":0.661,"araiCriC":1.521,"araiMortA":0.991,"araiMortB":0.749,"araiToileA":2.063,"araiToileB":1.76,"araiToucheA":1.108,"araiToucheB":1.076,"arcA":1.908,"arcB":1.703,"arcC":1.195,"atelier":1.577,"batonA":1.806,"batonB":1.025,"boisA":2.84,"boisB":1.615,"boisC":2.491,"bossA":1.534,"bossB":1.315,"bossC":1.681,"bourbeCriA":1.572,"bourbeCriB":1.426,"bourbeCriC":1.388,"bourbeFinA":0.862,"bourbeFinB":0.868,"bourbeGobeA":1.324,"bourbeGobeB":2.798,"bourbeLangueA":1.622,"bourbeLangueB":0.993,"bourbePlongeA":1.074,"bourbePlongeB":1.633,"bourbeRireA":1.659,"bourbeRireB":1.823,"bourbeRotA":1.059,"bourbeRotB":1.54,"bourbeSautA":0.745,"bourbeSautB":0.754,"bourbeToucheA":1.731,"bourbeToucheB":2.027,"brumeCarteA":4.231,"brumeCarteB":4.263,"canauxA":1.408,"canauxB":1.944,"chairDA":2.505,"chairDB":2.286,"chairDC":2.213,"chairFA":2.223,"chairFB":1.821,"chairFC":2.085,"chauveAilesA":4.843,"chauveAilesB":4.948,"chauveCriA":1.376,"chauveCriB":0.827,"chauveCriC":1.343,"chauveMortA":1.331,"chauveMortB":1.719,"chauvePiqueA":1.027,"chauvePiqueB":2.191,"chauveToucheA":1.351,"chauveToucheB":1.751,"codeNonA":4.907,"codeNonB":1.857,"codeOkA":2.002,"codeOkB":2.222,"coffreA":2.213,"coffreB":1.49,"combatA":1.257,"combatB":1.196,"cristalA":1.05,"cristalB":1.487,"cuirCasqueA":1.907,"cuirCasqueB":1.538,"cuirCriA":0.524,"cuirCriB":1.804,"cuirCriC":1.757,"cuirFinA":1.082,"cuirFinB":1.112,"cuirToucheA":1.057,"cuirToucheB":1.633,"dallesA":2.71,"dallesB":1.674,"donjon":0.612,"exploA":0.718,"exploB":0.741,"exploC":0.957,"faibleA":5.168,"faibleB":4.078,"feuCampA":2.304,"feuCampB":1.833,"finDonjonA":1.149,"finDonjonB":0.77,"flecheArgentA":1.419,"flecheArgentB":1.113,"flecheLourdeA":1.591,"flecheLourdeB":1.792,"folletCriA":2.887,"folletCriB":4.486,"folletCriC":4.517,"folletFlammeA":3.439,"folletFlammeB":4.518,"folletMortA":3.491,"folletMortB":3.599,"folletToucheA":2.798,"folletToucheB":2.075,"fuiteA":1.519,"fuiteB":1.283,"gardienA":1.236,"gardienFinA":1.067,"gardienFinB":1.154,"gardienPasA":1.302,"gardienPasB":1.352,"gardienPoingA":1.098,"gardienPoingB":1.02,"gardienRunesA":5.038,"gardienRunesB":2.886,"gardienToucheA":0.773,"gardienToucheB":1.292,"iconeA":2.92,"iconeB":1.994,"iconeC":4.961,"metalA":1.807,"metalB":1.466,"metalC":1.397,"ossuaireA":2.409,"ossuaireB":2.356,"pageSauveA":2.532,"pageSauveB":1.713,"pasCouloirA":2.815,"pasCouloirB":3.072,"pasCouloirC":1.703,"pasCouloirD":2.803,"petiteCriA":2.223,"petiteCriB":1.812,"petiteMortA":2.449,"petiteMortB":2.069,"petiteToucheA":1.946,"petiteToucheB":1.903,"portePierreA":1.143,"portePierreB":1.133,"potAcideA":1.443,"potAcideB":2.028,"potColleA":1.784,"potColleB":1.416,"potGivreA":1.187,"potGivreB":1.795,"potHuileA":1.305,"potHuileB":1.583,"puits":1.385,"ramasseA":4.317,"ramasseB":3.585,"ratColleA":1.03,"ratColleB":0.838,"ratColleC":1.074,"ratCritiqueA":0.344,"ratCritiqueB":0.482,"ratCritiqueC":0.269,"ratDagueA":1.012,"ratDagueB":0.851,"ratDagueC":0.928,"ratFeuA":0.545,"ratFeuB":0.704,"ratFeuC":0.529,"ratFlecheA":1.106,"ratFlecheB":1.065,"ratFlecheC":0.92,"ratFuiteA":1.16,"ratFuiteB":0.787,"ratFuiteC":1.11,"ratHuileA":1.03,"ratHuileB":1.062,"ratHuileC":1.102,"ratLoucheA":0.822,"ratLoucheB":1.015,"ratLoucheC":0.694,"ratLumiereA":0.562,"ratLumiereB":0.776,"ratLumiereC":0.752,"ratNuageA":2.059,"ratNuageB":0.959,"ratNuageC":2.52,"rebondA":2.369,"rebondB":2.204,"rebondC":2.488,"reposA":1.068,"reposB":0.892,"roiA":1.216,"roiAttaqueA":1.035,"roiAttaqueB":0.62,"roiCriA":1.153,"roiCriB":1.032,"roiCriC":1.234,"roiFinA":1.043,"roiFinB":0.816,"roiToucheA":0.979,"roiToucheB":0.989,"swishA":2.101,"swishB":1.831,"swishC":1.79,"tetardCriA":3.914,"tetardCriB":2.529,"tetardMortA":2.062,"tetardMortB":2.07,"tetardToucheA":1.346,"tetardToucheB":1.476,"toiles":1.188,"victoireA":1.34,"victoireB":1.111,"volA":1.607,"volB":2.392,"volC":1.684};
+window.NIVEAUX = {"amuletteA":2.018,"amuletteB":1.466,"araiCriA":0.688,"araiCriB":0.661,"araiCriC":1.521,"araiMortA":0.991,"araiMortB":0.749,"araiToileA":2.063,"araiToileB":1.76,"araiToucheA":1.108,"araiToucheB":1.076,"arcA":1.908,"arcB":1.703,"arcC":1.195,"atelier":1.577,"batonA":1.806,"batonB":1.025,"boisA":2.84,"boisB":1.615,"boisC":2.491,"bossA":1.534,"bossB":1.315,"bossC":1.681,"bourbeCriA":1.572,"bourbeCriB":1.426,"bourbeCriC":1.388,"bourbeFinA":0.862,"bourbeFinB":0.868,"bourbeGobeA":1.324,"bourbeGobeB":2.798,"bourbeLangueA":1.622,"bourbeLangueB":0.993,"bourbePlongeA":1.074,"bourbePlongeB":1.633,"bourbeRireA":1.659,"bourbeRireB":1.823,"bourbeRotA":1.059,"bourbeRotB":1.54,"bourbeSautA":0.745,"bourbeSautB":0.754,"bourbeToucheA":1.731,"bourbeToucheB":2.027,"brumeCarteA":4.231,"brumeCarteB":4.263,"canauxA":1.408,"canauxB":1.944,"chairDA":2.505,"chairDB":2.286,"chairDC":2.213,"chairFA":2.223,"chairFB":1.821,"chairFC":2.085,"chauveAilesA":4.843,"chauveAilesB":4.948,"chauveCriA":1.376,"chauveCriB":0.827,"chauveCriC":1.343,"chauveMortA":1.331,"chauveMortB":1.719,"chauvePiqueA":1.027,"chauvePiqueB":2.191,"chauveToucheA":1.351,"chauveToucheB":1.751,"codeNonA":4.907,"codeNonB":1.857,"codeOkA":2.002,"codeOkB":2.222,"coffreA":2.213,"coffreB":1.49,"combatA":1.257,"combatB":1.196,"cristalA":1.05,"cristalB":1.487,"cuirCasqueA":1.907,"cuirCasqueB":1.538,"cuirCriA":0.524,"cuirCriB":1.804,"cuirCriC":1.757,"cuirFinA":1.082,"cuirFinB":1.112,"cuirToucheA":1.057,"cuirToucheB":1.633,"dallesA":2.71,"dallesB":1.674,"donjon":0.612,"exploA":0.718,"exploB":0.741,"exploC":0.957,"faibleA":5.168,"faibleB":4.078,"feuCampA":2.304,"feuCampB":1.833,"finDonjonA":1.149,"finDonjonB":0.77,"flecheArgentA":1.419,"flecheArgentB":1.113,"flecheLourdeA":1.591,"flecheLourdeB":1.792,"folletCriA":2.887,"folletCriB":4.486,"folletCriC":4.517,"folletFlammeA":3.439,"folletFlammeB":4.518,"folletMortA":3.491,"folletMortB":3.599,"folletToucheA":2.798,"folletToucheB":2.075,"fuiteA":1.519,"fuiteB":1.283,"gardienA":1.236,"gardienFinA":1.067,"gardienFinB":1.154,"gardienPasA":1.302,"gardienPasB":1.352,"gardienPoingA":1.098,"gardienPoingB":1.02,"gardienRunesA":5.038,"gardienRunesB":2.886,"gardienToucheA":0.773,"gardienToucheB":1.292,"grilleCanauxA":1.589,"iconeA":2.92,"iconeB":1.994,"iconeC":4.961,"leo1A":1.458,"leo2A":1.394,"leo3A":0.934,"leoAahA":1.514,"leoAttrapeA":0.939,"leoAuraA":3.082,"leoBouchonA":2.503,"leoBoumA":0.458,"leoBriseA":1.972,"leoCapeA":1.977,"leoCasseA":0.932,"leoChargeA":1.0,"leoChuteA":0.885,"leoCrochetA":1.506,"leoDechireA":1.088,"leoFarineA":1.445,"leoFauxA":1.222,"leoFauxB":1.526,"leoFauxTireA":1.842,"leoFleauA":0.94,"leoGlisseA":0.901,"leoGlouA":1.045,"leoGourdeA":2.957,"leoHurlementA":0.778,"leoJetteA":3.211,"leoLancerA":1.532,"leoMarteauA":0.798,"leoMeuleA":1.09,"leoMusclesA":0.946,"leoNaseauxA":1.977,"leoPoingA":1.562,"leoPotionA":1.007,"leoRacleA":1.899,"leoRafaleA":1.215,"leoRamasseA":2.596,"leoSacA":1.581,"leoSaigneA":4.58,"leoSautA":0.618,"leoSiffletA":1.06,"leoSonneA":0.858,"leoSouffleA":1.094,"leoTorchesA":2.528,"leoToucheA":3.668,"leoTuniqueA":2.002,"metalA":1.807,"metalB":1.466,"metalC":1.397,"ossuaireA":2.409,"ossuaireB":2.356,"pageSauveA":2.532,"pageSauveB":1.713,"pasCouloirA":2.815,"pasCouloirB":3.072,"pasCouloirC":1.703,"pasCouloirD":2.803,"petiteCriA":2.223,"petiteCriB":1.812,"petiteMortA":2.449,"petiteMortB":2.069,"petiteToucheA":1.946,"petiteToucheB":1.903,"portePierreA":1.143,"portePierreB":1.133,"potAcideA":1.443,"potAcideB":2.028,"potColleA":1.784,"potColleB":1.416,"potGivreA":1.187,"potGivreB":1.795,"potHuileA":1.305,"potHuileB":1.583,"puits":1.385,"ramasseA":4.317,"ramasseB":3.585,"ratColleA":1.03,"ratColleB":0.838,"ratColleC":1.074,"ratCritiqueA":0.344,"ratCritiqueB":0.482,"ratCritiqueC":0.269,"ratDagueA":1.012,"ratDagueB":0.851,"ratDagueC":0.928,"ratFeuA":0.545,"ratFeuB":0.704,"ratFeuC":0.529,"ratFlecheA":1.106,"ratFlecheB":1.065,"ratFlecheC":0.92,"ratFuiteA":1.16,"ratFuiteB":0.787,"ratFuiteC":1.11,"ratHuileA":1.03,"ratHuileB":1.062,"ratHuileC":1.102,"ratLoucheA":0.822,"ratLoucheB":1.015,"ratLoucheC":0.694,"ratLumiereA":0.562,"ratLumiereB":0.776,"ratLumiereC":0.752,"ratNuageA":2.059,"ratNuageB":0.959,"ratNuageC":2.52,"rebondA":2.369,"rebondB":2.204,"rebondC":2.488,"reposA":1.068,"reposB":0.892,"roiA":1.216,"roiAttaqueA":1.035,"roiAttaqueB":0.62,"roiCriA":1.153,"roiCriB":1.032,"roiCriC":1.234,"roiFinA":1.043,"roiFinB":0.816,"roiToucheA":0.979,"roiToucheB":0.989,"roueCanauxA":3.776,"roueCanauxB":3.126,"swishA":2.101,"swishB":1.831,"swishC":1.79,"tetardCriA":3.914,"tetardCriB":2.529,"tetardMortA":2.062,"tetardMortB":2.07,"tetardToucheA":1.346,"tetardToucheB":1.476,"toiles":1.188,"victoireA":1.34,"victoireB":1.111,"volA":1.607,"volB":2.392,"volC":1.684};
 
 /* ===== sons/moteur.js ===== */
 /* Atelier des sons de Brumeval — le moteur.
@@ -5985,7 +5986,8 @@ function Moteur(ctx, opt){
     var fin = t + env[env.length - 1][0], dur = fin - t;
     if(o.vague) x.setPeriodicWave(o.vague); else x.type = o.type || 'sine';
     if(o.courbe) x.frequency.setValueCurveAtTime(o.courbe, t, o.cd || dur);
-    else { x.frequency.setValueAtTime(o.f, t); if(o.pts) o.pts.forEach(function(p){ x.frequency.exponentialRampToValueAtTime(p[1], t + p[0]); }); if(o.f2) x.frequency.exponentialRampToValueAtTime(o.f2, t + (o.gl || dur)); }
+    /* (15 novembre : un son fabriqué à l'avance l'est à 32 000 échantillons par seconde — une note au-dessus de la moitié n'y existe pas) */
+    else { x.frequency.setValueAtTime(Math.min(o.f, ctx.sampleRate / 2 - 60), t); if(o.pts) o.pts.forEach(function(p){ x.frequency.exponentialRampToValueAtTime(p[1], t + p[0]); }); if(o.f2) x.frequency.exponentialRampToValueAtTime(o.f2, t + (o.gl || dur)); }
     if(o.det) x.detune.value = o.det;
     if(o.vib){
       var v = ctx.createOscillator(), vg = g(0); v.frequency.value = o.vib[0];
@@ -6485,28 +6487,40 @@ function timbale(A, t, g, dest){
 }
 
 /* =================== 1. L'ARC =================== */
-S.arcA = function(A, P){
-  var t = P.t, o = A.bus(P, {rev:.25, pan:-.35});
-  A.bruit(t, {bp:2600, bq:3, env:A.perc(.001, .02), g:.35}, o);                              /* la flèche qu'on encoche */
-  grinceArc(A, t + .08, .7, {}, o);
-  A.bruit(t + .1, {bp:2200, bq:3, env:[[0, 0], [.3, .5], [.66, 1], [.7, 0]], g:.06, rugueux:.6}, o);   /* la flèche qui frotte */
-  lacherCorde(A, t + .8, {f:98, t60:.5}, o);
-  return {duree:1.4, moment:.8};
+/* (13 novembre) Les trois versions de l'arc, écrites en deux moitiés — la corde qu'on tend, la corde lâchée — sans rien changer au son :
+   dans le donjon, le Pisteur tire tout seul (S.arcA/B/C : on tend, puis on lâche à l'instant « moment ») ; dans le mini-jeu du tir aux
+   anneaux de l'enquête 3 (jeu/src/mj-visee.js), c'est le doigt qui décide quand lâcher, et Romain veut « le même son que quand il tire
+   avec son arc dans le donjon » : le mini-jeu joue donc ces deux moitiés-ci (G.BRUITAGES_ARC), l'une quand le doigt se pose, l'autre
+   quand il se lève. Une seule source : changer l'arc ici le change aux deux endroits. */
+var ARC = {
+  A:{rev:.25, moment:.8, duree:1.4,
+    tendre:function(A, t, o){
+      A.bruit(t, {bp:2600, bq:3, env:A.perc(.001, .02), g:.35}, o);                              /* la flèche qu'on encoche */
+      grinceArc(A, t + .08, .7, {}, o);
+      A.bruit(t + .1, {bp:2200, bq:3, env:[[0, 0], [.3, .5], [.66, 1], [.7, 0]], g:.06, rugueux:.6}, o);   /* la flèche qui frotte */
+    },
+    lacher:function(A, t, o){ lacherCorde(A, t, {f:98, t60:.5}, o); }},
+  B:{rev:.2, moment:.5, duree:.9,
+    tendre:function(A, t, o){
+      A.bruit(t, {filtres:[{type:'bandpass', f:1200, pts:[[.45, 2600]], q:2}], env:[[0, 0], [.3, 1], [.46, .8], [.48, 0]], g:.45, rugueux:.8, rugVit:3}, o);   /* la corde qu'on tend vite */
+    },
+    lacher:function(A, t, o){ lacherCorde(A, t, {f:140, t60:.18, clic:.6, claque:1.0, gt:.45, sat:2.4, eclat:.7, lp:3200}, o); }},
+  C:{rev:.4, moment:1.12, duree:2.2,
+    tendre:function(A, t, o){
+      clic(A, t, 2400, .5, o);
+      grinceArc(A, t + .1, 1.0, {i0:.045, i1:.012, res:[260, 640, 1300], q:12, g:3.4}, o);
+      A.bruit(t + .12, {bp:1900, bq:3, env:[[0, 0], [.5, .5], [.95, 1], [1, 0]], g:.05, rugueux:.6}, o);
+    },
+    lacher:function(A, t, o){ lacherCorde(A, t, {f:78, t60:.95, gc:.9, ft:120, gt:.5, eclat:.5}, o); }}
 };
-S.arcB = function(A, P){
-  var t = P.t, o = A.bus(P, {rev:.2, pan:-.35});
-  A.bruit(t, {filtres:[{type:'bandpass', f:1200, pts:[[.45, 2600]], q:2}], env:[[0, 0], [.3, 1], [.46, .8], [.48, 0]], g:.45, rugueux:.8, rugVit:3}, o);   /* la corde qu'on tend vite */
-  lacherCorde(A, t + .5, {f:140, t60:.18, clic:.6, claque:1.0, gt:.45, sat:2.4, eclat:.7, lp:3200}, o);
-  return {duree:.9, moment:.5};
-};
-S.arcC = function(A, P){
-  var t = P.t, o = A.bus(P, {rev:.4, pan:-.35});
-  clic(A, t, 2400, .5, o);
-  grinceArc(A, t + .1, 1.0, {i0:.045, i1:.012, res:[260, 640, 1300], q:12, g:3.4}, o);
-  A.bruit(t + .12, {bp:1900, bq:3, env:[[0, 0], [.5, .5], [.95, 1], [1, 0]], g:.05, rugueux:.6}, o);
-  lacherCorde(A, t + 1.12, {f:78, t60:.95, gc:.9, ft:120, gt:.5, eclat:.5}, o);
-  return {duree:2.2, moment:1.12};
-};
+['A', 'B', 'C'].forEach(function(v){
+  S['arc' + v] = function(A, P){
+    var x = ARC[v], t = P.t, o = A.bus(P, {rev:x.rev, pan:-.35});
+    x.tendre(A, t, o);
+    x.lacher(A, t + x.moment, o);
+    return {duree:x.duree, moment:x.moment};
+  };
+});
 
 /* =================== 2. LA FLÈCHE EN VOL =================== */
 S.volA = function(A, P){
@@ -7007,6 +7021,7 @@ S.iconeC = function(A, P){                                                      
   Object.keys(m[1]).forEach(function(v){ S[m[0] + v].moment = m[1][v]; });
 });
 G.BRUITAGES = S;
+G.BRUITAGES_ARC = ARC;   /* les deux moitiés de l'arc, pour le tir aux anneaux (jeu/src/mj-visee.js) */
 /* les petits morceaux, prêtés aux nouveaux sons de l'atelier (bestiaire.js, donjon.js) — rien ne change ici */
 G.BRUITAGES_OUTILS = {clic:clic, grinceArc:grinceArc, lacherCorde:lacherCorde, sifflement:sifflement, toc:toc, vibreFleche:vibreFleche, swish:swish, chantLame:chantLame, tchac:tchac, tinc:tinc,
   bong:bong, sifflementRat:sifflementRat, dents:dents, embrase:embrase, gresille:gresille, sploutch:sploutch, etire:etire, glisse:glisse, toux:toux, boum:boum, brume:brume,
@@ -7410,6 +7425,7 @@ function niveau(cle){ return (window.NIVEAUX || {})[cle] || 1; }
 var critique = {v:null, quand:0};
 function versionDe(id, o){
   if(o.version) return o.version;
+  if(PRE.fixeV[id]) return PRE.fixeV[id];                        /* (un combat en temps réel : sa liste de bruitages, fabriquée à l'avance) */
   if(PRE.sfxV[id]) return PRE.sfxV[id];                          /* pendant un combat : la version fabriquée à l'avance pour ce combat */
   if(!o.partie) return tire(CHOIX[id]);
   var maintenant = Date.now();
@@ -7425,7 +7441,7 @@ function bruitage(id, o){
   if(o.cale != null && fn.moment != null) o.dt = o.cale - fn.moment;     /* on cale l'instant clé du son sur celui de l'animation */
   var t = ctx.currentTime + .02 + Math.max(0, o.dt || 0);
   /* déjà fabriqué à l'avance : on joue l'enregistrement (presque rien à calculer), remis à sa place à gauche ou à droite */
-  var pre = sfxPre && PRE.sfx[cle + (o.partie ? ':' + o.partie : '')];
+  var pre = sfxPre && (PRE.sfx[cle + (o.partie ? ':' + o.partie : '')] || (!o.partie && !o.voix && !o.enrage && !o.un && PRE.fixe[cle]));
   if(pre){
     var src = ctx.createBufferSource(), sortiePre = sfxPre, pan = null; src.buffer = pre.buf;
     if(pre.pan && ctx.createStereoPanner){ pan = ctx.createStereoPanner(); pan.pan.value = pre.pan; pan.connect(sfxPre); sortiePre = pan; }
@@ -7435,6 +7451,7 @@ function bruitage(id, o){
     return {duree:C0 ? C0.duree : (PRE.duree[cle] || pre.buf.duration), moment:fn.moment, version:v, pre:true};
   }
   var P = A.prise(t, niveau(cle)), r = null;
+  if(o.un) P.un = 1;                                   /* (un seul pas du Gardien, au lieu des deux de l'Atelier) */
   A.voix = o.enrage ? VOIX_ENRAGE : (o.voix || null);
   try{
     if(o.partie){ var C = window.BRUITAGES.CRITIQUE[v]; if(C && C[o.partie]) C[o.partie](A, P, t); r = {duree:C ? C.duree : 3}; }
@@ -7464,6 +7481,14 @@ function musiqueDesQuePrete(nom){
   try{ cles = clesDe(nom).filter(function(c){ return !!window.MUSIQUES[c]; }); }catch(e){ musique(nom); return; }
   MUS.attendue = nom;
   Promise.all(cles.map(function(c){ return PRE.demander(c, true); })).then(function(){ if(MUS.attendue === nom) musique(nom); });
+}
+/* fabriquer une musique à l'avance SANS y passer, et sans attendre que le son soit débloqué par un premier toucher (l'adresse
+   d'essai du combat de Léo : sinon elle se fabriquait au premier toucher, en plein combat). Rend une promesse. */
+function preparerMusique(nom){
+  var cles;
+  if(!PRE.possible) return Promise.resolve();
+  try{ cles = clesDe(nom).filter(function(c){ return !!window.MUSIQUES[c]; }); }catch(e){ return Promise.resolve(); }
+  return Promise.all(cles.map(function(c){ return PRE.demander(c, true); })).catch(function(){});
 }
 function famille(c){ return c.replace(/[A-C]$/, ''); }
 /* la clé d'une musique : son nom s'il n'y en a qu'une (le puits, le fond du donjon), sinon la version choisie */
@@ -7513,7 +7538,9 @@ function enCombat(on){
   if(MUS.combat === on) return;
   MUS.combat = on;
   if(!PRE.possible) return;
-  if(on) setTimeout(function(){ if(MUS.combat) PRE.demander('bruitages'); }, 2500);
+  /* (pas dans un combat en temps réel — Léo : il prépare lui-même ses sons AVANT de commencer (Son.preparerBruits) ; fabriquer
+     ceux-ci 2,5 s après le début lui prenait ses premières secondes — RAPIDITE.md R20) */
+  if(on) setTimeout(function(){ if(MUS.combat && !S.tempsReel) PRE.demander('bruitages'); }, 2500);
   else setTimeout(function(){ if(MUS.combat) return; PRE.sfx = {}; PRE.sfxV = {}; delete PRE.attente.bruitages; }, 9000);
 }
 /* la musique fabriquée en direct (l'ancienne façon : seulement si le navigateur ne sait pas fabriquer à l'avance) */
@@ -7552,7 +7579,7 @@ function programme(){
      (l'explosion C reste en stéréo : son souffle traverse la salle) ; libérés après le combat.
    - Les rats (leur voix change quand ils sont enragés) restent fabriqués en direct. */
 var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-var PRE = {possible:!!(OAC && window.Moteur && window.MUSIQUES), mus:{}, sfx:{}, sfxV:{}, prochain:{}, duree:{}, attente:{}, file:[], occupe:false, pireTache:0, taches:{}, fait:0};
+var PRE = {possible:!!(OAC && window.Moteur && window.MUSIQUES), mus:{}, sfx:{}, sfxV:{}, fixe:{}, fixeV:{}, fixeJeton:0, prochain:{}, duree:{}, attente:{}, file:[], occupe:false, pireTache:0, taches:{}, fait:0};
 var SR_MUS = 16000, SR_SFX = 32000;
 /* la longueur de chaque boucle (en secondes) : un cycle d'accords ; C : le fondu entre la fin et le début ; lin : fondu droit (musique rythmée) ;
    n0 : on fait commencer la musique à cette mesure, pour que la boucle garde les deux airs de la boîte à musique (exploration B) */
@@ -7561,9 +7588,12 @@ var BOUCLE = {exploA:{L:44}, exploB:{L:32, n0:7}, exploC:{L:48}, combatA:{L:32 *
   donjon:{L:56}, toiles:{L:48}, atelier:{L:48}, canauxA:{L:60}, canauxB:{L:60}, ossuaireA:{L:60}, ossuaireB:{L:60},
   reposA:{L:64}, reposB:{L:70.4}, feuCampA:{L:40}, feuCampB:{L:40}, finDonjonA:{L:64}, finDonjonB:{L:64},
   gardienA:{L:128 * 60 / 66, C:1.5, lin:true}, roiA:{L:128 * 60 / 84, C:1.5, lin:true},
-  bossA:{L:128 * 60 / 92, C:1.5, lin:true}, bossB:{L:96 * 60 / 76, C:1.5, lin:true}, bossC:{L:128 * 60 / 100, C:1.5, lin:true}};
+  bossA:{L:128 * 60 / 92, C:1.5, lin:true}, bossB:{L:96 * 60 / 76, C:1.5, lin:true}, bossC:{L:128 * 60 / 100, C:1.5, lin:true},
+  /* Léo : une musique par phase (Romain, 15 novembre, 18 h 29) */
+  leo1A:{L:128 * 60 / 76, C:1.5, lin:true}, leo2A:{L:128 * 60 / 104, C:1.5, lin:true}, leo3A:{L:96 * 60 / 66, C:1.5, lin:true}};
 /* les bruitages lourds : [id, morceau, place à gauche (−) ou à droite (+), stéréo] — une version par combat */
-var SFX_PRE = {arc:[[null, -.35]], ratCritique:[['avant', .35], ['impact', .35], ['explosion', .35]], victoire:[[null, 0]], fuite:[[null, -.5]]};
+/* (19 novembre : le critique n'a plus de temps suspendu — son morceau « avant », l'aspiration, n'est plus joué : on ne le fabrique plus) */
+var SFX_PRE = {arc:[[null, -.35]], ratCritique:[['impact', .35], ['explosion', .35]], victoire:[[null, 0]], fuite:[[null, -.5]]};
 var SFX_DUREE = {arc:3.5, victoire:6.5, fuite:8, avant:3.5, impact:5.5, explosion:8.5};
 /* la version d'une musique : celle qui est (ou sera) prête ; tirée au hasard la première fois */
 PRE.cle = function(fam){
@@ -7642,8 +7672,10 @@ function rendreMusique(cle){
   });
 }
 /* un bruitage lourd, seul dans son petit rendu : mono (sans placement), sauf l'explosion C ; puis coupé à la fin du son */
-function rendreUnBruitage(id, v, partie, stereo){
-  var cle = id + v, sr = SR_SFX, d = SFX_DUREE[partie || id] || 6, can = stereo ? 2 : 1, off = new OAC(can, Math.ceil(sr * d), sr), Ao;
+/* court : pour les bruitages d'un combat en temps réel — quatre secondes au plus, et la fin de l'écho coupée plus tôt (en dessous
+   de −56 dB, avec un fondu) : trois fois moins de mémoire, pour la même oreille */
+function rendreUnBruitage(id, v, partie, stereo, court){
+  var cle = id + v, sr = SR_SFX, d = court ? Math.min(4, SFX_DUREE[partie || id] || 4) : SFX_DUREE[partie || id] || 6, can = stereo ? 2 : 1, off = new OAC(can, Math.ceil(sr * d), sr), Ao;
   if(!stereo) try{ off.createStereoPanner = null; }catch(e){}            /* mono : la place gauche/droite est remise en le jouant */
   chrono(function(){
     Ao = window.Moteur(off, {horsLigne:true, brut:true, volume:1});
@@ -7655,8 +7687,9 @@ function rendreUnBruitage(id, v, partie, stereo){
     return chrono(function(){
       var ch = [], c, i, n = x.length, fin = 0;
       for(c = 0; c < can; c++) ch.push(x.getChannelData(c));
-      for(i = n - 1; i > 0 && !fin; i -= 16) for(c = 0; c < can; c++) if(ch[c][i] > 2e-4 || ch[c][i] < -2e-4){ fin = Math.min(n, i + 16); break; }
-      var m = Math.max(1, Math.min(n, fin + Math.floor(sr * .05))), y = off.createBuffer(can, m, sr), fondu = Math.floor(sr * .03);
+      var seuil = court ? 1.6e-3 : 2e-4;
+      for(i = n - 1; i > 0 && !fin; i -= 16) for(c = 0; c < can; c++) if(ch[c][i] > seuil || ch[c][i] < -seuil){ fin = Math.min(n, i + 16); break; }
+      var m = Math.max(1, Math.min(n, fin + Math.floor(sr * (court ? .12 : .05)))), y = off.createBuffer(can, m, sr), fondu = Math.floor(sr * (court ? .14 : .03));
       for(c = 0; c < can; c++){ var dd = y.getChannelData(c), src = ch[c]; dd.set(src.subarray(0, m)); for(i = Math.max(0, m - fondu); i < m; i++) dd[i] *= (m - i) / fondu; }
       return y;
     }, 'decoupe');
@@ -7681,6 +7714,42 @@ function rendreBruitages(){
     });
   }, Promise.resolve()).then(function(){ return true; });
 }
+/* LES BRUITAGES D'UN COMBAT EN TEMPS RÉEL, FABRIQUÉS À L'AVANCE (15 novembre, 13 h 54 — Romain : « ça rame à mort » ; RAPIDITE.md, R16).
+   Contre Léo, un son fabriqué en direct coûte au fil principal au pire moment (seize coups de poing d'affilée, pendant qu'on
+   pianote). Son.preparerBruits(['leoPoing', …]) les enregistre un par un pendant l'écran de passage et le début du combat (une
+   version tirée au sort par son, pour ce combat) ; bruitage() joue ensuite l'enregistrement. Un son pas encore prêt est fabriqué
+   en direct, comme avant. Son.oublierBruits() libère tout à la fin du combat. (Rangés à part de PRE.sfx, que la fin d'un combat
+   ordinaire vide.) */
+function preparerBruits(ids, o){
+  if(!PRE.possible || !window.BRUITAGES) return Promise.resolve(0);
+  var jeton = ++PRE.fixeJeton, n = 0;
+  ids = ids || [];
+  /* « id:B » : cette version-là exactement (quand le jeu la demande par son nom — la faux de Léo, version B : sinon la version
+     fabriquée n'était pas celle qu'il jouait, et le son se refaisait en direct) */
+  var noms = ids.map(function(x){ return x.split(':')[0]; });
+  PRE.fixeF = PRE.fixeF || {};
+  /* o.seuls : on ne garde que cette liste (une nouvelle phase du combat : les sons de la phase d'avant libèrent leur mémoire) */
+  if(o && o.seuls){
+    Object.keys(PRE.fixeV).forEach(function(id){ if(noms.indexOf(id) < 0){ delete PRE.fixe[id + PRE.fixeV[id]]; delete PRE.fixeV[id]; } });
+    Object.keys(PRE.fixeF).forEach(function(cle){ if(noms.indexOf(PRE.fixeF[cle]) < 0){ delete PRE.fixe[cle]; delete PRE.fixeF[cle]; } });
+  }
+  PRE.fixeEnCours = true;
+  return ids.reduce(function(p, x){
+    return p.then(function(){
+      var k = x.split(':'), id = k[0];
+      if(jeton !== PRE.fixeJeton || !CHOIX[id] || !CHOIX[id].length) return;
+      var v = k[1] || PRE.fixeV[id] || tire(CHOIX[id]), cle = id + v;
+      if(!window.BRUITAGES[cle] || PRE.fixe[cle]) return;
+      return rendreUnBruitage(id, v, null, false, true).then(function(y){
+        if(jeton !== PRE.fixeJeton) return;
+        if(k[1]) PRE.fixeF[cle] = id; else PRE.fixeV[id] = v;
+        PRE.fixe[cle] = {buf:y, pan:0}; n++;
+        return new Promise(function(ok){ setTimeout(ok, 30); });           /* (on laisse respirer la page entre deux sons) */
+      }, function(){});
+    });
+  }, Promise.resolve()).then(function(){ if(jeton === PRE.fixeJeton){ PRE.fixeEnCours = false; window.Moteur.oublier(SR_SFX); } return n; });
+}
+function oublierBruits(){ PRE.fixeJeton++; PRE.fixe = {}; PRE.fixeV = {}; PRE.fixeF = {}; PRE.fixeEnCours = false; }
 /* la file d'attente : une chose à la fois, la plus urgente d'abord */
 PRE.demander = function(cle, urgent){
   var f = famille(cle);
@@ -7721,6 +7790,7 @@ PRE.memoire = function(){
   var o = 0;
   Object.keys(PRE.mus).forEach(function(k){ o += PRE.mus[k].buf.length * PRE.mus[k].buf.numberOfChannels * 4; });
   Object.keys(PRE.sfx).forEach(function(k){ o += PRE.sfx[k].buf.length * PRE.sfx[k].buf.numberOfChannels * 4; });
+  Object.keys(PRE.fixe).forEach(function(k){ o += PRE.fixe[k].buf.length * PRE.fixe[k].buf.numberOfChannels * 4; });
   return Math.round(o / 1e5) / 10;
 };
 /* pour les mesures : fabriquer les trois musiques et les bruitages lourds, et dire quand c'est fini */
@@ -7739,6 +7809,13 @@ function baisser(sec){
   var g = A.mus.gain, now = ctx.currentTime;
   g.cancelScheduledValues(now); g.setValueAtTime(g.value, now);
   g.setTargetAtTime(.28, now, .12); g.setTargetAtTime(1, now + (sec || 3), .7);
+}
+/* les cinématiques (Bible §13.45) : la musique du donjon se tait pendant le film (il a sa propre bande-son), puis revient */
+function sourdine(oui){
+  if(!ctx || !A) return;
+  var g = A.mus.gain, now = ctx.currentTime;
+  g.cancelScheduledValues(now); g.setValueAtTime(g.value, now);
+  g.setTargetAtTime(oui ? 0 : 1, now, oui ? .15 : .6);
 }
 function t0(dt){ return ctx.currentTime + (dt || 0) + .01; }
 /* une sortie : sec vers les bruitages, et un peu (ou beaucoup) dans la réverbération */
@@ -7797,15 +7874,26 @@ function corde(t, f, duree, gain, dest){
 /* =================== les bruitages =================== */
 var B = {};
 /* la course des héros : des bottes sur la pierre */
-B.pasHeros = function(duree, n){
+/* aigu (facultatif) : les mêmes pas, plus haut et plus sautillants — sur la carte du donjon (Romain, 11 novembre, 19 h 21 :
+   « ce petit bruit de pas quand ils rentrent dans une salle, tu peux le mettre aussi quand ils se déplacent sur la carte, avec
+   un bruit un peu plus aigu, un peu plus rigolo ») */
+B.pasHeros = function(duree, n, aigu){
   var o = bus(.3), t = t0(), k = 0;
-  n = n || 1;
+  n = n || 1; aigu = aigu || 1;
   for(var x = 0; x < duree; x += .15 / Math.max(1, n * .7)){
-    var tt = t + x + hasard(0, .02), fort = Math.min(1, .35 + x / duree);
-    ton(tt, {f:hasard(95, 125), f2:48, d:.09, g:.22 * fort}, o);
-    souffle(tt, {type:'bandpass', f:hasard(1400, 2200), q:.9, d:.05, g:.1 * fort}, o);
+    var tt = t + x + hasard(0, .02), fort = Math.min(1, .35 + x / duree), saut = aigu > 1 && k % 2 ? 1.18 : 1;
+    ton(tt, {f:hasard(95, 125) * aigu * saut, f2:48 * aigu * saut, d:.09 / Math.sqrt(aigu), g:.22 * fort}, o);
+    souffle(tt, {type:'bandpass', f:hasard(1400, 2200) * Math.sqrt(aigu), q:.9, d:.05, g:.1 * fort}, o);
     if(k++ % 3 === 0) souffle(tt + .02, {type:'highpass', f:5200, d:.03, g:.025 * fort}, o);   /* les boucles de ceinture */
   }
+};
+/* le miaulement du chat de la porte aux quatre signes : le même que celui du labo (jeu/src/labo/15-sons.js, « miaou ») —
+   deux notes qui glissent, « mi-aou » (Romain, 11 novembre, 19 h 21 : « quand le chat miaule, ce serait bien de lui faire un
+   miaulement ») */
+B.miaou = function(aigu){
+  var o = bus(.25), t = t0(), k = aigu || 1;
+  ton(t, {type:'triangle', f:620 * k, f2:940 * k, a:.05, d:.29, g:.16, lp:2400}, o);
+  ton(t + .16, {type:'triangle', f:940 * k, f2:560 * k, a:.05, d:.25, g:.14, lp:2200}, o);
 };
 /* la course des rats : des griffes qui cliquettent, vite */
 B.pasRats = function(duree){
@@ -8051,11 +8139,16 @@ S.Son = {
   bruitage:bruitage,
   musique:musique,
   musiqueDesQuePrete:musiqueDesQuePrete,
+  preparerMusique:preparerMusique,
   combat:enCombat,             /* le donjon : un combat commence (true) ou finit (false) — les bruitages lourds sont fabriqués, puis libérés */
   preparer:preparer,
+  preparerBruits:preparerBruits, oublierBruits:oublierBruits, bruitsPrets:function(){ return Object.keys(PRE.fixe).length; }, bruitsEnCours:function(){ return !!PRE.fixeEnCours; },
+  bruitsListe:function(){ return Object.keys(PRE.fixe).map(function(k){ return [k, Math.round(PRE.fixe[k].buf.duration * 100) / 100]; }); },
   volume:volume,
   precalcul:{tout:function(){ return PRE.tout(); }, etat:function(){ return PRE.etat(); }, memoire:function(){ return PRE.memoire(); }},
   baisser:baisser,
+  sourdine:sourdine,                                   /* (les cinématiques) */
+  contexte:function(){ return ctx; },                  /* (les cinématiques : la bande-son se joue sur le même contexte, déjà débloqué par un toucher) */
   musiqueEtat:function(){ return {voulu:MUS.voulu, attendue:MUS.attendue || null, nom:MUS.actuel ? MUS.actuel.nom : null, cles:MUS.actuel ? MUS.actuel.cles.slice() : [], gain:A ? A.mus.gain.value : null,
     joue:MUS.actuel ? Object.keys(MUS.actuel.par).reduce(function(n, c){ return n + MUS.actuel.par[c].length; }, 0) : 0, combat:MUS.combat}; },
   jouer:function(nom){
@@ -8132,10 +8225,22 @@ function eclat(x, y, taille, fond, ms){
   L.fx.appendChild(c);
   anime(c, [{transform:'translate(-50%,-50%) scale(.2)', opacity:1}, {transform:'translate(-50%,-50%) scale(1.6)', opacity:0}], {duration:ms || 500, easing:'ease-out'}).then(function(){ c.remove(); });
 }
+/* (15 novembre, 13 h 54 — RAPIDITE.md, R17) la secousse fait bouger TOUTE la scène (des centaines de pièces). Deux précautions :
+   - chaque image a la même forme (un déplacement puis une rotation), la dernière aussi (plus de « none ») : c'est ce qu'il faut
+     pour que la carte graphique la joue seule, sur Safari comme ailleurs ;
+   - dans un combat en temps réel (S.tempsReel : Léo), jamais deux secousses à la fois ni coup sur coup, jamais plus de 300 ms :
+     une rafale de seize coups ne secoue pas seize fois l'écran, un souffle de feu ne le secoue pas deux secondes. */
 function tremble(force, ms, delai){
-  var s = L.secousse, n = Math.round((ms || 400) / 40), images = [];
-  for(var k = 0; k <= n; k++){ var f = force * (1 - k / n); images.push({transform:k === n ? 'none' : 'translate(' + hasard(-f, f).toFixed(1) + 'px,' + hasard(-f * .7, f * .7).toFixed(1) + 'px) rotate(' + hasard(-f * .05, f * .05).toFixed(2) + 'deg)'}); }
-  return anime(s, images, {duration:ms || 400, delay:delai || 0});
+  ms = ms || 400;
+  if(S.tempsReel){
+    if(S.leger) return Promise.resolve();          /* (cet appareil a déjà fermé la page pendant le combat de Léo : plus de secousse — noyau.js, DJ.temoinLeo) */
+    var m = Date.now() + (delai || 0);
+    if(m < (tremble.jusque || 0)) return Promise.resolve();
+    ms = Math.min(ms, 300); force = Math.min(force, 10); tremble.jusque = m + ms + 350;
+  }
+  var s = L.secousse, n = Math.round(ms / 40), images = [];
+  for(var k = 0; k <= n; k++){ var f = k === n ? 0 : force * (1 - k / n); images.push({transform:'translate(' + hasard(-f, f).toFixed(1) + 'px,' + hasard(-f * .7, f * .7).toFixed(1) + 'px) rotate(' + hasard(-f * .05, f * .05).toFixed(2) + 'deg)'}); }
+  return anime(s, images, {duration:ms, delay:delai || 0});
 }
 function onde(x, y, coul, taille, ms){
   var o = el('div', 'onde-fx'); o.style.cssText = 'left:' + x + 'px;top:' + y + 'px;width:' + taille + 'px;height:' + taille + 'px;margin:' + (-taille / 2) + 'px 0 0 ' + (-taille / 2) + 'px;border-color:' + coul + ';box-shadow:0 0 18px ' + coul + ',inset 0 0 18px ' + coul;
@@ -8276,27 +8381,34 @@ function critique(x, y, n, exploser, son, o){
   /* Romain, 9 novembre, 16 h 37 : « il faut rester LOCALISÉ ; tu fais trembler l'écran si tu veux ; de la FUMÉE NOIRE ;
      les MEMBRES du rat éclatent sur le côté, la fumée cache ; pas tout l'écran ; un gros CRITIQUE ». Et le 10, 14 h 14 :
      « la fumée doit sortir AU MOMENT OÙ IL EXPLOSE, avec les morceaux ; elle grossit très vite, puis se disperse vite ;
-     plus fluide ; calé sur le son ». Donc rien ne couvre l'écran, et tout suit les trois temps du son :
+     plus fluide ; calé sur le son ». Donc rien ne couvre l'écran. JUSQU'AU 19 NOVEMBRE, tout suivait les trois temps du son :
        0 ms        la flèche frappe : le temps se suspend sur LUI — l'aspiration ;
        CRIT_IMPACT le coup claque : le gros « CRITIQUE ! », un petit tremblement ; il gonfle de plus en plus ;
        CRIT_ECLAT  l'explosion : la fumée noire et ses membres jaillissent ENSEMBLE, le chiffre, un tremblement ;
        puis        la fumée se disperse vite et laisse les cendres et les os (≈ 2,2 s en tout).
-     Pour que l'image et le son restent ensemble même si la tablette peine, tout est programmé D'UN COUP, ici : les trois
-     morceaux du son sur l'horloge du son, les images en animations à retardement (la carte graphique les joue seule). */
+     Pour que l'image et le son restent ensemble même si la tablette peine, tout est programmé D'UN COUP, ici : les
+     morceaux du son sur l'horloge du son, les images en animations (la carte graphique les joue seule). */
+  /* 19 NOVEMBRE (Romain, 10 h 48) : « dès qu'il a mis le coup de dague, tout de suite l'animation se fait. Faut pas qu'il y
+     ait de délai […] il grossit pas, il explose direct […] et l'animation est beaucoup plus rapide ». Les trois temps n'en
+     font plus qu'UN : au coup, le claquement et l'explosion (le son n'a plus son aspiration), la fumée noire et les membres,
+     le gros « CRITIQUE ! », le chiffre, UNE secousse (RAPIDITE.md R17 : jamais deux à la fois). Puis la fumée se disperse
+     (≈ 0,85 s en tout, 2,2 s avant). CRIT_IMPACT et CRIT_ECLAT restent, à zéro, pour qui voudrait remettre un retard. */
   var v = S.vitesse || 1, t1 = CRIT_IMPACT / v, t2 = CRIT_ECLAT / v;
-  son('aspire', 0); son('boum', t1 / 1000); son('explosion', t2 / 1000);
+  son('boum', t1 / 1000); son('explosion', t2 / 1000 + CRIT_SOUFFLE);
   /* le module du rat fait le reste autour de lui (exploser renvoie une Promise : la fumée dissipée) */
   var fin = Promise.resolve(exploser ? exploser({impact:t1, eclat:t2, leger:!!S.critLeger}) : null);
   texteCritique(x, y, t1);
-  tremble(5, 240, t1);
-  tremble(8, 320, t2);
+  tremble(8, 300, t2);
   var c = el('div', 'chiffre crit', '−' + n);        /* sur la fumée noire (jaune sur noir : il se lit bien) ; il monte sans toucher « CRITIQUE ! » */
-  c.style.left = (x + 6) + 'px'; c.style.top = (y + 40) + 'px'; c.style.animationDelay = t2 + 'ms'; c.style.animationFillMode = 'both';
+  c.style.left = (x + 6) + 'px'; c.style.top = (y + 40) + 'px';
+  if(t2){ c.style.animationDelay = t2 + 'ms'; c.style.animationFillMode = 'both'; }
   L.fx.appendChild(c); setTimeout(function(){ c.remove(); }, t2 + 1400);
-  if(o.brume) setTimeout(function(){ brumeNoire(x, y, o.brume); }, t2);          /* sans le module du rat (images fixes) : sa fumée à lui */
-  return attendre(CRIT_ECLAT).then(function(){ return Promise.race([fin, plus(2000)]); });
+  if(o.brume){ if(t2) setTimeout(function(){ brumeNoire(x, y, o.brume); }, t2); else brumeNoire(x, y, o.brume); }   /* sans le module du rat (images fixes) : sa fumée à lui */
+  return attendre(CRIT_ECLAT).then(function(){ return Promise.race([fin, plus(1500)]); });
 }
-var CRIT_IMPACT = 420, CRIT_ECLAT = 1020;
+/* (avant le 19 novembre : 420 et 1020 — l'aspiration, le coup, l'explosion.) CRIT_SOUFFLE (s) : l'explosion du son part un
+   souffle après le claquement, pour que leurs deux attaques ne s'additionnent pas (on n'entend qu'un seul coup) */
+var CRIT_IMPACT = 0, CRIT_ECLAT = 0, CRIT_SOUFFLE = .04;
 /* le gros « CRITIQUE ! » (Romain l'aime) : il claque au-dessus du rat, dans la moitié droite de la scène, puis s'envole.
    delai (ms) : il attend son moment sans rien montrer (programmé d'avance, pour tomber pile sur le son) */
 function texteCritique(x, y, delai){
@@ -8307,7 +8419,7 @@ function texteCritique(x, y, delai){
   L.ecran.appendChild(t);
   return anime(t, [{transform:'translate(-50%,-50%) scale(1.9) rotate(-8deg)', opacity:0}, {transform:'translate(-50%,-50%) scale(.92) rotate(-3deg)', opacity:1, offset:.08},
     {transform:'translate(-50%,-50%) scale(1.05) rotate(-4deg)', opacity:1, offset:.14}, {transform:'translate(-50%,-50%) scale(1) rotate(-4deg)', opacity:1, offset:.78},
-    {transform:'translate(-50%,-62%) scale(1.03) rotate(-4deg)', opacity:0}], {duration:2000, delay:delai || 0, fill:'backwards', easing:'ease-out'}).then(function(){ t.remove(); });
+    {transform:'translate(-50%,-62%) scale(1.03) rotate(-4deg)', opacity:0}], {duration:1500, delay:delai || 0, fill:'backwards', easing:'ease-out'}).then(function(){ t.remove(); });   /* (19 novembre : 1,5 s au lieu de 2 — le critique va plus vite) */
 }
 
 /* la fiole, la flèche, la loupe… : un vol en ligne droite ou en arc (h), avec rotation (tour) ou orienté selon la trajectoire.

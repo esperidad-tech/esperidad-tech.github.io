@@ -584,8 +584,8 @@ E[3] = {
        descendre (personne ne reste bloqué), mais c'est d'elle que vient la tenue de combat (descente.js) */
     tenues:{nom:'Les tenues de Mélusine', ic:'🧵', pour:['pisteur', 'sage', 'alchimiste'], dire:'Une tenue pour le Pisteur, une pour le Sage, une pour l\'Alchimiste : donne-leur ce code.',
       recu:{pisteur:'Une tenue solide, cousue par Mélusine : capuche verte et cuir épais. Elle t\'attend pour cette nuit.',
-        sage:'Une nouvelle page s\'est glissée dans ton Grand Livre : ta tenue, cousue par Mélusine.',
-        alchimiste:'Une tenue solide, cousue par Mélusine : capuche violette, et une ceinture à sept poches… pour sept fioles.'}},
+        sage:'Une tenue solide, cousue par Mélusine : capuche bleue, cuir épais, et une poche pour ton grimoire. Elle t\'attend dans ton Grand Livre, pour cette nuit.',
+        alchimiste:'Une tenue solide, cousue par Mélusine : capuche violette, et une ceinture à sept poches… pour sept fioles. Elle t\'attend pour cette nuit.'}},
     /* (17 novembre, étape 3) la pincée de farine du sac éventré : l'Alchimiste la ramasse lui-même chez Gaspard (lieux.boulangerie,
        p.recoit) et l'analyse au labo. sansCode:true : personne ne donne son code (tools/verif-e3.js). */
     sac_farine:{nom:'La pincée du sac éventré', ic:'🌾', pour:'alchimiste', sansCode:true, dire:'Une pincée de farine, pour l\'Alchimiste.'},

@@ -217,27 +217,34 @@ function critique(x, y, n, exploser, son, o){
   /* Romain, 9 novembre, 16 h 37 : « il faut rester LOCALISÉ ; tu fais trembler l'écran si tu veux ; de la FUMÉE NOIRE ;
      les MEMBRES du rat éclatent sur le côté, la fumée cache ; pas tout l'écran ; un gros CRITIQUE ». Et le 10, 14 h 14 :
      « la fumée doit sortir AU MOMENT OÙ IL EXPLOSE, avec les morceaux ; elle grossit très vite, puis se disperse vite ;
-     plus fluide ; calé sur le son ». Donc rien ne couvre l'écran, et tout suit les trois temps du son :
+     plus fluide ; calé sur le son ». Donc rien ne couvre l'écran. JUSQU'AU 19 NOVEMBRE, tout suivait les trois temps du son :
        0 ms        la flèche frappe : le temps se suspend sur LUI — l'aspiration ;
        CRIT_IMPACT le coup claque : le gros « CRITIQUE ! », un petit tremblement ; il gonfle de plus en plus ;
        CRIT_ECLAT  l'explosion : la fumée noire et ses membres jaillissent ENSEMBLE, le chiffre, un tremblement ;
        puis        la fumée se disperse vite et laisse les cendres et les os (≈ 2,2 s en tout).
-     Pour que l'image et le son restent ensemble même si la tablette peine, tout est programmé D'UN COUP, ici : les trois
-     morceaux du son sur l'horloge du son, les images en animations à retardement (la carte graphique les joue seule). */
+     Pour que l'image et le son restent ensemble même si la tablette peine, tout est programmé D'UN COUP, ici : les
+     morceaux du son sur l'horloge du son, les images en animations (la carte graphique les joue seule). */
+  /* 19 NOVEMBRE (Romain, 10 h 48) : « dès qu'il a mis le coup de dague, tout de suite l'animation se fait. Faut pas qu'il y
+     ait de délai […] il grossit pas, il explose direct […] et l'animation est beaucoup plus rapide ». Les trois temps n'en
+     font plus qu'UN : au coup, le claquement et l'explosion (le son n'a plus son aspiration), la fumée noire et les membres,
+     le gros « CRITIQUE ! », le chiffre, UNE secousse (RAPIDITE.md R17 : jamais deux à la fois). Puis la fumée se disperse
+     (≈ 0,85 s en tout, 2,2 s avant). CRIT_IMPACT et CRIT_ECLAT restent, à zéro, pour qui voudrait remettre un retard. */
   var v = S.vitesse || 1, t1 = CRIT_IMPACT / v, t2 = CRIT_ECLAT / v;
-  son('aspire', 0); son('boum', t1 / 1000); son('explosion', t2 / 1000);
+  son('boum', t1 / 1000); son('explosion', t2 / 1000 + CRIT_SOUFFLE);
   /* le module du rat fait le reste autour de lui (exploser renvoie une Promise : la fumée dissipée) */
   var fin = Promise.resolve(exploser ? exploser({impact:t1, eclat:t2, leger:!!S.critLeger}) : null);
   texteCritique(x, y, t1);
-  tremble(5, 240, t1);
-  tremble(8, 320, t2);
+  tremble(8, 300, t2);
   var c = el('div', 'chiffre crit', '−' + n);        /* sur la fumée noire (jaune sur noir : il se lit bien) ; il monte sans toucher « CRITIQUE ! » */
-  c.style.left = (x + 6) + 'px'; c.style.top = (y + 40) + 'px'; c.style.animationDelay = t2 + 'ms'; c.style.animationFillMode = 'both';
+  c.style.left = (x + 6) + 'px'; c.style.top = (y + 40) + 'px';
+  if(t2){ c.style.animationDelay = t2 + 'ms'; c.style.animationFillMode = 'both'; }
   L.fx.appendChild(c); setTimeout(function(){ c.remove(); }, t2 + 1400);
-  if(o.brume) setTimeout(function(){ brumeNoire(x, y, o.brume); }, t2);          /* sans le module du rat (images fixes) : sa fumée à lui */
-  return attendre(CRIT_ECLAT).then(function(){ return Promise.race([fin, plus(2000)]); });
+  if(o.brume){ if(t2) setTimeout(function(){ brumeNoire(x, y, o.brume); }, t2); else brumeNoire(x, y, o.brume); }   /* sans le module du rat (images fixes) : sa fumée à lui */
+  return attendre(CRIT_ECLAT).then(function(){ return Promise.race([fin, plus(1500)]); });
 }
-var CRIT_IMPACT = 420, CRIT_ECLAT = 1020;
+/* (avant le 19 novembre : 420 et 1020 — l'aspiration, le coup, l'explosion.) CRIT_SOUFFLE (s) : l'explosion du son part un
+   souffle après le claquement, pour que leurs deux attaques ne s'additionnent pas (on n'entend qu'un seul coup) */
+var CRIT_IMPACT = 0, CRIT_ECLAT = 0, CRIT_SOUFFLE = .04;
 /* le gros « CRITIQUE ! » (Romain l'aime) : il claque au-dessus du rat, dans la moitié droite de la scène, puis s'envole.
    delai (ms) : il attend son moment sans rien montrer (programmé d'avance, pour tomber pile sur le son) */
 function texteCritique(x, y, delai){
@@ -248,7 +255,7 @@ function texteCritique(x, y, delai){
   L.ecran.appendChild(t);
   return anime(t, [{transform:'translate(-50%,-50%) scale(1.9) rotate(-8deg)', opacity:0}, {transform:'translate(-50%,-50%) scale(.92) rotate(-3deg)', opacity:1, offset:.08},
     {transform:'translate(-50%,-50%) scale(1.05) rotate(-4deg)', opacity:1, offset:.14}, {transform:'translate(-50%,-50%) scale(1) rotate(-4deg)', opacity:1, offset:.78},
-    {transform:'translate(-50%,-62%) scale(1.03) rotate(-4deg)', opacity:0}], {duration:2000, delay:delai || 0, fill:'backwards', easing:'ease-out'}).then(function(){ t.remove(); });
+    {transform:'translate(-50%,-62%) scale(1.03) rotate(-4deg)', opacity:0}], {duration:1500, delay:delai || 0, fill:'backwards', easing:'ease-out'}).then(function(){ t.remove(); });   /* (19 novembre : 1,5 s au lieu de 2 — le critique va plus vite) */
 }
 
 /* la fiole, la flèche, la loupe… : un vol en ligne droite ou en arc (h), avec rotation (tour) ou orienté selon la trajectoire.
