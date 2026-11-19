@@ -254,7 +254,8 @@ function feteN(){ var P = M.P(); return (P && P.fete && P.fete.n) || 0; }
 function filetActif(id){
   var f = F(), x = f && f.gens[id], P = M.P(); if(!x || !x.filet) return false;
   if(P.vus['fete:filet:' + id]) return true;
-  return !(P.objets['_' + x.filet.sauf] || (P.recus && P.recus[x.filet.sauf]));
+  if(x.filet.saufVu && P.vus[x.filet.saufVu]) return false;   /* (19 novembre) elle a déjà avoué (une vérité, plus un code) */
+  return !(x.filet.sauf && (P.objets['_' + x.filet.sauf] || (P.recus && P.recus[x.filet.sauf])));
 }
 var FETE_TXT = 'Tout le village danse sous les lampions. Chacun a un mot à te glisser à l\'oreille !';
 /* LE DON (17 novembre, étape 4 du nouveau fil) : E.fete.gens.<pnj>.don = {obj, si:[conditions], titre, t, note} — à la fête, ce villageois

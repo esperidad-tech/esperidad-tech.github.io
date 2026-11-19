@@ -163,7 +163,7 @@ with sync_playwright() as p:
     verifier(pg.locator('#voile .gd-q').count() == 0, 'tout demandé à Anselme : il manque l\'aveu de Mélusine et la crypte')
     fermer(pg)
     ev(pg, 'gd-fete', {'id': 'melusine'})
-    verifier('C\'est moi qui ai écrit la lettre' in texte(pg) and '_info:aveu' in objets(pg) and 'Léo' not in texte(pg), 'Mélusine craque à la fête (le filet) : un homme en cape, aucun nom')
+    verifier('C\'est moi qui ai écrit la lettre' in texte(pg) and pg.evaluate("() => !!M.P().vus['fete:filet:melusine']") and 'Léo' not in texte(pg), 'Mélusine craque à la fête (le filet) : un homme en cape, aucun nom')
     verifier(not pg.evaluate("() => !!M.P().objets.tenues") and pg.locator('#voile [data-act=gd-fete-don]').count() == 0, 'pendant qu\'elle avoue : pas encore les tenues')
     fermer(pg)
     # (17 novembre, étape 4 du nouveau fil) LES TENUES : elle a avoué — à la fête, elle porte encore un « ❗ » ; on la retouche : trois tenues,
@@ -320,7 +320,7 @@ with sync_playwright() as p:
     code(pg, 'moment:2'); apres_code(pg)
     ic = grands_de(pg, 'anselme').index('cle')
     ev(pg, 'gd-fete', {'id': 'melusine'})
-    verifier('C\'est moi qui ai écrit la lettre' in texte(pg) and '_info:aveu' in objets(pg), 'le filet : Mélusine craque à la fête (code pour le Sage)')
+    verifier('C\'est moi qui ai écrit la lettre' in texte(pg) and pg.evaluate("() => !!M.P().vus['fete:filet:melusine']"), 'le filet : Mélusine craque à la fête (sans code : à dire au Sage)')
     shot(pg, 'B-melusine-filet')
     fermer(pg)
     # (17 novembre) le filet du plan : la nuit, avec le code du Pisteur, « 💡 Le plan » s'écrit dans le Carnet même si le Barde n'a pas tout entendu l'après-midi
