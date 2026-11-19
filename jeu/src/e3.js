@@ -317,7 +317,7 @@ E[3] = {
        majuscules »). Les indices : Anselme (fort, lentement, sans le presser), Basile (il ne prête rien, sauf à qui l'aide à sonner),
        Silas (le père d'Anselme l'a retrouvé en sonnant toute une nuit). */
     cle:{pnj:'anselme', ic:'🔔',
-      rate:'Bon, je monte sonner, moi.',
+      rate:'Bon, je monte sonner, moi. Tout seul !',
       etapes:[
         {t:'HEIN ? Ah, le Barde ! Qu\'est-ce que tu me veux ?', choix:[
           {q:'PARDON DE VOUS DÉRANGER, ANSELME, J\'AI UNE QUESTION !', r:'UN HARENG ? Je n\'ai pas faim, mon petit !'},
@@ -335,10 +335,13 @@ E[3] = {
           {q:'PARCE QUE LE MAIRE VEUT QUE TOUT SOIT PARFAIT.', r:'LE MAIRE VEUT UNE PAIRE ? De chaussettes ?'},
           {q:'VOTRE PÈRE A SONNÉ TOUTE UNE NUIT POUR SILAS. ODETTE AUSSI EST PERDUE.', r:'Il essuie une larme. « Alors on sonne pour Odette. Monte, mon petit ! »', bon:true}]}
       ],
-      reussi:{bouton:'🔔 Monter avec Anselme', titre:'La Grosse Marie sonne', t:'Vous tirez la corde ensemble : DONG… DONG… Anselme ferme les yeux et compte les coups. Sa clé pend à sa ceinture…', code:'info:cle_clou'},
-      /* (17 novembre, le nouveau fil, la nuit) raté : le Barde demande à Tim, perché sur les toits, s'il connaît un autre passage. Tim montre
-         le sentier du vieux puits : son code le trace sur le tableau des chemins secrets du Pisteur (E.chemins, plus bas). */
-      echec:{bouton:'🙋 « Tim ! Tu connais un autre passage ? »', qui:'tim', titre:'Tim, depuis les toits', t:'« Un autre passage ? Regarde, là-bas ! Moustache vient de filer par un petit sentier, jusqu\'au vieux puits… Il s\'est glissé entre les barreaux ! »', code:'info:vieux_puits'},
+      /* (Romain, 19 novembre, 10 h 30 : « si le barde il réussit le dialogue, il faut marquer que Anselm fait rentrer le barde et laisse la
+         porte ouverte […] que ça soit la porte du clocher, pas la porte de la crypte ») */
+      reussi:{bouton:'🔔 Monter avec Anselme', titre:'La Grosse Marie sonne', t:'Anselme te fait entrer dans le clocher et laisse la porte grande ouverte derrière vous. Vous tirez la corde ensemble : DONG… DONG… Il ferme les yeux et compte les coups. Sa clé pend à sa ceinture…', code:'info:cle_clou'},
+      /* (Romain, 19 novembre, 10 h 28 et 10 h 30) raté : plus de bouton « Tim ! » tout de suite. Anselme ferme à clé la porte du clocher et
+         monte sonner seul (le Pisteur ne peut plus y monter) ; le conteur dit qu'il faut un plan B. C'est au Barde de trouver Tim, à la
+         fête (E.fete.gens.tim.don) : c'est lui qui donne le code du vieux puits. */
+      echec:{t:'Anselme entre dans le clocher et ferme la porte à double tour derrière lui. Sa clé repart à sa ceinture : personne ne montera là-haut ce soir. DONG… DONG… Mince, le plan a échoué ! Il va falloir un plan B… Quelqu\'un d\'autre pourra peut-être vous aider.'},
       resume:{ok:'Tu as aidé Anselme à sonner la Grosse Marie. Sa clé pendait à sa ceinture…', rate:'Anselme est monté sonner tout seul, sa clé à la ceinture.'}},
     /* LE MAIRE INQUIET, À LA FÊTE (Romain, 14 novembre, 10 h 29, Bible §13.36 : « j'aimerais bien qu'on remette à la fin le maire inquiet,
        qui demande au Barde où sont ses amis »).
@@ -401,7 +404,12 @@ E[3] = {
           {q:'Et s\'il attrape quelqu\'un ?', apres:1, r:'Il prend toujours le plus faible. Ne laisse jamais un ami à moitié de ses forces.'}],
           note:'Silas, à la fête : c\'est lui qui a entraîné Léo. Quand il fonce, il ne regarde pas ses pieds (une flaque, et il s\'étale ; à terre, une lame lui fait très mal) ; avant de sauter, boire ou crier, un coup sur la tête arrête tout ; il attrape le plus faible.'}},
       victor:{t:'Je danse ! Enfin, j\'essaie.'},
-      tim:{t:'Chut ! Je suis monté en haut du mât des lampions.'},
+      tim:{t:'Chut ! Je suis monté en haut du mât des lampions.',
+        /* (Romain, 19 novembre, 10 h 28) le plan B : Anselme raté, Tim, perché au mât des lampions, connaît un autre passage — le Barde doit
+           penser à venir le voir (pas de « ❗ » : discret) ; son code trace le sentier du vieux puits chez le Pisteur (E.chemins) */
+        don:{code:'info:vieux_puits', discret:true, si:[{rate:'grand:cle'}], q:'Tim ! Tu connais un autre passage ?', titre:'Tim, en haut du mât',
+          t:'Un autre passage ? Regarde, là-bas ! Moustache vient de filer par un petit sentier, jusqu\'au vieux puits… Il s\'est glissé entre les barreaux !',
+          note:'Tim, à la fête : Moustache a filé par un petit sentier jusqu\'au vieux puits, et s\'est glissé entre les barreaux. Code pour le Pisteur !'}},
       melusine:{t:'Je n\'écrirai plus jamais pour personne…',
         /* le filet : son aveu n'a pas été obtenu l'après-midi */
         /* (Romain, 13 novembre : pas « je n'en peux plus » — « c'est trop dur de garder le secret, j'ai besoin de me confier ») */

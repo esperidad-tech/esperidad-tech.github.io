@@ -8,6 +8,7 @@
 - **Le Pisteur** : chez Odette, des dalles **sans aucun signe**, et **plus aucun texte d'aide**. Le matin, dans l'ombre, il peut les enfoncer (un coup de chance sur 504). L'après-midi, 3 secondes après l'entrée, le soleil allume une dalle, puis une deuxième, puis une troisième : c'est l'ordre. Il ressort sans fenêtre « Raté ».
 - **Pour la conception** : **le Pisteur trouve la cachette sans le Sage et sans le Barde.** Le papier et la pierre ne font plus que dire où et quand regarder. Si une enquête future a besoin que le Sage soit indispensable à une cachette, ce n'est plus ce modèle-là. La règle de Romain qui en sort : **pas de symboles à recopier d'un écran à l'autre, pas de texte qui explique l'énigme** — ce qu'on voit doit suffire.
 - **À faire valider par Romain** : les neuf dalles éclairées chez le Sage (pas les trois bonnes) ; les dalles qui se rallument après un essai raté ; les petites phrases.
+- **Retouche de 11 h 10 (en ligne, commit e52779d du site)** : chaque fois que le Pisteur revient dans la maison l'après-midi (après « Sortir de la maison », ou au retour de la pause ⏸️), l'animation des dalles repart de zéro.
 
 ## 19 novembre, 10 h 10 — UN ROND JAUNE SUR IRIS QUAND LE BARDE A LE CODE DU PISTEUR — EN LIGNE (Bible §13.74 ; commit f2a14ab du site)
 
