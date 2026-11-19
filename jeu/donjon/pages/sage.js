@@ -25,7 +25,7 @@ var table, couche, planEl, coinEl, runeEl, curseur, bulleEl;
 var NOTES_ENCRE = P.notes.filter(function(n){ return n.type === 'encre'; });
 var CELL = 12;     /* les petites cases où l'encre est révélée (en unités) */
 function construirePlan(){
-  var s = PS.svg();
+  var s = PS.svg({jour:JOUR});
   couche.innerHTML = s.principal;
   planEl = couche.firstChild;
   /* les toiles de l'encre invisible */
@@ -249,12 +249,18 @@ function toucherPlan(p){
     } else if(n.type === 'encre' && S.encreFinie[n.id] && dans(p, n.x, n.y, 300, 80)){ conte('L’encre invisible dit : « ' + n.lignes.join(' ') + ' ».'); return; }
     else if(n.type === 'coin' && coinOk && dans(p, n.x, n.y, 300, 70)){ conte('Une note à l’encre rouge : « ' + n.lignes.join(' ') + ' »'); return; }
   }
-  if(dans(p, P.titre.x, P.titre.y + 15, 380, 110)){ conte('« ' + P.titre.t + ' », ' + P.titre.sous + '.'); return; }
+  if(!JOUR && dans(p, P.titre.x, P.titre.y + 15, 380, 110)){ conte('« ' + P.titre.t + ' », ' + P.titre.sous + '.'); return; }
   for(var k = 0; k < P.signes.length; k++){
     var sg = P.signes[k];
     if(Math.hypot(p.x - sg.x, p.y - sg.y) < Math.max(26, sg.t * .9)){ conte(sg.porte ? 'Sur cette porte, un signe gravé : ' + NOMS_SIGNES[sg.s] + '.' : 'Pas de nom ici, juste un signe : ' + NOMS_SIGNES[sg.s] + '.'); return; }
   }
   var id = C.lieuEn(p.x, p.y);
+  if(JOUR){
+    if(id === 'egouts'){ conte('Un couloir qui tourne, qui tourne…'); return; }
+    if(id === 'dalles'){ conte('Un couloir pavé de cases claires et sombres, comme un damier. Et une note codée, juste à côté.'); return; }
+    if(id || U.dansPoly(U.contourTrait(U.lissePts(C.VIEUX), 50), p.x, p.y)){ conte('Quelque chose était écrit ici… L’encre a tant pâli qu’on ne le lit plus.'); return; }
+    return;
+  }
   if(id === 'galerie' || (!id && U.dansPoly(U.contourTrait(U.lissePts(C.VIEUX), 50), p.x, p.y))){ conte('C’est écrit : « La grande galerie ». Sur ce vieux plan, elle va jusqu’à la grotte de givre.'); return; }
   if(id){
     var nom = P.noms.filter(function(m){ return m.lieu === id && (!m.coin || coinOk); })[0];
@@ -548,6 +554,9 @@ function recommencer(){
    le carnet et les pages de sauvegarde sont dans le jeu : ici, il ne reste que le plan, sa grille, sa rune, et « Refermer ».
    « nouveau=<code> » : ce code vient d'arriver — sa petite scène se joue sur le plan (la rune apparaît, le coin se recolle). */
 var DANS = PG.dansJeu, PARAMS = PG.params || {};
+/* (Romain, 19 novembre, 9 h 41) « jour=1 » : le vieux plan d'Odette regardé avant la nuit (dès que le Sage l'a reçu). On le lit, on le
+   zoome, on déchiffre les notes codées… mais rien ne dit ce que c'est : ni noms, ni titre, ni crâne (sage-plan.js, svg({jour})). */
+var JOUR = !!(DANS && PARAMS.jour);
 function codesDuJeu(){
   var neufs = {};
   if(!DANS) return neufs;
