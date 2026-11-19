@@ -330,11 +330,17 @@ function loupe(n){
     (S.lues[n.id] ? PG.bulle('Tu l’as déjà déchiffrée : « ' + n.dit + ' ».') : dit('Les Fondateurs écrivaient avec leur alphabet secret. Chaque signe a la forme de sa case dans la grille.', 'sur-nuit')) +
     '<div class="loupe-corps"><div class="loupe-mots">';
   n.lignes.forEach(function(m){
+    /* (19 novembre, Romain : « la note codée sort de l'écran, on ne peut pas appuyer dessus ») un mot = un bloc : sur un téléphone en hauteur,
+       la ligne passe à la ligne entre deux mots (« UNE BOURSE DORT » faisait 728 px d'un seul tenant) */
     html += '<div class="loupe-ligne">';
-    m.split('').forEach(function(ch){
-      if(ch === ' '){ html += '<span class="loupe-esp"></span>'; return; }
-      var i = nb++;
-      html += '<button type="button" class="loupe-l" data-i="' + i + '">' + PS.glyphes([ch], 30, '#8e2e1c').replace('class="glyphes"', 'class="glyphes un"') + '<b data-case="' + i + '"></b></button>';
+    m.split(' ').forEach(function(mot){
+      if(!mot) return;
+      html += '<div class="loupe-mot">';
+      mot.split('').forEach(function(ch){
+        var i = nb++;
+        html += '<button type="button" class="loupe-l" data-i="' + i + '">' + PS.glyphes([ch], 30, '#8e2e1c').replace('class="glyphes"', 'class="glyphes un"') + '<b data-case="' + i + '"></b></button>';
+      });
+      html += '</div>';
     });
     html += '</div>';
   });

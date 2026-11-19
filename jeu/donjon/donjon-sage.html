@@ -223,18 +223,27 @@ p{margin:0}
 .loupe{width:min(860px,100%)}
 .loupe-corps{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;justify-content:center}
 .loupe-mots{display:flex;flex-direction:column;gap:8px;align-items:center}
-.loupe-ligne{display:flex;gap:4px}
-.loupe-esp{width:22px}
+.loupe-ligne{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 22px}
+.loupe-mot{display:flex;gap:4px}
 .loupe-l{position:relative;width:48px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:3px 0;border-radius:10px}
 .loupe-l .glyphes{width:40px;height:40px}
 .loupe-l b{width:44px;height:44px;border-radius:10px;border:2px dashed #8a6a3a;background:rgba(255,255,255,.4);display:grid;place-items:center;font-family:var(--f-titre);font-weight:400;font-size:26px;color:#1f3a6a}
 .loupe-l.choisi b{border:3px solid var(--or);background:#fffaf0;box-shadow:0 0 0 2px var(--encre)}
 .loupe-cle{width:300px;max-width:100%;background:rgba(255,250,240,.6);border:2px solid #8a6a3a;border-radius:10px;padding:5px}
-.clavier{display:grid;grid-template-columns:repeat(14,1fr);gap:5px}
-.clavier button{min-height:46px;min-width:44px;border-radius:10px;background:#3b2414;color:#f3e7cb;font-family:var(--f-titre);font-size:22px;box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.clavier{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:5px}
+.clavier button{min-height:46px;min-width:0;border-radius:10px;background:#3b2414;color:#f3e7cb;font-family:var(--f-titre);font-size:22px;box-shadow:0 2px 0 rgba(0,0,0,.35)}
 .clavier button:active{transform:translateY(2px)}
 .clavier .eff{background:#6a2a1a}
 .loupe-msg{min-height:0}
+/* (19 novembre) un téléphone tenu droit : 14 touches de 44 px (700 px) ne tiennent pas ; le clavier passe sur 7 colonnes, les signes rétrécissent un peu */
+@media (max-width:700px){
+  .clavier{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+  .loupe-ligne{gap:6px 14px}
+  .loupe-mot{gap:2px}
+  .loupe-l{width:clamp(30px, 9.4vw, 44px)}
+  .loupe-l .glyphes{width:clamp(28px, 8.4vw, 36px);height:clamp(28px, 8.4vw, 36px)}
+  .loupe-l b{width:clamp(28px, 8.6vw, 40px);height:clamp(32px, 9.4vw, 42px);font-size:20px}
+}
 
 /* ---------- le carnet de l'aventurier : le croquis du monstre et son récit ---------- */
 .livre-betes{border-top:2px dashed rgba(107,84,52,.45);padding-top:8px;display:flex;flex-direction:column;gap:8px}
@@ -3581,11 +3590,17 @@ function loupe(n){
     (S.lues[n.id] ? PG.bulle('Tu l’as déjà déchiffrée : « ' + n.dit + ' ».') : dit('Les Fondateurs écrivaient avec leur alphabet secret. Chaque signe a la forme de sa case dans la grille.', 'sur-nuit')) +
     '<div class="loupe-corps"><div class="loupe-mots">';
   n.lignes.forEach(function(m){
+    /* (19 novembre, Romain : « la note codée sort de l'écran, on ne peut pas appuyer dessus ») un mot = un bloc : sur un téléphone en hauteur,
+       la ligne passe à la ligne entre deux mots (« UNE BOURSE DORT » faisait 728 px d'un seul tenant) */
     html += '<div class="loupe-ligne">';
-    m.split('').forEach(function(ch){
-      if(ch === ' '){ html += '<span class="loupe-esp"></span>'; return; }
-      var i = nb++;
-      html += '<button type="button" class="loupe-l" data-i="' + i + '">' + PS.glyphes([ch], 30, '#8e2e1c').replace('class="glyphes"', 'class="glyphes un"') + '<b data-case="' + i + '"></b></button>';
+    m.split(' ').forEach(function(mot){
+      if(!mot) return;
+      html += '<div class="loupe-mot">';
+      mot.split('').forEach(function(ch){
+        var i = nb++;
+        html += '<button type="button" class="loupe-l" data-i="' + i + '">' + PS.glyphes([ch], 30, '#8e2e1c').replace('class="glyphes"', 'class="glyphes un"') + '<b data-case="' + i + '"></b></button>';
+      });
+      html += '</div>';
     });
     html += '</div>';
   });
