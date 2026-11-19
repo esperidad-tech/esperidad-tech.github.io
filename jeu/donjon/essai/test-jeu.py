@@ -160,10 +160,11 @@ def tablette(nav):
     verifie(P.etat("window.RatAnime ? SALLE.acteurs.r[0].etat().dos && !!SALLE.acteurs.r[0]._rat.fx.flaque_huile : !!document.querySelector('.flaque-huile')"), 'une flaque d\'huile reste au sol')
     P.heros('pisteur'); P.capture('13-bande-pisteur')
     P.geste('fleche'); P.cible(0)
-    # le critique (Romain, 9 novembre, 16 h 37) : localisé autour du rat — temps suspendu, fumée noire, membres, cendres
+    # le critique (Romain, 9 novembre, 16 h 37) : localisé autour du rat — fumée noire, membres, cendres
+    # (19 novembre : plus de temps suspendu ni de gonflement — il explose au coup, et tout va plus vite)
     pg.wait_for_selector('.ra-scene-fx, .crit-texte', state='attached', timeout=15000)
     zone = []
-    for n, ms in [('14-critique-suspendu', 200), ('15-critique-fumee', 550), ('16-critique-membres', 650), ('17-critique-retombent', 450), ('18-critique-cendres', 900)]:
+    for n, ms in [('14-critique-explosion', 60), ('15-critique-fumee', 180), ('16-critique-membres', 220), ('17-critique-retombent', 300), ('18-critique-cendres', 700)]:
         pg.wait_for_timeout(ms); P.capture(n)
         zone.append(pg.evaluate("""() => { var j = document.getElementById('jeu').getBoundingClientRect(), g = 1e9, d = -1e9, n = 0;
           document.querySelectorAll('.ra-scene-fx *, .crit-texte, #ecran-fx > *, #fx > *').forEach(function(e){
@@ -178,8 +179,8 @@ def tablette(nav):
     P.attend("SALLE.etat.mode === 'rats'")
     verifie(P.etat('SALLE.etat.r[0].mort'), 'le critique du Pisteur tue le rat net')
     s = P.etat('window.__sons')
-    verifie(all(x in s for x in ['ratHuile', 'arc', 'vol', 'chairF', 'ratCritique:avant', 'ratCritique:impact', 'ratCritique:explosion']) and not any(x.endswith('!') for x in s if not x.startswith('icone')),
-            'les sons de l\'atelier jouent : huile, arc, flèche, critique en trois morceaux (' + ' '.join(x for x in s if not x.startswith('icone')) + ')')
+    verifie(all(x in s for x in ['ratHuile', 'arc', 'vol', 'chairF', 'ratCritique:impact', 'ratCritique:explosion']) and 'ratCritique:avant' not in s and not any(x.endswith('!') for x in s if not x.startswith('icone')),
+            'les sons de l\'atelier jouent : huile, arc, flèche, critique en deux morceaux, sans l\'aspiration (' + ' '.join(x for x in s if not x.startswith('icone')) + ')')
     verifie(s.count('icone!') + s.count('icone') >= 2, 'toucher une icône d\'arme ou de potion demande le petit son « icone » (silencieux tant que Romain ne l\'a pas choisi)')
     pg.wait_for_timeout(1250); P.capture('19-tour-des-rats')
     P.attend_libre()

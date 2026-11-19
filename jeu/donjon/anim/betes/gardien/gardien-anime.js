@@ -30,7 +30,7 @@
      tousser()                 il tousse de la vapeur, trois fois, lentement
      mourir() / fuir()         une machine ne fuit pas : il ralentit, ses runes s'éteignent une à une, il s'agenouille,
                                puis s'effondre en pièces détachées dans un nuage de rouille ; les pièces restent au sol.
-     exploser(scene)           le critique : il s'emballe, puis explose (brume noire, onde de choc), engrenages et boulons
+     exploser(scene)           le critique : il explose tout de suite (19 novembre : il ne s'emballe plus ; brume noire, onde de choc), engrenages et boulons
                                projetés rebondissent et RESTENT au sol avec la carcasse fumante. La Promise a .boom.
    États (se cumulent, etat(nom, on) renvoie une Promise) :
      enrage (runes rouges, vapeur rouge, il frappe plus vite), brule (la mousse brûle), colle, ebloui (cœur déréglé,
@@ -2261,7 +2261,7 @@ R.mourir = function(o){
 };
 R.fuir = function(o){ return this.mourir(o); };
 
-/* ---------------- la mort par critique : il s'emballe et EXPLOSE ---------------- */
+/* ---------------- la mort par critique : il EXPLOSE, tout de suite (19 novembre : il ne s'emballe plus) ---------------- */
 R._boum = function(scene, o){
   scene = scene || this.c.parentNode || this.c;
   if(getComputedStyle(scene).position === 'static') scene.style.position = 'relative';
@@ -2280,9 +2280,9 @@ R._boum = function(scene, o){
   var anims = [];
   /* le cœur brûlant (orange, pas blanc), puis l'onde de choc */
   var c1 = el('<circle r="' + f1(50 * u) + '" fill="url(#' + fl + 'c)"/>');
-  c1.animate([{transform: T(cx, cy, .15), opacity: 1}, {offset: .35, transform: T(cx, cy, 1), opacity: 1}, {transform: T(cx, cy, 1.4), opacity: 0}], {duration: 460, easing: 'ease-out', fill: 'forwards'}).finished.then(oter(c1), oter(c1));
+  c1.animate([{transform: T(cx, cy, .15), opacity: 1}, {offset: .35, transform: T(cx, cy, 1), opacity: 1}, {transform: T(cx, cy, 1.4), opacity: 0}], {duration: 340, easing: 'ease-out', fill: 'forwards'}).finished.then(oter(c1), oter(c1));
   var c2 = el('<circle r="' + f1(40 * u) + '" fill="none" stroke="#2a1c3c" stroke-width="' + f1(10 * u) + '" stroke-opacity=".85"/><circle r="' + f1(40 * u) + '" fill="none" stroke="#d8c8f0" stroke-width="' + f1(2.4 * u) + '"/>');
-  c2.animate([{transform: T(cx, cy, .2), opacity: 1}, {transform: T(cx, cy, 3.4), opacity: 0}], {duration: 700, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'forwards'}).finished.then(oter(c2), oter(c2));
+  c2.animate([{transform: T(cx, cy, .2), opacity: 1}, {transform: T(cx, cy, 3.4), opacity: 0}], {duration: 480, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'forwards'}).finished.then(oter(c2), oter(c2));
   /* le nuage de brume noire : de grosses volutes qui jaillissent, restent, puis se dissipent en montant */
   var nb = o.brume || 8;
   for(var n = 0; n < nb; n++){
@@ -2291,7 +2291,7 @@ R._boum = function(scene, o){
     var dx = x * 1.7 + hasard(-14, 14) * u, dy = y * 1.4 - hasard(10, 40) * u;
     anims.push(g.animate([{transform: T(cx, cy, .1), opacity: 0}, {offset: .05, opacity: 1, transform: T(cx + x, cy + y, .9)},
       {offset: .5, opacity: .95, transform: T(cx + dx, cy + dy, 1.4)}, {transform: T(cx + dx * 1.3 + hasard(-20, 20) * u, cy + dy * 1.2 - 40 * u, 2), opacity: 0}],
-      {duration: hasard(2600, 3300), easing: 'cubic-bezier(.12,.75,.3,1)', fill: 'forwards'}));
+      {duration: hasard(1100, 1300), easing: 'cubic-bezier(.3,.5,.6,1)', fill: 'forwards'}));     /* (19 novembre : 2,6 à 3,3 s avant, avec une courbe qui laissait une longue traîne ; maintenant : aussi noire qu'avant pendant 0,4 s, partie en 1,2 s) */
   }
   for(var s = 0; s < 5; s++){
     var as = Math.random() * Math.PI * 2, vs = hasard(70, 150) * u, ls = hasard(7, 14) * u;
@@ -2304,21 +2304,14 @@ R.exploser = function(scene){
   var self = this, j = this._debutAction(), boomOk, boomP = new Promise(function(r){ boomOk = r; });
   if(this.mort){ boomOk(); var p0 = Promise.resolve(); p0.boom = boomP; return p0; }
   this._nettoyer();
-  /* 1. il s'emballe : les rouages deviennent fous, tout s'allume, il tremble de plus en plus, la vapeur fuse de partout */
-  this._rouages(7);
-  this._fondu('yeuxFort', 1, 200);
-  this._fondu('pf', 1, 400);
-  this._clignerRunes(900);
-  var k = [{t: 0, p: {}}];
-  for(var i = 1; i <= 10; i++) k.push({t: i / 11, p: {secousse: {x: i % 2 ? 2 + i * .7 : -2 - i * .7, a: i % 2 ? 1 + i * .15 : -1 - i * .15}, saut: {sx: 1 + i * .006, sy: 1 + i * .009, y: -i * .5}, buste: {a: i % 2 ? 1.5 : -1.5}, tete: {a: i % 2 ? 4 : -4}, machoire: {a: -i * 1.6}, capot1: {y: i % 2 ? -5 : 0}, capot2: {y: i % 2 ? 0 : -5}, plaque: {sx: i % 2 ? .9 : 1}}, e: 'linear'});
-  k.push({t: 1, p: {saut: {sx: 1.08, sy: 1.12, y: -8}}, e: 'ease-in'});
-  JOINTS.forEach(function(jt, n){ self._minuteur(function(){ self._jet(self._pt(jt[0]), jt[1], {n: 1, force: 1.4, blanc: true}); }, 80 + n * 85); });
-  /* les copies des pièces qui vont voler sont préparées pendant qu'il s'emballe (une à la fois) : le BOUM reste fluide */
+  /* 1. (19 novembre, Romain : « il grossit pas, il explose direct […] faut pas qu'il y ait de délai […] beaucoup plus
+        rapide ».) Avant : il s'emballait 0,9 s (rouages fous, runes, jets de vapeur, tremblements), et les copies des pièces
+        qui volent étaient préparées pendant ce temps, une à la fois. Maintenant : le BOUM tout de suite ; les pièces sont
+        détachées au moment du BOUM (il meurt une fois par descente). La fumée : ≈ 1,2 s (3 s avant). */
   var morceaux = [['tete', 'tete', -190, 150, -720, 22], ['epaule', 'epauleHaut', 170, 130, 540, 30], ['poing', 'poingC', 120, 110, 720, 14], ['poingF', 'poingFC', -150, 90, -540, 14]];
   if(!this.etat['sans-plaque']) morceaux.push(['plaque', 'plaqueC', -90, 170, 900, 34]);
   var prets = [];
-  morceaux.forEach(function(m, n){ self._minuteur(function(){ prets[n] = self._detacher([m[0]], self.S.fixe, m[1], true); }, 120 + n * 140); });
-  return this._seq(k, 900).fini.then(function(){
+  return Promise.resolve().then(function(){
     /* 2. BOUM */
     var c0 = self._pt('centre');
     var boum = self._boum(scene, {p: c0, u: 1.3});
@@ -2331,14 +2324,14 @@ R.exploser = function(scene){
       var d = prets[n] || self._detacher([m[0]], self.S.fixe, m[1], true);
       d.montrer();
       var x = Math.max(-40, Math.min(560, d.c[0] + m[2]));
-      var a = self._voler(d.g, d.c, [x, SOL - m[5]], {haut: m[3], rot: m[4], duree: hasard(1100, 1400), rebond: 14, glisse: m[2] > 0 ? 16 : -16, bascule: 10,
+      var a = self._voler(d.g, d.c, [x, SOL - m[5]], {haut: m[3], rot: m[4], duree: hasard(780, 980), rebond: 14, glisse: m[2] > 0 ? 16 : -16, bascule: 10,
         onSol: function(){ self._etincelles([x, SOL - 4], 4, {v: 34, grav: 10}); }});
       a.finished.then(function(){ try{ a.commitStyles(); a.cancel(); }catch(e){} self.S.fixeArr.appendChild(d.g); }, function(){});
     });
     /* des engrenages et des boulons projetés, qui rebondissent et restent */
     for(var g = 0; g < 4; g++){
       var r = hasard(7, 12), eng = self._el(self.S.fixe, P(rouageD(r, 8, 0), self.D.g(FER)) + '<circle r="' + f1(r * .45) + '" fill="#2a1a2a" stroke="' + O + '" stroke-width="1.6"/>');
-      var xg = c0[0] + (g % 2 ? 1 : -1) * hasard(60, 200), ag = self._voler(eng, c0, [xg, SOL - r * .6], {haut: hasard(90, 170), rot: hasard(-900, 900), duree: hasard(1000, 1400), rebond: 12, glisse: (g % 2 ? 1 : -1) * 14});
+      var xg = c0[0] + (g % 2 ? 1 : -1) * hasard(60, 200), ag = self._voler(eng, c0, [xg, SOL - r * .6], {haut: hasard(90, 170), rot: hasard(-900, 900), duree: hasard(720, 940), rebond: 12, glisse: (g % 2 ? 1 : -1) * 14});
       (function(eng, ag){ ag.finished.then(function(){ try{ ag.commitStyles(); ag.cancel(); }catch(e){} self.S.fixeArr.appendChild(eng); self.debris.push(eng); }, function(){}); })(eng, ag);
     }
     for(var bo = 0; bo < 2; bo++) self._boulon(c0, bo % 2 ? 1 : -1, true);
@@ -2347,7 +2340,7 @@ R.exploser = function(scene){
     self.mort = true;
     /* la carcasse s'affaisse sur ses jambes, ses braises rougeoient, elle fume longtemps */
     self._seq([{t: 0, p: {}}, {t: .35, p: fus({saut: {sx: 1, sy: .96, y: 14, a: 0, x: 0}, secousse: {x: 0, y: 0, a: 0}, capot1: {y: 0}, capot2: {y: 0}}, jambe('F', 0, -14), jambe('P', 0, -14)), e: 'cubic-bezier(.6,0,.9,.5)'},
-      {t: .65, p: {saut: {sy: 1.01, y: 8, a: -1.5}}, e: 'cubic-bezier(.2,.7,.4,1)'}, {t: 1, p: fus({saut: {sy: 1, y: 10, a: -1}}, jambe('F', 0, -10), jambe('P', 0, -10))}], 900);
+      {t: .65, p: {saut: {sy: 1.01, y: 8, a: -1.5}}, e: 'cubic-bezier(.2,.7,.4,1)'}, {t: 1, p: fus({saut: {sy: 1, y: 10, a: -1}}, jambe('F', 0, -10), jambe('P', 0, -10))}], 600);
     self._boucleX('braisesRestes', [{opacity: 1}, {opacity: .35}, {opacity: .9}, {opacity: .45}, {opacity: 1}], 1600);
     (function fumet(n){
       if(n <= 0) return;

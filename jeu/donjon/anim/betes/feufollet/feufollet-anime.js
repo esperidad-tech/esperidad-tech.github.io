@@ -848,18 +848,14 @@ R.mourir = function(){
   return attendreMs(T0 + 300).then(function(){ self._couperBoucles(); self._couperX(''); self.el.style.visibility = 'hidden'; self.enAction = false; self.mort = true; });
 };
 R.fuir = function(){ return this.mourir(); };
-/* le critique : il enfle, vacille, et ÉCLATE en gerbe d'étincelles bleues et en brume noire ; il reste au sol une petite
+/* le critique : il ÉCLATE tout de suite (19 novembre : il n'enfle plus) en gerbe d'étincelles bleues et en brume noire ; il reste au sol une petite
    braise froide qui s'éteint lentement */
 R.exploser = function(scene){
   var self = this, j = this._debutAction(), boomOk, boomP = new Promise(function(ok){ boomOk = ok; });
   ['brule', 'colle', 'enrage', 'cible', 'ebloui'].forEach(function(n){ if(self.etat[n]) self._visuel(n, false); self.etat[n] = false; });
-  this._fondu('pf', 1, 100);
-  var k = [{t: 0, p: {}}];
-  for(var i = 1; i <= 8; i++) k.push({t: i / 9, p: melange({taille: {s: (this.etat.grand ? 1.26 : 1) * (1 + i * .03)}, secousse: {x: i % 2 ? 6 : -6, a: i % 2 ? 3 : -3}, sourcilG: {y: -6, a: 16}, sourcilD: {y: -6, a: -16}, coeur: {s: 1 + i * .08}}, toutes({sy: 1 + i * .06, a: i % 2 ? 10 : -10})), e: 'linear'});
-  k.push({t: 1, p: {taille: {s: (this.etat.grand ? 1.26 : 1) * 1.36}}, e: 'ease-in'});
-  setTimeout(function(){ self._fondu('sourire', 0, 0); self._fondu('crache', 1, 0); }, 100);
-  (this.V.flash || []).forEach(function(e){ e.getAnimations().forEach(function(a){ a.cancel(); }); e.removeAttribute('visibility'); e.animate([{opacity: 0}, {opacity: .3, offset: .3}, {opacity: .1, offset: .5}, {opacity: .6, offset: .8}, {opacity: .9}], {duration: 560, fill: 'forwards'}); });
-  var pr = this._seq(k, 560).fini.then(function(){
+  /* (19 novembre, Romain : « il grossit pas, il explose direct […] faut pas qu'il y ait de délai […] beaucoup plus rapide ».
+     Avant : il enflait 0,56 s en blanchissant, puis la fumée restait 3,5 s. Maintenant : le BOUM tout de suite, la fumée ≈ 0,9 s.) */
+  var pr = Promise.resolve().then(function(){
     scene = scene || self.c.parentNode || self.c;
     if(getComputedStyle(scene).position === 'static') scene.style.position = 'relative';
     var sr = scene.getBoundingClientRect(), W = scene.offsetWidth || sr.width, H = scene.offsetHeight || sr.height, ech = W / (sr.width || 1);
@@ -873,25 +869,25 @@ R.exploser = function(scene){
     scene.appendChild(ov);
     function g(html, frames, o){ var e = document.createElementNS(NS, 'g'); e.innerHTML = html; ov.appendChild(e); var a = e.animate(frames, {duration: o.d, delay: o.dl || 0, easing: o.e || 'ease-out', fill: 'both'}); if(o.retirer !== false) a.finished.then(function(){ e.remove(); }, function(){}); return a; }
     self._fondu('bete', 0, 0);
-    self._opac('reflet', [{opacity: 1}, {opacity: 0}], 800);
+    self._opac('reflet', [{opacity: 1}, {opacity: 0}], 400);
     boomOk();
     /* la brume noire (6 nuages) */
     var brumes = [];
     for(var n = 0; n < 6; n++){ var a = n / 6 * Math.PI * 2 + hasard(-.3, .3), r = hasard(34, 50) * u, dx = Math.cos(a) * 60 * u, dy = Math.sin(a) * 40 * u - 16 * u;
-      brumes.push(g('<circle r="' + f1(r) + '" fill="url(#' + id + 'n)"/><circle cx="' + f1(-r * .25) + '" cy="' + f1(-r * .3) + '" r="' + f1(r * .6) + '" fill="url(#' + id + 'c)"/>', [{transform: T(cx, cy, .15), opacity: 0}, {offset: .06, opacity: 1, transform: T(cx + dx * .5, cy + dy * .5, 1)}, {offset: .55, opacity: .85, transform: T(cx + dx, cy + dy - 30 * u, 1.4)}, {transform: T(cx + dx * 1.3, cy + dy - 90 * u, 1.9), opacity: 0}], {d: hasard(3000, 3800), e: 'cubic-bezier(.12,.75,.3,1)', retirer: false})); }
+      brumes.push(g('<circle r="' + f1(r) + '" fill="url(#' + id + 'n)"/><circle cx="' + f1(-r * .25) + '" cy="' + f1(-r * .3) + '" r="' + f1(r * .6) + '" fill="url(#' + id + 'c)"/>', [{transform: T(cx, cy, .15), opacity: 0}, {offset: .06, opacity: 1, transform: T(cx + dx * .5, cy + dy * .5, 1)}, {offset: .55, opacity: .85, transform: T(cx + dx, cy + dy - 30 * u, 1.4)}, {transform: T(cx + dx * 1.3, cy + dy - 90 * u, 1.9), opacity: 0}], {d: hasard(880, 1000), e: 'cubic-bezier(.3,.5,.6,1)', retirer: false})); }     /* (19 novembre : 3 à 3,8 s avant, avec une courbe qui laissait une longue traîne ; maintenant : aussi noire qu'avant pendant 0,3 s, partie en 0,9 s) */
     /* la gerbe d'étincelles bleues : elles jaillissent, retombent, et s'éteignent */
     for(var s = 0; s < 14; s++){
       var as = -Math.PI * hasard(.05, .95), vs = hasard(80, 170) * u, xs = cx + Math.cos(as) * vs, ys = cy + Math.sin(as) * vs, rs = hasard(5, 10) * u * .5, cs = choisir([C5, C4, C3, '#ffffff']);
       g('<path d="' + scintD(0, 0, rs * 2) + '" fill="' + cs + '"/><circle r="' + f1(rs * 2.4) + '" fill="url(#' + id + 'g)" fill-opacity=".5"/>',
         [{transform: T(cx, cy, .4), opacity: 1}, {offset: .35, transform: T(xs, ys, 1, 90)}, {offset: .75, transform: T(xs + Math.cos(as) * 20 * u, Math.min(solY, ys + 80 * u), .8, 200), opacity: .9}, {transform: T(xs + Math.cos(as) * 26 * u, Math.min(solY, ys + 110 * u), .3, 260), opacity: 0}],
-        {d: hasard(1200, 1800), e: 'cubic-bezier(.2,.6,.5,1)'});
+        {d: hasard(750, 1050), e: 'cubic-bezier(.2,.6,.5,1)'});
     }
     /* BOUM : l'étoile bleue, l'éclair, l'onde de choc */
-    g('<path d="' + etoileD(70 * u, 11, .5) + '" fill="' + C3 + '" stroke="' + O + '" stroke-width="' + f1(3 * u) + '"/><path d="' + etoileD(42 * u, 11, .5) + '" fill="' + C5 + '"/>', [{transform: T(cx, cy, .15, 0), opacity: 1}, {offset: .35, transform: T(cx, cy, 1, 14), opacity: 1}, {transform: T(cx, cy, 1.15, 22), opacity: 0}], {d: 480, e: 'cubic-bezier(.1,.8,.3,1)'});
-    g('<circle r="' + f1(70 * u) + '" fill="url(#' + id + 'g)"/>', [{transform: T(cx, cy, .2), opacity: 1}, {transform: T(cx, cy, 1.9), opacity: 0}], {d: 480});
-    g('<circle r="' + f1(56 * u) + '" fill="none" stroke="#ffffff" stroke-width="' + f1(5 * u) + '"/>', [{transform: T(cx, cy, .2), opacity: .95}, {transform: T(cx, cy, 2.8), opacity: 0}], {d: 560, e: 'cubic-bezier(.1,.8,.3,1)'});
-    g('<ellipse rx="' + f1(60 * u) + '" ry="' + f1(8 * u) + '" fill="none" stroke="' + C4 + '" stroke-width="' + f1(4 * u) + '"/>', [{transform: T(cx, solY, .3), opacity: 0}, {offset: .3, opacity: .9, transform: T(cx, solY, .6)}, {transform: T(cx, solY, 3) + ' scale(1,.8)', opacity: 0}], {d: 1100, dl: 160, e: 'cubic-bezier(.1,.7,.3,1)'});
-    setTimeout(function(){ self._braise(); }, 600);
+    g('<path d="' + etoileD(70 * u, 11, .5) + '" fill="' + C3 + '" stroke="' + O + '" stroke-width="' + f1(3 * u) + '"/><path d="' + etoileD(42 * u, 11, .5) + '" fill="' + C5 + '"/>', [{transform: T(cx, cy, .15, 0), opacity: 1}, {offset: .35, transform: T(cx, cy, 1, 14), opacity: 1}, {transform: T(cx, cy, 1.15, 22), opacity: 0}], {d: 380, e: 'cubic-bezier(.1,.8,.3,1)'});
+    g('<circle r="' + f1(70 * u) + '" fill="url(#' + id + 'g)"/>', [{transform: T(cx, cy, .2), opacity: 1}, {transform: T(cx, cy, 1.9), opacity: 0}], {d: 380});
+    g('<circle r="' + f1(56 * u) + '" fill="none" stroke="#ffffff" stroke-width="' + f1(5 * u) + '"/>', [{transform: T(cx, cy, .2), opacity: .95}, {transform: T(cx, cy, 2.8), opacity: 0}], {d: 440, e: 'cubic-bezier(.1,.8,.3,1)'});
+    g('<ellipse rx="' + f1(60 * u) + '" ry="' + f1(8 * u) + '" fill="none" stroke="' + C4 + '" stroke-width="' + f1(4 * u) + '"/>', [{transform: T(cx, solY, .3), opacity: 0}, {offset: .3, opacity: .9, transform: T(cx, solY, .6)}, {transform: T(cx, solY, 3) + ' scale(1,.8)', opacity: 0}], {d: 700, dl: 80, e: 'cubic-bezier(.1,.7,.3,1)'});
+    setTimeout(function(){ self._braise(); }, 350);
     self._couperBoucles(); self._couperX(''); self.mort = true;
     return Promise.all(brumes.map(fini)).then(function(){ ov.remove(); });
   });

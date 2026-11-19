@@ -496,11 +496,9 @@ R.mourir = function(){ return this.fuir(); };
 R.exploser = function(scene){
   var self = this, j = this._debutAction(), boomOk, boomP = new Promise(function(ok){ boomOk = ok; });
   ['ebloui', 'brule', 'colle', 'enrage'].forEach(function(n){ if(self.etat[n]) self._visuel(n, false); self.etat[n] = false; });
-  var k = [{t: 0, p: {}}];
-  for(var i = 1; i <= 6; i++) k.push({t: i / 7, p: {corps: {sx: 1 + i * .04, sy: 1 + i * .05}, secousse: {x: i % 2 ? 4 : -4}, machoire: {a: i * 3}}, e: 'linear'});
-  k.push({t: 1, p: {corps: {sx: 1.32, sy: 1.4}}, e: 'ease-in'});
-  this._flash('flash', .6, 420);
-  var pr = this._seq(k, 420).fini.then(function(){
+  /* (19 novembre, Romain : « il grossit pas, il explose direct […] faut pas qu'il y ait de délai […] beaucoup plus rapide ».
+     Avant : il enflait 0,42 s, puis la fumée restait 3 s. Maintenant : le SPLATCH tout de suite, la fumée ≈ 1 s.) */
+  var pr = Promise.resolve().then(function(){
     scene = scene || self.c.parentNode || self.c;
     if(getComputedStyle(scene).position === 'static') scene.style.position = 'relative';
     var sr = scene.getBoundingClientRect(), W = scene.offsetWidth || sr.width, H = scene.offsetHeight || sr.height, ech = W / (sr.width || 1);
@@ -514,15 +512,15 @@ R.exploser = function(scene){
     self._fondu('bete', 0, 0);
     boomOk();
     var brumes = [];
-    for(var n = 0; n < 6; n++){ var a = n / 6 * Math.PI * 2, dx = Math.cos(a) * 60 * u, dy = Math.sin(a) * 30 * u - 20 * u; brumes.push(g('<circle r="' + f1(hasard(40, 60) * u) + '" fill="url(#btTb' + NUM + ')"/>', [{transform: T(cx, cy, .2), opacity: 0}, {offset: .06, opacity: 1, transform: T(cx + dx * .5, cy + dy * .5, 1)}, {offset: .55, opacity: .85, transform: T(cx + dx, cy + dy - 20 * u, 1.4)}, {transform: T(cx + dx * 1.3, cy + dy - 60 * u, 1.9), opacity: 0}], {d: hasard(2600, 3400), e: 'cubic-bezier(.12,.75,.3,1)'})); }
+    for(var n = 0; n < 6; n++){ var a = n / 6 * Math.PI * 2, dx = Math.cos(a) * 60 * u, dy = Math.sin(a) * 30 * u - 20 * u; brumes.push(g('<circle r="' + f1(hasard(40, 60) * u) + '" fill="url(#btTb' + NUM + ')"/>', [{transform: T(cx, cy, .2), opacity: 0}, {offset: .06, opacity: 1, transform: T(cx + dx * .5, cy + dy * .5, 1)}, {offset: .55, opacity: .85, transform: T(cx + dx, cy + dy - 20 * u, 1.4)}, {transform: T(cx + dx * 1.3, cy + dy - 60 * u, 1.9), opacity: 0}], {d: hasard(850, 970), e: 'cubic-bezier(.3,.5,.6,1)'})); }     /* (19 novembre : 2,6 à 3,4 s avant, avec une courbe qui laissait une longue traîne ; maintenant : aussi noire qu'avant pendant 0,3 s, partie en 0,9 s) */
     /* des paquets de glu verte qui giclent et retombent en s'aplatissant */
     for(var b = 0; b < 9; b++){ var ab = -Math.PI * (.08 + b * .1), vb = hasard(70, 140) * u, rb = hasard(5, 9) * u;
       g('<path d="M' + f1(-rb) + ' 0 C ' + f1(-rb) + ' ' + f1(-rb * 1.2) + ' ' + f1(rb) + ' ' + f1(-rb * 1.2) + ' ' + f1(rb) + ' 0 C ' + f1(rb) + ' ' + f1(rb * .9) + ' ' + f1(-rb) + ' ' + f1(rb * .9) + ' ' + f1(-rb) + ' 0 Z" fill="' + choisir(['#b8e070', '#8ab850', '#d8f4c0']) + '" stroke="' + O + '" stroke-width="' + f1(1.4 * u) + '"/>',
-        [{transform: T(cx, cy, .4)}, {offset: .45, transform: T(cx + Math.cos(ab) * vb, cy + Math.sin(ab) * vb, 1.1), opacity: 1}, {offset: .8, transform: T(cx + Math.cos(ab) * vb * 1.3, cy + 40 * u, 1.2)}, {transform: T(cx + Math.cos(ab) * vb * 1.35, cy + 44 * u, 1.4), opacity: 0}], {d: hasard(1100, 1500), e: 'cubic-bezier(.2,.6,.6,1)'}); }
+        [{transform: T(cx, cy, .4)}, {offset: .45, transform: T(cx + Math.cos(ab) * vb, cy + Math.sin(ab) * vb, 1.1), opacity: 1}, {offset: .8, transform: T(cx + Math.cos(ab) * vb * 1.3, cy + 40 * u, 1.2)}, {transform: T(cx + Math.cos(ab) * vb * 1.35, cy + 44 * u, 1.4), opacity: 0}], {d: hasard(700, 950), e: 'cubic-bezier(.2,.6,.6,1)'}); }
     /* SPLATCH : une étoile de glu, l'éclair et l'onde, par-dessus tout */
-    g('<path d="' + etoileD(80 * u, 11, .5) + '" fill="#c8f070" stroke="' + O + '" stroke-width="' + f1(3 * u) + '"/><path d="' + etoileD(48 * u, 11, .5) + '" fill="#f4ffd0"/>', [{transform: T(cx, cy, .15, 0), opacity: 1}, {offset: .35, transform: T(cx, cy, 1, 14), opacity: 1}, {transform: T(cx, cy, 1.15, 22), opacity: 0}], {d: 480, e: 'cubic-bezier(.1,.8,.3,1)'});
-    g('<circle r="' + f1(70 * u) + '" fill="url(#btTg' + NUM + ')"/>', [{transform: T(cx, cy, .2), opacity: 1}, {transform: T(cx, cy, 1.8), opacity: 0}], {d: 450});
-    g('<circle r="' + f1(60 * u) + '" fill="none" stroke="#ffffff" stroke-width="' + f1(5 * u) + '"/>', [{transform: T(cx, cy, .2), opacity: .9}, {transform: T(cx, cy, 2.6), opacity: 0}], {d: 520, e: 'cubic-bezier(.1,.8,.3,1)'});
+    g('<path d="' + etoileD(80 * u, 11, .5) + '" fill="#c8f070" stroke="' + O + '" stroke-width="' + f1(3 * u) + '"/><path d="' + etoileD(48 * u, 11, .5) + '" fill="#f4ffd0"/>', [{transform: T(cx, cy, .15, 0), opacity: 1}, {offset: .35, transform: T(cx, cy, 1, 14), opacity: 1}, {transform: T(cx, cy, 1.15, 22), opacity: 0}], {d: 380, e: 'cubic-bezier(.1,.8,.3,1)'});
+    g('<circle r="' + f1(70 * u) + '" fill="url(#btTg' + NUM + ')"/>', [{transform: T(cx, cy, .2), opacity: 1}, {transform: T(cx, cy, 1.8), opacity: 0}], {d: 360});
+    g('<circle r="' + f1(60 * u) + '" fill="none" stroke="#ffffff" stroke-width="' + f1(5 * u) + '"/>', [{transform: T(cx, cy, .2), opacity: .9}, {transform: T(cx, cy, 2.6), opacity: 0}], {d: 420, e: 'cubic-bezier(.1,.8,.3,1)'});
     /* ce qui reste : une petite arête de têtard dans une flaque de glu */
     var reste = document.createElementNS(NS, 'g');
     var os = '<ellipse cx="0" cy="6" rx="150" ry="14" fill="#a8c860" fill-opacity=".7" stroke="#4a6a2a" stroke-width="2"/>' + L('M-110 2 C -40 -4 60 -4 120 2', '#e8ffc0', 2, ' stroke-opacity=".7"') +
@@ -532,7 +530,7 @@ R.exploser = function(scene){
     var pd = self._ou('pieds');
     reste.setAttribute('transform', 'translate(' + f1(pd[0]) + ' ' + f1(pd[1] + 4) + ')');
     self.S.monde.appendChild(reste);
-    reste.firstChild.animate([{opacity: 0}, {opacity: 0, offset: .5}, {opacity: 1}], {duration: 1000, fill: 'both'});
+    reste.firstChild.animate([{opacity: 0}, {opacity: 0, offset: .3}, {opacity: 1}], {duration: 600, fill: 'both'});
     self._couperBoucles(); self.mort = true;
     return Promise.all(brumes.map(fini)).then(function(){ ov.remove(); });
   });
