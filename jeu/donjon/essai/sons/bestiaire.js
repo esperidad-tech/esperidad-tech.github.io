@@ -809,7 +809,7 @@ S.bourbeFinB = function(A, P){
   return {duree:2.6};
 };
 
-/* =================== 19 NOVEMBRE — « DÈS QU'UN ENNEMI FAIT UNE ACTION, IL Y A UN SON » (Romain, 11 h 44 ; Bible §13.83) ===================
+/* =================== 19 NOVEMBRE — « DÈS QU'UN ENNEMI FAIT UNE ACTION, IL Y A UN SON » (Romain, 11 h 44 ; Bible §13.90) ===================
    Ce qui se jouait en silence : Bourbe qui sort de l'eau en arrivant ; le bassin qui gèle, et Bourbe qui retombe sur la glace ;
    la glace qui s'en va (il retombe dans l'eau : « quand il replonge dans l'eau, il n'y a pas de son ») ; une bête prise dans la
    glace, puis lâchée ; une bête qui perd son tour sous l'eau. Une version de chacun, à écouter (🆕).

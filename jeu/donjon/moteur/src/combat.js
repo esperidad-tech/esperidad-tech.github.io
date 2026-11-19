@@ -774,7 +774,7 @@ async function un(ev, bl, ctx){
 function photoAvant(id){ var l = E.avant ? E.avant.betes : []; for(var k = 0; k < l.length; k++) if(l[k].id === id) return l[k]; return null; }
 function aEtat(a, nom){ var b = photoB(a.id); return !!(b && b.etats && b.etats[nom]); }
 
-/* ---------- 19 NOVEMBRE : « DÈS QU'UN ENNEMI FAIT UNE ACTION, IL Y A UN SON » (Romain, 11 h 44 ; Bible §13.83, MOTEUR-DONJON.md §9.26) ----------
+/* ---------- 19 NOVEMBRE : « DÈS QU'UN ENNEMI FAIT UNE ACTION, IL Y A UN SON » (Romain, 11 h 44 ; Bible §13.90, MOTEUR-DONJON.md §9.26) ----------
    Ce qui se jouait en silence (compté par un robot qui joue les huit combats et note chaque geste de bête sans son) : une bête
    qui gèle ou dégèle, une bête qui perd son tour, ce qu'un coup déclenche après lui (l'araignée et la chauve-souris qui
    tombent par terre, le feu follet qui grandit ou s'accroche au bouclier), les morceaux d'armure du rat cuirassé et la plaque

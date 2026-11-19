@@ -71,14 +71,14 @@ window.CATALOGUE = [
       ]},
       {id:'e-bourbe', titre:'Bourbe (boss)', sons:[
         {id:'bourbeCri', t:'Coassement', v:'ABC'}, {id:'bourbeLangue', t:'Sa langue', v:'AB'}, {id:'bourbeGobe', t:'Il gobe', v:'AB'}, {id:'bourbeRot', t:'Le rot', v:'AB'},
-        {id:'bourbePlonge', t:'Le plongeon', v:'AB'}, {id:'bourbeSaut', t:'Le saut', v:'AB'}, {id:'bourbeRire', t:'Chatouillé', v:'AB'}, {id:'bourbeTouche', t:'Touché', v:'AB'}, {id:'bourbeFin', t:'Défaite', v:'AB'},
-        /* 19 novembre (Romain : « quand il replonge dans l'eau, il n'y a pas de son […] quand le sol est gelé, il n'y a pas vraiment de son ») */
-        {id:'bourbeSort', t:'Il sort', v:'A'}, {id:'bassinGele', t:'Le bassin gèle', v:'A'}, {id:'glaceChoc', t:'Sur la glace', v:'A'}, {id:'glaceCasse', t:'La glace cède', v:'A'},
-        {id:'bullesFond', t:'Des bulles', v:'A'}
+        {id:'bourbePlonge', t:'Le plongeon', v:'AB'}, {id:'bourbeSaut', t:'Le saut', v:'AB'}, {id:'bourbeRire', t:'Chatouillé', v:'AB'}, {id:'bourbeTouche', t:'Touché', v:'AB'}, {id:'bourbeFin', t:'Défaite', v:'AB'}
       ]},
-      /* 19 novembre (Romain : « dès qu'un ennemi fait une action, il y a un son ») : ce qui vaut pour toutes les bêtes */
-      {id:'e-toutes', titre:'Toutes les bêtes', sons:[
-        {id:'gelPris', t:'Bête gelée', v:'A'}, {id:'gelFond', t:'La glace casse', v:'A'}, {id:'beteChute', t:'Elle tombe', v:'A'}
+      /* 19 novembre (Romain : « quand il replonge dans l'eau, il n'y a pas de son […] quand le sol est gelé, il n'y a pas vraiment de son […]
+         dès qu'un ennemi fait une action, il y a un son ») : les sons neufs de Bourbe (sa sortie de l'eau, le bassin qui gèle, la glace)
+         et ceux qui valent pour toutes les bêtes (prise dans la glace, lâchée, une chute). À part, pour que la section de Bourbe reste courte. */
+      {id:'e-toutes', titre:'Eau, glace, chutes', sons:[
+        {id:'bourbeSort', t:'Bourbe sort', v:'A'}, {id:'bassinGele', t:'Le bassin gèle', v:'A'}, {id:'glaceChoc', t:'Sur la glace', v:'A'}, {id:'glaceCasse', t:'La glace cède', v:'A'},
+        {id:'bullesFond', t:'Des bulles', v:'A'}, {id:'gelPris', t:'Bête gelée', v:'A'}, {id:'gelFond', t:'La glace casse', v:'A'}, {id:'beteChute', t:'Elle tombe', v:'A'}
       ]},
       /* LÉO, le boss final (13 novembre, Bible §13.33 : « à chaque attaque de Léo, il faut un son ») — une version de chacun, à valider par Romain */
       {id:'e-leo', titre:'Léo (boss final)', sous:[

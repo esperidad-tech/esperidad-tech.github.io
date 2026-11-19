@@ -159,7 +159,7 @@ function musiquePhase(n, o){
 }
 /* LA MUSIQUE AUTOUR D'UN FILM — 19 NOVEMBRE (Romain, 11 h 44 : « dans l'arrivée du donjon, quand on voit Léo, il y a la musique à
    la fin, elle commence à monter. Et après, le combat commence, et là, on se retrouve avec une musique plate. Je pense qu'il
-   faudrait arriver à mettre la continuité de la musique qu'on voit dans la cinématique » ; Bible §13.83).
+   faudrait arriver à mettre la continuité de la musique qu'on voit dans la cinématique » ; Bible §13.90).
    Ce qui se passait : la musique de la phase partait AVANT le film, en sourdine, à un endroit au hasard de sa boucle, et revenait
    après lui dans un fondu lent — souvent sur sa partie la plus vide. Mesuré avec le filtre « tablette » : la bande-son du film
    d'entrée finit à −18 dB (le grand coup, coupé net), la musique de la phase 1 joue à −37 dB.

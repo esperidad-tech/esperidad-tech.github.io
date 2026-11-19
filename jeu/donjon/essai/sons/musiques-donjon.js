@@ -351,7 +351,7 @@ M.leo3A = function(A, P){
   return I;
 };
 
-/* LE PONT APRÈS LE FILM D'ENTRÉE (19 novembre, Bible §13.83 — Romain : « à la fin [du film], la musique commence à monter. Et
+/* LE PONT APRÈS LE FILM D'ENTRÉE (19 novembre, Bible §13.90 — Romain : « à la fin [du film], la musique commence à monter. Et
    après, le combat commence, et là, on se retrouve avec une musique plate. Il faudrait arriver à mettre la continuité de la
    musique qu'on voit dans la cinématique »). Le film finit sur un cœur qui s'emballe, un souffle qui monte et un grand coup,
    coupé net 0,75 s plus tard (la fin du film) : ce coup-là devient la levée. Ici, joué UNE fois par-dessus la musique de la

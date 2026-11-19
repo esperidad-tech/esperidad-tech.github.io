@@ -35,7 +35,7 @@ var AUTO = {
   chauvesouris:['tomber', 'envol', 'folle']
 };
 /* les sons de l'Atelier, par bête (en attente de validation : ils jouent leur version A) */
-/* 19 NOVEMBRE (Romain, 11 h 44 : « dès qu'un ennemi fait une action, il y a un son » ; Bible §13.83 ; MOTEUR-DONJON.md §9.26).
+/* 19 NOVEMBRE (Romain, 11 h 44 : « dès qu'un ennemi fait une action, il y a un son » ; Bible §13.90 ; MOTEUR-DONJON.md §9.26).
    En plus du cri, du « touché », de la mort et des attaques, chaque bête peut dire :
      apres:{<coup>:[[son, secondes, sauf]]}   ce que ce coup déclenche APRÈS lui dans le module (elle tombe sur le dos 2 s plus
                                                tard, il grandit…) : le son part ce temps-là après le coup. « sauf » : pas si la

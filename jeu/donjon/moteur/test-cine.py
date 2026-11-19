@@ -67,7 +67,10 @@ def test(nav):
     verifie(r['plein'] and abs(r['ratio'] - 1440 / 616) < .02 and r['haut'] > 100 and abs(r['haut'] - r['bas']) < 2 and r['fond'] == 'rgb(0, 0, 0)',
             f'le film en plein écran, en 21:9, entre deux bandes noires ({r})')
     verifie(r['passer'], 'un bouton « Passer ➜ »')
-    pg.wait_for_function("() => document.querySelector('.cine-ecran video').currentTime > 1.6", timeout=20000)
+    # (19 novembre : Léo tombe à genoux dans le donjon, et le film part de l'instant où l'homme en cape est à genoux — son début est sauté)
+    t_film = pg.evaluate("() => document.querySelector('.cine-ecran video').currentTime")
+    verifie(t_film >= 1.85, f'le film de la phase 1 part à 1,88 s : son début (debout, puis la chute) est sauté ({t_film:.2f} s)')
+    pg.wait_for_function("() => document.querySelector('.cine-ecran video').currentTime > 2.4", timeout=20000)
     pg.screenshot(path=os.path.join(CAP, 'cine-a12.png'))
     b = pg.evaluate("() => window.__bruits.slice()")
     verifie('leoChute' in b and 'cineOutils' in b, f'les bruitages partent à l\'heure (le moteur du donjon) ({b})')
@@ -75,6 +78,9 @@ def test(nav):
     pg.wait_for_function("() => DJ.Leo.etat().phase === 2 && !DJ.Leo.etat().cine", timeout=30000)
     e = pg.evaluate("() => { var e = DJ.Leo.etat(), p = e.photo; return {nom:document.querySelector('#leo-barre em').textContent, pv:p.leo.pv, film:!!document.querySelector('.cine-ecran')}; }")
     verifie(e['nom'] == 'Léo' and e['pv'] == 6000 and not e['film'], f'après le film : la phase 2, « Léo », 6 000 ({e})')
+    # (19 novembre : le piège de la salle noire — après un film, la scène doit se voir)
+    vis = pg.evaluate("() => { var s = document.querySelector('#secousse'), l = document.querySelector('#leo, .leo, #persos'); return [s ? getComputedStyle(s).visibility : '?', l ? getComputedStyle(l).visibility : '?']; }")
+    verifie(vis[0] == 'visible' and vis[1] == 'visible', f'après le film, la salle se voit (pas de « caché » resté collé) ({vis})')
 
     print('— 2. Fin de la phase 2 : les sous-titres, le 🔊')
     film(pg, 'b23')
@@ -156,7 +162,8 @@ def bande_son(p):
         r = pg.evaluate("""() => ({d:Object.assign({}, CineLecteur.dernier), b:window.__bruits.filter(function(x){ return /^cine|^leoChute/.test(x); }),
           mus:SALLE.Son.musiqueEtat().gain, ctx:SALLE.Son.contexte() ? SALLE.Son.contexte().state : null})""")
         verifie(r['d'].get('bande') and r['d'].get('joue') and r['ctx'] == 'running', f'la bande-son est là et joue avec la vidéo ({r["d"]}, {r["ctx"]})')
-        verifie(r['b'] == [] and r['d'].get('bruitages') == 0, f'plus aucun bruitage joué un par un ({r["b"]})')
+        # (19 novembre : la chute à genoux et les outils qui tombent se jouent AVANT le film, dans le donjon — le film part après eux)
+        verifie(sorted(r['b']) == ['cineOutils', 'leoChute'] and r['d'].get('bruitages') == 0, f'plus aucun bruitage du film joué un par un ; avant lui : la chute à genoux et les outils ({r["b"]})')
         verifie(r['mus'] is not None and r['mus'] < .1, f'la musique du donjon se tait pendant le film ({r["mus"]})')
         pg.evaluate("() => document.querySelector('.cine-ecran video').pause()"); pg.wait_for_timeout(300)
         a = pg.evaluate("() => CineLecteur.dernier.joue")

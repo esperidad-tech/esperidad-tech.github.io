@@ -162,7 +162,7 @@ function bruitage(id, o){
      'repos'          le feu de camp (sa musique + le feu qui crépite) ;   'fin' : Léo retrouvé.
    D'une zone à l'autre, ce qui joue déjà (le fond du donjon) n'est pas coupé. */
 var MUS = {voulu:null, actuel:null, combat:false};
-/* o (19 novembre — la musique qui reprend à la fin d'un film, Bible §13.83) : o.depuis, l'endroit de la boucle où elle part
+/* o (19 novembre — la musique qui reprend à la fin d'un film, Bible §13.90) : o.depuis, l'endroit de la boucle où elle part
    (en secondes — sinon : au hasard) ; o.fondu, la durée de son fondu d'entrée (sinon : lent). Seulement pour une musique
    fabriquée à l'avance, et seulement quand elle démarre (si elle joue déjà, rien ne change). */
 function musique(nom, o){ MUS.attendue = null; MUS.voulu = nom || null; MUS.comment = o || null; appliquerMusique(); }
@@ -257,7 +257,7 @@ function jouerBoucle(b, o){
     src.onended = function(){ try{ src.disconnect(); g.disconnect(); }catch(e){} };
   }};
 }
-/* LE PONT (19 novembre, Bible §13.83 — Romain : « à la fin [du film], la musique commence à monter. Et après, le combat
+/* LE PONT (19 novembre, Bible §13.90 — Romain : « à la fin [du film], la musique commence à monter. Et après, le combat
    commence, et là, on se retrouve avec une musique plate. Il faudrait arriver à mettre la continuité de la musique qu'on voit dans
    la cinématique ») : une musique jouée UNE fois, par-dessus la boucle qui démarre — la suite de la musique du film. Fabriquée à
    l'avance comme les autres (Son.preparerMusique('leoPont') pendant le film ; BOUCLE : {une:true}) ; pas prête : rien (jamais
