@@ -14,19 +14,24 @@
       RAPIDITE.md : une pièce, c'est 2 000 traits. On ne les redessine JAMAIS. La pièce est une pile de calques (dessiner) :
         .in-fond    le décor, immobile (dessiné une fois) ;
         .in-rayons  le soleil et ses ombres : le calque entier respire (son opacité) ;
-        .in-ors     les signes dorés des dalles : le calque entier palpite ;
+        .in-ors     les trois dalles que le soleil allume (une lueur dorée, sans signe) : le calque entier palpite ;
         .in-grains, .in-feu   des pastilles HTML (la poussière, la braise) : position et opacité seulement ;
         .in-vie     ce qui prend le doigt (les dalles, les meubles à regarder) et la dalle qui glisse.
       1 em = 1 unité du dessin (la taille des lettres de .in-piece est réglée par caler).
       Une maison = une fiche dans MAISONS (ses meubles, ses fenêtres, sa porte, ce qu'on peut y regarder) : pour une autre maison,
       on écrit une autre fiche.
-   2. LE MINI-JEU « interieur » : on fouille la pièce du bout du doigt. Chez Odette (enquête 3), l'après-midi, le soleil rasant
-      réveille les signes gravés sur neuf vieilles dalles : trois dalles, dans le bon ordre (celui que le Sage a lu sur son plan,
-      avec la pierre de Tim), et la cachette s'ouvre. Le matin, la pièce est dans l'ombre : on regarde, rien ne se passe.
-      On n'y perd jamais : on essaie autant qu'on veut, ou on repart.
-        params : maison ('odette'), moment ('matin' | 'apresmidi' | 'nuit'), visite (true : on regarde seulement)
-        résultat : {reussi, message, detail, essais}
+   2. LE MINI-JEU « interieur » : on fouille la pièce du bout du doigt. Chez Odette (enquête 3), neuf vieilles dalles, SANS AUCUN SIGNE
+      (Romain, 19 novembre : « il n'y a pas de signe, il n'y a pas de clé […] c'est juste il faut appuyer sur des dalles » ; « il n'y a
+      pas de message qui dit quoi que ce soit comme indice »). Trois dalles, dans le bon ordre, et la cachette s'ouvre.
+      · Le matin : la pièce est dans l'ombre, AUCUNE aide ; on peut appuyer sur les dalles, mais rien ne dit lesquelles (un coup de
+        chance sur 504 : tant mieux pour lui s'il trouve).
+      · L'après-midi : trois secondes après l'entrée, le soleil allume une dalle, une seconde plus tard une deuxième, une seconde plus
+        tard une troisième : c'est l'ordre. Après un essai raté, elles s'éteignent et se rallument, dans le même ordre.
+      On n'y perd jamais : on essaie autant qu'on veut, ou on ressort (sorti:true : pas de fenêtre « Raté », moteur-actions.js).
+        params : maison ('odette'), moment ('matin' | 'apresmidi' | 'nuit'), visite (true : on regarde seulement, les dalles ne bougent pas)
+        résultat : {reussi, message, detail, essais, sorti}
         crochet de test : window.__interieur = {etat(), dalle(k), sortir()}
+      (Les noms de D.signes — 'lune', 'cloche'… — ne sont plus que les noms des dalles dans le code : on ne les dessine nulle part.)
    ========================================================== */
 (function(){
 'use strict';
@@ -413,9 +418,8 @@ var MAISONS = {
   }
 };
 
-/* les neuf dalles : la pierre, ses éclats, ses fissures, le signe gravé. lisible (le soleil) : la gravure se voit ; sinon elle est
-   usée, noyée dans l'ombre : on ne lit rien. → les neuf dessins, un par dalle */
-function pierresDalles(M, R, lisible){
+/* les neuf dalles : la pierre, ses éclats, ses fissures, ses rayures d'usure. Aucun signe. → les neuf dessins, un par dalle */
+function pierresDalles(M, R){
   var D = M.dalles, T = DALLE.t, sortie = [], k, i;
   function j(){ return (R() - .5) * 3.2; }
   for(k = 0; k < 9; k++){
@@ -425,9 +429,8 @@ function pierresDalles(M, R, lisible){
     for(i = 0; i < 12; i++) s += '<circle cx="' + n(p.x + 5 + R() * (T - 10)) + '" cy="' + n(p.y + 5 + R() * (T - 10)) + '" r="' + n(.6 + R() * 1.3) + '" fill="' + (R() < .5 ? 'rgba(40,34,28,.28)' : 'rgba(255,250,235,.3)') + '"/>';
     if(R() < .55){ var fx = p.x + 8 + R() * (T - 16), fy = p.y + 6; s += '<path d="M' + n(fx) + ' ' + n(fy) + 'l' + n(R() * 8 - 4) + ' ' + n(10 + R() * 8) + ' ' + n(R() * 8 - 4) + ' ' + n(8 + R() * 10) + '" fill="none" stroke="rgba(30,24,18,.45)" stroke-width="1"/>'; }
     if(R() < .4) s += '<path d="M' + n(p.x + T - 12) + ' ' + n(p.y + T - 3) + 'q5 -8 10 -6v6z" fill="#2f2822"/>';
-    var S = SIGNES[D.signes[k]], tr = 'translate(' + (p.x + T / 2) + ' ' + (p.y + T / 2) + ') scale(1.12)';
-    if(lisible) s += '<g transform="' + tr + '"><path d="' + S.d + '" transform="translate(.9 .9)" fill="none" stroke="rgba(255,250,235,.3)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="' + S.d + '" fill="none" stroke="rgba(34,26,18,.55)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>';
-    else { var Ru = graine(M.graine + 31 + k); for(i = 0; i < 7; i++){ var ux = p.x + 10 + Ru() * (T - 20), uy = p.y + 10 + Ru() * (T - 20); s += '<path d="M' + n(ux) + ' ' + n(uy) + 'q' + n(Ru() * 12 - 6) + ' ' + n(Ru() * 8 - 4) + ' ' + n(Ru() * 18 - 9) + ' ' + n(Ru() * 14 - 7) + '" fill="none" stroke="rgba(34,26,18,' + n(.12 + Ru() * .14) + ')" stroke-width="' + n(1.2 + Ru() * 1.6) + '" stroke-linecap="round"/>'; } }
+    /* (19 novembre : plus aucun signe gravé — de la vieille pierre usée, les mêmes rayures le matin et l'après-midi) */
+    { var Ru = graine(M.graine + 31 + k); for(i = 0; i < 7; i++){ var ux = p.x + 10 + Ru() * (T - 20), uy = p.y + 10 + Ru() * (T - 20); s += '<path d="M' + n(ux) + ' ' + n(uy) + 'q' + n(Ru() * 12 - 6) + ' ' + n(Ru() * 8 - 4) + ' ' + n(Ru() * 18 - 9) + ' ' + n(Ru() * 14 - 7) + '" fill="none" stroke="rgba(34,26,18,' + n(.12 + Ru() * .14) + ')" stroke-width="' + n(1.2 + Ru() * 1.6) + '" stroke-linecap="round"/>'; } }
     sortie.push(s);
   }
   return sortie;
@@ -515,8 +518,8 @@ function dessiner(o){
   var M = MAISONS[o.maison] || MAISONS.odette, R = graine(M.graine), u = 'in' + (++uidN) + '-', jour = o.moment === 'apresmidi', nuit = o.moment === 'nuit', D = M.dalles, F = M.fenetre, T = DALLE.t, k, f, s;
   /* ---- le décor (immobile) ---- */
   f = defs(u) + plancher(R);
-  var pierres = D ? pierresDalles(M, R, jour) : [];
-  if(D) f += cadreDalles(M) + pierres.filter(function(x, i){ return !jour || i !== D.cachette; }).join('');
+  var pierres = D ? pierresDalles(M, R) : [];
+  if(D) f += cadreDalles(M) + pierres.filter(function(x, i){ return i !== D.cachette; }).join('');
   f += '<rect x="' + MUR + '" y="' + MUR + '" width="' + (W - 2 * MUR) + '" height="26" fill="url(#' + u + 'omh)"/><rect x="' + MUR + '" y="' + MUR + '" width="22" height="' + (H - 2 * MUR) + '" fill="url(#' + u + 'omg)"/>';
   f += mur(0, 0, W, MUR, R) + mur(0, H - MUR, W, MUR, R) + mur(0, 0, MUR, H, R) + mur(W - MUR, 0, MUR, H, R);
   f += '<rect x="' + MUR + '" y="' + MUR + '" width="' + (W - 2 * MUR) + '" height="' + (H - 2 * MUR) + '" fill="none" stroke="' + TR + '" stroke-width="2.6"/>';
@@ -533,18 +536,23 @@ function dessiner(o){
   }
   if(M.cheminee) f += '<ellipse cx="' + (M.cheminee.x + M.cheminee.w / 2) + '" cy="' + (MUR + 50) + '" rx="' + (jour ? 110 : 160) + '" ry="' + (jour ? 84 : 124) + '" fill="url(#' + u + 'feufixe)"/>';
   s = '<div class="in-piece in-' + (jour ? 'jour' : 'ombre') + '" role="img" aria-label="' + esc(M.nom) + ', vue de dessus">' + calque('in-fond', TOUT, f);
-  if(jour && D){
-    /* la dalle de la cachette, dans sa case : quand elle glisse, elle disparaît sous sa voisine */
+  if(D){
+    /* la dalle de la cachette, dans sa case : quand elle glisse, elle disparaît sous sa voisine (le matin aussi : dans l'ombre, elle
+       porte la même pénombre que ses voisines) */
     var c = dalleXY(D.cachette);
-    s += calque('in-glisse', {x:c.x - 3, y:c.y - 3, w:T + 6, h:T + 6}, '<g class="in-glisse-g">' + pierres[D.cachette] + '</g>');
+    s += calque('in-glisse', {x:c.x - 3, y:c.y - 3, w:T + 6, h:T + 6}, '<g class="in-glisse-g">' + pierres[D.cachette] +
+      (jour ? '' : '<rect x="' + (c.x - 2) + '" y="' + (c.y - 2) + '" width="' + (T + 4) + '" height="' + (T + 4) + '" fill="#101638" opacity="' + (nuit ? .52 : .3) + '"/><rect x="' + (c.x - 2) + '" y="' + (c.y - 2) + '" width="' + (T + 4) + '" height="' + (T + 4) + '" fill="#141a44" opacity=".32"/>') + '</g>');
   }
   if(jour && F) s += calque('in-rayons', RAYON, defs(u + 'r-') + soleil(M, u + 'r-'));
   if(jour && D){
+    /* les trois dalles que le soleil allume, l'une après l'autre (le mini-jeu pose la classe « on ») : une lueur dorée, rien d'écrit */
     var cote = 3 * T + 2 * DALLE.e, ors = '';
-    for(k = 0; k < 9; k++){
-      var p = dalleXY(k), d = SIGNES[D.signes[k]].d;
-      ors += '<g class="in-or" data-k="' + k + '" transform="translate(' + (p.x + T / 2) + ' ' + (p.y + T / 2) + ') scale(1.12)"><path d="' + d + '" fill="none" stroke="#ffb52e" stroke-opacity=".16" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="' + d + '" fill="none" stroke="#ffc44a" stroke-opacity=".42" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round"/><path d="' + d + '" fill="none" stroke="#fff1b8" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></g>';
-    }
+    D.ordre.forEach(function(sg, rang){
+      var kk = D.signes.indexOf(sg), p = dalleXY(kk);
+      ors += '<g class="in-or" data-k="' + kk + '" data-rang="' + rang + '"><rect x="' + (p.x - 5) + '" y="' + (p.y - 5) + '" width="' + (T + 10) + '" height="' + (T + 10) + '" rx="7" fill="#ffb52e" fill-opacity=".3"/>' +
+        '<rect x="' + (p.x + 1) + '" y="' + (p.y + 1) + '" width="' + (T - 2) + '" height="' + (T - 2) + '" rx="3" fill="#ffd36b" fill-opacity=".62" stroke="#fff1b8" stroke-width="2.6"/>' +
+        '<rect x="' + (p.x + 9) + '" y="' + (p.y + 9) + '" width="' + (T - 18) + '" height="' + (T - 18) + '" rx="6" fill="#fffbe0" fill-opacity=".5"/></g>';
+    });
     s += calque('in-ors', {x:DALLE.x - 10, y:DALLE.y - 10, w:cote + 20, h:cote + 20}, ors);
   }
   /* la poussière qui danse dans le rayon (des pastilles : elles ne font que glisser et pâlir) */
@@ -567,13 +575,13 @@ function dessiner(o){
   var v = '';
   if(D) for(k = 0; k < 9; k++){
     var q = dalleXY(k);
-    v += '<g class="in-dalle" data-k="' + k + '" data-signe="' + D.signes[k] + '">' +
-      (jour ? '<rect class="in-enfonce" x="' + (q.x + 1) + '" y="' + (q.y + 1) + '" width="' + (T - 2) + '" height="' + (T - 2) + '" rx="2" fill="rgba(24,12,2,.36)" stroke="#ffd36b" stroke-width="3"/><path class="in-or-fixe" transform="translate(' + (q.x + T / 2) + ' ' + (q.y + T / 2 + 1.5) + ') scale(1.06)" d="' + SIGNES[D.signes[k]].d + '" fill="none" stroke="#fffbe0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>' : '') +
+    v += '<g class="in-dalle" data-k="' + k + '">' +
+      '<rect class="in-enfonce" x="' + (q.x + 1) + '" y="' + (q.y + 1) + '" width="' + (T - 2) + '" height="' + (T - 2) + '" rx="2" fill="rgba(24,12,2,' + (jour ? '.36' : '.5') + ')" stroke="' + (jour ? '#ffd36b' : '#aab4d8') + '" stroke-width="3"/>' +   /* (la dalle enfoncée : plus sombre, un liseré ; aucun signe) */
       '<rect class="in-touche" x="' + (q.x - 3) + '" y="' + (q.y - 3) + '" width="' + (T + 6) + '" height="' + (T + 6) + '" fill="#fff" fill-opacity="0"/></g>';
   }
   v += (M.regards || []).map(function(g){ return '<rect class="in-regard" data-o="' + g.id + '" x="' + g.r[0] + '" y="' + g.r[1] + '" width="' + g.r[2] + '" height="' + g.r[3] + '" rx="8" fill="#fff" fill-opacity="0"/>'; }).join('');
   s += calque('in-vie', TOUT, v);
-  if(jour && D){ var c2 = dalleXY(D.cachette); s += '<i class="in-eclat-tube" aria-hidden="true" style="left:' + u1(c2.x + T / 2 - 22) + ';top:' + u1(c2.y + T / 2 - 22) + ';width:' + u1(44) + ';height:' + u1(44) + '"></i>'; }
+  if(D){ var c2 = dalleXY(D.cachette); s += '<i class="in-eclat-tube" aria-hidden="true" style="left:' + u1(c2.x + T / 2 - 22) + ';top:' + u1(c2.y + T / 2 - 22) + ';width:' + u1(44) + ';height:' + u1(44) + '"></i>'; }
   return s + '</div>';
 }
 /* règle la taille de la pièce dans son cadre (la plus grande qui tient, 3 pour 4) et son unité ; → de quoi arrêter de surveiller */
@@ -593,30 +601,32 @@ function caler(piece, cadre){
 /* ==========================================================
    Le mini-jeu
    ========================================================== */
+/* (19 novembre) AUCUNE phrase d'aide : ni « reviens cet après-midi », ni « trois dalles, dans le bon ordre », ni « demande au Sage ».
+   Ces phrases disent seulement où l'on est, et ce qui vient de se passer. */
 var TEXTES = {
-  matin:'La maison d\'Odette, dans l\'ombre. Le soleil est de l\'autre côté : il n\'entrera par cette fenêtre que cet après-midi.',
+  matin:'La maison d\'Odette. Pas un bruit… et pas un chat.',
   nuit:'La maison d\'Odette, en pleine nuit. Seule la braise éclaire encore un peu.',
-  jour:'Le soleil de l\'après-midi entre par la fenêtre… et les vieilles dalles se réveillent ! L\'ombre du chat qui dort se pose au milieu.',
-  dalleOmbre:'De vieilles dalles, usées par les pas. Dans cette ombre, on n\'y voit rien.',
-  faux:'Clac ! Les dalles remontent. Ce n\'était pas le bon ordre…',
+  jour:'La maison d\'Odette. Le soleil entre par la fenêtre.',
+  faux:'Clac ! Les dalles remontent.',
   bon:'Un déclic, sous tes pieds… La dalle du milieu glisse !'
 };
 MJ.PHRASES = MJ.PHRASES || {};
-MJ.PHRASES.interieur = function(p){ return p && (p.visite || p.moment !== 'apresmidi') ? 'Regarde partout, du bout du doigt !' : 'Trois dalles, dans le bon ordre !'; };
+MJ.PHRASES.interieur = function(p){ return 'Regarde partout, du bout du doigt !'; };
 MJ.PLEIN_ECRAN = MJ.PLEIN_ECRAN || {};
 MJ.PLEIN_ECRAN.interieur = 1;
 MJ.enregistrer('interieur', {
   nom:'Fouiller la maison', role:'pisteur', ic:'🏠',
-  consigne:function(p){ return p && (p.visite || p.moment !== 'apresmidi') ? 'Fouille la pièce : regarde chaque meuble de près.' : 'Le soleil réveille les signes des vieilles dalles. Appuie sur trois dalles, dans le bon ordre : le Sage le connaît.'; },
-  reglages:function(nv, mods){ return {lignes:[{nom:'Essais', val:'autant que tu veux'}, {nom:'Le bon ordre', val:'demande au Sage'}]}; },
+  consigne:function(p){ return 'Fouille la pièce : regarde chaque meuble de près.'; },
+  reglages:function(nv, mods){ return {lignes:[{nom:'Essais', val:'autant que tu veux'}]}; },
   jouer:function(zone, params, fin){
     var id = MAISONS[params.maison] ? params.maison : 'odette', M = MAISONS[id], D = M.dalles;
-    var jour = params.moment === 'apresmidi', visite = !!params.visite || !jour || !D, essais = 0, pris = [], fini = false, bloque = false, minut = [];
+    /* visite (params.visite, ou une maison sans dalles) : on regarde seulement. Sinon les dalles s'enfoncent, le matin comme l'après-midi. */
+    var jour = params.moment === 'apresmidi', visite = !!params.visite || !D, essais = 0, pris = [], fini = false, bloque = false, minut = [], suite = [], allumees = [], tSuite = 0, temps = [];
     zone.innerHTML = '<div class="in-jeu' + (jour ? ' in-j-jour' : ' in-j-ombre') + (visite ? ' in-j-visite' : '') + '">' +
       '<div class="in-cadre">' + dessiner({maison:id, moment:params.moment, lait:!!params.lait}) + '</div>' +
       '<div class="in-bas"><p class="in-bulle" aria-live="polite"></p>' +
-      '<div class="in-actions">' + (visite ? '' : '<span class="in-pris" aria-label="Les dalles enfoncées"></span>') + '<button type="button" class="btn second in-sortir">' + (visite ? 'Sortir de la maison' : 'Sortir') + '</button></div></div></div>';
-    var racine = zone.firstChild, piece = racine.querySelector('.in-piece'), vie = racine.querySelector('.in-vie'), bulle = racine.querySelector('.in-bulle'), prisEl = racine.querySelector('.in-pris');
+      '<div class="in-actions"><button type="button" class="btn second in-sortir">Sortir de la maison</button></div></div></div>';
+    var racine = zone.firstChild, piece = racine.querySelector('.in-piece'), vie = racine.querySelector('.in-vie'), bulle = racine.querySelector('.in-bulle');
     var decaler = caler(piece, racine.querySelector('.in-cadre'));
     function apres(ms, f){ var t = setTimeout(f, ms); minut.push(t); return t; }
     function dire(t){
@@ -624,11 +634,25 @@ MJ.enregistrer('interieur', {
       if(MJ.boutonLire && MJ.nbMots && MJ.nbMots(t) > 3) bulle.appendChild(MJ.boutonLire(t));
       bulle.classList.remove('in-neuf'); void bulle.offsetWidth; bulle.classList.add('in-neuf');
     }
-    function majPris(){
-      if(!prisEl) return;
-      prisEl.innerHTML = [0, 1, 2].map(function(i){ return '<i class="in-pris-c' + (pris[i] !== undefined ? ' on' : '') + '">' + (pris[i] !== undefined ? signeSVG(D.signes[pris[i]], 26, '#fff1b8', 2.6) : '') + '</i>'; }).join('');
-    }
     function dalleEl(k){ return vie.querySelector('.in-dalle[data-k="' + k + '"]'); }
+    /* L'APRÈS-MIDI, LE SOLEIL MONTRE L'ORDRE : la première dalle s'allume « d0 » millisecondes après, la deuxième une seconde plus tard,
+       la troisième une seconde plus tard encore. Elles restent allumées. (Après un essai raté : tout s'éteint, et ça recommence.) */
+    function eteindre(){
+      suite.forEach(clearTimeout); suite = []; allumees = []; temps = [];
+      Array.prototype.forEach.call(racine.querySelectorAll('.in-or.on'), function(e){ e.classList.remove('on'); });
+    }
+    function montrer(d0){
+      if(!jour || visite || !D) return;
+      eteindre(); tSuite = Date.now();
+      D.ordre.forEach(function(sg, i){
+        suite.push(apres(d0 + i * 1000, function(){
+          if(fini) return;
+          var k = D.signes.indexOf(sg), e = racine.querySelector('.in-or[data-k="' + k + '"]');
+          if(e) e.classList.add('on');
+          allumees.push(k); temps.push(Date.now() - tSuite); U.son('ok');   /* (temps : pour les robots — à quel instant chaque dalle s'est allumée) */
+        }));
+      });
+    }
     function terminer(res){
       if(fini) return; fini = true;
       minut.forEach(clearTimeout); try{ decaler(); }catch(e){}
@@ -649,15 +673,16 @@ MJ.enregistrer('interieur', {
       dire(TEXTES.faux);
       apres(750, function(){
         pris.forEach(function(k){ dalleEl(k).classList.remove('in-bas-d'); });
-        pris = []; majPris(); racine.classList.remove('in-secoue'); bloque = false;
+        pris = []; racine.classList.remove('in-secoue'); bloque = false;
+        montrer(1000);
       });
     }
     function appuyer(k){
       if(fini || bloque || !D || !(k >= 0 && k < 9)) return;
-      if(visite){ U.son('tic'); dire(jour ? TEXTES.jour : TEXTES.dalleOmbre); return; }
+      if(visite){ U.son('tic'); return; }
       if(pris.indexOf(k) >= 0) return;
       pris.push(k); dalleEl(k).classList.add('in-bas-d');
-      U.son('tic'); U.vibrer(20); majPris();
+      U.son('tic'); U.vibrer(20);
       if(pris.length < 3) return;
       var ok = pris.every(function(d, i){ return D.signes[d] === D.ordre[i]; });
       bloque = true;
@@ -676,14 +701,16 @@ MJ.enregistrer('interieur', {
     }
     vie.addEventListener('click', clic);
     racine.querySelector('.in-sortir').onclick = function(){
-      /* (direct : pas d'écran de résultat — on ressort, c'est tout ; mj-core.js) */
+      /* (direct : pas d'écran de résultat — on ressort, c'est tout ; mj-core.js. sorti : le jeu ne dit ni « Raté » ni « Réessaie » :
+         il ramène devant la maison, moteur-actions.js) */
       if(visite) terminer({reussi:true, direct:true});
-      else terminer({reussi:false, direct:true});
+      else terminer({reussi:false, direct:true, sorti:true});
     };
-    majPris();
     dire(jour ? TEXTES.jour : (params.moment === 'nuit' ? TEXTES.nuit : TEXTES.matin));
+    montrer(3000);
     window.__interieur = {
-      etat:function(){ return {maison:id, jour:jour, visite:visite, pris:pris.map(function(k){ return D.signes[k]; }), essais:essais, fini:fini, ouvert:racine.classList.contains('in-ouvert'), signes:D ? D.signes.slice() : [], bulle:bulle.textContent}; },
+      etat:function(){ return {maison:id, jour:jour, visite:visite, pris:pris.map(function(k){ return D.signes[k]; }), essais:essais, fini:fini, ouvert:racine.classList.contains('in-ouvert'), signes:D ? D.signes.slice() : [],
+        allumees:allumees.map(function(k){ return D.signes[k]; }), temps:temps.slice(), bulle:bulle.textContent}; },
       dalle:function(k){ appuyer(typeof k === 'string' ? D.signes.indexOf(k) : k); },
       regarder:regarder,
       sortir:function(){ racine.querySelector('.in-sortir').click(); }
@@ -693,23 +720,14 @@ MJ.enregistrer('interieur', {
 });
 
 MJ.DEMOS = MJ.DEMOS || {};
-/* l'explication en images. La fouille : une main se pose sur un meuble, une bulle s'ouvre. Les dalles : la main appuie sur
-     trois dalles, l'une après l'autre (pas les bonnes : la démo ne donne pas la réponse), elles s'allument. */
+/* l'explication en images : la fouille — une main se pose sur un meuble, une bulle s'ouvre. Le matin comme l'après-midi : on ne montre
+   pas les dalles (19 novembre : aucune aide). */
 MJ.DEMOS.interieur = {w:300, h:420, f:function(el, p){
-    var visite = !!(p && (p.visite || p.moment !== 'apresmidi')), k, s = '<svg class="in-demo' + (visite ? ' in-demo-visite' : ' in-demo-dalles') + '" viewBox="0 0 300 420" preserveAspectRatio="xMidYMid meet"><rect width="300" height="420" fill="#3a2a1c"/>';
+    var k, s = '<svg class="in-demo in-demo-visite" viewBox="0 0 300 420" preserveAspectRatio="xMidYMid meet"><rect width="300" height="420" fill="#3a2a1c"/>';
     for(k = 0; k < 6; k++) s += '<rect x="' + (k * 50) + '" y="0" width="50" height="420" fill="' + ['#8a5c34', '#7d5230', '#906238', '#84572f', '#8c5e36', '#7a4f2c'][k] + '" stroke="rgba(26,12,4,.5)" stroke-width="1.4"/><path d="M' + (k * 50 + 12) + ' 0C' + (k * 50 + 20) + ' 140 ' + (k * 50 + 6) + ' 280 ' + (k * 50 + 14) + ' 420M' + (k * 50 + 34) + ' 0C' + (k * 50 + 28) + ' 160 ' + (k * 50 + 40) + ' 300 ' + (k * 50 + 32) + ' 420" fill="none" stroke="rgba(52,26,8,.25)" stroke-width="1.2"/>';
-    if(visite){
-      s += '<rect width="300" height="420" fill="#101638" opacity=".42"/>' +
-        '<g transform="translate(150 250)"><circle cx="5" cy="8" r="66" fill="rgba(18,8,0,.34)"/><circle r="64" fill="#6b4424" stroke="#2c2118" stroke-width="3"/><circle r="56" fill="#f7f1e3" stroke="#2c2118" stroke-width="2"/><circle r="56" fill="rgba(190,50,60,.3)"/><circle cx="-6" cy="-8" r="19" fill="#4a7db0" stroke="#2c2118" stroke-width="2.4"/><circle cx="-6" cy="-8" r="5" fill="#f4ead0" stroke="#2c2118" stroke-width="1.4"/><circle cx="30" cy="20" r="12" fill="#f7f1e3" stroke="#2c2118" stroke-width="1.8"/><circle cx="30" cy="20" r="6" fill="#8a5a2a"/><circle cx="-32" cy="24" r="12" fill="#f7f1e3" stroke="#2c2118" stroke-width="1.8"/><circle cx="-32" cy="24" r="6" fill="#8a5a2a"/></g>' +
-        '<g class="in-demo-bulle"><rect x="40" y="52" width="220" height="86" rx="16" fill="#fbf3dc" stroke="#2c2118" stroke-width="3"/><path d="M132 136l18 26 14 -26z" fill="#fbf3dc" stroke="#2c2118" stroke-width="3" stroke-linejoin="round"/><path d="M134 135h28" stroke="#fbf3dc" stroke-width="5"/><path d="M62 82h176M62 104h130" stroke="#8a6a3a" stroke-width="7" stroke-linecap="round"/></g>';
-    } else {
-      s += '<path d="M0 150L300 110L300 300L0 262Z" fill="rgba(255,214,120,.38)"/><rect x="45" y="105" width="210" height="210" rx="5" fill="#2f2822" stroke="#2c2118" stroke-width="3"/>';
-      var sg = ['lune', 'oeil', 'cloche', 'chaudron', 'lanterne', 'etoile', 'lyre', 'arbre', 'cle'], ord = [1, 5, 6];   /* (l'œil, l'étoile, la lyre : pas la réponse) */
-      for(k = 0; k < 9; k++){
-        var x = 52 + (k % 3) * 67, y = 112 + Math.floor(k / 3) * 67, i = ord.indexOf(k);
-        s += '<g class="in-demo-d' + (i >= 0 ? ' in-demo-d' + (i + 1) : '') + '"><rect x="' + x + '" y="' + y + '" width="62" height="62" rx="3" fill="#aaa091" stroke="#2a231d" stroke-width="2"/><rect class="in-demo-on" x="' + (x + 2) + '" y="' + (y + 2) + '" width="58" height="58" rx="2" fill="rgba(24,12,2,.4)" stroke="#ffd36b" stroke-width="4"/><g transform="translate(' + (x + 31) + ' ' + (y + 31) + ') scale(1.2)"><path d="' + SIGNES[sg[k]].d + '" fill="none" stroke="#fff1b8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></g></g>';
-      }
-    }
+    s += (p && p.moment === 'apresmidi' ? '<path d="M0 150L300 110L300 300L0 262Z" fill="rgba(255,214,120,.3)"/>' : '<rect width="300" height="420" fill="#101638" opacity=".42"/>') +
+      '<g transform="translate(150 250)"><circle cx="5" cy="8" r="66" fill="rgba(18,8,0,.34)"/><circle r="64" fill="#6b4424" stroke="#2c2118" stroke-width="3"/><circle r="56" fill="#f7f1e3" stroke="#2c2118" stroke-width="2"/><circle r="56" fill="rgba(190,50,60,.3)"/><circle cx="-6" cy="-8" r="19" fill="#4a7db0" stroke="#2c2118" stroke-width="2.4"/><circle cx="-6" cy="-8" r="5" fill="#f4ead0" stroke="#2c2118" stroke-width="1.4"/><circle cx="30" cy="20" r="12" fill="#f7f1e3" stroke="#2c2118" stroke-width="1.8"/><circle cx="30" cy="20" r="6" fill="#8a5a2a"/><circle cx="-32" cy="24" r="12" fill="#f7f1e3" stroke="#2c2118" stroke-width="1.8"/><circle cx="-32" cy="24" r="6" fill="#8a5a2a"/></g>' +
+      '<g class="in-demo-bulle"><rect x="40" y="52" width="220" height="86" rx="16" fill="#fbf3dc" stroke="#2c2118" stroke-width="3"/><path d="M132 136l18 26 14 -26z" fill="#fbf3dc" stroke="#2c2118" stroke-width="3" stroke-linejoin="round"/><path d="M134 135h28" stroke="#fbf3dc" stroke-width="5"/><path d="M62 82h176M62 104h130" stroke="#8a6a3a" stroke-width="7" stroke-linecap="round"/></g>';
     s += '<text class="in-demo-main" x="0" y="0" font-size="50" text-anchor="middle">👆</text></svg>';
     el.innerHTML = s;
     return {arreter:function(){ var d = el.firstChild; if(d && d.classList) d.classList.add('in-fige'); }};

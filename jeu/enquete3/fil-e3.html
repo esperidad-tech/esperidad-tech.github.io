@@ -120,7 +120,7 @@ var MOMENTS = [
     {r:'barde', t:'<b>Le voisin d\'en face</b> : <span class="q">« Odette m\'a dit : si je disparais, donne ce papier à qui viendra me chercher. »</span> Il est couvert de signes.', e:'neuf', code:'objet → 📜 « Le papier d\'Odette »'},
     {r:'sage', t:'<b>Le tableau d\'Odette</b> (sa mission pour le maire). Une fois assemblé, c\'est un vrai indice : Odette dans sa cuisine, un chat endormi au bord de la fenêtre, et sur le mur, les signes de la pierre de Tim. Le tableau reste dans son Grand Livre, et accroché à la mairie (on peut le revoir).', e:'change'},
     {r:'sage', t:'<b>Il déchiffre le papier</b> (l\'alphabet secret) : <span class="q">« Quand le soleil de l\'après-midi entrera chez moi, le chat qui dort te montrera le chemin. »</span>', e:'neuf'},
-    {r:'sage', t:'<b>Il prend la pierre de Tim</b> dans la poche de son Grand Livre et la pose sur le plan de la maison d\'Odette : la fenêtre du tableau brille, et trois signes s\'allument dans un ordre. S\'il n\'y pense pas : <span class="q">« Ces signes… tu les as déjà vus. Sur une pierre ? »</span>', e:'change', oral:'à voix haute → 🏹 « cet après-midi, chez Odette »'},
+    {r:'sage', t:'<b>Il prend la pierre de Tim</b> dans la poche de son Grand Livre et la promène sur le plan de la maison d\'Odette (19 novembre) : près du soleil, des mots s\'allument — <span class="q">« soleil de l\'après-midi »</span> ; près des dalles, elles s\'éclairent. Plus aucun signe, plus d\'ordre.', e:'change', oral:'à voix haute → 🏹 « cet après-midi, chez Odette »'},
     {r:'pisteur', t:'<b>Chez Odette, le matin</b> : une maison sombre, le soleil est de l\'autre côté. Rien… pour l\'instant.', e:'neuf'}
   ]},
   {titre:'Les bêtes', ic:'🐀', etapes:[
@@ -141,7 +141,7 @@ var MOMENTS = [
  ]}},
  {id:'apres-midi', ic:'☀️', titre:'L\'après-midi', sous:'On saute sur ce qu\'on attendait… et un plan se forme pour la nuit.', fils:[
   {titre:'Le secret d\'Odette', ic:'🗝️', etapes:[
-    {r:'pisteur', t:'<b>Chez Odette</b>, un mini-jeu vu de dessus : le soleil entre, l\'ombre de la fenêtre tombe sur le chat qui dort (le dessin du tableau), les trois signes dans l\'ordre du Sage… une cachette s\'ouvre. Sans le Sage, il ne trouve rien.', e:'change', code:'objet → 📜 « Le vieux plan d\'Odette »'},
+    {r:'pisteur', t:'<b>Chez Odette</b>, un mini-jeu vu de dessus : le soleil entre, l\'ombre de la fenêtre tombe sur le chat qui dort (le dessin du tableau), et trois dalles s\'allument l\'une après l\'autre (19 novembre : aucun signe, le soleil montre l\'ordre)… une cachette s\'ouvre. Le matin, dans l\'ombre, aucune aide : les dalles s\'enfoncent, mais rien ne dit lesquelles.', e:'change', code:'objet → 📜 « Le vieux plan d\'Odette »'},
     {r:'sage', t:'<b>Le vieux plan d\'Odette</b> : des couloirs sans nom, une petite cloche dessinée au départ, et des signes qu\'on ne sait pas lire. Une note d\'Odette : <span class="q">« Les signes ne parlent qu\'à la pierre qui les garde. »</span> On ne sait pas ce que c\'est, ni où ça mène.', e:'change'},
     {retire:'« Le plan des Fondateurs » et ses énigmes : la cachette donne directement le plan (sans écrire « souterrains » nulle part)'}
   ]},
@@ -241,7 +241,7 @@ var QUESTIONS = [
   ['Le poil de rat, c\'est trop tôt pour le donjon ?', 'Il dit seulement « sous terre », jamais « donjon ». Avec la terre de cave et la mousse lumineuse (une vraie plante des grottes), on comprend que ces rats vivent dans le noir, sans savoir où.'],
   ['Le chat gris pendant la course à l\'oie, comment le montrer ?', 'Tu as raison, ça ne se voit pas bien : je l\'enlève. C\'est l\'après-midi, devant la grille, que Moustache montre clairement qu\'il cherche Odette.'],
   ['Pourquoi aller sous l\'église ? C\'est assez clair ?', 'Trois choses l\'après-midi : Moustache qui appelle Odette devant la grille (le Pisteur), la petite cloche au départ du vieux plan (le Sage), et Anselme qui dit que sa grille est la seule entrée (le Barde).'],
-  ['Et si le Sage ne pense pas à la pierre de Tim ?', 'Les signes du tableau sont ceux de la pierre ; et s\'il regarde le plan de la maison sans elle, le livre lui souffle : « Ces signes… tu les as déjà vus. Sur une pierre ? »']
+  ['Et si le Sage ne pense pas à la pierre de Tim ?', 'Depuis le 19 novembre, ça ne bloque plus rien : l\'après-midi, le soleil montre l\'ordre des dalles au Pisteur, même si le Sage n\'a rien dit.']
 ];
 function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 function badge(r){ var x = R[r]; return '<span class="badge" style="--c:' + x.c + '" title="' + x.nom + '">' + x.ic + '</span>'; }

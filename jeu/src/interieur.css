@@ -10,10 +10,11 @@
 /* le soleil : le calque entier respire, tout doucement (un nuage qui passe) */
 .in-rayons{animation:in-respire 7s ease-in-out infinite;will-change:opacity}
 @keyframes in-respire{0%,100%{opacity:1}50%{opacity:.8}}
-/* les signes dorés : le calque entier palpite */
+/* les trois dalles que le soleil allume, l'une après l'autre (interieur.js pose « on ») : le calque entier palpite */
 .in-ors{animation:in-palpite 2.6s ease-in-out infinite;will-change:opacity}
-@keyframes in-palpite{0%,100%{opacity:.62}50%{opacity:1}}
-.in-ouvert .in-or[data-k="4"]{opacity:0}
+@keyframes in-palpite{0%,100%{opacity:.7}50%{opacity:1}}
+.in-or{opacity:0;transition:opacity .7s ease-out}
+.in-or.on{opacity:1}
 /* la poussière */
 .in-grains, .in-feu{position:absolute;inset:0;overflow:hidden}
 .in-grains i{position:absolute;border-radius:50%;background:#fff6d0;opacity:0;animation:in-grain 9s linear infinite;will-change:transform, opacity}
@@ -26,8 +27,8 @@
 @keyframes in-etincelle{0%,100%{opacity:.15}50%{opacity:1}}
 /* les dalles */
 .in-touche, .in-regard{cursor:pointer}
-.in-enfonce, .in-or-fixe{opacity:0;transition:opacity .14s}
-.in-bas-d .in-enfonce, .in-bas-d .in-or-fixe{opacity:1}
+.in-enfonce{opacity:0;transition:opacity .14s}
+.in-bas-d .in-enfonce{opacity:1}
 .in-bonne .in-enfonce{stroke:#fffbe0;fill:rgba(255,210,100,.3)}
 .in-j-visite .in-touche{cursor:default}
 /* la dalle de la cachette glisse sous sa voisine */
@@ -47,9 +48,6 @@
 @keyframes in-neuf{from{opacity:.3;transform:translateY(5px)}to{opacity:1;transform:none}}
 .in-actions{display:flex;align-items:center;gap:10px}
 .in-actions .in-sortir{margin-left:auto;flex:none}
-.in-pris{display:flex;gap:6px}
-.in-pris-c{width:40px;height:40px;border-radius:8px;border:2px dashed rgba(255,224,138,.5);display:flex;align-items:center;justify-content:center;background:rgba(255,224,138,.06)}
-.in-pris-c.on{border-style:solid;border-color:#ffd36b;background:#4a3320}
 /* la tablette couchée : la pièce à gauche, le texte à droite */
 @media (orientation:landscape) and (min-width:700px){
   .in-jeu{flex-direction:row;gap:18px;justify-content:center}

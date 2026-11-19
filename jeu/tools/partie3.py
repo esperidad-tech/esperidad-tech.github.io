@@ -214,8 +214,9 @@ def partie(nav, base):
     verifier(B.js("() => { M.render(); return !!M.P().mission.faits[1]; }"), 'le Barde a tout demandé aux sept villageois du matin : sa mission se coche')
     # (16 novembre, §13.54) Iris, une fois le vol raconté : sa question de plus, et un fond de flacon de son encre pour l'Alchimiste
     verifier(set(livrer(T, B)) == {'obj:encre_iris', 'obj:papier_odette'}, 'le Barde a donné au Sage : le papier d\'Odette ; à l\'Alchimiste : l\'encre d\'Iris (la poste et « sans sa canne » se disent à voix haute)')
-    # (16 novembre, Bible §13.57) LE SECRET D'ODETTE, le matin : le Sage déchiffre le papier que le voisin gardait, puis pose la pierre de Tim
-    # sur le plan de la maison, au dos — trois signes, dans un ordre, qu'il dit au Pisteur à voix haute (pas de code)
+    # (16 novembre, Bible §13.57 ; refait le 19 novembre, §13.72) LE SECRET D'ODETTE, le matin : le Sage déchiffre le papier que le voisin
+    # gardait, puis promène la pierre de Tim sur le plan de la maison, au dos — près du soleil, « soleil de l'après-midi » ; près des dalles,
+    # elles s'éclairent. Aucun signe, aucun ordre : il le dit au Pisteur à voix haute (pas de code)
     S.ouvrir_page('papier')
     if S.pg.locator('#voile [data-act=mj-go]').count(): S.pg.locator('#voile [data-act=mj-go]').click(); S.pg.wait_for_timeout(900)
     if S.pg.locator('#mj-plein .mj-go').count(): S.pg.locator('#mj-plein .mj-go').click(); S.pg.wait_for_timeout(1200)
@@ -225,17 +226,21 @@ def partie(nav, base):
     S.js("() => window.__pp.poser('maison', 'tim', .2, .2)"); S.pg.wait_for_timeout(200)
     froid = S.js("() => !M.P().vus['pierre:maison']")
     S.js("() => window.__pp.poser('maison', 'tim', .56, .485)"); S.pg.wait_for_timeout(400)
-    ordre = S.js("() => MJ.Interieur.MAISONS.odette.dalles.ordre")
-    verifier(froid and S.js("() => M.P().vus['pierre:maison'] === 'ok'") and 'puis' in S.texte('#livre-ici .lv-page.on'), f'la pierre de Tim, posée sur les dalles du plan : trois signes dans l\'ordre ({ordre}) — à dire au Pisteur')
+    dalles = S.js("() => !M.P().vus['pierre:maison'] && document.querySelector('.pp[data-pp=maison]').classList.contains('pp-zone-dalles')")
+    S.js("() => window.__pp.poser('maison', 'tim', .09, .485)"); S.pg.wait_for_timeout(400)
+    tp = S.texte('#livre-ici .lv-page.on')
+    verifier(froid and dalles and S.js("() => M.P().vus['pierre:maison'] === 'ok'") and 'soleil de l\'après-midi' in tp and not any(x in tp for x in ('la lune', 'la cloche', 'la clé', 'puis')),
+        'la pierre de Tim, promenée sur le plan : les dalles s\'éclairent, puis les mots « soleil de l\'après-midi » — aucun signe, aucun ordre')
     verifier(not list(livrer(T, S)), 'aucun code pour ça : le Sage le dit à voix haute')
-    # le Pisteur entre chez Odette, le matin : tout est dans l'ombre (une visite : rien à gagner, rien à rater)
-    if P.point('L2', 'maison'):
+    # le Pisteur entre chez Odette, le matin : dans l'ombre, sans aide ; des dalles au hasard ne donnent rien ; il ressort sans fenêtre « Raté »
+    if P.point('L2', 'cachette'):
         P.pg.locator('#voile [data-act=mj-go]').click(); P.pg.wait_for_timeout(900)
         if P.pg.locator('#mj-plein .mj-go').count(): P.pg.locator('#mj-plein .mj-go').click(); P.pg.wait_for_timeout(900)
-        P.js("() => { MJ.Interieur.MAISONS.odette.dalles.ordre.forEach(function(g){ __interieur.dalle(g); }); }"); P.pg.wait_for_timeout(600)
-        ouvert = P.js("() => __interieur.etat().ouvert")
+        P.js("() => { ['oeil', 'arbre', 'lyre'].forEach(function(g){ __interieur.dalle(g); }); }"); P.pg.wait_for_timeout(1500)
+        e = P.js("() => __interieur.etat()")
         P.pg.locator('#mj-plein .in-sortir').click(); P.pg.wait_for_timeout(500)
-        verifier(not ouvert and 'cet après-midi' in P.texte() and not P.js("() => !!M.P().objets.vieux_plan"), 'le Pisteur chez Odette, le matin : dans l\'ombre, même le bon ordre n\'ouvre rien — « …que cet après-midi »')
+        verifier(not e['ouvert'] and not e['jour'] and e['essais'] == 1 and 'après-midi' not in e['bulle'] and P.js("() => (M.UI.modal || {}).type") == 'maison' and not P.js("() => !!M.P().objets.vieux_plan"),
+            'le Pisteur chez Odette, le matin : dans l\'ombre, sans aide ; trois dalles au hasard, rien ; il ressort devant la porte, sans un mot')
         P.fermer()
     verifier(A.js("() => !!M.P().recus['obj:encre_iris']"), 'l\'Alchimiste a reçu le flacon d\'encre d\'Iris')
     # le Sage : le tableau, le Livre d'or, l'herbier, les premiers doutes
@@ -344,12 +349,15 @@ def partie(nav, base):
     verifier(nl == 1 and nc == 7, f'le Sage : deux nouvelles pages dans son Grand Livre, la lettre et le carnet d\'Odette avec ses sept chats ({nl}, {nc})')
     verifier(S.js("() => !M.E().pages.some(function(p){ return p.id === 'plan'; })"), '(16 novembre) plus de « plan des Fondateurs » sorti de nulle part')
     verifier(list(livrer(T, S)) == [], '(17 novembre) le Sage ne donne plus « Les écritures du village » à l\'Alchimiste : c\'est lui qui compare')
-    # (16 novembre) LE SECRET D'ODETTE, l'après-midi : le soleil entre chez Odette ; le Pisteur enfonce les trois dalles dans l'ordre que
-    # le Sage lui a dit (de vrais appuis, dans le vrai mini-jeu) ; la cachette s'ouvre : le vieux plan, pour le Sage
+    # (16 novembre ; 19 novembre) LE SECRET D'ODETTE, l'après-midi : le soleil entre chez Odette, et allume trois dalles l'une après l'autre ;
+    # le Pisteur les enfonce dans cet ordre-là (de vrais appuis, dans le vrai mini-jeu) ; la cachette s'ouvre : le vieux plan, pour le Sage
     if P.point('L2', 'cachette'):
         P.pg.locator('#voile [data-act=mj-go]').click(); P.pg.wait_for_timeout(900)
         if P.pg.locator('#mj-plein .mj-go').count(): P.pg.locator('#mj-plein .mj-go').click(); P.pg.wait_for_timeout(900)
-        for sg in S.js("() => MJ.Interieur.MAISONS.odette.dalles.ordre"):
+        P.pg.wait_for_function("() => __interieur.etat().allumees.length === 3", timeout=8000)
+        vu = P.js("() => __interieur.etat().allumees")
+        verifier(vu == P.js("() => MJ.Interieur.MAISONS.odette.dalles.ordre"), f'chez Odette, l\'après-midi : le soleil allume trois dalles, l\'une après l\'autre ({len(vu)})')
+        for sg in vu:
             P.js("(sg) => __interieur.dalle(sg)", sg); P.pg.wait_for_timeout(150)
         P.pg.wait_for_timeout(4200)
         if P.pg.locator('#mj-plein .mj-continuer').count(): P.pg.locator('#mj-plein .mj-continuer').click(); P.pg.wait_for_timeout(500)

@@ -1350,6 +1350,11 @@ A.point = function(el){
     M.lancerMJ(p.mj, E.niveau + (p.mjNiveau || 0) + (fac && fac.niveau || 0), fac && fac.params ? Object.assign({}, p.params, fac.params) : p.params, {titre:p.nom, ic:p.ic, avant:(fac && fac.avant) || p.avant, bouton:p.bouton, retour:'lieu', retourId:l,
       sansIntro:!!el.dataset.gratuit, niveauFixe:p.mjNiveauFixe || null, niveauMax:p.mjNiveauMax || null, reessaisInfinis:!!p.essaisInfinis}, function(res){
       if(res.gateau){ P.gateau = res.gateau; }   /* (enquête 3) le gâteau de la fête, tel que l'Alchimiste l'a fait */
+      /* (19 novembre, la maison d'Odette : « il n'y a pas de message qui dit quoi que ce soit comme indice ») res.sorti : on est seulement
+         ressorti de la maison, sans rien trouver. Ni « Raté », ni « Tu peux réessayer » : on se retrouve devant la porte, et le point
+         reste là, comme avant. (:entre : on y est entré à ce moment-là — la petite bulle de la carte, p.bulleUneFois.) */
+      /* (p.sortieLibre : pour ce point, toute sortie sans trouvaille est une simple sortie — même le jeu quitté en route, M.rateQuitte) */
+      if(!res.reussi && (res.sorti || p.sortieLibre)){ P.vus[k + ':entre'] = P.moment; M.sauver(); A.lieu({dataset:{id:l}}); return; }
       if(res.reussi) reveler(res.or ? Math.max(1, Math.min(5, Math.round(+res.or) || 0)) : 0);
       else { var n = M.echec ? M.echec(k) : 1; P.vus[k] = 'rate'; if(p.rateNote) M.noter(p.rateNote, p.ic);
         /* p.essaisInfinis (l'oie de l'enquête 3, Romain, 12 novembre) : on recommence autant qu'on veut ; le point ne se ferme jamais */

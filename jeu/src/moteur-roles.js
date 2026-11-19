@@ -96,6 +96,10 @@ function pointPlantes(lieu){
 M.pointsVisibles = function(lieu, role){
   var E = M.E(), L = E.lieux[lieu], R = L && L[role];
   var l = (R && R.points) ? R.points.filter(function(p){ return M.momentOk(p.moments); }) : [];
+  /* p.parMoment {matin:{…}, apresmidi:{…}} (enquête 3, 19 novembre : la maison d'Odette) : le MÊME point, sous un autre nom selon le moment
+     (son icône, son nom, ses textes, les réglages de son mini-jeu). Une fois fait, il est fait pour tous les moments. */
+  var mid = l.length ? M.momentId() : null;
+  l = l.map(function(p){ var pm = p && p.parMoment && p.parMoment[mid]; return pm ? Object.assign({}, p, pm) : p; });
   /* (plus de « Ce qui pousse ici » pour le Pisteur : il ne renseigne plus l'Alchimiste, Romain, 5 novembre, 13 h 19 ; pointPlantes reste, inutilisé) */
   return l;
 };
@@ -435,7 +439,9 @@ M.bullesMaisons = function(){
   if(!E || !P) return o;
   M.cle(E.lieux || {}).forEach(function(id){
     if(!/^[LFB]\d$/.test(id)) return;
-    var p = M.pointsMaison(id).filter(function(x){ return P.vus[role + ':' + id + ':' + x.id] !== 'ok'; })[0];
+    /* p.bulleUneFois (la maison d'Odette, le matin) : la bulle s'en va dès qu'on y est entré une fois à ce moment-là — elle ne dit pas
+       « il reste quelque chose à trouver ici » (Romain, 19 novembre : aucune aide le matin) */
+    var p = M.pointsMaison(id).filter(function(x){ var k = role + ':' + id + ':' + x.id; return P.vus[k] !== 'ok' && !(x.bulleUneFois && P.vus[k + ':entre'] === P.moment); })[0];
     if(p) o[id] = p.ic;
   });
   return o;

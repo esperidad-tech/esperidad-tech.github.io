@@ -9,7 +9,6 @@
 .ds-plan-bouton{display:flex;justify-content:center;margin:12px 0 10px}
 .pp-dessin{display:block;width:100%;height:auto;filter:none}
 .pp-plume{font-family:'Brush Script MT','Segoe Script','Bradley Hand',cursive;font-size:17px;font-style:italic;fill:#4a3320}
-.pp-rang{font:700 10px/1 system-ui,sans-serif;fill:#ffe08a}
 .pp-citation{font-style:italic}
 /* la pierre posée sur le plan */
 .pp-pose{position:absolute;transform:translate(-50%,-62%);padding:0;border:0;background:none;line-height:0;touch-action:none;cursor:grab;-webkit-tap-highlight-color:transparent;animation:pp-pose .28s cubic-bezier(.3,1.5,.5,1)}
@@ -23,17 +22,20 @@
 .pp-parle .pp-fixe .pp-runes{stroke:#ff6a1a}
 .pp-parle .pp-fixe{filter:drop-shadow(0 0 9px rgba(255,140,40,.95));animation:pp-brule 1.8s ease-in-out infinite}
 @keyframes pp-brule{0%,100%{opacity:1}50%{opacity:.72}}
-.pp-or-case{animation:pp-case 2.2s ease-in-out infinite}
-@keyframes pp-case{0%,100%{opacity:.72}40%{opacity:1}}
-.pp-or-rayon{animation:pp-brule 3s ease-in-out infinite}
+/* (19 novembre) LE PLAN OÙ LA PIERRE SE PROMÈNE (la maison d'Odette) : ce qu'elle réveille est caché, et s'allume tant qu'elle est là */
+.pp-mots-soleil, .pp-dalles-or{opacity:0;transition:opacity .35s ease-out;pointer-events:none}
+.pp-zone-soleil .pp-mots-soleil, .pp-zone-dalles .pp-dalles-or{opacity:1}
+.pp-zone-dalles .pp-dalles-or{animation:pp-case 2.2s ease-in-out infinite}
+@keyframes pp-case{0%,100%{opacity:.78}40%{opacity:1}}
+.pp-mots{font-size:19px;font-weight:700;fill:#a8420a;stroke:#fbefc8;stroke-width:5px;paint-order:stroke;stroke-linejoin:round}
+.pp-promene.pp-active .pp-plan{touch-action:none;cursor:grab}
+.pp-traine .pp-pose{opacity:0}
+.pp-zone-soleil .pp-pose .pp-runes, .pp-zone-dalles .pp-pose .pp-runes, .pp-fantome.pp-chaud .pp-runes{stroke:#ff6a1a}
+.pp-zone-soleil .pp-pose, .pp-zone-dalles .pp-pose{filter:drop-shadow(0 0 9px rgba(255,140,40,.95))}
+.pp-fantome.pp-chaud{filter:drop-shadow(0 0 10px rgba(255,140,40,.95)) drop-shadow(0 10px 8px rgba(0,0,0,.4))}
 /* ce que dit le plan */
 .pp-dit{margin:6px 0 0}
 .pp-dit .lv-texte{margin:0}
-.pp-trois{display:flex;align-items:center;justify-content:center;gap:6px;margin:4px 0 8px}
-.pp-trois b{font-size:1.5rem;color:#8a6a3a}
-.pp-trois-c{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 8px 5px;min-width:74px;border-radius:12px;background:#ffd36b;border:3px solid #b9770e;box-shadow:0 3px 0 #8a5a12}
-.pp-trois-c i{position:absolute;left:-8px;top:-8px;width:24px;height:24px;border-radius:50%;background:#24182e;color:#ffe08a;font:700 .9rem/24px system-ui,sans-serif;text-align:center;font-style:normal}
-.pp-trois-c small{font-weight:700;color:#3a2208;font-size:.82rem}
 /* la poche */
 .pp-poche{margin:8px auto 0;max-width:340px;padding:5px 8px 8px;border-radius:14px;background:#7a4a26;border:2px solid #35281b;box-shadow:inset 0 0 0 2px #7a4a26, inset 0 0 0 3.5px rgba(239,220,174,.55)}
 .pp-poche > b{display:block;color:#f6e7bd;font-size:.82rem;letter-spacing:.02em;margin:0 0 4px 4px}
@@ -53,4 +55,4 @@ html.pp-glisse, html.pp-glisse *{user-select:none;-webkit-user-select:none}
 /* le tableau d'Odette, à revoir */
 .pp-tableau{max-width:340px;margin:6px auto 10px;border-radius:6px;overflow:hidden;box-shadow:0 6px 16px rgba(0,0,0,.35)}
 .pp-tableau svg{display:block;width:100%;height:auto}
-@media (prefers-reduced-motion: reduce){ .pp-pose, .pp-parle .pp-fixe, .pp-or-case, .pp-or-rayon, .pp-pierre .pp-svg{animation:none} }
+@media (prefers-reduced-motion: reduce){ .pp-pose, .pp-parle .pp-fixe, .pp-zone-dalles .pp-dalles-or, .pp-pierre .pp-svg{animation:none} }

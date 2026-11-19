@@ -44,8 +44,8 @@ module.exports = function verifierE3(E, SRC, D){
         const cle = `${role}:${l}:${p.id}`, prod = liste(p.donne).concat(liste(p.donneAussi)).concat(p.obj ? ['obj:' + p.obj] : []), f = p.plante ? ['plante:' + p.plante] : [];
         /* (le gâteau est une création libre : on ne le rate jamais ; p.essaisInfinis : on recommence autant qu'on veut, il finit toujours par réussir) */
         const ratable = !!p.mj && p.mj !== 'gateau' && !p.essaisInfinis;
-        /* (16 novembre) p.oral : ce qu'un équipier doit lui avoir dit à voix haute (la cachette d'Odette : l'ordre des trois signes, que
-           le Sage lit sur son plan) — pas de code, mais la logique reste vérifiée */
+        /* (16 novembre) p.oral : ce qu'un équipier doit lui avoir dit à voix haute — pas de code, mais la logique reste vérifiée.
+           (Plus aucun point n'en a depuis le 19 novembre : la cachette d'Odette se trouve sans le Sage, le soleil montre l'ordre.) */
         aj({cle, role, moments:p.moments, besoins:[p.besoin, p.visibleSi, p.oral].filter(Boolean), sauf:p.cacheSi, produit:prod, faits:f, ratable, mj:p.mj,
           rate:p.ouvrePartiel ? {produit:prod, faits:f} : {produit:[], faits:[]}});
         (p.variantes || []).forEach((v, k) => { if(v.recoit || v.donne || v.obj) aj({cle:`${cle}:v${k}`, role, moments:p.moments, besoins:[[{vu:cle}]].concat(v.si ? [v.si] : []), produit:liste(v.recoit).concat(liste(v.donne)), filet:true}); });
@@ -264,7 +264,7 @@ module.exports = function verifierE3(E, SRC, D){
      joueur peut ne jamais faire sans que ce soit un raté (il n'y pense pas, il passe à côté). Un oubli à la fois : l'enquête se résout
      quand même, et on descend. Ce n'est PAS le cas du fil principal (les traces de Moustache jusqu'à la grille : sans elles, personne ne
      sait où est Odette — c'est voulu, et la maison d'Odette porte une bulle sur la carte du Pisteur tant qu'il ne les a pas suivies). */
-  const oublis = ['barde:levoisin:4', 'sage:page:papier', 'sage:pierre:maison', 'pisteur:L2:maison', 'pisteur:L2:cachette', 'sage:page:vieuxplan', 'barde:iris:5', 'sage:page:herbier',
+  const oublis = ['barde:levoisin:4', 'sage:page:papier', 'sage:pierre:maison', 'pisteur:L2:cachette', 'sage:page:vieuxplan', 'barde:iris:5', 'sage:page:herbier',
     'mission:barde:6', /* (17 novembre, 22 h 08 : les tenues de Mélusine ne sont plus un oubli permis — Anselme s'ouvre après) */ 'sage:ecriture', 'alchimiste:boulangerie:sac', 'alchimiste:analyse:sac_farine', 'barde:voisin:1', 'barde:gaspard:4', 'sage:mairie:rendu', 'alchimiste:analyse:encre_iris'];
   const inconnus = oublis.filter(k => !cles.has(k));
   const fatals = oublis.filter(k => cles.has(k)).filter(k => { const r = jouer(ROLES, null, [k]); return !juste(solutions(r)) || !r.faits.has('donjon:fini'); });
@@ -364,11 +364,20 @@ module.exports = function verifierE3(E, SRC, D){
   const jamais = ids.filter(c => !parfait.codes.has(c) && !toutJ.codes.has(c) && !souleve.codes.has(c) && !['info:copie', 'info:leo_dit1', 'info:leo_dit2'].includes(c));
   dit(!jamais.length, jamais.length ? 'des codes qu\'aucune partie ne fait apparaître (ni tout réussi, ni tout raté, ni la grille soulevée) : ' + jamais.join(', ') : 'Chaque code apparaît dans une partie (tout réussi, tout raté, ou la grille soulevée)');
 
-  /* (16 novembre) le secret d'Odette : la cachette ne s'ouvre pas sans le Sage (l'ordre des trois signes), ni sans le Barde (le papier) */
+  /* (16 novembre) le secret d'Odette : le papier (le Barde), la pierre de Tim sur le plan (le Sage), la cachette (le Pisteur), le vieux
+     plan (le Sage). (19 novembre, Romain : « l'après-midi […] il verra vraiment sur quelle dalle il faut appuyer » ; « il n'y a pas de
+     signe ») LA CACHETTE NE DÉPEND PLUS DU SAGE NI DU BARDE : le soleil montre l'ordre au Pisteur, et il peut même tomber dessus le matin.
+     Un seul point pour les deux moments (p.parMoment), plus de p.oral, aucun texte d'aide. */
   if(E.lieux.L2 && ((E.lieux.L2.pisteur || {}).points || []).some(p => p.id === 'cachette')){
     const sansS = jouer(['barde', 'pisteur', 'alchimiste']), sansB = jouer(['pisteur', 'sage', 'alchimiste']);
+    const pc = E.lieux.L2.pisteur.points.find(p => p.id === 'cachette'), pm = (pc.parMoment || {}).matin || {};
+    const textes = [pc.avant, pc.rate, pm.avant, pc.bouton, pm.bouton].filter(Boolean).join(' | ');
     dit(parfait.codes.has('obj:vieux_plan') && parfait.faits.has('pierre:maison'), 'le secret d\'Odette : le papier (le Barde), la pierre de Tim sur le plan (le Sage), la cachette (le Pisteur), le vieux plan (le Sage)');
-    dit(!sansS.codes.has('obj:vieux_plan') && !sansB.codes.has('obj:vieux_plan'), 'sans le Sage, ou sans le Barde, la cachette d\'Odette ne s\'ouvre pas');
+    dit(sansS.codes.has('obj:vieux_plan') && sansB.codes.has('obj:vieux_plan') && !pc.oral && !(E.lieux.L2.pisteur.points || []).some(p => p.id === 'maison'),
+      '(19 novembre) la cachette d\'Odette : un seul point, le matin et l\'après-midi ; elle s\'ouvre sans le Sage et sans le Barde (le soleil montre l\'ordre)');
+    dit(JSON.stringify(pc.moments) === JSON.stringify(['matin', 'apresmidi']) && pm.params && pm.params.moment === 'matin' && !pm.params.visite && pc.params.moment === 'apresmidi' && !!pc.sortieLibre
+      && !/dalle|ordre|Sage|signe|trois|réessa/i.test(textes) && !/après-midi|soleil/i.test([pm.avant, pm.bouton, pm.nom].join(' ')),
+      '(19 novembre) chez Odette : le matin, les dalles s\'enfoncent et rien n\'aide (ni « après-midi », ni « soleil ») ; aucun texte ne parle des dalles, de l\'ordre ou du Sage');
   }
   /* (17 novembre, étape 3) la pincée du sac éventré : l'Alchimiste la ramasse chez Gaspard (p.recoit), le labo sait l'analyser (E.labo,
      et sa fiche dans src/labo/30-donnees.js), et l'analyse a son texte — sans code (« Dis-le à tes amis ! ») et sans dire « souterrain » */

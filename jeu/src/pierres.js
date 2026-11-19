@@ -12,6 +12,11 @@
    · LES PLANS (E.plansPierre[id]) : {pierre (celle qu'il attend), zone {x, y, r} (dans le dessin, 300 de large), dessin(revele),
      avant, tiede, froid, autre (une pierre qui n'est pas la sienne), t (ce que dit le plan quand il parle), note}.
      Ce qui est gardé : P.vus['pierre:<plan>'] = 'ok'.
+   · UN PLAN OÙ LA PIERRE SE PROMÈNE (Pl.promene ; Romain, 19 novembre : « j'aimerais bien qu'on puisse prendre la pierre de Tim et la
+     balader sur le papier ») : le plan de la maison d'Odette. Pas de « chaud / froid », pas de fin : la pierre se balade tant qu'on veut
+     (on la fait glisser, ou on pose le doigt sur le papier et elle suit), et le papier réagit PENDANT qu'elle passe (Pl.zones) :
+     près du soleil, des mots s'allument (« soleil de l'après-midi ») ; sur les dalles, elles s'éclairent. Rien d'autre : ni signe,
+     ni numéro, ni ordre. P.vus['pierre:<plan>'] est noté quand les deux ont été vus.
    · Les pages de l'enquête 3 : M.papierOdetteHTML (le papier d'Odette : au dos, le plan de sa maison), M.vieuxPlanHTML (le vieux plan
      sorti de la cachette), M.tableauOdetteHTML (le tableau, qu'on peut revoir).
    Crochets : data-act="pp-poser" (data-pp, data-pierre, data-x, data-y), window.__pp.
@@ -56,8 +61,61 @@ M.pierresHTML = function(){
 
 /* ---------- Un plan et sa poche ---------- */
 function etat(id){ var e = UI.pp = UI.pp || {}; return e[id] = e[id] || {}; }
+/* ---------- Un plan où la pierre se promène (Pl.promene) ---------- */
+/* dans quelle zone du plan est ce point (x, y : dans le dessin, 300 de large) ? → 'soleil', 'dalles'… ou '' */
+function zoneDe(Pl, x, y){
+  var Z = Pl.zones || {}, ks = Object.keys(Z), i, z;
+  for(i = 0; i < ks.length; i++){ z = Z[ks[i]]; if(Math.abs(x - z.x) <= z.rx && Math.abs(y - z.y) <= z.ry) return ks[i]; }
+  return '';
+}
+function texteZone(Pl, zone, Pi){ return zone ? Pl.zones[zone].t : (Pl.froid || 'Ici, la pierre reste froide.').replace('{pierre}', Pi ? Pi.nom : 'La pierre'); }
+/* la pierre vient d'entrer dans une zone : la première fois, ça se remarque ; quand toutes les zones ont été vues, le plan « a parlé » */
+function entrerZone(id, zone){
+  var E = M.E(), P = M.P(), Pl = planDe(E, id), S = etat(id);
+  if(!zone || !Pl || !P) return;
+  S.vu = S.vu || {};
+  if(S.vu[zone]){ M.son('ok'); return; }
+  S.vu[zone] = 1;
+  M.son('magie'); try{ if(navigator.vibrate) navigator.vibrate([30, 50, 90]); }catch(e){}
+  if(!parle(id) && Object.keys(Pl.zones).every(function(z){ return S.vu[z]; })){
+    P.vus['pierre:' + id] = 'ok';
+    if(Pl.note) M.noter(Pl.note, Pl.ic || '🪨');
+    M.sauver();
+  }
+}
+/* pendant que la pierre glisse : le papier réagit tout de suite (les classes pp-zone-…, la phrase), sans rien redessiner */
+function survoler(id, pid, x, y){
+  var E = M.E(), Pl = planDe(E, id), S = etat(id), el = document.querySelector('.pp[data-pp="' + id + '"]');
+  if(!Pl || !Pl.promene || !el) return '';
+  var zone = Pl.pierre === pid && x >= 0 && x <= 1 && y >= 0 && y <= 1 ? zoneDe(Pl, x * 300, y * Pl.h) : '';
+  if(zone === (S.survol || '')) return zone;
+  S.survol = zone;
+  Object.keys(Pl.zones).forEach(function(z){ el.classList.toggle('pp-zone-' + z, z === zone); });
+  if(zone){
+    entrerZone(id, zone);
+    var d = el.querySelector('.pp-dit'), t = texteZone(Pl, zone, pierre(E, pid));
+    if(d) d.innerHTML = '<p class="lv-texte">' + esc(t) + ' ' + lire(t) + '</p>';
+  }
+  return zone;
+}
+function blocPromene(id, Pl){
+  var E = M.E(), S = etat(id), l = pierresDe(E), s = '';
+  /* (pp-active : une pierre est en main ou sortie — là seulement, le doigt posé sur le papier emmène la pierre au lieu de faire défiler la page) */
+  s += '<div class="pp pp-promene' + (S.main || S.pierre ? ' pp-active' : '') + (S.zone ? ' pp-zone-' + S.zone : '') + (S.pierre && !S.zone && S.chaleur ? ' pp-' + S.chaleur : '') + '" data-pp="' + esc(id) + '">';
+  s += '<div class="pp-plan" data-pp-plan="' + esc(id) + '">' + Pl.dessin(false);
+  if(S.pierre) s += '<button type="button" class="pp-pose" data-pp-pose="' + esc(S.pierre) + '" style="left:' + n(S.x * 100) + '%;top:' + n(S.y * 100) + '%" aria-label="' + esc((pierre(E, S.pierre) || {}).nom || 'La pierre') + ', posée sur le plan">' + pierreSVG(S.pierre, 54) + '</button>';
+  s += '</div>';
+  var dit = S.dit || Pl.avant;
+  s += '<div class="pp-dit" aria-live="polite"><p class="lv-texte">' + esc(dit) + ' ' + lire(dit) + '</p></div>';
+  s += '<div class="pp-poche"><b>Dans ta poche</b><div class="pp-poche-l">' + (l.length ? l.map(function(p){
+    var sortie = S.pierre === p.id;
+    return '<button type="button" class="pp-pierre' + (S.main === p.id ? ' pp-main' : '') + (sortie ? ' pp-sortie' : '') + '" data-pp-pierre="' + esc(p.id) + '">' + pierreSVG(p.id, 46) + '<span>' + esc(p.nom) + '</span></button>';
+  }).join('') : '<span class="pp-vide">Rien pour l\'instant.</span>') + '</div></div>';
+  return s + '</div>';
+}
 function bloc(id){
   var E = M.E(), Pl = planDe(E, id); if(!Pl) return '';
+  if(Pl.promene) return blocPromene(id, Pl);
   var S = etat(id), fait = parle(id), l = pierresDe(E), s = '';
   var classe = fait ? ' pp-parle' : S.chaleur ? ' pp-' + S.chaleur : '';
   s += '<div class="pp' + classe + '" data-pp="' + esc(id) + '">';
@@ -91,11 +149,19 @@ function redessiner(id){
 /* poser la pierre « pid » sur le plan « id », à l'endroit (x, y) — des fractions du dessin, de 0 à 1 */
 function poser(id, pid, x, y){
   var E = M.E(), P = M.P(), Pl = planDe(E, id), Pi = pierre(E, pid);
-  if(!Pl || !Pi || !P || parle(id)) return;
+  if(!Pl || !Pi || !P || (parle(id) && !Pl.promene)) return;
   if(pierresDe(E).indexOf(Pi) < 0) return;
   var S = etat(id);
   x = Math.max(.04, Math.min(.96, x)); y = Math.max(.04, Math.min(.96, y));
   S.pierre = pid; S.main = pid; S.x = x; S.y = y;
+  if(Pl.promene && Pl.pierre === pid){
+    /* la pierre se promène : là où on la lâche, le papier réagit (ou pas) ; elle peut repartir */
+    var z = zoneDe(Pl, x * 300, y * Pl.h), dejaLa = z && z === S.survol;
+    S.zone = z; S.survol = z; S.chaleur = z ? '' : 'froid'; S.dit = texteZone(Pl, z, Pi);
+    if(z && !dejaLa) entrerZone(id, z); else if(!z) M.son('tic');
+    redessiner(id); return;
+  }
+  if(Pl.promene){ S.zone = ''; S.survol = ''; }
   if(Pl.pierre !== pid){
     S.chaleur = 'froid'; S.dit = (Pl.autre || 'Elle reste froide. Ce n\'est pas cette pierre que le plan attend.').replace('{pierre}', Pi.nom);
     M.son('tic'); redessiner(id); return;
@@ -114,22 +180,31 @@ function poser(id, pid, x, y){
   M.son(S.chaleur === 'tiede' ? 'ok' : 'tic'); redessiner(id);
 }
 A['pp-poser'] = function(el){ poser(el.dataset.pp, el.dataset.pierre, +el.dataset.x, +el.dataset.y); };
-window.__pp = {poser:poser, etat:function(id){ return {parle:parle(id), ui:(UI.pp || {})[id] || null}; }};
+window.__pp = {poser:poser, survoler:survoler, etat:function(id){ return {parle:parle(id), ui:(UI.pp || {})[id] || null}; }};
 
 /* ---------- Les gestes (pris avant le livre) ---------- */
 var G = null;   /* {id (plan), pid, x0, y0, glisse, fantome} */
 function planSous(x, y){ var el = document.elementFromPoint(x, y); return el && el.closest ? el.closest('.pp-plan') : null; }
 function fraction(plan, x, y){ var r = plan.getBoundingClientRect(); return {x:(x - r.left) / r.width, y:(y - r.top) / r.height}; }
 function prendre(id, pid){
-  var S = etat(id), Pi = pierre(M.E(), pid);
-  S.main = pid; if(!S.pierre){ S.chaleur = ''; S.dit = (Pi ? Pi.nom : 'La pierre') + ' est dans ta main. Où vas-tu la poser ?'; }
+  var S = etat(id), Pi = pierre(M.E(), pid), Pl = planDe(M.E(), id);
+  S.main = pid; if(!S.pierre){ S.chaleur = ''; S.dit = (Pi ? Pi.nom : 'La pierre') + (Pl && Pl.promene ? ' est dans ta main. Promène-la sur le papier !' : ' est dans ta main. Où vas-tu la poser ?'); }
   M.son('clic'); redessiner(id);
 }
 document.addEventListener('pointerdown', function(e){
   if(!e.target.closest) return;
-  var b = e.target.closest('.pp-pierre, button.pp-pose'); if(!b) return;
-  var pp = b.closest('.pp'); if(!pp) return;
+  var b = e.target.closest('.pp-pierre, button.pp-pose');
   if(e.pointerType === 'mouse' && e.button !== 0) return;
+  if(!b){
+    /* (19 novembre) sur un plan où la pierre se promène : le doigt posé n'importe où sur le papier emmène la pierre (celle qu'on a en
+       main, ou celle qui est déjà sortie) — on la balade sans avoir à viser la pierre */
+    var pl = e.target.closest('.pp-promene .pp-plan'); if(!pl) return;
+    var S0 = etat(pl.dataset.ppPlan), pid0 = S0.main || S0.pierre; if(!pid0) return;
+    e.stopPropagation();
+    G = {id:pl.dataset.ppPlan, pid:pid0, x0:e.clientX, y0:e.clientY, pt:e.pointerId, glisse:false, fantome:null, depuisPlan:true, papier:true};
+    return;
+  }
+  var pp = b.closest('.pp'); if(!pp) return;
   e.stopPropagation();   /* le livre ne commence pas à tourner sa page */
   G = {id:pp.dataset.pp, pid:b.dataset.ppPierre || b.dataset.ppPose, x0:e.clientX, y0:e.clientY, pt:e.pointerId, glisse:false, fantome:null, depuisPlan:b.classList.contains('pp-pose')};
 }, true);
@@ -143,21 +218,34 @@ document.addEventListener('pointermove', function(e){
     f.className = 'pp-fantome'; f.innerHTML = pierreSVG(G.pid, 64);
     document.body.appendChild(f);
     document.documentElement.classList.add('pp-glisse');
+    /* la pierre déjà posée sur le plan s'efface : c'est elle qu'on emmène */
+    var pp0 = document.querySelector('.pp[data-pp="' + G.id + '"]'); if(pp0 && etat(G.id).pierre === G.pid) pp0.classList.add('pp-traine');
   }
   e.stopPropagation(); if(e.cancelable) e.preventDefault();
   G.fantome.style.transform = 'translate(' + (e.clientX - 32) + 'px,' + (e.clientY - 42) + 'px)';
+  /* un plan où la pierre se promène : le papier réagit pendant qu'elle passe */
+  var Plg = planDe(M.E(), G.id);
+  if(Plg && Plg.promene){
+    var plg = planSous(e.clientX, e.clientY - 10), zg = '';
+    if(plg && plg.dataset.ppPlan === G.id){ var qg = fraction(plg, e.clientX, e.clientY - 10); zg = survoler(G.id, G.pid, qg.x, qg.y); }
+    else zg = survoler(G.id, G.pid, -1, -1);
+    G.fantome.classList.toggle('pp-chaud', !!zg);
+  }
 }, true);
 function finGeste(e, annule){
   if(!G || e.pointerId !== G.pt) return;
   var g = G; G = null;
   if(g.fantome && g.fantome.parentNode) g.fantome.parentNode.removeChild(g.fantome);
   document.documentElement.classList.remove('pp-glisse');
-  if(!g.glisse){ if(!annule && !g.depuisPlan) prendre(g.id, g.pid); return; }
+  var pp0 = document.querySelector('.pp[data-pp="' + g.id + '"]'); if(pp0) pp0.classList.remove('pp-traine');
+  if(!g.glisse){ if(!annule && !g.depuisPlan) prendre(g.id, g.pid); return; }   /* (g.papier, sans glisser : le « clic » qui suit pose la pierre là) */
   e.stopPropagation();
   UI.ppBloque = Date.now();   /* le « clic » qui suit le glisser ne repose pas la pierre ailleurs */
-  if(annule) return;
-  var plan = planSous(e.clientX, e.clientY - 10);
-  if(plan && plan.dataset.ppPlan === g.id){ var q = fraction(plan, e.clientX, e.clientY - 10); poser(g.id, g.pid, q.x, q.y); }
+  var plan = annule ? null : planSous(e.clientX, e.clientY - 10);
+  if(plan && plan.dataset.ppPlan === g.id){ var q = fraction(plan, e.clientX, e.clientY - 10); poser(g.id, g.pid, q.x, q.y); return; }
+  /* lâchée hors du papier (ou geste annulé) : sur un plan où elle se promène, le papier revient comme avant */
+  var Plg = planDe(M.E(), g.id);
+  if(Plg && Plg.promene){ etat(g.id).survol = etat(g.id).zone || ''; redessiner(g.id); }
 }
 document.addEventListener('pointerup', function(e){ finGeste(e, false); }, true);
 document.addEventListener('pointercancel', function(e){ finGeste(e, true); }, true);
@@ -169,11 +257,12 @@ document.addEventListener('click', function(e){
   if(e.target.closest('button.pp-pose')) return;
   var id = plan.dataset.ppPlan, S = etat(id), E = M.E(), Pl = planDe(E, id);
   if(!Pl) return;
-  var pid = parle(id) ? null : (S.main || S.pierre);
+  var fait = parle(id) && !Pl.promene;   /* (un plan où la pierre se promène ne se fige jamais) */
+  var pid = fait ? null : (S.main || S.pierre);
   /* (Romain, 17 novembre, 23 h 13 : « quand je clique sur le plan, il se passe rien ») sans pierre à poser, toucher un plan qui se déroule
      en grand (le vieux plan, la nuit) l'ouvre : c'est là qu'on le lit, qu'on le zoome, et qu'on y promène la pierre de rune */
   if(!pid && Pl.ouvrir && Pl.ouvrir()){ e.stopPropagation(); return; }
-  if(parle(id)) return;
+  if(fait) return;
   if(!pid){
     S.dit = Pl.sansPierre || 'Le plan ne dit rien de plus… Il lui manque quelque chose.'; M.son('tic'); redessiner(id); return;
   }
@@ -216,34 +305,28 @@ function planMaison(revele){
   var c0 = 232, T = 56, e = 6, q, kk;
   for(kk = 0; kk < 9; kk++){
     q = {x:c0 + (kk % 3) * (T + e), y:310 + Math.floor(kk / 3) * (T + e)};
-    s += '<rect stroke-width="1.3" x="' + X(q.x) + '" y="' + Y(q.y) + '" width="' + n(T * MK) + '" height="' + n(T * MK) + '"/>';
-    if(!revele) s += '<path stroke-width="1" opacity=".5" d="M' + X(q.x + 14 + (kk * 7) % 11) + ' ' + Y(q.y + 16 + (kk * 5) % 9) + 'q' + n(6 + kk % 3 * 2) + ' -' + (3 + kk % 2 * 2) + ' ' + n(9 + kk % 4) + ' ' + (2 + kk % 3) + 'M' + X(q.x + 20) + ' ' + Y(q.y + 36 + (kk * 3) % 7) + 'l' + (4 + kk % 3) + ' ' + (1 + kk % 2) + '"/>';
+    s += '<rect stroke-width="1.3" x="' + X(q.x) + '" y="' + Y(q.y) + '" width="' + n(T * MK) + '" height="' + n(T * MK) + '"/>';   /* (19 novembre : des dalles nues, sans le moindre signe) */
   }
   s += '</g>';
   /* ce qu'Odette a écrit : le titre, et le soleil de l'après-midi, du côté de la fenêtre */
   s += '<text x="150" y="386" text-anchor="middle" class="pp-plume">Ma maison</text>';
   s += '<g transform="translate(19 ' + Y(400) + ')" fill="none" stroke="' + ENCRE + '" stroke-width="1.5" stroke-linecap="round"><circle r="6"/><path d="M0 -10v-4M0 10v4M-10 0h-4M-7 -7l-3 -3M-7 7l-3 3M7 -7l3 -3M7 7l3 3"/></g><path d="M29 ' + Y(400) + 'h9m-3 -3l3 3-3 3" fill="none" stroke="' + ENCRE + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>';
-  if(revele && I){
-    /* la pierre a parlé : le rayon d'or, de la fenêtre aux dalles ; les neuf signes ; les trois qui comptent, et leur rang */
-    var Dl = I.MAISONS.odette.dalles, cx = X(322), cy = Y(400);
-    s += '<path class="pp-or-rayon" d="M' + X(60) + ' ' + Y(388) + 'L' + cx + ' ' + n(cy - 26) + 'L' + cx + ' ' + n(cy + 26) + 'L' + X(60) + ' ' + Y(412) + 'Z" fill="rgba(255,196,74,.38)"/>';
-    for(kk = 0; kk < 9; kk++){
-      q = {x:c0 + (kk % 3) * (T + e) + T / 2, y:310 + Math.floor(kk / 3) * (T + e) + T / 2};
-      var rang = Dl.ordre.indexOf(Dl.signes[kk]), d = I.SIGNES[Dl.signes[kk]].d;
-      s += '<g transform="translate(' + X(q.x) + ' ' + Y(q.y) + ') scale(.48)">' + (rang >= 0 ? '<rect x="-27" y="-27" width="54" height="54" rx="4" fill="#ffd36b" stroke="#b9770e" stroke-width="3" class="pp-or-case" style="animation-delay:' + (rang * .5) + 's"/>' : '') +
-        '<path d="' + d + '" fill="none" stroke="' + (rang >= 0 ? '#3a2208' : 'rgba(120,85,40,.55)') + '" stroke-width="' + (rang >= 0 ? 3.6 : 2.6) + '" stroke-linecap="round" stroke-linejoin="round"/></g>';
-      if(rang >= 0) s += '<g transform="translate(' + n(X(q.x) + 11) + ' ' + n(Y(q.y) - 11) + ')"><circle r="7.5" fill="#24182e"/><text y="3.8" text-anchor="middle" class="pp-rang">' + (rang + 1) + '</text></g>';
-    }
+  /* CE QUE LA PIERRE DE TIM RÉVEILLE (19 novembre ; cachés, allumés par .pp-zone-soleil / .pp-zone-dalles — pierres.css) :
+     · près du soleil, des mots à la plume d'Odette : « soleil de l'après-midi » ;
+     · les neuf dalles, qui s'éclairent — toutes, sans signe, sans numéro, sans ordre (Romain : « je veux juste que les dalles
+       s'éclairent, c'est tout. Tu mets rien dessus »). */
+  s += '<g class="pp-mots-soleil" aria-hidden="true"><circle cx="19" cy="' + Y(400) + '" r="17" fill="rgba(255,196,74,.55)"/>' +
+    '<text x="9" y="' + n(Y(400) - 30) + '" class="pp-plume pp-mots" transform="rotate(-3 9 ' + n(Y(400) - 30) + ')">soleil de l\'après-midi</text></g>';
+  var cote = 3 * T + 2 * e;
+  s += '<g class="pp-dalles-or" aria-hidden="true"><defs><radialGradient id="' + k + 'h"><stop offset=".3" stop-color="#ffc44a" stop-opacity=".75"/><stop offset=".7" stop-color="#ffc44a" stop-opacity=".3"/><stop offset="1" stop-color="#ffc44a" stop-opacity="0"/></radialGradient></defs>' +
+    '<circle cx="' + n(X(c0) + cote * MK / 2) + '" cy="' + n(Y(310) + cote * MK / 2) + '" r="78" fill="url(#' + k + 'h)"/>' +
+    '<rect x="' + n(X(c0) - 5) + '" y="' + n(Y(310) - 5) + '" width="' + n(cote * MK + 10) + '" height="' + n(cote * MK + 10) + '" rx="6" fill="rgba(255,196,74,.6)"/>';
+  for(kk = 0; kk < 9; kk++){
+    q = {x:c0 + (kk % 3) * (T + e), y:310 + Math.floor(kk / 3) * (T + e)};
+    s += '<rect x="' + X(q.x) + '" y="' + Y(q.y) + '" width="' + n(T * MK) + '" height="' + n(T * MK) + '" rx="2" fill="#ffe08a" stroke="#b9770e" stroke-width="1.8"/>';
   }
+  s += '</g>';
   return s + '</svg>';
-}
-/* les trois signes, en grand, sous le plan : 1, 2, 3 */
-function troisSignes(){
-  var I = IN(); if(!I) return '';
-  var Dl = I.MAISONS.odette.dalles;
-  return '<div class="pp-trois" role="img" aria-label="' + esc(Dl.ordre.map(function(sg, i){ return (i + 1) + ' : ' + I.SIGNES[sg].nom; }).join(', ')) + '">' + Dl.ordre.map(function(sg, i){
-    return '<span class="pp-trois-c"><i>' + (i + 1) + '</i>' + I.signeSVG(sg, 46, '#3a2208', 2.8) + '<small>' + esc(I.SIGNES[sg].nom) + '</small></span>';
-  }).join('<b aria-hidden="true">›</b>') + '</div>';
 }
 
 /* LE VIEUX PLAN D'ODETTE : les couloirs du dessous, sans un nom (la carte du donjon, donjon/carte.js : CARTE_DONJON). Une petite cloche
@@ -311,21 +394,19 @@ M.tableauOdetteHTML = function(){
 var E3 = window.ENQUETES && window.ENQUETES[3];
 if(E3){
   var PLANS = {
-    /* le plan de la maison d'Odette, au dos de son papier : la pierre de Tim, posée sur les neuf dalles, donne l'ordre des trois signes
-       (le Sage le dit au Pisteur, à voix haute : pas de code) */
-    maison:{pierre:'tim', h:400, zone:{x:168.8, y:194, r:42}, repos:{x:168.8, y:262}, ic:'📜', dessin:planMaison, signes:troisSignes,
-      avant:'Au dos, Odette a dessiné sa maison. Au milieu, neuf signes minuscules, presque effacés…',
-      sansPierre:'Ces signes… tu les as déjà vus quelque part. Sur une pierre ?',
-      froid:'Ici, la pierre de Tim reste froide.',
-      tiede:'La pierre de Tim tiédit dans ta main… Tu n\'es pas loin !',
-      get t(){
-        var I = IN(), o = I ? I.MAISONS.odette.dalles.ordre.map(function(g){ return I.SIGNES[g].nom; }) : ['?', '?', '?'];
-        return 'La pierre de Tim devient brûlante ! Trois signes s\'allument, l\'un après l\'autre : ' + o[0] + ', puis ' + o[1] + ', puis ' + o[2] + '. Le Pisteur en aura besoin chez Odette, quand le soleil de l\'après-midi entrera par la fenêtre.';
+    /* le plan de la maison d'Odette, au dos de son papier (19 novembre) : la pierre de Tim s'y promène (promene). Près du soleil, des mots
+       s'allument ; sur les dalles, elles s'éclairent. Le Sage le dit au Pisteur, à voix haute — ou pas : pas de code, pas d'ordre à lire
+       (l'ordre, c'est le soleil qui le montre au Pisteur, l'après-midi : interieur.js). zones : dans le dessin, 300 × 400. */
+    maison:{pierre:'tim', h:400, promene:true, ic:'📜', dessin:planMaison,
+      zones:{
+        /* (des zones larges : le papier réagit dès que la pierre S'APPROCHE — sur un téléphone, la pierre posée en plein dessus cache presque
+           tout ce qu'elle allume) */
+        soleil:{x:24, y:194, rx:36, ry:42, t:'Près du soleil, des mots s\'allument : « soleil de l\'après-midi ».'},
+        dalles:{x:168.8, y:194, rx:64, ry:64, t:'Près de la pierre de Tim, les dalles s\'éclairent !'}
       },
-      get note(){
-        var I = IN(), o = I ? I.MAISONS.odette.dalles.ordre.map(function(g){ return I.SIGNES[g].nom; }) : [];
-        return 'Sur le plan de la maison d\'Odette, la pierre de Tim a allumé trois signes, dans l\'ordre : ' + o.join(', ') + '. À dire au Pisteur, pour cet après-midi.';
-      }},
+      avant:'Au dos du papier, Odette a dessiné sa maison.',
+      froid:'Ici, la pierre de Tim reste froide.',
+      note:'Sur le plan de la maison d\'Odette, la pierre de Tim réveille deux choses : près du soleil, les mots « soleil de l\'après-midi » ; et les dalles du milieu, qui s\'éclairent.'},
     /* le vieux plan d'Odette : il attend une autre pierre (la nuit) */
     vieuxplan:{pierre:'rune', h:180, large:true, zone:{x:150, y:90, r:400}, repos:{x:268, y:152}, ic:'🗺️', dessin:vieuxPlan,
       /* (17 novembre, 23 h 30) le texte disait « promène-la partout » sur ce petit dessin, où rien ne bouge : il dit maintenant où ça se passe
@@ -347,5 +428,5 @@ if(E3){
   Object.keys(PLANS).forEach(function(k){ E3.plansPierre[k] = Object.assign(PLANS[k], E3.plansPierre[k] || {}); });
 }
 
-M.Pierres = {planMaison:planMaison, vieuxPlan:vieuxPlan, troisSignes:troisSignes, pierreSVG:pierreSVG, bloc:bloc};
+M.Pierres = {planMaison:planMaison, vieuxPlan:vieuxPlan, pierreSVG:pierreSVG, bloc:bloc};
 })();

@@ -744,23 +744,25 @@ E[3] = {
        · Niveau : celui de l'enquête (enfant 3 : trois fausses pistes ; adulte 6 : quatre, dont Noisette et ses cinq doigts). */
     L2:{
       pisteur:{points:[
-        /* L'INTÉRIEUR DE LA MAISON D'ODETTE (16 novembre, le secret d'Odette ; interieur.js). Le matin : une visite, dans l'ombre (« Rien…
-           pour l'instant » : on a hâte d'être à l'après-midi). L'après-midi : le soleil réveille les neuf dalles ; trois dalles dans le
-           bon ordre — celui que le Sage a lu sur le plan d'Odette avec la pierre de Tim, et qu'il dit à voix haute — et la cachette
-           s'ouvre : le vieux plan (un code objet pour le Sage). Sans le Sage : 504 ordres possibles. On essaie autant qu'on veut. */
-        {id:'maison', ic:'🏠', nom:'La maison d\'Odette', moments:['matin'], mj:'interieur', essaisInfinis:true, sansTrouvaille:true,
-          params:{maison:'odette', moment:'matin', visite:true},
-          avant:'La porte d\'Odette n\'est jamais fermée à clé. Tu pousses le battant, sans bruit…', bouton:'🏠 Entrer chez Odette',
-          t:'Une maison bien rangée, et pas un chat. Ce matin, tout est dans l\'ombre : le soleil est de l\'autre côté. Il n\'entrera par la fenêtre que cet après-midi.'},
-        /* oral : ce qu'un équipier doit lui avoir dit À VOIX HAUTE pour qu'il y arrive (pas de code — la règle de Romain, 16 novembre : « un
-           code, ça sert à donner un objet, ou à activer un truc sur l'appareil de l'autre ; tout le reste se dit »). Le jeu ne le lit pas :
-           c'est le vérificateur (tools/verif-e3.js) qui s'en sert, pour que la logique de l'enquête reste vérifiée de bout en bout. */
-        {id:'cachette', ic:'☀️', nom:'Chez Odette, au soleil', moments:['apresmidi'], mj:'interieur', essaisInfinis:true, obj:'vieux_plan',
-          oral:[{vu:'pierre:maison'}],
+        /* L'INTÉRIEUR DE LA MAISON D'ODETTE (16 novembre, le secret d'Odette ; interieur.js) — REFAIT LE 19 NOVEMBRE (Romain : « je veux pas
+           qu'il y ait d'aide […] la maison un peu sombre […] il peut appuyer sur les dalles. Mais comme il n'y a pas le soleil, il ne sait
+           pas sur lesquelles appuyer. Après, s'il a de la chance, il peut trouver […] l'après-midi […] au bout de 3 secondes, une dalle
+           qui s'affiche, puis une seconde plus tard, une deuxième, puis une troisième […] il n'y a pas de signe »).
+           UN SEUL POINT, le matin et l'après-midi (p.parMoment, moteur-roles.js) : la même maison, les mêmes neuf dalles sans signe, la même
+           cachette — le vieux plan (un code objet pour le Sage).
+           · Le matin (« 🏠 La maison d'Odette ») : dans l'ombre, aucune aide. On peut appuyer sur les dalles : un coup de chance sur 504.
+           · L'après-midi (« ☀️ Chez Odette, au soleil ») : le soleil allume trois dalles, l'une après l'autre : c'est l'ordre.
+           On ressort quand on veut, sans fenêtre « Raté » (res.sorti, moteur-actions.js). Le Sage, lui, a lu sur le papier d'Odette, avec
+           la pierre de Tim : « soleil de l'après-midi », et les dalles qui s'éclairent (pierres.js) — il le dit à voix haute, ou pas : le
+           Pisteur peut trouver sans lui (plus de p.oral). (Avant le 19 novembre : deux points, « maison » le matin — une simple visite —
+           et « cachette » l'après-midi ; une partie en cours garde « pisteur:L2:maison », qui ne sert plus à rien.) */
+        {id:'cachette', ic:'☀️', nom:'Chez Odette, au soleil', moments:['matin', 'apresmidi'], mj:'interieur', essaisInfinis:true, sortieLibre:true, obj:'vieux_plan',
           params:{maison:'odette', moment:'apresmidi', lait:true},
-          avant:'Le soleil de l\'après-midi entre enfin chez Odette. Sur le plancher, de vieilles dalles se mettent à briller…', bouton:'☀️ Entrer chez Odette',
+          avant:'Le soleil de l\'après-midi entre enfin chez Odette. Tu pousses la porte…', bouton:'☀️ Entrer chez Odette',
+          parMoment:{matin:{ic:'🏠', nom:'La maison d\'Odette', bulleUneFois:true, params:{maison:'odette', moment:'matin'},
+            avant:'La porte d\'Odette n\'est jamais fermée à clé. Tu pousses le battant, sans bruit…', bouton:'🏠 Entrer chez Odette'}},
           t:'Sous la dalle du milieu, un étui de cuir. Dedans, un très vieux plan, roulé serré : des couloirs, des couloirs… Odette le cachait bien !',
-          rate:'Les dalles gardent leur secret. Trois dalles, dans le bon ordre… Le Sage a peut-être de quoi le trouver.'},
+          rate:'Tu ressors de chez Odette.'},
         /* (17 novembre, étape 3 du nouveau fil) plus de code du Barde : l'après-midi, le bol de lait de midi est renversé, le Pisteur le
            voit lui-même (et encore la nuit). Au bout : Moustache cherche Odette à la grille, et des yeux rouges derrière les barreaux —
            ce qui annonce les bêtes (Romain : « rien n'annonce le combat »). Le code, lui, ne change pas d'identité (info:crypte_fermee) :
@@ -1401,7 +1403,8 @@ E[3] = {
     /* LE SECRET D'ODETTE (16 novembre ; il remplace « Le plan des Fondateurs », qui sortait de nulle part — Romain : « il faut que quelqu'un
        l'apporte »). pierres.js :
        · le papier d'Odette (le voisin → le Barde → un code objet) : l'alphabet secret, sans minuteur ; au dos, le plan de sa maison, où
-         le Sage pose la pierre de Tim (sa poche) : trois signes, dans un ordre, à dire au Pisteur ;
+         le Sage promène la pierre de Tim (sa poche) : près du soleil, des mots s'allument (« soleil de l'après-midi ») ; sur les dalles,
+         elles s'éclairent. Aucun signe, aucun ordre (19 novembre) : l'ordre, c'est le soleil qui le montre au Pisteur, l'après-midi ;
        · le vieux plan d'Odette (la cachette → le Pisteur → un code objet) : des couloirs sans nom, une petite cloche au départ, des
          signes qu'on ne sait pas lire. Il attend une autre pierre : la nuit.
        · le tableau d'Odette, une fois peint : on peut le revoir (le chat de pierre sur la fenêtre, le rayon, les runes de la pierre). */
