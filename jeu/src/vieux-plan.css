@@ -45,8 +45,8 @@
 .vp-loupe-tete b{font-family:var(--f-titre);font-weight:400;font-size:1.25rem}
 .vp-fermer{width:42px;height:42px;border-radius:50%;border:2px solid #35281b;background:#fff6dc;font-size:18px;font-weight:800;color:#35281b;cursor:pointer}
 .vp-mots{display:flex;flex-direction:column;align-items:center;gap:8px;margin:8px 0}
-.vp-ligne{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
-.vp-esp{width:22px}
+.vp-ligne{display:flex;gap:6px 22px;flex-wrap:wrap;justify-content:center}
+.vp-mot{display:flex;gap:4px}
 .vp-l{position:relative;width:52px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:3px 0;border-radius:10px;border:0;background:none;cursor:pointer;font:inherit}
 .vp-l .glyphes{width:40px;height:40px}
 .vp-l b{width:46px;height:46px;border-radius:10px;border:2px dashed #8a6a3a;background:rgba(255,255,255,.45);display:grid;place-items:center;font-family:var(--f-titre);font-weight:400;font-size:26px;color:#1f3a6a}

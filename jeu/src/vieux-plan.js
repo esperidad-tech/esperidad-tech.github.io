@@ -280,12 +280,16 @@ function loupeHTML(){
   var t = deja ? 'Tu l’as déjà déchiffrée : « ' + n.dit + ' ».' : 'Quelqu’un a écrit ces mots avec un drôle d’alphabet. Chaque signe a la forme de sa case dans la grille.';
   var s = '<div class="vp-loupe"><div class="vp-loupe-tete"><b>🔍 Une note codée</b><button type="button" class="vp-fermer" data-act="vp-loupe-fermer" aria-label="Refermer la note">✕</button></div>' +
     '<p class="lv-texte">' + esc(t) + ' ' + lire(t) + '</p><div class="vp-mots">';
+  /* (un mot = un bloc : sur un téléphone, la ligne passe à la ligne entre deux mots, jamais au milieu d'un mot) */
   n.lignes.forEach(function(m){
     s += '<div class="vp-ligne">';
-    m.split('').forEach(function(ch){
-      if(ch === ' '){ s += '<span class="vp-esp"></span>'; return; }
-      var i = nb++;
-      s += '<button type="button" class="vp-l' + (!deja && i === (L.sel || 0) ? ' choisi' : '') + '" data-act="vp-l" data-i="' + i + '">' + PS.glyphes([ch], 30, '#8e2e1c') + '<b>' + esc(saisie[i] || '') + '</b></button>';
+    m.split(' ').forEach(function(mot){
+      s += '<span class="vp-mot">';
+      mot.split('').forEach(function(ch){
+        var i = nb++;
+        s += '<button type="button" class="vp-l' + (!deja && i === (L.sel || 0) ? ' choisi' : '') + '" data-act="vp-l" data-i="' + i + '">' + PS.glyphes([ch], 30, '#8e2e1c') + '<b>' + esc(saisie[i] || '') + '</b></button>';
+      });
+      s += '</span>';
     });
     s += '</div>';
   });
