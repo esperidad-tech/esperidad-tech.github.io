@@ -1,6 +1,13 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 17 novembre, 12 h 30)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 19 novembre, 10 h 30)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## 19 novembre, 10 h 30 — LE SECRET D'ODETTE REFAIT : PLUS AUCUN SIGNE, LE SOLEIL MONTRE L'ORDRE — EN LIGNE (Bible §13.75 ; commit 180890f du site, version 20261119-0923)
+
+- **Le Sage** : sur le plan de la maison (au dos du papier d'Odette), la pierre de Tim **se promène**. Près du soleil : les mots « soleil de l'après-midi ». Près des dalles : les neuf dalles s'éclairent. **Plus de signes, plus de numéros, plus d'ordre à lire.**
+- **Le Pisteur** : chez Odette, des dalles **sans aucun signe**, et **plus aucun texte d'aide**. Le matin, dans l'ombre, il peut les enfoncer (un coup de chance sur 504). L'après-midi, 3 secondes après l'entrée, le soleil allume une dalle, puis une deuxième, puis une troisième : c'est l'ordre. Il ressort sans fenêtre « Raté ».
+- **Pour la conception** : **le Pisteur trouve la cachette sans le Sage et sans le Barde.** Le papier et la pierre ne font plus que dire où et quand regarder. Si une enquête future a besoin que le Sage soit indispensable à une cachette, ce n'est plus ce modèle-là. La règle de Romain qui en sort : **pas de symboles à recopier d'un écran à l'autre, pas de texte qui explique l'énigme** — ce qu'on voit doit suffire.
+- **À faire valider par Romain** : les neuf dalles éclairées chez le Sage (pas les trois bonnes) ; les dalles qui se rallument après un essai raté ; les petites phrases.
 
 ## 19 novembre, 10 h 10 — UN ROND JAUNE SUR IRIS QUAND LE BARDE A LE CODE DU PISTEUR — EN LIGNE (Bible §13.74 ; commit f2a14ab du site)
 
