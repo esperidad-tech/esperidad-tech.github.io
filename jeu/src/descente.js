@@ -210,7 +210,7 @@ A['d6-sym'] = function(el){
   P.recus['allure:' + r.a.role] = true;
   M.noter(r.a.role === 'sage' ? 'Le Sage est en tenue de combat : son code est tapé.' : 'L\'Alchimiste est en tenue de combat : son code est tapé.', '🛡️');
   M.son('gain'); M.sauver();
-  M.ouvrir({type:'descente', vue:'recu', role:r.a.role});
+  M.ouvrir({type:'descente'});   /* (19 novembre) on revient à la fenêtre des deux boutons : celui-ci est validé */
 };
 A['d6-efface'] = function(){ var m = M.UI.modal; if(!m || m.vue !== 'six') return; m.seq = (m.seq || []).slice(0, -1); M.son('clic'); M.render(); };
 /* ---------- Le Sage et l'Alchimiste : la fenêtre de la tenue de combat (ils ont tapé « On va dans la crypte ») ---------- */
@@ -274,23 +274,35 @@ M.descenteHTML = function(m){
     if(ouvert && okS && okA) return s + '<button class="btn grand b-aller" data-act="ds-voir">🕯️ Voir la descente</button>' + retaper + '<button class="btn second" data-act="fermer">Plus tard</button></div>';
     return s + '<button class="btn grand b-aller" data-act="fermer">D\'accord</button>' + retaper + '</div>';
   }
-  /* il manque un équipier : on s'habille, on donne le code du départ, on attend les deux codes */
-  if(!(okS && okA)){
-    t = 'Un escalier de pierre s\'enfonce dans le noir… Pas si vite ! On ne descend pas là-dessous en chemise. ' + (aTenues() ? 'La tenue de Mélusine, sa capuche verte, ton arc et ta dague' : 'Capuche verte, arc et dague') + ' : te voilà prêt.';
-    return s + tenueCadre(['pisteur']) + '<h2>' + esc(TITRE_TENUE) + '</h2><p>' + esc(t) + ' ' + lire(TITRE_TENUE + ' ' + t) + '</p>' +
-      codeDonne('info:on_descend', 'Donne ce code au Sage et à l\'Alchimiste : ils s\'équipent, et chacun te montrera son code.') +
-      '<ul class="ds-prets">' +
-        lignePret(okS, '📖', okS ? 'Le Sage est prêt.' : 'Il te manque le code du Sage.') +
-        lignePret(okA, '⚗️', okA ? 'L\'Alchimiste est prêt, avec ses sept potions.' : (codeA ? 'Il te manque ses sept potions : l\'Alchimiste a un code pour ça, quand elles sont toutes prêtes.' : 'Il te manque le code de l\'Alchimiste.' + (sac.length ? '' : ' Et on a besoin des sept potions pour descendre.'))) +
-      '</ul>' + (okS ? '' : '<button class="btn grand b-aller" data-act="ds-six" data-role="sage">🔢 Le code du Sage</button>') +
-      (codeA ? '' : '<button class="btn grand b-aller" data-act="ds-six" data-role="alchimiste">🔢 Le code de l\'Alchimiste</button>') + '</div>';   /* (on referme avec ✕ : la fenêtre tient dans l'écran d'une tablette) */
+  /* (19 novembre, Romain : « une interface un peu plus travaillée, que le Pisteur ne soit pas obligé de revenir sans arrêt au puits »)
+     UNE SEULE fenêtre pour tout le départ : les deux boutons, celui du Sage et celui de l'Alchimiste. On touche l'un, on tape ses six
+     symboles, et on REVIENT ICI : son bouton est validé (✅, on ne peut plus le toucher). On touche l'autre, pareil. Quand les deux sont
+     validés, « Descendre » apparaît juste dessous. « Corriger un code » rend les deux boutons touchables si un code était faux. */
+  var n = sac.length, deja = !!P.vus['donjon:parti'], tous = okS && okA, corriger = !!m.corriger;
+  var pretsH = (okS ? ['sage'] : []).concat(okA ? ['alchimiste'] : []);
+  function boutonAmi(role, ok, nom, ic){
+    var qui = role === 'sage' ? 'du Sage' : 'de l\'Alchimiste';
+    if(ok && !corriger) return '<button class="btn grand ds-valide" disabled aria-disabled="true">✅ ' + ic + ' ' + nom + ' est prêt</button>';
+    if(role === 'alchimiste' && codeA && !sac.length) return '<button class="btn grand ds-valide ds-attend-b" disabled aria-disabled="true">⏳ ' + ic + ' Son code est tapé</button>';
+    return '<button class="btn grand b-aller" data-act="ds-six" data-role="' + role + '">🔢 ' + (ok ? 'Retaper le code ' : 'Le code ') + qui + '</button>';
   }
-  var n = sac.length, deja = !!P.vus['donjon:parti'];
-  t = deja ? 'Le donjon t\'attend, là où tu l\'as laissé. Les trois héros descendent ensemble, sur ta tablette.'
-    : 'Tout le monde est en tenue, les ' + (n === 7 ? 'sept' : n) + ' potions de l\'Alchimiste sont du voyage. Les trois héros descendent ensemble, sur ta tablette. Le Sage ouvre son Grand Livre : il voit le chemin, toi tu ne vois que la brume.';
-  return s + tenueCadre(['sage', 'alchimiste', 'pisteur']) + '<h2>' + (deja ? 'Retourner dans le donjon' : 'Descendre dans le donjon') + '</h2>' + fioles(sac) + '<p>' + esc(t) + '</p>' + lire(t) +
-    '<button class="btn grand b-aller" data-act="ds-aller">🕯️ ' + (deja ? 'Y retourner' : 'Descendre') + '</button><button class="btn second" data-act="fermer">Pas tout de suite</button></div>';
+  if(tous){
+    t = deja ? 'Le donjon t\'attend, là où tu l\'as laissé. Les trois héros descendent ensemble, sur ta tablette.'
+      : 'Tout le monde est en tenue, les ' + (n === 7 ? 'sept' : n) + ' potions de l\'Alchimiste sont du voyage. Les trois héros descendent ensemble, sur ta tablette. Le Sage ouvre son Grand Livre : il voit le chemin, toi tu ne vois que la brume.';
+    s += tenueCadre(['sage', 'alchimiste', 'pisteur']) + '<h2>' + (deja ? 'Retourner dans le donjon' : 'Tout est prêt !') + '</h2><p>' + esc(t) + ' ' + lire(t) + '</p>';
+  }else{
+    t = 'Un escalier de pierre s\'enfonce dans le noir… Pas si vite ! On ne descend pas là-dessous en chemise. ' + (aTenues() ? 'La tenue de Mélusine, sa capuche verte, ton arc et ta dague' : 'Capuche verte, arc et dague') + ' : te voilà prêt.';
+    s += tenueCadre(pretsH.concat(['pisteur'])) + '<h2>' + esc(TITRE_TENUE) + '</h2><p>' + esc(t) + ' ' + lire(TITRE_TENUE + ' ' + t) + '</p>' +
+      codeDonne('info:on_descend', 'Donne ce code au Sage et à l\'Alchimiste : ils s\'équipent, et chacun te montrera son code.');
+    if(codeA && !sac.length){ var t3 = 'Il te manque ses sept potions : l\'Alchimiste a un code pour ça, quand elles sont toutes prêtes.'; s += '<ul class="ds-prets">' + lignePret(false, '⚗️', t3) + '</ul>'; }
+    else if(!codeA && !sac.length){ var t4 = 'Et on a besoin des sept potions pour descendre.'; s += '<ul class="ds-prets">' + lignePret(false, '⚗️', t4) + '</ul>'; }
+  }
+  s += '<div class="ds-amis">' + boutonAmi('sage', okS, 'Le Sage', '📖') + boutonAmi('alchimiste', okA, 'L\'Alchimiste', '⚗️') + '</div>';
+  if(tous) return s + fioles(sac) + '<button class="btn grand b-aller" data-act="ds-aller">🕯️ ' + (deja ? 'Y retourner' : 'Descendre dans le donjon') + '</button>' +
+    '<div class="b-rangee centre">' + (corriger ? '' : '<button class="btn second" data-act="ds-corriger">✏️ Corriger un code</button>') + '<button class="btn second" data-act="fermer">Pas tout de suite</button></div></div>';
+  return s + (codeA || okS ? '<div class="b-rangee centre">' + (corriger ? '' : '<button class="btn second" data-act="ds-corriger">✏️ Corriger un code</button>') + '</div>' : '') + '</div>';   /* (on referme avec ✕ : la fenêtre tient dans l'écran d'une tablette) */
 };
+A['ds-corriger'] = function(){ var m = M.UI.modal; if(!m || m.type !== 'descente') return; M.son('clic'); m.corriger = true; M.render(); };
 A['ds-voir'] = function(){ M.son('page'); M.ouvrir({type:'descente'}); };
 /* un point « descente » (p.descente : 'crypte' ou 'puits') n'est pas une découverte : il ouvre la fenêtre de la descente */
 if(A.point){

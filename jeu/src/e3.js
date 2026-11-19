@@ -192,6 +192,9 @@ E[3] = {
     basile:'Si je continue, je tombe de mon échelle !'
   },
   questionsCachees:true,
+  /* (Romain, 19 novembre, 10 h 10 : « l'après-midi, il faut le forcer […] l'envoyer sur la carte avec le rond jaune et il peut cliquer que
+     là ») tant qu'un passage obligatoire attend sur ce lieu, pour ce rôle, à ce moment : la carte s'ouvre, et seul ce lieu se touche */
+  carteForcee:[{role:'sage', moments:['apresmidi'], lieu:'mairie', dire:'Le maire t\'attend à la mairie, avec ton tableau !'}],
   ecouteMaisons:true,   /* avec « Tendre l'oreille », une maison où il y a quelque chose à écouter montre sa feuille (« Frapper », « Écouter aux portes ») */
   potionAveu:true,
   vexeNeutre:true,
@@ -861,7 +864,9 @@ E[3] = {
       ]},
       /* le Sage (étape 3) : le tableau d'Odette (sa mission de fête), le Livre d'or, puis rendre le tableau (et le filet de la lettre) */
       sage:{intro:'La mairie. Ce soir, le tableau d\'Odette sera accroché au-dessus du gâteau.', points:[
-        {id:'tableau', ic:'🖼️', nom:'Le tableau d\'Odette', moments:['matin', 'apresmidi'], mj:'runes', mjNiveau:7, params:{image:'tableau'},
+        /* (Romain, 19 novembre, 10 h 10) l'après-midi, le Sage est OBLIGÉ de faire le tableau puis de le rendre au maire (sans quoi pas de
+           Livre d'or, et l'enquête se bloque) : oblige:['apresmidi'] sur les trois points, et E.carteForcee (moteur-roles.js) */
+        {id:'tableau', oblige:['apresmidi'], ic:'🖼️', nom:'Le tableau d\'Odette', moments:['matin', 'apresmidi'], mj:'runes', mjNiveau:7, params:{image:'tableau'},
           avant:'Pour peindre le tableau, tu as collé les vieux dessins d\'Odette et de ses chats… mais un coup de vent les a tous mélangés ! Remets chaque morceau à sa place.',
           bouton:'🖼️ Assembler le tableau',
           t:'Odette sourit sur la toile, sa canne à la main, ses sept chats autour d\'elle. Le maire : « Magnifique ! On l\'accrochera au-dessus du gâteau. »',
@@ -870,11 +875,11 @@ E[3] = {
         /* (13 novembre) le Livre d'or n'est plus un point de la mairie : c'est une page du Grand Livre (E.pages, « livredor ») */
         /* rendre le tableau : 5 pièces d'or. (13 novembre : plus de lettre accrochée sous le tableau — si le Barde ne l'obtient pas, le
            Pisteur va la chercher, autant de fois qu'il faut : « pas besoin de subterfuges », Romain) */
-        {id:'rendu', ic:'🎉', nom:'Rendre le tableau au maire', moments:A_, or:5, visibleSi:[{vu:'sage:mairie:tableau'}], ouvreLivre:['quiecrit'],
+        {id:'rendu', oblige:['apresmidi'], ic:'🎉', nom:'Rendre le tableau au maire', moments:A_, or:5, visibleSi:[{vu:'sage:mairie:tableau'}], ouvreLivre:['quiecrit'],
           /* (17 novembre, le nouveau fil) en échange, le maire lui confie le Livre d'or de la fête : il n'est plus dans le Grand Livre dès le
              matin (« rien n'arrive par magie »), et c'est le Sage qui compare les écritures, plus l'Alchimiste */
           t:'Le maire : « Magnifique ! Ce soir, tout le monde à la fête ! Tenez, gardez-moi donc le Livre d\'or : tout le village y a écrit un mot pour Odette. »'},
-        {id:'sanstableau', ic:'🏛️', nom:'Passer voir le maire', moments:A_, visibleSi:[{rate:'sage:mairie:tableau'}], ouvreLivre:['quiecrit'],
+        {id:'sanstableau', oblige:['apresmidi'], ic:'🏛️', nom:'Passer voir le maire', moments:A_, visibleSi:[{rate:'sage:mairie:tableau'}], ouvreLivre:['quiecrit'],
           t:'Le maire : « Pas de tableau ? Tant pis, les lampions feront l\'affaire. Rendez-vous utile : gardez-moi le Livre d\'or, tout le village y a écrit un mot pour Odette. »'}
       ]},
       /* l'Alchimiste (étape 4) : porter le gâteau au maire, l'après-midi (5 pièces d'or) */
