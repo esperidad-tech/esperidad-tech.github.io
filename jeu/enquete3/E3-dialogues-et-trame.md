@@ -364,9 +364,9 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
 - ❌ « PARCE QUE LE MAIRE VEUT QUE TOUT SOIT PARFAIT. » → « LE MAIRE VEUT UNE PAIRE ? De chaussettes ? »
 - ✅ « VOTRE PÈRE A SONNÉ TOUTE UNE NUIT POUR SILAS. ODETTE AUSSI EST PERDUE. » → Il essuie une larme. « Alors on sonne pour Odette. Monte, mon petit ! »
 
-- **Après un mauvais choix** : « Bon, je monte sonner, moi. » (et c'est fini)
-- **Réussi** : bouton « 🔔 Monter avec Anselme » → « La Grosse Marie sonne » : Vous tirez la corde ensemble : DONG… DONG… Anselme ferme les yeux et compte les coups. Sa clé pend à sa ceinture… → code « La Grosse Marie sonne » (pour pisteur)
-- **Raté** : bouton « 🙋 « Tim ! Tu connais un autre passage ? » » → « Tim, depuis les toits » : « Un autre passage ? Regarde, là-bas ! Moustache vient de filer par un petit sentier, jusqu'au vieux puits… Il s'est glissé entre les barreaux ! » → code « Le vieux puits » (pour pisteur)
+- **Après un mauvais choix** : « Bon, je monte sonner, moi. Tout seul ! » (et c'est fini)
+- **Réussi** : bouton « 🔔 Monter avec Anselme » → « La Grosse Marie sonne » : Anselme te fait entrer dans le clocher et laisse la porte grande ouverte derrière vous. Vous tirez la corde ensemble : DONG… DONG… Il ferme les yeux et compte les coups. Sa clé pend à sa ceinture… → code « La Grosse Marie sonne » (pour pisteur)
+- **Raté** : Anselme entre dans le clocher et ferme la porte à double tour derrière lui. Sa clé repart à sa ceinture : personne ne montera là-haut ce soir. DONG… DONG… Mince, le plan a échoué ! Il va falloir un plan B… Quelqu'un d'autre pourra peut-être vous aider. (sans code)
 - Dans le Carnet (ok) : Tu as aidé Anselme à sonner la Grosse Marie. Sa clé pendait à sa ceinture…
 - Dans le Carnet (rate) : Anselme est monté sonner tout seul, sa clé à la ceinture.
 
