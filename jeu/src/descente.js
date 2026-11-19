@@ -509,7 +509,7 @@ M.codeDonjon = function(id){
     if(!CARNET().livre[quoi]){ delete C[court]; return false; }
     P.vus['donjon:carnet'] = 1; vue = {vue:'bete', m:quoi, nouveau:!deja}; note = ['Le carnet de l\'aventurier, à la page : ' + (CARNET().noms[quoi] || quoi) + '.', '📓'];
   }
-  else if(court === 'rune:lumiere'){ P.vus['donjon:rune'] = 1; vue = {vue:'rune'}; note = ['Une pierre de rune, dans ta poche : à poser sur le vieux plan, dans ton Grand Livre.', '🪨']; }
+  else if(court === 'rune:lumiere'){ P.vus['donjon:rune'] = 1; vue = {vue:'rune'}; note = ['Une pierre de rune, dans ta poche : à promener sur le vieux plan, dans ton Grand Livre.', '🪨']; }
   else if(court === 'page:dechiree'){ vue = {vue:'coin'}; note = ['Le morceau déchiré du plan des souterrains est retrouvé.', '📜']; }
   else if(court === 'page:blanche'){ vue = {vue:'blanche'}; note = ['Une page blanche de plus dans ton Grand Livre : une sauvegarde de plus.', '✨']; }
   else if(court === 'plante:givre'){ if(M.recevoirPlanteRare) M.recevoirPlanteRare('givre'); vue = {vue:'givre'}; note = ['Le Pisteur t\'a envoyé une fleur de givre : elle t\'attend sur ton établi.', '❄️']; }
