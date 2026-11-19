@@ -365,7 +365,8 @@ def partie(nav, base):
         P.fermer()
     verifier(livrer(T, P, seulement=['obj:vieux_plan']) == ['obj:vieux_plan'], 'le code « Le vieux plan d\'Odette » passe du Pisteur au Sage')
     tv = S.page('vieuxplan')
-    verifier('petite cloche' in tv and 'souterrain' not in tv.lower(), 'le Sage : une nouvelle page, le vieux plan d\'Odette (des couloirs sans nom, une petite cloche)')
+    # (19 novembre, 11 h 01 ; Bible §13.78) la page EST le plan : sans texte, sans un nom (tools/e3-vieuxplan.py)
+    verifier(S.pg.locator('#livre-ici .lv-page.on [data-vp].vp-jour').count() == 1 and 'souterrain' not in tv.lower(), 'le Sage : une nouvelle page, le vieux plan d\'Odette, en grand, sans un nom')
     # le Pisteur : les traces de Moustache, depuis chez Odette, jusqu'à la crypte
     verifier(P.jouer('L2', 'traces') == 'pistage', 'le Pisteur suit les pattes de Moustache, depuis chez Odette (le nouveau mini-jeu)'); P.fermer()
     verifier(livrer(T, P) == ['info:crypte_fermee'] and B.js("() => M.nomCode('info:crypte_fermee').nom") == 'Odette est sous l\'église', 'le Pisteur a donné au Barde : « Odette est sous l\'église »')
@@ -520,14 +521,11 @@ def partie(nav, base):
     # le Sage : ses pages du donjon sont dans son Grand Livre ; son plan s'ouvre DANS le jeu
     S.page('sauvegardes')
     verifier(S.pg.locator('#livre-ici .lv-page.on .ds-blanche').count() == 2, 'le Sage : deux pages de sauvegarde dans son Grand Livre')
-    # (17 novembre, étape 4) plus de page « Le plan des souterrains » : le plan se regarde depuis la page du vieux plan d'Odette
-    tv = S.page('vieuxplan')
-    verifier('Le Pisteur a ouvert le passage' in tv and S.js("() => !M.E().pages.some(function(p){ return p.id === 'donjon' || p.id === 'porte'; })"), 'le Sage : le vieux plan d\'Odette se regarde maintenant de tout près (plus de page « Le plan des souterrains »)')
-    S.pg.locator('#livre-ici .lv-page.on [data-act=ds-plan]').click(); S.pg.wait_for_timeout(2500)
-    plan = S.pg.frame_locator('#donjon-plan-cadre')
-    verifier(S.pg.locator('#donjon-plan-cadre').count() == 1 and plan.locator('#b-fermer').is_visible() and 'vieux plan, de tout près' in plan.locator('#bulle').inner_text(), 'le Sage ouvre le plan, dans le jeu : « Le vieux plan, de tout près ! »')
-    plan.locator('#b-fermer').click(); S.pg.wait_for_timeout(500)
-    verifier(S.pg.locator('#donjon-plan-cadre').count() == 0 and S.js("() => M.UI.ecran") == 'enquete', 'il le referme : il est toujours dans l\'enquête')
+    # (17 novembre, étape 4) plus de page « Le plan des souterrains » ; (19 novembre, 11 h 01) le vieux plan d'Odette EST la page : le départ
+    # donné, les noms des salles y apparaissent ; plus de cadre par-dessus le jeu
+    S.page('vieuxplan')
+    verifier(S.pg.locator('#livre-ici .lv-page.on [data-vp].vp-nuit').count() == 1 and S.pg.locator('#donjon-plan-cadre, #livre-ici .lv-page.on [data-act=ds-plan]').count() == 0 and S.js("() => !M.E().pages.some(function(p){ return p.id === 'donjon' || p.id === 'porte'; })"),
+             'le Sage : le vieux plan d\'Odette montre maintenant les noms des salles, dans sa page (plus de page « Le plan des souterrains », plus de cadre)')
     # le Pisteur descend : le vrai donjon
     P.point('clocher', 'descendre'); P.pg.locator('#voile [data-act=ds-aller]').click()
     P.pg.wait_for_url('**/donjon/index.html**'); P.pg.wait_for_timeout(1500)

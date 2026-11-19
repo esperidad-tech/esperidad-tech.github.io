@@ -5,7 +5,8 @@ posé sur le papier) : près du soleil, les mots « soleil de l'après-midi » ;
 numéro, aucun ordre ; « Les objets magiques » ; le tableau d'Odette à revoir. Le Pisteur : la maison d'Odette le matin (dans l'ombre,
 AUCUNE aide, des dalles sans signe qu'on peut enfoncer ; on ressort sans fenêtre « Raté »), l'après-midi (le soleil allume trois dalles,
 l'une après l'autre : au bout de 3 s, puis 4, puis 5 ; un mauvais ordre, elles se rallument ; le bon ordre ; le code du vieux plan ; le
-paquet de la garde-robe) ; et le coup de chance du matin. Le Sage : le vieux plan, qui attend une autre pierre. Tablette et téléphone.
+paquet de la garde-robe) ; et le coup de chance du matin. Le Sage : le vieux plan, qui est la page elle-même (19 novembre ; le détail :
+tools/e3-vieuxplan.py). Tablette et téléphone.
    BRUMEVAL_DIST=<dossier construit> python3 tools/e3-secret.py"""
 import sys, os, json
 from playwright.sync_api import sync_playwright
@@ -235,38 +236,24 @@ with sync_playwright() as p:
     t = code(pg, 'obj:vieux_plan')
     verifier('vieux plan' in t, 'le code du Pisteur : « Le vieux plan d\'Odette »')
     t = page(pg, 'vieuxplan'); shot(pg, 'sage-vieuxplan')
-    verifier('plus un seul nom' in t and 'petite cloche' in t and 'la pierre qui les garde' in t, 'la page : des couloirs sans nom, la petite cloche, la note d\'Odette')
+    # (19 novembre, 11 h 01 ; Bible §13.78) LA PAGE EST LE PLAN (vieux-plan.js ; le détail : tools/e3-vieuxplan.py) : plus de textes
+    # (« étui de cuir », « petite cloche », « la pierre qui les garde »), plus de petit dessin, plus de bouton pour le dérouler
+    verifier(pg.locator('#livre-ici .lv-page.on [data-vp]').count() == 1 and not any(x in t for x in ('étui de cuir', 'petite cloche', 'pierre qui les garde')) and pg.locator('#livre-ici .lv-page.on .pp-plan, #livre-ici .lv-page.on [data-act=ds-plan]').count() == 0,
+             f'la page est le grand plan, sans les textes enlevés ({t[:80]})')
     verifier(not any(x in t.lower() for x in ['souterrain', 'donjon', 'crypte', 'maire', 'fondateur']), 'ni « souterrains », ni « donjon », ni « crypte », ni le maire, ni les Fondateurs')
-    verifier(pg.evaluate("() => document.querySelectorAll('.pp[data-pp=vieuxplan] .pp-dessin path').length > 20"), 'le plan est dessiné (les couloirs du dessous)')
-    r = centre(pg, '.pp[data-pp=vieuxplan] .pp-pierre[data-pp-pierre=tim]')
-    pg.mouse.click(r[0] + r[2] / 2, r[1] + r[3] / 2); pg.wait_for_timeout(250)
-    toucher_plan(pg, 'vieuxplan', .5, .5)
-    e = etat_pp(pg, 'vieuxplan'); shot(pg, 'sage-vieuxplan-tim')
-    verifier(not e['parle'] and 'La pierre de Tim reste froide' in e['dit'], f'la pierre de Tim sur le vieux plan : « {e["dit"][:80]} »')
-    # (17 novembre, étape 4) la nuit : plus de page « Le plan des souterrains » ; le vieux plan reste muet jusqu'au départ (le code du
-    # Pisteur, « On va dans la crypte ») ; alors il se regarde de tout près, depuis sa page
+    sv = pg.evaluate("() => document.querySelector('#livre-ici .lv-page.on .vp-couche svg.plan-svg').textContent")
+    verifier(pg.evaluate("() => document.querySelectorAll('#livre-ici .lv-page.on .vp-couche svg.plan-svg path').length > 20") and 'Fondateurs' not in sv and 'rats' not in sv, 'le plan est dessiné (les couloirs du dessous), sans un nom')
+    verifier(pg.locator('#livre-ici .lv-page.on .vp-pierre[data-vp-pierre=tim]').count() == 1, 'la pierre de Tim est dans la poche, sous la main')
+    # la nuit : plus de page « Le plan des souterrains » ; le vieux plan reste muet jusqu'au départ (le code du Pisteur, « On va dans la crypte »)
     pg.evaluate("() => { M.P().moment = M.E().moments.length - 1; M.sauver(); M.render(); }")
     verifier('donjon' not in pages(pg), 'la nuit : plus de page « Le plan des souterrains » arrivée toute seule')
     t = page(pg, 'vieuxplan')
-    # (19 novembre, 9 h 41) le vieux plan se déroule dès qu'on l'a, à tout moment ; avant le départ, « en jour » : rien ne dit ce que c'est
-    verifier(pg.locator('#livre-ici .lv-page.on [data-act=ds-plan]').count() == 1 and 'plus un seul nom' in t and 'souterrain' not in t.lower() and 'Pisteur a ouvert' not in t, 'la nuit, avant le départ : le vieux plan se déroule déjà, sans un mot des souterrains')
-    pg.locator('#livre-ici .lv-page.on [data-act=ds-plan]').first.click(); pg.wait_for_timeout(1500)
-    src = pg.evaluate("() => { var f = document.getElementById('donjon-plan-cadre'); return f ? f.src : (window.__donjonVers || ''); }")
-    verifier('jour=1' in src, f'(19 novembre) avant le départ, le plan s\'ouvre « en jour » ({src[-40:]})')
-    tx = 'ERREUR : pas de cadre'
-    for fr0 in pg.frames:
-        if 'sage.html' in fr0.url:
-            try:
-                fr0.wait_for_selector('.plan-svg', timeout=8000)
-                tx = fr0.evaluate("() => { var c = document.querySelector('.plan-svg').cloneNode(true); [].forEach.call(c.querySelectorAll('.traduction'), function(x){ x.remove(); }); return document.body.innerText + ' ' + c.textContent; }")
-            except Exception as ex:
-                tx = 'ERREUR ' + str(ex)
-    verifier('ERREUR' not in tx and 'Fondateurs' not in tx and 'rats' not in tx and 'givre' not in tx and 'bibliothèque' not in tx and 'atelier' not in tx.lower(), f'(19 novembre) en jour, ni titre ni noms sur le plan ({tx[:100]!r})')
+    verifier(pg.locator('#livre-ici .lv-page.on [data-vp].vp-jour').count() == 1 and 'souterrain' not in t.lower() and 'Pisteur a ouvert' not in t, 'la nuit, avant le départ : le plan est là, toujours sans noms')
     shot(pg, 'sage-vieuxplan-jour')
-    pg.evaluate("() => { if(M.fermerPlan) M.fermerPlan(); }"); pg.wait_for_timeout(300)
     code(pg, 'info:on_descend'); fermer(pg)
     t = page(pg, 'vieuxplan')
-    verifier('étui de cuir' in t and 'Le Pisteur a ouvert le passage' in t and 'Fondateurs' not in t and pg.locator('#livre-ici .lv-page.on [data-act=ds-plan]').count() == 1, f'le Pisteur a ouvert le passage : le vieux plan d\'Odette se regarde de tout près ({t[-120:]})')
+    sv = pg.evaluate("() => document.querySelector('#livre-ici .lv-page.on .vp-couche svg.plan-svg').textContent")
+    verifier(pg.locator('#livre-ici .lv-page.on [data-vp].vp-nuit').count() == 1 and 'Fondateurs' in sv and 'Le Pisteur a ouvert' not in t, f'le Pisteur a ouvert le passage : les noms des salles apparaissent ({t[-80:]})')
     shot(pg, 'sage-vieuxplan-depart')
     pg.context.close()
 

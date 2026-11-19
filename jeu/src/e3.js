@@ -1370,9 +1370,30 @@ E[3] = {
   /* les plans où une pierre se pose : la pierre qu'il attend, et la page du Grand Livre où il est (les dessins et les phrases : pierres.js).
      Ce que ça donne : le fait « pierre:<plan> » (P.vus), que le vérificateur connaît (tools/verif-e3.js). */
   plansPierre:{
-    maison:{pierre:'tim', page:'papier'},
-    vieuxplan:{pierre:'rune', page:'vieuxplan'}
+    maison:{pierre:'tim', page:'papier'}
   },
+  /* LE VIEUX PLAN D'ODETTE, DANS LE GRAND LIVRE (Romain, 19 novembre, 11 h 01 : « il faut mettre moins d'indices à déchiffrer […] le
+     NBBNBN, ça c'est bien […] la pierre de rune, elle peut afficher beaucoup plus de choses […] tout ce qui est important de prendre dans
+     les salles […] la pierre de Tim, elle pourrait faire apparaître certaines choses, et l'autre pierre pourrait faire apparaître d'autres
+     choses »). Le plan lui-même est dans la page (vieux-plan.js) ; ici, ce qu'il cache.
+     · codes : les notes codées gardées (carte.js, PLAN.notes) — une seule, le chemin des dalles ;
+     · encres : l'encre cachée, qui n'apparaît que là où passe SA pierre (pierre) ; x, y : le milieu du texte (les unités de la carte du
+       donjon) ; lignes ; t : la taille ; fleche : un petit trait d'encre vers la salle ; passage : un couloir secret dessiné en pointillés ;
+       dessin : un petit dessin à côté ('roue', 'fleur'). La pierre de Tim (dès le matin) : les mécanismes ; la pierre de rune (trouvée là-
+       dessous, la nuit) : ce qu'il faut prendre dans les salles (donjon/moteur/src/donnees.js, D.LIEUX). Les textes sont de Claude. */
+  vieuxPlan:{codes:['dalles'], encres:[
+    /* la pierre de Tim : la roue des canaux (et le passage secret qu'elle ouvre), la porte à pousser dans la salle aux trois portes */
+    {id:'roue', pierre:'tim', x:1655, y:1050, lignes:['la roue : 3 à droite,', '1 à gauche, 2 à droite'], passage:'c5', dessin:'roue', boite:{x:1470, y:862, w:320, h:240}},
+    {id:'oeil', pierre:'tim', x:2293, y:803, lignes:['prends l’œil'], fleche:[[2222, 801], [2154, 780]]},
+    /* la pierre de rune : ce qu'on trouve dans les salles */
+    {id:'bourse', pierre:'rune', x:1029, y:854, lignes:['une bourse d’or', 'dort ici'], fleche:[[1004, 826], [992, 792]]},
+    {id:'mousse', pierre:'rune', x:990, y:640, lignes:['une mousse', 'qui luit dans le noir'], fleche:[[1108, 628], [1150, 596]]},
+    {id:'carquois', pierre:'rune', x:1489, y:486, lignes:['deux carquois :', 'flèches de lune,', 'flèches qui percent l’armure'], fleche:[[1460, 530], [1456, 556]]},
+    {id:'fleur', pierre:'rune', x:905, y:1185, lignes:['ici pousse la fleur', 'qui ne fond jamais'], dessin:'fleur'},
+    {id:'batons', pierre:'rune', x:1925, y:495, t:16, lignes:['le bâton de lune, le bâton de chêne', 'et le coin du plan']},
+    {id:'amulette', pierre:'rune', x:2285, y:614, lignes:['une amulette de vie']},
+    {id:'page', pierre:'rune', x:1819, y:1221, lignes:['sous les os,', 'une page blanche']}
+  ]},
   absentTexte:{odette:'Odette n\'est pas chez elle. Le maire dit qu\'elle est chez sa sœur…'},
   absentPourTous:true,   /* (le Barde, lui, entre chez Odette pour poser la canne : pnj.voisin, à tous les moments depuis le 12 novembre au soir) */
   /* ---------- Le Grand Livre du Sage (livre.js ; E3-actions-des-roles.md §3, étape 3) ---------- */

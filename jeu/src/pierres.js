@@ -17,8 +17,8 @@
      (on la fait glisser, ou on pose le doigt sur le papier et elle suit), et le papier réagit PENDANT qu'elle passe (Pl.zones) :
      près du soleil, des mots s'allument (« soleil de l'après-midi ») ; sur les dalles, elles s'éclairent. Rien d'autre : ni signe,
      ni numéro, ni ordre. P.vus['pierre:<plan>'] est noté quand les deux ont été vus.
-   · Les pages de l'enquête 3 : M.papierOdetteHTML (le papier d'Odette : au dos, le plan de sa maison), M.vieuxPlanHTML (le vieux plan
-     sorti de la cachette), M.tableauOdetteHTML (le tableau, qu'on peut revoir).
+   · Les pages de l'enquête 3 : M.papierOdetteHTML (le papier d'Odette : au dos, le plan de sa maison), M.tableauOdetteHTML (le tableau,
+     qu'on peut revoir). (Le vieux plan sorti de la cachette : sa propre page, vieux-plan.js — 19 novembre.)
    Crochets : data-act="pp-poser" (data-pp, data-pierre, data-x, data-y), window.__pp.
    Chargé après livre.js.
    ========================================================== */
@@ -330,36 +330,6 @@ function planMaison(revele){
   return s + '</svg>';
 }
 
-/* LE VIEUX PLAN D'ODETTE : les couloirs du dessous, sans un nom (la carte du donjon, donjon/carte.js : CARTE_DONJON). Une petite cloche
-   au départ ; les signes gravés ; là où il y a quelque chose d'écrit, de l'encre passée qu'on ne sait pas lire ; un coin déchiré.
-   Rien n'y dit « souterrains » (Romain, 16 novembre). 300 × 180. */
-/* (17 novembre) revele : la pierre de rune est posée — l'encre passée se rallume, bleue */
-function vieuxPlan(revele){
-  var C = window.CARTE_DONJON, k = 'vp' + (++uid), w = 300, h = 180;
-  var s = '<svg class="pp-dessin pp-vieux" viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="Un très vieux plan : des couloirs, des salles, pas un seul nom">' + parchemin(w, h, k);
-  if(!C) return s + '</svg>';
-  var V = C.PLAN.cadre, kx = (w - 16) / V.w, ky = (h - 16) / V.h, K = Math.min(kx, ky), ox = (w - V.w * K) / 2 - V.x * K, oy = (h - V.h * K) / 2 - V.y * K;
-  s += '<g transform="translate(' + n(ox) + ' ' + n(oy) + ') scale(' + K.toFixed(4) + ')">';
-  /* les couloirs : un trait épais d'encre, puis le papier dedans (deux murs) ; pas les passages secrets */
-  var cou = C.LIENS.filter(function(l){ return !l.secret && !l.bouche && l.pts && l.pts.length > 1; }).map(function(l){ return 'M' + l.pts.map(function(p){ return n(p[0]) + ' ' + n(p[1]); }).join('L'); }).join('');
-  s += '<path d="' + cou + '" fill="none" stroke="' + ENCRE + '" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>';
-  Object.keys(C.LIEUX).forEach(function(id){ var L = C.LIEUX[id]; if(L.d && !L.couloir) s += '<path d="' + L.d + '" fill="' + PAPIER + '" stroke="' + ENCRE + '" stroke-width="9" stroke-linejoin="round"/>'; });
-  s += '<path d="' + cou + '" fill="none" stroke="' + PAPIER + '" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>';
-  /* les signes gravés */
-  (C.PLAN.signes || []).forEach(function(g){ if(g.porte || !C.SIGNES[g.s]) return; s += '<g transform="translate(' + g.x + ' ' + g.y + ') scale(' + n(g.t / 17) + ')"><path d="' + C.SIGNES[g.s] + '" fill="none" stroke="' + ENCRE + '" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>'; });
-  /* de l'encre passée : des lignes qu'on ne sait pas lire */
-  (C.PLAN.notes || []).forEach(function(nt, i){
-    for(var j = 0; j < Math.min(2, (nt.lignes || []).length); j++){ var y = nt.y + j * 30, d = 'M' + (nt.x - 70) + ' ' + y; for(var q = 0; q < 7; q++) d += 'q10 ' + ((q + i + j) % 2 ? -14 : 14) + ' 20 0'; if(revele) s += '<path d="' + d + '" fill="none" stroke="rgba(143,243,255,.5)" stroke-width="13" stroke-linecap="round"/>';
-      s += '<path d="' + d + '" fill="none" stroke="' + (revele ? '#05607c' : 'rgba(74,51,32,.34)') + '" stroke-width="5" stroke-linecap="round"/>'; }
-  });
-  /* la petite cloche, au départ */
-  var D0 = C.LIEUX.puits;
-  if(D0) s += '<g transform="translate(' + D0.x + ' ' + D0.y + ') scale(2.5)" fill="none" stroke="#7b2d26" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M-9 6C-9 -4 -6 -11 0 -11C6 -11 9 -4 9 6ZM-12 6H12M-2 9.5A2 2 0 1 0 2 9.5M0 -11v-4"/></g>';
-  /* le coin déchiré */
-  if(C.PLAN.dechire) s += '<path d="M' + C.PLAN.dechire.map(function(p){ return n(p[0]) + ' ' + n(p[1]); }).join('L') + 'Z" fill="#fbf3dc" stroke="#8a6a3a" stroke-width="5" stroke-linejoin="round"/>';
-  return s + '</g></svg>';
-}
-
 /* ---------- Les pages du Grand Livre ---------- */
 var T_PAPIER = '« Quand le soleil de l\'après-midi entrera chez moi, le chat qui dort te montrera le chemin. »';
 M.papierOdetteHTML = function(){
@@ -367,24 +337,8 @@ M.papierOdetteHTML = function(){
   var t = partiel ? 'Les signes sont à moitié effacés. Tu as quand même reconnu des mots : « soleil de l\'après-midi », « le chat qui dort », « le chemin ».' : T_PAPIER;
   return '<p class="lv-texte' + (partiel ? '' : ' pp-citation') + '">' + esc(t) + ' ' + lire(t) + '</p>' + bloc('maison');
 };
-/* (17 novembre, étape 4 du nouveau fil) LA NUIT, c'est sur cette page que le plan se regarde de tout près (M.donjonPlanBloc, descente.js :
-   le plan qui glisse et se zoome, par-dessus le jeu) : plus de page « Le plan des souterrains » arrivée toute seule. Et la pierre de rune que
-   le Pisteur trouve là-dessous (E.pierres) se pose ici, comme la pierre de Tim le matin : l'encre cachée se réveille.
-   Le filet : la cachette d'Odette jamais ouverte — la page arrive quand même avec le code du départ (« On va dans la crypte ») : en haut de
-   l'escalier, un plan gravé dans la pierre, que le Sage recopie. */
-M.vieuxPlanHTML = function(){
-  var P = M.P(), a = !!(P && P.recus && P.recus['obj:vieux_plan']);
-  /* (Romain, 17 novembre, 23 h 13 : « au départ, quelqu'un a dessiné une petite cloche : si on rentre par le puits, c'est faux ».) La
-     tablette du Sage ne sait pas par où le Pisteur est descendu (le même code du départ pour la crypte et pour le puits) : le texte ne
-     dit donc plus « au départ ». La cloche reste sur une salle : c'est toujours l'indice de l'après-midi (« il y a quelque chose sous
-     le clocher »). */
-  var t = a ? 'Un très vieux plan, roulé dans un étui de cuir, sous une dalle de la maison d\'Odette. Des couloirs, des salles… L\'encre a tant pâli qu\'on n\'y lit plus un seul nom. Sur l\'une des salles, quelqu\'un a dessiné une petite cloche. Un coin a été déchiré.'
-    : 'Le Pisteur a trouvé un plan gravé dans la pierre, à l\'entrée du passage. Tu l\'as recopié dans ton Grand Livre : des couloirs, des salles, des signes à demi effacés. Un coin manque.';
-  var t2 = 'Dans la marge, de l\'écriture penchée d\'Odette : « Les signes ne parlent qu\'à la pierre qui les garde. »';
-  /* le bouton jaune « 🔎 Regarder le plan de tout près » : juste sous le dessin (PLANS.vieuxplan.sous ; avant, tout en bas de la page, hors de l'écran) */
-  return '<p class="lv-texte">' + esc(t) + ' ' + lire(t) + '</p>' + bloc('vieuxplan') + (a ?'<p class="lv-texte pp-citation">' + esc(t2) + ' ' + lire(t2) + '</p>' : '') +
-    (M.donjonPlanBloc ? M.donjonPlanBloc() : '');
-};
+/* (19 novembre, 11 h 01) LE VIEUX PLAN D'ODETTE n'est plus ici : c'est la page elle-même, le grand plan qui glisse, avec ses deux pierres
+   (vieux-plan.js, M.vieuxPlanHTML). */
 M.tableauOdetteHTML = function(){
   var t = 'Le tableau que tu as peint pour la fête : Odette dans sa maison, avec ses sept chats. Le maire l\'accrochera au-dessus du gâteau. Regarde-le bien…';
   var img = window.MJ && MJ.tableauOdetteSVG ? MJ.tableauOdetteSVG() : '';
@@ -407,30 +361,12 @@ if(E3){
       },
       avant:'Au dos du papier, Odette a dessiné sa maison.',
       froid:'Ici, la pierre de Tim reste froide.',
-      note:'Sur le plan de la maison d\'Odette, la pierre de Tim réveille deux choses : près du soleil, les mots « soleil de l\'après-midi » ; et les dalles du milieu, qui s\'éclairent.'},
-    /* le vieux plan d'Odette : il attend une autre pierre (la nuit) */
-    vieuxplan:{pierre:'rune', h:180, large:true, zone:{x:150, y:90, r:400}, repos:{x:268, y:152}, ic:'🗺️', dessin:vieuxPlan,
-      /* (17 novembre, 23 h 30) le texte disait « promène-la partout » sur ce petit dessin, où rien ne bouge : il dit maintenant où ça se passe
-         (le plan déroulé en grand : le bouton jaune juste dessous, ou un doigt sur le plan) */
-      t:'La pierre de rune chauffe dans ta main… Les vieux signes se rallument, un à un ! Mais ils sont minuscules. Déroule ce plan en grand : là, ta pierre se promène partout, et elle réveille l\'encre cachée.',
-      note:'La pierre de rune réveille l\'encre cachée du vieux plan : à promener partout, sur le plan déroulé en grand.',
-      ouvrable:function(){ return !!(M.donjonPlanOuvrable && M.donjonPlanOuvrable()); },
-      ouvrir:function(){ return !!(M.donjonPlanOuvrir && M.donjonPlanOuvrir()); },
-      sous:function(){ return M.donjonPlanBouton ? M.donjonPlanBouton('sous') : ''; },
-      apres:function(){ return M.donjonPlanBouton ? M.donjonPlanBouton('apres') : ''; },
-      avant:'Ici et là, de l\'encre passée : des signes qu\'on ne sait plus lire. Pour l\'instant…',
-      sansPierre:'Les signes restent muets… « Ils ne parlent qu\'à la pierre qui les garde. »',
-      /* (Romain, 17 novembre, 7 h 47 : « on ne peut pas interagir avec […] il ne se passe rien ») l'après-midi, ce plan ne peut pas encore parler :
-         la page le dit maintenant en clair */
-      autre:'{pierre} reste froide, partout où tu la promènes. Ce n\'est pas elle qui garde ces signes-là…',
-      /* (Romain, 19 novembre, 9 h 41) toucher une pierre de la poche la pose tout de suite sur ce plan : on voit qu'on peut la promener
-         (la faire glisser), et qu'ici, elle ne fait rien */
-      poseDirecte:{x:.5, y:.5}}
+      note:'Sur le plan de la maison d\'Odette, la pierre de Tim réveille deux choses : près du soleil, les mots « soleil de l\'après-midi » ; et les dalles du milieu, qui s\'éclairent.'}
   };
   /* (e3.js garde, pour chaque plan, sa pierre et sa page : le vérificateur les lit sans navigateur) */
   E3.plansPierre = E3.plansPierre || {};
   Object.keys(PLANS).forEach(function(k){ E3.plansPierre[k] = Object.assign(PLANS[k], E3.plansPierre[k] || {}); });
 }
 
-M.Pierres = {planMaison:planMaison, vieuxPlan:vieuxPlan, pierreSVG:pierreSVG, bloc:bloc};
+M.Pierres = {planMaison:planMaison, pierreSVG:pierreSVG, bloc:bloc};
 })();

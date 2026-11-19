@@ -97,9 +97,12 @@ function detailsV1(id){
   return s;
 }
 var V1C = {puits:[88, 180], reserve:[285, 76], canaux:[285, 338], givre:[90, 342], toiles:[470, 332], eboulis:[566, 452], atelier:[640, 190], bibliotheque:[640, 72], ossuaire:[838, 180], camp:[765, 300], rats:[285, 190], bassin:[760, 445], porte4:[905, 445], leo:[905, 322]};
-function details(coin){
+/* (Romain, 19 novembre, 11 h 01) avant la nuit (jour) : pas les toiles d'araignée, ni les tombes, ni le feu de camp — rien qui fasse
+   penser à un donjon */
+var SANS_JOUR = {toiles:1, ossuaire:1, camp:1};
+function details(coin, jour){
   var s = '', w = 1.7, K = U.K;
-  Object.keys(V1C).forEach(function(k){ var o = C.LIEUX[k], v = V1C[k]; s += '<g transform="translate(' + o.x + ' ' + o.y + ') scale(' + K + ') translate(' + (-v[0]) + ' ' + (-v[1]) + ')">' + detailsV1(k) + '</g>'; });
+  Object.keys(V1C).forEach(function(k){ if(jour && SANS_JOUR[k]) return; var o = C.LIEUX[k], v = V1C[k]; s += '<g transform="translate(' + o.x + ' ' + o.y + ') scale(' + K + ') translate(' + (-v[0]) + ' ' + (-v[1]) + ')">' + detailsV1(k) + '</g>'; });
   if(coin) return s;
   /* la grande galerie (le plan est vieux : il la montre intacte) */
   s += colonne(1050, 736, 6, w) + colonne(1050, 774, 6, w) + colonne(990, 736, 6, w) + colonne(990, 774, 6, w) + colonne(930, 736, 6, w) + colonne(930, 774, 6, w);
@@ -231,12 +234,12 @@ function defs(id){
   return d.join('');
 }
 /* le donjon à l'encre (le même pour les deux morceaux) */
-function donjon(id, coin){
+function donjon(id, coin, jour){
   var dj = '';
   dj += '<g mask="url(#' + id + 'mHach)"><rect x="' + f(PV.x) + '" y="' + f(PV.y) + '" width="' + f(PV.w) + '" height="' + f(PV.h) + '" fill="url(#' + id + 'hach)"/></g>';
   dj += union(MUR + 2 * K1, ENC) + union(MUR, 'url(#' + id + 'murH)') + union(2.4 * K1, ENC) + union(0, SOLC) + union(0, 'url(#' + id + 'quad)');
   var dl = C.LIEUX.dalles; dj += '<path d="' + dl.d + '" fill="none" stroke="url(#' + id + 'quad2)" stroke-width="' + (dl.l - 3) + '"/>';
-  dj += details(coin);
+  dj += details(coin, jour);
   return dj;
 }
 function pli(){ var cx = PV.x + PV.w / 2, cy = PV.y + PV.h / 2;
@@ -263,14 +266,15 @@ function svg(o){
   var cad = P.cadre;
   p += '<rect x="' + f(cad.x + 16) + '" y="' + f(cad.y + 15) + '" width="' + f(cad.w - 32) + '" height="' + f(cad.h - 30) + '" fill="none" stroke="' + ENC2 + '" stroke-width="2.7" opacity=".7"/>' +
     '<rect x="' + f(cad.x + 25) + '" y="' + f(cad.y + 24) + '" width="' + f(cad.w - 50) + '" height="' + f(cad.h - 48) + '" fill="none" stroke="' + ENC2 + '" stroke-width="1.3" opacity=".55"/>';
-  p += '<g class="encre-plan">' + donjon('p', false) + '</g>';
+  p += '<g class="encre-plan">' + donjon('p', false, JOUR) + '</g>';
   /* les signes au lieu des noms (et les mêmes sur les trois portes) */
   P.signes.forEach(function(sg){ p += signe(sg.s, sg.x, sg.y, sg.t); });
   /* les noms à la plume */
   if(!JOUR) P.noms.forEach(function(n){ if(!n.coin) p += texte(n.x, n.y, n.l, n.t); });
   /* les notes codées, le piège noté */
   P.notes.forEach(function(n){
-    if(n.type === 'code'){
+    /* (o.codes : seulement ces notes codées — le vieux plan dans le Grand Livre n'en garde qu'une, les dalles : Romain, 19 novembre, 11 h 01) */
+    if(n.type === 'code' && !(o && o.codes && o.codes.indexOf(n.id) < 0)){
       var t = 12 * K1, lw = Math.max.apply(null, n.lignes.map(function(m){ return largeurCode(m, t); })) + 24, hh = (n.lignes.length - 1) * t * 1.45 + t + 22;
       p += '<g data-note="' + n.id + '"><path d="M' + f(n.x - lw / 2) + ' ' + f(n.y - hh / 2) + ' h' + f(lw) + ' v' + f(hh) + ' h' + f(-lw) + ' z" fill="#efdcae" opacity=".55"/>' +
         L('M' + f(n.x - lw / 2 + 5) + ' ' + f(n.y + hh / 2 + 5) + ' q' + f(lw / 2) + ' 7 ' + f(lw - 10) + ' 0', ENC2, 1.4, ' opacity=".7"') + code(n.x, n.y, n.lignes, t, ROUGE) + '</g>';
@@ -304,8 +308,8 @@ function svg(o){
   q += pli();
   q += '<rect x="' + f(cad.x + 16) + '" y="' + f(cad.y + 15) + '" width="' + f(cad.w - 32) + '" height="' + f(cad.h - 30) + '" fill="none" stroke="' + ENC2 + '" stroke-width="2.7" opacity=".7"/>' +
     '<rect x="' + f(cad.x + 25) + '" y="' + f(cad.y + 24) + '" width="' + f(cad.w - 50) + '" height="' + f(cad.h - 48) + '" fill="none" stroke="' + ENC2 + '" stroke-width="1.3" opacity=".55"/>';
-  q += '<g class="encre-plan">' + donjon('c', true) + '</g>';
-  P.noms.forEach(function(n){ if(n.coin) q += texte(n.x, n.y, n.l, n.t); });
+  q += '<g class="encre-plan">' + donjon('c', true, JOUR) + '</g>';
+  if(!JOUR) P.noms.forEach(function(n){ if(n.coin) q += texte(n.x, n.y, n.l, n.t); });
   P.notes.forEach(function(n){ if(n.type === 'coin') q += texte(n.x, n.y, n.lignes, 19, ROUGE); });
   /* le petit cœur à la porte (quand le Sage a entendu la voix derrière). Romain, 11 novembre (19 h 21) : « sur le plan du
      Sage, pas marqué Odette » — le cœur reste, le nom n'y est plus */
