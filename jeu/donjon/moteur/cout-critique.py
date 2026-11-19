@@ -1,4 +1,4 @@
-"""Ce que coûte un critique qui tue, à l'instant du coup, bête par bête (19 novembre, Bible §13.77 : « fais attention aux FPS »).
+"""Ce que coûte un critique qui tue, à l'instant du coup, bête par bête (19 novembre, Bible §13.82 : « fais attention aux FPS »).
 
     flock /tmp/brumeval-pw.lock python3 cout-critique.py [--taux 4] [--build DOSSIER]
 
@@ -9,7 +9,8 @@ et on mesure, en millisecondes depuis l'appel :
   - « 1re image » : quand l'écran a montré la première image d'après ;
   - « fumée partie » : quand la Promise de exploser() se termine (c'est ce que le combat attend pour reprendre).
 Mesuré le 19 novembre, ×4 — avant : 527 à 1 044 ms jusqu'au BOUM (la bête enflait), la fumée partie à 3,9 – 6,5 s ;
-après : 38 à 75 ms, la fumée partie à 1,1 – 1,9 s. Le rat : 75 ms de travail avant, 46 après (plus de gonflement à fabriquer).
+après : 30 à 130 ms (la mesure bouge d'un essai à l'autre), la fumée partie à 1,0 – 1,9 s. Le rat : 75 ms de travail avant,
+50 environ après (plus de gonflement à fabriquer).
 --build : un autre donjon construit que sortie/ (pour comparer avec une version d'avant)."""
 import os, sys
 from playwright.sync_api import sync_playwright

@@ -164,8 +164,8 @@ Avant, l'explosion était précédée d'un temps suspendu et d'un gonflement (0,
 volutes, les morceaux, les copies de pièces) se cachait dedans. Maintenant la bête éclate **à l'instant du coup**. Donc :
 
 **R22 — À l'instant du coup, on ne fabrique que ce qui se voit tout de suite.** Plus de longue animation préparée « pour
-plus tard » (le gonflement du rat : seize poses sur six pièces — son retrait fait passer le travail du rat de 75 à 46 ms au
-ralenti ×4). Ce qui peut attendre un quart de seconde (les restes au sol, les filets de fumée) part avec un `setTimeout`.
+plus tard » (le gonflement du rat : seize poses sur six pièces — son retrait fait passer le travail du rat de 75 à 50 ms
+environ au ralenti ×4). Ce qui peut attendre un quart de seconde (les restes au sol, les filets de fumée) part avec un `setTimeout`.
 **R23 — Une fumée courte n'a pas de traîne.** La courbe d'avant (`cubic-bezier(.12,.75,.3,1)` sur 3 s) laissait la fumée
 presque invisible pendant ses deux dernières secondes : des calques translucides animés pour rien, et le combat qui
 attendait. La courbe du 19 novembre (`cubic-bezier(.3,.5,.6,1)` sur 0,9 s) : aussi noire qu'avant pendant le premier
@@ -173,8 +173,9 @@ tiers de seconde (elle cache la bête qui disparaît), puis partie.
 **R24 — Le combat reprend quand la fumée est partie, pas avant** : on ne lance pas le geste suivant par-dessus une
 explosion (deux gros effets à la fois).
 
-**Les mesures** : `moteur/cout-critique.py` (le travail à l'instant du coup, bête par bête, ×4 : 38 à 75 ms ; la première
-image d'après : 94 à 235 ms au ralenti ×4, soit 25 à 60 ms sur un appareil normal) ; `moteur/perf.py rats crypte toiles`
+**Les mesures** : `moteur/cout-critique.py` (le travail à l'instant du coup, bête par bête, ×4 : 30 à 130 ms — la mesure
+bouge d'un essai à l'autre ; la première image d'après : 100 à 280 ms au ralenti ×4, soit 25 à 70 ms sur un appareil
+normal ; avant, la bête enflait 500 à 1 000 ms) ; `moteur/perf.py rats crypte toiles`
 (les images par seconde pendant le geste du Pisteur : pareilles qu'avant, à la mesure près — 28,6 → 30,6, 31,5 → 30,6,
 27,5 → 26,7 —, et l'effet dure 1 s au lieu de 3 à 6) ; `moteur/filmer-critique.py` (le film, image par image).
 **Ce qui reste cher** : les neuf bêtes autres que le rat dessinent encore leur fumée en SVG (un calque repeint par le fil

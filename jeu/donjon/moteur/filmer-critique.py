@@ -1,5 +1,5 @@
 """Filme un critique qui tue, dans un vrai combat du donjon, et en tire une planche d'images et les instants clés
-(19 novembre : « dès qu'il a mis le coup de dague, tout de suite l'animation se fait » — Bible §13.77).
+(19 novembre : « dès qu'il a mis le coup de dague, tout de suite l'animation se fait » — Bible §13.82).
 
     flock /tmp/brumeval-pw.lock python3 filmer-critique.py NOM SALLE SAC CIBLE GESTE ["h,g,c;h,g,c"] [--avant b1] [--build DOSSIER] [--vers DOSSIER]
 

@@ -484,7 +484,7 @@ Romain a joué l'enquête 3 avec sa famille, donjon compris, et a dicté ses cor
 - `L.BOUM = {leo:520, heros:30, mortel:true}` (`leo-regles.js`) : dans `P._boum`, le héros que Léo tient dans sa farine (le crochet, phase 1) perd toute sa vie, bouclier ou pas (`degats` avec `mortel:true`, puis `_tombe`) ; `mortel:false` rend l'ancienne règle (−30). Léo prend toujours 520.
 - `test-leo.js` : deux vérifications de plus (207). La simulation (`leo-sim.js`) : la phase 1 un peu plus dure pour les joueurs moyens et lents.
 
-### 9.25 Le 19 novembre : le critique qui tue, sans gonflement ni attente (Bible §13.77 ; `RAPIDITE.md` §4 ter)
+### 9.25 Le 19 novembre : le critique qui tue, sans gonflement ni attente (Bible §13.82 ; `RAPIDITE.md` §4 ter)
 
 Romain, 10 h 48 : « quand le Pisteur prend sa dague, ou n'importe quelle arme, et que ça fait un critique et tue la bestiole : l'animation plus rapide […] il grossit pas, il explose direct […] dès qu'il a mis le coup de dague, tout de suite l'animation se fait, faut pas qu'il y ait de délai […] pof, la fumée qui apparaît et tous les morceaux qui partent en lambeaux […] et fais attention aux FPS ».
 
