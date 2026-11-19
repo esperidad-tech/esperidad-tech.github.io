@@ -809,4 +809,94 @@ S.bourbeFinB = function(A, P){
   return {duree:2.6};
 };
 
+/* =================== 19 NOVEMBRE — « DÈS QU'UN ENNEMI FAIT UNE ACTION, IL Y A UN SON » (Romain, 11 h 44 ; Bible §13.83) ===================
+   Ce qui se jouait en silence : Bourbe qui sort de l'eau en arrivant ; le bassin qui gèle, et Bourbe qui retombe sur la glace ;
+   la glace qui s'en va (il retombe dans l'eau : « quand il replonge dans l'eau, il n'y a pas de son ») ; une bête prise dans la
+   glace, puis lâchée ; une bête qui perd son tour sous l'eau. Une version de chacun, à écouter (🆕).
+   « moment » : l'instant clé du son (l'eau qui s'ouvre, le choc) — le jeu le cale sur l'image (bruit(id, {cale:…})). */
+/* — Bourbe sort de l'eau (son arrivée) : des bulles qui montent, l'eau qui se soulève et s'ouvre, puis qui ruisselle de son dos — */
+S.bourbeSortA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.5, grotte:.5, pan:.1}), M = 1.5;
+  glouglou(A, t, 9, {f:170, g:.16, i1:.1, i2:.2, monte:2.2}, o);                                                /* des bulles, de plus en plus serrées */
+  glouglou(A, t + .8, 8, {f:240, g:.2, i1:.05, i2:.11}, o);
+  A.bruit(t + M - .35, {coul:'rose', filtres:[{type:'bandpass', f:300, pts:[[.35, 1100]], q:1.2}], env:[[0, 0], [.33, 1], [.4, 0]], g:.5}, o);   /* l'eau se soulève */
+  eclabousse(A, t + M, 2, {g:.75, d:.8, fmin:300, fmax:1800, lp:3500}, o);                                      /* elle s'ouvre : une grosse vague, pas un plouf */
+  A.joue(t + M + .1, A.eau(1.2, 60, {fmin:500, fmax:2200}), {g:.3, env:[[0, 0], [.1, 1], [1.2, 0]]}, o);       /* elle ruisselle de son dos */
+  pluie(A, P, t + M + .25, 1.3, 16, .9);
+  return {duree:3.3};
+};
+S.bourbeSortA.moment = 1.5;
+/* — le bassin gèle : la glace court sur l'eau en craquant, de plus en plus serré, puis elle se fige d'un coup — */
+S.bassinGeleA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.5, grotte:.4, pan:-.5, pan2:.5, pant:1.1});                                   /* elle traverse le bassin */
+  A.joue(t, A.crepitement(1.0, 190, {forme:function(u){ return .25 + .75 * u; }}), {g:.7, filtres:[{type:'highpass', f:2800}, {type:'lowpass', f:9000}]}, o);   /* crrrrrk */
+  A.bruit(t, {hp:5200, env:[[0, 0], [.75, 1], [1.05, 0]], g:.14}, o);                                            /* le froid qui siffle */
+  O.grinceArc(A, t + .2, .7, {res:[1300, 2700, 4800], q:14, g:1.1, i0:.03, i1:.007}, o);                       /* la glace qui se tend */
+  var c = t + 1.0, oc = A.bus(ici(P, c), {rev:.6, grotte:.5, pan:0});
+  A.bruit(c, {hp:2200, env:A.perc(.001, .04), g:.7, sat:3}, oc);                                                /* CRAC : elle est prise */
+  A.choc(c, {f:140, f2:60, d:.18, g:.35, sat:2, corpsF:260}, oc);                                               /* toung : toute la plaque résonne */
+  A.modes(c, 520, [[1, 1, .5], [2.6, .5, .3], [4.3, .3, .2]], {g:.08}, oc);
+  return {duree:1.8};
+};
+S.bassinGeleA.moment = 1.0;
+/* — il retombe de tout son poids sur la glace : un choc sourd, la glace qui se fend en étoile, des éclats qui retombent — */
+S.glaceChocA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.55, grotte:.6, pan:0});
+  A.choc(t, {f:85, f2:30, d:.5, g:.9, sat:4, corps:1.4, corpsF:240}, o);                                        /* BOUM */
+  A.bruit(t, {hp:1800, env:A.perc(.0008, .05), g:.9, sat:3.5}, o);                                              /* CRAC */
+  O.craque(A, t + .02, .55, .5, o);                                                                             /* les fissures courent */
+  A.modes(t, 430, [[1, 1, .6], [2.4, .6, .4], [3.9, .35, .25], [6.1, .2, .15]], {g:.1}, o);                     /* la plaque sonne */
+  for(var k = 0; k < 7; k++){ var tt = t + .12 + Math.random() * .7; A.modes(tt, h(2600, 5200), [[1, 1, h(.05, .14)], [2.7, .4, .05]], {g:h(.02, .05)}, A.bus(ici(P, tt), {rev:.4, pan:h(-.8, .8)})); }
+  return {duree:1.6};
+};
+S.glaceChocA.moment = 0;
+/* — la glace s'en va sous lui : elle craque, elle cède, et il retombe dans l'eau (plouf) — */
+S.glaceCasseA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.5, grotte:.5, pan:0});
+  O.craque(A, t, .3, .6, o);
+  A.bruit(t + .12, {hp:1600, env:A.perc(.0008, .06), g:.8, sat:3}, o);                                          /* CRAC */
+  for(var k = 0; k < 6; k++){ var tt = t + .15 + Math.random() * .5; A.modes(tt, h(2400, 5000), [[1, 1, h(.05, .12)], [2.7, .4, .05]], {g:h(.02, .05)}, A.bus(ici(P, tt), {rev:.4, pan:h(-.8, .8)})); }
+  var c = t + .3, oc = A.bus(ici(P, c), {rev:.55, grotte:.6, pan:0});
+  eclabousse(A, c, 3, {g:1, d:.85, fmin:300, fmax:2000}, oc);                                                   /* PLOUF */
+  glouglou(A, c + .5, 8, {f:210, g:.13, i1:.08, i2:.16, fade:true}, oc);
+  return {duree:2.2};
+};
+S.glaceCasseA.moment = .3;
+/* — une bête prise dans la glace : le givre la saisit, et elle se fige (tic) — */
+S.gelPrisA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.4, pan:.3});
+  A.joue(t, A.crepitement(.55, 170, {forme:function(u){ return Math.pow(1 - u, .8); }}), {g:.55, filtres:[{type:'highpass', f:3200}, {type:'lowpass', f:9000}]}, o);
+  O.grinceArc(A, t + .05, .4, {res:[1700, 3300, 5600], q:14, g:.9, i0:.02, i1:.006}, o);
+  A.bruit(t + .45, {hp:2600, env:A.perc(.0008, .03), g:.5, sat:3}, o);
+  A.modes(t + .45, 2100, [[1, 1, .25], [2.7, .4, .12]], {g:.05}, o);
+  return {duree:1.0};
+};
+/* — la glace la lâche : elle se fend et tombe en morceaux — */
+S.gelFondA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.4, pan:.3});
+  A.bruit(t, {hp:2000, env:A.perc(.0008, .04), g:.6, sat:3}, o);
+  O.craque(A, t + .01, .25, .35, o);
+  for(var k = 0; k < 6; k++){ var tt = t + .06 + Math.random() * .45; A.modes(tt, h(2600, 5600), [[1, 1, h(.05, .12)], [2.7, .4, .05]], {g:h(.025, .055)}, A.bus(ici(P, tt), {rev:.35, pan:h(-.3, .8)})); }
+  return {duree:.9};
+};
+/* — sous l'eau, il attend (il perd son tour) : des bulles qui montent — */
+S.bullesFondA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.45, grotte:.4, pan:.1});
+  glouglou(A, t, 7, {f:190, g:.18, i1:.09, i2:.2, monte:2.3}, o);
+  glouglou(A, t + .5, 5, {f:280, g:.12, i1:.06, i2:.14, fade:true}, o);
+  return {duree:1.6};
+};
+/* — une bête tombe par terre (l'araignée sur le dos, la chauve-souris sonnée ou collée…) : pof, la poussière, un petit rebond — */
+S.beteChuteA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.35, pan:.3});
+  A.choc(t, {f:130, f2:48, d:.2, g:.7, sat:2.5, corps:1, corpsF:300}, o);
+  A.bruit(t, {coul:'rose', filtres:[{type:'lowpass', f:2200, pts:[[.12, 500]], q:.8}], env:A.perc(.003, .16), g:.5}, o);
+  A.choc(t + .17, {f:110, f2:55, d:.1, g:.25, sat:2, corpsF:280}, o);
+  return {duree:.6};
+};
+S.beteChuteA.moment = 0;
+/* l'instant clé des sons de Bourbe déjà là (19 novembre : le jeu les cale sur l'image — avant, le plouf partait une seconde
+   avant que Bourbe touche l'eau) : le plouf du plongeon, le SPLASH du saut */
+S.bourbePlongeA.moment = .25; S.bourbePlongeB.moment = .05; S.bourbeSautA.moment = .95; S.bourbeSautB.moment = .7;
+
 })(window);

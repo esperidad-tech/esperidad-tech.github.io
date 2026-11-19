@@ -32,11 +32,13 @@ for c, ks in cartes.items():
     for k in ks:
         r = b[k]; f = 10 ** ((min(cible, atteint[k]) - r['sonie']) / 20); niv[k] = f
         print('%-14s sonie %6.1f -> x%.2f  (%6.1f, pic %.2f)' % (k, r['sonie'], f, r['sonie'] + 20 * math.log10(f), r['pic'] * f))
+PONTS = ('leoPont',)                      # une musique jouée UNE fois, qui commence fort et s'éteint (19 novembre) : son niveau d'écriture, sans dépasser le pic
 for k, r in m.items():
     k = k[2:]
     cible = CIBLE_SALLE if re.sub(r'[A-C]$', '', k) in COULEURS else (CIBLE_FEU if k.startswith('feuCamp') else CIBLE_MUS)
     f = 10 ** ((cible - r['sonie90']) / 20)
     f = min(f, PIC_MUS / r['pic'])
+    if k.startswith(PONTS): f = min(1, PIC_MUS / r['pic'])
     niv[k] = f
     print('%-14s sonie90 %6.1f -> x%.2f' % (k, r['sonie90'], f))
 json.dump(niv, open(os.path.join(ICI, 'niveaux.json'), 'w'), indent=1)

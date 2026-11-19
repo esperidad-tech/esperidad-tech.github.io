@@ -38,10 +38,11 @@ var AVEUX = [
 /* (15 novembre, 19 h 28 : la liste est COMPLÈTE — `sautes-leo.py` nomme chaque son encore fabriqué en direct pendant un combat ;
    il en restait de 6 à 12 par phase : le clic des icônes, les fioles, le pied qui racle, les naseaux, la torche, le sac, le
    saignement de la phase 2… Si ce robot en nomme un nouveau, l'ajouter ici. « id:B » : cette version-là exactement.) */
-var BRUITS = {tous:['icone', 'swish', 'chairF', 'chairD', 'arc', 'vol', 'baton', 'potHuile', 'leoCharge', 'leoRacle', 'leoNaseaux', 'leoGlisse', 'leoSonne', 'leoMuscles', 'leoTouche'],
+/* (19 novembre : « leoChute » passe dans « tous » — il tombe à genoux à la fin des phases 1 et 2, avant le film : aGenoux) */
+var BRUITS = {tous:['icone', 'swish', 'chairF', 'chairD', 'arc', 'vol', 'baton', 'potHuile', 'leoCharge', 'leoRacle', 'leoNaseaux', 'leoGlisse', 'leoSonne', 'leoMuscles', 'leoTouche', 'leoChute'],
   1:['leoFleau', 'leoMarteau', 'leoMeule', 'leoCrochet', 'leoCape', 'leoFarine', 'leoPoing', 'leoTorches', 'cristal', 'potGivre'],
   2:['leoPoing', 'leoSifflet', 'leoSaut', 'leoLancer', 'leoSac', 'leoGlou', 'leoBouchon', 'leoAah', 'leoAura', 'leoBrise', 'leoFaux', 'leoFaux:B', 'leoFauxTire', 'leoSaigne'],
-  3:['leoPoing', 'leoRafale', 'leoHurlement', 'leoSouffle', 'leoAttrape', 'leoSaigne', 'leoFaux', 'leoChute', 'potGivre']};
+  3:['leoPoing', 'leoRafale', 'leoHurlement', 'leoSouffle', 'leoAttrape', 'leoSaigne', 'leoFaux', 'potGivre']};
 /* les sons d'une phase : fabriqués pendant l'écran de passage (la première) ou pendant la cinématique d'avant (les suivantes) ;
    ceux de la phase d'avant rendent leur mémoire. Rend une promesse (on peut l'attendre, pas trop longtemps). */
 function sonsPhase(n){
@@ -62,7 +63,10 @@ function sonsPrets(max){
 }
 function preparer(phase){
   /* le film de l'entrée se télécharge pendant l'écran de passage (la première fois seulement) */
-  if(phase && typeof phase === 'object' && !(phase.faits && phase.faits['leo:vu'])) prechargerFilm('entree');
+  var avecEntree = !!(phase && typeof phase === 'object' && !(phase.faits && phase.faits['leo:vu']));
+  if(avecEntree) prechargerFilm('entree');
+  /* (19 novembre) le pont qui suit le film d'entrée se fabrique lui aussi d'avance (musiqueApresFilm) */
+  if(avecEntree) try{ if(SALLE.Son && SALLE.Son.preparerMusique) SALLE.Son.preparerMusique(PONT_ENTREE); }catch(e){}
   if(phase && typeof phase === 'object') phase = phaseGardee(phase);                    /* (la partie : la phase gardée) */
   /* les sons et la musique de la phase se fabriquent PENDANT qu'on prépare les images ; on n'ouvre le combat que quand tout est prêt */
   sonsPhase(+phase || 1);
@@ -148,10 +152,36 @@ function construire(){
    Avant, c'était la musique de Bourbe. Entre deux phases, on la change AU DÉBUT de la cinématique : la musique du donjon s'y tait
    (le film a sa bande-son), la nouvelle se fabrique pendant le film et part quand il finit. Tant qu'elle n'est pas prête,
    l'ancienne continue (pas de trou de silence). */
-function musiquePhase(n){
+function musiquePhase(n, o){
   var S = SALLE.Son;
   if(!S || !S.musique) return;
-  (S.musiqueDesQuePrete || S.musique)('grand:leo' + Math.max(1, Math.min(3, n)));
+  (S.musiqueDesQuePrete || S.musique)('grand:leo' + Math.max(1, Math.min(3, n)), o);
+}
+/* LA MUSIQUE AUTOUR D'UN FILM — 19 NOVEMBRE (Romain, 11 h 44 : « dans l'arrivée du donjon, quand on voit Léo, il y a la musique à
+   la fin, elle commence à monter. Et après, le combat commence, et là, on se retrouve avec une musique plate. Je pense qu'il
+   faudrait arriver à mettre la continuité de la musique qu'on voit dans la cinématique » ; Bible §13.83).
+   Ce qui se passait : la musique de la phase partait AVANT le film, en sourdine, à un endroit au hasard de sa boucle, et revenait
+   après lui dans un fondu lent — souvent sur sa partie la plus vide. Mesuré avec le filtre « tablette » : la bande-son du film
+   d'entrée finit à −18 dB (le grand coup, coupé net), la musique de la phase 1 joue à −37 dB.
+   Maintenant : PENDANT le film, l'ancienne musique s'arrête et la nouvelle se fabrique sans jouer (musiqueAvantFilm) ; À LA FIN
+   du film, elle part tout de suite, calée, au début d'une partie choisie (ENTREE_MUS), dans un fondu court (musiqueApresFilm).
+   Après le film d'entrée, un PONT joue par-dessus (une fois — la suite de la musique du film : essai/sons/musiques-donjon.js,
+   leoPontA ; dans l'Atelier des sons, « Musiques », 🆕) : le grand coup retombe sur un temps fort, le cœur continue de cogner
+   et ralentit, les cuivres répondent de plus en plus doucement, et les violoncelles de la phase 1 s'installent. */
+var ENTREE_MUS = {1:1, 2:1, 3:1}, PONT_ENTREE = 'leoPont';
+function musiqueAvantFilm(n, pont){
+  var S = SALLE.Son;
+  if(!S || !S.musique) return;
+  S.musique(null);
+  try{ if(S.preparerMusique){ S.preparerMusique('grand:leo' + n); if(pont) S.preparerMusique(pont); } }catch(e){}
+}
+function musiqueApresFilm(n, pont){
+  var S = SALLE.Son;
+  if(!S || !S.musique) return;
+  var d = S.partie ? S.partie('leo' + n, ENTREE_MUS[n] || 0) : null, joue = 0;
+  try{ if(S.sourdine) S.sourdine(false, true); if(pont && S.pont) joue = S.pont(pont); }catch(e){}
+  /* (sous le pont, la boucle entre doucement, calée sur lui — il commence 0,03 s après son début ; sans pont : tout de suite) */
+  musiquePhase(n, d == null ? null : {depuis:d - (joue ? .03 : 0), fondu:joue ? 4 : .3});
 }
 /* (un élément cherché une fois, puis gardé : maj() tourne à chaque image) */
 function mem(sel){ var c = E.mem || (E.mem = {}), e = c[sel]; return e && e.isConnected ? e : (c[sel] = q(sel)); }
@@ -162,8 +192,10 @@ function p2(){ return !!(E && E.p2 && E.c && E.leo.nouveau()); }        /* (15 n
 
 /* ====================================================================== 2. LES PHASES */
 function demarrerPhase(n, premiere){
+  var entree = !!(premiere && n === 1 && !E.partie.faits['leo:vu']);       /* la toute première fois : le film de l'entrée */
   sonsPhase(n);
-  musiquePhase(n);
+  /* (19 novembre) avant le film d'entrée, la musique ne part pas : elle se fabrique, et part à la fin du film (cineEntree) */
+  if(entree) musiqueAvantFilm(1, PONT_ENTREE); else musiquePhase(n);
   E.c = LR.combat(E.partie, {phase:n});
   E.ph = E.c.etat();
   E.elan = null; E.cases = null; E.suiteSig = null;
@@ -180,7 +212,7 @@ function demarrerPhase(n, premiere){
   prechargerFilms(n);
   E.cine = true;
   /* (un nouvel essai après une défaite, une phase reprise : ses sons sont peut-être encore en fabrication — on les attend) */
-  (premiere && n === 1 && !E.partie.faits['leo:vu'] ? cineEntree() : cinePret(n)).then(function(){ return sonsPrets(8); }).then(function(){ if(!E) return; E.cine = false; E.saute = false; E.ts = 0; });
+  (entree ? cineEntree() : cinePret(n)).then(function(){ return sonsPrets(8); }).then(function(){ if(!E) return; E.cine = false; E.saute = false; E.ts = 0; });
 }
 function remettreHeros(h){
   var A = E.A.h[h], s = slotH(h);
@@ -192,6 +224,38 @@ function remettreHeros(h){
 /* une pause qu'un toucher raccourcit (les cinématiques se passent d'un toucher) */
 function pause(ms){ return new Promise(function(ok){ var t0 = Date.now(); (function voir(){ if(!E || E.saute || Date.now() - t0 >= ms) return ok(); setTimeout(voir, 40); })(); }); }
 function pose(p, ms, c){ return E.saute ? E.leo.vers(p, 1) : E.leo.vers(p, ms, c); }
+/* LÉO AUTOUR DES FILMS — 19 NOVEMBRE (Romain, 11 h 44) : « quand on passe en phase 2, il était à terre, il se relève, puis il se
+   remet à terre, puis il se relève. Enfin, c'est bizarre » ; « quand on lance une cinématique, la position de fin quand on
+   reprend le donjon : il faut que le personnage soit dans la dernière position qu'il était dans la cinématique […] si à la fin
+   de la phase 2 il y a une cinématique, en phase 3 il faut qu'il ait la même position qu'à la fin de la cinématique ».
+   Ce qui se passait : (1) le film partait sur Léo comme il était — souvent AU SOL (glissé sur l'huile, sonné) ou en plein
+   geste — alors que le film le montre debout, qui tombe à genoux (a12), ou déjà à genoux (b23) ; (2) au retour du film, Léo
+   gardait 1,3 s sa pose d'AVANT le film (au sol, le bras tendu…), puis sautait en garde.
+   Maintenant : AVANT le film, il tombe à genoux là où il est (aGenoux) — et le film a12 part de l'instant où l'homme en cape
+   est à genoux (son début — debout, puis la chute — est sauté : FILM_A12_DEPART) ; APRÈS le film, il est TOUT DE SUITE dans la
+   dernière pose du film (poserLeo) : en garde après a12, les bras écartés en rugissant après b23 et après l'entrée, puis il
+   revient en garde. */
+var FILM_A12_DEPART = 1.88;
+function poserLeo(p){ try{ E.leo.vers(p, 1); E.leo.avancer(.02); }catch(e){} }
+async function aGenoux(){
+  if(E.p2) try{ E.p2.vider(); }catch(e){}               /* plus d'annonce (« LE FLÉAU »…) ni d'effet de l'attaque coupée */
+  E.leo.arme(null);
+  bruit('leoChute', {}, ['tombe']);
+  /* (fin de la phase 1 : ses outils tombent — le film le montrait dans son début, qu'on saute maintenant : le bruit se joue ici) */
+  try{ if(E.c && E.c.phase === 1) bruit('cineOutils', {dt:.12}); }catch(e){}
+  var p = 'genou';
+  if(E.leo.nouveau() && window.LeoCorps){
+    try{ E.leo.corps.visage('douleur'); }catch(e){}
+    /* (glissé sur l'huile, il est allongé loin devant lui : il se ramasse à genoux à mi-chemin, sans traverser la salle) */
+    var g = window.LeoCorps.POSES.genou, x0 = (E.leo.p && E.leo.p.x) || 0; p = {};
+    for(var k in g) p[k] = g[k];
+    p.x = Math.max(-120, Math.min(0, x0));
+  }
+  await pose(p, 520, 'o');
+  if(!E) return;
+  Fx.tremble(4, 200);
+  await pause(380);
+}
 function titre(grand, petit, ms){
   var t = el('div', 'leo-titre', '<b>' + esc(grand) + '</b>' + (petit ? '<small>' + esc(petit) + '</small>' : ''));
   q('#leo-cine').appendChild(t);
@@ -211,12 +275,17 @@ async function cineEntree(){
   var r = await film('entree', {passer:false});
   if(!E) return;
   if(r !== 'echec'){
-    E.leo.voile(0); E.leo.p.x = 0; E.leo.vers('garde', 1);
+    /* (19 novembre) la musique du film continue : le pont, et la musique de la phase 1 qui entre dessous */
+    musiqueApresFilm(1, PONT_ENTREE);
+    /* (19 novembre) la dernière image du film : les bras écartés sous sa cape, les torches qui s'embrasent — il les baisse, et se met en garde */
+    E.leo.voile(0); E.leo.p.x = 0; poserLeo('rugit');
     titre(NOMS[1], null, 2200);
-    await pause(900);
+    await pause(350);
+    await pose('garde', 600, 'io');
     return;
   }
-  /* (sans film : l'ancienne scène, dessinée en direct) */
+  /* (sans film : l'ancienne scène, dessinée en direct — et la musique comme avant) */
+  musiquePhase(1);
   passer(true);
   await pause(500);
   bruit('leoCape', {}, ['magie']);
@@ -237,12 +306,16 @@ async function cinePret(n){
 /* phase 1 → 2 : tout s'arrête, la barre des sorts descend ; il arrache sa cape et sa tunique, les jette hors de l'écran, et montre
    ses muscles — c'est Léo ! Le Pisteur ramasse ses outils (Romain, 14 novembre au soir : leo-p2.js, Bible §13.40). */
 async function cine12(){
-  var r = await film('a12');
+  /* (19 novembre) Léo est déjà à genoux (aGenoux) : le film part de l'instant où l'homme en cape est à genoux */
+  var r = await film('a12', {depart:FILM_A12_DEPART});
   if(!E) return;
+  musiqueApresFilm(2);                                  /* (19 novembre) la musique de la phase 2 part ici, à la fin du film, calée */
   if(r !== 'echec'){
     E.leo.arme(null); nuage(false); noir(false, true); flaque(false);
     ORDRE.forEach(function(h){ remettreHeros(h); });
     E.leo.tenue(2); E.leo.visage('colere');
+    /* la dernière image du film : Léo, les poings levés devant lui — en garde, tout de suite (plus sa pose d'avant le film) */
+    E.leo.p.x = 0; poserLeo('garde');
     q('#leo-barre em').textContent = NOMS[2];
     ramasser(['crochet', 'fleau', 'marteau']);
     await pause(1300);
@@ -252,15 +325,14 @@ async function cine12(){
   E.leo.arme(null); nuage(false); noir(false, true); flaque(false);
   ORDRE.forEach(function(h){ remettreHeros(h); });
   if(E.p2){
-    await E.p2.cine12({pause:pause, titre:titre, ramasser:ramasser, saute:function(){ return !E || E.saute; }, nom:function(n){ q('#leo-barre em').textContent = n; },
+    await E.p2.cine12({aGenoux:true, pause:pause, titre:titre, ramasser:ramasser, saute:function(){ return !E || E.saute; }, nom:function(n){ q('#leo-barre em').textContent = n; },
       bande:function(on){ var c = q('#combat'); if(c) c.classList.toggle('ouvert', !!on); }});
     q('#leo-barre em').textContent = NOMS[2];
     passer(false);
     return;
   }
-  bruit('leoChute', {}, ['tombe']);
-  await pose('genou', 700, 'o');
-  await pause(900);
+  /* (il est déjà à genoux : aGenoux) */
+  await pause(700);
   await pose('garde', 600);
   await pose('capeA', 350, 'o');
   bruit('leoDechire', {}, ['magie']);
@@ -282,20 +354,28 @@ async function cine12(){
 async function cine23(){
   var r = await film('b23');
   if(!E) return;
+  musiqueApresFilm(3);                                  /* (19 novembre) la musique de la phase 3 part ici, à la fin du film, calée */
   if(r !== 'echec'){
     E.leo.arme(null);
     if(E.p2) E.p2.vider();
-    E.leo.tenue(3); E.leo.visage('colere');
+    /* (19 novembre) la dernière image du film : Léo sous la potion, les bras écartés, qui rugit — la même pose, tout de suite
+       (plus sa pose d'avant le film) ; il rugit encore un instant, puis il se met en garde */
+    E.leo.tenue(3); E.leo.visage('cri');
+    E.leo.p.x = 0; poserLeo('rugit');
+    Fx.tremble(6, 300); bruit('leoMuscles', {}, ['tombe']);     /* (il rugit encore, les muscles bandés : ça s'entend) */
     ramasser(['faux', 'gourde']);
-    await pause(1300);
+    await pause(650);
+    if(!E) return;
+    E.leo.visage('colere');
+    await pose('garde', 550, 'io');
+    await pause(200);
     return;
   }
   passer(true);
   E.leo.arme(null);
   if(E.p2) E.p2.vider();
-  bruit('leoChute', {}, ['tombe']);
-  await pose('genou', 700, 'o');
-  await pause(700);
+  /* (il est déjà à genoux : aGenoux) */
+  await pause(500);
   bruit('leoPotion', {}, ['bulles']);
   if(E.leo.nouveau()){
     /* (15 novembre : c'est le même Léo qui boit et qui se transforme — plus d'ancien dessin en phase 3) */
@@ -348,6 +428,7 @@ function film(nom, o){
   var I = window.CINE_INFOS[nom], S = SALLE.Son || {};
   if(S.sourdine) S.sourdine(true);
   return window.CineLecteur.jouer({url:CINE_URL + nom + '.mp4', piste:I.piste ? CINE_URL + nom + '.mp3' : null, infos:I, passer:!(o && o.passer === false), attente:6000,
+    depart:(o && o.depart) || 0,                          /* (19 novembre) le film part de cet instant : son début est sauté */
     audio:function(){ return S.contexte ? S.contexte() : null; }, volume:function(){ return S.volume ? S.volume('bruitages') : 1; },
     son:function(id){ bruit(id, {}); },
     lire:function(t){ DJ.lire(t); }, parle:function(){ try{ return speechSynthesis.speaking; }catch(e){ return false; } }, taire:function(){ DJ.taire(); }
@@ -382,8 +463,10 @@ async function finPhase(res){
   adressePhase(n);
   DJ.temoinLeo('phase ' + n + ' : le film d\'avant');
   son('victoire');
+  await aGenoux();                                      /* (19 novembre) il tombe à genoux, là où il est : c'est là que le film le reprend */
+  if(!E) return;
   sonsPhase(n);                                         /* (les sons de la phase qui vient se fabriquent pendant la cinématique) */
-  musiquePhase(n);                                      /* (sa musique aussi : elle part à la fin du film) */
+  musiqueAvantFilm(n);                                  /* (sa musique aussi, sans jouer : elle part à la fin du film — cine12, cine23) */
   await (n === 2 ? cine12() : cine23());
   if(!E) return;
   E.saute = false;
@@ -826,7 +909,8 @@ function degatsEnnemi(ev){
     if(ev.coule){ Fx.chiffre(p.x + (ev.cause === 'saigne' ? -34 : 34) + (Math.random() * 16 - 8), Math.max(96, p.y + 30), '−' + ev.n, ev.cause === 'saigne' ? 'petit' : 'feu petit'); if(ev.cause === 'saigne' && Math.random() < .5) bruit('leoSaigne', {}, null); return; }
     Fx.chiffre(p.x, Math.max(96, p.y + 14), '−' + ev.n, ev.n >= 150 ? 'gros' : '');
     E.leo.eclair();
-    if(ev.n >= 150) Fx.tremble(8, 300);
+    /* (19 novembre : un gros coup le fait grogner — pas plus d'une fois toutes les 0,7 s, c'est un combat de vitesse) */
+    if(ev.n >= 150){ Fx.tremble(8, 300); var tg = Date.now(); if(!E.grogne || tg - E.grogne > 700){ E.grogne = tg; bruit('leoTouche', {}, null); } }
     return;
   }
   var a = E.rats[id]; if(!a) return;

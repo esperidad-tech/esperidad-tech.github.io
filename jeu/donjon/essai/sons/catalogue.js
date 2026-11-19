@@ -71,7 +71,14 @@ window.CATALOGUE = [
       ]},
       {id:'e-bourbe', titre:'Bourbe (boss)', sons:[
         {id:'bourbeCri', t:'Coassement', v:'ABC'}, {id:'bourbeLangue', t:'Sa langue', v:'AB'}, {id:'bourbeGobe', t:'Il gobe', v:'AB'}, {id:'bourbeRot', t:'Le rot', v:'AB'},
-        {id:'bourbePlonge', t:'Le plongeon', v:'AB'}, {id:'bourbeSaut', t:'Le saut', v:'AB'}, {id:'bourbeRire', t:'Chatouillé', v:'AB'}, {id:'bourbeTouche', t:'Touché', v:'AB'}, {id:'bourbeFin', t:'Défaite', v:'AB'}
+        {id:'bourbePlonge', t:'Le plongeon', v:'AB'}, {id:'bourbeSaut', t:'Le saut', v:'AB'}, {id:'bourbeRire', t:'Chatouillé', v:'AB'}, {id:'bourbeTouche', t:'Touché', v:'AB'}, {id:'bourbeFin', t:'Défaite', v:'AB'},
+        /* 19 novembre (Romain : « quand il replonge dans l'eau, il n'y a pas de son […] quand le sol est gelé, il n'y a pas vraiment de son ») */
+        {id:'bourbeSort', t:'Il sort', v:'A'}, {id:'bassinGele', t:'Le bassin gèle', v:'A'}, {id:'glaceChoc', t:'Sur la glace', v:'A'}, {id:'glaceCasse', t:'La glace cède', v:'A'},
+        {id:'bullesFond', t:'Des bulles', v:'A'}
+      ]},
+      /* 19 novembre (Romain : « dès qu'un ennemi fait une action, il y a un son ») : ce qui vaut pour toutes les bêtes */
+      {id:'e-toutes', titre:'Toutes les bêtes', sons:[
+        {id:'gelPris', t:'Bête gelée', v:'A'}, {id:'gelFond', t:'La glace casse', v:'A'}, {id:'beteChute', t:'Elle tombe', v:'A'}
       ]},
       /* LÉO, le boss final (13 novembre, Bible §13.33 : « à chaque attaque de Léo, il faut un son ») — une version de chacun, à valider par Romain */
       {id:'e-leo', titre:'Léo (boss final)', sous:[
@@ -156,6 +163,9 @@ window.CATALOGUE = [
     {id:'repos', t:'Repos (feu)', v:'AB', m:1}, {id:'gardien', t:'Le Gardien', v:'A', m:1}, {id:'roi', t:'Roi des rats', v:'A', m:1}, {id:'boss', t:'Bourbe', v:'ABC', m:1},
     /* 15 novembre, 18 h 29 (Romain) : Léo, une musique par phase — mystérieuse, le combat, terrifiante */
     {id:'leo1', t:'Léo, phase 1', v:'A', m:1, neuf:1}, {id:'leo2', t:'Léo, phase 2', v:'A', m:1, neuf:1}, {id:'leo3', t:'Léo, phase 3', v:'A', m:1, neuf:1},
+    /* 19 novembre (Romain : « la continuité de la musique qu'on voit dans la cinématique ») : le pont, joué UNE fois à la fin du film
+       d'entrée, par-dessus la musique de la phase 1 qui démarre (il ne tourne pas en boucle : douze secondes, puis il s'éteint) */
+    {id:'leoPont', t:'Après le film', v:'A', m:1, neuf:1},
     {id:'finDonjon', t:'Léo retrouvé', v:'AB', m:1}
   ]},
   {id:'jeu', titre:'Le jeu', sons:[

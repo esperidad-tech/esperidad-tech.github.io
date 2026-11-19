@@ -511,7 +511,8 @@ function reperes(X, etape, att, k, c){
     if(etape === 'retour' && une(X, 'w4', k, .55)) C.arme(null);
   }
   if(att === 'cape'){
-    if(etape === 'prise' && une(X, 'k0', k, 0)) alerte(X, '!', '#b9a8ff');
+    /* (19 novembre : il souffle par les naseaux en ramassant sa cape — plus de préparation muette) */
+    if(etape === 'prise' && une(X, 'k0', k, 0)){ alerte(X, '!', '#b9a8ff'); bruit(X, 'leoNaseaux', {}, null); }
     if(etape === 'elan' && une(X, 'k1', k, 0)) bruit(X, 'leoCape', {cale:d}, ['magie']);
   }
   /* ---------- la phase 3 ---------- */
@@ -606,7 +607,7 @@ function evenement(X, ev, c){
     return true;                                   /* (prise, élan, retour, repos : la pose suit toute seule) */
   }
   if(ev.t === 'leo-etat'){
-    if(ev.nom === 'brule'){ brule(X, ev.on); return true; }
+    if(ev.nom === 'brule'){ brule(X, ev.on); if(ev.on){ son(X, 'brule'); bruit(X, 'leoTouche', {}, null); } return true; }       /* (19 novembre : il prend feu, ça s'entend) */
     if(ev.nom === 'saigne' && ev.on && p3(X)){ entaille(X, ev.n || 1); return false; }      /* (l'état « 🩸 » s'affiche comme avant) */
     return false;
   }
@@ -1024,10 +1025,11 @@ async function suiteCine(X, o, ctx, L, C, Fx, vers, att){
   /* 1. tout s'arrête : la barre des sorts descend ; il tombe à genoux, encore habillé (la cape, la capuche, la tunique) */
   o.bande(false);
   L.tenue(2); C.habits({capuche:true, tunique:true, cape:true}); C.visage('douleur');
-  C.temps = 0; C.poser(LC.POSES.genou); L.eclair();
-  bruit(X, 'leoChute', {}, ['tombe']);
-  var pd = L.ancre('pieds'); Fx.onde(pd.x, 334, '#d8c8a8', 260, 500);
-  await att(1200);
+  /* (19 novembre : o.aGenoux — leo.js l'a déjà fait tomber à genoux, là où il était : il se replace, sans retomber) */
+  C.temps = 0;
+  if(o.aGenoux){ await vers(LC.POSES.genou, 320, 'io'); }
+  else { C.poser(LC.POSES.genou); L.eclair(); bruit(X, 'leoChute', {}, ['tombe']); var pd = L.ancre('pieds'); Fx.onde(pd.x, 334, '#d8c8a8', 260, 500); }
+  await att(o.aGenoux ? 800 : 1200);
   /* 2. il se relève, lentement, en serrant les poings */
   C.visage('colere');
   await vers(DEBOUT, 900, 'io');

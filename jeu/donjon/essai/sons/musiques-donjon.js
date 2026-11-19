@@ -351,6 +351,44 @@ M.leo3A = function(A, P){
   return I;
 };
 
+/* LE PONT APRÈS LE FILM D'ENTRÉE (19 novembre, Bible §13.83 — Romain : « à la fin [du film], la musique commence à monter. Et
+   après, le combat commence, et là, on se retrouve avec une musique plate. Il faudrait arriver à mettre la continuité de la
+   musique qu'on voit dans la cinématique »). Le film finit sur un cœur qui s'emballe, un souffle qui monte et un grand coup,
+   coupé net 0,75 s plus tard (la fin du film) : ce coup-là devient la levée. Ici, joué UNE fois par-dessus la musique de la
+   phase 1 qui démarre (son.js, Son.pont) : le temps fort — le même grand coup, les mêmes cuivres qui grincent (ré, mi bémol,
+   la bémol) —, le cœur qui continue de cogner puis ralentit jusqu'au « pas qui rôde » de la phase 1, les cordes qui tremblent
+   et redescendent, deux reprises de cuivres de plus en plus douces, et les violoncelles de la phase 1 (ré, mi bémol, ré, do)
+   qui s'installent. Seize temps à 76 à la minute, calés sur la boucle (elle part au début de sa partie 1 : au seizième temps,
+   elle entre dans sa partie 2, où les mêmes violoncelles continuent). */
+M.leoPontA = function(A, P){
+  var I = Instance(A, P), b = 60 / 76, T0 = .03;
+  var proche = A.bus(P, {grotte:.3}), coeur = A.bus(P, {grotte:.3}), tamb = A.bus(P, {grotte:.7, g:.9}), loin = A.bus(P, {grotte:1, g:.7});
+  function une(temps, fn){ I.chaque(T0 + temps * b, 1e6, fn); }
+  /* (sur une tablette, on n'entend pas le grave d'un tambour : ce qui porte, ce sont les cuivres, le chœur, les cordes, la cymbale
+     et la peau du cœur qui cogne — mesuré avec le filtre « tablette » de verifier.py) */
+  function cuivres(t, notes, d, g){ notes.forEach(function(n){ corGrave(A, t, m(n), d, g, proche); corGrave(A, t, m(n + 12), d, g * .5, proche); }); }
+  function bat(t, g){ A.choc(t, {f:84, f2:46, d:.2, g:g, sat:3, lp:600, bruit:.25, corpsF:220, corps:.9}, coeur); }
+  une(0, function(t){
+    grosCoup(A, t, .26, tamb);                                                                                         /* le temps fort */
+    A.bruit(t, {coul:'blanc', hp:2400, env:[[0, 0], [.004, 1], [1.6, 0]], g:.12}, tamb);                               /* la cymbale */
+    cuivres(t, [38, 39, 44], 4.8 * b, .11);                                                                              /* ré, mi bémol, la bémol : ça grince, comme dans le film */
+    A.choeur(t, [m(50), m(51), m(56)], 4 * b, {voyelle:'a', a:.05, r:2, g:.07}, loin);
+    tremGrave(A, t, m(57), m(50), 8 * b, .045, proche);                                                                /* les cordes redescendent, du la au ré */
+  });
+  /* le cœur : à la croche pendant huit temps, de moins en moins fort ; puis un coup tous les deux temps (le pas qui rôde prend le relais) */
+  for(var k = 0; k < 32; k++) (function(k){
+    var temps = k / 2, fort = k % 2 === 0, g = temps < 8 ? (fort ? .42 : .26) * (1 - temps / 13) : (fort && temps % 2 === 0 ? .2 * (1 - (temps - 8) / 12) : 0);
+    if(g > 0) une(temps, function(t){ bat(t, g); });
+  })(k);
+  une(4, function(t){ grosCoup(A, t, .2, tamb); cuivres(t, [38, 45, 50], 4.8 * b, .07); });
+  une(8, function(t){
+    grosCoup(A, t, .14, tamb); cuivres(t, [38, 39], 5 * b, .04);
+    A.choeur(t, [m(50), m(53), m(57)], 8 * b, {voyelle:'ou', a:2, r:3, g:.03}, loin);
+  });
+  [38, 39, 38, 36].forEach(function(n, k){ une(8 + 2 * k, function(t){ A.archet(t, m(n), 2 * b * .95, {a:.25, r:.3, g:.035 + k * .003}, proche); }); });   /* les violoncelles de la phase 1 */
+  return I;
+};
+
 /* =================== LA FIN DU DONJON : LÉO RETROUVÉ =================== */
 /* A — La lanterne de Léo : une harpe, un chœur, des cloches, en do majeur ; enfin de l'espoir */
 M.finDonjonA = function(A, P){

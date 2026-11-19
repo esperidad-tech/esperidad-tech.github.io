@@ -162,15 +162,18 @@ function bruitage(id, o){
      'repos'          le feu de camp (sa musique + le feu qui crépite) ;   'fin' : Léo retrouvé.
    D'une zone à l'autre, ce qui joue déjà (le fond du donjon) n'est pas coupé. */
 var MUS = {voulu:null, actuel:null, combat:false};
-function musique(nom){ MUS.attendue = null; MUS.voulu = nom || null; appliquerMusique(); }
+/* o (19 novembre — la musique qui reprend à la fin d'un film, Bible §13.83) : o.depuis, l'endroit de la boucle où elle part
+   (en secondes — sinon : au hasard) ; o.fondu, la durée de son fondu d'entrée (sinon : lent). Seulement pour une musique
+   fabriquée à l'avance, et seulement quand elle démarre (si elle joue déjà, rien ne change). */
+function musique(nom, o){ MUS.attendue = null; MUS.voulu = nom || null; MUS.comment = o || null; appliquerMusique(); }
 /* passer à une musique seulement quand elle est fabriquée : en attendant, celle d'avant continue (pas de trou de silence
    au début d'un grand combat, même sur une vieille tablette qui met du temps à fabriquer une longue musique) */
-function musiqueDesQuePrete(nom){
+function musiqueDesQuePrete(nom, o){
   var cles;
-  if(!PRE.possible || !ctx){ musique(nom); return; }
-  try{ cles = clesDe(nom).filter(function(c){ return !!window.MUSIQUES[c]; }); }catch(e){ musique(nom); return; }
+  if(!PRE.possible || !ctx){ musique(nom, o); return; }
+  try{ cles = clesDe(nom).filter(function(c){ return !!window.MUSIQUES[c]; }); }catch(e){ musique(nom, o); return; }
   MUS.attendue = nom;
-  Promise.all(cles.map(function(c){ return PRE.demander(c, true); })).then(function(){ if(MUS.attendue === nom) musique(nom); });
+  Promise.all(cles.map(function(c){ return PRE.demander(c, true); })).then(function(){ if(MUS.attendue === nom) musique(nom, o); });
 }
 /* fabriquer une musique à l'avance SANS y passer, et sans attendre que le son soit débloqué par un premier toucher (l'adresse
    d'essai du combat de Léo : sinon elle se fabriquait au premier toucher, en plein combat). Rend une promesse. */
@@ -212,8 +215,8 @@ function appliquerMusique(){
     if(garde[c]){ M.par[c] = garde[c]; return; }                       /* elle joue déjà : on ne la coupe pas */
     var l = M.par[c] = [];
     if(!PRE.possible){ l.push(musiqueEnDirect(c, now)); return; }
-    var b = PRE.mus[famille(c)];
-    if(b && b.cle === c) l.push(jouerBoucle(b));                       /* déjà fabriquée : elle part tout de suite */
+    var b = PRE.mus[famille(c)], comment = MUS.comment;
+    if(b && b.cle === c) l.push(jouerBoucle(b, comment));              /* déjà fabriquée : elle part tout de suite */
     else PRE.demander(c, true).then(function(){                        /* sinon on attend la sienne (quelques secondes) */
       if(MUS.actuel !== M && !(MUS.actuel && MUS.actuel.par[c] === l)) return;
       var b2 = PRE.mus[famille(c)];
@@ -240,18 +243,34 @@ function musiqueEnDirect(c, now){
   var I = window.MUSIQUES[c](A, P); I.pas(now + 1.2);
   return I;
 }
-/* une musique fabriquée à l'avance : elle tourne en boucle sans couture, à partir d'un endroit au hasard, avec un fondu d'entrée */
-function jouerBoucle(b){
-  var t = ctx.currentTime + .05, src = ctx.createBufferSource(), g = ctx.createGain();
+/* une musique fabriquée à l'avance : elle tourne en boucle sans couture, à partir d'un endroit au hasard, avec un fondu d'entrée
+   (o.depuis : à partir de cet endroit-là de la boucle, en secondes ; o.fondu : la durée du fondu d'entrée) */
+function jouerBoucle(b, o){
+  var t = ctx.currentTime + .05, src = ctx.createBufferSource(), g = ctx.createGain(), L = b.fin - b.debut;
   src.buffer = b.buf; src.loop = true; src.loopStart = b.debut; src.loopEnd = b.fin;
-  g.gain.setValueAtTime(0, t); g.gain.setTargetAtTime(1, t, 1.1);
+  g.gain.setValueAtTime(0, t); g.gain.setTargetAtTime(1, t, o && o.fondu != null ? Math.max(.01, o.fondu / 3) : 1.1);
   src.connect(g); g.connect(A.mus);
-  src.start(t, b.debut + Math.random() * (b.fin - b.debut));
+  src.start(t, b.debut + (o && o.depuis != null ? ((o.depuis % L) + L) % L : Math.random() * L));
   return {arreter:function(t2, fondu){
     g.gain.cancelScheduledValues(t2); g.gain.setValueAtTime(g.gain.value, t2); g.gain.setTargetAtTime(0, t2, (fondu || 1.5) / 4);
     try{ src.stop(t2 + (fondu || 1.5) + .3); }catch(e){}
     src.onended = function(){ try{ src.disconnect(); g.disconnect(); }catch(e){} };
   }};
+}
+/* LE PONT (19 novembre, Bible §13.83 — Romain : « à la fin [du film], la musique commence à monter. Et après, le combat
+   commence, et là, on se retrouve avec une musique plate. Il faudrait arriver à mettre la continuité de la musique qu'on voit dans
+   la cinématique ») : une musique jouée UNE fois, par-dessus la boucle qui démarre — la suite de la musique du film. Fabriquée à
+   l'avance comme les autres (Son.preparerMusique('leoPont') pendant le film ; BOUCLE : {une:true}) ; pas prête : rien (jamais
+   fabriquée en direct, le combat s'ouvre). Rend sa durée, ou 0. */
+function pont(fam){
+  if(!ctx || !A || !actif || VOL.musique <= 0) return 0;
+  var b = PRE.mus[fam];
+  if(!b || !b.une) return 0;
+  var t = ctx.currentTime + .05, src = ctx.createBufferSource();
+  src.buffer = b.buf; src.connect(A.mus); src.start(t);
+  src.onended = function(){ try{ src.disconnect(); }catch(e){} };
+  delete PRE.mus[fam];                                 /* (elle ne sert qu'une fois : sa mémoire est rendue quand elle a fini de jouer) */
+  return b.fin;
 }
 function programme(){
   if(!ctx || !MUS.actuel) return;
@@ -280,7 +299,13 @@ var BOUCLE = {exploA:{L:44}, exploB:{L:32, n0:7}, exploC:{L:48}, combatA:{L:32 *
   gardienA:{L:128 * 60 / 66, C:1.5, lin:true}, roiA:{L:128 * 60 / 84, C:1.5, lin:true},
   bossA:{L:128 * 60 / 92, C:1.5, lin:true}, bossB:{L:96 * 60 / 76, C:1.5, lin:true}, bossC:{L:128 * 60 / 100, C:1.5, lin:true},
   /* Léo : une musique par phase (Romain, 15 novembre, 18 h 29) */
-  leo1A:{L:128 * 60 / 76, C:1.5, lin:true}, leo2A:{L:128 * 60 / 104, C:1.5, lin:true}, leo3A:{L:96 * 60 / 66, C:1.5, lin:true}};
+  leo1A:{L:128 * 60 / 76, C:1.5, lin:true}, leo2A:{L:128 * 60 / 104, C:1.5, lin:true}, leo3A:{L:96 * 60 / 66, C:1.5, lin:true},
+  /* le pont après le film d'entrée de Léo (19 novembre) : joué une fois, 16 temps à 76 à la minute et la queue de son écho */
+  leoPontA:{L:16 * 60 / 76 + 3, une:true}};
+/* où commence chaque partie d'une musique à parties, DANS sa boucle fabriquée (elle a tourné 6 secondes avant qu'on la garde) :
+   Son.partie('leo1', 2) -> des secondes, à donner à musique(nom, {depuis:…}) */
+var PARTIES = {leo1:{t0:.4, b:60 / 76, temps:16}, leo2:{t0:.3, b:60 / 104, temps:16}, leo3:{t0:.4, b:60 / 66, temps:16}};
+function partieDe(fam, n){ var p = PARTIES[fam]; return p ? p.t0 + n * p.temps * p.b - 6 : 0; }
 /* les bruitages lourds : [id, morceau, place à gauche (−) ou à droite (+), stéréo] — une version par combat */
 /* (19 novembre : le critique n'a plus de temps suspendu — son morceau « avant », l'aspiration, n'est plus joué : on ne le fabrique plus) */
 var SFX_PRE = {arc:[[null, -.35]], ratCritique:[['impact', .35], ['explosion', .35]], victoire:[[null, 0]], fuite:[[null, -.5]]};
@@ -336,7 +361,8 @@ function rendre(off){
 }
 /* une musique : on la fait tourner F secondes pour qu'elle soit bien installée, puis on garde L secondes ; les C secondes d'après sont fondues dans le début */
 function rendreMusique(cle){
-  var B = (window.DJ_BOUCLES && window.DJ_BOUCLES[cle]) || BOUCLE[cle] || {L:24}, sr = SR_MUS, F = 6, C = B.C || 3, L = B.L, duree = F + L + C, pas = 2;
+  /* (B.une : une musique jouée une seule fois — un pont : on la garde depuis son début, sans fondu de boucle) */
+  var B = (window.DJ_BOUCLES && window.DJ_BOUCLES[cle]) || BOUCLE[cle] || {L:24}, sr = SR_MUS, F = B.une ? 0 : 6, C = B.une ? 0 : B.C || 3, L = B.L, duree = F + L + C, pas = 2;
   var off = new OAC(1, Math.ceil(sr * duree), sr), Ao, I;
   chrono(function(){
     Ao = window.Moteur(off, {horsLigne:true, brut:true, volume:1}); I = window.MUSIQUES[cle](Ao, Ao.prise(0, niveau(cle), 'mus'));
@@ -357,7 +383,7 @@ function rendreMusique(cle){
         var u = i / nc, wi = B.lin ? u : Math.sin(u * Math.PI / 2), wo = B.lin ? 1 - u : Math.cos(u * Math.PI / 2);
         b[i] = a[f0 + i] * wi + a[f0 + n + i] * wo;
       }
-      return {cle:cle, buf:y, debut:0, fin:n / sr};
+      return {cle:cle, buf:y, debut:0, fin:n / sr, une:!!B.une};
     }, 'boucle');
   });
 }
@@ -501,11 +527,12 @@ function baisser(sec){
   g.setTargetAtTime(.28, now, .12); g.setTargetAtTime(1, now + (sec || 3), .7);
 }
 /* les cinématiques (Bible §13.45) : la musique du donjon se tait pendant le film (il a sa propre bande-son), puis revient */
-function sourdine(oui){
+function sourdine(oui, net){
   if(!ctx || !A) return;
   var g = A.mus.gain, now = ctx.currentTime;
   g.cancelScheduledValues(now); g.setValueAtTime(g.value, now);
-  g.setTargetAtTime(oui ? 0 : 1, now, oui ? .15 : .6);
+  /* (net : la musique revient tout de suite — elle reprend pile à la fin du film, à un endroit choisi : voir musique(nom, o)) */
+  g.setTargetAtTime(oui ? 0 : 1, now, oui ? .15 : net ? .03 : .6);
 }
 function t0(dt){ return ctx.currentTime + (dt || 0) + .01; }
 /* une sortie : sec vers les bruitages, et un peu (ou beaucoup) dans la réverbération */
@@ -830,6 +857,7 @@ S.Son = {
   musique:musique,
   musiqueDesQuePrete:musiqueDesQuePrete,
   preparerMusique:preparerMusique,
+  pont:pont, partie:partieDe,                          /* (19 novembre : la musique qui reprend à la fin d'un film) */
   combat:enCombat,             /* le donjon : un combat commence (true) ou finit (false) — les bruitages lourds sont fabriqués, puis libérés */
   preparer:preparer,
   preparerBruits:preparerBruits, oublierBruits:oublierBruits, bruitsPrets:function(){ return Object.keys(PRE.fixe).length; }, bruitsEnCours:function(){ return !!PRE.fixeEnCours; },

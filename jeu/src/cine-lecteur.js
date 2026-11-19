@@ -17,7 +17,8 @@
    CineLecteur.prechargerPiste(url) -> Promise (la bande-son téléchargée, gardée en mémoire)
    CineLecteur.jouer({url, piste, audio:function() -> AudioContext, volume:function() -> 0..1,
                       infos:{duree, sons:[[t, id]], sousTitres:[[t0, t1, texte, qui]]}, son:function(id), lire:function(texte, qui),
-                      parle:function() -> bool, taire:function(), attente:ms, passer:true}) -> Promise('fini' | 'passe' | 'echec') */
+                      parle:function() -> bool, taire:function(), attente:ms, passer:true,
+                      depart:secondes (le film part de cet instant, son début est sauté)}) -> Promise('fini' | 'passe' | 'echec') */
 (function(){
 'use strict';
 var CL = window.CineLecteur = {};
@@ -178,6 +179,12 @@ function cacherDessous(ecran){
   }catch(x){}
   return function(){
     caches.forEach(function(c){ try{ if(c[1]) c[0].style.setProperty('visibility', c[1], c[2]); else c[0].style.removeProperty('visibility'); }catch(x){} });
+    /* ⚠️ (19 novembre, trouvé dans le combat de Léo, sur Chrome) UN PIÈGE DE CE CACHE-CACHE : un élément animé (Web Animations) et
+       dont l'animation vient de FINIR juste avant le film, puis qu'on anime de nouveau juste APRÈS, peut rester caché pour de bon
+       avec tout ce qu'il contient (son style calculé reste « visibility:hidden » alors que plus rien ne le demande ; il revient dès
+       qu'on touche à son style à lui). Vu sur #secousse (la secousse de la salle) : la salle restait noire après le film. Ni un
+       recalcul forcé ici, ni une propriété héritée changée ici n'y font rien : la parade est chez celui qui anime (effets.js,
+       `tremble` : il touche au style de l'élément avant de l'animer). À connaître avant d'animer un grand calque autour d'un film. */
     figees.forEach(function(a){ try{ if(a.playState === 'paused') a.play(); }catch(x){} });   /* (une animation annulée entre-temps reste annulée) */
   };
 }
@@ -245,6 +252,8 @@ CL.jouer = function(o){
       var off = video.currentTime; if(off >= bande.duration - .05) return;
       try{
         srcB = c.createBufferSource(); srcB.buffer = bande; gainB = c.createGain(); gainB.gain.value = vol();
+        /* (elle repart du milieu — après une pause, ou un film lancé avec o.depart : elle monte en 4 centièmes de seconde, sans claquer) */
+        if(off > .05){ try{ gainB.gain.setValueAtTime(0, c.currentTime); gainB.gain.linearRampToValueAtTime(vol(), c.currentTime + .04); }catch(e2){} }
         srcB.connect(gainB); gainB.connect(c.destination); srcB.start(0, Math.max(0, off));
         D.joue = true; D.departs++; D.depuis = off;
       }catch(e){ srcB = null; }
@@ -352,6 +361,14 @@ CL.jouer = function(o){
       video.addEventListener('pause', function(){ bandeStop(); });
       video.addEventListener('waiting', function(){ bandeStop(); });
       video.src = src;
+      /* o.depart (secondes — 19 novembre, le donjon : Léo est déjà à genoux quand le film a12 commence) : le film part de cet
+         instant ; son début est sauté (ses bruitages d'avant aussi ; la bande-son suit la vidéo : elle part du même instant) */
+      var dep = +o.depart > 0 ? +o.depart : 0;
+      if(dep){
+        cues.forEach(function(c){ if(c.t < dep) c.fait = true; });
+        try{ video.currentTime = dep; }catch(e){}
+        video.addEventListener('loadedmetadata', function(){ try{ if(video.currentTime < dep - .05) video.currentTime = dep; }catch(e){} });
+      }
       cadre.appendChild(video);
       var p = video.play();
       if(p && p.catch) p.catch(function(){

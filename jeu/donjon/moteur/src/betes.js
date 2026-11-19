@@ -35,17 +35,39 @@ var AUTO = {
   chauvesouris:['tomber', 'envol', 'folle']
 };
 /* les sons de l'Atelier, par bête (en attente de validation : ils jouent leur version A) */
+/* 19 NOVEMBRE (Romain, 11 h 44 : « dès qu'un ennemi fait une action, il y a un son » ; Bible §13.83 ; MOTEUR-DONJON.md §9.26).
+   En plus du cri, du « touché », de la mort et des attaques, chaque bête peut dire :
+     apres:{<coup>:[[son, secondes, sauf]]}   ce que ce coup déclenche APRÈS lui dans le module (elle tombe sur le dos 2 s plus
+                                               tard, il grandit…) : le son part ce temps-là après le coup. « sauf » : pas si la
+                                               bête a déjà cet état (elle est déjà par terre : elle ne retombe pas).
+     etats:{<état>:[son quand il arrive, son quand il s'en va]}   (chacun : un nom de son, ou [son, secondes])
+     speciaux:{<nom>:son}                      un « moment à elle » que les règles annoncent
+   Les sons de la glace (gelPris, gelFond), des bulles et de la chute (beteChute) valent pour toutes : SONS_COMMUNS, combat.js.
+   Les secondes viennent des animations des modules (anim/betes/<bête>/<bête>-anime.js) : si une animation change de durée,
+   son chiffre change ici. */
 var SONS = {
   rat:{},
-  ratcuir:{cri:'cuirCri', touche:'cuirTouche', mort:'cuirFin', tinte:'cuirCasque'},
-  araignee:{cri:'araiCri', touche:'araiTouche', mort:'araiMort', att:{toile:'araiToile'}},
+  ratcuir:{cri:'cuirCri', touche:'cuirTouche', mort:'cuirFin', tinte:'cuirCasque',
+    etats:{dos:[['beteChute', .65]]}},
+  araignee:{cri:'araiCri', touche:'araiTouche', mort:'araiMort', att:{toile:'araiToile'},
+    /* (la lumière, l'huile : elle lâche son fil et s'écrase sur le dos — _chute : 91 % de 2,2 s et de 2,6 s) */
+    apres:{lumiere:[['beteChute', 2.0, 'dos']], huile:[['beteChute', 2.37, 'dos']]},
+    etats:{haut:['araiCri', 'araiCri']}},
   petitearaignee:{cri:'petiteCri', touche:'petiteTouche', mort:'petiteMort'},
-  chauvesouris:{cri:'chauveCri', touche:'chauveTouche', mort:'chauveMort', att:{pique:'chauvePique'}, entree:'chauveAiles'},
-  feufollet:{cri:'folletCri', touche:'folletTouche', mort:'folletMort', att:{brulure:'folletFlamme'}},
+  chauvesouris:{cri:'chauveCri', touche:'chauveTouche', mort:'chauveMort', att:{pique:'chauvePique'}, entree:'chauveAiles',
+    /* (le BONG, la colle : 0,9 s à se débattre, puis elle tombe — _tomber : 68 % de 1,15 s) */
+    apres:{bruit:[['beteChute', 1.68, 'au-sol']], colle:[['beteChute', 1.68, 'au-sol']], lumiere:[['chauveCri', .42]]},
+    etats:{'au-sol':[['beteChute', .78], ['chauveAiles', .4]], folle:['chauveCri']}},
+  feufollet:{cri:'folletCri', touche:'folletTouche', mort:'folletMort', att:{brulure:'folletFlamme'},
+    /* (la lumière : il la boit et grandit ; le bouclier : il s'y accroche ; la fumée : sa silhouette s'y dessine) */
+    apres:{lumiere:[['folletFlamme', .6]], bouclier:[['folletFlamme', .35]], nuage:[['folletCri', .5]]}},
   tetard:{cri:'tetardCri', touche:'tetardTouche', mort:'tetardMort'},
-  roirats:{cri:'roiCri', touche:'roiTouche', mort:'roiFin', att:{grouillement:'roiAttaque', charge:'roiAttaque'}},
+  /* (le givre : son module se gèle tout seul dans touche() ; la colle, la lumière : toute la masse couine — pris en tas, ou roulés en boule) */
+  roirats:{cri:'roiCri', touche:'roiTouche', mort:'roiFin', att:{grouillement:'roiAttaque', charge:'roiAttaque'}, apres:{givre:[['gelPris', .15, 'gele']], colle:[['roiCri', .4]], lumiere:[['roiCri', .3]]}},
   gardien:{cri:'gardienRunes', touche:'gardienTouche', mort:'gardienFin', att:{poing:'gardienPoing'}, pas:'gardienPas'},
-  bourbe:{cri:'bourbeCri', touche:'bourbeTouche', mort:'bourbeFin', att:{langue:'bourbeLangue', saut:'bourbeSaut'}, gobe:'bourbeGobe', rot:'bourbeRot', plonge:'bourbePlonge', rire:'bourbeRire'}
+  bourbe:{cri:'bourbeCri', touche:'bourbeTouche', mort:'bourbeFin', att:{langue:'bourbeLangue', saut:'bourbeSaut'}, gobe:'bourbeGobe', rot:'bourbeRot', plonge:'bourbePlonge', rire:'bourbeRire',
+    /* (son arrivée : l'eau s'ouvre à 1,9 s, il ouvre l'œil et voit les héros à 4,1 s — R.entrer) */
+    entree:[['bourbeSort', {cale:1.9}], ['bourbeCri', {dt:4.1}]], sort:'bourbeSort', glace:'glaceChoc', gele:'bassinGele', degele:'glaceCasse', bulles:'bullesFond'}
 };
 
 function infoDe(module){ return module === 'rat' ? INFO_RAT : (window.BETES[module] && window.BETES[module].info) || {cadre:{w:200, h:150}, sol:.9}; }

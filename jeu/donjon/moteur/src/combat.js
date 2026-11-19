@@ -681,7 +681,8 @@ async function un(ev, bl, ctx){
       if(!a || (ev.critique && !ev.petit)) return;
       ctx.touche[a.id] = 1;
       sonTouche(a, ev);
-      return a.touche(ev.coup, a.module === 'roirats' && ev.coup === 'bruit' ? {vers:hPt('alchimiste'), onImpact:function(){ son('morsure'); Fx.tremble(6, 260); }} : null);
+      /* (19 novembre : le tintement des morceaux qui tombent est branché ici aussi — c'est touche() qui les fait tomber) */
+      return a.touche(ev.coup, a.module === 'roirats' && ev.coup === 'bruit' ? {vers:hPt('alchimiste'), onImpact:function(){ son('morsure'); Fx.tremble(6, 260); }} : a.rat ? null : rappels(a));
     case 'rebond':
       if(!a) return;
       bruit('rebond', {}, ['clic']); if(a.module === 'gardien' || a.module === 'ratcuir') bruit('metal');
@@ -706,6 +707,9 @@ async function un(ev, bl, ctx){
       if(a.rat && ev.on && ev.nom === 'dos') bruit('ratHuile', {cale:1.54, enrage:aEtat(a, 'enrage')}, ['couine', 0, 1.3]);
       if(a.rat && ev.on && ev.nom === 'colle') bruit('ratColle', {enrage:aEtat(a, 'enrage')}, ['splotch']);
       if(ev.on && ev.nom === 'enrage' && a.rat && !ev.deja){ a.etat('enrage', true); return attendre(120); }
+      /* (19 novembre : un état qui arrive ou s'en va s'entend — la glace, une chute, un cri ; le rat : sa glace seulement) */
+      if(a.rat){ if(ev.nom === 'gele' && !!a.gele !== !!ev.on) bruitRare(ev.on ? 'gelPris' : 'gelFond'); }
+      else sonEtat(a, ev);
       return a.etat(ev.nom, ev.on);
     case 'ouvert':
       if(!a) return;
@@ -757,7 +761,7 @@ async function un(ev, bl, ctx){
       if(!a) return;
       p = a.ancre('haut');
       Fx.mot(p.x, Math.max(104, p.y), ({colle:'rhââ !', gele:'brrr…', tournis:'💫', noeud:'gniii !', dos:'…', sous:'glou…'})[ev.nom] || '…', 'croc');
-      if(a.rat) son('couine', 0, .9, 1.4, aEtat(a, 'enrage'));
+      if(a.rat) son('couine', 0, .9, 1.4, aEtat(a, 'enrage')); else sonSaute(a, ev);       /* (19 novembre : les autres bêtes aussi) */
       return attendre(750);
     case 'soin': return soin(ev);
     case 'tombe': return tomber(h);
@@ -769,6 +773,76 @@ async function un(ev, bl, ctx){
 }
 function photoAvant(id){ var l = E.avant ? E.avant.betes : []; for(var k = 0; k < l.length; k++) if(l[k].id === id) return l[k]; return null; }
 function aEtat(a, nom){ var b = photoB(a.id); return !!(b && b.etats && b.etats[nom]); }
+
+/* ---------- 19 NOVEMBRE : « DÈS QU'UN ENNEMI FAIT UNE ACTION, IL Y A UN SON » (Romain, 11 h 44 ; Bible §13.83, MOTEUR-DONJON.md §9.26) ----------
+   Ce qui se jouait en silence (compté par un robot qui joue les huit combats et note chaque geste de bête sans son) : une bête
+   qui gèle ou dégèle, une bête qui perd son tour, ce qu'un coup déclenche après lui (l'araignée et la chauve-souris qui
+   tombent par terre, le feu follet qui grandit ou s'accroche au bouclier), les morceaux d'armure du rat cuirassé et la plaque
+   du Gardien qui tombent (leur tintement n'était branché que sur special(), alors que c'est touche() qui les fait tomber),
+   et chez Bourbe : sa sortie de l'eau, le bassin qui gèle, la glace qui cède. Et ses ploufs partaient une seconde trop tôt.
+   La table des sons de chaque bête : betes.js (SONS). Ici : les sons communs à toutes, et de quoi les jouer. */
+var SONS_COMMUNS = {gele:['gelPris', 'gelFond']};
+/* un son (un nom, ou [nom, secondes], ou [nom, {réglages}]), ou une liste de sons */
+function jouerSons(x, plus){
+  if(!x) return;
+  if(typeof x === 'string'){ bruit(x, plus ? {dt:plus} : {}); return; }
+  if(Array.isArray(x[0])){ x.forEach(function(y){ jouerSons(y, plus); }); return; }
+  var o = typeof x[1] === 'object' && x[1] ? Object.assign({}, x[1]) : {dt:+x[1] || 0};
+  if(plus){ if(o.cale != null) o.cale += plus; else o.dt = (o.dt || 0) + plus; }
+  bruit(x[0], o);
+}
+/* le même son pour plusieurs bêtes au même instant (le givre prend trois têtards d'un coup) : une seule fois */
+var dernierSon = {};
+function bruitRare(id, o, ms){
+  var t = Date.now();
+  if(dernierSon[id] && t - dernierSon[id] < (ms || 350)) return null;
+  dernierSon[id] = t;
+  return bruit(id, o || {});
+}
+function etatDuModule(a){ try{ return (a.acteur && a.acteur.etatCourant && a.acteur.etatCourant()) || {}; }catch(e){ return {}; } }
+/* ce que les modules annoncent eux-mêmes pendant un coup ou un « moment à eux » : un morceau de fer qui touche le sol */
+function rappels(a){
+  var S = DJ.Betes.SONS[a.module] || {}, o = {};
+  /* (le rat cuirassé perd neuf morceaux d'armure d'un coup : le premier fait le grand bruit de casque qui roule, les suivants
+     un simple tintement de fer — pas neuf casques qui roulent l'un sur l'autre) */
+  if(S.tinte) o.onTinte = function(){ if(!bruitRare(S.tinte, {}, 5000)) bruitRare('metal', {}, 260); Fx.tremble(3, 160); };
+  if(a.module === 'gardien') o.onTinte = function(){ bruit('metal', {}, ['clic']); Fx.tremble(5, 220); };
+  return o;
+}
+/* un état qui arrive (on) ou qui s'en va, sur une bête qui n'est pas un rat d'égout */
+function sonEtat(a, ev){
+  var S = DJ.Betes.SONS[a.module] || {}, nom = ev.nom, on = !!ev.on, ec = etatDuModule(a);
+  if(ev.deja || !!ec[nom] === on) return;               /* (le module l'a déjà joué dans son touche(), ou rien ne change) */
+  if(a.module === 'bourbe' && nom === 'gele'){
+    var dansEau = a.acteur._immerge ? !!a.acteur._immerge() : false, gelee = ec.gele;
+    if(on){
+      /* le bassin gèle : la glace court sur l'eau (elle se fige à 1,0 s) ; dans l'eau, il bondit et retombe dessus à 1,02 s (_surLaGlace) */
+      bruit(S.gele);
+      if(dansEau) bruit(S.glace, {dt:1.02});
+    } else if(gelee && !ec.sous && !ec.dos && !ec.berge) bruit(S.degele, {cale:.16});   /* la glace cède : il retombe dans l'eau (le plouf à 0,16 s) */
+    else bruitRare('gelFond');
+    return;
+  }
+  if(a.module === 'bourbe' && nom === 'dos'){
+    /* il bascule sur le dos (il retombe à 1,18 s), ou se remet à l'endroit (0,85 s) : dans l'eau un plouf, sur la glace ou la berge un choc */
+    var sec = ec.gele || ec.berge;
+    bruit(sec ? (ec.gele ? S.glace : 'beteChute') : S.plonge, {cale:on ? 1.18 : .85});
+    return;
+  }
+  if(a.module === 'bourbe' && nom === 'sec' && on){ bruit(S.cri); return; }
+  var l = (S.etats && S.etats[nom]) || SONS_COMMUNS[nom];
+  if(!l) return;
+  var x = l[on ? 0 : 1];
+  if(!x) return;
+  if(SONS_COMMUNS[nom] && !(S.etats && S.etats[nom])) bruitRare(typeof x === 'string' ? x : x[0]); else jouerSons(x);
+}
+/* une bête qui perd son tour : sa voix (sous l'eau : des bulles ; gelée : la glace qui la tient) */
+function sonSaute(a, ev){
+  var S = DJ.Betes.SONS[a.module] || {};
+  if(ev.nom === 'sous'){ bruit(S.bulles || 'bullesFond'); return; }
+  if(ev.nom === 'gele'){ bruitRare('gelPris'); return; }
+  if(S.cri) bruit(S.cri);
+}
 function sonTouche(a, ev){
   var S = DJ.Betes.SONS[a.module] || {}, c = ev.coup;
   if(a.rat){
@@ -779,20 +853,25 @@ function sonTouche(a, ev){
     else if(c === 'nuage') bruit('ratNuage', {enrage:enr});
     return;
   }
+  /* (19 novembre) ce que ce coup déclenche après lui dans le module : elle tombe par terre, il grandit… (betes.js, SONS.apres) */
+  var suite = S.apres && S.apres[c], ec = suite ? etatDuModule(a) : null;
+  if(suite) suite.forEach(function(x){ if(!(x[2] && ec[x[2]])) bruit(x[0], {dt:x[1] || 0}); });
   if(c === 'bruit' || c === 'louche') return;      /* le BONG a déjà sonné */
   if(S.touche) bruit(S.touche, {}, ['impact', .8]);
   if(ev.piege && S.cri) bruit(S.cri, {dt:.25});
 }
 function special(a, ev, ctx){
-  var S = DJ.Betes.SONS[a.module] || {}, o = {};
-  if(S.tinte) o.onTinte = function(){ bruit(S.tinte, {}, ['clic']); Fx.tremble(3, 160); };
-  if(a.module === 'gardien') o.onTinte = function(){ bruit('metal', {}, ['clic']); Fx.tremble(5, 220); };
+  var S = DJ.Betes.SONS[a.module] || {}, o = rappels(a);
   if(a.module === 'bourbe'){
-    if(ev.nom === 'plonger') bruit(S.plonge);
-    if(ev.nom === 'remonter') bruit(S.plonge, {dt:.1});
+    /* (19 novembre : calés sur l'image. Il plonge : il touche l'eau à 1,18 s (_plonger) — 1,1 s plus tard s'il part de la berge ;
+       sur la glace, il s'y cogne à 0,63 s. Il remonte : l'eau s'ouvre à 0,82 s (_remonter).) */
+    var ec = etatDuModule(a);
+    if(ev.nom === 'plonger'){ if(ec.gele) bruit(S.glace, {cale:.63}); else bruit(S.plonge, {cale:ec.berge ? 2.28 : 1.18}); }
+    if(ev.nom === 'remonter') bruit(S.plonge, {cale:.82});
     if(ev.nom === 'chatouille') bruit(S.rire);
     if(ev.nom === 'recrache') bruit(S.rot);
   }
+  if(S.speciaux && S.speciaux[ev.nom] && !(ctx.touche[a.id] && a._auto && a._auto.indexOf(ev.nom) >= 0)) jouerSons(S.speciaux[ev.nom]);
   return a.special(ev.nom, o, !!ctx.touche[a.id]);
 }
 
@@ -821,7 +900,8 @@ async function arrivees(gr){
   await Promise.all(faits.map(function(a, k){
     return attendre(k * (debut ? 210 : 120)).then(function(){
       var S = DJ.Betes.SONS[a.module] || {};
-      if(a.rat) son('couine', .3, 1 + k * .12); else if(S.entree) bruit(S.entree); else if(S.cri) bruit(S.cri, {dt:.3});
+      /* (19 novembre : une arrivée peut avoir plusieurs sons, calés sur l'image — Bourbe : l'eau qui s'ouvre, puis son cri) */
+      if(a.rat) son('couine', .3, 1 + k * .12); else if(S.entree) jouerSons(S.entree); else if(S.cri) bruit(S.cri, {dt:.3});
       var o = {};
       /* (un seul « boum » par pas : le son de l'Atelier en contient deux, d'où le boum en trop — Romain, 11 novembre) */
       if(a.module === 'gardien') o.onPas = function(){ bruit(S.pas, {un:1}, ['tombe']); Fx.tremble(7, 300); };
@@ -1062,6 +1142,15 @@ async function attaque(l, i, ctx){
     return j - 1;
   }
   if(a.rat) son('couine', 0, aEtat(a, 'enrage') ? 1 : 1.1, aEtat(a, 'enrage') ? 1.3 : 1, aEtat(a, 'enrage'));
+  else if(a.module === 'bourbe' && nomA === 'saut'){
+    /* (19 novembre) LE SAUT DE BOURBE, CALÉ SUR L'IMAGE (_saut) : il retombe à 1,41 s (1,94 s gonflé) — avant, le SPLASH partait
+       à 0,95 s, une demi-seconde à une seconde trop tôt. Sur la glace : pas d'eau, un choc et la glace qui se fend. Quand il
+       surgit du fond (ev.retour), l'eau s'ouvre à 0,52 s (0,7 s gonflé). */
+    var ecB = etatDuModule(a), gros = !!ecB.gonfle, tChoc = gros ? 1.94 : 1.41;
+    if(ecB.gele && !ev.retour){ bruit(S.cri); bruit(S.glace, {cale:tChoc}); }
+    else bruit(S.att.saut, {cale:tChoc});
+    if(ev.retour && S.plonge) bruit(S.plonge, {cale:gros ? .7 : .52});
+  }
   else if(S.att && S.att[nomA]) bruit(S.att[nomA]); else if(S.cri) bruit(S.cri);
   var joues = 0, attente = [], avale = null;
   coups.forEach(function(g){ g.forEach(function(x){ if(x.t === 'avale') avale = x; }); });
@@ -1074,7 +1163,7 @@ async function attaque(l, i, ctx){
     if(ev.gros && joues < jusqu) Fx.tremble(13, 480);          /* le coup préparé : la salle en tremble */
     while(joues < jusqu){ attente.push(coup(coups[joues], a, ev)); joues++; }
   }
-  if(ev.retour){ if(S.plonge) bruit(S.plonge, {dt:.1}); E.ph = E.c.etat(); majBadges(); }       /* (il n'est plus « sous l'eau ») */
+  if(ev.retour){ if(S.plonge && nomA !== 'saut') bruit(S.plonge, {dt:.1}); E.ph = E.c.etat(); majBadges(); }       /* (il n'est plus « sous l'eau » ; le plouf du saut : plus haut, calé) */
   var ret = await a.attaquer(nomA, {vers:vers, fois:ev.fois || 1, onImpact:impact, onAvale:function(){ if(avale) bruit(S.gobe); }, surgit:!!ev.retour});
   impact(nImpacts - 1);                      /* par sécurité : tout ce qui n'aurait pas été joué */
   await Promise.all(attente);

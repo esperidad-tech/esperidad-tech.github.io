@@ -75,6 +75,11 @@ function tremble(force, ms, delai){
     ms = Math.min(ms, 300); force = Math.min(force, 10); tremble.jusque = m + ms + 350;
   }
   var s = L.secousse, n = Math.round(ms / 40), images = [];
+  /* (19 novembre) AVANT D'ANIMER LA SALLE, ON TOUCHE À SON STYLE À ELLE (une propriété sans effet, qui ne s'hérite pas). Sans ça,
+     sur Chrome : une secousse finie juste avant un film (la scène est alors cachée par le lecteur : visibility:hidden), puis une
+     secousse juste après le film, et la salle restait cachée pour de bon — noire, sans héros ni monstre (vu dans le combat de
+     Léo). Le navigateur gardait le style « caché » de l'élément tant qu'on ne touchait pas à son style à lui. */
+  try{ tremble.n = (tremble.n || 0) + 1; s.style.outlineOffset = (tremble.n % 2) + 'px'; }catch(e){}
   for(var k = 0; k <= n; k++){ var f = k === n ? 0 : force * (1 - k / n); images.push({transform:'translate(' + hasard(-f, f).toFixed(1) + 'px,' + hasard(-f * .7, f * .7).toFixed(1) + 'px) rotate(' + hasard(-f * .05, f * .05).toFixed(2) + 'deg)'}); }
   return anime(s, images, {duration:ms, delay:delai || 0});
 }

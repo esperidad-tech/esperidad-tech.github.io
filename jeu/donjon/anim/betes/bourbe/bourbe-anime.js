@@ -1430,12 +1430,18 @@ R._giclee = function(p, n, coul){
   }
 };
 
-/* ---------------- l'entrée : il émerge lentement de l'eau noire ---------------- */
+/* ---------------- l'entrée : il émerge lentement de l'eau noire ----------------
+   19 NOVEMBRE (Romain, 11 h 44) : « quand on le voit pour la première fois, il se montre, il sort de l'eau et après il rentre
+   dans l'eau. Ça, c'est bizarre. Il faudrait le faire arriver et qu'il soit déjà en position : juste il sort de l'eau un petit
+   peu, et il reste comme ça. » Avant : il sortait EN ENTIER (6,2 s : la tête, le corps, la gorge gonflée, la langue), puis
+   _reprendre le renfonçait à sa place de combat. Maintenant : il monte du fond jusqu'à SA PLACE DE COMBAT (dans l'eau : on ne
+   voit que son visage et son œil — _base()), il ouvre l'œil, et il n'en bouge plus (4,6 s). Ses mains restent sous l'eau. */
 R.entrer = function(){
   var self = this, j = this._debutAction();
   this.etat.sous = false;
   this._fondu([this.plongeA, this.plongeB, this.S.ligne], 0, 0);
-  var depart = {pos: {y: 290, x: 10}, paupiere: {y: 46}, paupF: {y: 15}, langue: {sy: .06}, gorge: {sx: .9, sy: .9}, bras: {a: 30}, avbras: {a: -30}, main: {a: 30}, brasF: {a: 20}, mainF: {a: 30}, algues: {a: 10}, brins: {a: 18}};
+  var place = this._base(), fond = place.pos ? place.pos.y : FOND, recul = place.pos ? place.pos.x : RECUL, penche = place.posture ? place.posture.a : PENCHE;
+  var depart = {pos: {y: 290, x: recul}, posture: {a: penche}, paupiere: {y: 46}, paupF: {y: 15}, algues: {a: 10}, brins: {a: 18}};
   return this._allerA(depart, 1, null, true).then(function(){
     var c = [300, 372];
     /* des bulles, de plus en plus grosses */
@@ -1444,27 +1450,24 @@ R.entrer = function(){
     var dome = self._fxEl('<ellipse cx="0" cy="0" rx="120" ry="16" fill="' + self.D.doux('#4a8494') + '" opacity=".7"/>' + L('M-110 0 Q 0 -22 110 0', LUNE, 2, ' opacity=".6"'), self.S.ondes);
     dome.animate([{transform: 'translate(300px,372px) scale(.2,.2)', opacity: 0}, {offset: .6, transform: 'translate(300px,366px) scale(1,1)', opacity: 1}, {transform: 'translate(300px,370px) scale(1.4,.6)', opacity: 0}], {duration: 1700, delay: 1000, easing: 'ease-out', fill: 'both'}).finished.then(function(){ dome.remove(); });
     setTimeout(function(){ self._fondu(self.plongeA, 1, 700); }, 1500);
-    setTimeout(function(){ self._fondu(self.plongeB, 1, 500); }, 2900);
-    setTimeout(function(){ self._fondu(self.S.ligne, 1, 700); self._rides(c[0] - 120, 2, 1.6); self._rides(c[0] + 160, 2, 1.4); }, 3000);
-    /* l'eau ruisselle de partout */
-    [1800, 2100, 2400, 2700, 3000, 3300].forEach(function(t){ setTimeout(function(){ var p = self._ou('dos'); for(var k = 0; k < 3; k++) self._goutte([p[0] + hasard(-220, 150), p[1] + hasard(-20, 100)], {coul: '#cdeeff'}); }, t); });
-    var T = 6200;
+    /* (ses mains — plongeB — restent sous l'eau : à sa place de combat, on ne voit que son visage) */
+    setTimeout(function(){ self._fondu(self.S.ligne, 1, 700); self._rides(c[0] - 120, 2, 1.6); self._rides(c[0] + 160, 2, 1.4); }, 2500);
+    /* l'eau ruisselle de sa tête */
+    [1900, 2200, 2500, 2800, 3100].forEach(function(t){ setTimeout(function(){ if(self.mort) return; var p = self._ou('oeilC'); for(var k = 0; k < 2; k++) self._goutte([p[0] + hasard(-90, 110), p[1] + hasard(-40, 20)], {coul: '#cdeeff'}); }, t); });
+    var T = 4600;
     function t(ms){ return ms / T; }
     return self._seq([
       {t: 0, p: {}},
-      /* la couronne perce la surface, puis la tête, l'œil fermé */
-      {t: t(1500), p: {pos: {y: 250, x: 8}}, e: 'ease-in'},
-      {t: t(2700), p: {pos: {y: 120, x: 4}, algues: {a: 4}, brins: {a: 8}}, e: 'cubic-bezier(.3,.2,.4,1)'},
-      {t: t(3500), p: {pos: {y: -12, x: 0}, bras: {a: 6}, avbras: {a: -6}, main: {a: 6}, brasF: {a: 4}, mainF: {a: 6}, algues: {a: -6}, brins: {a: -12}}, e: 'cubic-bezier(.3,.6,.4,1)'},
-      {t: t(3900), p: {pos: {y: 0}, bras: {a: 0}, avbras: {a: 0}, main: {a: 0}, brasF: {a: 0}, mainF: {a: 0}, algues: {a: 0}, brins: {a: 0}}, e: 'cubic-bezier(.4,0,.3,1.4)'},
+      /* la couronne perce la surface, puis le visage, l'œil fermé : il monte un peu trop haut, et se pose à sa place */
+      {t: t(1500), p: {pos: {y: 250, x: recul}}, e: 'ease-in'},
+      {t: t(2600), p: {pos: {y: fond - 16, x: recul}, algues: {a: -5}, brins: {a: -10}}, e: 'cubic-bezier(.3,.2,.4,1)'},
+      {t: t(3000), p: {pos: {y: fond, x: recul}, algues: {a: 0}, brins: {a: 0}}, e: 'cubic-bezier(.4,0,.3,1.4)'},
       /* il OUVRE L'ŒIL, lentement */
-      {t: t(4200), p: {paupiere: {y: 44}, paupF: {y: 14}, pupille: {sx: .4}}},
-      {t: t(4900), p: {paupiere: {y: 0}, paupF: {y: 0}, pupille: {sx: .4}}, e: 'cubic-bezier(.4,0,.2,1)'},
-      {t: t(5200), p: {pupille: {sx: 1.25, sy: 1.15}, paupB: {y: -3}}},
-      /* il gonfle sa gorge, très content de lui, et sort la langue */
-      {t: t(5600), p: {gorge: {sx: 1.45, sy: 1.95}, langue: {sy: .4}, pupille: {sx: 1, sy: 1}, paupB: {y: 0}, saut: {y: -4}}, e: 'cubic-bezier(.3,.7,.4,1)'},
-      {t: t(6000), p: {gorge: {sx: 1, sy: 1}, langue: {sy: 1.1}, saut: {y: 0}}, e: 'cubic-bezier(.4,0,.3,1.4)'},
-      {t: 1, p: {langue: {sy: 1}}}
+      {t: t(3200), p: {paupiere: {y: 44}, paupF: {y: 14}, pupille: {sx: .4}}},
+      {t: t(3900), p: {paupiere: {y: 0}, paupF: {y: 0}, pupille: {sx: .4}}, e: 'cubic-bezier(.4,0,.2,1)'},
+      /* sa pupille s'ouvre en grand : il a vu les héros */
+      {t: t(4200), p: {pupille: {sx: 1.25, sy: 1.15}, paupB: {y: -3}}},
+      {t: 1, p: {pupille: {sx: 1, sy: 1}, paupB: {y: 0}}}
     ], T).fini;
   }).then(function(){ return self._finAction(j, 300); });
 };
