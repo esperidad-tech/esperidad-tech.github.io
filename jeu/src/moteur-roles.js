@@ -435,6 +435,24 @@ M.obligesCarte = function(){
   }catch(e){ console.error(e); }
   return o;
 };
+/* LA CARTE FORCÉE (E.carteForcee ; Romain, 19 novembre, 10 h 10, le Sage l'après-midi) : {role, moments, lieu, dire}. Tant qu'un passage
+   obligatoire de ce rôle attend sur ce lieu (le rond jaune, M.obligesCarte), seul ce lieu se touche sur la carte (les autres lieux, les
+   maisons et les visages : « Pas maintenant ! » et la phrase), et la carte s'ouvre d'elle-même une fois. Rien d'autre n'est bloqué. */
+M.carteForcee = function(){
+  var E = M.E(), P = M.P(), role = M.role(); if(!E || !P || !E.carteForcee || P.etape !== 'jeu') return null;
+  var f = E.carteForcee.filter(function(x){ return x.role === role && M.momentOk(x.moments); })[0];
+  if(!f) return null;
+  var o = M.obligesCarte(); return o.lieux.indexOf(f.lieu) >= 0 ? f : null;
+};
+document.addEventListener('click', function(ev){
+  var t = ev.target, el = t && t.closest ? t.closest('[data-act]') : null; if(!el) return;
+  var a = el.dataset.act; if(a !== 'lieu' && a !== 'maison' && a !== 'parler' && a !== 'frapper' && a !== 'pnj-carte') return;
+  if(el.closest('#voile')) return;   /* (dans la bulle du lieu ouvert : tout se touche) */
+  var f; try{ f = M.carteForcee(); }catch(e){ return; }
+  if(!f || el.dataset.id === f.lieu || el.dataset.l === f.lieu) return;
+  ev.stopPropagation(); if(ev.stopImmediatePropagation) ev.stopImmediatePropagation(); ev.preventDefault();
+  M.son('ko'); M.toast('Pas maintenant ! ' + f.dire);
+}, true);
 /* la petite bulle posée sur une maison de la carte quand il reste quelque chose à y faire (carte-jeu.js → carte.js, o.bullesMaison) */
 M.bullesMaisons = function(){
   var E = M.E(), P = M.P(), role = M.role(), o = {};

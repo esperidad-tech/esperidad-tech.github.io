@@ -85,15 +85,21 @@ M.quiEcritHTML = function(){
   s += '<div class="ec-or' + (fait ? ' ec-or-fini' : ' ec-or-choix') + '">' + EC.ordre.map(function(id){
     var m = motDor(id);
     if(fait) return EC.bons.indexOf(id) >= 0 ? m.replace('class="ec-or-mot"', 'class="ec-or-mot ec-or-bon"') : m;
+    /* (19 novembre) une main déjà reconnue reste marquée (verte), on cherche l'autre */
+    if(trouvee(id)) return '<div class="ec-or-b ec-or-trouve">' + m.replace('class="ec-or-mot"', 'class="ec-or-mot ec-or-bon"') + '</div>';
     return '<button type="button" class="ec-or-b" data-act="ec-designer" data-id="' + esc(id) + '">' + m + '</button>';
   }).join('') + '</div>';
   if(fait){ var c = 'info:cest_melusine', nc = M.nomCode(c), td = M.texteDonne(c);
     s += '<div class="b-donne"><p>' + nc.ic + ' <b>' + esc(nc.nom) + '</b> : ' + esc(td) + ' ' + lire(nc.nom + ' : ' + td) + '</p>' + M.codeHTML(M.code(c)) + '</div>'; }
   return s;
 };
+/* (Romain, 19 novembre, 10 h 10 : « il faut appuyer sur Mélusine et Margot pour valider […] on a appuyé que sur Mélusine et on nous dit
+   qu'il y a Mélusine et Margot, c'est pas logique ») chaque bonne main se reconnaît à part (P.vus['sage:ecriture:<id>']) ; le code part
+   quand les deux sont trouvées */
+function trouvee(id){ var P = M.P(); return !!(P && P.vus[K_EC + ':' + id]); }
 if(M.A) M.A['ec-designer'] = function(el){
   var P = M.P(), id = el.dataset.id, e = EC.ech[id];
-  if(!P || !e || P.vus[K_EC] === 'ok') return;
+  if(!P || !e || P.vus[K_EC] === 'ok' || trouvee(id)) return;
   var nom = e.nom.charAt(0).toUpperCase() + e.nom.slice(1);
   M.UI.confirmer = function(){ juger(id); };
   M.son('clic');
@@ -105,8 +111,16 @@ if(M.A) M.A['ec-designer'] = function(el){
 function juger(id){
   var P = M.P(), e = EC.ech[id]; if(!P || !e) return;
   if(EC.bons.indexOf(id) >= 0){
+    P.vus[K_EC + ':' + id] = 1;
+    var nomB = e.nom.charAt(0).toUpperCase() + e.nom.slice(1);
+    if(!EC.bons.every(trouvee)){
+      M.noter('En comparant la lettre au Livre d\'or : l\'écriture de ' + nomB + ' est pareille.', '🔍');
+      M.son('ok'); M.sauver(); M.UI.garderDefilement = true;
+      M.decouvrir({ic:'🔍', titre:'La même main !', t:'L\'écriture de ' + nomB + ' : les mêmes lettres que la lettre, trait pour trait ! Regarde bien les autres mots du Livre d\'or : est-ce la seule ?'});
+      return;
+    }
     P.vus[K_EC] = 'ok'; P.objets['_info:cest_melusine'] = true;
-    var t = 'Les mêmes lettres, trait pour trait… mais attention : il y a DEUX mains pareilles, celle de Mélusine et celle de Margot. Une seule a écrit la lettre. Donne ce code au Barde : à lui de voir laquelle ment !';
+    var t = 'Celle-là aussi, trait pour trait ! Il y a DEUX mains pareilles : celle de Mélusine et celle de Margot. Une seule a écrit la lettre. Donne ce code au Barde : à lui de voir laquelle ment !';
     M.noter('En comparant la lettre au Livre d\'or : deux écritures pareilles, Mélusine et Margot (code pour le Barde).', '🔍');
     M.son('magie'); M.sauver();
     M.decouvrir({ic:'🧵', titre:'Deux mains pareilles !', t:t, code:'info:cest_melusine'});
