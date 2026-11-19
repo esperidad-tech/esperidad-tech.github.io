@@ -83,9 +83,9 @@ module.exports = function verifierE3(E, SRC, D){
   /* la fête : le filet de celui qui craque (Mélusine), si le Barde n'a pas déjà son aveu */
   for(const id of Object.keys((E.fete || {}).gens || {})){
     const x = E.fete.gens[id];
-    if(x.filet) aj({cle:`barde:fete:${id}`, role:'barde', moments:E.fete.moments, sauf:[{donne:x.filet.sauf}], produit:[x.filet.code], faits:[`fete:filet:${id}`], filet:true});
+    if(x.filet) aj({cle:`barde:fete:${id}`, role:'barde', moments:E.fete.moments, sauf:[x.filet.saufVu ? {vu:x.filet.saufVu} : {donne:x.filet.sauf}], produit:liste(x.filet.code), faits:[`fete:filet:${id}`], filet:true});   /* (19 novembre : saufVu, et plus forcément de code) */
     /* (17 novembre) le don d'un fêtard (Mélusine : les tenues), une fois ses conditions vraies (son aveu, ou son filet) */
-    if(x.don) aj({cle:`barde:fete:don:${id}`, role:'barde', moments:E.fete.moments, besoins:[x.don.si].filter(Boolean), produit:['obj:' + x.don.obj], faits:[`fete:don:${id}`]});
+    if(x.don) aj({cle:`barde:fete:don:${id}`, role:'barde', moments:E.fete.moments, besoins:[x.don.si].filter(Boolean), produit:[x.don.code || 'obj:' + x.don.obj], faits:[`fete:don:${id}`]});
     /* (13 novembre, Bible §13.33) l'aide pour le donjon : avec le code du Pisteur, ce villageois a de nouvelles questions */
     if(x.aide) aj({cle:`barde:fete:aide:${id}`, role:'barde', moments:E.fete.moments, besoins:[[{code:x.aide.si}]], faits:[`fete:aide:${id}`]});
     /* (14 novembre, Bible §13.36) le grand dialogue d'un fêtard (le maire inquiet) : avec un des codes du Pisteur (la grille, ou le puits) ;

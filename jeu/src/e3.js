@@ -192,6 +192,9 @@ E[3] = {
     basile:'Si je continue, je tombe de mon échelle !'
   },
   questionsCachees:true,
+  /* (Romain, 19 novembre, 10 h 10 : « l'après-midi, il faut le forcer […] l'envoyer sur la carte avec le rond jaune et il peut cliquer que
+     là ») tant qu'un passage obligatoire attend sur ce lieu, pour ce rôle, à ce moment : la carte s'ouvre, et seul ce lieu se touche */
+  carteForcee:[{role:'sage', moments:['apresmidi'], lieu:'mairie', dire:'Le maire t\'attend à la mairie, avec ton tableau !'}],
   ecouteMaisons:true,   /* avec « Tendre l'oreille », une maison où il y a quelque chose à écouter montre sa feuille (« Frapper », « Écouter aux portes ») */
   potionAveu:true,
   vexeNeutre:true,
@@ -317,7 +320,7 @@ E[3] = {
        majuscules »). Les indices : Anselme (fort, lentement, sans le presser), Basile (il ne prête rien, sauf à qui l'aide à sonner),
        Silas (le père d'Anselme l'a retrouvé en sonnant toute une nuit). */
     cle:{pnj:'anselme', ic:'🔔',
-      rate:'Bon, je monte sonner, moi.',
+      rate:'Bon, je monte sonner, moi. Tout seul !',
       etapes:[
         {t:'HEIN ? Ah, le Barde ! Qu\'est-ce que tu me veux ?', choix:[
           {q:'PARDON DE VOUS DÉRANGER, ANSELME, J\'AI UNE QUESTION !', r:'UN HARENG ? Je n\'ai pas faim, mon petit !'},
@@ -335,10 +338,13 @@ E[3] = {
           {q:'PARCE QUE LE MAIRE VEUT QUE TOUT SOIT PARFAIT.', r:'LE MAIRE VEUT UNE PAIRE ? De chaussettes ?'},
           {q:'VOTRE PÈRE A SONNÉ TOUTE UNE NUIT POUR SILAS. ODETTE AUSSI EST PERDUE.', r:'Il essuie une larme. « Alors on sonne pour Odette. Monte, mon petit ! »', bon:true}]}
       ],
-      reussi:{bouton:'🔔 Monter avec Anselme', titre:'La Grosse Marie sonne', t:'Vous tirez la corde ensemble : DONG… DONG… Anselme ferme les yeux et compte les coups. Sa clé pend à sa ceinture…', code:'info:cle_clou'},
-      /* (17 novembre, le nouveau fil, la nuit) raté : le Barde demande à Tim, perché sur les toits, s'il connaît un autre passage. Tim montre
-         le sentier du vieux puits : son code le trace sur le tableau des chemins secrets du Pisteur (E.chemins, plus bas). */
-      echec:{bouton:'🙋 « Tim ! Tu connais un autre passage ? »', qui:'tim', titre:'Tim, depuis les toits', t:'« Un autre passage ? Regarde, là-bas ! Moustache vient de filer par un petit sentier, jusqu\'au vieux puits… Il s\'est glissé entre les barreaux ! »', code:'info:vieux_puits'},
+      /* (Romain, 19 novembre, 10 h 30 : « si le barde il réussit le dialogue, il faut marquer que Anselm fait rentrer le barde et laisse la
+         porte ouverte […] que ça soit la porte du clocher, pas la porte de la crypte ») */
+      reussi:{bouton:'🔔 Monter avec Anselme', titre:'La Grosse Marie sonne', t:'Anselme te fait entrer dans le clocher et laisse la porte grande ouverte derrière vous. Vous tirez la corde ensemble : DONG… DONG… Il ferme les yeux et compte les coups. Sa clé pend à sa ceinture…', code:'info:cle_clou'},
+      /* (Romain, 19 novembre, 10 h 28 et 10 h 30) raté : plus de bouton « Tim ! » tout de suite. Anselme ferme à clé la porte du clocher et
+         monte sonner seul (le Pisteur ne peut plus y monter) ; le conteur dit qu'il faut un plan B. C'est au Barde de trouver Tim, à la
+         fête (E.fete.gens.tim.don) : c'est lui qui donne le code du vieux puits. */
+      echec:{t:'Anselme entre dans le clocher et ferme la porte à double tour derrière lui. Sa clé repart à sa ceinture : personne ne montera là-haut ce soir. DONG… DONG… Mince, le plan a échoué ! Il va falloir un plan B… Quelqu\'un d\'autre pourra peut-être vous aider.'},
       resume:{ok:'Tu as aidé Anselme à sonner la Grosse Marie. Sa clé pendait à sa ceinture…', rate:'Anselme est monté sonner tout seul, sa clé à la ceinture.'}},
     /* LE MAIRE INQUIET, À LA FÊTE (Romain, 14 novembre, 10 h 29, Bible §13.36 : « j'aimerais bien qu'on remette à la fin le maire inquiet,
        qui demande au Barde où sont ses amis »).
@@ -401,12 +407,18 @@ E[3] = {
           {q:'Et s\'il attrape quelqu\'un ?', apres:1, r:'Il prend toujours le plus faible. Ne laisse jamais un ami à moitié de ses forces.'}],
           note:'Silas, à la fête : c\'est lui qui a entraîné Léo. Quand il fonce, il ne regarde pas ses pieds (une flaque, et il s\'étale ; à terre, une lame lui fait très mal) ; avant de sauter, boire ou crier, un coup sur la tête arrête tout ; il attrape le plus faible.'}},
       victor:{t:'Je danse ! Enfin, j\'essaie.'},
-      tim:{t:'Chut ! Je suis monté en haut du mât des lampions.'},
+      tim:{t:'Chut ! Je suis monté en haut du mât des lampions.',
+        /* (Romain, 19 novembre, 10 h 28) le plan B : Anselme raté, Tim, perché au mât des lampions, connaît un autre passage — le Barde doit
+           penser à venir le voir (pas de « ❗ » : discret) ; son code trace le sentier du vieux puits chez le Pisteur (E.chemins) */
+        don:{code:'info:vieux_puits', discret:true, si:[{rate:'grand:cle'}], q:'Tim ! Tu connais un autre passage ?', titre:'Tim, en haut du mât',
+          t:'Un autre passage ? Regarde, là-bas ! Moustache vient de filer par un petit sentier, jusqu\'au vieux puits… Il s\'est glissé entre les barreaux !',
+          note:'Tim, à la fête : Moustache a filé par un petit sentier jusqu\'au vieux puits, et s\'est glissé entre les barreaux. Code pour le Pisteur !'}},
       melusine:{t:'Je n\'écrirai plus jamais pour personne…',
         /* le filet : son aveu n'a pas été obtenu l'après-midi */
         /* (Romain, 13 novembre : pas « je n'en peux plus » — « c'est trop dur de garder le secret, j'ai besoin de me confier ») */
-        filet:{sauf:'info:aveu', t:'C\'est trop dur de garder ce secret… J\'ai besoin de me confier. C\'est moi qui ai écrit la lettre ! Un homme en cape m\'y a forcée. Je n\'ai pas vu son visage.', code:'info:aveu',
-          note:'Mélusine a craqué, à la fête : c\'est elle qui a écrit la lettre, forcée par un homme en cape. Elle n\'a pas vu son visage (code pour le Sage).'},
+        /* (19 novembre) plus de code : saufVu (elle a déjà avoué l'après-midi) remplace sauf:'info:aveu' */
+        filet:{saufVu:'verite:melusine:4', t:'C\'est trop dur de garder ce secret… J\'ai besoin de me confier. C\'est moi qui ai écrit la lettre ! Un homme en cape m\'y a forcée. Je n\'ai pas vu son visage.',
+          note:'Mélusine a craqué, à la fête : c\'est elle qui a écrit la lettre, forcée par un homme en cape. Elle n\'a pas vu son visage. À dire au Sage !'},
         /* (17 novembre, étape 4 du nouveau fil) LES TENUES : une fois qu'elle a avoué (l'après-midi, ou ici par le filet), elle porte un
            « ❗ » à la fête et donne au Barde trois tenues, cousues par remords : un code objet pour le Pisteur, le Sage et l'Alchimiste
            (x.don, grands.js). C'est d'elle que viennent les tenues de combat (« pourquoi des tenues ? », Romain, 16 novembre). */
@@ -626,7 +638,7 @@ E[3] = {
       t:'Le Livre d\'or de la fête t\'attend dans ton labo : tout le village y a écrit un petit mot pour Odette, chacun de sa main. Glisse la lettre sous ta loupe : le Livre d\'or s\'ouvrira, et tu compareras les écritures.',
       dire:'L\'Alchimiste pourra comparer les écritures : donne-lui ce code.'},
     /* (12 novembre : plus de code « L'herbier » — le Sage lit l'herbier à voix haute, l'Alchimiste cherche sur sa carte ; Bible §13.26) */
-    aveu:{nom:'L\'aveu de Mélusine', ic:'🧵', pour:'sage', de:'barde', savoir:true,
+    aveu:{nom:'L\'aveu de Mélusine', ic:'🧵', pour:'sage', de:'barde', savoir:true, reserve:true,   /* (19 novembre : plus donné, l'aveu se dit à voix haute ; ses symboles ne bougent pas) */
       t:'Mélusine a avoué : c\'est elle qui a écrit la lettre, et qui l\'a glissée sous la porte de la mairie. Un homme en cape l\'y a forcée ; elle n\'a pas vu son visage.',
       dire:'C\'est une preuve pour le Sage : donne-lui ce code.'},
     /* (étape 5, le Pisteur) ce qu'il reçoit et ce qu'il donne ; ceux du Sage, de l'Alchimiste et des grands dialogues du Barde
@@ -852,7 +864,9 @@ E[3] = {
       ]},
       /* le Sage (étape 3) : le tableau d'Odette (sa mission de fête), le Livre d'or, puis rendre le tableau (et le filet de la lettre) */
       sage:{intro:'La mairie. Ce soir, le tableau d\'Odette sera accroché au-dessus du gâteau.', points:[
-        {id:'tableau', ic:'🖼️', nom:'Le tableau d\'Odette', moments:['matin', 'apresmidi'], mj:'runes', mjNiveau:7, params:{image:'tableau'},
+        /* (Romain, 19 novembre, 10 h 10) l'après-midi, le Sage est OBLIGÉ de faire le tableau puis de le rendre au maire (sans quoi pas de
+           Livre d'or, et l'enquête se bloque) : oblige:['apresmidi'] sur les trois points, et E.carteForcee (moteur-roles.js) */
+        {id:'tableau', oblige:['apresmidi'], ic:'🖼️', nom:'Le tableau d\'Odette', moments:['matin', 'apresmidi'], mj:'runes', mjNiveau:7, params:{image:'tableau'},
           avant:'Pour peindre le tableau, tu as collé les vieux dessins d\'Odette et de ses chats… mais un coup de vent les a tous mélangés ! Remets chaque morceau à sa place.',
           bouton:'🖼️ Assembler le tableau',
           t:'Odette sourit sur la toile, sa canne à la main, ses sept chats autour d\'elle. Le maire : « Magnifique ! On l\'accrochera au-dessus du gâteau. »',
@@ -861,11 +875,11 @@ E[3] = {
         /* (13 novembre) le Livre d'or n'est plus un point de la mairie : c'est une page du Grand Livre (E.pages, « livredor ») */
         /* rendre le tableau : 5 pièces d'or. (13 novembre : plus de lettre accrochée sous le tableau — si le Barde ne l'obtient pas, le
            Pisteur va la chercher, autant de fois qu'il faut : « pas besoin de subterfuges », Romain) */
-        {id:'rendu', ic:'🎉', nom:'Rendre le tableau au maire', moments:A_, or:5, visibleSi:[{vu:'sage:mairie:tableau'}], ouvreLivre:['quiecrit'],
+        {id:'rendu', oblige:['apresmidi'], ic:'🎉', nom:'Rendre le tableau au maire', moments:A_, or:5, visibleSi:[{vu:'sage:mairie:tableau'}], ouvreLivre:['quiecrit'],
           /* (17 novembre, le nouveau fil) en échange, le maire lui confie le Livre d'or de la fête : il n'est plus dans le Grand Livre dès le
              matin (« rien n'arrive par magie »), et c'est le Sage qui compare les écritures, plus l'Alchimiste */
           t:'Le maire : « Magnifique ! Ce soir, tout le monde à la fête ! Tenez, gardez-moi donc le Livre d\'or : tout le village y a écrit un mot pour Odette. »'},
-        {id:'sanstableau', ic:'🏛️', nom:'Passer voir le maire', moments:A_, visibleSi:[{rate:'sage:mairie:tableau'}], ouvreLivre:['quiecrit'],
+        {id:'sanstableau', oblige:['apresmidi'], ic:'🏛️', nom:'Passer voir le maire', moments:A_, visibleSi:[{rate:'sage:mairie:tableau'}], ouvreLivre:['quiecrit'],
           t:'Le maire : « Pas de tableau ? Tant pis, les lampions feront l\'affaire. Rendez-vous utile : gardez-moi le Livre d\'or, tout le village y a écrit un mot pour Odette. »'}
       ]},
       /* l'Alchimiste (étape 4) : porter le gâteau au maire, l'après-midi (5 pièces d'or) */
@@ -1177,11 +1191,17 @@ E[3] = {
          nouveau fil, ce sera celui du Sage — l'écriture et la pointure). Démasquée : son aveu, et le code pour le Sage (le filet : la nuit,
          à la fête). La seule vérité de plus de 30 mots : c'est le tournant de l'enquête. NE PAS DÉPLACER : E.faits, les missions et le
          grand dialogue d'Anselme citent « verite:melusine:4 ». */
-      {q:'C\'est vous qui avez écrit la lettre.', g:'e', moments:A_, besoin:[{code:'info:cest_melusine'}], a:'Moi ? Je sais à peine écrire mon nom !', ment:true, donneVrai:'info:aveu',
+      {q:'C\'est vous qui avez écrit la lettre.', g:'e', moments:A_, besoin:[{code:'info:cest_melusine'}], a:'Moi ? Je sais à peine écrire mon nom !', ment:true,   /* (Romain, 19 novembre, 10 h 18) plus de code « L'aveu de Mélusine » : il ne servait qu'à savoir — à dire au Sage */
         /* (17 novembre, étape 4 du nouveau fil : « Mélusine : revenez me voir cette nuit ») plus de « il a peut-être laissé des traces »
            (une piste qui ne menait nulle part) : honteuse, elle promet de coudre de quoi les protéger — les tenues, à la fête (E.fete) */
-        vrai:'C\'est moi… Un homme en cape m\'a forcée à l\'écrire et à la déposer. Je n\'ai pas vu son visage. Pardon… Pour m\'excuser, je vous couds des tenues de combat. Revenez me voir cette nuit, à la fête : elles seront prêtes !',
-        note:'Mélusine dit qu\'elle sait à peine écrire son nom.', noteVrai:'Mélusine a avoué : un homme en cape l\'a forcée à écrire la lettre et à la déposer. Elle n\'a pas vu son visage (code pour le Sage). Pour s\'excuser, elle vous coud des tenues de combat : retourne la voir cette nuit, à la fête, avant de parler à Anselme !'}
+        /* (Romain, 19 novembre, 10 h 13 : « les tenues de combat, ça sort de nulle part ») elle demande ce qu'elle peut faire ; c'est le
+           Barde qui demande les tenues (la question [5], juste dessous) */
+        vrai:'C\'est moi… Un homme en cape m\'a forcée à l\'écrire et à la déposer. Je n\'ai pas vu son visage. Pardon… Est-ce que je peux faire quelque chose pour vous, pour me faire pardonner ?',
+        note:'Mélusine dit qu\'elle sait à peine écrire son nom.', noteVrai:'Mélusine a avoué : un homme en cape l\'a forcée à écrire la lettre et à la déposer. Elle n\'a pas vu son visage. À dire au Sage !'},
+      /* [5] (Romain, 19 novembre, 10 h 13) après l'aveu : les tenues, demandées par le Barde (à la fête, la nuit, elle les donne : E.fete) */
+      {q:'Pouvez-vous nous coudre des tenues de combat ?', g:'e', moments:A_, besoin:[{vu:'verite:melusine:4'}],
+        a:'Oui, bien sûr ! Je m\'y mets tout de suite. Revenez me voir cette nuit, à la fête : elles seront prêtes !',
+        note:'Mélusine coud des tenues de combat pour l\'équipe : retourne la voir cette nuit, à la fête, avant de parler à Anselme !'}
     ]},
     /* le matin : ses fleurs (marche.js : le bouton « 🌸 » dans sa conversation et sur sa pastille), et ses quatre questions — on lui a volé
        un flacon d'encre, cette nuit (Romain, 18 h 19). L'après-midi, elle est occupée par ses couronnes (elle vend encore, s'il reste des pièces). */

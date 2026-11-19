@@ -413,6 +413,9 @@ def partie(nav, base):
     bm = S.pg.locator('#livre-ici .lv-page.on [data-act=ec-designer][data-id=melusine]')
     verifier(bm.count() == 1 and S.pg.locator('#livre-ici .lv-page.on [data-act=ec-designer]').count() == 12, 'le Sage : « Comparer les écritures », la lettre et les douze mots du Livre d\'or')
     bm.scroll_into_view_if_needed(); bm.click(); S.pg.wait_for_timeout(300); S.pg.locator('#voile [data-act=confirmer-oui]').click(); S.pg.wait_for_timeout(400); S.fermer()
+    # (19 novembre) il faut les deux mains : Margot aussi
+    bg = S.pg.locator('#livre-ici .lv-page.on [data-act=ec-designer][data-id=margot]')
+    bg.scroll_into_view_if_needed(); bg.click(); S.pg.wait_for_timeout(300); S.pg.locator('#voile [data-act=confirmer-oui]').click(); S.pg.wait_for_timeout(400); S.fermer()
     verifier(livrer(T, S) == ['info:cest_melusine'] and B.js("() => !!M.P().recus['info:cest_melusine']"), 'le Sage désigne Mélusine : le code « L\'écriture de Mélusine » passe au Barde')
     # (13 novembre) le Barde peut poser la même accusation à Margot : elle dit vrai
     B.carte(); B.ev('lieu', {'id': 'taverne'}); B.ev('parler', {'id': 'margot'}); B.pg.wait_for_timeout(500)
@@ -475,7 +478,7 @@ def partie(nav, base):
     P.point('clocher', 'crypte'); P.pg.locator('#voile .b-choix-point [data-id=soulever]').click(); P.pg.wait_for_timeout(300)
     verifier('sans bruit' in P.texte() and 'info:on_descend' in P.a_donner(), 'le Pisteur soulève la grille : pas un bruit, et il a le code du départ')
     P.pg.locator('#voile .b-choix-point [data-id=descendre]').click(); P.pg.wait_for_timeout(300)
-    verifier('tenue de combat' in P.texte() and 'La tenue de Mélusine' in P.texte() and 'Il te manque le code du Sage' in P.texte() and P.pg.locator('#voile [data-act=ds-six]').count() == 2 and P.pg.locator('#voile [data-act=ds-aller]').count() == 0, 'le Pisteur, devant l\'escalier : la tenue de combat (celle de Mélusine), et les deux codes à six symboles qu\'il attend')
+    verifier('tenue de combat' in P.texte() and 'La tenue de Mélusine' in P.texte() and 'Le code du Sage' in P.texte() and P.pg.locator('#voile [data-act=ds-six]').count() == 2 and P.pg.locator('#voile [data-act=ds-aller]').count() == 0, 'le Pisteur, devant l\'escalier : la tenue de combat (celle de Mélusine), et les deux codes à six symboles qu\'il attend')
     P.fermer()
     # « On va dans la crypte » → le Sage et l'Alchimiste : leur tenue, leur code
     seq = P.js("() => M.code('info:on_descend')")

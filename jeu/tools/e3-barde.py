@@ -426,9 +426,13 @@ with sync_playwright() as p:
     verifier('à peine écrire mon nom' in texte(pg), 'elle nie : « Je sais à peine écrire mon nom ! »')
     ev(pg, 'bd-ment', {'p': 'melusine', 'i': '4'})
     m = modal(pg)
-    verifier(m and m['type'] == 'decouverte' and m.get('code') == 'info:aveu', 'démasquée : son aveu, et le code pour le Sage')
-    # (17 novembre, étape 4) plus de « il a peut-être laissé des traces » (une piste qui ne menait nulle part) : elle promet les tenues
-    verifier('homme en cape' in texte(pg) and 'laissé des traces' not in texte(pg) and 'tenues de combat' in texte(pg) and 'Revenez me voir cette nuit' in texte(pg) and 'Léo' not in texte(pg), 'un homme en cape ; « Je vais vous coudre de quoi vous protéger. Revenez me voir cette nuit ! » ; aucun nom')
+    # (19 novembre, 10 h 13 et 10 h 18) plus de code « L'aveu de Mélusine » : elle avoue, puis demande ce qu'elle peut faire
+    verifier(pg.evaluate("() => !M.P().objets['_info:aveu'] && M.P().vus['verite:melusine:4'] === 1"), '(19 novembre) démasquée : son aveu, sans code (à dire au Sage)')
+    pg.wait_for_timeout(9000)   # (la vérité s'écrit lettre à lettre)
+    verifier('homme en cape' in texte(pg) and 'quelque chose pour vous' in texte(pg) and 'tenues de combat' not in texte(pg).split('Pouvez-vous')[0] and 'Léo' not in texte(pg), '(19 novembre) un homme en cape ; « Est-ce que je peux faire quelque chose pour vous ? » ; elle ne parle pas encore des tenues')
+    verifier(pg.locator('#voile [data-act=question][data-i="5"]').count() == 1, '(19 novembre) une question à toucher : « Pouvez-vous nous coudre des tenues de combat ? »')
+    poser(pg, 'melusine', 5); pg.wait_for_timeout(7000)
+    verifier('prêtes' in texte(pg) and 'cette nuit' in texte(pg), '(19 novembre) « Oui, bien sûr ! […] Revenez me voir cette nuit, à la fête : elles seront prêtes ! »')
     shot(pg, 'melusine-aveu')
     fermer(pg)
     verifier(mission(5), 'la mission « fais-lui dire la vérité » se coche')

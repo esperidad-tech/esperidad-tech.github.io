@@ -139,7 +139,7 @@ function texte(E, D){
     if(X.fete && !X.reussi && !X.echec) p('- **Réussi ou raté : aucun code.** La fin de l\'enquête ne change pas.');
     if(X.reussi) p('- **Réussi** : bouton « ' + X.reussi.bouton + ' » → « ' + X.reussi.titre + ' » : ' + X.reussi.t + ' → code ' + nomCode(X.reussi.code));
     if(X.piege) p('- **Le piège** : bouton « ' + X.piege.bouton + ' » → « ' + X.piege.titre + ' » : ' + X.piege.t + ' → code ' + nomCode(X.piege.code));
-    if(X.echec) p('- **Raté** : bouton « ' + X.echec.bouton + ' » → « ' + X.echec.titre + ' » : ' + X.echec.t + ' → code ' + nomCode(X.echec.code));
+    if(X.echec) p('- **Raté** : ' + (X.echec.code ? 'bouton « ' + X.echec.bouton + ' » → « ' + X.echec.titre + ' » : ' + X.echec.t + ' → code ' + nomCode(X.echec.code) : X.echec.t + ' (sans code)'));
     Object.keys(X.resume || {}).forEach(k => p('- Dans le Carnet (' + k + ') : ' + X.resume[k]));
     if(X.sansReponse && X.sansReponse.resume) p('- Dans le Carnet (sans réponse possible) : ' + X.sansReponse.resume);
     p('');
@@ -150,7 +150,7 @@ function texte(E, D){
   Object.keys(E.fete.gens).forEach(id => {
     const x = E.fete.gens[id];
     p('- **' + nom(id) + '** : « ' + x.t + ' »' + (x.note ? ' _(noté dans le Carnet)_' : ''));
-    if(x.filet) p('  - **Le filet** (si son aveu n\'a pas été obtenu l\'après-midi) : « ' + x.filet.t + ' » → code ' + nomCode(x.filet.code));
+    if(x.filet) p('  - **Le filet** (si son aveu n\'a pas été obtenu l\'après-midi) : « ' + x.filet.t + ' »' + (x.filet.code ? ' → code ' + nomCode(x.filet.code) : ' (sans code : à dire au Sage)'));
     Object.keys(E.grands).filter(g => E.grands[g].attente && E.grands[g].pnj === id).forEach(g => p('  - 🎭 **Plus tard, il vient trouver le Barde tout seul** : le grand dialogue « ' + g + ' » (§3), sur un minuteur caché.'));
   });
   p('');

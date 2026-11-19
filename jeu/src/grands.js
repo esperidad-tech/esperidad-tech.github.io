@@ -102,6 +102,7 @@ function grandHTML(m){
       return h + recit(st.n > 0 ? X.apres : (X.apresRien || X.apres)) + orL + '<button class="btn grand" data-act="fermer">D\'accord</button></div>';
     }
     var S = st.fini === 'ok' ? X.reussi : st.fini === 'piege' ? X.piege : st.fini === 'rate' ? X.echec : null;
+    if(S && !S.code && S.t) h += recit(S.t);   /* (19 novembre) une fin sans code : le conteur la raconte ici (Anselme raté : le plan B) */
     if(S && S.code) return h + '<button class="btn grand b-aller" data-act="gd-suite" data-g="' + g + '">' + esc(S.bouton || '✨ La suite') + '</button></div>';
     /* (X.fete : un grand dialogue de la fête — pas de conversation où revenir, on referme) */
     if(X.fete) return h + '<button class="btn grand" data-act="fermer">D\'accord</button></div>';
@@ -254,7 +255,8 @@ function feteN(){ var P = M.P(); return (P && P.fete && P.fete.n) || 0; }
 function filetActif(id){
   var f = F(), x = f && f.gens[id], P = M.P(); if(!x || !x.filet) return false;
   if(P.vus['fete:filet:' + id]) return true;
-  return !(P.objets['_' + x.filet.sauf] || (P.recus && P.recus[x.filet.sauf]));
+  if(x.filet.saufVu && P.vus[x.filet.saufVu]) return false;   /* (19 novembre) elle a déjà avoué (une vérité, plus un code) */
+  return !(x.filet.sauf && (P.objets['_' + x.filet.sauf] || (P.recus && P.recus[x.filet.sauf])));
 }
 var FETE_TXT = 'Tout le village danse sous les lampions. Chacun a un mot à te glisser à l\'oreille !';
 /* LE DON (17 novembre, étape 4 du nouveau fil) : E.fete.gens.<pnj>.don = {obj, si:[conditions], titre, t, note} — à la fête, ce villageois
@@ -351,7 +353,7 @@ function feteHTML(lieu){
   if(cherche) ids = [Rt.pnj].concat(ids.filter(function(id){ return id !== Rt.pnj; }));
   ids.forEach(function(id){
     if(!D.PNJ[id]) return;
-    var ai = aide(id), appel = (cherche && id === Rt.pnj) || (!!ai && !aideFinie(id)) || !!don(id), vu = !!vus[id] && !appel && !ai;
+    var ai = aide(id), dn0 = don(id), appel = (cherche && id === Rt.pnj) || (!!ai && !aideFinie(id)) || (!!dn0 && !dn0.discret), vu = !!vus[id] && !appel && !ai && !dn0;   /* (dn0.discret : Tim, le plan B — touchable, sans « ❗ ») */
     /* (la règle du Barde, Romain, 13 novembre : celui qui a tout dit passe au rouge, et on ne peut plus le toucher) */
     h += '<button type="button" class="gd-fete-tete' + (appel ? ' gd-appel' : '') + (vu ? ' vu' : '') + '"' + (vu ? ' disabled aria-label="' + esc(nom(id) + ' : rien de plus à dire') + '"' : ' data-act="gd-fete" data-id="' + id + '" aria-label="' + esc((appel ? (ai ? 'Quelque chose à te dire : ' : 'Il te cherche : ') : 'Parler à ') + nom(id)) + '"') + '>' +
       '<span class="b-gens-img">' + M.pnjImg(id) + '</span>' + (appel ? '<i class="gd-fete-badge gd-fete-appel">❗</i>' : '') + '<b>' + esc(nom(id)) + '</b></button>';
@@ -364,7 +366,7 @@ A['gd-fete'] = function(el){
   P.fete = P.fete || {vus:{}, n:0};
   /* (17 novembre) il a quelque chose à donner (Mélusine : les tenues) : sa réplique, puis « ✨ La suite » → l'objet et son code */
   var dn = don(id);
-  if(dn){ P.fete.vus[id] = 1; P.vus['fete:don:' + id] = 1; donner('obj:' + dn.obj, dn.note, (D.PNJ[id] || {}).ic);
+  if(dn){ P.fete.vus[id] = 1; P.vus['fete:don:' + id] = 1; donner(dn.code || 'obj:' + dn.obj, dn.note, (D.PNJ[id] || {}).ic);
     M.son('clic'); M.sauver(); M.ouvrir({type:'grand', vue:'fete', qui:id, don:true, classe:'b-feuille-conv'}); return; }
   /* (16 novembre) le Barde qui ne lui avait encore jamais parlé à la fête entend d'abord sa phrase de la fête, et sa note (celle de
      Silas, « le maire ouvre le bal », sert au maire inquiet) : avant, elle était perdue */
@@ -397,7 +399,7 @@ A['gd-aide'] = function(el){
 function feteVueHTML(m){
   if(m.aide && aide(m.qui)) return aideVueHTML(m);
   var f = F(), id = m.qui, x = f.gens[id], fil = P_vus('fete:filet:' + id) && x.filet;
-  if(m.don && x.don) return '<div class="ma-feuille gd-feuille">' + tete(id) + ligne(cite(x.don.t), id) + '<button class="btn grand b-aller" data-act="gd-fete-don" data-id="' + id + '">✨ La suite</button></div>';
+  if(m.don && x.don) return '<div class="ma-feuille gd-feuille">' + tete(id) + (x.don.q ? '<p class="gd-aide-q">' + esc(x.don.q) + '</p>' : '') + ligne(cite(x.don.t), id) + '<button class="btn grand b-aller" data-act="gd-fete-don" data-id="' + id + '">✨ La suite</button></div>';
   var h = '<div class="ma-feuille gd-feuille">' + tete(id) + ligne(cite(fil ? x.filet.t : x.t), id);
   if(fil) return h + '<button class="btn grand b-aller" data-act="gd-fete-code" data-id="' + id + '">✨ La suite</button></div>';
   return h + '<button class="btn grand" data-act="fermer">D\'accord</button></div>';
@@ -406,7 +408,7 @@ function P_vus(k){ var P = M.P(); return !!(P && P.vus && P.vus[k]); }
 A['gd-fete-don'] = function(el){
   var id = el.dataset.id, x = (F() || {gens:{}}).gens[id]; if(!x || !x.don) return;
   var O = (M.E().objets || {})[x.don.obj] || {};
-  M.decouvrir({ic:O.ic || (D.PNJ[id] || {}).ic, titre:x.don.titre || O.nom || nom(id), t:cite(x.don.t), code:'obj:' + x.don.obj});
+  M.decouvrir({ic:x.don.code ? (D.PNJ[id] || {}).ic : O.ic || (D.PNJ[id] || {}).ic, titre:x.don.titre || O.nom || nom(id), t:cite(x.don.t), code:x.don.code || 'obj:' + x.don.obj});
 };
 A['gd-fete-code'] = function(el){
   var id = el.dataset.id, x = (F() || {gens:{}}).gens[id]; if(!x || !x.filet) return;
@@ -422,6 +424,7 @@ if(ind0) M.pnjIndispo = function(id){
       var P = M.P(), Rt = R();
       if(Rt && id === Rt.pnj && retenirDispo()) return false;
       if(aide(id)) return false;                       /* (il aide ceux du donjon : toujours ouvert, on peut le relire) */
+      if(don(id)) return false;                        /* (19 novembre) il a quelque chose à donner (Tim, le plan B) : plus rouge */
       return !!(P.fete && P.fete.vus && P.fete.vus[id]);
     }
   }catch(e){ console.error(e); }
