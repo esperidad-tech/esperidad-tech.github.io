@@ -150,7 +150,7 @@ function texte(E, D){
   Object.keys(E.fete.gens).forEach(id => {
     const x = E.fete.gens[id];
     p('- **' + nom(id) + '** : « ' + x.t + ' »' + (x.note ? ' _(noté dans le Carnet)_' : ''));
-    if(x.filet) p('  - **Le filet** (si son aveu n\'a pas été obtenu l\'après-midi) : « ' + x.filet.t + ' » → code ' + nomCode(x.filet.code));
+    if(x.filet) p('  - **Le filet** (si son aveu n\'a pas été obtenu l\'après-midi) : « ' + x.filet.t + ' »' + (x.filet.code ? ' → code ' + nomCode(x.filet.code) : ' (sans code : à dire au Sage)'));
     Object.keys(E.grands).filter(g => E.grands[g].attente && E.grands[g].pnj === id).forEach(g => p('  - 🎭 **Plus tard, il vient trouver le Barde tout seul** : le grand dialogue « ' + g + ' » (§3), sur un minuteur caché.'));
   });
   p('');

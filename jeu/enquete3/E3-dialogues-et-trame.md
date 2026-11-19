@@ -238,7 +238,9 @@ Puis : « Odette va bien ! Pour fêter ça : grande fête cette nuit, sur la pla
    - « Une banderole par chat d'Odette : Moustache, Biscotte, Pompon, Caramel, Mistigri, Noisette, Grisette. »
 5. **C'est vous qui avez écrit la lettre.** — 🔒 s'ouvre avec : le code « Deux écritures pareilles » (pour barde) _(l'après-midi)_
    - 🤥 « Moi ? Je sais à peine écrire mon nom ! »
-   - 🔍 démasqué : « C'est moi… Un homme en cape m'a forcée à l'écrire et à la déposer. Je n'ai pas vu son visage. Pardon… Pour m'excuser, je vous couds des tenues de combat. Revenez me voir cette nuit, à la fête : elles seront prêtes ! » → donne « L'aveu de Mélusine » (pour sage)
+   - 🔍 démasqué : « C'est moi… Un homme en cape m'a forcée à l'écrire et à la déposer. Je n'ai pas vu son visage. Pardon… Est-ce que je peux faire quelque chose pour vous, pour me faire pardonner ? »
+6. **Pouvez-vous nous coudre des tenues de combat ?** — 🔒 s'ouvre avec : Mélusine démasquée (question 5) _(l'après-midi)_
+   - « Oui, bien sûr ! Je m'y mets tout de suite. Revenez me voir cette nuit, à la fête : elles seront prêtes ! »
 - **Tout demandé** : « Laisse-moi coudre, je t'en prie… »
 - **Occupé, le matin** : « Pas maintenant ! Je viens de coudre ma manche à la banderole de Pompon… » — puis, si on revient : « Encore toi ? Attention à mes épingles ! Repasse cet après-midi. »
 
@@ -415,7 +417,7 @@ Chacun dit une réplique, autant de fois qu'on veut.
 - **Victor** : « Je danse ! Enfin, j'essaie. »
 - **Tim** : « Chut ! Je suis monté en haut du mât des lampions. »
 - **Mélusine** : « Je n'écrirai plus jamais pour personne… »
-  - **Le filet** (si son aveu n'a pas été obtenu l'après-midi) : « C'est trop dur de garder ce secret… J'ai besoin de me confier. C'est moi qui ai écrit la lettre ! Un homme en cape m'y a forcée. Je n'ai pas vu son visage. » → code « L'aveu de Mélusine » (pour sage)
+  - **Le filet** (si son aveu n'a pas été obtenu l'après-midi) : « C'est trop dur de garder ce secret… J'ai besoin de me confier. C'est moi qui ai écrit la lettre ! Un homme en cape m'y a forcée. Je n'ai pas vu son visage. » (sans code : à dire au Sage)
 - **Iris** : « J'ai tressé une couronne pour Odette. Je la poserai sur sa porte… quand elle reviendra. »
 - **Farinel** : « Je ne dors pas, je repose mes yeux ! »
 - **Basile** : « Les lampions tiennent ! Je n'en reviens pas moi-même. »
