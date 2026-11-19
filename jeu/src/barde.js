@@ -294,6 +294,12 @@ B.rienADire = function(id){
   var P = M.P(), E = M.E(); if(!P || !E || !E.pnj || !E.pnj[id] || id === 'voisin') return false;
   var Q = questions(id); if(!Q.length) return false;
   if(Q.some(function(q, i){ return !repondu(id, i) && !cachee(id, q) && (!q.besoin || M.besoinOk(q.besoin)); })) return false;
+  /* (Romain, 19 novembre, 9 h 29) un grand dialogue pas encore tranché garde sa porte ouverte : pas encore lancé (même s'il attend
+     encore « tout demandé »), ou lancé puis quitté (« Reprendre la conversation »), ou une deuxième chance ('encore'). Seule une
+     erreur (ou sa fin) le ferme. */
+  var GS = (P.grands || {});
+  if(Q.some(function(q){ if(!q.grand || (q.moments && !M.momentOk(q.moments)) || (q.cacheSi && M.besoinOk(q.cacheSi))) return false;   /* (pas cachée parce qu'elle attend encore « tout demandé » : elle viendra) */
+    var f = (GS[q.grand] || {}).fini; return !f || f === 'encore'; })) return false;
   /* (Romain, 13 novembre : « du moment qu'on a vu les discussions et que le bouton Mensonge a disparu […] tu me le mets quand même en
      rouge. Tant pis si on n'a pas trouvé le mensonge ») un mensonge pas démasqué ne garde la porte ouverte que tant qu'on peut encore
      le démasquer : le bouton « 🤥 Mensonge ? » est toujours sous sa réponse (mentEncorePossible), ou il reste une potion de vérité à

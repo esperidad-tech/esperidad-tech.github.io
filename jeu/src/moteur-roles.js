@@ -404,12 +404,14 @@ M.obligesCarte = function(){
     if(c.vu){ m = /^(?:verite|barde|fete:filet|fete:don):([a-z_]+)/.exec(c.vu); return m ? [m[1]] : null; }
     return null;
   }
+  /* oblige:true, ou oblige:['nuit'…] : seulement à ces moments (Romain, 19 novembre, 9 h 37) */
+  function obl(x){ return x === true || (Array.isArray(x) && x.indexOf(M.momentId()) >= 0); }
   try{
     M.cle(E.lieux || {}).forEach(function(id){
       var pts = M.pointsVisibles(id, role);
       pts.forEach(function(p){
         if(!p || (p.besoin && !M.besoinOk(p.besoin))) return;
-        if(p.oblige && !P.vus[role + ':' + id + ':' + p.id]) poser(id);
+        if(obl(p.oblige) && !P.vus[role + ':' + id + ':' + p.id]) poser(id);
         /* p.obligeUn:'<groupe>' : un seul des points de ce groupe suffit (tirer, pousser ou soulever la grille de la crypte) */
         if(p.obligeUn && !pts.some(function(x){ return x.obligeUn === p.obligeUn && P.vus[role + ':' + id + ':' + x.id]; })) poser(id);
       });
@@ -417,7 +419,7 @@ M.obligesCarte = function(){
     if(role === 'barde') M.cle(E.pnj || {}).forEach(function(id){
       var N = E.pnj[id], ou = N.ou && N.ou[M.momentId()]; if(!ou) return;
       (N.questions || []).forEach(function(q, i){
-        if(!q.oblige || !M.momentOk(q.moments)) return;
+        if(!obl(q.oblige) || !M.momentOk(q.moments)) return;
         var st = q.grand ? (P.grands || {})[q.grand] : null;
         if(q.grand ? (st && st.fini && st.fini !== 'encore') : P.vus['barde:' + id + ':' + i]) return;
         if(!q.besoin || M.besoinOk(q.besoin)){ poser(ou); return; }
