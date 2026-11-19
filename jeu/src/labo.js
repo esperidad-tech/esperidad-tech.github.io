@@ -56,7 +56,7 @@ function fiche(){
   var aucune = !Object.keys(P.analyses || {}).some(function(k){ return P.analyses[k]; });
   var guide = (M.tutoActif && M.tutoActif() && aucune) ? (l.filter(function(id){ return !P.analyses[id] && plusTard.indexOf(id) < 0; })[0] || null) : null;
   return {jeu:true, niveau:(E.niveau || 1) >= 6 ? 'difficile' : 'facile', recus:l, faits:l.filter(function(id){ return !!P.analyses[id]; }), plusTard:plusTard, etat:P.labo || null,
-    codes:codes, style:style(), son:!(S.options && S.options.son === false), mimi:aUnChat(), intro:!S.laboIntro, guide:guide,
+    codes:codes, style:style(), son:!(S.options && S.options.son === false), mimi:aUnChat(), mimiPantin:(window.MimiLabo ? window.MimiLabo() : null), intro:!S.laboIntro, guide:guide,
     /* (enquête 3) le Livre d'or de la fête est posé sur la paillasse : le Sage a donné le code « Les écritures du village » */
     livredor:!!P.recus['info:ecritures']};
 }
