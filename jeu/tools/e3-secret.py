@@ -248,7 +248,22 @@ with sync_playwright() as p:
     pg.evaluate("() => { M.P().moment = M.E().moments.length - 1; M.sauver(); M.render(); }")
     verifier('donjon' not in pages(pg), 'la nuit : plus de page « Le plan des souterrains » arrivée toute seule')
     t = page(pg, 'vieuxplan')
-    verifier(pg.locator('#livre-ici .lv-page.on [data-act=ds-plan]').count() == 0 and 'plus un seul nom' in t and 'souterrain' not in t.lower(), 'la nuit, avant le départ : le vieux plan reste muet (pas de bouton, pas un mot des souterrains)')
+    # (19 novembre, 9 h 41) le vieux plan se déroule dès qu'on l'a, à tout moment ; avant le départ, « en jour » : rien ne dit ce que c'est
+    verifier(pg.locator('#livre-ici .lv-page.on [data-act=ds-plan]').count() == 1 and 'plus un seul nom' in t and 'souterrain' not in t.lower() and 'Pisteur a ouvert' not in t, 'la nuit, avant le départ : le vieux plan se déroule déjà, sans un mot des souterrains')
+    pg.locator('#livre-ici .lv-page.on [data-act=ds-plan]').first.click(); pg.wait_for_timeout(1500)
+    src = pg.evaluate("() => { var f = document.getElementById('donjon-plan-cadre'); return f ? f.src : (window.__donjonVers || ''); }")
+    verifier('jour=1' in src, f'(19 novembre) avant le départ, le plan s\'ouvre « en jour » ({src[-40:]})')
+    tx = 'ERREUR : pas de cadre'
+    for fr0 in pg.frames:
+        if 'sage.html' in fr0.url:
+            try:
+                fr0.wait_for_selector('.plan-svg', timeout=8000)
+                tx = fr0.evaluate("() => { var c = document.querySelector('.plan-svg').cloneNode(true); [].forEach.call(c.querySelectorAll('.traduction'), function(x){ x.remove(); }); return document.body.innerText + ' ' + c.textContent; }")
+            except Exception as ex:
+                tx = 'ERREUR ' + str(ex)
+    verifier('ERREUR' not in tx and 'Fondateurs' not in tx and 'rats' not in tx and 'givre' not in tx and 'bibliothèque' not in tx and 'atelier' not in tx.lower(), f'(19 novembre) en jour, ni titre ni noms sur le plan ({tx[:100]!r})')
+    shot(pg, 'sage-vieuxplan-jour')
+    pg.evaluate("() => { if(M.fermerPlan) M.fermerPlan(); }"); pg.wait_for_timeout(300)
     code(pg, 'info:on_descend'); fermer(pg)
     t = page(pg, 'vieuxplan')
     verifier('étui de cuir' in t and 'Le Pisteur a ouvert le passage' in t and 'Fondateurs' not in t and pg.locator('#livre-ici .lv-page.on [data-act=ds-plan]').count() == 1, f'le Pisteur a ouvert le passage : le vieux plan d\'Odette se regarde de tout près ({t[-120:]})')

@@ -337,7 +337,7 @@ function portrait(m){ var C = cfg(), base = C && C.portraits; return base ? '<im
 var CADRE_PLAN = 'donjon-plan-cadre';
 function planAdresse(nouveau){
   var C = cfg(), P = M.P(), c = Object.keys(dj()).filter(function(k){ return POUR_DONJON[k.split(':')[0]] === 'sage'; });
-  return C.pages.sage + '?enquete=' + P.id + '&jeton=' + encodeURIComponent(jeton()) + '&dans=jeu&codes=' + encodeURIComponent(c.join(',')) + (nouveau ? '&nouveau=' + encodeURIComponent(nouveau) : '');
+  return C.pages.sage + '?enquete=' + P.id + '&jeton=' + encodeURIComponent(jeton()) + '&dans=jeu&codes=' + encodeURIComponent(c.join(',')) + (nouveau ? '&nouveau=' + encodeURIComponent(nouveau) : '') + (nuitOuverte() ? '' : '&jour=1');
 }
 M.planOuvert = function(){ return !!document.getElementById(CADRE_PLAN); };
 M.fermerPlan = function(){
@@ -348,12 +348,12 @@ A['ds-plan'] = function(el){
   var P = M.P(); if(!P || M.role() !== 'sage' || !cfg() || M.planOuvert()) return;
   var nouveau = el && el.dataset ? el.dataset.nouveau : '', u = planAdresse(nouveau);
   if(nouveau === 'rune:lumiere') P.vus['donjon:rune:plan'] = 1;   /* (la scène de la rune qui apparaît : une seule fois) */
-  P.vus['donjon:ouvert:sage'] = 1; M.sauver(); if(M.stop) M.stop(); M.son('page');
+  P.vus[nuitOuverte() ? 'donjon:ouvert:sage' : 'donjon:ouvert:sage:jour'] = 1; M.sauver(); if(M.stop) M.stop(); M.son('page');
   M.UI.modal = null;
   if(window.BRUMEVAL_SANS_DONJON){ window.__donjonVers = u; M.render(); return; }
   M.render();
   var f = document.createElement('iframe');
-  f.id = CADRE_PLAN; f.className = 'labo-cadre ds-plan-cadre'; f.setAttribute('title', 'Le plan des souterrains'); f.setAttribute('allow', 'autoplay; fullscreen');
+  f.id = CADRE_PLAN; f.className = 'labo-cadre ds-plan-cadre'; f.setAttribute('title', 'Le vieux plan d\'Odette'); f.setAttribute('allow', 'autoplay; fullscreen');
   f.src = u;
   document.body.appendChild(f);
   document.documentElement.classList.add('labo-ouvert');
@@ -377,10 +377,15 @@ window.addEventListener('message', function(e){
      pas encore déroulé le plan (ou pas encore depuis que sa pierre de rune y est posée) ;
    · toucher le petit plan lui-même le déroule aussi en grand (pierres.js, PLANS.vieuxplan.ouvrir) ;
    · M.donjonPlanBloc : au bas de la page, il ne reste que les explications. */
+/* la nuit, le passage ouvert : le plan devient celui de « là-dessous » (ses noms, son titre, les textes du Grand Livre) */
+function nuitOuverte(){ var P = M.P(); return !!(P && nuit() && P.recus && P.recus['info:on_descend']); }
+M.donjonPlanNuit = nuitOuverte;
 M.donjonPlanOuvrable = function(){
-  /* (et seulement la nuit : les codes ne changent pas d'une partie à l'autre — un joueur qui connaît déjà celui du départ ne doit pas
-     pouvoir dérouler le plan dès le matin) */
-  var P = M.P(); return !!(P && cfg() && M.role() === 'sage' && nuit() && P.recus && P.recus['info:on_descend']);
+  /* (Romain, 19 novembre, 9 h 41 : « quand on a le vieux plan, je veux qu'on puisse avoir le vieux plan directement […] même si le Sage il
+     est resté au matin […] on peut déjà interagir avec le plan […] mais on comprend pas à quoi ça sert ») : dès que le Sage a le vieux plan,
+     à tout moment, il se déroule — en « jour » (planAdresse : sans noms, sans titre, sans crâne) tant que le passage n'est pas ouvert, la
+     nuit. Le filet de la nuit (le plan gravé, sans la cachette) reste. */
+  var P = M.P(); return !!(P && cfg() && M.role() === 'sage' && ((P.recus && P.recus['obj:vieux_plan']) || nuitOuverte()));
 };
 /* la petite scène « Une rune apparaît ! » ne se joue qu'une fois sur le grand plan (P.vus['donjon:rune:plan']) */
 function runeAMontrer(){ var P = M.P(); return !!(P && P.vus['pierre:vieuxplan'] && dj()['rune:lumiere'] && !P.vus['donjon:rune:plan']); }
@@ -395,11 +400,11 @@ M.donjonPlanBouton = function(ou){
   if(!M.donjonPlanOuvrable()) return '';
   var P = M.P(), attend = !!(dj()['rune:lumiere'] && !P.vus['pierre:vieuxplan']);
   if((ou === 'apres') !== attend) return '';
-  var neuf = runeAMontrer(), guide = !attend && (neuf || !P.vus['donjon:ouvert:sage']);
+  var neuf = runeAMontrer(), guide = !attend && (neuf || !P.vus[nuitOuverte() ? 'donjon:ouvert:sage' : 'donjon:ouvert:sage:jour']);
   return '<div class="ds-plan-bouton"><button class="btn grand b-aller lv-ouvrir' + (guide ? ' b-guide' : '') + '" data-act="ds-plan"' + (neuf ? ' data-nouveau="rune:lumiere"' : '') + '>🔎 Regarder le plan de tout près</button></div>';
 };
 M.donjonPlanBloc = function(){
-  if(!M.donjonPlanOuvrable()) return '';
+  if(!M.donjonPlanOuvrable() || !nuitOuverte()) return '';   /* (le jour : rien ne dit ce que c'est) */
   var P = M.P(), C = dj(), posee = !!P.vus['pierre:vieuxplan'];
   var t = 'Le Pisteur a ouvert le passage : ce vieux plan, c\'est celui de ce qu\'il y a là-dessous ! Le Pisteur, lui, ne verra que de la brume : c\'est toi qui dis le chemin, à voix haute !';
   var l = [];
