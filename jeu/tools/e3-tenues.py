@@ -27,6 +27,23 @@ with sync_playwright() as p:
         verifier('Super, OK' in pg.evaluate("() => document.querySelector('#voile').innerText"), f'{role} : « 👍 Super, OK ! »')
         pg.wait_for_timeout(2500); shot(pg, 'tenue-' + role)
         pg.context.close()
+    # (19 novembre, 12 h 36) le Barde : à la fête, Mélusine lui donne les tenues ; après « D'accord », sa tenue à lui
+    print('— barde')
+    pg = debut(b, 'barde', TAB)
+    pg.evaluate("() => { M.S.heros = Object.assign(M.S.heros || {}, {sexe:'m', peau:'p4', cheveux:'noir', age:'adulte'}); var P = M.P(); P.moment = 2; P.vus['verite:melusine:4'] = 1; M.sauver(); M.render(); }")
+    pg.evaluate("() => { M.UI.modal = null; M.A['gd-fete']({dataset:{id:'melusine'}, closest:function(){ return null; }}); }"); pg.wait_for_timeout(500)
+    pg.locator('#voile [data-act=gd-fete-don]').click(); pg.wait_for_timeout(500)
+    verifier(pg.locator('#voile [data-act=ds-tenue-barde]').count() == 1, 'barde : les tenues de Mélusine, puis « D\'accord »')
+    pg.locator('#voile [data-act=ds-tenue-barde]').click(); pg.wait_for_timeout(1500)
+    m = pg.evaluate("() => M.UI.modal ? {type:M.UI.modal.type, vue:M.UI.modal.vue} : null")
+    src = pg.evaluate("() => { var f = document.querySelector('#voile iframe.ds-tenue'); return f ? f.src : ''; }")
+    verifier(m == {'type': 'descente', 'vue': 'tenueMel'} and 'h=barde' in src and 'b%3Am.p4.noir' in src, f'(19 novembre) barde : sa tenue de combat à lui ({m}, {src[-70:]})')
+    pg.wait_for_timeout(3000)
+    fr = [x for x in pg.frames if 'tenue.html' in x.url]
+    pret = fr[0].evaluate("() => !!(window.TENUE && window.TENUE.pret && window.TENUE.qui.join() === 'barde')") if fr else False
+    verifier(pret, '(19 novembre) le Barde est dessiné dans la fenêtre')
+    shot(pg, 'tenue-barde')
+    pg.context.close()
     b.close()
 print('Erreurs de page :', erreurs or 'aucune')
 print('ÉCHECS :', echecs)

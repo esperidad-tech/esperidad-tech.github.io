@@ -27,7 +27,7 @@ body.pret #sc{opacity:1}
 'use strict';
 var P = {};
 (location.search || '').replace(/^\?/, '').split('&').forEach(function(x){ if(!x) return; var k = x.split('='); P[decodeURIComponent(k[0])] = decodeURIComponent((k[1] || '').replace(/\+/g, ' ')); });
-var ORDRE = ['sage', 'alchimiste', 'pisteur'], HA = window.HerosAnime;
+var ORDRE = ['sage', 'alchimiste', 'pisteur', 'barde'], HA = window.HerosAnime;
 var qui = ORDRE.filter(function(h){ return (P.h || 'pisteur').split(',').indexOf(h) >= 0; });
 if(!qui.length) qui = ['pisteur'];
 var LOOK = window.DonjonAllure.lire(P.look, HA.DEFAUT);

@@ -28,7 +28,8 @@ function alchimiste(lk, grain){
   var pr = '#5e3a96', capu = '#4e2f86', cuir = '#7a5232', gant = '#5a3a26', pant = '#3e3448', bt = '#6e4428', or = '#d9b46a';
   var B = '', x = SQ.brasA[0], xb = SQ.brasB[0];
   /* couche 0 : les pans de la veste, la pointe de la capuche */
-  B += J('torse', '<g data-souple="pans"></g>' + J('tete', '<g data-souple="pointe"></g>'));
+  B += J('torse', '<g data-souple="pans"></g>' + J('tete', '<g data-souple="chDos"></g><g data-souple="pointe"></g>'));
+  var co = coiffureDe('alchimiste', lk);
   var genou = function(xx, k){ return k ? '' : P('M' + (xx - 10) + ' 224 L ' + (xx + 10) + ' 222 L ' + (xx + 11) + ' 238 L ' + (xx - 9) + ' 240 Z', d.g(cuir)) + rivets([[xx - 4, 230], [xx + 5, 229]]); };
   B += jambe(d, 'A', pant, bt, genou);
   /* bras loin, derrière le corps : manche violette, revers d'or, gant ouvert */
@@ -70,7 +71,7 @@ function alchimiste(lk, grain){
       E(150, 162, 14, 4, '#2a2436', ' stroke="' + O + '" stroke-width="2.6"') + L('M137 162 Q 150 168 163 162', '#c87a3a', 2.4) +
       L('M141 168 Q 142 178 148 182', '#8a84a0', 1.6, ' opacity=".7"') + rep('marmite', 150, 174), [150, 152]) + sacoche(d) + amulette(d, 127, 174, true) + rep('amulette', 127, 174));
   /* devant : la main loin (fiole, louche, herbes), la tête, les lunettes d'alchimiste, le col */
-  B += J('torse', J('tete', capucheFond(d, 124, 58, capu) + visage(d, 124, 58, lk) + meche(d, 124, 58, ch) + capuche(d, 124, 58, capu, or) +
+  B += J('torse', J('tete', capucheFond(d, 124, 58, capu) + visage(d, 124, 58, lk) + cheveux(d, 124, 58, ch, co, capu) + capuche(d, 124, 58, capu, or) + cheveuxDessus(d, 124, 58, ch, co) +
       L(T('M-26 -22 C -10 -30 20 -32 36 -24', 124, 58), O, 6) + L(T('M-26 -22 C -10 -30 20 -32 36 -24', 124, 58), '#4a2e1c', 3.5) +
       [[2, -30, 8], [21, -30, 7]].map(function(g){
         var gx = 124 + g[0], gy = 58 + g[1];
@@ -86,6 +87,8 @@ function alchimiste(lk, grain){
   B += J('torse', J('brasB', seg(xb, 108, 143, 18, 15.5, d.gh(pr)) + L('M' + (xb + 5) + ' 112 L ' + (xb + 4) + ' 138', LUNE, 1.4, ' opacity=".45"') +
     J('avantBrasB', seg(xb, 142, 181, 15.5, 13.5, d.gh(pr)) + bande(xb, 168, 17, 10, or) +
       J('mainB', '<g data-fiole-b>' + fioleTenue(d, xb, 184, 'hfB' + (++uid), '#ff8a3a', 1) + '</g>' + poing(d, xb, 187, 8.5, gant) + rep('pince', xb, 187)))));
+  /* la mèche de devant tombe par-dessus l'épaule et le bras proche */
+  B += J('torse', J('tete', '<g data-souple="chDev"></g>'));
   var corps = '<ellipse data-ombre cx="125" cy="293" rx="52" ry="8" fill="#000" opacity=".35"/>' + J('racine', J('bassin', B));
   var so = [
     {nom:'pans', type:'tissu', dos:[[98, 146], [84, 186], [62, 224]], devant:[[132, 150], [136, 190], [142, 228]], k:55, c:3.2, g:420, vent:0.8, onde:2.6,
@@ -94,8 +97,7 @@ function alchimiste(lk, grain){
     {nom:'tablier', type:'jupe', haut:[[112, 152], [149, 151]], bas:[[110, 214], [156, 212]], jambe:'cuisse', yJ:214, k:80, c:8, milieu:true,
       chemins:[{f:d.g(cuir), contour:true}, {f:sombre(cuir, .3), o:.8, zone:[0, .18, 0, 1]}, {s:'#d8b07a', w:1.3, o:.75, ligne:['u', .12, .03, .95], tirets:1},
         {s:'#d8b07a', w:1.3, o:.75, ligne:['u', .9, .03, .95], tirets:1}, {s:'#2a1a10', w:5, o:.22, ligne:['v', .55, .45, .75]}, {s:LUNE, w:1.8, o:.4, ligne:['u', .99, .05, .95]}]},
-    {nom:'pointe', type:'meche', pts:[[92, 6], [78, 2], [64, 6], [54, 16], [48, 30]], larg:[14, 11, 8, 5, 2], k:34, c:3.4, g:450,
-      f:d.g(capu), traits:[[sombre(capu, .45), 1.6, .8, -.15]], noeud:or, pompon:true, rNoeud:4.5}
-  ];
+    pointeCapuche(d, capu, or)
+  ].concat(souplesCheveux(d, ch, co, or));
   return {svg:d.svg(corps, grain), souples:so};
 }

@@ -5,6 +5,10 @@ var EZ = {lin:'linear', o:'cubic-bezier(.2,.75,.3,1)', i:'cubic-bezier(.55,0,.85
 function J0(){ return {x:0, y:0, r:0, k:0, sx:1, sy:1}; }
 function jn(v){ var o = J0(); if(typeof v === 'number') o.r = v; else for(var k in v) o[k] = v[k]; return o; }
 function tf(s){ return 'translate(' + r1(s.x) + 'px,' + r1(s.y) + 'px) rotate(' + (Math.round(s.r * 100) / 100) + 'deg) skewX(' + r1(s.k) + 'deg) scale(' + (Math.round(s.sx * 1000) / 1000) + ',' + (Math.round(s.sy * 1000) / 1000) + ')'; }
+/* la pose d'une pièce de CE héros : une personne âgée a le dos un peu voûté (Romain, 17 novembre : « légèrement, pas des vieux
+   croûtons ») — le torse un peu penché en avant, la tête qui se redresse à moitié. Ajouté au moment d'écrire la pose : les poses
+   elles-mêmes (et ce qu'on lit avec capturer) restent celles d'un adulte. */
+function tfH(h, n, s){ var o = h.voute && h.voute[n]; return tf(o ? {x:s.x, y:s.y, r:s.r + o, k:s.k, sx:s.sx, sy:s.sy} : s); }
 function egal(a, b){ return a.x === b.x && a.y === b.y && a.r === b.r && a.k === b.k && a.sx === b.sx && a.sy === b.sy; }
 var DEG = 180 / Math.PI;
 function norm(a){ while(a > 180) a -= 360; while(a <= -180) a += 360; return a; }

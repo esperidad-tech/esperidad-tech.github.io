@@ -227,8 +227,9 @@ function tenueTexte(){
   if(reste <= 0) return {ok:true, t:(mel ? 'Dans la tenue de Mélusine — capuche violette' : 'Capuche violette') + ', lunettes sur le front, et tes sept potions à la ceinture : te voilà prêt pour les souterrains ! Le Pisteur vous emmène tous les trois sur sa tablette.'};
   return {ok:false, t:'Ta tenue est prête… mais pas tes potions ! Il t\'en manque ' + (reste > 1 ? reste : 'une') + '. On a besoin des sept potions pour descendre : file à ton établi. Quand la dernière sera prête, ton code pour le Pisteur t\'y attendra.'};
 }
+A['ds-tenue-barde'] = function(){ if(!M.tenueFenetre('Mélusine a pensé à toi aussi : un pourpoint rouge à galons d\'or, un gilet de cuir, une petite cape, un chapeau à plume… et une sangle pour ton luth. Te voilà prêt pour cette nuit !')) M.fermer(); };
 M.tenueFenetre = function(t){
-  var role = M.role(); if(!cfg() || ROLES_A.concat(['pisteur']).indexOf(role) < 0) return false;
+  var role = M.role(); if(!cfg() || ROLES_A.concat(['pisteur', 'barde']).indexOf(role) < 0) return false;   /* (19 novembre, 12 h 36 : le Barde aussi) */
   M.son('gain'); M.ouvrir({type:'descente', vue:'tenueMel', t:t}); return true;
 };
 M.tenueHTML = function(dansLivre){
