@@ -44,7 +44,32 @@ function tweenLin(dur, f, fin){ var t0 = performance.now(); if(reduit) dur = 1; 
 function horsEcran(x){ var c = $('#cadre').getBoundingClientRect(), d = $('#decor').getBoundingClientRect(), u = d.width/1200 || 1; return {x:x == null ? 560 : x, y:640 + Math.max(0, c.bottom - d.bottom)/u + 230}; }
 function mimiPlace(p){ mimi.x = p.x; mimi.y = p.y; var e = mimi.el; e.style.left = (p.x/12) + '%'; e.style.top = (p.y/6.4) + '%'; }
 function mimiTaille(k){ mimi.taille = k; mimi.el.style.setProperty('--taille', k.toFixed(3)); }
-function mimiPose(p, el){ el = el || mimi.el; ['assis','marche','dort','lave','salut'].forEach(function(c){ el.classList.remove('at-c-' + c); }); el.classList.add('at-c-' + p); }
+function mimiPose(p, el){ el = el || mimi.el; ['assis','marche','dort','lave','salut'].forEach(function(c){ el.classList.remove('at-c-' + c); }); el.classList.add('at-c-' + p);
+  /* (19 novembre) la vraie Mimi (le pantin) glisse vers sa pose ; « marche » : debout, pendant les sauts */
+  if(mimi.rig && el === mimi.el && !mimi.rig.mort) try{ mimi.rig.pose(p === 'marche' ? 'debout' : p); }catch(e){} }
+/* ============ (Romain, 19 novembre, 9 h 24 et 12 h 36) LA VRAIE MIMI SUR LA PAILLASSE ============
+   « C'est le vieux chat, mais le nouveau chat […] des petites mimiques, où il est content, il ronronne ». Le jeu donne son pelage, ses yeux
+   et ses habits (LABO_CFG.mimiPantin : {v, acc}, atelier.js MimiLabo) ; le pantin (mimi-pantin.js, embarqué dans le labo) la fait vivre.
+   Assise sur la paillasse, elle fait ses petites mimiques de temps en temps (content, ronron, clignements, oreille, queue, elle pétrit). */
+function mimiPantinSVG(){
+  var Pm = window.MimiPantin, c = (typeof CFG === 'object' && CFG && CFG.mimiPantin) || null;
+  if(!Pm || !c) return '';
+  try{ return '<svg viewBox="0 0 ' + Pm.W + ' ' + Pm.H + '" overflow="visible" aria-hidden="true"><defs>' + Pm.defs() + '</defs>' + Pm.dessin(c.v || 0, Pm.pose('assis'), c.acc || {}) + '</svg>'; }catch(e){ return ''; }
+}
+var MIMIQUES = [['content', 1500], ['cligne', 900], ['oreille', 1100], ['queue', 2200], ['petrit', 2600], ['penche', 1600], ['cligne', 900], ['content', 1500]];
+function mimiMimiques(){
+  clearTimeout(mimi.tm);
+  if(!mimi.rig || mimi.rig.mort) return;
+  mimi.tm = setTimeout(function(){
+    if(mimi.pose && !mimi.porte && !mimi.enRoute && !mimi.el.hidden){
+      var g = MIMIQUES[Math.floor(Math.random() * MIMIQUES.length)];
+      try{ mimi.rig.geste(g[0], {d:g[1]}); }catch(e){}
+      if(g[0] === 'content' && Math.random() < .5) mimiDit('Prrr…');
+    }
+    mimiMimiques();
+  }, 2600 + Math.random() * 3200);
+}
+function mimiRonron(oui){ if(!mimi.rig || mimi.rig.mort) return; try{ if(oui) mimi.rig.geste('ronron'); else mimi.rig.sans('ronron'); }catch(e){} }
 function mimiSaut(vers, fin, taille, sansElan){
   var de = {x:mimi.x, y:mimi.y}, t0 = mimi.taille, t1 = taille || t0, haut = 40 + Math.abs(vers.y - de.y)*.3, sens = vers.x < de.x ? -1 : 1, e = mimi.el;
   e.classList.toggle('at-c-gauche', sens < 0); mimiPose('assis'); if(!sansElan) e.classList.add('elan');
@@ -71,23 +96,23 @@ function mimiVient(){
   if(document.querySelector('.intro') || (typeof GUIDE === 'object' && GUIDE && GUIDE.id && !GUIDE.fini)) return mimiVisite(20000);
   if(S.mode || S.occupe || mimi.enRoute || mimi.pose || mimi.porte || document.hidden) return mimiVisite(6000);
   mimi.enRoute = true; mimi.el.hidden = false; mimiTaille(1); mimiPlace(horsEcran(540));
-  mimiSaut(SIEGE, function(){ mimi.enRoute = false; mimi.pose = true; mimi.sur = true; son('pose'); mimiDit('Mrrr…'); son('ronron'); majOutils(); }, .84, true);
+  mimiSaut(SIEGE, function(){ mimi.enRoute = false; mimi.pose = true; mimi.sur = true; son('pose'); mimiDit('Mrrr…'); son('ronron'); mimiRonron(true); if(mimi.rig) try{ mimi.rig.geste('content', {d:1500}); }catch(e){} majOutils(); }, .84, true);
 }
 /* Il s'en va : il saute par-dessus le bord de la paillasse et sort de l'écran. On ne le voit plus. */
 function mimiSort(depuis){
-  mimi.enRoute = true; mimi.sur = false; mimi.pose = false; majOutils();
+  mimi.enRoute = true; mimi.sur = false; mimi.pose = false; mimiRonron(false); majOutils();
   mimiSaut(horsEcran(mimi.x + (mimi.x < 600 ? -60 : 60)), function(){ mimi.enRoute = false; mimi.el.hidden = true; majOutils(); mimiVisite(55000 + Math.random()*35000); }, 1, depuis === 'main');
 }
 function mimiPart(muet){
   if(mimi.enRoute || mimi.porte) return; clearTimeout(mimi.tp);
-  if(!muet){ mimiDit('Mraou !'); son('miaou'); }
+  if(!muet){ mimiDit('Mraou !'); /* (Romain, 19 novembre, 9 h 13 : au labo, le chat ne miaule plus — ça gênait) */ }
   mimi.enRoute = true; attendre(muet ? 0 : 260, function(){ mimi.enRoute = false; mimiSort(); });
 }
 /* Il est assis dessus : tant qu'il n'a pas bougé, on ne peut rien faire des échantillons du cuir */
-function mimiGene(){ if(!mimi.sur) return false; mimiDit('Mrrr ?', true); son('ronron'); return true; }
+function mimiGene(){ if(!mimi.sur) return false; mimiDit('Mrrr ?', true); son('ronron'); if(mimi.rig) try{ mimi.rig.geste(Math.random() < .5 ? 'content' : 'penche', {d:1300}); }catch(e){} return true; }
 /* On le prend avec le doigt… */
 function mimiPrend(){
-  clearTimeout(mimi.tp); clearTimeout(mimi.tv); mimi.porte = true; mimi.sur = false; mimi.el.classList.add('porte'); mimiPose('marche'); mimi.el.classList.add('saut'); mimiDit('Mraou ?'); son('miaou'); majOutils();
+  mimiRonron(false); clearTimeout(mimi.tp); clearTimeout(mimi.tv); mimi.porte = true; mimi.sur = false; mimi.el.classList.add('porte'); mimiPose('marche'); mimi.el.classList.add('saut'); mimiDit('Mraou ?'); /* (Romain, 19 novembre, 9 h 13 : au labo, le chat ne miaule plus — ça gênait) */ majOutils();
 }
 /* … et on le repose : sur le plateau, il s'assoit là (et s'il est encore sur les échantillons, il gêne toujours) ; ailleurs, il sort de l'écran */
 function mimiLache(p){
@@ -99,9 +124,11 @@ function mimiLache(p){
 function mimiReveil(){ if(mimi.el && !mimi.pose && !mimi.enRoute) mimiVisite(20000 + Math.random()*15000); }
 function mimiRetour(){ clearTimeout(mimi.tp); clearTimeout(mimi.tv); mimi.enRoute = false; mimi.pose = false; mimi.sur = false; mimi.porte = false; mimi.geste = null; mimi.el.classList.remove('porte', 'saut', 'elan', 'at-c-gauche'); mimiTaille(1); mimi.el.hidden = true; mimiPose('assis'); mimiVisite(); }
 function poserMimi(){
-  var e = document.createElement('div'); e.className = 'mimi at-t-chat at-c-assis'; e.innerHTML = '<span class="dit"></span>' + svgChat();
+  var pan = mimiPantinSVG();
+  var e = document.createElement('div'); e.className = 'mimi at-t-chat at-c-assis' + (pan ? ' mimi-pantin' : ''); e.innerHTML = '<span class="dit"></span>' + (pan || svgChat());
   e.setAttribute('role', 'button'); e.setAttribute('aria-label', 'Mimi, le chat'); e.tabIndex = 0; e.hidden = true; mimi.el = e;
   $('#calque').appendChild(e);
+  if(pan && window.MimiPantin){ try{ mimi.rig = window.MimiPantin.monter(e.querySelector('svg'), {pose:'assis', hote:e}); mimiMimiques(); }catch(err){ mimi.rig = null; } }
   var touche = function(){ if(mimi.enRoute || mimi.porte) return; if(mimi.pose) mimiPart(); };
   e.addEventListener('pointerdown', function(ev){ if(mimi.enRoute || S.mode || S.occupe) return; mimi.geste = {id:ev.pointerId, x:ev.clientX, y:ev.clientY, bouge:false}; try { e.setPointerCapture(ev.pointerId); } catch(err){} });
   e.addEventListener('pointermove', function(ev){

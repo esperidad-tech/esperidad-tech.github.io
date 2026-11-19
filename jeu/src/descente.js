@@ -227,6 +227,11 @@ function tenueTexte(){
   if(reste <= 0) return {ok:true, t:(mel ? 'Dans la tenue de Mélusine — capuche violette' : 'Capuche violette') + ', lunettes sur le front, et tes sept potions à la ceinture : te voilà prêt pour les souterrains ! Le Pisteur vous emmène tous les trois sur sa tablette.'};
   return {ok:false, t:'Ta tenue est prête… mais pas tes potions ! Il t\'en manque ' + (reste > 1 ? reste : 'une') + '. On a besoin des sept potions pour descendre : file à ton établi. Quand la dernière sera prête, ton code pour le Pisteur t\'y attendra.'};
 }
+A['ds-tenue-barde'] = function(){ if(!M.tenueFenetre('Mélusine a pensé à toi aussi : un pourpoint rouge à galons d\'or, un gilet de cuir, une petite cape, un chapeau à plume… et une sangle pour ton luth. Te voilà prêt pour cette nuit !')) M.fermer(); };
+M.tenueFenetre = function(t){
+  var role = M.role(); if(!cfg() || ROLES_A.concat(['pisteur', 'barde']).indexOf(role) < 0) return false;   /* (19 novembre, 12 h 36 : le Barde aussi) */
+  M.son('gain'); M.ouvrir({type:'descente', vue:'tenueMel', t:t}); return true;
+};
 M.tenueHTML = function(dansLivre){
   var role = M.role(), x = tenueTexte(), s = tenueCadre([role]);
   if(!dansLivre) s += '<h2>' + esc(TITRE_TENUE) + '</h2>';
@@ -244,6 +249,8 @@ function codeDonne(id, autre){
 function lignePret(ok, ic, t){ return '<li class="' + (ok ? 'ds-ok' : 'ds-attend') + '"><span aria-hidden="true">' + (ok ? '✅' : '⏳') + ' ' + ic + '</span><span>' + esc(t) + ' ' + lire(t) + '</span></li>'; }
 M.descenteHTML = function(m){
   var P = M.P(), role = M.role(), sac = P.sac || [], t, s = '<div class="b-info-modal ds-fenetre">';
+  /* (Romain, 19 novembre, 10 h 22) les tenues de Mélusine, reçues : son héros à lui (son visage, sa peau, son âge…) dans sa tenue de combat */
+  if(m.vue === 'tenueMel') return s + VUES.tenueMel(m) + '</div>';
   /* le Sage, l'Alchimiste : ce qu'un code du donjon leur apporte (plus bas) ; sinon leur tenue de combat, et leur code pour le Pisteur */
   if(role !== 'pisteur'){
     var vue = m.vue && VUES[m.vue] ? VUES[m.vue](m) : null;
@@ -332,8 +339,8 @@ if(A.point){
    pages de sauvegarde, le plan déchiré : des pages du Grand Livre, pas une interface à part. »
    · Un code du donjon (donjon:<sorte>:<quoi>, gelé dans codes-fixes.js) tapé dans l'onglet Code : M.codeDonjon (moteur-actions.js,
      traiterCode). Ce que le héros a reçu : P.donjonCodes {'rune:lumiere':1, 'etude:rat':1…}.
-   · Le Sage : « Le plan des souterrains » (le plan s'ouvre en grand par-dessus le jeu, dans un cadre : la page du donjon
-     jeu/donjon/pages/sage.js, en mode « dans le jeu » — sans son pavé de codes ni son livre) ; « Les pages de sauvegarde » (deux pages,
+   · Le Sage : le vieux plan d'Odette (19 novembre : la page elle-même, où le plan glisse et où les pierres se promènent — vieux-plan.js ;
+     avant, il s'ouvrait en grand par-dessus le jeu, dans un cadre) ; « Les pages de sauvegarde » (deux pages,
      une de plus avec le code « Une page blanche » ; un sort écrit montre son code, puis on le barre : P.donjonPages) ; « Le carnet de
      l'aventurier » (avec son code, ou page par page avec les codes d'étude ; les textes : window.DONJON_CARNET, tirés par build.py de
      jeu/donjon/moteur/src/donnees.js).
@@ -345,86 +352,30 @@ M.donjonCodes = function(){ var P = M.P(); return (P && P.donjonCodes) || {}; };
 function CARNET(){ return window.DONJON_CARNET || {ordre:[], noms:{}, livre:{}}; }
 function portrait(m){ var C = cfg(), base = C && C.portraits; return base ? '<img class="ds-croquis" src="' + esc(base + m + '.webp') + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' : ''; }
 
-/* --- le plan, en grand, par-dessus le jeu --- */
-var CADRE_PLAN = 'donjon-plan-cadre';
-function planAdresse(nouveau){
-  var C = cfg(), P = M.P(), c = Object.keys(dj()).filter(function(k){ return POUR_DONJON[k.split(':')[0]] === 'sage'; });
-  return C.pages.sage + '?enquete=' + P.id + '&jeton=' + encodeURIComponent(jeton()) + '&dans=jeu&codes=' + encodeURIComponent(c.join(',')) + (nouveau ? '&nouveau=' + encodeURIComponent(nouveau) : '') + (nuitOuverte() ? '' : '&jour=1');
-}
-M.planOuvert = function(){ return !!document.getElementById(CADRE_PLAN); };
-M.fermerPlan = function(){
-  var f = document.getElementById(CADRE_PLAN); if(!f) return;
-  f.remove(); document.documentElement.classList.remove('labo-ouvert'); M.son('page'); M.render();
-};
-A['ds-plan'] = function(el){
-  var P = M.P(); if(!P || M.role() !== 'sage' || !cfg() || M.planOuvert()) return;
-  var nouveau = el && el.dataset ? el.dataset.nouveau : '', u = planAdresse(nouveau);
-  if(nouveau === 'rune:lumiere') P.vus['donjon:rune:plan'] = 1;   /* (la scène de la rune qui apparaît : une seule fois) */
-  P.vus[nuitOuverte() ? 'donjon:ouvert:sage' : 'donjon:ouvert:sage:jour'] = 1; M.sauver(); if(M.stop) M.stop(); M.son('page');
-  M.UI.modal = null;
-  if(window.BRUMEVAL_SANS_DONJON){ window.__donjonVers = u; M.render(); return; }
-  M.render();
-  var f = document.createElement('iframe');
-  f.id = CADRE_PLAN; f.className = 'labo-cadre ds-plan-cadre'; f.setAttribute('title', 'Le vieux plan d\'Odette'); f.setAttribute('allow', 'autoplay; fullscreen');
-  f.src = u;
-  document.body.appendChild(f);
-  document.documentElement.classList.add('labo-ouvert');
-  try{ f.focus(); }catch(e){}
-};
-window.addEventListener('message', function(e){
-  var m = e.data, f = document.getElementById(CADRE_PLAN);
-  if(!m || m.donjonPlan !== 1 || !f || e.source !== f.contentWindow) return;
-  if(m.type === 'fermer') M.fermerPlan();
-  else if(m.type === 'lire'){ if(m.t) M.lire(String(m.t)); }
-});
-/* AU DÉPART, au bas de la page « Le vieux plan d'Odette » du Grand Livre (pierres.js, M.vieuxPlanHTML) : le plan se regarde de tout près
-   (17 novembre, étape 4 du nouveau fil : la page « Le plan des souterrains », qui arrivait toute seule la nuit, n'existe plus).
-   Seulement quand le Pisteur a ouvert le passage (le code du départ, « On va dans la crypte », que le Sage tape de toute façon pour
-   s'équiper : les pages de sauvegarde arrivent au même moment). Avant : rien — le vieux plan reste muet (« on ne sait pas ce que c'est,
-   ni où ça mène »), et le Sage ne lit pas le donjon à l'avance. */
-/* (Romain, 17 novembre, 23 h 13 : « sur le Sage, j'ai pas le plan des galeries […] on peut poser la pierre sur le plan, mais ça sert à rien
-   […] le plan, on peut pas zoomer dedans […] quand je clique sur le plan, il se passe rien ».) Le bouton jaune était tout en bas de la
-   page, hors de l'écran : il fallait faire défiler pour le trouver. Maintenant :
-   · M.donjonPlanBouton : le bouton jaune est JUSTE SOUS le petit plan (pierres.js le met là), avec le rond jaune tant que le Sage n'a
-     pas encore déroulé le plan (ou pas encore depuis que sa pierre de rune y est posée) ;
-   · toucher le petit plan lui-même le déroule aussi en grand (pierres.js, PLANS.vieuxplan.ouvrir) ;
-   · M.donjonPlanBloc : au bas de la page, il ne reste que les explications. */
-/* la nuit, le passage ouvert : le plan devient celui de « là-dessous » (ses noms, son titre, les textes du Grand Livre) */
+/* --- le vieux plan ---
+   (Romain, 19 novembre, 11 h 01 : « ce serait bien que ce soit dans la page principale, dans le grand livre du vieux sage, directement,
+   sans passer par une interface ».) Plus de plan qui s'ouvre en grand par-dessus le jeu (l'ancien cadre : donjon/pages/sage.html « dans
+   le jeu ») : le plan EST la page « vieuxplan » du Grand Livre (vieux-plan.js). Ce qui y menait (« ds-plan » : la fenêtre du coin
+   retrouvé…) ouvre maintenant cette page. Plus de bouton jaune « Regarder le plan de tout près », plus de lignes d'explication sous le
+   plan (« le Pisteur a ouvert un passage… ») : Romain les a enlevées. */
+/* la nuit, le passage ouvert : le plan devient celui de « là-dessous » (ses noms, son titre) */
 function nuitOuverte(){ var P = M.P(); return !!(P && nuit() && P.recus && P.recus['info:on_descend']); }
 M.donjonPlanNuit = nuitOuverte;
+/* (Romain, 19 novembre, 9 h 41 et 11 h 01 : « que ce plan soit disponible du matin jusqu'à la nuit ») dès que le Sage a le vieux plan, à
+   tout moment ; le filet de la nuit (le plan gravé, sans la cachette) reste */
 M.donjonPlanOuvrable = function(){
-  /* (Romain, 19 novembre, 9 h 41 : « quand on a le vieux plan, je veux qu'on puisse avoir le vieux plan directement […] même si le Sage il
-     est resté au matin […] on peut déjà interagir avec le plan […] mais on comprend pas à quoi ça sert ») : dès que le Sage a le vieux plan,
-     à tout moment, il se déroule — en « jour » (planAdresse : sans noms, sans titre, sans crâne) tant que le passage n'est pas ouvert, la
-     nuit. Le filet de la nuit (le plan gravé, sans la cachette) reste. */
   var P = M.P(); return !!(P && cfg() && M.role() === 'sage' && ((P.recus && P.recus['obj:vieux_plan']) || nuitOuverte()));
 };
-/* la petite scène « Une rune apparaît ! » ne se joue qu'une fois sur le grand plan (P.vus['donjon:rune:plan']) */
-function runeAMontrer(){ var P = M.P(); return !!(P && P.vus['pierre:vieuxplan'] && dj()['rune:lumiere'] && !P.vus['donjon:rune:plan']); }
-M.donjonPlanOuvrir = function(){
-  if(!M.donjonPlanOuvrable() || M.planOuvert()) return false;
-  A['ds-plan']({dataset:{nouveau:runeAMontrer() ? 'rune:lumiere' : ''}});
-  return true;
+M.planOuvert = function(){ return false; };
+M.fermerPlan = function(){};
+A['ds-plan'] = function(){
+  var P = M.P(); if(!P || M.role() !== 'sage' || !cfg()) return;
+  P.vus[nuitOuverte() ? 'donjon:ouvert:sage' : 'donjon:ouvert:sage:jour'] = 1; M.sauver();
+  A['ds-livre']({dataset:{id:'vieuxplan'}});
 };
-/* où : 'sous' (juste sous le dessin) ou 'apres' (après la poche). Tant que la pierre de rune attend dans la poche, c'est elle qu'on doit
-   voir d'abord : le bouton passe après la poche, sans rond jaune (toucher le plan le déroule toujours). */
-M.donjonPlanBouton = function(ou){
-  if(!M.donjonPlanOuvrable()) return '';
-  var P = M.P(), attend = !!(dj()['rune:lumiere'] && !P.vus['pierre:vieuxplan']);
-  if((ou === 'apres') !== attend) return '';
-  var neuf = runeAMontrer(), guide = !attend && (neuf || !P.vus[nuitOuverte() ? 'donjon:ouvert:sage' : 'donjon:ouvert:sage:jour']);
-  return '<div class="ds-plan-bouton"><button class="btn grand b-aller lv-ouvrir' + (guide ? ' b-guide' : '') + '" data-act="ds-plan"' + (neuf ? ' data-nouveau="rune:lumiere"' : '') + '>🔎 Regarder le plan de tout près</button></div>';
-};
-M.donjonPlanBloc = function(){
-  if(!M.donjonPlanOuvrable() || !nuitOuverte()) return '';   /* (le jour : rien ne dit ce que c'est) */
-  var P = M.P(), C = dj(), posee = !!P.vus['pierre:vieuxplan'];
-  var t = 'Le Pisteur a ouvert le passage : ce vieux plan, c\'est celui de ce qu\'il y a là-dessous ! Le Pisteur, lui, ne verra que de la brume : c\'est toi qui dis le chemin, à voix haute !';
-  var l = [];
-  l.push(C['page:dechiree'] ? ['✅', 'Le morceau déchiré est recollé.'] : ['✂️', 'Il manque un coin à ce plan.']);
-  if(C['rune:lumiere']) l.push(posee ? ['✨', 'Ta pierre de rune t\'attend sur le plan déroulé : là, elle se promène partout.'] : ['🪨', 'Tu as une pierre de rune dans ta poche : pose-la sur le plan, juste au-dessus.']);
-  return '<div class="ds-plan-nuit"><p class="lv-texte">' + esc(t) + ' ' + lire(t) + '</p>' +
-    '<ul class="lv-lignes ds-plan-notes">' + l.map(function(x){ return '<li><span class="lv-lignes-ic" aria-hidden="true">' + x[0] + '</span><p>' + esc(x[1]) + '</p>' + lire(x[1]) + '</li>'; }).join('') + '</ul></div>';
-};
+M.donjonPlanOuvrir = function(){ if(!M.donjonPlanOuvrable()) return false; A['ds-plan'](); return true; };
+M.donjonPlanBouton = function(){ return ''; };
+M.donjonPlanBloc = function(){ return ''; };
 M.donjonPageSage = M.donjonPlanBloc;   /* (l'ancien nom) */
 
 /* --- les pages de sauvegarde --- */
@@ -473,6 +424,13 @@ A['ds-livre'] = function(el){
 function fen(ic, titre, t, boutons){ return '<div class="b-grand-ic">' + ic + '</div><h2>' + esc(titre) + '</h2><p>' + esc(t) + ' ' + lire(titre + '. ' + t) + '</p>' + boutons; }
 var PLUS_TARD = '<button class="btn second" data-act="fermer">Plus tard</button>';
 var VUES = {
+  /* (Romain, 19 novembre, 10 h 22 : « quand on tape ce code, une fenêtre avec le personnage avec la tenue […] tu modifies pas le personnage
+     […] la tête, les yeux, la coiffure, la couleur de peau, l'âge […] un bouton super, ok ») le Pisteur, le Sage, l'Alchimiste */
+  tenueMel:function(m){
+    var role = M.role(), t = m.t || 'Mélusine a tenu parole : ta tenue de combat est prête.';
+    return tenueCadre([role]) + '<h2>' + esc('Ta tenue de combat') + '</h2><p>' + esc(t) + ' ' + lire('Ta tenue de combat. ' + t) + '</p>' +
+      '<button class="btn grand b-aller" data-act="fermer">👍 Super, OK !</button>';
+  },
   'carnet-recu':function(){
     return fen('📓', 'Un vieux carnet', 'Un vieux carnet, trouvé à l\'entrée du donjon. Quelqu\'un est passé par ici avant vous : un aventurier, qui a tout noté. Chaque monstre qu\'il a croisé a sa page. Tu le gardes dans ton Grand Livre.',
       '<button class="btn grand b-aller" data-act="ds-livre" data-id="aventurier">📖 Ouvrir le carnet</button>' + PLUS_TARD);
@@ -487,12 +445,12 @@ var VUES = {
   /* (17 novembre, étape 4) la pierre de rune rejoint la poche du Sage (E.pierres) : il la pose sur le vieux plan, dans son Grand Livre —
      le même geste que le matin avec la pierre de Tim */
   rune:function(){
-    return fen('🪨', 'Une pierre de rune !', 'La pierre que le Pisteur a trouvée se met à briller dans ta main… Une rune de lumière ! Elle rejoint ta poche. Pose-la sur le vieux plan, dans ton Grand Livre : on verra bien ce qu\'elle réveille.',
+    return fen('🪨', 'Une pierre de rune !', 'La pierre que le Pisteur a trouvée se met à briller dans ta main… Une rune de lumière ! Elle rejoint ta poche. Promène-la sur le vieux plan, dans ton Grand Livre : on verra bien ce qu\'elle réveille.',
       '<button class="btn grand b-aller" data-act="ds-livre" data-id="vieuxplan">📖 Ouvrir le Grand Livre</button>' + PLUS_TARD);
   },
   coin:function(){
     return fen('📜', 'Le morceau perdu du plan', 'Le Pisteur a trouvé le morceau déchiré de ton plan, dans la bibliothèque engloutie. Pose-le à sa place : les bords se recollent tout seuls…',
-      '<button class="btn grand b-aller" data-act="ds-plan" data-nouveau="page:dechiree">🗺️ Regarder le plan</button>' + PLUS_TARD);
+      '<button class="btn grand b-aller" data-act="ds-plan">🗺️ Regarder le plan</button>' + PLUS_TARD);
   },
   blanche:function(){
     return fen('✨', 'Une page blanche', 'Le Pisteur l\'a trouvée en fouillant. Elle se glisse dans ton Grand Livre : une sauvegarde de plus !',
@@ -551,7 +509,7 @@ M.codeDonjon = function(id){
     if(!CARNET().livre[quoi]){ delete C[court]; return false; }
     P.vus['donjon:carnet'] = 1; vue = {vue:'bete', m:quoi, nouveau:!deja}; note = ['Le carnet de l\'aventurier, à la page : ' + (CARNET().noms[quoi] || quoi) + '.', '📓'];
   }
-  else if(court === 'rune:lumiere'){ P.vus['donjon:rune'] = 1; vue = {vue:'rune'}; note = ['Une pierre de rune, dans ta poche : à poser sur le vieux plan, dans ton Grand Livre.', '🪨']; }
+  else if(court === 'rune:lumiere'){ P.vus['donjon:rune'] = 1; vue = {vue:'rune'}; note = ['Une pierre de rune, dans ta poche : à promener sur le vieux plan, dans ton Grand Livre.', '🪨']; }
   else if(court === 'page:dechiree'){ vue = {vue:'coin'}; note = ['Le morceau déchiré du plan des souterrains est retrouvé.', '📜']; }
   else if(court === 'page:blanche'){ vue = {vue:'blanche'}; note = ['Une page blanche de plus dans ton Grand Livre : une sauvegarde de plus.', '✨']; }
   else if(court === 'plante:givre'){ if(M.recevoirPlanteRare) M.recevoirPlanteRare('givre'); vue = {vue:'givre'}; note = ['Le Pisteur t\'a envoyé une fleur de givre : elle t\'attend sur ton établi.', '❄️']; }

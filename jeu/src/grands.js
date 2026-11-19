@@ -408,7 +408,9 @@ function P_vus(k){ var P = M.P(); return !!(P && P.vus && P.vus[k]); }
 A['gd-fete-don'] = function(el){
   var id = el.dataset.id, x = (F() || {gens:{}}).gens[id]; if(!x || !x.don) return;
   var O = (M.E().objets || {})[x.don.obj] || {};
-  M.decouvrir({ic:x.don.code ? (D.PNJ[id] || {}).ic : O.ic || (D.PNJ[id] || {}).ic, titre:x.don.titre || O.nom || nom(id), t:cite(x.don.t), code:x.don.code || 'obj:' + x.don.obj});
+  /* (Romain, 19 novembre, 10 h 22 et 12 h 36) les tenues de Mélusine : après « D'accord », le Barde voit la sienne (descente.js) */
+  M.decouvrir({ic:x.don.code ? (D.PNJ[id] || {}).ic : O.ic || (D.PNJ[id] || {}).ic, titre:x.don.titre || O.nom || nom(id), t:cite(x.don.t), code:x.don.code || 'obj:' + x.don.obj,
+    retour:x.don.obj === 'tenues' && M.tenueFenetre ? 'ds-tenue-barde' : null});
 };
 A['gd-fete-code'] = function(el){
   var id = el.dataset.id, x = (F() || {gens:{}}).gens[id]; if(!x || !x.filet) return;

@@ -11,7 +11,8 @@ function sage(lk, grain){
   var bleu = '#2f4c9e', capu = '#2a4290', robe = '#d8caa4', or = '#e8c062', pant = '#2e2c4a', ch0 = '#5e3a1e';
   var B = '', x = SQ.brasA[0], xb = SQ.brasB[0];
   /* couche 0 : le manteau qui flotte, la tresse du dos (ou la pointe de la capuche) */
-  B += J('torse', '<g data-souple="manteau"></g>' + J('tete', '<g data-souple="tresse"></g>'));
+  B += J('torse', '<g data-souple="manteau"></g>' + J('tete', '<g data-souple="chDos"></g><g data-souple="pointe"></g>'));
+  var co = coiffureDe('sage', lk);
   B += jambe(d, 'A', pant, ch0);
   var manche = function(av){
     var w = av ? function(c){ return '<g class="haAv">' + c + '</g>'; } : function(c){ return c; };
@@ -47,8 +48,8 @@ function sage(lk, grain){
     [0, 1, 2].map(function(k){ return '<path data-page="' + k + '" class="haJ" style="transform-origin:' + x + 'px 170px;opacity:0" d="M' + x + ' 157 L ' + (x + 25) + ' 161.5 L ' + (x + 25) + ' 185.5 L ' + x + ' 181 Z" fill="' + (k % 2 ? '#fffaf0' : '#f2e6c8') + '" stroke="' + O + '" stroke-width="2"/>'; }).join('') +
     '<g data-lueur-pages style="opacity:0">' + F('M' + (x - 26) + ' 162 L ' + x + ' 157 L ' + (x + 26) + ' 162 L ' + (x + 26) + ' 186 L ' + x + ' 181 L ' + (x - 26) + ' 186 Z', CYAN, ' opacity=".45" filter="' + d.flou(2.5) + '"') + '</g>' +
     rep('livre', x, 160) + '</g></g>';
-  B += J('torse', J('tete', capucheFond(d, 124, 58, capu) + visage(d, 124, 58, lk, {lunettes:lk.lunettes}) + meche(d, 124, 58, ch) + capuche(d, 124, 58, capu, or) +
-      '<g data-souple="tresse2"></g>' + rep('tete', 124, 40) + rep('teteC', 128, 60)));
+  B += J('torse', J('tete', capucheFond(d, 124, 58, capu) + visage(d, 124, 58, lk, {lunettes:lk.lunettes}) + cheveux(d, 124, 58, ch, co, capu) + capuche(d, 124, 58, capu, or) +
+      cheveuxDessus(d, 124, 58, ch, co) + rep('tete', 124, 40) + rep('teteC', 128, 60)));
   B += J('torse', J('brasA', manche(true) + J('avantBrasA', avb(true) + J('mainA', livre + '<g class="haAv">' + main(d, x, 186, 8, pe[1]) + '</g>'))));
   /* bras proche : le bâton de runes */
   var top = 187 - 122, bas = 187 + 132;
@@ -72,6 +73,8 @@ function sage(lk, grain){
   B += J('torse', J('brasB', seg(xb, 108, 143, 18, 16, d.gh(bleu)) + L('M' + (xb + 5) + ' 112 L ' + (xb + 4) + ' 138', LUNE, 1.4, ' opacity=".45"') +
     J('avantBrasB', P('M' + (xb - 8) + ' 142 L ' + (xb + 8) + ' 142 L ' + (xb + 12) + ' 178 Q ' + xb + ' 184 ' + (xb - 12) + ' 178 Z', d.gh(bleu)) + L('M' + (xb - 12) + ' 177 Q ' + xb + ' 183 ' + (xb + 12) + ' 177', or, 2.6) +
       J('mainB', baton + batonChene(d, xb, top, bas) + poing(d, xb, 188, 8, pe[1])))));
+  /* la mèche de devant tombe par-dessus l'épaule et le bras proche */
+  B += J('torse', J('tete', '<g data-souple="chDev"></g>'));
   var corps = '<ellipse data-ombre cx="125" cy="293" rx="56" ry="8" fill="#000" opacity=".35"/>' + J('racine', J('bassin', B));
   var so = [
     {nom:'manteau', type:'tissu', dos:[[98, 100], [74, 192], [50, 286]], devant:[[114, 102], [104, 194], [96, 288]], k:46, c:2.8, g:420, vent:1, onde:3,
@@ -83,9 +86,8 @@ function sage(lk, grain){
         {s:or, w:3, ligne:['v', .985, .01, .99]}, {s:CYAN, w:1.3, o:.75, ligne:['v', .94, .02, .98], tirets:1}, {s:LUNE, w:2, o:.5, ligne:['u', .9, .05, .95]}]},
     {nom:'echarpe', type:'meche', pts:[[102, 152], [94, 166], [86, 182], [80, 198]], larg:[10, 9, 7, 4], k:40, c:3.5, g:400, f:d.g(bleu), traits:[[or, 1.4, .9, .3]], noeud:or, pompon:true, rNoeud:4}
   ];
-  if(lk.fille){
-    so.push({nom:'tresse', type:'tresse', pts:[[86, 92], [82, 120], [78, 148], [74, 176]], n:6, pasT:15, k:40, c:3.4, g:450, f:d.g(ch[1]), trait:ch[0], bout:or});
-    so.push({nom:'tresse2', type:'tresse', pts:[[106, 92], [105, 116], [104, 140], [103, 164]], n:5, pasT:15, k:46, c:3.6, g:450, f:d.g(ch[1]), trait:ch[0], bout:or});
-  } else so.push({nom:'tresse', type:'meche', pts:[[92, 6], [78, 2], [64, 6], [54, 16], [48, 30]], larg:[14, 11, 8, 5, 2], k:34, c:3.4, g:450, f:d.g(capu), traits:[[sombre(capu, .45), 1.6, .8, -.15]], noeud:or, pompon:true, rNoeud:4.5});
+  /* les cheveux qui pendent ; sinon (comme avant pour un garçon) la pointe de la capuche */
+  var pend = souplesCheveux(d, ch, co, or);
+  so = so.concat(pend.some(function(s){ return s.nom === 'chDos'; }) ? pend : [pointeCapuche(d, capu, or)].concat(pend));
   return {svg:d.svg(corps, grain), souples:so};
 }

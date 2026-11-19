@@ -17,10 +17,10 @@ var CH = {brun:['#d39654', '#7c4624', '#3a1e0e'], chatain:['#e6bb85', '#a06f40',
   roux:['#ffb886', '#dc622a', '#7a2a0e'], gris:['#f2f2f6', '#a9aab8', '#5c5d6e'], blanc:['#ffffff', '#e4e7f0', '#a3a7bf'], nuit:['#9fbaff', '#3c50b4', '#141c50'], rose:['#ffd6ea', '#f07aab', '#932659']};
 var YX = {vert:['#0a3a22', '#1f9150', '#86ffbd'], bleu:['#0a1f4a', '#2f6fd0', '#a6dcff'], marron:['#2a1206', '#7a4420', '#e0a876'], noisette:['#2e2208', '#8a6a1c', '#ecd07a'],
   gris:['#1e2430', '#5f6f86', '#d6e2f0'], violet:['#2a0a4a', '#7a3fd0', '#dcb6ff'], ambre:['#3a1a02', '#c47a10', '#ffd98a']};
-var QUI = {p:'pisteur', s:'sage', a:'alchimiste'};
+var QUI = {p:'pisteur', s:'sage', a:'alchimiste', b:'barde'};   /* (19 novembre : b, le Barde — seulement pour la fenêtre de sa tenue) */
 function copie(o){ var r = {}, k; for(k in (o || {})) r[k] = o[k]; return r; }
 function lire(texte, base){
-  var r = {pisteur:copie(base && base.pisteur), sage:copie(base && base.sage), alchimiste:copie(base && base.alchimiste)};
+  var r = {pisteur:copie(base && base.pisteur), sage:copie(base && base.sage), alchimiste:copie(base && base.alchimiste), barde:copie(base && base.barde)};
   String(texte || '').split(',').forEach(function(x){
     var k = x.split(':'), h = QUI[k[0]], v = (k[1] || '').split('.');
     if(!h || v.length < 3) return;

@@ -5737,6 +5737,13 @@ function chatMonter(V, o, d){
   st.rig = MP.monter(sv, {pose:st.pose, gauche:!!st.gauche, hote:d});
   if(st.butin) st.rig.porter(st.butin);
 }
+/* (Romain, 19 novembre, 12 h 36) LE LABO : le chat qui saute sur la paillasse est la vraie Mimi du joueur — son pelage, ses yeux et ses
+   habits (le premier chat de l'atelier). Le labo (src/labo/20-chat.js) la redessine avec le même pantin. */
+window.MimiLabo = function(){
+  var a = window.M && window.M.S && window.M.S.atelier, o = a && (a.objets || []).filter(function(x){ return x && x.t === 'chat'; })[0];
+  if(!o) return null;
+  try{ return {v:vChat(o.v || 0), acc:accPantin(o.acc)}; }catch(e){ return null; }
+};
 function pantinDe(V, o){ var st = V.chats[o.id]; return st && st.rig && !st.rig.mort ? st.rig : null; }
 /* ce qu'elle porte dans la gueule (du SVG ; rien : elle le lâche) — gardé si son dessin est refait */
 function butinChat(V, o, svg){ var st = V.chats[o.id], r = pantinDe(V, o); if(st) st.butin = svg || null; if(r) r.porter(svg || ''); }

@@ -39,6 +39,12 @@ function css(){
 var ROLES = {};
 var FX = {etoiles:function(){}};
 
+function fabAge(role, lk, grain){
+  ECHELLE_TETE = lk && lk.age === 'enfant' ? 1.16 : 1;
+  try{ return ROLES[role].fab(lk, grain); } finally { ECHELLE_TETE = 1; }
+}
+/* la taille du corps selon l'âge : enfant plus petit, personne âgée un peu moins grande (adulte : inchangé) */
+var ECHELLE_CORPS = {enfant:.84, age:.94};
 /* ============ un héros ============ */
 function Heros(cont, role, lk){
   css();
@@ -49,6 +55,8 @@ function Heros(cont, role, lk){
   if(getComputedStyle(cont).position === 'static') cont.style.position = 'relative';
   this.racine = document.createElement('div'); this.racine.className = 'ha ha-' + role;
   this.boite = document.createElement('div'); this.boite.className = 'ha-boite';
+  if(ECHELLE_CORPS[this.lk.age]){ this.racine.style.transformOrigin = '50% 100%'; this.racine.style.transform = 'scale(' + ECHELLE_CORPS[this.lk.age] + ')'; }
+  this.voute = this.lk.age === 'age' ? {torse:5, tete:-3} : null;
   this.fx = document.createElement('div'); this.fx.className = 'ha-fx';
   this.racine.appendChild(this.boite); this.racine.appendChild(this.fx);
   cont.appendChild(this.racine);
@@ -60,7 +68,7 @@ function Heros(cont, role, lk){
     this.cuit = true; this.svg = cl.racine; this.vue = cl.vue;
     spec = {souples:M.souples};
   } else {
-    spec = this.R0.fab(this.lk, HerosAnime.grain);
+    spec = fabAge(role, this.lk, HerosAnime.grain);
     this.boite.innerHTML = spec.svg;
     this.svg = this.vue = this.boite.querySelector('svg');
   }
@@ -121,7 +129,7 @@ function preparerUn(role, lk, o){
   var l = fusionLk(role, lk), cle = cleModele(role, l);
   if(MODELES[cle]) return MODELES[cle].promesse;
   var Cu = window.Cuire;
-  var spec = ROLES[role].fab(l, HerosAnime.grain), h = Cu.hote(250, 300);
+  var spec = fabAge(role, l, HerosAnime.grain), h = Cu.hote(250, 300);
   h.innerHTML = spec.svg;
   var svg = h.firstElementChild; svg.style.cssText = 'display:block;width:250px;height:300px';
   var M = MODELES[cle] = {souples:spec.souples};
@@ -149,8 +157,8 @@ H.jouer = function(seq){
   seq.forEach(function(st){ var e = st.p ? resoudre(st.p, base) : base; etats.push(e); base = e; T += st.d; tps.push(T); });
   var noms = Object.keys(this.els).filter(function(n){ return etats.some(function(e){ return !egal(e[n], me.etat[n]); }); });
   noms.forEach(function(n){
-    var kfs = [{offset:0, transform:tf(me.etat[n]), easing:EZ[seq[0].e || 'io'] || seq[0].e}];
-    etats.forEach(function(e, i){ var nx = seq[i + 1]; kfs.push({offset:T ? tps[i + 1] / T : 1, transform:tf(e[n]), easing:nx ? (EZ[nx.e || 'io'] || nx.e) : 'linear'}); });
+    var kfs = [{offset:0, transform:tfH(me, n, me.etat[n]), easing:EZ[seq[0].e || 'io'] || seq[0].e}];
+    etats.forEach(function(e, i){ var nx = seq[i + 1]; kfs.push({offset:T ? tps[i + 1] / T : 1, transform:tfH(me, n, e[n]), easing:nx ? (EZ[nx.e || 'io'] || nx.e) : 'linear'}); });
     me.els[n].forEach(function(el){
       var old = el._a, a = el._a = el.animate(kfs, {duration:Math.max(T, 1), fill:'forwards'});
       if(old) old.cancel();
@@ -164,7 +172,7 @@ H.jouer = function(seq){
 };
 H.poser = function(pose){
   var me = this; this.etat = resoudre(pose, this.etat);
-  Object.keys(this.els).forEach(function(n){ me.els[n].forEach(function(el){ el.style.transform = tf(me.etat[n]); if(el._a){ el._a.cancel(); el._a = null; } }); });
+  Object.keys(this.els).forEach(function(n){ me.els[n].forEach(function(el){ el.style.transform = tfH(me, n, me.etat[n]); if(el._a){ el._a.cancel(); el._a = null; } }); });
 };
 /* fige la pose là où elle en est (pour interrompre un geste d'attente) */
 H.capturer = function(){
@@ -176,11 +184,11 @@ H.capturer = function(){
     if(m && m !== 'none'){
       var v = m.replace(/^matrix\(|\)$/g, '').split(',').map(Number), a = v[0], b = v[1], c = v[2], d = v[3];
       var r = Math.atan2(b, a), sx = Math.hypot(a, b), sy = -c * Math.sin(r) + d * Math.cos(r), tk = (c * Math.cos(r) + d * Math.sin(r)) / (sy || 1);
-      s = {x:v[4], y:v[5], r:r * DEG, k:Math.atan(tk) * DEG, sx:sx, sy:sy};
+      s = {x:v[4], y:v[5], r:r * DEG - ((me.voute && me.voute[n]) || 0), k:Math.atan(tk) * DEG, sx:sx, sy:sy};
       while(s.r - me.etat[n].r > 180) s.r -= 360; while(s.r - me.etat[n].r < -180) s.r += 360;
     }
     me.etat[n] = s;
-    me.els[n].forEach(function(el){ el.style.transform = tf(s); if(el._a){ el._a.cancel(); el._a = null; } });
+    me.els[n].forEach(function(el){ el.style.transform = tfH(me, n, s); if(el._a){ el._a.cancel(); el._a = null; } });
   });
 };
 /* les visages */
@@ -315,7 +323,7 @@ H._lueurs = function(on){
     var lv = M.modele.clonerLueur(); if(!lv) return;
     var w = document.createElement('div'); w.className = 'cu-lueur'; w.appendChild(lv);
     this.svg.appendChild(w); window.Cuire.ajuster(this.svg);
-    [].forEach.call(lv.querySelectorAll('[data-j]'), function(e){ var n = e.getAttribute('data-j'); if(me.els[n]){ me.els[n].push(e); e.style.transform = tf(me.etat[n]); } });
+    [].forEach.call(lv.querySelectorAll('[data-j]'), function(e){ var n = e.getAttribute('data-j'); if(me.els[n]){ me.els[n].push(e); e.style.transform = tfH(me, n, me.etat[n]); } });
     [].forEach.call(lv.querySelectorAll('[data-i]'), function(e){ var n = e.getAttribute('data-i'); if(me.elsI[n]) me.elsI[n].push(e); });
     this._lv = w;
     if(this._reappliquer) this._reappliquer();   /* (la silhouette reprend l'équipement montré) */

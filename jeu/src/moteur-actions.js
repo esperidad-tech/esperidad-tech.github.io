@@ -706,6 +706,7 @@ function traiterCode(seq){
       M.decouvrir({ic:nn.ic, titre:'Tu as reçu : ' + nn.nom, t:quoi, retour:'ouvrir-livre', retourId:'quiecrit'});
       return;
     }
+    if(x === 'tenues' && M.tenueFenetre && M.tenueFenetre(quoi)) return;   /* (19 novembre) les tenues de Mélusine : son héros en tenue (descente.js) */
     M.ouvrir({type:'info', ic:nn.ic, titre:'Tu as reçu : ' + nn.nom, t:quoi});
   } else {
     var I = E.infos[x];
@@ -1100,7 +1101,7 @@ function hasard(c){
 }
 
 /* ---------- Début d'enquête ---------- */
-function nouvelleEnquete(id){
+function nouvelleEnquete(id, direct){
   var S = M.S, E = window.ENQUETES[id];
   /* une enquête en cours d'écriture (E.enEcriture : l'enquête 3, tant qu'elle n'est pas réécrite) ne se joue pas */
   if(M.enEcriture(E)){ UI.ecran = 'accueil'; UI.saisie = []; UI.padSuite = false; M.sauver(); M.ouvrir({type:'info', ic:'🚧', titre:'Enquête ' + id + ' : en cours d\'écriture', t:'L\'enquête ' + id + ' est en train d\'être écrite. Elle arrive bientôt ! Votre or et votre expérience sont bien gardés.'}); return; }
@@ -1125,8 +1126,12 @@ function nouvelleEnquete(id){
     S.fioles = Math.max(S.fioles, 3) + M.fxSomme('fiolesBonus');
     if(M.fxSomme('rareGratuit')){ var rares = M.cle(D.INGR).filter(function(k){ return D.INGR[k].rare; }); var rr = rares[Math.floor(Math.random() * rares.length)]; M.ajouterIngr(rr, 1); }
   }
+  /* direct (l'adresse d'essai #test-e3-sage, plus bas : essaiDirect) : ni le film du début, ni la lettre, ni l'écran des missions —
+     on est tout de suite dans l'enquête, au premier moment, comme après « Commencer » */
+  if(direct){ P.filmDebut = 1; P.etape = 'jeu'; P.onglet = 'role'; if(E.debutCarnet){ P.onglet = 'carnet'; P.missionsOuvertes = 1; } }
   UI.ecran = 'enquete'; UI.modal = null; UI.saisie = []; UI.padSuite = false;
   M.sauver(); M.render(); window.scrollTo(0, 0);
+  if(direct) return;
   /* le film du début de l'enquête (18 novembre, Bible §13.69) : il passe devant la lettre, qui attend derrière lui */
   try{ if(M.jouerFilmDebut) M.jouerFilmDebut(); }catch(e){ console.error(e); }
   M.lireAuto(E.lettre);
@@ -1848,9 +1853,35 @@ A['crea-meme'] = function(){
 };
 
 /* ---------- Démarrage ---------- */
+/* L'ADRESSE D'ESSAI D'UNE ENQUÊTE (Romain, 19 novembre, 13 h 02 : « une version test où je commence directement à l'enquête numéro 3
+   avec le sage ») : …/brumeval/#test-e3-sage (et -pisteur, -barde, -alchimiste ; e1, e2 aussi). Un héros d'essai, « Sage (essai) »,
+   au niveau de l'enquête avec un peu d'or (comme le Mode test des Réglages), qui commence tout de suite l'enquête, au premier moment,
+   sans le film, la lettre ni l'écran des missions. Il a toujours le même emplacement (S.essai), jamais celui d'un vrai héros : ouvrir
+   l'adresse recommence l'enquête à zéro. Puis l'adresse redevient « #test » : recharger la page (ou revenir du donjon) ne recommence pas. */
+function essaiDirect(){
+  var m = /(^|[#&?])test-e(\d+)-(sage|pisteur|barde|alchimiste)\b/.exec(location.hash + '&' + location.search);
+  var id = m ? +m[2] : 0, role = m ? m[3] : '';
+  if(!m || !window.ENQUETES || !ENQUETES[id]) return false;
+  var cle = 'e' + id + '-' + role, l = M.emplacements(), n = 0, pris = l.map(function(x){ return x.n; });
+  l.forEach(function(x){ if(!n && x.s.essai === cle) n = x.n; });
+  for(var i = 1; !n && i <= 8; i++) if(pris.indexOf(i) < 0) n = i;
+  try{ history.replaceState(null, '', location.pathname + location.search + '#test'); }catch(e){}
+  if(!n) return false;
+  M.choisirEmplacement(n);
+  var avant = M.S, c = creaDefaut(role);
+  c.nom = D.ROLES[role][c.sexe === 'm' ? 'm' : 'f'] + ' (essai)'; c.joueur = 'adulte';
+  M.S = M.etatNeuf(); M.S.heros = c; M.S.essai = cle;
+  if(avant && avant.options) M.S.options = avant.options;
+  M.S.prochaine = id; M.S.xp = D.SEUILS[id - 1] || 0; M.S.or = id === 1 ? 0 : 120 * (id - 1);
+  if(role === 'alchimiste'){ M.ajouterIngr('miel', 2); M.ajouterIngr('eau', 2); }
+  nouvelleEnquete(id, true);
+  return true;
+}
+/* (l'adresse d'essai collée dans un onglet où le jeu est déjà ouvert : seule la fin de l'adresse change, la page ne se recharge pas) */
+window.addEventListener('hashchange', function(){ if(/(^|[#&?])test-e\d+-(sage|pisteur|barde|alchimiste)\b/.test(location.hash)) location.reload(); });
 function demarrer(){
-  var em = M.emplacement();
-  if(!em && !M.emplacements().length){ M.choisirEmplacement(1); em = '1'; }
+  var em = M.emplacement(), essai = /(^|[#&?])test-e\d+-(sage|pisteur|barde|alchimiste)\b/.test(location.hash + '&' + location.search);
+  if(!em && !M.emplacements().length && !essai){ M.choisirEmplacement(1); em = '1'; }
   M.S = em ? M.charger(em) : M.etatNeuf();
   document.addEventListener('click', function(ev){
     var el = ev.target.closest('[data-act]');
@@ -1876,6 +1907,8 @@ function demarrer(){
   document.addEventListener('input', function(ev){ if(ev.target.id === 'nom' && UI.crea) UI.crea.nom = ev.target.value; });
   document.getElementById('stop-voix').addEventListener('click', function(){ M.stop(); });
   if(M.S.heros && M.S.e && !M.S.e.resolu) UI.ecran = 'accueil';
+  var essaiFait = false;
+  if(essai){ try{ essaiFait = essaiDirect(); }catch(e){ console.error(e); } }
   /* des objets retirés de la boutique (M.reparerBoutique, moteur-base.js) : Fortuné rend l'or, une seule fois */
   var rb = (M.S.rembourse && M.S.heros) ? +M.S.rembourse.or || 0 : 0;
   if(M.S.rembourse){ delete M.S.rembourse; M.sauver(); }
@@ -1883,7 +1916,7 @@ function demarrer(){
   if(rb > 0) M.ouvrir({type:'info', ic:'👛', titre:'Fortuné te rend ton or',
     t:'Fortuné a repris certains objets de sa boutique : ils ne servaient à rien pour l\'instant. Il te rend ' + rb + ' pièces d\'or. À toi de choisir autre chose !'});
   try{ M.rateQuitte(); }catch(e){ console.error(e); }   /* un mini-jeu laissé ouvert quand on a quitté : raté */
-  try{ M.pubLancement(); }catch(e){ console.error(e); } /* la première fois sur cet appareil : le film de présentation */
+  if(!essaiFait){ try{ M.pubLancement(); }catch(e){ console.error(e); } } /* la première fois sur cet appareil : le film de présentation (pas sur l'adresse d'essai) */
   /* le service worker : la version GitHub, et un serveur local pour les essais (Jouer sans internet, heros.js) */
   if('serviceWorker' in navigator && ((location.protocol === 'https:' && /github\.io$/.test(location.hostname)) || /^(localhost|127\.0\.0\.1)$/.test(location.hostname))){
     navigator.serviceWorker.register('sw.js').catch(function(){});

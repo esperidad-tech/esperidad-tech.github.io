@@ -106,8 +106,15 @@ var OS = {
   JA:{hanche:SQ.cuisseA, l1:50, l2:50}, JB:{hanche:SQ.cuisseB, l1:50, l2:50}
 };
 /* une pièce articulée : <g data-j> (la pose) qui contient <g data-i> (l'attente), même pivot */
+var ECHELLE_TETE = 1;   /* enfant : tête plus grosse par rapport au corps (posée par fabAge) */
 function J(nom, contenu, x){
   var p = SQ[nom] || x, o = 'transform-origin:' + p[0] + 'px ' + p[1] + 'px';
+  /* (les emplacements des mèches souples restent dehors : leurs points sont grossis à part, pT) */
+  if(nom === 'tete' && ECHELLE_TETE !== 1){
+    var places = '';
+    contenu = contenu.replace(/<g data-souple="[^"]*"><\/g>/g, function(m){ places += m; return ''; });
+    contenu = (contenu ? '<g transform="translate(124 98) scale(' + ECHELLE_TETE + ') translate(-124 -98)">' + contenu + '</g>' : '') + places;
+  }
   return '<g class="haJ" data-j="' + nom + '" style="' + o + '"><g class="haJ" data-i="' + nom + '" style="' + o + '">' + contenu + '</g></g>';
 }
 /* un segment de membre, vertical au repos, arrondi aux deux bouts (les jointures restent pleines) */
@@ -154,6 +161,8 @@ function visage(d, cx, cy, lk, opt){
     '<ellipse cx="' + (cx + 4) + '" cy="' + (cy - 24) + '" rx="30" ry="11" fill="#1a0f26" opacity=".35" filter="' + d.flou(4) + '"/>' +
     '<ellipse cx="' + (cx - 9) + '" cy="' + (cy + 14) + '" rx="6" ry="3.4" fill="' + pe[3] + '" opacity=".45"/>' +
     '<ellipse cx="' + (cx + 22) + '" cy="' + (cy + 13) + '" rx="3.4" ry="2.4" fill="' + pe[3] + '" opacity=".35"/>';
+  var bb = barbeDe(lk);
+  if(bb) s += barbe(d, cx, cy, lk.ch, bb);
   /* les yeux : ouverts (ils clignent), fermés de joie, serrés, en spirale, ou qui luisent */
   var cils = '';
   if(lk.fille) [[n, -1, 6.2, 7.4], [f, 1, 4.3, 7]].forEach(function(e){ cils += L('M' + (e[0][0] + e[1] * (e[2] + 1)) + ' ' + (e[0][1] - e[3] * 0.5) + ' l ' + (e[1] * 4.5) + ' -3.5', O, 2.2); });
@@ -183,6 +192,7 @@ function visage(d, cx, cy, lk, opt){
     '<g data-b="grimace" style="display:none">' + P(T('M5 18 L 23 16 L 23 24 L 6 25 Z', cx, cy), '#fff') + L(T('M5 21 L 23 20 M11 17 L 11 25 M17 17 L 17 24', cx, cy), O, 1.4) + '</g>' +
     '<g data-b="o" style="display:none">' + E(cx + 15, cy + 22, 3.4, 4.2, '#5a1a24', ' stroke="' + O + '" stroke-width="2.2"') + '</g>' +
     '<g data-b="effort" style="display:none">' + P(T('M7 19 L 22 18 L 21 23 L 8 23 Z', cx, cy), '#fff') + L(T('M8 21 L 21 20.5', cx, cy), O, 1.2) + '</g>';
+  if(bb) s += barbe(d, cx, cy, lk.ch, bb, true);
   if(opt.lunettes) s += '<circle cx="' + n[0] + '" cy="' + n[1] + '" r="9.2" fill="#d8f4ff" fill-opacity=".18" stroke="#3a2a1a" stroke-width="2.2"/><circle cx="' + (f[0] + 0.5) + '" cy="' + f[1] + '" r="7.2" fill="#d8f4ff" fill-opacity=".18" stroke="#3a2a1a" stroke-width="2.2"/>' +
     L('M' + (n[0] + 9) + ' ' + (n[1] - 1) + ' L ' + (f[0] - 7) + ' ' + (f[1] - 1), '#3a2a1a', 2) +
     L('M' + (n[0] - 5) + ' ' + (n[1] - 5) + ' l 4 -2', '#fff', 1.6, ' opacity=".7"');
