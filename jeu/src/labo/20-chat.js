@@ -80,14 +80,14 @@ function mimiSort(depuis){
 }
 function mimiPart(muet){
   if(mimi.enRoute || mimi.porte) return; clearTimeout(mimi.tp);
-  if(!muet){ mimiDit('Mraou !'); son('miaou'); }
+  if(!muet){ mimiDit('Mraou !'); /* (Romain, 19 novembre, 9 h 13 : au labo, le chat ne miaule plus — ça gênait) */ }
   mimi.enRoute = true; attendre(muet ? 0 : 260, function(){ mimi.enRoute = false; mimiSort(); });
 }
 /* Il est assis dessus : tant qu'il n'a pas bougé, on ne peut rien faire des échantillons du cuir */
 function mimiGene(){ if(!mimi.sur) return false; mimiDit('Mrrr ?', true); son('ronron'); return true; }
 /* On le prend avec le doigt… */
 function mimiPrend(){
-  clearTimeout(mimi.tp); clearTimeout(mimi.tv); mimi.porte = true; mimi.sur = false; mimi.el.classList.add('porte'); mimiPose('marche'); mimi.el.classList.add('saut'); mimiDit('Mraou ?'); son('miaou'); majOutils();
+  clearTimeout(mimi.tp); clearTimeout(mimi.tv); mimi.porte = true; mimi.sur = false; mimi.el.classList.add('porte'); mimiPose('marche'); mimi.el.classList.add('saut'); mimiDit('Mraou ?'); /* (Romain, 19 novembre, 9 h 13 : au labo, le chat ne miaule plus — ça gênait) */ majOutils();
 }
 /* … et on le repose : sur le plateau, il s'assoit là (et s'il est encore sur les échantillons, il gêne toujours) ; ailleurs, il sort de l'écran */
 function mimiLache(p){

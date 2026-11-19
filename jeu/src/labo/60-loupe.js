@@ -61,6 +61,8 @@ function ouvrirLoupe(tir){
         '<button type="button" class="fleche-l pose" id="bPrec" aria-label="L\'échantillon d\'avant">◀</button><button type="button" class="fleche-l pose" id="bSuiv" aria-label="L\'échantillon d\'après">▶</button>' +
         '<button type="button" class="b-livredor pose" id="bLivreDor" hidden><span aria-hidden="true">📖</span> Le Livre d\'or</button><div id="zoneTiroir"></div>');
       vueLoupe(); placerVerre(); majBas(); requestAnimationFrame(function(){ rendVerre(); });
+      /* (Romain, 19 novembre, 9 h 23) arrivé par un tiroir : la loupe est posée, le tiroir s'ouvre tout de suite */
+      if(tir && !estEcriture(S.sel)) attendre(260, function(){ if(S.mode === 'loupe' && !S.tiroir) ouvrirTiroir(tir); });
       /* (17 novembre, Romain : « il y a encore marqué “il faut d'autres écritures pour comparer” ») plus aucun message ici : l'Alchimiste ne
          compare plus les écritures, c'est le Sage, dans son Grand Livre. La lettre ne se regarde plus ici que par son encre. */
       /* (Romain, 13 novembre : « il ne trouvait pas le Livre d'or ») avec le Livre d'or du Sage, il s'ouvre tout seul sous la lettre */
