@@ -1,4 +1,4 @@
-"""Enquête 3 : LE SECRET D'ODETTE (16 novembre ; Bible §13.57 ; REFAIT LE 19 NOVEMBRE, Bible §13.74) — Playwright.
+"""Enquête 3 : LE SECRET D'ODETTE (16 novembre ; Bible §13.57 ; REFAIT LE 19 NOVEMBRE, Bible §13.75) — Playwright.
 Le voisin donne le papier d'Odette au Barde (un code objet pour le Sage). Le Sage : la page n'existe pas sans le code ; l'alphabet secret ;
 au dos, le plan de la maison ; la poche et la pierre de Tim, QUI SE PROMÈNE sur le papier (de vrais touchers, de vrais glisser, le doigt
 posé sur le papier) : près du soleil, les mots « soleil de l'après-midi » ; près des dalles, elles s'éclairent ; AUCUN signe, aucun

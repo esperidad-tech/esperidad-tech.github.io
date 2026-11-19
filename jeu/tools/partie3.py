@@ -214,7 +214,7 @@ def partie(nav, base):
     verifier(B.js("() => { M.render(); return !!M.P().mission.faits[1]; }"), 'le Barde a tout demandé aux sept villageois du matin : sa mission se coche')
     # (16 novembre, §13.54) Iris, une fois le vol raconté : sa question de plus, et un fond de flacon de son encre pour l'Alchimiste
     verifier(set(livrer(T, B)) == {'obj:encre_iris', 'obj:papier_odette'}, 'le Barde a donné au Sage : le papier d\'Odette ; à l\'Alchimiste : l\'encre d\'Iris (la poste et « sans sa canne » se disent à voix haute)')
-    # (16 novembre, Bible §13.57 ; refait le 19 novembre, §13.74) LE SECRET D'ODETTE, le matin : le Sage déchiffre le papier que le voisin
+    # (16 novembre, Bible §13.57 ; refait le 19 novembre, §13.75) LE SECRET D'ODETTE, le matin : le Sage déchiffre le papier que le voisin
     # gardait, puis promène la pierre de Tim sur le plan de la maison, au dos — près du soleil, « soleil de l'après-midi » ; près des dalles,
     # elles s'éclairent. Aucun signe, aucun ordre : il le dit au Pisteur à voix haute (pas de code)
     S.ouvrir_page('papier')
