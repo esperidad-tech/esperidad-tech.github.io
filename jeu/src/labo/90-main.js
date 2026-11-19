@@ -182,8 +182,15 @@ $('#scene').addEventListener('click', function(e){
   if(a === 'coupe'){ var c = D().coupes[+g.dataset.i]; if(c) selectionner(c.t); return; }
   /* un outil : il faut d'abord avoir choisi quelque chose à analyser, et que l'outil puisse servir */
   if(!S.sel){ if(a === 'tiroir') secouer(g); else $$('#scene .objet:not(.fait)').forEach(secouer); return; }
-  /* les tiroirs ne s'ouvrent pas d'ici : il faut d'abord poser la loupe sur un échantillon (Romain, 10 novembre) */
-  if(a === 'tiroir'){ secouer(g); return; }
+  /* (Romain, 19 novembre, 9 h 23 : « qu'on puisse appuyer sur le tiroir directement […] ça met la loupe directement sur le truc à analyser »)
+     un échantillon choisi : toucher un tiroir pose la loupe dessus et ouvre ce tiroir (la loupe marche toujours aussi). Avant (10 novembre) :
+     il fallait d'abord la loupe. */
+  if(a === 'tiroir'){
+    if(!utilisable('loupe') || estEcriture(S.sel)){ secouer(g); return; }
+    if(surCuir(S.sel) && mimiGene()) return;
+    ouvrirLoupe(g.dataset.t);
+    return;
+  }
   if(utilisable(g.dataset.outil) === false){ secouer(g); return; }
   if(surCuir(S.sel) && mimiGene()) return;
   if(a === 'loupe') ouvrirLoupe(); else if(a === 'micro') ouvrirMicro();
