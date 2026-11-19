@@ -34101,8 +34101,10 @@ function sonsVisee(audio, sortie){
     /* LA PETITE MUSIQUE DE LA FÊTE (Romain, 16 novembre : « une petite musique un peu festive ») : une polka de village, huit mesures
        qui tournent en boucle — la flûte, l'accordéon sur les contretemps, la basse « poum-pa », un tambourin. Douce : on doit toujours
        entendre l'arc. mesure(i, t0) joue la mesure i (0 à 7) dans t0 secondes ; musique() joue les huit d'un coup (pour l'Atelier). */
-    mesure:function(i, t0){ jouerMesure(i % 8, t0 || 0); },
-    musique:function(){ for(var i = 0; i < 8; i++) jouerMesure(i, i * MESURE); }
+    /* (Romain, 19 novembre, 9 h 20 : « elle tourne un peu trop en boucle. Il faudrait rajouter d'autres couplets […] l'équivalent de 3 couplets »)
+       trois couplets de huit mesures : l'air du début, un deuxième qui monte vers le fa, et le premier repris avec des petites notes en plus */
+    mesure:function(i, t0){ jouerMesure(i % POLKA.air.length, t0 || 0); },
+    musique:function(){ for(var i = 0; i < POLKA.air.length; i++) jouerMesure(i, i * MESURE); }
   };
   function jouerMesure(i, t0){
     var c = POLKA.accords[i], r = POLKA.basses[i], q = 0;
@@ -34122,10 +34124,19 @@ function sonsVisee(audio, sortie){
 /* la polka : en demi-tons au-dessus du do (la flûte, l'accord), la note du bas de chaque mesure ; une croche = 0,2 s (132 à la noire) */
 var CROCHE = .2, MESURE = 4 * CROCHE;
 var POLKA = {
-  air:[[[4, 1], [7, 1], [12, 1], [7, 1]], [[9, 1], [7, 1], [5, 1], [4, 1]], [[2, 1], [4, 1], [5, 1], [7, 1]], [[4, 2], [0, 2]],
-       [[4, 1], [7, 1], [12, 1], [14, 1]], [[17, 1], [16, 1], [14, 1], [12, 1]], [[11, 1], [14, 1], [7, 1], [11, 1]], [[12, 3], [null, 1]]],
-  accords:[[0, 4, 7], [5, 9, 12], [7, 11, 14], [0, 4, 7], [0, 4, 7], [5, 9, 12], [7, 11, 14], [0, 4, 7]],
-  basses:[0, 5, -5, 0, 0, 5, -5, 0]
+  air:[/* le premier couplet */
+       [[4, 1], [7, 1], [12, 1], [7, 1]], [[9, 1], [7, 1], [5, 1], [4, 1]], [[2, 1], [4, 1], [5, 1], [7, 1]], [[4, 2], [0, 2]],
+       [[4, 1], [7, 1], [12, 1], [14, 1]], [[17, 1], [16, 1], [14, 1], [12, 1]], [[11, 1], [14, 1], [7, 1], [11, 1]], [[12, 3], [null, 1]],
+       /* le deuxième (19 novembre) : il part vers le fa, monte, et revient au do */
+       [[9, 1], [12, 1], [17, 1], [12, 1]], [[16, 1], [14, 1], [12, 1], [9, 1]], [[7, 1], [9, 1], [11, 1], [12, 1]], [[14, 2], [11, 2]],
+       [[9, 1], [12, 1], [17, 1], [19, 1]], [[17, 1], [16, 1], [14, 1], [12, 1]], [[14, 1], [11, 1], [7, 1], [11, 1]], [[12, 2], [null, 2]],
+       /* le troisième (19 novembre) : le premier air repris, avec des petites notes qui sautillent, et une fin qui rebondit */
+       [[4, .5], [5, .5], [7, 1], [12, 1], [7, 1]], [[9, .5], [11, .5], [12, 1], [9, 1], [5, 1]], [[7, 1], [11, .5], [12, .5], [14, 1], [11, 1]], [[12, 1], [7, 1], [4, 1], [null, 1]],
+       [[16, 1], [14, .5], [12, .5], [16, 1], [19, 1]], [[21, 1], [19, .5], [17, .5], [16, 1], [14, 1]], [[12, 1], [14, 1], [11, 1], [7, 1]], [[12, 2], [7, .5], [12, 1.5]]],
+  accords:[[0, 4, 7], [5, 9, 12], [7, 11, 14], [0, 4, 7], [0, 4, 7], [5, 9, 12], [7, 11, 14], [0, 4, 7],
+           [5, 9, 12], [9, 12, 16], [7, 11, 14], [7, 11, 14], [5, 9, 12], [0, 4, 7], [7, 11, 14], [0, 4, 7],
+           [0, 4, 7], [5, 9, 12], [7, 11, 14], [0, 4, 7], [0, 4, 7], [5, 9, 12], [7, 11, 14], [0, 4, 7]],
+  basses:[0, 5, -5, 0, 0, 5, -5, 0,   5, -3, -5, -5, 5, 0, -5, 0,   0, 5, -5, 0, 0, 5, -5, 0]
 };
 /* <<< LES SONS DE LA VISÉE */
 var ctxA = null;
