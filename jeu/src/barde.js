@@ -294,6 +294,12 @@ B.rienADire = function(id){
   var P = M.P(), E = M.E(); if(!P || !E || !E.pnj || !E.pnj[id] || id === 'voisin') return false;
   var Q = questions(id); if(!Q.length) return false;
   if(Q.some(function(q, i){ return !repondu(id, i) && !cachee(id, q) && (!q.besoin || M.besoinOk(q.besoin)); })) return false;
+  /* (Romain, 19 novembre, 9 h 29) un grand dialogue pas encore tranché garde sa porte ouverte : pas encore lancé (même s'il attend
+     encore « tout demandé »), ou lancé puis quitté (« Reprendre la conversation »), ou une deuxième chance ('encore'). Seule une
+     erreur (ou sa fin) le ferme. */
+  var GS = (P.grands || {});
+  if(Q.some(function(q){ if(!q.grand || (q.moments && !M.momentOk(q.moments)) || (q.cacheSi && M.besoinOk(q.cacheSi))) return false;   /* (pas cachée parce qu'elle attend encore « tout demandé » : elle viendra) */
+    var f = (GS[q.grand] || {}).fini; return !f || f === 'encore'; })) return false;
   /* (Romain, 13 novembre : « du moment qu'on a vu les discussions et que le bouton Mensonge a disparu […] tu me le mets quand même en
      rouge. Tant pis si on n'a pas trouvé le mensonge ») un mensonge pas démasqué ne garde la porte ouverte que tant qu'on peut encore
      le démasquer : le bouton « 🤥 Mensonge ? » est toujours sous sa réponse (mentEncorePossible), ou il reste une potion de vérité à
@@ -463,7 +469,7 @@ M.feuilleConv = function(id){
     if(intu) cadre += '<p class="bd-intu">🔮 Ton intuition : c\'est un mensonge !</p>';
     cadre += '<div class="bd-rep-outils">' + lire(v ? q.vrai : q.a, id) +
       (e2 && repetes(id) < repetesMax() ? '<button class="btn petit second" data-act="bd-repete" data-p="' + id + '" data-i="' + i + '">🔁 Répète</button>' : '') +
-      (e2 && !v && !ferme && derniere(id) === i && !minuteFinie(id, i, bd) ? boutonMent(id, i, bd) : '') + '</div></div>';
+      (e2 && !v && !ferme && derniere(id) === i && !minuteFinie(id, i, bd) ? boutonMent(id, i, bd) : '') + '</div>' + codesDansBoite(q) + '</div>';
     s += '<details class="b-question repondue bd-boite' + (ici ? ' bd-cur' : '') + '" name="' + nomBoites + '"' + (ici ? ' open' : '') + '><summary>' + (v ? '<span class="bd-mini-tag">🤥</span>' : '') + '<b>' + esc(q.q) + '</b></summary><div class="bd-boite-in">' + cadre + '</div></details>';
   });
   s += '</div>';
@@ -563,6 +569,18 @@ A.frapper = function(el){
    le bouton n'est que sous la dernière réponse de ce villageois (P.derniere[id]) ; dès qu'on pose une autre question, il part
    en fumée, avec un tout petit souffle (M.son('fumee')). « 🔁 Répète » redonne la chance sur la réponse répétée. */
 function derniere(id){ var P = M.P(); return P && P.derniere ? P.derniere[id] : undefined; }
+/* (Romain, 19 novembre, 9 h 13 : chez Odette, « Poser la canne » : la réponse dans la boîte, et pas de code — la fenêtre « Chez Odette »
+   n'a pas été vue, cause pas retrouvée) Enquête 3 : une réponse qui donne un code le garde aussi sous la réponse, dans sa boîte,
+   pour toujours. Les enquêtes 1 et 2 ne changent pas. */
+function codesDansBoite(q){
+  var E = M.E(); if(!E || E.id !== 3 || !q) return '';
+  var l = q.donne ? [].concat(q.donne) : q.obj ? ['obj:' + q.obj] : [];
+  return l.map(function(cd){
+    var seq = null; try{ seq = M.code(cd); }catch(e){} if(!seq) return '';
+    var n = M.nomCode(cd), td = M.texteDonne(cd), dit = M.direCode ? M.direCode(cd) : null, t = dit || (n.nom + ' : ' + td);
+    return '<div class="b-donne bd-donne-boite"><p>' + n.ic + ' ' + esc(t) + ' ' + lire(t) + '</p>' + M.codeHTML(seq) + '</div>';
+  }).join('');
+}
 function poserDerniere(id, i){ var P = M.P(); P.derniere = P.derniere || {}; P.derniere[id] = i; }
 B.derniere = derniere;
 /* La fumée : sur un vrai toucher, le bouton s'évapore à sa place, puis la question part (un tiers de seconde) ; appelée par le code

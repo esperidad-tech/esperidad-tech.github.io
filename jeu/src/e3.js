@@ -767,7 +767,7 @@ E[3] = {
            voit lui-même (et encore la nuit). Au bout : Moustache cherche Odette à la grille, et des yeux rouges derrière les barreaux —
            ce qui annonce les bêtes (Romain : « rien n'annonce le combat »). Le code, lui, ne change pas d'identité (info:crypte_fermee) :
            il s'appelle maintenant « Odette est sous l'église », et rouvre Iris (l'herbier) et Anselme chez le Barde. */
-        {oblige:true, id:'traces', ic:'🐾', nom:'Les traces de Moustache', moments:['apresmidi', 'nuit'], mj:'pistage', essaisInfinis:true,
+        {oblige:['nuit'], id:'traces', ic:'🐾', nom:'Les traces de Moustache', moments:['apresmidi', 'nuit'], mj:'pistage', essaisInfinis:true,
           donne:'info:crypte_fermee',
           avant:'Le bol de lait de midi est renversé, et des pattes blanches filent dehors : les chats d\'Odette sont partis, chacun de son côté ! Suis celles de Moustache… si tu sais les reconnaître.',
           bouton:'🐾 Suivre les traces',
@@ -1154,7 +1154,8 @@ E[3] = {
         note:'Chez Odette : tu as posé sa canne contre la porte. Sur la table, son carnet : un chat à chaque page, avec ses traces de pattes, et son écriture penchée.'},
       /* [1] (17 novembre, étape 3 du nouveau fil : « la maison d'Odette brille aussi sur sa carte : il voit le lait renversé, et le dit
          au Pisteur s'il n'y a pas pensé ») l'après-midi et la nuit, sans code : une phrase à dire à voix haute */
-      {q:'Jeter un œil chez Odette', moments:AN_,
+      {q:'Jeter un œil chez Odette', moments:AN_, oblige:['apresmidi'],   /* (Romain, 19 novembre, 9 h 31 et 9 h 37) le rond jaune chez Odette, l'après-midi, c'est pour le Barde : il le dit au Pisteur */
+       
         a:'Dans la cuisine, le bol de lait de midi est renversé. Par terre, de petites traces de pattes toutes fraîches filent dehors ! Les traces, c\'est l\'affaire du Pisteur : dis-le-lui !',
         note:'Chez Odette, l\'après-midi : le bol de lait de midi est renversé, et de petites traces de pattes toutes fraîches filent dehors. À dire au Pisteur !'}
     ]},

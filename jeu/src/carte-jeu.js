@@ -310,8 +310,11 @@ function contenu(ou, w, h){
       var hab = sansGens ? {} : habitants(E), vis = {};
       if(gardes.length){ var tous = habitants(E); M.cle(tous).forEach(function(k){ if(gardes.indexOf(tous[k].id || tous[k].pid) >= 0) hab[k] = tous[k]; }); }
       /* où est chacun, dans toutes les enquêtes (dès l'enquête 1 : la position de chacun remplace le marqueur « à qui parler » du tutoriel) */
+      var OB = (!T && M.obligesCarte) ? M.obligesCarte() : null;
       var PR = sansGens ? {marqueurs:[], chez:{}, absents:{}, bulles:{}} : presences(E, hab);
       if(gardes.length){ PR = presences(E, hab); PR.marqueurs = PR.marqueurs.filter(function(mq){ return gardes.indexOf(mq.visage) >= 0; }); }
+      /* (Romain, 19 novembre, 9 h 31) une maison au rond jaune (un passage obligatoire) : son portrait n'est plus pâle (chez Odette, l'après-midi) */
+      if(OB && OB.maisons) OB.maisons.forEach(function(k){ delete PR.absents[k]; });
       /* (un villageois sur un lieu qu'on ne peut pas encore toucher : on le voit, mais son visage ne se touche pas) */
       PR.marqueurs.forEach(function(mq){
         if(mq.lieu && (caches.indexOf(mq.lieu) >= 0 || (T && T.ouverts.indexOf(mq.lieu) < 0) || (guide && actifs.indexOf(mq.lieu) < 0 && verrous.indexOf(mq.lieu) < 0))) mq.act = null;
@@ -334,7 +337,7 @@ function contenu(ou, w, h){
       if(brNeuves.length){ res.commit = res.commit || {ids:[], tout:false}; res.commit.brume = brNeuves; }
       svg = Carte.svg({id:ou, moment:mid, niveau:'surface', actifs:actifs, verrous:verrous, caches:caches, marqueurs:marqueurs, riviere:E && E.riviereRouge ? 'rouge' : null, lavoir:E && (E.lavoirRose || E.riviereRouge) ? 'rose' : null,   /* enquête 2 : l'eau du lavoir rose (Romain, 22 h 49) */
         calque:null, surbrillance:T ? T.ici : null, maisons:T ? T.maisons : null, etiquette:r.etiquette, toucheMin:r.toucheMin, apparus:apparus, ouverts:ouverts,
-        habitants:hab, visages:vis, aides:aides, presents:PR.chez, absents:PR.absents, bullesChez:PR.bulles, bullesMaison:(!T && M.bullesMaisons) ? M.bullesMaisons() : null, obliges:(!T && M.obligesCarte) ? M.obligesCarte() : null,
+        habitants:hab, visages:vis, aides:aides, presents:PR.chez, absents:PR.absents, bullesChez:PR.bulles, bullesMaison:(!T && M.bullesMaisons) ? M.bullesMaisons() : null, obliges:OB,
         /* (enquête 3, la nuit : la fête) tout le village sur la place : les visages se rangent DANS la place, sans se chevaucher (carte.js, poserFoule) */
         foules:(E.fete && M.momentOk(E.fete.moments) ? (function(){ var o = {}; o[E.fete.lieu] = 1; return o; })() : null),
         brume:brume, brumePart:brNeuves.concat(enCours),
