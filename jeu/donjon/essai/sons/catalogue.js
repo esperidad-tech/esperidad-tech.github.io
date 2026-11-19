@@ -138,7 +138,8 @@ window.CATALOGUE = [
           {id:'cineSursaut', t:'Elle sursaute', v:'A', neuf:1}, {id:'cineCriFemme', t:'Le cri', v:'A', neuf:1}, {id:'cineSeau', t:'Le seau tombe', v:'A', neuf:1}, {id:'cineMurmure', t:'Le village murmure', v:'A', neuf:1},
           {id:'cineAube', t:'L\'aube', v:'A', neuf:1}, {id:'cinePorteMairie', t:'La grande porte', v:'A', neuf:1}, {id:'cinePapier', t:'La lettre', v:'A', neuf:1}, {id:'cineSoupir', t:'Le soulagement', v:'A', neuf:1},
           {id:'cineHourra', t:'Hourra !', v:'A', neuf:1}, {id:'cineFete', t:'La fête commence', v:'A', neuf:1}, {id:'cineClocheJoie', t:'Les cloches', v:'A', neuf:1}, {id:'cineFeteLoin', t:'La fête, loin', v:'A', neuf:1},
-          {id:'cineMiaou', t:'Moustache', v:'A', neuf:1}
+          {id:'cineMiaou', t:'Moustache', v:'A', neuf:1},
+          {id:'cineMoustacheGrogne', t:'Moustache pas content', v:'A', neuf:1}   /* 19 novembre : remplace le miaou à la fin de debut3 */
         ]}
       ]}
     ]},

@@ -194,20 +194,16 @@ M.cineMusFinMaireA = function(A, P){
     trem(A, t + 2, m(50), 6, .012, proche, {f2:m(53), env:[[0, 0], [5, 1], [6, 0]], vit:10});
   });
   a(I, 10.8, function(t){ trem(A, t, m(38), 4.2, .018, proche, {env:[[0, 0], [.5, 1], [3.6, 1], [4.2, 0]], vit:8, lp:900}); });   /* « Que s'est-il passé ici ? » */
-  a(I, 14.7, function(t){                                                                           /* le gant, la bague : une petite ritournelle qui fait froid */
-    [[0, 74], [.4, 75], [.8, 68], [1.6, 74], [2.0, 75], [2.4, 68], [2.9, 63]].forEach(function(p){ boite(A, t + p[0], m(p[1]), .045, proche); boite(A, t + p[0], m(p[1]), .02, ech); });
-    A.ton(t, {type:'sawtooth', f:m(26), env:[[0, 0], [.5, 1], [3.2, .9], [3.6, 0]], g:.03, filtres:[{type:'lowpass', f:200}]}, proche);
-    A.cloche(t + 2.1, m(86), {d:2.5, rapport:2.76, indice:.6, g:.02}, loin);                          /* la bague qui luit */
-  });
-  a(I, 18.2, function(t){                                                                           /* « Vous êtes allés trop loin… » */
+  /* (le gant et la bague : coupés du film le 19 novembre, avec leur ritournelle ; tout ce qui suit arrive 3,3 secondes plus tôt) */
+  a(I, 14.9, function(t){                                                                           /* « Vous êtes allés trop loin… » */
     [m(38), m(41), m(44)].forEach(function(f){ cuivre(A, t, f, 3.4, .03, proche); });
     A.choeur(t + .2, [m(50), m(53), m(56)], 3.3, {voyelle:'o', a:1, r:1.2, g:.02}, loin);
   });
-  a(I, 21.8, function(t){                                                                           /* « Monsieur le maire… ? » : ça monte */
+  a(I, 18.5, function(t){                                                                           /* « Monsieur le maire… ? » : ça monte */
     [m(50), m(51), m(56)].forEach(function(f){ trem(A, t, f, 2.2, .014, proche, {f2:f * 1.19, vit:13, env:[[0, 0], [2, 1], [2.2, 0]]}); });
     montee(A, t + 1.2, 1.0, .3, loin);
   });
-  a(I, 24.0, function(t){                                                                           /* « Gardes ! Attrapez-les ! » */
+  a(I, 20.7, function(t){                                                                           /* « Gardes ! Attrapez-les ! » */
     frappe(A, t, .5, tamb);
     [m(26), m(38), m(45), m(51)].forEach(function(f){ cuivre(A, t, f, 1.2, .04, proche); });
     for(var k = 0; k < 10; k++) A.tambour(t + .9 + k * .2, {f:k % 2 ? 80 : 70, d:.3, g:.18 + k * .015}, tamb);   /* la charge */

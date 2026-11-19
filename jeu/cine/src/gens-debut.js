@@ -117,14 +117,30 @@ GD.chat = function(o){
   /* les rayures du front, les joues claires */
   s += '<path d="M0 -66 L 0 -46 M-12 -64 L -9 -48 M12 -64 L 9 -48" stroke="#5a6074" stroke-width="3.4" stroke-linecap="round" opacity=".7"/><ellipse cx="-18" cy="0" rx="20" ry="13" fill="#d6dae6"/><ellipse cx="18" cy="0" rx="20" ry="13" fill="#d6dae6"/>';
   /* les yeux : grands, dorés ; la pupille en amande ; ils suivent, ils clignent */
-  var cl = U.clamp(o.cl || 0, 0, 1), lx = (o.lx || 0) * 5, ly = (o.ly || 0) * 3, triste = or * 3;
+  /* o.mefiant (0 → 1 ; Romain, 19 novembre : « une tête de chat pas content, avec des yeux un peu à moitié fermés, suspicieux ») : la paupière
+     du haut descend EN BIAIS, plus bas côté nez (le regard en coin, les sourcils froncés), la pupille devient une fente, les coins de la
+     bouche tombent ; les oreilles, on les règle à part (o.oreilles) */
+  var cl = U.clamp(o.cl || 0, 0, 1), lx = (o.lx || 0) * 5, ly = (o.ly || 0) * 3, triste = or * 3, mf = U.clamp(o.mefiant || 0, 0, 1), mb = 0;
   [-1, 1].forEach(function(sg){ var ex = sg * 24, ey = -24, h = 13 * (1 - cl);
-    if(h > 1.2){ var idc = 'chatOeil' + (sg > 0 ? 'D' : 'G');
-      s += '<clipPath id="' + idc + '"><ellipse cx="' + ex + '" cy="' + ey + '" rx="15" ry="' + f(h) + '"/></clipPath><ellipse cx="' + ex + '" cy="' + ey + '" rx="15" ry="' + f(h) + '" fill="#e8c24a"/><g clip-path="url(#' + idc + ')"><ellipse cx="' + ex + '" cy="' + f(ey + 4) + '" rx="15" ry="9" fill="#c89a20" opacity=".5"/><ellipse cx="' + f(ex + lx) + '" cy="' + f(ey + ly) + '" rx="' + f(5 + (o.pupille || 0) * 5) + '" ry="11" fill="#0c0a10"/><circle cx="' + f(ex + lx - 3.5) + '" cy="' + f(ey + ly - 4.5) + '" r="3" fill="#fff"/><circle cx="' + f(ex + lx + 3) + '" cy="' + f(ey + ly + 4) + '" r="1.4" fill="#fff" opacity=".8"/></g>'; }
+    /* la ligne de la paupière méfiante : du coin dehors (yO) au coin côté nez (yI), plus bas */
+    var yO = ey - h - 1 + mf * 9, yI = ey - h - 1 + mf * 17, xO = ex + sg * 17, xI = ex - sg * 17;
+    if(h > 1.2){ var idc = 'chatOeil' + (sg > 0 ? 'D' : 'G'), idp = 'chatPaup' + (sg > 0 ? 'D' : 'G');
+      var pup = U.lerp(5 + (o.pupille || 0) * 5, 2.6, mf);
+      s += '<clipPath id="' + idc + '"><ellipse cx="' + ex + '" cy="' + ey + '" rx="15" ry="' + f(h) + '"/></clipPath>' +
+        (mf > 0 ? '<clipPath id="' + idp + '"><path d="M' + f(xO + sg * 4) + ' ' + f(yO) + ' L ' + f(xI - sg * 4) + ' ' + f(yI) + ' L ' + f(xI - sg * 4) + ' ' + (ey + 30) + ' L ' + f(xO + sg * 4) + ' ' + (ey + 30) + ' Z"/></clipPath><g clip-path="url(#' + idp + ')">' : '') +
+        '<ellipse cx="' + ex + '" cy="' + ey + '" rx="15" ry="' + f(h) + '" fill="#e8c24a"/><g clip-path="url(#' + idc + ')"><ellipse cx="' + ex + '" cy="' + f(ey + 4) + '" rx="15" ry="9" fill="#c89a20" opacity=".5"/><ellipse cx="' + f(ex + lx) + '" cy="' + f(ey + ly) + '" rx="' + f(pup) + '" ry="11" fill="#0c0a10"/><circle cx="' + f(ex + lx - 3.5) + '" cy="' + f(ey + ly - 4.5 + mf * 5) + '" r="' + f(3 - mf * 1.2) + '" fill="#fff"/><circle cx="' + f(ex + lx + 3) + '" cy="' + f(ey + ly + 4) + '" r="1.4" fill="#fff" opacity=".8"/></g>' +
+        (mf > 0 ? '</g>' : ''); }
+    if(mf > 0){
+      /* la paupière : un trait épais en biais, et l'ombre qu'elle pose sur l'œil ; au-dessus, le front plissé (le sourcil froncé) */
+      s += '<path d="M' + f(xO + sg * 2) + ' ' + f(yO + 2.5) + ' L ' + f(xI - sg * 2) + ' ' + f(yI + 2.5) + '" stroke="#c89a20" stroke-width="' + f(4 * mf) + '" opacity=".6" stroke-linecap="round"/>' +
+        '<path d="M' + f(xO + sg * 2) + ' ' + f(yO) + ' L ' + f(xI - sg * 2) + ' ' + f(yI) + '" stroke="' + O + '" stroke-width="' + f(2.8 + mf * 1.4) + '" stroke-linecap="round"/>' +
+        '<path d="M' + f(xO + sg * 1) + ' ' + f(yO - 7) + ' Q ' + f(ex) + ' ' + f((yO + yI) / 2 - 9) + ' ' + f(xI - sg * 4) + ' ' + f(yI - 4) + '" fill="none" stroke="#5a6074" stroke-width="3" stroke-linecap="round" opacity="' + f(.75 * mf) + '"/>';
+    } else
     s += '<path d="M' + f(ex - sg * 16) + ' ' + f(ey + triste * -sg * 0) + ' C ' + f(ex - sg * 8) + ' ' + f(ey - h - 2 + triste) + ' ' + f(ex + sg * 8) + ' ' + f(ey - h - 2 - triste * .5) + ' ' + f(ex + sg * 16) + ' ' + f(ey - triste * .2) + '" fill="none" stroke="' + O + '" stroke-width="2.8" stroke-linecap="round"/>'; });
   /* le nez, la bouche (elle s'ouvre : il miaule), les longues moustaches blanches */
   s += '<path d="M-6 -6 L 6 -6 L 0 1 Z" fill="#e88a94" stroke="' + O + '" stroke-width="1.8" stroke-linejoin="round"/>';
   if(mi > .08) s += '<path d="M-9 4 C -8 ' + f(4 + mi * 20) + ' 8 ' + f(4 + mi * 20) + ' 9 4 Z" fill="#5a1418" stroke="' + O + '" stroke-width="2"/><path d="M-5 ' + f(6 + mi * 12) + ' C -2 ' + f(4 + mi * 9) + ' 2 ' + f(4 + mi * 9) + ' 5 ' + f(6 + mi * 12) + ' C 3 ' + f(8 + mi * 17) + ' -3 ' + f(8 + mi * 17) + ' -5 ' + f(6 + mi * 12) + ' Z" fill="#e8737a"/><path d="M-7 5 l 2.4 5 l 2 -5 M7 5 l -2.4 5 l -2 -5" fill="#fff"/>';
+  else if(mf > 0 && (mb = Math.max(mf, .85))) s += '<path d="M0 1 L 0 6 M0 6 C ' + f(-4) + ' ' + f(11 - mb * 4) + ' ' + f(-10) + ' ' + f(10 + mb * 1) + ' ' + f(-13) + ' ' + f(6 + mb * 8) + ' M0 6 C 4 ' + f(11 - mb * 4) + ' 10 ' + f(10 + mb * 1) + ' 13 ' + f(6 + mb * 8) + '" fill="none" stroke="' + O + '" stroke-width="2.2" stroke-linecap="round"/>';   /* (les coins de la bouche tombent) */
   else s += '<path d="M0 1 L 0 6 M0 6 C -4 11 -11 10 -13 6 M0 6 C 4 11 11 10 13 6" fill="none" stroke="' + O + '" stroke-width="2" stroke-linecap="round"/>';
   [-1, 1].forEach(function(sg){ [[-8, -14], [-1, 0], [7, 12]].forEach(function(m, i){ s += '<path d="M' + (sg * 20) + ' ' + f(2 + i * 3) + ' Q ' + (sg * 52) + ' ' + f(m[0] + 2 - or * 4) + ' ' + (sg * 96) + ' ' + f(m[1] + or * 10) + '" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>'; }); });
   s += '</g>';

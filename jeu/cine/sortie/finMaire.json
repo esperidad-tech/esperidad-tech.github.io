@@ -1,6 +1,6 @@
 {
  "nom": "La fin : le maire",
- "duree": 27.2,
+ "duree": 23.9,
  "sons": [
   [
    0.9,
@@ -67,27 +67,19 @@
    "cineArmure"
   ],
   [
-   15.1,
-   "cineGant"
-  ],
-  [
-   17.3,
-   "cineBague"
-  ],
-  [
-   24,
+   20.7,
    "cineCoeur"
   ],
   [
-   24.8,
+   21.5,
    "cineLances"
   ],
   [
-   25.2,
+   21.9,
    "cineGardes"
   ],
   [
-   26.6,
+   23.3,
    "cineCoup"
   ]
  ],
@@ -105,20 +97,20 @@
    "Le maire"
   ],
   [
-   18.3,
-   21.4,
+   15,
+   18.1,
    "Vous êtes allés trop loin. Beaucoup trop loin.",
    "Le maire"
   ],
   [
-   21.9,
-   23.6,
+   18.6,
+   20.3,
    "Monsieur le maire… ?",
    "Silas"
   ],
   [
-   24,
-   25.7,
+   20.7,
+   22.4,
    "Gardes ! Attrapez-les !",
    "Le maire"
   ]

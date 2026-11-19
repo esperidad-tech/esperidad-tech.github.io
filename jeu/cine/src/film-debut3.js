@@ -346,7 +346,7 @@ function plan7(t){
       FV.confettis(t, T6 + .2, [XF - 2600, -2300, -1500, XF + 2600, 0, 1600], 150, 67); }};
 }
 
-/* ================================================================ 8. MOUSTACHE (30,2 → la fin) : on descend entre les jambes ; le chat d'Odette, tout seul, ne fait pas la fête */
+/* ================================================================ 8. MOUSTACHE (30,2 → la fin) : on descend entre les jambes ; le chat d'Odette, tout seul, ne fait pas la fête : il nous regarde de travers */
 var CHAT = {x:XF - 70, z:330};
 function plan8(t){
   var a = t - T7, k = U.tresLisse(U.clamp(a / 3.4, 0, 1));
@@ -355,9 +355,14 @@ function plan8(t){
   /* deux danseurs passent tout près, devant nous (on ne voit que leurs jambes, floues) */
   var d1 = D.base('lavandiere'), d2 = D.base('victor'); D.joie(d1, t, 1, 31, 0); D.joie(d2, t, 1, 33, 3);
   A.push(D.acteur(t, 'lavandiere', CHAT.x + U.lerp(-560, 620, U.clamp((a - .1) / 1.7, 0, 1)), CHAT.z + 380, d1, {}, 'contre'), D.acteur(t, 'victor', CHAT.x + 330 + Math.cos(t * .9) * 60 + a * 26, CHAT.z + 300, d2, {}, 'contre'));
-  /* le chat : les oreilles couchées, il regarde à gauche, à droite, puis droit vers nous ; il miaule */
-  var re = U.piste([[0, -.9], [1.2, -.9], [1.5, .9], [2.4, .9], [2.8, 0], [9, 0]])(a), mi = Math.sin(U.clamp((a - 3.3) / .9, 0, 1) * Math.PI);
-  var chat = GD.chat({lx:re, ly:-.15 - .35 * U.clamp((a - 2.6) / .6, 0, 1), cl:cligne(t * 1.3, 2.2) + mi * .35, oreilles:U.lerp(.75, .95, mi) - .25 * U.clamp((a - 2.6) / .8, 0, 1), miaou:mi, queue:Math.max(0, Math.sin(t * 2.6)) * 1, tete:U.fbm(t * .5, 5, 2) * 3 + re * 3, souffle:.5 + .5 * Math.sin(t * 2.2), pupille:.5});
+  /* le chat : les oreilles mi-couchées, il regarde à gauche, à droite, puis droit vers nous — et il n'est PAS content (Romain, 19 novembre :
+     « une tête de chat pas content, avec des yeux un peu à moitié fermés, suspicieux », comme s'il savait qu'Odette a disparu et que tout ça
+     est un piège) : ses yeux se plissent en biais (GD.chat, o.mefiant), sa queue bat d'agacement, il grogne tout bas. Il ne miaule plus. */
+  var re = U.piste([[0, -.9], [1.2, -.9], [1.5, .9], [2.4, .9], [2.8, 0], [9, 0]])(a);
+  var mf = .3 + .7 * U.tresLisse(U.clamp((a - 2.7) / 1.1, 0, 1));                  /* méfiant dès le début ; il plisse les yeux en nous regardant */
+  var cl0 = cligne(t * 1.3, 2.2) * (1 - U.clamp((a - 2.6) / .4, 0, 1));             /* (il ne cligne plus : il nous fixe) */
+  var chat = GD.chat({lx:re, ly:-.15 - .35 * U.clamp((a - 2.6) / .6, 0, 1), cl:cl0 + .12 * mf, oreilles:.62 + .14 * U.clamp((a - 2.8) / .8, 0, 1), miaou:0, mefiant:mf,
+    queue:Math.max(0, Math.sin(t * (a > 3 ? 4.4 : 2.6))) * (a > 3 ? 1.3 : 1), tete:U.fbm(t * .5, 5, 2) * 2 + re * 3 - 5 * U.tresLisse(U.clamp((a - 2.8) / 1, 0, 1)), souffle:.5 + .5 * Math.sin(t * 2.2), pupille:.5});
   var lumChat = U.lisse(U.clamp((a - 1.6) / 1.6, 0, 1));
   A.push(D.libre(CHAT.x, 0, CHAT.z, '<ellipse cx="6" cy="2" rx="110" ry="17" fill="#000" opacity=".4"/>', [200, 300]), D.libre(CHAT.x, 0, CHAT.z + 1, chat, [200, 300], {relief:'Contre'}));
   /* un confetti s'est posé sur sa tête */
@@ -371,7 +376,7 @@ function plan8(t){
 CINE.films.debut3 = {
   nom:'La lettre d\'Odette — le début', plateau:'village', duree:T, defs:FV.defs,
   sons:[[.1, 'cineAube'], [.6, 'cineMurmure'], [T1 + .05, 'cinePorteMairie'], [T1 + 1.3, 'cinePapier'], [T2 + .1, 'cinePapier'], [T4 + .25, 'cineSoupir'], [T4 + 1.1, 'cineHourra'], [T5 + 1.9, 'cineHourra'],
-    [T6 + .1, 'cineFete'], [T6 + .9, 'cineClocheJoie'], [T6 + 1.0, 'cineEnvol'], [T6 + 2.6, 'cineClocheJoie'], [T7 + .2, 'cineFeteLoin'], [T7 + 3.35, 'cineMiaou']],
+    [T6 + .1, 'cineFete'], [T6 + .9, 'cineClocheJoie'], [T6 + 1.0, 'cineEnvol'], [T6 + 2.6, 'cineClocheJoie'], [T7 + .2, 'cineFeteLoin'], [T7 + 3.5, 'cineMoustacheGrogne']],
   sousTitres:LIGNES,
   etat:function(t){
     PV.prepare('place'); PV.prepare('foule');

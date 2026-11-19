@@ -859,4 +859,16 @@ S.cineMiaouA = function(A, P){
       filtres:[{type:'bandpass', f:2300, pts:[[d * .55, 1100]], q:2.2}]}, o); });
   return {duree:.9};
 };
+/* Moustache n'est pas content (Romain, 19 novembre : il remplace le « miaou ? » à la fin de debut3) : un « mrrrh » fermé, grave, qui
+   descend, avec un grain de grognement — le chat qui n'y croit pas */
+S.cineMoustacheGrogneA = function(A, P){
+  GD = 2.6;
+  var t = P.t, o = dehors(A, P, .1, .14), d = 1.05;
+  [[1, .06], [2, .03], [3, .014]].forEach(function(m){
+    A.ton(t, {type:'sawtooth', f:230 * m[0], f2:170 * m[0], gl:d, env:[[0, 0], [.08, 1], [d * .6, .85], [d, 0]], g:m[1] * .5, vib:[5, 3 * m[0]], trem:[22, .55], gigue:6,
+      filtres:[{type:'bandpass', f:620, q:1.6}, {type:'lowpass', f:1500}]}, o);
+  });
+  A.bruit(t + .05, {coul:'rose', filtres:[{type:'bandpass', f:400, q:1.4}], env:[[0, 0], [.1, 1], [d * .7, .6], [d, 0]], g:.05}, o);   /* le souffle du nez */
+  return {duree:1.3};
+};
 })(window);

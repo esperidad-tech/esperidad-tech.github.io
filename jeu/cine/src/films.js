@@ -708,7 +708,7 @@ var camera = plans([
   [23.8, [[23.8, {x:1300, y:-370, z:760, lacet:.08, focus:940}], [T, {x:1300, y:-360, z:860, lacet:.08, focus:700}, 'i2']]]
 ]);
 var lanterne = U.piste([[2.2, 0], [2.9, 1, 'o']]);
-CINE.films.finMaire = {
+var FILM_MAIRE = {
   nom:'La fin : le maire', duree:T,
   sons:[[.9, 'cinePasEcho'], [2.2, 'cineLanterne'], [2.7, 'cinePasEscalier'], [3.5, 'cinePasEscalier'], [4.3, 'cinePasEscalier'], [5.1, 'cinePasEscalier'], [5.9, 'cinePasEscalier'], [6.7, 'cinePasEscalier'],
     [4.4, 'cineArmure'], [5.6, 'cineArmure'], [6.8, 'cineArmure'], [8.0, 'cineArmure'], [8.2, 'cinePas'], [9.2, 'cinePas'], [10.2, 'cinePas'], [9.4, 'cineArmure'],
@@ -754,6 +754,19 @@ CINE.films.finMaire = {
       fondu:t < .4 ? {k:1 - t / .4} : t > 26.6 ? {k:(t - 26.6) / .5} : null
     };
   }
+};
+/* LE PLAN DU GANT ET DE LA BAGUE EST COUPÉ (Romain, 19 novembre : « il y a un plan sur sa main avec son gant qui se retire et on voit sa
+   bague. Ça, j'aimerais que tu retires ce plan. Tu changes rien d'autre »). Le film est écrit comme avant (27,2 s) ; on saute de 14,8 à
+   18,1 s : du plan moyen du maire, on passe tout droit au gros plan de « Vous êtes allés trop loin ». Ses bruitages (le gant, la bague)
+   s'en vont, et tout ce qui suit arrive 3,3 secondes plus tôt (la musique aussi : cine-musiques.js, cineMusFinMaireA). 23,9 s. */
+var COUPE = [14.8, 18.1], SAUT = COUPE[1] - COUPE[0];
+function avance(t){ return t < COUPE[0] ? t : t + SAUT; }
+function recule(t){ return t < COUPE[0] ? t : t - SAUT; }
+CINE.films.finMaire = {
+  nom:FILM_MAIRE.nom, duree:T - SAUT,
+  sons:FILM_MAIRE.sons.filter(function(c){ return c[0] < COUPE[0] || c[0] >= COUPE[1]; }).map(function(c){ return [Math.round(recule(c[0]) * 100) / 100, c[1]]; }),
+  sousTitres:LIGNES.map(function(l){ return [Math.round(recule(l[0]) * 100) / 100, Math.round(recule(l[1]) * 100) / 100, l[2], l[3]]; }),
+  etat:function(t){ return FILM_MAIRE.etat(avance(t)); }
 };
 })();
 
