@@ -1204,8 +1204,12 @@ E[3] = {
       {q:'Il vous reste un peu de cette encre ?', g:'h', moments:M_, secret:true, besoin:[{vu:'barde:iris:2'}], obj:'encre_iris',
         a:'Elle fouille dans son tablier : « Un fond de flacon, c\'est tout ce qu\'il me reste. Tiens, prends-le ! »',
         note:'Iris t\'a donné un fond de flacon de son encre. L\'Alchimiste pourra l\'analyser.'},
-      /* [5] (17 novembre, le nouveau fil : « l'herbier, c'est quelque chose que quelqu'un doit lui apporter ») avec le code du Pisteur */
-      {q:'Odette est sous l\'église, avec des bêtes aux yeux rouges !', g:'e', moments:A_, secret:true, besoin:[{code:'info:crypte_fermee'}], obj:'herbier',
+      /* [5] (17 novembre, le nouveau fil : « l'herbier, c'est quelque chose que quelqu'un doit lui apporter ») avec le code du Pisteur.
+         (19 novembre, 9 h 51, Romain : « une fois qu'elle a le code du Pisteur, tu peux mettre un rond jaune sur Iris ») oblige:true → le rond
+         jaune sur l'herboristerie, chez le Barde, dès qu'il a le code et tant que l'herbier n'est pas prêté (M.obligesCarte). Avant le code,
+         rien : Iris reste en rouge (« rien de plus à dire »). L'herbier n'est pas un verrou (la nuit, il arrive quand même) : son code n'a
+         pas d'anneau, et tools/verif-e3.js ne le compte pas parmi les passages obligatoires. */
+      {q:'Odette est sous l\'église, avec des bêtes aux yeux rouges !', g:'e', moments:A_, secret:true, besoin:[{code:'info:crypte_fermee'}], obj:'herbier', oblige:true,
         a:'Vous voulez descendre là-dessous ? Alors préparez-vous, et beaucoup : ces bêtes dorment le jour, et chassent la nuit. Tiens : Odette m\'empruntait souvent ce vieil herbier. Prends-le.',
         note:'Iris : les bêtes de sous l\'église dorment le jour et chassent la nuit. Elle t\'a prêté son vieil herbier (code pour le Sage).'}
     ]},

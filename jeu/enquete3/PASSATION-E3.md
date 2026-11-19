@@ -2,6 +2,11 @@
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
+## 19 novembre, 10 h 10 — UN ROND JAUNE SUR IRIS QUAND LE BARDE A LE CODE DU PISTEUR — EN LIGNE (Bible §13.74 ; commit f2a14ab du site)
+
+(Entre le 18 novembre et ici : les §13.68 à §13.73 de la Bible — pas recopiés dans ce fichier.)
+- **Pour la conception** : l'après-midi, l'herbier d'Iris n'arrive qu'avec le code du Pisteur « Odette est sous l'église ». Romain s'est cru bloqué (Iris en rouge) parce qu'il n'avait pas fait les traces de Moustache. Depuis le §13.73, c'est le Barde qui a le rond jaune chez Odette l'après-midi (« Jeter un œil », le dire au Pisteur) ; depuis le §13.74, **Iris a le rond jaune dès que le Barde a le code**, jusqu'à l'herbier. Le code de l'herbier reste sans anneau (la nuit, l'herbier arrive quand même).
+
 
 ## 17 novembre, minuit — LES RETOURS DE ROMAIN DE 23 H 13 : L'ÉTIQUETTE DE LA LETTRE AU LABO, LE PLAN DU SAGE, « L'ENTRÉE DES SOUTERRAINS », LES YEUX DE L'ALCHIMISTE — EN LIGNE (Bible §13.67 ; commits 6da46a7 (le jeu) et 377fac5 (le donjon) du site, version 20261117-2325)
 

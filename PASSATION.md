@@ -1,8 +1,10 @@
-# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 19 novembre, 9 h 05)
+# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 19 novembre, 10 h 10)
 
 À lire en entier par la nouvelle conversation avant de toucher à quoi que ce soit.
 
 **19 novembre, 9 h 05 — EN LIGNE (commit ec3be26 du site, version 20261119-0758 ; go de Romain à 8 h 39 : « Fais ça et mets en ligne » ; Bible §13.71)** : **deux films retouchés.** `finMaire` sans le plan du gant et de la bague (23,9 s ; `films.js` : `FILM_MAIRE` + `COUPE` ; la musique avancée dans `cineMusFinMaireA` ; la vidéo = l'ancienne moins les images 444 à 542, rien d'autre ne bouge). `debut3` : Moustache méfiant au dernier plan (`GD.chat({mefiant})`, `gens-debut.js`), plus de miaou, un grognement neuf `cineMoustacheGrogne` (Atelier des sons republié) ; seul ce plan refilmé (`filmer.py debut3 --de 30.2 --a 37.2`) et recollé. Le jeu reconstruit (sa fiche `cine-infos.js`). **À demander à Romain : le chat lui plaît ? le grognement ?**
+
+**19 novembre, 10 h 10 — EN LIGNE (commit f2a14ab du site, version 20261119-0909, Réglages « 19/11 à 10 h 04 » ; publication de GitHub vérifiée ; go de Romain à 9 h 51 ; Bible §13.74)** : enquête 3, **un rond jaune sur Iris** (l'herboristerie) chez le Barde dès qu'il a le code du Pisteur « Odette est sous l'église », jusqu'à l'herbier (`oblige:true` sur sa question [5], `e3.js`). Romain s'était cru bloqué (Iris rouge l'après-midi) : il n'avait pas fait les traces de Moustache. Robot : `e3-obliges.py`. **Les Réglages affichent l'heure de Paris de `VERSION`, pas le numéro du service worker** (20261119-0834 = « 19/11 à 09 h 28 »).
 
 **19 novembre, 10 h — EN LIGNE (commit 830dbb4 du site, version 20261119-0901 ; Bible §13.73)** : enquête 3, le maire de l'après-midi reste joignable tant que son grand dialogue n'est pas raté (`B.rienADire`) ; l'après-midi, le rond jaune chez Odette passe du Pisteur au Barde, portrait non pâle (`oblige` peut être une liste de moments). **QUATRE DEMANDES DE ROMAIN EN ATTENTE, au §13.73** (le chat du labo, les tiroirs du labo, la musique des banderoles, le vieux plan d'Odette du Sage dès le matin et sans indices de donjon).
 
