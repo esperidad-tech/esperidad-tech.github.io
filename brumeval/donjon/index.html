@@ -4243,6 +4243,426 @@ S.cineLueurA = function(A, P){
   A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:500, pts:[[4, 1400]], q:.8}], env:[[0, 0], [2, 1], [4.2, 0]], g:.06}, o);
   return {duree:4.6};
 };
+
+/* ---------------------------------------------------------------- 18 novembre (Romain, 00 h 02) : les deux descentes REFAITES en 2D (jeu/cine/src/film-descente*.js ; Bible §13.68)
+   « des sons de ce qu'ils font : les bruits de pas, la torche qui brûle… » — NEUFS, à écouter */
+/* (un bus à son niveau : les niveaux ci-dessous ont été réglés à la mesure, le 18 novembre — personne n'a encore écouté) */
+function busG(A, P, pan, rev, g){ return A.bus(P, {g:g, rev:rev == null ? .5 : rev, grotte:.4, pan:pan == null ? 0 : pan}); }
+/* la torche qui brûle (3,6 s, rejouée bout à bout) : la flamme qui ronfle et bat, des crépitements */
+S.cineTorcheA = function(A, P){
+  var t = P.t, d = 3.8, o = busG(A, P, .15, .3, 0.42);
+  A.bruit(t, {coul:'brun', filtres:[{type:'lowpass', f:520, q:.7}], env:[[0, 0], [.25, 1], [d - .4, 1], [d, 0]], g:.32, rugueux:.75, rugVit:13}, o);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:900, pts:[[d * .5, 1300], [d, 800]], q:.8}], env:[[0, 0], [.3, 1], [d - .4, .9], [d, 0]], g:.07, rugueux:.9, rugVit:19}, o);
+  A.joue(t + .1, A.crepitement(d - .3, 9), {g:.2, filtres:[{type:'highpass', f:1900}]}, o);
+  return {duree:d};
+};
+/* une étoffe qui bouge (une cape, une manche) */
+S.cineEtoffeA = function(A, P){
+  var t = P.t, o = busG(A, P, h(-.2, .2, 1.8), .3);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:1500, pts:[[.3, 700]], q:.8}], env:[[0, 0], [.07, 1], [.2, .5], [.42, 0]], g:.2, rugueux:.5, rugVit:30}, o);
+  return {duree:.5};
+};
+/* la flamme qui passe (la torche qu'on déplace vite) */
+S.cineSouffleFeuA = function(A, P){
+  var t = P.t, o = bus(A, P, -.2, .4);
+  A.bruit(t, {coul:'brun', filtres:[{type:'bandpass', f:260, pts:[[.35, 820], [.9, 340]], q:.9}], env:[[0, 0], [.3, 1], [.9, 0]], g:.5, rugueux:.6, rugVit:22}, o);
+  A.joue(t + .15, A.crepitement(.5, 30), {g:.14, filtres:[{type:'highpass', f:2400}]}, o);
+  return {duree:1};
+};
+/* un petit éclat de lumière sur du laiton */
+S.cineEclatA = function(A, P){
+  var t = P.t, o = busG(A, P, .2, .9, 1.4);
+  [[3136, 0], [4186, .07], [5274, .16]].forEach(function(n){ A.ton(t + n[1], {type:'sine', f:n[0], env:A.perc(.004, .7), g:.022}, o); });
+  return {duree:1.2};
+};
+/* la pierre de rune : elle chante tout bas, un accord de verre un peu faux, qui bat */
+S.cineRuneA = function(A, P){
+  var t = P.t, d = 3.8, o = busG(A, P, .1, .9, 0.7);
+  [[293.7, .05], [440, .04], [587.3, .034], [622.3, .018], [880, .016]].forEach(function(n, k){
+    A.ton(t + k * .12, {type:'sine', f:n[0], det:h(-4, 4), env:[[0, 0], [.9, 1], [d - 1.2, .85], [d, 0]], g:n[1], vib:[3.4 + k * .4, n[0] * .003], trem:[2.4, .35]}, o);
+  });
+  A.bruit(t, {coul:'blanc', filtres:[{type:'bandpass', f:5200, q:3}], env:[[0, 0], [1.2, 1], [d, 0]], g:.012}, o);
+  return {duree:d + .2};
+};
+/* « hm ? » : une petite voix intriguée */
+S.cineHmA = function(A, P){
+  var t = P.t, o = busG(A, P, .15, .35, 0.6);
+  voix(A, t, .34, {f:232, chute:1.3, g:.09, f1:420, f2:1100, lp:1700, souffle:.25, gigue:5, tr:.2, sat:1.2, env:[[0, 0], [.06, 1], [.24, .8], [.34, 0]]}, o);
+  return {duree:.5};
+};
+/* un pas sur la pierre (un seul : le film les place un par un) */
+S.cinePasPierreA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.5, grotte:.55, pan:h(-.25, .35)});
+  A.pas(t, {f:h(92, 122), bp:h(1300, 2000), g:h(.36, .48)}, o);
+  return {duree:.7};
+};
+/* un pas dans l'herbe, la nuit : sourd, des brins froissés */
+S.cinePasHerbeA = function(A, P){
+  GD = 1.5;
+  var t = P.t, o = dehors(A, P, h(-.3, .3), .15);
+  A.pas(t, {f:h(70, 90), bp:h(600, 900), g:.34}, o);
+  A.bruit(t + .01, {coul:'blanc', filtres:[{type:'bandpass', f:h(2600, 3600), q:.8}], env:[[0, 0], [.02, 1], [.16, 0]], g:.07, rugueux:.8, rugVit:40}, o);
+  return {duree:.5};
+};
+/* la torche lâchée dans le puits : elle file en sifflant, cogne tout en bas, loin, et roule */
+S.cineChuteTorcheA = function(A, P){
+  var t = P.t, o = busG(A, P, .2, .5, 0.7), loin = A.bus(P, {rev:1, grotte:1, pan:.2, g:.6});
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:1700, pts:[[1.1, 260]], q:1.3}], env:[[0, 0], [.1, 1], [.6, .5], [1.2, 0]], g:.34, rugueux:.6, rugVit:26}, o);
+  bois(A, t + 1.42, {f:210, f2:80, g:.5, d:.16, cf:520}, loin); bois(A, t + 1.66, {f:260, f2:110, g:.28, d:.1, cf:700}, loin); bois(A, t + 1.82, {f:300, f2:120, g:.16, d:.08, cf:800}, loin);
+  A.joue(t + 1.45, A.crepitement(.6, 30), {g:.12, filtres:[{type:'highpass', f:2200}]}, loin);
+  return {duree:2.8};
+};
+/* la corde et le treuil qui grincent sous le poids */
+S.cineCordeGrinceA = function(A, P){
+  var t = P.t, o = busG(A, P, -.1, .45, 2.8);
+  A.ton(t, {type:'sawtooth', f:150, f2:210, gl:.9, env:[[0, 0], [.15, 1], [.8, .8], [1.2, 0]], g:.045, gigue:22, trem:[15, .9], sat:2, filtres:[{type:'bandpass', f:820, q:2.6}, {type:'lowpass', f:1800, q:.7}]}, o);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:620, pts:[[1, 980]], q:1.6}], env:[[0, 0], [.3, 1], [1.2, 0]], g:.12, rugueux:.9, rugVit:17}, o);
+  return {duree:1.5};
+};
+/* une petite bête qui couine */
+S.cineCouinementA = function(A, P){
+  var t = P.t, o = busG(A, P, h(-.6, .6, 2.8), .7);
+  [0, .09, .2].forEach(function(d, k){ var f = h(3000, 3700); A.ton(t + d, {type:'triangle', f:f, f2:f * h(1.15, 1.35), gl:.05, env:[[0, 0], [.008, 1], [.05, .7], [.07, 0]], g:.03 - k * .006}, o); });
+  return {duree:.6};
+};
+/* des petites pattes qui détalent sur la pierre, un couinement */
+S.cineBetesA = function(A, P){
+  var t = P.t, d = 1.3, o = busG(A, P, h(-.5, .5, 4), .6);
+  A.joue(t, A.crepitement(d, 46), {g:.26, filtres:[{type:'bandpass', f:2300, q:1.2}], env:[[0, 0], [.08, 1], [d * .6, .7], [d, 0]]}, o);
+  A.joue(t + .1, A.crepitement(d - .3, 30), {g:.14, filtres:[{type:'highpass', f:3600}]}, A.bus(P, {g:4, rev:.7, grotte:.8, pan:h(-.8, .8)}));
+  var f = h(3100, 3600); A.ton(t + .12, {type:'triangle', f:f, f2:f * 1.25, gl:.05, env:[[0, 0], [.008, 1], [.06, 0]], g:.022}, o);
+  return {duree:d + .2};
+};
+/* il se laisse tomber sur les dalles : les deux pieds, l'étoffe */
+S.cineAtterritA = function(A, P){
+  var t = P.t, o = busG(A, P, 0, .55, 0.4);
+  lourd(A, t, .62, o); A.pas(t + .06, {f:105, bp:1500, g:.4}, o);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:1100, pts:[[.3, 600]], q:.8}], env:[[0, 0], [.04, 1], [.34, 0]], g:.16}, o);
+  return {duree:.9};
+};
+/* la clé glisse dans la serrure : du fer qui frotte, un petit « tic » */
+S.cineCleEntreA = function(A, P){
+  var t = P.t, o = busG(A, P, .2, .4, 1.6);
+  A.bruit(t, {coul:'blanc', filtres:[{type:'bandpass', f:3300, pts:[[.3, 4300]], q:2}], env:[[0, 0], [.04, 1], [.26, .6], [.32, 0]], g:.1, rugueux:.9, rugVit:48}, o);
+  fer(A, t + .3, h(1500, 1800), .05, o);
+  return {duree:.8};
+};
+/* la clé tourne : le pêne recule — « clac… clonk » */
+S.cineCleTourneA = function(A, P){
+  var t = P.t, o = busG(A, P, .2, .55, 0.55);
+  A.bruit(t, {coul:'blanc', filtres:[{type:'bandpass', f:2400, q:2}], env:[[0, 0], [.03, .7], [.2, .5], [.24, 0]], g:.07, rugueux:.9, rugVit:36}, o);
+  bois(A, t + .24, {f:330, f2:150, g:.5, d:.07, cf:1100}, o); fer(A, t + .24, 900, .1, o);
+  lourd(A, t + .46, .6, o); fer(A, t + .46, 520, .14, o);
+  return {duree:1.3};
+};
+/* l'air froid qui monte d'en bas : un souffle grave, une plainte lointaine */
+S.cineVentCaveA = function(A, P){
+  var t = P.t, d = 4.2, o = A.bus(P, {g:.8, rev:.9, grotte:1, pan:0});
+  A.bruit(t, {coul:'brun', filtres:[{type:'bandpass', f:210, pts:[[d * .5, 340], [d, 190]], q:.9}], env:[[0, 0], [d * .4, 1], [d * .75, .6], [d, 0]], g:.34}, o);
+  A.ton(t + .5, {type:'sine', f:176, f2:190, gl:d - 1, env:[[0, 0], [1.4, 1], [d - 1.2, .6], [d - .5, 0]], g:.016, vib:[.8, 5]}, o);
+  return {duree:d + .2};
+};
+/* =================== LES TROIS FILMS DU DÉBUT DES ENQUÊTES (jeu/cine/src/film-debut1/2/3.js ; Bible §13.69 ; 18 novembre) — NEUFS, à écouter ===================
+   Romain : « une cinématique à chaque début d'enquête, comme un générique d'épisode ». On est au village : dehors (presque pas d'écho),
+   ou dans le bureau du maire (une petite pièce feutrée). */
+function piece(A, P, pan, g){ return A.bus(P, {g:g == null ? 1 : g, rev:.22, pan:pan == null ? 0 : pan}); }
+/* un oiseau : quelques notes très aiguës qui glissent */
+function oiseau(A, t, f, n, g, dest){
+  for(var k = 0; k < n; k++){ var f1 = f * h(.9, 1.15), d = h(.05, .11);
+    A.ton(t + k * h(.1, .16), {type:'sine', f:f1, f2:f1 * h(.75, 1.45), gl:d, env:[[0, 0], [.008, 1], [d, 0]], g:g}, dest); }
+}
+/* des battements d'ailes : des petits claquements de plumes, de plus en plus loin */
+function ailes(A, t, n, g, pan, P, vit){
+  for(var k = 0; k < n; k++){ var x = k / n;
+    A.bruit(t + k * (vit || .085) + h(0, .02), {coul:'rose', filtres:[{type:'bandpass', f:h(700, 1500), q:1.1}], env:A.perc(.008, .05), g:g * (1 - x * .7)}, A.bus(P, {g:GD, rev:.12 + .3 * x, pan:pan + x * .5})); }
+}
+
+/* ---------- ENQUÊTE 1 : « La Lanterne d'Or » ---------- */
+/* la nuit dans le bureau : presque rien — un souffle très grave, un grillon très loin */
+S.cineNuitA = function(A, P){
+  GD = 1.6;
+  var t = P.t, d = 5.6, o = dehors(A, P, 0, .3);
+  A.bruit(t, {coul:'brun', filtres:[{type:'lowpass', f:260}], env:[[0, 0], [1.2, 1], [d - 1.4, 1], [d, 0]], g:.2}, o);
+  for(var k = 0; k < 9; k++){ var tt = t + .5 + k * .56 + h(0, .05);
+    for(var j = 0; j < 3; j++) A.ton(tt + j * .045, {type:'sine', f:4300, env:[[0, 0], [.004, 1], [.03, 0]], g:.006, trem:[60, .9]}, dehors(A, P, -.6, .5)); }
+  return {duree:d + .2};
+};
+/* la pendule : tic… tac… (huit battements) */
+S.cineTicTacA = function(A, P){
+  var t = P.t, o = piece(A, P, .5, 1.5);
+  for(var k = 0; k < 8; k++){ var tt = t + k * .5, f = k % 2 ? 1500 : 1900;
+    A.ton(tt, {type:'square', f:f, env:A.perc(.001, .018), g:.035, filtres:[{type:'bandpass', f:f, q:6}]}, o);
+    A.choc(tt, {f:420, f2:260, d:.03, g:.12, sat:1.5, corps:1.2, corpsF:900}, o); }
+  return {duree:4.2};
+};
+/* la Lanterne d'Or : une lumière qui chante — un accord de verre, des poussières d'or qui tintent */
+S.cineLanterneOrA = function(A, P){
+  var t = P.t, o = A.bus(P, {g:1.5, rev:.8, pan:0});
+  [[523.3, .04], [659.3, .034], [784, .03], [1046.5, .02]].forEach(function(n, k){
+    A.ton(t + k * .22, {type:'sine', f:n[0], env:[[0, 0], [.9, 1], [2.2, .7], [3.4, 0]], g:n[1], vib:[4.6 + k * .4, n[0] * .003]}, o); });
+  for(var k = 0; k < 9; k++) A.cloche(t + .5 + h(0, 2.2), [2093, 2637, 3136, 3520][k % 4] * h(.99, 1.01), {d:.7, g:.012, rapport:2.76, indice:.6}, o);
+  return {duree:3.8};
+};
+/* la fenêtre : le loquet qu'on soulève, puis les battants qui grincent en s'ouvrant */
+S.cineFenetreA = function(A, P){
+  var t = P.t, o = piece(A, P, .2, 1.6);
+  fer(A, t, 1250, .07, o); bois(A, t + .02, {f:520, f2:240, g:.3, d:.05, cf:1400}, o);
+  A.ton(t + .2, {type:'sawtooth', f:330, f2:520, gl:1.0, env:[[0, 0], [.15, 1], [.8, .8], [1.2, 0]], g:.028, gigue:28, trem:[21, .9], sat:2, filtres:[{type:'bandpass', f:1500, q:3}, {type:'lowpass', f:2800, q:.7}]}, o);
+  A.bruit(t + .2, {coul:'rose', filtres:[{type:'bandpass', f:800, pts:[[1, 1600]], q:1.4}], env:[[0, 0], [.3, 1], [1.2, 0]], g:.08, rugueux:.8, rugVit:18}, o);
+  bois(A, t + 1.25, {f:300, f2:130, g:.3, d:.09, cf:700}, o);
+  return {duree:1.8};
+};
+/* une main prend l'anneau de la Lanterne : un petit tintement de métal, un froissement d'étoffe */
+S.cinePriseA = function(A, P){
+  var t = P.t, o = piece(A, P, 0, 1.6);
+  fouet(A, t, .22, {f:900, f2:2000, q:.9, g:.18}, o);
+  A.cloche(t + .18, 1760, {d:.5, g:.035, rapport:2.4, indice:.8}, o); A.cloche(t + .26, 2349, {d:.4, g:.02, rapport:2.4, indice:.8}, o);
+  return {duree:.9};
+};
+/* la lumière s'en va : le chant de verre glisse vers le grave et s'éteint, un souffle l'emporte */
+S.cineLueurPartA = function(A, P){
+  var t = P.t, o = A.bus(P, {g:1.5, rev:.8, pan:.3});
+  [[784, .034], [1046.5, .026], [1318.5, .018]].forEach(function(n, k){
+    A.ton(t + k * .05, {type:'sine', f:n[0], f2:n[0] * .5, gl:1.8, env:[[0, 0], [.1, 1], [1.2, .5], [2, 0]], g:n[1], vib:[5, n[0] * .004]}, o); });
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:1800, pts:[[1.6, 420]], q:.9}], env:[[0, 0], [.3, 1], [1.8, 0]], g:.1}, o);
+  return {duree:2.2};
+};
+/* des pas légers et rapides sur les pavés, qui s'éloignent (on ne sait pas qui court) */
+S.cineCourseLegereA = function(A, P){
+  GD = 2.2;
+  var t = P.t, n = 15;
+  for(var k = 0; k < n; k++){ var x = k / n, o = A.bus(P, {g:GD, rev:.2 + .5 * x, pan:.15 - x * .3});
+    A.pas(t + k * .155 + h(0, .012), {f:h(150, 185), bp:h(2200, 3000), g:.5 * (1 - x * .72)}, o); }
+  return {duree:2.8};
+};
+/* la nuit passe très vite : la pendule s'emballe, un grand souffle monte, puis la lumière du matin (un accord clair) */
+S.cineTempsPasseA = function(A, P){
+  var t = P.t, o = piece(A, P, .4, 1.4), o2 = A.bus(P, {g:1.5, rev:.7, pan:0}), tt = 0, pas = .34;
+  for(var k = 0; k < 38 && tt < 3.3; k++){ var f = k % 2 ? 1500 : 1900;
+    A.ton(t + tt, {type:'square', f:f, env:A.perc(.001, .015), g:.03, filtres:[{type:'bandpass', f:f, q:6}]}, o); tt += pas; pas = Math.max(.045, pas * .9); }
+  A.bruit(t + .3, {coul:'rose', filtres:[{type:'bandpass', f:300, pts:[[3.2, 2400]], q:.8}], env:[[0, 0], [2.9, 1], [3.5, 0]], g:.13}, o2);
+  [[392, .03], [493.9, .028], [587.3, .026], [784, .02]].forEach(function(n, k){
+    A.ton(t + 3.1 + k * .07, {type:'sine', f:n[0], env:[[0, 0], [.35, 1], [1.2, .6], [2.2, 0]], g:n[1], vib:[4.8, n[0] * .003]}, o2); });
+  return {duree:5.5};
+};
+/* les oiseaux du matin : trois ou quatre petits chants qui se répondent */
+S.cineOiseauxA = function(A, P){
+  GD = 1.5;
+  var t = P.t;
+  [[.0, 3100, 4, -.5], [.45, 4200, 3, .4], [1.0, 2700, 5, .1], [1.7, 3800, 3, -.3], [2.2, 4500, 4, .6], [2.9, 3000, 4, -.1]].forEach(function(q){
+    oiseau(A, t + q[0] + h(0, .08), q[1], q[2], .016, A.bus(P, {g:GD, rev:.35, pan:q[3]})); });
+  return {duree:3.8};
+};
+/* la porte du bureau : la poignée, le pêne, les gonds */
+S.cinePorteBureauA = function(A, P){
+  var t = P.t, o = piece(A, P, -.3, 1.6);
+  fer(A, t, 900, .08, o); bois(A, t + .08, {f:260, f2:120, g:.45, d:.1, cf:640}, o);
+  A.ton(t + .2, {type:'sawtooth', f:210, f2:300, gl:.7, env:[[0, 0], [.1, 1], [.55, .7], [.8, 0]], g:.022, gigue:22, trem:[17, .9], sat:2, filtres:[{type:'bandpass', f:1100, q:3}]}, o);
+  return {duree:1.2};
+};
+/* le maire arrive en chantonnant : « hm-hm, hm-hmm… » (content de sa journée) */
+S.cineFredonneA = function(A, P){
+  GD = 2.2;
+  var t = P.t, o = piece(A, P, -.2, GD);
+  [[0, 196, .2], [.26, 246.9, .2], [.52, 293.7, .34], [.98, 246.9, .2], [1.24, 293.7, .5]].forEach(function(n){
+    gens(A, t + n[0], {f:n[1] * .5, d:n[2], voyelle:'ou', monte:1, g:.1, env:[[0, 0], [.04, 1], [n[2] * .7, .8], [n[2], 0]]}, o); });
+  return {duree:2};
+};
+/* trois pas sur le parquet du bureau */
+S.cinePasParquetA = function(A, P){
+  var t = P.t, o = piece(A, P, -.1, 1.5);
+  [0, .42, .84].forEach(function(x, k){ bois(A, t + x, {f:h(170, 210), f2:80, g:.5, d:.1, cf:h(420, 560)}, o); A.bruit(t + x, {bp:1500, bq:.9, env:A.perc(.001, .04), g:.1}, o);
+    if(k === 1) A.ton(t + x + .03, {type:'sawtooth', f:480, f2:560, gl:.14, env:[[0, 0], [.03, 1], [.16, 0]], g:.008, gigue:20, filtres:[{type:'bandpass', f:1700, q:4}]}, o); });
+  return {duree:1.4};
+};
+/* la stupeur : il retient son souffle d'un coup — et un coup sourd, comme le cœur qui tombe */
+S.cineStupeurA = function(A, P){
+  GD = 2.4;
+  var t = P.t, o = piece(A, P, 0, GD);
+  inspire(A, t, .34, .5, o);
+  gens(A, t + .04, {f:140, d:.3, voyelle:'o', monte:1.25, g:.05, env:[[0, 0], [.03, 1], [.3, 0]]}, o);
+  A.choc(t + .42, {f:90, f2:36, d:.5, g:.7, sat:2.4, corps:1.6, corpsF:200}, A.bus(P, {g:GD, rev:.6, pan:0}));
+  return {duree:1.3};
+};
+/* les pigeons s'envolent du toit, d'un seul coup */
+S.cineEnvolA = function(A, P){
+  GD = 2.2;
+  var t = P.t;
+  ailes(A, t, 16, .34, -.5, P, .07); ailes(A, t + .12, 14, .3, .1, P, .08); ailes(A, t + .3, 12, .24, -.1, P, .09);
+  for(var k = 0; k < 3; k++) A.ton(t + .1 + k * .35, {type:'sine', f:h(420, 520), f2:h(330, 380), gl:.2, env:[[0, 0], [.04, 1], [.22, 0]], g:.014, trem:[26, .8]}, dehors(A, P, h(-.5, .5), .4));
+  return {duree:2.2};
+};
+
+/* ---------- ENQUÊTE 2 : « La rivière rouge » ---------- */
+/* la rivière qui coule devant le lavoir : un courant doux, des petits clapotis */
+S.cineRiviereA = function(A, P){
+  GD = 1.5;
+  var t = P.t, d = 7, o = dehors(A, P, 0, .2);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:900, q:.6}, {type:'lowpass', f:2600}], env:[[0, 0], [1.2, 1], [d - 1.5, 1], [d, 0]], g:.07, rugueux:.4, rugVit:3}, o);
+  A.joue(t + .2, A.eau(d - .6, 16, {fmin:500, fmax:2200}), {g:.3, env:[[0, 0], [1, 1], [d - 2, 1], [d - .6, 0]]}, dehors(A, P, -.3, .25));
+  return {duree:d + .2};
+};
+/* le coq du village : « co-co-ri-coooo ! », au loin */
+S.cineCoqA = function(A, P){
+  GD = 1.6;
+  var t = P.t, o = A.bus(P, {g:GD, rev:.5, pan:.5});
+  [[0, .13, 520, 560], [.17, .13, 600, 640], [.34, .2, 700, 780], [.58, .9, 880, 560]].forEach(function(n, k){
+    A.ton(t + n[0], {type:'sawtooth', f:n[2], f2:n[3], gl:n[1], env:[[0, 0], [.02, 1], [n[1] * .7, .85], [n[1], 0]], g:.03, gigue:18, trem:[k === 3 ? 34 : 0, .5], sat:2,
+      filtres:[{type:'bandpass', f:1500, q:1.6}, {type:'peaking', f:2600, q:2, gain:6}]}, o); });
+  return {duree:2};
+};
+/* le drap plongé dans l'eau : « plouf », puis l'eau qui se referme et le linge qu'on frotte */
+S.cineLingeA = function(A, P){
+  GD = 1.8;
+  var t = P.t, o = dehors(A, P, .1, .2);
+  A.choc(t, {f:150, f2:60, d:.16, g:.4, sat:1.6}, o);
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:1300, pts:[[.5, 600]], q:.8}], env:[[0, 0], [.02, 1], [.25, .5], [.7, 0]], g:.34}, o);
+  A.joue(t + .05, A.eau(1.4, 40, {fmin:500, fmax:2600}), {g:.5, env:[[0, 1], [.5, .7], [1.4, 0]]}, o);
+  fouet(A, t + .8, .3, {f:500, f2:1100, q:.8, g:.2}, o); fouet(A, t + 1.2, .3, {f:1100, f2:500, q:.8, g:.18}, o);
+  return {duree:1.9};
+};
+/* le drap ruisselle : beaucoup de gouttes, puis de moins en moins */
+S.cineGouttesA = function(A, P){
+  GD = 1.8;
+  var t = P.t, o = dehors(A, P, 0, .25);
+  A.joue(t, A.eau(1.2, 55, {fmin:700, fmax:3000}), {g:.45, env:[[0, 1], [.5, .6], [1.2, 0]]}, o);
+  for(var k = 0; k < 14; k++) A.goutte(t + .2 + Math.pow(k / 14, 1.6) * 2.4 + h(0, .04), {f:h(900, 1700), g:.07 * (1 - k / 20)}, dehors(A, P, h(-.3, .3), .3));
+  return {duree:3};
+};
+/* elle sursaute : un souffle coupé net */
+S.cineSursautA = function(A, P){
+  GD = 2.6;
+  var t = P.t, o = dehors(A, P, 0, .15);
+  inspire(A, t, .26, .55, o);
+  gens(A, t + .02, {f:330, d:.22, voyelle:'a', monte:1.3, g:.05, env:[[0, 0], [.02, 1], [.22, 0]]}, o);
+  return {duree:.7};
+};
+/* le cri de la lavandière : « AAAH ! » (une voix de femme, qui monte) */
+S.cineCriFemmeA = function(A, P){
+  GD = 2.6;
+  var t = P.t, o = A.bus(P, {g:GD, rev:.35, pan:0});
+  gens(A, t, {f:392, d:.95, voyelle:'a', monte:1.32, g:.12, env:[[0, 0], [.05, 1], [.55, .9], [.95, 0]]}, o);
+  gens(A, t + .01, {f:396, d:.9, voyelle:'a', monte:1.3, g:.06, env:[[0, 0], [.05, 1], [.5, .9], [.9, 0]]}, o);
+  A.bruit(t, {coul:'rose', bp:2600, bq:1, env:[[0, 0], [.05, 1], [.9, 0]], g:.03, rugueux:.6, rugVit:30}, o);
+  return {duree:1.4};
+};
+/* le seau de bois lâché sur le quai : il cogne, il rebondit, il roule un peu */
+S.cineSeauA = function(A, P){
+  GD = 1.8;
+  var t = P.t, o = dehors(A, P, .4, .2);
+  bois(A, t, {f:260, f2:110, g:.9, d:.16, cf:480}, o); A.choc(t, {f:120, f2:55, d:.2, g:.4, sat:2}, o);
+  [.24, .42, .55, .64].forEach(function(x, k){ bois(A, t + x, {f:h(280, 340), f2:130, g:.55 - k * .12, d:.09, cf:h(500, 640)}, o); });
+  A.bruit(t + .7, {coul:'brun', filtres:[{type:'bandpass', f:300, q:1}], env:[[0, 0], [.1, 1], [.6, 0]], g:.2, rugueux:.9, rugVit:14}, o);
+  fer(A, t + .01, 640, .05, o);
+  return {duree:1.5};
+};
+/* le village murmure, inquiet : des voix basses qui se mêlent, sans paroles */
+S.cineMurmureA = function(A, P){
+  GD = 3.2;
+  var t = P.t, d = 4.6;
+  for(var v = 0; v < 30; v++){ var tt = t + h(0, d - .5), x = (tt - t) / d, env = Math.sin(Math.PI * Math.min(1, x * 1.15)) * .9 + .1;
+    gens(A, tt, {f:h(105, 250), d:h(.14, .34), voyelle:['ou', 'o', 'a', 'ou'][v % 4], monte:h(.88, 1.08), g:.03 * env}, dehors(A, P, h(-.8, .8), .25)); }
+  A.bruit(t, {coul:'rose', bp:700, bq:.6, env:[[0, 0], [.8, 1], [d - 1, .9], [d, 0]], g:.03, rugueux:.7, rugVit:9}, dehors(A, P, 0, .2));
+  return {duree:d + .2};
+};
+
+/* ---------- ENQUÊTE 3 : « La lettre d'Odette » ---------- */
+/* l'aube sur la place : un vent très doux, deux ou trois oiseaux qui s'éveillent */
+S.cineAubeA = function(A, P){
+  GD = 1.5;
+  var t = P.t, d = 5.6;
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:500, pts:[[d * .5, 800], [d, 450]], q:.6}], env:[[0, 0], [1.4, 1], [d - 1.6, .8], [d, 0]], g:.07}, dehors(A, P, -.2, .25));
+  [[.9, 3300, 3, .5], [2.3, 4100, 4, -.4], [3.6, 2900, 3, .2], [4.5, 3700, 3, -.6]].forEach(function(q){ oiseau(A, t + q[0], q[1], q[2], .012, A.bus(P, {g:GD, rev:.4, pan:q[3]})); });
+  return {duree:d + .2};
+};
+/* la grande porte de la mairie : le verrou, les deux vantaux lourds qui s'ouvrent */
+S.cinePorteMairieA = function(A, P){
+  GD = 2;
+  var t = P.t, o = A.bus(P, {g:GD, rev:.35, pan:0});
+  fer(A, t, 520, .12, o); lourd(A, t + .05, .5, o);
+  A.ton(t + .25, {type:'sawtooth', f:150, f2:230, gl:1.1, env:[[0, 0], [.2, 1], [.9, .8], [1.3, 0]], g:.03, gigue:24, trem:[13, .9], sat:2, filtres:[{type:'bandpass', f:800, q:2.4}, {type:'lowpass', f:2000, q:.7}]}, o);
+  A.bruit(t + .25, {coul:'brun', filtres:[{type:'bandpass', f:340, q:1}], env:[[0, 0], [.3, 1], [1.3, 0]], g:.2, rugueux:.9, rugVit:10}, o);
+  lourd(A, t + 1.5, .4, o);
+  return {duree:2.2};
+};
+/* une lettre qu'on déplie : le papier craque */
+S.cinePapierA = function(A, P){
+  GD = 2;
+  var t = P.t, o = dehors(A, P, 0, .12);
+  A.joue(t, A.crepitement(.5, 70), {g:.3, filtres:[{type:'highpass', f:2200}]}, o);
+  fouet(A, t + .05, .2, {f:2400, f2:4200, q:.7, g:.14}, o); fouet(A, t + .42, .24, {f:3600, f2:2000, q:.7, g:.12}, o);
+  A.joue(t + .5, A.crepitement(.35, 50), {g:.2, filtres:[{type:'highpass', f:2600}]}, o);
+  return {duree:1.1};
+};
+/* tout le village souffle de soulagement : « aaah… » */
+S.cineSoupirA = function(A, P){
+  GD = 4;
+  var t = P.t;
+  for(var k = 0; k < 6; k++) expire(A, t + h(0, .12), h(.6, .9), .3, dehors(A, P, -.7 + k * .28, .2));
+  [[196, 0], [247, .05], [294, .02], [165, .07], [330, .04]].forEach(function(v, k){
+    gens(A, t + .05 + v[1], {f:v[0], d:h(.7, .95), voyelle:'a', monte:.8, g:.06, env:[[0, 0], [.08, 1], [.4, .6], [.9, 0]]}, dehors(A, P, -.6 + k * .3, .3)); });
+  return {duree:1.5};
+};
+/* « HOURRA ! » : tout le village crie de joie, des mains qui claquent */
+S.cineHourraA = function(A, P){
+  GD = 4.5;
+  var t = P.t;
+  [[131, 0], [147, .04], [175, .02], [196, .06], [233, .03], [262, .07], [294, .01], [330, .05], [392, .08], [440, .04]].forEach(function(v, k){
+    gens(A, t + v[1] + h(0, .05), {f:v[0] * h(.97, 1.03), d:h(1.1, 1.6), voyelle:k % 3 ? 'a' : 'o', monte:1.18, g:.08, env:[[0, 0], [.08, 1], [.8, .9], [1.5, 0]]}, dehors(A, P, -.8 + k * .18, .3)); });
+  for(var c = 0; c < 22; c++) A.bruit(t + .3 + h(0, 1.6), {coul:'blanc', filtres:[{type:'bandpass', f:h(1400, 2400), q:1.4}], env:A.perc(.002, .035), g:.3}, dehors(A, P, h(-.8, .8), .2));
+  return {duree:2.4};
+};
+/* la fête commence : des applaudissements, des rires, des « youhou ! », des pieds qui dansent */
+S.cineFeteA = function(A, P){
+  GD = 3.6;
+  var t = P.t, d = 4.4;
+  for(var c = 0; c < 90; c++){ var x = h(0, 1); A.bruit(t + x * (d - .4), {coul:'blanc', filtres:[{type:'bandpass', f:h(1300, 2600), q:1.4}], env:A.perc(.002, .03), g:.24 * (1 - x * .5)}, dehors(A, P, h(-.9, .9), .2)); }
+  [[.2, 330, 1.5], [.9, 247, 1.4], [1.5, 440, 1.6], [2.2, 294, 1.3], [2.9, 392, 1.5], [3.4, 220, 1.3]].forEach(function(v, k){
+    gens(A, t + v[0], {f:v[1], d:h(.3, .5), voyelle:k % 2 ? 'ou' : 'a', monte:v[2], g:.06}, dehors(A, P, h(-.7, .7), .3)); });
+  /* un rire : « ha-ha-ha-ha » */
+  for(var r2 = 0; r2 < 5; r2++) gens(A, t + 1.1 + r2 * .15, {f:280 - r2 * 12, d:.1, voyelle:'a', monte:.9, g:.05, env:[[0, 0], [.015, 1], [.1, 0]]}, dehors(A, P, -.4, .25));
+  for(var p2 = 0; p2 < 14; p2++) pasTerre(A, t + h(.2, d - .4), h(.4, .8), dehors(A, P, h(-.8, .8)));
+  return {duree:d + .2};
+};
+/* les cloches du clocher sonnent la fête : un carillon clair, à toute volée */
+S.cineClocheJoieA = function(A, P){
+  GD = 1.6;
+  var t = P.t, o = A.bus(P, {g:GD, rev:.75, pan:.4});
+  [392, 493.9, 587.3, 392, 659.3, 587.3, 493.9, 784, 587.3, 493.9, 392, 587.3].forEach(function(f, k){
+    A.cloche(t + k * .36 + h(0, .03), f, {d:2.4, g:.05, rapport:3.5, indice:1.6}, o); A.cloche(t + k * .36, f * 2.01, {d:1.2, g:.012, rapport:2.76, indice:.8}, o); });
+  return {duree:6.6};
+};
+/* la fête, de loin (on est au ras des pavés, avec le chat) : un brouhaha joyeux, étouffé */
+S.cineFeteLoinA = function(A, P){
+  GD = 2.4;
+  var t = P.t, d = 3.6;
+  for(var c = 0; c < 46; c++) A.bruit(t + h(0, d - .3), {coul:'blanc', filtres:[{type:'bandpass', f:h(1000, 1600), q:1.2}, {type:'lowpass', f:1800}], env:A.perc(.003, .035), g:.14}, A.bus(P, {g:GD, rev:.6, pan:h(-.7, .7)}));
+  for(var v = 0; v < 12; v++) gens(A, t + h(0, d - .5), {f:h(150, 330), d:h(.2, .4), voyelle:['a', 'o', 'ou'][v % 3], monte:h(1.05, 1.3), g:.022}, A.bus(P, {g:GD, rev:.6, pan:h(-.7, .7)}));
+  return {duree:d + .3};
+};
+/* Moustache : « miaou ? » (un petit miaulement qui monte, puis redescend) */
+S.cineMiaouA = function(A, P){
+  GD = 2.6;
+  var t = P.t, o = dehors(A, P, .1, .18), d = .62;
+  [[1, .05], [2, .03], [3, .012]].forEach(function(m){
+    A.ton(t, {type:'sawtooth', f:520 * m[0], pts:null, f2:760 * m[0], gl:d * .45, env:[[0, 0], [.06, 1], [d * .5, .9], [d, 0]], g:m[1] * .5, vib:[7, 9 * m[0]], vibRetard:.2,
+      filtres:[{type:'bandpass', f:1400, pts:[[d * .45, 2300], [d, 1100]], q:2.2}]}, o);
+    A.ton(t + d * .45, {type:'sawtooth', f:760 * m[0], f2:540 * m[0], gl:d * .55, env:[[0, 0], [.03, 1], [d * .35, .7], [d * .55, 0]], g:m[1] * .5, vib:[7, 9 * m[0]],
+      filtres:[{type:'bandpass', f:2300, pts:[[d * .55, 1100]], q:2.2}]}, o); });
+  return {duree:.9};
+};
+/* Moustache n'est pas content (Romain, 19 novembre : il remplace le « miaou ? » à la fin de debut3) : un « mrrrh » fermé, grave, qui
+   descend, avec un grain de grognement — le chat qui n'y croit pas */
+S.cineMoustacheGrogneA = function(A, P){
+  GD = 2.6;
+  var t = P.t, o = dehors(A, P, .1, .14), d = 1.05;
+  [[1, .06], [2, .03], [3, .014]].forEach(function(m){
+    A.ton(t, {type:'sawtooth', f:230 * m[0], f2:170 * m[0], gl:d, env:[[0, 0], [.08, 1], [d * .6, .85], [d, 0]], g:m[1] * .5, vib:[5, 3 * m[0]], trem:[22, .55], gigue:6,
+      filtres:[{type:'bandpass', f:620, q:1.6}, {type:'lowpass', f:1500}]}, o);
+  });
+  A.bruit(t + .05, {coul:'rose', filtres:[{type:'bandpass', f:400, q:1.4}], env:[[0, 0], [.1, 1], [d * .7, .6], [d, 0]], g:.05}, o);   /* le souffle du nez */
+  return {duree:1.3};
+};
 })(window);
 
 
@@ -9150,7 +9570,8 @@ var BOUCLE = {exploA:{L:44}, exploB:{L:32, n0:7}, exploC:{L:48}, combatA:{L:32 *
   /* Léo : une musique par phase (Romain, 15 novembre, 18 h 29) */
   leo1A:{L:128 * 60 / 76, C:1.5, lin:true}, leo2A:{L:128 * 60 / 104, C:1.5, lin:true}, leo3A:{L:96 * 60 / 66, C:1.5, lin:true}};
 /* les bruitages lourds : [id, morceau, place à gauche (−) ou à droite (+), stéréo] — une version par combat */
-var SFX_PRE = {arc:[[null, -.35]], ratCritique:[['avant', .35], ['impact', .35], ['explosion', .35]], victoire:[[null, 0]], fuite:[[null, -.5]]};
+/* (19 novembre : le critique n'a plus de temps suspendu — son morceau « avant », l'aspiration, n'est plus joué : on ne le fabrique plus) */
+var SFX_PRE = {arc:[[null, -.35]], ratCritique:[['impact', .35], ['explosion', .35]], victoire:[[null, 0]], fuite:[[null, -.5]]};
 var SFX_DUREE = {arc:3.5, victoire:6.5, fuite:8, avant:3.5, impact:5.5, explosion:8.5};
 /* la version d'une musique : celle qui est (ou sera) prête ; tirée au hasard la première fois */
 PRE.cle = function(fam){
@@ -9938,27 +10359,34 @@ function critique(x, y, n, exploser, son, o){
   /* Romain, 9 novembre, 16 h 37 : « il faut rester LOCALISÉ ; tu fais trembler l'écran si tu veux ; de la FUMÉE NOIRE ;
      les MEMBRES du rat éclatent sur le côté, la fumée cache ; pas tout l'écran ; un gros CRITIQUE ». Et le 10, 14 h 14 :
      « la fumée doit sortir AU MOMENT OÙ IL EXPLOSE, avec les morceaux ; elle grossit très vite, puis se disperse vite ;
-     plus fluide ; calé sur le son ». Donc rien ne couvre l'écran, et tout suit les trois temps du son :
+     plus fluide ; calé sur le son ». Donc rien ne couvre l'écran. JUSQU'AU 19 NOVEMBRE, tout suivait les trois temps du son :
        0 ms        la flèche frappe : le temps se suspend sur LUI — l'aspiration ;
        CRIT_IMPACT le coup claque : le gros « CRITIQUE ! », un petit tremblement ; il gonfle de plus en plus ;
        CRIT_ECLAT  l'explosion : la fumée noire et ses membres jaillissent ENSEMBLE, le chiffre, un tremblement ;
        puis        la fumée se disperse vite et laisse les cendres et les os (≈ 2,2 s en tout).
-     Pour que l'image et le son restent ensemble même si la tablette peine, tout est programmé D'UN COUP, ici : les trois
-     morceaux du son sur l'horloge du son, les images en animations à retardement (la carte graphique les joue seule). */
+     Pour que l'image et le son restent ensemble même si la tablette peine, tout est programmé D'UN COUP, ici : les
+     morceaux du son sur l'horloge du son, les images en animations (la carte graphique les joue seule). */
+  /* 19 NOVEMBRE (Romain, 10 h 48) : « dès qu'il a mis le coup de dague, tout de suite l'animation se fait. Faut pas qu'il y
+     ait de délai […] il grossit pas, il explose direct […] et l'animation est beaucoup plus rapide ». Les trois temps n'en
+     font plus qu'UN : au coup, le claquement et l'explosion (le son n'a plus son aspiration), la fumée noire et les membres,
+     le gros « CRITIQUE ! », le chiffre, UNE secousse (RAPIDITE.md R17 : jamais deux à la fois). Puis la fumée se disperse
+     (≈ 0,85 s en tout, 2,2 s avant). CRIT_IMPACT et CRIT_ECLAT restent, à zéro, pour qui voudrait remettre un retard. */
   var v = S.vitesse || 1, t1 = CRIT_IMPACT / v, t2 = CRIT_ECLAT / v;
-  son('aspire', 0); son('boum', t1 / 1000); son('explosion', t2 / 1000);
+  son('boum', t1 / 1000); son('explosion', t2 / 1000 + CRIT_SOUFFLE);
   /* le module du rat fait le reste autour de lui (exploser renvoie une Promise : la fumée dissipée) */
   var fin = Promise.resolve(exploser ? exploser({impact:t1, eclat:t2, leger:!!S.critLeger}) : null);
   texteCritique(x, y, t1);
-  tremble(5, 240, t1);
-  tremble(8, 320, t2);
+  tremble(8, 300, t2);
   var c = el('div', 'chiffre crit', '−' + n);        /* sur la fumée noire (jaune sur noir : il se lit bien) ; il monte sans toucher « CRITIQUE ! » */
-  c.style.left = (x + 6) + 'px'; c.style.top = (y + 40) + 'px'; c.style.animationDelay = t2 + 'ms'; c.style.animationFillMode = 'both';
+  c.style.left = (x + 6) + 'px'; c.style.top = (y + 40) + 'px';
+  if(t2){ c.style.animationDelay = t2 + 'ms'; c.style.animationFillMode = 'both'; }
   L.fx.appendChild(c); setTimeout(function(){ c.remove(); }, t2 + 1400);
-  if(o.brume) setTimeout(function(){ brumeNoire(x, y, o.brume); }, t2);          /* sans le module du rat (images fixes) : sa fumée à lui */
-  return attendre(CRIT_ECLAT).then(function(){ return Promise.race([fin, plus(2000)]); });
+  if(o.brume){ if(t2) setTimeout(function(){ brumeNoire(x, y, o.brume); }, t2); else brumeNoire(x, y, o.brume); }   /* sans le module du rat (images fixes) : sa fumée à lui */
+  return attendre(CRIT_ECLAT).then(function(){ return Promise.race([fin, plus(1500)]); });
 }
-var CRIT_IMPACT = 420, CRIT_ECLAT = 1020;
+/* (avant le 19 novembre : 420 et 1020 — l'aspiration, le coup, l'explosion.) CRIT_SOUFFLE (s) : l'explosion du son part un
+   souffle après le claquement, pour que leurs deux attaques ne s'additionnent pas (on n'entend qu'un seul coup) */
+var CRIT_IMPACT = 0, CRIT_ECLAT = 0, CRIT_SOUFFLE = .04;
 /* le gros « CRITIQUE ! » (Romain l'aime) : il claque au-dessus du rat, dans la moitié droite de la scène, puis s'envole.
    delai (ms) : il attend son moment sans rien montrer (programmé d'avance, pour tomber pile sur le son) */
 function texteCritique(x, y, delai){
@@ -9969,7 +10397,7 @@ function texteCritique(x, y, delai){
   L.ecran.appendChild(t);
   return anime(t, [{transform:'translate(-50%,-50%) scale(1.9) rotate(-8deg)', opacity:0}, {transform:'translate(-50%,-50%) scale(.92) rotate(-3deg)', opacity:1, offset:.08},
     {transform:'translate(-50%,-50%) scale(1.05) rotate(-4deg)', opacity:1, offset:.14}, {transform:'translate(-50%,-50%) scale(1) rotate(-4deg)', opacity:1, offset:.78},
-    {transform:'translate(-50%,-62%) scale(1.03) rotate(-4deg)', opacity:0}], {duration:2000, delay:delai || 0, fill:'backwards', easing:'ease-out'}).then(function(){ t.remove(); });
+    {transform:'translate(-50%,-62%) scale(1.03) rotate(-4deg)', opacity:0}], {duration:1500, delay:delai || 0, fill:'backwards', easing:'ease-out'}).then(function(){ t.remove(); });   /* (19 novembre : 1,5 s au lieu de 2 — le critique va plus vite) */
 }
 
 /* la fiole, la flèche, la loupe… : un vol en ligne droite ou en arc (h), avec rotation (tour) ou orienté selon la trajectoire.
@@ -17106,17 +17534,81 @@ var CSS = '.cine-ecran{position:fixed;inset:0;z-index:99990;background:#000;opac
   'color:#ddd;font:600 15px/1 system-ui,sans-serif;padding:10px 16px;cursor:pointer;z-index:2}' +
   '.cine-attente{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px;border-radius:50%;background:#e8b84a;animation:cineAtt 1s ease-in-out infinite}' +
   '@keyframes cineAtt{0%,100%{opacity:.2;transform:scale(.7)}50%{opacity:1;transform:scale(1)}}' +
+  '.cine-ailleurs{position:fixed;inset:0;z-index:99980;background:#000;display:flex;align-items:center;justify-content:center;font-size:44px}' +
+  '.cine-ailleurs span{animation:cineAtt 2s ease-in-out infinite}' +
   '.cine-go{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:0;border-radius:16px;background:#ffd23f;color:#111;font:800 22px/1 system-ui,sans-serif;padding:18px 28px;cursor:pointer}';
 function style(){ if(document.getElementById('cine-css')) return; var s = document.createElement('style'); s.id = 'cine-css'; s.textContent = CSS; document.head.appendChild(s); }
 function el(tag, cls, html){ var e = document.createElement(tag); if(cls) e.className = cls; if(html != null) e.innerHTML = html; return e; }
 function esc(t){ return String(t).replace(/[&<>"]/g, function(c){ return {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]; }); }
 
-/* télécharger tout le film d'avance (une coupure de réseau au milieu ne le casse plus) */
+/* LES FILMS TÉLÉCHARGÉS (Romain, 19 novembre : « un bouton téléchargement où on pourrait télécharger toutes les cinématiques d'un coup ») :
+   « 🎬 Télécharger les films » (menu ☰, heros.js) range chaque film et sa bande-son dans la boîte « brumeval-films » du navigateur
+   (Cache Storage, gardée d'une version du jeu à l'autre ; le service worker ne l'efface pas et ne touche plus aux films).
+   Chaque fichier y est rangé sous son adresse suivie de « ?v=<octets du film> » (CINE_INFOS) : un film refait (autre taille) n'est
+   plus pris dans la boîte, il revient d'internet, et « Télécharger les films » le remplace. */
+var FILMS = CL.BOITE = 'brumeval-films';
+function nomFilm(url){ var m = /([^\/?#]+)\.(mp4|mp3)(?:[?#]|$)/.exec(String(url)); return m ? m[1] : null; }
+CL.cle = function(url){
+  var n = nomFilm(url), I = n && window.CINE_INFOS && window.CINE_INFOS[n];
+  try{ var a = new URL(url, location.href); a.search = ''; a.hash = ''; return a.href + (I && I.octets ? '?v=' + I.octets : ''); }catch(e){ return url; }
+};
+function boite(){ try{ return window.caches && location.protocol !== 'file:' ? caches.open(FILMS) : Promise.resolve(null); }catch(e){ return Promise.resolve(null); } }
+function dansLaBoite(url){
+  return boite().then(function(c){ return c ? c.match(CL.cle(url)) : null; }).then(function(r){ return r && r.ok ? r : null; }, function(){ return null; });
+}
+/* la liste des fichiers des films (adresses relatives au jeu : base 'cine/' dans le jeu) */
+CL.fichiers = function(base){
+  base = base || 'cine/';
+  var I = window.CINE_INFOS || {}, l = [];
+  Object.keys(I).forEach(function(n){ l.push(base + n + '.mp4'); if(I[n].piste) l.push(base + n + '.mp3'); });
+  return l;
+};
+/* combien de fichiers sont déjà dans la boîte -> Promise({n, total}) */
+CL.etatFilms = function(base){
+  var l = CL.fichiers(base);
+  return boite().then(function(c){
+    if(!c) return {n:0, total:l.length, impossible:true};
+    return Promise.all(l.map(function(u){ return c.match(CL.cle(u)).then(function(r){ return !!r; }, function(){ return false; }); }))
+      .then(function(ok){ return {n:ok.filter(Boolean).length, total:l.length}; });
+  }, function(){ return {n:0, total:l.length, impossible:true}; });
+};
+/* tout télécharger (deux fichiers à la fois) ; progres({fait, total, octets}) ; -> Promise({faits, echecs}) ; les vieilles versions s'en vont */
+CL.telechargerTout = function(progres, base){
+  var l = CL.fichiers(base), faits = 0, echecs = [], octets = 0, i = 0;
+  function dire(){ try{ if(progres) progres({fait:faits + echecs.length, total:l.length, octets:octets}); }catch(e){} }
+  try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function(){}); }catch(e){}
+  return boite().then(function(c){
+    if(!c) throw new Error('pas de stockage');
+    dire();
+    function un(u){
+      var k = CL.cle(u);
+      return c.match(k).then(function(r){
+        if(r) return r.blob().then(function(b){ octets += b.size; });
+        return fetch(u, {cache:'reload'}).then(function(r){
+          if(!r.ok) throw new Error('HTTP ' + r.status);
+          return r.blob();
+        }).then(function(b){
+          octets += b.size;
+          return c.put(k, new Response(b, {headers:{'Content-Type':/\.mp3$/.test(u) ? 'audio/mpeg' : 'video/mp4', 'Content-Length':String(b.size)}}));
+        });
+      }).then(function(){ faits++; }, function(){ echecs.push(u); }).then(dire);
+    }
+    function suivant(){ if(i >= l.length) return Promise.resolve(); return un(l[i++]).then(suivant); }
+    return Promise.all([suivant(), suivant()]).then(function(){
+      /* les fichiers d'une vieille version (un film refait) : effacés */
+      var bonnes = {}; l.forEach(function(u){ bonnes[CL.cle(u)] = 1; });
+      return c.keys().then(function(ks){ return Promise.all(ks.filter(function(q){ return !bonnes[q.url]; }).map(function(q){ return c.delete(q); })); }).catch(function(){});
+    }).then(function(){ return {faits:faits, echecs:echecs, total:l.length, octets:octets}; });
+  });
+};
+/* télécharger tout le film d'avance (une coupure de réseau au milieu ne le casse plus) ; s'il est dans la boîte des films : pris là, sans internet */
 CL.precharger = function(url){
   if(CACHE[url]) return CACHE[url];
   CACHE[url] = new Promise(function(ok){
     if(!window.fetch || !window.URL || !URL.createObjectURL || location.protocol === 'file:'){ ok(url); return; }
-    fetch(url).then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); })
+    dansLaBoite(url).then(function(r){
+      return r || fetch(url).then(function(r){ if(!r.ok) throw new Error(r.status); return r; });
+    }).then(function(r){ return r.blob(); })
       .then(function(b){ ok(URL.createObjectURL(b)); })
       .catch(function(){ CACHE[url] = null; ok(url); });
   });
@@ -17128,7 +17620,8 @@ CL.prechargerPiste = function(url){
   if(PISTES[url]) return PISTES[url];
   PISTES[url] = new Promise(function(ok){
     if(!window.fetch || location.protocol === 'file:'){ ok(null); return; }
-    fetch(url).then(function(r){ if(!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+    dansLaBoite(url).then(function(r){ return r || fetch(url).then(function(r){ if(!r.ok) throw new Error(r.status); return r; }); })
+      .then(function(r){ return r.arrayBuffer(); })
       .then(function(b){ ok(b); })
       .catch(function(){ PISTES[url] = null; ok(null); });
   });
@@ -17191,8 +17684,45 @@ CL.essai = null;
 /* (pour les robots : ce que fait le dernier film — la bande-son est-elle là, joue-t-elle, combien de bruitages un par un) */
 CL.dernier = {};
 
+/* un film passe-t-il ? (voix.js : pendant un film, le moteur des voix ne prépare rien d'avance — Romain, 19 novembre : les films figés
+   sur leur première image, saccadés. Le calcul des voix et le chargement de leurs modèles (60 Mo) prenaient l'appareil pendant le film.) */
+CL.enCours = false;
+/* LES AUTRES FENÊTRES DU MÊME APPAREIL SE TAISENT PENDANT UN FILM (Romain, 19 novembre, 8 h 25 : il essaie le jeu avec quatre fenêtres
+   côte à côte sur un seul ordinateur ; un film seul rame, mais deux films à la fois dans deux fenêtres ne rament plus — parce que deux
+   fenêtres sur quatre se taisent alors). Un film qui part le dit aux autres fenêtres du jeu (BroadcastChannel, même appareil seulement) :
+   elles se couvrent de noir avec un 🎬 (le jeu du dessous caché, ses animations en pause, ses voix en attente), jusqu'à la fin du film
+   (ou sa durée plus 5 secondes, si la fenêtre du film est fermée en route). Sur des tablettes séparées, rien ne change. */
+CL.ailleurs = false;
+var canal = null, moi = Math.random().toString(36).slice(2), autres = {}, voile = null, rendreVoile = null;
+try{ if(window.BroadcastChannel) canal = new BroadcastChannel('brumeval-cine'); }catch(e){ canal = null; }
+function dire(m){ try{ if(canal) canal.postMessage(m); }catch(e){} }
+function majVoile(){
+  var n = Object.keys(autres).length;
+  CL.ailleurs = n > 0;
+  if(n && !CL.enCours && !voile && document.body){
+    style();
+    voile = el('div', 'cine-ailleurs', '<span>🎬</span>');
+    voile.setAttribute('aria-label', 'Un film passe sur un autre écran');
+    document.body.appendChild(voile);
+    rendreVoile = cacherDessous(voile);
+  } else if((!n || CL.enCours) && voile){
+    try{ if(rendreVoile) rendreVoile(); }catch(e){}
+    voile.remove(); voile = null; rendreVoile = null;
+  }
+}
+if(canal) canal.onmessage = function(ev){
+  var m = ev.data || {};
+  if(!m.id || m.id === moi) return;
+  if(autres[m.id]){ clearTimeout(autres[m.id]); delete autres[m.id]; }
+  if(m.t === 'film') autres[m.id] = setTimeout(function(){ delete autres[m.id]; majVoile(); }, ((+m.duree || 60) + 5) * 1000);
+  majVoile();
+};
+window.addEventListener('pagehide', function(){ if(CL.enCours) dire({t:'fin', id:moi}); });
 CL.jouer = function(o){
   style();
+  CL.enCours = true;
+  majVoile();                                            /* (le voile d'un autre film s'en va : c'est notre film qui passe) */
+  dire({t:'film', id:moi, duree:(o.infos && o.infos.duree) || 60});
   return new Promise(function(fin){
     var fini = false, raf = 0, video = null, cues = (o.infos && o.infos.sons || []).map(function(c){ return {t:c[0], id:c[1], fait:false}; });
     var st = (o.infos && o.infos.sousTitres) || [], courant = -1, lecture = null, ecrit = -1, plein = {};
@@ -17234,6 +17764,9 @@ CL.jouer = function(o){
     place(); window.addEventListener('resize', place);
     function terminer(r){
       if(fini) return; fini = true;
+      CL.enCours = false;
+      dire({t:'fin', id:moi});
+      setTimeout(majVoile, 400);                         /* (un autre film passe encore ailleurs : le voile revient, après notre fondu) */
       try{ rendre(); }catch(x){}                          /* la scène du dessous revient (le film se fond en noir par-dessus) */
       cancelAnimationFrame(raf); window.removeEventListener('resize', place);
       if(lecture) clearInterval(lecture);
@@ -17333,7 +17866,7 @@ CL.jouer = function(o){
 
 /* ===== ../cine/sortie/cine-infos.js ===== */
 /* les cinématiques (jeu/cine : infos.py, ne pas modifier à la main) — la durée, les sons, les sous-titres de chaque film */
-window.CINE_INFOS = {"a12":{"duree":13.6,"sons":[[0.62,"cineOutils"],[0.78,"cineOutils"],[1.38,"leoChute"],[1.45,"cineOutils"],[1.9,"cineSouffle"],[3.4,"cineGrogne"],[4.3,"cinePas"],[5.48,"leoDechire"],[5.6,"cineCape"],[6.85,"cineCri"],[9.95,"leoMuscles"],[10.05,"cineOnde"],[11.45,"cineGrogne"],[11.5,"cineOnde"]],"sousTitres":[],"octets":2291741,"piste":1},"b23":{"duree":14.2,"sons":[[0.1,"cineSouffle"],[1.6,"cineSouffle"],[2.45,"cineEssuie"],[6.8,"leoSac"],[8.120000000000001,"leoBouchon"],[8.35,"cineCrache"],[8.85,"leoGlou"],[9.15,"leoGlou"],[9.45,"leoGlou"],[10.1,"leoBrise"],[10.25,"cineCoeur"],[10.45,"leoPotion"],[10.9,"cineCoeur"],[11,"cineMontee"],[11.45,"cineCoeur"],[11.98,"leoMuscles"],[12.15,"cineCri"],[12.5,"cineOnde"],[12.95,"cineOnde"]],"sousTitres":[[3.55,4.75,"Très bien…","Léo"],[4.95,6.35,"Je n'ai pas le choix.","Léo"]],"octets":2618280,"piste":1},"chene":{"duree":61.8,"sons":[[0.15,"cineFoule"],[3.05,"cineClameur"],[6.75,"cineLanterne"],[9.3,"cineFoulePasse"],[10.48,"cineBarriere"],[12.1,"cineVent"],[13.3,"cineHibou"],[16.4,"cineVent"],[19,"cineCape"],[19.84,"cineAllumette"],[22.3,"cineMeche"],[23.1,"cineCape"],[24.7,"cinePffft"],[28.92,"cineOh"],[32.95,"cineToux"],[33.9,"cineCourse"],[38.300000000000004,"cineSouffle"],[40.6,"cineSouffle"],[55,"cineFouleFuit"],[55.099999999999994,"cineToux"],[55.949999999999996,"cineToux"],[56.9,"cineToux"],[58.5,"cineVent"],[60,"cineCape"]],"sousTitres":[[2.5,5.4,"Tous au Vieux Chêne !","Gaspard"],[7,10.3,"Halte ! Le chemin est fermé !","Silas"],[38.6,41.8,"Ce sont des vapeurs toxiques !","Silas"],[42.1,45.3,"Elles montent des sous-sols !","Silas"],[45.6,48.8,"Reculez ! Ne respirez pas ça !","Le maire"],[49.2,52,"La zone est condamnée.","Le maire"],[52.3,54.7,"Rentrez chez vous !","Le maire"]],"octets":9863213,"piste":1},"entree":{"duree":15.2,"sons":[[0.15,"cinePasEcho"],[0.85,"cinePasEcho"],[1.35,"leoCape"],[3.6,"cineCape"],[3.98,"cinePas"],[4.930000000000001,"cinePas"],[9.75,"cineCape"],[14.4,"leoTorches"],[14.55,"cineGrogne"]],"sousTitres":[[6.7,9.4,"J'attends ce moment depuis longtemps.","L'homme en cape"],[9.85,12.45,"Vous n'auriez jamais dû venir ici.","L'homme en cape"],[12.6,14.55,"Je vais m'occuper de vous.","L'homme en cape"]],"octets":1713149,"piste":1},"escalier":{"duree":24,"sons":[[0.9,"cineGrille"],[3.1,"cineLanterne"],[0.2,"cineVent"],[9,"cineVent"],[14.5,"cineVent"],[6,"cineGoutte"],[11.5,"cineGoutte"],[16.8,"cineGoutte"],[19.2,"cineLueur"],[3.6,"cinePasEscalier"],[4.4,"cinePasEscalier"],[5.2,"cinePasEscalier"],[6,"cinePasEscalier"],[6.8,"cinePasEscalier"],[7.6,"cinePasEscalier"],[8.4,"cinePasEscalier"],[9.200000000000001,"cinePasEscalier"],[10.000000000000002,"cinePasEscalier"],[10.800000000000002,"cinePasEscalier"],[11.600000000000003,"cinePasEscalier"],[12.400000000000004,"cinePasEscalier"],[13.200000000000005,"cinePasEscalier"],[14.000000000000005,"cinePasEscalier"],[14.800000000000006,"cinePasEscalier"],[15.600000000000007,"cinePasEscalier"],[16.400000000000006,"cinePasEscalier"],[17.200000000000006,"cinePasEscalier"],[18.000000000000007,"cinePasEscalier"],[18.800000000000008,"cinePasEscalier"],[19.60000000000001,"cinePasEscalier"]],"sousTitres":[[1.2,4.3,"La grille grince… puis cède.","Le conteur"],[6.4,9.8,"Marche après marche, le jour s'éloigne.","Le conteur"],[12.8,16.2,"Des signes bleus s'éveillent.","Le conteur"],[19,22.4,"Tout en bas, une lueur attend.","Le conteur"]],"octets":4565605,"piste":1},"finLeo":{"duree":41.8,"sons":[[0.05,"cineSouffle"],[0.6,"cineCoeur"],[1.2,"cineCoeur"],[1.85,"cineChute"],[3.2,"cineSouffle"],[28.3,"cineCoeur"]],"sousTitres":[[4.6,7.2,"Assez… Vous avez gagné.","Léo"],[7.6,11,"Meunier… Je n'ai jamais voulu être meunier.","Léo"],[11.3,15.2,"Le maire, lui, m'a promis autre chose. Une vraie place.","Léo"],[15.8,18.7,"C'est lui qui a tout préparé, depuis le début :","Léo"],[18.9,22.1,"la rivière rouge, les fumigènes, la lettre.","Léo"],[22.4,26.3,"Odette, ce n'était pas prévu. Elle a été trop curieuse.","Léo"],[26.9,30.4,"Il descend souvent, tout seul, encore plus bas.","Léo"],[30.7,34.3,"Là-dessous, il y a une ville. Une ville entière, sous Brumeval.","Léo"],[34.8,37.6,"Moi, il ne m'a jamais laissé y aller.","Léo"],[37.8,39.9,"Personne n'y va. Jamais.","Léo"]],"octets":4428675,"piste":1},"finMaire":{"duree":27.2,"sons":[[0.9,"cinePasEcho"],[2.2,"cineLanterne"],[2.7,"cinePasEscalier"],[3.5,"cinePasEscalier"],[4.3,"cinePasEscalier"],[5.1,"cinePasEscalier"],[5.9,"cinePasEscalier"],[6.7,"cinePasEscalier"],[4.4,"cineArmure"],[5.6,"cineArmure"],[6.8,"cineArmure"],[8,"cineArmure"],[8.2,"cinePas"],[9.2,"cinePas"],[10.2,"cinePas"],[9.4,"cineArmure"],[15.1,"cineGant"],[17.3,"cineBague"],[24,"cineCoeur"],[24.8,"cineLances"],[25.2,"cineGardes"],[26.6,"cineCoup"]],"sousTitres":[[11,13.1,"Que s'est-il passé ici ? Léo !","Le maire"],[13.2,14.7,"Qu'avez-vous fait à Léo ?","Le maire"],[18.3,21.4,"Vous êtes allés trop loin. Beaucoup trop loin.","Le maire"],[21.9,23.6,"Monsieur le maire… ?","Silas"],[24,25.7,"Gardes ! Attrapez-les !","Le maire"]],"octets":4349088,"piste":1},"herosAlchimiste":{"duree":29.8,"sons":[[0.5,"pubPop"],[1,"pubPop"],[5.95,"pubWhoosh"],[7.95,"pubWhoosh"],[9.95,"pubWhoosh"],[10.95,"pubWhoosh"],[11.95,"pubWhoosh"],[15.95,"pubWhoosh"],[20.45,"pubWhoosh"],[22,"pubPop"],[22.5,"pubPop"],[23,"pubPop"],[23.5,"pubPop"],[23.95,"pubWhoosh"],[24.55,"cineClameur"],[26.25,"pubTada"]],"sousTitres":[],"octets":5845427,"piste":1},"herosBarde":{"duree":29.8,"sons":[[0.5,"pubPop"],[1,"pubPop"],[5.95,"pubWhoosh"],[8.45,"pubWhoosh"],[11.95,"pubWhoosh"],[15.95,"pubWhoosh"],[19.45,"pubWhoosh"],[22,"pubPop"],[22.5,"pubPop"],[23,"pubPop"],[23.5,"pubPop"],[23.95,"pubWhoosh"],[24.55,"cineClameur"],[26.25,"pubTada"]],"sousTitres":[],"octets":4408339,"piste":1},"herosPisteur":{"duree":29.8,"sons":[[0.5,"pubPop"],[1,"pubPop"],[6.45,"pubWhoosh"],[8.95,"pubWhoosh"],[11.95,"pubWhoosh"],[15.95,"pubWhoosh"],[20.45,"pubWhoosh"],[22,"pubPop"],[22.5,"pubPop"],[23,"pubPop"],[23.5,"pubPop"],[23.95,"pubWhoosh"],[24.55,"cineClameur"],[26.25,"pubTada"]],"sousTitres":[],"octets":6244905,"piste":1},"herosSage":{"duree":29.8,"sons":[[0.5,"pubPop"],[1,"pubPop"],[5.95,"pubWhoosh"],[8.45,"pubWhoosh"],[10.45,"pubWhoosh"],[11.95,"pubWhoosh"],[15.95,"pubWhoosh"],[20.45,"pubWhoosh"],[22,"pubPop"],[22.5,"pubPop"],[23,"pubPop"],[23.5,"pubPop"],[23.95,"pubWhoosh"],[24.55,"cineClameur"],[26.25,"pubTada"]],"sousTitres":[],"octets":5160945,"piste":1},"pub":{"duree":29.8,"sons":[[0.5,"pubPop"],[1.5,"pubPop"],[2.5,"pubPop"],[2.85,"pubPlongee"],[4,"pubTada"],[5.95,"pubWhoosh"],[7.95,"pubWhoosh"],[8.95,"pubWhoosh"],[9.95,"pubWhoosh"],[11.95,"pubWhoosh"],[12.95,"pubWhoosh"],[14.05,"cineClameur"],[15.25,"cineAllumette"],[16,"cinePffft"],[17,"cineCape"],[20.45,"pubWhoosh"],[22,"pubPop"],[22.5,"pubPop"],[23,"pubPop"],[23.5,"pubPop"],[23.95,"pubWhoosh"],[25,"cineClameur"],[26,"pubTada"]],"sousTitres":[],"octets":5141448,"piste":1},"puits":{"duree":24,"sons":[[0.3,"cineVent"],[0.8,"cineMeche"],[2,"cineMeche"],[3.2,"cineMeche"],[6,"cineCape"],[7.6,"cineCorde"],[8.5,"cineCorde"],[9.4,"cineCorde"],[10.3,"cineCorde"],[11.2,"cineCorde"],[12.1,"cineCorde"],[13,"cineCorde"],[13.9,"cineCorde"],[14.8,"cineCorde"],[15.7,"cineCorde"],[9,"cineGoutte"],[14.2,"cineGoutte"],[16.8,"cineChute"],[17.4,"cinePasEcho"],[18.6,"cineLueur"],[19.6,"cinePasEcho"],[20.4,"cinePasEcho"],[21.2,"cinePasEcho"]],"sousTitres":[[1,4.2,"La grille du puits a fondu.","Le conteur"],[6.8,10.1,"La corde file entre vos mains.","Le conteur"],[12.9,16.2,"Là-haut, la nuit rétrécit.","Le conteur"],[18.8,22.2,"En bas, un passage brille.","Le conteur"]],"octets":4723750,"piste":1}};
+window.CINE_INFOS = {"a12":{"duree":13.6,"sons":[[0.62,"cineOutils"],[0.78,"cineOutils"],[1.38,"leoChute"],[1.45,"cineOutils"],[1.9,"cineSouffle"],[3.4,"cineGrogne"],[4.3,"cinePas"],[5.48,"leoDechire"],[5.6,"cineCape"],[6.85,"cineCri"],[9.95,"leoMuscles"],[10.05,"cineOnde"],[11.45,"cineGrogne"],[11.5,"cineOnde"]],"sousTitres":[],"octets":2291741,"piste":1},"b23":{"duree":14.2,"sons":[[0.1,"cineSouffle"],[1.6,"cineSouffle"],[2.45,"cineEssuie"],[6.8,"leoSac"],[8.120000000000001,"leoBouchon"],[8.35,"cineCrache"],[8.85,"leoGlou"],[9.15,"leoGlou"],[9.45,"leoGlou"],[10.1,"leoBrise"],[10.25,"cineCoeur"],[10.45,"leoPotion"],[10.9,"cineCoeur"],[11,"cineMontee"],[11.45,"cineCoeur"],[11.98,"leoMuscles"],[12.15,"cineCri"],[12.5,"cineOnde"],[12.95,"cineOnde"]],"sousTitres":[[3.55,4.75,"Très bien…","Léo"],[4.95,6.35,"Je n'ai pas le choix.","Léo"]],"octets":2618280,"piste":1},"chene":{"duree":61.8,"sons":[[0.15,"cineFoule"],[3.05,"cineClameur"],[6.75,"cineLanterne"],[9.3,"cineFoulePasse"],[10.48,"cineBarriere"],[12.1,"cineVent"],[13.3,"cineHibou"],[16.4,"cineVent"],[19,"cineCape"],[19.84,"cineAllumette"],[22.3,"cineMeche"],[23.1,"cineCape"],[24.7,"cinePffft"],[28.92,"cineOh"],[32.95,"cineToux"],[33.9,"cineCourse"],[38.300000000000004,"cineSouffle"],[40.6,"cineSouffle"],[55,"cineFouleFuit"],[55.099999999999994,"cineToux"],[55.949999999999996,"cineToux"],[56.9,"cineToux"],[58.5,"cineVent"],[60,"cineCape"]],"sousTitres":[[2.5,5.4,"Tous au Vieux Chêne !","Gaspard"],[7,10.3,"Halte ! Le chemin est fermé !","Silas"],[38.6,41.8,"Ce sont des vapeurs toxiques !","Silas"],[42.1,45.3,"Elles montent des sous-sols !","Silas"],[45.6,48.8,"Reculez ! Ne respirez pas ça !","Le maire"],[49.2,52,"La zone est condamnée.","Le maire"],[52.3,54.7,"Rentrez chez vous !","Le maire"]],"octets":9863213,"piste":1},"debut1":{"duree":40.2,"sons":[[0.1,"cineNuit"],[0.3,"cineTicTac"],[1.6,"cineLanterneOr"],[4.2,"cineTicTac"],[6.3,"cineNuit"],[6.6000000000000005,"cineTicTac"],[8.15,"cineFenetre"],[8.8,"cineVent"],[10.5,"cineLanterneOr"],[11.35,"cinePrise"],[12.600000000000001,"cineLueurPart"],[15.25,"cineCourseLegere"],[15.399999999999999,"cineNuit"],[17.5,"cineCourseLegere"],[19.900000000000002,"cineTempsPasse"],[22.7,"cineOiseaux"],[24.549999999999997,"cinePorteBureau"],[25.299999999999997,"cineFredonne"],[25.4,"cinePasParquet"],[26.4,"cinePasParquet"],[29.25,"cineStupeur"],[32.65,"cineFenetre"],[35.2,"cineEnvol"],[36,"cineOiseaux"]],"sousTitres":[[29.5,32.55,"La Lanterne d'Or… Elle a disparu !","Le maire"],[34.7,36.95,"C'est une catastrophe !","Le maire"]],"octets":6336603,"piste":1},"debut2":{"duree":38.6,"sons":[[0.1,"cineRiviere"],[0.4,"cineOiseaux"],[2.3,"cineCoq"],[4.6,"cineRiviere"],[6.1,"cineOiseaux"],[8.2,"cineLinge"],[9.1,"cineLinge"],[10.5,"cineRiviere"],[10.65,"cineLinge"],[12,"cineGouttes"],[17,"cineSursaut"],[18.85,"cineCriFemme"],[19,"cineRiviere"],[20.85,"cineSeau"],[23.700000000000003,"cineCourse"],[25,"cineCourse"],[26.200000000000003,"cineOh"],[27.5,"cineOh"],[28,"cineRiviere"],[29.3,"cineMurmure"],[31.4,"cineMurmure"],[33.5,"cineRiviere"],[35.8,"cineVent"]],"sousTitres":[[19.7,23.3,"La rivière… Elle est toute rouge !","La lavandière"]],"octets":7693280,"piste":1},"debut3":{"duree":37.2,"sons":[[0.1,"cineAube"],[0.6,"cineMurmure"],[5.25,"cinePorteMairie"],[6.5,"cinePapier"],[9.7,"cinePapier"],[17.65,"cineSoupir"],[18.5,"cineHourra"],[22.7,"cineHourra"],[25.1,"cineFete"],[25.9,"cineClocheJoie"],[26,"cineEnvol"],[27.6,"cineClocheJoie"],[30.4,"cineFeteLoin"],[33.7,"cineMoustacheGrogne"]],"sousTitres":[[6.3,9.4,"Mes amis ! J'ai reçu une lettre !","Le maire"],[10,13.8,"Je vais très bien… Signé : Odette.","Le maire"],[14.7,17.2,"Odette va bien !","Le maire"],[21.2,24.8,"Grande fête cette nuit !","Le maire"]],"octets":8010537,"piste":1},"entree":{"duree":15.2,"sons":[[0.15,"cinePasEcho"],[0.85,"cinePasEcho"],[1.35,"leoCape"],[3.6,"cineCape"],[3.98,"cinePas"],[4.930000000000001,"cinePas"],[9.75,"cineCape"],[14.4,"leoTorches"],[14.55,"cineGrogne"]],"sousTitres":[[6.7,9.4,"J'attends ce moment depuis longtemps.","L'homme en cape"],[9.85,12.45,"Vous n'auriez jamais dû venir ici.","L'homme en cape"],[12.6,14.55,"Je vais m'occuper de vous.","L'homme en cape"]],"octets":1713149,"piste":1},"escalier":{"duree":52.000000000000014,"sons":[[0.2,"cineLanterne"],[1.45,"cineCleEntre"],[2.05,"cineCleTourne"],[2.95,"cineCleEntre"],[3.7,"cineGrille"],[5.9,"cineVentCave"],[6.8,"cineTorche"],[6.9,"cinePasEscalier"],[7.7,"cineGoutte"],[7.72,"cinePasEscalier"],[8.3,"cineBetes"],[8.54,"cinePasEscalier"],[9,"cineLanterne"],[9.36,"cinePasEscalier"],[10.18,"cinePasEscalier"],[10.2,"cineTorche"],[10.4,"cineCouinement"],[11,"cinePasEscalier"],[11.2,"cineGoutte"],[11.82,"cinePasEscalier"],[12.64,"cinePasEscalier"],[13,"cineTorche"],[13.1,"cinePasPierre"],[13.2,"cineVentCave"],[13.38,"cinePasPierre"],[13.66,"cinePasPierre"],[14.22,"cinePasPierre"],[14.22,"cinePasPierre"],[14.3,"cineBetes"],[14.78,"cinePasPierre"],[15.06,"cinePasPierre"],[15.34,"cinePasPierre"],[15.4,"cineGoutte"],[15.9,"cinePasPierre"],[15.9,"cinePasPierre"],[16.1,"cineCouinement"],[16.46,"cinePasPierre"],[16.6,"cineTorche"],[16.74,"cinePasPierre"],[17.02,"cinePasPierre"],[17.4,"cineBetes"],[17.58,"cinePasPierre"],[17.58,"cinePasPierre"],[17.9,"cineLanterne"],[18.14,"cinePasPierre"],[18.42,"cinePasPierre"],[18.6,"cineGoutte"],[18.7,"cinePasPierre"],[19.2,"cineCouinement"],[19.26,"cinePasPierre"],[19.26,"cinePasPierre"],[19.82,"cinePasPierre"],[20,"cineTorche"],[20.1,"cinePasPierre"],[20.3,"cineBetes"],[20.38,"cinePasPierre"],[20.94,"cinePasPierre"],[20.94,"cinePasPierre"],[21.5,"cinePasPierre"],[21.78,"cinePasPierre"],[22,"cineTorche"],[22.1,"cinePasPierre"],[22.5,"cineSouffleFeu"],[22.66,"cinePasPierre"],[23,"cineCouinement"],[23.22,"cinePasPierre"],[23.78,"cinePasPierre"],[23.9,"cineBetes"],[24.34,"cinePasPierre"],[24.5,"cineGoutte"],[24.9,"cinePasPierre"],[25.6,"cineTorche"],[25.7,"cinePasPierre"],[26,"cinePasPierre"],[26.200000000000003,"cineBetes"],[26.26,"cinePasPierre"],[26.82,"cinePasPierre"],[26.84,"cinePasPierre"],[27.3,"cineCouinement"],[27.38,"cinePasPierre"],[27.68,"cinePasPierre"],[27.700000000000003,"cineBetes"],[27.94,"cinePasPierre"],[28.5,"cinePasPierre"],[28.52,"cinePasPierre"],[28.900000000000002,"cineGoutte"],[29.06,"cinePasPierre"],[29.36,"cinePasPierre"],[30.200000000000003,"cineTorche"],[31.400000000000002,"cineEtoffe"],[34.50000000000001,"cineSouffleFeu"],[34.900000000000006,"cineTorche"],[36.7,"cineEclat"],[38.60000000000001,"cineRune"],[38.70000000000001,"cineTorche"],[42.60000000000001,"cineTorche"],[42.80000000000001,"cineRune"],[43.80000000000001,"cineHm"],[44.60000000000001,"cineEtoffe"],[46.80000000000001,"cineTorche"],[46.90000000000001,"cineEtoffe"],[47.10000000000001,"cineRune"],[50.42,"cinePasPierre"],[50.92,"cinePasPierre"],[51.42,"cinePasPierre"]],"sousTitres":[[47.35,50.8,"Allons-y. Odette doit être par là.","Le Pisteur"]],"octets":10733452,"piste":1},"finLeo":{"duree":41.8,"sons":[[0.05,"cineSouffle"],[0.6,"cineCoeur"],[1.2,"cineCoeur"],[1.85,"cineChute"],[3.2,"cineSouffle"],[28.3,"cineCoeur"]],"sousTitres":[[4.6,7.2,"Assez… Vous avez gagné.","Léo"],[7.6,11,"Meunier… Je n'ai jamais voulu être meunier.","Léo"],[11.3,15.2,"Le maire, lui, m'a promis autre chose. Une vraie place.","Léo"],[15.8,18.7,"C'est lui qui a tout préparé, depuis le début :","Léo"],[18.9,22.1,"la rivière rouge, les fumigènes, la lettre.","Léo"],[22.4,26.3,"Odette, ce n'était pas prévu. Elle a été trop curieuse.","Léo"],[26.9,30.4,"Il descend souvent, tout seul, encore plus bas.","Léo"],[30.7,34.3,"Là-dessous, il y a une ville. Une ville entière, sous Brumeval.","Léo"],[34.8,37.6,"Moi, il ne m'a jamais laissé y aller.","Léo"],[37.8,39.9,"Personne n'y va. Jamais.","Léo"]],"octets":4428675,"piste":1},"finMaire":{"duree":23.9,"sons":[[0.9,"cinePasEcho"],[2.2,"cineLanterne"],[2.7,"cinePasEscalier"],[3.5,"cinePasEscalier"],[4.3,"cinePasEscalier"],[5.1,"cinePasEscalier"],[5.9,"cinePasEscalier"],[6.7,"cinePasEscalier"],[4.4,"cineArmure"],[5.6,"cineArmure"],[6.8,"cineArmure"],[8,"cineArmure"],[8.2,"cinePas"],[9.2,"cinePas"],[10.2,"cinePas"],[9.4,"cineArmure"],[20.7,"cineCoeur"],[21.5,"cineLances"],[21.9,"cineGardes"],[23.3,"cineCoup"]],"sousTitres":[[11,13.1,"Que s'est-il passé ici ? Léo !","Le maire"],[13.2,14.7,"Qu'avez-vous fait à Léo ?","Le maire"],[15,18.1,"Vous êtes allés trop loin. Beaucoup trop loin.","Le maire"],[18.6,20.3,"Monsieur le maire… ?","Silas"],[20.7,22.4,"Gardes ! Attrapez-les !","Le maire"]],"octets":3732774,"piste":1},"herosAlchimiste":{"duree":29.8,"sons":[[0.5,"pubPop"],[1,"pubPop"],[5.95,"pubWhoosh"],[7.95,"pubWhoosh"],[9.95,"pubWhoosh"],[10.95,"pubWhoosh"],[11.95,"pubWhoosh"],[15.95,"pubWhoosh"],[20.45,"pubWhoosh"],[22,"pubPop"],[22.5,"pubPop"],[23,"pubPop"],[23.5,"pubPop"],[23.95,"pubWhoosh"],[24.55,"cineClameur"],[26.25,"pubTada"]],"sousTitres":[],"octets":5845427,"piste":1},"herosBarde":{"duree":29.8,"sons":[[0.5,"pubPop"],[1,"pubPop"],[5.95,"pubWhoosh"],[8.45,"pubWhoosh"],[11.95,"pubWhoosh"],[15.95,"pubWhoosh"],[19.45,"pubWhoosh"],[22,"pubPop"],[22.5,"pubPop"],[23,"pubPop"],[23.5,"pubPop"],[23.95,"pubWhoosh"],[24.55,"cineClameur"],[26.25,"pubTada"]],"sousTitres":[],"octets":4408339,"piste":1},"herosPisteur":{"duree":29.8,"sons":[[0.5,"pubPop"],[1,"pubPop"],[6.45,"pubWhoosh"],[8.95,"pubWhoosh"],[11.95,"pubWhoosh"],[15.95,"pubWhoosh"],[20.45,"pubWhoosh"],[22,"pubPop"],[22.5,"pubPop"],[23,"pubPop"],[23.5,"pubPop"],[23.95,"pubWhoosh"],[24.55,"cineClameur"],[26.25,"pubTada"]],"sousTitres":[],"octets":6244905,"piste":1},"herosSage":{"duree":29.8,"sons":[[0.5,"pubPop"],[1,"pubPop"],[5.95,"pubWhoosh"],[8.45,"pubWhoosh"],[10.45,"pubWhoosh"],[11.95,"pubWhoosh"],[15.95,"pubWhoosh"],[20.45,"pubWhoosh"],[22,"pubPop"],[22.5,"pubPop"],[23,"pubPop"],[23.5,"pubPop"],[23.95,"pubWhoosh"],[24.55,"cineClameur"],[26.25,"pubTada"]],"sousTitres":[],"octets":5160945,"piste":1},"pub":{"duree":29.8,"sons":[[0.5,"pubPop"],[1.5,"pubPop"],[2.5,"pubPop"],[2.85,"pubPlongee"],[4,"pubTada"],[5.95,"pubWhoosh"],[7.95,"pubWhoosh"],[8.95,"pubWhoosh"],[9.95,"pubWhoosh"],[11.95,"pubWhoosh"],[12.95,"pubWhoosh"],[14.05,"cineClameur"],[15.25,"cineAllumette"],[16,"cinePffft"],[17,"cineCape"],[20.45,"pubWhoosh"],[22,"pubPop"],[22.5,"pubPop"],[23,"pubPop"],[23.5,"pubPop"],[23.95,"pubWhoosh"],[25,"cineClameur"],[26,"pubTada"]],"sousTitres":[],"octets":5141448,"piste":1},"puits":{"duree":49.800000000000004,"sons":[[0,"cineTorche"],[0.15,"cinePasHerbe"],[0.2,"cineVent"],[0.71,"cinePasHerbe"],[1.27,"cinePasHerbe"],[1.6,"cineHibou"],[1.83,"cinePasHerbe"],[2.39,"cinePasHerbe"],[2.95,"cinePasHerbe"],[3.51,"cinePasHerbe"],[3.6,"cineTorche"],[4.07,"cinePasHerbe"],[4.63,"cinePasHerbe"],[5.19,"cinePasHerbe"],[7,"cineTorche"],[7.3,"cineVent"],[8.85,"cineEtoffe"],[9,"cineChuteTorche"],[9.9,"cineHm"],[11.6,"cineCordeGrince"],[11.9,"cineCorde"],[12.9,"cineCorde"],[13.2,"cineLanterne"],[13.899999999999999,"cineCorde"],[15.1,"cineCorde"],[15.6,"cineGoutte"],[16.1,"cineCorde"],[16.8,"cineCordeGrince"],[17.1,"cineCorde"],[17.4,"cineGoutte"],[17.7,"cineCouinement"],[18.1,"cineCorde"],[19.1,"cineCorde"],[19.3,"cineGoutte"],[20.6,"cineTorche"],[21,"cineCorde"],[21.8,"cineGoutte"],[22,"cineCorde"],[23.200000000000003,"cineAtterrit"],[23.35,"cineBetes"],[24.1,"cineEtoffe"],[24.5,"cineTorche"],[24.75,"cineSouffleFeu"],[25.1,"cineBetes"],[25.8,"cineGoutte"],[26.3,"cineLueur"],[28,"cineTorche"],[29.2,"cineEtoffe"],[32.3,"cineSouffleFeu"],[32.7,"cineTorche"],[34.5,"cineEclat"],[36.4,"cineRune"],[36.5,"cineTorche"],[40.4,"cineTorche"],[40.6,"cineRune"],[41.6,"cineHm"],[42.4,"cineEtoffe"],[44.6,"cineTorche"],[44.7,"cineEtoffe"],[44.9,"cineRune"],[48.22,"cinePasPierre"],[48.72,"cinePasPierre"],[49.22,"cinePasPierre"]],"sousTitres":[[45.15,48.6,"Allons-y. Odette doit être par là.","Le Pisteur"]],"octets":8831082,"piste":1}};
 
 
 /* ===== moteur/src/allure.js ===== */
@@ -17610,7 +18143,7 @@ DJ.mesurerCritiqueVrai = function(){
     if(lent) SALLE.critLeger = true;
   }};
 };
-DJ.VERSION = '17/11 à 23 h 45';
+DJ.VERSION = '19/11 à 12 h 05';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
@@ -19029,8 +19562,16 @@ async function geste(ev, evs){
   }
   return false;
 }
-/* ---------- le critique : localisé autour de la bête (Romain, 9 novembre, 16 h 37) ---------- */
+/* ---------- le critique : localisé autour de la bête (Romain, 9 novembre, 16 h 37) ----------
+   19 NOVEMBRE (Romain, 10 h 48) : « quand le Pisteur prend sa dague, ou n'importe quelle arme, et que ça fait un critique et
+   tue la bestiole : l'animation plus rapide […] il grossit pas, il explose direct […] dès qu'il a mis le coup de dague, tout
+   de suite l'animation se fait, faut pas qu'il y ait de délai […] pof, la fumée qui apparaît et tous les morceaux qui partent
+   en lambeaux […] et fais attention à ce que ça fasse pas [baisser] les FPS ». Donc, pour TOUTES les bêtes : plus
+   d'aspiration ni d'attente ; au coup, le son (le claquement et l'explosion ensemble), la bête qui éclate (son module ne la
+   fait plus gonfler), le gros « CRITIQUE ! », le chiffre, UNE secousse ; et le combat reprend dès que la fumée est partie
+   (≈ 1 s ; avant : 2,2 s pour un rat, 3,5 à 6 s pour les autres). Rien de plus à l'écran qu'avant, et moins longtemps. */
 /* dt : dans combien de secondes (programmé d'avance sur l'horloge du son, pour rester calé sur l'image) */
+var CRIT_SOUFFLE = .04;       /* l'explosion du son part un souffle après le claquement (leurs deux attaques ne s'additionnent pas) */
 function sonCritique(nom, dt){
   var plusTard = function(n){ setTimeout(function(){ son(n); }, (dt || 0) * 1000); };
   if(nom === 'aspire'){ if(!bruit('ratCritique', {partie:'avant', dt:dt})) plusTard('aspire'); return; }
@@ -19052,40 +19593,40 @@ async function critique(l, i, ctx){
     if(Fx.texteCritique) Fx.texteCritique(c.x, c.y);
     Fx.chiffre(c.x + 6, c.y + 40, '−' + ev.n, 'crit'); Fx.etincelles(c.x, c.y, 14);
     a.el.style.visibility = 'hidden'; a.mort = true;
-    await attendre(1200);
+    await attendre(800);
     return i + 1;
   }
   if(meurt && a.rat){
-    /* le rat : son module fait tout autour de lui (temps suspendu, fumée noire, morceaux, cendres) */
+    /* le rat : son module fait tout autour de lui, AU COUP (fumée noire, morceaux, cendres) */
     retirerHud(a.id); liberer(a);
-    /* le témoin : il dit si la page s'est fermée en plein critique (lu au redémarrage, affiché en bas de « Objets ») ;
-       et on compte les images en retard : si le critique rame sur cet appareil, les suivants sont allégés */
-    var vt = SALLE.vitesse || 1, tm = [setTimeout(function(){ DJ.temoinCritique('explosion'); }, 1020 / vt)];
-    DJ.temoinCritique('debut');
+    /* le témoin : il dit si la page s'est fermée en plein critique (lu au redémarrage, affiché en bas de « Objets ») */
+    DJ.temoinCritique('explosion');
     var mesure = DJ.mesurerCritique();
     await Fx.critique(c.x, c.y, ev.n, function(o){ return a.exploser(fx, o); }, sonCritique, {});
     mesure.fin();
-    tm.forEach(clearTimeout); DJ.temoinCritique(false);
+    DJ.temoinCritique(false);
     return i + 1;
   }
-  sonCritique('aspire');
   if(meurt){
+    /* les autres bêtes : tout part au coup, ensemble — le son, la bête qui éclate (son module), le texte, le chiffre, la secousse */
     retirerHud(a.id); liberer(a);
     DJ.temoinCritique('bete');
-    var p = a.acteur.exploser(fx), boom = p && p.boom ? Promise.resolve(p.boom) : attendre(420);
+    sonCritique('boum'); sonCritique('explosion', CRIT_SOUFFLE);
+    var p = a.acteur.exploser(fx);
     a.mort = true;
-    await Promise.race([boom, attendre(1400)]);
-    sonCritique('boum'); Fx.tremble(7, 300);
+    /* (le module pose sa fumée dans l'instant qui suit, sans qu'aucune image ne passe : on le laisse faire d'abord, pour que
+       le chiffre soit posé APRÈS la fumée, donc par-dessus elle — jaune sur noir, il se lit) */
+    await Promise.race([Promise.resolve(p && p.boom).catch(function(){}), attendre(120)]);
+    Fx.tremble(8, 300);
     if(Fx.texteCritique) Fx.texteCritique(c.x, c.y);
     Fx.chiffre(c.x + 6, c.y + 40, '−' + ev.n, 'crit');
-    setTimeout(function(){ sonCritique('explosion'); Fx.tremble(5, 240); }, 600 / (SALLE.vitesse || 1));
-    await Promise.race([Promise.resolve(p).catch(function(){}), attendre(4200)]);
+    /* on repart dès que la fumée est partie (≈ 0,9 s ; 1,2 s pour les deux élites, 1,7 s pour Bourbe) */
+    await Promise.race([Promise.resolve(p).catch(function(){}), attendre(2600)]);
     DJ.temoinCritique(false);
     a.el.classList.add('restes');
     return i + 1;
   }
-  /* un critique qui ne tue pas (un élite, le boss) : le même gros « CRITIQUE ! », et la bête encaisse */
-  await attendre(260);
+  /* un critique qui ne tue pas (un élite, le boss) : le même gros « CRITIQUE ! », et la bête encaisse — au coup, lui aussi */
   sonCritique('boum'); Fx.tremble(8, 320);
   if(Fx.texteCritique) Fx.texteCritique(c.x, c.y);
   Fx.chiffre(c.x + 6, c.y + 40, '−' + ev.n, 'crit');

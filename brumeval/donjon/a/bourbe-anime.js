@@ -2160,12 +2160,10 @@ R.exploser = function(scene){
   var self = this, j = this._debutAction(), boomOk, boomP = new Promise(function(ok){ boomOk = ok; });
   ['ebloui', 'brule', 'colle', 'cible', 'enrage'].forEach(function(n){ if(self.etat[n]) self._etatVisuel(n, false); self.etat[n] = false; });
   this._bosseBoucle(false);
-  /* il enfle, tremble, la peau brille… */
-  var k = [{t: 0, p: {}}];
-  for(var i = 1; i <= 10; i++) k.push({t: i / 11, p: {corps: {sx: 1 + i * .022, sy: 1 + i * .028}, secousse: {x: i % 2 ? 5 : -5, a: i % 2 ? 1.6 : -1.6}, oeil: {s: 1 + i * .035}, gorge: {sx: 1 + i * .08, sy: 1 + i * .12}, machoire: {a: -i * 1.6}, paupiere: {y: 0}, ventre: {sx: 1 + i * .02, sy: 1 + i * .02}}, e: 'linear'});
-  k.push({t: 1, p: {corps: {sx: 1.28, sy: 1.34}}, e: 'ease-in'});
-  (this.V.flashO || []).forEach(function(e){ e.getAnimations().forEach(function(a){ a.cancel(); }); e.removeAttribute('visibility'); e.animate([{opacity: 0}, {opacity: .3, offset: .3}, {opacity: .1, offset: .5}, {opacity: .55, offset: .8}, {opacity: .9}], {duration: 640, fill: 'forwards'}); });
-  var p = this._seq(k, 640).fini.then(function(){
+  /* (19 novembre, Romain : « il grossit pas, il explose direct […] faut pas qu'il y ait de délai […] beaucoup plus rapide ».
+     Avant : il enflait 0,64 s, la peau brillait, puis la fumée restait 5 s. Maintenant : le BOUM tout de suite, la fumée
+     ≈ 1,7 s — c'est le boss : un peu plus longue que pour les autres.) */
+  var p = Promise.resolve().then(function(){
     var cq = self._calque(scene), u = cq.u(), c = cq.ancre('centre'), W = cq.W, H = cq.H;
     cq.el.classList.add('ra-scene-fx');
     var cx = c[0], cy = c[1] + 10 * u;
@@ -2186,15 +2184,15 @@ R.exploser = function(scene){
       var dx = x * 1.6 + hasard(-20, 20) * u, dy = y * 1.3 - hasard(30, 80) * u;
       brumes.push(g.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(.1)', opacity: 0}, {offset: .05, opacity: 1, transform: 'translate(' + f1(cx + x) + 'px,' + f1(cy + y) + 'px) scale(1)'},
         {offset: .55, opacity: .92, transform: 'translate(' + f1(cx + dx) + 'px,' + f1(cy + dy) + 'px) scale(1.45)'}, {transform: 'translate(' + f1(cx + dx * 1.3 + hasard(-30, 30) * u) + 'px,' + f1(cy + dy * 1.2 - 50 * u) + 'px) scale(2)', opacity: 0}],
-        {duration: hasard(4600, 5800), easing: 'cubic-bezier(.12,.75,.3,1)', fill: 'forwards'}));
+        {duration: hasard(1500, 1800), easing: 'cubic-bezier(.3,.5,.6,1)', fill: 'forwards'}));     /* (19 novembre : 4,6 à 5,8 s avant, avec une courbe qui laissait une longue traîne ; maintenant : bien noire pendant 0,5 s, partie en 1,7 s) */
     }
     /* la gerbe d'eau noire : une colonne, puis des gouttes partout */
     var vd = 'M-60 0 C -58 -20 -52 -40 -40 -62 C -36 -40 -30 -26 -22 -16 C -22 -44 -16 -70 -6 -92 C 0 -66 4 -42 8 -18 C 14 -40 22 -60 34 -74 C 36 -50 38 -30 42 -14 C 48 -30 54 -44 62 -52 C 62 -30 62 -12 60 0 Z';
     var col = cq.g('<g transform="scale(' + f1(u * 2.6) + ',' + f1(u * 2.2) + ')">' + Pw(vd, '#24464f', 1.6, ' fill-opacity=".92"') + L('M-40 -58 C -38 -40 -32 -26 -24 -16 M-6 -88 C -2 -60 2 -40 6 -20 M34 -70 C 34 -48 36 -30 40 -16', '#cfe6ee', 2, ' stroke-opacity=".8"') + '</g>');
-    col.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(.4,.05)', opacity: 1}, {offset: .3, transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(1.1,1.15)', opacity: 1}, {transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(1.6,.1)', opacity: 0}], {duration: 1500, easing: 'cubic-bezier(.2,.7,.5,1)', fill: 'forwards'}).finished.then(function(){ col.remove(); });
+    col.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(.4,.05)', opacity: 1}, {offset: .3, transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(1.1,1.15)', opacity: 1}, {transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(1.6,.1)', opacity: 0}], {duration: 950, easing: 'cubic-bezier(.2,.7,.5,1)', fill: 'forwards'}).finished.then(function(){ col.remove(); });
     for(var w = 0; w < 5; w++){
       var aw = -Math.PI * (.12 + w * .19), vw = hasard(180, 320) * u, rw = hasard(8, 13) * u, gw = cq.g('<circle r="' + f1(rw) + '" fill="#1e3a44" stroke="' + O + '" stroke-width="' + f1(1.4 * u) + '"/><circle cx="' + f1(-rw * .3) + '" cy="' + f1(-rw * .3) + '" r="' + f1(rw * .35) + '" fill="#cfe6ee"/>');
-      gw.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px)'}, {offset: .45, transform: 'translate(' + f1(cx + Math.cos(aw) * vw * .6) + 'px,' + f1(sol + Math.sin(aw) * vw) + 'px)', easing: 'ease-in'}, {transform: 'translate(' + f1(cx + Math.cos(aw) * vw * 1.1) + 'px,' + f1(sol + 10 * u) + 'px)', opacity: .3}], {duration: hasard(1100, 1700), easing: 'cubic-bezier(.2,.6,.5,1)', fill: 'forwards'}).finished.then((function(q){ return function(){ q.remove(); }; })(gw));
+      gw.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px)'}, {offset: .45, transform: 'translate(' + f1(cx + Math.cos(aw) * vw * .6) + 'px,' + f1(sol + Math.sin(aw) * vw) + 'px)', easing: 'ease-in'}, {transform: 'translate(' + f1(cx + Math.cos(aw) * vw * 1.1) + 'px,' + f1(sol + 10 * u) + 'px)', opacity: .3}], {duration: hasard(750, 1100), easing: 'cubic-bezier(.2,.6,.5,1)', fill: 'forwards'}).finished.then((function(q){ return function(){ q.remove(); }; })(gw));
     }
     /* les éclats : des morceaux de peau verruqueuse, des pointes d'or, des brins d'algue */
     for(var e = 0; e < 6; e++){
@@ -2204,7 +2202,7 @@ R.exploser = function(scene){
       else html = '<path transform="scale(' + f1(u * (1 + Math.random())) + ')" d="M-12 -6 C -4 -14 10 -12 14 -2 C 16 8 2 14 -8 10 C -14 6 -16 0 -12 -6 Z" fill="#66703a" stroke="' + O + '" stroke-width="2"/><circle transform="scale(' + f1(u) + ')" cx="2" cy="-2" r="3.6" fill="#8a9a5a"/>';
       var ec = cq.g('<g>' + html + '</g>');
       ec.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) rotate(0deg)', opacity: 1}, {offset: .45, transform: 'translate(' + f1(cx + Math.cos(ae) * ve) + 'px,' + f1(cy + Math.sin(ae) * ve) + 'px) rotate(' + f1(re * .5) + 'deg)', opacity: 1},
-        {transform: 'translate(' + f1(cx + Math.cos(ae) * ve * 1.5) + 'px,' + f1(sol + 20 * u) + 'px) rotate(' + f1(re) + 'deg)', opacity: 0}], {duration: hasard(1400, 2000), easing: 'cubic-bezier(.2,.6,.6,1)', fill: 'forwards'}).finished.then((function(q){ return function(){ q.remove(); }; })(ec));
+        {transform: 'translate(' + f1(cx + Math.cos(ae) * ve * 1.5) + 'px,' + f1(sol + 20 * u) + 'px) rotate(' + f1(re) + 'deg)', opacity: 0}], {duration: hasard(850, 1150), easing: 'cubic-bezier(.2,.6,.6,1)', fill: 'forwards'}).finished.then((function(q){ return function(){ q.remove(); }; })(ec));
     }
     /* étincelles */
     for(var s = 0; s < 0; s++){
@@ -2213,15 +2211,15 @@ R.exploser = function(scene){
     }
     /* BOUM : une grande étoile de feu, l'éclair, les ondes de choc, par-dessus tout */
     var et = cq.g('<path d="' + etoileD(150 * u, 12, .55) + '" fill="#ffd060" stroke="' + O + '" stroke-width="' + f1(4 * u) + '"/><path d="' + etoileD(95 * u, 12, .55) + '" fill="#fff4c0"/>');
-    et.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(.15) rotate(0deg)', opacity: 1}, {offset: .35, transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(1) rotate(12deg)', opacity: 1}, {transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(1.15) rotate(20deg)', opacity: 0}], {duration: 520, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'forwards'}).finished.then(function(){ et.remove(); });
+    et.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(.15) rotate(0deg)', opacity: 1}, {offset: .35, transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(1) rotate(12deg)', opacity: 1}, {transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(1.15) rotate(20deg)', opacity: 0}], {duration: 420, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'forwards'}).finished.then(function(){ et.remove(); });
     /* l'éclair et les ondes de choc */
-    cq.g('<circle r="' + f1(150 * u) + '" fill="' + gB + '"/>').animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(.2)', opacity: 1}, {transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(1.8)', opacity: 0}], {duration: 520, easing: 'ease-out', fill: 'forwards'});
+    cq.g('<circle r="' + f1(150 * u) + '" fill="' + gB + '"/>').animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(.2)', opacity: 1}, {transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(1.8)', opacity: 0}], {duration: 420, easing: 'ease-out', fill: 'forwards'});
     var rond = cq.g('<circle r="' + f1(120 * u) + '" fill="none" stroke="#ffffff" stroke-width="' + f1(9 * u) + '"/>');
-    rond.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(.2)', opacity: .95}, {transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(3.4)', opacity: 0}], {duration: 760, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'both'}).finished.then(function(){ rond.remove(); });
+    rond.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(.2)', opacity: .95}, {transform: 'translate(' + f1(cx) + 'px,' + f1(cy) + 'px) scale(3.4)', opacity: 0}], {duration: 540, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'both'}).finished.then(function(){ rond.remove(); });
     var anneau = cq.g('<ellipse rx="' + f1(120 * u) + '" ry="' + f1(16 * u) + '" fill="none" stroke="' + LUNE + '" stroke-width="' + f1(6 * u) + '"/>');
-    anneau.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(.3)', opacity: 1}, {transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(4.5,2)', opacity: 0}], {duration: 1100, easing: 'cubic-bezier(.1,.7,.3,1)', fill: 'forwards'}).finished.then(function(){ anneau.remove(); });
+    anneau.animate([{transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(.3)', opacity: 1}, {transform: 'translate(' + f1(cx) + 'px,' + f1(sol) + 'px) scale(4.5,2)', opacity: 0}], {duration: 750, easing: 'cubic-bezier(.1,.7,.3,1)', fill: 'forwards'}).finished.then(function(){ anneau.remove(); });
     /* ce qui reste : un tas de vase, des os, la couronne tombée (posé un peu après le BOUM, pour ne pas alourdir l'image du choc) */
-    setTimeout(function(){ self._restes(); }, 380);
+    setTimeout(function(){ self._restes(); }, 260);
     self._couperBoucles();
     self.mort = true;
     return Promise.all(brumes.map(fini)).then(function(){ cq.retirer(); });
@@ -2251,7 +2249,7 @@ R._restes = function(){
   s += '</g>';
   s += C(-80, -16, 3, '#9ad0e0', ' opacity=".6"') + C(96, -12, 2.4, '#9ad0e0', ' opacity=".6"');
   var g = this._el(this.S.restes, '<g transform="translate(' + f1(x) + ' ' + f1(y) + ')"><g>' + s + '</g></g>');
-  g.firstChild.firstChild.animate([{opacity: 0, transform: 'scale(.3)'}, {offset: .6, opacity: 0}, {opacity: 1, transform: 'scale(1)'}], {duration: 1500, easing: 'ease-out', fill: 'both'});
+  g.firstChild.firstChild.animate([{opacity: 0, transform: 'scale(.3)'}, {offset: .3, opacity: 0}, {opacity: 1, transform: 'scale(1)'}], {duration: 750, easing: 'ease-out', fill: 'both'});
   /* des bulles de vase et un filet de fumée, de temps en temps */
   (function fumet(n){ if(n <= 0) return; self._bouffee([x + hasard(-60, 60), y - 40], {r: 8, coul: '#5a5260', op: .5, dx: hasard(-6, 14), dy: -60, duree: 1700, s1: 2.4}); setTimeout(function(){ fumet(n - 1); }, 520); })(9);
   [1800, 3200, 4800].forEach(function(ms){ setTimeout(function(){ self._rides(x + hasard(-100, 100), 1, 1, 376); }, ms); });
