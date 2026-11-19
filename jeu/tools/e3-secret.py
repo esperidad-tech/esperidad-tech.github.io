@@ -5,7 +5,7 @@ posé sur le papier) : près du soleil, les mots « soleil de l'après-midi » ;
 numéro, aucun ordre ; « Les objets magiques » ; le tableau d'Odette à revoir. Le Pisteur : la maison d'Odette le matin (dans l'ombre,
 AUCUNE aide, des dalles sans signe qu'on peut enfoncer ; on ressort sans fenêtre « Raté »), l'après-midi (le soleil allume trois dalles,
 l'une après l'autre : au bout de 3 s, puis 4, puis 5 ; un mauvais ordre, elles se rallument ; le bon ordre ; le code du vieux plan ; le
-paquet de la garde-robe) ; et le coup de chance du matin. Le Sage : le vieux plan, qui attend une autre pierre. Tablette et téléphone.
+paquet de la garde-robe) ; revenir dans la maison (après « Sortir », après la pause ⏸️) rejoue l'animation ; et le coup de chance du matin. Le Sage : le vieux plan, qui attend une autre pierre. Tablette et téléphone.
    BRUMEVAL_DIST=<dossier construit> python3 tools/e3-secret.py"""
 import sys, os, json
 from playwright.sync_api import sync_playwright
@@ -264,6 +264,7 @@ with sync_playwright() as p:
     def dalle(pg, sg):
         q = pg.evaluate(f"() => {{ var r = document.querySelector('.in-dalle[data-k=\"{SIG.index(sg)}\"] .in-touche').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }}")
         pg.mouse.click(q[0], q[1]); pg.wait_for_timeout(160)
+    def proche(l, attendu): return len(l) == len(attendu) and all(abs(a - c) <= 300 for a, c in zip(l, attendu))
     for vue, nomv in ((TEL, 'tel'), (TAB, 'tab')):
         print(f'— Le Pisteur ({nomv}) : la maison d\'Odette, le matin puis l\'après-midi')
         pg = debut(b, 'pisteur', vue, 'enfant')
@@ -330,7 +331,6 @@ with sync_playwright() as p:
         verifier(not any(x in g['bulle'] for x in ('dalle', 'ordre', 'Sage', 'trois', 'chat qui dort')), f'la phrase d\'entrée ne dit rien des dalles : « {g["bulle"][:60]} »')
         verifier(g['l'] + g['w'] <= g['vw'] + 1 and g['sb'] <= g['vh'] + 1 and g['dalle'] >= 30, f'tout tient dans l\'écran ; une dalle fait {round(g["dalle"])} px de large sous le doigt')
         # LE SOLEIL MONTRE L'ORDRE : rien avant 3 s, puis une dalle, une seconde plus tard une deuxième, une seconde plus tard une troisième
-        def proche(l, attendu): return len(l) == len(attendu) and all(abs(a - c) <= 300 for a, c in zip(l, attendu))
         pg.wait_for_function("() => __interieur.etat().allumees.length === 1", timeout=6000)
         e1 = pg.evaluate("() => __interieur.etat()")
         pg.wait_for_function("() => __interieur.etat().allumees.length === 3", timeout=6000)
@@ -356,13 +356,18 @@ with sync_playwright() as p:
         verifier(pg.evaluate("() => (M.UI.modal || {}).type") == 'maison' and not any(x in t for x in ('gardent leur secret', 'réessayer', 'Raté', 'ordre', 'Sage')) and pg.evaluate("() => !M.P().objets.vieux_plan && !M.P().vus['pisteur:L2:cachette']"),
             'sortir sans avoir trouvé : devant la porte, sans un mot — plus de « Les dalles gardent leur secret… Le Sage a peut-être… », pas de plan')
         verifier(pg.evaluate("() => M.bullesMaisons().L2") == '☀️', 'l\'après-midi, la bulle ☀️ reste sur la maison tant que la cachette n\'est pas trouvée')
-        # y retourner, le bon ordre
+        # y retourner : L'ANIMATION REPART DE ZÉRO (Romain, 19 novembre, 10 h 34 : « quand on retourne dans la maison, l'animation se réinitialise »)
         entrer(pg)
-        if pg.locator('#mj-plein .mj-go').count(): pg.locator('#mj-plein .mj-go').click(); pg.wait_for_timeout(900)
+        if pg.locator('#mj-plein .mj-go').count(): pg.locator('#mj-plein .mj-go').click(); pg.wait_for_timeout(500)
+        e0 = pg.evaluate("() => { var e = __interieur.etat(); return {allumees:e.allumees, pris:e.pris, on:document.querySelectorAll('.in-or.on').length, bas:document.querySelectorAll('.in-dalle.in-bas-d').length}; }")
+        verifier(e0 == {'allumees': [], 'pris': [], 'on': 0, 'bas': 0}, f'on retourne dans la maison sans avoir trouvé : rien d\'allumé, rien d\'enfoncé ({e0})')
+        pg.wait_for_function("() => __interieur.etat().allumees.length === 3", timeout=8000)
+        e3 = pg.evaluate("() => __interieur.etat()")
+        verifier(e3['allumees'] == ['lune', 'cloche', 'cle'] and proche(e3['temps'], [3000, 4000, 5000]), f'et le soleil rejoue tout, comme la première fois : 3 s, puis 1 s, puis 1 s ({e3["temps"]} ms)')
         for sg in ('lune', 'cloche', 'cle'): dalle(pg, sg)
         pg.wait_for_timeout(2600)
         e = pg.evaluate("() => window.__interieur.etat()"); shot(pg, f'pisteur-{nomv}-aprem-ouvert')
-        verifier(e['ouvert'], 'les trois dalles, dans l\'ordre du soleil (sans attendre qu\'il les rallume) : la dalle du milieu glisse')
+        verifier(e['ouvert'], 'les trois dalles, dans l\'ordre du soleil : la dalle du milieu glisse')
         pg.wait_for_timeout(1500)
         verifier(pg.locator('#mj-plein .mj-resultat.ok').count() == 1 and 'Une cachette' in texte(pg, '#mj-plein'), 'l\'écran du mini-jeu : « Une cachette ! »')
         pg.locator('#mj-plein .mj-continuer').click(); pg.wait_for_timeout(500)
@@ -376,6 +381,55 @@ with sync_playwright() as p:
         verifier(g1 >= g0 + 2 and 'pour la cachette d\'Odette' in tg, f'la garde-robe : un paquet, « pour la cachette d\'Odette » ({g0} → {g1})')
         fermer(pg)
         pg.context.close()
+
+    # ---------------------------------------------------------------- la pause ⏸️, l'après-midi
+    print('— Le Pisteur : la pause ⏸️ chez Odette, l\'après-midi (au retour, l\'animation des dalles repart de zéro)')
+    def reprendre(pg):
+        pg.locator('[data-act=mj-reprendre]').first.click(); pg.wait_for_timeout(400)
+        pg.wait_for_function("() => !document.querySelector('.mj-decompte') && !MJT.enPause()", timeout=6000)
+    def vue_dalles(pg):
+        return pg.evaluate("() => { var e = __interieur.etat(); return {allumees:e.allumees, pris:e.pris, on:document.querySelectorAll('.in-or.on').length, bas:document.querySelectorAll('.in-dalle.in-bas-d').length}; }")
+    pg = debut(b, 'pisteur', TAB, 'enfant')
+    moment_suivant(pg, 'pisteur')
+    ev(pg, 'maison', {'id': 'L2'}); pg.wait_for_timeout(300)
+    entrer(pg)
+    pg.locator('#mj-plein .mj-go').click(); pg.wait_for_timeout(300)
+    # (a) la pause au milieu de l'animation : deux dalles allumées, une dalle enfoncée
+    pg.wait_for_function("() => __interieur.etat().allumees.length === 2", timeout=8000)
+    dalle(pg, 'oeil')
+    pg.locator('#mj-plein .mj-btn-pause').click(); pg.wait_for_timeout(2600)
+    v = vue_dalles(pg)
+    verifier(pg.evaluate("() => MJT.enPause()") and len(v['allumees']) == 2 and pg.locator('[data-act=mj-reprendre]').count() >= 1, f'en pause depuis 2,6 s : la troisième dalle ne s\'est pas allumée toute seule ({v["allumees"]})')
+    reprendre(pg)
+    v = vue_dalles(pg); shot(pg, 'pisteur-pause-retour')
+    verifier(v == {'allumees': [], 'pris': [], 'on': 0, 'bas': 0}, f'au retour de la pause : les lueurs sont éteintes, la dalle enfoncée est remontée ({v})')
+    pg.wait_for_function("() => __interieur.etat().allumees.length === 3", timeout=8000)
+    e3 = pg.evaluate("() => __interieur.etat()")
+    verifier(e3['allumees'] == ['lune', 'cloche', 'cle'] and proche(e3['temps'], [3000, 4000, 5000]) and e3['essais'] == 0, f'puis le soleil rejoue tout, comme quand on entre : 3 s, puis 1 s, puis 1 s ({e3["temps"]} ms) ; aucun essai compté')
+    # (b) la pause quand les trois dalles sont déjà allumées
+    pg.locator('#mj-plein .mj-btn-pause').click(); pg.wait_for_timeout(800)
+    reprendre(pg)
+    v = vue_dalles(pg)
+    verifier(v['allumees'] == [] and v['on'] == 0, 'la pause avec les trois dalles allumées : au retour, tout est éteint')
+    pg.wait_for_function("() => __interieur.etat().allumees.length === 1", timeout=6000)
+    t1 = pg.evaluate("() => __interieur.etat().temps")
+    verifier(proche(t1, [3000]), f'et la première se rallume au bout de 3 s ({t1} ms)')
+    # sans attendre la suite : les trois bonnes dalles, dans l'ordre
+    for sg in ('lune', 'cloche', 'cle'): dalle(pg, sg)
+    pg.wait_for_timeout(2600)
+    verifier(pg.evaluate("() => __interieur.etat().ouvert"), 'les trois bonnes dalles dans l\'ordre, sans attendre la fin de l\'animation : la cachette s\'ouvre')
+    pg.context.close()
+    # (c) le matin : la pause ne change rien (rien à rejouer, les dalles enfoncées restent enfoncées)
+    pg = debut(b, 'pisteur', TAB, 'enfant')
+    ev(pg, 'maison', {'id': 'L2'}); pg.wait_for_timeout(300)
+    entrer(pg)
+    pg.locator('#mj-plein .mj-go').click(); pg.wait_for_timeout(600)
+    dalle(pg, 'oeil'); dalle(pg, 'arbre')
+    pg.locator('#mj-plein .mj-btn-pause').click(); pg.wait_for_timeout(600)
+    reprendre(pg); pg.wait_for_timeout(600)
+    v = vue_dalles(pg)
+    verifier(v['pris'] == ['oeil', 'arbre'] and v['bas'] == 2 and v['on'] == 0, f'le matin, au retour de la pause : la pièce comme on l\'a laissée, deux dalles enfoncées, rien d\'allumé ({v})')
+    pg.context.close()
 
     # ---------------------------------------------------------------- le coup de chance du matin
     print('— Le Pisteur : le coup de chance du matin (Romain : « s\'il a de la chance, il peut trouver […] je pense pas que ça gêne »)')

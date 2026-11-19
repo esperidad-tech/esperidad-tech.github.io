@@ -35,9 +35,12 @@ def lire(nom):
 # setTimeout, setInterval, requestAnimationFrame, Date.now et performance.now sont ceux de window.MJT,
 # qu'on peut figer. Les fichiers restent tels quels dans src/ ; l'enveloppe est mise ici, à l'assemblage.
 ENVELOPPE = ('setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'requestAnimationFrame', 'cancelAnimationFrame', 'Date', 'performance')
+# (19 novembre) interieur.js (la maison d'Odette) est un mini-jeu qui ne s'appelle pas mj-… : sans cette enveloppe, ses minuteurs tournaient
+# pendant la pause ⏸️ (les dalles s'allumaient toutes seules, mini-jeu caché : au retour, on n'avait pas vu dans quel ordre).
+PAUSABLES = ('interieur.js',)
 def lire_js(nom):
     t = lire(nom)
-    if not t or not nom.startswith('mj-') or nom == 'mj-temps.js':
+    if not t or not (nom.startswith('mj-') or nom in PAUSABLES) or nom == 'mj-temps.js':
         return t
     return (';(function(' + ', '.join(ENVELOPPE) + '){\n' + t + '\n}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);')
 

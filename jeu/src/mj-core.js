@@ -273,7 +273,11 @@ MJ.lancer = function(el, type, params, fin, options){
       if(!decompte) return;
       if(n === 0 || fini){
         if(decompte.parentNode) decompte.parentNode.removeChild(decompte);
-        decompte = null; enPause = false; MJT.reprendre(); return;
+        decompte = null; enPause = false; MJT.reprendre();
+        /* (19 novembre) un mini-jeu peut vouloir savoir qu'on revient de pause : s'il a rendu « auRetour », on l'appelle ici, une fois le
+           « 3, 2, 1 » fini (la maison d'Odette : les dalles s'éteignent et le soleil les rallume, comme quand on entre — interieur.js) */
+        if(!fini && enCours && enCours.auRetour) try{ enCours.auRetour(); }catch(e){ if(window.console) console.error(e); }
+        return;
       }
       decompte.innerHTML = '<b>' + n + '</b>';
       U.son('tic'); n--;

@@ -27,6 +27,10 @@
         chance sur 504 : tant mieux pour lui s'il trouve).
       · L'après-midi : trois secondes après l'entrée, le soleil allume une dalle, une seconde plus tard une deuxième, une seconde plus
         tard une troisième : c'est l'ordre. Après un essai raté, elles s'éteignent et se rallument, dans le même ordre.
+        CHAQUE FOIS QU'ON REVIENT DANS LA MAISON, ÇA REPART DE ZÉRO (Romain, 19 novembre, 10 h 34 : « quand on retourne dans la maison,
+        l'animation se réinitialise ») : en y rentrant après « Sortir de la maison » (une nouvelle partie), ET au retour de la pause ⏸️
+        (auRetour, appelé par mj-core.js après le « 3, 2, 1 » : les lueurs s'éteignent, les dalles enfoncées remontent, puis 3 s, 1 s, 1 s).
+        Pendant la pause, rien ne s'allume : ce fichier tourne sur l'horloge des mini-jeux (build.py, PAUSABLES).
       On n'y perd jamais : on essaie autant qu'on veut, ou on ressort (sorti:true : pas de fenêtre « Raté », moteur-actions.js).
         params : maison ('odette'), moment ('matin' | 'apresmidi' | 'nuit'), visite (true : on regarde seulement, les dalles ne bougent pas)
         résultat : {reussi, message, detail, essais, sorti}
@@ -653,6 +657,14 @@ MJ.enregistrer('interieur', {
         }));
       });
     }
+    /* ON REVIENT DANS LA MAISON (le retour de la pause ⏸️) : comme quand on entre — plus une lueur, plus une dalle enfoncée, puis le soleil
+       remontre l'ordre (3 s, 1 s, 1 s). Rien si la cachette est en train de s'ouvrir, ou si un essai raté est en train de remonter
+       (il rallume lui-même). Le matin : rien à rejouer, on retrouve la pièce comme on l'a laissée. */
+    function revenir(){
+      if(fini || bloque || visite || !jour) return;
+      pris.forEach(function(k){ dalleEl(k).classList.remove('in-bas-d'); }); pris = [];
+      montrer(3000);
+    }
     function terminer(res){
       if(fini) return; fini = true;
       minut.forEach(clearTimeout); try{ decaler(); }catch(e){}
@@ -715,7 +727,7 @@ MJ.enregistrer('interieur', {
       regarder:regarder,
       sortir:function(){ racine.querySelector('.in-sortir').click(); }
     };
-    return {arreter:function(){ fini = true; minut.forEach(clearTimeout); try{ decaler(); }catch(e){} vie.removeEventListener('click', clic); }};
+    return {arreter:function(){ fini = true; minut.forEach(clearTimeout); try{ decaler(); }catch(e){} vie.removeEventListener('click', clic); }, auRetour:revenir};
   }
 });
 
