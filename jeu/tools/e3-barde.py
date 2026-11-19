@@ -318,6 +318,10 @@ with sync_playwright() as p:
     shot(pg, 'chez-odette')
     fermer(pg)
     verifier(mission(2), 'la mission de la canne se coche')
+    # (19 novembre) la fenêtre refermée, le code reste sous la réponse, dans la boîte de « Poser la canne »
+    ev(pg, 'frapper', {'id': 'L2'}); pg.wait_for_timeout(300)
+    verifier(pg.locator('#voile .bd-donne-boite .b-sym').count() == 3, '(19 novembre) chez Odette, la fenêtre fermée : le code du carnet reste dans la boîte, sous la réponse')
+    fermer(pg)
     # les occupés du matin
     ev(pg, 'lieu', {'id': 'atelier'})
     verifier('banderole de Pompon' in texte(pg), 'Mélusine, occupée : sa première phrase')
@@ -390,7 +394,7 @@ with sync_playwright() as p:
     ev(pg, 'frapper', {'id': 'L2'}); pg.wait_for_timeout(300)
     poser(pg, 'voisin', 1); pg.wait_for_timeout(6500)
     dl = dedans(pg)
-    verifier('lait de midi est renversé' in dl and 'traces de pattes toutes fraîches' in dl and 'Pisteur' in dl and pg.locator('#voile .b-donne').count() == 0, f'« Jeter un œil chez Odette » : le lait de midi renversé, des traces fraîches, « dis-le au Pisteur » — et pas de code ({dl[-120:]})')
+    verifier('lait de midi est renversé' in dl and 'traces de pattes toutes fraîches' in dl and 'Pisteur' in dl and pg.locator('#voile .b-donne:not(.bd-donne-boite)').count() == 0, f'« Jeter un œil chez Odette » : le lait de midi renversé, des traces fraîches, « dis-le au Pisteur » — et pas de code ({dl[-120:]})')
     shot(pg, 'chez-odette-aprem')
     fermer(pg); fermer(pg)
     # (17 novembre, étape 3) l'affiche sur la porte de l'église : sur la carte des quatre, l'après-midi

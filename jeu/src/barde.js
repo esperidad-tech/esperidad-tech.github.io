@@ -463,7 +463,7 @@ M.feuilleConv = function(id){
     if(intu) cadre += '<p class="bd-intu">🔮 Ton intuition : c\'est un mensonge !</p>';
     cadre += '<div class="bd-rep-outils">' + lire(v ? q.vrai : q.a, id) +
       (e2 && repetes(id) < repetesMax() ? '<button class="btn petit second" data-act="bd-repete" data-p="' + id + '" data-i="' + i + '">🔁 Répète</button>' : '') +
-      (e2 && !v && !ferme && derniere(id) === i && !minuteFinie(id, i, bd) ? boutonMent(id, i, bd) : '') + '</div></div>';
+      (e2 && !v && !ferme && derniere(id) === i && !minuteFinie(id, i, bd) ? boutonMent(id, i, bd) : '') + '</div>' + codesDansBoite(q) + '</div>';
     s += '<details class="b-question repondue bd-boite' + (ici ? ' bd-cur' : '') + '" name="' + nomBoites + '"' + (ici ? ' open' : '') + '><summary>' + (v ? '<span class="bd-mini-tag">🤥</span>' : '') + '<b>' + esc(q.q) + '</b></summary><div class="bd-boite-in">' + cadre + '</div></details>';
   });
   s += '</div>';
@@ -563,6 +563,18 @@ A.frapper = function(el){
    le bouton n'est que sous la dernière réponse de ce villageois (P.derniere[id]) ; dès qu'on pose une autre question, il part
    en fumée, avec un tout petit souffle (M.son('fumee')). « 🔁 Répète » redonne la chance sur la réponse répétée. */
 function derniere(id){ var P = M.P(); return P && P.derniere ? P.derniere[id] : undefined; }
+/* (Romain, 19 novembre, 9 h 13 : chez Odette, « Poser la canne » : la réponse dans la boîte, et pas de code — la fenêtre « Chez Odette »
+   n'a pas été vue, cause pas retrouvée) Enquête 3 : une réponse qui donne un code le garde aussi sous la réponse, dans sa boîte,
+   pour toujours. Les enquêtes 1 et 2 ne changent pas. */
+function codesDansBoite(q){
+  var E = M.E(); if(!E || E.id !== 3 || !q) return '';
+  var l = q.donne ? [].concat(q.donne) : q.obj ? ['obj:' + q.obj] : [];
+  return l.map(function(cd){
+    var seq = null; try{ seq = M.code(cd); }catch(e){} if(!seq) return '';
+    var n = M.nomCode(cd), td = M.texteDonne(cd), dit = M.direCode ? M.direCode(cd) : null, t = dit || (n.nom + ' : ' + td);
+    return '<div class="b-donne bd-donne-boite"><p>' + n.ic + ' ' + esc(t) + ' ' + lire(t) + '</p>' + M.codeHTML(seq) + '</div>';
+  }).join('');
+}
 function poserDerniere(id, i){ var P = M.P(); P.derniere = P.derniere || {}; P.derniere[id] = i; }
 B.derniere = derniere;
 /* La fumée : sur un vrai toucher, le bouton s'évapore à sa place, puis la question part (un tiers de seconde) ; appelée par le code

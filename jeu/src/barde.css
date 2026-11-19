@@ -247,3 +247,4 @@
 @keyframes bd-bouffee{0%{opacity:0;transform:translate(0, 0) scale(.4)}25%{opacity:.9}100%{opacity:0;transform:translate(var(--x), var(--y)) scale(1.7)}}
 @media (prefers-reduced-motion: reduce){.bd-fumee{display:none}.bd-ment-p.bd-part{animation-duration:.01s}}
 .bd-fantome{position:fixed;z-index:199;margin:0}
+.bd-cadre .bd-donne-boite{margin-top:10px}
