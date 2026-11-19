@@ -160,6 +160,8 @@ def allure(pg, role, sexe='f', peau='p5', cheveux='noir'):
 def six(pg, role, a):
     """(17 novembre, 23 h 30) le code à SIX symboles d'un ami (tenue ET visage), tapé par le Pisteur sur l'écran du départ : la fenêtre
     de la descente doit être ouverte, avec son bouton « 🔢 Le code de… » (ou « 🔢 Retaper son code »)"""
+    if pg.locator(f'#voile [data-act=ds-six][data-role={role}]').count() == 0 and pg.locator('#voile [data-act=ds-corriger]').count():
+        pg.locator('#voile [data-act=ds-corriger]').click(); pg.wait_for_timeout(300)
     pg.locator(f'#voile [data-act=ds-six][data-role={role}]').first.click(); pg.wait_for_timeout(300)
     seq = pg.evaluate("([r, a]) => { var n = M.allureNumero(r, a) * 224 + M.visageNumero(a), o = DONNEES.ORDRE_SYM, s = [], i; for(i = 0; i < 6; i++){ s.unshift(o[n % 12]); n = Math.floor(n / 12); } return s; }", [role, a])
     for x in seq: ev(pg, 'd6-sym', {'s': x}); pg.wait_for_timeout(60)
@@ -213,7 +215,7 @@ def partie_enquete(b):
     verifier(pts == ['cle', 'crypte', 'soulever', 'descendre'], f'les deux autres gestes s\'en vont ({pts})')
     point(pg, 'descendre')
     t = texte(pg)
-    verifier('Il est temps d\'enfiler notre tenue de combat' in t and 'Il te manque le code du Sage' in t and 'Il te manque le code de l\'Alchimiste' in t and 'sept potions pour descendre' in t, f'la fenêtre de la tenue : les deux codes attendus ({t[:70]})')
+    verifier('Il est temps d\'enfiler notre tenue de combat' in t and 'Le code du Sage' in t and 'Le code de l\'Alchimiste' in t and 'sept potions pour descendre' in t, f'la fenêtre de la tenue : les deux codes attendus ({t[:70]})')
     verifier(pg.locator('#voile [data-act=ds-aller]').count() == 0 and pg.locator('#voile [data-act=ds-six]').count() == 2 and pg.locator('#voile .b-code').count() == 1 and pg.locator('#voile .ds-tenue').count() == 1, 'pas de descente sans les deux codes ; le code du départ est rappelé ; le héros est en tenue')
     verifier(not sans_son(pg) and jaune(pg, '#voile [data-act=ds-six][data-role=sage]') and jaune(pg, '#voile [data-act=ds-six][data-role=alchimiste]'), f'cette fenêtre : le 🔊 partout, et deux boutons jaunes ({sans_son(pg)})')
     shot(pg, 'tenue-pisteur')
@@ -239,13 +241,14 @@ def partie_enquete(b):
     a = pg.evaluate("() => M.P().allures.sage")
     verifier('Le Sage est prêt' in t and a['sexe'] + a['peau'] + a['cheveux'] == 'mp6blond' and a.get('coiffure') == 'boucles' and a.get('yeux') == 'bleu' and a.get('barbe') == 'courte' and a.get('vu') and not sans_son(pg), f'le code du Sage : toute sa tenue ET son visage d\'un coup ({t[:60]} ; {a})')
     verifier('deuxième code' not in t and pg.locator('#voile [data-act=ds-code]').count() == 0, 'plus de « deuxième code » : un seul code suffit')
+    verifier(pg.locator('#voile .ds-six').count() == 0 and pg.locator('#voile .ds-amis button:disabled').count() == 1 and pg.locator('#voile [data-act=ds-six][data-role=sage]').count() == 0 and pg.locator('#voile [data-act=ds-six][data-role=alchimiste]').count() == 1, '(19 novembre) après le code du Sage, on revient à la fenêtre des deux boutons : celui du Sage est validé et bloqué, celui de l\'Alchimiste attend')
     shot(pg, 'recu-sage'); fermer(pg)
     lieu(pg, 'clocher'); point(pg, 'descendre')
     t = texte(pg)
-    verifier('Le Sage est prêt.' in t and 'Il te manque le code de l\'Alchimiste' in t and pg.locator('#voile [data-act=ds-aller]').count() == 0 and pg.locator('#voile [data-act=ds-six]').count() == 1, 'il manque encore l\'Alchimiste')
+    verifier('Le Sage est prêt' in t and 'Le code de l\'Alchimiste' in t and pg.locator('#voile [data-act=ds-aller]').count() == 0 and pg.locator('#voile [data-act=ds-six]').count() == 1, 'il manque encore l\'Alchimiste')
     pg.locator('#voile [data-act=ds-six][data-role=alchimiste]').click(); pg.wait_for_timeout(300)
     taper6(tout6('alchimiste', sA)); t = texte(pg)
-    verifier('L\'Alchimiste est prêt' in t and pg.locator('#voile [data-act=ds-voir]').count() == 0 and pg.evaluate("() => (M.P().sac || []).length") == 0, f'le code de l\'Alchimiste, SANS ses potions : sa tenue, mais pas de « Voir la descente » ({t[:60]})')
+    verifier('Son code est tapé' in t and pg.locator('#voile [data-act=ds-aller]').count() == 0 and pg.evaluate("() => (M.P().sac || []).length") == 0, f'le code de l\'Alchimiste, SANS ses potions : son code est tapé, mais pas de « Descendre » ({t[:60]})')
     fermer(pg)
     lieu(pg, 'clocher'); point(pg, 'descendre'); t = texte(pg)
     verifier('Il te manque ses sept potions' in t and pg.locator('#voile [data-act=ds-aller]').count() == 0, 'la tenue est là, mais il lui manque ses sept potions')
@@ -371,18 +374,20 @@ def partie_enquete(b):
     t = texte(pg)
     # (Romain, 17 novembre, 23 h 13 : « l'Alchimiste a les yeux marron alors que son personnage a les yeux bleus ») un ami dont le Pisteur
     # n'a tapé que l'ANCIEN code d'allure à trois symboles (sans visage) n'est plus « prêt » : son bouton « 🔢 Le code de… » reste là
-    verifier('Il te manque le code du Sage' in t and 'Il te manque le code de l\'Alchimiste' in t and pg.locator('#voile [data-act=ds-aller]').count() == 0 and pg.locator('#voile [data-act=ds-six]').count() == 2,
+    verifier('Le code du Sage' in t and 'Le code de l\'Alchimiste' in t and pg.locator('#voile [data-act=ds-aller]').count() == 0 and pg.locator('#voile [data-act=ds-six]').count() == 2,
              'l\'ancien code à trois symboles de l\'Alchimiste ne suffit plus : la fenêtre demande encore le code à six symboles des deux amis')
     six(pg, 'alchimiste', {'sexe': 'm', 'peau': 'p2', 'cheveux': 'brun', 'age': 'adulte', 'coiffure': 'boucles', 'yeux': 'bleu', 'barbe': ''})
     t = texte(pg); a = pg.evaluate("() => M.P().allures.alchimiste")
     verifier('L\'Alchimiste est prêt' in t and a.get('yeux') == 'bleu' and a.get('vu') and 'a:m.p2.brun.bleu' in pg.evaluate("() => M.donjonLook()"), f'son code à six symboles : ses yeux bleus partent au donjon ({pg.evaluate("() => M.donjonLook()")})')
-    verifier(pg.locator('#voile [data-act=ds-six][data-role=alchimiste]').count() == 1 and 'Retaper son code' in t, '« Sinon, retape son code » : le bouton « 🔢 Retaper son code » est là')
+    verifier(pg.locator('#voile [data-act=ds-six][data-role=alchimiste]').count() == 0 and pg.locator('#voile [data-act=ds-corriger]').count() == 1, '(19 novembre) son bouton est validé (plus touchable) ; « ✏️ Corriger un code » est là')
+    pg.locator('#voile [data-act=ds-corriger]').click(); pg.wait_for_timeout(300)
+    verifier(pg.locator('#voile [data-act=ds-six][data-role=alchimiste]').count() == 1 and 'Retaper le code' in texte(pg), '« Corriger un code » : le bouton « 🔢 Retaper le code de l\'Alchimiste » est de nouveau là')
     six(pg, 'alchimiste', {'sexe': 'm', 'peau': 'p2', 'cheveux': 'brun', 'age': 'adulte', 'coiffure': 'boucles', 'yeux': 'gris', 'barbe': ''})
     verifier(pg.evaluate("() => M.P().allures.alchimiste.yeux") == 'gris', 'retapé : le héros change (des yeux gris)')
     six(pg, 'alchimiste', {'sexe': 'm', 'peau': 'p2', 'cheveux': 'brun', 'age': 'adulte', 'coiffure': 'boucles', 'yeux': 'bleu', 'barbe': ''})
     fermer(pg)
     lieu(pg, 'puits'); point(pg, 'descendre'); t = texte(pg)
-    verifier('Il te manque le code du Sage' in t and 'L\'Alchimiste est prêt' in t and pg.locator('#voile [data-act=ds-aller]').count() == 0, 'la fenêtre de la tenue : il manque le Sage')
+    verifier('Le code du Sage' in t and 'L\'Alchimiste est prêt' in t and pg.locator('#voile [data-act=ds-aller]').count() == 0, 'la fenêtre de la tenue : il manque le Sage')
     six(pg, 'sage', {'sexe': 'f', 'peau': 'p5', 'cheveux': 'noir', 'age': 'adulte', 'coiffure': 'tresses', 'yeux': 'ambre', 'barbe': ''}); fermer(pg)
     lieu(pg, 'puits'); point(pg, 'descendre')
     verifier(pg.locator('#voile .pl-fiole.pl-pleine').count() == 7 and pg.locator('#voile [data-act=ds-aller]').count() == 1, 'les deux codes tapés : la fenêtre de la descente, sept potions')

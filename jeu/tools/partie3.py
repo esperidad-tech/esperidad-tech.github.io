@@ -475,7 +475,7 @@ def partie(nav, base):
     P.point('clocher', 'crypte'); P.pg.locator('#voile .b-choix-point [data-id=soulever]').click(); P.pg.wait_for_timeout(300)
     verifier('sans bruit' in P.texte() and 'info:on_descend' in P.a_donner(), 'le Pisteur soulève la grille : pas un bruit, et il a le code du départ')
     P.pg.locator('#voile .b-choix-point [data-id=descendre]').click(); P.pg.wait_for_timeout(300)
-    verifier('tenue de combat' in P.texte() and 'La tenue de Mélusine' in P.texte() and 'Il te manque le code du Sage' in P.texte() and P.pg.locator('#voile [data-act=ds-six]').count() == 2 and P.pg.locator('#voile [data-act=ds-aller]').count() == 0, 'le Pisteur, devant l\'escalier : la tenue de combat (celle de Mélusine), et les deux codes à six symboles qu\'il attend')
+    verifier('tenue de combat' in P.texte() and 'La tenue de Mélusine' in P.texte() and 'Le code du Sage' in P.texte() and P.pg.locator('#voile [data-act=ds-six]').count() == 2 and P.pg.locator('#voile [data-act=ds-aller]').count() == 0, 'le Pisteur, devant l\'escalier : la tenue de combat (celle de Mélusine), et les deux codes à six symboles qu\'il attend')
     P.fermer()
     # « On va dans la crypte » → le Sage et l'Alchimiste : leur tenue, leur code
     seq = P.js("() => M.code('info:on_descend')")
