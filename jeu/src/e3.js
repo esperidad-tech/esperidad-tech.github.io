@@ -103,8 +103,9 @@ E[3] = {
     /* (étape 5) une mission de fête ratée compte comme faite (fini : un seul essai) ; rendre sa mission au maire, l'après-midi,
        se coche aussi quand les deux sont ratées (il n'y a alors rien à rendre) */
     pisteur:[
-      {ic:'🎏', t:'Accroche les banderoles de la fête, sur la place.', fait:[{fini:'pisteur:place:banderoles'}]},
-      {ic:'🦢', t:'Rattrape l\'oie de Gaspard, à la boulangerie.', fait:[{fini:'pisteur:boulangerie:oie'}]},
+      /* (23 novembre) faisables le matin et l'après-midi ; une fois la mission rendue au maire, elles s'en vont : la ligne se coche */
+      {ic:'🎏', t:'Accroche les banderoles de la fête, sur la place.', fait:[{fini:'pisteur:place:banderoles'}, {vu:'pisteur:mairie:mission'}]},
+      {ic:'🦢', t:'Rattrape l\'oie de Gaspard, à la boulangerie.', fait:[{fini:'pisteur:boulangerie:oie'}, {vu:'pisteur:mairie:mission'}]},
       {ic:'🏛️', t:'L\'après-midi, va rendre ta mission au maire.', fait:[{vu:'pisteur:mairie:mission'}, {et:[{rate:'pisteur:place:banderoles'}, {rate:'pisteur:boulangerie:oie'}]}]},
       /* (Romain, 13 novembre : « quand on passe la nuit, il y a des missions qui se mettent à jour et, pour le Pisteur, c'est trop
          grillé. Il faut les enlever. ») plus de missions de la nuit : ni le sac, ni le donjon — on les découvre en jouant */
@@ -794,7 +795,10 @@ E[3] = {
            c'est le dernier jeu qu'on a fait. Et tu le mets au niveau 9 ») le tir aux anneaux (mj-visee.js).
            (Romain, 16 novembre, 6 h 43 : « le nouveau tir de banderoles, niveau 8 ») niveau 8 pour tout le monde */
         /* (Romain, 16 novembre, 7 h 58 : « répétable à l'infini, jusqu'à ce qu'on réussisse ») essaisInfinis */
-        {id:'banderoles', ic:'🎏', nom:'Les banderoles de la fête', moments:M_, mj:'visee', mjNiveauFixe:8, essaisInfinis:true,
+        /* (Romain, 23 novembre, 10 h 03 : « quand il n'a pas fait les 2 missions du maire le matin, l'après-midi on ne peut plus les
+           faire ») le matin ET l'après-midi ; elles s'en vont dès que la mission est rendue au maire (rien à lui rendre ensuite) */
+        {id:'banderoles', ic:'🎏', nom:'Les banderoles de la fête', moments:MA_, mj:'visee', mjNiveauFixe:8, essaisInfinis:true,
+          disparait:[{vu:'pisteur:mairie:mission'}],
           avant:'Le maire veut des banderoles partout sur la place ! Vise les anneaux : chaque flèche emporte sa guirlande de petits drapeaux.',
           bouton:'🏹 Accrocher les banderoles',
           t:'Les petits drapeaux claquent au vent, d\'un toit à l\'autre. Basile lève le nez : « Ça, c\'est de la décoration ! »',
@@ -808,7 +812,9 @@ E[3] = {
         /* une oie vue de dos, en ville (mj-pisteur-alchi.js : fuyard 'oie', décor 'ville') ; niveau 9 pour tout le monde
            (Romain, 12 novembre, 8 h 56 ; avant : 4 au plus, comme Tim). On la recommence autant qu'on veut (essaisInfinis, Romain, 12 novembre,
            12 h 54 : « ça va l'occuper un temps ») : « 🔁 Recommencer » à la fin du mini-jeu, et le point reste ouvert tout le matin. */
-        {id:'oie', ic:'🦢', nom:'L\'oie de Gaspard', moments:M_, mj:'poursuite', mjNiveauFixe:9, essaisInfinis:true, params:{fuyard:'oie', decor:'ville'},
+        /* (23 novembre) le matin ET l'après-midi, jusqu'à la mission rendue au maire (voir les banderoles, sur la place) */
+        {id:'oie', ic:'🦢', nom:'L\'oie de Gaspard', moments:MA_, mj:'poursuite', mjNiveauFixe:9, essaisInfinis:true, params:{fuyard:'oie', decor:'ville'},
+          disparait:[{vu:'pisteur:mairie:mission'}],
           avant:'COUAC ! L\'oie de Gaspard s\'est sauvée de la cour, et elle file dans les rues ! Gaspard crie : « Sans elle, pas de festin ! » Rattrape-la !',
           bouton:'🏃 Courir après l\'oie',
           t:'Tu plonges… et tu l\'attrapes ! COUAC, COUAC ! Elle se débat, puis se calme dans tes bras. Gaspard la serre contre lui : « Ma belle ! Te voilà ! »',
