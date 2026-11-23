@@ -1178,8 +1178,11 @@ A['crea-role'] = function(el){
   var r = el.dataset.r, c = UI.crea;
   if(window.Persos && !c.role){ var d = Persos.defaut(r, c.sexe || 'f'); M.cle(d).forEach(function(k){ if(k !== 'sexe') c[k] = d[k]; }); }
   c.role = r; M.son('clic');
+  UI.creaCoiffures = false;   /* le menu des coiffures commence fermé */
   UI.creaEtape = 2; M.render(); window.scrollTo(0, 0);   /* toucher un rôle passe directement à l'étape suivante (Romain, 4 novembre) */
 };
+/* le menu des coiffures (menuCoiffure, moteur-ecrans.js) : on l'ouvre, on le referme */
+A['crea-menu'] = function(){ UI.creaCoiffures = !UI.creaCoiffures; M.son('clic'); UI.garderDefilement = true; M.render(); };
 A['crea-opt'] = function(el){
   var c = UI.crea, k = el.dataset.k, v = el.dataset.v;
   c[k] = v;

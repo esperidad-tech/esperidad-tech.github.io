@@ -235,7 +235,7 @@ function vueCreation(){
       s += option('Je suis', 'sexe', C.sexe.map(function(x){ return {id:x.id, nom:x.id === 'f' ? 'Une fille' : 'Un garçon'}; }), c.sexe, 'puce');
       s += option('Mon âge', 'age', C.age, c.age, 'puce');
       s += option('Ma peau', 'peau', C.peau, c.peau, 'couleur');
-      s += option('Ma coiffure', 'coiffure', C.coiffure[c.sexe] || [], c.coiffure, 'puce');
+      s += menuCoiffure(C.coiffure[c.sexe] || [], c.coiffure);
       s += option('Mes cheveux', 'cheveux', C.cheveux, c.cheveux, 'couleur');
       s += option('Mes yeux', 'yeux', C.yeux, c.yeux, 'couleur');
       s += option('Ma tenue', 'tenue', C.tenue, c.tenue, 'couleur');
@@ -258,6 +258,17 @@ function option(titre, cle, liste, val, type){
     if(type === 'couleur') return '<button class="b-pastille' + (on ? ' on' : '') + '" style="--p:' + x.c + '" data-act="crea-opt" data-k="' + cle + '" data-v="' + x.id + '" aria-label="' + esc(x.nom) + '" title="' + esc(x.nom) + '"></button>';
     return '<button class="puce' + (on ? ' on' : '') + '" data-act="crea-opt" data-k="' + cle + '" data-v="' + x.id + '">' + esc(x.nom) + '</button>';
   }).join('') + '</div></div>';
+}
+/* (Romain, 23 novembre, 11 h 13 : « des menus déroulants, pour les coiffures, de sorte à ce qu'on garde toujours, en visu, le personnage »)
+   Seize coiffures par sexe : elles sont rangées dans un menu. Fermé, il montre la coiffure portée. Ouvert (UI.creaCoiffures), il montre les seize
+   sur deux colonnes et RESTE ouvert : on en essaie plusieurs, le héros change à chaque fois ; on le referme en retouchant le menu. */
+function menuCoiffure(liste, val){
+  var ouvert = !!UI.creaCoiffures, porte = liste.filter(function(x){ return x.id === val; })[0] || liste[0] || {nom:''};
+  return '<div class="b-opt b-menu' + (ouvert ? ' ouvert' : '') + '"><span class="b-etiquette">Ma coiffure</span>' +
+    '<button class="puce on b-menu-tete" data-act="crea-menu" aria-expanded="' + ouvert + '"><span>' + esc(porte.nom) + '</span><i aria-hidden="true">▾</i></button>' +
+    (ouvert ? '<div class="b-menu-liste">' + liste.map(function(x){
+      return '<button class="puce' + (x.id === val ? ' on' : '') + '" data-act="crea-opt" data-k="coiffure" data-v="' + x.id + '">' + esc(x.nom) + '</button>';
+    }).join('') + '</div>' : '') + '</div>';
 }
 
 /* ---------- Fiche du héros : un seul écran, sans défilement (M.ecranHeros, heros.js) ---------- */

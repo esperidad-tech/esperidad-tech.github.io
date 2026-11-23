@@ -105,9 +105,9 @@ M.allureDe = function(n){
 /* mon code d'allure pour le cachot de la fin (les quatre rôles) */
 M.allureCodeFin = function(){ return 'allure:' + M.allureNumero(M.role(), M.allureMoi()); };
 M.allureMoi = function(){
-  var h = (M.S && M.S.heros) || {}, sx = h.sexe === 'm' ? 'm' : 'f';
+  var h = (M.S && M.S.heros) || {}, sx = h.sexe === 'm' ? 'm' : 'f', co = COIFF_PROCHE[h.coiffure] || h.coiffure;
   return {sexe:sx, age:AGES_A.indexOf(h.age) >= 0 ? h.age : 'adulte', peau:PEAUX_A.indexOf(h.peau) >= 0 ? h.peau : 'p1', cheveux:CHEV_A.indexOf(h.cheveux) >= 0 ? h.cheveux : 'brun', yeux:h.yeux || '',
-    coiffure:COIFF_A[sx].indexOf(h.coiffure) >= 0 ? h.coiffure : '', barbe:BARBE_A.indexOf(h.barbe) > 0 ? h.barbe : ''};
+    coiffure:COIFF_A[sx].indexOf(co) >= 0 ? co : '', barbe:BARBE_A.indexOf(h.barbe) > 0 ? h.barbe : ''};
 };
 /* mon code d'allure (le Sage, l'Alchimiste) */
 M.allureCode = function(){ var role = M.role(); return ROLES_A.indexOf(role) >= 0 ? 'allure:' + M.allureNumero(role, M.allureMoi()) : null; };
@@ -117,6 +117,11 @@ M.allureCode = function(){ var role = M.role(); return ROLES_A.indexOf(role) >= 
    224 codes, sans le rôle — il habille le héros dont on a tapé le code d'allure juste avant (P.allureDernier). Il n'est pas obligatoire :
    sans lui, le héros garde la coiffure et les yeux du héros de ce rôle. */
 var COIFF_A = {f:['queue', 'tresses', 'carre', 'longs', 'chignon', 'couettes', 'courte', 'tresse_c'], m:['epis', 'court', 'meche', 'boucles', 'arriere', 'catogan', 'milong', 'degarni']};
+/* (23 novembre) Les seize coiffures de plus de l'écran de création (persos.js) n'ont pas de place dans le code du visage (huit par sexe, pas une
+   de plus : les 224 codes sont comptés) ni de dessin sous la capuche du donjon. Dans le souterrain, le héros porte donc celle d'avant qui lui
+   ressemble le plus. Les codes des seize premières ne changent pas. */
+var COIFF_PROCHE = {tresse_cote:'tresses', macarons:'couettes', demi_queue:'longs', boucles_l:'longs', lisses:'longs', perlees:'tresses', queue_cote:'queue', afro:'courte',
+  crop:'court', boucles_d:'boucles', raie:'arriere', rase:'degarni', mulet:'milong', rideau:'meche', crete:'epis', twists:'boucles'};
 var YEUX_A = ['vert', 'bleu', 'marron', 'noisette', 'gris', 'violet', 'ambre'], BARBE_A = ['aucune', 'courte', 'longue', 'moustache'];
 M.visageNumero = function(a){
   var l = COIFF_A[a.sexe === 'm' ? 'm' : 'f'];

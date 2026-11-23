@@ -193,6 +193,7 @@ function defsCommuns(K, h){
     rad(K.n('lune'), [[0,'#fffaf0'], [.8,'#ffe9c2'], [1,'#ffd99a']], .4, .4, .7) +
     lin(K.n('mont'), [[0,'#3b3580'], [1,'#221f55']], 0, 0, 0, 1) +
     lin(K.n('sol'), [[0,'#2b5a58'], [1,'#10262c']], 0, 0, 0, 1) +
+    defsFinition(K, h) +
     rad(K.n('fond'), [[0, mix(K.role.c, '#2c2464', .55)], [.7, '#1c1a48'], [1, '#131932']], .5, .4, .7) +
   '</defs>';
   return d;
@@ -228,12 +229,18 @@ function oeil(K, x, y, d, f){
   if(lid) s += '<circle cx="' + x + '" cy="' + y + '" r="' + (12 * k) + '" fill="' + u('lueur') + '" opacity=".7" class="pj-pulse"/>';
   var plisse = f.plisse ? 2.5 : 0;
   /* blanc de l'œil */
-  s += '<path d="M' + X(-8.5) + ' ' + Yv(-4 + plisse) + ' Q ' + X(0) + ' ' + Yv(-7.5 + plisse) + ' ' + X(9) + ' ' + Yv(-4.5 + plisse) + ' Q ' + X(9.2) + ' ' + Yv(6) + ' ' + X(0) + ' ' + Yv(7 - plisse * .4) + ' Q ' + X(-8.5) + ' ' + Yv(6) + ' ' + X(-8.5) + ' ' + Yv(-4 + plisse) + ' Z" fill="#fff"/>';
+  var blancD = 'M' + X(-8.5) + ' ' + Yv(-4 + plisse) + ' Q ' + X(0) + ' ' + Yv(-7.5 + plisse) + ' ' + X(9) + ' ' + Yv(-4.5 + plisse) + ' Q ' + X(9.2) + ' ' + Yv(6) + ' ' + X(0) + ' ' + Yv(7 - plisse * .4) + ' Q ' + X(-8.5) + ' ' + Yv(6) + ' ' + X(-8.5) + ' ' + Yv(-4 + plisse) + ' Z';
+  /* (23 novembre) les héros : le tour de l'iris, une lumière en bas, l'ombre de la paupière (découpés par le blanc de l'œil) */
+  var fin = K._ombre != null, cidO = K.n('of' + (d < 0 ? 'g' : 'd'));
+  s += (fin ? '<clipPath id="' + cidO + '"><path d="' + blancD + '"/></clipPath>' : '') + '<path d="' + blancD + '" fill="#fff"/>';
   var ox = (f.regard || 0) * k * 3, rx = 5.8 * k, ry = 7.2 * k;
   if(f.humeur === 'peur'){ rx *= .8; ry *= .8; }
   s += '<ellipse cx="' + (x + ox) + '" cy="' + (y + .5 * k) + '" rx="' + rx + '" ry="' + ry + '" fill="' + u('iris') + '"/>';
   if(lid) s += '<ellipse cx="' + (x + ox) + '" cy="' + (y + 1 * k) + '" rx="' + (1.4 * k) + '" ry="' + (4.6 * k) + '" fill="#06140c"/>';
   else s += '<ellipse cx="' + (x + ox) + '" cy="' + (y + 1 * k) + '" rx="' + (2.5 * k) + '" ry="' + (3.4 * k) + '" fill="#0a0612"/>';
+  if(fin) s += '<g clip-path="url(#' + cidO + ')"><ellipse cx="' + (x + ox) + '" cy="' + (y + .5 * k) + '" rx="' + rx + '" ry="' + ry + '" fill="none" stroke="' + O + '" stroke-width="' + (1.1 * k) + '" opacity=".5"/>' +
+    '<path d="M' + (x + ox - 3.6 * k) + ' ' + (y + 5.2 * k) + ' Q ' + (x + ox) + ' ' + (y + 7.6 * k) + ' ' + (x + ox + 3.6 * k) + ' ' + (y + 5.2 * k) + '" stroke="#fff" stroke-width="' + (1.5 * k) + '" fill="none" opacity=".45" stroke-linecap="round"/>' +
+    '<ellipse cx="' + x + '" cy="' + (y - 7.4 * k) + '" rx="' + (12 * k) + '" ry="' + (4.6 * k) + '" fill="#2a1d48" opacity=".24"/></g>';
   s += '<ellipse cx="' + (x + ox + 2.2 * k) + '" cy="' + (y - 2.4 * k) + '" rx="' + (2.1 * k) + '" ry="' + (2.7 * k) + '" fill="#fff"/><circle cx="' + (x + ox - 2 * k) + '" cy="' + (y + 4 * k) + '" r="' + (1 * k) + '" fill="#fff"/>';
   /* paupière supérieure (trait épais) */
   s += '<path d="M' + X(-9.5) + ' ' + Yv(-2.5 + plisse) + ' Q ' + X(-2) + ' ' + Yv(-10.5 + plisse) + ' ' + X(9.5) + ' ' + Yv(-6 + plisse) + ' L ' + X(10.5) + ' ' + Yv(-3 + plisse) + ' Q ' + X(0) + ' ' + Yv(-8 + plisse) + ' ' + X(-9.5) + ' ' + Yv(-2 + plisse) + ' Z" fill="' + O + '"/>';
@@ -270,9 +277,12 @@ function visage(K, f){
   var forme = VISAGE[f.forme] || VISAGE[f.age] || VISAGE.adulte;
   s += oreilles(K);
   s += '<path d="' + forme + '" fill="' + u('peau') + '"' + c(2.3) + '/>';
-  /* ombre propre côté droit + ombre des cheveux sur le front */
-  s += '<path d="M15 26 C 22 20 26 12 26 4 L 26 14 C 24 22 18 28 8 32 Z" fill="' + P.ombre + '" opacity=".75"/>';
-  s += '<path d="M-26 -8 Q 0 6 26 -8 L 26 -1 Q 0 13 -26 -1 Z" fill="' + P.ombre + '" opacity=".6"/>';
+  /* ombre propre côté droit + ombre des cheveux sur le front (les héros : l'ombre de leur frange, visageFini) */
+  if(K._ombre != null && !f.pnj) s += '<clipPath id="' + K.n('vis') + '"><path d="' + forme + '"/></clipPath>' + visageFini(K, f, 'f');
+  else {
+    s += '<path d="M15 26 C 22 20 26 12 26 4 L 26 14 C 24 22 18 28 8 32 Z" fill="' + P.ombre + '" opacity=".75"/>';
+    s += '<path d="M-26 -8 Q 0 6 26 -8 L 26 -1 Q 0 13 -26 -1 Z" fill="' + P.ombre + '" opacity=".6"/>';
+  }
   var ey = f.age === 'enfant' ? 8 : 6, ek = f.age === 'enfant' ? 1.1 : f.age === 'age' ? .9 : 1;
   /* joues */
   var jo = f.joues || .35;
@@ -535,7 +545,7 @@ function visageM(K, f){
   /* ombre propre côté droit (joue, mâchoire) et ombre de la frange */
   s += '<g clip-path="url(#' + cid + ')">' +
     '<path d="M17 -30 C 25 -6 24 16 12 30 C 8 35 2 38 -4 40 L 40 40 L 40 -30 Z" fill="' + P.ombre + '" opacity=".6"/>' +
-    '<path d="M-30 -22 Q 0 -6 30 -22 L 30 -13 Q 0 3 -30 -13 Z" fill="' + P.ombre + '" opacity=".5"/>' +
+    (K._ombre ? ombrePortee(K) : '<path d="M-30 -22 Q 0 -6 30 -22 L 30 -13 Q 0 3 -30 -13 Z" fill="' + P.ombre + '" opacity=".5"/>') +
     '</g>';
   var jr = age === 'enfant' ? 7 : 5.4, jo = age === 'enfant' ? .34 : .18, jy = ey + (age === 'enfant' ? 10 : 9.4), jry = age === 'enfant' ? 3.2 : 2.4;
   s += '<ellipse cx="-18.5" cy="' + jy + '" rx="' + jr + '" ry="' + jry + '" fill="' + P.joue + '" opacity="' + jo + '"/><ellipse cx="18.5" cy="' + jy + '" rx="' + jr + '" ry="' + jry + '" fill="' + P.joue + '" opacity="' + jo + '"/>';
@@ -901,6 +911,564 @@ var COIFF = {
         traits([[[[-24,-28],[-27,-18],[-27,-6]], 1.4], [[[24,-28],[27,-18],[27,-6]], 1.4]], K.chev.c[2], .45);
       return s;
     }
+  }
+};
+
+/* ==========================================================
+   LA FINITION DES CHEVEUX (23 novembre) : chaque mèche a son ombre et sa lumière,
+   la frange porte son ombre sur le front, les côtés des garçons sont dégradés.
+   Quatre coiffures refaites (queue, pointes, longs, mi-longs) et seize de plus (huit par sexe).
+   Les villageois gardent leurs dessins d'avant (COIFF_V, COIFF_ANC).
+   ========================================================== */
+var LUM = [-.55, -.83];   /* d'où vient la lumière : en haut à gauche */
+function ech(P, n){ var r = [], i; for(i = 0; i <= n; i++) r.push(bez(P, i / n)); return r; }
+/* fuseau : ruban effilé le long des points C ; wf(t) = demi-largeur */
+function fuseau(C, wf){
+  var n = C.length - 1, L = [], R = [], i;
+  for(i = 0; i <= n; i++){
+    var a = C[Math.max(i - 1, 0)], z = C[Math.min(i + 1, n)], dx = z[0] - a[0], dy = z[1] - a[1], l = Math.hypot(dx, dy) || 1, w = wf(i / n);
+    L.push([C[i][0] - dy / l * w, C[i][1] + dx / l * w]); R.push([C[i][0] + dy / l * w, C[i][1] - dx / l * w]);
+  }
+  R.reverse();
+  return 'M' + pp(L[0]) + catmull(L) + ' L ' + pp(R[0]) + catmull(R) + ' Z';
+}
+function geoMeche(m, k){
+  var P = m[0], w = m[1], o = m[2] || {}, kk = o.fixe ? 1 : (k || 1);
+  var d = brin(P, w, {k:kk, ex:o.ex, b:o.b});
+  if(kk !== 1) P = P.map(function(p, j){ return j ? [P[0][0] + (p[0] - P[0][0]) * kk, P[0][1] + (p[1] - P[0][1]) * kk] : p; });
+  return {P:P, w:w, ex:o.ex == null ? .9 : o.ex, b:o.b == null ? .3 : o.b, d:d, o:o};
+}
+function demi(g, t){ return g.w / 2 * Math.pow(1 - t, g.ex) * (1 + g.b * Math.sin(Math.PI * t)); }
+/* le volume d'une mèche : un filet d'ombre sur son bord à l'ombre, un filet de lumière de l'autre côté */
+function volumeMeche(g){
+  var n = 12, C = ech(g.P, n), r = {om:'', lu:''}, i;
+  function cote(sg, t0, t1, dec, ep){
+    var pts = [], m = 8, j;
+    for(j = 0; j <= m; j++){
+      var t = t0 + (t1 - t0) * j / m, p = bez(g.P, t), q = bez(g.P, Math.min(1, t + .02)), q0 = bez(g.P, Math.max(0, t - .02));
+      var dx = q[0] - q0[0], dy = q[1] - q0[1], l = Math.hypot(dx, dy) || 1, w = demi(g, t);
+      pts.push([p[0] + (-dy / l) * w * dec * sg, p[1] + (dx / l) * w * dec * sg, w]);
+    }
+    return fuseau(pts, function(u){ var k = Math.round(u * m); return pts[k][2] * ep * Math.sin(Math.PI * (.08 + .84 * u)); });
+  }
+  var a = C[0], z = C[n], dx = z[0] - a[0], dy = z[1] - a[1], l = Math.hypot(dx, dy) || 1;
+  var sg = (-dy / l) * LUM[0] + (dx / l) * LUM[1] > 0 ? 1 : -1;   /* le côté éclairé */
+  if(g.w >= 7) r.om = '<path d="' + cote(-sg, .06, .94, .66, .34) + '"/>';
+  if(g.w >= 9 && !g.o.mat) r.lu = '<path d="' + cote(sg, .16, .62, .3, .2) + '"/>';
+  return r;
+}
+/* Chevelure : la masse (un seul contour), puis le volume de chaque mèche.
+   formes : chemins tout faits ; meches : [[points], largeur, options] ; o.ombre : elle fait de l'ombre sur le visage */
+function chevelure(K, formes, meches, o){
+  o = o || {};
+  var G = (meches || []).map(function(m){ return typeof m === 'string' ? {d:m} : geoMeche(m, o.k); });
+  var L = (formes || []).concat(G.map(function(g){ return g.d; }));
+  var s = masse(L, o.fill || K.u('chevU'), o.sw), om = '', lu = '';
+  G.forEach(function(g){ if(!g.P || g.o.plat) return; var v = volumeMeche(g); om += v.om; lu += v.lu; });
+  if(om) s += '<g fill="' + K.chev.c[2] + '" opacity="' + (o.om == null ? .3 : o.om) + '">' + om + '</g>';
+  if(lu && o.lu) s += '<g fill="' + K.chev.hl + '" opacity="' + o.lu + '">' + lu + '</g>';
+  if(o.ombre) K._ombre = (K._ombre || '') + ' ' + L.join(' ');
+  return s;
+}
+/* l'ombre de la frange sur le front et les joues : la frange elle-même, décalée, découpée par le visage */
+function ombrePortee(K){
+  if(!K._ombre) return '';
+  return '<path d="' + K._ombre + '" transform="translate(1.4 4.4)" fill="' + K.peau.ombre + '" opacity=".62"/>';
+}
+function visageFini(K, f, sx){
+  var P = K.peau;
+  return '<g clip-path="url(#' + K.n('vis') + ')">' +
+    '<path d="M17 -30 C 25 -6 24 16 12 30 C 8 35 2 38 -4 40 L 40 40 L 40 -30 Z" fill="' + P.ombre + '" opacity=".5"/>' +
+    (K._ombre ? ombrePortee(K) : '<path d="M-26 -8 Q 0 6 26 -8 L 26 -1 Q 0 13 -26 -1 Z" fill="' + P.ombre + '" opacity=".6"/>') + '</g>';
+}
+/* l'anneau de lumière : comme eclat(), mais qui s'éteint vers le bas */
+function anneau(K, cx, cy, rx, ry, a0, a1, n, h, op){
+  var s = eclat(K, cx, cy, rx, ry, a0, a1, n, h, op);
+  return s.replace('fill="' + K.chev.hl + '"', 'fill="' + K.u('chevL') + '"');
+}
+
+/* ---------- Refaites ---------- */
+/* petites mèches folles qui cassent le contour */
+function folles(K, L){ return masse(brins(L.map(function(m){ return [m[0], Math.min(m[1] || 3, 3.4), {ex:1.1, b:.1}]; })), K.u('chevU'), 1.15); }
+/* un liseré de lumière en haut à gauche du crâne */
+function lisere(K, d){ return '<path d="' + (d || 'M-26.6 -24 C -26 -38 -18 -48.6 -6 -52') + '" stroke="' + K.chev.hl + '" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".5"/>'; }
+/* une frange dessinée à la main (un chemin) : la masse, et son ombre sur le visage */
+function frange(K, L, o){
+  o = o || {};
+  if(o.ombre !== false) K._ombre = (K._ombre || '') + ' ' + L.join(' ');
+  return masse(L, o.fill || K.u('chevU'), o.sw);
+}
+/* les villageois gardent les quatre dessins d'avant (pnj, pnjExpressif) */
+var COIFF_ANC = {queue:COIFF.queue, epis:COIFF.epis, longs:COIFF.longs, milong:COIFF.milong};
+COIFF.queue = {
+  dos:function(K){
+    return A('pj-meche', chevelure(K, [], [
+      [[[8,-52],[40,-62],[55,-28],[46,10]], 25, {ex:.45, b:.35}],
+      [[[42,-22],[54,8],[42,44],[47,79]], 23, {ex:.85, b:.35}],
+      [[[36,-4],[41,22],[33,46],[36,65]], 11, {ex:.9}]
+    ], {fill:K.u('chevB'), lu:.42}) +
+      traits([[[[30,-40],[46,-22],[44,8]], 1.6], [[[40,10],[44,34],[43,58]], 1.5]], K.chev.c[2], .45), ' style="transform-origin:8px -50px"');
+  },
+  nuque:function(K){ return masse([DOME], K.u('chevB')); },
+  avant:function(K){
+    var F = 'M-30 -2 C -34 -32 -18 -56 4 -56 C 27 -56 38 -34 31 -3 C 28 -12 25 -18 20 -23 C 18 -14 14 -8 8 -4 C 10 -14 8 -22 2 -29 C -4 -19 -12 -13 -22 -10 C -18 -16 -16 -22 -16 -28 C -20 -19 -25 -11 -30 -2 Z';
+    var s = folles(K, [[[[-14,-53],[-19,-58],[-25,-57]], 3.4], [[[11,-56],[10,-61],[6,-63.5]], 3]]) +
+      frange(K, [F].concat(brins([[[[-27.5,-12],[-33,4],[-32,18],[-26.5,31]], 8.5], [[[27.5,-12],[33,4],[32,18],[26.5,31]], 8.5]]))) +
+      '<path d="M20 -23 C 18 -14 14 -8 8 -4 C 10 -14 8 -22 2 -29 C 10 -30 16 -28 20 -23 Z" fill="' + K.chev.c[2] + '" opacity=".3"/>' +
+      traits([[[[-25,-12],[-22,-26],[-12,-40]], 1.4], [[[-14,-13],[-8,-26],[0,-38]], 1.4], [[[9,-8],[13,-22],[10,-36]], 1.4], [[[24,-20],[26,-32],[20,-44]], 1.4],
+              [[[-8,-54],[-18,-46],[-26,-34]], 1.3], [[[16,-53],[25,-46],[30,-36]], 1.3], [[[-30,6],[-31,16],[-29,26]], 1.1], [[[30,6],[31,16],[29,26]], 1.1]], K.chev.c[2], .45) +
+      anneau(K, 1, -26, 26, 25, 208, 332, 6, 5.5) + lisere(K);
+    return s + ruban(K, 21, -54);
+  }
+};
+COIFF.epis = (function(vieux){ return {
+  nuque:function(K){
+    var k = kAge(K);
+    return chevelure(K, [DOS_M], [
+      [[[-28,-30],[-41,-35],[-55,-31]], 18], [[[-30,-14],[-41,-11],[-49,-1]], 15], [[[-26,2],[-32,10],[-35,21]], 12],
+      [[[28,-32],[43,-38],[57,-35]], 19], [[[30,-15],[43,-13],[52,-2]], 16], [[[26,2],[32,10],[37,20]], 12]
+    ], {k:k, fill:K.u('chevB'), lu:.3});
+  },
+  avant:function(K){
+    var k = kAge(K), M = [];
+    if(!K.chap) M = M.concat([
+      [[[-18,-46],[-31,-57],[-45,-62]], 20], [[[-6,-52],[-11,-66],[-13,-77]], 20],
+      [[[8,-53],[13,-67],[23,-76]], 21], [[[19,-46],[33,-57],[48,-61]], 20]
+    ]);
+    M = M.concat([
+      [[[-24,-32],[-30,-18],[-25,-4]], 13, {fixe:1}], [[[-13,-36],[-17,-20],[-9,-5]], 14, {fixe:1}], [[[-1,-38],[-4,-19],[3,0]], 14, {fixe:1}],
+      [[[11,-36],[15,-20],[8,-5]], 14, {fixe:1}], [[[22,-32],[29,-18],[23,-3]], 13, {fixe:1}],
+      [[[-26,-22],[-30,-5],[-25.5,11]], 9, {fixe:1}], [[[26,-22],[30,-5],[25.5,11]], 9, {fixe:1}]
+    ]);
+    return chevelure(K, [CALOTTE], M, {k:k, ombre:true}) +
+      traits([[[[-19,-15],[-20,-22],[-18,-30]], 2.4], [[[-6,-14],[-8,-22],[-7,-31]], 2.4], [[[6,-15],[6,-23],[4,-31]], 2.4], [[[17,-15],[19,-22],[17,-29]], 2.4]]) +
+      (K.chap ? '' : traits([[[[-12.5,-57],[-11,-53],[-9.5,-49]], 1.8], [[[2,-61],[2,-57],[1.5,-52]], 1.8], [[[16.5,-58],[14,-54],[12,-50]], 1.8]])) +
+      anneau(K, 0, -26, 26, 25, 205, 335, 5, 7);
+  }
+}; })(COIFF.epis);
+
+COIFF.longs = {
+  dos:function(K){
+    return masse(['M-36 -14 C -50 26 -42 66 -52 104 C -46 126 -32 140 -18 146 C -10 138 -2 140 4 146 C 14 140 22 142 30 146 C 40 136 52 122 52 104 C 42 66 50 26 36 -14 Z'], K.u('chevB')) +
+      traits([[[[-44,118],[-40,80],[-42,34]], 1.6], [[[-30,138],[-30,96],[-32,50]], 1.5], [[[30,138],[31,96],[33,50]], 1.5], [[[44,118],[41,80],[43,34]], 1.6], [[[-16,142],[-18,116],[-20,92]], 1.4], [[[17,142],[19,116],[21,92]], 1.4]], K.chev.c[2], .42) +
+      '<path d="M-40 30 C -44 60 -40 90 -46 112 M44 30 C 48 60 44 90 46 112" stroke="' + K.chev.hl + '" stroke-width="2.2" fill="none" opacity=".45" stroke-linecap="round"/>' +
+      '<path d="M-47 86 Q -40 92 -32 88 M32 88 Q 40 92 47 86" stroke="' + K.chev.hl + '" stroke-width="1.6" fill="none" opacity=".35" stroke-linecap="round"/>';
+  },
+  nuque:function(K){ return masse([DOME], K.u('chevB')); },
+  devant:function(K){
+    return A('pj-meche2', chevelure(K, [], [[[[-24,2],[-40,30],[-27,58],[-37,90]], 16, {ex:.7, b:.4}], [[[-22,20],[-30,44],[-22,66],[-27,84]], 10]], {lu:.42}) +
+      traits([[[[-30,26],[-33,46],[-30,64]], 1.5]], K.chev.c[2], .4), ' style="transform-origin:-24px 4px"');
+  },
+  avant:function(K){
+    var F = 'M-31 2 C -35 -32 -16 -57 6 -57 C 28 -57 38 -34 31 -2 C 27 -12 22 -20 14 -25 C 16 -14 12 -4 4 2 C 6 -10 2 -20 -6 -26 C -12 -18 -20 -14 -26 -12 C -26 -6 -28 -2 -31 2 Z';
+    return folles(K, [[[[-13,-53],[-18,-58],[-24,-57]], 3.2]]) +
+      frange(K, [F].concat(brins([[[[28,-10],[33.5,6],[33,22],[28,33]], 9]]))) +
+      '<path d="M14 -25 C 16 -14 12 -4 4 2 C 6 -10 2 -20 -6 -26 C 2 -29 9 -28 14 -25 Z" fill="' + K.chev.c[2] + '" opacity=".3"/>' +
+      fils(K, [[[-26,-12],[-20,-26],[-8,-40]], [[5,0],[10,-16],[6,-32]], [[20,-18],[23,-30],[18,-42]], [[-8,-54],[-18,-46],[-26,-34]], [[16,-53],[25,-46],[30,-36]], [[30.6,8],[31.6,18],[30,28]]]) +
+      anneau(K, 2, -26, 26, 25, 208, 332, 6, 5.5) + lisere(K) +
+      '<g transform="translate(-24 -44)"><circle r="5" fill="#fff"' + c(1.2) + '/><circle r="2.2" fill="#ffd36a"/></g>';
+  }
+};
+COIFF.milong = {
+  nuque:function(K){
+    var k = kAge(K);
+    return chevelure(K, ['M-33 8 C -43 -37 -21 -61 2 -61 C 27 -61 43 -37 33 8 C 31 16 27 22 21 25 L -21 25 C -27 22 -31 16 -33 8 Z'], [
+      [[[-30,-30],[-42,-30],[-50,-22]], 14], [[[-31,-13],[-41,-5],[-46,7]], 15], [[[-27,3],[-33,15],[-37,27]], 14],
+      [[[30,-30],[42,-30],[51,-22]], 14], [[[31,-13],[41,-5],[47,7]], 15], [[[27,3],[33,15],[38,27]], 14],
+      [[[-17,16],[-21,25],[-23,33]], 11], [[[17,16],[21,25],[24,32]], 11]
+    ], {k:k, fill:K.u('chevB'), lu:.3});
+  },
+  avant:function(K){
+    var k = kAge(K), M = [];
+    if(!K.chap) M = [[[[-6,-54],[-12,-64],[-22,-66]], 13], [[[8,-55],[14,-64],[26,-64]], 13]];
+    M = M.concat([
+      [[[-22,-34],[-29,-18],[-26,-1]], 13, {fixe:1}], [[[-12,-38],[-17,-20],[-11,-3]], 13, {fixe:1}], [[[-2,-40],[-3,-22],[2,-6]], 11, {fixe:1}],
+      [[[9,-39],[13,-21],[9,-2]], 13, {fixe:1}], [[[19,-35],[26,-19],[24,-1]], 13, {fixe:1}],
+      [[[-27,-20],[-32,0],[-30,18],[-26,27]], 12, {fixe:1}], [[[27,-20],[32,0],[30,18],[26,27]], 12, {fixe:1}],
+      [[[-29,2],[-35,14],[-40,21]], 9, {fixe:1}], [[[29,2],[35,14],[40,21]], 9, {fixe:1}]
+    ]);
+    return chevelure(K, [CALOTTE], M, {k:k, ombre:true}) +
+      traits([[[[-17.5,-14],[-19,-22],[-17,-30]], 2.2], [[[-6.5,-12],[-7,-21],[-7,-31]], 2.2], [[[5,-13],[6,-22],[5,-31]], 2.2], [[[16.5,-13],[18,-21],[16,-29]], 2.2], [[[-28,24],[-29,14],[-30,4]], 2], [[[28,24],[29,14],[30,4]], 2]]) +
+      anneau(K, 0, -26, 26, 25, 205, 335, 5, 6) + lisere(K);
+  }
+};
+
+/* ---------- outils pour les nouvelles coiffures ---------- */
+function mirD(d){ return d.replace(/(-?\d*\.?\d+)[ ,]+(-?\d*\.?\d+)/g, function(m, x, y){ return f1(-x) + ' ' + y; }); }
+function mirM(L){ return L.map(function(m){ return [m[0].map(function(p){ return [-p[0], p[1]]; }), m[1], m[2]]; }); }
+function rondD(x, y, r){ return 'M' + f1(x - r) + ' ' + y + ' a ' + r + ' ' + r + ' 0 1 0 ' + f1(2 * r) + ' 0 a ' + r + ' ' + r + ' 0 1 0 ' + f1(-2 * r) + ' 0 Z'; }
+/* le dessus du crâne, de la tempe gauche à la tempe droite ; on lui ajoute un bord de frange */
+var T0 = 'M-30.5 -3 C -35 -34 -17 -57 2 -57 C 24 -57 37 -34 30.5 -3';
+var BORD = {
+  /* raie au milieu, deux rideaux */
+  rideau:' C 29 -9 27 -13 24 -17 C 20 -25 11 -33 1 -37 C -9 -33 -19 -25 -23 -17 C -26 -13 -28 -9 -30.5 -3 Z',
+  /* frange balayée vers la droite (raie à gauche) */
+  balayee:' C 29 -10 27 -14 24 -17 C 22 -11 18 -7 13 -4 C 14 -10 13 -16 10 -21 C 4 -14 -6 -10 -16 -10 C -12 -16 -11 -24 -13 -32 C -19 -26 -25 -16 -27 -8 C -28 -6 -29 -4 -30.5 -3 Z',
+  /* frange droite */
+  droite:' L 27 -5 L 25.6 -10.4 Q 0 -6.4 -25.6 -10.4 L -27 -5 L -30.5 -3 Z',
+  /* trois pointes */
+  pointes:' C 28 -10 25 -15 21 -19 C 20 -13 17 -8 13 -5 C 13 -11 11 -17 7 -22 C 6 -15 3 -9 -1 -6 C -2 -13 -5 -19 -9 -23 C -11 -16 -15 -10 -20 -7 C -19 -12 -20 -16 -22 -20 C -26 -15 -29 -9 -30.5 -3 Z',
+  /* cheveux tirés en arrière : on voit le front */
+  tiree:' C 28 -16 20 -27 8 -30 C 2 -31.5 -4 -31.5 -10 -30 C -21 -27 -28 -16 -30.5 -3 Z'
+};
+/* des fils (séparations) qui suivent une frange : du bord vers la raie */
+function fils(K, L, op){ return traits(L.map(function(t){ return [t, 1.4]; }), K.chev.c[2], op == null ? .45 : op); }
+/* une natte ou une corde fine : un trait épais, son contour, ses petits nœuds */
+function corde(K, pts, w, o){
+  o = o || {};
+  var d = 'M' + pp(pts[0]) + catmull(pts), s = '';
+  s += '<path d="' + d + '" stroke="' + O + '" stroke-width="' + (w + 3.6) + '" fill="none" stroke-linecap="round"/>' +
+    '<path d="' + d + '" stroke="' + (o.fill || K.chev.c[1]) + '" stroke-width="' + w + '" fill="none" stroke-linecap="round"/>' +
+    '<path d="' + d + '" stroke="' + K.chev.c[2] + '" stroke-width="' + w + '" fill="none" stroke-dasharray="1.2 ' + f1(w * .75) + '" opacity=".6"/>' +
+    '<path d="' + d + '" stroke="' + K.chev.hl + '" stroke-width="' + f1(w * .28) + '" fill="none" stroke-linecap="round" opacity=".4" transform="translate(' + f1(-w * .22) + ' 0)"/>';
+  if(o.perle){ var e = pts[pts.length - 1]; s += '<circle cx="' + f1(e[0]) + '" cy="' + f1(e[1] + 1) + '" r="' + f1(w * .62) + '" fill="' + (o.perle === true ? K.u('or') : o.perle) + '" stroke="' + O + '" stroke-width="1.2"/><circle cx="' + f1(e[0] - 1) + '" cy="' + f1(e[1]) + '" r="' + f1(w * .16) + '" fill="#fff" opacity=".85"/>'; }
+  return s;
+}
+/* des boucles : une masse de ronds, l'ombre en croissant, le petit ressort, la lumière */
+function bouclesD(K, C, fill, o){
+  o = o || {};
+  var s = masse(C.map(function(p){ return rondD(p[0], p[1], p[2]); }), fill || K.u('chevU')), om = '', sp = '', lu = '', R = Math.PI / 180;
+  C.forEach(function(p, i){
+    var x = p[0], y = p[1], r = p[2];
+    function Q(a, rr, dx, dy){ return pp([x + (dx || 0) + Math.cos(a * R) * rr, y + (dy || 0) + Math.sin(a * R) * rr]); }
+    om += '<path d="M' + Q(-10, r * .9) + ' A ' + f1(r * .9) + ' ' + f1(r * .9) + ' 0 0 1 ' + Q(130, r * .9) + ' A ' + f1(r * 1.25) + ' ' + f1(r * 1.25) + ' 0 0 0 ' + Q(-10, r * .9) + ' Z"/>';
+    var a0 = (i * 67) % 360, rr = r * .46;
+    sp += '<path d="M' + Q(a0, rr) + ' A ' + f1(rr) + ' ' + f1(rr) + ' 0 1 1 ' + Q(a0 + 250, rr) + ' A ' + f1(rr * .55) + ' ' + f1(rr * .55) + ' 0 0 1 ' + Q(a0 + 330, rr * .35, Math.cos((a0 + 250) * R) * rr * .3, Math.sin((a0 + 250) * R) * rr * .3) + '"/>';
+    if(!o.sansLum && i % 2 === 0) lu += '<path d="M' + Q(200, r * .68) + ' A ' + f1(r * .68) + ' ' + f1(r * .68) + ' 0 0 1 ' + Q(250, r * .68) + '"/>';
+  });
+  return s + '<g fill="' + K.chev.c[2] + '" opacity=".4">' + om + '</g>' +
+    '<g stroke="' + K.chev.c[2] + '" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".5">' + sp + '</g>' +
+    '<g stroke="' + K.chev.hl + '" stroke-width="1.9" fill="none" stroke-linecap="round" opacity=".75">' + lu + '</g>';
+}
+function nom(sexe, id, n){ COIFFURES[sexe].push({id:id, nom:n}); }
+var MECHE_G = [[[-27.5,-12],[-33,4],[-32,18],[-26.5,31]], 8.5], MECHE_D = [[[27.5,-12],[33,4],[32,18],[26.5,31]], 8.5];
+
+/* ==========================================================
+   FILLES : huit coiffures de plus
+   ========================================================== */
+nom('f', 'tresse_cote', 'Tresse sur l\'épaule');
+COIFF.tresse_cote = {
+  nuque:function(K){ return masse([DOME], K.u('chevB')); },
+  devant:function(K){
+    var pts = [[27,16],[31.5,27],[34.5,38],[35.5,49],[35,60],[33.5,71],[31.5,82],[29.5,93]];
+    return A('pj-meche2', tresse(K, pts, 9.6) +
+      '<path d="M23.5 97 l-2.5 13 l5 -3 l3.2 5.4 l3.2 -5.4 l5 3 l-2.5 -13 Z" fill="' + K.u('chevU') + '"' + c(1.5) + '/>' + ruban(K, 29.6, 97), ' style="transform-origin:27px 16px"');
+  },
+  avant:function(K){
+    return folles(K, [[[[-14,-53],[-19,-58],[-25,-57]], 3.2]]) +
+      frange(K, [T0 + BORD.balayee].concat(brins([MECHE_G, [[[27.5,-12],[32.5,0],[32,10],[28,19]], 9]]))) +
+      '<path d="M24 -17 C 22 -11 18 -7 13 -4 C 14 -10 13 -16 10 -21 C 16 -22 21 -20 24 -17 Z" fill="' + K.chev.c[2] + '" opacity=".28"/>' +
+      fils(K, [[[-14,-12],[-2,-22],[6,-36]], [[2,-12],[12,-24],[14,-38]], [[18,-6],[23,-22],[20,-38]], [[-25,-12],[-22,-28],[-15,-42]], [[-13,-34],[-10,-44],[-2,-53]], [[-30,6],[-31,16],[-29,26]]]) +
+      anneau(K, 1, -26, 26, 25, 208, 332, 6, 5.5) + lisere(K);
+  }
+};
+
+nom('f', 'macarons', 'Deux macarons');
+COIFF.macarons = {
+  nuque:function(K){
+    var s = masse([DOME], K.u('chevB'));
+    if(K.chap) return s;
+    [-1, 1].forEach(function(d){
+      var x = 29 * d, y = -53;
+      s += '<circle cx="' + x + '" cy="' + y + '" r="15" fill="' + K.u('chevU') + '"' + c(2.2) + '/>' +
+        '<path d="M' + (x - 9) + ' ' + (y + 2) + ' C ' + (x - 9) + ' ' + (y - 9) + ' ' + (x + 6) + ' ' + (y - 11) + ' ' + (x + 9) + ' ' + (y - 2) + ' C ' + (x + 11) + ' ' + (y + 6) + ' ' + (x + 1) + ' ' + (y + 9) + ' ' + (x - 3) + ' ' + (y + 4) + ' C ' + (x - 5) + ' ' + (y - 1) + ' ' + (x + 2) + ' ' + (y - 4) + ' ' + (x + 4) + ' ' + y + '" stroke="' + K.chev.c[2] + '" stroke-width="1.6" fill="none" opacity=".5" stroke-linecap="round"/>' +
+        '<path d="M' + (x - 9) + ' ' + (y - 6) + ' q 5 -7 13 -5" stroke="' + K.chev.hl + '" stroke-width="2.4" fill="none" opacity=".7" stroke-linecap="round"/>' +
+        ruban(K, x - 9 * d, y + 12);
+    });
+    return s;
+  },
+  avant:function(K){
+    return frange(K, [T0 + BORD.pointes].concat(brins([[[[-27.5,-14],[-32,0],[-31,12],[-28,24]], 7], [[[27.5,-14],[32,0],[31,12],[28,24]], 7]]))) +
+      fils(K, [[[-20,-8],[-21,-22],[-14,-36]], [[-1,-7],[-2,-22],[2,-38]], [[13,-6],[14,-22],[12,-38]], [[21,-18],[23,-30],[18,-42]], [[0,-56],[1,-50],[1,-44]]]) +
+      anneau(K, 0, -26, 26, 25, 208, 332, 6, 5.5) + lisere(K);
+  }
+};
+
+nom('f', 'demi_queue', 'Demi-queue au ruban');
+COIFF.demi_queue = {
+  dos:function(K){
+    return masse(['M-35 -12 C -47 24 -42 62 -48 96 C -38 108 -24 108 -13 101 C -6 104 6 104 13 101 C 24 108 38 108 48 96 C 42 62 47 24 35 -12 Z'], K.u('chevB')) +
+      fils(K, [[[-40,90],[-38,50],[-38,10]], [[-26,100],[-27,60],[-29,20]], [[26,100],[27,60],[29,20]], [[40,90],[38,50],[38,10]]], .4) +
+      '<path d="M-42 34 C -44 56 -42 76 -44 92 M43 34 C 45 56 43 76 44 92" stroke="' + K.chev.hl + '" stroke-width="2" fill="none" opacity=".45" stroke-linecap="round"/>';
+  },
+  nuque:function(K){
+    var s = masse([DOME], K.u('chevB'));
+    if(!K.chap) s += '<g transform="translate(2 -62) scale(1.9)">' + ruban(K, 0, 0) + '</g>';
+    return s;
+  },
+  devant:function(K){
+    return A('pj-meche2', chevelure(K, [], [[[[-27,10],[-36,32],[-30,58],[-35,84]], 13, {ex:.8}]], {lu:.4}), ' style="transform-origin:-27px 10px"') +
+      A('pj-meche', chevelure(K, [], [[[[27,10],[36,32],[30,58],[35,84]], 13, {ex:.8}]], {lu:.3}), ' style="transform-origin:27px 10px"');
+  },
+  avant:function(K){
+    return frange(K, [T0 + BORD.rideau].concat(brins([[[[-25,-22],[-32.5,-8],[-33.5,10],[-28.5,28]], 9.5], [[[25,-22],[32.5,-8],[33.5,10],[28.5,28]], 9.5]]))) +
+      fils(K, [[[-24,-10],[-18,-26],[-4,-36]], [[-29,6],[-27,-14],[-12,-32]], [[24,-10],[18,-26],[6,-36]], [[29,6],[27,-14],[14,-32]], [[1,-37],[1,-46],[2,-56]]]) +
+      anneau(K, 1, -27, 26, 25, 208, 332, 6, 5.5) + lisere(K);
+  }
+};
+
+nom('f', 'boucles_l', 'Boucles en cascade');
+COIFF.boucles_l = {
+  dos:function(K){
+    var C = [], i;
+    for(i = 0; i < 7; i++){ C.push([-40 - (i % 2) * 5, -14 + i * 15, 11.5]); C.push([40 + (i % 2) * 5, -14 + i * 15, 11.5]); }
+    for(i = 0; i < 6; i++) C.push([-27.5 + i * 11, 82 + (i % 2) * 4, 11]);
+    return '<path d="M-38 -16 L -44 84 L 44 84 L 38 -16 Z" fill="' + K.u('chevB') + '"/>' + bouclesD(K, C, K.u('chevB'), {sansLum:true});
+  },
+  nuque:function(K){
+    var pts = [], n = 15, i;
+    for(i = 0; i <= n; i++){ var a = Math.PI * (.86 + i * 1.28 / n); pts.push([Math.cos(a) * 41, -22 + Math.sin(a) * (K.chap ? 30 : 42)]); }
+    return '<path d="' + festons(pts, 7.4, true) + '" fill="' + K.u('chevB') + '"' + c(2.2) + '/>';
+  },
+  devant:function(K){
+    var G = [[-33,22,9],[-38,37,9.6],[-35,52,9.4],[-39,66,8.6],[-35,79,7.4]];
+    return A('pj-meche2', bouclesD(K, G), ' style="transform-origin:-33px 14px"') +
+      A('pj-meche', bouclesD(K, G.map(function(p){ return [-p[0], p[1], p[2]]; })), ' style="transform-origin:33px 14px"');
+  },
+  avant:function(K){
+    var C = [[-14,-54,10], [0,-58,10.5], [14,-55,10], [25,-46,9.4], [-26,-44,9.4], [-10,-45,10.4], [5,-46,10.4], [19,-38,9.4], [30,-31,8.6],
+      [-31,-30,8.6], [-19,-32,9.4], [-5,-34,10], [9,-33,9.4], [22,-26,8.6], [-25,-19,7.4], [-13,-21.5,7.6], [-1,-22.5,7.6], [11,-21.5,7.6], [24,-18,7.2],
+      [-30,-8,6.4], [-31,4,6.2], [-29.5,15,5.6], [30,-8,6.4], [31,4,6.2], [29.5,15,5.6]];
+    if(K.chap) C = C.filter(function(p){ return p[1] > -38; });
+    K._ombre = (K._ombre || '') + ' ' + C.filter(function(p){ return p[1] > -36; }).map(function(p){ return rondD(p[0], p[1], p[2]); }).join(' ');
+    return bouclesD(K, C);
+  }
+};
+
+nom('f', 'lisses', 'Longs lisses à frange');
+COIFF.lisses = {
+  dos:function(K){
+    return masse(['M-35 -14 C -43 22 -43 70 -43 104 Q -43 109 -38 109 L 38 109 Q 43 109 43 104 C 43 70 43 22 35 -14 Z'], K.u('chevB')) +
+      fils(K, [[[-36,107],[-36,60],[-34,10]], [[-25,107],[-26,60],[-27,14]], [[25,107],[26,60],[27,14]], [[36,107],[36,60],[34,10]]], .4) +
+      '<path d="M-40 52 Q -34 56 -28 52 L -28 62 Q -34 66 -40 62 Z M28 52 Q 34 56 40 52 L 40 62 Q 34 66 28 62 Z" fill="' + K.chev.hl + '" opacity=".4"/>';
+  },
+  nuque:function(K){ return masse([DOME], K.u('chevB')); },
+  avant:function(K){
+    var cote = 'M-31 -8 C -34.5 6 -34.5 20 -33.6 35 L -22 35 C -22.6 20 -23.4 6 -24.4 -6 Z';
+    return frange(K, [T0 + BORD.droite, cote, mirD(cote)]) +
+      fils(K, [[[-19,-9.6],[-19,-22],[-15,-36]], [[-10,-8.6],[-10,-22],[-8,-38]], [[0,-7.6],[0,-22],[1,-40]], [[10,-8.6],[10,-22],[9,-38]], [[19,-9.6],[19,-22],[16,-36]],
+        [[-28,34],[-28.6,18],[-28.6,2]], [[28,34],[28.6,18],[28.6,2]]], .42) +
+      '<path d="M-33.2 33 L -22.4 33 M22.4 33 L 33.2 33" stroke="' + K.chev.hl + '" stroke-width="1.6" opacity=".5" stroke-linecap="round"/>' +
+      anneau(K, 0, -24, 26, 25, 206, 334, 7, 5) + lisere(K);
+  }
+};
+
+nom('f', 'perlees', 'Tresses perlées');
+COIFF.perlees = {
+  dos:function(K){
+    var s = '', X = [-40,-31,-21,21,31,40];
+    X.forEach(function(x, i){ var L = 62 + (i % 2) * 10; s += corde(K, [[x * .8, -10], [x, 14], [x * 1.04, 38], [x * .98, L]], 6, {fill:K.chev.c[2], perle:i % 2 ? '#e0483c' : true}); });
+    return s;
+  },
+  nuque:function(K){ return masse([DOME], K.u('chevB')); },
+  devant:function(K){
+    return A('pj-meche2', corde(K, [[-28,4],[-33,24],[-34,46],[-31,70]], 6.4, {perle:true}) + corde(K, [[-25,10],[-27,30],[-27,50],[-25,84]], 6, {perle:'#36b3a8'}), ' style="transform-origin:-28px 4px"') +
+      A('pj-meche', corde(K, [[28,4],[33,24],[34,46],[31,70]], 6.4, {perle:'#36b3a8'}) + corde(K, [[25,10],[27,30],[27,50],[25,84]], 6, {perle:true}), ' style="transform-origin:28px 4px"');
+  },
+  avant:function(K){
+    var s = frange(K, [T0 + BORD.tiree]);
+    /* les rangs de nattes sur le crâne */
+    s += '<g stroke="' + K.chev.c[2] + '" stroke-width="1.5" fill="none" opacity=".55" stroke-linecap="round">' +
+      [-22,-14,-6,2,10,18,25].map(function(x){ return '<path d="M' + f1(x * .5 + 1) + ' -56 Q ' + f1(x * .9) + ' -44 ' + x + ' ' + f1(-30 + Math.abs(x) * .42) + '"/>'; }).join('') + '</g>';
+    s += corde(K, [[-23,-24],[-29,-10],[-31,6],[-29,24]], 5.6, {perle:'#e0483c'}) + corde(K, [[23,-24],[29,-10],[31,6],[29,24]], 5.6, {perle:'#e0483c'});
+    return s + anneau(K, 0, -30, 24, 23, 212, 328, 6, 4.5, .6);
+  }
+};
+
+nom('f', 'queue_cote', 'Queue sur le côté');
+COIFF.queue_cote = {
+  nuque:function(K){ return masse([DOME], K.u('chevB')); },
+  devant:function(K){
+    return A('pj-meche2', chevelure(K, [], [
+      [[[-29,-22],[-50,-16],[-49,22],[-41,50]], 23, {ex:.5, b:.4}], [[[-42,14],[-50,40],[-37,60],[-41,84]], 19, {ex:.85, b:.35}], [[[-35,26],[-38,46],[-31,62],[-33,74]], 10]
+    ], {lu:.45}) + fils(K, [[[-44,-6],[-47,16],[-42,40]], [[-40,36],[-43,56],[-40,72]]], .42), ' style="transform-origin:-30px -22px"') +
+      '<ellipse cx="-31.5" cy="-21" rx="5.6" ry="8.4" transform="rotate(24 -31.5 -21)" fill="' + K.u('acc') + '"' + c(1.6) + '/><path d="M-33.6 -26 q 3 4 1.4 9" stroke="#fff" stroke-width="1.2" fill="none" opacity=".5" stroke-linecap="round"/>';
+  },
+  avant:function(K){
+    return folles(K, [[[[13,-55],[18,-60],[24,-59]], 3.2]]) +
+      frange(K, [mirD(T0 + BORD.balayee)].concat(brins([MECHE_D]))) +
+      fils(K, [[[14,-12],[2,-22],[-6,-36]], [[-2,-12],[-12,-24],[-14,-38]], [[-18,-6],[-23,-22],[-20,-38]], [[25,-12],[22,-28],[15,-42]], [[13,-34],[10,-44],[2,-53]]]) +
+      anneau(K, -1, -26, 26, 25, 208, 332, 6, 5.5) + lisere(K);
+  }
+};
+
+nom('f', 'afro', 'Afro et bandeau');
+COIFF.afro = {
+  nuque:function(K){
+    var pts = [], n = 19, i, ry = K.chap ? 34 : 50, cy = K.chap ? -16 : -27;
+    for(i = 0; i <= n; i++){ var a = Math.PI * (.8 + i * 1.4 / n), r = 1 + (i % 2 ? .04 : -.03); pts.push([Math.cos(a) * 51 * r, cy + Math.sin(a) * ry * r]); }
+    return '<path d="' + festons(pts, 8.4, true) + '" fill="' + K.u('chevB') + '"' + c(2.2) + '/>';
+  },
+  avant:function(K){
+    var C = [[-18,-64,11], [-3,-69,11.5], [13,-66,11], [27,-57,10.5], [-31,-54,10.5], [-15,-55,11.5], [1,-57,11.5], [17,-50,11], [34,-42,9.6],
+      [-38,-39,9.6], [-25,-41,10.5], [-9,-44,11], [7,-43,10.5], [22,-36,10], [-34,-27,8.6], [-22,-30,8.8], [22,-27,8.6], [34,-28,8.4], [-36,-15,7], [36,-15,7], [-34,-4,5.6], [34,-4,5.6]];
+    if(K.chap) C = C.filter(function(p){ return p[1] > -44; });
+    var s = bouclesD(K, C);
+    /* le bandeau, noué sur le côté */
+    s += '<path d="M-31 -16 C -24 -27 -10 -31 1 -31 C 12 -31 25 -27 31 -16 L 30 -7 C 24 -17 12 -21 1 -21 C -10 -21 -23 -17 -30 -7 Z" fill="' + K.u('acc') + '"' + c(2) + '/>' +
+      '<path d="M-26 -17 C -18 -24.6 -8 -27 2 -27" stroke="#fff" stroke-width="1.4" fill="none" opacity=".4" stroke-linecap="round"/>' +
+      '<path d="M26 -22 l11 -8 l1 9 Z M28 -18 l12 3 l-6 6 Z" fill="' + K.u('acc') + '"' + c(1.5) + '/><circle cx="27.6" cy="-19.6" r="3.2" fill="' + K.u('acc') + '"' + c(1.4) + '/>';
+    K._ombre = (K._ombre || '') + ' M-31 -16 C -24 -27 -10 -31 1 -31 C 12 -31 25 -27 31 -16 L 30 -7 C 24 -17 12 -21 1 -21 C -10 -21 -23 -17 -30 -7 Z';
+    return s;
+  }
+};
+
+/* ==========================================================
+   GARÇONS : huit coupes d'aujourd'hui (côtés en dégradé, contours nets)
+   ========================================================== */
+/* le crâne en dégradé : la peau, puis les cheveux qui s'effacent vers l'oreille */
+var CRANE = 'M-29.8 2 C -36.6 -36 -18 -58.6 2 -58.6 C 24 -58.6 36.6 -36 29.8 2 Z';
+function nuqueDeg(K){ return '<path d="' + CRANE + '" fill="' + K.u('peauU') + '"' + c(2.2) + '/><path d="' + CRANE + '" fill="' + K.u('chevF') + '"/>'; }
+/* les côtés : le dégradé, le contour net à la tempe, la patte, les petits points du rasé ; o.traits : des traits rasés */
+var COTE = 'M-29.7 -5 C -31.8 -16 -31.2 -28 -26 -39 L -14 -31 C -18.6 -29.6 -21 -27 -21.8 -24.4 L -22.5 -13.2 L -26.9 -9.6 C -26.9 -8 -26.9 -6.4 -26.8 -5.4 Z';
+function cotesDeg(K, o){
+  o = o || {};
+  var s = '', pk = '', i, j, P = K.peau;
+  [1, -1].forEach(function(d){
+    var D = d > 0 ? COTE : mirD(COTE);
+    s += '<path d="' + D + '" fill="' + K.u('peauU') + '"/><path d="' + D + '" fill="' + K.u('chevF') + '"/>';
+    /* le contour net (la tempe au carré) et la patte devant l'oreille */
+    s += '<path d="M' + f1(-21.8 * d) + ' -24.4 L ' + f1(-22.5 * d) + ' -13.2 L ' + f1(-26.9 * d) + ' -9.6" fill="none" stroke="' + K.chev.c[2] + '" stroke-width="1.5" stroke-linejoin="miter" stroke-linecap="round" opacity=".85"/>' +
+      '<path d="' + brin([[-27.5 * d, -9], [-27.9 * d, -3], [-27.3 * d, 4]], 3.4, {ex:.9, b:.1}) + '" fill="' + K.chev.c[1] + '" opacity=".6"/>';
+    for(j = 0; j < 5; j++) for(i = 0; i < 2 + (j > 1 ? 1 : 0); i++) pk += 'M' + f1((-28.6 + i * 2.6 + j * .7) * d) + ' ' + f1(-10 - j * 5.4 + i * 1.6) + ' l' + f1(.4 * d) + ' -1.5 ';
+    if(o.traits && d === (o.cote || 1)){
+      s += '<path d="M' + f1(-31 * d) + ' -25.6 L ' + f1(-22.6 * d) + ' -20.4 M' + f1(-30.8 * d) + ' -20.2 L ' + f1(-22.9 * d) + ' -15.6" stroke="' + P.c[0] + '" stroke-width="1.7" stroke-linecap="round"/>' +
+        '<path d="M' + f1(-31 * d) + ' -24.6 L ' + f1(-22.6 * d) + ' -19.4 M' + f1(-30.8 * d) + ' -19.2 L ' + f1(-22.9 * d) + ' -14.6" stroke="' + P.trait + '" stroke-width=".7" stroke-linecap="round" opacity=".6"/>';
+    }
+  });
+  return s + '<path d="' + pk + '" stroke="' + K.chev.c[2] + '" stroke-width="1" stroke-linecap="round" opacity=".5"/>';
+}
+/* des mèches de lumière qui suivent le coiffé */
+function eclats(K, L, op){ return traits(L.map(function(t){ return [t, 2]; }), K.chev.hl, op == null ? .5 : op); }
+
+nom('m', 'crop', 'Mèche texturée');
+COIFF.crop = {
+  nuque:function(K){ return nuqueDeg(K); },
+  avant:function(K){
+    var F = 'M-24 -24 C -30 -42 -17 -59 2 -59 C 22 -59 34 -42 26 -24 L 23.6 -15 L 19.6 -20 L 16 -12.6 L 11.6 -18.6 L 7.6 -11.6 L 3 -17.6 L -1.4 -11.4 L -6 -18 L -10 -12 L -14.4 -18.6 L -18.4 -13.4 L -21.4 -19.6 Z', L = [F];
+    if(!K.chap) L = L.concat(brins([[[[-15,-51],[-20,-58],[-25,-60.6]], 9], [[[-5,-56],[-7,-63],[-10,-66.4]], 9], [[[6,-56.6],[8,-63.4],[12,-66.6]], 9], [[[16,-52],[21,-58.4],[26,-60]], 8.6], [[[24,-44],[30,-48],[34,-47.6]], 7]], kAge(K)));
+    return cotesDeg(K) + frange(K, L) +
+      '<path d="M26 -24 L 23.6 -15 L 19.6 -20 L 16 -12.6 L 11.6 -18.6 L 7.6 -11.6 L 3 -17.6 L -1.4 -11.4 L -6 -18 L -10 -12 L -14.4 -18.6 L -18.4 -13.4 L -21.4 -19.6 L -24 -24 C -12 -28.6 14 -28.6 26 -24 Z" fill="' + K.chev.c[2] + '" opacity=".22"/>' +
+      fils(K, [[[-18.4,-14.6],[-17,-28],[-9,-44]], [[-10,-13.2],[-9,-28],[-4,-46]], [[-1.4,-12.6],[-1,-28],[0,-48]], [[7.6,-12.8],[8,-28],[5,-47]], [[16,-13.8],[16,-28],[10,-45]], [[23.6,-16.2],[23,-28],[15,-43]],
+        [[-22,-30],[-20,-42],[-10,-53]], [[25,-30],[23,-42],[13,-53]]], .5) +
+      eclats(K, [[[-14,-22],[-13,-32],[-8,-42]], [[-5,-21],[-5,-32],[-2,-44]], [[12,-22],[12,-32],[8,-43]]], .42) +
+      anneau(K, 0, -29, 25, 24, 210, 330, 6, 5) + lisere(K, 'M-24.6 -30 C -24 -42 -16 -51 -5 -54.4');
+  }
+};
+
+nom('m', 'boucles_d', 'Boucles sur le dessus');
+COIFF.boucles_d = {
+  nuque:function(K){ return nuqueDeg(K); },
+  avant:function(K){
+    var C = [[-9,-56,8.2], [3,-58,8.6], [15,-55,8.2], [-19,-48,8.2], [-7,-48.6,8.6], [5,-49.6,8.6], [17,-46.6,8.4], [26,-40,7.2],
+      [-25,-39,7.4], [-14,-39.6,8], [-2,-40.6,8.2], [10,-39.6,8], [21,-35,7.6], [-20,-30,6.8], [-9,-31,7.2], [2,-31.6,7.2], [13,-30.6,7], [22.6,-27,6.2]];
+    if(K.chap) C = C.filter(function(p){ return p[1] > -44; });
+    K._ombre = (K._ombre || '') + ' ' + C.filter(function(p){ return p[1] > -34; }).map(function(p){ return rondD(p[0], p[1], p[2]); }).join(' ');
+    return cotesDeg(K) + bouclesD(K, C);
+  }
+};
+
+nom('m', 'raie', 'Raie sur le côté');
+COIFF.raie = {
+  nuque:function(K){ return nuqueDeg(K); },
+  avant:function(K){
+    var F = 'M-22.5 -25 C -28.5 -42 -16 -58.5 2 -58.5 C 23 -58.5 35.5 -42 27.5 -21 C 24 -18.6 20 -17.6 15 -18.6 C 6 -20.4 -4 -23.4 -14 -29 C -17 -28 -20 -26.6 -22.5 -25 Z', L = [F], P = K.peau;
+    return cotesDeg(K) + frange(K, L) +
+      /* la raie : un trait de peau, bien net */
+      '<path d="M-14.2 -28.8 C -15.6 -38 -13.6 -47 -9.4 -54.6" stroke="' + P.c[0] + '" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+      '<path d="M-13 -29 C -14.4 -38 -12.4 -47 -8.2 -54.6" stroke="' + K.chev.c[2] + '" stroke-width="1" fill="none" stroke-linecap="round" opacity=".6"/>' +
+      /* les sillons du peigne, de la raie vers l'autre côté */
+      fils(K, [[[-12,-32],[2,-34],[20,-21]], [[-12.6,-37],[4,-41],[26,-27]], [[-12.4,-43],[6,-48],[30,-36]], [[-10.6,-49],[8,-54],[31,-45]], [[-18,-29],[-21,-36],[-20,-46]]], .5) +
+      eclats(K, [[[-9,-35],[4,-38],[18,-28]], [[-8,-46],[8,-51],[25,-41]], [[-4,-27.6],[6,-25.6],[16,-20.6]]], .45) +
+      '<path d="M27.5 -21 C 24 -18.6 20 -17.6 15 -18.6 C 6 -20.4 -4 -23.4 -14 -29 C -3 -27.6 12 -25 24.6 -25.6 Z" fill="' + K.chev.c[2] + '" opacity=".25"/>' +
+      lisere(K, 'M-23.4 -31 C -23 -43 -15 -52 -4 -55');
+  }
+};
+
+nom('m', 'rase', 'Rasé avec traits');
+COIFF.rase = {
+  nuque:function(K){ return nuqueDeg(K); },
+  avant:function(K){
+    var F = 'M-29.7 -5 C -33.4 -35 -16 -57.5 2 -57.5 C 22 -57.5 35.4 -35 29.7 -5 L 26.9 -9.6 L 22.5 -13.2 L 21.8 -25 C 14 -28.6 7 -29.4 1 -29.4 C -5 -29.4 -12 -28.6 -19.8 -25 L -22.5 -13.2 L -26.9 -9.6 Z', P = K.peau, pk = '', i, j;
+    var s = '<path d="' + F + '" fill="' + K.u('peauU') + '"' + c(2.2) + '/><path d="' + F + '" fill="' + K.u('chevF2') + '"/>';
+    K._ombre = (K._ombre || '') + ' ' + F;
+    for(j = 0; j < 5; j++) for(i = -5; i <= 5; i++){ var x = i * 5 + (j % 2) * 2.4, y = -51 + j * 5.4 + Math.abs(i) * 1.1; if(y < -27 - (Math.abs(x) > 18 ? 0 : 2)) pk += 'M' + f1(x) + ' ' + f1(y) + ' l' + f1(i * .2) + ' -2 '; }
+    s += '<path d="' + pk + '" stroke="' + K.chev.c[2] + '" stroke-width="1" stroke-linecap="round" opacity=".5"/>';
+    /* le contour, tracé au cordeau */
+    s += '<path d="M26.9 -9.6 L 22.5 -13.2 L 21.8 -25 C 14 -28.6 7 -29.4 1 -29.4 C -5 -29.4 -12 -28.6 -19.8 -25 L -22.5 -13.2 L -26.9 -9.6" fill="none" stroke="' + K.chev.c[2] + '" stroke-width="1.5" stroke-linejoin="miter" stroke-linecap="round" opacity=".85"/>';
+    [1, -1].forEach(function(d){ s += '<path d="' + brin([[-27.5 * d, -9], [-27.9 * d, -3], [-27.3 * d, 4]], 3.4, {ex:.9, b:.1}) + '" fill="' + K.chev.c[1] + '" opacity=".55"/>'; });
+    /* deux traits rasés sur le côté, et la lumière sur le crâne */
+    s += '<path d="M-31.6 -27 L -21 -20.6 M-31.4 -21.4 L -21.6 -15.6" stroke="' + P.c[0] + '" stroke-width="1.8" stroke-linecap="round"/>' +
+      '<path d="M-31.6 -26 L -21 -19.6 M-31.4 -20.4 L -21.6 -14.6" stroke="' + P.trait + '" stroke-width=".7" stroke-linecap="round" opacity=".6"/>';
+    return s + (K.chap ? '' : '<ellipse cx="-9" cy="-45" rx="11" ry="4.4" fill="#fff" opacity=".2" transform="rotate(-16 -9 -45)"/>');
+  }
+};
+
+nom('m', 'mulet', 'Mulet');
+COIFF.mulet = {
+  dos:function(K){
+    var G = [[[[-17,6],[-25,22],[-21,38],[-32,53]], 15, {ex:.75, b:.35}], [[[-11,14],[-17,30],[-13,44],[-20,57]], 12, {ex:.8}]];
+    return chevelure(K, ['M-22 2 L 22 2 L 20 30 L -20 30 Z'], G.concat(mirM(G)), {fill:K.u('chevB'), lu:.35}) +
+      fils(K, [[[-26,44],[-21,32],[-22,16]], [[26,44],[21,32],[22,16]]], .45);
+  },
+  nuque:function(K){ return nuqueDeg(K); },
+  avant:function(K){
+    var F = 'M-24 -24 C -30 -42 -17 -60 2 -60 C 22 -60 34 -42 26 -24 L 24 -13 L 20 -19 L 17 -10 L 12 -17.6 L 8.4 -9.4 L 4 -16.6 L 0 -12 L -4.6 -18 L -9 -10.6 L -13.6 -17.6 L -18 -12 L -21 -18.6 Z', L = [F];
+    if(!K.chap) L = L.concat(brins([[[[-16,-50],[-23,-57],[-30,-58]], 10], [[[-6,-56],[-9,-64],[-14,-68]], 10], [[[5,-57],[6,-65],[10,-69]], 10], [[[15,-53],[21,-60],[28,-62]], 10], [[[23,-45],[30,-49],[36,-48]], 8]], kAge(K)));
+    return cotesDeg(K) + frange(K, L) +
+      fils(K, [[[-18,-13.6],[-17,-28],[-9,-44]], [[-9,-12],[-9,-28],[-4,-46]], [[0,-13],[0,-28],[0,-48]], [[8.4,-11],[8,-28],[5,-47]], [[17,-11.6],[16,-28],[10,-45]], [[24,-14],[23,-28],[15,-43]]], .5) +
+      eclats(K, [[[-13,-22],[-13,-32],[-8,-42]], [[4,-21],[4,-32],[2,-44]], [[13,-22],[12,-32],[8,-43]]], .42) +
+      anneau(K, 0, -30, 25, 24, 210, 330, 6, 5) + lisere(K, 'M-24.6 -30 C -24 -42 -16 -51 -5 -54.4');
+  }
+};
+
+nom('m', 'rideau', 'Raie au milieu');
+COIFF.rideau = {
+  nuque:function(K){ return nuqueDeg(K); },
+  avant:function(K){
+    var M = [
+      [[[0,-48],[-13,-49],[-27,-40],[-31,-19]], 15, {fixe:1}], [[[1,-48],[-8,-43],[-17,-36],[-21.6,-23]], 10, {fixe:1}],
+      [[[2,-48],[15,-49],[28,-40],[32,-19]], 15, {fixe:1}], [[[1,-48],[10,-43],[18,-36],[22.6,-23]], 10, {fixe:1}]
+    ];
+    return cotesDeg(K) + chevelure(K, ['M-25 -25 C -32 -44 -18 -62 2 -62 C 22 -62 35 -44 26 -25 C 22 -34 12 -40 1 -43 C -10 -40 -21 -34 -25 -25 Z'], M, {k:kAge(K), ombre:true}) +
+      traits([[[[1,-43],[1,-51],[2,-60]], 2], [[[-24,-23],[-20,-31],[-12,-38]], 1.8], [[[25,-23],[21,-31],[13,-38]], 1.8]]) +
+      fils(K, [[[-29,-22],[-24,-36],[-9,-48]], [[30,-22],[25,-36],[11,-48]], [[-16,-30],[-10,-38],[-3,-45]], [[17,-30],[11,-38],[5,-45]]]) +
+      eclats(K, [[[-22,-30],[-17,-40],[-7,-47]], [[23,-30],[18,-40],[9,-47]]], .42) +
+      anneau(K, 1, -31, 25, 24, 212, 328, 6, 5) + lisere(K, 'M-25.6 -30 C -25 -44 -16 -54 -5 -57.6');
+  }
+};
+
+nom('m', 'crete', 'Crête');
+COIFF.crete = {
+  nuque:function(K){ return nuqueDeg(K); },
+  avant:function(K){
+    var k = kAge(K), F = 'M-29.7 -5 C -33.4 -35 -16 -57.5 2 -57.5 C 22 -57.5 35.4 -35 29.7 -5 L 26.9 -9.6 L 22.5 -13.2 L 21.8 -25 C 14 -28.6 7 -29.4 1 -29.4 C -5 -29.4 -12 -28.6 -19.8 -25 L -22.5 -13.2 L -26.9 -9.6 Z', pk = '', i, j;
+    var s = '<path d="' + F + '" fill="' + K.u('peauU') + '"' + c(2.2) + '/><path d="' + F + '" fill="' + K.u('chevF2') + '" opacity=".8"/>';
+    for(j = 0; j < 5; j++) for(i = 0; i < 3; i++){ pk += 'M' + f1(-27 + i * 4.4 + j * .8) + ' ' + f1(-14 - j * 7 + i * 2) + ' l.5 -1.6 M' + f1(27 - i * 4.4 - j * .8) + ' ' + f1(-14 - j * 7 + i * 2) + ' l-.5 -1.6 '; }
+    s += '<path d="' + pk + '" stroke="' + K.chev.c[2] + '" stroke-width="1" stroke-linecap="round" opacity=".5"/>' +
+      '<path d="M26.9 -9.6 L 22.5 -13.2 L 21.8 -25 C 14 -28.6 7 -29.4 1 -29.4 C -5 -29.4 -12 -28.6 -19.8 -25 L -22.5 -13.2 L -26.9 -9.6" fill="none" stroke="' + K.chev.c[2] + '" stroke-width="1.5" stroke-linejoin="miter" stroke-linecap="round" opacity=".85"/>';
+    K._ombre = (K._ombre || '') + ' ' + F;
+    var M = [[[[-5,-31],[-9,-21],[-3,-11]], 11, {fixe:1}], [[[4,-32],[5,-23],[1,-14]], 9, {fixe:1}]];
+    if(!K.chap) M = [
+      [[[-9,-34],[-14,-50],[-19,-64]], 16], [[[-3,-38],[-5,-58],[-6,-75]], 17], [[[4,-38],[6,-58],[8,-77]], 17], [[[10,-34],[16,-50],[23,-65]], 16], [[[12,-28],[21,-38],[29,-46]], 12]
+    ].concat(M);
+    s += chevelure(K, ['M-13 -27 C -15 -44 -8 -55 2 -55 C 12 -55 18 -44 15 -27 C 8 -31 -6 -31 -13 -27 Z'], M, {k:k, ombre:true, lu:.45});
+    return s + fils(K, [[[-8,-30],[-11,-46],[-13,-60]], [[1,-32],[1,-52],[2,-70]], [[9,-30],[13,-46],[17,-60]]], .42);
+  }
+};
+
+nom('m', 'twists', 'Twists');
+COIFF.twists = {
+  nuque:function(K){ return nuqueDeg(K); },
+  avant:function(K){
+    var s = cotesDeg(K) + frange(K, ['M-24 -23 C -30 -41 -17 -57 2 -57 C 22 -57 34 -41 26 -23 C 14 -28 -12 -28 -24 -23 Z'], {fill:K.u('chevB')});
+    var L = [];
+    [-21,-13,-5,4,13,21].forEach(function(x){ L.push([[x * .5 + 1, -52], [x * 1.02, -47], [x * 1.34, -37.6 + Math.abs(x) * .1]]); });
+    if(!K.chap) [-12,-3,6,14].forEach(function(x, i){ L.push([[x * .7 + 1, -55], [x * 1.1 + 1, -60], [x * 1.5 + 1, -57 + (i % 2) * 2]]); });
+    [-18,-9,0,9,18].forEach(function(x, i){ L.push([[x * .7 + 1, -47], [x * .95, -38], [x * 1.08 + (i % 2 ? 1 : -1), -27.6 + (i % 2) * 2.4]]); });
+    L.forEach(function(p, i){ s += corde(K, p, 5.8, {fill:i % 2 ? K.chev.c[1] : mix(K.chev.c[1], K.chev.c[0], .3)}); });
+    K._ombre += ' ' + [-18,-9,0,9,18].map(function(x){ return rondD(x * 1.08, -29, 4.6); }).join(' ');
+    return s;
   }
 };
 
@@ -1579,6 +2147,147 @@ function decor(K, h, t){
 /* ==========================================================
    Héros complet
    ========================================================== */
+/* ==========================================================
+   LA FINITION DES HABITS (23 novembre) : même pantin, mêmes formes ; on ajoute
+   la matière (la trame du tissu), les plis, les coutures, le cuir piqué, les doigts.
+   Les habits de la garde-robe (garderobe.js) gardent leur dessin à eux.
+   ========================================================== */
+function defsFinition(K, h){
+  var Ch = K.chev, T = K.tissu, fo = sombre(T[2], .25), cl = clair(T[0], .35);
+  return linU(K.n('chevL'), [[0, Ch.hl, .95], [.55, Ch.hl, .7], [1, Ch.hl, .1]], 0, -54, 0, -30) +
+    /* le dégradé des côtés : les cheveux s'effacent vers l'oreille (la peau se devine) */
+    linU(K.n('chevF'), [[0, Ch.c[1], 1], [.42, Ch.c[1], .8], [.8, Ch.c[1], .3], [1, Ch.c[1], .06]], 0, -40, 0, -3) +
+    linU(K.n('chevF2'), [[0, Ch.c[1], .92], [.55, Ch.c[1], .8], [.85, Ch.c[1], .34], [1, Ch.c[1], .08]], 0, -58, 0, -6) +
+    /* la trame du tissu : deux fils croisés */
+    '<pattern id="' + K.n('trame') + '" patternUnits="userSpaceOnUse" width="3.4" height="3.4" patternTransform="rotate(-32)">' +
+      '<path d="M0 .9 H3.4" stroke="' + fo + '" stroke-width=".55" opacity=".7"/><path d="M0 2.5 H3.4" stroke="' + cl + '" stroke-width=".45" opacity=".5"/></pattern>' +
+    /* le velours broché du Barde : petits losanges */
+    '<pattern id="' + K.n('broche') + '" patternUnits="userSpaceOnUse" width="12" height="14">' +
+      '<path d="M6 1.5 L 9 7 L 6 12.5 L 3 7 Z" fill="none" stroke="' + cl + '" stroke-width=".8" opacity=".55"/><circle cx="6" cy="7" r=".9" fill="' + cl + '" opacity=".6"/>' +
+      '<circle cx="0" cy="0" r=".8" fill="' + fo + '" opacity=".5"/><circle cx="12" cy="0" r=".8" fill="' + fo + '" opacity=".5"/><circle cx="0" cy="14" r=".8" fill="' + fo + '" opacity=".5"/><circle cx="12" cy="14" r=".8" fill="' + fo + '" opacity=".5"/></pattern>' +
+    /* le grain du cuir */
+    '<pattern id="' + K.n('grain') + '" patternUnits="userSpaceOnUse" width="9" height="8">' +
+      '<path d="M1 2 l1.6 .5 M5.5 5.4 l1.6 -.4" stroke="#2a160a" stroke-width=".6" stroke-linecap="round" opacity=".5"/><path d="M6 1.4 l1.4 .3" stroke="#f0c090" stroke-width=".5" stroke-linecap="round" opacity=".45"/></pattern>';
+}
+/* repasse la matière sur toutes les formes du vêtement (celles remplies avec le tissu) */
+function matiere(K, s, noms, motif, op){
+  var re = new RegExp('<path d="([^"]+)" fill="url\\(#' + K.id + '-(' + noms + ')\\)"', 'g'), m, r = '';
+  while((m = re.exec(s))) r += '<path d="' + m[1] + '" fill="' + K.u(motif) + '" opacity="' + op + '"/>';
+  return r;
+}
+function plis(K, L, op){ return traits(L, sombre(K.tissu[2], .2), op == null ? .34 : op); }
+function lums(K, L, op){ return traits(L, clair(K.tissu[0], .3), op == null ? .4 : op); }
+function couture(d, coul, op, w){ return '<path d="' + d + '" stroke="' + (coul || '#fff3d6') + '" stroke-width="' + (w || .9) + '" fill="none" stroke-dasharray="2.6 2.4" stroke-linecap="round" opacity="' + (op == null ? .6 : op * .8) + '"/>'; }
+function mir(L){ return L.map(function(t){ return [t[0].map(function(p){ return [300 - p[0], p[1]]; }), t[1]]; }); }
+
+function torseFini(K, h, t){
+  var s = torse(K, h, t), role = h.role, f = h.sexe === 'f', fil = clair(K.tissu[0], .5);
+  s += matiere(K, s, 'tun', role === 'barde' ? 'broche' : 'trame', role === 'barde' ? .32 : .36);
+  /* l'ombre du menton et du cou sur le col */
+  s += '<path d="M127 141 Q 150 165 173 141 Q 150 151 127 141 Z" fill="' + sombre(K.tissu[2], .3) + '" opacity=".28"/>';
+  if(role === 'pisteur'){
+    var w = f ? 0 : 1, by = f ? 272 : 266;
+    s += plis(K, [[[[134, 216], [130, 238], [123 + w * 2, by - 10]], 3.4], [[[147, 218], [147, 242], [144, by - 2]], 3], [[[161, 218], [164, 240], [169, by - 4]], 3.2], [[[172, 216], [178, 236], [186 - w * 2, by - 10]], 3],
+      [[[127, 199], [126, 187], [129, 173]], 2.8], [[[173, 199], [174, 187], [171, 173]], 2.8], [[[121, 158], [126, 165], [133, 167]], 2.4], [[[179, 158], [174, 165], [167, 167]], 2.4]], .34) +
+      lums(K, [[[[140, 218], [138, 240], [133, by - 4]], 2.6], [[[154, 219], [155, 240], [156, by]], 2.2], [[[124, 150], [122, 170], [124, 192]], 2.4]], .42) +
+      '<path d="' + (f ? 'M103 272 Q 150 284 197 272 L 195 264.6 Q 150 276.4 105 264.6 Z' : 'M108 266 Q 150 278 192 266 L 190.6 258.8 Q 150 270.4 109.4 258.8 Z') + '" fill="' + sombre(K.tissu[2], .25) + '" opacity=".3"/>' +
+      couture(f ? 'M105.6 263.4 Q 150 275 194.4 263.4' : 'M110 257.6 Q 150 269 190 257.6', fil, .6) +
+      couture('M121 150 C 119 166 121 186 124 199', fil, .45) + couture('M179 150 C 181 166 179 186 176 199', fil, .35);
+  } else if(role === 'alchimiste'){
+    s += plis(K, [[[[131, 216], [126, 270], [121, 330]], 3.6], [[[169, 216], [174, 270], [179, 330]], 3.6], [[[124, 240], [118, 280], [112, 322]], 2.6], [[[176, 240], [182, 280], [188, 322]], 2.6],
+      [[[126, 200], [125, 186], [128, 172]], 2.6], [[[174, 200], [175, 186], [172, 172]], 2.6]], .32) +
+      lums(K, [[[[136, 220], [133, 270], [130, 332]], 2.6], [[[122, 152], [119, 174], [121, 198]], 2.4]], .42) +
+      couture(f ? 'M101 329 Q 119 336 136 333' : 'M105 331 Q 122 338 138 335', fil, .6) + couture(f ? 'M164 333 Q 182 336 199 329' : 'M162 335 Q 179 338 195 331', fil, .5) +
+      couture('M141.5 208 L 136.5 332', fil, .4) + couture('M158.5 208 L 163.5 332', fil, .32) +
+      couture('M108 289 l14 -1.6', fil, .55) + couture('M178 288.5 l14 1.6', fil, .45);
+  } else if(role === 'barde'){
+    s += plis(K, [[[[127, 200], [126, 188], [129, 174]], 2.6], [[[173, 200], [174, 188], [171, 174]], 2.6], [[[142, 242], [141, 232], [143, 222]], 2], [[[158, 242], [159, 232], [157, 222]], 2]], .3) +
+      lums(K, [[[[124, 152], [122, 172], [124, 194]], 2.6], [[[141, 154], [140, 190], [141, 226]], 1.8]], .4);
+    /* les boutons du pourpoint */
+    [160, 176, 192, 208, 224, 240].forEach(function(y){ s += '<circle cx="150" cy="' + y + '" r="2.3" fill="' + K.u('or') + '" stroke="' + O + '" stroke-width=".9"/><circle cx="149.3" cy="' + (y - .7) + '" r=".7" fill="#fff" opacity=".8"/>'; });
+    if(f) s += plis(K, [[[[136, 232], [128, 270], [116, 312]], 3.6], [[[150, 234], [150, 276], [150, 320]], 3], [[[164, 232], [172, 270], [184, 312]], 3.6]], .3) +
+      lums(K, [[[[143, 232], [139, 274], [133, 318]], 2.6], [[[128, 228], [116, 268], [102, 308]], 2.4]], .4);
+  } else if(role === 'sage'){
+    s += plis(K, [[[[131, 222], [124, 300], [112, 388]], 4.4], [[[143, 226], [140, 310], [134, 398]], 3.4], [[[158, 226], [162, 310], [168, 398]], 3.4], [[[169, 222], [176, 300], [190, 388]], 4.4],
+      [[[126, 200], [125, 186], [128, 170]], 2.8], [[[174, 200], [175, 186], [172, 170]], 2.8]], .3) +
+      lums(K, [[[[137, 226], [132, 310], [123, 396]], 3], [[[121, 152], [118, 176], [121, 200]], 2.4], [[[126, 226], [116, 300], [102, 380]], 2.4]], .4) +
+      couture(f ? 'M95 391 Q 150 405 205 391' : 'M99 391 Q 150 403 201 391', fil, .6);
+  }
+  return s;
+}
+
+function brasFinis(K, h, t, eq){
+  var s = bras(K, h.role, t, eq), role = h.role, fil = clair(K.tissu[0], .5);
+  s += matiere(K, s, 'tun|tunO', role === 'barde' ? 'broche' : 'trame', role === 'barde' ? .3 : .34);
+  if(role === 'sage'){
+    var G = [[[[114, 206], [104, 214], [94, 212]], 2.8], [[[112, 222], [100, 232], [88, 232]], 2.6], [[[106, 244], [96, 252], [84, 252]], 2.2]];
+    s += plis(K, G.concat(mir(G)), .32) + lums(K, [[[[106, 160], [98, 186], [93, 214]], 2.6]], .4);
+  } else {
+    var E = [[[[114, 198], [106, 202], [98, 199]], 2.6], [[[113, 207], [106, 210], [99, 208]], 2.2], [[[125, 160], [118, 164], [112, 162]], 2.2]];
+    s += plis(K, E.concat(mir(E)), .34) + lums(K, [[[[105, 158], [99, 178], [98, 198]], 2.6], [[[98, 212], [96, 226], [95, 238]], 2]], .42);
+    if(role !== 'barde') s += couture('M95.5 233 L 111 235', fil, .55) + couture('M204.5 233 L 189 235', fil, .4);
+  }
+  return s;
+}
+
+/* les doigts : un pouce et trois traits, par-dessus la main */
+function doigts(K, h, eq){
+  var tr = eq.poignets === 'gants_cuir' || eq.poignets === 'gants_pisteur' ? '#2e1c10' : K.peau.trait, s = '';
+  if(h.role === 'sage'){
+    s += '<path d="M90 280.5 q -.6 -4 .6 -7 M95.4 282.4 q -.4 -4.4 .6 -7.6 M100.6 281.6 q 0 -4.2 .8 -7.2 M105.6 266 q -4.4 1.6 -5.4 6.4" stroke="' + tr + '" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".85"/>' +
+      '<path d="M200 281 q -.6 -4 .4 -7 M205.4 282.4 q -.2 -4.4 .6 -7.6 M210.6 280.6 q .4 -4 .2 -7 M195 266 q 4 2 4.4 6.4" stroke="' + tr + '" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".85"/>';
+  } else {
+    s += '<path d="M94.6 268.6 q -.8 -4 .4 -7.2 M99.8 270.6 q -.4 -4.4 .6 -7.8 M105 269.8 q 0 -4.2 .8 -7.2 M109.6 252 q -4.6 1.4 -5.6 6.6" stroke="' + tr + '" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".85"/>' +
+      '<path d="M195.6 267.4 q -.6 -4 .4 -7 M200.6 269 q -.2 -4.4 .6 -7.6 M205.6 267.6 q .4 -4 .2 -7 M191.4 253 q 4.2 1.8 4.6 6.6" stroke="' + tr + '" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".85"/>';
+  }
+  return s;
+}
+
+function jambesFinies(K, h, t, eq){
+  var s = '';
+  if(h.role === 'sage') return s;
+  /* le pantalon : plis du genou et de la cuisse */
+  var G = [[[[147, 256], [140, 262], [133, 261]], 2.6], [[[141, 300], [134, 304], [127, 302]], 2.2]];
+  if(t === 1) G.push([[[140, 334], [133, 338], [126, 336]], 2.2]);
+  s += traits(G.concat(mir(G)), '#0d0816', .3) + traits([[[[129, 250], [126, 276], [126, 300]], 2.2]], '#ffffff', .16);
+  /* les bottes : le cuir, les plis de la cheville, la piqûre, le reflet */
+  var hautB = t >= 2 || eq.pieds === 'bottes_vent' || eq.pieds === 'bottes_fondateurs', y0 = hautB ? 324 : 362;
+  if(!eq.pieds || eq.pieds === 'bottes_souples'){
+    var bas = 'M120 352 C 119 364 119 374 119 384 C 116 392 106 398 104 406 Q 104 414 113 414 L 141 414 Q 146 414 145 406 L 142 384 C 142 374 142 364 141 352 Z';
+    var haut = 'M119 316 C 117 338 117 360 119 382 C 116 392 106 398 104 406 Q 104 414 113 414 L 141 414 Q 146 414 145 406 L 142 382 C 144 360 145 338 143 316 Q 131 312 119 316 Z';
+    var d = hautB ? haut : bas;
+    s += '<g fill="' + K.u('grain') + '" opacity=".42"><path d="' + d + '"/><path d="' + d + '" transform="translate(300 0) scale(-1 1)"/></g>';
+    var P = [[[[142, 380], [132, 384.5], [121, 381]], 2.6], [[[141.5, 388.5], [133, 392], [124, 390]], 2]];
+    s += traits(P.concat(mir(P)), '#1c0e06', .42);
+    s += '<path d="M122.5 ' + y0 + ' C 121.4 ' + (y0 + 18) + ' 121.4 ' + (y0 + 36) + ' 122.4 378" stroke="#f6c896" stroke-width="2" fill="none" stroke-linecap="round" opacity=".4"/>' +
+      '<path d="M160.5 ' + y0 + ' C 159.4 ' + (y0 + 18) + ' 159.4 ' + (y0 + 36) + ' 160.4 378" stroke="#f6c896" stroke-width="2" fill="none" stroke-linecap="round" opacity=".3"/>' +
+      '<path d="M109 402.5 Q 114 398.5 121 399" stroke="#ffe0b8" stroke-width="2" fill="none" stroke-linecap="round" opacity=".5"/><path d="M191 402.5 Q 186 398.5 179 399" stroke="#ffe0b8" stroke-width="2" fill="none" stroke-linecap="round" opacity=".38"/>' +
+      couture('M107 405.6 Q 124 408.6 143.5 406', '#f3d6a4', .7, 1) + couture('M193 405.6 Q 176 408.6 156.5 406', '#f3d6a4', .6, 1);
+    [0, 1].forEach(function(dr){
+      s += '<g' + (dr ? ' transform="translate(300 0) scale(-1 1)"' : '') + '><path d="M118.6 366 Q 131 370 142.8 366 L 142.6 372.6 Q 131 376.6 118.8 372.6 Z" fill="#4a2a14" stroke="' + O + '" stroke-width="1.3" stroke-linejoin="round"/>' +
+        '<rect x="126.4" y="366.4" width="7.6" height="8.4" rx="1.6" fill="' + K.u('or') + '" stroke="' + O + '" stroke-width="1.1"/><path d="M130.2 368 v5" stroke="' + O + '" stroke-width="1"/></g>';
+    });
+    if(hautB) s += couture('M119.6 326 Q 131 322 142.4 326', '#f3d6a4', .65, 1) + couture('M157.6 326 Q 169 322 180.4 326', '#f3d6a4', .55, 1);
+  }
+  return s;
+}
+
+function ceintureFinie(K, h, t){
+  var role = h.role, s = '';
+  if(role === 'sage') return s;
+  var y = role === 'barde' ? 214 : role === 'alchimiste' ? 206 : 202;
+  if(t >= 2){
+    s += '<path d="M119 ' + y + ' L 181 ' + y + ' L 182 ' + (y + 12) + ' L 118 ' + (y + 12) + ' Z" fill="' + K.u('grain') + '" opacity=".4"/>' +
+      couture('M121 ' + (y + 2.3) + ' H 139 M161 ' + (y + 2.3) + ' H 180', '#f3d6a4', .75, 1) + couture('M120.6 ' + (y + 9.8) + ' H 139 M161 ' + (y + 9.8) + ' H 180.6', '#f3d6a4', .6, 1) +
+      '<g fill="#1c0e06" opacity=".7"><circle cx="165" cy="' + (y + 6) + '" r="1"/><circle cx="170.5" cy="' + (y + 6) + '" r="1"/><circle cx="176" cy="' + (y + 6) + '" r="1"/></g>' +
+      '<path d="M143.4 ' + (y - 1.4) + ' l4 0 M143.4 ' + (y - 1.4) + ' l0 5" stroke="#fff" stroke-width="1.3" stroke-linecap="round" opacity=".7"/>';
+    if(role === 'pisteur') s += couture('M124.2 145.4 L 177.8 204.6', '#f3d6a4', .7, 1) + couture('M128.4 141.8 L 182 201', '#f3d6a4', .55, 1);
+  } else if(role === 'pisteur'){
+    s += couture('M126.4 145 L 179.6 203.4', '#f6e6c4', .6, 1);
+  }
+  return s;
+}
+
 function complet(h){
   h = h || {};
   var role = ROLES[h.role] ? h.role : 'pisteur';
@@ -1671,15 +2380,15 @@ function heros(h, opts){
 
   /* --- corps --- */
   var corps = '';
-  var bas = G && (guet || G.a('jambes') || G.a('pieds')) ? G.couche('jambes') + (G.a('pieds') && !guet ? ailesBottes(eq) : '') : jambes(K, h, t, eq);
+  var bas = G && (guet || G.a('jambes') || G.a('pieds')) ? G.couche('jambes') + (G.a('pieds') && !guet ? ailesBottes(eq) : '') : jambes(K, h, t, eq) + jambesFinies(K, h, t, eq);
   if(h.sexe === 'm') corps += '<path d="M139.5 112 L 139.5 142 Q 150 149 160.5 142 L 160.5 112 Z" fill="' + K.u('peau') + '"' + c(2.1) + '/><path d="M139.5 116 Q 150 129 160.5 116 L 160.5 129 Q 150 135 139.5 129 Z" fill="' + K.peau.ombre + '"/><path d="M152 118 L 152 140" stroke="' + K.peau.ombre + '" stroke-width="3" opacity=".7"/>';
   else corps += '<path d="M142 112 L 142 142 Q 150 148 158 142 L 158 112 Z" fill="' + K.u('peau') + '"' + c(2) + '/><path d="M142 116 Q 150 128 158 116 L 158 128 Q 150 134 142 128 Z" fill="' + K.peau.ombre + '"/>';
   var iz = 0, zc = function(z){ if(opts.zones && corps.length > iz) corps = corps.slice(0, iz) + '<g data-zone="' + z + '">' + corps.slice(iz) + '</g>'; iz = corps.length; };
   zc('cou');
-  corps += G && G.a('corps') ? G.couche('corps') : torse(K, h, t);
+  corps += G && G.a('corps') ? G.couche('corps') : torseFini(K, h, t);
   if(t === 1) corps += baudrierT1(K, h);
   if(h.role === 'alchimiste') corps += sacoche(K, h, t, eq);
-  corps += ceinture(K, h, t);
+  corps += ceinture(K, h, t) + ceintureFinie(K, h, t);
   if(eq.rangee) corps += rangeeFioles(K, h);
   corps += bandouliere(K, h, eq, tal);
   corps += petitsCeinture(K, h, eq);
@@ -1697,8 +2406,8 @@ function heros(h, opts){
   if(eq.epaule === 'grappin') corps += '<g transform="translate(120 150)"><ellipse cx="0" cy="0" rx="14" ry="10" fill="none" stroke="#c9a46a" stroke-width="5"/><ellipse cx="0" cy="0" rx="14" ry="10" fill="none" stroke="' + O + '" stroke-width="1" stroke-dasharray="3 2"/><path d="M10 8 L 16 18 M16 18 l-4 4 M16 18 l4 4 M16 18 l0 6" stroke="#9aa0b0" stroke-width="2.4" stroke-linecap="round"/></g>';
   zc('corps');
   corps += G && G.a('arme') ? G.couche('arme') : mainGauche(K, h, t, eq);
-  corps += bras(K, h.role, t, eq) + (G ? G.couche('bras') : '');
-  corps += mains(K, h.role, eq) + (G ? G.couche('mains') : '');
+  corps += brasFinis(K, h, t, eq) + (G ? G.couche('bras') : '');
+  corps += mains(K, h.role, eq) + doigts(K, h, eq) + (G ? G.couche('mains') : '');
   zc('mains');
   if(h.role === 'pisteur' && t === 4 && !eq.cape) corps += '';
   if(h.role === 'pisteur' && t >= 3){
@@ -1725,6 +2434,8 @@ function heros(h, opts){
   if(cacheCh !== 'tout') tete += coif.nuque(K);
   var garcon = h.sexe === 'm';
   var face = {age:age, sexe:h.sexe, lueur:tal.vision || h.potion === 'vision', sansSourcils:true, regard:guet ? 1 : 0};
+  /* (23 novembre) la frange est dessinée AVANT le visage : elle laisse son contour dans K._ombre, et le visage en fait l'ombre portée */
+  K._ombre = ''; var avantS = cacheCh === 'tout' ? '' : coif.avant(K);
   tete += garcon ? visageM(K, face) : visage(K, face);
   var bb = garcon && age !== 'enfant' ? h.barbe : 'aucune';
   if(bb && bb !== 'aucune') tete += garcon ? barbeM(K, bb) : barbe(K, bb);
@@ -1732,8 +2443,8 @@ function heros(h, opts){
   else if(eq.masque === 'masque_ombre') tete += '<path d="' + (garcon ? 'M-26 14 C -20 10 20 10 26 14 C 25.6 18 23.6 21 20.4 24 C 15.6 30.2 9 34.6 0 36.6 C -9 34.6 -15.6 30.2 -20.4 24 C -23.6 21 -25.6 18 -26 14 Z' : 'M-26 14 C -20 10 20 10 26 14 C 26 26 16 34 0 36 C -16 34 -26 26 -26 14 Z') + '" fill="#2a2440"' + c(2) + '/><path d="M-26 14 C -20 10 20 10 26 14" stroke="#8ff3ff" stroke-width="1.4" fill="none" opacity=".7"/>';
   var sourc = garcon ? sourcilsM(K, face) : sourcils(K, face);
   if(cacheCh === 'tout') tete += sourc;
-  else if(coif.sousMeche) tete += sourc + coif.avant(K);
-  else tete += coif.avant(K) + sourc;
+  else if(coif.sousMeche) tete += sourc + avantS;
+  else tete += avantS + sourc;
   if(G) tete += G.couche('yeux');
   /* yeux : lunettes, monocle */
   if(eq.yeux === 'lunettes_sage') tete += '<g fill="#d8f4ff" fill-opacity=".25" stroke="' + K.u('or') + '" stroke-width="2"><circle cx="-12" cy="6" r="10"/><circle cx="12" cy="6" r="10"/></g><path d="M-2 5 q 2 -2 4 0 M-22 4 l-6 -2 M22 4 l6 -2" stroke="' + K.u('or') + '" stroke-width="2" fill="none"/>';
@@ -1896,7 +2607,7 @@ function pnj(id, opts){
     s += '<circle cx="160" cy="40" r="3" fill="#fff" opacity=".35"/><circle cx="30" cy="60" r="2" fill="#fff" opacity=".3"/><circle cx="176" cy="96" r="1.6" fill="#fff" opacity=".3"/>';
   }
   var T = 'translate(100 ' + hy + ') scale(' + hs + ')';
-  var coif = COIFF_V[sp.coiffure] || COIFF[sp.coiffure] || COIFF_V.court;
+  var coif = COIFF_V[sp.coiffure] || COIFF_ANC[sp.coiffure] || COIFF[sp.coiffure] || COIFF_V.court;
   var inner = '';
   /* en entier : les jambes et les chaussures, derrière tout le reste */
   if(pied) inner += jambesPnj(K, sp, GP);
@@ -2228,7 +2939,7 @@ function pnjExpressif(id, sp, opts){
     s += '<circle cx="160" cy="40" r="3" fill="#fff" opacity=".35"/><circle cx="30" cy="60" r="2" fill="#fff" opacity=".3"/><circle cx="176" cy="96" r="1.6" fill="#fff" opacity=".3"/>';
   }
   var hs = sp.age === 'enfant' ? 1.16 : 1.08, hy = sp.age === 'enfant' ? 100 : 104;
-  var coif = COIFF_V[sp.coiffure] || COIFF[sp.coiffure] || COIFF_V.court;
+  var coif = COIFF_V[sp.coiffure] || COIFF_ANC[sp.coiffure] || COIFF[sp.coiffure] || COIFF_V.court;
   var chap = sp.chapeau, acc = sp.accessoires || [];
   function accs(liste){ var r = ''; acc.forEach(function(a){ if(liste.indexOf(a) >= 0) r += accessoire(K, sp, a); }); return r; }
   var fv = {id:id, age:sp.age, sexe:sp.sexe, forme:sp.forme, nez:sp.nez, plisse:sp.plisse, sourcils:sp.sourcils, sourcilsC:sp.sourcilsC, joues:sp.joues, suie:sp.suie, farine:sp.farine, terre:sp.terre};

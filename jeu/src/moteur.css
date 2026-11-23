@@ -117,6 +117,14 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 @media (max-width:700px){.b-crea-apercu{position:relative}.b-crea-apercu svg{max-height:46vh}}
 .b-crea-apercu svg{width:100%;height:auto;display:block}
 .b-crea-apercu.petit{max-width:240px;margin:0 auto}
+/* (Romain, 23 novembre : « qu'on garde toujours, en visu, le personnage ») sur un écran étroit aussi, le héros reste en haut pendant qu'on fait défiler ses choix (plus petit, pour leur laisser la place) */
+@media (max-width:700px){.b-crea-grille > .b-crea-apercu{position:sticky;top:0}.b-crea-grille > .b-crea-apercu svg{max-height:34vh}}
+/* le menu des coiffures (menuCoiffure, moteur-ecrans.js) : fermé, la coiffure portée ; ouvert, les seize sur deux colonnes */
+.b-menu-tete{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;max-width:340px;text-align:left}
+.b-menu-tete i{font-style:normal;font-size:1.1rem;line-height:1;transition:transform .15s}
+.b-menu.ouvert .b-menu-tete i{transform:rotate(180deg)}
+.b-menu-liste{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:8px;border:1px solid var(--trait);border-radius:var(--r-2);background:rgba(0,0,0,.2)}
+.b-menu-liste .puce{min-height:44px;padding:6px 12px;border-radius:14px;text-align:left;line-height:1.15}
 .b-crea-options{display:flex;flex-direction:column;gap:14px}
 .b-opt{display:flex;flex-direction:column;gap:6px}
 .b-etiquette{font-weight:700;color:var(--brume);font-size:.95rem}
