@@ -184,6 +184,22 @@ COIFFURES.courts = {
   chignon:{c:[0, -36, -39], r:16}
 };
 
+/* LA LONGUE TRESSE À PERLES (le Sage du donjon, fille, cheveux noirs : Romain, 23 novembre, 22 h 21 : « tu peux passer au sage ») :
+   la raie au milieu, les cheveux tirés en arrière, une longue tresse attachée à la nuque qui descend dans le dos jusqu'à la taille,
+   des perles dorées enfilées dedans (queue.tresse, queue.perles) */
+COIFFURES.tresse = {
+  zone:lineaire([[-57, 0], [-31, 0], [-29, 28], [-26, 46], [-20, 62], [-12, 72], [-7.5, 80], [-5.5, 112], [6, 116], [10, 130], [14, 158], [16.5, 180]]),
+  /* (la raie au milieu : deux bandeaux qui partent du sommet du front et descendent vers les tempes) */
+  frange:'M44 -42 L 44 -8 L 33 -1 C 30 -12 24 -22 8 -29 C 5 -30 2 -31 0 -33 C -2 -31 -5 -30 -8 -29 C -24 -22 -30 -12 -33 -1 L -44 -8 L -44 -42 Z',
+  filsFace:[[[-1, -34], [-14, -29], [-27, -14]], [[1, -34], [14, -29], [27, -14]], [[-3, -42], [-17, -37], [-31, -22]], [[3, -42], [17, -37], [31, -22]], [[0, -50], [-12, -48], [-24, -40]], [[0, -50], [12, -48], [24, -40]]],
+  filsCote:[[[70, -8], [105, -14], [160, -18]], [[60, -23], [100, -27], [150, -24]], [[82, 1], [118, -2], [166, -10]], [[110, 8], [136, 4], [172, -4]], [[36, -41], [88, -38], [140, -30]]],
+  /* (deux petites mèches folles sur le front, de chaque côté de la raie) */
+  meches:[{p:[[-6, -32, 22], [-11, -26, 22], [-14, -18, 21]], w:2.6}, {p:[[6, -32, 22], [11, -26, 22], [14, -18, 21]], w:2.6}],
+  queue:{p:[[0, -12, -38], [2, 8, -44], [4, 40, -45], [5, 74, -43], [6, 108, -41], [6, 140, -39], [5, 158, -38]],
+    larg:table([[0, 5.6], [0.08, 7.4], [0.5, 6.8], [0.88, 5.4], [0.94, 4.6], [1, 1.4]]),
+    tresse:true, perles:[0.28, 0.46, 0.64, 0.82]}
+};
+
 /* ==========================================================
    HV.cheveux(K, coif, V, P) → {dos, devant, ombre}  (P : {qx, qz : le balancement du bout de la queue de cheval})
    ========================================================== */
@@ -213,7 +229,23 @@ HV.cheveux = function(K, coif, V, P){
     for(i = 2; i < nq - 1; i++){ f1q.push(nrm(i, 0.42)); if(i > 4) f2q.push(nrm(i, -0.38)); if(i > 2 && i < nq - 5) lum.push(nrm(i, sg * 0.62 * (E[i][0] > E[0][0] ? 1 : 1))); }
     /* (vue par le bout, la queue est trop courte à l'écran pour ses fils) */
     var longQ = Math.abs(E[nq][0] - E[0][0]) + Math.abs(E[nq][1] - E[Math.round(nq * 0.2)][1]), opQ = U.doux(70, 110, longQ);
-    if(opQ > 0.02){
+    if(Q.tresse){
+      /* LA TRESSE : des mèches croisées, en biais d'un bord à l'autre, une fois d'un côté, une fois de l'autre ; un reflet sur chaque
+         maille ; (sur des cheveux noirs, les traits sont clairs, sinon on ne les voit pas) */
+      var trT = lum2(K) < 0.25 ? K.chev.c[0] : K.chev.c[2], mailles = '', reflets = '';
+      for(i = 1; i < nq - 1; i++){
+        var sgm = i % 2 ? 1 : -1, a0 = nrm(i, -0.92 * sgm), a1 = nrm(i + 1, 0.92 * sgm), mm = nrm(i, 0.1 * sgm);
+        mailles += 'M' + f1(a0[0]) + ' ' + f1(a0[1]) + ' Q' + f1(mm[0]) + ' ' + f1(mm[1]) + ' ' + f1(a1[0]) + ' ' + f1(a1[1]) + ' ';
+        var h0 = nrm(i, 0.35 * sgm), h1 = nrm(i + 1, -0.05 * sgm);
+        reflets += 'M' + f1(h0[0]) + ' ' + f1(h0[1]) + ' L' + f1((h0[0] + h1[0]) / 2) + ' ' + f1((h0[1] + h1[1]) / 2) + ' ';
+      }
+      queue += '<path d="' + mailles + '" fill="none" stroke="' + trT + '" stroke-width="1.7" stroke-linecap="round" opacity="' + f1(0.75 * Math.max(0.3, opQ)) + '"/>' +
+        '<path d="' + reflets + '" fill="none" stroke="' + K.chev.hl + '" stroke-width="1.6" stroke-linecap="round" opacity="' + f1(0.5 * Math.max(0.3, opQ)) + '"/>';
+      /* les perles dorées enfilées dans la tresse */
+      (Q.perles || []).forEach(function(t){ var j2 = Math.round(t * nq), pq = E[j2], rr = Math.max(3.2, Q.larg(t) * 0.62);
+        queue += '<circle cx="' + f1(pq[0]) + '" cy="' + f1(pq[1]) + '" r="' + f1(rr) + '" fill="#e8b84a" stroke="' + O + '" stroke-width="1.6"/><circle cx="' + f1(pq[0] - rr * 0.35) + '" cy="' + f1(pq[1] - rr * 0.35) + '" r="' + f1(rr * 0.3) + '" fill="#fff3c8"/>'; });
+      queue += noeud(K, E[nq - 1][0], E[nq - 1][1], 0.7);
+    } else if(opQ > 0.02){
       queue += '<g fill="' + K.chev.c[2] + '" opacity="' + f1(0.42 * opQ) + '">' + PF(U.filet(f1q, 1.6), K.chev.c[2]) + PF(U.filet(f2q, 1.5), K.chev.c[2]) + '</g>';
       queue += PF(U.filet(lum, 2), K.chev.hl, ' opacity="' + f1(0.4 * opQ) + '"');
     }

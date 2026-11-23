@@ -78,7 +78,8 @@ function rond(x, y, r, c, o, plus){ return '<circle cx="' + x.toFixed(1) + '" cy
    sont pas encore en volume) */
 var ALLURES = {
   pisteur:{role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert', combat:true},
-  alchimiste:{role:'alchimiste', sexe:'m', peau:'p4', cheveux:'noir', yeux:'ambre', coiffure:'courts', combat:true}
+  alchimiste:{role:'alchimiste', sexe:'m', peau:'p4', cheveux:'noir', yeux:'ambre', coiffure:'courts', combat:true},
+  sage:{role:'sage', sexe:'f', peau:'p5', cheveux:'noir', yeux:'ambre', coiffure:'tresse', combat:true}
 };
 function Volume(cont, lk, creer0, role){
   css();
@@ -107,7 +108,7 @@ function Volume(cont, lk, creer0, role){
   this.calque.setAttribute('style', 'position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none');
   this.boite.appendChild(this.calque);
   this.effets = []; this.idGel = 'hvagel' + (++NUM);
-  this.base = role === 'alchimiste' ? HV.POSES.aGarde : HV.POSES.dGarde; this.cles = null; this.t0 = maintenant(); this.tenue = null; this.dernier = this.base;
+  this.base = role === 'alchimiste' ? HV.POSES.aGarde : role === 'sage' ? HV.POSES.sGarde : HV.POSES.dGarde; this.cles = null; this.t0 = maintenant(); this.tenue = null; this.dernier = this.base;
   /* (c'est l'adaptateur qui dit au pantin quelle pose prendre, à chaque image ; le pantin y ajoute sa petite vie) */
   this.p.courante = function(){ return me.pose(); };
   var d0 = this.p.dessiner;
@@ -121,7 +122,8 @@ function Volume(cont, lk, creer0, role){
     cont.appendChild(this.ombre.racine); PROTO = PROTO || Object.getPrototypeOf(this.ombre);
     /* (ses effets à lui — la flèche qui vole, la lame ; la fiole qui vole, le BONG, les feuilles — travaillent sur le nouveau) */
     ['_fleche', '_fleche2', '_impactFleche', '_impactFleche2', '_rebondFleche', '_lame', '_impactDague', '_recul',
-      '_fioleVole', '_fioleVole2', '_eclatPotion', '_bong', '_swoosh', '_feuilles'].forEach(function(n){ if(PROTO[n] && !V[n]) V[n] = PROTO[n]; }); }
+      '_fioleVole', '_fioleVole2', '_eclatPotion', '_bong', '_swoosh', '_feuilles',
+      '_cercle', '_appel', '_eclair', '_runesMontent', '_dome', '_fil', '_runesLivre', '_idee', '_fondLune', '_eclairSalle'].forEach(function(n){ if(PROTO[n] && !V[n]) V[n] = PROTO[n]; }); }
   catch(e){ this.ombre = null; if(G.console) console.warn('hv-adaptateur : pas d\'ancien héros', e); }
   this._prochainRegard = maintenant() + 2 + Math.random() * 4;
   /* (la fuite : le combat fait partir la case vers la gauche, retournée — elle court, au lieu de glisser en garde) */
@@ -207,7 +209,15 @@ V.ecranF = function(q){ var s = this.versSvg(q); return [(s[0] + 130) * KF, (s[1
 var REP = {tete:['tete', 0, -30], teteC:['tete', 4, -34], cou:['cou'], chevilleB:['chevilleD'], chevilleA:['chevilleG'], orteilA:['orteilG'], orteilB:['orteilD'], poignee:['poignetG'], bassin:['bassin'], amulette:['cou', 0, 16],
   /* (l'Alchimiste : la marmite pend sous SON poing gauche ; la fiole, les herbes, dans ses mains) */
   marmite:['poignetD', 0, 32], mainA:['poignetG'], mainB:['poignetD'], pince:['poignetD']};
+/* (le Sage : le cristal, le pied du bâton, le livre — là où le dernier dessin les a mis : K.rep, dans les mesures du dessin) */
+var REP_DESSIN = {cristal:'cristal', 'baton-bas':'batonBas', livre:'livre'};
+V.repDessin = function(nom){
+  var R = this.p.K.rep, q = R && R[REP_DESSIN[nom]];
+  return q ? [150 + q[0], q[1] - Math.max(0, (this.p.F && this.p.F.leve) || 0)] : null;
+};
 V.rep = function(nom, ref){
+  var sd = REP_DESSIN[nom] && this.repDessin(nom);
+  if(sd) return this.versRef(sd, ref || this.fx);
   var r = REP[nom] || ['bassin'], q = this.os()[r[0]], s = this.versSvg(q);
   return this.versRef([s[0] + (r[1] || 0), s[1] + (r[2] || 0)], ref || this.fx);
 };
@@ -689,6 +699,83 @@ V.herbes = function(scene, to, opt){
       return pluieDePetales(scene, a, cesHeros(scene, to || moi, moi)).then(function(){ sig(to); try{ if(opt.onImpact) opt.onImpact(to); }catch(e){ if(G.console) console.error(e); } });
     });
     return Promise.all([fini, vole]);
+  });
+};
+
+/* ==========================================================
+   LE SAGE : ses sorts (hv-sage.js) ; les effets sont ceux de l'ancien Sage (le cercle de runes, l'éclair, la rune d'appel, les
+   runes qui montent, le dôme, la lumière de la salle, les runes du livre, l'idée), partis de son cristal à elle
+   ========================================================== */
+function couche(scene){ var c = scene.querySelector(':scope > .ha-fxs'); if(!c){ c = document.createElement('div'); c.className = 'ha-fx ha-fxs'; c.style.zIndex = 5; scene.appendChild(c); } return c; }
+function etirer(L, k){ return k === 1 ? L : L.map(function(c){ return [c[0] * k, c[1]]; }); }
+/* le cristal s'illumine (une lueur qui grossit, des étincelles) */
+V.cristalFlash = function(fort){
+  this.effet('flash', function(u){ var s = this.repDessin('cristal'); if(!s) return ''; var f = [(s[0] + 130) * KF, (s[1] + 64) * KF], o = u < 0.12 ? u / 0.12 : 1 - (u - 0.12) / 0.5;
+    return lueur(f[0], f[1], (fort ? 60 : 40) + 50 * u, '#8ff3ff', Math.max(0, o)) + etincelles(f[0], f[1], Math.min(1, u / 0.6), 6, '#bff8ff', 12, fort ? 70 : 50, 0.2); }, 0.62);
+};
+/* LE SORT (et la rune d'appel : opt.appel) : le cristal s'allume ; le cercle de runes ; l'éclair part du cristal (0,72 s) */
+V.sort = function(scene, to, opt){
+  opt = opt || {};
+  var me = this, S = HV.SAGE;
+  return this.file(function(sig){
+    if(this.ko) return null;
+    this.cristalFlash(true);
+    this.plus(460, function(){ try{ me._cercle(scene); }catch(e){} });
+    var vole = attendre(S.LANCE * 1000).then(function(){
+      var a = me.rep('cristal', scene);
+      me.cristalFlash(true);
+      var f = opt.appel ? me._appel : me._eclair;
+      return f ? f.call(me, scene, a, to, opt).then(sig) : null;
+    });
+    return Promise.all([this.jouer(S.sort), vole]);
+  });
+};
+/* LE BOUCLIER (sur un ami, ou deux avec le bâton de chêne) : le bâton levé, les runes montent, le dôme se pose ; la promesse a
+   absorber(n) et retirer(), comme l'ancien */
+function groupeDomes(liste){
+  var g = liste.slice();
+  function choix(i){ return i === undefined ? liste : [liste[i]]; }
+  g.absorber = function(n, i){ return Promise.all(choix(i).map(function(b){ return b.absorber(n); })); };
+  g.retirer = function(i){ return Promise.all(choix(i).map(function(b){ return b.retirer(); })); };
+  return g;
+}
+V.bouclier = function(scene, cible, opt){
+  opt = opt || {};
+  var me = this, S = HV.SAGE, k = opt.sorte === 'chene' ? 1 : 1.5, L = couche(scene), liste = cible instanceof Array ? cible : [cible];
+  var p = this.file(function(sig){
+    this.cristalFlash(true);
+    try{ this._runesMontent(); }catch(e){}
+    this.plus(S.DOME * k * 1000, function(){
+      var a = me.rep('cristal', scene), domes = [];
+      if(liste.length < 2){ var b = me._dome(L, scene, liste[0], opt); sig(b); return; }
+      liste.forEach(function(el, i){ Promise.resolve(me._fil ? me._fil(L, scene, a, el, i) : null).then(function(){ domes[i] = me._dome(L, scene, el, opt); if(domes.filter(Boolean).length === liste.length) sig(groupeDomes(domes)); }); });
+    });
+    return this.jouer(etirer(S.bouclier, k));
+  });
+  p.absorber = function(n, i){ return p.then(function(b){ return b && b.absorber(n, i); }); };
+  p.retirer = function(i){ return p.then(function(b){ return b && b.retirer(i); }); };
+  return p;
+};
+/* LA LUMIÈRE DANS TOUTE LA SALLE : le bâton tenu haut ; la salle s'illumine (0,78 s) */
+V.eclairSalle = function(scene, opt){
+  opt = opt || {};
+  var me = this, S = HV.SAGE;
+  return this.file(function(sig){
+    var fond = null;
+    this.cristalFlash(true);
+    this.plus(300, function(){ try{ var c = me.rep('cristal', scene); fond = me._fondLune(scene, {x:c.x - 4, y:c.y - 30}); }catch(e){} });
+    this.plus(S.FLASH * 1000, function(){ me.cristalFlash(true); try{ sig(me._eclairSalle(scene, opt, fond)); }catch(e){ sig(null); } });
+    return this.jouer(S.eclairSalle);
+  });
+};
+/* ÉTUDIER : le livre ouvert, des runes s'en échappent ; l'idée s'allume au-dessus de sa tête */
+V.etudier = function(){
+  var me = this, S = HV.SAGE;
+  return this.file(function(){
+    if(this.ko) return null;
+    this.plus(600, function(){ try{ me._runesLivre(); }catch(e){} });
+    this.plus(S.IDEE * 1000, function(){ try{ me._idee(); }catch(e){} me.cristalFlash(false); });
+    return this.jouer(S.etudier);
   });
 };
 

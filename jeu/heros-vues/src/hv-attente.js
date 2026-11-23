@@ -3,10 +3,11 @@
    d'attente quand les personnages ils font rien. Il faut qu'ils fassent plus de choses, qu'ils regardent un petit peu derrière leur
    compagnon qui est derrière, le compagnon qui est devant, qu'ils fassent un petit signe de tête, qu'ils regardent s'il a toutes les
    potions, s'il regarde son arc, qu'il regarde son bâton, qu'il se gratte, qui se mettent en garde […] qui restent pas à rien faire
-   et qui fassent pas les mêmes animations d'attente »). Chargé après hv-alchimiste.js.
+   et qui fassent pas les mêmes animations d'attente »). Chargé après hv-alchimiste.js et hv-sage.js.
    HV.attentes(role, base) → {nom: images clés} (pour cette garde) : les gestes de tous (regarder les ennemis, le compagnon de derrière,
    celui de devant, un signe de tête, se gratter la tête, se mettre en garde) + ceux de son rôle (la Pisteuse : son arc ;
-   l'Alchimiste : compter ses fioles, en lever une vers la lumière ; le Sage : son bâton — quand il sera fait). L'adaptateur en tire un
+   l'Alchimiste : compter ses fioles, en lever une vers la lumière ; le Sage : frotter le cristal de son bâton, remonter ses
+   lunettes, taper le sol de son bâton). L'adaptateur en tire un
    au hasard toutes les 4 à 7 secondes, jamais deux fois le même de suite, chacun à son rythme.
    Rappel des sens : A > 0, il se tourne vers SA gauche (vers la droite de l'écran, les ennemis) ; A < 0, vers SA droite (vers nous,
    puis vers la gauche de l'écran : les compagnons qui sont derrière lui).
@@ -62,14 +63,26 @@ function alchimiste(A){
     [2.15, {mainG:[-16, 160, 30], relG:1, coudeG:[-0.9, 0.3, -0.2], poingG:0.92, fioleG:1, hoche:12, regY:0.6, sourire:0.5}],
     [2.27, {mainG:[-16, 162, 28], relG:1, coudeG:[-0.9, 0.3, -0.2], poingG:0.3, fioleG:0, hoche:10, regY:0.5}], [2.7, {}]];
 }
-var PROPRES = {pisteur:pisteur, alchimiste:alchimiste};
+function sage(A){
+  /* SON BÂTON : elle lève les yeux vers le cristal, le frotte du bout des doigts de l'autre main, sourit */
+  var F = {mainD:[-48, 112, 4], relD:1, coudeD:[0.6, 0.6, 0.4], mdirD:[-0.8, -0.3, 0.2], poingD:0.25, pouceD:[0, -1, 0.3], tete:-14, hoche:-10, regY:-0.7, regX:-0.7, sourcils:0.3};
+  A.baton = [[0.6, avec(F, {mainD:[-44, 118, 8]})]].concat([0.75, 0.9, 1.05, 1.2, 1.35].map(function(t, i){ return [t, avec(F, {mainD:[-46, 112 + (i % 2 ? -6 : 4), 6], sourire:0.4 + 0.1 * i})]; }))
+    .concat([[1.6, avec(F, {sourire:1, plisse:0.35, cristal:0.8})], [2.0, {cristal:0.5, sourire:0.6, regX:-0.3}], [2.4, {}]]);
+  /* ELLE REMONTE SES LUNETTES du bout de l'index, l'air savant */
+  var L = {mainD:[8, 96, 38], relD:1, coudeD:[0.8, 0.5, -0.2], mdirD:[-0.3, -1, 0.3], poingD:0.7, indexD:1, pouceD:[-1, 0, 0.3], sourcils:0.4, sourcilsAsym:0.4, plisse:0.2};
+  A.lunettes = [[0.45, avec(L, {mainD:[8, 102, 38]})], [0.62, avec(L, {mainD:[8, 94, 38], hoche:-4})], [0.9, avec(L, {mainD:[10, 98, 36], hoche:-3, sourire:0.7})], [1.3, {sourire:0.6, sourcils:0.3}], [1.6, {}]];
+  /* ELLE TAPE LE SOL DE SON BÂTON (une fois, sûre d'elle) */
+  A.tape = [[0.35, {mainG:[-64, 222, -8], sourcils:-0.4, plisse:0.2}], [0.48, {mainG:[-64, 242, -8], bas:[0, 10, 0], sourcils:-0.6, cristal:0.9}], [0.7, {mainG:[-64, 240, -8], cristal:0.5, sourire:0.5}], [1.2, {}]];
+}
+var PROPRES = {pisteur:pisteur, alchimiste:alchimiste, sage:sage};
 HV.attentes = function(role, base){
-  var k = role + ':' + (base === HV.POSES.aGarde ? 'a' : 'd');
+  var k = role + ':' + (base === HV.POSES.aGarde ? 'a' : base === HV.POSES.sGarde ? 's' : 'd');
   if(cache[k]) return cache[k];
   var A = communs(base);
   if(PROPRES[role]) PROPRES[role](A);
   return (cache[k] = A);
 };
 HV.NOMS_ATTENTE = {ennemis:'Il surveille les ennemis', derriere:'Il regarde son compagnon de derrière', devant:'Un coup d’œil devant', signe:'Un signe de tête',
-  gratte:'Il se gratte la tête', garde:'Il se met en garde', arc:'Elle regarde son arc', fioles:'Il compte ses fioles', lumiere:'Une fiole vers la lumière'};
+  gratte:'Il se gratte la tête', garde:'Il se met en garde', arc:'Elle regarde son arc', fioles:'Il compte ses fioles', lumiere:'Une fiole vers la lumière',
+  baton:'Elle frotte le cristal de son bâton', lunettes:'Elle remonte ses lunettes', tape:'Elle tape le sol de son bâton'};
 })(window);

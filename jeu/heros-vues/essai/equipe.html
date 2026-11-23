@@ -10,7 +10,8 @@ var ANG = (Hh[0] || '0,35,70,115,180').split(',').map(Number), L = +Hh[1] || 230
 /* les héros du donjon, avec l'allure du donjon (DJ.LOOK) et la tenue de combat */
 var HEROS = {
   pisteur:{role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert', combat:true},
-  alchimiste:{role:'alchimiste', sexe:'m', peau:'p4', cheveux:'noir', yeux:'ambre', coiffure:'courts', combat:true}
+  alchimiste:{role:'alchimiste', sexe:'m', peau:'p4', cheveux:'noir', yeux:'ambre', coiffure:'courts', combat:true},
+  sage:{role:'sage', sexe:'f', peau:'p5', cheveux:'noir', yeux:'ambre', coiffure:'tresse', combat:true}
 };
 var s = '', n = 0;
 ROLES.forEach(function(r){ ANG.forEach(function(a){

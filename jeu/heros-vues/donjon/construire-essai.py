@@ -16,7 +16,7 @@ ICI = pathlib.Path(__file__).resolve().parent
 HV = ICI.parent
 DONJON = HV.parent / 'donjon' / 'moteur' / 'sortie'
 SORTIE = HV / 'sortie' / 'donjon-essai'
-SRC = ['hv-base.js', 'hv-tete.js', 'hv-cheveux.js', 'hv-corps.js', 'hv-pantin.js', 'hv-poses.js', 'hv-positions.js', 'hv-donjon.js', 'hv-alchimiste.js', 'hv-attente.js']
+SRC = ['hv-base.js', 'hv-tete.js', 'hv-cheveux.js', 'hv-corps.js', 'hv-pantin.js', 'hv-poses.js', 'hv-positions.js', 'hv-donjon.js', 'hv-alchimiste.js', 'hv-sage.js', 'hv-attente.js']
 
 if not (DONJON / 'index.html').exists():
     raise SystemExit('Le donjon n\'est pas construit : python3 jeu/donjon/moteur/construire.py')

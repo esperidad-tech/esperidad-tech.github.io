@@ -408,6 +408,47 @@ function mainSVG(K, V, B, P){
       hb += '<path d="M' + f1(b0[0]) + ' ' + f1(b0[1]) + ' Q' + f1((b0[0] + b1[0]) / 2 + 7) + ' ' + f1((b0[1] + b1[1]) / 2 - 6) + ' ' + f1(b1[0]) + ' ' + f1(b1[1]) + ' Q' + f1((b0[0] + b1[0]) / 2 - 7) + ' ' + f1((b0[1] + b1[1]) / 2 + 6) + ' ' + f1(b0[0]) + ' ' + f1(b0[1]) + ' Z" fill="' + (i % 2 ? '#7ef08a' : '#5fd06a') + '" stroke="#1e5a2a" stroke-width="1.5"/>'; });
     objet += '<g opacity="' + f1(doux(0.05, 0.5, P.herbes)) + '">' + hb + '</g>';
   }
+  /* LE BÂTON À CRISTAL DU SAGE (K.baton, dans SA main droite ; P.sansBaton : posé) : un long bâton de bois qui passe dans le poing, du
+     sol jusqu'au-dessus de sa tête ; en haut, deux griffes dorées tiennent un cristal bleu qui luit (P.cristal : il brille plus fort) */
+  if(cote < 0 && K.baton && !(P.sansBaton > 0.5)){
+    var b0 = Q(7.6, -176, 2.4), b1 = Q(7.6, 120, 2.4), bc = Q(7.6, 142, 2.4), bh = Q(7.6, 165, 2.4), ux = bh[0] - bc[0], uy = bh[1] - bc[1], ul = Math.sqrt(ux * ux + uy * uy) || 1;
+    var px = -uy / ul * 11.5, py = ux / ul * 11.5, cri = borne(P.cristal || 0, 0, 1), cb2 = Q(7.6, 120, 2.4);
+    var g0 = Q(7.6, 116, 2.4), g1 = Q(7.6, 106, 2.4);
+    objet += PT(U.poly([b0, b1], false), O, 9.6) + PT(U.poly([b0, b1], false), '#7a5230', 6.2) + PT(U.poly([Q(7.6, -170, 2.4), Q(7.6, 112, 2.4)], false), '#a87a4a', 2, ' opacity=".7"') +
+      /* (les bagues dorées sous le cristal) */
+      PT(U.poly([g0, g1], false), O, 11) + PT(U.poly([g0, g1], false), '#e8c062', 7.4) +
+      /* (la lueur, les griffes, le cristal : un losange taillé) */
+      '<circle cx="' + f1(bc[0]) + '" cy="' + f1(bc[1]) + '" r="' + f1(26 + 12 * cri) + '" fill="#3fd0ff" opacity="' + f1(0.16 + 0.22 * cri) + '"/>' +
+      '<circle cx="' + f1(bc[0]) + '" cy="' + f1(bc[1]) + '" r="' + f1(15 + 6 * cri) + '" fill="#8ff3ff" opacity="' + f1(0.22 + 0.3 * cri) + '"/>' +
+      PT('M' + f1(cb2[0] - px * 0.9) + ' ' + f1(cb2[1] - py * 0.9) + ' Q' + f1(bc[0] - px * 1.25) + ' ' + f1(bc[1] - py * 1.25) + ' ' + f1(bc[0] - px * 0.7 + ux / ul * 8) + ' ' + f1(bc[1] - py * 0.7 + uy / ul * 8) +
+        ' M' + f1(cb2[0] + px * 0.9) + ' ' + f1(cb2[1] + py * 0.9) + ' Q' + f1(bc[0] + px * 1.25) + ' ' + f1(bc[1] + py * 1.25) + ' ' + f1(bc[0] + px * 0.7 + ux / ul * 8) + ' ' + f1(bc[1] + py * 0.7 + uy / ul * 8), O, 5.6) +
+      PT('M' + f1(cb2[0] - px * 0.9) + ' ' + f1(cb2[1] - py * 0.9) + ' Q' + f1(bc[0] - px * 1.25) + ' ' + f1(bc[1] - py * 1.25) + ' ' + f1(bc[0] - px * 0.7 + ux / ul * 8) + ' ' + f1(bc[1] - py * 0.7 + uy / ul * 8) +
+        ' M' + f1(cb2[0] + px * 0.9) + ' ' + f1(cb2[1] + py * 0.9) + ' Q' + f1(bc[0] + px * 1.25) + ' ' + f1(bc[1] + py * 1.25) + ' ' + f1(bc[0] + px * 0.7 + ux / ul * 8) + ' ' + f1(bc[1] + py * 0.7 + uy / ul * 8), '#e8c062', 2.6) +
+      '<path d="M' + f1(bh[0]) + ' ' + f1(bh[1]) + ' L' + f1(bc[0] + px) + ' ' + f1(bc[1] + py) + ' L' + f1(2 * bc[0] - bh[0]) + ' ' + f1(2 * bc[1] - bh[1]) + ' L' + f1(bc[0] - px) + ' ' + f1(bc[1] - py) + ' Z" fill="#8ff3ff"' + U.c(2.2) + '/>' +
+      '<path d="M' + f1(bh[0]) + ' ' + f1(bh[1]) + ' L' + f1(bc[0] - px) + ' ' + f1(bc[1] - py) + ' L' + f1(bc[0]) + ' ' + f1(bc[1]) + ' Z" fill="#e8fdff" opacity=".9"/>' +
+      '<path d="M' + f1(bc[0]) + ' ' + f1(bc[1]) + ' L' + f1(bc[0] + px) + ' ' + f1(bc[1] + py) + ' L' + f1(2 * bc[0] - bh[0]) + ' ' + f1(2 * bc[1] - bh[1]) + ' Z" fill="#3fb8e8" opacity=".55"/>';
+    [-150, -110, -60, 0, 50, 100, 142].forEach(function(b){ objetPts.push(Q(7.6, b, 2.4)); });
+    /* (où sont le cristal et le pied du bâton : l'adaptateur du donjon y fait partir les sorts) */
+    K.rep = K.rep || {}; K.rep.cristal = bc; K.rep.batonBas = b0;
+  }
+  /* LE LIVRE DU SAGE (P.livre, dans SA main gauche ; P.livreO : ouvert) : fermé, une couverture bleue au bord doré ; ouvert, deux pages
+     crème posées dans la paume, des lignes d'écriture */
+  if(cote > 0 && (P.livre || 0) > 0.05){
+    var lo = borne(P.livreO || 0, 0, 1), lc0 = Q(11, 0, 5);
+    /* (grand, pour qu'on le voie au donjon) */
+    function QB(u, v){ return Q(11 + u * 1.45, v * 1.45, 5 + 3.5 * Math.abs(u) / 26 * lo); }
+    var couv = [QB(-1, -15), QB(21, -15), QB(21, 15), QB(-1, 15)];
+    var lb = '<g opacity="' + f1(doux(0.05, 0.5, P.livre)) + '">';
+    if(lo < 0.98) lb += '<g opacity="' + f1(1 - lo) + '">' + PC(U.poly(couv), '#2f4f9a', 2.2) + PT(U.poly([QB(1, -13), QB(19, -13), QB(19, 13), QB(1, 13)]), '#e8c062', 1.4) + '</g>';
+    if(lo > 0.02){
+      var pg1 = [QB(0, -15), QB(-24 * lo, -14), QB(-24 * lo, 14), QB(0, 15)], pg2 = [QB(0, -15), QB(24 * lo, -14), QB(24 * lo, 14), QB(0, 15)], ecr = '';
+      [-9, -4, 1, 6].forEach(function(v){ [[-20, -4], [4, 20]].forEach(function(r){ var a1 = QB(r[0] * lo, v), a2 = QB(r[1] * lo, v); ecr += 'M' + f1(a1[0]) + ' ' + f1(a1[1]) + ' L' + f1(a2[0]) + ' ' + f1(a2[1]) + ' '; }); });
+      lb += '<g opacity="' + f1(lo) + '">' + PC(U.poly(pg1), '#f6ecd0', 2) + PC(U.poly(pg2), '#fbf3dc', 2) + PT(ecr, '#9a8a6a', 1.1, ' opacity=".8"') + PT(U.poly([QB(0, -15), QB(0, 15)], false), '#c9b285', 1.6) + '</g>';
+    }
+    objet += lb + '</g>';
+    objetPts.push(lc0, QB(20, 0), QB(-20 * lo, 0));
+    K.rep = K.rep || {}; K.rep.livre = lc0;
+  }
   /* la paume */
   var p1 = Q(1.5, 3.4), p2 = Q(1.5, -3.4), p3 = Q(9.6, 4.7), p4 = Q(9.6, -4.7), Lp = [];
   Lp.push(gelule(p1[0], p1[1], 4.5, p3[0], p3[1], 3.9), gelule(p2[0], p2[1], 4.5, p4[0], p4[1], 3.9), gelule(p3[0], p3[1], 3.9, p4[0], p4[1], 3.9), gelule(p1[0], p1[1], 4.5, p2[0], p2[1], 4.5));
@@ -517,6 +558,62 @@ function objetsTout(o, m){
 /* ---------- Le buste : un seul contour avec les manches de devant ----------
    jb.devant : les jambes qui passent devant le haut du corps (un genou levé devant la poitrine) ; jb.ouv : les jambes vues par
    l'ouverture de la tunique (accroupie de face, on regarde dans le bas de la tunique : les cuisses en sortent). */
+/* ==========================================================
+   LA LONGUE ROBE DU SAGE (K.robe — Romain, 23 novembre, 22 h 21 : « tu peux passer au sage ») : une robe crème qui tombe de la taille
+   jusqu'aux chevilles, sous un manteau bleu ouvert devant, bordé d'or. Elle cache les jambes : on la dessine comme ce qui
+   enveloppe la taille, les deux genoux et les deux chevilles (l'enveloppe de ces points, à l'écran) — quand elle marche, court,
+   s'agenouille ou tombe, la robe suit les jambes. Les jambes sont dessinées dessous (on ne voit que le bout des bottes). Le manteau :
+   la même enveloppe, arrêtée à mi-mollet, ouverte devant (une fente le long du milieu du corps, qui tourne avec lui ; vue de dos,
+   il est fermé), un liseré doré le long de l'ouverture et un ourlet doré en bas de la robe.
+   ========================================================== */
+function robeSVG(K, V, T, jg, jd){
+  var i, a, ROBE = ['#f7eed6', '#ead9b2', '#c9b285'], MANT = [U.clair(K.tenue, 0.25), K.tenue, U.sombre(K.tenue, 0.45)], OR = '#e8c062';
+  function rond3(c, r, n, dy){ var L = []; for(var k = 0; k < n; k++){ var t = k / n * 2 * Math.PI; L.push(pj([c[0] + r * Math.cos(t), c[1] + (dy || 0), c[2] + r * Math.sin(t)], V)); } return L; }
+  var taille = [];
+  for(i = 0; i < 24; i++){ a = i / 24 * 2 * Math.PI; taille.push(T.pt(a, 228).p); }
+  var genoux = rond3(jg.Kn, 21, 10).concat(rond3(jd.Kn, 21, 10));
+  /* (l'ourlet : autour de chaque cheville, un peu au-dessus du pied ; marqué pour tracer le bord doré) */
+  var ourlet = rond3(jg.An, 24, 16, 2).concat(rond3(jd.An, 24, 16, 2)).map(function(p){ return [p[0], p[1], p[2], 1]; });
+  var mollets = rond3(mixv(jg.Kn, jg.An, 0.62), 25, 12).concat(rond3(mixv(jd.Kn, jd.An, 0.62), 25, 12));
+  var H = enveloppe(taille.concat(genoux, ourlet).map(function(p){ return [p[0], p[1], p[3] || 0]; }));
+  var dR = U.lisse(H), xa = 1e9, xb = -1e9, ya = 1e9, yb = -1e9;
+  H.forEach(function(p){ xa = Math.min(xa, p[0]); xb = Math.max(xb, p[0]); ya = Math.min(ya, p[1]); yb = Math.max(yb, p[1]); });
+  var id = K.n('robe'), s = '<defs>' + degU(id + 'G', xa, 0, xb, 0, st(0, ROBE[0]) + st(0.55, ROBE[1]) + st(1, ROBE[2])) +
+    degU(id + 'M', xa, 0, xb, 0, st(0, MANT[0]) + st(0.5, MANT[1]) + st(1, MANT[2])) + '<clipPath id="' + id + 'C"><path d="' + dR + '"/></clipPath>';
+  /* (les plis : du devant de la taille vers l'ourlet) */
+  var plis = '';
+  [-0.7, -0.25, 0.25, 0.7].forEach(function(az, k){
+    var t0 = T.pt(az, 236); if(!t0.vu) return;
+    var b = pj(add(mixv(jg.An, jd.An, 0.2 + 0.2 * k), [0, -6, 0]), V);
+    plis += 'M' + f1(t0.p[0]) + ' ' + f1(t0.p[1]) + ' Q' + f1((t0.p[0] + b[0]) / 2 + (k - 1.5) * 4) + ' ' + f1((t0.p[1] + b[1]) / 2) + ' ' + f1(b[0]) + ' ' + f1(b[1]) + ' ';
+  });
+  /* (le bord du bas : les points de l'enveloppe qui viennent des chevilles, à la suite) */
+  var bord = [], cur = [];
+  H.concat([H[0]]).forEach(function(p){ if(p[2]) cur.push(p); else { if(cur.length > 1) bord.push(cur); cur = []; } });
+  if(cur.length > 1) bord.push(cur);
+  var dBord = bord.map(function(L){ return U.poly(L, false); }).join(' ');
+  /* LE MANTEAU : l'enveloppe de la taille, des genoux, des mollets ; ouvert devant */
+  var HM = enveloppe(taille.concat(genoux, mollets).map(function(p){ return [p[0], p[1]]; })), dM = U.lisse(HM);
+  var avant = T.pt(0, 236), ouvre = '', bordsOr = '';
+  if(avant.vu){
+    var fz = sub(T.pt(0, 250).w, T.pt(Math.PI, 250).w), sx = sub(T.pt(Math.PI / 2, 250).w, T.pt(-Math.PI / 2, 250).w);
+    fz = uni(fz); sx = uni(sx);
+    var m0 = mixv(mixv(jg.Kn, jg.An, 0.62), mixv(jd.Kn, jd.An, 0.62), 0.5), B0 = add(m0, fz, 30);
+    var TL = T.pt(-0.36, 230).w, TR = T.pt(0.36, 230).w, BL = add(B0, sx, -15), BR = add(B0, sx, 15), BL2 = add(BL, [0, 90, 0]), BR2 = add(BR, [0, 90, 0]);
+    var O4 = [TL, TR, BR, BR2, BL2, BL].map(function(q){ return pj(q, V); });
+    ouvre = '<mask id="' + id + 'O" maskUnits="userSpaceOnUse" x="-260" y="-120" width="520" height="600"><rect x="-260" y="-120" width="520" height="600" fill="#fff"/><path d="' + U.poly(O4) + '" fill="#000"/></mask>';
+    bordsOr = 'M' + f1(O4[0][0]) + ' ' + f1(O4[0][1]) + ' L' + f1(O4[5][0]) + ' ' + f1(O4[5][1]) + ' L' + f1(O4[4][0]) + ' ' + f1(O4[4][1]) +
+      ' M' + f1(O4[1][0]) + ' ' + f1(O4[1][1]) + ' L' + f1(O4[2][0]) + ' ' + f1(O4[2][1]) + ' L' + f1(O4[3][0]) + ' ' + f1(O4[3][1]);
+  }
+  s += '<clipPath id="' + id + 'MC"><path d="' + dM + '"/></clipPath>' + ouvre + '</defs>';
+  /* la robe */
+  s += PF(dR, 'url(#' + id + 'G)') + '<g clip-path="url(#' + id + 'C)">' + (plis ? PT(plis, ROBE[2], 1.6, ' opacity=".7"') : '') +
+    (dBord ? PT(dBord, O, 7) + PT(dBord, OR, 3.6) : '') + '</g>' + PT(dR, O, 2.4);
+  /* le manteau, par-dessus */
+  s += '<g' + (ouvre ? ' mask="url(#' + id + 'O)"' : '') + '>' + PF(dM, 'url(#' + id + 'M)') + PT(dM, O, 2.4) + '</g>';
+  if(bordsOr) s += '<g clip-path="url(#' + id + 'MC)">' + PT(bordsOr, O, 6) + PT(bordsOr, OR, 3) + '</g>';
+  return s;
+}
 function torse(K, h, T, P, avant, fond, jb){
   var V = T.V, cq = T.coques(), s = '', i, cid = K.n('tun');
   var pH = pj(T.C[0], V), pB = pj(T.C[NF], V), pM = pj(T.fr(204).C, V);
@@ -860,7 +957,9 @@ HV.corps = function(K, h, V, P){
      main qui va chercher une flèche dans le carquois, derrière sa tête ; Romain, 16 h 39 : « le mouvement du bras qui se relève, il y
      est pas toujours ») */
   var tH = pj(T.lieu([0, 118, -2]), V);
-  [bG, bD].forEach(function(b){ var w = pj(b.W, V); b.prTete = (w[2] > tH[2] + 6 && w[1] < tH[1] + 12 && Math.abs(w[0] - tH[0]) < 62) || (b.cle === 'D' && P.mainSurTete > 0.5 && dos && w[1] < tH[1] + 60); });
+  [bG, bD].forEach(function(b){ var w = pj(b.W, V); b.prTete = (w[2] > tH[2] + 6 && w[1] < tH[1] + 12 && Math.abs(w[0] - tH[0]) < 62) || (b.cle === 'D' && P.mainSurTete > 0.5 && dos && w[1] < tH[1] + 60);
+    /* (le bâton du Sage : son cristal, à la hauteur de la tête, plus près de nous qu'elle, passe devant elle) */
+    if(!b.prTete && b.cle === 'G' && K.baton && !(P.sansBaton > 0.5)){ var cr = pj(add(b.W, [0, -138, 0]), V); b.prTete = cr[2] > tH[2] + 4 && Math.abs(cr[0] - tH[0]) < 70 && Math.abs(cr[1] - tH[1]) < 80; } });
   /* (une main cachée par le buste — de dos, la main qui tire la corde vers son menton, de l'autre côté — : tout son bras passe
      derrière le buste, même si son coude, tiré en arrière, est de notre côté : on voit le coude dépasser, pas la main par-dessus
      l'épaule — Romain, 17 h 44 : « elle passe par-dessus les textures ») */
@@ -888,7 +987,7 @@ HV.corps = function(K, h, V, P){
   var pa = avant.map(function(b){ return brasSVG(K, V, b, P, false); });
   /* LES JAMBES : celle du fond d'abord. Elles sont dessinées après le buste ; chaque morceau (la cuisse, la botte) est caché là
      où la poitrine ou la jupe est devant lui (on regarde, en plusieurs points du morceau, ce qui est le plus près de nous). */
-  var J2 = [jg, jd].sort(function(a, b){ return a.fond - b.fond; }), jb = '', dbg = [], membres = [], jambesInfo = [];
+  var J2 = [jg, jd].sort(function(a, b){ return a.fond - b.fond; }), jb = '', dbg = [], membres = [], jambesInfo = [], sousRobe = [];
   function prof(){ var s = 0, i; for(i = 0; i < arguments.length; i++) s += pj(arguments[i], V)[2]; return s / arguments.length; }
   function morceau(svg, pts, r, nom){
     var R = cote3(T, pts, r), id = R.haut < 0 && R.jupe < 0 ? 'mHJ' : R.haut < 0 ? 'mH' : R.jupe < 0 ? 'mJ' : '';
@@ -967,7 +1066,9 @@ HV.corps = function(K, h, V, P){
        tibia part en arrière). */
     var cuisseDevant = prof(add(j.Kn, j.dc, -10)) > prof(add(j.Kn, j.dj, 10)) + 5;
     var dj = (prof(mixv(j.Ha, j.Kn, 0.6)) + prof(j.Kn, j.An)) / 2;
-    membres.push({d:dj, s:cuisseDevant ? sBotte + jb : jb + sBotte});
+    /* (sous une longue robe — le Sage —, les jambes sont dessinées d'abord, toutes les deux, et la robe les recouvre : voir plus bas) */
+    if(K.robe) sousRobe.push({d:dj, s:cuisseDevant ? sBotte + jb : jb + sBotte});
+    else membres.push({d:dj, s:cuisseDevant ? sBotte + jb : jb + sBotte});
     jambesInfo.push({j:j, dCuisse:sv.dCuisse, dBotte:sv.dBotte, d:dj});
   });
   /* LES BRAS DE DEVANT ET LES JAMBES SE RANGENT ENTRE EUX selon la profondeur (le plus loin d'abord) : une main posée au sol devant
@@ -1037,6 +1138,8 @@ HV.corps = function(K, h, V, P){
     if(!jambesInfo.some(function(ji){ return ji.d < dw && prés(ji); })) return;
     membres.push({d:dw, s:'<g mask="url(#' + K.n('mHJ') + ')">' + brasTout(pf[i], masquesObjets(B, pf[i], 'f')) + '</g>'});
   });
+  /* LA LONGUE ROBE (K.robe) : les jambes, puis la robe et le manteau par-dessus, avant tous les bras de devant */
+  if(K.robe){ sousRobe.sort(function(a, b){ return a.d - b.d; }); membres.push({d:-1e9, s:sousRobe.map(function(m){ return m.s; }).join('') + robeSVG(K, V, T, jg, jd)}); }
   membres.sort(function(a, b){ return a.d - b.d; });
   jb = (defsArc ? '<defs>' + defsArc + '</defs>' : '') + membres.map(function(m){ return m.s; }).join('');
   var tor = torse(K, h, T, P, avant, fond, {ouv:function(){ return J2.map(function(j){ return jambeSVG(K, V, j, P, 'o').svg; }).join(''); }});

@@ -122,6 +122,9 @@ HV.POSES = {
        pour verser) ; louche, la grande louche dans SA main droite (loucheR : il la fait tournoyer, en degrés) ; marmite, la petite
        marmite dans SA main gauche ; herbes, une poignée d'herbes dans SA main gauche */
     fioleG:0, fioleD:0, fioleV:0, louche:0, loucheR:0, marmite:0, herbes:0,
+    /* LE SAGE (hv-sage.js) : cristal, son cristal brille (0 … 1) ; sansBaton, le bâton est posé (1) ; livre, le livre dans SA main
+       gauche (0 … 1) ; livreO, il est ouvert (0 … 1) */
+    cristal:0, sansBaton:0, livre:0, livreO:0,
     /* leve : elle est en l'air (un saut), de tant ; son ombre reste au sol et rapetisse */
     leve:0},
   /* une main sur la hanche, la tête un peu penchée */

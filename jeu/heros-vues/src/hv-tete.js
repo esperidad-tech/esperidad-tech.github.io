@@ -132,6 +132,21 @@ HV.tete = function(K, h, V, P, CH){
     [-1, 1].forEach(function(d){ dans += PF(U.poly(poseL(ovale(19 * d, 16, 6 + rj, 3.2 + rj * 0.8, 14), V)), K.peau.joue, ' opacity="' + f1(0.34 + 0.34 * rj) + '"'); });
     /* les yeux */
     dans += oeil(K, -1, V, P, f) + oeil(K, 1, V, P, f);
+    /* LES LUNETTES RONDES (le Sage : K.lunettes) : deux cercles de laiton posés sur le visage autour des yeux, comme les yeux (elles
+       glissent et se resserrent quand elle tourne la tête), le pont sur le nez, les branches vers les oreilles, un reflet */
+    if(K.lunettes){
+      var LC = '#c9973a', LS = '#4a2e10';
+      [-1, 1].forEach(function(d){
+        var R = poseL(ovale(12.5 * d, 6.5, 9.6, 8.4, 26), V), Rf = U.poly(R);
+        dans += PF(Rf, '#e6f6ff', ' opacity=".16"') + PT(Rf, LS, 3.6) + PT(Rf, LC, 1.9);
+        var br = poseL([[21.9 * d, 5], [25.5 * d, 5.5], [28 * d, 7]], V);
+        dans += PT(U.poly(br, false), LS, 3) + PT(U.poly(br, false), LC, 1.4);
+        var re = poseL([[12.5 * d - 5.5, 2.5], [12.5 * d - 3.5, 0.2], [12.5 * d - 0.5, -0.6]], V);
+        dans += PT(U.poly(re, false), '#ffffff', 1.5, ' opacity=".75"');
+      });
+      var pont = poseL([[-3, 5.2], [0, 3.6], [3, 5.2]], V);
+      dans += PT(U.poly(pont, false), LS, 3.2) + PT(U.poly(pont, false), LC, 1.6);
+    }
     /* le nez : un petit trait qui pointe du côté où elle regarde ; de profil, c'est le contour qui le dessine */
     var S15 = Sv(15.6);
     var gn = glisse(15);
