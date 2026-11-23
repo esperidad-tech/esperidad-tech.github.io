@@ -593,17 +593,22 @@ function torse(K, h, T, P, avant, fond, jb){
     });
     if(s2) dessusHaut += '<clipPath id="' + bc + '"><use href="#' + K.n('tc') + '"/>' + avant.map(function(B){ return '<path d="' + B.manche[0] + '"/>'; }).join('') + '</clipPath><g clip-path="url(#' + bc + ')">' + s2 + '</g>';
   })();
-  /* LA FIOLE DE L'ALCHIMISTE, accrochée à sa sangle sur la poitrine : du verre, une potion orange qui brille, un bouchon */
+  /* LES POTIONS DE L'ALCHIMISTE (Romain, 20 h 24 : « plus de potions attachées sur lui ») : une grosse fiole orange sur la poitrine,
+     et des fioles de toutes les couleurs glissées dans sa sangle, de l'épaule à la hanche ; chacune n'est dessinée que si on voit
+     l'endroit de la sangle où elle est (elle tourne avec lui), un peu moins large quand on la voit par la tranche */
   if(K.tablier){
-    var fO = T.face(-12, 166);
-    if(fO.vu){
-      var fp = fO.p;
-      dessusHaut += '<g transform="translate(' + f1(fp[0]) + ' ' + f1(fp[1]) + ')">' +
+    var fiole = function(o, r, coul, clair){
+      var p = o.p, k = 0.55 + 0.45 * Math.max(0, Math.min(1, o.fa));
+      return '<g transform="translate(' + f1(p[0]) + ' ' + f1(p[1]) + ') scale(' + f1(k * r / 10) + ' ' + f1(r / 10) + ')">' +
         '<rect x="-3.2" y="-17" width="6.4" height="8" rx="1.5" fill="#e9e2f6"' + U.c(1.6) + '/><rect x="-3.8" y="-21" width="7.6" height="5" rx="1.6" fill="#a7743f"' + U.c(1.4) + '/>' +
-        '<circle cx="0" cy="0" r="10" fill="#efe9fb" opacity=".85"' + U.c(2) + '/>' +
-        '<path d="M-9.4 1.5 A 9.6 9.6 0 0 0 9.4 1.5 Q 4 -1.2 0 1 Q -4 3 -9.4 1.5 Z" fill="#ff8a2a"/><path d="M-6 4 A 7 7 0 0 0 6 4" fill="none" stroke="#ffd27a" stroke-width="2" opacity=".8"/>' +
+        '<circle cx="0" cy="0" r="10" fill="#efe9fb" opacity=".9"' + U.c(2) + '/>' +
+        '<path d="M-9.4 1.5 A 9.6 9.6 0 0 0 9.4 1.5 Q 4 -1.2 0 1 Q -4 3 -9.4 1.5 Z" fill="' + coul + '"/><path d="M-6 4 A 7 7 0 0 0 6 4" fill="none" stroke="' + clair + '" stroke-width="2" opacity=".8"/>' +
         '<path d="M-6 -5 Q -7 -1 -5.5 2" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".85"/></g>';
-    }
+    };
+    [[-1.05, 6.2, '#5fd06a', '#c8ffb0'], [-0.62, 6.4, '#4aa8ff', '#bfe6ff'], [-0.12, 10, '#ff8a2a', '#ffd27a'], [0.42, 6.4, '#b46cff', '#e6ccff'], [0.86, 6.2, '#ff5f7a', '#ffc4cf']].forEach(function(f){
+      var o = T.pt(f[0], 172.25 + 30.25 * Math.sin(f[0]));
+      if(o.vu && o.fa > 0.15) dessusHaut += fiole(o, f[1], f[2], f[3]);
+    });
   }
   /* la ceinture : un anneau de cuir, et sa boucle devant */
   var mc = pj(T.fr(208).C, V);
@@ -619,6 +624,21 @@ function torse(K, h, T, P, avant, fond, jb){
     /* (la boucle : un rectangle posé sur le ventre ; il se resserre quand elle se tourne, il penche quand elle se penche) */
     var ux = (bo[1][0] - bo[0][0]) / 18, uy = (bo[1][1] - bo[0][1]) / 18, vx = (bo[3][0] - bo[0][0]) / 20, vy = (bo[3][1] - bo[0][1]) / 20;
     ceinture += '<g transform="matrix(' + [ux, uy, vx, vy, (bo[0][0] + bo[2][0]) / 2, (bo[0][1] + bo[2][1]) / 2].map(function(v){ return Math.round(v * 1000) / 1000; }).join(' ') + ')"><rect x="-9" y="-10" width="18" height="20" rx="3" fill="#c9b07a"' + U.c(1.8) + '/><rect x="-4" y="-5" width="8" height="10" rx="1.5" fill="none" stroke="' + O + '" stroke-width="1.4"/><path d="M-6.6 -7.4 h4 M-6.6 -7.4 v5" stroke="#fff" stroke-width="1.3" stroke-linecap="round" opacity=".7"/></g>';
+  }
+
+  /* LES SACOCHES DE L'ALCHIMISTE (Romain, 20 h 24 : « plus de sacoches qui pendent sur sa robe ») : pendues à la ceinture tout
+     autour des hanches, sur la tunique ([où autour de lui, largeur, longueur]) ; chacune tourne avec lui et suit la pente du corps */
+  if(K.tablier){
+    [[0.78, 19, 24], [-0.92, 16, 20], [1.7, 18, 25], [-1.85, 15, 19], [2.65, 17, 22]].forEach(function(s3){
+      var h0 = T.pt(s3[0], 211), h1 = T.pt(s3[0], 211 + s3[2]);
+      if(!h0.vu || h0.fa < 0.12) return;
+      var a = h0.p, b = h1.p, k = 0.45 + 0.55 * Math.min(1, h0.fa), w = s3[1] * k / 2, dx = b[0] - a[0], dy = b[1] - a[1], L = Math.max(6, Math.sqrt(dx * dx + dy * dy)), th = Math.atan2(-dx, dy) * 180 / Math.PI;
+      ceinture += '<g transform="translate(' + f1(a[0]) + ' ' + f1(a[1]) + ') rotate(' + f1(th) + ')">' +
+        '<path d="M' + f1(-w) + ' 0 L' + f1(w) + ' 0 L' + f1(w + 1) + ' ' + f1(L * 0.78) + ' Q' + f1(w) + ' ' + f1(L) + ' 0 ' + f1(L + 1.2) + ' Q' + f1(-w) + ' ' + f1(L) + ' ' + f1(-w - 1) + ' ' + f1(L * 0.78) + ' Z" fill="' + K.u('cuir') + '"' + U.c(1.6) + '/>' +
+        '<path d="M' + f1(-w - 0.6) + ' -1 L' + f1(w + 0.6) + ' -1 L' + f1(w + 0.2) + ' ' + f1(L * 0.42) + ' Q0 ' + f1(L * 0.58) + ' ' + f1(-w - 0.2) + ' ' + f1(L * 0.42) + ' Z" fill="' + K.u('cuirH') + '"' + U.c(1.4) + '/>' +
+        '<rect x="-1.7" y="' + f1(L * 0.4) + '" width="3.4" height="3.2" rx=".6" fill="#c9b07a" stroke="' + O + '" stroke-width=".9"/>' +
+        couture('M' + f1(-w + 1.2) + ' ' + f1(L * 0.62) + ' Q0 ' + f1(L * 0.7) + ' ' + f1(w - 1.2) + ' ' + f1(L * 0.62), 0.5) + '</g>';
+    });
   }
 
   /* --- l'ouverture du bas de la tunique : quand on regarde dedans (accroupie, de face), on voit l'intérieur et les cuisses --- */

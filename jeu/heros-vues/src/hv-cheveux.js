@@ -177,10 +177,19 @@ COIFFURES.courts = {
   /* (les boucles : des ronds posés tout autour du crâne, dans la masse de derrière — là où ils dépassent, le contour fait des
      bosses ; [x, y, z, rayon]) */
   boucles:(function(){
-    var L = [[0, -58, 0, 7.5]], a;
-    for(a = 0; a < 360; a += 30) L.push([27 * Math.sin(a * Math.PI / 180), -51, 27 * Math.cos(a * Math.PI / 180), 7.5]);
-    for(a = 50; a <= 310; a += 26) L.push([33 * Math.sin(a * Math.PI / 180), -36, 33 * Math.cos(a * Math.PI / 180), 7]);
-    for(a = 110; a <= 250; a += 28) L.push([33 * Math.sin(a * Math.PI / 180), -20, 33 * Math.cos(a * Math.PI / 180), 6.5]);
+    /* (posées juste sous la surface des cheveux — elles ne dépassent que de 3 ou 4 —, en rangs décalés, un peu au hasard, jamais sur
+       le visage : plus on descend, plus elles sont seulement sur les côtés et derrière) */
+    var L = [[0, -57, 2, 6.5]], g = 7, rangs = [[-53, 7, 0], [-47, 10, 0], [-41, 12, 40], [-34, 12, 58], [-27, 11, 78], [-20, 9, 100], [-13, 7, 118], [-6, 5, 138]];
+    function hasard(){ g = (g * 16807) % 2147483647; return g / 2147483647; }
+    rangs.forEach(function(rg, j){
+      var y = rg[0], k = y < -12 ? Math.sqrt(Math.max(0, 1 - Math.pow((y + 12) / 45, 2))) : 1, n = rg[1], a0 = rg[2], i;
+      for(i = 0; i < n; i++){
+        var a = a0 + (360 - 2 * a0) * (n === 1 ? 0.5 : (i + (j % 2) * 0.5) / n) + (hasard() - 0.5) * 10, ar = a * Math.PI / 180, cs = Math.cos(ar);
+        if(a0 > 0 && (a < a0 || a > 360 - a0)) continue;
+        var rr = 5.6 + hasard() * 1.6;
+        L.push([(31.5 * k - 2.5) * Math.sin(ar), y + (hasard() - 0.5) * 3, ((cs >= 0 ? 30 : 35.5) * k - 2.5) * cs, rr]);
+      }
+    });
     return L;
   })()
 };
@@ -265,6 +274,18 @@ HV.cheveux = function(K, coif, V, P){
     });
   });
   dans += '<g fill="' + K.chev.c[2] + '" opacity=".4">' + fc + '</g>';
+  /* LES BOUCLES VUES SUR LE CRÂNE (Romain, 23 novembre, 20 h 24 : « quand on tourne, l'arrière de sa coiffure, elle bouge pas. Ça,
+     c'est pas normal ») : chaque boucle tournée vers nous est dessinée là où elle est sur la tête (un petit « c » sombre et un reflet) ;
+     elles glissent quand la tête tourne, passent derrière le bord, et celles de l'autre côté arrivent */
+  if(coif.boucles){
+    coif.boucles.forEach(function(b){
+      var ny = b[1] + 26, nl = Math.sqrt(b[0] * b[0] + ny * ny + b[2] * b[2]) || 1, f = (-b[0] * V.s + b[2] * V.c) / nl;
+      if(f < 0.08) return;
+      var q = ecran3([b], V)[0], r = b[3] * 0.72, sx = r * (0.5 + 0.5 * f);
+      dans += '<path d="M' + f1(q[0] - sx) + ' ' + f1(q[1] + r * 0.15) + ' A' + f1(sx) + ' ' + f1(r) + ' 0 1 1 ' + f1(q[0] + sx * 0.75) + ' ' + f1(q[1] + r * 0.65) + '" fill="none" stroke="' + K.chev.c[2] + '" stroke-width="1.5" stroke-linecap="round" opacity="' + f1(0.3 + 0.35 * f) + '"/>' +
+        '<path d="M' + f1(q[0] - sx * 0.55) + ' ' + f1(q[1] - r * 0.25) + ' Q' + f1(q[0] - sx * 0.1) + ' ' + f1(q[1] - r * 0.85) + ' ' + f1(q[0] + sx * 0.5) + ' ' + f1(q[1] - r * 0.45) + '" fill="none" stroke="' + K.chev.hl + '" stroke-width="1.5" stroke-linecap="round" opacity="' + f1(0.4 * f) + '"/>';
+    });
+  }
   /* la lumière : elle ne tourne pas avec la tête (elle reste en haut à gauche) ; elle suit seulement le milieu du crâne */
   var bm = U.bords(COIFFE.a(-26, V.w), V), cx = (bm[0] + bm[1]) / 2, kx = (bm[1] - bm[0]) / 63;
   dans += '<g transform="translate(' + f1(cx + 1) + ' 0) scale(' + f1(kx) + ' 1)">' + anneau(K, 0, -26, 26, 25, 208, 332, 6, 5.5) + '</g>';

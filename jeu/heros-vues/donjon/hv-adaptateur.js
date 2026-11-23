@@ -15,7 +15,7 @@
    ========================================================== */
 (function(G){
 'use strict';
-var HV = G.HerosVues, PROTO = null;
+var HV = G.HerosVues, PROTO = null, NUM = 0;
 /* (le cadre : la boîte du héros fait 200 × 240 ; ses pieds tombent là où tombaient ceux de l'ancien (le sol, y = 414, à 231,7 px
    du haut de la boîte) ; elle est 10 % plus grande qu'au premier essai — Romain, 20 h 05 : « elle est plus petite ») */
 var CADRE = [-21.8, 32.2, 329.6, 395.5], CAP = 55;
@@ -86,7 +86,7 @@ function Volume(cont, lk, creer0){
   this.calque.setAttribute('viewBox', [FX0, FY0, CADRE[2] * KF, CADRE[3] * KF].map(function(v){ return v.toFixed(2); }).join(' '));
   this.calque.setAttribute('style', 'position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none');
   this.boite.appendChild(this.calque);
-  this.effets = [];
+  this.effets = []; this.idGel = 'hvagel' + (++NUM);
   this.base = HV.POSES.dGarde; this.cles = null; this.t0 = maintenant(); this.tenue = null; this.dernier = this.base;
   /* (c'est l'adaptateur qui dit au pantin quelle pose prendre, à chaque image ; le pantin y ajoute sa petite vie) */
   this.p.courante = function(){ return me.pose(); };
@@ -228,27 +228,46 @@ function etoilesFilm(u, c){
       ' L' + x.toFixed(0) + ' ' + (y + 8).toFixed(0) + ' L' + (x - 8).toFixed(0) + ' ' + (y + 13).toFixed(0) + ' L' + (x - 6).toFixed(0) + ' ' + (y + 4).toFixed(0) + ' L' + (x - 13).toFixed(0) + ' ' + (y - 2).toFixed(0) + ' L' + (x - 4).toFixed(0) + ' ' + (y - 3).toFixed(0) + ' Z" fill="#ffd23f" stroke="' + O + '" stroke-width="2.5" opacity="' + o.toFixed(2) + '"/>'; }
   return s;
 }
-/* LE GIVRE (refait — Romain, 20 h 05 : « l'effet de froid, je suis pas fan » ; avant : de gros losanges posés sur elle) : un voile
-   blanc-bleu de givre sur la tête, les épaules, les bras et les genoux, hérissé de fines aiguilles de glace, et quelques flocons
-   qui tombent autour d'elle ; tout fond quand elle s'ébroue. o : l'opacité ; u : depuis quand */
-function givre(me, os, o, u){
+/* LE GIVRE (refait une troisième fois — Romain, 20 h 24 : « le gel, c'est toujours moche. Essaie de faire en sorte de mettre un petit
+   peu des cristaux et de changer un peu la couleur du personnage, le mettre un petit peu bleu ») : elle bleuit (un filtre de couleur
+   posé sur tout son dessin, seulement pendant le givre : gelGel()) et quelques bouquets de cristaux de glace poussent sur sa tête, ses
+   épaules, un coude et un genou, tournés vers l'extérieur. o : de 0 à 1 (ils poussent, puis fondent quand elle s'ébroue) */
+function givre(me, os, o){
   if(o <= 0) return '';
-  var s = '', i, k;
-  ['tete', 'epauleG', 'epauleD', 'coudeG', 'coudeD', 'poignetG', 'genouG', 'genouD'].forEach(function(n, i){
-    var q = me.ecranF(os[n]), x = q[0] + ((i * 37) % 17 - 8), y = q[1] + ((i * 53) % 13 - 6) - (n === 'tete' ? 46 : 0), r = (n === 'tete' ? 30 : 20) + (i % 3) * 3;
-    s += '<ellipse cx="' + x.toFixed(0) + '" cy="' + y.toFixed(0) + '" rx="' + (r * 1.3).toFixed(0) + '" ry="' + r.toFixed(0) + '" fill="#e8f7ff" opacity="' + (0.38 * o).toFixed(2) + '"/>';
-    var d = '';
-    for(k = 0; k < 7; k++){ var a = k / 7 * Math.PI * 2 + i * 0.7, l = r * (0.7 + 0.35 * ((k * 5 + i) % 3) / 2);
-      d += 'M' + x.toFixed(0) + ' ' + y.toFixed(0) + ' L' + (x + Math.cos(a) * l).toFixed(0) + ' ' + (y + Math.sin(a) * l * 0.85).toFixed(0) + ' '; }
-    s += '<path d="' + d + '" stroke="#9fd8f6" stroke-width="6" stroke-linecap="round" opacity="' + (0.7 * o).toFixed(2) + '"/>' +
-      '<path d="' + d + '" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" opacity="' + (0.95 * o).toFixed(2) + '"/>';
+  var s = '', c = me.ecranF(os.bassin);
+  [['tete', 0, -44, 1.15], ['epauleG', 0, 0, 1], ['epauleD', 0, 0, 0.9], ['coudeD', 0, 0, 0.75], ['genouG', 0, 0, 0.8]].forEach(function(z, i){
+    var q = me.ecranF(os[z[0]]), x = q[0] + z[1], y = q[1] + z[2], dx = x - c[0], dy = y - c[1] - 60, l0 = Math.sqrt(dx * dx + dy * dy) || 1, a0 = Math.atan2(dy / l0, dx / l0);
+    [-0.5, 0, 0.45].forEach(function(da, k){
+      var a = a0 + da + (i % 2 ? 0.08 : -0.06), l = (k === 1 ? 34 : 24) * z[3] * (0.4 + 0.6 * o), w = (k === 1 ? 8 : 6) * z[3], ca = Math.cos(a), sa = Math.sin(a), nx = -sa, ny = ca;
+      var P = [[x + nx * w * 0.5, y + ny * w * 0.5], [x + ca * l * 0.72 + nx * w * 0.5, y + sa * l * 0.72 + ny * w * 0.5], [x + ca * l, y + sa * l], [x + ca * l * 0.72 - nx * w * 0.5, y + sa * l * 0.72 - ny * w * 0.5], [x - nx * w * 0.5, y - ny * w * 0.5]];
+      var d = 'M' + P.map(function(p){ return p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(' L') + ' Z';
+      s += '<path d="' + d + '" fill="url(#' + me.idGel + 'c)" stroke="#3f84b8" stroke-width="2.2" stroke-linejoin="round" opacity="' + Math.min(1, o * 1.4).toFixed(2) + '"/>' +
+        '<path d="M' + P[0][0].toFixed(1) + ' ' + P[0][1].toFixed(1) + ' L' + P[1][0].toFixed(1) + ' ' + P[1][1].toFixed(1) + ' L' + P[2][0].toFixed(1) + ' ' + P[2][1].toFixed(1) + '" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="' + (0.9 * o).toFixed(2) + '"/>';
+    });
   });
-  var c = me.ecranF(os.cou);
-  for(i = 0; i < 7; i++){ var fx = c[0] + (i - 3) * 46 + 14 * Math.sin(u * 2 + i), fy = c[1] - 150 + ((u * 120 + i * 67) % 420);
-    s += '<path d="M' + (fx - 9).toFixed(0) + ' ' + fy.toFixed(0) + ' L' + (fx + 9).toFixed(0) + ' ' + fy.toFixed(0) + ' M' + (fx - 5).toFixed(0) + ' ' + (fy - 8).toFixed(0) + ' L' + (fx + 5).toFixed(0) + ' ' + (fy + 8).toFixed(0) +
-      ' M' + (fx + 5).toFixed(0) + ' ' + (fy - 8).toFixed(0) + ' L' + (fx - 5).toFixed(0) + ' ' + (fy + 8).toFixed(0) + '" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" opacity="' + (0.85 * o).toFixed(2) + '"/>'; }
   return s;
 }
+/* (le filtre « elle bleuit » : on passe de ses vraies couleurs, k = 0, à des couleurs glacées, k = 1 — moins vives, tirées vers le
+   bleu clair) */
+var GEL = [0.68, 0.1, 0.08, 0, 0.02, 0.07, 0.78, 0.14, 0, 0.05, 0.06, 0.14, 0.84, 0, 0.17, 0, 0, 0, 1, 0], NEUTRE = [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0];
+V.gelGel = function(k){
+  if(!this._gelF){
+    var d = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    d.innerHTML = '<filter id="' + this.idGel + '" color-interpolation-filters="sRGB" x="-20%" y="-20%" width="140%" height="140%"><feColorMatrix type="matrix" values="' + NEUTRE.join(' ') + '"/></filter>' +
+      '<linearGradient id="' + this.idGel + 'c" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4fdff"/><stop offset=".5" stop-color="#c4ecff"/><stop offset="1" stop-color="#7cc4ec"/></linearGradient>';
+    this.calque.parentNode.insertBefore(this._gelSvg(d), this.calque);
+    this._gelF = document.getElementById(this.idGel).firstChild;
+  }
+  if(k <= 0.001){ this.svg.style.filter = ''; return; }
+  this._gelF.setAttribute('values', GEL.map(function(v, i){ return (NEUTRE[i] + (v - NEUTRE[i]) * k).toFixed(3); }).join(' '));
+  this.svg.style.filter = 'url(#' + this.idGel + ')';
+};
+/* (les définitions du givre vivent dans un petit SVG à elles, à côté de son dessin) */
+V._gelSvg = function(defs){
+  var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  s.setAttribute('width', '0'); s.setAttribute('height', '0'); s.setAttribute('style', 'position:absolute;width:0;height:0');
+  s.appendChild(defs); return s;
+};
 /* les rats qui lui grimpent dessus, puis s'enfuient (le film) */
 function rats(me, os, u){
   var s = '';
@@ -369,7 +388,8 @@ V.touche = function(type, opt){
     if(g === 'coup') L.push(this.ombreFait('touche'));
     if(g === 'froid'){
       L.push(this.ombreFait('touche', 'froid', opt));
-      this.effet('givre', function(u, os){ return givre(this, os, u < 0.3 ? u / 0.3 : u < 2.25 ? 1 : Math.max(0, 1 - (u - 2.25) / 0.35), u); }, 2.6);
+      this.gelGel(0);
+      this.effet('givre', function(u, os){ var o = u < 0.3 ? u / 0.3 : u < 2.25 ? 1 : Math.max(0, 1 - (u - 2.25) / 0.3); this.gelGel(0.85 * o); return givre(this, os, o); }, 2.7);
     }
     if(g === 'rats'){
       this.effet('rats', function(u, os){ return rats(this, os, u); }, 3.0);

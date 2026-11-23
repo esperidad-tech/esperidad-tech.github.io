@@ -15,7 +15,7 @@ var HEROS = {
 var s = '', n = 0;
 ROLES.forEach(function(r){ ANG.forEach(function(a){
   var P = HV.pose(POSE); P.cap = a;
-  s += '<div class="c">' + HV.svg(HEROS[r], P, {id:'e' + (n++), cadre:'-10 -50 320 480'}).replace('<svg ', '<svg width="' + L + '" height="' + Math.round(L * 1.5) + '" ') + r + ' ' + a + '°</div>';
+  s += '<div class="c">' + HV.svg(HEROS[r], P, {id:'e' + (n++), cadre:(Hh[4] || '-10_-50_320_480').split('_').join(' ')}).replace('<svg ', '<svg width="' + L + '" height="' + Math.round(L * (+(Hh[4] || '-10_-50_320_480').split('_')[3]) / (+(Hh[4] || '-10_-50_320_480').split('_')[2])) + '" ') + r + ' ' + a + '°</div>';
 }); });
 document.body.innerHTML = s;
 </script>
