@@ -123,7 +123,7 @@ function Volume(cont, lk, creer0, role){
     ['_fleche', '_fleche2', '_impactFleche', '_impactFleche2', '_rebondFleche', '_lame', '_impactDague', '_recul',
       '_fioleVole', '_fioleVole2', '_eclatPotion', '_bong', '_swoosh', '_feuilles'].forEach(function(n){ if(PROTO[n] && !V[n]) V[n] = PROTO[n]; }); }
   catch(e){ this.ombre = null; if(G.console) console.warn('hv-adaptateur : pas d\'ancien héros', e); }
-  this._prochainRegard = maintenant() + 6 + Math.random() * 4;
+  this._prochainRegard = maintenant() + 2 + Math.random() * 4;
   /* (la fuite : le combat fait partir la case vers la gauche, retournée — elle court, au lieu de glisser en garde) */
   /* (et l'anneau doré à ses pieds suit la case : quand on peut la choisir — « dispo » — et quand c'est son tour — « actif » —,
      comme l'anneau des autres héros, mais dessiné avec elle : l'arrière derrière les bottes, l'avant devant) */
@@ -144,12 +144,21 @@ V.pose = function(){
   else {
     if(this.cles){ var a = this.apres; this.cles = null; this.apresF = typeof a === 'function' ? a : null; this.tenue = a && typeof a !== 'function' ? HV.avec(this.base, a) : null; this.t0 = t; this.trans = null; u = 0; this._finGeste(); }
     P = this.apresF ? this.apresF(u) : this.tenue || this.base;
-    /* (en attendant son tour, de temps en temps, elle regarde autour d'elle) */
-    if(!this.apresF && !this.tenue && !this.ko && this._veut && t > this._prochainRegard){ this._prochainRegard = t + 9 + Math.random() * 6; this.jouer(HV.DONJON.regard); }
+    /* (en attendant, il ne reste pas à rien faire : toutes les 4 à 7 secondes, un geste tiré au sort parmi ceux de tous et ceux de son
+       rôle — HV.attentes, hv-attente.js —, jamais deux fois le même de suite ; chacun à son rythme — Romain, 22 h 21) */
+    if(!this.apresF && !this.tenue && !this.ko && this._veut && t > this._prochainRegard){ this._prochainRegard = t + 4 + Math.random() * 3; this.jouer(this.attente()); }
   }
   if(this.trans){ var a2 = (t - this.trans.t) / this.trans.d; if(a2 < 1) P = melange(this.trans.A, P, lisse(a2)); else this.trans = null; }
   this.dernier = P;
   return P;
+};
+/* le geste d'attente suivant (V.attenteForcee : son nom, pour les films) */
+V.attente = function(){
+  var L = HV.attentes ? HV.attentes(this.role, this.base) : {ennemis:HV.DONJON.regard}, noms = Object.keys(L), me = this;
+  var cand = noms.filter(function(x){ return x !== me._derniereAttente; });
+  var n = this.attenteForcee && L[this.attenteForcee] ? this.attenteForcee : (cand[Math.floor(Math.random() * cand.length)] || noms[0]);
+  this._derniereAttente = n; this.attenteForcee = null;
+  return L[n];
 };
 V.calme = function(){ return !this.cles && !this.course && !this.apresF && !this.trans && !this.effets.length && !this._glisse && Math.abs((this.p.anV || 0) - (this.p.anC || 0)) < 0.02; };
 V._finGeste = function(){ var f = this._quandFini; this._quandFini = null; if(f) f(); };
