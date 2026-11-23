@@ -372,7 +372,8 @@ function mainSVG(K, V, B, P){
   var fv = cote < 0 ? (P.fioleG || 0) : (P.fioleD || 0);
   if(fv > 0.05){
     /* (grosse, pour qu'on la voie bien au donjon, où le héros est petit) */
-    var fc0 = Q(7.6, -18.5, 2.4), fn0 = Q(7.6, -7, 2.4), fn1 = Q(7.6, 6.5, 2.4), fn2 = Q(7.6, 11, 2.4), FR = 12.5, pot = K.potion || '#ff8a2a';
+    /* (la fiole de SA main gauche a sa couleur à elle, K.potion2 : il la verse dans celle de sa main droite) */
+    var fc0 = Q(7.6, -18.5, 2.4), fn0 = Q(7.6, -7, 2.4), fn1 = Q(7.6, 6.5, 2.4), fn2 = Q(7.6, 11, 2.4), FR = 12.5, pot = (cote > 0 && K.potion2) || K.potion || '#ff8a2a';
     objet += '<g opacity="' + f1(doux(0.05, 0.5, fv)) + '">' + PT(U.poly([fn0, fn1], false), O, 10.4) + PT(U.poly([fn0, fn1], false), '#e9e2f6', 6.8) +
       PT(U.poly([fn1, fn2], false), O, 11) + PT(U.poly([fn1, fn2], false), '#a7743f', 7.4) +
       '<circle cx="' + f1(fc0[0]) + '" cy="' + f1(fc0[1]) + '" r="' + FR + '" fill="#efe9fb" opacity=".92"' + U.c(2.2) + '/>' +

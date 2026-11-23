@@ -81,9 +81,11 @@ HV.arret = function(){
     [HV.ARRET.duree, g]];
 };
 
-/* ---------- EN GARDE, au donjon : les genoux un peu pliés, l'arc prêt de notre côté, la main libre près du carquois ---------- */
-P.dGarde = avec(P.repos, {bas:[0, 26, 2], bang:[8, 0, 0], dos:[10, 0, -4], piedG:[-32, 386, 18], piedD:[30, 386, -14], ouvG:0.45, ouvD:0.45,
-  genouG:[-0.45, 0, 1], genouD:[0.45, 0, 1],
+/* ---------- EN GARDE, au donjon : DEBOUT, les deux pieds bien posés au sol, les genoux à peine pliés (Romain, 23 novembre, 21 h 32 :
+   « les héros, ils flottent dans les airs […] il faut qu'ils soient posés au sol avec une ombre » — les genoux très pliés, le pied de
+   derrière plus haut à l'écran, donnaient l'air d'être en plein saut), l'arc prêt de notre côté, la main libre près du carquois ---------- */
+P.dGarde = avec(P.repos, {bas:[0, 7, 1], bang:[5, 0, 0], dos:[8, 0, -4], piedG:[-25, 386, 12], piedD:[25, 386, -10], ouvG:0.35, ouvD:0.35,
+  genouG:[-0.3, 0, 1], genouD:[0.3, 0, 1],
   mainG:[-58, 226, 30], coudeG:[-0.8, 0.3, -0.5], arcAxe:[-0.1, 0.92, -0.35], arcDir:[-0.85, 0, 0.5], poingG:0.8,
   mainD:[40, 206, 30], coudeD:[0.8, 0.3, -0.5], mdirD:[-0.2, 0.2, 1], poingD:0.45, hoche:-4,
   sourire:-0.2, largeB:0.85, sourcils:-0.55, plisse:0.15});
@@ -187,6 +189,24 @@ HV.DONJON = {
     [2.05, {bas:[0, 14, 0], mainG:[-86, 176, -4], relG:1, coudeG:[-1, 0.2, -0.2], arcAxe:[-0.2, 1, 0], arcDir:[-0.3, 0, 1], mainD:[84, 176, -4], relD:1, coudeD:[1, 0.2, -0.2], poingD:0.6, sourire:1, ouvre:0.2, sourcils:0.5}],
     [2.5, {}]]
 };
+/* L'AUTRE VICTOIRE : il saute en tournant sur lui-même, les deux bras en l'air, fou de joie (Romain, 23 novembre, 21 h 32 : la pirouette
+   de l'Alchimiste n'allait pas pour préparer une potion, « à la limite, le tourner comme on t'a fait, ça peut être pour la victoire
+   […] tu peux garder la victoire que t'as fait et tu fais aléatoirement […] tu peux l'appliquer sur d'autres persos ») ; l'adaptateur
+   tire au sort entre joie et joieTour. Un tour complet (tourne : -360, gardé jusqu'à la fin : sinon il retournerait en arrière). */
+(function(){
+  var BRAS = {mainG:[-56, 78, 10], relG:1, coudeG:[-1, 0.3, 0], arcAxe:[-0.25, 1, 0.1], arcDir:[-0.3, 0, 1], mainD:[56, 78, 10], relD:1, coudeD:[1, 0.4, 0], poingG:1, poingD:1, brasDessus:1};
+  var RIT = {sourire:1, ouvre:0.8, sourcils:0.9, plisse:0.5, rougit:0.6, hoche:-8};
+  function enLair(leve, tr){ return avec(avec(BRAS, RIT), {leve:leve, tourne:tr, bas:[0, 18, 0], piedG:[-18, 374, 6], piedD:[18, 374, -2], pointeG:30, pointeD:30}); }
+  HV.DONJON.joieTour = [
+    [0.18, {bas:[0, 44, 2], bang:[10, 0, 0], mainD:[42, 236, -12], mainG:[-58, 232, -6], hoche:6, sourire:1, ouvre:0.3, sourcils:0.6}],
+    [0.3, avec(avec(BRAS, RIT), {bas:[0, 6, 0], pointeG:40, pointeD:40, mainG:[-60, 120, 14], mainD:[58, 118, 14]})],
+    [0.4, enLair(30, -60)], [0.52, enLair(44, -170)], [0.64, enLair(38, -280)], [0.76, enLair(12, -350)],
+    [0.84, avec(avec(BRAS, RIT), {tourne:-360, bas:[0, 40, 2], ouvre:0.6})],
+    [1.1, avec(avec(BRAS, RIT), {tourne:-360, bas:[0, 8, 0], ouvre:0.7, mainG:[-60, 70, 10], mainD:[58, 72, 10]})],
+    [1.5, avec(avec(BRAS, RIT), {tourne:-360, bas:[0, 8, 0], ouvre:0.5, mainG:[-58, 76, 10], mainD:[56, 68, 10]})],
+    [1.85, {tourne:-360, bas:[0, 12, 0], mainG:[-86, 176, -4], relG:1, coudeG:[-1, 0.2, -0.2], arcAxe:[-0.2, 1, 0], arcDir:[-0.3, 0, 1], mainD:[84, 176, -4], relD:1, coudeD:[1, 0.2, -0.2], poingD:0.6, sourire:1, ouvre:0.2, sourcils:0.5}],
+    [2.25, {tourne:-360}]];
+})();
 
 /* ==========================================================
    LES AUTRES MOUVEMENTS DU DONJON (Romain, 23 novembre, 17 h 44 : « tu peux continuer un petit peu toutes les animations qu'il y a

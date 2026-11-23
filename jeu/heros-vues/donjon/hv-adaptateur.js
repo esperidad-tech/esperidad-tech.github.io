@@ -20,9 +20,11 @@
 (function(G){
 'use strict';
 var HV = G.HerosVues, PROTO = null, NUM = 0;
-/* (le cadre : la boîte du héros fait 200 × 240 ; ses pieds tombent là où tombaient ceux de l'ancien (le sol, y = 414, à 231,7 px
-   du haut de la boîte) ; elle est 10 % plus grande qu'au premier essai — Romain, 20 h 05 : « elle est plus petite ») */
-var CADRE = [-21.8, 32.2, 329.6, 395.5], CAP = 55;
+/* (le cadre : la boîte du héros fait 200 × 240 ; elle est 10 % plus grande qu'au premier essai — Romain, 20 h 05 : « elle est plus
+   petite ». Ses pieds tombaient là où tombaient ceux de l'ancien (à 231,7 px du haut de la boîte) : pile sur la ligne où le mur
+   rejoint le sol, son ombre à moitié sur le pied du mur, sombre — elle avait l'air de flotter devant le mur (Romain, 21 h 32). Ils
+   sont maintenant 4,9 px plus bas (le sol, y = 414, à 236,6 px du haut de la boîte) : bien posés SUR le sol, comme les rats.) */
+var CADRE = [-21.8, 24.2, 329.6, 395.5], CAP = 55;
 /* (les effets des films sont écrits dans les pixels du film — cadre [-130, -64, 560, 560] dans une image de 900 : on garde leurs
    nombres, et le calque des effets prend ce repère-là) */
 var KF = 900 / 560, FX0 = (CADRE[0] + 130) * KF, FY0 = (CADRE[1] + 64) * KF;
@@ -33,7 +35,9 @@ function css(){
   s.textContent = '.hva{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:1}' +
     '.hva-boite{position:absolute;inset:0;overflow:visible;will-change:transform}.hva-boite>svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;display:block}' +
     '.hva-fx{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:2}' +
-    '.hva-ombre-sol{position:absolute;left:0;top:0;width:100px;height:18px;margin:-9px 0 0 -50px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(0,0,0,.6),rgba(0,0,0,0))}' +
+    /* (son ombre : au moins aussi grande que celle des autres héros — 130 × 24 —, et plus foncée au milieu : sur le sol sombre du donjon,
+       l'ancienne ne se voyait pas et ils avaient l'air de flotter — Romain, 23 novembre, 21 h 32) */
+    '.hva-ombre-sol{position:absolute;left:0;top:0;width:100px;height:26px;margin:-13px 0 0 -50px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(0,0,0,.88),rgba(0,0,0,.66) 55%,rgba(0,0,0,0))}' +
     /* (son ombre et l'anneau de son tour sont dessinés avec elle : ceux de la case du donjon sont cachés) */
     '.perso.hv-volume>.ombre,.perso.hv-volume>.anneau{display:none!important}' +
     /* (l'ancien Pisteur, invisible : seuls ses effets se voient) */
@@ -204,7 +208,8 @@ V.ombreAuSol = function(){
   if((F.couche || 0) > 0.3) pts.push([b[0], 300, b[2] - 190 * F.couche]);
   pts.forEach(function(q){ var x = 150 + q[0] * Vv.c + q[2] * Vv.s; xa = Math.min(xa, x); xb = Math.max(xb, x); ds += -q[0] * Vv.s + q[2] * Vv.c; });
   var kx = (this.boite.offsetWidth || 200) / CADRE[2], lv = Math.max(0, F.leve || 0), k = 1 / (1 + lv / 70);
-  var X = ((xa + xb) / 2 - CADRE[0]) * kx, Y = (415 + 0.13 * ds / pts.length - CADRE[1]) * kx, W = ((xb - xa) * kx + 50) * k;
+  /* (son milieu un peu sous les semelles : l'ombre s'étale surtout sur le sol, devant le mur) */
+  var X = ((xa + xb) / 2 - CADRE[0]) * kx, Y = (421 + 0.13 * ds / pts.length - CADRE[1]) * kx, W = Math.max(140, (xb - xa) * kx + 90) * k;
   this.ombreSol.style.transform = 'translate(' + X.toFixed(1) + 'px,' + Y.toFixed(1) + 'px) scale(' + (W / 100).toFixed(3) + ',' + k.toFixed(3) + ')';
   this.ombreSol.style.opacity = k.toFixed(2);
 };
@@ -391,7 +396,10 @@ V.choisi = function(on){
   return Promise.resolve();
 };
 V.joie = function(){
-  return this.file(function(){ if(this.ko) return null; return Promise.all([this.jouer(HV.DONJON.joie), this.ombreFait('joie')]); });
+  /* (deux victoires, tirées au sort pour chacun : le saut les bras en l'air, ou le saut en tournant sur soi-même — Romain, 21 h 32 ;
+     V.joieForcee : 'joie' ou 'joieTour', pour les films) */
+  return this.file(function(){ if(this.ko) return null; var g = this.joieForcee || (Math.random() < 0.5 ? 'joie' : 'joieTour');
+    return Promise.all([this.jouer(HV.DONJON[g] || HV.DONJON.joie), this.ombreFait('joie')]); });
 };
 /* ELLE PREND UN COUP : le coup simple, le givre, les rats, le grand coup de poing */
 V.touche = function(type, opt){
@@ -528,44 +536,45 @@ function etincelles(x, y, u, n, c, r0, r1, graine){
       ' L' + xx.toFixed(1) + ' ' + (yy + 7).toFixed(1) + ' L' + (xx - 2).toFixed(1) + ' ' + (yy + 2).toFixed(1) + ' L' + (xx - 7).toFixed(1) + ' ' + yy.toFixed(1) + ' L' + (xx - 2).toFixed(1) + ' ' + (yy - 2).toFixed(1) + ' Z" fill="' + (i % 2 ? '#ffffff' : c) + '" opacity="' + o.toFixed(2) + '"/>'; }
   return s;
 }
-/* IL PRÉPARE UNE POTION : la fiole d'eau claire, les herbes émiettées (elle prend sa couleur, un éclat), la pirouette (une traînée de
-   lumière suit la fiole autour de lui, plus pâle quand elle passe derrière), la fiole levée vers la lumière (des rayons) ; puis il
-   attend, la fiole armée, qui luit doucement — jusqu'à ce qu'il la lance */
+/* le poing (dans ses mesures) : un peu au bout du poignet */
+function poingOs(os, cle){
+  var W = os['poignet' + cle], E = os['coude' + cle], d = [W[0] - E[0], W[1] - E[1], W[2] - E[2]], l = Math.sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]) || 1;
+  return [W[0] + d[0] / l * 7.6, W[1] + d[1] / l * 7.6, W[2] + d[2] / l * 7.6];
+}
+/* IL PRÉPARE UNE POTION (Romain, 21 h 32 : « tu lui fais une préparation. On voit bien qu'il prend ses fioles sur son torse, qui fait
+   un mélange ») : une fiole d'eau claire dans la main droite, une fiole de la couleur de la potion dans la gauche ; quand il penche la
+   gauche, un filet de potion coule dans la droite, qui prend sa couleur ; il secoue, le mélange s'illumine (un éclat, des étincelles) ;
+   puis il attend, la fiole armée, qui luit doucement — jusqu'à ce qu'il la lance */
 V.preparer = function(couleur){
   var me = this, A = HV.ALCHI;
   return this.file(function(){
     if(this.ko) return null;
-    var c = POTIONS[couleur] || couleur || '#5fd08a', trace = [];
+    var c = POTIONS[couleur] || couleur || '#5fd08a';
     this._fioleC = c;
-    this.p.K.potion = EAU;
-    this.plus(A.VERSE * 1000, function(){ me.p.K.potion = c; });
-    this.effet('fiole', function(u, os, T){
-      var q = fioleOs(os), f = this.ecranF(q), s = '', i;
-      /* (les miettes d'herbes tombent de la main gauche dans la fiole) */
-      if(u > A.VERSE - 0.1 && u < A.VERSE + 0.16){ var m = this.ecranF(os.poignetD), a0 = (u - (A.VERSE - 0.1)) / 0.26;
-        for(i = 0; i < 6; i++){ var a = Math.min(1, Math.max(0, a0 * 1.6 - i * 0.12)); if(a <= 0 || a >= 1) continue;
-          s += rond(mixe(m[0] + (i - 2.5) * 6, f[0], a), mixe(m[1] + 10, f[1], a) - 8 * Math.sin(a * Math.PI), 4.5, i % 2 ? '#7ef08a' : '#b8ffb0', 1, ' stroke="#1e5a2a" stroke-width="1.2"'); } }
-      if(u < A.VERSE) return s;
-      /* (l'éclat : elle prend sa couleur) */
-      var ue = u - A.VERSE;
-      if(ue < 0.5) s += lueur(f[0], f[1], 30 + 90 * ue, c, 1 - ue / 0.5) + etincelles(f[0], f[1], ue / 0.5, 8, c, 16, 80, 0.3);
-      /* (la traînée de la pirouette : la fiole tourne autour de lui ; quand elle passe derrière lui, sa lumière est cachée) */
-      if(u > A.TOURNE[0] - 0.08 && u < A.TOURNE[1] + 0.1){
-        trace.push([f[0], f[1], T, this.profondeur(q, os)]);
-        for(i = 1; i < trace.length; i++){ var p0 = trace[i - 1], p1 = trace[i], o = 1 - (T - p1[2]) / 0.24; if(o <= 0 || p0[3] < -4 || p1[3] < -4) continue;
-          var d = 'M' + p0[0].toFixed(0) + ' ' + p0[1].toFixed(0) + ' L' + p1[0].toFixed(0) + ' ' + p1[1].toFixed(0);
-          s += '<path d="' + d + '" stroke="' + c + '" stroke-width="' + (18 * o).toFixed(1) + '" stroke-linecap="round" opacity="' + (0.35 * o).toFixed(2) + '"/>' +
-            '<path d="' + d + '" stroke="#ffffff" stroke-width="' + (6 * o).toFixed(1) + '" stroke-linecap="round" opacity="' + (0.8 * o).toFixed(2) + '"/>'; }
+    this.p.K.potion = EAU; this.p.K.potion2 = c;
+    this.plus((A.VERSE + 0.16) * 1000, function(){ me.p.K.potion = c; });
+    this.effet('fiole', function(u, os){
+      var f = this.ecranF(fioleOs(os)), s = '', i;
+      /* (le filet de potion : du goulot de la fiole penchée au goulot de l'autre, dans le poing droit) */
+      var uv = u - A.VERSE;
+      if(uv > 0.02 && uv < 0.36){
+        var m = this.ecranF(poingOs(os, 'D')), b = this.ecranF(poingOs(os, 'G')), o = Math.min(1, (uv - 0.02) / 0.06, (0.36 - uv) / 0.08);
+        var x0 = m[0] - 14, y0 = m[1] + 6, x1 = b[0], y1 = b[1] - 10, d = 'M' + x0.toFixed(1) + ' ' + y0.toFixed(1) + ' Q' + ((x0 + x1) / 2 - 6).toFixed(1) + ' ' + (Math.min(y0, y1) - 4).toFixed(1) + ' ' + x1.toFixed(1) + ' ' + y1.toFixed(1);
+        s += '<path d="' + d + '" fill="none" stroke="' + O + '" stroke-width="8" stroke-linecap="round" opacity="' + (0.5 * o).toFixed(2) + '"/>' +
+          '<path d="' + d + '" fill="none" stroke="' + c + '" stroke-width="5" stroke-linecap="round" opacity="' + o.toFixed(2) + '"/>' +
+          '<path d="' + d + '" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" opacity="' + (0.7 * o).toFixed(2) + '"/>';
+        for(i = 0; i < 3; i++){ var a = ((uv * 4 + i / 3) % 1); s += rond(mixe(x1, x1 + (i - 1) * 10, a), y1 - 4 - 10 * Math.sin(a * Math.PI), 2.6 * (1 - a), c, o); }
       }
-      /* (levée vers la lumière : de grands rayons qui tournent) */
+      if(uv < 0.16) return s;
+      /* (elle a pris sa couleur : elle luit) */
+      var ue = u - (A.VERSE + 0.16);
+      if(ue < 0.35) s += lueur(f[0], f[1], 24 + 50 * ue, c, 1 - ue / 0.35);
+      /* (le mélange s'illumine) */
       var ul = u - A.ECLAT;
-      if(ul > -0.05 && ul < 0.5){ var ol = ul < 0.08 ? Math.max(0, (ul + 0.05) / 0.13) : 1 - (ul - 0.08) / 0.42;
-        for(i = 0; i < 10; i++){ var an = i / 10 * Math.PI * 2 + ul * 1.6, r0 = 26, r1 = 26 + (i % 2 ? 44 : 70) * (0.6 + 0.4 * ol);
-          s += '<path d="M' + (f[0] + r0 * Math.cos(an)).toFixed(1) + ' ' + (f[1] + r0 * Math.sin(an)).toFixed(1) + ' L' + (f[0] + r1 * Math.cos(an)).toFixed(1) + ' ' + (f[1] + r1 * Math.sin(an)).toFixed(1) + '" stroke="' + (i % 2 ? '#ffffff' : c) + '" stroke-width="5" stroke-linecap="round" opacity="' + (0.85 * ol).toFixed(2) + '"/>'; }
-        s += lueur(f[0], f[1], 70, c, ol) + etincelles(f[0], f[1], Math.min(1, ul / 0.5), 6, c, 20, 60, 1.1);
-      }
+      if(ul > -0.04 && ul < 0.5){ var ol = ul < 0.06 ? Math.max(0, (ul + 0.04) / 0.1) : 1 - (ul - 0.06) / 0.44;
+        s += lueur(f[0], f[1], 52, c, ol) + etincelles(f[0], f[1], Math.min(1, Math.max(0, ul) / 0.5), 8, c, 14, 62, 0.4); }
       /* (et elle luit doucement, tant qu'il la tient) */
-      return s + lueur(f[0], f[1], 34 + 4 * Math.sin(u * 7), c, 0.8);
+      return s + lueur(f[0], f[1], 26 + 3 * Math.sin(u * 7), c, 0.7);
     }, 99);
     return this.jouer(A.preparer, A.PRET);
   });
@@ -600,7 +609,61 @@ V.louche = function(scene, to){
     return this.jouer(A.louche);
   });
 };
-/* LES HERBES : il les lance en l'air, elles volent vers l'équipe (les feuilles de l'ancien, parties de sa main) */
+/* LES HERBES (Romain, 21 h 32 : « la main qui s'ouvre en l'air bien haut, le bras tendu vers le haut, et on voit les pétales qui
+   tombent sur les 3 personnes. Ça doit être un joli effet ») : il ouvre la main en l'air, une gerbe de pétales s'envole, puis retombe
+   doucement en se balançant sur chacun des héros (pour un seul ami : sur lui seul) ; là où ils arrivent, une douce lumière verte et des
+   petites croix qui montent. La promesse est rendue quand les premiers pétales touchent les héros. */
+var PETALES = ['#ffd1e6', '#ffffff', '#ffb3d1', '#c8ffb8', '#fff1f7', '#9be88a'];
+function cesHeros(scene, to, moi){
+  var S = scene.getBoundingClientRect(), ks = (S.width / (scene.offsetWidth || S.width)) || 1, L = [];
+  [].forEach.call(document.querySelectorAll('.perso.heros'), function(sl){
+    if(sl.classList.contains('avale') || getComputedStyle(sl).visibility === 'hidden') return;
+    var a = sl.querySelector('.acteur') || sl, r = a.getBoundingClientRect(); if(r.width < 10) return;
+    L.push({x:(r.left + r.width / 2 - S.left) / ks, y0:(r.top + r.height * 0.14 - S.top) / ks, y1:(r.top + r.height * 0.62 - S.top) / ks, w:r.width / ks});
+  });
+  if(!L.length) return [{x:to.x, y0:to.y - 40, y1:to.y + 60, w:120}];
+  /* (pour un seul ami — il n'est pas au milieu de l'équipe — : sur lui seul) */
+  if(to && moi && Math.abs(to.x - moi.x) > 40){ L.sort(function(a, b){ return Math.abs(a.x - to.x) - Math.abs(b.x - to.x); }); L = [L[0]]; }
+  return L;
+}
+function pluieDePetales(scene, a, cibles){
+  var NS = 'http://www.w3.org/2000/svg', sv = document.createElementNS(NS, 'svg'), W = scene.offsetWidth || 960, H = scene.offsetHeight || 540;
+  sv.setAttribute('width', W); sv.setAttribute('height', H); sv.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  sv.setAttribute('style', 'position:absolute;left:0;top:0;overflow:visible;pointer-events:none;z-index:6');
+  scene.appendChild(sv);
+  var N = 16 * cibles.length + 6, P = [], i, t0 = maintenant(), arrive = cibles.map(function(){ return 99; });
+  for(i = 0; i < N; i++){
+    var k = i % cibles.length, cb = cibles[k], tx = cb.x + (Math.random() - 0.5) * cb.w * 0.7, ty = cb.y0 + Math.random() * (cb.y1 - cb.y0);
+    var hx = a.x + (tx - a.x) * (0.25 + 0.2 * Math.random()) + (Math.random() - 0.5) * 70, hy = a.y - 70 - Math.random() * 90;
+    var dm = 0.32 + 0.12 * Math.random(), dc = 0.75 + 0.45 * Math.random(), dl = i * 0.012;
+    P.push({k:k, tx:tx, ty:ty, hx:hx, hy:hy, dm:dm, dc:dc, dl:dl, ph:Math.random() * 6.3, r0:Math.random() * 360, vr:(Math.random() - 0.5) * 540, c:PETALES[i % PETALES.length], s:0.9 + 0.6 * Math.random()});
+    arrive[k] = Math.min(arrive[k], dl + dm + dc);
+  }
+  var premier = Math.min.apply(null, arrive), fin = Math.max.apply(null, P.map(function(p){ return p.dl + p.dm + p.dc; })) + 0.9;
+  return new Promise(function(ok){
+    var rendu = false;
+    (function image(){
+      var t = maintenant() - t0, s = '';
+      /* (là où ils arrivent : une douce lumière verte, des petites croix qui montent) */
+      cibles.forEach(function(cb, k){ var u = t - arrive[k]; if(u < 0 || u > 0.9) return; var o = u < 0.15 ? u / 0.15 : 1 - (u - 0.15) / 0.75, cy = (cb.y0 + cb.y1) / 2;
+        s += '<ellipse cx="' + cb.x.toFixed(0) + '" cy="' + cy.toFixed(0) + '" rx="' + (cb.w * (0.2 + 0.15 * u)).toFixed(0) + '" ry="' + ((cb.y1 - cb.y0) * (0.45 + 0.15 * u)).toFixed(0) + '" fill="#bfffb0" opacity="' + (0.14 * o).toFixed(2) + '"/>';
+        for(var j = 0; j < 3; j++){ var xx = cb.x + (j - 1) * cb.w * 0.22, yy = cb.y0 + 20 - 50 * u - j * 8;
+          s += '<path d="M' + (xx - 6).toFixed(0) + ' ' + yy.toFixed(0) + ' h12 M' + xx.toFixed(0) + ' ' + (yy - 6).toFixed(0) + ' v12" stroke="#7ee07a" stroke-width="4" stroke-linecap="round" opacity="' + o.toFixed(2) + '"/>'; } });
+      P.forEach(function(p){
+        var u = t - p.dl; if(u < 0) return; var x, y, o = 1;
+        if(u < p.dm){ var a1 = u / p.dm, e = 1 - (1 - a1) * (1 - a1); x = mixe(a.x, p.hx, e); y = mixe(a.y, p.hy, e); o = Math.min(1, a1 * 4); }
+        else { var a2 = Math.min(1, (u - p.dm) / p.dc), e2 = a2 * a2 * (3 - 2 * a2); x = mixe(p.hx, p.tx, e2) + 14 * Math.sin(u * 5 + p.ph) * (1 - a2 * 0.5); y = mixe(p.hy, p.ty, e2);
+          if(a2 >= 1){ var a3 = (u - p.dm - p.dc) / 0.35; if(a3 > 1) return; o = 1 - a3; y += 10 * a3; } }
+        var r = p.r0 + p.vr * u, sx = 0.55 + 0.45 * Math.abs(Math.sin(u * 4 + p.ph));
+        s += '<g transform="translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ') rotate(' + r.toFixed(0) + ') scale(' + (p.s * sx).toFixed(2) + ' ' + p.s.toFixed(2) + ')" opacity="' + o.toFixed(2) + '">' +
+          '<path d="M0 -7 Q6 -1 0 8 Q-6 -1 0 -7 Z" fill="' + p.c + '" stroke="#b0607e" stroke-width="0.9"/><path d="M0 -4 L0 5" stroke="#ffffff" stroke-width="1" opacity=".7"/></g>';
+      });
+      sv.innerHTML = s;
+      if(!rendu && t >= premier){ rendu = true; ok(); }
+      if(t < fin) requestAnimationFrame(image); else { sv.remove(); if(!rendu) ok(); }
+    })();
+  });
+}
 V.herbes = function(scene, to, opt){
   opt = opt || {};
   var me = this, A = HV.ALCHI;
@@ -608,9 +671,8 @@ V.herbes = function(scene, to, opt){
     this.effet('pincee', function(u, os){ if(u < 0.3 || u > 0.75) return ''; var m = this.ecranF(os.poignetD); return etincelles(m[0], m[1], (u - 0.3) / 0.45, 5, '#a6ff9a', 6, 34, 0.5); }, 0.8);
     var fini = this.jouer(A.herbes);
     var vole = attendre(A.HERBES * 1000).then(function(){
-      var a = me.rep('mainB', scene);
-      if(!me._feuilles) return null;
-      return me._feuilles(scene, a, to, opt).then(sig);
+      var a = me.versRef(me.versSvg(poingOs(me.os(), 'D')), scene), moi = me.rep('tete', scene);
+      return pluieDePetales(scene, a, cesHeros(scene, to || moi, moi)).then(function(){ sig(to); try{ if(opt.onImpact) opt.onImpact(to); }catch(e){ if(G.console) console.error(e); } });
     });
     return Promise.all([fini, vole]);
   });

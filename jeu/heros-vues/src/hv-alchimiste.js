@@ -3,17 +3,22 @@
    l'alchimiste. Et pour les animations spéciales alchimiste, donc à savoir la préparation des potions et tout ça, tu me fais un truc
    vraiment sympa où on voit vraiment l'effet 3D du personnage. Et après, toutes les autres animations, tu peux reprendre celles que
    tu as fait pour le pisteur »). Chargé après hv-donjon.js.
+   REFAITS après ses retours de 21 h 32 : « ça fait bizarre qu'il tourne sur lui-même comme s'il était super content. Non, c'est
+   juste, tu lui fais une préparation. On voit bien qu'il prend ses fioles sur son torse, qui fait un mélange, et là, qui le lance en
+   l'air. Quand il le lance en l'air, tu fais bien tourner le torse vers nous » ; les herbes : « la main qui s'ouvre en l'air bien
+   haut, le bras tendu vers le haut, et on voit les pétales qui tombent sur les 3 personnes […] il se tourne vers nous […] il fait un
+   sourire » ; la pirouette, elle, devient une des deux victoires (HV.DONJON.joieTour, dans hv-donjon.js).
    - HV.POSES.aGarde : sa garde (sans arc : les poings prêts) ;
-   - HV.ALCHI.preparer : il prend une fiole sur sa sangle, SE TOURNE VERS NOUS, y émiette des herbes (elle prend sa couleur), fait
-     UNE PIROUETTE en l'air en la secouant (on le voit sous toutes ses faces), la lève vers la lumière, puis revient face aux
-     ennemis, la fiole armée derrière l'épaule (HV.ALCHI.PRET : la pose où il attend de la lancer) ;
-   - HV.ALCHI.lancer : l'élan (le buste se tourne loin de la cible, le bras part haut derrière), le pas, le fouet du bras par-dessus
-     l'épaule, la fiole part (HV.ALCHI.LACHE, en secondes), le bras finit en travers du corps ;
+   - HV.ALCHI.preparer : le buste un peu tourné vers nous, il prend une fiole sur sa poitrine (main droite), puis une deuxième (main
+     gauche), verse la deuxième dans la première (HV.ALCHI.VERSE : l'adaptateur fait couler la potion et change la couleur), range la
+     fiole vide, secoue le mélange, qui s'illumine (HV.ALCHI.ECLAT), puis arme la fiole derrière l'épaule (HV.ALCHI.PRET) ;
+   - HV.ALCHI.lancer : l'élan, le buste bien tourné vers nous, le bras qui part loin sur le côté ; le fouet par-dessus l'épaule, la
+     fiole part (HV.ALCHI.LACHE, en secondes), toujours le buste vers nous ; le bras finit en travers du corps ;
    - HV.ALCHI.louche : la petite marmite dans la main gauche, la grande louche dans la droite, levée très haut, et BONG (à 0,6 s :
      HV.ALCHI.BONG, comme le son du donjon) ; deux rebonds ; il se tourne vers nous et fait tournoyer la louche (deux tours) ; il
      les range ;
-   - HV.ALCHI.herbes : une poignée d'herbes prise dans une sacoche, il se tourne vers nous et la lance en l'air d'un grand geste
-     par en dessous (HV.ALCHI.HERBES : quand elles partent).
+   - HV.ALCHI.herbes : une poignée d'herbes prise dans une sacoche, il se tourne vers nous, lève le bras tout droit, bien haut, et
+     ouvre la main (HV.ALCHI.HERBES : les pétales s'envolent et retombent en pluie sur les trois héros — l'adaptateur) ; il sourit.
    Tous les autres gestes (arriver, son tour, les coups, tomber, se relever, la victoire, la toile, le crapaud…) sont ceux de la
    Pisteuse (HV.DONJON), joués sur sa garde.
    ========================================================== */
@@ -30,70 +35,65 @@ var g = P.aGarde;
 var FACE = HV.tour(g, -55, 4);
 function versNous(plus){ return avec(FACE, plus || {}); }
 
-/* ---------- PRÉPARER ----------
-   0 → 0,32 : la main droite prend une fiole sur la sangle (une fiole d'eau claire) ;
-   → 0,66 : il se tourne vers nous et la tient devant son menton, émerveillé ;
-   → 1,16 : la main gauche prend une pincée d'herbes dans une sacoche et l'émiette dessus : la potion prend sa couleur
-     (HV.ALCHI.VERSE : l'adaptateur change la couleur et fait des étincelles) ;
-   → 1,84 : LA PIROUETTE — il plie les genoux, saute et fait un tour complet sur lui-même en secouant la fiole au-dessus de lui
-     (on le voit de face, de profil avec ses fioles, de dos avec son chignon, de l'autre profil) ; il retombe face à nous ;
-   → 2,14 : il lève la fiole vers la lumière, elle brille (HV.ALCHI.ECLAT) ; → 2,66 : il revient face aux ennemis, la fiole armée
-     derrière l'épaule (HV.ALCHI.PRET). */
+/* ---------- PRÉPARER (2,2 s) ----------
+   Le buste un peu tourné vers nous (TQ : la tête, les épaules, les hanches ; les pieds restent plantés) pour qu'on voie ses mains.
+   0 → 0,3 : la main droite prend une fiole sur sa poitrine (de l'eau claire : la couleur de l'adaptateur) ;
+   → 0,62 : la main gauche en prend une deuxième (K.potion2 : la couleur de la potion) ;
+   → 1,24 : il lève la deuxième au-dessus de la première et la penche : elle s'y verse (HV.ALCHI.VERSE → HV.ALCHI.VERSE + 0,3) ;
+   → 1,46 : il range la fiole vide sur sa sangle ;
+   → 1,8 : il secoue le mélange, qui s'illumine (HV.ALCHI.ECLAT) ; → 2,1 : la fiole armée derrière l'épaule (HV.ALCHI.PRET). */
 var PRET = avec(g, {fioleG:1, mainG:[-42, 148, -8], relG:1, coudeG:[-0.7, 0.5, -0.4], pouceG:[0, -1, 0], mdirG:[0, -0.3, 1], poingG:0.9, sourcils:-0.6, plisse:0.3, sourire:0.2});
-/* (après la pirouette, il a fait un tour : on le garde, sinon il retournerait en arrière) */
-function tour1(o){ return avec(o, {tourne:-360}); }
-var TIENT = {fioleG:1, mainG:[-8, 132, 48], relG:1, coudeG:[-0.75, 0.5, -0.3], pouceG:[0, -1, 0], mdirG:[0.2, 0, 1], poingG:0.92};
-/* (en l'air : la fiole secouée au-dessus de lui, l'autre bras ouvert pour l'équilibre, les pointes de pied tendues) */
-function enLair(leve, tr, haut){
-  return versNous({leve:leve, tourne:tr, fioleG:1, mainG:[-40, 72 + haut, 18], relG:1, coudeG:[-0.8, 0.2, -0.4], pouceG:[0.2, -1, 0], mdirG:[0, -1, 0.2], poingG:0.92,
-    mainD:[74, 178, 12], relD:1, coudeD:[1, 0.2, -0.3], poingD:0.2, pouceD:[0, -1, 0.3], bas:[0, 14, 0], pointeG:26, pointeD:26,
-    regY:-0.7, regX:-0.3, hoche:-8, sourire:1, ouvre:0.55, largeB:0.9, sourcils:0.8, plisse:0.35});
-}
+var TQ = HV.tour(g, -38, 2);
+function tq(plus){ return avec(TQ, plus || {}); }
+/* (la fiole de la main droite, tenue devant sa poitrine ; y : plus bas quand il secoue) */
+function fiole1(y, plus){ return avec({fioleG:1, mainG:[-16, y, 44], relG:1, coudeG:[-0.85, 0.45, -0.3], pouceG:[0, -1, 0], mdirG:[0.3, 0, 1], poingG:0.92}, plus || {}); }
+/* (la fiole de la main gauche : droite, ou penchée pour verser — le goulot du côté du pouce, tourné vers l'autre fiole) */
+function fiole2(x, y, penche, plus){ return avec({fioleD:1, mainD:[x, y, 48], relD:1, coudeD:[0.85, 0.45, -0.3], pouceD:penche ? [-0.85, 0.5, 0.1] : [0, -1, 0], mdirD:[-0.3, 0, 1], poingD:0.92}, plus || {}); }
+var VERSE = 0.88, ECLAT = 1.8;
 var preparer = [
-  /* (la main droite va chercher une fiole sur la sangle ; il la regarde) */
-  [0.2, {mainG:[-14, 168, 24], relG:1, coudeG:[-0.9, 0.3, -0.2], poingG:0.3, pouceG:[0, -1, 0.3], hoche:10, regY:0.6, sourcils:0.2}],
-  [0.32, {mainG:[-14, 166, 26], relG:1, coudeG:[-0.9, 0.3, -0.2], poingG:0.92, pouceG:[0, -1, 0.3], fioleG:1, hoche:10, regY:0.6, sourire:0.3}],
-  /* (il se tourne vers nous, la fiole devant son menton, émerveillé) */
-  [0.66, versNous(avec(TIENT, {mainD:[30, 206, 30], relD:1, poingD:0.4, regY:-0.2, sourcils:0.8, plisse:-0.3, ouvre:0.25, largeB:0.6, hoche:-6}))],
-  /* (la main gauche prend une pincée d'herbes dans la sacoche…) */
-  [0.8, versNous(avec(TIENT, {mainD:[36, 222, 26], relD:1, coudeD:[0.9, 0.3, -0.2], poingD:0.3, pouceD:[0, -1, 0.3], hoche:8, regY:0.6, regX:0.4, sourcils:0.3, sourire:0.4}))],
-  [0.92, versNous(avec(TIENT, {herbes:1, mainD:[34, 216, 30], relD:1, coudeD:[0.9, 0.3, -0.2], poingD:0.85, pouceD:[0, -1, 0.3], hoche:6, regY:0.5, regX:0.3, sourire:0.5}))],
-  /* (… et l'émiette au-dessus de la fiole : la potion prend sa couleur) */
-  [1.08, versNous(avec(TIENT, {herbes:1, mainD:[10, 96, 52], relD:1, coudeD:[0.8, 0.5, -0.2], poingD:0.85, pouceD:[-1, 0, 0.3], mdirD:[-0.3, -0.2, 1], regY:-0.3, sourcils:0.6, sourire:0.6, plisse:0.2}))],
-  [1.18, versNous(avec(TIENT, {herbes:0, mainD:[14, 94, 52], relD:1, coudeD:[0.8, 0.5, -0.2], poingD:0.1, pouceD:[-1, 0, 0.3], mdirD:[-0.3, -0.2, 1], regY:-0.2, sourcils:0.9, sourire:0.9, ouvre:0.4, largeB:0.8}))],
-  /* (LA PIROUETTE : il plie les genoux, saute, fait un tour complet en secouant la fiole, retombe) */
-  [1.3, versNous({fioleG:1, mainG:[-30, 150, 40], relG:1, coudeG:[-0.8, 0.4, -0.3], pouceG:[0, -1, 0], poingG:0.92, mainD:[40, 196, 34], relD:1, poingD:0.3,
-    bas:[0, 46, 4], dos:[16, 0, 0], hoche:6, sourire:0.9, sourcils:0.7, plisse:0.4})],
-  [1.4, enLair(10, -30, 6)], [1.52, enLair(24, -130, -6)], [1.64, enLair(22, -240, 6)], [1.76, enLair(8, -335, -6)],
-  [1.84, tour1(versNous({fioleG:1, mainG:[-52, 106, 20], relG:1, coudeG:[-0.8, 0.4, -0.3], pouceG:[0, -1, 0], poingG:0.92, mainD:[66, 190, 20], relD:1, poingD:0.3,
-    bas:[0, 50, 6], dos:[14, 0, 0], hoche:8, sourire:1, ouvre:0.3, sourcils:0.6, plisse:0.5}))],
-  /* (il lève la fiole vers la lumière : elle brille) */
-  [2.14, tour1(versNous({fioleG:1, mainG:[-66, 86, 6], relG:1, coudeG:[-0.8, 0.2, -0.4], pouceG:[0, -1, 0], mdirG:[0, -1, 0.2], poingG:0.92,
-    mainD:[42, 204, 24], relD:1, poingD:0.6, bas:[0, 6, 0], regY:-0.85, regX:-0.5, hoche:-10, sourire:1, ouvre:0.45, largeB:0.9, sourcils:0.8, plisse:0.35}))],
-  [2.32, tour1(versNous({fioleG:1, mainG:[-66, 84, 6], relG:1, coudeG:[-0.8, 0.2, -0.4], pouceG:[0, -1, 0], mdirG:[0, -1, 0.2], poingG:0.92,
-    mainD:[42, 204, 24], relD:1, poingD:0.6, bas:[0, 6, 0], regY:-0.85, regX:-0.5, hoche:-10, sourire:1, ouvre:0.3, largeB:0.9, sourcils:0.8, plisse:0.35}))],
-  /* (il revient face aux ennemis, la fiole armée derrière l'épaule, décidé) */
-  [2.66, tour1(PRET)], [2.8, tour1(PRET)]];
+  /* (la main droite va chercher une fiole sur sa poitrine ; il la regarde) */
+  [0.18, tq({mainG:[-16, 170, 24], relG:1, coudeG:[-0.9, 0.3, -0.2], poingG:0.3, pouceG:[0, -1, 0.3], hoche:10, regY:0.6, regX:-0.2, sourcils:0.2})],
+  [0.3, tq({mainG:[-16, 168, 26], relG:1, coudeG:[-0.9, 0.3, -0.2], poingG:0.92, pouceG:[0, -1, 0.3], fioleG:1, hoche:10, regY:0.6, regX:-0.2})],
+  /* (la main gauche en prend une deuxième) */
+  [0.5, tq(fiole1(160, {mainD:[16, 176, 26], relD:1, coudeD:[0.9, 0.3, -0.2], poingD:0.3, pouceD:[0, -1, 0.3], hoche:8, regY:0.5, regX:0.2, sourcils:0.3}))],
+  [0.62, tq(fiole1(160, {fioleD:1, mainD:[16, 174, 28], relD:1, coudeD:[0.9, 0.3, -0.2], poingD:0.92, pouceD:[0, -1, 0.3], hoche:8, regY:0.5, regX:0.2}))],
+  /* (il la lève au-dessus de la première, concentré, et la penche : elle s'y verse) */
+  [0.8, tq(fiole1(162, fiole2(6, 118, false, {hoche:4, regY:0.3, sourcils:0.5, plisse:0.25, ouvre:0.1, largeB:0.6})))],
+  [0.92, tq(fiole1(162, fiole2(4, 116, true, {hoche:4, regY:0.35, sourcils:0.6, plisse:0.3, ouvre:0.15, largeB:0.5})))],
+  [1.1, tq(fiole1(164, fiole2(2, 114, true, {hoche:5, regY:0.4, sourcils:0.6, plisse:0.3, ouvre:0.15, largeB:0.5})))],
+  [1.24, tq(fiole1(162, fiole2(12, 132, false, {hoche:4, regY:0.3, sourcils:0.4, sourire:0.5})))],
+  /* (il range la fiole vide sur sa sangle) */
+  [1.38, tq(fiole1(162, {fioleD:1, mainD:[20, 176, 26], relD:1, coudeD:[0.9, 0.3, -0.2], poingD:0.92, pouceD:[0, -1, 0.3], regY:0.2, sourire:0.5}))],
+  [1.46, tq(fiole1(162, {fioleD:0, mainD:[22, 180, 26], relD:1, coudeD:[0.9, 0.3, -0.2], poingD:0.4, regY:0.1, sourire:0.5}))],
+  /* (il secoue le mélange, de haut en bas, l'œil dessus) */
+  [1.54, tq(fiole1(146, {mainD:[34, 200, 28], relD:1, poingD:0.5, regY:0.1, sourcils:0.3, sourire:0.6, plisse:0.2}))],
+  [1.61, tq(fiole1(166, {mainD:[34, 200, 28], relD:1, poingD:0.5, regY:0.2, sourcils:0.3, sourire:0.6, plisse:0.2}))],
+  [1.68, tq(fiole1(146, {mainD:[34, 200, 28], relD:1, poingD:0.5, regY:0.1, sourcils:0.3, sourire:0.6, plisse:0.2}))],
+  [1.75, tq(fiole1(164, {mainD:[34, 200, 28], relD:1, poingD:0.5, regY:0.2, sourcils:0.3, sourire:0.6, plisse:0.2}))],
+  /* (le mélange s'illumine : il le lève un peu, content de lui) */
+  [ECLAT + 0.04, tq(fiole1(140, {mainD:[36, 200, 28], relD:1, poingD:0.5, regY:-0.1, sourcils:0.6, sourire:0.9, plisse:0.35, ouvre:0.15}))],
+  /* (il arme la fiole derrière l'épaule, face aux ennemis, décidé) */
+  [2.1, PRET], [2.22, PRET]];
 
-/* ---------- LANCER (depuis PRET) ---------- */
-var LACHE = 0.56;
+/* ---------- LANCER (depuis PRET), LE BUSTE TOURNÉ VERS NOUS ---------- */
+var LACHE = 0.5;
 var lancer = [[0.01, PRET],
-  /* (l'élan : le buste se tourne loin de la cible, le bras part haut derrière, le poids sur la jambe de derrière) */
-  [0.24, {fioleG:1, mainG:[-60, 112, -58], relG:1, coudeG:[-0.6, -0.5, -0.6], pouceG:[0, -1, -0.3], mdirG:[0, -0.5, -1], poingG:0.92,
-    bang:[2, 0, -22], dos:[-8, 0, -30], bas:[0, 30, -14], hoche:-6, tete:20, mainD:[52, 170, 52], relD:1, coudeD:[0.8, 0.2, -0.4], poingD:0.4, sourcils:-0.9, plisse:0.5, ouvre:0.3}],
-  [0.34, {fioleG:1, mainG:[-62, 104, -64], relG:1, coudeG:[-0.6, -0.6, -0.6], pouceG:[0, -1, -0.3], mdirG:[0, -0.5, -1], poingG:0.92,
-    bang:[2, 0, -26], dos:[-10, 0, -34], bas:[0, 30, -16], hoche:-6, tete:24, mainD:[56, 166, 56], relD:1, coudeD:[0.8, 0.2, -0.4], poingD:0.4, sourcils:-1, plisse:0.6, ouvre:0.4}],
-  /* (le fouet : le bras passe par-dessus l'épaule, le buste se retourne vers la cible) */
-  [0.47, {fioleG:1, mainG:[-30, 84, 14], relG:1, coudeG:[-0.7, -0.5, -0.2], pouceG:[0, -1, 0.5], mdirG:[0, -0.3, 1], poingG:0.92,
-    bang:[6, 0, 2], dos:[8, 0, 6], bas:[0, 28, 6], hoche:-2, tete:6, mainD:[50, 200, 20], relD:1, poingD:0.6, sourcils:-1, plisse:0.6, ouvre:0.6}],
-  [LACHE - 0.02, {fioleG:1, mainG:[-12, 140, 76], relG:1, coudeG:[-0.6, 0.2, 0.3], pouceG:[0, -0.6, 1], mdirG:[0, 0.3, 1], poingG:0.6,
-    bang:[10, 0, 12], dos:[16, 0, 18], bas:[0, 32, 14], hoche:4, tete:-4, mainD:[46, 212, -6], relD:1, poingD:0.7, sourcils:-1, plisse:0.5, ouvre:0.7, largeB:0.8}],
-  [LACHE + 0.03, {fioleG:0, mainG:[0, 168, 80], relG:1, coudeG:[-0.5, 0.4, 0.3], pouceG:[0, 0, 1], mdirG:[0.2, 0.5, 1], poingG:0.05,
-    bang:[12, 0, 14], dos:[18, 0, 20], bas:[0, 33, 16], hoche:6, tete:-6, mainD:[46, 214, -10], relD:1, poingD:0.7, sourcils:-0.8, plisse:0.4, ouvre:0.5}],
+  /* (l'élan : le buste se tourne vers nous, le bras part loin sur SON côté droit, haut ; le poids sur la jambe de derrière) */
+  [0.22, {fioleG:1, mainG:[-74, 118, -10], relG:1, coudeG:[-0.7, -0.4, -0.5], pouceG:[0, -1, 0], mdirG:[-0.6, -0.4, 0], poingG:0.92,
+    bang:[2, 0, -20], dos:[-4, 0, -26], bas:[0, 16, -6], hoche:-4, tete:-6, regX:0.6, mainD:[44, 190, 40], relD:1, coudeD:[0.8, 0.3, -0.4], poingD:0.4, sourcils:-0.9, plisse:0.5, ouvre:0.25}],
+  [0.32, {fioleG:1, mainG:[-78, 106, -14], relG:1, coudeG:[-0.7, -0.5, -0.5], pouceG:[0, -1, 0], mdirG:[-0.6, -0.5, 0], poingG:0.92,
+    bang:[2, 0, -22], dos:[-6, 0, -28], bas:[0, 18, -8], hoche:-4, tete:-6, regX:0.7, mainD:[46, 186, 44], relD:1, coudeD:[0.8, 0.3, -0.4], poingD:0.4, sourcils:-1, plisse:0.6, ouvre:0.35}],
+  /* (le fouet : le bras passe par-dessus l'épaule ; le buste reste tourné vers nous) */
+  [0.43, {fioleG:1, mainG:[-50, 76, 8], relG:1, coudeG:[-0.8, -0.4, -0.2], pouceG:[0.2, -1, 0.3], mdirG:[0.3, -0.6, 0.6], poingG:0.92,
+    bang:[4, 0, -14], dos:[4, 0, -16], bas:[0, 14, 2], hoche:-2, tete:0, regX:0.8, mainD:[48, 200, 30], relD:1, poingD:0.6, sourcils:-1, plisse:0.6, ouvre:0.6, largeB:0.8}],
+  [LACHE - 0.02, {fioleG:1, mainG:[24, 104, 54], relG:1, coudeG:[-0.6, 0.2, 0.4], pouceG:[0.5, -0.6, 0.6], mdirG:[0.7, 0, 0.6], poingG:0.7,
+    bang:[6, 0, -10], dos:[8, 0, -10], bas:[0, 16, 6], hoche:2, tete:4, regX:0.9, mainD:[44, 208, 20], relD:1, poingD:0.7, sourcils:-1, plisse:0.5, ouvre:0.7, largeB:0.8}],
+  [LACHE + 0.03, {fioleG:0, mainG:[40, 128, 56], relG:1, coudeG:[-0.5, 0.4, 0.4], pouceG:[0.5, 0, 0.8], mdirG:[0.8, 0.2, 0.5], poingG:0.05,
+    bang:[6, 0, -8], dos:[8, 0, -8], bas:[0, 16, 8], hoche:3, tete:4, regX:0.9, mainD:[44, 210, 18], relD:1, poingD:0.7, sourcils:-0.8, plisse:0.4, ouvre:0.5}],
   /* (le bras finit en travers du corps, il regarde la fiole voler) */
-  [0.82, {mainG:[22, 214, 46], relG:1, coudeG:[-0.4, 0.6, 0.2], poingG:0.3, bang:[10, 0, 12], dos:[16, 0, 16], bas:[0, 32, 14], hoche:4, tete:-8, regX:0.6, sourcils:-0.4, sourire:0.3}],
-  [1.05, {mainG:[0, 214, 40], relG:1, coudeG:[-0.6, 0.4, -0.2], poingG:0.5, bang:[8, 0, 6], dos:[12, 0, 6], bas:[0, 30, 8], regX:0.5, sourire:0.5, sourcils:-0.2}],
-  [1.45, {}]];
+  [0.78, {mainG:[44, 196, 46], relG:1, coudeG:[-0.4, 0.6, 0.3], poingG:0.3, bang:[6, 0, -6], dos:[8, 0, -6], bas:[0, 14, 8], hoche:3, tete:6, regX:0.8, sourcils:-0.4, sourire:0.3}],
+  [1.0, {mainG:[10, 210, 40], relG:1, coudeG:[-0.6, 0.4, -0.2], poingG:0.5, bang:[6, 0, -2], dos:[8, 0, -2], regX:0.5, sourire:0.5, sourcils:-0.2}],
+  [1.35, {}]];
 
 /* ---------- LA LOUCHE (le BONG à 0,6 s) ---------- */
 var BONG = 0.6;
@@ -120,20 +120,25 @@ var louche = [
   [2.02, {louche:0, marmite:0, loucheR:720, mainG:[-30, 226, 12], relG:1, poingG:0.5, mainD:[30, 226, 12], relD:1, poingD:0.5, hoche:6, sourire:0.4}],
   [2.35, {loucheR:720}]];
 
-/* ---------- LES HERBES (pour l'équipe : il se tourne vers nous et les lance en l'air, elles retombent en pluie) ---------- */
-var HERBES = 0.72;
+/* ---------- LES HERBES (pour l'équipe) : il se tourne vers nous, lève le bras tout droit, bien haut, ouvre la main en l'air — les
+   pétales s'envolent et retombent sur les trois héros (l'adaptateur) — et sourit, content ---------- */
+var HERBES = 0.86;
+var HAUT = {mainD:[40, 64, 6], relD:1, coudeD:[1, 0, -0.1], mdirD:[0, -1, 0.05], pouceD:[-1, 0, 0.2]};
 var herbes = [
   [0.2, {mainD:[36, 230, 6], relD:1, coudeD:[0.9, 0.2, -0.3], poingD:0.3, hoche:10, regY:0.6}],
   [0.34, {herbes:1, mainD:[32, 214, 22], relD:1, coudeD:[0.9, 0.2, -0.3], pouceD:[0, -1, 0.3], poingD:0.85, hoche:6, sourire:0.4}],
-  /* (il se tourne vers nous, la main basse derrière, l'élan ; les genoux plient) */
-  [0.56, versNous({herbes:1, mainD:[50, 236, -22], relD:1, coudeD:[0.9, 0.3, -0.3], pouceD:[0, -1, 0], mdirD:[0, 0.5, -1], poingD:0.85, bas:[0, 40, 0], dos:[10, 0, 0], regY:0.2, sourcils:0.4, sourire:0.6})],
-  /* (le lancer par en dessous, d'un grand geste qui monte vers le plafond) */
-  [HERBES, versNous({herbes:0.6, mainD:[44, 68, 20], relD:1, coudeD:[1, 0, -0.2], pouceD:[0, -0.4, 1], mdirD:[0, -1, 0.4], poingD:0.05, bas:[0, 8, 0], regY:-0.7, hoche:-8, sourire:1, ouvre:0.45, sourcils:0.7, plisse:0.3})],
-  [HERBES + 0.04, versNous({herbes:0, mainD:[44, 64, 18], relD:1, coudeD:[1, 0, -0.2], pouceD:[0, -0.4, 1], mdirD:[0, -1, 0.4], poingD:0, bas:[0, 6, 0], regY:-0.8, hoche:-10, sourire:1, ouvre:0.4, sourcils:0.7})],
-  /* (il regarde la pluie de feuilles retomber, ravi) */
-  [1.05, versNous({mainD:[40, 150, 40], relD:1, coudeD:[0.8, 0.5, 0], poingD:0.1, regY:-0.6, hoche:-8, sourire:0.9, sourcils:0.6, plisse:0.4})],
-  [1.45, {}]];
+  /* (il se tourne vers nous, la poignée d'herbes contre la poitrine) */
+  [0.56, versNous({herbes:1, mainD:[22, 150, 40], relD:1, coudeD:[0.9, 0.4, -0.2], pouceD:[0, -1, 0.2], poingD:0.85, regY:-0.2, sourcils:0.4, sourire:0.6})],
+  /* (le bras monte, tout droit, bien haut ; le poing encore fermé) */
+  [0.78, versNous(avec(HAUT, {herbes:1, poingD:0.85, regY:-0.8, regX:0.3, hoche:-10, sourire:0.8, sourcils:0.6, plisse:0.2}))],
+  /* (il ouvre la main en l'air : les pétales s'envolent) */
+  [HERBES, versNous(avec(HAUT, {herbes:0.4, poingD:0.05, regY:-0.85, regX:0.3, hoche:-12, sourire:1, ouvre:0.4, largeB:0.9, sourcils:0.8, plisse:0.3}))],
+  [HERBES + 0.05, versNous(avec(HAUT, {herbes:0, poingD:0, regY:-0.85, regX:0.3, hoche:-12, sourire:1, ouvre:0.35, largeB:0.9, sourcils:0.8, plisse:0.35}))],
+  /* (il les regarde retomber sur ses amis, le bras toujours en l'air, avec un grand sourire) */
+  [1.5, versNous(avec(HAUT, {poingD:0, regY:-0.4, regX:-0.5, hoche:-4, sourire:1, ouvre:0.2, sourcils:0.7, plisse:0.5}))],
+  [1.8, versNous({mainD:[40, 170, 36], relD:1, coudeD:[0.9, 0.4, -0.2], poingD:0.2, regX:-0.3, sourire:0.9, sourcils:0.5, plisse:0.4})],
+  [2.15, {}]];
 
-HV.ALCHI = {preparer:preparer, lancer:lancer, louche:louche, herbes:herbes, PRET:PRET, LACHE:LACHE, BONG:BONG, HERBES:HERBES, VERSE:1.16, ECLAT:2.14, TOURNE:[1.4, 1.84]};
+HV.ALCHI = {preparer:preparer, lancer:lancer, louche:louche, herbes:herbes, PRET:PRET, LACHE:LACHE, BONG:BONG, HERBES:HERBES, VERSE:VERSE, ECLAT:ECLAT};
 HV.NOMS_ALCHI = {preparer:'Il prépare une potion', lancer:'Il lance la fiole', louche:'La louche : BONG !', herbes:'Les herbes, pour un ami'};
 })(window);
