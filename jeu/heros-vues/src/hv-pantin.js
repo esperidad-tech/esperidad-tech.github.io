@@ -34,7 +34,7 @@ HV.dessin = function(h, P, o){
   /* (penchée loin de nous, vue de dos : la tête est derrière les épaules) */
   var loin = tp.fond < -22;
   s += '<g transform="translate(150 0)">' + G1 + (CH.queueDevant ? '' : CH.queue) + (tDos ? '' : CH.dos) + '</g>' + C.derriere + C.jambes +
-    (tDos ? G1 + T.svg + '</g>' : '') + (loin ? visage : '') + C.cou(tDos, tDos ? nuque : ombreCou) + C.torse + C.carquoisDevant + bras +
+    (tDos ? G1 + T.svg + '</g>' : '') + (loin ? visage : '') + C.cou(tDos, tDos ? nuque : ombreCou) + C.torse + C.carquoisDevant + C.jambesApres + bras +
     (loin ? '' : visage) + (dessus ? C.devant : '') + '</g>';
   return s;
 };
@@ -65,14 +65,17 @@ HV.POSES = {
   repos:{mainG:[-50.5, 243, 4], coudeG:[-0.7, -0.1, -0.7], mainD:[50.5, 243, 4], coudeD:[0.7, -0.1, -0.7], relG:1, relD:1, mdirG:[0, 0, 0], mdirD:[0, 0, 0],
     pouceG:[0.25, 0.1, 1], pouceD:[-0.25, 0.1, 1], poingG:0.75, poingD:0.15, indexG:0, indexD:0,
     piedG:[-19.5, 386, 5], piedD:[19.5, 386, -5], genouG:[-0.25, 0, 1], genouD:[0.25, 0, 1], ouvG:0.3, ouvD:0.3, pointeG:0, pointeD:0,
-    bas:[0, 0, 0], bang:[0, 0, 0], dos:[0, 0, 0], tete:0, pen:0, hoche:0, bx:0, ty:0, sourcils:0,
+    bas:[0, 0, 0], bang:[0, 0, 0], dos:[0, 0, 0], tete:0, pen:0, hoche:0, bx:0, ty:0,
+    /* l'expression (hv-tete.js) : le sourire de toujours, les sourcils au repos, le regard droit devant */
+    sourcils:0, sourcilsIn:0, sourcilsAsym:0, plisse:0, sourire:1, ouvre:0, largeB:1, bouchex:0, rougit:0, regX:0, regY:0,
     arcDir:[-0.82, 0, 0.57], arcAxe:[0, 1, 0], tendu:0, dague:0, brasDessus:0},
   /* une main sur la hanche, la tête un peu penchée */
   hanche:{mainD:[33, 211, 10], coudeD:[1, -0.1, -0.5], mdirD:[-0.45, 0.75, 0.45], pouceD:[0.3, 0.3, -1], poingD:0.35, pen:-5, bx:2.5, piedD:[24, 386, -4]},
   /* elle fait coucou de sa main libre (la paume vers nous) */
   coucou:{mainD:[73, 103, 12], coudeD:[0.5, 1, -0.1], mdirD:[0.05, -1, 0], pouceD:[-1, 0, 0], poingD:0, pen:4, sourcils:0.6, brasDessus:1},
   /* elle vise : le bras de l'arc tendu sur le côté, la corde à la joue, la tête tournée vers la cible */
-  tir:{mainG:[-116, 151, 5], coudeG:[0, 0.7, -0.6], mainD:[17, 128, 12], coudeD:[1, -0.35, -0.3], poingD:0.8, tete:-84, sourcils:-0.6, arcDir:[-1, 0, 0.04], tendu:1, brasDessus:1,
+  tir:{mainG:[-116, 151, 5], coudeG:[0, 0.7, -0.6], pouceG:[0, -1, 0.1], mainD:[17, 128, 12], coudeD:[1, -0.35, -0.3], poingD:0.8, tete:-84, arcDir:[-1, 0, 0.04], tendu:1, brasDessus:1,
+    sourcils:-0.8, plisse:0.5, sourire:-0.1, largeB:0.75,
     piedG:[-26, 386, 3], piedD:[22.5, 386, -3]}
 };
 /* les poses, dans l'ordre où on les montre : [nom, ce qu'on dit à l'écran] (HV.LISTE est complétée par hv-poses.js) */
@@ -184,7 +187,7 @@ PP.dessiner = function(dt){
   /* --- les gestes des poses --- */
   var w = eio(this.tw), tp = t - (this.tPose || 0), g = HV.GESTES && HV.GESTES[nom];
   if(nom === 'coucou'){ var a = Math.sin(TAU * tp * 2.3); F.mainD = [F.mainD[0] + 9 * a * w, F.mainD[1] + 3 * Math.abs(a) * w, F.mainD[2]]; }
-  if(nom === 'tir'){ F.rx = -0.5 * w; F.souffle *= 0.4; }
+  if(nom.slice(0, 3) === 'tir'){ F.rx = -0.5 * w; F.souffle *= 0.4; }
   if(g) g(F, w, tp, this);
   this.F = F;
   this.fig.innerHTML = HV.dessin(this.h, F, {K:this.K});

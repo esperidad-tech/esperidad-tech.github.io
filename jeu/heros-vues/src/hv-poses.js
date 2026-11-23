@@ -119,6 +119,47 @@ ajoute('combat', 'esquive', 'Elle esquive', {bas:[-18, 30, -8], bang:[-6, -12, 0
    LES PETITS GESTES : ce qui bouge une fois la pose prise. g(F, w, t) : F, la pose de cette image (on y ajoute le geste) ;
    w : 0 → 1 pendant qu'elle prend la pose ; t : les secondes depuis qu'elle l'a prise.
    ========================================================== */
+/* ==========================================================
+   LES VISAGES : une expression par pose (Romain, 23 novembre, 13 h 36 : « il n'y a aucune expression de visage […] pour chaque
+   position, il faut qu'elle ait une expression de visage qui corresponde »). Les nombres (hv-tete.js) :
+   sourire (1 sourit, 0 neutre, -1 les coins tombent), ouvre (la bouche s'ouvre), largeB (0,45 lèvres pincées … 1,2 grande),
+   bouchex (une moue de côté), sourcils (-1 froncés … 1 levés), sourcilsIn (le bout près du nez remonte : inquiète, fatiguée),
+   sourcilsAsym (un sourcil plus haut), plisse (> 0 elle plisse les yeux ; < 0 grands ouverts), rougit, regX / regY (le regard).
+   Le pouce (pouceG) : pour tenir l'arc devant elle, le pouce en haut — la paume face à nous, l'arc passe devant (hv-corps.js).
+   ========================================================== */
+var VISAGES = {
+  repos:{},
+  hanche:{sourire:1, sourcilsAsym:0.35, plisse:0.15},                                          /* sûre d'elle */
+  coucou:{sourire:1, ouvre:0.35, sourcils:0.6, plisse:0.2},                                    /* toute contente */
+  reflechit:{sourire:0.1, largeB:0.7, bouchex:0.6, sourcilsAsym:0.8, regX:0.6, regY:-0.6},    /* hmm… */
+  derriere:{sourire:0.3, sourcils:0.4, regX:0.4},                                              /* curieuse */
+  reverence:{sourire:1, plisse:0.3, regY:0.7},                                                 /* polie, les yeux baissés */
+  essouffle:{sourire:-0.1, ouvre:0.65, sourcilsIn:0.8, plisse:0.3, rougit:0.9},              /* épuisée */
+  guet:{sourire:0, largeB:0.8, sourcils:-0.2, plisse:0.55},                                   /* elle plisse les yeux au soleil */
+  montre:{sourire:0.6, ouvre:0.35, sourcils:0.7, plisse:-0.15},                                /* « là ! » */
+  ecoute:{sourire:0, largeB:0.7, sourcils:0.5, sourcilsAsym:0.3, regX:-0.7},                  /* elle tend l'oreille */
+  accroupie:{sourire:0.1, sourcils:-0.25, regY:0.35},                                          /* attentive */
+  piste:{sourire:0, largeB:0.65, sourcils:-0.45, plisse:0.2, regY:1},                          /* concentrée sur la trace */
+  mainsAuSol:{sourire:-0.1, largeB:0.8, sourcils:-0.35, plisse:0.15},                          /* sérieuse, prête à bondir */
+  ramasse:{sourire:0.5, ouvre:0.15, sourcils:0.6, regY:1},                                     /* elle a trouvé quelque chose */
+  aguets:{sourire:-0.3, largeB:0.8, sourcils:-0.5, plisse:0.2},                                /* méfiante */
+  furtif:{sourire:-0.15, largeB:0.65, sourcils:-0.6, plisse:0.25},                            /* lèvres pincées, pas un bruit */
+  furtif2:{sourire:-0.15, largeB:0.65, sourcils:-0.6, plisse:0.25},
+  chut:{sourire:0, ouvre:0.3, largeB:0.45, sourcils:0.5, plisse:0.25},                         /* « chhh » */
+  affut:{sourire:-0.25, largeB:0.75, sourcils:-0.7, plisse:0.35},                              /* elle guette sa proie */
+  tir:{sourire:-0.1, largeB:0.75, sourcils:-0.8, plisse:0.5},                                  /* elle vise : un œil plissé */
+  tirGenou:{sourire:-0.1, largeB:0.75, sourcils:-0.8, plisse:0.5, pouceG:[0, -1, 0.1]},
+  tirHaut:{sourire:-0.1, largeB:0.75, sourcils:-0.8, plisse:0.5, pouceG:[0, -1, 0.1]},
+  fleche:{sourire:0.2, sourcils:-0.3, plisse:0.1},                                             /* calme, elle se prépare */
+  course:{sourire:0, ouvre:0.45, sourcils:-0.4, sourcilsIn:0.3, rougit:0.5},                   /* l'effort */
+  victoire:{sourire:1, ouvre:0.7, sourcils:0.9, plisse:0.45, rougit:0.6},                      /* elle rit */
+  combat:{sourire:-0.6, largeB:1, sourcils:-1, plisse:0.3},                                    /* les dents serrées */
+  fente:{sourire:-0.5, ouvre:0.55, largeB:0.9, sourcils:-1, plisse:0.2},                       /* elle crie en frappant */
+  esquive:{sourire:-0.3, ouvre:0.45, largeB:0.7, sourcils:0.8, sourcilsIn:0.7, plisse:-0.4}    /* surprise, alarmée */
+};
+Object.keys(VISAGES).forEach(function(nom){ var v = VISAGES[nom], k; if(P[nom]) for(k in v) P[nom][k] = v[k]; });
+HV.VISAGES = VISAGES;
+
 var TAU = Math.PI * 2;
 HV.GESTES = {
   /* ses doigts suivent le bord de la trace ; elle relève un instant les yeux */

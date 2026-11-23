@@ -110,12 +110,23 @@ function tronc(V, P){
   if(so) for(i = 0; i < IP; i++) T.C[i] = [T.C[i][0], T.C[i][1] - so * (1 - doux(150, 240, Y0 + PAS * i)), T.C[i][2]];
   /* (en attendant les cuisses : le bas de la tunique tombe droit sous le bassin) */
   for(i = IP + 1; i <= NF; i++){ T.M[i] = Mp; T.C[i] = add(T.C[i - 1], mv(Mp, [0, PAS, 0])); }
-  /* la coupe à la hauteur y : {C : son milieu, M : comment elle est tournée} */
-  T.fr = function(yy){
-    var u = borne((yy - Y0) / PAS, 0, NF), k = Math.min(NF - 1, Math.floor(u)), t = u - k, A = T.C[k], B = T.C[k + 1], Ma = T.M[k], Mb = T.M[k + 1];
+  /* LE BAS DE LA TUNIQUE EN QUATRE PANS (draper()) : le devant de SON côté droit, le devant de SON côté gauche, le dos à droite,
+     le dos à gauche. Chaque pan suit la cuisse qui est dessous ; un point du bas de la tunique est le mélange des quatre, selon
+     où il est sur le tour (devant / derrière, à droite / à gauche). Au repos les quatre sont les mêmes. */
+  T.pans = {fG:{C:T.C, M:T.M}, fD:{C:T.C, M:T.M}, bG:{C:T.C, M:T.M}, bD:{C:T.C, M:T.M}, g:{C:T.C, M:T.M}};
+  function cadre(C, Mx, yy){
+    var u = borne((yy - Y0) / PAS, 0, NF), k = Math.min(NF - 1, Math.floor(u)), t = u - k, A = C[k], B = C[k + 1], Ma = Mx[k], Mb = Mx[k + 1];
     if(t < 1e-6) return {C:A, M:Ma};
     return {C:mixv(A, B, t), M:Ma === Mb ? Ma : Ma.map(function(v, j){ return v + (Mb[j] - v) * t; })};
+  }
+  /* la coupe à la hauteur y : {C : son milieu, M : comment elle est tournée} (sous le bassin : la moyenne des quatre pans) */
+  T.fr = function(yy){
+    if(yy <= 245 || !T.drape) return cadre(T.C, T.M, yy);
+    var R = {C:[0, 0, 0], M:[0, 0, 0, 0, 0, 0, 0, 0, 0]};
+    ['fG', 'fD', 'bG', 'bD', 'g'].forEach(function(v){ var f = cadre(T.pans[v].C, T.pans[v].M, yy), j; for(j = 0; j < 3; j++) R.C[j] += f.C[j] / 5; for(j = 0; j < 9; j++) R.M[j] += f.M[j] / 5; });
+    return R;
   };
+  T.frPan = function(v, yy){ return cadre(T.pans[v].C, T.pans[v].M, yy); };
   /* un point donné dans les mesures du héros debout → où il est passé (il suit la coupe de sa hauteur) */
   T.lieu = function(q){ var yy = borne(q[1], Y0, Y0 + PAS * NF), fr = T.fr(yy); return add(fr.C, mv(fr.M, [q[0], q[1] - yy, q[2]])); };
   /* le même, accroché à la poitrine d'un seul bloc (les épaules, le carquois, les mains « qui suivent ») */
@@ -124,10 +135,28 @@ function tronc(V, P){
   T.dB = -T.Cb[0] * V.s + T.Cb[2] * V.c;       /* la profondeur de la poitrine */
   /* un point de la surface : y, q = [x, z] dans sa coupe ; nrm : pour savoir s'il est tourné vers nous → {p : [X, Y], f, vu} */
   T.sur = function(yy, q, nrm, fr){
-    fr = fr || T.fr(yy);
-    var w = add(fr.C, mv(fr.M, [q[0], 0, q[1]])), p = pj(w, V), dc = -fr.C[0] * V.s + fr.C[2] * V.c, k = (yy - 214) / 58;
-    var o = {p:[p[0] + (k > 0 ? T.jx * k * k : 0), p[1] + ANNEAU * (p[2] - dc)], f:p[2]};
-    if(nrm){ var n = mv(fr.M, [nrm[0], 0, nrm[1]]); o.vu = (-n[0] * V.s + n[2] * V.c) - ANNEAU * n[1] > 0; }
+    var w, n = null, Cc;
+    if(yy > 245 && T.drape){
+      /* sous le bassin : le mélange des quatre pans, selon où est le point (devant / derrière, SA droite / SA gauche) */
+      var S = BUSTE.a(yy, 1), zr = q[1] - S.zm, l = Math.sqrt(q[0] * q[0] + zr * zr) || 1;
+      var wf = doux(-0.35, 0.35, zr / l), wd = doux(-0.45 * S.a, 0.45 * S.a, q[0]), wc = 1 - doux(0.12 * S.a, 0.5 * S.a, Math.abs(q[0]));
+      /* (le milieu du devant tombe entre les cuisses : il prend le pan « g ») */
+      var P4 = {fG:wf * (1 - wc) * (1 - wd), fD:wf * (1 - wc) * wd, g:wf * wc, bG:(1 - wf) * (1 - wd), bD:(1 - wf) * wd};
+      w = [0, 0, 0]; Cc = [0, 0, 0]; if(nrm) n = [0, 0, 0];
+      for(var v in P4){
+        if(P4[v] < 1e-4) continue;
+        var f = T.frPan(v, yy), pw = add(f.C, mv(f.M, [q[0], 0, q[1]]));
+        w = add(w, pw, P4[v]); Cc = add(Cc, f.C, P4[v]);
+        if(nrm) n = add(n, mv(f.M, [nrm[0], 0, nrm[1]]), P4[v]);
+      }
+    } else {
+      fr = fr || T.fr(yy);
+      w = add(fr.C, mv(fr.M, [q[0], 0, q[1]])); Cc = fr.C;
+      if(nrm) n = mv(fr.M, [nrm[0], 0, nrm[1]]);
+    }
+    var p = pj(w, V), dc = -Cc[0] * V.s + Cc[2] * V.c, k = (yy - 214) / 58;
+    var o = {p:[p[0] + (k > 0 ? T.jx * k * k : 0), p[1] + ANNEAU * (p[2] - dc)], f:p[2], w:w};
+    if(n) o.vu = (-n[0] * V.s + n[2] * V.c) - ANNEAU * n[1] > 0;
     return o;
   };
   /* un point du tour du buste : az (radians ; 0 : devant, +90° : SA gauche), y */
@@ -146,15 +175,20 @@ function tronc(V, P){
     return R;
   };
   /* tout le tour d'une coupe, à l'écran (n points) */
-  T.cercle = function(yy, n){
-    var S = BUSTE.a(yy, 1), fr = T.fr(yy), r = [], j;
-    for(j = 0; j < n; j++) r.push(T.sur(yy, U.point(S, TAU * j / n), null, fr).p);
+  T.cercle = function(yy, n, prof){
+    var S = BUSTE.a(yy, 1), fr = yy > 245 && T.drape ? null : T.fr(yy), r = [], j;
+    for(j = 0; j < n; j++){ var o = T.sur(yy, U.point(S, TAU * j / n), null, fr); r.push(o.p); if(prof) prof.push([o.p[0], o.p[1], o.f]); }
+    /* (pour savoir ce qui est devant ou derrière : aussi des points à l'intérieur de la coupe, à mi-chemin et au milieu) */
+    if(prof){
+      for(j = 0; j < 8; j++){ var q = U.point(S, TAU * j / 8), o2 = T.sur(yy, [q[0] * 0.5, S.zm + (q[1] - S.zm) * 0.5], null, fr); prof.push([o2.p[0], o2.p[1], o2.f]); }
+      var o3 = T.sur(yy, [0, S.zm], null, fr); prof.push([o3.p[0], o3.p[1], o3.f]);
+    }
     return r;
   };
   /* un anneau autour du buste à la hauteur y : la partie tournée vers nous, de SA droite à SA gauche → [[X, Y]…] */
   T.anneau = function(yy, n){
-    var S = BUSTE.a(yy, 1), fr = T.fr(yy), NK = 24, vis = [], a0 = null, a1 = null, j, r = [];
-    function vu(a){ var nn = normale(S, U.point(S, a)), w = mv(fr.M, [nn[0], 0, nn[1]]); return (-w[0] * V.s + w[2] * V.c) - ANNEAU * w[1] > 0; }
+    var S = BUSTE.a(yy, 1), fr = yy > 245 && T.drape ? null : T.fr(yy), NK = 24, vis = [], a0 = null, a1 = null, j, r = [];
+    function vu(a){ var q = U.point(S, a); return T.sur(yy, q, normale(S, q), fr).vu; }
     function ang(k){ return -Math.PI + TAU * k / NK; }
     function bord(k){ var lo = ang(k), hi = lo + TAU / NK, va = vis[k], m, it; for(it = 0; it < 8; it++){ m = (lo + hi) / 2; if(vu(m) === va) lo = m; else hi = m; } return (lo + hi) / 2; }
     var nv = 0;
@@ -174,32 +208,69 @@ function tronc(V, P){
   T.coques = function(){
     if(T._cq) return T._cq;
     var NS = 40, R = [], L = [], k, j;
-    for(j = 0; j <= NS; j++){ var yy = 137 + 135 * j / NS, ring = T.cercle(yy, 24); ring.y = yy; R.push(ring); }
+    /* (T.prof : des points de la surface, avec leur profondeur, pour la poitrine (jusqu'à la ceinture) et pour la jupe) */
+    T.prof = {haut:[], jupe:[]};
+    for(j = 0; j <= NS; j++){ var yy = 137 + 135 * j / NS, ring = T.cercle(yy, 24, yy <= YJ + 0.1 ? T.prof.haut : T.prof.jupe); ring.y = yy; R.push(ring); }
     for(k = 0; k < NS; k += 4){ var pts = []; for(j = k; j <= k + 4; j++) pts = pts.concat(R[j]); L.push({d:U.poly(enveloppe(pts)), y0:R[k].y, y1:R[k + 4].y}); }
     T.tours = R;
     return (T._cq = L);
   };
+  /* Ce point (X, Y à l'écran, sa profondeur d, l'épaisseur r du membre) est-il devant (1) ou derrière (-1) cette partie du buste
+     ('haut' : la poitrine ; 'jupe' : le bas de la tunique) ? 0 : ils ne se recouvrent pas à l'écran. */
+  T.devant = function(X, Y, d, r, part){
+    T.coques();
+    var L = T.prof[part], best = -1e9, i, R2 = 64;
+    for(i = 0; i < L.length; i++){ var dx = L[i][0] - X, dy = L[i][1] - Y; if(dx * dx + dy * dy < R2 && L[i][2] > best) best = L[i][2]; }
+    if(best < -1e8) return 0;
+    return d + r >= best - 1 ? 1 : -1;
+  };
   return T;
 }
-/* le bas de la tunique se drape sur les cuisses : il part dans leur direction (moy : la moyenne des deux cuisses), de plus en
-   plus vers le bas. Jamais plus de 70° : accroupie les genoux plus haut que les hanches, il pend entre les jambes. */
-function draper(T, moy){
-  var M = T.Mp, lm = lon(moy), i;
-  if(lm < 0.02) return;
-  /* (les cuisses vues depuis le bassin : vers SON côté, vers le bas, vers l'avant. Des genoux levés plus haut que les hanches,
-     c'est toujours « vers l'avant » : la tunique ne part jamais vers l'arrière) */
-  var s = M[0] * moy[0] + M[3] * moy[1] + M[6] * moy[2], d = M[1] * moy[0] + M[4] * moy[1] + M[7] * moy[2], f = M[2] * moy[0] + M[5] * moy[1] + M[8] * moy[2];
-  var al = Math.atan2(f, d) / RAD, k = Math.min(1, lm / 0.4);
-  if(al < -120) al += 360;
-  al = borne(al * 0.62, -40, 70) * k;
-  var be = borne(Math.asin(borne(s / lm, -1, 1)) / RAD * 0.62, -35, 35) * k;
-  if(Math.abs(al) < 0.05 && Math.abs(be) < 0.05) return;
-  function Mj(y){ var t = doux(245, 272, y); return mm(M, mm(RX(-al * t), RZ(-be * t))); }
-  for(i = IP + 1; i <= NF; i++){
-    var y = Y0 + PAS * i;
-    T.M[i] = Mj(y);
-    T.C[i] = add(T.C[i - 1], mv(Mj(y - PAS / 2), [0, PAS, 0]));
+var YJ = 204.5;      /* où la poitrine s'arrête et où commence la jupe (sous la ceinture, qui cache la jointure) */
+/* Un membre (une suite de points dans l'espace et son épaisseur) : devant ou derrière la poitrine, et la jupe ?
+   → {haut, jupe} : 1 devant, -1 derrière, 0 ils ne se recouvrent pas. On vote sur plusieurs points du membre. */
+function cote3(T, pts, r){
+  var R = {haut:0, jupe:0};
+  ['haut', 'jupe'].forEach(function(part){
+    var s = 0;
+    pts.forEach(function(q){ var p = pj(q, T.V); s += T.devant(p[0], p[1], p[2], r, part); });
+    R[part] = s > 0 ? 1 : s < 0 ? -1 : 0;
+  });
+  return R;
+}
+/* LE BAS DE LA TUNIQUE SE POSE SUR LES CUISSES (Romain, 23 novembre, 13 h 36 : « on est censé la voir, la jambe droite »).
+   Chaque pan suit la cuisse qui est dessous : le devant de SON côté droit se pose sur SA cuisse droite levée (et la cuisse
+   ressort au bas de la tunique), le dos suit une cuisse qui part en arrière ; sinon le pan tombe. dc : la direction de la cuisse. */
+function draper(T, dcG, dcD){
+  var M = T.Mp, i;
+  function angles(dc){
+    /* (la cuisse vue depuis le bassin : vers SON côté, vers le bas, vers l'avant) */
+    var s = M[0] * dc[0] + M[3] * dc[1] + M[6] * dc[2], d = M[1] * dc[0] + M[4] * dc[1] + M[7] * dc[2], f = M[2] * dc[0] + M[5] * dc[1] + M[8] * dc[2];
+    var al = Math.atan2(f, d) / RAD;
+    if(al < -120) al += 360;           /* (un genou levé plus haut que la hanche : c'est encore « vers l'avant ») */
+    return {al:al, be:Math.asin(borne(s, -1, 1)) / RAD};
   }
+  var A = {G:angles(dcG), D:angles(dcD)}, Gr = angles([0, 1, 0]);      /* (Gr : le bas du monde, vu depuis le bassin : la pesanteur) */
+  Gr.al *= 0.85; Gr.be *= 0.6;
+  function pan(al, be){
+    var C = T.C.slice(0, IP + 1), Mx = T.M.slice(0, IP + 1);
+    function Mj(y){ var t = doux(245, 272, y); return mm(M, mm(RX(-al * t), RZ(-be * t))); }
+    for(i = IP + 1; i <= NF; i++){ var y = Y0 + PAS * i; Mx[i] = Mj(y); C[i] = add(C[i - 1], mv(Mj(y - PAS / 2), [0, PAS, 0])); }
+    return {C:C, M:Mx};
+  }
+  /* Devant : le pan se pose sur la cuisse si elle est plus en avant que la pesanteur (jusqu'à 150° : accroupie, la cuisse
+     remonte) ; sinon il tombe. Derrière : il suit une cuisse qui part plus en arrière que la pesanteur ; sinon il tombe (Romain :
+     « la logique » — une tunique ne reste pas raide en l'air quand elle se penche). Sur le côté, le pan s'écarte avec la cuisse.
+     g : le tissu qui tombe, tout simplement (le milieu du devant, entre les cuisses). */
+  function be(s){ return borne(A[s].be * 0.75 + Gr.be * 0.4, -40, 40); }
+  T.pans = {
+    fG:pan(borne(Math.max(A.G.al * 0.94, Gr.al), -60, 150), be('G')),
+    fD:pan(borne(Math.max(A.D.al * 0.94, Gr.al), -60, 150), be('D')),
+    bG:pan(borne(Math.min(A.G.al * 0.85, Gr.al), -70, 90), be('G')),
+    bD:pan(borne(Math.min(A.D.al * 0.85, Gr.al), -70, 90), be('D')),
+    g:pan(borne(Gr.al, -70, 90), borne(Gr.be, -40, 40))
+  };
+  T.drape = true; T._cq = null;
 }
 function couture(d, op){ return d ? '<path d="' + d + '" stroke="#f3d6a4" stroke-width=".9" fill="none" stroke-dasharray="2.6 2.4" stroke-linecap="round" opacity="' + (op || 0.55) + '"/>' : ''; }
 function st(o, c1, a){ return '<stop offset="' + o + '" stop-color="' + c1 + '"' + (a == null ? '' : ' stop-opacity="' + a + '"') + '/>'; }
@@ -256,8 +327,8 @@ function mainSVG(K, V, B, P){
       U.masse(lame, '#d5dbe6', 1.6) + PT(U.poly(fil, false), '#ffffff', 1.2, ' opacity=".8"') + PT(U.poly([ga, gb], false), O, 5.6) + PT(U.poly([ga, gb], false), '#c9b07a', 3) + '</g>';
   }
   /* la paume */
-  var p1 = Q(1.5, 3.4), p2 = Q(1.5, -3.4), p3 = Q(9.6, 4.7), p4 = Q(9.6, -4.7);
-  L.push(gelule(p1[0], p1[1], 4.5, p3[0], p3[1], 3.9), gelule(p2[0], p2[1], 4.5, p4[0], p4[1], 3.9), gelule(p3[0], p3[1], 3.9, p4[0], p4[1], 3.9), gelule(p1[0], p1[1], 4.5, p2[0], p2[1], 4.5));
+  var p1 = Q(1.5, 3.4), p2 = Q(1.5, -3.4), p3 = Q(9.6, 4.7), p4 = Q(9.6, -4.7), Lp = [];
+  Lp.push(gelule(p1[0], p1[1], 4.5, p3[0], p3[1], 3.9), gelule(p2[0], p2[1], 4.5, p4[0], p4[1], 3.9), gelule(p3[0], p3[1], 3.9, p4[0], p4[1], 3.9), gelule(p1[0], p1[1], 4.5, p2[0], p2[1], 4.5));
   /* les doigts : ils se plient vers la paume (deux phalanges) ; ouverts, ils s'écartent un peu */
   var ec = (1 - pg) * 0.07, D = [], idx = P['index' + cle] || 0;
   for(i = 0; i < 4; i++){
@@ -272,10 +343,11 @@ function mainSVG(K, V, B, P){
   /* le pouce */
   var t0 = [3.2, 5.2, 0.6], u1 = uni([0.62 - 0.3 * pg, 0.75, 0.2 + 0.7 * pg]), t1 = add(t0, u1, 5.6), u2 = uni([0.85 - 0.9 * pg, 0.42 - 0.6 * pg, 0.25 + 0.9 * pg]), t2 = add(t1, u2, 4.7);
   var k0 = Q(t0[0], t0[1], t0[2]), k1 = Q(t1[0], t1[1], t1[2]), k2 = Q(t2[0], t2[1], t2[2]);
-  L.push(gelule(k0[0], k0[1], 3.1, k1[0], k1[1], 2.75), gelule(k1[0], k1[1], 2.75, k2[0], k2[1], 2.35));
+  Lp.push(gelule(k0[0], k0[1], 3.1, k1[0], k1[1], 2.75), gelule(k1[0], k1[1], 2.75, k2[0], k2[1], 2.35));
   /* la peau : un dégradé en travers de la main */
   var mc = Q(8, 0), gid = K.n('pm' + cle), s = degU(gid, mc[0] - 9, mc[1] - 10, mc[0] + 9, mc[1] + 10, st(0, K.peau.c[0]) + st(0.62, K.peau.c[1]) + st(1, U.mix(K.peau.c[1], K.peau.ombre, 0.7)));
-  s += U.masse(L, 'url(#' + gid + ')', 1.9);
+  var defs = s, paume = U.masse(Lp, 'url(#' + gid + ')', 1.9);
+  s += U.masse(Lp.concat(L), 'url(#' + gid + ')', 1.9);
   /* un trait entre deux doigts voisins */
   var tr = '';
   for(i = 0; i < 3; i++){
@@ -283,7 +355,8 @@ function mainSVG(K, V, B, P){
     if(d2(pts[0], pts[2]) > 2.2) tr += U.poly(pts, false) + ' ';
   }
   s += PT(tr, K.peau.trait, 1.05, ' opacity=".8"');
-  return {objet:objet, main:s};
+  /* (pour tenir l'arc : la paume seule, et les doigts seuls avec leurs traits ; vers : la paume est tournée vers nous) */
+  return {objet:objet, main:s, paume:defs + paume, doigts:U.masse(L, 'url(#' + gid + ')', 1.9) + PT(tr, K.peau.trait, 1.05, ' opacity=".8"'), n:n, vers:-n[0] * V.s + n[2] * V.c};
 }
 
 /* le dessin d'un bras. plein : avec tout son contour (le bras du fond, dessiné avant le buste) ; sinon son trait ne commence qu'à l'aisselle */
@@ -304,7 +377,15 @@ function brasSVG(K, V, B, P, plein){
   s += PC(dq, K.u('cuir'), 1.6) + PF(dq, K.u('grain'), ' opacity=".4"') + couture('M' + f1(q1[0] - nx * 6.4) + ' ' + f1(q1[1] - ny * 6.4) + ' L ' + f1(q1[0] + nx * 6.4) + ' ' + f1(q1[1] + ny * 6.4), 0.5);
   /* Trois couches, que le corps range : les manches, PUIS ce qu'elle tient (l'arc, la dague : jamais sous une manche), PUIS les mains */
   var mn = mainSVG(K, V, B, P);
-  return {manche:s, arc:(cote < 0 && P.arc !== false ? arcSVG(K, V, add(B.W, B.dir, 8), P) : '') + mn.objet, main:mn.main};
+  if(cote < 0 && P.arc !== false){
+    /* L'ARC DANS LE POING (Romain, 23 novembre, 13 h 36 : « l'arc, il est censé être devant la main ») : la poignée passe dans la
+       paume, les doigts se referment par-dessus. Quand on voit l'intérieur de la main, on voit donc la paume, puis l'arc, puis les
+       doigts ; quand on voit le dos de la main, le poing cache la poignée. */
+    var arc = arcSVG(K, V, add(add(B.W, B.dir, 8), mn.n, 3.5), P);
+    if(mn.vers > 0.15) return {manche:s, arc:mn.paume + arc + mn.objet, main:mn.doigts};
+    return {manche:s, arc:arc + mn.objet, main:mn.main};
+  }
+  return {manche:s, arc:mn.objet, main:mn.main};
 }
 
 /* ---------- Le buste : un seul contour avec les manches de devant ----------
@@ -321,10 +402,16 @@ function torse(K, h, T, P, avant, fond, jb){
   defs += degU(K.n('rtH'), mx - nx * 47.5, my - ny * 47.5, mx + nx * 47.5, my + ny * 47.5, st(0, '#000', 0.14) + st(0.16, '#fff', 0.2) + st(0.42, '#fff', 0.02) + st(0.66, '#000', 0.08) + st(0.86, '#000', 0.26) + st(1, '#000', 0.46)) +
     degU(K.n('rtV'), mx - ax * al / 2, my - ay * al / 2, mx + ax * al / 2, my + ay * al / 2, st(0, '#fff', 0.12) + st(0.3, '#fff', 0) + st(0.62, '#000', 0) + st(1, '#000', 0.26));
   var dTout = cq.map(function(c1){ return c1.d; }).join(' ');
-  var coupe2 = jb && jb.devant, dHaut = coupe2 ? cq.filter(function(c1){ return c1.y1 <= 206; }).map(function(c1){ return c1.d; }).join(' ') : dTout,
-    dJupe = coupe2 ? cq.filter(function(c1){ return c1.y1 > 206; }).map(function(c1){ return c1.d; }).join(' ') : '';
+  var dHaut = cq.filter(function(c1){ return c1.y1 <= YJ + 0.1; }).map(function(c1){ return c1.d; }).join(' '),
+    dJupe = cq.filter(function(c1){ return c1.y0 >= YJ - 0.1; }).map(function(c1){ return c1.d; }).join(' ');
+  /* LES CACHES (Romain, 23 novembre, 13 h 36 : « les membres ne peuvent pas traverser le corps […] avoir la logique en 3D ») :
+     une jambe est dessinée APRÈS le buste, mais cachée là où la poitrine ou la jupe est devant elle. Le cache prend aussi le
+     trait du contour : la jambe s'arrête net au bord du buste, elle passe derrière. */
+  function cache(id, d){ return '<mask id="' + K.n(id) + '" maskUnits="userSpaceOnUse" x="-500" y="-300" width="1000" height="1100"><rect x="-500" y="-300" width="1000" height="1100" fill="#fff"/><path d="' + d + '" fill="#000" stroke="#000" stroke-width="4.6" stroke-linejoin="round"/></mask>'; }
+  /* (le haut des bras de devant fait partie de la poitrine : une jambe derrière la poitrine est aussi derrière les épaules) */
+  var hautBras = avant.map(function(B){ return B.manche[0]; }).join(' ');
   s += '<defs>' + defs + '<path id="' + K.n('tc') + '" d="' + dTout + '"/><clipPath id="' + cid + '"><use href="#' + K.n('tc') + '"/></clipPath>' +
-    (coupe2 ? '<clipPath id="' + cid + 'h"><path d="' + dHaut + '"/></clipPath><clipPath id="' + cid + 'j"><path d="' + dJupe + '"/></clipPath><clipPath id="' + cid + 'x"><path clip-rule="evenodd" d="M-400 -200 H400 V700 H-400 Z ' + cq[4].d + '"/></clipPath>' : '') + '</defs>';
+    cache('mH', dHaut + ' ' + hautBras) + cache('mJ', dJupe) + cache('mHJ', dTout + ' ' + hautBras) + '</defs>';
   function plein(d, c1){ return '<path d="' + d + '" fill="' + c1 + '"/>'; }
   function tout(c1, x){ return '<use href="#' + K.n('tc') + '" fill="' + c1 + '"' + (x || '') + '/>'; }
 
@@ -405,7 +492,7 @@ function torse(K, h, T, P, avant, fond, jb){
   }
 
   /* --- l'ouverture du bas de la tunique : quand on regarde dedans (accroupie, de face), on voit l'intérieur et les cuisses --- */
-  var axS = mv(T.M[NF], [0, 1, 0]), vuO = (-axS[0] * V.s + axS[2] * V.c) - ANNEAU * axS[1], ouv = '';
+  var axS = mv(T.fr(272).M, [0, 1, 0]), vuO = (-axS[0] * V.s + axS[2] * V.c) - ANNEAU * axS[1], ouv = '';
   if(vuO > 0.03 && jb && jb.ouv){
     var dO = U.poly(T.tours[T.tours.length - 1]), oid = K.n('ouv');
     ouv = '<clipPath id="' + oid + '"><path d="' + dO + '"/></clipPath><g opacity="' + f1(doux(0.03, 0.16, vuO)) + '">' + PF(dO, U.sombre(K.tissu[2], 0.3)) + '<g clip-path="url(#' + oid + ')">' + jb.ouv() + '</g>' + PT(dO, O, 2) + '</g>';
@@ -417,12 +504,7 @@ function torse(K, h, T, P, avant, fond, jb){
   function trait(d){ return '<path d="' + d + '" fill="none" stroke="' + O + '" stroke-width="4.6" stroke-linejoin="round"/>'; }
   var epaules = '';
   fond.forEach(function(B){ epaules += PF(B.epaule, K.u('tunP')); });
-  if(!coupe2){
-    s += trait(dTout + manches) + epaules + tout(K.u('tunP')) + '<g clip-path="url(#' + cid + ')">' + dans + '</g>' + ouv + dessusHaut + ceinture;
-  } else {
-    s += trait(dHaut + manches) + epaules + plein(dHaut, K.u('tunP')) + '<g clip-path="url(#' + cid + 'h)">' + dans + '</g>' + dessusHaut +
-      jb.devant + '<g clip-path="url(#' + cid + 'x)">' + trait(dJupe) + '</g>' + plein(dJupe, K.u('tunP')) + '<g clip-path="url(#' + cid + 'j)">' + dans + '</g>' + ouv + ceinture;
-  }
+  s += trait(dTout + manches) + epaules + tout(K.u('tunP')) + '<g clip-path="url(#' + cid + ')">' + dans + '</g>' + ouv + dessusHaut + ceinture;
   return s;
 }
 
@@ -478,6 +560,8 @@ function jambeSVG(K, V, J, P, suf){
   /* la cuisse, et l'ombre de la tunique dessus */
   var lc = d2(ha, kn) || 1, ox = ha[0] + (kn[0] - ha[0]) * Math.min(1, 32 / lc), oy = ha[1] + (kn[1] - ha[1]) * Math.min(1, 32 / lc);
   s += PC(dcu, K.u('pant'), 2.2) + '<clipPath id="' + cu + '"><path d="' + dcu + '"/></clipPath><ellipse cx="' + f1(ox) + '" cy="' + f1(oy) + '" rx="22" ry="13" fill="#000" opacity=".3" clip-path="url(#' + cu + ')"/>';
+  /* (la cuisse et la botte sont deux morceaux : chacun sait s'il est devant ou derrière le buste) */
+  var cuisse = s; s = '';
   /* le mollet : un peu en arrière du tibia, au premier tiers ; la cheville est plus fine */
   var hk = sub(J.Ha, J.Kn), ar = sub(hk, mul(J.dj, dot(hk, J.dj))), Mo = add(add(J.Kn, J.dj, 24), uni(lon(ar) < 0.5 ? [0, 0, -1] : ar), 2.4), mo = pj(Mo, V);
   var botte = [gelule(bt[0], bt[1], 13, mo[0], mo[1], 12.5), gelule(mo[0], mo[1], 12.5, an[0], an[1], 10.9), gelule(ta[0], ta[1], 9, po[0], po[1], 7.8), gelule(a2[0], a2[1], 10.6, t2[0], t2[1], 8.8)];
@@ -505,7 +589,7 @@ function jambeSVG(K, V, J, P, suf){
   var pl = 3.2 * V.c, dr = 'M-14.2 0 Q 0 ' + f1(pl) + ' 14.2 0 L 13.8 9.5 Q 0 ' + f1(9.5 + pl * 1.6) + ' -13.8 9.5 Z';
   var rev = ul > 8 ? f1(Math.atan2(uy, ux) / RAD - 90) : 0;
   s += '<g transform="translate(' + f1(bq[0] - ux * 9) + ' ' + f1(bq[1] - uy * 9) + ') rotate(' + rev + ')"><path d="' + dr + '" transform="translate(0 4.5)" fill="#000" opacity=".22"/>' + PC(dr, '#8a5a30', 1.6) + PF(dr, K.u('grain'), ' opacity=".4"') + couture('M-12 2.6 Q 0 ' + f1(2.6 + pl) + ' 12 2.6', 0.6) + '</g>';
-  return s;
+  return {cuisse:cuisse, botte:s, svg:cuisse + s};
 }
 
 /* ---------- Le carquois : en travers du dos, il dépasse derrière SON épaule gauche ; il suit la poitrine ---------- */
@@ -534,7 +618,7 @@ HV.corps = function(K, h, V, P){
   P = P || {};
   var T = tronc(V, P), ba = P.bang || Z3, ds = P.dos || Z3;
   var jg = jambe(V, -1, P, T), jd = jambe(V, 1, P, T);
-  draper(T, mul(add(jg.dc, jd.dc), 0.5));
+  draper(T, jg.dc, jd.dc);
   var bG = bras(V, -1, P, T), bD = bras(V, 1, P, T);
   /* (quand elle tend l'arc, la corde passe par les doigts de l'autre main) */
   if(P.tendu > 0.02) P._encoche = add(bD.W, bD.da, 12);
@@ -544,10 +628,45 @@ HV.corps = function(K, h, V, P){
   [bG, bD].sort(function(a, b){ return a.fond - b.fond; }).forEach(function(b){ (b.fond < SEUIL ? fond : avant).push(b); });
   var der = (cq && !dos ? cq.svg : '') + fond.map(function(b){ var o = brasSVG(K, V, b, P, true); return o.manche + o.arc + o.main; }).join('');
   var pa = avant.map(function(b){ return brasSVG(K, V, b, P, false); });
-  /* les jambes : celle du fond d'abord. Un genou levé plus haut que la ceinture, devant la poitrine, passe devant le haut du corps */
-  var yc = pj(T.fr(208).C, V), dP = pj(T.fr(190).C, V)[2], J2 = [jg, jd].sort(function(a, b){ return a.fond - b.fond; }), jb = '', jdv = '';
-  J2.forEach(function(j){ var sv = jambeSVG(K, V, j, P); if(j.kn[2] - dP > 16 && j.kn[1] < yc[1] + 6) jdv += sv; else jb += sv; });
-  var tor = torse(K, h, T, P, avant, fond, {devant:jdv, ouv:function(){ return J2.map(function(j){ return jambeSVG(K, V, j, P, 'o'); }).join(''); }});
+  /* LES JAMBES : celle du fond d'abord. Elles sont dessinées après le buste ; chaque morceau (la cuisse, la botte) est caché là
+     où la poitrine ou la jupe est devant lui (on regarde, en plusieurs points du morceau, ce qui est le plus près de nous). */
+  var J2 = [jg, jd].sort(function(a, b){ return a.fond - b.fond; }), jb = '', dbg = [], membres = [];
+  function prof(){ var s = 0, i; for(i = 0; i < arguments.length; i++) s += pj(arguments[i], V)[2]; return s / arguments.length; }
+  function morceau(svg, pts, r, nom){
+    var R = cote3(T, pts, r), id = R.haut < 0 && R.jupe < 0 ? 'mHJ' : R.haut < 0 ? 'mH' : R.jupe < 0 ? 'mJ' : '';
+    dbg.push([nom, R.haut, R.jupe]);
+    return id ? '<g mask="url(#' + K.n(id) + ')">' + svg + '</g>' : svg;
+  }
+  J2.forEach(function(j){
+    var sv = jambeSVG(K, V, j, P);
+    /* LA CUISSE est à moitié dans la tunique : du bassin jusqu'au bas de la tunique (27 de long), elle est dedans, donc cachée par
+       la jupe partout ; au-delà, elle en sort, et elle est devant ou derrière la jupe selon ce qu'on voit. On la dessine donc deux
+       fois : entière, cachée par la jupe ; puis, si sa partie qui sort est devant la jupe, seulement cette partie-là, par-dessus. */
+    var dehors = cote3(T, [0.5, 0.65, 0.8, 0.95].map(function(t){ return mixv(j.Ha, j.Kn, t); }), 12), idH = dehors.haut < 0 ? 'mHJ' : 'mJ';
+    dbg.push(['cuisse' + j.cle, dehors.haut, dehors.jupe]);
+    jb = '<g mask="url(#' + K.n(idH) + ')">' + sv.cuisse + '</g>';
+    if(dehors.jupe > 0){
+      var c0 = pj(mixv(j.Ha, j.Kn, 0.37), V), c1 = pj(j.Kn, V), ux = c1[0] - c0[0], uy = c1[1] - c0[1], ul = Math.sqrt(ux * ux + uy * uy);
+      if(ul > 4){
+        ux /= ul; uy /= ul;
+        var cid = K.n('sort' + j.cle), B = 300, cp = [[c0[0] - uy * B, c0[1] + ux * B], [c0[0] - uy * B + ux * B, c0[1] + ux * B + uy * B], [c0[0] + uy * B + ux * B, c0[1] - ux * B + uy * B], [c0[0] + uy * B, c0[1] - ux * B]];
+        jb += '<clipPath id="' + cid + '"><path d="' + U.poly(cp) + '"/></clipPath><g clip-path="url(#' + cid + ')"' + (dehors.haut < 0 ? ' mask="url(#' + K.n('mH') + ')"' : '') + '>' + sv.cuisse + '</g>';
+      }
+    }
+    membres.push({d:prof(mixv(j.Ha, j.Kn, 0.6)), s:jb});
+    membres.push({d:prof(j.Kn, j.An, mixv(j.An, j.Po, 0.5)), s:morceau(sv.botte, [j.Kn, add(j.Kn, j.dj, 24), j.An, mixv(j.An, j.Po, 0.5), j.Po], 10, 'botte' + j.cle)});
+  });
+  /* LES BRAS DE DEVANT ET LES JAMBES SE RANGENT ENTRE EUX selon la profondeur (le plus loin d'abord) : une main posée au sol devant
+     elle passe derrière la botte du genou à terre quand on la voit de dos. Pour un même bras : la manche, puis ce qu'il tient, puis
+     la main. Quand les bras passent devant la tête (brasDessus), ils restent à part, dessinés après elle. */
+  var dessus = P.brasDessus > 0.5;
+  if(!dessus) avant.forEach(function(B, i){
+    var o = pa[i], dw = prof(B.W);
+    membres.push({d:prof(B.El, B.W), s:o.manche}, {d:dw + 0.01, s:o.arc}, {d:dw + 0.02, s:o.main});
+  });
+  membres.sort(function(a, b){ return a.d - b.d; });
+  jb = membres.map(function(m){ return m.s; }).join('');
+  var tor = torse(K, h, T, P, avant, fond, {ouv:function(){ return J2.map(function(j){ return jambeSVG(K, V, j, P, 'o').svg; }).join(''); }});
   /* la tête : au bout du cou, qui part du haut du buste. Elle reste droite quand le dos se penche (elle regarde devant elle) ;
      P.hoche la fait baisser (> 0) ou lever le nez. */
   var yawT = ba[2] + ds[2] + (P.tete || 0), Vt = U.vue((P.cap || 0) + yawT), ho = P.hoche || 0;
@@ -557,8 +676,8 @@ HV.corps = function(K, h, V, P){
   var xs = [pj(jg.An, V), pj(jd.An, V)], ys = 0;
   [jg.Kn, jd.Kn, bG.W, bD.W].forEach(function(q){ if(q[1] > SOL - 26) xs.push(pj(q, V)); });
   var xa = 1e9, xb = -1e9; xs.forEach(function(q){ xa = Math.min(xa, q[0]); xb = Math.max(xb, q[0]); ys += q[2] / xs.length; });
-  return {T:T, derriere:der, jambes:jb, torse:tor, carquoisDevant:cq && dos ? cq.svg : '',
-    devant:pa.map(function(o){ return o.manche; }).join('') + pa.map(function(o){ return o.arc; }).join('') + pa.map(function(o){ return o.main; }).join(''), dos:dos,
+  return {T:T, dbg:dbg, derriere:der, jambes:'', jambesApres:jb, torse:tor, carquoisDevant:cq && dos ? cq.svg : '',
+    devant:dessus ? pa.map(function(o){ return o.manche; }).join('') + pa.map(function(o){ return o.arc; }).join('') + pa.map(function(o){ return o.main; }).join('') : '', dos:dos,
     cou:function(tDos, ombre){ return cou(K, V, pj(add(Hp, nd, tDos ? 13 : 20), V), bc, rc, ombre); },
     tete:{V:Vt, tx:pHp[0] + 3 * Vt.s, ty:pHp[1] - 28, px:-3 * Vt.s, rot:(P.pen || 0) + ho * Vt.s, hocheF:ho * Vt.c, fond:pHp[2] - T.dB},
     ombre:{cx:(xa + xb) / 2, rx:Math.max(50 + 8 * Math.abs(V.s), (xb - xa) / 2 + 32), cy:SOL + 1 + PSOL * ys},

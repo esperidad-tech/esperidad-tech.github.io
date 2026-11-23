@@ -249,6 +249,9 @@ HV.cheveux = function(K, coif, V, P){
   var lis = [];
   cal.rows.forEach(function(r){ if(r.y > -52 && r.y < -22) lis.push([r.g + 2.6, r.y]); });
   if(lis.length > 3) dev += PT(U.courbe(lis.reverse()), K.chev.hl, 1.6, ' opacity=".5"');
-  return {queue:queue, queueDevant:zq > 6, dos:dos, devant:dev, ombre:ombre};
+  /* La queue de cheval est attachée derrière la tête : elle ne passe devant (la tête, le dos, les bras) que si on la voit de dos.
+     De face et de profil, elle est derrière tout le reste (Romain, 23 novembre, 13 h 36 : « on voit un bout de sa tresse devant
+     le bras, alors que normalement la tresse est censée être derrière »). */
+  return {queue:queue, queueDevant:zq > 6 && V.c < -0.3, dos:dos, devant:dev, ombre:ombre};
 };
 })(window);

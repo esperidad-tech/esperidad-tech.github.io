@@ -1,0 +1,15 @@
+<!doctype html><meta charset="utf-8">
+<!-- Les visages de chaque pose, en gros plan : visages.html#angle/taille[/pose,pose…] (le cadre suit la tête, où qu'elle soit) -->
+<style>body{margin:0;background:#131932;display:flex;flex-wrap:wrap;gap:6px;padding:10px;font:600 13px system-ui,sans-serif;color:#cfd6ff}
+.c{text-align:center}svg{background:#1b2347;border-radius:8px;display:block}</style>
+<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script><script src="../src/hv-poses.js"></script>
+<body><script>
+var HV = HerosVues, Hh = location.hash.slice(1).split('/'), A = +Hh[0] || 0, L = +Hh[1] || 200;
+var h = {role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert'};
+var SEUL = Hh[2] ? Hh[2].split(',') : null;
+document.body.innerHTML = HV.LISTE.filter(function(l){ return !SEUL || SEUL.indexOf(l[0]) >= 0; }).map(function(l, i){
+  var P = HV.pose(l[0]); P.cap = A;
+  var C = HV.corps(HV.contexte('x', h), h, HV.outils.vue(A), P), cx = 150 + C.tete.tx, cy = C.tete.ty + 2;
+  return '<div class="c">' + HV.svg(h, P, {id:'v' + i, cadre:(cx - 52) + ' ' + (cy - 50) + ' 104 104'}).replace('<svg ', '<svg width="' + L + '" height="' + L + '" ') + l[1] + '</div>';
+}).join('');
+</script>

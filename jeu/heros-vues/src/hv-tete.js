@@ -47,9 +47,16 @@ function ovale(cx, cy, rx, ry, n){ var r = [], i; n = n || 20; for(i = 0; i < n;
 /* ---------- Un œil (d : -1 celui de gauche à l'écran quand elle est de face, 1 celui de droite) ---------- */
 function oeil(K, d, V, P, f){
   var ex = 12 * d, ey = 6, yo = borne(P.yo == null ? 1 : P.yo, 0, 1), s = '', garcon = f.sexe === 'm';
-  var ox = borne(P.rx || 0, -1, 1) * 2.6, oy = borne(P.ry || 0, -1, 1) * 1.6;
+  var rgx = borne((P.rx || 0) + (P.regX || 0), -1, 1), rgy = borne((P.ry || 0) + (P.regY || 0), -1, 1), ox = rgx * 2.6, oy = rgy * 1.6;
+  /* L'EXPRESSION (Romain, 23 novembre, 13 h 36 : « pour chaque position, il faut qu'elle ait une expression de visage qui
+     corresponde »). plisse > 0 : elle plisse les yeux (la paupière du bas remonte, celle du haut descend un peu : elle vise, elle
+     rit) ; < 0 : les yeux grands ouverts (la surprise). Quand elle regarde en bas, la paupière du haut descend aussi. */
+  var pl = borne(P.plisse || 0, -0.5, 1), bas = Math.max(0, rgy);
+  function sq(w){ return w < 0 ? w * (1 - 0.32 * Math.max(pl, 0) + 0.25 * Math.max(-pl, 0) - 0.22 * bas) : w * (1 - 0.68 * Math.max(pl, 0)); }
+  var B7 = sq(7);
+  function Qw(w){ return B7 - (B7 - sq(w)) * (0.12 + 0.88 * yo); }
   /* un point de l'œil (v : vers l'extérieur du visage, w : vers le bas) ; la paupière qui se ferme le ramène vers le bas de l'œil */
-  function Q(v, w){ w = 7 - (7 - w) * (0.12 + 0.88 * yo); return pose(ex + v * d, ey + w, V); }
+  function Q(v, w){ return pose(ex + v * d, ey + Qw(w), V); }
   function L(pts){ return pts.map(function(p){ return Q(p[0], p[1]); }); }
   if(yo < 0.14){
     s += PT(U.poly(L(U.ech([[-8.5, 4.6], [0, 8.6], [9.2, 4.2]], 8)), false), O, 2.4);
@@ -75,7 +82,7 @@ function oeil(K, d, V, P, f){
   if(!garcon){
     var cils = '';
     [[[9, -5], [13, -6.5], [14.5, -9.5]], [[9.6, -2.5], [13.2, -2.1], [14.8, -4.3]]].forEach(function(cl){
-      U.morceaux(U.ech(cl, 5).map(function(q){ return [ex + q[0] * d, ey + 7 - (7 - q[1]) * (0.12 + 0.88 * yo)]; }), TETE, V).forEach(function(run){ cils += U.poly(run.map(function(q){ return pose(q[0], q[1], V); }), false) + ' '; });
+      U.morceaux(U.ech(cl, 5).map(function(q){ return [ex + q[0] * d, ey + Qw(q[1])]; }), TETE, V).forEach(function(run){ cils += U.poly(run.map(function(q){ return pose(q[0], q[1], V); }), false) + ' '; });
     });
     s += PT(cils, O, 1.8);
   }
@@ -120,7 +127,9 @@ HV.tete = function(K, h, V, P, CH){
   if(CH && CH.ombre) dans += '<path d="' + CH.ombre + '" transform="translate(1.4 4.4)" fill="' + K.peau.ombre + '" opacity=".6"/>';
   if(face){
     /* les joues */
-    [-1, 1].forEach(function(d){ dans += PF(U.poly(poseL(ovale(19 * d, 16, 6, 3.2, 14), V)), K.peau.joue, ' opacity=".34"'); });
+    /* (rougit : l'effort, la joie — les joues plus rouges) */
+    var rj = borne(P.rougit || 0, 0, 1);
+    [-1, 1].forEach(function(d){ dans += PF(U.poly(poseL(ovale(19 * d, 16, 6 + rj, 3.2 + rj * 0.8, 14), V)), K.peau.joue, ' opacity="' + f1(0.34 + 0.34 * rj) + '"'); });
     /* les yeux */
     dans += oeil(K, -1, V, P, f) + oeil(K, 1, V, P, f);
     /* le nez : un petit trait qui pointe du côté où elle regarde ; de profil, c'est le contour qui le dessine */
@@ -132,22 +141,49 @@ HV.tete = function(K, h, V, P, CH){
     /* la bouche : un sourire, sur le bombé des lèvres (elle s'enroule plus que le reste du visage : de profil il en reste le coin) */
     function levre(q){ return [q[0] * V.c + (T_MIL(q[1]) - 0.3 - q[0] * q[0] / 12) * V.s, q[1] + glisse(q[1])]; }
     function vuL(q){ return V.c - V.s * q[0] / 6 > 0.02; }
-    var bo = U.ech([[-6, 22], [0, 26.2], [6, 22]], 12).filter(vuL).map(levre);
-    if(bo.length > 1) dans += PT(U.poly(bo, false), '#9e4c38', 1.8);
-    if(f.sexe === 'f'){
-      var lv = U.ech([[-3.5, 23.6], [0, 25.8], [3.5, 23.6]], 6).concat(U.ech([[3.5, 23.6], [0, 24.5], [-3.5, 23.6]], 6).slice(1)).filter(vuL).map(levre);
-      if(lv.length > 2) dans += PF(U.poly(lv), '#e0707a', ' opacity=".7"');
+    /* LA BOUCHE selon l'expression : sourire (1 : le sourire de toujours ; 0 : neutre ; -1 : les coins tombent), ouvre (0 … 1 : la
+       bouche s'ouvre), largeB (sa largeur : 0,45 les lèvres pincées en « o », 1 normale), bouchex (une moue de côté) */
+    var sr = borne(P.sourire == null ? 1 : P.sourire, -1, 1), ov = borne(P.ouvre || 0, 0, 1), kb = borne(P.largeB == null ? 1 : P.largeB, 0.3, 1.4), bx = borne(P.bouchex || 0, -1, 1) * 2.4;
+    var wb = 6 * kb * (1 + 0.2 * ov), yc = 23.4 - 1.4 * sr, ym = 23.4 + 2.8 * sr - ov * 3 * (1 - Math.max(sr, 0));
+    var cG = [-wb + bx, yc + bx * 0.5], cD = [wb + bx, yc - bx * 0.5], haut = U.ech([cG, [bx * 0.6, ym], cD], 12);
+    if(ov < 0.06){
+      var bo = haut.filter(vuL).map(levre);
+      if(bo.length > 1) dans += PT(U.poly(bo, false), '#9e4c38', 1.8);
+      if(f.sexe === 'f' && sr > 0.2){
+        /* (la lèvre du bas, sous le trait : le même dessin qu'avant pour le sourire de toujours) */
+        var Ym = (cG[1] + cD[1] + 2 * ym) / 4 - 24.1;
+        var lv = U.ech([[-3.5, 23.6], [0, 25.8], [3.5, 23.6]], 6).concat(U.ech([[3.5, 23.6], [0, 24.5], [-3.5, 23.6]], 6).slice(1))
+          .map(function(q){ return [q[0] * kb + bx * 0.6, q[1] + Ym]; }).filter(vuL).map(levre);
+        if(lv.length > 2) dans += PF(U.poly(lv), '#e0707a', ' opacity="' + f1(0.7 * Math.min(1, sr * 1.5)) + '"');
+      }
+    } else {
+      /* la bouche ouverte : le dedans sombre, les dents en haut quand elle sourit, la langue en bas */
+      var yb = ym + 2 + 12 * ov, bas2 =U.ech([cD, [bx * 0.6, yb + (sr > 0 ? 2 * sr : 0)], cG], 12).slice(1, -1);
+      var tout = haut.concat(bas2), vus = tout.filter(vuL);
+      if(vus.length > tout.length * 0.6){
+        var dB2 = U.poly(vus.map(levre)), bid = K.n('bch');
+        dans += '<clipPath id="' + bid + '"><path d="' + dB2 + '"/></clipPath>' + PF(dB2, '#5a1a2a') + '<g clip-path="url(#' + bid + ')">' +
+          PF(U.poly(U.ech([[-wb * 0.7 + bx, yb + 3], [bx * 0.6, yb - 3.2 * ov - 1], [wb * 0.7 + bx, yb + 3]], 8).filter(vuL).map(levre)), '#d9606e') +
+          (sr > 0.2 ? PT(U.poly(haut.map(function(q){ return [q[0], q[1] + 1.1]; }).filter(vuL).map(levre), false), '#fffaf2', 1.6 + 1.6 * ov) : '') + '</g>' +
+          PT(dB2, '#9e4c38', 1.5);
+      } else {
+        var bo2 = haut.filter(vuL).map(levre);
+        if(bo2.length > 1) dans += PT(U.poly(bo2, false), '#9e4c38', 1.8);
+      }
     }
   }
   s += '<g clip-path="url(#' + cid + ')">' + dans + '</g>' + av;
   /* les sourcils : par-dessus la frange (on les voit à travers, comme dans persos.js) */
   var sc = '';
   if(face){
-    var sb = P.sourcils || 0;        /* -1 : froncés ; 1 : levés */
+    /* sourcils : -1 froncés (le bout près du nez descend : la colère, la concentration), 1 levés ; sourcilsIn : le bout près du
+       nez remonte (l'inquiétude, la fatigue) ; sourcilsAsym : un sourcil plus haut que l'autre (elle réfléchit, elle doute) */
+    var sb0 = P.sourcils || 0, si = borne(P.sourcilsIn || 0, -1, 1), sa = borne(P.sourcilsAsym || 0, -1, 1);
     [-1, 1].forEach(function(d){
-      U.morceaux(U.ech([[20 * d, -8 - sb * 1.5], [12 * d, -12 - sb * 2.6], [4 * d, -9 - sb * 0.8]], 8), TETE, V).forEach(function(run){
+      var sb = borne(sb0 + sa * d * 0.8, -1.4, 1.4), fr = Math.max(0, -sb);
+      U.morceaux(U.ech([[20 * d, -8 - sb * 2], [12 * d, -12 - sb * 3.2 - si * 0.8], [4 * d, -9 - sb * 1 + fr * 3.4 - si * 4]], 8), TETE, V).forEach(function(run){
         var pts = run.map(function(p){ return pose(p[0], p[1], V); });
-        if(Math.abs(pts[0][0] - pts[pts.length - 1][0]) > 1.6) sc += PT(U.poly(pts, false), K.chev.c[2], f.sexe === 'm' ? 3 : 2.4);
+        if(Math.abs(pts[0][0] - pts[pts.length - 1][0]) > 1.6) sc += PT(U.poly(pts, false), K.chev.c[2], (f.sexe === 'm' ? 3 : 2.4) + 0.5 * Math.min(1, Math.abs(sb) + si));
       });
     });
   }
