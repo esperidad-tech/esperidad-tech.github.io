@@ -34,9 +34,24 @@ function ecran(q){
 }
 function osE(nom){ return ecran(HV.os(h, p.F)[nom]); }
 function mixe(a, b, t){ return a + (b - a) * t; }
+function mixe2(a, b, t){ return [mixe(a[0], b[0], t), mixe(a[1], b[1], t)]; }
 function lisse(t){ t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t); }
 function rond(x, y, r, c, o, plus){ return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '" fill="' + c + '"' + (o != null ? ' opacity="' + o.toFixed(2) + '"' : '') + (plus || '') + '/>'; }
 var O = '#24182e';
+/* le ruban de lumière laissé par le bout de la dague : on garde où était la pointe (le poignet, prolongé dans le sens de
+   l'avant-bras) pendant le coup, et on dessine des morceaux qui s'effacent en 0,22 s */
+function ruban(trace, garde){
+  if(garde){ var w = osE('poignetD'), c = osE('coudeD'), vx = w[0] - c[0], vy = w[1] - c[1], l = Math.sqrt(vx * vx + vy * vy) || 1; trace.push([w[0] + vx / l * 52, w[1] + vy / l * 52, T]); }
+  var s = '';
+  trace.forEach(function(q, i){
+    if(i === 0) return; var p0 = trace[i - 1], o = 1 - (T - q[2]) / 0.22; if(o <= 0 || q[2] - p0[2] > 0.1) return;
+    var d = 'M' + p0[0].toFixed(0) + ' ' + p0[1].toFixed(0) + ' L' + q[0].toFixed(0) + ' ' + q[1].toFixed(0);
+    s += '<path d="' + d + '" stroke="#8ff3ff" stroke-width="' + (40 * o).toFixed(1) + '" stroke-linecap="round" opacity="' + (0.22 * o).toFixed(2) + '"/>' +
+      '<path d="' + d + '" stroke="#d8fbff" stroke-width="' + (18 * o).toFixed(1) + '" stroke-linecap="round" opacity="' + (0.55 * o).toFixed(2) + '"/>' +
+      '<path d="' + d + '" stroke="#fff" stroke-width="' + (6 * o).toFixed(1) + '" stroke-linecap="round" opacity="' + (0.95 * o).toFixed(2) + '"/>';
+  });
+  return s;
+}
 /* (le début du geste en cours, pour les effets) */
 var g0 = -1;
 function joue(nom){ p.joue(nom); g0 = T; }
@@ -54,17 +69,25 @@ var S = {
 
   /* ---------- LES AUTRES MOUVEMENTS (Romain, 17 h 44) : chacun a ses effets dessinés par-dessus (dessus(u), u : le temps depuis le
      début du geste) et parfois ce qu'il fait d'elle à l'écran (chaque(u) : où elle est, si on la voit) ---------- */
-  /* C'EST SON TOUR : un anneau jaune à ses pieds (celui dont c'est le tour, au donjon) */
-  choisi:{fin:3.4, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.choisi; pret(55); }], [0.6, function(){ joue('choisi'); }]],
-    dessus:function(u){ if(u < 0.1) return ''; var a = lisse(u / 0.3), f = osE('chevilleG'), g = osE('chevilleD'), cx = (f[0] + g[0]) / 2, cy = Math.max(f[1], g[1]) + 22, r = 1 + 0.04 * Math.sin(u * 6);
-      return '<ellipse cx="' + cx.toFixed(0) + '" cy="' + cy.toFixed(0) + '" rx="' + (120 * r).toFixed(0) + '" ry="' + (26 * r).toFixed(0) + '" fill="none" stroke="#ffd23f" stroke-width="7" opacity="' + (0.85 * a).toFixed(2) + '"/>'; }},
-  /* LE COUP DE DAGUE : la trace blanche de la lame */
-  dague:{fin:3.4, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.dague; pret(55); }], [0.6, function(){ joue('dague'); }]],
-    trace:[], dessus:function(u){
-      var t = this.trace, s = '';
-      if(u > 0.5 && u < 0.85){ var m = osE('poignetD'); t.push([m[0] + 30, m[1] - 10, T]); }
-      t.forEach(function(q, i){ if(i === 0) return; var o = 1 - (T - q[2]) / 0.25; if(o > 0) s += '<path d="M' + t[i - 1][0].toFixed(0) + ' ' + t[i - 1][1].toFixed(0) + ' L' + q[0].toFixed(0) + ' ' + q[1].toFixed(0) + '" stroke="#fff" stroke-width="' + (14 * o).toFixed(1) + '" stroke-linecap="round" opacity="' + (0.7 * o).toFixed(2) + '"/>'; });
-      return s; }},
+  /* C'EST SON TOUR : l'anneau doré à ses pieds, dessiné par le héros lui-même (le fond derrière ses bottes, le devant devant —
+     hv-pantin.js, anneau()) */
+  choisi:{fin:3.8, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.choisi; pret(55); }], [0.6, function(){ p.choisi(true); joue('choisi'); }]]},
+  /* LE COUP DE DAGUE : deux grands revers ; le bout de la lame laisse un large ruban de lumière (bleu pâle autour, blanc au milieu) */
+  dague:{fin:3.6, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.dague; pret(55); }], [0.6, function(){ joue('dague'); }]],
+    trace:[], dessus:function(u){ return ruban(this.trace, (u > 0.46 && u < 0.66) || (u > 0.84 && u < 1.02)); }},
+  /* LE SAUT À LA DAGUE : elle bondit jusqu'au dernier rang (le film la fait avancer pendant le saut), abat la dague en retombant,
+     puis rebondit jusqu'à sa place ; de la poussière au départ et à l'arrivée, un éclair là où la lame frappe */
+  dagueSaut:{fin:4.0, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.dagueSaut; pret(55); X = -150; }], [0.6, function(){ joue('dagueSaut'); }]],
+    trace:[], vu:{},
+    chaque:function(u){
+      var S = HV.SAUT, d = 400;
+      if(u < S.decolle) X = -150; else if(u < S.frappe) X = -150 + d * lisse((u - S.decolle) / (S.frappe - S.decolle)); else if(u < S.repart) X = -150 + d;
+      else if(u < S.revient) X = -150 + d * (1 - lisse((u - S.repart) / (S.revient - S.repart))); else X = -150;
+      var me = this;
+      [['d', S.decolle], ['f', S.frappe], ['r', S.repart], ['v', S.revient]].forEach(function(k){ if(u >= k[1] && !me.vu[k[0]]){ me.vu[k[0]] = 1; var a = osE('chevilleG'), b = osE('chevilleD');
+        for(var i = 0; i < 4; i++) nuages.push({x:(a[0] + b[0]) / 2 + (i - 1.5) * 38, y:Math.max(a[1], b[1]) + 26 + (i % 2) * 10, t0:T + i * 0.04, d:(i - 1.5) * 70}); if(k[0] === 'f') eclair(); } });
+    },
+    dessus:function(u){ return ruban(this.trace, u > HV.SAUT.frappe - 0.16 && u < HV.SAUT.frappe + 0.04); }},
   /* LE GIVRE : un souffle bleu, puis des éclats de glace sur elle, qui fondent quand elle s'ébroue */
   froid:{fin:4.6, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.froid; pret(55); }], [0.6, function(){ joue('froid'); }]],
     dessus:function(u){
@@ -97,22 +120,47 @@ var S = {
       for(i = 0; i < 4; i++){ var a = u * 7 + i * Math.PI / 2, x = c[0] + 70 * Math.cos(a) + 10, y = c[1] - 70 + 18 * Math.sin(a);
         s += '<path d="M' + x.toFixed(0) + ' ' + (y - 12) + ' L' + (x + 4) + ' ' + (y - 3) + ' L' + (x + 13) + ' ' + (y - 2) + ' L' + (x + 6) + ' ' + (y + 4) + ' L' + (x + 8) + ' ' + (y + 13) + ' L' + x.toFixed(0) + ' ' + (y + 8) + ' L' + (x - 8) + ' ' + (y + 13) + ' L' + (x - 6) + ' ' + (y + 4) + ' L' + (x - 13) + ' ' + (y - 2) + ' L' + (x - 4) + ' ' + (y - 3) + ' Z" fill="#ffd23f" stroke="' + O + '" stroke-width="2.5" opacity="' + o.toFixed(2) + '"/>'; }
       return s; }},
-  /* LA TOILE : des fils blancs qui l'entourent ; quand elle la déchire, ils volent en morceaux */
-  toile:{fin:4.2, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.toile; pret(55); }], [0.6, function(){ joue('toile'); }]],
+  /* LA TOILE (refaite — Romain, 18 h 51 : « on dirait pas du tout une toile d'araignée […] il faut qu'elle soit plus prenante, il
+     faut bien qu'on voie bien qu'il soit coincé dedans ») : une vraie toile d'araignée — des rayons qui partent de sa poitrine, la
+     spirale qui les relie en creusant entre deux rayons, des fils d'amarre jusqu'au plafond et au sol — et, par-dessus, un cocon de
+     bandes de soie enroulées autour de ses bras et de ses jambes. Elle tremble quand elle se débat ; quand elle la déchire, les
+     rayons cassent et volent, des lambeaux restent pendus aux amarres. */
+  toile:{fin:4.4, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.toile; pret(55); }], [0.6, function(){ joue('toile'); }]],
     dessus:function(u){
-      var s = '', os = HV.os(h, p.F), dech = 1.9;
-      if(u < 0.15) return '';
-      var hs = [ecran(os.epauleG), ecran(os.epauleD), ecran(os.hancheG), ecran(os.hancheD), ecran(os.genouG), ecran(os.genouD)];
-      var cx = (hs[0][0] + hs[1][0] + hs[2][0] + hs[3][0]) / 4, top = Math.min(hs[0][1], hs[1][1]) - 10, bot = Math.max(hs[4][1], hs[5][1]) + 10;
+      var s = '', os = HV.os(h, p.F), dech = 1.9, SOIE = '#f4f1ea', i, k;
+      if(u < 0.12) return '';
+      var eG = ecran(os.epauleG), eD = ecran(os.epauleD), hG = ecran(os.hancheG), hD = ecran(os.hancheD), gG = ecran(os.genouG), gD = ecran(os.genouD), te = ecran(os.tete);
+      var cx = (eG[0] + eD[0] + hG[0] + hD[0]) / 4, cy = mixe((eG[1] + eD[1]) / 2, (hG[1] + hD[1]) / 2, 0.35), RX = 150, RY = 230, N = 16;
+      function f(x){ return x.toFixed(1); }
+      function fil(d, w, o, c){ return '<path d="' + d + '" fill="none" stroke="' + (c || SOIE) + '" stroke-width="' + w + '" stroke-linecap="round" opacity="' + o.toFixed(2) + '"/>'; }
       if(u < dech){
-        var o = Math.min(1, (u - 0.15) / 0.2), i;
-        for(i = 0; i < 7; i++){ var y = mixe(top, bot, i / 6), w = 95 - Math.abs(i - 2) * 6, b = 10 * Math.sin(u * 5 + i);
-          s += '<path d="M' + (cx - w).toFixed(0) + ' ' + (y - 14 + b).toFixed(0) + ' Q' + cx.toFixed(0) + ' ' + (y + 22).toFixed(0) + ' ' + (cx + w).toFixed(0) + ' ' + (y - 10 - b).toFixed(0) + '" fill="none" stroke="#f4f1ea" stroke-width="3" opacity="' + (0.85 * o).toFixed(2) + '"/>'; }
-        [[-60, 0.5], [-20, 0.2], [30, 0.7], [70, 0.3]].forEach(function(v){ s += '<path d="M' + (cx + v[0]).toFixed(0) + ' ' + top.toFixed(0) + ' Q' + (cx + v[0] * 0.6).toFixed(0) + ' ' + mixe(top, bot, v[1]).toFixed(0) + ' ' + (cx + v[0] * 0.9).toFixed(0) + ' ' + bot.toFixed(0) + '" fill="none" stroke="#f4f1ea" stroke-width="2.4" opacity="' + (0.7 * o).toFixed(2) + '"/>'; });
+        var o = Math.min(1, (u - 0.12) / 0.25), tr = 3 * Math.sin(u * 9) * (u > 0.45 ? 1 : 0), P = [];
+        /* (les rayons : un peu irréguliers, comme une vraie toile) */
+        for(i = 0; i < N; i++){ var an = i / N * Math.PI * 2 + 0.13 * Math.sin(i * 2.3), rr = 1 + 0.12 * Math.sin(i * 1.7); P.push([Math.cos(an) * RX * rr, Math.sin(an) * RY * rr]); }
+        /* (les amarres : jusqu'au plafond, au mur et au sol) */
+        [[260, -380], [-230, -380], [380, 20], [-300, 330], [230, 330]].forEach(function(a, j){ var e = P[Math.round((Math.atan2(a[1], a[0]) / (Math.PI * 2) + 1) * N) % N];
+          s += fil('M' + f(cx + e[0] + tr) + ' ' + f(cy + e[1]) + ' L' + f(cx + a[0]) + ' ' + f(cy + a[1]), 2, 0.75 * o); });
+        for(i = 0; i < N; i++) s += fil('M' + f(cx + tr) + ' ' + f(cy) + ' L' + f(cx + P[i][0] + tr) + ' ' + f(cy + P[i][1]), 2.2, 0.85 * o);
+        /* (la spirale : d'un rayon au suivant, le fil se creuse vers le centre) */
+        for(k = 1; k <= 7; k++){ var fr = k / 7.4, d = '';
+          for(i = 0; i < N; i++){ var a0 = P[i], a1 = P[(i + 1) % N], mx = (a0[0] + a1[0]) / 2 * fr * 0.86, my = (a0[1] + a1[1]) / 2 * fr * 0.86;
+            d += (i === 0 ? 'M' + f(cx + a0[0] * fr + tr) + ' ' + f(cy + a0[1] * fr) : '') + ' Q' + f(cx + mx + tr) + ' ' + f(cy + my) + ' ' + f(cx + a1[0] * fr + tr) + ' ' + f(cy + a1[1] * fr); }
+          s += fil(d, 1.7, 0.8 * o); }
+        /* (le cocon : des bandes de soie enroulées autour d'elle — les bras collés, les jambes serrées) */
+        [[eG, eD, 0.0], [mixe2(eG, hG, 0.5), mixe2(eD, hD, 0.5), 0.1], [hG, hD, 0.2], [mixe2(hG, gG, 0.5), mixe2(hD, gD, 0.5), 0.3], [gG, gD, 0.4]].forEach(function(b, j){
+          var a = Math.min(1, Math.max(0, (u - 0.2 - b[2] * 0.5) / 0.25)); if(a <= 0) return;
+          var x0 = Math.min(b[0][0], b[1][0]) - 34, x1 = Math.max(b[0][0], b[1][0]) + 34, y0 = (b[0][1] + b[1][1]) / 2 + (j % 2 ? 8 : -6), dy = j % 2 ? -14 : 14;
+          var d = 'M' + f(x0 + tr) + ' ' + f(y0 - dy) + ' Q' + f((x0 + x1) / 2 + tr) + ' ' + f(y0 + 26) + ' ' + f(x1 + tr) + ' ' + f(y0 + dy);
+          s += fil(d, 13, 0.55 * a * o, '#d9d4c8') + fil(d, 8, 0.8 * a * o) + fil(d, 1.4, 0.7 * a * o, '#ffffff');
+        });
       } else {
-        var a = (u - dech) / 0.6, j; if(a > 1) return '';
-        for(j = 0; j < 14; j++){ var ang = j / 14 * Math.PI * 2, r = 60 + 260 * a, x = cx + r * Math.cos(ang), y = mixe(top, bot, 0.45) + r * 0.8 * Math.sin(ang);
-          s += '<path d="M' + x.toFixed(0) + ' ' + y.toFixed(0) + ' l' + (14 * Math.cos(ang + 1)).toFixed(0) + ' ' + (14 * Math.sin(ang + 1)).toFixed(0) + '" stroke="#f4f1ea" stroke-width="3" opacity="' + (0.9 * (1 - a)).toFixed(2) + '"/>'; }
+        var a2 = (u - dech) / 0.9; if(a2 > 1) return '';
+        /* (les rayons cassent et volent) */
+        for(i = 0; i < N; i++){ var an2 = i / N * Math.PI * 2, r1 = 40 + 320 * a2, r2 = r1 + 50;
+          s += fil('M' + f(cx + Math.cos(an2) * r1) + ' ' + f(cy + Math.sin(an2) * r1 * 1.3 + 140 * a2 * a2) + ' L' + f(cx + Math.cos(an2 + 0.2) * r2) + ' ' + f(cy + Math.sin(an2 + 0.2) * r2 * 1.3 + 140 * a2 * a2), 3, 0.9 * (1 - a2)); }
+        /* (des lambeaux restent pendus aux amarres du plafond, et se balancent) */
+        [[260, -380], [-230, -380]].forEach(function(a, j){ var bx = cx + a[0] * 0.55 + 20 * Math.sin(u * 7 + j), by = cy + a[1] * 0.4;
+          s += fil('M' + f(cx + a[0]) + ' ' + f(cy + a[1]) + ' Q' + f(cx + a[0] * 0.7) + ' ' + f(cy + a[1] * 0.6) + ' ' + f(bx) + ' ' + f(by), 2, 0.8 * (1 - a2)); });
       }
       return s; }},
   /* LE CRAPAUD : la langue rose sort de la droite et la colle ; elle est tirée hors de l'image ; puis recrachée, elle revient en volant
@@ -160,6 +208,9 @@ var S = {
       else { X = 160; Y = 0; }
     },
     dessus:function(u){
+      /* (Romain, 18 h 51 : la main de Léo du donjon n'a pas cette taille — « la main, tu peux l'enlever et juste garder le personnage.
+         Et garder l'animation » : on ne la dessine plus ; c'est le donjon qui montrera Léo) */
+      if(!S.leo.avecMain) return '';
       var L = HV.LEO; if(u < L.prise - 0.3 || u > L.lance + 0.5) return '';
       var b = ecran(HV.os(h, p.F).bassin), x, y, o = 1;
       if(u < L.prise){ var a = lisse((u - L.prise + 0.3) / 0.3); x = mixe(1000, b[0] + 30, a); y = mixe(-200, b[1] - 30, a); }

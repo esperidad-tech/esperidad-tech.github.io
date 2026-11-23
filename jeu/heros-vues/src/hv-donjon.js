@@ -201,6 +201,8 @@ var ALLONGEE = {bas:[0, 152, -66], bang:[-90, 0, 0], dos:[2, 0, 0], hoche:4, cou
 HV.ALLONGEE = avec(P.dGarde, ALLONGEE);
 /* (le relevé de la chute, que Romain a validé : à partir de 2,75 s, remis à zéro) */
 var RELEVE = HV.DONJON.chute.filter(function(k){ return k[0] >= 2.75; }).map(function(k){ return [k[0] - 2.75, k[1]]; });
+/* (pour l'essai dans le donjon, donjon/hv-adaptateur.js : allongée sonnée, le relevé, la toile) */
+HV.SONNEE = avec(KO, ALLONGEE); HV.RELEVE = RELEVE;
 function decale(L, dt){ return L.map(function(k){ return [k[0] + dt, k[1]]; }); }
 /* un frisson : de petits allers-retours rapides de A, de t0 à t1, autour d'une pose */
 function frissons(pose, t0, t1, pas, f){
@@ -215,9 +217,8 @@ HV.DONJON.choisi = [[0.25, {bas:[0, 14, 2], dos:[6, 0, -4], hoche:-8, sourcils:0
   [0.85, {bas:[0, 16, 2], dos:[6, 0, -4], hoche:-4, sourcils:-0.8, sourire:0.5, plisse:0.3, poingG:0.95, poingD:0.7, regX:0.4}],
   [1.8, {bas:[0, 18, 2], dos:[6, 0, -4], hoche:-4, sourcils:-0.8, sourire:0.5, plisse:0.3, poingG:0.95, poingD:0.7, regX:0.3}], [2.3, {}]];
 
-/* LE COUP DE DAGUE : SA main gauche tire la dague de la ceinture, elle prend son élan, un grand pas en avant vers l'ennemi et un
-   revers de haut en bas, le bras au bout ; elle revient en garde et range la dague */
-HV.DONJON.dague = [[0.18, {mainD:[36, 236, 8], coudeD:[0.9, 0.2, -0.5], mdirD:[0, 1, 0], poingD:0.9, hoche:8, regY:0.4}],
+/* (la première version du coup de dague, gardée pour mémoire — remplacée plus bas : Romain, 18 h 51, « plus violent ») */
+var DAGUE_V1 = [[0.18, {mainD:[36, 236, 8], coudeD:[0.9, 0.2, -0.5], mdirD:[0, 1, 0], poingD:0.9, hoche:8, regY:0.4}],
   [0.3, {mainD:[42, 222, 10], coudeD:[0.9, 0.2, -0.5], mdirD:[0, 1, 0], poingD:1, dague:1, hoche:2}],
   [0.48, {mainD:[60, 140, -26], coudeD:[1, -0.3, -0.3], pouceD:[0, -0.5, 1], poingD:1, dague:1, dos:[-4, 0, 14], bang:[0, 0, 6], bas:[0, 30, -6], sourcils:-1, plisse:0.4, sourire:-0.3}],
   [0.62, {piedD:[30, 386, 92], genouD:[0.3, -0.1, 1], pointeD:-6, piedG:[-30, 386, -36], pointeG:30, bas:[4, 50, 40], bang:[16, 0, 6], dos:[14, 0, 8],
@@ -230,6 +231,63 @@ HV.DONJON.dague = [[0.18, {mainD:[36, 236, 8], coudeD:[0.9, 0.2, -0.5], mdirD:[0
   [1.5, {piedD:[30, 376, 20], pointeD:20, bas:[0, 34, 10], mainD:[46, 200, 40], coudeD:[0.9, 0.3, -0.4], pouceD:[0, -0.5, 1], poingD:1, dague:1, sourcils:-0.7}],
   [1.85, {mainD:[36, 236, 8], coudeD:[0.9, 0.2, -0.5], mdirD:[0, 1, 0], poingD:1, dague:1, hoche:6, regY:0.3}],
   [1.95, {mainD:[36, 236, 8], coudeD:[0.9, 0.2, -0.5], mdirD:[0, 1, 0], poingD:0.9, dague:0, hoche:6, regY:0.3}], [2.4, {}]];
+
+/* LE COUP DE DAGUE, DEUXIÈME VERSION (Romain, 23 novembre, 18 h 51 : « il faut que ça soit un peu plus violent et un peu plus vers
+   devant […] un mouvement plus ample […] que le bras entraîne un peu le corps et que quand il donne un grand coup à gauche, t'as le
+   corps qui se tourne un petit peu à gauche et quand il donne un grand coup à droite, t'as le corps qui tourne un petit peu vers la
+   droite aussi ») : elle tire la dague, s'élance d'un grand pas, et frappe deux fois : un grand revers qui part de haut, de SON côté
+   gauche, et traverse devant elle jusqu'à SA droite (tout le haut du corps tourne avec), puis le retour, de SA droite à SA gauche (le
+   corps repart dans l'autre sens). Les bras bien loin du corps, devant elle. */
+var FENTE_D = {piedD:[30, 386, 104], genouD:[0.3, -0.1, 1], pointeD:-6, piedG:[-30, 386, -40], pointeG:34, genouG:[-0.3, 0.2, 1], bas:[4, 54, 44]};
+function frappe(main, pouce, lacet, plus2){ return avec(avec(FENTE_D, {mainD:main, coudeD:[0.8, 0.3, -0.3], pouceD:pouce, poingD:1, dague:1, bang:[18, 0, lacet * 0.45], dos:[14, 0, lacet]}), plus2 || {}); }
+HV.DONJON.dague = [[0.16, {mainD:[36, 236, 8], coudeD:[0.9, 0.2, -0.5], mdirD:[0, 1, 0], poingD:0.9, hoche:8, regY:0.4, sourcils:-0.6}],
+  [0.28, {mainD:[42, 222, 10], coudeD:[0.9, 0.2, -0.5], mdirD:[0, 1, 0], poingD:1, dague:1, hoche:2, sourcils:-0.8}],
+  /* (l'élan : la dague haut, de SON côté gauche, en arrière ; le corps tourné vers elle) */
+  [0.44, {mainD:[70, 118, -30], coudeD:[1, -0.4, -0.2], pouceD:[0, -0.6, 1], poingD:1, dague:1, dos:[-2, 0, 26], bang:[2, 0, 12], bas:[0, 34, -8], hoche:-4,
+    sourcils:-1, plisse:0.5, sourire:-0.4, largeB:0.6}],
+  /* (le grand revers : elle s'élance, la lame passe devant elle, loin, et finit à SA droite ; le corps suit) */
+  [0.54, frappe([22, 156, 86], [0, -0.6, 1], 4, {ouvre:0.7, sourcils:-1, plisse:0.3, largeB:0.85})],
+  [0.62, frappe([-30, 192, 48], [0, 0.2, 1], -30, {ouvre:0.6, sourcils:-1, plisse:0.4})],
+  [0.78, frappe([-26, 186, 50], [0, 0.2, 1], -32, {ouvre:0.2, sourcils:-1, plisse:0.5})],
+  /* (le retour : de SA droite à SA gauche, le corps repart dans l'autre sens) */
+  [0.9, frappe([24, 150, 86], [0, -0.3, -1], 4, {ouvre:0.75, sourcils:-1, plisse:0.3})],
+  [0.98, frappe([84, 168, 22], [0, -0.3, -1], 30, {ouvre:0.5, sourcils:-1, plisse:0.4})],
+  [1.3, frappe([80, 172, 24], [0, -0.3, -1], 26, {ouvre:0.1, sourcils:-0.8, plisse:0.4, sourire:-0.2})],
+  /* (elle se repousse sur le pied de devant et revient) */
+  [1.62, {piedD:[30, 376, 20], pointeD:20, bas:[0, 34, 10], mainD:[46, 200, 40], coudeD:[0.9, 0.3, -0.4], pouceD:[0, -0.5, 1], poingD:1, dague:1, sourcils:-0.7}],
+  [1.95, {mainD:[36, 236, 8], coudeD:[0.9, 0.2, -0.5], mdirD:[0, 1, 0], poingD:1, dague:1, hoche:6, regY:0.3}],
+  [2.05, {mainD:[36, 236, 8], coudeD:[0.9, 0.2, -0.5], mdirD:[0, 1, 0], poingD:0.9, dague:0, hoche:6, regY:0.3}], [2.5, {}]];
+
+/* LE SAUT À LA DAGUE (Romain, 18 h 51 : « quand le dernier ennemi est sur le 3e rang, il faut qu'il saute jusqu'au dernier rang […]
+   il faut que ça soit un joli saut ») : elle tire la dague, se ramasse, bondit (les bras qui montent, les genoux repliés en l'air, la
+   dague levée au-dessus de la tête), retombe en abattant la dague, puis rebondit en arrière jusqu'à sa place.
+   HV.SAUT : quand elle décolle, retombe, repart, revient — pour le film (et le donjon : elle avance pendant le saut). */
+HV.SAUT = {decolle:0.55, haut:0.8, frappe:1.05, repart:1.62, revient:1.98};
+HV.DONJON.dagueSaut = [[0.16, {mainD:[36, 236, 8], coudeD:[0.9, 0.2, -0.5], mdirD:[0, 1, 0], poingD:0.9, hoche:8, regY:0.4, sourcils:-0.6}],
+  [0.28, {mainD:[42, 222, 10], coudeD:[0.9, 0.2, -0.5], mdirD:[0, 1, 0], poingD:1, dague:1, hoche:2, sourcils:-0.8}],
+  /* (elle se ramasse, les bras en arrière) */
+  [0.46, {bas:[0, 72, -6], bang:[22, 0, 0], dos:[14, 0, 0], hoche:-6, genouG:[-0.4, -0.1, 1], genouD:[0.4, -0.1, 1], mainD:[46, 214, -46], coudeD:[1, 0, -0.2], poingD:1, dague:1,
+    mainG:[-58, 214, -40], relG:1, coudeG:[-1, 0, -0.2], sourcils:-1, plisse:0.5, sourire:-0.3}],
+  /* (elle décolle : les jambes poussent, les bras montent) */
+  [HV.SAUT.decolle, {leve:30, bas:[0, 6, 10], bang:[10, 0, 0], dos:[4, 0, 0], hoche:-10, piedG:[-24, 392, -30], pointeG:60, piedD:[24, 388, -10], pointeD:50,
+    mainD:[36, 90, 30], coudeD:[1, -0.3, 0], pouceD:[0, -1, 0.2], poingD:1, dague:1, mainG:[-62, 120, 20], relG:1, coudeG:[-1, -0.3, 0], ouvre:0.6, sourcils:-1, plisse:0.3}],
+  /* (tout en haut : les genoux repliés, la dague levée au-dessus de la tête) */
+  [HV.SAUT.haut, {leve:96, bas:[0, 40, 0], bang:[4, 0, 0], hoche:-6, piedG:[-24, 330, 30], pointeG:30, piedD:[24, 320, 10], pointeD:30, genouG:[-0.3, -0.6, 1], genouD:[0.3, -0.6, 1],
+    mainD:[30, 46, 4], coudeD:[1, -0.2, -0.2], pouceD:[0, -1, 0.3], poingD:1, dague:1, brasDessus:1, mainG:[-66, 140, 30], relG:1, coudeG:[-1, -0.2, 0], ouvre:0.5, sourcils:-1, plisse:0.4}],
+  [HV.SAUT.frappe - 0.1, {leve:46, bas:[0, 20, 10], bang:[14, 0, 0], hoche:-2, piedG:[-28, 380, -10], pointeG:20, piedD:[28, 380, 30], pointeD:10,
+    mainD:[28, 110, 60], coudeD:[1, -0.2, -0.2], pouceD:[0, -0.8, 0.6], poingD:1, dague:1, mainG:[-66, 160, 30], relG:1, coudeG:[-1, -0.2, 0], ouvre:0.8, sourcils:-1, plisse:0.3}],
+  /* (elle retombe en abattant la dague, un genou presque à terre) */
+  [HV.SAUT.frappe, avec(FENTE_D, {leve:0, bas:[4, 70, 40], bang:[26, 0, 0], dos:[18, 0, 0], hoche:4, mainD:[14, 212, 74], coudeD:[0.7, 0.4, -0.3], pouceD:[0, 0.4, 1], poingD:1, dague:1,
+    mainG:[-74, 200, -10], relG:1, coudeG:[-1, 0, -0.2], ouvre:0.7, sourcils:-1, plisse:0.5})],
+  [1.4, avec(FENTE_D, {bas:[4, 64, 38], bang:[22, 0, 0], dos:[14, 0, 0], hoche:2, mainD:[16, 208, 72], coudeD:[0.7, 0.4, -0.3], pouceD:[0, 0.4, 1], poingD:1, dague:1,
+    mainG:[-74, 204, -6], relG:1, coudeG:[-1, 0, -0.2], ouvre:0.1, sourcils:-0.9, plisse:0.4, sourire:-0.2})],
+  /* (elle rebondit en arrière jusqu'à sa place) */
+  [HV.SAUT.repart, {leve:0, bas:[0, 56, 0], bang:[10, 0, 0], mainD:[44, 200, 30], coudeD:[0.9, 0.3, -0.4], poingD:1, dague:1, sourcils:-0.7}],
+  [HV.SAUT.repart + 0.18, {leve:64, bas:[0, 30, -6], bang:[-8, 0, 0], dos:[-6, 0, 0], piedG:[-24, 350, 20], pointeG:30, piedD:[24, 346, 0], pointeD:30, genouG:[-0.3, -0.5, 1], genouD:[0.3, -0.5, 1],
+    mainD:[60, 180, 10], coudeD:[1, 0, -0.3], poingD:1, dague:1, mainG:[-70, 180, 0], relG:1, sourcils:-0.6}],
+  [HV.SAUT.revient, {leve:0, bas:[0, 44, -6], bang:[8, 0, 0], mainD:[46, 204, 34], coudeD:[0.9, 0.3, -0.4], poingD:1, dague:1, sourcils:-0.7}],
+  [2.3, {mainD:[36, 236, 8], coudeD:[0.9, 0.2, -0.5], mdirD:[0, 1, 0], poingD:1, dague:1, hoche:6, regY:0.3}],
+  [2.4, {mainD:[36, 236, 8], coudeD:[0.9, 0.2, -0.5], mdirD:[0, 1, 0], poingD:0.9, dague:0, hoche:6, regY:0.3}], [2.9, {}]];
 
 /* LE GIVRE : touchée par le froid, elle se recroqueville, les bras serrés contre elle, les genoux l'un contre l'autre ; elle grelotte
    (des frissons rapides), puis s'ébroue d'un coup et revient en garde */
@@ -270,10 +328,12 @@ HV.DONJON.rats = [[0.12, {hoche:16, regY:0.9, sourcils:0.7, ouvre:0.5, plisse:-0
 
 /* LE GRAND COUP DE POING : bien plus fort que le coup — la tête part en arrière, elle recule de deux pas, sonnée ; elle secoue la
    tête, s'essuie la bouche du dos de la main, furieuse, et revient en garde */
-HV.DONJON.poing = [[0.06, avec(AIE, {bas:[0, 30, -14], bang:[-12, 0, 0], dos:[-24, 0, 10], hoche:-22, pen:-12, mainD:[62, 186, 0], mainG:[-72, 204, 6]})],
-  [0.2, avec(AIE, avec(recule(-44, true), {bas:[0, 36, -28], bang:[-16, -4, 0], dos:[-18, -6, 10], hoche:-14, pen:-10, mainD:[64, 180, 0], mainG:[-74, 196, 4]}))],
-  [0.36, avec(AIE, avec(recule(-56), {piedG:[-32, 370, -18], pointeG:25, bas:[0, 40, -36], bang:[-8, -4, 0], dos:[-10, -4, 6], hoche:-8, pen:-6}))],
-  [0.55, avec(KO, avec(recule(-56), {piedG:[-32, 386, -14], bas:[0, 44, -32], bang:[8, 0, 0], dos:[10, 0, 0], hoche:6, pen:4}))],
+/* (Romain, 18 h 51 : « tu peux le faire un petit peu se tourner quand il prend un coup […] on a plus l'effet que c'est en 3D » : le coup
+   lui fait tourner la tête et les épaules vers nous, puis les hanches suivent, et elle revient face aux ennemis) */
+HV.DONJON.poing = [[0.06, avec(AIE, {bas:[0, 30, -14], bang:[-12, 0, -16], dos:[-24, 0, -34], tete:-24, hoche:-22, pen:-12, mainD:[62, 186, 0], mainG:[-72, 204, 6]})],
+  [0.2, avec(AIE, avec(recule(-44, true), {bas:[0, 36, -28], bang:[-16, -4, -30], dos:[-18, -6, -30], tete:-20, lacetG:-20, lacetD:-20, hoche:-14, pen:-10, mainD:[64, 180, 0], mainG:[-74, 196, 4]}))],
+  [0.36, avec(AIE, avec(recule(-56), {piedG:[-32, 370, -18], pointeG:25, bas:[0, 40, -36], bang:[-8, -4, -34], dos:[-10, -4, -14], tete:-8, lacetG:-26, lacetD:-26, hoche:-8, pen:-6}))],
+  [0.55, avec(KO, avec(recule(-56), {piedG:[-32, 386, -14], bas:[0, 44, -32], bang:[8, 0, -16], dos:[10, 0, 6], hoche:6, pen:4, lacetG:-12, lacetD:-12}))],
   [0.85, avec(KO, avec(recule(-56), {piedG:[-32, 386, -14], bas:[0, 44, -32], bang:[8, 0, 0], dos:[10, 0, 0], hoche:4, pen:10}))],
   [1.0, avec(KO, avec(recule(-56), {piedG:[-32, 386, -14], bas:[0, 44, -32], bang:[8, 0, 0], dos:[10, 0, 0], hoche:4, pen:-10}))],
   [1.15, avec(recule(-56), {piedG:[-32, 386, -14], bas:[0, 42, -30], bang:[8, 0, 0], dos:[10, 0, 0], hoche:4, pen:4, plisse:0.5, sourcilsIn:0.6})],
@@ -288,7 +348,7 @@ HV.DONJON.poing = [[0.06, avec(AIE, {bas:[0, 30, -14], bang:[-12, 0, 0], dos:[-2
 
 /* LA TOILE : la toile la colle — les bras plaqués contre le corps, les genoux serrés ; elle se débat (elle se tord à droite, à
    gauche, de plus en plus fort), se ramasse… et la déchire en ouvrant les bras d'un coup ; fière d'elle */
-var COLLEE = {bas:[0, 30, -4], dos:[0, 0, 0], bang:[4, 0, 0], mainG:[-38, 232, 14], relG:1, coudeG:[-0.3, 0, -1], arcAxe:[-0.05, 1, 0.05], arcDir:[-0.6, 0, 0.8],
+var COLLEE = HV.COLLEE = {bas:[0, 30, -4], dos:[0, 0, 0], bang:[4, 0, 0], mainG:[-38, 232, 14], relG:1, coudeG:[-0.3, 0, -1], arcAxe:[-0.05, 1, 0.05], arcDir:[-0.6, 0, 0.8],
   mainD:[38, 232, 14], relD:1, coudeD:[0.3, 0, -1], poingD:0.8, piedG:[-16, 386, 6], piedD:[16, 386, -6], genouG:[-0.1, 0, 1], genouD:[0.1, 0, 1], ouvG:0.1, ouvD:0.1,
   sourcils:-0.6, sourcilsIn:0.4, bouchex:0.5, sourire:-0.4};
 HV.DONJON.toile = [[0.1, {sourcils:0.6, ouvre:0.45, bas:[0, 30, -4], plisse:-0.2}], [0.35, COLLEE],
@@ -377,6 +437,6 @@ HV.DONJON.amulette = [[0.01, avec(KO, ALLONGEE)], [0.3, avec(KO, ALLONGEE)], [0.
 /* (le donjon comme une position : pour les pages d'essai, gestes.html#donjon:tir) */
 HV.POSITIONS.donjon = {titre:'En garde', base:'dGarde', attente:[99, 99], gestes:HV.DONJON};
 HV.NOMS_DONJON = {course:'Elle arrive en courant', regard:'En garde, elle regarde autour', tir:'Elle tire', coup:'Elle prend un coup', chute:'Elle tombe… et se relève', joie:'Victoire !',
-  choisi:'C\'est son tour', dague:'Coup de dague', froid:'Le givre', rats:'Les rats !', poing:'Un grand coup de poing', toile:'Prise dans la toile', crapaud:'Avalée… et recrachée',
+  choisi:'C\'est son tour', dague:'Coup de dague', dagueSaut:'Elle saute avec sa dague', froid:'Le givre', rats:'Les rats !', poing:'Un grand coup de poing', toile:'Prise dans la toile', crapaud:'Avalée… et recrachée',
   leo:'Léo l\'attrape et la jette', amulette:'L\'amulette la relève'};
 })(window);

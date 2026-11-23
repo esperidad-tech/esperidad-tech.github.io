@@ -28,6 +28,9 @@ HV.dessin = function(h, P, o){
   var ombreCou = '<path d="' + T.peau + '" transform="translate(1.2 7.5) ' + tT + '" fill="' + K.peau.ombre + '" opacity=".8"/>';
   var om = C.ombre, lv = Math.max(0, P.leve || 0), ko = 1 / (1 + lv / 90);
   var s = '<ellipse cx="' + f1(150 + om.cx) + '" cy="' + f1(om.cy) + '" rx="' + f1(om.rx * ko) + '" ry="' + f1(7 * ko) + '" fill="' + K.u('ombre') + '"' + (lv ? ' opacity="' + f1(ko) + '"' : '') + '/>';
+  /* (la moitié de devant est dessinée dans le groupe du corps, décalé de 150 et levé de lv : on la décale d'autant) */
+  var rxA = Math.max(86, om.rx * 1.35), AN = {der:anneau(P, 150 + om.cx, om.cy, rxA).der, dev:anneau(P, om.cx, om.cy + lv, rxA).dev};
+  s += AN.der;
   /* l'ordre des morceaux : la tête vue de face (les cheveux de derrière d'abord, le visage à la fin) ou de dos (le visage d'abord,
      puis le cou, puis les cheveux par-dessus) ; la queue de cheval passe devant tout quand elle est de notre côté */
   var tDos = Vt.c < -0.15, G1 = '<g transform="' + tT + '">', dessus = C.dessus, bras = dessus ? '' : C.devant;
@@ -36,10 +39,40 @@ HV.dessin = function(h, P, o){
   /* (penchée loin de nous, vue de dos : la tête est derrière les épaules) */
   var loin = tp.fond < -22;
   s += '<g transform="translate(150 ' + f1(-lv) + ')">' + G1 + (CH.queueDevant ? '' : CH.queue) + (tDos ? '' : CH.dos) + '</g>' + C.derriere + C.jambes +
-    (tDos ? G1 + T.svg + '</g>' : '') + (loin ? visage : '') + C.cou(tDos, tDos ? nuque : ombreCou) + C.torse + C.carquoisDevant + C.jambesApres + bras +
+    (tDos ? G1 + T.svg + '</g>' : '') + (loin ? visage : '') + C.cou(tDos, tDos ? nuque : ombreCou) + C.torse + C.carquoisDevant + C.jambesApres + AN.dev + bras +
     (loin ? '' : visage) + (dessus ? C.devant : '') + '</g>';
   return s;
 };
+/* L'ANNEAU DE CELUI DONT C'EST LE TOUR (Romain, 23 novembre, 18 h 51 : « le cercle est censé passer derrière les jambes […] le devant,
+   il passe devant les bottes et l'arrière du cercle, il passe derrière les bottes […] un joli effet ») : un anneau doré posé au sol,
+   en deux moitiés — celle du fond est dessinée avant elle, celle de devant après ses bottes — avec sa lueur, un reflet qui tourne,
+   et de petites étincelles qui montent (celles du fond derrière elle, celles de devant devant).
+   P.anneau : de 0 à 1 (il apparaît) ; P.anneauT : le temps (pour qu'il vive). → {der, dev} */
+function anneau(P, cx, cy, rx){
+  var a = Math.max(0, Math.min(1, P.anneau || 0)), t = P.anneauT || 0;
+  if(a < 0.01) return {der:'', dev:''};
+  var ry = rx * 0.24, k = 0.86 + 0.14 * a, R = rx * k, Ry = ry * k, pul = 0.85 + 0.15 * Math.sin(t * 3.2);
+  function arc(haut){ return 'M' + f1(cx - R) + ' ' + f1(cy) + ' A' + f1(R) + ' ' + f1(Ry) + ' 0 0 ' + (haut ? 1 : 0) + ' ' + f1(cx + R) + ' ' + f1(cy); }
+  function moitie(haut){
+    var d = arc(haut), o = a * (haut ? 0.75 : 1), s = '';
+    /* (la lueur, l'anneau, son bord clair, le reflet qui tourne) */
+    s += '<path d="' + d + '" fill="none" stroke="#ffcf3a" stroke-width="16" stroke-linecap="round" opacity="' + f1(0.18 * o * pul) + '"/>';
+    s += '<path d="' + d + '" fill="none" stroke="#ffd84a" stroke-width="8" stroke-linecap="round" opacity="' + f1(0.35 * o * pul) + '"/>';
+    s += '<path d="' + d + '" fill="none" stroke="#7a4a10" stroke-width="6.4" stroke-linecap="round" opacity="' + f1(0.9 * o) + '"/>';
+    s += '<path d="' + d + '" fill="none" stroke="#ffd23f" stroke-width="3.6" stroke-linecap="round" opacity="' + f1(o) + '"/>';
+    s += '<path d="' + d + '" fill="none" stroke="#fff6c8" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="14 26" stroke-dashoffset="' + f1((haut ? 1 : -1) * t * 40) + '" opacity="' + f1(0.9 * o) + '"/>';
+    /* (les étincelles qui montent) */
+    for(var i = 0; i < 8; i++){
+      var th = i / 8 * Math.PI * 2 + t * 0.6, sy = Math.sin(th);
+      if((sy < 0) !== haut) continue;
+      var u = (t * 0.7 + i * 0.37) % 1, x = cx + R * Math.cos(th), y = cy + Ry * sy - 46 * u, r = 3.4 * (1 - u * 0.6), op = a * Math.sin(Math.PI * u) * (haut ? 0.7 : 1);
+      s += '<path d="M' + f1(x) + ' ' + f1(y - r * 1.8) + ' L' + f1(x + r * 0.5) + ' ' + f1(y - r * 0.5) + ' L' + f1(x + r * 1.8) + ' ' + f1(y) + ' L' + f1(x + r * 0.5) + ' ' + f1(y + r * 0.5) +
+        ' L' + f1(x) + ' ' + f1(y + r * 1.8) + ' L' + f1(x - r * 0.5) + ' ' + f1(y + r * 0.5) + ' L' + f1(x - r * 1.8) + ' ' + f1(y) + ' L' + f1(x - r * 0.5) + ' ' + f1(y - r * 0.5) + ' Z" fill="#fff2a8" opacity="' + f1(op) + '"/>';
+    }
+    return s;
+  }
+  return {der:moitie(true), dev:moitie(false)};
+}
 /* les os d'une pose (où sont le bassin, les genoux, les mains…), dans les mesures du héros : pour vérifier une pose, poser un objet */
 HV.os = function(h, P){
   var B0 = HV.POSES.repos, P2 = {}, kk;
@@ -170,6 +203,7 @@ PP.position = function(nom){
   lancer();
 };
 PP.joue = function(g){ this.gestForce = g; lancer(); };
+PP.choisi = function(on){ this.anC = on ? 1 : 0; lancer(); };
 /* changer ses habits (h.couleurs, h.tenue…) sans rien interrompre : la pose, le geste en cours continuent */
 PP.habiller = function(h){
   this.h = h; this.K = HV.contexte(this.K.id, h);
@@ -208,6 +242,9 @@ PP.dessiner = function(dt){
   j.v += (120 * (cj - j.x) - 9 * j.v) * dt; j.x += j.v * dt;
   F.qx = q.x; F.qz = q.z; F.jx = j.x;
   F.rx = Math.max(-1, Math.min(1, ec / 34)); F.ry = 0; F.yo = 1; F.souffle = 0;
+  /* (l'anneau doré de celui dont c'est le tour : p.choisi(true) le fait apparaître en douceur) */
+  this.anV = (this.anV || 0) + ((this.anC || 0) - (this.anV || 0)) * Math.min(1, dt * 5);
+  F.anneau = this.anV; F.anneauT = t;
   if(this.auto){
     /* --- sa petite vie : elle respire, cligne des yeux, bouge un peu la tête, jette un coup d'œil --- */
     var re = Math.sin(TAU * t / 3.6);

@@ -19,6 +19,9 @@
      moins pantin ») : le buste et les manches ont UN seul contour et la même couleur.
    - Ce qui est d'un seul côté (l'arc dans SA main droite, le carquois sur SON épaule gauche, le baudrier en travers) reste de
      son côté quand le héros se tourne.
+   - LES CACHES (<mask>) couvrent x -260 … 260, y -120 … 480 (le héros, l'arc, les bras tendus, couchée par terre) et pas plus :
+     plus grands, chaque image coûte beaucoup plus cher à peindre (l'essai dans le donjon, 23 novembre : 10 → 16 images par seconde
+     sur la machine d'essai) ; plus petits, ils couperaient un bras. Vérifié sur tous les films : pas un pixel ne change.
    ========================================================== */
 (function(G){
 'use strict';
@@ -414,7 +417,7 @@ function brasSVG(K, V, B, P, plein){
     var fx = c2[0] - B.a[0], fy = c2[1] - B.a[1], fl = Math.sqrt(fx * fx + fy * fy) || 1, lf = Math.min(16, fl * 0.45), fid = K.n('fb' + B.cle);
     fx /= fl; fy /= fl;
     s += '<linearGradient id="' + fid + 'g" gradientUnits="userSpaceOnUse" x1="' + f1(B.a[0]) + '" y1="' + f1(B.a[1]) + '" x2="' + f1(B.a[0] + fx * lf) + '" y2="' + f1(B.a[1] + fy * lf) + '"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff"/></linearGradient>' +
-      '<mask id="' + fid + '" maskUnits="userSpaceOnUse" x="-500" y="-300" width="1000" height="1100"><rect x="-500" y="-300" width="1000" height="1100" fill="url(#' + fid + 'g)"/></mask>';
+      '<mask id="' + fid + '" maskUnits="userSpaceOnUse" x="-260" y="-120" width="520" height="600"><rect x="-260" y="-120" width="520" height="600" fill="url(#' + fid + 'g)"/></mask>';
     fondu = ' mask="url(#' + fid + ')"';
   }
   s += (plein ? '<path d="' + L.join(' ') + '" fill="none" stroke="' + O + '" stroke-width="4.4" stroke-linejoin="round"/>' :
@@ -429,9 +432,15 @@ function brasSVG(K, V, B, P, plein){
   var nx = -(w[1] - c2[1]), ny = w[0] - c2[0], nl = Math.sqrt(nx * nx + ny * ny) || 1, ux = (w[0] - c2[0]) / nl, uy = (w[1] - c2[1]) / nl; nx /= nl; ny /= nl;
   function Q(al, k){ return f1(c2[0] + ux * al + nx * k) + ' ' + f1(c2[1] + uy * al + ny * k); }
   if(nl > 12) s += PT('M' + Q(-1, -6.4) + ' Q ' + Q(3, 0) + ' ' + Q(0, 5.4) + ' M' + Q(6, -5.6) + ' Q ' + Q(9.4, -1) + ' ' + Q(7.4, 3.4), U.sombre(K.tissu[2], 0.2), 1.5, ' opacity=".34"');
-  /* le poignet de cuir, piqué */
-  var q1 = [vers(c2[0], w[0], 0.8), vers(c2[1], w[1], 0.8)], dq = gelule(q1[0], q1[1], R_PO + 0.9, w[0], w[1], R_PO + 0.5);
+  /* le poignet de cuir, piqué — EN TENUE DE COMBAT (h.tenue = 'combat', K.combat : Romain, 23 novembre, 18 h 51 : « il faut qu'il ait
+     sa tenue de combat ») un long brassard de cuir, du milieu de l'avant-bras au poignet, avec deux sangles et leurs boucles */
+  var lgB = K.combat ? 0.38 : 0.8, q1 = [vers(c2[0], w[0], lgB), vers(c2[1], w[1], lgB)], dq = gelule(q1[0], q1[1], (K.combat ? R_CO : R_PO) + 1.2, w[0], w[1], R_PO + 0.9);
   s += PC(dq, K.u('cuir'), 1.6) + PF(dq, K.u('grain'), ' opacity=".4"') + couture('M' + f1(q1[0] - nx * 6.4) + ' ' + f1(q1[1] - ny * 6.4) + ' L ' + f1(q1[0] + nx * 6.4) + ' ' + f1(q1[1] + ny * 6.4), 0.5);
+  if(K.combat && nl > 14){
+    [0.55, 0.8].forEach(function(t){ var x = vers(c2[0], w[0], t), y = vers(c2[1], w[1], t), r = vers(R_CO, R_PO, t) + 1.4;
+      s += PT('M' + f1(x - nx * r) + ' ' + f1(y - ny * r) + ' L ' + f1(x + nx * r) + ' ' + f1(y + ny * r), O, 4.6) + PT('M' + f1(x - nx * r) + ' ' + f1(y - ny * r) + ' L ' + f1(x + nx * r) + ' ' + f1(y + ny * r), '#3b2211', 2.6) +
+        PC(gelule(x + nx * r * 0.35 - ux * 1.6, y + ny * r * 0.35 - uy * 1.6, 2.2, x + nx * r * 0.35 + ux * 1.6, y + ny * r * 0.35 + uy * 1.6, 2.2), '#d9b46a', 1.2); });
+  }
   /* Trois couches, que le corps range : les manches, PUIS ce qu'elle tient (l'arc, la dague : jamais sous une manche), PUIS les mains */
   var mn = mainSVG(K, V, B, P);
   if(cote < 0 && P.arc !== false){
@@ -481,7 +490,7 @@ function torse(K, h, T, P, avant, fond, jb){
      trait du contour : la jambe s'arrête net au bord du buste, elle passe derrière. */
   /* (chaque forme est un tracé à part : deux formes mises dans un seul tracé peuvent, là où elles se chevauchent, s'annuler et
      laisser un trou dans le cache) */
-  function cache(id, L){ return '<mask id="' + K.n(id) + '" maskUnits="userSpaceOnUse" x="-500" y="-300" width="1000" height="1100"><rect x="-500" y="-300" width="1000" height="1100" fill="#fff"/><g fill="#000" stroke="#000" stroke-width="4.6" stroke-linejoin="round">' + L.map(function(d){ return '<path d="' + d + '"/>'; }).join('') + '</g></mask>'; }
+  function cache(id, L){ return '<mask id="' + K.n(id) + '" maskUnits="userSpaceOnUse" x="-260" y="-120" width="520" height="600"><rect x="-260" y="-120" width="520" height="600" fill="#fff"/><g fill="#000" stroke="#000" stroke-width="4.6" stroke-linejoin="round">' + L.map(function(d){ return '<path d="' + d + '"/>'; }).join('') + '</g></mask>'; }
   /* (le haut des bras de devant fait partie de la poitrine : une jambe derrière la poitrine est aussi derrière les épaules) */
   var hautBras = avant.map(function(B){ return B.manche[0]; }), lH = cq.filter(function(c1){ return c1.y1 <= YJ + 0.1; }).map(function(c1){ return c1.d; }),
     lJ = cq.filter(function(c1){ return c1.y0 >= YJ - 0.1; }).map(function(c1){ return c1.d; });
@@ -604,7 +613,7 @@ function torse(K, h, T, P, avant, fond, jb){
     var ux = B.c2[0] - B.e[0], uy = B.c2[1] - B.e[1], ul = Math.sqrt(ux * ux + uy * uy) || 1, fid = K.n('fe' + B.cle), p0 = 0.1 * ul, p1 = 0.3 * ul + R_CO;
     ux /= ul; uy /= ul;
     epaules += '<linearGradient id="' + fid + 'g" gradientUnits="userSpaceOnUse" x1="' + f1(B.e[0] + ux * p0) + '" y1="' + f1(B.e[1] + uy * p0) + '" x2="' + f1(B.e[0] + ux * p1) + '" y2="' + f1(B.e[1] + uy * p1) + '"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
-      '<mask id="' + fid + '" maskUnits="userSpaceOnUse" x="-500" y="-300" width="1000" height="1100"><rect x="-500" y="-300" width="1000" height="1100" fill="url(#' + fid + 'g)"/></mask>' +
+      '<mask id="' + fid + '" maskUnits="userSpaceOnUse" x="-260" y="-120" width="520" height="600"><rect x="-260" y="-120" width="520" height="600" fill="url(#' + fid + 'g)"/></mask>' +
       PF(B.epaule, K.u('tunP'), ' mask="url(#' + fid + ')"');
   });
   s += trait(dTout + manches) + epaules + tout(K.u('tunP')) + '<g clip-path="url(#' + cid + ')">' + dans + '</g>' + ouv + dessusHaut + ceinture;
@@ -711,6 +720,14 @@ function jambeSVG(K, V, J, P, suf){
   var pl = 3.2 * V.c, dr = 'M-14.2 0 Q 0 ' + f1(pl) + ' 14.2 0 L 13.8 9.5 Q 0 ' + f1(9.5 + pl * 1.6) + ' -13.8 9.5 Z';
   var rev = ul > 8 ? f1(Math.atan2(uy, ux) / RAD - 90) : 0;
   s += '<g transform="translate(' + f1(bq[0] - ux * 9) + ' ' + f1(bq[1] - uy * 9) + ') rotate(' + rev + ')"><path d="' + dr + '" transform="translate(0 4.5)" fill="#000" opacity=".22"/>' + PC(dr, '#8a5a30', 1.6) + PF(dr, K.u('grain'), ' opacity=".4"') + couture('M-12 2.6 Q 0 ' + f1(2.6 + pl) + ' 12 2.6', 0.6) + '</g>';
+  /* EN TENUE DE COMBAT : la genouillère de cuir, posée sur le devant du genou (là où il pointe), avec sa sangle */
+  if(K.combat){
+    var kd = sub(J.Kn, mixv(J.Ha, J.An, 0.5)), pole = P['genou' + J.cle] || [cote * 0.25, 0, 1], kf = lon(kd) > 3 ? uni(kd) : uni(pole);
+    var kc = pj(add(J.Kn, kf, 7), V), ka = pj(add(add(J.Kn, kf, 7), J.dj, -9), V), kb = pj(add(add(J.Kn, kf, 6), J.dj, 9), V), vis = 0.45 + 0.55 * Math.abs(dot(kf, [V.s, 0, V.c]));
+    var gk = gelule(ka[0], ka[1], 8 + 3.5 * vis, kb[0], kb[1], 7 + 3 * vis);
+    s += PC(gk, K.u('cuir'), 2) + PF(gk, K.u('grain'), ' opacity=".45"') + PT('M' + f1(ka[0]) + ' ' + f1(ka[1] + 2) + ' Q ' + f1(kc[0] + 2) + ' ' + f1(kc[1]) + ' ' + f1(kb[0]) + ' ' + f1(kb[1] - 2), '#f0c090', 1.4, ' opacity=".35"') +
+      couture('M' + f1(kc[0] - 9) + ' ' + f1(kc[1] + 6) + ' Q ' + f1(kc[0]) + ' ' + f1(kc[1] + 9) + ' ' + f1(kc[0] + 9) + ' ' + f1(kc[1] + 6), 0.5);
+  }
   return {cuisse:cuisse, botte:s, svg:cuisse + s, dCuisse:dcu, dBotte:botte};
 }
 
@@ -774,7 +791,7 @@ HV.corps = function(K, h, V, P){
   var ptsCou = [];
   [[-38, 152, 14], [-38, 152, -14], [-16, 110, 12], [-16, 110, -10], [16, 110, 12], [16, 110, -10], [38, 152, 14], [38, 152, -14]].forEach(function(q){ ptsCou.push(pj(T.buste(q), V)); });
   var dCou = U.poly(enveloppe(ptsCou)), dTete = 'M' + f1(tEl.x - tEl.rx) + ' ' + f1(tEl.y) + ' a' + tEl.rx + ' ' + tEl.ry + ' 0 1 0 ' + 2 * tEl.rx + ' 0 a' + tEl.rx + ' ' + tEl.ry + ' 0 1 0 ' + -2 * tEl.rx + ' 0 Z';
-  var idCou = K.n('mCou'), masqueCou = '<defs><mask id="' + idCou + '" maskUnits="userSpaceOnUse" x="-500" y="-300" width="1000" height="1100"><rect x="-500" y="-300" width="1000" height="1100" fill="#fff"/><path d="' + dCou + '" fill="#000"/><path d="' + dTete + '" fill="#000"/></mask></defs>';
+  var idCou = K.n('mCou'), masqueCou = '<defs><mask id="' + idCou + '" maskUnits="userSpaceOnUse" x="-260" y="-120" width="520" height="600"><rect x="-260" y="-120" width="520" height="600" fill="#fff"/><path d="' + dCou + '" fill="#000"/><path d="' + dTete + '" fill="#000"/></mask></defs>';
   var der = (cq && !dos ? cq.svg : '') + (pf.length ? masqueCou + '<g mask="url(#' + idCou + ')">' + pf.map(function(o){ return brasTout(o); }).join('') + '</g>' : '');
   var pa = avant.map(function(b){ return brasSVG(K, V, b, P, false); });
   /* LES JAMBES : celle du fond d'abord. Elles sont dessinées après le buste ; chaque morceau (la cuisse, la botte) est caché là
@@ -841,7 +858,7 @@ HV.corps = function(K, h, V, P){
     dbg.push(['cuisse' + j.cle, dehors.haut, dehors.jupe]);
     /* (la poitrine, quand elle est devant la cuisse : penchée en avant, vue de dos…) */
     var autres = dehors.haut < 0 ? lHautC.concat(avant.map(function(B){ return B.manche[0]; })) : [];
-    jb = '<mask id="' + mid + '" maskUnits="userSpaceOnUse" x="-500" y="-300" width="1000" height="1100"><rect x="-500" y="-300" width="1000" height="1100" fill="#fff"/>' +
+    jb = '<mask id="' + mid + '" maskUnits="userSpaceOnUse" x="-260" y="-120" width="520" height="600"><rect x="-260" y="-120" width="520" height="600" fill="#fff"/>' +
       (js.d ? '<path d="' + js.d + '" fill="#000" stroke="#000" stroke-width="1" stroke-linejoin="round"/>' : '') +
       (autres.length ? '<g fill="#000" stroke="#000" stroke-width="4.6" stroke-linejoin="round">' + autres.map(function(d){ return '<path d="' + d + '"/>'; }).join('') + '</g>' : '') + '</mask>' +
       '<g mask="url(#' + mid + ')">' + sv.cuisse + '</g>';
@@ -902,7 +919,7 @@ HV.corps = function(K, h, V, P){
     }
     if(!occ.length) return '';
     var id = K.n('am' + nom);
-    defsArc += '<mask id="' + id + '" maskUnits="userSpaceOnUse" x="-500" y="-300" width="1000" height="1100"><rect x="-500" y="-300" width="1000" height="1100" fill="#fff"/><g fill="#000" stroke="#000" stroke-width="4.4" stroke-linejoin="round">' + occ.map(function(d){ return '<path d="' + d + '"/>'; }).join('') + '</g></mask>';
+    defsArc += '<mask id="' + id + '" maskUnits="userSpaceOnUse" x="-260" y="-120" width="520" height="600"><rect x="-260" y="-120" width="520" height="600" fill="#fff"/><g fill="#000" stroke="#000" stroke-width="4.4" stroke-linejoin="round">' + occ.map(function(d){ return '<path d="' + d + '"/>'; }).join('') + '</g></mask>';
     return id;
   }
   function masquesObjets(B, o, suffixe){
