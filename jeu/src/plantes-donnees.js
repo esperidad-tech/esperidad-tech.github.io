@@ -193,46 +193,93 @@ var RE = {
    la recette (donjon:recette:givre) : tapé DANS le donjon par le Pisteur, il lui donne le Givre (« gèle tout » : le grand bassin de
    Bourbe). Elle ne compte pas parmi les sept potions du départ (ORDRE ne change pas) : PLUS (les potions) et PL_PLUS (les plantes).
    C'est une plante inventée : sa recette suit de vrais gestes (macérer à froid, filtrer, distiller, laisser cristalliser), et « vrai »
-   dit ce qui est vrai dans le monde (le menthol de la menthe). */
-var PLUS = ['givre'], PL_PLUS = ['givre'];
+   dit ce qui est vrai dans le monde (le menthol de la menthe).
+
+   ⚠️ REFAIT LE 23 NOVEMBRE — LES DEUX PLANTES DU DONJON SE FONT EN DEUX ÉTAPES (Romain, 11 h 36 : « on passe d'abord par la table de
+   préparation, où on prend les parties de la plante […] dès qu'on a l'ingrédient qu'il faut, on le met dans un petit pot. Et ce petit
+   pot va servir pour le grand chaudron […] avec les ingrédients de base […] tu fais pareil pour les deux plantes du premier donjon »).
+   · ICI, L'ÉTABLI NE FAIT PLUS LA POTION : il fait un INGRÉDIENT, mis dans un petit pot (RE.<id>.pot = true). RE.givre : les cristaux
+     de givre ; RE.mousse : la poudre de mousse lumineuse. Mêmes identifiants que D.PREPARATIONS (donnees.js).
+   · ENSUITE, LE GRAND CHAUDRON (le mini-jeu, D.RECETTES.givre et D.RECETTES.baumelum) : des ingrédients cueillis, puis le petit pot.
+     C'est la potion sortie du chaudron qui donne le code pour le Pisteur (D.POTIONS_DONJON, plantes.js), plus l'établi.
+   · apres : ce que dit la carte de l'établi quand le pot est prêt (avec un bouton jaune vers le grand chaudron). Plus de « code » ici.
+   · La mousse lumineuse (Schistostega pennata, une vraie mousse des grottes : Bible §13.55) arrive maintenant sur l'établi comme la
+     fleur de givre ; l'ancien « chaudron du donjon » (trois bocaux à choisir, une page à part) ne sert plus. */
+var PLUS = ['givre', 'mousse'], PL_PLUS = ['givre', 'mousse'];
 PL.givre = {milieu:'Tout au fond des souterrains de Brumeval, dans une grotte où il gèle toute l\'année.',
   nom:'La fleur de givre', court:'Fleur de givre', potion:'givre', rare:true,
   arrive:'Elle ne fond jamais. Rien qu\'à la toucher, tes doigts picotent !',
   parties:{petales:{nom:'Les pétales de glace', c:'#bfeaff', s:'fleurs'},
     feuilles:{nom:'Les feuilles en aiguilles', c:'#9fd4e6', s:'feuilles', faux:'Des aiguilles toutes froides… mais le vrai froid, celui qui gèle, est dans les pétales.'},
     racine:{nom:'La racine', c:'#9fb2c2', s:'racine', faux:'Une racine grise, tiède comme un caillou. Le froid n\'est pas là !'}}};
-RE.givre = {nom:'Le givre', court:'Givre', coul:'#bff4ff', plante:'givre', partie:'petales', dit:'les pétales de glace.',
-  sert:'Dans le donjon, il gèle tout ce qu\'il touche. Même l\'eau !',
-  /* (le code de cette recette, pour le Pisteur : plantes.js le passe à l'établi ; apres : ce que l'établi dit en le montrant) */
-  code:'donjon:recette:givre', apres:'Donne ce code au Pisteur : ça peut être utile !',
+RE.givre = {nom:'Les cristaux de givre', court:'Cristaux', coul:'#bff4ff', plante:'givre', partie:'petales', dit:'les pétales de glace.',
+  sert:'Un ingrédient pour ton grand chaudron : avec lui, tu prépareras la potion de givre du Pisteur.',
+  pot:true, chaudron:'givre', note:'Ce n\'est pas encore une potion : c\'est un ingrédient pour ton grand chaudron.',
+  apres:'Ce petit pot est un ingrédient. Au grand chaudron, avec de l\'eau et de la menthe, il deviendra la potion de givre !',
   recette:['Émince les pétales.', 'Écrase-les : ils deviennent une neige bleue.', 'Fais fondre cette neige dans l\'eau, sans feu.', 'Filtre l\'eau bleue.',
-    'Distille-la à feu doux.', 'Laisse reposer les gouttes : des cristaux apparaissent.', 'Écrase les cristaux en poudre.', 'Mets en fiole.'],
+    'Laisse-la reposer à l\'ombre : des cristaux apparaissent.', 'Mets les cristaux dans un petit pot.'],
   etapes:[
     {o:'planche', m:'Les pétales émincés', c:'#bfeaff', f:'hache', t:'Tchac, tchac ! Les pétales craquent sous la lame, comme de la glace fine.'},
     {o:'mortier', m:'La neige bleue', c:'#d2f1ff', f:'tas', t:'Cric, crac ! Sous le pilon, les pétales deviennent une neige bleue. Le mortier se couvre de buée.'},
     {o:'marmite', liq:'eau', feu:0, m:'L\'eau bleue', c:'#8fd6f2', f:'jus', t:'Sans feu, surtout ! La neige fond dans l\'eau froide et lui donne tout son froid. L\'eau devient bleue.'},
     {o:'filtre', m:'L\'eau bleue claire', c:'#9fe6ff', f:'jus', t:'L\'eau traverse le tissu. Les miettes de pétales restent dessus.'},
-    {o:'alambic', feu:1, m:'Les gouttes glacées', c:'#dff8ff', f:'jus', t:'À feu doux, la vapeur monte dans le col de cygne… et retombe en gouttes glacées. Le vase se couvre de buée !'},
-    {o:'sechoir', m:'Les cristaux de givre', c:'#f2fdff', f:'cristaux', t:'Les gouttes reposent à l\'ombre. De petits cristaux poussent, comme le givre sur une vitre.'},
-    {o:'mortier', m:'La poudre de givre', c:'#e2f8ff', f:'tas', t:'Cric, crac ! Les cristaux deviennent une poudre plus fine que la neige.'},
-    {o:'fiole', t:'En fiole ! Le verre se couvre de givre. Ne la garde pas trop longtemps dans la main…'}],
+    {o:'sechoir', m:'Les cristaux de givre', c:'#f2fdff', f:'cristaux', t:'L\'eau bleue repose à l\'ombre, sans feu. Elle s\'en va tout doucement… et de petits cristaux poussent, comme le givre sur une vitre.'},
+    {o:'fiole', t:'Dans le petit pot ! Le verre se couvre de givre. Ne le garde pas trop longtemps dans la main…'}],
   faux:{'0:mortier':'Entiers, les pétales glissent sous le pilon comme des glaçons. Il faut d\'abord les couper.',
     '0:marmite:eau':'Entiers, les pétales flottent sur l\'eau comme de petits glaçons. Ils gardent leur froid pour eux.',
     '1:marmite:eau':'Les morceaux flottent sur l\'eau sans fondre. Il faut d\'abord les écraser.',
     '2:marmite:eau+doux':'Malheur ! Avec le feu, tout le froid s\'envole en vapeur. Sans feu, surtout !',
     '2:marmite:eau+fort':'Malheur ! Avec le feu, tout le froid s\'envole en vapeur. Sans feu, surtout !',
     '2:filtre':'Rien ne coule : c\'est de la neige, pas de l\'eau. Il faut d\'abord la faire fondre.',
-    '3:alambic':'Pleine de miettes, l\'eau bleue boucherait le col de cygne. Il faut d\'abord la filtrer.',
-    '4:alambic:froid':'Sans feu, pas de vapeur : pas une goutte ne monte.',
-    '4:alambic:fort':'Trop fort ! L\'eau bleue bout à gros bouillons et passe toute trouble dans le tuyau. À feu doux !',
-    '4:marmite':'Dans la marmite ouverte, la vapeur glacée s\'envole par la fenêtre. Il faudrait l\'attraper…',
-    '4:sechoir':'L\'eau bleue sèche… et il ne reste qu\'une tache. Son froid est trop mélangé : il faut d\'abord la distiller.',
-    '4:fiole':'Pas encore ! Cette eau est fraîche, mais elle ne gèle rien. Il faut la distiller.',
-    '5:fiole':'Pas encore ! Ces gouttes sont à peine fraîches. Laisse-les reposer : le froid doit se rassembler en cristaux.',
-    '6:fiole':'Les cristaux sont trop gros : ils ne passent pas par le goulot. Il faut les écraser.',
-    '6:tamis':'Les cristaux restent tous sur le tamis : ils sont trop gros !',
-    '6:marmite:eau':'Dans l\'eau, les cristaux fondraient d\'un coup ! Tu les retires vite. Ce qu\'il leur faut, c\'est le pilon.'},
-  vrai:'La fleur de givre ne pousse que sous Brumeval. Mais une plante qui fait froid, ça existe vraiment : la menthe ! Son menthol trompe ta langue : elle croit qu\'il fait froid, alors que rien n\'a refroidi.'};
+    '3:sechoir':'Pleine de miettes de pétales, l\'eau bleue ne donnerait que des cristaux tout sales. Il faut d\'abord la filtrer.',
+    '3:fiole':'Pas encore ! C\'est de l\'eau bleue pleine de miettes, pas des cristaux.',
+    '4:marmite:froid':'Sans feu, l\'eau bleue attend dans la marmite… Elle sera mieux au séchoir, à l\'ombre : ses cristaux pourront pousser.',
+    '4:marmite':'Malheur ! Sur le feu, tout le froid s\'envolerait en vapeur. Laisse-la reposer à l\'ombre, sans feu.',
+    '4:alambic:froid':'Sans feu, l\'alambic dort. L\'eau bleue sera mieux au séchoir, à l\'ombre.',
+    '4:alambic':'L\'alambic, c\'est du feu et de la vapeur : tout le froid s\'en irait ! Laisse-la reposer à l\'ombre.',
+    '4:fiole':'Pas encore ! Cette eau est fraîche, mais elle ne gèle rien. Laisse-la reposer : le froid doit se rassembler en cristaux.',
+    '5:mortier':'Cric, crac ! Une poudre fine… Mais la recette veut de beaux cristaux entiers. Tu en gardes pour le pot.',
+    '5:tamis':'Les cristaux restent tous sur le tamis : ils sont trop gros !',
+    '5:marmite:eau':'Dans l\'eau, les cristaux fondraient d\'un coup ! Tu les retires vite. L\'eau, ce sera pour le grand chaudron.'},
+  vrai:'La fleur de givre ne pousse que sous Brumeval. Mais de vraies plantes lui ressemblent ! La ficoïde glaciale est couverte de perles qui brillent comme du givre. Et en Amérique, l\'« herbe à givre » fait de vraies fleurs de glace : quand il gèle, sa sève sort de la tige en rubans.'};
+
+/* La mousse lumineuse (23 novembre) : le Pisteur la trouve dans le puits d'aération du donjon (donjon:plante:lumiere). Une VRAIE mousse
+   des grottes, Schistostega pennata, « l'or des lutins » : elle ne fabrique pas de lumière, elle renvoie celle qu'elle reçoit. Ce qui
+   brille, ce n'est pas la petite fronde en plume : c'est le tapis de fils verts dessous (son protonéma, aux cellules rondes comme de
+   petites loupes — c'est ce que montre le microscope du labo). Les gestes sont ceux qu'on fait vraiment avec une mousse : la laisser
+   sécher à l'ombre, la réduire en poudre, la tamiser. « vrai » : la sphaigne, la mousse des pansements de la Grande Guerre. */
+PL.mousse = {milieu:'Dans les grottes et les fentes des rochers, là où n\'entre qu\'un filet de jour.',
+  nom:'La mousse lumineuse', court:'Mousse lumineuse', potion:'mousse', rare:true,
+  arrive:'Dans l\'ombre de ta main, elle brille d\'un vert doré !',
+  parties:{tapis:{nom:'Le tapis vert doré', c:'#c8e45a', s:'feuilles'},
+    frondes:{nom:'Les petites plumes vertes', c:'#6fbf6a', s:'brins', faux:'De jolies petites plumes vertes… qui ne brillent pas. L\'éclat vient du tapis de fils, tout en dessous.'},
+    caillou:{nom:'Le caillou', c:'#9a93a8', s:'racine', faux:'Un caillou tout gris. La mousse n\'a pas de racines : elle était juste posée dessus !'}}};
+RE.mousse = {nom:'La poudre de mousse', court:'Poudre', coul:'#d6ee5a', plante:'mousse', partie:'tapis', dit:'le tapis vert doré, sous les petites plumes.',
+  sert:'Un ingrédient pour ton grand chaudron : avec elle, tu prépareras le baume lumineux du Pisteur.',
+  pot:true, chaudron:'baumelum', note:'Ce n\'est pas encore une potion : c\'est un ingrédient pour ton grand chaudron.',
+  apres:'Ce petit pot est un ingrédient. Au grand chaudron, avec du miel et des pensées sauvages, il deviendra le baume lumineux !',
+  recette:['Laisse sécher le tapis de mousse, à l\'ombre.', 'Écrase-le en poudre.', 'Passe la poudre au tamis : garde la plus fine.', 'Mets-la dans un petit pot.'],
+  etapes:[
+    {o:'sechoir', m:'La mousse sèche', c:'#b9cf58', f:'feuilles', t:'La mousse sèche à l\'ombre. Au soleil, elle grillerait : elle a toujours vécu dans le noir !'},
+    {o:'mortier', m:'La poudre verte', c:'#cfe45c', f:'tas', t:'Cric, crac ! Sèche, la mousse s\'écrase toute seule. Une poudre verte, pleine de petits grains de sable.'},
+    {o:'tamis', m:'La poudre fine', c:'#e0f26a', f:'tas', t:'Tu secoues. Le sable et les brins restent sur le tamis ; une poudre très fine passe, d\'un beau vert doré.'},
+    {o:'fiole', t:'Dans le petit pot ! Mets ta main autour : la poudre brille encore, tout doucement.'}],
+  faux:{'0:mortier':'Fraîche, la mousse s\'écrase en bouillie verte. Elle est pleine d\'eau : il faut d\'abord la laisser sécher.',
+    '0:planche':'Tchac, tchac… De tout petits bouts tout mous, qui collent à la lame. Il faut d\'abord la laisser sécher.',
+    '0:presse':'Tu serres la vis… De l\'eau claire coule : la mousse en était pleine, comme une éponge ! Mais son éclat ne se presse pas.',
+    '0:tamis':'Encore fraîche, la mousse reste en paquet sur le tamis. Rien ne passe !',
+    '0:marmite:eau':'Elle boit l\'eau comme une éponge : une mousse n\'a pas de racines ! Mais toute mouillée, impossible d\'en faire une poudre.',
+    '0:marmite:eau+doux':'Malheur ! Dans l\'eau chaude, la mousse cuit comme des épinards. Elle ne renvoie plus un seul éclat.',
+    '0:marmite:eau+fort':'Malheur ! Dans l\'eau chaude, la mousse cuit comme des épinards. Elle ne renvoie plus un seul éclat.',
+    '0:fiole':'Pas encore ! Fraîche, elle moisirait dans son pot. Il faut d\'abord la laisser sécher.',
+    '1:tamis':'Les brins secs sont trop gros : rien ne passe par les petits trous. Il faut d\'abord les écraser.',
+    '1:marmite:eau':'Une tisane de mousse… Elle a un goût de cave ! Ce n\'est pas ce que dit la recette.',
+    '1:fiole':'Pas encore ! En brins, elle ne se mélangerait pas dans le chaudron. Il faut l\'écraser en poudre.',
+    '2:fiole':'Pas encore ! La poudre est pleine de grains de sable : ils rayeraient le chaudron. Passe-la d\'abord au tamis.',
+    '2:marmite:eau':'La poudre flotte, puis fait une boue verte. Garde-la bien sèche : l\'eau, ce sera pour le grand chaudron.',
+    '3:mortier':'Elle est déjà plus fine que de la farine !',
+    '3:marmite:eau':'La poudre flotte, puis fait une boue verte. Garde-la bien sèche : l\'eau, ce sera pour le grand chaudron.'},
+  vrai:'Cette mousse existe vraiment : on l\'appelle « l\'or des lutins ». Elle ne fabrique pas de lumière, elle renvoie celle qu\'elle reçoit. Et une mousse, ça soigne pour de vrai : pendant la Grande Guerre, on pansait les blessés avec de la sphaigne séchée, qui boit vingt fois son poids d\'eau.'};
 
 window.PLANTES_DONNEES = {ORDRE:ORDRE, ORDRE_PL:ORDRE_PL, PL:PL, RE:RE, PLUS:PLUS, PL_PLUS:PL_PLUS};
 })();

@@ -268,7 +268,30 @@ D.RECETTES = {
   fumigene:{ingr:[['ortie', 1], ['brume', 1]], cuisson:'chaudron'},
   eclairante:{ingr:[['champignon', 1], ['pensee', 1]], cuisson:'chaudron'},
   coeur:{ingr:[['miel', 2], ['pensee', 1], ['eau', 1]], cuisson:'chaudron'},
-  hydromel:{ingr:[['miel', 2], ['lavande', 1], ['pensee', 1], ['eau', 1]], cuisson:'chaudron'}   /* recette difficile : cinq doses, finir dans l'arc-en-ciel */
+  hydromel:{ingr:[['miel', 2], ['lavande', 1], ['pensee', 1], ['eau', 1]], cuisson:'chaudron'},   /* recette difficile : cinq doses, finir dans l'arc-en-ciel */
+  /* (23 novembre) LES DEUX POTIONS DU DONJON, en deux étapes (Romain : « d'abord la table de préparation […] on le met dans un petit pot
+     […] ce petit pot va servir pour le grand chaudron, avec les ingrédients de base ») : des ingrédients qu'on cueille (l'eau, la menthe,
+     le miel, les pensées), PUIS le petit pot fabriqué sur l'établi des plantes (D.PREPARATIONS). donjon : elles ne sont pas dans D.POTIONS
+     (aucun code nouveau : celui que montre la potion finie est le code de recette du donjon, déjà gelé — D.POTIONS_DONJON, plantes.js). */
+  givre:{ingr:[['eau', 2], ['menthe', 1], ['givre', 1]], cuisson:'chaudron', donjon:true},
+  baumelum:{ingr:[['miel', 2], ['pensee', 1], ['mousse', 1]], cuisson:'chaudron', donjon:true}
+};
+/* LES PRÉPARATIONS : des ingrédients qu'on ne cueille pas. On les FABRIQUE sur l'établi des plantes (plantes-donnees.js : RE.givre,
+   RE.mousse — même identifiant), on les met dans un petit pot, et le pot se pose sur la poutre du grand chaudron avec les bocaux.
+   Elles ne sont PAS dans D.INGR : on ne les cueille pas, on ne les range pas dans les tiroirs, aucune étiquette. */
+D.PREPARATIONS = {
+  givre:{nom:'Cristaux de givre', court:'Givre', ic:'❄️', c:'#bff4ff'},
+  mousse:{nom:'Poudre de mousse lumineuse', court:'Mousse', ic:'🔆', c:'#d6ee5a'}
+};
+/* Les potions du donjon qui sortent du grand chaudron : leur nom, la plante du donjon qui les lance (recu : le code que le Pisteur
+   envoie, P.donjonCodes), le petit pot qu'il leur faut (prep), et le code de recette que le Pisteur tapera DANS le donjon (code). */
+D.POTIONS_DONJON = {
+  givre:{nom:'La potion de givre', fini:'La potion de givre est prête !', ic:'❄️', c:'#bff4ff', prep:'givre', recu:'plante:givre', code:'donjon:recette:givre',
+    utile:'Pour le Pisteur, dans le donjon : elle gèle tout ce qu\'elle touche. Même l\'eau !',
+    vrai:'La menthe fait froid pour de vrai : son menthol trompe ta langue, qui croit sentir du froid alors que rien n\'a refroidi. Voilà pourquoi il en faut dans cette potion !'},
+  baumelum:{nom:'Le baume lumineux', fini:'Le baume lumineux est prêt !', ic:'🔆', c:'#d6ee5a', prep:'mousse', recu:'plante:lumiere', code:'donjon:recette:baumelum',
+    utile:'Pour le Pisteur, dans le donjon : il soigne toute l\'équipe d\'un coup. Et il brille dans le noir !',
+    vrai:'Le miel soigne pour de vrai : depuis toujours, on en met sur les plaies pour qu\'elles guérissent. Et la pensée sauvage est une vieille plante des herboristes, pour la peau.'}
 };
 
 /* ---------- Le grand chaudron ----------
@@ -295,7 +318,11 @@ var CHAUDRON_FRISES = {
   fumigene:['bouillant', [0, 1]],
   eclairante:['arc-en-ciel', [0, 0.5]],
   coeur:['rouge', [0, 0.8, 1, 0.6]],
-  hydromel:['arc-en-ciel', [0, 0.5, 1, 0.45, 0.8]]
+  hydromel:['arc-en-ciel', [0, 0.5, 1, 0.45, 0.8]],
+  /* (23 novembre) le givre finit dans le BLEU (froid : la brume se lève sur le chaudron) — pas dans le violet, tout en bas : la bande y
+     est si près du gel qu'une potion de givre… gèlerait une fois sur deux ; le baume dans le JAUNE (le miel doit chauffer) */
+  givre:['bleu', [0, 1, 1.1, 1.2]],
+  baumelum:['jaune', [0, 1, 1.1, 1.2]]
 };
 D.CHAUDRON = {};
 Object.keys(D.RECETTES).forEach(function(id){
@@ -336,7 +363,7 @@ D.ETAPES = {
 D.texteEtapes = function(id){
   var R = D.RECETTES[id], C = D.CHAUDRON[id];
   if(!R) return '';
-  var s = R.ingr.map(function(x){ return x[1] + ' ' + D.INGR[x[0]].nom.toLowerCase(); }).join(', puis ');
+  var s = R.ingr.map(function(x){ return x[1] + ' ' + (D.INGR[x[0]] || D.PREPARATIONS[x[0]] || {nom:x[0]}).nom.toLowerCase(); }).join(', puis ');
   var Z = C && D.ZONES_CHAUDRON[C.zone];
   if(Z) s += ' ; à la fin, garder la potion ' + (C.zone === 'arc-en-ciel' ? 'dans l\'ARC-EN-CIEL du chaudron (' : 'dans la zone ' + Z.grand + ' du chaudron (') + Z.dit + ')';
   return s;

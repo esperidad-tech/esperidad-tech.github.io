@@ -269,7 +269,40 @@ function givre(){
     partie('petales', 'Les pétales de glace', ZC(119, 74, 48) + ZC(188, 120, 34) + flocon(119, 74, 46) + flocon(188, 120, 31) + eclats);
 }
 
-var PLANTES = {oseille:oseille, souci:souci, melisse:melisse, lin:lin, lycopode:lycopode, vesse:vesse, gui:gui, givre:givre};
+/* ---------------------------------------------------------- La mousse lumineuse ----------------------------------------------------------
+   (23 novembre) Une vraie mousse des grottes, Schistostega pennata, « l'or des lutins ». Le Pisteur la trouve dans le puits d'aération
+   du donjon, sur une pierre. Trois parties : le caillou où elle était posée (une mousse n'a pas de racines), les petites frondes
+   plates comme des plumes (hautes d'un centimètre, en vrai), et dessous le tapis de fils vert doré — c'est LUI qui renvoie la lumière. */
+function plumeMousse(){
+  var s = LL('M0,0 C-1,-14 1,-30 0,-48', '#4f9a4a', 2.4), i, y, w;
+  for(i = 0; i < 6; i++){
+    y = -9 - i * 6.6; w = 12 - i * 1.3;
+    s += E(-w * 0.55, y - 2, f1(w * 0.55), 3.1, '#6fbf6a', 1.7, ' transform="rotate(-24 ' + f1(-w * 0.55) + ' ' + f1(y - 2) + ')"') +
+      E(w * 0.55, y - 2, f1(w * 0.55), 3.1, '#7fcf7a', 1.7, ' transform="rotate(24 ' + f1(w * 0.55) + ' ' + f1(y - 2) + ')"');
+  }
+  return s + E(0, -50, 2.6, 4, '#8fdc86', 1.6);
+}
+function mousse(){
+  var caillou = P('M40,262 C34,232 58,206 96,200 C140,192 196,198 216,224 C230,244 226,262 214,270 C160,282 80,280 40,262 Z', '#9a93a8', 3) +
+    '<path d="M52,262 C90,274 170,276 210,264 C198,274 160,279 128,279 C96,279 66,274 52,262 Z" fill="#6f687e" opacity=".6"/>' +
+    L('M58,244 q12,-6 22,0 M176,246 q14,-4 26,4 M104,258 q18,4 34,-2', '#7d768c', 2.2);
+  /* le tapis : une pellicule vert doré posée sur la pierre, avec ses petits éclats */
+  var eclats = '';
+  [[92, 218, 2.4], [116, 208, 2], [140, 222, 2.6], [164, 210, 2], [184, 220, 2.2], [128, 214, 1.6], [104, 226, 1.6], [172, 226, 1.8], [150, 206, 1.5]].forEach(function(c){ eclats += C(c[0], c[1], c[2], '#fbffd8', 0); });
+  var tapis = '<ellipse cx="134" cy="212" rx="94" ry="36" fill="#e8ff7a" opacity=".28"/>' +
+    P('M62,216 C76,198 108,190 134,192 C164,192 196,200 206,218 C196,230 168,235 134,235 C104,236 74,232 62,216 Z', '#c8e45a', 3) +
+    L('M80,214 C98,202 150,198 190,214', '#f4ffb0', 3, ' opacity=".85"') + eclats;
+  var frondes = '';
+  [[96, 206, -14, 0.9], [120, 198, -5, 1.1], [144, 195, 4, 1.2], [168, 199, 11, 1], [189, 209, 19, 0.82]].forEach(function(a){
+    frondes += G('translate(' + a[0] + ' ' + a[1] + ') rotate(' + a[2] + ') scale(' + a[3] + ')', plumeMousse());
+  });
+  return sol(274, 22, 238) +
+    partie('caillou', 'Le caillou', caillou) +
+    partie('tapis', 'Le tapis vert doré', tapis) +
+    partie('frondes', 'Les petites plumes vertes', Z(82, 136, 126, 66) + frondes);
+}
+
+var PLANTES = {oseille:oseille, souci:souci, melisse:melisse, lin:lin, lycopode:lycopode, vesse:vesse, gui:gui, givre:givre, mousse:mousse};
 
 /* une fiole de potion (pleine si on donne sa couleur) : l'étagère des sept potions, les pages du grimoire */
 function fiole(coul){

@@ -680,7 +680,7 @@ M.nomCode = function(id){
   if(t === 'allure') return {ic:'🛡️', nom:'La tenue de combat'};
   if(t === 'visage') return {ic:'💇', nom:'Le visage'};
   /* (enquête 3) un code du donjon qu'un joueur de l'enquête garde pour un équipier : le givre de l'Alchimiste, que le Pisteur tape DANS le donjon */
-  if(t === 'donjon') return x === 'recette' && p[2] === 'givre' ? {ic:'❄️', nom:'Le givre (à taper dans le donjon)'} : x === 'sauve' ? {ic:'📜', nom:'Un sort de sauvegarde (à taper dans le donjon)'} : {ic:'🕯️', nom:'Un code du donjon'};
+  if(t === 'donjon') return x === 'recette' && p[2] === 'givre' ? {ic:'❄️', nom:'La potion de givre (à taper dans le donjon)'} : x === 'recette' && p[2] === 'baumelum' ? {ic:'🔆', nom:'Le baume lumineux (à taper dans le donjon)'} : x === 'sauve' ? {ic:'📜', nom:'Un sort de sauvegarde (à taper dans le donjon)'} : {ic:'🕯️', nom:'Un code du donjon'};
   return {ic:'🏆', nom:'Victoire'};
 };
 

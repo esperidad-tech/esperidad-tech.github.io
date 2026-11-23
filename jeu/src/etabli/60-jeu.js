@@ -145,7 +145,7 @@ function choisirPlante(k){
   if(S.occupe || S.mode) return;
   var p = PL[k], c = centrePlante(k);
   poser();
-  if(S.faites[p.potion]){ son('clic'); bulle(c.x, c.y - 34, DIT.dejaPotion); return; }
+  if(S.faites[p.potion]){ son('clic'); bulle(c.x, c.y - 34, RE[p.potion].pot ? 'Déjà dans son petit pot !' : DIT.dejaPotion); return; }
   if(!(S.dispo[k] > 0)){ son('clic'); bulle(c.x, c.y - 30, DIT.pasCueillie); return; }
   if(S.partie && S.plante !== k && S.n > 0){ son('non'); secouer($('#plante-' + k)); bulle(c.x, c.y - 34, DIT.uneChose, 'oups'); return; }
   if(S.partie) lacher();
@@ -416,8 +416,9 @@ function toucherFoyer(o){
 function toucherPotion(id){
   if(S.occupe || S.mode) return;
   var r = RE[id], q = placePotion(id); son('clic'); poser();
-  if(enPlus(id)){   /* une potion en plus (le givre) : prête, elle remontre son code pour le Pisteur */
-    if(S.faites[id] && codePlus(id)) return ouvrirPrete(id, null, false);
+  if(enPlus(id)){   /* un petit pot (les cristaux de givre, la poudre de mousse) : prêt, il redit qu'il va au grand chaudron */
+    if(S.faites[id] && RE[id].pot && S.verses && S.verses[id]) return bulle(q.x, q.y + 30, 'Vide ! Tu l\'as versé dans ton grand chaudron.');
+    if(S.faites[id] && (RE[id].pot || codePlus(id))) return ouvrirPrete(id, null, false);
     return bulle(q.x, q.y + 30, S.faites[id] ? r.nom + ' : prête !' : r.court + ' : ' + DIT.pasPrete.charAt(0).toLowerCase() + DIT.pasPrete.slice(1));
   }
   if(toutesFaites() && S.sac) return ouvrirCode();   /* les sept sont prêtes : le code pour le Pisteur */

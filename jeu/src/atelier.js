@@ -692,8 +692,12 @@ function N(s){ return {f:0, s:s}; }
 var ETQ_EXTRA = {'x-etoile':'⭐', 'x-coeur':'❤️', 'x-lune':'🌙', 'x-chat':'🐱', 'x-arc':'🌈', 'x-feu':'🔥', 'x-gemme':'💎', 'x-fleur':'🌸'};
 var INGR = {};   /* rempli par la vue (opts.ingr) */
 function icEtq(id){ return ETQ_EXTRA[id] || (INGR[id] && INGR[id].ic) || '❔'; }
-function icIngr(id){ return (INGR[id] && INGR[id].ic) || '❔'; }
-function coulIngr(id){ return (INGR[id] && INGR[id].c) || '#9aa3c8'; }
+/* (23 novembre) PREP : les préparations de l'établi des plantes (D.PREPARATIONS : les cristaux de givre, la poudre de mousse). Ce ne sont
+   pas des ingrédients qu'on cueille ni qu'on range : un petit pot, posé sur la poutre du chaudron quand il est prêt (opts.pots). */
+var PREP = {};   /* rempli par la vue (opts.preparations) */
+function estPrep(id){ return !!PREP[id]; }
+function icIngr(id){ return (INGR[id] && INGR[id].ic) || (PREP[id] && PREP[id].ic) || '❔'; }
+function coulIngr(id){ return (INGR[id] && INGR[id].c) || (PREP[id] && PREP[id].c) || '#9aa3c8'; }
 
 function pastille(x, y, r, ch){
   return '<g class="at-etq-o"><circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#fffaf0" stroke="' + K + '" stroke-width="2.5"/>' + emo(x, y + r * 0.08, r * 1.2, ch) + '</g>';
@@ -3440,6 +3444,7 @@ function vue(el, opts){
   opts = opts || {};
   var D = DD();
   INGR = opts.ingr || D.INGR || {};
+  PREP = opts.preparations || D.PREPARATIONS || {};
   var V = {
     el:el, o:opts, uid:++uidVue, etat:poserEtabli(normaliser(opts.etat || etatNeuf()), !!opts.etabli),
     mode:'ranger', k:0.5, timers:[], nettoie:[], suivis:[], arrete:false, sel:null, chats:{},
@@ -3506,6 +3511,9 @@ function vue(el, opts){
     etat:function(){ return V.etat; },
     /* le chaudron en cours (MJ.lancer) : le moteur le met en pause au lieu de l'abandonner quand on change d'onglet (moteur-actions.js) */
     partie:function(){ return V.mjPartie || null; },
+    /* (23 novembre) l'établi des plantes y envoie : « 🍲 Au grand chaudron ! » (plantes.js, M.allerChaudron) — une seule recette prête : elle
+       part tout de suite ; plusieurs : le panneau du chaudron ; rien de prêt : le grimoire, qui montre ce qui manque */
+    chaudron:function(){ allerAuChaudron(V); },
     /* pour les bancs d'essai */
     _vb:function(){ return {x0:V.vb.x0, y0:V.vb.y0, w:V.vb.w, h:V.vb.h, k:V.k, pan:{x:V.pan.x, y:V.pan.y}}; },
     _voir:function(x, y){ centrerSur(V, x, y); },
@@ -3883,7 +3891,7 @@ function brillerFlacons(V, l){
 function dessinerPiece(V, avantK){
   var sc = V.scene;
   sc.innerHTML = '';
-  V.parId = {}; V.elO = {}; V.elK = {}; V.elTas = []; V.elNeuf = null; V.elFl = []; V.elPaSigne = null; V.elEtSigne = null; V.elPlP = null; V.plP = null;
+  V.parId = {}; V.elO = {}; V.elK = {}; V.elTas = []; V.elNeuf = null; V.elFl = []; V.elPaSigne = null; V.elEtSigne = null; V.elChSigne = null; V.elPlP = null; V.plP = null;
   V.etat.objets.forEach(function(o){ V.parId[o.id] = o; });
   /* (la flaque : devant le chaudron, dans sa pièce) */
   if(V.etat.flaque && salleDe(V.parId.ch) === V.salle){
@@ -4072,11 +4080,34 @@ function majFixes(V){
   if(V.parId.et && V.elO.et){ redessiner(V, V.parId.et); majSigneEt(V); } else if(V.elEtSigne){ V.elEtSigne.remove(); V.elEtSigne = null; }
   var ch = V.elO.ch;
   if(ch){
-    var pret = (V.o.fioles || 0) > 0 && recettesDe(V).some(function(r){ return etatRecette(V, r.id).pret; });
+    /* (23 novembre : une potion du donjon — r.sansFiole — est prête même sans fiole vide) */
+    var pret = recettesDe(V).some(function(r){ return ((V.o.fioles || 0) > 0 || r.sansFiole) && etatRecette(V, r.id).pret; });
     ch.classList.toggle('at-pret', pret);
     var vb = ch.querySelector('.at-vides');
     if(vb) vb.outerHTML = videsHTML(V);
   }
+  majSigneCh(V);
+}
+/* (23 novembre) Le signe du chaudron : « 🍲 Ton petit pot ! » sautille au-dessus de lui tant qu'un petit pot préparé sur l'établi des
+   plantes (les cristaux de givre, la poudre de mousse) attend d'être versé dans sa potion. Le toucher mène au chaudron — ou au grimoire,
+   s'il manque encore un ingrédient à cueillir. Caché pendant une préparation et quand les bulles du chaudron sont ouvertes. */
+function majSigneCh(V){
+  var p = potsDe(V), n = cles(p).filter(function(k){ return p[k] > 0 && estPrep(k); }).length, voir = !!(n && V.parId.ch && V.elO.ch && V.mode === 'ranger' && V.bullesPa !== 'ch' && !V.salle);
+  if(!voir){ if(V.elChSigne){ V.elChSigne.remove(); V.elChSigne = null; } return; }
+  if(!V.elChSigne){
+    var b = document.createElement('div');
+    b.className = 'at-tas-neuf at-pa-signe at-ch-signe at-touche';
+    b.setAttribute('data-at', 'ch-signe');
+    V.scene.appendChild(b);
+    V.elChSigne = b;
+  }
+  var txt = n > 1 ? '🍲 Tes petits pots !' : '🍲 Ton petit pot !';
+  if(V.elChSigne._t !== txt){ V.elChSigne.innerHTML = '<span>' + txt + '</span>'; V.elChSigne._t = txt; V.elChSigne.setAttribute('aria-label', txt); }
+  var F = cadreObjet(V, 'ch');
+  if(!F) return;
+  V.elChSigne.style.left = pX(V, F.x - 110); V.elChSigne.style.top = pY(V, F.y - F.h - 96);
+  V.elChSigne.style.width = pW(V, 220); V.elChSigne.style.height = pH(V, 70);
+  V.elChSigne.style.zIndex = Math.round((1000 + F.y) * 5) + 3;
 }
 /* Les fioles vides : un petit badge sur le chaudron (il faut une fiole vide pour chaque potion) */
 function videsHTML(V){
@@ -4208,7 +4239,7 @@ function majTient(V){
   t.hidden = false;
   majCiblesSel(V);
 }
-function nomIngr(k){ return (INGR[k] && INGR[k].nom) || k; }
+function nomIngr(k){ return (INGR[k] && INGR[k].nom) || (PREP[k] && PREP[k].nom) || k; }
 
 /* ---------- Bulle d'information (avec 🔊 si l'explication peut être lue) ---------- */
 var APPRIS = 3;
@@ -4455,6 +4486,7 @@ function action(V, at, pot){
   else if(at === 'analyses') ouvrirAnalyses(V);
   else if(at === 'pa-signe'){ if(V.parId.pa) bullesPaillasse(V, V.parId.pa); }   /* (le signe « À analyser ! » : comme toucher la paillasse) */
   else if(at === 'et-signe'){ if(V.parId.et) bullesPaillasse(V, V.parId.et); }
+  else if(at === 'ch-signe'){ allerAuChaudron(V); }   /* (23 novembre) le signe « 🍲 Ton petit pot ! » : droit au chaudron (ou au grimoire, s'il manque un ingrédient) */
   else if(at === 'plantes-porte'){ var rp = V.o.rangerPlantes ? V.o.rangerPlantes() : null; if(rp){ son(V, 'clic'); toast(V, '<b>🌿</b> ' + esc(rp.t), 4600, rp.t); majFixes(V); } }   /* la botte devant la porte → la tringle de l'établi, s'il reste une place */   /* (le signe « À préparer ! » : comme toucher l'établi) */
   else if(at === 'plantes'){ if(V.parId.et) bullesPaillasse(V, V.parId.et); }
   else if(at === 'reserve') ouvrirReserve(V);
@@ -4537,10 +4569,11 @@ function fermerBullesPa(V){
   if(b) b.remove();
   if(V.bullesT){ clearTimeout(V.bullesT); V.bullesT = 0; }
   if(!V.bullesPa) return;
-  var g = guideBulles(V), pa = V.bullesPa === 'pa', et = V.bullesPa === 'et';
+  var g = guideBulles(V), pa = V.bullesPa === 'pa', et = V.bullesPa === 'et', chb = V.bullesPa === 'ch';
   V.bullesPa = null;
   if(pa) majSignePa(V);   /* (le signe « À analyser ! » revient) */
   if(et) majSigneEt(V);
+  if(chb) majSigneCh(V);   /* (le signe « Ton petit pot ! » du chaudron aussi) */
   if(g) guidePlacer(V);
 }
 function placerBullesPa(V){
@@ -5529,9 +5562,17 @@ function corpsAnalyses(V){
 
 /* ---------- Le livre des recettes (lecture seule) et le chaudron (préparer) : deux écrans ---------- */
 function rec(V, id){ return recettesDe(V).filter(function(r){ return r.id === id; })[0]; }
+/* (23 novembre) les petits pots prêts, venus de l'établi des plantes ({givre:1} : opts.pots, une liste ou une fonction) */
+function potsDe(V){
+  var p = null;
+  try{ p = typeof V.o.pots === 'function' ? V.o.pots() : V.o.pots; }catch(e){ p = null; }
+  return (p && typeof p === 'object') ? p : {};
+}
 function stockRange(V){
   var t = {};
   V.etat.objets.forEach(function(o){ (o.cases || []).forEach(function(c){ cles(c.i).forEach(function(k){ t[k] = (t[k] || 0) + c.i[k]; }); }); });
+  /* … et les petits pots : ils ne sont dans aucun tiroir, ils attendent sur la poutre du chaudron */
+  var p = potsDe(V); cles(p).forEach(function(k){ if(p[k] > 0 && estPrep(k)) t[k] = (t[k] || 0) + p[k]; });
   return t;
 }
 function zoneDeRecette(id){
@@ -5629,15 +5670,18 @@ function ficheRecette(V, r){
       var lui = j === dic.length;
       return '<button type="button" class="at-ri at-ri-q' + (lui ? ' a-toi' : '') + '" data-dicter="' + r.id + '" data-j="' + j + '"' + (lui ? '' : ' disabled') + ' aria-label="Ingrédient ' + (j + 1) + ' : demande au Sage"><span class="at-ri-ic">❓</span><small>' + (j + 1) + '</small></button>';
     }
-    return '<div class="at-ri ' + (ok ? 'ok' : 'ko') + '" data-ingr="' + k + '"><span class="at-ri-ic" style="--c:' + coulIngr(k) + '">' + icIngr(k) +
+    return '<div class="at-ri ' + (ok ? 'ok' : 'ko') + (estPrep(k) ? ' at-ri-pot' : '') + '" data-ingr="' + k + '"><span class="at-ri-ic" style="--c:' + coulIngr(k) + '">' + icIngr(k) +
       '<b>' + (ok ? '✓ ' : '') + Math.min(a, 99) + '/' + x[1] + '</b>' + (!ok && (pan[k] || 0) > 0 ? '<i class="at-ri-carton" title="par terre, devant la porte">🌿</i>' : '') + '</span><small>' + esc(nomIngr(k)) + '</small></div>';
   }).join('');
-  var ut = utilePotion(r.id);
+  /* (23 novembre) une potion du donjon : ce qu'elle fait est dit par la recette (r.utile) ; son petit pot se prépare sur l'établi */
+  var ut = r.utile || utilePotion(r.id), potManque = ingr.filter(function(x){ return estPrep(x[0]) && (s[x[0]] || 0) < x[1]; })[0];
+  var tp = potManque ? '🌿 ' + nomIngr(potManque[0]) + ' : ce petit pot se prépare sur ton établi des plantes.' : '';
   return '<div class="at-rcarte' + (e.pret ? ' pret' : ' manque') + (secrete && !dicte ? ' secrete' : '') + (dicte ? ' dictee' : '') + '" style="--c:' + (r.c || '#8ff3ff') + '" data-fiche="' + r.id + '">' +
     '<h4><span class="at-rec-ic">' + (r.ic || '🧪') + '</span><span>' + esc(r.nom) + '</span>' + lireBtn(r.nom + '. ' + ut) + '</h4>' +
     '<div class="at-ringr">' + ligne + '</div>' +
     (secrete && !dicte ? '<p class="at-rsage">📜 ' + esc('Recette secrète : demande au Sage de te la lire, puis touche les « ? » dans l\'ordre !') + ' <button type="button" class="at-rond" data-lire="sage" aria-label="Écouter">🔊</button></p>' : '') +
     (dicte ? '<p class="at-rsage">📜 ' + esc('Le Sage t\'a dicté la recette.') + '</p>' : '') +
+    (tp ? '<p class="at-rsage">' + esc(tp) + ' ' + lireBtn(tp.slice(3)) + '</p>' : '') +
     '<p class="at-rutile">' + esc(ut) + '</p>' +
     '<button type="button" class="at-rpreparer' + (e.pret ? '' : ' ko') + '" data-r="' + r.id + '">🍲 Préparer</button></div>';
 }
@@ -5692,7 +5736,9 @@ function ouvrirChaudron(V){
     if(lu){ lu.classList.add('at-livre-appel'); apres(V, 5200, function(){ if(V.elO.lu) V.elO.lu.classList.remove('at-livre-appel'); majReperes(V); }); majReperes(V); }
     return;
   }
-  if(!((V.o.fioles || 0) > 0)){
+  /* (23 novembre : une potion du donjon — r.sansFiole — ne demande pas de fiole vide) */
+  if(!((V.o.fioles || 0) > 0)) prets = prets.filter(function(r){ return r.sansFiole; });
+  if(!prets.length){
     son(V, 'ko');
     var tf = 'Il te faut une fiole vide pour mettre la potion.';
     toast(V, '<b>🧪</b> ' + esc(tf), 4600, tf);
@@ -5702,6 +5748,18 @@ function ouvrirChaudron(V){
   ouvrirCalque(V, 'at-cal-chaudron', '<div class="at-livre"></div>');
   dessinerChaudron(V, prets);
   son(V, 'bulle');
+}
+/* (23 novembre) venu de l'établi des plantes avec un petit pot : droit au chaudron. Une seule potion prête : elle part tout de suite ;
+   plusieurs : le panneau ; aucune (il manque un ingrédient à cueillir) : le grimoire s'ouvre, il montre ce qui manque. */
+function allerAuChaudron(V){
+  if(V.mode !== 'ranger' || V.mjPartie) return;
+  fermerBullesPa(V);
+  var dj = recettesDe(V).filter(function(r){ return r.donjon; }), prets = dj.filter(function(r){ return etatRecette(V, r.id).pret; });
+  try{ var pc = posObj(V, V.parId.ch); centrerSur(V, pc.x, pc.y - 60); }catch(e){}
+  if(prets.length === 1){ demarrer(V, prets[0].id, null); return; }
+  if(prets.length > 1){ ouvrirChaudron(V); return; }
+  if(dj.length){ ouvrirLivre(V); return; }
+  ouvrirChaudron(V);
 }
 function dessinerChaudron(V, prets){
   prets = prets || recettesDe(V).filter(function(r){ return etatRecette(V, r.id).pret; });
@@ -9700,6 +9758,12 @@ function demarrer(V, rid, bouton){
       return;
     }
     if(bouton) anim(bouton, [{transform:'translateX(0)'}, {transform:'translateX(-8px)'}, {transform:'translateX(8px)'}, {transform:'translateX(0)'}], {duration:320});
+    /* (23 novembre) il ne manque que le petit pot : il se prépare sur l'établi des plantes */
+    if(er.manquent.every(function(x){ return estPrep(x[0]); })){
+      var tpm = 'Il te manque ' + nomIngr(er.manquent[0][0]).toLowerCase() + ' : ce petit pot se prépare sur ton établi des plantes.';
+      toast(V, '<b>🌿 ➡️ 🍲</b> ' + esc(tpm), 5200, tpm);
+      return;
+    }
     toast(V, '<b>🗺️ 🌿</b> Il te manque des ingrédients : va cueillir !', 2800);
     return;
   }
@@ -9767,7 +9831,9 @@ function finPreparation(V, rid, res){
   if(V.mjEl){ V.mjEl.remove(); V.mjEl = null; }
   /* au tutoriel, un essai raté ou abandonné rend les ingrédients ; dans toutes les enquêtes, quitter le chaudron (🏳️) ne coûte rien
      (Romain, 14 novembre) ; une potion ratée pour de vrai, elle, a bien brûlé ses ingrédients (dès l'enquête 2) */
-  if(!res.reussi && (V.o.tutoriel || res.raison === 'abandon')) rendreVerses(V);
+  /* (23 novembre) une potion du donjon ratée rend aussi ses ingrédients : la nuit du donjon, on ne renvoie pas l'Alchimiste cueillir */
+  var rDj = rec(V, rid);
+  if(!res.reussi && (V.o.tutoriel || res.raison === 'abandon' || (rDj && rDj.donjon))) rendreVerses(V);
   V.verses = [];
   if(V.etat.verses){ delete V.etat.verses; changer(V); }
   if(res.raison === 'boum' || res.raison === 'trop' || res.raison === 'tard'){ V.etat.flaque = 1; changer(V); }
@@ -9787,7 +9853,7 @@ function finPreparation(V, rid, res){
   /* un petit effet sur le chaudron de la pièce */
   if(V.elO.ch){
     V.elO.ch.classList.add(res.reussi ? 'at-chp-ok' : 'at-chp-rate');
-    var p = (DD().POTIONS || {})[rid] || {};
+    var p = (DD().POTIONS || {})[rid] || rDj || {};
     if(res.reussi) V.elO.ch.style.setProperty('--liq', p.c || '#8ff3ff');
     apres(V, 2600, function(){ if(V.elO.ch){ V.elO.ch.classList.remove('at-chp-ok', 'at-chp-rate'); V.elO.ch.style.removeProperty('--liq'); } });
   }

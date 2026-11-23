@@ -303,6 +303,20 @@ function contenu(k, w, T, B){
       [[-.3, .3, 6.5], [.36, .2, 5], [.1, .5, 3.6], [-.5, .62, 3]].forEach(function(m){ x = w * m[0]; y = T + A * m[1]; var q = m[2];
         s += '<path d="M' + f(x) + ',' + f(y - q) + ' L' + f(x + q * .28) + ',' + f(y - q * .28) + ' L' + f(x + q) + ',' + f(y) + ' L' + f(x + q * .28) + ',' + f(y + q * .28) + ' L' + f(x) + ',' + f(y + q) + ' L' + f(x - q * .28) + ',' + f(y + q * .28) + ' L' + f(x - q) + ',' + f(y) + ' L' + f(x - q * .28) + ',' + f(y - q * .28) + ' Z" fill="#fff6c2" stroke="#c99a12" stroke-width="1"/>'; });
       break;
+    /* (23 novembre) les deux petits pots de l'établi des plantes (D.PREPARATIONS) : des cristaux de givre, une poudre vert doré */
+    case 'givre':
+      s += '<path d="M' + (-w) + ',' + f(T + A * .74) + ' Q0,' + f(T + A * .4) + ' ' + w + ',' + f(T + A * .76) + ' V8 H' + (-w) + ' Z" fill="#cfefff"/>';
+      [[-.52, .66, 7], [-.14, .46, 9.5], [.3, .58, 8], [.6, .78, 6], [-.3, .9, 6.5], [.1, .86, 7.5]].forEach(function(m, j){ x = w * m[0]; y = T + A * m[1]; var q = m[2];
+        s += '<path d="M' + f(x) + ',' + f(y - q) + ' L' + f(x + q * .52) + ',' + f(y - q * .2) + ' L' + f(x + q * .3) + ',' + f(y + q * .62) + ' L' + f(x - q * .36) + ',' + f(y + q * .62) + ' L' + f(x - q * .52) + ',' + f(y - q * .15) + ' Z" fill="' + (j % 2 ? '#f4fdff' : '#bfeaff') + '" stroke="' + K + '" stroke-width="1.4" stroke-linejoin="round"/>' +
+          '<path d="M' + f(x) + ',' + f(y - q * .7) + ' L' + f(x - q * .1) + ',' + f(y + q * .4) + '" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>'; });
+      break;
+    case 'mousse':
+      s += '<path d="M' + (-w) + ',' + f(T + A * .7) + ' Q' + f(w * .1) + ',' + f(T + A * .34) + ' ' + w + ',' + f(T + A * .74) + ' V8 H' + (-w) + ' Z" fill="#c8e45a"/>' +
+        '<path d="M' + (-w) + ',' + f(T + A * .7) + ' Q' + f(w * .1) + ',' + f(T + A * .34) + ' ' + w + ',' + f(T + A * .74) + '" fill="none" stroke="#f4ffb0" stroke-width="2.4"/>' +
+        '<path d="M' + (-w) + ',' + f(T + A * 1.02) + ' Q0,' + f(T + A * .8) + ' ' + w + ',' + f(T + A * 1.04) + ' V8 H' + (-w) + ' Z" fill="#a9c63e" opacity=".6"/>';
+      [[-.36, .72, 4.6], [.22, .56, 5.6], [.52, .86, 3.6], [-.08, .92, 3.4]].forEach(function(m){ x = w * m[0]; y = T + A * m[1]; var q = m[2];
+        s += '<path d="M' + f(x) + ',' + f(y - q) + ' L' + f(x + q * .28) + ',' + f(y - q * .28) + ' L' + f(x + q) + ',' + f(y) + ' L' + f(x + q * .28) + ',' + f(y + q * .28) + ' L' + f(x) + ',' + f(y + q) + ' L' + f(x - q * .28) + ',' + f(y + q * .28) + ' L' + f(x - q) + ',' + f(y) + ' L' + f(x - q * .28) + ',' + f(y - q * .28) + ' Z" fill="#fdffe0"/>'; });
+      break;
     default:
       s += '<circle cx="0" cy="' + f(T + A * .5) + '" r="' + f(w * .5) + '" fill="#8d8a99" stroke="' + K + '" stroke-width="2"/>';
   }
@@ -337,7 +351,10 @@ function bocal(k, o){
   /* le bouchon de liège : son tour, son dessus (un ovale : on le voit d'en haut), la ficelle du goulot */
   s += '<path d="M21,9 V21 A15,4.6 0 0 0 51,21 V9 Z" fill="url(#' + id + 'l)" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>' +
     '<ellipse cx="36" cy="9" rx="15" ry="4.8" fill="#e9c79c" stroke="' + K + '" stroke-width="3"/><path d="M28,8.4 q8,2.6 16,0" fill="none" stroke="#b98a5c" stroke-width="1.5" stroke-linecap="round"/>' +
-    '<path d="M19.5,23.5 Q36,29 52.5,23.5" fill="none" stroke="#c9a56a" stroke-width="2.6" stroke-linecap="round"/>';
+    /* (un petit pot de l'établi, o.pot : un ruban rouge noué au goulot — on le reconnaît parmi les bocaux) */
+    (o.pot ? '<path d="M19.5,23.5 Q36,29 52.5,23.5" fill="none" stroke="' + K + '" stroke-width="5.4" stroke-linecap="round"/><path d="M19.5,23.5 Q36,29 52.5,23.5" fill="none" stroke="#e0483c" stroke-width="3" stroke-linecap="round"/>' +
+      '<path d="M22,25 l-8,-5 l-1,7 Z M22,25 l-7,6 l6,2 Z" fill="#e0483c" stroke="' + K + '" stroke-width="1.8" stroke-linejoin="round"/>'
+      : '<path d="M19.5,23.5 Q36,29 52.5,23.5" fill="none" stroke="#c9a56a" stroke-width="2.6" stroke-linecap="round"/>');
   /* l'étiquette de papier (le nom), courbée comme le verre */
   s += etiq(o.nom || k, 'mjc-nl') + etiq(o.court || o.nom || k, 'mjc-nc');
   s += '</svg>';

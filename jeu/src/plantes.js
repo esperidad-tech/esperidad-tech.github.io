@@ -43,6 +43,12 @@ function suivre(){
   }
   ORDRE_PL.forEach(function(k){ if(P.plantes && P.plantes[k] > 0 && !g.plantes[k]) g.plantes[k] = n; });
   ORDRE.forEach(function(id){ if(P.vus['fiole:' + id] && !g.fioles[id]) g.fioles[id] = n; });
+  /* (23 novembre) une partie d'avant le changement : la mousse lumineuse déjà reçue (son code tapé) attendait dans l'ancien chaudron
+     du donjon — elle vient maintenant se pendre à la tringle de l'établi, comme la fleur de givre */
+  var dc = P.donjonCodes || {};
+  if(dc['plante:lumiere'] && !P.vus['plante:mousse'] && !(P.objets && P.objets['_donjon:recette:baumelum']) && PL.mousse){
+    P.plantes = P.plantes || {}; if(!P.vus['fiole:mousse'] && !(P.plantes.mousse > 0)) P.plantes.mousse = 1; P.vus['plante:mousse'] = 1;
+  }
 }
 /* La tringle de l'établi n'a que TROIS places (Romain, 12 novembre, 13 h 52). Une plante cueillie s'y pend s'il en reste une ; sinon elle
    attend devant la porte de l'atelier (P.plPorte). Là, on touche le panier : elles vont se pendre s'il y a de la place, sinon « plus de place ».
@@ -141,7 +147,12 @@ function fiche(){
   suivre();
   var P = M.P(), S = M.S;
   return {jeu:true, plantes:plantesDispo(), trouvees:trouvees(), faites:faitesTout(), etat:P.etabli || null, style:style(), son:!(S.options && S.options.son === false),
-    intro:!S.etabliIntro, nuit:nuit(), sac:sacFiche(), sacVu:!!P.vus['sac:donne'], donjon:donjonDispo(), plus:codesPlus(), vite:!!window.BRUMEVAL_ETABLI_VITE};
+    intro:!S.etabliIntro, nuit:nuit(), sac:sacFiche(), sacVu:!!P.vus['sac:donne'], donjon:donjonDispo(), plus:codesPlus(), verses:potsVerses(), vite:!!window.BRUMEVAL_ETABLI_VITE};
+}
+/* (23 novembre) les petits pots déjà versés dans leur potion, au grand chaudron : sur l'établi, ils sont vides (D.POTIONS_DONJON, plus bas) */
+function potsVerses(){
+  var P = M.P(), X = D.POTIONS_DONJON || {};
+  return Object.keys(X).filter(function(id){ return P && (P.vus['donjon:potion:' + id] || (P.objets && P.objets['_' + X[id].code])); }).map(function(id){ return X[id].prep; });
 }
 function cadre(){ return document.getElementById(CADRE); }
 M.etabliOuvert = function(){ return !!cadre(); };
@@ -169,8 +180,11 @@ function finie(id){
   if(!P || !r || P.vus['fiole:' + id]) return;
   P.vus['fiole:' + id] = 1;
   if(P.plantes && P.plantes[r.plante] > 0) P.plantes[r.plante]--;
-  M.noter('Potion prête : ' + r.nom.charAt(0).toLowerCase() + r.nom.slice(1) + '.', '🧪');
-  /* (une potion en plus : le givre) son code est pour le Pisteur — il le tape dans le donjon */
+  /* (23 novembre) un INGRÉDIENT en petit pot (r.pot : les cristaux de givre, la poudre de mousse) : il attend le grand chaudron de
+     l'atelier (M.potsPrets, plus bas). Plus de code ici : c'est la potion sortie du chaudron qui le donne. */
+  if(r.pot) M.noter(r.nom + ' : le petit pot est prêt. Au grand chaudron !', '🍲');
+  else M.noter('Potion prête : ' + r.nom.charAt(0).toLowerCase() + r.nom.slice(1) + '.', '🧪');
+  /* (une potion en plus qui aurait encore son code à elle : plus aucune depuis le 23 novembre) */
   if(PLUS.indexOf(id) >= 0){ if(r.code){ P.objets['_' + r.code] = true; M.noter(r.nom + ' : son code est pour le Pisteur. ' + (r.apres || ''), '❄️'); } }
   toutes = PLUS.indexOf(id) < 0 && faites().length === ORDRE.length;
   if(toutes) M.noter('Les sept potions sont prêtes !', '🧪');
@@ -187,7 +201,7 @@ window.addEventListener('message', function(e){
   else if(m.type === 'finie'){
     finie(String(m.id));
     /* on répond : ce que le jeu sait maintenant (le code du sac change avec chaque potion) */
-    try{ f.contentWindow.postMessage({etabli:1, type:'maj', faites:faitesTout(), plantes:plantesDispo(), trouvees:trouvees(), nuit:nuit(), sac:sacFiche(), donjon:donjonDispo(), plus:codesPlus()}, '*'); }catch(err){}
+    try{ f.contentWindow.postMessage({etabli:1, type:'maj', faites:faitesTout(), plantes:plantesDispo(), trouvees:trouvees(), nuit:nuit(), sac:sacFiche(), donjon:donjonDispo(), plus:codesPlus(), verses:potsVerses()}, '*'); }catch(err){}
   }
   else if(m.type === 'lire'){ if(m.t) M.lire(String(m.t)); }
   else if(m.type === 'stop'){ M.stop && M.stop(); }
@@ -195,7 +209,73 @@ window.addEventListener('message', function(e){
   else if(m.type === 'sacVu'){ if(sacFiche()){ P.vus['sac:donne'] = 1; M.sauver(); } }
   else if(m.type === 'donjon'){ if(m.etat && typeof m.etat === 'object') P.etabli = m.etat; M.fermerEtabli(); if(M.A['ds-chaudron']) M.A['ds-chaudron'](); }   /* 🫕 le chaudron du donjon : les herbes lumineuses (descente.js) */
   else if(m.type === 'quitter'){ if(m.etat && typeof m.etat === 'object') P.etabli = m.etat; M.fermerEtabli(); }
+  /* (23 novembre) « 🍲 Au grand chaudron ! » sur la carte d'un petit pot : l'établi se referme, le chaudron de l'atelier s'ouvre */
+  else if(m.type === 'chaudron'){ if(m.etat && typeof m.etat === 'object') P.etabli = m.etat; M.fermerEtabli(); M.allerChaudron(); }
 });
+
+/* ==========================================================
+   (23 novembre) LES DEUX POTIONS DU DONJON SORTENT DU GRAND CHAUDRON (Romain, 11 h 36)
+   Étape 1, l'établi : la plante du donjon devient un ingrédient, dans un petit pot (RE.givre, RE.mousse : pot).
+   Étape 2, le grand chaudron de l'atelier (le mini-jeu) : des ingrédients cueillis, puis le petit pot (D.RECETTES.givre, .baumelum).
+   La potion réussie montre le code de recette du donjon (déjà gelé : donjon:recette:givre, donjon:recette:baumelum) : le Pisteur le
+   tape DANS le donjon. Rien de neuf dans les codes.
+   · M.recettesDonjon() : les recettes à montrer dans le grimoire et au chaudron (dès que la plante est arrivée, jusqu'à la potion faite).
+   · M.potsPrets() : les petits pots prêts — ils se posent sur la poutre du chaudron avec les bocaux (atelier.js, opts.pots).
+   · M.potionDonjonFinie(id, reussi) : le chaudron a fini (moteur-actions.js, potionFinie). Ni fiole vide ni action pour ces potions-là.
+   · Le filet de la cueillette : un lieu déjà cueilli se recueille tant qu'il manque à l'Alchimiste un ingrédient d'une de ces deux
+     recettes qui pousse là (sinon, la nuit du donjon, on resterait bloqué avec le petit pot sur les bras).
+   ========================================================== */
+var PD = D.POTIONS_DONJON || {};
+function djCodes(){ var P = M.P(); return (P && P.donjonCodes) || {}; }
+function potionDonjonFaite(id){ var P = M.P(), x = PD[id]; return !!(P && x && (P.vus['donjon:potion:' + id] || (P.objets && P.objets['_' + x.code]))); }
+/* la plante est arrivée (son code tapé), et la potion n'est pas encore sortie du chaudron */
+function potionDonjonEnCours(id){
+  var P = M.P(), x = PD[id], r = x && RE[x.prep];
+  return !!(P && r && (djCodes()[x.recu] || P.vus['plante:' + r.plante]) && !potionDonjonFaite(id));
+}
+M.estRecetteDonjon = function(id){ return !!PD[id]; };
+M.recettesDonjon = function(){
+  if(!M.P || !M.P() || M.role() !== 'alchimiste') return [];
+  return Object.keys(PD).filter(potionDonjonEnCours).map(function(id){
+    var x = PD[id];
+    return {id:id, nom:x.nom, ic:x.ic, c:x.c, etapes:[], connue:true, donjon:true, sansFiole:true, utile:x.utile};
+  });
+};
+M.potsPrets = function(){
+  var r = {};
+  if(!M.P || !M.P() || M.role() !== 'alchimiste') return r;
+  Object.keys(PD).forEach(function(id){ var x = PD[id]; if(potionDonjonEnCours(id) && faite(x.prep)) r[x.prep] = 1; });
+  return r;
+};
+M.potionDonjonFinie = function(id, reussi){
+  var P = M.P(), x = PD[id]; if(!P || !x) return;
+  if(!reussi){ M.son('echec'); M.sauver(); return; }      /* (raté : le petit pot n'est pas perdu, les ingrédients versés non plus — atelier.js) */
+  P.vus['donjon:potion:' + id] = 1; P.objets['_' + x.code] = true;
+  M.noter(x.nom + ' : son code est pour le Pisteur. Il le tape dans le donjon.', x.ic);
+  M.son('magie'); M.sauver();
+  M.ouvrir({type:'descente', vue:'potion', id:id});
+};
+/* (l'établi : « Au grand chaudron ! » ; la fenêtre du code d'une plante) on va à l'atelier, et le chaudron s'ouvre — avec ce qui manque, s'il manque quelque chose */
+M.allerChaudron = function(){
+  var P = M.P(); if(!P) return;
+  M.UI.modal = null; M.UI.ecran = 'enquete'; P.onglet = 'role'; M.render();
+  setTimeout(function(){ try{ var v = window.Atelier && Atelier._vue && Atelier._vue(); if(v && v.chaudron) v.chaudron(); }catch(e){} }, 350);
+};
+/* le filet de la cueillette */
+function manqueDonjonIci(lieu){
+  var l = Object.keys(PD).filter(potionDonjonEnCours); if(!l.length) return false;
+  var a = M.ingr() || {}, besoin = {};
+  l.forEach(function(id){ ((D.RECETTES[id] || {}).ingr || []).forEach(function(x){ if(D.INGR[x[0]]) besoin[x[0]] = (besoin[x[0]] || 0) + x[1]; }); });
+  return M.cueilletteIci(lieu).some(function(c){ return c.ingr && besoin[c.ingr] > (a[c.ingr] || 0); });
+}
+if(M.dejaCueilli){
+  var dejaAv = M.dejaCueilli;
+  M.dejaCueilli = function(lieu){
+    var r = dejaAv.apply(this, arguments);
+    if(r){ try{ if(M.role() === 'alchimiste' && manqueDonjonIci(lieu)) return false; }catch(e){} }
+    return r;
+  };
+}
 
 /* ---------- Le sac, en petites fioles (la fenêtre du Pisteur, la fenêtre de la descente : descente.js) ---------- */
 function fiolesSac(l){

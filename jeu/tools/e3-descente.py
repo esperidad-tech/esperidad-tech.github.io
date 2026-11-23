@@ -62,6 +62,56 @@ def code(pg, cle, garder=False):
     if not garder: fermer(pg); pg.evaluate("() => { M.P().onglet = 'carte'; M.render(); }")
     return t
 
+def au_chaudron(pg, fr, prep, pot, formes, nom):
+    """(23 novembre, Bible §13.96) LA DEUXIÈME ÉTAPE d'une plante du donjon : son petit pot (fait sur l'établi) part au GRAND CHAUDRON de
+    l'atelier. La carte de l'établi n'a plus de code : un bouton jaune « Au grand chaudron ! ». Dans l'atelier, le grimoire montre la
+    recette (des ingrédients cueillis, puis le pot) ; on range ce qui manque, on joue le mini-jeu (par ses points d'accès d'essai), et la
+    potion réussie montre le code de recette du donjon, pour le Pisteur."""
+    carte = fr.evaluate("() => { var c = document.querySelector('.carte.prete'); return c ? c.innerText.replace(/\\s+/g, ' ') : ''; }")
+    verifier('petit pot est un ingrédient' in carte and 'grand chaudron' in carte and fr.locator('#plusCode').count() == 0 and 'Donne ce code' not in carte and fr.locator('.carte.prete .b-jaune[data-chaudron]').count() == 1,
+             f'{nom} : la carte du petit pot — un ingrédient pour le grand chaudron, plus de code ici, un bouton jaune ({carte[-70:]})')
+    verifier(ET.sans_son(pg, '.carte') == [], 'le 🔊 partout')
+    shot(pg, 'alchimiste-pot-' + prep)
+    verifier(pg.evaluate("(a) => !!M.P().vus['fiole:' + a[0]] && M.potsPrets()[a[0]] === 1 && M.recettesDonjon().some(r => r.id === a[1]) && M.potionsPretes().n === 7 && !M.P().objets['_donjon:recette:' + a[1]]", [prep, pot]),
+             'le jeu a noté le petit pot ; sa recette est au grimoire ; les sept potions restent sept ; pas encore de code')
+    ET.toucher(pg, '.carte.prete [data-chaudron]', False); pg.wait_for_timeout(1300)
+    verifier(pg.evaluate("() => !M.etabliOuvert() && M.P().onglet === 'role'") and pg.locator(f'#atelier-ici .at-rcarte[data-fiche={pot}]').count() == 1 and pg.locator(f'#atelier-ici .at-rcarte[data-fiche={pot}] .at-ri-pot.ok').count() == 1,
+             '« Au grand chaudron ! » : l\'établi se referme, l\'atelier s\'ouvre sur le grimoire — la recette est là, son petit pot est prêt')
+    manque = pg.evaluate("(pot) => DONNEES.RECETTES[pot].ingr.filter(x => DONNEES.INGR[x[0]]).map(x => x[0])", pot)
+    # le filet : un lieu déjà cueilli à ce moment se recueille tant qu'un ingrédient de la recette manque
+    filet = pg.evaluate("""(manque) => { var P = M.P(), E = M.E(), a = M.ingr() || {}, k = manque.filter(function(i){ return !(a[i] > 0); })[0]; if(!k) return 'rien ne manque';
+      var l = Object.keys(E.lieux).filter(function(id){ return M.cueilletteIci(id).some(function(c){ return c.ingr === k; }); })[0]; if(!l) return 'pas de lieu pour ' + k;
+      var av = P.vus['cueilli:' + l]; P.vus['cueilli:' + l] = P.moment; var r = M.dejaCueilli(l); if(av === undefined) delete P.vus['cueilli:' + l]; else P.vus['cueilli:' + l] = av; return r ? 'bloqué à ' + l : 'ok'; }""", manque)
+    verifier(filet in ('ok', 'rien ne manque'), f'le filet de la cueillette : un lieu déjà cueilli se recueille tant qu\'il manque un ingrédient de la recette ({filet})')
+    pg.evaluate("""(pot) => { var S = M.S, fx = S.atelier.objets.filter(function(o){ return o.cases && o.cases.length; })[0];
+      DONNEES.RECETTES[pot].ingr.forEach(function(x, i){ if(DONNEES.INGR[x[0]]){ var c = fx.cases[i % fx.cases.length]; c.i[x[0]] = (c.i[x[0]] || 0) + x[1]; } }); M.sauver(); M.render(); }""", pot)
+    pg.wait_for_timeout(1200)
+    avant = pg.evaluate("() => JSON.stringify(Atelier.compter(M.S.atelier))")
+    pg.evaluate("() => Atelier._vue().chaudron()"); pg.wait_for_timeout(1200)
+    verifier(pg.locator('#atelier-ici .at-mj .mj-go').count() == 1 and pg.locator('#atelier-ici .at-mj .mj-btn-lire, #atelier-ici .at-mj .b-lire').count() >= 1, 'une seule potion prête : le grand chaudron part tout de suite (l\'explication en images, un bouton jaune, sans fiole vide ni action)')
+    pg.click('#atelier-ici .at-mj .mj-go', force=True); pg.wait_for_timeout(1200)
+    bocaux = pg.evaluate("() => [].map.call(document.querySelectorAll('.mjc-boite'), function(b){ return b.dataset.ingr + (b.classList.contains('mjc-pot') ? '*' : ''); }).join(',')")
+    verifier((prep + '*') in bocaux.split(','), f'sur la poutre, avec les bocaux : le petit pot ({bocaux})')
+    API = "MJ.TYPES.chaudron._dernier.api"
+    for _ in range(220):
+        r = pg.evaluate(f"""() => {{ var a = {API}, fin = document.querySelector('.mjc').classList.contains('mjc-phase-fin'), z = a.dansZone(), zf = a.zoneFin();
+          a.buches(3); a.chaleur(fin ? (zf[0] + zf[1]) / 2 : 45); if(!fin && z.length) a.verser(z[0]); return !!document.querySelector('.at-mj .mj-resultat'); }}""")
+        if r: break
+        pg.wait_for_timeout(250)
+    pg.wait_for_timeout(600)
+    verifier(pg.locator('#atelier-ici .at-mj .mj-resultat:not(.ko)').count() == 1, 'la potion se prépare au grand chaudron : réussie')
+    shot(pg, 'alchimiste-chaudron-' + pot)
+    pg.click('#atelier-ici .at-mj .mj-continuer', force=True); pg.wait_for_timeout(900)
+    t = texte(pg)
+    verifier(nom in t and 'Donne ce code au Pisteur' in t and 'dans le donjon' in t and 'C\'est vrai' in t and pg.evaluate("() => [].map.call(document.querySelectorAll('#voile .b-code .b-sym span'), function(e){ return e.textContent; }).join('')") == formes and not sans_son(pg),
+             f'la potion réussie : son code pour le Pisteur, et ce qui est vrai ({t[:70]})')
+    shot(pg, 'alchimiste-code-' + pot)
+    verifier(pg.evaluate("(a) => !!M.P().vus['donjon:potion:' + a[1]] && !!M.P().objets['_donjon:recette:' + a[1]] && !M.potsPrets()[a[0]] && !M.recettesDonjon().length", [prep, pot]),
+             'le jeu a noté la potion : son code est dans les codes donnés, le pot est parti, la recette n\'est plus au grimoire')
+    apres = pg.evaluate("() => JSON.stringify(Atelier.compter(M.S.atelier))")
+    verifier(avant != apres, f'les ingrédients cueillis ont bien été versés ({avant} → {apres})')
+    fermer(pg)
+
 def lieu(pg, l):
     pg.evaluate("() => { M.UI.modal = null; M.P().onglet = 'carte'; M.render(); }")
     ev(pg, 'lieu', {'id': l})
@@ -525,18 +575,18 @@ def partie_enquete(b):
     verifier(fr.evaluate("() => !!document.querySelector('#pendue-givre') && document.querySelector('#potion-givre').style.display !== 'none'"), 'l\'établi s\'ouvre : la fleur pend à la tringle, son flacon vide attend')
     R = ET.recettes(pg)
     ET.faire(pg, 'givre', R); pg.wait_for_timeout(1300)
-    carte = fr.evaluate("() => { var c = document.querySelector('.carte.prete'); return c ? c.innerText.replace(/\\s+/g, ' ') : ''; }")
-    verifier('givre' in ET.etat(pg)['faites'] and len(R['RE']['givre']['etapes']) == 8, 'la potion de givre se fait, geste par geste : huit étapes')
-    verifier('Donne ce code au Pisteur : ça peut être utile' in carte and 'Sept fioles' not in carte and fr.locator('#plusCode .formes').inner_text() == '🍄❤️🔑', f'sa carte : « Donne ce code au Pisteur : ça peut être utile ! », et le code de la recette ({carte[-90:]})')
-    verifier(ET.sans_son(pg, '.carte') == [], 'le 🔊 partout')
-    shot(pg, 'alchimiste-givre')
-    ET.continuer(pg); pg.wait_for_timeout(300)
-    verifier(pg.evaluate("() => !!M.P().vus['fiole:givre'] && M.potionsPretes().n === 7 && M.code('donjon:recette:givre').join('-') === 'champi-coeur-cle'"), 'le jeu a noté le givre ; les sept restent sept ; le code est celui du donjon')
-    ET.quitter(pg)
+    # (23 novembre) DEUX ÉTAPES : l'établi ne fait plus la potion, il fait un ingrédient (les cristaux de givre, dans un petit pot) ;
+    # le pot part au grand chaudron de l'atelier (l'eau, la menthe, puis le pot), et c'est la potion du chaudron qui donne le code
+    verifier('givre' in ET.etat(pg)['faites'] and len(R['RE']['givre']['etapes']) == 6 and R['RE']['givre'].get('pot') is True, 'les cristaux de givre se préparent sur l\'établi, geste par geste : six étapes, la dernière dans un petit pot')
+    verifier(pg.evaluate("() => M.code('donjon:recette:givre').join('-') === 'champi-coeur-cle'"), 'le code de la recette est toujours celui du donjon')
+    au_chaudron(pg, fr, 'givre', 'givre', '🍄❤️🔑', 'La potion de givre')
     # (16 novembre, Bible §13.55) la mousse lumineuse (avant : « les herbes lumineuses ») : un brin sur la paillasse d'analyse, le reste dans
     # l'ancien chaudron du donjon
     t = code(pg, 'donjon:plante:lumiere', True)
-    verifier('mousse' in t and 'herbes' not in t and jaune(pg, '#voile [data-act=ds-labo]') and jaune(pg, '#voile [data-act=ds-chaudron]') and not sans_son(pg), f'la mousse lumineuse : la regarder de près, ou le chaudron du donjon ({t[:60]})')
+    # (23 novembre) comme la fleur de givre : la mousse arrive sur l'établi ; le brin du labo reste, pour la regarder de près ; plus de chaudron du donjon
+    verifier('mousse' in t and 'herbes' not in t and 'établi' in t and jaune(pg, '#voile [data-act=ds-etabli]') and pg.locator('#voile [data-act=ds-labo]').count() == 1 and pg.locator('#voile [data-act=ds-chaudron]').count() == 0 and not sans_son(pg),
+             f'la mousse lumineuse : elle va sur l\'établi (bouton jaune) ; on peut aussi la regarder de près ; plus de « chaudron du donjon » ({t[:60]})')
+    verifier(pg.evaluate("() => M.P().plantes.mousse === 1 && !!M.P().vus['plante:mousse'] && M.recettesDonjon().some(function(r){ return r.id === 'baumelum'; })"), 'la mousse attend sur la tringle de l\'établi ; la recette du baume lumineux est au grimoire')
     verifier(pg.evaluate("() => !!M.P().recus['obj:mousse'] && M.E().labo.indexOf('mousse') >= 0 && !M.P().analyses.mousse"), 'un brin de mousse attend sur la paillasse d\'analyse')
     # … au labo : la loupe (le casier des feuilles a une mousse de plus), puis la découverte, sans code
     pg.locator('#voile [data-act=ds-labo]').click(); pg.wait_for_timeout(1800)
@@ -559,12 +609,16 @@ def partie_enquete(b):
     t = texte(pg)
     verifier('or des lutins' in t and pg.locator('#voile .b-donne').count() == 0 and pg.evaluate("() => !!M.P().analyses.mousse"), f'en sortant : la découverte (« l\'or des lutins »), sans code ({t[:60]})')
     pg.evaluate("() => { M.fermer(); }"); pg.wait_for_timeout(500)
-    # … puis le chaudron du donjon (la fenêtre, relue : plus de bouton du labo)
+    # … puis l'établi (la fenêtre, relue : plus de bouton du labo), la poudre de mousse en petit pot, et le grand chaudron : le baume lumineux
     t = code(pg, 'donjon:plante:lumiere', True)
-    verifier('mousse' in t and pg.locator('#voile [data-act=ds-labo]').count() == 0 and jaune(pg, '#voile [data-act=ds-chaudron]'), 'la mousse déjà regardée : il ne reste que le chaudron du donjon')
-    pg.locator('#voile [data-act=ds-chaudron]').click(); pg.wait_for_timeout(300)
-    u = vers(pg)
-    verifier(u.startswith('donjon/alchimiste.html?') and ('jeton=' + jeton(pg)) in u and 'recu=plante%3Alumiere' in u, f'on part vers le chaudron du donjon, avec la plante ({u})')
+    verifier('mousse' in t and pg.locator('#voile [data-act=ds-labo]').count() == 0 and jaune(pg, '#voile [data-act=ds-etabli]'), 'la mousse déjà regardée : il ne reste que l\'établi')
+    pg.locator('#voile [data-act=ds-etabli]').click(); pg.wait_for_timeout(300)
+    fr = ET.ouvrir(pg)
+    verifier(fr.evaluate("() => !!document.querySelector('#pendue-mousse') && document.querySelector('#potion-mousse').style.display !== 'none'"), 'l\'établi s\'ouvre : la mousse pend à la tringle, son petit pot vide attend')
+    R = ET.recettes(pg)
+    ET.faire(pg, 'mousse', R); pg.wait_for_timeout(1300)
+    verifier('mousse' in ET.etat(pg)['faites'] and len(R['RE']['mousse']['etapes']) == 4 and R['RE']['mousse'].get('pot') is True, 'la poudre de mousse se prépare sur l\'établi : sécher, écraser, tamiser, et dans un petit pot')
+    au_chaudron(pg, fr, 'mousse', 'baumelum', '🐱🌳🌙', 'Le baume lumineux')
     pg.context.close()
 
     # ======================================================================== le Barde n'a pas de page du donjon
@@ -687,17 +741,16 @@ def partie_vraie(b):
         verifier(pg.locator('#livre-ici .lv-page.on .vp-pierre[data-vp-pierre=rune]').count() == 1, 'la pierre de rune, dans la poche, au-dessus du plan')
         pg.screenshot(path=f'{OUT}/v5-sage-rune.png')
         pg.context.close()
-        # ---------- l'Alchimiste : les herbes lumineuses, au chaudron du donjon ----------
+        # ---------- l'Alchimiste : la mousse lumineuse ne quitte plus le jeu (23 novembre) ----------
+        # (avant : son code ouvrait l'ancien chaudron du donjon, une page à part — donjon/alchimiste.html ; maintenant : l'établi, puis le grand chaudron)
         pg = debut(b, 'Alchi', 'alchimiste', base + 'index.html#test', sans_donjon=False)
         code(pg, 'moment:1'); code(pg, 'moment:2')
         code(pg, 'donjon:plante:lumiere', True)
-        pg.locator('#voile [data-act=ds-chaudron]').click()
-        pg.wait_for_url('**/donjon/alchimiste.html**'); pg.wait_for_timeout(1500)
-        verifier(pg.locator('#b-enquete').count() == 1 and pg.evaluate("() => !!ALCHI.etat().codes['plante:lumiere']") and pg.locator('.plante-fen').count() == 1, 'le chaudron du donjon s\'ouvre pour de vrai, et la plante y arrive toute seule (sans retaper le code)')
+        verifier(pg.locator('#voile [data-act=ds-chaudron]').count() == 0 and pg.locator('#voile [data-act=ds-etabli]').count() == 1, 'la mousse lumineuse, avec le vrai donjon à côté : plus de bouton vers l\'ancien chaudron du donjon')
+        pg.locator('#voile [data-act=ds-etabli]').click(); pg.wait_for_timeout(600)
+        fr2 = ET.ouvrir(pg)
+        verifier(bool(fr2) and 'index.html' in pg.url and fr2.evaluate("() => !!document.querySelector('#pendue-mousse')"), 'l\'établi s\'ouvre dans le jeu, la mousse pend à la tringle : on ne part plus vers une autre page')
         pg.screenshot(path=f'{OUT}/v6-alchimiste.png')
-        pg.eval_on_selector('#b-enquete', 'e => e.click()')
-        pg.wait_for_url('**/brumeval/index.html**'); pg.wait_for_timeout(900)
-        verifier(pg.evaluate("() => M.UI.ecran") == 'enquete', 'l\'Alchimiste revient dans l\'enquête')
         pg.context.close()
     finally:
         srv.shutdown(); shutil.rmtree(rac, ignore_errors=True)

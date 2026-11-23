@@ -2,6 +2,14 @@
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
 
+## 23 novembre — LES DEUX PLANTES DU DONJON EN DEUX ÉTAPES : L'ÉTABLI FAIT UN PETIT POT, LE GRAND CHAUDRON FAIT LA POTION — EN LIGNE (Bible §13.96)
+
+- **Ce que Romain a demandé (11 h 36)** : plus de « chaudron du donjon » à part ; la potion de givre et la potion lumineuse passent par **l'établi des plantes** (on prépare un ingrédient, on le met dans un petit pot), puis par **le grand chaudron refait** (§13.93), avec **des ingrédients cueillis** (l'eau, le miel, la menthe, les pensées…) et le petit pot. « Au maximum de la réalité. »
+- **La fleur de givre** : six étapes sur l'établi → **les cristaux de givre** ; au chaudron : 2 eau, 1 menthe, le pot → **la potion de givre** (à finir dans le bleu). Les vraies plantes qui lui ressemblent : la ficoïde glaciale, « l'herbe à givre » d'Amérique.
+- **La mousse lumineuse** : elle arrive sur l'établi (quatre étapes : sécher, écraser, tamiser, pot) → **la poudre de mousse** ; au chaudron : 2 miel, 1 pensées sauvages, le pot → **le baume lumineux** (à finir dans le jaune). Le vrai : la sphaigne des pansements de la Grande Guerre, le miel sur les plaies.
+- **Pour la conception** : c'est maintenant LE modèle d'une plante rare — **une plante → un ingrédient en petit pot (l'établi) → une potion (le grand chaudron, avec ce qu'on cueille)**. Une prochaine plante rare demande surtout des données : `PL` et `RE` (`pot:true`) dans `plantes-donnees.js`, `D.PREPARATIONS`, `D.RECETTES` et `D.POTIONS_DONJON` dans `donnees.js`, un dessin dans `plantes-dessins.js`, un contenu de pot dans `mj-chaudron-dessin.js` — et une ligne dans quelques tables (`M.codeDonjon` de `descente.js`, `PLACE` et `VERRES` de `src/etabli/50-scene.js`, `CODES` et `CHOCS` de `mj-chaudron.js`, `M.nomCode` de `moteur-base.js`).
+- **Les codes n'ont pas changé** ; rien de neuf à donner ni à taper.
+
 ## 19 novembre, 12 h 45 — LE VIEUX PLAN D'ODETTE EST LA PAGE DU GRAND LIVRE ; LES DEUX PIERRES Y RÉVEILLENT L'ENCRE CACHÉE — EN LIGNE (Bible §13.86 ; commits 96ddf8a et 6b75bb6 du site, version 20261119-1142)
 
 - **Le Sage** : dès qu'il a le code « Le vieux plan d'Odette », la page **est** le grand plan, du matin à la nuit. Il le fait glisser, il l'approche. **Avant le départ, rien ne dit ce que c'est** (ni noms, ni titre, ni toiles d'araignée, ni tombes, ni feu de camp) ; la nuit, une fois le passage ouvert, les noms des salles apparaissent.

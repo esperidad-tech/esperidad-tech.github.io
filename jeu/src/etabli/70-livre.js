@@ -13,7 +13,7 @@ function pageLivre(id){
     ligne('<p><b>Où ?</b> ' + echap(p.milieu) + '</p>', p.nom + '. ' + p.milieu) +
     (fait ? ligne('<p><b>C\'est vrai !</b> ' + echap(r.vrai) + '</p>', 'C\'est vrai ! ' + r.vrai, 'vrai') : '') + '</div>';
   /* (Romain, 12 novembre, 12 h 45 : rien sur ce à quoi la potion servira — seulement la partie, puis la recette) */
-  var d = '<div class="page d"><h2><svg viewBox="-30 -82 60 86" aria-hidden="true">' + flacon(id, r.coul) + '</svg><span>' + echap(r.nom) + (fait ? ' <span class="fait-t">✓ prête</span>' : '') + '</span></h2>' +
+  var d = '<div class="page d"><h2><svg viewBox="-30 -82 60 86" aria-hidden="true">' + flacon(id, r.coul) + '</svg><span>' + echap(r.nom) + (fait ? ' <span class="fait-t">' + (r.pot ? '✓ en pot' : '✓ prête') + '</span>' : '') + '</span></h2>' +
     ligne('<p><b>La partie :</b> ' + echap(r.dit) + '</p>', 'La partie à prendre : ' + r.dit) +
     ligne('<p><b>La recette :</b></p><ol>' + r.recette.map(function(l){ return '<li>' + echap(l) + '</li>'; }).join('') + '</ol>', 'La recette. ' + r.recette.map(function(l, i){ return (i + 1) + ' : ' + l; }).join(' ')) +
     (r.note ? ligne('<p>' + echap(r.note) + '</p>', r.note, 'note') : '') +
@@ -73,9 +73,23 @@ function codePlusHTML(id){
   return ligne('<p>' + echap(r.apres || '') + '</p>', r.apres || '', 'note') +
     '<div class="code" id="plusCode"><span>Le code pour le Pisteur</span><span class="formes">' + c.formes.map(echap).join('') + '</span>' + bSon('Le code de la potion, pour le Pisteur.') + '</div>';
 }
+/* (23 novembre) un INGRÉDIENT en petit pot (r.pot : les cristaux de givre, la poudre de mousse) : pas de code ici — le pot part au
+   grand chaudron de l'atelier, où il devient la potion du Pisteur. La carte le dit, avec un bouton jaune qui y mène. */
+function potHTML(id){
+  var r = RE[id];
+  return ligne('<p>' + echap(r.apres || '') + '</p>', r.apres || '', 'note') +
+    '<div class="pot-boutons"><button type="button" class="b-jaune" data-chaudron="1">🍲 Au grand chaudron !</button>' +
+    '<button type="button" class="b-plus-tard" data-fond="1">Plus tard</button></div>';
+}
 function ouvrirPrete(id, t, toutes){
   var r = RE[id];
   if(!t) t = r.etapes[r.etapes.length - 1].t;
+  if(r.pot){
+    ouvrirMode('prete', '<div class="voile-l" data-fond="1"></div><div class="carte prete" role="dialog" aria-label="' + echap(r.nom) + ' : le petit pot est prêt">' +
+      '<div class="prete-h"><svg class="grand-f" viewBox="-36 -88 72 94" aria-hidden="true"><circle cx="0" cy="-34" r="44" fill="' + G('haloP') + '"/><g transform="translate(0,-8)">' + flacon(id, r.coul) + '</g></svg><div class="prete-t"><h2>' + echap(r.nom) + ' !</h2>' + ligne('<p>' + echap(t) + '</p>', t) + '</div></div>' +
+      ligne('<p><b>C\'est vrai !</b> ' + echap(r.vrai) + '</p>', 'C\'est vrai ! ' + r.vrai, 'vrai') + potHTML(id) + '</div>');
+    return;
+  }
   ouvrirMode('prete', '<div class="voile-l" data-fond="1"></div><div class="carte prete" role="dialog" aria-label="' + echap(r.nom) + ' : la potion est prête">' +
     '<div class="prete-h"><svg class="grand-f" viewBox="-36 -88 72 94" aria-hidden="true"><circle cx="0" cy="-34" r="44" fill="' + G('haloP') + '"/>' + flacon(id, r.coul) + '</svg><div class="prete-t"><h2>' + echap(r.nom) + ' !</h2>' + ligne('<p>' + echap(t) + '</p>', t) + '</div></div>' +
     ligne('<p><b>C\'est vrai !</b> ' + echap(r.vrai) + '</p>', 'C\'est vrai ! ' + r.vrai, 'vrai') +

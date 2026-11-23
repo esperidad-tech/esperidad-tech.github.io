@@ -462,19 +462,32 @@ var VUES = {
       '<button class="btn grand b-aller" data-act="ds-livre" data-id="sauvegardes">📖 Ouvrir le Grand Livre</button>' + PLUS_TARD);
   },
   givre:function(){
-    return fen('❄️', 'La fleur de givre', 'Le Pisteur t\'envoie une fleur de givre, cueillie tout au fond des souterrains. Elle ne fond jamais… Elle t\'attend sur ton établi : il y a du travail !',
+    return fen('❄️', 'La fleur de givre', 'Le Pisteur t\'envoie une fleur de givre, cueillie tout au fond des souterrains. Elle ne fond jamais… Elle t\'attend sur ton établi : fais-en des cristaux, puis direction ton grand chaudron !',
       '<button class="btn grand b-aller" data-act="ds-etabli">🌿 Aller à l\'établi</button>' + PLUS_TARD);
   },
   /* (16 novembre, Romain, 15 h : « oui » à la mousse lumineuse — Bible §13.55) une vraie plante des grottes, Schistostega pennata,
      « l'or des lutins ». Un brin se pose sur la paillasse d'analyse (obj:mousse : la loupe, le microscope, la bougie — on y apprend
      qu'elle ne fabrique pas de lumière, elle la renvoie) ; le reste se mélange dans le chaudron du donjon, avec le miel et le souci :
      la mousse n'est qu'un ingrédient. L'analyse n'est pas obligatoire : le chaudron marche sans elle. */
+  /* (23 novembre, Romain, 11 h 36 : deux étapes, comme la fleur de givre) la mousse va sur l'ÉTABLI des plantes : on en fait une poudre,
+     mise dans un petit pot ; le pot part au GRAND CHAUDRON de l'atelier (le miel, les pensées, puis le pot) : le baume lumineux.
+     L'ancien « chaudron du donjon » (une page à part, trois bocaux à choisir) ne sert plus. Le brin du labo reste, pour la regarder. */
   lumiere:function(){
     var vue = !!(M.P().analyses || {}).mousse;
-    return fen('🌿', 'De la mousse lumineuse', vue ? 'La mousse lumineuse du Pisteur t\'attend : elle se mélange dans ton chaudron du donjon.'
-        : 'Le Pisteur t\'envoie une mousse qui brille dans le noir. Un brin t\'attend sur ta paillasse : regarde-le de près ! Le reste se mélange dans ton chaudron du donjon.',
-      (vue ? '' : '<button class="btn grand b-aller" data-act="ds-labo">🔬 La regarder de près</button>') +
-      '<button class="btn grand b-aller" data-act="ds-chaudron">🫕 Le chaudron du donjon</button>' + PLUS_TARD);
+    return fen('🌿', 'De la mousse lumineuse', vue ? 'La mousse lumineuse du Pisteur t\'attend sur ton établi : fais-en une poudre, puis direction ton grand chaudron !'
+        : 'Le Pisteur t\'envoie une mousse qui brille dans le noir. Elle t\'attend sur ton établi : fais-en une poudre, puis direction ton grand chaudron ! Un brin est aussi sur ta paillasse, pour la regarder de près.',
+      '<button class="btn grand b-aller" data-act="ds-etabli">🌿 Aller à l\'établi</button>' +
+      (vue ? '' : '<button class="btn second" data-act="ds-labo">🔬 La regarder de près</button>') + PLUS_TARD);
+  },
+  /* (23 novembre) la potion du donjon sort du grand chaudron (plantes.js, M.potionDonjonFinie) : son code, pour le Pisteur, qui le tape DANS
+     le donjon. On le retrouve dans « 🔢 Les codes donnés » du Carnet. */
+  potion:function(m){
+    var x = (D.POTIONS_DONJON || {})[m.id]; if(!x) return fen('🧪', 'Potion prête', '', '<button class="btn grand b-aller" data-act="fermer">Continuer</button>');
+    var t = 'Donne ce code au Pisteur : il le tape dans le donjon, avec le bouton « Un code ».', v = 'C\'est vrai ! ' + x.vrai;
+    return '<div class="b-grand-ic">' + x.ic + '</div><h2>' + esc(x.fini || x.nom) + '</h2>' +
+      '<p>' + esc(t) + ' ' + lire(x.nom + '. ' + t) + '</p>' + M.codeHTML(M.code(x.code), true) +
+      '<p class="ds-suite"><b>C\'est vrai !</b> ' + esc(x.vrai) + ' ' + lire(v) + '</p>' +
+      '<button class="btn grand b-aller" data-act="fermer">👍 C\'est noté</button>';
   }
 };
 A['ds-etabli'] = function(){ M.UI.modal = null; M.render(); if(M.ouvrirEtabli) M.ouvrirEtabli(); };
@@ -519,7 +532,8 @@ M.codeDonjon = function(id){
   else if(court === 'page:blanche'){ vue = {vue:'blanche'}; note = ['Une page blanche de plus dans ton Grand Livre : une sauvegarde de plus.', '✨']; }
   else if(court === 'plante:givre'){ if(M.recevoirPlanteRare) M.recevoirPlanteRare('givre'); vue = {vue:'givre'}; note = ['Le Pisteur t\'a envoyé une fleur de givre : elle t\'attend sur ton établi.', '❄️']; }
   else if(court === 'plante:lumiere'){ P.recus['obj:mousse'] = true;   /* (16 novembre) un brin sur la paillasse d'analyse (E.labo, E.objets.mousse) */
-    vue = {vue:'lumiere'}; note = ['Le Pisteur t\'a envoyé de la mousse lumineuse : un brin sur ta paillasse, le reste pour ton chaudron du donjon.', '🌿']; }
+    if(M.recevoirPlanteRare) M.recevoirPlanteRare('mousse');            /* (23 novembre) et la mousse sur l'établi des plantes, comme la fleur de givre */
+    vue = {vue:'lumiere'}; note = ['Le Pisteur t\'a envoyé de la mousse lumineuse : elle t\'attend sur ton établi. Un brin est aussi sur ta paillasse.', '🌿']; }
   else { delete C[court]; return false; }
   if(!deja && note) M.noter(note[0], note[1]);
   M.son(deja ? 'clic' : 'gain'); M.sauver();
@@ -528,6 +542,8 @@ M.codeDonjon = function(id){
 };
 /* dans le sac de l'Alchimiste, la nuit (plantes.js) : le chaudron du donjon n'est plus là que pour la mousse lumineuse, une fois reçue */
 M.donjonBoutonAlchimiste = function(){
+  /* (23 novembre) l'ancien chaudron du donjon ne sert plus : la mousse passe par l'établi, puis par le grand chaudron de l'atelier */
+  if(!window.BRUMEVAL_VIEUX_CHAUDRON) return '';
   if(!cfg() || M.role() !== 'alchimiste' || !nuit() || !dj()['plante:lumiere']) return '';
   var t = 'Ta mousse lumineuse t\'attend dans ton chaudron du donjon.';
   return '<p class="ds-suite">' + esc(t) + ' <button type="button" class="b-lire" data-pl="lire" data-t="' + esc(t) + '" aria-label="Écouter">🔊</button></p>' +

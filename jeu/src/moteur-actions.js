@@ -61,7 +61,12 @@ function monterAtelier(){
     plantes:M.plantesEnAttente ? function(){ return M.plantesEnAttente(); } : 0, etabliSigne:M.etabliSigne ? M.etabliSigne() : null,
     /* la tringle de l'établi n'a que trois places : le reste attend devant la porte (plantes.js) */
     plantesPorte:M.plantesPorte ? function(){ return M.plantesPorte(); } : null, rangerPlantes:M.rangerPlantes || null, planteSVG:M.planteSVG || null,
-    recettes:M.recettesConnues().map(function(r){ var p = D.POTIONS[r]; return {id:r, nom:p.nom, ic:p.ic, c:p.c, etapes:D.ETAPES[r] || [], connue:!D.RECETTES[r].secrete}; }),
+    recettes:M.recettesConnues().map(function(r){ var p = D.POTIONS[r]; return {id:r, nom:p.nom, ic:p.ic, c:p.c, etapes:D.ETAPES[r] || [], connue:!D.RECETTES[r].secrete}; })
+      /* (23 novembre) les potions du donjon (le givre, le baume lumineux) : dès que le Pisteur a envoyé la plante, jusqu'à la potion faite (plantes.js) */
+      .concat(M.recettesDonjon ? M.recettesDonjon() : []),
+    /* … et leurs petits pots, préparés sur l'établi des plantes : ils se posent sur la poutre du chaudron, avec les bocaux */
+    pots:function(){ return M.potsPrets ? M.potsPrets() : {}; },
+    preparations:D.PREPARATIONS || {},
     /* (12 novembre) une enquête sans recette au chaudron : ce que disent le grimoire et le chaudron quand on les touche (atelier.js, sansRecette) */
     sansRecette:(E && E.plantes) ? 'Rien pour le chaudron aujourd\'hui : tes potions se préparent sur l\'établi, avec les plantes !' : 'Aucune recette pour le chaudron aujourd\'hui.',
     niveau:(E ? E.niveau : 1) + M.decalage(), mods:mm.mods, aides:mm.aides,
@@ -71,6 +76,8 @@ function monterAtelier(){
     onChange:function(){ M.sauver(); },
     peutPreparer:function(rid){
       var P2 = M.P(), E2 = M.E();
+      /* (23 novembre) une potion du donjon : ni fiole vide ni action (le Pisteur l'attend, en bas) */
+      if(M.estRecetteDonjon && M.estRecetteDonjon(rid)) return M.mjPause ? 'Un mini-jeu est en pause : finis-le d\'abord !' : true;
       /* une seule potion de vérité par enquête (E.veriteUnique, enquête 2 : Romain, 4 novembre, 22 h 38) */
       if(rid === 'verite' && E2 && E2.veriteUnique && P2 && P2.veriteFaite) return 'Tu as déjà préparé la potion de vérité de cette enquête : une seule par enquête !';
       if(S.fioles <= 0){ M.toast('Plus de fiole vide ! Il en faudra une pour mettre la potion.'); return false; }
@@ -80,6 +87,8 @@ function monterAtelier(){
       M.sauver(); return true;
     },
     potionFinie:function(id, reussi){
+      /* (23 novembre) une potion du donjon : son code pour le Pisteur (plantes.js) — pas de flacon devant la porte */
+      if(M.estRecetteDonjon && M.estRecetteDonjon(id)){ M.potionDonjonFinie(id, reussi); try{ if(atelierMonte && atelierMonte.maj) atelierMonte.maj({fioles:S.fioles, potions:S.potions}); }catch(e){} return; }
       if(reussi){
         S.fioles = Math.max(0, S.fioles - 1);
         var doses = 1 + M.fxSomme('doses');

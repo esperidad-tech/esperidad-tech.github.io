@@ -102,6 +102,8 @@ document.addEventListener('click', function(e){
   if((b = e.target.closest('[data-tourne]'))) return tournerPage(+b.dataset.tourne);
   if(e.target.closest('[data-intro]')){ son('clic'); arreterLecture(); S.mode = 'intro'; fermerMode(); dire('introVue'); return; }
   if(e.target.closest('[data-donjon]')){ son('clic'); fermerMode(); dire('donjon', {etat:exporter()}); return; }
+  /* (23 novembre) le petit pot est prêt : « 🍲 Au grand chaudron ! » — le jeu referme l'établi et ouvre le chaudron de l'atelier */
+  if(e.target.closest('[data-chaudron]')){ son('clic'); arreterLecture(); fermerMode(); dire('chaudron', {etat:exporter()}); return; }
   if(e.target.closest('[data-suite]')){ arreterLecture(); fermerMode(); if(toutesFaites() && S.sac) ouvrirCode(); return; }   /* après la septième potion : le code */
   if(e.target.closest('[data-fond]')){ arreterLecture(); return fermerMode(); }
   if(e.target.closest('#bReglages')){ var pn = $('#reglages'); pn.hidden = !pn.hidden; son('clic'); return; }
@@ -145,6 +147,8 @@ function appliquerFiche(c){
   if(c.plus && typeof c.plus === 'object'){ S.plus = {}; PLUS.forEach(function(id){ var x = c.plus[id]; if(x && Array.isArray(x.formes)) S.plus[id] = {formes:x.formes.slice(0, 4)}; }); }   /* (les codes des potions en plus : le givre) */
   if(Array.isArray(c.trouvees)){ S.trouvees = {}; c.trouvees.forEach(function(k){ if(PL[k]) S.trouvees[k] = 1; }); }
   if(Array.isArray(c.faites)){ S.faites = {}; c.faites.forEach(function(id){ if(RE[id]) S.faites[id] = 1; }); }
+  /* (23 novembre) les petits pots déjà versés dans leur potion, au grand chaudron de l'atelier : ici, ils sont vides */
+  if(Array.isArray(c.verses)){ S.verses = {}; c.verses.forEach(function(id){ if(RE[id]) S.verses[id] = 1; }); }
   if('nuit' in c) S.nuit = !!c.nuit;
   if('sac' in c) S.sac = c.sac && Array.isArray(c.sac.formes) ? {formes:c.sac.formes.slice(0, 4)} : null;
   if('donjon' in c) S.donjon = !!c.donjon;

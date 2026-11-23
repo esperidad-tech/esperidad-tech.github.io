@@ -1,5 +1,7 @@
 # Enquête 3 « La lettre d'Odette » — le Pisteur, l'Alchimiste et le Sage ; tous les codes ; qui prouve quoi (version 2, 11 novembre 2026)
 
+> **⚠️ 23 NOVEMBRE (Bible §13.96, qui fait foi ; demande de Romain à 11 h 36) — les deux plantes du donjon se préparent en DEUX ÉTAPES chez l'Alchimiste.** (1) **L'établi des plantes** fait un ingrédient, mis dans un petit pot : **les cristaux de givre** (la fleur de givre, six étapes) ; **la poudre de mousse** (la mousse lumineuse, quatre étapes — elle arrive maintenant sur l'établi). (2) **Le grand chaudron de l'atelier** (le mini-jeu) fait la potion : **2 eau, 1 menthe, 1 cristaux de givre** → la potion de givre ; **2 miel, 1 pensées sauvages, 1 poudre de mousse** → le baume lumineux. C'est la potion sortie du chaudron qui montre le code de recette pour le Pisteur (les mêmes codes qu'avant, à taper dans le donjon). **L'ancien « chaudron du donjon » (une page à part) ne sert plus.** Aucun code n'a changé. Tout ce qui, plus bas, parle de « huit étapes », de « chaudron du donjon » ou d'un code donné par l'établi est dépassé.
+
 > **⚠️ 23 NOVEMBRE, 10 H 12 (Bible §13.91, qui fait foi ; demande de Romain à 10 h 03) — les deux missions du maire du Pisteur (les banderoles, l'oie) se font le matin ET l'après-midi**, tant qu'il n'a pas rendu sa mission au maire ; après, elles s'en vont et leur ligne de mission se coche. Aucun code n'a changé (57 / 69 / 1630).
 
 > **⚠️ 16 NOVEMBRE, 17 H 11 (Bible §13.54 et §13.55, qui font foi ; go de Romain à 15 h) — l'encre d'Iris, plus de lavande au labo, la mousse lumineuse :**

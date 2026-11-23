@@ -46,7 +46,8 @@ var MAX_BUCHES = 6;                     /* au-delà, on ne peut plus en ajouter 
    chaque bûche chauffe de FEU_K unités/s, la potion perd FROID unités/s (neutre à 2 bûches) ;
    une bûche ajoutée donne un petit coup de chaud (FEU_COUP) ; touiller un tour par seconde refroidit de TOUILLE unités/s. */
 var FEU_K = 1.6, FROID = 3.2, FEU_COUP = 3, TOUILLE = 9, BRULE = 6.5;
-var CHOCS = {eau:-5, miel:3, baies:4, champignon:-3, trefle:2, brume:-7, lavande:-3, pensee:3, menthe:-5, ortie:6, racine:3, lune:-6};
+var CHOCS = {eau:-5, miel:3, baies:4, champignon:-3, trefle:2, brume:-7, lavande:-3, pensee:3, menthe:-5, ortie:6, racine:3, lune:-6,
+  givre:-9, mousse:1};   /* (23 novembre : les petits pots de l'établi — les cristaux de givre refroidissent d'un coup) */
 /* (les six bûches du feu, leur place et leur dessin : MJ.chaudronDessin.BUCHES, mj-chaudron-dessin.js) */
 /* La palette du chaudron (Romain, 4 novembre) : une couleur unie bien à part par ingrédient (pas de motif), pour les carrés
    allumés de la frise et les pastilles de la carte de la recette. Les boîtes, elles, n'ont pas de couleur : c'est la recette
@@ -56,7 +57,8 @@ var CHOCS = {eau:-5, miel:3, baies:4, champignon:-3, trefle:2, brume:-7, lavande
 var CODES = {
   eau:{c:'#4ec1f5'}, miel:{c:'#e07f14'}, baies:{c:'#5165cb'}, champignon:{c:'#ff521a'},
   trefle:{c:'#8bc02b'}, brume:{c:'#e3e8ea'}, lavande:{c:'#9a6cf0'}, pensee:{c:'#febb02'},
-  menthe:{c:'#5b9821'}, ortie:{c:'#99c23b'}, racine:{c:'#ad7156'}, lune:{c:'#fdd835'}
+  menthe:{c:'#5b9821'}, ortie:{c:'#99c23b'}, racine:{c:'#ad7156'}, lune:{c:'#fdd835'},
+  givre:{c:'#d4f3ff'}, mousse:{c:'#b4e61e'}   /* (les petits pots de l'établi des plantes) */
 };
 function codeDe(k){ return CODES[k] || {c:(((window.DONNEES || {}).INGR || {})[k] || {}).c || '#888'}; }
 /* (23 novembre) LE DÉCOR : plus de chalet. C'est la cheminée de l'atelier vue de près, dessinée par mj-chaudron-dessin.js
@@ -238,7 +240,9 @@ function construire(el, P, demo){
   var D = DD(), id = ++uid, C = (D.CHAUDRON || {})[P.potion] || {zone:'vert', frise:[]}, Zi = infoZone(C.zone);
   /* les caisses : seulement les ingrédients vraiment là dans le laboratoire (le stock de l'atelier) ;
      sans stock (salle d'entraînement) : ceux de la recette et 3 autres. Toujours ceux de la recette. */
-  var I = D.INGR || {}, tous = Object.keys(I), stock = null, voulus = {};
+  /* (23 novembre) I : les ingrédients qu'on cueille, PLUS les petits pots préparés sur l'établi des plantes (D.PREPARATIONS : les cristaux
+     de givre, la poudre de mousse). « tous » — ceux qu'on tire au hasard pour remplir la poutre de la salle d'entraînement — : sans les pots. */
+  var I = Object.assign({}, D.INGR || {}, D.PREPARATIONS || {}), PRP = D.PREPARATIONS || {}, tous = Object.keys(D.INGR || {}), stock = null, voulus = {};
   try{ stock = typeof P.stock === 'function' ? P.stock() : (P.stock || null); }catch(e){ stock = null; }
   C.frise.forEach(function(f){ voulus[f.ingr] = 1; });
   if(stock) Object.keys(stock).forEach(function(k){ if(stock[k] > 0) voulus[k] = 1; });
@@ -266,7 +270,7 @@ function construire(el, P, demo){
   var Ds = Dessin();
   var boites = ingrs.map(function(k){
     var x = I[k] || {ic:'❔', c:'#888', nom:k};
-    return '<button type="button" class="mjc-boite" data-ingr="' + k + '" aria-label="' + esc(x.nom) + '">' + Ds.bocal(k, {nom:esc(nomCourt(k, x)), court:esc(NOMS_ETROITS[k] || nomCourt(k, x)), ic:icDe(k, x)}) + '</button>';
+    return '<button type="button" class="mjc-boite' + (PRP[k] ? ' mjc-pot' : '') + '" data-ingr="' + k + '" aria-label="' + esc(x.nom) + '">' + Ds.bocal(k, {nom:esc(nomCourt(k, x)), court:esc(NOMS_ETROITS[k] || nomCourt(k, x)), ic:icDe(k, x), pot:!!PRP[k]}) + '</button>';
   }).join('');
   /* deux étages seulement : l'en-tête du mini-jeu (le nom, les cœurs, ⏸️ 🏳️ 🔊 : mj-core.js) et la poutre (.mjc-haut) ; la recette,
      le thermomètre et la réserve de bois sont dans le décor (.mjc-scene), placés par disposer() */
@@ -313,7 +317,7 @@ function icDe(k, x){ return k === 'pensee' ? PENSEE_SVG : ((x && x.ic) || '❔')
 /* Le nom écrit sous l'icône d'une caisse : un seul mot */
 var NOMS_COURTS = {lune:'Lune', pensee:'Pensées'};
 var NOMS_ETROITS = {champignon:'Champi'};     /* quand les caisses sont étroites (téléphone) */
-function nomCourt(k, x){ return NOMS_COURTS[k] || String((x && x.nom) || k).split(/[ '’]/)[0]; }
+function nomCourt(k, x){ return NOMS_COURTS[k] || (x && x.court) || String((x && x.nom) || k).split(/[ '’]/)[0]; }   /* (x.court : les petits pots, D.PREPARATIONS) */
 
 /* Point de la scène SVG → coordonnées dans un élément (tient compte du cadrage) */
 function versEl(E, x, y, el){
@@ -443,7 +447,7 @@ MJ.enregistrer('chaudron', {
   },
 
   jouer:function(el, R, fin){
-    var D = DD(), I = D.INGR || {};
+    var D = DD(), I = Object.assign({}, D.INGR || {}, D.PREPARATIONS || {});
     if(!R.potion) R.potion = choisirPotion(R.niveauEffectif || 3);
     var E = construire(el, R, false), C = E.C, Z = zones(R), cible = C.zone, total = C.frise.length;
     /* l'arc-en-ciel est la bande la plus étroite : on le tient un peu moins longtemps */
@@ -1042,6 +1046,8 @@ MJ.enregistrer('chaudron', {
       buches:function(n){ S.L = U.borne(n, 0, MAX_BUCHES); majBuches(); },
       verser:function(ingr){ verser(ingr, E.boites.querySelector('[data-ingr="' + ingr + '"]')); },
       dansZone:function(){ return S.fen.filter(dansZone).map(function(f){ return f.ingr; }); },
+      /* (pour les robots) la bande à tenir à la fin : [bas, haut] sur l'échelle de la chaleur */
+      zoneFin:function(){ return zFin.slice(); },
       ajouterBuche:ajouterBuche, retirerBuche:retirerBuche
     };
     return {arreter:function(){
