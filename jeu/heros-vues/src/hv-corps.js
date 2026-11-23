@@ -443,7 +443,7 @@ function brasSVG(K, V, B, P, plein){
   }
   /* Trois couches, que le corps range : les manches, PUIS ce qu'elle tient (l'arc, la dague : jamais sous une manche), PUIS les mains */
   var mn = mainSVG(K, V, B, P);
-  if(cote < 0 && P.arc !== false){
+  if(cote < 0 && P.arc !== false && K.arme === 'arc'){
     /* L'ARC DANS LE POING (Romain, 23 novembre, 13 h 36 : « l'arc, il est censé être devant la main ») : la poignée passe dans la
        paume, les doigts se referment par-dessus. Quand on voit l'intérieur de la main, on voit donc la paume, puis l'arc, puis les
        doigts ; quand on voit le dos de la main, le poing cache la poignée. L'arc est rendu en morceaux (ses deux branches, la
@@ -554,7 +554,21 @@ function torse(K, h, T, P, avant, fond, jb){
      derrière d'un seul tenant (Romain, 23 novembre, 15 h 04 : « elle se coupe […] il faut qu'elle arrête de disparaître dès que
      ça tourne ») : on suit la boucle tout autour et on dessine les morceaux qu'on voit, chacun prolongé exactement jusqu'au bord
      du buste (là où il passe derrière), et passé par-dessus l'épaule quand on la voit de côté. */
-  (function(){
+  /* LE TABLIER DE CUIR DE L'ALCHIMISTE (K.tablier) : posé sur le devant du buste, de la poitrine jusque sous la ceinture, une poche
+     cousue ; il suit le buste quand il se tourne ou se penche (T.face), et ne dépasse jamais de son contour */
+  if(K.tablier){
+    var tO = [[-12, 150], [-6, 148], [6, 148], [12, 150], [17, 180], [20, 204], [24, 222], [22, 236], [0, 241], [-22, 236], [-24, 222], [-20, 204], [-17, 180]].map(function(q){ return T.face(q[0], q[1]); });
+    if(tO.filter(function(o){ return o.vu; }).length >= 9){
+      var dT = U.poly(tO.map(function(o){ return o.p; })), pO = [[-12, 214], [12, 214], [12, 231], [-12, 231]].map(function(q){ return T.face(q[0], q[1]).p; });
+      var sT = PC(dT, K.u('cuirH'), 1.8) + PF(dT, K.u('grain'), ' opacity=".45"') +
+        couture(U.poly([[-9, 154], [-14, 182], [-17, 206], [-20, 224]].map(function(q){ return T.face(q[0], q[1]).p; }), false)) +
+        couture(U.poly([[9, 154], [14, 182], [17, 206], [20, 224]].map(function(q){ return T.face(q[0], q[1]).p; }), false)) +
+        PC(U.poly(pO), K.u('cuir'), 1.4) + couture(U.poly([pO[0], pO[1]].map(function(q){ return [q[0], q[1] + 2.4]; }), false));
+      var tc2 = K.n('tbc');
+      dessusHaut += '<clipPath id="' + tc2 + '"><use href="#' + K.n('tc') + '"/></clipPath><g clip-path="url(#' + tc2 + ')">' + sT + '</g>';
+    }
+  }
+  if(K.baudrier) (function(){
     var NB = 96, Y0b = 172.25, Ab = 30.25;
     function bq(az){ return T.pt(az, Y0b + Ab * Math.sin(az)); }
     function bord(a0, a1, v0){ var m, it, o; for(it = 0; it < 9; it++){ m = (a0 + a1) / 2; o = bq(m); if(o.vu === v0) a0 = m; else a1 = m; } var p = bq((a0 + a1) / 2).p; return [p[0], p[1], 0]; }
@@ -579,6 +593,18 @@ function torse(K, h, T, P, avant, fond, jb){
     });
     if(s2) dessusHaut += '<clipPath id="' + bc + '"><use href="#' + K.n('tc') + '"/>' + avant.map(function(B){ return '<path d="' + B.manche[0] + '"/>'; }).join('') + '</clipPath><g clip-path="url(#' + bc + ')">' + s2 + '</g>';
   })();
+  /* LA FIOLE DE L'ALCHIMISTE, accrochée à sa sangle sur la poitrine : du verre, une potion orange qui brille, un bouchon */
+  if(K.tablier){
+    var fO = T.face(-12, 166);
+    if(fO.vu){
+      var fp = fO.p;
+      dessusHaut += '<g transform="translate(' + f1(fp[0]) + ' ' + f1(fp[1]) + ')">' +
+        '<rect x="-3.2" y="-17" width="6.4" height="8" rx="1.5" fill="#e9e2f6"' + U.c(1.6) + '/><rect x="-3.8" y="-21" width="7.6" height="5" rx="1.6" fill="#a7743f"' + U.c(1.4) + '/>' +
+        '<circle cx="0" cy="0" r="10" fill="#efe9fb" opacity=".85"' + U.c(2) + '/>' +
+        '<path d="M-9.4 1.5 A 9.6 9.6 0 0 0 9.4 1.5 Q 4 -1.2 0 1 Q -4 3 -9.4 1.5 Z" fill="#ff8a2a"/><path d="M-6 4 A 7 7 0 0 0 6 4" fill="none" stroke="#ffd27a" stroke-width="2" opacity=".8"/>' +
+        '<path d="M-6 -5 Q -7 -1 -5.5 2" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".85"/></g>';
+    }
+  }
   /* la ceinture : un anneau de cuir, et sa boucle devant */
   var mc = pj(T.fr(208).C, V);
   function large(q){ return [mc[0] + (q[0] - mc[0]) * 1.02, q[1]]; }

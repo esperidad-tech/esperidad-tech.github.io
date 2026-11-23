@@ -165,6 +165,26 @@ COIFFURES.queue = {
     brin:{de:0.34, p:[[19, 8, -48], [23, 46, -41]], w:4.2}}
 };
 
+/* LES CHEVEUX COURTS EN BOUCLES (l'Alchimiste du donjon, garçon, cheveux noirs : Romain, 23 novembre, 20 h 05 : « tu peux lancer
+   l'alchimiste ») : la nuque dégagée, une frange courte en mèches pointues, des boucles qui cassent le tour du crâne. Première
+   version, à faire valider. */
+COIFFURES.courts = {
+  zone:lineaire([[-57, 0], [-33, 0], [-30, 30], [-26, 50], [-18, 64], [-10, 72], [-6, 84], [-3, 108], [2, 128], [6, 150], [9, 180]]),
+  frange:'M44 -42 L 44 -16 L 34 -12 C 30 -18 27 -21 24 -23 C 22 -17 19 -14 15 -12 C 15 -18 13 -23 9 -26 C 6 -20 2 -17 -3 -15 C -2 -21 -4 -25 -7 -28 C -10 -22 -14 -18 -19 -16 C -18 -21 -19 -25 -22 -27 C -25 -21 -29 -16 -34 -13 L -44 -16 L -44 -42 Z',
+  filsFace:[[[-24, -16], [-22, -28], [-14, -40]], [[-6, -18], [-4, -30], [2, -42]], [[12, -15], [14, -28], [10, -40]], [[26, -18], [26, -30], [20, -42]]],
+  filsCote:[[[70, -10], [100, -24], [140, -38]], [[60, -26], [96, -40], [140, -50]], [[90, -2], [124, -12], [160, -24]]],
+  /* (les boucles : de petites mèches recourbées, sur le dessus et au-dessus des oreilles) */
+  /* (les boucles : des ronds posés tout autour du crâne, dans la masse de derrière — là où ils dépassent, le contour fait des
+     bosses ; [x, y, z, rayon]) */
+  boucles:(function(){
+    var L = [[0, -58, 0, 7.5]], a;
+    for(a = 0; a < 360; a += 30) L.push([27 * Math.sin(a * Math.PI / 180), -51, 27 * Math.cos(a * Math.PI / 180), 7.5]);
+    for(a = 50; a <= 310; a += 26) L.push([33 * Math.sin(a * Math.PI / 180), -36, 33 * Math.cos(a * Math.PI / 180), 7]);
+    for(a = 110; a <= 250; a += 28) L.push([33 * Math.sin(a * Math.PI / 180), -20, 33 * Math.cos(a * Math.PI / 180), 6.5]);
+    return L;
+  })()
+};
+
 /* ==========================================================
    HV.cheveux(K, coif, V, P) → {dos, devant, ombre}  (P : {qx, qz : le balancement du bout de la queue de cheval})
    ========================================================== */
@@ -202,7 +222,8 @@ HV.cheveux = function(K, coif, V, P){
   }
   var zq = Q ? -Q.p[2][0] * V.s + Q.p[2][2] * V.c : -1;
   /* --- la masse de derrière --- */
-  var masse = U.masse([masseDos(V, coif.zone, -57, 18)], K.u('chevB'));
+  var bcl = (coif.boucles || []).map(function(b){ var q = ecran3([b], V)[0]; return U.gelule(q[0], q[1], b[3], q[0], q[1], b[3]); });
+  var masse = U.masse([masseDos(V, coif.zone, -57, 18)].concat(bcl), K.u('chevB'));
   /* --- les mèches libres : devant si elles sont de notre côté, sinon derrière le visage --- */
   var mDos = [], mDev = [];
   (coif.meches || []).forEach(function(m){

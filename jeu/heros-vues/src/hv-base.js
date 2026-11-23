@@ -327,6 +327,12 @@ HV.contexte = function(id, h){
   /* h.combat : la tenue de combat du donjon (des brassards et des genouillères de cuir, des jambières brunes, comme le Pisteur du
      donjon d'aujourd'hui) */
   K.combat = !!h.combat;
+  /* (ce que chaque rôle porte — Romain, 23 novembre, 20 h 05 : « tu peux lancer l'alchimiste, le sage » : l'arc, le carquois et le
+     baudrier sont au Pisteur ; l'Alchimiste a son tablier de cuir et sa fiole sur la poitrine ; le Sage, son bâton) */
+  var rl = h.role || 'pisteur';
+  K.arme = h.arme !== undefined ? h.arme : rl === 'pisteur' ? 'arc' : null;
+  K.baudrier = rl === 'pisteur' || rl === 'alchimiste';
+  K.tablier = rl === 'alchimiste';
   K.pant = cp ? [sombre(cp, 0.1), sombre(cp, 0.55)] : K.combat ? ['#5a4232', '#241811'] : ['#4a4062', '#221d33'];
   K.botte = cb ? [clair(cb, 0.3), sombre(cb, 0.2), sombre(cb, 0.6)] : ['#b77b45', '#6e4223', '#3b2211'];
   K.cuir = cc ? [clair(cc, 0.3), sombre(cc, 0.2), sombre(cc, 0.6)] : ['#b77b45', '#6e4223', '#3b2211'];

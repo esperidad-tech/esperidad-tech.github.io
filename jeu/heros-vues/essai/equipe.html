@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8">
+<!-- Les héros côte à côte, pour suivre le chantier de l'Alchimiste et du Sage : equipe.html#angle,angle…/taille/pose/roles
+     ex. equipe.html#0,35,70,115,180/230/repos/alchimiste ; equipe.html#30/200/repos/pisteur,alchimiste -->
+<style>body{margin:0;background:#131932;display:flex;flex-wrap:wrap;gap:6px;padding:10px;font:12px sans-serif;color:#cfd6ff}
+.c{text-align:center}svg{background:#1b2347;border-radius:8px;display:block}</style>
+<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script><script src="../src/hv-poses.js"></script>
+<body><script>
+var HV = HerosVues, Hh = decodeURIComponent(location.hash.slice(1)).split('/');
+var ANG = (Hh[0] || '0,35,70,115,180').split(',').map(Number), L = +Hh[1] || 230, POSE = Hh[2] || 'repos', ROLES = (Hh[3] || 'pisteur,alchimiste').split(',');
+/* les héros du donjon, avec l'allure du donjon (DJ.LOOK) et la tenue de combat */
+var HEROS = {
+  pisteur:{role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert', combat:true},
+  alchimiste:{role:'alchimiste', sexe:'m', peau:'p4', cheveux:'noir', yeux:'ambre', coiffure:'courts', combat:true}
+};
+var s = '', n = 0;
+ROLES.forEach(function(r){ ANG.forEach(function(a){
+  var P = HV.pose(POSE); P.cap = a;
+  s += '<div class="c">' + HV.svg(HEROS[r], P, {id:'e' + (n++), cadre:'-10 -50 320 480'}).replace('<svg ', '<svg width="' + L + '" height="' + Math.round(L * 1.5) + '" ') + r + ' ' + a + '°</div>';
+}); });
+document.body.innerHTML = s;
+</script>
