@@ -26,8 +26,8 @@ HV.dessin = function(h, P, o){
   var tDos = Vt.c < -0.15, G1 = '<g transform="' + tT + '">', bras = P.brasDessus ? '' : C.devant;
   s += '<g transform="' + haut + '">' + G1 + (CH.queueDevant ? '' : CH.queue) + (tDos ? '' : CH.dos) + '</g>' + C.derriere + '</g>';
   s += '<g transform="translate(150 0)">' + C.jambes + '</g>';
-  s += '<g transform="' + haut + '">' + (tDos ? G1 + T.svg + T.oreille + '</g>' : '') + C.cou(Yo + (tDos ? 15 : 8), tDos ? '<rect x="-30" y="' + f1(Yo + 12) + '" width="60" height="13" fill="' + K.peau.ombre + '" opacity=".75"/>' : ombreCou) + C.torse + C.carquoisDevant + bras +
-    G1 + (tDos ? CH.dos + CH.devant : T.svg + CH.devant + T.oreille + T.sourcils) + (CH.queueDevant ? CH.queue : '') + '</g>' + (P.brasDessus ? C.devant : '') + '</g>';
+  s += '<g transform="' + haut + '">' + (tDos ? G1 + T.svg + '</g>' : '') + C.cou(Yo + (tDos ? 15 : 8), tDos ? '<rect x="-30" y="' + f1(Yo + 12) + '" width="60" height="13" fill="' + K.peau.ombre + '" opacity=".75"/>' : ombreCou) + C.torse + C.carquoisDevant + bras +
+    G1 + (tDos ? CH.dos + CH.devant : T.svg + CH.devant + T.sourcils) + (CH.queueDevant ? CH.queue : '') + '</g>' + (P.brasDessus ? C.devant : '') + '</g>';
   return s;
 };
 /* ==========================================================
@@ -35,15 +35,15 @@ HV.dessin = function(h, P, o){
    (mainG : SON bras droit, à gauche de l'écran quand elle est de face — celui qui tient l'arc ; mainD : SON bras gauche.)
    ========================================================== */
 HV.POSES = {
-  repos:{mainG:[-49, 243, 4], coudeG:[-0.7, -0.1, -0.7], mainD:[49, 243, 4], coudeD:[0.7, -0.1, -0.7], piedG:[-19, 386, 3], piedD:[19, 386, -3], ouvG:0.3, ouvD:0.3,
+  repos:{mainG:[-50.5, 243, 4], coudeG:[-0.7, -0.1, -0.7], mainD:[50.5, 243, 4], coudeD:[0.7, -0.1, -0.7], piedG:[-19.5, 386, 5], piedD:[19.5, 386, -5], ouvG:0.3, ouvD:0.3,
     tete:0, pen:0, bx:0, ty:0, sourcils:0, arcDir:[-0.82, 0, 0.57], tendu:0, brasDessus:0},
   /* une main sur la hanche, la tête un peu penchée */
-  hanche:{mainD:[30, 213, 10], coudeD:[1, -0.1, -0.5], pen:-5, bx:2.5, piedD:[23, 386, -2]},
+  hanche:{mainD:[32, 213, 11], coudeD:[1, -0.1, -0.5], pen:-5, bx:2.5, piedD:[24, 386, -4]},
   /* elle fait coucou de sa main libre */
   coucou:{mainD:[73, 103, 12], coudeD:[0.5, 1, -0.1], pen:4, sourcils:0.6, brasDessus:1},
   /* elle vise : le bras de l'arc tendu sur le côté, la corde à la joue, la tête tournée vers la cible */
   tir:{mainG:[-116, 151, 5], coudeG:[0, 0.7, -0.6], mainD:[17, 128, 12], coudeD:[1, -0.35, -0.3], tete:-84, sourcils:-0.6, arcDir:[-1, 0, 0.04], tendu:1, brasDessus:1,
-    piedG:[-26, 386, 2], piedD:[22, 386, -2]}
+    piedG:[-26, 386, 3], piedD:[22.5, 386, -3]}
 };
 HV.pose = function(nom){
   var B = HV.POSES.repos, Q = HV.POSES[nom] || {}, R = {}, k;

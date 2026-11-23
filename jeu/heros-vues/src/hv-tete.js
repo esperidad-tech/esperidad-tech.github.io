@@ -83,10 +83,11 @@ function oeil(K, d, V, P, f){
 var OREILLE = [[0, -7], [3, -9.2], [7, -8.6], [9.2, -4], [8.6, 2], [6, 6.4], [2.8, 7.4], [0, 4.6]];
 var OREILLE_PLI = [[2.8, -5], [5.8, -4.8], [6.6, 0.4], [4.2, 3.8]];
 function oreille(K, d, V){
-  var S = TETE.a(3), bx = d * (S.a - 0.6), bz = -3.4, ux = d * 0.52, uz = -0.855;      /* (l'attache ; la direction du pavillon : vers l'extérieur et l'arrière) */
+  var S = TETE.a(3, V.w), bx = d * (S.a - 0.6), bz = -3.4, ux = d * 0.52, uz = -0.855;      /* (l'attache ; la direction du pavillon : vers l'extérieur et l'arrière) */
   function Q(p){ var x = bx + ux * p[0], z = bz + uz * p[0]; return [x * V.c + z * V.s, 4 + p[1]]; }
   var d1 = U.lisse(OREILLE.map(Q));
-  return {devant:(-bx * V.s + bz * V.c) > -1.5,
+  /* (devant la peau si son attache est de notre côté ; sinon derrière la tête : elle n'en dépasse que si la tête est de face) */
+  return {devant:U.visible(S, Math.atan2(bx, bz - S.zm), V),
     svg:PC(d1, K.u('peauU'), 1.8) + PT(U.courbe(OREILLE_PLI.map(Q)), K.peau.trait, 1.2)};
 }
 
@@ -132,7 +133,7 @@ HV.tete = function(K, h, V, P, CH){
       if(lv.length > 2) dans += PF(U.poly(lv), '#e0707a', ' opacity=".7"');
     }
   }
-  s += '<g clip-path="url(#' + cid + ')">' + dans + '</g>';
+  s += '<g clip-path="url(#' + cid + ')">' + dans + '</g>' + av;
   /* les sourcils : par-dessus la frange (on les voit à travers, comme dans persos.js) */
   var sc = '';
   if(face){
@@ -144,6 +145,6 @@ HV.tete = function(K, h, V, P, CH){
       });
     });
   }
-  return {peau:dPeau, svg:s, oreille:av, sourcils:sc, contour:ct};
+  return {peau:dPeau, svg:s, oreille:'', sourcils:sc, contour:ct};
 };
 })(window);
