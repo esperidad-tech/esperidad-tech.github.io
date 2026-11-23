@@ -35,7 +35,32 @@ var SOL = 414, TAU = Math.PI * 2, Z3 = [0, 0, 0];
 var T_A = table([[137, 12], [139, 22.5], [142, 29.5], [146, 33.5], [152, 34], [165, 32.5], [180, 30], [200, 28.5], [208, 29], [222, 32.5], [246, 40], [272, 47.5]]);
 var T_F = table([[137, 9.5], [139, 11.5], [142, 13.5], [146, 15.5], [152, 18], [165, 20], [180, 18.5], [200, 16.5], [208, 17], [222, 19.5], [246, 24.5], [272, 30]]);
 var T_B = table([[137, 9.5], [139, 11], [142, 13], [146, 14.5], [152, 15.5], [165, 16], [180, 15.5], [200, 14.5], [208, 15], [222, 18.5], [246, 23.5], [272, 28.5]]);
-var BUSTE = HV.BUSTE = U.volume(137, 272, function(y){ return coupe(T_A(y), 0, T_F(y), T_B(y), 2.3, 2.3); });
+var BUSTE_F = HV.BUSTE = U.volume(137, 272, function(y){ return coupe(T_A(y), 0, T_F(y), T_B(y), 2.3, 2.3); });
+/* ---------- LE CORPS D'HOMME (Romain, 23 novembre, 22 h 21 : « pour les hommes j'aimerais avoir un peu qu'on ait l'impression qu'ils
+   soient plus costauds et une poitrine un peu plus large » ; 23 h 53 : « tu peux passer aux hommes, aux enfants, aux papys. Commence
+   par les hommes. Tu peux reprendre tout ce que tu as fait, mais simplement la modélisation, il faut que le corps, il soit un peu
+   différent pour les hommes ») ----------
+   Le même squelette (les mêmes hauteurs : toutes les poses et tous les gestes marchent tels quels), mais un autre GABARIT : un buste en
+   V — les épaules et la poitrine bien plus larges, une poitrine plus épaisse (les pectoraux), le dos plus large, la taille à peine
+   marquée, les hanches pas plus larges que la poitrine ; les épaules plus écartées ; des bras, des jambes, un cou plus épais ; des
+   mains un peu plus grandes. Le bas de la tunique (sous la ceinture) reste presque le même. */
+var T_AH = table([[137, 15.5], [139, 29.5], [142, 38.5], [146, 43], [152, 44], [165, 42], [180, 37.5], [200, 34], [208, 33.5], [222, 34.5], [246, 41], [272, 47.5]]);
+var T_FH = table([[137, 11.5], [139, 14], [142, 17], [146, 20], [152, 23.5], [165, 25], [180, 22.5], [200, 19.5], [208, 19], [222, 20.5], [246, 25], [272, 30]]);
+var T_BH = table([[137, 11.5], [139, 14], [142, 17], [146, 19], [152, 20], [165, 20], [180, 18.5], [200, 16.5], [208, 16.5], [222, 18.5], [246, 23.5], [272, 28.5]]);
+var BUSTE_H = HV.BUSTE_H = U.volume(137, 272, function(y){ return coupe(T_AH(y), 0, T_FH(y), T_BH(y), 2.4, 2.3); });
+/* les gabarits : le buste, où sont les épaules (ep) et les hanches (ha), l'épaisseur des bras (au haut du bras, au coude, au poignet),
+   des jambes (jb : en plus), du cou (co : en plus), la taille des mains (ma) */
+var GABARITS = HV.GABARITS = {
+  femme:{buste:BUSTE_F, ep:31.5, ha:13, rEp:10.6, rCo:9.3, rPo:8.3, jb:1, co:1, ma:1},
+  homme:{buste:BUSTE_H, ep:38.5, ha:15, rEp:13.2, rCo:11.4, rPo:9.8, jb:1.12, co:1.28, ma:1.12}
+};
+var BUSTE = BUSTE_F, GAB = GABARITS.femme;
+/* (le gabarit de ce dessin : posé au début de HV.corps — tout le dessin d'un héros se fait d'un seul coup, sans rien d'autre au milieu) */
+function gabarit(K){
+  GAB = GABARITS[K && K.corps] || GABARITS.femme;
+  BUSTE = GAB.buste; R_EP = GAB.rEp; R_CO = GAB.rCo; R_PO = GAB.rPo;
+  return GAB;
+}
 
 /* ---------- Les vecteurs, les rotations ---------- */
 function add(a, b, k){ k = k == null ? 1 : k; return [a[0] + b[0] * k, a[1] + b[1] * k, a[2] + b[2] * k]; }
@@ -299,7 +324,7 @@ var R_EP = 10.6, R_CO = 9.3, R_PO = 8.3, LIBRE = 0.36;
    sourcils) */
 HV.VISIERE = [22, -46, 32];
 function bras(V, cote, P, T){
-  var cle = cote < 0 ? 'G' : 'D', Ep = T.buste([cote * 31.5, 151, 0]);
+  var cle = cote < 0 ? 'G' : 'D', EPX = GAB.ep, Ep = T.buste([cote * EPX, 151, 0]);
   var rel = P['rel' + cle]; if(rel == null) rel = 1;
   var Wa = P['main' + cle] || [cote * 50.5, 243, 4], pa = P['coude' + cle] || [cote * 0.7, -0.1, -0.7], mdL = P['mdir' + cle], pcL = P['pouce' + cle];
   /* LA MAIN EN VISIÈRE (P.visiere, de 0 à 1, SA main gauche) : la main à plat au-dessus des yeux, comme une casquette, et elle suit
@@ -318,7 +343,7 @@ function bras(V, cote, P, T){
   /* (et, comme en dessin animé, le bras s'étire un peu — 12 % au plus : la tête de nos héros est grande, sans ça le poing ne
      dépasserait pas d'elle) */
   var lev = 0, eti = 1;
-  if(rel > 0.5){ lev = borne((151 - Wa[1] - 45) / 40, 0, 1); if(lev > 0){ Ep = T.buste([cote * (31.5 - lev * 4), 151 - lev * 22, 0]); eti = 1 + 0.12 * lev; } }
+  if(rel > 0.5){ lev = borne((151 - Wa[1] - 45) / 40, 0, 1); if(lev > 0){ Ep = T.buste([cote * (EPX - lev * 4), 151 - lev * 22, 0]); eti = 1 + 0.12 * lev; } }
   var J = ik3(Ep, Wc, 50 * eti, 43 * eti, pole), El = J[0], W = J[1], da = uni(sub(W, El));
   /* (une main qui suit le buste tourne AVEC lui : vers où pointent ses doigts, son pouce, l'arc qu'elle tient — Romain, 23 novembre,
      16 h 39 : « l'arc est à l'envers » quand elle s'était tournée pour viser) */
@@ -512,32 +537,34 @@ function mainSVG(K, V, B, P){
     var lc0 = QB(0, 0, EP);
     K.rep = K.rep || {}; K.rep.livre = lc0;
   }
-  /* la paume */
-  var p1 = Q(1.5, 3.4), p2 = Q(1.5, -3.4), p3 = Q(9.6, 4.7), p4 = Q(9.6, -4.7), Lp = [];
-  Lp.push(gelule(p1[0], p1[1], 4.5, p3[0], p3[1], 3.9), gelule(p2[0], p2[1], 4.5, p4[0], p4[1], 3.9), gelule(p3[0], p3[1], 3.9, p4[0], p4[1], 3.9), gelule(p1[0], p1[1], 4.5, p2[0], p2[1], 4.5));
+  /* la paume (MA : la main d'un homme est un peu plus grande — GAB ; ce qu'elle tient ne bouge pas) */
+  var MA = GAB.ma;
+  function QM(a, b, c2){ return Q(a * MA, b * MA, (c2 || 0) * MA); }
+  var p1 = QM(1.5, 3.4), p2 = QM(1.5, -3.4), p3 = QM(9.6, 4.7), p4 = QM(9.6, -4.7), Lp = [];
+  Lp.push(gelule(p1[0], p1[1], 4.5 * MA, p3[0], p3[1], 3.9 * MA), gelule(p2[0], p2[1], 4.5 * MA, p4[0], p4[1], 3.9 * MA), gelule(p3[0], p3[1], 3.9 * MA, p4[0], p4[1], 3.9 * MA), gelule(p1[0], p1[1], 4.5 * MA, p2[0], p2[1], 4.5 * MA));
   /* les doigts : ils se plient vers la paume (deux phalanges) ; ouverts, ils s'écartent un peu */
   var ec = (1 - pg) * 0.07, D = [], idx = P['index' + cle] || 0;
   for(i = 0; i < 4; i++){
     /* (l'index peut rester tendu : elle montre du doigt, « chut ! ») */
     var pli = i === 0 ? pg * (1 - idx) : pg, c1 = 0.1 + 1.3 * pli, c2a = c1 * 2.15;
-    var l1 = DG_LON[i] * 0.55, l2 = DG_LON[i] * 0.47, ev = DG_OFF[i] * ec, r = DG_RAY[i];
+    var l1 = DG_LON[i] * 0.55, l2 = DG_LON[i] * 0.47, ev = DG_OFF[i] * ec, r = DG_RAY[i] * MA;
     var b0 = [9.6, DG_OFF[i], 0], b1 = [b0[0] + l1 * Math.cos(c1), b0[1] + ev * l1, l1 * Math.sin(c1)], b2 = [b1[0] + l2 * Math.cos(c2a), b1[1] + ev * l2, b1[2] + l2 * Math.sin(c2a)];
-    var q0 = Q(b0[0], b0[1], b0[2]), q1 = Q(b1[0], b1[1], b1[2]), q2 = Q(b2[0], b2[1], b2[2]);
+    var q0 = QM(b0[0], b0[1], b0[2]), q1 = QM(b1[0], b1[1], b1[2]), q2 = QM(b2[0], b2[1], b2[2]);
     L.push(gelule(q0[0], q0[1], r + 0.2, q1[0], q1[1], r), gelule(q1[0], q1[1], r, q2[0], q2[1], r * 0.88));
     D.push([b0, b1, b2]);
   }
   /* le pouce */
   var t0 = [3.2, 5.2, 0.6], u1 = uni([0.62 - 0.3 * pg, 0.75, 0.2 + 0.7 * pg]), t1 = add(t0, u1, 5.6), u2 = uni([0.85 - 0.9 * pg, 0.42 - 0.6 * pg, 0.25 + 0.9 * pg]), t2 = add(t1, u2, 4.7);
-  var k0 = Q(t0[0], t0[1], t0[2]), k1 = Q(t1[0], t1[1], t1[2]), k2 = Q(t2[0], t2[1], t2[2]);
-  Lp.push(gelule(k0[0], k0[1], 3.1, k1[0], k1[1], 2.75), gelule(k1[0], k1[1], 2.75, k2[0], k2[1], 2.35));
+  var k0 = QM(t0[0], t0[1], t0[2]), k1 = QM(t1[0], t1[1], t1[2]), k2 = QM(t2[0], t2[1], t2[2]);
+  Lp.push(gelule(k0[0], k0[1], 3.1 * MA, k1[0], k1[1], 2.75 * MA), gelule(k1[0], k1[1], 2.75 * MA, k2[0], k2[1], 2.35 * MA));
   /* la peau : un dégradé en travers de la main */
-  var mc = Q(8, 0), gid = K.n('pm' + cle), s = degU(gid, mc[0] - 9, mc[1] - 10, mc[0] + 9, mc[1] + 10, st(0, K.peau.c[0]) + st(0.62, K.peau.c[1]) + st(1, U.mix(K.peau.c[1], K.peau.ombre, 0.7)));
+  var mc = QM(8, 0), gid = K.n('pm' + cle), s = degU(gid, mc[0] - 9, mc[1] - 10, mc[0] + 9, mc[1] + 10, st(0, K.peau.c[0]) + st(0.62, K.peau.c[1]) + st(1, U.mix(K.peau.c[1], K.peau.ombre, 0.7)));
   var defs = s, paume = U.masse(Lp, 'url(#' + gid + ')', 1.9);
   s += U.masse(Lp.concat(L), 'url(#' + gid + ')', 1.9);
   /* un trait entre deux doigts voisins */
   var tr = '';
   for(i = 0; i < 3; i++){
-    var A = D[i], Bq = D[i + 1], pts = [0, 1, 2].map(function(j){ var x = j === 0 ? 1.6 : 0, qq = Q((A[j][0] + Bq[j][0]) / 2 + x, (A[j][1] + Bq[j][1]) / 2, (A[j][2] + Bq[j][2]) / 2 + 0.6); return [qq[0], qq[1]]; });
+    var A = D[i], Bq = D[i + 1], pts = [0, 1, 2].map(function(j){ var x = j === 0 ? 1.6 : 0, qq = QM((A[j][0] + Bq[j][0]) / 2 + x, (A[j][1] + Bq[j][1]) / 2, (A[j][2] + Bq[j][2]) / 2 + 0.6); return [qq[0], qq[1]]; });
     if(d2(pts[0], pts[2]) > 2.2) tr += U.poly(pts, false) + ' ';
   }
   s += PT(tr, K.peau.trait, 1.05, ' opacity=".8"');
@@ -919,7 +946,7 @@ function arcSVG(K, V, Hd, P){
    P.pointeG / pointeD (degrés) : 0, le pied à plat ; 50, sur la pointe (le talon levé) ; 90, les orteils repliés sous un genou à terre.
    Un pied ne passe jamais sous le sol : sa cheville remonte s'il le faut. */
 function jambe(V, cote, P, T){
-  var cle = cote < 0 ? 'G' : 'D', Ha = add(T.Pc, mv(T.Mp, [cote * 13, 1, 0]));
+  var cle = cote < 0 ? 'G' : 'D', Ha = add(T.Pc, mv(T.Mp, [cote * GAB.ha, 1, 0]));
   var A = (P['pied' + cle] || [cote * 19.5, 386, cote * -5]).slice(), pole = P['genou' + cle] || [cote * 0.25, 0, 1];
   var ouv = P['ouv' + cle] == null ? 0.3 : P['ouv' + cle], pt = (P['pointe' + cle] || 0) * RAD, cp = Math.cos(pt), sp = Math.sin(pt);
   /* (le pied tourne en dehors — ou en dedans si ouv < 0 — sans changer de longueur) */
@@ -942,7 +969,8 @@ function jambeSVG(K, V, J, P, suf){
   var plie = Math.min(1, Math.max(0, 1 - dot(J.dc, J.dj))), dh = 8 * plie;
   var cote = J.cote, cle = J.cle + (suf || ''), ha = pj(J.Ha, V), kn = J.kn, an = pj(J.An, V), bt = pj(add(J.Kn, J.dj, -3 + dh), V);
   var ta = pj(J.Ta, V), po = pj(J.Po, V), a2 = pj(add(J.An, J.m, 4), V), t2 = pj(add(J.Ta, J.m, -1), V);
-  var s = '', dcu = gelule(ha[0], ha[1], 13.2, kn[0], kn[1], 10.6), cu = K.n('cu' + cle);
+  /* (jb : les jambes plus épaisses d'un homme — GAB, plus haut) */
+  var jb = GAB.jb, s = '', dcu = gelule(ha[0], ha[1], 13.2 * jb, kn[0], kn[1], 10.6 * jb), cu = K.n('cu' + cle);
   /* la cuisse, et l'ombre de la tunique dessus */
   var lc = d2(ha, kn) || 1, ox = ha[0] + (kn[0] - ha[0]) * Math.min(1, 32 / lc), oy = ha[1] + (kn[1] - ha[1]) * Math.min(1, 32 / lc);
   s += PC(dcu, K.u('pant'), 2.2) + '<clipPath id="' + cu + '"><path d="' + dcu + '"/></clipPath><ellipse cx="' + f1(ox) + '" cy="' + f1(oy) + '" rx="22" ry="13" fill="#000" opacity=".3" clip-path="url(#' + cu + ')"/>';
@@ -950,7 +978,7 @@ function jambeSVG(K, V, J, P, suf){
   var cuisse = s; s = '';
   /* le mollet : un peu en arrière du tibia, au premier tiers ; la cheville est plus fine */
   var hk = sub(J.Ha, J.Kn), ar = sub(hk, mul(J.dj, dot(hk, J.dj))), Mo = add(add(J.Kn, J.dj, 24), uni(lon(ar) < 0.5 ? [0, 0, -1] : ar), 2.4), mo = pj(Mo, V);
-  var botte = [gelule(bt[0], bt[1], 13, mo[0], mo[1], 12.5), gelule(mo[0], mo[1], 12.5, an[0], an[1], 10.9), gelule(ta[0], ta[1], 9, po[0], po[1], 7.8), gelule(a2[0], a2[1], 10.6, t2[0], t2[1], 8.8)];
+  var botte = [gelule(bt[0], bt[1], 13 * jb, mo[0], mo[1], 12.5 * jb), gelule(mo[0], mo[1], 12.5 * jb, an[0], an[1], 10.9 * jb), gelule(ta[0], ta[1], 9 * jb, po[0], po[1], 7.8 * jb), gelule(a2[0], a2[1], 10.6 * jb, t2[0], t2[1], 8.8 * jb)];
   var cid = K.n('bt' + cle), ysol = SOL + 0.6 + PSOL * Math.max(ta[2], po[2]);
   s += '<clipPath id="' + cid + '"><rect x="-300" y="-100" width="600" height="' + f1(ysol + 100) + '"/></clipPath>';
   s += '<g clip-path="url(#' + cid + ')">' + U.masse(botte, K.u('botte'), 2.2) + botte.map(function(d){ return PF(d, K.u('grain'), ' opacity=".42"') + PF(d, K.u('relM'), ' opacity=".55"'); }).join('') + '</g>';
@@ -972,7 +1000,7 @@ function jambeSVG(K, V, J, P, suf){
     if(d2(s1, s2) > 6) s += '<g clip-path="url(#' + cid + ')">' + PT(U.poly([s1, s2], false), '#2a1c26', 2.6) + couture(U.poly([c1, c2], false), 0.6) + '</g>';
   }
   /* le revers de la botte, et son ombre sur la tige : il suit le tibia */
-  var pl = 3.2 * V.c, dr = 'M-14.2 0 Q 0 ' + f1(pl) + ' 14.2 0 L 13.8 9.5 Q 0 ' + f1(9.5 + pl * 1.6) + ' -13.8 9.5 Z';
+  var pl = 3.2 * V.c, rw = 14.2 * jb, rw2 = 13.8 * jb, dr = 'M' + f1(-rw) + ' 0 Q 0 ' + f1(pl) + ' ' + f1(rw) + ' 0 L ' + f1(rw2) + ' 9.5 Q 0 ' + f1(9.5 + pl * 1.6) + ' ' + f1(-rw2) + ' 9.5 Z';
   var rev = ul > 8 ? f1(Math.atan2(uy, ux) / RAD - 90) : 0;
   s += '<g transform="translate(' + f1(bq[0] - ux * 9) + ' ' + f1(bq[1] - uy * 9) + ') rotate(' + rev + ')"><path d="' + dr + '" transform="translate(0 4.5)" fill="#000" opacity=".22"/>' + PC(dr, '#8a5a30', 1.6) + PF(dr, K.u('grain'), ' opacity=".4"') + couture('M-12 2.6 Q 0 ' + f1(2.6 + pl) + ' 12 2.6', 0.6) + '</g>';
   /* EN TENUE DE COMBAT : la genouillère de cuir, posée sur le devant du genou (là où il pointe), avec sa sangle */
@@ -1010,6 +1038,7 @@ function carquois(K, V, T){
    ========================================================== */
 HV.corps = function(K, h, V, P){
   P = P || {};
+  gabarit(K);
   var T = tronc(V, P), ba = P.bang || Z3, ds = P.dos || Z3;
   var jg = jambe(V, -1, P, T), jd = jambe(V, 1, P, T);
   draper(T, jg.dc, jd.dc);
@@ -1219,7 +1248,7 @@ HV.corps = function(K, h, V, P){
   var co = borne(P.couche || 0, 0, 1);
   var upC = mv(T.M[0], [0, -1, 0]), upT = mv(mm(RY(yawT), RX(ho * 0.5)), [0, -1, 0]), N0 = T.lieu([0, 139, -2]), nd = uni(add(mul(upC, 0.5 + 0.5 * co), upT, 0.5 - 0.5 * co)), Hp = add(N0, nd, 19);
   var pN0 = pj(N0, V), pN1 = pj(add(N0, nd, 30), V), lN = d2(pN0, pN1), angN = lN < 1 ? 0 : Math.atan2(pN1[0] - pN0[0], pN0[1] - pN1[1]) / RAD * Math.min(1, lN / 16);
-  var pHp = pj(Hp, V), rc = Math.sqrt(77.4 * V.c * V.c + 59.3 * V.s * V.s), bc = pj(T.lieu([0, 146, -2]), V);
+  var pHp = pj(Hp, V), rc = Math.sqrt(77.4 * V.c * V.c + 59.3 * V.s * V.s) * GAB.co, bc = pj(T.lieu([0, 146, -2]), V);
   /* l'ombre au sol : sous les pieds (et sous une main ou un genou posé) */
   var xs = [pj(jg.An, V), pj(jd.An, V)], ys = 0;
   [jg.Kn, jd.Kn, bG.W, bD.W].forEach(function(q){ if(q[1] > SOL - 26) xs.push(pj(q, V)); });
@@ -1230,7 +1259,7 @@ HV.corps = function(K, h, V, P){
     tete:{V:Vt, tx:pHp[0] + 3 * Vt.s, ty:pHp[1] - 28, px:-3 * Vt.s, rot:(P.pen || 0) + ho * Vt.s + co * angN, hocheF:ho * Vt.c, fond:pHp[2] - T.dB},
     ombre:{cx:(xa + xb) / 2, rx:Math.max(50 + 8 * Math.abs(V.s), (xb - xa) / 2 + 32), cy:SOL + 1 + PSOL * ys},
     os:{bassin:T.Pc, hancheG:jg.Ha, hancheD:jd.Ha, genouG:jg.Kn, genouD:jd.Kn, chevilleG:jg.An, chevilleD:jd.An, talonG:jg.Ta, talonD:jd.Ta, orteilG:jg.Po, orteilD:jd.Po,
-      epauleG:T.buste([-31.5, 151, 0]), epauleD:T.buste([31.5, 151, 0]), coudeG:bG.El, coudeD:bD.El, poignetG:bG.W, poignetD:bD.W, cou:N0, tete:Hp}};
+      epauleG:T.buste([-GAB.ep, 151, 0]), epauleD:T.buste([GAB.ep, 151, 0]), coudeG:bG.El, coudeD:bD.El, poignetG:bG.W, poignetD:bD.W, cou:N0, tete:Hp}};
 };
 HV.SOL = SOL;
 })(window);

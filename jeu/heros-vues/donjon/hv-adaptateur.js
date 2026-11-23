@@ -93,8 +93,9 @@ function Volume(cont, lk, creer0, role){
   this.fx = document.createElement('div'); this.fx.className = 'hva-fx';
   this.racine.appendChild(this.boite); this.racine.appendChild(this.fx);
   cont.appendChild(this.racine);
-  /* (en tenue de combat) */
-  this.h = HV.avec(ALLURES[role], {});
+  /* (en tenue de combat ; « &hommes=1 » dans l'adresse de la page d'essai : les trois héros en garçons — le corps d'homme, hv-corps.js,
+     GABARITS ; Romain, 23 novembre, 23 h 53 : « commence par les hommes ») */
+  this.h = HV.avec(ALLURES[role], G.HV_HOMMES || /[?&]hommes=1/.test(G.location ? G.location.search : '') ? {sexe:'m'} : {});
   this.p = HV.monter(this.boite, this.h, {cadre:CADRE.join(' '), cap:CAP});
   this.p.posi = null; this.p.nom = 'donjonVolume';
   this.svg = this.boite.querySelector('svg');

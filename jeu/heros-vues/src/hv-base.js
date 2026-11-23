@@ -327,6 +327,9 @@ HV.contexte = function(id, h){
   /* h.combat : la tenue de combat du donjon (des brassards et des genouillères de cuir, des jambières brunes, comme le Pisteur du
      donjon d'aujourd'hui) */
   K.combat = !!h.combat;
+  /* (le gabarit du corps — hv-corps.js, GABARITS : « femme », « homme » ; Romain, 23 novembre, 23 h 53 : « tu peux passer aux hommes,
+     aux enfants, aux papys. Commence par les hommes ») ; h.corps pour en forcer un */
+  K.corps = h.corps || (h.sexe === 'm' ? 'homme' : 'femme');
   /* (ce que chaque rôle porte — Romain, 23 novembre, 20 h 05 : « tu peux lancer l'alchimiste, le sage » : l'arc, le carquois et le
      baudrier sont au Pisteur ; l'Alchimiste a son tablier de cuir et sa fiole sur la poitrine ; le Sage, son bâton) */
   var rl = h.role || 'pisteur';
