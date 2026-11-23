@@ -160,7 +160,7 @@ function tronc(V, P){
     var p = pj(w, V), dc = -Cc[0] * V.s + Cc[2] * V.c, k = (yy - 214) / 58;
     var o = {p:[p[0] + (k > 0 ? T.jx * k * k : 0), p[1] + ANNEAU * (p[2] - dc)], f:p[2], w:w};
     /* (vu : tourné vers nous ; fa : de combien, de 0 au bord à 1 en face) */
-    if(n){ var fa = (-n[0] * V.s + n[2] * V.c) - ANNEAU * n[1]; o.vu = fa > 0; o.fa = fa / (lon(n) || 1); }
+    if(n){ var fa = (-n[0] * V.s + n[2] * V.c) - ANNEAU * n[1]; o.vu = fa > 0; o.fa = fa / (lon(n) || 1); o.n = n; }
     return o;
   };
   /* un point du tour du buste : az (radians ; 0 : devant, +90° : SA gauche), y */
@@ -597,9 +597,12 @@ function torse(K, h, T, P, avant, fond, jb){
      et des fioles de toutes les couleurs glissées dans sa sangle, de l'épaule à la hanche ; chacune n'est dessinée que si on voit
      l'endroit de la sangle où elle est (elle tourne avec lui), un peu moins large quand on la voit par la tranche */
   if(K.tablier){
+    /* (une fiole est une petite boule de verre posée SUR la poitrine : son milieu est à un rayon de la surface, vers l'extérieur — de
+       profil, à 90° et 270°, elles dépassent bien du corps : Romain, 20 h 39) */
     var fiole = function(o, r, coul, clair){
-      var p = o.p, k = 0.55 + 0.45 * Math.max(0, Math.min(1, o.fa));
-      return '<g transform="translate(' + f1(p[0]) + ' ' + f1(p[1]) + ') scale(' + f1(k * r / 10) + ' ' + f1(r / 10) + ')">' +
+      var p = o.p, nl = o.n ? lon(o.n) || 1 : 1;
+      if(o.n){ var a3 = pj(o.w, V), b3 = pj(add(o.w, o.n, r * 0.95 / nl), V); p = [p[0] + b3[0] - a3[0], p[1] + b3[1] - a3[1]]; }
+      return '<g transform="translate(' + f1(p[0]) + ' ' + f1(p[1]) + ') scale(' + f1(r / 10) + ')">' +
         '<rect x="-3.2" y="-17" width="6.4" height="8" rx="1.5" fill="#e9e2f6"' + U.c(1.6) + '/><rect x="-3.8" y="-21" width="7.6" height="5" rx="1.6" fill="#a7743f"' + U.c(1.4) + '/>' +
         '<circle cx="0" cy="0" r="10" fill="#efe9fb" opacity=".9"' + U.c(2) + '/>' +
         '<path d="M-9.4 1.5 A 9.6 9.6 0 0 0 9.4 1.5 Q 4 -1.2 0 1 Q -4 3 -9.4 1.5 Z" fill="' + coul + '"/><path d="M-6 4 A 7 7 0 0 0 6 4" fill="none" stroke="' + clair + '" stroke-width="2" opacity=".8"/>' +
@@ -607,7 +610,7 @@ function torse(K, h, T, P, avant, fond, jb){
     };
     [[-1.05, 6.2, '#5fd06a', '#c8ffb0'], [-0.62, 6.4, '#4aa8ff', '#bfe6ff'], [-0.12, 10, '#ff8a2a', '#ffd27a'], [0.42, 6.4, '#b46cff', '#e6ccff'], [0.86, 6.2, '#ff5f7a', '#ffc4cf']].forEach(function(f){
       var o = T.pt(f[0], 172.25 + 30.25 * Math.sin(f[0]));
-      if(o.vu && o.fa > 0.15) dessusHaut += fiole(o, f[1], f[2], f[3]);
+      if(o.fa > -0.2) dessusHaut += fiole(o, f[1], f[2], f[3]);
     });
   }
   /* la ceinture : un anneau de cuir, et sa boucle devant */
