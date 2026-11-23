@@ -47,7 +47,7 @@ async def main():
         await asyncio.sleep(1.5)
         await pg.evaluate('''() => { var R = function(r){ return HerosVuesDonjon.toutes.filter(function(v){ return v.role === r; })[0]; };
           var V = R('pisteur') || HerosVuesDonjon.toutes[HerosVuesDonjon.toutes.length - 1], FX = document.querySelector('#fx'), S = FX.getBoundingClientRect(), k = S.width / FX.offsetWidth;
-          window.V = V; window.A = R('alchimiste'); window.FX = FX;
+          window.V = V; window.A = R('alchimiste'); window.S = R('sage'); window.FX = FX;
           var ti = document.createElement('div'); ti.style.cssText = 'position:fixed;left:184px;top:58px;z-index:9999;color:#fff3c0;font:600 24px Georgia,serif;text-shadow:0 2px 0 #24182e,0 0 8px #000;pointer-events:none'; document.body.appendChild(ti);
           window.T = function(s){ ti.textContent = s; return s; };
           window.C = function(i){ var L = [].map.call(document.querySelectorAll('.perso.bete, .bete'), function(e){ var r = e.getBoundingClientRect(); return {x:(r.left + r.width / 2 - S.left) / k, y:(r.top + r.height * 0.55 - S.top) / k, w:r.width / k}; }).filter(function(r){ return r.w > 20; }).sort(function(a, b){ return a.x - b.x; }); return L[Math.min(i, L.length - 1)] || {x:700, y:300}; }; }''')

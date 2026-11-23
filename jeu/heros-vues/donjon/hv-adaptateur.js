@@ -714,10 +714,12 @@ V.cristalFlash = function(fort){
   this.effet('flash', function(u){ var s = this.repDessin('cristal'); if(!s) return ''; var f = [(s[0] + 130) * KF, (s[1] + 64) * KF], o = u < 0.12 ? u / 0.12 : 1 - (u - 0.12) / 0.5;
     return lueur(f[0], f[1], (fort ? 60 : 40) + 50 * u, '#8ff3ff', Math.max(0, o)) + etincelles(f[0], f[1], Math.min(1, u / 0.6), 6, '#bff8ff', 12, fort ? 70 : 50, 0.2); }, 0.62);
 };
-/* LE SORT (et la rune d'appel : opt.appel) : le cristal s'allume ; le cercle de runes ; l'éclair part du cristal (0,72 s) */
+/* LE SORT (et la rune d'appel : opt.appel) : le cristal s'allume ; le cercle de runes ; l'éclair part du cristal (0,72 s). La rune
+   d'appel a son geste à elle (HV.SAGE.appel : elle tient, puis elle tire) et son effet à elle (_appelV) ; la promesse est rendue au
+   moment où elle tire : le combat fait alors glisser le monstre devant les autres. */
 V.sort = function(scene, to, opt){
   opt = opt || {};
-  var me = this, S = HV.SAGE;
+  var me = this, S = HV.SAGE, ap = !!(opt.appel && S.appel);
   return this.file(function(sig){
     if(this.ko) return null;
     this.cristalFlash(true);
@@ -725,10 +727,88 @@ V.sort = function(scene, to, opt){
     var vole = attendre(S.LANCE * 1000).then(function(){
       var a = me.rep('cristal', scene);
       me.cristalFlash(true);
+      if(ap) return me._appelV(scene, to, (S.TIRE - S.LANCE) * 1000).then(sig);
       var f = opt.appel ? me._appel : me._eclair;
       return f ? f.call(me, scene, a, to, opt).then(sig) : null;
     });
-    return Promise.all([this.jouer(S.sort), vole]);
+    return Promise.all([this.jouer(ap ? S.appel : S.sort), vole]);
+  });
+};
+/* LA RUNE D'APPEL, REFAITE (Romain, 23 novembre, 23 h 09 : « l'effet de la rune d'appel, il est pas terrible. Il faudrait que ce soit
+   un sort, un effet un peu plus parlant. Qu'on comprenne vraiment ce que c'est ») — elle « amène un monstre » (son bouton : 🧲) :
+   une étincelle violette file du cristal jusqu'au monstre ; une RUNE EN FORME D'AIMANT s'imprime sur lui (elle arrive grande, se
+   pose, son anneau tourne) et un lasso de lumière se referme autour de lui ; une CHAÎNE de maillons lumineux se déroule du monstre
+   jusqu'au cristal et se tend (elle vibre), des chevrons ‹ ‹ ‹ y courent du monstre vers elle — vers les héros ; elle TIRE : la chaîne
+   claque et se rembobine dans le cristal, la rune éclate — et le combat fait glisser le monstre devant les autres. Tout est redessiné à
+   chaque image (une seconde et demie), dans la scène des effets. tire : dans combien de millisecondes elle tire. */
+var VIO = '#c9a2ff', VIO_C = '#f1e6ff', VIO_F = '#8a5cff';
+function runeAimant(x, y, sc, rot, o, fl){
+  var g = '<g transform="translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ') scale(' + sc.toFixed(3) + ')" opacity="' + o.toFixed(2) + '">' +
+    '<circle r="40" fill="' + VIO_F + '" opacity="' + (0.14 + 0.3 * fl).toFixed(2) + '"/>' +
+    '<g transform="rotate(' + rot.toFixed(1) + ')"><circle r="29" fill="none" stroke="' + VIO + '" stroke-width="8" opacity=".35"/><circle r="29" fill="none" stroke="' + VIO_C + '" stroke-width="2.8"/>' +
+    '<circle r="22" fill="none" stroke="' + VIO + '" stroke-width="1.8" stroke-dasharray="5 4"/>';
+  for(var k = 0; k < 8; k++){ var an = k * Math.PI / 4, c = Math.cos(an), s2 = Math.sin(an); g += '<path d="M' + (33 * c).toFixed(1) + ' ' + (33 * s2).toFixed(1) + ' L' + (38 * c).toFixed(1) + ' ' + (38 * s2).toFixed(1) + '" stroke="' + VIO_C + '" stroke-width="2.4" stroke-linecap="round"/>'; }
+  var m = 'M-9.5 -12 L -9.5 1 Q -9.5 12 0 12 Q 9.5 12 9.5 1 L 9.5 -12';
+  return g + '</g><path d="' + m + '" fill="none" stroke="' + VIO_F + '" stroke-width="10" opacity=".55"/><path d="' + m + '" fill="none" stroke="' + VIO_C + '" stroke-width="4.6"/>' +
+    '<path d="M-13.4 -12 H -5.6 M5.6 -12 H 13.4" stroke="#ff6a8a" stroke-width="4.6"/>' + (fl > 0.05 ? '<circle r="' + (18 + 30 * fl).toFixed(1) + '" fill="#ffffff" opacity="' + (0.5 * fl).toFixed(2) + '"/>' : '') + '</g>';
+}
+V._appelV = function(scene, to, tire){
+  var me = this, NS = 'http://www.w3.org/2000/svg', sv = document.createElementNS(NS, 'svg'), W = scene.offsetWidth || 960, H = scene.offsetHeight || 540;
+  sv.setAttribute('width', W); sv.setAttribute('height', H); sv.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  sv.setAttribute('style', 'position:absolute;left:0;top:0;overflow:visible;pointer-events:none;z-index:6');
+  scene.appendChild(sv);
+  var t0 = maintenant(), TV = 0.16, TC = 0.4, TT = Math.max(TC + 0.15, tire / 1000), FIN = TT + 0.5, a0 = me.rep('cristal', scene);
+  function f2(v){ return v.toFixed(1); }
+  return new Promise(function(ok){
+    var rendu = false;
+    (function image(){
+      var t = maintenant() - t0, s = '', a = a0;
+      try{ a = me.rep('cristal', scene) || a0; }catch(e){}
+      var dx = to.x - a.x, dy = to.y - a.y, dist = Math.sqrt(dx * dx + dy * dy) || 1, ux = dx / dist, uy = dy / dist, ang = Math.atan2(dy, dx) * 180 / Math.PI;
+      function P(f){ return [a.x + dx * f, a.y + dy * f]; }
+      /* 1. l'étincelle qui file jusqu'au monstre, avec sa traînée */
+      if(t < TV){ var e = lisse(t / TV), q = P(e), q0 = P(Math.max(0, e - 0.22));
+        s += '<path d="M' + f2(q0[0]) + ' ' + f2(q0[1]) + ' L' + f2(q[0]) + ' ' + f2(q[1]) + '" stroke="' + VIO + '" stroke-width="8" stroke-linecap="round" opacity=".45"/>' +
+          '<path d="M' + f2(q0[0]) + ' ' + f2(q0[1]) + ' L' + f2(q[0]) + ' ' + f2(q[1]) + '" stroke="' + VIO_C + '" stroke-width="3" stroke-linecap="round"/>' + rond(q[0], q[1], 9, '#ffffff', 0.95) + rond(q[0], q[1], 16, VIO, 0.35); }
+      /* 2. la chaîne : elle se déroule du monstre vers le cristal, se tend (elle vibre), puis se rembobine dans le cristal */
+      var c0 = 1, c1 = 1;
+      if(t >= TV && t < TC){ c0 = 1 - lisse((t - TV) / (TC - TV)); }
+      else if(t >= TC && t < TT){ c0 = 0; }
+      else if(t >= TT){ c0 = 0; c1 = 1 - lisse((t - TT) / 0.2); }
+      if(c1 - c0 > 0.01 && t >= TV){
+        var vib = t >= TC && t < TT ? Math.sin(t * 70) * 1.8 : 0, nx = -uy, ny = ux, L0 = P(c0), L1 = P(c1), tend = t >= TC && t < TT ? 0.5 + 0.5 * Math.sin(t * 18) : 0;
+        s += '<path d="M' + f2(L0[0]) + ' ' + f2(L0[1]) + ' L' + f2(L1[0]) + ' ' + f2(L1[1]) + '" stroke="' + VIO_F + '" stroke-width="' + (12 + 4 * tend).toFixed(1) + '" stroke-linecap="round" opacity=".3"/>' +
+          '<path d="M' + f2(L0[0]) + ' ' + f2(L0[1]) + ' L' + f2(L1[0]) + ' ' + f2(L1[1]) + '" stroke="' + VIO + '" stroke-width="2" opacity=".9"/>';
+        var n = Math.floor((c1 - c0) * dist / 12);
+        for(var k = 0; k <= n; k++){
+          var fk = c1 - k * 12 / dist; if(fk < c0) break;
+          var qk = P(fk), w2 = Math.sin(fk * dist * 0.08 + t * 40) * vib, pe = k % 2;
+          s += '<ellipse cx="' + f2(qk[0] + nx * w2) + '" cy="' + f2(qk[1] + ny * w2) + '" rx="7" ry="' + (pe ? 1.6 : 3.6) + '" transform="rotate(' + ang.toFixed(1) + ' ' + f2(qk[0] + nx * w2) + ' ' + f2(qk[1] + ny * w2) + ')" fill="none" stroke="' + (pe ? VIO : VIO_C) + '" stroke-width="2.6"/>';
+        }
+        /* (les chevrons qui courent du monstre vers elle : « il vient par ici ») */
+        if(t >= TC && t < TT) for(var j = 0; j < 3; j++){
+          var fj = 1 - (((t - TC) * 1.5 + j / 3) % 1), qj = P(0.08 + 0.84 * fj), oj = Math.min(1, Math.min(fj, 1 - fj) * 5);
+          s += '<path d="M8 -10 L -3 0 L 8 10" transform="translate(' + f2(qj[0]) + ' ' + f2(qj[1]) + ') rotate(' + ang.toFixed(1) + ')" fill="none" stroke="#ffffff" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="' + oj.toFixed(2) + '"/>';
+        }
+      }
+      /* 3. la rune-aimant sur le monstre, et le lasso qui se referme autour de lui */
+      if(t >= TV){
+        var u = t - TV, sc = u < 0.14 ? 1.9 - 0.9 * lisse(u / 0.14) : 1, o = t > TT ? Math.max(0, 1 - (t - TT) / 0.22) : Math.min(1, u / 0.06), fl = u < 0.2 ? 1 - u / 0.2 : t > TT ? Math.max(0, 1 - (t - TT) / 0.15) : 0;
+        var la = lisse((u - 0.06) / 0.3), lo = t > TT ? Math.max(0, 1 - (t - TT) / 0.3) : Math.min(1, u / 0.1);
+        if(lo > 0.02) s += '<ellipse cx="' + f2(to.x) + '" cy="' + f2(to.y + 6) + '" rx="' + f2(86 - 30 * la) + '" ry="' + f2(46 - 14 * la) + '" fill="none" stroke="' + VIO_F + '" stroke-width="10" opacity="' + (0.3 * lo).toFixed(2) + '"/>' +
+          '<ellipse cx="' + f2(to.x) + '" cy="' + f2(to.y + 6) + '" rx="' + f2(86 - 30 * la) + '" ry="' + f2(46 - 14 * la) + '" fill="none" stroke="' + (t > TT ? '#ffffff' : VIO_C) + '" stroke-width="3.2" stroke-dasharray="14 7" opacity="' + lo.toFixed(2) + '"/>';
+        if(o > 0.02) s += runeAimant(to.x, to.y - 4, sc * (t > TT ? 1 + 0.5 * (t - TT) : 1), u * 90, o, fl);
+      }
+      /* 4. elle tire : la rune éclate en étincelles violettes */
+      if(t >= TT && t < TT + 0.45){
+        var v = (t - TT) / 0.45;
+        for(var i = 0; i < 12; i++){ var an2 = i / 12 * 6.283 + 0.4, r2 = 20 + 70 * lisse(v), px = to.x + Math.cos(an2) * r2, py = to.y + Math.sin(an2) * r2 * 0.7 + 20 * v * v;
+          s += rond(px, py, 4.5 * (1 - v) + 1, i % 2 ? VIO_C : VIO, 1 - v); }
+      }
+      sv.innerHTML = s;
+      if(!rendu && t >= TT + 0.03){ rendu = true; ok(to); }
+      if(t < FIN) requestAnimationFrame(image); else { sv.remove(); if(!rendu) ok(to); }
+    })();
   });
 };
 /* LE BOUCLIER (sur un ami, ou deux avec le bâton de chêne) : le bâton levé, les runes montent, le dôme se pose ; la promesse a
@@ -757,6 +837,131 @@ V.bouclier = function(scene, cible, opt){
   p.retirer = function(i){ return p.then(function(b){ return b && b.retirer(i); }); };
   return p;
 };
+/* LE BOUCLIER, REFAIT (Romain, 23 novembre, 23 h 09 : « l'effet du bouclier, il faut qu'il soit mieux fait. Qu'il soit un peu plus fin,
+   qu'il entoure vraiment la personne ») : plus le grand dôme d'hexagones posé devant la case ; une BULLE fine, à la taille du héros,
+   qui l'entoure vraiment. Elle est dans la boîte du héros (elle le suit) : sa moitié de derrière est DERRIÈRE lui (un voile doré, la
+   moitié arrière de l'anneau au sol), sa moitié de devant DEVANT lui (un trait doré fin et sa lueur, un reflet, la moitié avant de
+   l'anneau ; son allure : voir « deuxième version », plus bas). Elle naît du sol : l'anneau s'ouvre, elle grandit, le trait monte des
+   deux côtés jusqu'au sommet, la bulle s'allume, des étincelles montent. Encaisser (absorber) : elle s'illumine et tremble, « −n
+   absorbés » ; se briser (retirer) : elle s'illumine, gonfle, éclate en éclats. Le bouclier du bâton de chêne : la même, en bleu.
+   En temps réel (Léo) : rien ne tourne sans fin (comme l'ancien dôme). Un héros qui n'est pas en volume garde l'ancien dôme. */
+var PAL_BOUC = {jaune:{trait:'#ffd84a', lueur:'#ffb020', clair:'#fff6c8', fond:'#ffe680'}, bleu:{trait:'#8ff3ff', lueur:'#3fd0ff', clair:'#e8fdff', fond:'#bff8ff'}};
+var NB = 0;
+function volumeDe(el){
+  var L = G.HerosVuesDonjon.toutes || [];
+  for(var i = 0; i < L.length; i++){ var c = L[i].cont; if(c === el || (el && el.contains && el.contains(c)) || (c && c.contains && c.contains(el))) return L[i]; }
+  return null;
+}
+function calqueBulle(){ var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', CADRE.join(' ')); s.setAttribute('style', 'position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none'); return s; }
+V._dome = function(L, scene, cible, opt){
+  var vol = volumeDe(cible);
+  if(!vol && PROTO && PROTO._dome) return PROTO._dome.call(this, L, scene, cible, opt);
+  return bulle(vol, opt || {});
+};
+function bulle(vol, opt){
+  var C = PAL_BOUC[opt.sorte === 'chene' ? 'bleu' : 'jaune'], id = 'hvb' + (++NB), figer = !!(G.SALLE && G.SALLE.tempsReel);
+  var os = vol.os(), F = vol.p.F || {}, tt = vol.versSvg(os.tete), pa = vol.versSvg(F.piedG || [-25, 386, 0]), pb = vol.versSvg(F.piedD || [25, 386, 0]);
+  /* (sa taille : du sol — y 414 — jusqu'un peu au-dessus de la tête ; sa largeur : celle d'un héros et un peu d'air) */
+  var cx = (pa[0] + pb[0]) / 2, G0 = 414, T = tt[1] - 78, rx = 72, H = G0 - T, ry = 12;
+  function n1(v){ return v.toFixed(1); }
+  var gauche = 'M' + n1(cx - rx) + ' ' + G0 + ' C ' + n1(cx - rx) + ' ' + n1(G0 - H * 0.64) + ' ' + n1(cx - rx * 0.8) + ' ' + n1(T) + ' ' + n1(cx) + ' ' + n1(T);
+  var droite = 'M' + n1(cx + rx) + ' ' + G0 + ' C ' + n1(cx + rx) + ' ' + n1(G0 - H * 0.64) + ' ' + n1(cx + rx * 0.8) + ' ' + n1(T) + ' ' + n1(cx) + ' ' + n1(T);
+  var forme = gauche + ' C ' + n1(cx + rx * 0.8) + ' ' + n1(T) + ' ' + n1(cx + rx) + ' ' + n1(G0 - H * 0.64) + ' ' + n1(cx + rx) + ' ' + G0 + ' A' + rx + ' ' + ry + ' 0 0 1 ' + n1(cx - rx) + ' ' + G0 + ' Z';
+  var arriereSol = 'M' + n1(cx - rx) + ' ' + G0 + ' A' + rx + ' ' + ry + ' 0 0 1 ' + n1(cx + rx) + ' ' + G0, avantSol = 'M' + n1(cx + rx) + ' ' + G0 + ' A' + rx + ' ' + ry + ' 0 0 1 ' + n1(cx - rx) + ' ' + G0;
+  /* DEUXIÈME VERSION (Romain, 23 novembre, 23 h 40 : « il est vraiment pas joli. J'aimais bien comment il était un petit peu avant, là,
+     avec les runes. Il était un peu transparent. Tu peux même un petit peu l'animer […] Avec un effet de dégradé qui faisait un peu
+     bouclier ») : la forme reste celle qui l'entoure (23 h 09 : « plus fin, qu'il entoure vraiment la personne »), mais avec l'allure de
+     l'ancien dôme : le dégradé transparent au milieu, plus clair vers le bord ; le fin quadrillage d'hexagones qui monte doucement ; les
+     runes posées tout le long de la bulle, qui scintillent ; le double liseré lumineux, le reflet ; l'anneau en pointillés au sol, qui
+     tourne. Plus de runes qui tournent autour de lui. */
+  var ar = calqueBulle(), av = calqueBulle(), HX = 16.8, HY = 14.56;
+  function degrade(nom, o0, o1, o2){ return '<radialGradient id="' + nom + '" gradientUnits="userSpaceOnUse" cx="' + n1(cx) + '" cy="' + n1(G0 - H * 0.42) + '" r="' + n1(H * 0.6) + '"><stop offset="0" stop-color="' + C.lueur + '" stop-opacity="' + o0 + '"/><stop offset=".68" stop-color="' + C.trait + '" stop-opacity="' + o1 + '"/><stop offset="1" stop-color="' + C.clair + '" stop-opacity="' + o2 + '"/></radialGradient>'; }
+  function sol(d){ return '<path d="' + d + '" fill="none" stroke="' + C.lueur + '" stroke-width="9" opacity=".12"/><path d="' + d + '" fill="none" stroke="' + C.lueur + '" stroke-width="5" opacity=".2"/><path class="b-pointille" d="' + d + '" fill="none" stroke="' + C.trait + '" stroke-width="2" stroke-dasharray="5 4"/>'; }
+  function liseres(d){ return '<path d="' + d + '" pathLength="100" stroke-dasharray="100" fill="none" stroke="' + C.lueur + '" stroke-width="8" opacity=".13"/><path d="' + d + '" pathLength="100" stroke-dasharray="100" fill="none" stroke="' + C.lueur + '" stroke-width="4.6" opacity=".24"/>' +
+    '<path d="' + d + '" pathLength="100" stroke-dasharray="100" fill="none" stroke="' + C.trait + '" stroke-width="2" stroke-linecap="round"/>'; }
+  ar.innerHTML = '<defs>' + degrade(id + 'g', 0.06, 0.18, 0.55) + '</defs><g class="b-voile" opacity="0"><path d="' + forme + '" fill="url(#' + id + 'g)"/></g><g class="b-sol">' + sol(arriereSol) + '</g>';
+  av.innerHTML = '<defs>' + degrade(id + 'h', 0.03, 0.1, 0.4) +
+      '<pattern id="' + id + 'p" width="' + HX + '" height="' + HY + '" patternUnits="userSpaceOnUse"><path d="M4.2 0 L 12.6 0 L 16.8 7.28 L 12.6 14.56 L 4.2 14.56 L 0 7.28 Z" fill="none" stroke="' + C.fond + '" stroke-width=".9" opacity=".6"/></pattern>' +
+      '<clipPath id="' + id + 'c"><path d="' + forme + '"/></clipPath></defs>' +
+    '<g class="b-voile" opacity="0"><path d="' + forme + '" fill="url(#' + id + 'h)"/>' +
+      '<g clip-path="url(#' + id + 'c)" opacity=".42"><rect class="b-hex" x="' + n1(cx - rx - 20) + '" y="' + n1(T - 30) + '" width="' + n1(2 * rx + 40) + '" height="' + n1(H + 60) + '" fill="url(#' + id + 'p)"/></g>' +
+      '<path class="b-reflet" d="M' + n1(cx - rx * 0.66) + ' ' + n1(T + H * 0.25) + ' Q ' + n1(cx - rx * 0.52) + ' ' + n1(T + H * 0.06) + ' ' + n1(cx - rx * 0.1) + ' ' + n1(T + H * 0.025) + '" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" opacity=".7"/></g>' +
+    '<g class="b-trait">' + liseres(gauche) + liseres(droite) + '</g><g class="b-runes"></g><g class="b-sol">' + sol(avantSol) + '</g>' +
+    '<path class="b-eclat" d="' + forme + '" fill="' + C.clair + '" opacity="0"/><g class="b-etinc"></g>';
+  vol.boite.insertBefore(ar, vol.svg);
+  vol.boite.insertBefore(av, vol.calque);
+  /* (le badge du bouclier, au-dessus de la bulle, et la place des mots « −n absorbés ») */
+  var k = (vol.boite.offsetWidth || 200) / CADRE[2], haut = document.createElement('div');
+  /* (les deux calques grandissent et tremblent depuis le sol, sous le héros) */
+  [ar, av].forEach(function(sv){ sv.style.transformOrigin = n1((cx - CADRE[0]) * k) + 'px ' + n1((G0 - CADRE[1]) * k) + 'px'; });
+  haut.style.cssText = 'position:absolute;left:' + n1((cx - CADRE[0]) * k) + 'px;top:' + n1((T - CADRE[1]) * k) + 'px;width:0;height:0;z-index:3;pointer-events:none';
+  haut.innerHTML = '<div class="ha-badge">🛡️ −' + (opt.pct || 75) + ' %' + (opt.sansTour ? '' : ' · 1 tour') + '</div>';
+  vol.boite.appendChild(haut);
+  /* --- elle naît du sol --- */
+  var anims = [];
+  function anime(el, kf, o){ var a = el.animate(kf, o); return a; }
+  [ar, av].forEach(function(sv){
+    [].forEach.call(sv.querySelectorAll('.b-sol'), function(g){ anime(g, [{transform:'translate(' + n1(cx) + 'px,' + G0 + 'px) scale(.1) translate(' + n1(-cx) + 'px,' + (-G0) + 'px)', opacity:0}, {transform:'translate(' + n1(cx) + 'px,' + G0 + 'px) scale(1.12) translate(' + n1(-cx) + 'px,' + (-G0) + 'px)', opacity:1, offset:.7}, {transform:'none', opacity:1}], {duration:360, easing:'ease-out'}); });
+    [].forEach.call(sv.querySelectorAll('.b-voile'), function(g){ g.setAttribute('opacity', '1'); anime(g, [{opacity:0}, {opacity:0, offset:.55}, {opacity:1}], {duration:680, easing:'ease-out'}); });
+  });
+  [].forEach.call(av.querySelectorAll('.b-trait path'), function(p){ anime(p, [{strokeDashoffset:100}, {strokeDashoffset:100, offset:.25}, {strokeDashoffset:0}], {duration:560, easing:'ease-out', fill:'forwards'}); });
+  anime(av.querySelector('.b-eclat'), [{opacity:0}, {opacity:0, offset:.6}, {opacity:.5, offset:.72}, {opacity:0}], {duration:900});
+  /* (des étincelles qui montent du sol, dans la bulle) */
+  var et = av.querySelector('.b-etinc'), se = '';
+  for(var i = 0; i < 9; i++){ var ex = cx + (i / 8 - 0.5) * rx * 1.4, ey = G0 - 8 - (i % 3) * 6; se += '<path d="M0 -6 L1.6 -1.6 L6 0 L1.6 1.6 L0 6 L-1.6 1.6 L-6 0 L-1.6 -1.6 Z" fill="' + C.clair + '" transform="translate(' + n1(ex) + ' ' + n1(ey) + ')"/>'; }
+  et.innerHTML = se;
+  [].forEach.call(et.children, function(p, i){ var ex = cx + (i / 8 - 0.5) * rx * 1.4, ey = G0 - 8 - (i % 3) * 6, mt = H * (0.45 + 0.35 * ((i * 37) % 10) / 10);
+    anime(p, [{transform:'translate(' + n1(ex) + 'px,' + n1(ey) + 'px) scale(.3)', opacity:0}, {transform:'translate(' + n1(ex) + 'px,' + n1(ey - mt * 0.3) + 'px) scale(1)', opacity:1, offset:.3}, {transform:'translate(' + n1(ex + (i % 2 ? 6 : -6)) + 'px,' + n1(ey - mt) + 'px) scale(.4)', opacity:0}],
+      {duration:900 + (i % 3) * 140, delay:260 + i * 35, easing:'ease-out', fill:'both'}); });
+  /* --- les runes posées tout le long de la bulle (comme sur l'ancien dôme) ; elles scintillent chacune à son tour --- */
+  var gR = av.querySelector('.b-runes'), sR = '', RU = ['M-6 8 L 0 -8 L 6 8 M-3 2 L 3 2', 'M-4 -8 L -4 8 M-4 -8 L 5 -3 L -4 2', 'M0 -8 L 0 8 M-6 -4 L 6 4 M6 -4 L -6 4', 'M-6 -6 L 6 6 M-6 6 L 6 -6 M0 -8 L 0 8', 'M-5 -8 L -5 8 M-5 0 L 5 -8 M-5 0 L 5 8', 'M0 -8 L 6 0 L 0 8 L -6 0 Z'];
+  for(var r1 = 0; r1 < 10; r1++){ var an1 = Math.PI * (0.1 + 0.8 * r1 / 9), x1 = cx - (rx - 11) * Math.cos(an1), y1 = G0 - (H - 18) * Math.sin(an1) * (0.3 + 0.7 * Math.pow(Math.sin(an1), 0.35));
+    sR += '<g transform="translate(' + n1(x1) + ' ' + n1(y1) + ') scale(.6)"><path d="' + RU[r1 % RU.length] + '" fill="none" stroke="' + C.lueur + '" stroke-width="6" stroke-linecap="round" opacity=".35"/><path d="' + RU[r1 % RU.length] + '" fill="none" stroke="' + C.clair + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>'; }
+  gR.innerHTML = sR;
+  gR.animate([{opacity:0}, {opacity:0, offset:.55}, {opacity:1}], {duration:900});
+  /* (elle vit doucement : les hexagones montent, les runes scintillent, le pointillé du sol tourne, le liseré et le reflet respirent) */
+  if(!figer){
+    anims.push(av.querySelector('.b-hex').animate([{transform:'translateY(0px)'}, {transform:'translateY(' + (-HY) + 'px)'}], {duration:1800, iterations:Infinity}));
+    [].forEach.call(gR.children, function(g, i){ anims.push(g.animate([{opacity:.4}, {opacity:1}], {duration:1200, iterations:Infinity, direction:'alternate', easing:'ease-in-out', delay:-i * 330})); });
+    [ar, av].forEach(function(sv){ [].forEach.call(sv.querySelectorAll('.b-pointille'), function(p){ anims.push(p.animate([{strokeDashoffset:0}, {strokeDashoffset:-18}], {duration:1500, iterations:Infinity})); }); });
+    anims.push(av.querySelector('.b-trait').animate([{opacity:.8}, {opacity:1}], {duration:1100, iterations:Infinity, direction:'alternate', easing:'ease-in-out', delay:600}));
+    anims.push(av.querySelector('.b-reflet').animate([{opacity:.4}, {opacity:.85}], {duration:1700, iterations:Infinity, direction:'alternate', easing:'ease-in-out'}));
+  }
+  /* (elle sort du sol en grandissant, comme l'ancien dôme) */
+  [ar, av].forEach(function(sv){ sv.animate([{transform:'scale(.3,0)'}, {transform:'scale(1.06,1.08)', offset:.6}, {transform:'scale(.98,.97)', offset:.8}, {transform:'none'}], {duration:560, easing:'ease-out'}); });
+  function tremble(){ [ar, av].forEach(function(sv){ sv.animate([{transform:'none'}, {transform:'scale(1.05,.95)', offset:.25}, {transform:'scale(.98,1.03)', offset:.6}, {transform:'none'}], {duration:420}); }); }
+  var fini = false;
+  return {
+    el:av,
+    absorber:function(nb){
+      if(fini) return Promise.resolve();
+      av.querySelector('.b-eclat').animate([{opacity:.55}, {opacity:0}], {duration:420, easing:'ease-out'});
+      tremble();
+      var m = document.createElement('div');
+      m.textContent = '−' + nb + ' absorbé' + (nb > 1 ? 's' : '');
+      m.style.cssText = 'position:absolute;left:0;top:-30px;transform:translate(-50%,-100%);white-space:nowrap;font:800 18px/1 system-ui,"Segoe UI",sans-serif;color:' + C.clair + ';text-shadow:0 0 8px ' + C.lueur + ',0 2px 0 #24182e';
+      haut.appendChild(m);
+      return m.animate([{transform:'translate(-50%,-80%)', opacity:0}, {transform:'translate(-50%,-100%)', opacity:1, offset:.15}, {transform:'translate(-50%,-180%)', opacity:0}], {duration:1300, easing:'ease-out', fill:'forwards'}).finished.then(function(){ m.remove(); });
+    },
+    retirer:function(){
+      if(fini) return Promise.resolve(); fini = true;
+      anims.forEach(function(a){ try{ a.cancel(); }catch(e){} });
+      av.querySelector('.b-eclat').animate([{opacity:0}, {opacity:.7, offset:.3}, {opacity:0}], {duration:380, fill:'forwards'});
+      /* (des éclats qui volent du contour) */
+      var se2 = '', E = [];
+      for(var i = 0; i < 14; i++){ var an = Math.PI * (1.05 + 0.9 * i / 13), x = cx + rx * Math.cos(an) * (i % 2 ? 1 : 0.92), y = G0 - H * 0.5 + (H * 0.55) * Math.sin(an) * 0.98; E.push([x, y, an]);
+        se2 += '<path d="M0 -5 L4 3 L-4 3 Z" fill="' + (i % 2 ? C.trait : C.clair) + '" transform="translate(' + n1(x) + ' ' + n1(y) + ')"/>'; }
+      var gE = document.createElementNS('http://www.w3.org/2000/svg', 'g'); gE.innerHTML = se2; av.appendChild(gE);
+      [].forEach.call(gE.children, function(p, i){ var e = E[i], dx2 = Math.cos(e[2]) * 46, dy2 = Math.sin(e[2]) * 30;
+        p.animate([{transform:'translate(' + n1(e[0]) + 'px,' + n1(e[1]) + 'px) rotate(0deg)', opacity:1}, {transform:'translate(' + n1(e[0] + dx2) + 'px,' + n1(e[1] + dy2 + 60) + 'px) rotate(' + (i % 2 ? 260 : -260) + 'deg)', opacity:0}], {duration:600, easing:'ease-out', fill:'forwards'}); });
+      haut.animate([{opacity:1}, {opacity:0}], {duration:300, fill:'forwards'});
+      /* (la bulle gonfle et s'efface ; les éclats, eux, finissent de voler) */
+      ar.animate([{transform:'none', opacity:1}, {transform:'scale(1.1,1.06)', opacity:0}], {duration:380, easing:'ease-in', fill:'forwards'});
+      [].forEach.call(av.querySelectorAll('.b-voile, .b-runes, .b-sol, .b-trait'), function(g){ g.animate([{opacity:1}, {opacity:1, offset:.3}, {opacity:0}], {duration:400, fill:'forwards'}); });
+      return attendre(680).then(function(){ ar.remove(); av.remove(); haut.remove(); });
+    }
+  };
+}
 /* LA LUMIÈRE DANS TOUTE LA SALLE : le bâton tenu haut ; la salle s'illumine (0,78 s) */
 V.eclairSalle = function(scene, opt){
   opt = opt || {};

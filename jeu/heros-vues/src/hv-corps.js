@@ -345,7 +345,7 @@ function mainSVG(K, V, B, P){
   w = uni(w);
   var n = mul(croix(d, w), -cote);                               /* (vers où regarde la paume) */
   function Q(a, b, c2){ return pj(add(add(add(W, d, a), w, b), n, c2 || 0), V); }
-  var L = [], objet = '', objetPts = [], i;
+  var L = [], objet = '', objetPts = [], morceaux = [], i;
   /* la dague, dans SA main gauche : le manche est dans le poing, la lame sort du côté du pouce */
   if(cote > 0 && (P.dague || 0) > 0.3){
     var g0 = Q(7.6, -7.4, 2.4), g1 = Q(7.6, 8, 2.4), ga = Q(3.6, 8.6, 2.4), gb = Q(11.6, 8.6, 2.4);
@@ -413,8 +413,15 @@ function mainSVG(K, V, B, P){
   if(cote < 0 && K.baton && !(P.sansBaton > 0.5)){
     var b0 = Q(7.6, -176, 2.4), b1 = Q(7.6, 120, 2.4), bc = Q(7.6, 142, 2.4), bh = Q(7.6, 165, 2.4), ux = bh[0] - bc[0], uy = bh[1] - bc[1], ul = Math.sqrt(ux * ux + uy * uy) || 1;
     var px = -uy / ul * 11.5, py = ux / ul * 11.5, cri = borne(P.cristal || 0, 0, 1), cb2 = Q(7.6, 120, 2.4);
-    var g0 = Q(7.6, 116, 2.4), g1 = Q(7.6, 106, 2.4);
-    objet += PT(U.poly([b0, b1], false), O, 9.6) + PT(U.poly([b0, b1], false), '#7a5230', 6.2) + PT(U.poly([Q(7.6, -170, 2.4), Q(7.6, 112, 2.4)], false), '#a87a4a', 2, ' opacity=".7"') +
+    var g0 = Q(7.6, 116, 2.4), g1 = Q(7.6, 106, 2.4), bm0 = Q(7.6, 4, 2.4), bm1 = Q(7.6, -4, 2.4);
+    /* LE BÂTON EN DEUX MORCEAUX (Romain, 23 novembre, 23 h 09 : « le bâton, il est censé être dans sa main et pas derrière son bras »,
+       « quand il jette le bâton en avant […] il rentre à moitié dans sa robe ») : le bas (sous le poing) et le haut (au-dessus, avec le
+       cristal), chacun caché seulement là où quelque chose est vraiment devant LUI — avant, tout le bâton était caché d'un coup dès
+       que la plupart de ses points étaient derrière le buste ou derrière l'avant-bras qui le tient. Et l'avant-bras qui le tient ne le
+       cache jamais : le bâton est dans le poing, devant le poignet (masquesObjets). La jonction est dans le poing, sous les doigts. */
+    morceaux.push({nom:'bb', svg:PT(U.poly([b0, bm0], false), O, 9.6) + PT(U.poly([b0, bm0], false), '#7a5230', 6.2) + PT(U.poly([Q(7.6, -170, 2.4), Q(7.6, 0, 2.4)], false), '#a87a4a', 2, ' opacity=".7"'),
+      pts:[-170, -140, -110, -80, -50, -20].map(function(b){ return Q(7.6, b, 2.4); })});
+    morceaux.push({nom:'bh', svg:PT(U.poly([bm1, b1], false), O, 9.6) + PT(U.poly([bm1, b1], false), '#7a5230', 6.2) + PT(U.poly([Q(7.6, 0, 2.4), Q(7.6, 112, 2.4)], false), '#a87a4a', 2, ' opacity=".7"') +
       /* (les bagues dorées sous le cristal) */
       PT(U.poly([g0, g1], false), O, 11) + PT(U.poly([g0, g1], false), '#e8c062', 7.4) +
       /* (la lueur, les griffes, le cristal : un losange taillé) */
@@ -426,27 +433,83 @@ function mainSVG(K, V, B, P){
         ' M' + f1(cb2[0] + px * 0.9) + ' ' + f1(cb2[1] + py * 0.9) + ' Q' + f1(bc[0] + px * 1.25) + ' ' + f1(bc[1] + py * 1.25) + ' ' + f1(bc[0] + px * 0.7 + ux / ul * 8) + ' ' + f1(bc[1] + py * 0.7 + uy / ul * 8), '#e8c062', 2.6) +
       '<path d="M' + f1(bh[0]) + ' ' + f1(bh[1]) + ' L' + f1(bc[0] + px) + ' ' + f1(bc[1] + py) + ' L' + f1(2 * bc[0] - bh[0]) + ' ' + f1(2 * bc[1] - bh[1]) + ' L' + f1(bc[0] - px) + ' ' + f1(bc[1] - py) + ' Z" fill="#8ff3ff"' + U.c(2.2) + '/>' +
       '<path d="M' + f1(bh[0]) + ' ' + f1(bh[1]) + ' L' + f1(bc[0] - px) + ' ' + f1(bc[1] - py) + ' L' + f1(bc[0]) + ' ' + f1(bc[1]) + ' Z" fill="#e8fdff" opacity=".9"/>' +
-      '<path d="M' + f1(bc[0]) + ' ' + f1(bc[1]) + ' L' + f1(bc[0] + px) + ' ' + f1(bc[1] + py) + ' L' + f1(2 * bc[0] - bh[0]) + ' ' + f1(2 * bc[1] - bh[1]) + ' Z" fill="#3fb8e8" opacity=".55"/>';
-    [-150, -110, -60, 0, 50, 100, 142].forEach(function(b){ objetPts.push(Q(7.6, b, 2.4)); });
+      '<path d="M' + f1(bc[0]) + ' ' + f1(bc[1]) + ' L' + f1(bc[0] + px) + ' ' + f1(bc[1] + py) + ' L' + f1(2 * bc[0] - bh[0]) + ' ' + f1(2 * bc[1] - bh[1]) + ' Z" fill="#3fb8e8" opacity=".55"/>',
+      pts:[20, 50, 80, 110, 142].map(function(b){ return Q(7.6, b, 2.4); })});
     /* (où sont le cristal et le pied du bâton : l'adaptateur du donjon y fait partir les sorts) */
     K.rep = K.rep || {}; K.rep.cristal = bc; K.rep.batonBas = b0;
   }
-  /* LE LIVRE DU SAGE (P.livre, dans SA main gauche ; P.livreO : ouvert) : fermé, une couverture bleue au bord doré ; ouvert, deux pages
-     crème posées dans la paume, des lignes d'écriture */
+  /* LE LIVRE DU SAGE (P.livre, dans SA main gauche ; P.livreO : ouvert ; P.livreP : une page qui tourne) — REFAIT (Romain, 23 novembre,
+     23 h 09 : « si tu veux vraiment qu'il sorte un livre, il faudrait que ça soit un peu mieux fait, quoi, qu'on voit mieux que c'est un
+     livre ») : avant, une plaque bleue vue par la tranche. Maintenant un gros livre épais, en volume, tenu par-derrière (la main est
+     derrière lui : il est dessiné APRÈS elle — « apres »), ses pages tournées vers nous : la couverture bleu nuit à coins dorés et un
+     médaillon d'or ; la tranche crème des pages ; il s'ouvre en tournant autour de son dos (la couverture de devant passe de l'autre
+     côté) ; ouvert, deux pages crème bombées, des lignes d'écriture, une rune dessinée sur la page de droite (elle luit avec le cristal),
+     un signet rouge qui pend ; une page qui tourne (livreP).
+     Le dos du livre est le long des doigts (d), les pages s'étalent le long du pouce (w), elles regardent comme la paume (n). */
+  var apres = '';
   if(cote > 0 && (P.livre || 0) > 0.05){
-    var lo = borne(P.livreO || 0, 0, 1), lc0 = Q(11, 0, 5);
-    /* (grand, pour qu'on le voie au donjon) */
-    function QB(u, v){ return Q(11 + u * 1.45, v * 1.45, 5 + 3.5 * Math.abs(u) / 26 * lo); }
-    var couv = [QB(-1, -15), QB(21, -15), QB(21, 15), QB(-1, 15)];
-    var lb = '<g opacity="' + f1(doux(0.05, 0.5, P.livre)) + '">';
-    if(lo < 0.98) lb += '<g opacity="' + f1(1 - lo) + '">' + PC(U.poly(couv), '#2f4f9a', 2.2) + PT(U.poly([QB(1, -13), QB(19, -13), QB(19, 13), QB(1, 13)]), '#e8c062', 1.4) + '</g>';
-    if(lo > 0.02){
-      var pg1 = [QB(0, -15), QB(-24 * lo, -14), QB(-24 * lo, 14), QB(0, 15)], pg2 = [QB(0, -15), QB(24 * lo, -14), QB(24 * lo, 14), QB(0, 15)], ecr = '';
-      [-9, -4, 1, 6].forEach(function(v){ [[-20, -4], [4, 20]].forEach(function(r){ var a1 = QB(r[0] * lo, v), a2 = QB(r[1] * lo, v); ecr += 'M' + f1(a1[0]) + ' ' + f1(a1[1]) + ' L' + f1(a2[0]) + ' ' + f1(a2[1]) + ' '; }); });
-      lb += '<g opacity="' + f1(lo) + '">' + PC(U.poly(pg1), '#f6ecd0', 2) + PC(U.poly(pg2), '#fbf3dc', 2) + PT(ecr, '#9a8a6a', 1.1, ' opacity=".8"') + PT(U.poly([QB(0, -15), QB(0, 15)], false), '#c9b285', 1.6) + '</g>';
+    var lo = borne(P.livreO || 0, 0, 1), lp = borne(P.livreP || 0, 0, 1), LH = 30, LW = 40, EP = 10, cri2 = borne(P.cristal || 0, 0, 1);
+    var BLEU = '#23366e', BLEU2 = '#30489a', OR2 = '#e8c062', CREME = '#f7eccd', CREME2 = '#e9d9ae';
+    /* (x : en travers, le long du pouce ; y : le long du dos, du haut (-) au bas (+) ; z : vers nous, hors de la paume) */
+    function QB(x, y, z){ return Q(6 + y, x, 4 + z); }
+    function pl(L){ return U.poly(L); }
+    /* une moitié du livre : du dos jusqu'au bord, dans la direction (cx, cz) ; z0 : sa hauteur au dos ; bombe : les pages bombées */
+    function moitie(cx, cz, z0, bombe){
+      var f = function(t, y, dz){ return QB(cx * LW * t, y, z0 + cz * LW * t + (dz || 0) + bombe * Math.sin(Math.PI * Math.min(1, t * 1.25)) * (1 - Math.abs(y) / LH * 0.25)); };
+      return f;
     }
-    objet += lb + '</g>';
-    objetPts.push(lc0, QB(20, 0), QB(-20 * lo, 0));
+    function quad(f, t0, t1, y0, y1, dz, n){
+      var A = [], B2 = [], k;
+      for(k = 0; k <= n; k++){ var t = t0 + (t1 - t0) * k / n; A.push(f(t, y0, dz)); B2.unshift(f(t, y1, dz)); }
+      return A.concat(B2);
+    }
+    function lignes(f, t0, t1, dz, saute){
+      var s2 = '';
+      for(var k = 0; k < 7; k++){ if(saute && k >= 2 && k <= 4) continue; var y = -LH + 8 + k * 6.4, a1 = f(t0, y, dz), a2 = f(t1 - (k % 3 === 2 ? 0.18 : 0), y, dz);
+        s2 += 'M' + f1(a1[0]) + ' ' + f1(a1[1]) + ' L' + f1(a2[0]) + ' ' + f1(a2[1]) + ' '; }
+      return PT(s2, '#8a7350', 1.25, ' opacity=".85"');
+    }
+    /* la couverture de dos (à droite) et ses pages : toujours là */
+    var bA = 14 * lo * RAD, fD = moitie(Math.cos(bA), Math.sin(bA), 0, 0), pD = moitie(Math.cos(bA), Math.sin(bA), EP * (1 - lo * 0.55), 2.2 * lo);
+    var lb = '<g opacity="' + f1(doux(0.05, 0.5, P.livre)) + '">';
+    lb += PC(pl(quad(fD, 0, 1.04, -LH - 1.5, LH + 1.5, 0, 1)), BLEU, 2.2);
+    /* (la tranche des pages : le bloc crème entre les deux couvertures) */
+    var tr2 = [fD(1, -LH + 1, 1), pD(0.98, -LH + 1, 0), pD(0.98, LH - 1, 0), fD(1, LH - 1, 1)];
+    lb += PC(pl(tr2), CREME2, 1.6) + PT('M' + f1(vers(tr2[0][0], tr2[1][0], 0.5)) + ' ' + f1(vers(tr2[0][1], tr2[1][1], 0.5)) + ' L' + f1(vers(tr2[3][0], tr2[2][0], 0.5)) + ' ' + f1(vers(tr2[3][1], tr2[2][1], 0.5)), '#b9a273', 1, ' opacity=".8"');
+    lb += PC(pl(quad(pD, 0, 0.98, -LH + 1, LH - 1, 0, 6)), CREME, 1.8);
+    if(lo > 0.35){ lb += '<g opacity="' + f1(doux(0.35, 0.7, lo)) + '">' + lignes(pD, 0.14, 0.88, 0.3, true);
+      /* (la rune dessinée sur la page de droite : un cercle et une étoile ; elle luit avec le cristal) */
+      var rc = pD(0.5, -LH + 8 + 3 * 6.4, 0.4), rr = 7.5;
+      lb += '<circle cx="' + f1(rc[0]) + '" cy="' + f1(rc[1]) + '" r="' + f1(rr + 4 + 6 * cri2) + '" fill="#8ff3ff" opacity="' + f1(0.12 + 0.4 * cri2) + '"/>' +
+        '<circle cx="' + f1(rc[0]) + '" cy="' + f1(rc[1]) + '" r="' + f1(rr) + '" fill="none" stroke="' + (cri2 > 0.5 ? '#2fa8d8' : '#7a5a3a') + '" stroke-width="1.5"/>' +
+        PT('M' + f1(rc[0]) + ' ' + f1(rc[1] - rr * 0.75) + ' L' + f1(rc[0]) + ' ' + f1(rc[1] + rr * 0.75) + ' M' + f1(rc[0] - rr * 0.65) + ' ' + f1(rc[1] - rr * 0.38) + ' L' + f1(rc[0] + rr * 0.65) + ' ' + f1(rc[1] + rr * 0.38) +
+          ' M' + f1(rc[0] - rr * 0.65) + ' ' + f1(rc[1] + rr * 0.38) + ' L' + f1(rc[0] + rr * 0.65) + ' ' + f1(rc[1] - rr * 0.38), cri2 > 0.5 ? '#2fa8d8' : '#7a5a3a', 1.4) + '</g>'; }
+    /* la couverture de devant et ses pages : elle tourne autour du dos, de « posée dessus » (fermé) à « de l'autre côté » (ouvert) */
+    var th = (180 - 14) * lo * RAD, cxG = Math.cos(th), czG = Math.sin(th), zG = EP * (1 - lo), fG = moitie(cxG, czG, zG, 0), pG = moitie(cxG, czG, zG + (lo > 0.5 ? EP * 0.45 : -1.5), lo > 0.5 ? 2.2 * lo : 0);
+    if(lo <= 0.5){
+      /* (fermé ou presque : on voit la couverture de devant, ses coins dorés et son médaillon) */
+      var cv = quad(fG, 0, 1.04, -LH - 1.5, LH + 1.5, 0, 1), cvc = fG(0.55, 0, 0);
+      lb += PC(pl(cv), BLEU2, 2.2) + PT(pl(quad(fG, 0.08, 0.96, -LH + 2.5, LH - 2.5, 0, 1)), OR2, 1.3, ' opacity=".9"');
+      [[1.04, -LH - 1.5, 0.78, -LH + 0.5], [1.04, LH + 1.5, 0.78, LH - 0.5]].forEach(function(c){ var a1 = fG(c[0], c[1], 0), a2 = fG(c[2], c[1], 0), a3 = fG(c[0], c[3] + (c[1] > 0 ? -6 : 6), 0); lb += PC(pl([a1, a2, a3]), OR2, 1.2); });
+      lb += '<circle cx="' + f1(cvc[0]) + '" cy="' + f1(cvc[1]) + '" r="6.2" fill="' + OR2 + '"' + U.c(1.4) + '/><path d="M' + f1(cvc[0]) + ' ' + f1(cvc[1] - 3.6) + ' L' + f1(cvc[0] + 1.1) + ' ' + f1(cvc[1] - 1.1) + ' L' + f1(cvc[0] + 3.6) + ' ' + f1(cvc[1]) + ' L' + f1(cvc[0] + 1.1) + ' ' + f1(cvc[1] + 1.1) + ' L' + f1(cvc[0]) + ' ' + f1(cvc[1] + 3.6) + ' L' + f1(cvc[0] - 1.1) + ' ' + f1(cvc[1] + 1.1) + ' L' + f1(cvc[0] - 3.6) + ' ' + f1(cvc[1]) + ' L' + f1(cvc[0] - 1.1) + ' ' + f1(cvc[1] - 1.1) + ' Z" fill="#fff6c8"/>';
+    } else {
+      /* (ouvert : la couverture dépasse sous la page de gauche, puis la page) */
+      lb += PC(pl(quad(fG, 0, 1.04, -LH - 1.5, LH + 1.5, 0, 1)), BLEU, 2.2) + PC(pl(quad(pG, 0, 0.98, -LH + 1, LH - 1, 0, 6)), '#fbf2d6', 1.8);
+      lb += '<g opacity="' + f1(doux(0.5, 0.8, lo)) + '">' + lignes(pG, 0.12, 0.86, 0.3, false) + '</g>';
+      /* (le creux du dos, au milieu) */
+      lb += PT('M' + f1(QB(0, -LH + 1, EP * 0.45)[0]) + ' ' + f1(QB(0, -LH + 1, EP * 0.45)[1]) + ' L' + f1(QB(0, LH - 1, EP * 0.45)[0]) + ' ' + f1(QB(0, LH - 1, EP * 0.45)[1]), '#b39a68', 2.2, ' opacity=".9"');
+      /* (le signet rouge, qui pend du bas du dos) */
+      var s0 = QB(1, LH - 2, EP * 0.5), s1 = QB(4, LH + 13, EP * 0.5), s2b = QB(7.5, LH + 12, EP * 0.5), s3 = QB(4.5, LH - 2, EP * 0.5);
+      lb += PC(pl([s0, s1, QB(5.2, LH + 9, EP * 0.5), s2b, s3]), '#c0392b', 1.3);
+    }
+    /* (une page qui tourne : elle se lève de la droite, passe en l'air vers nous, se pose à gauche) */
+    if(lo > 0.8 && lp > 0.02 && lp < 0.98){
+      var tp = (14 + (180 - 28) * lp) * RAD, pT = moitie(Math.cos(tp), Math.sin(tp), EP * 0.48, 1.5);
+      lb += PC(pl(quad(pT, 0, 0.97, -LH + 1.5, LH - 1.5, 0, 6)), lp < 0.5 ? '#fffaf0' : '#f3e6c2', 1.6);
+    }
+    lb += '</g>';
+    apres += lb;
+    var lc0 = QB(0, 0, EP);
     K.rep = K.rep || {}; K.rep.livre = lc0;
   }
   /* la paume */
@@ -479,7 +542,7 @@ function mainSVG(K, V, B, P){
   }
   s += PT(tr, K.peau.trait, 1.05, ' opacity=".8"');
   /* (pour tenir l'arc : la paume seule, et les doigts seuls avec leurs traits ; vers : la paume est tournée vers nous) */
-  return {objet:objet, objetPts:objetPts, main:s, paume:defs + paume, doigts:U.masse(L, 'url(#' + gid + ')', 1.9) + PT(tr, K.peau.trait, 1.05, ' opacity=".8"'), n:n, vers:-n[0] * V.s + n[2] * V.c};
+  return {objet:objet, objetPts:objetPts, morceaux:morceaux, apres:apres, main:s, paume:defs + paume, doigts:U.masse(L, 'url(#' + gid + ')', 1.9) + PT(tr, K.peau.trait, 1.05, ' opacity=".8"'), n:n, vers:-n[0] * V.s + n[2] * V.c};
 }
 
 /* le dessin d'un bras. plein : avec tout son contour (le bras du fond, dessiné avant le buste) ; sinon son trait ne commence qu'à l'aisselle */
@@ -536,23 +599,26 @@ function brasSVG(K, V, B, P, plein){
     var Pa = P;
     if(B.tourne){ Pa = Object.create(P); Pa.arcAxe = B.tourne(P.arcAxe || [0, 1, 0]); Pa.arcDir = B.tourne(P.arcDir || [-0.82, 0, 0.57]); }
     var arc = arcSVG(K, V, add(add(B.W, B.dir, 8), mn.n, 3.5), Pa);
-    if(mn.vers > 0.15) return {manche:s, paume:mn.paume, arc:arc, objet:mn.objet, objetPts:mn.objetPts, main:mn.doigts};
-    return {manche:s, paume:'', arc:arc, objet:mn.objet, objetPts:mn.objetPts, main:mn.main};
+    if(mn.vers > 0.15) return {manche:s, paume:mn.paume, arc:arc, objet:mn.objet, objetPts:mn.objetPts, morceaux:mn.morceaux, main:mn.doigts, apres:mn.apres};
+    return {manche:s, paume:'', arc:arc, objet:mn.objet, objetPts:mn.objetPts, morceaux:mn.morceaux, main:mn.main, apres:mn.apres};
   }
-  return {manche:s, paume:'', arc:null, objet:mn.objet, objetPts:mn.objetPts, main:mn.main};
+  return {manche:s, paume:'', arc:null, objet:mn.objet, objetPts:mn.objetPts, morceaux:mn.morceaux, main:mn.main, apres:mn.apres};
 }
 /* un bras en une seule chaîne de dessin (la manche, la paume, l'arc, ce qu'il tient, la main) ; m : pour chaque morceau de l'arc
    (cH, cB, bH, bB), le masque qui le cache là où quelque chose est devant lui */
 function brasTout(o, m){
   m = m || {};
-  return o.manche + o.paume + objetsTout(o, m) + o.main;
+  /* (apres : ce qui est devant la main — le livre, tenu par-derrière) */
+  return o.manche + o.paume + objetsTout(o, m) + o.main + (o.apres || '');
 }
 /* ce qu'une main tient (l'arc en morceaux, la flèche ou la dague), chaque morceau sous son masque s'il en a un */
 function objetsTout(o, m){
   m = m || {};
   function sous(id, s){ return id ? '<g mask="url(#' + id + ')">' + s + '</g>' : s; }
   var a = o.arc ? o.arc.morceaux.map(function(x){ return sous(m[x.nom], x.svg); }).join('') + o.arc.poignee : '';
-  return a + sous(m.objet, o.objet);
+  /* (les morceaux du bâton du Sage, chacun sous son masque) */
+  var mo = o.morceaux ? o.morceaux.map(function(x){ return sous(m[x.nom], x.svg); }).join('') : '';
+  return a + mo + sous(m.objet, o.objet);
 }
 
 /* ---------- Le buste : un seul contour avec les manches de devant ----------
@@ -1081,7 +1147,7 @@ HV.corps = function(K, h, V, P){
     lJupe = cqs.filter(function(c1){ return c1.y0 >= YJ - 0.1; }).map(function(c1){ return c1.d; }), defsArc = '';
   /* L'ARC : chaque branche est cachée là où la poitrine, la jupe ou une jambe est devant elle (on compare les profondeurs en
      plusieurs points de la branche) */
-  function masqueBranche(pts, nom, avecBras){
+  function masqueBranche(pts, nom, avecBras, sauf){
     var occ = [], s1;
     ['haut', 'jupe'].forEach(function(part){ s1 = 0; pts.forEach(function(q){ s1 += T.devant(q[0], q[1], q[2], 2, part); }); if(s1 < 0) occ = occ.concat(part === 'haut' ? lHaut : lJupe); });
     /* un os (de A à B, d'épaisseur r) cache le morceau si, là où il le croise à l'écran, il est plus près de nous que lui */
@@ -1102,7 +1168,7 @@ HV.corps = function(K, h, V, P){
     });
     /* (la corde et les flèches passent DERRIÈRE un bras qui est devant elles — Romain, 16 h 39 : « le fil de l'arc, lui aussi, il est
        censé être derrière le bras ») */
-    if(avecBras) [bG, bD].forEach(function(B){ os(B.Ep, B.El, R_EP, B.manche[0]); os(B.El, B.W, R_CO, B.manche[1]); });
+    if(avecBras) [bG, bD].forEach(function(B){ os(B.Ep, B.El, R_EP, B.manche[0]); if(B !== sauf) os(B.El, B.W, R_CO, B.manche[1]); });
     /* (et derrière la tête ou le cou : vue de dos, l'encoche de la flèche et le bout de la corde sont dans la main cachée derrière la
        tête) */
     if(avecBras){
@@ -1119,6 +1185,8 @@ HV.corps = function(K, h, V, P){
     var m = {};
     if(o.arc) o.arc.morceaux.forEach(function(x){ m[x.nom] = masqueBranche(x.pts, B.cle + suffixe + x.nom, /^(cH|cB|fl)$/.test(x.nom)); });
     if(o.objetPts && o.objetPts.length) m.objet = masqueBranche(o.objetPts, B.cle + suffixe + 'ob', true);
+    /* (le bâton : son propre avant-bras ne le cache pas — il est dans le poing, devant le poignet) */
+    if(o.morceaux) o.morceaux.forEach(function(x){ m[x.nom] = masqueBranche(x.pts, B.cle + suffixe + x.nom, true, B); });
     return m;
   }
   var mPa = avant.map(function(B, i){ return masquesObjets(B, pa[i], ''); });
@@ -1157,7 +1225,7 @@ HV.corps = function(K, h, V, P){
   [jg.Kn, jd.Kn, bG.W, bD.W].forEach(function(q){ if(q[1] > SOL - 26) xs.push(pj(q, V)); });
   var xa = 1e9, xb = -1e9; xs.forEach(function(q){ xa = Math.min(xa, q[0]); xb = Math.max(xb, q[0]); ys += q[2] / xs.length; });
   return {T:T, dbg:dbg, dbgBras:[bG, bD].map(function(b){ return {cle:b.cle, fond:b.fond, sousBuste:b.sousBuste, prTete:b.prTete, avant:avant.indexOf(b) >= 0, w:b.w, cou:tN}; }), derriere:der, jambes:'', jambesApres:jb, torse:tor, carquoisDevant:cq && dos ? cq.svg : '',
-    devant:dessus ? pa.map(function(o){ return o.manche; }).join('') + pa.map(function(o, i){ return o.paume + objetsTout(o, mPa[i]); }).join('') + pa.map(function(o){ return o.main; }).join('') : '', dos:dos, dessus:dessus,
+    devant:dessus ? pa.map(function(o){ return o.manche; }).join('') + pa.map(function(o, i){ return o.paume + objetsTout(o, mPa[i]); }).join('') + pa.map(function(o){ return o.main + (o.apres || ''); }).join('') : '', dos:dos, dessus:dessus,
     cou:function(tDos, ombre){ return cou(K, V, pj(add(Hp, nd, tDos ? 13 : 20), V), bc, rc, ombre); },
     tete:{V:Vt, tx:pHp[0] + 3 * Vt.s, ty:pHp[1] - 28, px:-3 * Vt.s, rot:(P.pen || 0) + ho * Vt.s + co * angN, hocheF:ho * Vt.c, fond:pHp[2] - T.dB},
     ombre:{cx:(xa + xb) / 2, rx:Math.max(50 + 8 * Math.abs(V.s), (xb - xa) / 2 + 32), cy:SOL + 1 + PSOL * ys},

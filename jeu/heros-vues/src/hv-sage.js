@@ -49,35 +49,70 @@ function enlair(cle, x, z){ var o = {}; o['pied' + cle] = [x, 372, z]; o['pointe
    ramène son pied. */
 var LANCE = 0.72;
 var BAT = {relG:1, coudeG:[-0.8, 0.35, -0.4], poingG:0.95};
-var POINTE = {mainG:[-8, 172, 62], pouceG:[0.12, -0.5, 1], mdirG:[0.4, 0.4, 0.8], coudeG:[-0.7, 0.4, -0.2], mainD:[30, 204, 40], relD:1, poingD:0.1, mdirD:[0, 0.4, 1]};
+/* LE BÂTON POINTÉ (Romain, 23 novembre, 23 h 09 : « quand il jette le bâton en avant pour faire un sort, le bâton, il rentre à moitié
+   dans sa robe ») : la main sur SON côté droit, devant elle ; le bâton vers l'avant et un peu vers le haut, un peu vers le milieu — son
+   pied passe donc DEHORS, le long de sa hanche, de notre côté (avant, la main était au milieu du ventre et le bas du bâton passait
+   dans son corps). Le poing est fermé par-dessus, les doigts vers le milieu (mdirG, à angle droit du bâton : sinon il penche). */
+var POINTE = {mainG:[-32, 168, 54], pouceG:[0.28, -0.75, 0.6], mdirG:[0.95, 0.15, -0.24], coudeG:[-0.8, 0.4, -0.3], mainD:[30, 204, 40], relD:1, poingD:0.1, mdirD:[0, 0.4, 1]};
+/* (le bâton qui remonte, après le sort, puis droit à côté d'elle : jamais devant son visage) */
+var RECUL = {mainG:[-38, 178, 44], pouceG:[0.2, -0.85, 0.48], mdirG:[0.97, 0.2, -0.1]};
+var RANGE = {mainG:[-62, 214, -6], pouceG:[0.05, -1, 0.02], mdirG:[0.2, -0.26, 1]};
 var PAS = {piedG:[pg[0] - 6, 386, pg[2] + 34], pointeG:0};
 var sort = [
   [0.12, avec(BAT, {bas:[2, 16, -4], dos:[g.dos[0] + 4, 0, g.dos[2] - 4], hoche:6, sourcils:-0.8, plisse:0.35, sourire:-0.3})],
   [0.3, tq(-34, 2, avec(avec(BAT, enlair('G', pg[0] - 2, pg[2] + 14)), {mainG:[-62, 196, 0], pouceG:[0.05, -1, 0], mdirG:[0.2, -0.26, 1], mainD:[38, 206, 32], relD:1, poingD:0.2,
     bas:[2, 8, 0], hoche:-6, regX:0.8, sourcils:-0.9, plisse:0.4, sourire:-0.3, cristal:0.7}))],
   [0.46, avec(avec(avec(BAT, POINTE), PAS), {bas:[-10, 18, 16], bang:[10, 0, 12], dos:[12, 0, 10], tete:-6, hoche:2, sourcils:-1, plisse:0.5, ouvre:0.55, largeB:0.8, cristal:1})],
-  [LANCE, avec(avec(avec(BAT, POINTE), PAS), {mainG:[-4, 168, 70], bas:[-12, 20, 19], bang:[11, 0, 13], dos:[14, 0, 11], tete:-6, hoche:2, sourcils:-1, plisse:0.6, ouvre:0.6, largeB:0.8, cristal:1})],
+  [LANCE, avec(avec(avec(BAT, POINTE), PAS), {mainG:[-30, 164, 62], bas:[-12, 20, 19], bang:[11, 0, 13], dos:[14, 0, 11], tete:-6, hoche:2, sourcils:-1, plisse:0.6, ouvre:0.6, largeB:0.8, cristal:1})],
   /* (le recul du sort) */
-  [0.86, avec(avec(BAT, PAS), {mainG:[-14, 176, 54], pouceG:[0.08, -0.7, 0.8], mdirG:[0.4, 0.3, 0.8], bas:[-6, 14, 10], bang:[7, 0, 8], dos:[6, 0, 6],
+  [0.86, avec(avec(avec(BAT, RECUL), PAS), {bas:[-6, 14, 10], bang:[7, 0, 8], dos:[6, 0, 6],
     mainD:[32, 210, 36], relD:1, poingD:0.2, hoche:-2, sourcils:-0.7, plisse:0.4, ouvre:0.2, cristal:0.5})],
-  [1.12, avec(avec(BAT, PAS), {mainG:[-40, 200, 30], pouceG:[0.06, -0.9, 0.3], mdirG:[0.3, 0, 1], bas:[-4, 12, 8], bang:[6, 0, 4], dos:[8, 0, 2], sourcils:-0.6, plisse:0.3, cristal:0.3})],
+  [1.12, avec(avec(avec(BAT, RANGE), PAS), {bas:[-4, 12, 8], bang:[6, 0, 4], dos:[8, 0, 2], sourcils:-0.6, plisse:0.3, cristal:0.3})],
   /* (elle ramène son pied) */
   [1.3, avec(enlair('G', pg[0] - 3, pg[2] + 16), {bas:[0, 9, 3], sourcils:-0.5})],
   [1.44, {}]];
+
+/* ---------- LA RUNE D'APPEL (2,1 s ; la rune part à 0,72 s ; elle TIRE à 1,52 s : HV.SAGE.TIRE) ----------
+   Le même départ que le sort (Romain, 23 h 09 : « la rune d'appel, le mouvement, il est bon ») ; puis, pendant que la rune se pose sur
+   le monstre et que la chaîne de lumière se tend (hv-adaptateur.js), elle TIENT, le bâton pointé, l'effort sur le visage ; et elle
+   tire d'un coup sec : le bâton revient vers elle, elle se penche en arrière, le pied de devant recule — le monstre arrive. */
+var TIRE = 1.52;
+var TIENT = avec(avec(avec(BAT, POINTE), PAS), {mainG:[-30, 165, 60], bas:[-11, 20, 17], bang:[10, 0, 12], dos:[12, 0, 10], tete:-6, hoche:3, sourcils:-1, sourcilsIn:0.3, plisse:0.7, ouvre:0.3, largeB:0.9, cristal:1});
+var appel = sort.slice(0, 4).concat([
+  [0.9, TIENT],
+  [1.12, avec(TIENT, {mainG:[-31, 166, 58], bas:[-10, 21, 16], ouvre:0.25})],
+  [1.34, avec(TIENT, {mainG:[-30, 165, 60], bas:[-11, 20, 17], ouvre:0.35})],
+  [1.42, avec(TIENT, {mainG:[-28, 163, 64], bas:[-12, 19, 19], ouvre:0.2})],
+  /* (le coup sec : le bâton tiré vers elle, le buste en arrière) */
+  [TIRE, avec(avec(avec(BAT, RECUL), PAS), {mainG:[-46, 186, 18], pouceG:[0.14, -0.8, 0.58], bas:[0, 12, -6], bang:[4, 0, -2], dos:[-8, 0, -2],
+    mainD:[34, 200, 30], relD:1, poingD:0.7, tete:-4, hoche:-5, sourcils:-0.9, plisse:0.5, ouvre:0.55, largeB:0.9, cristal:1})],
+  /* (elle ramène son pied de devant : il se lève, il se pose à sa place) */
+  [1.7, avec(avec(BAT, RANGE), avec(enlair('G', pg[0] - 3, pg[2] + 16), {mainG:[-60, 208, -4], bas:[1, 10, -4], dos:[-4, 0, 0], tete:4, regX:0.7, sourcils:-0.8, plisse:0.4, cristal:0.6}))],
+  [1.86, {bas:[0, 9, 0], regX:0.6, sourcils:-0.6}],
+  [2.06, {}]]);
 
 /* ---------- LE BOUCLIER (le dôme à 0,76 s ; × 1,5 pour le bouclier jaune : l'adaptateur étire les temps) ----------
    Elle plie les genoux ; elle se tourne vers nous en levant le bâton, son pied de derrière recule d'un pas pour bien s'ancrer ; elle
    se grandit, le bâton haut, la main gauche ouverte vers le ciel, cambrée ; le dôme ; puis elle revient. */
 var DOME = 0.76;
-var LEVE = {mainG:[-40, 150, 22], pouceG:[0.04, -1, 0], mdirG:[0.3, 0, 1], mainD:[46, 104, 30], relD:1, coudeD:[0.9, 0.1, -0.3], poingD:0.05, mdirD:[0, -1, 0.3], pouceD:[-1, 0, 0.3]};
-var RECULE = {piedD:[pd[0] + 4, 386, pd[2] - 22], pointeD:0};
+/* DEUXIÈME VERSION (Romain, 23 novembre, 23 h 09 : « il fait un bouclier et il regarde à gauche. S'il fait un bouclier, il faudrait qu'il
+   regarde vers la personne à qui il fait le bouclier […] au moins qu'il regarde l'une des deux personnes […] là, il se tourne et il
+   regarde derrière et il y a le bouclier qui part devant ») : elle ne se tourne plus vers nous ; elle regarde ses amis (devant elle,
+   vers la droite de l'écran), avance d'un pas vers eux, lève le bâton à côté d'elle (le cristal au-dessus de sa tête, jamais devant
+   son visage) et TEND la main gauche ouverte vers eux, la paume vers eux : elle leur envoie le bouclier. */
+var LEVE = {mainG:[-70, 146, -10], relG:1, coudeG:[-0.9, 0.15, -0.3], pouceG:[0.05, -1, 0.02], mdirG:[0.2, -0.26, 1], poingG:0.95};
+var TEND = {mainD:[42, 152, 80], relD:1, coudeD:[0.55, 0.45, -0.5], poingD:0.04, mdirD:[0.1, -0.9, 0.4], pouceD:[-1, 0, 0.1]};
+var VERS = {tete:8, regX:0.9, regY:0.1};
 var bouclier = [
-  [0.14, avec(BAT, {bas:[0, 18, 0], hoche:8, mainD:[36, 214, 30], relD:1, poingD:0.4, sourcils:-0.8, plisse:0.3})],
-  [0.32, tq(-40, 2, avec(avec(avec(BAT, LEVE), enlair('D', pd[0] + 3, pd[2] - 12)), {mainD:[44, 140, 34], bas:[0, 10, -2], hoche:-8, regY:-0.4, sourcils:-0.8, plisse:0.3, ouvre:0.4, cristal:0.8}))],
-  [0.5, tq(-44, 2, avec(avec(avec(BAT, LEVE), RECULE), {bas:[2, 2, -8], dosPlus:[-8, 0, 0], hoche:-12, regY:-0.6, sourcils:-0.9, plisse:0.4, ouvre:0.6, largeB:0.8, cristal:1}))],
-  [DOME, tq(-44, 2, avec(avec(avec(BAT, LEVE), RECULE), {mainD:[46, 98, 30], bas:[2, 0, -9], dosPlus:[-10, 0, 0], hoche:-12, regY:-0.6, sourcils:-0.6, plisse:0.4, ouvre:0.5, cristal:1}))],
-  [1.0, tq(-24, 2, avec(RECULE, {mainG:[-56, 220, 4], relG:1, coudeG:[-0.9, 0.3, -0.3], pouceG:[0.06, -1, 0], mdirG:[0.2, -0.26, 1], poingG:0.95, bas:[0, 8, -6], regX:0.4, sourcils:-0.3, plisse:0.3, cristal:0.5}))],
-  [1.18, avec(enlair('D', pd[0] + 3, pd[2] - 12), {bas:[0, 8, -2], regX:0.4, sourcils:-0.4, cristal:0.4})],
+  [0.14, avec(avec(BAT, VERS), {mainG:[-64, 222, -8], pouceG:[0.06, -1, 0], mdirG:[0.2, -0.26, 1], bas:[0, 18, 0], hoche:6, mainD:[30, 196, 34], relD:1, coudeD:[0.8, 0.4, -0.3], poingD:0.6, sourcils:-0.8, plisse:0.35})],
+  [0.32, tq(-10, 2, avec(avec(avec(BAT, VERS), enlair('G', pg[0] - 2, pg[2] + 14)), {mainG:[-60, 184, 2], pouceG:[0.05, -1, 0.02], mdirG:[0.2, -0.26, 1], mainD:[38, 172, 56], relD:1, coudeD:[0.6, 0.45, -0.5], poingD:0.3, mdirD:[0.1, -0.6, 0.8], pouceD:[-1, 0, 0.1],
+    bas:[0, 12, 4], hoche:0, sourcils:-0.9, plisse:0.4, ouvre:0.3, cristal:0.7}))],
+  [0.5, tq(-10, 2, avec(avec(avec(avec(BAT, LEVE), TEND), PAS), avec(VERS, {bas:[-6, 9, 12], dosPlus:[8, 0, 4], bangPlus:[4, 0, 4], hoche:-2, sourcils:-1, plisse:0.45, ouvre:0.55, largeB:0.8, cristal:1})))],
+  /* (le bouclier part : la main pousse vers eux) */
+  [DOME, tq(-10, 2, avec(avec(avec(avec(BAT, LEVE), TEND), PAS), avec(VERS, {mainG:[-70, 140, -10], mainD:[46, 148, 90], bas:[-8, 8, 14], dosPlus:[10, 0, 5], bangPlus:[5, 0, 5], hoche:-3, sourcils:-0.7, plisse:0.5, ouvre:0.6, largeB:0.9, cristal:1})))],
+  [1.0, tq(-6, 2, avec(avec(avec(avec(BAT, LEVE), TEND), PAS), avec(VERS, {mainG:[-70, 156, -10], mainD:[44, 156, 82], bas:[-6, 9, 12], dosPlus:[7, 0, 3], sourcils:-0.6, plisse:0.35, ouvre:0.15, cristal:0.6})))],
+  /* (elle revient : le bâton redescend, la main aussi, le pied de devant revient) */
+  [1.18, avec(avec(BAT, RANGE), avec(enlair('G', pg[0] - 3, pg[2] + 16), {mainG:[-60, 206, 4], bas:[-2, 9, 4], tete:6, regX:0.7, sourcils:-0.5, cristal:0.4}))],
   [1.36, {}]];
 
 /* ---------- LA LUMIÈRE DANS TOUTE LA SALLE (la lumière à 0,78 s) ----------
@@ -100,22 +135,28 @@ var eclairSalle = [
 
 /* ---------- ÉTUDIER (1,92 s ; l'idée à 1,2 s) : elle se tourne un peu vers nous pour lire, change d'appui ---------- */
 var IDEE = 1.2;
-var LIT = {livre:1, mainD:[14, 186, 48], relD:1, coudeD:[0.8, 0.5, -0.2], poingD:0.5, mdirD:[-0.6, -0.2, 0.8], pouceD:[0, -1, 0.2]};
+/* LE LIVRE TENU POUR QU'ON LE VOIE (Romain, 23 h 09 : « qu'on voit mieux que c'est un livre ») : la main gauche le tient par-derrière,
+   devant sa poitrine, ses pages tournées entre elle et nous (un peu vers le haut, vers ses yeux) — avant, on le voyait par la tranche.
+   (mdirD : les doigts vers le bas et vers le milieu ; pouceD : à angle droit, vers SA gauche ; la paume — et les pages — vers nous) */
+var LIT = {livre:1, mainD:[10, 174, 56], relD:1, coudeD:[0.8, 0.5, -0.2], poingD:0.35, mdirD:[-0.39, 0.8, 0.46], pouceD:[0.92, 0.3, 0.26]};
 var etudier = [
   [0.2, {mainD:[36, 222, 12], relD:1, coudeD:[0.9, 0.3, -0.3], poingD:0.3, hoche:10, regY:0.6, regX:0.3}],
-  [0.3, {livre:1, mainD:[36, 220, 14], relD:1, coudeD:[0.9, 0.3, -0.3], poingD:0.6, hoche:10, regY:0.6, regX:0.3}],
-  /* (elle l'ouvre devant elle et lit, penchée dessus, tournée vers nous, son poids sur une jambe) */
-  [0.52, tq(-30, 2, avec(LIT, {livreO:1, bas:[-5, 10, 0], dosPlus:[4, 0, 0], hoche:14, regY:0.7, regX:0.1, sourcils:0.3, ouvre:0.1, largeB:0.6}))],
-  [0.86, tq(-30, 2, avec(LIT, {livreO:1, mainD:[14, 184, 48], bas:[-5, 10, 0], dosPlus:[5, 0, 0], hoche:15, regY:0.75, regX:-0.1, sourcils:0.5, sourcilsAsym:0.3, plisse:0.2}))],
-  [1.08, tq(-30, 2, avec(LIT, {livreO:1, bas:[-4, 10, 0], dosPlus:[5, 0, 0], hoche:14, regY:0.7, regX:0.2, sourcils:0.5, plisse:0.2}))],
+  [0.3, {livre:1, mainD:[36, 220, 14], relD:1, coudeD:[0.9, 0.3, -0.3], poingD:0.6, mdirD:[-0.39, 0.8, 0.46], pouceD:[0.92, 0.3, 0.26], hoche:10, regY:0.6, regX:0.3}],
+  /* (elle l'ouvre devant elle — la couverture tourne autour du dos — et lit, penchée dessus, tournée vers nous, son poids sur une jambe) */
+  [0.44, tq(-24, 2, avec(LIT, {livreO:0.15, bas:[-4, 9, 0], hoche:10, regY:0.6, regX:0.2, sourcils:0.1}))],
+  [0.62, tq(-30, 2, avec(LIT, {livreO:1, bas:[-5, 10, 0], dosPlus:[4, 0, 0], hoche:14, regY:0.7, regX:0.1, sourcils:0.3, ouvre:0.1, largeB:0.6}))],
+  /* (elle tourne une page) */
+  [0.86, tq(-30, 2, avec(LIT, {livreO:1, livreP:0, mainD:[12, 178, 52], bas:[-5, 10, 0], dosPlus:[5, 0, 0], hoche:15, regY:0.75, regX:-0.1, sourcils:0.5, sourcilsAsym:0.3, plisse:0.2}))],
+  [1.04, tq(-30, 2, avec(LIT, {livreO:1, livreP:1, bas:[-4, 10, 0], dosPlus:[5, 0, 0], hoche:14, regY:0.7, regX:0.2, sourcils:0.5, plisse:0.2}))],
+  [1.08, tq(-30, 2, avec(LIT, {livreO:1, livreP:1, bas:[-4, 10, 0], dosPlus:[5, 0, 0], hoche:14, regY:0.7, regX:0.2, sourcils:0.5, plisse:0.2}))],
   /* (l'idée ! elle se redresse, relève la tête, les yeux grands ouverts) */
-  [IDEE + 0.06, tq(-24, 2, avec(LIT, {livreO:1, mainD:[14, 180, 46], bas:[2, 4, 0], dosPlus:[-3, 0, 0], hoche:-8, regY:-0.6, sourcils:0.9, plisse:-0.3, ouvre:0.35, sourire:0.6, cristal:0.8}))],
-  [1.48, tq(-20, 2, avec(LIT, {livreO:1, mainD:[14, 182, 46], bas:[2, 6, 0], hoche:-4, regY:-0.3, sourcils:0.4, sourire:0.4, plisse:0.3, cristal:0.4}))],
+  [IDEE + 0.06, tq(-24, 2, avec(LIT, {livreO:1, livreP:1, mainD:[12, 174, 50], bas:[2, 4, 0], dosPlus:[-3, 0, 0], hoche:-8, regY:-0.6, sourcils:0.9, plisse:-0.3, ouvre:0.35, sourire:0.6, cristal:0.8}))],
+  [1.48, tq(-20, 2, avec(LIT, {livreO:1, livreP:1, mainD:[12, 178, 50], bas:[2, 6, 0], hoche:-4, regY:-0.3, sourcils:0.4, sourire:0.4, plisse:0.3, cristal:0.4}))],
   /* (elle le referme et le range, les yeux de nouveau sur les ennemis) */
-  [1.62, avec(LIT, {livreO:0, hoche:6, regY:0.3, regX:0.4, sourcils:-0.4})],
+  [1.62, avec(LIT, {livreO:0, livreP:1, hoche:6, regY:0.3, regX:0.4, sourcils:-0.4})],
   [1.78, {livre:0, mainD:[36, 220, 14], relD:1, coudeD:[0.9, 0.3, -0.3], poingD:0.4, hoche:4, regX:0.5, sourcils:-0.5}],
   [1.92, {}]];
 
-HV.SAGE = {sort:sort, bouclier:bouclier, eclairSalle:eclairSalle, etudier:etudier, LANCE:LANCE, DOME:DOME, FLASH:FLASH, IDEE:IDEE};
-HV.NOMS_SAGE = {sort:'Le sort : un éclair', bouclier:'Le bouclier sur un ami', eclairSalle:'La lumière dans toute la salle', etudier:'Elle étudie son livre'};
+HV.SAGE = {sort:sort, appel:appel, bouclier:bouclier, eclairSalle:eclairSalle, etudier:etudier, LANCE:LANCE, TIRE:TIRE, DOME:DOME, FLASH:FLASH, IDEE:IDEE};
+HV.NOMS_SAGE = {sort:'Le sort : un éclair', appel:'La rune d\'appel : elle tire le monstre', bouclier:'Le bouclier sur un ami', eclairSalle:'La lumière dans toute la salle', etudier:'Elle étudie son livre'};
 })(window);
