@@ -246,7 +246,6 @@ function vueCreation(){
     s += '<div class="b-crea-nom"><div class="b-crea-apercu petit">' + portrait('buste', true, true, Object.assign({}, c, {niveau:1, talents:[], equip:[]})) + '</div>' +
       '<label class="b-etiquette" for="nom">Comment t\'appelles-tu, ' + (c.sexe === 'm' ? D.ROLES[c.role].m : D.ROLES[c.role].f) + ' ?</label>' +
       '<input id="nom" class="b-champ" maxlength="16" autocomplete="off" value="' + esc(c.nom || '') + '" placeholder="Ton prénom">' +
-      '<div class="b-suggestions">' + ['Naïm', 'Alicia', 'Siham', 'Romain', 'Lia'].map(function(n){ return '<button class="puce" data-act="crea-nom" data-n="' + n + '">' + n + '</button>'; }).join('') + '</div>' +
       '</div><div class="b-bas"><button class="btn grand" data-act="crea-fin">✨ C\'est parti !</button></div>';
   }
   return s + '</main>';

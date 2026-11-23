@@ -1206,7 +1206,6 @@ A['crea-opt'] = function(el){
 A['crea-hasard'] = function(){ if(window.Persos) hasard(UI.crea); M.son('magie'); UI.garderDefilement = true; M.render(); };
 A['crea-suite'] = function(){ if(UI.creaEtape === 1 && !UI.crea.role) return; UI.creaEtape++; M.render(); window.scrollTo(0, 0); };
 A['crea-retour'] = function(){ if(UI.creaEtape > 1){ UI.creaEtape--; M.render(); } else { UI.ecran = 'accueil'; M.render(); } };
-A['crea-nom'] = function(el){ var i = document.getElementById('nom'); if(i) i.value = el.dataset.n; UI.crea.nom = el.dataset.n; };
 A['crea-fin'] = function(){
   var i = document.getElementById('nom'), nom = (i && i.value || '').trim();
   if(!nom){ M.toast('Écris ton prénom !'); if(i) i.focus(); return; }
