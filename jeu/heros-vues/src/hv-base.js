@@ -334,10 +334,12 @@ HV.contexte = function(id, h){
   K.baudrier = rl === 'pisteur' || rl === 'alchimiste';
   K.tablier = rl === 'alchimiste';
   /* LE SAGE (Romain, 23 novembre, 22 h 21 : « tu peux passer au sage ») : la longue robe crème sous le manteau bleu ouvert, bordé d'or
-     (K.robe : hv-sage.js), son bâton à cristal dans SA main droite (K.baton), ses lunettes rondes (K.lunettes : hv-tete.js) */
+     (K.robe : hv-corps.js), son bâton à cristal dans SA main droite (K.baton) ; K.lunettes : des lunettes rondes (hv-tete.js) */
   K.robe = rl === 'sage';
   K.baton = h.baton !== undefined ? h.baton : rl === 'sage';
-  K.lunettes = h.lunettes !== undefined ? !!h.lunettes : rl === 'sage';
+  /* (les lunettes : enlevées du Sage — Romain, 23 novembre, 22 h 53 : « tu les as fait en texture collée sur le visage et ça fait
+     moche […] enlève-les » ; le dessin reste, coupé : h.lunettes = true pour le remettre) */
+  K.lunettes = !!h.lunettes;
   /* (la couleur de la potion dans sa main : l'adaptateur du donjon la change avant de préparer — HV.monter(…).K.potion) */
   K.potion = h.potion || '#ff8a2a';
   K.pant = cp ? [sombre(cp, 0.1), sombre(cp, 0.55)] : K.combat ? ['#5a4232', '#241811'] : ['#4a4062', '#221d33'];

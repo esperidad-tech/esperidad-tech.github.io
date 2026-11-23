@@ -146,9 +146,10 @@ V.pose = function(){
   else {
     if(this.cles){ var a = this.apres; this.cles = null; this.apresF = typeof a === 'function' ? a : null; this.tenue = a && typeof a !== 'function' ? HV.avec(this.base, a) : null; this.t0 = t; this.trans = null; u = 0; this._finGeste(); }
     P = this.apresF ? this.apresF(u) : this.tenue || this.base;
-    /* (en attendant, il ne reste pas à rien faire : toutes les 4 à 7 secondes, un geste tiré au sort parmi ceux de tous et ceux de son
-       rôle — HV.attentes, hv-attente.js —, jamais deux fois le même de suite ; chacun à son rythme — Romain, 22 h 21) */
-    if(!this.apresF && !this.tenue && !this.ko && this._veut && t > this._prochainRegard){ this._prochainRegard = t + 4 + Math.random() * 3; this.jouer(this.attente()); }
+    /* (en attendant, il ne reste pas à rien faire : toutes les 3 à 5,5 secondes, un geste tiré au sort parmi ceux de tous et ceux de
+       son rôle — HV.attentes, hv-attente.js : sur ses gardes, jamais tranquille —, jamais deux fois le même de suite ; chacun à son
+       rythme — Romain, 22 h 21 et 22 h 48) */
+    if(!this.apresF && !this.tenue && !this.ko && this._veut && t > this._prochainRegard){ this._prochainRegard = t + 3 + Math.random() * 2.5; this.jouer(this.attente()); }
   }
   if(this.trans){ var a2 = (t - this.trans.t) / this.trans.d; if(a2 < 1) P = melange(this.trans.A, P, lisse(a2)); else this.trans = null; }
   this.dernier = P;
