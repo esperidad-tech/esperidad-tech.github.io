@@ -20,7 +20,7 @@ HV.dessin = function(h, P, o){
   var C = HV.corps(K, h, Vb, P), tp = C.tete, Vt = tp.V;
   /* la tête : au bout du cou (hv-corps.js). Quand elle baisse la tête, vue de profil la tête penche vers l'avant ; vue de face,
      ce sont les traits du visage et la frange qui descendent. La queue de cheval, elle, continue de pendre vers le bas. */
-  var rot = tp.rot, pend = Math.tan(Math.max(-0.9, Math.min(0.9, rot * RAD))) * 100;
+  var rot = tp.rot, pend = Math.tan(Math.max(-0.9, Math.min(0.9, rot * RAD))) * 100 * (1 - Math.max(0, Math.min(1, P.couche || 0)));
   P.hocheF = tp.hocheF; P.qx = (P.qx || 0) + pend * Vt.c; P.qz = (P.qz || 0) + pend * Vt.s;
   var coif = HV.COIFFURES[h.coiffure] || HV.COIFFURES.queue;
   var CH = HV.cheveux(K, coif, Vt, P), T = HV.tete(K, h, Vt, P, CH);
@@ -64,6 +64,7 @@ HV.capDe = function(P){
      pouceG / pouceD : de quel côté est le pouce. poingG / poingD : 0 ouverte … 1 fermée. indexG / indexD : 1, l'index reste tendu.
    - piedG / piedD : la cheville. genouG / genouD : de quel côté va le genou. ouvG / ouvD : le pied tourné en dehors.
      pointeG / pointeD (degrés) : 0 à plat, 50 sur la pointe, 90 les orteils repliés (un genou à terre).
+     lacetG / lacetD (degrés) : le pied pivote sur place (> 0 : vers SA gauche), comme quand on se tourne sans lever le pied.
    - bas [x, y, z] : le bassin se déplace (y > 0 : il descend). bang [avant, côté, vrille] : le bassin penche (degrés).
      dos [avant, côté, vrille] : le dos se courbe de la taille aux épaules.
    - tete : elle tourne la tête ; pen : elle la penche sur le côté ; hoche : elle la baisse (> 0) ou lève le nez.
@@ -71,10 +72,12 @@ HV.capDe = function(P){
      tendu ; dague : 1, elle a sa dague dans SA main gauche ; brasDessus : 1, les bras passent devant la tête.
    ========================================================== */
 HV.POSES = {
-  repos:{mainG:[-50.5, 243, 4], coudeG:[-0.7, -0.1, -0.7], mainD:[50.5, 243, 4], coudeD:[0.7, -0.1, -0.7], relG:1, relD:1, mdirG:[0, 0, 0], mdirD:[0, 0, 0],
+  /* (la main de l'arc un peu écartée du corps : quand elle se tournait, l'arc rentrait dans la tunique — Romain, 16 h 39 : « l'arc qui
+     a un petit bug là, qui passe sous les textures ») */
+  repos:{mainG:[-56, 243, 6], coudeG:[-0.7, -0.1, -0.7], mainD:[50.5, 243, 4], coudeD:[0.7, -0.1, -0.7], relG:1, relD:1, mdirG:[0, 0, 0], mdirD:[0, 0, 0],
     pouceG:[0.25, 0.1, 1], pouceD:[-0.25, 0.1, 1], poingG:0.75, poingD:0.15, indexG:0, indexD:0,
-    piedG:[-19.5, 386, 5], piedD:[19.5, 386, -5], genouG:[-0.25, 0, 1], genouD:[0.25, 0, 1], ouvG:0.3, ouvD:0.3, pointeG:0, pointeD:0,
-    bas:[0, 0, 0], bang:[0, 0, 0], dos:[0, 0, 0], tete:0, pen:0, hoche:0, bx:0, ty:0,
+    piedG:[-19.5, 386, 5], piedD:[19.5, 386, -5], genouG:[-0.25, 0, 1], genouD:[0.25, 0, 1], ouvG:0.3, ouvD:0.3, pointeG:0, pointeD:0, lacetG:0, lacetD:0,
+    bas:[0, 0, 0], bang:[0, 0, 0], dos:[0, 0, 0], tete:0, pen:0, hoche:0, bx:0, ty:0, couche:0, visiere:0,
     /* l'expression (hv-tete.js) : le sourire de toujours, les sourcils au repos, le regard droit devant */
     sourcils:0, sourcilsIn:0, sourcilsAsym:0, plisse:0, sourire:1, ouvre:0, largeB:1, bouchex:0, rougit:0, regX:0, regY:0,
     /* (l'arc tenu le long du corps : son ventre vers l'avant, la corde derrière — avant, la corde passait DANS la jupe : Romain,

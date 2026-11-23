@@ -177,6 +177,9 @@ HV.cheveux = function(K, coif, V, P){
   if(Q){
     var C3 = cr3(Q.p, 7), nq = C3.length - 1, qx = P.qx || 0, qz = P.qz || 0;
     C3.forEach(function(q, j){ var k = Math.pow(j / nq, 1.6); q[0] += qx * k; q[2] += qz * k; q[1] -= (Math.abs(qx) + Math.abs(qz)) * 0.12 * k; });
+    /* (allongée sur le dos, P.couche : la queue de cheval ne pend plus, elle s'étale au sol au-dessus de sa tête) */
+    var cq = Math.max(0, Math.min(1, P.couche || 0));
+    if(cq) C3.forEach(function(q, j){ var a = C3[0][1], k = Math.min(1, j / nq * 1.6); q[1] += (2 * a - 2 * q[1]) * cq * k * 0.85; q[2] -= 10 * cq * k; });
     /* (une chaîne de gélules, comme la queue de Mimi : vue par le bout, elle reste ronde) */
     var E = ecran3(C3, V), Lq = [U.ruban(E, function(t){ return Q.larg(t); })], jq;
     for(jq = 0; jq < nq - 1; jq++) Lq.push(U.gelule(E[jq][0], E[jq][1], Q.larg(jq / nq) - 0.25, E[jq + 1][0], E[jq + 1][1], Q.larg((jq + 1) / nq) - 0.25));

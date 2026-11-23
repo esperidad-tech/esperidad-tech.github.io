@@ -35,26 +35,40 @@ function ecran(q){
 /* les scénarios : une liste de [quand, que faire] */
 var S = {
   /* (un seul angle par film : c'est elle qui bouge, pas la caméra qui tourne autour d'elle) */
-  course:{fin:3.6, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.course; vers(62, true); courir = {t0:0, de:-700, jusqu:1.95}; }],
-    [1.95, function(){ courir = null; p.position('donjon'); }]]},
-  garde:{fin:7.2, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.regard; pret(55); }], [0.8, function(){ p.joue('regard'); }]]},
+  /* (elle court deux foulées, puis freine au moment où SON pied droit va se poser : elle s'arrête net en dérapant, en garde) */
+  course:{fin:4.2, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.course; vers(62, true); var ts = 1.93 * HV.COURSE.cycle; courir = {t0:0, de:30 - (VX() * ts + HV.ARRET.glisse(9) * PX()), jusqu:ts}; }]]},
+  garde:{fin:8.2, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.regard; pret(55); }], [0.8, function(){ p.joue('regard'); }]]},
   tir:{fin:6.8, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.tir; pret(55); }], [0.6, function(){ p.joue('tir'); }], [3.8, function(){ p.joue('tir'); }]]},
   coup:{fin:4.6, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.coup; pret(55); }], [0.6, function(){ p.joue('coup'); eclair(); }], [2.6, function(){ p.joue('coup'); eclair(); }]]},
-  chute:{fin:6.4, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.chute; pret(50); }], [0.6, function(){ p.joue('chute'); eclair(); }]]},
+  /* (elle tombe en arrière, vers la gauche de l'image : on la place un peu plus à droite pour qu'elle reste entière au sol) */
+  chute:{fin:6.9, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.chute; pret(50); X = 150; }], [0.6, function(){ p.joue('chute'); eclair(); }]]},
   joie:{fin:3.8, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.joie; pret(45); }], [0.6, function(){ p.joue('joie'); }]]}
 };
 var SC = S[nomS] || S.tir, k = 0;
 /* un éclair blanc là où le coup arrive (sur sa poitrine) */
-var eclairs = [];
+var eclairs = [], nuages = [];
 function eclair(){ eclairs.push({t0:T + 0.08}); }
+/* (sa vitesse à l'écran quand elle court, en pixels par seconde ; PX : une de ses mesures vers l'avant, en pixels) */
+function PX(){ return Math.sin(62 * Math.PI / 180) * K; }
+function VX(){ return HV.COURSE.avance / HV.COURSE.cycle * PX(); }
 window.image = function(){
   while(k < SC.pas.length && SC.pas[k][0] <= T + 1e-6) SC.pas[k++][1]();
   /* la course : la pose vient de HV.course, et elle avance à la vitesse de ses pieds */
-  if(courir){
+  if(courir && T < courir.jusqu){
     var c = HV.course(T - courir.t0); p.A = p.B = c; p.tw = 1; p.posi = null; p.nom = 'course';
-    var vx = HV.COURSE.avance / HV.COURSE.cycle * Math.sin(62 * Math.PI / 180) * K;
-    X = courir.de + vx * (T - courir.t0);
-  } else if(nomS === 'course' && T < 2.4){ X += (2.4 - T) / 0.45 * 6; }
+    X = courir.de + VX() * (T - courir.t0);
+  } else if(courir){
+    /* elle freine : les images clés de HV.arret, à partir de la dernière pose de course ; elle glisse encore un peu */
+    if(!courir.dep){ courir.dep = HV.course(courir.jusqu - courir.t0); courir.cles = HV.arret(); }
+    var u = T - courir.jusqu;
+    if(u < HV.ARRET.duree){ var c2 = HV.gesteImage(courir.dep, courir.cles, u); p.A = p.B = c2; p.tw = 1; p.posi = null; p.nom = 'arret'; }
+    else { courir = null; pret(62); }
+    if(courir){
+      X = courir.de + VX() * courir.jusqu + HV.ARRET.glisse(u) * PX();
+      /* (la poussière sous le pied qui dérape) */
+      if(u > HV.ARRET.poussiere[0] && u < HV.ARRET.poussiere[1]){ var os0 = HV.os(h, p.F), a0 = ecran(os0.chevilleG); nuages.push({x:a0[0] + 30, y:a0[1] + 34, t0:T, d:(Math.random() - 0.5) * 40}); }
+    }
+  }
   /* (la joie : un petit saut) */
   Y = 0;
   /* (le saut de la victoire est dans la pose : leve) */
@@ -64,6 +78,7 @@ window.image = function(){
   p.dessiner(1 / 30);
   var s = '';
   fleches.forEach(function(f){ var d = (T - f.t0) * 2600, x = f.x + d; if(x < 1000) s += '<g transform="translate(' + x.toFixed(0) + ' ' + f.y.toFixed(0) + ')"><path d="M-110 0 H0" stroke="#24182e" stroke-width="8"/><path d="M-110 0 H0" stroke="#e6d8b8" stroke-width="4"/><path d="M14 0 L-6 -9 L-6 9 Z" fill="#b8bcc8" stroke="#24182e" stroke-width="3"/><path d="M-112 0 l-14 -10 h12 l12 10 l-12 10 h-12 Z" fill="#c0392b" stroke="#24182e" stroke-width="2.5"/></g>'; });
+  nuages.forEach(function(n){ var u = (T - n.t0) / 0.7; if(u >= 0 && u < 1){ s += '<circle cx="' + (n.x - 50 * u + n.d * u).toFixed(0) + '" cy="' + (n.y - 30 * u).toFixed(0) + '" r="' + (12 + 34 * u).toFixed(0) + '" fill="#b8a9c0" opacity="' + (0.45 * (1 - u)).toFixed(2) + '"/>'; } });
   eclairs.forEach(function(e){ var u = (T - e.t0) / 0.25; if(u >= 0 && u < 1){ var os = HV.os(h, p.F), a = ecran(os.cou), r = 40 + 90 * u; s += '<circle cx="' + (a[0] + 60) + '" cy="' + (a[1] + 70) + '" r="' + r + '" fill="#fff" opacity="' + (0.8 * (1 - u)).toFixed(2) + '"/>'; } });
   fx.innerHTML = s;
   T += 1 / 30;

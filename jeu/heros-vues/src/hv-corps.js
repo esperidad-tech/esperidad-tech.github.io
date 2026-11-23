@@ -292,17 +292,33 @@ function relief(K, nom, x0, y0, x1, y1, r){
    héros debout) ; 0, elle est là où on le dit (posée au sol, sur un genou). P.mdirG / mdirD : vers où pointent les doigts
    ([0, 0, 0] : dans le prolongement de l'avant-bras). */
 var R_EP = 10.6, R_CO = 9.3, R_PO = 8.3, LIBRE = 0.36;
+/* (la main en visière : où est le poignet par rapport au centre de la tête, tête droite — à gauche du front, devant, au-dessus des
+   sourcils) */
+HV.VISIERE = [22, -46, 32];
 function bras(V, cote, P, T){
   var cle = cote < 0 ? 'G' : 'D', Ep = T.buste([cote * 31.5, 151, 0]);
   var rel = P['rel' + cle]; if(rel == null) rel = 1;
-  var Wa = P['main' + cle] || [cote * 50.5, 243, 4], pa = P['coude' + cle] || [cote * 0.7, -0.1, -0.7];
+  var Wa = P['main' + cle] || [cote * 50.5, 243, 4], pa = P['coude' + cle] || [cote * 0.7, -0.1, -0.7], mdL = P['mdir' + cle], pcL = P['pouce' + cle];
+  /* LA MAIN EN VISIÈRE (P.visiere, de 0 à 1, SA main gauche) : la main à plat au-dessus des yeux, comme une casquette, et elle suit
+     la tête quand elle tourne (Romain, 16 h 39 : « elle passe derrière la tête, elle passe devant la tête […] la main, elle doit être
+     placée plate […] comme une casquette devant les yeux ») */
+  var vi = cle === 'D' ? borne(P.visiere || 0, 0, 1) : 0;
+  if(vi > 0){
+    var ty = (P.tete || 0) * RAD, cy = Math.cos(ty), sy = Math.sin(ty);
+    var ry = function(v){ return [v[0] * cy + v[2] * sy, v[1], -v[0] * sy + v[2] * cy]; };
+    Wa = mixv(Wa, add([0, 116, -2], ry(HV.VISIERE)), vi); pa = mixv(pa, ry([1, 0.4, -0.1]), vi); rel = rel + (1 - rel) * vi;
+    mdL = mixv(mdL || [0, 0, 0], ry([-1, 0.04, 0.18]), vi); pcL = mixv(pcL || [-0.25, 0.1, 1], ry([0, 0.5, -1]), vi);
+  }
   var Wc = rel > 0 ? mixv(Wa, T.buste(Wa), rel) : Wa, pole = rel > 0 ? mixv(pa, mv(T.Mb, pa), rel) : pa;
   var J = ik3(Ep, Wc, 50, 43, pole), El = J[0], W = J[1], da = uni(sub(W, El));
-  var md = P['mdir' + cle] || Z3, lm = lon(md), dir = lm < 0.02 ? da : uni(add(mul(da, Math.max(0, 1 - lm)), md)), M = add(W, dir, 17);
+  /* (une main qui suit le buste tourne AVEC lui : vers où pointent ses doigts, son pouce, l'arc qu'elle tient — Romain, 23 novembre,
+     16 h 39 : « l'arc est à l'envers » quand elle s'était tournée pour viser) */
+  function tourne(v){ return rel > 0 && v ? mixv(v, mv(T.Mb, v), rel) : v; }
+  var md = tourne(mdL || Z3), lm = lon(md), dir = lm < 0.02 ? da : uni(add(mul(da, Math.max(0, 1 - lm)), md)), M = add(W, dir, 17);
   var e = pj(Ep, V), c2 = pj(El, V), w = pj(W, V), m = pj(M, V);
   var a = [vers(e[0], c2[0], LIBRE), vers(e[1], c2[1], LIBRE)], ra = vers(R_EP, R_CO, LIBRE);
   var bas = gelule(c2[0], c2[1], R_CO, w[0], w[1], R_PO);
-  return {cote:cote, cle:cle, e:e, c2:c2, w:w, m:m, W:W, El:El, dir:dir, da:da, a:a, ra:ra, fond:(e[2] - T.dB) + (c2[2] - T.dB) * 0.5,
+  return {cote:cote, cle:cle, e:e, c2:c2, w:w, m:m, W:W, El:El, Ep:Ep, dir:dir, da:da, a:a, ra:ra, tourne:tourne, pouce:pcL, fond:(e[2] - T.dB) + (c2[2] - T.dB) * 0.5,
     manche:[gelule(e[0], e[1], R_EP, c2[0], c2[1], R_CO), bas],                 /* toute la manche */
     libre:[gelule(a[0], a[1], ra, c2[0], c2[1], R_CO), bas],                     /* ce qui se détache du buste : de l'aisselle au poignet */
     epaule:gelule(e[0], e[1], R_EP + 0.4, vers(e[0], c2[0], 0.3), vers(e[1], c2[1], 0.3), vers(R_EP, R_CO, 0.3) + 0.2)};
@@ -313,14 +329,14 @@ function bras(V, cote, P, T){
    de quel côté est le pouce ; P.poingG / poingD : 0, la main ouverte ; 1, le poing fermé (elle tient l'arc, la dague). */
 var DG_OFF = [4.5, 1.55, -1.5, -4.4], DG_LON = [9.7, 10.9, 10.1, 8.2], DG_RAY = [2.3, 2.35, 2.3, 2.05];
 function mainSVG(K, V, B, P){
-  var cote = B.cote, cle = B.cle, W = B.W, d = B.dir, pc = P['pouce' + cle] || [-cote * 0.25, 0.1, 1], pg = P['poing' + cle];
+  var cote = B.cote, cle = B.cle, W = B.W, d = B.dir, pc = (B.tourne || function(v){ return v; })(B.pouce || P['pouce' + cle] || [-cote * 0.25, 0.1, 1]), pg = P['poing' + cle];
   if(pg == null) pg = cote < 0 ? 0.75 : 0.15;
   var w = sub(pc, mul(d, dot(pc, d)));
   if(lon(w) < 0.08) w = sub([0, -1, 0.2], mul(d, dot([0, -1, 0.2], d)));
   w = uni(w);
   var n = mul(croix(d, w), -cote);                               /* (vers où regarde la paume) */
   function Q(a, b, c2){ return pj(add(add(add(W, d, a), w, b), n, c2 || 0), V); }
-  var L = [], objet = '', i;
+  var L = [], objet = '', objetPts = [], i;
   /* la dague, dans SA main gauche : le manche est dans le poing, la lame sort du côté du pouce */
   if(cote > 0 && (P.dague || 0) > 0.3){
     var g0 = Q(7.6, -7.4, 2.4), g1 = Q(7.6, 8, 2.4), ga = Q(3.6, 8.6, 2.4), gb = Q(11.6, 8.6, 2.4);
@@ -337,6 +353,8 @@ function mainSVG(K, V, B, P){
     var fa = Q(7.6, -26 + sf, 2.4), fb = Q(7.6, 40 + sf, 2.4), fp = Q(7.6, 48 + sf, 2.4), fq = Q(7.6, 40 + sf, 5.2), fr = Q(7.6, 40 + sf, -0.4), e1 = Q(7.6, -26 + sf, 2.4), e2 = Q(7.6, -14 + sf, 2.4), e3 = Q(7.6, -24 + sf, 7.4), e4 = Q(7.6, -16 + sf, 7.4);
     objet += '<g opacity="' + f1(doux(0.05, 0.6, P.flecheD)) + '">' + PT(U.poly([fa, fb], false), O, 3.6) + PT(U.poly([fa, fb], false), '#e6d8b8', 1.8) +
       PC(U.poly([fp, fq, fr]), '#b8bcc8', 1.3) + PC(U.poly([e1, e2, e4, e3]), '#c0392b', 1.1) + '</g>';
+    /* (ses points, loin du poing : pour savoir ce qui passe devant la flèche — un bras, le buste) */
+    [-24, -14, 18, 28, 38, 46].forEach(function(b){ objetPts.push(Q(7.6, b + sf, 2.4)); });
   }
   /* la paume */
   var p1 = Q(1.5, 3.4), p2 = Q(1.5, -3.4), p3 = Q(9.6, 4.7), p4 = Q(9.6, -4.7), Lp = [];
@@ -368,7 +386,7 @@ function mainSVG(K, V, B, P){
   }
   s += PT(tr, K.peau.trait, 1.05, ' opacity=".8"');
   /* (pour tenir l'arc : la paume seule, et les doigts seuls avec leurs traits ; vers : la paume est tournée vers nous) */
-  return {objet:objet, main:s, paume:defs + paume, doigts:U.masse(L, 'url(#' + gid + ')', 1.9) + PT(tr, K.peau.trait, 1.05, ' opacity=".8"'), n:n, vers:-n[0] * V.s + n[2] * V.c};
+  return {objet:objet, objetPts:objetPts, main:s, paume:defs + paume, doigts:U.masse(L, 'url(#' + gid + ')', 1.9) + PT(tr, K.peau.trait, 1.05, ' opacity=".8"'), n:n, vers:-n[0] * V.s + n[2] * V.c};
 }
 
 /* le dessin d'un bras. plein : avec tout son contour (le bras du fond, dessiné avant le buste) ; sinon son trait ne commence qu'à l'aisselle */
@@ -415,18 +433,27 @@ function brasSVG(K, V, B, P, plein){
        paume, les doigts se referment par-dessus. Quand on voit l'intérieur de la main, on voit donc la paume, puis l'arc, puis les
        doigts ; quand on voit le dos de la main, le poing cache la poignée. L'arc est rendu en morceaux (ses deux branches, la
        poignée) : HV.corps cache chaque branche là où le buste ou une jambe est devant elle. */
-    var arc = arcSVG(K, V, add(add(B.W, B.dir, 8), mn.n, 3.5), P);
-    if(mn.vers > 0.15) return {manche:s, paume:mn.paume, arc:arc, objet:mn.objet, main:mn.doigts};
-    return {manche:s, paume:'', arc:arc, objet:mn.objet, main:mn.main};
+    /* (l'arc tourne avec la main quand elle suit le buste) */
+    var Pa = P;
+    if(B.tourne){ Pa = Object.create(P); Pa.arcAxe = B.tourne(P.arcAxe || [0, 1, 0]); Pa.arcDir = B.tourne(P.arcDir || [-0.82, 0, 0.57]); }
+    var arc = arcSVG(K, V, add(add(B.W, B.dir, 8), mn.n, 3.5), Pa);
+    if(mn.vers > 0.15) return {manche:s, paume:mn.paume, arc:arc, objet:mn.objet, objetPts:mn.objetPts, main:mn.doigts};
+    return {manche:s, paume:'', arc:arc, objet:mn.objet, objetPts:mn.objetPts, main:mn.main};
   }
-  return {manche:s, paume:'', arc:null, objet:mn.objet, main:mn.main};
+  return {manche:s, paume:'', arc:null, objet:mn.objet, objetPts:mn.objetPts, main:mn.main};
 }
 /* un bras en une seule chaîne de dessin (la manche, la paume, l'arc, ce qu'il tient, la main) ; m : pour chaque morceau de l'arc
    (cH, cB, bH, bB), le masque qui le cache là où quelque chose est devant lui */
 function brasTout(o, m){
   m = m || {};
-  var a = o.arc ? o.arc.morceaux.map(function(x){ return m[x.nom] ? '<g mask="url(#' + m[x.nom] + ')">' + x.svg + '</g>' : x.svg; }).join('') + o.arc.poignee : '';
-  return o.manche + o.paume + a + o.objet + o.main;
+  return o.manche + o.paume + objetsTout(o, m) + o.main;
+}
+/* ce qu'une main tient (l'arc en morceaux, la flèche ou la dague), chaque morceau sous son masque s'il en a un */
+function objetsTout(o, m){
+  m = m || {};
+  function sous(id, s){ return id ? '<g mask="url(#' + id + ')">' + s + '</g>' : s; }
+  var a = o.arc ? o.arc.morceaux.map(function(x){ return sous(m[x.nom], x.svg); }).join('') + o.arc.poignee : '';
+  return a + sous(m.objet, o.objet);
 }
 
 /* ---------- Le buste : un seul contour avec les manches de devant ----------
@@ -608,10 +635,13 @@ function arcSVG(K, V, Hd, P){
   }
   /* l'arc en quatre morceaux, chacun avec ses points à l'écran (et leur profondeur), pour savoir ce qui passe devant lui :
      haut, bas : les deux branches ; cordeH, cordeB : les deux moitiés de la corde ; poignee : la poignée et la flèche */
-  return {morceaux:[
+  var M = [
       {nom:'cH', svg:corde(t1), pts:ptsCorde(t1)}, {nom:'cB', svg:corde(t2), pts:ptsCorde(t2)},
-      {nom:'bH', svg:branche(pts.slice(0, n / 2 + 1)), pts:pts.slice(1, n / 2)}, {nom:'bB', svg:branche(pts.slice(n / 2)), pts:pts.slice(n / 2 + 1, n)}],
-    poignee:s + PT('M' + f1(g1[0]) + ' ' + f1(g1[1]) + ' L ' + f1(g2[0]) + ' ' + f1(g2[1]), '#6e4223', 6.4)};
+      {nom:'bH', svg:branche(pts.slice(0, n / 2 + 1)), pts:pts.slice(1, n / 2)}, {nom:'bB', svg:branche(pts.slice(n / 2)), pts:pts.slice(n / 2 + 1, n)}];
+  /* (la flèche encochée est un morceau à part : un bras peut passer devant elle — Romain, 16 h 39 : « la flèche elle est censée être
+     derrière le bras ») */
+  if(s){ var fp = []; for(i = 1; i <= 6; i++) fp.push([vers(mid[0], pt[0], i / 7), vers(mid[1], pt[1], i / 7), vers(mid[2], pt[2], i / 7)]); M.push({nom:'fl', svg:s, pts:fp}); }
+  return {morceaux:M, poignee:PT('M' + f1(g1[0]) + ' ' + f1(g1[1]) + ' L ' + f1(g2[0]) + ' ' + f1(g2[1]), '#6e4223', 6.4)};
 }
 
 /* ---------- Une jambe : où sont ses os ----------
@@ -623,7 +653,10 @@ function jambe(V, cote, P, T){
   var A = (P['pied' + cle] || [cote * 19.5, 386, cote * -5]).slice(), pole = P['genou' + cle] || [cote * 0.25, 0, 1];
   var ouv = P['ouv' + cle] == null ? 0.3 : P['ouv' + cle], pt = (P['pointe' + cle] || 0) * RAD, cp = Math.cos(pt), sp = Math.sin(pt);
   /* (le pied tourne en dehors — ou en dedans si ouv < 0 — sans changer de longueur) */
-  var h0 = [cote * 20 * ouv, 0, 19], Lt = 19.92, e = uni(h0), sd = [e[0] * cp, sp, e[2] * cp], m = [-e[0] * sp, cp, -e[2] * sp];
+  /* (P.lacetG / lacetD : le pied pivote sur place — Romain, 16 h 39 : « quand on est debout et qu'on se retourne comme ça, les jambes
+     elles se tournent sans qu'on ait besoin de lever la jambe ») */
+  var la = (P['lacet' + cle] || 0) * RAD, h1 = [cote * 20 * ouv, 0, 19];
+  var h0 = [h1[0] * Math.cos(la) + h1[2] * Math.sin(la), 0, -h1[0] * Math.sin(la) + h1[2] * Math.cos(la)], Lt = 19.92, e = uni(h0), sd = [e[0] * cp, sp, e[2] * cp], m = [-e[0] * sp, cp, -e[2] * sp];
   /* le pied au sol : le talon ou la pointe ne descend pas plus bas que le sol */
   var bas = Math.max(A[1] + 21 * m[1] - 7.07 * sd[1] + 9, A[1] + 22 * m[1] + Lt * sd[1] + 7.8) - (SOL + 2);
   if(bas > 0) A[1] -= bas;
@@ -708,7 +741,12 @@ HV.corps = function(K, h, V, P){
   var av = mv(T.Mb, [0, 0, 1]), dos = -av[0] * V.s + av[2] * V.c < -0.15;      /* (de dos : le carquois passe devant) */
   var cq = h.role === 'pisteur' || !h.role ? carquois(K, V, T) : null;
   var avant = [], fond = [], SEUIL = -8;
-  [bG, bD].sort(function(a, b){ return a.fond - b.fond; }).forEach(function(b){ (b.fond < SEUIL ? fond : avant).push(b); });
+  /* (une main près de la tête et plus près de nous qu'elle : son bras passe devant, même si l'épaule est derrière — vue de dos, la
+     main qui va chercher une flèche dans le carquois, derrière sa tête ; Romain, 16 h 39 : « le mouvement du bras qui se relève, il y
+     est pas toujours ») */
+  var tH = pj(T.lieu([0, 118, -2]), V);
+  [bG, bD].forEach(function(b){ var w = pj(b.W, V); b.prTete = w[2] > tH[2] + 6 && w[1] < tH[1] + 12 && Math.abs(w[0] - tH[0]) < 62; });
+  [bG, bD].sort(function(a, b){ return a.fond - b.fond; }).forEach(function(b){ (b.fond < SEUIL && !b.prTete ? fond : avant).push(b); });
   var pf = fond.map(function(b){ return brasSVG(K, V, b, P, true); });
   var der = (cq && !dos ? cq.svg : '') + pf.map(function(o){ return brasTout(o); }).join('');
   var pa = avant.map(function(b){ return brasSVG(K, V, b, P, false); });
@@ -800,46 +838,54 @@ HV.corps = function(K, h, V, P){
      elle passe derrière la botte du genou à terre quand on la voit de dos. Un bras est d'un seul tenant : la manche, puis ce qu'il
      tient (l'arc n'est jamais sous sa propre manche — Romain, 23 novembre, 11 h 22 et 14 h 11), puis la main. Quand les bras passent
      devant la tête (brasDessus, vue de face), ils restent à part, dessinés après elle ; vus de dos, ils restent avec les autres. */
-  var dessus = P.brasDessus > 0.5 && !dos;
+  /* (les bras passent aussi par-dessus la tête quand une main est près d'elle et plus près de nous qu'elle) */
+  var dessus = (P.brasDessus > 0.5 && !dos) || avant.some(function(b){ return b.prTete; });
   var cqs = T.coques(), lHaut = cqs.filter(function(c1){ return c1.y1 <= YJ + 0.1; }).map(function(c1){ return c1.d; }),
     lJupe = cqs.filter(function(c1){ return c1.y0 >= YJ - 0.1; }).map(function(c1){ return c1.d; }), defsArc = '';
   /* L'ARC : chaque branche est cachée là où la poitrine, la jupe ou une jambe est devant elle (on compare les profondeurs en
      plusieurs points de la branche) */
-  function masqueBranche(pts, nom){
+  function masqueBranche(pts, nom, avecBras){
     var occ = [], s1;
     ['haut', 'jupe'].forEach(function(part){ s1 = 0; pts.forEach(function(q){ s1 += T.devant(q[0], q[1], q[2], 2, part); }); if(s1 < 0) occ = occ.concat(part === 'haut' ? lHaut : lJupe); });
+    /* un os (de A à B, d'épaisseur r) cache le morceau si, là où il le croise à l'écran, il est plus près de nous que lui */
+    function os(a3, b3, r, d){
+      var A = pj(a3, V), Bp = pj(b3, V), vx = Bp[0] - A[0], vy = Bp[1] - A[1], l2 = vx * vx + vy * vy || 1, vote = 0;
+      pts.forEach(function(q){
+        var t = borne(((q[0] - A[0]) * vx + (q[1] - A[1]) * vy) / l2, 0, 1), cx = A[0] + vx * t - q[0], cy = A[1] + vy * t - q[1];
+        if(cx * cx + cy * cy > r * r) return;
+        vote += vers(A[2], Bp[2], t) + r * 0.6 > q[2] + 1 ? 1 : -1;
+      });
+      if(vote > 0) occ = occ.concat(d);
+    }
     /* (la cuisse : seulement la partie qui sort de la tunique ; dedans, c'est la tunique qui compte) */
     jambesInfo.forEach(function(ji){
       var c0 = mixv(ji.j.Ha, ji.j.Kn, 0.37), p0 = pj(c0, V), p1 = pj(ji.j.Kn, V);
-      [[c0, ji.j.Kn, 12, gelule(p0[0], p0[1], 12.2, p1[0], p1[1], 10.6)], [ji.j.Kn, ji.j.An, 11, ji.dBotte]].forEach(function(seg){
-        var A = pj(seg[0], V), Bp = pj(seg[1], V), vx = Bp[0] - A[0], vy = Bp[1] - A[1], l2 = vx * vx + vy * vy || 1, vote = 0;
-        pts.forEach(function(q){
-          var t = borne(((q[0] - A[0]) * vx + (q[1] - A[1]) * vy) / l2, 0, 1), cx = A[0] + vx * t - q[0], cy = A[1] + vy * t - q[1];
-          if(cx * cx + cy * cy > seg[2] * seg[2]) return;
-          vote += vers(A[2], Bp[2], t) + seg[2] * 0.6 > q[2] + 1 ? 1 : -1;
-        });
-        if(vote > 0) occ = occ.concat(seg[3]);
-      });
+      os(c0, ji.j.Kn, 12, gelule(p0[0], p0[1], 12.2, p1[0], p1[1], 10.6));
+      os(ji.j.Kn, ji.j.An, 11, ji.dBotte);
     });
+    /* (la corde et les flèches passent DERRIÈRE un bras qui est devant elles — Romain, 16 h 39 : « le fil de l'arc, lui aussi, il est
+       censé être derrière le bras ») */
+    if(avecBras) [bG, bD].forEach(function(B){ os(B.Ep, B.El, R_EP, B.manche[0]); os(B.El, B.W, R_CO, B.manche[1]); });
     if(!occ.length) return '';
     var id = K.n('am' + nom);
     defsArc += '<mask id="' + id + '" maskUnits="userSpaceOnUse" x="-500" y="-300" width="1000" height="1100"><rect x="-500" y="-300" width="1000" height="1100" fill="#fff"/><g fill="#000" stroke="#000" stroke-width="4.4" stroke-linejoin="round">' + occ.map(function(d){ return '<path d="' + d + '"/>'; }).join('') + '</g></mask>';
     return id;
   }
-  if(!dessus) avant.forEach(function(B, i){
-    var o = pa[i], m = {};
-    if(o.arc) o.arc.morceaux.forEach(function(x){ m[x.nom] = masqueBranche(x.pts, B.cle + x.nom); });
-    membres.push({d:prof(B.W), s:brasTout(o, m)});
-  });
+  function masquesObjets(B, o, suffixe){
+    var m = {};
+    if(o.arc) o.arc.morceaux.forEach(function(x){ m[x.nom] = masqueBranche(x.pts, B.cle + suffixe + x.nom, /^(cH|cB|fl)$/.test(x.nom)); });
+    if(o.objetPts && o.objetPts.length) m.objet = masqueBranche(o.objetPts, B.cle + suffixe + 'ob', true);
+    return m;
+  }
+  var mPa = avant.map(function(B, i){ return masquesObjets(B, pa[i], ''); });
+  if(!dessus) avant.forEach(function(B, i){ membres.push({d:prof(B.W), s:brasTout(pa[i], mPa[i])}); });
   /* UN BRAS DU FOND DEVANT UNE JAMBE (elle ramasse un indice, vue de trois quarts : le bras qui descend vers le sol passe devant le
      genou levé) : il est dessiné derrière le buste, puis une deuxième fois avec les jambes, caché là où le buste est (il reste
      donc derrière le buste, mais il passe devant la jambe qui est derrière lui). */
   fond.forEach(function(B, i){
     var dw = prof(B.W);
     if(!jambesInfo.some(function(ji){ return ji.d < dw; })) return;
-    var o = pf[i], m = {};
-    if(o.arc) o.arc.morceaux.forEach(function(x){ m[x.nom] = masqueBranche(x.pts, B.cle + 'f' + x.nom); });
-    membres.push({d:dw, s:'<g mask="url(#' + K.n('mHJ') + ')">' + brasTout(o, m) + '</g>'});
+    membres.push({d:dw, s:'<g mask="url(#' + K.n('mHJ') + ')">' + brasTout(pf[i], masquesObjets(B, pf[i], 'f')) + '</g>'});
   });
   membres.sort(function(a, b){ return a.d - b.d; });
   jb = (defsArc ? '<defs>' + defsArc + '</defs>' : '') + membres.map(function(m){ return m.s; }).join('');
@@ -847,16 +893,20 @@ HV.corps = function(K, h, V, P){
   /* la tête : au bout du cou, qui part du haut du buste. Elle reste droite quand le dos se penche (elle regarde devant elle) ;
      P.hoche la fait baisser (> 0) ou lever le nez. */
   var yawT = ba[2] + ds[2] + (P.tete || 0), Vt = U.vue((HV.capDe ? HV.capDe(P) : P.cap || 0) + yawT), ho = P.hoche || 0;
-  var upC = mv(T.M[0], [0, -1, 0]), upT = mv(mm(RY(yawT), RX(ho * 0.5)), [0, -1, 0]), N0 = T.lieu([0, 139, -2]), nd = uni(add(mul(upC, 0.5), upT, 0.5)), Hp = add(N0, nd, 19);
+  /* (P.couche, de 0 à 1 : allongée, la tête ne reste plus droite, elle se pose dans le prolongement du cou — Romain, 16 h 39 : au sol,
+     « la tête, elle est toute bizarre ») */
+  var co = borne(P.couche || 0, 0, 1);
+  var upC = mv(T.M[0], [0, -1, 0]), upT = mv(mm(RY(yawT), RX(ho * 0.5)), [0, -1, 0]), N0 = T.lieu([0, 139, -2]), nd = uni(add(mul(upC, 0.5 + 0.5 * co), upT, 0.5 - 0.5 * co)), Hp = add(N0, nd, 19);
+  var pN0 = pj(N0, V), pN1 = pj(add(N0, nd, 30), V), lN = d2(pN0, pN1), angN = lN < 1 ? 0 : Math.atan2(pN1[0] - pN0[0], pN0[1] - pN1[1]) / RAD * Math.min(1, lN / 16);
   var pHp = pj(Hp, V), rc = Math.sqrt(77.4 * V.c * V.c + 59.3 * V.s * V.s), bc = pj(T.lieu([0, 146, -2]), V);
   /* l'ombre au sol : sous les pieds (et sous une main ou un genou posé) */
   var xs = [pj(jg.An, V), pj(jd.An, V)], ys = 0;
   [jg.Kn, jd.Kn, bG.W, bD.W].forEach(function(q){ if(q[1] > SOL - 26) xs.push(pj(q, V)); });
   var xa = 1e9, xb = -1e9; xs.forEach(function(q){ xa = Math.min(xa, q[0]); xb = Math.max(xb, q[0]); ys += q[2] / xs.length; });
   return {T:T, dbg:dbg, derriere:der, jambes:'', jambesApres:jb, torse:tor, carquoisDevant:cq && dos ? cq.svg : '',
-    devant:dessus ? pa.map(function(o){ return o.manche; }).join('') + pa.map(function(o){ return o.paume + (o.arc ? o.arc.morceaux.map(function(x){ return x.svg; }).join('') + o.arc.poignee : '') + o.objet; }).join('') + pa.map(function(o){ return o.main; }).join('') : '', dos:dos, dessus:dessus,
+    devant:dessus ? pa.map(function(o){ return o.manche; }).join('') + pa.map(function(o, i){ return o.paume + objetsTout(o, mPa[i]); }).join('') + pa.map(function(o){ return o.main; }).join('') : '', dos:dos, dessus:dessus,
     cou:function(tDos, ombre){ return cou(K, V, pj(add(Hp, nd, tDos ? 13 : 20), V), bc, rc, ombre); },
-    tete:{V:Vt, tx:pHp[0] + 3 * Vt.s, ty:pHp[1] - 28, px:-3 * Vt.s, rot:(P.pen || 0) + ho * Vt.s, hocheF:ho * Vt.c, fond:pHp[2] - T.dB},
+    tete:{V:Vt, tx:pHp[0] + 3 * Vt.s, ty:pHp[1] - 28, px:-3 * Vt.s, rot:(P.pen || 0) + ho * Vt.s + co * angN, hocheF:ho * Vt.c, fond:pHp[2] - T.dB},
     ombre:{cx:(xa + xb) / 2, rx:Math.max(50 + 8 * Math.abs(V.s), (xb - xa) / 2 + 32), cy:SOL + 1 + PSOL * ys},
     os:{bassin:T.Pc, hancheG:jg.Ha, hancheD:jd.Ha, genouG:jg.Kn, genouD:jd.Kn, chevilleG:jg.An, chevilleD:jd.An, talonG:jg.Ta, talonD:jd.Ta, orteilG:jg.Po, orteilD:jd.Po,
       epauleG:T.buste([-31.5, 151, 0]), epauleD:T.buste([31.5, 151, 0]), coudeG:bG.El, coudeD:bD.El, poignetG:bG.W, poignetD:bD.W, cou:N0, tete:Hp}};
