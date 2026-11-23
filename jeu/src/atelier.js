@@ -7978,6 +7978,10 @@ function audioMimi(){
 }
 function sonMimi(V, nom){
   if(V && V.o && V.o.sansSurprise === 'muet') return;
+  /* (Romain, 23 novembre, 10 h 26 : « quand on est sur l'atelier ou sur la table d'analyse […] que Mimi ne miaule pas […] on est
+     concentré sur autre chose et il y a un chat qui miaule et on ne peut rien faire ») : l'établi ou la paillasse d'analyse ouverts
+     par-dessus l'atelier, plus un son de Mimi (ni miaou, ni ronron…) ; elle continue sa petite vie sans bruit */
+  try{ var Mg = window.M; if(Mg && ((Mg.etabliOuvert && Mg.etabliOuvert()) || (Mg.laboOuvert && Mg.laboOuvert()))) return; }catch(e){}
   try{ if(!SONS_MIMI) SONS_MIMI = sonsMimi(audioMimi, function(a){ return a.destination; }); if(SONS_MIMI[nom]) SONS_MIMI[nom](); }catch(e){}
 }
 
