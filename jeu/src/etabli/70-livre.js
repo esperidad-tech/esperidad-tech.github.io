@@ -75,9 +75,11 @@ function codePlusHTML(id){
 }
 /* (23 novembre) un INGRÉDIENT en petit pot (r.pot : les cristaux de givre, la poudre de mousse) : pas de code ici — le pot part au
    grand chaudron de l'atelier, où il devient la potion du Pisteur. La carte le dit, avec un bouton jaune qui y mène. */
+/* le « ! », le « ? », le « : » et le « » » ne passent jamais seuls à la ligne (vu sur la carte de la mousse : un « ! » tout seul) */
+function colle(h){ return String(h).replace(/ ([!?:»])/g, '&nbsp;$1').replace(/« /g, '«&nbsp;'); }
 function potHTML(id){
   var r = RE[id];
-  return ligne('<p>' + echap(r.apres || '') + '</p>', r.apres || '', 'note') +
+  return ligne('<p>' + colle(echap(r.apres || '')) + '</p>', r.apres || '', 'note') +
     '<div class="pot-boutons"><button type="button" class="b-jaune" data-chaudron="1">🍲 Au grand chaudron !</button>' +
     '<button type="button" class="b-plus-tard" data-fond="1">Plus tard</button></div>';
 }
@@ -86,8 +88,8 @@ function ouvrirPrete(id, t, toutes){
   if(!t) t = r.etapes[r.etapes.length - 1].t;
   if(r.pot){
     ouvrirMode('prete', '<div class="voile-l" data-fond="1"></div><div class="carte prete" role="dialog" aria-label="' + echap(r.nom) + ' : le petit pot est prêt">' +
-      '<div class="prete-h"><svg class="grand-f" viewBox="-36 -88 72 94" aria-hidden="true"><circle cx="0" cy="-34" r="44" fill="' + G('haloP') + '"/><g transform="translate(0,-8)">' + flacon(id, r.coul) + '</g></svg><div class="prete-t"><h2>' + echap(r.nom) + ' !</h2>' + ligne('<p>' + echap(t) + '</p>', t) + '</div></div>' +
-      ligne('<p><b>C\'est vrai !</b> ' + echap(r.vrai) + '</p>', 'C\'est vrai ! ' + r.vrai, 'vrai') + potHTML(id) + '</div>');
+      '<div class="prete-h"><svg class="grand-f" viewBox="-36 -88 72 94" aria-hidden="true"><circle cx="0" cy="-34" r="44" fill="' + G('haloP') + '"/><g transform="translate(0,-8)">' + flacon(id, r.coul) + '</g></svg><div class="prete-t"><h2>' + echap(r.nom) + '&nbsp;!</h2>' + ligne('<p>' + colle(echap(t)) + '</p>', t) + '</div></div>' +
+      ligne('<p><b>C\'est vrai&nbsp;!</b> ' + colle(echap(r.vrai)) + '</p>', 'C\'est vrai ! ' + r.vrai, 'vrai') + potHTML(id) + '</div>');
     return;
   }
   ouvrirMode('prete', '<div class="voile-l" data-fond="1"></div><div class="carte prete" role="dialog" aria-label="' + echap(r.nom) + ' : la potion est prête">' +
