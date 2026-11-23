@@ -5293,6 +5293,8 @@ La fenêtre défile sur un petit téléphone : « Descendre » est tout en bas (
 
 **Toujours en attente de Romain (ses demandes du matin, `claude/maj-23-novembre-heros.md`)** : le même héros dès l'enquête 1 (c'est déjà le cas pour le dessin ; restent les niveaux) ; enlever niveaux, talents, objets et boutique ; les habits qui suivent d'une enquête à l'autre ; enlever les prénoms proposés ; la tenue en couleur pour tous ; plus tard : huit vraies places de plus dans le code du visage et les seize nouvelles coiffures sous la capuche du donjon.
 
+**(23 novembre, 11 h 39, Romain : « Il y a toujours les prénoms Naïm, Alicia, Siam, Romain, Lia. Enlève-moi ça »)** : **plus aucun prénom proposé à la création du héros** (`moteur-ecrans.js` : la ligne `.b-suggestions` retirée ; `moteur-actions.js` : `A['crea-nom']` retirée ; il reste le champ « Ton prénom »). En ligne, commit 12d67c5 du site, version 20261123-1046. Tests : `rapide.sh`, `partie2.py` sans échec.
+
 ## 14. La grande carte et la brume (chantier ouvert le 12 novembre) — DANS LE JEU ET EN LIGNE DEPUIS LE 12 NOVEMBRE À 12 H 06 (§14.5) ; depuis l'après-midi, deux zones se lèvent dans l'enquête 3 pour l'Alchimiste (§14.7)
 
 **À lire d'abord : le §14.5** (ce qui est dans le jeu), **puis le §14.7** (les deux premières zones levées). Les §14.1 à §14.4 racontent le modèle du matin ; ils restent vrais pour les lieux, les zones et les questions à décider.
