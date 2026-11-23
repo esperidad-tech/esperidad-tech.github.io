@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8">
+<!-- Un geste d'une position, image par image : gestes.html#position:geste/angle/images/taille[/cadre x_y_l_h]
+     ex. gestes.html#genou:fleche/20/10/200 ; gestes.html#accroupi:/30/1/300 (la pose de base seule) -->
+<style>body{margin:0;background:#131932;padding:8px;font:600 12px system-ui,sans-serif;color:#cdd5ff}
+.c{display:inline-block;margin:3px;text-align:center}svg{background:#1d2550;border-radius:8px;display:block}</style>
+<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script><script src="../src/hv-poses.js"></script><script src="../src/hv-positions.js"></script>
+<body><script>
+var HV = HerosVues, Hh = decodeURIComponent(location.hash.slice(1)).split('/'), a = (Hh[0] || 'genou:fleche').split(':');
+var Po = HV.POSITIONS[a[0]], ang = +Hh[1] || 0, n = +Hh[2] || 8, L = +Hh[3] || 200, CADRE = (Hh[4] || '-50_40_400_400').split('_').map(Number);
+var h = {role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert'}, base = HV.pose(Po.base), G = a[1] ? Po.gestes[a[1]] : null;
+var tot = G ? G[G.length - 1][0] : 0, s = '', T0 = 0, T1 = tot;
+/* (un sixième morceau « de_à » : seulement ce moment-là du geste, ex. 0.8_2.6) */
+if(Hh[5]){ var ab = Hh[5].split('_').map(Number); T0 = ab[0]; T1 = ab[1]; }
+for(var i = 0; i < n; i++){
+  var u = n > 1 ? T0 + (T1 - T0) * i / (n - 1) : T0, F = G ? HV.gesteImage(base, G, u) : base;
+  F = HV.melange({}, F, 1); F.cap = ang;
+  s += '<div class="c">' + HV.svg(h, F, {id:'g' + i, cadre:CADRE.join(' ')}).replace('<svg ', '<svg width="' + L + '" height="' + Math.round(L * CADRE[3] / CADRE[2]) + '" ') + (G ? u.toFixed(1) + ' s' : a[0]) + '</div>';
+}
+document.body.innerHTML = s;
+</script>

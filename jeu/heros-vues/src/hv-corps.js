@@ -156,7 +156,8 @@ function tronc(V, P){
     }
     var p = pj(w, V), dc = -Cc[0] * V.s + Cc[2] * V.c, k = (yy - 214) / 58;
     var o = {p:[p[0] + (k > 0 ? T.jx * k * k : 0), p[1] + ANNEAU * (p[2] - dc)], f:p[2], w:w};
-    if(n) o.vu = (-n[0] * V.s + n[2] * V.c) - ANNEAU * n[1] > 0;
+    /* (vu : tourné vers nous ; fa : de combien, de 0 au bord à 1 en face) */
+    if(n){ var fa = (-n[0] * V.s + n[2] * V.c) - ANNEAU * n[1]; o.vu = fa > 0; o.fa = fa / (lon(n) || 1); }
     return o;
   };
   /* un point du tour du buste : az (radians ; 0 : devant, +90° : SA gauche), y */
@@ -328,6 +329,13 @@ function mainSVG(K, V, B, P){
     objet = '<g opacity="' + f1(doux(0.3, 0.7, P.dague)) + '">' + PT(U.poly([g0, g1], false), O, 7.4) + PT(U.poly([g0, g1], false), '#6e4223', 4.6) +
       U.masse(lame, '#d5dbe6', 1.6) + PT(U.poly(fil, false), '#ffffff', 1.2, ' opacity=".8"') + PT(U.poly([ga, gb], false), O, 5.6) + PT(U.poly([ga, gb], false), '#c9b07a', 3) + '</g>';
   }
+  /* une flèche tenue dans la même main (P.flecheD : elle la sort du carquois, la remet) : la tige passe dans le poing, la pointe
+     sort du côté du pouce, l'empennage de l'autre */
+  if(cote > 0 && (P.flecheD || 0) > 0.05){
+    var fa = Q(7.6, -26, 2.4), fb = Q(7.6, 40, 2.4), fp = Q(7.6, 48, 2.4), fq = Q(7.6, 40, 5.2), fr = Q(7.6, 40, -0.4), e1 = Q(7.6, -26, 2.4), e2 = Q(7.6, -14, 2.4), e3 = Q(7.6, -24, 7.4), e4 = Q(7.6, -16, 7.4);
+    objet += '<g opacity="' + f1(doux(0.05, 0.6, P.flecheD)) + '">' + PT(U.poly([fa, fb], false), O, 3.6) + PT(U.poly([fa, fb], false), '#e6d8b8', 1.8) +
+      PC(U.poly([fp, fq, fr]), '#b8bcc8', 1.3) + PC(U.poly([e1, e2, e4, e3]), '#c0392b', 1.1) + '</g>';
+  }
   /* la paume */
   var p1 = Q(1.5, 3.4), p2 = Q(1.5, -3.4), p3 = Q(9.6, 4.7), p4 = Q(9.6, -4.7), Lp = [];
   Lp.push(gelule(p1[0], p1[1], 4.5, p3[0], p3[1], 3.9), gelule(p2[0], p2[1], 4.5, p4[0], p4[1], 3.9), gelule(p3[0], p3[1], 3.9, p4[0], p4[1], 3.9), gelule(p1[0], p1[1], 4.5, p2[0], p2[1], 4.5));
@@ -498,15 +506,35 @@ function torse(K, h, T, P, avant, fond, jb){
   /* le col en V */
   var colO = [[-10, 138.5], [-5, 148], [0, 158], [5, 148], [10, 138.5]].map(function(q){ return T.face(q[0], q[1]); }), col = colO.map(function(o){ return o.p; });
   if(d2(col[0], col[4]) > 3 && colO[2].vu) dessusHaut += PC(U.poly(col), K.u('tunO'), 1.6);
-  /* le baudrier : de SON épaule droite à SA hanche gauche, en travers de la poitrine et du dos */
-  [false, true].forEach(function(dos){
-    var run = [];
-    for(i = 0; i <= 16; i++){ var t = i / 16, q = T.face(-25.5 + 56.5 * t, 142 + 60.5 * t, dos); if(q.vu) run.push(q.p); }
-    if(run.length > 2){
-      var rb = U.ruban(run, function(){ return 4.7; });
-      dessusHaut += PC(rb, K.u('cuir'), 1.8) + PF(rb, K.u('grain'), ' opacity=".4"') + couture(U.poly(run.map(function(q2){ return [q2[0] - 2, q2[1] - 2.2]; }), false));
+  /* le baudrier : UNE boucle de cuir autour du buste, de SON épaule droite (en haut) à SA hanche gauche (en bas), devant et
+     derrière d'un seul tenant (Romain, 23 novembre, 15 h 04 : « elle se coupe […] il faut qu'elle arrête de disparaître dès que
+     ça tourne ») : on suit la boucle tout autour et on dessine les morceaux qu'on voit, chacun prolongé exactement jusqu'au bord
+     du buste (là où il passe derrière), et passé par-dessus l'épaule quand on la voit de côté. */
+  (function(){
+    var NB = 96, Y0b = 172.25, Ab = 30.25;
+    function bq(az){ return T.pt(az, Y0b + Ab * Math.sin(az)); }
+    function bord(a0, a1, v0){ var m, it, o; for(it = 0; it < 9; it++){ m = (a0 + a1) / 2; o = bq(m); if(o.vu === v0) a0 = m; else a1 = m; } var p = bq((a0 + a1) / 2).p; return [p[0], p[1], 0]; }
+    function pt3(o){ return [o.p[0], o.p[1], o.fa]; }
+    var S = [], k, runs = [], run = null, k0 = -1, pas = TAU / NB;
+    for(k = 0; k < NB; k++){ S.push(bq(-Math.PI + pas * k)); if(k0 < 0 && !S[k].vu) k0 = k; }
+    /* (on part d'un point caché : un morceau vu n'est jamais coupé en deux par le début de la boucle) */
+    if(k0 < 0) runs.push(S.map(pt3).concat([pt3(S[0])]));
+    else for(k = k0 + 1; k <= k0 + NB; k++){
+      var o0 = S[k % NB], av = S[(k - 1) % NB], az0 = -Math.PI + pas * k;
+      if(o0.vu && !av.vu) run = [bord(az0 - pas, az0, false)];
+      if(o0.vu) run.push(pt3(o0));
+      if(o0.vu && !S[(k + 1) % NB].vu){ run.push(bord(az0, az0 + pas, true)); runs.push(run); run = null; }
     }
-  });
+    /* (le cuir ne dépasse jamais du contour du buste et du haut des bras ; vu par la tranche, près du bord, il s'amincit : il
+       tourne autour du corps au lieu de s'arrêter net) */
+    var bc = K.n('bdc'), s2 = '';
+    runs.forEach(function(r2){
+      if(r2.length < 2) return;
+      var rb = U.ruban(r2, function(u){ var q = r2[Math.round(u * (r2.length - 1))]; return 4.7 * (0.12 + 0.88 * doux(0, 0.45, q[2])); });
+      s2 += PC(rb, K.u('cuir'), 1.8) + PF(rb, K.u('grain'), ' opacity=".4"') + couture(U.poly(r2.map(function(q2){ return [q2[0] - 2, q2[1] - 2.2]; }), false));
+    });
+    if(s2) dessusHaut += '<clipPath id="' + bc + '"><use href="#' + K.n('tc') + '"/>' + avant.map(function(B){ return '<path d="' + B.manche[0] + '"/>'; }).join('') + '</clipPath><g clip-path="url(#' + bc + ')">' + s2 + '</g>';
+  })();
   /* la ceinture : un anneau de cuir, et sa boucle devant */
   var mc = pj(T.fr(208).C, V);
   function large(q){ return [mc[0] + (q[0] - mc[0]) * 1.02, q[1]]; }
@@ -620,7 +648,7 @@ function jambeSVG(K, V, J, P, suf){
   var botte = [gelule(bt[0], bt[1], 13, mo[0], mo[1], 12.5), gelule(mo[0], mo[1], 12.5, an[0], an[1], 10.9), gelule(ta[0], ta[1], 9, po[0], po[1], 7.8), gelule(a2[0], a2[1], 10.6, t2[0], t2[1], 8.8)];
   var cid = K.n('bt' + cle), ysol = SOL + 0.6 + PSOL * Math.max(ta[2], po[2]);
   s += '<clipPath id="' + cid + '"><rect x="-300" y="-100" width="600" height="' + f1(ysol + 100) + '"/></clipPath>';
-  s += '<g clip-path="url(#' + cid + ')">' + U.masse(botte, K.u('cuir'), 2.2) + botte.map(function(d){ return PF(d, K.u('grain'), ' opacity=".42"') + PF(d, K.u('relM'), ' opacity=".55"'); }).join('') + '</g>';
+  s += '<g clip-path="url(#' + cid + ')">' + U.masse(botte, K.u('botte'), 2.2) + botte.map(function(d){ return PF(d, K.u('grain'), ' opacity=".42"') + PF(d, K.u('relM'), ' opacity=".55"'); }).join('') + '</g>';
   /* le long de la tige : un reflet, les plis de la cheville, une sangle et sa boucle */
   var bq = pj(add(J.Kn, J.dj, 3 + dh), V), ux = an[0] - bq[0], uy = an[1] - bq[1], ul = Math.sqrt(ux * ux + uy * uy) || 1; ux /= ul; uy /= ul;
   function Q(t, k){ return f1(bq[0] + ux * ul * t - uy * k) + ' ' + f1(bq[1] + uy * ul * t + ux * k); }
@@ -816,7 +844,7 @@ HV.corps = function(K, h, V, P){
   var tor = torse(K, h, T, P, avant, fond, {ouv:function(){ return J2.map(function(j){ return jambeSVG(K, V, j, P, 'o').svg; }).join(''); }});
   /* la tête : au bout du cou, qui part du haut du buste. Elle reste droite quand le dos se penche (elle regarde devant elle) ;
      P.hoche la fait baisser (> 0) ou lever le nez. */
-  var yawT = ba[2] + ds[2] + (P.tete || 0), Vt = U.vue((P.cap || 0) + yawT), ho = P.hoche || 0;
+  var yawT = ba[2] + ds[2] + (P.tete || 0), Vt = U.vue((HV.capDe ? HV.capDe(P) : P.cap || 0) + yawT), ho = P.hoche || 0;
   var upC = mv(T.M[0], [0, -1, 0]), upT = mv(mm(RY(yawT), RX(ho * 0.5)), [0, -1, 0]), N0 = T.lieu([0, 139, -2]), nd = uni(add(mul(upC, 0.5), upT, 0.5)), Hp = add(N0, nd, 19);
   var pHp = pj(Hp, V), rc = Math.sqrt(77.4 * V.c * V.c + 59.3 * V.s * V.s), bc = pj(T.lieu([0, 146, -2]), V);
   /* l'ombre au sol : sous les pieds (et sous une main ou un genou posé) */

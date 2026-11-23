@@ -1,9 +1,11 @@
-"""Le film d'essai : python3 filmer.py [sortie.mp4] [--images dossier]  (une image après l'autre dans Chromium, puis ffmpeg)"""
+"""Le film d'essai : python3 filmer.py [sortie.mp4] [--images dossier] [--page film-positions.html#accroupi]
+   (une image après l'autre dans Chromium, puis ffmpeg ; la page par défaut : film.html)"""
 import sys, os, subprocess, shutil
 from playwright.sync_api import sync_playwright
 ICI = os.path.dirname(os.path.abspath(__file__))
-args = sys.argv[1:]; dos = '/tmp/hv-film'
+args = sys.argv[1:]; dos = '/tmp/hv-film'; page = 'film.html'
 if '--images' in args: i = args.index('--images'); dos = args[i + 1]; del args[i:i + 2]
+if '--page' in args: i = args.index('--page'); page = args[i + 1]; del args[i:i + 2]
 sortie = args[0] if args else os.path.join(ICI, 'pisteuse-poses.mp4')
 shutil.rmtree(dos, ignore_errors=True); os.makedirs(dos)
 with sync_playwright() as p:
@@ -11,7 +13,7 @@ with sync_playwright() as p:
     pg = nav.new_page(viewport={'width': 900, 'height': 900})
     errs = []
     pg.on('pageerror', lambda e: errs.append(str(e)))
-    pg.goto('file://' + os.path.join(ICI, 'film.html'))
+    pg.goto('file://' + os.path.join(ICI, page))
     n = 0
     while True:
         encore = pg.evaluate('() => window.image()')

@@ -318,9 +318,23 @@ HV.contexte = function(id, h){
   K.peau = trouve(HV.PEAUX, h.peau); K.chev = trouve(HV.CHEVEUX, h.cheveux); K.yeux = trouve(HV.YEUX, h.yeux);
   K.role = HV.ROLES[h.role] || HV.ROLES.pisteur;
   K.tenue = trouve(HV.TENUES, h.tenue || K.role.tenue).c;
+  /* les couleurs de la garde-robe (h.couleurs = {habit, pantalon, bottes, cuir}, des noms de HV.PALETTE, comme dans le jeu) */
+  var cl = h.couleurs || {};
+  function pal(id){ for(var i = 0; i < HV.PALETTE.length; i++) if(HV.PALETTE[i].id === id) return HV.PALETTE[i].c; return null; }
+  if(pal(cl.habit)) K.tenue = pal(cl.habit);
   K.tissu = [clair(K.tenue, 0.3), K.tenue, sombre(K.tenue, 0.45)];
+  var cp = pal(cl.pantalon), cb = pal(cl.bottes), cc = pal(cl.cuir);
+  K.pant = cp ? [sombre(cp, 0.1), sombre(cp, 0.55)] : ['#4a4062', '#221d33'];
+  K.botte = cb ? [clair(cb, 0.3), sombre(cb, 0.2), sombre(cb, 0.6)] : ['#b77b45', '#6e4223', '#3b2211'];
+  K.cuir = cc ? [clair(cc, 0.3), sombre(cc, 0.2), sombre(cc, 0.6)] : ['#b77b45', '#6e4223', '#3b2211'];
   return K;
 };
+/* les couleurs de la garde-robe du jeu (jeu/src/garderobe.js : PALETTE) */
+HV.PALETTE = [
+  {id:'rouge', c:'#d33a3a'}, {id:'orange', c:'#ec8526'}, {id:'jaune', c:'#f1c232'}, {id:'vert', c:'#4aa64e'}, {id:'foret', c:'#2e6a3c'},
+  {id:'turquoise', c:'#1fa39b'}, {id:'bleu', c:'#2f6ed0'}, {id:'nuit', c:'#2c3572'}, {id:'violet', c:'#7b4ac9'}, {id:'rose', c:'#e467a5'},
+  {id:'marron', c:'#875230'}, {id:'noir', c:'#36313f'}, {id:'gris', c:'#8b91a2'}, {id:'blanc', c:'#ece8df'}
+];
 function stops(st){ return st.map(function(s){ return '<stop offset="' + s[0] + '" stop-color="' + s[1] + '"' + (s[2] != null ? ' stop-opacity="' + s[2] + '"' : '') + '/>'; }).join(''); }
 function lin(id, st, x1, y1, x2, y2){ return '<linearGradient id="' + id + '" x1="' + (x1 || 0) + '" y1="' + (y1 || 0) + '" x2="' + (x2 == null ? 1 : x2) + '" y2="' + (y2 == null ? 1 : y2) + '">' + stops(st) + '</linearGradient>'; }
 function linU(id, st, x1, y1, x2, y2){ return '<linearGradient id="' + id + '" gradientUnits="userSpaceOnUse" x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '">' + stops(st) + '</linearGradient>'; }
@@ -342,9 +356,10 @@ HV.defs = function(K){
     '<pattern id="' + n('grain') + '" patternUnits="userSpaceOnUse" width="9" height="8"><path d="M1 2 l1.6 .5 M5.5 5.4 l1.6 -.4" stroke="#2a160a" stroke-width=".6" stroke-linecap="round" opacity=".5"/><path d="M6 1.4 l1.4 .3" stroke="#f0c090" stroke-width=".5" stroke-linecap="round" opacity=".45"/></pattern>' +
     lin(n('tunO'), [[0, mix(T[1], T[2], 0.5)], [1, sombre(T[2], 0.3)]]) +
     lin(n('acc'), [[0, clair(K.tenue, 0.35)], [1, sombre(K.tenue, 0.35)]]) +
-    lin(n('pant'), [[0, '#4a4062'], [1, '#221d33']]) +
-    lin(n('cuir'), [[0, '#b77b45'], [0.5, '#6e4223'], [1, '#3b2211']]) +
-    lin(n('cuirH'), [[0, '#3b2211'], [0.3, '#a06a3a'], [0.55, '#7a4a26'], [1, '#3b2211']], 0, 0, 1, 0) +
+    lin(n('pant'), [[0, K.pant[0]], [1, K.pant[1]]]) +
+    lin(n('cuir'), [[0, K.cuir[0]], [0.5, K.cuir[1]], [1, K.cuir[2]]]) +
+    lin(n('botte'), [[0, K.botte[0]], [0.5, K.botte[1]], [1, K.botte[2]]]) +
+    lin(n('cuirH'), [[0, K.cuir[2]], [0.3, mix(K.cuir[0], K.cuir[1], 0.55)], [0.55, mix(K.cuir[1], K.cuir[0], 0.25)], [1, K.cuir[2]]], 0, 0, 1, 0) +
     lin(n('or'), [[0, '#fff4b8'], [0.45, '#eab43c'], [1, '#94620e']]) +
     lin(n('bois'), [[0, '#5a3214'], [0.5, '#c48a50'], [1, '#5a3214']], 0, 0, 1, 0) +
     /* le relief : d'un bord à l'autre de la forme (la lumière vient d'en haut à gauche) */

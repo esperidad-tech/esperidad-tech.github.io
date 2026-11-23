@@ -15,7 +15,8 @@ HV.dessin = function(h, P, o){
   for(kk in B0) P2[kk] = B0[kk];
   for(kk in P) P2[kk] = P[kk];
   P = P2;
-  var K = o.K || HV.contexte(o.id || 'hv', h), Vb = U.vue(P.cap || 0);
+  /* (P.tourne : elle se tourne d'elle-même, en plus de l'angle où on la regarde — un geste « elle regarde à droite ») */
+  var K = o.K || HV.contexte(o.id || 'hv', h), Vb = U.vue(HV.capDe(P));
   var C = HV.corps(K, h, Vb, P), tp = C.tete, Vt = tp.V;
   /* la tête : au bout du cou (hv-corps.js). Quand elle baisse la tête, vue de profil la tête penche vers l'avant ; vue de face,
      ce sont les traits du visage et la frange qui descendent. La queue de cheval, elle, continue de pendre vers le bas. */
@@ -43,7 +44,14 @@ HV.os = function(h, P){
   var B0 = HV.POSES.repos, P2 = {}, kk;
   for(kk in B0) P2[kk] = B0[kk];
   for(kk in P) P2[kk] = P[kk];
-  return HV.corps(HV.contexte('os', h), h, U.vue(P2.cap || 0), P2).os;
+  return HV.corps(HV.contexte('os', h), h, U.vue(HV.capDe(P2)), P2).os;
+};
+/* vers où le corps est vraiment tourné : l'angle où on la regarde (cap), sauf pendant un geste qui la tourne vers un angle précis
+   (capA, avec le poids capW : pour tirer, elle se met de côté par rapport à sa cible), plus ce qu'elle tourne d'elle-même (tourne) */
+HV.capDe = function(P){
+  var c = P.cap || 0, w = P.capW || 0;
+  if(w > 0){ var d = ((P.capA || 0) - c) % 360; d = (d + 540) % 360 - 180; c += d * w; }
+  return c + (P.tourne || 0);
 };
 
 /* ==========================================================
@@ -68,7 +76,11 @@ HV.POSES = {
     bas:[0, 0, 0], bang:[0, 0, 0], dos:[0, 0, 0], tete:0, pen:0, hoche:0, bx:0, ty:0,
     /* l'expression (hv-tete.js) : le sourire de toujours, les sourcils au repos, le regard droit devant */
     sourcils:0, sourcilsIn:0, sourcilsAsym:0, plisse:0, sourire:1, ouvre:0, largeB:1, bouchex:0, rougit:0, regX:0, regY:0,
-    arcDir:[-0.82, 0, 0.57], arcAxe:[0, 1, 0], tendu:0, dague:0, brasDessus:0},
+    /* (l'arc tenu le long du corps : son ventre vers l'avant, la corde derrière — avant, la corde passait DANS la jupe : Romain,
+       23 novembre, 15 h 04 : « au repos, il y a un bug avec son arc ») */
+    arcDir:[-0.2, 0, 1], arcAxe:[0, 1, 0], tendu:0, dague:0, brasDessus:0,
+    /* tourne : elle se tourne d'elle-même (degrés) ; flecheD : une flèche dans SA main (celle qui tire la corde) */
+    tourne:0, flecheD:0, capA:0, capW:0},
   /* une main sur la hanche, la tête un peu penchée */
   hanche:{mainD:[33, 211, 10], coudeD:[1, -0.1, -0.5], mdirD:[-0.45, 0.75, 0.45], pouceD:[0.3, 0.3, -1], poingD:0.35, pen:-5, bx:2.5, piedD:[24, 386, -4]},
   /* elle fait coucou de sa main libre (la paume vers nous) */
@@ -129,6 +141,7 @@ PP.detruire = function(){ this.mort = true; var i = PANTINS.indexOf(this); if(i 
 PP.vers = function(angle, net){ this.capV = angle; if(net){ this.cap = angle; this.vc = 0; } lancer(); };
 /* elle prend une pose. dur (secondes) : sinon, d'autant plus longtemps que le bassin a de chemin à faire (se relever, s'accroupir) */
 PP.pose = function(nom, dur){
+  if(!this.enPosition){ this.posi = null; this.gest = null; }
   if(nom === this.nom) return;
   this.A = this.courante(); this.B = HV.pose(nom);
   var dy = Math.abs(this.B.bas[1] - this.A.bas[1]), dz = Math.abs(this.B.bas[2] - this.A.bas[2]);
@@ -136,6 +149,27 @@ PP.pose = function(nom, dur){
   lancer();
 };
 PP.courante = function(){ return this.tw >= 1 ? this.B : melange(this.A, this.B, eio(this.tw)); };
+/* LES POSITIONS (hv-positions.js) : elle prend la pose de base de la position et y reste ; de temps en temps, elle fait un des
+   gestes de cette position (elle regarde à droite, se baisse, sort une flèche…), puis revient. .joue(geste) : ce geste-là, tout
+   de suite (les films, les boutons). */
+PP.position = function(nom){
+  var Po = HV.POSITIONS && HV.POSITIONS[nom];
+  if(!Po) return;
+  if(this.posi === nom) return;
+  var cur = this.F ? this.courante() : null;
+  this.enPosition = true; this.pose(Po.base); this.enPosition = false;
+  /* (sortir d'un geste en cours : on repart de là où elle en est) */
+  if(this.gest && cur){ this.A = this.gestCourant || cur; this.tw = 0; }
+  this.posi = nom; this.gest = null; this.prochain = null; this.gestForce = null;
+  lancer();
+};
+PP.joue = function(g){ this.gestForce = g; lancer(); };
+/* changer ses habits (h.couleurs, h.tenue…) sans rien interrompre : la pose, le geste en cours continuent */
+PP.habiller = function(h){
+  this.h = h; this.K = HV.contexte(this.K.id, h);
+  var d = this.hote.querySelector('svg > defs'); if(d) d.outerHTML = HV.defs(this.K);
+  this.dessiner(0);
+};
 PP.regard = function(x, y, ms){ this.reg.cx = x; this.reg.cy = y; this.reg.jusqu = this.t + (ms || 1500) / 1000; };
 PP.image = function(now){
   if(this.mort) return;
@@ -150,7 +184,9 @@ PP.image = function(now){
 PP.dessiner = function(dt){
   var t = (this.t += dt), TAU = Math.PI * 2;
   if(this.tw < 1) this.tw = Math.min(1, this.tw + dt / this.dur);
-  var F = melange({}, this.courante(), 1), nom = this.nom;
+  var base = this.courante();
+  if(this.posi && HV.positionImage && this.tw >= 1){ base = HV.positionImage(this, base, t); this.gestCourant = base; }
+  var F = melange({}, base, 1), nom = this.nom;
   /* --- elle se tourne : un ressort bien amorti ; la tête prend de l'avance, les yeux encore plus --- */
   var ec = this.capV - this.cap;
   this.vc += (62 * ec - 15.5 * this.vc) * dt; this.cap += this.vc * dt;
@@ -185,7 +221,8 @@ PP.dessiner = function(dt){
   }
   if(t < this.reg.jusqu){ F.rx = this.reg.cx; F.ry = this.reg.cy; }
   /* --- les gestes des poses --- */
-  var w = eio(this.tw), tp = t - (this.tPose || 0), g = HV.GESTES && HV.GESTES[nom];
+  /* (dans une position, ce sont les gestes de la position qui jouent, pas ceux des poses) */
+  var w = eio(this.tw), tp = t - (this.tPose || 0), g = !this.posi && HV.GESTES && HV.GESTES[nom];
   if(nom === 'coucou'){ var a = Math.sin(TAU * tp * 2.3); F.mainD = [F.mainD[0] + 9 * a * w, F.mainD[1] + 3 * Math.abs(a) * w, F.mainD[2]]; }
   if(nom.slice(0, 3) === 'tir'){ F.rx = -0.5 * w; F.souffle *= 0.4; }
   if(g) g(F, w, tp, this);

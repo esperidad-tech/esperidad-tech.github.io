@@ -37,20 +37,29 @@ button.gris{background:#3a4480;color:#fff}
 </head>
 <body>
 <main>
-<h1>La Pisteuse : le corps qui se plie, les mains, ses poses</h1>
-<p class="sous">Un essai, hors du jeu. Chaque image est un vrai dessin, refait pour l'angle et la pose demandés : rien n'est retourné ni écrasé.</p>
+<h1>La Pisteuse : ses positions</h1>
+<p class="sous">Un essai, hors du jeu. Choisis une position : elle la prend et y reste, et de temps en temps elle fait un petit geste. Chaque image est un vrai dessin, refait pour l'angle et la pose : rien n'est retourné ni écrasé.</p>
 <div class="scene">
   <div class="colle">
     <div id="plateau"><div id="heros"></div><div id="nom">Au repos</div><div id="angle">0°</div><div class="aide">Fais glisser le doigt pour la faire tourner</div></div>
   </div>
   <div>
+    <div class="bloc"><h2>Ses positions</h2>
+      <div class="rang" id="positions"></div>
+      <h3 style="margin-top:12px">Un geste, tout de suite</h3>
+      <div class="rang" id="gestes"></div>
+      <p class="note">Sans rien toucher, elle fait ces gestes d'elle-même, de temps en temps, au hasard.</p>
+    </div>
+    <div class="bloc"><h2>Ses habits</h2><div id="habits"></div>
+      <p class="note">Les couleurs changent dans toutes les positions, même au milieu d'un geste. Les chapeaux, capes, masques… de la garde-robe ne sont pas encore dessinés en volume.</p>
+    </div>
     <div class="bloc"><h2>Se tourner</h2>
       <div class="rang">
         <button data-cap="-90">◀ Profil gauche</button><button data-cap="-45">Trois quarts</button><button data-cap="0">De face</button><button data-cap="45">Trois quarts</button><button data-cap="90">Profil droit ▶</button>
         <button data-cap="180">De dos</button><button id="tour">Un tour complet</button>
       </div>
     </div>
-    <div class="bloc"><h2>Prendre une pose</h2>
+    <div class="bloc"><h2>Toutes les poses (l'essai d'avant)</h2>
       <div id="poses"></div>
       <div class="rang" style="margin-top:12px"><button id="defile" class="gris">▶ Les enchaîner toutes</button></div>
       <p class="note">Elle glisse d'une pose à l'autre : le bassin descend, les pieds restent au sol, le dos se plie, la tunique suit.</p>
@@ -63,7 +72,7 @@ button.gris{background:#3a4480;color:#fff}
 </div>
 </main>
 <!--SCRIPTS-->
-<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script><script src="../src/hv-poses.js"></script>
+<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script><script src="../src/hv-poses.js"></script><script src="../src/hv-positions.js"></script>
 <!--/SCRIPTS-->
 <script>
 (function(){
@@ -94,12 +103,49 @@ button.gris{background:#3a4480;color:#fff}
     var r = document.createElement('div'); r.className = 'rang'; boite.appendChild(r);
     HV.LISTE.forEach(function(l){
       if(l[2] !== f[0]) return;
-      var b = document.createElement('button'); b.textContent = l[1]; if(l[0] === 'repos') b.className = 'on';
+      var b = document.createElement('button'); b.className = 'gris'; b.textContent = l[1];
       b.addEventListener('click', function(){ arreter(); prendre(l); });
       r.appendChild(b); BOUTONS[l[0]] = b;
     });
   });
+  /* LES POSITIONS : elle la prend et y reste ; ses gestes */
+  var bPos = document.getElementById('positions'), bGes = document.getElementById('gestes'), BP = {};
+  function position(nom){
+    arreter();
+    for(var k in BP) BP[k].classList.toggle('on', k === nom);
+    for(var k2 in BOUTONS) BOUTONS[k2].classList.remove('on');
+    var Po = HV.POSITIONS[nom];
+    nomEl.textContent = Po.titre;
+    p.position(nom);
+    bGes.innerHTML = '';
+    Object.keys(Po.gestes).forEach(function(g){
+      var b = document.createElement('button'); b.className = 'gris'; b.textContent = HV.NOMS_GESTES[g] || g;
+      b.addEventListener('click', function(){ p.joue(g); });
+      bGes.appendChild(b);
+    });
+    dessinerVues(Po.base);
+  }
+  HV.LISTE_POSITIONS.forEach(function(nom){
+    var b = document.createElement('button'); b.textContent = HV.POSITIONS[nom].titre;
+    b.addEventListener('click', function(){ position(nom); });
+    bPos.appendChild(b); BP[nom] = b;
+  });
+  /* SES HABITS : les couleurs de la garde-robe du jeu */
+  var hab = document.getElementById('habits'), CL = {habit:'foret', pantalon:'nuit', bottes:'marron', cuir:'marron'};
+  [['habit', 'La tunique'], ['pantalon', 'Le pantalon'], ['bottes', 'Les bottes'], ['cuir', 'Ceinture, baudrier, carquois']].forEach(function(z){
+    var t = document.createElement('h3'); t.textContent = z[1]; hab.appendChild(t);
+    var r = document.createElement('div'); r.className = 'rang'; hab.appendChild(r);
+    HV.PALETTE.forEach(function(c){
+      var b = document.createElement('button'); b.title = c.id; b.setAttribute('aria-label', z[1] + ' : ' + c.id);
+      b.style.cssText = 'background:' + c.c + ';min-width:40px;min-height:40px;padding:0;border:2px solid #0b0f26';
+      if(CL[z[0]] === c.id) b.classList.add('on');
+      b.addEventListener('click', function(){ CL[z[0]] = c.id; r.querySelectorAll('button').forEach(function(x){ x.classList.toggle('on', x === b); }); h.couleurs = {habit:CL.habit, pantalon:CL.pantalon, bottes:CL.bottes, cuir:CL.cuir}; p.habiller(h); });
+      r.appendChild(b);
+    });
+  });
   function prendre(l){
+    for(var k in BP) BP[k].classList.remove('on');
+    bGes.innerHTML = '';
     for(var k in BOUTONS) BOUTONS[k].classList.toggle('on', k === l[0]);
     nomEl.textContent = l[1];
     p.pose(l[0]);
@@ -133,7 +179,8 @@ button.gris{background:#3a4480;color:#fff}
       vues.appendChild(b);
     });
   }
-  dessinerVues('repos');
+  /* au début : la position « au repos », vue de trois quarts */
+  position('repos'); aller(25);
 })();
 </script>
 </body>

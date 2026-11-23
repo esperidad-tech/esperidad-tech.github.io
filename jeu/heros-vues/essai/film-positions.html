@@ -1,0 +1,46 @@
+<!doctype html><meta charset="utf-8">
+<!-- Les films des positions : film-positions.html#accroupi (python3 filmer.py sortie.mp4 --page film-positions.html#accroupi)
+     Une image après l'autre : window.image() avance d'un trentième de seconde. -->
+<style>html,body{margin:0;background:#131932;overflow:hidden}
+#plateau{position:relative;width:900px;height:900px;background:radial-gradient(120% 90% at 50% 40%,#34407e 0%,#1d2550 55%,#141a3a 100%)}
+#heros svg{display:block;width:900px;height:900px}
+#titre{position:absolute;left:0;right:0;top:12px;text-align:center;font:800 38px system-ui,sans-serif;color:#ffd23f;text-shadow:0 2px 0 #24182e,0 0 14px rgba(0,0,0,.5)}
+#sous{position:absolute;left:0;right:0;top:62px;text-align:center;font:700 28px system-ui,sans-serif;color:#e9ecff;text-shadow:0 2px 0 #24182e}</style>
+<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script><script src="../src/hv-poses.js"></script><script src="../src/hv-positions.js"></script>
+<body><div id="plateau"><div id="heros"></div><div id="titre"></div><div id="sous"></div></div>
+<script>
+var HV = HerosVues, h = {role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert'};
+var graine = 11; Math.random = function(){ graine = (graine * 16807) % 2147483647; return graine / 2147483647; };
+window.requestAnimationFrame = function(){ return 0; };
+var p = HV.monter(document.getElementById('heros'), h, {cadre:'-75 -40 450 450'}), titre = document.getElementById('titre'), sous = document.getElementById('sous');
+p.sansHasard = true;
+/* un scénario : ['pos', nom, angle] (elle prend la position), ['g', geste] (un geste ; on attend qu'il finisse), ['v', angle] (on la
+   regarde d'ailleurs), ['att', secondes], ['hab', {couleurs}] (elle change d'habits) */
+var S = {
+  repos:[['pos', 'repos', 25], ['att', 1.6], ['g', 'droite'], ['att', 0.8], ['g', 'gauche'], ['v', -30], ['att', 0.8], ['g', 'arc'], ['att', 0.6], ['g', 'derriere'], ['v', 20], ['att', 1.5]],
+  aguets:[['pos', 'repos', 30], ['att', 1], ['pos', 'aguets', 30], ['att', 1.4], ['g', 'scrute'], ['att', 0.6], ['g', 'alerteD'], ['att', 0.8], ['v', 70], ['att', 0.6], ['g', 'alerteG'], ['att', 0.6], ['g', 'scrute'], ['att', 1]],
+  accroupi:[['pos', 'repos', 30], ['att', 1], ['pos', 'accroupi', 30], ['att', 1.4], ['g', 'regarde'], ['att', 0.5], ['g', 'sol'], ['att', 0.5], ['v', 60], ['g', 'trace'], ['att', 0.5],
+    ['g', 'poussiere'], ['att', 0.4], ['v', 10], ['g', 'derriere'], ['att', 0.4], ['g', 'arc'], ['att', 0.4], ['g', 'baudrier'],
+    ['att', 0.6], ['hab', {habit:'rouge', pantalon:'bleu', bottes:'noir', cuir:'orange'}], ['att', 1.2], ['hab', {habit:'violet', pantalon:'gris', bottes:'marron', cuir:'noir'}], ['att', 1.2], ['hab', {}], ['att', 1]],
+  genou:[['pos', 'repos', 20], ['att', 1], ['pos', 'genou', 20], ['att', 1.4], ['g', 'fleche'], ['att', 0.6], ['v', 50], ['g', 'inspecte'], ['att', 0.5], ['v', 10], ['g', 'visiere'], ['att', 1]],
+  garde:[['pos', 'repos', 30], ['att', 1], ['pos', 'garde', 30], ['att', 2], ['g', 'coups'], ['att', 1.4], ['g', 'esquive'], ['att', 1.4], ['v', 60], ['g', 'coups'], ['att', 1.6], ['g', 'range'], ['att', 1]]
+};
+var nomS = decodeURIComponent(location.hash.slice(1)) || 'accroupi', SC = S[nomS], T = 0, k = 0, attendJusqu = 0;
+function geste(nom){ return HV.POSITIONS[p.posi].gestes[nom]; }
+function suivant(){
+  while(k < SC.length && T >= attendJusqu){
+    var e = SC[k++];
+    if(e[0] === 'pos'){ p.position(e[1]); p.vers(e[2]); titre.textContent = HV.POSITIONS[e[1]].titre; sous.textContent = ''; attendJusqu = T + 0.9; }
+    else if(e[0] === 'g'){ p.joue(e[1]); sous.textContent = HV.NOMS_GESTES[e[1]] || ''; var G = geste(e[1]); attendJusqu = T + G[G.length - 1][0] + 0.15; }
+    else if(e[0] === 'v'){ p.vers(e[1]); }
+    else if(e[0] === 'att'){ attendJusqu = T + e[1]; if(!p.gest) sous.textContent = ''; }
+    else if(e[0] === 'hab'){ h.couleurs = e[1]; p.habiller(h); sous.textContent = 'Elle change d\'habits'; }
+  }
+}
+window.image = function(){
+  suivant();
+  p.dessiner(1 / 30);
+  T += 1 / 30;
+  return k < SC.length || T < attendJusqu;
+};
+</script>
