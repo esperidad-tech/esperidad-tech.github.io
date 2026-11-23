@@ -70,6 +70,8 @@ with sync_playwright() as p:
     pg.context.close()
     print('— 3. la pause, puis la page qui se recharge')
     pg = creer(b, 2); avant = preparer(pg)
+    # (23 novembre : le chaudron prend tout l'écran, les onglets sont dessous → on sort par ⏸️, puis on change d'onglet)
+    pg.click('#atelier-ici .at-mj .mj-btn-pause', force=True); pg.wait_for_timeout(500)
     pg.click('[data-act=onglet][data-o=carte]', force=True); pg.wait_for_timeout(700)
     verifier(pg.evaluate("() => !!M.mjPause") and stock(pg) != avant, 'en pause : la préparation attend, rien ne revient')
     rouvrir(pg)

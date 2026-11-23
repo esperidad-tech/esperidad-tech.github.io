@@ -126,7 +126,12 @@ function nouveauCarton(e, l, ch){ e.n++; var k = {id:'k' + e.n, t:'carton', rest
 var RETIRES = {pot_peinture:1};
 /* Les anciens rangements (caisse, sac, tonneau : « moches », dit Romain) deviennent de beaux meubles, avec leur contenu */
 var ANCIENS = {caisse:'placard', sac:'placard', tonneau:'apothicaire'};
-/* Les meubles spéciaux : un seul de chaque, toujours dans la pièce (on peut les déplacer) */
+/* (23 novembre, Romain : « que le chaudron soit vraiment intégré dans la cheminée, avec impossibilité de le bouger ») LE FOYER : le
+   creux de la cheminée, où le grand chaudron est scellé. x : le milieu de la cheminée (monde) ; ow : la demi-largeur de l'ouverture ;
+   prof : la profondeur du creux dans le mur ; Z : l'endroit du DEVANT du chaudron (monde : 0 = le mur, plus = vers nous) ;
+   ech : la taille du chaudron dans l'âtre (il doit passer entre les deux piliers). */
+var FOYER = {x:950, ow:110, prof:150, Z:54, ech:0.92};
+/* Les meubles spéciaux : un seul de chaque, toujours dans la pièce (on peut les déplacer — sauf le chaudron, scellé dans le foyer) */
 var SPECIAUX = {
   chaudron:{id:'ch', x:950, y:716},
   lutrin:{id:'lu', x:400, y:766},
@@ -264,6 +269,8 @@ function normaliser(e){
     if(!l.length) e.objets.push({id:S.id, t:t, x:S.x, y:S.y, f:0, v:0, st:0, sur:null});
     else if(l.length > 1) e.objets = e.objets.filter(function(o){ return o.t !== t || o === l[0]; });
   });
+  /* (23 novembre) le grand chaudron est scellé dans le foyer : où qu'il ait été posé (même dans la chambre), il y retourne */
+  e.objets.forEach(function(o){ if(o.t === 'chaudron') sceller(o); });
   /* le chaudron a maintenant trois formes (10 novembre) : une ancienne sauvegarde garde son chaudron rond, et sa couleur */
   if(!e.chFormes){ e.chFormes = 1; e.objets.forEach(function(o){ if(o.t === 'chaudron') o.st = styleAvec(3, 0, (o.st || 0) % 8); }); }
   /* l'établi des plantes a maintenant cinq formes, comme la paillasse (12 novembre) : une ancienne sauvegarde garde sa couleur, et prend l'établi de bois */
@@ -556,6 +563,14 @@ function echelleSol(y){ return (y - VPY) / (SOL_Y - VPY) / S_REF; }
 /* ---------- Le repère d'un objet ----------
    o : origine (monde) ; ax : [ex, ey, ez] (monde par unité locale) ; w, h : sa boîte locale (l'origine est en (w/2, h)) */
 var AXES_FACE = [[1 / S_REF, 0, 0], [0, -1 / S_REF, 0], [0, 0, -1 / S_REF]];
+/* (le chaudron dans le foyer : de face, un peu plus petit — FOYER.ech) */
+var AXES_FOYER = AXES_FACE.map(function(a){ return a.map(function(v){ return v * FOYER.ech; }); });
+/* Scelle le chaudron dans le foyer : sa place ne dépend plus de rien (ni du doigt, ni de la taille de l'écran) */
+function sceller(o){
+  var a = proj(FOYER.x, 0, FOYER.Z);
+  o.x = Math.round(a[0] * 10) / 10; o.y = Math.round(a[1] * 10) / 10; o.cote = 0; o.sur = null;
+  delete o.pz; delete o.py; delete o.pc; delete o.placer;
+}
 var AXES_G = [[0, 0, -1 / S_REF], [0, -1 / S_REF, 0], [-1 / S_REF, 0, 0]];   /* contre le mur de gauche : il regarde vers la droite */
 var AXES_D = [[0, 0, 1 / S_REF], [0, -1 / S_REF, 0], [1 / S_REF, 0, 0]];     /* contre le mur de droite : il regarde vers la gauche */
 function axesDe(cote){ return cote === 'g' ? AXES_G : cote === 'd' ? AXES_D : AXES_FACE; }
@@ -1018,7 +1033,7 @@ var PANSES = [
   [[94, 110], [104, 115], [150, 115], [184, 110], [198, 96], [204, 62]],
   [[94, 110], [106, 124], [126, 130], [148, 122], [168, 100], [180, 62]]
 ];
-def('chaudron', {w:260, h:214, p:230, z:'sol', special:'chaudron', cls:'at-chp', nf:3, nom:'Grand chaudron', ic:'🍲', surf:null,
+def('chaudron', {w:260, h:214, p:230, z:'sol', special:'chaudron', cls:'at-chp', nf:3, nom:'Grand chaudron', ic:'🍲', surf:null, fixe:1, sansOmbre:1,   /* (fixe : scellé dans le foyer de la cheminée, FOYER) */
   d:function(c){
     var cuivre = DESSIN.cuivre, cz = 116, fo = c.fo || 0, s = '<g class="at-ch-p" data-at="chaudron">';
     var cercleFer = function(y, r){          /* un cercle de fer : seulement sa moitié de devant */
@@ -1035,6 +1050,8 @@ def('chaudron', {w:260, h:214, p:230, z:'sol', special:'chaudron', cls:'at-chp',
     s += P(lisse(enveloppe(corps), true, 0.5), G(cuivre ? 'cuivre' : 'metal')) + c.sur(reflet(fo === 2 ? 'M36,118 C40,140 58,158 84,168' : 'M46,112 C48,140 66,166 90,178', 6), 8);
     if(fo === 1) s += cercleFer(126, 116) + cercleFer(176, 113);
     if(fo === 2) s += cercleFer(112, 128);
+    /* (23 novembre) dans le foyer : de petites flammes devant, entre les pieds — on voit que ça chauffe */
+    s += c.sur('<g class="at-feu-foyer">' + flammesSVG(130, 213, 0) + '</g>', cz - 56);
     s += c.ligne([[60, 170, cz - 80], [42, 212, cz - 96]], K, 10) + c.ligne([[60, 170, cz - 80], [42, 212, cz - 96]], '#5a5078', 4) +
       c.ligne([[200, 170, cz - 80], [218, 212, cz - 96]], K, 10) + c.ligne([[200, 170, cz - 80], [218, 212, cz - 96]], '#5a5078', 4);
     /* les anses */
@@ -2850,10 +2867,30 @@ function svgCheminee(V){
   [470, 414, 358, 302].forEach(function(Y, i){ if(Y < H - 10) joints.push(c.ligne([[-116, -Y, -46], [116, -Y, -46]], 'rgba(36,24,46,.35)', 3)); });
   [[-50, 470, 414], [50, 414, 358], [-30, 358, 302], [20, 470, 414]].forEach(function(q){ if(q[1] < H - 10) joints.push(c.ligne([[q[0], -q[1], -46], [q[0], -q[2], -46]], 'rgba(36,24,46,.35)', 3)); });
   s += joints.join('');
-  /* les deux piliers et le fond noir */
-  s += P('M' + (X - 98) + ',522 L' + (X - 98) + ',382 C' + (X - 98) + ',330 ' + (X + 98) + ',330 ' + (X + 98) + ',382 L' + (X + 98) + ',522 Z', '#1b0e0a') +
-    '<ellipse cx="' + X + '" cy="508" rx="80" ry="40" fill="' + G('feuFoyer') + '" opacity=".55"/>' +
-    c.boite(-138, -210, -98, 0, -40, 0, {face:G('pierre'), dessus:G('pierre'), cote:G('pierre')}) + c.boite(98, -210, 138, 0, -40, 0, {face:G('pierre'), dessus:G('pierre'), cote:G('pierre')});
+  /* (23 novembre) LE FOYER : un vrai creux dans le mur, où le grand chaudron est scellé (FOYER). Devant, la pierre de l'âtre avance
+     dans la pièce ; dedans (tout ce qui dépasse de l'ouverture est coupé) : le mur du fond noirci et ses briques, la joue de droite
+     (on regarde la cheminée d'un peu à gauche : celle de gauche ne se voit pas), le sol de pierre et la lueur des braises. */
+  var OW = FOYER.ow, PF = FOYER.prof, JT = 'rgba(36,24,46,.38)';
+  var ouv = 'M' + (X - OW) + ',522 L' + (X - OW) + ',376 C' + (X - OW) + ',322 ' + (X + OW) + ',322 ' + (X + OW) + ',376 L' + (X + OW) + ',522 Z';
+  s += c.poly([[-150, 0, 0], [150, 0, 0], [160, 0, -84], [-160, 0, -84]], G('pierre')) +
+    c.ligne([[-54, 0, -3], [-58, 0, -81]], JT, 3) + c.ligne([[54, 0, -3], [58, 0, -81]], JT, 3);
+  var fond = '', i, jy;
+  for(i = 1; i < 8; i++){
+    jy = -i * 27;
+    fond += c.ligne([[-OW, jy, PF], [OW, jy, PF]], 'rgba(255,255,255,.07)', 2.5);
+    for(var jx = -OW + (i % 2 ? 26 : 52); jx < OW; jx += 52) fond += c.ligne([[jx, jy, PF], [jx, jy + 27, PF]], 'rgba(255,255,255,.07)', 2.5);
+  }
+  s += '<clipPath id="atc-foyer"><path d="' + ouv + '"/></clipPath>' + P(ouv, '#1b0e0a') +
+    '<g clip-path="url(#atc-foyer)">' +
+      c.poly([[-OW - 6, -240, PF], [OW + 6, -240, PF], [OW + 6, 0, PF], [-OW - 6, 0, PF]], '#22130f', ' stroke-width="3"') + fond +
+      c.poly([[OW, -240, 0], [OW, -240, PF], [OW, 0, PF], [OW, 0, 0]], '#38231c', ' stroke-width="3"') +
+      c.poly([[-OW, 0, 0], [OW, 0, 0], [OW, 0, PF], [-OW, 0, PF]], '#4d3d42', ' stroke-width="3"') +
+      c.ligne([[-36, 0, 2], [-36, 0, PF]], JT, 2.5) + c.ligne([[38, 0, 2], [38, 0, PF]], JT, 2.5) + c.ligne([[-OW, 0, PF * 0.5], [OW, 0, PF * 0.5]], JT, 2.5) +
+      '<ellipse cx="' + f1(c.Q(0, 0, 34)[0]) + '" cy="' + f1(c.Q(0, 0, 34)[1]) + '" rx="96" ry="26" fill="' + G('feuFoyer') + '" opacity=".6"/>' +
+      '<ellipse cx="' + X + '" cy="430" rx="120" ry="110" fill="' + G('feuFoyer') + '" opacity=".22"/>' +
+    '</g>' + T(ouv, K, SW) +
+    /* les deux piliers (plus minces qu'avant : le chaudron passe entre eux) */
+    c.boite(-138, -210, -OW, 0, -40, 0, {face:G('pierre'), dessus:G('pierre'), cote:G('pierre')}) + c.boite(OW, -210, 138, 0, -40, 0, {face:G('pierre'), dessus:G('pierre'), cote:G('pierre')});
   /* le manteau (on peut y poser de petites choses) et sa bougie */
   s += c.boite(-166, -236, 166, -206, -62, 0, {face:G('bois'), dessus:G('boisH'), cote:G('boisS')}) +
     c.boite(-144, -270, -128, -236, -40, -28, {face:'#f6ecd2', dessus:'#fffaf0', cote:'#e8dcc0'}) +
@@ -3001,6 +3038,7 @@ function surfaceRepere(V, o, prof){
 }
 function repereObjet(V, o, prof){
   var c = catDe(o), xl = murG(V), xr = murD(V);
+  if(c.fixe) return repere([FOYER.x, 0, FOYER.Z], AXES_FOYER, c.w, c.h);      /* le chaudron : scellé dans le foyer */
   if(o.sur && (prof || 0) < 3){
     var S = surfaceRepere(V, o, prof);
     if(S) return repere(S.o, S.ax, c.w, c.h);
@@ -3321,6 +3359,7 @@ function verifierBoutique(V){
    on garde seulement chaque objet dans la pièce (l'écran a peut-être changé de taille). Ce qui vient d'une ancienne sauvegarde (o.placer) trouve une place. */
 function garderDansPiece(V, o){
   var c = catDe(o), xl = murG(V), xr = murD(V), hw = largDe(c) / 2, pw = profDe(c);
+  if(c.fixe){ sceller(o); return; }
   if(c.z === 'mur'){
     if(o.cote){
       /* (une sauvegarde d'avant la perspective : sa place à l'écran devient une place sur le mur de côté) */
@@ -4582,6 +4621,7 @@ function prendreObjet(V, e, o){
   var id = e.pointerId, x0 = e.clientX, y0 = e.clientY, pan0 = {x:V.pan.x, y:V.pan.y}, etat = 'attente', g = null, glissable = V.root.classList.contains('at-glissable');
   /* le chat : le doigt qui glisse sur lui le caresse (il ronronne) ; s'il sort du chat, la pièce défile (ou, sur un grand écran, on le déplace) */
   var chat = o.t === 'chat', car = {l:0, n:0, x:x0, y:y0};
+  var scelle = !!catDe(o).fixe;      /* (23 novembre) le chaudron du foyer : on le touche (ses bulles), on ne le soulève jamais */
   function surChat(ev){ var r = d.getBoundingClientRect(), mx = r.width * 0.25 + 12, my = r.height * 0.25 + 12; return ev.clientX > r.left - mx && ev.clientX < r.right + mx && ev.clientY > r.top - my && ev.clientY < r.bottom + my; }
   /* le doigt est-il parti pour de bon ? (à plus d'un bon bout de doigt de son pelage : le pantin sait où elle est vraiment) */
   /* (dix fois par seconde au plus : c'est une mesure qui coûte, et le doigt bouge bien plus souvent — « sans que ça rame ») */
@@ -4600,6 +4640,7 @@ function prendreObjet(V, e, o){
   var tm = apres(V, TENIR, function(){
     if(etat !== 'attente') return;
     if(chat){ etat = 'caresse'; d.classList.remove('at-appui'); caresseDebut(V, o, e); return; }
+    if(scelle) return;      /* (le doigt qui reste dessus : rien ; quand il se lève, c'est un toucher) */
     vibrer(12); lever(null);
   });
   function mv(ev){
@@ -4609,7 +4650,7 @@ function prendreObjet(V, e, o){
       clearTimeout(tm);
       if(chat && surChat(ev)){ etat = 'caresse'; d.classList.remove('at-appui'); car.x = ev.clientX; car.y = ev.clientY; caresseDebut(V, o, ev); }
       else if(glissable){ etat = 'defile'; d.classList.remove('at-appui'); V.root.classList.add('at-defile'); }
-      else if(chat && !chatPortable(V, o)){ etat = 'rien'; d.classList.remove('at-appui'); }
+      else if(scelle || (chat && !chatPortable(V, o))){ etat = 'rien'; d.classList.remove('at-appui'); }
       else lever(ev);
     }
     if(etat === 'caresse'){
@@ -7978,6 +8019,13 @@ function audioMimi(){
 }
 function sonMimi(V, nom){
   if(V && V.o && V.o.sansSurprise === 'muet') return;
+  /* (Romain, 23 novembre, 10 h 26 : « quand on est sur l'atelier ou sur la table d'analyse […] que Mimi ne miaule pas […] on est
+     concentré sur autre chose et il y a un chat qui miaule et on ne peut rien faire ») : l'établi ou la paillasse d'analyse ouverts
+     par-dessus l'atelier, plus un son de Mimi (ni miaou, ni ronron…) ; elle continue sa petite vie sans bruit */
+  try{ var Mg = window.M; if(Mg && ((Mg.etabliOuvert && Mg.etabliOuvert()) || (Mg.laboOuvert && Mg.laboOuvert()))) return; }catch(e){}
+  /* (même jour) pareil pendant la potion : le chaudron prend maintenant tout l'écran, Mimi est cachée derrière (en pause, le chaudron
+     est rangé et on la revoit : ses sons reviennent) */
+  if(V && V.mjEl && !V.mjEl.classList.contains('mj-cache')) return;
   try{ if(!SONS_MIMI) SONS_MIMI = sonsMimi(audioMimi, function(a){ return a.destination; }); if(SONS_MIMI[nom]) SONS_MIMI[nom](); }catch(e){}
 }
 
@@ -9677,7 +9725,8 @@ function demarrer(V, rid, bouton){
   p.connue = r.connue !== false || dicteeFinie(V, rid);   /* la recette secrète que le Sage a dictée (grimoire) : connue */
   p.stock = function(){ return stockRange(V); };
   var ov = document.createElement('div');
-  ov.className = 'at-mj';
+  /* (23 novembre) le chaudron prend tout l'écran, comme le labo (at-mj-plein : mj-chaudron.css) ; en pause, il retourne dans l'atelier */
+  ov.className = 'at-mj at-mj-plein';
   ov.innerHTML = '<div class="at-mj-cadre"></div>';
   V.root.appendChild(ov);
   /* (étape 4) le chat, dans un coin : il dresse les oreilles quand on verse le bon ingrédient (le mini-jeu n'appelle onVerse que pour le bon) */

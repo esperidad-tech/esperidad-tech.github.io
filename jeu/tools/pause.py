@@ -139,9 +139,14 @@ with sync_playwright() as p:
         ok(pg.locator('#atelier-ici .at-mj .mj-btn-pause').count() == 1, 'le chaudron a son ⏸️')
         if pg.locator('#atelier-ici .at-mj .mj-go').count(): pg.click('#atelier-ici .at-mj .mj-go'); pg.wait_for_timeout(1200)
         pg.screenshot(path=f'{OUT}/11-chaudron-jeu.png')
-        # changer d'onglet pendant le chaudron : il se met en pause (avant : abandonné)
+        # (23 novembre) le chaudron prend TOUT l'écran (.at-mj-plein) : les onglets sont dessous, on ne les touche plus pendant la potion.
+        # On sort par ⏸️ (le chaudron se range, l'atelier et les onglets reviennent), puis on change d'onglet.
+        ok(pg.evaluate('() => { var r = document.querySelector("#atelier-ici .at-mj").getBoundingClientRect(); return r.left <= 0 && r.top <= 0 && r.width >= innerWidth && r.height >= innerHeight; }'), 'le chaudron prend tout l\'écran')
+        pg.click('#atelier-ici .at-mj .mj-btn-pause'); pg.wait_for_timeout(500)
+        ok(pg.evaluate('() => !!M.mjPause && M.mjPause.hote === "atelier" && MJT.enPause()'), '⏸️ met le chaudron en pause')
+        ok(pg.evaluate('() => !!document.querySelector("#atelier-ici .at-mj.mj-cache")'), 'en pause, le chaudron se range : on revoit l\'atelier et les onglets')
         pg.click('[data-act=onglet][data-o=carte]'); pg.wait_for_timeout(600)
-        ok(pg.evaluate('() => !!M.mjPause && M.mjPause.hote === "atelier" && MJT.enPause()'), 'changer d\'onglet met le chaudron en pause')
+        ok(pg.evaluate('() => !!M.mjPause && M.mjPause.hote === "atelier" && MJT.enPause()'), 'changer d\'onglet : le chaudron reste en pause')
         ok(pg.evaluate('() => document.getElementById("mj-parking").childElementCount') > 0, 'l\'atelier attend de côté')
         ok(pg.locator('#mj-rappel:not([hidden])').count() == 1, 'le rappel est là')
         pg.screenshot(path=f'{OUT}/12-chaudron-pause-carte.png')

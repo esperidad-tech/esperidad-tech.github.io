@@ -1,4 +1,4 @@
-# Les héros « en volume » — le chantier ouvert le 23 novembre (Bible §13.91)
+# Les héros « en volume » — le chantier ouvert le 23 novembre (Bible §13.94)
 
 **Où on en est (23 novembre, 11 h) : un premier personnage, la Pisteuse (fille, queue de cheval, tenue en couleur), tourne sur elle-même et prend des poses. C'EST UN ESSAI HORS DU JEU : rien n'est branché dans `build.py`, rien n'est en ligne, `persos.js` n'est pas touché. Romain doit le voir et dire si c'est la bonne direction avant qu'on aille plus loin.**
 

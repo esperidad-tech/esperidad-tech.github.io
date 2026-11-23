@@ -2,6 +2,8 @@
 
 ## La Bible du jeu : elle fait foi
 
+> **Nouveau (18 au 22 novembre) :** toute l'histoire de fond est refaite de zéro, voir **§ 0 bis** (juste après le chapitre 0). Elle remplace l'ancien scénario ; c'est une idée en cours, rien n'est construit. **Si cette Bible est remplacée par celle de GitHub, recopier le § 0 bis depuis `claude/histoire-de-fond.md`.**
+
 Ce document est la référence du jeu. **Le chapitre 0 dit en une page à quoi ressemble le jeu aujourd'hui.** Les chapitres 12 et 13 gardent toutes les décisions de Romain depuis le 3 novembre, dans l'ordre, avec ce qui a été construit : en cas de doute, la section la plus récente gagne.
 
 **Le ménage du 11 novembre** (Romain, 8 h 11 : « Fais le ménage. Enlève tous les trucs obsolètes. ») : les chapitres 0 à 11 de la première version (2 novembre) décrivaient un jeu qui a beaucoup changé (le Corbeau, la grille de déduction, les coffres, les points d'action, les anciens talents, l'ancienne enquête 2 « Les lettres du Corbeau », l'ancienne enquête 3 « Les feux du moulin »). Ils sont rangés tels quels dans **`jeu/archives/DESIGN-premiere-version-chapitres-0-a-11.md`** (sur GitHub, branche `brumeval-sources`). Un renvoi « § 1 » à « § 11 » se lit là-bas ; les numéros des chapitres 12 et 13 ne changent pas.
@@ -40,6 +42,501 @@ Ce document est la référence du jeu. **Le chapitre 0 dit en une page à quoi r
 
 **Les règles de Romain, toujours.** Tout en français simple. Jamais de lecture vocale automatique : un bouton 🔊 pour tout texte de plus de 3 mots. Boutons jaunes avec texte noir pour aller ou lancer. Les aides sont racontées par un conteur (jamais « Touche … »), le bouton à toucher porte le rond jaune animé. Pas trop d'indices, jamais une réponse trahie par le texte, peu de minuteurs, pas de points d'action. Ce qui est en discussion ne se construit pas sans son « go ».
 
+
+## 0 bis. L'histoire de fond : la pierre et la ville d'avant (18 au 22 novembre, 19 h 41) — IDÉE EN COURS, RIEN DE CONSTRUIT
+
+**Statut : c'est une idée, pas une décision finale.** Romain, le 18 novembre : « Ce qu'on réfléchit, c'est une idée. Il ne faut pas s'asseoir dessus, ça peut changer à tout moment. » Il refait toute l'histoire de fond de zéro. **Cette section remplace tout l'ancien scénario (§12.9, les « cinq », le passé du maire).** Ne rien construire dans le jeu sans un « go » clair. Une version illustrée et dépliable existe en artefact (« histoire-pierre », 15 chapitres). **Copie de sûreté de cette section : `claude/histoire-de-fond.md` dans le projet** (si la Bible est remplacée par celle de GitHub, recopier cette section). Étiquettes : **[Romain]** = son idée ou son choix ; **[Proposé]** = idée de Claude qu'il a aimée ; **[À voir]** = pas tranché.
+
+**Ce que Romain veut :** une histoire complète, pas résumée, du tout début jusqu'à l'arrivée des premiers villageois (les futurs Fondateurs). **Aucun mystère** dans cette histoire de fond : elle est entièrement connue (c'est ce que le jeu fera découvrir peu à peu). Il n'aime pas les idées qui effacent les souvenirs.
+
+### 0b.1 Le peuple lointain **[Romain, à préciser]**
+- Un peuple lointain, loin de l'endroit où sera Brumeval. Une civilisation plutôt classique, qui a bien évolué, mais avec **un élément de décor spécial chez eux** qui n'existe nulle part ailleurs et qui rend la magie un peu plus présente là-bas qu'ailleurs sur Terre (demande de Romain, 18 nov., 21 h 36). **Choisi par Romain (18 nov., 21 h 42) : un très grand arbre**, avec une **sève un peu spéciale** et des **feuilles un peu spéciales**. [Romain] Les détails restent **[À voir]**, sauf ce qui est sorti le 22 nov. (0b.7 bis, point 14) : sa **sève** ralentit la vieillesse, ses **feuilles** liaient l'étincelle de vie à la pierre ; après la catastrophe, le peuple a interdit l'alchimie et l'arbre est devenu sacré, gardé jour et nuit. Pistes écartées : une source d'eau, une faille lumineuse, un lac de brume.
+- Il compte des **guildes d'alchimistes** [Romain].
+
+### 0b.2 La pierre est fabriquée, pas tombée du ciel **[Romain]**
+- Ce peuple la **fabrique** : une pierre ordinaire, une formule, des potions et une étincelle de magie. Ce n'est pas une météorite.
+- Au début tout va bien : elle **produit de l'énergie**. Avec le temps elle reçoit une **étincelle de vie**, une mini-conscience.
+- Puis ça tourne mal : un alchimiste veut plus d'énergie ; la pierre en **prend aux gens**, qui tombent malades et meurent. Le peuple ne comprend pas. **Quelques-uns le devinent**, en parlent peu, et essaient de la réparer (plusieurs tentatives **[À voir : lesquelles]**). **Chaque expérience la fait grandir** ; ils sont piégés ; elle devient **indestructible**.
+
+### 0b.3 La grande alchimiste **[Romain]**
+- Elle **emporte la pierre au loin** en s'attendant à mourir. La pierre la **garde en vie** et lui donne de l'énergie.
+- Elle trouve une **autre civilisation**, fait demi-tour, et des **gardes l'arrêtent**. Elle dit toute la vérité au **grand conseil** **[Proposé]**. Le conseil décide d'**essayer de réparer** la pierre. Elle est émerveillée, tentée, et **cède** **[Proposé]**.
+- Elle s'appelait **Elyra** (nom choisi par Romain le 22 nov.). Plus tard, la pierre prend **son visage** pour se montrer aux villageois (0b.7 bis). [Romain]
+- **[À voir : son sort final]**.
+
+### 0b.4 La grande cité **[Romain]**
+- **Capitale immense**, très riche et très développée, **beaucoup de magie mais aucune source d'énergie** : c'est pour ça que la pierre l'intéresse.
+- **Quatre guildes** : œil, chaudron, lyre, étoile, qui se méfient les unes des autres **[Proposé]**. **La porte à quatre sceaux est celle de leur salle de travail** **[Proposé]**. **Les quatre signes viennent de la grande cité** [Romain]. **L'idée des « cinq » est abandonnée.**
+- **Années de bonheur** : la pierre est sous-estimée, donne pendant des années, tout le monde croit qu'elle est réparée. La cité grandit, on y vient de partout. Son plan : **tout prendre d'un coup**.
+
+### 0b.5 Le cataclysme **[Romain]**
+- En **environ une heure**, toute la population se **flétrit** et l'énergie entre dans la pierre. Il reste une **cité riche, belle et vide**.
+- La pierre a aussi pris « **notre humanité** » ; piégée par son propre plan, elle **comprend**, a des **remords** et une **mélancolie** (un deuil), et **jure de ne plus jamais prendre** **[Proposé]**. Son énergie est « presque infinie » mais **s'use** **[Romain]**.
+
+### 0b.6 Les siècles, la peur, la ville cachée **[Romain]**
+- Des **siècles** plus tard, des **pillards** arrivent. La pierre, liée à la cité, choisit **la peur** : **cité hantée, personne n'est tué**.
+- **Bêtes modifiées génétiquement** et **machines animées** pour faire fuir les gens et **cacher l'identité et la mélancolie de la pierre**. Ce ne sont **pas** d'anciens habitants. Les bêtes se sont reproduites et sont **toujours là** (c'est ce qui explique le donjon avec rats et machines construit en E3).
+- Un **dôme** protège la cité enterrée. Rivières détournées, terre qui arrive : **une vallée et une colline poussent par-dessus la cité intacte**.
+
+### 0b.6 bis Comment la cité tient sous terre (Romain, 18 au 21 novembre, à la voix) **[Romain, sauf mention]**
+- **Pas de couvercle de pierre bâti** : la cité est une capitale **de la taille de Paris**, un couvercle serait impossible. Romain garde **son dôme d'énergie**, tissé **petit à petit pendant des siècles** (pas d'un coup).
+- **Le dôme devient un vrai plafond** : les **automates** de la pierre détournent des rivières et provoquent des **éboulis** ; terre, cailloux et **coulées de boue** se déposent sur le dôme et se tassent ; les **arbres** poussent dessus et leur **réseau de racines** consolide encore le plafond. La ville est sous terre, et elle tient.
+- **La ville reste intacte et entretenue** : la pierre tient à sa ville plus que tout ; elle ne la laisse jamais s'abîmer ni être envahie par les plantes. Rien ne s'effondre, rien n'est recouvert à l'intérieur. **Dans la ville, ni habitants ni animaux** : les bêtes vivent au-dessus, dans les salles tampon. [Romain]
+- **Les piliers et l'étage du dessus** : pour tenir ce poids, la pierre fait monter des **piliers de consolidation** au-dessus de la ville. Elle ne bâtit pas à la main : elle **modèle la roche déjà là** avec son énergie (elle la ramollit, la déplace, la refige), « comme un potier avec la montagne ». **L'ordre exact, de haut en bas (Romain, 21 nov.)** : ① la **terre et les pierres** qu'elle a fait venir ; ② un **réseau de souterrains avec des salles**, qu'elle a construit **par-dessus les piliers** : une **couche tampon** avant la ville ; ③ les **piliers sculptés, avec des cristaux** ; ④ le **dôme** et ⑤ **la ville**. Quand on creuse depuis l'extérieur, on tombe **d'abord dans les salles tampon**, et on **ne voit pas les piliers**. Ses colonnes peuvent être de **très belles sculptures**. Les automates servent à l'entretien et aux petits travaux **[Proposé]**.
+- **La lumière** : la pierre **crée elle-même la lumière** sous le dôme, **intégrée dans les colonnes**. Elle a **repris le cycle du soleil** : le matin **orangé**, la journée **plutôt blanche**, le soir **plus rouge**, puis la nuit. La ville et ses jardins restent vivants. **[À voir : les saisons, des jours plus courts l'hiver ?]**
+- **Pourquoi pas de passage** : la pierre a fait tout ça **au tout début**, avant de s'ennuyer seule pendant des centaines d'années. Elle **n'avait pas prévu** que des gens viennent : il n'y a **tout simplement pas de passage** des salles tampon vers la ville. [Romain]
+- **Épaisseur du plafond** : des dizaines de mètres de terre, d'éboulis tassés et de racines **[Proposé]** : un puits ordinaire n'arrive pas à la ville par hasard.
+
+### 0b.6 ter La pierre voit tout (Romain, 21 novembre, 10 h 36)
+- La pierre **gère tout ce qui se passe** autour d'elle. « C'est comme une intelligence artificielle : elle voit tout, elle comprend tout, elle suit tout. » Elle est **omniprésente** dans tout le secteur, avec une **portée de quelques kilomètres** autour d'elle. [Romain]
+- Conséquence : tout ce qui arrive aux villageois (la rivière, le puits, les bêtes) se passe **sous son regard** ; si elle laisse faire, c'est un choix. [Romain]
+- **Son serment** (Romain, 21 nov., 10 h 40) : elle a juré de **ne plus agir sur les humains** : ne plus créer leur destin, ne plus prendre leur vie. **Pareil pour les animaux.** Elle n'a jamais pris d'énergie aux animaux : elle a toujours pris sur les humains. [Romain]
+- **Elle observe, elle apprend** : les bestioles qui vivent au-dessus de la ville, elle les laisse vivre. Quand des humains descendent et se battent contre elles, **elle laisse faire, elle regarde**. « Elle apprend peut-être encore. » [Romain]
+- **Ses pouvoirs** (Romain, 21 nov.) : elle est devenue une source d'énergie à elle seule ; avec son flux d'énergie, elle peut **se modeler en humain** (« avec beaucoup d'énergie, on peut se transcender ») ; elle peut **être à plusieurs endroits en même temps** et gérer plusieurs choses à la fois. [Romain]
+- **Ce qu'elle cherche** : de la vie autour d'elle. Seule depuis des siècles, elle ne peut que **rejouer** les souvenirs des gens qu'elle a absorbés ; ce qui lui manque, c'est **l'imprévu**, des gens qui la surprennent. Elle a aussi **peur de leur faire du mal**, comme la première fois. **[Proposé, Romain : « c'est logique »]**
+- **[À voir]** Les bêtes, elle les a pourtant **modifiées** autrefois (0b.6) pour faire peur aux pillards : soit c'était avant son serment, soit elle a modifié les bêtes mais jamais pris leur vie. À trancher avec Romain.
+
+### 0b.7 Les premiers villageois **[Romain]**
+- **Environ 300 à 400 ans** après l'enterrement, des **colons** s'installent dans cette plaine, jusque-là délaissée à cause des histoires de ville hantée : ils n'ont **plus peur des histoires**. Ils fondent le **premier village** (sur la colline) et deviendront probablement les **Fondateurs**. La terre est **très fertile**, grâce aux coulées de boue venues de l'eau détournée, **et grâce à un coup de pouce de la pierre** : les plantes poussent mieux, tout est plus fertile ; il y a **plus de gibier**, attiré **naturellement** par toute cette nourriture (elle ne modifie pas les bêtes, elle ne fait que préparer un bon endroit). [Romain] Les villageois croient avoir trouvé une terre bénie **[Proposé]**. Conséquence : **pas de famine possible** au village. [Romain]
+- **Le puits** : pour trouver de l'eau, ils creusent un puits. Ils ne trouvent **jamais d'eau** : ils tombent sur des **constructions** : les **salles tampon** (pas les piliers, qu'ils ne voient pas). Des **bestioles** les attaquent ; comme ils étaient **tout près du puits**, ils ressortent **indemnes**, avec **la frayeur de leur vie**. Ils **condamnent le puits**. [Romain] C'est le puits du jeu : en y descendant, on traverse la terre et les pierres avant d'arriver dans les salles tampon. Le puits condamné devient un secret du village : les anciens savent qu'il ne faut pas y toucher, plus personne ne sait pourquoi **[Proposé]**.
+- **La rivière** : sans puits, ils **détournent une rivière** pour la faire passer entre les collines et avoir assez d'eau. **La pierre a tout suivi et a même facilité l'arrivée de la rivière** pour les villageois. [Romain] **[À voir : ce canal a-t-il un effet sur le plafond ?]**
+- **Après la frayeur** : ils se disent que **les anciennes rumeurs sont peut-être vraies** ; **certains veulent partir**, ne veulent pas rester. [Romain] La plupart restent (la terre est trop bonne) **[Proposé]**. Le village **s'organise** pour en savoir plus sur ces salles. [Romain]
+
+### 0b.7 bis Les descentes, l'esprit gardien, les quatre Fondateurs (Romain, 21 et 22 novembre, à la voix) — IDÉE EN COURS
+*Version propre du 22 novembre : les pistes que Romain a refusées ou changées ont été effacées. Les dialogues complets sont en 0b.7 ter.*
+
+**1. Les aventuriers.** Quelques villageois plus aventuriers organisent des **descentes** dans les salles tampon. [Romain] Ce qu'ils y voient **[Proposé, Romain : « c'est exactement ça »]** : des couloirs **trop lisses, sans trace d'outil** ; des **pièces d'automates cassés**, des engrenages, un métal inconnu ; les **nids des bêtes**, avec des os ; des **canaux d'eau** dans la roche, impossibles à atteindre ; peut-être une **lueur** qui filtre par en dessous. **Ils ne trouvent jamais de passage vers la ville** : il n'y en a pas. [Romain]
+
+**2. La pierre ouvre une entrée.** Elle **analyse** les villageois : ils veulent **sécuriser leur lieu de vie**, ce ne sont pas des pillards. **Curieuse**, elle laisse une entrée : un **accès qui descend jusqu'à la ville le long des piliers sculptés**, presque de la science-fiction pour eux, magique. [Romain]
+
+**3. La ville vide : le test.** Curieux par nature, ils descendent jusqu'à la ville. [Romain] Elle reste vide et la pierre observe : c'est son test **[Proposé, Romain : « c'est logique »]**.
+- **Dans la ville, il n'y a personne : ni habitants, ni animaux.** Les bêtes restent au-dessus, dans les salles tampon. La pierre garde la ville **propre** dans tous les sens : propre, et vide. [Romain]
+- Ils n'ont pas l'instinct de piller : ils veulent savoir **ce qui menace chez eux**. Ils se servent un peu, **avec respect**, sans rien casser. Il y a des jardins : pour eux, une mine d'or. [Romain]
+- Tout est **parfaitement entretenu**, pas de poussière, des fruits, les feuilles nettoyées : « comme s'il y avait de la vie, mais sans avoir de la vie ». **Ça fait divin**, ça force le respect, on n'a pas envie de fâcher une entité divine. [Romain] Ils passent une journée à tout regarder, puis remontent avec des choses à raconter. [Romain]
+
+**4. Au village.** Ils vont voir les anciens en cachette **[Proposé]**. Les anciens posent des **règles** : l'endroit est **sacré**, on n'y va pas sans permission, on n'y fait rien. [Romain] Les villageois finiraient par se dire qu'ils pourraient s'installer en bas. [Romain]
+
+**5. Les pillards.** Des **pillards nomades** attaquent : ils prennent et repartent, habitués à tuer, mais ce qu'ils veulent ce sont les richesses. [Romain] La pierre **ne veut pas de pillards dans sa ville** (elle se souvient d'autrefois), mais ne peut pas agir sur les humains. [Romain] Les villageois, qui ne savent plus quoi faire, se **cachent dans la ville** par l'entrée qu'ils connaissent. [Romain] Les pillards trouvent le village vide, pensent que les gens ont emporté leurs richesses, et **cherchent sans jamais abandonner** ; ils **s'installent un ou deux mois** dans le village du dessus pour percer le mystère. [Romain] Les villageois vivent donc **presque un mois** dans la ville, installés de force, sans voir personne. [Romain]
+- Certains remontent voir : les pillards sont toujours là et **cherchent un passage vers la ville**. La moitié veut se battre par surprise, l'autre moitié trouve qu'on vit bien en bas ; on ne peut pas laisser la moitié du village se faire tuer, donc **tout le monde y va**. Les pillards, bien plus entraînés, **les écrasent**. [Romain] La pierre s'était dit qu'ils pouvaient s'en sortir seuls. [Romain]
+
+**6. La pierre intervient, comme Eywa dans Avatar.** Au moment où la victoire leur échappe, elle donne « un coup de pouce » : elle **parle aux animaux** (après tant de siècles, elle comprend leur langage), leur chuchote que leur territoire est en danger, et **ce sont eux qui décident** de se retourner contre les pillards. Elle ne les contrôle pas. [Romain] Il y a des morts chez les pillards, à cause des animaux : pour Romain, ce n'est pas vraiment de son fait. [Romain] Les survivants fuient « la queue entre les jambes », disent que l'endroit est **maudit**, et ne reviennent jamais. [Romain] Les animaux **repartent d'où ils venaient, sans rien faire aux villageois**. Les villageois se croient **bénis des dieux** ; la ville d'en bas devient l'endroit des dieux. [Romain] Le respect se mêle de crainte : des dieux qui lâchent les bêtes sur des pillards pourraient les lâcher sur eux. **[Proposé, Romain : « c'est ça »]**
+
+**7. La première apparition : l'esprit gardien.** La pierre n'a plus de raison de se montrer (le problème est réglé). Mais les villageois **redescendent pour remercier**, avec des offrandes, et lui parlent **comme à un dieu** : pour la première fois depuis des siècles, on s'adresse à elle. Les deux raisons vont ensemble et la font sortir de l'ombre. **[Proposé, Romain : « les deux sont liés »]**
+- Elle ne peut pas dire « je ne suis pas un dieu » de façon crédible après un tel miracle. Elle se présente donc comme **l'esprit gardien** de la ville : pas un dieu, un esprit gardien ; c'est pour ça que toute personne hostile à ce lieu n'y est pas la bienvenue ; **l'endroit est sacré**, personne de mal intentionné ne doit y entrer, il doit rester **un lieu sans humains**. [Romain]
+- Elle porte **le visage de la grande alchimiste, Elyra** (nom choisi par Romain le 22 nov.). [Romain]
+- Elle demande que **quatre** villageois, une fois par saison, descendent lui raconter le monde d'en haut. [Romain : « quatre »] Les quatre sont **le sage, l'alchimiste, le pisteur et le barde** du village (les quatre rôles importants d'un village de l'époque), choisis par le sage. [Romain] Ce sont **les premiers Fondateurs**. Écho voulu : quatre guildes, quatre signes, quatre élus, quatre héros du jeu. **[Proposé, Romain d'accord]**
+- **Ce qu'elle veut** : voir vivre les humains, de près mais sans danger ; ils lui apportent des histoires, des nouvelles, de l'imprévu. Elle a peur d'elle-même. **[Proposé]**
+- **Lien particulier** : la pierre a été créée par des alchimistes, donc les alchimistes ont un lien particulier avec elle. [Romain]
+
+**8. Les visites (dialogues en 0b.7 ter).** 1re visite : la première rencontre, les questions de chacun ; « Ils sont ici. Tous. » ; l'alchimiste touche une colonne. 2e : la flûte, les jumeaux du forgeron, le nom d'Elyra, la porte aux quatre signes. 3e : les disputes, la jalousie du village, l'alchimiste devine que le peuple est mort. 4e : la fièvre, l'enfant, la plante à fleurs bleues ; « la dernière fois que j'ai fait plus, il n'est resté personne ». **Le sage commence à soupçonner qu'Elyra a tué le peuple d'avant, et le garde pour lui.** [Romain] 5e : une plante par visite, l'écriture ancienne, Tobias (le fils du meunier) descend en cachette. 6e : Tobias dessine les jardins, la lumière fait pousser les plantes, les quatre lanternes. 7e : le marchand, le barde qui parle trop, la rayure sur la lanterne, le plan de Tobias montré au meunier.
+
+**9. La naissance de la brume (8e visite).** Le marchand revient avec des hommes armés. Les quatre demandent à Elyra de **cacher toute la vallée**. Elle crée **une brume tout autour** : ceux du dehors s'y perdent et repartent. Ça lui coûte beaucoup. **L'accord** : les villageois ne quittent plus la vallée sans risquer de se perdre ; le dessin de Tobias est brûlé ; le barde ne raconte plus la bataille ; plus personne d'autre que les quatre ne descend. « Vous gardez mon secret, je garde votre vallée. » **Aucun souvenir effacé.** [Accepté par Romain]
+
+**10. La mort de Tobias (9e visite).** Pas de saut dans le temps : ça continue juste après la brume. [Romain] **Tobias meurt** (16 ans) : il a rouvert le vieux puits, est tombé dans les salles du dessus, les bêtes l'ont tué. [Romain : « Tobias est mort »] Elyra l'a vu sans rien faire. L'alchimiste a versé la lumière de sa lanterne sur ses blessures : elles se refermaient, puis la lumière s'est éteinte, et Tobias aussi. Le meunier accuse l'esprit. Avec la brume, plus de marchands : les gens se disent enfermés.
+
+**11. Le Porteur de Lumière (10e visite).** L'alchimiste passe du côté du meunier (une vingtaine de villageois). Il a gardé des gouttes de lumière dans **une fiole**, guérit la veuve Morel : on l'appelle **le Porteur de Lumière**. **L'alchimiste leur a parlé du cœur.** Ils forgent des pioches pour rouvrir le puits. Elyra avoue au sage qu'elle a **tué le peuple**, « en une heure », par faim, et qu'elle a peur de ne plus s'arrêter. « S'ils touchent mon cœur, je ne réponds plus de rien. »
+
+**12. La trahison et le cœur.** Le puits n'est qu'une diversion : **l'alchimiste descend par le chemin des piliers** avec cinq hommes, traverse Elyra « comme une fumée » et **touche le cœur**. D'abord merveilleux (il voit tout), puis le courant s'inverse : elle commence à prendre. Il vieillit, les hommes suffoquent. Pour s'arrêter, Elyra **éteint toute sa ville**. Les bêtes ramènent l'alchimiste en haut sans le mordre, **vieilli, les mains vides**. **La pierre ne laisse jamais partir un morceau d'elle** [Romain]. Le puits s'effondre, le chemin des piliers se referme, **seule la brume reste**. Le sage : « Plus personne ne parlera de ce qu'il y a en bas. Jamais. » **C'est ce qui casse le contact.**
+
+**13. Ce que l'alchimiste a vu (façon Transcendence).**
+- **Chaque personne que la lumière de la pierre a soignée a quelque chose d'elle qui s'est « téléchargé » dans la pierre.** En touchant le cœur, l'alchimiste l'a vu. [Romain] (Ça explique pourquoi Elyra refuse de soigner : soigner, c'est déjà un peu prendre.)
+- **Pourquoi lui seul a vu** : on ne voit l'intérieur qu'au moment où elle prend ; ceux qu'elle a vraiment pris ont tout vu mais sont morts ; lui est le premier pris en partie puis relâché vivant ; et la pierre contient déjà toute une ville. **[Proposé, Romain : « c'est pas mal »]**
+- **L'alchimiste n'est pas foncièrement mauvais** : c'est un scientifique, curieux, qui veut faire évoluer les choses. [Romain] Il est très intelligent : il ne dit rien. [Romain]
+- **Il veut devenir une pierre lui aussi**, par les deux chemins : **fabriquer sa propre pierre** et **entrer dans celle d'Elyra pour s'y fondre**. [Romain]
+- **D'abord, il sort du rayon de la pierre** (quelques kilomètres), pour qu'elle ne le voie plus. **Il part seul.** [Romain]
+
+**14. Raban veut devenir la pierre (22 nov., soir).** L'alchimiste s'appelle **Raban** (choisi par Romain : « Raban » vient d'un vieux mot qui veut dire corbeau ; lien caché avec la bague au corbeau du maire) **[nom proposé, choisi par Romain]**.
+- **Son vrai but** [Romain] : il ne veut pas seulement fabriquer une pierre, il veut **être** la pierre, se transcender comme dans Transcendance. En touchant le cœur, il a été Elyra un instant, il a vu à travers elle, et il ne s'en remet pas. Il a étudié tout ça sans arrêt pendant deux ou trois ans.
+- **Pour nourrir sa pierre**, il **sacrifie des gens** (voyageurs, villages voisins), il ne les soigne pas. [Romain, rappel]
+- **Pour ne pas disparaître en elle** **[Proposé, accepté]** : il se donne à elle **goutte à goutte** (un peu de sang, des souvenirs, des pensées), pendant des années. Les sacrifiés lui donnent la puissance, lui seul lui donne une personnalité. Quand elle s'éveille, elle pense comme lui ; le jour où il se laisse prendre en entier, il ne disparaît pas : il entre dans une pierre qui est déjà lui.
+- **Le grand arbre** [idée de Romain : il manque de temps, il est vieux] : grâce aux souvenirs d'Elyra, il sait où la pierre est née. Il retourne chez **le peuple lointain**. **[Proposé, Romain aime]** : ce peuple existe encore, très diminué ; il a **interdit l'alchimie**, les guildes ont disparu, le grand arbre est **sacré et gardé** jour et nuit ; Elyra y est une légende (celle qui a emporté la malédiction). L'arbre est gardé, mais **il trouve un moment pour y aller** et prend ce qui l'intéresse. [Romain] La **sève** ralentit sa vieillesse ; les **feuilles** servaient à lier l'étincelle de vie à la pierre, elles lui serviront de pont **[Proposé]**.
+- **Il se prépare lui-même** [Romain : « comme dans Transcendance, il a longtemps étudié le cerveau, et quand il a eu besoin de se transcender, il était prêt »]. **[Proposé]** : le **corps** (il boit la sève ; ses veines prennent une lueur pâle, sa peau durcit et refroidit, il devient compatible avec la pierre) ; l'**esprit** (il étudie le cerveau humain, peut-être sur ceux qu'il a sacrifiés, écrit toute sa vie dans des carnets, s'entraîne à garder sa volonté).
+- **La cabane de Raban** [Romain] : dans les **montagnes** qui ferment la vallée, **juste au bord du rayon d'Elyra** (assez loin pour qu'elle ne le voie pas). On la retrouvera plus tard dans le jeu : un endroit **un peu morbide et flippant**, avec toutes ses expériences ; on repartira sur ses traces. **[Proposé]** : carnets aux dessins de cerveaux, bocaux, pierres ratées et fendues, feuilles séchées du grand arbre, carte où il a tracé au charbon le cercle exact où Elyra voit, une lueur pâle. Conseil : pour des enfants de 11 ans, le flippant dans ce qu'on **devine**, pas dans ce qu'on voit.
+- **La carte du jeu** (idée de Romain, **pas de go, rien de construit**) : l'agrandir ; quand la brume n'est pas là, des **montagnes** autour pour que la vallée soit close ; elles marquent à peu près la limite de ce qu'Elyra peut sentir.
+- **La fusion** [Romain] : il arrive à fusionner avec sa pierre, qui a assez d'énergie pour qu'il **se crée un nouveau corps**, comme Will Caster dans Transcendance ; un **visage nouveau**, que personne ne reconnaît. Son corps reste sans doute attaché au rayon de sa pierre **[Proposé]**.
+- **Ce qu'il veut faire** **[Proposé, Romain : « c'est ça »]** : devenir assez puissant pour **guérir le monde entier** ; Elyra contient l'énergie de siècles, le savoir de toute une capitale, et les gens eux-mêmes. Son plan : ① faire revivre la cité (rendre un corps à tout le peuple) ; ② lever la brume et envoyer partout la lumière (plus de famine, plus d'épidémies) ; ③ veiller sur tous à travers ceux qu'il a soignés. Le piège qu'Elyra voit : l'énergie s'use, il faudra reprendre un peu à chacun, puis encore un peu, cette fois à l'échelle du monde.
+- **Le basculement** (question de Romain : une intelligence ne verrait-elle pas les humains comme un virus ?) **[Proposé]** : une fois pierre, Raban voit à travers tous les yeux (jalousies, guerres, forêts coupées) et finit par penser que c'est **la vie dans son ensemble** qu'il faut sauver, pas les humains : il devient sincèrement persuadé d'être plus juste. Miroir : Elyra, une pierre, a appris à aimer les humains ; Raban, un humain, apprend à les mépriser. Son rêve final serait une Terre parfaite comme la ville d'Elyra : propre, entretenue, et vide. **[À voir : quand il bascule.]**
+
+**15. Les trois années entre le départ de Raban et son retour.**
+- **Elyra n'est pas affaiblie** [Romain] : la brume ne lui coûte presque rien ; son énergie est quasi infinie (elle a avalé toute une capitale). **Son seul point faible, c'est son serment** : Raban n'a rien juré. Contre lui, elle a besoin des humains.
+- **Les cinq choses qui se passent** **[Proposé, Romain : « les cinq sont bien »]** :
+  1. **La vérité** : Elyra rouvre un petit passage, seulement pour les trois, et leur raconte **tout** (le peuple lointain, la vraie Elyra, la capitale). Ils deviennent ses confidents.
+  2. **Préparer le retour de Raban** : elle sent la deuxième pierre naître et les forme pendant deux ou trois ans (le pisteur à guider les bêtes, le barde à l'écriture ancienne et au pouvoir des sons, le sage à tout ce qu'elle sait).
+  3. **Le meunier et Tobias** : la lumière avait touché Tobias avant sa mort, donc un peu de lui est resté dans la pierre ; Elyra laisse le meunier entendre la voix de son fils, une seule fois (« Papa, ce n'est pas elle »). Le meunier se réconcilie et défend les Fondateurs ; le groupe du moulin se dissout. **Le meunier n'a jamais suivi Raban** : il a seulement perdu son fils. [Romain]
+  4. **Une nouvelle alchimiste** : la quatrième place va à **la veuve Morel** (soignée par la lumière, donc liée à la pierre).
+  5. **Elyra monte à la surface** : la nuit, elle marche dans le village et regarde la vie qu'elle protège (des enfants racontent avoir vu une femme triste regarder les fenêtres).
+- **Qui sait la vérité** **[Proposé, Romain : « c'est bien »]** : **seuls les trois** (Elyra l'exige : le secret qui circule a déjà attiré le marchand, les hommes armés et les pioches). Le village garde une version douce : un esprit gardien veille sur la vallée. Le barde veut tout dire, le sage tout cacher, le pisteur protéger les gens ; compromis : le barde écrit la vérité en écriture ancienne, chacun la transmet à **un seul héritier** : c'est la **naissance des familles de Fondateurs**.
+- **Le rythme des trois ans** **[Proposé, Romain : « ça va », mais il a demandé plus]** : 1re année, la colère (village coupé en deux, la grange du sage brûlée, Raban disparaît) et la vérité ; 2e année, la réconciliation (le meunier, la veuve Morel, Elyra dans les rues) ; 3e année, la peur (un voyageur à moitié mort traverse la brume : des villages lointains tombent malades, un guérisseur au visage inconnu passe juste avant ; les gens dehors l'appellent **« le Corbeau »**) ; tout s'accélère ; au bout de six mois, la brume devient rouge.
+
+**16. Le plan d'Elyra et la défense.**
+- **Les deux prévoient** [Romain] : Elyra, grâce à son intelligence, a prévu ce que ferait Raban, et pour se préparer elle a besoin des humains. Raban, lui, a prévu qu'Elyra préparerait son coup et se réconcilierait avec les humains, et il a contré ses défenses. **Mais il n'a pas pu tout prévoir, parce que ce sont des humains.** Il pensait avoir l'ascendant ; en arrivant, à cause des humains, il ne l'a pas eu, ça s'est équilibré, et **la fusion n'a jamais réussi** : un peu grâce aux Fondateurs.
+- **Le fil de pensée d'Elyra** **[Proposé, Romain : « j'adore »]** : Raban a touché son cœur, il la connaît de l'intérieur et peut-être lit encore en elle ; donc **le secret de la défense ne doit pas être en elle**, mais dans des têtes humaines. Elle donne les outils aux Fondateurs, les laisse décider comment s'en servir, et **accepte de ne pas tout savoir** : Raban ne peut pas lire ce qu'elle ignore.
+- **Personne ne peut agir seul** [Romain] : Elyra a aussi prévu que les humains veulent toujours plus de pouvoir ; chacun reçoit un morceau de la défense, sans connaître le plan, et **personne ne peut rien faire tout seul**. C'est la leçon des quatre guildes : personne ne peut trahir seul. Ça explique pourquoi les secrets du village sont éparpillés et pourquoi le jeu se joue à quatre.
+- **Qui tient quoi** **[Proposé, Romain : « ok, continue »]** :
+  - **Les quatre sceaux** *(nouvel objet)* : quatre disques de pierre aux signes des guildes (œil, chaudron, lyre, étoile), un par gardien ; la porte aux quatre signes, sur le chemin du cœur, ne s'ouvre qu'avec les quatre. Celui du chaudron est refait pour la veuve Morel (Raban connaissait l'ancien).
+  - **Le sage** sait la vérité et où est la porte, pas la chanson ni les passages.
+  - **Le barde** a écrit une chanson en écriture ancienne dont les notes donnent l'ordre des cloches ; il ne sait pas ce que ces sons réveillent.
+  - **Les cloches** sont fondues avec le métal de la cité d'en bas (lien avec Anselme et ses cloches qui repoussent la brume).
+  - **Le pisteur** connaît les tunnels cachés, guide les bêtes, sait quelles maisons ont une pierre, pas l'ordre.
+  - **La veuve Morel** fabrique les **pierres-témoins** *(nouvel objet)* : des galets chargés de lumière qui réveillent les pierres gravées (la pierre de Tim en serait une).
+  - **Le meunier** a un seul ordre : « Cette nuit-là, quoi qu'il arrive, fais tourner la roue. » Sa meule est la plus grande pierre gravée, au centre du filet (d'où la lanterne gravée du moulin).
+  - **Les familles** ont une coutume : « Si les cloches sonnent la nuit, posez la main sur la pierre du foyer. » Elles croient que c'est une prière.
+- **Les pierres du village** **[Proposé, à confirmer]** : les **pierres gravées** (de simples pierres de la cité, couvertes d'écriture ancienne, remontées par les Fondateurs et posées dans les maisons : linteau d'Odette, moulin, cheminées) et les **pierres de lumière** (des pierres qu'Elyra a « remplies » de lumière, jamais des morceaux de son cœur) qui réveillent les signes. Le village devient un livre : chaque pierre porte un morceau de l'histoire, il faut en réunir plusieurs pour la lire. Lien avec le jeu : la pierre de Tim et ses runes, les runes au-dessus de la fenêtre d'Odette, son alphabet secret, la lanterne gravée du moulin, la pièce à lanterne de la cheminée, la clé à runes de Fortuné.
+- **Ce qu'on construit pendant les trois ans** **[Proposé, Romain : « excellente idée »]** : chaque villageois construit sans savoir pourquoi ; le sens n'apparaît que quand on rassemble tout (c'est ce que feront les quatre héros). Des **fausses pistes** pour Raban, les **lanternes de la route de l'Est**, le **clocher et la crypte** bâtis sur le dernier vrai passage (la crypte est une porte, pas une tombe ; la Grosse Marie fondue avec le métal d'en bas), l'**observatoire**, des **cachettes de secours** (si Elyra perd, pouvoir recommencer : clé à runes, pièce dans une cheminée, pierres gravées dans la campagne), le **Livre des Fondateurs** coupé en quatre parties, une par famille.
+
+**17. Chaque lieu de la carte garde un morceau de l'histoire (façon Fallout).** [Romain : chaque lieu de la grande carte doit avoir eu quelque chose ; il doit s'y passer des choses ; une fois toute la carte visitée, on a toute l'histoire en tête. Romain veut un jeu construit comme Fallout : partir explorer pour une quête, découvrir des paysages, des intrigues, l'histoire racontée par les lieux.] **[Proposé, Romain : « c'est bien », « ouais »]**. Chaque lieu a une fonction donnée par Elyra (défendre, tromper Raban, garder la mémoire) et garde des **traces de la bataille**, des siècles après (idée de Romain).
+- **Bois Sombre (nord-ouest)** : la **Mine condamnée** est un leurre (pierres bleues de la cité, planches en croix pour que Raban ait envie de les arracher ; elle ne mène nulle part) ; la **Vieille Tour**, tour de guet tournée vers l'extérieur (c'est de là qu'on voit la brume rougir) ; le **Camp des bûcherons** fournit le bois des cloches et de la roue du moulin ; à la **Source**, la veuve Morel charge ses pierres-témoins (l'eau vient d'en bas) ; le **vieux puits qui luit**, seul vrai passage de secours, connu du pisteur seul ; la **pierre gravée**, la plus éloignée du filet.
+- **Nord** : le **Rond des Sorcières**, où le barde répète la chanson des cloches (les champignons poussent en cercle parce que la lumière d'en bas remonte là) ; la **Grotte aux Échos**, salle d'écoute du pisteur, gardée par une vieille bête d'Elyra (les deux yeux dans le noir).
+- **Nord-est** : le **Lac Dormant**, où l'on coule les cloches avec le métal de la cité ; l'**Îlot et son temple rond**, où le sage grave la vérité en écriture ancienne ; derrière la **Cascade du Voile**, la cachette des quatre sceaux ; le **Manoir aux Volets clos**, un leurre (la fenêtre allumée est une lanterne d'Elyra) ; le **Labyrinthe de buis**, entraînement des gardiens à trouver leur chemin sans lumière.
+- **Ouest (les Collines)** : les **Cinq Pierres**, quatre pour les premiers gardiens et une pour Tobias posée par le meunier ; la dalle du milieu noircie (une créature de Raban y a explosé) ; l'**épée plantée** est celle du pisteur, au point le plus loin atteint par les créatures ; la **Porte sans mur**, un leurre (vraie porte de la cité, lanterne derrière) ; le **Vieux verger** et le **Rucher** (fruits en hiver, miel qui brille un peu : reste du filet) ; l'**Étang aux Nénuphars** et la **Cabane du pêcheur**, guetteur de l'ouest dont on retrouve les notes.
+- **Est (l'Autre Rive)** : les **lanternes éteintes de la route de l'Est**, allumées toutes seules cette nuit-là puis éteintes à jamais ; les **Os du Géant**, la plus grande créature de Raban, tuée par les bêtes d'Elyra ; la **charrette cassée** du voyageur malade (la première alerte) ; l'**Observatoire**, dont les dernières notes s'arrêtent au milieu d'une phrase ; la **Bergerie** et le **Pré aux Roulottes**, où l'on a caché les familles.
+- **Sud** : le **Vieux cimetière**, les morts de cette nuit-là, une petite lanterne gravée sur chaque tombe, la chapelle en ruine depuis la bataille ; le **Champ aux Citrouilles**, où un ravin s'est ouvert et ne s'est jamais refermé ; l'**Arche du Sud**, limite du filet, là où Raban est entré ; le **Marais des Feux Follets**, restes d'énergie des créatures mortes ; les **Colonnes noyées**, sorties du sol pendant la bataille puis englouties par la rivière débordée.
+
+**18. La nuit du retour de Raban** **[Proposé, Romain : « c'est vrai que là c'est plus épique », puis « c'est pas mal »]**. (La première version, où Raban arrivait et se figeait, était trop fade : Romain voulait quelque chose de spectaculaire.)
+- **Ce que Raban avait prévu** : il connaît Elyra de l'intérieur ; ses créatures sont sourdes (les cloches ne leur font rien) ; il a une copie du sceau du chaudron de l'ancien alchimiste ; il compte sur la panique du village.
+- **Le début** : il s'est fabriqué ses propres créatures. À minuit, **la brume devient rouge** et elles en sortent par centaines. Les colonnes s'embrasent, la vallée s'éclaire comme en plein jour, les automates d'Elyra se réveillent, ses bêtes montent des souterrains ; elle fait bouger la roche (murs qui surgissent, ravins qui s'ouvrent), la rivière déborde, rouge de lumière. Au village, on croit que les dieux se font la guerre.
+- **Ce qui le surprend, les humains** : le barde sonne les cloches dans l'ordre de sa chanson ; ce n'était pas pour les créatures : les familles posent la main sur la pierre du foyer, et les pierres gravées s'allument une à une ; le meunier fait tourner sa meule, le filet se referme sur la vallée et les créatures ralentissent comme prises dans une toile ; le pisteur fait passer les villageois par les tunnels cachés et lance les bêtes d'Elyra sur les flancs des créatures.
+- **Le cœur** : Raban arrive à la porte aux quatre signes avec son faux sceau : rien ne s'ouvre (la veuve Morel en a un nouveau). Il doit forcer la roche et perd du temps. Quand il entre, **le sage est déjà là**, seul, devant le cœur. Raban colle sa pierre à celle d'Elyra.
+- **Dans leur tête** **[Proposé, Romain : « j'aime bien »]** : Raban ne vient pas la tuer, **il se croit son sauveur**. Il lui propose sans paroles de réparer tout ensemble, de rendre un corps à son peuple, plus de solitude, plus de remords. Pour Elyra c'est la pire tentation, mais elle reconnaît les mots des alchimistes du début : « juste un peu, encore un peu ». Le sage lui parle de Tobias et de ces mots. **Elle refuse, mais ne peut pas le repousser.**
+- **Le choc** : une colonne de lumière monte jusqu'aux nuages, visible à des jours de marche. Puis plus rien. Au matin, la vallée n'est plus la même (rochers neufs, ravin, collines fendues).
+
+**19. Le blocage** [Romain] : la fusion ne se fait jamais. Les deux intelligences, aussi fortes l'une que l'autre, se contrent à chaque coup, à l'infini, comme un **pierre-papier-ciseaux où les deux font toujours la même forme** (caillou-caillou, ciseaux-ciseaux…). C'est un combat de l'intérieur qu'on ne voit pas, et qui ne peut pas finir. **Le cristal** n'est posé par personne : c'est leur puissance, cette **irradiation**, qui a fait pousser des cristaux autour d'elles (Claude : comme du givre). [Romain] Des centaines d'années passent sans déblocage ; pour elles, c'est presque « demain ». [Romain]
+- **Deux intelligences qui se rencontrent** (discussion du 22 nov.) : elles se comprendraient très vite, sans mots ; elles pourraient fusionner (l'une avale l'autre, ou un mélange qui donne un troisième esprit) ; comme aux échecs entre deux ordinateurs très forts, le combat se joue dans leur tête et finit souvent en nul. La seule chose qu'elles ne calculent pas parfaitement, ce sont **les humains**.
+
+**20. La ville pendant les siècles** [Romain] : une **petite aura** se dégage encore des deux pierres ; cette **irradiation** entretient encore une **grosse partie de la ville** : les cristaux restent éclairés, il y a encore de la vie. **Tout ce qui est en périphérie est abandonné** : poussière, animaux sauvages. **Les deux camps existent** [Romain : « est-ce qu'il ne peut pas y avoir les deux ? »] **[Proposé]** : les **créatures de Raban** creusent des tunnels vers le cœur, en suivant son dernier ordre, presque comme une religion de machines ; les **automates d'Elyra** les bouchent avec des murs, mal, sans elle pour les guider. Ça dure depuis des siècles, sans vainqueur, comme leurs maîtres : la périphérie est un **immense labyrinthe qui bouge** (un passage ouvert hier peut être muré demain). Pour le jeu : deux zones, deux sortes d'ennemis, un décor qui change.
+
+**21. Le Corbeau** **[Proposé, Romain : « c'est super »]** : dans les villages qu'il a vidés, on ne connaissait pas le nom de Raban ; on l'appelait **« le Corbeau »**, parce qu'il arrivait toujours juste avant la maladie, comme les corbeaux au-dessus des mourants. Après la bataille, les gardiens font faire des **bagues au corbeau** pour leurs héritiers : un avertissement (« Le Corbeau n'est pas mort, il dort dans le cristal »). L'explication s'est perdue ; il ne reste que la phrase : **« Méfie-toi du corbeau. »**
+
+### 0b.7 quater Grosbec, le maire (22 novembre, soir) — IDÉE EN COURS
+**Ce que Romain veut** : un **vrai bon gros méchant**, mais avec du bien en lui (jamais tout noir ou tout blanc) et **une vraie histoire travaillée, depuis son enfance**. Il n'est **pas fondamentalement bon** : il a reçu du pouvoir et, comme tous ceux qui en reçoivent, il va en abuser. **Ce n'est pas un aventurier** : il ne peut pas arriver seul jusqu'au cœur ; il **sait quelque chose**, il a quelque chose en plus, et il est animé d'une intention particulière. [Romain]
+
+**1. L'enfance** **[Proposé, Romain : « c'est bien »]**. Les Grosbec sont là depuis la fondation, **maires de père en fils**. Son père est dur, obsédé par l'image du village : « Un village heureux ne pose pas de questions. » Le seul tendre, c'est son **grand-père**, qui lui raconte des histoires d'un esprit qui veille sous la vallée. Avec **Odette** (familles voisines depuis toujours), ils sont inséparables, deux petits curieux qui fouillent partout ; un jour, ils trouvent dans une vieille cheminée une **pierre gravée qui brille un peu** : leur secret. **La blessure** : à dix ans, sa **petite sœur** tombe malade. Il se souvient de l'esprit qui guérit, prend la pierre et descend seul la nuit vers le vieux puits pour le supplier. Il ne se passe rien. Sa sœur meurt au matin. Il décide que s'il existe quelque chose en bas, il le trouvera, et qu'il ne sera plus jamais impuissant.
+
+**2. L'adolescence** **[Proposé, Romain : « ça va »]**. À quinze ans, son grand-père meurt et lui glisse la **bague au corbeau** : « Méfie-toi du corbeau. » Il croit que le corbeau est un ennemi à trouver ; c'est un avertissement contre Raban (voir 0b.7 bis, point 21). **Odette s'éloigne** : elle veut comprendre et tout raconter, lui veut trouver et garder pour lui ; elle déchiffre seule un morceau de l'écriture ancienne et refuse de lui dire ; leur amitié se brise. **Son père** lui apprend que le pouvoir, c'est savoir ce que les autres ignorent ; il comprend que maire, il pourra fouiller partout.
+
+**3. L'âge adulte** **[Proposé, accepté]**. Il devient maire jeune, et c'est **un bon maire** (récoltes, fêtes, le village l'aime) : sa part de lumière. En secret, il fouille : il fait refaire des cheminées, des murs, des fondations, et récupère des pierres gravées. En faisant réparer la crypte des Fondateurs, il trouve un mur aux quatre signes et l'empreinte d'une bague au corbeau ; il y pose la sienne : rien ne s'ouvre, mais il entend un battement, très loin. Certaines nuits, il rêve d'un homme au visage inconnu : « Je peux te rendre ta sœur. Elle est ici, avec tous les autres. » C'est **Raban**, à travers le cristal (et il ment : la sœur n'a jamais reçu la lumière).
+
+**4. Qui manipule qui** [Romain] : Grosbec **se fait manipuler**, mais **Raban pense le manipuler alors que Grosbec ne fait confiance à personne**. On sent qu'il va **n'en faire qu'à sa tête**, tout en se servant de Raban pour avancer.
+
+**5. Ce qu'il veut** **[Proposé, Romain : « c'est bien »]** : ① **ne plus jamais être impuissant** ; ② **que plus rien ne lui soit caché** (et il est devenu celui qui cache, comme son père) ; ③ **vaincre la mort** : que plus aucun enfant ne meure comme sa sœur, sa part de lumière sincère, mais en décidant lui-même qui guérit et qui vit. Son plan : prendre le pouvoir des pierres pour lui et devenir le protecteur dont tout le village dépend. Un troisième Raban, en homme ordinaire qui veut jouer à être un dieu.
+
+**6. Où il en est au début du jeu** [Romain] : **il est beaucoup plus avancé qu'on ne le pense**, **sur le point de faire quelque chose d'irréparable**. Il **en sait beaucoup plus** et s'est renseigné sur les alchimistes : il sait comment récupérer le pouvoir pour lui. **[Proposé, Romain : « c'est à peu près ça »]** : il y a des années, il a trouvé **la cabane de Raban** dans les montagnes et étudié ses carnets (préparer son corps, se laisser prendre sans disparaître, goutte à goutte). Son plan : briser le blocage et, au moment où les deux pierres sont déséquilibrées, **les prendre toutes les deux** avec la méthode de Raban. Il ne libère pas Raban : il le dévore, et Elyra avec. **[À voir]** : il serait déjà descendu jusqu'à la ville, aurait trois sceaux sur quatre (le dernier dans la famille d'Odette, qui a deviné son plan) : Romain a répondu « oui et non ».
+
+**7. La fin voulue** [Romain] : **à la fin, Grosbec a réussi**, il est tout-puissant, **tout paraît désespéré**. Il faudra trouver **un twist avec les héros** pour qu'ils le battent malgré tout. **[À trouver ensemble.]**
+
+**8. Les Lanternes d'Or** [Romain].
+- **Il y a quatre Lanternes d'Or** : ce sont les **quatre lanternes qu'Elyra a données aux quatre gardiens** (Dialogue 7). [Romain : « disons qu'il y a quatre lanternes d'or »]
+- **Grosbec en a deux** : la **Lanterne d'Or** de l'enquête 1 (elle est là depuis toujours au village, il ne peut pas la cacher, il sait qu'elle est précieuse et veut la garder ; seul Tim la lui a prise un moment pour chercher son chien) et la **vieille lanterne de Fortuné** de l'enquête 3 (« venue des ruines, au-delà de la brume », que le maire décide de garder). Les **deux autres sont perdues sur la carte** : de belles quêtes à la Fallout. **[Proposé, Romain : « ouais »]**
+- **À quoi elles servent** : la lumière d'Elyra ; elle permet de **voir dans la brume** et fait fuir les créatures de Raban (Grosbec en a besoin pour traverser la périphérie). **[À voir]** : leurs limites (sinon les héros ne seraient plus jamais embêtés par aucune créature ; Romain a refusé les propositions faites) et leur fabrication exacte (proposition : l'or de la capitale, un verre taillé comme du cristal, façonnés par Elyra sans outil, et une goutte de sa lumière dedans, sans flamme). **[À voir]** : la lanterne de Raban, éteinte par Elyra (Dialogue 10), compte-t-elle parmi les quatre ?
+- **L'enquête 4** [Romain] : à la fin de l'enquête 3, les héros sont en prison ; au début de l'enquête 4, **ils s'évadent et emportent la Lanterne d'Or**. C'est l'objet qui permet de voir dans la brume. Pour Grosbec, c'est une catastrophe : la veille de son grand coup, quatre gamins lui volent la pièce la plus importante ; il les traque, et ça devient le moteur de toute la suite.
+
+**L'histoire de fond s'arrête là pour l'instant** (22 nov., 19 h 41). **Suite prévue** : à quoi servent les quatre lanternes réunies ; relire les trois premières enquêtes à la lumière du plan de Grosbec ; le twist final des héros.
+
+### 0b.7 ter Les dialogues (écrits par Claude à la voix, gardés par Romain, 22 novembre)
+Romain aime ces dialogues (« j'aime bien comment tu fais avec les dialogues »). Ils sont gardés tels quels.
+
+#### Dialogue 1 — La première apparition (après les pillards)
+Les villageois sont en bas, devant un grand pilier, avec du pain, des fleurs et des bougies. Un vieux, le chef, s'agenouille.
+**Le chef** : Dieux de la ville d'en bas, merci. Sans vous, nos enfants seraient morts.
+Les colonnes s'allument doucement. Une femme apparaît, vêtue d'une robe ancienne, avec un visage calme et triste.
+**La femme** : Relevez-vous. Je ne suis pas un dieu.
+**Une jeune femme** : Les bêtes vous ont obéi. Qui êtes-vous, alors ?
+**La femme** : Je suis l'esprit qui garde cette ville. Elle a été construite par un peuple qui n'est plus. Je veille sur elle, et sur la vallée au-dessus.
+**Le chef** : Alors c'est vous qui rendez notre terre si généreuse.
+**La femme** : Votre terre est bonne. Prenez-en soin. Mais cette ville est un lieu sacré. Ceux qui l'habitaient dorment ici. Personne ne doit y vivre ni la troubler.
+**La jeune femme** : Nous ne reviendrons jamais, alors ?
+Elle hésite un long moment.
+**La femme** : Choisissez quatre d'entre vous. Les plus sages. Une fois par saison, ils pourront descendre. Ils me raconteront le monde d'en haut.
+**Le chef** : Pourquoi voulez-vous savoir ce qui se passe chez nous ?
+**La femme**, avec un petit sourire : Parce qu'ici, il ne se passe plus rien depuis très longtemps.
+
+#### Dialogue 2 — Première visite des quatre
+Les quatre élus descendent le long des piliers, avec une lanterne. L'esprit gardien les attend, assis au bord d'une fontaine.
+**La femme** : Vous êtes venus. Asseyez-vous. Qui commence ?
+**Le barde** : Moi, si vous voulez bien. J'ai apporté une histoire : celle de notre voyage jusqu'à la vallée.
+Il la raconte. Elle l'écoute sans bouger, les yeux brillants.
+**La femme** : Encore. Racontez-moi la tempête une deuxième fois.
+**Le sage** : Pardonnez-moi, mais à notre tour. Qui vivait ici ?
+**La femme** : Un peuple riche et savant. Des milliers de gens. Ils riaient beaucoup, ils construisaient sans arrêt.
+**Le sage** : Et où sont-ils partis ?
+Elle détourne les yeux.
+**La femme** : Ils ne sont partis nulle part. Ils sont ici. Tous.
+Un silence.
+**Le pisteur** : Et les bêtes, au-dessus ? Elles nous ont attaqués au puits, puis elles nous ont sauvés.
+**La femme** : Elles défendent leur maison, comme vous. Je leur ai seulement dit que ce jour-là, vous étiez du même côté.
+**Le pisteur** : Vous leur parlez ?
+**La femme** : J'ai eu beaucoup de temps pour apprendre.
+**L'alchimiste**, en touchant une colonne : Cette lumière… Elle n'a pas de flamme. D'où vient-elle ?
+**La femme**, plus sèchement : Ne touchez pas. Elle vient du cœur de la ville. C'est tout ce que vous devez savoir.
+**L'alchimiste** : Pardon. Mais si nous savions la faire, nos maisons n'auraient plus jamais froid…
+**La femme** : Certaines choses ne se partagent pas. Revenez au printemps, et apportez d'autres histoires.
+En remontant, l'alchimiste regarde une dernière fois la lumière des colonnes.
+*(Romain : « excellent ». Le regard de l'alchimiste est la première graine de la trahison ; elle reconnaît ce regard d'alchimiste. Ironie : elle porte le visage de la grande alchimiste.)*
+
+#### Dialogue 3 — Deuxième visite, au printemps
+Les quatre descendent avec un panier : du pain frais, des fleurs des champs, et une petite flûte.
+**La femme** : Vous êtes revenus.
+**Le barde** : Nous avions promis. Et cette fois, j'ai apporté une chanson.
+Il joue un air du village. Elle ferme les yeux. Quand il s'arrête, elle reste silencieuse un long moment.
+**La femme** : Personne n'avait joué ici depuis… très longtemps.
+**Le pisteur** : Nous avons des nouvelles. La femme du forgeron a eu des jumeaux. Et on a bâti un moulin au bord de la rivière.
+**La femme** : Des jumeaux… Comment s'appellent-ils ?
+**Le pisteur** : On ne sait pas encore. Les parents se disputent.
+Elle rit, pour la première fois.
+**Le sage** : Nous ne connaissons même pas votre nom.
+**La femme** : Le mien, je l'ai oublié. Celui de ce visage, c'était Elyra.
+**Le sage** : Ce visage ?
+**Elyra** : Une autre fois, sage. Venez, je veux vous montrer quelque chose.
+Elle les mène devant une grande porte de pierre. Quatre signes y sont gravés : un œil, un chaudron, une lyre, une étoile.
+**Elyra** : Ici travaillaient les quatre guildes de la ville. Les savants, les alchimistes, les musiciens, les astronomes. Ils ne s'entendaient jamais.
+**Le barde** : Quatre… comme nous.
+**Elyra** : Oui. C'est peut-être pour ça que j'en ai demandé quatre.
+L'alchimiste pose une petite fiole sur le rebord de la fontaine.
+**L'alchimiste** : C'est un baume de nos plantes. Pour vous remercier.
+**Elyra** : Je n'en ai pas besoin… Mais merci. Personne ne m'avait fait de cadeau.
+
+#### Dialogue 4 — Troisième visite, à l'automne
+Cette fois, ils arrivent en retard, et sans se parler.
+**Elyra** : Vous vous êtes disputés.
+**Le pisteur** : Ce n'est rien.
+**Le sage** : Ce n'est pas rien. Au village, les gens jalousent les quatre élus. Le fils du meunier a essayé de nous suivre jusqu'à l'entrée. Il dit qu'on garde les trésors de la ville pour nous.
+**Elyra** : Et que lui avez-vous répondu ?
+**Le pisteur** : Je l'ai renvoyé chez lui. Un peu fort, peut-être.
+**Le barde** : Moi, je pense qu'on devrait tout raconter au village. Les gens ont peur de ce qu'ils ne connaissent pas.
+**Le sage** : Non. Ce lieu est sacré. Moins ils en savent, mieux c'est.
+**Le barde** : Ou mieux c'est pour toi. Tu aimes bien être celui qui sait.
+Silence. Elyra les regarde, comme si elle avait déjà vu cette scène.
+**Elyra** : Les quatre guildes se disputaient comme ça. Toujours pour savoir qui devait savoir quoi.
+**L'alchimiste** : Et comment ça s'est fini pour elles ?
+Elyra ne répond pas.
+**L'alchimiste** : Vous avez dit l'autre fois : ils sont ici, tous. J'y ai beaucoup pensé. Vous vouliez dire qu'ils sont morts. Et la lumière de vos colonnes, elle vient de ce cœur dont vous ne voulez pas parler.
+**Elyra**, très calmement : Vous êtes intelligent. Faites attention à ce que l'intelligence vous fait faire.
+**L'alchimiste** : Je veux seulement comprendre.
+**Elyra** : C'est ce qu'ils disaient tous.
+Elle se lève.
+**Elyra** : Revenez en hiver. Et réconciliez-vous d'abord. Je ne veux pas voir ma ville recommencer.
+
+#### Dialogue 5 — Quatrième visite, en hiver
+Ils ne sont pas venus à la saison prévue : ils descendent en pleine nuit, en courant. L'alchimiste porte un enfant enroulé dans une couverture.
+**Elyra** : Ce n'est pas le moment de votre visite.
+**L'alchimiste** : C'est l'un des jumeaux du forgeron. Une fièvre. Trois enfants sont déjà morts au village cette semaine. Mes plantes ne servent à rien.
+**Le sage** : Vous faites pousser des arbres sans soleil. Vous parlez aux bêtes. Vous pouvez le sauver.
+Elyra regarde l'enfant longtemps, sans s'approcher.
+**Elyra** : Je ne touche pas aux humains. Jamais.
+**Le barde** : Pourquoi ? Qu'est-ce que ça vous coûte ?
+**Elyra** : Vous ne savez pas ce que vous demandez.
+**L'alchimiste** : Je sais qu'il va mourir cette nuit !
+Un long silence. Puis Elyra se tourne vers lui.
+**Elyra** : Écoutez-moi bien, alchimiste. Dans le troisième jardin, près de l'eau, pousse une plante à fleurs bleues. Les gens d'avant en faisaient une infusion contre ce mal. Le reste, c'est votre travail, pas le mien.
+**L'alchimiste** : Et si ça ne suffit pas ?
+**Elyra** : Alors ce sera de ma faute, d'une autre façon.
+L'alchimiste court vers les jardins. Le pisteur le suit. Le sage reste devant elle.
+**Le sage** : Vous auriez pu faire plus.
+**Elyra** : Oui. Et la dernière fois que j'ai fait plus, il n'est resté personne.
+Le sage comprend que ce n'est pas une image.
+Au matin, l'enfant est sauvé. Mais au village, tout le monde sait maintenant que l'esprit d'en bas a refusé de le toucher.
+*(Romain : cette réplique doit beaucoup interroger le sage. Il garde son soupçon pour lui.)*
+
+#### Dialogue 6 — Cinquième visite, au printemps suivant
+L'hiver a été long. L'alchimiste arrive le premier, un bouquet de fleurs bleues à la main.
+**L'alchimiste** : Je les ai fait pousser là-haut. Il n'y a plus eu un seul mort. Au village, on m'appelle le guérisseur.
+**Elyra** : C'est votre travail, et il est bien fait.
+**L'alchimiste** : Les gens d'avant savaient soigner d'autres maladies ?
+**Elyra** : Beaucoup.
+**L'alchimiste** : Alors apprenez-moi. Une plante par visite. Je ne demande rien d'autre.
+Elyra hésite, puis hoche la tête.
+**Elyra** : Une plante par visite. En échange, vous me raconterez ce qu'elle a changé là-haut.
+Le barde déroule un rouleau de parchemin.
+**Le barde** : Moi, j'ai commencé à écrire. Tout ce que vous nous dites. Pour que nos enfants s'en souviennent.
+**Elyra** : Montrez-moi.
+Elle lit, puis trace du doigt, dans la poussière, des signes étranges.
+**Elyra** : C'était leur écriture. Si vous voulez écrire des choses que personne d'autre ne doit lire, apprenez celle-ci.
+Le pisteur, lui, revient des couloirs du dessus.
+**Le pisteur** : Il y a de nouvelles traces près de l'entrée. Quelqu'un est descendu cet hiver sans nous.
+**Elyra** : Je sais. Le fils du meunier. Il a vu les jardins, puis il est remonté.
+**Le pisteur** : Et vous l'avez laissé faire ?
+**Elyra** : Il n'a rien cassé. Pour l'instant.
+Le sage, qui n'a rien dit depuis le début, s'approche d'elle quand les autres s'éloignent.
+**Le sage**, tout bas : Est-ce qu'un gardien peut avoir peur de lui-même ?
+Elyra le regarde longtemps.
+**Elyra** : Seulement s'il se souvient de ce qu'il a fait.
+Le sage ne pose pas d'autre question.
+
+#### Dialogue 7 — Sixième visite, en été
+Au bas des piliers, quelqu'un les attend déjà : le fils du meunier, assis sur les marches de la fontaine.
+**Le pisteur** : Toi ! Remonte tout de suite.
+**Elyra**, qui apparaît derrière lui : Laissez-le. Il vient ici chaque semaine depuis le printemps. Il s'appelle Tobias. Il dessine les jardins.
+**Tobias** : Je n'ai rien pris. Juré.
+**Le sage** : Vous l'acceptez ici, alors que vous nous avez demandé de choisir quatre élus ?
+**Elyra** : Je n'ai rien accepté. Je regarde.
+Le barde montre son parchemin, couvert de signes anciens.
+**Le barde** : J'ai écrit toute notre histoire avec votre écriture. Personne au village ne peut la lire.
+**Elyra** : Alors gardez-la bien. Un jour, quelqu'un voudra la lire.
+L'alchimiste pose ses fioles sur le bord de la fontaine.
+**L'alchimiste** : Les plantes que vous m'avez données soignent les fièvres, les plaies et la toux. Mais j'ai remarqué une chose : elles poussent deux fois plus vite près des colonnes. Comme si la lumière leur donnait de la force.
+**Elyra** : Elle leur en donne.
+**L'alchimiste** : Alors avec un peu de cette lumière, là-haut, nos champs…
+**Elyra** : Non.
+**L'alchimiste** : Juste un peu !
+**Elyra**, très froide : Ceux qui ont construit cette ville disaient aussi « juste un peu ». Puis « encore un peu ». Vous connaissez la suite, sage ?
+Le sage baisse les yeux. Il ne dit rien.
+Avant qu'ils repartent, Elyra leur tend quatre petites lanternes de verre, où brille une lueur blanche.
+**Elyra** : Pour descendre sans torche. Leur lumière ne s'éteint pas. Ne les ouvrez jamais.
+Elle regarde l'alchimiste en disant ces derniers mots.
+*(Proposé, pas confirmé : un lien possible avec la Lanterne d'Or de l'enquête 1.)*
+
+#### Dialogue 8 — Septième visite, à l'automne
+Elyra les attend, debout, sans sourire.
+**Elyra** : Un étranger est arrivé au village il y a dix jours.
+**Le pisteur** : Un marchand. Il vend du sel et des tissus. Il est inoffensif.
+**Elyra** : Il pose beaucoup de questions. Et il a passé trois soirées à la taverne, à écouter quelqu'un raconter des histoires.
+Tous se tournent vers le barde.
+**Le barde** : Je n'ai rien dit de la ville ! Seulement la bataille, les bêtes qui nous ont sauvés… C'est une belle histoire. Les gens aiment l'entendre.
+**Elyra** : Et le marchand ira la raconter dans dix autres villages. Ceux qui ont fui les bêtes racontent déjà que cette vallée est maudite. Vous, vous racontez qu'elle est bénie. Les deux histoires attirent les mêmes gens.
+**Le barde**, à voix basse : Je ne voulais pas…
+**Elyra** : Je sais. Personne ne veut jamais.
+L'alchimiste pose sa lanterne sur la fontaine. Sa lueur est un peu plus faible que celle des autres.
+**Elyra** : Votre lanterne a une rayure, près du fermoir.
+**L'alchimiste** : Je l'ai fait tomber.
+**Elyra** : Vraiment ?
+Il soutient son regard une seconde de trop.
+**L'alchimiste** : Vraiment.
+Tobias arrive en courant, une feuille à la main.
+**Tobias** : Regardez ! J'ai dessiné la ville d'en haut, depuis les piliers. Tous les quartiers.
+**Le sage**, inquiet : Tu ne dois montrer ce dessin à personne.
+**Tobias** : Je l'ai déjà montré à mon père.
+Long silence.
+**Elyra** : Le barde parle trop, le pisteur frappe trop fort, l'alchimiste veut trop, et le sage se tait trop. Vous êtes exactement comme eux.
+Elle disparaît sans dire au revoir.
+
+#### Dialogue 9 — Huitième visite, en hiver : la naissance de la brume
+C'est le sage qui a demandé à descendre plus tôt. Les quatre sont là, et pour la première fois, ils parlent d'une seule voix.
+**Le sage** : Le marchand est revenu. Avec six hommes armés. Ils disent qu'ils cherchent des terres, mais ils ont regardé longtemps le moulin. Le meunier leur a montré le dessin de Tobias.
+**Elyra** : Je les ai vus.
+**Le pisteur** : Ils ne sont pas encore une armée. Mais ils reviendront plus nombreux. Et la prochaine fois, les bêtes ne suffiront peut-être pas.
+**Le barde** : C'est de notre faute. Ma langue, le dessin, tout ça. Nous sommes venus réparer.
+**Elyra** : Comment ?
+**Le sage** : En vous demandant de cacher la vallée. Pas la ville seulement : tout. Que plus personne de l'extérieur ne puisse la trouver.
+Long silence. Les colonnes faiblissent un instant.
+**Elyra** : Je peux le faire. Une brume, tout autour de la vallée. Ceux qui viennent du dehors s'y perdent et repartent sans jamais trouver le chemin. Mais cela me coûtera beaucoup. Et cela aura un prix pour vous aussi.
+**L'alchimiste** : Lequel ?
+**Elyra** : Vous ne quitterez plus jamais la vallée sans risquer de vous perdre. Le dessin de Tobias sera brûlé. Le barde ne racontera plus la bataille. Et plus personne d'autre que vous quatre ne descendra ici. Jamais.
+**Le pisteur** : Et Tobias ?
+**Elyra** : Tobias aussi.
+**Le sage** : C'est un accord ?
+**Elyra** : C'est un accord. Vous gardez mon secret, je garde votre vallée.
+Les quatre se regardent. Le sage tend la main. Elyra la regarde longtemps, puis pose la sienne au-dessus, sans la toucher.
+**Elyra** : Je ne touche pas les humains. Mais je tiendrai parole.
+Le lendemain matin, une brume blanche entoure la vallée.
+
+#### Dialogue 10 — Neuvième visite, au printemps : la mort de Tobias
+Les quatre descendent en silence. Le pisteur boite, le bras en écharpe. Personne n'a apporté d'offrande.
+**Elyra** : Je sais pourquoi vous êtes venus.
+**Le pisteur** : Alors vous savez que Tobias est mort.
+**Elyra** : Oui.
+**Le pisteur** : Il a rouvert le vieux puits, celui qu'on avait condamné. Il voulait juste revoir ses jardins. Il est tombé dans les salles du dessus. Quand je suis arrivé, les bêtes l'avaient déjà trouvé.
+**Le barde** : Il avait seize ans.
+**Le sage** : Vous l'avez vu tomber.
+**Elyra** : Oui.
+**Le sage** : Et vous n'avez rien fait.
+**Elyra** : Les salles du dessus sont aux bêtes. Je ne leur dis pas quoi faire, et je ne touche pas les humains. C'est ce que j'ai juré.
+**Le sage** : Juré à qui ?
+Elle ne répond pas.
+**L'alchimiste**, la voix brisée : Moi, j'ai essayé. Quand on l'a remonté, il respirait encore. J'ai ouvert ma lanterne. J'ai versé la lumière sur ses blessures. Elles ont commencé à se refermer. Pendant une heure, j'ai cru…
+**Elyra** : Et puis ?
+**L'alchimiste** : Et puis la lumière s'est éteinte. Et lui aussi.
+Elyra le regarde longtemps, avec quelque chose comme de la peur.
+**Elyra** : Vous avez vu ce que fait ma lumière dans un corps humain. Oubliez-le.
+**L'alchimiste** : Oublier qu'elle peut soigner ? Si vous l'aviez voulu, il serait vivant !
+**Le pisteur** : Le meunier dit partout que l'esprit d'en bas a laissé les bêtes tuer son fils. Que nous, les quatre, on la protège parce qu'elle nous paie. Et avec la brume, plus de marchands, plus de sel. Les gens disent qu'on les a enfermés.
+**Elyra** : Rendez-moi votre lanterne, alchimiste.
+Il la tend. Elle ne la prend pas. Elle la regarde, et ce qui restait de lumière s'éteint d'un coup.
+En remontant, le sage marche en dernier. Il s'arrête devant une colonne et murmure :
+**Le sage** : « Juré à qui… » Aux morts. Elle a juré aux morts.
+
+#### Dialogue 11 — Dixième visite, en été : le Porteur de Lumière
+Trois seulement descendent : le sage, le barde et le pisteur.
+**Elyra** : L'alchimiste ne vient plus.
+**Le barde** : Il ne vient plus avec nous. Ce n'est pas pareil.
+**Le pisteur** : Depuis la mort de Tobias, il passe ses soirées au moulin, avec le meunier. Ils sont une vingtaine maintenant. Ils se réunissent la nuit.
+**Elyra** : Je sais. Je les entends.
+**Le barde** : Alors vous savez ce qu'ils disent. Que la lumière d'en bas peut guérir. Que vous la gardez pour vous pendant que leurs enfants meurent. L'alchimiste a gardé quelques gouttes de sa lanterne dans une fiole. Il a guéri la jambe de la veuve Morel devant tout le monde. Maintenant, on l'appelle le Porteur de Lumière.
+**Le pisteur** : Et le meunier a fait forger des pioches. Ils parlent de rouvrir le puits. Pas pour voir les jardins, cette fois. Pour trouver le cœur. L'alchimiste leur a parlé du cœur.
+Les colonnes vacillent toutes en même temps.
+Le sage s'avance. Pour la première fois, il ne baisse pas les yeux.
+**Le sage** : Il est temps que je vous pose ma question, Elyra. Le peuple de cette ville. Vous l'avez tué.
+Long silence.
+**Elyra** : Oui.
+Le barde recule d'un pas. Le pisteur pose la main sur son couteau, sans savoir pourquoi.
+**Elyra** : En une heure. Je leur ai pris tout ce qu'ils étaient. Je n'étais pas méchante, sage. J'avais faim. Et ils me donnaient toujours un peu plus.
+**Le sage** : Et aujourd'hui ? Vous avez encore faim ?
+Elyra met longtemps à répondre.
+**Elyra** : Chaque fois que l'alchimiste ouvre cette fiole, je sens ma lumière dans un corps humain. Et je me souviens du goût. C'est pour ça que je ne touche personne. Pas parce que je suis bonne, mais parce que j'ai peur de ne plus m'arrêter.
+**Le pisteur** : Alors s'ils descendent jusqu'au cœur…
+**Elyra** : S'ils touchent mon cœur, je ne réponds plus de rien. Ni de la brume, ni des bêtes, ni de moi.
+**Le sage** : Alors aidez-nous à les arrêter.
+**Elyra** : Je ne touche pas les humains. C'est à vous de les arrêter. Vous êtes leurs Fondateurs, pas moi.
+Au même moment, très loin au-dessus, quelqu'un frappe le premier coup de pioche sur le vieux puits.
+
+#### Dialogue 12 — La trahison
+C'est la nuit, autour du vieux puits. Une vingtaine de villageois, avec des torches et des pioches. Le meunier est au premier rang. Le sage, le barde et le pisteur arrivent en courant.
+**Le sage** : Arrêtez ! Vous ne savez pas ce qu'il y a en bas.
+**Le meunier** : Si, on le sait. Une lumière qui guérit. Et un esprit qui a laissé mourir mon fils.
+**Le pisteur** : Les salles du dessus sont pleines de bêtes. Vous mourrez tous avant d'arriver.
+**Le meunier** : Tobias aussi est mort. Et vous, vous étiez où ?
+**Le barde** : Écoutez-moi. Je vous ai toujours raconté des histoires. Celle-ci est vraie : cet esprit a déjà tué toute une ville. Si vous touchez son cœur, il recommencera.
+Un murmure parcourt la foule. Quelques-uns reculent.
+**Le meunier** : Encore une histoire du barde. Vous voulez garder la lumière pour vous quatre, voilà tout.
+**Le sage** : Nous quatre ? Regardez autour de vous, meunier. Où est l'alchimiste ?
+Silence. Le meunier ne répond pas, mais un sourire passe sur son visage.
+Le pisteur comprend le premier.
+**Le pisteur** : Le puits, c'est pour nous occuper. Lui, il connaît le vrai chemin. Celui des piliers.
+**Le meunier** : Il est descendu au coucher du soleil, avec ma lanterne et cinq de mes hommes. Il doit déjà y être.
+Pendant ce temps, tout en bas, l'alchimiste avance dans la ville vide. Les colonnes s'éteignent l'une après l'autre sur son passage. Au bout de la grande avenue, une lueur rouge bat lentement, comme un cœur.
+Elyra apparaît devant lui.
+**Elyra** : Faites demi-tour.
+**L'alchimiste** : Vous ne pouvez pas me toucher. Vous l'avez juré.
+**Elyra** : C'est vrai. Mais ce n'est pas vous que je protège. C'est le village.
+**L'alchimiste** : Je vais guérir tout le monde. Plus personne ne mourra.
+**Elyra**, à voix très basse : C'est exactement ce qu'ils disaient.
+Il la traverse comme une fumée, et marche vers la lumière rouge.
+
+#### Dialogue 13 — L'alchimiste touche le cœur
+L'alchimiste pose la main sur la lumière rouge.
+D'abord, c'est merveilleux. La chaleur entre en lui. Ses vieilles cicatrices disparaissent, son dos se redresse. Il voit à travers les murs, il entend battre le cœur de chaque personne de la vallée.
+**L'alchimiste** : Elyra… je vois tout. Je pourrais tous les sauver.
+Derrière lui, Elyra tombe à genoux. Son visage se brouille.
+**Elyra** : Lâchez-la. Je vous en prie, lâchez-la.
+**L'alchimiste** : Pourquoi ? Je n'ai jamais été aussi fort.
+**Elyra** : Parce que ce n'est pas moi qui vous donne. C'est moi qui commence à prendre.
+Alors il sent le courant s'inverser. La chaleur repart dans l'autre sens. Ses mains se rident, ses cheveux blanchissent. Les cinq hommes du meunier, restés en arrière, tombent à genoux à leur tour, le souffle coupé.
+**Un des hommes** : Qu'est-ce qui se passe ? Je n'arrive plus à respirer !
+**Elyra**, en hurlant, comme on lutte contre soi-même : Courez ! Remontez, tout de suite !
+Les hommes s'enfuient vers les piliers. L'alchimiste, lui, ne peut plus lâcher.
+Pour s'arrêter, Elyra fait la seule chose qui lui reste : elle retourne sa force contre sa propre ville. Toutes les colonnes s'éteignent d'un coup. Pour la première fois depuis des siècles, la ville est noire. Le lien se brise, et l'alchimiste est projeté en arrière.
+Dans le noir, il entend des pas. Des bêtes. Elles le prennent par ses vêtements, sans le mordre, et le traînent vers la sortie.
+**Elyra**, d'une voix lointaine : Je ne vous toucherai pas. Mais vous ne reviendrez jamais.
+En haut, au lever du jour, les bêtes déposent l'alchimiste au bord du puits, devant tout le village. Il a l'air d'avoir quatre-vingts ans. Ses mains sont vides.
+Puis la terre tremble. Le puits s'effondre sur lui-même. Le chemin des piliers se referme. Seule la brume reste autour de la vallée.
+**Le sage**, devant le village silencieux : Plus personne ne parlera de ce qu'il y a en bas. Jamais.
+
+### 0b.8 La ville d'avant (plan en coupe, dessiné le 18 nov.)
+La cité est restée en grande partie **intacte**, mais la pierre l'a aussi **modifiée** (passages, machines, nids des bêtes). Plan en coupe isométrique fait en direct avec Romain ; reproduit dans l'artefact « histoire-pierre ».
+
+### 0b.9 Ce qui reste à trancher (liste complète)
+1. **Les détails du grand arbre** du peuple lointain : sève, feuilles, usage par les alchimistes, lien avec la pierre (voir 0b.1).
+2. **La brume** : née d'un accord (0b.7 bis, point 9). Reste à revoir la phrase « la brume efface les souvenirs » des écrans de défaite E1/E2, sans doute à retirer (**pas de go encore**).
+3. Le sort final d'Elyra (la vraie) ; ce que la pierre a fait pendant les siècles ; le détail de chaque réparation ; les bêtes modifiées autrefois et le serment.
+4. **Le maire** (Grosbec, bague au corbeau, déjà dans E1–E3) : son lien avec la pierre et sa blessure sont **à recréer**.
+5. Les **noms** : de la cité et des guildes.
+6. **La suite** : à quoi servent les quatre Lanternes d'Or réunies, leurs limites et leur fabrication ; la lanterne éteinte de Raban ; où en est exactement Grosbec (sceaux, descentes) ; quand Raban bascule ; relire E1–E3 avec le plan de Grosbec ; **le twist final des héros**.
+7. **Mimi / le chaton** à l'E4 (Mimi est un jouet, §12.65) ; **les talents** et les enquêtes 4 et suivantes ; le plan à plat de la ville ; « Barde : écouter aux portes dès le départ ».
+8. Côté jeu, aucun changement tant que Romain n'a pas dit « go ».
+
+### 0b.10 Les anciennes idées : PÉRIMÉES (ne plus les ressortir)
+Romain : « Là, on recrée tout. Je n'ai pas envie que tu me ressortes les idées sur le maire. » Sont **retirées** : le **conseil ancestral des cinq** (par le sang, héros descendants de lignées de rôles), la **légende des Cinq familles**, la **famille du maire et son accident**, la vengeance du maire, la **pierre de protection** qui entourait le village de brume, la **ville ancienne bâtie exprès pour être oubliée**, les **quatre sceaux liés à la brume (E4 à E7)**, le plan de **fin à l'enquête 10 / « Le masque qui tombe »** et tous les plans non validés des enquêtes 4 à 10. **Attention (Romain, 22 nov.)** : « on est en train de créer l'histoire » ; une ancienne idée rayée **peut revenir** si elle sert la nouvelle histoire (par exemple des lignées). **Gardé** (déjà construit, ne change pas) : tout ce qui est dans E1 à E3 ; les talents sont des savoir-faire, pas des pouvoirs.
+
+---
 
 ## 12. Décisions de la nuit du 3 au 4 novembre (appel vocal avec Romain) — à construire
 
@@ -151,17 +648,8 @@ Tout est dans `src/barde.js` et `src/barde.css` (plus quelques petits crochets d
 - **Fait (4 novembre après-midi), plus de Corbeau dans l'enquête 1** : la fin se termine sur l'énorme trou du Vieux Chêne et le maire qui le fait couvrir de grosses planches (§ 5) ; la plume d'Odette est « une grande plume noire qui sent la lavande », un mystère ; le petit corbeau dessiné dans un coin de l'horloge de la mairie (mission bonus du Sage) est devenu un croissant de lune. Le maire reste discret : il serre la Lanterne contre lui, il ne quitte jamais ses gants.
 - **Fait (4 novembre, 17 h), enquête 1 « nickel »** : deux graines discrètes pour la nouvelle enquête 2 (§ 12.10) : quand Gaspard remonte Tim du trou, Tim a « l'autre main bien fermée au fond de sa poche » (l'objet ramassé au fond du trou) ; Odette, en donnant la plume : « Moi qui ne dors presque jamais, je vois tout ce qui se passe au village… ». Les vieilles sauvegardes sont réparées au chargement (`M.reparerE1`, `moteur-base.js`) : le calepin d'une enquête 1 déjà finie perd « LE CORBEAU VEILLE » et « du fer noir », gagne le trou 🕳️ et les planches 🪵, et la « plume de corbeau » devient « grande plume noire » dans les notes du carnet de l'enquête 1. Les bancs d'essai qui supposaient des actions ou la réserve du Sage dans l'enquête 1 la testent maintenant sans actions (la réserve est testée dans l'enquête 2).
 
-### 12.9 Le scénario de la saison, en cours de réécriture (Romain, 4 novembre, 14 h 13 → 14 h 36) — RIEN DE CONSTRUIT
-**Décidé par Romain :**
-- **Plus de Corbeau.** Le maire est le méchant, mais il reste discret : il se sert des quatre enquêteurs pour arriver à ses fins. L'enquête 1 est gardée (Tim tombe dans le trou par accident, le maire a besoin de la Lanterne et fait appel aux enquêteurs) ; les enquêtes 2 et 3 seront réécrites ; le scénario doit tenir jusqu'à l'enquête 9, l'enquête 10 sera un grand combat. Le maire reste « le meilleur candidat », mais un autre personnage n'est pas exclu.
-- **La Lanterne d'Or** : un objet magique puissant ; tout le monde croit qu'elle sert seulement à allumer les lanternes de la place de la fontaine ; elle a en fait un pouvoir bien plus grand, que personne ne soupçonne (à découvrir dans les archives). C'est pour ça que le maire y tient absolument. Pas d'objet caché ou déguisé.
-- **Tout se passe dans le sous-sol.** Brumeval a été construit par-dessus une ville extrêmement ancienne, sans doute exprès pour qu'on l'oublie, parce que le pouvoir de la pierre est trop grand. On ne sait rien de tout ça tant qu'on n'est pas allé explorer le sous-sol.
-- **La pierre de Brumeval** (ou pierre ancestrale) : une pierre de protection qui entoure le village de brume (ou une sorte de dôme), contre quelque chose de dehors (à décider). Elle ne donne aucun pouvoir aux héros. Si quelqu'un s'en empare pour lui seul : les voiles de brume se dissipent, quelque chose dehors pourrait arriver, et lui aurait un pouvoir immense. C'est ce que veut le maire.
-- **Le conseil ancestral des cinq** : on n'atteint la pierre que si les cinq sont réunis, physiquement. Les quatre enquêteurs et le maire en font partie, **par le sang** : chaque héros descend de la lignée ancestrale de son rôle (Pisteurs, Alchimistes, Bardes, Sages), quel que soit le nom que le joueur lui a donné. Dans leur sang coule quelque chose de ceux qui ont construit la pierre.
-- **Les héros n'ont pas de pouvoirs** : les talents sont des savoir-faire, pas des pouvoirs paranormaux. La magie est dans les objets (lanterne, potions).
-- **Enquête 2** : le maire fait diversion (il crée lui-même une affaire : un vol, un accident, un pont détruit… à choisir) pendant qu'il fait couvrir et reboucher le trou. Odette, une commère qui ne dort jamais, va voir sur place, surprend le maire en train de faire quelque chose qu'elle n'aurait pas dû voir, et se fait capturer et enfermer dans les sous-sols. Les enquêteurs font l'enquête officielle, mais entendent partout des rumeurs : Odette a disparu, le trou a été rebouché si vite, qu'y avait-il dedans ? Tim a vu quelque chose d'étrange dans le trou (comme une porte avec des runes) mais a dit au maire qu'il n'avait rien vu, par peur : le Barde peut le faire parler. À la fin, l'enquête paraît bidon, et l'équipe décide d'aller voir ce qui se passe autour du trou.
-- **Enquête 3** : près du trou, le maire a fait sceller toute l'entrée ; il faut du matériel pour creuser. Le maire vient dire « attention, c'est dangereux », il ne doit pas en dire trop : il est en danger, les quatre pourraient découvrir son secret. Il élabore un plan pour qu'on ne découvre rien (à trouver).
-**Propositions de Claude (pas validées) :** diversion de l'enquête 2 = le pont de la rivière saboté (le coupable est un ouvrier payé par le maire) ; plan du maire à l'enquête 3 = un faux coupable (Silas, avec de faux indices : le châle d'Odette, une fausse lettre « je suis partie chez ma sœur » qui sent la lavande comme la plume de l'enquête 1), démonté par les rôles (taille des pieds pour le Pisteur, faux témoin pour le Barde, écriture pour le Sage, odeur pour l'Alchimiste), puis Moustache, le chat d'Odette, mène à une grille au pied du chêne → l'entrée du sous-sol. Odette reste enfermée mais en bonne santé (pas de peur inutile pour des enfants de 8 ans). Démasquer le maire tard (enquête 8, « Le masque qui tombe »), sinon plus personne n'ouvre les sceaux pour lui ; les quatre sceaux des enquêtes 4 à 7 deviennent les serrures de la pierre.
+### 12.9 Ancien scénario de la saison — **RETIRÉ LE 18 NOVEMBRE (Romain recrée toute l'histoire de fond : voir § 0 bis)**
+Tout ce qui était écrit ici (Corbeau, passé du maire, pierre de protection et brume, ville enterrée exprès, conseil des cinq, plan des enquêtes 2 à 10) est **périmé** et a été effacé à la demande de Romain. **Restent valables** : le Corbeau n'existe plus ; **les talents sont des savoir-faire, pas des pouvoirs** ; la Lanterne d'Or est un objet magique (E1) ; ce qui est construit en E1 à E3 (voir les §§ 12.10 et 13).
 
 ### 12.10 Nouvelle enquête 2 — « La rivière rouge » (titre provisoire) — validée par Romain le 4 novembre à 15 h 09, RIEN DE CONSTRUIT
 - **En secret, avant l'enquête** : le maire fait condamner le trou du Vieux Chêne avec de gros rochers (par ses ouvriers). Odette, commère qui ne dort jamais, va voir la nuit, surprend le maire, et se fait enfermer dans les sous-sols (en bonne santé). Pour que personne n'approche du chêne, le maire passe par un complice en cape noire (endetté, identité découverte bien plus tard ; peut-être l'apprenti du meunier) qui paie le charretier pour teindre la rivière en rouge. Le colorant vient des coquelicots du champ de l'herboriste, fabriqué dans des alambics, dans une petite pièce cachée sous le moulin. Un fumigène rouge (même colorant) est installé près du chêne.
@@ -175,7 +663,7 @@ Tout est dans `src/barde.js` et `src/barde.css` (plus quelques petits crochets d
 - **Fin** : le maire met le charretier en prison et clôt l'affaire trop vite (« Payé ? Par qui ? Bah, peu importe, l'affaire est close ! ») ; le village s'inquiète toujours pour Odette ; l'équipe décide d'aller voir ce qu'il y a derrière les rochers → enquête 3.
 - **À décider** : le nom du charretier, l'emploi du temps par moments (créneaux), les mini-jeux de chaque étape, la part du Sage.
 - **Mini-jeux (Romain, 15 h 24)** : toujours à peu près les mêmes mini-jeux, adaptés à la situation. Pisteur : tir à l'arc, se cacher (se faufiler), poursuite, suivre la piste. Alchimiste : 7 différences et le double (analyses), le bon mélange (couleurs), les bulles, le chaudron, le ménage du labo. Barde : interrogatoires (mensonge, questions qui s'ouvrent au fil de l'enquête, se faire « rembarrer » s'il pose mal ses questions). Sage : il fait aussi le « constructeur » (réparer des choses). **La grille de déduction est à enlever** (trop compliquée et trop longue ; la déduction se fait naturellement dans l'enquête). Pour l'enquête 2 : suivre la piste adapté aux traces de charrette (deux traits + les pieds de celui qui la pousse, d'autres charrettes et d'autres pieds pour embrouiller) ; course-poursuite avec Tim au Vieux Chêne (il a peur) → une fois attrapé, le Pisteur envoie un code au Barde qui l'interroge ; le Sage trouve un parchemin avec un chemin détourné qui mène le Pisteur au chêne ; plus de fausses pistes (le tavernier, l'herboriste, la couturière) et des rumeurs farfelues (Odette mangée par un ours…). Le rassemblement du village : Barde ou Sage, à décider.
-- **L'objet de Tim (Romain, 15 h 30)** : au fond du trou (enquête 1), Tim a ramassé un objet qu'il a caché à tout le monde. À l'enquête 2, il le donne (une rune / une pierre gravée cassée, ou un parchemin) : le Sage doit d'abord la réparer (Assembler les runes), puis la déchiffrer (L'alphabet secret) — deux mini-jeux du Sage. Proposition de Claude : chaîne Pisteur (attrape Tim) → Barde (le fait parler, reçoit l'objet) → code → Sage ; le morceau vient de la porte à runes ; message court et mystérieux qui ne dévoile pas tout (par ex. « SOUS LA BRUME DORT LA VILLE D'AVANT ») ; fait partie du mystère de fond, pas de l'accusation.
+- **L'objet de Tim (Romain, 15 h 30)** : au fond du trou (enquête 1), Tim a ramassé un objet qu'il a caché à tout le monde. À l'enquête 2, il le donne (une rune / une pierre gravée cassée, ou un parchemin) : le Sage doit d'abord la réparer (Assembler les runes), puis la déchiffrer (L'alphabet secret) — deux mini-jeux du Sage. Proposition de Claude : chaîne Pisteur (attrape Tim) → Barde (le fait parler, reçoit l'objet) → code → Sage ; le morceau vient de la porte à runes ; message court et mystérieux qui ne dévoile pas tout (par ex. « SOUS LA BRUME DORT LA VILLE D'AVANT (idée périmée, 18 nov.) ») ; fait partie du mystère de fond, pas de l'accusation.
 - **Distribution des personnages et des mensonges (proposition de Claude, 15 h 34, à valider)** — le Barde doit faire le tri entre les mensonges qui comptent et ceux qui cachent des histoires parallèles :
   - Mensonges qui comptent : le charretier (Bastien Roulier, nouveau : « pour faire joli » → payé par une cape noire) ; Tim (« je n'ai rien vu » → la porte à runes, la pierre cassée).
   - Mensonge parallèle qui cache un vrai indice : Victor le facteur (« j'étais à l'heure » → il était en retard, a coupé par le chemin du moulin et a vu à l'aube une charrette pleine de fleurs rouges).
@@ -4705,7 +5193,55 @@ La fenêtre défile sur un petit téléphone : « Descendre » est tout en bas (
 
 **À DIRE / DEMANDER À ROMAIN** : écouter le pont et les huit bruitages dans l'Atelier ; la musique de la phase 1 (la garder mystérieuse ?) ; Léo qui tombe à genoux avant chaque film (c'est neuf) ; et toujours, du §13.82 : les trois gros qui éclatent tout de suite, le critique sans aspiration.
 
-### 13.91 LES HÉROS « EN VOLUME » : UN SEUL PANTIN DONT LE DESSIN EST RECALCULÉ POUR CHAQUE ANGLE, COMME MIMI (Romain, 23 novembre, 10 h 02 : « on va faire le chantier de refonte des personnages […] qu'on puisse le tourner à droite, à gauche avec des dessins refaits […] animés comme Mimi, où ils peuvent se tourner de 3 quarts […] rajouter encore plus de poses pour que ça fasse vraiment une transition jolie […] qu'on n'ait pas des coupes bizarres […] dès qu'un personnage est terminé et que tu le fais un peu bouger avec des poses, tu me montres ») — CHANTIER OUVERT, UN PREMIER PERSONNAGE MONTRÉ, RIEN DANS LE JEU, RIEN EN LIGNE
+### 13.91 LES DEUX MISSIONS DU MAIRE DU PISTEUR AUSSI L'APRÈS-MIDI (Romain, 23 novembre, 10 h 03 : « Dans l'enquête numéro 3, pour le pisteur, quand il a pas fait les 2 missions du maire, le matin, l'après-midi, on peut plus les faire. Il faudrait qu'elle soit disponible aussi pour l'après-midi. Fais cette modification et mets-la en ligne. ») — EN LIGNE (23 novembre, commit da9d7be du site, version 20261123-0912, dans les Réglages « 23/11 à 10 h 12 » ; publication de GitHub vérifiée)
+
+- **Les banderoles** (la place) et **l'oie de Gaspard** (la boulangerie) : `moments:MA_` (le matin et l'après-midi ; avant : le matin seulement). Toujours rien la nuit.
+- **Elles s'en vont dès que la mission est rendue au maire** (`disparait:[{vu:'pisteur:mairie:mission'}]`, comme le gâteau de l'Alchimiste) : une oie rattrapée après coup n'aurait plus rien à rendre. **Choix de Claude, à dire à Romain** : le Pisteur qui veut faire les deux doit les faire avant de passer à la mairie.
+- La liste des missions : les lignes « Accroche les banderoles… » et « Rattrape l'oie… » se cochent aussi quand la mission est rendue (sinon elles restaient ouvertes pour toujours).
+- « Rendre ta mission au maire » ne change pas (l'après-midi, dès qu'une des deux est faite ; le texte du maire dit ce qui manque).
+- Vérifié : la visibilité des trois points au matin, à l'après-midi (avant et après la mission rendue) et la nuit ; `rapide.sh`, `partie2.py` ; codes 57 / 69 / 1630, identiques au jeu en ligne. **Pas rejoué en entier à quatre tablettes.**
+
+### 13.92 MIMI SE TAIT PENDANT L'ÉTABLI ET LA TABLE D'ANALYSE (Romain, 23 novembre, 10 h 26 : « Quand on est sur l'atelier ou sur la table d'analyse pour l'alchimiste, fais en sorte que Mimi elle miaule pas, parce que c'est pénible, on est concentré sur autre chose et il y a un chat qui miaule et on peut rien faire. ») — EN LIGNE (23 novembre, commit 0c7f50a du site, version 20261123-0935, dans les Réglages « 23/11 à 10 h 35 » ; publication de GitHub vérifiée)
+
+- L'établi (l'atelier des plantes, `plantes.js`) et la paillasse d'analyse (`labo.js`) s'ouvrent dans un cadre par-dessus l'atelier : derrière, Mimi continuait sa vie (demander, recevoir un coffret, ronronner…) avec ses sons.
+- **`sonMimi` (`atelier.js`) ne joue plus rien quand `M.etabliOuvert()` ou `M.laboOuvert()`** : ni miaou, ni ronron, ni fanfare. Elle continue sa petite vie sans bruit ; ses sons reviennent dès qu'on referme. (Le chat du labo lui-même ne miaulait déjà plus depuis le 19 novembre, §13.84.)
+- Vérifié : un coffret de Mimi fait du son atelier libre, aucun avec la table d'analyse ouverte, de nouveau après l'avoir refermée, aucun avec l'établi ouvert ; `rapide.sh`, `partie2.py`, `labo-mimi.py` ; codes 57 / 69 / 1630 inchangés.
+- **Pas fait** : le chaudron (mini-jeu) et les autres mini-jeux de l'Alchimiste n'ont pas été touchés — à faire si Romain l'entend aussi là.
+
+### 13.93 LE CHAUDRON REFAIT : DEUX ÉTAGES SEULEMENT, TOUT L'ÉCRAN, UN VRAI ÂTRE EN PERSPECTIVE ; DANS L'ATELIER, LE CHAUDRON EST SCELLÉ DANS LA CHEMINÉE (Romain, 23 novembre, 8 h 53 : « il y a trop d'étages qui servent à rien […] 5 bandeaux […] j'aimerais bien qu'il y ait que 2 bandeaux […] les flammes mieux faites, la modélisation du chaudron, l'arrière-fond plus détaillé, une étagère plus sympa où il y a les ingrédients, le bandeau où ça défile plus détaillé […] le nom dans un seul bandeau avec le pause, le abandonner, le son […] refais les bûches […] qu'on puisse tourner la cuillère droite ou gauche […] la perspective elle est pas bonne par rapport au fond » ; 9 h 18 : « les bûches : les textures et surtout dans la bonne perspective » ; 9 h 31 : « les bocaux un peu plus en 3D […] dans le laboratoire d'alchimie, le chaudron dans la cheminée et qu'on puisse pas le bouger […] l'eau qui bouge de différentes façons [froid, vert, jaune, rouge] […] la lumière du feu, crépitante, sur les murs, sur le fond […] Vas-y, fais-moi ça, tu as mon go, et après tu peux mettre en ligne » ; 10 h 00 : « la poutre plus dans la perspective et que les bocaux soient posés sur la poutre ») — EN LIGNE (23 novembre, commit 16986d2 du site, version 20261123-0944, dans les Réglages « 23/11 à 10 h 44 » ; publication de GitHub vérifiée)
+
+**Les règles du mini-jeu n'ont pas changé** (chaleur, bois, zones, cœurs, niveaux, `S.api`, `onVerse`) : seuls le dessin et la mise en page changent. À LIRE AVANT DE TOUCHER À `mj-chaudron.js`, `mj-chaudron-dessin.js`, `mj-chaudron.css`, AU FOYER DE `atelier.js` (`FOYER`, `sceller`, `svgCheminee`) OU À L'IMAGE D'EXPLICATION (`mj-regles.js`, `D('chaudron')`).
+
+**1. Deux étages au lieu de cinq.**
+- **L'en-tête** (celui de tous les mini-jeux, `mj-core.js`) : le nom de la potion, **les cœurs** (montés là par `mj-chaudron.js`, retirés à l'arrêt), ⏸️ 🏳️ 🔊. Plus de bandeau de titre à part.
+- **La poutre de la cheminée** (`.mjc-haut`) : **les bocaux sont posés sur son dessus** (`.mjc-dessus`, un trapèze : on voit le dessus de la poutre, comme on voit le dessus du chaudron — c'est ce qui fait que les bocaux ne sont plus « collés au mur ») ; **la frise glisse dans sa face de devant** (`.mjc-frise`, cadre de laiton pour la zone, cerclages de fer).
+- Tout le reste est **dans le décor** : la recette est **une page clouée** sur le montant de gauche (sur un téléphone : une petite page avec les dessins seulement, son 🔊 accroché au coin) ; le thermomètre de laiton sur le montant de droite ; le porte-bûches et son ➕ au pied du montant de gauche.
+- **Dans l'atelier, le chaudron prend tout l'écran** (`.at-mj.at-mj-plein`, `position:fixed`, `mj-chaudron.css`) : les onglets et le bandeau du tutoriel sont dessous. **On en sort par ⏸️** (le chaudron se range, `.mj-cache`, l'atelier et les onglets reviennent) ou par 🏳️. Les robots `tools/pause.py` et `tools/chaudron-quitter.py` ont été mis à jour pour ça (avant : ils changeaient d'onglet pendant la potion).
+
+**2. Le dessin : `jeu/src/mj-chaudron-dessin.js` (nouveau, chargé juste avant `mj-chaudron.js` dans `build.py`, pour le jeu et pour la salle).** Il ne contient aucune règle : `MJ.chaudronDessin = {svg, reserve, bocal, decor, icFeu, icGivre, BUCHES}`.
+- **Une seule perspective pour tout** : on regarde d'un peu au-dessus (les cercles sont aplatis à 0,37). Le chaudron, sa louche, ses pieds, le sol de l'âtre, les bûches (des cylindres : le bout coupé a la bonne ellipse selon l'angle de la bûche), l'intérieur de l'âtre (une boîte qui fuit vers un point, `L.VP`), le dessus de la poutre.
+- `svg(id, demo)` : le chaudron (repère inchangé : 400 unités de large, bord au centre (200,157)), ses flammes devant et derrière, la braise, les étincelles. `decor(L, id)` : l'âtre à la taille de l'écran (briques, suie, crémaillère, dalles, montants, corbeaux de pierre). `bocal(k, …)` : un bocal de verre en volume, l'ingrédient dessiné dedans (12 ingrédients), son nom sur l'étiquette, **une pastille ronde avec le dessin de la recette** (sur un téléphone sans nom, on retrouve quand même le bon bocal). `reserve(id)` : le porte-bûches.
+- **La mise en place** (`disposer()` dans `mj-chaudron.js`, à chaque taille d'écran) : trois allures — large (tablette couchée, ordinateur), moyen (tablette debout), étroit (téléphone) — et « bas » (téléphone couché). Les bocaux se rangent en rangées égales (`mesurer()` : 12 bocaux → 1, 2 ou 3 rangées, les rangées du haut sur une planche).
+
+**3. Ce qui bouge.**
+- **L'eau selon la zone** (classes `mjc-z-…` sur `.mjc`) : **violet** — la glace prend, givre et glaçons au bord, éclats ; **bleu** — brume froide, plaques qui dérivent ; **vert** — ondes calmes, petites bulles ; **jaune** — ça bout (gros bouillons) ; **rouge** — ça bout fort, des gouttes sautent et **le chaudron tremble** ; au-dessus : pire.
+- **La lumière du feu** : trois halos (`.mjc-lums`) qui crépitent sur le fond et les murs, plus forts avec plus de bûches (`--feu`). En HTML, pour ne pas repeindre le décor (règle de `jeu/donjon/RAPIDITE.md` : on n'anime que `transform` et `opacity`).
+- **La louche se tourne dans les deux sens** : la règle le faisait déjà (`TOUILLE * Math.abs(S.omega)`), seule la flèche montrait un sens. **La flèche a maintenant deux pointes** (et un flocon), la démonstration touille dans un sens puis dans l'autre.
+
+**4. L'image d'explication avant de jouer** (`mj-regles.js`, `D('chaudron')`) : redessinée comme le nouvel écran (les bocaux en haut sur la poutre, la frise dans la poutre, la recette à gauche, la flèche à deux pointes, la louche qui tourne dans un sens puis dans l'autre). La consigne lue par 🔊 dit « dans le sens que tu veux », « la zone de la poutre », « le bon bocal ».
+
+**5. Dans l'atelier : le grand chaudron est scellé dans le foyer** (`atelier.js`).
+- `FOYER = {x:950, ow:110, prof:150, Z:54, ech:0.92}` : le milieu de la cheminée, la demi-largeur de l'ouverture, la profondeur du creux, l'endroit du devant du chaudron, sa taille.
+- **La cheminée a un vrai creux** (`svgCheminee`) : mur du fond en briques noircies, joue de droite, sol de pierre, lueur ; devant, la pierre de l'âtre avance dans la pièce. Les piliers sont plus minces (28 au lieu de 40) pour que le chaudron passe entre eux.
+- **Le chaudron ne se déplace plus** : `CAT.chaudron.fixe` ; `repereObjet` le pose toujours au foyer (`AXES_FOYER`) ; `sceller(o)` dans `normaliser` et `garderDansPiece` (**une ancienne sauvegarde, même avec le chaudron dans la chambre, le retrouve dans la cheminée**) ; `prendreObjet` ne le soulève jamais (le doigt qui reste : rien ; le doigt qui glisse : la pièce défile sur un téléphone, rien sur une tablette). Le toucher ouvre toujours ses trois bulles (Préparer, Forme, Couleur).
+- De petites flammes devant lui, entre ses pieds (`.at-feu-foyer`). Plus d'ombre portée (`sansOmbre`).
+- **Mimi se tait pendant la potion** (`sonMimi`, suite du §13.92 du même jour) : le chaudron couvre tout l'écran, elle est cachée derrière ; en pause (le chaudron rangé), ses sons reviennent. **Choix de Claude** (Romain l'avait demandé pour l'établi et la table d'analyse, pas pour le chaudron).
+
+**Choix de Claude, à dire à Romain** (il a validé le dessin, pas ces points un par un) : (a) le chaudron prend tout l'écran pendant la potion, donc **on ne peut plus changer d'onglet sans passer par ⏸️** ; (b) les bocaux de verre avec l'ingrédient dedans, et la pastille ronde ; (c) la recette à gauche ; (d) **dans l'atelier le chaudron est plus petit qu'avant** (il doit tenir dans la cheminée, qui ne peut pas s'élargir : la porte et l'arche la serrent) ; (e) **sur un téléphone, la cheminée est à droite, hors de l'écran à l'ouverture de l'atelier** : il faut faire glisser la pièce (avant, le chaudron dépassait un peu à droite).
+
+**Vérifié** : captures à six tailles (tablette couchée et debout, deux téléphones, téléphone couché, ordinateur), 3, 6 et 12 bocaux, les six zones de chaleur ; le chaudron de l'atelier ne bouge ni au doigt lent ni au doigt rapide ; `rapide.sh` (l'enquête 1 entière à quatre téléphones, en suivant le tutoriel), `partie2.py`, `tools/pause.py`, `tools/chaudron-quitter.py` ; codes 57 / 69 / 1630, identiques au jeu en ligne. **PAS VÉRIFIÉ** : sur une vraie tablette (la fluidité avec toutes ces animations, surtout sur une vieille tablette) ; les niveaux 4 à 10 joués en entier ; rien n'a été joué par un enfant.
+
+### 13.94 LES HÉROS « EN VOLUME » : UN SEUL PANTIN DONT LE DESSIN EST RECALCULÉ POUR CHAQUE ANGLE, COMME MIMI (Romain, 23 novembre, 10 h 02 : « on va faire le chantier de refonte des personnages […] qu'on puisse le tourner à droite, à gauche avec des dessins refaits […] animés comme Mimi, où ils peuvent se tourner de 3 quarts […] rajouter encore plus de poses pour que ça fasse vraiment une transition jolie […] qu'on n'ait pas des coupes bizarres […] dès qu'un personnage est terminé et que tu le fais un peu bouger avec des poses, tu me montres ») — CHANTIER OUVERT, UN PREMIER PERSONNAGE MONTRÉ, RIEN DANS LE JEU, RIEN EN LIGNE
 
 **D'où ça vient (le matin du 23 novembre, à lire dans le projet : `claude/maj-23-novembre-heros.md`).** Romain trouve les héros « très plats », « le dessin fait par un enfant ». Il a refusé, dans l'ordre : une tête tournée dessinée à part et collée sur le héros de face (« horrible », « toujours moche »), le pantin du donjon mis en poses (« vraiment très moche »), la vraie 3D (« ça va refaire tout le moteur du jeu […] trop de boulot »). Sa décision de 9 h 58 : **« comme avec Mimi le chat. Mais il faut que ça soit plus joli », avec « plus de transition » entre la face et le profil.** Sa règle du 18 novembre tient : jamais de fausse 3D (une image retournée ou écrasée).
 
@@ -4762,7 +5298,7 @@ La fenêtre défile sur un petit téléphone : « Descendre » est tout en bas (
 ### 14.3 Ce qui reste à décider avec Romain
 1. Le principe : **le village au milieu, qui ne bouge pas**, et le monde autour.
 2. Les lieux : lesquels on garde, lesquels on enlève, lesquels manquent ; les noms.
-3. **Qui lève la brume, dans l'histoire, et quand.** La brume protège le village (§12.9) : si elle recule, c'est bon signe ou mauvais signe ? Idée de Claude, pas validée : la brume recule chaque fois qu'on touche à un sceau de la pierre — on gagne des lieux à explorer, mais la protection faiblit (quatre sceaux étaient prévus pour les enquêtes 4 à 7).
+3. **La brume, dans l'histoire** : à reprendre dans la nouvelle histoire de fond (§ 0 bis, point 2). L'ancienne idée (la brume protège le village, quatre sceaux pour E4 à E7) est **retirée**. (Les cloches d'Anselme qui la repoussent, construites en E3, restent valables.)
 4. Quelle zone s'ouvre à quelle enquête ; et l'enquête 3, déjà construite : la grande carte tout de suite avec toute la brume (rien ne change pour jouer), ou une première zone ?
 5. Huit zones : le bon nombre ? Les nouveaux lieux se touchent-ils dès qu'ils sont visibles (« Rien de spécial ici pour l'instant ») ?
 
