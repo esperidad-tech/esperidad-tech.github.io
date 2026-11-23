@@ -29,9 +29,17 @@ HV.POSITIONS.donjon = {titre:'En garde', base:'dGarde', attente:[99, 99], gestes
 var nomS = decodeURIComponent(location.hash.slice(1)) || 'tir', T = 0, fin = 6, X = 0, Y = 0, fleches = [], courir = null;
 /* un point du héros (ses mesures) → où il est sur l'image (pixels) */
 function ecran(q){
-  var V = U.vue(HV.capDe(p.F)), x = q[0] * V.c + q[2] * V.s, xs = 150 + x;
-  return [(xs - CAD[0]) * K + X, (q[1] - CAD[1]) * K + Y];
+  var V = U.vue(HV.capDe(p.F)), x = q[0] * V.c + q[2] * V.s, xs = 150 + x, lv = Math.max(0, p.F.leve || 0);
+  return [(xs - CAD[0]) * K + X, (q[1] - lv - CAD[1]) * K + Y];
 }
+function osE(nom){ return ecran(HV.os(h, p.F)[nom]); }
+function mixe(a, b, t){ return a + (b - a) * t; }
+function lisse(t){ t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t); }
+function rond(x, y, r, c, o, plus){ return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '" fill="' + c + '"' + (o != null ? ' opacity="' + o.toFixed(2) + '"' : '') + (plus || '') + '/>'; }
+var O = '#24182e';
+/* (le début du geste en cours, pour les effets) */
+var g0 = -1;
+function joue(nom){ p.joue(nom); g0 = T; }
 /* les scénarios : une liste de [quand, que faire] */
 var S = {
   /* (un seul angle par film : c'est elle qui bouge, pas la caméra qui tourne autour d'elle) */
@@ -42,7 +50,141 @@ var S = {
   coup:{fin:4.6, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.coup; pret(55); }], [0.6, function(){ p.joue('coup'); eclair(); }], [2.6, function(){ p.joue('coup'); eclair(); }]]},
   /* (elle tombe en arrière, vers la gauche de l'image : on la place un peu plus à droite pour qu'elle reste entière au sol) */
   chute:{fin:6.9, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.chute; pret(50); X = 150; }], [0.6, function(){ p.joue('chute'); eclair(); }]]},
-  joie:{fin:3.8, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.joie; pret(45); }], [0.6, function(){ p.joue('joie'); }]]}
+  joie:{fin:3.8, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.joie; pret(45); }], [0.6, function(){ p.joue('joie'); }]]},
+
+  /* ---------- LES AUTRES MOUVEMENTS (Romain, 17 h 44) : chacun a ses effets dessinés par-dessus (dessus(u), u : le temps depuis le
+     début du geste) et parfois ce qu'il fait d'elle à l'écran (chaque(u) : où elle est, si on la voit) ---------- */
+  /* C'EST SON TOUR : un anneau jaune à ses pieds (celui dont c'est le tour, au donjon) */
+  choisi:{fin:3.4, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.choisi; pret(55); }], [0.6, function(){ joue('choisi'); }]],
+    dessus:function(u){ if(u < 0.1) return ''; var a = lisse(u / 0.3), f = osE('chevilleG'), g = osE('chevilleD'), cx = (f[0] + g[0]) / 2, cy = Math.max(f[1], g[1]) + 22, r = 1 + 0.04 * Math.sin(u * 6);
+      return '<ellipse cx="' + cx.toFixed(0) + '" cy="' + cy.toFixed(0) + '" rx="' + (120 * r).toFixed(0) + '" ry="' + (26 * r).toFixed(0) + '" fill="none" stroke="#ffd23f" stroke-width="7" opacity="' + (0.85 * a).toFixed(2) + '"/>'; }},
+  /* LE COUP DE DAGUE : la trace blanche de la lame */
+  dague:{fin:3.4, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.dague; pret(55); }], [0.6, function(){ joue('dague'); }]],
+    trace:[], dessus:function(u){
+      var t = this.trace, s = '';
+      if(u > 0.5 && u < 0.85){ var m = osE('poignetD'); t.push([m[0] + 30, m[1] - 10, T]); }
+      t.forEach(function(q, i){ if(i === 0) return; var o = 1 - (T - q[2]) / 0.25; if(o > 0) s += '<path d="M' + t[i - 1][0].toFixed(0) + ' ' + t[i - 1][1].toFixed(0) + ' L' + q[0].toFixed(0) + ' ' + q[1].toFixed(0) + '" stroke="#fff" stroke-width="' + (14 * o).toFixed(1) + '" stroke-linecap="round" opacity="' + (0.7 * o).toFixed(2) + '"/>'; });
+      return s; }},
+  /* LE GIVRE : un souffle bleu, puis des éclats de glace sur elle, qui fondent quand elle s'ébroue */
+  froid:{fin:4.6, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.froid; pret(55); }], [0.6, function(){ joue('froid'); }]],
+    dessus:function(u){
+      var s = '', os = HV.os(h, p.F), pts = ['epauleG', 'epauleD', 'coudeG', 'coudeD', 'genouG', 'genouD', 'tete', 'hancheG', 'hancheD', 'poignetG'];
+      if(u < 0.4){ var a = u / 0.4, c = osE('cou'); s += rond(c[0] + 60 - 200 * (1 - a), c[1] + 80, 60 + 120 * a, '#bfe8ff', 0.5 * (1 - a)); }
+      var o = u < 0.3 ? u / 0.3 : u < 2.25 ? 1 : Math.max(0, 1 - (u - 2.25) / 0.35);
+      if(o > 0) pts.forEach(function(n, i){ var q = ecran(os[n]), d = 12 + (i % 3) * 5, x = q[0] + ((i * 37) % 23 - 11), y = q[1] + ((i * 53) % 19 - 9);
+        s += '<path d="M' + x.toFixed(0) + ' ' + (y - d).toFixed(0) + ' L' + (x + d * 0.55).toFixed(0) + ' ' + y.toFixed(0) + ' L' + x.toFixed(0) + ' ' + (y + d).toFixed(0) + ' L' + (x - d * 0.55).toFixed(0) + ' ' + y.toFixed(0) + ' Z" fill="#e4f6ff" stroke="#7cc4ec" stroke-width="2.5" opacity="' + (0.9 * o).toFixed(2) + '"/>'; });
+      return s; }},
+  /* LES RATS : ils grimpent sur ses jambes, puis sautent par terre et s'enfuient */
+  rats:{fin:4.8, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.rats; pret(55); }], [0.6, function(){ joue('rats'); }]],
+    dessus:function(u){
+      var s = '', os = HV.os(h, p.F);
+      [['chevilleG', 'genouG', 0.0, -1], ['chevilleD', 'genouD', 0.15, 1], ['chevilleG', 'hancheG', 0.3, 1], ['chevilleD', 'hancheD', 0.45, -1], ['chevilleD', 'genouD', 0.7, -1]].forEach(function(r, i){
+        var t0 = r[2], a = (u - t0) / 1.4; if(a < 0) return;
+        var A = ecran(os[r[0]]), B = ecran(os[r[1]]), x, y, fuite = Math.max(0, (u - 2.0 - i * 0.06) / 0.6);
+        if(fuite <= 0){ var w = Math.min(1, a) * 0.85 + 0.15 * Math.sin(u * 9 + i) * 0.2; x = mixe(A[0], B[0], w) + r[3] * 10; y = mixe(A[1] + 30, B[1], w); }
+        else { if(fuite > 1) return; x = A[0] + r[3] * (40 + 260 * fuite); y = A[1] + 30 - 60 * Math.sin(Math.min(1, fuite * 2) * Math.PI) * 0.4 + 40 * fuite; }
+        var dx = fuite > 0 ? r[3] : (i % 2 ? 0.3 : -0.3), ang = fuite > 0 ? 0 : -70;
+        s += '<g transform="translate(' + x.toFixed(0) + ' ' + y.toFixed(0) + ') rotate(' + (ang * (dx > 0 ? -1 : 1)) + ') scale(' + (dx >= 0 ? 1 : -1) + ' 1)">' +
+          '<path d="M-14 4 Q-34 10 -40 -2" fill="none" stroke="' + O + '" stroke-width="5"/><path d="M-14 4 Q-34 10 -40 -2" fill="none" stroke="#d99aa0" stroke-width="2.5"/>' +
+          '<ellipse cx="0" cy="0" rx="17" ry="10" fill="#6b6570" stroke="' + O + '" stroke-width="3"/><circle cx="16" cy="-3" r="7" fill="#6b6570" stroke="' + O + '" stroke-width="3"/>' +
+          '<circle cx="12" cy="-10" r="4" fill="#d99aa0" stroke="' + O + '" stroke-width="2"/><circle cx="19" cy="-4" r="1.8" fill="' + O + '"/></g>';
+      });
+      return s; }},
+  /* LE GRAND COUP DE POING : l'éclair, puis des étoiles qui tournent autour de sa tête */
+  poing:{fin:3.8, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.poing; pret(55); }], [0.6, function(){ joue('poing'); eclair(); }]],
+    dessus:function(u){
+      if(u < 0.45 || u > 1.4) return ''; var s = '', c = osE('tete'), o = u < 0.6 ? (u - 0.45) / 0.15 : u > 1.2 ? (1.4 - u) / 0.2 : 1, i;
+      for(i = 0; i < 4; i++){ var a = u * 7 + i * Math.PI / 2, x = c[0] + 70 * Math.cos(a) + 10, y = c[1] - 70 + 18 * Math.sin(a);
+        s += '<path d="M' + x.toFixed(0) + ' ' + (y - 12) + ' L' + (x + 4) + ' ' + (y - 3) + ' L' + (x + 13) + ' ' + (y - 2) + ' L' + (x + 6) + ' ' + (y + 4) + ' L' + (x + 8) + ' ' + (y + 13) + ' L' + x.toFixed(0) + ' ' + (y + 8) + ' L' + (x - 8) + ' ' + (y + 13) + ' L' + (x - 6) + ' ' + (y + 4) + ' L' + (x - 13) + ' ' + (y - 2) + ' L' + (x - 4) + ' ' + (y - 3) + ' Z" fill="#ffd23f" stroke="' + O + '" stroke-width="2.5" opacity="' + o.toFixed(2) + '"/>'; }
+      return s; }},
+  /* LA TOILE : des fils blancs qui l'entourent ; quand elle la déchire, ils volent en morceaux */
+  toile:{fin:4.2, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.toile; pret(55); }], [0.6, function(){ joue('toile'); }]],
+    dessus:function(u){
+      var s = '', os = HV.os(h, p.F), dech = 1.9;
+      if(u < 0.15) return '';
+      var hs = [ecran(os.epauleG), ecran(os.epauleD), ecran(os.hancheG), ecran(os.hancheD), ecran(os.genouG), ecran(os.genouD)];
+      var cx = (hs[0][0] + hs[1][0] + hs[2][0] + hs[3][0]) / 4, top = Math.min(hs[0][1], hs[1][1]) - 10, bot = Math.max(hs[4][1], hs[5][1]) + 10;
+      if(u < dech){
+        var o = Math.min(1, (u - 0.15) / 0.2), i;
+        for(i = 0; i < 7; i++){ var y = mixe(top, bot, i / 6), w = 95 - Math.abs(i - 2) * 6, b = 10 * Math.sin(u * 5 + i);
+          s += '<path d="M' + (cx - w).toFixed(0) + ' ' + (y - 14 + b).toFixed(0) + ' Q' + cx.toFixed(0) + ' ' + (y + 22).toFixed(0) + ' ' + (cx + w).toFixed(0) + ' ' + (y - 10 - b).toFixed(0) + '" fill="none" stroke="#f4f1ea" stroke-width="3" opacity="' + (0.85 * o).toFixed(2) + '"/>'; }
+        [[-60, 0.5], [-20, 0.2], [30, 0.7], [70, 0.3]].forEach(function(v){ s += '<path d="M' + (cx + v[0]).toFixed(0) + ' ' + top.toFixed(0) + ' Q' + (cx + v[0] * 0.6).toFixed(0) + ' ' + mixe(top, bot, v[1]).toFixed(0) + ' ' + (cx + v[0] * 0.9).toFixed(0) + ' ' + bot.toFixed(0) + '" fill="none" stroke="#f4f1ea" stroke-width="2.4" opacity="' + (0.7 * o).toFixed(2) + '"/>'; });
+      } else {
+        var a = (u - dech) / 0.6, j; if(a > 1) return '';
+        for(j = 0; j < 14; j++){ var ang = j / 14 * Math.PI * 2, r = 60 + 260 * a, x = cx + r * Math.cos(ang), y = mixe(top, bot, 0.45) + r * 0.8 * Math.sin(ang);
+          s += '<path d="M' + x.toFixed(0) + ' ' + y.toFixed(0) + ' l' + (14 * Math.cos(ang + 1)).toFixed(0) + ' ' + (14 * Math.sin(ang + 1)).toFixed(0) + '" stroke="#f4f1ea" stroke-width="3" opacity="' + (0.9 * (1 - a)).toFixed(2) + '"/>'; }
+      }
+      return s; }},
+  /* LE CRAPAUD : la langue rose sort de la droite et la colle ; elle est tirée hors de l'image ; puis recrachée, elle revient en volant
+     et retombe assise, couverte de bave verte */
+  crapaud:{fin:7.0, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.crapaud; pret(55); }], [0.4, function(){ joue('crapaud'); }]],
+    chaque:function(u){
+      var C = HV.CRAPAUD;
+      if(u < 0) return;
+      if(u > C.colle + 0.1 && u < C.avalee){ var a = (u - C.colle - 0.1) / (C.avalee - C.colle - 0.1); X = 900 * a * a; }
+      else if(u >= C.avalee && u < C.recrachee){ X = 900; hd.style.opacity = 0; }
+      else if(u >= C.recrachee && u < C.pose){ var b = (u - C.recrachee) / (C.pose - C.recrachee); hd.style.opacity = 1; X = 900 * (1 - b); Y = -160 * Math.sin(b * Math.PI); }
+      else if(u >= C.pose){ X = 0; Y = 0; hd.style.opacity = 1; }
+    },
+    dessus:function(u){
+      var C = HV.CRAPAUD, s = '';
+      if(u > C.colle - 0.1 && u < C.avalee){
+        var c = osE('cou'), xb = c[0] + 34, yb = c[1] + 34, e = Math.min(1, (u - C.colle + 0.1) / 0.12), x0 = 960, xa = mixe(x0, xb, e);
+        s += '<path d="M' + x0 + ' ' + (yb - 30) + ' Q' + ((x0 + xa) / 2).toFixed(0) + ' ' + (yb - 60).toFixed(0) + ' ' + xa.toFixed(0) + ' ' + yb.toFixed(0) + '" fill="none" stroke="' + O + '" stroke-width="34" stroke-linecap="round"/>' +
+          '<path d="M' + x0 + ' ' + (yb - 30) + ' Q' + ((x0 + xa) / 2).toFixed(0) + ' ' + (yb - 60).toFixed(0) + ' ' + xa.toFixed(0) + ' ' + yb.toFixed(0) + '" fill="none" stroke="#e87a9a" stroke-width="26" stroke-linecap="round"/>' +
+          rond(xa, yb, 22, '#e87a9a', null, ' stroke="' + O + '" stroke-width="4"');
+      }
+      if(u >= C.pose){
+        var o = u < 5.3 ? 1 : Math.max(0, 1 - (u - 5.3) / 0.6), os = HV.os(h, p.F);
+        if(o > 0){
+          var f = osE('chevilleG'), g = osE('chevilleD');
+          s += '<ellipse cx="' + ((f[0] + g[0]) / 2 - 40).toFixed(0) + '" cy="' + (Math.max(f[1], g[1]) + 26).toFixed(0) + '" rx="150" ry="22" fill="#8fd16a" opacity="' + (0.55 * o).toFixed(2) + '"/>';
+          ['tete', 'epauleG', 'epauleD', 'coudeD', 'genouG', 'genouD', 'bassin'].forEach(function(n, i){ var q = ecran(os[n]), x = q[0] + (i % 2 ? 8 : -6), y = q[1] + 4, l = 14 + (i % 3) * 8;
+            s += '<path d="M' + (x - 9) + ' ' + y + ' Q' + x + ' ' + (y - 10) + ' ' + (x + 9) + ' ' + y + ' L' + (x + 4) + ' ' + (y + l) + ' Q' + x + ' ' + (y + l + 8) + ' ' + (x - 4) + ' ' + (y + l) + ' Z" fill="#9be07a" stroke="#4f8a37" stroke-width="2" opacity="' + (0.85 * o).toFixed(2) + '"/>'; });
+          /* (elle s'ébroue : des gouttes partent) */
+          if(u > 3.05 && u < 3.8){ var c2 = osE('tete'), k2; for(k2 = 0; k2 < 8; k2++){ var an = k2 / 8 * Math.PI * 2 + 0.3, r = 50 + (u - 3.05) * 300 * ((k2 % 3) + 2) / 3;
+            s += rond(c2[0] + 10 + r * Math.cos(an), c2[1] - 40 + r * 0.7 * Math.sin(an), 7, '#9be07a', Math.max(0, 1 - (u - 3.05) / 0.75), ' stroke="#4f8a37" stroke-width="2"'); } }
+        }
+      }
+      return s; }},
+  /* LÉO : sa grande main la prend par la taille, la soulève, la secoue, et la jette vers la gauche ; elle retombe sur le dos et se
+     relève */
+  leo:{fin:10.4, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.leo; pret(55); X = 160; }], [0.4, function(){ joue('leo'); }]],
+    chaque:function(u){
+      var L = HV.LEO;
+      if(u < 0){ X = 160; return; }
+      if(u >= L.haut && u < L.elan){ Y = 10 * Math.sin((u - L.haut) * 22); X = 160; }
+      else if(u >= L.elan && u < L.lance){ var a = (u - L.elan) / (L.lance - L.elan); X = 160 + 60 * a; Y = -30 * a; }
+      else if(u >= L.lance && u < L.sol){ var b = (u - L.lance) / (L.sol - L.lance); X = mixe(220, -40, b); Y = -30 - 110 * Math.sin(b * Math.PI) + 30 * b; }
+      else if(u >= L.sol){ X = -40; Y = 0; }
+      else { X = 160; Y = 0; }
+    },
+    dessus:function(u){
+      var L = HV.LEO; if(u < L.prise - 0.3 || u > L.lance + 0.5) return '';
+      var b = ecran(HV.os(h, p.F).bassin), x, y, o = 1;
+      if(u < L.prise){ var a = lisse((u - L.prise + 0.3) / 0.3); x = mixe(1000, b[0] + 30, a); y = mixe(-200, b[1] - 30, a); }
+      else if(u < L.lance){ x = b[0] + 30; y = b[1] - 30; }
+      else { var c = (u - L.lance) / 0.5; x = 700 + 400 * c; y = 200 - 300 * c; o = 1 - c; }
+      /* (la main de Léo : la paume, quatre doigts serrés autour de sa taille, le pouce, et la manche) */
+      return '<g transform="translate(' + x.toFixed(0) + ' ' + y.toFixed(0) + ')" opacity="' + o.toFixed(2) + '">' +
+        '<path d="M60 -40 L420 -260 L470 -180 L120 30 Z" fill="#3b2a3a" stroke="' + O + '" stroke-width="6"/>' +
+        '<path d="M-40 -60 Q40 -100 110 -50 L120 40 Q60 80 -30 60 Z" fill="#e8b48f" stroke="' + O + '" stroke-width="6"/>' +
+        [-40, -14, 12, 38].map(function(d){ return '<path d="M-30 ' + (d - 4) + ' Q-110 ' + (d - 8) + ' -112 ' + (d + 8) + ' Q-110 ' + (d + 22) + ' -30 ' + (d + 18) + '" fill="#e8b48f" stroke="' + O + '" stroke-width="5"/>'; }).join('') +
+        '<path d="M20 -70 Q-20 -120 -70 -110 Q-90 -96 -60 -84 Q-20 -80 10 -40" fill="#e8b48f" stroke="' + O + '" stroke-width="5"/></g>'; }},
+  /* L'AMULETTE : elle est à terre ; une lumière dorée sort de sa poitrine, la relève ; l'amulette se brise en éclats dorés */
+  amulette:{fin:4.6, double:true, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.amulette; pret(50); X = 150; joue('amulette'); }]],
+    dessus:function(u){
+      var A = HV.AMULETTE, s = '', c = osE('cou'), x = c[0] + 6, y = c[1] + 40;
+      if(u > A.lueur && u < A.brise + 0.6){ var a = Math.min(1, (u - A.lueur) / 0.5), f = u > A.brise ? Math.max(0, 1 - (u - A.brise) / 0.6) : 1, r = 40 + 160 * a, i;
+        s += '<defs><radialGradient id="or"><stop offset="0" stop-color="#fff6c8" stop-opacity=".95"/><stop offset=".35" stop-color="#ffd23f" stop-opacity=".55"/><stop offset="1" stop-color="#ffd23f" stop-opacity="0"/></radialGradient></defs>' +
+          rond(x, y, r, 'url(#or)', f);
+        for(i = 0; i < 8; i++){ var an = i / 8 * Math.PI * 2 + u * 0.8; s += '<path d="M' + (x + 30 * Math.cos(an)).toFixed(0) + ' ' + (y + 30 * Math.sin(an)).toFixed(0) + ' L' + (x + r * 1.1 * Math.cos(an)).toFixed(0) + ' ' + (y + r * 1.1 * Math.sin(an)).toFixed(0) + '" stroke="#fff2a8" stroke-width="5" opacity="' + (0.5 * a * f).toFixed(2) + '"/>'; }
+        s += rond(x, y, 9, '#ffe680', f, ' stroke="' + O + '" stroke-width="3"');
+      }
+      if(u >= A.brise && u < A.brise + 0.8){ var b = (u - A.brise) / 0.8, j;
+        for(j = 0; j < 10; j++){ var an2 = j / 10 * Math.PI * 2, rr = 14 + 220 * b, px = x + rr * Math.cos(an2), py = y + rr * Math.sin(an2) + 120 * b * b;
+          s += '<path d="M' + px.toFixed(0) + ' ' + (py - 8).toFixed(0) + ' L' + (px + 6).toFixed(0) + ' ' + py.toFixed(0) + ' L' + px.toFixed(0) + ' ' + (py + 8).toFixed(0) + ' L' + (px - 6).toFixed(0) + ' ' + py.toFixed(0) + ' Z" fill="#ffd23f" stroke="' + O + '" stroke-width="2" opacity="' + (1 - b).toFixed(2) + '"/>'; } }
+      return s; }}
 };
 var SC = S[nomS] || S.tir, k = 0;
 /* un éclair blanc là où le coup arrive (sur sa poitrine) */
@@ -69,15 +211,19 @@ window.image = function(){
       if(u > HV.ARRET.poussiere[0] && u < HV.ARRET.poussiere[1]){ var os0 = HV.os(h, p.F), a0 = ecran(os0.chevilleG); nuages.push({x:a0[0] + 30, y:a0[1] + 34, t0:T, d:(Math.random() - 0.5) * 40}); }
     }
   }
-  /* (la joie : un petit saut) */
-  Y = 0;
   /* (le saut de la victoire est dans la pose : leve) */
+  if(!courir) Y = 0;
+  if(SC.chaque) SC.chaque(g0 >= 0 ? T - g0 : -1);
   hd.style.transform = 'translate(' + X.toFixed(1) + 'px,' + Y.toFixed(1) + 'px)';
   /* la flèche qui part, au moment du lâcher */
-  if(p.gest && p.gest.nom === 'tir'){ var u2 = p.t - p.gest.t0; if(u2 >= 1.37 && !p.gest.parti){ p.gest.parti = true; var os = HV.os(h, p.F), a = ecran(os.poignetG); fleches.push({x:a[0], y:a[1], t0:T}); } }
+  /* (la flèche qui part sort de l'arc : elle n'est dessinée qu'à droite de la main de l'arc — avant, sa queue passait par-dessus le
+     bras : Romain, 17 h 44 : « la flèche, quand elle tire, elle passe par-dessus le bras ») */
+  if(p.gest && p.gest.nom === 'tir'){ var u2 = p.t - p.gest.t0; if(u2 >= 1.37 && !p.gest.parti){ p.gest.parti = true; var os = HV.os(h, p.F), a = ecran(os.poignetG); fleches.push({x:a[0] + 14, y:a[1] - 4, t0:T, n:fleches.length}); } }
+  /* (un geste qui part d'une autre pose que la garde — l'amulette, elle est à terre — : on saute la toute première image) */
+  if(SC.double && T < 1e-6) p.dessiner(0.02);
   p.dessiner(1 / 30);
-  var s = '';
-  fleches.forEach(function(f){ var d = (T - f.t0) * 2600, x = f.x + d; if(x < 1000) s += '<g transform="translate(' + x.toFixed(0) + ' ' + f.y.toFixed(0) + ')"><path d="M-110 0 H0" stroke="#24182e" stroke-width="8"/><path d="M-110 0 H0" stroke="#e6d8b8" stroke-width="4"/><path d="M14 0 L-6 -9 L-6 9 Z" fill="#b8bcc8" stroke="#24182e" stroke-width="3"/><path d="M-112 0 l-14 -10 h12 l12 10 l-12 10 h-12 Z" fill="#c0392b" stroke="#24182e" stroke-width="2.5"/></g>'; });
+  var s = SC.dessus && g0 >= 0 ? SC.dessus.call(SC, T - g0) : '';
+  fleches.forEach(function(f){ var d = (T - f.t0) * 2600, x = f.x + d; if(x < 1000) s += '<clipPath id="fl' + f.n + '"><rect x="' + f.x.toFixed(0) + '" y="0" width="1200" height="900"/></clipPath><g clip-path="url(#fl' + f.n + ')"><g transform="translate(' + x.toFixed(0) + ' ' + f.y.toFixed(0) + ')"><path d="M-110 0 H0" stroke="#24182e" stroke-width="8"/><path d="M-110 0 H0" stroke="#e6d8b8" stroke-width="4"/><path d="M14 0 L-6 -9 L-6 9 Z" fill="#b8bcc8" stroke="#24182e" stroke-width="3"/><path d="M-112 0 l-14 -10 h12 l12 10 l-12 10 h-12 Z" fill="#c0392b" stroke="#24182e" stroke-width="2.5"/></g></g>'; });
   nuages.forEach(function(n){ var u = (T - n.t0) / 0.7; if(u >= 0 && u < 1){ s += '<circle cx="' + (n.x - 50 * u + n.d * u).toFixed(0) + '" cy="' + (n.y - 30 * u).toFixed(0) + '" r="' + (12 + 34 * u).toFixed(0) + '" fill="#b8a9c0" opacity="' + (0.45 * (1 - u)).toFixed(2) + '"/>'; } });
   eclairs.forEach(function(e){ var u = (T - e.t0) / 0.25; if(u >= 0 && u < 1){ var os = HV.os(h, p.F), a = ecran(os.cou), r = 40 + 90 * u; s += '<circle cx="' + (a[0] + 60) + '" cy="' + (a[1] + 70) + '" r="' + r + '" fill="#fff" opacity="' + (0.8 * (1 - u)).toFixed(2) + '"/>'; } });
   fx.innerHTML = s;

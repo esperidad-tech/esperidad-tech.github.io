@@ -310,7 +310,13 @@ function bras(V, cote, P, T){
     mdL = mixv(mdL || [0, 0, 0], ry([-1, 0.04, 0.18]), vi); pcL = mixv(pcL || [-0.25, 0.1, 1], ry([0, 0.5, -1]), vi);
   }
   var Wc = rel > 0 ? mixv(Wa, T.buste(Wa), rel) : Wa, pole = rel > 0 ? mixv(pa, mv(T.Mb, pa), rel) : pa;
-  var J = ik3(Ep, Wc, 50, 43, pole), El = J[0], W = J[1], da = uni(sub(W, El));
+  /* (le bras levé au-dessus de la tête : l'épaule monte avec lui, comme en vrai — Romain, 17 h 44 : « qu'elle lève bien le bras très
+     haut pour sortir la flèche du carquois ») */
+  /* (et, comme en dessin animé, le bras s'étire un peu — 12 % au plus : la tête de nos héros est grande, sans ça le poing ne
+     dépasserait pas d'elle) */
+  var lev = 0, eti = 1;
+  if(rel > 0.5){ lev = borne((151 - Wa[1] - 45) / 40, 0, 1); if(lev > 0){ Ep = T.buste([cote * (31.5 - lev * 4), 151 - lev * 22, 0]); eti = 1 + 0.12 * lev; } }
+  var J = ik3(Ep, Wc, 50 * eti, 43 * eti, pole), El = J[0], W = J[1], da = uni(sub(W, El));
   /* (une main qui suit le buste tourne AVEC lui : vers où pointent ses doigts, son pouce, l'arc qu'elle tient — Romain, 23 novembre,
      16 h 39 : « l'arc est à l'envers » quand elle s'était tournée pour viser) */
   function tourne(v){ return rel > 0 && v ? mixv(v, mv(T.Mb, v), rel) : v; }
@@ -640,7 +646,7 @@ function arcSVG(K, V, Hd, P){
       {nom:'bH', svg:branche(pts.slice(0, n / 2 + 1)), pts:pts.slice(1, n / 2)}, {nom:'bB', svg:branche(pts.slice(n / 2)), pts:pts.slice(n / 2 + 1, n)}];
   /* (la flèche encochée est un morceau à part : un bras peut passer devant elle — Romain, 16 h 39 : « la flèche elle est censée être
      derrière le bras ») */
-  if(s){ var fp = []; for(i = 1; i <= 6; i++) fp.push([vers(mid[0], pt[0], i / 7), vers(mid[1], pt[1], i / 7), vers(mid[2], pt[2], i / 7)]); M.push({nom:'fl', svg:s, pts:fp}); }
+  if(s){ var fp = []; for(i = 0; i <= 6; i++) fp.push([vers(mid[0], pt[0], i / 7), vers(mid[1], pt[1], i / 7), vers(mid[2], pt[2], i / 7)]); M.push({nom:'fl', svg:s, pts:fp}); }
   return {morceaux:M, poignee:PT('M' + f1(g1[0]) + ' ' + f1(g1[1]) + ' L ' + f1(g2[0]) + ' ' + f1(g2[1]), '#6e4223', 6.4)};
 }
 
@@ -745,10 +751,31 @@ HV.corps = function(K, h, V, P){
      main qui va chercher une flèche dans le carquois, derrière sa tête ; Romain, 16 h 39 : « le mouvement du bras qui se relève, il y
      est pas toujours ») */
   var tH = pj(T.lieu([0, 118, -2]), V);
-  [bG, bD].forEach(function(b){ var w = pj(b.W, V); b.prTete = w[2] > tH[2] + 6 && w[1] < tH[1] + 12 && Math.abs(w[0] - tH[0]) < 62; });
-  [bG, bD].sort(function(a, b){ return a.fond - b.fond; }).forEach(function(b){ (b.fond < SEUIL && !b.prTete ? fond : avant).push(b); });
+  [bG, bD].forEach(function(b){ var w = pj(b.W, V); b.prTete = (w[2] > tH[2] + 6 && w[1] < tH[1] + 12 && Math.abs(w[0] - tH[0]) < 62) || (b.cle === 'D' && P.mainSurTete > 0.5 && dos && w[1] < tH[1] + 60); });
+  /* (une main cachée par le buste — de dos, la main qui tire la corde vers son menton, de l'autre côté — : tout son bras passe
+     derrière le buste, même si son coude, tiré en arrière, est de notre côté : on voit le coude dépasser, pas la main par-dessus
+     l'épaule — Romain, 17 h 44 : « elle passe par-dessus les textures ») */
+  /* (une main derrière le cou ou le menton — celle qui tire la corde, vue de dos — : son bras reste devant le dos (on voit le coude
+     tiré en arrière par-dessus l'épaule), mais le cou et le haut des épaules cachent la main : sousCou, plus bas ; derrière la tête,
+     ce sont les cheveux qui la cachent) */
+  var tN = pj(T.lieu([0, 130, 0]), V);
+  /* (la tête, vue comme une ellipse : où elle est à l'écran et sa profondeur — le même calcul que plus bas pour la poser au bout du
+     cou ; son dessin va de 57 au-dessus à 34 au-dessous du point où elle est posée, moins 28) */
+  var co0 = borne(P.couche || 0, 0, 1), yaw0 = ba[2] + ds[2] + (P.tete || 0), ho0 = P.hoche || 0;
+  var nd0 = uni(add(mul(mv(T.M[0], [0, -1, 0]), 0.5 + 0.5 * co0), mv(mm(RY(yaw0), RX(ho0 * 0.5)), [0, -1, 0]), 0.5 - 0.5 * co0));
+  var pH0 = pj(add(T.lieu([0, 139, -2]), nd0, 19), V), tEl = {x:pH0[0], y:pH0[1] - 36, rx:40, ry:46, d:pH0[2]};
+  function dansTete(q){ var a = (q[0] - tEl.x) / tEl.rx, c = (q[1] - tEl.y) / tEl.ry; return a * a + c * c < 1; }
+  [bG, bD].forEach(function(b){ b.sousBuste = T.devant(b.w[0], b.w[1], b.w[2], 4, 'haut') + T.devant(b.m[0], b.m[1], b.m[2], 4, 'haut') < 0;
+    b.sousCou = !b.prTete && ((b.w[2] < tN[2] - 3 && d2(b.w, tN) < 40) || (b.w[2] < tEl.d - 4 && dansTete(b.w))); });
+  [bG, bD].sort(function(a, b){ return a.fond - b.fond; }).forEach(function(b){ ((b.fond < SEUIL || b.sousBuste) && !b.prTete ? fond : avant).push(b); });
   var pf = fond.map(function(b){ return brasSVG(K, V, b, P, true); });
-  var der = (cq && !dos ? cq.svg : '') + pf.map(function(o){ return brasTout(o); }).join('');
+  /* (un bras derrière elle est aussi caché par le cou, le haut des épaules et la tête : sinon la main qui tire la corde, vue de dos,
+     apparaissait dans le creux à côté du cou — Romain, 17 h 44 : « elle passe par-dessus les textures ») */
+  var ptsCou = [];
+  [[-38, 152, 14], [-38, 152, -14], [-16, 110, 12], [-16, 110, -10], [16, 110, 12], [16, 110, -10], [38, 152, 14], [38, 152, -14]].forEach(function(q){ ptsCou.push(pj(T.buste(q), V)); });
+  var dCou = U.poly(enveloppe(ptsCou)), dTete = 'M' + f1(tEl.x - tEl.rx) + ' ' + f1(tEl.y) + ' a' + tEl.rx + ' ' + tEl.ry + ' 0 1 0 ' + 2 * tEl.rx + ' 0 a' + tEl.rx + ' ' + tEl.ry + ' 0 1 0 ' + -2 * tEl.rx + ' 0 Z';
+  var idCou = K.n('mCou'), masqueCou = '<defs><mask id="' + idCou + '" maskUnits="userSpaceOnUse" x="-500" y="-300" width="1000" height="1100"><rect x="-500" y="-300" width="1000" height="1100" fill="#fff"/><path d="' + dCou + '" fill="#000"/><path d="' + dTete + '" fill="#000"/></mask></defs>';
+  var der = (cq && !dos ? cq.svg : '') + (pf.length ? masqueCou + '<g mask="url(#' + idCou + ')">' + pf.map(function(o){ return brasTout(o); }).join('') + '</g>' : '');
   var pa = avant.map(function(b){ return brasSVG(K, V, b, P, false); });
   /* LES JAMBES : celle du fond d'abord. Elles sont dessinées après le buste ; chaque morceau (la cuisse, la botte) est caché là
      où la poitrine ou la jupe est devant lui (on regarde, en plusieurs points du morceau, ce qui est le plus près de nous). */
@@ -866,6 +893,13 @@ HV.corps = function(K, h, V, P){
     /* (la corde et les flèches passent DERRIÈRE un bras qui est devant elles — Romain, 16 h 39 : « le fil de l'arc, lui aussi, il est
        censé être derrière le bras ») */
     if(avecBras) [bG, bD].forEach(function(B){ os(B.Ep, B.El, R_EP, B.manche[0]); os(B.El, B.W, R_CO, B.manche[1]); });
+    /* (et derrière la tête ou le cou : vue de dos, l'encoche de la flèche et le bout de la corde sont dans la main cachée derrière la
+       tête) */
+    if(avecBras){
+      var vt = 0;
+      pts.forEach(function(q){ var dt = dansTete(q), dc = d2(q, tN) < 30; if(!dt && !dc) return; vt += (dt ? q[2] < tEl.d - 4 : q[2] < tN[2] - 3) ? 1 : -1; });
+      if(vt > 0) occ = occ.concat([dCou, dTete]);
+    }
     if(!occ.length) return '';
     var id = K.n('am' + nom);
     defsArc += '<mask id="' + id + '" maskUnits="userSpaceOnUse" x="-500" y="-300" width="1000" height="1100"><rect x="-500" y="-300" width="1000" height="1100" fill="#fff"/><g fill="#000" stroke="#000" stroke-width="4.4" stroke-linejoin="round">' + occ.map(function(d){ return '<path d="' + d + '"/>'; }).join('') + '</g></mask>';
@@ -878,13 +912,20 @@ HV.corps = function(K, h, V, P){
     return m;
   }
   var mPa = avant.map(function(B, i){ return masquesObjets(B, pa[i], ''); });
-  if(!dessus) avant.forEach(function(B, i){ membres.push({d:prof(B.W), s:brasTout(pa[i], mPa[i])}); });
+  if(!dessus) avant.forEach(function(B, i){ var s0 = brasTout(pa[i], mPa[i]); membres.push({d:prof(B.W), s:B.sousCou ? masqueCou + '<g mask="url(#' + idCou + ')">' + s0 + '</g>' : s0}); });
   /* UN BRAS DU FOND DEVANT UNE JAMBE (elle ramasse un indice, vue de trois quarts : le bras qui descend vers le sol passe devant le
      genou levé) : il est dessiné derrière le buste, puis une deuxième fois avec les jambes, caché là où le buste est (il reste
      donc derrière le buste, mais il passe devant la jambe qui est derrière lui). */
   fond.forEach(function(B, i){
     var dw = prof(B.W);
-    if(!jambesInfo.some(function(ji){ return ji.d < dw; })) return;
+    /* (seulement si la main ou l'avant-bras passe vraiment sur cette jambe, à l'écran : sinon, au tir vu de dos, la main qui recule
+       vers le menton était redessinée par-dessus le bras de l'arc) */
+    function prés(ji){
+      var pts = [B.w, B.m, B.c2], seg = [[pj(ji.j.Ha, V), ji.j.kn], [ji.j.kn, pj(ji.j.An, V)]];
+      return pts.some(function(q){ return seg.some(function(s){ var A = s[0], C2 = s[1], vx = C2[0] - A[0], vy = C2[1] - A[1], l2 = vx * vx + vy * vy || 1,
+        t = borne(((q[0] - A[0]) * vx + (q[1] - A[1]) * vy) / l2, 0, 1), dx = A[0] + vx * t - q[0], dy = A[1] + vy * t - q[1]; return dx * dx + dy * dy < 30 * 30; }); });
+    }
+    if(!jambesInfo.some(function(ji){ return ji.d < dw && prés(ji); })) return;
     membres.push({d:dw, s:'<g mask="url(#' + K.n('mHJ') + ')">' + brasTout(pf[i], masquesObjets(B, pf[i], 'f')) + '</g>'});
   });
   membres.sort(function(a, b){ return a.d - b.d; });
@@ -903,7 +944,7 @@ HV.corps = function(K, h, V, P){
   var xs = [pj(jg.An, V), pj(jd.An, V)], ys = 0;
   [jg.Kn, jd.Kn, bG.W, bD.W].forEach(function(q){ if(q[1] > SOL - 26) xs.push(pj(q, V)); });
   var xa = 1e9, xb = -1e9; xs.forEach(function(q){ xa = Math.min(xa, q[0]); xb = Math.max(xb, q[0]); ys += q[2] / xs.length; });
-  return {T:T, dbg:dbg, derriere:der, jambes:'', jambesApres:jb, torse:tor, carquoisDevant:cq && dos ? cq.svg : '',
+  return {T:T, dbg:dbg, dbgBras:[bG, bD].map(function(b){ return {cle:b.cle, fond:b.fond, sousBuste:b.sousBuste, prTete:b.prTete, avant:avant.indexOf(b) >= 0, w:b.w, cou:tN}; }), derriere:der, jambes:'', jambesApres:jb, torse:tor, carquoisDevant:cq && dos ? cq.svg : '',
     devant:dessus ? pa.map(function(o){ return o.manche; }).join('') + pa.map(function(o, i){ return o.paume + objetsTout(o, mPa[i]); }).join('') + pa.map(function(o){ return o.main; }).join('') : '', dos:dos, dessus:dessus,
     cou:function(tDos, ombre){ return cou(K, V, pj(add(Hp, nd, tDos ? 13 : 20), V), bc, rc, ombre); },
     tete:{V:Vt, tx:pHp[0] + 3 * Vt.s, ty:pHp[1] - 28, px:-3 * Vt.s, rot:(P.pen || 0) + ho * Vt.s + co * angN, hocheF:ho * Vt.c, fond:pHp[2] - T.dB},

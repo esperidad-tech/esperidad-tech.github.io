@@ -147,18 +147,27 @@ HV.puis = function(A, B, pause){
    départ (pour les pas) ; o.vise : ce qui change pour viser (les jambes d'une pose à genou, par exemple).
    ========================================================== */
 /* (la main, dans les mesures du buste : le carquois est sur SON épaule gauche, son haut vers [46, 98, -19]) */
-var Q_CHERCHE = {mainD:[44, 102, -28], relD:1, coudeD:[0.7, -0.7, 0.3], mdirD:[-0.1, -0.5, -0.85], pouceD:[-0.4, 0.9, 0.1], poingD:0.2, flecheP:1, poingG:0.8};
+/* (la main va chercher la flèche PAR-DESSUS l'épaule : le coude monte, la main redescend sur les encoches, au-dessus de l'ouverture
+   du carquois — avant, l'avant-bras passait à travers le carquois : Romain, 17 h 44 : « le bras, quand il prend la flèche, il passe à
+   moitié à travers le carquois ». La flèche tenue part du côté du pouce : le pouce est tourné vers le fond du carquois.) */
+var Q_CHERCHE = {mainD:[46, 86, -24], relD:1, coudeD:[0.5, -1, 0.2], mdirD:[0.1, 0.2, -1], pouceD:[-0.36, 0.93, 0], poingD:0.2, flecheP:1, poingG:0.8};
 var Q_TIENT = avec(Q_CHERCHE, {poingD:0.95, flecheD:1});
-/* (la main monte tout droit au-dessus de la tête, le bras presque tendu — Romain, 16 h 39 : « il faut vraiment que la main elle aille
-   plus haut… jusqu'au-dessus de sa tête ») */
-var Q_HAUT = {mainD:[42, 60, 2], relD:1, coudeD:[0.9, -0.2, 0.3], mdirD:[0, -1, -0.1], pouceD:[-0.36, 0.93, 0], poingD:0.95, flecheD:1, flecheP:1, hoche:-6, brasDessus:1};
-/* (au donjon, vue de dos : la main monte derrière sa tête, de notre côté — on la voit tirer la flèche vers le haut) */
-var Q_HAUT_DOS = avec(Q_HAUT, {mainD:[20, 70, -40], coudeD:[0.9, -0.1, -0.4], mdirD:[0, -1, -0.3]});
+/* (puis le bras monte TRÈS haut, presque tendu, l'épaule monte avec lui (hv-corps.js), le poing au-dessus de la tête, la flèche qui
+   pend dessous : elle sort du carquois — Romain, 16 h 39 et 17 h 44 : « qu'elle lève bien le bras très haut pour sortir la flèche du
+   carquois ». Le poing est tourné le pouce en bas, pour que la flèche pende.) */
+var Q_HAUT = {mainD:[30, 24, -2], relD:1, coudeD:[0.9, -0.2, 0.3], mdirD:[0, -0.2, 1], pouceD:[0, 1, 0], poingD:0.95, flecheD:1, flecheP:1, hoche:-6, brasDessus:1};
+/* (au donjon, vue de dos : la main monte derrière sa tête, de notre côté) */
+/* (mainSurTete : son bras passe devant sa tête et sa queue de cheval, même si la main est un peu derrière — sinon, de trois quarts
+   dos, le bras levé disparaît derrière la queue de cheval) */
+var Q_HAUT_DOS = avec(Q_HAUT, {mainSurTete:1, mainD:[24, 22, -26], coudeD:[0.9, -0.3, -0.2], mdirD:[0.1, -0.2, -1], pouceD:[-0.2, 1, 0]});
 var VISE = {mainG:[-116, 151, 5], relG:1, coudeG:[0, 0.7, -0.6], pouceG:[0, -1, 0.1], arcAxe:[0, 1, 0], arcDir:[-1, 0, 0.04], poingG:0.75,
   tete:-84, brasDessus:1, sourcils:-0.8, plisse:0.5, sourire:-0.1, largeB:0.75};
 var A_ARC = avec(VISE, {mainD:[-30, 148, 34], relD:1, coudeD:[1, 0.3, -0.3], mdirD:[-0.3, 0.1, 1], pouceD:[-1, 0, 0.1], poingD:0.95, flecheD:1, flecheP:1});
-var ENCOCHE = avec(VISE, {mainD:[-86, 152, 8], relD:1, coudeD:[1, -0.2, -0.4], mdirD:[0, 0, 0], pouceD:[-1, 0, 0.1], poingD:0.9, flecheD:0, tendu:0.05});
-var BANDE = avec(VISE, {mainD:[17, 128, 12], relD:1, coudeD:[1, -0.35, -0.3], mdirD:[0, 0, 0], pouceD:[-1, 0, 0.1], poingD:0.8, tendu:1, sourcils:-0.9, plisse:0.6});
+/* (la main qui encoche reste juste derrière le bras de l'arc, un peu plus bas : vue de dos, elle ne dépasse plus au-dessus de
+   l'épaule — Romain, 17 h 44) */
+var ENCOCHE = avec(VISE, {mainD:[-74, 160, 16], relD:1, coudeD:[1, -0.2, -0.4], mdirD:[0, 0, 0], pouceD:[-1, 0, 0.1], poingD:0.9, flecheD:0, tendu:0.05});
+/* (la main qui tire la corde s'ancre sous la pommette : vue de dos, elle est cachée par la tête, plus rien ne dépasse à côté du cou) */
+var BANDE = avec(VISE, {mainD:[16, 120, 14], relD:1, coudeD:[1, -0.35, -0.3], mdirD:[0, 0, 0], pouceD:[-1, 0, 0.1], poingD:0.8, tendu:1, sourcils:-0.9, plisse:0.6});
 var LACHE = avec(VISE, {mainD:[36, 120, -12], relD:1, coudeD:[1, -0.35, -0.3], mdirD:[0, 0, 0], pouceD:[-1, 0, 0.1], poingD:0.05, tendu:0, mainG:[-114, 146, 4], plisse:0.25, ouvre:0.2});
 HV.flecheSortie = function(o){
   o = o || {};
@@ -186,15 +195,23 @@ HV.flecheSortie = function(o){
   /* (au donjon, elle a presque fini de se tourner quand sa main arrive au carquois : son dos est vers nous, on voit la main prendre
      la flèche et monter au-dessus de sa tête — Romain, 16 h 39 : « le mouvement du bras qui se relève, il y est pas toujours ») */
   var c1 = A ? corps(0.95, 0.55, 1.15) : corps(0.3, 0), c2 = A ? corps(1, 0.85, 1.16) : corps(0.4, 0), c3 = A ? corps(1, 1, 1.1) : corps(0.7, 0.25), c4 = A ? corps(1, 1) : corps(0.9, 0.5);
-  k(0.18, avec(Q_CHERCHE, avec(c1, {tete:b.tete + 10})));
-  k(0.15, avec(Q_TIENT, c2));
-  k(0.17, avec(avec(A ? Q_HAUT_DOS : Q_HAUT, c3), V));
-  k(0.11, avec(avec(A_ARC, c4), V));
+  var QH = A ? Q_HAUT_DOS : Q_HAUT;
+  /* (de dos, le bras qui va au carquois passe devant la queue de cheval et le carquois : on le voit monter, ce n'est pas un poing qui
+     flotte à côté de la tête) */
+  var sur = A ? {mainSurTete:1} : {};
+  k(0.18, avec(avec(Q_CHERCHE, sur), avec(c1, {tete:b.tete + 10})));
+  k(0.15, avec(avec(Q_TIENT, sur), c2));
+  /* (le bras monte, et reste un instant tout en haut : on le voit bien) */
+  /* (le buste se penche un peu de l'autre côté : l'épaule gauche monte encore) */
+  var ch = {dos:[c3.dos[0], c3.dos[1] - 10, c3.dos[2]]};
+  k(0.13, avec(avec(avec(QH, c3), ch), V));
+  k(0.05, avec(avec(avec(QH, c3), ch), avec(V, {mainD:[QH.mainD[0], QH.mainD[1] - 3, QH.mainD[2]]})));
+  k(0.10, avec(avec(A_ARC, c4), V));
   k(0.05, avec(avec(ENCOCHE, corps(1, 1)), V));
   k(0.35, avec(avec(BANDE, corps(1, 1)), V));
   var VB = avec(avec(BANDE, corps(1, 1)), V);
   if(o.lache !== false){
-    k(0.31, avec(VB, {mainD:[16, 129, 12]}));
+    k(0.31, avec(VB, {mainD:[15, 121, 14]}));
     k(0.06, avec(avec(LACHE, corps(1, 1)), V));
     k(0.12, avec(avec(LACHE, corps(1, 1)), avec(V, {mainD:[40, 124, -16], sourire:0.3})));
     k(0.32, avec(avec(LACHE, corps(1, 1)), avec(V, {mainD:[40, 126, -16], sourire:0.3, poingD:0.2})));
@@ -204,11 +221,17 @@ HV.flecheSortie = function(o){
     /* elle ne tire pas : elle tient la visée, puis laisse revenir la corde, reprend la flèche et la range */
     k(1.2, VB);
     k(0.5, avec(ENCOCHE, avec(corps(1, 1), avec(V, {sourcils:0.1, plisse:0.1}))));
-    k(0.12, avec(A_ARC, avec(corps(1, 1), avec(V, {mainD:[-70, 150, 14], flecheD:1, sourcils:0.1, plisse:0.1}))));
-    k(0.45, avec(Q_HAUT, avec(corps(0.6, 0.6), {tete:b.tete + 14, mainG:[-80, 210, 30], relG:1, brasDessus:0})));
+    k(0.15, avec(A_ARC, avec(corps(1, 1), avec(V, {mainD:[-70, 150, 14], flecheD:1, sourcils:0.1, plisse:0.1}))));
+    /* (pour ranger la flèche, la main ne passe plus devant son visage — Romain, 17 h 44 : « des petits bugs quand elle fait sa
+       flèche » : elle redescend devant sa poitrine, la flèche debout, pendant que l'arc s'abaisse ; puis elle remonte par SON côté
+       gauche, au-dessus de l'épaule, et la flèche replonge dans le carquois) */
+    k(0.35, avec(corps(0.6, 0.6), {mainD:[20, 200, 50], relD:1, coudeD:[0.6, 0.6, 0.5], mdirD:[0, -1, 0.1], pouceD:[0, -1, 0.2], poingD:0.95, flecheD:1, flecheP:0.4,
+      mainG:[-80, 214, 30], relG:1, tete:b.tete + 6, hoche:6, brasDessus:0}));
+    k(0.35, avec(corps(0.4, 0.3), {mainD:[56, 76, 6], relD:1, coudeD:[1, 0.2, 0.2], mdirD:[0, -0.2, 1], pouceD:[0, 1, 0], poingD:0.95, flecheD:1, flecheP:1,
+      tete:b.tete + 16, hoche:-4, brasDessus:0}));
     k(0.3, avec(Q_TIENT, corps(0.3, 0)));
-    k(0.12, avec(Q_CHERCHE, corps(0.3, 0)));
-    k(0.5, {});
+    k(0.15, avec(Q_CHERCHE, corps(0.3, 0)));
+    k(0.55, {});
   }
   return L;
 };
@@ -274,9 +297,11 @@ HV.POSITIONS = {
      entre les mouvements. C'est valable pour toutes les positions ») */
   repos:{titre:'Au repos', base:'repos', attente:[4.5, 8], gestes:{
     /* (à droite : curieuse ; à gauche : elle voit quelque chose qui lui plaît ; derrière : un bruit, elle s'inquiète) */
-    droite:HV.regardeEtRevient(P.repos, -50, 1.8, 0, {visage:{sourcils:0.3, sourcilsAsym:0.5, sourire:0.6, regX:-0.3}}),
+    /* (quand elle se tourne vers SA droite, la main de l'arc s'écarte un peu et l'arc penche vers l'extérieur : sinon il passait derrière
+       son corps — Romain, 17 h 44 : « quand elle regarde derrière elle, là, l'arc il disparaît un petit peu ») */
+    droite:HV.regardeEtRevient(P.repos, -50, 1.8, 0, {visage:{sourcils:0.3, sourcilsAsym:0.5, sourire:0.6, regX:-0.3, mainG:[-62, 238, 14], arcAxe:[-0.3, 1, 0.05]}}),
     gauche:HV.regardeEtRevient(P.repos, 50, 1.8, 0, {visage:{sourire:1.2, sourcils:0.35, plisse:0.25, rougit:0.25, regX:0.3}}),
-    derriere:HV.regardeEtRevient(P.repos, -95, 1.5, 0, {visage:{sourcilsIn:0.6, sourcils:0.25, ouvre:0.12, sourire:-0.1, largeB:0.7}}),
+    derriere:HV.regardeEtRevient(P.repos, -95, 1.5, 0, {visage:{sourcilsIn:0.6, sourcils:0.25, ouvre:0.12, sourire:-0.1, largeB:0.7, mainG:[-62, 238, 14], arcAxe:[-0.3, 1, 0.05]}}),
     /* (son arc : elle le lève devant elle et le tourne pour voir sa courbe, pince la corde du bout des doigts, contente) */
     arc:[[0.8, {mainG:[-46, 206, 36], arcAxe:[-0.15, 1, 0.15], arcDir:[-1, 0, 0.25], hoche:14, regY:0.6, regX:-0.5, tete:-14, sourcils:0.15}],
       [1.6, {mainG:[-44, 204, 38], arcAxe:[-0.1, 1, 0.1], arcDir:[-1, 0, 0.35], hoche:12, regY:0.5, regX:-0.6, tete:-16, sourcils:0.2, sourcilsAsym:0.4}],
@@ -322,11 +347,14 @@ HV.POSITIONS = {
       [3.4, avec(PENCHE, {mainD:[10, 384, 58], indexD:1, poingD:0.2, hoche:14, regY:0.1, sourcils:0.4, ouvre:0.25, sourire:0.4})],
       [4.2, avec(PENCHE, {mainD:[10, 384, 58], indexD:1, poingD:0.2, hoche:12, regY:0, regX:0.4, sourcils:0.2, sourire:0.7})], [5.0, {}]],
     /* (une poussière sur son genou : agacée, elle la chasse d'une pichenette, puis vérifie) */
-    poussiere:[[0.7, {mainD:[-10, 318, 74], relD:0, mdirD:[-1, 0.3, 0.2], poingD:0.1, hoche:14, regY:0.6, regX:-0.4, sourire:-0.3, sourcilsIn:0.3, bouchex:-0.4}],
-      [0.95, {mainD:[-20, 322, 72], relD:0, mdirD:[-1, 0.3, 0.2], poingD:0.1, hoche:14, regY:0.6, regX:-0.4, sourire:-0.3, sourcilsIn:0.3, bouchex:-0.4}],
-      [1.2, {mainD:[-10, 318, 74], relD:0, mdirD:[-1, 0.3, 0.2], poingD:0.1, hoche:14, regY:0.6, regX:-0.4, sourire:-0.3, sourcilsIn:0.3, bouchex:-0.4}],
-      [1.45, {mainD:[-22, 322, 72], relD:0, mdirD:[-1, 0.3, 0.2], poingD:0.1, hoche:14, regY:0.6, regX:-0.4, sourire:-0.2, sourcilsIn:0.3}],
-      [2.3, {mainD:[-12, 316, 70], relD:0, mdirD:[-1, 0.3, 0.2], poingD:0.3, hoche:12, regY:0.5, regX:-0.3, sourire:0.6, sourcils:0.2}], [3.0, {}]],
+    /* (la poussière est sur le dessus de SON genou gauche : la main passe dessus, bien au-dessus du genou — avant, elle frottait entre
+       les cuisses et passait tantôt devant, tantôt derrière : Romain, 17 h 44 : « la main elle bug, elle passe devant derrière ») */
+    poussiere:(b = {relD:0, mdirD:[-0.3, 0.5, 1], pouceD:[-1, 0, 0.2], poingD:0.1, hoche:14, regY:0.6, regX:0.4, tete:10, sourire:-0.3, sourcilsIn:0.3, bouchex:-0.4},
+      [[0.7, avec(b, {mainD:[58, 314, 50]})],
+      [0.95, avec(b, {mainD:[74, 316, 44]})],
+      [1.2, avec(b, {mainD:[58, 314, 50]})],
+      [1.45, avec(b, {mainD:[74, 316, 44], sourire:-0.2})],
+      [2.3, avec(b, {mainD:[64, 308, 50], poingD:0.3, hoche:12, regY:0.5, regX:0.3, sourire:0.6, sourcils:0.2, sourcilsIn:0, bouchex:0})], [3.0, {}]]),
     derriere:HV.regardeEtRevient(P.posAccroupi, -85, 1.6, 0, {sansPas:true, visage:{sourcils:0.35, sourcilsIn:0.4, ouvre:0.15, largeB:0.7}}),
     arc:[[0.9, {mainG:[-70, 300, 72], arcAxe:[-0.4, 0.85, 0.3], hoche:10, regX:-0.5, regY:0.3, tete:-10, sourcils:0.15}],
       [1.9, {mainG:[-66, 304, 70], arcAxe:[0.05, 0.9, 0.4], hoche:10, regX:-0.5, regY:0.3, tete:-10, sourcilsAsym:0.4, sourire:0.5}],

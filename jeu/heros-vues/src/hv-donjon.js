@@ -187,7 +187,196 @@ HV.DONJON = {
     [2.05, {bas:[0, 14, 0], mainG:[-86, 176, -4], relG:1, coudeG:[-1, 0.2, -0.2], arcAxe:[-0.2, 1, 0], arcDir:[-0.3, 0, 1], mainD:[84, 176, -4], relD:1, coudeD:[1, 0.2, -0.2], poingD:0.6, sourire:1, ouvre:0.2, sourcils:0.5}],
     [2.5, {}]]
 };
+
+/* ==========================================================
+   LES AUTRES MOUVEMENTS DU DONJON (Romain, 23 novembre, 17 h 44 : « tu peux continuer un petit peu toutes les animations qu'il y a
+   dans le donjon ») — d'après l'inventaire de LISEZ-MOI.md (ce que le donjon appelle aujourd'hui dans heros-anime.js). Les effets
+   (la toile, le givre, les rats, la langue du crapaud, la main de Léo, la lueur de l'amulette) sont dessinés par le film
+   (essai/film-donjon.html), pas par le héros.
+   ========================================================== */
+/* allongée sur le dos, à plat (la fin de la chute) */
+var ALLONGEE = {bas:[0, 152, -66], bang:[-90, 0, 0], dos:[2, 0, 0], hoche:4, couche:1, piedG:[-26, 392, 4], piedD:[32, 396, 34], pointeG:-20, pointeD:-34, genouG:[-0.3, -1, 0.3], genouD:[0.35, -1, 0.5],
+  mainG:[-92, 404, -112], relG:0, coudeG:[-1, -0.3, 0], mdirG:[-0.5, 0, -1], pouceG:[0, -1, 0], mainD:[96, 404, -100], relD:0, coudeD:[1, -0.3, 0], mdirD:[0.5, 0, -1], poingD:0.2,
+  arcAxe:[0, 0, 1], arcDir:[-1, 0, 0], poingG:0.4};
+HV.ALLONGEE = avec(P.dGarde, ALLONGEE);
+/* (le relevé de la chute, que Romain a validé : à partir de 2,75 s, remis à zéro) */
+var RELEVE = HV.DONJON.chute.filter(function(k){ return k[0] >= 2.75; }).map(function(k){ return [k[0] - 2.75, k[1]]; });
+function decale(L, dt){ return L.map(function(k){ return [k[0] + dt, k[1]]; }); }
+/* un frisson : de petits allers-retours rapides de A, de t0 à t1, autour d'une pose */
+function frissons(pose, t0, t1, pas, f){
+  var L = [], t, i = 0;
+  for(t = t0; t < t1 - 1e-6; t += pas, i++) L.push([t, avec(pose, f(i % 2 ? 1 : -1, (t - t0) / (t1 - t0)))]);
+  return L;
+}
+
+/* C'EST SON TOUR : elle se redresse, inspire, serre son arc, un petit signe de tête décidé */
+HV.DONJON.choisi = [[0.25, {bas:[0, 14, 2], dos:[6, 0, -4], hoche:-8, sourcils:0.4, ouvre:0.15, plisse:-0.2, regX:0.2}],
+  [0.55, {bas:[0, 10, 2], dos:[4, 0, -4], hoche:8, sourcils:-0.6, sourire:0.4, plisse:0.2, poingG:0.95, poingD:0.7}],
+  [0.85, {bas:[0, 16, 2], dos:[6, 0, -4], hoche:-4, sourcils:-0.8, sourire:0.5, plisse:0.3, poingG:0.95, poingD:0.7, regX:0.4}],
+  [1.8, {bas:[0, 18, 2], dos:[6, 0, -4], hoche:-4, sourcils:-0.8, sourire:0.5, plisse:0.3, poingG:0.95, poingD:0.7, regX:0.3}], [2.3, {}]];
+
+/* LE COUP DE DAGUE : SA main gauche tire la dague de la ceinture, elle prend son élan, un grand pas en avant vers l'ennemi et un
+   revers de haut en bas, le bras au bout ; elle revient en garde et range la dague */
+HV.DONJON.dague = [[0.18, {mainD:[36, 236, 8], coudeD:[0.9, 0.2, -0.5], mdirD:[0, 1, 0], poingD:0.9, hoche:8, regY:0.4}],
+  [0.3, {mainD:[42, 222, 10], coudeD:[0.9, 0.2, -0.5], mdirD:[0, 1, 0], poingD:1, dague:1, hoche:2}],
+  [0.48, {mainD:[60, 140, -26], coudeD:[1, -0.3, -0.3], pouceD:[0, -0.5, 1], poingD:1, dague:1, dos:[-4, 0, 14], bang:[0, 0, 6], bas:[0, 30, -6], sourcils:-1, plisse:0.4, sourire:-0.3}],
+  [0.62, {piedD:[30, 386, 92], genouD:[0.3, -0.1, 1], pointeD:-6, piedG:[-30, 386, -36], pointeG:30, bas:[4, 50, 40], bang:[16, 0, 6], dos:[14, 0, 8],
+    mainD:[24, 150, 86], coudeD:[0.6, 0.3, -0.3], pouceD:[0, -0.6, 1], poingD:1, dague:1, ouvre:0.65, sourcils:-1, plisse:0.3, largeB:0.8}],
+  [0.74, {piedD:[30, 386, 92], genouD:[0.3, -0.1, 1], pointeD:-6, piedG:[-30, 386, -36], pointeG:30, bas:[4, 52, 42], bang:[16, 0, 4], dos:[16, 0, -2],
+    mainD:[8, 206, 76], coudeD:[0.6, 0.6, -0.3], pouceD:[0, 0.3, 1], poingD:1, dague:1, ouvre:0.4, sourcils:-1, plisse:0.4}],
+  [1.15, {piedD:[30, 386, 92], genouD:[0.3, -0.1, 1], pointeD:-6, piedG:[-30, 386, -36], pointeG:30, bas:[4, 50, 40], bang:[14, 0, 4], dos:[14, 0, 0],
+    mainD:[10, 204, 74], coudeD:[0.6, 0.6, -0.3], pouceD:[0, 0.3, 1], poingD:1, dague:1, ouvre:0.1, sourcils:-0.8, plisse:0.3}],
+  /* (elle se repousse sur le pied de devant et revient) */
+  [1.5, {piedD:[30, 376, 20], pointeD:20, bas:[0, 34, 10], mainD:[46, 200, 40], coudeD:[0.9, 0.3, -0.4], pouceD:[0, -0.5, 1], poingD:1, dague:1, sourcils:-0.7}],
+  [1.85, {mainD:[36, 236, 8], coudeD:[0.9, 0.2, -0.5], mdirD:[0, 1, 0], poingD:1, dague:1, hoche:6, regY:0.3}],
+  [1.95, {mainD:[36, 236, 8], coudeD:[0.9, 0.2, -0.5], mdirD:[0, 1, 0], poingD:0.9, dague:0, hoche:6, regY:0.3}], [2.4, {}]];
+
+/* LE GIVRE : touchée par le froid, elle se recroqueville, les bras serrés contre elle, les genoux l'un contre l'autre ; elle grelotte
+   (des frissons rapides), puis s'ébroue d'un coup et revient en garde */
+var GELEE = {bas:[0, 40, -4], bang:[10, 0, 0], dos:[24, 0, 0], hoche:14, mainD:[-14, 190, 40], relD:1, coudeD:[0.6, 0.5, -0.2], mdirD:[-1, 0, 0.3], poingD:0.6,
+  mainG:[-22, 204, 42], relG:1, coudeG:[-0.6, 0.5, -0.2], arcAxe:[-0.35, 1, 0.3], arcDir:[-0.6, 0, 0.8], piedG:[-14, 386, 8], piedD:[14, 386, -4], genouG:[0.2, 0, 1], genouD:[-0.2, 0, 1],
+  ouvG:-0.1, ouvD:-0.1, plisse:0.8, sourcilsIn:1, sourcils:0.2, ouvre:0.12, largeB:1.25, sourire:-0.5};
+HV.DONJON.froid = [[0.08, avec(AIE, {bas:[0, 30, -6], dos:[-10, 0, 4], hoche:-10})], [0.35, GELEE]]
+  .concat(frissons(GELEE, 0.45, 2.0, 0.07, function(s, a){ return {bas:[s * 2.2, 40, -4], pen:s * 3, sourcilsAsym:s * 0.2}; }))
+  .concat([[2.1, GELEE],
+    /* (elle s'ébroue : les bras s'ouvrent, la tête secoue) */
+    [2.28, {bas:[0, 30, 0], pen:-10, mainD:[64, 210, 20], relD:1, mainG:[-66, 214, 22], relG:1, sourcils:0.2, plisse:0.9, ouvre:0.3, largeB:0.8}],
+    [2.42, {bas:[0, 30, 0], pen:10, mainD:[64, 210, 20], relD:1, mainG:[-66, 214, 22], relG:1, sourcils:0.2, plisse:0.9, ouvre:0.3, largeB:0.8}],
+    [2.56, {bas:[0, 30, 0], pen:-6, mainD:[60, 212, 20], relD:1, mainG:[-64, 216, 22], relG:1, sourcils:-0.4, plisse:0.5}],
+    [3.1, {sourcils:-0.7, plisse:0.3, sourire:-0.2}], [3.5, {}]]);
+
+/* LES RATS (le grouillement) : ils lui grimpent dessus — elle sursaute, regarde ses pieds, dégoûtée, tape des pieds l'un après
+   l'autre, chasse les rats de sa hanche du revers de la main, puis frissonne de dégoût */
+var RATS_V = {hoche:20, regY:1, sourire:-0.9, bouchex:0.6, sourcilsIn:0.7, ouvre:0.3, plisse:0.4};
+function tape(cote, haut){
+  var R = avec(RATS_V, {bas:[cote === 'D' ? -4 : 4, 26, 2], mainD:[62, 204, 18], relD:1, coudeD:[1, 0.2, -0.3], poingD:0.2});
+  if(cote === 'D') R.piedD = [30, haut ? 352 : 386, -10]; else R.piedG = [-32, haut ? 352 : 386, 18];
+  R['pointe' + cote] = haut ? 25 : 0; R['genou' + cote] = cote === 'D' ? [0.5, -0.2, 1] : [-0.5, -0.2, 1];
+  return R;
+}
+HV.DONJON.rats = [[0.12, {hoche:16, regY:0.9, sourcils:0.7, ouvre:0.5, plisse:-0.3, bas:[0, 20, -4]}],
+  [0.35, tape('D', true)], [0.5, tape('D', false)], [0.68, tape('G', true)], [0.83, tape('G', false)],
+  [1.0, tape('D', true)], [1.15, tape('D', false)], [1.33, tape('G', true)], [1.48, tape('G', false)],
+  /* (le revers de la main sur la hanche, deux fois) */
+  [1.7, avec(RATS_V, {bas:[0, 30, 0], mainD:[40, 232, 30], relD:1, coudeD:[1, 0.3, -0.3], mdirD:[0, 1, 0.4], poingD:0.1})],
+  [1.85, avec(RATS_V, {bas:[0, 30, 0], mainD:[50, 222, 40], relD:1, coudeD:[1, 0.3, -0.3], mdirD:[0.3, 1, 0.6], poingD:0.1})],
+  [2.0, avec(RATS_V, {bas:[0, 30, 0], mainD:[40, 232, 30], relD:1, coudeD:[1, 0.3, -0.3], mdirD:[0, 1, 0.4], poingD:0.1})],
+  [2.15, avec(RATS_V, {bas:[0, 30, 0], mainD:[50, 222, 40], relD:1, coudeD:[1, 0.3, -0.3], mdirD:[0.3, 1, 0.6], poingD:0.1})],
+  /* (un frisson de dégoût) */
+  [2.4, {bas:[0, 20, 0], pen:-6, hoche:-6, sourire:-1, bouchex:0.7, plisse:0.9, sourcilsIn:0.8, ouvre:0.25, largeB:0.6}],
+  [2.52, {bas:[0, 20, 0], pen:6, hoche:-6, sourire:-1, bouchex:0.7, plisse:0.9, sourcilsIn:0.8, ouvre:0.25, largeB:0.6}],
+  [2.64, {bas:[0, 20, 0], pen:-3, hoche:-4, sourire:-0.8, bouchex:0.5, plisse:0.6, sourcilsIn:0.6}],
+  [3.2, {sourire:-0.3, sourcils:-0.6}], [3.6, {}]];
+
+/* LE GRAND COUP DE POING : bien plus fort que le coup — la tête part en arrière, elle recule de deux pas, sonnée ; elle secoue la
+   tête, s'essuie la bouche du dos de la main, furieuse, et revient en garde */
+HV.DONJON.poing = [[0.06, avec(AIE, {bas:[0, 30, -14], bang:[-12, 0, 0], dos:[-24, 0, 10], hoche:-22, pen:-12, mainD:[62, 186, 0], mainG:[-72, 204, 6]})],
+  [0.2, avec(AIE, avec(recule(-44, true), {bas:[0, 36, -28], bang:[-16, -4, 0], dos:[-18, -6, 10], hoche:-14, pen:-10, mainD:[64, 180, 0], mainG:[-74, 196, 4]}))],
+  [0.36, avec(AIE, avec(recule(-56), {piedG:[-32, 370, -18], pointeG:25, bas:[0, 40, -36], bang:[-8, -4, 0], dos:[-10, -4, 6], hoche:-8, pen:-6}))],
+  [0.55, avec(KO, avec(recule(-56), {piedG:[-32, 386, -14], bas:[0, 44, -32], bang:[8, 0, 0], dos:[10, 0, 0], hoche:6, pen:4}))],
+  [0.85, avec(KO, avec(recule(-56), {piedG:[-32, 386, -14], bas:[0, 44, -32], bang:[8, 0, 0], dos:[10, 0, 0], hoche:4, pen:10}))],
+  [1.0, avec(KO, avec(recule(-56), {piedG:[-32, 386, -14], bas:[0, 44, -32], bang:[8, 0, 0], dos:[10, 0, 0], hoche:4, pen:-10}))],
+  [1.15, avec(recule(-56), {piedG:[-32, 386, -14], bas:[0, 42, -30], bang:[8, 0, 0], dos:[10, 0, 0], hoche:4, pen:4, plisse:0.5, sourcilsIn:0.6})],
+  /* (elle s'essuie la bouche du dos de la main, furieuse) */
+  [1.5, avec(recule(-56), {piedG:[-32, 386, -14], bas:[0, 40, -30], bang:[6, 0, 0], dos:[8, 0, 0], hoche:6, mainD:[10, 122, 40], relD:1, coudeD:[1, 0.5, -0.2], mdirD:[-1, 0, 0.2], poingD:0.7,
+    sourcils:-1, plisse:0.5, sourire:-0.6})],
+  [1.7, avec(recule(-56), {piedG:[-32, 386, -14], bas:[0, 40, -30], bang:[6, 0, 0], dos:[8, 0, 0], hoche:6, mainD:[-14, 124, 44], relD:1, coudeD:[1, 0.5, -0.2], mdirD:[-1, 0, 0.2], poingD:0.7,
+    sourcils:-1, plisse:0.5, sourire:-0.6})],
+  /* (elle revient à sa place, un pas après l'autre) */
+  [2.05, avec(recule(-30, true), {bas:[0, 34, -12], sourcils:-1, plisse:0.4, sourire:-0.5})],
+  [2.35, {sourcils:-0.9, plisse:0.3, sourire:-0.4}], [2.8, {}]];
+
+/* LA TOILE : la toile la colle — les bras plaqués contre le corps, les genoux serrés ; elle se débat (elle se tord à droite, à
+   gauche, de plus en plus fort), se ramasse… et la déchire en ouvrant les bras d'un coup ; fière d'elle */
+var COLLEE = {bas:[0, 30, -4], dos:[0, 0, 0], bang:[4, 0, 0], mainG:[-38, 232, 14], relG:1, coudeG:[-0.3, 0, -1], arcAxe:[-0.05, 1, 0.05], arcDir:[-0.6, 0, 0.8],
+  mainD:[38, 232, 14], relD:1, coudeD:[0.3, 0, -1], poingD:0.8, piedG:[-16, 386, 6], piedD:[16, 386, -6], genouG:[-0.1, 0, 1], genouD:[0.1, 0, 1], ouvG:0.1, ouvD:0.1,
+  sourcils:-0.6, sourcilsIn:0.4, bouchex:0.5, sourire:-0.4};
+HV.DONJON.toile = [[0.1, {sourcils:0.6, ouvre:0.45, bas:[0, 30, -4], plisse:-0.2}], [0.35, COLLEE],
+  [0.65, avec(COLLEE, {dos:[0, 0, 14], bas:[-3, 30, -4], hoche:6, plisse:0.4})], [0.9, avec(COLLEE, {dos:[0, 0, -14], bas:[3, 30, -4], hoche:6, plisse:0.4})],
+  [1.15, avec(COLLEE, {dos:[6, 0, 18], bas:[-4, 32, -4], hoche:10, plisse:0.7, largeB:0.5, sourire:-0.6})], [1.4, avec(COLLEE, {dos:[6, 0, -18], bas:[4, 32, -4], hoche:10, plisse:0.7, largeB:0.5, sourire:-0.6})],
+  /* (elle se ramasse, rassemble ses forces) */
+  [1.75, avec(COLLEE, {bas:[0, 46, -2], dos:[14, 0, 0], hoche:14, mainD:[30, 218, 26], mainG:[-30, 218, 26], plisse:0.95, sourire:-0.7, largeB:0.4, sourcils:-1})],
+  /* (et déchire la toile : les bras s'ouvrent d'un coup, elle crie) */
+  [1.92, {bas:[0, 10, 0], dos:[-6, 0, 0], bang:[0, 0, 0], hoche:-10, mainD:[88, 168, 10], relD:1, coudeD:[1, -0.2, -0.3], poingD:0.9, mainG:[-88, 170, 10], relG:1, coudeG:[-1, -0.2, -0.3],
+    arcAxe:[-0.3, 1, 0], arcDir:[-0.3, 0, 1], ouvre:0.75, sourcils:-1, plisse:0.3, largeB:0.9}],
+  [2.15, {bas:[0, 12, 0], dos:[-4, 0, 0], hoche:-8, mainD:[84, 172, 10], relD:1, coudeD:[1, -0.2, -0.3], mainG:[-84, 174, 10], relG:1, coudeG:[-1, -0.2, -0.3], arcAxe:[-0.3, 1, 0], arcDir:[-0.3, 0, 1],
+    ouvre:0.3, sourcils:-0.6, sourire:0.4}],
+  [2.6, {sourire:0.7, sourcils:-0.3, plisse:0.2}], [3.1, {}]];
+
+/* LE CRAPAUD : sa langue la colle — elle est tirée en avant, les pieds décollent, et elle disparaît (le film la tire hors de
+   l'image) ; puis il la recrache : elle revient en volant, roulée en boule, retombe assise, couverte de bave ; elle s'ébroue comme
+   un chien, dégoûtée, se relève et s'essuie la figure.
+   HV.CRAPAUD : quand elle part (avalee), quand elle revient (recrachee), quand elle touche le sol (pose) — pour le film. */
+HV.CRAPAUD = {colle:0.5, avalee:1.05, recrachee:2.2, pose:2.62};
+var BOULE = {leve:40, bas:[0, 96, -10], bang:[-30, 0, 0], dos:[30, 0, 0], hoche:24, piedG:[-20, 330, 40], piedD:[20, 330, 40], pointeG:20, pointeD:20, genouG:[-0.2, -1, 0.6], genouD:[0.2, -1, 0.6],
+  mainD:[24, 230, 60], relD:1, coudeD:[0.8, 0.4, -0.2], mainG:[-28, 232, 60], relG:1, coudeG:[-0.8, 0.4, -0.2], arcAxe:[-0.6, 0.8, 0.2], arcDir:[-0.4, 0, 1],
+  plisse:1, sourcilsIn:0.9, ouvre:0.3, largeB:0.6, sourire:-0.6};
+var ASSISE = {bas:[0, 148, -56], bang:[-40, 0, 0], dos:[18, 0, 0], hoche:10, piedG:[-24, 392, 30], piedD:[26, 392, 16], pointeG:-20, pointeD:-20, genouG:[-0.3, -1, 0.4], genouD:[0.3, -1, 0.4],
+  mainD:[40, 388, -70], relD:0, coudeD:[1, 0, -0.3], mdirD:[0, 0.3, -1], poingD:0.1, mainG:[-48, 388, -74], relG:0, coudeG:[-1, 0, -0.3], arcAxe:[0, 0.3, 1], arcDir:[-1, 0, 0.1]};
+var BAVE = {sourire:-1, bouchex:0.7, plisse:0.9, sourcilsIn:0.8, ouvre:0.3, largeB:0.5};
+HV.DONJON.crapaud = [[0.45, {sourcils:-0.6}],
+  /* (la langue la colle : surprise, elle est tirée vers l'avant, les bras partent en arrière) */
+  [0.6, avec(AIE, {bas:[0, 30, 10], bang:[14, 0, 0], dos:[10, 0, 0], hoche:-6, mainD:[50, 200, -40], mainG:[-60, 206, -40], sourcils:0.7, plisse:0.2, ouvre:0.7})],
+  [0.8, avec(AIE, {bas:[0, 24, 24], bang:[22, 0, 0], dos:[14, 0, 0], hoche:-10, piedG:[-30, 380, -40], pointeG:50, mainD:[54, 196, -50], mainG:[-64, 200, -50], sourcils:0.8, ouvre:0.8})],
+  [1.0, avec(AIE, {leve:40, bas:[0, 20, 20], bang:[30, 0, 0], dos:[14, 0, 0], hoche:-12, piedG:[-24, 372, -40], piedD:[24, 372, -30], pointeG:60, pointeD:60, mainD:[54, 190, -56], mainG:[-64, 194, -56], sourcils:0.9, ouvre:0.9})],
+  [HV.CRAPAUD.avalee, avec(AIE, {leve:50, bas:[0, 20, 20], bang:[32, 0, 0], dos:[14, 0, 0], hoche:-12, piedG:[-24, 372, -40], piedD:[24, 372, -30], pointeG:60, pointeD:60, mainD:[54, 190, -56], mainG:[-64, 194, -56], sourcils:0.9, ouvre:0.9})],
+  /* (recrachée : en boule, elle vole) */
+  [HV.CRAPAUD.recrachee, BOULE], [HV.CRAPAUD.pose - 0.08, avec(BOULE, {leve:6})],
+  /* (elle retombe assise, couverte de bave) */
+  [HV.CRAPAUD.pose, avec(BAVE, ASSISE)], [3.0, avec(BAVE, ASSISE)],
+  /* (elle s'ébroue comme un chien : la tête et les épaules de droite à gauche) */
+  [3.12, avec(BAVE, avec(ASSISE, {pen:-12, dos:[18, 0, -14]}))], [3.24, avec(BAVE, avec(ASSISE, {pen:12, dos:[18, 0, 14]}))],
+  [3.36, avec(BAVE, avec(ASSISE, {pen:-12, dos:[18, 0, -14]}))], [3.48, avec(BAVE, avec(ASSISE, {pen:12, dos:[18, 0, 14]}))], [3.62, avec(BAVE, ASSISE)],
+  /* (elle se relève : un genou, puis debout) */
+  [4.1, avec(BAVE, {bas:[0, 86, -12], bang:[16, 0, 0], dos:[16, 0, 0], piedD:[15, 394, -60], pointeD:88, genouD:[0.1, 0.9, 1], piedG:[-27, 386, 46], genouG:[-0.3, -0.5, 1],
+    mainD:[-18, 316, 50], relD:0, mdirD:[-1, 0.4, 0.3], poingD:0.2, mainG:[-62, 330, 50], relG:0, hoche:8, arcAxe:[0, 0.45, 0.9], arcDir:[-1, 0, 0.2]})],
+  [4.6, avec(BAVE, {bas:[0, 34, -4], bang:[12, 0, 0], dos:[12, 0, 0], hoche:4})],
+  /* (elle s'essuie la figure avec sa manche) */
+  [5.0, avec(BAVE, {mainD:[-6, 112, 44], relD:1, coudeD:[1, 0.6, -0.1], mdirD:[-1, 0.2, 0.1], poingD:0.6, hoche:6})],
+  [5.25, avec(BAVE, {mainD:[-26, 118, 40], relD:1, coudeD:[1, 0.6, -0.1], mdirD:[-1, 0.2, 0.1], poingD:0.6, hoche:6})],
+  [5.7, {sourire:-0.5, bouchex:0.4, sourcils:-0.6, plisse:0.3}], [6.2, {}]];
+
+/* LÉO L'ATTRAPE ET LA JETTE (phase 3) : sa grande main la saisit par la taille et la soulève ; elle se débat, les jambes dans le
+   vide, pousse sur ses doigts ; il la secoue, prend son élan… et la jette au loin : elle vole, retombe sur le dos, et se relève
+   comme après une chute.
+   HV.LEO : quand la main la prend, la soulève, la lance, quand elle touche le sol — pour le film. */
+HV.LEO = {prise:0.5, haut:1.2, elan:2.5, lance:2.75, sol:3.3};
+var TENUE = {leve:60, bas:[0, 20, -4], bang:[6, 0, 0], dos:[6, 0, 0], hoche:-4, mainD:[30, 228, 34], relD:1, coudeD:[0.9, 0.3, -0.3], mdirD:[-0.6, 0, 1], poingD:0.2,
+  mainG:[-34, 226, 34], relG:1, coudeG:[-0.9, 0.3, -0.3], mdirG:[0.6, 0, 1], arcAxe:[-0.6, 0.8, 0], arcDir:[-0.4, 0, 1], piedG:[-20, 400, 0], piedD:[20, 400, 4], pointeG:50, pointeD:50,
+  genouG:[-0.1, 0, 1], genouD:[0.1, 0, 1], sourcils:0.3, sourcilsIn:0.7, ouvre:0.45, plisse:0.3, sourire:-0.5};
+function gigote(i){ var s = i % 2 ? 1 : -1; return avec(TENUE, {piedG:[-20, 392 - 10 * s, 14 * s], piedD:[20, 392 + 10 * s, -14 * s], pointeG:40 + 15 * s, pointeD:40 - 15 * s, dos:[6, 0, 6 * s], sourcils:-0.2 * s, ouvre:0.3 + 0.2 * s}); }
+HV.DONJON.leo = [[0.4, {sourcils:0.6, ouvre:0.3, hoche:-8, regY:-0.5}],
+  [HV.LEO.prise, avec(AIE, {bas:[0, 26, 0], mainD:[36, 222, 30], relD:1, mainG:[-40, 220, 30], relG:1, sourcils:0.7, ouvre:0.6})],
+  [HV.LEO.haut, avec(TENUE, {ouvre:0.7, sourcils:0.8})]]
+  .concat([1.45, 1.65, 1.85, 2.05, 2.25].map(function(t, i){ return [t, gigote(i)]; }))
+  .concat([[HV.LEO.elan, avec(TENUE, {leve:76, bang:[-10, 0, 0], sourcils:0.8, ouvre:0.6, plisse:0.6})],
+    /* (lancée : elle vole en se tordant, les bras et les jambes en l'air) */
+    [HV.LEO.lance, avec(AIE, {leve:84, bas:[0, 40, -20], bang:[-40, 0, 0], dos:[-10, 0, 0], hoche:-14, mainD:[60, 150, -30], relD:1, coudeD:[1, -0.3, -0.3], mainG:[-66, 150, -30], relG:1, coudeG:[-1, -0.3, -0.3],
+      piedG:[-22, 360, 40], piedD:[22, 340, 30], pointeG:30, pointeD:30, genouG:[-0.2, -1, 0.5], genouD:[0.2, -1, 0.5], ouvre:0.8})],
+    [HV.LEO.sol - 0.1, avec(AIE, {leve:30, bas:[0, 120, -50], bang:[-70, 0, 0], dos:[6, 0, 0], hoche:14, couche:0.5, piedG:[-24, 340, 18], piedD:[26, 330, -2], pointeG:-10, pointeD:-10,
+      genouG:[-0.3, -1, 0.2], genouD:[0.3, -1, 0.2], mainG:[-90, 390, -100], relG:0, coudeG:[-1, -0.4, 0], mainD:[94, 390, -96], relD:0, coudeD:[1, -0.4, 0], arcAxe:[0, 0.2, 1], arcDir:[-1, 0, 0]})],
+    [HV.LEO.sol, avec(KO, ALLONGEE)], [HV.LEO.sol + 1.0, avec(KO, avec(ALLONGEE, {tete:12}))], [HV.LEO.sol + 1.5, avec(KO, avec(ALLONGEE, {tete:-4, ouvre:0.3}))]])
+  .concat(decale(RELEVE, HV.LEO.sol + 2.0));
+
+/* L'AMULETTE (la relève dorée) : elle est à terre ; l'amulette sur sa poitrine s'allume, une lumière dorée la soulève d'un seul
+   mouvement, les bras qui s'ouvrent ; elle est debout, étonnée ; l'amulette se brise (le film) ; elle se remet en garde, décidée.
+   C'est un geste qui part d'ELLE ALLONGÉE (HV.ALLONGEE) : le film la pose à terre avant. HV.AMULETTE : quand l'amulette s'allume,
+   quand elle se brise. */
+HV.AMULETTE = {lueur:0.3, debout:1.5, brise:1.9};
+HV.DONJON.amulette = [[0.01, avec(KO, ALLONGEE)], [0.3, avec(KO, ALLONGEE)], [0.7, avec(ALLONGEE, {hoche:-6, sourcils:0.5, ouvre:0.2, plisse:-0.2, sourire:0})],
+  /* (la lumière la soulève : le dos se redresse, elle passe à genoux, les bras s'ouvrent) */
+  [1.0, {leve:14, bas:[0, 90, -20], bang:[-10, 0, 0], dos:[-6, 0, 0], hoche:-12, piedG:[-24, 392, 20], piedD:[24, 392, 0], pointeG:20, pointeD:20, genouG:[-0.4, -0.4, 1], genouD:[0.4, -0.4, 1],
+    mainD:[74, 220, 30], relD:1, coudeD:[1, 0.2, -0.3], poingD:0.1, mainG:[-74, 222, 30], relG:1, coudeG:[-1, 0.2, -0.3], arcAxe:[-0.4, 1, 0.1], arcDir:[-0.3, 0, 1],
+    sourcils:0.9, ouvre:0.6, plisse:-0.3, sourire:0.3}],
+  [HV.AMULETTE.debout, {leve:6, bas:[0, 6, 0], hoche:-14, mainD:[80, 190, 20], relD:1, coudeD:[1, 0.2, -0.3], poingD:0.1, mainG:[-80, 192, 20], relG:1, coudeG:[-1, 0.2, -0.3],
+    arcAxe:[-0.4, 1, 0.1], arcDir:[-0.3, 0, 1], sourcils:1, ouvre:0.5, plisse:-0.4, sourire:0.6}],
+  [HV.AMULETTE.brise + 0.1, {bas:[0, 14, 0], hoche:10, regY:0.8, mainD:[20, 190, 40], relD:1, coudeD:[0.8, 0.5, -0.3], mdirD:[-0.6, -0.2, 0.6], poingD:0.2, sourcils:0.6, ouvre:0.3, sourire:0}],
+  [2.6, {bas:[0, 14, 0], hoche:8, regY:0.6, mainD:[20, 192, 40], relD:1, coudeD:[0.8, 0.5, -0.3], mdirD:[-0.6, -0.2, 0.6], poingD:0.4, sourcilsIn:0.6, sourcils:0.2, sourire:-0.2}],
+  [3.1, {sourcils:-0.8, plisse:0.3, sourire:0.3, regX:0.4}], [3.6, {}]];
+
 /* (le donjon comme une position : pour les pages d'essai, gestes.html#donjon:tir) */
 HV.POSITIONS.donjon = {titre:'En garde', base:'dGarde', attente:[99, 99], gestes:HV.DONJON};
-HV.NOMS_DONJON = {course:'Elle arrive en courant', regard:'En garde, elle regarde autour', tir:'Elle tire', coup:'Elle prend un coup', chute:'Elle tombe… et se relève', joie:'Victoire !'};
+HV.NOMS_DONJON = {course:'Elle arrive en courant', regard:'En garde, elle regarde autour', tir:'Elle tire', coup:'Elle prend un coup', chute:'Elle tombe… et se relève', joie:'Victoire !',
+  choisi:'C\'est son tour', dague:'Coup de dague', froid:'Le givre', rats:'Les rats !', poing:'Un grand coup de poing', toile:'Prise dans la toile', crapaud:'Avalée… et recrachée',
+  leo:'Léo l\'attrape et la jette', amulette:'L\'amulette la relève'};
 })(window);

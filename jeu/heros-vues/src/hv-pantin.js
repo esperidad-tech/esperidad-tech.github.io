@@ -77,7 +77,7 @@ HV.POSES = {
   repos:{mainG:[-56, 243, 6], coudeG:[-0.7, -0.1, -0.7], mainD:[50.5, 243, 4], coudeD:[0.7, -0.1, -0.7], relG:1, relD:1, mdirG:[0, 0, 0], mdirD:[0, 0, 0],
     pouceG:[0.25, 0.1, 1], pouceD:[-0.25, 0.1, 1], poingG:0.75, poingD:0.15, indexG:0, indexD:0,
     piedG:[-19.5, 386, 5], piedD:[19.5, 386, -5], genouG:[-0.25, 0, 1], genouD:[0.25, 0, 1], ouvG:0.3, ouvD:0.3, pointeG:0, pointeD:0, lacetG:0, lacetD:0,
-    bas:[0, 0, 0], bang:[0, 0, 0], dos:[0, 0, 0], tete:0, pen:0, hoche:0, bx:0, ty:0, couche:0, visiere:0,
+    bas:[0, 0, 0], bang:[0, 0, 0], dos:[0, 0, 0], tete:0, pen:0, hoche:0, bx:0, ty:0, couche:0, visiere:0, mainSurTete:0,
     /* l'expression (hv-tete.js) : le sourire de toujours, les sourcils au repos, le regard droit devant */
     sourcils:0, sourcilsIn:0, sourcilsAsym:0, plisse:0, sourire:1, ouvre:0, largeB:1, bouchex:0, rougit:0, regX:0, regY:0,
     /* (l'arc tenu le long du corps : son ventre vers l'avant, la corde derrière — avant, la corde passait DANS la jupe : Romain,
