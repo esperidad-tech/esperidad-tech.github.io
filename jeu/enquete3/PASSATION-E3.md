@@ -1,6 +1,10 @@
-# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 23 novembre, 13 h)
+# Passation — Enquête 3 « La lettre d'Odette » (6 novembre 2026, mise à jour le 23 novembre, 14 h 10)
 
 À lire en entier avant de commencer. Écrit par la conversation qui a conçu l'enquête 3, puis mis à jour par la conversation qui construit le jeu, pour celle qui reprend la conception.
+
+## 23 novembre, 14 h — « 🤝 MES AMIS » : PLUS DE CODES D'AMIS À LA DESCENTE NI AU CACHOT — EN LIGNE (Bible §13.97)
+
+Juste après la création du héros, chacun tape une fois pour toutes le code de six dessins des trois autres (l'écran « Mes amis », `jeu/src/amis.js` ; les amis sont gardés avec le héros, d'une enquête à l'autre ; le code porte maintenant les seize coiffures de chaque sexe). **Dans l'enquête 3** : quand le Sage et l'Alchimiste sont dans « Mes amis » du Pisteur, **sa fenêtre de la descente n'a plus aucun code d'ami à taper** — il ne lui manque que « Les sept potions » de l'Alchimiste ; « On va dans la crypte » se donne toujours (il ouvre leur page du donjon). Chez le Sage et l'Alchimiste qui ont fait « Mes amis » : « Le Pisteur te connaît déjà » (le code reste là, sans l'anneau jaune). **Au cachot de la fin, les amis de « Mes amis » sont là tout de suite**, sans pavé. Sans « Mes amis » (une partie d'avant, un ami pas tapé) : tout marche comme avant. Aucun code de l'enquête 3 n'a bougé. Au donjon, la capuche reste (Romain voudrait voir les coiffures : chantier à part, pas fait).
 
 ## 23 novembre — LES DEUX PLANTES DU DONJON EN DEUX ÉTAPES : L'ÉTABLI FAIT UN PETIT POT, LE GRAND CHAUDRON FAIT LA POTION — EN LIGNE (Bible §13.96)
 
