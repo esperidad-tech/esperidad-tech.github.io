@@ -69,3 +69,5 @@ jeu/test/mimi-soins/
 # les captures du robot du gros plan, tools/mimi-grosplan.py (refaites à chaque fois)
 jeu/test/mimi-grosplan/
 jeu/heros-vues/sortie/
+# les captures du robot de « Mes amis », tools/amis.py (refaites à chaque fois)
+jeu/test/amis/

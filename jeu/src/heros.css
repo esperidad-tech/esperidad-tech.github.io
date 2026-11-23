@@ -159,3 +159,31 @@ body.hr-plein{overflow:hidden}
 .hr-fiche-talent .btn.grand{align-self:center}
 .hr-charger-img{width:120px;height:120px;margin:0 auto;border-radius:50%;overflow:hidden;border:3px solid var(--or);background:var(--nuit)}
 .hr-charger-img svg{display:block;width:100%;height:100%}
+
+/* ---------- 🤝 Mes amis (amis.js, 23 novembre ; Bible §13.97) ---------- */
+.hr-btn-amis{position:relative;width:60px;height:60px;border-radius:50%;border:0;padding:0;font-size:1.9rem;line-height:1;
+  background:linear-gradient(180deg,#ffd7a8,#d9893a);box-shadow:0 5px 0 #8a4f17, 0 10px 22px rgba(0,0,0,.45);transition:transform .08s, box-shadow .08s}
+.hr-btn-amis:active{transform:translateY(4px);box-shadow:0 1px 0 #8a4f17}
+.am-page{align-items:center;text-align:center}
+.am-titre{margin:0}
+.am-moi{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
+.am-moi-heros{width:min(44vw, 200px);border-radius:50%;overflow:hidden;background:radial-gradient(circle at 50% 40%, rgba(255,255,255,.14), rgba(10,12,32,.55) 70%);border:3px solid var(--c, var(--or))}
+.am-moi-heros svg{display:block;width:100%;height:auto}
+.am-moncode{width:100%;max-width:620px;box-sizing:border-box}
+.am-moncode p{margin:0 0 6px}
+.am-consigne{max-width:560px;margin:0}
+.am-amis{display:grid;grid-template-columns:repeat(3, minmax(0, 1fr));gap:clamp(8px, 2.6vw, 18px);width:100%;max-width:640px}
+.am-ami{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px 12px;border-radius:18px;border:3px solid rgba(255,255,255,.2);
+  background:rgba(10,12,32,.6);color:inherit;font:inherit;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.4);transition:transform .08s, box-shadow .08s, background .25s}
+.am-ami:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.4)}
+.am-ami.on{background:linear-gradient(180deg,#63d891,#23894e);border-color:#b4f7cc;box-shadow:0 5px 0 #145c33, 0 0 18px rgba(99,216,145,.45);color:#fff}
+.am-ami-portrait,.am-f-portrait{position:relative;display:block;width:100%;aspect-ratio:1 / 1;border-radius:12px;overflow:hidden;background:rgba(255,255,255,.08)}
+.am-ami-portrait svg,.am-f-portrait svg{display:block;width:100%;height:100%}
+.am-ombre svg{filter:brightness(0);opacity:.6}
+.am-question{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(2.2rem, 9vw, 3.6rem);color:#ffd23f;text-shadow:0 2px 8px #000}
+.am-ami-nom{font-weight:700;font-size:clamp(.85rem, 3.4vw, 1.1rem);line-height:1.15}
+.am-ami small{font-size:clamp(.75rem, 3vw, .95rem);opacity:.92}
+.am-plus-tard{max-width:520px;margin:0;opacity:.85;font-size:.95rem}
+.am-fenetre .am-f-portrait{width:min(30vw, 120px);margin:0 auto 4px;border-radius:50%}
+.am-fenetre h2{margin-top:0}
+.ds-moncode-amis p{opacity:.9}

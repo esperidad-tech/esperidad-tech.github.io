@@ -104,10 +104,12 @@ M.allureDe = function(n){
 };
 /* mon code d'allure pour le cachot de la fin (les quatre rôles) */
 M.allureCodeFin = function(){ return 'allure:' + M.allureNumero(M.role(), M.allureMoi()); };
-M.allureMoi = function(){
-  var h = (M.S && M.S.heros) || {}, sx = h.sexe === 'm' ? 'm' : 'f', co = COIFF_PROCHE[h.coiffure] || h.coiffure;
+/* (23 novembre, « Mes amis ») M.allureMoi(true) : la VRAIE coiffure (une des seize de son sexe), pour le code de six dessins ;
+   M.allureMoi() : celle d'avant qui lui ressemble (les codes à trois dessins et le donjon n'en connaissent que huit) */
+M.allureMoi = function(vraie){
+  var h = (M.S && M.S.heros) || {}, sx = h.sexe === 'm' ? 'm' : 'f', co = vraie ? h.coiffure : (COIFF_PROCHE[h.coiffure] || h.coiffure), lc = vraie ? COIFF_6 : COIFF_A;
   return {sexe:sx, age:AGES_A.indexOf(h.age) >= 0 ? h.age : 'adulte', peau:PEAUX_A.indexOf(h.peau) >= 0 ? h.peau : 'p1', cheveux:CHEV_A.indexOf(h.cheveux) >= 0 ? h.cheveux : 'brun', yeux:h.yeux || '',
-    coiffure:COIFF_A[sx].indexOf(co) >= 0 ? co : '', barbe:BARBE_A.indexOf(h.barbe) > 0 ? h.barbe : ''};
+    coiffure:lc[sx].indexOf(co) >= 0 ? co : '', barbe:BARBE_A.indexOf(h.barbe) > 0 ? h.barbe : ''};
 };
 /* mon code d'allure (le Sage, l'Alchimiste) */
 M.allureCode = function(){ var role = M.role(); return ROLES_A.indexOf(role) >= 0 ? 'allure:' + M.allureNumero(role, M.allureMoi()) : null; };
@@ -122,6 +124,11 @@ var COIFF_A = {f:['queue', 'tresses', 'carre', 'longs', 'chignon', 'couettes', '
    ressemble le plus. Les codes des seize premières ne changent pas. */
 var COIFF_PROCHE = {tresse_cote:'tresses', macarons:'couettes', demi_queue:'longs', boucles_l:'longs', lisses:'longs', perlees:'tresses', queue_cote:'queue', afro:'courte',
   crop:'court', boucles_d:'boucles', raie:'arriere', rase:'degarni', mulet:'milong', rideau:'meche', crete:'epis', twists:'boucles'};
+/* (23 novembre, Romain : « il faut que ça prenne en compte les nouvelles coupes de cheveux ») le code de six dessins, lui, a toute la
+   place : les seize coiffures de chaque sexe, dans l'ordre de l'écran de création (les huit d'avant, puis les huit nouvelles). Liste
+   écrite ici exprès (pas lue dans persos.js) : une coiffure ajoutée là-bas ne décale pas les codes. Une nouvelle se met AU BOUT. */
+var COIFF_6 = {f:COIFF_A.f.concat(['tresse_cote', 'macarons', 'demi_queue', 'boucles_l', 'lisses', 'perlees', 'queue_cote', 'afro']),
+  m:COIFF_A.m.concat(['crop', 'boucles_d', 'raie', 'rase', 'mulet', 'rideau', 'crete', 'twists'])};
 var YEUX_A = ['vert', 'bleu', 'marron', 'noisette', 'gris', 'violet', 'ambre'], BARBE_A = ['aucune', 'courte', 'longue', 'moustache'];
 M.visageNumero = function(a){
   var l = COIFF_A[a.sexe === 'm' ? 'm' : 'f'];
@@ -133,8 +140,10 @@ M.visageDe = function(n, sexe){
   return {coiffure:COIFF_A[sexe === 'm' ? 'm' : 'f'][c], yeux:YEUX_A[y], barbe:BARBE_A[b]};
 };
 M.visageCode = function(){ return 'visage:' + M.visageNumero(M.allureMoi()); };
-function allureTxt(a){ return (a.sexe === 'm' ? 'm' : 'f') + '.' + a.peau + '.' + a.cheveux + (a.yeux && /^[a-z]+$/.test(a.yeux) ? '.' + a.yeux : '') + (a.age === 'enfant' ? '.enf' : a.age === 'age' ? '.age' : '') +
-  (a.coiffure && /^[a-z_]+$/.test(a.coiffure) ? '.c-' + a.coiffure : '') + (a.barbe && /^[a-z]+$/.test(a.barbe) && a.barbe !== 'aucune' ? '.b-' + a.barbe : ''); }
+/* (le texte de l'allure pour le donjon : il ne sait dessiner sous la capuche que les huit coiffures d'avant ; une nouvelle y devient celle qui lui ressemble) */
+function allureTxt(a){ var co = a.coiffure && (COIFF_PROCHE[a.coiffure] || a.coiffure);
+  return (a.sexe === 'm' ? 'm' : 'f') + '.' + a.peau + '.' + a.cheveux + (a.yeux && /^[a-z]+$/.test(a.yeux) ? '.' + a.yeux : '') + (a.age === 'enfant' ? '.enf' : a.age === 'age' ? '.age' : '') +
+  (co && /^[a-z_]+$/.test(co) ? '.c-' + co : '') + (a.barbe && /^[a-z]+$/.test(a.barbe) && a.barbe !== 'aucune' ? '.b-' + a.barbe : ''); }
 /* le code d'allure d'un équipier, reçu : son héros (le visage d'avant est gardé, s'il va avec : même sexe) */
 function allureRecue(P, a){
   var av = P.allures && P.allures[a.role], n = {sexe:a.sexe, peau:a.peau, cheveux:a.cheveux, age:a.age};
@@ -142,9 +151,25 @@ function allureRecue(P, a){
   P.allures = P.allures || {}; P.allures[a.role] = n; P.allureDernier = a.role;
   return n;
 }
+/* (23 novembre, Romain : « dès qu'on a créé le personnage, on peut rentrer le code de chacun […] comme ça, c'est fait jusqu'à la fin de
+   l'aventure ») LES AMIS DE « MES AMIS » (amis.js) : M.S.amis[rôle] = {sexe, age, peau, cheveux, yeux, coiffure, barbe}, gardés avec le
+   héros, d'une enquête à l'autre (effacés seulement quand on recommence à la création). Ce qui se tape à la descente ou au cachot reste,
+   comme avant, dans la partie de l'enquête (P.allures). Ce qui compte pour un ami : un code de six dessins tapé dans CETTE enquête
+   (P.allures[r].vu : le Pisteur l'a peut-être corrigé), sinon l'ami de « Mes amis » (a.amis), sinon ce qu'on a de lui dans l'enquête. */
+function amisS(){ var S = M.S; return (S && S.amis && typeof S.amis === 'object') ? S.amis : {}; }
+function amiDe(P, r){
+  var a = P && P.allures && P.allures[r], s = amisS()[r];
+  if(a && a.vu) return a;
+  if(s) return Object.assign({}, s, {vu:true, amis:true});
+  return a || null;
+}
+function amisDe(P){ var l = {}; ['pisteur', 'alchimiste', 'barde', 'sage'].forEach(function(r){ var a = amiDe(P, r); if(a) l[r] = a; }); return l; }
+M.amisConnus = function(){ return amisDe(M.P && M.S && M.S.e ? M.P() : null); };
+/* cette tablette a fait « Mes amis » en entier (les trois autres héros) : on ne parle plus de « montrer son code » */
+M.amisTous = function(){ var s = amisS(), moi = M.role(); return ['pisteur', 'alchimiste', 'barde', 'sage'].every(function(r){ return r === moi || !!s[r]; }); };
 /* l'allure à passer au donjon et à la petite page de la tenue : moi, et (le Pisteur) ceux dont j'ai tapé le code */
 function lookTxt(){
-  var P = M.P(), role = M.role(), a = (P && P.allures) || {}, l = [role.charAt(0) + ':' + allureTxt(M.allureMoi())];
+  var P = M.P(), role = M.role(), a = amisDe(P), l = [role.charAt(0) + ':' + allureTxt(M.allureMoi())];
   if(role === 'pisteur') ROLES_A.forEach(function(r){ if(a[r]) l.push(r.charAt(0) + ':' + allureTxt(a[r])); });
   return l.join(',');
 }
@@ -154,7 +179,7 @@ M.donjonLook = lookTxt;
    tapé l'ancien code d'allure à trois symboles (sans visage : celui de l'après-midi, d'avant 22 h) passait pour prêt : son bouton
    « 🔢 Le code de… » ne s'affichait plus, et il descendait avec les yeux et la coiffure du héros par défaut. */
 function amiPret(a){ return !!(a && a.vu); }
-function pretADescendre(){ var P = M.P(), a = (P && P.allures) || {}; return !!(amiPret(a.sage) && amiPret(a.alchimiste) && P.sac && P.sac.length); }
+function pretADescendre(){ var P = M.P(), a = amisDe(P); return !!(amiPret(a.sage) && amiPret(a.alchimiste) && P.sac && P.sac.length); }
 M.donjonPret = pretADescendre;
 /* les héros en tenue de combat : la petite page du donjon, dans un cadre (pas de texte, pas de son, rien à toucher) */
 function tenueCadre(qui){
@@ -174,23 +199,38 @@ M.deuxCodesHTML = function(id1, gros){
    l'Alchimiste et pour le Sage ») UN SEUL code de six symboles pour le héros en entier : tenue (allure : 1296) ET visage (224), soit
    1296 × 224 = 290 304 codes sur les 2 985 984 de six symboles parmi douze. Calculé, pas gelé dans une table : rôle, sexe, âge, peau, cheveux
    dans les 1296 premiers, la coiffure, les yeux et la barbe dans les 224 autres. (L'allure à trois symboles reste pour le cachot de la fin.) */
+/* (23 novembre, « Mes amis ») LES SEIZE COIFFURES ENTRENT DANS LE CODE : le visage compte maintenant 448 cases (coiffure 0 à 15 dans
+   COIFF_6 + 16 × yeux + 112 × barbe), soit 1296 × 448 = 580 608 codes sur 2 985 984 (un sur cinq : six dessins tapés au hasard tombent
+   encore quatre fois sur cinq sur « ce code ne marche pas »). Et les quatre rôles ont le leur (avant : le Sage et l'Alchimiste seulement).
+   Toujours calculé, jamais dans la table des codes : AUCUN code d'enquête ne bouge. Les quatre tablettes doivent avoir la même version
+   du jeu quand elles s'échangent leurs codes. M.visageNumero / M.visageDe (huit coiffures) restent pour les codes « visage: » à trois dessins. */
 function symOrdre(){ return D.ORDRE_SYM; }
-M.tenueCode6 = function(){
-  var a = M.allureMoi(), n = M.allureNumero(M.role(), a) * 224 + M.visageNumero(a), o = symOrdre(), r = [], i;
+function visage6(a){
+  var l = COIFF_6[a.sexe === 'm' ? 'm' : 'f'];
+  return Math.max(0, l.indexOf(a.coiffure)) + 16 * Math.max(0, YEUX_A.indexOf(a.yeux)) + 112 * Math.max(0, BARBE_A.indexOf(a.barbe));
+}
+M.code6De = function(role, a){
+  var n = M.allureNumero(role, a) * 448 + visage6(a), o = symOrdre(), r = [], i;
   for(i = 0; i < 6; i++){ r.unshift(o[n % o.length]); n = Math.floor(n / o.length); }
   return r;
 };
+M.tenueCode6 = function(){ return M.code6De(M.role(), M.allureMoi(true)); };
+/* -> {a:{role, sexe, peau, cheveux, age}, vz:{coiffure, yeux, barbe}} ou null (pas un code de héros) */
 function decoder6(seq){
   var o = symOrdre(), n = 0, i;
+  if(!seq || seq.length !== 6) return null;
   for(i = 0; i < seq.length; i++){ var k = o.indexOf(seq[i]); if(k < 0) return null; n = n * o.length + k; }
-  var al = Math.floor(n / 224); if(al > 1295) return null;
-  var a = M.allureDe(al); if(ROLES_A.indexOf(a.role) < 0) return null;
-  return {a:a, v:n % 224};
+  var al = Math.floor(n / 448); if(al > 1295) return null;
+  var a = M.allureDe(al), v = n % 448;
+  return {a:a, vz:{coiffure:COIFF_6[a.sexe === 'm' ? 'm' : 'f'][v % 16], yeux:YEUX_A[Math.floor(v / 16) % 7], barbe:BARBE_A[Math.floor(v / 112)]}};
 }
 M.decoderTenue6 = decoder6;
 function monCodeHTML(){
   var role = M.role(), t = 'Montre ce code au Pisteur : c\'est toute ta tenue et ton visage. Il te reconnaîtra dans le donjon.';
-  return ROLES_A.indexOf(role) >= 0 ? '<div class="b-donne ds-moncode"><p>🛡️ ' + esc(t) + ' ' + lire(t) + '</p><div class="ds-un">' + M.codeHTML(M.tenueCode6(), true).replace('class="b-code grand"', 'class="b-code grand b-code-oblige" title="Un code à ne pas oublier"') + '</div></div>' : '';   /* (le code à ne pas oublier : l'anneau jaune) */
+  if(ROLES_A.indexOf(role) < 0) return '';
+  /* (23 novembre) cette tablette a fait « Mes amis » : le Pisteur a sûrement déjà le code ; on le garde à portée, sans l'anneau jaune */
+  if(M.amisTous()){ var t2 = 'Le Pisteur te connaît déjà, grâce à « Mes amis ». Il te demande quand même ton code ? Le voici.'; return '<div class="b-donne ds-moncode ds-moncode-amis"><p>🤝 ' + esc(t2) + ' ' + lire(t2) + '</p><div class="ds-un">' + M.codeHTML(M.tenueCode6(), true) + '</div></div>'; }
+  return '<div class="b-donne ds-moncode"><p>🛡️ ' + esc(t) + ' ' + lire(t) + '</p><div class="ds-un">' + M.codeHTML(M.tenueCode6(), true).replace('class="b-code grand"', 'class="b-code grand b-code-oblige" title="Un code à ne pas oublier"') + '</div></div>';   /* (le code à ne pas oublier : l'anneau jaune) */
 }
 /* le Pisteur, à son écran de départ : le code de six symboles d'un ami (modal {type:'descente', vue:'six', role, seq:[], err}) */
 function sixHTML(m){
@@ -207,10 +247,11 @@ A['d6-sym'] = function(el){
   m.err = ''; m.seq.push(el.dataset.s); M.son('tic');
   if(m.seq.length < 6){ M.render(); return; }
   var r = decoder6(m.seq);
+  if(r && ROLES_A.indexOf(r.a.role) < 0) r = null;   /* (le code du Pisteur ou du Barde : pas celui d'un ami qui descend) */
   if(!r || r.a.role !== m.role){
     M.son('ko'); m.seq = []; m.err = r ? 'Ce code est celui de l\'autre ami. Regarde bien qui te le montre !' : 'Ce code ne marche pas. Regarde bien les six dessins, et recommence.'; M.render(); return;
   }
-  var n = allureRecue(P, r.a), vz = M.visageDe(r.v, r.a.sexe);
+  var n = allureRecue(P, r.a), vz = r.vz;
   n.coiffure = vz.coiffure; n.yeux = vz.yeux; n.barbe = vz.barbe; n.vu = true;
   P.recus['allure:' + r.a.role] = true;
   M.noter(r.a.role === 'sage' ? 'Le Sage est en tenue de combat : son code est tapé.' : 'L\'Alchimiste est en tenue de combat : son code est tapé.', '🛡️');
@@ -230,7 +271,7 @@ function tenueTexte(){
     : 'Mélusine a tenu parole : capuche violette, cuir épais, et une ceinture à sept poches. Ta tenue attend le grand départ.'};
   if(role === 'sage') return {ok:true, t:(mel ? 'Dans la tenue de Mélusine — capuche bleue' : 'Capuche bleue') + ', grimoire à la ceinture, bâton de cristal : te voilà prêt pour les souterrains ! Le Pisteur vous emmène tous les trois sur sa tablette.'};
   if(reste <= 0) return {ok:true, t:(mel ? 'Dans la tenue de Mélusine — capuche violette' : 'Capuche violette') + ', lunettes sur le front, et tes sept potions à la ceinture : te voilà prêt pour les souterrains ! Le Pisteur vous emmène tous les trois sur sa tablette.'};
-  return {ok:false, t:'Ta tenue est prête… mais pas tes potions ! Il t\'en manque ' + (reste > 1 ? reste : 'une') + '. On a besoin des sept potions pour descendre : file à ton établi. Quand la dernière sera prête, ton code pour le Pisteur t\'y attendra.'};
+  return {ok:false, t:'Ta tenue est prête… mais pas tes potions ! Il t\'en manque ' + (reste > 1 ? reste : 'une') + '. On a besoin des sept potions pour descendre : file à ton établi.' + (M.amisTous() ? '' : ' Quand la dernière sera prête, ton code pour le Pisteur t\'y attendra.')};
 }
 A['ds-tenue-barde'] = function(){ if(!M.tenueFenetre('Mélusine a pensé à toi aussi : un pourpoint rouge à galons d\'or, un gilet de cuir, une petite cape, un chapeau à plume… et une sangle pour ton luth. Te voilà prêt pour cette nuit !')) M.fermer(); };
 M.tenueFenetre = function(t){
@@ -268,7 +309,9 @@ M.descenteHTML = function(m){
     s += codeDonne('info:leo_battu');
     return s + '<button class="btn" data-act="fermer">D\'accord</button></div>';
   }
-  var al = P.allures || {}, codeA = amiPret(al.alchimiste), okS = amiPret(al.sage), okA = !!(codeA && sac.length), ouvert = !!P.vus['donjon:entree'];
+  var al = amisDe(P), codeA = amiPret(al.alchimiste), okS = amiPret(al.sage), okA = !!(codeA && sac.length), ouvert = !!P.vus['donjon:entree'];
+  /* (23 novembre) le Sage et l'Alchimiste sont dans « Mes amis » : plus aucun code à taper ici, plus de boutons pour eux */
+  var parAmis = !!(al.sage && al.sage.amis && al.alchimiste && al.alchimiste.amis);
   /* (17 novembre) les sept potions viennent de arriver dans le sac : rien d'autre (pas de tenue, pas de donjon : on est encore l'après-midi) */
   if(m.vue === 'potions'){
     t = 'L\'Alchimiste a fini ses sept potions : les voilà dans ton sac. Elles te serviront sûrement… plus tard.';
@@ -305,14 +348,15 @@ M.descenteHTML = function(m){
   }else{
     t = 'Un escalier de pierre s\'enfonce dans le noir… Pas si vite ! On ne descend pas là-dessous en chemise. ' + (aTenues() ? 'La tenue de Mélusine, sa capuche verte, ton arc et ta dague' : 'Capuche verte, arc et dague') + ' : te voilà prêt.';
     s += tenueCadre(pretsH.concat(['pisteur'])) + '<h2>' + esc(TITRE_TENUE) + '</h2><p>' + esc(t) + ' ' + lire(TITRE_TENUE + ' ' + t) + '</p>' +
-      codeDonne('info:on_descend', 'Donne ce code au Sage et à l\'Alchimiste : ils s\'équipent, et chacun te montrera son code.');
+      codeDonne('info:on_descend', parAmis ? 'Donne ce code au Sage et à l\'Alchimiste : ils s\'équipent.' : 'Donne ce code au Sage et à l\'Alchimiste : ils s\'équipent, et chacun te montrera son code.');
     if(codeA && !sac.length){ var t3 = 'Il te manque ses sept potions : l\'Alchimiste a un code pour ça, quand elles sont toutes prêtes.'; s += '<ul class="ds-prets">' + lignePret(false, '⚗️', t3) + '</ul>'; }
     else if(!codeA && !sac.length){ var t4 = 'Et on a besoin des sept potions pour descendre.'; s += '<ul class="ds-prets">' + lignePret(false, '⚗️', t4) + '</ul>'; }
   }
-  s += '<div class="ds-amis">' + boutonAmi('sage', okS, 'Le Sage', '📖') + boutonAmi('alchimiste', okA, 'L\'Alchimiste', '⚗️') + '</div>';
+  if(!parAmis || corriger) s += '<div class="ds-amis">' + boutonAmi('sage', okS, 'Le Sage', '📖') + boutonAmi('alchimiste', okA, 'L\'Alchimiste', '⚗️') + '</div>';
+  var corrigeB = corriger || parAmis ? '' : '<button class="btn second" data-act="ds-corriger">✏️ Corriger un code</button>';   /* (« Mes amis » : on corrige là-bas) */
   if(tous) return s + fioles(sac) + '<button class="btn grand b-aller" data-act="ds-aller">🕯️ ' + (deja ? 'Y retourner' : 'Descendre dans le donjon') + '</button>' +
-    '<div class="b-rangee centre">' + (corriger ? '' : '<button class="btn second" data-act="ds-corriger">✏️ Corriger un code</button>') + '<button class="btn second" data-act="fermer">Pas tout de suite</button></div></div>';
-  return s + (codeA || okS ? '<div class="b-rangee centre">' + (corriger ? '' : '<button class="btn second" data-act="ds-corriger">✏️ Corriger un code</button>') + '</div>' : '') + '</div>';   /* (on referme avec ✕ : la fenêtre tient dans l'écran d'une tablette) */
+    '<div class="b-rangee centre">' + corrigeB + '<button class="btn second" data-act="fermer">Pas tout de suite</button></div></div>';
+  return s + ((codeA || okS) && corrigeB ? '<div class="b-rangee centre">' + corrigeB + '</div>' : '') + '</div>';   /* (on referme avec ✕ : la fenêtre tient dans l'écran d'une tablette) */
 };
 A['ds-corriger'] = function(){ var m = M.UI.modal; if(!m || m.type !== 'descente') return; M.son('clic'); m.corriger = true; M.render(); };
 A['ds-voir'] = function(){ M.son('page'); M.ouvrir({type:'descente'}); };

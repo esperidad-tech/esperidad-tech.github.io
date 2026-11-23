@@ -94,6 +94,7 @@ M.ecranHeros = function(){
       '<div class="hr-boutons">' +
         '<button class="hr-bourse" data-act="ecran" data-e="boutique" aria-label="Bourse : ' + S.or + ' pièces, la boutique"><span class="hr-bourse-ic">👛</span><b>' + S.or + '</b></button>' +
         '<button class="hr-btn-arbre' + (arbre ? ' on' : '') + '" data-act="hr-arbre" aria-label="Arbre des talents" aria-pressed="' + arbre + '"><span>🌳</span>' + (att.length ? '<i class="hr-badge">⭐</i>' : '') + '</button>' +
+        (M.ecranAmis ? '<button class="hr-btn-amis" data-act="ecran" data-e="amis" aria-label="Mes amis"><span>🤝</span></button>' : '') +   /* (23 novembre) les codes des trois autres héros (amis.js) */
       '</div>' +
     '</div>' +
   '</main>';
@@ -559,6 +560,7 @@ M.ecranMenu = function(){
   return '<main class="b-page hr-page hr-menu">' + M.barreRetour('Menu') +
     '<nav class="hr-menu-l">' +
       (M.S.heros ? '<button class="btn second" data-act="ecran" data-e="heros">🧝 Mon héros</button>' : '') +
+      (M.S.heros && M.ecranAmis ? '<button class="btn second" data-act="ecran" data-e="amis">🤝 Mes amis</button>' : '') +   /* (23 novembre) amis.js */
       (M.S.calepin && M.S.calepin.length && M.S.heros && M.S.heros.role === 'sage' ? '<button class="btn second" data-act="calepin">📔 Calepin</button>' : '') +   /* (le calepin des enquêtes passées : au Sage, Romain, 14 h 15) */
       '<button class="btn second" data-act="aide">❓ Comment jouer</button>' +
       (window.CINE_INFOS && window.CINE_INFOS.pub && window.CineLecteur ? '<button class="btn second" data-act="pub">🎬 Le film</button>' : '') +   /* la pub de 30 secondes, à revoir de partout (Bible §12.64) */

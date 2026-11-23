@@ -80,6 +80,7 @@ M.vue = function(){
   switch(UI.ecran){
     case 'creation': return vueCreation();
     case 'heros': return M.ecranHeros ? M.ecranHeros() : vueAccueil();   /* l'écran du héros (heros.js) */
+    case 'amis': return M.ecranAmis ? M.ecranAmis() : vueAccueil();   /* 🤝 Mes amis : les codes des trois autres héros (amis.js) */
     case 'menu': return M.ecranMenu ? M.ecranMenu() : vueAccueil();
     case 'boutique': return vueBoutique();
     case 'enquete': return vueEnquete();
@@ -568,7 +569,8 @@ function prisonHTML(o){
   var moi = M.role(), autres = ['pisteur', 'alchimiste', 'barde', 'sage'].filter(function(r){ return r !== moi; });
   /* (13 novembre, Bible §13.33) un ami dont on a tapé le code d'apparence (P.allures : sous l'image, prisonCodesHTML — ou, pour le Pisteur,
      les codes de la descente) n'est plus une ombre : son héros est là, avec sa peau et ses cheveux */
-  var al = (M.P() && M.P().allures) || {};
+  /* (23 novembre) et les amis de « Mes amis », tapés une fois pour toutes à la création (amis.js) : ils sont là tout de suite, sans code */
+  var al = M.amisConnus ? M.amisConnus() : ((M.P() && M.P().allures) || {});
   var ombre = function(r, i){
     var a = al[r], h = window.Persos && Persos.defaut ? Persos.defaut(r, a ? a.sexe : (i % 2 ? 'm' : 'f')) : {role:r};
     if(a) Object.assign(h, {sexe:a.sexe, peau:a.peau, cheveux:a.cheveux}, a.age ? {age:a.age} : {},
@@ -587,11 +589,12 @@ function prisonHTML(o){
 /* Sous le cachot : mon code d'apparence, à montrer aux amis, et le pavé pour taper les leurs. Tant qu'il manque quelqu'un. */
 function prisonCodesHTML(){
   /* (17 novembre) deux codes par ami : sa tenue, puis son visage — on garde le pavé tant qu'un visage manque */
-  var P = M.P(), moi = M.role(), al = (P && P.allures) || {}, manque = ['pisteur', 'alchimiste', 'barde', 'sage'].filter(function(r){ return r !== moi && !(al[r] && (al[r].vu || !M.visageCode)); });
+  var P = M.P(), moi = M.role(), al = M.amisConnus ? M.amisConnus() : ((P && P.allures) || {}), manque = ['pisteur', 'alchimiste', 'barde', 'sage'].filter(function(r){ return r !== moi && !(al[r] && (al[r].vu || !M.visageCode)); });
   if(!M.allureCodeFin) return '';
   if(!manque.length){ var tb = 'Vous voilà réunis… derrière les barreaux.'; return '<p class="b-prison-codes-ok">' + esc(tb) + ' ' + lire(tb) + '</p>'; }
   var t = 'Montre tes deux codes à tes amis, et tape les leurs, l\'un après l\'autre : la tenue, puis le visage. Ils apparaîtront à côté de toi.';
-  return '<section class="b-prison-codes"><p>' + esc(t) + ' ' + lire(t) + '</p><div class="b-prison-moncode">' + (M.deuxCodesHTML ? M.deuxCodesHTML(M.allureCodeFin()) : '<b>Ton code</b>' + M.codeHTML(M.code(M.allureCodeFin()))) + '</div>' + padHTML() + '</section>';
+  return '<section class="b-prison-codes"><p>' + esc(t) + ' ' + lire(t) + '</p><div class="b-prison-moncode">' + (M.deuxCodesHTML ? M.deuxCodesHTML(M.allureCodeFin()) : '<b>Ton code</b>' + M.codeHTML(M.code(M.allureCodeFin()))) + '</div>' + padHTML() +
+    (M.ecranAmis ? '<div class="b-rangee centre"><button class="btn second" data-act="ecran" data-e="amis">🤝 Mes amis</button></div>' : '') + '</section>';   /* (23 novembre) ou leurs codes de six dessins, une fois pour toutes */
 }
 /* ---------- Défaite ---------- */
 function vueDefaite(){
