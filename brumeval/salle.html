@@ -4124,7 +4124,30 @@ D.RECETTES = {
   fumigene:{ingr:[['ortie', 1], ['brume', 1]], cuisson:'chaudron'},
   eclairante:{ingr:[['champignon', 1], ['pensee', 1]], cuisson:'chaudron'},
   coeur:{ingr:[['miel', 2], ['pensee', 1], ['eau', 1]], cuisson:'chaudron'},
-  hydromel:{ingr:[['miel', 2], ['lavande', 1], ['pensee', 1], ['eau', 1]], cuisson:'chaudron'}   /* recette difficile : cinq doses, finir dans l'arc-en-ciel */
+  hydromel:{ingr:[['miel', 2], ['lavande', 1], ['pensee', 1], ['eau', 1]], cuisson:'chaudron'},   /* recette difficile : cinq doses, finir dans l'arc-en-ciel */
+  /* (23 novembre) LES DEUX POTIONS DU DONJON, en deux étapes (Romain : « d'abord la table de préparation […] on le met dans un petit pot
+     […] ce petit pot va servir pour le grand chaudron, avec les ingrédients de base ») : des ingrédients qu'on cueille (l'eau, la menthe,
+     le miel, les pensées), PUIS le petit pot fabriqué sur l'établi des plantes (D.PREPARATIONS). donjon : elles ne sont pas dans D.POTIONS
+     (aucun code nouveau : celui que montre la potion finie est le code de recette du donjon, déjà gelé — D.POTIONS_DONJON, plantes.js). */
+  givre:{ingr:[['eau', 2], ['menthe', 1], ['givre', 1]], cuisson:'chaudron', donjon:true},
+  baumelum:{ingr:[['miel', 2], ['pensee', 1], ['mousse', 1]], cuisson:'chaudron', donjon:true}
+};
+/* LES PRÉPARATIONS : des ingrédients qu'on ne cueille pas. On les FABRIQUE sur l'établi des plantes (plantes-donnees.js : RE.givre,
+   RE.mousse — même identifiant), on les met dans un petit pot, et le pot se pose sur la poutre du grand chaudron avec les bocaux.
+   Elles ne sont PAS dans D.INGR : on ne les cueille pas, on ne les range pas dans les tiroirs, aucune étiquette. */
+D.PREPARATIONS = {
+  givre:{nom:'Cristaux de givre', court:'Givre', ic:'❄️', c:'#bff4ff'},
+  mousse:{nom:'Poudre de mousse lumineuse', court:'Mousse', ic:'🔆', c:'#d6ee5a'}
+};
+/* Les potions du donjon qui sortent du grand chaudron : leur nom, la plante du donjon qui les lance (recu : le code que le Pisteur
+   envoie, P.donjonCodes), le petit pot qu'il leur faut (prep), et le code de recette que le Pisteur tapera DANS le donjon (code). */
+D.POTIONS_DONJON = {
+  givre:{nom:'La potion de givre', fini:'La potion de givre est prête !', ic:'❄️', c:'#bff4ff', prep:'givre', recu:'plante:givre', code:'donjon:recette:givre',
+    utile:'Pour le Pisteur, dans le donjon : elle gèle tout ce qu\'elle touche. Même l\'eau !',
+    vrai:'La menthe fait froid pour de vrai : son menthol trompe ta langue, qui croit sentir du froid alors que rien n\'a refroidi. Voilà pourquoi il en faut dans cette potion !'},
+  baumelum:{nom:'Le baume lumineux', fini:'Le baume lumineux est prêt !', ic:'🔆', c:'#d6ee5a', prep:'mousse', recu:'plante:lumiere', code:'donjon:recette:baumelum',
+    utile:'Pour le Pisteur, dans le donjon : il soigne toute l\'équipe d\'un coup. Et il brille dans le noir !',
+    vrai:'Le miel soigne pour de vrai : depuis toujours, on en met sur les plaies pour qu\'elles guérissent. Et la pensée sauvage est une vieille plante des herboristes, pour la peau.'}
 };
 
 /* ---------- Le grand chaudron ----------
@@ -4151,7 +4174,11 @@ var CHAUDRON_FRISES = {
   fumigene:['bouillant', [0, 1]],
   eclairante:['arc-en-ciel', [0, 0.5]],
   coeur:['rouge', [0, 0.8, 1, 0.6]],
-  hydromel:['arc-en-ciel', [0, 0.5, 1, 0.45, 0.8]]
+  hydromel:['arc-en-ciel', [0, 0.5, 1, 0.45, 0.8]],
+  /* (23 novembre) le givre finit dans le BLEU (froid : la brume se lève sur le chaudron) — pas dans le violet, tout en bas : la bande y
+     est si près du gel qu'une potion de givre… gèlerait une fois sur deux ; le baume dans le JAUNE (le miel doit chauffer) */
+  givre:['bleu', [0, 1, 1.1, 1.2]],
+  baumelum:['jaune', [0, 1, 1.1, 1.2]]
 };
 D.CHAUDRON = {};
 Object.keys(D.RECETTES).forEach(function(id){
@@ -4192,7 +4219,7 @@ D.ETAPES = {
 D.texteEtapes = function(id){
   var R = D.RECETTES[id], C = D.CHAUDRON[id];
   if(!R) return '';
-  var s = R.ingr.map(function(x){ return x[1] + ' ' + D.INGR[x[0]].nom.toLowerCase(); }).join(', puis ');
+  var s = R.ingr.map(function(x){ return x[1] + ' ' + (D.INGR[x[0]] || D.PREPARATIONS[x[0]] || {nom:x[0]}).nom.toLowerCase(); }).join(', puis ');
   var Z = C && D.ZONES_CHAUDRON[C.zone];
   if(Z) s += ' ; à la fin, garder la potion ' + (C.zone === 'arc-en-ciel' ? 'dans l\'ARC-EN-CIEL du chaudron (' : 'dans la zone ' + Z.grand + ' du chaudron (') + Z.dit + ')';
   return s;
@@ -17044,6 +17071,20 @@ function contenu(k, w, T, B){
       [[-.3, .3, 6.5], [.36, .2, 5], [.1, .5, 3.6], [-.5, .62, 3]].forEach(function(m){ x = w * m[0]; y = T + A * m[1]; var q = m[2];
         s += '<path d="M' + f(x) + ',' + f(y - q) + ' L' + f(x + q * .28) + ',' + f(y - q * .28) + ' L' + f(x + q) + ',' + f(y) + ' L' + f(x + q * .28) + ',' + f(y + q * .28) + ' L' + f(x) + ',' + f(y + q) + ' L' + f(x - q * .28) + ',' + f(y + q * .28) + ' L' + f(x - q) + ',' + f(y) + ' L' + f(x - q * .28) + ',' + f(y - q * .28) + ' Z" fill="#fff6c2" stroke="#c99a12" stroke-width="1"/>'; });
       break;
+    /* (23 novembre) les deux petits pots de l'établi des plantes (D.PREPARATIONS) : des cristaux de givre, une poudre vert doré */
+    case 'givre':
+      s += '<path d="M' + (-w) + ',' + f(T + A * .74) + ' Q0,' + f(T + A * .4) + ' ' + w + ',' + f(T + A * .76) + ' V8 H' + (-w) + ' Z" fill="#cfefff"/>';
+      [[-.52, .66, 7], [-.14, .46, 9.5], [.3, .58, 8], [.6, .78, 6], [-.3, .9, 6.5], [.1, .86, 7.5]].forEach(function(m, j){ x = w * m[0]; y = T + A * m[1]; var q = m[2];
+        s += '<path d="M' + f(x) + ',' + f(y - q) + ' L' + f(x + q * .52) + ',' + f(y - q * .2) + ' L' + f(x + q * .3) + ',' + f(y + q * .62) + ' L' + f(x - q * .36) + ',' + f(y + q * .62) + ' L' + f(x - q * .52) + ',' + f(y - q * .15) + ' Z" fill="' + (j % 2 ? '#f4fdff' : '#bfeaff') + '" stroke="' + K + '" stroke-width="1.4" stroke-linejoin="round"/>' +
+          '<path d="M' + f(x) + ',' + f(y - q * .7) + ' L' + f(x - q * .1) + ',' + f(y + q * .4) + '" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>'; });
+      break;
+    case 'mousse':
+      s += '<path d="M' + (-w) + ',' + f(T + A * .7) + ' Q' + f(w * .1) + ',' + f(T + A * .34) + ' ' + w + ',' + f(T + A * .74) + ' V8 H' + (-w) + ' Z" fill="#c8e45a"/>' +
+        '<path d="M' + (-w) + ',' + f(T + A * .7) + ' Q' + f(w * .1) + ',' + f(T + A * .34) + ' ' + w + ',' + f(T + A * .74) + '" fill="none" stroke="#f4ffb0" stroke-width="2.4"/>' +
+        '<path d="M' + (-w) + ',' + f(T + A * 1.02) + ' Q0,' + f(T + A * .8) + ' ' + w + ',' + f(T + A * 1.04) + ' V8 H' + (-w) + ' Z" fill="#a9c63e" opacity=".6"/>';
+      [[-.36, .72, 4.6], [.22, .56, 5.6], [.52, .86, 3.6], [-.08, .92, 3.4]].forEach(function(m){ x = w * m[0]; y = T + A * m[1]; var q = m[2];
+        s += '<path d="M' + f(x) + ',' + f(y - q) + ' L' + f(x + q * .28) + ',' + f(y - q * .28) + ' L' + f(x + q) + ',' + f(y) + ' L' + f(x + q * .28) + ',' + f(y + q * .28) + ' L' + f(x) + ',' + f(y + q) + ' L' + f(x - q * .28) + ',' + f(y + q * .28) + ' L' + f(x - q) + ',' + f(y) + ' L' + f(x - q * .28) + ',' + f(y - q * .28) + ' Z" fill="#fdffe0"/>'; });
+      break;
     default:
       s += '<circle cx="0" cy="' + f(T + A * .5) + '" r="' + f(w * .5) + '" fill="#8d8a99" stroke="' + K + '" stroke-width="2"/>';
   }
@@ -17078,7 +17119,10 @@ function bocal(k, o){
   /* le bouchon de liège : son tour, son dessus (un ovale : on le voit d'en haut), la ficelle du goulot */
   s += '<path d="M21,9 V21 A15,4.6 0 0 0 51,21 V9 Z" fill="url(#' + id + 'l)" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>' +
     '<ellipse cx="36" cy="9" rx="15" ry="4.8" fill="#e9c79c" stroke="' + K + '" stroke-width="3"/><path d="M28,8.4 q8,2.6 16,0" fill="none" stroke="#b98a5c" stroke-width="1.5" stroke-linecap="round"/>' +
-    '<path d="M19.5,23.5 Q36,29 52.5,23.5" fill="none" stroke="#c9a56a" stroke-width="2.6" stroke-linecap="round"/>';
+    /* (un petit pot de l'établi, o.pot : un ruban rouge noué au goulot — on le reconnaît parmi les bocaux) */
+    (o.pot ? '<path d="M19.5,23.5 Q36,29 52.5,23.5" fill="none" stroke="' + K + '" stroke-width="5.4" stroke-linecap="round"/><path d="M19.5,23.5 Q36,29 52.5,23.5" fill="none" stroke="#e0483c" stroke-width="3" stroke-linecap="round"/>' +
+      '<path d="M22,25 l-8,-5 l-1,7 Z M22,25 l-7,6 l6,2 Z" fill="#e0483c" stroke="' + K + '" stroke-width="1.8" stroke-linejoin="round"/>'
+      : '<path d="M19.5,23.5 Q36,29 52.5,23.5" fill="none" stroke="#c9a56a" stroke-width="2.6" stroke-linecap="round"/>');
   /* l'étiquette de papier (le nom), courbée comme le verre */
   s += etiq(o.nom || k, 'mjc-nl') + etiq(o.court || o.nom || k, 'mjc-nc');
   s += '</svg>';
@@ -17235,7 +17279,8 @@ var MAX_BUCHES = 6;                     /* au-delà, on ne peut plus en ajouter 
    chaque bûche chauffe de FEU_K unités/s, la potion perd FROID unités/s (neutre à 2 bûches) ;
    une bûche ajoutée donne un petit coup de chaud (FEU_COUP) ; touiller un tour par seconde refroidit de TOUILLE unités/s. */
 var FEU_K = 1.6, FROID = 3.2, FEU_COUP = 3, TOUILLE = 9, BRULE = 6.5;
-var CHOCS = {eau:-5, miel:3, baies:4, champignon:-3, trefle:2, brume:-7, lavande:-3, pensee:3, menthe:-5, ortie:6, racine:3, lune:-6};
+var CHOCS = {eau:-5, miel:3, baies:4, champignon:-3, trefle:2, brume:-7, lavande:-3, pensee:3, menthe:-5, ortie:6, racine:3, lune:-6,
+  givre:-9, mousse:1};   /* (23 novembre : les petits pots de l'établi — les cristaux de givre refroidissent d'un coup) */
 /* (les six bûches du feu, leur place et leur dessin : MJ.chaudronDessin.BUCHES, mj-chaudron-dessin.js) */
 /* La palette du chaudron (Romain, 4 novembre) : une couleur unie bien à part par ingrédient (pas de motif), pour les carrés
    allumés de la frise et les pastilles de la carte de la recette. Les boîtes, elles, n'ont pas de couleur : c'est la recette
@@ -17245,7 +17290,8 @@ var CHOCS = {eau:-5, miel:3, baies:4, champignon:-3, trefle:2, brume:-7, lavande
 var CODES = {
   eau:{c:'#4ec1f5'}, miel:{c:'#e07f14'}, baies:{c:'#5165cb'}, champignon:{c:'#ff521a'},
   trefle:{c:'#8bc02b'}, brume:{c:'#e3e8ea'}, lavande:{c:'#9a6cf0'}, pensee:{c:'#febb02'},
-  menthe:{c:'#5b9821'}, ortie:{c:'#99c23b'}, racine:{c:'#ad7156'}, lune:{c:'#fdd835'}
+  menthe:{c:'#5b9821'}, ortie:{c:'#99c23b'}, racine:{c:'#ad7156'}, lune:{c:'#fdd835'},
+  givre:{c:'#d4f3ff'}, mousse:{c:'#b4e61e'}   /* (les petits pots de l'établi des plantes) */
 };
 function codeDe(k){ return CODES[k] || {c:(((window.DONNEES || {}).INGR || {})[k] || {}).c || '#888'}; }
 /* (23 novembre) LE DÉCOR : plus de chalet. C'est la cheminée de l'atelier vue de près, dessinée par mj-chaudron-dessin.js
@@ -17427,7 +17473,9 @@ function construire(el, P, demo){
   var D = DD(), id = ++uid, C = (D.CHAUDRON || {})[P.potion] || {zone:'vert', frise:[]}, Zi = infoZone(C.zone);
   /* les caisses : seulement les ingrédients vraiment là dans le laboratoire (le stock de l'atelier) ;
      sans stock (salle d'entraînement) : ceux de la recette et 3 autres. Toujours ceux de la recette. */
-  var I = D.INGR || {}, tous = Object.keys(I), stock = null, voulus = {};
+  /* (23 novembre) I : les ingrédients qu'on cueille, PLUS les petits pots préparés sur l'établi des plantes (D.PREPARATIONS : les cristaux
+     de givre, la poudre de mousse). « tous » — ceux qu'on tire au hasard pour remplir la poutre de la salle d'entraînement — : sans les pots. */
+  var I = Object.assign({}, D.INGR || {}, D.PREPARATIONS || {}), PRP = D.PREPARATIONS || {}, tous = Object.keys(D.INGR || {}), stock = null, voulus = {};
   try{ stock = typeof P.stock === 'function' ? P.stock() : (P.stock || null); }catch(e){ stock = null; }
   C.frise.forEach(function(f){ voulus[f.ingr] = 1; });
   if(stock) Object.keys(stock).forEach(function(k){ if(stock[k] > 0) voulus[k] = 1; });
@@ -17455,7 +17503,7 @@ function construire(el, P, demo){
   var Ds = Dessin();
   var boites = ingrs.map(function(k){
     var x = I[k] || {ic:'❔', c:'#888', nom:k};
-    return '<button type="button" class="mjc-boite" data-ingr="' + k + '" aria-label="' + esc(x.nom) + '">' + Ds.bocal(k, {nom:esc(nomCourt(k, x)), court:esc(NOMS_ETROITS[k] || nomCourt(k, x)), ic:icDe(k, x)}) + '</button>';
+    return '<button type="button" class="mjc-boite' + (PRP[k] ? ' mjc-pot' : '') + '" data-ingr="' + k + '" aria-label="' + esc(x.nom) + '">' + Ds.bocal(k, {nom:esc(nomCourt(k, x)), court:esc(NOMS_ETROITS[k] || nomCourt(k, x)), ic:icDe(k, x), pot:!!PRP[k]}) + '</button>';
   }).join('');
   /* deux étages seulement : l'en-tête du mini-jeu (le nom, les cœurs, ⏸️ 🏳️ 🔊 : mj-core.js) et la poutre (.mjc-haut) ; la recette,
      le thermomètre et la réserve de bois sont dans le décor (.mjc-scene), placés par disposer() */
@@ -17502,7 +17550,7 @@ function icDe(k, x){ return k === 'pensee' ? PENSEE_SVG : ((x && x.ic) || '❔')
 /* Le nom écrit sous l'icône d'une caisse : un seul mot */
 var NOMS_COURTS = {lune:'Lune', pensee:'Pensées'};
 var NOMS_ETROITS = {champignon:'Champi'};     /* quand les caisses sont étroites (téléphone) */
-function nomCourt(k, x){ return NOMS_COURTS[k] || String((x && x.nom) || k).split(/[ '’]/)[0]; }
+function nomCourt(k, x){ return NOMS_COURTS[k] || (x && x.court) || String((x && x.nom) || k).split(/[ '’]/)[0]; }   /* (x.court : les petits pots, D.PREPARATIONS) */
 
 /* Point de la scène SVG → coordonnées dans un élément (tient compte du cadrage) */
 function versEl(E, x, y, el){
@@ -17632,7 +17680,7 @@ MJ.enregistrer('chaudron', {
   },
 
   jouer:function(el, R, fin){
-    var D = DD(), I = D.INGR || {};
+    var D = DD(), I = Object.assign({}, D.INGR || {}, D.PREPARATIONS || {});
     if(!R.potion) R.potion = choisirPotion(R.niveauEffectif || 3);
     var E = construire(el, R, false), C = E.C, Z = zones(R), cible = C.zone, total = C.frise.length;
     /* l'arc-en-ciel est la bande la plus étroite : on le tient un peu moins longtemps */
@@ -18231,6 +18279,8 @@ MJ.enregistrer('chaudron', {
       buches:function(n){ S.L = U.borne(n, 0, MAX_BUCHES); majBuches(); },
       verser:function(ingr){ verser(ingr, E.boites.querySelector('[data-ingr="' + ingr + '"]')); },
       dansZone:function(){ return S.fen.filter(dansZone).map(function(f){ return f.ingr; }); },
+      /* (pour les robots) la bande à tenir à la fin : [bas, haut] sur l'échelle de la chaleur */
+      zoneFin:function(){ return zFin.slice(); },
       ajouterBuche:ajouterBuche, retirerBuche:retirerBuche
     };
     return {arreter:function(){
@@ -37086,7 +37136,7 @@ M.nomCode = function(id){
   if(t === 'allure') return {ic:'🛡️', nom:'La tenue de combat'};
   if(t === 'visage') return {ic:'💇', nom:'Le visage'};
   /* (enquête 3) un code du donjon qu'un joueur de l'enquête garde pour un équipier : le givre de l'Alchimiste, que le Pisteur tape DANS le donjon */
-  if(t === 'donjon') return x === 'recette' && p[2] === 'givre' ? {ic:'❄️', nom:'Le givre (à taper dans le donjon)'} : x === 'sauve' ? {ic:'📜', nom:'Un sort de sauvegarde (à taper dans le donjon)'} : {ic:'🕯️', nom:'Un code du donjon'};
+  if(t === 'donjon') return x === 'recette' && p[2] === 'givre' ? {ic:'❄️', nom:'La potion de givre (à taper dans le donjon)'} : x === 'recette' && p[2] === 'baumelum' ? {ic:'🔆', nom:'Le baume lumineux (à taper dans le donjon)'} : x === 'sauve' ? {ic:'📜', nom:'Un sort de sauvegarde (à taper dans le donjon)'} : {ic:'🕯️', nom:'Un code du donjon'};
   return {ic:'🏆', nom:'Victoire'};
 };
 
