@@ -3,7 +3,7 @@
      ex. gestes.html#genou:fleche/20/10/200 ; gestes.html#accroupi:/30/1/300 (la pose de base seule) -->
 <style>body{margin:0;background:#131932;padding:8px;font:600 12px system-ui,sans-serif;color:#cdd5ff}
 .c{display:inline-block;margin:3px;text-align:center}svg{background:#1d2550;border-radius:8px;display:block}</style>
-<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script><script src="../src/hv-poses.js"></script><script src="../src/hv-positions.js"></script>
+<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script><script src="../src/hv-poses.js"></script><script src="../src/hv-positions.js"></script><script src="../src/hv-donjon.js"></script>
 <body><script>
 var HV = HerosVues, Hh = decodeURIComponent(location.hash.slice(1)).split('/'), a = (Hh[0] || 'genou:fleche').split(':');
 var Po = HV.POSITIONS[a[0]], ang = +Hh[1] || 0, n = +Hh[2] || 8, L = +Hh[3] || 200, CADRE = (Hh[4] || '-50_40_400_400').split('_').map(Number);

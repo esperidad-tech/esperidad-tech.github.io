@@ -1,8 +1,9 @@
 <!doctype html><meta charset="utf-8">
 <!-- Les films des mouvements du donjon (premières propositions) : film-donjon.html#course | garde | tir | coup | chute | joie
      python3 filmer.py sortie/donjon-tir.mp4 --page "film-donjon.html#tir". Une image après l'autre : window.image().
-     Au donjon, les ennemis sont à droite : elle est dessinée DROITIÈRE (l'arc dans sa main gauche) — tout le personnage est pris
-     dans un miroir, à tous les angles ; ce n'est pas une image retournée pour faire semblant de tourner. -->
+     Au donjon, les ennemis sont à droite. L'arc est dans SA main droite (Romain, 23 novembre, 15 h 54) : tournée vers la droite de
+     trois quarts, c'est la main de notre côté ; pour tirer, elle se met de profil (le dos un peu vers nous). -->
+
 <style>html,body{margin:0;background:#131932;overflow:hidden}
 #plateau{position:relative;width:900px;height:900px;overflow:hidden;background:linear-gradient(#1a1630 0%,#2a2340 52%,#3a3048 66%,#2b2436 100%)}
 #sol{position:absolute;left:0;right:0;top:690px;bottom:0;background:repeating-linear-gradient(90deg,rgba(0,0,0,.18) 0 2px,transparent 2px 120px),linear-gradient(#4a3e52,#2e2638);border-top:3px solid #1c1626}
@@ -21,28 +22,26 @@ window.requestAnimationFrame = function(){ return 0; };
 var CAD = [-130, -64, 560, 560], K = 900 / CAD[2];
 var hd = document.getElementById('heros'), p = HV.monter(hd, h, {cadre:CAD.join(' ')}), fx = document.getElementById('fx'), titre = document.getElementById('titre');
 p.sansHasard = true;
-/* (droitière : tout le personnage dans un miroir ; on la regarde à l'angle θ = on dessine l'autre à -θ) */
-p.fig.setAttribute('transform', 'matrix(-1 0 0 1 300 0)');
-function vers(a, net){ p.vers(-a, net); }
+function vers(a, net){ p.vers(a, net); }
+/* (le film commence directement en garde) */
+function pret(a){ vers(a, true); p.position('donjon'); p.A = p.B; p.tw = 1; }
 HV.POSITIONS.donjon = {titre:'En garde', base:'dGarde', attente:[99, 99], gestes:HV.DONJON};
 var nomS = decodeURIComponent(location.hash.slice(1)) || 'tir', T = 0, fin = 6, X = 0, Y = 0, fleches = [], courir = null;
 /* un point du héros (ses mesures) → où il est sur l'image (pixels) */
 function ecran(q){
-  var V = U.vue(HV.capDe(p.F)), x = q[0] * V.c + q[2] * V.s, xs = 150 - x;   /* (miroir) */
+  var V = U.vue(HV.capDe(p.F)), x = q[0] * V.c + q[2] * V.s, xs = 150 + x;
   return [(xs - CAD[0]) * K + X, (q[1] - CAD[1]) * K + Y];
 }
 /* les scénarios : une liste de [quand, que faire] */
 var S = {
-  course:{fin:4.2, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.course; vers(62, true); courir = {t0:0, de:-700, jusqu:1.95}; }],
-    [1.95, function(){ courir = null; p.position('donjon'); }], [3.2, function(){ vers(40); }]]},
-  garde:{fin:8.2, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.regard; vers(55, true); p.position('donjon'); }], [0.8, function(){ p.joue('regard'); }],
-    [4.6, function(){ vers(20); }], [5.0, function(){ p.joue('regard'); }], [8.0, function(){ vers(55); }]]},
-  tir:{fin:8.6, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.tir; vers(55, true); p.position('donjon'); }], [0.6, function(){ p.joue('tir'); }],
-    [4.4, function(){ vers(15); }], [4.8, function(){ p.joue('tir'); }]]},
-  coup:{fin:5.6, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.coup; vers(55, true); p.position('donjon'); }], [0.6, function(){ p.joue('coup'); eclair(); }],
-    [2.6, function(){ vers(80); }], [3.2, function(){ p.joue('coup'); eclair(); }]]},
-  chute:{fin:6.4, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.chute; vers(50, true); p.position('donjon'); }], [0.6, function(){ p.joue('chute'); eclair(); }]]},
-  joie:{fin:4.2, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.joie; vers(45, true); p.position('donjon'); }], [0.6, function(){ p.joue('joie'); }], [2.9, function(){ vers(20); }]]}
+  /* (un seul angle par film : c'est elle qui bouge, pas la caméra qui tourne autour d'elle) */
+  course:{fin:3.6, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.course; vers(62, true); courir = {t0:0, de:-700, jusqu:1.95}; }],
+    [1.95, function(){ courir = null; p.position('donjon'); }]]},
+  garde:{fin:7.2, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.regard; pret(55); }], [0.8, function(){ p.joue('regard'); }]]},
+  tir:{fin:6.8, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.tir; pret(55); }], [0.6, function(){ p.joue('tir'); }], [3.8, function(){ p.joue('tir'); }]]},
+  coup:{fin:4.6, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.coup; pret(55); }], [0.6, function(){ p.joue('coup'); eclair(); }], [2.6, function(){ p.joue('coup'); eclair(); }]]},
+  chute:{fin:6.4, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.chute; pret(50); }], [0.6, function(){ p.joue('chute'); eclair(); }]]},
+  joie:{fin:3.8, pas:[[0, function(){ titre.textContent = HV.NOMS_DONJON.joie; pret(45); }], [0.6, function(){ p.joue('joie'); }]]}
 };
 var SC = S[nomS] || S.tir, k = 0;
 /* un éclair blanc là où le coup arrive (sur sa poitrine) */
@@ -53,15 +52,15 @@ window.image = function(){
   /* la course : la pose vient de HV.course, et elle avance à la vitesse de ses pieds */
   if(courir){
     var c = HV.course(T - courir.t0); p.A = p.B = c; p.tw = 1; p.posi = null; p.nom = 'course';
-    var vx = HV.COURSE.pas / 0.62 * Math.sin(62 * Math.PI / 180) * K;
+    var vx = HV.COURSE.avance / HV.COURSE.cycle * Math.sin(62 * Math.PI / 180) * K;
     X = courir.de + vx * (T - courir.t0);
   } else if(nomS === 'course' && T < 2.4){ X += (2.4 - T) / 0.45 * 6; }
   /* (la joie : un petit saut) */
   Y = 0;
-  if(p.gest && p.gest.nom === 'joie'){ var u = (p.t - p.gest.t0 - 0.3) / 0.55; if(u > 0 && u < 1) Y = -70 * Math.sin(Math.PI * u); }
+  /* (le saut de la victoire est dans la pose : leve) */
   hd.style.transform = 'translate(' + X.toFixed(1) + 'px,' + Y.toFixed(1) + 'px)';
   /* la flèche qui part, au moment du lâcher */
-  if(p.gest && p.gest.nom === 'tir'){ var u2 = p.t - p.gest.t0; if(u2 >= 2.25 && !p.gest.parti){ p.gest.parti = true; var os = HV.os(h, p.F), a = ecran(os.poignetG); fleches.push({x:a[0], y:a[1], t0:T}); } }
+  if(p.gest && p.gest.nom === 'tir'){ var u2 = p.t - p.gest.t0; if(u2 >= 1.37 && !p.gest.parti){ p.gest.parti = true; var os = HV.os(h, p.F), a = ecran(os.poignetG); fleches.push({x:a[0], y:a[1], t0:T}); } }
   p.dessiner(1 / 30);
   var s = '';
   fleches.forEach(function(f){ var d = (T - f.t0) * 2600, x = f.x + d; if(x < 1000) s += '<g transform="translate(' + x.toFixed(0) + ' ' + f.y.toFixed(0) + ')"><path d="M-110 0 H0" stroke="#24182e" stroke-width="8"/><path d="M-110 0 H0" stroke="#e6d8b8" stroke-width="4"/><path d="M14 0 L-6 -9 L-6 9 Z" fill="#b8bcc8" stroke="#24182e" stroke-width="3"/><path d="M-112 0 l-14 -10 h12 l12 10 l-12 10 h-12 Z" fill="#c0392b" stroke="#24182e" stroke-width="2.5"/></g>'; });

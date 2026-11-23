@@ -332,7 +332,9 @@ function mainSVG(K, V, B, P){
   /* une flèche tenue dans la même main (P.flecheD : elle la sort du carquois, la remet) : la tige passe dans le poing, la pointe
      sort du côté du pouce, l'empennage de l'autre */
   if(cote > 0 && (P.flecheD || 0) > 0.05){
-    var fa = Q(7.6, -26, 2.4), fb = Q(7.6, 40, 2.4), fp = Q(7.6, 48, 2.4), fq = Q(7.6, 40, 5.2), fr = Q(7.6, 40, -0.4), e1 = Q(7.6, -26, 2.4), e2 = Q(7.6, -14, 2.4), e3 = Q(7.6, -24, 7.4), e4 = Q(7.6, -16, 7.4);
+    /* (P.flecheP : 0, tenue au milieu ; 1, tenue par son bout, l'encoche — pour la tirer du carquois) */
+    var sf = 22 * (P.flecheP || 0);
+    var fa = Q(7.6, -26 + sf, 2.4), fb = Q(7.6, 40 + sf, 2.4), fp = Q(7.6, 48 + sf, 2.4), fq = Q(7.6, 40 + sf, 5.2), fr = Q(7.6, 40 + sf, -0.4), e1 = Q(7.6, -26 + sf, 2.4), e2 = Q(7.6, -14 + sf, 2.4), e3 = Q(7.6, -24 + sf, 7.4), e4 = Q(7.6, -16 + sf, 7.4);
     objet += '<g opacity="' + f1(doux(0.05, 0.6, P.flecheD)) + '">' + PT(U.poly([fa, fb], false), O, 3.6) + PT(U.poly([fa, fb], false), '#e6d8b8', 1.8) +
       PC(U.poly([fp, fq, fr]), '#b8bcc8', 1.3) + PC(U.poly([e1, e2, e4, e3]), '#c0392b', 1.1) + '</g>';
   }

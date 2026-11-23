@@ -16,14 +16,16 @@ var p = HV.monter(document.getElementById('heros'), h, {cadre:'-75 -40 450 450'}
 p.sansHasard = true;
 /* un scénario : ['pos', nom, angle] (elle prend la position), ['g', geste] (un geste ; on attend qu'il finisse), ['v', angle] (on la
    regarde d'ailleurs), ['att', secondes], ['hab', {couleurs}] (elle change d'habits) */
+/* (Romain, 15 h 54 : « on a l'impression qu'elle est sur un socle qui tourne » — c'était aussi la caméra qui tournait autour d'elle
+   dans ces films : maintenant on la regarde d'un seul angle par film, c'est elle seule qui bouge) */
 var S = {
-  repos:[['pos', 'repos', 25], ['att', 1.6], ['g', 'droite'], ['att', 0.8], ['g', 'gauche'], ['v', -30], ['att', 0.8], ['g', 'arc'], ['att', 0.6], ['g', 'derriere'], ['v', 20], ['att', 1.5]],
-  aguets:[['pos', 'repos', 30], ['att', 1], ['pos', 'aguets', 30], ['att', 1.4], ['g', 'scrute'], ['att', 0.6], ['g', 'alerteD'], ['att', 0.8], ['v', 70], ['att', 0.6], ['g', 'alerteG'], ['att', 0.6], ['g', 'scrute'], ['att', 1]],
-  accroupi:[['pos', 'repos', 30], ['att', 1], ['pos', 'accroupi', 30], ['att', 1.4], ['g', 'regarde'], ['att', 0.5], ['g', 'sol'], ['att', 0.5], ['v', 60], ['g', 'trace'], ['att', 0.5],
-    ['g', 'poussiere'], ['att', 0.4], ['v', 10], ['g', 'derriere'], ['att', 0.4], ['g', 'arc'], ['att', 0.4], ['g', 'baudrier'],
+  repos:[['pos', 'repos', 25], ['att', 1.6], ['g', 'droite'], ['att', 0.8], ['g', 'gauche'], ['att', 0.8], ['g', 'arc'], ['att', 0.6], ['g', 'derriere'], ['att', 1.5]],
+  aguets:[['pos', 'repos', 30], ['att', 1], ['pos', 'aguets', 30], ['att', 1.4], ['g', 'scrute'], ['att', 0.6], ['g', 'alerteD'], ['att', 1.2], ['g', 'alerteG'], ['att', 0.6], ['g', 'scrute'], ['att', 1]],
+  accroupi:[['pos', 'repos', 30], ['att', 1], ['pos', 'accroupi', 30], ['att', 1.4], ['g', 'regarde'], ['att', 0.5], ['g', 'sol'], ['att', 0.5], ['g', 'trace'], ['att', 0.5],
+    ['g', 'poussiere'], ['att', 0.4], ['g', 'derriere'], ['att', 0.4], ['g', 'arc'], ['att', 0.4], ['g', 'baudrier'],
     ['att', 0.6], ['hab', {habit:'rouge', pantalon:'bleu', bottes:'noir', cuir:'orange'}], ['att', 1.2], ['hab', {habit:'violet', pantalon:'gris', bottes:'marron', cuir:'noir'}], ['att', 1.2], ['hab', {}], ['att', 1]],
-  genou:[['pos', 'repos', 20], ['att', 1], ['pos', 'genou', 20], ['att', 1.4], ['g', 'fleche'], ['att', 0.6], ['v', 50], ['g', 'inspecte'], ['att', 0.5], ['v', 10], ['g', 'visiere'], ['att', 1]],
-  garde:[['pos', 'repos', 30], ['att', 1], ['pos', 'garde', 30], ['att', 2], ['g', 'coups'], ['att', 1.4], ['g', 'esquive'], ['att', 1.4], ['v', 60], ['g', 'coups'], ['att', 1.6], ['g', 'range'], ['att', 1]]
+  genou:[['pos', 'repos', 20], ['att', 1], ['pos', 'genou', 20], ['att', 1.4], ['g', 'fleche'], ['att', 0.6], ['g', 'inspecte'], ['att', 0.5], ['g', 'visiere'], ['att', 1]],
+  garde:[['pos', 'repos', 30], ['att', 1], ['pos', 'garde', 30], ['att', 2], ['g', 'coups'], ['att', 1.4], ['g', 'esquive'], ['att', 1.4], ['g', 'coups'], ['att', 1.6], ['g', 'range'], ['att', 1]]
 };
 var nomS = decodeURIComponent(location.hash.slice(1)) || 'accroupi', SC = S[nomS], T = 0, k = 0, attendJusqu = 0;
 function geste(nom){ return HV.POSITIONS[p.posi].gestes[nom]; }

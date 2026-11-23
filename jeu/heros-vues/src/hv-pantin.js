@@ -26,7 +26,8 @@ HV.dessin = function(h, P, o){
   var CH = HV.cheveux(K, coif, Vt, P), T = HV.tete(K, h, Vt, P, CH);
   var tT = 'translate(' + f1(tp.tx + (P.tx || 0)) + ' ' + f1(tp.ty + (P.ty || 0)) + ')' + (rot ? ' rotate(' + f1(rot) + ' ' + f1(tp.px) + ' 28)' : '');
   var ombreCou = '<path d="' + T.peau + '" transform="translate(1.2 7.5) ' + tT + '" fill="' + K.peau.ombre + '" opacity=".8"/>';
-  var om = C.ombre, s = '<ellipse cx="' + f1(150 + om.cx) + '" cy="' + f1(om.cy) + '" rx="' + f1(om.rx) + '" ry="7" fill="' + K.u('ombre') + '"/>';
+  var om = C.ombre, lv = Math.max(0, P.leve || 0), ko = 1 / (1 + lv / 90);
+  var s = '<ellipse cx="' + f1(150 + om.cx) + '" cy="' + f1(om.cy) + '" rx="' + f1(om.rx * ko) + '" ry="' + f1(7 * ko) + '" fill="' + K.u('ombre') + '"' + (lv ? ' opacity="' + f1(ko) + '"' : '') + '/>';
   /* l'ordre des morceaux : la tête vue de face (les cheveux de derrière d'abord, le visage à la fin) ou de dos (le visage d'abord,
      puis le cou, puis les cheveux par-dessus) ; la queue de cheval passe devant tout quand elle est de notre côté */
   var tDos = Vt.c < -0.15, G1 = '<g transform="' + tT + '">', dessus = C.dessus, bras = dessus ? '' : C.devant;
@@ -34,7 +35,7 @@ HV.dessin = function(h, P, o){
   var visage = G1 + (tDos ? CH.dos + CH.devant : T.svg + CH.devant + T.sourcils) + (CH.queueDevant ? CH.queue : '') + '</g>';
   /* (penchée loin de nous, vue de dos : la tête est derrière les épaules) */
   var loin = tp.fond < -22;
-  s += '<g transform="translate(150 0)">' + G1 + (CH.queueDevant ? '' : CH.queue) + (tDos ? '' : CH.dos) + '</g>' + C.derriere + C.jambes +
+  s += '<g transform="translate(150 ' + f1(-lv) + ')">' + G1 + (CH.queueDevant ? '' : CH.queue) + (tDos ? '' : CH.dos) + '</g>' + C.derriere + C.jambes +
     (tDos ? G1 + T.svg + '</g>' : '') + (loin ? visage : '') + C.cou(tDos, tDos ? nuque : ombreCou) + C.torse + C.carquoisDevant + C.jambesApres + bras +
     (loin ? '' : visage) + (dessus ? C.devant : '') + '</g>';
   return s;
@@ -78,9 +79,11 @@ HV.POSES = {
     sourcils:0, sourcilsIn:0, sourcilsAsym:0, plisse:0, sourire:1, ouvre:0, largeB:1, bouchex:0, rougit:0, regX:0, regY:0,
     /* (l'arc tenu le long du corps : son ventre vers l'avant, la corde derrière — avant, la corde passait DANS la jupe : Romain,
        23 novembre, 15 h 04 : « au repos, il y a un bug avec son arc ») */
-    arcDir:[-0.2, 0, 1], arcAxe:[0, 1, 0], tendu:0, dague:0, brasDessus:0,
+    arcDir:[-0.2, 0, 1], arcAxe:[-0.1, 1, 0], tendu:0, dague:0, brasDessus:0,
     /* tourne : elle se tourne d'elle-même (degrés) ; flecheD : une flèche dans SA main (celle qui tire la corde) */
-    tourne:0, flecheD:0, capA:0, capW:0},
+    tourne:0, flecheD:0, flecheP:0, capA:0, capW:0,
+    /* leve : elle est en l'air (un saut), de tant ; son ombre reste au sol et rapetisse */
+    leve:0},
   /* une main sur la hanche, la tête un peu penchée */
   hanche:{mainD:[33, 211, 10], coudeD:[1, -0.1, -0.5], mdirD:[-0.45, 0.75, 0.45], pouceD:[0.3, 0.3, -1], poingD:0.35, pen:-5, bx:2.5, piedD:[24, 386, -4]},
   /* elle fait coucou de sa main libre (la paume vers nous) */
@@ -207,6 +210,9 @@ PP.dessiner = function(dt){
     var re = Math.sin(TAU * t / 3.6);
     F.souffle = 0.5 + 0.5 * re;
     F.pen += 1.1 * Math.sin(TAU * t / 7.3 + 1); F.tete += 2.6 * Math.sin(TAU * t / 9.1);
+    /* (elle passe doucement son poids d'un pied sur l'autre, les hanches suivent un peu : elle n'est jamais figée) */
+    var ps = Math.sin(TAU * t / 6.7);
+    F.bas = [F.bas[0] + 2.2 * ps, F.bas[1] + 0.6 * Math.abs(ps), F.bas[2]]; F.bang = [F.bang[0], F.bang[1] - 1.6 * ps, F.bang[2] + 1.4 * ps];
     F.qx += 1.5 * Math.sin(TAU * t / 4.2); F.qz += 0.8 * Math.sin(TAU * t / 5.7 + 2);
     /* (une main posée au sol ou sur un genou ne bouge pas) */
     F.mainG = [F.mainG[0] - 0.7 * re * F.relG, F.mainG[1] + 0.3 * re * F.relG, F.mainG[2] + 1.2 * Math.sin(TAU * t / 5.1) * F.relG];
