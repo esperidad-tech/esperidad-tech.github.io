@@ -16,6 +16,8 @@ var HV = G.HerosVues, U = HV.outils, O = HV.O, RAD = HV.RAD;
 var f1 = U.f1, borne = U.borne, vers = U.vers, coupe = U.coupe, table = U.table, leve = U.leve, PF = U.PF, PT = U.PT, PC = U.PC;
 
 function rond(y, y0, h){ var k = (y - y0) / h; return Math.sqrt(Math.max(0, 1 - k * k)); }
+/* (la clarté des cheveux : sur des cheveux très sombres, les traits sombres ne se voient pas — on les trace en clair) */
+function lum2(K){ var hx = K.chev.c[1].replace('#', ''); return (parseInt(hx.substr(0, 2), 16) * 0.3 + parseInt(hx.substr(2, 2), 16) * 0.59 + parseInt(hx.substr(4, 2), 16) * 0.11) / 255; }
 var T_AH = table([[4, 31.5], [8, 29.6], [12, 25.2], [15, 18.4], [17, 9.4], [18, 0.02]]);
 var T_CBH = table([[0, 35.5], [6, 33], [10, 29.6], [14, 23.2], [17, 13], [18, 0.02]]);
 function coupeCoiffe(y){
@@ -175,22 +177,11 @@ COIFFURES.courts = {
   /* (Romain, 20 h 32 : les petites boucles dessinées sur le crâne, « très très très moche » — enlevées. À la place : des mèches
      ondulées sur les côtés et l'arrière de la tête (on ne dessine que la partie tournée vers nous : elles glissent quand il tourne),
      et quelques grosses ondulations douces sur le contour) */
-  filsCote:[[[38, -48], [70, -54], [105, -52], [140, -46], [168, -38]], [[62, -32], [92, -42], [122, -40], [150, -34], [174, -24]],
-    [[78, -18], [104, -28], [130, -26], [156, -18], [176, -8]], [[96, -6], [120, -12], [146, -8], [170, 2]], [[20, -56], [60, -60], [110, -59], [160, -54]],
-    [[112, 4], [136, 0], [160, 6]]],
-  /* (les ondulations du contour : de gros ronds posés juste sous la surface des cheveux, dans la masse de derrière — là où ils
-     dépassent, le contour fait de douces bosses ; [x, y, z, rayon]) */
-  boucles:(function(){
-    var L = [], rangs = [[-50, 6, 0, 9.5, 15], [-38, 7, 58, 9, 0], [-24, 5, 108, 8.5, 10]];
-    rangs.forEach(function(rg){
-      var y = rg[0], k = Math.sqrt(Math.max(0, 1 - Math.pow((y + 12) / 45, 2))), n = rg[1], a0 = rg[2], i;
-      for(i = 0; i < n; i++){
-        var a = a0 + (360 - 2 * a0) * (a0 ? (i + 0.5) / n : i / n) + rg[4], ar = a * Math.PI / 180, cs = Math.cos(ar);
-        L.push([(31.5 * k - 5.5) * Math.sin(ar), y, ((cs >= 0 ? 30 : 35.5) * k - 5.5) * cs, rg[3]]);
-      }
-    });
-    return L;
-  })()
+  /* (les mèches tirées vers le chignon : elles partent du front et des tempes et finissent toutes à l'arrière, là où il est) */
+  filsCote:[[[30, -54], [80, -56], [130, -52], [168, -46]], [[50, -40], [92, -48], [136, -48], [170, -43]], [[72, -24], [108, -34], [144, -40], [172, -40]],
+    [[92, -8], [124, -20], [152, -32], [174, -37]], [[112, 4], [140, -10], [162, -26], [176, -34]]],
+  /* LE CHIGNON (Romain, 20 h 36) : une boule de cheveux roulés à l'arrière du crâne ([x, y, z] de son milieu, son rayon) */
+  chignon:{c:[0, -36, -39], r:16}
 };
 
 /* ==========================================================
@@ -229,6 +220,21 @@ HV.cheveux = function(K, coif, V, P){
     queue += noeud(K, E[0][0], E[0][1] + 1, 0.92);
   }
   var zq = Q ? -Q.p[2][0] * V.s + Q.p[2][2] * V.c : -1;
+  /* --- LE CHIGNON (Romain, 23 novembre, 20 h 36 : « elle a fait un chignon. Donc le chignon, il est à l'arrière. Donc quand on se
+     retourne, on le voit, il est toujours à l'arrière. Et quand on est de dos, on l'a au premier plan ») : une boule de cheveux
+     roulés, posée à l'arrière du crâne, dans l'espace ; comme la queue de cheval, elle passe devant la tête quand on la voit de dos,
+     derrière elle sinon (de face, la tête la cache ; de profil, elle dépasse derrière la tête) --- */
+  var CHG = coif.chignon;
+  if(CHG){
+    var cc = CHG.c, cx = cc[0] * V.c + cc[2] * V.s + (P.qx || 0) * 0.15, cy = cc[1], R = CHG.r, ri = R * 0.62;
+    queue += U.masse(['M' + f1(cx - R) + ' ' + f1(cy) + ' a' + f1(R) + ' ' + f1(R * 0.94) + ' 0 1 0 ' + f1(2 * R) + ' 0 a' + f1(R) + ' ' + f1(R * 0.94) + ' 0 1 0 ' + f1(-2 * R) + ' 0 Z'], K.u('chevQ'));
+    /* (les cheveux enroulés : une spirale, et un reflet en haut à gauche) */
+    var tr = lum2(K) < 0.25 ? K.chev.c[0] : K.chev.c[2];
+    queue += '<path d="M' + f1(cx + ri) + ' ' + f1(cy + 1) + ' A' + f1(ri) + ' ' + f1(ri * 0.94) + ' 0 1 0 ' + f1(cx - 1) + ' ' + f1(cy - ri) + ' M' + f1(cx + ri * 0.45) + ' ' + f1(cy + ri * 0.3) + ' A' + f1(ri * 0.5) + ' ' + f1(ri * 0.48) + ' 0 1 0 ' + f1(cx + 1) + ' ' + f1(cy - ri * 0.55) +
+      ' M' + f1(cx - R * 0.9) + ' ' + f1(cy + R * 0.25) + ' Q' + f1(cx - R * 0.4) + ' ' + f1(cy + R * 1.05) + ' ' + f1(cx + R * 0.55) + ' ' + f1(cy + R * 0.75) + '" fill="none" stroke="' + tr + '" stroke-width="1.6" stroke-linecap="round" opacity=".6"/>' +
+      '<path d="M' + f1(cx - R * 0.7) + ' ' + f1(cy - R * 0.25) + ' Q' + f1(cx - R * 0.55) + ' ' + f1(cy - R * 0.8) + ' ' + f1(cx - R * 0.05) + ' ' + f1(cy - R * 0.85) + '" fill="none" stroke="' + K.chev.hl + '" stroke-width="2" stroke-linecap="round" opacity=".55"/>';
+    zq = -cc[0] * V.s + cc[2] * V.c;
+  }
   /* --- la masse de derrière --- */
   var bcl = (coif.boucles || []).map(function(b){ var q = ecran3([b], V)[0]; return U.gelule(q[0], q[1], b[3], q[0], q[1], b[3]); });
   var masse = U.masse([masseDos(V, coif.zone, -57, 18)].concat(bcl), K.u('chevB'));
@@ -273,8 +279,7 @@ HV.cheveux = function(K, coif, V, P){
     });
   });
   /* (sur des cheveux très sombres — noirs —, un trait sombre ne se voit pas : les mèches sont alors tracées en clair) */
-  var hx = K.chev.c[1].replace('#', ''), lum = (parseInt(hx.substr(0, 2), 16) * 0.3 + parseInt(hx.substr(2, 2), 16) * 0.59 + parseInt(hx.substr(4, 2), 16) * 0.11) / 255;
-  dans += lum < 0.25 ? '<g fill="' + K.chev.c[0] + '" opacity=".55">' + fc + '</g>' : '<g fill="' + K.chev.c[2] + '" opacity=".4">' + fc + '</g>';
+  dans += lum2(K) < 0.25 ? '<g fill="' + K.chev.c[0] + '" opacity=".55">' + fc + '</g>' : '<g fill="' + K.chev.c[2] + '" opacity=".4">' + fc + '</g>';
   /* LES BOUCLES VUES SUR LE CRÂNE (Romain, 23 novembre, 20 h 24 : « quand on tourne, l'arrière de sa coiffure, elle bouge pas. Ça,
      c'est pas normal ») : chaque boucle tournée vers nous est dessinée là où elle est sur la tête (un petit « c » sombre et un reflet) ;
      elles glissent quand la tête tourne, passent derrière le bord, et celles de l'autre côté arrivent */
