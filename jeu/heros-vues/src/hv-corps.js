@@ -96,7 +96,7 @@ function bras(V, cote, P){
 function brasSVG(K, V, B, P, plein){
   var s = '', c2 = B.c2, w = B.w, m = B.m, cote = B.cote, L = plein ? B.manche : B.libre;
   s += '<path d="' + L.join(' ') + '" fill="none" stroke="' + O + '" stroke-width="4.4" stroke-linejoin="round"/>' +
-    '<path d="' + B.manche.join(' ') + '" fill="' + K.u('tun') + '"/><path d="' + B.manche.join(' ') + '" fill="' + K.u('trame') + '" opacity=".34"/>' +
+    '<path d="' + L.join(' ') + '" fill="' + K.u('tun') + '"/><path d="' + L.join(' ') + '" fill="' + K.u('trame') + '" opacity=".34"/>' +
     /* le relief de chaque os, en travers de lui ; celui de l'avant-bras s'arrête au coude (pas deux couches l'une sur l'autre) */
     relief(K, 'rb' + B.cle + '0', B.e[0], B.e[1], c2[0], c2[1], R_EP) + relief(K, 'rb' + B.cle + '1', c2[0], c2[1], w[0], w[1], R_CO) +
     '<clipPath id="' + K.n('xb' + B.cle) + '"><path clip-rule="evenodd" d="M-400 -200 H400 V700 H-400 Z ' + L[0] + '"/></clipPath>' +
@@ -108,8 +108,9 @@ function brasSVG(K, V, B, P, plein){
   /* le poignet de cuir, piqué */
   var q1 = [vers(c2[0], w[0], 0.8), vers(c2[1], w[1], 0.8)], dq = gelule(q1[0], q1[1], R_PO + 0.9, w[0], w[1], R_PO + 0.5);
   s += PC(dq, K.u('cuir'), 1.6) + PF(dq, K.u('grain'), ' opacity=".4"') + couture('M' + f1(q1[0] - nx * 6.4) + ' ' + f1(q1[1] - ny * 6.4) + ' L ' + f1(q1[0] + nx * 6.4) + ' ' + f1(q1[1] + ny * 6.4), 0.5);
-  /* l'arc est dans cette main : on le dessine avant la main (elle le tient) */
-  if(cote < 0 && P.arc !== false) s += arcSVG(K, V, add(B.W, B.dir, 8), P);
+  /* l'arc est dans cette main. Trois couches, que le corps range : les manches, PUIS l'arc (jamais sous une manche), PUIS les mains */
+  var manche = s, arc = cote < 0 && P.arc !== false ? arcSVG(K, V, add(B.W, B.dir, 8), P) : '';
+  s = '';
   /* la main : le pouce (vers l'avant quand le bras pend : de face la main le cache, de profil il dépasse), la paume et les doigts
      d'un seul tenant, trois traits pour séparer les doigts */
   var pc = P['pouce' + B.cle] || [-cote * 0.25, 0.1, 1], po1 = p3(add(add(B.W, B.dir, 4.5), pc, 4.6), V), po2 = p3(add(add(B.W, B.dir, 10.5), pc, 8.8), V);
@@ -124,7 +125,7 @@ function brasSVG(K, V, B, P, plein){
     });
     s += PT(dg, K.peau.trait, 1.25, ' opacity=".85"');
   }
-  return s;
+  return {manche:manche, arc:arc, main:s};
 }
 
 /* ---------- Le buste : un seul contour avec les manches de devant ---------- */
@@ -166,6 +167,9 @@ function torse(K, h, V, P, avant, fond){
   dans += PF(U.poly(b2.concat(bas.slice().reverse())), U.sombre(K.tissu[2], 0.25), ' opacity=".34"') + couture(U.courbe(anneau(BUSTE, 263, V, 14).map(suit)), 0.55);
   dans += PT(U.courbe(ct.D.filter(function(q){ return q[1] > 152 && q[1] < 262; }).map(function(q){ return [q[0] - 1.9, q[1]]; })), '#cfe9ff', 1.5, ' opacity=".36"');
   s += '<g clip-path="url(#' + cid + ')">' + dans + '</g>';
+  /* le haut des bras de devant fait partie du buste : le baudrier et la ceinture passent PAR-DESSUS l'épaule
+     (Romain, 23 novembre, 11 h 22 : « c'est le vêtement le plus au-dessus ») */
+  avant.forEach(function(B){ s += PF(B.manche[0], K.u('tun')) + PF(B.manche[0], K.u('trame'), ' opacity=".34"'); });
   /* le col en V */
   var col = [[-10, 138.5], [-5, 148], [0, 158], [5, 148], [10, 138.5]].map(function(q){ return poseB(q[0], q[1], V); });
   if(Math.abs(col[0][0] - col[4][0]) > 3 && V.c > -0.1) s += PC(U.poly(col), K.u('tunO'), 1.6);
@@ -175,7 +179,7 @@ function torse(K, h, V, P, avant, fond){
     for(i = 0; i <= 16; i++){ var t = i / 16, q = poseB2(-25.5 + 56.5 * t, 142 + 60.5 * t, V, dos); if(q.vu) run.push(q.p); }
     if(run.length > 2){
       var rb = U.ruban(run, function(){ return 4.7; });
-      s += '<g clip-path="url(#' + cid + ')">' + PC(rb, K.u('cuir'), 1.8) + PF(rb, K.u('grain'), ' opacity=".4"') + couture(U.poly(run.map(function(q2){ return [q2[0] - 2, q2[1] - 2.2]; }), false)) + '</g>';
+      s += PC(rb, K.u('cuir'), 1.8) + PF(rb, K.u('grain'), ' opacity=".4"') + couture(U.poly(run.map(function(q2){ return [q2[0] - 2, q2[1] - 2.2]; }), false));
     }
   });
   /* la ceinture : un anneau de cuir, et sa boucle devant */
@@ -278,9 +282,10 @@ HV.corps = function(K, h, V, P){
   var jg = jambe(K, V, -1, P), jd = jambe(K, V, 1, P), cq = h.role === 'pisteur' || !h.role ? carquois(K, V) : null;
   var avant = [], fond = [], SEUIL = -8, dos = V.c < -0.15;      /* (de dos : le carquois passe devant) */
   [bras(V, -1, P), bras(V, 1, P)].sort(function(a, b){ return a.fond - b.fond; }).forEach(function(b){ (b.fond < SEUIL ? fond : avant).push(b); });
-  var der = (cq && !dos ? cq.svg : '') + fond.map(function(b){ return brasSVG(K, V, b, P, true); }).join('');
+  var der = (cq && !dos ? cq.svg : '') + fond.map(function(b){ var o = brasSVG(K, V, b, P, true); return o.manche + o.arc + o.main; }).join('');
+  var pa = avant.map(function(b){ return brasSVG(K, V, b, P, false); });
   var jb = [jg, jd].sort(function(a, b){ return a.fond - b.fond; }).map(function(j){ return j.svg; }).join('');
   return {derriere:der, jambes:jb, torse:torse(K, h, V, P, avant, fond), carquoisDevant:cq && dos ? cq.svg : '',
-    devant:avant.map(function(b){ return brasSVG(K, V, b, P, false); }).join(''), dos:dos, cou:function(yt, ombre){ return cou(K, V, yt, ombre); }};
+    devant:pa.map(function(o){ return o.manche; }).join('') + pa.map(function(o){ return o.arc; }).join('') + pa.map(function(o){ return o.main; }).join(''), dos:dos, cou:function(yt, ombre){ return cou(K, V, yt, ombre); }};
 };
 })(window);
