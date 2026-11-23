@@ -1,0 +1,12 @@
+<!doctype html><meta charset="utf-8">
+<style>body{margin:0;background:#131932;display:flex;flex-wrap:wrap;gap:6px;padding:10px;font:12px sans-serif;color:#cfd6ff}
+.c{text-align:center}svg{background:#1b2347;border-radius:8px;display:block}</style>
+<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script>
+<body><script>
+var HV = HerosVues, Hh = location.hash.slice(1).split('/'), ANGLES = Hh[0] ? Hh[0].split(',').map(Number) : [0, 15, 30, 45, 60, 75, 90], L = +Hh[1] || 210, TETE = +Hh[2] || 0;
+var h = {role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert'};
+document.body.innerHTML = ANGLES.map(function(a, i){
+  var P = window.POSE ? window.POSE(a, i) : {cap:a, tete:TETE};
+  return '<div class="c" style="width:' + L + 'px">' + HV.svg(h, P, {id:'p' + i}).replace('<svg ', '<svg width="' + L + '" height="' + Math.round(L * 440 / 300) + '" ') + a + '°</div>';
+}).join('');
+</script>

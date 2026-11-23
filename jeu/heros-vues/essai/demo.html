@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La Pisteuse qui se tourne — essai</title>
+<style>
+:root{--nuit:#131932;--nuit2:#1d2550;--encre:#24182e;--jaune:#ffd23f;--texte:#e9ecff;--doux:#9aa6d8}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--nuit);color:var(--texte);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:14px 12px 28px}
+h1{font-size:20px;margin:4px 0 2px;font-weight:800;text-wrap:balance}
+p.sous{margin:0 0 10px;color:var(--doux);font-size:14px}
+.scene{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+@media(min-width:760px){.scene{grid-template-columns:minmax(0,430px) minmax(0,1fr);align-items:start}}
+#plateau{position:relative;border-radius:18px;background:radial-gradient(120% 90% at 50% 34%,#34407e 0%,#1d2550 55%,#141a3a 100%);overflow:hidden;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none}
+#plateau.tire{cursor:grabbing}
+#plateau svg{display:block;width:100%;height:auto}
+#plateau .aide{position:absolute;left:0;right:0;top:10px;text-align:center;font-size:13px;color:#cdd5ff;opacity:.85;pointer-events:none}
+#angle{position:absolute;bottom:8px;right:10px;font-size:13px;color:#cdd5ff;background:rgba(10,14,40,.5);padding:3px 9px;border-radius:99px;font-variant-numeric:tabular-nums}
+.bloc{background:var(--nuit2);border-radius:14px;padding:10px 12px;margin-bottom:10px}
+.bloc h2{font-size:14px;margin:0 0 8px;color:#cdd5ff;font-weight:700}
+.rang{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:10px 14px;background:var(--jaune);color:#111;cursor:pointer;min-height:44px}
+button:active{transform:translateY(1px)}
+button.on{outline:3px solid #fff;outline-offset:1px}
+button.gris{background:#3a4480;color:#fff}
+#vues{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+#vues button{padding:2px;background:#141a3a;min-height:0;border-radius:10px;color:#cdd5ff;font-weight:600;font-size:11px}
+#vues svg{display:block;width:100%;height:auto}
+.note{font-size:13px;color:var(--doux);margin:6px 0 0}
+</style>
+</head>
+<body>
+<main>
+<h1>La Pisteuse qui se tourne</h1>
+<p class="sous">Un essai, hors du jeu. Chaque image est un vrai dessin, refait pour l'angle demandé : rien n'est retourné ni écrasé.</p>
+<div class="scene">
+  <div>
+    <div id="plateau"><div id="heros"></div><div id="angle">0°</div><div class="aide">Fais glisser le doigt pour la faire tourner</div></div>
+  </div>
+  <div>
+    <div class="bloc"><h2>Se tourner</h2>
+      <div class="rang">
+        <button data-cap="-90">◀ Profil gauche</button><button data-cap="-45">Trois quarts</button><button data-cap="0">De face</button><button data-cap="45">Trois quarts</button><button data-cap="90">Profil droit ▶</button>
+        <button data-cap="180">De dos</button><button id="tour">Un tour complet</button>
+      </div>
+    </div>
+    <div class="bloc"><h2>Prendre une pose</h2>
+      <div class="rang" id="poses">
+        <button data-pose="repos" class="on">Au repos</button><button data-pose="hanche">La main sur la hanche</button><button data-pose="coucou">Coucou !</button><button data-pose="tir">Elle vise</button>
+      </div>
+    </div>
+    <div class="bloc"><h2>Les dessins entre la face et le profil</h2>
+      <div id="vues"></div>
+      <p class="note">Avant : 3 dessins (face, trois quarts, profil). Ici il y en a autant qu'on veut : le dessin est recalculé pour chaque angle.</p>
+    </div>
+  </div>
+</div>
+</main>
+<!--SCRIPTS-->
+<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script>
+<!--/SCRIPTS-->
+<script>
+(function(){
+  var HV = window.HerosVues, h = {role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert'};
+  var CADRE = '-40 0 380 446', plateau = document.getElementById('plateau'), etiq = document.getElementById('angle');
+  var p = HV.monter(document.getElementById('heros'), h, {cadre:CADRE});
+  window.PANTIN = p;
+  function norme(a){ a = ((a + 180) % 360 + 360) % 360 - 180; return Math.round(a); }
+  setInterval(function(){ etiq.textContent = norme(p.cap) + '°'; }, 120);
+  /* le plus court chemin vers un angle */
+  function aller(cap){ var d = ((cap - p.capV) % 360 + 540) % 360 - 180; p.vers(p.capV + d); }
+  document.querySelectorAll('[data-cap]').forEach(function(b){ b.addEventListener('click', function(){ aller(+b.getAttribute('data-cap')); }); });
+  /* un tour complet, tranquille */
+  var tour = null;
+  document.getElementById('tour').addEventListener('click', function(){
+    if(tour) return;
+    var de = p.capV, t0 = performance.now();
+    tour = setInterval(function(){
+      var u = Math.min(1, (performance.now() - t0) / 3600), e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+      p.vers(de + 360 * e);
+      if(u >= 1){ clearInterval(tour); tour = null; }
+    }, 30);
+  });
+  document.querySelectorAll('[data-pose]').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('[data-pose]').forEach(function(x){ x.classList.toggle('on', x === b); });
+      var nom = b.getAttribute('data-pose');
+      p.pose(nom);
+      if(nom === 'tir') aller(0);
+    });
+  });
+  /* le doigt : on la fait tourner */
+  var x0 = null, c0 = 0;
+  plateau.addEventListener('pointerdown', function(e){ x0 = e.clientX; c0 = p.capV; plateau.classList.add('tire'); try{ plateau.setPointerCapture(e.pointerId); }catch(err){} });
+  plateau.addEventListener('pointermove', function(e){ if(x0 === null) return; p.vers(c0 + (e.clientX - x0) * 0.7); });
+  function fin(){ x0 = null; plateau.classList.remove('tire'); }
+  plateau.addEventListener('pointerup', fin); plateau.addEventListener('pointercancel', fin);
+  /* les sept dessins de la face au profil */
+  var vues = document.getElementById('vues');
+  [0, 15, 30, 45, 60, 75, 90].forEach(function(a, i){
+    var b = document.createElement('button');
+    b.innerHTML = HV.svg(h, {cap:a}, {id:'v' + i, cadre:'70 20 160 200'}) + a + '°';
+    b.addEventListener('click', function(){ aller(a); });
+    vues.appendChild(b);
+  });
+})();
+</script>
+</body>
+</html>

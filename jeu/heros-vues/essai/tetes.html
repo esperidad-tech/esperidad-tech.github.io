@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8">
+<style>body{margin:0;background:#131932;display:flex;flex-wrap:wrap;gap:6px;padding:10px;font:12px sans-serif;color:#cfd6ff}
+.c{width:210px;text-align:center}svg{width:210px;height:224px;background:#1b2347;border-radius:8px}</style>
+<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script>
+<body><script>
+var HV = HerosVues, U = HV.outils;
+var Hh = location.hash.slice(1).split('/'), ANGLES = Hh[0] ? Hh[0].split(',').map(Number) : [0, 15, 30, 45, 60, 75, 90, -15, -30, -45, -60, -75, -90], TAILLE = +Hh[1] || 210;
+var st = document.createElement('style'); st.textContent = '.c{width:' + TAILLE + 'px}svg{width:' + TAILLE + 'px;height:' + Math.round(TAILLE * 160 / 150) + 'px}'; document.head.appendChild(st);
+function tete(psi, i, P){
+  var h = {role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert'}, K = HV.contexte('t' + i, h), V = U.vue(psi);
+  P = P || {};
+  var CH = HV.cheveux(K, HV.COIFFURES.queue, V, P), T = HV.tete(K, h, V, P, CH);
+  return '<div class="c"><svg viewBox="-75 -84 150 160">' + HV.defs(K) + (CH.queueDevant ? '' : CH.queue) + CH.dos + T.svg + CH.devant + T.oreille + T.sourcils + (CH.queueDevant ? CH.queue : '') + '</svg>' + psi + '°</div>';
+}
+document.body.innerHTML = ANGLES.map(function(a, i){ return tete(a, i); }).join('');
+</script>

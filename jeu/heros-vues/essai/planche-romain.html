@@ -1,0 +1,17 @@
+<!doctype html><meta charset="utf-8">
+<style>body{margin:0;background:#131932;padding:18px 18px 10px;font:700 17px system-ui,sans-serif;color:#e9ecff;width:1564px}
+h1{font-size:24px;margin:0 0 4px}h2{font-size:18px;margin:14px 0 8px;color:#ffd23f}
+.r{display:flex;gap:8px}.c{text-align:center;flex:1}svg{background:radial-gradient(120% 90% at 50% 34%,#34407e 0%,#1d2550 55%,#141a3a 100%);border-radius:12px;display:block;width:100%;height:auto;margin-bottom:4px}
+p{margin:0;font-weight:500;color:#9aa6d8;font-size:15px}</style>
+<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script>
+<body><h1>La Pisteuse en volume — essai du 23 novembre (hors du jeu)</h1>
+<p>Un seul pantin : chaque image est un vrai dessin, refait pour l'angle demandé.</p>
+<h2>De la face au profil : sept dessins (il peut y en avoir autant qu'on veut)</h2><div class="r" id="a"></div>
+<h2>De l'autre côté, de dos, et trois poses</h2><div class="r" id="b"></div>
+<script>
+var HV = HerosVues, h = {role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert'}, n = 0;
+function un(ou, P, nom, cadre){ var p = HV.pose(P.pose || 'repos'), k; for(k in P) p[k] = P[k]; document.getElementById(ou).insertAdjacentHTML('beforeend', '<div class="c">' + HV.svg(h, p, {id:'q' + (n++), cadre:cadre || '30 14 240 412'}) + nom + '</div>'); }
+[[0, 'De face'], [15, '15°'], [30, '30°'], [45, 'Trois quarts'], [60, '60°'], [75, '75°'], [90, 'De profil']].forEach(function(a){ un('a', {cap:a[0]}, a[1]); });
+un('b', {cap:-45}, 'Trois quarts, de l\'autre côté'); un('b', {cap:-90}, 'Profil gauche'); un('b', {cap:150}, 'De trois quarts dos'); un('b', {cap:180}, 'De dos');
+un('b', {pose:'hanche', cap:25}, 'La main sur la hanche'); un('b', {pose:'coucou', cap:-20}, 'Coucou !'); un('b', {pose:'tir', cap:0}, 'Elle vise', '-22 14 240 412');
+</script>

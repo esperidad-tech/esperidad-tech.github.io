@@ -1,0 +1,13 @@
+<!doctype html><meta charset="utf-8">
+<style>body{margin:0;background:#131932;display:flex;flex-wrap:wrap;gap:6px;padding:10px;font:12px sans-serif;color:#cfd6ff}
+.c{text-align:center}svg{background:#1b2347;border-radius:8px;display:block}</style>
+<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script>
+<body><script>
+var HV = HerosVues, Hh = location.hash.slice(1).split('/'), L = +Hh[1] || 260;
+var h = {role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert'};
+var LISTE = (Hh[0] || 'repos:0,hanche:0,hanche:35,coucou:0,coucou:-30,tir:0,tir:20,guet:40').split(',');
+document.body.innerHTML = LISTE.map(function(x, i){
+  var a = x.split(':'), P = HV.pose(a[0]); P.cap = +a[1] || 0;
+  return '<div class="c" style="width:' + L + 'px">' + HV.svg(h, P, {id:'p' + i, cadre:'-40 0 380 440'}).replace('<svg ', '<svg width="' + L + '" height="' + Math.round(L * 440 / 380) + '" ') + x + '</div>';
+}).join('');
+</script>

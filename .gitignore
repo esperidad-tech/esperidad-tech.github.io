@@ -68,3 +68,4 @@ jeu/test/mimi-habits/
 jeu/test/mimi-soins/
 # les captures du robot du gros plan, tools/mimi-grosplan.py (refaites à chaque fois)
 jeu/test/mimi-grosplan/
+jeu/heros-vues/sortie/
