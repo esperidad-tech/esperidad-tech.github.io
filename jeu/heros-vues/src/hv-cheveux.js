@@ -172,22 +172,21 @@ COIFFURES.courts = {
   zone:lineaire([[-57, 0], [-33, 0], [-30, 30], [-26, 50], [-18, 64], [-10, 72], [-6, 84], [-3, 108], [2, 128], [6, 150], [9, 180]]),
   frange:'M44 -42 L 44 -16 L 34 -12 C 30 -18 27 -21 24 -23 C 22 -17 19 -14 15 -12 C 15 -18 13 -23 9 -26 C 6 -20 2 -17 -3 -15 C -2 -21 -4 -25 -7 -28 C -10 -22 -14 -18 -19 -16 C -18 -21 -19 -25 -22 -27 C -25 -21 -29 -16 -34 -13 L -44 -16 L -44 -42 Z',
   filsFace:[[[-24, -16], [-22, -28], [-14, -40]], [[-6, -18], [-4, -30], [2, -42]], [[12, -15], [14, -28], [10, -40]], [[26, -18], [26, -30], [20, -42]]],
-  filsCote:[[[70, -10], [100, -24], [140, -38]], [[60, -26], [96, -40], [140, -50]], [[90, -2], [124, -12], [160, -24]]],
-  /* (les boucles : de petites mèches recourbées, sur le dessus et au-dessus des oreilles) */
-  /* (les boucles : des ronds posés tout autour du crâne, dans la masse de derrière — là où ils dépassent, le contour fait des
-     bosses ; [x, y, z, rayon]) */
+  /* (Romain, 20 h 32 : les petites boucles dessinées sur le crâne, « très très très moche » — enlevées. À la place : des mèches
+     ondulées sur les côtés et l'arrière de la tête (on ne dessine que la partie tournée vers nous : elles glissent quand il tourne),
+     et quelques grosses ondulations douces sur le contour) */
+  filsCote:[[[38, -48], [70, -54], [105, -52], [140, -46], [168, -38]], [[62, -32], [92, -42], [122, -40], [150, -34], [174, -24]],
+    [[78, -18], [104, -28], [130, -26], [156, -18], [176, -8]], [[96, -6], [120, -12], [146, -8], [170, 2]], [[20, -56], [60, -60], [110, -59], [160, -54]],
+    [[112, 4], [136, 0], [160, 6]]],
+  /* (les ondulations du contour : de gros ronds posés juste sous la surface des cheveux, dans la masse de derrière — là où ils
+     dépassent, le contour fait de douces bosses ; [x, y, z, rayon]) */
   boucles:(function(){
-    /* (posées juste sous la surface des cheveux — elles ne dépassent que de 3 ou 4 —, en rangs décalés, un peu au hasard, jamais sur
-       le visage : plus on descend, plus elles sont seulement sur les côtés et derrière) */
-    var L = [[0, -57, 2, 6.5]], g = 7, rangs = [[-53, 7, 0], [-47, 10, 0], [-41, 12, 40], [-34, 12, 58], [-27, 11, 78], [-20, 9, 100], [-13, 7, 118], [-6, 5, 138]];
-    function hasard(){ g = (g * 16807) % 2147483647; return g / 2147483647; }
-    rangs.forEach(function(rg, j){
-      var y = rg[0], k = y < -12 ? Math.sqrt(Math.max(0, 1 - Math.pow((y + 12) / 45, 2))) : 1, n = rg[1], a0 = rg[2], i;
+    var L = [], rangs = [[-50, 6, 0, 9.5, 15], [-38, 7, 58, 9, 0], [-24, 5, 108, 8.5, 10]];
+    rangs.forEach(function(rg){
+      var y = rg[0], k = Math.sqrt(Math.max(0, 1 - Math.pow((y + 12) / 45, 2))), n = rg[1], a0 = rg[2], i;
       for(i = 0; i < n; i++){
-        var a = a0 + (360 - 2 * a0) * (n === 1 ? 0.5 : (i + (j % 2) * 0.5) / n) + (hasard() - 0.5) * 10, ar = a * Math.PI / 180, cs = Math.cos(ar);
-        if(a0 > 0 && (a < a0 || a > 360 - a0)) continue;
-        var rr = 5.6 + hasard() * 1.6;
-        L.push([(31.5 * k - 2.5) * Math.sin(ar), y + (hasard() - 0.5) * 3, ((cs >= 0 ? 30 : 35.5) * k - 2.5) * cs, rr]);
+        var a = a0 + (360 - 2 * a0) * (a0 ? (i + 0.5) / n : i / n) + rg[4], ar = a * Math.PI / 180, cs = Math.cos(ar);
+        L.push([(31.5 * k - 5.5) * Math.sin(ar), y, ((cs >= 0 ? 30 : 35.5) * k - 5.5) * cs, rg[3]]);
       }
     });
     return L;
@@ -273,11 +272,13 @@ HV.cheveux = function(K, coif, V, P){
       vider();
     });
   });
-  dans += '<g fill="' + K.chev.c[2] + '" opacity=".4">' + fc + '</g>';
+  /* (sur des cheveux très sombres — noirs —, un trait sombre ne se voit pas : les mèches sont alors tracées en clair) */
+  var hx = K.chev.c[1].replace('#', ''), lum = (parseInt(hx.substr(0, 2), 16) * 0.3 + parseInt(hx.substr(2, 2), 16) * 0.59 + parseInt(hx.substr(4, 2), 16) * 0.11) / 255;
+  dans += lum < 0.25 ? '<g fill="' + K.chev.c[0] + '" opacity=".55">' + fc + '</g>' : '<g fill="' + K.chev.c[2] + '" opacity=".4">' + fc + '</g>';
   /* LES BOUCLES VUES SUR LE CRÂNE (Romain, 23 novembre, 20 h 24 : « quand on tourne, l'arrière de sa coiffure, elle bouge pas. Ça,
      c'est pas normal ») : chaque boucle tournée vers nous est dessinée là où elle est sur la tête (un petit « c » sombre et un reflet) ;
      elles glissent quand la tête tourne, passent derrière le bord, et celles de l'autre côté arrivent */
-  if(coif.boucles){
+  if(coif.boucles && coif.bouclesVues){
     coif.boucles.forEach(function(b){
       var ny = b[1] + 26, nl = Math.sqrt(b[0] * b[0] + ny * ny + b[2] * b[2]) || 1, f = (-b[0] * V.s + b[2] * V.c) / nl;
       if(f < 0.08) return;
