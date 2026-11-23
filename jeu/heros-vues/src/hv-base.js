@@ -108,11 +108,12 @@ function leve(S, x, V, vrai){
   return x * V.c + Z(Math.abs(x)) * V.s;
 }
 /* Un tracé fermé donné de face → la partie qu'on voit, coupée proprement au bord du volume (puis à poser avec leve()) */
-function coupeBord(P, vol, V){
+function coupeBord(P, vol, V, marge){
   var sg = V.s > 0 ? 1 : V.s < 0 ? -1 : 0, n = P.length, i;
   if(!sg) return P;
   function xb(y){ return xBord(vol.a(y, V.w), V); }
-  function dehors(q){ return sg * q[0] - xb(q[1]); }
+  marge = marge || 0;
+  function dehors(q){ return sg * q[0] - xb(q[1]) - marge; }
   var F = P.map(dehors), i0 = -1;
   for(i = 0; i < n; i++) if(F[i] <= 0){ i0 = i; break; }
   if(i0 < 0) return [];
@@ -121,10 +122,10 @@ function coupeBord(P, vol, V){
     var ia = (i0 + i) % n, ib = (i0 + i + 1) % n, A = P[ia], B = P[ib], fa = F[ia], fb = F[ib];
     if(fa <= 0) out.push(A);
     if((fa <= 0) !== (fb <= 0)){
-      var t = fa / (fa - fb), my = A[1] + (B[1] - A[1]) * t, M = [sg * xb(my), my];
+      var t = fa / (fa - fb), my = A[1] + (B[1] - A[1]) * t, M = [sg * (xb(my) + marge), my];
       if(fa <= 0){ out.push(M); sortie = my; }
       else {
-        if(sortie !== null){ var k = Math.max(1, Math.round(Math.abs(my - sortie) / 2.5)), j; for(j = 1; j < k; j++){ var yy = sortie + (my - sortie) * j / k; out.push([sg * xb(yy), yy]); } }
+        if(sortie !== null){ var k = Math.max(1, Math.round(Math.abs(my - sortie) / 2.5)), j; for(j = 1; j < k; j++){ var yy = sortie + (my - sortie) * j / k; out.push([sg * (xb(yy) + marge), yy]); } }
         out.push(M); sortie = null;
       }
     }
@@ -334,7 +335,11 @@ HV.defs = function(K){
     linU(n('chevQ'), [[0, mix(Ch.c[0], Ch.c[1], 0.45)], [0.5, mix(Ch.c[1], Ch.c[2], 0.3)], [1, Ch.c[2]]], -30, -70, 20, 80) +
     linU(n('chevL'), [[0, Ch.hl, 0.95], [0.55, Ch.hl, 0.7], [1, Ch.hl, 0.1]], 0, -54, 0, -30) +
     lin(n('iris'), [[0, Y.c[0]], [0.55, Y.c[1]], [1, Y.c[2]]], 0, 0, 0, 1) +
-    lin(n('tun'), [[0, T[0]], [0.55, T[1]], [1, T[2]]]) +
+    /* la tunique : le même dégradé pour le buste et les manches (dans les mesures du corps), pour qu'ils se fondent */
+    linU(n('tun'), [[0, T[0]], [0.55, T[1]], [1, T[2]]], -46, 136, 46, 276) +
+    /* les matières : la trame du tissu (deux fils croisés), le grain du cuir */
+    '<pattern id="' + n('trame') + '" patternUnits="userSpaceOnUse" width="3.4" height="3.4" patternTransform="rotate(-32)"><path d="M0 .9 H3.4" stroke="' + sombre(T[2], 0.25) + '" stroke-width=".55" opacity=".7"/><path d="M0 2.5 H3.4" stroke="' + clair(T[0], 0.35) + '" stroke-width=".45" opacity=".5"/></pattern>' +
+    '<pattern id="' + n('grain') + '" patternUnits="userSpaceOnUse" width="9" height="8"><path d="M1 2 l1.6 .5 M5.5 5.4 l1.6 -.4" stroke="#2a160a" stroke-width=".6" stroke-linecap="round" opacity=".5"/><path d="M6 1.4 l1.4 .3" stroke="#f0c090" stroke-width=".5" stroke-linecap="round" opacity=".45"/></pattern>' +
     lin(n('tunO'), [[0, mix(T[1], T[2], 0.5)], [1, sombre(T[2], 0.3)]]) +
     lin(n('acc'), [[0, clair(K.tenue, 0.35)], [1, sombre(K.tenue, 0.35)]]) +
     lin(n('pant'), [[0, '#4a4062'], [1, '#221d33']]) +

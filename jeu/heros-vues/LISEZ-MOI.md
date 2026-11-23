@@ -1,6 +1,6 @@
 # Les héros « en volume » — le chantier ouvert le 23 novembre (Bible §13.94)
 
-**Où on en est (23 novembre, 11 h) : un premier personnage, la Pisteuse (fille, queue de cheval, tenue en couleur), tourne sur elle-même et prend des poses. C'EST UN ESSAI HORS DU JEU : rien n'est branché dans `build.py`, rien n'est en ligne, `persos.js` n'est pas touché. Romain doit le voir et dire si c'est la bonne direction avant qu'on aille plus loin.**
+**Où on en est (23 novembre, 11 h 40) : un premier personnage, la Pisteuse (fille, queue de cheval, tenue en couleur), tourne sur elle-même et prend des poses. Romain l'a vue à 11 h (« c'est exactement ce que je voulais ») ; ses défauts sont corrigés dans la deuxième version (voir plus bas). C'EST UN ESSAI HORS DU JEU : rien n'est branché dans `build.py`, rien n'est en ligne, `persos.js` n'est pas touché. Romain doit le voir et dire si c'est la bonne direction avant qu'on aille plus loin.**
 
 ## Ce que Romain a demandé
 - 23 novembre, 9 h 58 (après avoir refusé une tête tournée collée sur le héros de face, le pantin du donjon et la vraie 3D) : « Je préfère vraiment que tu fasses comme avec Mimi le chat. Mais il faut que ça soit plus joli. Et peut-être qu'il y ait plus de transition entre le moment où elle est tournée à 90 degrés et le moment où elle est de face. »
@@ -28,15 +28,26 @@ Comme Mimi (`jeu/src/mimi-vues.js`) : le héros n'est pas une série de dessins 
 - la page d'essai : https://claude.ai/artifact/Xc46TS5qmRis4ofSURCdRn
 - le film `pisteuse-se-tourne.mp4` et la planche `planche-pisteuse.png` (dans la conversation).
 
+## L'avis de Romain (11 h) et la deuxième version (11 h 40)
+Il veut : des mains moins « moufles », que ça fasse **moins pantin** (« que le bras soit intégré dans l'épaule », pas de trait qui le détache ; pareil pour les jambes, les genoux, les pieds), plus d'oreille qui apparaît et disparaît, une Pisteuse moins maigre (surtout de profil), et les textures du matin. Fait :
+- **la tunique d'un seul tenant** : un seul contour pour le buste et les manches de devant, le même dégradé (`tun`) ; le trait d'un bras ne commence qu'à l'aisselle (`bras().libre`) ; l'épaule du bras du fond se fond dans le buste (`epaule`) ; le relief de chaque os en travers de lui (`relief()`) ;
+- **les mains** : un pouce, la paume et les doigts d'un seul tenant, trois traits ;
+- **l'oreille** : toujours juste après la peau, jamais par-dessus les cheveux ; la `zone` de la coiffure passe au-dessus puis derrière elle ;
+- **la carrure** : buste, bras, jambes, bottes plus épais ;
+- **la frange vue par la tranche** : `poseC` lui garde un peu d'épaisseur passé le bord ;
+- **les matières de la maquette du matin** (`claude/maquette-heros-coiffures.md` dans le projet) : `trame`, `grain`, plis, coutures, sangles des bottes, ombres portées, liseré froid, mèches folles. **Les seize nouvelles coiffures de cette maquette ne sont pas encore portées** (c'est l'étape « toutes les coiffures »).
+
+**La suite voulue par Romain** : tous les personnages avec toutes les coiffures, puis les poses (le Pisteur d'abord, les autres ensuite).
+
 ## Ce qui n'est PAS fait (dit à Romain)
 - **Un seul héros** : la Pisteuse fille, queue de cheval. Pas les garçons (leur visage, `visageM`), pas les âges (enfant, âgé), pas les trois autres rôles (leurs habits : manteau de l'Alchimiste, pourpoint du Barde, robe du Sage), pas les 31 autres coiffures, ni les barbes, les chapeaux, la garde-robe du Pisteur (`garderobe.js`), les objets, les villageois.
 - **Rien dans le jeu** : `Persos.heros(h, {vue:'tete'|'buste'|'pied'})` est appelé partout (création, portraits, Carnet, cabane, descente, donjon : `heros-anime.js` a ses propres pantins). Il faudra décider écran par écran.
 - **La vitesse n'est pas mesurée** sur une vieille tablette : chaque image refait tout le dessin (`innerHTML`). Si ça rame : garder en mémoire les dessins par angle (« cuire », comme au donjon), ou n'écrire que ce qui change (comme Mimi, `data-m`).
-- **Petits défauts connus** : le bras du fond change de couche vers 16° (un trait apparaît d'un coup) ; vers 75° la mèche du milieu de la frange devient une barre fine ; les mains sont des moufles (un pouce seulement) ; pas de hochement de tête (seulement tourner et pencher) ; une seule expression (le sourire) ; de dos c'est simple (pas de couture, la nuque est nue).
+- **Petits défauts connus** : le bras du fond change encore de couche vers 16° (bien moins visible : son épaule est fondue) ; pas de hochement de tête (seulement tourner et pencher) ; une seule expression (le sourire) ; de dos c'est simple (la nuque est nue) ; les jambes ne plient pas encore (pas de pose accroupie) ; la trame du tissu ne tourne pas avec elle (elle reste droite à l'écran).
 - Les décisions du matin restent à prendre (`claude/maj-23-novembre-heros.md` dans le projet) : seize coiffures par sexe, la fin des niveaux, talents et objets, le code du visage à huit coiffures, etc.
 
 ## Pour continuer (dans l'ordre proposé, après l'avis de Romain)
-1. Ses retouches sur la Pisteuse (le visage de trois quarts, les mains, ce qu'il trouve « pas joli »).
+1. Son avis sur la deuxième version.
 2. Le garçon (même corps, sa tête : `visageM`, ses yeux, une première coupe), puis les trois autres rôles (un volume par vêtement).
 3. Les coiffures : chacune = `zone` + `frange` (son tracé de face existe déjà dans `persos.js`) + `meches` / `queue`. Compter une vraie séance.
 4. Les poses de chaque rôle (Romain en veut plusieurs pour le Pisteur : furtif, chasseur, combattant).

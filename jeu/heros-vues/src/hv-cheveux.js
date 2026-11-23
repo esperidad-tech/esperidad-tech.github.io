@@ -35,7 +35,13 @@ function lineaire(T){
     return vers(T[i][1], T[i + 1][1], (y - T[i][0]) / (T[i + 1][0] - T[i][0]));
   };
 }
-function poseC(x, y, V){ return [leve(COIFFE.a(y, V.w), x, V, true), y]; }
+/* poser un point de la frange. Passé le bord, la mèche ne s'aplatit pas en un trait : elle garde un peu d'épaisseur et fait le
+   tour du bord (une mèche vue par la tranche) */
+function poseC(x, y, V){
+  var S = COIFFE.a(y, V.w), sg = V.s > 0 ? 1 : V.s < 0 ? -1 : 0, xh = U.xBord(S, V), d = sg * x - xh;
+  if(sg && d > 0) return [leve(S, sg * xh, V, true) + sg * 2.6 * Math.sin(Math.PI * Math.min(1, d / 6)) * U.doux(-41, -27, y), y];
+  return [leve(S, x, V, true), y];
+}
 /* un point de la surface de la chevelure : t (degrés autour de la tête, 0 devant), y, r : de combien il s'en écarte → {p : [X, y], vu} */
 function surC(td, y, V, r){
   var S = COIFFE.a(y, V.w), t = td * RAD, q = U.point(S, t);
@@ -138,7 +144,8 @@ function anneau(K, cx, cy, rx, ry, a0, a1, n, h){
    ========================================================== */
 var COIFFURES = HV.COIFFURES = {};
 COIFFURES.queue = {
-  zone:lineaire([[-57, 0], [-31, 0], [-29, 28], [-26, 46], [-20, 62], [-12, 72], [-4, 78], [1, 84], [3.5, 96], [6, 106], [10, 128], [14, 158], [16.5, 180]]),
+  /* (les cheveux passent au-dessus de l'oreille puis derrière elle : elle est dégagée) */
+  zone:lineaire([[-57, 0], [-31, 0], [-29, 28], [-26, 46], [-20, 62], [-12, 72], [-7.5, 80], [-5.5, 112], [6, 116], [10, 130], [14, 158], [16.5, 180]]),
   /* la frange, vue de face : son bord du bas (le tracé de persos.js), fermée par le haut du crâne */
   frange:'M44 -42 L 44 -12 L 31 -3 C 28 -12 25 -18 20 -23 C 18 -14 14 -8 8 -4 C 10 -14 8 -22 2 -29 C -4 -19 -12 -13 -22 -10 C -18 -16 -16 -22 -16 -28 C -20 -19 -25 -11 -30 -2 L -44 -12 L -44 -42 Z',
   /* le creux sombre sous la grande mèche */
@@ -147,7 +154,9 @@ COIFFURES.queue = {
   /* sur le côté et l'arrière : les cheveux tirés vers la queue de cheval ([degrés autour de la tête, y] ; l'autre côté est en miroir) */
   filsCote:[[[70, -8], [105, -24], [152, -42]], [[60, -23], [100, -37], [146, -49]], [[82, 1], [118, -11], [162, -33]], [[110, 8], [136, -3], [170, -25]], [[36, -41], [88, -48], [140, -53]]],
   /* les deux mèches devant les oreilles : [points dans l'espace x, y, z], largeur */
-  meches:[{p:[[-28.5, -12, 6], [-33, 4, 3], [-32.2, 18, 3], [-27, 31, 5.5]], w:8}, {p:[[28.5, -12, 6], [33, 4, 3], [32.2, 18, 3], [27, 31, 5.5]], w:8}],
+  meches:[{p:[[-28.5, -12, 6], [-33, 4, 3], [-32.2, 18, 3], [-27, 31, 5.5]], w:8}, {p:[[28.5, -12, 6], [33, 4, 3], [32.2, 18, 3], [27, 31, 5.5]], w:8},
+    /* deux petites mèches folles qui cassent le contour du crâne */
+    {p:[[-13, -52, 8], [-17.5, -57, 6], [-22.5, -56.6, 4]], w:3.4}, {p:[[11, -55, 2], [10.5, -60, 0], [7, -62, -2]], w:3.2}],
   /* la queue de cheval : attachée haut derrière la tête */
   queue:{p:[[3, -51, -21], [9, -65, -33], [13, -51, -47], [13, -16, -50], [10, 22, -44], [13, 66, -38]],
     larg:table([[0, 4.4], [0.1, 6.4], [0.28, 7.4], [0.6, 6.4], [0.85, 3.9], [1, 0.3]]),
@@ -201,7 +210,7 @@ HV.cheveux = function(K, coif, V, P){
   L.push(cal.d);
   var ombre = '';
   if(coif.frange && face){
-    var fr = U.points(coif.frange, 9).map(function(sp){ return U.poly(U.coupeBord(sp, COIFFE, V).map(function(p){ return poseC(p[0], p[1], V); })); }).join(' ');
+    var fr = U.points(coif.frange, 9).map(function(sp){ return U.poly(U.coupeBord(sp, COIFFE, V, 6).map(function(p){ return poseC(p[0], p[1], V); })); }).join(' ');
     L.push(fr); ombre = fr;
   }
   L = L.concat(mDev);
