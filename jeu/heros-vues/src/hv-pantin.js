@@ -1,8 +1,9 @@
 /* ==========================================================
    Les héros « en volume » — 5 sur 5 : LE PANTIN (ce qui assemble le dessin, et ce qui le fait vivre).
    HV.dessin(h, P, o) → le dessin (du SVG) du héros h dans la pose P, pour un cadre 300 × 440 :
-     P.cap : vers où le corps est tourné (0 de face, 90 à droite, -90 à gauche) ; P.tete : la tête en plus, par rapport au corps ;
-     P.pen : elle penche la tête ; P.rx, P.ry : le regard ; P.yo : les yeux ouverts ; P.souffle ; P.qx, P.qz : la queue de cheval…
+     P.cap : vers où le corps est tourné (0 de face, 90 à droite, -90 à gauche) ; P.tete : la tête en plus, par rapport au buste ;
+     P.pen : elle penche la tête ; P.hoche : elle la baisse ; P.rx, P.ry : le regard ; P.yo : les yeux ouverts ; P.souffle ;
+     P.qx, P.qz : la queue de cheval ; et tout ce que dit une pose (HV.POSES, plus bas).
    ========================================================== */
 (function(G){
 'use strict';
@@ -10,41 +11,72 @@ var HV = G.HerosVues, U = HV.outils, RAD = HV.RAD, f1 = U.f1;
 
 HV.dessin = function(h, P, o){
   o = o || {}; P = P || {};
-  if(HV.POSES && !P.mainG){ var B0 = HV.POSES.repos, P2 = {}, kk; for(kk in B0) P2[kk] = B0[kk]; for(kk in P) P2[kk] = P[kk]; P = P2; }
-  var K = o.K || HV.contexte(o.id || 'hv', h), cap = P.cap || 0, dt = P.tete || 0;
-  var Vb = U.vue(cap), Vt = U.vue(cap + dt);
+  var B0 = HV.POSES.repos, P2 = {}, kk;
+  for(kk in B0) P2[kk] = B0[kk];
+  for(kk in P) P2[kk] = P[kk];
+  P = P2;
+  var K = o.K || HV.contexte(o.id || 'hv', h), Vb = U.vue(P.cap || 0);
+  var C = HV.corps(K, h, Vb, P), tp = C.tete, Vt = tp.V;
+  /* la tête : au bout du cou (hv-corps.js). Quand elle baisse la tête, vue de profil la tête penche vers l'avant ; vue de face,
+     ce sont les traits du visage et la frange qui descendent. La queue de cheval, elle, continue de pendre vers le bas. */
+  var rot = tp.rot, pend = Math.tan(Math.max(-0.9, Math.min(0.9, rot * RAD))) * 100;
+  P.hocheF = tp.hocheF; P.qx = (P.qx || 0) + pend * Vt.c; P.qz = (P.qz || 0) + pend * Vt.s;
   var coif = HV.COIFFURES[h.coiffure] || HV.COIFFURES.queue;
-  var CH = HV.cheveux(K, coif, Vt, P), T = HV.tete(K, h, Vt, P, CH), C = HV.corps(K, h, Vb, P);
-  /* la place de la tête : elle tourne autour de l'axe du cou */
-  var xo = 3 * Math.sin(dt * RAD), zo = -2 + 3 * Math.cos(dt * RAD), Xo = xo * Vb.c + zo * Vb.s + (P.tx || 0), Yo = 92 + (P.ty || 0);
-  var tT = 'translate(' + f1(Xo) + ' ' + f1(Yo) + ')' + (P.pen ? ' rotate(' + f1(P.pen) + ' 0 28)' : '');
-  var haut = 'translate(' + f1(150 + (P.bx || 0)) + ' ' + f1(-(P.souffle || 0) * 1.3) + ')';
-  var ombreCou = '<path d="' + T.peau + '" transform="translate(' + f1(Xo + 1.2) + ' ' + f1(Yo + 7.5) + ')" fill="' + K.peau.ombre + '" opacity=".8"/>';
-  var s = '<ellipse cx="150" cy="415" rx="' + f1(50 + 8 * Math.abs(Vb.s)) + '" ry="7" fill="' + K.u('ombre') + '"/>';
+  var CH = HV.cheveux(K, coif, Vt, P), T = HV.tete(K, h, Vt, P, CH);
+  var tT = 'translate(' + f1(tp.tx + (P.tx || 0)) + ' ' + f1(tp.ty + (P.ty || 0)) + ')' + (rot ? ' rotate(' + f1(rot) + ' ' + f1(tp.px) + ' 28)' : '');
+  var ombreCou = '<path d="' + T.peau + '" transform="translate(1.2 7.5) ' + tT + '" fill="' + K.peau.ombre + '" opacity=".8"/>';
+  var om = C.ombre, s = '<ellipse cx="' + f1(150 + om.cx) + '" cy="' + f1(om.cy) + '" rx="' + f1(om.rx) + '" ry="7" fill="' + K.u('ombre') + '"/>';
   /* l'ordre des morceaux : la tête vue de face (les cheveux de derrière d'abord, le visage à la fin) ou de dos (le visage d'abord,
      puis le cou, puis les cheveux par-dessus) ; la queue de cheval passe devant tout quand elle est de notre côté */
-  var tDos = Vt.c < -0.15, G1 = '<g transform="' + tT + '">', bras = P.brasDessus ? '' : C.devant;
-  s += '<g transform="' + haut + '">' + G1 + (CH.queueDevant ? '' : CH.queue) + (tDos ? '' : CH.dos) + '</g>' + C.derriere + '</g>';
-  s += '<g transform="translate(150 0)">' + C.jambes + '</g>';
-  s += '<g transform="' + haut + '">' + (tDos ? G1 + T.svg + '</g>' : '') + C.cou(Yo + (tDos ? 15 : 8), tDos ? '<rect x="-30" y="' + f1(Yo + 12) + '" width="60" height="13" fill="' + K.peau.ombre + '" opacity=".75"/>' : ombreCou) + C.torse + C.carquoisDevant + bras +
-    G1 + (tDos ? CH.dos + CH.devant : T.svg + CH.devant + T.sourcils) + (CH.queueDevant ? CH.queue : '') + '</g>' + (P.brasDessus ? C.devant : '') + '</g>';
+  var tDos = Vt.c < -0.15, G1 = '<g transform="' + tT + '">', dessus = P.brasDessus > 0.5, bras = dessus ? '' : C.devant;
+  var nuque = '<g transform="' + tT + '"><rect x="-30" y="12" width="60" height="13" fill="' + K.peau.ombre + '" opacity=".75"/></g>';
+  var visage = G1 + (tDos ? CH.dos + CH.devant : T.svg + CH.devant + T.sourcils) + (CH.queueDevant ? CH.queue : '') + '</g>';
+  /* (penchée loin de nous, vue de dos : la tête est derrière les épaules) */
+  var loin = tp.fond < -22;
+  s += '<g transform="translate(150 0)">' + G1 + (CH.queueDevant ? '' : CH.queue) + (tDos ? '' : CH.dos) + '</g>' + C.derriere + C.jambes +
+    (tDos ? G1 + T.svg + '</g>' : '') + (loin ? visage : '') + C.cou(tDos, tDos ? nuque : ombreCou) + C.torse + C.carquoisDevant + bras +
+    (loin ? '' : visage) + (dessus ? C.devant : '') + '</g>';
   return s;
 };
+/* les os d'une pose (où sont le bassin, les genoux, les mains…), dans les mesures du héros : pour vérifier une pose, poser un objet */
+HV.os = function(h, P){
+  var B0 = HV.POSES.repos, P2 = {}, kk;
+  for(kk in B0) P2[kk] = B0[kk];
+  for(kk in P) P2[kk] = P[kk];
+  return HV.corps(HV.contexte('os', h), h, U.vue(P2.cap || 0), P2).os;
+};
+
 /* ==========================================================
-   LES POSES : où sont les mains, les pieds, la tête. Une pose ne dit que ce qui change par rapport à « repos ».
-   (mainG : SON bras droit, à gauche de l'écran quand elle est de face — celui qui tient l'arc ; mainD : SON bras gauche.)
+   LES POSES. Une pose ne dit que ce qui change par rapport à « repos » ; « repos » donne TOUTES les clés (on glisse de l'une
+   à l'autre en mélangeant les nombres). Les mesures : x > 0 vers SA gauche, y vers le bas (le sol : 414), z vers l'avant.
+   - mainG : SON bras droit (à gauche de l'écran quand elle est de face), celui qui tient l'arc ; mainD : SON bras gauche.
+     Le poignet. relG / relD : 1, la main suit le buste (mesures du héros debout) ; 0, elle est exactement là (au sol, sur un genou).
+     coudeG / coudeD : de quel côté va le coude. mdirG / mdirD : vers où pointent les doigts ([0, 0, 0] : comme l'avant-bras).
+     pouceG / pouceD : de quel côté est le pouce. poingG / poingD : 0 ouverte … 1 fermée. indexG / indexD : 1, l'index reste tendu.
+   - piedG / piedD : la cheville. genouG / genouD : de quel côté va le genou. ouvG / ouvD : le pied tourné en dehors.
+     pointeG / pointeD (degrés) : 0 à plat, 50 sur la pointe, 90 les orteils repliés (un genou à terre).
+   - bas [x, y, z] : le bassin se déplace (y > 0 : il descend). bang [avant, côté, vrille] : le bassin penche (degrés).
+     dos [avant, côté, vrille] : le dos se courbe de la taille aux épaules.
+   - tete : elle tourne la tête ; pen : elle la penche sur le côté ; hoche : elle la baisse (> 0) ou lève le nez.
+   - arcAxe : dans quel sens est tenu l'arc (debout : [0, 1, 0]) ; arcDir : de quel côté est son ventre (la corde est à l'opposé) ;
+     tendu ; dague : 1, elle a sa dague dans SA main gauche ; brasDessus : 1, les bras passent devant la tête.
    ========================================================== */
 HV.POSES = {
-  repos:{mainG:[-50.5, 243, 4], coudeG:[-0.7, -0.1, -0.7], mainD:[50.5, 243, 4], coudeD:[0.7, -0.1, -0.7], piedG:[-19.5, 386, 5], piedD:[19.5, 386, -5], ouvG:0.3, ouvD:0.3,
-    tete:0, pen:0, bx:0, ty:0, sourcils:0, arcDir:[-0.82, 0, 0.57], tendu:0, brasDessus:0},
+  repos:{mainG:[-50.5, 243, 4], coudeG:[-0.7, -0.1, -0.7], mainD:[50.5, 243, 4], coudeD:[0.7, -0.1, -0.7], relG:1, relD:1, mdirG:[0, 0, 0], mdirD:[0, 0, 0],
+    pouceG:[0.25, 0.1, 1], pouceD:[-0.25, 0.1, 1], poingG:0.75, poingD:0.15, indexG:0, indexD:0,
+    piedG:[-19.5, 386, 5], piedD:[19.5, 386, -5], genouG:[-0.25, 0, 1], genouD:[0.25, 0, 1], ouvG:0.3, ouvD:0.3, pointeG:0, pointeD:0,
+    bas:[0, 0, 0], bang:[0, 0, 0], dos:[0, 0, 0], tete:0, pen:0, hoche:0, bx:0, ty:0, sourcils:0,
+    arcDir:[-0.82, 0, 0.57], arcAxe:[0, 1, 0], tendu:0, dague:0, brasDessus:0},
   /* une main sur la hanche, la tête un peu penchée */
-  hanche:{mainD:[32, 213, 11], coudeD:[1, -0.1, -0.5], pen:-5, bx:2.5, piedD:[24, 386, -4]},
-  /* elle fait coucou de sa main libre */
-  coucou:{mainD:[73, 103, 12], coudeD:[0.5, 1, -0.1], pen:4, sourcils:0.6, brasDessus:1},
+  hanche:{mainD:[33, 211, 10], coudeD:[1, -0.1, -0.5], mdirD:[-0.45, 0.75, 0.45], pouceD:[0.3, 0.3, -1], poingD:0.35, pen:-5, bx:2.5, piedD:[24, 386, -4]},
+  /* elle fait coucou de sa main libre (la paume vers nous) */
+  coucou:{mainD:[73, 103, 12], coudeD:[0.5, 1, -0.1], mdirD:[0.05, -1, 0], pouceD:[-1, 0, 0], poingD:0, pen:4, sourcils:0.6, brasDessus:1},
   /* elle vise : le bras de l'arc tendu sur le côté, la corde à la joue, la tête tournée vers la cible */
-  tir:{mainG:[-116, 151, 5], coudeG:[0, 0.7, -0.6], mainD:[17, 128, 12], coudeD:[1, -0.35, -0.3], tete:-84, sourcils:-0.6, arcDir:[-1, 0, 0.04], tendu:1, brasDessus:1,
+  tir:{mainG:[-116, 151, 5], coudeG:[0, 0.7, -0.6], mainD:[17, 128, 12], coudeD:[1, -0.35, -0.3], poingD:0.8, tete:-84, sourcils:-0.6, arcDir:[-1, 0, 0.04], tendu:1, brasDessus:1,
     piedG:[-26, 386, 3], piedD:[22.5, 386, -3]}
 };
+/* les poses, dans l'ordre où on les montre : [nom, ce qu'on dit à l'écran] (HV.LISTE est complétée par hv-poses.js) */
+HV.LISTE = [['repos', 'Au repos'], ['hanche', 'La main sur la hanche'], ['coucou', 'Coucou !'], ['tir', 'Elle vise']];
 HV.pose = function(nom){
   var B = HV.POSES.repos, Q = HV.POSES[nom] || {}, R = {}, k;
   for(k in B) R[k] = Q[k] !== undefined ? Q[k] : B[k];
@@ -59,6 +91,7 @@ function melange(a, b, t){
   }
   return R;
 }
+HV.melange = melange;
 function eio(u){ return u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2; }
 
 /* ==========================================================
@@ -91,9 +124,12 @@ function Pantin(hote, h, o){
 var PP = Pantin.prototype;
 PP.detruire = function(){ this.mort = true; var i = PANTINS.indexOf(this); if(i >= 0) PANTINS.splice(i, 1); };
 PP.vers = function(angle, net){ this.capV = angle; if(net){ this.cap = angle; this.vc = 0; } lancer(); };
+/* elle prend une pose. dur (secondes) : sinon, d'autant plus longtemps que le bassin a de chemin à faire (se relever, s'accroupir) */
 PP.pose = function(nom, dur){
   if(nom === this.nom) return;
-  this.A = this.courante(); this.B = HV.pose(nom); this.tw = 0; this.dur = dur || 0.45; this.nom = nom; this.tPose = this.t;
+  this.A = this.courante(); this.B = HV.pose(nom);
+  var dy = Math.abs(this.B.bas[1] - this.A.bas[1]), dz = Math.abs(this.B.bas[2] - this.A.bas[2]);
+  this.tw = 0; this.dur = dur || 0.45 + Math.min(0.45, (dy + dz) / 200); this.nom = nom; this.tPose = this.t;
   lancer();
 };
 PP.courante = function(){ return this.tw >= 1 ? this.B : melange(this.A, this.B, eio(this.tw)); };
@@ -111,7 +147,7 @@ PP.image = function(now){
 PP.dessiner = function(dt){
   var t = (this.t += dt), TAU = Math.PI * 2;
   if(this.tw < 1) this.tw = Math.min(1, this.tw + dt / this.dur);
-  var F = melange({}, this.courante(), 1), nom = this.nom, i;
+  var F = melange({}, this.courante(), 1), nom = this.nom;
   /* --- elle se tourne : un ressort bien amorti ; la tête prend de l'avance, les yeux encore plus --- */
   var ec = this.capV - this.cap;
   this.vc += (62 * ec - 15.5 * this.vc) * dt; this.cap += this.vc * dt;
@@ -133,8 +169,9 @@ PP.dessiner = function(dt){
     F.souffle = 0.5 + 0.5 * re;
     F.pen += 1.1 * Math.sin(TAU * t / 7.3 + 1); F.tete += 2.6 * Math.sin(TAU * t / 9.1);
     F.qx += 1.5 * Math.sin(TAU * t / 4.2); F.qz += 0.8 * Math.sin(TAU * t / 5.7 + 2);
-    F.mainG = [F.mainG[0] - 0.7 * re, F.mainG[1] + 0.3 * re, F.mainG[2] + 1.2 * Math.sin(TAU * t / 5.1)];
-    F.mainD = [F.mainD[0] + 0.7 * re, F.mainD[1] + 0.3 * re, F.mainD[2] - 1.2 * Math.sin(TAU * t / 5.1)];
+    /* (une main posée au sol ou sur un genou ne bouge pas) */
+    F.mainG = [F.mainG[0] - 0.7 * re * F.relG, F.mainG[1] + 0.3 * re * F.relG, F.mainG[2] + 1.2 * Math.sin(TAU * t / 5.1) * F.relG];
+    F.mainD = [F.mainD[0] + 0.7 * re * F.relD, F.mainD[1] + 0.3 * re * F.relD, F.mainD[2] - 1.2 * Math.sin(TAU * t / 5.1) * F.relD];
     var cl = this.cli;
     if(cl.d > 0){ cl.d -= dt; F.yo = 1 - Math.sin(Math.PI * Math.max(0, Math.min(1, 1 - cl.d / 0.17))); if(cl.d <= 0) cl.t = t + 2.2 + Math.random() * 3.6; }
     else if(t > cl.t){ cl.d = 0.17; if(Math.random() < 0.2) cl.t = t + 0.32; }
@@ -145,9 +182,10 @@ PP.dessiner = function(dt){
   }
   if(t < this.reg.jusqu){ F.rx = this.reg.cx; F.ry = this.reg.cy; }
   /* --- les gestes des poses --- */
-  var w = nom === this.nom ? eio(this.tw) : 0, tp = t - (this.tPose || 0);
-  if(nom === 'coucou'){ var a = Math.sin(TAU * tp * 2.3); F.mainD = [F.mainD[0] + 9 * a * w, F.mainD[1] + 3 * Math.abs(a) * w, F.mainD[2]]; F.yo = Math.min(F.yo, 1 - 0.0 * w); }
+  var w = eio(this.tw), tp = t - (this.tPose || 0), g = HV.GESTES && HV.GESTES[nom];
+  if(nom === 'coucou'){ var a = Math.sin(TAU * tp * 2.3); F.mainD = [F.mainD[0] + 9 * a * w, F.mainD[1] + 3 * Math.abs(a) * w, F.mainD[2]]; }
   if(nom === 'tir'){ F.rx = -0.5 * w; F.souffle *= 0.4; }
+  if(g) g(F, w, tp, this);
   this.F = F;
   this.fig.innerHTML = HV.dessin(this.h, F, {K:this.K});
 };

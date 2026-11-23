@@ -37,7 +37,9 @@ function lineaire(T){
 }
 /* poser un point de la frange. Passé le bord, la mèche ne s'aplatit pas en un trait : elle garde un peu d'épaisseur et fait le
    tour du bord (une mèche vue par la tranche) */
+var HO = 0;      /* (elle baisse la tête, vue de face : la frange descend sur le front — hv-tete.js fait glisser le visage) */
 function poseC(x, y, V){
+  if(HO) y += HO * U.doux(-42, -28, y);
   var S = COIFFE.a(y, V.w), sg = V.s > 0 ? 1 : V.s < 0 ? -1 : 0, xh = U.xBord(S, V), d = sg * x - xh;
   if(sg && d > 0) return [leve(S, sg * xh, V, true) + sg * 2.6 * Math.sin(Math.PI * Math.min(1, d / 6)) * U.doux(-41, -27, y), y];
   return [leve(S, x, V, true), y];
@@ -169,6 +171,7 @@ COIFFURES.queue = {
 HV.cheveux = function(K, coif, V, P){
   P = P || {};
   var dos = '', L = [], fils = '', i, sg = V.s >= 0 ? 1 : -1, face = V.c > -0.3;
+  HO = borne((P.hocheF || 0) * 0.16, -3, 5);
   /* --- la queue de cheval --- */
   var Q = coif.queue, queue = '';
   if(Q){

@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8">
+<!-- Le passage d'une pose à une autre, image par image : passage.html#de:vers:angle,de:vers:angle…/taille/nombre d'images
+     (pour vérifier qu'on glisse bien de l'une à l'autre, sans coupe bizarre) -->
+<style>body{margin:0;background:#131932;padding:8px;font:12px sans-serif;color:#cfd6ff}
+.r{display:flex;gap:4px;margin-bottom:8px;align-items:flex-end}.c{text-align:center}svg{background:#1b2347;border-radius:6px;display:block}</style>
+<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script><script src="../src/hv-poses.js"></script>
+<body><script>
+var HV = HerosVues, Hh = decodeURIComponent(location.hash.slice(1)).split('/'), L = +Hh[1] || 200, N = +Hh[2] || 8;
+var h = {role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert'}, n = 0;
+function eio(u){ return u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2; }
+document.body.innerHTML = (Hh[0] || 'repos:accroupie:30').split(',').map(function(x){
+  var a = x.split(':'), A = HV.pose(a[0]), B = HV.pose(a[1]), s = '<div class="r">', i;
+  for(i = 0; i <= N; i++){
+    var P = HV.melange(A, B, eio(i / N)); P.cap = +a[2] || 0;
+    s += '<div class="c">' + HV.svg(h, P, {id:'p' + (n++), cadre:'-70 20 440 420'}).replace('<svg ', '<svg width="' + L + '" height="' + Math.round(L * 420 / 440) + '" ') + (i === 0 ? a[0] : i === N ? a[1] : '') + '</div>';
+  }
+  return s + '</div>';
+}).join('');
+</script>

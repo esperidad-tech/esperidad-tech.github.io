@@ -3,23 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>La Pisteuse qui se tourne — essai</title>
+<title>La Pisteuse : ses poses — essai</title>
 <style>
 :root{--nuit:#131932;--nuit2:#1d2550;--encre:#24182e;--jaune:#ffd23f;--texte:#e9ecff;--doux:#9aa6d8}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--nuit);color:var(--texte);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-main{max-width:980px;margin:0 auto;padding:14px 12px 28px}
+main{max-width:1040px;margin:0 auto;padding:14px 12px 28px}
 h1{font-size:20px;margin:4px 0 2px;font-weight:800;text-wrap:balance}
 p.sous{margin:0 0 10px;color:var(--doux);font-size:14px}
 .scene{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
-@media(min-width:760px){.scene{grid-template-columns:minmax(0,430px) minmax(0,1fr);align-items:start}}
+@media(min-width:760px){.scene{grid-template-columns:minmax(0,440px) minmax(0,1fr);align-items:start}.colle{position:sticky;top:8px}}
+@media(max-width:759px){.colle{position:sticky;top:0;z-index:5;background:var(--nuit);padding-bottom:6px}#plateau{max-width:340px;margin:0 auto}}
 #plateau{position:relative;border-radius:18px;background:radial-gradient(120% 90% at 50% 34%,#34407e 0%,#1d2550 55%,#141a3a 100%);overflow:hidden;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none}
 #plateau.tire{cursor:grabbing}
 #plateau svg{display:block;width:100%;height:auto}
 #plateau .aide{position:absolute;left:0;right:0;top:10px;text-align:center;font-size:13px;color:#cdd5ff;opacity:.85;pointer-events:none}
+#nom{position:absolute;left:10px;bottom:8px;font-size:14px;font-weight:700;color:var(--jaune);background:rgba(10,14,40,.5);padding:3px 10px;border-radius:99px}
 #angle{position:absolute;bottom:8px;right:10px;font-size:13px;color:#cdd5ff;background:rgba(10,14,40,.5);padding:3px 9px;border-radius:99px;font-variant-numeric:tabular-nums}
 .bloc{background:var(--nuit2);border-radius:14px;padding:10px 12px;margin-bottom:10px}
 .bloc h2{font-size:14px;margin:0 0 8px;color:#cdd5ff;font-weight:700}
+.bloc h3{font-size:12px;margin:10px 0 6px;color:var(--doux);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.bloc h3:first-of-type{margin-top:0}
 .rang{display:flex;flex-wrap:wrap;gap:8px}
 button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:10px 14px;background:var(--jaune);color:#111;cursor:pointer;min-height:44px}
 button:active{transform:translateY(1px)}
@@ -33,11 +37,11 @@ button.gris{background:#3a4480;color:#fff}
 </head>
 <body>
 <main>
-<h1>La Pisteuse qui se tourne</h1>
-<p class="sous">Un essai, hors du jeu. Chaque image est un vrai dessin, refait pour l'angle demandé : rien n'est retourné ni écrasé.</p>
+<h1>La Pisteuse : le corps qui se plie, les mains, ses poses</h1>
+<p class="sous">Un essai, hors du jeu. Chaque image est un vrai dessin, refait pour l'angle et la pose demandés : rien n'est retourné ni écrasé.</p>
 <div class="scene">
-  <div>
-    <div id="plateau"><div id="heros"></div><div id="angle">0°</div><div class="aide">Fais glisser le doigt pour la faire tourner</div></div>
+  <div class="colle">
+    <div id="plateau"><div id="heros"></div><div id="nom">Au repos</div><div id="angle">0°</div><div class="aide">Fais glisser le doigt pour la faire tourner</div></div>
   </div>
   <div>
     <div class="bloc"><h2>Se tourner</h2>
@@ -47,24 +51,24 @@ button.gris{background:#3a4480;color:#fff}
       </div>
     </div>
     <div class="bloc"><h2>Prendre une pose</h2>
-      <div class="rang" id="poses">
-        <button data-pose="repos" class="on">Au repos</button><button data-pose="hanche">La main sur la hanche</button><button data-pose="coucou">Coucou !</button><button data-pose="tir">Elle vise</button>
-      </div>
+      <div id="poses"></div>
+      <div class="rang" style="margin-top:12px"><button id="defile" class="gris">▶ Les enchaîner toutes</button></div>
+      <p class="note">Elle glisse d'une pose à l'autre : le bassin descend, les pieds restent au sol, le dos se plie, la tunique suit.</p>
     </div>
     <div class="bloc"><h2>Les dessins entre la face et le profil</h2>
       <div id="vues"></div>
-      <p class="note">Avant : 3 dessins (face, trois quarts, profil). Ici il y en a autant qu'on veut : le dessin est recalculé pour chaque angle.</p>
+      <p class="note">Le dessin est recalculé pour chaque angle : il y en a autant qu'on veut, pour chaque pose.</p>
     </div>
   </div>
 </div>
 </main>
 <!--SCRIPTS-->
-<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script>
+<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script><script src="../src/hv-poses.js"></script>
 <!--/SCRIPTS-->
 <script>
 (function(){
   var HV = window.HerosVues, h = {role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert'};
-  var CADRE = '-40 0 380 446', plateau = document.getElementById('plateau'), etiq = document.getElementById('angle');
+  var CADRE = '-70 4 440 440', plateau = document.getElementById('plateau'), etiq = document.getElementById('angle'), nomEl = document.getElementById('nom');
   var p = HV.monter(document.getElementById('heros'), h, {cadre:CADRE});
   window.PANTIN = p;
   function norme(a){ a = ((a + 180) % 360 + 360) % 360 - 180; return Math.round(a); }
@@ -78,18 +82,39 @@ button.gris{background:#3a4480;color:#fff}
     if(tour) return;
     var de = p.capV, t0 = performance.now();
     tour = setInterval(function(){
-      var u = Math.min(1, (performance.now() - t0) / 3600), e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+      var u = Math.min(1, (performance.now() - t0) / 4200), e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
       p.vers(de + 360 * e);
       if(u >= 1){ clearInterval(tour); tour = null; }
     }, 30);
   });
-  document.querySelectorAll('[data-pose]').forEach(function(b){
-    b.addEventListener('click', function(){
-      document.querySelectorAll('[data-pose]').forEach(function(x){ x.classList.toggle('on', x === b); });
-      var nom = b.getAttribute('data-pose');
-      p.pose(nom);
-      if(nom === 'tir') aller(0);
+  /* les poses, rangées par famille */
+  var boite = document.getElementById('poses'), BOUTONS = {};
+  HV.FAMILLES.forEach(function(f){
+    var t = document.createElement('h3'); t.textContent = f[1]; boite.appendChild(t);
+    var r = document.createElement('div'); r.className = 'rang'; boite.appendChild(r);
+    HV.LISTE.forEach(function(l){
+      if(l[2] !== f[0]) return;
+      var b = document.createElement('button'); b.textContent = l[1]; if(l[0] === 'repos') b.className = 'on';
+      b.addEventListener('click', function(){ arreter(); prendre(l); });
+      r.appendChild(b); BOUTONS[l[0]] = b;
     });
+  });
+  function prendre(l){
+    for(var k in BOUTONS) BOUTONS[k].classList.toggle('on', k === l[0]);
+    nomEl.textContent = l[1];
+    p.pose(l[0]);
+    /* (elle vise sur le côté : de face, on la voit bien) */
+    if(l[0].slice(0, 3) === 'tir') aller(0);
+    dessinerVues(l[0]);
+  }
+  /* les enchaîner toutes : une pose toutes les deux secondes, en tournant un peu */
+  var defile = null, bd = document.getElementById('defile'), rang = 0;
+  function arreter(){ if(defile){ clearInterval(defile); defile = null; bd.textContent = '▶ Les enchaîner toutes'; } }
+  bd.addEventListener('click', function(){
+    if(defile){ arreter(); return; }
+    bd.textContent = '⏸ Arrêter';
+    function pas(){ rang = (rang + 1) % HV.LISTE.length; var l = HV.LISTE[rang]; prendre(l); if(l[0].slice(0, 3) !== 'tir') aller([35, 70, -35, 0, 90, -60][rang % 6]); }
+    pas(); defile = setInterval(pas, 2100);
   });
   /* le doigt : on la fait tourner */
   var x0 = null, c0 = 0;
@@ -97,14 +122,18 @@ button.gris{background:#3a4480;color:#fff}
   plateau.addEventListener('pointermove', function(e){ if(x0 === null) return; p.vers(c0 + (e.clientX - x0) * 0.7); });
   function fin(){ x0 = null; plateau.classList.remove('tire'); }
   plateau.addEventListener('pointerup', fin); plateau.addEventListener('pointercancel', fin);
-  /* les sept dessins de la face au profil */
+  /* les sept dessins de la face au profil, pour la pose choisie */
   var vues = document.getElementById('vues');
-  [0, 15, 30, 45, 60, 75, 90].forEach(function(a, i){
-    var b = document.createElement('button');
-    b.innerHTML = HV.svg(h, {cap:a}, {id:'v' + i, cadre:'70 20 160 200'}) + a + '°';
-    b.addEventListener('click', function(){ aller(a); });
-    vues.appendChild(b);
-  });
+  function dessinerVues(nom){
+    vues.innerHTML = '';
+    [0, 15, 30, 45, 60, 75, 90].forEach(function(a, i){
+      var b = document.createElement('button'), P = HV.pose(nom); P.cap = a;
+      b.innerHTML = HV.svg(h, P, {id:'v' + i, cadre:'-40 20 380 420'}) + a + '°';
+      b.addEventListener('click', function(){ aller(a); });
+      vues.appendChild(b);
+    });
+  }
+  dessinerVues('repos');
 })();
 </script>
 </body>

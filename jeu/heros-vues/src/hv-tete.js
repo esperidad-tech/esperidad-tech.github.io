@@ -35,8 +35,12 @@ var T_MIL = table([[-34, 19.6], [-26, 22.6], [-18, 24.6], [-10, 25.5], [-3, 25.3
 function zMilieu(y){ var S = TETE.a(y, 0); return Math.max(S.zm + S.cf, y < -34 ? -99 : T_MIL(y)); }
 HV.zMilieu = zMilieu;
 
-/* poser un point du visage (x, y vus de face) → [X, y] */
-function pose(x, y, V){ return [leve(TETE.a(y, V.w), x, V), y]; }
+/* poser un point du visage (x, y vus de face) → [X, y].
+   HO : quand elle baisse la tête (vue de face), les traits du visage descendent de HO vers le menton (hv-pantin.js : P.hocheF) ;
+   quand elle lève le nez, ils remontent. Le contour de la tête, lui, ne change pas : ce n'est pas une image écrasée. */
+var HO = 0;
+function glisse(y){ return HO * (y > 4 ? 1 - 0.5 * Math.min(1, (y - 4) / 30) : 1); }
+function pose(x, y, V){ var y2 = y + glisse(y); return [leve(TETE.a(y2, V.w), x, V), y2]; }
 function poseL(L, V){ return L.map(function(p){ return pose(p[0], p[1], V); }); }
 function ovale(cx, cy, rx, ry, n){ var r = [], i; n = n || 20; for(i = 0; i < n; i++){ var a = 2 * Math.PI * i / n; r.push([cx + rx * Math.cos(a), cy + ry * Math.sin(a)]); } return r; }
 
@@ -84,7 +88,7 @@ var OREILLE = [[0, -7], [3, -9.2], [7, -8.6], [9.2, -4], [8.6, 2], [6, 6.4], [2.
 var OREILLE_PLI = [[2.8, -5], [5.8, -4.8], [6.6, 0.4], [4.2, 3.8]];
 function oreille(K, d, V){
   var S = TETE.a(3, V.w), bx = d * (S.a - 0.6), bz = -3.4, ux = d * 0.52, uz = -0.855;      /* (l'attache ; la direction du pavillon : vers l'extérieur et l'arrière) */
-  function Q(p){ var x = bx + ux * p[0], z = bz + uz * p[0]; return [x * V.c + z * V.s, 4 + p[1]]; }
+  function Q(p){ var x = bx + ux * p[0], z = bz + uz * p[0]; return [x * V.c + z * V.s, 4 + p[1] - HO * 0.45]; }      /* (elle baisse la tête : les oreilles remontent) */
   var d1 = U.lisse(OREILLE.map(Q));
   /* (devant la peau si son attache est de notre côté ; sinon derrière la tête : elle n'en dépasse que si la tête est de face) */
   return {devant:U.visible(S, Math.atan2(bx, bz - S.zm), V),
@@ -97,6 +101,7 @@ function oreille(K, d, V){
    ========================================================== */
 HV.tete = function(K, h, V, P, CH){
   var f = {sexe:h.sexe === 'm' ? 'm' : 'f'}, s = '', sg = V.s >= 0 ? 1 : -1, face = V.c > -0.3;
+  HO = borne((P.hocheF || 0) * 0.27, -6, 8);
   /* le contour : la tête, et le nez qui dépasse du côté où elle regarde */
   var ct = U.contour(TETE, V, -49, 34, 2.4, function(y, b){ var X = zMilieu(y) * V.s; return [X, X]; });
   function Sv(y){ return TETE.a(y, V.w); }
@@ -120,11 +125,12 @@ HV.tete = function(K, h, V, P, CH){
     dans += oeil(K, -1, V, P, f) + oeil(K, 1, V, P, f);
     /* le nez : un petit trait qui pointe du côté où elle regarde ; de profil, c'est le contour qui le dessine */
     var S15 = Sv(15.6);
-    var N1 = [(T_MIL(12) - 0.4) * V.s, 12], N2 = [-1.6 * V.c + (T_MIL(15.8) - 0.3) * V.s, 16.4], N3 = [0.8 * V.c + (T_MIL(18) - 1.6) * V.s, 17.2];
+    var gn = glisse(15);
+    var N1 = [(T_MIL(12) - 0.4) * V.s, 12 + gn], N2 = [-1.6 * V.c + (T_MIL(15.8) - 0.3) * V.s, 16.4 + gn], N3 = [0.8 * V.c + (T_MIL(18) - 1.6) * V.s, 17.2 + gn];
     var bord = U.bords(S15, V), sort = sg > 0 ? N2[0] - bord[1] : bord[0] - N2[0], opN = 1 - doux(-2.4, 0.4, sort);
     if(opN > 0.03) dans += PT(U.poly([N1, N2, N3], false), K.peau.trait, 1.5, ' opacity="' + f1(opN) + '"');
     /* la bouche : un sourire, sur le bombé des lèvres (elle s'enroule plus que le reste du visage : de profil il en reste le coin) */
-    function levre(q){ return [q[0] * V.c + (T_MIL(q[1]) - 0.3 - q[0] * q[0] / 12) * V.s, q[1]]; }
+    function levre(q){ return [q[0] * V.c + (T_MIL(q[1]) - 0.3 - q[0] * q[0] / 12) * V.s, q[1] + glisse(q[1])]; }
     function vuL(q){ return V.c - V.s * q[0] / 6 > 0.02; }
     var bo = U.ech([[-6, 22], [0, 26.2], [6, 22]], 12).filter(vuL).map(levre);
     if(bo.length > 1) dans += PT(U.poly(bo, false), '#9e4c38', 1.8);

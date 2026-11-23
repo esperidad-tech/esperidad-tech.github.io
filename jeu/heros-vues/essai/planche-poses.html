@@ -1,0 +1,24 @@
+<!doctype html><meta charset="utf-8">
+<!-- La planche des poses envoyée à Romain : chaque pose sous l'angle où elle se lit le mieux, rangées par famille -->
+<style>body{margin:0;background:#131932;padding:14px;font:600 15px system-ui,sans-serif;color:#e9ecff;width:1932px}
+h1{margin:0 0 4px;font-size:26px;color:#ffd23f}p{margin:0 0 12px;color:#9aa6d8;font-weight:500}
+h2{margin:14px 0 6px;font-size:17px;color:#cdd5ff;text-transform:uppercase;letter-spacing:.05em}
+.r{display:flex;gap:8px;flex-wrap:wrap}.c{text-align:center;width:268px}
+svg{background:radial-gradient(120% 90% at 50% 40%,#34407e 0%,#1d2550 60%,#141a3a 100%);border-radius:12px;display:block}</style>
+<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script><script src="../src/hv-poses.js"></script>
+<body><script>
+var HV = HerosVues, h = {role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert'}, n = 0;
+var ANGLE = {repos:30, hanche:20, coucou:-20, reflechit:25, derriere:0, reverence:40, essouffle:50, guet:25, montre:30, ecoute:-30, accroupie:35, piste:55, mainsAuSol:40, ramasse:55,
+  aguets:30, furtif:65, furtif2:65, chut:15, affut:35, tir:0, tirGenou:0, tirHaut:0, fleche:25, course:70, victoire:0, combat:35, fente:60, esquive:10};
+var s = '<h1>La Pisteuse : ses 28 poses</h1><p>Le corps se plie (le bassin descend, le dos se courbe, la tunique suit les cuisses), les mains ont cinq doigts. Chaque pose marche sous tous les angles.</p>';
+HV.FAMILLES.forEach(function(f){
+  s += '<h2>' + f[1] + '</h2><div class="r">';
+  HV.LISTE.forEach(function(l){
+    if(l[2] !== f[0]) return;
+    var P = HV.pose(l[0]); P.cap = ANGLE[l[0]] || 0;
+    s += '<div class="c">' + HV.svg(h, P, {id:'p' + (n++), cadre:'-60 18 420 420'}).replace('<svg ', '<svg width="268" height="268" ') + l[1] + '</div>';
+  });
+  s += '</div>';
+});
+document.body.innerHTML = s;
+</script>

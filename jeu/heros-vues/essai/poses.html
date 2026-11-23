@@ -1,13 +1,24 @@
 <!doctype html><meta charset="utf-8">
+<!-- Une planche pour regarder : poses.html#pose:angle,pose:angle…/taille/cadre
+     - « *:30 » : toutes les poses, tournées de 30° ; « tir:* » : la pose « tir » sous huit angles ;
+     - un troisième morceau change un nombre de la pose : repos:0:hoche=20&pen=5 ;
+     - cadre : x_y_largeur_hauteur (pour regarder de près : 80_220_60_60). -->
 <style>body{margin:0;background:#131932;display:flex;flex-wrap:wrap;gap:6px;padding:10px;font:12px sans-serif;color:#cfd6ff}
 .c{text-align:center}svg{background:#1b2347;border-radius:8px;display:block}</style>
-<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script>
+<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script><script src="../src/hv-poses.js"></script>
 <body><script>
-var HV = HerosVues, Hh = location.hash.slice(1).split('/'), L = +Hh[1] || 260;
+var HV = HerosVues, Hh = decodeURIComponent(location.hash.slice(1)).split('/'), L = +Hh[1] || 260, CADRE = (Hh[2] || '-40_0_380_440').split('_').map(Number);
 var h = {role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert'};
-var LISTE = (Hh[0] || 'repos:0,hanche:0,hanche:35,coucou:0,coucou:-30,tir:0,tir:20,guet:40').split(',');
-document.body.innerHTML = LISTE.map(function(x, i){
-  var a = x.split(':'), P = HV.pose(a[0]); P.cap = +a[1] || 0;
-  return '<div class="c" style="width:' + L + 'px">' + HV.svg(h, P, {id:'p' + i, cadre:'-40 0 380 440'}).replace('<svg ', '<svg width="' + L + '" height="' + Math.round(L * 440 / 380) + '" ') + x + '</div>';
+var LISTE = [];
+(Hh[0] || '*:25').split(',').forEach(function(x){
+  var a = x.split(':');
+  if(a[0] === '*') HV.LISTE.forEach(function(l){ LISTE.push([l[0], a[1], a[2]]); });
+  else if(a[1] === '*') [0, 45, 90, 135, 180, -135, -90, -45].forEach(function(c){ LISTE.push([a[0], c, a[2]]); });
+  else LISTE.push(a);
+});
+document.body.innerHTML = LISTE.map(function(a, i){
+  var P = HV.pose(a[0]); P.cap = +a[1] || 0;
+  (a[2] || '').split('&').forEach(function(kv){ var k = kv.split('='); if(k[0]) P[k[0]] = +k[1]; });
+  return '<div class="c" style="width:' + L + 'px">' + HV.svg(h, P, {id:'p' + i, cadre:CADRE.join(' ')}).replace('<svg ', '<svg width="' + L + '" height="' + Math.round(L * CADRE[3] / CADRE[2]) + '" ') + a[0] + ' ' + (+a[1] || 0) + '°' + (a[2] ? ' ' + a[2] : '') + '</div>';
 }).join('');
 </script>

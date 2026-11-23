@@ -1,36 +1,29 @@
 <!doctype html><meta charset="utf-8">
+<!-- Le film d'essai : python3 filmer.py sortie.mp4 (une image après l'autre : window.image() avance d'un trentième de seconde) -->
 <style>html,body{margin:0;background:#131932;overflow:hidden}
-#plateau{position:relative;width:720px;height:960px;background:radial-gradient(120% 90% at 50% 36%,#34407e 0%,#1d2550 55%,#141a3a 100%)}
-#heros svg{display:block;width:720px;height:960px}
-#titre{position:absolute;left:0;right:0;top:20px;text-align:center;font:800 44px system-ui,sans-serif;color:#ffd23f;text-shadow:0 2px 0 #24182e,0 0 14px rgba(0,0,0,.5)}</style>
-<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script>
+#plateau{position:relative;width:900px;height:900px;background:radial-gradient(120% 90% at 50% 40%,#34407e 0%,#1d2550 55%,#141a3a 100%)}
+#heros svg{display:block;width:900px;height:900px}
+#titre{position:absolute;left:0;right:0;top:12px;text-align:center;font:800 38px system-ui,sans-serif;color:#ffd23f;text-shadow:0 2px 0 #24182e,0 0 14px rgba(0,0,0,.5)}</style>
+<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script><script src="../src/hv-poses.js"></script>
 <body><div id="plateau"><div id="heros"></div><div id="titre"></div></div>
 <script>
 var HV = HerosVues, h = {role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert'};
 /* (un hasard qui se répète : le film est le même à chaque fois) */
 var graine = 7; Math.random = function(){ graine = (graine * 16807) % 2147483647; return graine / 2147483647; };
 window.requestAnimationFrame = function(){ return 0; };
-var p = HV.monter(document.getElementById('heros'), h, {cadre:'-14 -30 328 437.3'}), titre = document.getElementById('titre');
-function eio(u){ return u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2; }
-var PERSO = !!window.FILM, FILM = window.FILM || [
-  [0, function(){ titre.textContent = 'De face'; }],
-  [1.3, function(){ p.vers(45); titre.textContent = 'De trois quarts'; }],
-  [2.6, function(){ p.vers(90); titre.textContent = 'De profil'; }],
-  [4.1, function(){ p.vers(0); titre.textContent = 'De face'; }],
-  [5.3, function(){ p.vers(-90); titre.textContent = 'De l\'autre côté'; }],
-  [6.9, function(){ p.vers(0); titre.textContent = ''; }],
-  [8.0, function(){ titre.textContent = 'Un tour complet'; }],
-  [11.7, function(){ titre.textContent = ''; }],
-  [12.2, function(){ p.pose('hanche'); p.vers(385); titre.textContent = 'La main sur la hanche'; }],
-  [14.2, function(){ p.pose('coucou'); p.vers(340); titre.textContent = 'Coucou !'; }],
-  [16.8, function(){ p.pose('tir', 0.6); p.vers(360); titre.textContent = 'Elle vise'; }],
-  [19.6, function(){ p.pose('repos'); titre.textContent = ''; }]
+var p = HV.monter(document.getElementById('heros'), h, {cadre:'-75 -22 450 450'}), titre = document.getElementById('titre');
+var NOMS = {}; HV.LISTE.forEach(function(l){ NOMS[l[0]] = l[1]; });
+/* [quand (secondes), la pose, vers quel angle elle se tourne] */
+var FILM = window.FILM || [
+  [0, 'repos', 0], [1.3, 'aguets', 35], [2.9, 'furtif', 70], [4.1, 'furtif2', 70], [5.2, 'furtif', 70], [6.3, 'furtif2', 70],
+  [7.4, 'accroupie', 40], [9.2, 'accroupie', -45], [10.9, 'piste', 60], [13.2, 'piste', 105], [14.6, 'mainsAuSol', 50], [16.9, 'ramasse', 75],
+  [18.9, 'guet', 20], [20.8, 'montre', -20], [22.5, 'chut', 0], [24.1, 'affut', 40], [26.0, 'tirGenou', 0], [28.2, 'fleche', 20], [29.8, 'tir', 0], [31.6, 'tirHaut', 0],
+  [33.4, 'course', 75], [35.2, 'combat', 40], [36.9, 'fente', 75], [38.6, 'esquive', 10], [40.2, 'essouffle', 55], [42.3, 'reverence', 30], [44.5, 'victoire', 0], [46.5, 'repos', 0]
 ];
-var DUREE = window.DUREE || 20.8, fait = 0, T = 0;
+var DUREE = window.DUREE || 48, fait = 0, T = 0;
 /* avancer d'une image (1/30 s) */
 window.image = function(){
-  while(fait < FILM.length && FILM[fait][0] <= T + 1e-6){ FILM[fait][1](); fait++; }
-  if(!PERSO && T >= 8.0 && T <= 11.8){ p.vers(360 * eio(Math.min(1, (T - 8.0) / 3.6))); }
+  while(fait < FILM.length && FILM[fait][0] <= T + 1e-6){ var f = FILM[fait++]; p.pose(f[1]); p.vers(f[2]); titre.textContent = NOMS[f[1]] || ''; }
   p.dessiner(1 / 30);
   T += 1 / 30;
   return T < DUREE;
