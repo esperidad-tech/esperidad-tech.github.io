@@ -1,5 +1,7 @@
 # Enquête 3 « La lettre d'Odette » — le Pisteur, l'Alchimiste et le Sage ; tous les codes ; qui prouve quoi (version 2, 11 novembre 2026)
 
+> **⚠️ 23 NOVEMBRE, 10 H 12 (Bible §13.91, qui fait foi ; demande de Romain à 10 h 03) — les deux missions du maire du Pisteur (les banderoles, l'oie) se font le matin ET l'après-midi**, tant qu'il n'a pas rendu sa mission au maire ; après, elles s'en vont et leur ligne de mission se coche. Aucun code n'a changé (57 / 69 / 1630).
+
 > **⚠️ 16 NOVEMBRE, 17 H 11 (Bible §13.54 et §13.55, qui font foi ; go de Romain à 15 h) — l'encre d'Iris, plus de lavande au labo, la mousse lumineuse :**
 > - **Le Barde, chez Iris, le matin** : une fois le vol raconté, une question de plus (« Il vous reste un peu de cette encre ? ») → **un code pour l'Alchimiste, « L'encre d'Iris »** (`obj:encre_iris`).
 > - **L'Alchimiste, au labo** : le flacon sur le cuir, le test des couleurs (une seule bande noire : la noix de galle). **La deuxième des deux analyses — la lettre, l'encre d'Iris — donne « La même encre »** (`meme_encre`, une information, pour le Sage). La lettre n'a plus de pollen de lavande : son analyse demande l'écriture (la loupe, avec le Livre d'or) et l'encre (l'eau chaude, puis le test des couleurs).
