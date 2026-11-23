@@ -38,6 +38,11 @@ function css(){
     /* (son ombre : au moins aussi grande que celle des autres héros — 130 × 24 —, et plus foncée au milieu : sur le sol sombre du donjon,
        l'ancienne ne se voyait pas et ils avaient l'air de flotter — Romain, 23 novembre, 21 h 32) */
     '.hva-ombre-sol{position:absolute;left:0;top:0;width:100px;height:26px;margin:-13px 0 0 -50px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(0,0,0,.88),rgba(0,0,0,.66) 55%,rgba(0,0,0,0))}' +
+    /* (LE VRAI FLOTTEMENT, enfin trouvé — Romain, 23 novembre, 21 h 54 : « tu me fais encore flotter les héros ») : le donjon fait
+       monter et descendre de 4 px, toutes les 1,5 s, chaque héros qu'on peut choisir (`.perso.dispo > .acteur{animation:flotte …}`,
+       jeu/donjon/essai/src/jeu.css) — c'est-à-dire presque tout le temps. Coupé ici pour TOUS les héros (les anciens aussi) : ils
+       restent posés au sol ; l'anneau doré suffit pour dire qu'on peut les choisir. Dans le vrai donjon, la règle est toujours là. */
+    '.perso.heros.dispo>.acteur{animation:none!important}' +
     /* (son ombre et l'anneau de son tour sont dessinés avec elle : ceux de la case du donjon sont cachés) */
     '.perso.hv-volume>.ombre,.perso.hv-volume>.anneau{display:none!important}' +
     /* (l'ancien Pisteur, invisible : seuls ses effets se voient) */
