@@ -212,10 +212,12 @@ function frissons(pose, t0, t1, pas, f){
 }
 
 /* C'EST SON TOUR : elle se redresse, inspire, serre son arc, un petit signe de tête décidé */
-HV.DONJON.choisi = [[0.25, {bas:[0, 14, 2], dos:[6, 0, -4], hoche:-8, sourcils:0.4, ouvre:0.15, plisse:-0.2, regX:0.2}],
-  [0.55, {bas:[0, 10, 2], dos:[4, 0, -4], hoche:8, sourcils:-0.6, sourire:0.4, plisse:0.2, poingG:0.95, poingD:0.7}],
-  [0.85, {bas:[0, 16, 2], dos:[6, 0, -4], hoche:-4, sourcils:-0.8, sourire:0.5, plisse:0.3, poingG:0.95, poingD:0.7, regX:0.4}],
-  [1.8, {bas:[0, 18, 2], dos:[6, 0, -4], hoche:-4, sourcils:-0.8, sourire:0.5, plisse:0.3, poingG:0.95, poingD:0.7, regX:0.3}], [2.3, {}]];
+/* (elle ne monte plus sur ses jambes : Romain, 20 h 05, « les héros, ils flottent […] se soulever, et puis rebaisser » — les
+   pieds et le bassin restent où ils sont, seuls le buste, la tête et les poings bougent) */
+HV.DONJON.choisi = [[0.25, {dos:[2, 0, -4], bang:[4, 0, 0], hoche:-8, sourcils:0.4, ouvre:0.15, plisse:-0.2, regX:0.2}],
+  [0.55, {dos:[0, 0, -4], bang:[4, 0, 0], hoche:8, sourcils:-0.6, sourire:0.4, plisse:0.2, poingG:0.95, poingD:0.7}],
+  [0.85, {dos:[2, 0, -4], bang:[4, 0, 0], hoche:-4, sourcils:-0.8, sourire:0.5, plisse:0.3, poingG:0.95, poingD:0.7, regX:0.4}],
+  [1.8, {dos:[2, 0, -4], bang:[4, 0, 0], hoche:-4, sourcils:-0.8, sourire:0.5, plisse:0.3, poingG:0.95, poingD:0.7, regX:0.3}], [2.3, {}]];
 
 /* (la première version du coup de dague, gardée pour mémoire — remplacée plus bas : Romain, 18 h 51, « plus violent ») */
 var DAGUE_V1 = [[0.18, {mainD:[36, 236, 8], coudeD:[0.9, 0.2, -0.5], mdirD:[0, 1, 0], poingD:0.9, hoche:8, regY:0.4}],
@@ -330,20 +332,26 @@ HV.DONJON.rats = [[0.12, {hoche:16, regY:0.9, sourcils:0.7, ouvre:0.5, plisse:-0
    tête, s'essuie la bouche du dos de la main, furieuse, et revient en garde */
 /* (Romain, 18 h 51 : « tu peux le faire un petit peu se tourner quand il prend un coup […] on a plus l'effet que c'est en 3D » : le coup
    lui fait tourner la tête et les épaules vers nous, puis les hanches suivent, et elle revient face aux ennemis) */
-HV.DONJON.poing = [[0.06, avec(AIE, {bas:[0, 30, -14], bang:[-12, 0, -16], dos:[-24, 0, -34], tete:-24, hoche:-22, pen:-12, mainD:[62, 186, 0], mainG:[-72, 204, 6]})],
-  [0.2, avec(AIE, avec(recule(-44, true), {bas:[0, 36, -28], bang:[-16, -4, -30], dos:[-18, -6, -30], tete:-20, lacetG:-20, lacetD:-20, hoche:-14, pen:-10, mainD:[64, 180, 0], mainG:[-74, 196, 4]}))],
-  [0.36, avec(AIE, avec(recule(-56), {piedG:[-32, 370, -18], pointeG:25, bas:[0, 40, -36], bang:[-8, -4, -34], dos:[-10, -4, -14], tete:-8, lacetG:-26, lacetD:-26, hoche:-8, pen:-6}))],
-  [0.55, avec(KO, avec(recule(-56), {piedG:[-32, 386, -14], bas:[0, 44, -32], bang:[8, 0, -16], dos:[10, 0, 6], hoche:6, pen:4, lacetG:-12, lacetD:-12}))],
-  [0.85, avec(KO, avec(recule(-56), {piedG:[-32, 386, -14], bas:[0, 44, -32], bang:[8, 0, 0], dos:[10, 0, 0], hoche:4, pen:10}))],
-  [1.0, avec(KO, avec(recule(-56), {piedG:[-32, 386, -14], bas:[0, 44, -32], bang:[8, 0, 0], dos:[10, 0, 0], hoche:4, pen:-10}))],
-  [1.15, avec(recule(-56), {piedG:[-32, 386, -14], bas:[0, 42, -30], bang:[8, 0, 0], dos:[10, 0, 0], hoche:4, pen:4, plisse:0.5, sourcilsIn:0.6})],
+/* (Romain, 20 h 05 : « trop repoussé en arrière […] on a l'impression qu'il flotte […] c'est juste le torse qui se fait
+   propulser en arrière et il y a le pied gauche qui retient pour éviter qu'elle tombe » : elle ne glisse plus ; le pied de devant
+   reste planté, le buste part en arrière en tournant, et SON pied gauche part loin derrière pour la retenir) */
+var BRACE = {piedD:[36, 386, -118], pointeD:0, genouD:[0.45, 0.1, 1]};
+HV.DONJON.poing = [[0.06, avec(AIE, {bas:[0, 30, -16], bang:[-14, 0, -16], dos:[-30, 0, -34], tete:-24, hoche:-24, pen:-12, mainD:[62, 186, 0], mainG:[-72, 204, 6]})],
+  /* (le pied gauche part en arrière, en l'air) */
+  [0.2, avec(AIE, {piedD:[34, 368, -72], pointeD:25, bas:[0, 36, -32], bang:[-18, -4, -30], dos:[-28, -6, -30], tete:-20, lacetD:-14, hoche:-18, pen:-10, mainD:[66, 176, -6], mainG:[-76, 192, 0]})],
+  /* (il se plante loin derrière : elle est retenue, le buste encore en arrière, les genoux pliés) */
+  [0.34, avec(AIE, avec(BRACE, {bas:[0, 46, -46], bang:[-12, -4, -34], dos:[-18, -4, -16], tete:-10, lacetD:-18, hoche:-10, pen:-6}))],
+  [0.55, avec(KO, avec(BRACE, {bas:[0, 48, -46], bang:[4, 0, -16], dos:[8, 0, 6], hoche:6, pen:4, lacetD:-10}))],
+  [0.85, avec(KO, avec(BRACE, {bas:[0, 48, -44], bang:[6, 0, 0], dos:[10, 0, 0], hoche:4, pen:10}))],
+  [1.0, avec(KO, avec(BRACE, {bas:[0, 48, -44], bang:[6, 0, 0], dos:[10, 0, 0], hoche:4, pen:-10}))],
+  [1.15, avec(BRACE, {bas:[0, 46, -42], bang:[6, 0, 0], dos:[10, 0, 0], hoche:4, pen:4, plisse:0.5, sourcilsIn:0.6})],
   /* (elle s'essuie la bouche du dos de la main, furieuse) */
-  [1.5, avec(recule(-56), {piedG:[-32, 386, -14], bas:[0, 40, -30], bang:[6, 0, 0], dos:[8, 0, 0], hoche:6, mainD:[10, 122, 40], relD:1, coudeD:[1, 0.5, -0.2], mdirD:[-1, 0, 0.2], poingD:0.7,
+  [1.5, avec(BRACE, {bas:[0, 44, -40], bang:[6, 0, 0], dos:[8, 0, 0], hoche:6, mainD:[10, 122, 40], relD:1, coudeD:[1, 0.5, -0.2], mdirD:[-1, 0, 0.2], poingD:0.7,
     sourcils:-1, plisse:0.5, sourire:-0.6})],
-  [1.7, avec(recule(-56), {piedG:[-32, 386, -14], bas:[0, 40, -30], bang:[6, 0, 0], dos:[8, 0, 0], hoche:6, mainD:[-14, 124, 44], relD:1, coudeD:[1, 0.5, -0.2], mdirD:[-1, 0, 0.2], poingD:0.7,
+  [1.7, avec(BRACE, {bas:[0, 44, -40], bang:[6, 0, 0], dos:[8, 0, 0], hoche:6, mainD:[-14, 124, 44], relD:1, coudeD:[1, 0.5, -0.2], mdirD:[-1, 0, 0.2], poingD:0.7,
     sourcils:-1, plisse:0.5, sourire:-0.6})],
-  /* (elle revient à sa place, un pas après l'autre) */
-  [2.05, avec(recule(-30, true), {bas:[0, 34, -12], sourcils:-1, plisse:0.4, sourire:-0.5})],
+  /* (le pied gauche revient sous elle) */
+  [2.05, avec(recule(-40, true), {bas:[0, 34, -14], sourcils:-1, plisse:0.4, sourire:-0.5})],
   [2.35, {sourcils:-0.9, plisse:0.3, sourire:-0.4}], [2.8, {}]];
 
 /* LA TOILE : la toile la colle — les bras plaqués contre le corps, les genoux serrés ; elle se débat (elle se tord à droite, à

@@ -16,8 +16,9 @@
 (function(G){
 'use strict';
 var HV = G.HerosVues, PROTO = null;
-/* (le cadre : la boîte du héros fait 200 × 240 ; ses pieds tombent là où tombaient ceux de l'ancien, et elle a sa taille) */
-var CADRE = [-38, -6, 362, 435], CAP = 55;
+/* (le cadre : la boîte du héros fait 200 × 240 ; ses pieds tombent là où tombaient ceux de l'ancien (le sol, y = 414, à 231,7 px
+   du haut de la boîte) ; elle est 10 % plus grande qu'au premier essai — Romain, 20 h 05 : « elle est plus petite ») */
+var CADRE = [-21.8, 32.2, 329.6, 395.5], CAP = 55;
 /* (les effets des films sont écrits dans les pixels du film — cadre [-130, -64, 560, 560] dans une image de 900 : on garde leurs
    nombres, et le calque des effets prend ce repère-là) */
 var KF = 900 / 560, FX0 = (CADRE[0] + 130) * KF, FY0 = (CADRE[1] + 64) * KF;
@@ -28,6 +29,7 @@ function css(){
   s.textContent = '.hva{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:1}' +
     '.hva-boite{position:absolute;inset:0;overflow:visible;will-change:transform}.hva-boite>svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;display:block}' +
     '.hva-fx{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:2}' +
+    '.hva-ombre-sol{position:absolute;left:0;top:0;width:100px;height:18px;margin:-9px 0 0 -50px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(0,0,0,.6),rgba(0,0,0,0))}' +
     /* (son ombre et l'anneau de son tour sont dessinés avec elle : ceux de la case du donjon sont cachés) */
     '.perso.hv-volume>.ombre,.perso.hv-volume>.anneau{display:none!important}' +
     /* (l'ancien Pisteur, invisible : seuls ses effets se voient) */
@@ -75,6 +77,10 @@ function Volume(cont, lk, creer0){
   this.p = HV.monter(this.boite, this.h, {cadre:CADRE.join(' '), cap:CAP});
   this.p.posi = null; this.p.nom = 'donjonVolume';
   this.svg = this.boite.querySelector('svg');
+  /* (son ombre au sol, sous ses pieds, bien visible comme celle des autres héros : Romain, 20 h 05, « les pieds posés sur le sol
+     avec une petite ombre au sol […] qu'ils soient vraiment ancrés dans le donjon ») */
+  this.ombreSol = document.createElement('div'); this.ombreSol.className = 'hva-ombre-sol';
+  this.boite.insertBefore(this.ombreSol, this.svg);
   /* (le calque des effets des films, par-dessus elle, dans le repère du film) */
   this.calque = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   this.calque.setAttribute('viewBox', [FX0, FY0, CADRE[2] * KF, CADRE[3] * KF].map(function(v){ return v.toFixed(2); }).join(' '));
@@ -98,8 +104,12 @@ function Volume(cont, lk, creer0){
   catch(e){ this.ombre = null; if(G.console) console.warn('hv-adaptateur : pas d\'ancien Pisteur', e); }
   this._prochainRegard = maintenant() + 6 + Math.random() * 4;
   /* (la fuite : le combat fait partir la case vers la gauche, retournée — elle court, au lieu de glisser en garde) */
+  /* (et l'anneau doré à ses pieds suit la case : quand on peut la choisir — « dispo » — et quand c'est son tour — « actif » —,
+     comme l'anneau des autres héros, mais dessiné avec elle : l'arrière derrière les bottes, l'avant devant) */
+  this.slot = slot;
   if(slot && G.MutationObserver) new MutationObserver(function(){
     if(slot.classList.contains('detale') && !me._fuit){ me._fuit = true; me._finGeste(); me.cles = null; me.trans = null; var t0 = maintenant(); me.course = function(){ return HV.course(maintenant() - t0); }; }
+    me.p.choisi(slot.classList.contains('dispo') || slot.classList.contains('actif'));
   }).observe(slot, {attributes:true, attributeFilter:['class']});
   (G.HerosVuesDonjon.toutes = G.HerosVuesDonjon.toutes || []).push(this);
 }
@@ -173,8 +183,20 @@ V.rep = function(nom, ref){
 /* ---------- les effets des films, redessinés sur elle ---------- */
 V.effet = function(nom, f, duree){ var e = {nom:nom, t0:maintenant(), f:f, d:duree || 99}; this.effets = this.effets.filter(function(x){ return x.nom !== nom; }); this.effets.push(e); return e; };
 V.sansEffet = function(nom){ this.effets = this.effets.filter(function(x){ return x.nom !== nom; }); };
+/* l'ombre au sol : sous ses pieds (et son bassin, son dos quand elle est couchée), sur le sol ; en l'air, elle rapetisse et pâlit */
+V.ombreAuSol = function(){
+  var F = this.p.F; if(!F || !this.ombreSol) return;
+  var Vv = HV.outils.vue(HV.capDe(F)), b = F.bas || [0, 0, 0], pts = [F.piedG, F.piedD, [b[0], 245 + b[1], b[2]]], xa = 1e9, xb = -1e9, ds = 0;
+  if((F.couche || 0) > 0.3) pts.push([b[0], 300, b[2] - 190 * F.couche]);
+  pts.forEach(function(q){ var x = 150 + q[0] * Vv.c + q[2] * Vv.s; xa = Math.min(xa, x); xb = Math.max(xb, x); ds += -q[0] * Vv.s + q[2] * Vv.c; });
+  var kx = (this.boite.offsetWidth || 200) / CADRE[2], lv = Math.max(0, F.leve || 0), k = 1 / (1 + lv / 70);
+  var X = ((xa + xb) / 2 - CADRE[0]) * kx, Y = (415 + 0.13 * ds / pts.length - CADRE[1]) * kx, W = ((xb - xa) * kx + 50) * k;
+  this.ombreSol.style.transform = 'translate(' + X.toFixed(1) + 'px,' + Y.toFixed(1) + 'px) scale(' + (W / 100).toFixed(3) + ',' + k.toFixed(3) + ')';
+  this.ombreSol.style.opacity = k.toFixed(2);
+};
 V.apresImage = function(){
   var t = maintenant(), me = this;
+  this.ombreAuSol();
   this.effets = this.effets.filter(function(e){ return t - e.t0 < e.d; });
   if(!this.effets.length){ if(this._calquePlein){ this.calque.innerHTML = ''; this._calquePlein = false; } return; }
   var os = this.os(), s = '';
@@ -206,12 +228,25 @@ function etoilesFilm(u, c){
       ' L' + x.toFixed(0) + ' ' + (y + 8).toFixed(0) + ' L' + (x - 8).toFixed(0) + ' ' + (y + 13).toFixed(0) + ' L' + (x - 6).toFixed(0) + ' ' + (y + 4).toFixed(0) + ' L' + (x - 13).toFixed(0) + ' ' + (y - 2).toFixed(0) + ' L' + (x - 4).toFixed(0) + ' ' + (y - 3).toFixed(0) + ' Z" fill="#ffd23f" stroke="' + O + '" stroke-width="2.5" opacity="' + o.toFixed(2) + '"/>'; }
   return s;
 }
-/* les cristaux de givre posés sur elle (le film), o : leur opacité */
-function givre(me, os, o){
-  var s = '';
-  /* (plus gros que dans le film : au donjon elle est petite à l'écran) */
-  ['epauleG', 'epauleD', 'coudeG', 'coudeD', 'genouG', 'genouD', 'tete', 'hancheG', 'hancheD', 'poignetG'].forEach(function(n, i){ var q = me.ecranF(os[n]), d = (12 + (i % 3) * 5) * 1.7, x = q[0] + ((i * 37) % 23 - 11) * 1.5, y = q[1] + ((i * 53) % 19 - 9) * 1.5;
-    s += '<path d="M' + x.toFixed(0) + ' ' + (y - d).toFixed(0) + ' L' + (x + d * 0.55).toFixed(0) + ' ' + y.toFixed(0) + ' L' + x.toFixed(0) + ' ' + (y + d).toFixed(0) + ' L' + (x - d * 0.55).toFixed(0) + ' ' + y.toFixed(0) + ' Z" fill="#e4f6ff" stroke="#7cc4ec" stroke-width="4" opacity="' + (0.9 * o).toFixed(2) + '"/>'; });
+/* LE GIVRE (refait — Romain, 20 h 05 : « l'effet de froid, je suis pas fan » ; avant : de gros losanges posés sur elle) : un voile
+   blanc-bleu de givre sur la tête, les épaules, les bras et les genoux, hérissé de fines aiguilles de glace, et quelques flocons
+   qui tombent autour d'elle ; tout fond quand elle s'ébroue. o : l'opacité ; u : depuis quand */
+function givre(me, os, o, u){
+  if(o <= 0) return '';
+  var s = '', i, k;
+  ['tete', 'epauleG', 'epauleD', 'coudeG', 'coudeD', 'poignetG', 'genouG', 'genouD'].forEach(function(n, i){
+    var q = me.ecranF(os[n]), x = q[0] + ((i * 37) % 17 - 8), y = q[1] + ((i * 53) % 13 - 6) - (n === 'tete' ? 46 : 0), r = (n === 'tete' ? 30 : 20) + (i % 3) * 3;
+    s += '<ellipse cx="' + x.toFixed(0) + '" cy="' + y.toFixed(0) + '" rx="' + (r * 1.3).toFixed(0) + '" ry="' + r.toFixed(0) + '" fill="#e8f7ff" opacity="' + (0.38 * o).toFixed(2) + '"/>';
+    var d = '';
+    for(k = 0; k < 7; k++){ var a = k / 7 * Math.PI * 2 + i * 0.7, l = r * (0.7 + 0.35 * ((k * 5 + i) % 3) / 2);
+      d += 'M' + x.toFixed(0) + ' ' + y.toFixed(0) + ' L' + (x + Math.cos(a) * l).toFixed(0) + ' ' + (y + Math.sin(a) * l * 0.85).toFixed(0) + ' '; }
+    s += '<path d="' + d + '" stroke="#9fd8f6" stroke-width="6" stroke-linecap="round" opacity="' + (0.7 * o).toFixed(2) + '"/>' +
+      '<path d="' + d + '" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" opacity="' + (0.95 * o).toFixed(2) + '"/>';
+  });
+  var c = me.ecranF(os.cou);
+  for(i = 0; i < 7; i++){ var fx = c[0] + (i - 3) * 46 + 14 * Math.sin(u * 2 + i), fy = c[1] - 150 + ((u * 120 + i * 67) % 420);
+    s += '<path d="M' + (fx - 9).toFixed(0) + ' ' + fy.toFixed(0) + ' L' + (fx + 9).toFixed(0) + ' ' + fy.toFixed(0) + ' M' + (fx - 5).toFixed(0) + ' ' + (fy - 8).toFixed(0) + ' L' + (fx + 5).toFixed(0) + ' ' + (fy + 8).toFixed(0) +
+      ' M' + (fx + 5).toFixed(0) + ' ' + (fy - 8).toFixed(0) + ' L' + (fx - 5).toFixed(0) + ' ' + (fy + 8).toFixed(0) + '" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" opacity="' + (0.85 * o).toFixed(2) + '"/>'; }
   return s;
 }
 /* les rats qui lui grimpent dessus, puis s'enfuient (le film) */
@@ -316,7 +351,7 @@ V.attendre = function(){ this._veut = true; return this; };
 /* C'EST SON TOUR : l'anneau doré (dessiné avec elle : l'arrière passe derrière ses bottes, l'avant devant), elle se redresse */
 V.choisi = function(on){
   on = on !== false;
-  this.p.choisi(on);
+  if(!this.slot) this.p.choisi(on);
   if(!!this._choisi === on) return Promise.resolve();
   this._choisi = on;
   if(on && !this.ko && !this.cles && !this.course && !this.tenue && !this.apresF) this.jouer(HV.DONJON.choisi);
@@ -334,17 +369,15 @@ V.touche = function(type, opt){
     if(g === 'coup') L.push(this.ombreFait('touche'));
     if(g === 'froid'){
       L.push(this.ombreFait('touche', 'froid', opt));
-      this.effet('givre', function(u, os){ return givre(this, os, u < 0.3 ? u / 0.3 : u < 2.25 ? 1 : Math.max(0, 1 - (u - 2.25) / 0.35)); }, 2.6);
+      this.effet('givre', function(u, os){ return givre(this, os, u < 0.3 ? u / 0.3 : u < 2.25 ? 1 : Math.max(0, 1 - (u - 2.25) / 0.35), u); }, 2.6);
     }
     if(g === 'rats'){
       this.effet('rats', function(u, os){ return rats(this, os, u); }, 3.0);
     }
     if(g === 'poing'){
-      /* (le choc, la lueur, la poussière de l'ancien ; elle est projetée en arrière et glisse, puis revient) */
+      /* (le choc, la lueur, la poussière de l'ancien — la poussière tombe sous son pied de derrière ; elle ne glisse plus : Romain,
+         20 h 05, « trop repoussé en arrière […] on a l'impression qu'il flotte ») */
       L.push(this.ombreFait('touche', 'poing', opt));
-      var X1 = -64, X2 = -90;
-      this.boite.animate([{transform:'translateX(0px)'}, {transform:'translateX(' + X1 + 'px)', offset:.1, easing:'cubic-bezier(.15,.6,.4,1)'}, {transform:'translateX(' + X2 + 'px)', offset:.32, easing:'ease-out'},
-        {transform:'translateX(' + X2 + 'px)', offset:.56}, {transform:'translateX(0px)', offset:.9, easing:'cubic-bezier(.45,0,.3,1)'}, {transform:'translateX(0px)'}], {duration:1700});
       this.effet('etoiles', function(u, os){ return u < 0.45 ? '' : etoilesFilm(u - 0.45, this.ecranF(os.tete)); }, 1.4);
     }
     return Promise.all(L);
@@ -388,7 +421,8 @@ V.tirer = function(scene, to, type, opt){
       /* (la flèche qui vole part tout entière DEVANT la main de l'arc : sa queue ne passe jamais sur son bras ni sur sa tête —
          Romain, 17 h 44 : « la flèche, quand elle tire, elle passe par-dessus le bras ») */
       var m = me.rep('poignee', scene), dx = to.x - m.x, dy = to.y - m.y, d = Math.sqrt(dx * dx + dy * dy) || 1, ux = dx / d, uy = dy / d;
-      var k = me.echelle(scene), L = 86 * k, t = {x:m.x + ux * (L + 14 * k), y:m.y + uy * (L + 14 * k)}, n = {x:t.x - ux * L, y:t.y - uy * L};
+      /* (une flèche à sa taille : Romain, 20 h 05, « la flèche qui va sur les ennemis, elle est 10 fois trop grosse ») */
+      var k = me.echelle(scene), L = 56 * k, t ={x:m.x + ux * (L + 14 * k), y:m.y + uy * (L + 14 * k)}, n = {x:t.x - ux * L, y:t.y - uy * L};
       if(type === 'lourde' && me._recul) try{ me._recul(); }catch(e){}
       var f = neuve ? me._fleche2 : me._fleche;
       if(!f) return null;
