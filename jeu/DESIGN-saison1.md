@@ -5201,6 +5201,13 @@ La fenêtre défile sur un petit téléphone : « Descendre » est tout en bas (
 - « Rendre ta mission au maire » ne change pas (l'après-midi, dès qu'une des deux est faite ; le texte du maire dit ce qui manque).
 - Vérifié : la visibilité des trois points au matin, à l'après-midi (avant et après la mission rendue) et la nuit ; `rapide.sh`, `partie2.py` ; codes 57 / 69 / 1630, identiques au jeu en ligne. **Pas rejoué en entier à quatre tablettes.**
 
+### 13.92 MIMI SE TAIT PENDANT L'ÉTABLI ET LA TABLE D'ANALYSE (Romain, 23 novembre, 10 h 26 : « Quand on est sur l'atelier ou sur la table d'analyse pour l'alchimiste, fais en sorte que Mimi elle miaule pas, parce que c'est pénible, on est concentré sur autre chose et il y a un chat qui miaule et on peut rien faire. ») — EN LIGNE (23 novembre, commit 0c7f50a du site, version 20261123-0935, dans les Réglages « 23/11 à 10 h 35 » ; publication de GitHub vérifiée)
+
+- L'établi (l'atelier des plantes, `plantes.js`) et la paillasse d'analyse (`labo.js`) s'ouvrent dans un cadre par-dessus l'atelier : derrière, Mimi continuait sa vie (demander, recevoir un coffret, ronronner…) avec ses sons.
+- **`sonMimi` (`atelier.js`) ne joue plus rien quand `M.etabliOuvert()` ou `M.laboOuvert()`** : ni miaou, ni ronron, ni fanfare. Elle continue sa petite vie sans bruit ; ses sons reviennent dès qu'on referme. (Le chat du labo lui-même ne miaulait déjà plus depuis le 19 novembre, §13.84.)
+- Vérifié : un coffret de Mimi fait du son atelier libre, aucun avec la table d'analyse ouverte, de nouveau après l'avoir refermée, aucun avec l'établi ouvert ; `rapide.sh`, `partie2.py`, `labo-mimi.py` ; codes 57 / 69 / 1630 inchangés.
+- **Pas fait** : le chaudron (mini-jeu) et les autres mini-jeux de l'Alchimiste n'ont pas été touchés — à faire si Romain l'entend aussi là.
+
 ## 14. La grande carte et la brume (chantier ouvert le 12 novembre) — DANS LE JEU ET EN LIGNE DEPUIS LE 12 NOVEMBRE À 12 H 06 (§14.5) ; depuis l'après-midi, deux zones se lèvent dans l'enquête 3 pour l'Alchimiste (§14.7)
 
 **À lire d'abord : le §14.5** (ce qui est dans le jeu), **puis le §14.7** (les deux premières zones levées). Les §14.1 à §14.4 racontent le modèle du matin ; ils restent vrais pour les lieux, les zones et les questions à décider.
