@@ -434,39 +434,44 @@ D('chaudron', function(el){
   var CC = KS.map(function(k){ return TC && TC.codes && TC.codes[k] ? TC.codes[k].c : '#888'; });
   function MO(k, x, y, s){ return TC && TC.motif ? TC.motif(k, 'x="' + x + '" y="' + y + '" width="' + s + '" height="' + s + '"') : ''; }
   var P = 11.5, CX = 150, RY = 182, ING = ['💧', '🍯', '🫐', '🍄', '☘️'], CIBLE = 2;
-  var XE = [34, 92, 150, 208, 266], YE = 384, BU = [40, 300], ZX = 66, ZW = 168, GX = 276, GY0 = 300, GH = 196;   /* la zone : 60 % de la frise, au milieu */
+  /* (23 novembre) comme dans le jeu refait : les bocaux en haut, posés sur la poutre ; la frise dans la poutre (FR : son haut) ;
+     la recette épinglée à gauche ; le thermomètre à droite */
+  var XE = [34, 92, 150, 208, 266], YE = 36, FR = 68, DY = 44, BU = [40, 300], ZX = 66, ZW = 168, GX = 276, GY0 = 300, GH = 150;   /* la zone : 60 % de la frise, au milieu ; DY : tout ce qui est sous la poutre est descendu d'autant */
   var th0 = -.55;
-  function bout(th){ return {bx:CX + 32 * Math.cos(th), by:RY + 7 * Math.sin(th), hx:CX + 50 * Math.cos(th), hy:126 + 9 * Math.sin(th)}; }
-  /* la louche tourne entre 3,3 et 4,9 s */
-  function th(t){ return th0 - Math.PI * 4 * Math.max(0, Math.min(1, (t - 3.3) / 1.6)); }
+  function bout(th){ return {bx:CX + 32 * Math.cos(th), by:RY + 7 * Math.sin(th), hx:CX + 50 * Math.cos(th), hy:132 + 8 * Math.sin(th)}; }
+  /* la louche tourne entre 3,3 et 4,9 s : un tour dans un sens, puis un tour dans l'autre (les deux refroidissent) */
+  function th(t){ var u = Math.max(0, Math.min(1, (t - 3.3) / 1.6)); return th0 - Math.PI * 2 * (u < .5 ? 2 * u : 2 - 2 * u); }
   var b0 = bout(th0);
-  /* la main : le tas de bois (0,9 s), la louche (3,3 → 4,9 s), la caisse (7,7 s) */
-  var hors = piste([[0, 262, 250, 0], [.7, BU[0] + 30, BU[1] - 24, 0], [.9, BU[0] + 30, BU[1] - 24, 1], [1.08, BU[0] + 30, BU[1] - 24, 0], [2.7, 230, 200, 0], [3.25, b0.hx, b0.hy, 0]]);
-  var apres = piste([[4.9, b0.hx, b0.hy, 0], [5.6, 262, 250, 0], [7.25, XE[CIBLE] + 4, YE - 30, 0], [7.6, XE[CIBLE], YE - 4, 1], [7.8, XE[CIBLE], YE - 4, 0], [8.7, 262, 250, 0], [P, 262, 250, 0]]);
+  /* la main : le tas de bois (0,9 s), la louche (3,3 → 4,9 s), le bocal (7,7 s) */
+  var hors = piste([[0, 262, 250 + DY, 0], [.7, BU[0] + 30, BU[1] - 24 + DY, 0], [.9, BU[0] + 30, BU[1] - 24 + DY, 1], [1.08, BU[0] + 30, BU[1] - 24 + DY, 0], [2.7, 230, 200 + DY, 0], [3.25, b0.hx, b0.hy + DY, 0]]);
+  var apres = piste([[4.9, b0.hx, b0.hy + DY, 0], [5.6, 262, 250 + DY, 0], [7.25, XE[CIBLE] + 4, YE + 36, 0], [7.6, XE[CIBLE], YE + 6, 1], [7.8, XE[CIBLE], YE + 6, 0], [8.7, 262, 250 + DY, 0], [P, 262, 250 + DY, 0]]);
   var flammes = '<path d="M0,0 C-16,-6 -14,-26 -4,-40 C-4,-28 4,-26 6,-34 C18,-22 18,-4 0,0 Z" fill="#f5b945" stroke="#e8693c" stroke-width="3"/>';
   var buche = function(x, y, r){ return '<g transform="translate(' + x + ',' + y + ') rotate(' + r + ')"><rect x="-17" y="-5.5" width="34" height="11" rx="5.5" fill="#8a5a33" stroke="' + K + '" stroke-width="2"/><ellipse cx="17" cy="0" rx="3.8" ry="5.5" fill="#d9a066" stroke="' + K + '" stroke-width="1.5"/></g>'; };
   var id = uid('rgch');
   var svg = svgDemo(el,
     '<defs><linearGradient id="' + id + 'f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2148"/><stop offset="1" stop-color="#1a1430"/></linearGradient>' +
     '<linearGradient id="' + id + 'g" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#8b52e0"/><stop offset=".25" stop-color="#3f86f0"/><stop offset=".5" stop-color="#3fcf6a"/><stop offset=".72" stop-color="#ffd23f"/><stop offset=".88" stop-color="#f04a35"/><stop offset="1" stop-color="#ff2410"/></linearGradient>' +
-    '<clipPath id="' + id + 'c"><rect x="10" y="12" width="280" height="50" rx="11"/></clipPath></defs>' +
+    '<clipPath id="' + id + 'c"><rect x="10" y="' + (FR + 4) + '" width="280" height="42" rx="10"/></clipPath></defs>' +
     '<rect width="300" height="420" fill="url(#' + id + 'f)"/>' +
-    /* la frise et sa zone 🍲 */
-    '<rect x="10" y="12" width="280" height="50" rx="11" fill="#2a1d14" stroke="#24182e" stroke-width="3"/>' +
-    '<rect class="rg-zone" x="' + ZX + '" y="15" width="' + ZW + '" height="44" rx="9" fill="#ffd36a" fill-opacity=".12" stroke="#ffd36a" stroke-width="2.5" stroke-dasharray="6 4"/>' +
-    emo(ZX + 9, 23, 11, '🍲') +
-    '<g clip-path="url(#' + id + 'c)"><g class="rg-carre"><rect class="rg-carre-r" x="0" y="27" width="30" height="30" rx="7" fill="#7a7590" stroke="' + K + '" stroke-width="2.5"/></g>' +
-      '<g class="rg-carre2"><rect x="0" y="27" width="30" height="30" rx="7" fill="#7a7590" stroke="' + K + '" stroke-width="2.5"/></g></g>' +
+    /* le sol de l'âtre, devant */
+    '<rect x="0" y="' + (270 + DY) + '" width="300" height="' + (150 - DY) + '" fill="#3a3049"/><path d="M0,' + (270 + DY) + ' H300 M0,' + (322 + DY) + ' H300 M72,' + (270 + DY) + ' L52,' + (322 + DY) + ' M150,' + (270 + DY) + ' V' + (322 + DY) + ' M228,' + (270 + DY) + ' L248,' + (322 + DY) + ' M104,' + (322 + DY) + ' L86,420 M196,' + (322 + DY) + ' L214,420" stroke="#24182e" stroke-width="2" opacity=".6"/>' +
+    /* la poutre : son dessus (les bocaux sont posés dessus), sa face de devant où glisse la frise, le cadre de laiton */
+    '<polygon points="14,' + (FR - 10) + ' 286,' + (FR - 10) + ' 297,' + FR + ' 3,' + FR + '" fill="#d6a06a" stroke="#24182e" stroke-width="2.5" stroke-linejoin="round"/>' +
+    '<rect x="3" y="' + FR + '" width="294" height="50" rx="5" fill="#96592f" stroke="#24182e" stroke-width="3"/>' +
+    '<rect x="10" y="' + (FR + 4) + '" width="280" height="42" rx="10" fill="#2a1d14" stroke="#24182e" stroke-width="2.5"/>' +
+    '<rect class="rg-zone" x="' + ZX + '" y="' + (FR + 5) + '" width="' + ZW + '" height="40" rx="9" fill="#ffd36a" fill-opacity=".12" stroke="#d9a441" stroke-width="3" stroke-dasharray="6 4"/>' +
+    '<path d="M' + (ZX + ZW / 2 - 8) + ',' + (FR + 51) + ' h16 l-8,8 Z" fill="#d9a441" stroke="#24182e" stroke-width="1.5" stroke-linejoin="round"/>' +
+    '<g clip-path="url(#' + id + 'c)"><g class="rg-carre"><rect class="rg-carre-r" x="0" y="' + (FR + 10) + '" width="30" height="30" rx="7" fill="#7a7590" stroke="' + K + '" stroke-width="2.5"/></g>' +
+      '<g class="rg-carre2"><rect x="0" y="' + (FR + 10) + '" width="30" height="30" rx="7" fill="#7a7590" stroke="' + K + '" stroke-width="2.5"/></g></g>' +
     '<path class="rg-fl" d="M-8,0 L8,0 L0,10 Z" fill="#ffd36a" stroke="' + K + '" stroke-width="1.5"/>' +
-    /* la carte de la recette (version simple) : 2 💧 › 1 🍯 › 3 🫐 › 🧪, chaque ingrédient avec sa pastille de couleur */
-    [[2, 0, 10], [1, 1, 82], [3, 2, 154]].map(function(r){
-      return '<g class="rg-rec' + r[1] + '"><rect x="' + r[2] + '" y="67" width="62" height="24" rx="12" fill="rgba(0,0,0,.4)" stroke="' + CC[r[1]] + '" stroke-width="2"/>' +
-        '<text x="' + (r[2] + 11) + '" y="80" font-size="14" font-weight="800" fill="#ffe3a3" text-anchor="middle" dominant-baseline="central">' + r[0] + '</text>' +
-        '<circle cx="' + (r[2] + 28) + '" cy="79" r="7" fill="' + CC[r[1]] + '" stroke="' + K + '" stroke-width="2"/>' + emo(r[2] + 47, 80, 14, ING[r[1]]) +
-        (r[1] < 2 ? '<text x="' + (r[2] + 67) + '" y="80" font-size="13" font-weight="900" fill="#ffe3a3" text-anchor="middle" dominant-baseline="central">›</text>' : '') + '</g>';
-    }).join('') +
-    '<text x="223" y="80" font-size="13" font-weight="900" fill="#ffe3a3" text-anchor="middle" dominant-baseline="central">›</text>' +
-    '<rect x="229" y="67" width="30" height="24" rx="12" fill="rgba(0,0,0,.4)" stroke="#ffd36a" stroke-width="1.5"/>' + emo(244, 80, 13, '🧪') +
+    /* la recette épinglée, à gauche : 2 💧, 1 🍯, 3 🫐, puis 🧪 — chaque ingrédient avec sa pastille de couleur */
+    '<g transform="translate(0,' + DY + ')">' +
+    '<rect x="4" y="128" width="66" height="116" rx="4" fill="#f3e4c2" stroke="#24182e" stroke-width="2.5" transform="rotate(-2 37 128)"/><circle cx="37" cy="133" r="3.5" fill="#8d8a99" stroke="#24182e" stroke-width="1.5"/>' +
+    [[2, 0, 140], [1, 1, 166], [3, 2, 192]].map(function(r){
+      return '<g class="rg-rec' + r[1] + '"><rect x="8" y="' + r[2] + '" width="58" height="23" rx="11.5" fill="rgba(255,233,168,0)" stroke="' + CC[r[1]] + '" stroke-width="2"/>' +
+        '<text x="18" y="' + (r[2] + 12.5) + '" font-size="14" font-weight="800" fill="#35281b" text-anchor="middle" dominant-baseline="central">' + r[0] + '</text>' +
+        '<circle cx="34" cy="' + (r[2] + 11.5) + '" r="7" fill="' + CC[r[1]] + '" stroke="' + K + '" stroke-width="2"/>' + emo(53, r[2] + 12.5, 14, ING[r[1]]) + '</g>';
+    }).join('') + emo(37, 230, 14, '🧪') +
     /* la jauge : en haut ça explose, en bas ça gèle ; la bande verte au milieu */
     emo(GX + 8, GY0 - GH - 12, 14, '🌋') + emo(GX + 8, GY0 + 14, 14, '🧊') +
     '<rect x="' + GX + '" y="' + (GY0 - GH) + '" width="16" height="' + GH + '" rx="8" fill="url(#' + id + 'g)" stroke="' + K + '" stroke-width="3"/>' +
@@ -483,11 +488,14 @@ D('chaudron', function(el){
     '<g class="rg-bulles"><circle cx="130" cy="' + (RY - 2) + '" r="3" fill="#fff" opacity=".5"/><circle cx="168" cy="' + (RY + 2) + '" r="2.4" fill="#fff" opacity=".5"/></g>' +
     '<g class="rg-ronds" opacity="0"><ellipse cx="150" cy="' + RY + '" rx="20" ry="5" fill="none" stroke="#fff" stroke-width="2.5"/><ellipse cx="150" cy="' + RY + '" rx="34" ry="8" fill="none" stroke="#fff" stroke-width="2"/></g>' +
     '<g class="rg-louche"><path d="" stroke="' + K + '" stroke-width="11" stroke-linecap="round"/><path d="" stroke="#c08a4a" stroke-width="6" stroke-linecap="round"/><ellipse rx="10" ry="5" fill="#c08a4a" stroke="' + K + '" stroke-width="2.5"/></g></g>' +
-    '<g class="rg-fleche" opacity="0"><path d="M220,150 C200,124 100,124 80,150" stroke="#5ab8ff" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M76,156 L89,150 L77,142 Z" fill="#5ab8ff"/></g>' +
-    /* les caisses : chacune avec la bande de sa couleur */
-    '<rect x="6" y="408" width="288" height="8" rx="3" fill="#8a5a33" stroke="' + K + '" stroke-width="2"/>' +
-    ING.map(function(ic, i){ return '<g class="e' + i + '"><rect x="' + (XE[i] - 25) + '" y="' + (YE - 24) + '" width="50" height="48" rx="9" fill="#c08a4a" stroke="' + K + '" stroke-width="2.5"/>' +
-      '<rect x="' + (XE[i] - 19) + '" y="' + (YE - 14) + '" width="38" height="30" rx="4" fill="#f3e4c2" stroke="#5a4630" stroke-width="1.5"/>' + emo(XE[i], YE + 1, 20, ic) + '</g>'; }).join('') +
+    /* la flèche à deux pointes : on touille dans le sens qu'on veut, les deux refroidissent */
+    '<g class="rg-fleche" opacity="0"><path d="M220,150 C200,124 100,124 80,150" stroke="#5ab8ff" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M76,156 L89,150 L77,142 Z" fill="#5ab8ff"/><path d="M224,156 L211,150 L223,142 Z" fill="#5ab8ff"/></g>' +
+    '</g>' +
+    /* les bocaux de verre, posés sur le dessus de la poutre : le bouchon, le verre, l'ingrédient dedans */
+    ING.map(function(ic, i){ return '<g class="e' + i + '"><ellipse cx="' + XE[i] + '" cy="' + (YE + 27) + '" rx="23" ry="4" fill="#24182e" opacity=".35"/>' +
+      '<rect x="' + (XE[i] - 21) + '" y="' + (YE - 20) + '" width="42" height="47" rx="10" fill="#cfe3e6" fill-opacity=".9" stroke="' + K + '" stroke-width="2.5"/>' +
+      '<rect x="' + (XE[i] - 13) + '" y="' + (YE - 29) + '" width="26" height="11" rx="4" fill="#c08a4a" stroke="' + K + '" stroke-width="2.5"/>' +
+      '<path d="M' + (XE[i] - 15) + ',' + (YE - 11) + ' v24" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/>' + emo(XE[i] + 1, YE + 5, 20, ic) + '</g>'; }).join('') +
     emo(0, 0, 24, ING[CIBLE], 'rg-vol') +
     '<g class="rg-bvol" opacity="0">' + buche(0, 0, 0) + '</g>');
   var louche = $(svg, '.rg-louche'), potion = $(svg, '.rg-potion'), fleche = $(svg, '.rg-fleche'), feu = $(svg, '.rg-feu'), lueur = $(svg, '.rg-lueur');
@@ -499,7 +507,7 @@ D('chaudron', function(el){
     var a = th(t), b = bout(a), dl = 'M' + f1(b.bx) + ',' + f1(b.by) + ' L' + f1(b.hx) + ',' + f1(b.hy);
     louche.children[0].setAttribute('d', dl); louche.children[1].setAttribute('d', dl);
     louche.children[2].setAttribute('cx', f1(b.bx)); louche.children[2].setAttribute('cy', f1(b.by));
-    var m = t < 3.25 ? hors(t) : (t < 4.9 ? {x:b.hx, y:b.hy, p:true} : apres(t));
+    var m = t < 3.25 ? hors(t) : (t < 4.9 ? {x:b.hx, y:b.hy + DY, p:true} : apres(t));
     poserMain(gMain, m.x, m.y, m.p, t, [.9, 7.6]);
     /* la barre : monte avec la bûche (1,3 → 3,2 s), redescend en touillant (3,4 → 4,9 s) et continue un peu (inertie, jusqu'à 5,5 s), puis le feu la remet au milieu */
     var c = .5 + .2 * entre(t, 1.3, 3.2) - .27 * entre(t, 3.4, 5.5) + .07 * entre(t, 5.6, 7);
@@ -509,7 +517,7 @@ D('chaudron', function(el){
     bulles.setAttribute('transform', 'translate(0,' + f1(-Math.abs(Math.sin(t * (3 + 6 * Math.max(0, c - .5)))) * 3) + ')');
     /* la bûche vole du tas au feu */
     var ub = (t - .95) / .5;
-    if(ub > 0 && ub < 1){ vis(bvol, 1); pose(bvol, mix(BU[0], 150, ub), mix(BU[1], 286, ub) - 60 * Math.sin(Math.PI * ub), 1, ub * 200); } else vis(bvol, 0);
+    if(ub > 0 && ub < 1){ vis(bvol, 1); pose(bvol, mix(BU[0], 150, ub), mix(BU[1], 286, ub) + DY - 60 * Math.sin(Math.PI * ub), 1, ub * 200); } else vis(bvol, 0);
     var niv = .75 + .45 * entre(t, 1.4, 1.8) - .4 * entre(t, 8.6, 10.6), danse = 1 + .06 * Math.sin(t * 11);
     feu.setAttribute('transform', 'translate(150,282) scale(' + (niv * danse).toFixed(3) + ',' + (niv / danse).toFixed(3) + ')');
     lueur.setAttribute('opacity', (.08 + .3 * Math.max(0, niv - .35)).toFixed(2));
@@ -527,10 +535,10 @@ D('chaudron', function(el){
     var rr = $(svg, '.rg-rec' + CIBLE + ' rect'); rr.setAttribute('stroke-width', dansZ ? 4 : 2); rr.setAttribute('stroke', dansZ ? '#ffd36a' : CC[CIBLE]);
     zone.setAttribute('fill-opacity', dansZ ? (.22 + .12 * Math.sin(t * 9)).toFixed(2) : '.12');
     zone.setAttribute('stroke-dasharray', dansZ ? 'none' : '6 4');
-    pose(fl, xc + 15, 14 + 2 * Math.abs(Math.sin(t * 6))); vis(fl, t > 5.4 && t < 7.9 ? 1 : 0);
-    /* l'ingrédient vole de la caisse à la marmite */
+    pose(fl, xc + 15, FR - 4 + 2 * Math.abs(Math.sin(t * 6))); vis(fl, t > 5.4 && t < 7.9 ? 1 : 0);
+    /* l'ingrédient vole du bocal à la marmite */
     var ui = (t - 7.7) / .6;
-    if(ui > 0 && ui < 1){ vis(vol, 1); vol.setAttribute('x', f1(mix(XE[CIBLE], 150, ui))); vol.setAttribute('y', f1(mix(YE, RY + 4, ui) - 80 * Math.sin(Math.PI * ui))); vol.setAttribute('font-size', f1(24 * (1 - .35 * ui))); }
+    if(ui > 0 && ui < 1){ vis(vol, 1); vol.setAttribute('x', f1(mix(XE[CIBLE], 150, ui))); vol.setAttribute('y', f1(mix(YE, RY + 4 + DY, ui) - 34 * Math.sin(Math.PI * ui))); vol.setAttribute('font-size', f1(24 * (1 - .35 * ui))); }
     else vis(vol, 0);
     eCible.setAttribute('transform', t > 7.6 && t < 7.8 ? 'translate(0,3)' : '');
     var ur = (t - 8.3) / .55, on = ur > 0 && ur < 1;
