@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8">
+<!-- Un geste du donjon, image par image, pour le vérifier : geste.html#role/geste/t1,t2,…/angle/taille
+     ex. geste.html#alchimiste/preparer/0,0.4,0.8,1.2,1.6,2.05,2.6/55/200 ; geste.html#alchimiste/lancer/0.24,0.47,0.56/55
+     (le geste : HV.ALCHI.<nom>, sinon HV.DONJON.<nom> ; la garde : aGarde pour l'Alchimiste, dGarde pour la Pisteuse) -->
+<style>body{margin:0;background:#131932;display:flex;flex-wrap:wrap;gap:6px;padding:10px;font:12px sans-serif;color:#cfd6ff}
+.c{text-align:center}svg{background:#1b2347;border-radius:8px;display:block}</style>
+<script src="../src/hv-base.js"></script><script src="../src/hv-tete.js"></script><script src="../src/hv-cheveux.js"></script><script src="../src/hv-corps.js"></script><script src="../src/hv-pantin.js"></script><script src="../src/hv-poses.js"></script><script src="../src/hv-positions.js"></script><script src="../src/hv-donjon.js"></script><script src="../src/hv-alchimiste.js"></script>
+<body><script>
+var HV = HerosVues, Hh = decodeURIComponent(location.hash.slice(1)).split('/');
+var R = Hh[0] || 'alchimiste', NOM = Hh[1] || 'preparer', TS = (Hh[2] || '0,1,2').split(',').map(Number), CAP = Hh[3] === undefined ? 55 : +Hh[3], L = +Hh[4] || 200;
+var HEROS = {
+  pisteur:{role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert', combat:true},
+  alchimiste:{role:'alchimiste', sexe:'m', peau:'p4', cheveux:'noir', yeux:'ambre', coiffure:'courts', combat:true, potion:'#7fd8ff'}
+};
+var base = R === 'alchimiste' ? HV.POSES.aGarde : HV.POSES.dGarde;
+var Gst = (HV.ALCHI && HV.ALCHI[NOM]) || HV.DONJON[NOM], s = '', n = 0, cadre = '-30 -60 360 500';
+TS.forEach(function(t){
+  var P = Gst ? HV.gesteImage(base, Gst, t) : HV.avec(base, {}); P.cap = CAP;
+  s += '<div class="c">' + HV.svg(HEROS[R], P, {id:'g' + (n++), cadre:cadre}).replace('<svg ', '<svg width="' + L + '" height="' + Math.round(L * 500 / 360) + '" ') + NOM + ' ' + t + ' s</div>';
+});
+document.body.innerHTML = s;
+</script>

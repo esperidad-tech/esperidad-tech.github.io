@@ -118,6 +118,10 @@ HV.POSES = {
     arcDir:[-0.2, 0, 1], arcAxe:[-0.1, 1, 0], tendu:0, dague:0, brasDessus:0,
     /* tourne : elle se tourne d'elle-même (degrés) ; flecheD : une flèche dans SA main (celle qui tire la corde) */
     tourne:0, flecheD:0, flecheP:0, capA:0, capW:0,
+    /* L'ALCHIMISTE (hv-alchimiste.js) : fioleG / fioleD, une fiole dans SA main droite / gauche (0 … 1) ; fioleV, elle penche (degrés,
+       pour verser) ; louche, la grande louche dans SA main droite (loucheR : il la fait tournoyer, en degrés) ; marmite, la petite
+       marmite dans SA main gauche ; herbes, une poignée d'herbes dans SA main gauche */
+    fioleG:0, fioleD:0, fioleV:0, louche:0, loucheR:0, marmite:0, herbes:0,
     /* leve : elle est en l'air (un saut), de tant ; son ombre reste au sol et rapetisse */
     leve:0},
   /* une main sur la hanche, la tête un peu penchée */

@@ -365,6 +365,48 @@ function mainSVG(K, V, B, P){
     /* (ses points, loin du poing : pour savoir ce qui passe devant la flèche — un bras, le buste) */
     [-24, -14, 18, 28, 38, 46].forEach(function(b){ objetPts.push(Q(7.6, b + sf, 2.4)); });
   }
+  /* CE QUE L'ALCHIMISTE TIENT (hv-alchimiste.js). Une fiole (P.fioleG / P.fioleD, de la couleur K.potion) : son col passe dans le
+     poing, son ventre de verre sort du côté du petit doigt — elle tourne avec la main, en vrai, dans l'espace ; la potion reste à
+     plat (la pesanteur). La louche (P.louche, SA main droite) : le manche dans le poing, le cuilleron au bout, côté pouce. La
+     petite marmite (P.marmite, SA main gauche) : pendue par son anse sous le poing. Les herbes (P.herbes, SA main gauche). */
+  var fv = cote < 0 ? (P.fioleG || 0) : (P.fioleD || 0);
+  if(fv > 0.05){
+    /* (grosse, pour qu'on la voie bien au donjon, où le héros est petit) */
+    var fc0 = Q(7.6, -18.5, 2.4), fn0 = Q(7.6, -7, 2.4), fn1 = Q(7.6, 6.5, 2.4), fn2 = Q(7.6, 11, 2.4), FR = 12.5, pot = K.potion || '#ff8a2a';
+    objet += '<g opacity="' + f1(doux(0.05, 0.5, fv)) + '">' + PT(U.poly([fn0, fn1], false), O, 10.4) + PT(U.poly([fn0, fn1], false), '#e9e2f6', 6.8) +
+      PT(U.poly([fn1, fn2], false), O, 11) + PT(U.poly([fn1, fn2], false), '#a7743f', 7.4) +
+      '<circle cx="' + f1(fc0[0]) + '" cy="' + f1(fc0[1]) + '" r="' + FR + '" fill="#efe9fb" opacity=".92"' + U.c(2.2) + '/>' +
+      '<path d="M' + f1(fc0[0] - FR * 0.94) + ' ' + f1(fc0[1] + 1) + ' A' + FR + ' ' + FR + ' 0 0 0 ' + f1(fc0[0] + FR * 0.94) + ' ' + f1(fc0[1] + 1) + ' Z" fill="' + pot + '"/>' +
+      '<path d="M' + f1(fc0[0] - 8) + ' ' + f1(fc0[1] + 6) + ' A8.5 8.5 0 0 0 ' + f1(fc0[0] + 8) + ' ' + f1(fc0[1] + 6) + '" fill="none" stroke="#fff" stroke-width="1.8" opacity=".45"/>' +
+      '<path d="M' + f1(fc0[0] - 7.2) + ' ' + f1(fc0[1] - 6.5) + ' Q' + f1(fc0[0] - 8.6) + ' ' + f1(fc0[1] - 1.5) + ' ' + f1(fc0[0] - 6.6) + ' ' + f1(fc0[1] + 2.5) + '" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".85"/></g>';
+    objetPts.push(fc0, Q(7.6, -28, 2.4), fn1);
+  }
+  if(cote < 0 && (P.louche || 0) > 0.05){
+    /* (loucheR : elle tournoie dans la main comme le pistolet d'un cow-boy autour de son doigt — dans le plan de l'avant-bras :
+       le cuilleron passe devant le poing, en bas, derrière, en haut) */
+    var lr = (P.loucheR || 0) * RAD, lco = Math.cos(lr), lsi = Math.sin(lr);
+    function QL(b){ return Q(7.6 + b * lsi, b * lco, 2.4); }
+    var lh0 = QL(-12), lh1 = QL(44), lb = QL(52);
+    objet += '<g opacity="' + f1(doux(0.05, 0.5, P.louche)) + '">' + PT(U.poly([lh0, lh1], false), O, 7.4) + PT(U.poly([lh0, lh1], false), '#8a8f9c', 4.4) +
+      '<circle cx="' + f1(lb[0]) + '" cy="' + f1(lb[1]) + '" r="10" fill="#6a6f7c"' + U.c(2.2) + '/><ellipse cx="' + f1(lb[0] - 1) + '" cy="' + f1(lb[1] - 1.5) + '" rx="6.5" ry="5" fill="#2e3038"/>' +
+      '<path d="M' + f1(lb[0] - 7) + ' ' + f1(lb[1] + 3) + ' A8 8 0 0 0 ' + f1(lb[0] + 6) + ' ' + f1(lb[1] + 5) + '" fill="none" stroke="#d5dbe6" stroke-width="1.6" opacity=".8"/></g>';
+    objetPts.push(QL(20), QL(36), lb);
+  }
+  if(cote > 0 && (P.marmite || 0) > 0.05){
+    var mf = Q(7.6, 0, 2.4), mx = mf[0], my = mf[1] + 25;
+    objet += '<g opacity="' + f1(doux(0.05, 0.5, P.marmite)) + '"><path d="M' + f1(mx - 14) + ' ' + f1(my - 8) + ' Q' + f1(mx) + ' ' + f1(my - 40) + ' ' + f1(mx + 14) + ' ' + f1(my - 8) + '" fill="none" stroke="' + O + '" stroke-width="3.6"/>' +
+      '<path d="M' + f1(mx - 14) + ' ' + f1(my - 8) + ' Q' + f1(mx) + ' ' + f1(my - 40) + ' ' + f1(mx + 14) + ' ' + f1(my - 8) + '" fill="none" stroke="#8a8f9c" stroke-width="1.6"/>' +
+      '<path d="M' + f1(mx - 16) + ' ' + f1(my - 8) + ' Q' + f1(mx - 18) + ' ' + f1(my + 14) + ' ' + f1(mx) + ' ' + f1(my + 15) + ' Q' + f1(mx + 18) + ' ' + f1(my + 14) + ' ' + f1(mx + 16) + ' ' + f1(my - 8) + ' Z" fill="#3a3442"' + U.c(2) + '/>' +
+      '<ellipse cx="' + f1(mx) + '" cy="' + f1(my - 8) + '" rx="16.5" ry="4.6" fill="#1a1620"' + U.c(1.8) + '/><path d="M' + f1(mx - 11) + ' ' + f1(my - 2) + ' Q' + f1(mx - 12) + ' ' + f1(my + 8) + ' ' + f1(mx - 4) + ' ' + f1(my + 11) + '" fill="none" stroke="#8a8098" stroke-width="2" stroke-linecap="round" opacity=".7"/></g>';
+    objetPts.push([mx, my, mf[2]], [mx - 12, my, mf[2]], [mx + 12, my, mf[2]]);
+  }
+  if(cote > 0 && (P.herbes || 0) > 0.05){
+    var hb = '';
+    /* (grandes, pour qu'on les voie au donjon) */
+    [-40, -15, 10, 35, 58].forEach(function(a, i){ var b0 = Q(7.6, 4, 2.4), b1 = Q(7.6 + 9 * Math.sin(a * RAD), 26 + (i % 2) * 6, 2.4 + 12 * Math.cos(a * RAD));
+      hb += '<path d="M' + f1(b0[0]) + ' ' + f1(b0[1]) + ' Q' + f1((b0[0] + b1[0]) / 2 + 7) + ' ' + f1((b0[1] + b1[1]) / 2 - 6) + ' ' + f1(b1[0]) + ' ' + f1(b1[1]) + ' Q' + f1((b0[0] + b1[0]) / 2 - 7) + ' ' + f1((b0[1] + b1[1]) / 2 + 6) + ' ' + f1(b0[0]) + ' ' + f1(b0[1]) + ' Z" fill="' + (i % 2 ? '#7ef08a' : '#5fd06a') + '" stroke="#1e5a2a" stroke-width="1.5"/>'; });
+    objet += '<g opacity="' + f1(doux(0.05, 0.5, P.herbes)) + '">' + hb + '</g>';
+  }
   /* la paume */
   var p1 = Q(1.5, 3.4), p2 = Q(1.5, -3.4), p3 = Q(9.6, 4.7), p4 = Q(9.6, -4.7), Lp = [];
   Lp.push(gelule(p1[0], p1[1], 4.5, p3[0], p3[1], 3.9), gelule(p2[0], p2[1], 4.5, p4[0], p4[1], 3.9), gelule(p3[0], p3[1], 3.9, p4[0], p4[1], 3.9), gelule(p1[0], p1[1], 4.5, p2[0], p2[1], 4.5));

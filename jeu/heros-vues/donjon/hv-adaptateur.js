@@ -11,6 +11,10 @@
    Et ceux des films (la toile, le ruban de la dague, les cristaux de givre, les rats, la bave) sont redessinés sur elle.
    Pas fait : les autres coiffures et apparences (elle est toujours la rousse à queue de cheval), Léo (phase 3 : être attrapée),
    les objets portés (equiper : retenu, pas dessiné sur elle), la flèche colorée encochée selon sa sorte.
+   L'ALCHIMISTE EN VOLUME (Romain, 23 novembre, 20 h 46 : « tu peux faire toutes les animations pour l'alchimiste ») : le même
+   adaptateur, avec son allure (le garçon au chignon, hv-base.js) et sa garde (HV.POSES.aGarde). Ses gestes à lui (hv-alchimiste.js) :
+   preparer, lancer, louche, herbes — leurs effets (la fiole qui vole, le BONG, les feuilles) sont ceux de l'ancien Alchimiste, partis
+   de ses mains à lui ; tous les autres ordres sont ceux de la Pisteuse.
    Chargé dans le <head>, AVANT le donjon : il attend que le donjon pose window.HerosAnime pour l'envelopper.
    ========================================================== */
 (function(G){
@@ -61,10 +65,17 @@ function rond(x, y, r, c, o, plus){ return '<circle cx="' + x.toFixed(1) + '" cy
 /* ==========================================================
    LA PISTEUSE EN VOLUME, avec les ordres de l'ancien Pisteur
    ========================================================== */
-function Volume(cont, lk, creer0){
+/* (leur allure au donjon : la Pisteuse rousse à queue de cheval ; l'Alchimiste, le garçon brun au chignon — les autres apparences ne
+   sont pas encore en volume) */
+var ALLURES = {
+  pisteur:{role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert', combat:true},
+  alchimiste:{role:'alchimiste', sexe:'m', peau:'p4', cheveux:'noir', yeux:'ambre', coiffure:'courts', combat:true}
+};
+function Volume(cont, lk, creer0, role){
   css();
   var me = this;
-  this.cont = cont; this.role = 'pisteur'; this.lk = lk || {}; this.ko = false; this._q = Promise.resolve(); this._timers = []; this._veut = false;
+  role = ALLURES[role] ? role : 'pisteur';
+  this.cont = cont; this.role = role; this.lk = lk || {}; this.ko = false; this._q = Promise.resolve(); this._timers = []; this._veut = false;
   if(getComputedStyle(cont).position === 'static') cont.style.position = 'relative';
   var slot = cont.closest && cont.closest('.perso'); if(slot) slot.classList.add('hv-volume');
   this.racine = document.createElement('div'); this.racine.className = 'hva';
@@ -72,8 +83,8 @@ function Volume(cont, lk, creer0){
   this.fx = document.createElement('div'); this.fx.className = 'hva-fx';
   this.racine.appendChild(this.boite); this.racine.appendChild(this.fx);
   cont.appendChild(this.racine);
-  /* (elle est toujours la Pisteuse rousse à queue de cheval, en tenue de combat : les autres apparences ne sont pas encore en volume) */
-  this.h = {role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert', combat:true};
+  /* (en tenue de combat) */
+  this.h = HV.avec(ALLURES[role], {});
   this.p = HV.monter(this.boite, this.h, {cadre:CADRE.join(' '), cap:CAP});
   this.p.posi = null; this.p.nom = 'donjonVolume';
   this.svg = this.boite.querySelector('svg');
@@ -87,7 +98,7 @@ function Volume(cont, lk, creer0){
   this.calque.setAttribute('style', 'position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none');
   this.boite.appendChild(this.calque);
   this.effets = []; this.idGel = 'hvagel' + (++NUM);
-  this.base = HV.POSES.dGarde; this.cles = null; this.t0 = maintenant(); this.tenue = null; this.dernier = this.base;
+  this.base = role === 'alchimiste' ? HV.POSES.aGarde : HV.POSES.dGarde; this.cles = null; this.t0 = maintenant(); this.tenue = null; this.dernier = this.base;
   /* (c'est l'adaptateur qui dit au pantin quelle pose prendre, à chaque image ; le pantin y ajoute sa petite vie) */
   this.p.courante = function(){ return me.pose(); };
   var d0 = this.p.dessiner;
@@ -96,12 +107,13 @@ function Volume(cont, lk, creer0){
   var im0 = this.p.image;
   this.p.image = function(now){ if(me.calme() && this.t0 && now - this.t0 < 64) return; im0.call(this, now); };
   this.p.vers(CAP, true);
-  /* l'ancien Pisteur, invisible, pour ses effets */
-  try{ this.ombre = creer0(cont, 'pisteur', lk); this.ombre.racine.classList.add('hva-ombre'); this.ombre._etoiles = function(){};
+  /* l'ancien héros du même rôle, invisible, pour ses effets */
+  try{ this.ombre = creer0(cont, role, lk); this.ombre.racine.classList.add('hva-ombre'); this.ombre._etoiles = function(){};
     cont.appendChild(this.ombre.racine); PROTO = PROTO || Object.getPrototypeOf(this.ombre);
-    /* (ses effets à lui — la flèche qui vole, la lame — travaillent sur elle) */
-    ['_fleche', '_fleche2', '_impactFleche', '_impactFleche2', '_rebondFleche', '_lame', '_impactDague', '_recul'].forEach(function(n){ if(PROTO[n] && !V[n]) V[n] = PROTO[n]; }); }
-  catch(e){ this.ombre = null; if(G.console) console.warn('hv-adaptateur : pas d\'ancien Pisteur', e); }
+    /* (ses effets à lui — la flèche qui vole, la lame ; la fiole qui vole, le BONG, les feuilles — travaillent sur le nouveau) */
+    ['_fleche', '_fleche2', '_impactFleche', '_impactFleche2', '_rebondFleche', '_lame', '_impactDague', '_recul',
+      '_fioleVole', '_fioleVole2', '_eclatPotion', '_bong', '_swoosh', '_feuilles'].forEach(function(n){ if(PROTO[n] && !V[n]) V[n] = PROTO[n]; }); }
+  catch(e){ this.ombre = null; if(G.console) console.warn('hv-adaptateur : pas d\'ancien héros', e); }
   this._prochainRegard = maintenant() + 6 + Math.random() * 4;
   /* (la fuite : le combat fait partir la case vers la gauche, retournée — elle court, au lieu de glisser en garde) */
   /* (et l'anneau doré à ses pieds suit la case : quand on peut la choisir — « dispo » — et quand c'est son tour — « actif » —,
@@ -174,7 +186,9 @@ V.versRef = function(s, ref){
 /* … → le repère des effets des films */
 V.ecranF = function(q){ var s = this.versSvg(q); return [(s[0] + 130) * KF, (s[1] + 64) * KF]; };
 /* les repères de l'ancien Pisteur (pour ses effets), posés sur elle */
-var REP = {tete:['tete', 0, -30], teteC:['tete', 4, -34], cou:['cou'], chevilleB:['chevilleD'], chevilleA:['chevilleG'], orteilA:['orteilG'], orteilB:['orteilD'], poignee:['poignetG'], bassin:['bassin'], amulette:['cou', 0, 16]};
+var REP = {tete:['tete', 0, -30], teteC:['tete', 4, -34], cou:['cou'], chevilleB:['chevilleD'], chevilleA:['chevilleG'], orteilA:['orteilG'], orteilB:['orteilD'], poignee:['poignetG'], bassin:['bassin'], amulette:['cou', 0, 16],
+  /* (l'Alchimiste : la marmite pend sous SON poing gauche ; la fiole, les herbes, dans ses mains) */
+  marmite:['poignetD', 0, 32], mainA:['poignetG'], mainB:['poignetD'], pince:['poignetD']};
 V.rep = function(nom, ref){
   var r = REP[nom] || ['bassin'], q = this.os()[r[0]], s = this.versSvg(q);
   return this.versRef([s[0] + (r[1] || 0), s[1] + (r[2] || 0)], ref || this.fx);
@@ -409,6 +423,8 @@ V.tomber = function(){
     if(this.ko) return null;
     var me = this;
     this.ko = true;
+    /* (l'Alchimiste lâche sa fiole s'il en tenait une) */
+    this.sansEffet('fiole');
     this.ombreFait('tomber');
     this.plus(860, function(){ if(me.ko) me._etoiles(true); });
     return this.jouer(HV.DONJON.chute.filter(function(k){ return k[0] <= 0.84 + 1e-6; }), HV.SONNEE);
@@ -490,6 +506,116 @@ V.dague = function(scene, to, opt){
     return this.jouer(HV.DONJON.dague);
   });
 };
+/* ==========================================================
+   L'ALCHIMISTE : ses gestes à lui (hv-alchimiste.js)
+   ========================================================== */
+/* (les potions, comme l'ancien : un nom → sa couleur ; givre, acide, huile, colle volent avec leur traînée à elles) */
+var POTIONS = {feu:'#ff7a2a', fumigene:'#aab4d2', huile:'#f2b630', colle:'#ece4d0', baume:'#5fd08a', coeur:'#ff5a7a', givre:'#7fd8ff', acide:'#7ae04a'};
+var POT2 = {givre:1, acide:1, huile:1, colle:1}, EAU = '#d8e8f2';
+/* où est la fiole (dans ses mesures) : sous le poing de SA main droite, un peu au bout */
+function fioleOs(os){
+  var W = os.poignetG, E = os.coudeG, d = [W[0] - E[0], W[1] - E[1], W[2] - E[2]], l = Math.sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]) || 1;
+  return [W[0] + d[0] / l * 7.6, W[1] + d[1] / l * 7.6 + 16, W[2] + d[2] / l * 7.6];
+}
+/* (devant ou derrière lui, vu d'ici : > 0, plus près de nous que son bassin) */
+V.profondeur = function(q, os){ var Vv = HV.outils.vue(HV.capDe(this.p.F)), b = os.bassin; return (-q[0] * Vv.s + q[2] * Vv.c) - (-b[0] * Vv.s + b[2] * Vv.c); };
+/* la lueur de la fiole, ses étincelles, la traînée de lumière de la pirouette (dans le repère des films) */
+function lueur(x, y, r, c, o){ return rond(x, y, r, c, 0.16 * o) + rond(x, y, r * 0.66, c, 0.22 * o) + rond(x, y, r * 0.36, '#ffffff', 0.3 * o); }
+function etincelles(x, y, u, n, c, r0, r1, graine){
+  var s = '', i;
+  for(i = 0; i < n; i++){ var a = i / n * Math.PI * 2 + graine, r = r0 + (r1 - r0) * u, o = Math.max(0, 1 - u), xx = x + r * Math.cos(a), yy = y + r * Math.sin(a) - 20 * u;
+    s += '<path d="M' + xx.toFixed(1) + ' ' + (yy - 7).toFixed(1) + ' L' + (xx + 2).toFixed(1) + ' ' + (yy - 2).toFixed(1) + ' L' + (xx + 7).toFixed(1) + ' ' + yy.toFixed(1) + ' L' + (xx + 2).toFixed(1) + ' ' + (yy + 2).toFixed(1) +
+      ' L' + xx.toFixed(1) + ' ' + (yy + 7).toFixed(1) + ' L' + (xx - 2).toFixed(1) + ' ' + (yy + 2).toFixed(1) + ' L' + (xx - 7).toFixed(1) + ' ' + yy.toFixed(1) + ' L' + (xx - 2).toFixed(1) + ' ' + (yy - 2).toFixed(1) + ' Z" fill="' + (i % 2 ? '#ffffff' : c) + '" opacity="' + o.toFixed(2) + '"/>'; }
+  return s;
+}
+/* IL PRÉPARE UNE POTION : la fiole d'eau claire, les herbes émiettées (elle prend sa couleur, un éclat), la pirouette (une traînée de
+   lumière suit la fiole autour de lui, plus pâle quand elle passe derrière), la fiole levée vers la lumière (des rayons) ; puis il
+   attend, la fiole armée, qui luit doucement — jusqu'à ce qu'il la lance */
+V.preparer = function(couleur){
+  var me = this, A = HV.ALCHI;
+  return this.file(function(){
+    if(this.ko) return null;
+    var c = POTIONS[couleur] || couleur || '#5fd08a', trace = [];
+    this._fioleC = c;
+    this.p.K.potion = EAU;
+    this.plus(A.VERSE * 1000, function(){ me.p.K.potion = c; });
+    this.effet('fiole', function(u, os, T){
+      var q = fioleOs(os), f = this.ecranF(q), s = '', i;
+      /* (les miettes d'herbes tombent de la main gauche dans la fiole) */
+      if(u > A.VERSE - 0.1 && u < A.VERSE + 0.16){ var m = this.ecranF(os.poignetD), a0 = (u - (A.VERSE - 0.1)) / 0.26;
+        for(i = 0; i < 6; i++){ var a = Math.min(1, Math.max(0, a0 * 1.6 - i * 0.12)); if(a <= 0 || a >= 1) continue;
+          s += rond(mixe(m[0] + (i - 2.5) * 6, f[0], a), mixe(m[1] + 10, f[1], a) - 8 * Math.sin(a * Math.PI), 4.5, i % 2 ? '#7ef08a' : '#b8ffb0', 1, ' stroke="#1e5a2a" stroke-width="1.2"'); } }
+      if(u < A.VERSE) return s;
+      /* (l'éclat : elle prend sa couleur) */
+      var ue = u - A.VERSE;
+      if(ue < 0.5) s += lueur(f[0], f[1], 30 + 90 * ue, c, 1 - ue / 0.5) + etincelles(f[0], f[1], ue / 0.5, 8, c, 16, 80, 0.3);
+      /* (la traînée de la pirouette : la fiole tourne autour de lui ; quand elle passe derrière lui, sa lumière est cachée) */
+      if(u > A.TOURNE[0] - 0.08 && u < A.TOURNE[1] + 0.1){
+        trace.push([f[0], f[1], T, this.profondeur(q, os)]);
+        for(i = 1; i < trace.length; i++){ var p0 = trace[i - 1], p1 = trace[i], o = 1 - (T - p1[2]) / 0.24; if(o <= 0 || p0[3] < -4 || p1[3] < -4) continue;
+          var d = 'M' + p0[0].toFixed(0) + ' ' + p0[1].toFixed(0) + ' L' + p1[0].toFixed(0) + ' ' + p1[1].toFixed(0);
+          s += '<path d="' + d + '" stroke="' + c + '" stroke-width="' + (18 * o).toFixed(1) + '" stroke-linecap="round" opacity="' + (0.35 * o).toFixed(2) + '"/>' +
+            '<path d="' + d + '" stroke="#ffffff" stroke-width="' + (6 * o).toFixed(1) + '" stroke-linecap="round" opacity="' + (0.8 * o).toFixed(2) + '"/>'; }
+      }
+      /* (levée vers la lumière : de grands rayons qui tournent) */
+      var ul = u - A.ECLAT;
+      if(ul > -0.05 && ul < 0.5){ var ol = ul < 0.08 ? Math.max(0, (ul + 0.05) / 0.13) : 1 - (ul - 0.08) / 0.42;
+        for(i = 0; i < 10; i++){ var an = i / 10 * Math.PI * 2 + ul * 1.6, r0 = 26, r1 = 26 + (i % 2 ? 44 : 70) * (0.6 + 0.4 * ol);
+          s += '<path d="M' + (f[0] + r0 * Math.cos(an)).toFixed(1) + ' ' + (f[1] + r0 * Math.sin(an)).toFixed(1) + ' L' + (f[0] + r1 * Math.cos(an)).toFixed(1) + ' ' + (f[1] + r1 * Math.sin(an)).toFixed(1) + '" stroke="' + (i % 2 ? '#ffffff' : c) + '" stroke-width="5" stroke-linecap="round" opacity="' + (0.85 * ol).toFixed(2) + '"/>'; }
+        s += lueur(f[0], f[1], 70, c, ol) + etincelles(f[0], f[1], Math.min(1, ul / 0.5), 6, c, 20, 60, 1.1);
+      }
+      /* (et elle luit doucement, tant qu'il la tient) */
+      return s + lueur(f[0], f[1], 34 + 4 * Math.sin(u * 7), c, 0.8);
+    }, 99);
+    return this.jouer(A.preparer, A.PRET);
+  });
+};
+/* IL LANCE LA FIOLE : l'élan, le fouet du bras ; elle part (la fiole qui vole et se brise : celle de l'ancien) */
+V.lancer = function(scene, to, couleur, opt){
+  if(couleur && typeof couleur === 'object'){ opt = couleur; couleur = opt.potion; }
+  opt = opt || {};
+  var me = this, A = HV.ALCHI;
+  return this.file(function(sig){
+    var nom = POTIONS[couleur] ? couleur : opt.potion, c = opt.couleur || POTIONS[nom] || (couleur && couleur.charAt && couleur.charAt(0) === '#' ? couleur : null) || this._fioleC || '#ff8a3a';
+    var o2 = {}, k; for(k in opt) o2[k] = opt[k];
+    if(nom && POT2[nom]) o2._potion = nom;
+    this.p.K.potion = c;
+    var fini = this.jouer(A.lancer);
+    var vole = attendre(A.LACHE * 1000).then(function(){
+      var a = me.versRef(me.versSvg(fioleOs(me.os())), scene);
+      me.sansEffet('fiole'); me._fioleC = null;
+      if(!me._fioleVole) return null;
+      return me._fioleVole(scene, a, to, c, o2).then(sig);
+    });
+    return Promise.all([fini, vole]);
+  });
+};
+/* LA LOUCHE : BONG sur la marmite (à 0,6 s, quand le combat fait sonner le BONG), puis il fait tournoyer sa louche */
+V.louche = function(scene, to){
+  var me = this, A = HV.ALCHI;
+  return this.file(function(){
+    if(this.ko) return null;
+    this.plus((A.BONG - 0.13) * 1000, function(){ try{ me._swoosh(); }catch(e){} });
+    this.plus(A.BONG * 1000, function(){ try{ me._bong(scene); }catch(e){} });
+    return this.jouer(A.louche);
+  });
+};
+/* LES HERBES : il les lance en l'air, elles volent vers l'équipe (les feuilles de l'ancien, parties de sa main) */
+V.herbes = function(scene, to, opt){
+  opt = opt || {};
+  var me = this, A = HV.ALCHI;
+  return this.file(function(sig){
+    this.effet('pincee', function(u, os){ if(u < 0.3 || u > 0.75) return ''; var m = this.ecranF(os.poignetD); return etincelles(m[0], m[1], (u - 0.3) / 0.45, 5, '#a6ff9a', 6, 34, 0.5); }, 0.8);
+    var fini = this.jouer(A.herbes);
+    var vole = attendre(A.HERBES * 1000).then(function(){
+      var a = me.rep('mainB', scene);
+      if(!me._feuilles) return null;
+      return me._feuilles(scene, a, to, opt).then(sig);
+    });
+    return Promise.all([fini, vole]);
+  });
+};
+
 /* LA TOILE : collée dans une vraie toile d'araignée, elle se débat (en boucle) ; entoile(false) : elle la déchire */
 V.entoile = function(on){
   on = on !== false;
@@ -502,7 +628,7 @@ V.entoile = function(on){
       this.effet('toile', function(u, os){ return toile(this, os, u, null); }, 1e9);
       return this.jouer(HV.DONJON.toile.filter(function(k){ return k[0] <= 0.35 + 1e-6; }), function(u){
         var a = Math.sin(u * 3.2), b = Math.max(0, Math.sin(u * 1.6));
-        return HV.avec(HV.POSES.dGarde, HV.avec(HV.COLLEE, {dos:[2 * b, 0, 12 * a], bas:[-3 * a, 30, -4], hoche:6 + 4 * b, plisse:0.4 + 0.4 * b}));
+        return HV.avec(me.base, HV.avec(HV.COLLEE, {dos:[2 * b, 0, 12 * a], bas:[-3 * a, 30, -4], hoche:6 + 4 * b, plisse:0.4 + 0.4 * b}));
       }).then(function(){ return attendre(500); });
     }
     /* (elle se ramasse et l'ouvre d'un coup : les fils cassent et volent) */
@@ -564,8 +690,8 @@ function envelopper(HA){
   if(!HA || HA.__hv) return HA;
   var creer0 = HA.creer;
   HA.creer = function(cont, role, lk){
-    if(role !== 'pisteur' || G.HV_ANCIEN) return creer0.apply(HA, arguments);
-    return new Volume(cont, lk, function(c, r, l){ return creer0.call(HA, c, r, l); });
+    if(!ALLURES[role] || G.HV_ANCIEN || (G.HV_ROLES && G.HV_ROLES.indexOf(role) < 0)) return creer0.apply(HA, arguments);
+    return new Volume(cont, lk, function(c, r, l){ return creer0.call(HA, c, r, l); }, role);
   };
   HA.__hv = true;
   return HA;

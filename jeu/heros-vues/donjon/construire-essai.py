@@ -5,7 +5,8 @@
     python3 jeu/heros-vues/donjon/construire-essai.py  → jeu/heros-vues/sortie/donjon-essai/index.html
 
 Le donjon n'est pas touché : on copie sa construction (jeu/donjon/moteur/sortie/) et on glisse en tête de la page les héros en
-volume (src/*.js) et l'adaptateur (donjon/hv-adaptateur.js), qui remplace le Pisteur par la Pisteuse en volume.
+volume (src/*.js) et l'adaptateur (donjon/hv-adaptateur.js), qui remplace le Pisteur par la Pisteuse en volume, et
+l'Alchimiste par l'Alchimiste en volume (23 novembre, 21 h 20).
 Dans la copie seulement, deux nombres du combat sont recalés sur ses gestes (pour que les sons tombent juste) :
 le lâcher de la flèche (1,38 s au lieu de 1,32) et le coup de dague (0,54 s au lieu de 0,70).
 Pour voir un combat : index.html?combat=rats&nouveau=1 (avec &vitesse=3 : plus vite)."""
@@ -15,7 +16,7 @@ ICI = pathlib.Path(__file__).resolve().parent
 HV = ICI.parent
 DONJON = HV.parent / 'donjon' / 'moteur' / 'sortie'
 SORTIE = HV / 'sortie' / 'donjon-essai'
-SRC = ['hv-base.js', 'hv-tete.js', 'hv-cheveux.js', 'hv-corps.js', 'hv-pantin.js', 'hv-poses.js', 'hv-positions.js', 'hv-donjon.js']
+SRC = ['hv-base.js', 'hv-tete.js', 'hv-cheveux.js', 'hv-corps.js', 'hv-pantin.js', 'hv-poses.js', 'hv-positions.js', 'hv-donjon.js', 'hv-alchimiste.js']
 
 if not (DONJON / 'index.html').exists():
     raise SystemExit('Le donjon n\'est pas construit : python3 jeu/donjon/moteur/construire.py')

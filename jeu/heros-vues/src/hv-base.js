@@ -333,6 +333,8 @@ HV.contexte = function(id, h){
   K.arme = h.arme !== undefined ? h.arme : rl === 'pisteur' ? 'arc' : null;
   K.baudrier = rl === 'pisteur' || rl === 'alchimiste';
   K.tablier = rl === 'alchimiste';
+  /* (la couleur de la potion dans sa main : l'adaptateur du donjon la change avant de préparer — HV.monter(…).K.potion) */
+  K.potion = h.potion || '#ff8a2a';
   K.pant = cp ? [sombre(cp, 0.1), sombre(cp, 0.55)] : K.combat ? ['#5a4232', '#241811'] : ['#4a4062', '#221d33'];
   K.botte = cb ? [clair(cb, 0.3), sombre(cb, 0.2), sombre(cb, 0.6)] : ['#b77b45', '#6e4223', '#3b2211'];
   K.cuir = cc ? [clair(cc, 0.3), sombre(cc, 0.2), sombre(cc, 0.6)] : ['#b77b45', '#6e4223', '#3b2211'];
