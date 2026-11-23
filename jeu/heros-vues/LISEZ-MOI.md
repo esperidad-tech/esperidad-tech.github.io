@@ -1,6 +1,6 @@
 # Les héros « en volume » — le chantier ouvert le 23 novembre (Bible §13.94)
 
-**Où on en est (23 novembre, 11 h 40) : un premier personnage, la Pisteuse (fille, queue de cheval, tenue en couleur), tourne sur elle-même et prend des poses. Romain l'a vue à 11 h (« c'est exactement ce que je voulais ») ; ses défauts sont corrigés dans la deuxième version (voir plus bas). C'EST UN ESSAI HORS DU JEU : rien n'est branché dans `build.py`, rien n'est en ligne, `persos.js` n'est pas touché. Romain doit le voir et dire si c'est la bonne direction avant qu'on aille plus loin.**
+**Où on en est (23 novembre, 11 h 15) : un premier personnage, la Pisteuse (fille, queue de cheval, tenue en couleur), tourne sur elle-même et prend des poses. Romain l'a vue à 11 h (« c'est exactement ce que je voulais ») ; ses défauts sont corrigés dans la deuxième version (voir plus bas). C'EST UN ESSAI HORS DU JEU : rien n'est branché dans `build.py`, rien n'est en ligne, `persos.js` n'est pas touché. Romain doit le voir et dire si c'est la bonne direction avant qu'on aille plus loin.**
 
 ## Ce que Romain a demandé
 - 23 novembre, 9 h 58 (après avoir refusé une tête tournée collée sur le héros de face, le pantin du donjon et la vraie 3D) : « Je préfère vraiment que tu fasses comme avec Mimi le chat. Mais il faut que ça soit plus joli. Et peut-être qu'il y ait plus de transition entre le moment où elle est tournée à 90 degrés et le moment où elle est de face. »
@@ -28,7 +28,7 @@ Comme Mimi (`jeu/src/mimi-vues.js`) : le héros n'est pas une série de dessins 
 - la page d'essai : https://claude.ai/artifact/Xc46TS5qmRis4ofSURCdRn
 - le film `pisteuse-se-tourne.mp4` et la planche `planche-pisteuse.png` (dans la conversation).
 
-## L'avis de Romain (11 h) et la deuxième version (11 h 40)
+## L'avis de Romain (11 h) et la deuxième version (11 h 15)
 Il veut : des mains moins « moufles », que ça fasse **moins pantin** (« que le bras soit intégré dans l'épaule », pas de trait qui le détache ; pareil pour les jambes, les genoux, les pieds), plus d'oreille qui apparaît et disparaît, une Pisteuse moins maigre (surtout de profil), et les textures du matin. Fait :
 - **la tunique d'un seul tenant** : un seul contour pour le buste et les manches de devant, le même dégradé (`tun`) ; le trait d'un bras ne commence qu'à l'aisselle (`bras().libre`) ; l'épaule du bras du fond se fond dans le buste (`epaule`) ; le relief de chaque os en travers de lui (`relief()`) ;
 - **les mains** : un pouce, la paume et les doigts d'un seul tenant, trois traits ;
