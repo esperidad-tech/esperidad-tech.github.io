@@ -369,6 +369,7 @@ function contenuModal(m){
     case 'porte': return M.porteHTML ? M.porteHTML(m) : '';   /* 👂 écouter aux portes (barde.js) */
     case 'marche': return M.marcheHTML ? M.marcheHTML(m) : '';   /* 💐 le marché aux fleurs du Barde (enquête 3, marche.js) */
     case 'descente': return M.descenteHTML ? M.descenteHTML(m) : '';   /* 🕯️ la descente dans le donjon (enquête 3, descente.js) */
+    case 'amis': return M.amisHTML ? M.amisHTML(m) : '';   /* 🤝 le code de six dessins d'un ami (« Mes amis », amis.js) */
     case 'pointure': return M.pointureHTML ? M.pointureHTML(m) : '';   /* 👣 deux mains qui se ressemblent : les empreintes du jardin d'Iris (enquête 3, ecritures.js) */
     case 'plantes': return M.plantesHTML ? M.plantesHTML(m) : '';   /* 🎒 le sac de l'Alchimiste, reçu par le Pisteur (enquête 3, plantes.js) */
     case 'grand': return M.grandHTML ? M.grandHTML(m) : '';   /* 🗨️ les grands dialogues du Barde, la fête, retenir le maire (enquête 3, grands.js) */
@@ -1217,7 +1218,12 @@ A['crea-fin'] = function(){
   if(avant.legendes) M.S.legendes = avant.legendes;
   if(avant.options) M.S.options = avant.options;
   if(avant.ancien){ M.S.ancien = {heros:avant.ancien.heros}; }
-  M.sauver(); M.son('victoire'); UI.ecran = 'accueil'; M.render();
+  /* (Romain, 23 novembre, 13 h 10 : « une fois que tout le monde a créé son personnage […] tu rentres le code ») le héros fait, l'écran
+     « Mes amis » (amis.js). Pas pendant les parties des robots (navigator.webdriver), qui vont droit au village comme avant, sauf
+     BRUMEVAL_AVEC_AMIS (tools/amis.py) — comme le film du début et la pub. */
+  var amis = !!M.ecranAmis; try{ if(navigator.webdriver && !window.BRUMEVAL_AVEC_AMIS) amis = false; }catch(e){}
+  UI.amisCrea = amis;
+  M.sauver(); M.son('victoire'); UI.ecran = amis ? 'amis' : 'accueil'; M.render(); window.scrollTo(0, 0);
   M.lireAuto('Bienvenue à Brumeval, ' + nom + ' !');
 };
 A.ecran = function(el){ if(M.aller) return M.aller(el.dataset.e); UI.modal = null; UI.saisie = []; UI.ecran = el.dataset.e; M.render(); window.scrollTo(0, 0); };   /* M.aller (heros.js) retient d'où l'on vient, pour « ← Retour » */

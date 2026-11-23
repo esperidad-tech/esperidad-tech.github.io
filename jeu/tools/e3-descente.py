@@ -213,7 +213,7 @@ def six(pg, role, a):
     if pg.locator(f'#voile [data-act=ds-six][data-role={role}]').count() == 0 and pg.locator('#voile [data-act=ds-corriger]').count():
         pg.locator('#voile [data-act=ds-corriger]').click(); pg.wait_for_timeout(300)
     pg.locator(f'#voile [data-act=ds-six][data-role={role}]').first.click(); pg.wait_for_timeout(300)
-    seq = pg.evaluate("([r, a]) => { var n = M.allureNumero(r, a) * 224 + M.visageNumero(a), o = DONNEES.ORDRE_SYM, s = [], i; for(i = 0; i < 6; i++){ s.unshift(o[n % 12]); n = Math.floor(n / 12); } return s; }", [role, a])
+    seq = pg.evaluate("([r, a]) => M.code6De(r, a)", [role, a])   # (23 novembre : seize coiffures dans le code, descente.js)
     for x in seq: ev(pg, 'd6-sym', {'s': x}); pg.wait_for_timeout(60)
     pg.wait_for_timeout(500)
 
@@ -277,7 +277,7 @@ def partie_enquete(b):
     shot(pg, 'six')
     sA = {'sexe': 'f', 'peau': 'p2', 'cheveux': 'rose', 'age': 'adulte', 'coiffure': 'couettes', 'yeux': 'violet', 'barbe': ''}
     sS = {'sexe': 'm', 'peau': 'p6', 'cheveux': 'blond', 'age': 'adulte', 'coiffure': 'boucles', 'yeux': 'bleu', 'barbe': 'courte'}
-    tout6 = lambda r, a: pg.evaluate("([r, a]) => { var n = M.allureNumero(r, a) * 224 + M.visageNumero(a), o = DONNEES.ORDRE_SYM, s = [], i; for(i = 0; i < 6; i++){ s.unshift(o[n % 12]); n = Math.floor(n / 12); } return s; }", [r, a])
+    tout6 = lambda r, a: pg.evaluate("([r, a]) => M.code6De(r, a)", [r, a])   # (23 novembre : seize coiffures dans le code, descente.js)
     def taper6(seq):
         for s in seq: ev(pg, 'd6-sym', {'s': s}); pg.wait_for_timeout(60)
         pg.wait_for_timeout(500)
@@ -481,7 +481,7 @@ def partie_enquete(b):
     verifier(not sans_son(pg) and jaune(pg, '#voile .b-aller'), f'le 🔊 partout, et un bouton jaune ({sans_son(pg)})')
     moi = pg.evaluate("() => M.allureCode()")
     verifier(pg.evaluate("(id) => { var a = M.allureDe(+id.split(':')[1]), h = M.S.heros; return a.role === 'sage' && a.sexe === (h.sexe === 'm' ? 'm' : 'f') && a.peau === h.peau && a.cheveux === h.cheveux; }", moi), f'ce code dit bien son héros ({moi})')
-    verifier(pg.evaluate("() => { var r = M.decoderTenue6(M.tenueCode6()), h = M.S.heros, v = M.visageNumero(M.allureMoi()); return !!r && r.a.role === 'sage' && r.a.peau === h.peau && r.a.cheveux === h.cheveux && r.v === v && M.tenueCode6().length === 6; }"), 'son code à six symboles redonne bien son héros, tenue et visage')
+    verifier(pg.evaluate("() => { var r = M.decoderTenue6(M.tenueCode6()), h = M.S.heros, v = M.allureMoi(true); return !!r && r.a.role === 'sage' && r.a.peau === h.peau && r.a.cheveux === h.cheveux && r.vz.coiffure === v.coiffure && r.vz.yeux === v.yeux && M.tenueCode6().length === 6; }"), 'son code à six symboles redonne bien son héros, tenue et visage')
     shot(pg, 'sage-tenue'); fermer(pg)
     t = code(pg, 'info:on_descend', True); verifier('Montre ce code au Pisteur' in t, 'le code retapé : la même fenêtre (il retrouve son code)'); fermer(pg)
     t = code(pg, moi, True); verifier('pour le Pisteur' in t, f'son propre code tapé chez lui : « pour le Pisteur » ({t[:50]})'); fermer(pg)
