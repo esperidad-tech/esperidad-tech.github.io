@@ -46,8 +46,10 @@ ajoute('piste', 'accroupie', 'Accroupie', {bas:[0, 94, -10], bang:[16, 0, 0], do
 /* un genou à terre, assise sur son talon, une main sur la trace, l'arc planté à côté d'elle */
 ajoute('piste', 'piste', 'Elle lit une trace', {bas:[0, 105, -30], bang:[42, 0, 6], dos:[46, 0, 6],
   piedD:[15, 394, -50], pointeD:88, genouD:[0.1, 0.9, 1], piedG:[-27, 386, 40], genouG:[-0.3, -0.5, 1], ouvG:0.2,
-  mainD:[30, 397, 72], relD:0, coudeD:[1, -0.2, -0.4], mdirD:[-0.1, 0.5, 0.85], pouceD:[-1, 0, 0.2], poingD:0.05,
-  mainG:[-50, 300, 44], relG:0, coudeG:[-1, 0.3, -0.2], hoche:26, tete:6});
+  mainD:[32, 395, 66], relD:0, coudeD:[1, -0.2, -0.4], mdirD:[-0.1, 0.5, 0.85], pouceD:[-1, 0, 0.2], poingD:0.05,
+  /* (le bras de l'arc : tendu sur le côté, la main en haut de l'arc planté — avant, il était replié contre l'épaule, ce qui est
+     impossible : Romain, 23 novembre, 14 h 11) */
+  mainG:[-86, 300, 76], relG:0, coudeG:[-1, 0.3, -0.2], hoche:26, tete:6});
 /* accroupie très bas, les deux mains posées au sol, l'arc couché par terre sous sa main */
 ajoute('piste', 'mainsAuSol', 'Les deux mains au sol', {bas:[0, 116, -24], bang:[38, 0, 0], dos:[42, 0, 0],
   piedG:[-30, 386, -8], piedD:[30, 386, -8], pointeG:50, pointeD:50, ouvG:1, ouvD:1, genouG:[-0.8, -0.3, 1], genouD:[0.8, -0.3, 1],

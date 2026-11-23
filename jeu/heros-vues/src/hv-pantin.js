@@ -28,7 +28,7 @@ HV.dessin = function(h, P, o){
   var om = C.ombre, s = '<ellipse cx="' + f1(150 + om.cx) + '" cy="' + f1(om.cy) + '" rx="' + f1(om.rx) + '" ry="7" fill="' + K.u('ombre') + '"/>';
   /* l'ordre des morceaux : la tête vue de face (les cheveux de derrière d'abord, le visage à la fin) ou de dos (le visage d'abord,
      puis le cou, puis les cheveux par-dessus) ; la queue de cheval passe devant tout quand elle est de notre côté */
-  var tDos = Vt.c < -0.15, G1 = '<g transform="' + tT + '">', dessus = P.brasDessus > 0.5, bras = dessus ? '' : C.devant;
+  var tDos = Vt.c < -0.15, G1 = '<g transform="' + tT + '">', dessus = C.dessus, bras = dessus ? '' : C.devant;
   var nuque = '<g transform="' + tT + '"><rect x="-30" y="12" width="60" height="13" fill="' + K.peau.ombre + '" opacity=".75"/></g>';
   var visage = G1 + (tDos ? CH.dos + CH.devant : T.svg + CH.devant + T.sourcils) + (CH.queueDevant ? CH.queue : '') + '</g>';
   /* (penchée loin de nous, vue de dos : la tête est derrière les épaules) */
