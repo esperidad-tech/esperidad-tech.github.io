@@ -1205,56 +1205,81 @@ html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc
 
 /* ==========================================================
    Mini-jeu « Le chaudron » (préfixe .mjc-)
+   (23 novembre 2026, go de Romain à 9 h 31 ; Bible §13.91) REFAIT : deux étages seulement — l'en-tête du mini-jeu (le nom de la
+   potion, les cœurs, ⏸️ 🏳️ 🔊) et la poutre de la cheminée (les bocaux posés dessus, la frise dans sa face). Tout le reste est dans le
+   décor : la cheminée de l'atelier vue de près, la recette épinglée à gauche, le thermomètre de laiton à droite, la réserve de bois.
+   Les dessins : mj-chaudron-dessin.js. Les places (chaudron, recette, thermomètre, réserve, lumières) : disposer(), mj-chaudron.js,
+   qui pose aussi --fx, --fy (le milieu de la potion), --fw (la largeur du bord) et --feuy (le feu) sur .mjc-scene.
+   Animations : seulement transform et opacity (jeu/donjon/RAPIDITE.md).
    ========================================================== */
-.mj-chaudron .mj-zone{background:radial-gradient(110% 80% at 50% 85%, #3a2346, #1c1735 70%)}
+.mj-chaudron .mj-zone{background:#1a1424}
 .mjc{position:relative;flex:1;display:flex;flex-direction:column;min-height:0;-webkit-user-select:none;user-select:none}
 .mjc button{font:inherit;color:inherit}
-.mjc-haut{flex:none;display:flex;flex-direction:column;gap:6px;padding:8px 10px 2px}
 
-/* La zone où la potion doit finir */
-.mjc-l1{display:flex;align-items:center;gap:8px}
-.mjc-l1 .mjc-cible{flex:1;min-width:0}
-.mjc-cible{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;padding:5px 12px;border-radius:14px;background:rgba(0,0,0,.32);border:3px solid var(--c);
-  font-weight:700;font-size:.95rem;text-align:center;line-height:1.15;box-shadow:0 0 14px -4px var(--c)}
-.mjc-cible-ic{font-size:1.3rem}
-.mjc-cible-nom{color:var(--c);font-size:1.2rem;letter-spacing:.04em;text-shadow:0 2px 0 #24182e}
-.mjc-cible-nom.ae{background:linear-gradient(90deg,#ff5a5a,#ffb347,#fff35c,#5df08a,#5ab8ff,#c77dff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
-.mjc-pastille{width:26px;height:26px;border-radius:50%;background:var(--c);border:3px solid #24182e;flex:none}
-.mjc-pastille.ae{background:conic-gradient(#ff5a5a,#ffb347,#fff35c,#5df08a,#5ab8ff,#c77dff,#ff5a5a)}
+/* ---------- l'en-tête : le nom, les cœurs, ⏸️ 🏳️ 🔊 ---------- */
+.mj-chaudron .mj-tete{padding:6px 10px;gap:8px}
+.at-mj .mj-chaudron .mj-tete .mj-ic{display:none}   /* (dans l'atelier, le nom de la potion a déjà son icône) */
+.mjc-vies{display:flex;gap:2px;flex:none;margin:0 4px}
+.mjc-vies .mj-coeur{width:24px;height:22px}
 
-/* La frise : un petit carré de la COULEUR de chaque ingrédient (rien d'autre), dans l'ordre de la recette ;
-   on le verse quand il est dans la zone 🍲 (à gauche). Une petite flèche montre le prochain (niveaux bas). */
-.mjc-frise{position:relative;height:76px;border-radius:14px;border:3px solid #24182e;overflow:hidden;
-  background:repeating-linear-gradient(90deg, rgba(255,255,255,.04) 0 2px, transparent 2px 40px), linear-gradient(#4a3424,#2a1d14);box-shadow:inset 0 5px 12px rgba(0,0,0,.5)}
-/* la zone (60 % de la frise, au milieu) : grise et éteinte quand elle est vide ; un carré y entre → elle s'allume en jaune */
-.mjc-zone-f{position:absolute;top:3px;bottom:3px;left:20%;width:60%;border-radius:11px;border:3px dashed #77728a;background:rgba(150,146,170,.1);--c:#ffd36a;transition:background .2s, box-shadow .2s, border-color .2s}
-.mjc-zone-f > span{position:absolute;left:5px;top:2px;font-size:1rem;line-height:1;filter:drop-shadow(0 1px 0 #24182e) grayscale(1);opacity:.6}
-.mjc-zone-f.pret{border-style:solid;border-color:#ffd36a;background:rgba(255,211,106,.28);box-shadow:0 0 18px rgba(255,211,106,.8), inset 0 0 14px rgba(255,211,106,.45)}
-.mjc-zone-f.pret > span{filter:drop-shadow(0 1px 0 #24182e);opacity:1}
-.mjc-phase-fin .mjc-zone-f{border-style:solid;border-color:var(--c);background:rgba(255,255,255,.08);box-shadow:0 0 14px var(--c)}
-.mjc-piste{position:absolute;inset:0}
-.mjc-ing{position:absolute;left:0;bottom:6px;width:46px;height:46px;border-radius:12px;display:grid;place-items:center;background:#7a7590;border:3px solid #24182e;
-  box-shadow:inset 0 4px 0 rgba(255,255,255,.35), inset 0 -5px 0 rgba(0,0,0,.18), 0 3px 0 rgba(0,0,0,.4);will-change:transform;transition:opacity .35s}
-.mjc-ing i{font-style:normal;font-size:1.5rem;line-height:1;display:block}
+/* (l'atelier) le chaudron prend tout l'écran, comme le labo : l'en-tête du héros et les onglets passent derrière. En pause (.mj-cache),
+   il retourne dans le cadre de l'atelier, assombri, pour laisser les onglets (moteur-actions.js, M.mjPause). */
+.at-mj.at-mj-plein:not(.mj-cache){position:fixed;inset:0;z-index:80;padding:env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);background:#131932}
+.at-mj.at-mj-plein:not(.mj-cache) .mj{border-radius:0;border:0}
 
-/* La carte de la recette (à côté de la frise) : nombre, couleur + motif, icône, nom, dans l'ordre ; 🔊 pour l'entendre */
-.mjc-recette{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 5px;padding:4px 6px;border-radius:12px;background:rgba(255,246,216,.08);border:2px solid rgba(255,246,216,.22)}
-.mjc-rec-t{font-size:1.05rem;line-height:1}
-.mjc-rec-sep{font-weight:900;color:#ffe3a3;opacity:.7}
-.mjc-rec-i{display:inline-flex;align-items:center;gap:4px;padding:2px 8px 2px 4px;border-radius:999px;background:rgba(0,0,0,.38);border:2px solid var(--c);color:#fff6d8;font-weight:800;font-size:.9rem;line-height:1;white-space:nowrap;transition:opacity .25s}
-.mjc-rec-i b{font-size:1.05rem;color:#ffe3a3;min-width:.7em;text-align:center}
-.mjc-l1 .mjc-recette{flex:1;min-width:0}
-.mjc-rec-c{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--c);border:2px solid #24182e;flex:none;font-style:normal;box-shadow:inset 0 3px 0 rgba(255,255,255,.35)}
-.mjc-rec-fin{border-color:#ffd36a;padding:2px 6px}
-.mjc-rec-ic{font-size:1.05rem}
+/* ---------- la poutre de la cheminée : les bocaux dessus, la frise dans sa face ---------- */
+.mjc-haut{position:relative;z-index:2;flex:none;display:flex;flex-direction:column;padding:6px 6px 0;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='184' height='92'%3E%3Crect width='184' height='92' fill='%236f689a'/%3E%3Crect x='1.5' y='1.5' width='66' height='43' rx='4' fill='%23a59ecb'/%3E%3Crect x='70.5' y='1.5' width='57' height='43' rx='4' fill='%23aea7d3'/%3E%3Crect x='130.5' y='1.5' width='52' height='43' rx='4' fill='%239c95c2'/%3E%3Crect x='-30.5' y='47.5' width='66' height='43' rx='4' fill='%23aea7d3'/%3E%3Crect x='153.5' y='47.5' width='66' height='43' rx='4' fill='%23aea7d3'/%3E%3Crect x='38.5' y='47.5' width='58' height='43' rx='4' fill='%239c95c2'/%3E%3Crect x='99.5' y='47.5' width='51' height='43' rx='4' fill='%23a59ecb'/%3E%3Cpath d='M8 7H40M78 7h26M46 53h30M108 53h22' stroke='%23c9c3e6' stroke-width='2' stroke-linecap='round' opacity='.7'/%3E%3C/svg%3E") 50% 100% / 184px 92px}
+.mjc-haut::before{content:'';position:absolute;inset:0;background:linear-gradient(rgba(11,7,20,.5), rgba(11,7,20,.08) 70%);pointer-events:none}
+/* le bec du cadre de laiton : ce qui est dans le cadre tombe dans le chaudron */
+.mjc-haut::after{content:'';position:absolute;left:50%;bottom:-12px;margin-left:-13px;border-left:13px solid transparent;border-right:13px solid transparent;border-top:13px solid #d9a441;filter:drop-shadow(0 2.5px 0 #24182e);z-index:3;pointer-events:none}
+
+/* les bocaux : de verre, vus d'un peu au-dessus (mj-chaudron-dessin.js, bocal) ; l'ingrédient dedans, son nom sur l'étiquette,
+   son icône (celle de la recette et de la frise) sur l'étiquette ronde pendue au goulot */
+.mjc-boites{position:relative;z-index:3;display:grid;justify-content:center;gap:15px 8px;min-width:0;padding:2px 4px 0;margin-bottom:-17px;
+  background:linear-gradient(to top, rgba(11,7,20,.55), rgba(11,7,20,0) 44px)}   /* (l'ombre du mur, juste au-dessus de la poutre) */
+.mjc-boite{position:relative;width:100%;min-width:0;aspect-ratio:72/94;padding:0;border:0;background:none;cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent}
+.mjc-bocal{display:block;width:100%;height:100%;overflow:visible;pointer-events:none}
+.mjc-bocal text{font-family:var(--f-texte)}
+.mjc-bocal-halo{opacity:0}
+.mjc-boite.due .mjc-bocal-halo{opacity:.95}
+.mjc-nc,.mjc-etroit .mjc-nl{display:none}
+.mjc-etroit .mjc-nc{display:inline}
+.mjc-pastille-ic{position:absolute;right:-4%;top:12%;width:40%;aspect-ratio:1;box-sizing:border-box;border-radius:50%;background:#f3e4c2;border:2px solid #5a4630;display:grid;place-items:center;
+  font-size:calc(var(--bw, 64px) * .22);line-height:1;box-shadow:0 2px 0 rgba(0,0,0,.3);transform:rotate(8deg);pointer-events:none}
+.mjc-pastille-ic .mjc-ic-svg{width:1.15em;height:1.15em;vertical-align:0}
+/* plusieurs rangées : les rangées du haut ont chacune leur planche (son dessus clair, sa tranche foncée) ; la dernière est sur la poutre */
+.mjc-boite.mjc-sur-planche::before{content:'';position:absolute;left:-60%;right:-60%;bottom:-9px;height:15px;box-sizing:border-box;border-radius:2px;background:linear-gradient(#c98f5c 0, #e2ae78 56%, #24182e 56%, #24182e 64%, #96592f 64%);border:solid #24182e;border-width:2.5px 0;z-index:-1}
+
+/* LE DESSUS DE LA POUTRE (Romain, 23 novembre, 10 h : « que les bocaux soient posés sur la poutre », pas contre le mur). On voit la
+   poutre d'un peu au-dessus, comme le chaudron : son dessus est une tablette de bois qui part vers le mur — ses deux bouts fuient
+   vers le milieu, elle est plus sombre au fond. Les bocaux sont posés dessus (leur ombre aussi) ; sa face de devant porte la frise. */
+.mjc-dessus{position:relative;z-index:2;flex:none;height:26px;background:#24182e;clip-path:polygon(3.2% 0, 96.8% 0, 100% 100%, 0 100%)}
+.mjc-dessus::before{content:'';position:absolute;left:4px;right:4px;top:3.5px;bottom:0;clip-path:polygon(3.2% 0, 96.8% 0, 100% 100%, 0 100%);
+  background:linear-gradient(90deg, rgba(36,24,46,.28), rgba(36,24,46,0) 9%, rgba(36,24,46,0) 91%, rgba(36,24,46,.28)),
+    repeating-linear-gradient(rgba(110,63,32,.42) 0 1.5px, rgba(110,63,32,0) 1.5px 7px), linear-gradient(#a8703f, #d6a06a 55%, #edbf8a)}
+.mjc-phase-fin .mjc-boite{opacity:.45;filter:grayscale(.6)}
+.mjc-boite.appui{animation:mjc-appui .25s ease-out}
+.mjc-boite.due{animation:mjc-saute .4s ease-in-out infinite alternate}
 /* (13 novembre) la pensée dessinée (mj-chaudron.js, icDe) : de la taille d'un émoji */
 .mjc-ic-svg{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.18em}
-.mjc-rec-i em{font-style:normal}
-.mjc-rec-i.ici{box-shadow:0 0 0 2px #ffd36a, 0 0 12px #ffd36a}
-.mjc-rec-i.fait{opacity:.45}
-.mjc-rec-i.fait::after{content:'✔';color:#7cf0a8;margin-left:2px}
-.mjc-rec-i.secret .mjc-rec-c{font-size:.95rem}
-.mjc-recette .mj-lire-mini{width:30px;height:30px;font-size:.9rem;margin-left:2px}
+
+/* la frise : une rainure creusée dans la face de la poutre ; un jeton de la COULEUR de chaque ingrédient y glisse de droite à gauche,
+   dans l'ordre de la recette ; on le verse quand il est dans le cadre de laiton (60 % de la frise, au milieu) */
+.mjc-frise{--sq:46px;position:relative;z-index:2;height:66px;box-sizing:border-box;border-radius:0 0 8px 8px;border:4px solid #24182e;overflow:hidden;
+  background:linear-gradient(90deg, #3a3156 0 16px, rgba(58,49,86,0) 16px calc(100% - 16px), #3a3156 calc(100% - 16px)),
+    repeating-linear-gradient(91deg, rgba(74,42,20,.4) 0 2px, rgba(74,42,20,0) 2px 41px), linear-gradient(#b9794a, #96592f 50%, #6e3f20);
+  box-shadow:0 8px 14px rgba(0,0,0,.5), inset 0 3px 0 rgba(255,222,170,.32)}
+.mjc-frise::before{content:'';position:absolute;left:22px;right:22px;top:4px;bottom:4px;border-radius:12px;background:linear-gradient(#2c1a10, #4a2f1c 30%, #5a3a22);border:3px solid #24182e;box-shadow:inset 0 4px 7px rgba(0,0,0,.5)}
+/* le cadre de laiton : éteint quand il est vide ; un jeton y entre → il s'allume */
+.mjc-zone-f{position:absolute;top:2px;bottom:2px;left:20%;width:60%;box-sizing:border-box;border-radius:13px;border:4px solid #d9a441;background:rgba(255,211,106,.05);--c:#ffd36a;
+  box-shadow:0 0 0 2.5px #24182e, inset 0 0 0 2px rgba(36,24,46,.6);transition:background .2s, box-shadow .2s, border-color .2s}
+.mjc-zone-f.pret{border-color:#ffd36a;background:rgba(255,211,106,.26);box-shadow:0 0 0 2.5px #24182e, 0 0 18px rgba(255,211,106,.85), inset 0 0 14px rgba(255,211,106,.45)}
+.mjc-phase-fin .mjc-zone-f{border-color:var(--c);background:rgba(255,255,255,.08);box-shadow:0 0 0 2.5px #24182e, 0 0 14px var(--c)}
+.mjc-piste{position:absolute;inset:0}
+.mjc-ing{position:absolute;left:0;top:50%;width:var(--sq);height:var(--sq);margin-top:calc(var(--sq) / -2);box-sizing:border-box;border-radius:12px;display:grid;place-items:center;background:#7d7893;border:3px solid #24182e;
+  box-shadow:inset 0 4px 0 rgba(255,255,255,.35), inset 0 -5px 0 rgba(0,0,0,.18), 0 3px 0 rgba(0,0,0,.4);will-change:transform;transition:opacity .35s}
+.mjc-ing i{font-style:normal;font-size:1.5rem;line-height:1;display:block}
 .mjc-ing.zone{background:var(--c);animation:mjc-ing-pouls .45s ease-in-out infinite alternate}   /* allumé : sa couleur unie */
 @keyframes mjc-ing-pouls{from{box-shadow:0 0 0 3px #fff6d8, 0 0 10px 2px #ffd36a}to{box-shadow:0 0 0 4px #fff6d8, 0 0 22px 7px #ffd36a}}
 .mjc-ing.fait{opacity:0;transition:opacity .25s}
@@ -1264,14 +1289,224 @@ html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc
 .mjc-ing-fin.ae{box-shadow:0 0 0 3px #ff8fe0, 0 3px 0 rgba(0,0,0,.4)}
 .mjc-ing-fin.dedans{box-shadow:0 0 0 3px var(--c), 0 0 20px 4px var(--c)}
 .mjc-tenue{position:absolute;left:3px;right:3px;bottom:3px;height:6px;border-radius:3px;background:#3fcf6a;box-shadow:0 0 6px #fff;transform-origin:left center;transform:scaleX(0)}
-.mjc-limite{display:none;position:absolute;left:3px;right:3px;top:3px;height:4px;border-radius:2px;background:#ff6a5a;transform-origin:left center}
+.mjc-limite{display:none;position:absolute;left:3px;right:3px;top:3px;height:4px;border-radius:2px;background:#fff6d8;opacity:.6;transform-origin:left center}
 .mjc-ing-fin.limite .mjc-limite{display:block}
-.mjc-fl-next{position:absolute;left:0;top:2px;width:0;height:0;z-index:3;pointer-events:none;will-change:transform}
+.mjc-fl-next{position:absolute;left:0;top:1px;width:0;height:0;z-index:3;pointer-events:none;will-change:transform}
 .mjc-fl-next[hidden]{display:none}
-.mjc-fl-next i{position:absolute;left:-11px;top:0;width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:16px solid #ffd36a;filter:drop-shadow(0 2px 0 #24182e);animation:mjc-fl-bond .5s ease-in-out infinite alternate}
-@keyframes mjc-fl-bond{from{transform:translateY(0)}to{transform:translateY(4px)}}
+.mjc-fl-next i{position:absolute;left:-9px;top:0;width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:12px solid #ffd36a;filter:drop-shadow(0 2px 0 #24182e);animation:mjc-fl-bond .5s ease-in-out infinite alternate}
+@keyframes mjc-fl-bond{from{transform:translateY(0)}to{transform:translateY(3px)}}
+/* la fin : un petit compte à rebours calme dans le cadre (orange dans les 10 dernières secondes) */
+.mjc-compte{position:absolute;right:8px;top:50%;transform:translateY(-50%);padding:2px 8px;border-radius:10px;background:rgba(0,0,0,.45);color:#fff6d8;font-weight:800;font-size:.9rem;white-space:nowrap}
+.mjc-compte.vite{color:#ffb35c}
+/* Niveau 1 seulement (enquête 1, le tutoriel) : un « ? » sur les jetons gris ; allumé dans le cadre, l'icône de l'ingrédient */
+.mjc-ing.aide i{font-style:normal;line-height:1}
+.mjc-ing-q{font-size:1.5rem;font-weight:900;color:#e7e3f2;text-shadow:0 2px 0 #24182e}
+.mjc-ing.aide .mjc-ing-ic{display:none;font-size:1.55rem;filter:drop-shadow(0 2px 0 rgba(36,24,46,.55))}
+.mjc-ing.aide.zone .mjc-ing-q{display:none}
+.mjc-ing.aide.zone .mjc-ing-ic{display:block}
+/* un ingrédient oublié revient au bout de la frise (Romain, 5 novembre, 12 h 31) */
+.mjc-ing.revient{animation:mjc-revient .5s ease-out}
+@keyframes mjc-revient{0%{filter:brightness(2.2) drop-shadow(0 0 8px #ff4a3a)}100%{filter:none}}
 
-/* Une erreur d'ingrédient : l'écran tremble et rougit, une flèche montre la caisse avec la phrase (🔊) */
+/* ---------- la scène : l'âtre, le chaudron, la recette, le thermomètre, la réserve de bois ---------- */
+.mjc-scene{position:relative;flex:1;min-height:0;background:#1a1424}
+.mjc-decor-b{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.mjc-decor{display:block;width:100%;height:100%}
+/* LA LUMIÈRE DU FEU sur les murs, le fond et les dalles : trois halos qui crépitent, chacun à son rythme (en HTML, pour que le
+   compositeur les anime sans rien repeindre) ; leur force suit le nombre de bûches (--feu, posé par majBuches) */
+.mjc-lums{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;opacity:var(--feu, .8);transition:opacity .6s}
+.mjc-lum{position:absolute;border-radius:50%;will-change:opacity, transform}
+.mjc-lum.a{left:calc(var(--fx) - var(--fw) * 1.6);top:calc(var(--feuy) - var(--fw) * 1.35);width:calc(var(--fw) * 3.2);height:calc(var(--fw) * 2.7);background:radial-gradient(closest-side, rgba(255,170,80,.4), rgba(255,120,50,.15) 55%, rgba(255,120,50,0));animation:mjc-lum-a 2.3s linear infinite}
+.mjc-lum.b{left:calc(var(--fx) - var(--fw) * .85);top:calc(var(--feuy) - var(--fw) * .78);width:calc(var(--fw) * 1.7);height:calc(var(--fw) * 1.5);background:radial-gradient(closest-side, rgba(255,214,130,.38), rgba(255,150,60,.13) 60%, rgba(255,150,60,0));animation:mjc-lum-b .9s linear infinite}
+.mjc-lum.c{left:calc(var(--fx) - var(--fw) * 1.25);top:calc(var(--feuy) + var(--fw) * .04);width:calc(var(--fw) * 2.5);height:calc(var(--fw) * .5);background:radial-gradient(closest-side, rgba(255,190,100,.45), rgba(255,140,60,0));animation:mjc-lum-b 1.3s linear infinite reverse}
+@keyframes mjc-lum-a{0%{opacity:.76;transform:scale(1)}13%{opacity:1;transform:scale(1.03)}27%{opacity:.68;transform:scale(.98)}41%{opacity:.95;transform:scale(1.02)}58%{opacity:.62;transform:scale(.97)}72%{opacity:1;transform:scale(1.04)}86%{opacity:.8;transform:scale(1)}100%{opacity:.76;transform:scale(1)}}
+@keyframes mjc-lum-b{0%{opacity:.6}20%{opacity:1}38%{opacity:.5}55%{opacity:.9}70%{opacity:.4}85%{opacity:1}100%{opacity:.6}}
+
+/* le chaudron (sa place et sa taille : disposer) */
+.mjc-scene > .mjc-svg{position:absolute;z-index:1;display:block;touch-action:none;overflow:visible;cursor:grab}
+.mjc-touille .mjc-svg{cursor:grabbing}
+.mjc-liq{fill:#3fcf6a;stroke:rgba(255,255,255,.28);stroke-width:2}
+.mjc-ae{opacity:0;transition:opacity .25s}
+.mjc-z-arc-en-ciel .mjc-ae{opacity:.62;animation:b-lueur 1s ease-in-out infinite}
+.mjc-louche-in,.mjc-louche-out,.mjc-givre,.mjc-frais,.mjc-givre-bord,.mjc-bulles,.mjc-bouillons,.mjc-gouttes,.mjc-ondes,.mjc-tour,.mjc-lueur-feu,.mjc-flammes,.mjc-etincelles,.mjc-fleche,.mjc-vapeur,.mjc-buche{pointer-events:none}
+
+/* LA POTION BOUGE SELON SA CHALEUR (Romain, 23 novembre) — les classes .mjc-z-… suivent la zone de la jauge (mj-chaudron.js, rendu) */
+/* les bulles : rares dans le bleu, tranquilles dans le vert, serrées dans le jaune, grosses dans le rouge */
+.mjc-bl{fill:rgba(255,255,255,.5);stroke:rgba(36,24,46,.55);stroke-width:1.5;transform-box:fill-box;transform-origin:center;opacity:0}
+.mjc-z-bleu .mjc-bl:nth-child(4n){animation:mjc-bl-s 2.6s ease-out infinite}
+.mjc-z-vert .mjc-bl:nth-child(3n),.mjc-z-arc-en-ciel .mjc-bl:nth-child(3n){animation:mjc-bl-m 1.9s ease-out infinite}
+.mjc-z-jaune .mjc-bl:nth-child(2n){animation:mjc-bl-m 1.2s ease-out infinite}
+.mjc-z-rouge .mjc-bl{animation:mjc-bl-l 1s ease-out infinite}
+.mjc-z-bouillant .mjc-bl{animation:mjc-bl-l .7s ease-out infinite;fill:rgba(255,230,200,.7)}
+/* le vert : c'est calme, deux ronds s'élargissent doucement à la surface */
+.mjc-onde{fill:none;stroke:#fff;stroke-width:2.5;opacity:0;transform-box:fill-box;transform-origin:center}
+.mjc-z-vert .mjc-onde,.mjc-z-arc-en-ciel .mjc-onde{animation:mjc-onde 2.8s ease-out infinite}
+.mjc-z-vert .mjc-onde.o2,.mjc-z-arc-en-ciel .mjc-onde.o2{animation-delay:-1.4s}
+@keyframes mjc-onde{0%{transform:scale(.2);opacity:0}25%{opacity:.5}100%{transform:scale(1.15);opacity:0}}
+/* le jaune : ça commence à bouillir, de gros bouillons se soulèvent ; le rouge : ça bout fort, des gouttes sautent, le chaudron tremble */
+.mjc-bo{fill:rgba(255,255,255,.4);stroke:rgba(36,24,46,.5);stroke-width:1.6;opacity:0;transform-box:fill-box;transform-origin:50% 100%}
+.mjc-z-jaune .mjc-bo:nth-child(odd){animation-name:mjc-bo;animation-duration:1.25s;animation-timing-function:ease-in-out;animation-iteration-count:infinite}
+.mjc-z-rouge .mjc-bo{animation-name:mjc-bo;animation-duration:.85s;animation-timing-function:ease-in-out;animation-iteration-count:infinite}
+.mjc-z-bouillant .mjc-bo,.mjc-bout .mjc-bo{animation-name:mjc-bo;animation-duration:.5s;animation-timing-function:ease-in-out;animation-iteration-count:infinite}
+@keyframes mjc-bo{0%{transform:scale(.3,0);opacity:0}35%{transform:scale(1,1);opacity:1}60%{transform:scale(1.15,.8);opacity:.9}75%,100%{transform:scale(1.4,0);opacity:0}}
+.mjc-goutte{fill:#fff;fill-opacity:.8;stroke:rgba(36,24,46,.55);stroke-width:1.4;opacity:0}
+.mjc-z-rouge .mjc-goutte{animation-name:mjc-goutte;animation-duration:1s;animation-timing-function:ease-out;animation-iteration-count:infinite}
+.mjc-z-bouillant .mjc-goutte,.mjc-bout .mjc-goutte{animation-name:mjc-goutte;animation-duration:.6s;animation-timing-function:ease-out;animation-iteration-count:infinite}
+@keyframes mjc-goutte{0%{transform:translateY(26px) scale(.6);opacity:0}20%{opacity:1}60%{transform:translateY(-16px) scale(1);opacity:1}100%{transform:translateY(24px) scale(.7);opacity:0}}
+.mjc-z-rouge .mjc-corps{animation:mjc-tremblote .14s linear infinite alternate}
+.mjc-z-bouillant .mjc-corps{animation:mjc-tremblote .09s linear infinite alternate}
+@keyframes mjc-tremblote{from{transform:translate(-1.2px,.6px)}to{transform:translate(1.2px,-.6px)}}
+.mjc-z-bouillant .mjc-liq{animation:mjc-frisson .18s linear infinite alternate}
+/* tout près de l'explosion : ça bout à gros bouillons et tout le chaudron tremble */
+.mjc-bout .mjc-svg{animation:mjc-bout .14s linear infinite alternate}
+.mjc-bout .mjc-bl{animation:mjc-bl-l .55s ease-out infinite!important;fill:rgba(255,236,210,.8)}
+.mjc-bout .mjc-bl:nth-child(odd){r:11px}
+@keyframes mjc-bout{from{transform:translate(-2px,1px) rotate(-.6deg)}to{transform:translate(2px,-1px) rotate(.6deg)}}
+/* le bleu : ça refroidit — une brume froide rampe sur la potion, de petits glaçons dérivent, un liseré de givre fait le tour */
+.mjc-frais{opacity:0;transition:opacity .7s}
+.mjc-z-bleu .mjc-frais{opacity:.85}
+.mjc-z-violet .mjc-frais{opacity:1}
+.mjc-brumef{animation:mjc-derive 4.6s ease-in-out infinite alternate}
+.mjc-brumef.b2{animation-duration:5.8s;animation-direction:alternate-reverse}
+.mjc-brumef.b3{animation-duration:3.9s}
+@keyframes mjc-derive{from{transform:translateX(-16px)}to{transform:translateX(18px)}}
+.mjc-glacon{transform-box:fill-box;transform-origin:center;animation:mjc-flotte 3.4s ease-in-out infinite alternate}
+.mjc-glacon.g2{animation-duration:4.4s;animation-direction:alternate-reverse}
+@keyframes mjc-flotte{from{transform:translate(-7px,1px) rotate(-5deg)}to{transform:translate(8px,-2px) rotate(6deg)}}
+/* le violet : ça gèle — de grandes plaques de glace se rejoignent (leur opacité suit la température), elles scintillent ;
+   le bord du chaudron se couvre de givre et de petits glaçons */
+.mjc-givre{opacity:0}
+.mjc-eclat{animation:mjc-scintille 1.3s ease-in-out infinite}
+.mjc-eclat.e2{animation-delay:-.65s}
+@keyframes mjc-scintille{0%,100%{opacity:.15}50%{opacity:1}}
+.mjc-givre-bord{opacity:0;transition:opacity .8s}
+.mjc-z-violet .mjc-givre-bord,.mjc-gele .mjc-givre-bord,.mjc-fin-gel .mjc-givre-bord{opacity:1}
+/* la vapeur (son opacité suit la température) */
+.mjc-vapeur{opacity:0}
+.mjc-vapeur path{fill:none;stroke:rgba(238,240,255,.4);stroke-width:9;stroke-linecap:round;animation:mjc-vap 2.6s ease-in-out infinite}
+.mjc-vapeur path:nth-child(2){animation-delay:-.9s}
+.mjc-vapeur path:nth-child(3){animation-delay:-1.7s}
+
+/* le feu : chaque langue danse à son rythme ; les braises rougeoient ; les étincelles montent */
+.mjc-flammes{transform-origin:200px 398px;transition:transform .35s ease-out}
+.mjc-fl{transform-box:view-box;animation:mjc-danse 1.1s ease-in-out infinite alternate}
+.mjc-fl.b{animation-duration:.85s;animation-delay:-.4s}
+.mjc-fl.c{animation-duration:1.3s;animation-delay:-.7s}
+@keyframes mjc-danse{from{transform:scale(1,1) skewX(0deg)}50%{transform:scale(.94,1.1) skewX(-3deg)}to{transform:scale(1.05,.93) skewX(3deg)}}
+.mjc-braise{animation:mjc-rougeoie 1.6s ease-in-out infinite alternate}
+.mjc-braise.b2{animation-delay:-.8s}
+@keyframes mjc-rougeoie{from{opacity:.55}to{opacity:1}}
+.mjc-et{animation:mjc-monte 2.4s linear infinite}
+.mjc-et.e1{animation-delay:-.8s}
+.mjc-et.e2{animation-delay:-1.6s}
+@keyframes mjc-monte{0%{transform:translateY(40px);opacity:0}25%{opacity:1}100%{transform:translateY(-70px);opacity:0}}
+.mjc[data-buches="0"] .mjc-et,.mjc[data-buches="0"] .mjc-braise{animation:none;opacity:0}
+.mjc-lueur-feu,.mjc-chaud{transition:opacity .35s}
+.mjc[data-buches="0"] .mjc-chaud{opacity:0}
+.mjc[data-buches="6"] .mjc-lueur-feu{animation:b-lueur .4s ease-in-out infinite}
+.mjc-buche{transform-box:fill-box;transform-origin:center}
+.mjc-buche.brule .mjc-ember{animation:b-lueur .7s ease-in-out infinite}
+/* la flèche à deux pointes : on touille dans le sens qu'on veut, ça refroidit ; elle grossit quand il faut refroidir */
+.mjc-fleche{opacity:.85;transform-box:fill-box;transform-origin:center;transition:opacity .2s}
+.mjc-indice-refroidit .mjc-refroidit,.mjc-demo-refroidit .mjc-refroidit{opacity:1;animation:mjc-gonfle .4s ease-in-out infinite alternate}
+
+/* la réserve de bois : on la touche pour ajouter une bûche ; son rond vert brille et pulse quand il ne reste qu'une bûche (ou que ça refroidit trop) */
+.mjc-tas{position:absolute;z-index:2;display:block;overflow:visible;pointer-events:none;-webkit-tap-highlight-color:transparent}
+.mjc-tas-g{pointer-events:auto;cursor:pointer}
+.mjc-plus{transform-box:fill-box;transform-origin:center}
+.mjc-plus-halo{fill:#ffd36a;opacity:0}
+.mjc-bois-vite .mjc-plus,.mjc-indice-bois .mjc-plus,.mjc-gele .mjc-plus{animation:mjc-bois .42s ease-in-out infinite alternate}
+.mjc-bois-vite .mjc-plus-halo,.mjc-indice-bois .mjc-plus-halo,.mjc-gele .mjc-plus-halo{opacity:.55}
+.mjc-bois-vite .mjc-tas-g,.mjc-gele .mjc-tas-g{filter:drop-shadow(0 0 8px #ffd36a)}
+@keyframes mjc-bois{from{transform:scale(1)}to{transform:scale(1.28)}}
+/* La flèche rouge vers le bois (tutoriel, niveau 1 ; Romain, 5 novembre, 16 h 30) : elle arrive en rebondissant quand il ne reste
+   qu'une bûche, se balance doucement, et repart en douceur dès qu'il y a 2 bûches */
+.mjc-fl-bois{opacity:0;transform-box:fill-box;transform-origin:50% 100%;transform:translateY(-30px) scale(.35);pointer-events:none;
+  transition:opacity .3s ease-in, transform .4s ease-in;filter:drop-shadow(0 4px 0 rgba(36,24,46,.55))}
+.mjc-bois-fleche .mjc-fl-bois{opacity:1;transform:none;transition:opacity .25s ease-out, transform .6s cubic-bezier(.34,1.56,.64,1)}
+.mjc-fl-bois > g{transform-box:fill-box}
+.mjc-bois-fleche .mjc-fl-bois > g{animation:mjc-fl-bois .55s ease-in-out .6s infinite alternate}
+@keyframes mjc-fl-bois{to{transform:translateY(10px)}}
+@media (prefers-reduced-motion: reduce){ .mjc-bois-fleche .mjc-fl-bois > g{animation:none} .mjc-fl-bois{transition:opacity .2s} }
+
+/* la recette : une page épinglée (une ligne par ingrédient : combien, sa couleur, son icône, son nom ; la fiole à la fin ; 🔊) */
+.mjc-recette{position:absolute;z-index:2;pointer-events:none;box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;gap:3px;padding:19px 4px 7px;border:3px solid #24182e;border-radius:4px 7px 5px 9px;
+  background:linear-gradient(135deg, #fbf0d4, #ead7a8);color:#35281b;box-shadow:4px 6px 0 rgba(0,0,0,.3);transform:rotate(-2.5deg);transform-origin:50% 0}
+.mjc-rec-clou{position:absolute;left:50%;top:3px;width:11px;height:11px;margin-left:-8px;border-radius:50%;background:radial-gradient(circle at 35% 30%, #e7e3f2, #8d8a99 60%);border:2.5px solid #24182e}
+.mjc-rec-t{font-family:var(--f-main);font-weight:700;font-size:1.4rem;line-height:1;text-align:center;color:#5a3a1c;border-bottom:2px dashed #b79a62;padding-bottom:3px;margin-bottom:1px}
+.mjc-rec-i{display:flex;align-items:center;gap:3px;min-height:34px;box-sizing:border-box;padding:1px 4px;border-radius:999px;border:2px solid transparent;font-weight:800;font-size:1.05rem;line-height:1;white-space:nowrap;transition:opacity .25s}
+.mjc-rec-i b{font-size:1.15rem;min-width:.8em;text-align:center}
+.mjc-rec-c{display:grid;place-items:center;width:18px;height:18px;box-sizing:border-box;border-radius:50%;background:var(--c);border:2.2px solid #24182e;flex:none;font-style:normal;font-size:.7rem}
+.mjc-rec-ic{font-size:1.05rem;flex:none}
+/* (pas de overflow:hidden : il rognait le haut des grandes lettres de l'écriture à la main — « Miel » devenait « Mie ») */
+.mjc-rec-i em{font-style:normal;font-family:var(--f-main);font-weight:700;font-size:1.1rem;line-height:1.25;min-width:0;padding:0 2px 0 1px}
+.mjc-rec-i.ici{background:#ffe9a8;border-color:#e0a21c}
+/* (une ligne faite : elle pâlit et porte un petit rond vert coché, accroché à son bout — il ne prend pas la place du nom) */
+.mjc-rec-i{position:relative}
+.mjc-rec-i.fait > *{opacity:.45}
+.mjc-rec-i.fait::after{content:'✔';position:absolute;right:-5px;top:50%;width:17px;height:17px;margin-top:-10.5px;display:grid;place-items:center;border-radius:50%;background:#3fae62;border:2px solid #24182e;color:#fff;font-size:.62rem;font-weight:900;line-height:1}
+.mjc-rec-fin{justify-content:center;border-radius:0;border-top:2px dashed #b79a62;margin-top:2px;padding-top:4px}
+.mjc-rec-fin.ici{border:2px solid #e0a21c;border-radius:999px}
+.mjc-rec-i.secret{white-space:normal;font-size:.9rem;line-height:1.1;min-height:0;padding:3px 2px}
+.mjc-rec-i.secret em{font-size:1.15rem}
+.mjc-recette .mj-lire-mini{align-self:center;width:30px;height:30px;font-size:.9rem;margin:2px 0 0;background:rgba(36,24,46,.12)}
+/* écran étroit : la page se resserre (sans le titre ni les noms) */
+.mjc-recette .mj-lire-mini{pointer-events:auto}   /* (la page laisse passer le doigt : on peut touiller dessous ; seul son 🔊 se touche) */
+.mjc-recette.mini{padding:17px 4px 5px;gap:2px}
+/* petit écran : encore plus serrée */
+.mjc-recette.serre .mjc-rec-i{min-height:25px;font-size:.95rem}
+.mjc-recette.serre .mjc-rec-i b{font-size:1rem}
+.mjc-recette.serre .mjc-rec-c{width:15px;height:15px}
+.mjc-recette.serre .mjc-rec-ic{font-size:.9rem}
+.mjc-recette.mini .mjc-rec-t,.mjc-recette.mini .mjc-rec-i:not(.secret) em{display:none}
+.mjc-recette.mini .mjc-rec-i{min-height:30px;gap:4px;padding:1px 2px;justify-content:center}
+.mjc-recette.mini .mjc-rec-i.secret{flex-direction:column;text-align:center}
+.mjc-recette.mini .mjc-rec-i.secret em{font-size:1rem}
+.mjc-recette.mini .mjc-rec-i.fait::after{margin-left:0}
+/* (resserrée) son 🔊 est accroché au coin d'en bas à droite : la page reste courte et ne couvre pas le chaudron */
+.mjc-recette.mini .mj-lire-mini{position:absolute;right:-13px;bottom:-13px;width:30px;height:30px;margin:0;background:#f3e4c2;border:2.5px solid #24182e;box-shadow:0 2px 0 rgba(0,0,0,.3)}
+
+/* le thermomètre de laiton : le feu en haut (ça explose), le givre en bas (ça gèle) ; son tube porte les bandes de couleur */
+.mjc-jauge{position:absolute;z-index:2;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 0;border-radius:30px;border:3.5px solid #24182e;
+  background:linear-gradient(90deg, #f6d88a, #d9a441 45%, #9a6b1f);box-shadow:inset 0 0 0 2px rgba(251,227,160,.55), 3px 5px 0 rgba(0,0,0,.3)}
+.mjc-j-ic{flex:none;width:56%;line-height:0}
+.mjc-j-ic svg{display:block;width:100%;height:auto;overflow:visible}
+.mjc-j-tube{position:relative;flex:1;width:52%;border-radius:14px;border:3px solid #24182e;box-shadow:inset 4px 0 0 rgba(255,255,255,.28), inset -3px 0 0 rgba(0,0,0,.18)}
+.mjc-j-ae{position:absolute;left:0;right:0;background:linear-gradient(90deg,#ff5a5a,#ffb347,#fff35c,#5df08a,#5ab8ff,#c77dff);border-top:2px solid #fff;border-bottom:2px solid #fff}
+.mjc-j-cible{position:absolute;left:-9px;right:-9px;border:3px solid #ffd36a;border-radius:9px;box-shadow:0 0 0 2px #24182e, 0 0 12px #ffd36a;animation:b-lueur 1.4s ease-in-out infinite}
+.mjc-j-cible::after{content:'🎯';position:absolute;left:-24px;top:50%;transform:translateY(-50%);font-size:.9rem}
+/* le curseur : une bague blanche et sa flèche de laiton */
+.mjc-j-curseur{position:absolute;left:-11px;right:-11px;bottom:50%;height:0;z-index:2}
+.mjc-j-curseur::before{content:'';position:absolute;left:0;right:0;top:-5px;height:10px;box-sizing:border-box;border-radius:5px;background:#fff;border:2.5px solid #24182e;box-shadow:0 0 8px rgba(255,255,255,.8)}
+.mjc-j-curseur::after{content:'';position:absolute;left:-15px;top:-9px;border-top:9px solid transparent;border-bottom:9px solid transparent;border-left:13px solid #ffd36a;filter:drop-shadow(0 1.5px 0 #24182e) drop-shadow(0 -1.5px 0 #24182e) drop-shadow(-1.5px 0 0 #24182e) drop-shadow(1.5px 0 0 #24182e)}
+.mjc-j-curseur b{display:none;position:absolute;left:-20px;top:-11px;transform:translateX(-100%);padding:0 5px;border-radius:8px;background:#fff6d8;color:#35281b;font-size:.75rem;border:2px solid #24182e}
+.mjc-revele .mjc-j-curseur b{display:block}
+.mjc-bout .mjc-j-tube{box-shadow:0 0 0 3px #ff3a3a, 0 0 18px #ff3a3a}
+.mjc-gele .mjc-j-tube{box-shadow:0 0 0 3px #8fd0ff, 0 0 18px #8fd0ff}
+/* pendant les ingrédients : pas de zone ni de 🎯 sur la jauge ; à la fin, la zone apparaît (petite animation) */
+.mjc-sans-cible .mjc-j-cible,.mjc-j-ae{display:none}
+.mjc-cible-ae.mjc-phase-fin .mjc-j-ae{display:block}
+.mjc-cible-apparait .mjc-j-cible{animation:mjc-cible-in .8s cubic-bezier(.3,1.6,.5,1), b-lueur 1.4s .8s ease-in-out infinite}
+@keyframes mjc-cible-in{0%{opacity:0;transform:scale(.2, .2)}60%{opacity:1;transform:scale(1.35,1.15)}100%{transform:none}}
+/* on ne verse que dans le vert : la bande verte soulignée doucement pendant les ingrédients (elle pulse quand on en sort) */
+.mjc-j-vert{position:absolute;left:-6px;right:-6px;border-radius:8px;box-shadow:0 0 0 2px rgba(184,255,208,.75), 0 0 8px rgba(124,240,168,.4);pointer-events:none}
+.mjc-phase-fin .mjc-j-vert{display:none}
+.mjc-verrou .mjc-j-vert{animation:mjc-vert-pouls 1s ease-in-out infinite alternate}
+@keyframes mjc-vert-pouls{from{box-shadow:0 0 0 2px rgba(184,255,208,.6), 0 0 6px rgba(124,240,168,.3)}to{box-shadow:0 0 0 3px rgba(184,255,208,1), 0 0 16px rgba(124,240,168,.85)}}
+/* hors du vert : les bocaux sont verrouillés (grisés, petit thermomètre) */
+.mjc-verrou .mjc-boite{filter:grayscale(.85) brightness(.62)}
+.mjc-verrou .mjc-boite::after{content:'🌡️';position:absolute;left:0;top:10%;font-size:.95rem;line-height:1;filter:none}
+/* Niveau 1 : à la fin, la frise se vide ; une grosse flèche rouge montre la zone à atteindre sur la jauge */
+.mjc-j-fleche{display:none;position:absolute;right:calc(100% + 22px);width:74px;height:44px;transform:translateY(50%);z-index:3;pointer-events:none;filter:drop-shadow(0 3px 0 #24182e)}
+.mjc-j-fleche::before{content:'';position:absolute;left:0;top:12px;width:44px;height:20px;border-radius:6px 0 0 6px;background:#ff3a2e;box-shadow:inset 0 3px 0 rgba(255,255,255,.35)}
+.mjc-j-fleche::after{content:'';position:absolute;right:0;top:0;border-top:22px solid transparent;border-bottom:22px solid transparent;border-left:32px solid #ff3a2e}
+.mjc-fin-guidee .mjc-j-fleche{display:block;animation:mjc-j-fleche .6s ease-in-out infinite alternate}
+@keyframes mjc-j-fleche{from{margin-right:0}to{margin-right:-10px}}
+.mjc-fin-guidee .mjc-piste,.mjc-fin-guidee .mjc-zone-f,.mjc-fin-guidee .mjc-fl-next{visibility:hidden}
+@media (prefers-reduced-motion: reduce){ .mjc-fin-guidee .mjc-j-fleche{animation:none} }
+
+/* ---------- les messages ---------- */
+/* Une erreur d'ingrédient : l'écran tremble et rougit, une flèche montre le bocal avec la phrase (🔊) */
 .mjc-tremble{animation:mjc-tremble .45s ease-out}
 .mjc-err{position:absolute;inset:0;z-index:8;pointer-events:none;background:rgba(255,30,40,.3);box-shadow:inset 0 0 70px 18px rgba(255,0,20,.75);animation:mjc-err .9s ease-out forwards}
 .mjc-err[hidden]{display:none}
@@ -1282,149 +1517,18 @@ html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc
 .mjc-oups b{flex:1}
 .mjc-oups .mj-lire-mini{pointer-events:auto;margin:0;background:rgba(36,24,46,.12)}
 .mjc-oups::before{content:'';position:absolute;left:var(--ax, 50%);top:-19px;margin-left:-12px;border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:16px solid #ff3a3a}
-.mjc-oups.sans-fleche::before{display:none}   /* un carré oublié : la phrase seule, en haut de la scène (mj-chaudron.js, montrerOups) */
+.mjc-oups.sans-fleche::before{display:none}   /* un jeton oublié : la phrase seule, en haut de la scène (mj-chaudron.js, montrerOups) */
+.mjc-oups.doux{background:#fff6d8;color:#35281b;box-shadow:0 0 0 3px #7cf0a8, 0 6px 0 rgba(0,0,0,.3)}
+.mjc-oups.doux::before{border-bottom-color:#7cf0a8}
 @keyframes mjc-oups{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-
-/* Trop chaud / trop froid : le badge d'alerte */
-.mjc-danger{position:absolute;right:62px;top:2%;z-index:4;padding:5px 12px;border-radius:14px;border:3px solid #24182e;font-weight:800;white-space:nowrap;pointer-events:none;animation:mjc-danger .35s ease-in-out infinite alternate}
+/* Trop chaud / trop froid : le badge d'alerte, au-dessus du chaudron */
+.mjc-danger{position:absolute;left:var(--fx, 50%);top:max(6px, calc(var(--fy, 30%) - var(--fw, 200px) * .98));margin-left:-90px;width:180px;box-sizing:border-box;text-align:center;z-index:4;padding:5px 8px;border-radius:14px;border:3px solid #24182e;font-weight:800;white-space:nowrap;pointer-events:none;animation:mjc-danger .35s ease-in-out infinite alternate}
 @keyframes mjc-danger{from{box-shadow:0 0 0 0 rgba(255,60,40,.0)}to{box-shadow:0 0 0 5px rgba(255,60,40,.55)}}
 .mjc-danger[hidden]{display:none}
 .mjc-danger.chaud{background:#ffe0d6;color:#a3180c}
 .mjc-danger.froid{background:#e3f4ff;color:#14507a}
-
-/* Toutes les caisses d'ingrédients de l'atelier, rangées en grille (icône + nom) ; les vies à côté de la zone visée */
-.mjc-boites{display:grid;grid-template-columns:repeat(auto-fit,minmax(56px,1fr));gap:7px 6px}
-.mjc-boite{position:relative;min-width:0;height:66px;padding:4px 2px 3px;border-radius:12px;border:3px solid #24182e;touch-action:none;cursor:pointer;
-  background:repeating-linear-gradient(0deg, transparent 0 16px, rgba(60,30,10,.35) 16px 18px), linear-gradient(90deg,#dca066,#a8693a);
-  box-shadow:inset 0 3px 0 rgba(255,255,255,.3), 0 4px 0 #5e3416, 0 6px 12px rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;justify-content:space-between}
-/* Les boîtes d'ingrédients : de petits pots en bois, sans couleur, avec une étiquette de papier (icône + nom) */
-.mjc-boites{padding-top:7px;row-gap:13px!important}
-.mjc-boite{background:linear-gradient(90deg, rgba(255,255,255,.14), rgba(255,255,255,0) 30%, rgba(0,0,0,.2)), linear-gradient(#7a5a42, #4e3626)!important;border-radius:9px 9px 14px 14px!important;
-  justify-content:center!important;box-shadow:inset 0 -6px 0 rgba(0,0,0,.22), 0 4px 0 #2a1b12, 0 6px 10px rgba(0,0,0,.35)!important}
-.mjc-boite::before{content:'';display:block;position:absolute;left:10%;right:10%;top:-8px;height:9px;border-radius:5px;background:linear-gradient(#a27a52,#6a4a30);border:3px solid #24182e}
-.mjc-etiq{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;max-width:92%;padding:2px 5px 3px;border-radius:4px;background:#f3e4c2;border:2px solid #5a4630;box-shadow:0 2px 0 rgba(0,0,0,.3);transform:rotate(-2deg)}
-.mjc-boite:nth-child(even) .mjc-etiq{transform:rotate(1.6deg)}
-.mjc-boite .mjc-etiq-ic{font-size:1.35rem;line-height:1;text-shadow:none}
-.mjc-boite .mjc-etiq small{background:none;padding:0;font-size:.62rem}
-.mjc-phase-fin .mjc-boite{opacity:.45;filter:grayscale(.6)}
-.mjc-boite span{position:relative;font-size:1.55rem;line-height:1;text-shadow:0 2px 0 rgba(0,0,0,.25)}
-.mjc-boite small{position:relative;max-width:100%;padding:1px 4px;border-radius:6px;background:rgba(255,246,216,.9);color:#35281b;font-size:.6rem;font-weight:800;line-height:1.15;
-  letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mjc-boite small em{font-style:normal}
-.mjc-nc,.mjc-etroit .mjc-nl{display:none}
-.mjc-etroit .mjc-nc{display:inline}
-.mjc-boite.appui{animation:mjc-appui .25s ease-out}
-.mjc-boite.due{box-shadow:0 0 0 4px #ffd36a, 0 0 20px #ffd36a, 0 4px 0 #5e3416;animation:mjc-saute .4s ease-in-out infinite alternate}
-.mjc-vies{display:flex;gap:2px;flex:none}
-.mjc-vies .mj-coeur{width:24px;height:22px}
-
-/* La scène */
-.mjc-scene{position:relative;flex:1;min-height:0;display:flex;align-items:stretch;justify-content:center}
-.mjc-svg{flex:0 1 auto;min-width:0;height:100%;width:auto;aspect-ratio:400/380;max-width:calc(100% - 60px);display:block;touch-action:none;overflow:visible;cursor:grab}
-.mjc-touille .mjc-svg{cursor:grabbing}
-.mjc-liq{fill:#3fcf6a;stroke:rgba(255,255,255,.28);stroke-width:2}
-.mjc-ae{opacity:0;transition:opacity .25s}
-.mjc-z-arc-en-ciel .mjc-ae{opacity:.62;animation:b-lueur 1s ease-in-out infinite}
-.mjc-bl{fill:rgba(255,255,255,.5);stroke:rgba(36,24,46,.55);stroke-width:1.5;transform-box:fill-box;transform-origin:center;opacity:0}
-.mjc-z-bleu .mjc-bl:nth-child(4n){animation:mjc-bl-s 2.6s ease-out infinite}
-.mjc-z-vert .mjc-bl:nth-child(3n),.mjc-z-arc-en-ciel .mjc-bl:nth-child(3n){animation:mjc-bl-m 1.9s ease-out infinite}
-.mjc-z-jaune .mjc-bl:nth-child(2n){animation:mjc-bl-m 1.4s ease-out infinite}
-.mjc-z-rouge .mjc-bl{animation:mjc-bl-l 1.2s ease-out infinite}
-.mjc-z-bouillant .mjc-bl{animation:mjc-bl-l .7s ease-out infinite;fill:rgba(255,230,200,.7)}
-.mjc-z-bouillant .mjc-liq{animation:mjc-frisson .18s linear infinite alternate}
-.mjc-givre{opacity:0;pointer-events:none}
-.mjc-givre text{fill:#eaf7ff;stroke:#24182e;stroke-width:1}
-.mjc-vapeur{opacity:0;pointer-events:none}
-.mjc-vapeur path{fill:none;stroke:rgba(238,240,255,.45);stroke-width:9;stroke-linecap:round;animation:mjc-vap 2.6s ease-in-out infinite}
-.mjc-vapeur path:nth-child(2){animation-delay:-.9s}
-.mjc-vapeur path:nth-child(3){animation-delay:-1.7s}
-.mjc-louche-in,.mjc-louche-out,.mjc-givre,.mjc-bulles,.mjc-tour,.mjc-lueur-feu,.mjc-flammes{pointer-events:none}
-.mjc-flammes{transform-origin:200px 336px;transition:transform .35s ease-out}
-.mjc-lueur-feu{transition:opacity .35s}
-.mjc-fl{stroke:#24182e;stroke-width:3;stroke-linejoin:round;transform-box:fill-box;transform-origin:50% 100%;animation:mjc-flamme .45s ease-in-out infinite alternate}
-.mjc-fl.f0{fill:#ff8a3c}
-.mjc-fl.f1{fill:#ffd36a}
-.mjc-fl.f2{fill:#ff5a2c}
-.mjc-buche,.mjc-tas{cursor:pointer}
-.mjc-buche.brule .mjc-ember{animation:b-lueur .7s ease-in-out infinite}
-/* l'icône « remettre du bois » (sur le tas) : elle brille et pulse quand il ne reste qu'une bûche (ou que ça refroidit trop) */
-.mjc-plus{transform-box:fill-box;transform-origin:center}
-.mjc-plus-halo{fill:#ffd36a;opacity:0}
-.mjc-bois-vite .mjc-plus,.mjc-indice-bois .mjc-plus,.mjc-gele .mjc-plus{animation:mjc-bois .42s ease-in-out infinite alternate}
-.mjc-bois-vite .mjc-plus-halo,.mjc-indice-bois .mjc-plus-halo,.mjc-gele .mjc-plus-halo{opacity:.55}
-.mjc-bois-vite .mjc-tas,.mjc-gele .mjc-tas{filter:drop-shadow(0 0 8px #ffd36a)}
-@keyframes mjc-bois{from{transform:scale(1)}to{transform:scale(1.28)}}
-.mjc[data-buches="6"] .mjc-lueur-feu{animation:b-lueur .4s ease-in-out infinite}
-.mjc-fleche{opacity:.55;transform-box:fill-box;transform-origin:center;transition:opacity .2s}
-.mjc-fl-ic{opacity:.7;pointer-events:none}
-.mjc:not(.mjc-demo) .mjc-chauffe,.mjc:not(.mjc-demo) .mjc-fl-ic.chaud{display:none}   /* touiller refroidit seulement : plus de flèche « chauffe » */
-.mjc-indice-chauffe .mjc-chauffe,.mjc-indice-refroidit .mjc-refroidit,.mjc-demo-chauffe .mjc-chauffe,.mjc-demo-refroidit .mjc-refroidit{opacity:1;animation:mjc-gonfle .4s ease-in-out infinite alternate}
-/* tout près de l'explosion : ça bout à gros bouillons et le chaudron tremble */
-.mjc-bout .mjc-svg{animation:mjc-bout .14s linear infinite alternate}
-.mjc-bout .mjc-bl{animation:mjc-bl-l .55s ease-out infinite!important;fill:rgba(255,236,210,.8)}
-.mjc-bout .mjc-bl:nth-child(odd){r:11px}
-.mjc-bout .mjc-j-tube{box-shadow:0 0 0 3px #ff3a3a, 0 0 18px #ff3a3a}
-.mjc-gele .mjc-j-tube{box-shadow:0 0 0 3px #8fd0ff, 0 0 18px #8fd0ff}
-@keyframes mjc-bout{from{transform:translate(-2px,1px) rotate(-.6deg)}to{transform:translate(2px,-1px) rotate(.6deg)}}
-
-/* La jauge des couleurs */
-.mjc-jauge{flex:none;width:58px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 10px 10px 0}
-.mjc-j-ic{font-size:1.15rem;line-height:1}
-.mjc-j-tube{position:relative;flex:1;width:26px;border-radius:14px;border:3px solid #24182e;box-shadow:inset 0 0 0 2px rgba(255,255,255,.2), 0 0 10px rgba(0,0,0,.4)}
-.mjc-j-ae{position:absolute;left:0;right:0;background:linear-gradient(90deg,#ff5a5a,#ffb347,#fff35c,#5df08a,#5ab8ff,#c77dff);border-top:2px solid #fff;border-bottom:2px solid #fff}
-.mjc-j-cible{position:absolute;left:-9px;right:-9px;border:3px solid #ffd36a;border-radius:9px;box-shadow:0 0 12px #ffd36a;animation:b-lueur 1.4s ease-in-out infinite}
-.mjc-j-cible::after{content:'🎯';position:absolute;left:-20px;top:50%;transform:translateY(-50%);font-size:.85rem}
-.mjc-j-curseur{position:absolute;left:-12px;right:-12px;bottom:50%;height:0;z-index:2}
-.mjc-j-curseur::before{content:'';position:absolute;left:0;right:0;top:-4px;height:8px;border-radius:4px;background:#fff;border:2px solid #24182e;box-shadow:0 0 8px #fff}
-.mjc-j-curseur b{display:none;position:absolute;right:-6px;top:-11px;transform:translateX(100%);padding:0 5px;border-radius:8px;background:#fff6d8;color:#35281b;font-size:.75rem;border:2px solid #24182e}
-.mjc-revele .mjc-j-curseur b{display:block}
-/* pendant les ingrédients : pas de zone ni de 🎯 sur la jauge ; à la fin, la zone apparaît (petite animation) */
-.mjc-sans-cible .mjc-j-cible,.mjc-j-ae{display:none}
-.mjc-cible-ae.mjc-phase-fin .mjc-j-ae{display:block}
-.mjc-cible-apparait .mjc-j-cible{animation:mjc-cible-in .8s cubic-bezier(.3,1.6,.5,1), b-lueur 1.4s .8s ease-in-out infinite}
-@keyframes mjc-cible-in{0%{opacity:0;transform:scale(.2, .2)}60%{opacity:1;transform:scale(1.35,1.15)}100%{transform:none}}
-
-/* on ne verse que dans le vert : la bande verte soulignée doucement pendant les ingrédients (pulse quand on en sort) */
-.mjc-j-vert{position:absolute;left:-6px;right:-6px;border-radius:8px;box-shadow:0 0 0 2px rgba(124,240,168,.5), 0 0 8px rgba(124,240,168,.35);pointer-events:none}
-.mjc-phase-fin .mjc-j-vert{display:none}
-.mjc-verrou .mjc-j-vert{animation:mjc-vert-pouls 1s ease-in-out infinite alternate}
-@keyframes mjc-vert-pouls{from{box-shadow:0 0 0 2px rgba(124,240,168,.45), 0 0 6px rgba(124,240,168,.3)}to{box-shadow:0 0 0 3px rgba(124,240,168,.95), 0 0 16px rgba(124,240,168,.8)}}
-/* hors du vert : les pots sont verrouillés (grisés, petit thermomètre) */
-.mjc-verrou .mjc-boite{filter:grayscale(.85) brightness(.62)}
-.mjc-verrou .mjc-boite::after{content:'🌡️';position:absolute;right:3px;top:2px;font-size:.85rem;line-height:1;filter:none}
-.mjc-oups.doux{background:#fff6d8;color:#35281b;box-shadow:0 0 0 3px #7cf0a8, 0 6px 0 rgba(0,0,0,.3)}
-.mjc-oups.doux::before{border-bottom-color:#7cf0a8}
-/* la fin : un petit compte à rebours calme dans la zone de la frise (orange dans les 10 dernières secondes) */
-.mjc-compte{position:absolute;right:8px;top:50%;transform:translateY(-50%);padding:2px 8px;border-radius:10px;background:rgba(0,0,0,.35);color:#fff6d8;font-weight:800;font-size:.9rem;white-space:nowrap}
-.mjc-compte.vite{color:#ffb35c}
-.mjc-zone-f > .mjc-compte{left:auto;right:8px;top:50%;filter:none;opacity:1;font-size:.9rem}
-.mjc-limite{background:#fff6d8!important;opacity:.6}
-
-/* Niveau 1 seulement (enquête 1, le tutoriel) : un « ? » sur les carrés gris ; allumé dans la zone, l'icône de l'ingrédient */
-.mjc-ing.aide i{font-style:normal;line-height:1}
-.mjc-ing-q{font-size:1.5rem;font-weight:900;color:#e7e3f2;text-shadow:0 2px 0 #24182e}
-.mjc-ing.aide .mjc-ing-ic{display:none;font-size:1.55rem;filter:drop-shadow(0 2px 0 rgba(36,24,46,.55))}
-.mjc-ing.aide.zone .mjc-ing-q{display:none}
-.mjc-ing.aide.zone .mjc-ing-ic{display:block}
-/* … et à la fin, la frise se vide ; une grosse flèche rouge montre la zone à atteindre sur la jauge */
-.mjc-j-fleche{display:none;position:absolute;right:calc(100% + 18px);width:74px;height:44px;transform:translateY(50%);z-index:3;pointer-events:none;filter:drop-shadow(0 3px 0 #24182e)}
-.mjc-j-fleche::before{content:'';position:absolute;left:0;top:12px;width:44px;height:20px;border-radius:6px 0 0 6px;background:#ff3a2e;box-shadow:inset 0 3px 0 rgba(255,255,255,.35)}
-.mjc-j-fleche::after{content:'';position:absolute;right:0;top:0;border-top:22px solid transparent;border-bottom:22px solid transparent;border-left:32px solid #ff3a2e}
-.mjc-fin-guidee .mjc-j-fleche{display:block;animation:mjc-j-fleche .6s ease-in-out infinite alternate}
-@keyframes mjc-j-fleche{from{margin-right:0}to{margin-right:-10px}}
-.mjc-fin-guidee .mjc-piste,.mjc-fin-guidee .mjc-zone-f,.mjc-fin-guidee .mjc-fl-next{visibility:hidden}
-@media (prefers-reduced-motion: reduce){ .mjc-fin-guidee .mjc-j-fleche{animation:none} }
-
-/* le fond : l'intérieur du chalet, derrière le chaudron */
-.mjc-decor{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.95}
-.mjc-scene > .mjc-svg,.mjc-scene > .mjc-jauge{position:relative;z-index:1}
-/* le plancher : son haut (la ligne mur/sol) est placé en JS juste au-dessus des pieds du chaudron (placerSol) */
-.mjc-sol{position:absolute;left:0;right:0;top:70%;bottom:0;z-index:0;pointer-events:none;box-shadow:0 -6px 14px rgba(0,0,0,.45)}
-.mjc-sol svg{display:block;width:100%;height:100%}
-.mjc-revele .mjc-jauge{width:84px}
-
 /* Petits effets */
-.mjc-bulle{position:absolute;left:50%;top:15%;z-index:4;transform:translateX(-50%);padding:5px 12px;border-radius:14px;background:#fff6e6;color:#35281b;border:3px solid #24182e;font-weight:700;white-space:nowrap;pointer-events:none;animation:mjc-bulle .3s ease-out;box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.mjc-bulle{position:absolute;left:var(--fx, 50%);top:max(44px, calc(var(--fy, 30%) - var(--fw, 200px) * .74));z-index:4;transform:translateX(-50%);padding:5px 12px;border-radius:14px;background:#fff6e6;color:#35281b;border:3px solid #24182e;font-weight:700;white-space:nowrap;pointer-events:none;animation:mjc-bulle .3s ease-out;box-shadow:0 4px 0 rgba(0,0,0,.25)}
 .mjc-bulle b{font-size:1.15rem}
 .mjc-bulle.ko{background:#ffe0d6}
 .mjc-bulle.ae{background:linear-gradient(90deg,#ffd0d0,#fff3b0,#c8f7d4,#cfe6ff,#ecd6ff)}
@@ -1438,100 +1542,79 @@ html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc
 .mjc-plouf i:nth-child(5){--dx:38px;--dy:-22px}
 .mjc-main{position:absolute;left:0;top:0;font-size:2.2rem;pointer-events:none;margin:-8px 0 0 -10px;z-index:3;filter:drop-shadow(0 3px 0 #24182e)}
 
-/* Les fins */
+/* ---------- les fins (placées sur le chaudron : --fx, --fy, --fw) ---------- */
 .mjc-fin{position:absolute;inset:0;z-index:5;display:grid;place-items:center;pointer-events:none;overflow:hidden}
 .mjc-fin-txt{position:relative;z-index:3;padding:0 12px;text-align:center;font-family:var(--f-titre);font-weight:400;font-size:clamp(1.7rem,7vw,2.6rem);color:#ffe3a3;text-shadow:0 3px 0 #24182e, 0 0 18px rgba(0,0,0,.8);animation:mjc-txt .7s ease-out}
 .mjc-fin.gel .mjc-fin-txt{color:#dff4ff}
 .mjc-fin.eteint .mjc-fin-txt,.mjc-fin.rate .mjc-fin-txt{color:#c9c6d6}
-.mjc-eclair{position:absolute;left:50%;top:45%;width:120%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side, #fff 0, #ffe08a 25%, #ff7a3c 50%, rgba(255,90,40,0) 75%);animation:mjc-eclair .9s ease-out forwards}
-.mjc-debris{position:absolute;left:50%;top:45%}
+.mjc-eclair{position:absolute;left:var(--fx, 50%);top:var(--fy, 45%);width:120%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side, #fff 0, #ffe08a 25%, #ff7a3c 50%, rgba(255,90,40,0) 75%);animation:mjc-eclair .9s ease-out forwards}
+.mjc-debris{position:absolute;left:var(--fx, 50%);top:var(--fy, 45%)}
 .mjc-debris i{position:absolute;width:14px;height:10px;border-radius:3px;background:#5e3418;border:2px solid #24182e;animation:mjc-debris 1s ease-out forwards}
 .mjc-debris i:nth-child(1){--a:0deg}.mjc-debris i:nth-child(2){--a:40deg;background:#f04a35}.mjc-debris i:nth-child(3){--a:80deg}.mjc-debris i:nth-child(4){--a:120deg;background:#ffd23f}
 .mjc-debris i:nth-child(5){--a:160deg}.mjc-debris i:nth-child(6){--a:200deg;background:#f04a35}.mjc-debris i:nth-child(7){--a:240deg}.mjc-debris i:nth-child(8){--a:290deg;background:#ffd23f}.mjc-debris i:nth-child(9){--a:330deg}
-.mjc-fumee{position:absolute;left:50%;top:40%;width:46%;aspect-ratio:1;margin-left:-23%;border-radius:50%;background:radial-gradient(closest-side, #5a4e66, rgba(60,52,72,.6) 60%, rgba(60,52,72,0));animation:mjc-fumee 1.8s ease-out forwards}
-.mjc-fumee.f2{margin-left:-10%;animation-delay:.25s}
+.mjc-fumee{position:absolute;left:var(--fx, 50%);top:calc(var(--fy, 40%) - var(--fw, 200px) * .55);width:var(--fw, 200px);aspect-ratio:1;margin-left:calc(var(--fw, 200px) * -.5);border-radius:50%;background:radial-gradient(closest-side, #5a4e66, rgba(60,52,72,.6) 60%, rgba(60,52,72,0));animation:mjc-fumee 1.8s ease-out forwards}
+.mjc-fumee.f2{margin-left:calc(var(--fw, 200px) * -.2);animation-delay:.25s}
 .mjc-fumee.grise{background:radial-gradient(closest-side, #b9b6c6, rgba(160,156,176,.6) 60%, rgba(160,156,176,0))}
 .mjc-fin-boum .mjc-svg{animation:mjc-tremble .5s ease-out}
 .mjc-fin-boum .mjc-liq{fill:#2a1208!important}
-.mjc-glace{position:absolute;left:12%;right:22%;top:28%;height:30%;border-radius:50%;background:radial-gradient(closest-side, rgba(230,248,255,.95), rgba(160,215,255,.7) 70%, rgba(160,215,255,0));animation:mjc-glace 1s ease-out forwards}
-.mjc-cristaux{position:absolute;top:30%;font-size:2.2rem;letter-spacing:.4em;animation:mjc-txt .8s ease-out}
+.mjc-glace{position:absolute;left:calc(var(--fx, 50%) - var(--fw, 200px) * .52);width:calc(var(--fw, 200px) * 1.04);top:calc(var(--fy, 40%) - var(--fw, 200px) * .21);height:calc(var(--fw, 200px) * .42);border-radius:50%;background:radial-gradient(closest-side, rgba(230,248,255,.95), rgba(160,215,255,.7) 70%, rgba(160,215,255,0));animation:mjc-glace 1s ease-out forwards}
+.mjc-cristaux{position:absolute;top:calc(var(--fy, 40%) - var(--fw, 200px) * .1);font-size:2.2rem;letter-spacing:.4em;animation:mjc-txt .8s ease-out}
 .mjc-fin-gel .mjc-liq{fill:#cfeaff!important}
 .mjc-fin-gel .mjc-givre{opacity:1!important}
 .mjc-fin-eteint .mjc-flammes,.mjc-fin-eteint .mjc-lueur-feu{opacity:0!important;transition:opacity .8s}
 .mjc-fin-eteint .mjc-liq{fill:#4a4458!important}
 .mjc-fin-rate .mjc-liq{fill:#8d8a99!important}
-.mjc-halo-ok{position:absolute;left:50%;top:30%;width:80%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side, var(--c), rgba(0,0,0,0));opacity:.55;animation:mjc-halo 1.6s ease-out forwards}
+.mjc-halo-ok{position:absolute;left:var(--fx, 50%);top:calc(var(--fy, 40%) - var(--fw, 200px) * .4);width:calc(var(--fw, 200px) * 1.7);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side, var(--c), rgba(0,0,0,0));opacity:.55;animation:mjc-halo 1.6s ease-out forwards}
 .mjc-halo-ok::after{content:'';position:absolute;inset:8%;border-radius:50%;background:repeating-conic-gradient(from 0deg, rgba(255,246,216,.5) 0deg 8deg, transparent 8deg 30deg);-webkit-mask:radial-gradient(closest-side,#000 25%,transparent);mask:radial-gradient(closest-side,#000 25%,transparent);animation:mjc-tourne 10s linear infinite}
-.mjc-fiole{position:absolute;left:50%;top:8%;width:min(28%,130px);aspect-ratio:80/110;transform:translateX(-50%);animation:mjc-fiole-monte .7s cubic-bezier(.3,1.4,.5,1)}
+.mjc-fiole{position:absolute;left:var(--fx, 50%);top:max(4px, calc(var(--fy, 40%) - var(--fw, 200px) * 1.02));width:min(28%,130px);aspect-ratio:80/110;transform:translateX(-50%);animation:mjc-fiole-monte .7s cubic-bezier(.3,1.4,.5,1)}
 .mjc-fiole svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 16px var(--c))}
 .mjc-fiole-niv{transform:translateY(100px);animation:mjc-remplit 1.4s .35s ease-out forwards}
-.mjc-etoiles{position:absolute;left:50%;top:24%}
+.mjc-etoiles{position:absolute;left:var(--fx, 50%);top:calc(var(--fy, 40%) - var(--fw, 200px) * .6)}
 .mjc-etoiles i{position:absolute;width:12px;height:12px;margin:-6px;border-radius:50%;background:#fff6d8;box-shadow:0 0 12px var(--c), 0 0 4px #fff;animation:mjc-eclat 1.1s 1.1s ease-out forwards;opacity:0}
 .mjc-etoiles i:nth-child(1){--a:0deg}.mjc-etoiles i:nth-child(2){--a:30deg}.mjc-etoiles i:nth-child(3){--a:60deg}.mjc-etoiles i:nth-child(4){--a:90deg}
 .mjc-etoiles i:nth-child(5){--a:120deg}.mjc-etoiles i:nth-child(6){--a:150deg}.mjc-etoiles i:nth-child(7){--a:180deg}.mjc-etoiles i:nth-child(8){--a:210deg}
 .mjc-etoiles i:nth-child(9){--a:240deg}.mjc-etoiles i:nth-child(10){--a:270deg}.mjc-etoiles i:nth-child(11){--a:300deg}.mjc-etoiles i:nth-child(12){--a:330deg}
 .mjc-fin.ok .mjc-fin-txt{align-self:end;margin-bottom:9%}
 
-/* Démo */
+/* ---------- la démo (sans décor : le chaudron et son thermomètre, côte à côte) ---------- */
 .mjc-demo{position:absolute;inset:0}
-.mjc-demo .mjc-svg{max-width:calc(100% - 50px)}
-.mjc-demo .mjc-jauge{padding:4px 6px 4px 0}
+.mjc-demo .mjc-scene{display:flex;align-items:stretch;justify-content:center;background:none}
+.mjc-demo .mjc-scene > .mjc-svg{position:relative;flex:0 1 auto;min-width:0;height:100%;width:auto;aspect-ratio:460/462;max-width:calc(100% - 50px)}
+.mjc-demo .mjc-jauge{position:relative;flex:none;width:34px;margin:4px 6px 4px 0}
 .mj-chaudron .mj-demo{height:200px}
 
+/* ---------- les petits écrans ---------- */
 @media (max-width:420px){
-  .mjc-haut{padding:6px 6px 0;gap:5px}
-  .mjc-cible{font-size:.85rem;padding:4px 8px}
-  .mjc-frise{height:70px}
-  .mjc-ing{width:42px;height:42px;bottom:5px}
-  .mjc-boites{gap:6px 4px}
-  .mjc-boite{height:60px}
-  .mjc-boite span{font-size:1.3rem}
-  .mjc-boite small{font-size:.56rem;padding:1px 2px}
-  .mjc-bande{height:15px}
-  .mjc-bande .mjc-motif{width:13px;height:13px}
-  .mjc-jauge{width:46px;padding-right:6px}
+  .mjc-haut{padding:4px 3px 0}
+  .mjc-frise{--sq:42px;height:60px}
   .mjc-vies .mj-coeur{width:20px;height:18px}
-  .mjc-recette{gap:3px 3px;padding:3px 4px}
-  .mjc-rec-i{font-size:.8rem;padding:2px 6px 2px 3px;gap:3px}
-  .mjc-rec-c{width:22px;height:22px}
-  .mjc-rec-c .mjc-motif{width:16px;height:16px}
-  .mjc-rec-ic{font-size:.9rem}
-  .mjc-recette .mj-lire-mini{width:28px;height:28px}
+  .mj-chaudron .mj-tete{padding:5px 6px;gap:5px}
+  .mj-chaudron .mj-tete .mj-nom{font-size:1.05rem}
+  .mj-chaudron .mj-tete .mj-btn-lire,.mj-chaudron .mj-tete .mj-btn-pause,.mj-chaudron .mj-tete .at-mj-abandon{width:40px;height:40px}
 }
 @media (max-height:600px){
-  .mjc-cible > span:nth-child(2){display:none}
-  .mjc-frise{height:60px}
-  .mjc-ing{width:36px;height:36px;bottom:4px}
-  .mjc-fl-next i{border-top-width:13px;border-left-width:9px;border-right-width:9px;left:-9px}
-  .mjc-boite{height:50px;padding-top:3px}
-  .mjc-boite span{font-size:1.15rem}
-  .mjc-rec-ic{display:none}
+  .mjc-frise{--sq:38px;height:54px}
+  .mjc-dessus{height:20px}
+  .mjc-boites{margin-bottom:-13px}
+  .mjc-fl-next i{border-top-width:10px;border-left-width:8px;border-right-width:8px;left:-8px}
+  .mjc-haut{padding-top:3px}
 }
-
 @media (max-height:500px){
-  .mjc-haut{gap:4px;padding-top:4px}
-  .mjc-frise{height:52px}
-  .mjc-ing{width:32px;height:32px;bottom:3px}
-  .mjc-boite{height:44px;padding:2px 2px 2px}
-  .mjc-bande{height:12px}
-  .mjc-bande .mjc-motif{width:10px;height:10px}
-  .mjc-boite span{font-size:1rem}
-  .mjc-boite small{font-size:.52rem}
-}
-@media (min-width:700px) and (min-height:900px){
-  .mjc-boite{height:76px}
-  .mjc-boite span{font-size:1.85rem}
-  .mjc-boite small{font-size:.68rem}
+  .mjc-frise{--sq:32px;height:46px}
+  .mjc-dessus{height:15px}
+  .mjc-boites{margin-bottom:-10px;row-gap:12px}
+  .mj-chaudron .mj-tete{padding:3px 8px}
+  .mjc-rec-i{min-height:26px}
+  .mjc-recette{padding-top:15px;gap:1px}
+  .mjc-rec-t{font-size:1.1rem}
 }
 @keyframes mjc-saute{from{transform:translateY(0)}to{transform:translateY(-3px) scale(1.06)}}
 @keyframes mjc-appui{0%{transform:scale(1)}40%{transform:scale(.88)}100%{transform:scale(1)}}
-@keyframes mjc-casse{0%{transform:scale(1.6) rotate(-14deg)}60%{transform:scale(.8) rotate(8deg)}100%{transform:none}}
 @keyframes mjc-bl-s{0%{transform:scale(0);opacity:0}30%{opacity:1}80%{transform:scale(.45);opacity:1}100%{transform:scale(.6);opacity:0}}
 @keyframes mjc-bl-m{0%{transform:scale(0);opacity:0}30%{opacity:1}80%{transform:scale(.85);opacity:1}100%{transform:scale(1.05);opacity:0}}
 @keyframes mjc-bl-l{0%{transform:scale(0);opacity:0}30%{opacity:1}80%{transform:scale(1.5);opacity:1}100%{transform:scale(1.9);opacity:0}}
 @keyframes mjc-frisson{from{transform:translateY(0)}to{transform:translateY(-1.5px)}}
 @keyframes mjc-vap{0%{transform:translateY(12px);opacity:0}40%{opacity:1}100%{transform:translateY(-26px);opacity:0}}
-@keyframes mjc-flamme{from{transform:scale(1,1)}to{transform:scale(.86,1.16)}}
 @keyframes mjc-gonfle{from{transform:scale(1)}to{transform:scale(1.12)}}
 @keyframes mjc-bulle{from{opacity:0;transform:translate(-50%,8px) scale(.9)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
 @keyframes mjc-plouf{0%{transform:translate(0,0) scale(.6);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.3);opacity:0}}
@@ -1546,20 +1629,6 @@ html.mj-ios #mj-plein.mj-fixe, html.mj-ios #sl-plein.mj-fixe{padding-bottom:calc
 @keyframes mjc-tourne{to{transform:rotate(360deg)}}
 @keyframes mjc-remplit{to{transform:translateY(18px)}}
 @keyframes mjc-eclat{0%{transform:rotate(var(--a)) translateX(0) scale(1);opacity:1}100%{transform:rotate(var(--a)) translateX(130px) scale(.2);opacity:0}}
-
-/* un ingrédient oublié revient au bout de la frise (Romain, 5 novembre, 12 h 31) */
-.mjc-ing.revient{animation:mjc-revient .5s ease-out}
-@keyframes mjc-revient{0%{filter:brightness(2.2) drop-shadow(0 0 8px #ff4a3a)}100%{filter:none}}
-
-/* La flèche rouge vers le bois (tutoriel, niveau 1 ; Romain, 5 novembre, 16 h 30) : elle arrive en rebondissant quand il ne reste
-   qu'une bûche, se balance doucement, et repart en douceur dès qu'il y a 2 bûches */
-.mjc-fl-bois{opacity:0;transform-box:fill-box;transform-origin:50% 100%;transform:translateY(-30px) scale(.35);pointer-events:none;
-  transition:opacity .3s ease-in, transform .4s ease-in;filter:drop-shadow(0 4px 0 rgba(36,24,46,.55))}
-.mjc-bois-fleche .mjc-fl-bois{opacity:1;transform:none;transition:opacity .25s ease-out, transform .6s cubic-bezier(.34,1.56,.64,1)}
-.mjc-fl-bois > g{transform-box:fill-box}
-.mjc-bois-fleche .mjc-fl-bois > g{animation:mjc-fl-bois .55s ease-in-out .6s infinite alternate}
-@keyframes mjc-fl-bois{to{transform:translateY(10px)}}
-@media (prefers-reduced-motion: reduce){ .mjc-bois-fleche .mjc-fl-bois > g{animation:none} .mjc-fl-bois{transition:opacity .2s} }
 
 /* ==========================================================
    Brumeval v2 — mini-jeux du Barde et du Sage (préfixe .mjb-)
@@ -15957,6 +16026,454 @@ MJ.enregistrer('bulles', {
 })();
 
 }).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
+/* ===== mj-chaudron-dessin.js ===== */
+;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
+/* ==========================================================
+   Brumeval v2 — les dessins du mini-jeu « Le chaudron » (23 novembre 2026, go de Romain à 9 h 31 ; Bible §13.91)
+   Tout ce qui se DESSINE dans le chaudron refait, sans aucune règle du jeu (les règles : mj-chaudron.js) :
+   - svg(id)        le chaudron, son feu, ses six bûches, la flèche à deux pointes (repère du jeu : 400 unités de large,
+                    le bord en y = 157, le sol en y = 392 ; la boîte du dessin : -30 0 460 462) ;
+   - reserve(id)    la réserve de bois (le bouton « une bûche de plus ») ;
+   - bocal(…)       un bocal de verre de l'étagère, vu d'un peu au-dessus, avec son ingrédient dessiné dedans ;
+   - decor(L, id)   l'âtre de la cheminée de l'atelier, en perspective, à la taille de l'écran (L : mj-chaudron.js, disposer) ;
+   - icFeu, icGivre les deux petits dessins du thermomètre.
+   LA PERSPECTIVE (une seule règle pour tout) : le chaudron est vu d'un peu au-dessus, un rond posé à plat devient un ovale
+   aplati à APLAT = 0,37. Les pieds, le lit de cendre et les bûches sont posés sur cet ovale ; le fond de l'âtre, ses côtés,
+   ses dalles et le parquet fuient vers un même point (L.VP).
+   Préfixe CSS : .mjc-   Chargé AVANT mj-chaudron.js (build.py). Dépend de mj-core.js.
+   ========================================================== */
+(function(){
+'use strict';
+var MJ = window.MJ;
+if(!MJ){ console.error('mj-chaudron-dessin : mj-core.js doit être chargé avant.'); return; }
+var K = '#24182e', APLAT = 0.37, COSV = Math.sqrt(1 - APLAT * APLAT);
+function alea(seed){ var s = seed % 2147483647; if(s <= 0) s += 2147483646; return function(){ s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; }
+function f(x){ return (Math.round(x * 10) / 10).toString(); }
+function pts(a){ return a.map(function(p){ return f(p[0]) + ',' + f(p[1]); }).join(' '); }
+
+/* ---------- les flammes : une langue en trois couches (rouge orangé, orange, jaune clair), au pied arrondi ---------- */
+function flamme(cx, by, w, h, sway){
+  return 'M' + f(cx - w / 2) + ',' + f(by) +
+    ' C' + f(cx - w * .62) + ',' + f(by - h * .34) + ' ' + f(cx - w * .30 + sway * .2) + ',' + f(by - h * .56) + ' ' + f(cx - w * .12 + sway * .6) + ',' + f(by - h * .78) +
+    ' C' + f(cx - w * .04 + sway * .8) + ',' + f(by - h * .88) + ' ' + f(cx + sway * .9 - w * .05) + ',' + f(by - h * .95) + ' ' + f(cx + sway) + ',' + f(by - h) +
+    ' C' + f(cx + sway * .7 + w * .12) + ',' + f(by - h * .84) + ' ' + f(cx + w * .30 + sway * .3) + ',' + f(by - h * .62) + ' ' + f(cx + w * .20) + ',' + f(by - h * .42) +
+    ' C' + f(cx + w * .44) + ',' + f(by - h * .5) + ' ' + f(cx + w * .58) + ',' + f(by - h * .24) + ' ' + f(cx + w / 2) + ',' + f(by) +
+    ' C' + f(cx + w * .42) + ',' + f(by + w * .26) + ' ' + f(cx - w * .42) + ',' + f(by + w * .26) + ' ' + f(cx - w / 2) + ',' + f(by) + ' Z';
+}
+function langue(id, cx, by, w, h, sway, cl, sansCoeur){
+  return '<g class="mjc-fl ' + cl + '" style="transform-origin:' + f(cx) + 'px ' + f(by) + 'px">' +
+    '<path d="' + flamme(cx, by, w, h, sway) + '" fill="url(#mjcf1' + id + ')" stroke="#8c2410" stroke-width="2.2" stroke-linejoin="round"/>' +
+    '<path d="' + flamme(cx + sway * .1, by + 1, w * .66, h * .72, sway * .7) + '" fill="url(#mjcf2' + id + ')"/>' +
+    (sansCoeur ? '' : '<path d="' + flamme(cx + sway * .12, by + 2, w * .36, h * .44, sway * .45) + '" fill="#fff3b8"/>') + '</g>';
+}
+function flocon(r, c){
+  var s = '';
+  for(var i = 0; i < 3; i++) s += '<g transform="rotate(' + (i * 60) + ')"><path d="M0,' + (-r) + ' V' + r + ' M0,' + f(-r * .55) + ' l' + f(-r * .3) + ',' + f(-r * .3) + ' M0,' + f(-r * .55) + ' l' + f(r * .3) + ',' + f(-r * .3) + ' M0,' + f(r * .55) + ' l' + f(-r * .3) + ',' + f(r * .3) + ' M0,' + f(r * .55) + ' l' + f(r * .3) + ',' + f(r * .3) + '" stroke="' + c + '" stroke-width="' + f(r * .22) + '" stroke-linecap="round" fill="none"/></g>';
+  return s;
+}
+
+/* ---------- une bûche couchée sur le sol ----------
+   (x1,y1) = le bout coupé, vers nous ; (x2,y2) = le bout dans le feu. Une bûche est un cylindre : son corps garde la même épaisseur à
+   l'écran, et son bout coupé est un ovale d'autant plus rond qu'elle pointe vers nous. On retrouve l'angle vrai de la bûche sur le sol
+   d'après sa pente à l'écran (APLAT), et on en tire la largeur de l'ovale.
+   .mjc-charbon et .mjc-ember : la bûche qui se consume noircit et rougeoie (mj-chaudron.js, rendu). */
+var BUCHES = [[34, 410, 190, 381, 15], [368, 408, 212, 380, 15], [227, 433, 203, 394, 15.5], [88, 432, 192, 399, 13], [316, 434, 210, 400, 13], [124, 373, 270, 366, 12]];
+function buche(id, i){
+  var B = BUCHES[i], x1 = B[0], y1 = B[1], x2 = B[2], y2 = B[3], r = B[4];
+  var dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy), a = Math.atan2(dy, dx) * 180 / Math.PI, s = '', rr = alea(11 + i * 7), k;
+  var phi = Math.atan2(Math.abs(dy) / APLAT, Math.abs(dx)), ov = Math.max(.2, Math.sin(phi) * COSV), re = r * (i === 2 ? .84 : .92), bas = dx < 0 ? -1 : 1;
+  var gid = 'mjcb' + id + '_' + i, corps = 'M0,' + (-r) + ' L' + f(L - re * .5) + ',' + f(-re) + ' Q' + f(L) + ',' + f(-re) + ' ' + f(L) + ',0 Q' + f(L) + ',' + f(re) + ' ' + f(L - re * .5) + ',' + f(re) + ' L0,' + r + ' Z';
+  s += '<g class="mjc-buche" data-i="' + i + '"><g transform="translate(' + f(x1) + ',' + f(y1) + ') rotate(' + f(a) + ')"><defs>' +
+    '<linearGradient id="' + gid + '" x1="0" y1="' + (bas > 0 ? 0 : 1) + '" x2="0" y2="' + (bas > 0 ? 1 : 0) + '"><stop offset="0" stop-color="#b47a4b"/><stop offset=".3" stop-color="#8d5933"/><stop offset=".72" stop-color="#5f381d"/><stop offset="1" stop-color="#3a2010"/></linearGradient>' +
+    '<clipPath id="c' + gid + '"><path d="' + corps + '"/></clipPath></defs>';
+  /* le corps : l'écorce, un peu bosselée */
+  var haut = 'M0,' + (-r), bq = '';
+  for(k = 1; k <= 6; k++) haut += ' L' + f(L * k / 6.4) + ',' + f(-(r + (re - r) * k / 6.4) + (rr() - .5) * 2.2);
+  for(k = 6; k >= 1; k--) bq += ' L' + f(L * k / 6.4) + ',' + f((r + (re - r) * k / 6.4) + (rr() - .5) * 2.2);
+  s += '<path d="' + haut + ' Q' + f(L + re * .3) + ',' + f(-re) + ' ' + f(L) + ',0 Q' + f(L + re * .3) + ',' + f(re) + ' ' + f(L * 6 / 6.4) + ',' + f(re) + bq + ' L0,' + r + ' Z" fill="url(#' + gid + ')" stroke="' + K + '" stroke-width="3.2" stroke-linejoin="round"/>';
+  s += '<g clip-path="url(#c' + gid + ')">';
+  /* les crevasses de l'écorce (des traits sombres qui ondulent dans le sens du bois) et leurs crêtes claires */
+  for(k = 0; k < 16; k++){ var bx = 5 + rr() * (L * .6), by = -r + 2.5 + rr() * (2 * r - 5), bl = 9 + rr() * 16, w1 = (rr() - .5) * 3;
+    s += '<path d="M' + f(bx) + ',' + f(by) + ' q' + f(bl * .5) + ',' + f(w1) + ' ' + f(bl) + ',' + f((rr() - .5) * 1.6) + '" fill="none" stroke="#33190a" stroke-width="' + f(1.4 + rr() * .9) + '" stroke-linecap="round" opacity=".9"/>';
+    if(k % 2) s += '<path d="M' + f(bx + 2) + ',' + f(by - 2.2 * bas) + ' q' + f(bl * .4) + ',' + f(w1) + ' ' + f(bl * .7) + ',0" fill="none" stroke="#d09a64" stroke-width="1.3" stroke-linecap="round" opacity=".75"/>'; }
+  /* un nœud, et l'écorce qui le contourne */
+  var nx = L * (.24 + rr() * .12), ny = (rr() - .5) * r * .5;
+  s += '<path d="M' + f(nx - 11) + ',' + f(ny - 5.5) + ' q11,-4 22,0 M' + f(nx - 11) + ',' + f(ny + 5.5) + ' q11,4 22,0" fill="none" stroke="#33190a" stroke-width="1.5" stroke-linecap="round"/>' +
+    '<ellipse cx="' + f(nx) + '" cy="' + f(ny) + '" rx="5.4" ry="3.6" fill="#4a2812" stroke="#2a1508" stroke-width="1.4"/><ellipse cx="' + f(nx) + '" cy="' + f(ny) + '" rx="2.4" ry="1.5" fill="#8d5933"/>';
+  /* la lumière du feu sur le bois, puis le bout qui brûle : le charbon */
+  s += '<rect x="' + f(L * .3) + '" y="' + (-r - 2) + '" width="' + f(L * .7) + '" height="' + (2 * r + 4) + '" fill="url(#mjcfb' + id + ')"/>' +
+    '<rect x="' + f(L * .58) + '" y="' + (-r - 2) + '" width="' + f(L * .44) + '" height="' + (2 * r + 4) + '" fill="url(#mjcch' + id + ')"/>';
+  /* la bûche qui se consume : elle noircit tout entière, ses fentes rougeoient */
+  s += '<rect class="mjc-charbon" x="-2" y="' + (-r - 2) + '" width="' + f(L + 4) + '" height="' + (2 * r + 4) + '" fill="#1c1216" opacity="0"/><g class="mjc-ember" opacity="0">';
+  for(k = 0; k < 5; k++){ var ex = L * (.18 + k * .16), ey = (rr() - .5) * r * 1.1;
+    s += '<path d="M' + f(ex) + ',' + f(ey) + ' q' + f(3 + rr() * 3) + ',' + f(1.5 + rr() * 1.5) + ' ' + f(7 + rr() * 5) + ',' + f((rr() - .5) * 3) + '" fill="none" stroke="' + (k % 2 ? '#ffb347' : '#ff7a2c') + '" stroke-width="' + f(1.5 + rr() * .7) + '" stroke-linecap="round"/>'; }
+  s += '</g></g>';
+  /* un reflet le long du dessus */
+  s += '<path d="M' + f(r * ov + 5) + ',' + f(-(r - 3.2) * bas) + ' H' + f(L * .5) + '" stroke="#e0b07c" stroke-width="2" stroke-linecap="round" opacity=".5"/>';
+  /* le bout coupé : l'écorce autour, l'aubier clair, le cœur plus foncé, les cernes, deux fentes */
+  var e0 = r * ov;
+  s += '<ellipse cx="0" cy="0" rx="' + f(e0) + '" ry="' + f(r) + '" fill="#5a3519" stroke="' + K + '" stroke-width="3.2"/>' +
+    '<ellipse cx="0" cy="0" rx="' + f(e0 * .8) + '" ry="' + f(r * .82) + '" fill="#f1d3a0"/><ellipse cx="0" cy="0" rx="' + f(e0 * .52) + '" ry="' + f(r * .54) + '" fill="#e2b77c"/>' +
+    '<ellipse cx="0" cy="0" rx="' + f(e0 * .66) + '" ry="' + f(r * .68) + '" fill="none" stroke="#b9854a" stroke-width="1.2"/><ellipse cx="0" cy="0" rx="' + f(e0 * .38) + '" ry="' + f(r * .4) + '" fill="none" stroke="#b9854a" stroke-width="1.2"/>' +
+    '<ellipse cx="0" cy="0" rx="' + f(e0 * .16) + '" ry="' + f(r * .17) + '" fill="#a8733c"/>' +
+    '<path d="M0,0 L' + f(e0 * .55) + ',' + f(-r * .6) + ' M0,0 L' + f(-e0 * .5) + ',' + f(r * .62) + '" stroke="#8a5a2c" stroke-width="1.5" stroke-linecap="round"/>' +
+    '<path d="M' + f(-e0 * .62) + ',' + f(-r * .5) + ' Q' + f(-e0 * .2) + ',' + f(-r * .82) + ' ' + f(e0 * .3) + ',' + f(-r * .74) + '" fill="none" stroke="#fff3d6" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>';
+  return s + '</g></g>';
+}
+
+/* ---------- le chaudron, son feu, ses bûches ---------- */
+function defs(id){
+  return '<linearGradient id="mjcm' + id + '" x1="0" x2="1"><stop offset="0" stop-color="#6a5f92"/><stop offset=".42" stop-color="#3d3459"/><stop offset="1" stop-color="#1a1428"/></linearGradient>' +
+    '<linearGradient id="mjcpi' + id + '" x1="0" x2="1"><stop offset="0" stop-color="#4d4370"/><stop offset="1" stop-color="#231c36"/></linearGradient>' +
+    '<linearGradient id="mjca' + id + '" x1="0" x2="1"><stop offset="0" stop-color="#ff5a5a"/><stop offset=".2" stop-color="#ffb347"/><stop offset=".4" stop-color="#fff35c"/><stop offset=".6" stop-color="#5df08a"/><stop offset=".8" stop-color="#5ab8ff"/><stop offset="1" stop-color="#c77dff"/></linearGradient>' +
+    '<radialGradient id="mjcg' + id + '" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffc56a" stop-opacity=".85"/><stop offset=".4" stop-color="#ff7a2c" stop-opacity=".42"/><stop offset="1" stop-color="#ff7a2c" stop-opacity="0"/></radialGradient>' +
+    '<radialGradient id="mjcc2' + id + '" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffc05a" stop-opacity="1"/><stop offset=".5" stop-color="#ff6a2a" stop-opacity=".62"/><stop offset="1" stop-color="#ff6a2a" stop-opacity="0"/></radialGradient>' +
+    '<radialGradient id="mjcpo' + id + '" cx=".42" cy=".35" r=".7"><stop offset="0" stop-color="#fff" stop-opacity=".34"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></radialGradient>' +
+    '<radialGradient id="mjcos' + id + '" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".5"/><stop offset=".7" stop-color="#000" stop-opacity=".22"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>' +
+    '<linearGradient id="mjcf1' + id + '" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff8a1e"/><stop offset=".55" stop-color="#f4511e"/><stop offset="1" stop-color="#d9361a"/></linearGradient>' +
+    '<linearGradient id="mjcf2' + id + '" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffe27a"/><stop offset=".6" stop-color="#ffb02e"/><stop offset="1" stop-color="#ff8a1e"/></linearGradient>' +
+    '<linearGradient id="mjcf3' + id + '" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffe27a"/><stop offset=".45" stop-color="#ffab2e"/><stop offset="1" stop-color="#f4611e"/></linearGradient>' +
+    '<linearGradient id="mjcfb' + id + '" x1="0" x2="1"><stop offset="0" stop-color="#ff9a3c" stop-opacity="0"/><stop offset="1" stop-color="#ff9a3c" stop-opacity=".55"/></linearGradient>' +
+    '<linearGradient id="mjcch' + id + '" x1="0" x2="1"><stop offset="0" stop-color="#1c1216" stop-opacity="0"/><stop offset=".4" stop-color="#1c1216" stop-opacity=".88"/><stop offset="1" stop-color="#120b0f"/></linearGradient>' +
+    '<clipPath id="mjccp' + id + '"><path d="M58,160 C30,210 62,322 200,322 C338,322 370,210 342,160 Z"/></clipPath>' +
+    '<clipPath id="mjcc' + id + '"><ellipse cx="200" cy="157" rx="128" ry="46"/></clipPath>';
+}
+function svg(id, demo){
+  var s = '<svg class="mjc-svg" viewBox="-30 0 460 462" aria-hidden="true"><defs>' + defs(id) + '</defs>', i;
+  /* la lumière du feu derrière, l'ombre sur la pierre de l'âtre, le lit de cendre et ses braises */
+  s += '<ellipse class="mjc-lueur-feu" cx="200" cy="356" rx="235" ry="150" fill="url(#mjcg' + id + ')"/>' +
+    '<ellipse cx="200" cy="402" rx="190" ry="60" fill="url(#mjcos' + id + ')"/>' +
+    '<path d="M118,398 C110,384 138,370 176,372 C196,366 232,368 252,374 C282,376 296,390 284,402 C290,414 262,424 232,420 C212,428 176,426 160,420 C132,422 110,412 118,398 Z" fill="#2c2433" opacity=".75"/>' +
+    '<path d="M140,398 C138,388 160,380 200,380 C240,380 262,388 260,398 C258,410 240,416 200,416 C160,416 142,410 140,398 Z" fill="#4a363c"/>';
+  [[126, 414, 2.2], [282, 416, 2], [108, 392, 1.6], [298, 396, 1.8], [150, 426, 1.6], [262, 428, 1.8]].forEach(function(c){ s += '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="' + c[2] + '" fill="#8d8494" opacity=".7"/>'; });
+  [[150, 400, 8, 3.4], [186, 412, 9, 3.6], [240, 414, 8, 3.4], [258, 396, 7, 3], [170, 388, 6, 2.6]].forEach(function(b, j){ s += '<ellipse class="mjc-braise' + (j % 2 ? ' b2' : '') + '" cx="' + b[0] + '" cy="' + b[1] + '" rx="' + b[2] + '" ry="' + b[3] + '" fill="' + (j % 2 ? '#ffb347' : '#ff6a2a') + '"/>'; });
+  /* le pied du fond */
+  s += '<path d="M192,300 L196,352 H206 L210,300 Z" fill="#231c36" stroke="' + K + '" stroke-width="3.5" stroke-linejoin="round"/>';
+  /* la bûche du fond (la sixième) */
+  s += buche(id, 5);
+  /* les flammes de derrière : deux langues lèchent les côtés de la panse, une grande masse claire sous le chaudron */
+  s += '<g class="mjc-flammes">' + langue(id, 104, 392, 66, 144, -44, 'a') + langue(id, 298, 392, 68, 158, 48, 'b') +
+    '<path d="M112,400 C104,360 126,330 150,318 H250 C274,330 296,360 288,400 Z" fill="url(#mjcf3' + id + ')"/></g>';
+  /* ---- le chaudron (ce groupe tremble quand ça bout fort) ---- */
+  s += '<g class="mjc-corps">';
+  s += '<path d="M58,160 C30,210 62,322 200,322 C338,322 370,210 342,160 Z" fill="url(#mjcm' + id + ')" stroke="' + K + '" stroke-width="5" stroke-linejoin="round"/>';
+  s += '<g clip-path="url(#mjccp' + id + ')"><ellipse class="mjc-chaud" cx="200" cy="372" rx="200" ry="128" fill="url(#mjcc2' + id + ')"/>' +
+    '<path d="M76,188 C70,240 104,286 152,304" fill="none" stroke="#fff" stroke-opacity=".26" stroke-width="9" stroke-linecap="round"/><path d="M92,196 C90,222 100,246 116,262" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="4" stroke-linecap="round"/>' +
+    '<path d="M330,196 C326,244 300,284 262,304" fill="none" stroke="#0e0a17" stroke-opacity=".5" stroke-width="12" stroke-linecap="round"/>' +
+    /* le cerclage sous le bord, et ses rivets */
+    '<path d="M48,196 C80,236 320,236 352,196" fill="none" stroke="#1d1730" stroke-width="9"/><path d="M48,193 C80,233 320,233 352,193" fill="none" stroke="#6a5f92" stroke-width="2" opacity=".8"/>';
+  [72, 104, 142, 180, 220, 258, 296, 328].forEach(function(x){ var t = (x - 200) / 152; s += '<circle cx="' + x + '" cy="' + f(195 + 30 * (1 - t * t)) + '" r="3.6" fill="#7b70a6" stroke="#15101f" stroke-width="1.6"/>'; });
+  s += '</g>';
+  /* les anses : un anneau de fer de chaque côté */
+  s += '<path d="M56,178 C26,174 24,222 54,218 M344,178 C374,174 376,222 346,218" fill="none" stroke="' + K + '" stroke-width="11" stroke-linecap="round"/><path d="M56,178 C26,174 24,222 54,218 M344,178 C374,174 376,222 346,218" fill="none" stroke="#51476f" stroke-width="5" stroke-linecap="round"/>';
+  /* l'intérieur : la paroi, la potion et tout ce qui bouge dessus */
+  s += '<g clip-path="url(#mjcc' + id + ')"><ellipse cx="200" cy="157" rx="128" ry="46" fill="#120d1c"/>' +
+    '<ellipse class="mjc-liq" cx="200" cy="170" rx="118" ry="42.5"/><ellipse class="mjc-ae" cx="200" cy="170" rx="118" ry="42.5" fill="url(#mjca' + id + ')"/>' +
+    '<ellipse cx="200" cy="170" rx="118" ry="42.5" fill="url(#mjcpo' + id + ')"/><ellipse cx="176" cy="160" rx="62" ry="15" fill="#fff" opacity=".16"/>' +
+    /* le tourbillon de la cuillère */
+    '<g class="mjc-tour"><path d="M200,82 A88,88 0 0 1 288,170 M200,258 A88,88 0 0 1 112,170 M200,114 A56,56 0 0 1 256,170 M200,226 A56,56 0 0 1 144,170" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="3.5" stroke-linecap="round" vector-effect="non-scaling-stroke"/></g>' +
+    /* le calme (vert) : deux ronds qui s'élargissent doucement */
+    '<g class="mjc-ondes"><ellipse class="mjc-onde" cx="162" cy="176" rx="34" ry="12"/><ellipse class="mjc-onde o2" cx="246" cy="164" rx="30" ry="10.5"/></g>';
+  var bl = '';
+  for(i = 0; i < 16; i++){ var a = (i * 137.5) % 360 * Math.PI / 180, q = 0.2 + ((i * 0.41) % 0.75);
+    bl += '<circle class="mjc-bl" style="animation-delay:-' + ((i * 0.29) % 1.6).toFixed(2) + 's" cx="' + f(200 + Math.cos(a) * 100 * q) + '" cy="' + f(170 + Math.sin(a) * 36 * q) + '" r="' + (5 + (i % 3) * 2) + '"/>'; }
+  s += '<g class="mjc-bulles">' + bl + '</g>';
+  /* ça bout (jaune, rouge) : de gros bouillons qui se soulèvent */
+  s += '<g class="mjc-bouillons">';
+  [[150, 182, 15], [236, 190, 17], [196, 164, 13], [262, 166, 12], [128, 164, 11], [206, 198, 14]].forEach(function(b, j){
+    s += '<path class="mjc-bo" style="animation-delay:-' + (j * .23).toFixed(2) + 's" d="M' + (b[0] - b[2]) + ',' + b[1] + ' A' + b[2] + ',' + f(b[2] * .8) + ' 0 0 1 ' + (b[0] + b[2]) + ',' + b[1] + ' A' + b[2] + ',' + f(b[2] * .3) + ' 0 0 1 ' + (b[0] - b[2]) + ',' + b[1] + ' Z"/>'; });
+  s += '</g>';
+  /* ça refroidit (bleu) : une brume froide rampe sur la potion, de petits glaçons dérivent, un liseré de givre au bord */
+  s += '<g class="mjc-frais"><ellipse cx="200" cy="170" rx="113" ry="39" fill="none" stroke="#eaf7ff" stroke-width="5" stroke-dasharray="2 9" stroke-linecap="round" opacity=".9"/>' +
+    '<ellipse class="mjc-brumef" cx="150" cy="166" rx="52" ry="11" fill="#eaf7ff" opacity=".4"/><ellipse class="mjc-brumef b2" cx="250" cy="182" rx="46" ry="10" fill="#eaf7ff" opacity=".34"/><ellipse class="mjc-brumef b3" cx="204" cy="150" rx="40" ry="8" fill="#eaf7ff" opacity=".3"/>';
+  [[142, 184, 1], [258, 160, .8], [206, 196, .7]].forEach(function(g, j){
+    s += '<g class="mjc-glacon' + (j % 2 ? ' g2' : '') + '"><path transform="translate(' + g[0] + ',' + g[1] + ') scale(' + g[2] + ')" d="M-14,0 L-8,-6 L6,-7 L15,-1 L9,6 L-7,6 Z" fill="#f4fbff" stroke="#8fc6ea" stroke-width="2" stroke-linejoin="round"/><path transform="translate(' + g[0] + ',' + g[1] + ') scale(' + g[2] + ')" d="M-6,-2 L3,-3" stroke="#bfe3f7" stroke-width="2" stroke-linecap="round"/></g>'; });
+  s += '</g>';
+  /* ça gèle (violet) : de grandes plaques de glace se rejoignent (leur opacité suit la température : mj-chaudron.js) */
+  s += '<g class="mjc-givre"><path d="M92,170 L120,146 L170,140 L196,158 L176,186 L124,192 Z M204,150 L250,136 L296,150 L306,174 L262,180 L222,172 Z M186,196 L230,184 L278,190 L262,206 L206,210 Z" fill="#f4fbff" fill-opacity=".9" stroke="#8fc6ea" stroke-width="2.5" stroke-linejoin="round"/>' +
+    '<path d="M120,160 L160,166 M150,150 L158,178 M232,150 L262,166 M270,146 L256,172 M214,196 L250,198" stroke="#a9d6f0" stroke-width="2" stroke-linecap="round"/>';
+  [[140, 158], [266, 160], [228, 196], [182, 150]].forEach(function(e, j){ s += '<g class="mjc-eclat' + (j % 2 ? ' e2' : '') + '" transform="translate(' + e[0] + ',' + e[1] + ')"><path d="M0,-7 L1.8,-1.8 L7,0 L1.8,1.8 L0,7 L-1.8,1.8 L-7,0 L-1.8,-1.8 Z" fill="#fff"/></g>'; });
+  s += '</g>';
+  /* la cuillère dans la potion (redessinée à chaque image : mj-chaudron.js, dessinerLouche) */
+  s += '<g class="mjc-louche-in"><ellipse class="mjc-ride" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2.5"/><ellipse class="mjc-cuilleron" fill="rgba(20,10,30,.35)"/>' +
+    '<polygon class="mjc-manche-in" fill="#b9733f" stroke="' + K + '" stroke-width="3.5" stroke-linejoin="round"/></g></g>';
+  /* le bord : un gros bourrelet de fonte */
+  s += '<path d="M56,157 a144,53 0 1 0 288,0 a144,53 0 1 0 -288,0 Z M72,157 a128,46 0 1 0 256,0 a128,46 0 1 0 -256,0 Z" fill="#4a4166" fill-rule="evenodd" stroke="' + K + '" stroke-width="5"/>' +
+    '<path d="M70,175 Q200,222 330,175" fill="none" stroke="#8a80b8" stroke-width="3" stroke-opacity=".7" stroke-linecap="round"/><path d="M84,128 Q200,98 316,128" fill="none" stroke="#2a2240" stroke-width="3" stroke-opacity=".8" stroke-linecap="round"/>';
+  /* le givre sur le bord et ses petits glaçons (quand la potion va geler) */
+  s += '<g class="mjc-givre-bord"><path d="M62,170 Q200,226 338,170" fill="none" stroke="#f4fbff" stroke-width="6" stroke-linecap="round" stroke-dasharray="14 6"/>';
+  [[96, 196, 14], [140, 207, 18], [186, 212, 13], [232, 211, 19], [276, 204, 14], [312, 193, 11]].forEach(function(g){ s += '<path d="M' + (g[0] - 4.5) + ',' + g[1] + ' L' + (g[0] + 4.5) + ',' + g[1] + ' L' + g[0] + ',' + (g[1] + g[2]) + ' Z" fill="#eaf7ff" stroke="#8fc6ea" stroke-width="1.6" stroke-linejoin="round"/>'; });
+  s += '</g>';
+  /* les gouttes qui sautent quand ça bout fort (rouge) */
+  s += '<g class="mjc-gouttes">';
+  [[150, 150], [206, 138], [258, 148], [180, 132], [234, 128]].forEach(function(g, j){ s += '<circle class="mjc-goutte" style="animation-delay:-' + (j * .19).toFixed(2) + 's" cx="' + g[0] + '" cy="' + g[1] + '" r="' + (3.4 + (j % 2)) + '"/>'; });
+  s += '</g>';
+  /* la vapeur */
+  s += '<g class="mjc-vapeur"><path d="M146,112 C132,88 160,74 148,44"/><path d="M196,104 C182,76 210,60 198,26"/><path d="M252,112 C238,88 266,72 254,46"/></g>';
+  /* la cuillère hors de la potion, et le bord du fond qui passe devant elle quand elle est derrière */
+  s += '<g class="mjc-louche-out"><polygon class="mjc-manche" fill="#c98450" stroke="' + K + '" stroke-width="3.5" stroke-linejoin="round"/><polygon class="mjc-reflet" fill="#f3c991"/>' +
+    '<circle class="mjc-pommeau" fill="#a8693a" stroke="' + K + '" stroke-width="3.5"/></g>' +
+    '<path class="mjc-bord-arriere" d="M56,157 A144,53 0 0 1 344,157 L328,157 A128,46 0 0 0 72,157 Z" fill="#4a4166" stroke="' + K + '" stroke-width="5" stroke-linejoin="round" opacity="0"/>';
+  s += '</g>';
+  /* la flèche à deux pointes : on touille dans le sens qu'on veut, ça refroidit (elle grossit quand il faut refroidir) */
+  var rx = 184, ry = 86, cx = 200, cy = 158, t0 = Math.PI * .80, t1 = Math.PI * 1.20;
+  var P = function(t){ return [cx + rx * Math.cos(t), cy + ry * Math.sin(t)]; }, p0 = P(t0), p1 = P(t1), d = 'M' + f(p0[0]) + ',' + f(p0[1]) + ' A' + rx + ',' + ry + ' 0 0 1 ' + f(p1[0]) + ',' + f(p1[1]);
+  var pointe = function(t, sens){ var p = P(t), tx = -rx * Math.sin(t) * sens, ty = ry * Math.cos(t) * sens, l = Math.hypot(tx, ty); tx /= l; ty /= l; var nx = -ty, ny = tx;
+    return '<path d="M' + f(p[0] + tx * 17) + ',' + f(p[1] + ty * 17) + ' L' + f(p[0] + nx * 13) + ',' + f(p[1] + ny * 13) + ' L' + f(p[0] - nx * 13) + ',' + f(p[1] - ny * 13) + ' Z" fill="#6cc4ff" stroke="' + K + '" stroke-width="3.5" stroke-linejoin="round"/>'; };
+  s += '<g class="mjc-fleche mjc-refroidit"><path d="' + d + '" fill="none" stroke="' + K + '" stroke-width="13" stroke-linecap="round"/><path d="' + d + '" fill="none" stroke="#6cc4ff" stroke-width="6.5" stroke-linecap="round"/>' + pointe(t1, 1) + pointe(t0, -1) +
+    '<g transform="translate(-11,158)"><circle r="15" fill="#eaf7ff" stroke="' + K + '" stroke-width="3"/>' + flocon(9, '#2f8fd6') + '</g></g>';
+  /* les deux bûches de côté : elles passent derrière les pieds, leur bout coupé revient vers nous */
+  s += buche(id, 0) + buche(id, 1);
+  /* les deux pieds de devant, posés sur le même ovale que le bord */
+  s += '<path d="M127,284 C123,330 114,372 103,402 L115,406 C126,376 137,336 145,296 Z M273,284 C277,330 286,372 297,402 L285,406 C274,376 263,336 255,296 Z" fill="url(#mjcpi' + id + ')" stroke="' + K + '" stroke-width="4" stroke-linejoin="round"/>' +
+    '<path d="M96,402 Q108,396 120,404 L122,411 Q108,416 94,410 Z M304,402 Q292,396 280,404 L278,411 Q292,416 306,410 Z" fill="#2a2240" stroke="' + K + '" stroke-width="3.5" stroke-linejoin="round"/>' +
+    '<path d="M129,296 C126,334 119,368 110,396" fill="none" stroke="#7b70a6" stroke-width="2.4" stroke-linecap="round" opacity=".7"/><path class="mjc-chaud" d="M290,398 C282,370 274,336 269,302" fill="none" stroke="#ff9a4a" stroke-width="2.6" stroke-linecap="round" opacity=".7"/>';
+  /* les flammes de devant : elles naissent sur le bois et lèchent le fond de la panse */
+  s += '<g class="mjc-flammes">' + langue(id, 170, 398, 44, 84, -8, 'b') + langue(id, 230, 398, 48, 98, 9, 'c') + langue(id, 200, 402, 38, 60, 2, 'a') + langue(id, 146, 396, 26, 42, -7, 'c', 1) + langue(id, 256, 396, 26, 48, 7, 'a', 1) + '</g>';
+  /* les bûches de devant : deux en biais, puis celle qui pointe vers nous (on voit tout son bout rond) */
+  s += buche(id, 3) + buche(id, 4) + buche(id, 2);
+  s += '<g class="mjc-flammes">' + langue(id, 190, 406, 20, 30, -3, 'c', 1) + '</g>';
+  /* les étincelles, autour du chaudron */
+  s += '<g class="mjc-etincelles">';
+  [[40, 250, 2.6], [22, 300, 2], [54, 214, 1.8], [364, 236, 2.6], [380, 296, 2], [350, 204, 1.8], [14, 262, 1.5], [390, 258, 1.6]].forEach(function(e, j){ s += '<circle class="mjc-et e' + (j % 3) + '" cx="' + e[0] + '" cy="' + e[1] + '" r="' + e[2] + '" fill="' + (j % 2 ? '#ffd36a' : '#ff9a3c') + '"/>'; });
+  return s + '</g></svg>';
+}
+
+/* ---------- la réserve de bois : des bûches empilées qui pointent vers nous, leur longueur fuit vers le fond ----------
+   .mjc-tas [data-act=bois] : on la touche pour ajouter une bûche ; .mjc-plus : le rond vert, qui brille quand le feu baisse ;
+   .mjc-fl-bois : la grosse flèche rouge du tutoriel (niveau 1), au-dessus du tas. */
+function reserve(id){
+  var D = 30, dxv = 7, fer = 'M4,22 V86 Q4,95 13,95 H111 Q120,95 120,86 V22';
+  var s = '<svg class="mjc-tas" data-act="bois" viewBox="-12 -124 174 242" aria-hidden="true"><defs><linearGradient id="mjcev' + id + '" x1="0" x2="1"><stop offset="0" stop-color="#b47a4b"/><stop offset=".4" stop-color="#8d5933"/><stop offset="1" stop-color="#4a2a15"/></linearGradient></defs>' +
+    '<g class="mjc-tas-g"><ellipse cx="66" cy="98" rx="84" ry="15" fill="rgba(0,0,0,.45)"/>' +
+    '<path d="M4,95 L' + (4 + dxv) + ',' + (95 - D) + ' M120,95 L' + (113 + dxv) + ',' + (95 - D) + '" stroke="' + K + '" stroke-width="7" stroke-linecap="round"/>';
+  [[30, 78, 15.5, 1], [62, 79, 16.5, 2], [95, 78, 15.5, 3], [46, 51, 15.5, 4], [79, 51, 15.5, 5], [62, 25, 14.5, 6]].forEach(function(b){
+    var cx = b[0], cy = b[1], r = b[2], rr = alea(b[3] * 31), rf = r * .9, fx = cx + dxv, fy = cy - D, i;
+    s += '<path d="M' + f(cx - r) + ',' + cy + ' L' + f(fx - rf) + ',' + f(fy) + ' Q' + f(fx) + ',' + f(fy - rf * .9) + ' ' + f(fx + rf) + ',' + f(fy) + ' L' + f(cx + r) + ',' + cy + ' Z" fill="url(#mjcev' + id + ')" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>';
+    for(i = 0; i < 4; i++){ var t = .15 + i * .23, ax = cx - r + 2 * r * t, bx2 = fx - rf + 2 * rf * t; s += '<path d="M' + f(ax) + ',' + f(cy - 6 - rr() * 5) + ' L' + f(ax + (bx2 - ax) * .8) + ',' + f(cy - D * .8 - rr() * 3) + '" stroke="' + (i % 2 ? '#33190a' : '#c08a58') + '" stroke-width="1.5" stroke-linecap="round" opacity=".85"/>'; }
+    s += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + r + '" ry="' + f(r * .93) + '" fill="#5a3519" stroke="' + K + '" stroke-width="3.2"/>' +
+      '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + f(r * .8) + '" ry="' + f(r * .75) + '" fill="#f1d3a0"/><ellipse cx="' + cx + '" cy="' + cy + '" rx="' + f(r * .5) + '" ry="' + f(r * .46) + '" fill="#e2b77c"/>' +
+      '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + f(r * .64) + '" ry="' + f(r * .6) + '" fill="none" stroke="#b9854a" stroke-width="1.3"/><ellipse cx="' + cx + '" cy="' + cy + '" rx="' + f(r * .34) + '" ry="' + f(r * .31) + '" fill="none" stroke="#b9854a" stroke-width="1.3"/>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + f(r * .13) + '" fill="#a8733c"/>' +
+      '<path d="M' + cx + ',' + cy + ' l' + f((rr() - .3) * r * .9) + ',' + f(-r * .62) + ' M' + cx + ',' + cy + ' l' + f((rr() - .7) * r * .9) + ',' + f(r * .6) + '" stroke="#8a5a2c" stroke-width="1.5" stroke-linecap="round"/>' +
+      '<path d="M' + f(cx - r * .55) + ',' + f(cy - r * .42) + ' Q' + f(cx - r * .2) + ',' + f(cy - r * .74) + ' ' + f(cx + r * .28) + ',' + f(cy - r * .68) + '" fill="none" stroke="#fff3d6" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>';
+  });
+  s += '<path d="' + fer + '" fill="none" stroke="' + K + '" stroke-width="9" stroke-linecap="round"/><path d="' + fer + '" fill="none" stroke="#51476f" stroke-width="4" stroke-linecap="round"/>';
+  /* le rond vert « une bûche de plus » */
+  s += '<g class="mjc-plus"><circle class="mjc-plus-halo" cx="120" cy="-8" r="30"/><circle cx="120" cy="-8" r="21" fill="#7cf0a8" stroke="' + K + '" stroke-width="3.6"/><path d="M120,-18 V2 M110,-8 H130" stroke="' + K + '" stroke-width="5" stroke-linecap="round"/></g>' +
+    '<rect x="-10" y="-34" width="160" height="150" fill="transparent"/></g>';
+  /* la flèche rouge du tutoriel */
+  s += '<g class="mjc-fl-bois"><g><path d="M50,-118 H74 V-74 H94 L62,-36 L30,-74 H50 Z" fill="#ff3a2e" stroke="' + K + '" stroke-width="4" stroke-linejoin="round"/><path d="M55,-112 V-72" stroke="rgba(255,255,255,.45)" stroke-width="5" stroke-linecap="round"/></g></g>';
+  return s + '</svg>';
+}
+
+/* ---------- un bocal de l'étagère ----------
+   Vu d'un peu au-dessus, comme le chaudron : on voit le dessus du bouchon, le fond est arrondi, l'étiquette suit la courbe du verre.
+   Boîte du dessin : 0 0 72 94. L'ingrédient est dessiné dans la « fenêtre » du verre, au-dessus de l'étiquette.
+   ic : la petite étiquette ronde pendue au goulot (l'icône de la recette et de la frise), pour retrouver le bocal d'un coup d'œil. */
+function contenu(k, w, T, B){
+  var s = '', A = B - T, r = alea(k.length * 97 + k.charCodeAt(0) * 13), i, x, y;
+  function feuille(x, y, a, l, c, c2){ return '<g transform="translate(' + f(x) + ',' + f(y) + ') rotate(' + a + ')"><path d="M0,0 C' + f(l * .3) + ',' + f(-l * .42) + ' ' + f(l * .8) + ',' + f(-l * .32) + ' ' + l + ',0 C' + f(l * .8) + ',' + f(l * .32) + ' ' + f(l * .3) + ',' + f(l * .42) + ' 0,0 Z" fill="' + c + '" stroke="' + K + '" stroke-width="1.7" stroke-linejoin="round"/><path d="M2,0 H' + f(l - 3) + '" stroke="' + c2 + '" stroke-width="1.4" stroke-linecap="round"/></g>'; }
+  /* un liquide : sa surface est un ovale (on la voit d'en haut), plus claire que le dessous */
+  function liquide(ys, c, c2, c3){ return '<path d="M' + (-w) + ',' + f(ys) + ' V8 H' + w + ' V' + f(ys) + ' Z" fill="' + c + '"/><rect x="' + (-w) + '" y="' + f(B) + '" width="' + (2 * w) + '" height="' + f(-B + 8) + '" fill="' + c3 + '" opacity=".6"/>' +
+    '<ellipse cx="0" cy="' + f(ys) + '" rx="' + w + '" ry="' + f(w * .24) + '" fill="' + c2 + '" stroke="#fff" stroke-opacity=".6" stroke-width="1.4"/>'; }
+  switch(k){
+    case 'eau':
+      s += liquide(T + A * .4, '#4ec1f5', '#a9e3fb', '#2f9fe0') + '<circle cx="' + f(w * .3) + '" cy="' + f(T + A * .78) + '" r="3" fill="#dff6ff"/><circle cx="' + f(-w * .25) + '" cy="' + f(T + A * .7) + '" r="2.1" fill="#dff6ff"/>';
+      break;
+    case 'miel':
+      s += liquide(T + A * .44, '#f0a418', '#ffcf5a', '#c9690c') + '<ellipse cx="' + f(-w * .12) + '" cy="' + f(T + A * .42) + '" rx="' + f(w * .3) + '" ry="2.4" fill="#fff0b8" opacity=".8"/>';
+      break;
+    case 'baies':
+      for(i = 0; i < 40; i++){ x = (i % 5 - 2) * w * .42 + (Math.floor(i / 5) % 2 ? w * .2 : 0); y = -5 - Math.floor(i / 5) * w * .36 - r() * 2; if(y < T + A * .22) break;
+        s += '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(w * .25) + '" fill="' + (i % 3 ? '#5165cb' : '#3f4fae') + '" stroke="' + K + '" stroke-width="1.5"/><circle cx="' + f(x - 1.8) + '" cy="' + f(y - 2) + '" r="1.6" fill="#b9c4ff"/>'; }
+      break;
+    case 'champignon':
+      [[-.3, 1, B + 3], [.36, .78, B + 4]].forEach(function(m){ var q = w * .56 * m[1], hh = A * .86 * m[1]; x = w * m[0]; y = m[2];
+        s += '<path d="M' + f(x - q * .3) + ',' + f(y) + ' V' + f(y - hh * .5) + ' H' + f(x + q * .3) + ' V' + f(y) + ' Z" fill="#f6ead2" stroke="' + K + '" stroke-width="1.8"/>' +
+          '<path d="M' + f(x - q) + ',' + f(y - hh * .44) + ' C' + f(x - q) + ',' + f(y - hh * 1.06) + ' ' + f(x + q) + ',' + f(y - hh * 1.06) + ' ' + f(x + q) + ',' + f(y - hh * .44) + ' Z" fill="#ff521a" stroke="' + K + '" stroke-width="2"/>' +
+          '<circle cx="' + f(x - q * .42) + '" cy="' + f(y - hh * .62) + '" r="2.6" fill="#fff3e0"/><circle cx="' + f(x + q * .34) + '" cy="' + f(y - hh * .7) + '" r="2.2" fill="#fff3e0"/><circle cx="' + f(x) + '" cy="' + f(y - hh * .84) + '" r="1.8" fill="#fff3e0"/>'; });
+      break;
+    case 'trefle':
+      [[-.42, .7, .82], [.4, .62, .9], [0, .34, 1.08]].forEach(function(m){ x = w * m[0]; y = T + A * m[1]; var q = w * .21 * m[2];
+        s += '<path d="M' + f(x) + ',' + f(y + q) + ' V' + f(B + 6) + '" stroke="#5c8a1c" stroke-width="2.2"/>';
+        [0, 120, 240].forEach(function(a){ s += '<circle cx="' + f(x + Math.sin(a * Math.PI / 180) * q) + '" cy="' + f(y - Math.cos(a * Math.PI / 180) * q) + '" r="' + f(q) + '" fill="#8bc02b" stroke="' + K + '" stroke-width="1.6"/>'; });
+        s += '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(q * .3) + '" fill="#5c8a1c"/>'; });
+      break;
+    case 'brume':
+      s += '<rect x="' + (-w) + '" y="' + f(T - 8) + '" width="' + (2 * w) + '" height="' + f(-T + 14) + '" fill="#e3e8ea" opacity=".72"/>';
+      [[-.22, .34], [.18, .62], [-.3, .86]].forEach(function(m){ x = w * m[0]; y = T + A * m[1];
+        s += '<path d="M' + f(x - 13) + ',' + f(y) + ' c0,-10 14,-10 14,-2 c0,6 -8,6 -8,1 M' + f(x + 4) + ',' + f(y + 3) + ' c5,-8 17,-6 14,3" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>' +
+          '<path d="M' + f(x - 13) + ',' + f(y + 1.5) + ' c0,-10 14,-10 14,-2" fill="none" stroke="#9fb0bb" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>'; });
+      break;
+    case 'lavande':
+      [-.5, 0, .5].forEach(function(m, j){ x = w * m; var yt = T + A * (j === 1 ? .12 : .26); s += '<path d="M' + f(x) + ',' + f(B + 6) + ' V' + f(yt + 8) + '" stroke="#6f8f3a" stroke-width="2.2"/>';
+        for(i = 0; i < 6; i++) s += '<ellipse cx="' + f(x + (i % 2 ? 3 : -3)) + '" cy="' + f(yt + 4 + i * A * .11) + '" rx="4.4" ry="3.6" fill="' + (i % 2 ? '#9a6cf0' : '#8253dc') + '" stroke="' + K + '" stroke-width="1.3"/>'; });
+      break;
+    case 'pensee':
+      [[-.36, .68, .62], [.38, .6, .56], [0, .3, .5]].forEach(function(m){ x = w * m[0]; y = T + A * m[1];
+        s += '<path d="M' + f(x) + ',' + f(y + 6) + ' V' + f(B + 6) + '" stroke="#6f8f3a" stroke-width="2"/><g transform="translate(' + f(x) + ',' + f(y) + ') scale(' + f(m[2] * w / 30) + ')"><g stroke="' + K + '" stroke-width="2.6" stroke-linejoin="round"><ellipse cx="-7" cy="-9" rx="8" ry="9" fill="#ffc21a"/><ellipse cx="7" cy="-9" rx="8" ry="9" fill="#ffc21a"/><ellipse cx="-11" cy="2" rx="8.5" ry="7.5" fill="#febb02"/><ellipse cx="11" cy="2" rx="8.5" ry="7.5" fill="#febb02"/><path d="M-10 6 C -10 18 10 18 10 6 C 6 3 -6 3 -10 6 Z" fill="#ffd23f"/></g><path d="M0 3 L -5 -4 M0 3 L 5 -4 M0 3 L 0 11" stroke="#6a3aa8" stroke-width="2" stroke-linecap="round"/><circle cx="0" cy="3" r="3" fill="#ff8a1a" stroke="' + K + '" stroke-width="1.2"/></g>'; });
+      break;
+    case 'menthe':
+      s += '<path d="M0,' + f(B + 6) + ' V' + f(T + A * .18) + '" stroke="#3d6e12" stroke-width="2.4"/>';
+      for(i = 0; i < 6; i++) s += feuille(0, T + A * (.26 + i * .13), i % 2 ? -24 : -156, w * (.78 - i * .03), '#5b9821', '#2f5a0c');
+      s += feuille(0, T + A * .2, -90, w * .5, '#6aa82a', '#2f5a0c');
+      break;
+    case 'ortie':
+      s += '<path d="M0,' + f(B + 6) + ' V' + f(T + A * .2) + '" stroke="#6d9320" stroke-width="2.4"/>';
+      for(i = 0; i < 4; i++){ var a = i % 2 ? -18 : -162, l = w * (.86 - i * .05), yy = T + A * (.3 + i * .2);
+        s += '<g transform="translate(0,' + f(yy) + ') rotate(' + a + ')"><path d="M0,0 L' + f(l * .16) + ',' + f(-l * .26) + ' L' + f(l * .3) + ',' + f(-l * .2) + ' L' + f(l * .42) + ',' + f(-l * .32) + ' L' + f(l * .56) + ',' + f(-l * .2) + ' L' + f(l * .7) + ',' + f(-l * .26) + ' L' + l + ',0 L' + f(l * .7) + ',' + f(l * .26) + ' L' + f(l * .56) + ',' + f(l * .2) + ' L' + f(l * .42) + ',' + f(l * .32) + ' L' + f(l * .3) + ',' + f(l * .2) + ' L' + f(l * .16) + ',' + f(l * .26) + ' Z" fill="#99c23b" stroke="' + K + '" stroke-width="1.6" stroke-linejoin="round"/><path d="M2,0 H' + f(l - 3) + '" stroke="#5f8418" stroke-width="1.4"/></g>'; }
+      break;
+    case 'racine':
+      [[-.3, B + 1, 8, 1], [.3, B - 1, -14, .9], [0, T + A * .56, 24, 1.05]].forEach(function(m){ var q = w / 26 * m[3];
+        s += '<g transform="translate(' + f(w * m[0]) + ',' + f(m[1]) + ') rotate(' + m[2] + ') scale(' + f(q) + ')"><path d="M-16,0 C-12,-10 6,-12 14,-6 C22,-2 20,7 12,9 C2,12 -12,10 -16,0 Z" fill="#ad7156" stroke="' + K + '" stroke-width="2"/><path d="M-8,-3 q6,4 14,0 M-4,4 q5,2 10,0" fill="none" stroke="#7d4c36" stroke-width="1.5" stroke-linecap="round"/><path d="M14,-6 q8,-4 10,-10 M-16,0 q-6,2 -8,8" fill="none" stroke="#8a563c" stroke-width="2.2" stroke-linecap="round"/></g>'; });
+      break;
+    case 'lune':
+      s += '<path d="M' + (-w) + ',' + f(T + A * .78) + ' Q' + f(-w * .1) + ',' + f(T + A * .46) + ' ' + w + ',' + f(T + A * .82) + ' V8 H' + (-w) + ' Z" fill="#fdd835"/><path d="M' + (-w) + ',' + f(T + A * .78) + ' Q' + f(-w * .1) + ',' + f(T + A * .46) + ' ' + w + ',' + f(T + A * .82) + '" fill="none" stroke="#fff6c2" stroke-width="2.2"/>';
+      [[-.3, .3, 6.5], [.36, .2, 5], [.1, .5, 3.6], [-.5, .62, 3]].forEach(function(m){ x = w * m[0]; y = T + A * m[1]; var q = m[2];
+        s += '<path d="M' + f(x) + ',' + f(y - q) + ' L' + f(x + q * .28) + ',' + f(y - q * .28) + ' L' + f(x + q) + ',' + f(y) + ' L' + f(x + q * .28) + ',' + f(y + q * .28) + ' L' + f(x) + ',' + f(y + q) + ' L' + f(x - q * .28) + ',' + f(y + q * .28) + ' L' + f(x - q) + ',' + f(y) + ' L' + f(x - q * .28) + ',' + f(y - q * .28) + ' Z" fill="#fff6c2" stroke="#c99a12" stroke-width="1"/>'; });
+      break;
+    default:
+      s += '<circle cx="0" cy="' + f(T + A * .5) + '" r="' + f(w * .5) + '" fill="#8d8a99" stroke="' + K + '" stroke-width="2"/>';
+  }
+  return s;
+}
+var nBocal = 0;
+/* o : {nom, court (le nom des bocaux étroits), ic (html de l'icône : un émoji, ou un petit svg)} */
+function bocal(k, o){
+  o = o || {};
+  var id = 'mjcj' + (++nBocal), s = '', hw = 27;
+  /* le verre : des épaules rondes, un goulot, un fond arrondi (l'ovale du dessous) */
+  var corps = 'M9,36 C9,27 19,28 19,21 L53,21 C53,28 63,27 63,36 L63,80 A27,7.5 0 0 1 9,80 Z';
+  function etiq(nom, cls){
+    var fs = nom.length > 8 ? 9.6 : 11.4, lw = Math.max(46, nom.length * fs * .6 + 10);
+    return '<g class="' + cls + '"><path d="M' + f(36 - lw / 2) + ',60 Q36,65.5 ' + f(36 + lw / 2) + ',60 L' + f(36 + lw / 2) + ',76 Q36,81.5 ' + f(36 - lw / 2) + ',76 Z" fill="#f3e4c2" stroke="#5a4630" stroke-width="2" stroke-linejoin="round"/>' +
+      '<text x="36" y="' + f(71.6 + fs * .36) + '" text-anchor="middle" font-weight="700" font-size="' + fs + '" fill="#35281b">' + nom + '</text></g>';
+  }
+  s += '<svg class="mjc-bocal" viewBox="0 0 72 94" aria-hidden="true" focusable="false"><defs>' +
+    '<clipPath id="' + id + '"><path d="' + corps + '"/></clipPath>' +
+    '<linearGradient id="' + id + 'v" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".34"/><stop offset=".28" stop-color="#fff" stop-opacity=".04"/><stop offset=".78" stop-color="#bcd6ff" stop-opacity=".08"/><stop offset="1" stop-color="#000" stop-opacity=".26"/></linearGradient>' +
+    '<linearGradient id="' + id + 'l" x1="0" x2="1"><stop offset="0" stop-color="#e0b684"/><stop offset=".5" stop-color="#c7935e"/><stop offset="1" stop-color="#8f5f38"/></linearGradient></defs>';
+  s += '<ellipse cx="36" cy="88" rx="31" ry="5.5" fill="rgba(0,0,0,.42)"/>';
+  s += '<path class="mjc-bocal-halo" d="' + corps + '" fill="none" stroke="#ffd36a" stroke-width="11" stroke-linejoin="round"/>';
+  s += '<path d="' + corps + '" fill="#d7dcf2" fill-opacity=".42"/><g clip-path="url(#' + id + ')"><g transform="translate(36,86)">' + contenu(k, hw, -60, -27) + '</g>' +
+    '<rect x="6" y="14" width="60" height="78" fill="url(#' + id + 'v)"/>' +
+    /* le fond du bocal, vu à travers le verre */
+    '<path d="M11,80 A25,6.5 0 0 0 61,80" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="2"/></g>';
+  s += '<path d="' + corps + '" fill="none" stroke="' + K + '" stroke-width="3.2" stroke-linejoin="round"/>';
+  /* les reflets du verre : il est rond */
+  s += '<path d="M15,40 C14,52 14,66 15.5,76" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" opacity=".6"/><path d="M57,42 V56" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".35"/>' +
+    '<path d="M19,22.5 Q36,27.5 53,22.5" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>';
+  /* le bouchon de liège : son tour, son dessus (un ovale : on le voit d'en haut), la ficelle du goulot */
+  s += '<path d="M21,9 V21 A15,4.6 0 0 0 51,21 V9 Z" fill="url(#' + id + 'l)" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>' +
+    '<ellipse cx="36" cy="9" rx="15" ry="4.8" fill="#e9c79c" stroke="' + K + '" stroke-width="3"/><path d="M28,8.4 q8,2.6 16,0" fill="none" stroke="#b98a5c" stroke-width="1.5" stroke-linecap="round"/>' +
+    '<path d="M19.5,23.5 Q36,29 52.5,23.5" fill="none" stroke="#c9a56a" stroke-width="2.6" stroke-linecap="round"/>';
+  /* l'étiquette de papier (le nom), courbée comme le verre */
+  s += etiq(o.nom || k, 'mjc-nl') + etiq(o.court || o.nom || k, 'mjc-nc');
+  s += '</svg>';
+  /* l'étiquette ronde du goulot : l'icône de la recette */
+  if(o.ic) s += '<span class="mjc-pastille-ic" aria-hidden="true">' + o.ic + '</span>';
+  return s;
+}
+
+/* ---------- l'âtre de la cheminée, à la taille de l'écran ----------
+   L (mj-chaudron.js, disposer) : W, H (la scène), VP {x, y} (le point de fuite), s (le fond de l'âtre, plus petit que l'ouverture),
+   JX0, JX1 (les montants, côté pièce), OX0, OX1 (l'ouverture), FY (le bord de devant de l'âtre), av, tr (la pierre qui avance, sa tranche),
+   planche (largeur d'une planche du parquet, devant), cx, cy, sc (le chaudron : le centre de son ovale au sol, son échelle), large. */
+function tuile(pid, w, h, rangs, o){
+  var s = '<pattern id="' + pid + '" patternUnits="userSpaceOnUse" width="' + w + '" height="' + h + '"><rect width="' + w + '" height="' + h + '" fill="' + o.joint + '"/>', y = 0, hh = h / rangs.length;
+  rangs.forEach(function(l, j){
+    var x = l[0];
+    l.slice(1).forEach(function(ww, i){
+      [x, x - w].forEach(function(xx){
+        if(xx + ww < 0 || xx > w) return;
+        s += '<rect x="' + f(xx + o.jw / 2) + '" y="' + f(y + o.jw / 2) + '" width="' + f(ww - o.jw) + '" height="' + f(hh - o.jw) + '" rx="' + o.rx + '" fill="' + o.cols[(i + j) % o.cols.length] + '"/>' +
+          '<path d="M' + f(xx + 7) + ',' + f(y + 5.5) + ' H' + f(xx + ww * (.35 + ((i * 7 + j * 3) % 5) * .08)) + '" stroke="' + o.clair + '" stroke-width="2" stroke-linecap="round" opacity=".7"/>';
+      });
+      x += ww;
+    });
+    y += hh;
+  });
+  return s + '</pattern>';
+}
+function decor(L, id){
+  var W = L.W, H = L.H, VP = L.VP, s = '', i, P = 'mjd' + id;
+  function vp(x, y, k){ return [VP.x + (x - VP.x) * k, VP.y + (y - VP.y) * k]; }
+  var bx0 = vp(L.OX0, 0, L.s)[0], bx1 = vp(L.OX1, 0, L.s)[0], by1 = vp(0, L.FY, L.s)[1], byT = -6, bq = L.large ? 24 : 19, bl = L.large ? 46 : 38;
+  s += '<svg class="mjc-decor" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" aria-hidden="true"><defs>' +
+    tuile(P + 'pc', bl * 4, bl * 2, [[0, bl * 1.5, bl * 1.3, bl * 1.2], [-bl * .7, bl * 1.4, bl * 1.1, bl * 1.5]], {joint:'#6f689a', jw:3, rx:4, cols:['#a59ecb', '#aea7d3', '#9c95c2'], clair:'#c9c3e6'}) +
+    tuile(P + 'pm', 132, 116, [[0, 66, 66], [-33, 66, 66]], {joint:'#5d5688', jw:2.5, rx:2, cols:['#857eb0', '#8c85b8', '#7f78aa'], clair:'#a59ecb'}) +
+    tuile(P + 'pb', bq * 4.4, bq * 2, [[0, bq * 2.2, bq * 2.2], [-bq * 1.1, bq * 2.2, bq * 2.2]], {joint:'#1f1728', jw:2.2, rx:1, cols:['#3b2f47', '#42354f', '#372b43'], clair:'#55476a'}) +
+    '<linearGradient id="' + P + 'su" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#07050b" stop-opacity=".9"/><stop offset=".55" stop-color="#07050b" stop-opacity=".25"/><stop offset="1" stop-color="#07050b" stop-opacity="0"/></linearGradient>' +
+    '<linearGradient id="' + P + 'oh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".6"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>' +
+    '<linearGradient id="' + P + 'cg" x1="1" x2="0"><stop offset="0" stop-color="#ff9a4a" stop-opacity=".5"/><stop offset="1" stop-color="#ff9a4a" stop-opacity="0"/></linearGradient>' +
+    '<linearGradient id="' + P + 'cd" x1="0" x2="1"><stop offset="0" stop-color="#ff9a4a" stop-opacity=".5"/><stop offset="1" stop-color="#ff9a4a" stop-opacity="0"/></linearGradient>' +
+    '<radialGradient id="' + P + 'sf" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffb35c" stop-opacity=".7"/><stop offset=".55" stop-color="#ff7a2c" stop-opacity=".26"/><stop offset="1" stop-color="#ff7a2c" stop-opacity="0"/></radialGradient>' +
+    '<radialGradient id="' + P + 'vi" cx=".5" cy=".55" r=".75"><stop offset=".55" stop-color="#0b0714" stop-opacity="0"/><stop offset="1" stop-color="#0b0714" stop-opacity=".6"/></radialGradient>' +
+    '<clipPath id="' + P + 'cs"><polygon points="' + pts([[bx0, by1], [bx1, by1], [L.OX1, L.FY], [L.OX0, L.FY]]) + '"/></clipPath></defs>';
+  /* 1. le mur de l'atelier (les mêmes pierres violettes), de chaque côté de la cheminée */
+  s += '<rect width="' + W + '" height="' + H + '" fill="url(#' + P + 'pm)"/>';
+  /* 2. le parquet de l'atelier, devant : ses planches fuient vers le même point que l'âtre */
+  s += '<rect x="0" y="' + L.FY + '" width="' + W + '" height="' + (H - L.FY) + '" fill="#8c5a33"/>';
+  var kf = (L.FY - VP.y) / (H - VP.y), np = Math.ceil(W / L.planche / 2) + 2;
+  for(i = -np; i <= np; i++){ var xb = VP.x + i * L.planche;
+    s += '<polygon points="' + pts([[vp(xb, H, kf)[0], L.FY], [vp(xb + L.planche, H, kf)[0], L.FY], [xb + L.planche, H], [xb, H]]) + '" fill="' + (i % 2 ? '#9a6539' : '#8f5c34') + '" stroke="#5a3519" stroke-width="2.5"/>'; }
+  s += '<rect x="0" y="' + L.FY + '" width="' + W + '" height="' + (H - L.FY) + '" fill="url(#' + P + 'oh)" opacity=".4"/>';
+  /* 3. l'intérieur de l'âtre : le fond de briques noircies, les deux côtés, les dalles du sol */
+  s += '<rect x="' + L.OX0 + '" y="-2" width="' + (L.OX1 - L.OX0) + '" height="' + (L.FY + 2) + '" fill="#1a1424"/>' +
+    '<rect x="' + f(bx0) + '" y="' + byT + '" width="' + f(bx1 - bx0) + '" height="' + f(by1 - byT) + '" fill="url(#' + P + 'pb)"/><rect x="' + f(bx0) + '" y="' + byT + '" width="' + f(bx1 - bx0) + '" height="' + f(by1 - byT) + '" fill="url(#' + P + 'su)"/>';
+  s += '<polygon points="' + pts([[L.OX0, byT], [bx0, byT], [bx0, by1], [L.OX0, L.FY]]) + '" fill="#31273d"/><polygon points="' + pts([[L.OX1, byT], [bx1, byT], [bx1, by1], [L.OX1, L.FY]]) + '" fill="#2b2236"/>';
+  for(i = 1; i < 9; i++){ var yj = L.FY * i / 9, q = vp(0, yj, L.s)[1];
+    s += '<path d="M' + L.OX0 + ',' + f(yj) + ' L' + f(bx0) + ',' + f(q) + ' M' + L.OX1 + ',' + f(yj) + ' L' + f(bx1) + ',' + f(q) + '" stroke="#1c1526" stroke-width="2.2"/>'; }
+  s += '<polygon points="' + pts([[L.OX0, byT], [bx0, byT], [bx0, by1], [L.OX0, L.FY]]) + '" fill="url(#' + P + 'cd)" opacity=".55"/><polygon points="' + pts([[L.OX1, byT], [bx1, byT], [bx1, by1], [L.OX1, L.FY]]) + '" fill="url(#' + P + 'cg)" opacity=".55"/>';
+  s += '<polygon points="' + pts([[bx0, by1], [bx1, by1], [L.OX1, L.FY], [L.OX0, L.FY]]) + '" fill="#5a4f6e"/><g clip-path="url(#' + P + 'cs)">';
+  for(i = -4; i <= 4; i++){ var xf = VP.x + i * (L.OX1 - L.OX0) / 5.2; s += '<path d="M' + f(xf) + ',' + L.FY + ' L' + f(vp(xf, L.FY, L.s)[0]) + ',' + f(by1) + '" stroke="#3a3049" stroke-width="2.6"/>'; }
+  [0.22, 0.5, 0.8].forEach(function(t){ var yy = by1 + (L.FY - by1) * t * (0.6 + 0.4 * t); s += '<path d="M0,' + f(yy) + ' H' + W + '" stroke="#3a3049" stroke-width="2.6"/>'; });
+  s += '<ellipse cx="' + f(L.cx) + '" cy="' + f(L.cy) + '" rx="' + f(L.sc * 290) + '" ry="' + f(L.sc * 105) + '" fill="url(#' + P + 'sf)"/></g>';
+  s += '<path d="M' + f(bx0) + ',' + f(by1) + ' H' + f(bx1) + ' M' + f(bx0) + ',' + byT + ' V' + f(by1) + ' M' + f(bx1) + ',' + byT + ' V' + f(by1) + '" stroke="#17111f" stroke-width="3" fill="none"/>';
+  /* la crémaillère : la tige à crans et son crochet, au fond */
+  var cmx = L.cx + L.sc * 6, cmy = L.cy - L.sc * 382, e = L.sc;
+  if(cmy > 60){
+    s += '<g opacity=".9"><path d="M' + f(cmx) + ',-4 V' + f(cmy - 26) + '" stroke="#0e0a15" stroke-width="' + f(7 * e + 2) + '" stroke-linecap="round"/>';
+    for(var yc = 14; yc < cmy - 44; yc += 17 * e + 6) s += '<path d="M' + f(cmx) + ',' + f(yc) + ' l' + f(9 * e + 3) + ',' + f(5 * e + 2) + '" stroke="#0e0a15" stroke-width="' + f(4 * e + 1.5) + '" stroke-linecap="round"/>';
+    s += '<path d="M' + f(cmx) + ',' + f(cmy - 28) + ' q0,' + f(20 * e + 6) + ' ' + f(-13 * e - 4) + ',' + f(15 * e + 5) + '" fill="none" stroke="#0e0a15" stroke-width="' + f(5 * e + 2) + '" stroke-linecap="round"/></g>';
+  }
+  /* l'ombre de la poutre dans l'âtre */
+  s += '<rect x="' + L.OX0 + '" y="0" width="' + (L.OX1 - L.OX0) + '" height="' + f(Math.min(90, H * .16)) + '" fill="url(#' + P + 'oh)"/>';
+  /* 4. la pierre de l'âtre qui avance dans la pièce : son dessus, sa tranche */
+  s += '<polygon points="' + pts([[L.JX0 - L.av * .4, L.FY], [L.JX1 + L.av * .4, L.FY], [L.JX1 + L.av, L.FY + L.av], [L.JX0 - L.av, L.FY + L.av]]) + '" fill="#6b607f" stroke="' + K + '" stroke-width="3.5" stroke-linejoin="round"/>' +
+    '<polygon points="' + pts([[L.JX0 - L.av, L.FY + L.av], [L.JX1 + L.av, L.FY + L.av], [L.JX1 + L.av, L.FY + L.av + L.tr], [L.JX0 - L.av, L.FY + L.av + L.tr]]) + '" fill="#4a405e" stroke="' + K + '" stroke-width="3.5" stroke-linejoin="round"/>';
+  for(i = -3; i <= 3; i++){ var xs = VP.x + i * (L.JX1 - L.JX0) / 6.4; s += '<path d="M' + f(xs) + ',' + (L.FY + 2) + ' L' + f(xs + (xs - VP.x) * .05) + ',' + (L.FY + L.av - 2) + ' M' + f(xs + (xs - VP.x) * .05) + ',' + (L.FY + L.av + 2) + ' v' + (L.tr - 4) + '" stroke="#3f3552" stroke-width="2.4"/>'; }
+  s += '<ellipse cx="' + f(L.cx) + '" cy="' + f(L.FY + L.av * .3) + '" rx="' + f(L.sc * 240) + '" ry="' + f(L.av * .9) + '" fill="url(#' + P + 'sf)" opacity=".7"/>';
+  /* 5. les deux montants de la cheminée, en grosses pierres claires ; le feu les éclaire du côté de l'âtre */
+  var ch = Math.min(70, (L.OX0 - L.JX0) * .6);
+  s += '<rect x="' + L.JX0 + '" y="-4" width="' + (L.OX0 - L.JX0) + '" height="' + (L.FY + 4) + '" fill="url(#' + P + 'pc)"/><rect x="' + f(L.OX0 - ch) + '" y="-4" width="' + f(ch) + '" height="' + (L.FY + 4) + '" fill="url(#' + P + 'cg)"/>' +
+    '<rect x="' + L.OX1 + '" y="-4" width="' + (L.JX1 - L.OX1) + '" height="' + (L.FY + 4) + '" fill="url(#' + P + 'pc)"/><rect x="' + L.OX1 + '" y="-4" width="' + f(ch) + '" height="' + (L.FY + 4) + '" fill="url(#' + P + 'cd)"/>' +
+    '<rect x="' + L.JX0 + '" y="-4" width="' + (L.OX0 - L.JX0) + '" height="' + (L.FY + 4) + '" fill="none" stroke="' + K + '" stroke-width="4"/><rect x="' + L.OX1 + '" y="-4" width="' + (L.JX1 - L.OX1) + '" height="' + (L.FY + 4) + '" fill="none" stroke="' + K + '" stroke-width="4"/>';
+  /* les deux corbeaux de pierre qui portent la poutre, en haut des montants (elle avance dans la pièce) */
+  if(L.large){
+    var cw = L.OX0 - L.JX0, chh = Math.min(30, H * .06);
+    [[L.JX0, 1], [L.OX1, -1]].forEach(function(m){
+      var a0 = m[0] + cw * .12, a1 = m[0] + cw * .88;
+      s += '<polygon points="' + pts([[a0, -2], [a1, -2], [a1 - 9, chh], [a0 + 9, chh]]) + '" fill="#8f88b8" stroke="' + K + '" stroke-width="3.5" stroke-linejoin="round"/>' +
+        '<path d="M' + f(a0 + 6) + ',' + f(chh * .5) + ' H' + f(a1 - 6) + '" stroke="#6f689a" stroke-width="2.5"/>';
+    });
+  }
+  /* la poutre avance dans la pièce : son ombre tombe sur les montants */
+  s += '<rect x="' + L.JX0 + '" y="0" width="' + (L.JX1 - L.JX0) + '" height="' + f(Math.min(34, H * .07)) + '" fill="url(#' + P + 'oh)"/>';
+  /* 6. l'ombre des coins */
+  s += '<rect width="' + W + '" height="' + H + '" fill="url(#' + P + 'vi)"/>';
+  return s + '</svg>';
+}
+
+/* les deux petits dessins du thermomètre : le feu en haut, le givre en bas */
+var icFeu = '<svg viewBox="-10 -14 20 24" aria-hidden="true"><path d="' + flamme(0, 7, 14, 19, 1.5) + '" fill="#f4511e" stroke="' + K + '" stroke-width="2"/><path d="' + flamme(0, 7, 7, 10, 1) + '" fill="#ffd36a"/></svg>';
+var icGivre = '<svg viewBox="-10 -10 20 20" aria-hidden="true">' + flocon(8, '#2f6fb0') + '</svg>';
+
+MJ.chaudronDessin = {BUCHES:BUCHES, svg:svg, reserve:reserve, bocal:bocal, decor:decor, icFeu:icFeu, icGivre:icGivre};
+})();
+
+}).call(this, MJT.setTimeout, MJT.clearTimeout, MJT.setInterval, MJT.clearInterval, MJT.raf, MJT.caf, MJT.Date, MJT.performance);
 /* ===== mj-chaudron.js ===== */
 ;(function(setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame, Date, performance){
 /* ==========================================================
@@ -16008,7 +16525,7 @@ var MAX_BUCHES = 6;                     /* au-delà, on ne peut plus en ajouter 
    une bûche ajoutée donne un petit coup de chaud (FEU_COUP) ; touiller un tour par seconde refroidit de TOUILLE unités/s. */
 var FEU_K = 1.6, FROID = 3.2, FEU_COUP = 3, TOUILLE = 9, BRULE = 6.5;
 var CHOCS = {eau:-5, miel:3, baies:4, champignon:-3, trefle:2, brume:-7, lavande:-3, pensee:3, menthe:-5, ortie:6, racine:3, lune:-6};
-var BUCHES = [[160, 344, -6], [240, 344, 6], [200, 348, 0], [180, 331, -12], [220, 331, 12], [200, 318, 2], [200, 336, 88]];
+/* (les six bûches du feu, leur place et leur dessin : MJ.chaudronDessin.BUCHES, mj-chaudron-dessin.js) */
 /* La palette du chaudron (Romain, 4 novembre) : une couleur unie bien à part par ingrédient (pas de motif), pour les carrés
    allumés de la frise et les pastilles de la carte de la recette. Les boîtes, elles, n'ont pas de couleur : c'est la recette
    qui fait le lien couleur → ingrédient. D.INGR garde ses couleurs à lui (le mélange et les teintures de l'enquête 3). */
@@ -16020,41 +16537,9 @@ var CODES = {
   menthe:{c:'#5b9821'}, ortie:{c:'#99c23b'}, racine:{c:'#ad7156'}, lune:{c:'#fdd835'}
 };
 function codeDe(k){ return CODES[k] || {c:(((window.DONNEES || {}).INGR || {})[k] || {}).c || '#888'}; }
-/* Le plancher du chalet, en légère perspective (planches qui fuient vers le mur) : un calque à part, dont le haut (la ligne
-   mur/sol) est placé à chaque mesure juste au-dessus des pieds du chaudron (placerSol, dans jouer) : il marche à tous les formats. */
-var SOL_Y = 292;   /* la ligne mur/sol, en coordonnées du dessin du chaudron (les pieds sont à y = 330-336, les bûches vers 345) */
-function solChalet(){
-  var s = '<div class="mjc-sol"><svg viewBox="0 0 1000 300" preserveAspectRatio="none" aria-hidden="true">' +
-    '<defs><linearGradient id="mjcSolG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c120c"/><stop offset=".35" stop-color="#2a1b12"/><stop offset="1" stop-color="#3a271a"/></linearGradient>' +
-    '<radialGradient id="mjcSolF" cx=".5" cy=".25" r=".5"><stop offset="0" stop-color="#ff9a40" stop-opacity=".16"/><stop offset="1" stop-color="#ff9a40" stop-opacity="0"/></radialGradient></defs>' +
-    '<rect width="1000" height="300" fill="url(#mjcSolG)"/>';
-  for(var k = -14; k <= 14; k++) s += '<path d="M' + (500 + k * 46) + ',0 L' + (500 + k * 92) + ',300" stroke="#140c07" stroke-width="2.5" vector-effect="non-scaling-stroke"/>';
-  [30, 72, 128, 200, 290].forEach(function(y){ s += '<path d="M0,' + y + ' H1000" stroke="#170e09" stroke-width="1.5" opacity=".6" vector-effect="non-scaling-stroke"/>'; });
-  return s + '<rect width="1000" height="300" fill="url(#mjcSolF)"/><rect width="1000" height="7" fill="#3d2a1c"/><path d="M0,7 H1000" stroke="#0f0905" stroke-width="3" vector-effect="non-scaling-stroke"/></svg></div>';
-}
-/* Le fond derrière le chaudron : l'intérieur d'un chalet (mur de planches, étagère et ses pots, petite fenêtre de nuit), sombre et discret */
-function decorChalet(){
-  var s = '<svg class="mjc-decor" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="800" height="450" fill="#21160f"/>';
-  for(var i = 0; i < 20; i++){
-    s += '<rect x="' + (i * 40) + '" y="0" width="40" height="392" fill="' + (i % 2 ? '#2a1c14' : '#2e1f16') + '"/><path d="M' + (i * 40) + ',0 V392" stroke="#170f0a" stroke-width="3"/>';
-    if(i % 3 === 1) s += '<ellipse cx="' + (i * 40 + 20) + '" cy="' + (60 + (i * 53) % 260) + '" rx="5" ry="3" fill="#1c120c"/>';
-  }
-  s += '<rect x="0" y="0" width="800" height="22" fill="#1a110b"/><rect x="0" y="22" width="800" height="5" fill="#120b07"/>' +
-    /* la petite fenêtre : la nuit, la lune */
-    '<rect x="470" y="46" width="104" height="112" rx="6" fill="#3a281b" stroke="#120b07" stroke-width="4"/><rect x="480" y="56" width="84" height="92" fill="#111a30"/>' +
-    '<circle cx="540" cy="80" r="11" fill="#e9dfb4" opacity=".45"/><circle cx="500" cy="72" r="1.6" fill="#e9dfb4" opacity=".6"/><circle cx="520" cy="118" r="1.3" fill="#e9dfb4" opacity=".5"/><circle cx="552" cy="128" r="1.4" fill="#e9dfb4" opacity=".5"/>' +
-    '<path d="M522,56 V148 M480,102 H564" stroke="#3a281b" stroke-width="6"/><rect x="462" y="156" width="120" height="10" rx="3" fill="#3a281b" stroke="#120b07" stroke-width="3"/>' +
-    /* l'étagère et quelques pots */
-    '<rect x="214" y="150" width="190" height="10" rx="2" fill="#3d2a1c" stroke="#120b07" stroke-width="3"/><path d="M236,160 l12,18 M382,160 l-12,18" stroke="#3d2a1c" stroke-width="6" stroke-linecap="round"/>' +
-    '<rect x="228" y="118" width="24" height="32" rx="5" fill="#4a5662"/><rect x="226" y="112" width="28" height="8" rx="3" fill="#5a4030"/>' +
-    '<rect x="262" y="126" width="20" height="24" rx="4" fill="#5b4a3a"/><ellipse cx="300" cy="140" rx="13" ry="10" fill="#3f5a48"/><rect x="294" y="124" width="12" height="8" rx="2" fill="#5a4030"/>' +
-    '<rect x="324" y="108" width="18" height="42" rx="5" fill="#584452"/><rect x="352" y="122" width="26" height="28" rx="6" fill="#4d4a5e"/><rect x="350" y="116" width="30" height="8" rx="3" fill="#5a4030"/>' +
-    '<path d="M110,40 v48 M104,88 h12" stroke="#3d2a1c" stroke-width="4"/><path d="M98,92 q12,-10 24,0 l-4,28 h-16 z" fill="#3a4a2e" opacity=".8"/>' +
-    /* le plancher */
-    '<rect x="0" y="392" width="800" height="58" fill="#1a110b"/><path d="M0,392 H800 M0,414 H800 M0,434 H800" stroke="#120b07" stroke-width="3"/>' +
-    '<rect x="0" y="0" width="800" height="450" fill="url(#mjcVig)"/><defs><radialGradient id="mjcVig" cx=".5" cy=".55" r=".75"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".55"/></radialGradient></defs></svg>';
-  return s;
-}
+/* (23 novembre) LE DÉCOR : plus de chalet. C'est la cheminée de l'atelier vue de près, dessinée par mj-chaudron-dessin.js
+   (MJ.chaudronDessin) à la taille de l'écran : voir disposer(), dans jouer. */
+function Dessin(){ return MJ.chaudronDessin || {}; }
 var COUL = {violet:'#8b52e0', bleu:'#3f86f0', vert:'#3fcf6a', jaune:'#ffd23f', rouge:'#f04a35', bouillant:'#ff2410'};
 var ORDRE = ['violet', 'bleu', 'vert', 'jaune', 'rouge', 'bouillant'];
 var COEUR = '<svg viewBox="0 0 24 22" aria-hidden="true"><path d="M12 20.5 C5 15 1.5 11.2 1.5 7 C1.5 3.8 4 1.5 7 1.5 C9.1 1.5 10.9 2.7 12 4.5 C13.1 2.7 14.9 1.5 17 1.5 C20 1.5 22.5 3.8 22.5 7 C22.5 11.2 19 15 12 20.5 Z"/></svg>';
@@ -16238,114 +16723,40 @@ function construire(el, P, demo){
   else U.melanger(tous.filter(function(k){ return !voulus[k]; })).slice(0, 3).forEach(function(k){ voulus[k] = 1; });
   var ingrs = tous.filter(function(k){ return voulus[k]; });
   Object.keys(voulus).forEach(function(k){ if(ingrs.indexOf(k) < 0) ingrs.push(k); });
-  var flammes = '';
-  for(var i = 0; i < 7; i++){
-    var fx = 152 + i * 16, fh = 30 + ((i * 5) % 3) * 9, fb = 336;
-    flammes += '<path class="mjc-fl f' + (i % 3) + '" style="animation-delay:-' + (i * 0.13).toFixed(2) + 's" d="M' + (fx - 12) + ',' + fb + ' C' + (fx - 17) + ',' + (fb - fh * 0.5) + ' ' + (fx - 4) + ',' + (fb - fh * 0.7) + ' ' + fx + ',' + (fb - fh) + ' C' + (fx + 4) + ',' + (fb - fh * 0.7) + ' ' + (fx + 17) + ',' + (fb - fh * 0.5) + ' ' + (fx + 12) + ',' + fb + ' Z"/>';
-  }
-  /* les bûches du feu (on n'en retire plus) ; on en ajoute en touchant le tas de bois */
-  var buches = BUCHES.slice(0, MAX_BUCHES).map(function(b, k){
-    return '<g class="mjc-buche" data-i="' + k + '" transform="translate(' + b[0] + ',' + b[1] + ') rotate(' + b[2] + ')">' +
-      '<rect x="-34" y="-9" width="68" height="18" rx="9" fill="url(#mjcb' + id + ')" stroke="' + K + '" stroke-width="3.5"/>' +
-      '<path d="M-24,-3 H8 M-14,4 H18" stroke="#5a3218" stroke-width="2" stroke-linecap="round"/>' +
-      '<ellipse cx="29" cy="0" rx="5" ry="8.5" fill="#f0c48c" stroke="' + K + '" stroke-width="3"/><ellipse cx="29" cy="0" rx="2" ry="4" fill="none" stroke="#b07a40" stroke-width="1.5"/>' +
-      '<rect class="mjc-charbon" x="-34" y="-9" width="68" height="18" rx="9" fill="#2a1208" opacity="0"/>' +
-      '<path class="mjc-ember" d="M-20,2 L-8,-2 L2,3 L14,-1" stroke="#ff8a3c" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0"/>' +
-      '<rect x="-36" y="-14" width="72" height="28" fill="transparent"/></g>';
-  }).join('');
-  var tas = '';
-  [[44, 346, 0], [44, 330, 0], [44, 314, 0], [30, 338, 90], [58, 338, 90]].slice(0, 3).forEach(function(b){
-    tas += '<g transform="translate(' + b[0] + ',' + b[1] + ')"><rect x="-34" y="-8.5" width="68" height="17" rx="8.5" fill="url(#mjcb' + id + ')" stroke="' + K + '" stroke-width="3.5"/>' +
-      '<ellipse cx="-29" cy="0" rx="5" ry="8" fill="#f0c48c" stroke="' + K + '" stroke-width="3"/><ellipse cx="29" cy="0" rx="5" ry="8" fill="#f0c48c" stroke="' + K + '" stroke-width="3"/></g>';
-  });
-  function fleche(t0, t1, horaire, c, cls){
-    var rx = 174, ry = 76, cx = 200, cy = 156;
-    var x0 = cx + rx * Math.cos(t0), y0 = cy + ry * Math.sin(t0), x1 = cx + rx * Math.cos(t1), y1 = cy + ry * Math.sin(t1);
-    var tx = -rx * Math.sin(t1) * (horaire ? 1 : -1), ty = ry * Math.cos(t1) * (horaire ? 1 : -1), l = Math.hypot(tx, ty); tx /= l; ty /= l;
-    var nx = -ty, ny = tx, tip = [x1 + tx * 14, y1 + ty * 14];
-    var d = 'M' + x0.toFixed(1) + ',' + y0.toFixed(1) + ' A' + rx + ',' + ry + ' 0 0 ' + (horaire ? 1 : 0) + ' ' + x1.toFixed(1) + ',' + y1.toFixed(1);
-    return '<g class="mjc-fleche ' + cls + '"><path d="' + d + '" fill="none" stroke="' + K + '" stroke-width="15" stroke-linecap="round"/><path d="' + d + '" fill="none" stroke="' + c + '" stroke-width="8" stroke-linecap="round"/>' +
-      '<path d="M' + tip[0].toFixed(1) + ',' + tip[1].toFixed(1) + ' L' + (x1 + nx * 13).toFixed(1) + ',' + (y1 + ny * 13).toFixed(1) + ' L' + (x1 - nx * 13).toFixed(1) + ',' + (y1 - ny * 13).toFixed(1) + ' Z" fill="' + c + '" stroke="' + K + '" stroke-width="3.5" stroke-linejoin="round"/></g>';
-  }
-  var bl = '';
-  for(i = 0; i < 16; i++){
-    var a = (i * 137.5) % 360 * Math.PI / 180, rr = 0.2 + ((i * 0.41) % 0.75);
-    bl += '<circle class="mjc-bl" style="animation-delay:-' + ((i * 0.29) % 1.6).toFixed(2) + 's" cx="' + (CX + Math.cos(a) * 100 * rr).toFixed(1) + '" cy="' + (CY + Math.sin(a) * 36 * rr).toFixed(1) + '" r="' + (5 + (i % 3) * 2) + '"/>';
-  }
-  var givre = '';
-  for(i = 0; i < 9; i++){ var ga = i * 40 * Math.PI / 180; givre += '<text x="' + (CX + Math.cos(ga) * 84).toFixed(0) + '" y="' + (CY + Math.sin(ga) * 30 + 6).toFixed(0) + '" font-size="' + (14 + (i % 3) * 4) + '" text-anchor="middle">❄</text>'; }
-  var gradBuche = '<linearGradient id="mjcb' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b0743f"/><stop offset=".5" stop-color="#8a5228"/><stop offset="1" stop-color="#5e3418"/></linearGradient>';
-  var svg = '<svg class="mjc-svg" viewBox="0 0 400 380" aria-hidden="true">' +
-    '<defs>' + gradBuche +
-      '<linearGradient id="mjcm' + id + '" x1="0" x2="1"><stop offset="0" stop-color="#6a5f92"/><stop offset=".45" stop-color="#3a3156"/><stop offset="1" stop-color="#1a1428"/></linearGradient>' +
-      '<linearGradient id="mjca' + id + '" x1="0" x2="1"><stop offset="0" stop-color="#ff5a5a"/><stop offset=".2" stop-color="#ffb347"/><stop offset=".4" stop-color="#fff35c"/><stop offset=".6" stop-color="#5df08a"/><stop offset=".8" stop-color="#5ab8ff"/><stop offset="1" stop-color="#c77dff"/></linearGradient>' +
-      '<radialGradient id="mjcg' + id + '"><stop offset="0" stop-color="#ffd36a" stop-opacity=".9"/><stop offset=".5" stop-color="#ff7a3c" stop-opacity=".5"/><stop offset="1" stop-color="#ff7a3c" stop-opacity="0"/></radialGradient>' +
-      '<clipPath id="mjcc' + id + '"><ellipse cx="' + RIM.cx + '" cy="' + RIM.cy + '" rx="' + RIM.rxi + '" ry="' + RIM.ryi + '"/></clipPath>' +
-    '</defs>' +
-    /* les ombres de contact sur le plancher : sous le chaudron (et le feu), sous chaque pied */
-    '<ellipse cx="200" cy="348" rx="150" ry="20" fill="rgba(0,0,0,.42)"/>' +
-    '<ellipse cx="96" cy="332" rx="17" ry="5" fill="rgba(0,0,0,.6)"/><ellipse cx="304" cy="332" rx="17" ry="5" fill="rgba(0,0,0,.6)"/><ellipse cx="200" cy="338" rx="15" ry="4.5" fill="rgba(0,0,0,.55)"/>' +
-    '<g class="mjc-tas" data-act="bois"><ellipse cx="44" cy="356" rx="50" ry="11" fill="rgba(0,0,0,.55)"/>' + tas +
-      '<g class="mjc-plus"><circle class="mjc-plus-halo" cx="78" cy="292" r="25"/><circle cx="78" cy="292" r="17" fill="#7cf0a8" stroke="' + K + '" stroke-width="3.5"/><path d="M78,283 V301 M69,292 H87" stroke="' + K + '" stroke-width="4.5" stroke-linecap="round"/>' +
-        '<text x="78" y="266" font-size="20" text-anchor="middle">🪵</text></g>' +
-      '<rect x="0" y="244" width="112" height="126" fill="transparent"/></g>' +
-    fleche(-0.95, 0.55, true, '#ff6a4a', 'mjc-chauffe') + fleche(Math.PI + 0.95, Math.PI - 0.55, false, '#5ab8ff', 'mjc-refroidit') +
-    '<text class="mjc-fl-ic chaud" x="384" y="178" font-size="22" text-anchor="middle">🔥</text><text class="mjc-fl-ic" x="16" y="178" font-size="22" text-anchor="middle">❄️</text>' +
-    '<ellipse class="mjc-lueur-feu" cx="200" cy="318" rx="110" ry="48" fill="url(#mjcg' + id + ')"/>' +
-    '<path d="M110,290 L96,330 M290,290 L304,330 M200,300 L200,336" stroke="' + K + '" stroke-width="11" stroke-linecap="round"/>' +
-    '<path d="M110,290 L96,330 M290,290 L304,330 M200,300 L200,336" stroke="#4a4166" stroke-width="5" stroke-linecap="round"/>' +
-    '<path d="M58,166 C52,262 120,312 200,312 C280,312 348,262 342,166 Z" fill="url(#mjcm' + id + ')" stroke="' + K + '" stroke-width="5" stroke-linejoin="round"/>' +
-    '<path d="M76,190 C80,240 110,276 150,292" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="8" stroke-linecap="round"/>' +
-    '<path d="M54,176 C30,174 30,214 56,212 M346,176 C370,174 370,214 344,212" fill="none" stroke="' + K + '" stroke-width="8"/>' +
-    '<g clip-path="url(#mjcc' + id + ')">' +
-      '<ellipse cx="' + RIM.cx + '" cy="' + RIM.cy + '" rx="' + RIM.rxi + '" ry="' + RIM.ryi + '" fill="#120d1c"/>' +
-      '<ellipse class="mjc-liq" cx="' + CX + '" cy="' + CY + '" rx="' + RL + '" ry="' + (RL * SINA).toFixed(1) + '"/>' +
-      '<ellipse class="mjc-ae" cx="' + CX + '" cy="' + CY + '" rx="' + RL + '" ry="' + (RL * SINA).toFixed(1) + '" fill="url(#mjca' + id + ')"/>' +
-      '<g class="mjc-tour"><path d="M200,82 A88,88 0 0 1 288,170 M200,258 A88,88 0 0 1 112,170 M200,114 A56,56 0 0 1 256,170 M200,226 A56,56 0 0 1 144,170" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="3.5" stroke-linecap="round" vector-effect="non-scaling-stroke"/></g>' +
-      '<g class="mjc-bulles">' + bl + '</g>' +
-      '<g class="mjc-givre">' + givre + '</g>' +
-      '<g class="mjc-louche-in"><ellipse class="mjc-ride" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2.5"/><ellipse class="mjc-cuilleron" fill="rgba(20,10,30,.35)"/>' +
-        '<polygon class="mjc-manche-in" fill="#b9733f" stroke="' + K + '" stroke-width="3.5" stroke-linejoin="round"/></g>' +
-    '</g>' +
-    '<path d="M' + (RIM.cx - RIM.rxo) + ',' + RIM.cy + ' a' + RIM.rxo + ',' + RIM.ryo + ' 0 1 0 ' + (2 * RIM.rxo) + ',0 a' + RIM.rxo + ',' + RIM.ryo + ' 0 1 0 ' + (-2 * RIM.rxo) + ',0 Z M' + (RIM.cx - RIM.rxi) + ',' + RIM.cy + ' a' + RIM.rxi + ',' + RIM.ryi + ' 0 1 0 ' + (2 * RIM.rxi) + ',0 a' + RIM.rxi + ',' + RIM.ryi + ' 0 1 0 ' + (-2 * RIM.rxi) + ',0 Z" fill="#4a4166" fill-rule="evenodd" stroke="' + K + '" stroke-width="5"/>' +
-    '<path d="M' + (RIM.cx - RIM.rxo + 14) + ',' + (RIM.cy + 18) + ' Q' + RIM.cx + ',' + (RIM.cy + RIM.ryo + 8) + ' ' + (RIM.cx + RIM.rxo - 14) + ',' + (RIM.cy + 18) + '" fill="none" stroke="#8a80b8" stroke-width="3" stroke-opacity=".6"/>' +
-    '<g class="mjc-vapeur"><path d="M150,110 C138,84 162,70 150,40"/><path d="M200,100 C188,72 212,58 200,24"/><path d="M252,110 C240,84 264,70 252,42"/></g>' +
-    '<g class="mjc-louche-out"><polygon class="mjc-manche" fill="#c98450" stroke="' + K + '" stroke-width="3.5" stroke-linejoin="round"/><polygon class="mjc-reflet" fill="#f3c991"/>' +
-      '<circle class="mjc-pommeau" fill="#a8693a" stroke="' + K + '" stroke-width="3.5"/></g>' +
-    '<path class="mjc-bord-arriere" d="M' + (RIM.cx - RIM.rxo) + ',' + RIM.cy + ' A' + RIM.rxo + ',' + RIM.ryo + ' 0 0 1 ' + (RIM.cx + RIM.rxo) + ',' + RIM.cy + ' L' + (RIM.cx + RIM.rxi) + ',' + RIM.cy + ' A' + RIM.rxi + ',' + RIM.ryi + ' 0 0 0 ' + (RIM.cx - RIM.rxi) + ',' + RIM.cy + ' Z" fill="#4a4166" stroke="' + K + '" stroke-width="5" stroke-linejoin="round" opacity="0"/>' +
-    '<g class="mjc-flammes">' + flammes + '</g>' +
-    '<g class="mjc-feu-buches">' + buches + '</g>' +
-    /* le tutoriel (niveau 1) : une grosse flèche rouge vers le tas de bois quand il ne reste qu'une bûche (Romain, 5 novembre, 16 h 30) */
-    '<g class="mjc-fl-bois" aria-hidden="true"><g><path d="M32,150 H56 V200 H76 L44,238 L12,200 H32 Z" fill="#ff3a2e" stroke="' + K + '" stroke-width="4" stroke-linejoin="round"/>' +
-      '<path d="M37,156 V203" stroke="rgba(255,255,255,.45)" stroke-width="5" stroke-linecap="round"/></g></g>' +
-    '</svg>';
-  var cible = '<div class="mjc-cible" style="--c:' + Zi.c + '"><span class="mjc-cible-ic">🎯</span><span>À la fin, zone</span> <b class="mjc-cible-nom' + (C.zone === 'arc-en-ciel' ? ' ae' : '') + '">' + esc(Zi.grand) + '</b><i class="mjc-pastille' + (C.zone === 'arc-en-ciel' ? ' ae' : '') + '"></i></div>';
+  /* (23 novembre) le chaudron, son feu, ses six bûches, la flèche à deux pointes : dessinés par mj-chaudron-dessin.js */
+  var svg = Dessin().svg(id, demo);
   /* La carte de la recette, à côté de la frise (Romain) : chaque ingrédient dans l'ordre, avec sa couleur, son icône, son nom
      et le nombre à verser ; la frise, elle, ne montre que les couleurs. Recette secrète : seulement des ❓. */
   var groupes = [];
   C.frise.forEach(function(f){ var g = groupes[groupes.length - 1]; if(g && g.ingr === f.ingr) g.n++; else groupes.push({ingr:f.ingr, n:1}); });
   var connueR = P.connue !== false, lireRec = 'La recette : ' + groupes.map(function(g){ var x = I[g.ingr] || {nom:g.ingr}; return g.n + ' ' + String(x.nom).toLowerCase(); }).join(', puis ') + '.';
-  var recette = '<div class="mjc-recette"><span class="mjc-rec-t">📜</span>' + (connueR ? groupes.map(function(g, k){
+  /* (23 novembre) la recette est une page épinglée dans le décor, à gauche de l'âtre : une ligne par ingrédient, la fiole en bas */
+  var recette = '<div class="mjc-recette"><i class="mjc-rec-clou"></i><b class="mjc-rec-t">La recette</b>' + (connueR ? groupes.map(function(g, k){
       var x = I[g.ingr] || {ic:'❔', c:'#888', nom:g.ingr};
-      return (k ? '<span class="mjc-rec-sep">›</span>' : '') + '<span class="mjc-rec-i" data-g="' + k + '" style="--c:' + codeDe(g.ingr).c + '"><b>' + g.n + '</b><i class="mjc-rec-c"></i>' +
+      return '<span class="mjc-rec-i" data-g="' + k + '" style="--c:' + codeDe(g.ingr).c + '"><b>' + g.n + '</b><i class="mjc-rec-c"></i>' +
         '<span class="mjc-rec-ic">' + icDe(g.ingr, x) + '</span><em>' + esc(nomCourt(g.ingr, x)) + '</em></span>';
     }).join('') : '<span class="mjc-rec-i secret" style="--c:#8d8a99"><i class="mjc-rec-c">❓</i><em>Recette secrète</em></span>') +
     /* la dernière étape : la fiole (la zone à tenir n'apparaît sur la jauge qu'à ce moment-là) */
-    '<span class="mjc-rec-sep">›</span><span class="mjc-rec-i mjc-rec-fin"><span class="mjc-rec-ic">🧪</span></span></div>';
+    '<span class="mjc-rec-i mjc-rec-fin"><span class="mjc-rec-ic">🧪</span></span></div>';
   lireRec += ' Et à la fin, la fiole : garde la potion dans la zone qui s\'allume sur la jauge.';
+  /* (23 novembre) les ingrédients : des bocaux de verre posés sur la poutre de la cheminée (l'ingrédient dessiné dedans, son nom sur
+     l'étiquette, son icône pendue au goulot) ; la frise glisse dans la face de la poutre, juste dessous */
+  var Ds = Dessin();
   var boites = ingrs.map(function(k){
     var x = I[k] || {ic:'❔', c:'#888', nom:k};
-    /* une petite boîte sans couleur, avec son étiquette de papier : l'icône et le nom */
-    return '<button type="button" class="mjc-boite" data-ingr="' + k + '" aria-label="' + esc(x.nom) + '"><span class="mjc-etiq"><span class="mjc-etiq-ic">' + icDe(k, x) + '</span><small><em class="mjc-nl">' + esc(nomCourt(k, x)) + '</em><em class="mjc-nc">' + esc(NOMS_ETROITS[k] || nomCourt(k, x)) + '</em></small></span></button>';
+    return '<button type="button" class="mjc-boite" data-ingr="' + k + '" aria-label="' + esc(x.nom) + '">' + Ds.bocal(k, {nom:esc(nomCourt(k, x)), court:esc(NOMS_ETROITS[k] || nomCourt(k, x)), ic:icDe(k, x)}) + '</button>';
   }).join('');
+  /* deux étages seulement : l'en-tête du mini-jeu (le nom, les cœurs, ⏸️ 🏳️ 🔊 : mj-core.js) et la poutre (.mjc-haut) ; la recette,
+     le thermomètre et la réserve de bois sont dans le décor (.mjc-scene), placés par disposer() */
   var r = U.html('<div class="mjc' + (demo ? ' mjc-demo' : '') + '">' +
-    (demo ? '' : '<div class="mjc-haut"><div class="mjc-l1">' + recette + '<div class="mjc-vies"></div></div>' +
-      '<div class="mjc-frise"><div class="mjc-zone-f"><span>🍲</span></div><div class="mjc-piste"></div><div class="mjc-fl-next" hidden><i></i></div></div>' +
-      '<div class="mjc-boites">' + boites + '</div></div>') +
-    '<div class="mjc-scene">' + (demo ? '' : decorChalet() + solChalet()) + svg +
-      '<div class="mjc-jauge"><span class="mjc-j-ic">🌋</span><div class="mjc-j-tube"><i class="mjc-j-ae"></i><i class="mjc-j-vert"></i><i class="mjc-j-cible"></i><i class="mjc-j-curseur"><b></b></i></div><span class="mjc-j-ic">🧊</span></div>' +
+    /* (.mjc-dessus : le dessus de la poutre, vu d'un peu au-dessus comme le chaudron — les bocaux sont posés dessus, pas contre le mur) */
+    (demo ? '' : '<div class="mjc-haut"><div class="mjc-boites">' + boites + '</div><div class="mjc-dessus" aria-hidden="true"></div>' +
+      '<div class="mjc-frise"><div class="mjc-zone-f"></div><div class="mjc-piste"></div><div class="mjc-fl-next" hidden><i></i></div></div></div>') +
+    '<div class="mjc-scene">' + (demo ? '' : '<div class="mjc-decor-b" aria-hidden="true"></div><div class="mjc-lums" aria-hidden="true"><i class="mjc-lum a"></i><i class="mjc-lum b"></i><i class="mjc-lum c"></i></div>') + svg +
+      (demo ? '' : recette + Ds.reserve(id)) +
+      '<div class="mjc-jauge"><span class="mjc-j-ic">' + Ds.icFeu + '</span><div class="mjc-j-tube"><i class="mjc-j-ae"></i><i class="mjc-j-vert"></i><i class="mjc-j-cible"></i><i class="mjc-j-curseur"><b></b></i></div><span class="mjc-j-ic">' + Ds.icGivre + '</span></div>' +
       '<div class="mjc-bulle" hidden></div><div class="mjc-danger" hidden></div><div class="mjc-fin" hidden></div>' +
-    '</div>' + (demo ? '' : '<div class="mjc-err" hidden></div><div class="mjc-oups" hidden></div>') + '</div>');
+    '</div>' + (demo ? '' : '<div class="mjc-vies"></div><div class="mjc-err" hidden></div><div class="mjc-oups" hidden></div>') + '</div>');
   el.appendChild(r);
   var q = function(s){ return r.querySelector(s); };
   var rec = q('.mjc-recette');
@@ -16355,11 +16766,14 @@ function construire(el, P, demo){
     id:id, racine:r, svg:q('.mjc-svg'), C:C, ingrs:ingrs, zoneCible:C.zone, Zi:Zi,
     liq:q('.mjc-liq'), ae:q('.mjc-ae'), tour:q('.mjc-tour'), givre:q('.mjc-givre'), vapeur:q('.mjc-vapeur'),
     bordArriere:q('.mjc-bord-arriere'), ride:q('.mjc-ride'), cuilleron:q('.mjc-cuilleron'), mancheIn:q('.mjc-manche-in'), manche:q('.mjc-manche'), reflet:q('.mjc-reflet'), pommeau:q('.mjc-pommeau'),
-    flammes:q('.mjc-flammes'), lueur:q('.mjc-lueur-feu'), buches:[].slice.call(r.querySelectorAll('.mjc-buche')), tas:q('.mjc-tas'),
+    flammes:[].slice.call(r.querySelectorAll('.mjc-flammes')), lueur:q('.mjc-lueur-feu'), tas:q('.mjc-tas'),
+    /* les six bûches, rangées par leur numéro (dans le dessin, elles sont dans l'ordre « du fond vers nous ») */
+    buches:[].slice.call(r.querySelectorAll('.mjc-buche')).sort(function(a, b){ return a.getAttribute('data-i') - b.getAttribute('data-i'); }),
+    decorB:q('.mjc-decor-b'), lums:q('.mjc-lums'), rec:q('.mjc-recette'), jaugeB:q('.mjc-jauge'),
     chauffe:q('.mjc-chauffe'), refroidit:q('.mjc-refroidit'),
     jauge:q('.mjc-j-tube'), curseur:q('.mjc-j-curseur'), jAe:q('.mjc-j-ae'), jCible:q('.mjc-j-cible'), jVert:q('.mjc-j-vert'),
     frise:q('.mjc-frise'), piste:q('.mjc-piste'), zoneF:q('.mjc-zone-f'), flNext:q('.mjc-fl-next'), boites:q('.mjc-boites'), vies:q('.mjc-vies'), bulle:q('.mjc-bulle'), fin:q('.mjc-fin'), scene:q('.mjc-scene'),
-    err:q('.mjc-err'), oups:q('.mjc-oups'), danger:q('.mjc-danger'), plus:q('.mjc-plus'), sol:q('.mjc-sol')
+    err:q('.mjc-err'), oups:q('.mjc-oups'), danger:q('.mjc-danger'), plus:q('.mjc-plus')
   };
 }
 
@@ -16434,8 +16848,8 @@ MJ.enregistrer('chaudron', {
   consigne:function(p){
     var C = (DD().CHAUDRON || {})[p.potion] || {zone:'vert'}, Z = infoZone(C.zone);
     return 'Le bois chauffe la potion : touche le tas de bois pour ajouter une bûche, la barre monte. Le bois brûle vite, pense à en remettre ! ' +
-      'Touille avec ton doigt pour refroidir : la barre descend, et elle continue un peu quand tu t\'arrêtes. Trop chaud, ça explose ; trop froid, ça gèle. ' +
-      'Quand un carré s\'allume dans la zone de la frise, regarde sa couleur sur la recette et touche le bon pot. Tu ne peux verser que quand la barre est dans le vert. Si tu te trompes, tu perds un cœur. ' +
+      'Touille avec ton doigt pour refroidir, dans le sens que tu veux : la barre descend, et elle continue un peu quand tu t\'arrêtes. Trop chaud, ça explose ; trop froid, ça gèle. ' +
+      'Quand un carré s\'allume dans la zone de la poutre, regarde sa couleur sur la recette et touche le bon bocal. Tu ne peux verser que quand la barre est dans le vert. Si tu te trompes, tu perds un cœur. ' +
       'À la fin, garde la potion dans la zone ' + Z.nom + ' jusqu\'à ce que la fiole se remplisse.';
   },
   /* niveau 1 = le tutoriel (3 cœurs, l'ingrédient attend dans la zone, une flèche, barre légère, zones larges) ; jusqu'au niveau 10 :
@@ -16492,14 +16906,14 @@ MJ.enregistrer('chaudron', {
     E.racine.classList.add('mjc-z-vert');
     var stop = U.boucle(function(dt){
       t += dt;
-      var sens = Math.floor(t / 3.2) % 2 === 0 ? 1 : -1, w = 5.5 * sens;
+      /* (23 novembre) comme dans le jeu : on touille dans un sens, puis dans l'autre, et les deux refroidissent ; la main s'arrête, le feu réchauffe */
+      var ph = t % 6.4, tourne = ph < 2 || (ph >= 3.2 && ph < 5.2), sens = ph < 3.2 ? 1 : -1, w = tourne ? 5.5 * sens : 0;
       theta += w * dt;
-      h = U.borne(h + KSTIR * w * dt * 0.9, Z.bleu[0] + 4, Z.rouge[1] - 4);
+      h = U.borne(h + (tourne ? -14 : 9) * dt, Z.bleu[0] + 4, Z.rouge[1] - 4);
       dessinerLouche(E, theta);
       E.liq.style.fill = couleur(h, Z);
       E.curseur.style.bottom = h + '%';
-      E.racine.classList.toggle('mjc-demo-chauffe', sens > 0);
-      E.racine.classList.toggle('mjc-demo-refroidit', sens < 0);
+      E.racine.classList.toggle('mjc-demo-refroidit', tourne);
       var p2 = proj(LOUCHE.r * Math.cos(theta), 0, LOUCHE.r * Math.sin(theta)), m = versEl(E, p2.x, p2.y, E.scene);
       main.style.transform = 'translate(' + m.x.toFixed(1) + 'px,' + m.y.toFixed(1) + 'px)';
     });
@@ -16590,11 +17004,18 @@ MJ.enregistrer('chaudron', {
       G.sq = (S.fen[0] && S.fen[0].el.offsetWidth) || 44;
       G.pps = (zw + G.sq - 12) / R.fenetre;
       E.zoneF.style.left = G.zl + 'px'; E.zoneF.style.width = zw + 'px';
-      /* les caisses : des rangées égales (12 → 1 rangée de 12, 2 de 6 ou 3 de 4), jamais une caisse toute seule */
-      var nb = E.ingrs.length, cols = nb;
-      for(var r = 1; r <= nb; r++){ cols = Math.ceil(nb / r); if(w / cols >= 66 || (r > 1 && w / cols >= 54)) break; }
-      E.boites.style.gridTemplateColumns = 'repeat(' + cols + ',minmax(0,1fr))';
-      E.boites.classList.toggle('mjc-etroit', w / cols < 74);
+      /* les bocaux : des rangées égales (12 → 1 rangée de 12, 2 de 6 ou 3 de 4), jamais un bocal tout seul ; leur taille suit la place
+         (plus petits sur un écran bas, pour laisser le chaudron respirer) */
+      var nb = E.ingrs.length, cols = nb, ecranBas = E.racine.clientHeight < 430;
+      for(var r = 1; r <= nb; r++){ cols = Math.ceil(nb / r); if(w / cols >= 62 || (r > 1 && w / cols >= 52)) break; }
+      var bw = Math.max(42, Math.min(ecranBas ? 50 : 74, Math.floor(w / cols) - 6)), rangs = Math.ceil(nb / cols);
+      E.boites.style.setProperty('--bw', bw + 'px');
+      /* (minmax(0, …) : les bocaux rétrécissent plutôt que de faire déborder l'écran) */
+      E.boites.style.gridTemplateColumns = 'repeat(' + cols + ',minmax(0,' + bw + 'px))';
+      E.boites.style.columnGap = Math.max(2, Math.min(40, Math.floor((w - 8 - cols * bw) / Math.max(1, cols - 1)))) + 'px';
+      E.boites.classList.toggle('mjc-etroit', bw < 62);
+      /* plusieurs rangées : celles du haut ont chacune leur planche ; la dernière est posée sur la poutre */
+      [].forEach.call(E.boites.children, function(b, i){ b.classList.toggle('mjc-sur-planche', i < (rangs - 1) * cols); });
       S.fen.forEach(function(f){ f.fige = false; });
     }
     /* bord gauche du carré (px) ; dans la zone dès qu'il y entre, jusqu'à ce qu'il en sorte */
@@ -16603,26 +17024,89 @@ MJ.enregistrer('chaudron', {
     function dansZone(f){ if(f.fait || S.tf < f.a - 1e-6 || f !== prochain()) return false; return posL(f) + G.sq >= G.zl + 6; }
     function prochain(){ for(var i = 0; i < S.fen.length; i++) if(!S.fen[i].fait) return S.fen[i]; return null; }
     function arretDe(f){ return f.a + (G.zr - 6 - (G.zl + G.zr) / 2 + G.sq / 2) / G.pps; }
-    /* le sol monte jusqu'à la ligne mur/sol, juste au-dessus des pieds du chaudron (position réelle, à chaque format) */
-    function placerSol(){
-      if(!E.sol) return;
-      var p = versEl(E, CX, SOL_Y, E.scene);
-      if(p.y > 0) E.sol.style.top = Math.round(p.y) + 'px';
+    /* (23 novembre) LA MISE EN PLACE DU DÉCOR, à chaque taille d'écran. Le chaudron est posé en bas de la scène, au milieu de l'âtre,
+       aussi grand que la place le permet ; l'âtre (mj-chaudron-dessin.js, decor) est redessiné autour de lui ; la recette va sur le
+       montant de gauche, le thermomètre sur celui de droite, la réserve de bois en bas à gauche. Sur un écran étroit (un téléphone
+       debout), les montants sont minces : la recette et le thermomètre mordent sur l'âtre, au-dessus et à côté du chaudron.
+       Les effets de fin et les lumières se placent par rapport au chaudron grâce à --fx, --fy, --fw et --feuy (mj-chaudron.css). */
+    var dispo = {w:0, h:0};
+    function px(el, l, t, w, h){ if(!el) return; el.style.left = l.toFixed(1) + 'px'; el.style.top = t.toFixed(1) + 'px'; if(w !== undefined) el.style.width = w.toFixed(1) + 'px'; if(h !== undefined) el.style.height = h.toFixed(1) + 'px'; }
+    function disposer(){
+      var W = E.scene.clientWidth, H = E.scene.clientHeight;
+      if(!W || !H || (W === dispo.w && H === dispo.h)) return;
+      dispo.w = W; dispo.h = H;
+      /* trois allures : large (une tablette couchée, un ordinateur : de vrais montants, le mur de l'atelier de chaque côté),
+         moyen (une tablette debout : des montants moyens) et étroit (un téléphone debout : des montants minces) ; bas : un téléphone couché */
+      var large = W >= 640 && W >= H * 1.05, moyen = W >= 640 && !large, bas = H < 330;
+      var mj = large ? U.borne(W * 0.12, 84, 150) : (moyen ? W * 0.085 : Math.max(14, W * 0.055)), mx = large ? U.borne(W * 0.06, 0, 80) : 0, jw = bas ? 34 : (large || moyen ? 50 : 40);
+      var L = {W:W, H:H, large:large || moyen, JX0:Math.round(mx), JX1:Math.round(W - mx), OX0:Math.round(mx + mj), OX1:Math.round(W - mx - mj)};
+      L.av = bas ? 10 : (large ? 26 : 18); L.tr = bas ? 8 : (large ? 16 : 12);
+      L.FY = Math.round(H - U.borne(H * 0.07, 10, 60) - L.av - L.tr);
+      L.VP = {x:W / 2, y:-U.borne(H * 0.22, 60, 160)}; L.s = large ? 0.74 : 0.78; L.planche = large || moyen ? 120 : 74;
+      /* le chaudron : son dessin fait 460 unités de large (avec la flèche) et 418 de la cuillère au bord de devant de l'âtre
+         (sur un écran bas, le haut de la cuillère passe derrière la poutre : le chaudron y gagne en taille) */
+      var surJ = large || (moyen && mj >= jw + 8);   /* le thermomètre tient sur le montant de droite */
+      var place = (L.OX1 - L.OX0) - (surJ ? 0 : jw * 0.8), sc = Math.min(place / 440, (L.FY - 4) / (bas ? 352 : 418), 1.6);
+      L.sc = sc; L.cx = L.OX0 + place / 2 + 10 * sc; L.cy = L.FY - 62 * sc;
+      px(E.svg, L.cx - 230 * sc, L.cy - 392 * sc, 460 * sc, 462 * sc);
+      if(E.decorB) E.decorB.innerHTML = Dessin().decor(L, E.id);
+      var st = E.scene.style;
+      st.setProperty('--fx', L.cx.toFixed(1) + 'px'); st.setProperty('--fy', (L.cy - 222 * sc).toFixed(1) + 'px'); st.setProperty('--fw', (288 * sc).toFixed(1) + 'px'); st.setProperty('--feuy', (L.cy - 40 * sc).toFixed(1) + 'px');
+      /* le thermomètre */
+      var jh, jt;
+      if(bas){ jh = L.FY - 12; jt = 6; }
+      else if(large){ jt = Math.max(10, L.FY * 0.07); jh = Math.min(420, L.FY - jt - Math.max(16, L.FY * 0.1)); }
+      else { jh = U.borne(L.FY * 0.64, 150, moyen ? 460 : 390); jt = Math.max(6, L.FY - 10 - jh); }
+      px(E.jaugeB, surJ ? L.OX1 + (mj - jw) / 2 : W - jw - 3, jt, jw, jh);
+      /* la recette épinglée : sur le montant de gauche s'il est assez large, sinon en haut à gauche de l'âtre (resserrée : .mini) */
+      if(E.rec){
+        /* (large : la page est clouée sur le montant et dépasse un peu sur le mur, à gauche — il faut la place d'écrire « Champignon ») */
+        var rw = bas ? 72 : (large ? Math.min(176, mj + mx - 14) : (moyen ? 150 : 82));
+        if(rw < 130) rw = Math.min(rw, 82);   /* pas la place des noms : la petite page, avec les dessins seulement */
+        E.rec.classList.toggle('mini', rw < 104);
+        E.rec.classList.toggle('serre', bas || (!large && !moyen && H < 430));
+        px(E.rec, large ? Math.max(6, Math.min(L.JX0 + (mj - rw) / 2, L.OX0 - 6 - rw)) : (moyen ? 8 : L.OX0 + 4), bas ? 5 : (large ? 24 : 10), rw);
+        /* un nom trop long pour sa ligne s'écrit plus petit, jamais coupé */
+        [].forEach.call(E.rec.querySelectorAll('.mjc-rec-i:not(.secret) em'), function(em){
+          em.style.fontSize = '';
+          if(em.clientWidth && em.scrollWidth > em.clientWidth + 1) em.style.fontSize = (1.1 * Math.max(0.66, em.clientWidth / em.scrollWidth)).toFixed(2) + 'rem';
+        });
+      }
+      /* la réserve de bois (sa boîte : 174 × 242 unités ; le bas du porte-bûches est à 219 unités du haut) : au pied du montant de
+         gauche ; sur un écran bas, dans l'âtre, à gauche du chaudron ; sur un écran étroit, dans le coin d'en bas à gauche */
+      if(E.tas){
+        var kt = bas ? 0.5 : (large ? U.borne(mj / 150, 0.7, 1.05) : (moyen ? 0.95 : 0.72));
+        if(bas) px(E.tas, L.OX0 + 6, L.FY - 4 - 219 * kt, 174 * kt, 242 * kt);
+        else if(large) px(E.tas, L.JX0 + mj / 2 - 74 * kt, L.FY + L.av * 0.5 - 219 * kt, 174 * kt, 242 * kt);
+        else px(E.tas, -4, H - 5 - 219 * kt, 174 * kt, 242 * kt);
+      }
     }
-    placerSol(); requestAnimationFrame(placerSol);
-    if(window.ResizeObserver){ var roS = new ResizeObserver(placerSol); roS.observe(E.scene); stops.push(function(){ roS.disconnect(); }); }
+    disposer(); requestAnimationFrame(disposer);
+    /* (quand la belle écriture est chargée, les noms de la recette changent de largeur : on refait la mise en place) */
+    if(document.fonts && document.fonts.ready && document.fonts.ready.then) document.fonts.ready.then(function(){ dispo.w = 0; disposer(); });
+    if(window.ResizeObserver){ var roS = new ResizeObserver(disposer); roS.observe(E.scene); stops.push(function(){ roS.disconnect(); }); }
     mesurer(); majRecette();
     if(window.ResizeObserver){ var ro = new ResizeObserver(mesurer); ro.observe(E.frise); stops.push(function(){ ro.disconnect(); }); }
 
     /* --- les cœurs (mj-core.js : la même rangée partout ; cœurs = erreurs encore permises) --- */
     function majVies(casse){ E.vies.innerHTML = U.coeurs(S.vies, R.vies, casse ? S.vies : undefined); }
+    /* (23 novembre) les cœurs montent dans l'en-tête du mini-jeu, entre le nom de la potion et ⏸️ 🏳️ 🔊 : un seul bandeau en haut */
+    (function(){
+      var hote = E.racine.closest && E.racine.closest('.mj'), tete = hote && hote.querySelector('.mj-tete'), titres = tete && tete.querySelector('.mj-titres');
+      if(!tete || !E.vies) return;
+      tete.insertBefore(E.vies, titres ? titres.nextSibling : tete.firstChild);
+      stops.push(function(){ if(E.vies.parentNode) E.vies.parentNode.removeChild(E.vies); });
+    })();
     majVies();
 
     /* --- bûches --- */
     function majBuches(){
       E.buches.forEach(function(b, i){ b.style.display = i < S.L ? '' : 'none'; b.classList.toggle('brule', i === S.L - 1); });
-      E.flammes.style.transform = 'scale(' + (S.L ? 0.35 + S.L * 0.16 : 0).toFixed(2) + ',' + (S.L ? 0.25 + S.L * 0.17 : 0).toFixed(2) + ')';
-      E.lueur.style.opacity = (S.L ? 0.15 + S.L * 0.12 : 0).toFixed(2);
+      /* le feu grandit avec le bois (dessiné à sa taille pour 3 bûches) ; sa lumière sur les murs aussi (--feu, mj-chaudron.css) */
+      var echF = 'scale(' + (S.L ? Math.min(1.22, 0.58 + S.L * 0.14) : 0).toFixed(2) + ',' + (S.L ? Math.min(1.38, 0.43 + S.L * 0.19) : 0).toFixed(2) + ')';
+      E.flammes.forEach(function(g){ g.style.transform = echF; });
+      E.lueur.style.opacity = (S.L ? Math.min(1, 0.3 + S.L * 0.18) : 0).toFixed(2);
+      E.racine.style.setProperty('--feu', (S.L ? Math.min(1, 0.28 + S.L * 0.175) : 0).toFixed(2));
       E.racine.setAttribute('data-buches', S.L);
       E.racine.classList.toggle('mjc-bois-vite', S.L <= 1);   /* presque plus de bois : l'icône « remettre du bois » brille */
       E.racine.classList.toggle('mjc-bois-fleche', !!R.aideTuto && S.L <= 1 && !S.fini);   /* (le tutoriel : la flèche rouge arrive, et repart dès 2 bûches) */
@@ -16645,9 +17129,15 @@ MJ.enregistrer('chaudron', {
       S.L++;
       S.v += FEU_COUP;
       A.tock(); apres(280, function(){ A.crepite(); });
+      /* la bûche arrive de la réserve (à gauche) et se pose à sa place dans le feu */
       var nb = E.buches[S.L - 1];
-      var bp = BUCHES[S.L - 1];
-      if(nb && nb.animate && bp) nb.animate([{transform:'translate(' + (bp[0] - 120) + 'px,' + (bp[1] - 50) + 'px) rotate(' + (bp[2] - 40) + 'deg)', opacity:0}, {transform:'translate(' + bp[0] + 'px,' + bp[1] + 'px) rotate(' + bp[2] + 'deg)', opacity:1}], {duration:280, easing:'ease-out'});
+      if(nb){
+        /* une bûche neuve : ni noircie ni rougeoyante (elle avait gardé l'allure de celle qui s'était consumée à sa place) */
+        var c0 = nb.querySelector('.mjc-charbon'), e0 = nb.querySelector('.mjc-ember');
+        if(c0) c0.setAttribute('opacity', '0'); if(e0) e0.setAttribute('opacity', '0');
+        avant['ch' + S.L] = avant['em' + S.L] = undefined;
+      }
+      if(nb && nb.animate) nb.animate([{transform:'translate(-130px,-70px) rotate(-18deg)', opacity:0}, {transform:'none', opacity:1}], {duration:300, easing:'ease-out'});
       majBuches();
       bulle('<b>🪵 +1 🔥</b>');
     }
@@ -16812,6 +17302,8 @@ MJ.enregistrer('chaudron', {
       S.tient = e.pointerId; S.doigt = angle(p); S.theta = S.theta + wrap(S.doigt - S.theta);
       E.racine.classList.add('mjc-touille');
     });
+    /* (23 novembre) la réserve de bois est un dessin à part, posé dans le décor : on la touche pour ajouter une bûche */
+    if(E.tas) ecoute(E.tas, 'pointerdown', function(e){ if(S.fini) return; e.preventDefault(); ajouterBuche(); });
     ecoute(window, 'pointermove', function(e){ if(S.tient === e.pointerId) S.doigt = angle(versSvg(e)); });
     function lacher(e){ if(S.tient === e.pointerId){ S.tient = null; E.racine.classList.remove('mjc-touille'); } }
     ecoute(window, 'pointerup', lacher);
@@ -23892,39 +24384,44 @@ D('chaudron', function(el){
   var CC = KS.map(function(k){ return TC && TC.codes && TC.codes[k] ? TC.codes[k].c : '#888'; });
   function MO(k, x, y, s){ return TC && TC.motif ? TC.motif(k, 'x="' + x + '" y="' + y + '" width="' + s + '" height="' + s + '"') : ''; }
   var P = 11.5, CX = 150, RY = 182, ING = ['💧', '🍯', '🫐', '🍄', '☘️'], CIBLE = 2;
-  var XE = [34, 92, 150, 208, 266], YE = 384, BU = [40, 300], ZX = 66, ZW = 168, GX = 276, GY0 = 300, GH = 196;   /* la zone : 60 % de la frise, au milieu */
+  /* (23 novembre) comme dans le jeu refait : les bocaux en haut, posés sur la poutre ; la frise dans la poutre (FR : son haut) ;
+     la recette épinglée à gauche ; le thermomètre à droite */
+  var XE = [34, 92, 150, 208, 266], YE = 36, FR = 68, DY = 44, BU = [40, 300], ZX = 66, ZW = 168, GX = 276, GY0 = 300, GH = 150;   /* la zone : 60 % de la frise, au milieu ; DY : tout ce qui est sous la poutre est descendu d'autant */
   var th0 = -.55;
-  function bout(th){ return {bx:CX + 32 * Math.cos(th), by:RY + 7 * Math.sin(th), hx:CX + 50 * Math.cos(th), hy:126 + 9 * Math.sin(th)}; }
-  /* la louche tourne entre 3,3 et 4,9 s */
-  function th(t){ return th0 - Math.PI * 4 * Math.max(0, Math.min(1, (t - 3.3) / 1.6)); }
+  function bout(th){ return {bx:CX + 32 * Math.cos(th), by:RY + 7 * Math.sin(th), hx:CX + 50 * Math.cos(th), hy:132 + 8 * Math.sin(th)}; }
+  /* la louche tourne entre 3,3 et 4,9 s : un tour dans un sens, puis un tour dans l'autre (les deux refroidissent) */
+  function th(t){ var u = Math.max(0, Math.min(1, (t - 3.3) / 1.6)); return th0 - Math.PI * 2 * (u < .5 ? 2 * u : 2 - 2 * u); }
   var b0 = bout(th0);
-  /* la main : le tas de bois (0,9 s), la louche (3,3 → 4,9 s), la caisse (7,7 s) */
-  var hors = piste([[0, 262, 250, 0], [.7, BU[0] + 30, BU[1] - 24, 0], [.9, BU[0] + 30, BU[1] - 24, 1], [1.08, BU[0] + 30, BU[1] - 24, 0], [2.7, 230, 200, 0], [3.25, b0.hx, b0.hy, 0]]);
-  var apres = piste([[4.9, b0.hx, b0.hy, 0], [5.6, 262, 250, 0], [7.25, XE[CIBLE] + 4, YE - 30, 0], [7.6, XE[CIBLE], YE - 4, 1], [7.8, XE[CIBLE], YE - 4, 0], [8.7, 262, 250, 0], [P, 262, 250, 0]]);
+  /* la main : le tas de bois (0,9 s), la louche (3,3 → 4,9 s), le bocal (7,7 s) */
+  var hors = piste([[0, 262, 250 + DY, 0], [.7, BU[0] + 30, BU[1] - 24 + DY, 0], [.9, BU[0] + 30, BU[1] - 24 + DY, 1], [1.08, BU[0] + 30, BU[1] - 24 + DY, 0], [2.7, 230, 200 + DY, 0], [3.25, b0.hx, b0.hy + DY, 0]]);
+  var apres = piste([[4.9, b0.hx, b0.hy + DY, 0], [5.6, 262, 250 + DY, 0], [7.25, XE[CIBLE] + 4, YE + 36, 0], [7.6, XE[CIBLE], YE + 6, 1], [7.8, XE[CIBLE], YE + 6, 0], [8.7, 262, 250 + DY, 0], [P, 262, 250 + DY, 0]]);
   var flammes = '<path d="M0,0 C-16,-6 -14,-26 -4,-40 C-4,-28 4,-26 6,-34 C18,-22 18,-4 0,0 Z" fill="#f5b945" stroke="#e8693c" stroke-width="3"/>';
   var buche = function(x, y, r){ return '<g transform="translate(' + x + ',' + y + ') rotate(' + r + ')"><rect x="-17" y="-5.5" width="34" height="11" rx="5.5" fill="#8a5a33" stroke="' + K + '" stroke-width="2"/><ellipse cx="17" cy="0" rx="3.8" ry="5.5" fill="#d9a066" stroke="' + K + '" stroke-width="1.5"/></g>'; };
   var id = uid('rgch');
   var svg = svgDemo(el,
     '<defs><linearGradient id="' + id + 'f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2148"/><stop offset="1" stop-color="#1a1430"/></linearGradient>' +
     '<linearGradient id="' + id + 'g" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#8b52e0"/><stop offset=".25" stop-color="#3f86f0"/><stop offset=".5" stop-color="#3fcf6a"/><stop offset=".72" stop-color="#ffd23f"/><stop offset=".88" stop-color="#f04a35"/><stop offset="1" stop-color="#ff2410"/></linearGradient>' +
-    '<clipPath id="' + id + 'c"><rect x="10" y="12" width="280" height="50" rx="11"/></clipPath></defs>' +
+    '<clipPath id="' + id + 'c"><rect x="10" y="' + (FR + 4) + '" width="280" height="42" rx="10"/></clipPath></defs>' +
     '<rect width="300" height="420" fill="url(#' + id + 'f)"/>' +
-    /* la frise et sa zone 🍲 */
-    '<rect x="10" y="12" width="280" height="50" rx="11" fill="#2a1d14" stroke="#24182e" stroke-width="3"/>' +
-    '<rect class="rg-zone" x="' + ZX + '" y="15" width="' + ZW + '" height="44" rx="9" fill="#ffd36a" fill-opacity=".12" stroke="#ffd36a" stroke-width="2.5" stroke-dasharray="6 4"/>' +
-    emo(ZX + 9, 23, 11, '🍲') +
-    '<g clip-path="url(#' + id + 'c)"><g class="rg-carre"><rect class="rg-carre-r" x="0" y="27" width="30" height="30" rx="7" fill="#7a7590" stroke="' + K + '" stroke-width="2.5"/></g>' +
-      '<g class="rg-carre2"><rect x="0" y="27" width="30" height="30" rx="7" fill="#7a7590" stroke="' + K + '" stroke-width="2.5"/></g></g>' +
+    /* le sol de l'âtre, devant */
+    '<rect x="0" y="' + (270 + DY) + '" width="300" height="' + (150 - DY) + '" fill="#3a3049"/><path d="M0,' + (270 + DY) + ' H300 M0,' + (322 + DY) + ' H300 M72,' + (270 + DY) + ' L52,' + (322 + DY) + ' M150,' + (270 + DY) + ' V' + (322 + DY) + ' M228,' + (270 + DY) + ' L248,' + (322 + DY) + ' M104,' + (322 + DY) + ' L86,420 M196,' + (322 + DY) + ' L214,420" stroke="#24182e" stroke-width="2" opacity=".6"/>' +
+    /* la poutre : son dessus (les bocaux sont posés dessus), sa face de devant où glisse la frise, le cadre de laiton */
+    '<polygon points="14,' + (FR - 10) + ' 286,' + (FR - 10) + ' 297,' + FR + ' 3,' + FR + '" fill="#d6a06a" stroke="#24182e" stroke-width="2.5" stroke-linejoin="round"/>' +
+    '<rect x="3" y="' + FR + '" width="294" height="50" rx="5" fill="#96592f" stroke="#24182e" stroke-width="3"/>' +
+    '<rect x="10" y="' + (FR + 4) + '" width="280" height="42" rx="10" fill="#2a1d14" stroke="#24182e" stroke-width="2.5"/>' +
+    '<rect class="rg-zone" x="' + ZX + '" y="' + (FR + 5) + '" width="' + ZW + '" height="40" rx="9" fill="#ffd36a" fill-opacity=".12" stroke="#d9a441" stroke-width="3" stroke-dasharray="6 4"/>' +
+    '<path d="M' + (ZX + ZW / 2 - 8) + ',' + (FR + 51) + ' h16 l-8,8 Z" fill="#d9a441" stroke="#24182e" stroke-width="1.5" stroke-linejoin="round"/>' +
+    '<g clip-path="url(#' + id + 'c)"><g class="rg-carre"><rect class="rg-carre-r" x="0" y="' + (FR + 10) + '" width="30" height="30" rx="7" fill="#7a7590" stroke="' + K + '" stroke-width="2.5"/></g>' +
+      '<g class="rg-carre2"><rect x="0" y="' + (FR + 10) + '" width="30" height="30" rx="7" fill="#7a7590" stroke="' + K + '" stroke-width="2.5"/></g></g>' +
     '<path class="rg-fl" d="M-8,0 L8,0 L0,10 Z" fill="#ffd36a" stroke="' + K + '" stroke-width="1.5"/>' +
-    /* la carte de la recette (version simple) : 2 💧 › 1 🍯 › 3 🫐 › 🧪, chaque ingrédient avec sa pastille de couleur */
-    [[2, 0, 10], [1, 1, 82], [3, 2, 154]].map(function(r){
-      return '<g class="rg-rec' + r[1] + '"><rect x="' + r[2] + '" y="67" width="62" height="24" rx="12" fill="rgba(0,0,0,.4)" stroke="' + CC[r[1]] + '" stroke-width="2"/>' +
-        '<text x="' + (r[2] + 11) + '" y="80" font-size="14" font-weight="800" fill="#ffe3a3" text-anchor="middle" dominant-baseline="central">' + r[0] + '</text>' +
-        '<circle cx="' + (r[2] + 28) + '" cy="79" r="7" fill="' + CC[r[1]] + '" stroke="' + K + '" stroke-width="2"/>' + emo(r[2] + 47, 80, 14, ING[r[1]]) +
-        (r[1] < 2 ? '<text x="' + (r[2] + 67) + '" y="80" font-size="13" font-weight="900" fill="#ffe3a3" text-anchor="middle" dominant-baseline="central">›</text>' : '') + '</g>';
-    }).join('') +
-    '<text x="223" y="80" font-size="13" font-weight="900" fill="#ffe3a3" text-anchor="middle" dominant-baseline="central">›</text>' +
-    '<rect x="229" y="67" width="30" height="24" rx="12" fill="rgba(0,0,0,.4)" stroke="#ffd36a" stroke-width="1.5"/>' + emo(244, 80, 13, '🧪') +
+    /* la recette épinglée, à gauche : 2 💧, 1 🍯, 3 🫐, puis 🧪 — chaque ingrédient avec sa pastille de couleur */
+    '<g transform="translate(0,' + DY + ')">' +
+    '<rect x="4" y="128" width="66" height="116" rx="4" fill="#f3e4c2" stroke="#24182e" stroke-width="2.5" transform="rotate(-2 37 128)"/><circle cx="37" cy="133" r="3.5" fill="#8d8a99" stroke="#24182e" stroke-width="1.5"/>' +
+    [[2, 0, 140], [1, 1, 166], [3, 2, 192]].map(function(r){
+      return '<g class="rg-rec' + r[1] + '"><rect x="8" y="' + r[2] + '" width="58" height="23" rx="11.5" fill="rgba(255,233,168,0)" stroke="' + CC[r[1]] + '" stroke-width="2"/>' +
+        '<text x="18" y="' + (r[2] + 12.5) + '" font-size="14" font-weight="800" fill="#35281b" text-anchor="middle" dominant-baseline="central">' + r[0] + '</text>' +
+        '<circle cx="34" cy="' + (r[2] + 11.5) + '" r="7" fill="' + CC[r[1]] + '" stroke="' + K + '" stroke-width="2"/>' + emo(53, r[2] + 12.5, 14, ING[r[1]]) + '</g>';
+    }).join('') + emo(37, 230, 14, '🧪') +
     /* la jauge : en haut ça explose, en bas ça gèle ; la bande verte au milieu */
     emo(GX + 8, GY0 - GH - 12, 14, '🌋') + emo(GX + 8, GY0 + 14, 14, '🧊') +
     '<rect x="' + GX + '" y="' + (GY0 - GH) + '" width="16" height="' + GH + '" rx="8" fill="url(#' + id + 'g)" stroke="' + K + '" stroke-width="3"/>' +
@@ -23941,11 +24438,14 @@ D('chaudron', function(el){
     '<g class="rg-bulles"><circle cx="130" cy="' + (RY - 2) + '" r="3" fill="#fff" opacity=".5"/><circle cx="168" cy="' + (RY + 2) + '" r="2.4" fill="#fff" opacity=".5"/></g>' +
     '<g class="rg-ronds" opacity="0"><ellipse cx="150" cy="' + RY + '" rx="20" ry="5" fill="none" stroke="#fff" stroke-width="2.5"/><ellipse cx="150" cy="' + RY + '" rx="34" ry="8" fill="none" stroke="#fff" stroke-width="2"/></g>' +
     '<g class="rg-louche"><path d="" stroke="' + K + '" stroke-width="11" stroke-linecap="round"/><path d="" stroke="#c08a4a" stroke-width="6" stroke-linecap="round"/><ellipse rx="10" ry="5" fill="#c08a4a" stroke="' + K + '" stroke-width="2.5"/></g></g>' +
-    '<g class="rg-fleche" opacity="0"><path d="M220,150 C200,124 100,124 80,150" stroke="#5ab8ff" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M76,156 L89,150 L77,142 Z" fill="#5ab8ff"/></g>' +
-    /* les caisses : chacune avec la bande de sa couleur */
-    '<rect x="6" y="408" width="288" height="8" rx="3" fill="#8a5a33" stroke="' + K + '" stroke-width="2"/>' +
-    ING.map(function(ic, i){ return '<g class="e' + i + '"><rect x="' + (XE[i] - 25) + '" y="' + (YE - 24) + '" width="50" height="48" rx="9" fill="#c08a4a" stroke="' + K + '" stroke-width="2.5"/>' +
-      '<rect x="' + (XE[i] - 19) + '" y="' + (YE - 14) + '" width="38" height="30" rx="4" fill="#f3e4c2" stroke="#5a4630" stroke-width="1.5"/>' + emo(XE[i], YE + 1, 20, ic) + '</g>'; }).join('') +
+    /* la flèche à deux pointes : on touille dans le sens qu'on veut, les deux refroidissent */
+    '<g class="rg-fleche" opacity="0"><path d="M220,150 C200,124 100,124 80,150" stroke="#5ab8ff" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M76,156 L89,150 L77,142 Z" fill="#5ab8ff"/><path d="M224,156 L211,150 L223,142 Z" fill="#5ab8ff"/></g>' +
+    '</g>' +
+    /* les bocaux de verre, posés sur le dessus de la poutre : le bouchon, le verre, l'ingrédient dedans */
+    ING.map(function(ic, i){ return '<g class="e' + i + '"><ellipse cx="' + XE[i] + '" cy="' + (YE + 27) + '" rx="23" ry="4" fill="#24182e" opacity=".35"/>' +
+      '<rect x="' + (XE[i] - 21) + '" y="' + (YE - 20) + '" width="42" height="47" rx="10" fill="#cfe3e6" fill-opacity=".9" stroke="' + K + '" stroke-width="2.5"/>' +
+      '<rect x="' + (XE[i] - 13) + '" y="' + (YE - 29) + '" width="26" height="11" rx="4" fill="#c08a4a" stroke="' + K + '" stroke-width="2.5"/>' +
+      '<path d="M' + (XE[i] - 15) + ',' + (YE - 11) + ' v24" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/>' + emo(XE[i] + 1, YE + 5, 20, ic) + '</g>'; }).join('') +
     emo(0, 0, 24, ING[CIBLE], 'rg-vol') +
     '<g class="rg-bvol" opacity="0">' + buche(0, 0, 0) + '</g>');
   var louche = $(svg, '.rg-louche'), potion = $(svg, '.rg-potion'), fleche = $(svg, '.rg-fleche'), feu = $(svg, '.rg-feu'), lueur = $(svg, '.rg-lueur');
@@ -23957,7 +24457,7 @@ D('chaudron', function(el){
     var a = th(t), b = bout(a), dl = 'M' + f1(b.bx) + ',' + f1(b.by) + ' L' + f1(b.hx) + ',' + f1(b.hy);
     louche.children[0].setAttribute('d', dl); louche.children[1].setAttribute('d', dl);
     louche.children[2].setAttribute('cx', f1(b.bx)); louche.children[2].setAttribute('cy', f1(b.by));
-    var m = t < 3.25 ? hors(t) : (t < 4.9 ? {x:b.hx, y:b.hy, p:true} : apres(t));
+    var m = t < 3.25 ? hors(t) : (t < 4.9 ? {x:b.hx, y:b.hy + DY, p:true} : apres(t));
     poserMain(gMain, m.x, m.y, m.p, t, [.9, 7.6]);
     /* la barre : monte avec la bûche (1,3 → 3,2 s), redescend en touillant (3,4 → 4,9 s) et continue un peu (inertie, jusqu'à 5,5 s), puis le feu la remet au milieu */
     var c = .5 + .2 * entre(t, 1.3, 3.2) - .27 * entre(t, 3.4, 5.5) + .07 * entre(t, 5.6, 7);
@@ -23967,7 +24467,7 @@ D('chaudron', function(el){
     bulles.setAttribute('transform', 'translate(0,' + f1(-Math.abs(Math.sin(t * (3 + 6 * Math.max(0, c - .5)))) * 3) + ')');
     /* la bûche vole du tas au feu */
     var ub = (t - .95) / .5;
-    if(ub > 0 && ub < 1){ vis(bvol, 1); pose(bvol, mix(BU[0], 150, ub), mix(BU[1], 286, ub) - 60 * Math.sin(Math.PI * ub), 1, ub * 200); } else vis(bvol, 0);
+    if(ub > 0 && ub < 1){ vis(bvol, 1); pose(bvol, mix(BU[0], 150, ub), mix(BU[1], 286, ub) + DY - 60 * Math.sin(Math.PI * ub), 1, ub * 200); } else vis(bvol, 0);
     var niv = .75 + .45 * entre(t, 1.4, 1.8) - .4 * entre(t, 8.6, 10.6), danse = 1 + .06 * Math.sin(t * 11);
     feu.setAttribute('transform', 'translate(150,282) scale(' + (niv * danse).toFixed(3) + ',' + (niv / danse).toFixed(3) + ')');
     lueur.setAttribute('opacity', (.08 + .3 * Math.max(0, niv - .35)).toFixed(2));
@@ -23985,10 +24485,10 @@ D('chaudron', function(el){
     var rr = $(svg, '.rg-rec' + CIBLE + ' rect'); rr.setAttribute('stroke-width', dansZ ? 4 : 2); rr.setAttribute('stroke', dansZ ? '#ffd36a' : CC[CIBLE]);
     zone.setAttribute('fill-opacity', dansZ ? (.22 + .12 * Math.sin(t * 9)).toFixed(2) : '.12');
     zone.setAttribute('stroke-dasharray', dansZ ? 'none' : '6 4');
-    pose(fl, xc + 15, 14 + 2 * Math.abs(Math.sin(t * 6))); vis(fl, t > 5.4 && t < 7.9 ? 1 : 0);
-    /* l'ingrédient vole de la caisse à la marmite */
+    pose(fl, xc + 15, FR - 4 + 2 * Math.abs(Math.sin(t * 6))); vis(fl, t > 5.4 && t < 7.9 ? 1 : 0);
+    /* l'ingrédient vole du bocal à la marmite */
     var ui = (t - 7.7) / .6;
-    if(ui > 0 && ui < 1){ vis(vol, 1); vol.setAttribute('x', f1(mix(XE[CIBLE], 150, ui))); vol.setAttribute('y', f1(mix(YE, RY + 4, ui) - 80 * Math.sin(Math.PI * ui))); vol.setAttribute('font-size', f1(24 * (1 - .35 * ui))); }
+    if(ui > 0 && ui < 1){ vis(vol, 1); vol.setAttribute('x', f1(mix(XE[CIBLE], 150, ui))); vol.setAttribute('y', f1(mix(YE, RY + 4 + DY, ui) - 34 * Math.sin(Math.PI * ui))); vol.setAttribute('font-size', f1(24 * (1 - .35 * ui))); }
     else vis(vol, 0);
     eCible.setAttribute('transform', t > 7.6 && t < 7.8 ? 'translate(0,3)' : '');
     var ur = (t - 8.3) / .55, on = ur > 0 && ur < 1;
