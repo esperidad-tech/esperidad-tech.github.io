@@ -1,4 +1,4 @@
-// Le Sage contre le cœur — maquette 15 : 10 combos jouissifs à 3 niveaux (tornade, comète et boulets renforcés), la colère du cœur
+// Le Sage contre Grosbec — maquette 16 : la grande salle vue de haut, Grosbec et ses golems (ceux du combat du Barde) ; 10 combos à 3 niveaux, la colère de Grosbec
 const G = (() => {
   const W = 900, H = 900;
   const CFG = {
@@ -35,7 +35,7 @@ const G = (() => {
     piege: { fam: 'sort', nom: 'Rune piège', ic: '💫', max: 3, txt: l => `Une rune s’allume sous les golems et les sonne, toutes les ${['', '5', '4', '3'][l]} secondes.` },
     chaine: { fam: 'sort', nom: 'Lumière en chaîne', ic: '⚡', max: 3, txt: l => `Un éclair saute de golem en golem : ${['', '3', '5', '7'][l]} golems.` },
     bouclier: { fam: 'sort', nom: 'Bouclier de cristal', ic: '💎', max: 3, txt: l => `Chaque ami a un bouclier qui encaisse un coup. Il revient en ${['', '20', '15', '10'][l]} secondes.` },
-    chouette: { fam: 'sort', nom: 'La chouette du Sage', ic: '🦉', max: 3, txt: l => `Elle fond sur les lanceurs : ${['', '3', '5', '8'][l]} dégâts.` },
+    chouette: { fam: 'sort', nom: 'La chouette du Sage', ic: '🦉', max: 3, txt: l => `Elle fond sur les frondeurs : ${['', '3', '5', '8'][l]} dégâts.` },
     solide: { fam: 'rune', nom: 'Mur solide', ic: '🧱', max: 3, txt: l => `Le mur dure ${3 + l} secondes au lieu de 3.` },
     large: { fam: 'rune', nom: 'Trait large', ic: '🖌️', max: 3, txt: l => ['', 'Le trait touche plus large.', 'Le trait touche encore plus large.', 'Le trait touche très large.'][l] },
     aimant: { fam: 'cadeau', nom: 'Aimant', ic: '🧲', max: 3, txt: l => 'Les éclats d’encre viennent à toi de plus loin.' },
@@ -46,7 +46,7 @@ const G = (() => {
     orage: { fam: 'combo', of: ['piege', 'chaine'], nom: 'Orage', ic: '⛈️', max: 3, txt: l => ['', 'Un golem qui éclate fait tomber la foudre sur 3 golems autour : ils sont sonnés.', 'La foudre fait éclater les golems déjà sonnés : réaction en chaîne !', 'Toutes les 6 secondes, un orage tombe tout seul sur la place.'][l] },
     volcan: { fam: 'combo', of: ['brulant', 'epines'], nom: 'Volcan', ic: '🌋', max: 3, txt: l => ['', 'Le feu brûle deux fois plus fort et saute de golem en golem. Le mur met le feu aussi.', 'Un golem qui meurt en brûlant explose en boule de feu et enflamme ses voisins.', 'Les golems en feu courent partout en paniquant, et le trait laisse une coulée de lave.'][l] },
     etoiles: { fam: 'combo', of: ['double', 'rapide'], nom: 'Pluie d’étoiles', ic: '🌠', max: 3, txt: l => ['', 'Toutes les 5 secondes, 12 étoiles partent tout autour du Sage.', 'Toutes les 3 secondes, et les étoiles rebondissent sur les bords.', 'Chaque étoile qui détruit un golem éclate en 3 étoiles.'][l] },
-    comete: { fam: 'combo', of: ['pas', 'percant'], nom: 'La comète', ic: '🌟', max: 3, txt: l => ['', 'Le Sage court plus vite et laisse une large traînée d’étoiles qui brûle fort les golems et arrête les pierres.', 'La traînée sonne les golems qui la touchent et renvoie les pierres ; le Sage projette ceux qu’il percute.', 'La traînée explose derrière lui : les golems sonnés éclatent, les autres sont sonnés.'][l] },
+    comete: { fam: 'combo', of: ['pas', 'percant'], nom: 'La comète', ic: '🌟', max: 3, txt: l => ['', 'Le Sage court plus vite et laisse une large traînée d’étoiles qui brûle fort les golems et arrête les braises.', 'La traînée sonne les golems qui la touchent et renvoie les braises ; le Sage projette ceux qu’il percute.', 'La traînée explose derrière lui : les golems sonnés éclatent, les autres sont sonnés.'][l] },
     scribe: { fam: 'combo', of: ['encrier', 'moisson'], nom: 'Le scribe fou', ic: '🐙', max: 3, txt: l => ['', 'Les runes coûtent 1 encre de moins, et l’encre remonte toute seule.', 'Combo ×4 avec une rune : FRÉNÉSIE ! 6 secondes d’encre gratuite.', 'Chaque rune a un écho : elle se relance toute seule juste après. La frénésie arrive dès ×3.'][l] },
     tornade: { fam: 'combo', of: ['pages', 'aimant'], nom: 'Tornade de pages', ic: '🌀', max: 3, txt: l => ['', 'L’escargot ne coûte plus que 4. Les pages s’envolent en spirale jusqu’au bord de la place, puis reviennent.', 'L’escargot devient une tornade : elle aspire les golems, puis les recrache sonnés (un trait les fait éclater).', 'La tornade dure plus longtemps, se promène vers la foule et déchiquette les golems.'][l] },
     sanctuaire: { fam: 'combo', of: ['sceau', 'bouclier'], nom: 'Sanctuaire', ic: '🏛️', max: 3, txt: l => ['', 'Quand un bouclier casse, le sceau sonne tous les golems du cercle.', 'Toutes les 8 secondes, le sceau pulse et projette les golems du cercle au loin.', 'L’onde du sceau fait éclater les golems sonnés.'][l] },
@@ -155,9 +155,12 @@ const G = (() => {
     if (t > 12 && r < 0.55) return 'coureur';
     return 'cogneur';
   }
+  // les deux portes du mur du fond : [gauche, droite] de chacune ; un golem « du haut » sort par l'une des deux
+  const PORTES = [[70, 230], [670, 830]];
+  const porte = p => { const u = Math.max(0, Math.min(1, (p - 40) / 820)), P = PORTES[u < 0.5 ? 0 : 1], v = u < 0.5 ? u * 2 : (u - 0.5) * 2; return P[0] + v * (P[1] - P[0]); };
   function spawn(s, type, side, twin) {
     const T = TYPES[type], sd = side ?? Math.floor(rng(s) * 4), p = twin ?? rng(s) * 820 + 40, m = -30;
-    const xy = [[p, 30], [W - m, p], [p, H - m], [m, p]][sd], hp = T.hp + bonusHp(s, type);
+    const xy = [[porte(p), 30], [W - m, p], [p, H - m], [m, p]][sd], hp = T.hp + bonusHp(s, type);
     // pendant la fureur, de plus en plus de golems sont cuirassés : on ne peut plus les sonner
     const iron = fury(s) > 0 && rng(s) < Math.min(0.9, 0.25 + 0.15 * (fury(s) - 1));
     s.soldiers.push({ id: s.nextId++, type, x: xy[0], y: xy[1], r: T.r, hp, max: hp, vx: 0, vy: 0, atk: 0.5, daze: 0, flash: 0, burn: 0, burnCd: 0, burnTick: 0, held: false, fear: 0, dance: 0, charmCd: 0, iron });
@@ -180,7 +183,7 @@ const G = (() => {
         s.fx.push({ k: 'side', side, life: 2.4, max: 2.4 });
       }
       const NOMS = ['par le haut', 'par la droite', 'par le bas', 'par la gauche'];
-      say(s, k === 1 ? `Grosse vague ${NOMS[sides[0]]} : ${n} soldats !` : k === 4 ? `Grosses vagues de tous les côtés : ${n} soldats chacune !` : `Grosses vagues ${sides.slice(0, k).map(i => NOMS[i]).join(' et ')} : ${n} soldats chacune !`, 2.6);
+      say(s, k === 1 ? `Grosse vague ${NOMS[sides[0]]} : ${n} golems !` : k === 4 ? `Grosses vagues de tous les côtés : ${n} golems chacune !` : `Grosses vagues ${sides.slice(0, k).map(i => NOMS[i]).join(' et ')} : ${n} golems chacune !`, 2.6);
       s.burstT = c.burstEvery;
     }
   }
@@ -600,7 +603,7 @@ const G = (() => {
     }
     // la colère du cœur : à 12 et à 14 minutes, ils arrivent plus nombreux et plus vite
     const rage = s.realT >= 900 ? 3 + Math.floor((s.realT - 900) / 30) : s.realT >= 840 ? 2 : s.realT >= 720 ? 1 : 0;
-    if (rage > s.rage) { const first = s.rage; s.rage = rage; if (rage <= 3) say(s, rage === 1 ? 'Le cœur se met en colère : les golems arrivent plus vite et plus nombreux !' : rage === 2 ? 'Le cœur est fou de rage !' : 'Le cœur devient fou furieux : plus rien ne l’arrête…', 4); if (first >= 3) return; s.fx.push({ k: 'side', side: 0, life: 2.4, max: 2.4 }); s.fx.push({ k: 'side', side: 2, life: 2.4, max: 2.4 }); s.shake = 0.4; }
+    if (rage > s.rage) { const first = s.rage; s.rage = rage; if (rage <= 3) say(s, rage === 1 ? 'Grosbec se met en colère : les golems arrivent plus vite et plus nombreux !' : rage === 2 ? 'Grosbec est fou de rage !' : 'Grosbec devient fou furieux : plus rien ne l’arrête…', 4); if (first >= 3) return; s.fx.push({ k: 'side', side: 0, life: 2.4, max: 2.4 }); s.fx.push({ k: 'side', side: 2, life: 2.4, max: 2.4 }); s.shake = 0.4; }
   }
   // ----- les pouvoirs des cartes, à chaque instant -----
   function upgrades(s, dt) {
@@ -867,9 +870,9 @@ const G = (() => {
     const SC = lv(s, 'scribe');
     if (SC >= 2 && s.frenzy <= 0 && killed >= (SC >= 3 ? 3 : 4)) { s.frenzy = SC >= 3 ? 10 : 6; s.fx.push({ k: 'frenzy', life: 1, max: 1 }); say(s, `FRÉNÉSIE ! ${s.frenzy} secondes d’encre gratuite !`, 2.5); return { ok: true, hit, killed }; }
     if (kind === 'trait') say(s, killed >= 3 ? `Lumière : ${killed} d’un coup !` : hit ? `Lumière : ${hit} touché${hit > 1 ? 's' : ''}.` : 'Lumière… dans le vide.');
-    else if (kind === 'mur') say(s, `Un mur courbe, pour ${s.cfg.wallLife} secondes : il ralentit et renvoie les pierres.`);
+    else if (kind === 'mur') say(s, `Un mur courbe, pour ${s.cfg.wallLife} secondes : il ralentit et renvoie les braises.`);
     else if (kind === 'spirale' && lv(s, 'tornade') >= 2) say(s, hit ? `Tornade ! ${hit} golem${hit > 1 ? 's' : ''} aspiré${hit > 1 ? 's' : ''} !` : 'Tornade… dans le vide.');
-    else say(s, hit ? `${NOM[kind]} : ${hit} soldat${hit > 1 ? 's' : ''} projeté${hit > 1 ? 's' : ''} !` : `${NOM[kind]}… dans le vide.`);
+    else say(s, hit ? `${NOM[kind]} : ${hit} golem${hit > 1 ? 's' : ''} projeté${hit > 1 ? 's' : ''} !` : `${NOM[kind]}… dans le vide.`);
     return { ok: true, hit, killed };
   }
   // une rune et ses copies (la rune miroir : des copies gratuites, tournées autour des amis)
@@ -935,6 +938,6 @@ const G = (() => {
     }
     return hit;
   }
-  return { W, H, CFG, TYPES, GROS, SYMS, CODES, ORDER, POSTE, HEART, CARDS, UP, newGame, step, recognize, cast, costOf, inside, pathLen, enterCode, dist, bonusHp, sidesNow, minutes, choose, openChoice, cardPool, lv, combosReady, turnRune };
+  return { W, H, CFG, TYPES, GROS, SYMS, CODES, ORDER, POSTE, HEART, PORTES, CARDS, UP, newGame, step, recognize, cast, costOf, inside, pathLen, enterCode, dist, bonusHp, sidesNow, minutes, choose, openChoice, cardPool, lv, combosReady, turnRune };
 })();
 if (typeof module !== 'undefined') module.exports = G;
