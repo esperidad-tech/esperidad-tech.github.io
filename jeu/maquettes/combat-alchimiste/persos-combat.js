@@ -265,14 +265,16 @@
   /* Une énorme armure faite des pièces de la ville d'en bas (un métal bleuté) cerclée de bronze ; un casque en grand bec
      (son nom), les yeux qui luisent derrière ; les quatre Lanternes d'Or serties dans l'armure (sur la poitrine et sur les
      épaules) d'où partent des veines d'or : c'est l'énergie qu'il siphonne ; l'écharpe rouge du maire et sa médaille ;
-     la bague au corbeau sur son poing. o : t, coup (0 à 1 : il vient d'être touché), rage (0 à 1), ordre (0 à 1 : il lève le bras). */
+     la bague au corbeau sur son poing. o : t, coup (0 à 1 : il vient d'être touché), rage (0 à 1), ordre (0 à 1 : il lève le bras).
+     (version 9) brasG, brasD (0 à 1 : il lève le bras gauche, le droit), saut (en unités : il décolle du sol, pour taper du pied),
+     tremble (0 à 1 : il tremble de colère). */
   var ACIER = "#4D6577", BRONZE = "#A8783A", OR = "#F2C230", ROUGE = "#8E2A2A";
   PC.grosbec = function (ctx, o) {
     o = o || {};
     var t = o.t || 0, rage = o.rage || 0, coup = o.coup || 0, ordre = o.ordre || 0;
-    var resp = Math.sin(t * 1.6) * 0.8, tremble = coup > 0 ? Math.sin(t * 70) * 2 * coup : 0;
+    var resp = Math.sin(t * 1.6) * 0.8, tremble = (coup > 0 ? Math.sin(t * 70) * 2 * coup : 0) + (o.tremble ? Math.sin(t * 53) * 2.2 * o.tremble : 0);
     var veine = mix(OR, "#FF4A2A", rage), yeux = mix("#FFC266", "#FF3A20", rage);
-    ctx.save(); ctx.translate(tremble, 0);
+    ctx.save(); ctx.translate(tremble, -(o.saut || 0));
 
     /* l'aura d'énergie */
     lueur(ctx, 0, -50, 62, veine, 0.16 + 0.06 * Math.sin(t * 3));
@@ -330,7 +332,7 @@
 
     /* les bras et les poings */
     [-1, 1].forEach(function (c) {
-      var lv = c > 0 ? ordre : 0;
+      var lv = c > 0 ? Math.max(ordre, o.brasD || 0) : (o.brasG || 0);
       var sx = c * 27, sy0 = yT - 25, ex = c * (33 - lv * 4), ey = yT - 8 - lv * 22, hx = c * (32 - lv * 6), hy = yT + 9 - lv * 52;
       capsule(ctx, sx, sy0, ex, ey, 7, 6.4); ctx.fillStyle = volume(ctx, ex, (sy0 + ey) / 2, 8, ACIER); ctx.fill(); trait(ctx, ACIER, 1);
       capsule(ctx, ex, ey, hx, hy, 6.4, 6); ctx.fillStyle = volume(ctx, hx, (ey + hy) / 2, 8, sombre(ACIER, 0.06)); ctx.fill(); trait(ctx, ACIER, 1);
