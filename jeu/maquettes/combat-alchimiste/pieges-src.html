@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Alegreya+Sans:wght@400;500;700;800&display=swap">
 <style>
-/* Version 8 : les vrais personnages (Grosbec dans son armure, ses automates, l'Alchimiste du donjon vu de dos). Des corps lourds, pas des balles. La foule arrive sans arrêt. Grosbec est hors de portée : on ne le blesse qu'en lui renvoyant ses automates. Un seul doigt suffit : les potions en bas, on touche la place pour lancer, on fait glisser l'Alchimiste. */
+/* Version 9 : Grosbec mène le combat (salves à thème, colère, bouclier, 8 minutes), la vraie vague. Version 8 : les vrais personnages (Grosbec dans son armure, ses automates, l'Alchimiste du donjon vu de dos). Des corps lourds, pas des balles. La foule arrive sans arrêt. Grosbec est hors de portée : on ne le blesse qu'en lui renvoyant ses automates. Un seul doigt suffit : les potions en bas, on touche la place pour lancer, on fait glisser l'Alchimiste. */
 :root {
   --bg: #0E1213; --surface: #1B2326; --surface-2: #232E31; --ink: #E8ECEA; --muted: #9AA7A3; --line: #33413F;
   --jaune: #F2C230; --jaune-ombre: #A5831B;
@@ -75,7 +75,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
 <div class="voile" id="regles">
   <div class="boite">
     <h2>Les Pièges de l'Alchimiste</h2>
-    <p>Version 8. Grosbec reste tout au fond : tes fioles ne vont pas jusqu'à lui. Ses automates, si ! <b>Renvoie-les-lui à la figure.</b> Ils arrivent de plus en plus nombreux… et plus ils sont nombreux, plus tu as de munitions.</p>
+    <p>Version 9. Grosbec reste tout au fond : tes fioles ne vont pas jusqu'à lui. Il envoie ses automates par vagues. <b>Détruis-les</b> : chaque automate détruit l'affaiblit. <b>Renvoie-les-lui à la figure</b> : ça lui fait encore plus mal… et ça l'énerve.</p>
     <h3>Jouer avec un seul doigt</h3>
     <div class="regle"><span class="tuile" style="--c:#3D2F5C">☝️</span><p>Choisis 1 à 3 potions en bas, puis <b>touche la place</b> : tu vois la zone, tu peux glisser, tu lâches. <b>Fais glisser l'Alchimiste</b> pour bouger, <b>touche-le</b> pour boire.</p></div>
     <div class="regle"><span class="tuile">💥</span><p><b>Tes potions projettent, elles ne tuent presque pas.</b> Une explosion souffle toujours en éventail, loin de toi, vers le fond. Un automate projeté vole, retombe, glisse un tout petit peu et met 2 secondes à se relever. S'il percute un ami, les deux restent assommés 5 secondes. S'il percute Grosbec… aïe, pour Grosbec !</p></div>
@@ -108,7 +108,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   "use strict";
   /* ================= réglages ================= */
   var W = 360, FY = 0.75, BANDE = 86;
-  var PV_J = 100, PV_B = 450, V_IMPACT = 110, V_BOSS = 60, STUN = 5, LEVE = 2, G = 650, PORTEE_F = 0.24, MAX_E = 36;
+  var PV_J = 100, PV_B = 1200, DUREE = 480, VITESSE = 1, V_IMPACT = 110, V_BOSS = 60, STUN = 5, LEVE = 2, G = 650, PORTEE_F = 0.24, MAX_E = 36;
   var ING = [
     { id: "feu", nom: "Feu", hex: "#E5572A" }, { id: "eau", nom: "Eau", hex: "#2E86D6" },
     { id: "farine", nom: "Farine", hex: "#D9C9A4" }, { id: "acide", nom: "Acide", hex: "#5DB338" },
@@ -129,7 +129,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     "feu acide fleur": "Savon brûlant", "eau farine acide": "Ciment", "eau farine fleur": "Pâte de soin", "eau acide fleur": "Savon électrique", "farine acide fleur": "Mousse fleurie"
   };
   var SPEC = {
-    "eau eau": { forme: "cone", lab: "Vague en cône", len: 300, half: 0.45, force: 560 },
+    "eau eau": { forme: "cone", lab: "Vague : elle emporte tout", len: 470, half: 0.42, force: 560 },
     "feu eau": { forme: "cone", lab: "Vapeur en cône", len: 240, half: 0.45 },
     "acide acide": { forme: "rayon", lab: "Jet : garde le doigt appuyé" },
     "feu feu feu": { forme: "colonnes", lab: "Colonnes : tout s'envole", r: 70 },
@@ -138,11 +138,11 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   };
   var RAYONS = [0, 34, 50, 64], LABR = ["", "Éclaboussure", "Cercle", "Grand cercle"];
   var TYPES = {
-    rapide:   { nom: "Le rapide",   pv: 18, v: 60, r: 11, h: 27, m: 1,   kv: 1,    coup: 1,  cad: 1.0, coul: "#3FB6C9", tete: "#62C8D8" },
-    bouclier: { nom: "Le bouclier", pv: 30, v: 42, r: 13, h: 27, m: 1.6, kv: 0.92, coup: 3,  cad: 1.4, coul: "#7E8D96", tete: "#8F9DA5" },
-    lourd:    { nom: "Le lourd",    pv: 46, v: 30, r: 18, h: 26, m: 3,   kv: 0.8,  coup: 5,  cad: 1.8, coul: "#8B5E3C", tete: "#9C6C46", lourd: true },
-    cracheur: { nom: "Le cracheur", pv: 22, v: 38, r: 12, h: 27, m: 1.3, kv: 0.95, coup: 2,  cad: 1.4, coul: "#B8572E", tete: "#C96A3F", portee: 250, tir: 3.6 },
-    souffleur:{ nom: "Le souffleur",pv: 24, v: 36, r: 13, h: 27, m: 1.4, kv: 0.94, coup: 2,  cad: 1.4, coul: "#6C8F86", tete: "#80A69C", portee: 220, souffle: 4.2 }
+    rapide:   { nom: "Le rapide",   pv: 18, v: 60, r: 11, h: 27, m: 1,   kv: 1,    coup: 1,  cad: 1.4, coul: "#3FB6C9", tete: "#62C8D8" },
+    bouclier: { nom: "Le bouclier", pv: 30, v: 42, r: 13, h: 27, m: 1.6, kv: 0.92, coup: 3,  cad: 2.0, coul: "#7E8D96", tete: "#8F9DA5" },
+    lourd:    { nom: "Le lourd",    pv: 46, v: 30, r: 18, h: 26, m: 3,   kv: 0.8,  coup: 5,  cad: 2.5, coul: "#8B5E3C", tete: "#9C6C46", lourd: true },
+    cracheur: { nom: "Le cracheur", pv: 22, v: 38, r: 12, h: 27, m: 1.3, kv: 0.95, coup: 2,  cad: 2.0, coul: "#B8572E", tete: "#C96A3F", portee: 250, tir: 3.6 },
+    souffleur:{ nom: "Le souffleur",pv: 24, v: 36, r: 13, h: 27, m: 1.4, kv: 0.94, coup: 2,  cad: 2.0, coul: "#6C8F86", tete: "#80A69C", portee: 220, souffle: 4.2 }
   };
   var TC = { feu: "229,87,42", eau: "46,134,214", nuage: "217,201,164", acide: "93,179,56", fleurs: "150,130,245", boue: "122,86,52", vapeur: "222,228,232", fumee: "80,150,60",
              savon: "240,225,245", elec: "110,180,255", lianes: "70,150,60", pollen: "240,205,70", mousse: "235,240,220", bain: "246,236,252", popcorn: "255,236,190" };
@@ -193,7 +193,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     if (e.attrape && e.attrape.feu > 0) return;
     if (e.statue > 0) { briser(e); return; }
     if (e.tourb) return;
-    e.bulle = null; e.deBulle = false;
+    e.bulle = null; e.deBulle = false; e.form = null; e.vague = null;
     libererDeLianes(e);
     var k = e.T.kv;
     e.vx = Math.cos(ang) * vh * k; e.vy = Math.sin(ang) * vh * k;
@@ -205,6 +205,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   // un corps balayé (la vague) : renversé, il glisse sur les pavés
   function balayer(e, ang, v) {
     if (e.attrape || e.statue > 0 || e.tourb || e.etat === "bulle") return;
+    e.form = null;
     var k = e.T.kv;
     if (e.etat === "vol") { e.vx += Math.cos(ang) * v * 0.4 * k; e.vy += Math.sin(ang) * v * 0.4 * k; return; }
     e.vx = Math.cos(ang) * v * k; e.vy = Math.sin(ang) * v * k;
@@ -217,7 +218,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     if (o.statue > 0) { briser(o); return; }
     if (o.etat === "bulle") { eclaterBulle(o); return; }
     o.pv -= dm; fxTxt(o.x, o.y, -(o.T.h + 14), "−" + Math.round(dm), "#FFD25A"); fx({ k: "etoile", x: o.x, y: o.y, dur: .35 });
-    o.court = false;
+    o.court = false; o.form = null; o.vague = null;
     if (o.etat === "vol") { o.vx *= 0.15; o.vy *= 0.15; o.stunSol = STUN; return; }
     if (o.attrape) return;
     o.x += Math.cos(ang) * recul; o.y += Math.sin(ang) * recul;
@@ -241,6 +242,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     if (S) { S.hero.y = L.D - 30; S.E.forEach(function (e) { e.y = Math.min(e.y, L.D - e.r); }); }
   }
   window.addEventListener("resize", redim);
+  function arche(g, cx, top, w, h) { g.beginPath(); g.moveTo(cx - w / 2, top + h); g.lineTo(cx - w / 2, top + w / 2); g.arc(cx, top + w / 2, w / 2, Math.PI, 0); g.lineTo(cx + w / 2, top + h); g.closePath(); }
   function peindreFond() {
     var c = fx2; c.setTransform(L.s * L.dpr, 0, 0, L.s * L.dpr, 0, 0);
     var g = c.createLinearGradient(0, 0, 0, 96); g.addColorStop(0, "#0D1424"); g.addColorStop(1, "#1D2433");
@@ -251,6 +253,13 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     [[14, 56], [38, 70], [74, 50], [92, 68], [132, 58], [214, 58], [262, 50], [280, 68], [316, 56], [340, 70]].forEach(function (p) { c.fillRect(p[0], p[1], 9, 11); });
     c.fillStyle = "#E8D9B0"; c.beginPath(); c.arc(180, 30, 8, 0, 7); c.fill();
     c.strokeStyle = "#3A2F2A"; c.lineWidth = 1.6; c.beginPath(); c.moveTo(180, 25); c.lineTo(180, 30); c.lineTo(184, 33); c.stroke();
+    // les portes d'où sortent les automates : deux ruelles sous un porche, deux portes de la mairie
+    PORTES.forEach(function (px, i) {
+      var m = i === 1 || i === 2, w = m ? 22 : 20, h = m ? 24 : 26, y0 = 92 - h;
+      c.fillStyle = m ? "#7A6650" : "#4F443A"; arche(c, px, y0 - 3, w + 6, h + 3); c.fill();
+      c.fillStyle = "#120D0A"; arche(c, px, y0, w, h); c.fill();
+      if (m) { c.strokeStyle = "#B0923F"; c.lineWidth = 1; arche(c, px, y0 - 1.5, w + 3, h + 1.5); c.stroke(); c.fillStyle = "#3A2A1C"; c.fillRect(px - 0.5, y0 + 6, 1, h - 6); }
+    });
     c.fillStyle = "#26231F"; c.fillRect(0, 88, W, 8);
     c.fillStyle = "#34332F"; c.fillRect(0, L.top, W, L.bot - L.top);
     c.strokeStyle = "rgba(0,0,0,.30)"; c.lineWidth = 1;
@@ -306,6 +315,13 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
         case "pop": osc("square", 620, 280, 0.06, 0.14); bruit(0.05, "highpass", 3000, 0.2); break;
         case "vent": bruit(0.6, "bandpass", 500, 0.25); break;
         case "cri": osc("sawtooth", 300, 120, 0.4, 0.15); break;
+        case "cor": osc("sawtooth", 147, 147, 0.7, 0.12); osc("sawtooth", 220, 220, 0.7, 0.08, 0.05); break;
+        case "pied": osc("sine", 70, 35, 0.4, 0.8); bruit(0.3, "lowpass", 300, 0.6); break;
+        case "grogne": osc("sawtooth", 110, 80, 0.4, 0.12); osc("sawtooth", 112, 76, 0.45, 0.08, 0.05); break;
+        case "colere": osc("sawtooth", 140, 70, 0.9, 0.15); osc("sawtooth", 143, 72, 0.9, 0.1, 0.04); bruit(0.5, "lowpass", 500, 0.3); break;
+        case "bouclier": osc("sine", 520, 880, 0.35, 0.15); osc("sine", 780, 1320, 0.35, 0.08); break;
+        case "bloque": osc("square", 900, 860, 0.12, 0.08); osc("sine", 1800, 1700, 0.25, 0.1); break;
+        case "vague": bruit(1.1, "lowpass", 900, 0.6); bruit(0.8, "bandpass", 2500, 0.2); break;
         case "combo": osc("sine", 660, 660, 0.1, 0.2); osc("sine", 880, 880, 0.1, 0.2, 0.1); osc("sine", 1320, 1320, 0.18, 0.2, 0.2); break;
       }
     } catch (e) {}
@@ -343,22 +359,23 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
           B: { x: 180, y: 66, r: 30, pv: PV_B, hit: 0 },
           E: [], T: [], FX: [], P: [], O: [], gateau: null, rayon: null, nRayon: 0, slots: [], eauS: 0, soinT: -99, soinsSuite: 0,
           temps: 0, tues: 0, enCours: true, pause: false, vise: null, glisse: null, ptr: { x: 180, y: 200 }, notes: [], nid: 0,
-          shake: 0, ralenti: 0, msg: null, big: null, compteur: null, chaines: {}, nChaine: 0, chaineCour: 0, chaineMax: 0, spawnT: 1.2, rageT: 24, rage: 0,
-          coupsBoss: 0, coolHeros: 0, combosPartie: {}, rageV: 0, ordreT: -9 };
+          shake: 0, ralenti: 0, msg: null, big: null, compteur: null, chaines: {}, nChaine: 0, chaineCour: 0, chaineMax: 0, rage: 0,
+          coupsBoss: 0, coolHeros: 0, combosPartie: {}, rageV: 0, ordreT: -9,
+          V: [], file: [], fileT: 0, GA: null, bulle: null, banniere: null, portesT: [0, 0, 0, 0], bouclierB: 0, bouclierV: 0, bouclierFlash: 0,
+          colere: 0, nColeres: 0, coolColere: 0, coolOccup: 0, dernierCoupB: -99, dir: { i: 0, seuil: 0, decal: 0, attente: 0, apres: 0 } };
     [[70, 0.46], [292, 0.56], [244, 0.32]].forEach(function (p) { S.O.push(tonneau(p[0], p[1] * L.D)); });
     S.O.push(charrette(150, 0.5 * L.D));
     S.boules = []; S.elecTic = 0;
     S.fontaine = null;
-    for (var i = 0; i < 5; i++) { sortir(i < 4 ? "rapide" : "bouclier", i % 2 === 0); S.E[i].y += 40 + i * 12; }
     $("fin").hidden = true; $("regles").hidden = true; $("btn-go").textContent = "Reprendre";
     if (alchi) { alchi.geste = null; alchi.capVise = 180; alchi.capAff = 180; alchi.capT = 0; alchi.prochain = maintenant() + 4; }
-    dire("Les automates arrivent… laisse-les venir !", "");
+    dire("Grosbec t'attend devant la mairie… ses automates vont sortir.", "");
     majPotions();
     dernierT = performance.now(); rafId = requestAnimationFrame(boucle);
   }
   function boucle(now) {
     if (!S || !S.enCours) return;
-    var dt = Math.min(0.05, Math.max(0, (now - dernierT) / 1000)); dernierT = now;
+    var dt = Math.min(0.05, Math.max(0, (now - dernierT) / 1000)) * VITESSE; dernierT = now;
     if (!S.pause) {
       if (S.ralenti > 0) { S.ralenti -= dt; dt *= 0.3; }
       var n = Math.max(1, Math.ceil(dt / 0.017));
@@ -377,18 +394,16 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     if (S.big) { S.big.t -= dt; if (S.big.t <= 0) S.big = null; }
     if (S.compteur) { S.compteur.t -= dt; if (S.compteur.t <= 0) S.compteur = null; }
     majTraces(dt);
-    // la foule : de plus en plus d'automates, sans attendre qu'on ait fini
-    S.spawnT -= dt;
-    if (S.spawnT <= 0) {
-      S.spawnT = Math.max(1.2, 3 - S.temps / 50);
-      var groupe = Math.min(4, 1 + Math.floor(S.temps / 30)), gauche = Math.random() < 0.5;
-      for (var g = 0; g < groupe && S.E.length < MAX_E; g++) sortir(choixType(), gauche);
-    }
-    S.rageT -= dt; if (S.rage > 0) S.rage -= dt;
-    S.rageV += ((S.rage > 0 ? 1 : 0) - S.rageV) * Math.min(1, dt * 3); S.ordreT += dt;
-    if (S.rageT <= 0) { S.rageT = 24; S.rage = 6; S.ordreT = 0; dire("Grosbec hurle : « Plus vite, mes automates ! »", "mal"); son("cri"); }
+    // Grosbec mène le combat : ses salves, sa colère, son bouclier
+    directeur(dt);
+    if (S.rage > 0) S.rage -= dt;
+    S.rageV += ((S.rage > 0 || (S.GA && S.GA.nom === "colere") ? 1 : 0) - S.rageV) * Math.min(1, dt * 3);
+    if (S.banniere) { S.banniere.t -= dt; if (S.banniere.t <= 0) S.banniere = null; }
+    if (S.bulle) { S.bulle.t -= dt; if (S.bulle.t <= 0) S.bulle = null; }
+    S.bouclierFlash = Math.max(0, S.bouclierFlash - dt);
     if (S.gateau) { S.gateau.t -= dt; if (S.gateau.t <= 0) S.gateau = null; }
     majHeros(dt);
+    majVagues(dt);
     S.E.forEach(function (e) { majAuto(e, dt); });
     var enFeu = S.E.filter(function (e) { return e.panique > 0; }).length;
     if (enFeu >= 6 && !S.feuMontre) { S.feuMontre = true; combo("panique"); } else if (enFeu < 3) S.feuMontre = false;
@@ -416,8 +431,219 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     S.E.push({ id: ++S.nid, t: t, T: T, r: T.r, pv: T.pv, x: gauche ? 22 + Math.random() * 40 : 298 + Math.random() * 40, y: 20 + Math.random() * 50,
                vx: 0, vy: 0, z: 0, vz: 0, spin: 0, shield: t === "bouclier", colle: 0, aveugle: 0, etourdi: 0, panique: 0, meche: 0, mouille: 0, enfarine: 0, elec: 0, lent: 0,
                dirT: 0, dir: 0, cd: T.cad * 0.6, mange: false, attrape: null, atchoum: 0.5, coolHit: 0, coolTon: 0, rayonVu: 0,
-               etat: "debout", immuFeu: 0, immuElec: 0, statue: 0, bulle: null, tourb: null, lie: null, lieT: 0, tension: 0, tirT: 2 + Math.random() * 2, souffleT: 2 + Math.random() * 2, terreT: 0, touche: {}, cote: 1, hop: false, leger: false, stunSol: 0, ko: false, court: false, volT: 0, apresVol: false, angLiane: 0 });
+               etat: "debout", app: 0, form: null, vague: null, immuFeu: 0, immuElec: 0, statue: 0, bulle: null, tourb: null, lie: null, lieT: 0, tension: 0, tirT: 2 + Math.random() * 2, souffleT: 2 + Math.random() * 2, terreT: 0, touche: {}, cote: 1, hop: false, leger: false, stunSol: 0, ko: false, court: false, volT: 0, apresVol: false, angLiane: 0 });
   }
+
+  /* ================= Grosbec mène le combat (version 9) ================= */
+  // Romain, 24 nov. 11 h 46 : « que ça soit vraiment rythmé par le boss », des vagues à thème (les rapides, puis les armures, puis les
+  // gros…), « que le combat dure à peu près 8 minutes » : à 4 minutes, Grosbec n'a pas perdu plus de la moitié de sa vie, et il ne
+  // meurt pas avant 8 minutes. S'il perd trop vite, il se protège (un bouclier qu'on voit) et envoie de quoi t'occuper. Détruire ses
+  // automates le blesse un peu ; les lui envoyer dessus le blesse plus… et l'énerve : il s'énerve, puis envoie une salve plus grosse.
+  var PORTES = [30, 124, 236, 330];   // les deux ruelles (sous les porches) et les deux portes de la mairie
+  var VAL_KILL = { rapide: 6, bouclier: 9, lourd: 14, cracheur: 8, souffleur: 8 };
+  var SALVES = [
+    { t: 1, nom: "Les rapides", cri: "En avant, mes rapides !", g: [["rapide", 6]], portes: [0, 3] },
+    { t: 30, nom: "Rapides et boucliers", cri: "Plus vite que ça !", g: [["rapide", 6], ["bouclier", 2]] },
+    { t: 62, nom: "La ligne de boucliers", cri: "Boucliers, en ligne !", g: [["bouclier", 8]], form: true },
+    { t: 100, nom: "Les gros", cri: "Mes gros, écrasez-la !", g: [["lourd", 4], ["rapide", 4]], portes: [1, 2] },
+    { t: 140, nom: "Les cracheurs", cri: "Cracheurs, feu à volonté !", g: [["bouclier", 4], ["cracheur", 3]], form: true },
+    { t: 180, nom: "Les souffleurs", cri: "Soufflez-lui ses potions au nez !", g: [["souffleur", 3], ["rapide", 6]] },
+    { t: 225, nom: "La nuée de rapides", cri: "Mes rapides, tous ensemble !", g: [["rapide", 12]] },
+    { t: 270, nom: "Les gros, lentement", cri: "Avancez… doucement… écrasez tout !", g: [["lourd", 6], ["cracheur", 3]], form: true },
+    { t: 315, nom: "Rapides et souffleurs", cri: "Encore ! Encore !", g: [["rapide", 10], ["souffleur", 2]] },
+    { t: 360, nom: "Le grand mélange", cri: "Tout le monde dehors !", g: [["bouclier", 4], ["lourd", 3], ["cracheur", 3], ["souffleur", 2]], form: true },
+    { t: 410, nom: "La garde rapprochée", cri: "Protégez-moi !", g: [["bouclier", 6], ["lourd", 4], ["rapide", 4]], form: true },
+    { t: 450, nom: "La dernière salve", cri: "Ce n'est pas fini !", g: [["rapide", 8], ["bouclier", 4], ["lourd", 4]] }
+  ];
+  var SEUILS = [
+    { pv: 0.75, nom: "Deux vagues de gros", cri: "MES GROS ! TOUS ! ÉCRASEZ-LA !", g: [["lourd", 6]], form: true, grande: true, deux: true },
+    { pv: 0.5, nom: "Toute la garde", cri: "TOUTE LA GARDE ! EN AVANT !", g: [["bouclier", 20]], form: true, grande: true },
+    { pv: 0.25, nom: "L'armée entière", cri: "TOUTE MON ARMÉE ! MAINTENANT !", g: [["rapide", 10], ["bouclier", 8], ["lourd", 6], ["cracheur", 3], ["souffleur", 3]], form: true, grande: true }
+  ];
+  function sortirPorte(t, porte, lane) {
+    sortir(t, true);
+    var e = S.E[S.E.length - 1];
+    e.x = PORTES[porte] + (Math.random() - 0.5) * 10; e.y = 9; e.app = 0.4; e.form = lane === null || lane === undefined ? null : lane;
+    S.portesT[porte] = Math.max(S.portesT[porte], 1.3);
+    return e;
+  }
+  function plusProche(x, portes) { var b = portes[0]; portes.forEach(function (p) { if (Math.abs(PORTES[p] - x) < Math.abs(PORTES[b] - x)) b = p; }); return b; }
+  // il lance une salve : on le voit donner l'ordre (le bras levé ; les deux bras et des coups de pied par terre pour les grosses)
+  function lancerSalve(def) {
+    S.GA = { nom: def.grande ? "grande" : "salve", t: 0, dur: def.grande ? 2.3 : 1.5, lache: def.grande ? 1.3 : 0.55, def: def, fait: false };
+  }
+  function lacherSalve(def) {
+    var portes = def.portes || [0, 1, 2, 3], liste = [], k = 0;
+    def.g.forEach(function (g) { for (var i = 0; i < g[1]; i++) liste.push(g[0]); });
+    var nL = Math.min(8, liste.length);
+    liste.forEach(function (t, i) {
+      var lane = def.form ? 40 + ((i % nL) + 0.5) * (280 / nL) + (Math.random() - 0.5) * 8 : null;
+      S.file.push({ t: t, porte: def.form ? plusProche(lane, portes) : portes[k++ % portes.length], lane: lane, vite: !!def.grande });
+    });
+    S.banniere = { txt: def.nom, t: 3.2 };
+    dire("Grosbec : « " + def.cri + " »", "mal"); son("cor");
+    bulleBoss([def.grande ? "EN AVANT !!" : "ALLEZ !"]);
+    if (def.deux) S.P.push({ t: 0, dur: 7, invisible: true, cb: function () { lancerSalve({ nom: def.nom + " : la deuxième", cri: "Et une deuxième vague !", g: def.g, form: def.form, grande: true }); } });
+  }
+  function bulleBoss(liste) { S.bulle = { txt: liste[Math.floor(Math.random() * liste.length)], t: 1.5 }; }
+  function grosseColere() {
+    S.nColeres++; S.colere = 0; S.coolColere = 35; S.rage = 6;
+    var n = Math.min(18, 6 + 3 * S.nColeres);
+    var def = { nom: "La colère de Grosbec", cri: "VOUS ALLEZ VOIR CE QUE VOUS ALLEZ VOIR !", g: [["rapide", Math.ceil(n * 0.6)], ["lourd", Math.floor(n * 0.4)]], grande: true };
+    S.GA = { nom: "colere", gros: true, t: 0, dur: 1.5, ensuite: function () { lancerSalve(def); } };
+    dire("Grosbec explose de colère !", "mal");
+  }
+  function majGA(dt) {
+    var A = S.GA; if (!A) return;
+    A.t += dt;
+    if (A.nom === "salve" || A.nom === "grande") {
+      if (!A.fait && A.t >= A.lache) { A.fait = true; if (A.def) lacherSalve(A.def); }
+      if (A.nom === "grande") [0.38, 0.9].forEach(function (tt, i) {
+        if (!A["pied" + i] && A.t >= tt) { A["pied" + i] = true; S.shake = Math.max(S.shake, 0.4); fx({ k: "onde", x: S.B.x, y: S.B.y + 4, r: 62, c: "242,194,48", dur: .5 }); fx({ k: "poussiere", x: S.B.x, y: S.B.y + 4, r: 46, dur: .5 }); son("pied"); }
+      });
+    } else if (A.nom === "colere") {
+      if (!A.dit) { A.dit = true; bulleBoss(A.gros ? ["GRRRRAAAAH !!", "RHAAAAA !!", "ÇA SUFFIT !!"] : ["GRRR !", "RHAA !", "MMMFF !!", "GNNNN… !", "HRMPF !"]); son(A.gros ? "colere" : "grogne"); }
+      if (A.gros && !A.pied && A.t >= 1.15) { A.pied = true; S.shake = Math.max(S.shake, 0.5); fx({ k: "onde", x: S.B.x, y: S.B.y + 4, r: 72, c: "255,90,50", dur: .55 }); fx({ k: "poussiere", x: S.B.x, y: S.B.y + 4, r: 50, dur: .5 }); son("pied"); }
+    }
+    if (A.t >= A.dur) { S.GA = null; if (A.ensuite) A.ensuite(); }
+  }
+  // sa pose du moment (persos-combat.js : brasG, brasD, saut, tremble, ordre)
+  function grosbecPose() {
+    var A = S.GA, p = { brasG: 0, brasD: 0, saut: 0, tremble: 0, ordre: 0 };
+    if (!A) { if (S.bouclierV > 0.05) p.brasG = p.brasD = 0.42 * S.bouclierV; return p; }
+    var u = A.t;
+    function env(a, b, c, d) { return u < a ? 0 : u < b ? (u - a) / (b - a) : u < c ? 1 : u < d ? 1 - (u - c) / (d - c) : 0; }
+    function bond(a, d) { return Math.max(0, Math.sin(Math.PI * clamp((u - a) / d, 0, 1))); }
+    if (A.nom === "salve") p.ordre = env(0, 0.35, 1.05, 1.5);
+    else if (A.nom === "grande") { p.saut = 7 * (bond(0.1, 0.28) + bond(0.62, 0.28)); p.brasG = p.brasD = env(1.0, 1.3, 2.0, 2.3); }
+    else if (A.nom === "colere") {
+      p.tremble = u < A.dur - 0.15 ? 1 : 0; var f = Math.sin(u * 13);
+      p.brasG = 0.6 * Math.max(0, f); p.brasD = 0.6 * Math.max(0, -f);
+      if (A.gros) p.saut = 9 * bond(0.95, 0.22);
+    }
+    else if (A.nom === "bouclier") p.brasG = p.brasD = 0.5 * Math.min(1, u / 0.3);
+    return p;
+  }
+  // le bouclier de Grosbec : il le lève quand tu le blesses plus vite que prévu
+  function plancher() { return PV_B * Math.max(0, 1 - S.temps / DUREE); }
+  function majBouclierBoss(dt) {
+    var marge = S.B.pv - plancher();
+    var leve = S.temps < DUREE && marge < PV_B * 0.015 && S.temps - S.dernierCoupB < 2.5;
+    if (leve && S.bouclierB <= 0) { dire("Grosbec se protège derrière ses lanternes !", "mal"); son("bouclier"); if (!S.GA) S.GA = { nom: "bouclier", t: 0, dur: 0.7 }; }
+    if (leve) S.bouclierB = 4; else S.bouclierB = Math.max(0, S.bouclierB - dt);
+    S.bouclierV += ((S.bouclierB > 0 ? 1 : 0) - S.bouclierV) * Math.min(1, dt * 4);
+  }
+  // TOUT ce qui blesse Grosbec passe ici. Il ne descend jamais sous le plancher (à 4 min, la moitié ; à 8 min, zéro) ; il encaisse de
+  // moins en moins en s'en approchant. Le coup de pouce caché : en retard sur les 8 minutes, ou après 8 minutes, il prend plus.
+  function blesserBoss(dm, o) {
+    o = o || {};
+    var B = S.B, t = S.temps, pl = plancher(), retard = (B.pv - pl) / PV_B, k = 1;
+    if (retard > 0.12) k *= Math.min(1.8, 1 + (retard - 0.12) * 2.5);
+    if (t > DUREE) k *= 1 + (t - DUREE) / 120;
+    dm *= k;
+    var marge = B.pv - pl, zone = PV_B * 0.1;
+    if (t < DUREE) {   // (après 8 minutes, plus rien ne le protège)
+      if (marge < zone) dm *= Math.max(0, marge / zone);
+      dm = Math.min(dm, Math.max(0, marge));
+    }
+    S.dernierCoupB = t;
+    if (o.lance) {
+      S.colere += 1;
+      if (!S.GA) S.GA = { nom: "colere", t: 0, dur: 0.9 }; else bulleBoss(["AÏE !", "OUILLE !", "HMPF !"]);
+    }
+    if (o.continu) { B.pv -= dm; return dm; }
+    if (dm < 0.5) { S.bouclierFlash = 0.3; if (S.bouclierB <= 0) S.bouclierB = 2; return 0; }
+    dm = Math.max(1, Math.round(dm));
+    B.pv -= dm;
+    return dm;
+  }
+  function directeur(dt) {
+    var D = S.dir;
+    S.coolColere = Math.max(0, S.coolColere - dt); S.coolOccup = Math.max(0, S.coolOccup - dt);
+    S.colere = Math.max(0, S.colere - dt / 9);
+    for (var i = 0; i < S.portesT.length; i++) S.portesT[i] = Math.max(0, S.portesT[i] - dt);
+    majGA(dt);
+    // les automates sortent par les portes, un par un
+    S.fileT -= dt;
+    if (S.file.length && S.fileT <= 0 && S.E.length < MAX_E) { var f = S.file.shift(); sortirPorte(f.t, f.porte, f.lane); S.fileT = f.vite ? 0.16 : 0.3; }
+    majBouclierBoss(dt);
+    if (S.GA) return;   // il est déjà en train de faire quelque chose
+    // 1. il a perdu un quart de sa vie : une très grosse salve
+    if (D.seuil < SEUILS.length && S.B.pv <= PV_B * SEUILS[D.seuil].pv) { lancerSalve(SEUILS[D.seuil]); D.seuil++; return; }
+    // 2. tu lui as jeté ses automates dessus trop souvent : il explose de colère
+    if (S.colere >= 4 && S.coolColere <= 0) { grosseColere(); return; }
+    // 3. il se protège : il envoie de quoi t'occuper
+    if (S.bouclierB > 0 && S.coolOccup <= 0) { S.coolOccup = 25; lancerSalve({ nom: "Pour t'occuper", cri: "Occupez-la pendant que je me protège !", g: [["rapide", 6], ["bouclier", 2]] }); return; }
+    // 4. le programme
+    var vivants = S.E.length + S.file.length;
+    if (D.i < SALVES.length) {
+      var sv = SALVES[D.i], quand = sv.t + D.decal;
+      // personne sur la place : il n'attend pas
+      if (vivants < 3 && quand - S.temps > 5) { D.decal -= quand - S.temps - 3; quand = S.temps + 3; }
+      if (S.temps >= quand) {
+        // trop de monde, ou tu es mal en point : il attend un peu (20 s au plus)
+        if ((vivants > 18 || S.pv < 30) && D.attente < 20) { D.attente += dt; D.decal += dt; return; }
+        D.attente = 0; D.i++; lancerSalve(sv);
+      }
+    } else if (S.temps - D.apres > 40 && vivants < 14) {
+      D.apres = S.temps;
+      lancerSalve({ nom: "Encore des automates", cri: "Je n'ai pas dit mon dernier mot !", g: [["rapide", 6], ["bouclier", 3], ["lourd", 2], [Math.random() < 0.5 ? "cracheur" : "souffleur", 2]] });
+    }
+  }
+
+  /* ================= la vague (eau + eau) et le raz-de-marée (eau × 3) ================= */
+  // Une vraie vague qui avance : ceux qu'elle prend, elle les emporte (jusqu'au bout de la place, et sur Grosbec si elle y va) ;
+  // le gros et les boucliers résistent un peu (ils sont emportés moins loin). Tous ressortent trempés : 5 fois moins vite.
+  function creerVague(x, y, ang, half, len, v) {
+    S.V.push({ x: x, y: y, ang: ang, half: half, len: len, v: v, d: 10, t: 0, n: 0, chaine: S.chaineCour || nouvelleChaine(), fini: false, finT: 0.35 });
+  }
+  function dansArc(V, ox, oy) {
+    if (V.half >= 3) return true;
+    var a = Math.atan2(oy - V.y, ox - V.x) - V.ang;
+    while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI;
+    return Math.abs(a) <= V.half + 0.08;
+  }
+  function majVagues(dt) {
+    S.V = S.V.filter(function (V) {
+      V.t += dt;
+      if (V.fini) { V.finT -= dt; return V.finT > 0; }
+      var d0 = V.d; V.d = Math.min(V.len, V.d + V.v * dt);
+      S.E.forEach(function (e) {
+        if (e.vague || e.etat === "bulle" || e.statue > 0 || e.tourb || e.z > 30 || (e.attrape && e.attrape.feu > 0)) return;
+        var d = Math.hypot(e.x - V.x, e.y - V.y);
+        if (d < d0 - e.r - 8 || d > V.d + e.r || !dansArc(V, e.x, e.y)) return;
+        mouiller(e);
+        if (e.attrape) return;   // la liane le retient
+        e.form = null; e.lie = null;
+        e.vague = V; e.vagueFin = d + (e.T.lourd ? 70 : e.shield ? 130 : 9999);
+        e.etat = "glisse"; e.apresVol = false; e.z = 0; e.vz = 0; e.touche = {}; e.stunSol = 0; e.terreT = 0; e.chaine = V.chaine;
+        e.cote = Math.cos(Math.atan2(e.y - V.y, e.x - V.x)) >= 0 ? 1 : -1;
+        V.n++;
+      });
+      S.O.forEach(function (o) {
+        if (!o.actif || o.vagueV === V) return;
+        var d = Math.hypot(o.x - V.x, o.y - V.y);
+        if (d < d0 - o.r - 8 || d > V.d + o.r || !dansArc(V, o.x, o.y)) return;
+        o.vagueV = V; o.chaine = V.chaine; lancerDir(o, Math.atan2(o.y - V.y, o.x - V.x), V.v * 1.1);
+      });
+      if (V.d >= V.len - 0.5) {
+        V.fini = true;
+        if (V.half < 3) [0.4, 0.75].forEach(function (k) { ajouterTrace("eau", V.x + Math.cos(V.ang) * V.len * k, V.y + Math.sin(V.ang) * V.len * k, 40, 10); });
+      }
+      return true;
+    });
+  }
+  // un automate emporté : il reste sur la crête
+  function majEmporte(e, dt) {
+    var V = e.vague, ra = Math.atan2(e.y - V.y, e.x - V.x), dc = Math.hypot(e.x - V.x, e.y - V.y);
+    if (V.fini || dc >= e.vagueFin || e.etat !== "glisse") { e.vague = null; e.vx = Math.cos(ra) * 120; e.vy = Math.sin(ra) * 120; return false; }
+    var av = Math.max(0, V.d - 6 - dc);
+    e.x += Math.cos(ra) * av; e.y += Math.sin(ra) * av; e.vx = Math.cos(ra) * V.v; e.vy = Math.sin(ra) * V.v;
+    e.mouille = Math.max(e.mouille, 7);
+    if (murs(e)) e.vague = null;
+    return true;
+  }
+  function rongerBouclier(e) { if (!e.shield) return; e.shield = false; fxTxt(e.x, e.y, -34, "bouclier rongé !", "#9BE07A"); son("pschitt"); }
 
   /* ================= héros ================= */
   function dansTrace(o, type) { for (var i = 0; i < S.T.length; i++) { var t = S.T[i]; if (t.type === type && d2(o, t) < t.r) return t; } return null; }
@@ -447,6 +673,9 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       else if (t.type === "elec") S.pv -= 5 * dt;
       else if (t.type === "fleurs") S.pv = Math.min(PV_J, S.pv + 5 * dt * (t.pow || 1));
     });
+    var pres = S.E.some(function (e) { return e.etat === "debout" && d2(e, h) < e.r + h.r + 14; });
+    S.calme = pres ? 0 : (S.calme || 0) + dt;
+    if (S.calme > 2 && S.pv < PV_J) S.pv = Math.min(PV_J, S.pv + 2 * dt);
   }
   function blesser(d, txt) { if (d <= 0) return; S.pv -= d; if (d >= 2) alchiCoup(); fxTxt(S.hero.x, S.hero.y, -44, "−" + Math.round(d), "#F0806A"); son("aie"); if (txt) dire(txt, "mal"); }
   function soigner(h) { S.pv = Math.min(PV_J, S.pv + h); fxTxt(S.hero.x, S.hero.y, -44, "+" + Math.round(h), "#EE86B6"); }
@@ -640,13 +869,13 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     S.elecTic -= dt; if (S.elecTic > 0) return; S.elecTic = 0.8;
     var t = S.T.filter(function (t) { return t.type === "elec" && d2(t, S.B) < t.r + S.B.r * 0.6; })[0];
     if (!t) return;
-    S.B.pv -= 4; S.B.hit = 0.25; fxTxt(S.B.x, S.B.y, -80, "−4", "#FFF07A"); fx({ k: "eclair", x: t.x, y: t.y, x2: S.B.x, y2: S.B.y, dur: .35 }); son("zap");
+    var dmE = blesserBoss(4); S.B.hit = 0.25; fxTxt(S.B.x, S.B.y, -80, dmE ? "−" + dmE : "bloqué !", "#FFF07A"); fx({ k: "eclair", x: t.x, y: t.y, x2: S.B.x, y2: S.B.y, dur: .35 }); son("zap");
     combo("elec");
   }
 
   /* ================= automates ================= */
   function majAuto(e, dt) {
-    ["colle", "aveugle", "etourdi", "mouille", "enfarine", "elec", "lent", "coolHit", "coolTon", "immuFeu", "immuElec", "lieT", "souffleAnim"].forEach(function (k) { e[k] = Math.max(0, e[k] - dt); });
+    ["colle", "aveugle", "etourdi", "mouille", "enfarine", "elec", "lent", "coolHit", "coolTon", "immuFeu", "immuElec", "lieT", "souffleAnim", "app"].forEach(function (k) { e[k] = Math.max(0, e[k] - dt); });
     // en feu : il brûle doucement, sans courir ; s'il prend de la farine, la mèche s'allume
     if (e.panique > 0) {
       e.panique -= dt; e.pv -= 2 * dt;
@@ -662,6 +891,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       return;
     }
     if (e.etat === "bulle") { majBulle(e, dt); return; }
+    if (e.vague && majEmporte(e, dt)) return;
     if (e.meche > 0) {
       e.meche -= dt;
       if (e.meche <= 0) { e.meche = 0; e.pv = 0; exploser(e.x, e.y, 76, {}); combo("meche"); return; }
@@ -689,7 +919,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
           if (e.atchoum <= 0) { e.atchoum = 0.7 + Math.random() * 0.6; nouvelleChaine(); ejecter(e, Math.random() * 6.28, 110, 170, { leger: true }); fxTxt(e.x, e.y, -30, "atchoum !", "#F0D060"); son("atchoum"); }
           break;
         case "feu": if (e.panique <= 0) feuSur(e); break;
-        case "acide": e.lent = 0.3; break;
+        case "acide": e.lent = 0.3; rongerBouclier(e); break;
         case "elec": e.etourdi = Math.max(e.etourdi, 0.4); e.elec = Math.max(e.elec, 0.3); e.pv -= 2 * dt; break;
         case "savon": surSavon = true; break;
         case "bain":
@@ -730,7 +960,8 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     var d = d2(e, cible), contact = versGateau ? 10 : e.r + S.hero.r + 2;
     e.mange = versGateau && d <= contact + 2;
     if (e.mange && e.T.lourd) S.gateau.t -= 2 * dt;
-    var vmax = e.T.v * (S.rage > 0 ? 1.4 : 1) * (e.lent > 0 ? 0.5 : 1);
+    // trempé, il avance 5 fois moins vite (Romain : « ralenti à 80 % »)
+    var vmax = e.T.v * (S.rage > 0 ? 1.3 : 1) * (e.lent > 0 ? 0.5 : 1) * (e.mouille > 0 ? 0.2 : 1);
     var k = Math.min(1, (surSavon ? 0.5 : 9) * dt), court = !bloque && e.meche > 0;
     if (bloque) { e.vx *= Math.exp(-6 * dt); e.vy *= Math.exp(-6 * dt); }
     else if (court) {
@@ -742,10 +973,15 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       e.vx += (Math.cos(e.dir) * vmax * 0.6 - e.vx) * k; e.vy += (Math.sin(e.dir) * vmax * 0.6 - e.vy) * k;
     } else {
       var dx = 0, dy = 0, tireur = !versGateau && (e.t === "cracheur" || e.t === "souffleur") && d < e.T.portee && e.y < S.hero.y - 60;
-      if (d > contact && !tireur) { dx = (cible.x - e.x) / d * vmax; dy = (cible.y - e.y) / d * vmax; }
+      // en ligne : la salve avance d'un bloc, doucement, chacun dans son couloir ; à 200 de toi, chacun fonce
+      var enLigne = e.form !== null && e.form !== undefined && !versGateau;
+      if (enLigne && e.y > S.hero.y - 200) { e.form = null; enLigne = false; }
+      if (tireur) {}
+      else if (enLigne) { dx = clamp((e.form - e.x) * 1.8, -vmax, vmax); dy = vmax * 0.6; }
+      else if (d > contact) { dx = (cible.x - e.x) / d * vmax; dy = (cible.y - e.y) / d * vmax; }
       if (e.lie && d > 0.01) { var tr = Math.sin(S.temps * 4 + e.id) * 0.9; dx += -(cible.y - e.y) / d * vmax * tr; dy += (cible.x - e.x) / d * vmax * tr; }
       e.vx += (dx - e.vx) * k; e.vy += (dy - e.vy) * k;
-      if (tireur && e.t === "cracheur") { e.tirT -= dt; if (e.tirT <= 0) { e.tirT = e.T.tir; cracher(e); } }
+      if (tireur && e.t === "cracheur") { if (e.mouille > 0) e.tirT = Math.max(e.tirT, 0.8); e.tirT -= dt; if (e.tirT <= 0) { e.tirT = e.T.tir; cracher(e); } }
       if (tireur && e.t === "souffleur") { e.souffleT -= dt; if (e.souffleT <= 0) { e.souffleT = e.T.souffle; souffler(e); } }
     }
     if (!court) e.court = false;
@@ -755,7 +991,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     if (!bloque && !court && !versGateau && e.aveugle <= 0 && d <= contact + 1) {
       e.cd -= dt;
       if (e.cd <= 0) {
-        e.cd = e.T.cad;
+        e.cd = e.T.cad * (S.pv < 30 ? 1.5 : 1);
         if (S.eauS > 0) { fxTxt(S.hero.x, S.hero.y, -40, "il glisse !", "#9FC6EA"); balayer(e, -Math.PI / 2, 260); }
         else blesser(e.T.coup, e.T.nom + " te frappe ! −" + e.T.coup);
       }
@@ -813,10 +1049,10 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     return hit;
   }
   function frapperBoss(e, sp) {
-    var dm = Math.round((8 + Math.min(sp, 400) / 20) * Math.sqrt(e.T ? e.T.m : (e.m || 2)));
-    S.B.pv -= dm; S.B.hit = 0.35; S.coupsBoss++;
-    fxTxt(S.B.x, S.B.y, -80, "−" + dm, "#FFD25A");
-    fx({ k: "etoile", x: S.B.x, y: S.B.y, dur: .45 }); son("gong"); S.shake = Math.max(S.shake, 0.35);
+    var dm = blesserBoss(Math.round((8 + Math.min(sp, 400) / 20) * Math.sqrt(e.T ? e.T.m : (e.m || 2))), { lance: true });
+    S.B.hit = dm ? 0.35 : 0.15; S.coupsBoss++;
+    fxTxt(S.B.x, S.B.y, -80, dm ? "−" + dm : "bloqué !", dm ? "#FFD25A" : "#F2C230");
+    fx({ k: "etoile", x: S.B.x, y: S.B.y, dur: .45 }); son(dm ? "gong" : "bloque"); S.shake = Math.max(S.shake, dm ? 0.35 : 0.15);
     if (e.T) {
       e.pv -= 6;
       // il s'écrase sur Grosbec et tombe à ses pieds
@@ -825,7 +1061,8 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     }
     choc(S.B.x, S.B.y, e.chaine);
     var cris = ["Aïe ! Mes propres automates !", "Ouille, ma lanterne !", "Mais visez-la, elle !", "Arrêtez de me foncer dessus !", "Mon beau masque !"];
-    dire("Grosbec : « " + cris[Math.floor(Math.random() * cris.length)] + " » −" + dm, "bon");
+    if (dm) dire("Grosbec : « " + cris[Math.floor(Math.random() * cris.length)] + " » −" + dm, "bon");
+    else dire("Grosbec se protège : ton coup rebondit sur son bouclier.", "");
   }
   function bouge(e) { return (e.etat === "vol" && e.z < 40 && e.volT > 0.12 && vit(e) > 90) || (e.etat === "glisse" && vit(e) > V_IMPACT); }
   // un corps lancé percute un ami : les deux sont assommés, personne ne rebondit (sauf le lourd, qui renverse tout)
@@ -852,6 +1089,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       if (a.etat === "bulle" || b.etat === "bulle" || a.tourb || b.tourb) continue;
       var d = d2(a, b), m = a.r + b.r;
       if (d >= m || d < 0.01) continue;
+      if (a.vague && b.vague) { var kv = (m - d) / d / 2; a.x -= (b.x - a.x) * kv; a.y -= (b.y - a.y) * kv; b.x += (b.x - a.x) * kv; b.y += (b.y - a.y) * kv; continue; }
       var ma = bouge(a), mb = bouge(b);
       if (ma || mb) {
         var p = ma && (!mb || vit(a) >= vit(b)) ? a : b, q = p === a ? b : a;
@@ -887,6 +1125,10 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     S.E = S.E.filter(function (e) {
       if (e.pv > 0) return true;
       S.tues++; fxTxt(e.x, e.y, -20, "Pouf !", "#8BD46A"); fx({ k: "poussiere", x: e.x, y: e.y, r: e.r + 10, dur: .45 });
+      // son cœur de lumière retourne à l'armure de Grosbec… et la fait sauter un peu
+      var val = VAL_KILL[e.t] || 6;
+      fx({ k: "etincelle", x: e.x, y: e.y, x2: S.B.x, y2: S.B.y, dur: .6 });
+      S.P.push({ t: 0, dur: 0.6, invisible: true, cb: function () { var dmK = blesserBoss(val); if (dmK) { fxTxt(S.B.x + (Math.random() - 0.5) * 34, S.B.y, -64, "−" + dmK, "#F2C230"); S.B.hit = Math.max(S.B.hit, 0.1); } else S.bouclierFlash = 0.3; } });
       if (e.attrape) { var i = e.attrape.prises.indexOf(e.id); if (i >= 0) e.attrape.prises.splice(i, 1); }
       return false;
     });
@@ -1011,7 +1253,9 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
         t.feu -= dt; t.ang += 7 * dt;
         var tenus = S.E.filter(function (e) { return e.attrape === t; });
         tenus.forEach(function (e, i) {
-          var a = t.ang + i * 6.283 / tenus.length, R = Math.max(28, t.r * 0.9);
+          var a = t.ang + i * 6.283 / tenus.length, R = Math.max(28, t.r * 0.9), dB = d2(t, S.B);
+          // bien placée (Grosbec à moins de 100 du bout des lianes), la massue s'allonge vers lui
+          if (dB < R + 100) R = Math.max(R, dB - 8);
           e.x = t.x + Math.cos(a) * R; e.y = t.y + Math.sin(a) * R; e.z = 10; e.etat = "debout"; e.terreT = 0;
           e.vx = -Math.sin(a) * R * 7; e.vy = Math.cos(a) * R * 7; e.spin += dt * 12; e.angLiane = a;
           // le tourbillon : ceux qu'il frappe sont éjectés très loin
@@ -1024,7 +1268,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
             }
           });
           if (S.coolHeros <= 0 && d2(S.hero, e) < S.hero.r + e.r + 4) { blesser(5, "La massue de lianes te tape aussi ! −5"); S.coolHeros = 0.7; }
-          if (e.coolTon <= 0 && d2(e, S.B) < e.r + S.B.r) { e.coolTon = 0.8; frapperBoss(e, 300); combo("massue"); }
+          if (e.coolTon <= 0 && d2(e, S.B) < e.r + S.B.r) { e.coolTon = 0.8; frapperBoss(e, 420); combo("massue"); }
         });
         if (t.feu <= 0) {
           S.chaineCour = t.chaine; tenus.forEach(function (e) { e.attrape = null; e.z = 10; ejecter(e, e.angLiane + Math.PI / 2, 300, 240); });
@@ -1050,7 +1294,8 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       if (e.enfarine > 0 && e.meche <= 0) { e.meche = 3; e.enfarine = 0; e.court = false; fxTxt(e.x, e.y, -(e.T.h + 24), "mèche !", "#FFB347"); }
       var ar = angDe(e, x, y), ah = angDe(e, S.hero.x, S.hero.y);
       var dx = Math.cos(ar) * 0.6 + Math.cos(ah), dy = Math.sin(ar) * 0.6 + Math.sin(ah);
-      ejecter(e, (dx || dy) ? Math.atan2(dy, dx) : ar, 250 + 200 * p, 340 + 70 * p); e.pv -= 4;
+      if (e.shield) { ejecter(e, (dx || dy) ? Math.atan2(dy, dx) : ar, (250 + 200 * p) * 0.45, (340 + 70 * p) * 0.6); if (Math.random() < 0.4) fxTxt(e.x, e.y, -34, "bouclier !", "#BFD3E6"); }
+      else { ejecter(e, (dx || dy) ? Math.atan2(dy, dx) : ar, 250 + 200 * p, 340 + 70 * p); e.pv -= 4; }
     });
     S.O.forEach(function (b) { if (b.actif && Math.hypot(b.x - x, b.y - y) < r + b.r) pousser(b, x, y, 420); });
     var dh = Math.hypot(S.hero.x - x, S.hero.y - y);
@@ -1123,6 +1368,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     }
     if (c.farine) { dedans().forEach(function (e) { enfariner(e, c.farine); }); ajouterTrace("nuage", x, y, R, 4 + c.farine); }
     if (c.acide) {
+      dedans().forEach(rongerBouclier);
       var mouilles = dedans().filter(function (e) { return e.mouille > 0; });
       dedans().forEach(function (e) { e.lent = 3; e.pv -= 2 * c.acide; });
       if (mouilles.length) electrocuter(mouilles);
@@ -1154,8 +1400,9 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   }
   function cone(c, ang, spec) {
     var h = S.hero, vague = !c.feu;
-    fx({ k: "cone", x: h.x, y: h.y, ang: ang, len: spec.len, half: spec.half, c: vague ? "70,150,230" : "230,230,235", dur: .45 });
-    son(vague ? "splat" : "pschitt");
+    if (vague) { creerVague(h.x, h.y - 6, ang, spec.half, spec.len, 330); son("vague"); note("la vague emporte tout sur son passage"); return; }
+    fx({ k: "cone", x: h.x, y: h.y, ang: ang, len: spec.len, half: spec.half, c: "230,230,235", dur: .45 });
+    son("pschitt");
     var n = 0;
     S.E.forEach(function (e) {
       if (!dansCone(e, h, ang, spec.len + e.r, spec.half)) return;
@@ -1178,10 +1425,9 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
         e.tourb = { t: 1.3, a: Math.atan2(e.y - h.y, e.x - h.x), R: clamp(d2(e, h), 45, 120), chaine: S.chaineCour }; e.etat = "debout"; e.terreT = 0; e.lie = null; nT++;
         return;
       }
-      mouiller(e); balayer(e, angDe(e, h.x, h.y), 400);
     });
     if (nT) { combo("tourbillon"); note("ils tournent sur le savon !"); }
-    S.O.forEach(function (o) { if (o.actif && d2(o, h) < R + o.r) pousser(o, h.x, h.y, 480); });
+    creerVague(h.x, h.y, 0, Math.PI, R + 40, 300); son("vague");
     note("tout le monde est repoussé !");
   }
   function majRayon(dt) {
@@ -1207,7 +1453,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       var rx = cs - 2 * dot * nx0, ry = sn - 2 * dot * ny0, P2 = { x: P.x + rx * 650, y: P.y + ry * 650 };
       b = P; R.p = P; R.b2 = P2; segs = [[a, P, ang], [P, P2, Math.atan2(ry, rx)]];
       if (distSeg(S.B, P, P2) < S.B.r) {
-        S.B.pv -= 30 * dt; S.B.hit = 0.2; R.dmB = (R.dmB || 0) + 30 * dt;
+        var dmR = blesserBoss(30 * dt, { continu: true }); S.B.hit = 0.2; R.dmB = (R.dmB || 0) + dmR;
         if (R.dmB >= 6) { fxTxt(S.B.x, S.B.y, -80, "−" + Math.round(R.dmB), "#FFB347"); R.dmB = 0; }
         combo("miroir");
       }
@@ -1339,6 +1585,15 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       ctx.fillStyle = "#E9A6C8"; ctx.strokeStyle = "#7A3E5C"; ctx.lineWidth = 2; ctx.beginPath(); ctx.rect(GX - 12, GY - 12, 24, 14); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "#9B8CF0"; rond(GX, GY - 15, 4); ctx.fill();
     }
+    // les portes qui s'ouvrent : la lumière de Grosbec en sort
+    S.portesT.forEach(function (pt, i) {
+      if (pt <= 0) return;
+      var px = PORTES[i], m = i === 1 || i === 2, al = Math.min(1, pt / 0.4);
+      ctx.fillStyle = "rgba(255,190,90," + (0.6 * al) + ")"; arche(ctx, px, 92 - (m ? 24 : 26), m ? 22 : 20, m ? 24 : 26); ctx.fill();
+      var gp = ctx.createRadialGradient(px, 97, 2, px, 100, 44); gp.addColorStop(0, "rgba(255,190,90," + (0.4 * al) + ")"); gp.addColorStop(1, "rgba(255,190,90,0)");
+      ctx.fillStyle = gp; ell(px, 100, 44, 16); ctx.fill();
+    });
+    dessinerVagues(tps);
     var debout = [];
     debout.push({ y: S.B.y, f: dessinerBoss });
     debout.push({ y: FONTAINE.fy * L.D, f: dessinerFontaine });
@@ -1414,6 +1669,13 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
         ctx.strokeStyle = "rgba(220,240,235," + (0.7 * (1 - kf)) + ")"; ctx.lineWidth = 2;
         for (var vi = 0; vi < 7; vi++) { var va = f.ang - f.half + (2 * f.half) * vi / 6, vd = f.len * (0.2 + 0.8 * kf); ctx.beginPath(); ctx.moveTo(f.x + Math.cos(va) * vd * 0.4, sy(f.y + Math.sin(va) * vd * 0.4) - 14); ctx.lineTo(f.x + Math.cos(va) * vd, sy(f.y + Math.sin(va) * vd) - 14); ctx.stroke(); }
       }
+      else if (f.k === "etincelle") {
+        // le cœur d'un automate détruit file vers Grosbec
+        var ex = f.x + (f.x2 - f.x) * kf, ey = sy(f.y + (f.y2 - f.y) * kf) - 20 - Math.sin(Math.PI * kf) * 40;
+        var ge = ctx.createRadialGradient(ex, ey, 0, ex, ey, 9); ge.addColorStop(0, "rgba(255,250,220,1)"); ge.addColorStop(0.4, "rgba(255,190,80,.8)"); ge.addColorStop(1, "rgba(255,170,60,0)");
+        ctx.fillStyle = ge; rond(ex, ey, 9); ctx.fill();
+        for (var tr2 = 1; tr2 <= 3; tr2++) { var k2 = Math.max(0, kf - tr2 * 0.05), tx2 = f.x + (f.x2 - f.x) * k2, ty2 = sy(f.y + (f.y2 - f.y) * k2) - 20 - Math.sin(Math.PI * k2) * 40; ctx.fillStyle = "rgba(255,200,90," + (0.5 - tr2 * 0.13) + ")"; rond(tx2, ty2, 3.5 - tr2 * 0.7); ctx.fill(); }
+      }
       else if (f.k === "txt") { ctx.globalAlpha = 1 - kf; texte(f.txt, X, Y + f.dz - kf * 24, 14, f.c); ctx.globalAlpha = 1; }
     });
     // en haut : ta vie, le nombre d'automates, le message
@@ -1421,12 +1683,21 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     ctx.fillStyle = S.pv > 35 ? "#5FBF58" : "#E5A93A"; ctx.fillRect(12, 10, 110 * Math.max(0, S.pv / PV_J), 9);
     texte(Math.max(0, Math.ceil(S.pv)) + "", 128, 19, 11, "#fff", "left");
     texte(S.E.length + " automate" + (S.E.length > 1 ? "s" : ""), 12, 33, 11, S.E.length > 18 ? "#F0806A" : "#C9D2CF", "left");
-    if (S.rage > 0) texte("Grosbec enrage !", W / 2, 33, 11, "#F0806A");
     if (S.msg && S.msg.t > 0) {
       ctx.globalAlpha = Math.min(1, S.msg.t);
       var mt = S.msg.txt.length > 66 ? S.msg.txt.slice(0, 64) + "…" : S.msg.txt;
       ctx.fillStyle = "rgba(10,12,14,.78)"; ctx.fillRect(0, 38, W, 20);
       texte(mt, W / 2, 52, 11.5, S.msg.ton === "mal" ? "#F0806A" : S.msg.ton === "bon" ? "#8BD46A" : "#E8ECEA");
+      ctx.globalAlpha = 1;
+    }
+    // la salve qui arrive : son nom
+    if (S.banniere) {
+      var kb0 = S.banniere.t, yb = sy(S.B.y) + 36;
+      ctx.globalAlpha = Math.max(0, Math.min(1, kb0 * 2, (3.2 - kb0) * 5));
+      ctx.font = "800 12.5px 'Alegreya Sans', sans-serif"; var wb = ctx.measureText(S.banniere.txt).width + 44;
+      ctx.fillStyle = "rgba(110,26,20,.9)"; ctx.beginPath(); ctx.moveTo(W / 2 - wb / 2 - 8, yb); ctx.lineTo(W / 2 - wb / 2, yb - 10); ctx.lineTo(W / 2 + wb / 2, yb - 10); ctx.lineTo(W / 2 + wb / 2 + 8, yb); ctx.lineTo(W / 2 + wb / 2, yb + 10); ctx.lineTo(W / 2 - wb / 2, yb + 10); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "#F2C230"; ctx.lineWidth = 1.2; ctx.stroke();
+      texte("⚔  " + S.banniere.txt + "  ⚔", W / 2, yb + 4.5, 12.5, "#FFE9B0");
       ctx.globalAlpha = 1;
     }
     if (S.compteur) {
@@ -1439,6 +1710,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       var kb = 1 - S.big.t / 1.5, sc = kb < 0.15 ? 0.6 + kb / 0.15 * 0.6 : 1.2 - Math.min(0.2, (kb - 0.15) * 0.4);
       ctx.save(); ctx.translate(W / 2, L.top + (L.bot - L.top) * 0.42); ctx.scale(sc, sc); ctx.globalAlpha = Math.min(1, S.big.t * 2);
       ctx.font = "800 27px 'Alegreya Sans', sans-serif"; ctx.textAlign = "center"; ctx.lineWidth = 6; ctx.strokeStyle = "rgba(0,0,0,.85)";
+      var lb = ctx.measureText(S.big.txt).width; if (lb * sc > W - 24) ctx.scale((W - 24) / (lb * sc), (W - 24) / (lb * sc));
       ctx.strokeText(S.big.txt, 0, 0); ctx.fillStyle = "#F2C230"; ctx.fillText(S.big.txt, 0, 0);
       if (S.big.neuf) { ctx.font = "800 13px 'Alegreya Sans', sans-serif"; ctx.lineWidth = 3; ctx.strokeText("Nouveau combo dans le carnet !", 0, 22); ctx.fillStyle = "#fff"; ctx.fillText("Nouveau combo dans le carnet !", 0, 22); }
       ctx.restore(); ctx.globalAlpha = 1;
@@ -1497,18 +1769,41 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     ctx.restore();
   }
   function dessinerBoss(tps) {
-    var B = S.B, x = B.x, Y = sy(B.y), u = S.ordreT;
-    var ordre = u < 0 ? 0 : u < 0.4 ? u / 0.4 : u < 1.4 ? 1 : u < 1.9 ? 1 - (u - 1.4) / 0.5 : 0;
-    ombre(x, Y, 34);
+    var B = S.B, x = B.x, Y = sy(B.y), P = grosbecPose();
+    ombre(x, Y, 34 - P.saut * 0.8);
     ctx.save(); ctx.translate(x, Y); ctx.scale(0.86, 0.86);
-    grosbecGarde({ t: tps, coup: Math.max(0, B.hit / 0.35), rage: S.rageV, ordre: ordre }, 0.86);
+    grosbecGarde({ t: tps, coup: Math.max(0, B.hit / 0.35), rage: S.rageV, ordre: P.ordre, brasG: P.brasG, brasD: P.brasD, saut: P.saut, tremble: P.tremble }, 0.86);
     ctx.restore();
+    // son bouclier : un dôme doré, nid d'abeilles, qui s'allume quand un coup rebondit
+    if (S.bouclierV > 0.02) {
+      var al = S.bouclierV * (1 + S.bouclierFlash * 2), cy = Y - 46, rx = 50, ry = 64;
+      var gd = ctx.createRadialGradient(x, cy, 12, x, cy, ry); gd.addColorStop(0, "rgba(242,194,48,0)"); gd.addColorStop(0.75, "rgba(242,194,48," + (0.12 * al) + ")"); gd.addColorStop(1, "rgba(255,230,140," + Math.min(0.9, 0.5 * al) + ")");
+      ctx.fillStyle = gd; ell(x, cy, rx, ry); ctx.fill();
+      ctx.save(); ell(x, cy, rx, ry); ctx.clip();
+      ctx.strokeStyle = "rgba(255,225,120," + Math.min(0.8, 0.35 * al) + ")"; ctx.lineWidth = 0.8;
+      for (var hy = -4; hy <= 4; hy++) for (var hx = -4; hx <= 4; hx++) { var hcx = x + hx * 15 + (hy % 2 ? 7.5 : 0), hcy = cy + hy * 13 + Math.sin(tps * 2) * 2; ctx.beginPath(); for (var hk = 0; hk < 6; hk++) { var ha = hk * Math.PI / 3 + Math.PI / 6; ctx.lineTo(hcx + Math.cos(ha) * 8, hcy + Math.sin(ha) * 8); } ctx.closePath(); ctx.stroke(); }
+      ctx.restore();
+      ctx.strokeStyle = "rgba(255,240,170," + Math.min(1, 0.7 * al) + ")"; ctx.lineWidth = 1.6; ell(x, cy, rx, ry); ctx.stroke();
+    }
     ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(x - 55, Y + 8, 110, 7);
-    ctx.fillStyle = "#E5572A"; ctx.fillRect(x - 55, Y + 8, 110 * Math.max(0, B.pv / PV_B), 7);
-    texte("Grosbec " + Math.max(0, Math.ceil(B.pv)), x, Y + 27, 11, "#F2C86A");
+    ctx.fillStyle = S.bouclierV > 0.5 ? "#F2C230" : "#E5572A"; ctx.fillRect(x - 55, Y + 8, 110 * Math.max(0, B.pv / PV_B), 7);
+    texte((S.bouclierV > 0.5 ? "🛡 " : "") + "Grosbec", x, Y + 27, 11, "#F2C86A");
+    // ce qu'il crie (une bulle de bande dessinée)
+    if (S.bulle) {
+      var bt = S.bulle, sc2 = bt.t > 1.3 ? 0.6 + (1.5 - bt.t) * 2 : 1;
+      ctx.font = "800 13px 'Alegreya Sans', sans-serif"; var bw = ctx.measureText(bt.txt).width + 16;
+      var bx = clamp(x + 26 + bw / 2, bw / 2 + 4, W - bw / 2 - 4), byy = Y - 72;
+      ctx.save(); ctx.translate(bx, byy); ctx.scale(sc2, sc2); ctx.globalAlpha = Math.min(1, bt.t * 3);
+      ctx.fillStyle = "#FFF8E6"; ctx.strokeStyle = "#1A1410"; ctx.lineWidth = 2;
+      ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(-bw / 2, -13, bw, 24, 10); else ctx.rect(-bw / 2, -13, bw, 24);
+      ctx.moveTo(-bw / 2 + 12, 11); ctx.lineTo(-bw / 2 + 2, 22); ctx.lineTo(-bw / 2 + 22, 11); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#B3261E"; ctx.textAlign = "center"; ctx.fillText(bt.txt, 0, 4);
+      ctx.restore(); ctx.globalAlpha = 1;
+    }
   }
   function dessinerAuto(e, tps) {
     var T = e.T, x = e.x, Y = sy(e.y);
+    if (e.app > 0) ctx.globalAlpha = Math.max(0, 1 - e.app / 0.4);
     if (e.mouille > 0) { ctx.strokeStyle = "rgba(79,163,240,.7)"; ctx.lineWidth = 2; ell(x, Y, e.r + 5, (e.r + 5) * 0.45); ctx.stroke(); }
     ombre(x, Y, e.r * (e.z > 0 ? Math.max(0.5, 1 - e.z / 160) : 1));
     var w = e.r * 1.35, hh = T.h, rot = 0, couche = e.etat === "glisse" || e.etat === "terre";
@@ -1549,6 +1844,30 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     if ((e.etourdi > 0.4 || (e.etat === "terre" && e.ko)) && e.z <= 0) { for (var s = 0; s < 3; s++) { var as = tps * 5 + s * 2.09; texte("✦", x + Math.cos(as) * 9, top - 2 + Math.sin(as) * 3, 9, "#FFE08A"); } }
     var tag = e.meche > 0 ? "mèche !" : e.statue > 0 ? "" : e.panique > 0 ? "" : e.mange ? "il mange" : e.colle > 0 ? "collé" : e.attrape ? "attrapé" : "";
     if (tag) texte(tag, x, Y + 13, 9.5, "#FFD9A0");
+    ctx.globalAlpha = 1;
+  }
+  // la vague : une nappe d'eau, un bourrelet bleu, l'écume blanche qui bouillonne, des gouttes
+  function dessinerVagues(tps) {
+    S.V.forEach(function (V) {
+      var al = V.fini ? Math.max(0, V.finT / 0.35) : 1, d = V.d, plein = V.half >= 3;
+      var a0 = plein ? 0 : V.ang - V.half, a1 = plein ? Math.PI * 2 : V.ang + V.half, n = plein ? 40 : 18, i, a;
+      function px(a, r) { return V.x + Math.cos(a) * r; }
+      function py(a, r, lev) { return sy(V.y + Math.sin(a) * r) - (lev || 0); }
+      var dIn = Math.max(4, d - 80);
+      ctx.beginPath();
+      for (i = 0; i <= n; i++) { a = a0 + (a1 - a0) * i / n; ctx.lineTo(px(a, d - 6), py(a, d - 6, 3)); }
+      for (i = n; i >= 0; i--) { a = a0 + (a1 - a0) * i / n; ctx.lineTo(px(a, dIn), py(a, dIn)); }
+      ctx.closePath(); ctx.fillStyle = "rgba(50,130,215," + (0.3 * al) + ")"; ctx.fill();
+      ctx.lineCap = "round"; ctx.lineJoin = "round";
+      ctx.beginPath(); for (i = 0; i <= n; i++) { a = a0 + (a1 - a0) * i / n; ctx.lineTo(px(a, d - 3), py(a, d - 3, 6 + Math.sin(i * 1.7 + tps * 10) * 1.5)); }
+      ctx.strokeStyle = "rgba(30,110,200," + (0.9 * al) + ")"; ctx.lineWidth = 10; ctx.stroke();
+      ctx.beginPath(); for (i = 0; i <= n; i++) { a = a0 + (a1 - a0) * i / n; ctx.lineTo(px(a, d), py(a, d, 10 + Math.sin(i * 2.3 + tps * 12) * 2)); }
+      ctx.strokeStyle = "rgba(235,248,255," + (0.95 * al) + ")"; ctx.lineWidth = 3.5; ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255," + (0.85 * al) + ")";
+      for (i = 0; i < n * 2; i++) { a = a0 + (a1 - a0) * (i + 0.5) / (n * 2); var j = Math.sin(i * 12.9 + tps * 9) * 3; rond(px(a, d + j), py(a, d + j, 11 + Math.abs(Math.sin(i * 3.1 + tps * 13)) * 5), 1.6 + (i % 3) * 0.8); ctx.fill(); }
+      ctx.fillStyle = "rgba(170,215,255," + (0.8 * al) + ")";
+      for (i = 0; i < n; i++) { a = a0 + (a1 - a0) * ((i * 7) % n + 0.5) / n; var hg = ((tps * 3 + i * 0.37) % 1); rond(px(a, d + 4 + hg * 10), py(a, d + 4 + hg * 10, 14 + Math.sin(hg * Math.PI) * 14), 1.4); ctx.fill(); }
+    });
   }
   function dessinerHeros(tps) {
     var h = S.hero, x = h.x, Y = sy(h.y);
@@ -1766,11 +2085,11 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     automateGarde(e.t, o, cle);
   }
   // Grosbec : un seul, redessiné 15 fois par seconde dans sa toile
-  var CACHE_G = { c: null, k: 0, cle: "" }, G_BOITE = [-60, 60, -126, 8];
+  var CACHE_G = { c: null, k: 0, cle: "" }, G_BOITE = [-62, 62, -150, 8];
   function grosbecGarde(o, ech) {
     var k = L.s * L.dpr * ech, G = CACHE_G, B = G_BOITE;
     if (!G.c || G.k !== k) { G.c = document.createElement("canvas"); G.c.width = Math.ceil((B[1] - B[0]) * k); G.c.height = Math.ceil((B[3] - B[2]) * k); G.k = k; G.cle = ""; }
-    var tq = Math.floor(o.t * 15) / 15, cle = tq + "|" + Math.round(o.coup * 10) + "|" + Math.round(o.rage * 10) + "|" + Math.round(o.ordre * 10);
+    var tq = Math.floor(o.t * 15) / 15, cle = tq + "|" + Math.round(o.coup * 10) + "|" + Math.round(o.rage * 10) + "|" + Math.round(o.ordre * 10) + "|" + Math.round((o.brasG || 0) * 10) + "|" + Math.round((o.brasD || 0) * 10) + "|" + Math.round(o.saut || 0) + "|" + Math.round((o.tremble || 0) * 4);
     if (G.cle !== cle) {
       var g = G.c.getContext("2d"); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, G.c.width, G.c.height);
       g.setTransform(k, 0, 0, k, -B[0] * k, -B[2] * k); o.t = tq; PersosCombat.grosbec(g, o); G.cle = cle;
@@ -1863,6 +2182,6 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   redim();
   dessiner();
   setTimeout(monterAlchi, 50);
-  window.__v4 = { alchi: function () { return alchi; }, etat: function () { return S; }, L: L, lancer: function (x, y) { lancer({ x: x, y: y }); }, boire: function () { boire(); }, ajouter: ajouter };
+  window.__v4 = { essai: { lancerSalve: function (d) { lancerSalve(d); }, SALVES: SALVES, SEUILS: SEUILS, colere: function () { grosseColere(); } }, vitesse: function (v) { VITESSE = v; }, alchi: function () { return alchi; }, etat: function () { return S; }, L: L, lancer: function (x, y) { lancer({ x: x, y: y }); }, boire: function () { boire(); }, ajouter: ajouter };
 })();
 </script>
