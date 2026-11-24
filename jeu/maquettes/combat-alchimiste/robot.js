@@ -57,6 +57,7 @@ const DUREE = +(process.argv[2] || 90000);
       await p.waitForTimeout(+(process.argv[4] || 420));
       if (shot < 4 && Date.now() - t0 > 12000 * (shot + 1)) { shot++; await p.screenshot({ path: "v4-jeu-" + nom + "-" + shot + ".png" }); }
     }
+    await p.waitForTimeout(1600);
     const fin = await p.evaluate(() => { const S = window.__v4.etat(); return { fin: !S.enCours, temps: Math.round(S.temps), pv: Math.round(S.pv), boss: Math.round(S.B.pv), nE: S.E.length, tues: S.tues, coups: S.coupsBoss, chaine: S.chaineMax, combos: S.combosPartie, titre: document.getElementById("fin-titre").textContent }; });
     await p.screenshot({ path: "v4-fin-" + nom + ".png" });
     console.log(nom, JSON.stringify(dims), "tours", tours, JSON.stringify(fin));

@@ -219,7 +219,7 @@
 
     /* le bras de devant, et ce qu'il tient */
     if (f === 0) { bras(-1, true); bras(1, true); } else bras(-cFond, true);
-    if (type === "bouclier") {
+    if (type === "bouclier" && !o.sansBouclier) {
       // un grand bouclier rond, cerclé d'or : c'est sur lui que rebondit ton rayon de feu
       var sx = -bw * 0.35 + dx * 1.2 - 1, syy = yB + bh * 0.62, sr = 8.6, sa = 1 - Math.abs(f) * 0.35;
       ell(ctx, sx, syy, sr * sa, sr); ctx.fillStyle = volume(ctx, sx, syy, sr * 1.1, E.statue ? TERRE.email : "#4E6E96", true); ctx.fill(); trait(ctx, "#4E6E96", 1);
