@@ -238,10 +238,11 @@ A.attaquer = function(nom, o){
 };
 
 /* ---------- la fin ---------- */
-A.fuir = function(){ var self = this; this.mort = true; return pr(this.acteur.fuir()).then(function(){ self.el.classList.add('parti'); }); };
-A.mourir = function(){
+/* (o : {onTombe, laisser} — ce que la bête laisse au sol en partant, 24 novembre ; les modules qui ne savent pas l'ignorent) */
+A.fuir = function(o){ var self = this; this.mort = true; return pr(this.acteur.fuir(o)).then(function(){ self.el.classList.add(o && o.laisser && !self.rat ? 'restes' : 'parti'); }); };
+A.mourir = function(o){
   var self = this, a = this.acteur; this.mort = true;
-  return pr(a.mourir ? a.mourir() : a.fuir()).then(function(){ if(self.rat) self.el.classList.add('parti'); else self.el.classList.add('restes'); });
+  return pr(a.mourir ? a.mourir(o) : a.fuir(o)).then(function(){ if(self.rat) self.el.classList.add('parti'); else self.el.classList.add('restes'); });
 };
 A.exploser = function(scene, o){
   var self = this; this.mort = true;

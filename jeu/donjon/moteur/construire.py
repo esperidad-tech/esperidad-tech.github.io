@@ -19,7 +19,7 @@ BETES = ['ratcuir', 'araignee', 'petitearaignee', 'chauvesouris', 'feufollet', '
 # des héros en volume, à l'allure des joueurs ; le Barde reste l'ancien). « ?ancien=1 » dans l'adresse : les anciens héros.
 HEROS_VUES = os.path.join(os.path.dirname(DONJON), 'heros-vues')
 HV = [os.path.join(HEROS_VUES, 'src', f) for f in ['hv-base.js', 'hv-tete.js', 'hv-cheveux.js', 'hv-corps.js', 'hv-pantin.js', 'hv-poses.js',
-      'hv-positions.js', 'hv-donjon.js', 'hv-alchimiste.js', 'hv-sage.js', 'hv-attente.js']] + [os.path.join(HEROS_VUES, 'donjon', 'hv-adaptateur.js')]
+      'hv-positions.js', 'hv-donjon.js', 'hv-alchimiste.js', 'hv-sage.js', 'hv-attente.js', 'hv-cuit.js']] + [os.path.join(HEROS_VUES, 'donjon', 'hv-adaptateur.js')]
 # le cœur du jeu, dans cet ordre (tout le reste se charge à la demande)
 COEUR = [
     ('sons', [os.path.join(ESSAI, 'sons', f) for f in ['moteur.js', 'bruitages.js', 'bestiaire.js', 'donjon.js', 'leo.js', 'cine.js', 'musiques.js', 'musiques-donjon.js']]),

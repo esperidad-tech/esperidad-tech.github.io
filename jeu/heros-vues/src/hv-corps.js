@@ -393,7 +393,7 @@ function mainSVG(K, V, B, P){
   w = uni(w);
   var n = mul(croix(d, w), -cote);                               /* (vers où regarde la paume) */
   function Q(a, b, c2){ return pj(add(add(add(W, d, a), w, b), n, c2 || 0), V); }
-  var L = [], objet = '', objetPts = [], morceaux = [], i;
+  var L = [], objet = '', objetPts = [], morceaux = [], i, louche = '';
   /* la dague, dans SA main gauche : le manche est dans le poing, la lame sort du côté du pouce */
   if(cote > 0 && (P.dague || 0) > 0.3){
     var g0 = Q(7.6, -7.4, 2.4), g1 = Q(7.6, 8, 2.4), ga = Q(3.6, 8.6, 2.4), gb = Q(11.6, 8.6, 2.4);
@@ -435,11 +435,12 @@ function mainSVG(K, V, B, P){
        le cuilleron passe devant le poing, en bas, derrière, en haut) */
     var lr = (P.loucheR || 0) * RAD, lco = Math.cos(lr), lsi = Math.sin(lr);
     function QL(b){ return Q(7.6 + b * lsi, b * lco, 2.4); }
-    var lh0 = QL(-12), lh1 = QL(44), lb = QL(52);
+    var lh0 = QL(-12), lh1 = QL(44), lb = QL(52), o0 = objet.length;
     objet += '<g opacity="' + f1(doux(0.05, 0.5, P.louche)) + '">' + PT(U.poly([lh0, lh1], false), O, 7.4) + PT(U.poly([lh0, lh1], false), '#8a8f9c', 4.4) +
       '<circle cx="' + f1(lb[0]) + '" cy="' + f1(lb[1]) + '" r="10" fill="#6a6f7c"' + U.c(2.2) + '/><ellipse cx="' + f1(lb[0] - 1) + '" cy="' + f1(lb[1] - 1.5) + '" rx="6.5" ry="5" fill="#2e3038"/>' +
       '<path d="M' + f1(lb[0] - 7) + ' ' + f1(lb[1] + 3) + ' A8 8 0 0 0 ' + f1(lb[0] + 6) + ' ' + f1(lb[1] + 5) + '" fill="none" stroke="#d5dbe6" stroke-width="1.6" opacity=".8"/></g>';
     objetPts.push(QL(20), QL(36), lb);
+    louche = objet.slice(o0);          /* (le pantin cuit en fait un morceau à part) */
   }
   if(cote > 0 && (P.marmite || 0) > 0.05){
     var mf = Q(7.6, 0, 2.4), mx = mf[0], my = mf[1] + 25;
@@ -592,7 +593,7 @@ function mainSVG(K, V, B, P){
   }
   s += PT(tr, K.peau.trait, 1.05, ' opacity=".8"');
   /* (pour tenir l'arc : la paume seule, et les doigts seuls avec leurs traits ; vers : la paume est tournée vers nous) */
-  return {objet:objet, objetPts:objetPts, morceaux:morceaux, apres:apres, main:s, paume:defs + paume, doigts:U.masse(L, 'url(#' + gid + ')', 1.9) + PT(tr, K.peau.trait, 1.05, ' opacity=".8"'), n:n, vers:-n[0] * V.s + n[2] * V.c};
+  return {objet:objet, louche:louche, objetPts:objetPts, morceaux:morceaux, apres:apres, main:s, paume:defs + paume, doigts:U.masse(L, 'url(#' + gid + ')', 1.9) + PT(tr, K.peau.trait, 1.05, ' opacity=".8"'), n:n, vers:-n[0] * V.s + n[2] * V.c};
 }
 
 /* le dessin d'un bras. plein : avec tout son contour (le bras du fond, dessiné avant le buste) ; sinon son trait ne commence qu'à l'aisselle */
@@ -652,7 +653,7 @@ function brasSVG(K, V, B, P, plein){
     if(mn.vers > 0.15) return {manche:s, paume:mn.paume, arc:arc, objet:mn.objet, objetPts:mn.objetPts, morceaux:mn.morceaux, main:mn.doigts, apres:mn.apres};
     return {manche:s, paume:'', arc:arc, objet:mn.objet, objetPts:mn.objetPts, morceaux:mn.morceaux, main:mn.main, apres:mn.apres};
   }
-  return {manche:s, paume:'', arc:null, objet:mn.objet, objetPts:mn.objetPts, morceaux:mn.morceaux, main:mn.main, apres:mn.apres};
+  return {manche:s, paume:'', arc:null, objet:mn.objet, louche:mn.louche, objetPts:mn.objetPts, morceaux:mn.morceaux, main:mn.main, apres:mn.apres};
 }
 /* un bras en une seule chaîne de dessin (la manche, la paume, l'arc, ce qu'il tient, la main) ; m : pour chaque morceau de l'arc
    (cH, cB, bH, bB), le masque qui le cache là où quelque chose est devant lui */
@@ -1283,6 +1284,146 @@ HV.corps = function(K, h, V, P){
     ombre:{cx:(xa + xb) / 2, rx:Math.max(50 + 8 * Math.abs(V.s), (xb - xa) / 2 + 32), cy:SOL + 1 + PSOL * ys},
     os:{bassin:T.Pc, hancheG:jg.Ha, hancheD:jd.Ha, genouG:jg.Kn, genouD:jd.Kn, chevilleG:jg.An, chevilleD:jd.An, talonG:jg.Ta, talonD:jd.Ta, orteilG:jg.Po, orteilD:jd.Po,
       epauleG:T.buste([-GAB.ep, 151, 0]), epauleD:T.buste([GAB.ep, 151, 0]), coudeG:bG.El, coudeD:bD.El, poignetG:bG.W, poignetD:bD.W, cou:N0, tete:Hp}};
+};
+
+/* ==========================================================
+   LE PANTIN CUIT (24 novembre, nuit — Romain, 4 h 14 : « les nouveaux personnages, ils font ramer même mon iPhone […] 24 images
+   minimum pour toutes les tablettes, même celles qui sont très lentes »). Redessiner tout le héros à chaque image coûte trop :
+   hv-cuit.js le découpe en MORCEAUX dessinés une seule fois (des images), que la carte graphique déplace. Ici, les deux outils
+   dont il a besoin, faits avec les mêmes calculs que HV.corps :
+   - HV.squelette(K, h, V, P) : seulement où sont les os, à l'écran — presque rien à calculer (pas de dessin) ;
+   - HV.morceaux(K, h, V, P) : le dessin de chaque morceau, séparé des autres (sans les caches qui les coupent les uns par les autres :
+     c'est l'ordre des morceaux, devant / derrière, qui fera ce travail).
+   Les points sont « à l'écran », dans les mesures du dessin (avant le décalage de 150 du pantin), [x, y, profondeur].
+   ========================================================== */
+function teteDe(T, V, P){
+  var ba = P.bang || Z3, ds = P.dos || Z3;
+  var yawT = ba[2] + ds[2] + (P.tete || 0), Vt = U.vue((HV.capDe ? HV.capDe(P) : P.cap || 0) + yawT), ho = P.hoche || 0, co = borne(P.couche || 0, 0, 1);
+  var upC = mv(T.M[0], [0, -1, 0]), upT = mv(mm(RY(yawT), RX(ho * 0.5)), [0, -1, 0]), N0 = T.lieu([0, 139, -2]), nd = uni(add(mul(upC, 0.5 + 0.5 * co), upT, 0.5 - 0.5 * co)), Hp = add(N0, nd, 19);
+  var pN0 = pj(N0, V), pN1 = pj(add(N0, nd, 30), V), lN = d2(pN0, pN1), angN = lN < 1 ? 0 : Math.atan2(pN1[0] - pN0[0], pN0[1] - pN1[1]) / RAD * Math.min(1, lN / 16);
+  var pHp = pj(Hp, V);
+  return {V:Vt, yaw:yawT, tx:pHp[0] + 3 * Vt.s, ty:pHp[1] - 28, px:-3 * Vt.s, rot:(P.pen || 0) + ho * Vt.s + co * angN, hocheF:ho * Vt.c, fond:pHp[2] - T.dB,
+    N0:N0, nd:nd, Hp:Hp, cou0:pN0, bc:pj(T.lieu([0, 146, -2]), V)};
+}
+/* L'ARC, à l'écran (les mêmes calculs que arcSVG et le début de mainSVG) : ses deux bouts, le milieu de la corde (ou l'encoche, quand
+   elle tire), la pointe de la flèche encochée — le pantin cuit fait de l'arc, de chaque moitié de corde et de la flèche des morceaux
+   à part, chacun tendu entre deux de ces points */
+/* le repère d'une main (comme mainSVG) : Q(a, b, c) → le point (à l'écran) à a le long des doigts, b du côté du pouce, c vers la paume */
+function repereMain(V, B, P){
+  var cote = B.cote, d = B.dir, pc = (B.tourne || function(v){ return v; })(B.pouce || P['pouce' + B.cle] || [-cote * 0.25, 0.1, 1]);
+  var w = sub(pc, mul(d, dot(pc, d))); if(lon(w) < 0.08) w = sub([0, -1, 0.2], mul(d, dot([0, -1, 0.2], d)));
+  w = uni(w);
+  var n = mul(croix(d, w), -cote);
+  return {d:d, w:w, n:n, Q:function(a, b, c){ return pj(add(add(add(B.W, d, a), w, b), n, c || 0), V); }};
+}
+/* le bâton du Sage, la louche de l'Alchimiste (SA main droite : bG) : deux points le long de chacun (comme mainSVG) */
+function objetsOs(V, B, P, K){
+  var R = {}, M = repereMain(V, B, P);
+  if(K.baton && !(P.sansBaton > 0.5)) R.baton = {a:M.Q(7.6, -176, 2.4), b:M.Q(7.6, 165, 2.4), cristal:M.Q(7.6, 142, 2.4), cri:borne(P.cristal || 0, 0, 1)};
+  if((P.louche || 0) > 0.05){ var lr = (P.loucheR || 0) * RAD, lco = Math.cos(lr), lsi = Math.sin(lr);
+    R.louche = {a:M.Q(7.6 - 12 * lsi, -12 * lco, 2.4), b:M.Q(7.6 + 52 * lsi, 52 * lco, 2.4), o:doux(0.05, 0.5, P.louche)}; }
+  return R;
+}
+function arcOs(V, B, P){
+  var M = repereMain(V, B, P), d = M.d, n = M.n, Hd = add(add(B.W, d, 8), n, 3.5);
+  var Pa = P; if(B.tourne){ Pa = {arcAxe:B.tourne(P.arcAxe || [0, 1, 0]), arcDir:B.tourne(P.arcDir || [-0.82, 0, 0.57]), arcLong:P.arcLong, tendu:P.tendu}; }
+  var axe = uni(Pa.arcAxe || [0, 1, 0]), e0 = Pa.arcDir || [-0.82, 0, 0.57], e = sub(e0, mul(axe, dot(e0, axe))), L = Pa.arcLong || 101, td = Pa.tendu || 0;
+  e = uni(lon(e) < 0.05 ? [-0.82, 0, 0.57] : e);
+  function Q(u, v){ return pj(add(add(Hd, e, u), axe, v), V); }
+  var bx = -16.5 - 9 * td, by = L - 5 * td, t1 = Q(bx, -by), t2 = Q(bx, by), mid = [(t1[0] + t2[0]) / 2, (t1[1] + t2[1]) / 2, (t1[2] + t2[2]) / 2], pt = null;
+  if(td > 0.02 && P._encoche){ var nk = pj(P._encoche, V); mid = [vers(mid[0], nk[0], td), vers(mid[1], nk[1], td), vers(mid[2], nk[2], td)]; pt = Q(20, 0); }
+  /* (le ventre de l'arc : de quel côté de la ligne des bouts il se courbe, à l'écran) */
+  var ve = Q(5.5, 0), sens = (t2[0] - t1[0]) * (ve[1] - t1[1]) - (t2[1] - t1[1]) * (ve[0] - t1[0]);
+  return {t1:t1, t2:t2, mid:mid, pt:pt, td:td, sens:sens < 0 ? -1 : 1};
+}
+function osDe(T, V, P, jg, jd, bG, bD, K){
+  /* (sous : la main est derrière le buste, là où on le voit — comme sousBuste de HV.corps, en plus simple : tout le bras passe derrière) */
+  var cb = pj(T.Cb, V), tN = pj(T.lieu([0, 130, 0]), V);
+  function b2(B){ var sous = B.w[2] < T.dB - 6 && Math.abs(B.w[0] - cb[0]) < 34 && B.w[1] > cb[1] - 50 && B.w[1] < cb[1] + 95;
+    /* (et la main derrière le cou ou la tête — celle qui tire la corde, vue de dos : comme sousCou) */
+    if(!sous && B.w[2] < tN[2] - 3 && d2(B.w, tN) < 46) sous = true;
+    return {e:B.e, c2:B.c2, w:B.w, m:B.m, fond:B.fond, sous:sous}; }
+  function j2(j){ return {ha:pj(j.Ha, V), kn:j.kn, an:pj(j.An, V), ta:pj(j.Ta, V), po:pj(j.Po, V), fond:j.fond}; }
+  var av = mv(T.Mb, [0, 0, 1]);
+  var S = {bras:{G:b2(bG), D:b2(bD)}, jambes:{G:j2(jg), D:j2(jd)}, bassin:pj(T.Pc, V), haut:pj(T.lieu([0, 139, -2]), V), taille:pj(T.lieu([0, 204, 0]), V),
+    dos:-av[0] * V.s + av[2] * V.c < -0.15, tete:teteDe(T, V, P)};
+  if(K && P.arc !== false && K.arme === 'arc') S.arc = arcOs(V, bG, P);
+  if(K){ var ob = objetsOs(V, bG, P, K); if(ob.baton) S.baton = ob.baton; if(ob.louche) S.louche = ob.louche; }
+  return S;
+}
+/* les os d'une pose, en 3D (les mêmes que HV.corps(…).os), sans rien dessiner : HV.os (hv-pantin.js) s'en sert — avant, il faisait
+   tout le dessin pour les avoir (4 ms à chaque fois, et les effets du donjon les demandent à chaque image) */
+HV.corpsOs = function(K, h, V, P){
+  P = P || {};
+  gabarit(K);
+  var T = tronc(V, P), jg = jambe(V, -1, P, T), jd = jambe(V, 1, P, T), bG = bras(V, -1, P, T), bD = bras(V, 1, P, T), tt = teteDe(T, V, P);
+  return {bassin:T.Pc, hancheG:jg.Ha, hancheD:jd.Ha, genouG:jg.Kn, genouD:jd.Kn, chevilleG:jg.An, chevilleD:jd.An, talonG:jg.Ta, talonD:jd.Ta, orteilG:jg.Po, orteilD:jd.Po,
+    epauleG:T.buste([-GAB.ep, 151, 0]), epauleD:T.buste([GAB.ep, 151, 0]), coudeG:bG.El, coudeD:bD.El, poignetG:bG.W, poignetD:bD.W, cou:tt.N0, tete:tt.Hp};
+};
+HV.squelette = function(K, h, V, P){
+  P = P || {};
+  gabarit(K);
+  var T = tronc(V, P), jg = jambe(V, -1, P, T), jd = jambe(V, 1, P, T), bG = bras(V, -1, P, T), bD = bras(V, 1, P, T);
+  if(P.tendu > 0.02) P._encoche = add(bD.W, bD.da, 12);
+  return osDe(T, V, P, jg, jd, bG, bD, K);
+};
+/* un bras en trois morceaux : le haut (sans le trait du bout du coude : c'est l'avant-bras, dessous, qui fait le contour du coude),
+   l'avant-bras (tout son contour, son brassard, les plis du coude), la main et ce qu'elle tient */
+function brasEnMorceaux(K, V, B, P){
+  var c2 = B.c2, w = B.w, L = B.manche;
+  var haut = PT(cotes(B.e[0], B.e[1], R_EP, c2[0], c2[1], R_CO), O, 4.4) +
+    '<path d="' + L[0] + '" fill="' + K.u('tunP') + '"/><path d="' + L[0] + '" fill="' + K.u('trame') + '" opacity=".34"/>' +
+    relief(K, 'rb' + B.cle + '0', B.e[0], B.e[1], c2[0], c2[1], R_EP) + PF(L[0], K.u('rb' + B.cle + '0'));
+  /* (un bras DEVANT le buste : comme brasSVG, son trait et son relief naissent en fondu sous l'aisselle — il se fond dans la
+     poitrine ; la manche part bien de l'épaule, de la couleur de la tunique : le buste cuit n'a pas le haut des bras) */
+  var fx = c2[0] - B.a[0], fy = c2[1] - B.a[1], fl = Math.sqrt(fx * fx + fy * fy) || 1, lf = Math.min(16, fl * 0.45), fid = K.n('fc' + B.cle);
+  fx /= fl; fy /= fl;
+  var fondu = ' mask="url(#' + fid + ')"';
+  var hautDevant = '<linearGradient id="' + fid + 'g" gradientUnits="userSpaceOnUse" x1="' + f1(B.a[0]) + '" y1="' + f1(B.a[1]) + '" x2="' + f1(B.a[0] + fx * lf) + '" y2="' + f1(B.a[1] + fy * lf) + '"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff"/></linearGradient>' +
+    '<mask id="' + fid + '" maskUnits="userSpaceOnUse" x="-260" y="-120" width="520" height="600"><rect x="-260" y="-120" width="520" height="600" fill="url(#' + fid + 'g)"/></mask>' +
+    '<path d="' + cotes(B.a[0], B.a[1], B.ra, c2[0], c2[1], R_CO) + '" fill="none" stroke="' + O + '" stroke-width="4.4" stroke-linecap="round"' + fondu + '/>' +
+    '<path d="' + L[0] + '" fill="' + K.u('tunP') + '"/><path d="' + L[0] + '" fill="' + K.u('trame') + '" opacity=".34"/>' +
+    relief(K, 'rb' + B.cle + '0', B.e[0], B.e[1], c2[0], c2[1], R_EP) + PF(L[0], K.u('rb' + B.cle + '0'), fondu);
+  var o = brasSVG(K, V, B, P, true);
+  /* (l'avant-bras : la manche entière moins le haut du bras — on la redessine à part, avec son contour à elle) */
+  var bas = PC(L[1], K.u('tunP'), 4.4) + '<path d="' + L[1] + '" fill="' + K.u('trame') + '" opacity=".34"/>' +
+    relief(K, 'rb' + B.cle + '1', c2[0], c2[1], w[0], w[1], R_CO) + PF(L[1], K.u('rb' + B.cle + '1'));
+  /* (le brassard, les plis : la fin de o.manche, après les reliefs — on la reprend telle quelle) */
+  var i = o.manche.lastIndexOf('clip-path="url(#' + K.n('xb' + B.cle) + ')"/>');
+  if(i >= 0) bas += o.manche.slice(i + ('clip-path="url(#' + K.n('xb' + B.cle) + ')"/>').length);
+  /* (l'arc n'est pas dans la main : ses morceaux sont à part — arcOs) */
+  /* (le bâton du Sage — ses morceaux — et la louche de l'Alchimiste ne sont pas dans la main non plus : objetsOs) */
+  var objet = o.louche ? o.objet.replace(o.louche, '') : o.objet;
+  var R = {haut:haut, hautDevant:hautDevant, bas:bas, main:o.paume + objetsTout({objet:objet}) + o.main + (o.apres || ''), o:o,
+    baton:(o.morceaux || []).map(function(x){ return x.svg; }).join(''), louche:o.louche || ''};
+  if(o.arc){
+    var A = {}; o.arc.morceaux.forEach(function(x){ A[x.nom] = x.svg; });
+    R.arc = (A.bH || '') + (A.bB || '') + o.arc.poignee; R.cordeH = A.cH || ''; R.cordeB = A.cB || ''; R.fleche = A.fl || '';
+  }
+  return R;
+}
+HV.morceaux = function(K, h, V, P){
+  P = P || {};
+  gabarit(K);
+  var T = tronc(V, P), jg = jambe(V, -1, P, T), jd = jambe(V, 1, P, T);
+  draper(T, jg.dc, jd.dc);
+  var bG = bras(V, -1, P, T), bD = bras(V, 1, P, T);
+  if(P.tendu > 0.02) P._encoche = add(bD.W, bD.da, 12);
+  var os = osDe(T, V, P, jg, jd, bG, bD, K), M = {os:os, bras:{}, jambes:{}};
+  [bG, bD].forEach(function(B){ M.bras[B.cle] = brasEnMorceaux(K, V, B, P); });
+  [jg, jd].forEach(function(j){ var sv = jambeSVG(K, V, j, P); M.jambes[j.cle] = {cuisse:sv.cuisse, botte:sv.botte}; });
+  var cq = h.role === 'pisteur' || !h.role ? carquois(K, V, T) : null;
+  M.carquois = cq ? cq.svg : '';
+  M.buste = torse(K, h, T, P, [], [], {ouv:function(){ return ''; }});
+  if(K.robe) M.robe = robeSVG(K, V, T, jg, jd);
+  var tt = os.tete, rc = Math.sqrt(77.4 * V.c * V.c + 59.3 * V.s * V.s) * GAB.co;
+  M.cou = function(tDos, ombre){ return cou(K, V, pj(add(tt.Hp, tt.nd, tDos ? 13 : 20), V), tt.bc, rc, ombre); };
+  /* (l'ombre au sol, comme HV.corps : sous les pieds — l'anneau doré de son tour s'y pose) */
+  var xs = [pj(jg.An, V), pj(jd.An, V)], ys = 0, xa = 1e9, xb = -1e9;
+  [jg.Kn, jd.Kn, bG.W, bD.W].forEach(function(q){ if(q[1] > SOL - 26) xs.push(pj(q, V)); });
+  xs.forEach(function(q){ xa = Math.min(xa, q[0]); xb = Math.max(xb, q[0]); ys += q[2] / xs.length; });
+  M.ombre = {cx:(xa + xb) / 2, rx:Math.max(50 + 8 * Math.abs(V.s), (xb - xa) / 2 + 32), cy:SOL + 1 + PSOL * ys};
+  return M;
 };
 HV.SOL = SOL;
 })(window);

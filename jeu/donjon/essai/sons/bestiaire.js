@@ -899,4 +899,40 @@ S.beteChuteA.moment = 0;
    avant que Bourbe touche l'eau) : le plouf du plongeon, le SPLASH du saut */
 S.bourbePlongeA.moment = .25; S.bourbePlongeB.moment = .05; S.bourbeSautA.moment = .95; S.bourbeSautB.moment = .7;
 
+/* =================== CE QUE LAISSE UNE BÊTE BATTUE (Romain, 24 novembre, 4 h 14 : « quand on tue un ennemi […] qu'il laisse un
+   truc sur place. Et que tu fasses un bruit […] des plaques de métal au sol […] un bruit de plaques de métal au sol qui te tombent »).
+   Joués au moment où le morceau touche le sol (le combat les appelle à cet instant : pas de moment à caler). =================== */
+/* — une plaque d'armure qui tombe sur la pierre : un KLANG plat, un petit rebond, elle vibre en se couchant — */
+S.plaqueTombeA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.4, pan:h(-.2, .5)}), f = h(520, 760);
+  clang(A, t, f, {g:.16, choc:.35, long:.7, fc:220}, o);
+  clang(A, t + h(.09, .13), f * h(1.02, 1.08), {g:.07, choc:.12, long:.5, clic:.25}, o);
+  for(var k = 0; k < 5; k++) tinte(A, t + .17 + k * (.05 - k * .006), .55 * (1 - k / 6), o);     /* elle vibre en se couchant */
+  return {duree:1.1};
+};
+/* — la braise du feu follet qui tombe : un tout petit « tic » de pierre, un tintement froid, un souffle bleu qui s'éteint — */
+S.braiseTombeA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.5, pan:h(0, .5)});
+  A.choc(t, {f:420, f2:180, d:.05, g:.25, sat:1.5}, o);
+  O.clic(A, t, 5200, .35, o);
+  A.modes(t + .005, h(1800, 2300), [[1, 1, .35], [2.76, .45, .2], [5.4, .2, .1]], {g:.05}, o);
+  A.bruit(t + .02, {coul:'rose', filtres:[{type:'bandpass', f:1800, pts:[[.5, 900]], q:1.2}], env:[[0, 0], [.05, 1], [.6, 0]], g:.12}, o);   /* fffff */
+  return {duree:.9};
+};
+/* — un morceau plus doux qui tombe (une touffe de poil, une patte, une aile déchirée, de la bave) : un « pof » feutré — */
+S.resteTombeA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.3, pan:h(0, .5)});
+  A.choc(t, {f:150, f2:70, d:.09, g:.35, sat:1.6, corps:1, corpsF:360}, o);
+  A.bruit(t, {coul:'rose', filtres:[{type:'lowpass', f:1800, pts:[[.08, 600]], q:.7}], env:A.perc(.003, .1), g:.3}, o);
+  return {duree:.4};
+};
+/* — la couronne du Roi des rats : elle tinte, roule un peu, et se couche — */
+S.couronneTombeA = function(A, P){
+  var t = P.t, o = A.bus(P, {rev:.45, pan:.3});
+  clang(A, t, 980, {g:.1, choc:.2, long:.6, clicF:5200}, o);
+  var x = .12, iv = .16, g = 1;
+  for(var k = 0; k < 7; k++){ tinte(A, t + x, .8 * g, o); x += iv; iv *= .72; g *= .8; }
+  return {duree:x + .5};
+};
+
 })(window);

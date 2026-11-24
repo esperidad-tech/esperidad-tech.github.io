@@ -814,8 +814,11 @@ R.special = function(nom, o){
   return pr.then(function(){ return self._finAction(j, 200); });
 };
 /* IL S'ÉTEINT : il vacille, les langues tombent une à une, des volutes montent ; le cœur reste seul, pâlit et s'éteint */
-R.mourir = function(){
+R.mourir = function(o){
+  o = o || {};
   var self = this, j = this._debutAction(), T0 = 3200;
+  /* (24 novembre : mort sans critique aussi, il laisse sa braise — elle tombe quand son cœur s'éteint, et sonne au sol) */
+  setTimeout(function(){ self._braise({onTombe: o.onTombe}); }, T0 * .45);     /* (pas trop tard : on doit la voir tomber de lui) */
   ['brule', 'colle', 'enrage', 'cible', 'ebloui'].forEach(function(n){ if(self.etat[n]) self._visuel(n, false); self.etat[n] = false; });
   this._fondu('plisse', 1, 300);
   var k = [{t: 0, p: {}},
@@ -847,10 +850,11 @@ R.mourir = function(){
   for(var v = 0; v < 6; v++) (function(v){ setTimeout(function(){ var q = self._ou('centre'); self._volute([q[0] + hasard(-40, 40), q[1] - hasard(10, 60)], {dx: hasard(-20, 30), duree: 1600}); self._etincelles([q[0] + hasard(-30, 30), q[1] - 20], 2, ['#dfe8f0', '#c8d4e0'], .6, {haut: true}); }, 300 + v * 380); })(v);
   return attendreMs(T0 + 300).then(function(){ self._couperBoucles(); self._couperX(''); self.el.style.visibility = 'hidden'; self.enAction = false; self.mort = true; });
 };
-R.fuir = function(){ return this.mourir(); };
+R.fuir = function(o){ return this.mourir(o); };
 /* le critique : il ÉCLATE tout de suite (19 novembre : il n'enfle plus) en gerbe d'étincelles bleues et en brume noire ; il reste au sol une petite
    braise froide qui s'éteint lentement */
-R.exploser = function(scene){
+R.exploser = function(scene, o){
+  o = o || {};
   var self = this, j = this._debutAction(), boomOk, boomP = new Promise(function(ok){ boomOk = ok; });
   ['brule', 'colle', 'enrage', 'cible', 'ebloui'].forEach(function(n){ if(self.etat[n]) self._visuel(n, false); self.etat[n] = false; });
   /* (19 novembre, Romain : « il grossit pas, il explose direct […] faut pas qu'il y ait de délai […] beaucoup plus rapide ».
@@ -887,24 +891,32 @@ R.exploser = function(scene){
     g('<circle r="' + f1(70 * u) + '" fill="url(#' + id + 'g)"/>', [{transform: T(cx, cy, .2), opacity: 1}, {transform: T(cx, cy, 1.9), opacity: 0}], {d: 380});
     g('<circle r="' + f1(56 * u) + '" fill="none" stroke="#ffffff" stroke-width="' + f1(5 * u) + '"/>', [{transform: T(cx, cy, .2), opacity: .95}, {transform: T(cx, cy, 2.8), opacity: 0}], {d: 440, e: 'cubic-bezier(.1,.8,.3,1)'});
     g('<ellipse rx="' + f1(60 * u) + '" ry="' + f1(8 * u) + '" fill="none" stroke="' + C4 + '" stroke-width="' + f1(4 * u) + '"/>', [{transform: T(cx, solY, .3), opacity: 0}, {offset: .3, opacity: .9, transform: T(cx, solY, .6)}, {transform: T(cx, solY, 3) + ' scale(1,.8)', opacity: 0}], {d: 700, dl: 80, e: 'cubic-bezier(.1,.7,.3,1)'});
-    setTimeout(function(){ self._braise(); }, 350);
+    setTimeout(function(){ self._braise({onTombe: o.onTombe}); }, 120);     /* (24 novembre : elle tombe tout de suite, et sonne au sol) */
     self._couperBoucles(); self._couperX(''); self.mort = true;
     return Promise.all(brumes.map(fini)).then(function(){ ov.remove(); });
   });
   pr.boom = boomP;
   return pr;
 };
-/* la petite braise froide qui reste au sol, et qui s'éteint lentement (elle garde une toute petite lueur) */
-R._braise = function(){
-  var c = this._ou('centre'), x = Math.max(80, Math.min(460, c[0])), D = this.D;
+/* la petite braise froide qui reste au sol, et qui s'éteint lentement (elle garde une toute petite lueur).
+   (24 novembre, Romain : « qu'il explose très rapidement, mais qu'il laisse un truc au sol. Et quand le truc au sol il tombe, tu fais
+   un petit bruit » : elle TOMBE maintenant d'où il était, rebondit un peu, et o.onTombe() est appelé quand elle touche le sol — le
+   combat y joue le son ; o.depuis : d'où elle tombe) */
+R._braise = function(o){
+  o = o || {};
+  var c = o.depuis || this._ou('centre'), x = Math.max(80, Math.min(460, c[0])), D = this.D, y0 = Math.min(SOL - 30, c[1]);
   var lueur = '<ellipse cx="0" cy="-4" rx="46" ry="12" fill="' + D.doux(C3, .8) + '"/><circle cx="0" cy="-10" r="26" fill="' + D.doux(C4, .8) + '"/>';
   var pierre = '<ellipse cx="0" cy="2" rx="30" ry="5" fill="#000" fill-opacity=".4"/>' + P('M-16 0 C -18 -10 -8 -16 0 -15 C 10 -16 18 -8 16 0 C 10 4 -10 4 -16 0 Z', '#1a2a3a', ' stroke-width="2.2"') + L('M-10 -6 L -2 -10 L 6 -6 M2 -10 L 4 -2', C3, 1.6, ' stroke-opacity=".9"');
   var flamme = F(flammeD(24, 12), C3, ' fill-opacity=".8"') + F(flammeD(14, 7), C5);
   var g = document.createElementNS(NS, 'g');
-  g.setAttribute('transform', 'translate(' + f1(x) + ' ' + f1(SOL - 2) + ') scale(1.6)');
   g.innerHTML = '<g>' + lueur + '</g>' + pierre + '<g transform="translate(0 -12)"><g>' + flamme + '</g></g>';
   this.S.restes.appendChild(g);
-  g.animate([{opacity: 0}, {opacity: 1}], {duration: 400, fill: 'both'});
+  /* elle tombe (la pesanteur), touche le sol, rebondit à peine */
+  var TC = 360, haut = SOL - 2 - y0;
+  g.animate([{transform: T(x, y0, 1.1, -30), opacity: .9, easing: 'cubic-bezier(.55,0,1,.45)'}, {offset: .72, transform: T(x, SOL - 2, 1.6, 8), opacity: 1, easing: 'cubic-bezier(.2,.6,.5,1)'},
+    {offset: .86, transform: T(x, SOL - 2 - Math.min(10, haut * .08), 1.6, 0), easing: 'ease-in'}, {transform: T(x, SOL - 2, 1.6, 0)}],
+    {duration: TC / .72, fill: 'forwards'});
+  if(o.onTombe) setTimeout(function(){ try{ o.onTombe('braise'); }catch(e){} }, TC);
   /* elle palpite un moment, puis pâlit ; la petite flamme rétrécit et disparaît */
   g.firstChild.animate([{opacity: 1}, {opacity: .7, offset: .1}, {opacity: 1, offset: .2}, {opacity: .6, offset: .35}, {opacity: .8, offset: .45}, {opacity: .15}], {duration: 6000, fill: 'forwards', easing: 'ease-in-out'});
   g.lastChild.firstChild.animate([{transform: 'scale(1,1)', opacity: 1}, {transform: 'scale(.8,1.2)', offset: .15}, {transform: 'scale(1.05,.9)', offset: .3}, {transform: 'scale(.6,.8)', opacity: .8, offset: .6}, {transform: 'scale(0,0)', opacity: 0}], {duration: 5000, fill: 'forwards', easing: 'ease-in-out'});
@@ -968,7 +980,7 @@ function creer(conteneur, options){
     entrer: function(){ return t.entrer(); }, attendre: function(){ return t.attendre(); },
     attaquer: function(nom, o){ return t.attaquer(nom, o); }, touche: function(type){ return t.touche(type); },
     special: function(nom, o){ return t.special(nom, o); }, tousser: function(){ return t.tousser(); },
-    fuir: function(){ return t.fuir(); }, mourir: function(){ return t.mourir(); }, exploser: function(scene){ return t.exploser(scene); },
+    fuir: function(o){ return t.fuir(o); }, mourir: function(o){ return t.mourir(o); }, exploser: function(scene, o){ return t.exploser(scene, o); },
     etat: function(nom, on){ return t.changerEtat(nom, on); }, cible: function(on){ return t.changerEtat('cible', on); },
     etatCourant: function(){ var e = {}; for(var k in t.etat) e[k] = t.etat[k]; return e; },
     ancre: function(nom){ return t.ancre(nom); }, arreter: function(){ t.arreter(); return this; }, _bete: t

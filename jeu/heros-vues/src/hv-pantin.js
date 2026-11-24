@@ -79,6 +79,7 @@ function anneau(P, cx, cy, rx){
   }
   return {der:moitie(true), dev:moitie(false)};
 }
+HV._anneau = anneau;      /* (le pantin cuit le dessine une fois, en deux moitiés : hv-cuit.js) */
 /* les os d'une pose (où sont le bassin, les genoux, les mains…), dans les mesures du héros : pour vérifier une pose, poser un objet */
 HV.os = function(h, P){
   var B0 = HV.POSES.repos, P2 = {}, kk;
@@ -86,7 +87,8 @@ HV.os = function(h, P){
   for(kk in P) P2[kk] = P[kk];
   var K = HV.contexte('os', h);
   if(K.voute){ var d0 = P2.dos || [0, 0, 0]; P2.dos = [d0[0] + K.voute, d0[1], d0[2]]; }
-  var os = HV.corps(K, h, U.vue(HV.capDe(P2)), P2).os, e = K.echelle;
+  /* (24 novembre, la vitesse : les os seuls, sans faire tout le dessin — HV.corpsOs, hv-corps.js) */
+  var os = HV.corpsOs(K, h, U.vue(HV.capDe(P2)), P2), e = K.echelle;
   /* (l'enfant, les anciens : le héros est dessiné plus petit, posé sur le sol — ses os aussi : x et z depuis le milieu, y depuis le sol) */
   if(e !== 1) for(kk in os) os[kk] = [os[kk][0] * e, HV.SOL + (os[kk][1] - HV.SOL) * e, os[kk][2] * e];
   return os;

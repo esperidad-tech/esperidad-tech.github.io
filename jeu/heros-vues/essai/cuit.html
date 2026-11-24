@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le pantin cuit — essai</title>
+<style>
+html,body{margin:0;background:#1d2550;color:#e9ecff;font:15px/1.4 system-ui,sans-serif}
+.rang{display:flex;gap:10px;padding:10px;flex-wrap:wrap}
+.case{position:relative;width:330px;height:396px;background:radial-gradient(120% 90% at 50% 34%,#34407e 0%,#1d2550 55%,#141a3a 100%);border-radius:14px;overflow:hidden}
+.case svg{position:absolute;inset:0;width:100%;height:100%}
+.case b{position:absolute;left:8px;top:6px;font-size:13px;color:#ffd23f;z-index:50}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:8px 12px;background:#ffd23f;color:#111;margin:4px}
+#info{padding:0 12px;font-size:13px;color:#cdd5ff;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<div class="rang">
+  <div class="case" id="vivant"><b>en volume (redessiné)</b></div>
+  <div class="case" id="cuit"><b>cuit (morceaux)</b></div>
+</div>
+<div id="boutons" style="padding:0 6px"></div>
+<div id="info"></div>
+<!--SCRIPTS-->
+<script src="../src/hv-base.js"></script>
+<script src="../src/hv-tete.js"></script>
+<script src="../src/hv-cheveux.js"></script>
+<script src="../src/hv-corps.js"></script>
+<script src="../src/hv-pantin.js"></script>
+<script src="../src/hv-poses.js"></script>
+<script src="../src/hv-positions.js"></script>
+<script src="../src/hv-donjon.js"></script>
+<script src="../src/hv-alchimiste.js"></script>
+<script src="../src/hv-sage.js"></script>
+<script src="../src/hv-attente.js"></script>
+<script src="../src/hv-cuit.js"></script>
+<!--/SCRIPTS-->
+<script>
+(function(){
+var HV = window.HerosVues, q = new URLSearchParams(location.search);
+var CADRE = [-21.8, 24.2, 329.6, 395.5], CAP = 55;
+var role = q.get('role') || 'pisteur';
+var ALL = {pisteur:{role:'pisteur', sexe:'f', peau:'p1', cheveux:'roux', yeux:'vert', combat:true},
+  alchimiste:{role:'alchimiste', sexe:'m', peau:'p4', cheveux:'noir', yeux:'ambre', coiffure:'courts', combat:true},
+  sage:{role:'sage', sexe:'f', peau:'p5', cheveux:'noir', yeux:'ambre', coiffure:'tresse', combat:true}};
+var h = ALL[role];
+var base = role === 'alchimiste' ? HV.POSES.aGarde : role === 'sage' ? HV.POSES.sGarde : HV.POSES.dGarde;
+/* le vivant : le vrai pantin, piloté comme dans le donjon */
+var seul = q.get('seul');
+var p = seul === 'cuit' ? {vers:function(){}, courante:null} : HV.monter(document.getElementById('vivant'), h, {cadre:CADRE.join(' '), cap:CAP});
+p.vers(CAP, true); p.auto = false;
+var jeu = null;
+p.courante = function(){ if(jeu){ var u = (performance.now() - jeu.t0) / 1000; if(u < jeu.fin) return HV.gesteImage(base, jeu.cles, u); jeu = null; } return base; };
+/* le cuit */
+var R = seul === 'vivant' ? null : HV.Cuit.monter(document.getElementById('cuit'), h, {cadre:CADRE.join(' '), cap:CAP, res:2});
+if(!R) R = {preparer:function(){ return Promise.resolve(); }, figer:function(){}, jouer:function(L){ return new Promise(function(ok){ setTimeout(ok, L[L.length - 1].t * 1000); }); }, variantes:{}};
+window.R = R; window.p = p;
+var info = document.getElementById('info');
+function images(cles, pas){
+  var fin = HV.dureeGeste(cles), L = [];
+  for(var t = 0; t < fin; t += pas) L.push({t:t, P:HV.gesteImage(base, cles, t)});
+  L.push({t:fin, P:HV.gesteImage(base, cles, fin)});
+  return L;
+}
+function preparerTout(L){ var i = 0; return (function suite(){ if(i >= L.length) return Promise.resolve(); return R.preparer(L[i++].P).then(suite); })(); }
+window.pret = false;
+var t0 = performance.now();
+R.preparer(base).then(function(){ R.figer(base); info.textContent = 'cuit en ' + Math.round(performance.now() - t0) + ' ms'; window.pret = true; });
+var gestes = {}, k;
+for(k in HV.DONJON) gestes[k] = HV.DONJON[k];
+for(k in HV.ALCHI) if(HV.ALCHI[k] instanceof Array) gestes['a_' + k] = HV.ALCHI[k];
+for(k in HV.SAGE) if(HV.SAGE[k] instanceof Array) gestes['s_' + k] = HV.SAGE[k];
+window.GESTES = gestes;
+(role === 'pisteur' ? ['dague', 'dagueSaut', 'tir', 'coup', 'joie', 'chute', 'regard'] : role === 'alchimiste' ? ['a_preparer', 'a_lancer', 'a_louche', 'a_herbes', 'coup', 'joie'] :
+  ['s_sort', 's_appel', 's_bouclier', 's_eclairSalle', 's_etudier', 'coup', 'joie']).forEach(function(n){
+  if(!gestes[n]) return;
+  var b = document.createElement('button'); b.textContent = n; b.id = 'g-' + n;
+  b.onclick = function(){ window.jouerGeste(n); };
+  document.getElementById('boutons').appendChild(b);
+});
+window.jouerGeste = function(n){
+  var cles = gestes[n], L = images(cles, 1 / 30), t1 = performance.now();
+  return preparerTout(L).then(function(){
+    var cuire = Math.round(performance.now() - t1), now = performance.now() + 30;
+    jeu = {cles:cles, fin:HV.dureeGeste(cles), t0:now};
+    if(HV.reveiller) HV.reveiller();
+    info.textContent = n + ' : ' + L.length + ' images, cuisson des variantes ' + cuire + ' ms ; variantes : ' + Object.keys(R.variantes).map(function(k){ return k + ' ' + Object.keys(R.variantes[k]).length; }).join(', ');
+    return R.jouer(L, {debut:now});
+  });
+};
+})();
+</script>
+</body>
+</html>

@@ -985,8 +985,10 @@ async function geste(ev, evs){
       return false;
     case 'dague':
       to = a.cible(avant && avant.ouvert);
-      bruit('swish', {cale:lame()}, ['dague']);
-      await H.pisteur.dague(fx, {x:Math.max(hCx('pisteur') + 90, a.ancre('centre').x - Math.min(70, a.cadre.w * .3)), y:to.y});
+      var cD = {x:Math.max(hCx('pisteur') + 90, a.ancre('centre').x - Math.min(70, a.cadre.w * .3)), y:to.y};
+      /* (24 novembre : un « swish » à chaque coup de lame, à l'instant où le héros frappe — H.pisteur.moments, héros en volume) */
+      (H.pisteur.moments ? H.pisteur.moments('dague', fx, cD) : [lame()]).forEach(function(t){ bruit('swish', {cale:t}, ['dague']); });
+      await H.pisteur.dague(fx, cD);
       bruit('chairD');
       return false;
     case 'potion':
@@ -1121,7 +1123,9 @@ async function critique(l, i, ctx){
     retirerHud(a.id); liberer(a);
     DJ.temoinCritique('bete');
     sonCritique('boum'); sonCritique('explosion', CRIT_SOUFFLE);
-    var p = a.acteur.exploser(fx);
+    /* (24 novembre : ses restes tombent — plaques, braise… — et sonnent quand ils touchent le sol) */
+    var tombeC = quandTombe(), p = a.acteur.exploser(fx, {onTombe:tombeC});
+    if(!RESTES_MODULE[a.module]) morceau(a, tombeC);
     a.mort = true;
     /* (le module pose sa fumée dans l'instant qui suit, sans qu'aucune image ne passe : on le laisse faire d'abord, pour que
        le chiffre soit posé APRÈS la fumée, donc par-dessus elle — jaune sur noir, il se lit) */
@@ -1145,15 +1149,56 @@ async function critique(l, i, ctx){
   await attendre(350);
   return i;
 }
-async function mort(a, ev){
-  var S = DJ.Betes.SONS[a.module] || {};
-  retirerHud(a.id); liberer(a);
-  if(a.rat){ bruit('ratFuite', {dt:.45}, ['fuiteRat']); return a.fuir(); }
-  if(S.mort) bruit(S.mort);
-  if(ev.mode === 'explose'){ sonCritique('boum'); return a.exploser(fx); }
-  if(ev.mode === 'meurt') return a.mourir();
-  return a.fuir();
+/* CE QUE LAISSE UNE BÊTE BATTUE (Romain, 24 novembre, 4 h 14 : « quand on tue un ennemi, que ça soit avec un critique ou sans
+   critique, qu'il laisse un truc sur place. Et que tu fasses un bruit ») : le module fait tomber ses restes (la braise du feu follet,
+   les plaques du rat cuirassé…) et nous appelle quand l'un d'eux touche le sol — on joue alors son bruit. Les bêtes dont le module
+   ne fait rien tomber laissent un petit morceau dessiné ici (MORCEAUX), qui tombe et sonne pareil. */
+var SON_RESTE = {plaque:'plaqueTombe', braise:'braiseTombe', couronne:'couronneTombe', reste:'resteTombe'};
+function quandTombe(){ var n = 0; return function(quoi){ if(++n > 6) return; bruit(SON_RESTE[quoi] || 'resteTombe', {}, ['tombe']); }; }
+var RESTES_MODULE = {feufollet:1, ratcuir:1};
+var MORCEAUX = {
+  /* une touffe de poil gris */
+  rat:{quoi:'reste', l:34, h:18, svg:'<path d="M2 16 Q 6 4 14 8 Q 16 0 22 6 Q 28 2 30 10 Q 34 14 30 17 Z" fill="#6a5a62" stroke="#24182e" stroke-width="2.2" stroke-linejoin="round"/><path d="M10 12 Q 14 9 18 12 M20 11 Q 24 8 27 12" fill="none" stroke="#9a8a92" stroke-width="1.6" stroke-linecap="round"/>'},
+  /* un morceau d'aile de chauve-souris */
+  chauvesouris:{quoi:'reste', l:40, h:20, svg:'<path d="M2 18 L 10 3 Q 14 10 18 6 Q 22 12 28 8 Q 32 14 38 12 L 30 18 Z" fill="#4a3658" stroke="#24182e" stroke-width="2.2" stroke-linejoin="round"/><path d="M10 4 L 14 17 M18 7 L 21 17 M28 9 L 28 17" stroke="#2c2036" stroke-width="1.4"/>'},
+  /* une patte d'araignée repliée */
+  /* (plus clair qu'avant : sur le sol sombre de la cave, on ne la voyait pas) */
+  araignee:{quoi:'reste', l:40, h:20, svg:'<path d="M3 17 L 14 5 L 26 9 L 36 18" fill="none" stroke="#24182e" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 17 L 14 5 L 26 9 L 36 18" fill="none" stroke="#8a6a9a" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="14" cy="5" r="2.6" fill="#c8a8d8" stroke="#24182e" stroke-width="1.4"/><circle cx="26" cy="9" r="2.6" fill="#c8a8d8" stroke="#24182e" stroke-width="1.4"/>'},
+  petitearaignee:{quoi:'reste', l:24, h:14, svg:'<path d="M2 12 L 9 3 L 16 6 L 22 12" fill="none" stroke="#24182e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12 L 9 3 L 16 6 L 22 12" fill="none" stroke="#8a6a9a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>'},
+  /* une flaque de bave verte */
+  tetard:{quoi:'reste', plat:true, l:40, h:12, svg:'<ellipse cx="20" cy="7" rx="18" ry="5" fill="#6aa84f" stroke="#24182e" stroke-width="2"/><ellipse cx="14" cy="5.5" rx="6" ry="1.6" fill="#c8f0a0" opacity=".8"/>'},
+  /* la couronne du Roi des rats */
+  roirats:{quoi:'couronne', l:40, h:28, svg:'<path d="M4 26 L 2 8 L 12 16 L 20 2 L 28 16 L 38 8 L 36 26 Z" fill="#f0c040" stroke="#24182e" stroke-width="2.4" stroke-linejoin="round"/><path d="M6 22 L 34 22" stroke="#a87818" stroke-width="2"/><circle cx="20" cy="15" r="3" fill="#bfffd0" stroke="#24182e" stroke-width="1.5"/><path d="M8 12 L 10 20" stroke="#fff6c8" stroke-width="1.6" stroke-linecap="round"/>'},
+  /* un engrenage rouillé du Gardien */
+  gardien:{quoi:'plaque', l:34, h:34, svg:'<g transform="translate(17 17)"><path d="M-3 -16 L 3 -16 L 4 -11 L 9 -9 L 13 -12 L 16 -8 L 12 -4 L 13 1 L 17 3 L 15 9 L 10 8 L 7 12 L 9 16 L 3 17 L 1 13 L -4 13 L -6 17 L -12 15 L -10 10 L -13 6 L -17 5 L -16 -1 L -12 -2 L -12 -7 L -15 -10 L -11 -14 L -7 -11 L -4 -12 Z" fill="#9a6a3a" stroke="#24182e" stroke-width="2.2" stroke-linejoin="round"/><circle r="5" fill="#3a2a20" stroke="#24182e" stroke-width="2"/></g>'}
+};
+/* un petit morceau qui tombe de la bête, roule un peu, et reste au sol jusqu'à la fin du combat (dans la scène, sous les héros) */
+function morceau(a, sonne){
+  var M = MORCEAUX[a.module]; if(!M || !a.cadre) return;
+  var cont = q('#persos') || fx, c = a.ancre ? a.ancre('centre') : {x:a.cadre.x + a.cadre.w / 2, y:a.cadre.y + a.cadre.h / 2};
+  var solY = (DJ.Betes.SOL || 372), k = 1.2, x = c.x + (Math.random() * 40 - 20), y0 = Math.min(solY - 30, c.y), yS = solY - M.h * k * .5 + 12;     /* (+12 : posé sur le sol, au niveau des pattes, pas en l'air) */
+  var e = el('div', 'reste-bete'); e.style.cssText = 'position:absolute;left:0;top:0;width:' + (M.l * k) + 'px;height:' + (M.h * k) + 'px;margin:' + (-M.h * k / 2) + 'px 0 0 ' + (-M.l * k / 2) + 'px;z-index:3;pointer-events:none';     /* (3 : au-dessus de l'eau et des toiles du sol, #sol-fx = 2 ; sous les bêtes vivantes) */
+  e.innerHTML = '<svg viewBox="0 0 ' + M.l + ' ' + M.h + '" width="100%" height="100%" style="overflow:visible">' + M.svg + '</svg>';
+  cont.appendChild(e);
+  /* il tourne en l'air, mais retombe à l'endroit (un tour entier, à peu près) ; une flaque ne tourne pas */
+  var r = M.plat ? 0 : (Math.random() < .5 ? -1 : 1) * 360 + (Math.random() * 30 - 15), d = 560;
+  function T(xx, yy, rr){ return 'translate(' + xx.toFixed(1) + 'px,' + yy.toFixed(1) + 'px) rotate(' + rr.toFixed(0) + 'deg)'; }
+  e.animate([{transform:T(x, y0 - 10, 0), opacity:0, easing:'cubic-bezier(.2,.6,.5,1)'}, {offset:.25, transform:T(x + 6, y0 - 40, r * .3), opacity:1, easing:'cubic-bezier(.55,0,1,.45)'},
+    {offset:.75, transform:T(x + 18, yS, r), easing:'cubic-bezier(.2,.6,.5,1)'}, {offset:.88, transform:T(x + 22, yS - 6, r + 8), easing:'ease-in'}, {transform:T(x + 24, yS, r + 4)}], {duration:d, fill:'forwards'});
+  if(sonne) setTimeout(function(){ sonne(M.quoi); }, d * .75 / ((SALLE.vitesse || 1) * (window.DJ_RYTHME || 1)));
 }
+async function mort(a, ev){
+  var S = DJ.Betes.SONS[a.module] || {}, tombe = quandTombe(), lui = !!RESTES_MODULE[a.module];
+  retirerHud(a.id); liberer(a);
+  if(a.rat){ bruit('ratFuite', {dt:.45}, ['fuiteRat']); morceau(a, tombe); return a.fuir(); }
+  if(S.mort) bruit(S.mort);
+  if(ev.mode === 'explose'){ sonCritique('boum'); if(!lui) morceau(a, tombe); return a.exploser(fx, {onTombe:tombe}); }
+  if(!lui) morceau(a, tombe);
+  var o = lui ? {onTombe:tombe, laisser:true} : undefined;
+  if(ev.mode === 'meurt') return a.mourir(o).then(function(){ if(lui) cacherOmbre(a); });
+  return a.fuir(o).then(function(){ if(lui) cacherOmbre(a); });
+}
+function cacherOmbre(a){ var o = a.el && a.el.querySelector('.ombre'); if(o) o.style.display = 'none'; }
 
 /* ---------- l'attaque d'une bête : les coups tombent sur les héros aux moments d'impact ---------- */
 async function attaque(l, i, ctx){

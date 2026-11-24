@@ -110,6 +110,11 @@ function allureDe(role, lk){
      rien ; une respiration très légère est jouée par la carte graphique (tout le dessin, depuis les pieds) ;
    - pendant un geste : 20 dessins par seconde au plus (au lieu de 30) ; l'anneau doré ne scintille plus.
    « ?leger=1 » / « ?leger=0 » dans l'adresse : forcé (les essais). */
+/* LE PANTIN CUIT (24 novembre, nuit — Romain, 4 h 14 : « les nouveaux personnages, ils font ramer même mon iPhone […] 24 images
+   minimum pour toutes les tablettes, même celles qui sont très lentes ») : hv-cuit.js. Le héros n'est plus redessiné à chaque image :
+   ses morceaux, dessinés une fois, sont bougés par la carte graphique ; le pantin ne fait plus que tenir à jour la pose (pour les
+   effets, l'ombre, la fin des gestes) et s'endort au calme. « ?cuit=0 » dans l'adresse : l'ancien dessin à chaque image (les essais). */
+var CUIT = !!HV.Cuit && !/[?&]cuit=0/.test(G.location ? G.location.search : '');
 var SEUIL_LEGER = 7, LEGER = {on:false, n:0, somme:0, fixe:false};
 (function(){ var m = /[?&]leger=([01])/.exec(G.location ? G.location.search : ''); if(m){ LEGER.on = m[1] === '1'; LEGER.fixe = true; } })();
 function noterDessin(ms){
@@ -155,13 +160,16 @@ function Volume(cont, lk, creer0, role){
   /* (c'est l'adaptateur qui dit au pantin quelle pose prendre, à chaque image ; le pantin y ajoute sa petite vie) */
   this.p.courante = function(){ return me.pose(); };
   var d0 = this.p.dessiner;
-  this.p.dessiner = function(dt){ var t1 = horloge(), r = d0.call(this, dt); if(r !== false){ noterDessin(horloge() - t1); this._vides = 0; } else this._vides = (this._vides || 0) + 1; me.apresImage(); return r; };
+  /* (cuit : plus de dessin, seulement la pose — le pantin cuit, lui, joue ce qui a été prévu) */
+  if(CUIT) d0 = function(){ var P = me.pose(), F = {}, k; for(k in P) F[k] = P[k]; F.cap = CAP; this.F = F; return true; };
+  this.p.dessiner = function(dt){ var t1 = horloge(), r = d0.call(this, dt); if(r !== false){ if(!CUIT) noterDessin(horloge() - t1); this._vides = 0; } else this._vides = (this._vides || 0) + 1; me.apresImage(); return r; };
   /* (au calme — elle respire, cligne des yeux —, 15 dessins par seconde suffisent ; pendant un geste, 30 : la tablette souffle ;
      en léger, 20 au plus — et au calme, quand plus rien ne bouge depuis 8 images, elle s'endort : plus rien à faire à chaque image,
      jusqu'au prochain geste, qui la réveille : HV.reveiller) */
   var im0 = this.p.image;
   this.p.image = function(now){
     var calme = me.calme();
+    if(CUIT && me.cuit && me.cuit.pret){ if(calme) return false; if(this.t0 && now - this.t0 < 30) return; return im0.call(this, now); }
     if(LEGER.on && calme && (this._vides || 0) >= 8 && this.tw >= 1 && Math.abs(this.capV - this.cap) < 0.05) return false;
     if(this.t0 && now - this.t0 < (calme ? 64 : LEGER.on ? 48 : 0)) return;
     im0.call(this, now);
@@ -185,9 +193,13 @@ function Volume(cont, lk, creer0, role){
      comme l'anneau des autres héros, mais dessiné avec elle : l'arrière derrière les bottes, l'avant devant) */
   this.slot = slot;
   if(slot && G.MutationObserver) new MutationObserver(function(){
-    if(slot.classList.contains('detale') && !me._fuit){ me._fuit = true; me._finGeste(); me.cles = null; me.trans = null; var t0 = maintenant(); me.course = function(){ return HV.course(maintenant() - t0); }; me.p._vides = 0; if(HV.reveiller) HV.reveiller(); }
+    if(slot.classList.contains('detale') && !me._fuit){ me._fuit = true; me._finGeste(); me.cles = null; me.trans = null; var t0 = maintenant(); me.course = function(){ return HV.course(maintenant() - t0); };
+      /* (cuit : la course est la même boucle, prévue d'avance) */
+      me.course.pose = function(u){ return HV.course(u); }; me.course.boucle = HV.COURSE.cycle; me.course.t0 = t0;
+      me.p._vides = 0; if(HV.reveiller) HV.reveiller(); if(me.cuit) me.cuitPlan(); }
     me.p.choisi(slot.classList.contains('dispo') || slot.classList.contains('actif'));
   }).observe(slot, {attributes:true, attributeFilter:['class']});
+  if(CUIT) this.cuitMonter();
   (G.HerosVuesDonjon.toutes = G.HerosVuesDonjon.toutes || []).push(this);
 }
 var V = Volume.prototype;
@@ -203,7 +215,7 @@ V.pose = function(){
     /* (en attendant, il ne reste pas à rien faire : toutes les 3 à 5,5 secondes, un geste tiré au sort parmi ceux de tous et ceux de
        son rôle — HV.attentes, hv-attente.js : sur ses gardes, jamais tranquille —, jamais deux fois le même de suite ; chacun à son
        rythme — Romain, 22 h 21 et 22 h 48) */
-    if(!this.apresF && !this.tenue && !this.ko && this._veut && !LEGER.on && t > this._prochainRegard){ this._prochainRegard = t + 3 + Math.random() * 2.5; this.jouer(this.attente()); }
+    if(!this.apresF && !this.tenue && !this.ko && this._veut && !LEGER.on && !this.cuit && t > this._prochainRegard){ this._prochainRegard = t + 3 + Math.random() * 2.5; this.jouer(this.attente()); }
   }
   if(this.trans){ var a2 = (t - this.trans.t) / this.trans.d; if(a2 < 1) P = melange(this.trans.A, P, lisse(a2)); else this.trans = null; }
   this.dernier = P;
@@ -229,7 +241,9 @@ V.jouer = function(cles, apres){
   this.course = null; this.apresF = null; this.tenue = null;
   this.cles = cles; this.fin = cles[cles.length - 1][0]; this.t0 = maintenant(); this.apres = apres || null;
   this.p._vides = 0; if(HV.reveiller) HV.reveiller();          /* (le léger : un geste réveille le dessin) */
-  return new Promise(function(r){ me._quandFini = r; });
+  var pr = new Promise(function(r){ me._quandFini = r; });
+  if(this.cuit) this.cuitPlan();
+  return pr;
 };
 /* la file des ordres : un à la fois ; sig(v) rend la promesse tout de suite (la flèche a touché), le geste continue */
 V.file = function(fn){
@@ -286,6 +300,15 @@ var REP = {tete:['tete', 0, -30], teteC:['tete', 4, -34], cou:['cou'], chevilleB
 /* (le Sage : le cristal, le pied du bâton, le livre — là où le dernier dessin les a mis : K.rep, dans les mesures du dessin) */
 var REP_DESSIN = {cristal:'cristal', 'baton-bas':'batonBas', livre:'livre'};
 V.repDessin = function(nom){
+  /* (cuit : plus de dessin à chaque image pour les noter — le cristal et le pied du bâton viennent des os, le livre d'un dessin du
+     corps de la pose du moment) */
+  if(this.cuit && this.p.F){
+    var Fq = this.p.F, Vq = HV.outils.vue(HV.capDe(Fq)), Sq = HV.squelette(this.p.K, this.h, Vq, Fq), qq = null;
+    if(nom === 'cristal' && Sq.baton) qq = Sq.baton.cristal;
+    else if(nom === 'baton-bas' && Sq.baton) qq = Sq.baton.a;
+    else if(nom === 'livre'){ if(this._livreF !== Fq){ this._livreF = Fq; try{ HV.morceaux(this.p.K, this.h, Vq, Fq); }catch(e){} } qq = this.p.K.rep && this.p.K.rep.livre; }
+    if(qq) return [150 + qq[0], qq[1] - Math.max(0, Fq.leve || 0)];
+  }
   var R = this.p.K.rep, q = R && R[REP_DESSIN[nom]];
   return q ? [150 + q[0], q[1] - Math.max(0, (this.p.F && this.p.F.leve) || 0)] : null;
 };
@@ -378,9 +401,10 @@ V.gelGel = function(k){
     this.calque.parentNode.insertBefore(this._gelSvg(d), this.calque);
     this._gelF = document.getElementById(this.idGel).firstChild;
   }
-  if(k <= 0.001){ this.svg.style.filter = ''; return; }
+  var cible = this.cuit ? this.cuit.racine : this.svg;
+  if(k <= 0.001){ cible.style.filter = ''; return; }
   this._gelF.setAttribute('values', GEL.map(function(v, i){ return (NEUTRE[i] + (v - NEUTRE[i]) * k).toFixed(3); }).join(' '));
-  this.svg.style.filter = 'url(#' + this.idGel + ')';
+  cible.style.filter = 'url(#' + this.idGel + ')';
 };
 /* (les définitions du givre vivent dans un petit SVG à elles, à côté de son dessin) */
 V._gelSvg = function(defs){
@@ -484,6 +508,10 @@ V.entrer = function(dist){
         me.boite.style.transform = 'translateX(' + Math.min(0, x).toFixed(1) + 'px)';
         return P;
       };
+      /* (cuit : la même course, sans rien toucher — pour la prévoir d'avance) */
+      me.course.pose = function(u){ return u < ts ? HV.course(u) : HV.gesteImage(dep, cles, Math.min(u - ts, A.duree)); };
+      me.course.duree = ts + A.duree; me.course.t0 = me.t0;
+      if(me.cuit) me.cuitPlan();
     });
   });
 };
@@ -580,6 +608,17 @@ V.tirer = function(scene, to, type, opt){
     });
     return Promise.all([fini, vole]);
   });
+};
+/* LES INSTANTS CLÉS D'UN GESTE (Romain, 24 novembre, 4 h 14 : « le son, il faut qu'il soit vraiment au même moment que quand il fait
+   le mouvement droite-gauche pour frapper […] que les sons soient synchro ») : en secondes depuis le début du geste ; le combat y cale
+   ses sons (combat.js). La dague : deux revers (0,54 et 0,90 s) — ou, loin, le saut qui retombe (HV.SAUT.frappe) ; la flèche : 1,38 s. */
+V.moments = function(nom, scene, to){
+  if(nom === 'tirer') return [1.38];
+  if(nom === 'dague' && scene && to){
+    var pied = this.rep('chevilleB', scene), k = this.echelle(scene), dx = Math.max(0, to.x - pied.x - 70) / k;
+    return dx > SEUIL_SAUT ? [HV.SAUT.frappe] : [0.54, 0.90];
+  }
+  return [];
 };
 /* combien de pixels de la scène pour un pixel de sa boîte */
 V.echelle = function(scene){ var a = this.racine.getBoundingClientRect(), b = scene.getBoundingClientRect(); return (a.width / (this.racine.offsetWidth || a.width)) / ((b.width / (scene.offsetWidth || b.width)) || 1); };
@@ -1137,10 +1176,120 @@ V.expr = function(){};
 V.cligner = function(){};
 V.arreter = function(){
   this._veut = false; this._timers.forEach(clearTimeout); this._timers = [];
+  clearTimeout(this._cuitAttente);
   this._etoiles(false);
   if(this.ombre) try{ this.ombre.arreter(); }catch(e){}
 };
-V.detruire = function(){ this.arreter(); this.p.detruire(); this.racine.remove(); if(this.ombre) try{ this.ombre.detruire(); }catch(e){} };
+V.detruire = function(){ this.arreter(); this.p.detruire(); if(this.cuit) this.cuit.detruire(); this.racine.remove(); if(this.ombre) try{ this.ombre.detruire(); }catch(e){} };
+
+/* ==========================================================
+   LE PANTIN CUIT (voir CUIT, plus haut ; hv-cuit.js)
+   ========================================================== */
+if(G.addEventListener) G.addEventListener('resize', function(){ ((G.HerosVuesDonjon && G.HerosVuesDonjon.toutes) || []).forEach(function(v){ if(v.cuit) v.cuit.ajuster(); }); });
+V.cuitMonter = function(){
+  var me = this;
+  /* (la finesse des morceaux : ce que la boîte fait vraiment à l'écran, en pixels de l'appareil) */
+  var k = (this.boite.offsetWidth || 200) / CADRE[2], res = Math.max(0.8, Math.min(2, k * (G.devicePixelRatio || 1) * 1.1));
+  this.cuit = HV.Cuit.monter(this.boite, this.h, {cadre:CADRE.join(' '), cap:CAP, res:res, K:this.p.K});
+  this.cuit.racine.style.visibility = 'hidden';
+  this.cuit.anneauP = this.base;
+  this._cuitGen = 0;
+  var c0 = this.p.choisi;
+  this.p.choisi = function(on){ c0.call(this, on); if(me.cuit) me.cuit.anneau(on); };
+  this.cuit.preparer(this.base).then(function(){
+    if(!me.cuit || me.cuit.mort) return;
+    me.cuit.pret = true;
+    if(me.svg) me.svg.style.visibility = 'hidden';
+    me.cuit.racine.style.visibility = '';
+    me.cuit.ajuster();
+    me.cuitPlan();
+    me.cuitPrecuire();
+  });
+};
+/* ce que le pantin cuit doit jouer, d'après l'état du moment : le geste en cours (ou la course) jusqu'au bout, puis ce qui suit — la
+   pose gardée et sa petite vie, ou la boucle d'après (pris dans la toile). Tout est prévu ici, une fois ; la carte graphique joue. */
+var DT_CUIT = 1 / 30;
+V.cuitPlan = function(){
+  var R = this.cuit; if(!R || !R.pret || R.mort) return;
+  var me = this, gen = ++this._cuitGen, now = maintenant(), DT = DT_CUIT;
+  clearTimeout(this._cuitAttente);
+  var S = {cles:this.cles, t0:this.t0, fin:this.fin, base:this.base, apres:this.apres, trans:this.trans, course:this.course};
+  function trans(P, t){ if(S.trans){ var a2 = (t - S.trans.t) / S.trans.d; if(a2 < 1) return melange(S.trans.A, P, lisse(a2)); } return P; }
+  var images = [], debut = null, finS = null, ensuite, u;
+  if(S.course && S.course.pose){
+    var c = S.course, c0 = c.t0 != null ? c.t0 : S.t0;
+    if(c.boucle){
+      var Lc = []; for(u = 0; u < c.boucle; u += DT) Lc.push({t:u, P:c.pose(u)});
+      Lc.push({t:c.boucle, P:c.pose(c.boucle)});
+      R.jouer(Lc, {boucle:true, debut:c0 * 1000, cle:'course'});
+      return;
+    }
+    for(u = 0; u < c.duree; u += DT) images.push({t:u, P:c.pose(u)});
+    images.push({t:c.duree, P:c.pose(c.duree)});
+    debut = c0; finS = c0 + c.duree; ensuite = {P:this.base};
+  } else if(S.cles){
+    for(u = 0; u < S.fin; u += DT) images.push({t:u, P:trans(HV.gesteImage(S.base, S.cles, u), S.t0 + u)});
+    images.push({t:S.fin, P:HV.gesteImage(S.base, S.cles, S.fin)});
+    debut = S.t0; finS = S.t0 + S.fin;
+    var a = S.apres;
+    ensuite = typeof a === 'function' ? {f:a, t0:finS} : {P:a ? HV.avec(S.base, a) : S.base};
+  } else ensuite = this.apresF ? {f:this.apresF, t0:this.t0} : {P:this.tenue || this.base};
+  function apres(){
+    if(gen !== me._cuitGen || R.mort) return;
+    if(ensuite.f){
+      var per = ensuite.f.periode || 4, Lf = [], v;
+      for(v = 0; v < per; v += DT) Lf.push({t:v, P:ensuite.f(v)});
+      Lf.push({t:per, P:ensuite.f(per)});
+      R.jouer(Lf, {boucle:true, debut:(ensuite.t0 != null ? ensuite.t0 : (finS || now)) * 1000});
+    } else {
+      /* (la petite vie : prévue une fois par pose gardée) */
+      R.jouer(R.imagesVie(ensuite.P), {boucle:true, debut:(finS || now) * 1000, cle:ensuite.P === me.base ? 'vie' : null});
+      me.cuitAttente();
+    }
+  }
+  if(images.length) R.jouer(images, {debut:debut * 1000}).then(apres);
+  else apres();
+};
+/* LES GESTES D'ATTENTE (hv-attente.js) : toutes les 3 à 5,5 s, au calme, un geste au hasard — seulement s'il est déjà cuit (sinon, on
+   attend le suivant ; la cuisson d'avance s'en charge) */
+V.cuitAttente = function(){
+  var me = this;
+  clearTimeout(this._cuitAttente);
+  if(!this._veut || this.ko) return;
+  this._cuitAttente = setTimeout(function(){
+    if(!me.cuit || me.cuit.mort || !me._veut || me.ko) return;
+    if(me.cles || me.course || me.apresF || me.tenue || me.effets.length || me._glisse) return me.cuitAttente();
+    var g = me.attente(), fin = HV.dureeGeste(g), pret = true, t;
+    for(t = 0; t <= fin && pret; t += 0.25) if(me.cuit.aCuire(HV.gesteImage(me.base, g, t))) pret = false;
+    if(!pret) return me.cuitAttente();
+    me.jouer(g);
+  }, (3 + Math.random() * 2.5) * 1000);
+};
+/* LA CUISSON D'AVANCE : les morceaux de tous ses gestes, un à la fois, quand il ne fait rien (entre deux tours) — ceux de son rôle
+   d'abord, puis les coups qu'il prend, la joie, les gestes d'attente. Gardés pour toute la partie (hv-cuit.js, CU.cache). */
+V.cuitPrecuire = function(){
+  if(/[?&]precuire=0/.test(G.location ? G.location.search : '')) return;          /* (les essais) */
+  var me = this, R = this.cuit, b = this.base, D = HV.DONJON, A = HV.ALCHI, S = HV.SAGE, L = [];
+  function g(cles){ if(cles && cles.length && cles[0] instanceof Array) L.push(cles); }
+  if(this.role === 'pisteur'){ g(D.dague); g(D.dagueSaut); g(D.tir); }
+  if(this.role === 'alchimiste' && A){ g(A.preparer); g(A.lancer); g(A.louche); g(A.herbes); }
+  if(this.role === 'sage' && S){ g(S.sort); g(S.appel); g(S.bouclier); g(S.eclairSalle); g(S.etudier); }
+  g(D.choisi); g(D.coup); g(D.chute); g([[0.01, HV.SONNEE]].concat(decale(HV.RELEVE, 0.5))); g(D.joie); g(D.froid); g(D.rats); g(D.poing);
+  g(D.toile); g(D.crapaud); g(D.amulette);
+  var at = HV.attentes ? HV.attentes(this.role, b) : {}; Object.keys(at).forEach(function(n){ g(at[n]); });
+  var vies = [b, HV.SONNEE]; if(this.role === 'alchimiste' && A && A.PRET) vies.push(HV.avec(b, A.PRET));
+  var i = 0, libre = function(){ return !me.cles && !me.course && !me.effets.length && !me._glisse; };
+  (function suite(){
+    if(!me.cuit || me.cuit.mort) return;
+    var im = [];
+    if(i < vies.length){ im = R.imagesVie(vies[i++]).filter(function(x, j){ return j % 3 === 0; }); }
+    else {
+      var cl = L[i - vies.length]; if(!cl) return; i++;
+      var fin = HV.dureeGeste(cl), t; for(t = 0; t <= fin + 1e-6; t += 0.1) im.push({t:t, P:HV.gesteImage(b, cl, Math.min(t, fin))});
+    }
+    R.cuireImages(im, libre).then(function(){ setTimeout(suite, 50); });
+  })();
+};
 
 /* (les gestes d'attaque, qu'on peut sauter en temps réel : V.file) */
 ['tirer', 'dague', 'preparer', 'lancer', 'louche', 'herbes', 'sort', 'bouclier', 'eclairSalle', 'etudier'].forEach(function(n){
