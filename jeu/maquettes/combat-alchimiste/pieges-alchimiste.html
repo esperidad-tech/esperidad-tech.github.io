@@ -1,0 +1,1692 @@
+<title>Les Pièges de l'Alchimiste</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Alegreya+Sans:wght@400;500;700;800&display=swap">
+<style>
+/* Version 5 : des corps lourds, pas des balles. La foule arrive sans arrêt. Grosbec est hors de portée : on ne le blesse qu'en lui renvoyant ses automates. Un seul doigt suffit : les potions en bas, on touche la place pour lancer, on fait glisser l'Alchimiste. */
+:root {
+  --bg: #0E1213; --surface: #1B2326; --surface-2: #232E31; --ink: #E8ECEA; --muted: #9AA7A3; --line: #33413F;
+  --jaune: #F2C230; --jaune-ombre: #A5831B;
+  --f-titre: "IM Fell English SC", "Iowan Old Style", Palatino, Georgia, serif;
+  --f-texte: "Alegreya Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-texte); font-size: 16px; line-height: 1.4; overflow: hidden;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 8px 0; }
+button { font: inherit; color: inherit; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid var(--jaune); outline-offset: 2px; }
+svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.jeu { position: relative; width: 100%; max-width: 460px; margin: 0 auto; height: calc(100vh - 16px); height: calc(100dvh - 16px); border-radius: 18px; overflow: hidden; background: #1A1F1E; user-select: none; -webkit-user-select: none; }
+.jeu canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.haut { position: absolute; top: 6px; right: 8px; display: flex; gap: 6px; z-index: 3; }
+.rond-btn { width: 34px; height: 34px; border-radius: 50%; border: 0; background: rgba(0,0,0,.45); color: #fff; display: grid; place-items: center; cursor: pointer; font-size: 15px; padding: 0; }
+.bande { position: absolute; left: 0; right: 0; bottom: 0; height: 86px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 4px 10px 8px; background: linear-gradient(#151a1b, #0e1213); z-index: 2; }
+.potions { display: flex; gap: clamp(6px, 2.4vw, 12px); align-items: center; }
+.pot { position: relative; width: clamp(42px, 13vw, 54px); height: clamp(42px, 13vw, 54px); border-radius: 50%; border: 3px solid color-mix(in srgb, var(--c) 60%, #000); background: var(--c); color: #fff; display: grid; place-items: center; cursor: pointer; padding: 0; box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 50%, #000); }
+.pot:active { transform: translateY(2px); box-shadow: 0 1px 0 color-mix(in srgb, var(--c) 50%, #000); }
+.pot.farine { color: #4A3D24; }
+.pot:disabled { opacity: .45; }
+.pot .touche { position: absolute; left: 0; right: 0; bottom: -15px; text-align: center; font-size: 10px; color: var(--muted); display: none; }
+@media (hover: hover) and (pointer: fine) { .pot .touche { display: block; } }
+.vider { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: rgba(255,255,255,.06); color: #ddd; cursor: pointer; padding: 0; font-size: 14px; flex: none; }
+
+.voile { position: fixed; inset: 0; z-index: 20; background: rgba(8,11,12,.93); overflow: auto; display: grid; place-items: center;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.boite { width: 100%; max-width: 520px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: grid; gap: 9px; }
+.boite h2 { font-family: var(--f-titre); font-weight: 400; font-size: 1.8rem; margin: 0; line-height: 1.05; }
+.boite h3 { font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 8px 0 0; }
+.boite p { margin: 0; font-size: .95rem; }
+.regle { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 10px; align-items: center; font-size: .94rem; }
+.tuile { width: 44px; height: 44px; border-radius: 12px; background: var(--c, #2A3033); display: grid; place-items: center; font-size: 22px; }
+.carnet { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: 6px; }
+.carnet span { font-size: .85rem; font-weight: 800; border-radius: 8px; padding: 4px 8px; background: var(--surface-2); color: var(--muted); border: 1px dashed var(--line); }
+.carnet span.vu { color: #111; background: var(--jaune); border: 1px solid var(--jaune); }
+.go { justify-self: center; background: var(--jaune); color: #111; border: 0; border-radius: 14px; font-weight: 800; font-size: 1.2rem; padding: 12px 30px; box-shadow: 0 4px 0 var(--jaune-ombre); cursor: pointer; margin-top: 4px; }
+.go:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--jaune-ombre); }
+.lien { justify-self: center; background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; font-size: .9rem; }
+.stats { color: var(--muted); font-size: .9rem; }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-feu" viewBox="0 0 24 24"><path d="M12 21c-3.9 0-6.5-2.6-6.5-6.1 0-3.4 2.6-5.3 3.6-8.4 1.6 1.3 2.3 3 2.4 4.6 1.2-.9 1.9-2.4 2-4.1 2.6 2 5 5 5 8 0 3.5-2.6 6-6.5 6z"/></symbol>
+    <symbol id="i-eau" viewBox="0 0 24 24"><path d="M12 3.2c3.4 4.3 6 7.6 6 11.1A6 6 0 0 1 6 14.3c0-3.5 2.6-6.8 6-11.1z"/></symbol>
+    <symbol id="i-farine" viewBox="0 0 24 24"><path d="M3.5 19.5c1.5-5.2 4.6-8.5 8.5-8.5s7 3.3 8.5 8.5z"/><path d="M8.5 8.5h.01M12 6h.01M15.5 8.5h.01"/></symbol>
+    <symbol id="i-acide" viewBox="0 0 24 24"><path d="M9.5 3.5h5M10.3 3.5v5.2L5.6 17.3A2.2 2.2 0 0 0 7.5 20.5h9a2.2 2.2 0 0 0 1.9-3.2l-4.7-8.6V3.5"/></symbol>
+    <symbol id="i-fleur" viewBox="0 0 24 24"><circle cx="12" cy="10" r="2.2"/><path d="M12 7.8c-1.4-2.6-.3-4.6 0-4.8.3.2 1.4 2.2 0 4.8zM14.1 9.3c2.3-1.8 4.6-1.2 4.8-.9-.1.3-1.9 1.9-4.8.9zM13.3 12c1.7 2.4 1 4.5.7 4.7-.3-.1-1.7-1.9-.7-4.7zM10.7 12c-1 2.8-2.4 4.6-2.7 4.7-.3-.2-1-2.3.7-4.7zM9.9 9.3c-2.9 1-4.7-.6-4.8-.9.2-.3 2.5-.9 4.8.9z"/><path d="M12 16.5v4.5"/></symbol>
+  </defs>
+</svg>
+
+<div class="jeu" id="jeu">
+  <canvas id="cv" aria-label="La place : touche un endroit pour lancer, fais glisser l'Alchimiste pour bouger, touche-le pour boire"></canvas>
+  <div class="haut">
+    <button type="button" class="rond-btn" id="btn-son" aria-label="Couper le son">🔊</button>
+    <button type="button" class="rond-btn" id="btn-pause" aria-label="Pause, règles et combos">⏸</button>
+  </div>
+  <div class="bande">
+    <div class="potions" id="potions"></div>
+    <button type="button" class="vider" id="vider" aria-label="Vider le chaudron">✕</button>
+  </div>
+</div>
+
+<div class="voile" id="regles">
+  <div class="boite">
+    <h2>Les Pièges de l'Alchimiste</h2>
+    <p>Version 5. Grosbec reste tout au fond : tes fioles ne vont pas jusqu'à lui. Ses automates, si ! <b>Renvoie-les-lui à la figure.</b> Ils arrivent de plus en plus nombreux… et plus ils sont nombreux, plus tu as de munitions.</p>
+    <h3>Jouer avec un seul doigt</h3>
+    <div class="regle"><span class="tuile" style="--c:#3D2F5C">☝️</span><p>Choisis 1 à 3 potions en bas, puis <b>touche la place</b> : tu vois la zone, tu peux glisser, tu lâches. <b>Fais glisser l'Alchimiste</b> pour bouger, <b>touche-le</b> pour boire.</p></div>
+    <div class="regle"><span class="tuile">💥</span><p><b>Tes potions projettent, elles ne tuent presque pas.</b> Une explosion souffle toujours en éventail, loin de toi, vers le fond. Un automate projeté vole, retombe, glisse un tout petit peu et met 2 secondes à se relever. S'il percute un ami, les deux restent assommés 5 secondes. S'il percute Grosbec… aïe, pour Grosbec !</p></div>
+    <div class="regle"><span class="tuile">🛡️</span><p>Les petits te font perdre 1, les moyens 3, les gros 5.</p></div>
+    <h3>Les réactions</h3>
+    <p style="font-size:.9rem">feu + farine = <b>BOUM</b> (ça projette) · eau + eau = <b>vague</b> · acide + fleur = <b>savon</b> (ça glisse) · eau + farine = <b>boue</b> (ça colle) · farine + acide = <b>volcan</b> (ça envoie en l'air) · eau + acide = <b>électricité</b> · eau + fleur = <b>lianes</b> · feu + fleur = <b>pollen</b> (atchoum) · farine + fleur + fleur = <b>gâteau</b> (appât).</p>
+    <p style="font-size:.9rem"><b>En feu</b>, un automate brûle doucement et passe le feu à ceux qu'il touche. <b>Mouillé</b>, il conduit l'électricité. <b>Enfariné</b> puis du feu : <b>la mèche s'allume</b>, il fonce tout droit comme un dératé et explose 3 secondes plus tard ! Le <b>lourd</b> est une boule de bowling : il renverse tous ceux qu'il croise. Les <b>tonneaux</b> aussi.</p>
+    <p style="font-size:.9rem">Deux automates de plus arrivent après 30 secondes : <b>le cracheur</b>, qui te crache du feu de loin (s'il traverse un nuage de farine… boum chez ses amis), et <b>le souffleur</b>, qui pousse tes nuages et ton pollen vers toi.</p>
+    <p style="font-size:.9rem">Sur la place, il y a aussi <b>la charrette</b> (trop lourde pour rouler… sauf avec du savon sous les roues), <b>la fontaine</b> (essaie d'y verser quelque chose) et la <b>mousse du volcan</b>, qui fait rebondir ceux qui tombent dessus.</p>
+    <h3>Le carnet des combos</h3>
+    <div class="carnet" id="carnet"></div>
+    <p class="stats">Au clavier : flèches (ou Q et D) pour glisser, 1 à 5 pour les potions, la souris pour lancer, Espace pour boire.</p>
+    <button type="button" class="go" id="btn-go">Commencer</button>
+    <button type="button" class="lien" id="btn-recommencer">Recommencer la partie</button>
+  </div>
+</div>
+
+<div class="voile" id="fin" hidden>
+  <div class="boite" style="text-align:center">
+    <h2 id="fin-titre"></h2>
+    <p id="fin-texte"></p>
+    <p class="stats" id="fin-stats"></p>
+    <button type="button" class="go" id="btn-rejouer">Rejouer</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  /* ================= réglages ================= */
+  var W = 360, FY = 0.75, BANDE = 86;
+  var PV_J = 100, PV_B = 450, V_IMPACT = 110, V_BOSS = 60, STUN = 5, LEVE = 2, G = 650, PORTEE_F = 0.24, MAX_E = 36;
+  var ING = [
+    { id: "feu", nom: "Feu", hex: "#E5572A" }, { id: "eau", nom: "Eau", hex: "#2E86D6" },
+    { id: "farine", nom: "Farine", hex: "#D9C9A4" }, { id: "acide", nom: "Acide", hex: "#5DB338" },
+    { id: "fleur", nom: "Fleur bleue", hex: "#7C6BEB" }
+  ];
+  var IDX = {}; ING.forEach(function (g, i) { IDX[g.id] = i; });
+  var NOMS = {
+    "feu": "Petite flamme", "eau": "Jet d'eau", "farine": "Nuage de farine", "acide": "Goutte d'acide", "fleur": "Fleurs",
+    "feu feu": "Boule de feu", "eau eau": "Vague", "farine farine": "Gros nuage", "acide acide": "Jet d'acide", "fleur fleur": "Tapis de fleurs",
+    "feu eau": "Vapeur", "feu farine": "BOUM !", "feu acide": "Fumée verte", "feu fleur": "Pollen", "eau farine": "Boue",
+    "eau acide": "Flaque électrique", "eau fleur": "Lianes", "farine acide": "Volcan", "farine fleur": "Crêpe", "acide fleur": "Savon",
+    "feu feu feu": "Colonne de feu", "eau eau eau": "Raz-de-marée", "farine farine farine": "Tempête de farine", "acide acide acide": "Bain d'acide", "fleur fleur fleur": "Grand remède",
+    "feu feu eau": "Geyser", "feu feu farine": "GROS BOUM", "feu feu acide": "Feu vert", "feu feu fleur": "Bouquet de flammes", "feu eau eau": "Brouillard",
+    "eau eau farine": "Grande boue", "eau eau acide": "Grande flaque électrique", "eau eau fleur": "Grandes lianes", "feu farine farine": "Feu d'artifice", "eau farine farine": "Pâte épaisse",
+    "farine farine acide": "Gros volcan", "farine farine fleur": "Brioche", "feu acide acide": "Acide bouillant", "eau acide acide": "Flaque qui pique", "farine acide acide": "Volcan acide",
+    "acide acide fleur": "Savon piquant", "feu fleur fleur": "Tisane chaude", "eau fleur fleur": "Grande tisane", "farine fleur fleur": "Gâteau de fleurs", "acide fleur fleur": "Savon doux",
+    "feu eau farine": "Boum fumant", "feu eau acide": "Vapeur acide", "feu eau fleur": "Tisane parfaite", "feu farine acide": "Bombe verte", "feu farine fleur": "Pluie de pétales",
+    "feu acide fleur": "Savon brûlant", "eau farine acide": "Ciment", "eau farine fleur": "Pâte de soin", "eau acide fleur": "Savon électrique", "farine acide fleur": "Mousse fleurie"
+  };
+  var SPEC = {
+    "eau eau": { forme: "cone", lab: "Vague en cône", len: 300, half: 0.45, force: 560 },
+    "feu eau": { forme: "cone", lab: "Vapeur en cône", len: 240, half: 0.45 },
+    "acide acide": { forme: "rayon", lab: "Jet : garde le doigt appuyé" },
+    "feu feu feu": { forme: "colonnes", lab: "Colonnes : tout s'envole", r: 70 },
+    "eau eau eau": { forme: "anneau", lab: "Raz-de-marée autour de toi", r: 140 },
+    "farine fleur fleur": { forme: "pose", lab: "Appât posé" }
+  };
+  var RAYONS = [0, 34, 50, 64], LABR = ["", "Éclaboussure", "Cercle", "Grand cercle"];
+  var TYPES = {
+    rapide:   { nom: "Le rapide",   pv: 18, v: 60, r: 11, h: 20, m: 1,   kv: 1,    coup: 1,  cad: 1.0, coul: "#3FB6C9", tete: "#62C8D8" },
+    bouclier: { nom: "Le bouclier", pv: 30, v: 42, r: 13, h: 24, m: 1.6, kv: 0.92, coup: 3,  cad: 1.4, coul: "#7E8D96", tete: "#8F9DA5" },
+    lourd:    { nom: "Le lourd",    pv: 46, v: 30, r: 18, h: 30, m: 3,   kv: 0.8,  coup: 5,  cad: 1.8, coul: "#8B5E3C", tete: "#9C6C46", lourd: true },
+    cracheur: { nom: "Le cracheur", pv: 22, v: 38, r: 12, h: 22, m: 1.3, kv: 0.95, coup: 2,  cad: 1.4, coul: "#B8572E", tete: "#C96A3F", portee: 250, tir: 3.6 },
+    souffleur:{ nom: "Le souffleur",pv: 24, v: 36, r: 13, h: 22, m: 1.4, kv: 0.94, coup: 2,  cad: 1.4, coul: "#6C8F86", tete: "#80A69C", portee: 220, souffle: 4.2 }
+  };
+  var TC = { feu: "229,87,42", eau: "46,134,214", nuage: "217,201,164", acide: "93,179,56", fleurs: "150,130,245", boue: "122,86,52", vapeur: "222,228,232", fumee: "80,150,60",
+             savon: "240,225,245", elec: "110,180,255", lianes: "70,150,60", pollen: "240,205,70", mousse: "235,240,220", bain: "246,236,252", popcorn: "255,236,190" };
+  var TA = { feu: .34, eau: .30, nuage: .42, acide: .32, fleurs: .28, boue: .55, vapeur: .38, fumee: .40, savon: .45, elec: .35, lianes: .25, pollen: .40, mousse: .45, bain: .55, popcorn: .5 };
+  var COMBOS = {
+    boulet: "BOULET DE CANON !", carambolage: "CARAMBOLAGE !", bowling: "BOWLING !", catapulte: "CATAPULTE !",
+    meche: "MÈCHE SUR PATTES !", panique: "TOUT LE MONDE EN FEU !", massue: "MASSUE DE LIANES !", elec: "ÉLECTROCUTÉS !", tonneau: "TONNEAU DANS LE MILLE !",
+    charrette: "LA CHARRETTE FOLLE !", trampoline: "TRAMPOLINE !", fontaine: "LA FONTAINE ÉLECTRIQUE !",
+    crac: "CRAC !", brulants: "BOUM EN SÉRIE !", bain: "BAIN MOUSSANT !", siamois: "LES SIAMOIS !", tourbillon: "TOURBILLON !",
+    lancepierre: "LANCE-PIERRE !", bulles: "BULLES DE SAVON !", statue: "TERRE CUITE !", popcorn: "POP-CORN !",
+    cracheur: "MERCI LE CRACHEUR !", souffleur: "ATCHOUM GÉNÉRAL !", miroir: "BOUCLIER MIROIR !"
+  };
+  var FONTAINE = { x: 46, fy: 0.62, r: 22 };
+
+  /* ================= outils ================= */
+  function $(id) { return document.getElementById(id); }
+  function ico(id) { return '<svg class="ico" aria-hidden="true"><use href="#i-' + id + '"/></svg>'; }
+  function d2(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function vit(o) { return Math.hypot(o.vx || 0, o.vy || 0); }
+  function cleTxt(r) { return r.slice().sort(function (a, b) { return IDX[a] - IDX[b]; }).join(" "); }
+  function compter(r) { var c = { feu: 0, eau: 0, farine: 0, acide: 0, fleur: 0 }; r.forEach(function (id) { c[id]++; }); return c; }
+  function distSeg(p, a, b) {
+    var dx = b.x - a.x, dy = b.y - a.y, l = dx * dx + dy * dy;
+    var t = l ? clamp(((p.x - a.x) * dx + (p.y - a.y) * dy) / l, 0, 1) : 0;
+    return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+  }
+  function dansCone(p, o, ang, len, half) {
+    var d = Math.hypot(p.x - o.x, p.y - o.y); if (d > len) return false;
+    var a = Math.atan2(p.y - o.y, p.x - o.x) - ang;
+    while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI;
+    return Math.abs(a) <= half;
+  }
+  function masse(o) { return o.T ? o.T.m : (o.m || 2); }
+  function pousser(o, fx0, fy0, n, vz) {
+    if (!o.T && S) o.chaine = S.chaineCour;
+    var d = Math.hypot(o.x - fx0, o.y - fy0), k = n / Math.pow(masse(o), 0.6), ux, uy;
+    if (d < 0.5) { var a = Math.random() * 6.28; ux = Math.cos(a); uy = Math.sin(a); } else { ux = (o.x - fx0) / d; uy = (o.y - fy0) / d; }
+    o.vx = (o.vx || 0) + ux * k; o.vy = (o.vy || 0) + uy * k;
+    if (vz && o.T) { o.vz = Math.max(o.vz || 0, vz / Math.pow(masse(o), 0.4)); o.z = Math.max(o.z || 0, 1); }
+  }
+  function lancerDir(o, ang, n) { if (!o.T && S) o.chaine = S.chaineCour; var k = n / Math.pow(masse(o), 0.6); o.vx = (o.vx || 0) + Math.cos(ang) * k; o.vy = (o.vy || 0) + Math.sin(ang) * k; }
+  function angDe(o, x, y) { var d = Math.hypot(o.x - x, o.y - y); return d < 0.5 ? Math.random() * 6.28 : Math.atan2(o.y - y, o.x - x); }
+  function libererDeLianes(e) { if (e.attrape) { var i = e.attrape.prises.indexOf(e.id); if (i >= 0) e.attrape.prises.splice(i, 1); e.attrape = null; } }
+  // un corps éjecté : il part en cloche, assez lentement, et va loin
+  function ejecter(e, ang, vh, vz, o) {
+    o = o || {};
+    if (e.attrape && e.attrape.feu > 0) return;
+    if (e.statue > 0) { briser(e); return; }
+    if (e.tourb) return;
+    e.bulle = null; e.deBulle = false;
+    libererDeLianes(e);
+    var k = e.T.kv;
+    e.vx = Math.cos(ang) * vh * k; e.vy = Math.sin(ang) * vh * k;
+    e.vz = vz * (e.T.lourd ? 0.88 : 1); e.z = Math.max(e.z, 1);
+    e.chaine = S.chaineCour || nouvelleChaine(); e.trampo = 0;
+    e.etat = "vol"; e.volT = 0; e.hop = false; e.leger = !!o.leger; e.stunSol = 0; e.touche = {}; e.ko = false;
+    e.cote = Math.cos(ang) >= 0 ? 1 : -1;
+  }
+  // un corps balayé (la vague) : renversé, il glisse sur les pavés
+  function balayer(e, ang, v) {
+    if (e.attrape || e.statue > 0 || e.tourb || e.etat === "bulle") return;
+    var k = e.T.kv;
+    if (e.etat === "vol") { e.vx += Math.cos(ang) * v * 0.4 * k; e.vy += Math.sin(ang) * v * 0.4 * k; return; }
+    e.vx = Math.cos(ang) * v * k; e.vy = Math.sin(ang) * v * k;
+    e.etat = "glisse"; e.apresVol = false; e.z = 0; e.vz = 0; e.touche = {}; e.stunSol = 0;
+    e.cote = Math.cos(ang) >= 0 ? 1 : -1; e.chaine = S.chaineCour || nouvelleChaine();
+  }
+  // assommé par un choc : il tombe là où il est, 5 secondes
+  function assommer(o, dm, ang, recul) {
+    if (o.attrape && o.attrape.feu > 0) return;
+    if (o.statue > 0) { briser(o); return; }
+    if (o.etat === "bulle") { eclaterBulle(o); return; }
+    o.pv -= dm; fxTxt(o.x, o.y, -(o.T.h + 14), "−" + Math.round(dm), "#FFD25A"); fx({ k: "etoile", x: o.x, y: o.y, dur: .35 });
+    o.court = false;
+    if (o.etat === "vol") { o.vx *= 0.15; o.vy *= 0.15; o.stunSol = STUN; return; }
+    if (o.attrape) return;
+    o.x += Math.cos(ang) * recul; o.y += Math.sin(ang) * recul;
+    o.etat = "terre"; o.terreT = Math.max(o.terreT, STUN); o.ko = true; o.vx = o.vy = 0; o.cote = Math.cos(ang) >= 0 ? 1 : -1;
+  }
+
+  /* ================= écran ================= */
+  var box = $("jeu"), cv = $("cv"), ctx = cv.getContext("2d");
+  var fond = document.createElement("canvas"), fx2 = fond.getContext("2d");
+  var L = { H: 640, top: 96, bot: 530, D: 580, s: 1, dpr: 1 };
+  var S = null, dernierT = 0, clavier = {}, rafId = 0;
+  function sy(gy) { return L.top + gy * FY; }
+  function portee() { return L.D * PORTEE_F; }
+  function redim() {
+    var r = box.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+    L.s = r.width / W; L.H = r.height / L.s; L.dpr = dpr;
+    cv.width = Math.max(1, Math.round(r.width * dpr)); cv.height = Math.max(1, Math.round(r.height * dpr));
+    fond.width = cv.width; fond.height = cv.height;
+    L.top = 96; L.bot = L.H - BANDE / L.s - 12; L.D = Math.max(200, (L.bot - L.top) / FY);
+    peindreFond();
+    if (S) { S.hero.y = L.D - 30; S.E.forEach(function (e) { e.y = Math.min(e.y, L.D - e.r); }); }
+  }
+  window.addEventListener("resize", redim);
+  function peindreFond() {
+    var c = fx2; c.setTransform(L.s * L.dpr, 0, 0, L.s * L.dpr, 0, 0);
+    var g = c.createLinearGradient(0, 0, 0, 96); g.addColorStop(0, "#0D1424"); g.addColorStop(1, "#1D2433");
+    c.fillStyle = g; c.fillRect(0, 0, W, L.H);
+    function maison(x0, x1, haut, pointe, coul) { c.fillStyle = coul; c.beginPath(); c.moveTo(x0, haut); c.lineTo((x0 + x1) / 2, pointe); c.lineTo(x1, haut); c.lineTo(x1, 92); c.lineTo(x0, 92); c.closePath(); c.fill(); }
+    maison(0, 60, 44, 24, "#3A2F2A"); maison(60, 112, 36, 16, "#45372F"); maison(112, 248, 30, 4, "#514238"); maison(248, 300, 36, 16, "#45372F"); maison(300, 360, 44, 24, "#3A2F2A");
+    c.fillStyle = "#F2C86A";
+    [[14, 56], [38, 70], [74, 50], [92, 68], [132, 58], [214, 58], [262, 50], [280, 68], [316, 56], [340, 70]].forEach(function (p) { c.fillRect(p[0], p[1], 9, 11); });
+    c.fillStyle = "#E8D9B0"; c.beginPath(); c.arc(180, 30, 8, 0, 7); c.fill();
+    c.strokeStyle = "#3A2F2A"; c.lineWidth = 1.6; c.beginPath(); c.moveTo(180, 25); c.lineTo(180, 30); c.lineTo(184, 33); c.stroke();
+    c.fillStyle = "#26231F"; c.fillRect(0, 88, W, 8);
+    c.fillStyle = "#34332F"; c.fillRect(0, L.top, W, L.bot - L.top);
+    c.strokeStyle = "rgba(0,0,0,.30)"; c.lineWidth = 1;
+    var row = 0;
+    for (var y = L.top; y < L.bot; y += 18, row++) {
+      c.beginPath(); c.moveTo(0, y + .5); c.lineTo(W, y + .5); c.stroke();
+      for (var x = (row % 2) * 20; x < W; x += 40) { c.beginPath(); c.moveTo(x + .5, y); c.lineTo(x + .5, Math.min(y + 18, L.bot)); c.stroke(); }
+    }
+    // la ligne au-delà de laquelle les fioles ne vont pas
+    var yp = sy(portee());
+    c.strokeStyle = "rgba(242,194,48,.35)"; c.lineWidth = 1.5; c.setLineDash([6, 6]); c.beginPath(); c.moveTo(0, yp); c.lineTo(W, yp); c.stroke(); c.setLineDash([]);
+    c.font = "700 9px 'Alegreya Sans', sans-serif"; c.fillStyle = "rgba(242,194,48,.6)"; c.textAlign = "right"; c.fillText("tes fioles ne vont pas plus loin", W - 6, yp - 4);
+    c.fillStyle = "#5B5850"; c.fillRect(0, L.bot, W, 12);
+    c.fillStyle = "#77736A"; c.fillRect(0, L.bot, W, 4);
+    c.strokeStyle = "rgba(0,0,0,.3)";
+    for (var k = 30; k < W; k += 50) { c.beginPath(); c.moveTo(k, L.bot + 4); c.lineTo(k, L.bot + 12); c.stroke(); }
+    c.fillStyle = "#0E1213"; c.fillRect(0, L.bot + 12, W, L.H);
+  }
+
+  /* ================= sons (bruitages seulement) ================= */
+  var AC = null, BRUIT = null, muet = false, dernierSon = {};
+  function initAudio() {
+    if (AC) { if (AC.state === "suspended") AC.resume(); return; }
+    try { AC = new (window.AudioContext || window.webkitAudioContext)(); var n = AC.sampleRate; BRUIT = AC.createBuffer(1, n, n); var dd = BRUIT.getChannelData(0); for (var i = 0; i < n; i++) dd[i] = Math.random() * 2 - 1; } catch (e) { AC = null; }
+  }
+  function bruit(dur, type, f, g) {
+    var src = AC.createBufferSource(); src.buffer = BRUIT; var fi = AC.createBiquadFilter(); fi.type = type; fi.frequency.value = f;
+    var ga = AC.createGain(), t = AC.currentTime; ga.gain.setValueAtTime(g, t); ga.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    src.connect(fi); fi.connect(ga); ga.connect(AC.destination); src.start(t); src.stop(t + dur);
+  }
+  function osc(type, f0, f1, dur, g, delai) {
+    var o = AC.createOscillator(); o.type = type; var t = AC.currentTime + (delai || 0);
+    o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
+    var ga = AC.createGain(); ga.gain.setValueAtTime(g, t); ga.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(ga); ga.connect(AC.destination); o.start(t); o.stop(t + dur);
+  }
+  function son(t) {
+    if (!AC || muet) return;
+    var now = AC.currentTime; if (dernierSon[t] && now - dernierSon[t] < 0.06) return; dernierSon[t] = now;
+    try {
+      switch (t) {
+        case "boom": bruit(0.5, "lowpass", 700, 0.9); osc("sine", 90, 35, 0.5, 0.8); break;
+        case "pschitt": bruit(0.35, "bandpass", 3000, 0.35); break;
+        case "zap": osc("sawtooth", 140, 90, 0.3, 0.18); bruit(0.2, "highpass", 4000, 0.2); break;
+        case "boing": osc("sine", 260, 680, 0.18, 0.3); break;
+        case "thud": osc("triangle", 150 + Math.random() * 60, 60, 0.12, 0.5); bruit(0.08, "lowpass", 800, 0.35); break;
+        case "gong": osc("sine", 180, 160, 0.7, 0.5); osc("sine", 362, 330, 0.5, 0.2); bruit(0.1, "lowpass", 1200, 0.4); break;
+        case "splat": bruit(0.18, "lowpass", 900, 0.45); break;
+        case "fiole": osc("sine", 500, 900, 0.08, 0.12); break;
+        case "aie": osc("square", 220, 120, 0.12, 0.15); break;
+        case "atchoum": bruit(0.22, "bandpass", 1500, 0.3); break;
+        case "crac": bruit(0.12, "highpass", 2500, 0.7); osc("square", 900, 200, 0.08, 0.15); break;
+        case "pop": osc("square", 620, 280, 0.06, 0.14); bruit(0.05, "highpass", 3000, 0.2); break;
+        case "vent": bruit(0.6, "bandpass", 500, 0.25); break;
+        case "cri": osc("sawtooth", 300, 120, 0.4, 0.15); break;
+        case "combo": osc("sine", 660, 660, 0.1, 0.2); osc("sine", 880, 880, 0.1, 0.2, 0.1); osc("sine", 1320, 1320, 0.18, 0.2, 0.2); break;
+      }
+    } catch (e) {}
+  }
+
+  /* ================= carnet des combos ================= */
+  var CLE_CARNET = "brumeval-carnet-combos-v4", vus = {};
+  try { vus = JSON.parse(localStorage.getItem(CLE_CARNET) || "{}") || {}; } catch (e) { vus = {}; }
+  function carnet() { $("carnet").innerHTML = Object.keys(COMBOS).map(function (k) { return '<span class="' + (vus[k] ? "vu" : "") + '">' + (vus[k] ? "✓ " : "") + COMBOS[k].replace(" !", "") + '</span>'; }).join(""); }
+  function combo(k) {
+    if (!S) return;
+    S.combosPartie[k] = (S.combosPartie[k] || 0) + 1;
+    if (S.big && S.big.k === k && S.big.t > 0.7) return;
+    var neuf = !vus[k];
+    S.big = { k: k, txt: COMBOS[k], t: 1.5, neuf: neuf };
+    son("combo");
+    if (neuf) { vus[k] = 1; try { localStorage.setItem(CLE_CARNET, JSON.stringify(vus)); } catch (e) {} }
+  }
+  // la chaîne : chaque choc qui arrive peu après le précédent fait monter le compteur
+  function nouvelleChaine() { S.chaineCour = ++S.nChaine; return S.chaineCour; }
+  function choc(x, y, id) {
+    if (!id) id = ++S.nChaine;
+    var n = (S.chaines[id] || 0) + 1; S.chaines[id] = n; S.chaineMax = Math.max(S.chaineMax, n);
+    if (n >= 2) S.compteur = { n: n, t: 1.1, x: x, y: y };
+    if (n === 4) S.ralenti = 0.6;
+    if (n === 6) combo("carambolage");
+  }
+
+  /* ================= partie ================= */
+  function tonneau(x, y) { return { x: x, y: y, x0: x, y0: y, vx: 0, vy: 0, r: 11, m: 2, actif: true, respawn: 0, roule: 0 }; }
+  function charrette(x, y) { return { type: "charrette", x: x, y: y, x0: x, y0: y, vx: 0, vy: 0, r: 20, m: 6, actif: true, respawn: 0, roule: 0, savon: 0 }; }
+  function nouvellePartie() {
+    cancelAnimationFrame(rafId);
+    S = { pv: PV_J, hero: { x: 180, y: L.D - 30, r: 13 },
+          B: { x: 180, y: 66, r: 30, pv: PV_B, hit: 0 },
+          E: [], T: [], FX: [], P: [], O: [], gateau: null, rayon: null, nRayon: 0, slots: [], eauS: 0, soinT: -99, soinsSuite: 0,
+          temps: 0, tues: 0, enCours: true, pause: false, vise: null, glisse: null, ptr: { x: 180, y: 200 }, notes: [], nid: 0,
+          shake: 0, ralenti: 0, msg: null, big: null, compteur: null, chaines: {}, nChaine: 0, chaineCour: 0, chaineMax: 0, spawnT: 1.2, rageT: 24, rage: 0,
+          coupsBoss: 0, coolHeros: 0, combosPartie: {} };
+    [[70, 0.46], [292, 0.56], [244, 0.32]].forEach(function (p) { S.O.push(tonneau(p[0], p[1] * L.D)); });
+    S.O.push(charrette(150, 0.5 * L.D));
+    S.boules = []; S.elecTic = 0;
+    S.fontaine = null;
+    for (var i = 0; i < 5; i++) { sortir(i < 4 ? "rapide" : "bouclier", i % 2 === 0); S.E[i].y += 40 + i * 12; }
+    $("fin").hidden = true; $("regles").hidden = true; $("btn-go").textContent = "Reprendre";
+    dire("Les automates arrivent… laisse-les venir !", "");
+    majPotions();
+    dernierT = performance.now(); rafId = requestAnimationFrame(boucle);
+  }
+  function boucle(now) {
+    if (!S || !S.enCours) return;
+    var dt = Math.min(0.05, Math.max(0, (now - dernierT) / 1000)); dernierT = now;
+    if (!S.pause) {
+      if (S.ralenti > 0) { S.ralenti -= dt; dt *= 0.3; }
+      var n = Math.max(1, Math.ceil(dt / 0.017));
+      for (var i = 0; i < n; i++) avancer(dt / n);
+    }
+    dessiner();
+    if (S.B.pv <= 0) return fin(true);
+    if (S.pv <= 0) return fin(false);
+    rafId = requestAnimationFrame(boucle);
+  }
+  function avancer(dt) {
+    S.temps += dt;
+    S.eauS = Math.max(0, S.eauS - dt); S.coolHeros = Math.max(0, S.coolHeros - dt); S.B.hit = Math.max(0, S.B.hit - dt);
+    S.shake = Math.max(0, S.shake - dt * 2);
+    if (S.msg) S.msg.t -= dt;
+    if (S.big) { S.big.t -= dt; if (S.big.t <= 0) S.big = null; }
+    if (S.compteur) { S.compteur.t -= dt; if (S.compteur.t <= 0) S.compteur = null; }
+    majTraces(dt);
+    // la foule : de plus en plus d'automates, sans attendre qu'on ait fini
+    S.spawnT -= dt;
+    if (S.spawnT <= 0) {
+      S.spawnT = Math.max(1.2, 3 - S.temps / 50);
+      var groupe = Math.min(4, 1 + Math.floor(S.temps / 30)), gauche = Math.random() < 0.5;
+      for (var g = 0; g < groupe && S.E.length < MAX_E; g++) sortir(choixType(), gauche);
+    }
+    S.rageT -= dt; if (S.rage > 0) S.rage -= dt;
+    if (S.rageT <= 0) { S.rageT = 24; S.rage = 6; dire("Grosbec hurle : « Plus vite, mes automates ! »", "mal"); son("cri"); }
+    if (S.gateau) { S.gateau.t -= dt; if (S.gateau.t <= 0) S.gateau = null; }
+    majHeros(dt);
+    S.E.forEach(function (e) { majAuto(e, dt); });
+    var enFeu = S.E.filter(function (e) { return e.panique > 0; }).length;
+    if (enFeu >= 6 && !S.feuMontre) { S.feuMontre = true; combo("panique"); } else if (enFeu < 3) S.feuMontre = false;
+    majFontaine(dt);
+    majLiens();
+    majBoules(dt);
+    majGrosbecElec(dt);
+    collisions();
+    majTonneaux(dt);
+    if (S.rayon) majRayon(dt);
+    S.P.forEach(function (p) { p.t += dt; if (p.t >= p.dur && !p.fini) { p.fini = true; p.cb(); } });
+    S.P = S.P.filter(function (p) { return !p.fini; });
+    S.FX.forEach(function (f) { f.t += dt; }); S.FX = S.FX.filter(function (f) { return f.t < f.dur; });
+    nettoyer();
+  }
+  function choixType() {
+    var r = Math.random(), t = S.temps;
+    if (t < 25) return r < 0.85 ? "rapide" : "bouclier";
+    if (t < 30) return r < 0.6 ? "rapide" : r < 0.85 ? "bouclier" : "lourd";
+    if (t < 60) return r < 0.5 ? "rapide" : r < 0.72 ? "bouclier" : r < 0.84 ? "lourd" : r < 0.93 ? "cracheur" : "souffleur";
+    return r < 0.42 ? "rapide" : r < 0.62 ? "bouclier" : r < 0.76 ? "lourd" : r < 0.89 ? "cracheur" : "souffleur";
+  }
+  function sortir(t, gauche) {
+    var T = TYPES[t]; if (gauche === undefined) gauche = Math.random() < 0.5;
+    S.E.push({ id: ++S.nid, t: t, T: T, r: T.r, pv: T.pv, x: gauche ? 22 + Math.random() * 40 : 298 + Math.random() * 40, y: 20 + Math.random() * 50,
+               vx: 0, vy: 0, z: 0, vz: 0, spin: 0, shield: t === "bouclier", colle: 0, aveugle: 0, etourdi: 0, panique: 0, meche: 0, mouille: 0, enfarine: 0, elec: 0, lent: 0,
+               dirT: 0, dir: 0, cd: T.cad * 0.6, mange: false, attrape: null, atchoum: 0.5, coolHit: 0, coolTon: 0, rayonVu: 0,
+               etat: "debout", immuFeu: 0, immuElec: 0, statue: 0, bulle: null, tourb: null, lie: null, lieT: 0, tension: 0, tirT: 2 + Math.random() * 2, souffleT: 2 + Math.random() * 2, terreT: 0, touche: {}, cote: 1, hop: false, leger: false, stunSol: 0, ko: false, court: false, volT: 0, apresVol: false, angLiane: 0 });
+  }
+
+  /* ================= héros ================= */
+  function dansTrace(o, type) { for (var i = 0; i < S.T.length; i++) { var t = S.T[i]; if (t.type === type && d2(o, t) < t.r) return t; } return null; }
+  function majFontaine(dt) {
+    var F = S.fontaine; if (!F) return;
+    F.t -= dt; if (F.t <= 0) { S.fontaine = null; return; }
+    if (F.type !== "elec") return;
+    F.tic -= dt; if (F.tic > 0) return;
+    F.tic = 0.8;
+    var fX = FONTAINE.x, fY = FONTAINE.fy * L.D;
+    var pris = S.E.filter(function (e) { return e.z < 20 && Math.hypot(e.x - fX, e.y - fY) < FONTAINE.r + 46; });
+    if (pris.length) {
+      pris.forEach(function (e) { fx({ k: "eclair", x: fX, y: fY, x2: e.x, y2: e.y, dur: .35 }); });
+      var n = electrocuter(pris);
+      if (n >= 2) combo("fontaine");
+    }
+    if (Math.hypot(S.hero.x - fX, S.hero.y - fY) < FONTAINE.r + 46) blesser(3, "La fontaine te secoue ! −3");
+  }
+  function majHeros(dt) {
+    var h = S.hero, kx = (clavier.d ? 1 : 0) - (clavier.g ? 1 : 0);
+    if (kx) h.x += kx * 160 * dt;
+    h.x = clamp(h.x, 18, W - 18); h.y = L.D - 30;
+    S.T.forEach(function (t) {
+      if (d2(h, t) > t.r) return;
+      if (t.type === "feu" && S.eauS <= 0) S.pv -= 4 * dt;
+      else if (t.type === "elec") S.pv -= 5 * dt;
+      else if (t.type === "fleurs") S.pv = Math.min(PV_J, S.pv + 5 * dt * (t.pow || 1));
+    });
+  }
+  function blesser(d, txt) { if (d <= 0) return; S.pv -= d; fxTxt(S.hero.x, S.hero.y, -44, "−" + Math.round(d), "#F0806A"); son("aie"); if (txt) dire(txt, "mal"); }
+  function soigner(h) { S.pv = Math.min(PV_J, S.pv + h); fxTxt(S.hero.x, S.hero.y, -44, "+" + Math.round(h), "#EE86B6"); }
+
+  /* ================= états des automates ================= */
+  function feuSur(e) {
+    if (e.statue > 0) return;
+    if (e.etat === "bulle") { eclaterBulle(e); return; }
+    if ((e.colle > 0 || dansTrace(e, "boue")) && e.etat !== "vol") { cuire(e); return; }
+    if (e.mouille > 0) { e.mouille = 0; fxTxt(e.x, e.y, -30, "pschitt", "#9FC6EA"); son("pschitt"); return; }
+    if (e.enfarine > 0) { if (e.meche <= 0) { e.meche = 3; e.enfarine = 0; e.court = false; fxTxt(e.x, e.y, -(e.T.h + 24), "mèche !", "#FFB347"); } return; }
+    if (e.meche > 0 || e.immuFeu > 0) return;
+    if (e.panique <= 0) fxTxt(e.x, e.y, -(e.T.h + 20), "au feu !", "#FF8A3D");
+    e.panique = Math.max(e.panique, 4);
+  }
+  function enfariner(e, n) {
+    if (e.panique > 0) { e.panique = 0; brulantExplose(e); return; }
+    e.aveugle = Math.max(e.aveugle, 1.2 * (n || 1));
+    if (e.mouille > 0) { e.colle = Math.max(e.colle, 7); e.mouille = 0; fxTxt(e.x, e.y, -30, "boue !", "#C9A46E"); return; }
+    e.enfarine = Math.max(e.enfarine, 9);
+  }
+  function mouiller(e) {
+    if (e.panique > 0) { e.panique = 0; crac(e); e.mouille = 7; return; }
+    if (e.enfarine > 0) { e.colle = Math.max(e.colle, 7); e.enfarine = 0; fxTxt(e.x, e.y, -30, "boue !", "#C9A46E"); return; }
+    e.mouille = Math.max(e.mouille, 7);
+  }
+  // électricité : elle saute d'un automate mouillé à l'autre
+  function electrocuter(depart) {
+    var vus2 = {}, file = depart.filter(function (e) { return e.immuElec <= 0 && e.statue <= 0; }), liste = [];
+    while (file.length) {
+      var e = file.shift(); if (vus2[e.id]) continue; vus2[e.id] = 1; liste.push(e);
+      S.E.forEach(function (o) { if (!vus2[o.id] && o.immuElec <= 0 && o.statue <= 0 && (o.mouille > 0 || dansTrace(o, "elec")) && d2(o, e) < 70) file.push(o); });
+    }
+    liste.forEach(function (e, i) {
+      e.etourdi = Math.max(e.etourdi, 3); e.elec = 3; e.immuElec = 5; e.pv -= 3; e.vx *= 0.2; e.vy *= 0.2;
+      if (i > 0) fx({ k: "eclair", x: liste[i - 1].x, y: liste[i - 1].y, x2: e.x, y2: e.y, dur: .35 });
+    });
+    if (liste.length) son("zap");
+    if (liste.length >= 3) combo("elec");
+    return liste.length;
+  }
+
+  function crac(e) {
+    e.pv -= 12; e.immuFeu = 2;
+    fxTxt(e.x, e.y, -(e.T.h + 26), "CRAC !", "#FFFFFF"); fx({ k: "etoile", x: e.x, y: e.y, dur: .4 }); son("crac"); S.shake = Math.max(S.shake, .15);
+    if (e.etat === "debout" && !e.attrape) { e.etat = "terre"; e.terreT = Math.max(e.terreT, 2.5); e.ko = true; e.vx = e.vy = 0; }
+    combo("crac"); choc(e.x, e.y, S.chaineCour);
+  }
+  function brulantExplose(e) {
+    e.pv -= 6; fxTxt(e.x, e.y, -(e.T.h + 26), "BOUM !", "#FFB347");
+    var x = e.x, y = e.y; S.P.push({ t: 0, dur: 0.12, invisible: true, cb: function () { exploser(x, y, 62, {}); } });
+    combo("brulants");
+  }
+  function cuire(e) {
+    e.statue = 12; e.colle = 0; e.panique = 0; e.etat = "debout"; e.terreT = 0; e.vx = e.vy = 0; libererDeLianes(e);
+    fxTxt(e.x, e.y, -(e.T.h + 22), "terre cuite !", "#E0915A"); fx({ k: "poussiere", x: e.x, y: e.y, r: e.r + 8, dur: .4 }); son("crac");
+    combo("statue");
+  }
+  function briser(e) {
+    e.statue = 0; e.pv = 0;
+    fx({ k: "eclats", x: e.x, y: e.y, c: "#B5653A", dur: .7 }); fxTxt(e.x, e.y, -(e.T.h + 22), "en miettes !", "#E0915A"); son("crac");
+    S.shake = Math.max(S.shake, .15); combo("statue"); choc(e.x, e.y, S.chaineCour);
+  }
+  // les bulles de savon : de l'eau sur le savon, ils s'envolent dans des bulles qui flottent vers le fond
+  function bulles(t) {
+    var n = 0;
+    S.E.forEach(function (e) {
+      if (e.etat === "vol" || e.etat === "bulle" || e.statue > 0 || d2(e, t) > t.r + e.r * 0.5) return;
+      libererDeLianes(e); e.lie = null;
+      e.etat = "bulle"; e.bulle = { t: 9 }; e.vx = e.vy = 0; e.terreT = 0; n++;
+      fxTxt(e.x, e.y, -30, "bulle !", "#F4EEFF");
+    });
+    for (var i = 0; i < 5; i++) fx({ k: "bulleVide", x: t.x + (Math.random() - 0.5) * t.r, y: t.y + (Math.random() - 0.5) * t.r * 0.6, r: 6 + Math.random() * 8, dur: 2 + Math.random() });
+    son("pop"); note(n ? n + " automate" + (n > 1 ? "s" : "") + " dans des bulles !" : "des bulles s'envolent");
+  }
+  function majBulle(e, dt) {
+    var B = e.bulle; B.t -= dt;
+    e.z = Math.min(48, e.z + 45 * dt); e.spin += dt * 1.5;
+    var ah = angDe(e, S.hero.x, S.hero.y);
+    e.vx = Math.cos(ah) * 24 + Math.sin(S.temps * 2 + e.id) * 12; e.vy = Math.sin(ah) * 24;
+    e.x = clamp(e.x + e.vx * dt, e.r, W - e.r); e.y = clamp(e.y + e.vy * dt, 8, L.D - e.r);
+    if (d2(e, S.B) < e.r + S.B.r) { eclaterBulle(e, true); return; }
+    if (B.t <= 0 || e.y <= 9) eclaterBulle(e);
+  }
+  function eclaterBulle(e, surBoss) {
+    if (e.etat !== "bulle") return;
+    fx({ k: "onde", x: e.x, y: e.y, r: e.r * 2, c: "250,245,255", dur: .3 }); fxTxt(e.x, e.y, -e.z - 30, "pop !", "#F4EEFF"); son("pop");
+    e.bulle = null; e.etat = "vol"; e.vx = e.vy = 0; e.vz = 0; e.volT = 0.2; e.hop = false; e.leger = false; e.touche = {}; e.stunSol = 0;
+    e.deBulle = true; e.chaine = nouvelleChaine();
+    if (surBoss) { e.touche.boss = 1; frapperBoss(e, 260); combo("bulles"); }
+  }
+  // les siamois : la pâte épaisse colle deux automates ensemble
+  function lier(a, b) {
+    a.lie = b; b.lie = a; a.lieT = b.lieT = 14; a.lieD = b.lieD = a.r + b.r;
+    fxTxt((a.x + b.x) / 2, (a.y + b.y) / 2, -30, "collés !", "#C9A46E");
+  }
+  function majLiens() {
+    S.E.forEach(function (a) {
+      var b = a.lie; if (!b) return;
+      if (a.lieT <= 0 || b.pv <= 0 || b.lie !== a || a.statue > 0 || b.statue > 0 || a.etat === "bulle" || b.etat === "bulle") { a.lie = null; if (b.lie === a) b.lie = null; return; }
+      if (a.id > b.id) return;
+      // projetés ensemble : quand l'un part, il emmène l'autre
+      [[a, b], [b, a]].forEach(function (c) {
+        var p = c[0], q = c[1];
+        if (p.etat === "vol" && q.etat !== "vol") { q.etat = "vol"; q.vx = p.vx; q.vy = p.vy; q.vz = p.vz; q.z = p.z; q.volT = p.volT; q.hop = p.hop; q.leger = p.leger; q.touche = p.touche; q.chaine = p.chaine; q.stunSol = 0; q.cote = p.cote; combo("siamois"); }
+        else if (p.etat === "glisse" && (q.etat === "debout" || q.etat === "terre")) { q.etat = "glisse"; q.vx = p.vx; q.vy = p.vy; q.apresVol = p.apresVol; q.touche = p.touche; q.chaine = p.chaine; q.cote = p.cote; }
+      });
+      var d = d2(a, b);
+      if (d > a.lieD && d > 0.01) { var k = (d - a.lieD) / d / 2; a.x += (b.x - a.x) * k; a.y += (b.y - a.y) * k; b.x -= (b.x - a.x) * k; b.y -= (b.y - a.y) * k; }
+    });
+  }
+  // le tourbillon : sur le savon, le raz-de-marée les fait tourner autour de toi, puis les éjecte
+  function majTourb(e, dt) {
+    var T2 = e.tourb, h = S.hero; T2.t -= dt; T2.a += 6.5 * dt;
+    e.x = clamp(h.x + Math.cos(T2.a) * T2.R, e.r, W - e.r); e.y = clamp(h.y + Math.sin(T2.a) * T2.R * 0.8, 8, L.D - e.r);
+    e.z = 6; e.spin += dt * 10; e.vx = -Math.sin(T2.a) * T2.R * 6.5; e.vy = Math.cos(T2.a) * T2.R * 6.5;
+    S.E.forEach(function (o) {
+      if (o === e || o.tourb || o.coolTon > 0 || o.z > 30 || o.etat === "bulle") return;
+      if (d2(o, e) < o.r + e.r + 6) { o.coolTon = 0.8; o.pv -= 6; S.chaineCour = T2.chaine; fx({ k: "etoile", x: o.x, y: o.y, dur: .3 }); son("thud"); ejecter(o, angDe(o, h.x, h.y), 330, 300); choc(o.x, o.y, T2.chaine); }
+    });
+    if (T2.t <= 0) { e.tourb = null; e.z = 1; S.chaineCour = T2.chaine; ejecter(e, angDe(e, h.x, h.y), 340, 300); }
+  }
+  // le lance-pierre : l'acide coupe la liane, l'automate qui tirait part en arrière
+  function couperLianes(t) {
+    var tenus = S.E.filter(function (e) { return e.attrape === t; });
+    retirer(t);
+    fx({ k: "onde", x: t.x, y: t.y, r: t.r, c: "120,220,80", dur: .35 }); son("boing");
+    if (!tenus.length) { note("l'acide coupe les lianes"); return; }
+    var id = nouvelleChaine();
+    tenus.forEach(function (e) { var k = e.tension || 0; e.tension = 0; e.attrape = null; S.chaineCour = id; ejecter(e, angDe(e, S.hero.x, S.hero.y), 270 + 45 * k, 260 + 20 * k); });
+    combo("lancepierre"); note("la liane claque : lance-pierre !");
+  }
+  // le bain moussant : le savon et la mousse du volcan qui se touchent
+  function verifierBain() {
+    S.T.filter(function (t) { return t.type === "mousse"; }).forEach(function (m) {
+      var sv = S.T.filter(function (t) { return t.type === "savon" && Math.hypot(t.x - m.x, t.y - m.y) < t.r + m.r; })[0];
+      if (!sv) return;
+      var x = (m.x + sv.x) / 2, y = (m.y + sv.y) / 2, r = Math.min(130, Math.max(m.r, sv.r) * 1.35);
+      retirer(m); retirer(sv); brut("bain", x, y, r, 10);
+      fx({ k: "onde", x: x, y: y, r: r, c: "246,236,252", dur: .6 }); son("pop"); note("bain moussant !");
+      if (S.E.some(function (e) { return Math.hypot(e.x - x, e.y - y) < r; })) combo("bain");
+    });
+  }
+  // le cracheur crache du feu ; le souffleur souffle tes nuages
+  function majBoules(dt) {
+    S.boules = S.boules.filter(function (b) {
+      b.t += dt; b.x += b.vx * dt; b.y += b.vy * dt;
+      if (b.x < 0 || b.x > W || b.y < 0 || b.y > L.D || b.t > 4) return false;
+      for (var i = 0; i < S.T.length; i++) {
+        var t = S.T[i]; if (d2(b, t) > t.r * 0.8) continue;
+        if (t.type === "nuage" || t.type === "pollen") {
+          var amis = S.E.filter(function (e) { return d2(e, t) < t.r * 1.3 + e.r; }).length;
+          retirer(t); exploserPlusTard(t.x, t.y, t.r * 1.3); dire("Le cracheur met le feu à ton nuage… sur ses amis !", "bon");
+          if (amis) combo("cracheur");
+          return false;
+        }
+        if (t.type === "eau" || t.type === "bain" || t.type === "savon") { fxTxt(b.x, b.y, -20, "pschitt", "#9FC6EA"); son("pschitt"); return false; }
+        if (t.type === "lianes") { enflammerLianes(t); return false; }
+        if (t.type === "mousse") { t.type = "popcorn"; t.t = 3; t.dur = 3; t.chaine = nouvelleChaine(); combo("popcorn"); return false; }
+      }
+      var tonneauTouche = false;
+      S.O.forEach(function (o) { if (!tonneauTouche && o.actif && o.type !== "charrette" && d2(o, b) < o.r + 5) { tonneauTouche = true; exploserTonneau(o); } });
+      if (tonneauTouche) return false;
+      if (d2(b, S.hero) < S.hero.r + 6) {
+        if (S.eauS > 0) fxTxt(S.hero.x, S.hero.y, -40, "pschitt", "#9FC6EA"); else blesser(4, "Le cracheur te brûle ! −4");
+        return false;
+      }
+      return true;
+    });
+  }
+  function cracher(e) {
+    var a = Math.atan2(S.hero.y - e.y, S.hero.x - e.x) + (Math.random() - 0.5) * 0.12;
+    S.boules.push({ x: e.x + Math.cos(a) * 10, y: e.y + Math.sin(a) * 10, vx: Math.cos(a) * 190, vy: Math.sin(a) * 190, t: 0 });
+    fxTxt(e.x, e.y, -(e.T.h + 20), "pfff !", "#FF9A5A"); son("fiole");
+  }
+  function souffler(e) {
+    var a = Math.atan2(S.hero.y - e.y, S.hero.x - e.x), len = 230, half = 0.5, pollenSouffle = null;
+    fx({ k: "vent", x: e.x, y: e.y, ang: a, len: len, half: half, dur: .7 }); son("vent");
+    S.T.forEach(function (t) {
+      if (["nuage", "pollen", "vapeur", "fumee", "feu"].indexOf(t.type) < 0 || !dansCone(t, e, a, len + t.r * 0.5, half)) return;
+      t.x += Math.cos(a) * 90; t.y += Math.sin(a) * 90; t.r = Math.min(110, t.r * 1.25); t.t = Math.max(t.t, 3);
+      if (t.type === "pollen") pollenSouffle = t;
+    });
+    if (pollenSouffle) {
+      var n = S.E.filter(function (o) { return d2(o, pollenSouffle) < pollenSouffle.r; }).length;
+      S.E.forEach(function (o) { if (d2(o, pollenSouffle) < pollenSouffle.r) o.atchoum = Math.random() * 0.3; });
+      if (n >= 3) combo("souffleur");
+    }
+  }
+  function majGrosbecElec(dt) {
+    S.elecTic -= dt; if (S.elecTic > 0) return; S.elecTic = 0.8;
+    var t = S.T.filter(function (t) { return t.type === "elec" && d2(t, S.B) < t.r + S.B.r * 0.6; })[0];
+    if (!t) return;
+    S.B.pv -= 4; S.B.hit = 0.25; fxTxt(S.B.x, S.B.y, -80, "−4", "#FFF07A"); fx({ k: "eclair", x: t.x, y: t.y, x2: S.B.x, y2: S.B.y, dur: .35 }); son("zap");
+    combo("elec");
+  }
+
+  /* ================= automates ================= */
+  function majAuto(e, dt) {
+    ["colle", "aveugle", "etourdi", "mouille", "enfarine", "elec", "lent", "coolHit", "coolTon", "immuFeu", "immuElec", "lieT"].forEach(function (k) { e[k] = Math.max(0, e[k] - dt); });
+    // en feu : il brûle doucement, sans courir ; s'il prend de la farine, la mèche s'allume
+    if (e.panique > 0) {
+      e.panique -= dt; e.pv -= 2 * dt;
+      if (e.panique <= 0) { e.panique = 0; e.immuFeu = 3; }
+      else if (e.enfarine > 0) { e.enfarine = 0; e.panique = 0; brulantExplose(e); }
+    }
+    if (e.attrape && S.T.indexOf(e.attrape) === -1) e.attrape = null;
+    if (e.attrape && e.attrape.feu > 0) return; // la liane en feu le fait tournoyer
+    if (e.tourb) { majTourb(e, dt); return; }
+    if (e.statue > 0) {
+      e.statue -= dt; e.vx = e.vy = 0;
+      if (e.statue <= 0) { e.statue = 0; fx({ k: "eclats", x: e.x, y: e.y, c: "#B5653A", dur: .5 }); fxTxt(e.x, e.y, -30, "il se libère", "#E0915A"); }
+      return;
+    }
+    if (e.etat === "bulle") { majBulle(e, dt); return; }
+    if (e.meche > 0) {
+      e.meche -= dt;
+      if (e.meche <= 0) { e.meche = 0; e.pv = 0; exploser(e.x, e.y, 76, {}); combo("meche"); return; }
+    }
+    // en vol : il suit sa course, seul un choc l'arrête
+    if (e.etat === "vol") {
+      e.volT += dt;
+      e.vz -= G * dt; e.z += e.vz * dt;
+      e.x += e.vx * dt; e.y += e.vy * dt;
+      murs(e);
+      if (e.z <= 0) atterrir(e);
+      return;
+    }
+    var surSavon = false;
+    S.T.forEach(function (t) {
+      if (d2(e, t) > t.r) return;
+      switch (t.type) {
+        case "eau": mouiller(e); break;
+        case "boue": e.colle = Math.max(e.colle, 1.2); break;
+        case "nuage": e.aveugle = Math.max(e.aveugle, 0.6); if (e.mouille <= 0) e.enfarine = Math.max(e.enfarine, 2); break;
+        case "vapeur": case "fumee": e.aveugle = Math.max(e.aveugle, 0.6); break;
+        case "pollen":
+          if (e.etat !== "debout") break;
+          e.atchoum -= dt;
+          if (e.atchoum <= 0) { e.atchoum = 0.7 + Math.random() * 0.6; nouvelleChaine(); ejecter(e, Math.random() * 6.28, 110, 170, { leger: true }); fxTxt(e.x, e.y, -30, "atchoum !", "#F0D060"); son("atchoum"); }
+          break;
+        case "feu": if (e.panique <= 0) feuSur(e); break;
+        case "acide": e.lent = 0.3; break;
+        case "elec": e.etourdi = Math.max(e.etourdi, 0.4); e.elec = Math.max(e.elec, 0.3); e.pv -= 2 * dt; break;
+        case "savon": surSavon = true; break;
+        case "bain":
+          surSavon = true; e.panique = 0; e.enfarine = 0; e.colle = 0; e.mouille = Math.max(e.mouille, 2);
+          if (e.etat === "debout" && Math.random() < dt * 1.2) { nouvelleChaine(); balayer(e, Math.random() * 6.28, 170); fxTxt(e.x, e.y, -30, "oups !", "#F4EEFF"); }
+          break;
+        case "fleurs": e.pv = Math.min(e.T.pv, e.pv + 3 * dt); break;
+        case "lianes":
+          if (!t.feu && !e.attrape && t.prises.length < 4 && vit(e) < 200) { e.attrape = t; t.prises.push(e.id); e.vx = 0; e.vy = 0; e.etat = "debout"; e.terreT = 0; fxTxt(e.x, e.y, -30, "attrapé !", "#8BD46A"); }
+          break;
+      }
+    });
+    if (e.etat === "vol") return; // il vient d'éternuer
+    if (e.attrape) { e.vx = 0; e.vy = 0; e.tension = Math.min(3, (e.tension || 0) + dt); return; }
+    e.tension = 0;
+    // renversé, il glisse sur les pavés
+    if (e.etat === "glisse") {
+      var fr = surSavon ? 0.12 : (e.apresVol ? 5 : 0.8);
+      e.vx *= Math.exp(-fr * dt); e.vy *= Math.exp(-fr * dt);
+      e.x += e.vx * dt; e.y += e.vy * dt;
+      murs(e);
+      if (e.etat === "glisse" && vit(e) < 22) {
+        var reste = e.stunSol || (e.apresVol ? LEVE : 1.2);
+        e.etat = "terre"; e.terreT = Math.max(e.terreT, reste); e.ko = e.ko || reste > LEVE; e.stunSol = 0; e.vx = e.vy = 0;
+      }
+      return;
+    }
+    // à terre : il met un moment à se relever
+    if (e.etat === "terre") {
+      e.terreT -= dt; e.vx = e.vy = 0;
+      if (e.terreT <= 0) { e.etat = "debout"; e.terreT = 0; e.ko = false; e.cd = e.T.cad * 0.5; e.court = false; }
+      return;
+    }
+    // debout
+    var bloque = e.etourdi > 0 || e.colle > 0;
+    var cible = S.hero, versGateau = false;
+    if (S.gateau && d2(e, S.gateau) < 180) { cible = S.gateau; versGateau = true; }
+    var d = d2(e, cible), contact = versGateau ? 10 : e.r + S.hero.r + 2;
+    e.mange = versGateau && d <= contact + 2;
+    if (e.mange && e.T.lourd) S.gateau.t -= 2 * dt;
+    var vmax = e.T.v * (S.rage > 0 ? 1.4 : 1) * (e.lent > 0 ? 0.5 : 1);
+    var k = Math.min(1, (surSavon ? 0.5 : 9) * dt), court = !bloque && e.meche > 0;
+    if (bloque) { e.vx *= Math.exp(-6 * dt); e.vy *= Math.exp(-6 * dt); }
+    else if (court) {
+      // en feu : il fonce tout droit, n'importe où
+      if (!e.court) { e.court = true; e.dir = Math.random() * 6.28; }
+      e.vx += (Math.cos(e.dir) * 150 - e.vx) * k; e.vy += (Math.sin(e.dir) * 150 - e.vy) * k;
+    } else if (e.aveugle > 0) {
+      e.dirT -= dt; if (e.dirT <= 0) { e.dirT = 0.6; e.dir = Math.random() * 6.28; }
+      e.vx += (Math.cos(e.dir) * vmax * 0.6 - e.vx) * k; e.vy += (Math.sin(e.dir) * vmax * 0.6 - e.vy) * k;
+    } else {
+      var dx = 0, dy = 0, tireur = !versGateau && (e.t === "cracheur" || e.t === "souffleur") && d < e.T.portee && e.y < S.hero.y - 60;
+      if (d > contact && !tireur) { dx = (cible.x - e.x) / d * vmax; dy = (cible.y - e.y) / d * vmax; }
+      if (e.lie && d > 0.01) { var tr = Math.sin(S.temps * 4 + e.id) * 0.9; dx += -(cible.y - e.y) / d * vmax * tr; dy += (cible.x - e.x) / d * vmax * tr; }
+      e.vx += (dx - e.vx) * k; e.vy += (dy - e.vy) * k;
+      if (tireur && e.t === "cracheur") { e.tirT -= dt; if (e.tirT <= 0) { e.tirT = e.T.tir; cracher(e); } }
+      if (tireur && e.t === "souffleur") { e.souffleT -= dt; if (e.souffleT <= 0) { e.souffleT = e.T.souffle; souffler(e); } }
+    }
+    if (!court) e.court = false;
+    e.x += e.vx * dt; e.y += e.vy * dt;
+    var mur = murs(e);
+    if (mur && court) e.dir = Math.atan2(mur.ny, mur.nx) + (Math.random() - 0.5) * 1.8;
+    if (!bloque && !court && !versGateau && e.aveugle <= 0 && d <= contact + 1) {
+      e.cd -= dt;
+      if (e.cd <= 0) {
+        e.cd = e.T.cad;
+        if (S.eauS > 0) { fxTxt(S.hero.x, S.hero.y, -40, "il glisse !", "#9FC6EA"); balayer(e, -Math.PI / 2, 260); }
+        else blesser(e.T.coup, e.T.nom + " te frappe ! −" + e.T.coup);
+      }
+    }
+  }
+  function atterrir(e) {
+    var chute = -e.vz; e.z = 0; e.vz = 0;
+    if (e.leger) { e.etat = "debout"; e.vx = e.vy = 0; e.leger = false; return; }
+    // il retombe sur la mousse du volcan : boing, il repart très haut et va retomber plus loin
+    if (!e.hop && !e.trampo && dansTrace(e, "mousse")) {
+      e.trampo = 1;
+      // s'il tombait droit, la mousse le renvoie loin de toi, vers le fond
+      var sp0 = vit(e), aT = sp0 > 60 ? Math.atan2(e.vy, e.vx) : angDe(e, S.hero.x, S.hero.y) + (Math.random() - 0.5) * 0.8, vT = Math.max(sp0 * 1.15, 230) * (e.T.lourd ? 0.85 : 1);
+      e.vx = Math.cos(aT) * vT; e.vy = Math.sin(aT) * vT; e.vz = 540; e.z = 1; e.volT = 0; e.touche = {};
+      fx({ k: "onde", x: e.x, y: e.y, r: 26, c: "240,245,225", dur: .4 }); fxTxt(e.x, e.y, -30, "boing !", "#F0F5E1"); son("boing"); combo("trampoline");
+      return;
+    }
+    if (!e.hop) {
+      e.hop = true;
+      fx({ k: "poussiere", x: e.x, y: e.y, r: e.r + 10, dur: .35 }); son("thud");
+      e.pv -= chute > 400 ? 3 : 1;
+      // il retombe sur quelqu'un : les deux sont assommés
+      var touche = 0;
+      S.E.forEach(function (o) {
+        if (o === e || o.z > 10 || e.touche[o.id]) return;
+        if (d2(o, e) < o.r + e.r + 4) { e.touche[o.id] = 1; assommer(o, 7, Math.atan2(o.y - e.y, o.x - e.x), 8); touche++; choc(o.x, o.y, e.chaine); }
+      });
+      if (touche) { combo(e.deBulle ? "bulles" : "catapulte"); e.stunSol = Math.max(e.stunSol, STUN); }
+      e.deBulle = false;
+      if (!e.touche.boss && d2(e, S.B) < e.r + S.B.r + 6) { e.touche.boss = 1; frapperBoss(e, 240); combo("catapulte"); }
+      if (dansTrace(e, "savon")) { e.etat = "glisse"; e.apresVol = false; return; }
+      // un tout petit rebond, puis il glisse à peine
+      e.vz = 70; e.z = 0.5; e.vx *= 0.35; e.vy *= 0.35;
+    } else { e.etat = "glisse"; e.apresVol = true; }
+  }
+  // les murs et la fontaine arrêtent net : rien ne rebondit
+  function murs(o) {
+    var sp = vit(o), hit = null;
+    if (o.x < o.r) { o.x = o.r; if (o.vx < 0) o.vx = 0; hit = { nx: 1, ny: 0 }; }
+    if (o.x > W - o.r) { o.x = W - o.r; if (o.vx > 0) o.vx = 0; hit = { nx: -1, ny: 0 }; }
+    if (o.y < 8) { o.y = 8; if (o.vy < 0) o.vy = 0; hit = { nx: 0, ny: 1 }; }
+    if (o.y > L.D - o.r) { o.y = L.D - o.r; if (o.vy > 0) o.vy = 0; hit = { nx: 0, ny: -1 }; }
+    var f = { x: FONTAINE.x, y: FONTAINE.fy * L.D }, df = d2(o, f), mf = o.r + FONTAINE.r;
+    if (df < mf && df > 0.01 && (o.z || 0) < 30) {
+      var nx = (o.x - f.x) / df, ny = (o.y - f.y) / df; o.x = f.x + nx * mf; o.y = f.y + ny * mf;
+      var vn = o.vx * nx + o.vy * ny; if (vn < 0) { o.vx -= vn * nx; o.vy -= vn * ny; }
+      hit = { nx: nx, ny: ny };
+    }
+    if (hit && o.T && (o.etat === "vol" || o.etat === "glisse") && sp > V_IMPACT && !o.touche.mur) {
+      o.touche.mur = 1; o.pv -= 3; o.vx *= 0.15; o.vy *= 0.15;
+      fx({ k: "etoile", x: o.x, y: o.y, dur: .3 }); fxTxt(o.x, o.y, -(o.T.h + 14), "bam", "#FFD25A"); son("thud"); choc(o.x, o.y, o.chaine);
+      if (o.etat === "vol") o.stunSol = Math.max(o.stunSol, LEVE + 1);
+      else { o.etat = "terre"; o.terreT = Math.max(o.terreT, LEVE + 1); o.vx = o.vy = 0; }
+    }
+    return hit;
+  }
+  function frapperBoss(e, sp) {
+    var dm = Math.round((8 + Math.min(sp, 400) / 20) * Math.sqrt(e.T ? e.T.m : (e.m || 2)));
+    S.B.pv -= dm; S.B.hit = 0.35; S.coupsBoss++;
+    fxTxt(S.B.x, S.B.y, -80, "−" + dm, "#FFD25A");
+    fx({ k: "etoile", x: S.B.x, y: S.B.y, dur: .45 }); son("gong"); S.shake = Math.max(S.shake, 0.35);
+    if (e.T) {
+      e.pv -= 6;
+      // il s'écrase sur Grosbec et tombe à ses pieds
+      if (e.etat === "vol") { e.vx *= 0.1; e.vy *= 0.1; e.stunSol = Math.max(e.stunSol, 3); }
+      else if (!e.attrape) { e.etat = "terre"; e.terreT = Math.max(e.terreT, 3); e.vx = e.vy = 0; }
+    }
+    choc(S.B.x, S.B.y, e.chaine);
+    var cris = ["Aïe ! Mes propres automates !", "Ouille, ma lanterne !", "Mais visez-la, elle !", "Arrêtez de me foncer dessus !", "Mon beau masque !"];
+    dire("Grosbec : « " + cris[Math.floor(Math.random() * cris.length)] + " » −" + dm, "bon");
+  }
+  function bouge(e) { return (e.etat === "vol" && e.z < 40 && e.volT > 0.12 && vit(e) > 90) || (e.etat === "glisse" && vit(e) > V_IMPACT); }
+  // un corps lancé percute un ami : les deux sont assommés, personne ne rebondit (sauf le lourd, qui renverse tout)
+  function impact(p, q) {
+    var v = vit(p), ang = Math.atan2(q.y - p.y, q.x - p.x), dm = Math.round(3 + v / 45);
+    p.touche[q.id] = 1; q.touche[p.id] = 1;
+    if (q.statue > 0) { S.chaineCour = p.chaine; briser(q); p.vx *= 0.6; p.vy *= 0.6; return; }
+    if (p.lie) { dm *= 2; combo("siamois"); }
+    assommer(q, dm, ang, 8);
+    if (p.T.lourd && !q.T.lourd) { p.vx *= 0.75; p.vy *= 0.75; combo("bowling"); }
+    else {
+      p.pv -= dm;
+      if (p.etat === "vol") { p.vx *= 0.12; p.vy *= 0.12; p.stunSol = STUN; }
+      else { p.etat = "terre"; p.terreT = Math.max(p.terreT, STUN); p.ko = true; p.vx = p.vy = 0; }
+    }
+    son("thud"); S.shake = Math.max(S.shake, .1); choc((p.x + q.x) / 2, (p.y + q.y) / 2, p.chaine);
+    if ((p.elec > 0.5) !== (q.elec > 0.5)) electrocuter([p.elec > 0.5 ? q : p]);
+  }
+  function collisions() {
+    var E = S.E, i, j;
+    for (i = 0; i < E.length; i++) for (j = i + 1; j < E.length; j++) {
+      var a = E[i], b = E[j];
+      if ((a.attrape && a.attrape.feu > 0) || (b.attrape && b.attrape.feu > 0)) continue;
+      if (a.etat === "bulle" || b.etat === "bulle" || a.tourb || b.tourb) continue;
+      var d = d2(a, b), m = a.r + b.r;
+      if (d >= m || d < 0.01) continue;
+      var ma = bouge(a), mb = bouge(b);
+      if (ma || mb) {
+        var p = ma && (!mb || vit(a) >= vit(b)) ? a : b, q = p === a ? b : a;
+        if (!(p.etat === "vol" && q.etat === "vol") && q.z < 25 && !p.touche[q.id]) impact(p, q);
+        continue;
+      }
+      if (a.z > 4 || b.z > 4) continue;
+      // le feu passe de l'un à l'autre
+      if (a.panique > 0 && b.panique <= 0 && b.meche <= 0 && b.mouille <= 0) feuSur(b);
+      else if (b.panique > 0 && a.panique <= 0 && a.meche <= 0 && a.mouille <= 0) feuSur(a);
+      // l'automate électrique : tout ce qu'il touche prend la décharge
+      if (a.elec > 0.5 && b.immuElec <= 0 && b.statue <= 0) electrocuter([b]);
+      else if (b.elec > 0.5 && a.immuElec <= 0 && a.statue <= 0) electrocuter([a]);
+      var nx = (b.x - a.x) / d, ny = (b.y - a.y) / d, kk = m - d, pa = a.statue > 0 ? 0 : b.statue > 0 ? 1 : 0.5;
+      a.x -= nx * kk * pa; a.y -= ny * kk * pa; b.x += nx * kk * (1 - pa); b.y += ny * kk * (1 - pa);
+    }
+    E.forEach(function (e) {
+      if (e.etat === "bulle" || e.tourb) return;
+      var v = vit(e), db = d2(e, S.B), mb = e.r + S.B.r;
+      if (db < mb && e.z < 110) {
+        var lance = (e.etat === "vol" && e.volT > 0.05 && !e.leger) || (e.etat === "glisse" && v > V_BOSS);
+        if (lance && !e.touche.boss) { e.touche.boss = 1; frapperBoss(e, v); combo("boulet"); }
+        if (db > 0.01 && e.z < 40) { e.x = S.B.x + (e.x - S.B.x) / db * mb; e.y = S.B.y + (e.y - S.B.y) / db * mb; }
+      }
+      if (bouge(e) && e.z < 30 && !e.touche.heros && d2(e, S.hero) < e.r + S.hero.r) {
+        e.touche.heros = 1;
+        if (S.eauS <= 0) blesser(3, "Un automate projeté te percute ! −3");
+        if (e.etat === "vol") { e.vx *= 0.1; e.vy *= 0.1; } else { e.etat = "terre"; e.terreT = Math.max(e.terreT, LEVE); e.vx = e.vy = 0; }
+      }
+    });
+  }
+  function nettoyer() {
+    S.E = S.E.filter(function (e) {
+      if (e.pv > 0) return true;
+      S.tues++; fxTxt(e.x, e.y, -20, "Pouf !", "#8BD46A"); fx({ k: "poussiere", x: e.x, y: e.y, r: e.r + 10, dur: .45 });
+      if (e.attrape) { var i = e.attrape.prises.indexOf(e.id); if (i >= 0) e.attrape.prises.splice(i, 1); }
+      return false;
+    });
+  }
+
+  /* ================= tonneaux ================= */
+  function majTonneaux(dt) {
+    S.O.forEach(function (o) {
+      if (!o.actif) { o.respawn -= dt; if (o.respawn <= 0) { o.actif = true; o.x = o.x0; o.y = o.y0; o.vx = o.vy = 0; } return; }
+      var cha = o.type === "charrette";
+      if (cha) { if (dansTrace(o, "savon")) o.savon = 6; o.savon = Math.max(0, o.savon - dt); }
+      // la charrette est lourde : sans savon sous les roues, elle avance à peine
+      var frO = cha ? (o.savon > 0 ? 0.15 : 2.2) : 0.6;
+      o.vx *= Math.exp(-frO * dt); o.vy *= Math.exp(-frO * dt);
+      o.x += o.vx * dt; o.y += o.vy * dt; o.roule += vit(o) * dt;
+      var sp = vit(o);
+      if (o.x < o.r) { o.x = o.r; o.vx = Math.max(0, o.vx); } if (o.x > W - o.r) { o.x = W - o.r; o.vx = Math.min(0, o.vx); }
+      if (o.y < 8) { o.y = 8; o.vy = Math.max(0, o.vy); } if (o.y > L.D - o.r) { o.y = L.D - o.r; o.vy = Math.min(0, o.vy); }
+      var f = { x: FONTAINE.x, y: FONTAINE.fy * L.D }, df = d2(o, f), mf = o.r + FONTAINE.r;
+      if (df < mf && df > 0.01) { var nx = (o.x - f.x) / df, ny = (o.y - f.y) / df; o.x = f.x + nx * mf; o.y = f.y + ny * mf; var vn = o.vx * nx + o.vy * ny; if (vn < 0) { o.vx -= vn * nx; o.vy -= vn * ny; } }
+      S.E.forEach(function (e) {
+        if (e.z > 14 || (e.attrape && e.attrape.feu > 0)) return;
+        var d = d2(o, e), m = o.r + e.r; if (d >= m || d < 0.01) return;
+        if (cha && sp > 70 && e.coolTon <= 0) {
+          // la charrette folle écrase tout et envoie valser ceux qu'elle percute
+          e.coolTon = 0.8; e.pv -= 12; fxTxt(e.x, e.y, -(e.T.h + 14), "−12", "#FFD25A");
+          S.chaineCour = o.chaine; ejecter(e, Math.atan2(e.y - o.y, e.x - o.x), 230, 260);
+          o.vx *= 0.93; o.vy *= 0.93; son("thud"); choc(e.x, e.y, o.chaine); combo("charrette");
+        } else if (!cha && sp > 100 && e.coolTon <= 0) {
+          // le tonneau renverse ceux qu'il croise et continue de rouler
+          e.coolTon = 0.6; assommer(e, 8, Math.atan2(e.y - o.y, e.x - o.x), 10);
+          o.vx *= 0.8; o.vy *= 0.8; son("thud"); choc(e.x, e.y, o.chaine); combo("bowling");
+        } else {
+          var k = (m - d) / d, pe = cha ? 0.9 : 0.5;
+          e.x += (e.x - o.x) * k * pe; e.y += (e.y - o.y) * k * pe; o.x -= (e.x - o.x) * k * (1 - pe); o.y -= (e.y - o.y) * k * (1 - pe);
+        }
+      });
+      var db = d2(o, S.B), mb = o.r + S.B.r;
+      if (db < mb) {
+        if (sp > V_BOSS) {
+          if (cha) { frapperBoss(o, Math.min(200, sp)); combo("charrette"); o.actif = false; o.respawn = 15; fx({ k: "poussiere", x: o.x, y: o.y, r: 40, dur: .7 }); son("boom"); S.shake = Math.max(S.shake, .5); return; }
+          frapperBoss(o, Math.min(150, sp)); combo("tonneau"); exploserTonneau(o); return;
+        }
+        if (db > 0.01) { o.x = S.B.x + (o.x - S.B.x) / db * mb; o.y = S.B.y + (o.y - S.B.y) / db * mb; }
+      }
+      var dh = d2(o, S.hero);
+      if (dh < o.r + S.hero.r && dh > 0.01) {
+        if (sp > 100 && S.coolHeros <= 0 && S.eauS <= 0) { blesser(cha ? 8 : 5, cha ? "La charrette te roule dessus ! −8" : "Un tonneau te roule dessus ! −5"); S.coolHeros = 0.6; }
+        var kh = o.r + S.hero.r - dh; o.x -= (S.hero.x - o.x) / dh * kh; o.y -= (S.hero.y - o.y) / dh * kh; o.vy = Math.min(0, o.vy);
+      }
+      if (!cha && dansTrace(o, "feu")) exploserTonneau(o);
+      // un tonneau oublié hors de portée revient à sa place
+      if (o.y < portee() && sp < 20) { o.loin = (o.loin || 0) + dt; if (o.loin > 5) { o.loin = 0; fx({ k: "poussiere", x: o.x, y: o.y, r: 20, dur: .4 }); o.x = o.x0; o.y = o.y0; o.vx = o.vy = 0; fx({ k: "poussiere", x: o.x, y: o.y, r: 20, dur: .4 }); } }
+      else o.loin = 0;
+    });
+  }
+  function exploserTonneau(o) { if (!o.actif) return; o.actif = false; o.respawn = 14; exploserPlusTard(o.x, o.y, 70); }
+  function tonneauxDans(test) { S.O.forEach(function (o) { if (o.actif && o.type !== "charrette" && test(o)) exploserTonneau(o); }); }
+
+  /* ================= traces au sol ================= */
+  function brut(type, x, y, r, dur, pow) { var t = { type: type, x: x, y: y, r: r, t: dur, dur: dur, pow: pow || 1, prises: [], feu: 0, ang: 0 }; S.T.push(t); if (S.T.length > 45) retirer(S.T[0]); return t; }
+  function retirer(t) { var i = S.T.indexOf(t); if (i >= 0) S.T.splice(i, 1); if (t.type === "lianes") S.E.forEach(function (e) { if (e.attrape === t) e.attrape = null; }); }
+  function chevauche(t, x, y, r) { return Math.hypot(t.x - x, t.y - y) < r + t.r * 0.6; }
+  function attraper(t) { S.E.forEach(function (e) { if (!e.attrape && e.etat !== "vol" && e.etat !== "bulle" && !e.tourb && !(e.statue > 0) && t.prises.length < 4 && d2(e, t) < t.r) { e.attrape = t; t.prises.push(e.id); e.vx = e.vy = 0; e.etat = "debout"; e.terreT = 0; } }); }
+  function enflammerLianes(t) {
+    if (t.feu > 0) return;
+    if (!S.E.some(function (e) { return e.attrape === t; })) { retirer(t); note("les lianes brûlent"); return; }
+    t.feu = 2.6; t.ang = 0; t.chaine = ++S.nChaine; note("les lianes grillent et se tordent !");
+  }
+  function electrifier() {
+    var change = true;
+    while (change) {
+      change = false;
+      S.T.forEach(function (t) { if (t.type === "eau" && S.T.some(function (u) { return u.type === "elec" && u !== t && Math.hypot(u.x - t.x, u.y - t.y) < u.r + t.r; })) { t.type = "elec"; t.t = Math.max(t.t, 6); t.dur = Math.max(t.dur, 6); change = true; } });
+    }
+    electrocuter(S.E.filter(function (e) { return e.z < 6 && dansTrace(e, "elec"); }));
+  }
+  function ajouterTrace(type, x, y, r, dur, pow) {
+    var cree = true, devient = type, conv = false;
+    S.T.filter(function (t) { return chevauche(t, x, y, r); }).forEach(function (t) {
+      if (type === "feu") {
+        if (t.type === "eau") { retirer(t); brut("vapeur", t.x, t.y, t.r, 3); cree = false; note("pschitt : vapeur"); son("pschitt"); }
+        else if (t.type === "nuage" || t.type === "pollen") { retirer(t); exploserPlusTard(t.x, t.y, t.r * 1.3); note("la poudre explose !"); }
+        else if (t.type === "fleurs") { retirer(t); brut("pollen", t.x, t.y, t.r, 5); note("les fleurs lâchent leur pollen"); }
+        else if (t.type === "lianes") enflammerLianes(t);
+        else if (t.type === "boue") { S.E.forEach(function (e) { if (e.etat !== "vol" && d2(e, t) < t.r) cuire(e); }); retirer(t); note("la boue cuit : terre cuite !"); }
+        else if (t.type === "mousse") { t.type = "popcorn"; t.t = 3; t.dur = 3; t.chaine = ++S.nChaine; note("pop-corn !"); combo("popcorn"); }
+      } else if (type === "eau") {
+        if (t.type === "feu") { retirer(t); brut("vapeur", t.x, t.y, t.r * 0.8, 2); note("feu éteint"); }
+        else if (t.type === "nuage") { retirer(t); brut("boue", t.x, t.y, t.r, 10); cree = false; note("boue : collés !"); }
+        else if (t.type === "fleurs") { retirer(t); attraper(brut("lianes", t.x, t.y, t.r, 10)); cree = false; note("des lianes poussent !"); }
+        else if (t.type === "acide") { retirer(t); devient = "elec"; note("l'eau devient électrique !"); }
+        else if (t.type === "elec") devient = "elec";
+        else if (t.type === "savon") { retirer(t); bulles(t); cree = false; combo("bulles"); }
+      } else if (type === "nuage") {
+        if (t.type === "eau") { retirer(t); brut("boue", t.x, t.y, t.r, 10); cree = false; note("boue : collés !"); }
+        else if (t.type === "feu") { retirer(t); exploserPlusTard(x, y, r * 1.3); cree = false; note("la farine explose sur le feu !"); }
+      } else if (type === "acide") {
+        if (t.type === "fleurs") { retirer(t); brut("savon", t.x, t.y, t.r, 14); cree = false; note("du savon !"); }
+        else if (t.type === "eau") { t.type = "elec"; t.t = Math.max(t.t, 6); cree = false; conv = true; note("la flaque devient électrique !"); }
+        else if (t.type === "lianes" && !(t.feu > 0)) couperLianes(t);
+      } else if (type === "fleurs") {
+        if (t.type === "feu") { cree = false; brut("pollen", x, y, r, 5); note("pollen !"); }
+        else if (t.type === "acide") { retirer(t); cree = false; brut("savon", x, y, r, 14); note("du savon !"); }
+        else if (t.type === "eau") { retirer(t); cree = false; attraper(brut("lianes", x, y, r, 10)); note("des lianes poussent !"); }
+      }
+    });
+    if (cree) { var nt = brut(devient, x, y, r, devient === "elec" ? 6 : dur, pow); if (devient === "lianes") attraper(nt); }
+    if (devient === "elec" || conv) electrifier();
+    if (type === "feu") tonneauxDans(function (o) { return Math.hypot(o.x - x, o.y - y) < r + o.r; });
+  }
+  function majTraces(dt) {
+    S.T.forEach(function (t) {
+      t.t -= dt;
+      if (t.type === "popcorn") {
+        S.E.forEach(function (e) {
+          if (e.etat === "vol" || e.etat === "bulle" || e.statue > 0 || e.tourb || d2(e, t) > t.r) return;
+          if (Math.random() < dt * 2.6) { e.pv -= 2; S.chaineCour = t.chaine; ejecter(e, Math.random() * 6.28, 90 + Math.random() * 90, 300 + Math.random() * 80); son("pop"); fxTxt(e.x, e.y, -24, "pop !", "#FFE7B0"); }
+        });
+      }
+      if (t.type === "lianes" && t.feu > 0) {
+        t.feu -= dt; t.ang += 7 * dt;
+        var tenus = S.E.filter(function (e) { return e.attrape === t; });
+        tenus.forEach(function (e, i) {
+          var a = t.ang + i * 6.283 / tenus.length, R = Math.max(28, t.r * 0.9);
+          e.x = t.x + Math.cos(a) * R; e.y = t.y + Math.sin(a) * R; e.z = 10; e.etat = "debout"; e.terreT = 0;
+          e.vx = -Math.sin(a) * R * 7; e.vy = Math.cos(a) * R * 7; e.spin += dt * 12; e.angLiane = a;
+          // le tourbillon : ceux qu'il frappe sont éjectés très loin
+          S.E.forEach(function (o) {
+            if (o === e || o.attrape === t || o.coolTon > 0 || o.z > 30) return;
+            if (d2(o, e) < o.r + e.r + 8) {
+              o.coolTon = 0.8; o.pv -= 8; fxTxt(o.x, o.y, -(o.T.h + 14), "−8", "#FFD25A"); fx({ k: "etoile", x: o.x, y: o.y, dur: .3 });
+              S.chaineCour = t.chaine; ejecter(o, Math.atan2(o.y - t.y, o.x - t.x) + 0.5, 340, 320);
+              son("thud"); choc(o.x, o.y, t.chaine); combo("massue");
+            }
+          });
+          if (S.coolHeros <= 0 && d2(S.hero, e) < S.hero.r + e.r + 4) { blesser(5, "La massue de lianes te tape aussi ! −5"); S.coolHeros = 0.7; }
+          if (e.coolTon <= 0 && d2(e, S.B) < e.r + S.B.r) { e.coolTon = 0.8; frapperBoss(e, 300); combo("massue"); }
+        });
+        if (t.feu <= 0) {
+          S.chaineCour = t.chaine; tenus.forEach(function (e) { e.attrape = null; e.z = 10; ejecter(e, e.angLiane + Math.PI / 2, 300, 240); });
+          fx({ k: "poussiere", x: t.x, y: t.y, r: t.r, dur: .5 }); t.t = 0;
+        }
+      }
+    });
+    S.T = S.T.filter(function (t) { if (t.t > 0) return true; if (t.type === "lianes") S.E.forEach(function (e) { if (e.attrape === t) e.attrape = null; }); return false; });
+  }
+  function exploserPlusTard(x, y, r) { S.P.push({ t: 0, dur: 0.16, invisible: true, cb: function () { exploser(x, y, r, {}); } }); }
+  // une explosion pousse très fort mais blesse peu : ce sont les chocs qui font mal
+  function exploser(x, y, r, o) {
+    o = o || {};
+    fx({ k: "boom", x: x, y: y, r: r, dur: .45 }); son("boom"); S.shake = Math.max(S.shake, 0.35);
+    var garde = S.chaineCour; nouvelleChaine();
+    S.T.filter(function (t) { return t.type === "lianes" && Math.hypot(t.x - x, t.y - y) < r + t.r * 0.5; }).forEach(enflammerLianes);
+    // le souffle éjecte chacun dans sa direction, en cloche
+    S.E.forEach(function (e) {
+      if (e.attrape && e.attrape.feu > 0) return;
+      var d = Math.hypot(e.x - x, e.y - y);
+      if (d > r + e.r * 0.5) return;
+      var p = Math.max(0, 1 - d / (r * 1.3));
+      if (e.enfarine > 0 && e.meche <= 0) { e.meche = 3; e.enfarine = 0; e.court = false; fxTxt(e.x, e.y, -(e.T.h + 24), "mèche !", "#FFB347"); }
+      var ar = angDe(e, x, y), ah = angDe(e, S.hero.x, S.hero.y);
+      var dx = Math.cos(ar) * 0.6 + Math.cos(ah), dy = Math.sin(ar) * 0.6 + Math.sin(ah);
+      ejecter(e, (dx || dy) ? Math.atan2(dy, dx) : ar, 250 + 200 * p, 340 + 70 * p); e.pv -= 4;
+    });
+    S.O.forEach(function (b) { if (b.actif && Math.hypot(b.x - x, b.y - y) < r + b.r) pousser(b, x, y, 420); });
+    var dh = Math.hypot(S.hero.x - x, S.hero.y - y);
+    if (dh < r + S.hero.r * 0.5) {
+      if (o.soi) blesser(15); else if (S.eauS > 0) note("ton bouclier d'eau te protège"); else if (dh < r * 0.5) { blesser(3); note("tu la prends un peu !"); }
+    }
+    S.T.filter(function (t) { return (t.type === "nuage" || t.type === "pollen") && Math.hypot(t.x - x, t.y - y) < r + t.r * 0.5; }).forEach(function (t) { retirer(t); exploserPlusTard(t.x, t.y, t.r * 1.3); });
+    S.chaineCour = garde;
+  }
+
+  /* ================= lancer ================= */
+  function note(t) { if (S.notes.indexOf(t) === -1) S.notes.push(t); }
+  function lancer(P) {
+    nouvelleChaine();
+    var r = S.slots.slice(); S.slots = []; majPotions();
+    var cle = cleTxt(r), c = compter(r), spec = SPEC[cle], nom = NOMS[cle];
+    var ang = Math.atan2(P.y - S.hero.y, P.x - S.hero.x);
+    son("fiole");
+    if (spec && spec.forme === "cone") { S.notes = []; cone(c, ang, spec); finLancer(nom); return; }
+    if (spec && spec.forme === "anneau") { S.notes = []; anneau(spec.r); finLancer(nom); return; }
+    var col = melangeCouleur(r);
+    S.P.push({ t: 0, dur: 0.28, x0: S.hero.x, y0: S.hero.y, x1: P.x, y1: P.y, c: col, cb: function () {
+      S.notes = []; nouvelleChaine();
+      if (spec && spec.forme === "colonnes") colonnes(P.x, P.y, spec.r);
+      else if (spec && spec.forme === "pose") { S.gateau = { x: P.x, y: P.y, t: 7 }; note("les automates gourmands accourent"); }
+      else cercle(P.x, P.y, c, r.length);
+      finLancer(nom);
+    } });
+  }
+  function finLancer(nom) { dire(nom + (S.notes.length ? " · " + S.notes.join(" · ") : ""), ""); }
+  function cercle(x, y, c, n) {
+    var R = RAYONS[n], fX = FONTAINE.x, fY = FONTAINE.fy * L.D;
+    if (Math.hypot(x - fX, y - fY) < R + FONTAINE.r) {
+      if (c.acide && !c.eau) { S.fontaine = { type: "elec", t: 10, tic: 0 }; note("la fontaine crépite !"); son("zap"); }
+      else if (c.farine && !c.feu) { S.fontaine = { type: "boue", t: 10 }; brut("boue", fX, fY, 78, 10); S.E.forEach(function (e) { if (e.etat !== "vol" && Math.hypot(e.x - fX, e.y - fY) < 78) e.colle = Math.max(e.colle, 6); }); note("la fontaine crache de la boue !"); son("splat"); }
+    }
+    fx({ k: "onde", x: x, y: y, r: R, c: "255,255,255", dur: .3 });
+    if (c.feu || c.acide) S.E.forEach(function (e) { if (e.etat === "bulle" && Math.hypot(e.x - x, e.y - y) < R + e.r * 2) eclaterBulle(e); });
+    if (c.eau === 1 && c.farine === 2) {
+      var libres = S.E.filter(function (e) { return e.etat !== "vol" && e.etat !== "bulle" && !e.lie && !(e.statue > 0) && Math.hypot(e.x - x, e.y - y) < R + e.r; }), paires = 0;
+      while (libres.length >= 2) {
+        var a0 = libres.shift(), bi = 0, bd = 1e9;
+        libres.forEach(function (o, i) { var dd = d2(o, a0); if (dd < bd) { bd = dd; bi = i; } });
+        lier(a0, libres.splice(bi, 1)[0]); paires++;
+      }
+      brut("boue", x, y, R * 0.6, 6);
+      note(paires ? "pâte épaisse : les voilà collés deux par deux !" : "pâte épaisse");
+      if (paires) combo("siamois");
+      return;
+    }
+    var dedans = function () { return S.E.filter(function (e) { return Math.hypot(e.x - x, e.y - y) < R + e.r * 0.5 && e.z < 30; }); };
+    if (c.feu && c.farine) { exploser(x, y, R * 1.3 + 10 * (c.feu + c.farine - 2), {}); c.feu = 0; c.farine = 0; note("BOUM : tout le monde s'envole !"); }
+    if (c.acide && c.fleur) { var k1 = Math.min(c.acide, c.fleur); c.acide -= k1; c.fleur -= k1; ajouterTrace("savon", x, y, R * 1.2, 14); note("du savon : ça glisse !"); }
+    if (c.eau && c.acide) { var k2 = Math.min(c.eau, c.acide); c.eau -= k2; c.acide -= k2; dedans().forEach(mouiller); brut("elec", x, y, R, 6); electrifier(); note("ça grésille !"); }
+    if (c.farine && c.acide) { var k3 = Math.min(c.farine, c.acide); c.farine -= k3; c.acide -= k3; volcan(x, y, R); }
+    if (c.eau && c.fleur) { var k4 = Math.min(c.eau, c.fleur); c.eau -= k4; c.fleur -= k4; attraper(brut("lianes", x, y, R, 10)); note("des lianes les attrapent !"); }
+    if (c.feu && c.fleur) { var k5 = Math.min(c.feu, c.fleur); c.feu -= k5; c.fleur -= k5; brut("pollen", x, y, R, 6); note("pollen : atchoum !"); }
+    if (c.eau && c.farine) { brut("boue", x, y, R, 10); dedans().forEach(function (e) { e.colle = Math.max(e.colle, 8); }); note("boue : collés !"); c.eau = 0; c.farine = 0; }
+    if (c.feu && c.eau) { brut("vapeur", x, y, R, 4); dedans().forEach(function (e) { mouiller(e); e.aveugle = Math.max(e.aveugle, 3); }); note("vapeur : ils ne voient plus rien"); c.feu = 0; c.eau = 0; }
+    if (c.feu && c.acide) { brut("fumee", x, y, R, 6); dedans().forEach(function (e) { e.aveugle = Math.max(e.aveugle, 3); }); note("fumée verte"); c.feu = 0; c.acide = 0; }
+    if (c.feu) {
+      dedans().forEach(feuSur);
+      if (Math.hypot(S.hero.x - x, S.hero.y - y) < R + S.hero.r * 0.5 && S.eauS <= 0) { blesser(4 * c.feu); note("tu te brûles !"); }
+      ajouterTrace("feu", x, y, R * 0.9, 3 + c.feu);
+    }
+    if (c.eau) {
+      dedans().forEach(function (e) { mouiller(e); balayer(e, angDe(e, x, y), 160 * c.eau); });
+      S.O.forEach(function (o) { if (o.actif && Math.hypot(o.x - x, o.y - y) < R + o.r) pousser(o, x, y, 220 * c.eau); });
+      ajouterTrace("eau", x, y, R, 10);
+    }
+    if (c.farine) { dedans().forEach(function (e) { enfariner(e, c.farine); }); ajouterTrace("nuage", x, y, R, 4 + c.farine); }
+    if (c.acide) {
+      var mouilles = dedans().filter(function (e) { return e.mouille > 0; });
+      dedans().forEach(function (e) { e.lent = 3; e.pv -= 2 * c.acide; });
+      if (mouilles.length) electrocuter(mouilles);
+      ajouterTrace("acide", x, y, R, 5);
+    }
+    if (c.fleur) ajouterTrace("fleurs", x, y, R, 6 + 2 * c.fleur, 1);
+    verifierBain();
+  }
+  function volcan(x, y, R) {
+    fx({ k: "volcan", x: x, y: y, r: R, dur: .6 }); son("splat");
+    S.E.forEach(function (e) {
+      if (Math.hypot(e.x - x, e.y - y) > R + e.r * 0.5) return;
+      ejecter(e, Math.random() * 6.28, 10 + Math.random() * 25, 520);
+    });
+    brut("mousse", x, y, R * 1.15, 9);
+    note("volcan : ils s'envolent !");
+    verifierBain();
+  }
+  function colonnes(x, y, R) {
+    fx({ k: "col", x: x, y: y, r: R, dur: .7 }); son("boom"); S.shake = Math.max(S.shake, .3);
+    S.E.forEach(function (e) {
+      if (Math.hypot(e.x - x, e.y - y) > R + e.r * 0.5) return;
+      if (e.attrape) enflammerLianes(e.attrape);
+      feuSur(e); ejecter(e, angDe(e, x, y), 150, 360); e.pv -= 4;
+    });
+    if (Math.hypot(S.hero.x - x, S.hero.y - y) < R + S.hero.r * 0.5 && S.eauS <= 0) { blesser(12); note("tu la prends aussi !"); }
+    ajouterTrace("feu", x, y, R, 5);
+    note("tout s'envole en feu !");
+  }
+  function cone(c, ang, spec) {
+    var h = S.hero, vague = !c.feu;
+    fx({ k: "cone", x: h.x, y: h.y, ang: ang, len: spec.len, half: spec.half, c: vague ? "70,150,230" : "230,230,235", dur: .45 });
+    son(vague ? "splat" : "pschitt");
+    var n = 0;
+    S.E.forEach(function (e) {
+      if (!dansCone(e, h, ang, spec.len + e.r, spec.half)) return;
+      mouiller(e);
+      if (vague) { balayer(e, ang, spec.force); n++; }
+      else e.aveugle = Math.max(e.aveugle, 3);
+    });
+    if (vague) S.O.forEach(function (o) { if (o.actif && dansCone(o, h, ang, spec.len + o.r, spec.half)) lancerDir(o, ang, spec.force * 1.1); });
+    var px = h.x + Math.cos(ang) * spec.len * 0.55, py = h.y + Math.sin(ang) * spec.len * 0.55;
+    if (vague) { ajouterTrace("eau", px, py, 42, 10); note(n ? "la vague emporte " + n + " automate" + (n > 1 ? "s" : "") : "la vague passe"); }
+    else { brut("vapeur", px, py, 42, 3); note("vapeur : ils ne voient plus rien"); }
+  }
+  function anneau(R) {
+    var h = S.hero;
+    fx({ k: "onde", x: h.x, y: h.y, r: R, c: "70,150,230", dur: .5 }); son("splat");
+    var nT = 0;
+    S.E.forEach(function (e) {
+      if (d2(e, h) > R + e.r || e.etat === "bulle" || e.statue > 0) return;
+      if ((dansTrace(e, "savon") || dansTrace(e, "bain")) && e.etat !== "vol" && !e.attrape) {
+        e.tourb = { t: 1.3, a: Math.atan2(e.y - h.y, e.x - h.x), R: clamp(d2(e, h), 45, 120), chaine: S.chaineCour }; e.etat = "debout"; e.terreT = 0; e.lie = null; nT++;
+        return;
+      }
+      mouiller(e); balayer(e, angDe(e, h.x, h.y), 400);
+    });
+    if (nT) { combo("tourbillon"); note("ils tournent sur le savon !"); }
+    S.O.forEach(function (o) { if (o.actif && d2(o, h) < R + o.r) pousser(o, h.x, h.y, 480); });
+    note("tout le monde est repoussé !");
+  }
+  function majRayon(dt) {
+    var R = S.rayon; R.t -= dt;
+    if (R.t <= 0 || R.lache) { S.rayon = null; return; }
+    var h = S.hero, ang = Math.atan2(S.ptr.y - h.y, S.ptr.x - h.x), cs = Math.cos(ang), sn = Math.sin(ang);
+    var a = { x: h.x, y: h.y }, b = { x: h.x + cs * 700, y: h.y + sn * 700 };
+    // le bouclier d'un automate : le rayon de feu rebondit dessus ; l'acide, lui, le ronge
+    var miroir = null, best = 1e9;
+    S.E.forEach(function (e) {
+      if (!e.shield || e.etat !== "debout") return;
+      var rs = e.r + R.large, tc = (e.x - a.x) * cs + (e.y - a.y) * sn, d2c = Math.pow(e.x - a.x, 2) + Math.pow(e.y - a.y, 2) - tc * tc;
+      if (tc <= 0 || d2c > rs * rs) return;
+      var th = tc - Math.sqrt(rs * rs - d2c);
+      if (th > 0 && th < best) { best = th; miroir = e; }
+    });
+    R.p = null; R.b2 = null;
+    var segs = [[a, b, ang]];
+    if (miroir && R.kind === "acide") { miroir.shield = false; fxTxt(miroir.x, miroir.y, -34, "bouclier rongé", "#9BE07A"); son("pschitt"); }
+    else if (miroir) {
+      // le bouclier est rond : touché au milieu, le rayon revient sur toi ; touché de biais, il part de côté
+      var P = { x: a.x + cs * best, y: a.y + sn * best }, dm0 = d2(P, miroir) || 1, nx0 = (P.x - miroir.x) / dm0, ny0 = (P.y - miroir.y) / dm0, dot = cs * nx0 + sn * ny0;
+      var rx = cs - 2 * dot * nx0, ry = sn - 2 * dot * ny0, P2 = { x: P.x + rx * 650, y: P.y + ry * 650 };
+      b = P; R.p = P; R.b2 = P2; segs = [[a, P, ang], [P, P2, Math.atan2(ry, rx)]];
+      if (distSeg(S.B, P, P2) < S.B.r) {
+        S.B.pv -= 30 * dt; S.B.hit = 0.2; R.dmB = (R.dmB || 0) + 30 * dt;
+        if (R.dmB >= 6) { fxTxt(S.B.x, S.B.y, -80, "−" + Math.round(R.dmB), "#FFB347"); R.dmB = 0; }
+        combo("miroir");
+      }
+      if (distSeg(h, P, P2) < h.r + 4 && S.eauS <= 0) { S.pv -= 10 * dt; if (!R.ouille) { R.ouille = true; dire("Mal visé : le rayon te revient dessus !", "mal"); } }
+    }
+    R.a = a; R.b = b;
+    segs.forEach(function (sg, iS) { rayonSeg(R, sg[0], sg[1], sg[2], dt, miroir, iS); });
+  }
+  function rayonSeg(R, a, b, ang, dt, miroir, iS) {
+    S.E.forEach(function (e) {
+      if (e === miroir) return;
+      if (e.etat === "bulle") { if (distSeg(e, a, b) < e.r * 2) eclaterBulle(e); return; }
+      if (distSeg(e, a, b) > e.r + R.large) return;
+      if (iS === 1 && R.kind === "feu") combo("miroir");
+      if (e.etat !== "vol" && !e.attrape) {
+        if (!R.chaine) R.chaine = ++S.nChaine;
+        if (e.etat !== "glisse") { e.etat = "glisse"; e.apresVol = false; e.touche = {}; e.stunSol = 0; e.vx *= 0.3; e.vy *= 0.3; e.cote = Math.cos(ang) >= 0 ? 1 : -1; e.chaine = R.chaine; }
+        e.vx += Math.cos(ang) * 600 * dt * e.T.kv; e.vy += Math.sin(ang) * 600 * dt * e.T.kv;
+      }
+      if (R.kind === "feu") { if (e.rayonVu !== R.id) { e.rayonVu = R.id; feuSur(e); } if (e.attrape) enflammerLianes(e.attrape); }
+      else { e.lent = 1; if (e.mouille > 0 && e.rayonVu !== R.id) { e.rayonVu = R.id; electrocuter([e]); } }
+    });
+    if (R.kind === "feu") {
+      S.T.filter(function (t) { return (t.type === "nuage" || t.type === "pollen") && distSeg(t, a, b) < t.r; }).forEach(function (t) { retirer(t); exploserPlusTard(t.x, t.y, t.r * 1.3); });
+      S.T.filter(function (t) { return t.type === "lianes" && distSeg(t, a, b) < t.r; }).forEach(enflammerLianes);
+      S.T.filter(function (t) { return t.type === "mousse" && distSeg(t, a, b) < t.r; }).forEach(function (t) { t.type = "popcorn"; t.t = 3; t.dur = 3; t.chaine = ++S.nChaine; combo("popcorn"); });
+      S.E.forEach(function (e) { if (e.etat !== "vol" && !(e.statue > 0) && (e.colle > 0) && distSeg(e, a, b) < e.r + R.large) cuire(e); });
+      tonneauxDans(function (o) { return distSeg(o, a, b) < o.r + R.large; });
+    } else {
+      S.T.filter(function (t) { return t.type === "lianes" && !(t.feu > 0) && distSeg(t, a, b) < t.r; }).forEach(couperLianes);
+      S.O.forEach(function (o) { if (o.actif && distSeg(o, a, b) < o.r + R.large) { o.vx += Math.cos(ang) * 500 * dt; o.vy += Math.sin(ang) * 500 * dt; } });
+    }
+  }
+
+  /* ================= boire ================= */
+  function boire() {
+    nouvelleChaine();
+    var r = S.slots.slice(); S.slots = []; majPotions();
+    var cle = cleTxt(r), c = compter(r), nom = NOMS[cle], h = S.hero;
+    S.notes = [];
+    var haut = -Math.PI / 2;
+    if (c.acide && c.fleur) { var k = Math.min(c.acide, c.fleur); c.acide -= k; c.fleur -= k; ajouterTrace("savon", h.x, h.y - 60, 70, 12); note("tu craches du savon devant toi !"); }
+    if (c.feu && c.farine) { exploser(h.x, h.y, 130, { soi: true }); c.feu = 0; c.farine = 0; note("tu exploses : tout le monde valse !"); }
+    if (c.feu === 3) {
+      blesser(25); S.rayon = { id: ++S.nRayon, kind: "feu", t: 3, large: 12, tenu: false }; S.ptr = { x: S.hero.x, y: S.B.y };
+      note("tu craches du feu : touche la place pour le diriger ! (−25)"); c.feu = 0;
+    } else if (c.feu) {
+      var lg = 460, half = c.feu === 2 ? 0.5 : 0.3, force = c.feu === 2 ? 380 : 260, soi = c.feu === 2 ? 12 : 6;
+      fx({ k: "cone", x: h.x, y: h.y, ang: haut, len: lg, half: half, c: "245,120,50", dur: .55 }); son("boom");
+      S.E.forEach(function (e) { if (dansCone(e, h, haut, lg + e.r, half)) { if (e.attrape) enflammerLianes(e.attrape); feuSur(e); balayer(e, haut, force); } });
+      tonneauxDans(function (o) { return dansCone(o, h, haut, lg + o.r, half); });
+      S.T.filter(function (t) { return t.type === "lianes" && dansCone(t, h, haut, lg, half); }).forEach(enflammerLianes);
+      blesser(soi); note((c.feu === 2 ? "rot de feu géant" : "hoquet de feu") + " (−" + soi + ")"); c.feu = 0;
+    }
+    if (c.eau) { S.eauS = Math.max(S.eauS, [0, 3, 5, 8][c.eau]); note("bouclier d'eau : ils glissent sur toi"); }
+    if (c.farine) { ajouterTrace("nuage", h.x, h.y - 30, 60, 4); note("nuage devant toi"); }
+    if (c.acide) { var pa = c.acide === 3 ? 40 : 8 * c.acide; blesser(pa); note("aïe, tu te ronges ! (−" + pa + ")"); }
+    if (c.fleur) {
+      S.soinsSuite = (S.temps - S.soinT < 6) ? S.soinsSuite + 1 : 0; S.soinT = S.temps;
+      var m = [1, 0.5, 0.25, 0][Math.min(3, S.soinsSuite)];
+      if (m === 0) { blesser(5); note("trop de tisane : mal au ventre !"); }
+      else { soigner(15 * c.fleur * m); if (m < 1) note("ça marche moins bien : trop de tisane"); }
+    }
+    finLancer("Tu bois : " + nom);
+  }
+
+  /* ================= fin ================= */
+  function fin(gagne) {
+    S.enCours = false;
+    $("fin-titre").textContent = gagne ? "Gagné !" : "Perdu…";
+    $("fin-texte").textContent = gagne ? "Grosbec est assommé par ses propres automates !" : "La foule d'automates a eu le dessus.";
+    $("fin-stats").textContent = "Temps : " + Math.round(S.temps) + " s · Automates cassés : " + S.tues + " · Coups sur Grosbec : " + S.coupsBoss + " · Plus longue chaîne : ×" + S.chaineMax + " · Combos découverts : " + Object.keys(vus).length + " / " + Object.keys(COMBOS).length;
+    $("fin").hidden = false; $("btn-rejouer").focus();
+  }
+
+  /* ================= effets ================= */
+  function fx(o) { o.t = 0; S.FX.push(o); if (S.FX.length > 120) S.FX.shift(); }
+  function fxTxt(x, y, dz, txt, c) { fx({ k: "txt", x: x + (Math.random() * 10 - 5), y: y, dz: dz, txt: txt, c: c, dur: .9 }); }
+  function dire(txt, ton) { if (S) S.msg = { txt: txt, ton: ton || "", t: 3.5 }; }
+  function melangeCouleur(r) {
+    var R = 0, G = 0, B = 0;
+    r.forEach(function (id) { var h = ING[IDX[id]].hex; R += parseInt(h.substr(1, 2), 16); G += parseInt(h.substr(3, 2), 16); B += parseInt(h.substr(5, 2), 16); });
+    var n = r.length || 1; return "rgb(" + Math.round(R / n) + "," + Math.round(G / n) + "," + Math.round(B / n) + ")";
+  }
+
+  /* ================= dessin ================= */
+  function ell(x, y, rx, ry) { ctx.beginPath(); ctx.ellipse(x, y, Math.max(0.1, rx), Math.max(0.1, ry), 0, 0, Math.PI * 2); }
+  function rond(x, y, r) { ctx.beginPath(); ctx.arc(x, y, Math.max(0.1, r), 0, Math.PI * 2); }
+  function texte(t, x, y, taille, coul, align) {
+    ctx.font = "800 " + taille + "px 'Alegreya Sans', sans-serif"; ctx.textAlign = align || "center";
+    ctx.lineWidth = 3; ctx.strokeStyle = "rgba(0,0,0,.75)"; ctx.strokeText(t, x, y); ctx.fillStyle = coul; ctx.fillText(t, x, y);
+  }
+  function dessiner() {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(fond, 0, 0);
+    var k = L.s * L.dpr, sx = 0, syk = 0;
+    if (S && S.shake > 0) { sx = (Math.random() - 0.5) * S.shake * 14 * k; syk = (Math.random() - 0.5) * S.shake * 14 * k; }
+    ctx.setTransform(k, 0, 0, k, sx, syk);
+    if (!S) return;
+    var tps = S.temps, i;
+    S.T.forEach(function (t) {
+      var a = TA[t.type] * Math.min(1, t.t / 1.2), X = t.x, Y = sy(t.y), r = t.r, j, an, rr;
+      ctx.fillStyle = "rgba(" + TC[t.type] + "," + a + ")"; ell(X, Y, r, r * FY); ctx.fill();
+      ctx.strokeStyle = "rgba(" + TC[t.type] + "," + Math.min(1, a * 2) + ")"; ctx.lineWidth = 1.5; ctx.stroke();
+      if (t.type === "fleurs") { ctx.fillStyle = "rgba(200,190,255," + a * 2 + ")"; for (j = 0; j < 7; j++) { an = j * 2.4; rr = (j / 7) * r * 0.8; rond(X + Math.cos(an) * rr, Y + Math.sin(an) * rr * FY, 2.5); ctx.fill(); } }
+      else if (t.type === "boue") { ctx.fillStyle = "rgba(70,45,25," + a + ")"; ell(X - r * .3, Y, r * .25, r * .18); ctx.fill(); ell(X + r * .35, Y + r * .1, r * .2, r * .14); ctx.fill(); }
+      else if (t.type === "bain" || t.type === "popcorn") {
+        ctx.strokeStyle = "rgba(255,255,255," + Math.min(1, a * 1.8) + ")"; ctx.fillStyle = "rgba(255,255,255," + a * 0.6 + ")"; ctx.lineWidth = 1.3;
+        for (j = 0; j < 16; j++) { an = j * 2.1 + tps * (t.type === "popcorn" ? 3 : 0.4); rr = (0.15 + (j % 5) * 0.17) * r; var bz = t.type === "popcorn" ? Math.abs(Math.sin(tps * 7 + j)) * 6 : 0; rond(X + Math.cos(an) * rr, Y + Math.sin(an) * rr * FY - bz, 3 + (j % 3) * 2.2); ctx.fill(); ctx.stroke(); }
+      }
+      else if (t.type === "savon") { ctx.strokeStyle = "rgba(255,255,255," + a * 1.6 + ")"; ctx.lineWidth = 1.2; for (j = 0; j < 8; j++) { an = j * 1.9 + tps * 0.5; rr = (0.25 + (j % 4) * 0.18) * r; rond(X + Math.cos(an) * rr, Y + Math.sin(an) * rr * FY, 2.5 + (j % 2) * 2); ctx.stroke(); } }
+      else if (t.type === "elec") {
+        ctx.strokeStyle = "rgba(255,240,120," + (0.5 + 0.5 * Math.random()) + ")"; ctx.lineWidth = 1.5;
+        for (j = 0; j < 3; j++) { var a0 = Math.random() * 6.28, px = X + Math.cos(a0) * r * 0.6, py = Y + Math.sin(a0) * r * 0.6 * FY; ctx.beginPath(); ctx.moveTo(px, py); for (var q = 0; q < 4; q++) { px += (Math.random() - 0.5) * 14; py += (Math.random() - 0.5) * 10; ctx.lineTo(px, py); } ctx.stroke(); }
+      }
+      else if (t.type === "pollen") { ctx.fillStyle = "rgba(255,230,90," + a * 1.8 + ")"; for (j = 0; j < 10; j++) { an = j * 2.3 + tps; rr = ((j * 37) % 10) / 10 * r; rond(X + Math.cos(an) * rr, Y + Math.sin(an) * rr * FY - 4, 1.8); ctx.fill(); } }
+      else if (t.type === "lianes") {
+        ctx.strokeStyle = t.feu > 0 ? "rgba(255,140,50,.95)" : "rgba(80,170,70,.9)"; ctx.lineWidth = 3; ctx.lineCap = "round";
+        for (j = 0; j < 6; j++) { an = j * 1.05 + (t.feu > 0 ? t.ang : Math.sin(tps * 2 + j) * 0.2); var bx = X + Math.cos(an) * r * 0.9, by = Y + Math.sin(an) * r * 0.9 * FY; ctx.beginPath(); ctx.moveTo(X, Y); ctx.quadraticCurveTo((X + bx) / 2 + Math.sin(tps * 3 + j) * 6, (Y + by) / 2 - 10, bx, by - 6); ctx.stroke(); }
+      }
+    });
+    if (S.gateau) {
+      var GX = S.gateau.x, GY = sy(S.gateau.y);
+      ctx.fillStyle = "rgba(0,0,0,.35)"; ell(GX, GY + 4, 14, 5); ctx.fill();
+      ctx.fillStyle = "#E9A6C8"; ctx.strokeStyle = "#7A3E5C"; ctx.lineWidth = 2; ctx.beginPath(); ctx.rect(GX - 12, GY - 12, 24, 14); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#9B8CF0"; rond(GX, GY - 15, 4); ctx.fill();
+    }
+    var debout = [];
+    debout.push({ y: S.B.y, f: dessinerBoss });
+    debout.push({ y: FONTAINE.fy * L.D, f: dessinerFontaine });
+    S.O.forEach(function (o) { if (o.actif) debout.push({ y: o.y, f: function () { dessinerTonneau(o); } }); });
+    S.E.forEach(function (e) { debout.push({ y: e.y, f: function () { dessinerAuto(e, tps); } }); });
+    debout.push({ y: S.hero.y, f: function () { dessinerHeros(tps); } });
+    debout.sort(function (a, b) { return a.y - b.y; }).forEach(function (d) { d.f(tps); });
+    S.P.forEach(function (q) {
+      if (q.invisible) return;
+      var kq = Math.min(1, q.t / q.dur), x = q.x0 + (q.x1 - q.x0) * kq, y = sy(q.y0 + (q.y1 - q.y0) * kq) - 30 * (1 - kq) - Math.sin(Math.PI * kq) * 50;
+      ctx.fillStyle = q.c; ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; rond(x, y, 6); ctx.fill(); ctx.stroke();
+    });
+    // les siamois : la pâte qui les tient
+    S.E.forEach(function (e) {
+      if (!e.lie || e.id > e.lie.id) return;
+      var o = e.lie; ctx.strokeStyle = "#8A6A44"; ctx.lineWidth = 6; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(e.x, sy(e.y) - e.z - 10); ctx.lineTo(o.x, sy(o.y) - o.z - 10); ctx.stroke();
+      ctx.strokeStyle = "#C9A46E"; ctx.lineWidth = 2; ctx.stroke();
+    });
+    // les boules de feu du cracheur
+    (S.boules || []).forEach(function (b) {
+      var X = b.x, Y = sy(b.y) - 16;
+      ctx.fillStyle = "rgba(255,150,60,.35)"; rond(X - b.vx * 0.04, Y - b.vy * 0.03, 8); ctx.fill();
+      ctx.fillStyle = "#FF8A3D"; rond(X, Y, 6); ctx.fill(); ctx.fillStyle = "#FFE08A"; rond(X, Y, 3); ctx.fill();
+      ctx.fillStyle = "rgba(0,0,0,.3)"; ell(b.x, sy(b.y), 5, 2); ctx.fill();
+    });
+    if (S.rayon && S.rayon.a) {
+      var R = S.rayon, c1 = R.kind === "feu" ? "255,140,60" : "120,220,80";
+      var trait = function (p1, p2) {
+        var ax = p1.x, ay = sy(p1.y) - 22, bx3 = p2.x, by3 = sy(p2.y) - 22;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "rgba(" + c1 + ",.35)"; ctx.lineWidth = R.kind === "feu" ? 28 : 18; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx3, by3); ctx.stroke();
+        ctx.strokeStyle = "rgba(" + c1 + ",.95)"; ctx.lineWidth = (R.kind === "feu" ? 10 : 6) + Math.sin(tps * 40) * 2; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx3, by3); ctx.stroke();
+      };
+      trait(R.a, R.b);
+      if (R.b2) { trait(R.p, R.b2); ctx.fillStyle = "rgba(255,240,180,.9)"; rond(R.p.x, sy(R.p.y) - 22, 9 + Math.sin(tps * 30) * 3); ctx.fill(); }
+    }
+    if (S.vise && S.slots.length) dessinerVisee();
+    S.FX.forEach(function (f) {
+      var kf = f.t / f.dur, X = f.x, Y = f.y !== undefined ? sy(f.y) : 0;
+      if (f.k === "boom") { ctx.fillStyle = "rgba(255,170,60," + (0.55 * (1 - kf)) + ")"; ell(X, Y, f.r * (0.4 + 0.6 * kf), f.r * FY * (0.4 + 0.6 * kf)); ctx.fill(); ctx.strokeStyle = "rgba(255,230,140," + (1 - kf) + ")"; ctx.lineWidth = 3; ctx.stroke();
+        ctx.fillStyle = "rgba(255,220,120," + (0.6 * (1 - kf)) + ")"; rond(X, Y - 18 - kf * 20, f.r * 0.35 * (1 - kf * 0.5)); ctx.fill(); }
+      else if (f.k === "onde") { ctx.strokeStyle = "rgba(" + f.c + "," + (1 - kf) + ")"; ctx.lineWidth = 3; ell(X, Y, f.r * (0.6 + 0.4 * kf), f.r * FY * (0.6 + 0.4 * kf)); ctx.stroke(); }
+      else if (f.k === "cone") {
+        ctx.fillStyle = "rgba(" + f.c + "," + (0.45 * (1 - kf)) + ")"; ctx.beginPath(); ctx.moveTo(f.x, sy(f.y));
+        var len = f.len * (0.4 + 0.6 * Math.min(1, kf * 3));
+        for (i = 0; i <= 12; i++) { var a = f.ang - f.half + (2 * f.half) * i / 12; ctx.lineTo(f.x + Math.cos(a) * len, sy(f.y + Math.sin(a) * len)); }
+        ctx.closePath(); ctx.fill();
+      } else if (f.k === "col") {
+        for (var c2 = 0; c2 < 9; c2++) { var an = c2 * 2.39, rr = Math.sqrt((c2 + 0.5) / 9) * f.r * 0.85, cx = f.x + Math.cos(an) * rr, cy = sy(f.y + Math.sin(an) * rr), hgt = 50 * Math.sin(Math.PI * kf); ctx.fillStyle = "rgba(255," + (120 + c2 * 10) + ",50," + (1 - kf * 0.6) + ")"; ctx.fillRect(cx - 5, cy - hgt, 10, hgt); }
+      } else if (f.k === "volcan") {
+        ctx.fillStyle = "rgba(240,245,225," + (0.8 * (1 - kf)) + ")";
+        for (var v = 0; v < 8; v++) { var av = v * 0.8, rv = f.r * 0.6; rond(f.x + Math.cos(av) * rv * kf, Y - 40 * Math.sin(Math.PI * kf) + Math.sin(av) * rv * FY * kf, 7); ctx.fill(); }
+      } else if (f.k === "poussiere") { ctx.fillStyle = "rgba(200,190,170," + (0.5 * (1 - kf)) + ")"; ell(X, Y, f.r * (0.6 + kf), f.r * FY * (0.4 + kf * 0.5)); ctx.fill(); }
+      else if (f.k === "etoile") { ctx.strokeStyle = "rgba(255,240,150," + (1 - kf) + ")"; ctx.lineWidth = 2.5; for (var s = 0; s < 6; s++) { var as = s * 1.047; ctx.beginPath(); ctx.moveTo(X + Math.cos(as) * 6, Y - 16 + Math.sin(as) * 6); ctx.lineTo(X + Math.cos(as) * (12 + kf * 10), Y - 16 + Math.sin(as) * (12 + kf * 10)); ctx.stroke(); } }
+      else if (f.k === "eclair") {
+        ctx.strokeStyle = "rgba(255,245,140," + (1 - kf) + ")"; ctx.lineWidth = 2.5; ctx.beginPath();
+        var x1 = f.x, y1 = sy(f.y) - 14, x2 = f.x2, y2 = sy(f.y2) - 14; ctx.moveTo(x1, y1);
+        for (var z = 1; z < 6; z++) ctx.lineTo(x1 + (x2 - x1) * z / 6 + (Math.random() - 0.5) * 12, y1 + (y2 - y1) * z / 6 + (Math.random() - 0.5) * 12);
+        ctx.lineTo(x2, y2); ctx.stroke();
+      }
+      else if (f.k === "eclats") {
+        ctx.fillStyle = f.c;
+        for (var ei = 0; ei < 9; ei++) { var ea = ei * 0.7, ed = kf * 34, eh = Math.sin(Math.PI * Math.min(1, kf * 1.3)) * 26; ctx.globalAlpha = 1 - kf * 0.7; ctx.fillRect(X + Math.cos(ea) * ed - 3, Y - 12 - eh + Math.sin(ea) * ed * 0.5, 6, 4); }
+        ctx.globalAlpha = 1;
+      }
+      else if (f.k === "bulleVide") {
+        var by0 = Y - 10 - kf * 90;
+        ctx.strokeStyle = "rgba(255,255,255," + (0.8 * (1 - kf)) + ")"; ctx.lineWidth = 1.4; rond(X + Math.sin(kf * 9) * 6, by0, f.r); ctx.stroke();
+        ctx.fillStyle = "rgba(240,225,255," + (0.18 * (1 - kf)) + ")"; ctx.fill();
+      }
+      else if (f.k === "vent") {
+        ctx.strokeStyle = "rgba(220,240,235," + (0.7 * (1 - kf)) + ")"; ctx.lineWidth = 2;
+        for (var vi = 0; vi < 7; vi++) { var va = f.ang - f.half + (2 * f.half) * vi / 6, vd = f.len * (0.2 + 0.8 * kf); ctx.beginPath(); ctx.moveTo(f.x + Math.cos(va) * vd * 0.4, sy(f.y + Math.sin(va) * vd * 0.4) - 14); ctx.lineTo(f.x + Math.cos(va) * vd, sy(f.y + Math.sin(va) * vd) - 14); ctx.stroke(); }
+      }
+      else if (f.k === "txt") { ctx.globalAlpha = 1 - kf; texte(f.txt, X, Y + f.dz - kf * 24, 14, f.c); ctx.globalAlpha = 1; }
+    });
+    // en haut : ta vie, le nombre d'automates, le message
+    ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.fillRect(12, 10, 110, 9);
+    ctx.fillStyle = S.pv > 35 ? "#5FBF58" : "#E5A93A"; ctx.fillRect(12, 10, 110 * Math.max(0, S.pv / PV_J), 9);
+    texte(Math.max(0, Math.ceil(S.pv)) + "", 128, 19, 11, "#fff", "left");
+    texte(S.E.length + " automate" + (S.E.length > 1 ? "s" : ""), 12, 33, 11, S.E.length > 18 ? "#F0806A" : "#C9D2CF", "left");
+    if (S.rage > 0) texte("Grosbec enrage !", W / 2, 33, 11, "#F0806A");
+    if (S.msg && S.msg.t > 0) {
+      ctx.globalAlpha = Math.min(1, S.msg.t);
+      var mt = S.msg.txt.length > 66 ? S.msg.txt.slice(0, 64) + "…" : S.msg.txt;
+      ctx.fillStyle = "rgba(10,12,14,.78)"; ctx.fillRect(0, 38, W, 20);
+      texte(mt, W / 2, 52, 11.5, S.msg.ton === "mal" ? "#F0806A" : S.msg.ton === "bon" ? "#8BD46A" : "#E8ECEA");
+      ctx.globalAlpha = 1;
+    }
+    if (S.compteur) {
+      var kc = 1 - S.compteur.t / 1.1, scc = 1 + Math.max(0, 0.4 - kc * 2);
+      ctx.save(); ctx.translate(clamp(S.compteur.x, 40, W - 40), Math.max(80, sy(S.compteur.y) - 50)); ctx.scale(scc, scc); ctx.globalAlpha = Math.min(1, S.compteur.t * 2);
+      texte("×" + S.compteur.n, 0, 0, 18 + Math.min(16, S.compteur.n * 2), S.compteur.n >= 4 ? "#FFB347" : "#FFE08A");
+      ctx.restore(); ctx.globalAlpha = 1;
+    }
+    if (S.big) {
+      var kb = 1 - S.big.t / 1.5, sc = kb < 0.15 ? 0.6 + kb / 0.15 * 0.6 : 1.2 - Math.min(0.2, (kb - 0.15) * 0.4);
+      ctx.save(); ctx.translate(W / 2, L.top + (L.bot - L.top) * 0.42); ctx.scale(sc, sc); ctx.globalAlpha = Math.min(1, S.big.t * 2);
+      ctx.font = "800 27px 'Alegreya Sans', sans-serif"; ctx.textAlign = "center"; ctx.lineWidth = 6; ctx.strokeStyle = "rgba(0,0,0,.85)";
+      ctx.strokeText(S.big.txt, 0, 0); ctx.fillStyle = "#F2C230"; ctx.fillText(S.big.txt, 0, 0);
+      if (S.big.neuf) { ctx.font = "800 13px 'Alegreya Sans', sans-serif"; ctx.lineWidth = 3; ctx.strokeText("Nouveau combo dans le carnet !", 0, 22); ctx.fillStyle = "#fff"; ctx.fillText("Nouveau combo dans le carnet !", 0, 22); }
+      ctx.restore(); ctx.globalAlpha = 1;
+    }
+  }
+  function ombre(x, Y, r) { ctx.fillStyle = "rgba(0,0,0,.42)"; ell(x, Y, r, r * 0.42); ctx.fill(); }
+  function dessinerFontaine() {
+    var x = FONTAINE.x, Y = sy(FONTAINE.fy * L.D), r = FONTAINE.r;
+    ctx.fillStyle = "#4A4944"; ell(x, Y + 6, r, r * FY); ctx.fill(); ctx.fillRect(x - r, Y - 6, 2 * r, 12);
+    ctx.fillStyle = "#5B5A55"; ell(x, Y - 6, r, r * FY); ctx.fill();
+    var F = S.fontaine;
+    ctx.fillStyle = F && F.type === "boue" ? "rgba(122,86,52,.95)" : "rgba(46,134,214,.85)"; ell(x, Y - 6, r - 5, (r - 5) * FY); ctx.fill();
+    if (F && F.type === "elec") {
+      ctx.strokeStyle = "rgba(255,240,120," + (0.5 + 0.5 * Math.random()) + ")"; ctx.lineWidth = 1.6;
+      for (var z = 0; z < 4; z++) { var a0 = Math.random() * 6.28, px = x + Math.cos(a0) * (r - 6), py = Y - 6 + Math.sin(a0) * (r - 6) * FY; ctx.beginPath(); ctx.moveTo(px, py); for (var q = 0; q < 3; q++) { px += (Math.random() - 0.5) * 16; py -= Math.random() * 10; ctx.lineTo(px, py); } ctx.stroke(); }
+      ctx.strokeStyle = "rgba(255,240,120,.25)"; ctx.lineWidth = 2; ell(x, Y, r + 46, (r + 46) * FY); ctx.stroke();
+    }
+    ctx.fillStyle = "#6A6963"; ctx.fillRect(x - 3, Y - 30, 6, 24);
+    ctx.strokeStyle = F && F.type === "boue" ? "rgba(140,100,60,.95)" : F && F.type === "elec" ? "rgba(255,240,140,.95)" : "rgba(150,200,245,.9)"; ctx.lineWidth = F && F.type === "boue" ? 3 : 1.8;
+    ctx.beginPath(); ctx.moveTo(x, Y - 30); ctx.quadraticCurveTo(x - 10, Y - 34, x - 12, Y - 14); ctx.moveTo(x, Y - 30); ctx.quadraticCurveTo(x + 10, Y - 34, x + 12, Y - 14); ctx.stroke();
+  }
+  function dessinerCharrette(o) {
+    var x = o.x, Y = sy(o.y), tour = o.roule / 9;
+    ombre(x, Y, o.r + 4);
+    ctx.save(); ctx.translate(x, Y);
+    // brancards
+    ctx.strokeStyle = "#4A3220"; ctx.lineWidth = 3; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(-14, -10); ctx.lineTo(-30, -4); ctx.moveTo(14, -10); ctx.lineTo(30, -4); ctx.stroke();
+    // caisse et foin
+    ctx.fillStyle = "#8A6038"; ctx.strokeStyle = "#3A2614"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.rect(-20, -30, 40, 20); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = "rgba(58,38,20,.6)"; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-20, -23); ctx.lineTo(20, -23); ctx.moveTo(-20, -16); ctx.lineTo(20, -16); ctx.stroke();
+    ctx.fillStyle = "#D9B85A"; ctx.beginPath(); ctx.moveTo(-18, -30); ctx.quadraticCurveTo(0, -46, 18, -30); ctx.closePath(); ctx.fill();
+    // roues
+    [-13, 13].forEach(function (wx) {
+      ctx.fillStyle = "#5A3E24"; ctx.strokeStyle = "#2A1A0C"; ctx.lineWidth = 2; rond(wx, -8, 8); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = "#C9A46E"; ctx.lineWidth = 1.4; ctx.beginPath();
+      for (var k = 0; k < 3; k++) { var a = tour + k * 1.047; ctx.moveTo(wx + Math.cos(a) * 7, -8 + Math.sin(a) * 7); ctx.lineTo(wx - Math.cos(a) * 7, -8 - Math.sin(a) * 7); }
+      ctx.stroke();
+    });
+    if (o.savon > 0) { ctx.strokeStyle = "rgba(255,255,255,.8)"; ctx.lineWidth = 1.2; [[-20, -2, 3], [-8, 1, 2.5], [6, 0, 3.5], [19, -1, 2.5]].forEach(function (b) { rond(b[0], b[1], b[2]); ctx.stroke(); }); }
+    ctx.restore();
+  }
+  function dessinerTonneau(o) {
+    if (o.type === "charrette") return dessinerCharrette(o);
+    var x = o.x, Y = sy(o.y);
+    ombre(x, Y, o.r + 1);
+    ctx.save(); ctx.translate(x, Y - 12);
+    ctx.fillStyle = "#7A5634"; ctx.strokeStyle = "#3A2614"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.rect(-10, -9, 20, 20); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#94683F"; ell(0, -9, 10, 4.5); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = "#3A2614"; ctx.lineWidth = 1.5;
+    var off = (o.roule * 0.6) % 8;
+    for (var b = -2; b < 20; b += 8) { var yy = -9 + ((b + off) % 20 + 20) % 20; ctx.beginPath(); ctx.moveTo(-10, yy); ctx.lineTo(10, yy); ctx.stroke(); }
+    ctx.fillStyle = "#F4EBD5"; ctx.font = "800 9px 'Alegreya Sans', sans-serif"; ctx.textAlign = "center"; ctx.fillText("F", 0, 5);
+    ctx.restore();
+  }
+  function dessinerBoss(tps) {
+    var B = S.B, x = B.x + (B.hit > 0 ? Math.sin(tps * 70) * 3 : 0), Y = sy(B.y);
+    ombre(x, Y, 30);
+    ctx.save(); ctx.translate(x, Y);
+    if (B.hit > 0) ctx.rotate(Math.sin(tps * 40) * 0.08);
+    ctx.fillStyle = "#6A7478"; rond(-22, -38, 10); ctx.fill(); rond(22, -38, 10); ctx.fill();
+    ctx.fillStyle = B.hit > 0 ? "#8A9498" : "#59646A"; ctx.strokeStyle = "#1E2427"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(-21, -44); ctx.quadraticCurveTo(0, -52, 21, -44); ctx.lineTo(23, -6); ctx.quadraticCurveTo(0, 2, -23, -6); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#6E797E"; ctx.beginPath(); ctx.moveTo(-15, -72); ctx.quadraticCurveTo(0, -86, 15, -72); ctx.lineTo(16, -52); ctx.quadraticCurveTo(0, -47, -16, -52); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#0C0806"; ctx.fillRect(-11, -68, 22, 5);
+    ctx.fillStyle = S.rage > 0 ? "#FF4A2A" : "#E8A23A"; rond(-5, -65.5, 1.8); ctx.fill(); rond(5, -65.5, 1.8); ctx.fill();
+    ctx.fillStyle = "#B0923F"; ctx.beginPath(); ctx.moveTo(-4, -62); ctx.lineTo(0, -52); ctx.lineTo(4, -62); ctx.fill();
+    ctx.fillStyle = "rgba(242,200,106," + (0.5 + 0.3 * Math.sin(tps * 4)) + ")"; rond(0, -26, 6.5); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(x - 55, Y + 8, 110, 7);
+    ctx.fillStyle = "#E5572A"; ctx.fillRect(x - 55, Y + 8, 110 * Math.max(0, B.pv / PV_B), 7);
+    texte("Grosbec " + Math.max(0, Math.ceil(B.pv)), x, Y + 27, 11, "#F2C86A");
+  }
+  function dessinerAuto(e, tps) {
+    var T = e.T, x = e.x, Y = sy(e.y);
+    if (e.mouille > 0) { ctx.strokeStyle = "rgba(79,163,240,.7)"; ctx.lineWidth = 2; ell(x, Y, e.r + 5, (e.r + 5) * 0.45); ctx.stroke(); }
+    ombre(x, Y, e.r * (e.z > 0 ? Math.max(0.5, 1 - e.z / 160) : 1));
+    var w = e.r * 1.35, hh = T.h, rot = 0, couche = e.etat === "glisse" || e.etat === "terre";
+    if ((e.attrape && e.attrape.feu > 0) || e.tourb) rot = Math.sin(e.spin) * 0.9;
+    else if (e.etat === "bulle") rot = Math.sin(e.spin) * 0.25;
+    else if (e.etat === "vol") rot = e.leger ? 0.3 * e.cote : e.cote * Math.min(1.45, e.volT * 2.4);
+    else if (e.etat === "glisse") rot = e.cote * 1.45;
+    else if (e.etat === "terre") rot = e.cote * 1.45 * (e.terreT < 0.35 ? e.terreT / 0.35 : 1);
+    // la liane qui le retient : il tire vers toi, elle s'étire
+    var pench = 0;
+    if (e.attrape && !(e.attrape.feu > 0) && e.tension > 0) {
+      var at = e.attrape, ah2 = angDe(S.hero, e.x, e.y); pench = Math.min(10, e.tension * 3.5);
+      ctx.strokeStyle = "#4E9A2E"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(at.x, sy(at.y)); ctx.quadraticCurveTo((at.x + x) / 2, (sy(at.y) + Y) / 2 + 6, x + Math.cos(ah2) * pench, Y - 8 + Math.sin(ah2) * pench * FY); ctx.stroke();
+      x += Math.cos(ah2) * pench; Y += Math.sin(ah2) * pench * FY;
+    }
+    ctx.save(); ctx.translate(x, Y - e.z - hh / 2 + Math.abs(Math.sin(rot)) * (hh / 2 - e.r * 0.55)); ctx.rotate(rot); ctx.translate(0, hh / 2);
+    ctx.fillStyle = e.statue > 0 ? "#B5653A" : e.colle > 0 ? "#6B4A2E" : e.enfarine > 0 ? "#E6DFCC" : T.coul; ctx.strokeStyle = "#1E2427"; ctx.lineWidth = 1.8;
+    ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(-w / 2, -hh, w, hh - 2, 6); else ctx.rect(-w / 2, -hh, w, hh - 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = e.enfarine > 0 ? "#F1ECDF" : T.tete; rond(0, -hh - e.r * 0.45, e.r * 0.55); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#0C0806"; ctx.fillRect(-e.r * 0.35, -hh - e.r * 0.55, e.r * 0.7, 2.5);
+    if (e.t === "lourd") { ctx.fillStyle = "#3A2614"; ctx.fillRect(w / 2 - 2, -hh - 12, 13, 7); ctx.fillRect(w / 2 + 3, -hh - 5, 3, 16); }
+    if (e.t === "cracheur") {
+      ctx.fillStyle = "#3A2614"; ctx.fillRect(-4, -hh - e.r - 6, 8, 9);
+      ctx.fillStyle = e.tirT < 0.6 ? "#FFB347" : "#7A3A1A"; rond(0, -hh - e.r - 6, 3.2); ctx.fill();
+      if (e.tirT < 0.6) { ctx.fillStyle = "rgba(255,170,60,.45)"; rond(0, -hh - e.r - 6, 7); ctx.fill(); }
+    }
+    if (e.t === "souffleur") {
+      ctx.strokeStyle = "#2E3E3A"; ctx.lineWidth = 1.4; for (var sf = 0; sf < 3; sf++) { ctx.beginPath(); ctx.moveTo(-w / 2, -hh + 5 + sf * 5); ctx.lineTo(w / 2, -hh + 5 + sf * 5 + (sf % 2 ? 2 : -2)); ctx.stroke(); }
+      ctx.fillStyle = "#C9A46E"; ctx.beginPath(); ctx.moveTo(-3, -hh - e.r * 0.5); ctx.lineTo(-7, -hh - e.r - 8); ctx.lineTo(7, -hh - e.r - 8); ctx.lineTo(3, -hh - e.r * 0.5); ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+    if (e.statue > 0) { ctx.strokeStyle = "rgba(60,30,15,.8)"; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-w / 2 + 3, -hh + 4); ctx.lineTo(0, -hh / 2); ctx.lineTo(-2, -4); ctx.moveTo(w / 2 - 2, -hh + 8); ctx.lineTo(2, -hh / 2 + 3); ctx.stroke(); }
+    if (e.t === "rapide") { ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(2, -hh + 4); ctx.lineTo(-3, -hh + 10); ctx.lineTo(2, -hh + 10); ctx.lineTo(-2, -hh + 16); ctx.stroke(); }
+    if (e.shield) { ctx.fillStyle = "rgba(79,163,240,.85)"; ctx.strokeStyle = "#1E5C9A"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(0, -hh / 2 + 2, w * 0.62, hh * 0.38, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = "#cfe6ff"; rond(0, -hh / 2 + 2, 2.5); ctx.fill(); }
+    if (e.panique > 0) { for (var f = 0; f < 3; f++) { ctx.fillStyle = Math.random() < 0.5 ? "#FFB347" : "#FF5A2A"; ctx.beginPath(); var fxp = (f - 1) * 6 + (Math.random() - 0.5) * 2, fyp = -hh - e.r * 0.9 - 4; ctx.moveTo(fxp - 4, fyp + 6); ctx.quadraticCurveTo(fxp, fyp - 10 - Math.random() * 6, fxp + 4, fyp + 6); ctx.fill(); } }
+    if (e.meche > 0) {
+      ctx.strokeStyle = "#5A4630"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, -hh - e.r); ctx.quadraticCurveTo(6, -hh - e.r - 8, 3, -hh - e.r - 13); ctx.stroke();
+      ctx.fillStyle = Math.random() < 0.5 ? "#FFE08A" : "#FF8A3D"; rond(3 + (Math.random() - 0.5) * 3, -hh - e.r - 14, 3 + Math.random() * 2); ctx.fill();
+    }
+    if (e.elec > 0) { ctx.strokeStyle = "rgba(255,240,120,.9)"; ctx.lineWidth = 1.4; for (var z = 0; z < 2; z++) { var px = (Math.random() - 0.5) * w * 1.4, py = -Math.random() * hh; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + 5, py - 5); ctx.lineTo(px, py - 8); ctx.lineTo(px + 6, py - 13); ctx.stroke(); } }
+    if (e.attrape) { ctx.strokeStyle = e.attrape.feu > 0 ? "#FF8A3D" : "#4E9A2E"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(-w / 2 - 2, -4); ctx.lineTo(w / 2 + 2, -hh * 0.4); ctx.moveTo(-w / 2 - 2, -hh * 0.6); ctx.lineTo(w / 2 + 2, -hh * 0.2); ctx.stroke(); }
+    ctx.restore();
+    if (e.etat === "bulle") {
+      var bR = e.r * 1.9 + Math.sin(tps * 3 + e.id) * 1.5, bY = Y - e.z - hh / 2;
+      var gB = ctx.createRadialGradient(x - bR * 0.3, bY - bR * 0.3, 1, x, bY, bR);
+      gB.addColorStop(0, "rgba(255,255,255,.35)"); gB.addColorStop(0.7, "rgba(220,200,255,.12)"); gB.addColorStop(1, "rgba(200,230,255,.45)");
+      ctx.fillStyle = gB; rond(x, bY, bR); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,.8)"; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,.85)"; ell(x - bR * 0.4, bY - bR * 0.45, bR * 0.22, bR * 0.12); ctx.fill();
+    }
+    var top = Y - e.z - (couche ? e.r * 1.7 + 8 : T.h + e.r + 8);
+    ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(x - e.r, top, e.r * 2, 3.5);
+    ctx.fillStyle = "#E5572A"; ctx.fillRect(x - e.r, top, e.r * 2 * Math.max(0, e.pv / T.pv), 3.5);
+    if ((e.etourdi > 0.4 || (e.etat === "terre" && e.ko)) && e.z <= 0) { for (var s = 0; s < 3; s++) { var as = tps * 5 + s * 2.09; texte("✦", x + Math.cos(as) * 9, top - 2 + Math.sin(as) * 3, 9, "#FFE08A"); } }
+    var tag = e.meche > 0 ? "mèche !" : e.statue > 0 ? "" : e.panique > 0 ? "" : e.mange ? "il mange" : e.colle > 0 ? "collé" : e.attrape ? "attrapé" : "";
+    if (tag) texte(tag, x, Y + 13, 9.5, "#FFD9A0");
+  }
+  function dessinerHeros(tps) {
+    var h = S.hero, x = h.x, Y = sy(h.y);
+    if (S.eauS > 0) { ctx.strokeStyle = "rgba(70,150,230," + (0.6 + 0.3 * Math.sin(tps * 6)) + ")"; ctx.lineWidth = 4; ell(x, Y - 16, 22, 26); ctx.stroke(); }
+    // les petites flèches qui disent « on peut me faire glisser »
+    ctx.fillStyle = S.glisse && S.glisse.bouge ? "rgba(242,194,48,.9)" : "rgba(242,194,48,.45)";
+    ctx.beginPath(); ctx.moveTo(x - 30, Y - 14); ctx.lineTo(x - 22, Y - 19); ctx.lineTo(x - 22, Y - 9); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x + 30, Y - 14); ctx.lineTo(x + 22, Y - 19); ctx.lineTo(x + 22, Y - 9); ctx.closePath(); ctx.fill();
+    ombre(x, Y, 15);
+    ctx.save(); ctx.translate(x, Y);
+    ctx.fillStyle = "#3D2F5C"; ctx.strokeStyle = "#7C6BEB"; ctx.lineWidth = 2.4;
+    ctx.beginPath(); ctx.moveTo(-14, -2); ctx.quadraticCurveTo(-13, -24, 0, -28); ctx.quadraticCurveTo(13, -24, 14, -2); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#4A3A6E"; rond(0, -34, 9); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = "#2A1F42"; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.arc(0, -36, 8, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke();
+    ctx.restore();
+    var n = S.slots.length, px = clamp(x - 29, 2, W - 60), py = Y + 5;
+    ctx.fillStyle = "rgba(11,15,17,.88)"; ctx.strokeStyle = "#3A4448"; ctx.lineWidth = 1.2;
+    ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(px, py, 58, 16, 8); else ctx.rect(px, py, 58, 16); ctx.fill(); ctx.stroke();
+    for (var i = 0; i < 3; i++) {
+      var cx = px + 13 + i * 16, cy = py + 8;
+      if (i < n) { ctx.fillStyle = ING[IDX[S.slots[i]]].hex; rond(cx, cy, 5.5); ctx.fill(); }
+      else { ctx.strokeStyle = "rgba(255,255,255,.3)"; ctx.setLineDash([2, 2]); rond(cx, cy, 5.5); ctx.stroke(); ctx.setLineDash([]); }
+    }
+  }
+  function dessinerVisee() {
+    var cle = cleTxt(S.slots), spec = SPEC[cle], P = S.ptr, h = S.hero, HX = h.x, HY = sy(h.y), i, a;
+    ctx.fillStyle = "rgba(255,255,255,.14)"; ctx.strokeStyle = "rgba(255,255,255,.8)"; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+    var ang = Math.atan2(P.y - h.y, P.x - h.x);
+    if (spec && spec.forme === "cone") { ctx.beginPath(); ctx.moveTo(HX, HY); for (i = 0; i <= 12; i++) { a = ang - spec.half + 2 * spec.half * i / 12; ctx.lineTo(HX + Math.cos(a) * spec.len, sy(h.y + Math.sin(a) * spec.len)); } ctx.closePath(); ctx.fill(); ctx.stroke(); }
+    else if (spec && spec.forme === "anneau") { ell(HX, HY, spec.r, spec.r * FY); ctx.fill(); ctx.stroke(); }
+    else if (spec && spec.forme === "pose") { ell(P.x, sy(P.y), 14, 10); ctx.fill(); ctx.stroke(); }
+    else {
+      var R = spec && spec.r ? spec.r : RAYONS[S.slots.length];
+      var c = compter(S.slots); if (c.feu && c.farine && !spec) R *= 1.3;
+      ctx.beginPath(); ctx.moveTo(HX, HY - 20); ctx.quadraticCurveTo((HX + P.x) / 2, Math.min(HY, sy(P.y)) - 60, P.x, sy(P.y)); ctx.stroke();
+      ell(P.x, sy(P.y), R, R * FY); ctx.fill(); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+  }
+
+  /* ================= commandes ================= */
+  function majPotions() { var n = S ? S.slots.length : 0; document.querySelectorAll(".pot").forEach(function (b) { b.disabled = n >= 3; }); }
+  $("potions").innerHTML = ING.map(function (g, i) { return '<button type="button" class="pot ' + g.id + '" data-ing="' + g.id + '" style="--c:' + g.hex + '" aria-label="' + g.nom + '">' + ico(g.id) + '<span class="touche">' + (i + 1) + '</span></button>'; }).join("");
+  function ajouter(id) {
+    if (!S || !S.enCours || S.pause || S.slots.length >= 3) return;
+    S.slots.push(id); majPotions();
+    var cle = cleTxt(S.slots), spec = SPEC[cle];
+    dire(NOMS[cle] + " · " + (spec ? spec.lab : LABR[S.slots.length]), "");
+  }
+  $("potions").addEventListener("click", function (ev) { var b = ev.target.closest("[data-ing]"); if (b) ajouter(b.dataset.ing); });
+  $("vider").addEventListener("click", function () { if (S) { S.slots = []; majPotions(); dire("Chaudron vidé", ""); } });
+  function versSol(ev) {
+    var r = cv.getBoundingClientRect();
+    var lx = (ev.clientX - r.left) / L.s, ly = (ev.clientY - r.top) / L.s;
+    return { x: clamp(lx, 0, W), y: clamp((ly - L.top) / FY, 0, L.D), sx: lx, sy: ly };
+  }
+  function viser(p) { return { x: p.x, y: Math.max(p.y, portee()), sx: p.sx, sy: p.sy }; }
+  function surHeros(p) { var h = S.hero; return Math.abs(p.sx - h.x) < 30 && p.sy > sy(h.y) - 50 && p.sy < sy(h.y) + 26; }
+  cv.addEventListener("pointerdown", function (ev) {
+    if (!S || !S.enCours || S.pause) return;
+    ev.preventDefault();
+    var p = versSol(ev);
+    try { cv.setPointerCapture(ev.pointerId); } catch (e) {}
+    if (!S.glisse && surHeros(p)) { S.glisse = { pid: ev.pointerId, x0: ev.clientX, hx0: S.hero.x, bouge: false }; return; }
+    if (S.rayon && !S.rayon.tenu) { S.ptr = p; S.rayonPid = ev.pointerId; return; }
+    if (S.vise) return;
+    if (!S.slots.length) { dire("Choisis d'abord tes potions en bas.", ""); return; }
+    S.ptr = viser(p);
+    var spec = SPEC[cleTxt(S.slots)];
+    if (spec && spec.forme === "rayon") {
+      S.slots = []; majPotions();
+      S.rayon = { id: ++S.nRayon, kind: "acide", t: 2, large: 8, tenu: true, pid: ev.pointerId };
+      dire("Jet d'acide : promène-le, il pousse tout ce qu'il touche", ""); return;
+    }
+    S.vise = { pid: ev.pointerId };
+  });
+  cv.addEventListener("pointermove", function (ev) {
+    if (!S) return;
+    if (S.glisse && ev.pointerId === S.glisse.pid) {
+      var dx = ev.clientX - S.glisse.x0;
+      if (Math.abs(dx) > 8) S.glisse.bouge = true;
+      if (S.glisse.bouge) S.hero.x = clamp(S.glisse.hx0 + dx / L.s, 18, W - 18);
+      return;
+    }
+    if (S.vise && ev.pointerId === S.vise.pid) S.ptr = viser(versSol(ev));
+    else if (S.rayon && (S.rayon.pid === ev.pointerId || (!S.rayon.tenu && (S.rayonPid === ev.pointerId || ev.pointerType === "mouse")))) S.ptr = S.rayon.kind === "acide" ? viser(versSol(ev)) : versSol(ev);
+  });
+  function relacher(ev) {
+    if (!S) return;
+    if (S.rayon && S.rayon.tenu && S.rayon.pid === ev.pointerId) S.rayon.lache = true;
+    if (S.rayonPid === ev.pointerId) S.rayonPid = null;
+    if (S.glisse && ev.pointerId === S.glisse.pid) {
+      var bouge = S.glisse.bouge; S.glisse = null;
+      if (!bouge && S.enCours && !S.pause) { if (S.slots.length) boire(); else dire("Choisis des potions, puis touche-toi pour les boire.", ""); }
+      return;
+    }
+    if (!S.vise || ev.pointerId !== S.vise.pid) return;
+    S.vise = null;
+    if (!S.enCours || S.pause || !S.slots.length) return;
+    var p = viser(versSol(ev)); S.ptr = p; lancer(p);
+  }
+  cv.addEventListener("pointerup", relacher);
+  cv.addEventListener("pointercancel", function (ev) { if (S) { if (S.vise && S.vise.pid === ev.pointerId) S.vise = null; if (S.glisse && S.glisse.pid === ev.pointerId) S.glisse = null; if (S.rayon && S.rayon.pid === ev.pointerId) S.rayon.lache = true; } });
+  var TOUCHES = { ArrowLeft: "g", ArrowRight: "d", q: "g", d: "d", a: "g", Q: "g", D: "d", A: "g" };
+  document.addEventListener("keydown", function (ev) {
+    if (!S || !S.enCours || S.pause) return;
+    if (TOUCHES[ev.key]) { clavier[TOUCHES[ev.key]] = true; ev.preventDefault(); return; }
+    if (ev.key >= "1" && ev.key <= "5") { ajouter(ING[+ev.key - 1].id); ev.preventDefault(); }
+    else if (ev.key === "Backspace" || ev.key === "Escape") { S.slots = []; majPotions(); ev.preventDefault(); }
+    else if (ev.key === " " && S.slots.length) { boire(); ev.preventDefault(); }
+  });
+  document.addEventListener("keyup", function (ev) { if (TOUCHES[ev.key]) clavier[TOUCHES[ev.key]] = false; });
+  $("btn-go").addEventListener("click", function () {
+    initAudio();
+    if (S && S.enCours) { S.pause = false; $("regles").hidden = true; dernierT = performance.now(); }
+    else nouvellePartie();
+  });
+  $("btn-pause").addEventListener("click", function () { if (S && S.enCours) S.pause = true; carnet(); $("regles").hidden = false; $("btn-go").focus(); });
+  $("btn-son").addEventListener("click", function () { muet = !muet; this.textContent = muet ? "🔇" : "🔊"; this.setAttribute("aria-label", muet ? "Remettre le son" : "Couper le son"); });
+  $("btn-rejouer").addEventListener("click", function () { initAudio(); nouvellePartie(); });
+  $("btn-recommencer").addEventListener("click", function () { initAudio(); if (S) S.enCours = false; nouvellePartie(); });
+  carnet();
+  redim();
+  dessiner();
+  window.__v4 = { etat: function () { return S; }, L: L, lancer: function (x, y) { lancer({ x: x, y: y }); }, boire: function () { boire(); }, ajouter: ajouter };
+})();
+</script>

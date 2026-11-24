@@ -1,0 +1,35 @@
+# Le combat de l'Alchimiste (enquête 10, combat final) — maquettes
+
+**Où on en est (24 novembre, 5 h).** C'est **une maquette jouable, hors du jeu** : rien n'est branché dans `build.py`, rien n'est en ligne sur le site. Romain l'essaie par les liens ci-dessous et donne ses retours à la voix. La Bible (`jeu/DESIGN-saison1.md`) n'a pas encore de section sur ce combat : les règles ci-dessous sont celles de la maquette, **validées en jouant**, pas encore écrites dans la Bible.
+
+## Les liens (canevas claude.ai, privés)
+- **La maquette jouable** (version 7) : https://claude.ai/artifact/FnXyS2BVdDbRjyYpzDd1WT — `pieges-alchimiste.html`
+- **Les personnages** (premiers dessins, à valider) : https://claude.ai/artifact/VhiYDGCcQudpCMR6gJAssK — `personnages-src.html` + `persos-combat.js` (`python3 construire-planche.py` → `personnages-combat.html`, avec le moteur des héros en volume de `jeu/heros-vues/src/`)
+- Les étapes d'avant (pour l'histoire) : le grimoire des mélanges (https://claude.ai/artifact/YJBBurfRQZnK4qdJ9zmdhH), le récapitulatif des combos (https://claude.ai/artifact/ER5vMKcQSnUeyNHEoZXPNL), les commandes au téléphone (https://claude.ai/artifact/TfFo9XF8yQHkWBGfzvT178), les deux vues (https://claude.ai/artifact/8vqXtKKnab5bHquB3y3EE4), le premier duel (https://claude.ai/artifact/RVoUkEHRKVxMLujrwPZndF), les automates en couloir (https://claude.ai/artifact/MZgjo7kNUKvkjPUi2VJWkw).
+
+## Le jeu, tel que Romain l'a voulu (versions 4 à 7, nuit du 23 au 24 novembre)
+- **Cinq potions** (feu, eau, farine, acide, fleur bleue), jusqu'à trois dans le chaudron, **aucune limite** (pas de doses, pas de mana : Romain n'aime pas les limitations).
+- **Un seul doigt** : on choisit les potions en bas, on touche la place pour lancer (on voit la zone, on glisse, on lâche) ; on fait **glisser l'Alchimiste** à gauche et à droite derrière le muret ; **le toucher sans glisser = boire**. Plus de joystick (Romain : impossible de bouger et de lancer en même temps sur un téléphone).
+- **Vue fixe de la place, d'assez haut, sans perspective** (« comme Clash Royale »), Grosbec tout au fond devant la mairie.
+- **Grosbec est hors de portée** : une ligne « tes fioles ne vont pas plus loin ». **Ses automates le blessent** quand on les lui renvoie dessus (et les tonneaux, la charrette, un rayon de feu renvoyé par un bouclier, une flaque électrique qui le touche). Il ne nettoie plus rien ; il enrage de temps en temps (automates plus rapides 6 s).
+- **La foule** : des groupes de plus en plus gros, sans attendre qu'on ait fini (jusqu'à 36 automates). Ils te tapent : **−1 le petit (rapide), −3 le moyen (bouclier), −5 le gros (lourd)** (Romain).
+- **Des corps lourds, pas des balles** (Romain, 24 nov. 2 h 45) : une explosion les envoie **en cloche, assez lentement mais loin** ; ils retombent, **un tout petit rebond**, glissent à peine, **2 s pour se relever**. **Un corps lancé qui percute un ami : les deux tombent, assommés 5 s, personne ne rebondit.** Les murs et la fontaine arrêtent net. Seuls le lourd, les tonneaux et la charrette continuent sur leur lancée en renversant tout (boules de bowling).
+- **Le souffle d'une explosion part en éventail, à l'opposé de l'Alchimiste**, vers le fond (Romain n'arrivait plus à toucher Grosbec : depuis le bas, rien n'allait assez loin). Un BOUM lancé ne coûte que 3 PV, et seulement s'il éclate sur lui.
+- **La vague** (eau + eau) les renverse et les fait glisser loin sur les pavés.
+- **Le feu** (Romain, 24 nov. 4 h 16) : un automate en feu **brûle doucement, sans courir**, et passe le feu à ceux qu'il touche (puis 3 s sans pouvoir reprendre feu). **Seule la mèche** (farine, puis feu) le fait foncer tout droit, puis exploser. La potion feu seule s'appelle « Petite flamme » (pour ne pas la confondre avec la flammèche de Romain).
+- **Le compteur ×2, ×3…** compte les chocs d'un même geste ; ralenti à ×4, « CARAMBOLAGE ! » à ×6. Un carnet des combos (stockage du navigateur).
+
+## Les combos de la version 7 (tous ceux du récapitulatif, adaptés)
+Carambolage, boulet de canon (savon + BOUM ou vague), patinoire, bowling (lourd, tonneau), tonneau dans le mille, catapulte (volcan), trampoline (la mousse du volcan), mèche sur pattes, tout le monde en feu, massue de lianes, électrocutés, piège à boue, l'appât (gâteau), barbecue (bouclier d'eau + colonnes sur soi), charrette folle (savon sous les roues + vague), fontaine électrique (acide dedans), fontaine de boue (farine dedans), **CRAC** (feu puis eau), **boum en série** (feu puis farine), **terre cuite** (boue puis feu : statues qu'on brise), **siamois** (eau + farine + farine : collés deux par deux), **bulles de savon** (savon puis eau : ils flottent vers Grosbec ; feu ou acide pour éclater), **lance-pierre** (lianes, puis acide qui coupe), **bain moussant** (savon + volcan), **pop-corn** (feu sur la mousse), **tourbillon** (savon autour de soi + eau × 3), **bouclier miroir** (boire feu × 3, viser le bord d'un bouclier : le rayon part de côté et peut toucher Grosbec ; au milieu, il revient sur soi), **l'automate électrique** (il garde ses étincelles 3 s et électrocute ce qu'il touche), **le cracheur fait le travail** (sa boule de feu traverse ton nuage de farine), **le souffleur** (il souffle tes nuages et ton pollen vers toi). **Pas fait** : « le coup raté » (il aurait cassé vague + BOUM, dit à Romain).
+Deux automates de plus après 30 s : **le cracheur** (crache du feu de loin) et **le souffleur** (souffle les nuages vers toi).
+
+## Les personnages (premiers dessins, 24 novembre 5 h ; avis de Romain attendu)
+- `persos-combat.js` : `PersosCombat.automate(ctx, type, o)` et `PersosCombat.grosbec(ctx, o)`, au canevas, en volume (dégradés, reflets, liseré froid) ; pieds en (0, 0), une unité = un pixel du combat. Les automates se tournent (`o.face`, de -1 à 1 : les traits de devant glissent, pas d'image retournée) et marchent (`o.marche`) ; leurs états : feu, mouillé, enfariné, boue, terre cuite, électrique, mèche, aveuglé.
+- **Proposé** : ce sont les vieux automates d'Elyra réveillés par l'armure de Grosbec (coque claire de porcelaine, articulations du métal d'en bas, émail de couleur, cœur de cristal à la lumière ambrée de Grosbec). Grosbec : casque en grand bec et crête de plumes de bronze, quatre Lanternes d'Or serties (poitrine, épaules, ceinture) avec des veines d'or, armure de métal d'en bas cerclée de bronze, écharpe et cape rouges du maire, bague au corbeau.
+- **L'Alchimiste** : le vrai, celui des héros en volume du donjon (`jeu/heros-vues/src/`), vu de dos.
+- **Pas fait** : les mettre dans la maquette jouable (la suite, après l'avis de Romain).
+
+## Pour essayer et vérifier
+- `robot.js` (Playwright) : `node robot.js 220000 iphone 900` (un robot qui varie ses coups ; `… pc 1500 boum` : un robot qui ne fait que des BOUM). Il fabrique `apercu-v4.html` à partir de `pieges-alchimiste.html`.
+- `essais-combos.js` : chaque nouveau combo déclenché exprès (`window.__v4` : `etat()`, `lancer(x, y)`, `boire()`).
+- Les dernières mesures (version 7) : le robot qui varie gagne en 77 à 91 s ; le robot « que des BOUM », toutes les 1,5 s, perd (il faut mélanger les coups).

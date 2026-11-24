@@ -1,0 +1,155 @@
+<title>Deux vues pour l'arène</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Alegreya+Sans:wght@400;700;800&display=swap">
+<style>
+/* Même scène dessinée deux fois : à plat vu du dessus, puis en vue plongeante (de trois quarts). Un seul look sombre, comme le combat. */
+:root { --bg: #12171A; --surface: #1B2326; --ink: #E8ECEA; --muted: #9AA7A3; --line: #33413F; --bon: #8BD46A; --mal: #F0806A; --jaune: #F2C230; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: "Alegreya Sans", "Segoe UI", Arial, sans-serif; font-size: 16px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 22px 40px; }
+.page { max-width: 900px; margin: 0 auto; display: grid; gap: 18px; }
+h1 { font-family: "IM Fell English SC", Georgia, serif; font-weight: 400; font-size: clamp(1.8rem, 5vw, 2.5rem); margin: 0; line-height: 1.05; }
+.chapeau { color: var(--muted); margin: 4px 0 0; max-width: 68ch; }
+.duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 18px; }
+.vue { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.vue h2 { font-family: "IM Fell English SC", Georgia, serif; font-weight: 400; font-size: 1.45rem; margin: 0; }
+.vue.reco { border-color: var(--jaune); }
+.badge { justify-self: start; background: var(--jaune); color: #111; font-weight: 800; font-size: .8rem; border-radius: 999px; padding: 2px 10px; }
+svg.scene { width: 100%; max-width: 360px; height: auto; justify-self: center; border-radius: 12px; display: block; }
+ul { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; }
+li.plus::marker { content: "＋ "; color: var(--bon); }
+li.moins::marker { content: "－ "; color: var(--mal); }
+.avis { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px 18px; }
+.avis p { margin: 0; max-width: 72ch; }
+</style>
+
+<div class="page">
+  <header>
+    <h1>Deux vues pour l'arène</h1>
+    <p class="chapeau">La même scène dessinée deux fois : Grosbec au fond, du savon, une flaque avec des lianes, un automate qui vole après un BOUM, un autre dans une bulle, et l'Alchimiste qui vise.</p>
+  </header>
+
+  <div class="duo">
+    <section class="vue">
+      <h2>A. Vue de dessus</h2>
+      <svg class="scene" viewBox="0 0 360 520" role="img" aria-label="Vue de dessus : tout est à plat, des ronds sur un quadrillage">
+        <rect width="360" height="520" fill="#1A1F1E"/>
+        <g stroke="rgba(255,255,255,.05)">
+          <path d="M40 0V520M80 0V520M120 0V520M160 0V520M200 0V520M240 0V520M280 0V520M320 0V520"/>
+          <path d="M0 40H360M0 80H360M0 120H360M0 160H360M0 200H360M0 240H360M0 280H360M0 320H360M0 360H360M0 400H360M0 440H360M0 480H360"/>
+        </g>
+        <circle cx="180" cy="62" r="30" fill="#59646A" stroke="#1E2427" stroke-width="3"/>
+        <circle cx="180" cy="72" r="6" fill="#F2C86A"/>
+        <circle cx="110" cy="260" r="42" fill="rgba(240,220,240,.28)" stroke="rgba(240,220,240,.7)" stroke-width="2"/>
+        <g fill="rgba(255,255,255,.6)"><circle cx="96" cy="250" r="4"/><circle cx="120" cy="270" r="3"/><circle cx="125" cy="245" r="2.5"/></g>
+        <circle cx="110" cy="260" r="42" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="6 5"/>
+        <circle cx="250" cy="350" r="40" fill="rgba(46,134,214,.32)" stroke="rgba(46,134,214,.8)" stroke-width="2"/>
+        <path d="M232 344q8-14 18-4t16-8M236 362q10 6 16-4t14 2" stroke="#4E9A2E" stroke-width="3" fill="none"/>
+        <circle cx="250" cy="350" r="15" fill="#7E8D96" stroke="#1E2427" stroke-width="2.5"/>
+        <circle cx="150" cy="180" r="14" fill="#3FB6C9" stroke="#1E2427" stroke-width="2.5"/>
+        <circle cx="296" cy="214" r="25" fill="rgba(200,230,255,.12)" stroke="rgba(220,240,255,.8)" stroke-width="2"/>
+        <circle cx="296" cy="214" r="13" fill="#3FB6C9" stroke="#1E2427" stroke-width="2.5"/>
+        <circle cx="70" cy="380" r="20" fill="#8B5E3C" stroke="#1E2427" stroke-width="2.5"/>
+        <circle cx="180" cy="476" r="24" fill="#3D2F5C" stroke="#7C6BEB" stroke-width="3"/>
+        <path d="M180 452 L110 260" stroke="rgba(255,255,255,.5)" stroke-width="2" stroke-dasharray="5 4"/>
+        <g font-family="Alegreya Sans, sans-serif" font-size="11" font-weight="800" fill="#FFD9A0" text-anchor="middle">
+          <text x="150" y="208">il vole ?</text><text x="296" y="252">bulle ?</text>
+        </g>
+      </svg>
+      <ul>
+        <li class="plus">Le plus simple pour viser : la zone est un rond, exactement là où tu touches.</li>
+        <li class="plus">Le plus rapide à dessiner : ce sont des ronds.</li>
+        <li class="moins">Tout est à plat. Un automate qui vole, une bulle qui flotte, une chute, une liane qui soulève quelqu'un : ça ne se voit presque pas.</li>
+        <li class="moins">Moins beau, et on ne voit pas les héros en volume.</li>
+      </ul>
+    </section>
+
+    <section class="vue reco">
+      <span class="badge">Ma recommandation</span>
+      <h2>B. Vue plongeante (de trois quarts)</h2>
+      <svg class="scene" viewBox="0 0 360 520" role="img" aria-label="Vue plongeante : le sol part en perspective, les personnages sont debout avec leur ombre, ce qui vole est au-dessus de son ombre">
+        <defs>
+          <linearGradient id="mur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0E1214"/><stop offset="1" stop-color="#232B2E"/></linearGradient>
+          <linearGradient id="sol" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B2120"/><stop offset="1" stop-color="#262E2C"/></linearGradient>
+        </defs>
+        <rect width="360" height="520" fill="url(#mur)"/>
+        <g fill="#3A3026"><rect x="18" y="34" width="96" height="6"/><rect x="18" y="72" width="96" height="6"/><rect x="246" y="34" width="96" height="6"/><rect x="246" y="72" width="96" height="6"/></g>
+        <g><rect x="24" y="20" width="9" height="14" rx="2" fill="#5DB338"/><rect x="40" y="16" width="8" height="18" rx="2" fill="#E5572A"/><rect x="58" y="22" width="10" height="12" rx="2" fill="#7C6BEB"/><rect x="88" y="18" width="9" height="16" rx="2" fill="#2E86D6"/>
+          <rect x="30" y="58" width="10" height="14" rx="2" fill="#D9C9A4"/><rect x="70" y="56" width="8" height="16" rx="2" fill="#5DB338"/><rect x="252" y="20" width="9" height="14" rx="2" fill="#E5572A"/><rect x="276" y="16" width="10" height="18" rx="2" fill="#2E86D6"/>
+          <rect x="300" y="22" width="8" height="12" rx="2" fill="#7C6BEB"/><rect x="262" y="58" width="9" height="14" rx="2" fill="#5DB338"/><rect x="316" y="56" width="10" height="16" rx="2" fill="#D9C9A4"/></g>
+        <path d="M70 118 L290 118 L360 520 L0 520 Z" fill="url(#sol)"/>
+        <g stroke="rgba(255,255,255,.06)" fill="none">
+          <path d="M70 118L0 520M114 118L72 520M158 118L144 520M202 118L216 520M246 118L288 520M290 118L360 520"/>
+          <path d="M64 150H296M56 192H304M45 250H315M32 322H328M16 410H344"/>
+        </g>
+        <ellipse cx="180" cy="128" rx="58" ry="12" fill="#2C3538"/>
+        <ellipse cx="180" cy="126" rx="34" ry="7" fill="rgba(0,0,0,.45)"/>
+        <g transform="translate(180 126)">
+          <circle cx="-26" cy="-50" r="11" fill="#6A7478"/><circle cx="26" cy="-50" r="11" fill="#6A7478"/>
+          <path d="M-24 -54 Q0 -64 24 -54 L28 -6 Q0 4 -28 -6 Z" fill="#59646A" stroke="#1E2427" stroke-width="2.5"/>
+          <path d="M-17 -86 Q0 -102 17 -86 L18 -62 Q0 -55 -18 -62 Z" fill="#6E797E" stroke="#1E2427" stroke-width="2.5"/>
+          <rect x="-12" y="-80" width="24" height="5" rx="2.5" fill="#0C0806"/>
+          <circle cx="-5" cy="-77.5" r="1.8" fill="#E8A23A"/><circle cx="5" cy="-77.5" r="1.8" fill="#E8A23A"/>
+          <path d="M-4 -73 L0 -63 L4 -73 Z" fill="#B0923F"/>
+          <circle cx="0" cy="-34" r="7" fill="#F2C86A"/>
+        </g>
+        <ellipse cx="118" cy="290" rx="58" ry="24" fill="rgba(240,220,240,.28)" stroke="rgba(240,220,240,.75)" stroke-width="2"/>
+        <g fill="rgba(255,255,255,.7)"><circle cx="100" cy="284" r="4"/><circle cx="126" cy="296" r="3"/><circle cx="136" cy="281" r="2.5"/><circle cx="108" cy="300" r="2"/></g>
+        <ellipse cx="118" cy="290" rx="58" ry="24" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="6 5"/>
+        <path d="M180 430 Q140 300 118 290" stroke="rgba(255,255,255,.55)" stroke-width="2" stroke-dasharray="5 4" fill="none"/>
+        <circle cx="146" cy="330" r="5" fill="#C8A0D8" stroke="#fff" stroke-width="1.5"/>
+        <ellipse cx="258" cy="374" rx="62" ry="24" fill="rgba(46,134,214,.32)" stroke="rgba(46,134,214,.8)" stroke-width="2"/>
+        <ellipse cx="258" cy="376" rx="14" ry="5" fill="rgba(0,0,0,.4)"/>
+        <g transform="translate(258 352)">
+          <rect x="-11" y="-14" width="22" height="26" rx="8" fill="#7E8D96" stroke="#1E2427" stroke-width="2"/>
+          <circle cx="0" cy="-20" r="8" fill="#8F9DA5" stroke="#1E2427" stroke-width="2"/>
+          <path d="M-15 -6 a17 17 0 0 0 0 16" stroke="#4FA3F0" stroke-width="4" fill="none" stroke-linecap="round"/>
+        </g>
+        <path d="M236 378 C224 350 246 342 240 320 C236 306 250 300 252 290 M282 378 C292 352 268 346 276 322 C280 308 266 300 264 292 M258 380 C262 360 246 356 250 336" stroke="#4E9A2E" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <ellipse cx="150" cy="228" rx="10" ry="4" fill="rgba(0,0,0,.45)"/>
+        <g transform="translate(160 168) rotate(-28)">
+          <rect x="-8" y="-10" width="16" height="20" rx="6" fill="#3FB6C9" stroke="#1E2427" stroke-width="2"/>
+          <circle cx="0" cy="-15" r="6" fill="#62C8D8" stroke="#1E2427" stroke-width="2"/>
+        </g>
+        <path d="M128 202 h-22 M132 192 h-28 M130 212 h-18" stroke="rgba(255,255,255,.5)" stroke-width="2" stroke-linecap="round"/>
+        <ellipse cx="300" cy="268" rx="11" ry="4" fill="rgba(0,0,0,.35)"/>
+        <circle cx="300" cy="206" r="27" fill="rgba(200,230,255,.12)" stroke="rgba(220,240,255,.85)" stroke-width="2"/>
+        <path d="M288 192 a14 14 0 0 1 10 -6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <g transform="translate(300 210) rotate(14)">
+          <rect x="-7" y="-8" width="14" height="17" rx="5" fill="#3FB6C9" stroke="#1E2427" stroke-width="2"/>
+          <circle cx="0" cy="-12" r="5" fill="#62C8D8" stroke="#1E2427" stroke-width="2"/>
+        </g>
+        <ellipse cx="64" cy="420" rx="22" ry="7" fill="rgba(0,0,0,.45)"/>
+        <g transform="translate(64 392)">
+          <rect x="-17" y="-20" width="34" height="38" rx="11" fill="#8B5E3C" stroke="#1E2427" stroke-width="2.5"/>
+          <circle cx="0" cy="-27" r="11" fill="#9C6C46" stroke="#1E2427" stroke-width="2.5"/>
+          <rect x="12" y="-36" width="16" height="9" rx="2" fill="#3A2614"/><rect x="18" y="-27" width="4" height="22" fill="#3A2614"/>
+        </g>
+        <ellipse cx="180" cy="502" rx="30" ry="9" fill="rgba(0,0,0,.5)"/>
+        <g transform="translate(180 470)">
+          <path d="M-26 32 Q-24 -6 0 -14 Q24 -6 26 32 Z" fill="#3D2F5C" stroke="#7C6BEB" stroke-width="3"/>
+          <circle cx="0" cy="-26" r="15" fill="#4A3A6E" stroke="#7C6BEB" stroke-width="3"/>
+          <path d="M-14 -34 Q0 -48 14 -34" stroke="#2A1F42" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <path d="M18 -4 l14 -26" stroke="#E4DEFF" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="33" cy="-33" r="5" fill="#C8A0D8" stroke="#fff" stroke-width="1.5"/>
+        </g>
+        <g font-family="Alegreya Sans, sans-serif" font-size="11" font-weight="800" fill="#FFD9A0" text-anchor="middle">
+          <text x="112" y="176">il vole !</text><text x="300" y="166">dans la bulle</text><text x="304" y="330">attrapé par les lianes</text>
+        </g>
+      </svg>
+      <ul>
+        <li class="plus">On voit la hauteur : l'automate qui vole au-dessus de son ombre, la bulle qui flotte, la chute, la liane qui soulève. Pour nos combos, c'est essentiel.</li>
+        <li class="plus">Plus beau, et c'est la vue de Magicka. Les héros en volume y trouvent leur place.</li>
+        <li class="plus">Le labo de Grosbec au fond (les étagères de potions) donne un vrai décor.</li>
+        <li class="moins">La zone de visée devient un ovale aplati : un peu moins précise au fond de l'arène.</li>
+        <li class="moins">Un peu plus de travail de dessin.</li>
+      </ul>
+    </section>
+  </div>
+
+  <section class="avis">
+    <p><b>Mon avis :</b> la vue B, avec une caméra assez haute (on voit surtout le sol, un peu les côtés des personnages). Toute la pagaille qu'on veut (projections, bulles, lianes, chutes) se joue en hauteur, et la vue de dessus la cacherait. Pour garder une visée facile, la zone visée reste bien marquée au sol, et l'Alchimiste est devant, de dos, comme si on était derrière lui.</p>
+  </section>
+</div>

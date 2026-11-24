@@ -1,0 +1,301 @@
+<title>Les Combos de l'Alchimiste</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&family=Alegreya+Sans+SC:wght@500;700&display=swap">
+<style>
+/* Récapitulatif des combos du combat de l'Alchimiste : les règles, les réactions, les couches, la physique, puis chaque combo avec ses étapes en petites potions. */
+:root {
+  --bg: #E6EBEA; --surface: #F7F9F8; --surface-2: #EDF1F0; --ink: #1C2526; --muted: #56625F; --line: #C6D0CD;
+  --cuivre: #A45A22; --essai: #2E7D4F; --decide: #2D74B8; --propose: #B0731A; --mal: #B8432E;
+  --f-titre: "IM Fell English SC", "Iowan Old Style", Palatino, Georgia, serif;
+  --f-texte: "Alegreya Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --f-label: "Alegreya Sans SC", "Alegreya Sans", "Segoe UI", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #101517; --surface: #172022; --surface-2: #1D282A; --ink: #E3E9E7; --muted: #98A6A2; --line: #2B3739; --cuivre: #E39A5C; --essai: #6CCB8E; --decide: #79B4EE; --propose: #E9B45C; --mal: #F0806A; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #101517; --surface: #172022; --surface-2: #1D282A; --ink: #E3E9E7; --muted: #98A6A2; --line: #2B3739; --cuivre: #E39A5C; --essai: #6CCB8E; --decide: #79B4EE; --propose: #E9B45C; --mal: #F0806A; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-texte); font-size: 16.5px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 26px 56px; }
+.page { max-width: 1080px; margin: 0 auto; display: grid; gap: 20px; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--cuivre); outline-offset: 3px; }
+h1 { font-family: var(--f-titre); font-weight: 400; font-size: clamp(2rem, 5.2vw, 3rem); line-height: 1.05; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--f-titre); font-weight: 400; font-size: 1.55rem; margin: 0 0 10px; text-wrap: balance; }
+.chapeau { margin: 6px 0 0; color: var(--muted); max-width: 72ch; }
+.bloc { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 20px 20px; min-width: 0; }
+.bloc > p { margin: 0 0 10px; max-width: 74ch; }
+.deux { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 20px; }
+svg.ico { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.mini { width: 24px; height: 24px; border-radius: 50%; background: var(--c); display: inline-grid; place-items: center; color: #fff; border: 1.5px solid color-mix(in srgb, var(--c) 62%, #000); flex: none; vertical-align: middle; }
+.mini.farine { color: #4A3D24; }
+.etat { display: inline-block; font-family: var(--f-label); font-weight: 700; font-size: .74rem; letter-spacing: .04em; border-radius: 999px; padding: 1px 9px; white-space: nowrap; color: var(--sc); background: color-mix(in srgb, var(--sc) 13%, transparent); border: 1px solid color-mix(in srgb, var(--sc) 45%, transparent); }
+.legende { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; font-size: .93rem; color: var(--muted); }
+.legende span.etat { margin-right: 4px; }
+.mot { font-family: var(--f-label); font-weight: 700; letter-spacing: .02em; font-size: .9rem; border-radius: 6px; padding: 0 7px; background: var(--surface-2); border: 1px solid var(--line); white-space: nowrap; }
+
+table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+td, th { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; text-align: left; }
+th { font-family: var(--f-label); font-weight: 700; font-size: .78rem; letter-spacing: .05em; color: var(--muted); }
+td.rec { white-space: nowrap; width: 1%; }
+td.rec .mini + .mini { margin-left: 2px; }
+td.res b { font-weight: 800; }
+td.av { color: var(--muted); font-size: .88rem; }
+.table-wrap { overflow-x: auto; }
+
+.couches { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 10px; }
+.couche { border-radius: 12px; padding: 10px 12px; background: var(--surface-2); border-left: 5px solid var(--cc); display: grid; gap: 4px; font-size: .93rem; }
+.couche b.t { font-family: var(--f-label); font-size: 1rem; letter-spacing: .03em; color: var(--ink); }
+
+.filtres { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 3px 12px; cursor: pointer; font-size: .92rem; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.cartes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 12px; }
+.combo { background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; gap: 8px; align-content: start; }
+.combo-tete { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+.combo h3 { font-family: var(--f-titre); font-weight: 400; font-size: 1.3rem; line-height: 1.1; margin: 0; }
+.etapes { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; counter-reset: e; }
+.etapes li { display: flex; gap: 8px; align-items: center; font-size: .94rem; counter-increment: e; }
+.etapes li::before { content: counter(e); font-family: var(--f-label); font-weight: 700; font-size: .75rem; color: var(--muted); width: 1em; flex: none; }
+.etapes li .minis { display: inline-flex; gap: 2px; flex: none; }
+.effet { margin: 0; font-size: .95rem; }
+.risque { margin: 0; font-size: .9rem; color: var(--mal); }
+.qui { font-size: .82rem; color: var(--muted); }
+ul.liste { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; }
+ul.liste li { max-width: 80ch; }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-feu" viewBox="0 0 24 24"><path d="M12 21c-3.9 0-6.5-2.6-6.5-6.1 0-3.4 2.6-5.3 3.6-8.4 1.6 1.3 2.3 3 2.4 4.6 1.2-.9 1.9-2.4 2-4.1 2.6 2 5 5 5 8 0 3.5-2.6 6-6.5 6z"/></symbol>
+    <symbol id="i-eau" viewBox="0 0 24 24"><path d="M12 3.2c3.4 4.3 6 7.6 6 11.1A6 6 0 0 1 6 14.3c0-3.5 2.6-6.8 6-11.1z"/></symbol>
+    <symbol id="i-farine" viewBox="0 0 24 24"><path d="M3.5 19.5c1.5-5.2 4.6-8.5 8.5-8.5s7 3.3 8.5 8.5z"/><path d="M8.5 8.5h.01M12 6h.01M15.5 8.5h.01"/></symbol>
+    <symbol id="i-acide" viewBox="0 0 24 24"><path d="M9.5 3.5h5M10.3 3.5v5.2L5.6 17.3A2.2 2.2 0 0 0 7.5 20.5h9a2.2 2.2 0 0 0 1.9-3.2l-4.7-8.6V3.5"/></symbol>
+    <symbol id="i-fleur" viewBox="0 0 24 24"><circle cx="12" cy="10" r="2.2"/><path d="M12 7.8c-1.4-2.6-.3-4.6 0-4.8.3.2 1.4 2.2 0 4.8zM14.1 9.3c2.3-1.8 4.6-1.2 4.8-.9-.1.3-1.9 1.9-4.8.9zM13.3 12c1.7 2.4 1 4.5.7 4.7-.3-.1-1.7-1.9-.7-4.7zM10.7 12c-1 2.8-2.4 4.6-2.7 4.7-.3-.2-1-2.3.7-4.7zM9.9 9.3c-2.9 1-4.7-.6-4.8-.9.2-.3 2.5-.9 4.8.9z"/><path d="M12 16.5v4.5"/></symbol>
+  </defs>
+</svg>
+
+<div class="page">
+  <header>
+    <h1>Les combos de l'Alchimiste</h1>
+    <p class="chapeau">Tout ce qu'on a imaginé le 23 novembre pour le combat final de l'Alchimiste, avec seulement 5 ingrédients. Chaque ligne dit où on en est.</p>
+    <div class="legende" style="margin-top:10px">
+      <span><span class="etat" style="--sc:var(--essai)">Dans l'essai</span>déjà jouable dans « Les Pièges de l'Alchimiste »</span>
+      <span><span class="etat" style="--sc:var(--decide)">Décidé</span>tu l'as validé, pas encore construit</span>
+      <span><span class="etat" style="--sc:var(--propose)">Proposé</span>mon idée, pas encore validée</span>
+    </div>
+  </header>
+
+  <div class="deux">
+    <section class="bloc" aria-labelledby="t-traces">
+      <h2 id="t-traces">Règle 1 : chaque ingrédient laisse une trace</h2>
+      <p>Là où la fiole casse, il reste quelque chose. On peut lancer sur une zone vide pour préparer un piège.</p>
+      <table><tbody id="traces"></tbody></table>
+    </section>
+    <section class="bloc" aria-labelledby="t-couches">
+      <h2 id="t-couches">Règle 3 : ce qui vient de toucher ne marche plus</h2>
+      <p>Chaque coup laisse une couche sur l'ennemi (un anneau de couleur). Le même ingrédient ne lui fait plus rien, mais un autre peut faire très mal. C'est ce qui empêche de gagner en lançant toujours la même chose. <span class="etat" style="--sc:var(--essai)">Dans l'essai</span></p>
+      <div class="couches" id="couches"></div>
+    </section>
+  </div>
+
+  <section class="bloc" aria-labelledby="t-reac">
+    <h2 id="t-reac">Règle 2 : deux choses qui se touchent réagissent</h2>
+    <p>Dans le chaudron, ou au sol quand on lance l'un sur l'autre. Cinq réactions sont nouvelles : elles remplacent ce qui était écrit dans le grimoire des 55 mélanges, qu'il faudra mettre à jour.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Mélange</th><th>Ce que ça donne</th><th>État</th><th>Avant</th></tr></thead>
+      <tbody id="reactions"></tbody>
+    </table></div>
+  </section>
+
+  <section class="bloc" aria-labelledby="t-phys">
+    <h2 id="t-phys">La physique : c'est elle qui rend les combos drôles</h2>
+    <ul class="liste" id="physique"></ul>
+  </section>
+
+  <section class="bloc" aria-labelledby="t-combos">
+    <h2 id="t-combos">Les combos</h2>
+    <p><span class="etat" style="--sc:var(--decide)">Décidé</span> <b>Le carnet des combos</b>, comme l'album de Mimi : chaque combo réussi affiche son nom en grand (« MÈCHE SUR PATTES ! ») et s'inscrit dans le carnet. Le but, c'est de tous les trouver.</p>
+    <div class="filtres" id="filtres" role="group" aria-label="Filtrer par état"></div>
+    <div class="cartes" id="cartes"></div>
+  </section>
+
+  <div class="deux">
+    <section class="bloc" aria-labelledby="t-boire">
+      <h2 id="t-boire">Ce qui est risqué est très puissant</h2>
+      <ul class="liste" id="boire"></ul>
+    </section>
+    <section class="bloc" aria-labelledby="t-grosbec">
+      <h2 id="t-grosbec">Grosbec joue avec les mêmes règles</h2>
+      <ul class="liste" id="grosbec"></ul>
+    </section>
+  </div>
+
+  <div class="deux">
+    <section class="bloc" aria-labelledby="t-autos">
+      <h2 id="t-autos">Les automates : chacun contre quelque chose</h2>
+      <ul class="liste" id="autos"></ul>
+    </section>
+    <section class="bloc" aria-labelledby="t-decider">
+      <h2 id="t-decider">Encore à décider</h2>
+      <ul class="liste" id="decider"></ul>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var ING = { feu: ["Feu", "#E5572A"], eau: ["Eau", "#2E86D6"], farine: ["Farine", "#D9C9A4"], acide: ["Acide", "#5DB338"], fleur: ["Fleur bleue", "#7C6BEB"] };
+  var ETATS = { essai: ["Dans l'essai", "var(--essai)"], decide: ["Décidé", "var(--decide)"], propose: ["Proposé", "var(--propose)"] };
+  function mini(id) { return '<span class="mini ' + id + '" style="--c:' + ING[id][1] + '" title="' + ING[id][0] + '"><svg class="ico" aria-hidden="true"><use href="#i-' + id + '"/></svg></span>'; }
+  function etat(e) { return '<span class="etat" style="--sc:' + ETATS[e][1] + '">' + ETATS[e][0] + '</span>'; }
+  // « @feu » devient une petite potion, « [savon] » devient un mot encadré
+  function txt(s) {
+    return s.replace(/@(feu|eau|farine|acide|fleur)/g, function (_, id) { return mini(id); })
+            .replace(/\[([^\]]+)\]/g, '<span class="mot">$1</span>');
+  }
+  function $(id) { return document.getElementById(id); }
+
+  var TRACES = [
+    ["feu", "<b>Sol en feu</b> : brûle qui passe dessus."],
+    ["eau", "<b>Flaque</b> : mouille qui passe dedans."],
+    ["farine", "<b>Nuage</b> : aveugle qui est dedans."],
+    ["acide", "<b>Flaque verte</b> : ronge qui passe dedans."],
+    ["fleur", "<b>Fleurs</b> : soignent qui est dessus… même les automates."]
+  ];
+  $("traces").innerHTML = TRACES.map(function (t) { return '<tr><td class="rec">' + mini(t[0]) + '</td><td>' + t[1] + '</td></tr>'; }).join("");
+
+  var COUCHES = [
+    ["Brûlant", "#F07A45", "après du feu", "Le feu <b>le soigne</b>. L'eau : <b>CRAC</b>, l'armure chaude se fend (gros dégâts). La farine : <b>BOUM</b>."],
+    ["Mouillé", "#4FA3F0", "après de l'eau", "Le feu fait <b>pschitt</b>. La farine : <b>boue</b>, collé."],
+    ["Rongé", "#7BCB55", "après de l'acide", "L'acide ne fait plus rien, mais <b>tout le reste fait plus mal</b>. L'eau rince l'acide."],
+    ["Enfariné", "#C9B88F", "après de la farine", "Le feu : <b>BOUM</b>. L'eau : <b>boue</b>."]
+  ];
+  $("couches").innerHTML = COUCHES.map(function (c) { return '<div class="couche" style="--cc:' + c[1] + '"><b class="t">' + c[0] + '</b><span style="color:var(--muted);font-size:.85rem">' + c[2] + '</span><span>' + c[3] + '</span></div>'; }).join("");
+
+  // [ingrédients, résultat, état, avant]
+  var REACTIONS = [
+    [["feu", "farine"], "<b>BOUM</b> : explosion qui projette tout le monde.", "essai", ""],
+    [["feu", "eau"], "<b>Vapeur</b> : aveugle. Un mouillé ne brûle pas (pschitt).", "essai", ""],
+    [["eau", "farine"], "<b>Boue</b> : colle longtemps.", "essai", ""],
+    [["feu", "acide"], "<b>Fumée verte</b> : ronge longtemps.", "essai", ""],
+    [["farine", "fleur"], "<b>Gâteau</b> : appât qui attire les automates gourmands, ou bouclier si on le mange.", "essai", ""],
+    [["acide", "fleur"], "<b>Savon</b> : une mousse au sol où ça glisse, ils ne peuvent plus tourner.", "decide", "raté (« Pschitt »)"],
+    [["eau", "acide"], "<b>Flaque électrique</b> : les automates (en métal) dans l'eau prennent une décharge et sont étourdis. La pile au citron.", "decide", "acide dilué"],
+    [["farine", "acide"], "<b>Volcan</b> : ça mousse, ça déborde et ça projette en l'air. Le volcan au vinaigre de l'école.", "decide", "poudre qui pique"],
+    [["eau", "fleur"], "<b>Lianes</b> : les fleurs poussent d'un coup et attrapent les automates.", "decide", "les fleurs poussent"],
+    [["feu", "fleur"], "<b>Pollen</b> : ils éternuent et partent n'importe où. Le pollen est une poudre : du feu dessus fait BOUM, comme la farine.", "decide", "les fleurs brûlent"]
+  ];
+  $("reactions").innerHTML = REACTIONS.map(function (r) {
+    return '<tr><td class="rec">' + r[0].map(mini).join("") + '</td><td class="res">' + r[1] + '</td><td>' + etat(r[2]) + '</td><td class="av">' + (r[3] || "—") + '</td></tr>';
+  }).join("");
+
+  var PHYSIQUE = [
+    etat("essai") + " Les explosions <b>repoussent</b> les automates.",
+    etat("decide") + " Les explosions <b>projettent très fort</b> : l'automate vole au-dessus de son ombre et sort du nuage.",
+    etat("decide") + " Un automate projeté qui <b>percute</b> un autre : <b>les deux sont étourdis</b> (je propose 5 secondes ; tu avais dit 10).",
+    etat("decide") + " Un automate projeté qui percute <b>Grosbec</b> lui fait des dégâts, <b>même quand il est protégé</b> : son bouclier arrête les potions, pas ses propres automates.",
+    etat("decide") + " Sur le <b>savon</b>, un automate poussé ou projeté <b>glisse sans s'arrêter</b> jusqu'à ce qu'il cogne quelque chose.",
+    etat("decide") + " <b>Le décor sert aux combos</b> : les tonneaux de farine du meunier, la fontaine, la charrette. Les automates rebondissent dessus."
+  ];
+  $("physique").innerHTML = PHYSIQUE.map(function (x) { return "<li>" + x + "</li>"; }).join("");
+
+  // [nom, état, étapes, effet, risque, d'où vient l'idée]
+  var COMBOS = [
+    ["Le piège à boue", "essai", ["@eau sur une zone vide : une [flaque]", "Attendre qu'ils marchent dedans", "@farine dessus"], "Boue : tous collés.", "Le rapide saute par-dessus les flaques. Grosbec peut laver ou sécher.", "Romain"],
+    ["La mèche", "essai", ["@farine @farine @farine sur eux : un énorme [nuage]", "Une simple @feu dedans"], "Énorme BOUM, et les nuages voisins explosent en chaîne.", "Si c'est près de toi, tu le prends aussi.", "Claude"],
+    ["Le barbecue", "essai", ["Boire @eau @eau : [bouclier d'eau]", "Les laisser venir te coller", "@feu @feu @feu sur toi-même"], "Les colonnes de feu les brûlent ; toi, rien.", "Sans bouclier, tu prends tous les dégâts.", "Romain"],
+    ["L'appât", "essai", ["@farine @fleur @fleur : un [gâteau]", "Ils s'arrêtent tous pour le grignoter", "@feu @feu @farine dessus, loin de toi"], "GROS BOUM sur tout le groupe.", "Le rapide ne s'arrête pas pour manger.", "Claude"],
+    ["CRAC !", "essai", ["@feu sur un automate : il devient [brûlant]", "@eau sur lui"], "L'armure chaude se fend : gros dégâts, et il est sonné.", "Un deuxième feu l'aurait soigné.", "Romain"],
+    ["Les brûlants qui explosent", "essai", ["@feu @feu @feu sur un groupe : tous [brûlants]", "@farine sur eux"], "La farine prend feu sur chacun : BOUM en série.", "", "Claude"],
+    ["Le boulet de canon", "decide", ["@acide @fleur derrière un automate : du [savon]", "@feu @farine sur lui"], "Projeté, il file sur la mousse jusqu'au bout et s'écrase sur Grosbec : dégâts même s'il est protégé.", "Il faut viser l'alignement avec Grosbec.", "Romain"],
+    ["Le billard", "decide", ["Un BOUM projette un automate", "Il percute un 2e, qui percute un 3e"], "Chacun est étourdi.", "", "Romain"],
+    ["La patinoire", "decide", ["@acide @fleur sur leur chemin : du [savon]", "@feu sur le sol plus loin : un [sol en feu]", "@eau @eau : une vague"], "Ils glissent tous dans le feu sans pouvoir tourner.", "Toi aussi tu glisses si tu marches sur ton savon.", "Romain"],
+    ["La flaque géante électrique", "decide", ["Plusieurs @eau qui se touchent : une grande [flaque]", "Une goutte d'@acide dedans"], "Tous les automates dans l'eau sont électrocutés d'un coup. Si la flaque touche Grosbec, lui aussi.", "Si tu es dans la flaque, toi aussi.", "Romain"],
+    ["Les lianes puis le BOUM", "decide", ["@eau @fleur : des [lianes] qui les attrapent", "@feu @farine sur eux"], "Attrapés, ils ne peuvent pas fuir l'explosion.", "", "Claude"],
+    ["La massue de lianes", "decide", ["@eau @fleur : des [lianes] qui attrapent un automate", "@feu sur les lianes"], "Les lianes grillent et se tordent : l'automate attrapé devient une massue qui assomme tout le monde autour, puis il est lâché et projeté.", "Si les lianes sont près de toi, la massue te tape aussi.", "Romain"],
+    ["Atchoum", "decide", ["@fleur sur le sol : des [fleurs]", "@feu dessus : du [pollen]"], "Ils éternuent dans tous les sens et se rentrent dedans. Un peu de feu en plus : BOUM, le pollen explose.", "", "Claude"],
+    ["Le lance-pierre", "propose", ["@eau @fleur : une [liane] retient un automate qui tire pour avancer", "Une goutte d'@acide coupe la liane"], "Il part comme un élastique en arrière, droit sur Grosbec ou sur ses copains.", "", "Claude"],
+    ["Les bulles de savon", "propose", ["@acide @fleur : du [savon]", "@eau dessus : des [bulles géantes]", "Elles emprisonnent les automates et les font flotter", "@feu ou @acide pour les éclater au bon moment"], "Ils tombent sur la tête des autres, ou sur Grosbec.", "", "Claude"],
+    ["Les statues de terre cuite", "propose", ["@eau @farine : ils sont collés dans la [boue]", "@feu dessus : la boue cuit"], "Ils deviennent des statues immobiles qui bloquent le passage des autres. Un coup fort (un BOUM, un automate projeté) : elles volent en éclats.", "", "Claude"],
+    ["Le pop-corn", "propose", ["@farine @acide : un [volcan] de mousse", "@feu dessus"], "Ça éclate comme du maïs : les automates rebondissent partout en se cognant.", "", "Claude"],
+    ["L'automate électrique", "propose", ["Un automate prend la décharge dans une [flaque électrique]", "Il garde des étincelles 3 secondes"], "Tout ce qu'il touche est électrocuté à son tour. Avec le billard ou la massue de lianes : des chaînes d'éclairs.", "", "Claude"],
+    ["Le tonneau-bowling", "decide", ["Les [tonneaux de farine] du meunier sont sur la place", "@eau @eau : une vague pousse un tonneau", "@feu sur le tonneau qui roule"], "Il roule et renverse les automates, puis devient une bombe roulante.", "S'il roule vers toi…", "Claude"],
+    ["La fontaine électrique", "decide", ["Une goutte d'@acide dans la [fontaine]"], "Elle crépite un bon moment : tout automate qui passe à côté prend une décharge.", "Toi aussi, si tu t'en approches.", "Claude"],
+    ["La fontaine de boue", "decide", ["@farine dans la [fontaine]"], "Elle crache de la boue tout autour : tout le monde est collé.", "", "Claude"],
+    ["La charrette folle", "decide", ["@acide @fleur sous la [charrette] : du savon", "@eau @eau : une vague la pousse"], "Elle file et écrase tout sur son passage.", "", "Claude"],
+    ["Le cracheur fait le travail", "decide", ["@farine entre le [cracheur] et ses copains : un nuage", "Il te tire dessus : son feu traverse le nuage"], "BOUM sur ses propres amis.", "Si le nuage est près de toi, tu le prends aussi.", "Claude"],
+    ["Le souffleur éternue tout le monde", "decide", ["@feu sur des fleurs : du [pollen]", "Le [souffleur] souffle dedans"], "Le pollen part sur toute la bande : tout le monde éternue et se rentre dedans.", "", "Claude"],
+    ["Le bouclier miroir", "decide", ["Bois @feu @feu @feu : ton [rayon de feu]", "Vise de biais le bouclier d'un automate"], "Le rayon rebondit sur les autres, ou sur Grosbec. Du billard avec un rayon.", "Mal visé, il revient vers toi. (L'acide, lui, ronge le bouclier au lieu de rebondir.)", "Claude"],
+    ["La mèche sur pattes", "decide", ["@farine sur un automate : il est [enfariné]", "Une petite @feu sur lui : la mèche s'allume"], "Il panique, court dans tous les sens pendant 3 secondes, puis explose au milieu de ses copains.", "S'il court vers toi…", "Claude"],
+    ["Les siamois", "decide", ["@eau @farine @farine (pâte épaisse) sur deux automates côte à côte : [collés ensemble]", "@feu @farine sur eux"], "Ils marchent de travers en se tirant l'un l'autre ; projetés ensemble, ils percutent pour deux.", "", "Claude"],
+    ["Le tourbillon", "decide", ["@acide @fleur autour de toi : du [savon]", "@eau @eau @eau : le raz-de-marée"], "Tout le monde tourne en rond sur le savon, puis est éjecté dans tous les sens.", "", "Claude"],
+    ["Le trampoline", "decide", ["@farine @acide : un [volcan] de mousse", "Un automate tombe dedans (bulle éclatée, projection)"], "Il rebondit très haut et retombe ailleurs, sur la tête de quelqu'un.", "", "Claude"],
+    ["Le bain moussant", "decide", ["@acide @fleur : du [savon]", "@farine @acide dessus : la mousse du volcan"], "Une mousse géante : les automates ressortent tout propres (couches parties, bouclier glissé)… et glissent dans tous les sens.", "", "Claude"],
+    ["Le coup raté (à éviter)", "essai", ["@feu @eau : vapeur, ils sont [mouillés]", "@feu @farine sur les mêmes"], "Pschitt : le BOUM ne fait presque rien sur des mouillés. Il fallait faire le BOUM d'abord.", "", "Claude"]
+  ];
+  var filtre = null;
+  var zf = $("filtres");
+  zf.innerHTML = '<button type="button" class="chip" data-f="" aria-pressed="true">Tous (' + COMBOS.length + ')</button>' +
+    Object.keys(ETATS).map(function (k) { var n = COMBOS.filter(function (c) { return c[1] === k; }).length; return '<button type="button" class="chip" data-f="' + k + '" aria-pressed="false">' + ETATS[k][0] + ' (' + n + ')</button>'; }).join("");
+  zf.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-f]"); if (!b) return;
+    filtre = b.dataset.f || null;
+    zf.querySelectorAll("[data-f]").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+    cartes();
+  });
+  function cartes() {
+    $("cartes").innerHTML = COMBOS.filter(function (c) { return !filtre || c[1] === filtre; }).map(function (c) {
+      return '<article class="combo"><div class="combo-tete"><h3>' + c[0] + '</h3>' + etat(c[1]) + '</div>' +
+        '<ol class="etapes">' + c[2].map(function (e) { return '<li><span>' + txt(e) + '</span></li>'; }).join("") + '</ol>' +
+        '<p class="effet">→ ' + c[3] + '</p>' + (c[4] ? '<p class="risque">Attention : ' + c[4] + '</p>' : '') +
+        '<span class="qui">Idée de ' + c[5] + '</span></article>';
+    }).join("");
+  }
+  cartes();
+
+  var BOIRE = [
+    etat("essai") + " " + mini("feu") + " bu : <b>un long cône de flammes</b> jusqu'au fond de la place ; tu perds 8.",
+    etat("essai") + " " + mini("feu") + mini("feu") + " bu : <b>un cône énorme</b> ; tu perds 16.",
+    etat("essai") + " " + mini("feu") + mini("feu") + mini("feu") + " bu : <b>tu craches un rayon de feu</b> que tu promènes 3 secondes ; tu perds un tiers de ta vie.",
+    etat("essai") + " " + mini("feu") + mini("farine") + " bu : <b>tu exploses avec eux</b>, plus fort qu'un BOUM lancé.",
+    etat("essai") + " " + mini("feu") + mini("feu") + mini("feu") + " lancé près de toi : <b>tu prends tous les dégâts</b>, sauf avec un bouclier d'eau.",
+    etat("essai") + " " + mini("acide") + mini("acide") + mini("acide") + " bu : tu perds 45. Un piège.",
+    etat("essai") + " " + mini("fleur") + " : la tisane soigne de moins en moins si on en boit d'affilée ; à la 4e, <b>mal au ventre</b>."
+  ];
+  $("boire").innerHTML = BOIRE.map(function (x) { return "<li>" + x + "</li>"; }).join("");
+
+  var GROSBEC = [
+    etat("essai") + " <b>Protégé tant qu'il a des automates</b> ; sa lanterne s'ouvre 5 secondes après chaque vague. Il a ses couches lui aussi.",
+    etat("essai") + " <b>Lavage</b> : enlève la boue, les couches et l'aveuglement de ses automates.",
+    etat("essai") + " <b>Séchage</b> : toutes tes flaques et ta boue disparaissent.",
+    etat("essai") + " <b>Potion de feu sur toi</b> (un cercle qui clignote avant). Le bouclier d'eau te protège.",
+    etat("propose") + " <b>Savon sous ses automates</b> : ils arrivent sur toi en glissant très vite.",
+    etat("propose") + " <b>Il électrifie la flaque où tu te tiens.</b>"
+  ];
+  $("grosbec").innerHTML = GROSBEC.map(function (x) { return "<li>" + x + "</li>"; }).join("");
+
+  var AUTOS = [
+    "<b>Le rapide</b> : fonce, fragile, <b>saute par-dessus les flaques</b> (eau, boue, acide, savon).",
+    "<b>Le bouclier</b> : ta fiole <b>rebondit</b> sur lui. Ce qui reste au sol le touche, et l'acide ronge son bouclier.",
+    "<b>Le lourd</b> : <b>ne recule jamais</b>, tape fort. La boue le colle.",
+    "<b>Le cracheur</b> (pas encore dans l'essai) : tire du feu de loin, sèche tes flaques, fait exploser ta farine… près de toi, ou près de ses copains si tu t'y prends bien.",
+    "<b>Le souffleur</b> (pas encore dans l'essai) : <b>chasse les nuages</b> (farine, vapeur, pollen), parfois vers toi, parfois sur ses copains."
+  ];
+  $("autos").innerHTML = AUTOS.map(function (x) { return "<li>" + x + "</li>"; }).join("");
+
+  var DECIDER = [
+    "<b>Étourdi après une collision</b> : 5 secondes (mon avis) ou 10 (ta première idée).",
+    "<b>Les combos « proposés »</b> : lesquels garder (lance-pierre, bulles, terre cuite, pop-corn, automate électrique).",
+    "<b>Lesquels mettre dans la version 3 de l'essai</b> : 5 ou 6 des meilleurs, pour tester d'abord si la physique est amusante ; le reste ensuite.",
+    "<b>Les fleurs soignent tout le monde</b>, automates compris : on garde ce risque ?",
+    "<b>Le grimoire des 55 mélanges</b> à mettre à jour avec les 5 nouvelles réactions.",
+    "<b>Où a lieu le combat</b> : sûrement en ville, pas dans le labo de Grosbec.",
+    "<b>La vue</b> : décidée (comme Clash Royale, caméra haute, sans perspective), avec les potions en rangée pour l'index gauche et le joystick à droite."
+  ];
+  $("decider").innerHTML = DECIDER.map(function (x) { return "<li>" + x + "</li>"; }).join("");
+})();
+</script>

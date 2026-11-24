@@ -1,0 +1,541 @@
+<title>Les Automates de Grosbec</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Alegreya+Sans:wght@400;500;700;800&display=swap">
+<style>
+/* Un seul look sombre : la salle sous la mairie. L'armure au fond de l'arène, les automates descendent vers l'Alchimiste, le chaudron en dessous. */
+:root {
+  --bg: #12171A; --surface: #1B2326; --surface-2: #232E31; --ink: #E8ECEA; --muted: #9AA7A3; --line: #33413F;
+  --sol: #1A1F1E; --sol-2: #20272A;
+  --jaune: #F2C230; --jaune-ombre: #A5831B; --mal: #F0806A; --bon: #8BD46A; --soin: #EE86B6;
+  --f-titre: "IM Fell English SC", "Iowan Old Style", Palatino, Georgia, serif;
+  --f-texte: "Alegreya Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-texte); font-size: 16px; line-height: 1.4;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 10px 22px;
+}
+button { font: inherit; color: inherit; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid var(--jaune); outline-offset: 2px; }
+svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+.jeu { max-width: 560px; margin: 0 auto; display: grid; gap: 8px; }
+.barre-haut { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.barre-haut h1 { font-family: var(--f-titre); font-weight: 400; font-size: 1.4rem; margin: 0; }
+.petits { display: flex; gap: 8px; }
+.petit { border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 3px 11px; font-size: .86rem; cursor: pointer; }
+
+/* L'arène */
+.arene { position: relative; height: clamp(300px, 50vh, 480px); border-radius: 14px; border: 1px solid var(--line); overflow: hidden;
+  background:
+    linear-gradient(90deg, transparent 33.2%, rgba(255,255,255,.035) 33.3%, rgba(255,255,255,.035) 33.6%, transparent 33.7%, transparent 66.4%, rgba(255,255,255,.035) 66.5%, rgba(255,255,255,.035) 66.8%, transparent 66.9%),
+    repeating-linear-gradient(0deg, var(--sol) 0 38px, var(--sol-2) 38px 40px);
+}
+.cible { position: absolute; background: none; border: 0; padding: 0; cursor: pointer; display: grid; justify-items: center; gap: 2px; }
+.armure { top: 1%; left: 50%; transform: translateX(-50%); width: 140px; z-index: 2; }
+.armure svg { width: 62px; height: auto; overflow: visible; }
+.armure.touche svg, .auto.touche .corps { animation: touche .3s ease-out; }
+@keyframes touche { 0% { filter: brightness(2.6) } 100% { filter: none } }
+.mini-pv { width: 64px; height: 6px; background: #0B0F11; border-radius: 3px; overflow: hidden; display: block; }
+.mini-pv > span { display: block; height: 100%; background: #E5572A; width: 100%; }
+.armure .mini-pv { width: 110px; height: 8px; }
+.etat-a { font-size: .75rem; font-weight: 800; min-height: 1.1em; color: #F07A45; white-space: nowrap; }
+.charge-a { width: 110px; height: 5px; background: #0B0F11; border-radius: 3px; overflow: hidden; display: block; visibility: hidden; }
+.charge-a > span { display: block; height: 100%; width: 0; background: #F07A45; }
+.armure.prepare .charge-a { visibility: visible; }
+.armure.prepare svg { animation: tremble .12s linear infinite; }
+@keyframes tremble { 50% { transform: translateX(2px) } }
+
+.jet { position: absolute; left: 50%; top: 21%; bottom: 17%; width: 38px; transform: translateX(-50%); border-radius: 19px; pointer-events: none; opacity: 0; z-index: 1; }
+.jet.prepare { opacity: 1; border: 2px dashed rgba(240,122,69,.7); animation: clignote .35s linear infinite; }
+.jet.feu { opacity: 1; background: linear-gradient(180deg, #FFE08A, #F07A45 40%, #C8453A); box-shadow: 0 0 24px #F07A45; animation: flamme .12s linear infinite alternate; }
+@keyframes clignote { 50% { opacity: .35 } }
+@keyframes flamme { from { width: 34px } to { width: 44px } }
+
+.auto { transform: translate(-50%, -50%); z-index: 3; }
+.auto .corps { width: var(--t); height: var(--t); border-radius: 30%; background: var(--c); color: #fff; display: grid; place-items: center; border: 3px solid color-mix(in srgb, var(--c) 55%, #000); box-shadow: 0 3px 0 rgba(0,0,0,.35); position: relative; }
+.auto .corps svg.ico { width: 56%; height: 56%; stroke-width: 2.2; }
+.auto.bouclier.intact .corps { box-shadow: 0 0 0 4px #4FA3F0, 0 3px 0 rgba(0,0,0,.35); }
+.auto.mouille .corps { outline: 3px dotted #4FA3F0; outline-offset: 3px; }
+.auto.colle .corps { background: #6B4A2E; }
+.auto .mini-pv { width: calc(var(--t) - 4px); }
+.auto .tag { font-size: .66rem; font-weight: 800; line-height: 1; min-height: .7rem; color: #FFD9A0; white-space: nowrap; }
+
+.moi { bottom: 1.5%; left: 50%; transform: translateX(-50%); z-index: 2; }
+.moi .rond-moi { width: 54px; height: 54px; border-radius: 50%; background: #3D2F5C; border: 3px solid #7C6BEB; display: grid; place-items: center; color: #E4DEFF; transition: box-shadow .2s; }
+.moi .rond-moi svg.ico { width: 30px; height: 30px; }
+.moi .lab { font-size: .72rem; font-weight: 800; color: var(--muted); }
+.moi.eau .rond-moi { box-shadow: 0 0 0 5px #2E86D6; }
+.moi.feu-s .rond-moi { box-shadow: 0 0 0 5px #E5572A; }
+.moi.eau.feu-s .rond-moi { box-shadow: 0 0 0 4px #2E86D6, 0 0 0 9px #E5572A; }
+.moi.nuage .rond-moi { outline: 10px solid rgba(217,201,164,.45); }
+.moi.brule .rond-moi { animation: brule .25s linear infinite alternate; }
+@keyframes brule { to { background: #7A2E22; } }
+
+.flot { position: absolute; transform: translate(-50%, -50%); font-weight: 800; font-size: 1.2rem; pointer-events: none; text-shadow: 0 2px 4px #000; animation: monte .95s ease-out forwards; white-space: nowrap; z-index: 5; }
+.flot.degat { color: #FFD25A; } .flot.mal { color: var(--mal); } .flot.soin { color: var(--soin); } .flot.bon { color: var(--bon); } .flot.rate { color: #B8C0BE; }
+@keyframes monte { to { transform: translate(-50%, calc(-50% - 40px)); opacity: 0 } }
+
+.message { min-height: 2.6em; display: grid; place-items: center; text-align: center; font-weight: 700; font-size: .95rem; padding: 0 6px; }
+.message.mal { color: var(--mal); } .message.bon { color: var(--bon); }
+
+/* L'Alchimiste et son chaudron */
+.carte { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px 12px; }
+.nom { font-family: var(--f-titre); font-size: 1.1rem; line-height: 1.1; }
+.joueur-haut { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; }
+.barre { height: 16px; background: #0B0F11; border-radius: 8px; overflow: hidden; position: relative; }
+.barre > span { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #2F8A4A, #6CC655); }
+.barre > b { position: absolute; right: 7px; top: 0; font-size: .74rem; line-height: 16px; font-variant-numeric: tabular-nums; text-shadow: 0 1px 2px #000; }
+.puces { display: flex; flex-wrap: wrap; gap: 5px; min-height: 22px; margin-top: 6px; }
+.puce { font-size: .76rem; font-weight: 700; border-radius: 6px; padding: 1px 7px; background: color-mix(in srgb, var(--pc) 22%, transparent); border: 1px solid color-mix(in srgb, var(--pc) 55%, transparent); color: var(--pc); }
+.chaudron-ligne { display: flex; gap: 8px; align-items: center; justify-content: center; margin: 6px 0 2px; }
+.slots { display: flex; gap: 7px; padding: 6px 10px; background: #0B0F11; border-radius: 999px; border: 2px solid #3A4448; }
+.slot { width: 44px; height: 44px; border-radius: 50%; border: 2px dashed rgba(255,255,255,.22); background: transparent; display: grid; place-items: center; padding: 0; cursor: pointer; color: #fff; }
+.slot.plein { background: var(--c); border: 3px solid rgba(255,255,255,.85); }
+.slot svg.ico { width: 24px; height: 24px; }
+.slot.farine svg.ico, .ing.farine .rond { color: #4A3D24; }
+.vider { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface-2); cursor: pointer; padding: 0; }
+.apercu { text-align: center; color: var(--muted); min-height: 1.4em; font-size: .9rem; margin-bottom: 6px; }
+.apercu b { color: var(--ink); }
+.ings { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.ing { background: none; border: 0; padding: 0; display: grid; justify-items: center; gap: 2px; cursor: pointer; }
+.ing .rond { width: min(56px, 100%); aspect-ratio: 1; max-width: 100%; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; border: 3px solid color-mix(in srgb, var(--c) 65%, #000); box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 50%, #000); }
+.ing:active .rond { transform: translateY(2px); box-shadow: 0 1px 0 color-mix(in srgb, var(--c) 50%, #000); }
+.ing:disabled { opacity: .45; }
+.ing .rond svg.ico { width: 55%; height: 55%; }
+.ing .n { font-size: .78rem; font-weight: 700; }
+.touche { display: none; font-size: .7rem; color: var(--muted); }
+@media (hover: hover) and (pointer: fine) { .touche { display: inline; } }
+
+/* Règles et fin */
+.voile { position: fixed; inset: 0; z-index: 20; background: rgba(8,11,12,.9); overflow: auto; display: grid; place-items: center;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.boite { width: 100%; max-width: 520px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: grid; gap: 10px; }
+.boite h2 { font-family: var(--f-titre); font-weight: 400; font-size: 1.8rem; margin: 0; line-height: 1.05; }
+.boite h3 { font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 6px 0 0; }
+.boite p { margin: 0; }
+.regle { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 10px; align-items: center; font-size: .95rem; }
+.regle .pic { width: 40px; height: 40px; border-radius: 30%; background: var(--c, var(--surface-2)); color: #fff; display: grid; place-items: center; border: 2px solid color-mix(in srgb, var(--c, #555) 55%, #000); }
+.regle .pic svg.ico { width: 24px; height: 24px; stroke-width: 2.2; }
+.regle .pic.rond { border-radius: 50%; }
+.regle b { color: var(--ink); }
+.go { justify-self: center; background: var(--jaune); color: #111; border: 0; border-radius: 14px; font-weight: 800; font-size: 1.2rem; padding: 12px 30px; box-shadow: 0 4px 0 var(--jaune-ombre); cursor: pointer; margin-top: 4px; }
+.go:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--jaune-ombre); }
+.stats { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) {
+  .armure.prepare svg, .jet.prepare, .jet.feu, .moi.brule .rond-moi { animation: none; }
+  .flot { animation-duration: .6s; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-feu" viewBox="0 0 24 24"><path d="M12 21c-3.9 0-6.5-2.6-6.5-6.1 0-3.4 2.6-5.3 3.6-8.4 1.6 1.3 2.3 3 2.4 4.6 1.2-.9 1.9-2.4 2-4.1 2.6 2 5 5 5 8 0 3.5-2.6 6-6.5 6z"/></symbol>
+    <symbol id="i-eau" viewBox="0 0 24 24"><path d="M12 3.2c3.4 4.3 6 7.6 6 11.1A6 6 0 0 1 6 14.3c0-3.5 2.6-6.8 6-11.1z"/><path d="M9.3 14.6a2.8 2.8 0 0 0 2.6 2.8"/></symbol>
+    <symbol id="i-farine" viewBox="0 0 24 24"><path d="M3.5 19.5c1.5-5.2 4.6-8.5 8.5-8.5s7 3.3 8.5 8.5z"/><path d="M8.5 8.5h.01M12 6h.01M15.5 8.5h.01M10 3.8h.01M14 3.8h.01"/></symbol>
+    <symbol id="i-acide" viewBox="0 0 24 24"><path d="M9.5 3.5h5M10.3 3.5v5.2L5.6 17.3A2.2 2.2 0 0 0 7.5 20.5h9a2.2 2.2 0 0 0 1.9-3.2l-4.7-8.6V3.5"/><path d="M8 15.5h8"/></symbol>
+    <symbol id="i-fleur" viewBox="0 0 24 24"><circle cx="12" cy="10" r="2.2"/><path d="M12 7.8c-1.4-2.6-.3-4.6 0-4.8.3.2 1.4 2.2 0 4.8zM14.1 9.3c2.3-1.8 4.6-1.2 4.8-.9-.1.3-1.9 1.9-4.8.9zM13.3 12c1.7 2.4 1 4.5.7 4.7-.3-.1-1.7-1.9-.7-4.7zM10.7 12c-1 2.8-2.4 4.6-2.7 4.7-.3-.2-1-2.3.7-4.7zM9.9 9.3c-2.9 1-4.7-.6-4.8-.9.2-.3 2.5-.9 4.8.9z"/><path d="M12 16.5v4.5"/></symbol>
+    <symbol id="e-rapide" viewBox="0 0 24 24"><path d="M13 2 5 13h6l-1 9 8-11h-6z"/></symbol>
+    <symbol id="e-bouclier" viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 3 8 7 9.5 4-1.5 7-5 7-9.5V6z"/></symbol>
+    <symbol id="e-lourd" viewBox="0 0 24 24"><rect x="3" y="4" width="13" height="7" rx="1.5"/><path d="M9.5 11v10M16 7.5h4"/></symbol>
+    <symbol id="e-cracheur" viewBox="0 0 24 24"><path d="M3 9h9l7-4v14l-7-4H3z"/><path d="M6 15v4"/></symbol>
+    <symbol id="i-moi" viewBox="0 0 24 24"><path d="M9.5 3h5M10.3 3v5.5L5.6 16.8A2.4 2.4 0 0 0 7.7 20.5h8.6a2.4 2.4 0 0 0 2.1-3.7L13.7 8.5V3"/><path d="M7.5 14.5c2-1 4-1 9 0"/></symbol>
+    <symbol id="i-armure" viewBox="0 0 24 24"><path d="M7 5.5Q12 1.5 17 5.5L17.5 12Q12 14 6.5 12Z"/><path d="M9 8h6M11 11l1 2.5 1-2.5"/><path d="M5 15Q12 12 19 15l1 6H4z"/></symbol>
+  </defs>
+</svg>
+
+<div class="jeu">
+  <div class="barre-haut">
+    <h1>Les Automates de Grosbec</h1>
+    <div class="petits">
+      <button type="button" class="petit" id="btn-regles">Règles</button>
+      <button type="button" class="petit" id="btn-recommencer">Recommencer</button>
+    </div>
+  </div>
+
+  <div class="arene" id="arene">
+    <div class="jet" id="jet"></div>
+    <button type="button" class="cible armure" id="armure" aria-label="Lancer sur l'armure de Grosbec">
+      <svg viewBox="0 0 100 112" aria-hidden="true">
+        <g stroke="#1E2427" stroke-width="3" stroke-linejoin="round">
+          <circle cx="15" cy="66" r="12" fill="#6A7478"/><circle cx="85" cy="66" r="12" fill="#6A7478"/>
+          <path d="M20 60 Q50 46 80 60 L86 102 Q50 112 14 102 Z" fill="#59646A"/>
+          <path d="M29 20 Q50 3 71 20 L73 49 Q50 58 27 49 Z" fill="#6E797E"/>
+        </g>
+        <rect x="33" y="28" width="34" height="8" rx="4" fill="#0C0806"/>
+        <circle id="oeil-g" cx="42" cy="32" r="2.6" fill="#E8A23A"/><circle id="oeil-d" cx="58" cy="32" r="2.6" fill="#E8A23A"/>
+        <path d="M44 40 L50 53 L56 40 Z" fill="#B0923F" stroke="#1E2427" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="50" cy="82" r="8" fill="#F2C86A" stroke="#1E2427" stroke-width="2.5"/>
+      </svg>
+      <span class="mini-pv"><span id="pv-a"></span></span>
+      <span class="etat-a" id="etat-a"></span>
+      <span class="charge-a"><span id="charge-a"></span></span>
+    </button>
+    <div id="autos"></div>
+    <button type="button" class="cible moi" id="moi" aria-label="Lancer sur moi">
+      <span class="rond-moi"><svg class="ico" aria-hidden="true"><use href="#i-moi"/></svg></span>
+      <span class="lab">MOI</span>
+    </button>
+  </div>
+
+  <div class="message" id="message" aria-live="polite"></div>
+
+  <section class="carte" aria-label="L'Alchimiste">
+    <div class="joueur-haut">
+      <div class="nom">L'Alchimiste</div>
+      <div class="barre"><span id="pv-j"></span><b id="pv-j-t"></b></div>
+    </div>
+    <div class="puces" id="puces-j"></div>
+    <div class="chaudron-ligne">
+      <div class="slots" id="slots"></div>
+      <button type="button" class="vider" id="vider" aria-label="Vider le chaudron">✕</button>
+    </div>
+    <div class="apercu" id="apercu"></div>
+    <div class="ings" id="ings"></div>
+  </section>
+</div>
+
+<div class="voile" id="regles">
+  <div class="boite">
+    <h2>Les Automates de Grosbec</h2>
+    <p>L'armure lâche ses automates : ils marchent vers toi. Casse-les, et abats l'armure !</p>
+    <div class="regle"><span class="pic rond" style="--c:#7C6BEB"><svg class="ico"><use href="#i-moi"/></svg></span><p><b>Pour lancer :</b> mets 1 à 3 ingrédients dans le chaudron, puis <b>touche ta cible</b>. Touche-toi (MOI) pour lancer sur toi.</p></div>
+    <h3>Les automates</h3>
+    <div class="regle"><span class="pic" style="--c:#3FB6C9"><svg class="ico"><use href="#e-rapide"/></svg></span><p><b>Le rapide</b> fonce, mais il est fragile : un peu de feu suffit.</p></div>
+    <div class="regle"><span class="pic" style="--c:#7E8D96;box-shadow:0 0 0 3px #4FA3F0"><svg class="ico"><use href="#e-bouclier"/></svg></span><p><b>Le bouclier</b> : tout rebondit, sauf l'acide. Ronge d'abord son bouclier.</p></div>
+    <div class="regle"><span class="pic" style="--c:#8B5E3C"><svg class="ico"><use href="#e-lourd"/></svg></span><p><b>Le lourd</b> est lent mais tape très fort. La boue (eau + farine) le colle sur place.</p></div>
+    <div class="regle"><span class="pic" style="--c:#C8453A"><svg class="ico"><use href="#e-cracheur"/></svg></span><p><b>Le cracheur</b> reste loin et crache du feu. De l'eau sur toi te protège.</p></div>
+    <div class="regle"><span class="pic" style="--c:#59646A"><svg class="ico"><use href="#i-armure"/></svg></span><p><b>L'armure</b> prépare parfois un jet de flammes : de l'eau sur elle l'éteint.</p></div>
+    <h3>Sur toi</h3>
+    <div class="regle"><span class="pic rond" style="--c:#7C6BEB"><svg class="ico"><use href="#i-fleur"/></svg></span><p>Fleur : tu te soignes (moins bien si tu en prends trop d'affilée). Eau : bouclier d'eau. Farine : nuage, ils te ratent… mais gare au feu ! Feu : bouclier de feu, tu te brûles un peu. Acide : aïe.</p></div>
+    <p class="stats"><span class="touche">Au clavier : touches 1 à 5 pour les ingrédients, Retour arrière pour vider.</span></p>
+    <button type="button" class="go" id="btn-go">Commencer</button>
+  </div>
+</div>
+
+<div class="voile" id="fin" hidden>
+  <div class="boite" style="text-align:center">
+    <h2 id="fin-titre"></h2>
+    <p id="fin-texte"></p>
+    <p class="stats" id="fin-stats"></p>
+    <button type="button" class="go" id="btn-rejouer">Rejouer</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var PV_J = 100, PV_A = 220, Y0 = 26, YH = 72;
+  var ING = [
+    { id: "feu", nom: "Feu", hex: "#E5572A" }, { id: "eau", nom: "Eau", hex: "#2E86D6" },
+    { id: "farine", nom: "Farine", hex: "#D9C9A4" }, { id: "acide", nom: "Acide", hex: "#5DB338" },
+    { id: "fleur", nom: "Fleur bleue", hex: "#7C6BEB" }
+  ];
+  var IDX = {}; ING.forEach(function (g, i) { IDX[g.id] = i; });
+  // Les noms des 55 mélanges (les effets sont calculés à partir des ingrédients)
+  var NOMS = {
+    "feu": "Flammèche", "eau": "Jet d'eau", "farine": "Nuage de farine", "acide": "Goutte d'acide", "fleur": "Tisane",
+    "feu feu": "Boule de feu", "eau eau": "Vague", "farine farine": "Gros nuage", "acide acide": "Acide fort", "fleur fleur": "Infusion",
+    "feu eau": "Vapeur brûlante", "feu farine": "BOUM !", "feu acide": "Fumée verte", "feu fleur": "Thé brûlant", "eau farine": "Pâte collante",
+    "eau acide": "Pluie acide", "eau fleur": "Rosée", "farine acide": "Poudre qui pique", "farine fleur": "Crêpe aux fleurs", "acide fleur": "Pschitt !",
+    "feu feu feu": "Colonne de feu", "eau eau eau": "Raz-de-marée", "farine farine farine": "Tempête de farine", "acide acide acide": "Bain d'acide", "fleur fleur fleur": "Grand remède",
+    "feu feu eau": "Geyser", "feu feu farine": "GROS BOUM", "feu feu acide": "Feu vert", "feu feu fleur": "Bouquet de flammes", "feu eau eau": "Brouillard",
+    "eau eau farine": "Boue", "eau eau acide": "Marée acide", "eau eau fleur": "Source fraîche", "feu farine farine": "Feu d'artifice", "eau farine farine": "Mortier",
+    "farine farine acide": "Nuage qui ronge", "farine farine fleur": "Brioche magique", "feu acide acide": "Acide bouillant", "eau acide acide": "Acide dilué", "farine acide acide": "Pâte acide",
+    "acide acide fleur": "Pschitt ! (le retour)", "feu fleur fleur": "Tisane réconfortante", "eau fleur fleur": "Grande tisane", "farine fleur fleur": "Gâteau de fleurs", "acide fleur fleur": "Fleur qui résiste",
+    "feu eau farine": "Boum fumant", "feu eau acide": "Vapeur acide", "feu eau fleur": "Tisane parfaite", "feu farine acide": "Bombe verte", "feu farine fleur": "Pluie de pétales",
+    "feu acide fleur": "Fumée puante", "eau farine acide": "Ciment qui ronge", "eau farine fleur": "Pâte de soin", "eau acide fleur": "Remède amer", "farine acide fleur": "Poudre d'herbes"
+  };
+  function nomDe(r) { return NOMS[r.slice().sort(function (a, b) { return IDX[a] - IDX[b]; }).join(" ")]; }
+
+  var TYPES = {
+    rapide:   { nom: "Le rapide",   pv: 8,  v: 11, coup: 5,  cad: 1.2, t: 44, coul: "#3FB6C9", ico: "e-rapide" },
+    bouclier: { nom: "Le bouclier", pv: 26, v: 6,  coup: 8,  cad: 2,   t: 52, coul: "#7E8D96", ico: "e-bouclier" },
+    lourd:    { nom: "Le lourd",    pv: 50, v: 3.5, coup: 18, cad: 3,  t: 64, coul: "#8B5E3C", ico: "e-lourd" },
+    cracheur: { nom: "Le cracheur", pv: 18, v: 4,  coup: 6,  cad: 4.5, t: 48, coul: "#C8453A", ico: "e-cracheur", arret: 42 }
+  };
+
+  function $(id) { return document.getElementById(id); }
+  function ico(id) { return '<svg class="ico" aria-hidden="true"><use href="#' + (id.indexOf("-") > 0 ? id : "i-" + id) + '"/></svg>'; }
+  function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+  var arene = $("arene"), zAutos = $("autos"), elArmure = $("armure"), elMoi = $("moi");
+  var S = null, dernierT = 0, elems = {};
+
+  /* --- interface fixe --- */
+  $("ings").innerHTML = ING.map(function (g, i) {
+    return '<button type="button" class="ing ' + g.id + '" data-ing="' + g.id + '" style="--c:' + g.hex + '"><span class="rond">' + ico(g.id) + '</span><span class="n">' + g.nom + ' <span class="touche">' + (i + 1) + '</span></span></button>';
+  }).join("");
+
+  /* --- partie --- */
+  function nouvellePartie() {
+    zAutos.innerHTML = ""; elems = {};
+    S = { pvJ: PV_J, A: { pv: PV_A, spawnT: 1.5, jetT: 14, phase: "repos", phaseT: 0, msgEau: false },
+          E: [], nid: 0, slots: [], eauS: 0, nuage: 0, feuS: 0, brul: 0, soinT: -99, soinsSuite: 0,
+          enCours: true, pause: false, temps: 0, tues: 0, lances: 0 };
+    $("fin").hidden = true; $("regles").hidden = true; $("btn-go").textContent = "Reprendre";
+    dire("Les automates arrivent !", "");
+    dessinerSlots(); dessiner();
+    dernierT = performance.now(); requestAnimationFrame(tick);
+  }
+
+  function tick(now) {
+    if (!S || !S.enCours) return;
+    var dt = Math.min(0.1, Math.max(0, (now - dernierT) / 1000)); dernierT = now;
+    if (S.pause) { requestAnimationFrame(tick); return; }
+    S.temps += dt;
+    S.eauS = Math.max(0, S.eauS - dt); S.nuage = Math.max(0, S.nuage - dt); S.feuS = Math.max(0, S.feuS - dt);
+    if (S.brul > 0) { S.brul -= dt; S.pvJ -= 2 * dt; }
+
+    var A = S.A, rage = A.pv < PV_A * 0.4;
+    A.spawnT -= dt;
+    if (A.spawnT <= 0) { faireVenir(); A.spawnT = (4.5 + Math.random() * 2) * (rage ? 0.7 : 1); }
+    if (A.phase === "repos") { A.jetT -= dt; if (A.jetT <= 0) { A.phase = "charge"; A.phaseT = 4; dire("L'armure prépare son jet de flammes !", "mal"); } }
+    else if (A.phase === "charge") { A.phaseT -= dt; if (A.phaseT <= 0) { A.phase = "feu"; A.phaseT = 3; A.msgEau = false; } }
+    else if (A.phase === "feu") {
+      A.phaseT -= dt; feuSurMoi(7 * dt, true);
+      if (A.phaseT <= 0) { A.phase = "repos"; A.jetT = rage ? 9 : 13; }
+    }
+
+    S.E.forEach(function (e) {
+      if (e.mouille > 0) e.mouille -= dt;
+      if (e.stun > 0) { e.stun -= dt; return; }
+      var stop = e.T.arret || YH;
+      if (e.y < stop) e.y = Math.min(stop, e.y + e.T.v * dt);
+      else { e.cd -= dt; if (e.cd <= 0) { e.cd = e.T.cad; frapperMoi(e); } }
+    });
+    nettoyer();
+    dessiner();
+    if (S.A.pv <= 0) return fin(true);
+    if (S.pvJ <= 0) return fin(false);
+    requestAnimationFrame(tick);
+  }
+
+  function faireVenir() {
+    if (S.E.length >= 6) return;
+    var pool = S.temps < 18 ? ["rapide", "rapide", "bouclier"] : ["rapide", "rapide", "bouclier", "lourd", "cracheur"];
+    if (S.temps >= 18 && !S.vuLourd) { pool = ["lourd"]; S.vuLourd = true; }
+    else if (S.temps >= 26 && !S.vuCracheur) { pool = ["cracheur"]; S.vuCracheur = true; }
+    var t = pick(pool), T = TYPES[t];
+    S.E.push({ id: ++S.nid, t: t, T: T, pv: T.pv, x: pick([18, 50, 82]) + (Math.random() * 8 - 4), y: Y0, stun: 0, stunLab: "", mouille: 0, shield: t === "bouclier", cd: T.cad * 0.5 });
+  }
+
+  function nettoyer() {
+    S.E = S.E.filter(function (e) {
+      if (e.pv > 0) return true;
+      S.tues++; flotte(e.x, e.y, "Pouf !", "bon");
+      if (elems[e.id]) { elems[e.id].remove(); delete elems[e.id]; }
+      return false;
+    });
+  }
+
+  /* --- ce que les ennemis te font --- */
+  function frapperMoi(e) {
+    if (e.t === "cracheur") { flotte(e.x, e.y + 6, "pfff !", "mal"); feuSurMoi(e.T.coup, false, e.T.nom); return; }
+    if (S.nuage > 0) { flotte(50, 86, "Raté !", "bon"); return; }
+    S.pvJ -= e.T.coup; flotte(50, 86, "−" + e.T.coup, "mal");
+    dire(e.T.nom + " te frappe ! −" + e.T.coup, "mal");
+    if (S.feuS > 0) { e.pv -= 5; flotte(e.x, e.y, "−5", "degat"); }
+  }
+  function feuSurMoi(d, continu, qui) {
+    if (S.eauS > 0) {
+      if (!continu) flotte(50, 86, "Protégé !", "bon");
+      else if (!S.A.msgEau) { S.A.msgEau = true; dire("Ton bouclier d'eau arrête le jet de flammes !", "bon"); }
+      return;
+    }
+    if (S.nuage > 0) { S.nuage = 0; S.pvJ -= 15; flotte(50, 86, "BOUM −15", "mal"); dire("Le feu touche ton nuage de farine : BOUM !", "mal"); return; }
+    S.pvJ -= d;
+    if (!continu) { S.brul = 3; flotte(50, 86, "−" + d, "mal"); dire((qui || "Le feu") + " te brûle ! −" + d, "mal"); }
+  }
+
+  /* --- ce que tu lances --- */
+  function compter(r) { var c = { feu: 0, eau: 0, farine: 0, acide: 0, fleur: 0 }; r.forEach(function (id) { c[id]++; }); return c; }
+
+  function lancerSur(cible, e) {
+    if (!S || !S.enCours || S.pause) return;
+    if (!S.slots.length) { dire("Mets d'abord des ingrédients dans le chaudron.", ""); return; }
+    var r = S.slots.slice(); S.slots = []; dessinerSlots(); S.lances++;
+    var c = compter(r), parts = [nomDe(r)], ton = "";
+    var pos = cible === "moi" ? [50, 86] : cible === "armure" ? [50, 10] : [e.x, e.y];
+    if (c.acide && c.fleur) { flotte(pos[0], pos[1], "Pschitt", "rate"); dire(parts[0] + " : l'acide mange la fleur. Raté !", "mal"); return; }
+    if (cible === "moi") ton = surMoi(c, parts);
+    else if (cible === "armure") ton = surArmure(c, parts);
+    else {
+      var zone = r.length === 3 && (c.feu === 3 || c.eau === 3 || c.farine === 3 || c.acide === 3);
+      if (zone) { parts.push("sur tous les automates !"); S.E.slice().forEach(function (x) { surAuto(x, c, null, 0.6); }); ton = "bon"; }
+      else {
+        ton = surAuto(e, c, parts, 1);
+        if (c.feu && c.farine) S.E.forEach(function (x) { if (x !== e && Math.hypot(x.x - e.x, (x.y - e.y) * 0.8) < 22) surAuto(x, { feu: c.feu, eau: 0, farine: c.farine, acide: 0, fleur: 0 }, null, 0.5); });
+      }
+      nettoyer();
+    }
+    dire(parts.join(" · "), ton);
+    dessiner();
+  }
+
+  function surAuto(e, c, parts, k) {
+    var notes = [], dmg = 0, sh = e.shield, ton = "bon";
+    if (c.acide) { if (sh) { e.shield = false; sh = false; notes.push("bouclier rongé !"); } dmg += 5 * c.acide; }
+    if (sh) {
+      if (c.feu) dmg += 8 * c.feu * 0.2;
+      if (c.feu || c.eau || c.farine) { notes.push("ça rebondit sur le bouclier"); ton = "mal"; }
+    } else {
+      if (c.feu) {
+        var fd = 8 * c.feu;
+        if (c.farine) fd += 12 * Math.min(c.feu, c.farine);
+        if (e.mouille > 0) { fd *= 0.3; e.mouille = 0; notes.push("pschitt, il est mouillé"); ton = "mal"; }
+        dmg += fd;
+      }
+      if (c.eau) {
+        e.y = Math.max(Y0, e.y - 7 * c.eau); e.mouille = 6;
+        if (c.farine && !c.feu) { e.stun = 6; e.stunLab = "collé"; notes.push("boue : collé !"); }
+        else notes.push("mouillé, il recule");
+      } else if (c.farine && !c.feu) {
+        if (e.mouille > 0) { e.stun = 6; e.stunLab = "collé"; e.mouille = 0; notes.push("boue : collé !"); }
+        else { e.stun = Math.max(e.stun, 2 * c.farine); e.stunLab = "aveuglé"; notes.push("aveuglé"); }
+      }
+    }
+    if (c.fleur) { var h = 8 * c.fleur; e.pv = Math.min(e.T.pv, e.pv + h); flotte(e.x, e.y + 5, "+" + h, "soin"); notes.push("oups, tu l'as soigné !"); ton = "mal"; }
+    dmg = Math.round(dmg * k);
+    if (dmg > 0) { e.pv -= dmg; flotte(e.x, e.y, "−" + dmg, "degat"); secouer(elems[e.id]); if (e.pv <= 0) notes.push(e.T.nom.toLowerCase() + " est cassé !"); }
+    if (parts) Array.prototype.push.apply(parts, notes);
+    return ton;
+  }
+
+  function surArmure(c, parts) {
+    var A = S.A, dmg = 0, ton = "bon";
+    if (c.eau && (A.phase === "charge" || A.phase === "feu")) { A.phase = "repos"; A.jetT = 13; parts.push("jet de flammes éteint !"); }
+    if (c.feu) {
+      if (A.phase === "feu") { parts.push("elle crache du feu : elle absorbe le tien"); ton = "mal"; }
+      else { dmg += 8 * c.feu; if (c.farine) dmg += 12 * Math.min(c.feu, c.farine); }
+    }
+    dmg += 5 * c.acide + 2 * c.eau;
+    if (c.farine && !c.feu) {
+      if (A.phase === "charge") A.phaseT = Math.min(4, A.phaseT + 1.5 * c.farine); else if (A.phase === "repos") A.jetT += 2 * c.farine;
+      parts.push("aveuglée : son jet est retardé");
+    }
+    if (c.fleur) { var h = 10 * c.fleur; A.pv = Math.min(PV_A, A.pv + h); flotte(50, 14, "+" + h, "soin"); parts.push("oups, tu l'as soignée !"); ton = "mal"; }
+    if (dmg > 0) { A.pv -= dmg; flotte(50, 10, "−" + dmg, "degat"); secouer(elArmure); }
+    return ton;
+  }
+
+  function surMoi(c, parts) {
+    if (c.feu && c.farine) { S.pvJ -= 15; flotte(50, 86, "BOUM −15", "mal"); parts.push("tu t'es fait exploser !"); return "mal"; }
+    var ton = "bon";
+    if (c.fleur) {
+      S.soinsSuite = (S.temps - S.soinT < 6) ? S.soinsSuite + 1 : 0; S.soinT = S.temps;
+      var mult = [1, 0.5, 0.25, 0][Math.min(3, S.soinsSuite)];
+      if (mult === 0) { S.pvJ -= 5; flotte(50, 86, "−5", "mal"); parts.push("trop de tisane : mal au ventre !"); ton = "mal"; }
+      else { var h = Math.round(15 * c.fleur * mult); S.pvJ = Math.min(PV_J, S.pvJ + h); flotte(50, 86, "+" + h, "soin"); if (mult < 1) parts.push("ça marche moins bien, trop de tisane"); }
+    }
+    if (c.eau) { S.eauS = 6; S.brul = 0; parts.push("bouclier d'eau"); }
+    if (c.farine) { S.nuage = 5; parts.push("nuage : ils te ratent"); }
+    if (c.feu) { S.feuS = 6; S.pvJ -= 3 * c.feu; flotte(50, 80, "−" + 3 * c.feu, "mal"); parts.push("bouclier de feu (tu te brûles un peu)"); }
+    if (c.acide) { S.pvJ -= 6 * c.acide; flotte(50, 80, "−" + 6 * c.acide, "mal"); parts.push("aïe, tu te ronges !"); ton = "mal"; }
+    return ton;
+  }
+
+  function fin(gagne) {
+    S.enCours = false; dessiner();
+    $("fin-titre").textContent = gagne ? "Gagné !" : "Perdu…";
+    $("fin-texte").textContent = gagne ? "L'armure s'effondre, et ses automates avec elle." : "Les automates ont eu le dessus cette fois.";
+    $("fin-stats").textContent = "Temps : " + Math.round(S.temps) + " s · Automates cassés : " + S.tues + " · Mélanges lancés : " + S.lances;
+    $("fin").hidden = false; $("btn-rejouer").focus();
+  }
+
+  /* --- affichage --- */
+  function dire(txt, ton) { var el = $("message"); el.textContent = txt; el.className = "message " + (ton || ""); }
+  function flotte(x, y, txt, cls) {
+    var s = document.createElement("span"); s.className = "flot " + cls; s.textContent = txt;
+    s.style.left = x + "%"; s.style.top = y + "%"; arene.appendChild(s);
+    setTimeout(function () { s.remove(); }, 950);
+  }
+  function secouer(el) { if (!el) return; el.classList.remove("touche"); void el.getBoundingClientRect(); el.classList.add("touche"); }
+
+  function dessiner() {
+    var A = S.A;
+    $("pv-a").style.width = Math.max(0, A.pv / PV_A * 100) + "%";
+    var prep = A.phase === "charge", feu = A.phase === "feu";
+    elArmure.classList.toggle("prepare", prep);
+    $("etat-a").textContent = prep ? "Jet de flammes !" : feu ? "Elle crache du feu !" : (A.pv < PV_A * 0.4 ? "En rage" : "");
+    $("charge-a").style.width = prep ? ((1 - A.phaseT / 4) * 100) + "%" : "0";
+    $("jet").className = "jet" + (prep ? " prepare" : feu ? " feu" : "");
+    var oeil = prep || feu ? "#F07A45" : "#E8A23A"; $("oeil-g").setAttribute("fill", oeil); $("oeil-d").setAttribute("fill", oeil);
+
+    S.E.forEach(function (e) {
+      var el = elems[e.id];
+      if (!el) {
+        el = document.createElement("button"); el.type = "button"; el.className = "cible auto " + e.t; el.dataset.id = e.id;
+        el.setAttribute("aria-label", "Lancer sur " + e.T.nom.toLowerCase());
+        el.style.setProperty("--t", e.T.t + "px"); el.style.setProperty("--c", e.T.coul);
+        el.innerHTML = '<span class="corps">' + ico(e.T.ico) + '</span><span class="mini-pv"><span></span></span><span class="tag"></span>';
+        zAutos.appendChild(el); elems[e.id] = el;
+      }
+      el.style.left = e.x + "%"; el.style.top = e.y + "%";
+      el.classList.toggle("intact", e.shield);
+      el.classList.toggle("mouille", e.mouille > 0);
+      el.classList.toggle("colle", e.stun > 0 && e.stunLab === "collé");
+      el.querySelector(".mini-pv > span").style.width = Math.max(0, e.pv / e.T.pv * 100) + "%";
+      var tag = e.stun > 0 ? e.stunLab : e.mouille > 0 ? "mouillé" : "";
+      var t = el.querySelector(".tag"); if (t.textContent !== tag) t.textContent = tag;
+    });
+
+    $("pv-j").style.width = Math.max(0, S.pvJ / PV_J * 100) + "%";
+    $("pv-j-t").textContent = Math.max(0, Math.ceil(S.pvJ)) + " / " + PV_J;
+    elMoi.classList.toggle("eau", S.eauS > 0);
+    elMoi.classList.toggle("feu-s", S.feuS > 0);
+    elMoi.classList.toggle("nuage", S.nuage > 0);
+    elMoi.classList.toggle("brule", S.brul > 0 || (feu && S.eauS <= 0));
+    var p = "";
+    if (S.eauS > 0) p += '<span class="puce" style="--pc:#5AA8EE">Bouclier d\'eau</span>';
+    if (S.feuS > 0) p += '<span class="puce" style="--pc:#F07A45">Bouclier de feu</span>';
+    if (S.nuage > 0) p += '<span class="puce" style="--pc:#D9C9A4">Nuage</span>';
+    if (S.brul > 0) p += '<span class="puce" style="--pc:#F0806A">Tu brûles</span>';
+    if (S.soinsSuite > 0 && S.temps - S.soinT < 6) p += '<span class="puce" style="--pc:#EE86B6">Trop de tisane</span>';
+    var pj = $("puces-j"); if (pj.innerHTML !== p) pj.innerHTML = p;
+  }
+
+  function dessinerSlots() {
+    var h = "", n = S ? S.slots.length : 0;
+    for (var i = 0; i < 3; i++) {
+      var id = S && S.slots[i];
+      h += id ? '<button type="button" class="slot plein ' + id + '" data-slot="' + i + '" style="--c:' + ING[IDX[id]].hex + '" aria-label="Enlever ' + ING[IDX[id]].nom + '">' + ico(id) + '</button>'
+              : '<span class="slot" aria-hidden="true"></span>';
+    }
+    $("slots").innerHTML = h;
+    $("apercu").innerHTML = n ? "<b>" + nomDe(S.slots) + "</b> : touche ta cible" : "Mets des ingrédients, puis touche ta cible.";
+    document.querySelectorAll(".ing").forEach(function (b) { b.disabled = n >= 3; });
+  }
+  function ajouter(id) { if (S && S.enCours && !S.pause && S.slots.length < 3) { S.slots.push(id); dessinerSlots(); } }
+
+  /* --- commandes --- */
+  $("ings").addEventListener("click", function (ev) { var b = ev.target.closest("[data-ing]"); if (b) ajouter(b.dataset.ing); });
+  $("slots").addEventListener("click", function (ev) { var b = ev.target.closest("[data-slot]"); if (b && S) { S.slots.splice(+b.dataset.slot, 1); dessinerSlots(); } });
+  $("vider").addEventListener("click", function () { if (S) { S.slots = []; dessinerSlots(); } });
+  zAutos.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-id]"); if (!b || !S) return;
+    var e = S.E.filter(function (x) { return x.id === +b.dataset.id; })[0]; if (e) lancerSur("auto", e);
+  });
+  elArmure.addEventListener("click", function () { lancerSur("armure"); });
+  elMoi.addEventListener("click", function () { lancerSur("moi"); });
+  $("btn-go").addEventListener("click", function () {
+    if (S && S.enCours) { S.pause = false; $("regles").hidden = true; dernierT = performance.now(); }
+    else nouvellePartie();
+  });
+  $("btn-regles").addEventListener("click", function () { if (S && S.enCours) S.pause = true; $("regles").hidden = false; $("btn-go").focus(); });
+  $("btn-rejouer").addEventListener("click", nouvellePartie);
+  $("btn-recommencer").addEventListener("click", function () { if (S) S.enCours = false; nouvellePartie(); });
+  document.addEventListener("keydown", function (ev) {
+    if (!S || !S.enCours || S.pause) return;
+    if (ev.key >= "1" && ev.key <= "5") { ajouter(ING[+ev.key - 1].id); ev.preventDefault(); }
+    else if (ev.key === "Backspace" || ev.key === "Escape") { S.slots = []; dessinerSlots(); ev.preventDefault(); }
+  });
+
+  S = { pvJ: PV_J, A: { pv: PV_A, phase: "repos" }, E: [], slots: [], eauS: 0, feuS: 0, nuage: 0, brul: 0, soinsSuite: 0, soinT: -99, temps: 0 };
+  dessiner(); dessinerSlots();
+  window.__auto = { etat: function () { return S; } };
+})();
+</script>

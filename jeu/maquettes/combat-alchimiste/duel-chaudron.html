@@ -1,0 +1,508 @@
+<title>Duel du Chaudron</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Alegreya+Sans:wght@400;500;700;800&display=swap">
+<style>
+/* Un seul look sombre : la salle du combat final. L'armure en haut, l'Alchimiste et son chaudron en bas, tout tient sur un écran de téléphone. */
+:root {
+  --bg: #12171A; --surface: #1B2326; --surface-2: #232E31; --ink: #E8ECEA; --muted: #9AA7A3; --line: #33413F;
+  --jaune: #F2C230; --jaune-ombre: #A5831B; --mal: #F0806A; --bon: #8BD46A; --soin: #EE86B6;
+  --f-titre: "IM Fell English SC", "Iowan Old Style", Palatino, Georgia, serif;
+  --f-texte: "Alegreya Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-texte); font-size: 16px; line-height: 1.4;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px 24px;
+}
+button { font: inherit; color: inherit; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid var(--jaune); outline-offset: 2px; }
+svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+.jeu { max-width: 560px; margin: 0 auto; display: grid; gap: 10px; }
+.barre-haut { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.barre-haut h1 { font-family: var(--f-titre); font-weight: 400; font-size: 1.5rem; margin: 0; }
+.petits { display: flex; gap: 8px; }
+.petit { border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 3px 11px; font-size: .86rem; cursor: pointer; }
+.petit[aria-pressed="true"] { border-color: var(--jaune); color: var(--jaune); }
+
+.carte { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; position: relative; overflow: hidden; }
+.nom { font-family: var(--f-titre); font-size: 1.2rem; line-height: 1.1; }
+.barre { height: 16px; background: #0B0F11; border-radius: 8px; overflow: hidden; position: relative; }
+.barre > span { display: block; height: 100%; width: 100%; }
+.barre > b { position: absolute; right: 7px; top: 0; font-size: .74rem; line-height: 16px; font-variant-numeric: tabular-nums; text-shadow: 0 1px 2px #000; }
+.pv-e > span { background: linear-gradient(90deg, #9E2F22, #E5572A); }
+.pv-j > span { background: linear-gradient(90deg, #2F8A4A, #6CC655); }
+.puces { display: flex; flex-wrap: wrap; gap: 5px; min-height: 22px; }
+.puce { font-size: .78rem; font-weight: 700; border-radius: 6px; padding: 1px 7px; background: color-mix(in srgb, var(--pc) 22%, transparent); border: 1px solid color-mix(in srgb, var(--pc) 55%, transparent); color: var(--pc); }
+
+/* L'armure */
+.ennemi-haut { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; align-items: center; }
+.armure { width: 92px; height: auto; overflow: visible; }
+.armure.tremble { animation: tremble .12s linear infinite; }
+.armure.frappe { animation: frappe .35s ease-out; }
+.armure.touche { animation: touche .3s ease-out; }
+@keyframes tremble { 0%,100% { transform: translateX(0) } 50% { transform: translateX(2px) } }
+@keyframes frappe { 40% { transform: translateY(10px) scale(1.12) } }
+@keyframes touche { 0% { filter: brightness(2.4) } 100% { filter: none } }
+.ennemi-infos { display: grid; gap: 6px; min-width: 0; }
+.attaque { display: grid; gap: 4px; margin-top: 2px; }
+.att-nom { display: flex; align-items: center; gap: 6px; font-weight: 800; color: var(--ac, var(--muted)); min-height: 24px; }
+.att-nom.repos { font-weight: 500; color: var(--muted); }
+.charge { height: 12px; }
+.charge > span { background: var(--ac, #555); width: 0; }
+.charge.fin > span { animation: clignote .25s linear infinite; }
+@keyframes clignote { 50% { opacity: .55 } }
+.parade { font-size: .84rem; color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 4px; min-height: 22px; }
+.parade .ou { margin: 0 2px; }
+.mini { width: 20px; height: 20px; border-radius: 50%; background: var(--c); display: inline-grid; place-items: center; color: #fff; border: 1.5px solid color-mix(in srgb, var(--c) 60%, #000); flex: none; }
+.mini svg.ico { width: 13px; height: 13px; stroke-width: 2.2; }
+.mini.farine svg.ico { color: #4A3D24; }
+.groupe-mini { display: inline-flex; gap: 2px; }
+
+.habitudes { margin-top: 10px; display: grid; gap: 5px; }
+.habitudes .titre { font-size: .78rem; color: var(--muted); }
+.hab-grille { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.hab { display: flex; align-items: center; gap: 5px; min-width: 0; }
+.hab .barre { flex: 1; height: 9px; min-width: 0; }
+.hab .barre > span { background: var(--c); width: 0; }
+.hab .barre::after { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,.55); }
+.hab.trop .barre { box-shadow: 0 0 0 1.5px var(--mal); }
+
+.message { min-height: 2.9em; display: grid; place-items: center; text-align: center; font-weight: 700; padding: 2px 6px; }
+.message.mal { color: var(--mal); } .message.bon { color: var(--bon); }
+
+/* L'Alchimiste */
+.joueur-haut { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; }
+.chaudron-ligne { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; margin: 10px 0 4px; }
+.slots { display: flex; gap: 7px; padding: 7px 11px; background: #0B0F11; border-radius: 999px; border: 2px solid #3A4448; }
+.slot { width: 46px; height: 46px; border-radius: 50%; border: 2px dashed rgba(255,255,255,.22); background: transparent; display: grid; place-items: center; padding: 0; cursor: pointer; color: #fff; }
+.slot.plein { background: var(--c); border: 3px solid rgba(255,255,255,.85); }
+.slot svg.ico { width: 24px; height: 24px; }
+.slot.farine svg.ico { color: #4A3D24; }
+.lancer { background: var(--jaune); color: #111; border: 0; border-radius: 14px; font-weight: 800; font-size: 1.12rem; padding: 12px 16px; box-shadow: 0 4px 0 var(--jaune-ombre); cursor: pointer; }
+.lancer:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--jaune-ombre); }
+.lancer:disabled { opacity: .45; cursor: default; }
+.vider { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface-2); cursor: pointer; font-size: 1rem; padding: 0; }
+.apercu { text-align: center; color: var(--muted); min-height: 1.4em; font-size: .92rem; margin-bottom: 8px; }
+.apercu b { color: var(--ink); }
+.ings { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.ing { background: none; border: 0; padding: 0; display: grid; justify-items: center; gap: 3px; cursor: pointer; }
+.ing .rond { width: min(60px, 100%); aspect-ratio: 1; max-width: 100%; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; border: 3px solid color-mix(in srgb, var(--c) 65%, #000); box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 50%, #000); }
+.ing:active .rond { transform: translateY(2px); box-shadow: 0 1px 0 color-mix(in srgb, var(--c) 50%, #000); }
+.ing.farine .rond { color: #4A3D24; }
+.ing .rond svg.ico { width: 55%; height: 55%; }
+.ing .n { font-size: .8rem; font-weight: 700; }
+.touche { display: none; font-size: .7rem; color: var(--muted); }
+@media (hover: hover) and (pointer: fine) { .touche { display: inline; } }
+
+.flot { position: absolute; top: 38%; font-weight: 800; font-size: 1.5rem; pointer-events: none; text-shadow: 0 2px 4px #000; animation: monte 1s ease-out forwards; white-space: nowrap; }
+.flot.degat { color: #FFD25A; } .flot.mal { color: var(--mal); } .flot.soin { color: var(--soin); } .flot.bon { color: var(--bon); }
+@keyframes monte { from { transform: translateY(0); opacity: 1 } to { transform: translateY(-46px); opacity: 0 } }
+
+/* Écrans d'explication et de fin */
+.voile { position: fixed; inset: 0; z-index: 20; background: rgba(8,11,12,.9); overflow: auto; display: grid; place-items: center;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.boite { width: 100%; max-width: 520px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: grid; gap: 12px; }
+.boite h2 { font-family: var(--f-titre); font-weight: 400; font-size: 1.9rem; margin: 0; line-height: 1.05; }
+.boite p { margin: 0; }
+.regle { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; align-items: start; }
+.regle .pic { width: 34px; height: 34px; border-radius: 10px; background: var(--surface-2); display: grid; place-items: center; color: var(--pc, var(--ink)); }
+.att-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: .95rem; }
+.att-ligne b { min-width: 9.5em; color: var(--pc); }
+.go { justify-self: center; background: var(--jaune); color: #111; border: 0; border-radius: 14px; font-weight: 800; font-size: 1.2rem; padding: 12px 30px; box-shadow: 0 4px 0 var(--jaune-ombre); cursor: pointer; }
+.go:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--jaune-ombre); }
+.stats { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) {
+  .armure.tremble, .armure.frappe, .armure.touche, .charge.fin > span { animation: none; }
+  .flot { animation-duration: .6s; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-feu" viewBox="0 0 24 24"><path d="M12 21c-3.9 0-6.5-2.6-6.5-6.1 0-3.4 2.6-5.3 3.6-8.4 1.6 1.3 2.3 3 2.4 4.6 1.2-.9 1.9-2.4 2-4.1 2.6 2 5 5 5 8 0 3.5-2.6 6-6.5 6z"/></symbol>
+    <symbol id="i-eau" viewBox="0 0 24 24"><path d="M12 3.2c3.4 4.3 6 7.6 6 11.1A6 6 0 0 1 6 14.3c0-3.5 2.6-6.8 6-11.1z"/><path d="M9.3 14.6a2.8 2.8 0 0 0 2.6 2.8"/></symbol>
+    <symbol id="i-farine" viewBox="0 0 24 24"><path d="M3.5 19.5c1.5-5.2 4.6-8.5 8.5-8.5s7 3.3 8.5 8.5z"/><path d="M8.5 8.5h.01M12 6h.01M15.5 8.5h.01M10 3.8h.01M14 3.8h.01"/></symbol>
+    <symbol id="i-acide" viewBox="0 0 24 24"><path d="M9.5 3.5h5M10.3 3.5v5.2L5.6 17.3A2.2 2.2 0 0 0 7.5 20.5h9a2.2 2.2 0 0 0 1.9-3.2l-4.7-8.6V3.5"/><path d="M8 15.5h8"/></symbol>
+    <symbol id="i-fleur" viewBox="0 0 24 24"><circle cx="12" cy="10" r="2.2"/><path d="M12 7.8c-1.4-2.6-.3-4.6 0-4.8.3.2 1.4 2.2 0 4.8zM14.1 9.3c2.3-1.8 4.6-1.2 4.8-.9-.1.3-1.9 1.9-4.8.9zM13.3 12c1.7 2.4 1 4.5.7 4.7-.3-.1-1.7-1.9-.7-4.7zM10.7 12c-1 2.8-2.4 4.6-2.7 4.7-.3-.2-1-2.3.7-4.7zM9.9 9.3c-2.9 1-4.7-.6-4.8-.9.2-.3 2.5-.9 4.8.9z"/><path d="M12 16.5v4.5"/></symbol>
+    <symbol id="i-poing" viewBox="0 0 24 24"><rect x="5" y="7" width="13" height="11" rx="3"/><path d="M9 7v4M12.5 7v4M15.5 7.5v3.5M5 12.5h4"/><path d="M8 18v3h8v-3"/></symbol>
+    <symbol id="i-ecrase" viewBox="0 0 24 24"><path d="M12 3v10M7.5 8.5 12 13l4.5-4.5"/><path d="M3.5 20h17M6 16.5l1.5 3.5M18 16.5 16.5 20M12 16v4"/></symbol>
+    <symbol id="i-habitude" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3.1 8 7.5 9.5 4.4-1.5 7.5-4.9 7.5-9.5V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  </defs>
+</svg>
+
+<div class="jeu">
+  <div class="barre-haut">
+    <h1>Duel du Chaudron</h1>
+    <div class="petits">
+      <button type="button" class="petit" id="aide" aria-pressed="true">Aide : oui</button>
+      <button type="button" class="petit" id="recommencer">Recommencer</button>
+    </div>
+  </div>
+
+  <section class="carte" id="zone-e" aria-label="L'armure de Grosbec">
+    <div class="ennemi-haut">
+      <svg class="armure" id="armure" viewBox="0 0 100 112" aria-hidden="true">
+        <g stroke="#1E2427" stroke-width="3" stroke-linejoin="round">
+          <circle cx="15" cy="66" r="12" fill="#6A7478"/><circle cx="85" cy="66" r="12" fill="#6A7478"/>
+          <path d="M20 60 Q50 46 80 60 L86 102 Q50 112 14 102 Z" fill="#59646A"/>
+          <path d="M29 20 Q50 3 71 20 L73 49 Q50 58 27 49 Z" fill="#6E797E"/>
+        </g>
+        <g id="couche" opacity="0"><path d="M20 60 Q50 46 80 60 L86 102 Q50 112 14 102 Z"/><path d="M29 20 Q50 3 71 20 L73 49 Q50 58 27 49 Z"/></g>
+        <rect x="33" y="28" width="34" height="8" rx="4" fill="#0C0806"/>
+        <circle class="oeil" cx="42" cy="32" r="2.6" fill="#E8A23A"/><circle class="oeil" cx="58" cy="32" r="2.6" fill="#E8A23A"/>
+        <path d="M44 40 L50 53 L56 40 Z" fill="#B0923F" stroke="#1E2427" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M50 66 v28 M38 80 h24" stroke="#3E474B" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <div class="ennemi-infos">
+        <div class="nom">L'armure de Grosbec</div>
+        <div class="barre pv-e"><span id="pv-e"></span><b id="pv-e-t"></b></div>
+        <div class="puces" id="puces-e"></div>
+        <div class="attaque">
+          <div class="att-nom repos" id="att-nom">Elle se met en garde…</div>
+          <div class="barre charge" id="charge"><span id="charge-v"></span></div>
+          <div class="parade" id="parade"></div>
+        </div>
+      </div>
+    </div>
+    <div class="habitudes">
+      <div class="titre">Ce que l'armure connaît (après le trait, tes parades avec cet ingrédient ne marchent plus)</div>
+      <div class="hab-grille" id="habitudes"></div>
+    </div>
+  </section>
+
+  <div class="message" id="message" aria-live="polite"></div>
+
+  <section class="carte" id="zone-j" aria-label="L'Alchimiste">
+    <div class="joueur-haut">
+      <div class="nom">L'Alchimiste</div>
+      <div class="barre pv-j"><span id="pv-j"></span><b id="pv-j-t"></b></div>
+    </div>
+    <div class="puces" id="puces-j" style="margin-top:6px"></div>
+    <div class="chaudron-ligne">
+      <div class="slots" id="slots"></div>
+      <button type="button" class="lancer" id="lancer">Lancer !</button>
+      <button type="button" class="vider" id="vider" aria-label="Vider le chaudron">✕</button>
+    </div>
+    <div class="apercu" id="apercu"></div>
+    <div class="ings" id="ings"></div>
+  </section>
+</div>
+
+<div class="voile" id="intro">
+  <div class="boite">
+    <h2>Duel du Chaudron</h2>
+    <p>Un essai tout simple du combat de l'Alchimiste contre l'armure de Grosbec.</p>
+    <div class="regle"><span class="pic" style="--pc:#E8A23A"><svg class="ico"><use href="#i-poing"/></svg></span><p>L'armure prépare une attaque : la barre se remplit. Quand elle est pleine, ça frappe. Lance le bon mélange avant !</p></div>
+    <div id="intro-parades" style="display:grid;gap:6px"></div>
+    <div class="regle"><span class="pic" style="--pc:#F0806A"><svg class="ico"><use href="#i-habitude"/></svg></span><p>L'armure s'habitue. Si tu lances trop souvent le même ingrédient, il fait de moins en moins mal, et après le trait, il n'arrête plus ses attaques. Elle oublie si tu changes.</p></div>
+    <div class="regle"><span class="pic" style="--pc:#7C6BEB"><svg class="ico"><use href="#i-fleur"/></svg></span><p>La fleur bleue soigne. Rien ne s'épuise : tu peux lancer autant que tu veux.</p></div>
+    <p class="stats"><span class="touche">Au clavier : touches 1 à 5 pour les ingrédients, Espace pour lancer.</span></p>
+    <button type="button" class="go" id="commencer">Commencer</button>
+  </div>
+</div>
+
+<div class="voile" id="fin" hidden>
+  <div class="boite" style="text-align:center">
+    <h2 id="fin-titre"></h2>
+    <p id="fin-texte"></p>
+    <p class="stats" id="fin-stats"></p>
+    <button type="button" class="go" id="rejouer">Rejouer</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var PV_E = 350, PV_J = 100;
+  var ING = [
+    { id: "feu", nom: "Feu", art: "le feu", hex: "#E5572A" },
+    { id: "eau", nom: "Eau", art: "l'eau", hex: "#2E86D6" },
+    { id: "farine", nom: "Farine", art: "la farine", hex: "#D9C9A4" },
+    { id: "acide", nom: "Acide", art: "l'acide", hex: "#5DB338" },
+    { id: "fleur", nom: "Fleur bleue", art: "la fleur", hex: "#7C6BEB" }
+  ];
+  var IDX = {}; ING.forEach(function (g, i) { IDX[g.id] = i; });
+  var ADAPT = ["feu", "eau", "farine", "acide"];
+
+  // recette | nom | sorte | effets | dégâts (0-5) | soin (0-3) — les mêmes 55 mélanges que le tableau
+  var RAW = [
+    "feu|Flammèche|attaque|degats|2|0", "eau|Jet d'eau|gene|repousse|1|0", "farine|Nuage de farine|gene|aveugle|0|0", "acide|Goutte d'acide|gene|ronge|1|0", "fleur|Tisane|soin|soin|0|1",
+    "feu feu|Boule de feu|attaque|degats brulure|3|0", "eau eau|Vague|gene|repousse annule|1|0", "farine farine|Gros nuage|gene|aveugle|0|0", "acide acide|Acide fort|gene|ronge|1|0", "fleur fleur|Infusion|soin|soin|0|2",
+    "feu eau|Vapeur brûlante|gene|aveugle degats|1|0", "feu farine|BOUM !|attaque|degats|4|0", "feu acide|Fumée verte|attaque|brulure|2|0", "feu fleur|Thé brûlant|soin|soin bonus|0|1",
+    "eau farine|Pâte collante|gene|colle|0|0", "eau acide|Pluie acide|gene|ronge|0|0", "eau fleur|Rosée|soin|soin nettoie|0|1", "farine acide|Poudre qui pique|gene|aveugle ronge|0|0",
+    "farine fleur|Crêpe aux fleurs|soin|soin bouclier|0|1", "acide fleur|Pschitt !|rate|rate|0|0",
+    "feu feu feu|Colonne de feu|attaque|degats brulure|5|0", "eau eau eau|Raz-de-marée|gene|annule aterre|1|0", "farine farine farine|Tempête de farine|gene|aveugle|0|0",
+    "acide acide acide|Bain d'acide|gene|ronge|1|0", "fleur fleur fleur|Grand remède|soin|soin|0|3",
+    "feu feu eau|Geyser|attaque|degats aveugle|2|0", "feu feu farine|GROS BOUM|attaque|degats risque|5|0", "feu feu acide|Feu vert|attaque|brulure ronge|3|0",
+    "feu feu fleur|Bouquet de flammes|attaque|degats bonus|3|0", "feu eau eau|Brouillard|gene|aveugle|0|0", "eau eau farine|Boue|gene|bloque|0|0",
+    "eau eau acide|Marée acide|gene|repousse ronge|0|0", "eau eau fleur|Source fraîche|soin|soin nettoie|0|2", "feu farine farine|Feu d'artifice|attaque|degats aveugle|4|0",
+    "eau farine farine|Mortier|gene|colle|0|0", "farine farine acide|Nuage qui ronge|gene|aveugle ronge|0|0", "farine farine fleur|Brioche magique|soin|bouclier soin|0|1",
+    "feu acide acide|Acide bouillant|attaque|ronge brulure|2|0", "eau acide acide|Acide dilué|gene|ronge|0|0", "farine acide acide|Pâte acide|gene|colle ronge|0|0",
+    "acide acide fleur|Pschitt ! (le retour)|rate|rate risque|0|0", "feu fleur fleur|Tisane réconfortante|soin|soin bonus|0|2", "eau fleur fleur|Grande tisane|soin|soin|0|2",
+    "farine fleur fleur|Gâteau de fleurs|soin|soin bouclier|0|2", "acide fleur fleur|Fleur qui résiste|soin|soin|0|1",
+    "feu eau farine|Boum fumant|attaque|degats aveugle|3|0", "feu eau acide|Vapeur acide|gene|ronge aveugle|1|0", "feu eau fleur|Tisane parfaite|soin|soin nettoie bonus|0|2",
+    "feu farine acide|Bombe verte|attaque|degats ronge|4|0", "feu farine fleur|Pluie de pétales|attaque|degats soin|3|1", "feu acide fleur|Fumée puante|gene|aveugle|0|0",
+    "eau farine acide|Ciment qui ronge|gene|colle ronge|0|0", "eau farine fleur|Pâte de soin|soin|soin bouclier|0|1", "eau acide fleur|Remède amer|soin|soin ronge|0|1",
+    "farine acide fleur|Poudre d'herbes|gene|aveugle soin|0|1"
+  ];
+  function cle(liste) { return liste.map(function (id) { return IDX[id]; }).sort().join("-"); }
+  var MIX = {};
+  RAW.forEach(function (l) {
+    var p = l.split("|"); var r = p[0].split(" ");
+    MIX[cle(r)] = { r: r, n: p[1], t: p[2], g: p[3].split(" "), f: +p[4], s: +p[5] };
+  });
+
+  var ATT = {
+    poing:   { nom: "Coup de poing", dmg: 15, dur: 3.5, coul: "#C9D1D4", ico: "poing", stop: ["annule", "bloque", "aveugle", "aterre"], eau: false,
+               ex: [["farine"], ["eau", "eau"], ["eau", "eau", "farine"]], plus: "ou tout ce qui aveugle" },
+    flammes: { nom: "Jet de flammes", dmg: 18, dur: 3, coul: "#F07A45", ico: "feu", stop: [], eau: true,
+               ex: [["eau"]], plus: "ou n'importe quel mélange avec de l'eau" },
+    ecrase:  { nom: "Grand écrasement", dmg: 35, dur: 5, coul: "#B48CF0", ico: "ecrase", stop: ["bloque", "aterre"], eau: false,
+               ex: [["eau", "eau", "farine"], ["eau", "eau", "eau"]], plus: "(la colle et la vague le retardent)" }
+  };
+  var TIRAGE = ["poing", "poing", "poing", "flammes", "flammes", "ecrase"];
+
+  function ico(id) { return '<svg class="ico" aria-hidden="true"><use href="#i-' + id + '"/></svg>'; }
+  function mini(id) { var g = ING[IDX[id]]; return '<span class="mini ' + id + '" style="--c:' + g.hex + '" title="' + g.nom + '">' + ico(id) + '</span>'; }
+  function exemples(a) { return a.ex.map(function (r) { return '<span class="groupe-mini">' + r.map(mini).join("") + '</span>'; }).join('<span class="ou">ou</span>'); }
+  function $(id) { return document.getElementById(id); }
+
+  var zoneE = $("zone-e"), zoneJ = $("zone-j"), armure = $("armure");
+  var aide = true;
+  var S = null, dernierT = 0;
+
+  /* --- interface fixe --- */
+  $("ings").innerHTML = ING.map(function (g, i) {
+    return '<button type="button" class="ing ' + g.id + '" data-ing="' + g.id + '" style="--c:' + g.hex + '"><span class="rond">' + ico(g.id) + '</span><span class="n">' + g.nom + ' <span class="touche">' + (i + 1) + '</span></span></button>';
+  }).join("");
+  $("habitudes").innerHTML = ADAPT.map(function (id) {
+    return '<div class="hab" id="hab-' + id + '" style="--c:' + ING[IDX[id]].hex + '">' + mini(id) + '<div class="barre"><span></span></div></div>';
+  }).join("");
+  $("intro-parades").innerHTML = Object.keys(ATT).map(function (k) {
+    var a = ATT[k];
+    return '<div class="att-ligne" style="--pc:' + a.coul + '"><b>' + a.nom + '</b>' + exemples(a) + '<span style="color:var(--muted);font-size:.86rem">' + a.plus + '</span></div>';
+  }).join("");
+
+  /* --- partie --- */
+  function nouvellePartie() {
+    S = { pvE: PV_E, pvJ: PV_J, res: { feu: 0, eau: 0, farine: 0, acide: 0 }, prev: {}, att: null, dernier: null, pause: 2.5,
+          ronge: 0, rongeM: 1, aterre: 0, brulE: 0, brulEv: 0, brulJ: 0, bouclier: 1, bonus: false, slots: [],
+          enCours: true, temps: 0, casts: 0, parades: 0 };
+    $("fin").hidden = true; $("intro").hidden = true;
+    dire("", "");
+    afficherAttaque(); dessinerSlots(); dessiner();
+    dernierT = performance.now();
+    requestAnimationFrame(tick);
+  }
+
+  function tick(now) {
+    if (!S || !S.enCours) return;
+    var dt = Math.min(0.1, Math.max(0, (now - dernierT) / 1000)); dernierT = now;
+    S.temps += dt;
+    ADAPT.forEach(function (id) { S.res[id] = Math.max(0, S.res[id] - 0.035 * dt); if (S.res[id] < 0.45) S.prev[id] = false; });
+    if (S.brulE > 0) { S.brulE -= dt; S.pvE -= S.brulEv * dt; }
+    if (S.brulJ > 0) { S.brulJ -= dt; S.pvJ -= 2 * dt; }
+    if (S.ronge > 0) S.ronge -= dt;
+    if (S.aterre > 0) S.aterre -= dt;
+    if (!S.att) { S.pause -= dt; if (S.pause <= 0) nouvelleAttaque(); }
+    else { S.att.t += dt * S.att.v; if (S.att.t >= S.att.dur) frappe(); }
+    dessiner();
+    if (S.pvE <= 0) return fin(true);
+    if (S.pvJ <= 0) return fin(false);
+    requestAnimationFrame(tick);
+  }
+
+  function nouvelleAttaque() {
+    var id;
+    do { id = TIRAGE[Math.floor(Math.random() * TIRAGE.length)]; } while (id === "ecrase" && S.dernier === "ecrase");
+    S.dernier = id;
+    S.att = { id: id, a: ATT[id], t: 0, dur: ATT[id].dur, v: 1, rate: false };
+    afficherAttaque();
+  }
+
+  function frappe() {
+    var a = S.att.a;
+    anim(armure, "frappe");
+    if (S.att.rate) { dire(a.nom + " : il tape dans le vide !", "bon"); flotte(zoneJ, "Raté !", "bon"); S.parades++; }
+    else {
+      var d = Math.round(a.dmg * S.bouclier);
+      S.pvJ -= d; flotte(zoneJ, "−" + d, "mal");
+      var txt = a.nom + " ! −" + d + (S.bouclier < 1 ? " (le bouclier a amorti)" : "");
+      S.bouclier = 1;
+      if (S.att.id === "flammes") { S.brulJ = 4; txt += " · tu brûles"; }
+      dire(txt, "mal");
+    }
+    S.att = null; S.pause = 1.4;
+    afficherAttaque();
+  }
+
+  function lancer() {
+    if (!S || !S.enCours || !S.slots.length) return;
+    var m = MIX[cle(S.slots)];
+    S.slots = []; S.casts++;
+    var has = function (t) { return m.g.indexOf(t) !== -1; };
+    var nb = function (id) { return m.r.filter(function (x) { return x === id; }).length; };
+    var avg = m.r.reduce(function (s, id) { return s + (id === "fleur" ? 0 : S.res[id]); }, 0) / m.r.length;
+    var parts = [m.n], ton = "";
+
+    if (m.f > 0) {
+      var mult = (1 - avg) * (S.ronge > 0 ? S.rongeM : 1) * (S.aterre > 0 ? 2 : 1) * (S.bonus ? 1.5 : 1);
+      S.bonus = false;
+      var d = Math.max(1, Math.round(m.f * 9 * mult));
+      S.pvE -= d; flotte(zoneE, "−" + d, "degat"); anim(armure, "touche");
+      parts.push("−" + d); ton = "bon";
+    }
+    if (has("brulure")) { S.brulE = 5; S.brulEv = (1 + nb("feu")) * (1 - S.res.feu); parts.push("il brûle"); }
+    if (has("ronge")) { S.ronge = 7; S.rongeM = 1 + (0.25 + 0.25 * nb("acide")) * (1 - S.res.acide); parts.push("armure rongée"); }
+    if (has("soin")) { var h = m.s * 15; S.pvJ = Math.min(PV_J, S.pvJ + h); flotte(zoneJ, "+" + h, "soin"); }
+    if (has("bouclier")) { S.bouclier = m.n === "Brioche magique" ? 0.15 : 0.4; parts.push("bouclier"); }
+    if (has("nettoie") && S.brulJ > 0) { S.brulJ = 0; parts.push("brûlure éteinte"); }
+    if (has("risque")) { S.pvJ -= 6; flotte(zoneJ, "−6", "mal"); parts.push("ça t'éclabousse"); }
+    if (has("bonus")) { S.bonus = true; }
+    if (has("rate")) ton = "mal";
+
+    var avecEau = m.r.indexOf("eau") !== -1;
+    var controle = ["annule", "bloque", "aveugle", "aterre", "repousse", "colle"].some(has) || (S.att && S.att.a.eau && avecEau);
+    if (controle) {
+      if (avg >= 0.5) { parts.push("elle connaît ce mélange : ça ne la gêne plus"); ton = "mal"; }
+      else {
+        if (S.att) {
+          var a = S.att.a;
+          var parAveugle = has("aveugle") && a.stop.indexOf("aveugle") !== -1;
+          var arret = a.stop.some(function (t) { return t !== "aveugle" && has(t); }) || (a.eau && avecEau);
+          if (arret) {
+            parts.push(a.nom + " arrêté !"); flotte(zoneE, "Paré !", "bon");
+            S.parades++; S.att = null; S.pause = 1.4 + (has("bloque") ? 2 : 0); ton = "bon";
+          } else if (parAveugle) {
+            S.att.rate = true; parts.push("il ne voit plus rien"); ton = "bon";
+          } else if (has("repousse")) {
+            S.att.t = Math.max(0, S.att.t - 0.35 * S.att.dur); parts.push("repoussé");
+          } else if (has("colle")) {
+            S.att.v = 0.5; parts.push("ralenti");
+          }
+        } else if (has("bloque") || has("aterre")) { S.pause += 1.5; }
+        if (has("aterre")) { S.aterre = 4; parts.push("à terre : tes coups font le double"); }
+      }
+    }
+
+    if (m.t === "attaque" || m.t === "gene") {
+      m.r.forEach(function (id) { if (id !== "fleur") S.res[id] = Math.min(0.8, S.res[id] + 0.15); });
+      var appris = ADAPT.filter(function (id) { if (S.res[id] >= 0.5 && !S.prev[id]) { S.prev[id] = true; return true; } return false; });
+      if (appris.length) parts.push("l'armure s'habitue à " + appris.map(function (id) { return ING[IDX[id]].art; }).join(" et "));
+    }
+    dire(parts.join(" · "), ton);
+    afficherAttaque(); dessinerSlots();
+  }
+
+  function fin(gagne) {
+    S.enCours = false; S.att = null; afficherAttaque(); dessiner();
+    $("fin-titre").textContent = gagne ? "Gagné !" : "Perdu…";
+    $("fin-texte").textContent = gagne ? "L'armure de Grosbec tombe en morceaux." : "L'armure a eu le dessus cette fois.";
+    $("fin-stats").textContent = "Temps : " + Math.round(S.temps) + " s · Mélanges lancés : " + S.casts + " · Attaques arrêtées : " + S.parades;
+    $("fin").hidden = false;
+    $("rejouer").focus();
+  }
+
+  /* --- affichage --- */
+  function dire(txt, ton) { var el = $("message"); el.textContent = txt; el.className = "message " + (ton || ""); }
+  function flotte(zone, txt, cls) {
+    var s = document.createElement("span"); s.className = "flot " + cls; s.textContent = txt;
+    s.style.left = (30 + Math.random() * 35) + "%"; zone.appendChild(s);
+    setTimeout(function () { s.remove(); }, 1000);
+  }
+  function anim(el, cls) { el.classList.remove("frappe", "touche"); void el.getBoundingClientRect(); el.classList.add(cls); }
+
+  function afficherAttaque() {
+    var nom = $("att-nom"), par = $("parade");
+    var oeils = armure.querySelectorAll(".oeil");
+    if (S && S.att) {
+      var a = S.att.a;
+      nom.className = "att-nom"; nom.style.setProperty("--ac", a.coul);
+      nom.innerHTML = ico(a.ico) + "<span>" + a.nom + "</span>";
+      $("charge").style.setProperty("--ac", a.coul);
+      par.innerHTML = aide ? "Pour l'arrêter :" + exemples(a) + "<span>" + a.plus + "</span>" : "";
+      oeils.forEach(function (o) { o.setAttribute("fill", a.coul); });
+    } else {
+      nom.className = "att-nom repos"; nom.textContent = "Elle se met en garde…";
+      par.innerHTML = "";
+      oeils.forEach(function (o) { o.setAttribute("fill", "#E8A23A"); });
+    }
+  }
+
+  var derniersPucesE = "", derniersPucesJ = "";
+  function dessiner() {
+    $("pv-e").style.width = Math.max(0, S.pvE / PV_E * 100) + "%";
+    $("pv-e-t").textContent = Math.max(0, Math.ceil(S.pvE)) + " / " + PV_E;
+    $("pv-j").style.width = Math.max(0, S.pvJ / PV_J * 100) + "%";
+    $("pv-j-t").textContent = Math.max(0, Math.ceil(S.pvJ)) + " / " + PV_J;
+    var p = S.att ? Math.min(1, S.att.t / S.att.dur) : 0;
+    $("charge-v").style.width = (p * 100) + "%";
+    $("charge").classList.toggle("fin", p > 0.72);
+    armure.classList.toggle("tremble", p > 0.72);
+    var top = null, max = 0;
+    ADAPT.forEach(function (id) {
+      var r = S.res[id], h = $("hab-" + id);
+      h.querySelector(".barre > span").style.width = (r * 100) + "%";
+      h.classList.toggle("trop", r >= 0.5);
+      if (r > max) { max = r; top = id; }
+    });
+    var c = $("couche");
+    if (top && max > 0.05) { c.setAttribute("fill", ING[IDX[top]].hex); c.setAttribute("opacity", (max * 0.7).toFixed(2)); } else c.setAttribute("opacity", "0");
+    var pe = "";
+    if (S.brulE > 0) pe += '<span class="puce" style="--pc:#F07A45">Il brûle</span>';
+    if (S.ronge > 0) pe += '<span class="puce" style="--pc:#7BCB55">Rongée</span>';
+    if (S.aterre > 0) pe += '<span class="puce" style="--pc:#B48CF0">À terre : dégâts ×2</span>';
+    if (S.att && S.att.rate) pe += '<span class="puce" style="--pc:#D9C9A4">Aveuglée</span>';
+    if (S.att && S.att.v < 1) pe += '<span class="puce" style="--pc:#C9A46E">Collée</span>';
+    if (pe !== derniersPucesE) { $("puces-e").innerHTML = pe; derniersPucesE = pe; }
+    var pj = "";
+    if (S.bouclier < 1) pj += '<span class="puce" style="--pc:#3FC0BB">Bouclier</span>';
+    if (S.bonus) pj += '<span class="puce" style="--pc:#F2C230">Prochain sort plus fort</span>';
+    if (S.brulJ > 0) pj += '<span class="puce" style="--pc:#F0806A">Tu brûles</span>';
+    if (pj !== derniersPucesJ) { $("puces-j").innerHTML = pj; derniersPucesJ = pj; }
+  }
+
+  function dessinerSlots() {
+    var h = "";
+    for (var i = 0; i < 3; i++) {
+      var id = S && S.slots[i];
+      h += id ? '<button type="button" class="slot plein ' + id + '" data-slot="' + i + '" style="--c:' + ING[IDX[id]].hex + '" aria-label="Enlever ' + ING[IDX[id]].nom + '">' + ico(id) + '</button>'
+              : '<span class="slot" aria-hidden="true"></span>';
+    }
+    $("slots").innerHTML = h;
+    var n = S ? S.slots.length : 0;
+    $("lancer").disabled = !n;
+    $("apercu").innerHTML = n ? "Dans le chaudron : <b>" + MIX[cle(S.slots)].n + "</b>" : "Touche des ingrédients (jusqu'à 3), puis Lancer.";
+    document.querySelectorAll(".ing").forEach(function (b) { b.disabled = n >= 3; });
+  }
+
+  function ajouter(id) { if (S && S.enCours && S.slots.length < 3) { S.slots.push(id); dessinerSlots(); } }
+  function vider() { if (S) { S.slots = []; dessinerSlots(); } }
+
+  /* --- commandes --- */
+  $("ings").addEventListener("click", function (ev) { var b = ev.target.closest("[data-ing]"); if (b) ajouter(b.dataset.ing); });
+  $("slots").addEventListener("click", function (ev) { var b = ev.target.closest("[data-slot]"); if (b && S) { S.slots.splice(+b.dataset.slot, 1); dessinerSlots(); } });
+  $("lancer").addEventListener("click", lancer);
+  $("vider").addEventListener("click", vider);
+  $("commencer").addEventListener("click", nouvellePartie);
+  $("rejouer").addEventListener("click", nouvellePartie);
+  $("recommencer").addEventListener("click", function () { if (S) S.enCours = false; nouvellePartie(); });
+  $("aide").addEventListener("click", function () { aide = !aide; this.setAttribute("aria-pressed", String(aide)); this.textContent = "Aide : " + (aide ? "oui" : "non"); afficherAttaque(); });
+  document.addEventListener("keydown", function (ev) {
+    if (!S || !S.enCours) return;
+    if (ev.key >= "1" && ev.key <= "5") { ajouter(ING[+ev.key - 1].id); ev.preventDefault(); }
+    else if (ev.key === " " || ev.key === "Enter") { ev.preventDefault(); lancer(); }
+    else if (ev.key === "Backspace" || ev.key === "Escape") { ev.preventDefault(); vider(); }
+  });
+  document.addEventListener("keyup", function (ev) { if (S && S.enCours && ev.key === " ") ev.preventDefault(); });
+
+  S = { pvE: PV_E, pvJ: PV_J, res: { feu: 0, eau: 0, farine: 0, acide: 0 }, slots: [], att: null, bouclier: 1 };
+  dessiner(); dessinerSlots(); afficherAttaque();
+  window.__duel = { etat: function () { return S; }, mix: MIX };
+})();
+</script>

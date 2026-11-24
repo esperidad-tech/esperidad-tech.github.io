@@ -1,0 +1,231 @@
+<title>Les Personnages du Combat</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Alegreya+Sans:wght@400;500;700;800&display=swap">
+<style>
+/* Planche des personnages du combat final (E10) : Grosbec dans son armure, ses automates, l'Alchimiste vu de dos.
+   Une seule allure, sombre, comme la place de Brumeval la nuit. */
+:root {
+  --bg: #121614; --surface: #1C2321; --surface-2: #243030; --ink: #ECEFE9; --muted: #A3AEA8; --line: #34413D;
+  --pave: #34332F; --jaune: #F2C230; --jaune-ombre: #A5831B; --or: #E2B54A;
+  --f-titre: "IM Fell English SC", "Iowan Old Style", Palatino, Georgia, serif;
+  --f-texte: "Alegreya Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-texte); font-size: 16px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 18px 40px; }
+.page { max-width: 620px; margin: 0 auto; display: grid; gap: 18px; }
+header h1 { font-family: var(--f-titre); font-weight: 400; font-size: clamp(1.9rem, 7vw, 2.6rem); line-height: 1.02; margin: 0 0 6px; text-wrap: balance; }
+header p { margin: 0; color: var(--muted); max-width: 60ch; }
+.carte { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.carte h2 { font-family: var(--f-titre); font-weight: 400; font-size: 1.55rem; margin: 0; line-height: 1.1; }
+.carte .sous { margin: -6px 0 0; color: var(--muted); font-size: .92rem; }
+.scene { width: 100%; display: block; border-radius: 12px; background: var(--pave); touch-action: manipulation; }
+.boutons { display: flex; flex-wrap: wrap; gap: 8px; }
+.go { background: var(--jaune); color: #111; border: 0; border-radius: 12px; font: 800 .95rem var(--f-texte); padding: 9px 14px; box-shadow: 0 3px 0 var(--jaune-ombre); cursor: pointer; }
+.go:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--jaune-ombre); }
+.go[aria-pressed="true"] { outline: 3px solid #fff; outline-offset: 2px; }
+.puce { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; font: 700 .85rem var(--f-texte); padding: 6px 12px; cursor: pointer; }
+.puce[aria-pressed="true"] { background: var(--or); color: #1A1406; border-color: var(--or); }
+.onglets { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.onglet { background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 4px 2px 6px; cursor: pointer; color: var(--ink); font: 700 .72rem var(--f-texte); display: grid; justify-items: center; gap: 2px; min-width: 0; }
+.onglet canvas { width: 100%; max-width: 64px; aspect-ratio: 1 / 1.15; display: block; }
+.onglet[aria-pressed="true"] { border-color: var(--or); box-shadow: inset 0 0 0 2px var(--or); }
+.fiche { margin: 0; font-size: .95rem; }
+.fiche b { color: #fff; }
+ul.ce { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; font-size: .94rem; }
+ul.ce li::marker { color: var(--or); }
+.alchi { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: center; }
+@media (max-width: 460px) { .alchi { grid-template-columns: 1fr; } }
+.hote { width: 100%; max-width: 260px; aspect-ratio: 320 / 430; margin: 0 auto; background: radial-gradient(ellipse at 50% 92%, rgba(0,0,0,.45) 0 22%, transparent 23%), var(--pave); border-radius: 12px; overflow: hidden; }
+.hote svg { width: 100%; height: 100%; display: block; }
+label.tourne { display: grid; gap: 4px; font-size: .9rem; color: var(--muted); }
+input[type=range] { width: 100%; accent-color: var(--or); }
+.note { font-size: .85rem; color: var(--muted); margin: 0; }
+.etiq { display: inline-block; font: 800 .7rem var(--f-texte); letter-spacing: .06em; text-transform: uppercase; color: #1A1406; background: var(--or); border-radius: 6px; padding: 2px 7px; }
+:focus-visible { outline: 2px solid var(--jaune); outline-offset: 2px; }
+</style>
+
+<div class="page">
+  <header>
+    <h1>Les Personnages du Combat</h1>
+    <p>Premiers dessins pour le combat final : Grosbec dans son armure, ses cinq automates et l'Alchimiste. Tout bouge : regarde-les avant qu'on les mette dans la partie.</p>
+  </header>
+
+  <section class="carte" aria-labelledby="t-grosbec">
+    <h2 id="t-grosbec">Grosbec, dans son armure</h2>
+    <p class="sous">Il reste tout au fond de la place, devant la mairie.</p>
+    <canvas class="scene" id="cv-grosbec" width="340" height="330" aria-label="Grosbec dans son armure, animé"></canvas>
+    <div class="boutons" id="b-grosbec">
+      <button type="button" class="go" data-g="coup">Il est touché</button>
+      <button type="button" class="go" data-g="rage" aria-pressed="false">Il enrage</button>
+      <button type="button" class="go" data-g="ordre">Il donne un ordre</button>
+    </div>
+    <ul class="ce">
+      <li><b>Le casque en grand bec</b> (c'est son nom) et une crête de plumes de bronze ; ses yeux luisent derrière la fente.</li>
+      <li><b>Les quatre Lanternes d'Or</b> serties dans l'armure (la poitrine, les deux épaules, la ceinture) : l'énergie qu'il siphonne court dans des veines d'or.</li>
+      <li><b>L'armure</b> : des pièces de la ville d'en bas, ce métal bleuté, cerclées de bronze.</li>
+      <li><b>L'écharpe rouge du maire</b>, sa médaille, et la cape du maire en lambeaux.</li>
+      <li><b>La bague au corbeau</b> sur son poing droit, avec l'éclat rouge du cristal.</li>
+    </ul>
+  </section>
+
+  <section class="carte" aria-labelledby="t-auto">
+    <h2 id="t-auto">Ses automates</h2>
+    <p class="sous"><span class="etiq">Proposé</span> Ce sont les vieux automates d'Elyra, réveillés par l'armure de Grosbec : une coque claire comme de la porcelaine, des articulations du métal d'en bas, de l'émail de couleur selon leur sorte, et un cœur de cristal qui brille de la lumière de Grosbec.</p>
+    <div class="onglets" id="onglets"></div>
+    <canvas class="scene" id="cv-auto" width="340" height="300" aria-label="L'automate choisi, qui marche et se tourne"></canvas>
+    <p class="fiche" id="fiche"></p>
+    <div class="boutons" id="etats"></div>
+    <p class="note">Il se tourne tout seul de gauche à droite : les traits de devant glissent sur la coque, comme pour les héros.</p>
+  </section>
+
+  <section class="carte" aria-labelledby="t-alchi">
+    <h2 id="t-alchi">L'Alchimiste</h2>
+    <div class="alchi">
+      <div class="hote" id="hote-alchi" aria-label="L'Alchimiste en volume"></div>
+      <div style="display:grid;gap:10px;min-width:0">
+        <p class="fiche">C'est <b>le même que dans le donjon</b>, en volume. Au combat, on le voit <b>de dos</b> : il fait face à Grosbec, derrière le muret.</p>
+        <label class="tourne">Le faire tourner
+          <input type="range" id="tour-alchi" min="0" max="360" step="5" value="180" aria-label="L'angle de l'Alchimiste">
+        </label>
+        <div class="boutons">
+          <button type="button" class="puce" data-a="180" aria-pressed="true">De dos</button>
+          <button type="button" class="puce" data-a="140" aria-pressed="false">Trois quarts</button>
+          <button type="button" class="puce" data-a="0" aria-pressed="false">De face</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="carte" aria-labelledby="t-echelle">
+    <h2 id="t-echelle">À la taille du téléphone</h2>
+    <p class="sous">Tout le monde à la taille qu'il aura vraiment dans le combat, pour voir si on les reconnaît.</p>
+    <canvas class="scene" id="cv-echelle" width="360" height="330" aria-label="Les personnages à la taille du combat"></canvas>
+  </section>
+</div>
+
+<!--SCRIPTS-->
+<script>
+(function () {
+  "use strict";
+  var PC = window.PersosCombat, HV = window.HerosVues;
+  var DPR = Math.min(2, window.devicePixelRatio || 1);
+  function prep(cv) { var w = +cv.getAttribute("width"), h = +cv.getAttribute("height"); cv.width = w * DPR; cv.height = h * DPR; cv.style.aspectRatio = w + " / " + h; return { ctx: cv.getContext("2d"), w: w, h: h }; }
+  function pave(ctx, w, h, y0) {
+    ctx.fillStyle = "#34332F"; ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = "rgba(0,0,0,.28)"; ctx.lineWidth = 1;
+    for (var y = y0 || 0, r = 0; y < h; y += 18, r++) { ctx.beginPath(); ctx.moveTo(0, y + .5); ctx.lineTo(w, y + .5); ctx.stroke(); for (var x = (r % 2) * 20; x < w; x += 40) { ctx.beginPath(); ctx.moveTo(x + .5, y); ctx.lineTo(x + .5, y + 18); ctx.stroke(); } }
+  }
+  function ombre(ctx, x, y, rx) { ctx.fillStyle = "rgba(0,0,0,.42)"; ctx.beginPath(); ctx.ellipse(x, y, rx, rx * 0.34, 0, 0, 7); ctx.fill(); }
+  var t0 = performance.now();
+
+  /* ---------- Grosbec ---------- */
+  var G = prep(document.getElementById("cv-grosbec")), etatG = { coup: 0, rage: 0, rageV: 0, ordre: 0, ordreT: -9 };
+  document.getElementById("b-grosbec").addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-g]"); if (!b) return;
+    var g = b.dataset.g;
+    if (g === "coup") etatG.coup = 1;
+    if (g === "ordre") etatG.ordreT = 0;
+    if (g === "rage") { etatG.rageV = etatG.rageV ? 0 : 1; b.setAttribute("aria-pressed", etatG.rageV ? "true" : "false"); }
+  });
+  function dessinGrosbec(t, dt) {
+    var c = G.ctx; c.setTransform(DPR, 0, 0, DPR, 0, 0);
+    // la mairie derrière lui
+    var g = c.createLinearGradient(0, 0, 0, 120); g.addColorStop(0, "#0D1424"); g.addColorStop(1, "#1D2433"); c.fillStyle = g; c.fillRect(0, 0, G.w, 120);
+    c.fillStyle = "#514238"; c.beginPath(); c.moveTo(40, 120); c.lineTo(40, 52); c.lineTo(170, 14); c.lineTo(300, 52); c.lineTo(300, 120); c.closePath(); c.fill();
+    c.fillStyle = "#F2C86A"; [[70, 70], [110, 62], [220, 62], [260, 70]].forEach(function (p) { c.fillRect(p[0], p[1], 12, 15); });
+    c.fillStyle = "#E8D9B0"; c.beginPath(); c.arc(170, 46, 11, 0, 7); c.fill();
+    c.fillStyle = "#26231F"; c.fillRect(0, 112, G.w, 10);
+    c.save(); c.beginPath(); c.rect(0, 120, G.w, G.h - 120); c.clip(); pave(c, G.w, G.h, 120); c.restore();
+    etatG.coup = Math.max(0, etatG.coup - dt * 1.8);
+    etatG.rage += (etatG.rageV - etatG.rage) * Math.min(1, dt * 3);
+    etatG.ordreT += dt; etatG.ordre = etatG.ordreT < 0 ? 0 : etatG.ordreT < 0.4 ? etatG.ordreT / 0.4 : etatG.ordreT < 1.4 ? 1 : etatG.ordreT < 1.9 ? 1 - (etatG.ordreT - 1.4) / 0.5 : 0;
+    ombre(c, 170, 300, 70);
+    c.save(); c.translate(170, 302); c.scale(2.55, 2.55); PC.grosbec(c, { t: t, coup: etatG.coup, rage: etatG.rage, ordre: etatG.ordre }); c.restore();
+  }
+
+  /* ---------- les automates ---------- */
+  var FICHES = {
+    rapide: ["Le rapide", "Fin et léger, <b>un seul grand œil</b> et une antenne. Il court vite mais tape peu (−1). Il vole loin quand il est projeté."],
+    bouclier: ["Le bouclier", "Un casque à visière en T et <b>un grand bouclier rond cerclé d'or</b>, au soleil d'Elyra griffé. Ton rayon de feu rebondit dessus. Il tape à −3."],
+    lourd: ["Le lourd", "<b>Un gros tonneau de porcelaine</b> cerclé de bronze, la tête enfoncée dans les épaules, des poings de métal. Ta boule de bowling. Il tape à −5."],
+    cracheur: ["Le cracheur", "<b>Un petit poêle sur pattes</b> : son foyer rougeoie quand il va cracher, une cheminée fume sur sa tête, une tuyère à la place de la bouche."],
+    souffleur: ["Le souffleur", "<b>Un soufflet de cuir</b> dans la poitrine et <b>un pavillon de cuivre</b> à la place de la bouche : il pousse tes nuages vers toi."]
+  };
+  var ETATS = [["marche", "Il marche"], ["feu", "En feu"], ["mouille", "Mouillé"], ["farine", "Enfariné"], ["boue", "Dans la boue"], ["statue", "Terre cuite"], ["elec", "Électrique"], ["meche", "La mèche"], ["aveugle", "Aveuglé"]];
+  var choix = "rapide", etats = { marche: true }, souffleT = 0, crachT = 0;
+  var ongl = document.getElementById("onglets"), mini = [];
+  Object.keys(FICHES).forEach(function (k) {
+    var b = document.createElement("button"); b.type = "button"; b.className = "onglet"; b.dataset.k = k; b.setAttribute("aria-pressed", k === choix ? "true" : "false");
+    var cv = document.createElement("canvas"); cv.setAttribute("width", "64"); cv.setAttribute("height", "74");
+    b.appendChild(cv); b.appendChild(document.createTextNode(FICHES[k][0].replace("Le ", "")));
+    ongl.appendChild(b); mini.push({ k: k, P: prep(cv) });
+  });
+  ongl.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-k]"); if (!b) return; choix = b.dataset.k;
+    ongl.querySelectorAll("[data-k]").forEach(function (x) { x.setAttribute("aria-pressed", x.dataset.k === choix ? "true" : "false"); });
+    fiche();
+  });
+  var bEt = document.getElementById("etats");
+  ETATS.forEach(function (e) { var b = document.createElement("button"); b.type = "button"; b.className = "puce"; b.dataset.e = e[0]; b.textContent = e[1]; b.setAttribute("aria-pressed", etats[e[0]] ? "true" : "false"); bEt.appendChild(b); });
+  bEt.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-e]"); if (!b) return; var k = b.dataset.e;
+    etats[k] = !etats[k]; b.setAttribute("aria-pressed", etats[k] ? "true" : "false");
+  });
+  function fiche() { document.getElementById("fiche").innerHTML = "<b>" + FICHES[choix][0] + ".</b> " + FICHES[choix][1]; }
+  fiche();
+  var A = prep(document.getElementById("cv-auto"));
+  function dessinAuto(t, dt) {
+    var c = A.ctx; c.setTransform(DPR, 0, 0, DPR, 0, 0); pave(c, A.w, A.h, 4);
+    var face = Math.sin(t * 0.7) * 0.85, sc = choix === "lourd" ? 6.2 : 7.4;
+    souffleT = (souffleT + dt) % 4.2; crachT = (crachT + dt) % 3.6;
+    var o = { t: t, marche: etats.marche ? 1 : 0, face: face, etats: etats, charge: crachT > 3 ? (crachT - 3) / 0.6 : 0, souffle: souffleT > 3.6 ? Math.sin((souffleT - 3.6) / 0.6 * Math.PI) : 0 };
+    ombre(c, 170, 262, choix === "lourd" ? 120 : 82);
+    c.save(); c.translate(170, 266); c.scale(sc, sc); PC.automate(c, choix, o); c.restore();
+    mini.forEach(function (m) {
+      var x = m.P.ctx; x.setTransform(DPR, 0, 0, DPR, 0, 0); x.clearRect(0, 0, m.P.w, m.P.h);
+      ombre(x, 32, 66, 16); x.save(); x.translate(32, 68); var s = m.k === "lourd" ? 1.45 : 1.75; x.scale(s, s); PC.automate(x, m.k, { t: t + m.k.length, marche: 0.4 }); x.restore();
+    });
+  }
+
+  /* ---------- l'Alchimiste, avec le vrai moteur des héros en volume ---------- */
+  var hAlchi = { role: "alchimiste", sexe: "m", peau: "p4", cheveux: "noir", yeux: "ambre", coiffure: "courts", combat: true };
+  var pantin = null, imgAlchi = null;
+  try {
+    pantin = HV.monter(document.getElementById("hote-alchi"), hAlchi, { cadre: "-10 -40 320 430", cap: 180 });
+    var svg = HV.svg(hAlchi, (function () { var P = HV.pose("repos"); P.cap = 180; return P; })(), { id: "ech", cadre: "-10 -40 320 430" });
+    imgAlchi = new Image(); imgAlchi.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  } catch (e) { document.getElementById("hote-alchi").textContent = "(le moteur des héros n'a pas pu démarrer)"; }
+  var tour = document.getElementById("tour-alchi");
+  function viser(a) { if (pantin) pantin.vers(a); tour.value = a; document.querySelectorAll("[data-a]").forEach(function (b) { b.setAttribute("aria-pressed", +b.dataset.a === +a ? "true" : "false"); }); }
+  tour.addEventListener("input", function () { viser(+tour.value); });
+  document.querySelectorAll("[data-a]").forEach(function (b) { b.addEventListener("click", function () { viser(+b.dataset.a); }); });
+
+  /* ---------- à la taille du combat ---------- */
+  var E2 = prep(document.getElementById("cv-echelle"));
+  function dessinEchelle(t) {
+    var c = E2.ctx; c.setTransform(DPR, 0, 0, DPR, 0, 0);
+    var g = c.createLinearGradient(0, 0, 0, 60); g.addColorStop(0, "#0D1424"); g.addColorStop(1, "#1D2433"); c.fillStyle = g; c.fillRect(0, 0, E2.w, 60);
+    c.fillStyle = "#514238"; c.beginPath(); c.moveTo(112, 58); c.lineTo(112, 26); c.lineTo(180, 4); c.lineTo(248, 26); c.lineTo(248, 58); c.closePath(); c.fill();
+    c.fillStyle = "#26231F"; c.fillRect(0, 56, E2.w, 6);
+    c.save(); c.beginPath(); c.rect(0, 60, E2.w, E2.h - 60); c.clip(); pave(c, E2.w, E2.h, 60); c.restore();
+    ombre(c, 180, 122, 30); c.save(); c.translate(180, 124); PC.grosbec(c, { t: t }); c.restore();
+    var L = [["rapide", 70, 185], ["bouclier", 130, 205], ["lourd", 200, 190], ["cracheur", 265, 210], ["souffleur", 310, 180], ["rapide", 95, 240], ["bouclier", 235, 245]];
+    L.forEach(function (a, i) { ombre(c, a[1], a[2], a[0] === "lourd" ? 17 : 12); c.save(); c.translate(a[1], a[2]); PC.automate(c, a[0], { t: t + i, marche: 1, face: Math.sin(t * 0.5 + i) * 0.5 }); c.restore(); });
+    c.fillStyle = "#5B5850"; c.fillRect(0, 300, E2.w, 10); c.fillStyle = "#77736A"; c.fillRect(0, 300, E2.w, 3);
+    if (imgAlchi && imgAlchi.complete && imgAlchi.naturalWidth) { ombre(c, 180, 296, 13); c.drawImage(imgAlchi, 180 - 23, 296 - 58, 46, 62); }
+  }
+
+  var dernier = performance.now();
+  function boucle(now) {
+    var t = (now - t0) / 1000, dt = Math.min(0.05, (now - dernier) / 1000); dernier = now;
+    try { dessinGrosbec(t, dt); dessinAuto(t, dt); dessinEchelle(t); } catch (e) { console.error(e); }
+    requestAnimationFrame(boucle);
+  }
+  requestAnimationFrame(boucle);
+  window.__planche = { ok: true };
+})();
+</script>

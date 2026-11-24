@@ -1,0 +1,529 @@
+<title>Les Mélanges de l'Alchimiste</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&family=Alegreya+Sans+SC:wght@500;700&display=swap">
+<style>
+/* Le grimoire de l'Alchimiste, version 2 : chaque mélange a une forme de zone, un effet lancé, une trace au sol, un effet bu et un point faible. */
+:root {
+  --bg: #E6EBEA; --surface: #F7F9F8; --surface-2: #EDF1F0; --ink: #1C2526; --muted: #56625F; --line: #C6D0CD;
+  --cuivre: #A45A22; --chaudron: #2A2F33; --chaudron-bord: #4A5257;
+  --t-a: #C2412B; --t-c: #2D74B8; --t-s: #C23F7A; --t-r: #7C8583;
+  --f-titre: "IM Fell English SC", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --f-texte: "Alegreya Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --f-label: "Alegreya Sans SC", "Alegreya Sans", "Segoe UI", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101517; --surface: #172022; --surface-2: #1D282A; --ink: #E3E9E7; --muted: #98A6A2; --line: #2B3739;
+    --cuivre: #E39A5C; --chaudron: #0B0F11; --chaudron-bord: #3A4448;
+    --t-a: #F0806A; --t-c: #79B4EE; --t-s: #EE86B6; --t-r: #A3ACAA; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101517; --surface: #172022; --surface-2: #1D282A; --ink: #E3E9E7; --muted: #98A6A2; --line: #2B3739;
+  --cuivre: #E39A5C; --chaudron: #0B0F11; --chaudron-bord: #3A4448;
+  --t-a: #F0806A; --t-c: #79B4EE; --t-s: #EE86B6; --t-r: #A3ACAA; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-texte); font-size: 16.5px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 26px 56px;
+}
+.page { max-width: 1080px; margin: 0 auto; display: grid; gap: 20px; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--cuivre); outline-offset: 3px; }
+svg.ico { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+h1 { font-family: var(--f-titre); font-weight: 400; font-size: clamp(2rem, 5.2vw, 3rem); line-height: 1.05; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--f-titre); font-weight: 400; font-size: 1.5rem; margin: 0 0 10px; text-wrap: balance; }
+.chapeau { margin: 6px 0 0; color: var(--muted); max-width: 70ch; }
+.chapeau b { color: var(--ink); }
+.bloc { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 20px 20px; min-width: 0; }
+.bloc p { margin: 0 0 8px; max-width: 72ch; }
+.deux { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 20px; }
+
+.mini { width: 22px; height: 22px; border-radius: 50%; background: var(--c); display: inline-grid; place-items: center; color: #fff; border: 1.5px solid color-mix(in srgb, var(--c) 65%, #000); flex: none; vertical-align: middle; }
+.mini svg.ico { width: 14px; height: 14px; stroke-width: 2; }
+.mini.farine svg.ico { color: #4A3D24; }
+.recette { display: inline-flex; gap: 3px; vertical-align: middle; }
+
+/* Gestes */
+.gestes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 12px; }
+.geste { background: var(--surface-2); border-radius: 12px; padding: 12px; display: grid; gap: 4px; }
+.geste b { font-family: var(--f-label); letter-spacing: .03em; }
+.geste span { color: var(--muted); font-size: .95rem; }
+
+/* Règles : traces et réactions */
+.traces { display: grid; gap: 8px; }
+.trace { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; align-items: center; }
+.reactions { width: 100%; border-collapse: collapse; font-size: .95rem; }
+.reactions td { padding: 6px 4px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.reactions td:first-child { white-space: nowrap; width: 1%; padding-right: 10px; }
+
+/* Chaudron */
+.etabli { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 22px; align-items: start; }
+.zone-chaudron { display: grid; gap: 16px; justify-items: center; }
+.chaudron { position: relative; width: min(100%, 300px); aspect-ratio: 1.25; max-width: 100%; }
+.chaudron .cuve { position: absolute; inset: 14% 6% 6% 6%; border-radius: 46% 46% 50% 50% / 38% 38% 62% 62%; background: var(--chaudron); box-shadow: inset 0 -14px 30px rgba(0,0,0,.45), 0 8px 18px rgba(0,0,0,.18); }
+.chaudron .rebord { position: absolute; left: 2%; right: 2%; top: 10%; height: 15%; border-radius: 50%; background: var(--chaudron-bord); }
+.chaudron .liquide { position: absolute; left: 7%; right: 7%; top: 12.5%; height: 10%; border-radius: 50%; background: var(--liq, #3a4a50); transition: background .35s ease; }
+.emplacements { position: absolute; left: 0; right: 0; top: 40%; display: flex; justify-content: center; gap: 4%; }
+.empl { width: 23%; aspect-ratio: 1; border-radius: 50%; border: 2px dashed rgba(255,255,255,.35); background: rgba(255,255,255,.04); display: grid; place-items: center; cursor: pointer; padding: 0; color: #fff; }
+.empl.plein { border: 3px solid rgba(255,255,255,.9); background: var(--c); }
+.empl .vide { font-family: var(--f-label); font-size: .78rem; color: rgba(255,255,255,.55); }
+.empl svg.ico { width: 52%; height: 52%; }
+.empl.farine svg.ico, .ing.farine svg.ico { color: #4A3D24; }
+.ingredients { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.ing { display: grid; justify-items: center; gap: 3px; background: none; border: 0; cursor: pointer; padding: 2px; }
+.ing .rond { width: 56px; height: 56px; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; border: 3px solid color-mix(in srgb, var(--c) 70%, #000); box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 55%, #000); }
+.ing:active .rond { transform: translateY(2px); box-shadow: 0 1px 0 color-mix(in srgb, var(--c) 55%, #000); }
+.ing[disabled] { opacity: .45; cursor: not-allowed; }
+.ing .nom { font-weight: 700; font-size: .9rem; }
+.commandes { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; align-items: center; }
+.btn { border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: .95rem; }
+.decouverts { font-size: .92rem; color: var(--muted); }
+.decouverts b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* Fiche d'un mélange (résultat et cartes) */
+.fiche { border: 1px solid var(--line); border-radius: 14px; background: var(--surface-2); padding: 14px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.resultat { min-height: 280px; }
+.resultat .attente { color: var(--muted); margin: 0; }
+.fiche-tete { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; align-items: center; }
+.fiche-nom { font-family: var(--f-titre); font-size: 1.45rem; line-height: 1.05; margin: 0; }
+.resultat .fiche-nom { font-size: clamp(1.6rem, 4vw, 2.1rem); }
+.fiche-sous { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--muted); font-size: .88rem; margin-top: 3px; }
+.forme-lab { font-family: var(--f-label); font-weight: 700; letter-spacing: .03em; color: var(--tc); }
+.diag { width: 64px; height: 64px; background: var(--surface); border-radius: 10px; border: 1px solid var(--line); flex: none; }
+.ligne { display: grid; grid-template-columns: 7.2em minmax(0, 1fr); gap: 8px; font-size: .95rem; }
+.ligne > b { font-family: var(--f-label); font-weight: 700; font-size: .82rem; letter-spacing: .04em; color: var(--muted); padding-top: 2px; }
+.ligne.faible > span { color: var(--t-a); }
+.nouveau { font-family: var(--f-label); font-weight: 700; font-size: .78rem; letter-spacing: .05em; color: var(--cuivre); }
+
+/* Formes */
+.formes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 10px 16px; }
+.forme { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 10px; align-items: center; font-size: .93rem; }
+.forme .diag { width: 56px; height: 56px; }
+.forme b { display: block; }
+.forme span { color: var(--muted); }
+
+/* Liste */
+.filtres { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+.filtres .lab { font-family: var(--f-label); font-weight: 700; font-size: .82rem; letter-spacing: .05em; color: var(--muted); margin-right: 2px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 3px 11px 3px 5px; cursor: pointer; font-size: .9rem; }
+.chip.sans-rond { padding-left: 11px; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.compte { font-size: .9rem; color: var(--muted); margin: 4px 0 10px; }
+.groupe-titre { font-family: var(--f-label); font-weight: 700; letter-spacing: .05em; color: var(--muted); margin: 14px 0 8px; font-size: .9rem; }
+.cartes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 12px; }
+.carte { cursor: pointer; text-align: left; border-left: 5px solid var(--tc); }
+.carte:hover { border-color: var(--muted); border-left-color: var(--tc); }
+
+/* Ennemis */
+.ennemis { display: grid; gap: 10px; }
+.ennemi { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; align-items: start; }
+.ennemi .pic { width: 44px; height: 44px; border-radius: 30%; background: var(--c); color: #fff; display: grid; place-items: center; border: 2px solid color-mix(in srgb, var(--c) 55%, #000); }
+.ennemi .pic svg.ico { width: 26px; height: 26px; stroke-width: 2.2; }
+.ennemi p { margin: 0; }
+.ennemi b { color: var(--ink); }
+.liste { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; }
+.liste li { max-width: 78ch; }
+.combo { background: var(--surface-2); border-radius: 12px; padding: 10px 12px; display: grid; gap: 4px; }
+.combo b { font-family: var(--f-label); letter-spacing: .03em; }
+.combos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 10px; }
+
+@media (max-width: 760px) { .etabli { grid-template-columns: 1fr; padding: 16px; } .resultat { min-height: 0; } .ligne { grid-template-columns: 1fr; gap: 0; } }
+@media (prefers-reduced-motion: reduce) { .chaudron .liquide { transition: none; } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-feu" viewBox="0 0 24 24"><path d="M12 21c-3.9 0-6.5-2.6-6.5-6.1 0-3.4 2.6-5.3 3.6-8.4 1.6 1.3 2.3 3 2.4 4.6 1.2-.9 1.9-2.4 2-4.1 2.6 2 5 5 5 8 0 3.5-2.6 6-6.5 6z"/></symbol>
+    <symbol id="i-eau" viewBox="0 0 24 24"><path d="M12 3.2c3.4 4.3 6 7.6 6 11.1A6 6 0 0 1 6 14.3c0-3.5 2.6-6.8 6-11.1z"/><path d="M9.3 14.6a2.8 2.8 0 0 0 2.6 2.8"/></symbol>
+    <symbol id="i-farine" viewBox="0 0 24 24"><path d="M3.5 19.5c1.5-5.2 4.6-8.5 8.5-8.5s7 3.3 8.5 8.5z"/><path d="M8.5 8.5h.01M12 6h.01M15.5 8.5h.01M10 3.8h.01M14 3.8h.01"/></symbol>
+    <symbol id="i-acide" viewBox="0 0 24 24"><path d="M9.5 3.5h5M10.3 3.5v5.2L5.6 17.3A2.2 2.2 0 0 0 7.5 20.5h9a2.2 2.2 0 0 0 1.9-3.2l-4.7-8.6V3.5"/><path d="M8 15.5h8"/></symbol>
+    <symbol id="i-fleur" viewBox="0 0 24 24"><circle cx="12" cy="10" r="2.2"/><path d="M12 7.8c-1.4-2.6-.3-4.6 0-4.8.3.2 1.4 2.2 0 4.8zM14.1 9.3c2.3-1.8 4.6-1.2 4.8-.9-.1.3-1.9 1.9-4.8.9zM13.3 12c1.7 2.4 1 4.5.7 4.7-.3-.1-1.7-1.9-.7-4.7zM10.7 12c-1 2.8-2.4 4.6-2.7 4.7-.3-.2-1-2.3.7-4.7zM9.9 9.3c-2.9 1-4.7-.6-4.8-.9.2-.3 2.5-.9 4.8.9z"/><path d="M12 16.5v4.5"/></symbol>
+    <symbol id="e-rapide" viewBox="0 0 24 24"><path d="M13 2 5 13h6l-1 9 8-11h-6z"/></symbol>
+    <symbol id="e-bouclier" viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 3 8 7 9.5 4-1.5 7-5 7-9.5V6z"/></symbol>
+    <symbol id="e-lourd" viewBox="0 0 24 24"><rect x="3" y="4" width="13" height="7" rx="1.5"/><path d="M9.5 11v10M16 7.5h4"/></symbol>
+    <symbol id="e-cracheur" viewBox="0 0 24 24"><path d="M3 9h9l7-4v14l-7-4H3z"/><path d="M6 15v4"/></symbol>
+    <symbol id="e-souffleur" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 10c0-4 2-6 4-6s2 4-2 6M14 12c4 0 6 2 6 4s-4 2-6-2M12 14c0 4-2 6-4 6s-2-4 2-6M10 12c-4 0-6-2-6-4s4-2 6 2"/></symbol>
+    <symbol id="i-armure" viewBox="0 0 24 24"><path d="M7 5.5Q12 1.5 17 5.5L17.5 12Q12 14 6.5 12Z"/><path d="M9 8h6M11 11l1 2.5 1-2.5"/><path d="M5 15Q12 12 19 15l1 6H4z"/></symbol>
+  </defs>
+</svg>
+
+<div class="page">
+  <header>
+    <h1>Les Mélanges de l'Alchimiste</h1>
+    <p class="chapeau">Version 2. Chaque mélange <b>se lance sur une zone</b> (avec sa propre forme) ou <b>se boit</b>. Chacun laisse une trace au sol et a un point faible. Avec en plus les automates, les potions de Grosbec, et les garde-fous pour qu'il n'y ait pas de « mode dieu ». Les effets sont des propositions, à changer.</p>
+  </header>
+
+  <section class="bloc" aria-labelledby="t-gestes">
+    <h2 id="t-gestes">Comment on lance</h2>
+    <div class="gestes">
+      <div class="geste"><b>1. Mélanger</b><span>On touche 1 à 3 ingrédients. L'ordre ne compte pas.</span></div>
+      <div class="geste"><b>2. Viser</b><span>On pose le doigt dans l'arène : la zone s'affiche en transparence. On la déplace en glissant.</span></div>
+      <div class="geste"><b>3. Lâcher</b><span>La fiole part et casse là. Pour un rayon, on garde le doigt appuyé et le rayon suit le doigt.</span></div>
+      <div class="geste"><b>Ou boire</b><span>On touche l'Alchimiste : il boit le mélange. Effet différent, parfois une bonne surprise, parfois un raté.</span></div>
+    </div>
+  </section>
+
+  <div class="deux">
+    <section class="bloc" aria-labelledby="t-traces">
+      <h2 id="t-traces">Règle 1 : chaque ingrédient laisse une trace</h2>
+      <p>Là où la fiole casse, il reste quelque chose. On peut donc lancer sur une zone vide pour préparer un piège.</p>
+      <div class="traces" id="traces"></div>
+    </section>
+    <section class="bloc" aria-labelledby="t-reactions">
+      <h2 id="t-reactions">Règle 2 : deux choses qui se touchent réagissent</h2>
+      <p>Dans le chaudron, ou au sol quand on lance l'un sur l'autre. C'est la vraie force de l'Alchimiste.</p>
+      <table class="reactions"><tbody id="reactions"></tbody></table>
+    </section>
+  </div>
+
+  <section class="etabli" aria-label="Le chaudron">
+    <div class="zone-chaudron">
+      <div class="chaudron">
+        <div class="cuve"></div><div class="rebord"></div><div class="liquide" id="liquide"></div>
+        <div class="emplacements" id="emplacements"></div>
+      </div>
+      <div class="ingredients" id="ingredients" role="group" aria-label="Les ingrédients"></div>
+      <div class="commandes">
+        <button class="btn" id="vider" type="button">Vider le chaudron</button>
+        <span class="decouverts">Découverts : <b id="nb-dec">0</b> / 55</span>
+      </div>
+    </div>
+    <div class="fiche resultat" id="resultat" aria-live="polite"></div>
+  </section>
+
+  <section class="bloc" aria-labelledby="t-formes">
+    <h2 id="t-formes">Les formes de zone</h2>
+    <div class="formes" id="formes"></div>
+  </section>
+
+  <section class="bloc" aria-labelledby="t-liste">
+    <h2 id="t-liste">Les 55 mélanges</h2>
+    <div class="filtres" id="filtre-ing"><span class="lab">Contient</span></div>
+    <div class="filtres" id="filtre-forme"><span class="lab">Forme</span></div>
+    <div class="compte" id="compte"></div>
+    <div id="liste"></div>
+  </section>
+
+  <div class="deux">
+    <section class="bloc" aria-labelledby="t-ennemis">
+      <h2 id="t-ennemis">Les automates : chacun contre quelque chose</h2>
+      <div class="ennemis" id="ennemis"></div>
+    </section>
+    <section class="bloc" aria-labelledby="t-boss">
+      <h2 id="t-boss">Grosbec, l'autre alchimiste</h2>
+      <p>Son armure lance elle aussi des potions : sur ses automates pour les aider, ou sur toi. Il faut anticiper ce qu'il va défaire.</p>
+      <ul class="liste" id="boss"></ul>
+    </section>
+  </div>
+
+  <section class="bloc" aria-labelledby="t-combos">
+    <h2 id="t-combos">Des exemples de combos</h2>
+    <div class="combos" id="combos"></div>
+  </section>
+
+  <div class="deux">
+    <section class="bloc" aria-labelledby="t-garde">
+      <h2 id="t-garde">Pas de « mode dieu » : les garde-fous</h2>
+      <ul class="liste" id="garde"></ul>
+    </section>
+    <section class="bloc" aria-labelledby="t-avis">
+      <h2 id="t-avis">Ce que j'en pense</h2>
+      <ul class="liste" id="avis"></ul>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var ING = [
+    { id: "feu", nom: "Feu", hex: "#E5572A" }, { id: "eau", nom: "Eau", hex: "#2E86D6" },
+    { id: "farine", nom: "Farine", hex: "#D9C9A4" }, { id: "acide", nom: "Acide", hex: "#5DB338" },
+    { id: "fleur", nom: "Fleur bleue", hex: "#7C6BEB" }
+  ];
+  var IDX = {}; ING.forEach(function (g, i) { IDX[g.id] = i; });
+  var SORTES = { a: "Attaque", c: "Gêne", s: "Soin", r: "Raté" };
+
+  var FORMES = {
+    eclat:    ["Éclaboussure", "Petite zone, là où la fiole casse."],
+    cercle:   ["Cercle", "Zone moyenne, là où tu vises."],
+    grand:    ["Grand cercle", "Grande zone, là où tu vises."],
+    pluie:    ["Pluie", "Plein de petites gouttes sur une grande zone."],
+    colonnes: ["Colonnes", "Des colonnes qui jaillissent du sol sur toute une zone."],
+    cone:     ["Cône", "Part de toi et s'élargit vers où tu vises."],
+    rayon:    ["Rayon", "Un trait depuis toi : tu le promènes avec le doigt."],
+    anneau:   ["Autour de toi", "Un cercle centré sur toi : pas besoin de viser."],
+    mur:      ["Mur", "Une barrière posée en travers du chemin."],
+    chaine:   ["Chaîne", "Une suite d'effets en ligne, de toi jusqu'à la cible."],
+    roule:    ["Qui roule", "Part de toi et roule tout droit."],
+    nuage:    ["Nuage qui avance", "Un nuage qui se déplace dans la direction visée."],
+    pose:     ["Objet posé", "Quelque chose que tu poses par terre."],
+    rien:     ["Raté", "Rien de bon ne se passe."]
+  };
+
+  // [recette, nom, sorte, forme, lancer, reste au sol, boire, point faible]
+  var M = [
+    ["feu", "Flammèche", "a", "eclat", "Petite brûlure là où la fiole casse.", "Sol en feu (3 s)", "Hoquet de feu : trois petites flammes sortent devant toi.", "Le cracheur ne sent pas le feu."],
+    ["eau", "Jet d'eau", "c", "eclat", "Mouille et repousse un peu.", "Flaque d'eau (10 s)", "Éteint tes brûlures.", "Le cracheur sèche la flaque."],
+    ["farine", "Nuage de farine", "c", "eclat", "Petit nuage : ceux dedans sont aveuglés.", "Nuage de farine (5 s)", "Tu tousses : petit nuage autour de toi, ceux qui te collent te ratent.", "Le souffleur chasse le nuage."],
+    ["acide", "Goutte d'acide", "a", "eclat", "Ronge un bouclier ou une armure.", "Flaque d'acide (5 s)", "Aïe, tu te ronges. Raté !", "Le rapide saute par-dessus la flaque."],
+    ["fleur", "Tisane", "s", "eclat", "Quelques fleurs poussent et soignent qui est dessus.", "Fleurs (8 s)", "Soin (moins fort si tu en bois trop d'affilée).", "Un automate sur les fleurs se soigne aussi."],
+
+    ["feu feu", "Boule de feu", "a", "cercle", "Explosion de flammes moyenne.", "Sol en feu (4 s)", "Rot de feu : un petit cône de flammes devant toi.", "Le cracheur ; le lavage de Grosbec éteint le sol."],
+    ["eau eau", "Vague", "c", "cone", "Un cône d'eau qui repousse fort et mouille.", "Sol mouillé dans le cône", "Bouclier d'eau (6 s) : le feu ne te fait plus rien, même le tien.", "Le lourd ne recule pas ; le bouclier la bloque."],
+    ["farine farine", "Gros nuage", "c", "cercle", "Grand nuage : tous ceux dedans sont aveuglés.", "Nuage de farine (6 s)", "Tu tousses un gros nuage autour de toi.", "Le souffleur ; un peu de feu dedans et BOUM."],
+    ["acide acide", "Acide fort", "a", "rayon", "Un rayon d'acide que tu promènes : ronge tout sur la ligne.", "Traînée d'acide (4 s)", "Aïe, tu te ronges fort. Raté !", "Il ne dure que 2 secondes : il faut viser juste."],
+    ["fleur fleur", "Infusion", "s", "cercle", "Grand tapis de fleurs qui soigne.", "Fleurs (8 s)", "Bon soin.", "Les automates dessus se soignent aussi ; le feu brûle les fleurs."],
+
+    ["feu eau", "Vapeur brûlante", "c", "cone", "Un cône de vapeur : aveugle et brûle un peu.", "Nuage chaud (4 s)", "Tu souffles de la vapeur : nuage autour de toi.", "Ils sont mouillés après : ton BOUM suivant fera pschitt."],
+    ["feu farine", "BOUM !", "a", "cercle", "Explosion : gros dégâts, et tout le monde recule.", "Rien", "Petit boum autour de toi : dégâts autour, et un peu sur toi.", "Trop près de toi, tu le prends aussi ; pschitt sur un mouillé."],
+    ["feu acide", "Fumée verte", "a", "cercle", "Nuage toxique : ronge ceux dedans pendant longtemps.", "Fumée verte (6 s)", "Tu tousses vert : tu perds un peu de vie. Raté !", "Le souffleur la renvoie, parfois vers toi."],
+    ["feu fleur", "Thé brûlant", "a", "cercle", "Feu de broussailles : le sol brûle longtemps.", "Sol en feu (7 s)", "Soin, et ton prochain lancer est plus fort.", "Le lavage de Grosbec l'éteint."],
+    ["eau farine", "Pâte collante", "c", "eclat", "Une boule de pâte : colle 1 ou 2 automates (8 s).", "Sol collant (6 s)", "Tu recraches une boule de pâte : elle colle le premier qui arrive devant toi.", "Le rapide saute par-dessus ; le lavage les décolle."],
+    ["eau acide", "Pluie acide", "a", "pluie", "Pluie de gouttes sur une grande zone : ronge un peu tout le monde, use les boucliers.", "Sol acide léger (5 s)", "Acide dilué : tu perds un peu, mais la boue et les brûlures partent.", "Dégâts faibles."],
+    ["eau fleur", "Rosée", "s", "cercle", "Fleurs arrosées : soignent plus fort et plus longtemps.", "Fleurs (12 s)", "Soin, et tes mauvais effets partent.", "Les automates dessus se soignent aussi."],
+    ["farine acide", "Poudre qui pique", "c", "cercle", "Nuage qui aveugle et ronge.", "Nuage (4 s)", "Tu éternues : un cône de poudre aveugle ceux devant toi, et ça pique un peu.", "Le souffleur."],
+    ["farine fleur", "Crêpe aux fleurs", "c", "eclat", "Une crêpe se colle sur la tête d'un automate : aveuglé longtemps (8 s).", "Rien", "Soin et petit bouclier.", "Un seul automate."],
+    ["acide fleur", "Pschitt !", "r", "rien", "L'acide mange la fleur : il ne se passe rien.", "Rien", "Rien. Raté !", "C'est un raté."],
+
+    ["feu feu feu", "Colonne de feu", "a", "colonnes", "Plein de colonnes de flammes jaillissent sur toute une zone : énormes dégâts.", "Sol en feu (5 s)", "Tu craches du feu : un rayon de flammes que tu promènes (3 s). Tu te brûles un peu après.", "Si la zone te touche, tu brûles aussi (sauf avec un bouclier d'eau) ; le cracheur s'en moque."],
+    ["eau eau eau", "Raz-de-marée", "c", "anneau", "Autour de toi : repousse très fort tous ceux qui te collent, et mouille tout.", "Grande flaque autour de toi (10 s)", "Tu deviens une fontaine : long bouclier d'eau, et tu éteins tout autour de toi.", "Le lourd ne recule pas ; ceux qui sont loin ne sont pas touchés."],
+    ["farine farine farine", "Tempête de farine", "c", "grand", "Énorme nuage : tout le monde dedans est aveuglé longtemps.", "Nuage géant (8 s)", "Tu deviens blanc comme un fantôme : ils te perdent de vue (4 s).", "Le souffleur ; le moindre feu dedans fait un énorme BOUM, même près de toi."],
+    ["acide acide acide", "Bain d'acide", "a", "grand", "Grande flaque d'acide : ronge tout ce qui marche dedans, les boucliers fondent.", "Flaque d'acide (8 s)", "Aïe, tu te ronges très fort. Gros raté !", "Le rapide saute par-dessus ; le séchage de Grosbec la fait disparaître."],
+    ["fleur fleur fleur", "Grand remède", "s", "grand", "Un grand jardin qui soigne beaucoup.", "Jardin (10 s)", "Gros soin (attention au mal de ventre).", "Les automates dedans se soignent aussi ; le feu le brûle."],
+
+    ["feu feu eau", "Geyser", "a", "eclat", "Un geyser jaillit sous un automate : il s'envole, retombe et reste sonné.", "Flaque chaude (4 s)", "Tu bous : un jet de vapeur devant toi, et tu te brûles un peu.", "Un seul automate ; le lourd est trop lourd pour s'envoler."],
+    ["feu feu farine", "GROS BOUM", "a", "grand", "Énorme explosion : dégâts énormes sur une très grande zone.", "Rien", "Tu exploses : énorme anneau de dégâts autour de toi, mais tu perds la moitié de ta vie.", "Tu la prends aussi si c'est trop près ; pschitt sur les mouillés."],
+    ["feu feu acide", "Feu vert", "a", "mur", "Un mur de flammes vertes en travers du chemin : ceux qui le traversent brûlent et sont rongés.", "Mur (6 s)", "Tu craches des flammes vertes en cône, mais tu te ronges un peu.", "Le cracheur traverse sans rien sentir ; le souffleur l'éteint."],
+    ["feu feu fleur", "Bouquet de flammes", "a", "chaine", "Des fleurs de feu poussent en ligne, de toi jusqu'à l'endroit visé.", "Sol en feu en ligne (4 s)", "Ton prochain lancer est deux fois plus fort, et petit soin.", "Le cracheur."],
+    ["feu eau eau", "Brouillard", "c", "grand", "Un grand brouillard : tous dedans sont aveuglés… mais toi non plus, tu ne les vois plus.", "Brouillard (8 s)", "Brouillard autour de toi : ils te perdent de vue.", "Le souffleur ; tu ne vois plus où ils sont."],
+    ["eau eau farine", "Boue", "c", "grand", "Grande flaque de boue : tous ceux dedans sont collés très longtemps (8 s).", "Boue (10 s)", "Boue dans la bouche : tu ne peux plus boire pendant 5 s. Raté !", "Le rapide saute par-dessus ; le cracheur la sèche ; Grosbec lance son lavage."],
+    ["eau eau acide", "Marée acide", "c", "cone", "Un cône d'eau acide : repousse et ronge.", "Sol acide léger (4 s)", "Tout est nettoyé (boue, brûlure), mais ça pique un peu.", "Le lourd ne recule pas ; le bouclier la bloque."],
+    ["eau eau fleur", "Source fraîche", "s", "cercle", "Une source jaillit : les fleurs s'étendent petit à petit.", "Fleurs qui grandissent (12 s)", "Soin, et tes mauvais effets partent.", "Les automates dessus se soignent aussi."],
+    ["feu farine farine", "Feu d'artifice", "a", "chaine", "Cinq petits boums à la suite, de toi jusqu'à l'endroit visé : ils aveuglent.", "Rien", "Étincelles autour de toi : ceux qui te touchent sont aveuglés.", "Les premiers boums sont près de toi : attention."],
+    ["eau farine farine", "Mortier", "c", "mur", "Un mur de pâte qui durcit : il bloque le passage (10 s).", "Mur (10 s)", "Estomac en béton : les coups te font moins mal, mais tu ne peux plus boire (6 s).", "Le lourd casse le mur ; le cracheur tire par-dessus."],
+    ["farine farine acide", "Nuage qui ronge", "c", "nuage", "Un nuage qui avance tout seul dans la direction visée : aveugle et ronge.", "Nuage qui avance (6 s)", "Tu tousses : un cône qui pique devant toi.", "Le souffleur le renvoie."],
+    ["farine farine fleur", "Brioche magique", "c", "roule", "Une grosse brioche roule tout droit et renverse tout sur son passage, comme au bowling.", "Rien", "Gros bouclier : le prochain coup ne fait presque rien, et petit soin.", "Le lourd l'arrête ; elle ne roule que tout droit."],
+    ["feu acide acide", "Acide bouillant", "a", "rayon", "Un rayon d'acide bouillant à promener : brûle, ronge, perce les boucliers.", "Traînée d'acide (4 s)", "Aïe, ça brûle et ça ronge. Gros raté !", "Il ne dure que 2 secondes ; le cracheur ne sent pas la brûlure."],
+    ["eau acide acide", "Acide dilué", "a", "grand", "Grande flaque d'acide léger qui dure très longtemps.", "Flaque d'acide (12 s)", "Tout est nettoyé (boue, colle, brûlure), mais tu perds un peu de vie.", "Dégâts faibles ; le séchage de Grosbec."],
+    ["farine acide acide", "Pâte acide", "c", "eclat", "Une boule qui colle et ronge : parfaite contre le bouclier.", "Sol collant acide (5 s)", "Aïe, ça colle et ça ronge. Raté !", "Un ou deux automates seulement."],
+    ["acide acide fleur", "Pschitt ! (le retour)", "r", "rien", "Trop d'acide : ça t'éclabousse, tu perds un peu de vie.", "Rien", "Pareil : tu perds un peu de vie. Raté !", "C'est un raté."],
+    ["feu fleur fleur", "Tisane réconfortante", "s", "cercle", "Fleurs tièdes : elles soignent bien.", "Fleurs (8 s)", "Bon soin, et ton prochain lancer est plus fort.", "Les automates dessus se soignent aussi."],
+    ["eau fleur fleur", "Grande tisane", "s", "grand", "Grand tapis de fleurs qui soigne.", "Fleurs (10 s)", "Gros soin.", "Les automates dessus se soignent aussi."],
+    ["farine fleur fleur", "Gâteau de fleurs", "c", "pose", "Un gâteau posé par terre : les automates gourmands s'arrêtent pour le grignoter (6 s).", "Gâteau (6 s)", "Soin et petit bouclier.", "Le lourd l'avale en 2 secondes ; le rapide ne s'arrête pas."],
+    ["acide fleur fleur", "Fleur qui résiste", "a", "pose", "Une fleur carnivore pousse là : elle mord les automates qui passent (8 s).", "Fleur carnivore (8 s)", "Petit soin.", "Le feu la brûle ; le lourd l'écrase."],
+
+    ["feu eau farine", "Boum fumant", "a", "grand", "Une explosion, puis un gros nuage de vapeur : dégâts, puis aveuglés.", "Vapeur (5 s)", "Tu tousses de la fumée : brouillard autour de toi.", "Pschitt sur les mouillés."],
+    ["feu eau acide", "Vapeur acide", "a", "cone", "Un cône de vapeur qui ronge les armures.", "Nuage (3 s)", "Tu tousses, ça pique. Raté !", "Le souffleur ; le bouclier bloque le cône."],
+    ["feu eau fleur", "Tisane parfaite", "s", "pluie", "Une pluie chaude de pétales sur une zone : soigne et nettoie.", "Rien", "Soin, nettoie, et ton prochain lancer est plus fort.", "Les automates sous la pluie se soignent aussi."],
+    ["feu farine acide", "Bombe verte", "a", "cercle", "Explosion qui laisse une flaque d'acide.", "Flaque d'acide (6 s)", "Tu exploses en vert : dégâts autour de toi, et sur toi.", "Trop près de toi, tu la prends aussi."],
+    ["feu farine fleur", "Pluie de pétales", "a", "pluie", "Des pétales en feu tombent sur une grande zone : petits dégâts partout et petits feux.", "Petits feux (3 s)", "Petit soin, et étincelles autour de toi.", "Dégâts faibles ; le cracheur."],
+    ["feu acide fleur", "Fumée puante", "c", "cercle", "Un nuage qui pue : les automates refusent d'y entrer et font le tour (6 s).", "Nuage puant (6 s)", "Tu pues : ils n'osent plus t'approcher (4 s).", "Le souffleur ; le lourd ne sent rien."],
+    ["eau farine acide", "Ciment qui ronge", "c", "cercle", "Sol collant qui ronge : collés et rongés.", "Sol collant (6 s)", "Aïe. Raté !", "Le rapide saute par-dessus ; le lavage de Grosbec."],
+    ["eau farine fleur", "Pâte de soin", "s", "cercle", "Tapis moelleux : il soigne, et ralentit ceux qui marchent dessus.", "Tapis (8 s)", "Soin et petit bouclier.", "Les automates dessus se soignent aussi."],
+    ["eau acide fleur", "Remède amer", "s", "cercle", "Herbe amère : les automates la détestent (elle les ronge), l'Alchimiste est soigné.", "Herbe (8 s)", "Soin, et tes mauvais effets partent.", "Dégâts faibles."],
+    ["farine acide fleur", "Poudre d'herbes", "c", "cone", "Un cône de poudre qui aveugle les automates.", "Nuage (4 s)", "Tu éternues : un cône qui aveugle devant toi, et petit soin.", "Le souffleur."]
+  ];
+
+  var TRACES = [
+    ["feu", "Sol en feu : brûle qui passe dessus."],
+    ["eau", "Flaque : mouille qui passe dedans."],
+    ["farine", "Nuage : aveugle qui est dedans."],
+    ["acide", "Flaque verte : ronge qui passe dedans."],
+    ["fleur", "Fleurs : soignent qui est dessus… même les automates."]
+  ];
+  var REACTIONS = [
+    ["feu farine", "<b>BOUM</b> : explosion."],
+    ["feu eau", "<b>Vapeur</b> : aveugle, et le feu s'éteint. Un mouillé ne brûle pas (pschitt)."],
+    ["eau farine", "<b>Boue</b> : colle très longtemps."],
+    ["feu acide", "<b>Fumée verte</b> : ronge longtemps."],
+    ["eau acide", "<b>Acide dilué</b> : plus faible, mais plus large."],
+    ["farine acide", "<b>Poudre qui pique</b> : aveugle et ronge."],
+    ["feu fleur", "Les fleurs <b>brûlent</b>."],
+    ["eau fleur", "Les fleurs <b>poussent</b> : soin plus fort."],
+    ["farine fleur", "<b>Gâteau</b> : bouclier, ou appât."],
+    ["acide fleur", "L'acide <b>mange</b> la fleur : raté."]
+  ];
+  var ENNEMIS = [
+    ["e-rapide", "#3FB6C9", "Le rapide", "fonce vers toi et <b>saute par-dessus les flaques</b> (eau, boue, acide) : tes pièges au sol ne l'arrêtent pas. Il est fragile : n'importe quelle explosion le casse."],
+    ["e-bouclier", "#7E8D96", "Le bouclier", "tient son bouclier devant lui : <b>tout ce qui vient de face rebondit</b> (cône, rayon, vague, brioche). Mais ce qui tombe du ciel (colonnes, pluie) et ce qui est au sol (flaques) passe. L'acide ronge son bouclier."],
+    ["e-lourd", "#8B5E3C", "Le lourd", "<b>ne recule jamais</b> (vague, raz-de-marée), casse les murs et écrase les fleurs. Il tape très fort. La boue le colle sur place."],
+    ["e-cracheur", "#C8453A", "Le cracheur", "reste loin et crache du feu. <b>Le feu ne lui fait rien.</b> Son feu sèche tes flaques et fait exploser tes nuages de farine, même près de toi. L'eau l'éteint."],
+    ["e-souffleur", "#5E8C7A", "Le souffleur (nouveau)", "un ventilateur sur pattes : <b>il chasse les nuages</b> (farine, vapeur, brouillard, fumée), parfois vers toi. L'acide grippe son ventilateur, la boue le colle."]
+  ];
+  var BOSS = [
+    "<b>Potion de lavage</b> (zone) : nettoie ses automates. La boue, la colle, l'aveuglement et l'acide partent. Mieux vaut attendre qu'il l'ait lancée, ou ne pas tout miser au même endroit.",
+    "<b>Potion de rage</b> (zone) : ses automates vont deux fois plus vite pendant 6 secondes.",
+    "<b>Potion de séchage</b> : toutes les flaques et la boue disparaissent d'un coup.",
+    "<b>Potion d'huile</b> (sur toi) : si du feu te touche, tu brûles très fort. De l'eau sur toi l'enlève.",
+    "<b>Potion de soin</b> (zone) : des fleurs qui soignent ses automates. Brûle-les avec du feu.",
+    "<b>Jet de flammes</b> : un cône de feu vers toi. Un bouclier d'eau te protège.",
+    "<b>Sa protection</b> : tant qu'il lui reste des automates, rien ne le touche. Quand il est découvert, tes zones le touchent comme les autres : s'il est dans ta flaque, il est mouillé."
+  ];
+  var COMBOS = [
+    ["Le piège à boue", ["eau"], "Lance de l'eau sur le chemin, sans personne. Attends qu'ils marchent dans la flaque, puis un peu de farine dessus : boue, tous collés. (Sauf le rapide, qui saute.)"],
+    ["Le barbecue", ["eau", "eau"], "Bois une Vague : bouclier d'eau. Laisse-les venir te coller. Puis Colonne de feu sur toi-même : ils brûlent, toi rien."],
+    ["L'appât", ["farine", "fleur", "fleur"], "Pose un Gâteau de fleurs : ils s'arrêtent tous au même endroit. Puis un GROS BOUM dessus, loin de toi."],
+    ["La mèche", ["farine", "farine", "farine"], "Tempête de farine sur eux, puis une simple Flammèche dedans : énorme BOUM. À faire seulement s'ils sont loin."],
+    ["Le coup raté", ["feu", "eau"], "Vapeur, puis BOUM sur les mêmes : pschitt, ils sont mouillés. Il fallait faire le BOUM d'abord."]
+  ];
+  var GARDE = [
+    "Chaque effet fort à distance a un automate qui le défait : la boue (le rapide saute, le cracheur sèche), les nuages (le souffleur), les murs (le lourd), les cônes et les rayons (le bouclier).",
+    "Grosbec lave, sèche et accélère ses automates : un piège posé trop tôt ne sert à rien.",
+    "Les grosses explosions et les colonnes te touchent aussi si elles sont près de toi.",
+    "Le soin s'use : trop de tisane d'affilée et tu as mal au ventre. Et les fleurs soignent aussi les automates qui marchent dessus.",
+    "Le triplé n'est plus magique : chacun a sa zone et son point faible, comme les autres.",
+    "Les ratés à boire (acide, boue, ciment) punissent ceux qui boivent n'importe quoi."
+  ];
+  var AVIS = [
+    "<b>Le meilleur de tes idées</b> : les traces au sol et les réactions. On peut préparer des pièges, attendre, puis déclencher. C'est là que naît le vrai jeu.",
+    "<b>Grosbec alchimiste</b> : très bonne idée, et ça colle à son labo sous la mairie. Le combat devient un duel d'alchimistes.",
+    "<b>Risque n° 1 : viser sur un téléphone en temps réel.</b> Il faut voir la zone avant de lâcher, et des zones assez grosses. Une tablette serait bien plus confortable.",
+    "<b>Risque n° 2 : 110 effets (55 lancés, 55 bus)</b>, personne ne les retiendra. Mais les deux règles (traces + réactions) permettent de deviner la plupart. Les effets bus restent des surprises à découvrir.",
+    "<b>Risque n° 3 : c'est beaucoup plus gros à construire</b> que les essais d'avant. Pour le prochain essai, je n'en mettrais qu'une quinzaine, les plus parlants, pour vérifier que viser et préparer des pièges est amusant.",
+    "<b>À équilibrer en jouant</b> : certains mélanges sont sûrement trop faibles (Remède amer) ou trop forts (Boue, Tempête de farine). Seul l'essai le dira."
+  ];
+
+  function cle(liste) { return liste.map(function (id) { return IDX[id]; }).sort().join("-"); }
+  var PAR_CLE = {};
+  M = M.map(function (a) {
+    var r = a[0].split(" ");
+    var m = { r: r, n: a[1], t: a[2], f: a[3], l: a[4], reste: a[5], b: a[6], pf: a[7] };
+    m.k = cle(r); m.r = m.k.split("-").map(function (i) { return ING[+i].id; });
+    PAR_CLE[m.k] = m; return m;
+  });
+
+  function ico(id) { return '<svg class="ico" aria-hidden="true"><use href="#' + (id.indexOf("-") > 0 ? id : "i-" + id) + '"/></svg>'; }
+  function mini(id) { var g = ING[IDX[id]]; return '<span class="mini ' + id + '" style="--c:' + g.hex + '" title="' + g.nom + '">' + ico(id) + '</span>'; }
+  function recette(r) { return '<span class="recette">' + r.map(mini).join("") + '</span>'; }
+  function tcoul(t) { return "var(--t-" + t + ")"; }
+
+  /* Petits schémas de forme : l'Alchimiste est le point en bas */
+  function diag(f, c) {
+    var h = '<svg class="diag" viewBox="0 0 64 64" aria-hidden="true">';
+    var moi = '<circle cx="32" cy="56" r="4" fill="var(--ink)"/>';
+    var pointille = function (x, y) { return '<path d="M32 52 L' + x + ' ' + y + '" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>'; };
+    var zone = 'fill="' + c + '" fill-opacity=".25" stroke="' + c + '" stroke-width="2"';
+    switch (f) {
+      case "eclat": h += pointille(40, 25) + '<circle cx="40" cy="18" r="7" ' + zone + '/>' + moi; break;
+      case "cercle": h += pointille(35, 33) + '<circle cx="36" cy="20" r="12" ' + zone + '/>' + moi; break;
+      case "grand": h += pointille(33, 38) + '<circle cx="33" cy="21" r="17" ' + zone + '/>' + moi; break;
+      case "pluie":
+        h += pointille(33, 38) + '<circle cx="33" cy="21" r="17" fill="none" stroke="' + c + '" stroke-width="1.5" stroke-dasharray="3 3"/>';
+        [[25, 14], [36, 11], [42, 20], [28, 25], [37, 29], [22, 22], [33, 19]].forEach(function (p) { h += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="2.6" fill="' + c + '"/>'; });
+        h += moi; break;
+      case "colonnes":
+        h += pointille(33, 38) + '<circle cx="33" cy="21" r="17" fill="none" stroke="' + c + '" stroke-width="1.5" stroke-dasharray="3 3"/>';
+        [[24, 14], [33, 9], [42, 15], [28, 24], [38, 25]].forEach(function (p) { h += '<rect x="' + (p[0] - 2) + '" y="' + (p[1] - 6) + '" width="4" height="12" rx="2" fill="' + c + '"/>'; });
+        h += moi; break;
+      case "cone": h += '<path d="M32 53 L12 8 L52 8 Z" ' + zone + '/>' + moi; break;
+      case "rayon": h += '<path d="M32 52 L46 10" stroke="' + c + '" stroke-width="5" stroke-linecap="round"/><path d="M36 7 Q46 0 56 9" fill="none" stroke="var(--muted)" stroke-width="1.5"/><path d="M52 5 L56 9 L51 11" fill="none" stroke="var(--muted)" stroke-width="1.5"/>' + moi; break;
+      case "anneau": h += '<circle cx="32" cy="32" r="22" ' + zone + '/><circle cx="32" cy="32" r="4" fill="var(--ink)"/>'; break;
+      case "mur": h += pointille(32, 28) + '<rect x="12" y="18" width="40" height="7" rx="3" fill="' + c + '"/>' + moi; break;
+      case "chaine": [0.25, 0.42, 0.59, 0.76, 0.93].forEach(function (t) { h += '<circle cx="' + (32 + 14 * t) + '" cy="' + (52 - 44 * t) + '" r="4" ' + zone + '/>'; }); h += moi; break;
+      case "roule": h += '<circle cx="32" cy="40" r="7" ' + zone + '/><path d="M32 30 V8 M27 13 L32 8 L37 13" stroke="' + c + '" stroke-width="2" fill="none"/>' + moi; break;
+      case "nuage": h += pointille(30, 34) + '<path d="M18 30a6 6 0 0 1 3-11 8 8 0 0 1 15-2 6 6 0 0 1 4 13z" ' + zone + '/><path d="M42 18 L54 10 M49 9 L54 10 L52 15" stroke="var(--muted)" stroke-width="1.5" fill="none"/>' + moi; break;
+      case "pose": h += pointille(38, 28) + '<rect x="31" y="14" width="14" height="10" rx="3" ' + zone + '/><path d="M34 14 V10 M38 14 V9 M42 14 V10" stroke="' + c + '" stroke-width="1.5"/>' + moi; break;
+      default: h += '<path d="M22 18 L42 38 M42 18 L22 38" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"/>' + moi;
+    }
+    return h + '</svg>';
+  }
+
+  function fiche(m, grand) {
+    return '<div class="fiche-tete">' + diag(m.f, tcoul(m.t)) +
+      '<div><' + (grand ? 'h3' : 'h3') + ' class="fiche-nom">' + m.n + '</h3>' +
+      '<div class="fiche-sous">' + recette(m.r) + '<span class="forme-lab" style="--tc:' + tcoul(m.t) + '">' + FORMES[m.f][0] + '</span><span>· ' + SORTES[m.t] + '</span></div></div></div>' +
+      '<div class="ligne"><b>Lancer</b><span>' + m.l + '</span></div>' +
+      '<div class="ligne"><b>Reste au sol</b><span>' + m.reste + '</span></div>' +
+      '<div class="ligne"><b>Boire</b><span>' + m.b + '</span></div>' +
+      '<div class="ligne faible"><b>Point faible</b><span>' + m.pf + '</span></div>';
+  }
+
+  /* --- règles --- */
+  document.getElementById("traces").innerHTML = TRACES.map(function (t) { return '<div class="trace">' + mini(t[0]) + '<span>' + t[1] + '</span></div>'; }).join("");
+  document.getElementById("reactions").innerHTML = REACTIONS.map(function (x) { return '<tr><td>' + recette(x[0].split(" ")) + '</td><td>' + x[1] + '</td></tr>'; }).join("");
+  document.getElementById("formes").innerHTML = Object.keys(FORMES).map(function (k) { return '<div class="forme">' + diag(k, "var(--cuivre)") + '<div><b>' + FORMES[k][0] + '</b><span>' + FORMES[k][1] + '</span></div></div>'; }).join("");
+  document.getElementById("ennemis").innerHTML = ENNEMIS.map(function (e) { return '<div class="ennemi"><span class="pic" style="--c:' + e[1] + '">' + ico(e[0]) + '</span><p><b>' + e[2] + '</b> ' + e[3] + '</p></div>'; }).join("");
+  document.getElementById("boss").innerHTML = BOSS.map(function (x) { return '<li>' + x + '</li>'; }).join("");
+  document.getElementById("combos").innerHTML = COMBOS.map(function (c) { return '<div class="combo"><b>' + c[0] + '</b><span>' + c[2] + '</span></div>'; }).join("");
+  document.getElementById("garde").innerHTML = GARDE.map(function (x) { return '<li>' + x + '</li>'; }).join("");
+  document.getElementById("avis").innerHTML = AVIS.map(function (x) { return '<li>' + x + '</li>'; }).join("");
+
+  /* --- découverts --- */
+  var CLE_DEC = "brumeval-melanges-decouverts", dec = {};
+  try { dec = JSON.parse(localStorage.getItem(CLE_DEC) || "{}") || {}; } catch (e) { dec = {}; }
+  function majDec() { document.getElementById("nb-dec").textContent = Object.keys(dec).filter(function (k) { return PAR_CLE[k]; }).length; }
+  function noter(k) { var neuf = !dec[k]; dec[k] = 1; try { localStorage.setItem(CLE_DEC, JSON.stringify(dec)); } catch (e) {} majDec(); return neuf; }
+
+  /* --- chaudron --- */
+  var slots = [];
+  var zIng = document.getElementById("ingredients");
+  zIng.innerHTML = ING.map(function (g) { return '<button type="button" class="ing ' + g.id + '" data-ing="' + g.id + '" style="--c:' + g.hex + '"><span class="rond">' + ico(g.id) + '</span><span class="nom">' + g.nom + '</span></button>'; }).join("");
+  zIng.addEventListener("click", function (ev) { var b = ev.target.closest("[data-ing]"); if (b && slots.length < 3) { slots.push(b.dataset.ing); rendre(); } });
+  document.getElementById("emplacements").addEventListener("click", function (ev) { var b = ev.target.closest("[data-slot]"); if (b && slots[+b.dataset.slot] !== undefined) { slots.splice(+b.dataset.slot, 1); rendre(); } });
+  document.getElementById("vider").addEventListener("click", function () { slots = []; rendre(); });
+
+  function rendre() {
+    var e = "";
+    for (var i = 0; i < 3; i++) {
+      var id = slots[i];
+      e += id ? '<button type="button" class="empl plein ' + id + '" data-slot="' + i + '" style="--c:' + ING[IDX[id]].hex + '" aria-label="Enlever ' + ING[IDX[id]].nom + '">' + ico(id) + '</button>'
+              : '<span class="empl" aria-hidden="true"><span class="vide">vide</span></span>';
+    }
+    document.getElementById("emplacements").innerHTML = e;
+    zIng.querySelectorAll(".ing").forEach(function (b) { b.disabled = slots.length >= 3; });
+    var liq = document.getElementById("liquide");
+    if (slots.length) {
+      var r = 0, g = 0, b = 0;
+      slots.forEach(function (id) { var h = ING[IDX[id]].hex; r += parseInt(h.substr(1, 2), 16); g += parseInt(h.substr(3, 2), 16); b += parseInt(h.substr(5, 2), 16); });
+      var n = slots.length; liq.style.setProperty("--liq", "rgb(" + Math.round(r / n) + "," + Math.round(g / n) + "," + Math.round(b / n) + ")");
+    } else liq.style.setProperty("--liq", "#3a4a50");
+    var res = document.getElementById("resultat");
+    if (!slots.length) { res.innerHTML = '<p class="attente">Touche un ingrédient pour le jeter dans le chaudron (jusqu\'à trois, et deux fois le même si tu veux). Touche un rond du chaudron pour l\'enlever.</p>'; return; }
+    var m = PAR_CLE[cle(slots)];
+    var neuf = noter(m.k);
+    res.innerHTML = (neuf ? '<span class="nouveau">Nouveau mélange découvert !</span>' : "") + fiche(m, true);
+  }
+
+  /* --- liste --- */
+  var fIng = {}, fForme = null;
+  var zFi = document.getElementById("filtre-ing"), zFf = document.getElementById("filtre-forme");
+  zFi.insertAdjacentHTML("beforeend", ING.map(function (g) { return '<button type="button" class="chip" data-f-ing="' + g.id + '" aria-pressed="false">' + mini(g.id) + g.nom + '</button>'; }).join(""));
+  zFf.insertAdjacentHTML("beforeend", '<button type="button" class="chip sans-rond" data-f-forme="" aria-pressed="true">Toutes</button>' +
+    Object.keys(FORMES).map(function (k) { return '<button type="button" class="chip sans-rond" data-f-forme="' + k + '" aria-pressed="false">' + FORMES[k][0] + '</button>'; }).join(""));
+  zFi.addEventListener("click", function (ev) { var b = ev.target.closest("[data-f-ing]"); if (!b) return; var id = b.dataset.fIng; fIng[id] = !fIng[id]; b.setAttribute("aria-pressed", String(!!fIng[id])); liste(); });
+  zFf.addEventListener("click", function (ev) { var b = ev.target.closest("[data-f-forme]"); if (!b) return; fForme = b.dataset.fForme || null; zFf.querySelectorAll("[data-f-forme]").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); }); liste(); });
+
+  var TITRES = { 1: "Un seul ingrédient", 2: "Deux ingrédients", 3: "Trois ingrédients" };
+  function liste() {
+    var voulus = Object.keys(fIng).filter(function (k) { return fIng[k]; });
+    var l = M.filter(function (m) {
+      if (fForme && m.f !== fForme) return false;
+      return voulus.every(function (id) { return m.r.indexOf(id) !== -1; });
+    });
+    var h = "", n = 0;
+    [1, 2, 3].forEach(function (len) {
+      var part = l.filter(function (m) { return m.r.length === len; });
+      if (!part.length) return;
+      h += '<div class="groupe-titre">' + TITRES[len] + ' · ' + part.length + '</div><div class="cartes">';
+      part.forEach(function (m) { n++; h += '<div class="fiche carte" role="button" tabindex="0" data-k="' + m.k + '" style="--tc:' + tcoul(m.t) + '">' + fiche(m, false) + '</div>'; });
+      h += '</div>';
+    });
+    document.getElementById("liste").innerHTML = h || '<p>Aucun mélange avec ces filtres.</p>';
+    document.getElementById("compte").textContent = n + " mélange" + (n > 1 ? "s" : "") + " sur 55 · touche une fiche pour la mettre dans le chaudron";
+  }
+  var douce = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function charger(k) { slots = PAR_CLE[k].r.slice(); rendre(); document.querySelector(".etabli").scrollIntoView({ behavior: douce ? "smooth" : "auto", block: "start" }); }
+  var zl = document.getElementById("liste");
+  zl.addEventListener("click", function (ev) { var c = ev.target.closest("[data-k]"); if (c) charger(c.dataset.k); });
+  zl.addEventListener("keydown", function (ev) { if (ev.key === "Enter" || ev.key === " ") { var c = ev.target.closest("[data-k]"); if (c) { ev.preventDefault(); charger(c.dataset.k); } } });
+
+  majDec(); liste(); rendre();
+  if (Object.keys(PAR_CLE).length !== 55) console.error("Mélanges : " + Object.keys(PAR_CLE).length);
+})();
+</script>

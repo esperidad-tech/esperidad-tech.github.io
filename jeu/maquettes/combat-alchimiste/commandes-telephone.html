@@ -1,0 +1,177 @@
+<title>Les Commandes du Combat</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Alegreya+Sans:wght@400;700;800&display=swap">
+<style>
+/* Maquette n° 5 : la vue « fausse 3D » sans perspective (comme Zelda ou Pokémon). Le sol est un rectangle, tout garde la même taille partout. Potions en rangée pour l'index gauche, joystick pour le pouce droit, une bande interdite en bas. */
+:root { --bg: #12171A; --surface: #1B2326; --ink: #E8ECEA; --muted: #9AA7A3; --line: #33413F; --bon: #8BD46A; --mal: #F0806A; --jaune: #F2C230; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: "Alegreya Sans", "Segoe UI", Arial, sans-serif; font-size: 16px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 22px 40px; }
+.page { max-width: 900px; margin: 0 auto; display: grid; gap: 18px; }
+h1 { font-family: "IM Fell English SC", Georgia, serif; font-weight: 400; font-size: clamp(1.8rem, 5vw, 2.5rem); margin: 0; line-height: 1.05; }
+.chapeau { color: var(--muted); margin: 4px 0 0; max-width: 70ch; }
+.chapeau b { color: var(--ink); }
+.duo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 760px) { .duo { grid-template-columns: 1fr; } }
+svg.tel { width: 100%; max-width: 360px; height: auto; display: block; margin: 0 auto; }
+svg.large { width: 100%; height: auto; display: block; }
+.bloc { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px 18px; display: grid; gap: 8px; min-width: 0; }
+.bloc h2 { font-family: "IM Fell English SC", Georgia, serif; font-weight: 400; font-size: 1.35rem; margin: 0; }
+.bloc p { margin: 0; }
+ol, ul { margin: 0; padding-left: 1.3em; display: grid; gap: 5px; }
+ol.cle { list-style: none; padding-left: 0; }
+.num { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--jaune); color: #111; font-weight: 800; font-size: .78rem; margin-right: 4px; }
+</style>
+
+<div class="page">
+  <header>
+    <h1>Les commandes du combat</h1>
+    <p class="chapeau">Cinquième proposition : la vue <b>sans perspective</b>, comme dans Zelda, Pokémon ou Stardew Valley. Le sol est un rectangle vu un peu de haut, et tout garde la même taille partout sur l'écran. On voit quand même la hauteur, grâce aux ombres : l'automate qui vole est au-dessus de la sienne.</p>
+  </header>
+
+  <div class="duo">
+    <svg class="tel" viewBox="0 0 330 660" role="img" aria-label="Un iPhone debout en plein écran, vue sans perspective : la place est un rectangle aussi large au fond que devant ; en bas, derrière un muret, une bande avec les cinq potions en rangée et le joystick">
+      <defs>
+        <linearGradient id="ciel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0D1424"/><stop offset="1" stop-color="#1D2433"/></linearGradient>
+        <pattern id="paves" width="40" height="24" patternUnits="userSpaceOnUse">
+          <rect width="40" height="24" fill="#34332F"/>
+          <path d="M0 0.5H40M0 12.5H40M20 0V12.5M0 12.5V24M40 12.5V24" stroke="rgba(0,0,0,.32)" stroke-width="1.2"/>
+        </pattern>
+        <clipPath id="ecran"><rect x="14" y="14" width="302" height="632" rx="42"/></clipPath>
+        <g id="auto"><ellipse cx="0" cy="11" rx="10" ry="4" fill="rgba(0,0,0,.45)"/><rect x="-8" y="-10" width="16" height="19" rx="6" fill="#3FB6C9" stroke="#1E2427" stroke-width="1.8"/><circle cx="0" cy="-14" r="6" fill="#62C8D8" stroke="#1E2427" stroke-width="1.8"/></g>
+        <g id="lourd"><ellipse cx="0" cy="15" rx="15" ry="5.5" fill="rgba(0,0,0,.45)"/><rect x="-13" y="-14" width="26" height="28" rx="8" fill="#8B5E3C" stroke="#1E2427" stroke-width="2"/><circle cx="0" cy="-20" r="8.5" fill="#9C6C46" stroke="#1E2427" stroke-width="2"/><rect x="10" y="-28" width="13" height="7" rx="1.5" fill="#3A2614"/><rect x="14" y="-21" width="3.5" height="17" fill="#3A2614"/></g>
+        <g id="bouc"><ellipse cx="0" cy="12" rx="11" ry="4.2" fill="rgba(0,0,0,.45)"/><rect x="-9" y="-11" width="18" height="21" rx="6" fill="#7E8D96" stroke="#1E2427" stroke-width="1.8"/><circle cx="0" cy="-15" r="6.5" fill="#8F9DA5" stroke="#1E2427" stroke-width="1.8"/><path d="M-12 -4 a13 13 0 0 0 0 13" stroke="#4FA3F0" stroke-width="3.5" fill="none" stroke-linecap="round"/></g>
+        <g id="grosbec"><ellipse cx="0" cy="2" rx="30" ry="9" fill="rgba(0,0,0,.45)"/><circle cx="-19" cy="-34" r="8.5" fill="#6A7478"/><circle cx="19" cy="-34" r="8.5" fill="#6A7478"/><path d="M-18 -38 Q0 -45 18 -38 L20 -4 Q0 3 -20 -4 Z" fill="#59646A" stroke="#1E2427" stroke-width="2"/><path d="M-13 -62 Q0 -74 13 -62 L14 -44 Q0 -40 -14 -44 Z" fill="#6E797E" stroke="#1E2427" stroke-width="2"/><rect x="-9.5" y="-58" width="19" height="4" rx="2" fill="#0C0806"/><circle cx="-4" cy="-56" r="1.5" fill="#E8A23A"/><circle cx="4" cy="-56" r="1.5" fill="#E8A23A"/><path d="M-3 -53 L0 -45 L3 -53 Z" fill="#B0923F"/><circle cx="0" cy="-23" r="5.5" fill="#F2C86A"/></g>
+        <g id="heros"><ellipse cx="0" cy="28" rx="24" ry="8" fill="rgba(0,0,0,.5)"/><path d="M-21 26 Q-19 -5 0 -12 Q19 -5 21 26 Z" fill="#3D2F5C" stroke="#7C6BEB" stroke-width="2.6"/><circle cx="0" cy="-21" r="12.5" fill="#4A3A6E" stroke="#7C6BEB" stroke-width="2.6"/><path d="M-10 -28 Q0 -40 10 -28" stroke="#2A1F42" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+        <g id="p-feu" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M0 8c-3.4 0-5.6-2.2-5.6-5.3 0-3 2.2-4.6 3.1-7.3 1.4 1.2 2 2.6 2.1 4 1-.8 1.7-2.1 1.7-3.6 2.2 1.7 4.3 4.3 4.3 6.9 0 3.1-2.2 5.3-5.6 5.3z"/></g>
+        <g id="p-eau" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M0 -8.5c3 3.7 5.2 6.6 5.2 9.6a5.2 5.2 0 0 1-10.4 0c0-3 2.2-5.9 5.2-9.6z"/></g>
+        <g id="p-farine" fill="none" stroke="#4A3D24" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M-7.5 6c1.3-4.5 4-7.4 7.5-7.4s6.2 2.9 7.5 7.4z"/><path d="M-3 -5h.01M0 -7.5h.01M3 -5h.01"/></g>
+        <g id="p-acide" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M-3 -8.5h6M-2.3 -8.5v4.6L-6.3 3.4a1.9 1.9 0 0 0 1.7 2.9h9.2a1.9 1.9 0 0 0 1.7-2.9l-4-7.3v-4.6"/></g>
+        <g id="p-fleur" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="0" cy="-2" r="2"/><path d="M0 -4c-1.3-2.4-.3-4.2 0-4.4.3.2 1.3 2 0 4.4zM2 -2c2.2-1.6 4.1-1.1 4.3-.9-.1.3-1.7 1.8-4.3.9zM-2 -2c-2.6.9-4.2-.6-4.3-.9.2-.3 2.1-.8 4.3.9zM0 0v6"/></g>
+      </defs>
+
+      <rect x="2" y="2" width="326" height="656" rx="54" fill="#0B0D0E" stroke="#55595C" stroke-width="3"/>
+      <g clip-path="url(#ecran)">
+        <rect x="14" y="14" width="302" height="632" fill="url(#ciel)"/>
+        <!-- façades, vues de face -->
+        <path d="M14 70 L44 46 L74 70 V142 H14 Z" fill="#3A2F2A"/>
+        <path d="M74 60 L99 40 L124 60 V142 H74 Z" fill="#45372F"/>
+        <path d="M124 54 L165 28 L206 54 V142 H124 Z" fill="#514238"/>
+        <path d="M206 60 L231 40 L256 60 V142 H206 Z" fill="#45372F"/>
+        <path d="M256 70 L286 46 L316 70 V142 H256 Z" fill="#3A2F2A"/>
+        <circle cx="165" cy="74" r="11" fill="#E8D9B0" stroke="#3A2F2A" stroke-width="2"/><path d="M165 67 V74 L169 77" stroke="#3A2F2A" stroke-width="1.6" fill="none"/>
+        <g fill="#F2C86A"><rect x="26" y="84" width="10" height="12" rx="1"/><rect x="52" y="104" width="10" height="12" rx="1"/><rect x="86" y="74" width="10" height="12" rx="1"/><rect x="102" y="100" width="10" height="12" rx="1"/><rect x="136" y="96" width="12" height="14" rx="1"/><rect x="182" y="96" width="12" height="14" rx="1"/><rect x="218" y="74" width="10" height="12" rx="1"/><rect x="234" y="100" width="10" height="12" rx="1"/><rect x="268" y="104" width="10" height="12" rx="1"/><rect x="294" y="84" width="10" height="12" rx="1"/></g>
+        <rect x="153" y="112" width="24" height="30" rx="11" fill="#2A211C"/>
+        <rect x="14" y="142" width="302" height="8" fill="#26231F"/>
+        <!-- la place : un rectangle, aussi large au fond que devant -->
+        <rect x="14" y="150" width="302" height="398" fill="url(#paves)"/>
+        <!-- fontaine (à gauche) et tonneaux (à droite) : des obstacles qui servent aux combos -->
+        <ellipse cx="50" cy="300" rx="32" ry="16" fill="#5B5A55" stroke="#2A2925" stroke-width="2"/>
+        <rect x="18" y="300" width="64" height="16" fill="#4A4944"/><ellipse cx="50" cy="316" rx="32" ry="16" fill="#4A4944"/>
+        <ellipse cx="50" cy="300" rx="25" ry="11" fill="#2E86D6" opacity=".8"/>
+        <rect x="47" y="276" width="6" height="22" rx="2" fill="#6A6963"/><path d="M50 276 q-10 4 -12 16 M50 276 q10 4 12 16" stroke="#8FC4F2" stroke-width="2" fill="none"/>
+        <g><rect x="270" y="318" width="22" height="26" rx="4" fill="#7A5634" stroke="#3A2614" stroke-width="2"/><ellipse cx="281" cy="318" rx="11" ry="5" fill="#94683F" stroke="#3A2614" stroke-width="2"/>
+          <rect x="290" y="330" width="22" height="26" rx="4" fill="#7A5634" stroke="#3A2614" stroke-width="2"/><ellipse cx="301" cy="330" rx="11" ry="5" fill="#94683F" stroke="#3A2614" stroke-width="2"/></g>
+        <!-- vies et pause -->
+        <rect x="28" y="30" width="86" height="9" rx="4.5" fill="rgba(0,0,0,.55)"/><rect x="28" y="30" width="64" height="9" rx="4.5" fill="#5FBF58"/>
+        <rect x="105" y="156" width="120" height="0"/>
+        <circle cx="296" cy="35" r="12" fill="rgba(255,255,255,.14)"/><path d="M292 30v10M300 30v10" stroke="#fff" stroke-width="2.4"/>
+        <rect x="128" y="24" width="74" height="22" rx="11" fill="#000"/>
+        <!-- personnages : la même taille partout -->
+        <use href="#grosbec" x="165" y="204"/>
+        <rect x="113" y="216" width="104" height="8" rx="4" fill="rgba(0,0,0,.55)"/><rect x="113" y="216" width="78" height="8" rx="4" fill="#E5572A"/>
+        <use href="#bouc" x="236" y="262"/>
+        <ellipse cx="104" cy="374" rx="54" ry="27" fill="rgba(240,220,240,.22)" stroke="#fff" stroke-width="2" stroke-dasharray="6 5"/>
+        <use href="#auto" x="90" y="366"/><use href="#auto" x="118" y="380"/>
+        <circle cx="110" cy="384" r="17" fill="rgba(255,236,200,.28)" stroke="rgba(255,236,200,.8)" stroke-width="2"/>
+        <!-- un automate projeté : il vole au-dessus de son ombre -->
+        <ellipse cx="200" cy="396" rx="10" ry="4" fill="rgba(0,0,0,.4)"/>
+        <g transform="translate(212 336) rotate(-25)"><rect x="-8" y="-10" width="16" height="19" rx="6" fill="#3FB6C9" stroke="#1E2427" stroke-width="1.8"/><circle cx="0" cy="-14" r="6" fill="#62C8D8" stroke="#1E2427" stroke-width="1.8"/></g>
+        <path d="M188 330 h-16 M190 340 h-22 M188 350 h-14" stroke="rgba(255,255,255,.5)" stroke-width="2" stroke-linecap="round"/>
+        <use href="#lourd" x="262" y="444"/>
+        <path d="M165 462 Q124 420 108 384" stroke="rgba(255,255,255,.5)" stroke-width="1.8" stroke-dasharray="4 4" fill="none"/>
+        <!-- l'Alchimiste et son chaudron collé sous lui -->
+        <use href="#heros" x="165" y="486"/>
+        <rect x="136" y="520" width="58" height="22" rx="11" fill="rgba(11,15,17,.88)" stroke="#3A4448" stroke-width="1.5"/>
+        <circle cx="149" cy="531" r="7" fill="#E5572A"/><circle cx="165" cy="531" r="7" fill="#D9C9A4"/><circle cx="181" cy="531" r="7" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.3" stroke-dasharray="2.5 2.5"/>
+        <!-- le muret : l'Alchimiste ne descend pas plus bas -->
+        <rect x="14" y="548" width="302" height="14" fill="#5B5850"/>
+        <rect x="14" y="548" width="302" height="4" fill="#77736A"/>
+        <path d="M54 552V562M104 552V562M154 552V562M204 552V562M254 552V562M304 552V562" stroke="rgba(0,0,0,.3)"/>
+        <!-- la bande des commandes -->
+        <rect x="14" y="562" width="302" height="84" fill="#141819"/>
+        <circle cx="30" cy="604" r="11" fill="rgba(255,255,255,.12)"/><path d="M25.5 599.5l9 9M34.5 599.5l-9 9" stroke="#ddd" stroke-width="2"/>
+        <g stroke-width="2.2">
+          <circle cx="66" cy="604" r="17" fill="#E5572A" stroke="#7A2A12"/>
+          <circle cx="104" cy="604" r="17" fill="#2E86D6" stroke="#174C7D"/>
+          <circle cx="142" cy="604" r="17" fill="#D9C9A4" stroke="#7C6B47"/>
+          <circle cx="180" cy="604" r="17" fill="#5DB338" stroke="#2E6A17"/>
+          <circle cx="218" cy="604" r="17" fill="#7C6BEB" stroke="#3E2F9A"/>
+        </g>
+        <use href="#p-feu" x="66" y="604"/><use href="#p-eau" x="104" y="605"/><use href="#p-farine" x="142" y="604"/><use href="#p-acide" x="180" y="604"/><use href="#p-fleur" x="218" y="604"/>
+        <circle cx="278" cy="604" r="33" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.3)" stroke-width="2"/>
+        <circle cx="286" cy="596" r="15" fill="rgba(255,255,255,.25)" stroke="rgba(255,255,255,.55)" stroke-width="2"/>
+        <g font-family="Alegreya Sans, sans-serif" font-weight="800" font-size="11">
+          <text x="104" y="418" fill="#FFE7C2" text-anchor="middle">touche pour lancer</text>
+          <text x="194" y="468" fill="#D8CCFF">touche-le</text>
+          <text x="194" y="481" fill="#D8CCFF">pour boire</text>
+          <text x="218" y="326" fill="#FFD9A0">il vole !</text>
+        </g>
+      </g>
+      <!-- repères -->
+      <g font-family="Alegreya Sans, sans-serif" font-weight="800" font-size="12" fill="#111" text-anchor="middle">
+        <circle cx="228" cy="220" r="10" fill="#F2C230"/><text x="228" y="224">1</text>
+        <circle cx="206" cy="531" r="10" fill="#F2C230"/><text x="206" y="535">2</text>
+        <circle cx="142" cy="634" r="10" fill="#F2C230"/><text x="142" y="638">3</text>
+        <circle cx="312" cy="572" r="10" fill="#F2C230"/><text x="312" y="576">4</text>
+        <circle cx="166" cy="368" r="10" fill="#F2C230"/><text x="166" y="372">5</text>
+        <circle cx="136" cy="460" r="10" fill="#F2C230"/><text x="136" y="464">6</text>
+        <circle cx="24" cy="555" r="10" fill="#F2C230"/><text x="24" y="559">7</text>
+      </g>
+    </svg>
+
+    <div style="display:grid;gap:16px;min-width:0">
+      <section class="bloc">
+        <h2>Ce qu'il y a sur l'écran</h2>
+        <ol class="cle">
+          <li><span class="num">1</span>La vie de Grosbec, sous lui ; la tienne en haut à gauche, la pause en haut à droite.</li>
+          <li><span class="num">2</span><b>Le chaudron, collé sous l'Alchimiste</b>, qui le suit partout.</li>
+          <li><span class="num">3</span><b>Les 5 potions en rangée</b>, bien espacées, pour l'index gauche. Le ✕ pour vider au bout de la rangée.</li>
+          <li><span class="num">4</span><b>Le joystick</b>, pour le pouce droit (ou l'index droit, téléphone posé sur la table).</li>
+          <li><span class="num">5</span><b>Toucher l'arène = lancer là.</b> La zone s'affiche quand on appuie ; on peut glisser pour l'ajuster, puis on lâche.</li>
+          <li><span class="num">6</span><b>Toucher l'Alchimiste = boire.</b></li>
+          <li><span class="num">7</span><b>Le muret</b> : le bord de la place. L'Alchimiste ne descend pas plus bas, donc il ne passe jamais sous les boutons.</li>
+        </ol>
+      </section>
+      <section class="bloc">
+        <h2>Si la place est trop petite</h2>
+        <svg class="large" viewBox="0 0 320 162" role="img" aria-label="La place est une fois et demie plus large que l'écran ; l'écran glisse de gauche à droite pour suivre l'Alchimiste">
+          <defs><pattern id="paves2" width="20" height="12" patternUnits="userSpaceOnUse"><rect width="20" height="12" fill="#34332F"/><path d="M0 .5H20M0 6.5H20M10 0V6.5M0 6.5V12M20 6.5V12" stroke="rgba(0,0,0,.32)"/></pattern></defs>
+          <rect x="10" y="22" width="300" height="110" rx="6" fill="url(#paves2)" stroke="#55595C"/>
+          <rect x="10" y="22" width="300" height="20" fill="#3A2F2A"/>
+          <circle cx="160" cy="54" r="7" fill="#59646A"/>
+          <circle cx="40" cy="80" r="9" fill="#2E86D6" opacity=".7"/><rect x="276" y="84" width="14" height="16" rx="3" fill="#7A5634"/>
+          <circle cx="132" cy="112" r="6" fill="#7C6BEB"/>
+          <rect x="82" y="14" width="104" height="126" rx="10" fill="rgba(242,194,48,.08)" stroke="#F2C230" stroke-width="2.5"/>
+          <path d="M70 78 h-22 m6 -6 l-6 6 6 6 M198 78 h22 m-6 -6 l6 6 -6 6" stroke="#F2C230" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <g font-family="Alegreya Sans, sans-serif" font-weight="800" font-size="10" text-anchor="middle">
+            <text x="134" y="10" fill="#F2C230">ce que montre l'écran</text>
+            <text x="160" y="157" fill="#9AA7A3">la place, une fois et demie plus large</text>
+          </g>
+        </svg>
+        <p>Dans cette vue, rien ne se déforme quand l'écran glisse : on peut donc élargir la place plus tard, sans souci. L'écran suit l'Alchimiste seulement de gauche à droite. Grosbec, au milieu du fond, reste presque toujours visible. Une petite flèche au bord de l'écran signale un automate hors de vue.</p>
+      </section>
+      <section class="bloc">
+        <h2>Ce que j'en pense</h2>
+        <ul>
+          <li><b>Cette vue règle le problème de place</b> : le fond est aussi large que le devant. Avec la perspective d'avant, il ne faisait que la moitié.</li>
+          <li><b>Elle est aussi plus simple à faire</b> : une flaque, une bulle ou un automate ont la même taille partout. Les calculs de zone et de collision restent simples.</li>
+          <li><b>La rangée de potions pour l'index</b> : l'index tape une potion, puis remonte tout droit vers sa cible. Le trajet le plus court.</li>
+          <li>Je commencerais par la place fixe, de la largeur de l'écran. On ne l'élargit que si l'essai montre qu'on s'y sent à l'étroit.</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+</div>
