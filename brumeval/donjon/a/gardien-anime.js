@@ -47,11 +47,39 @@
    - les boucles autonomes (engrenages, pistons, battement du cœur, étincelle du fil, étoiles, flammes) animent des
      pièces <g data-j="x-nom"> ;
    - les petites formes n'ont ni opacity ni transform (fill-opacity / stroke-opacity, géométrie des runes déjà tournée) ;
-   - au plus 24 particules à la fois, retirées du DOM à la fin. Mesure : perf.py (processeur ralenti ×6). */
+   - au plus 24 particules à la fois, retirées du DOM à la fin. Mesure : perf.py (processeur ralenti ×6).
+
+   CUIT (24 novembre, 17 h 21 — Romain : « dans la salle avec le gardien mécanique […] il y a encore des ralentissements […] quand j'ai
+   fait un critique sur la grosse machine, ça a beaucoup ramé ») : un SVG dont on anime les pièces est REPEINT EN ENTIER à chaque image,
+   par le fil principal (RAPIDITE.md, R1) — et le Gardien est le plus gros dessin du donjon. BETES.gardien.preparer({res}) le cuit une
+   fois (anim/cuire.js : chaque pièce devient un <div>, le dessin fixe des images), pendant l'écran de passage ; ensuite, creer() monte
+   une copie cuite : ses pièces bougent par la carte graphique. Le module marche des deux façons (SVG vivant, ou cuit) : les quelques
+   endroits qui touchaient au SVG passent par les petits outils ci-dessous (matrices, opacité, îlots pour les effets). */
 (function(global){
 'use strict';
 var ID = 'gardien', PX = 'bt-gardien', NS = 'http://www.w3.org/2000/svg';
 var O = '#24182e', LUNE = '#bfe8ff', CYAN = '#9ffaff', CYANF = '#1ec8ff', ROUGE = '#ff3a1a', ROUGEC = '#ffd8a8', NUM = 0;
+/* (le modèle cuit : {modele, prefixe} — BETES.gardien.preparer) */
+var MODELE = null, CUISSON = null;
+/* ---------- SVG vivant ou cuit : les mêmes gestes ---------- */
+function estSvg(e){ return !!e && e.namespaceURI === NS; }
+function opaDe(e){ if(estSvg(e)){ var a = e.getAttribute('opacity'); return a == null ? 1 : +a; } return e.style.opacity === '' ? 1 : +e.style.opacity; }
+function estCache(e){ return estSvg(e) ? e.getAttribute('visibility') === 'hidden' : e.style.visibility === 'hidden'; }
+function poserOpa(e, v){ if(estSvg(e)) e.setAttribute('opacity', v); else e.style.opacity = v; }
+function cacher(e, on){ if(estSvg(e)){ if(on) e.setAttribute('visibility', 'hidden'); else e.removeAttribute('visibility'); } else e.style.visibility = on ? 'hidden' : ''; }
+function mMul(A, B){ return [A[0] * B[0] + A[2] * B[1], A[1] * B[0] + A[3] * B[1], A[0] * B[2] + A[2] * B[3], A[1] * B[2] + A[3] * B[3], A[0] * B[4] + A[2] * B[5] + A[4], A[1] * B[4] + A[3] * B[5] + A[5]]; }
+function mInv(m){ var d = m[0] * m[3] - m[1] * m[2] || 1e-9; return [m[3] / d, -m[1] / d, -m[2] / d, m[0] / d, (m[2] * m[5] - m[3] * m[4]) / d, (m[1] * m[4] - m[0] * m[5]) / d]; }
+function mAp(m, x, y){ return [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]]; }
+/* la matrice d'un élément vers les pixels (comme getCTM ; marche aussi sur une pièce cuite) */
+function mat(e){
+  if(global.Cuire && global.Cuire.ctm) return global.Cuire.ctm(e);
+  var m = e.getCTM(); return [m.a, m.b, m.c, m.d, m.e, m.f];
+}
+/* la boîte d'un élément dans son propre repère (getBBox ; une pièce cuite : sa boîte est sa place) */
+function boiteDe(e){
+  if(estSvg(e)){ var b = e.getBBox(); return {x:b.x, y:b.y, width:b.width, height:b.height}; }
+  return {x:parseFloat(e.style.left) || 0, y:parseFloat(e.style.top) || 0, width:parseFloat(e.style.width) || 0, height:parseFloat(e.style.height) || 0};
+}
 
 /* =====================================================================
    1. Petits outils de dessin (ceux de la fiche du bestiaire, sans filtre)
@@ -140,7 +168,8 @@ function rotAutour(a, Q, Pv){
 function rotP(p, a, c){ var r = a * Math.PI / 180, co = Math.cos(r), si = Math.sin(r), dx = p[0] - c[0], dy = p[1] - c[1]; return [c[0] + dx * co - dy * si, c[1] + dx * si + dy * co]; }
 
 /* Les pièces articulées : un <g data-j> dont le pivot est ramené à (0,0). Contenu FIXE : on n'anime que transform et opacity. */
-function piv(nom, x, y, c){ return '<g transform="translate(' + x + ' ' + y + ')"><g data-j="' + nom + '"><g transform="translate(' + (-x) + ' ' + (-y) + ')">' + c + '</g></g></g>'; }
+/* (data-i sur le groupe du dedans : cuit, il reste un <div> — _ou(pièce.firstElementChild, x, y) y lit le repère du dessin) */
+function piv(nom, x, y, c){ return '<g transform="translate(' + x + ' ' + y + ')"><g data-j="' + nom + '"><g data-i="" transform="translate(' + (-x) + ' ' + (-y) + ')">' + c + '</g></g></g>'; }
 /* une variante pré-dessinée : cachée (opacité 0 et visibility hidden), montrée par _fondu */
 function vari(nom, c, op, x, y){
   var a = ' data-j="v-' + nom + '" opacity="' + (op || 0) + '"' + (op ? '' : ' visibility="hidden"');
@@ -215,7 +244,9 @@ function Gardien(conteneur, options){
   injecterCSS();
   this.c = conteneur;
   this.o = options || {};
-  var D = new Defs(PX + (++NUM) + '_');
+  /* (cuit : le même préfixe que le modèle — ses dégradés sont dans la copie, sous les mêmes noms ; voir plus bas) */
+  var M = this.o.preparation ? null : MODELE;
+  var D = new Defs(M ? M.prefixe : PX + (++NUM) + '_');
   this.D = D;
   this.G = {flash: D.doux('#fff8e0', .85), lumiere: D.doux('#fff4b0', .9), cyan: D.doux('#bff8ff', .9), braise: D.doux('#ffb040', 1),
     vapeur: D.doux('#eef2f8', .95), vapeurR: D.doux('#ff9a86', .95), rouille: D.doux('#b8642e', .95), rouille2: D.doux('#7a3a1e', .95), fumee: D.doux('#6a6278', .9),
@@ -224,12 +255,22 @@ function Gardien(conteneur, options){
   var art = dessinerGardien.call(this, D);
   var div = document.createElement('div');
   div.className = PX;
-  div.innerHTML = '<svg xmlns="' + NS + '" viewBox="' + VB.join(' ') + '" preserveAspectRatio="xMidYMax meet"><defs>' + D.l.join('') + '</defs>' + art +
-    '<g data-reperes><circle cx="0" cy="0" r="1" fill-opacity="0"/><circle cx="100" cy="100" r="1" fill-opacity="0"/></g></svg>';
   conteneur.appendChild(div);
   this.el = div;
-  this.svg = div.querySelector('svg');
-  D.vivant = this.svg.querySelector('defs');
+  if(M){
+    /* la copie cuite : this.svg est sa racine (un <div>) ; les pièces y gardent leurs data-* */
+    var cl = M.modele.cloner(div);
+    this.svg = cl.racine; this.cuit = true;
+    D.vivant = cl.defs;
+    var me = this;
+    this._ajuste = function(){ if(!me.mort && global.Cuire) global.Cuire.ajuster(me.svg); };
+    global.addEventListener('resize', this._ajuste);
+  } else {
+    div.innerHTML = '<svg xmlns="' + NS + '" viewBox="' + VB.join(' ') + '" preserveAspectRatio="xMidYMax meet"><defs>' + D.l.join('') + '</defs>' + art +
+      '<g data-reperes><circle data-m="" cx="0" cy="0" r="1" fill-opacity="0"/><circle data-m="" cx="100" cy="100" r="1" fill-opacity="0"/></g></svg>';
+    this.svg = div.querySelector('svg');
+    D.vivant = this.svg.querySelector('defs');
+  }
   var self = this;
   /* trois sortes de pièces : J (animées en transform par les poses), V (variantes : opacité seule), K (boucles autonomes) */
   this.J = {}; this.V = {}; this.K = {}; this.S = {}; this.A = {};
@@ -258,6 +299,8 @@ function Gardien(conteneur, options){
   this.vitesse = 1;
   this.allume = true;
   this.eteintes = {};
+  /* (le modèle qu'on va cuire reste au repos : aucune boucle, aucune particule) */
+  if(this.o.preparation) return;
   this._lancerX();
   this._reprendre(0);
 }
@@ -327,10 +370,8 @@ R._allerA = function(pose, duree, e, tout){
 R._ou = function(ref, x, y){
   var el = typeof ref === 'string' ? (this.A[ref] || (this.J[ref] && this.J[ref][0]) || this.S[ref]) : ref;
   if(x == null && el.getAttribute('data-a')){ x = +el.getAttribute('cx'); y = +el.getAttribute('cy'); }
-  var m = el.getCTM(), w = this.S.monde.getCTM(), p = this.svg.createSVGPoint();
-  p.x = x || 0; p.y = y || 0;
-  p = p.matrixTransform(m).matrixTransform(w.inverse());
-  return [p.x, p.y];
+  var q = mAp(mat(el), x || 0, y || 0);
+  return mAp(mInv(mat(this.S.monde)), q[0], q[1]);
 };
 R._pt = function(nom){ return this._ou(nom); };
 /* du repère « monde » à l'écran, et retour (deux marques fixes donnent l'échelle et le décalage) */
@@ -351,6 +392,8 @@ R._couperBoucles = function(){
 };
 /* un élément SVG créé à la volée (particules, débris, restes : jamais dans une pièce) */
 R._el = function(parent, html){
+  /* (cuit : un petit îlot SVG dans le <div> de l'emplacement, au repère du dessin — anim/cuire.js) */
+  if(!estSvg(parent) && global.Cuire) return global.Cuire.ilot(parent, html);
   var g = document.createElementNS(NS, 'g');
   g.innerHTML = html;
   parent.appendChild(g);
@@ -368,15 +411,15 @@ R._fondu = function(els, vers, ms, delai){
   if(typeof els === 'string') els = this.V[els] || this.J[els] || [];
   [].concat(els).forEach(function(e){
     if(!e) return;
-    var de = e.getAttribute('visibility') === 'hidden' ? 0 : parseFloat(getComputedStyle(e).opacity);
+    var de = estCache(e) ? 0 : parseFloat(getComputedStyle(e).opacity);
     e.getAnimations().forEach(function(a){ if(a.id !== 'pulse') a.cancel(); });
-    e.setAttribute('opacity', vers);
-    e.style.opacity = '';
-    if(vers > 0) e.removeAttribute('visibility');
+    poserOpa(e, vers);
+    if(estSvg(e)) e.style.opacity = '';
+    if(vers > 0) cacher(e, false);
     if(ms && !isNaN(de) && Math.abs(de - vers) > .01){
       var an = e.animate([{opacity: de}, {opacity: vers}], {duration: ms, delay: delai || 0, fill: 'backwards', easing: 'ease-in-out'});
-      if(vers <= 0) an.finished.then(function(){ if(+e.getAttribute('opacity') <= 0) e.setAttribute('visibility', 'hidden'); }, function(){});
-    } else if(vers <= 0) e.setAttribute('visibility', 'hidden');
+      if(vers <= 0) an.finished.then(function(){ if(opaDe(e) <= 0) cacher(e, true); }, function(){});
+    } else if(vers <= 0) cacher(e, true);
   });
 };
 /* toutes les variantes dont le nom commence par… */
@@ -403,7 +446,7 @@ R._debutAction = function(){
   this.enAction = true;
   this._couperBoucles();
   /* une action interrompue ne laisse rien de passager derrière elle : les yeux reviennent, les rouages aussi */
-  if(this.V && this.V.yeuxFort && +this.V.yeuxFort[0].getAttribute('opacity') > 0) this._fondu('yeuxFort', 0, 150);
+  if(this.V && this.V.yeuxFort && opaDe(this.V.yeuxFort[0]) > 0) this._fondu('yeuxFort', 0, 150);
   if(this.rouages && !this.mort) this._rouages(this.etat.gele ? .04 : (this.etat.enrage ? 1.8 : 1));
   return this.jeton;
 };
@@ -580,6 +623,7 @@ R._voler = function(g, depart, arrivee, o){
 /* une copie de pièce(s), posée dans le repère fixe exactement où elle est ; la pièce d'origine est cachée (opacité).
    La copie est un débris (hors des pièces) : elle peut voler, tomber et rester au sol. Renvoie {g, c (centre), ang}. */
 R._detacher = function(noms, parent, ancre, pret){
+  if(this.cuit) return this._detacherCuit(noms, parent, ancre, pret);
   var self = this, rep = parent || this.S.fixe, w = rep.getCTM().inverse(), ref = this.J[noms[0]][0], M = w.multiply(ref.getCTM());
   var c = ancre ? this._ou(ancre) : [M.e, M.f];
   var g = this._el(rep, '');
@@ -591,6 +635,31 @@ R._detacher = function(noms, parent, ancre, pret){
     [].forEach.call(inner.querySelectorAll('[data-a],[data-slot]'), function(e){ e.remove(); });
     [].forEach.call(inner.querySelectorAll('[data-j]'), function(e){ e.removeAttribute('data-j'); });
     g.appendChild(inner);
+    if(!pret) self.J[n].forEach(function(e){ e.style.opacity = 0; });
+  });
+  g.style.transform = 'translate(' + f1(c[0]) + 'px,' + f1(c[1]) + 'px)';
+  if(pret) g.style.visibility = 'hidden';
+  this.debris.push(g);
+  return {g: g, c: c, ang: 0, montrer: function(){ g.style.visibility = ''; noms.forEach(function(n){ self.J[n].forEach(function(e){ e.style.opacity = 0; }); }); }};
+};
+/* la même chose, cuit : une copie des <div> de la pièce, posée dans le repère de l'emplacement avec la matrice de la pièce */
+R._detacherCuit = function(noms, parent, ancre, pret){
+  var self = this, rep = parent || this.S.fixe, w = mInv(mat(rep)), M = mMul(w, mat(this.J[noms[0]][0]));
+  var c = ancre ? this._ou(ancre) : [M[4], M[5]];
+  var g = document.createElement('div');
+  g.className = 'cu'; g.setAttribute('data-debris', '1');
+  rep.appendChild(g);
+  noms.forEach(function(n){
+    var el = self.J[n][0], Mn = mMul(w, mat(el)), cp = el.cloneNode(true);
+    /* (la pièce cuite : son repère propre est décalé de sa place — left / top — dans son parent) */
+    var l = parseFloat(el.style.left) || 0, t = parseFloat(el.style.top) || 0;
+    cp.getAnimations && cp.getAnimations().forEach(function(a){ a.cancel(); });
+    cp.style.left = '0px'; cp.style.top = '0px'; cp.style.opacity = ''; cp.style.transformOrigin = '0 0';
+    cp.style.transform = 'translate(' + f1(-c[0]) + 'px,' + f1(-c[1]) + 'px) matrix(' + Mn.map(r3).join(',') + ') translate(' + f1(l) + 'px,' + f1(t) + 'px)';
+    [].forEach.call(cp.querySelectorAll('[data-a],[data-slot]'), function(e){ e.remove(); });
+    [].forEach.call(cp.querySelectorAll('[data-j]'), function(e){ e.removeAttribute('data-j'); });
+    cp.removeAttribute('data-j');
+    g.appendChild(cp);
     if(!pret) self.J[n].forEach(function(e){ e.style.opacity = 0; });
   });
   g.style.transform = 'translate(' + f1(c[0]) + 'px,' + f1(c[1]) + 'px)';
@@ -1156,9 +1225,11 @@ var POSES = {
   /* endormi : affaissé, la tête basse, les poings posés au sol */
   dormant: fus({saut: {y: 14, sy: .985}, buste: {a: -10, y: 3}, tete: {a: -22, y: 7, x: -3}, machoire: {a: -2}, epaule: {a: 3, y: 2}, chaineF: {a: 8}},
     membre('F', [104, 262], 14), membre('P', [446, 322], 4), jambe('F', 2, -14), jambe('P', 0, -14)),
-  /* ébloui : le cœur déréglé ; il recule, le bras proche levé devant les yeux */
-  ebloui: fus({buste: {a: 5, y: 1}, tete: {a: 12, y: -2, x: 2}, machoire: {a: -9}, epaule: {a: -10, y: -6}, brasF: {a: -14}, avbrasF: {a: -16}, poingF: {a: -10}},
-    membre('P', [284, 98], null, -172), jambe('F', -6, 0), jambe('P', 4, 0)),
+  /* ébloui : le cœur déréglé ; il recule, l'avant-bras en visière AU-DESSUS des yeux (le poing au-dessus du front : on voit encore
+     ses yeux), la tête détournée (24 novembre, 17 h 21 — Romain : « il fait n'importe quoi avec ses bras » ; avant : le gros poing
+     posé en plein sur son visage) */
+  ebloui: fus({buste: {a: 6, y: 1}, tete: {a: -10, y: 1, x: 2}, machoire: {a: -9}, epaule: {a: -10, y: -6}, brasF: {a: -10}, avbrasF: {a: -12}, poingF: {a: -8}},
+    membre('P', [268, 36], null, 182), jambe('F', -6, 0), jambe('P', 4, 0)),
   /* renversé : tombé sur le dos comme une tortue, les pieds en l'air, les bras qui battent */
   dos: fus({saut: sautDos(62, 4), buste: {a: 8}, tete: {a: 22, x: 2}, machoire: {a: -12}, epaule: {a: 6}, chaineF: {a: -70}},
     membre('F', [70, 200], null, 200), membre('P', [470, 250], null, 40), jambe('F', -14, -18, -20), jambe('P', -6, -12, -14))
@@ -1395,9 +1466,17 @@ R._joue = function(ev){
 /* les yeux clignent (une variante qui s'éteint un instant : opacité seulement) */
 R._clignerYeux = function(){
   var e = (this.V[this.etat.enrage ? 'yeuxR' : 'yeux'] || [])[0];
-  if(!e || e.getAttribute('visibility') === 'hidden') return;
-  e.animate([{opacity: 1}, {offset: .2, opacity: .1}, {offset: .4, opacity: 1}, {offset: .55, opacity: .3}, {opacity: 1}], {duration: 360, easing: 'steps(5, end)'});
+  if(!e || estCache(e)) return;
+  /* (des sauts nets, sans steps() — Safari ne le joue pas par la carte graphique : RAPIDITE.md, R5) */
+  e.animate(sauts([[0, 1], [.2, .1], [.4, 1], [.55, .3], [.8, 1]]), {duration: 360});
 };
+/* des valeurs d'opacité tenues puis changées d'un coup : [[instant (0..1), opacité], …] → images clés */
+function sauts(l){
+  var k = [];
+  l.forEach(function(p, i){ if(i) k.push({offset: Math.max(0, p[0] - .001), opacity: l[i - 1][1]}); k.push({offset: p[0], opacity: p[1]}); });
+  k.push({offset: 1, opacity: l[l.length - 1][1]});
+  return k;
+}
 /* les yeux s'allument plus fort un moment */
 R._clignerFort = function(delai, duree){
   var self = this;
@@ -1407,8 +1486,8 @@ R._clignerFort = function(delai, duree){
 /* les runes clignotent (déréglé, explosion) */
 R._clignerRunes = function(ms){
   this._varis(this.etat.enrage ? 'rr-' : 'r-').forEach(function(e){
-    if(e.getAttribute('visibility') === 'hidden') return;
-    e.animate([{opacity: 1}, {offset: .15, opacity: .2}, {offset: .3, opacity: 1}, {offset: .5, opacity: .35}, {offset: .7, opacity: 1}, {offset: .85, opacity: .5}, {opacity: 1}], {duration: ms || 500, easing: 'steps(6, end)'});
+    if(estCache(e)) return;
+    e.animate(sauts([[0, 1], [.15, .2], [.3, 1], [.5, .35], [.7, 1], [.85, .5], [.95, 1]]), {duration: ms || 500});
   });
 };
 /* une miette de rouille qui tombe en tournoyant */
@@ -1452,7 +1531,7 @@ R._majRunes = function(ms, delai){
     if(n.indexOf('rr-') === 0 || n.indexOf('r-') === 0) full = n;
     if(!full) return;
     var v = self._cibleRune(full);
-    self.V[n].forEach(function(el){ var vis = el.getAttribute('visibility') !== 'hidden' && +el.getAttribute('opacity') > 0; if(vis !== (v > 0)) self._fondu(el, v, ms, delai); });
+    self.V[n].forEach(function(el){ var vis = !estCache(el) && opaDe(el) > 0; if(vis !== (v > 0)) self._fondu(el, v, ms, delai); });
   });
   var oy = this.allume && !this.eteintes.yeux;
   this._fondu('yeux', oy && !e.enrage ? 1 : 0, ms);
@@ -1485,7 +1564,7 @@ R._e_sans_plaque = function(on){
   this.etat['sans-plaque'] = on;
   if(on){ this.etat['plaque-ouverte'] = false; this.etat['plaque-entrouverte'] = false; }
   this.J.plaque.forEach(function(e){ e.style.opacity = on ? 0 : ''; });
-  if(!on){ (this.fx.debrisPlaque || []).forEach(function(g){ g.remove(); }); this.fx.debrisPlaque = []; this._varis('fel').concat(this.V.gelP || [], this.V.acide || []).forEach(function(el){ el.setAttribute('opacity', 0); el.setAttribute('visibility', 'hidden'); }); }
+  if(!on){ (this.fx.debrisPlaque || []).forEach(function(g){ g.remove(); }); this.fx.debrisPlaque = []; this._varis('fel').concat(this.V.gelP || [], this.V.acide || []).forEach(function(el){ poserOpa(el, 0); cacher(el, true); }); }
   this._majRunes(300);
   return this._changerMode(400);
 };
@@ -1647,7 +1726,7 @@ R.entrer = function(o){
         delete self.eteintes[n];
         self._majRunes(240);
         var el = ETINCELANTES[n] && (self.V['r-' + n] || [])[0];
-        if(el){ var bb = el.getBBox(); self._eclat(self._ou(el, bb.x + bb.width / 2, bb.y + bb.height / 2), 9, '#dffcff', {anneau: CYANF, duree: 320}); }
+        if(el){ var bb = boiteDe(el); self._eclat(self._ou(el, bb.x + bb.width / 2, bb.y + bb.height / 2), 9, '#dffcff', {anneau: CYANF, duree: 320}); }
       }, 200 + k * 95);
     });
     /* 2. la vapeur fuse des joints ; les rouages se remettent à tourner */
@@ -1942,7 +2021,7 @@ R._piege = function(o){
     self._minuteur(function(){
       self._fondu(self.V['r-' + n] || [], 0, 160); self._fondu(self.V['rr-' + n] || [], self._cibleRune('rr-' + n), 160);
       var el = ETINCELANTES[n] && (self.V['rr-' + n] || [])[0];
-      if(el && i % 2){ var bb = el.getBBox(); self._eclat(self._ou(el, bb.x + bb.width / 2, bb.y + bb.height / 2), 9, '#ffd0b0', {anneau: ROUGE, duree: 300}); }
+      if(el && i % 2){ var bb = boiteDe(el); self._eclat(self._ou(el, bb.x + bb.width / 2, bb.y + bb.height / 2), 9, '#ffd0b0', {anneau: ROUGE, duree: 300}); }
     }, 300 + i * 42);
   });
   this._minuteur(function(){ self._fondu('yeuxFort', 0, 200); self._majRunes(150); self._rouages(1.8); }, 300 + REVEIL.length * 42);
@@ -1950,16 +2029,19 @@ R._piege = function(o){
     {t: .1, p: {buste: {a: 5}, tete: {a: 10, y: -2}, machoire: {a: -8}, secousse: {x: 6}}, e: 'cubic-bezier(.1,.9,.3,1)'},
     {t: .25, p: {secousse: {x: 0}}},
     {t: .4, p: {secousse: {x: 1.6}}, e: 'linear'}, {t: .44, p: {secousse: {x: -1.6}}, e: 'linear'}, {t: .48, p: {secousse: {x: 1.6}}, e: 'linear'}, {t: .52, p: fus({secousse: {x: 0}}, this._toutesPieces({brasF: 1, avbrasF: 1, poingF: 1, bras: 1, avbras: 1, poing: 1, epaule: 1, saut: 1, hancheF: 1, tibiaF: 1, piedF: 1, cuisse: 1, tibia: 1, pied: 1})), e: 'linear'},
-    /* il rugit, les deux bras levés */
-    {t: .7, p: fus(membre('F', [150, 4], -40), membre('P', [470, 120], -40), {buste: {a: 6, y: -3}, tete: {a: 14, y: -3}, machoire: {a: -24}, saut: {y: -6, sy: 1.03}, epaule: {a: -10, y: -8}}, jambe('F', 0, 6), jambe('P', 0, 6)), e: 'cubic-bezier(.3,.7,.3,1)'},
-    /* et frappe du pied */
-    {t: .83, p: fus({saut: {y: 5, sy: .95}, buste: {a: -4, y: 2}, tete: {a: -6}, machoire: {a: -10}}, jambe('F', 0, -5), jambe('P', 0, -5)), e: 'cubic-bezier(.6,0,.9,.5)'},
+    /* il rugit, la poitrine en avant, ses deux poings serrés levés DEVANT lui (24 novembre, 17 h 21 — Romain : « il fait n'importe quoi
+       avec ses bras » ; avant : un bras passait derrière sa tête, l'autre partait tendu sur le côté) */
+    {t: .7, p: fus(membre('F', [150, 168], null, -80), membre('P', [418, 176], null, -100),{buste: {a: 5, y: -4}, tete: {a: 12, y: -3}, machoire: {a: -24}, saut: {y: -5, sy: 1.03}, epaule: {a: -6, y: -6}}, jambe('F', 0, 5), jambe('P', 0, 5)), e: 'cubic-bezier(.3,.7,.3,1)'},
+    /* et abat ses deux poings sur le sol (BOUM), penché en avant */
+    {t: .8, p: fus(membre('F', [96, 338], null, 120), membre('P', [446, 346], null, 80),{saut: {y: 9, sy: .95}, buste: {a: -6, y: 3}, tete: {a: -8}, machoire: {a: -10}, epaule: {a: 4, y: 4}}, jambe('F', 0, -7), jambe('P', 0, -7)), e: 'cubic-bezier(.6,0,.9,.5)'},
+    {t: .88, p: fus({saut: {y: 7, sy: .97}}), e: 'ease-out'},
     {t: 1, p: this._toutesPieces(fus({buste: 1, tete: 1, machoire: 1, secousse: 1, saut: 1, epaule: 1}, membre('F', [0, 0]), membre('P', [0, 0]), jambe('F', 0, 0), jambe('P', 0, 0)))}];
   this._minuteur(function(){
     JOINTS.slice(0, 5).forEach(function(jt, i){ self._jet(self._pt(jt[0]), jt[1], {n: 1, delai: i * 40}); });
     self._jet(self._pt('chem1'), -1.5, {n: 2, force: 1.5}); self._jet(self._pt('bouche'), Math.PI * .95, {n: 2});
   }, T * .7);
-  this._minuteur(function(){ self._poussiere(self._pt('piedFC'), 3, -1); self._poussiere(self._pt('piedC'), 3, 1); }, T * .83);
+  /* (la poussière sous ses deux poings) */
+  this._minuteur(function(){ self._poussiere(self._pt('poingFC'), 3, -1); self._poussiere(self._pt('poingC'), 3, 1); }, T * .8);
   return this._seq(k, T).fini.then(function(){ return self._finAction(j, 300); });
 };
 R._coeurEbloui = function(o){
@@ -1990,16 +2072,19 @@ R._t_colle = function(o){
 R._t_huile = function(o){
   var self = this, j = this._debutAction(), T = 2000;
   this._flaque('huile', 270, 170);
+  /* (24 novembre, 17 h 21 — Romain : « il fait n'importe quoi avec ses bras » : avant, il moulinait — le poing passait du sol
+     au-dessus de sa tête, quatre fois. Maintenant : le pied de devant part, il bascule en arrière, les bras un peu écartés pour
+     l'équilibre, vacille deux fois… et se rattrape en plantant ses deux poings au sol, lourd, puis se redresse.) */
   var k = [{t: 0, p: {}}];
-  k.push({t: .14, p: fus(jambe('F', -24, 0, -4), jambe('P', 16, 0, 4), membre('F', [56, 196], -20), {pos: {x: -6}, saut: {y: 6}, buste: {a: -5}, tete: {a: -8}, machoire: {a: -12}, bras: {a: -38}, avbras: {a: -30}, poing: {a: -20}, chaineF: {a: 40}}), e: 'cubic-bezier(.3,.6,.5,1)'});
-  for(var i = 0; i < 4; i++){
-    var s = i % 2 ? 1 : -1;
-    k.push({t: .24 + i * .13, p: fus(jambe('F', -24 + s * 10, 0, s * 4), jambe('P', 16 - s * 8, 0), membre('F', s > 0 ? [60, 40] : [40, 250], s * 30), {pos: {x: s * 8}, buste: {a: s * 6}, tete: {a: -s * 8}, bras: {a: s > 0 ? -60 : 30}, avbras: {a: s > 0 ? -40 : 20}, chaineF: {a: -s * 40}, epaule: {a: s * 4}}), e: 'ease-in-out'});
-  }
-  k.push({t: .84, p: fus(jambe('F', 0, -6), jambe('P', 0, -6), {pos: {x: 0}, saut: {y: 7, sy: .94}, buste: {a: -3}, tete: {a: -4}, machoire: {a: -6}, brasF: {a: 0}, avbrasF: {a: 0}, poingF: {a: 0}, bras: {a: 0}, avbras: {a: 0}, poing: {a: 0}}), e: 'cubic-bezier(.6,0,.9,.5)'});
-  k.push({t: 1, p: this._toutesPieces(fus({pos: 1, saut: 1, buste: 1, tete: 1, machoire: 1, chaineF: 1, epaule: 1}, jambe('F', 0, 0), jambe('P', 0, 0)))});
-  this._minuteur(function(){ self._jet(self._pt('jGenouF'), -2.6, {n: 2}); self._jet(self._pt('jGenou'), -.6, {n: 2}); }, T * .45);
-  this._minuteur(function(){ self._poussiere(self._pt('piedFC'), 3, -1); self._poussiere(self._pt('piedC'), 3, 1); }, T * .84);
+  k.push({t: .16, p: fus(jambe('F', -26, 0, -6), jambe('P', 14, -4, 4), membre('F', [66, 252], null, 150), membre('P', [474, 262], null, 70), {pos: {x: -6}, saut: {y: 4}, buste: {a: 6}, tete: {a: 10, y: -2}, machoire: {a: -14}, chaineF: {a: 30}}), e: 'cubic-bezier(.3,.6,.5,1)'});
+  k.push({t: .3, p: fus(jambe('F', -18, 0, 4), jambe('P', 8, 0), membre('F', [76, 262], null, 145), membre('P', [468, 270], null, 75),{pos: {x: 6}, buste: {a: -4}, tete: {a: -6}, chaineF: {a: -20}}), e: 'ease-in-out'});
+  k.push({t: .42, p: fus(jambe('F', -24, 0, -4), jambe('P', 12, -2, 2), membre('F', [64, 256], null, 150), membre('P', [476, 262], null, 70),{pos: {x: -4}, buste: {a: 5}, tete: {a: 8}, chaineF: {a: 24}}), e: 'ease-in-out'});
+  /* il se rattrape : ses deux poings plantés au sol, le corps tombé d'un coup */
+  k.push({t: .58, p: fus(jambe('F', -12, -8), jambe('P', 6, -8), membre('F', [88, 336], null, 120), membre('P', [448, 346], null, 80),{pos: {x: 0}, saut: {y: 11, sy: .94}, buste: {a: -6, y: 3}, tete: {a: -8}, machoire: {a: -6}, chaineF: {a: 0}, epaule: {a: 4, y: 4}}), e: 'cubic-bezier(.6,0,.9,.5)'});
+  k.push({t: .74, p: fus({saut: {y: 9, sy: .96}, tete: {a: -4}}), e: 'ease-out'});
+  k.push({t: 1, p: this._toutesPieces(fus({pos: 1, saut: 1, buste: 1, tete: 1, machoire: 1, chaineF: 1, epaule: 1}, membre('F', [0, 0]), membre('P', [0, 0]), jambe('F', 0, 0), jambe('P', 0, 0)))});
+  this._minuteur(function(){ self._jet(self._pt('jGenouF'), -2.6, {n: 2}); self._jet(self._pt('jGenou'), -.6, {n: 2}); }, T * .3);
+  this._minuteur(function(){ self._poussiere(self._pt('poingFC'), 3, -1); self._poussiere(self._pt('poingC'), 3, 1); }, T * .58);
   return this._seq(k, T).fini.then(function(){ setTimeout(function(){ self._enleverFlaque('huile'); }, 700); return self._finAction(j, 200); });
 };
 R._t_nuage = function(o){ return this.tousser(); };
@@ -2224,7 +2309,7 @@ R.mourir = function(o){
     self._minuteur(function(){
       self.eteintes[n] = 1; self._majRunes(220);
       var el = ETINCELANTES[n] && (self.V['r-' + n] || [])[0];
-      if(el){ var bb = el.getBBox(), p = self._ou(el, bb.x + bb.width / 2, bb.y + bb.height / 2); self._bouffee(p, {r: 4, grad: self.G.fumee, op: .6, dy: -18, duree: 600}); }
+      if(el){ var bb = boiteDe(el), p = self._ou(el, bb.x + bb.width / 2, bb.y + bb.height / 2); self._bouffee(p, {r: 4, grad: self.G.fumee, op: .6, dy: -18, duree: 600}); }
     }, 900 + k2 * 80);
   });
   [[700, .6], [1400, .35], [2100, .15], [2800, .05], [3300, 0]].forEach(function(v){ self._minuteur(function(){ self._rouages(v[1]); }, v[0]); });
@@ -2409,8 +2494,25 @@ function acteur(b){
     _bete: b
   };
 }
+/* LA CUISSON (24 novembre, 17 h 21 — voir l'en-tête : « CUIT ») : une fois, pendant l'écran de passage. o.res : pixels par unité du
+   dessin (le moteur la calcule comme pour les héros). Sans anim/cuire.js, ou si ça rate : le Gardien reste un SVG vivant. */
+function preparer(o){
+  o = o || {};
+  if(MODELE || !global.Cuire || !global.Cuire.cuire) return Promise.resolve();
+  if(CUISSON) return CUISSON;
+  var hote = global.Cuire.hote(INFO.cadre.w, INFO.cadre.h), g = new Gardien(hote, {preparation: true});
+  /* (la résolution : comme les héros, sa largeur à l'écran par unité du dessin × 1,25, puis × 0,8 — un grand dessin, et la mémoire du
+     téléphone ; entre 0,7 et 2) */
+  var res = o.res || Math.max(.7, Math.min(2, INFO.cadre.w / VB[2] * (o.ecran || 2) * 1.25 * .8) * (o.allege || 1));
+  /* (pas de will-change sur les pièces : trop de couches — RAPIDITE.md, R6 ; la carte graphique les prend quand elles bougent) */
+  CUISSON = global.Cuire.cuire(g.svg, {res: res}).then(function(m){
+    MODELE = {modele: m, prefixe: g.D.u};
+  }).catch(function(e){ if(global.console) console.warn('gardien : cuisson', e); }).then(function(){ g.mort = true; hote.remove(); });
+  return CUISSON;
+}
 global.BETES = global.BETES || {};
-global.BETES[ID] = {info: INFO, creer: function(conteneur, options){ return acteur(new Gardien(conteneur, options)); }};
+global.BETES[ID] = {info: INFO, preparer: preparer, cuit: function(){ return !!MODELE; },
+  creer: function(conteneur, options){ return acteur(new Gardien(conteneur, options)); }};
 })(typeof window !== 'undefined' ? window : this);
 
 })(function(f, ms){ var a = Array.prototype.slice.call(arguments); a[1] = (+ms || 0) / (window.DJ_RYTHME || 1); return window.setTimeout.apply(window, a); });
