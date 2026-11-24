@@ -60,10 +60,20 @@ function modulesDe(salle){
   });
   return l;
 }
+/* (24 novembre, 17 h 21 — Romain : l'atelier « rame énormément ») : une bête dont le module sait se cuire (BETES[m].preparer : le
+   Gardien) est cuite pendant l'écran de passage, à la taille où on la voit — comme les héros. */
+function cuireBetes(mods){
+  var s = Math.min(window.innerWidth / 960, window.innerHeight / 540), dpr = window.devicePixelRatio || 1, k = DJ.allegeImages ? DJ.allegeImages() : 1;
+  return Promise.all(mods.map(function(m){
+    var B = window.BETES && window.BETES[m]; if(!B || !B.preparer || !window.Cuire) return null;
+    /* (ecran : pixels réels par pixel de la scène de 960 × 540 ; le module en tire sa résolution) */
+    return Promise.resolve(B.preparer({ecran:s * dpr, allege:k})).catch(function(){});
+  }));
+}
 function preparer(salle){
   var mods = modulesDe(salle);
   return Promise.all(mods.map(function(m){ return DJ.charger.bete(m); }))
-    .then(function(){ return Promise.all([cuireHeros(), mods.indexOf('rat') >= 0 ? cuireRat() : null, DJ.charger.image(DJ.charger.decor(salle)),
+    .then(function(){ return Promise.all([cuireHeros(), cuireBetes(mods), mods.indexOf('rat') >= 0 ? cuireRat() : null, DJ.charger.image(DJ.charger.decor(salle)),
       DJ.charger.image(SALLE.img('fumee-a')), DJ.charger.image(SALLE.img('brume-a')), DJ.charger.image(SALLE.img('brume-b'))]); });
 }
 
@@ -1041,6 +1051,8 @@ async function geste(ev, evs){
       else if(ev.rebond) bruit(a.module === 'gardien' || a.module === 'ratcuir' ? 'metal' : 'bois'); else bruit('chairF');
       R = D.RECETTES[ev.fleche];
       if(R && !ev.rebond){ son('verre'); Fx.eclabousse(to.x, to.y, R.coul, true); if(SON_POTION[ev.fleche]) bruit(SON_POTION[ev.fleche]); }
+      /* (la flèche fumigène — 24 novembre : elle éclate en un gros nuage, dans toute la salle, comme la fiole) */
+      if(ev.salle){ var mB = milieuBetes(), nF = Fx.nuage(mB.x, mB.y); son('vole', .9); await nF.plein; await attendre(250); return true; }
       return false;
     case 'dague':
       to = a.cible(avant && avant.ouvert);

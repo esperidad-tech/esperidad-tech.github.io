@@ -310,7 +310,8 @@ P.gestes = function(h){
   /* les potions : l'Alchimiste les lance, le Pisteur y trempe une flèche */
   if(D.HEROS[h].sac) this.recettes.forEach(function(rid){
     var r = D.RECETTES[rid], geste = 'p:' + rid;
-    if(h === 'pisteur' && !r.fleche) return;
+    /* (la flèche fumigène du donjon — 24 novembre — n'existe pas contre Léo : le fumigène n'y sert à rien) */
+    if(h === 'pisteur' && (!r.fleche || r.vise === 'salle')) return;
     if(r.vise === 'bete'){
       /* l'huile et le feu atteignent Léo jusque dans sa farine (c'est comme ça qu'on libère un ami, et que la farine fait BOUM) */
       var c2 = ennemis.slice();

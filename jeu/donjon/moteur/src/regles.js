@@ -651,6 +651,17 @@ P._soin = function(ev, h, n, par){
    la transperçante passe à travers les bêtes de brume (même point faible ouvert : le tour est perdu). */
 P._fleche = function(ev, m, potion, q){
   var bonus = !!q && q.contre.indexOf(m.type) >= 0, coup = q ? q.coup : 'fleche', nom = potion || (q ? q.fleche : 'normale');
+  /* LA FLÈCHE FUMIGÈNE (Romain, 24 novembre, 17 h 21 : « que le pisteur, il puisse avoir accès à la flèche de fumigène […] le combat
+     du rat beaucoup trop long. Et on y gagnerait à avoir la flèche de fumigène et aussi la potion de fumigène ») : trempée dans le
+     fumigène, elle éclate en un gros nuage dans toute la salle, comme la fiole de l'Alchimiste — qu'elle touche ou qu'elle ricoche.
+     Le Pisteur fait le nuage, l'Alchimiste peut sonner la louche au même tour (le Roi des rats : nuage, puis bruit). */
+  var recS = potion && D.RECETTES[potion];
+  if(recS && recS.vise === 'salle'){
+    var soi = this;
+    ev.push({t:'tir', heros:'pisteur', bete:m.id, fleche:nom, rebond:false, salle:true});
+    this.vivants().forEach(function(x){ soi._pouvoir(ev, x, recS.pouvoir, {heros:'pisteur', fleche:true}); });
+    return;
+  }
   if(q && q.rebondit && q.rebondit.indexOf(m.type) >= 0){
     ev.push({t:'tir', heros:'pisteur', bete:m.id, fleche:nom, rebond:true, defaut:'rebondit'});
     ev.push({t:'rebond', bete:m.id, coup:coup}); return;

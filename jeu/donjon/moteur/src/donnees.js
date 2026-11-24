@@ -81,7 +81,9 @@ D.BATON = {id:'baton', ic:'🪄', nom:'Bâton normal', d:'rien de spécial'};
    fleche : le Pisteur peut y tremper une flèche. pouvoir : le nom du coup que reçoit le monstre. */
 D.RECETTES = {
   feu:{petit:'Feu', nom:'Fiole de feu', d:'brûle un monstre', long:'Elle brûle un monstre.', vise:'bete', fleche:true, pouvoir:'feu', coul:'#ff7a2a'},
-  fumigene:{nom:'Fumigène', d:'un gros nuage', long:'Un gros nuage, dans toute la salle.', vise:'salle', fleche:false, pouvoir:'nuage', coul:'#aab4d2'},
+  /* (fleche:true depuis le 24 novembre — Romain, 17 h 21 : « que le pisteur, il puisse avoir accès à la flèche de fumigène. Depuis le début,
+     je trouve le combat du rat beaucoup trop long » : la flèche trempée éclate en nuage dans toute la salle, comme la fiole — P._fleche) */
+  fumigene:{nom:'Fumigène', d:'un gros nuage', long:'Un gros nuage, dans toute la salle.', vise:'salle', fleche:true, pouvoir:'nuage', coul:'#aab4d2'},
   /* (libere : lancée sur un ami pris dans une toile, elle le libère tout de suite — Romain, 11 novembre : « il y a toujours un contre ») */
   huile:{nom:'Huile', d:'ça glisse !', long:'Ça glisse, ça glisse… Et sur un ami pris dans une toile, elle le libère.', vise:'bete', fleche:true, pouvoir:'huile', coul:'#f2b630', libere:'entoile'},
   colle:{nom:'Colle', d:'pattes collées', long:'Les pattes restent collées au sol.', vise:'bete', fleche:true, pouvoir:'colle', coul:'#ece4d0'},

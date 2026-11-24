@@ -340,15 +340,16 @@ def potions(nav):
     # le Pisteur (Romain, 16 h 37) : « arc normal, arc de lune, arc transperçant et la dague. Et après : feu, huile, colle, acide, givre. »
     pg.tap('.b-heros[data-id="pisteur"]', force=True); pg.wait_for_timeout(300)
     m = pg.evaluate(MESURE)
-    verifie(m['gauche'] == ['fleche', 'f:fleches-argent', 'f:fleches-lourdes', 'dague'] and m['droite'] == ['p:feu', 'p:huile', 'p:colle', 'p:acide', 'p:givre'] and m['petites'] == m['droite'] and m['titres'] == ['⚔️ Ses armes', 'Ses combos'],
-            'le Pisteur : à gauche ses quatre armes, à droite ses cinq combos (la flèche trempée) ' + str(m['gauche']) + str(m['titres']))
+    # (24 novembre, 17 h 21 : et la flèche fumigène — Romain : « que le pisteur, il puisse avoir accès à la flèche de fumigène »)
+    verifie(m['gauche'] == ['fleche', 'f:fleches-argent', 'f:fleches-lourdes', 'dague'] and m['droite'] == ['p:feu', 'p:fumigene', 'p:huile', 'p:colle', 'p:acide', 'p:givre'] and m['petites'] == m['droite'] and m['titres'] == ['⚔️ Ses armes', 'Ses combos'],
+            'le Pisteur : à gauche ses quatre armes, à droite ses six combos (la flèche trempée) ' + str(m['gauche']) + str(m['titres']))
     noms = pg.evaluate(NOMS, '.b-armes')
     # (dans cette salle, tout vole : depuis le 11 novembre au soir, la dague y est éteinte et dit « Trop haut ! »)
     volent = pg.evaluate("() => { var c = DJ.Combat._E().c; return !c.aPortee().length; }")
     verifie(noms == ['Arc normal — ce qui vole', 'Arc de lune — bêtes de brume [dessin]', 'Arc transperçant — perce l\'armure [dessin]', 'Dague — ' + ('Trop haut !' if volent else 'celui de devant')], 'ses armes : arc normal, arc de lune, arc transperçant, dague ' + str(noms))
     verifie(not volent or pg.evaluate("() => document.querySelector('#bande .carte[data-id=\"dague\"]').classList.contains('off')"), 'rien ne marche par terre ici : la carte de la dague est éteinte')
     noms = pg.evaluate(NOMS, '.b-combos')
-    verifie(noms == ['Feu', 'Huile', 'Colle', 'Acide', 'Givre'], 'ses combos : feu, huile, colle, acide, givre ' + str(noms))
+    verifie(noms == ['Feu', 'Fumigène', 'Huile', 'Colle', 'Acide', 'Givre'], 'ses combos : feu, fumigène, huile, colle, acide, givre ' + str(noms))
     verifie(not m['dehors'] and m['journal'], 'les cartes du Pisteur tiennent dans la bande ' + str(m['dehors']))
     pg.screenshot(path=os.path.join(CAP, 'combat-fleches.png'))
     # le défaut de l'arc transperçant : sa flèche passe à travers une bête de brume

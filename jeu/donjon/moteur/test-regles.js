@@ -626,6 +626,15 @@ section('Le Roi des rats');
   ok(trouve(ev, 'touche', function(e){ return e.coup === 'bruit' && e.bete === roi.id; }).piege && ch && ch.cibles[0] === 'alchimiste' && trouve(ev, 'degats', function(e){ return e.heros === 'alchimiste'; }).n === Math.ceil(D.MONSTRES.roirats.attaques.charge.degats * D.CHIFFRES.bouclier),
     'piège : le bruit au mauvais moment, ils chargent l\'Alchimiste (son bouclier en arrête 75 %)');
 
+  /* la flèche fumigène (Romain, 24 novembre, 17 h 21 : « le combat du rat beaucoup trop long ») : le Pisteur fait le nuage, l'Alchimiste
+     sonne la louche au même tour */
+  t = prep('ossuaire', {sac:['fumigene', 'colle', 'feu']}); c = t.c; roi = seul(c);
+  ok(c.gestes('pisteur').some(function(g){ return g.geste === 'p:fumigene' && g.permis && g.cibles.indexOf(roi.id) >= 0; }), 'le Pisteur a la flèche fumigène');
+  ev = jouer(c, 'pisteur', 'p:fumigene', roi);
+  ok(trouve(ev, 'tir', function(e){ return e.salle && e.fleche === 'fumigene'; }) && c.a(roi, 'noeud'), 'la flèche fumigène éclate en nuage dans toute la salle : le nœud se tend');
+  ev = jouer(c, 'alchimiste', 'louche');
+  ok(trouve(ev, 'special', function(e){ return e.nom === 'tirent'; }) && roi.ouvert !== 0, 'et la louche au même tour : le nœud se montre (ouvert) — un tour de gagné');
+
   t = prep('ossuaire', {sac:['fumigene', 'colle', 'feu']}); c = t.c; roi = seul(c);
   jouer(c, 'alchimiste', 'p:fumigene');
   ev = jouer(c, 'pisteur', 'p:colle', roi);

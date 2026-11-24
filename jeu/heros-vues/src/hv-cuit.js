@@ -212,6 +212,9 @@ CP.aCuire = function(P0){ var P = this.poseComplete(P0); return this.manquants(P
 var DE_LA_TETE = {tete:1, cheveuxDos:1, cou:1};
 CP.preparer = function(P0){
   var me = this, P = this.poseComplete(P0), S = this.squelette(P), L = this.manquants(P, S);
+  /* (this._seulement : quand un geste attend ses images, on ne cuit que ces morceaux-là — les mains de l'Alchimiste et leurs fioles ;
+     le reste prend la variante la plus proche, comme d'habitude) */
+  if(this._seulement){ var so = this._seulement; L = L.filter(function(x){ return so[x[0]]; }); }
   if(!L.length) return Promise.resolve();
   var K = this.K, h = this.h, V = this.vue(P), corps = L.some(function(x){ return !DE_LA_TETE[x[0]]; }), tete = L.some(function(x){ return DE_LA_TETE[x[0]]; });
   /* (le dessin du corps seulement s'il en manque un morceau : la tête seule se dessine bien plus vite) */
@@ -266,7 +269,12 @@ function vueDeCle(c){ var m = /v(-?\d+)/.exec(c) || /^[a-z]+(-?\d+)/i.exec(c); r
 CP.variante = function(nom, cle){
   var t = this.variantes[nom]; if(!t) return null;
   if(t[cle]) return {cle:cle, v:t[cle]};
-  var ks = Object.keys(t), vue = cle.split(/[a-z]+/i)[1], i;
+  var ks = Object.keys(t), i;
+  /* (une main qui tient une fiole d'une couleur pas encore cuite : la même main, avec une fiole d'une autre couleur — plutôt qu'une
+     main d'une autre pose, sans fiole peut-être. 24 novembre, 17 h 21) */
+  var sansK = function(c){ return c.replace(/^k(#[0-9a-f]{3,6})*/i, ''); };
+  if(/^k#/i.test(cle)){ var cs = sansK(cle); for(i = 0; i < ks.length; i++) if(/^k#/i.test(ks[i]) && sansK(ks[i]) === cs) return {cle:ks[i], v:t[ks[i]]}; cle = cs; }
+  var vue = cle.split(/[a-z]+/i)[1];
   /* (la tête : le même angle ET la même inclinaison d'abord — une tête du bon angle mais penchée autrement est dessinée plus haut ou
      plus bas dans son cadre : elle flottait à côté du cou — Romain, 24 novembre, 12 h 50) */
   if(nom === 'tete'){
@@ -497,9 +505,26 @@ CP.imagesVie = function(P0){
 };
 /* ---------- CUIRE D'AVANCE les morceaux d'un geste (images = [{t, P}]) : un morceau à la fois, en laissant la page respirer entre
    deux ; libre() dit si on peut travailler maintenant (pas pendant un geste) → promesse ---------- */
-CP.cuireImages = function(images, libre, pause){
-  /* (pause : le repos entre deux dessins, en ms — 16 d'habitude ; plus long quand chaque image compte : Léo, en temps réel) */
-  var me = this, i = 0, P0 = pause || 16;
+/* (24 novembre, 17 h 21 : une image peut porter ses couleurs à elle, x.K — les deux fioles de l'Alchimiste, pour chaque potion. Le
+   pantin prend ces couleurs le temps de calculer les clés et d'écrire le dessin — tout se fait d'un coup, sans rien attendre —, puis
+   reprend les siennes. pause : 0 = d'une traite, quand le geste attend ses images.) */
+CP._avecK = function(K2){
+  if(!K2) return function(){};
+  var me = this, avant = {}, k;
+  for(k in K2){ avant[k] = me.K[k]; me.K[k] = K2[k]; }
+  return function(){ for(var k2 in avant) me.K[k2] = avant[k2]; };
+};
+CP.aCuireK = function(P, K2, seulement){
+  var r = this._avecK(K2);
+  try{
+    if(!seulement) return this.aCuire(P);
+    var Pc = this.poseComplete(P); return this.manquants(Pc, this.squelette(Pc)).filter(function(x){ return seulement[x[0]]; }).length;
+  } finally{ r(); }
+};
+CP.cuireImages = function(images, libre, pause, seulement){
+  /* (pause : le repos entre deux dessins, en ms — 16 d'habitude ; plus long quand chaque image compte : Léo, en temps réel ;
+     seulement : {mainG:1, …} — ne cuire que ces morceaux) */
+  var me = this, i = 0, P0 = pause == null ? 16 : pause;
   marquer(images);
   return new Promise(function(fini){
     (function suite(){
@@ -507,9 +532,12 @@ CP.cuireImages = function(images, libre, pause){
       if(libre && !libre()) return setTimeout(suite, 400);
       var n0 = performance.now();
       /* (on avance jusqu'à la prochaine image qui a quelque chose à cuire) */
-      while(i < images.length && !me.aCuire(images[i].P)){ i++; if(performance.now() - n0 > 8) return setTimeout(suite, 0); }
+      while(i < images.length && !me.aCuireK(images[i].P, images[i].K, seulement)){ i++; if(performance.now() - n0 > 8) return setTimeout(suite, 0); }
       if(i >= images.length) return fini();
-      me.preparer(images[i++].P).then(function(){ setTimeout(suite, P0); }, function(){ setTimeout(suite, P0); });
+      var im = images[i++], r = me._avecK(im.K), pr;
+      me._seulement = seulement || null;
+      try{ pr = me.preparer(im.P); } finally{ r(); me._seulement = null; }
+      pr.then(function(){ setTimeout(suite, P0); }, function(){ setTimeout(suite, P0); });
     })();
   });
 };

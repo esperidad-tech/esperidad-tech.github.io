@@ -254,7 +254,9 @@ Cuire.cuire = function(svg, o){
     if(tl && tl.numberOfItems){ var c1 = tl.consolidate(); if(c1){ tf = 'matrix(' + deSvg(c1.matrix).join(',') + ')'; ox = 0; oy = 0; } }
     /* l'origine n'est écrite que si elle compte : une transformation fixe, une origine écrite dans le style, ou une origine
        non nulle donnée par une règle CSS (sinon, les classes du module, comme « pulse autour du centre », gardent la main) */
-    var ecrire = (tf && tf !== 'none') || !!(E.style && E.style.transformOrigin) || (!feuille && (ox || oy));
+    /* (24 novembre : et une pièce « feuille » décalée — sa boîte commence ailleurs qu'en 0 0 : en SVG, elle tourne et grandit autour
+       du 0 0 de son dessin, pas du coin de sa boîte ; par exemple les étoiles du rat cuirassé, dessinées autour de 0 0) */
+    var ecrire = (tf && tf !== 'none') || !!(E.style && E.style.transformOrigin) || (!feuille && (ox || oy)) || (feuille && !!(boite.x || boite.y));
     var n = {type:'div', el:E, boite:boite, origine:ecrire ? [ox - boite.x, oy - boite.y] : null, transform:tf, opacite:parseFloat(cs.opacity),
       cache:caches.has(E), visibilite:(E.getAttribute('visibility') || (E.style && E.style.visibility) || ''), clip:null};
     var f = E.getAttribute('filter');
