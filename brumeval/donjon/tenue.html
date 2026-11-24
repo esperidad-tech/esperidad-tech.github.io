@@ -4385,7 +4385,19 @@ function coucheBras(S, cle, P){
 function q(v, pas){ return Math.round((v || 0) / pas) * pas; }
 /* (la vue d'un morceau du corps : l'angle où on le regarde, plus ce que le bassin et le dos tournent sur eux-mêmes) */
 /* (pas : tous les combien de degrés une nouvelle variante — le buste change beaucoup quand il tourne ; un bras, une botte, presque pas) */
-function vueDe(P, pas){ return q(HV.capDe(P) + ((P.bang || [0, 0, 0])[2] + (P.dos || [0, 0, 0])[2]) * 0.5, pas || 20); }
+/* (un angle ramené entre -180 et 180 : après un tour complet, on retrouve les mêmes variantes) */
+function tour(a){ a = ((a % 360) + 540) % 360 - 180; return a === -180 ? 180 : a; }
+function vueDe(P, pas){ return tour(q(HV.capDe(P) + ((P.bang || [0, 0, 0])[2] + (P.dos || [0, 0, 0])[2]) * 0.5, P._vite ? Math.max(90, pas || 20) : pas || 20)); }
+/* (quand le corps tourne vite — la victoire en tournant sur soi-même —, une variante tous les 60° suffit : on ne voit pas la différence,
+   et il y en aurait plus de cent à dessiner) */
+function marquer(images){
+  for(var i = 1; i < images.length; i++){
+    var a = images[i - 1], b = images[i], dt = Math.max(1e-3, b.t - a.t), d = Math.abs(HV.capDe(b.P) - HV.capDe(a.P)) / dt;
+    if(d > 240){ a.P = copie(a.P); b.P = copie(b.P); a.P._vite = b.P._vite = true; }
+  }
+  return images;
+}
+function copie(P){ if(P._copie) return P; var R = {}, k; for(k in P) R[k] = P[k]; R._copie = true; return R; }
 var PAS_VUE = {buste:20, carquois:20, robe:20, cou:30, arc:30, brasHautG:60, brasBasG:60, brasHautD:60, brasBasD:60, cuisseG:60, botteG:60, cuisseD:60, botteD:60};
 function cleMain(P, c, K){
   /* (la couleur des fioles de l'Alchimiste : K.potion, K.potion2 — le donjon la change pendant ses gestes) */
@@ -4402,8 +4414,8 @@ function cleTete(P, yaw){
 function cleDe(nom, P, S, K){
   if(nom === 'mainG') return cleMain(P, 'G', K);
   if(nom === 'mainD') return cleMain(P, 'D', K);
-  if(nom === 'tete') return cleTete(P, S.tete.yaw + HV.capDe(P));
-  if(nom === 'cheveuxDos') return 'y' + q(S.tete.yaw + HV.capDe(P), 20);
+  if(nom === 'tete') return cleTete(P, tour(P._vite ? q(S.tete.yaw + HV.capDe(P), 90) : q(S.tete.yaw + HV.capDe(P), 20)));
+  if(nom === 'cheveuxDos') return 'y' + tour(q(S.tete.yaw + HV.capDe(P), P._vite ? 90 : 20));
   if(nom === 'arc') return S.arc ? 'v' + vueDe(P, 30) + 's' + S.arc.sens + 't' + q(S.arc.td, 0.5) : null;
   if(nom === 'cordeH' || nom === 'cordeB') return S.arc ? 'c' : null;
   if(nom === 'fleche') return S.arc && S.arc.pt ? 'f' : null;
@@ -4623,6 +4635,7 @@ CP.jouer = function(images, o){
   o = o || {};
   var me = this, n = images.length, D = Math.max(0.001, images[n - 1].t);
   this.arreter();
+  marquer(images);
   /* 1) les os et les morceaux voulus à chaque image */
   /* (o.cle : un plan déjà fait pour ces mêmes images — la petite vie de la garde, la course — tant que rien n'a été cuit depuis) */
   this._plans = this._plans || {};
@@ -4755,6 +4768,7 @@ CP.imagesVie = function(P0){
    deux ; libre() dit si on peut travailler maintenant (pas pendant un geste) → promesse ---------- */
 CP.cuireImages = function(images, libre){
   var me = this, i = 0;
+  marquer(images);
   return new Promise(function(fini){
     (function suite(){
       if(me.mort) return fini();
@@ -4936,7 +4950,7 @@ function Volume(cont, lk, creer0, role){
   this.p.courante = function(){ return me.pose(); };
   var d0 = this.p.dessiner;
   /* (cuit : plus de dessin, seulement la pose — le pantin cuit, lui, joue ce qui a été prévu) */
-  if(CUIT) d0 = function(){ var P = me.pose(), F = {}, k; for(k in P) F[k] = P[k]; F.cap = CAP; this.F = F; return true; };
+  if(CUIT) d0 = function(){ var P = me.pose(), F = {}, k; for(k in P) F[k] = P[k]; F.cap = CAP; this.F = F; this.anV = this.anC || 0; return true; };     /* (l'anneau : c'est le pantin cuit qui le montre) */
   this.p.dessiner = function(dt){ var t1 = horloge(), r = d0.call(this, dt); if(r !== false){ if(!CUIT) noterDessin(horloge() - t1); this._vides = 0; } else this._vides = (this._vides || 0) + 1; me.apresImage(); return r; };
   /* (au calme — elle respire, cligne des yeux —, 15 dessins par seconde suffisent ; pendant un geste, 30 : la tablette souffle ;
      en léger, 20 au plus — et au calme, quand plus rien ne bouge depuis 8 images, elle s'endort : plus rien à faire à chaque image,
@@ -5039,6 +5053,19 @@ V.plus = function(ms, fn){ var me = this, id = setTimeout(function(){ var i = me
 V.glisse = function(x0, x1, d, ease, y){
   var me = this, t0 = maintenant(), tok = this._gl = (this._gl || 0) + 1;
   this._glisse = true; this.p._vides = 0; if(HV.reveiller) HV.reveiller();
+  /* (cuit : la boîte glisse par la carte graphique, comme le reste — sur une tablette lente, le fil principal ne la faisait avancer
+     que par à-coups) */
+  if(this.cuit && this.boite.animate){
+    var kf = [], i, a, e;
+    for(i = 0; i <= 24; i++){ a = i / 24; e = ease ? ease(a) : a; kf.push({offset:a, transform:'translate(' + (x0 + (x1 - x0) * e).toFixed(1) + 'px,' + (y ? y(a) : 0).toFixed(1) + 'px)'}); }
+    if(this._glA) try{ this._glA.cancel(); }catch(x){}
+    var an = this._glA = this.boite.animate(kf, {duration:Math.max(1, d * 1000), fill:'forwards'});
+    this.dx = x1;
+    return an.finished.then(function(){
+      if(tok !== me._gl) return;
+      me.boite.style.transform = kf[kf.length - 1].transform; an.cancel(); me._glA = null; me._glisse = false;
+    }, function(){});
+  }
   return new Promise(function(r){ (function pas(){ if(tok !== me._gl) return r(); var a = Math.min(1, (maintenant() - t0) / d), e = ease ? ease(a) : a; me.dx = x0 + (x1 - x0) * e;
     me.boite.style.transform = 'translate(' + me.dx.toFixed(1) + 'px,' + (y ? y(a) : 0).toFixed(1) + 'px)'; if(a < 1) requestAnimationFrame(pas); else { me._glisse = false; r(); } })(); });
 };
@@ -5286,7 +5313,18 @@ V.entrer = function(dist){
       /* (cuit : la même course, sans rien toucher — pour la prévoir d'avance) */
       me.course.pose = function(u){ return u < ts ? HV.course(u) : HV.gesteImage(dep, cles, Math.min(u - ts, A.duree)); };
       me.course.duree = ts + A.duree; me.course.t0 = me.t0;
-      if(me.cuit) me.cuitPlan();
+      if(me.cuit){
+        me.cuitPlan();
+        /* (et la boîte avance par la carte graphique : les mêmes positions, prévues d'avance) */
+        if(me.boite.animate){
+          var kf = [], D2 = ts + A.duree, i2;
+          for(i2 = 0; i2 <= 60; i2++){ var u2 = D2 * i2 / 60, x2 = u2 < ts ? -dist + vr * u2 : -G9 + A.glisse(Math.min(u2 - ts, A.duree)) * sc;
+            kf.push({offset:i2 / 60, transform:'translateX(' + Math.min(0, x2).toFixed(1) + 'px)'}); }
+          var an = me.boite.animate(kf, {duration:D2 * 1000, fill:'forwards'});
+          an.startTime = me.t0 * 1000;
+          an.finished.then(function(){ an.cancel(); }, function(){});
+        }
+      }
     });
   });
 };
@@ -5332,6 +5370,7 @@ V.touche = function(type, opt){
 };
 /* ELLE TOMBE SUR LE DOS, sonnée (la chute validée), et reste allongée */
 V.tomber = function(){
+  this._releve = null;
   return this.file(function(){
     if(this.ko) return null;
     var me = this;
@@ -5346,7 +5385,10 @@ V.tomber = function(){
 /* ELLE SE RELÈVE : comme après la chute ; avec l'amulette, la lumière dorée la soulève d'un coup */
 V.relever = function(opt){
   opt = opt || {};
-  return this.file(function(){
+  /* (24 novembre — contre Léo, le combat redemande « relève-toi » à chaque mise à jour tant qu'elle est encore au sol ; chaque demande
+     attendait son tour dans la file : à la victoire, 40 secondes de relevés en retard avant la joie. Une seule à la fois.) */
+  if(this._releve) return this._releve;
+  var me = this, pr = this._releve = this.file(function(){
     var me = this, am = !!opt.amulette;
     this._etoiles(false);
     var L = am ? HV.DONJON.amulette : [[0.01, HV.SONNEE]].concat(decale(HV.RELEVE, 0.5));
@@ -5355,6 +5397,8 @@ V.relever = function(opt){
       return Promise.all([me.jouer(L), o]);
     }).then(function(){ me.ko = false; });
   });
+  pr.then(function(){ if(me._releve === pr) me._releve = null; });
+  return pr;
 };
 /* ELLE TIRE : le geste validé (la main au carquois, le bras levé haut, la flèche encochée, elle bande, elle lâche à 1,38 s) ;
    la flèche qui vole est celle de l'ancien (toutes les sortes : feu, huile, colle, argent, lourde, rebond…), partie de son arc */
@@ -5897,10 +5941,12 @@ V.entoile = function(on){
     this.ombreFait('entoile', on);
     if(on){
       this.effet('toile', function(u, os){ return toile(this, os, u, null); }, 1e9);
-      return this.jouer(HV.DONJON.toile.filter(function(k){ return k[0] <= 0.35 + 1e-6; }), function(u){
+      var debat = function(u){
         var a = Math.sin(u * 3.2), b = Math.max(0, Math.sin(u * 1.6));
         return HV.avec(me.base, HV.avec(HV.COLLEE, {dos:[2 * b, 0, 12 * a], bas:[-3 * a, 30, -4], hoche:6 + 4 * b, plisse:0.4 + 0.4 * b}));
-      }).then(function(){ return attendre(500); });
+      };
+      debat.periode = 2 * Math.PI / 1.6;          /* (cuit : elle se débat en boucle — un tour complet des deux balancements) */
+      return this.jouer(HV.DONJON.toile.filter(function(k){ return k[0] <= 0.35 + 1e-6; }), debat).then(function(){ return attendre(500); });
     }
     /* (elle se ramasse et l'ouvre d'un coup : les fils cassent et volent) */
     var L = morceau(HV.DONJON.toile, 1.6, 3.1, HV.COLLEE), dech = 1.92 - 1.6 + 0.01;
@@ -5964,7 +6010,9 @@ if(G.addEventListener) G.addEventListener('resize', function(){ ((G.HerosVuesDon
 V.cuitMonter = function(){
   var me = this;
   /* (la finesse des morceaux : ce que la boîte fait vraiment à l'écran, en pixels de l'appareil) */
-  var k = (this.boite.offsetWidth || 200) / CADRE[2], res = Math.max(0.8, Math.min(2, k * (G.devicePixelRatio || 1) * 1.1));
+  /* (sa vraie taille à l'écran, scène réduite comprise : sur un téléphone, la scène est plus petite — moins de mémoire pour les toiles) */
+  var rw = 0; try{ rw = this.boite.getBoundingClientRect().width; }catch(e){}
+  var k = (rw || this.boite.offsetWidth || 200) / CADRE[2], res = Math.max(0.8, Math.min(2, k * (G.devicePixelRatio || 1) * 1.05));
   this.cuit = HV.Cuit.monter(this.boite, this.h, {cadre:CADRE.join(' '), cap:CAP, res:res, K:this.p.K});
   this.cuit.racine.style.visibility = 'hidden';
   this.cuit.anneauP = this.base;
@@ -6102,6 +6150,8 @@ function mesurer(){
    demande : « ?volume=1 » dans l'adresse. Partout ailleurs, les anciens héros.) */
 var SUR_DEMANDE = true;
 function tropLent(){
+  /* (cuits, ils ne coûtent presque rien à chaque image, sur toutes les tablettes : plus de mesure) */
+  if(!SUR_DEMANDE && CUIT){ if(TROP_LENT === null){ TROP_LENT = false; if(G.HerosVuesDonjon) G.HerosVuesDonjon.mesure = {ms:0, anciens:false, cuit:true}; } return false; }
   if(SUR_DEMANDE && !VOLUME_FORCE){ if(TROP_LENT === null){ TROP_LENT = true; if(G.HerosVuesDonjon) G.HerosVuesDonjon.mesure = {ms:0, anciens:true, attente:true}; } return true; }
   if(TROP_LENT === null){
     var ms = VOLUME_FORCE ? 0 : mesurer();
