@@ -87,7 +87,7 @@ Chaque héros a **2 places d'objet**. Trouver un objet quand c'est plein oblige 
 
 **Les objets à passer par code :**
 - la fleur de givre (grotte de givre) va à l'Alchimiste, qui la cuisine au chaudron et obtient la recette Givre ;
-- les herbes lumineuses (puits d'aération) vont à l'Alchimiste, pour la recette Baume lumineux (soigne 15 à chacun des trois héros : à 30, le soin dépassait les dégâts des salles) ;
+- les herbes lumineuses (puits d'aération) vont à l'Alchimiste, pour la recette Baume lumineux (soigne 20 à chacun des trois héros — 15 jusqu'au 24 novembre, Romain : « qu'il fasse plus 20 au lieu de plus 15 » ; à 30, le soin dépassait les dégâts des salles) ;
 - la page déchirée (bibliothèque) va au Sage, et complète le plan : le coin du bassin, avec une note sur Bourbe ;
 - une page blanche (le tas d'os du cul-de-sac éboulé) va au Sage, et lui donne une sauvegarde de plus.
 

@@ -29,8 +29,34 @@ function q(s, r){ return (r || document).querySelector(s); }
 function qa(s, r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
 function esc(t){ return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
 function relancer(e, cls){ e.classList.remove(cls); void e.offsetWidth; e.classList.add(cls); }
-function attendre(ms){ return new Promise(function(ok){ setTimeout(ok, ms / (SALLE.vitesse || 1)); }); }
+function attendre(ms){ return new Promise(function(ok){ setTimeout(ok, ms / ((SALLE.vitesse || 1) * (window.DJ_RYTHME || 1))); }); }
 DJ.el = el; DJ.q = q; DJ.qa = qa; DJ.esc = esc; DJ.relancer = relancer; DJ.attendre = attendre;
+
+/* LE TOUR DES BÊTES, EN ACCÉLÉRÉ (Romain, 24 novembre, 0 h 11 : « que les tours adverses soient plus rapides… qu'il y ait
+   moins d'attente entre les animations »). DJ.rythme(k) : pendant que les bêtes jouent, tout va k fois plus vite —
+   les pauses du jeu (DJ.attendre), les animations (element.animate : durée et délai), les minuteries des modules des bêtes
+   (construire.py leur donne un setTimeout à elles, qui lit window.DJ_RYTHME) et l'instant des bruitages calés sur l'image.
+   Les boucles (respirations, vent, états qui durent) gardent leur allure. DJ.rythme(1) : retour à la normale. */
+window.DJ_RYTHME = 1;
+DJ.rythme = function(k){ window.DJ_RYTHME = k > 1 ? k : 1; };
+(function(){
+  var an = window.Element && Element.prototype.animate;
+  if(!an || an._rythme) return;
+  var f = function(kf, o){
+    var k = window.DJ_RYTHME || 1;
+    if(k !== 1 && o != null){
+      if(typeof o === 'number') o = o / k;
+      else if(o.iterations !== Infinity){
+        var c = {}; for(var n in o) c[n] = o[n];
+        if(c.duration) c.duration /= k; if(c.delay) c.delay /= k; if(c.endDelay) c.endDelay /= k;
+        o = c;
+      }
+    }
+    return an.call(this, kf, o);
+  };
+  f._rythme = true;
+  Element.prototype.animate = f;
+})();
 DJ.hasard = function(){ return SALLE.hasard(); };
 
 /* ================= la voix (seulement sur un bouton 🔊) ================= */
@@ -66,6 +92,8 @@ DJ.texte = function(t, cls){ var mots = String(t).replace(/<[^>]*>/g, ' ').trim(
 /* ================= le son ================= */
 DJ.son = function(){ var S = SALLE.Son; if(S && S.jouer) S.jouer.apply(null, arguments); };
 DJ.bruit = function(id, o, ancien){
+  var k = window.DJ_RYTHME || 1;
+  if(k !== 1 && o && (o.cale != null || o.dt != null)){ var c = {}; for(var n in o) c[n] = o[n]; if(c.cale != null) c.cale /= k; if(c.dt != null) c.dt /= k; o = c; }
   var S = SALLE.Son, r = S && S.bruitage ? S.bruitage(id, o || {}) : null;
   if(!r && ancien) DJ.son.apply(null, ancien);
   return r;

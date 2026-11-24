@@ -128,11 +128,20 @@ function carte(o){
   /* la carte est peinte une fois, à une finesse qui ne dépasse jamais 4 096 px de côté (RAPIDITE.md R9, mémoire de l'iPhone) */
   var ech = Math.max(1, Math.min(2, Math.round(z * dpr * 4) / 4, 4096 / C.EMPREINTE.w));
   C.ouvrirSecrets(secretsOuverts());      /* un passage secret ouvert devient un couloir comme les autres (murs, sol, brume) */
+  /* ON AVANCE EN TOUCHANT LA SALLE SUIVANTE (Romain, 24 novembre, 0 h 11 : « qu'on puisse cliquer n'importe où sur la salle suivante
+     pour que les personnages ils avancent » — plus de chevrons dorés, que les icônes des codes pouvaient cacher) : la salle d'à côté,
+     ou le couloir qui y mène, même dans la brume ; ailleurs, le conteur dit pourquoi on ne part pas. */
   X.V = C.vue(elCarte(), {brume:p.vus['@brume'] || null, etats:etats, centre:{x:pt.x, y:pt.y}, echelle:ech, surToucher:function(x, y, id){
     if(X.occupe) return;
-    if(id && X.V.brume.estVu(id)) conte(nomLieu(id) + '.');
+    var s = X.V.sortieEn(x, y, id, X.ici);
+    if(s){ son('clic'); aller(s.vers, s.lien); return; }
+    if(doitSauver()){ conte('D\'abord, une page de sauvegarde ! Après, on repart.'); return; }
+    if(id && id === X.ici) conte(nomLieu(id) + '. On y est !');
+    else if(id && X.V.brume.estVu(id)) conte(nomLieu(id) + '. C\'est plus loin : on y va salle après salle, par les couloirs.');
     else conte('La brume cache tout, par ici… Le plan du Sage sait peut-être ce qu\'il y a dessous.');
   }});
+  /* (pour les robots : où toucher l'écran pour prendre la sortie i) */
+  DJ.cibleSortie = function(i){ return X.V && X.V.cibleSortie(i); };
   /* la brume levée : celle qu'on avait gardée, sinon tous les lieux déjà vus */
   if(!p.vus['@brume']) Object.keys(p.vus).forEach(function(l){ if(l.charAt(0) !== '@' && C.LIEUX[l]) X.V.decouvrir(l, {anim:false}); });
   if(C.LIEUX[X.ici]) X.V.decouvrir(X.ici, {anim:false});

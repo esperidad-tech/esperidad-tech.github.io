@@ -130,6 +130,19 @@ HV.tete = function(K, h, V, P, CH){
     /* (rougit : l'effort, la joie — les joues plus rouges) */
     var rj = borne(P.rougit || 0, 0, 1);
     [-1, 1].forEach(function(d){ dans += PF(U.poly(poseL(ovale(19 * d, 16, 6 + rj, 3.2 + rj * 0.8, 14), V)), K.peau.joue, ' opacity="' + f1(0.34 + 0.34 * rj) + '"'); });
+    /* (les anciens — le papy, la mamie : quelques rides, posées sur le visage comme le reste : les pattes d'oie au coin des yeux, un
+       petit pli sous les yeux, les plis du sourire, deux lignes sur le front) */
+    if(K.corps === 'papy' || K.corps === 'mamie'){
+      var rid = function(pts){ var q = poseL(pts, V); return 'M' + q.map(function(p){ return f1(p[0]) + ' ' + f1(p[1]); }).join(' L'); };
+      var rd = '';
+      [-1, 1].forEach(function(d){
+        rd += rid([[21 * d, 4], [25.5 * d, 1.8]]) + rid([[21.5 * d, 7.2], [25.5 * d, 8.8]]);
+        rd += rid([[7 * d, 13.4], [10 * d, 14.8], [14 * d, 15], [17 * d, 13.8]]);
+        rd += rid([[6.5 * d, 17.5], [8.5 * d, 21], [10.5 * d, 25]]);
+      });
+      rd += rid([[-10, -13], [-4, -14.2], [4, -14.2], [10, -13]]) + rid([[-8, -9], [-3, -9.8], [3, -9.8], [8, -9]]);
+      dans += PT(rd, K.peau.trait, 0.95, ' opacity=".5"');
+    }
     /* les yeux */
     dans += oeil(K, -1, V, P, f) + oeil(K, 1, V, P, f);
     /* LES LUNETTES RONDES (le Sage : K.lunettes) : deux cercles de laiton posés sur le visage autour des yeux, comme les yeux (elles

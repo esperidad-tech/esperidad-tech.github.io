@@ -825,14 +825,19 @@ V.bouclier = function(scene, cible, opt){
   opt = opt || {};
   var me = this, S = HV.SAGE, k = opt.sorte === 'chene' ? 1 : 1.5, L = couche(scene), liste = cible instanceof Array ? cible : [cible];
   var p = this.file(function(sig){
+    /* (24 novembre) le geste ne finit pas avant que les bulles soient posées : avec deux ou trois amis, les fils de lumière
+       arrivaient APRÈS la fin du geste, la promesse rendait « rien », et Léo ne pouvait plus enlever ces bulles-là (elles
+       s'empilaient : « les héros ont disparu »). Au plus 3 s d'attente (un geste coupé ne pose rien). */
+    var pret, posees = new Promise(function(r){ pret = r; });
+    function donne(v){ sig(v); pret(); }
     this.cristalFlash(true);
     try{ this._runesMontent(); }catch(e){}
     this.plus(S.DOME * k * 1000, function(){
       var a = me.rep('cristal', scene), domes = [];
-      if(liste.length < 2){ var b = me._dome(L, scene, liste[0], opt); sig(b); return; }
-      liste.forEach(function(el, i){ Promise.resolve(me._fil ? me._fil(L, scene, a, el, i) : null).then(function(){ domes[i] = me._dome(L, scene, el, opt); if(domes.filter(Boolean).length === liste.length) sig(groupeDomes(domes)); }); });
+      if(liste.length < 2){ var b = me._dome(L, scene, liste[0], opt); donne(b); return; }
+      liste.forEach(function(el, i){ Promise.resolve(me._fil ? me._fil(L, scene, a, el, i) : null).then(function(){ domes[i] = me._dome(L, scene, el, opt); if(domes.filter(Boolean).length === liste.length) donne(groupeDomes(domes)); }); });
     });
-    return this.jouer(etirer(S.bouclier, k));
+    return Promise.all([this.jouer(etirer(S.bouclier, k)), Promise.race([posees, attendre(3000)])]).then(function(){});
   });
   p.absorber = function(n, i){ return p.then(function(b){ return b && b.absorber(n, i); }); };
   p.retirer = function(i){ return p.then(function(b){ return b && b.retirer(i); }); };
@@ -931,8 +936,11 @@ function bulle(vol, opt){
   /* (elle sort du sol en grandissant, comme l'ancien dôme) */
   [ar, av].forEach(function(sv){ sv.animate([{transform:'scale(.3,0)'}, {transform:'scale(1.06,1.08)', offset:.6}, {transform:'scale(.98,.97)', offset:.8}, {transform:'none'}], {duration:560, easing:'ease-out'}); });
   function tremble(){ [ar, av].forEach(function(sv){ sv.animate([{transform:'none'}, {transform:'scale(1.05,.95)', offset:.25}, {transform:'scale(.98,1.03)', offset:.6}, {transform:'none'}], {duration:420}); }); }
-  var fini = false;
-  return {
+  var fini = false, poignee;
+  /* (24 novembre — le bug de Léo, phase 2 : « les héros ont disparu ») UNE bulle à la fois sur un héros : une nouvelle remplace
+     l'ancienne. Avant, des bulles qu'on n'enlevait jamais s'empilaient jusqu'à cacher le héros (voir V.bouclier). */
+  if(vol._bulle) try{ vol._bulle.retirer(); }catch(e){}
+  vol._bulle = poignee = {
     el:av,
     absorber:function(nb){
       if(fini) return Promise.resolve();
@@ -946,6 +954,7 @@ function bulle(vol, opt){
     },
     retirer:function(){
       if(fini) return Promise.resolve(); fini = true;
+      if(vol._bulle === poignee) vol._bulle = null;
       anims.forEach(function(a){ try{ a.cancel(); }catch(e){} });
       av.querySelector('.b-eclat').animate([{opacity:0}, {opacity:.7, offset:.3}, {opacity:0}], {duration:380, fill:'forwards'});
       /* (des éclats qui volent du contour) */
@@ -962,6 +971,7 @@ function bulle(vol, opt){
       return attendre(680).then(function(){ ar.remove(); av.remove(); haut.remove(); });
     }
   };
+  return poignee;
 }
 /* LA LUMIÈRE DANS TOUTE LA SALLE : le bâton tenu haut ; la salle s'illumine (0,78 s) */
 V.eclairSalle = function(scene, opt){

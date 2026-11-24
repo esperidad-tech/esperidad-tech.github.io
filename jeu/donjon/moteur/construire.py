@@ -84,11 +84,24 @@ def images():
             copier(os.path.join(pp, f), os.path.join(d, 'portrait-' + f))
 
 
+# (24 novembre) le tour des bêtes en accéléré (noyau.js, DJ.rythme) : chaque module de bête reçoit son propre setTimeout,
+# qui raccourcit ses minuteries comme ses animations quand window.DJ_RYTHME > 1 (le reste de la page garde le vrai).
+TEMPO_AVANT = '(function(setTimeout){\n'
+TEMPO_APRES = ('\n})(function(f, ms){ var a = Array.prototype.slice.call(arguments); a[1] = (+ms || 0) / (window.DJ_RYTHME || 1); '
+               'return window.setTimeout.apply(window, a); });\n')
+
+
+def bete_js(src, dst):
+    if plus_recent(src, dst) or plus_recent(__file__, dst):
+        with open(dst, 'w', encoding='utf-8') as f:
+            f.write(TEMPO_AVANT + lire(src) + TEMPO_APRES)
+
+
 def scripts():
     d = os.path.join(SORTIE, 'a'); os.makedirs(d, exist_ok=True)
-    copier(os.path.join(DONJON, 'anim', 'rat', 'rat-anime.js'), os.path.join(d, 'rat-anime.js'))
+    bete_js(os.path.join(DONJON, 'anim', 'rat', 'rat-anime.js'), os.path.join(d, 'rat-anime.js'))
     for b in BETES:
-        copier(os.path.join(DONJON, 'anim', 'betes', b, b + '-anime.js'), os.path.join(d, b + '-anime.js'))
+        bete_js(os.path.join(DONJON, 'anim', 'betes', b, b + '-anime.js'), os.path.join(d, b + '-anime.js'))
 
 
 def page():
@@ -98,7 +111,10 @@ def page():
         for f in fichiers:
             if not os.path.exists(f):
                 print('  (absent, sauté) :', os.path.relpath(f, DONJON)); continue
-            code += '\n/* ===== ' + os.path.relpath(f, DONJON) + ' ===== */\n' + lire(f) + '\n'
+            js = lire(f)
+            if os.path.basename(f) == 'heros-anime.js':      # (24 novembre : les héros touchés pendant le tour des bêtes suivent le rythme)
+                js = TEMPO_AVANT + js + TEMPO_APRES
+            code += '\n/* ===== ' + os.path.relpath(f, DONJON) + ' ===== */\n' + js + '\n'
     p = lire(os.path.join(SRC, 'page.html'))
     p = p.replace('/*CSS*/', '\n'.join(lire(c) for c in CSS if os.path.exists(c)))
     import datetime

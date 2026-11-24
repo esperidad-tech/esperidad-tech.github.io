@@ -329,7 +329,10 @@ HV.contexte = function(id, h){
   K.combat = !!h.combat;
   /* (le gabarit du corps — hv-corps.js, GABARITS : « femme », « homme » ; Romain, 23 novembre, 23 h 53 : « tu peux passer aux hommes,
      aux enfants, aux papys. Commence par les hommes ») ; h.corps pour en forcer un */
-  K.corps = h.corps || (h.sexe === 'm' ? 'homme' : 'femme');
+  /* (h.age, comme dans le jeu : « adulte », « enfant », « age » — l'enfant et les anciens ont leur gabarit, hv-corps.js) */
+  K.corps = h.corps || (h.age === 'enfant' ? (h.sexe === 'm' ? 'garcon' : 'fille') : h.age === 'age' ? (h.sexe === 'm' ? 'papy' : 'mamie') : (h.sexe === 'm' ? 'homme' : 'femme'));
+  var gb = HV.GABARITS && HV.GABARITS[K.corps];
+  K.echelle = (gb && gb.echelle) || 1; K.teteK = (gb && gb.tete) || 1; K.voute = (gb && gb.voute) || 0;
   /* (ce que chaque rôle porte — Romain, 23 novembre, 20 h 05 : « tu peux lancer l'alchimiste, le sage » : l'arc, le carquois et le
      baudrier sont au Pisteur ; l'Alchimiste a son tablier de cuir et sa fiole sur la poitrine ; le Sage, son bâton) */
   var rl = h.role || 'pisteur';

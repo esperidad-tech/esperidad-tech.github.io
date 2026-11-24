@@ -152,6 +152,8 @@ function liberer(a){ if(DJ.Betes.AVANT[a.module]){ var k = E.prises.indexOf(a.x0
    largeur de file : chacune reçoit une place à la mesure de son corps (la moitié de son cadre), et le reste est partagé. */
 function centreB(a){ return a.cadre.x + a.cadre.w * (a.rat ? .56 : .5); }
 async function avancer(moi){
+  /* Bourbe est trop gros pour bouger : c'est sa barre de vie qui passe devant celles des autres (Romain, 24 novembre, 0 h 11) */
+  if(moi && moi.module === 'bourbe'){ barresDevant(); await attendre(500); return; }
   var viv = E.ordre.map(B).filter(function(x){ return x && !x.mort && x.module !== 'bourbe'; });
   viv.sort(function(x, y){ return centreB(x) - centreB(y); });
   var k = viv.indexOf(moi); if(k <= 0) return;
@@ -191,6 +193,25 @@ function majBarres(){
     q('b', e).textContent = b.pv;
     e.style.opacity = b.mort ? 0 : 1;
   });
+  barresDevant();
+}
+/* Bourbe, quand il est celui de devant (sorti de l'eau et appelé) : sa grande barre glisse en tête de la file des barres des
+   bêtes, et les petites se poussent à droite. Quand il retourne à l'eau (ou meurt), chacune reprend sa place. */
+function barresDevant(){
+  if(!E.c || !E.c.devantSol) return;
+  var bo = E.c.b.filter(function(m){ return m.def.module === 'bourbe'; })[0], pb = bo && q('#pv-' + bo.id);
+  if(!pb) return;
+  var d = E.c.devantSol(), devant = !bo.mort && d === bo, autres = [];
+  E.c.b.forEach(function(m){ var e = q('#pv-' + m.id); if(e && e !== pb && !m.mort) autres.push(e); });
+  if(!devant || !autres.length){
+    if(pb.classList.contains('devant')){ pb.classList.remove('devant'); pb.style.transform = ''; autres.concat(Array.prototype.slice.call(document.querySelectorAll('.pv.monstre'))).forEach(function(e){ if(e !== pb) e.style.transform = ''; }); }
+    return;
+  }
+  var g = Infinity; autres.forEach(function(e){ g = Math.min(g, e.offsetLeft - e.offsetWidth / 2); });
+  var dB = g - (pb.offsetLeft - pb.offsetWidth / 2), dA = pb.offsetWidth + 12;
+  pb.classList.add('devant');
+  pb.style.transform = 'translateX(-50%) translateX(' + dB.toFixed(0) + 'px)';
+  autres.forEach(function(e){ e.style.transform = 'translateX(-50%) translateX(' + dA.toFixed(0) + 'px)'; });
 }
 /* un chiffre de vie posé tout de suite (pendant qu'on joue une liste, avant la photo finale) */
 function barre(cle, pv, pvMax){
@@ -554,11 +575,15 @@ async function apres(){
   /* plus personne ne peut jouer : les monstres */
   E.mode = 'monstres'; E.occupe = true; E.sel = null; E.geste = null;
   maj();
-  await attendre(400);
-  var avant = E.ph;
-  await jouer(E.c.tourMonstres(), avant);
+  /* (24 novembre) le tour des bêtes va RYTHME fois plus vite : animations, pauses, minuteries (noyau.js, DJ.rythme) */
+  DJ.rythme(RYTHME);
+  try{
+    await attendre(400);
+    var avant = E.ph;
+    await jouer(E.c.tourMonstres(), avant);
+  }finally{ DJ.rythme(1); }
   if(E.c.fini()) return finCombat();
-  await attendre(250);
+  await attendre(150);
   /* un tour où plus aucun héros ne peut jouer (tous entoilés…) : on enchaîne */
   if(!(E.c.aJouer() || []).length) return apres();
   tourHeros();
@@ -566,6 +591,8 @@ async function apres(){
 
 /* les évènements d'une liste, rangés en blocs : un bloc = ce qui arrive à UNE bête (ou un moment du système) */
 var COTE_HEROS = {degats:1, tombe:1, releve:1, soin:1, pare:1, etat:1, passe:1};
+/* le tour des bêtes en accéléré (Romain, 24 novembre, 0 h 11) : 1,5 fois plus vite que les gestes des héros */
+var RYTHME = 1.5;
 function cleDe(ev){
   if(ev.t === 'arrive') return ev.de ? 'b:' + ev.de : 'arrivees';
   /* le geste d'un héros ouvre toujours son propre bloc, même quand il vise une bête : c'est là que le héros s'anime
@@ -824,9 +851,10 @@ function sonEtat(a, ev){
     return;
   }
   if(a.module === 'bourbe' && nom === 'dos'){
-    /* il bascule sur le dos (il retombe à 1,18 s), ou se remet à l'endroit (0,85 s) : dans l'eau un plouf, sur la glace ou la berge un choc */
+    /* il bascule sur le dos (il retombe à 0,74 s), ou se remet à l'endroit (0,42 s) : dans l'eau un plouf, sur la glace ou la
+       berge un choc (24 novembre : il se retourne plus vite — avant 1,18 s et 0,85 s) */
     var sec = ec.gele || ec.berge;
-    bruit(sec ? (ec.gele ? S.glace : 'beteChute') : S.plonge, {cale:on ? 1.18 : .85});
+    bruit(sec ? (ec.gele ? S.glace : 'beteChute') : S.plonge, {cale:on ? .74 : .42});
     return;
   }
   if(a.module === 'bourbe' && nom === 'sec' && on){ bruit(S.cri); return; }

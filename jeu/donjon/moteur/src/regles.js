@@ -659,6 +659,14 @@ P._fleche = function(ev, m, potion, q){
     ev.push({t:'tir', heros:'pisteur', bete:m.id, fleche:nom, rebond:false, defaut:'traverse'});
     ev.push({t:'mot', bete:m.id, texte:MOTS.traverse}); return;
   }
+  /* LA FLÈCHE QUI TUE D'UN COUP (Romain, 24 novembre : la flèche de lune et le feu follet, la transperçante et le rat cuirassé —
+     q.tue) : quoi qu'il arrive (point faible fermé, grandi, accroché), il tombe — le grand spectacle du critique mortel */
+  if(q && q.tue && q.tue.indexOf(m.type) >= 0 && !m.mort){
+    ev.push({t:'tir', heros:'pisteur', bete:m.id, fleche:nom, rebond:false});
+    ev.push({t:'touche', bete:m.id, coup:coup, piege:false, critique:true});
+    this._blesse(ev, m, Math.max(1, m.pv), {critique:true, cause:'fleche'});
+    return;
+  }
   /* le critique surprise : une flèche simple, sur un monstre normal au point faible fermé */
   var surprise = !potion && m.ouvert === 0 && m.def.rang === 'normal' && this.R() < C.surprise;
   var blinde = this._un(m, m.def.blinde);

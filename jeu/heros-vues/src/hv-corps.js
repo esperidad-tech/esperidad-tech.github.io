@@ -48,11 +48,34 @@ var T_AH = table([[137, 15.5], [139, 29.5], [142, 38.5], [146, 43], [152, 44], [
 var T_FH = table([[137, 11.5], [139, 14], [142, 17], [146, 20], [152, 23.5], [165, 25], [180, 22.5], [200, 19.5], [208, 19], [222, 20.5], [246, 25], [272, 30]]);
 var T_BH = table([[137, 11.5], [139, 14], [142, 17], [146, 19], [152, 20], [165, 20], [180, 18.5], [200, 16.5], [208, 16.5], [222, 18.5], [246, 23.5], [272, 28.5]]);
 var BUSTE_H = HV.BUSTE_H = U.volume(137, 272, function(y){ return coupe(T_AH(y), 0, T_FH(y), T_BH(y), 2.4, 2.3); });
+/* ---------- LES ENFANTS ET LES ANCIENS (Romain, 23 novembre, 23 h 53 : « aux enfants, aux papys » ; l'âge vient du jeu : adulte,
+   enfant, âgé) ----------
+   - L'ENFANT : le même squelette, dessiné plus petit (echelle : 0,84, posé sur le sol), avec une tête un peu plus grosse pour son corps
+     (tete : 1,16) ; un buste mince, sans poitrine, un petit ventre rond ; les épaules étroites, des bras et des jambes plus fins, de
+     petites mains. Garçon et fille : presque le même corps (le garçon, les épaules un peu plus larges).
+   - LES ANCIENS (le papy, la mamie) : le corps d'homme ou de femme, avec un ventre (la tunique bombe devant, sous la poitrine), la
+     taille plus large ; le dos un peu voûté (voute, en degrés : le haut du dos penche en avant), un tout petit peu plus petits.
+   Comme pour l'homme : toutes les poses et tous les gestes marchent tels quels. */
+var T_AE = table([[137, 10], [139, 18.5], [142, 24.5], [146, 27.5], [152, 28], [165, 27.5], [180, 27], [200, 27], [208, 27.5], [222, 30], [246, 36], [272, 42]]);
+var T_FE = table([[137, 8.5], [139, 10], [142, 12], [146, 13.5], [152, 15], [165, 16], [180, 16.5], [200, 17], [208, 17], [222, 18], [246, 22], [272, 26.5]]);
+var T_BE = table([[137, 8.5], [139, 10], [142, 11.5], [146, 13], [152, 14], [165, 14.5], [180, 14], [200, 13.5], [208, 14], [222, 17], [246, 21.5], [272, 26]]);
+var BUSTE_E = HV.BUSTE_E = U.volume(137, 272, function(y){ return coupe(T_AE(y), 0, T_FE(y), T_BE(y), 2.2, 2.3); });
+var T_AP = table([[137, 15.5], [139, 29], [142, 37.5], [146, 42], [152, 43], [165, 42], [180, 40], [200, 40], [208, 40.5], [222, 41], [246, 44], [272, 48.5]]);
+var T_FP = table([[137, 11.5], [139, 14], [142, 17], [146, 20], [152, 23], [165, 26], [180, 30], [200, 35], [208, 35.5], [222, 32], [246, 27], [272, 30]]);
+var BUSTE_P = HV.BUSTE_P = U.volume(137, 272, function(y){ return coupe(T_AP(y), 0, T_FP(y), T_BH(y), 2.3, 2.3); });
+var T_AM = table([[137, 12], [139, 22], [142, 29], [146, 33], [152, 34], [165, 33.5], [180, 33], [200, 33.5], [208, 34], [222, 36], [246, 41.5], [272, 48]]);
+var T_FM = table([[137, 9.5], [139, 11.5], [142, 13.5], [146, 15.5], [152, 18], [165, 20.5], [180, 21.5], [200, 24], [208, 24.5], [222, 24], [246, 25], [272, 30]]);
+var BUSTE_M = HV.BUSTE_M = U.volume(137, 272, function(y){ return coupe(T_AM(y), 0, T_FM(y), T_B(y), 2.3, 2.3); });
 /* les gabarits : le buste, où sont les épaules (ep) et les hanches (ha), l'épaisseur des bras (au haut du bras, au coude, au poignet),
-   des jambes (jb : en plus), du cou (co : en plus), la taille des mains (ma) */
+   des jambes (jb : en plus), du cou (co : en plus), la taille des mains (ma) ; echelle : tout le héros, posé sur le sol ; tete : la
+   tête en plus ; voute : le haut du dos penché en avant (degrés) */
 var GABARITS = HV.GABARITS = {
   femme:{buste:BUSTE_F, ep:31.5, ha:13, rEp:10.6, rCo:9.3, rPo:8.3, jb:1, co:1, ma:1},
-  homme:{buste:BUSTE_H, ep:38.5, ha:15, rEp:13.2, rCo:11.4, rPo:9.8, jb:1.12, co:1.28, ma:1.12}
+  homme:{buste:BUSTE_H, ep:38.5, ha:15, rEp:13.2, rCo:11.4, rPo:9.8, jb:1.12, co:1.28, ma:1.12},
+  fille:{buste:BUSTE_E, ep:27, ha:11.5, rEp:9, rCo:8, rPo:7.2, jb:0.88, co:0.86, ma:0.92, echelle:0.84, tete:1.16},
+  garcon:{buste:BUSTE_E, ep:28.5, ha:11.5, rEp:9.4, rCo:8.3, rPo:7.4, jb:0.9, co:0.9, ma:0.94, echelle:0.84, tete:1.16},
+  mamie:{buste:BUSTE_M, ep:31, ha:13.5, rEp:10.4, rCo:9.1, rPo:8.1, jb:0.98, co:1, ma:1, echelle:0.96, voute:9},
+  papy:{buste:BUSTE_P, ep:37.5, ha:15.5, rEp:12.6, rCo:11, rPo:9.6, jb:1.08, co:1.22, ma:1.1, echelle:0.96, voute:11}
 };
 var BUSTE = BUSTE_F, GAB = GABARITS.femme;
 /* (le gabarit de ce dessin : posé au début de HV.corps — tout le dessin d'un héros se fait d'un seul coup, sans rien d'autre au milieu) */

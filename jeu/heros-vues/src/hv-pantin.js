@@ -17,6 +17,8 @@ HV.dessin = function(h, P, o){
   P = P2;
   /* (P.tourne : elle se tourne d'elle-même, en plus de l'angle où on la regarde — un geste « elle regarde à droite ») */
   var K = o.K || HV.contexte(o.id || 'hv', h), Vb = U.vue(HV.capDe(P));
+  /* (les anciens : le haut du dos un peu voûté, en plus de la pose — K.voute, hv-corps.js GABARITS) */
+  if(K.voute){ var d0 = P.dos || [0, 0, 0]; P.dos = [d0[0] + K.voute, d0[1], d0[2]]; }
   var C = HV.corps(K, h, Vb, P), tp = C.tete, Vt = tp.V;
   /* la tête : au bout du cou (hv-corps.js). Quand elle baisse la tête, vue de profil la tête penche vers l'avant ; vue de face,
      ce sont les traits du visage et la frange qui descendent. La queue de cheval, elle, continue de pendre vers le bas. */
@@ -24,7 +26,9 @@ HV.dessin = function(h, P, o){
   P.hocheF = tp.hocheF; P.qx = (P.qx || 0) + pend * Vt.c; P.qz = (P.qz || 0) + pend * Vt.s;
   var coif = HV.COIFFURES[h.coiffure] || HV.COIFFURES.queue;
   var CH = HV.cheveux(K, coif, Vt, P), T = HV.tete(K, h, Vt, P, CH);
-  var tT = 'translate(' + f1(tp.tx + (P.tx || 0)) + ' ' + f1(tp.ty + (P.ty || 0)) + ')' + (rot ? ' rotate(' + f1(rot) + ' ' + f1(tp.px) + ' 28)' : '');
+  var tT = 'translate(' + f1(tp.tx + (P.tx || 0)) + ' ' + f1(tp.ty + (P.ty || 0)) + ')' + (rot ? ' rotate(' + f1(rot) + ' ' + f1(tp.px) + ' 28)' : '') +
+    /* (l'enfant : la tête un peu plus grosse pour son corps, grandie depuis le cou — K.teteK) */
+    (K.teteK !== 1 ? ' translate(' + f1(tp.px) + ' 28) scale(' + K.teteK + ') translate(' + f1(-tp.px) + ' -28)' : '');
   var ombreCou = '<path d="' + T.peau + '" transform="translate(1.2 7.5) ' + tT + '" fill="' + K.peau.ombre + '" opacity=".8"/>';
   var om = C.ombre, lv = Math.max(0, P.leve || 0), ko = 1 / (1 + lv / 90);
   var s = '<ellipse cx="' + f1(150 + om.cx) + '" cy="' + f1(om.cy) + '" rx="' + f1(om.rx * ko) + '" ry="' + f1(7 * ko) + '" fill="' + K.u('ombre') + '"' + (lv ? ' opacity="' + f1(ko) + '"' : '') + '/>';
@@ -41,6 +45,8 @@ HV.dessin = function(h, P, o){
   s += '<g transform="translate(150 ' + f1(-lv) + ')">' + G1 + (CH.queueDevant ? '' : CH.queue) + (tDos ? '' : CH.dos) + '</g>' + C.derriere + C.jambes +
     (tDos ? G1 + T.svg + '</g>' : '') + (loin ? visage : '') + C.cou(tDos, tDos ? nuque : ombreCou) + C.torse + C.carquoisDevant + C.jambesApres + AN.dev + bras +
     (loin ? '' : visage) + (dessus ? C.devant : '') + '</g>';
+  /* (l'enfant, les anciens : tout le héros plus petit, posé sur le sol au milieu — K.echelle ; HV.os en tient compte) */
+  if(K.echelle !== 1) s = '<g transform="translate(150 ' + HV.SOL + ') scale(' + K.echelle + ') translate(-150 ' + (-HV.SOL) + ')">' + s + '</g>';
   return s;
 };
 /* L'ANNEAU DE CELUI DONT C'EST LE TOUR (Romain, 23 novembre, 18 h 51 : « le cercle est censé passer derrière les jambes […] le devant,
@@ -78,7 +84,12 @@ HV.os = function(h, P){
   var B0 = HV.POSES.repos, P2 = {}, kk;
   for(kk in B0) P2[kk] = B0[kk];
   for(kk in P) P2[kk] = P[kk];
-  return HV.corps(HV.contexte('os', h), h, U.vue(HV.capDe(P2)), P2).os;
+  var K = HV.contexte('os', h);
+  if(K.voute){ var d0 = P2.dos || [0, 0, 0]; P2.dos = [d0[0] + K.voute, d0[1], d0[2]]; }
+  var os = HV.corps(K, h, U.vue(HV.capDe(P2)), P2).os, e = K.echelle;
+  /* (l'enfant, les anciens : le héros est dessiné plus petit, posé sur le sol — ses os aussi : x et z depuis le milieu, y depuis le sol) */
+  if(e !== 1) for(kk in os) os[kk] = [os[kk][0] * e, HV.SOL + (os[kk][1] - HV.SOL) * e, os[kk][2] * e];
+  return os;
 };
 /* vers où le corps est vraiment tourné : l'angle où on la regarde (cap), sauf pendant un geste qui la tourne vers un angle précis
    (capA, avec le poids capW : pour tirer, elle se met de côté par rapport à sa cible), plus ce qu'elle tourne d'elle-même (tourne) */

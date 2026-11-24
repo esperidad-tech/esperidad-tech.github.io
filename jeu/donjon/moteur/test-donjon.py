@@ -18,6 +18,11 @@ CAP = os.path.join(ICI, 'captures'); os.makedirs(CAP, exist_ok=True)
 ERREURS, OK = [], []
 
 
+def toucher_sortie(pg, i):
+    """Prendre la sortie i de la carte : un toucher sur son couloir (plus de chevrons dorés depuis le 24 novembre)."""
+    pg.evaluate("""(i) => { var p = DJ.cibleSortie(i), el = document.querySelector('.cd-vue');
+      ['pointerdown', 'pointerup'].forEach(function(t){ el.dispatchEvent(new PointerEvent(t, {pointerId:7, clientX:p.x, clientY:p.y, bubbles:true, isPrimary:true})); }); }""", i)
+
 def verifie(cond, quoi):
     (OK if cond else ERREURS).append(quoi)
     print(('  ok  ' if cond else '  ÉCHEC  ') + quoi, flush=True)
@@ -68,7 +73,7 @@ class Jeu:
         i = self.pg.evaluate("(v) => DJ.Explo.etat().sorties.indexOf(v)", lieu)
         if i < 0:
             verifie(False, f'pas de sortie vers {lieu} depuis {self.etat()["ici"]} (sorties : {self.etat()["sorties"]})'); return False
-        self.clic('.cd-sortie[data-i="%d"]' % i); self.pg.wait_for_timeout(500); return True
+        toucher_sortie(self.pg, i); self.pg.wait_for_timeout(500); return True
 
     def chemin(self, *lieux):
         for l in lieux:

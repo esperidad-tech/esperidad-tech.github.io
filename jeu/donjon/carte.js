@@ -1591,10 +1591,15 @@ function vue(el, o){
     posePion();
     return new Promise(function(ok){ a.onfinish = function(){ ok(); }; a.oncancel = function(){ ok(); }; });
   }
-  /* --- les sorties (des chevrons dorés au début des couloirs) --- */
+  /* --- les sorties : PLUS DE CHEVRONS DORÉS (Romain, 24 novembre, 0 h 11 : « j'aimerais vraiment qu'on puisse cliquer n'importe où sur
+     la salle suivante pour que les personnages ils avancent. J'aimerais que tu enlèves ces petits signes jaunes […] en fonction de
+     ton écran, t'as les icônes […] qui peuvent se retrouver par-dessus ce petit truc et tu peux te retrouver coincé ») : la vue garde la
+     liste des sorties ; on y va en touchant la salle d'à côté, ou le couloir qui y mène (sortieEn, plus bas ; explo.js). opt.chevrons :
+     les remettre (la page d'essai de la carte). --- */
   var sorties = [], surSortie = null;
   function majSorties(){
     sortiesEl.innerHTML = '';
+    if(!o.chevrons) return;
     sorties.forEach(function(q, i){
       var p = pointSur(q.lien, q.t == null ? .42 : q.t, q.depuis); if(!p) return;
       var b = document.createElement('button'); b.className = 'cd-sortie'; b.type = 'button'; b.dataset.i = i; b.setAttribute('aria-label', q.nom || 'Aller par là');
@@ -1603,6 +1608,36 @@ function vue(el, o){
       b.addEventListener('click', function(ev){ ev.stopPropagation(); if(surSortie) surSortie(q); });
       sortiesEl.appendChild(b);
     });
+  }
+  /* la sortie que vise un toucher (x, y : unités de la carte ; id : le lieu sous le doigt) : celle dont la salle d'arrivée est sous le
+     doigt, sinon celle dont le couloir passe tout près (80 au plus) → la sortie, ou null */
+  function sortieEn(x, y, id, ici){
+    var best = null, bd = 1e9;
+    sorties.forEach(function(q){
+      var d;
+      if(id && id === q.vers) d = 0;
+      else {
+        var pts = trace(q.lien, q.depuis), k;
+        d = 1e9;
+        for(k = 0; k + 1 < pts.length; k++) d = Math.min(d, distSeg(x, y, pts[k], pts[k + 1]));
+        if(q.vers === 'J') d = Math.min(d, Math.hypot(x - J.x, y - J.y));
+        /* (dans la salle où l'on est, seulement tout contre l'entrée du couloir) */
+        if(id && id === ici && d > 30) d = 1e9;
+      }
+      if(d < bd){ bd = d; best = q; }
+    });
+    return bd <= 80 ? best : null;
+  }
+  function distSeg(x, y, a, b){
+    var vx = b[0] - a[0], vy = b[1] - a[1], l2 = vx * vx + vy * vy || 1, t = borne(((x - a[0]) * vx + (y - a[1]) * vy) / l2, 0, 1);
+    return Math.hypot(a[0] + vx * t - x, a[1] + vy * t - y);
+  }
+  /* (pour les robots : où toucher l'écran pour prendre la sortie i — un point de son couloir, près d'ici, comme les anciens chevrons) */
+  function cibleSortie(i){
+    var q = sorties[i]; if(!q) return null;
+    var p = pointSur(q.lien, q.t == null ? .42 : q.t, q.depuis); if(!p) return null;
+    var r = el.getBoundingClientRect();
+    return {x:r.left + tx + p.x * z, y:r.top + ty + p.y * z};
   }
   placer(); majEtiquettes(); orienter(o.dir || 0);
   centrer(depart);
@@ -1621,6 +1656,8 @@ function vue(el, o){
     pion:function(x, y, dir){ if(typeof x === 'string'){ var L = LIEUX[x]; pion.x = L.x; pion.y = L.y; } else { pion.x = x; pion.y = y; } if(dir != null) orienter(dir); posePion(); },
     deplacer:deplacer,
     sorties:function(liste, fn){ sorties = liste || []; surSortie = fn || null; majSorties(); },
+    sortieEn:function(x, y, id, ici){ return sortieEn(x, y, id, ici); },
+    cibleSortie:cibleSortie,
     redessiner:function(id, nouveauxEtats){ if(nouveauxEtats) etats = nouveauxEtats; var D = deco(id, etats[id] === 'vu'); rd.redessiner(D.boite, etats); },
     position:function(){ return {tx:tx, ty:ty, z:z}; },
     etat:function(){ return {brume:B.etat(), pion:{x:pion.x, y:pion.y, dir:dirPion}}; },

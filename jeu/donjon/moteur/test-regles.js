@@ -802,22 +802,23 @@ section('Bourbe, le crapaud du puits');
 section('Les objets et leurs bonus');
 (function(){
   var t = prep('toiles', {objets:{pisteur:['fleches-argent']}, hasard:[0.3]}), c = t.c, f = bete(c, 'feufollet'), ar = bete(c, 'araignee'), ev;   /* la toile ira sur l'Alchimiste */
+  /* (Romain, 24 novembre : la flèche de lune tue un feu follet d'un coup, quoi qu'il arrive — avant : 10 fermé, critique × 1,5) */
+  var pvF0 = f.pv;
   ev = jouer(c, 'pisteur', 'f:fleches-argent', f);
-  ok(trouve(ev, 'tir').fleche === 'argent' && trouve(ev, 'touche').coup === 'fleche-argent' && trouve(ev, 'degats').n === 10, 'flèches d\'argent : elles touchent le feu follet même fermé (10)');
+  ok(trouve(ev, 'tir').fleche === 'argent' && trouve(ev, 'touche').coup === 'fleche-argent' && trouve(ev, 'degats').n === pvF0 && f.mort && trouve(ev, 'mort').mode === 'explose', 'flèches de lune : le feu follet fermé tombe d\'un coup (' + pvF0 + ')');
   tourSuivant(c);
   ev = jouer(c, 'pisteur', 'f:fleches-argent', ar);
   egal(trouve(ev, 'degats').n, 3, 'sur une autre bête, l\'argent ne change rien (3)');
   tourSuivant(c);
-  jouer(c, 'alchimiste', 'p:fumigene');
-  var f2 = bete(c, 'feufollet', 1);
+  var f2 = bete(c, 'feufollet', 1); f2.pv = 60;
   ev = jouer(c, 'pisteur', 'f:fleches-argent', f2);
-  egal(trouve(ev, 'degats').n, 90, 'flèches d\'argent : le critique est une fois et demie plus fort (60 → 90)');
+  ok(trouve(ev, 'degats').n === 60 && f2.mort, 'flèches de lune : même un feu follet qui a grandi tombe d\'un coup (60)');
 
   t = prep('atelier', {objets:{pisteur:['fleches-lourdes']}, sac:['acide', 'feu', 'baume']}); c = t.c;
   var g = bete(c, 'gardien'), rc = bete(c, 'ratcuir');
+  /* (Romain, 24 novembre : la transperçante tue un rat cuirassé d'un coup — avant : 12 fermé, 90 sans armure) */
   ev = jouer(c, 'pisteur', 'f:fleches-lourdes', rc);
-  ok(trouve(ev, 'tir').fleche === 'lourde' && trouve(ev, 'touche').coup === 'fleche-lourde' && trouve(ev, 'degats').n === 12, 'flèches lourdes : 12 sur le rat cuirassé, même fermé (au lieu de 1)');
-  rc.pv = 70;
+  ok(trouve(ev, 'tir').fleche === 'lourde' && trouve(ev, 'touche').coup === 'fleche-lourde' && trouve(ev, 'degats').n === 70 && rc.mort, 'flèches transperçantes : le rat cuirassé fermé tombe d\'un coup (70)');
   jouer(c, 'alchimiste', 'p:acide', g); tourSuivant(c);
   ev = jouer(c, 'pisteur', 'f:fleches-lourdes', g);
   ok(trouve(ev, 'tir').fleche === 'lourde' && trouve(ev, 'rebond') && g.pv === 280, 'flèches lourdes : le Gardien fermé reste immunisé (un élite ne se grignote pas)');
@@ -825,9 +826,6 @@ section('Les objets et leurs bonus');
   jouer(c, 'sage', 'rune', g);
   ev = jouer(c, 'pisteur', 'f:fleches-lourdes', g);
   egal(trouve(ev, 'degats').n, 165, 'flèches lourdes : le critique sur le Gardien passe de 110 à 165');
-  jouer(c, 'alchimiste', 'p:acide', rc); tourSuivant(c);
-  ev = jouer(c, 'pisteur', 'f:fleches-lourdes', rc);
-  ok(trouve(ev, 'degats').n === 90 && rc.mort, 'flèches lourdes : 90 sur le rat cuirassé sans armure, il est battu d\'un coup');
 
   /* Romain, 10 novembre : le Pisteur porte tous ses carquois et CHOISIT sa flèche ; chaque sorte a son défaut */
   t = prep('toiles', {objets:{pisteur:['fleches-normales', 'fleches-argent', 'fleches-lourdes']}, sac:['fumigene', 'feu', 'baume'], hasard:[0.3]}); c = t.c; f = bete(c, 'feufollet');
@@ -1260,7 +1258,7 @@ section('Les salles sans combat');
 (function(){
   var p = R.nouvellePartie(21), ev;
   ev = R.entrer(p, 'galerie');
-  egal(trouve(ev, 'scene').contenu.objets, ['bourse', 'rune'], 'la galerie effondrée : une bourse, et la pierre de rune du Sage');
+  egal(trouve(ev, 'scene').contenu.objets, ['bourse'], 'la galerie effondrée : une bourse (la pierre de rune est à l\'entrée depuis le 17 novembre)');
   ev = R.prendre(p, 'bourse');
   ok(trouve(ev, 'or').n === D.CHIFFRES.bourse && p.or === D.CHIFFRES.bourse && p.heros.pisteur.objets.length === 1, 'la bourse donne de l\'or et ne prend pas de place');
   egal(R.prendre(p, 'bourse')[0].mot, 'Déjà pris', 'on ne la prend pas deux fois');
@@ -1333,12 +1331,13 @@ section('Les salles sans combat');
     egal(D.ROUE.suite.join(''), 'dddgdd', 'l\'ordre de la roue est celui du plan du Sage (3 à droite, 1 à gauche, 2 à droite)');
     /* à l'entrée : le carnet de l'aventurier ; la rune de lumière du Sage est dans la deuxième salle (Romain, 11 novembre :
        le donjon est le même qu'on entre par le puits ou par la crypte, seule la pièce d'entrée change) */
+    /* (depuis le 17 novembre, la pierre de rune est aussi à l'entrée — donnees.js, D.LIEUX.puits ; test remis à jour le 24 novembre) */
     var y = R.nouvellePartie(8);
-    egal(R.contenu(y, 'puits').objets, ['carnet'], 'à l\'entrée : le carnet de l\'aventurier, et pas la pierre de rune');
-    R.entrer(y, 'galerie');
-    egal(R.contenu(y, 'galerie').objets, ['bourse', 'rune'], 'dans la deuxième salle (la galerie effondrée) : la bourse, et la pierre de rune');
-    ok(D.OBJETS.carnet.code === 'carnet:aventurier' && CODES.CODES['carnet:aventurier'].a === 'sage' && CODES.CODES['carnet:aventurier'].de === 'pisteur', 'le carnet donne un code pour le Sage (Romain, 11 novembre : « un livre à l\'entrée du puits »)');
+    egal(R.contenu(y, 'puits').objets, ['carnet', 'rune'], 'à l\'entrée : le carnet de l\'aventurier, et la pierre de rune (17 novembre)');
     var er = R.prendre(y, 'rune');
+    R.entrer(y, 'galerie');
+    egal(R.contenu(y, 'galerie').objets, ['bourse'], 'dans la deuxième salle (la galerie effondrée) : la bourse');
+    ok(D.OBJETS.carnet.code === 'carnet:aventurier' && CODES.CODES['carnet:aventurier'].a === 'sage' && CODES.CODES['carnet:aventurier'].de === 'pisteur', 'le carnet donne un code pour le Sage (Romain, 11 novembre : « un livre à l\'entrée du puits »)');
     ok(trouve(er, 'code-objet').code === 'rune:lumiere' && trouve(er, 'code-objet').pour === 'sage' && R.objets(y).codes.some(function(c){ return c.code === 'rune:lumiere'; }), 'la prendre donne un code pour le Sage (il reste dans les objets)');
     ok(CODES.CODES['rune:lumiere'] && CODES.CODES['rune:lumiere'].a === 'sage' && D.OBJETS.rune.discret, 'le code rune:lumiere se tape sur la tablette du Sage ; rien ne signale la pierre dans la salle');
     /* une vieille partie déjà passée par la cave aux toiles : son passage est ouvert */
@@ -1391,7 +1390,8 @@ section('Les salles sans combat');
   egal(trouve(ev, 'boucle').vers, 'canaux', 'les égouts tournants ramènent aux canaux');
   egal(D.COMBATS.egouts.monstres, ['rat'], 'les égouts : un rat errant');
   ev = R.entrer(p, 'porte4');
-  ok(trouve(ev, 'code-objet').code === 'porte:odette' && trouve(ev, 'code-objet').pour === 'sage', 'la porte aux quatre signes : le code porte:odette pour le Sage');
+  /* (la porte aux quatre signes n'envoie plus de code : elle est « marquée » — D.LIEUX.porte4.marque ; test remis à jour le 24 novembre) */
+  ok(D.LIEUX.porte4.marque === 'porte:odette' && !trouve(ev, 'code-objet'), 'la porte aux quatre signes : marquée porte:odette, sans code à taper');
   ev = R.entrer(p, 'leo');
   ok(trouve(ev, 'code-objet').code === 'leo:salle' && trouve(ev, 'code-objet').pour === 'barde' && trouve(ev, 'boss') && !trouve(ev, 'fin-donjon') && !p.faits.fin, 'la dernière salle : un code pour le Barde en entrant (leo:salle), Léo est là — le donjon n\'est pas fini');
   ok(R.contenu(p, 'leo').boss === true && R.contenu(p, 'leo').fin === false, '… tant que Léo n\'est pas battu');

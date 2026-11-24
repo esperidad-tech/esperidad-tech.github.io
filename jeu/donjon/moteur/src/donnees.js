@@ -90,7 +90,8 @@ D.RECETTES = {
   coeur:{petit:'Cœur', nom:'Cœur vaillant', d:'relève un ami', long:'Il relève un ami tombé au sol.', vise:'sol', fleche:false, releve:40, coul:'#ff5a7a'},
   /* celles qu'on gagne au chaudron de l'Alchimiste (codes recette:givre et recette:baumelum) */
   givre:{nom:'Givre', d:'gèle tout', long:'Un froid qui gèle tout ce qu\'il touche.', vise:'bete', fleche:true, pouvoir:'givre', coul:'#bff4ff', gagnee:true},
-  baumelum:{petit:'Lumineux', nom:'Baume lumineux', d:'soigne tout le monde', long:'Il soigne un peu toute l\'équipe.', vise:'equipe', fleche:false, soinEquipe:15, coul:'#7affc0', gagnee:true}
+  /* (le baume lumineux soigne 20 chacun, 15 jusqu'au 24 novembre — Romain : « que le baume multiple, il fasse plus 20 au lieu de plus 15 ») */
+  baumelum:{petit:'Lumineux', nom:'Baume lumineux', d:'soigne tout le monde', long:'Il soigne un peu toute l\'équipe.', vise:'equipe', fleche:false, soinEquipe:20, coul:'#7affc0', gagnee:true}
 };
 D.RECETTES_DEPART = ['feu', 'fumigene', 'huile', 'colle', 'acide', 'baume', 'coeur'];
 D.ORDRE_RECETTES = ['feu', 'fumigene', 'huile', 'colle', 'acide', 'baume', 'coeur', 'givre', 'baumelum'];
@@ -139,10 +140,15 @@ D.OBJETS = {
   /* (Romain, 11 novembre, 19 h 21 : « pour le Pisteur, les objets : toutes les solutions, enlève ça ». Les textes des flèches
      ne disent donc plus contre qui elles servent : ni dans « 🎒 Objets », ni quand on les ramasse.) */
   'fleches-argent':{nom:'Flèches de lune', petit:'De lune', court:'Flèche de lune', pour:'pisteur', carquois:true, equipe:'carquois-argent', fleche:'argent', coup:'fleche-argent', ic:'🌙',
-    contre:['feufollet', 'chauvesouris'], ferme:10, critique:1.5, rebondit:['ratcuir', 'gardien'], dg:'bêtes de brume', carte:{nom:'Arc de lune', d:'bêtes de brume'},
+    /* (tue : une seule flèche de lune tue un feu follet, quoi qu'il arrive — Romain, 24 novembre, 0 h 11 : « que la flèche de lune, elle
+       one-shot les feux follets quoi qu'il arrive […] Ce sont des flèches de lune avec un métal particulier qui peut sans doute absorber
+       l'énergie et donc détruire les feux follets direct » ; règles : P._fleche) */
+    contre:['feufollet', 'chauvesouris'], tue:['feufollet'], ferme:10, critique:1.5, rebondit:['ratcuir', 'gardien'], dg:'bêtes de brume', carte:{nom:'Arc de lune', d:'bêtes de brume'},
     d:'Des flèches à la pointe d\'argent. Elles brillent comme la lune.'},
   'fleches-lourdes':{nom:'Flèches transperçantes', petit:'Transperçante', court:'Flèche transperçante', pour:'pisteur', carquois:true, equipe:'carquois-lourd', fleche:'lourde', coup:'fleche-lourde', ic:'🔩',
-    contre:['ratcuir', 'gardien'], ferme:12, critique:1.5, traverse:['feufollet', 'chauvesouris'], dg:'perce l\'armure', carte:{nom:'Arc transperçant', d:'perce l\'armure'},
+    /* (tue : une seule flèche transperçante tue un rat cuirassé — Romain, 24 novembre, 0 h 11 : « pareil pour les flèches transperçantes.
+       J'aimerais qu'elles tuent les rats cuirassés d'un seul coup ») */
+    contre:['ratcuir', 'gardien'], tue:['ratcuir'], ferme:12, critique:1.5, traverse:['feufollet', 'chauvesouris'], dg:'perce l\'armure', carte:{nom:'Arc transperçant', d:'perce l\'armure'},
     d:'De lourdes flèches, à la pointe de fer.'},
   /* Romain, 11 novembre (16 h 07) : « pour le Sage, on puisse récupérer deux armes. Ou plus, autant d'armes qu'on veut. Et
      on doit choisir dans le donjon. » Une arme (arme:true) ne prend donc pas de place dans les mains, comme un carquois.

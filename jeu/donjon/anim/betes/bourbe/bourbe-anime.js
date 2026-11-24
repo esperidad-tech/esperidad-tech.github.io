@@ -2068,8 +2068,10 @@ R._retourner = function(on, j){
   var self = this, T;
   this.etat.dos = on;
   var dans = !this.etat.berge && !this.etat.gele;
+  /* (Romain, 24 novembre, 0 h 11 : « le crapaud… qu'il se retourne plus rapidement » — avant : 1,6 s sur le dos, 1,3 s pour
+     se remettre à l'endroit) */
   if(on){
-    T = 1600;
+    T = 1000;
     var fin = POSES.dos, k = [{t: 0, p: {}}];
     /* il bascule en arrière, les pattes en l'air, et retombe à plat sur le dos */
     k.push({t: .25, p: {posture: {a: 40, y: -30}, saut: {y: -10}, cuisse: {a: -20}, bras: {a: -30}, brasF: {a: -20}, machoire: {a: -14}, oeil: {s: 1.15}, langue: {a: 30}}, e: 'cubic-bezier(.3,.6,.5,1)'});
@@ -2084,7 +2086,7 @@ R._retourner = function(on, j){
     setTimeout(function(){ var c = self._ou('centre'); if(dans){ self._gerbe(c[0], 372, 1.6, {n: 16}); } else { self._eclabousse([c[0] - 60, self._ou('pieds')[1]], '#cdeeff', 2.4); self._eclabousse([c[0] + 80, self._ou('pieds')[1]], '#cdeeff', 2); } }, T * .74);
     return this._seq(k, T).fini;
   }
-  T = 1300;
+  T = 650;
   setTimeout(function(){ var c = self._ou('centre'); if(dans) self._gerbe(c[0], 372, 1.3, {n: 12}); }, T * .65);
   return this._seq([{t: 0, p: {}}, {t: .35, p: {posture: {a: 250, y: -50}, saut: {y: -16}, cuisse: {a: -10}, jambe: {a: -20}, bras: {a: -10}, machoire: {a: -10}}, e: 'cubic-bezier(.3,.6,.5,1)'},
     {t: .68, p: {posture: {a: 360, y: 0}, saut: {y: 0, sy: .88, sx: 1.08}, cuisse: {a: 0}, jambe: {a: 0}, pied: {a: 0}, bras: {a: 0}, avbras: {a: 0}, main: {a: 0}, brasF: {a: 0}, mainF: {a: 0}, machoire: {a: 0}, langue: {a: 0}, algues: {a: 0}, brins: {a: 0}, couronne: {a: 0}}, e: 'cubic-bezier(.5,0,.9,.6)'},
