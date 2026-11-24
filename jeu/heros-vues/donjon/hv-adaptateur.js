@@ -35,6 +35,8 @@ function css(){
   s.textContent = '.hva{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:1}' +
     '.hva-boite{position:absolute;inset:0;overflow:visible;will-change:transform}.hva-boite>svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;display:block}' +
     '.hva-fx{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:2}' +
+    /* (le mode léger : une respiration très douce de tout le dessin, depuis les pieds, jouée par la carte graphique) */
+    '.hva-leger .hva-boite>svg.hv{transform-origin:50% 94%;animation:hvaRespire 3.6s ease-in-out infinite}@keyframes hvaRespire{0%,100%{transform:none}50%{transform:scale(1.004,1.012)}}' +
     /* (son ombre : au moins aussi grande que celle des autres héros — 130 × 24 —, et plus foncée au milieu : sur le sol sombre du donjon,
        l'ancienne ne se voyait pas et ils avaient l'air de flotter — Romain, 23 novembre, 21 h 32) */
     '.hva-ombre-sol{position:absolute;left:0;top:0;width:100px;height:26px;margin:-13px 0 0 -50px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(0,0,0,.88),rgba(0,0,0,.66) 55%,rgba(0,0,0,0))}' +
@@ -81,6 +83,46 @@ var ALLURES = {
   alchimiste:{role:'alchimiste', sexe:'m', peau:'p4', cheveux:'noir', yeux:'ambre', coiffure:'courts', combat:true},
   sage:{role:'sage', sexe:'f', peau:'p5', cheveux:'noir', yeux:'ambre', coiffure:'tresse', combat:true}
 };
+/* L'ALLURE DU JOUEUR (24 novembre, dans le vrai donjon) : ce que le jeu donne au donjon (allure.js, lk = {fille, pe, ch, ir, age,
+   coiffure, barbe}) devient les choix des héros en volume : fille ou garçon, la peau, les cheveux, les yeux, l'âge (enfant, adulte,
+   âgé). Les héros en volume n'ont que trois coiffures (la queue de cheval, les cheveux courts, la tresse) : on prend la plus proche
+   de celle du jeu ; un garçon sans coiffure connue a les cheveux courts. Pas encore de barbe. */
+var COIFF_VOL = {queue:'queue', longs:'queue', catogan:'queue', tresses:'tresse', couettes:'tresse', tresse_c:'tresse',
+  carre:'courts', chignon:'courts', courte:'courts', epis:'courts', court:'courts', meche:'courts', boucles:'courts', arriere:'courts', milong:'courts', degarni:'courts'};
+function allureDe(role, lk){
+  var o = {};
+  if(!lk) return o;
+  function id(L, c){ if(!c || !c[0]) return null; for(var i = 0; i < L.length; i++) if(L[i].c[0] === c[0]) return L[i].id; return null; }
+  if(lk.fille === true || lk.fille === false) o.sexe = lk.fille ? 'f' : 'm';
+  var pe = id(HV.PEAUX, lk.pe), ch = id(HV.CHEVEUX, lk.ch), ye = id(HV.YEUX, lk.ir);
+  if(pe) o.peau = pe; if(ch) o.cheveux = ch; if(ye) o.yeux = ye;
+  if(lk.age === 'enfant' || lk.age === 'age') o.age = lk.age;
+  var sexe = o.sexe || ALLURES[role].sexe;
+  if(COIFF_VOL[lk.coiffure]) o.coiffure = COIFF_VOL[lk.coiffure];
+  else if(o.sexe && o.sexe !== ALLURES[role].sexe) o.coiffure = sexe === 'm' ? 'courts' : role === 'sage' ? 'tresse' : 'queue';
+  return o;
+}
+
+/* LE MODE LÉGER (Romain, 24 novembre, 0 h 11 : « une très vieille tablette… il faut absolument pas que ça rame ») : chaque dessin
+   d'un héros en volume est chronométré. Si, sur cet appareil, un dessin coûte en moyenne plus de SEUIL_LEGER ms (une tablette
+   ancienne, ou très occupée), toute la page passe en léger :
+   - au calme, plus de petite vie dessinée (respiration, clignements, gestes d'attente) : le dessin reste tel quel et ne coûte plus
+     rien ; une respiration très légère est jouée par la carte graphique (tout le dessin, depuis les pieds) ;
+   - pendant un geste : 20 dessins par seconde au plus (au lieu de 30) ; l'anneau doré ne scintille plus.
+   « ?leger=1 » / « ?leger=0 » dans l'adresse : forcé (les essais). */
+var SEUIL_LEGER = 7, LEGER = {on:false, n:0, somme:0, fixe:false};
+(function(){ var m = /[?&]leger=([01])/.exec(G.location ? G.location.search : ''); if(m){ LEGER.on = m[1] === '1'; LEGER.fixe = true; } })();
+function noterDessin(ms){
+  if(LEGER.fixe || LEGER.on) return;
+  LEGER.n++;
+  if(LEGER.n <= 6) return;                      /* (les premiers dessins : la page se met en route) */
+  LEGER.somme += ms;
+  if(LEGER.n === 46 && LEGER.somme / 40 > SEUIL_LEGER){ LEGER.on = true; ((G.HerosVuesDonjon && G.HerosVuesDonjon.toutes) || []).forEach(function(v){ v.leger(); }); }
+}
+function horloge(){ return G.performance && performance.now ? performance.now() : Date.now(); }
+/* (la largeur des boîtes ne change que si la fenêtre change : on ne la relit qu'alors — ombreAuSol) */
+var TAILLE_V = 0;
+if(G.addEventListener) G.addEventListener('resize', function(){ TAILLE_V++; });
 function Volume(cont, lk, creer0, role){
   css();
   var me = this;
@@ -95,7 +137,7 @@ function Volume(cont, lk, creer0, role){
   cont.appendChild(this.racine);
   /* (en tenue de combat ; « &hommes=1 » dans l'adresse de la page d'essai : les trois héros en garçons — le corps d'homme, hv-corps.js,
      GABARITS ; Romain, 23 novembre, 23 h 53 : « commence par les hommes ») */
-  this.h = HV.avec(ALLURES[role], G.HV_HOMMES || /[?&]hommes=1/.test(G.location ? G.location.search : '') ? {sexe:'m'} : {});
+  this.h = HV.avec(HV.avec(ALLURES[role], allureDe(role, lk)), G.HV_HOMMES || /[?&]hommes=1/.test(G.location ? G.location.search : '') ? {sexe:'m', coiffure:'courts'} : {});
   this.p = HV.monter(this.boite, this.h, {cadre:CADRE.join(' '), cap:CAP});
   this.p.posi = null; this.p.nom = 'donjonVolume';
   this.svg = this.boite.querySelector('svg');
@@ -113,13 +155,24 @@ function Volume(cont, lk, creer0, role){
   /* (c'est l'adaptateur qui dit au pantin quelle pose prendre, à chaque image ; le pantin y ajoute sa petite vie) */
   this.p.courante = function(){ return me.pose(); };
   var d0 = this.p.dessiner;
-  this.p.dessiner = function(dt){ d0.call(this, dt); me.apresImage(); };
-  /* (au calme — elle respire, cligne des yeux —, 15 dessins par seconde suffisent ; pendant un geste, 30 : la tablette souffle) */
+  this.p.dessiner = function(dt){ var t1 = horloge(), r = d0.call(this, dt); if(r !== false){ noterDessin(horloge() - t1); this._vides = 0; } else this._vides = (this._vides || 0) + 1; me.apresImage(); return r; };
+  /* (au calme — elle respire, cligne des yeux —, 15 dessins par seconde suffisent ; pendant un geste, 30 : la tablette souffle ;
+     en léger, 20 au plus — et au calme, quand plus rien ne bouge depuis 8 images, elle s'endort : plus rien à faire à chaque image,
+     jusqu'au prochain geste, qui la réveille : HV.reveiller) */
   var im0 = this.p.image;
-  this.p.image = function(now){ if(me.calme() && this.t0 && now - this.t0 < 64) return; im0.call(this, now); };
+  this.p.image = function(now){
+    var calme = me.calme();
+    if(LEGER.on && calme && (this._vides || 0) >= 8 && this.tw >= 1 && Math.abs(this.capV - this.cap) < 0.05) return false;
+    if(this.t0 && now - this.t0 < (calme ? 64 : LEGER.on ? 48 : 0)) return;
+    im0.call(this, now);
+  };
+  if(LEGER.on) this.leger();
   this.p.vers(CAP, true);
   /* l'ancien héros du même rôle, invisible, pour ses effets */
   try{ this.ombre = creer0(cont, role, lk); this.ombre.racine.classList.add('hva-ombre'); this.ombre._etoiles = function(){};
+    /* (24 novembre, la vitesse : invisible, il n'a pas besoin de faire vivre ses tissus et ses cordes à chaque image — c'était, pendant
+       les gestes, le plus gros travail de la page) */
+    this.ombre._lire = function(){}; this.ombre._pas = function(){};
     cont.appendChild(this.ombre.racine); PROTO = PROTO || Object.getPrototypeOf(this.ombre);
     /* (ses effets à lui — la flèche qui vole, la lame ; la fiole qui vole, le BONG, les feuilles — travaillent sur le nouveau) */
     ['_fleche', '_fleche2', '_impactFleche', '_impactFleche2', '_rebondFleche', '_lame', '_impactDague', '_recul',
@@ -132,7 +185,7 @@ function Volume(cont, lk, creer0, role){
      comme l'anneau des autres héros, mais dessiné avec elle : l'arrière derrière les bottes, l'avant devant) */
   this.slot = slot;
   if(slot && G.MutationObserver) new MutationObserver(function(){
-    if(slot.classList.contains('detale') && !me._fuit){ me._fuit = true; me._finGeste(); me.cles = null; me.trans = null; var t0 = maintenant(); me.course = function(){ return HV.course(maintenant() - t0); }; }
+    if(slot.classList.contains('detale') && !me._fuit){ me._fuit = true; me._finGeste(); me.cles = null; me.trans = null; var t0 = maintenant(); me.course = function(){ return HV.course(maintenant() - t0); }; me.p._vides = 0; if(HV.reveiller) HV.reveiller(); }
     me.p.choisi(slot.classList.contains('dispo') || slot.classList.contains('actif'));
   }).observe(slot, {attributes:true, attributeFilter:['class']});
   (G.HerosVuesDonjon.toutes = G.HerosVuesDonjon.toutes || []).push(this);
@@ -150,7 +203,7 @@ V.pose = function(){
     /* (en attendant, il ne reste pas à rien faire : toutes les 3 à 5,5 secondes, un geste tiré au sort parmi ceux de tous et ceux de
        son rôle — HV.attentes, hv-attente.js : sur ses gardes, jamais tranquille —, jamais deux fois le même de suite ; chacun à son
        rythme — Romain, 22 h 21 et 22 h 48) */
-    if(!this.apresF && !this.tenue && !this.ko && this._veut && t > this._prochainRegard){ this._prochainRegard = t + 3 + Math.random() * 2.5; this.jouer(this.attente()); }
+    if(!this.apresF && !this.tenue && !this.ko && this._veut && !LEGER.on && t > this._prochainRegard){ this._prochainRegard = t + 3 + Math.random() * 2.5; this.jouer(this.attente()); }
   }
   if(this.trans){ var a2 = (t - this.trans.t) / this.trans.d; if(a2 < 1) P = melange(this.trans.A, P, lisse(a2)); else this.trans = null; }
   this.dernier = P;
@@ -164,6 +217,8 @@ V.attente = function(){
   this._derniereAttente = n; this.attenteForcee = null;
   return L[n];
 };
+/* le mode léger (voir LEGER, plus haut) : plus de petite vie dessinée ; une respiration jouée par la carte graphique */
+V.leger = function(){ this.p.leger = true; this.p.auto = false; this.racine.classList.add('hva-leger'); };
 V.calme = function(){ return !this.cles && !this.course && !this.apresF && !this.trans && !this.effets.length && !this._glisse && Math.abs((this.p.anV || 0) - (this.p.anC || 0)) < 0.02; };
 V._finGeste = function(){ var f = this._quandFini; this._quandFini = null; if(f) f(); };
 /* jouer des images clés (sur la garde du donjon) → une promesse, à la fin ; apres : la pose à garder ensuite (ou une fonction du temps) */
@@ -173,6 +228,7 @@ V.jouer = function(cles, apres){
   this.trans = {A:this.dernier, t:maintenant(), d:0.16};
   this.course = null; this.apresF = null; this.tenue = null;
   this.cles = cles; this.fin = cles[cles.length - 1][0]; this.t0 = maintenant(); this.apres = apres || null;
+  this.p._vides = 0; if(HV.reveiller) HV.reveiller();          /* (le léger : un geste réveille le dessin) */
   return new Promise(function(r){ me._quandFini = r; });
 };
 /* la file des ordres : un à la fois ; sig(v) rend la promesse tout de suite (la flèche a touché), le geste continue */
@@ -189,22 +245,34 @@ V.plus = function(ms, fn){ var me = this, id = setTimeout(function(){ var i = me
 /* glisser la boîte (courir, sauter, reculer) : de x0 à x1 pixels en d secondes */
 V.glisse = function(x0, x1, d, ease, y){
   var me = this, t0 = maintenant(), tok = this._gl = (this._gl || 0) + 1;
-  this._glisse = true;
+  this._glisse = true; this.p._vides = 0; if(HV.reveiller) HV.reveiller();
   return new Promise(function(r){ (function pas(){ if(tok !== me._gl) return r(); var a = Math.min(1, (maintenant() - t0) / d), e = ease ? ease(a) : a; me.dx = x0 + (x1 - x0) * e;
     me.boite.style.transform = 'translate(' + me.dx.toFixed(1) + 'px,' + (y ? y(a) : 0).toFixed(1) + 'px)'; if(a < 1) requestAnimationFrame(pas); else { me._glisse = false; r(); } })(); });
 };
 
 /* ---------- où sont les choses ---------- */
 /* les os de la pose affichée (dans ses mesures) */
-V.os = function(){ return HV.os(this.h, this.p.F); };
+/* (24 novembre, la vitesse : calculés une fois par dessin — les effets les redemandaient plusieurs fois par image) */
+V.os = function(){ var F = this.p.F; if(F && F === this._osF) return this._os; this._osF = F; this._os = HV.os(this.h, F); return this._os; };
 /* un point d'elle (ses mesures) → coordonnées de son SVG */
 V.versSvg = function(q){ var P = this.p.F, Vv = HV.outils.vue(HV.capDe(P)); return [150 + q[0] * Vv.c + q[2] * Vv.s, q[1] - Math.max(0, P.leve || 0)]; };
 /* … → pixels dans « ref » (la scène des effets du combat, ou son calque fx) */
 V.versRef = function(s, ref){
-  var R = this.svg.getBoundingClientRect(), k = R.width / CADRE[2], x = R.left + (s[0] - CADRE[0]) * k, y = R.top + (s[1] - CADRE[1]) * k;
-  var Q = ref.getBoundingClientRect(), kr = (Q.width / (ref.offsetWidth || Q.width)) || 1;
+  var R = boite(this.svg), k = R.width / CADRE[2], x = R.left + (s[0] - CADRE[0]) * k, y = R.top + (s[1] - CADRE[1]) * k;
+  var Q = boite(ref), kr = (Q.width / (Q.ow || Q.width)) || 1;
   return {x:(x - Q.left) / kr, y:(y - Q.top) / kr};
 };
+/* (24 novembre, la vitesse : la place d'un élément à l'écran, relue au plus une fois par image — chaque lecture après une écriture
+   refait toute la mise en page) */
+var BOITES = typeof WeakMap === 'function' ? new WeakMap() : null;
+function boite(el){
+  var t = horloge(), c = BOITES && BOITES.get(el);
+  if(c && t - c.t < 12) return c;
+  var r = el.getBoundingClientRect();
+  c = {t:t, left:r.left, top:r.top, width:r.width, height:r.height, ow:el.offsetWidth};
+  if(BOITES) BOITES.set(el, c);
+  return c;
+}
 /* … → le repère des effets des films */
 V.ecranF = function(q){ var s = this.versSvg(q); return [(s[0] + 130) * KF, (s[1] + 64) * KF]; };
 /* les repères de l'ancien Pisteur (pour ses effets), posés sur elle */
@@ -225,7 +293,7 @@ V.rep = function(nom, ref){
 };
 
 /* ---------- les effets des films, redessinés sur elle ---------- */
-V.effet = function(nom, f, duree){ var e = {nom:nom, t0:maintenant(), f:f, d:duree || 99}; this.effets = this.effets.filter(function(x){ return x.nom !== nom; }); this.effets.push(e); return e; };
+V.effet = function(nom, f, duree){ var e = {nom:nom, t0:maintenant(), f:f, d:duree || 99}; this.effets = this.effets.filter(function(x){ return x.nom !== nom; }); this.effets.push(e); this.p._vides = 0; if(HV.reveiller) HV.reveiller(); return e; };
 V.sansEffet = function(nom){ this.effets = this.effets.filter(function(x){ return x.nom !== nom; }); };
 /* l'ombre au sol : sous ses pieds (et son bassin, son dos quand elle est couchée), sur le sol ; en l'air, elle rapetisse et pâlit */
 V.ombreAuSol = function(){
@@ -233,11 +301,14 @@ V.ombreAuSol = function(){
   var Vv = HV.outils.vue(HV.capDe(F)), b = F.bas || [0, 0, 0], pts = [F.piedG, F.piedD, [b[0], 245 + b[1], b[2]]], xa = 1e9, xb = -1e9, ds = 0;
   if((F.couche || 0) > 0.3) pts.push([b[0], 300, b[2] - 190 * F.couche]);
   pts.forEach(function(q){ var x = 150 + q[0] * Vv.c + q[2] * Vv.s; xa = Math.min(xa, x); xb = Math.max(xb, x); ds += -q[0] * Vv.s + q[2] * Vv.c; });
-  var kx = (this.boite.offsetWidth || 200) / CADRE[2], lv = Math.max(0, F.leve || 0), k = 1 / (1 + lv / 70);
+  /* (24 novembre, la vitesse : la largeur de la boîte n'est relue que si la fenêtre change de taille — la lire après avoir écrit
+     forçait toute la mise en page, à chaque image ; et on n'écrit que si l'ombre a bougé) */
+  if(!this._largeur || this._largeurV !== TAILLE_V){ this._largeur = this.boite.offsetWidth || 0; this._largeurV = TAILLE_V; if(!this._largeur){ this._largeur = 200; this._largeurV = -1; } }
+  var kx = this._largeur / CADRE[2], lv = Math.max(0, F.leve || 0), k = 1 / (1 + lv / 70);
   /* (son milieu un peu sous les semelles : l'ombre s'étale surtout sur le sol, devant le mur) */
   var X = ((xa + xb) / 2 - CADRE[0]) * kx, Y = (421 + 0.13 * ds / pts.length - CADRE[1]) * kx, W = Math.max(140, (xb - xa) * kx + 90) * k;
-  this.ombreSol.style.transform = 'translate(' + X.toFixed(1) + 'px,' + Y.toFixed(1) + 'px) scale(' + (W / 100).toFixed(3) + ',' + k.toFixed(3) + ')';
-  this.ombreSol.style.opacity = k.toFixed(2);
+  var tr = 'translate(' + X.toFixed(1) + 'px,' + Y.toFixed(1) + 'px) scale(' + (W / 100).toFixed(3) + ',' + k.toFixed(3) + ')';
+  if(tr !== this._ombreTr){ this._ombreTr = tr; this.ombreSol.style.transform = tr; this.ombreSol.style.opacity = k.toFixed(2); }
 };
 V.apresImage = function(){
   var t = maintenant(), me = this;
@@ -395,6 +466,7 @@ V.entrer = function(dist){
     var n = Math.max(1, Math.min(Math.floor(1.6 / C.cycle - 0.93), Math.round((dist - G9) / v / C.cycle - 0.93))), ts = (n + 0.93) * C.cycle, vr = (dist - G9) / ts;
     var dep = HV.course(ts), cles = HV.arret(), vu = {};
     this._finGeste(); this.cles = null; this.apresF = null; this.tenue = null; this.trans = null; this.t0 = maintenant();
+    this.p._vides = 0; if(HV.reveiller) HV.reveiller();
     return new Promise(function(fini){
       me.course = function(u){
         var x, P;
@@ -1066,11 +1138,44 @@ V.arreter = function(){
 V.detruire = function(){ this.arreter(); this.p.detruire(); this.racine.remove(); if(this.ombre) try{ this.ombre.detruire(); }catch(e){} };
 
 /* ---------- l'enveloppe : quand le donjon pose window.HerosAnime, son « creer » donne la Pisteuse en volume ---------- */
+/* (« ?ancien=1 » dans l'adresse : les anciens héros, comme avant le 24 novembre — au cas où) */
+var ANCIEN = /[?&]ancien=1/.test(G.location ? G.location.search : ''), VOLUME_FORCE = /[?&]volume=1/.test(G.location ? G.location.search : '');
+/* LES TABLETTES TROP LENTES GARDENT LES ANCIENS HÉROS (24 novembre — Romain : « une très vieille tablette… il faut absolument pas que
+   ça rame »). Mesuré dans le donjon, processeur ralenti comme une vieille tablette (×4, ×6) : les héros en volume y bougent à 4 ou 5
+   images par seconde pendant leurs gestes — ça saccade — alors que les anciens, « cuits » en images, glissent tout seuls. Au premier
+   héros créé, on chronomètre donc quatre dessins d'un héros en volume (hors de l'écran) : au-delà de SEUIL_ANCIENS ms par dessin,
+   toute la page garde les anciens héros. (Sur la machine d'essai : ~8 ms ; ×2 : ~16 ms.) « ?volume=1 » : les héros en volume quand
+   même. La mesure : HerosVuesDonjon.mesure. */
+var SEUIL_ANCIENS = 13, TROP_LENT = null;
+function mesurer(){
+  try{
+    var h = HV.avec(ALLURES.pisteur, {}), K = HV.contexte('hvmesure', h), P = HV.avec(HV.POSES.dGarde, {cap:CAP}), d = document.createElement('div');
+    d.style.cssText = 'position:absolute;left:-3000px;top:0;width:200px;height:290px;overflow:hidden;pointer-events:none';
+    d.innerHTML = '<svg class="hv" viewBox="' + CADRE.join(' ') + '" xmlns="http://www.w3.org/2000/svg" style="width:200px;height:290px">' + HV.defs(K) + '<g class="hv-fig"></g></svg>';
+    document.body.appendChild(d);
+    var g = d.querySelector('.hv-fig'), i, t0;
+    g.innerHTML = HV.dessin(h, P, {K:K}); void d.offsetWidth;                  /* (le premier : la page se met en route) */
+    /* (le plus court des cinq : pendant le chargement, la page fait autre chose en même temps — les sons, les images — et la moyenne
+       comptait ce travail-là aussi) */
+    var ms = 1e9;
+    for(i = 0; i < 5; i++){ P.cap = CAP - 6 + i * 3; t0 = horloge(); g.innerHTML = HV.dessin(h, P, {K:K}); void d.offsetWidth; ms = Math.min(ms, horloge() - t0); }
+    d.remove();
+    return ms;
+  }catch(e){ return 0; }
+}
+function tropLent(){
+  if(TROP_LENT === null){
+    var ms = VOLUME_FORCE ? 0 : mesurer();
+    TROP_LENT = ms > SEUIL_ANCIENS;
+    if(G.HerosVuesDonjon) G.HerosVuesDonjon.mesure = {ms:Math.round(ms * 10) / 10, anciens:TROP_LENT};
+  }
+  return TROP_LENT;
+}
 function envelopper(HA){
   if(!HA || HA.__hv) return HA;
   var creer0 = HA.creer;
   HA.creer = function(cont, role, lk){
-    if(!ALLURES[role] || G.HV_ANCIEN || (G.HV_ROLES && G.HV_ROLES.indexOf(role) < 0)) return creer0.apply(HA, arguments);
+    if(!ALLURES[role] || G.HV_ANCIEN || ANCIEN || (G.HV_ROLES && G.HV_ROLES.indexOf(role) < 0) || tropLent()) return creer0.apply(HA, arguments);
     return new Volume(cont, lk, function(c, r, l){ return creer0.call(HA, c, r, l); }, role);
   };
   HA.__hv = true;

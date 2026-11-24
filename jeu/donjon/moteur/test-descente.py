@@ -228,7 +228,7 @@ class Descente:
             return bool(f.get(k))
         abime = any(H[h]['pv'] < 0.7 * H[h]['pvMax'] for h in HEROS)
         if not fait('objet:carnet'): return 'puits'                     # le carnet de l'aventurier, à l'entrée
-        if not fait('objet:rune'): return 'galerie'                     # la pierre de rune du Sage, dans la deuxième salle
+        if not fait('objet:rune'): return 'puits'                       # la pierre de rune du Sage, à l'entrée aussi (17 novembre)
         if not fait('objet:herbes'): return 'aeration'
         if not fait('combat:rats'): return 'rats'
         if not fait('objet:fleches-lourdes') or not fait('objet:fleches-argent'): return 'reserve'
@@ -308,9 +308,10 @@ class Descente:
         if lieu == 'puits' and not f.get('objet:carnet'):
             self.objet('carnet'); self.fenetre_code()
             f = self.partie()['faits']
-        if lieu == 'galerie' and not f.get('objet:rune'):
-            self.cap('galerie'); self.objet('rune'); self.fenetre_code()
-            verifie(bool(self.partie()['faits'].get('objet:rune')), 'dans la galerie : la pierre de rune est trouvée (un code pour le Sage)')
+        # (17 novembre : la pierre de rune est à l'entrée, plus dans la galerie)
+        if lieu == 'puits' and not f.get('objet:rune') and self.js("!!(DJ.Explo._S() && DJ.Explo._S().o.rune)"):
+            self.cap('rune'); self.objet('rune'); self.fenetre_code()
+            verifie(bool(self.partie()['faits'].get('objet:rune')), 'à l\'entrée : la pierre de rune est trouvée (un code pour le Sage)')
             f = self.partie()['faits']
         if False:
             pass

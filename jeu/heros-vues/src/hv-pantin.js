@@ -175,8 +175,11 @@ function eio(u){ return u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2; }
    Une seule boucle pour tous les pantins, à 30 dessins par seconde au plus ; elle s'arrête quand il n'y en a plus à l'écran.
    ========================================================== */
 var PANTINS = [], RAF = 0, NP = 0;
-function boucle(now){ RAF = 0; for(var i = PANTINS.length - 1; i >= 0; i--) PANTINS[i].image(now); if(PANTINS.length) RAF = requestAnimationFrame(boucle); }
+/* (24 novembre — le mode léger : un pantin qui n'a plus rien à dessiner répond « false » ; quand AUCUN n'a plus rien à faire, la boucle
+   s'arrête : le fil principal dort, comme le veut le donjon — RAPIDITE.md, R3. HV.reveiller() la relance, dès qu'un geste commence.) */
+function boucle(now){ RAF = 0; var encore = false; for(var i = PANTINS.length - 1; i >= 0; i--) if(PANTINS[i].image(now) !== false) encore = true; if(PANTINS.length && encore) RAF = requestAnimationFrame(boucle); }
 function lancer(){ if(!RAF && PANTINS.length && typeof requestAnimationFrame === 'function') RAF = requestAnimationFrame(boucle); }
+HV.reveiller = lancer;
 
 function Pantin(hote, h, o){
   o = o || {};
@@ -226,7 +229,7 @@ PP.choisi = function(on){ this.anC = on ? 1 : 0; lancer(); };
 PP.habiller = function(h){
   this.h = h; this.K = HV.contexte(this.K.id, h);
   var d = this.hote.querySelector('svg > defs'); if(d) d.outerHTML = HV.defs(this.K);
-  this.dessiner(0);
+  this._force = true; this.dessiner(0);
 };
 PP.regard = function(x, y, ms){ this.reg.cx = x; this.reg.cy = y; this.reg.jusqu = this.t + (ms || 1500) / 1000; };
 PP.image = function(now){
@@ -290,9 +293,27 @@ PP.dessiner = function(dt){
   if(nom === 'coucou'){ var a = Math.sin(TAU * tp * 2.3); F.mainD = [F.mainD[0] + 9 * a * w, F.mainD[1] + 3 * Math.abs(a) * w, F.mainD[2]]; }
   if(nom.slice(0, 3) === 'tir'){ F.rx = -0.5 * w; F.souffle *= 0.4; }
   if(g) g(F, w, tp, this);
+  /* (24 novembre — LE MODE LÉGER des vieilles tablettes, hv-adaptateur.js : sans sa petite vie, quand rien n'a bougé depuis la
+     dernière image, on ne refait pas le dessin — c'est lui qui coûte : le calcul, puis la peinture. L'anneau ne scintille plus.) */
+  if(this.leger){
+    F.anneauT = 0;
+    if(!this._force && this.F && memeF(this.F, F)) return false;
+  }
+  this._force = false;
   this.F = F;
   this.fig.innerHTML = HV.dessin(this.h, F, {K:this.K});
+  return true;
 };
+/* deux poses identiques, à un rien près (le léger : on ne redessine pas pour rien) */
+function memeF(a, b){
+  for(var k in b){
+    var x = a[k], y = b[k];
+    if(typeof y === 'number'){ if(typeof x !== 'number' || Math.abs(x - y) > 0.004) return false; }
+    else if(y instanceof Array){ if(!(x instanceof Array) || x.length !== y.length) return false; for(var i = 0; i < y.length; i++) if(Math.abs(x[i] - y[i]) > 0.004) return false; }
+    else if(x !== y) return false;
+  }
+  return true;
+}
 /* une image fixe, sans hasard : P (une pose complète ou ses seuls changements), dt facultatif */
 PP.fige = function(P){ this.auto = false; var F = melange({}, HV.pose('repos'), 1), k; for(k in P) F[k] = P[k]; this.F = F; this.fig.innerHTML = HV.dessin(this.h, F, {K:this.K}); };
 HV.monter = function(hote, h, o){ return new Pantin(hote, h, o); };

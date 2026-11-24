@@ -18,7 +18,12 @@ var Fx, Son;
 function son(){ DJ.son.apply(null, arguments); }
 function bruit(id, o, ancien){ return DJ.bruit(id, o, ancien); }
 /* le Pisteur lâche la corde 1,32 s après le début du tir ; sa lame touche 0,70 s après le début du coup */
+/* l'instant où la flèche part et où la lame frappe (pour caler les sons) : les héros en volume (24 novembre) n'ont pas tout à fait le
+   même rythme que les anciens (gardés sur les tablettes trop lentes : hv-adaptateur.js) */
 var LACHER = 1.32, LAME = .70;
+function enVolume(h){ var a = E && E.A && E.A.h[h]; return !!(a && a.p && a.svg); }
+function lacher(){ return enVolume('pisteur') ? 1.38 : LACHER; }
+function lame(){ return enVolume('pisteur') ? .54 : LAME; }
 var E = null;                     /* le combat en cours */
 var jeu, fx, fxHaut, hud, bandeEl;
 
@@ -969,8 +974,9 @@ async function geste(ev, evs){
     case 'tir':
       to = a.cible(avant && avant.ouvert);
       if(ev.fleche === 'lourde' && (a.module === 'gardien' || a.module === 'ratcuir')) to.metal = true;
-      bruit('arc', {cale:LACHER}, ['arc']); bruit('vol', {dt:LACHER});
-      if(ev.fleche === 'argent') bruit('flecheArgent', {dt:LACHER}); if(ev.fleche === 'lourde') bruit('flecheLourde', {dt:LACHER});
+      var tL = lacher();
+      bruit('arc', {cale:tL}, ['arc']); bruit('vol', {dt:tL});
+      if(ev.fleche === 'argent') bruit('flecheArgent', {dt:tL}); if(ev.fleche === 'lourde') bruit('flecheLourde', {dt:tL});
       await H.pisteur.tirer(fx, to, ev.fleche, {rebond:!!ev.rebond, sol:DJ.Betes.SOL + 6});
       if(ev.defaut === 'traverse'){ /* la flèche transperçante passe à travers la bête de brume : aucun choc */ }
       else if(ev.rebond) bruit(a.module === 'gardien' || a.module === 'ratcuir' ? 'metal' : 'bois'); else bruit('chairF');
@@ -979,7 +985,7 @@ async function geste(ev, evs){
       return false;
     case 'dague':
       to = a.cible(avant && avant.ouvert);
-      bruit('swish', {cale:LAME}, ['dague']);
+      bruit('swish', {cale:lame()}, ['dague']);
       await H.pisteur.dague(fx, {x:Math.max(hCx('pisteur') + 90, a.ancre('centre').x - Math.min(70, a.cadre.w * .3)), y:to.y});
       bruit('chairD');
       return false;

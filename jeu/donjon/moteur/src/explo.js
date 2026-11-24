@@ -837,7 +837,10 @@ function fenetreObjets(){
   s += '<div class="boutons"><button class="sombre discret" data-act="recommencer">↺ Recommencer la descente</button></div>';
   s += '<div class="ligne petit version">Version du ' + esc(DJ.VERSION) + (DJ.plantages() ? ' · critiques allégés (' + DJ.plantages() + (DJ.plantageOu() ? ', ' + esc(DJ.plantageOu()) : '') + ')' : '') +
     (DJ.plantagesCharge && DJ.plantagesCharge() ? ' · images allégées (' + DJ.plantagesCharge() + ')' : '') +
-    (DJ.critMesure() ? ' · dernier critique : image la plus lente ' + esc(DJ.critMesure()) : '') + '</div>';
+    (DJ.critMesure() ? ' · dernier critique : image la plus lente ' + esc(DJ.critMesure()) : '') +
+    /* (24 novembre : quels héros sur cette tablette — en volume, ou les anciens si elle est trop lente ; hv-adaptateur.js) */
+    (function(){ var m = window.HerosVuesDonjon && window.HerosVuesDonjon.mesure; if(!m) return ''; var l = (window.HerosVuesDonjon.toutes || []).some(function(v){ return v.p && v.p.leger; });
+      return ' · héros : ' + (m.anciens ? 'les anciens (tablette lente, ' : 'en volume' + (l ? ', allégés' : '') + ' (') + esc(String(m.ms)) + ' ms)'; })() + '</div>';
   DJ.fenetre(s, 'livre');
 }
 /* LA SAUVEGARDE OBLIGATOIRE (Romain, 13 novembre, 17 h 42) : « après avoir fait les deux premières salles, que tu obliges les

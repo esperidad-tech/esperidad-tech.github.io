@@ -17,7 +17,7 @@ from collections import defaultdict
 from playwright.sync_api import sync_playwright
 
 ICI = os.path.dirname(os.path.abspath(__file__))
-PAGE = 'file://' + os.path.join(ICI, 'sortie', 'index.html')
+PAGE = os.environ.get('PAGE') or 'file://' + os.path.join(ICI, 'sortie', 'index.html')     # (PAGE=… : une autre page, la page d'essai)
 args = sys.argv[1:]
 TAUX = 4
 SORTIE = None

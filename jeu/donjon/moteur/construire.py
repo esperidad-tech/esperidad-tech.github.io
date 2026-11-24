@@ -14,9 +14,16 @@ SORTIE = os.path.join(ICI, 'sortie')
 ESSAI = os.path.join(DONJON, 'essai')
 
 BETES = ['ratcuir', 'araignee', 'petitearaignee', 'chauvesouris', 'feufollet', 'tetard', 'roirats', 'gardien', 'bourbe']
+# (24 novembre) LES HÉROS EN VOLUME dans le vrai donjon (jeu/heros-vues/) : leurs scripts, puis l'adaptateur, AVANT heros-anime.js —
+# l'adaptateur attend que heros-anime.js pose window.HerosAnime pour l'envelopper (le Pisteur, l'Alchimiste et le Sage deviennent
+# des héros en volume, à l'allure des joueurs ; le Barde reste l'ancien). « ?ancien=1 » dans l'adresse : les anciens héros.
+HEROS_VUES = os.path.join(os.path.dirname(DONJON), 'heros-vues')
+HV = [os.path.join(HEROS_VUES, 'src', f) for f in ['hv-base.js', 'hv-tete.js', 'hv-cheveux.js', 'hv-corps.js', 'hv-pantin.js', 'hv-poses.js',
+      'hv-positions.js', 'hv-donjon.js', 'hv-alchimiste.js', 'hv-sage.js', 'hv-attente.js']] + [os.path.join(HEROS_VUES, 'donjon', 'hv-adaptateur.js')]
 # le cœur du jeu, dans cet ordre (tout le reste se charge à la demande)
 COEUR = [
     ('sons', [os.path.join(ESSAI, 'sons', f) for f in ['moteur.js', 'bruitages.js', 'bestiaire.js', 'donjon.js', 'leo.js', 'cine.js', 'musiques.js', 'musiques-donjon.js']]),
+    ('héros en volume', HV),
     ('animation', [os.path.join(DONJON, 'anim', 'cuire.js'), os.path.join(DONJON, 'anim', 'heros', 'heros-anime.js')]),
     ('salle d\'essai (son, effets)', [os.path.join(ESSAI, 'src', 'son.js'), os.path.join(ESSAI, 'src', 'effets.js')]),
     ('règles', [os.path.join(DONJON, 'donjon-codes.js'), os.path.join(SRC, 'donnees.js'), os.path.join(SRC, 'regles.js'), os.path.join(SRC, 'leo-regles.js')]),
@@ -135,7 +142,7 @@ def page():
 def tenue():
     # la petite page de la tenue de combat (jeu/src/descente.js la montre dans un cadre) : les héros animés, à l'allure des joueurs
     code = ''
-    for f in [os.path.join(DONJON, 'anim', 'cuire.js'), os.path.join(DONJON, 'anim', 'heros', 'heros-anime.js'), os.path.join(SRC, 'allure.js')]:
+    for f in HV + [os.path.join(DONJON, 'anim', 'cuire.js'), os.path.join(DONJON, 'anim', 'heros', 'heros-anime.js'), os.path.join(SRC, 'allure.js')]:
         code += '\n/* ===== ' + os.path.relpath(f, DONJON) + ' ===== */\n' + lire(f) + '\n'
     p = lire(os.path.join(SRC, 'tenue.html')).replace('/*JEU*/', code.replace('</script', '<\\/script'))
     with open(os.path.join(SORTIE, 'tenue.html'), 'w', encoding='utf-8') as f:

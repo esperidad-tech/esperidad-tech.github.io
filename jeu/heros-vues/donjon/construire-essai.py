@@ -31,11 +31,13 @@ js = '\n'.join((HV / 'src' / f).read_text(encoding='utf-8') for f in SRC)
 js += '\n' + (ICI / 'hv-adaptateur.js').read_text(encoding='utf-8')
 # (les deux nombres du combat, dans la copie seulement)
 AVANT, APRES = 'var LACHER = 1.32, LAME = .70;', 'var LACHER = 1.38, LAME = .54;'
-assert page.count(AVANT) == 1, 'le combat a changé : retrouver LACHER et LAME dans combat.js'
-page = page.replace(AVANT, APRES)
-# (en tête de page : avant tous les scripts du donjon)
-i = page.index('<head>') + len('<head>')
-page = page[:i] + '\n<script>/* LES HÉROS EN VOLUME (essai) */\n' + js.replace('</script', '<\\/script') + '\n</script>' + page[i:]
+# (24 novembre : le vrai donjon a maintenant les héros en volume — la copie n'a plus rien à ajouter)
+if 'heros-vues/donjon/hv-adaptateur.js' not in page:
+    assert page.count(AVANT) == 1, 'le combat a changé : retrouver LACHER et LAME dans combat.js'
+    page = page.replace(AVANT, APRES)
+    # (en tête de page : avant tous les scripts du donjon)
+    i = page.index('<head>') + len('<head>')
+    page = page[:i] + '\n<script>/* LES HÉROS EN VOLUME (essai) */\n' + js.replace('</script', '<\\/script') + '\n</script>' + page[i:]
 (SORTIE / 'index.html').write_text(page, encoding='utf-8')
 for f in ('alchimiste.html', 'sage.html', 'tenue.html'):
     if (SORTIE / f).exists():
