@@ -330,6 +330,16 @@ DJ.brancher = function(){
   window.addEventListener('orientationchange', function(){ setTimeout(DJ.ajuster, 200); });
   ['#cadre', '#jeu'].forEach(function(s){ var e = q(s); if(e) e.addEventListener('scroll', function(){ e.scrollTop = 0; e.scrollLeft = 0; }); });
   window.addEventListener('scroll', function(){ window.scrollTo(0, 0); });
+  /* (24 novembre au soir — Romain, 20 h 52 : après un rechargement tout seul, sur iPhone couché, « ça décale l'image […] je suis
+     obligé de le remettre en position portrait pour après le remettre en position paysage ». Au rechargement, Safari donne parfois
+     une taille de page fausse, puis la corrige sans prévenir (aucun « resize »). On se recale donc au retour sur la page, quand la
+     zone visible change, et on vérifie chaque seconde que la taille n'a pas bougé — deux lectures, presque rien.) */
+  var vu = '';
+  function verifier(){ var k = window.innerWidth + 'x' + window.innerHeight; if(k !== vu){ vu = k; try{ window.scrollTo(0, 0); }catch(e){} DJ.ajuster(); } }
+  window.addEventListener('pageshow', function(){ vu = ''; setTimeout(verifier, 60); });
+  try{ if(window.visualViewport) window.visualViewport.addEventListener('resize', function(){ vu = ''; verifier(); }); }catch(e){}
+  setInterval(verifier, 1000);
+  [120, 600].forEach(function(ms){ setTimeout(function(){ vu = ''; verifier(); }, ms); });
   DJ.ajuster();
 };
 

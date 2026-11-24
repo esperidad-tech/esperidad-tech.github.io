@@ -122,14 +122,44 @@ function cleDe(nom, P, S, K){
 function toile(texte, W, H){
   return new Promise(function(ok){
     var u = URL.createObjectURL(new Blob([texte], {type:'image/svg+xml'})), im = new Image();
+    /* (l'image SVG lâchée tout de suite, sans attendre le ramasse-miettes : chacune est un petit document SVG en mémoire — 24 novembre
+       au soir, les plantages du combat de Léo, voir defsPour) */
+    function lacher(){ im.onload = im.onerror = null; URL.revokeObjectURL(u); try{ im.removeAttribute('src'); }catch(e){} }
     im.onload = function(){
       var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
       try{ cv.getContext('2d').drawImage(im, 0, 0, W, H); }catch(e){}
-      URL.revokeObjectURL(u); ok(cv);
+      lacher(); ok(cv);
     };
-    im.onerror = function(){ URL.revokeObjectURL(u); ok(null); };
+    im.onerror = function(){ lacher(); ok(null); };
     im.src = u;
   });
+}
+/* LES <defs> D'UN MORCEAU (24 novembre au soir — Romain, 20 h 11 et 20 h 16 : au combat de Léo, « ça a bugué, ça a refait
+   recommencer », à la lumière du Sage puis au feu de Léo). Avant, chaque image d'un morceau emportait dans ses <defs> TOUT le dessin
+   du corps (les dégradés et les caches d'un morceau sont écrits dans le dessin d'un autre) : 45 Ko en moyenne, et au combat de Léo
+   1 300 images, 80 Mo de texte, chacune devenant un document SVG — mesuré : la page montait à 1,3 Go avant que le ramasse-miettes
+   passe (0,45 Go avec les anciens héros). Sur iPhone, la page est fermée avant. Maintenant, on lit une fois les définitions de la
+   pose (reserve) et chaque morceau n'emporte que ce qu'il utilise (ses dégradés, ses caches, ce qu'eux-mêmes utilisent). */
+var RE_REF = /url\(\s*['"]?#([^)'"\s]+)['"]?\s*\)|href="#([^"]+)"/g;
+function refsDe(t){ var r = [], m; RE_REF.lastIndex = 0; while((m = RE_REF.exec(t))) r.push(m[1] || m[2]); return r; }
+/* (les éléments à identifiant des dessins des héros : dégradés, caches, masques, motifs, filtres — jamais emboîtés dans un élément
+   du même nom — et un chemin repris par <use>. Lus dans le texte, sans construire de document : rien à ramasser ensuite) */
+var RE_DEF = /<(linearGradient|radialGradient|clipPath|mask|pattern|filter|symbol)\b[^>]*?\sid="([^"]+)"[^>]*?(?:\/>|>[\s\S]*?<\/\1>)|<(path|g|rect|circle|ellipse|polygon)\b[^>]*?\sid="([^"]+)"[^>]*?\/>/g;
+function reserve(src){
+  var ids = {}, m, n = 0;
+  RE_DEF.lastIndex = 0;
+  while((m = RE_DEF.exec(src))){ var id = m[2] || m[4]; if(!ids[id]){ ids[id] = m[0]; n++; } }
+  return n ? ids : null;
+}
+function defsPour(R, d){
+  /* (ce que le morceau définit lui-même — le cache du cou est dans le dessin du cou — n'est pas à reprendre) */
+  var vus = reserve(d) || {}, out = [], pile = refsDe(d);
+  while(pile.length){
+    var id = pile.pop(); if(vus[id]) continue; vus[id] = 1;
+    var t = R[id]; if(!t){ (CU.manque = CU.manque || {})[id] = 1; return null; }          /* (une définition pas trouvée : on garde tout, comme avant) */
+    out.push(t); pile = pile.concat(refsDe(t));
+  }
+  return '<defs>' + out.join('') + '</defs>';
 }
 /* la boîte d'un morceau (on le pose dans un SVG caché pour la mesurer) */
 var MESURE = null;
@@ -244,10 +274,14 @@ CP.preparer = function(P0){
     defsT = '<defs>' + dessins.cheveuxDos + dessins.tete + '</defs>';
   }
   var base = HV.defs(K);
+  /* (les définitions de la pose, lues une fois ; chaque morceau n'en emporte que ce qu'il utilise — voir defsPour) */
+  var RC = null, RT = null;
   var travail = L.map(function(x){
     var nom = x[0], cle = x[1], d = (/^brasHaut/.test(nom) && /a$/.test(cle) && dessins[nom + 'a']) || dessins[nom], tete = MORCEAUX[nom].type === 'tete';
     if(!d) return Promise.resolve(me.garder(nom, cle, {vide:true}));
-    var defs = base + (DE_LA_TETE[nom] ? defsT : defsC);
+    var dlt = DE_LA_TETE[nom], R = dlt ? (RT === null ? (RT = reserve(base + defsT) || false) : RT) : (RC === null ? (RC = reserve(base + defsC) || false) : RC);
+    var defs = R && defsPour(R, d);
+    if(!defs){ defs = base + (dlt ? defsT : defsC); CU.secours = (CU.secours || 0) + 1; }   /* (CU.secours : combien de fois tout a été gardé) */
     var b = boite('', d);
     if(!b) return Promise.resolve(me.garder(nom, cle, {vide:true}));
     var r = me.res, W = Math.ceil(b.w * r), H = Math.ceil(b.h * r);
