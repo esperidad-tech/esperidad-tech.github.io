@@ -5338,7 +5338,12 @@ function mesurer(){
     return ms;
   }catch(e){ return 0; }
 }
+/* (24 novembre, 4 h 14 — Romain : « les nouveaux personnages, ils font ramer même mon iPhone » : la mesure ne voit pas la peinture
+   du dessin, qui coûte cher sur Safari. TANT QU'ILS NE SONT PAS « CUITS » EN IMAGES, les héros en volume ne viennent plus que sur
+   demande : « ?volume=1 » dans l'adresse. Partout ailleurs, les anciens héros.) */
+var SUR_DEMANDE = true;
 function tropLent(){
+  if(SUR_DEMANDE && !VOLUME_FORCE){ if(TROP_LENT === null){ TROP_LENT = true; if(G.HerosVuesDonjon) G.HerosVuesDonjon.mesure = {ms:0, anciens:true, attente:true}; } return true; }
   if(TROP_LENT === null){
     var ms = VOLUME_FORCE ? 0 : mesurer();
     TROP_LENT = ms > SEUIL_ANCIENS;

@@ -10779,7 +10779,12 @@ function mesurer(){
     return ms;
   }catch(e){ return 0; }
 }
+/* (24 novembre, 4 h 14 — Romain : « les nouveaux personnages, ils font ramer même mon iPhone » : la mesure ne voit pas la peinture
+   du dessin, qui coûte cher sur Safari. TANT QU'ILS NE SONT PAS « CUITS » EN IMAGES, les héros en volume ne viennent plus que sur
+   demande : « ?volume=1 » dans l'adresse. Partout ailleurs, les anciens héros.) */
+var SUR_DEMANDE = true;
 function tropLent(){
+  if(SUR_DEMANDE && !VOLUME_FORCE){ if(TROP_LENT === null){ TROP_LENT = true; if(G.HerosVuesDonjon) G.HerosVuesDonjon.mesure = {ms:0, anciens:true, attente:true}; } return true; }
   if(TROP_LENT === null){
     var ms = VOLUME_FORCE ? 0 : mesurer();
     TROP_LENT = ms > SEUIL_ANCIENS;
@@ -23853,7 +23858,7 @@ DJ.mesurerCritiqueVrai = function(){
     if(lent) SALLE.critLeger = true;
   }};
 };
-DJ.VERSION = '24/11 à 3 h 15';
+DJ.VERSION = '24/11 à 4 h 16';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
@@ -30311,6 +30316,7 @@ function fenetreObjets(){
     (DJ.critMesure() ? ' · dernier critique : image la plus lente ' + esc(DJ.critMesure()) : '') +
     /* (24 novembre : quels héros sur cette tablette — en volume, ou les anciens si elle est trop lente ; hv-adaptateur.js) */
     (function(){ var m = window.HerosVuesDonjon && window.HerosVuesDonjon.mesure; if(!m) return ''; var l = (window.HerosVuesDonjon.toutes || []).some(function(v){ return v.p && v.p.leger; });
+      if(m.attente) return ' · héros : les anciens';
       return ' · héros : ' + (m.anciens ? 'les anciens (tablette lente, ' : 'en volume' + (l ? ', allégés' : '') + ' (') + esc(String(m.ms)) + ' ms)'; })() + '</div>';
   DJ.fenetre(s, 'livre');
 }
