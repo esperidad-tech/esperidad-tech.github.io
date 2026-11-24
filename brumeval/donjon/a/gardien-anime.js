@@ -1228,8 +1228,11 @@ var POSES = {
   /* ébloui : le cœur déréglé ; il recule, l'avant-bras en visière AU-DESSUS des yeux (le poing au-dessus du front : on voit encore
      ses yeux), la tête détournée (24 novembre, 17 h 21 — Romain : « il fait n'importe quoi avec ses bras » ; avant : le gros poing
      posé en plein sur son visage) */
-  ebloui: fus({buste: {a: 6, y: 1}, tete: {a: -10, y: 1, x: 2}, machoire: {a: -9}, epaule: {a: -10, y: -6}, brasF: {a: -10}, avbrasF: {a: -12}, poingF: {a: -8}},
-    membre('P', [268, 36], null, 182), jambe('F', -6, 0), jambe('P', 4, 0)),
+  /* (24 novembre au soir — Romain, 20 h 28 : « toujours moches » : c'était le bras de DERRIÈRE qui passait par-dessus sa tête, le
+     poing posé sur son crâne. Maintenant le bras de devant : l'avant-bras en biais au-dessus des yeux, le poing levé à gauche de la
+     tête — il se protège de la lumière ; le bras de derrière reste en bas) */
+  ebloui: fus({buste: {a: 6, y: 1}, tete: {a: -10, y: 1, x: 2}, machoire: {a: -9}, epaule: {a: -10, y: -6}},
+    membre('F', [140, 30], null, -70), membre('P', [446, 316], null, 92), jambe('F', -6, 0), jambe('P', 4, 0)),
   /* renversé : tombé sur le dos comme une tortue, les pieds en l'air, les bras qui battent */
   dos: fus({saut: sautDos(62, 4), buste: {a: 8}, tete: {a: 22, x: 2}, machoire: {a: -12}, epaule: {a: 6}, chaineF: {a: -70}},
     membre('F', [70, 200], null, 200), membre('P', [470, 250], null, 40), jambe('F', -14, -18, -20), jambe('P', -6, -12, -14))
@@ -1707,14 +1710,25 @@ R.entrer = function(o){
      « boum » et la salle qui tremble à chaque pied posé : onPas) ; ses runes s'allument une à une pendant qu'il marche, ses yeux à
      la fin. Avant : il était déjà là, endormi, se réveillait (3 s), puis faisait deux pas. (o.reveil : l'ancienne entrée) */
   if(!o.reveil){
-    var S2 = 70, base = fus(melange(N, {}, 1), {pos: {x: 2 * S + 2 * S2}});
+    /* (24 novembre au soir — Romain, 20 h 28 : « quand on rentre […] le golem de fer, là, il apparaît d'un coup à l'intérieur. Alors
+       que j'aurais bien aimé que tu le fasses rentrer en le faisant marcher » : il partait de 200 unités à droite — encore DANS la
+       salle — et se montrait une image à sa place avant de sauter à son départ. Maintenant : caché tant que sa pose de départ n'est
+       pas posée, il part tout entier HORS de l'écran (_horsEcran : du bord droit de la salle à son poing le plus à gauche) et marche
+       jusqu'à sa place, à grands pas lourds (des cycles de deux pas d'au plus 80 unités), puis deux pas plus courts.) */
+    this.el.style.visibility = 'hidden';
+    var D = this._horsEcran(), nC = Math.max(1, Math.ceil((D - 2 * S) / 160)), S2 = Math.max(40, (D - 2 * S) / (2 * nC)), TC = 1100;
+    var base = fus(melange(N, {}, 1), {pos: {x: 2 * S + 2 * S2 * nC}}), T0 = Math.max(0, nC * TC + 1400 - 2900);
     return this._allerA(base, 1, null, true).then(function(){
       if(j !== self.jeton) return;
-      REVEIL.forEach(function(n, k){ self._minuteur(function(){ delete self.eteintes[n]; self._majRunes(200); }, 150 + k * 80); });
-      [[300, 1], [900, 5], [1500, 3], [2100, 8]].forEach(function(v){ self._minuteur(function(){ var jt = JOINTS[v[1]]; self._jet(self._pt(jt[0]), jt[1], {n: 3, blanc: true}); }, v[0]); });
-      [[200, .4], [1000, .8], [1800, 1]].forEach(function(v){ self._minuteur(function(){ self._rouages(v[1]); }, v[0]); });
-      self._minuteur(function(){ delete self.eteintes.yeux; self._majRunes(120); self._clignerFort(0, 600); }, 2300);
-      return self._marcher(S2, o.onPas, 2 * S, 1500);
+      self.el.style.visibility = '';
+      /* (les runes, la vapeur, les rouages et les yeux : pendant la fin de la marche, quand on le voit — T0) */
+      REVEIL.forEach(function(n, k){ self._minuteur(function(){ delete self.eteintes[n]; self._majRunes(200); }, T0 + 150 + k * 80); });
+      [[300, 1], [900, 5], [1500, 3], [2100, 8]].forEach(function(v){ self._minuteur(function(){ var jt = JOINTS[v[1]]; self._jet(self._pt(jt[0]), jt[1], {n: 3, blanc: true}); }, T0 + v[0]); });
+      [[200, .4], [1000, .8], [1800, 1]].forEach(function(v){ self._minuteur(function(){ self._rouages(v[1]); }, T0 + v[0]); });
+      self._minuteur(function(){ delete self.eteintes.yeux; self._majRunes(120); self._clignerFort(0, 600); }, T0 + 2300);
+      var p = Promise.resolve();
+      for(var c = nC - 1; c >= 0; c--) (function(c){ p = p.then(function(){ if(j === self.jeton) return self._marcher(S2, o.onPas, 2 * S + 2 * S2 * c, TC); }); })(c);
+      return p;
     }).then(function(){ if(j === self.jeton) return self._marcher(S, o.onPas, 0, 1400); })
       .then(function(){ return self._finAction(j, 300); });
   }
@@ -1758,6 +1772,14 @@ R.entrer = function(o){
 };
 /* deux pas lourds (le pied de devant d'abord) : les pieds posés restent collés au sol (cinématique inverse),
    le corps plonge à chaque pas ; onPas(n) au moment où le pied frappe le sol */
+/* de combien (en unités du dessin) le pousser à droite pour qu'il soit tout entier hors de la salle : du bord droit de la scène
+   (#monde dans le donjon, sinon la fenêtre) à son poing de devant (le plus à gauche de lui, vers x = 20) — entre 200 et 900 */
+R._horsEcran = function(){
+  try{
+    var sc = document.getElementById('monde'), dr = sc ? sc.getBoundingClientRect().right : (global.innerWidth || 960);
+    return Math.max(200, Math.min(900, this._depuisEcran({x: dr, y: 0})[0] - 20 + 30));
+  }catch(e){ return 400; }
+};
 R._marcher = function(S, onPas, base, duree){
   /* (24 novembre : base — d'où il part, en plus des deux pas ; duree — plus vite pour arriver de loin) */
   var self = this, T = duree || 2200, N = 14, k = [], X0 = (base || 0) + 2 * S;
@@ -1802,7 +1824,10 @@ R.attaquer = function(nom, o){
   var bA = -8, cl = rotP([cible[0] + Lg, cible[1]], -bA, ART.buste), dir = angle(ART.epauleF, cl), lp = Math.min(184, Math.max(120, Math.hypot(cl[0] - Sx, cl[1] - Sy) - 30));
   dir = Math.max(.35, Math.min(2.95, dir));
   function W(l, dyy){ return [Sx + Math.cos(dir) * l, Sy + Math.sin(dir) * l + (dyy || 0)]; }
-  var dd = dir * 180 / Math.PI, armer = membre('F', [196, -40], -40), frappe = membre('F', W(lp), null, dd - 30), retour = membre('F', W(lp - 30, -5), null, dd - 16);
+  /* (armer — 24 novembre au soir, Romain, 20 h 28 : « il fait n'importe quoi avec ses bras […] toujours moches » : le bras montait tout
+     droit DERRIÈRE sa tête, comme une antenne. Maintenant il le lève devant, à côté de sa tête, le poing serré en l'air — on le voit
+     armer — puis l'abat en avant sur sa cible) */
+  var dd = dir * 180 / Math.PI, armer = membre('F', [100, 0], null, -115), frappe = membre('F', W(lp), null, dd - 30), retour = membre('F', W(lp - 30, -5), null, dd - 16);
   var fin = this._toutesPieces(fus(armer, {pos: 1, buste: 1, saut: 1, tete: 1, machoire: 1, epaule: 1, chaineF: 1, bras: 1, avbras: 1, poing: 1, secousse: 1, capot1: 1, capot2: 1}, jambe('F', 0, 0), jambe('P', 0, 0)));
   var k = [{t: 0, p: {}},
     /* 1. il arme son bras au-dessus de la tête : lent, lourd */
@@ -2029,9 +2054,10 @@ R._piege = function(o){
     {t: .1, p: {buste: {a: 5}, tete: {a: 10, y: -2}, machoire: {a: -8}, secousse: {x: 6}}, e: 'cubic-bezier(.1,.9,.3,1)'},
     {t: .25, p: {secousse: {x: 0}}},
     {t: .4, p: {secousse: {x: 1.6}}, e: 'linear'}, {t: .44, p: {secousse: {x: -1.6}}, e: 'linear'}, {t: .48, p: {secousse: {x: 1.6}}, e: 'linear'}, {t: .52, p: fus({secousse: {x: 0}}, this._toutesPieces({brasF: 1, avbrasF: 1, poingF: 1, bras: 1, avbras: 1, poing: 1, epaule: 1, saut: 1, hancheF: 1, tibiaF: 1, piedF: 1, cuisse: 1, tibia: 1, pied: 1})), e: 'linear'},
-    /* il rugit, la poitrine en avant, ses deux poings serrés levés DEVANT lui (24 novembre, 17 h 21 — Romain : « il fait n'importe quoi
-       avec ses bras » ; avant : un bras passait derrière sa tête, l'autre partait tendu sur le côté) */
-    {t: .7, p: fus(membre('F', [150, 168], null, -80), membre('P', [418, 176], null, -100),{buste: {a: 5, y: -4}, tete: {a: 12, y: -3}, machoire: {a: -24}, saut: {y: -5, sy: 1.03}, epaule: {a: -6, y: -6}}, jambe('F', 0, 5), jambe('P', 0, 5)), e: 'cubic-bezier(.3,.7,.3,1)'},
+    /* il rugit, la poitrine en avant, ses deux poings serrés levés HAUT, de chaque côté de sa tête, comme un gorille (24 novembre au
+       soir — Romain, 20 h 28 : « toujours moches » ; à 17 h 21, les poings « devant lui » se cachaient derrière son torse ; avant
+       encore, un bras passait derrière sa tête) */
+    {t: .7, p: fus(membre('F', [96, 10], null, -120), membre('P', [436, 40], null, -80), {buste: {a: 5, y: -4}, tete: {a: 12, y: -3}, machoire: {a: -24}, saut: {y: -5, sy: 1.03}, epaule: {a: -6, y: -6}}, jambe('F', 0, 5), jambe('P', 0, 5)), e: 'cubic-bezier(.3,.7,.3,1)'},
     /* et abat ses deux poings sur le sol (BOUM), penché en avant */
     {t: .8, p: fus(membre('F', [96, 338], null, 120), membre('P', [446, 346], null, 80),{saut: {y: 9, sy: .95}, buste: {a: -6, y: 3}, tete: {a: -8}, machoire: {a: -10}, epaule: {a: 4, y: 4}}, jambe('F', 0, -7), jambe('P', 0, -7)), e: 'cubic-bezier(.6,0,.9,.5)'},
     {t: .88, p: fus({saut: {y: 7, sy: .97}}), e: 'ease-out'},
@@ -2512,7 +2538,9 @@ function preparer(o){
 }
 global.BETES = global.BETES || {};
 global.BETES[ID] = {info: INFO, preparer: preparer, cuit: function(){ return !!MODELE; },
-  creer: function(conteneur, options){ return acteur(new Gardien(conteneur, options)); }};
+  creer: function(conteneur, options){ return acteur(new Gardien(conteneur, options)); },
+  /* (pour régler les poses dans la page de démonstration : BETES.gardien._outils.membre('F', [x, y], null, vise)…) */
+  _outils: {membre: function(){ return membre.apply(null, arguments); }, jambe: function(){ return jambe.apply(null, arguments); }, fus: fus, POSES: POSES, ART: ART}};
 })(typeof window !== 'undefined' ? window : this);
 
 })(function(f, ms){ var a = Array.prototype.slice.call(arguments); a[1] = (+ms || 0) / (window.DJ_RYTHME || 1); return window.setTimeout.apply(window, a); });
