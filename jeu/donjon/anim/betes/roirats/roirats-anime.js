@@ -47,6 +47,25 @@
 'use strict';
 var ID = 'roirats', PX = 'bt-roirats', NS = 'http://www.w3.org/2000/svg';
 var O = '#24182e', LUNE = '#bfe8ff', NUM = 0;
+/* CUIT (24 novembre au soir — Romain, 22 h 51 : « dans la salle du roi du rat, j'ai senti qu'il y avait encore des ralentissements ») :
+   comme le Gardien et le rat cuirassé. Un SVG dont on anime les pièces est REPEINT EN ENTIER à chaque image (RAPIDITE.md, R1) — et
+   le Roi des rats, ce sont dix rats. BETES.roirats.preparer({ecran, allege}) le cuit une fois (anim/cuire.js), pendant l'écran de
+   passage ; ensuite creer() monte une copie cuite. Le module marche des deux façons (SVG vivant, ou cuit) : les endroits qui
+   touchaient au SVG passent par les petits outils ci-dessous. */
+var MODELE = null, CUISSON = null;
+function estSvg(e){ return !!e && e.namespaceURI === NS; }
+function estCache(e){ return estSvg(e) ? e.getAttribute('visibility') === 'hidden' : e.style.visibility === 'hidden'; }
+function opaDe(e){ if(estSvg(e)){ var a = e.getAttribute('opacity'); return a == null ? 1 : +a; } return e.style.opacity === '' ? 1 : +e.style.opacity; }
+function poserOpa(e, v){ if(estSvg(e)) e.setAttribute('opacity', v); else e.style.opacity = v; }
+function cacher(e, on){ if(estSvg(e)){ if(on) e.setAttribute('visibility', 'hidden'); else e.removeAttribute('visibility'); } else e.style.visibility = on ? 'hidden' : ''; }
+function mMul(A, B){ return [A[0] * B[0] + A[2] * B[1], A[1] * B[0] + A[3] * B[1], A[0] * B[2] + A[2] * B[3], A[1] * B[2] + A[3] * B[3], A[0] * B[4] + A[2] * B[5] + A[4], A[1] * B[4] + A[3] * B[5] + A[5]]; }
+function mInv(m){ var d = m[0] * m[3] - m[1] * m[2] || 1e-9; return [m[3] / d, -m[1] / d, -m[2] / d, m[0] / d, (m[2] * m[5] - m[3] * m[4]) / d, (m[1] * m[4] - m[0] * m[5]) / d]; }
+function mAp(m, x, y){ return [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]]; }
+/* la matrice d'un élément vers les pixels (comme getCTM ; marche aussi sur une pièce cuite) */
+function mat(e){
+  if(global.Cuire && global.Cuire.ctm) return global.Cuire.ctm(e);
+  var m = e.getCTM(); return [m.a, m.b, m.c, m.d, m.e, m.f];
+}
 
 /* =====================================================================
    1. Petits outils de dessin (ceux de la fiche du bestiaire, sans filtre)
@@ -110,14 +129,16 @@ function eclatD(r){ return 'M0 ' + f1(-r) + ' Q ' + f1(r * .14) + ' ' + f1(-r * 
 function osD(l){ return 'M' + (-l) + ' -3 L ' + l + ' -3 C ' + (l + 6) + ' -10 ' + (l + 14) + ' -6 ' + (l + 10) + ' 0 C ' + (l + 14) + ' 6 ' + (l + 6) + ' 10 ' + l + ' 3 L ' + (-l) + ' 3 C ' + (-l - 6) + ' 10 ' + (-l - 14) + ' 6 ' + (-l - 10) + ' 0 C ' + (-l - 14) + ' -6 ' + (-l - 6) + ' -10 ' + (-l) + ' -3 Z'; }
 
 /* Les pièces articulées : un <g data-j> dont le pivot est ramené à (0,0). Contenu FIXE : on n'anime que transform et opacity. */
-function piv(nom, x, y, c){ return '<g transform="translate(' + f1(x) + ' ' + f1(y) + ')"><g data-j="' + nom + '"><g transform="translate(' + f1(-x) + ' ' + f1(-y) + ')">' + c + '</g></g></g>'; }
+/* (data-i sur le groupe du dedans : cuit, la pièce reste un <div> au repère du dessin — voir CUIT, en haut) */
+function piv(nom, x, y, c){ return '<g transform="translate(' + f1(x) + ' ' + f1(y) + ')"><g data-j="' + nom + '"><g data-i="" transform="translate(' + f1(-x) + ' ' + f1(-y) + ')">' + c + '</g></g></g>'; }
 /* une variante pré-dessinée : cachée (opacité 0 et visibility hidden), montrée par _fondu */
 function vari(nom, c, op){ return '<g data-j="v-' + nom + '" opacity="' + (op || 0) + '"' + (op ? '' : ' visibility="hidden"') + '>' + c + '</g>'; }
 /* une pièce à boucle autonome (x-), avec son pivot */
 function xp(nom, x, y, c){ return piv('x-' + nom, x, y, c); }
 function slot(nom){ return '<g data-slot="' + nom + '"></g>'; }
 /* un petit repère caché, suivi par ancre() (getBoundingClientRect) et par les effets */
-function repere(nom, x, y){ return '<circle data-a="' + nom + '" cx="' + f1(x) + '" cy="' + f1(y) + '" r="1.5" fill="#000" fill-opacity="0"/>'; }
+/* (data-x / data-y : cuit, le petit rond n'est plus un cercle — R._ou y lit son centre) */
+function repere(nom, x, y){ return '<circle data-a="' + nom + '" data-x="' + f1(x) + '" data-y="' + f1(y) + '" cx="' + f1(x) + '" cy="' + f1(y) + '" r="1.5" fill="#000" fill-opacity="0"/>'; }
 
 /* les dégradés et découpes d'une bête (identifiants uniques par bête) */
 function Defs(u){ this.u = u; this.n = 0; this.l = []; this.cache = {}; }
@@ -354,7 +375,9 @@ function Roi(conteneur, options){
   injecterCSS();
   this.c = conteneur;
   this.o = options || {};
-  var D = new Defs(PX + (++NUM) + '_');
+  /* (cuit : le même préfixe que le modèle — ses dégradés sont dans la copie, sous les mêmes noms) */
+  var M = this.o.preparation ? null : MODELE;
+  var D = new Defs(M ? M.prefixe : PX + (++NUM) + '_');
   this.D = D;
   this.G = {flash: D.doux('#fff8e0', .85), lumiere: D.doux('#fff4b0', .9), vapeur: D.doux('#eef2f8', .9), fumee: D.doux('#6a6278', .9), poussiere: D.doux('#7a6e86', .8),
     toux: D.doux('#dfe6c4', 1), braise: D.doux('#ffb040', 1), rose: D.doux('#ffb8c8', .9), givre: D.doux('#e8f8ff', .9), acide: D.doux('#c8f060', .85), noir: D.doux('#0c0812', .95),
@@ -364,12 +387,23 @@ function Roi(conteneur, options){
   var art = dessinerRoi.call(this, D);
   var div = document.createElement('div');
   div.className = PX;
-  div.innerHTML = '<svg xmlns="' + NS + '" viewBox="' + VB.join(' ') + '" preserveAspectRatio="xMidYMax meet"><defs>' + D.l.join('') + '</defs>' + art +
-    '<g data-reperes><circle cx="0" cy="0" r="1" fill-opacity="0"/><circle cx="100" cy="100" r="1" fill-opacity="0"/></g></svg>';
-  conteneur.appendChild(div);
+  if(M){
+    /* la copie cuite : this.svg est sa racine (un <div>) ; les pièces y gardent leurs data-* */
+    conteneur.appendChild(div);
+    var cl = M.modele.cloner(div), me = this;
+    this.svg = cl.racine; this.cuit = true;
+    D.vivant = cl.defs;
+    this._ajuste = function(){ if(!me.mort && global.Cuire) global.Cuire.ajuster(me.svg); };
+    global.addEventListener('resize', this._ajuste);
+  } else {
+    /* (data-m : cuites, les deux marques restent des <div> à leur place — _marques) */
+    div.innerHTML = '<svg xmlns="' + NS + '" viewBox="' + VB.join(' ') + '" preserveAspectRatio="xMidYMax meet"><defs>' + D.l.join('') + '</defs>' + art +
+      '<g data-reperes><circle data-m="" cx="0" cy="0" r="1" fill-opacity="0"/><circle data-m="" cx="100" cy="100" r="1" fill-opacity="0"/></g></svg>';
+    conteneur.appendChild(div);
+    this.svg = div.querySelector('svg');
+    D.vivant = this.svg.querySelector('defs');
+  }
   this.el = div;
-  this.svg = div.querySelector('svg');
-  D.vivant = this.svg.querySelector('defs');
   var self = this;
   /* trois sortes de pièces : J (animées en transform par les poses), V (variantes : opacité seule), K (boucles autonomes) */
   this.J = {}; this.V = {}; this.K = {}; this.S = {}; this.A = {};
@@ -394,6 +428,8 @@ function Roi(conteneur, options){
   this.debris = [];
   this.mort = false;
   this.vitesse = 1;
+  /* (le modèle qu'on va cuire reste au repos : aucune boucle, aucune particule) */
+  if(this.o.preparation) return;
   this._lancerX();
   this._reprendre(0);
 }
@@ -498,11 +534,9 @@ R._allerA = function(pose, duree, e, tout){
 /* un point (un repère, ou x,y dans une pièce) ramené dans le repère « monde » (celui du dessin, qui ne bouge pas) */
 R._ou = function(ref, x, y){
   var el = typeof ref === 'string' ? (this.A[ref] || (this.J[ref] && this.J[ref][0]) || this.S[ref]) : ref;
-  if(x == null && el.getAttribute('data-a')){ x = +el.getAttribute('cx'); y = +el.getAttribute('cy'); }
-  var m = el.getCTM(), w = this.S.monde.getCTM(), p = this.svg.createSVGPoint();
-  p.x = x || 0; p.y = y || 0;
-  p = p.matrixTransform(m).matrixTransform(w.inverse());
-  return [p.x, p.y];
+  if(x == null && el.getAttribute('data-a')){ x = +el.getAttribute('data-x'); y = +el.getAttribute('data-y'); }
+  var q = mAp(mat(el), x || 0, y || 0);
+  return mAp(mInv(mat(this.S.monde)), q[0], q[1]);
 };
 /* du repère « monde » à l'écran, et retour (deux marques fixes donnent l'échelle et le décalage) */
 R._marques = function(){
@@ -520,6 +554,8 @@ R._couperBoucles = function(){
 };
 /* un élément SVG créé à la volée (particules, débris, restes : jamais dans une pièce) */
 R._el = function(parent, html){
+  /* (cuit : un petit îlot SVG dans le <div> de l'emplacement, au repère du dessin — anim/cuire.js) */
+  if(!estSvg(parent) && global.Cuire) return global.Cuire.ilot(parent, html);
   var g = document.createElementNS(NS, 'g');
   g.innerHTML = html;
   parent.appendChild(g);
@@ -536,15 +572,15 @@ R._fondu = function(els, vers, ms, delai){
   if(typeof els === 'string') els = this.V[els] || [];
   [].concat(els).forEach(function(e){
     if(!e) return;
-    var de = e.getAttribute('visibility') === 'hidden' ? 0 : parseFloat(getComputedStyle(e).opacity);
+    var de = estCache(e) ? 0 : parseFloat(getComputedStyle(e).opacity);
     e.getAnimations().forEach(function(a){ if(a.id !== 'pulse') a.cancel(); });
-    e.setAttribute('opacity', vers);
-    e.style.opacity = '';
-    if(vers > 0) e.removeAttribute('visibility');
+    poserOpa(e, vers);
+    if(estSvg(e)) e.style.opacity = '';
+    if(vers > 0) cacher(e, false);
     if(ms && !isNaN(de) && Math.abs(de - vers) > .01){
       var an = e.animate([{opacity: de}, {opacity: vers}], {duration: ms, delay: delai || 0, fill: 'backwards', easing: 'ease-in-out'});
-      if(vers <= 0) an.finished.then(function(){ if(+e.getAttribute('opacity') <= 0) e.setAttribute('visibility', 'hidden'); }, function(){});
-    } else if(vers <= 0) e.setAttribute('visibility', 'hidden');
+      if(vers <= 0) an.finished.then(function(){ if(opaDe(e) <= 0) cacher(e, true); }, function(){});
+    } else if(vers <= 0) cacher(e, true);
   });
 };
 /* l'opacité d'une pièce animée (elle disparaît en s'enfuyant, par exemple) */
@@ -797,6 +833,7 @@ R._voler = function(g, depart, arrivee, o){
 /* une copie de pièce, posée dans le repère fixe exactement où elle est ; la pièce d'origine est cachée (opacité).
    La copie est un débris (hors des pièces) : elle peut voler, tomber et rester au sol. Renvoie {g, c (le pivot)}. */
 R._detacher = function(n, parent){
+  if(this.cuit) return this._detacherCuit(n, parent);
   var self = this, rep = parent || this.S.fixe, w = rep.getCTM().inverse(), el = this.J[n][0], M = w.multiply(el.getCTM());
   var c = [M.e, M.f], g = this._el(rep, ''), inner = document.createElementNS(NS, 'g');
   g.setAttribute('data-debris', '1');
@@ -809,6 +846,26 @@ R._detacher = function(n, parent){
   g.style.transform = 'translate(' + f1(c[0]) + 'px,' + f1(c[1]) + 'px)';
   this.debris.push(g);
   return {g: g, c: c, ang: deg(Math.atan2(M.b, M.a))};
+};
+/* la même chose, cuit : une copie des <div> de la pièce (les images sont partagées), posée dans le repère de l'emplacement avec la
+   matrice de la pièce (comme le Gardien) */
+R._detacherCuit = function(n, parent){
+  var rep = parent || this.S.fixe, w = mInv(mat(rep)), el = this.J[n][0], M = mMul(w, mat(el)), c = [M[4], M[5]];
+  var g = document.createElement('div');
+  g.className = 'cu'; g.setAttribute('data-debris', '1');
+  rep.appendChild(g);
+  var cp = el.cloneNode(true), l = parseFloat(el.style.left) || 0, t = parseFloat(el.style.top) || 0;
+  cp.getAnimations && cp.getAnimations().forEach(function(a){ a.cancel(); });
+  cp.style.left = '0px'; cp.style.top = '0px'; cp.style.opacity = ''; cp.style.transformOrigin = '0 0';
+  cp.style.transform = 'translate(' + f1(-c[0]) + 'px,' + f1(-c[1]) + 'px) matrix(' + M.map(r3).join(',') + ') translate(' + f1(l) + 'px,' + f1(t) + 'px)';
+  [].forEach.call(cp.querySelectorAll('[data-a],[data-slot]'), function(e){ e.remove(); });
+  [].forEach.call(cp.querySelectorAll('[data-j]'), function(e){ e.removeAttribute('data-j'); });
+  cp.removeAttribute('data-j');
+  g.appendChild(cp);
+  this.J[n].forEach(function(e){ e.style.opacity = 0; });
+  g.style.transform = 'translate(' + f1(c[0]) + 'px,' + f1(c[1]) + 'px)';
+  this.debris.push(g);
+  return {g: g, c: c, ang: deg(Math.atan2(M[1], M[0]))};
 };
 
 /* =====================================================================
@@ -2279,7 +2336,8 @@ R._restes = function(){
   var nq = 'M-12 0 C -10 -12 6 -12 6 0 C 6 10 -10 10 -8 0 C -6 -10 12 -8 14 2 C 16 8 22 8 26 2';
   s += '<g transform="translate(10 -16)">' + L(nq, O, 7.4) + L(nq, '#d48a9a', 3.8) + L(nq, '#f8d0d8', 1.2, so(.5)) + '</g>';
   var g = this._el(this.S.fixe, '<g transform="translate(' + x + ' ' + y + ')"><g>' + s + '</g></g>');
-  g.firstChild.firstChild.animate([{opacity: 0, transform: 'scale(.3)'}, {offset: .3, opacity: 0}, {opacity: 1, transform: 'scale(1)'}], {duration: 650, easing: 'ease-out', fill: 'both'});
+  /* (cuit, g est un îlot : <div><svg><g translate>… — le groupe à faire grandir est un cran plus bas) */
+  (estSvg(g) ? g : g.firstChild).firstChild.firstChild.animate([{opacity: 0, transform: 'scale(.3)'}, {offset: .3, opacity: 0}, {opacity: 1, transform: 'scale(1)'}], {duration: 650, easing: 'ease-out', fill: 'both'});
   (function fumet(n){ if(n <= 0) return; self._bouffee([x + hasard(-80, 80), y - 30], {r: 8, grad: self.G.fumee, op: .5, dx: hasard(-6, 14), dy: -60, duree: 1700, s1: 2.4}); setTimeout(function(){ fumet(n - 1); }, 480); })(9);
 };
 
@@ -2313,6 +2371,21 @@ function acteur(b){
     _bete: b
   };
 }
+/* LA CUISSON (24 novembre au soir — voir « CUIT », en haut) : une fois, pendant l'écran de passage. o.ecran : pixels réels par pixel de
+   la scène ; o.allege : moins de mémoire. Sans anim/cuire.js, ou si ça rate : il reste un SVG vivant. */
+function preparer(o){
+  o = o || {};
+  if(MODELE || !global.Cuire || !global.Cuire.cuire) return Promise.resolve();
+  if(CUISSON) return CUISSON;
+  var hote = global.Cuire.hote(INFO.cadre.w, INFO.cadre.h), r = new Roi(hote, {preparation: true});
+  /* (la résolution : comme le Gardien — sa largeur à l'écran par unité du dessin × 1,25, × 0,8 ; entre 0,7 et 2) */
+  var res = o.res || Math.max(.7, Math.min(2, INFO.cadre.w / VB[2] * (o.ecran || 2) * 1.25 * .8) * (o.allege || 1));
+  CUISSON = global.Cuire.cuire(r.svg, {res: res}).then(function(m){
+    MODELE = {modele: m, prefixe: r.D.u};
+  }).catch(function(e){ if(global.console) console.warn('roirats : cuisson', e); }).then(function(){ r.mort = true; hote.remove(); });
+  return CUISSON;
+}
 global.BETES = global.BETES || {};
-global.BETES[ID] = {info: INFO, creer: function(conteneur, options){ return acteur(new Roi(conteneur, options)); }};
+global.BETES[ID] = {info: INFO, preparer: preparer, cuit: function(){ return !!MODELE; },
+  creer: function(conteneur, options){ return acteur(new Roi(conteneur, options)); }};
 })(typeof window !== 'undefined' ? window : this);

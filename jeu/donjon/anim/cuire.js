@@ -157,11 +157,16 @@ Cuire.place = function(parent, x, y, cls){
 function rendre(texte, W, H){
   return new Promise(function(ok){
     var u = URL.createObjectURL(new Blob([texte], {type:'image/svg+xml'})), im = new Image();
-    function fin(r){ URL.revokeObjectURL(u); ok(r); }
+    /* (24 novembre au soir — les plantages sur iPhone : l'image SVG de travail lâchée tout de suite. Chacune garde avec elle son dessin
+       rendu, et ses filtres — la lueur : un grossissement et deux flous — jusqu'à ce que le navigateur la jette : mesuré à l'ouverture du
+       combat de Léo, la mémoire de la page montait d'un Go en cinq secondes avant de redescendre. RAPIDITE.md, R9) */
+    function lacher(){ if(!im) return; im.onload = im.onerror = null; URL.revokeObjectURL(u); try{ im.removeAttribute('src'); }catch(e){} im = null; }
+    function fin(r){ lacher(); ok(r); }
     im.onload = function(){
       try{
         var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
         cv.getContext('2d').drawImage(im, 0, 0, W, H);
+        lacher();          /* (dessinée : elle ne sert plus, pendant que la toile devient une image PNG) */
         /* la toile est vidée dès que l'image est faite (largeur 0) : sur iPhone, Safari compte la mémoire de toutes les toiles
            encore vivantes, même celles qui attendent d'être jetées (RAPIDITE.md, règle R9) */
         if(cv.toBlob) cv.toBlob(function(b){ if(b){ fin({url:URL.createObjectURL(b)}); cv.width = cv.height = 0; } else fin({canvas:cv}); }, 'image/png');

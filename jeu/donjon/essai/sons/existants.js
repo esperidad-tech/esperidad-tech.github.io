@@ -63,6 +63,7 @@ var tampons = null;
 function salle(fn, duree){
   return {chemin:'salle', duree:duree, joue:function(J, S){
     tampons = tampons || E.bruitsSalle(J.ctx, J.A);
+    if(J.A.besoinCave) J.A.besoinCave();          /* (la réverbération n'est plus fabriquée d'office : moteur.js, 24 novembre) */
     var rev = J.ctx.createGain(); rev.connect(J.A.caveIn);
     var B = E.salle(J.ctx, J.A, S, rev, tampons.blanc, tampons.brun), l = [];
     fn(B, l);

@@ -375,6 +375,7 @@ function rendreMusique(cle){
     })(t);
   } else chrono(function(){ I.pas(duree); });
   return rendre(off).then(function(x){
+    if(Ao && Ao.liberer) Ao.liberer();          /* (les tables des réverbérations, rendues tout de suite — moteur.js, 24 novembre) */
     /* on ne garde que la boucle (de F à F + L) ; son début reçoit, en fondu, ce qui suit sa fin */
     return chrono(function(){
       var n = Math.round(L * sr), nc = Math.round(C * sr), f0 = Math.round(F * sr), a = x.getChannelData(0), y = off.createBuffer(1, n, sr), b = y.getChannelData(0);
@@ -400,6 +401,7 @@ function rendreUnBruitage(id, v, partie, stereo, court){
     else { var r = window.BRUITAGES[cle](Ao, P); if(r && r.duree) PRE.duree[cle] = r.duree; }
   }, 'un-bruitage');
   return rendre(off).then(function(x){
+    if(Ao && Ao.liberer) Ao.liberer();          /* (les tables des réverbérations, rendues tout de suite — moteur.js, 24 novembre) */
     return chrono(function(){
       var ch = [], c, i, n = x.length, fin = 0;
       for(c = 0; c < can; c++) ch.push(x.getChannelData(c));

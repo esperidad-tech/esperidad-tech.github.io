@@ -1667,7 +1667,9 @@ R._flaque = function(type, cx, rx){
   else html = '<ellipse cx="' + cx + '" cy="' + sol + '" rx="' + rx + '" ry="' + f1(rx * .1) + '" fill="#c8d84a" fill-opacity=".55" stroke="#5a6420" stroke-width="2"/>' + L('M' + f1(cx - rx * .8) + ' ' + f1(sol - 4) + ' C ' + f1(cx - rx * .4) + ' ' + f1(sol - 8) + ' ' + f1(cx + rx * .2) + ' ' + f1(sol - 8) + ' ' + f1(cx + rx * .6) + ' ' + f1(sol - 4), '#ffffd0', 1.8, so(.7)) +
     [[-.6, 1, 4], [-.1, 3, 3], [.4, -1, 4.6]].map(function(b){ return C(f1(cx + b[0] * rx), f1(sol + b[1]), b[2], '#e8f0a0', ' stroke="#5a6420" stroke-width="1"'); }).join('');
   var g = this._el(this.S.fixeArr, '<g transform="translate(' + cx + ' ' + sol + ')"><g>' + '<g transform="translate(' + (-cx) + ' ' + (-sol) + ')">' + html + '</g></g></g>');
-  g.firstChild.firstChild.animate([{transform: 'scale(.2,.4)', opacity: 0}, {transform: 'scale(1)', opacity: 1}], {duration: 420, easing: 'cubic-bezier(.2,.8,.3,1.2)'});
+  /* (cuit, g est un îlot : <div><svg><g translate>… — le groupe à faire grandir est un cran plus bas ; avant, la flaque apparaissait
+     en haut à gauche de la salle pendant 0,4 s — 24 novembre au soir) */
+  (estSvg(g) ? g : g.firstChild).firstChild.firstChild.animate([{transform: 'scale(.2,.4)', opacity: 0}, {transform: 'scale(1)', opacity: 1}], {duration: 420, easing: 'cubic-bezier(.2,.8,.3,1.2)'});
   this.fx['flaque_' + type] = g;
   return g;
 };
