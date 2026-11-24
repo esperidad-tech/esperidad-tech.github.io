@@ -17,10 +17,10 @@ const DUREE = +(process.argv[2] || 90000); const VIT = +(process.env.VIT || 3); 
     const dims = await p.evaluate(() => ({ sw: document.documentElement.scrollWidth, sh: document.documentElement.scrollHeight, vw: innerWidth, vh: innerHeight, bande: document.querySelector(".bande").scrollWidth, bandeW: document.querySelector(".bande").clientWidth }));
     const t0 = Date.now(); let tours = 0, shot = 0, boumShots = 0;
     while (Date.now() - t0 < DUREE) {
-      const st = await p.evaluate(() => { const S = window.__v4.etat(); if (!S || !S.enCours) return null; return { L: window.__v4.L, bouclier: S.eauS > 1, pv: S.pv, B: { x: S.B.x, y: S.B.y }, h: { x: S.hero.x, y: S.hero.y }, E: S.E.map(e => ({ x: e.x, y: e.y, t: e.t, enf: e.enfarine > 0, m: e.mouille > 0 })), O: S.O.filter(o => o.actif).map(o => ({ x: o.x, y: o.y })) }; });
+      const st = await p.evaluate(() => { const S = window.__v4.etat(); if (!S || !S.enCours) return null; return { L: window.__v4.L, bouclier: S.eauS > 1, pv: S.pv, B: { x: S.B.x, y: S.B.y }, h: { x: S.hero.x, y: S.hero.y }, E: S.E.map(e => ({ x: e.x, y: e.y, t: e.t, enf: e.enfarine > 0, m: e.mouille > 0, boss: !!e.boss, brulant: e.brulant > 0, balance: !!e.balance, occupe: e.mangeT > 0 || e.digere > 0 || e.dort > 0 || !!e.rebond, z: e.z })), gateau: !!S.gateau, lianes: S.T.filter(t => t.type === "lianes").map(t => ({ x: t.x, y: t.y, feu: t.feu > 0 })), mousse: S.T.some(t => t.type === "mousse"), O: S.O.filter(o => o.actif).map(o => ({ x: o.x, y: o.y })) }; });
       if (!st) break;
       tours++;
-      const J = await p.evaluate(() => { const S = window.__v4.etat(); return { t: Math.round(S.temps), B: Math.round(S.B.pv), pl: Math.round(1200 * Math.max(0, 1 - S.temps / 480)), E: S.E.length, f: S.file.length, pv: Math.round(S.pv), salve: S.dir.i, seuil: S.dir.seuil, bouclier: S.bouclierB > 0, col: S.nColeres, tues: S.tues }; });
+      const J = await p.evaluate(() => { const S = window.__v4.etat(); return { t: Math.round(S.temps), B: Math.round(S.B.pv), pl: Math.round(1200 * Math.max(0, 1 - S.temps / 480)), E: S.E.length, f: S.file.length, pv: Math.round(S.pv), boss: S.E.filter(e => e.boss).map(e => e.t + ":" + Math.round(e.pv)).join(" "), bossKO: S.bossKO || 0, palier: S.palier, salve: S.dir.i, seuil: S.dir.seuil, bouclier: S.bouclierB > 0, col: S.nColeres, tues: S.tues }; });
       if (J.t >= journal) { journal += 30; console.log(nom, JSON.stringify(J)); }
       if (moitie === null && J.B <= 600) { moitie = J.t; console.log(nom, "moitié à", J.t, "s"); }
       const box = await p.$eval("#cv", c => { const r = c.getBoundingClientRect(); return { x: r.left, y: r.top }; });
@@ -47,6 +47,14 @@ const DUREE = +(process.argv[2] || 90000); const VIT = +(process.env.VIT || 3); 
         const proche = st.E.slice().sort((a, b) => Math.hypot(a.x - st.h.x, a.y - st.h.y) - Math.hypot(b.x - st.h.x, b.y - st.h.y))[0];
         rec = ["feu", "farine"]; cible = { x: proche.x, y: proche.y };
       }
+      else if (!process.env.SANSBOSS && tours % 2 === 0 && st.E.some(e => e.boss && !e.occupe && e.z < 5) && (() => {
+        // (version 14) donner à un gros boss ce dont il a envie
+        const B2 = st.E.find(e => e.boss && !e.occupe && e.z < 5);
+        if (B2.t === "glouton") { if (st.gateau) return false; rec = ["farine", "fleur", "fleur"]; cible = { x: B2.x, y: B2.y + 30 }; return true; }
+        if (B2.t === "frileux") { rec = B2.brulant ? ["eau"] : ["feu", "feu"]; cible = B2; return true; }
+        if (B2.t === "singe") { const L = st.lianes.find(l => !l.feu); if (B2.balance && L) { rec = ["feu"]; cible = L; return true; } if (L) return false; rec = ["eau", "fleur"]; cible = { x: B2.x, y: B2.y + 20 }; return true; }
+        if (B2.t === "sauteur") { if (st.mousse) return false; rec = ["farine", "acide"]; cible = { x: B2.x, y: B2.y + 20 }; return true; }
+        return false; })()) {}
       else if (tours % 11 === 5) { rec = ["eau", "eau", "eau"]; boireIt = true; }
       else if (st.pv < 5 && tours % 2 === 0) { rec = ["fleur", "fleur", "fleur"]; boireIt = true; }
       else if (pres >= 2 && !st.bouclier) { rec = ["eau", "eau"]; boireIt = true; }
@@ -65,11 +73,11 @@ const DUREE = +(process.argv[2] || 90000); const VIT = +(process.env.VIT || 3); 
         if (apres.n) console.log("lancer raté", rec.join(), JSON.stringify(cible), JSON.stringify(q), JSON.stringify(apres)); }
       if (rec.join() === "feu,farine" && boumShots < 2 && Date.now() - t0 > 15000 * (boumShots + 1)) { boumShots++; await p.waitForTimeout(380); await p.screenshot({ path: "v5-boum-" + nom + "-" + boumShots + ".png" }); await p.waitForTimeout(700); await p.screenshot({ path: "v5-apres-" + nom + "-" + boumShots + ".png" }); }
       await p.waitForTimeout(+(process.argv[4] || 420));
-      if (shot < 6 && Date.now() - t0 > 25000 * (shot + 1)) { shot++; await p.screenshot({ path: "v13-jeu-" + nom + "-" + shot + ".png" }); }
+      if (shot < 6 && Date.now() - t0 > 25000 * (shot + 1)) { shot++; await p.screenshot({ path: "v14-jeu-" + nom + "-" + shot + ".png" }); }
     }
     await p.waitForTimeout(1600);
-    const fin = await p.evaluate(() => { const S = window.__v4.etat(); return { fin: !S.enCours, temps: Math.round(S.temps), pv: Math.round(S.pv), boss: Math.round(S.B.pv), bless: S.bless, nE: S.E.length, tues: S.tues, coups: S.coupsBoss, nMega: S.nMega, chaine: S.chaineMax, combos: S.combosPartie, titre: document.getElementById("fin-titre").textContent }; });
-    await p.screenshot({ path: "v13-fin-" + nom + ".png" });
+    const fin = await p.evaluate(() => { const S = window.__v4.etat(); return { fin: !S.enCours, temps: Math.round(S.temps), pv: Math.round(S.pv), boss: Math.round(S.B.pv), bless: S.bless, nE: S.E.length, tues: S.tues, coups: S.coupsBoss, nMega: S.nMega, bossKO: S.bossKO, chaine: S.chaineMax, combos: S.combosPartie, titre: document.getElementById("fin-titre").textContent }; });
+    await p.screenshot({ path: "v14-fin-" + nom + ".png" });
     console.log(nom, JSON.stringify(dims), "tours", tours, JSON.stringify(fin));
     await ctx.close();
   }

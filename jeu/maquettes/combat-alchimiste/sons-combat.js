@@ -1,4 +1,4 @@
-/* Les sons du combat de l'Alchimiste (enquête 10, combat final) — version 11, 24 novembre.
+/* Les sons du combat de l'Alchimiste (enquête 10, combat final) — version 11, 24 novembre (version 14 : les sons des gros boss).
    Romain, 24 nov. 11 h 46 : « Les sons, ils sont affreux, ils sont tous à refaire. Il faut mettre des sons vraiment d'armée, une
    petite musique, une musique de combat qui soit prenante et qui soit pas chiante, parce qu'elle dure quand même assez longtemps. »
    Tout est fabriqué avec le moteur de l'Atelier des sons du donjon (jeu/donjon/essai/sons/moteur.js, bruitages.js, musiques.js),
@@ -130,12 +130,33 @@
     bouleBoue: function (t, B) { O.sploutch(A, t, { g: 0.7, f: 160 }, B.salle); A.choc(t, { f: 90, f2: 45, d: 0.2, g: 0.4 }, B.salle); A.joue(t + 0.05, A.eau(0.5, 40, { fmin: 200, fmax: 700 }), { g: 0.4 }, B.sec); },
     // le berserker en toupie : une lame qui tourne
     toupie: function (t, B) { for (var k = 0; k < 6; k++) O.swish(A, t + k * 0.11, 0.1, { f1: 1500, f2: 4000, f3: 1800, g: 0.25 }, B.sec); O.glisse(A, t, 0.25, B.sec); },
+    // ---- version 14 : les gros boss ----
+    // un gros boss arrive : trois pas lourds, le cor, un coup de timbale
+    bossArrive: function (t, B) { [0, 0.4, 0.8].forEach(function (d) { O.chuteGrave(A, t + d, 0.6, 0.5, B.salle); A.choc(t + d, { f: 75, f2: 38, d: 0.25, g: 0.42, sat: 3 }, B.salle); }); cor(t + 0.3, m(38), 1.4, 0.1, B.loin); cor(t + 0.3, m(42), 1.4, 0.07, B.loin); cor(t + 0.9, m(45), 1.0, 0.07, B.loin); O.timbale(A, t + 1.2, 0.7, B.salle); },
+    // le ventre du Glouton qui gargouille
+    ventre: function (t, B) { A.bruit(t, { coul: "brun", filtres: [{ type: "lowpass", f: 180, pts: [[0.3, 460], [0.6, 160], [0.9, 400], [1.2, 130]], q: 5 }], env: [[0, 0], [0.15, 1], [1.0, 0.7], [1.3, 0]], g: 0.6, rugueux: 0.9, rugVit: 9 }, B.salle); A.ton(t, { type: "sine", f: 70, f2: 55, gl: 1.2, env: [[0, 0], [0.2, 1], [1.3, 0]], g: 0.12, vib: [7, 6] }, B.salle); },
+    // il mange : des coups de dents qui croquent, un « mmm »
+    miam: function (t, B) { for (var k = 0; k < 4; k++) { A.choc(t + k * 0.16, { f: 230, f2: 120, d: 0.05, g: 0.25, bruit: 0.8 }, B.sec); A.bruit(t + k * 0.16, { bp: 2600, bq: 1.2, env: A.perc(0.002, 0.07), g: 0.2 }, B.sec); } voix(t + 0.05, { f: 140, forme: "effort", d: 0.6, rauque: 0.3, g: 0.16 }, B.sec); },
+    // le rot du Glouton
+    rot: function (t, B) { voix(t, { f: 82, forme: "effort", d: 0.75, rauque: 1, g: 0.45, lp: 700 }, B.salle); A.bruit(t, { coul: "brun", lp: 300, env: [[0, 0], [0.05, 1], [0.7, 0]], g: 0.3 }, B.salle); },
+    // le Frileux claque des dents
+    brrr: function (t, B) { for (var k = 0; k < 12; k++) O.tinc(A, t + k * 0.045, h(2500, 3100), { g: 0.05, clic: 0.8 }, B.sec); A.bruit(t, { bp: 900, bq: 2, env: [[0, 0], [0.05, 1], [0.5, 0]], g: 0.08 }, B.sec); },
+    // le choc thermique : un grand craquement, et un nuage de vapeur qui siffle
+    chocThermique: function (t, B) { O.craque(A, t, 0.4, 0.8, B.salle); A.choc(t, { f: 180, f2: 70, d: 0.2, g: 0.45, sat: 2.5 }, B.salle); porcelaine(t + 0.02, 2, B.sec); A.bruit(t + 0.05, { hp: 2000, env: [[0, 0], [0.03, 1], [0.4, 0.7], [1.5, 0]], g: 0.4 }, B.salle); A.cloche(t, m(52), { d: 1.4, rapport: 2.76, indice: 1.2, g: 0.06 }, B.loin); },
+    // le Singe : deux « hou-hou » de métal
+    ouhouh: function (t, B) { [0, 0.24].forEach(function (d) { A.ton(t + d, { type: "triangle", f: 360, f2: 620, gl: 0.12, env: A.perc(0.01, 0.2), g: 0.26, vib: [12, 15], lp: 2500 }, B.sec); O.clic(A, t + d, 3200, 0.3, B.sec); }); },
+    // le Sauteur : un gros ressort qui part très haut
+    boingGeant: function (t, B) { A.ton(t, { type: "triangle", f: 100, f2: 440, gl: 0.3, env: A.perc(0.003, 0.65), g: 0.42, vib: [14, 40] }, B.sec); A.ton(t, { type: "sine", f: 55, f2: 120, gl: 0.2, env: A.perc(0.003, 0.3), g: 0.2 }, B.sec); },
+    // il a eu ce qu'il voulait : un grand coup, et une fanfare courte
+    cadeauBoss: function (t, B) { A.choc(t, { f: 95, f2: 45, d: 0.3, g: 0.5, sat: 3 }, B.salle); O.timbale(A, t, 0.7, B.salle); [[0.08, 62], [0.16, 69], [0.24, 74]].forEach(function (n) { O.cuivre(A, t + n[0], m(n[1]), 0.22, 0.06, B.salle); }); },
+    // un gros boss K.O. : sa carcasse tombe en morceaux, le cor descend
+    bossKO: function (t, B) { [0, 0.12, 0.27, 0.4].forEach(function (d) { A.choc(t + d, { f: h(120, 190), f2: 60, d: 0.2, g: 0.4, sat: 3 }, B.salle); porcelaine(t + d, 1.5, B.salle); }); cor(t + 0.3, m(45), 0.6, 0.07, B.loin); cor(t + 0.8, m(38), 1.2, 0.08, B.loin); },
     // la fin
     victoire: function (t, B) { if (G.BRUITAGES && G.BRUITAGES.victoireA) G.BRUITAGES.victoireA(A, { t: t, sec: B.P.sec, cave: B.P.cave, grotte: B.P.grotte }); },
     defaite: function (t, B) { [[0, 50], [0.5, 49], [1.0, 45], [1.6, 38]].forEach(function (n) { cor(t + n[0], m(n[1] - 12), 0.9, 0.08, B.loin); }); O.timbale(A, t + 1.6, 0.8, B.salle); }
   };
   // pour ne pas tout noyer : un même bruit pas plus souvent que…
-  var LIMITE = { mega: 0.4, megaPrete: 1, jet: 1.5, marteau: 0.4, tornade: 1, bouleBoue: 0.25, toupie: 0.5, allez: 0.9, berserker: 0.25, armure: 0.12, courtcircuit: 0.3, planter: 0.3, feuBois: 0.4, brise: 0.15, thud: 0.07, pop: 0.06, mort: 0.08, etincelle: 0.15, boom: 0.09, gong: 0.12, bam: 0.08, zap: 0.12, splat: 0.08, verre: 0.06, pschitt: 0.12, atchoum: 0.12, crac: 0.08, bloque: 0.15, aie: 0.2, aieBoss: 0.6, grogne: 0.8 };
+  var LIMITE = { bossArrive: 1.5, ventre: 2, miam: 0.5, rot: 1, brrr: 1.5, chocThermique: 0.4, ouhouh: 1.2, boingGeant: 0.3, cadeauBoss: 0.4, bossKO: 1, mega: 0.4, megaPrete: 1, jet: 1.5, marteau: 0.4, tornade: 1, bouleBoue: 0.25, toupie: 0.5, allez: 0.9, berserker: 0.25, armure: 0.12, courtcircuit: 0.3, planter: 0.3, feuBois: 0.4, brise: 0.15, thud: 0.07, pop: 0.06, mort: 0.08, etincelle: 0.15, boom: 0.09, gong: 0.12, bam: 0.08, zap: 0.12, splat: 0.08, verre: 0.06, pschitt: 0.12, atchoum: 0.12, crac: 0.08, bloque: 0.15, aie: 0.2, aieBoss: 0.6, grogne: 0.8 };
   SC.jouer = function (nom) {
     if (!A || MUET) return;
     var f = BR[nom]; if (!f) return;

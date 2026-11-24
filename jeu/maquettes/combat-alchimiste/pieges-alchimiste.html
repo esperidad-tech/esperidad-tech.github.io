@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Alegreya+Sans:wght@400;500;700;800&display=swap">
 <style>
-/* Version 13 : la méga-potion, le rayon d'eau, les rayons animés, la tornade de feu, la boule de boue, le lancer du marteau, la toupie. Version 12 : le berserker, le soldat en armure, le porte-barricade, le Colosse ; les points faibles ; 10 cœurs ; le bouclier de Grosbec qui lance des vagues sans fin. Version 11 : les sons d'armée et la musique de combat (moteur de l'Atelier des sons). Version 10 : l'étagère des potions, l'aide aux mélanges, des sorts plus beaux. Version 9 : Grosbec mène le combat (salves à thème, colère, bouclier, 8 minutes), la vraie vague. Version 8 : les vrais personnages (Grosbec dans son armure, ses automates, l'Alchimiste du donjon vu de dos). Des corps lourds, pas des balles. La foule arrive sans arrêt. Grosbec est hors de portée : on ne le blesse qu'en lui renvoyant ses automates. Un seul doigt suffit : les potions en bas, on touche la place pour lancer, on fait glisser l'Alchimiste. */
+/* Version 14 : les quatre gros boss (le Glouton, le Frileux, le Singe, le Sauteur), un, deux, trois puis quatre aux quatre paliers de Grosbec ; plus de monde quand il s'énerve. Version 13 : la méga-potion, le rayon d'eau, les rayons animés, la tornade de feu, la boule de boue, le lancer du marteau, la toupie. Version 12 : le berserker, le soldat en armure, le porte-barricade, le Colosse ; les points faibles ; 10 cœurs ; le bouclier de Grosbec qui lance des vagues sans fin. Version 11 : les sons d'armée et la musique de combat (moteur de l'Atelier des sons). Version 10 : l'étagère des potions, l'aide aux mélanges, des sorts plus beaux. Version 9 : Grosbec mène le combat (salves à thème, colère, bouclier, 8 minutes), la vraie vague. Version 8 : les vrais personnages (Grosbec dans son armure, ses automates, l'Alchimiste du donjon vu de dos). Des corps lourds, pas des balles. La foule arrive sans arrêt. Grosbec est hors de portée : on ne le blesse qu'en lui renvoyant ses automates. Un seul doigt suffit : les potions en bas, on touche la place pour lancer, on fait glisser l'Alchimiste. */
 :root {
   --bg: #0E1213; --surface: #1B2326; --surface-2: #232E31; --ink: #E8ECEA; --muted: #9AA7A3; --line: #33413F;
   --jaune: #F2C230; --jaune-ombre: #A5831B;
@@ -127,11 +127,12 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
 <div class="voile" id="regles">
   <div class="boite">
     <h2>Les Pièges de l'Alchimiste</h2>
-    <p>Version 13. Grosbec reste tout au fond : tes fioles ne vont pas jusqu'à lui. Il envoie ses automates par vagues. <b>Détruis-les</b> : chaque automate détruit l'affaiblit. <b>Renvoie-les-lui à la figure</b> : ça lui fait encore plus mal… et ça l'énerve.</p>
+    <p>Version 14. Grosbec reste tout au fond : tes fioles ne vont pas jusqu'à lui. Il envoie ses automates par vagues. <b>Détruis-les</b> : chaque automate détruit l'affaiblit. <b>Renvoie-les-lui à la figure</b> : ça lui fait encore plus mal… et ça l'énerve.</p>
     <h3>Jouer avec un seul doigt</h3>
     <div class="regle"><span class="tuile" style="--c:#3D2F5C">☝️</span><p>Choisis 1 à 3 potions en bas, puis <b>touche la place</b> : tu vois la zone, tu peux glisser, tu lâches. <b>Fais glisser l'Alchimiste</b> pour bouger, <b>touche-le</b> pour boire.</p></div>
     <div class="regle"><span class="tuile">💥</span><p><b>Tes potions projettent, elles ne tuent presque pas.</b> Une explosion souffle toujours en éventail, loin de toi, vers le fond. Un automate projeté vole, retombe, glisse un tout petit peu et met 2 secondes à se relever. S'il percute un ami, les deux restent assommés 5 secondes. S'il percute Grosbec… aïe, pour Grosbec !</p></div>
-    <div class="regle"><span class="tuile">🛡️</span><p>Les petits te font perdre 1, les moyens 3, les gros 5. Quand personne ne te touche, tu reprends des forces.</p></div>
+    <div class="regle"><span class="tuile">🛡️</span><p>Tu as dix cœurs. Les petits t'en prennent un demi, les moyens un, les gros deux. Quand personne ne te touche, tu reprends des forces.</p></div>
+    <div class="regle"><span class="tuile" style="--c:#8E2A2A">👹</span><p><b>Quatre gros boss</b> viendront aider Grosbec. Rien ne leur fait mal… sauf ce dont ils ont envie. <b>Regarde la bulle au-dessus de leur tête.</b></p></div>
     <div class="regle"><span class="tuile" style="--c:#2E86D6">🌊</span><p><b>La vague</b> (eau + eau) emporte tout jusqu'au bout de la place. <b>Trempés</b>, ils avancent cinq fois moins vite.</p></div>
     <div class="regle"><span class="tuile" style="--c:#5DB338">🧪</span><p><b>Les boucliers</b> résistent aux explosions. L'acide ronge leur bouclier.</p></div>
     <div class="regle"><span class="tuile" style="--c:#B8902F">✦</span><p><b>La méga-potion</b> : détruis des automates, trouve des combos ; quand le cercle doré du chaudron est plein, touche <b>MÉGA</b> : ton prochain mélange part deux fois, en plus grand.</p></div>
@@ -4362,8 +4363,16 @@ HV.NOMS_ATTENTE = {scrute:'Il surveille les ennemis', alerte:'Un bruit derrière
     berserker:{ email: "#B3262B", jambe: 9.2, rJ: 2.4, hanche: 3.4, bw: 8.4, bh: 10.2, rT: 5.0, rB: 2.4, bras: 9.4, poids: 0.85 },
     chevalier:{ email: "#8D9AA8", jambe: 8.4, rJ: 2.9, hanche: 4.1, bw: 9.4, bh: 11, rT: 5.4, rB: 2.7, bras: 8.6, poids: 1.25 },
     porteur:  { email: "#9C7A44", jambe: 8.4, rJ: 2.6, hanche: 3.8, bw: 8.2, bh: 10, rT: 5.0, rB: 2.3, bras: 8.4, poids: 1 },
-    colosse:  { email: "#4B3F63", jambe: 7.2, rJ: 4.1, hanche: 6.4, bw: 14.5, bh: 14.5, rT: 5.4, rB: 3.8, bras: 12.5, poids: 1.6 }
+    colosse:  { email: "#4B3F63", jambe: 7.2, rJ: 4.1, hanche: 6.4, bw: 14.5, bh: 14.5, rT: 5.4, rB: 3.8, bras: 12.5, poids: 1.6 },
+    // (version 14) les quatre gros boss, dessinés 1,5 fois plus grands : le Glouton (un gros ventre, une bouche sur le ventre, sa
+    // serviette et sa fourchette), le Frileux (bonnet, écharpe, glaçons ; il rougit quand il chauffe), le Singe (longs bras, oreilles,
+    // museau, une queue en ressort), le Sauteur (monté sur deux gros ressorts, des antennes à ressort)
+    glouton:  { email: "#C0703A", jambe: 6.6, rJ: 4.0, hanche: 6.6, bw: 16.5, bh: 16, rT: 5.6, rB: 3.7, bras: 11.5, poids: 1.7 },
+    frileux:  { email: "#4F95C8", jambe: 8.6, rJ: 3.0, hanche: 4.4, bw: 10.5, bh: 12, rT: 5.8, rB: 2.8, bras: 9.2, poids: 1.25 },
+    singe:    { email: "#7A4E2A", jambe: 7.4, rJ: 2.5, hanche: 3.8, bw: 9.0, bh: 10.6, rT: 5.6, rB: 2.4, bras: 13.5, poids: 0.85 },
+    sauteur:  { email: "#4E9A36", jambe: 6.2, rJ: 2.6, hanche: 4.2, bw: 9.6, bh: 11, rT: 5.3, rB: 2.4, bras: 8, poids: 1.0 }
   };
+  var BOSS = { glouton: 1, frileux: 1, singe: 1, sauteur: 1 };
   var ACIER = "#9AA8B6";
   PC.SORTES = SORTES;
   var TERRE = { coque: "#C2703F", metal: "#9A5530", email: "#A85C34" };
@@ -4375,6 +4384,7 @@ HV.NOMS_ATTENTE = {scrute:'Il surveille les ennemis', alerte:'Un bruit derrière
   PC.automate = function (ctx, type, o) {
     o = o || {};
     if (type === "colosse") { ctx.save(); ctx.scale(1.75, 1.75); var rc0 = colosse(ctx, o); ctx.restore(); return rc0; }
+    if (BOSS[type]) { ctx.save(); ctx.scale(1.5, 1.5); grosBoss(ctx, type, o); ctx.restore(); return; }
     return automate(ctx, type, o);
   };
   function colosse(ctx, o) {
@@ -4401,8 +4411,12 @@ HV.NOMS_ATTENTE = {scrute:'Il surveille les ennemis', alerte:'Un bruit derrière
     }
   }
   function automate(ctx, type, o) {
-    var S = SORTES[type] || SORTES.rapide, E = o.etats || {}, t = o.t || 0, f = Math.max(-1, Math.min(1, o.face || 0)), LOURD = type === "lourd" || type === "colosse";
+    var S = SORTES[type] || SORTES.rapide, E = o.etats || {}, t = o.t || 0, f = Math.max(-1, Math.min(1, o.face || 0)), LOURD = type === "lourd" || type === "colosse" || type === "glouton";
     var coque = COQUE, metal = METAL, email = S.email, noyau = NOYAU;
+    if (type === "frileux") { var chf = o.chaud || 0; coque = mix("#DCEEFA", "#FFB08A", chf * 0.85); metal = mix("#7FA6C4", "#B0604A", chf * 0.7); email = mix(S.email, "#D8402A", chf); }
+    if (type === "singe") { coque = "#D8B68A"; metal = "#7A5A40"; }
+    if (type === "sauteur") { coque = "#E4ECD2"; metal = "#5F7A55"; }
+    if (type === "glouton") { coque = "#F1E4CA"; }
     if (type === "chevalier") { coque = ACIER; metal = "#5D6B7A"; }
     if (type === "colosse") { metal = "#4E5566"; }
     if (o.grille) { coque = sombre(coque, 0.35); email = sombre(email, 0.35); }
@@ -4562,7 +4576,9 @@ HV.NOMS_ATTENTE = {scrute:'Il surveille les ennemis', alerte:'Un bruit derrière
         [-1, 1].forEach(function (c) { ctx.beginPath(); ctx.moveTo(c * rT * 0.55, yT - rT * 0.6); ctx.quadraticCurveTo(c * rT * 1.6, yT - rT * 0.9, c * rT * 1.35, yT - rT * 1.9); ctx.quadraticCurveTo(c * rT * 1.1, yT - rT * 1.1, c * rT * 0.25, yT - rT * 0.85); ctx.closePath();
           ctx.fillStyle = volume(ctx, c * rT, yT - rT * 1.1, rT, "#E8DCC4", true); ctx.fill(); trait(ctx, "#B9A98C", 0.6); });
       }
-      if (type === "rapide") { // un seul grand œil rond, comme une lentille
+      if (o.dort) { // les yeux fermés (le Glouton qui dort)
+        ctx.strokeStyle = "#C9D6E2"; ctx.lineWidth = 0.75; [-1, 1].forEach(function (c) { ctx.beginPath(); ctx.arc(hdx + c * rT * 0.3, yT + rT * 0.02, rT * 0.17, 0.25, Math.PI - 0.25); ctx.stroke(); });
+      } else if (type === "rapide") { // un seul grand œil rond, comme une lentille
         lueur(ctx, hdx, yT + rT * 0.12, rT * 0.9, yeux, 0.5); ctx.fillStyle = yeux; ell(ctx, hdx, yT + rT * 0.12, rT * 0.3, rT * 0.27); ctx.fill();
         ctx.fillStyle = "#fff"; ell(ctx, hdx - rT * 0.1, yT + rT * 0.03, rT * 0.09, rT * 0.08); ctx.fill();
         ctx.strokeStyle = metal; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(rT * 0.4, yT - rT * 0.8); ctx.lineTo(rT * 0.9, yT - rT * 1.7); ctx.stroke(); ctx.fillStyle = email; ell(ctx, rT * 0.92, yT - rT * 1.78, 1.1, 1.1); ctx.fill();
@@ -4633,6 +4649,111 @@ HV.NOMS_ATTENTE = {scrute:'Il surveille les ennemis', alerte:'Un bruit derrière
     }
     ctx.restore();
   };
+
+  /* ---------- les quatre gros boss (version 14) ---------- */
+  function grosBoss(ctx, type, o) {
+    var S = SORTES[type], E = o.etats || {}, t = o.t || 0, f = Math.max(-1, Math.min(1, o.face || 0)), LOURD = type === "glouton";
+    // les mêmes mesures que dans automate() (pour poser ce qu'on ajoute au bon endroit)
+    var vit = E.statue ? 0 : (o.marche || 0), ph = t * (S.poids > 1.3 ? 6 : S.poids < 0.9 ? 11 : 8.5), bob = -Math.abs(Math.sin(ph)) * 0.9 * vit * (2 - S.poids * 0.5), sw = Math.sin(ph) * 0.38 * vit;
+    var bw = S.bw * (1 - 0.1 * Math.abs(f)), bh = S.bh, rT = S.rT, yH = -S.jambe + bob, yB = yH - bh, yT = yB - rT * 0.72 - (LOURD ? -rT * 0.55 : 0), dx = f * bw * 0.42, hdx = f * rT * 0.42;
+    var devant = f > 0 ? -1 : 1;   // le côté du bras de devant
+    function main(cote) {
+      var sx = cote * (bw + S.rB * 0.4), sy0 = yB + bh * 0.22, ang = (cote * 0.18) + (cote > 0 ? sw : -sw);
+      var ex = sx + Math.sin(ang) * S.bras * 0.55 + cote * 1.2, ey = sy0 + Math.cos(ang) * S.bras * 0.55;
+      return { x: ex + Math.sin(ang * 1.4) * S.bras * 0.5, y: ey + Math.cos(ang * 1.4) * S.bras * 0.48 };
+    }
+    if (type === "glouton") {
+      automate(ctx, type, o);
+      var cq = "#F1E4CA";
+      if (o.gonfle) { ell(ctx, 0, yB + bh * 0.7, bw * 1.14, bh * 0.52); ctx.fillStyle = volume(ctx, 0, yB + bh * 0.5, bw * 1.15, cq, true); ctx.fill(); trait(ctx, cq, 1); }
+      // la grande bouche sur le ventre, avec des dents ; elle mâche quand il mange ; fermée quand il dort
+      var bx = dx * 0.8, byy = yB + bh * 0.8, bl = bw * 0.6, ouvre = o.bouche ? 1 : o.dort ? 0 : 0.4, bhh = bh * (0.05 + 0.15 * ouvre);
+      if (ouvre > 0.1) {
+        ell(ctx, bx, byy, bl, bhh); ctx.fillStyle = "#3A1410"; ctx.fill(); trait(ctx, "#5A2A1A", 0.8);
+        ell(ctx, bx, byy + bhh * 0.45, bl * 0.5, bhh * 0.45); ctx.fillStyle = "#C2424A"; ctx.fill();
+        ctx.fillStyle = "#FFF6E0";
+        for (var d = -3; d <= 3; d++) { var tx = bx + d * bl * 0.27, ky = Math.sqrt(Math.max(0, 1 - Math.pow(d * 0.27, 2)));
+          ctx.beginPath(); ctx.moveTo(tx - 1.2, byy - bhh * ky); ctx.lineTo(tx, byy - bhh * ky + 2.2); ctx.lineTo(tx + 1.2, byy - bhh * ky); ctx.fill();
+          if (d % 2 === 0) { ctx.beginPath(); ctx.moveTo(tx - 1.1, byy + bhh * ky); ctx.lineTo(tx, byy + bhh * ky - 2); ctx.lineTo(tx + 1.1, byy + bhh * ky); ctx.fill(); } }
+      } else { ctx.strokeStyle = "#5A2A1A"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(bx - bl, byy - 1); ctx.quadraticCurveTo(bx, byy + 2.5, bx + bl, byy - 1); ctx.stroke(); }
+      // la serviette nouée au cou, à carreaux rouges
+      var nx = dx * 0.3, ny = yB + rT * 0.85;
+      ctx.save(); ctx.beginPath(); ctx.moveTo(nx - bw * 0.55, ny); ctx.lineTo(nx + bw * 0.55, ny); ctx.lineTo(dx * 0.6, yB + bh * 0.6); ctx.closePath();
+      ctx.fillStyle = "#FFFDF6"; ctx.fill(); trait(ctx, "#D8D0C0", 0.6); ctx.clip();
+      ctx.strokeStyle = "rgba(200,40,40,.55)"; ctx.lineWidth = 1.1;
+      for (var q = -12; q <= 12; q += 3) { ctx.beginPath(); ctx.moveTo(nx + q, ny - 2); ctx.lineTo(nx + q, yB + bh * 0.65); ctx.stroke(); ctx.beginPath(); ctx.moveTo(nx - 12, ny + 1.5 + (q + 12) * 0.5); ctx.lineTo(nx + 12, ny + 1.5 + (q + 12) * 0.5); ctx.stroke(); }
+      ctx.restore();
+      [-1, 1].forEach(function (c) { ctx.beginPath(); ctx.moveTo(nx, ny); ctx.lineTo(nx + c * 3.2, ny - 2.2); ctx.lineTo(nx + c * 3.2, ny + 1.6); ctx.closePath(); ctx.fillStyle = "#FFFDF6"; ctx.fill(); trait(ctx, "#C8C0B0", 0.5); });
+      // la fourchette, dans la main de devant
+      var M = main(f === 0 ? 1 : devant);
+      ctx.strokeStyle = "#C9D2DA"; ctx.lineWidth = 1.1; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(M.x, M.y + 1.5); ctx.lineTo(M.x + 0.8, M.y - 11); ctx.stroke();
+      ctx.lineWidth = 0.7; for (var dn = -1; dn <= 1; dn++) { ctx.beginPath(); ctx.moveTo(M.x + 0.8 + dn * 1.3, M.y - 11); ctx.lineTo(M.x + 0.8 + dn * 1.3, M.y - 15); ctx.stroke(); }
+      ctx.beginPath(); ctx.moveTo(M.x - 0.5, M.y - 11); ctx.lineTo(M.x + 2.1, M.y - 11); ctx.stroke();
+      return;
+    }
+    if (type === "frileux") {
+      var ch = o.chaud || 0;
+      if (ch >= 0.75) lueur(ctx, 0, yB + bh * 0.5, bw * 2.4, "#FF5A2A", 0.3 + 0.15 * Math.sin(t * 9));
+      automate(ctx, type, o);
+      // l'écharpe rayée, et son bout qui pend
+      var ex0 = dx * 0.3, ey0 = yB - 0.4;
+      rrect(ctx, ex0 - bw * 0.55, ey0 - 1.6, bw * 1.1, 3.2, 1.5); ctx.fillStyle = "#C8323A"; ctx.fill(); trait(ctx, "#C8323A", 0.6);
+      ctx.strokeStyle = "#FFF2E8"; ctx.lineWidth = 0.9; for (var r1 = -2; r1 <= 2; r1++) { ctx.beginPath(); ctx.moveTo(ex0 + r1 * bw * 0.22, ey0 - 1.5); ctx.lineTo(ex0 + r1 * bw * 0.22 + 0.8, ey0 + 1.5); ctx.stroke(); }
+      var bout = -devant * bw * 0.35 + dx * 0.4, fl = Math.sin(t * 4) * 1.2;
+      ctx.beginPath(); ctx.moveTo(bout - 1.6, ey0 + 1); ctx.quadraticCurveTo(bout - 2 + fl, ey0 + bh * 0.3, bout - 1 + fl * 1.5, ey0 + bh * 0.62); ctx.lineTo(bout + 2.2 + fl * 1.5, ey0 + bh * 0.62); ctx.quadraticCurveTo(bout + 1.5 + fl, ey0 + bh * 0.3, bout + 1.6, ey0 + 1); ctx.closePath();
+      ctx.fillStyle = "#C8323A"; ctx.fill(); trait(ctx, "#C8323A", 0.5);
+      ctx.strokeStyle = "#FFF2E8"; ctx.lineWidth = 1; [0.3, 0.5].forEach(function (k) { ctx.beginPath(); ctx.moveTo(bout - 1.6 + fl * k, ey0 + bh * 0.62 * k + 1); ctx.lineTo(bout + 2 + fl * k, ey0 + bh * 0.62 * k + 1); ctx.stroke(); });
+      // le bonnet à pompon
+      ctx.beginPath(); ctx.moveTo(-rT * 1.05, yT - rT * 0.25); ctx.quadraticCurveTo(-rT * 1.0, yT - rT * 1.6, hdx * 0.4, yT - rT * 1.55); ctx.quadraticCurveTo(rT * 1.0, yT - rT * 1.6, rT * 1.05, yT - rT * 0.25); ctx.closePath();
+      ctx.fillStyle = volume(ctx, 0, yT - rT, rT * 1.2, "#C8323A", true); ctx.fill(); trait(ctx, "#C8323A", 0.7);
+      rrect(ctx, -rT * 1.1, yT - rT * 0.5, rT * 2.2, rT * 0.42, rT * 0.2); ctx.fillStyle = volume(ctx, 0, yT - rT * 0.3, rT, "#FFF2E8"); ctx.fill(); trait(ctx, "#D8CCC0", 0.5);
+      ell(ctx, hdx * 0.4, yT - rT * 1.65, 1.9, 1.9); ctx.fillStyle = volume(ctx, hdx * 0.4, yT - rT * 1.65, 2, "#FFFFFF", true); ctx.fill(); trait(ctx, "#D8CCC0", 0.5);
+      // les glaçons (ils fondent quand il chauffe)
+      var n = Math.round((1 - ch) * 4);
+      var glacons = [[-(bw + S.rB * 0.4), yB + bh * 0.22 + 2.5], [bw + S.rB * 0.4, yB + bh * 0.22 + 2.5], [hdx - 2, yT + rT * 0.95], [hdx + 2.2, yT + rT * 0.9]];
+      for (var gi = 0; gi < n; gi++) { var G = glacons[gi], lg = 3.5 + (gi % 2) * 1.5; ctx.beginPath(); ctx.moveTo(G[0] - 1.2, G[1]); ctx.lineTo(G[0], G[1] + lg); ctx.lineTo(G[0] + 1.2, G[1]); ctx.closePath(); ctx.fillStyle = "rgba(210,240,255,.95)"; ctx.fill(); ctx.strokeStyle = "rgba(120,180,220,.9)"; ctx.lineWidth = 0.4; ctx.stroke(); }
+      if (ch <= 0.25) { ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.lineWidth = 0.5; [[-bw * 0.6, yB + 3], [bw * 0.5, yB + bh * 0.6], [-bw * 0.2, yB + bh * 0.85]].forEach(function (P) { ctx.beginPath(); ctx.moveTo(P[0] - 1.2, P[1]); ctx.lineTo(P[0] + 1.2, P[1]); ctx.moveTo(P[0], P[1] - 1.2); ctx.lineTo(P[0], P[1] + 1.2); ctx.stroke(); }); }
+      return;
+    }
+    if (type === "singe") {
+      // la queue en spirale, derrière
+      var cq2 = -devant, qb = "#7A4E2A";
+      ctx.beginPath(); ctx.moveTo(cq2 * bw * 0.3, yH - 2); ctx.bezierCurveTo(cq2 * bw * 1.5, yH + 1, cq2 * bw * 2.1, yB + bh * 0.3, cq2 * bw * 1.6, yB - 1);
+      ctx.arc(cq2 * bw * 1.35, yB - 1, bw * 0.25, 0, Math.PI * 1.6, cq2 < 0);
+      ctx.strokeStyle = qb; ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.stroke(); ctx.strokeStyle = "rgba(255,230,200,.35)"; ctx.lineWidth = 0.7; ctx.stroke();
+      automate(ctx, type, o);
+      // les oreilles, le museau, la touffe
+      [-1, 1].forEach(function (c) { var ox = hdx * 0.3 + c * rT * 1.02, oy = yT - rT * 0.1;
+        ell(ctx, ox, oy, rT * 0.42, rT * 0.44); ctx.fillStyle = volume(ctx, ox, oy, rT * 0.5, "#7A4E2A"); ctx.fill(); trait(ctx, "#7A4E2A", 0.6);
+        ell(ctx, ox, oy, rT * 0.24, rT * 0.26); ctx.fillStyle = "#E3A7A0"; ctx.fill(); });
+      ell(ctx, hdx, yT + rT * 0.66, rT * 0.56, rT * 0.34); ctx.fillStyle = volume(ctx, hdx, yT + rT * 0.6, rT * 0.6, "#F0D8B0", true); ctx.fill(); trait(ctx, "#C8A880", 0.5);
+      ctx.fillStyle = "#3A2418"; ell(ctx, hdx - 0.9, yT + rT * 0.55, 0.45, 0.35); ctx.fill(); ell(ctx, hdx + 0.9, yT + rT * 0.55, 0.45, 0.35); ctx.fill();
+      ctx.strokeStyle = "#3A2418"; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.arc(hdx, yT + rT * 0.62, rT * 0.28, 0.35, Math.PI - 0.35); ctx.stroke();
+      ctx.fillStyle = "#7A4E2A"; for (var k = -1; k <= 1; k++) { ctx.beginPath(); ctx.moveTo(hdx * 0.5 + k * 1.6 - 1, yT - rT * 0.78); ctx.lineTo(hdx * 0.5 + k * 2.2, yT - rT * 1.35 - (k ? 0 : 0.8)); ctx.lineTo(hdx * 0.5 + k * 1.6 + 1, yT - rT * 0.78); ctx.fill(); }
+      return;
+    }
+    if (type === "sauteur") {
+      // monté sur deux gros ressorts : écrasés quand il touche le sol, tendus en l'air
+      var c = o.ressort || 0, hS = c >= 1 ? 4.5 : c >= 0.5 ? 7.5 : 11;
+      [-1, 1].forEach(function (cote) {
+        var cx = cote * (S.hanche + 0.6);
+        ell(ctx, cx, -0.6, 3.8, 1.4); ctx.fillStyle = "#3E6E2A"; ctx.fill();
+        ctx.beginPath(); ctx.moveTo(cx, -0.8); for (var i = 1; i <= 8; i++) ctx.lineTo(cx + (i % 2 ? 2.6 : -2.6), -0.8 - (hS - 0.8) * i / 8.5); ctx.lineTo(cx, -hS);
+        ctx.strokeStyle = "#8E9AA4"; ctx.lineWidth = 1.5; ctx.lineJoin = "round"; ctx.stroke(); ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = 0.5; ctx.stroke();
+      });
+      ctx.save(); ctx.translate(0, -hS);
+      automate(ctx, type, o);
+      // des antennes à ressort, une boule jaune au bout
+      [-1, 1].forEach(function (cote) {
+        var ax = hdx * 0.6 + cote * rT * 0.45, ay = yT - rT * 0.8, sp = Math.sin(t * 8 + cote) * 0.8;
+        ctx.beginPath(); ctx.moveTo(ax, ay); for (var i = 1; i <= 6; i++) ctx.lineTo(ax + cote * i * 0.5 + (i % 2 ? 1.1 : -1.1) + sp * i / 6, ay - i * 1.3);
+        ctx.strokeStyle = "#6F8597"; ctx.lineWidth = 0.7; ctx.stroke();
+        ell(ctx, ax + cote * 3 + sp, ay - 8.4, 1.6, 1.6); ctx.fillStyle = volume(ctx, ax + cote * 3 + sp, ay - 8.4, 1.8, "#F2D24A", true); ctx.fill(); trait(ctx, "#C8A82A", 0.4);
+      });
+      ctx.restore();
+      return;
+    }
+  }
 
   /* ---------- Grosbec dans son armure ---------- */
   /* Une énorme armure faite des pièces de la ville d'en bas (un métal bleuté) cerclée de bronze ; un casque en grand bec
@@ -6325,7 +6446,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
 
 </script>
 <script>
-/* Les sons du combat de l'Alchimiste (enquête 10, combat final) — version 11, 24 novembre.
+/* Les sons du combat de l'Alchimiste (enquête 10, combat final) — version 11, 24 novembre (version 14 : les sons des gros boss).
    Romain, 24 nov. 11 h 46 : « Les sons, ils sont affreux, ils sont tous à refaire. Il faut mettre des sons vraiment d'armée, une
    petite musique, une musique de combat qui soit prenante et qui soit pas chiante, parce qu'elle dure quand même assez longtemps. »
    Tout est fabriqué avec le moteur de l'Atelier des sons du donjon (jeu/donjon/essai/sons/moteur.js, bruitages.js, musiques.js),
@@ -6457,12 +6578,33 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     bouleBoue: function (t, B) { O.sploutch(A, t, { g: 0.7, f: 160 }, B.salle); A.choc(t, { f: 90, f2: 45, d: 0.2, g: 0.4 }, B.salle); A.joue(t + 0.05, A.eau(0.5, 40, { fmin: 200, fmax: 700 }), { g: 0.4 }, B.sec); },
     // le berserker en toupie : une lame qui tourne
     toupie: function (t, B) { for (var k = 0; k < 6; k++) O.swish(A, t + k * 0.11, 0.1, { f1: 1500, f2: 4000, f3: 1800, g: 0.25 }, B.sec); O.glisse(A, t, 0.25, B.sec); },
+    // ---- version 14 : les gros boss ----
+    // un gros boss arrive : trois pas lourds, le cor, un coup de timbale
+    bossArrive: function (t, B) { [0, 0.4, 0.8].forEach(function (d) { O.chuteGrave(A, t + d, 0.6, 0.5, B.salle); A.choc(t + d, { f: 75, f2: 38, d: 0.25, g: 0.42, sat: 3 }, B.salle); }); cor(t + 0.3, m(38), 1.4, 0.1, B.loin); cor(t + 0.3, m(42), 1.4, 0.07, B.loin); cor(t + 0.9, m(45), 1.0, 0.07, B.loin); O.timbale(A, t + 1.2, 0.7, B.salle); },
+    // le ventre du Glouton qui gargouille
+    ventre: function (t, B) { A.bruit(t, { coul: "brun", filtres: [{ type: "lowpass", f: 180, pts: [[0.3, 460], [0.6, 160], [0.9, 400], [1.2, 130]], q: 5 }], env: [[0, 0], [0.15, 1], [1.0, 0.7], [1.3, 0]], g: 0.6, rugueux: 0.9, rugVit: 9 }, B.salle); A.ton(t, { type: "sine", f: 70, f2: 55, gl: 1.2, env: [[0, 0], [0.2, 1], [1.3, 0]], g: 0.12, vib: [7, 6] }, B.salle); },
+    // il mange : des coups de dents qui croquent, un « mmm »
+    miam: function (t, B) { for (var k = 0; k < 4; k++) { A.choc(t + k * 0.16, { f: 230, f2: 120, d: 0.05, g: 0.25, bruit: 0.8 }, B.sec); A.bruit(t + k * 0.16, { bp: 2600, bq: 1.2, env: A.perc(0.002, 0.07), g: 0.2 }, B.sec); } voix(t + 0.05, { f: 140, forme: "effort", d: 0.6, rauque: 0.3, g: 0.16 }, B.sec); },
+    // le rot du Glouton
+    rot: function (t, B) { voix(t, { f: 82, forme: "effort", d: 0.75, rauque: 1, g: 0.45, lp: 700 }, B.salle); A.bruit(t, { coul: "brun", lp: 300, env: [[0, 0], [0.05, 1], [0.7, 0]], g: 0.3 }, B.salle); },
+    // le Frileux claque des dents
+    brrr: function (t, B) { for (var k = 0; k < 12; k++) O.tinc(A, t + k * 0.045, h(2500, 3100), { g: 0.05, clic: 0.8 }, B.sec); A.bruit(t, { bp: 900, bq: 2, env: [[0, 0], [0.05, 1], [0.5, 0]], g: 0.08 }, B.sec); },
+    // le choc thermique : un grand craquement, et un nuage de vapeur qui siffle
+    chocThermique: function (t, B) { O.craque(A, t, 0.4, 0.8, B.salle); A.choc(t, { f: 180, f2: 70, d: 0.2, g: 0.45, sat: 2.5 }, B.salle); porcelaine(t + 0.02, 2, B.sec); A.bruit(t + 0.05, { hp: 2000, env: [[0, 0], [0.03, 1], [0.4, 0.7], [1.5, 0]], g: 0.4 }, B.salle); A.cloche(t, m(52), { d: 1.4, rapport: 2.76, indice: 1.2, g: 0.06 }, B.loin); },
+    // le Singe : deux « hou-hou » de métal
+    ouhouh: function (t, B) { [0, 0.24].forEach(function (d) { A.ton(t + d, { type: "triangle", f: 360, f2: 620, gl: 0.12, env: A.perc(0.01, 0.2), g: 0.26, vib: [12, 15], lp: 2500 }, B.sec); O.clic(A, t + d, 3200, 0.3, B.sec); }); },
+    // le Sauteur : un gros ressort qui part très haut
+    boingGeant: function (t, B) { A.ton(t, { type: "triangle", f: 100, f2: 440, gl: 0.3, env: A.perc(0.003, 0.65), g: 0.42, vib: [14, 40] }, B.sec); A.ton(t, { type: "sine", f: 55, f2: 120, gl: 0.2, env: A.perc(0.003, 0.3), g: 0.2 }, B.sec); },
+    // il a eu ce qu'il voulait : un grand coup, et une fanfare courte
+    cadeauBoss: function (t, B) { A.choc(t, { f: 95, f2: 45, d: 0.3, g: 0.5, sat: 3 }, B.salle); O.timbale(A, t, 0.7, B.salle); [[0.08, 62], [0.16, 69], [0.24, 74]].forEach(function (n) { O.cuivre(A, t + n[0], m(n[1]), 0.22, 0.06, B.salle); }); },
+    // un gros boss K.O. : sa carcasse tombe en morceaux, le cor descend
+    bossKO: function (t, B) { [0, 0.12, 0.27, 0.4].forEach(function (d) { A.choc(t + d, { f: h(120, 190), f2: 60, d: 0.2, g: 0.4, sat: 3 }, B.salle); porcelaine(t + d, 1.5, B.salle); }); cor(t + 0.3, m(45), 0.6, 0.07, B.loin); cor(t + 0.8, m(38), 1.2, 0.08, B.loin); },
     // la fin
     victoire: function (t, B) { if (G.BRUITAGES && G.BRUITAGES.victoireA) G.BRUITAGES.victoireA(A, { t: t, sec: B.P.sec, cave: B.P.cave, grotte: B.P.grotte }); },
     defaite: function (t, B) { [[0, 50], [0.5, 49], [1.0, 45], [1.6, 38]].forEach(function (n) { cor(t + n[0], m(n[1] - 12), 0.9, 0.08, B.loin); }); O.timbale(A, t + 1.6, 0.8, B.salle); }
   };
   // pour ne pas tout noyer : un même bruit pas plus souvent que…
-  var LIMITE = { mega: 0.4, megaPrete: 1, jet: 1.5, marteau: 0.4, tornade: 1, bouleBoue: 0.25, toupie: 0.5, allez: 0.9, berserker: 0.25, armure: 0.12, courtcircuit: 0.3, planter: 0.3, feuBois: 0.4, brise: 0.15, thud: 0.07, pop: 0.06, mort: 0.08, etincelle: 0.15, boom: 0.09, gong: 0.12, bam: 0.08, zap: 0.12, splat: 0.08, verre: 0.06, pschitt: 0.12, atchoum: 0.12, crac: 0.08, bloque: 0.15, aie: 0.2, aieBoss: 0.6, grogne: 0.8 };
+  var LIMITE = { bossArrive: 1.5, ventre: 2, miam: 0.5, rot: 1, brrr: 1.5, chocThermique: 0.4, ouhouh: 1.2, boingGeant: 0.3, cadeauBoss: 0.4, bossKO: 1, mega: 0.4, megaPrete: 1, jet: 1.5, marteau: 0.4, tornade: 1, bouleBoue: 0.25, toupie: 0.5, allez: 0.9, berserker: 0.25, armure: 0.12, courtcircuit: 0.3, planter: 0.3, feuBois: 0.4, brise: 0.15, thud: 0.07, pop: 0.06, mort: 0.08, etincelle: 0.15, boom: 0.09, gong: 0.12, bam: 0.08, zap: 0.12, splat: 0.08, verre: 0.06, pschitt: 0.12, atchoum: 0.12, crac: 0.08, bloque: 0.15, aie: 0.2, aieBoss: 0.6, grogne: 0.8 };
   SC.jouer = function (nom) {
     if (!A || MUET) return;
     var f = BR[nom]; if (!f) return;
@@ -6595,17 +6737,22 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   };
   var RAYONS = [0, 34, 50, 64], LABR = ["", "Éclaboussure", "Cercle", "Grand cercle"];
   var TYPES = {
-    rapide:   { nom: "Le rapide",   pv: 18, v: 60, r: 11, h: 27, m: 1,   kv: 1,    coup: 0.5, cad: 1.4, coul: "#3FB6C9", tete: "#62C8D8" },
-    bouclier: { nom: "Le bouclier", pv: 30, v: 42, r: 13, h: 27, m: 1.6, kv: 0.92, coup: 1,  cad: 2.0, coul: "#7E8D96", tete: "#8F9DA5" },
-    lourd:    { nom: "Le gros",     pv: 46, v: 30, r: 18, h: 26, m: 3,   kv: 0.8,  coup: 2,  cad: 2.5, coul: "#8B5E3C", tete: "#9C6C46", lourd: true },
-    cracheur: { nom: "Le cracheur", pv: 22, v: 38, r: 12, h: 27, m: 1.3, kv: 0.95, coup: 0.5, cad: 2.0, coul: "#B8572E", tete: "#C96A3F", portee: 250, tir: 3.6 },
-    souffleur:{ nom: "Le souffleur",pv: 24, v: 36, r: 13, h: 27, m: 1.4, kv: 0.94, coup: 0.5, cad: 2.0, coul: "#6C8F86", tete: "#80A69C", portee: 220, souffle: 4.2 },
+    rapide:   { nom: "Le rapide",   pv: 15, v: 60, r: 11, h: 27, m: 1,   kv: 1,    coup: 0.5, cad: 1.4, coul: "#3FB6C9", tete: "#62C8D8" },
+    bouclier: { nom: "Le bouclier", pv: 26, v: 42, r: 13, h: 27, m: 1.6, kv: 0.92, coup: 1,  cad: 2.0, coul: "#7E8D96", tete: "#8F9DA5" },
+    lourd:    { nom: "Le gros",     pv: 40, v: 30, r: 18, h: 26, m: 3,   kv: 0.8,  coup: 2,  cad: 2.5, coul: "#8B5E3C", tete: "#9C6C46", lourd: true },
+    cracheur: { nom: "Le cracheur", pv: 19, v: 38, r: 12, h: 27, m: 1.3, kv: 0.95, coup: 0.5, cad: 2.0, coul: "#B8572E", tete: "#C96A3F", portee: 250, tir: 3.6 },
+    souffleur:{ nom: "Le souffleur",pv: 21, v: 36, r: 13, h: 27, m: 1.4, kv: 0.94, coup: 0.5, cad: 2.0, coul: "#6C8F86", tete: "#80A69C", portee: 220, souffle: 4.2 },
     // (version 12) le berserker : il fonce, il cogne fort ; le soldat en armure : seule l'électricité le traverse ;
     // le porte-barricade : il plante des barricades qui arrêtent la vague ; le Colosse : le petit chef, presque invulnérable
-    berserker:{ nom: "Le berserker", pv: 34, v: 100, r: 12, h: 28, m: 1.3, kv: 0.9, coup: 1.5, cad: 1.5, coul: "#B3262B", tete: "#C8403A" },
-    chevalier:{ nom: "Le soldat en armure", pv: 50, v: 34, r: 14, h: 30, m: 2.2, kv: 0.55, coup: 1, cad: 1.8, coul: "#8D9AA8", tete: "#A0ADB8", armure: true },
-    porteur:  { nom: "Le porte-barricade", pv: 26, v: 44, r: 12, h: 28, m: 1.2, kv: 0.95, coup: 0.5, cad: 2.0, coul: "#9C7A44", tete: "#B08C54" },
-    colosse:  { nom: "Le Colosse", pv: 120, v: 20, r: 27, h: 48, m: 8, kv: 0.12, coup: 3, cad: 2.6, coul: "#4B3F63", tete: "#5E5078", lourd: true, chef: true }
+    berserker:{ nom: "Le berserker", pv: 29, v: 100, r: 12, h: 28, m: 1.3, kv: 0.9, coup: 1.5, cad: 1.5, coul: "#B3262B", tete: "#C8403A" },
+    chevalier:{ nom: "Le soldat en armure", pv: 43, v: 34, r: 14, h: 30, m: 2.2, kv: 0.55, coup: 1, cad: 1.8, coul: "#8D9AA8", tete: "#A0ADB8", armure: true },
+    porteur:  { nom: "Le porte-barricade", pv: 22, v: 44, r: 12, h: 28, m: 1.2, kv: 0.95, coup: 0.5, cad: 2.0, coul: "#9C7A44", tete: "#B08C54" },
+    colosse:  { nom: "Le Colosse", pv: 120, v: 20, r: 27, h: 48, m: 8, kv: 0.12, coup: 3, cad: 2.6, coul: "#4B3F63", tete: "#5E5078", lourd: true, chef: true },
+    // (version 14) les quatre gros boss : chacun son envie (voir « les gros boss »)
+    glouton:  { nom: "Le Glouton", pv: 110, v: 24, r: 24, h: 54, m: 7, kv: 0.25, coup: 1.5, cad: 2.6, coul: "#C0703A", tete: "#D08048", lourd: true, boss: true },
+    frileux:  { nom: "Le Frileux", pv: 110, v: 30, r: 20, h: 52, m: 6, kv: 0.3, coup: 1, cad: 2.2, coul: "#4F95C8", tete: "#6FB0DA", boss: true },
+    singe:    { nom: "Le Singe", pv: 100, v: 62, r: 18, h: 50, m: 4, kv: 0.6, coup: 0.5, cad: 1.4, coul: "#7A4E2A", tete: "#8E6038", boss: true },
+    sauteur:  { nom: "Le Sauteur", pv: 110, v: 44, r: 19, h: 52, m: 5, kv: 0.3, coup: 1, cad: 2.2, coul: "#4E9A36", tete: "#62B048", boss: true }
   };
   // les points faibles (Romain : « il y a des effets qui sont plus forts sur certains personnages… quand ils lancent une grosse vague de
   // mecs avec des armures, tu sais qu'il faut les électrocuter ») ; sorte : choc, explo, feu, elec, acide, poison
@@ -6620,9 +6767,10 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     var F = FAIBLE[e.t] || {}, k = F[sorte] == null ? 1 : F[sorte];
     if (e.grille > 0 && k < 1) k = 1;                                      // le soldat grillé : son armure ne protège plus
     if (e.t === "colosse") k = e.denude > 0 ? 2 : 0.08;                    // le Colosse : presque rien… sauf sans armure
+    if (e.boss) k = e.ouvert > 0 ? 2.5 : 0.2;                              // un gros boss : presque rien… sauf quand il est sonné
     e.pv -= d * k;
     if (k >= 2 && !(e.retourT > 0)) { e.retourT = 0.7; fxTxt(e.x, e.y, -(e.T.h + 30), (sorte === "elec" ? "⚡" : sorte === "poison" ? "☠" : "") + " ×" + k + " !", "#FFE14A"); }
-    else if (k <= 0.3 && !(e.retourT > 0)) { e.retourT = 1.4; fxTxt(e.x, e.y, -(e.T.h + 30), e.t === "colosse" ? "il ne sent rien" : "🛡 ça glisse", "#B8C4CE"); if (e.T.armure || e.t === "colosse") son("armure"); }
+    else if (k <= 0.3 && !(e.retourT > 0)) { e.retourT = 1.4; fxTxt(e.x, e.y, -(e.T.h + 30), e.t === "colosse" || e.boss ? "il ne sent rien" : "🛡 ça glisse", "#B8C4CE"); if (e.T.armure || e.t === "colosse" || e.boss) son("armure"); }
     return d * k;
   }
   var TC = { feu: "229,87,42", eau: "46,134,214", nuage: "217,201,164", acide: "93,179,56", fleurs: "150,130,245", boue: "122,86,52", vapeur: "222,228,232", fumee: "80,150,60",
@@ -6630,6 +6778,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   var TA = { feu: .34, eau: .30, nuage: .42, acide: .32, fleurs: .28, boue: .55, vapeur: .38, fumee: .40, savon: .45, elec: .35, lianes: .25, pollen: .40, mousse: .45, bain: .55, popcorn: .5 };
   var COMBOS = {
     courtcircuit: "COURT-CIRCUIT !", barricadeFeu: "LA BARRICADE EN FEU !",
+    glouton: "LE GLOUTON GAVÉ !", chocThermique: "CHOC THERMIQUE !", singeVolant: "LE SINGE VOLANT !", tournis: "LE TOURNIS DU SINGE !", trampolineGeant: "LE GRAND TRAMPOLINE !",
     marteau: "LANCER DU MARTEAU !", tornadeFeu: "TORNADE DE FEU !", bouleBoue: "LA BOULE DE BOUE !", toupie: "LE BERSERKER EN TOUPIE !", jet: "LANCE À INCENDIE !", mega: "MÉGA-POTION !",
     boulet: "BOULET DE CANON !", carambolage: "CARAMBOLAGE !", bowling: "BOWLING !", catapulte: "CATAPULTE !",
     meche: "MÈCHE SUR PATTES !", panique: "TOUT LE MONDE EN FEU !", massue: "MASSUE DE LIANES !", elec: "ÉLECTROCUTÉS !", tonneau: "TONNEAU DANS LE MILLE !",
@@ -6680,7 +6829,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     libererDeLianes(e);
     var k = e.T.kv;
     e.vx = Math.cos(ang) * vh * k; e.vy = Math.sin(ang) * vh * k;
-    e.vz = vz * (e.T.lourd ? 0.88 : 1); e.z = Math.max(e.z, 1);
+    e.vz = vz * (e.T.lourd ? 0.88 : 1) * (e.boss && e.t !== "singe" ? 0.7 : 1); e.z = Math.max(e.z, 1);
     e.chaine = S.chaineCour || nouvelleChaine(); e.trampo = 0;
     e.etat = "vol"; e.volT = 0; e.hop = false; e.leger = !!o.leger; e.stunSol = 0; e.touche = {}; e.ko = false;
     e.cote = Math.cos(ang) >= 0 ? 1 : -1;
@@ -6921,6 +7070,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
           temps: 0, tues: 0, enCours: true, pause: false, vise: null, glisse: null, ptr: { x: 180, y: 200 }, notes: [], nid: 0,
           shake: 0, ralenti: 0, msg: null, big: null, compteur: null, chaines: {}, nChaine: 0, chaineCour: 0, chaineMax: 0, rage: 0,
           coupsBoss: 0, coolHeros: 0, combosPartie: {}, rageV: 0, ordreT: -9,
+          bossFile: [], palier: 0, bossVus: {}, indiceBoss: {}, nBossApp: 0, coolPetite: 0,
           PA: [], BB: [], mega: 0, megaArme: false, megaK: 1, BAR: [], PB: null, nPB: 0, coolPB: 0, V: [], file: [], fileT: 0, GA: null, bulle: null, banniere: null, portesT: [0, 0, 0, 0], bouclierB: 0, bouclierV: 0, bouclierFlash: 0,
           colere: 0, nColeres: 0, coolColere: 0, coolOccup: 0, dernierCoupB: -99, dir: { i: 0, seuil: 0, decal: 0, attente: 0, apres: 0 } };
     [[70, 0.46], [292, 0.56], [244, 0.32]].forEach(function (p) { S.O.push(tonneau(p[0], p[1] * L.D)); });
@@ -7006,6 +7156,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
                vx: 0, vy: 0, z: 0, vz: 0, spin: 0, shield: t === "bouclier", porte: t === "porteur" ? 2 : 0, denude: 0, grille: 0, poison: 0, retourT: 0, plante: 0, colle: 0, aveugle: 0, etourdi: 0, panique: 0, meche: 0, mouille: 0, enfarine: 0, elec: 0, lent: 0,
                dirT: 0, dir: 0, cd: T.cad * 0.6, mange: false, attrape: null, atchoum: 0.5, coolHit: 0, coolTon: 0, rayonVu: 0,
                etat: "debout", app: 0, form: null, vague: null, immuFeu: 0, immuElec: 0, statue: 0, bulle: null, tourb: null, lie: null, lieT: 0, tension: 0, tirT: 2 + Math.random() * 2, souffleT: 2 + Math.random() * 2, terreT: 0, touche: {}, cote: 1, hop: false, leger: false, stunSol: 0, ko: false, court: false, volT: 0, apresVol: false, angLiane: 0 });
+    if (T.boss) { var nb = S.E[S.E.length - 1]; nb.boss = true; nb.ouvert = 0; nb.cadeaux = 0; nb.cri = 2; nb.indiceT = S.temps + 22; nb.chaleur = 0; nb.brulant = 0; nb.coolChaud = 0; nb.coolBrrr = 0; nb.mangeT = 0; nb.digere = 0; nb.dort = 0; nb.balance = null; nb.rebond = 0; nb.esquiveT = 0; }
   }
 
   /* ================= Grosbec mène le combat (version 9) ================= */
@@ -7014,7 +7165,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   // meurt pas avant 8 minutes. S'il perd trop vite, il se protège (un bouclier qu'on voit) et envoie de quoi t'occuper. Détruire ses
   // automates le blesse un peu ; les lui envoyer dessus le blesse plus… et l'énerve : il s'énerve, puis envoie une salve plus grosse.
   var PORTES = [30, 124, 236, 330];   // les deux ruelles (sous les porches) et les deux portes de la mairie
-  var VAL_KILL = { rapide: 6, bouclier: 9, lourd: 14, cracheur: 8, souffleur: 8, berserker: 10, chevalier: 12, porteur: 8, colosse: 60 };
+  var VAL_KILL = { rapide: 6, bouclier: 9, lourd: 14, cracheur: 8, souffleur: 8, berserker: 10, chevalier: 12, porteur: 8, colosse: 60, glouton: 50, frileux: 50, singe: 50, sauteur: 50 };
   // chaque salve dit (une fois, par le conteur, avec son bouton 🔊) ce qui marche contre elle : « faible »
   var SALVES = [
     { t: 1, nom: "Les rapides", cri: "En avant, mes rapides !", g: [["rapide", 6]], portes: [0, 3] },
@@ -7031,9 +7182,9 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     { t: 445, nom: "La dernière salve", cri: "Ce n'est pas fini !", g: [["rapide", 8], ["chevalier", 4], ["lourd", 3], ["berserker", 2]] }
   ];
   var SEUILS = [
-    { pv: 0.75, nom: "Deux vagues de gros", cri: "MES GROS ! TOUS ! ÉCRASEZ-LA !", g: [["lourd", 6]], form: true, grande: true, deux: true, faible: "Les gros détestent l'électricité… et le poison de l'acide." },
-    { pv: 0.5, nom: "Toute la garde", cri: "TOUTE LA GARDE ! EN AVANT !", g: [["chevalier", 10], ["bouclier", 6]], form: true, grande: true, faible: "Des armures partout. Il va falloir de l'électricité." },
-    { pv: 0.25, nom: "L'armée entière", cri: "TOUTE MON ARMÉE ! MAINTENANT !", g: [["rapide", 8], ["chevalier", 6], ["lourd", 4], ["berserker", 4], ["porteur", 2], ["cracheur", 2]], form: true, grande: true }
+    { pv: 0.75, nom: "La vague de gros", cri: "MES GROS ! TOUS ! ÉCRASEZ-LA !", g: [["lourd", 5]], form: true, grande: true, faible: "Les gros détestent l'électricité… et le poison de l'acide." },
+    { pv: 0.5, nom: "La garde", cri: "LA GARDE ! EN AVANT !", g: [["chevalier", 6], ["bouclier", 4]], form: true, grande: true, faible: "Des armures partout. Il va falloir de l'électricité." },
+    { pv: 0.25, nom: "L'armée entière", cri: "TOUTE MON ARMÉE ! MAINTENANT !", g: [["rapide", 6], ["chevalier", 3], ["lourd", 3], ["berserker", 3], ["porteur", 1], ["cracheur", 1]], form: true, grande: true }
   ];
   function sortirPorte(t, porte, lane) {
     sortir(t, true);
@@ -7073,9 +7224,9 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   }
   function bulleBoss(liste) { S.bulle = { txt: liste[Math.floor(Math.random() * liste.length)], t: 1.5 }; }
   function grosseColere() {
-    S.nColeres++; S.colere = 0; S.coolColere = 35; S.rage = 6;
-    var n = Math.min(18, 6 + 3 * S.nColeres);
-    var def = { nom: "La colère de Grosbec", cri: "VOUS ALLEZ VOIR CE QUE VOUS ALLEZ VOIR !", g: [["rapide", Math.ceil(n * 0.6)], ["lourd", Math.floor(n * 0.4)]], grande: true };
+    S.nColeres++; S.colere = 0; S.coolColere = 30; S.rage = 6;
+    var n = Math.min(30, 10 + 4 * S.nColeres);
+    var def = { nom: "La colère de Grosbec", cri: "VOUS ALLEZ VOIR CE QUE VOUS ALLEZ VOIR !", g: [["rapide", Math.ceil(n * 0.45)], ["berserker", Math.floor(n * 0.25)], ["lourd", Math.floor(n * 0.3)]], grande: true };
     S.GA = { nom: "colere", gros: true, t: 0, dur: 1.5, ensuite: function () { lancerSalve(def); } };
     dire("Grosbec explose de colère !", "mal");
   }
@@ -7172,6 +7323,8 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     S.dernierCoupB = t;
     if (o.lance) {
       S.colere += 1;
+      // chaque fois qu'il s'énerve, deux automates de plus sortent (« À MOI ! »)
+      if (S.coolPetite <= 0 && S.E.length + S.file.length < 22) { S.coolPetite = 5; for (var pc = 0; pc < 2; pc++) S.file.push({ t: Math.random() < 0.3 ? "berserker" : "rapide", porte: [0, 3][pc], lane: null, vite: true }); S.portesT[0] = S.portesT[3] = 1.3; }
       if (!S.GA) S.GA = { nom: "colere", t: 0, dur: 0.9 }; else bulleBoss(["AÏE !", "OUILLE !", "HMPF !"]);
     }
     if (S.PB) { if (!o.continu) S.bouclierFlash = 0.3; return 0; }   // pendant « ALLEZ ! ALLEZ ! », rien ne passe
@@ -7183,7 +7336,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   }
   function directeur(dt) {
     var D = S.dir;
-    S.coolColere = Math.max(0, S.coolColere - dt); S.coolOccup = Math.max(0, S.coolOccup - dt);
+    S.coolColere = Math.max(0, S.coolColere - dt); S.coolOccup = Math.max(0, S.coolOccup - dt); S.coolPetite = Math.max(0, S.coolPetite - dt);
     S.colere = Math.max(0, S.colere - dt / 9);
     for (var i = 0; i < S.portesT.length; i++) S.portesT[i] = Math.max(0, S.portesT[i] - dt);
     majGA(dt);
@@ -7198,11 +7351,14 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     var kB = S.B.pv / PV_B, ph = S.temps < 12 ? 0 : kB > 0.75 ? 1 : kB > 0.5 ? 2 : kB > 0.25 ? 3 : 4;
     if (ph !== S.phaseMus && window.SonsCombat) { S.phaseMus = ph; window.SonsCombat.phase(ph); }
     if (window.SonsCombat) window.SonsCombat.tension(Math.max(S.E.length / 30, S.rage > 0 ? 1 : 0));
+    // les gros boss : le premier au bout de 45 s (palier 1), puis à chaque quart de sa vie
+    if (!S.palier && S.temps >= 45) programmerBoss(1);
+    majBossFile();
     if (S.GA) return;   // il est déjà en train de faire quelque chose
-    // 1. il a perdu un quart de sa vie : une très grosse salve
-    if (D.seuil < SEUILS.length && S.B.pv <= PV_B * SEUILS[D.seuil].pv) { lancerSalve(SEUILS[D.seuil]); D.seuil++; return; }
+    // 1. il a perdu un quart de sa vie : une très grosse salve, et les gros boss du palier suivant
+    if (D.seuil < SEUILS.length && S.B.pv <= PV_B * SEUILS[D.seuil].pv) { lancerSalve(SEUILS[D.seuil]); D.seuil++; if (!S.palier) programmerBoss(1); programmerBoss(D.seuil + 1); return; }
     // 2. tu lui as jeté ses automates dessus trop souvent : il explose de colère
-    if (S.colere >= 4 && S.coolColere <= 0) { grosseColere(); return; }
+    if (S.colere >= 3 && S.coolColere <= 0) { grosseColere(); return; }
     // 3. il se protège : il envoie de quoi t'occuper
     if (S.PB) return;
     // 4. le programme
@@ -7220,6 +7376,202 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
       D.apres = S.temps;
       lancerSalve({ nom: "Encore des automates", cri: "Je n'ai pas dit mon dernier mot !", g: [["rapide", 6], ["bouclier", 3], ["lourd", 2], [Math.random() < 0.5 ? "cracheur" : "souffleur", 2]] });
     }
+  }
+
+  /* ================= les gros boss (version 14) ================= */
+  // Romain (24 nov. 16 h 34) : « à chaque palier, un gros boss : un au palier 1, 2 au palier 2, 3 au palier 3, 4 au palier 4. Et chaque
+  // boss, il est sensible à quelque chose de spécial… il faut que ça soit clair dans ce qu'il veut. Faut qu'on le voie, faut qu'on le
+  // sente. » Chacun montre son envie dans une bulle au-dessus de sa tête (le même dessin que l'aide aux potions), on l'entend (le
+  // ventre, les dents, les cris, les ressorts). Tant qu'il n'a pas eu ce qu'il veut, presque rien ne lui fait mal (× 0,2) ; quand il
+  // l'a eu, il prend un gros coup (« cadeau ») et reste sonné quelques secondes (× 2,5).
+  var BOSS_ORDRE = ["glouton", "frileux", "singe", "sauteur"];
+  var BOSS_INFO = {
+    glouton: { nom: "LE GLOUTON", envie: "🎂", intro: "Le Glouton ! Son ventre gargouille si fort qu'on l'entend d'ici. Il rêve d'un gâteau…", revoila: "Revoilà le Glouton. Il a encore faim !",
+               indice: "Psst… regarde au-dessus de tes fioles : l'une d'elles fait un gâteau.", ko: "Le Glouton s'écroule, le ventre plein.", cri: "ventre", criTxt: "grrrouuu…" },
+    frileux: { nom: "LE FRILEUX", envie: "🔥", intro: "Le Frileux ! Il claque des dents. Un bon feu lui ferait tellement plaisir…", revoila: "Revoilà le Frileux. Il grelotte toujours.",
+               indice: "Psst… le Frileux grelotte. Fais-lui un peu de feu !", ko: "Le Frileux tombe en morceaux… mais il a enfin chaud.", cri: "brrr", criTxt: "brrr…" },
+    singe:   { nom: "LE SINGE", envie: "🌿", intro: "Le Singe ! Il ne tient pas en place. Ce qu'il adore ? Se balancer aux lianes.", revoila: "Revoilà le Singe. Il cherche des lianes.",
+               indice: "Psst… regarde au-dessus de tes fioles : l'une d'elles fait pousser des lianes.", ko: "Le Singe a fini de faire le singe.", cri: "ouhouh", criTxt: "ouh ouh !" },
+    sauteur: { nom: "LE SAUTEUR", envie: "🌋", intro: "Le Sauteur ! Ses ressorts le démangent. Il rêve de rebondir sur la mousse d'un volcan.", revoila: "Revoilà le Sauteur. Boing, boing…",
+               indice: "Psst… regarde au-dessus de tes fioles : l'une d'elles fait un volcan.", ko: "Plus un ressort ne bouge : le Sauteur est K.O.", cri: "boing", criTxt: "boing ?" }
+  };
+  // palier n : le nouveau d'abord, seul, puis ceux qu'on connaît déjà, un toutes les 7 s
+  function programmerBoss(n) {
+    if (n > 4 || n <= S.palier) return;
+    S.palier = n;
+    var liste = [BOSS_ORDRE[n - 1]].concat(BOSS_ORDRE.slice(0, n - 1).reverse());
+    liste.forEach(function (t, i) { S.bossFile.push({ t: t, quand: S.temps + 3 + i * 7 }); });
+  }
+  function majBossFile() {
+    var f = S.bossFile[0]; if (!f || S.temps < f.quand) return;
+    if (S.E.filter(function (e) { return e.boss; }).length >= 5) { f.quand = S.temps + 3; return; }
+    S.bossFile.shift();
+    // celui-là est encore sur la place (ou va sortir) : il compte pour ce palier, on n'en envoie pas un deuxième
+    if (S.E.some(function (e) { return e.t === f.t; }) || S.file.some(function (q) { return q.t === f.t; })) return;
+    appelerBoss(f.t);
+  }
+  function appelerBoss(t) {
+    var I = BOSS_INFO[t], deja = S.bossVus[t]; S.bossVus[t] = (deja || 0) + 1;
+    S.file.unshift({ t: t, porte: S.nBossApp++ % 2 ? 2 : 1, lane: null, vite: true });
+    S.portesT[1] = S.portesT[2] = 1.6;
+    S.banniere = { txt: I.nom, t: 3.2 }; son("bossArrive"); S.shake = Math.max(S.shake, 0.4);
+    dire(deja ? I.revoila : I.intro, "mal");
+    if (!S.GA) S.GA = { nom: "salve", t: 0, dur: 1.5, lache: 99, fait: true };   // il le montre du doigt : « à toi ! »
+    bulleBoss(["À TOI !", "VAS-Y !", "MONTRE-LUI !"]);
+  }
+  // ce dont il a envie, s'il y en a sur la place (le gâteau, des lianes, la mousse du volcan)
+  function envieBoss(e) {
+    if (e.t === "glouton") return S.gateau && d2(e, S.gateau) < 430 ? S.gateau : null;
+    var type = e.t === "singe" ? "lianes" : e.t === "sauteur" ? "mousse" : null; if (!type) return null;
+    var best = null, bd = 420;
+    S.T.forEach(function (t) { if (t.type !== type || t.feu > 0 || t.t < 0.8) return; var d = d2(e, t); if (d < bd) { bd = d; best = t; } });
+    return best;
+  }
+  // il a eu ce qu'il voulait : un gros coup, et il reste sonné
+  function cadeau(e, dm, k) {
+    e.pv -= dm; e.ouvert = Math.max(e.ouvert, 4.5); e.cadeaux++; e.indiceT = 0;
+    fxTxt(e.x, e.y, -(e.T.h + 44), "−" + dm, "#FFE14A"); fx({ k: "etoile", x: e.x, y: e.y, dur: .5 }); fx({ k: "onde", x: e.x, y: e.y, r: 60, c: "242,194,48", dur: .5 });
+    S.shake = Math.max(S.shake, 0.4); combo(k); son("cadeauBoss");
+    if (e.pv > 0) S.P.push({ t: 0, dur: 1.6, invisible: true, cb: function () { if (e.pv > 0 && e.ouvert > 0 && S.E.indexOf(e) >= 0) dire(e.T.nom + " est sonné : il ne se protège plus. Vas-y !", "bon"); } });
+  }
+  // chaque image, avant tout le reste ; vrai = il ne fait rien d'autre (il mange, il dort, il se balance…)
+  function majBoss(e, dt) {
+    e.ouvert = Math.max(0, e.ouvert - dt); e.cri -= dt; e.esquiveT = Math.max(0, e.esquiveT - dt); e.coolBrrr = Math.max(0, e.coolBrrr - dt);
+    var I = BOSS_INFO[e.t], debout = e.etat === "debout" && e.z <= 0.5 && !e.attrape;
+    // le conteur l'aide une fois (par sorte de boss), s'il n'a toujours rien trouvé au bout de 22 s
+    if (e.indiceT && S.temps > e.indiceT) { e.indiceT = 0; if (!e.cadeaux && !S.indiceBoss[e.t]) { S.indiceBoss[e.t] = 1; dire(I.indice, "aide"); } }
+    // on l'entend : le ventre du Glouton, les dents du Frileux, le Singe, les ressorts du Sauteur
+    if (e.cri <= 0) { e.cri = 4.5 + Math.random() * 3; if (debout && !(e.dort > 0) && !(e.mangeT > 0)) { son(I.cri); fxTxt(e.x, e.y, -(e.T.h + 22), e.t === "frileux" && e.brulant > 0 ? "pfiou…" : I.criTxt, "#F4EBD5"); } }
+    if (e.t === "frileux") {
+      e.coolChaud = Math.max(0, e.coolChaud - dt);
+      if (e.brulant > 0) {
+        e.brulant -= dt;
+        if (Math.random() < dt * 9) part({ x: e.x + (Math.random() - 0.5) * e.r, y: e.y, z: e.T.h * 0.7, vx: (Math.random() - 0.5) * 20, vz: 50, g: -20, dur: 0.8, r: 3, r1: 9, c: "vapeur", a: 0.7 });
+        if (e.brulant <= 0) { e.chaleur = 55; fxTxt(e.x, e.y, -(e.T.h + 30), "il refroidit…", "#9FD0F0"); }
+      } else e.chaleur = Math.max(0, e.chaleur - 5 * dt);
+      return false;
+    }
+    if (e.t === "glouton") {
+      if (!debout) return false;
+      if (!(e.mangeT > 0) && !(e.digere > 0) && !(e.dort > 0) && S.gateau && d2(e, S.gateau) < e.r + 16) {
+        e.mangeT = 1.8; S.gateau.glouton = true; S.gateau.t = Math.max(S.gateau.t, 2.5);
+        fxTxt(e.x, e.y, -(e.T.h + 30), "MIAM !", "#FFE08A"); son("miam");
+      }
+      if (e.mangeT > 0) {
+        e.mangeT -= dt; e.vx = e.vy = 0;
+        if (Math.random() < dt * 14) part({ x: e.x + (Math.random() - 0.5) * 16, y: e.y, z: e.T.h * 0.55, vx: (Math.random() - 0.5) * 70, vz: 60 + Math.random() * 60, g: 400, dur: 0.6, r: 1.8, r1: 1.2, c: "farine" });
+        if (e.mangeT <= 0) { e.mangeT = 0; S.gateau = null; e.digere = 1.1; son("miam"); }
+        return true;
+      }
+      if (e.digere > 0) {
+        e.digere -= dt; e.vx = e.vy = 0;
+        if (e.digere <= 0) {
+          e.digere = 0; son("rot"); fxTxt(e.x, e.y, -(e.T.h + 34), "BUUURP !", "#FFD25A"); fx({ k: "onde", x: e.x, y: e.y, r: 40, c: "255,230,160", dur: .4 });
+          e.dort = 6; cadeau(e, 40, "glouton"); e.ouvert = 6;
+          dire("Le Glouton a trop mangé… il s'endort. C'est le moment !", "bon");
+        }
+        return true;
+      }
+      if (e.dort > 0) {
+        e.dort -= dt; e.vx = e.vy = 0;
+        if (Math.random() < dt * 1.4) fxTxt(e.x + 10, e.y, -(e.T.h + 6), "z", "#CFE3FF");
+        if (e.dort <= 0) { e.dort = 0; fxTxt(e.x, e.y, -(e.T.h + 30), "il a encore faim !", "#FFD9A0"); }
+        return true;
+      }
+      return false;
+    }
+    if (e.t === "singe") {
+      if (e.balance && e.attrape && !(e.attrape.feu > 0)) {
+        // il fait la balançoire autour des lianes ; au bout de 3,5 s, elles lâchent et il part en l'air
+        var tl = e.attrape, B = e.balance, R = Math.max(18, tl.r * 0.75);
+        B.T -= dt; B.a += 7 * dt;
+        e.x = tl.x + Math.cos(B.a) * R; e.y = tl.y + Math.sin(B.a) * R * 0.8; e.z = 10 + Math.sin(B.a * 2) * 6; e.etat = "debout"; e.terreT = 0;
+        e.vx = -Math.sin(B.a) * R * 7; e.vy = Math.cos(B.a) * R * 7 * 0.8; e.spin += dt * 10; e.tension = 0; e.ouvert = Math.max(e.ouvert, 0.3);
+        if (Math.random() < dt * 1.2) fxTxt(e.x, e.y, -(e.T.h + 20), Math.random() < 0.5 ? "youpi !" : "ouh ouh !", "#FFE08A");
+        if (B.T <= 0) { libererDeLianes(e); nouvelleChaine(); ejecter(e, B.a + Math.PI / 2, 330, 280); fxTxt(e.x, e.y, -(e.T.h + 24), "la liane lâche !", "#8BD46A"); son("lianes"); }
+        return true;
+      }
+      if (e.balance && !e.attrape && debout) e.balance = null;
+      if (debout && !(e.etourdi > 0) && !(e.colle > 0)) {
+        var L2 = envieBoss(e);
+        if (L2 && d2(e, L2) < Math.max(14, L2.r * 0.8)) {
+          e.balance = { a: angDe(e, L2.x, L2.y), T: 3.5 }; e.attrape = L2; L2.prises.push(e.id); e.vx = e.vy = 0;
+          son("ouhouh"); fxTxt(e.x, e.y, -(e.T.h + 30), "OUH OUH !", "#FFE08A");
+          return true;
+        }
+        // il esquive les fioles qui vont lui tomber dessus (sauf celles qui font des lianes !)
+        if (!(e.esquiveT > 0)) S.P.forEach(function (pp) {
+          if (e.esquiveT > 0 || pp.invisible || !pp.cle || pp.cle.indexOf("eau") >= 0 && pp.cle.indexOf("fleur") >= 0 || pp.dur - pp.t > 0.2 || Math.hypot(pp.x1 - e.x, pp.y1 - e.y) > 48) return;
+          e.esquiveT = 2.2; var cote = e.x < W / 2 ? 1 : -1;
+          e.etat = "vol"; e.leger = true; e.z = 1; e.vz = 230; e.vx = cote * 170; e.vy = (Math.random() - 0.5) * 60; e.volT = 0; e.touche = {};
+          fxTxt(e.x, e.y, -(e.T.h + 20), "hop !", "#FFE08A");
+        });
+      }
+      return false;
+    }
+    if (e.t === "sauteur") {
+      if (debout && !e.rebond && !(e.etourdi > 0) && !(e.colle > 0)) {
+        var M = envieBoss(e);
+        if (M && d2(e, M) < Math.max(14, M.r * 0.8)) {
+          e.rebond = 1; e.mousse = M; e.etat = "vol"; e.vz = 370; e.z = 1; e.vx = e.vy = 0; e.volT = 0; e.touche = {}; e.leger = false; e.hop = false;
+          fx({ k: "onde", x: e.x, y: e.y, r: 30, c: "240,245,225", dur: .4 }); fxTxt(e.x, e.y, -40, "BOING !", "#F0F5E1"); son("boingGeant");
+          return true;
+        }
+      }
+      return false;
+    }
+    return false;
+  }
+  // il retombe : les trois rebonds du Sauteur, l'atterrissage du Singe
+  function atterrirBoss(e) {
+    if (e.t === "sauteur" && e.rebond) {
+      var m = e.mousse && S.T.indexOf(e.mousse) >= 0 && d2(e, e.mousse) < e.mousse.r + 16 ? e.mousse : null;
+      if (m && e.rebond < 3) {
+        e.rebond++; e.etat = "vol"; e.vz = [0, 370, 440, 510][e.rebond]; e.z = 1; e.vx = (m.x - e.x) * 0.6; e.vy = (m.y - e.y) * 0.6; e.volT = 0; e.touche = {}; e.leger = false;
+        fx({ k: "onde", x: e.x, y: e.y, r: 30 + e.rebond * 10, c: "240,245,225", dur: .4 }); fxTxt(e.x, e.y, -40, ["", "BOING !", "BOIIING !!", "BOIIIIIING !!!"][e.rebond], "#F0F5E1"); son("boingGeant");
+        return true;
+      }
+      if (e.rebond >= 3) {
+        // il retombe de tout là-haut : BOUM, la place tremble, tout le monde autour valse
+        e.rebond = 0; e.mousse = null; e.etat = "debout"; e.vx = e.vy = 0; e.hop = true; e.etourdi = 3;
+        if (m) retirer(m);
+        fx({ k: "boom", x: e.x, y: e.y, r: 70, dur: .45 }); fx({ k: "onde", x: e.x, y: e.y, r: 110, c: "240,245,225", dur: .6 }); fx({ k: "fissure", x: e.x, y: e.y, r: 50, dur: 2 });
+        S.shake = Math.max(S.shake, 0.8); son("pied"); son("boom");
+        var ch = nouvelleChaine();
+        S.E.forEach(function (o) { if (o === e || o.z > 10 || d2(o, e) > 110) return; S.chaineCour = ch; degat(o, 8, "choc"); ejecter(o, angDe(o, e.x, e.y), 260, 300); });
+        cadeau(e, 45, "trampolineGeant");
+        return true;
+      }
+      e.rebond = 0; e.mousse = null;   // il est retombé à côté de la mousse
+      return false;
+    }
+    if (e.t === "singe" && e.balance && !e.attrape) {
+      var vole = e.marteau; e.marteau = false; e.balance = null;
+      cadeau(e, vole ? 45 : 22, vole ? "singeVolant" : "tournis"); e.etourdi = 4;
+      fxTxt(e.x, e.y, -(e.T.h + 20), "il a le tournis !", "#FFE08A");
+      return false;
+    }
+    return false;
+  }
+  // le Frileux : le feu le réchauffe (le thermomètre monte) ; brûlant, une douche froide le fait éclater (le choc thermique)
+  function chauffer(e, n) {
+    if (e.brulant > 0 || e.coolChaud > 0) return;
+    e.coolChaud = 0.35; e.chaleur = Math.min(100, e.chaleur + n);
+    if (e.chaleur >= 100) {
+      e.brulant = 9; fxTxt(e.x, e.y, -(e.T.h + 34), "BRÛLANT !", "#FF7A3A"); son("feu"); fx({ k: "onde", x: e.x, y: e.y, r: 40, c: "255,120,50", dur: .4 });
+      if (!e.ditChaud) { e.ditChaud = true; dire("Le Frileux est brûlant ! Et maintenant… une bonne douche froide ?", "aide"); }
+    } else if (Math.random() < 0.4) fxTxt(e.x, e.y, -(e.T.h + 24), "ahhh…", "#FFB070");
+  }
+  function doucher(e) {
+    if (e.brulant > 0) {
+      e.brulant = 0; e.chaleur = 0; e.mouille = 3;
+      gerbe(e.x, e.y, 22, "vapeur", { v: 140, vz: 120, z: 20, g: -30, dur: 1.4, r: 6, r1: 18, a: 0.85 });
+      fxTxt(e.x, e.y, -(e.T.h + 30), "CRAAAC !", "#FFFFFF"); son("chocThermique");
+      cadeau(e, 45, "chocThermique");
+      return;
+    }
+    e.mouille = Math.max(e.mouille, 7); e.chaleur = Math.max(0, e.chaleur - 30);
+    if (!(e.coolBrrr > 0)) { e.coolBrrr = 2.5; fxTxt(e.x, e.y, -(e.T.h + 24), "brrr !", "#9FD0F0"); son("brrr"); }
   }
 
   /* ================= les barricades (version 12) ================= */
@@ -7303,7 +7655,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
       }
       var v = Math.hypot(B.vx, B.vy); B.rot += v * dt / B.r;
       S.E.forEach(function (e) {
-        if (e.dansBoule || e.z > 24 || e.t === "colosse" || e.etat === "bulle" || e.tourb) return;
+        if (e.dansBoule || e.z > 24 || e.t === "colosse" || e.boss || e.etat === "bulle" || e.tourb) return;
         if (Math.hypot(e.x - B.x, e.y - B.y) < B.r + e.r * 0.6) { e.dansBoule = B; e.vague = null; e.attrape = null; B.n++; B.r = 14 + 5 * Math.sqrt(B.n); son("thud"); }
       });
       var cogne = B.x < B.r || B.x > W - B.r || B.y < 10 + B.r * 0.3 || B.y > L.D - B.r;
@@ -7367,7 +7719,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
         if (e.attrape) return;   // la liane le retient
         if (e.t === "colosse" && !(e.denude > 0)) return;   // le Colosse ne bouge pas (il est juste trempé)
         e.form = null; e.lie = null;
-        e.vague = V; e.vagueFin = d + ({ lourd: 60, chevalier: 70, colosse: 90 }[e.t] || (e.shield ? 150 : 9999));
+        e.vague = V; e.vagueFin = d + ({ lourd: 60, chevalier: 70, colosse: 90 }[e.t] || (e.boss ? 80 : e.shield ? 150 : 9999));
         e.etat = "glisse"; e.apresVol = false; e.z = 0; e.vz = 0; e.touche = {}; e.stunSol = 0; e.terreT = 0; e.chaine = V.chaine;
         e.cote = Math.cos(Math.atan2(e.y - V.y, e.x - V.x)) >= 0 ? 1 : -1;
         V.n++;
@@ -7454,6 +7806,9 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   /* ================= états des automates ================= */
   function feuSur(e) {
     if (e.statue > 0) return;
+    // (version 14) le Frileux : le feu le réchauffe ; les autres gros boss : ils brûlent un peu, sans plus (ni mèche, ni terre cuite)
+    if (e.t === "frileux") { chauffer(e, 30); return; }
+    if (e.boss) { if (e.panique <= 0 && !(e.immuFeu > 0)) { fxTxt(e.x, e.y, -(e.T.h + 20), "au feu !", "#FF8A3D"); e.panique = 3; } return; }
     // un automate qui tourne dans le tourbillon prend feu : tout le tourbillon s'embrase et s'élargit (la tornade de feu)
     if (e.tourb && !e.tourb.feu) {
       var tous = S.E.filter(function (o) { return o.tourb; });
@@ -7476,6 +7831,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     e.enfarine = Math.max(e.enfarine, 9);
   }
   function mouiller(e) {
+    if (e.t === "frileux") { doucher(e); return; }
     if (e.panique > 0) { e.panique = 0; crac(e); e.mouille = 7; return; }
     if (e.enfarine > 0) { e.colle = Math.max(e.colle, 7); e.enfarine = 0; fxTxt(e.x, e.y, -30, "boue !", "#C9A46E"); return; }
     e.mouille = Math.max(e.mouille, 7);
@@ -7520,6 +7876,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     combo("brulants");
   }
   function cuire(e) {
+    if (e.boss) return;
     e.statue = 12; e.colle = 0; e.panique = 0; e.etat = "debout"; e.terreT = 0; e.vx = e.vy = 0; libererDeLianes(e);
     fxTxt(e.x, e.y, -(e.T.h + 22), "terre cuite !", "#E0915A"); fx({ k: "poussiere", x: e.x, y: e.y, r: e.r + 8, dur: .4 }); son("crac");
     combo("statue");
@@ -7533,7 +7890,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   function bulles(t) {
     var n = 0;
     S.E.forEach(function (e) {
-      if (e.etat === "vol" || e.etat === "bulle" || e.statue > 0 || d2(e, t) > t.r + e.r * 0.5) return;
+      if (e.boss || e.etat === "vol" || e.etat === "bulle" || e.statue > 0 || d2(e, t) > t.r + e.r * 0.5) return;
       libererDeLianes(e); e.lie = null;
       e.etat = "bulle"; e.bulle = { t: 9 }; e.vx = e.vy = 0; e.terreT = 0; n++;
       fxTxt(e.x, e.y, -30, "bulle !", "#F4EEFF");
@@ -7679,6 +8036,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     if (e.poison > 0) { e.poison -= dt; degat(e, 1.5 * dt, "poison"); if (Math.random() < dt * 5) part({ x: e.x + (Math.random() - 0.5) * e.r, y: e.y, z: e.T.h + 4, vz: 22, dur: 0.8, r: 1.6, r1: 3, c: "acide", a: 0.9 }); }
     if (e.attrape && S.T.indexOf(e.attrape) === -1) e.attrape = null;
     if (e.attrape && e.attrape.feu > 0) return; // la liane en feu le fait tournoyer
+    if (e.boss && majBoss(e, dt)) return;      // (version 14) le gros boss mange, dort, se balance…
     if (e.tourb) { majTourb(e, dt); return; }
     if (e.statue > 0) {
       e.statue -= dt; e.vx = e.vy = 0;
@@ -7723,7 +8081,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
           break;
         case "fleurs": e.pv = Math.min(e.T.pv, e.pv + 3 * dt); break;
         case "lianes":
-          if (!t.feu && !e.attrape && t.prises.length < 4 && vit(e) < 200) { e.attrape = t; t.prises.push(e.id); e.vx = 0; e.vy = 0; e.etat = "debout"; e.terreT = 0; fxTxt(e.x, e.y, -30, "attrapé !", "#8BD46A"); }
+          if (!e.boss && !t.feu && !e.attrape && t.prises.length < 4 && vit(e) < 200) { e.attrape = t; t.prises.push(e.id); e.vx = 0; e.vy = 0; e.etat = "debout"; e.terreT = 0; fxTxt(e.x, e.y, -30, "attrapé !", "#8BD46A"); }
           break;
       }
     });
@@ -7757,14 +8115,16 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     }
     // debout
     var bloque = e.etourdi > 0 || e.colle > 0;
-    var cible = S.hero, versGateau = false;
-    if (S.gateau && d2(e, S.gateau) < 180) { cible = S.gateau; versGateau = true; }
-    var d = d2(e, cible), contact = versGateau ? 10 : e.r + S.hero.r + 2;
+    var cible = S.hero, versGateau = false, veut = e.boss ? envieBoss(e) : null;
+    if (veut) cible = veut;
+    else if (S.gateau && !S.gateau.glouton && !e.boss && d2(e, S.gateau) < 180) { cible = S.gateau; versGateau = true; }
+    var d = d2(e, cible), contact = veut ? 4 : versGateau ? 10 : e.r + S.hero.r + 2;
     e.mange = versGateau && d <= contact + 2;
     if (e.mange && e.T.lourd) S.gateau.t -= 2 * dt;
     // trempé, il avance 5 fois moins vite (Romain : « ralenti à 80 % ») ; le berserker sprinte quand il te voit (et le feu l'énerve)
     var vmax = e.T.v * (S.rage > 0 ? 1.3 : 1) * (e.lent > 0 ? 0.5 : 1) * (e.mouille > 0 ? 0.2 : 1);
     if (e.t === "berserker") { if (d < 260) vmax *= 1.3; if (e.panique > 0) vmax *= 1.5; if (e.colle > 0) vmax = 0; }
+    if (veut) vmax = Math.max(vmax, e.T.v * 1.8);   // il a vu ce qu'il voulait : il y court
     var k = Math.min(1, (surSavon ? 0.5 : 9) * dt), court = !bloque && e.meche > 0;
     if (bloque) { e.vx *= Math.exp(-6 * dt); e.vy *= Math.exp(-6 * dt); }
     else if (court) {
@@ -7799,7 +8159,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     e.x += e.vx * dt; e.y += e.vy * dt;
     var mur = murs(e);
     if (mur && court) e.dir = Math.atan2(mur.ny, mur.nx) + (Math.random() - 0.5) * 1.8;
-    if (!bloque && !court && !versGateau && e.aveugle <= 0 && d <= contact + 1) {
+    if (!bloque && !court && !versGateau && !veut && e.aveugle <= 0 && d <= contact + 1) {
       e.cd -= dt;
       if (e.cd <= 0) {
         e.cd = e.T.cad * (S.pv < 3 ? 1.5 : 1);
@@ -7815,6 +8175,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   function atterrir(e) {
     var chute = -e.vz; e.z = 0; e.vz = 0;
     if (e.leger) { e.etat = "debout"; e.vx = e.vy = 0; e.leger = false; return; }
+    if (e.boss && atterrirBoss(e)) return;
     // il retombe sur la mousse du volcan : boing, il repart très haut et va retomber plus loin
     if (!e.hop && !e.trampo && dansTrace(e, "mousse")) {
       e.trampo = 1;
@@ -7943,7 +8304,8 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
       if (e.pv > 0) return true;
       S.tues++; fxTxt(e.x, e.y, -20, "Pouf !", "#8BD46A"); fx({ k: "poussiere", x: e.x, y: e.y, r: e.r + 10, dur: .45 });
       // son cœur de lumière retourne à l'armure de Grosbec… et la fait sauter un peu
-      var val = VAL_KILL[e.t] || 6; son("mort"); gagnerMega(e.t === "colosse" ? 25 : 0.7);
+      var val = VAL_KILL[e.t] || 6; son("mort"); gagnerMega(e.t === "colosse" || e.boss ? 25 : 0.7);
+      if (e.boss) { S.bossKO = (S.bossKO || 0) + 1; bigTxt(BOSS_INFO[e.t].nom + " EST K.O. !"); dire(BOSS_INFO[e.t].ko, "bon"); son("bossKO"); S.shake = Math.max(S.shake, 0.5); fx({ k: "eclats", x: e.x, y: e.y, c: e.T.coul, dur: .8 }); }
       fx({ k: "etincelle", x: e.x, y: e.y, x2: S.B.x, y2: S.B.y, dur: .6 });
       S.P.push({ t: 0, dur: 0.6, invisible: true, cb: function () { var dmK = blesserBoss(val); son("etincelle"); if (dmK) { fxTxt(S.B.x + (Math.random() - 0.5) * 34, S.B.y, -64, "−" + dmK, "#F2C230"); S.B.hit = Math.max(S.B.hit, 0.1); } else S.bouclierFlash = 0.3; } });
       if (e.attrape) { var i = e.attrape.prises.indexOf(e.id); if (i >= 0) e.attrape.prises.splice(i, 1); }
@@ -8009,7 +8371,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   function brut(type, x, y, r, dur, pow) { var t = { type: type, x: x, y: y, r: r, t: dur, dur: dur, pow: pow || 1, prises: [], feu: 0, ang: 0 }; S.T.push(t); if (S.T.length > 45) retirer(S.T[0]); return t; }
   function retirer(t) { var i = S.T.indexOf(t); if (i >= 0) S.T.splice(i, 1); if (t.type === "lianes") S.E.forEach(function (e) { if (e.attrape === t) e.attrape = null; }); }
   function chevauche(t, x, y, r) { return Math.hypot(t.x - x, t.y - y) < r + t.r * 0.6; }
-  function attraper(t) { S.E.forEach(function (e) { if (!e.attrape && e.etat !== "vol" && e.etat !== "bulle" && !e.tourb && !(e.statue > 0) && t.prises.length < 4 && d2(e, t) < t.r) { e.attrape = t; t.prises.push(e.id); e.vx = e.vy = 0; e.etat = "debout"; e.terreT = 0; } }); }
+  function attraper(t) { S.E.forEach(function (e) { if (!e.boss && !e.attrape && e.etat !== "vol" && e.etat !== "bulle" && !e.tourb && !(e.statue > 0) && t.prises.length < 4 && d2(e, t) < t.r) { e.attrape = t; t.prises.push(e.id); e.vx = e.vy = 0; e.etat = "debout"; e.terreT = 0; } }); }
   function enflammerLianes(t) {
     if (t.feu > 0) return;
     if (!S.E.some(function (e) { return e.attrape === t; })) { retirer(t); note("les lianes brûlent"); return; }
@@ -8114,7 +8476,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
       var d = Math.hypot(e.x - x, e.y - y);
       if (d > r + e.r * 0.5) return;
       var p = Math.max(0, 1 - d / (r * 1.3));
-      if (e.enfarine > 0 && e.meche <= 0) { e.meche = 3; e.enfarine = 0; e.court = false; fxTxt(e.x, e.y, -(e.T.h + 24), "mèche !", "#FFB347"); }
+      if (e.enfarine > 0 && e.meche <= 0 && !e.boss) { e.meche = 3; e.enfarine = 0; e.court = false; fxTxt(e.x, e.y, -(e.T.h + 24), "mèche !", "#FFB347"); }
       var ar = angDe(e, x, y), ah = angDe(e, S.hero.x, S.hero.y);
       var dx = Math.cos(ar) * 0.6 + Math.cos(ah), dy = Math.sin(ar) * 0.6 + Math.sin(ah);
       if (e.shield) { ejecter(e, (dx || dy) ? Math.atan2(dy, dx) : ar, (250 + 200 * p) * 0.45, (340 + 70 * p) * 0.6); if (Math.random() < 0.4) fxTxt(e.x, e.y, -34, "bouclier !", "#BFD3E6"); }
@@ -8145,7 +8507,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     if (spec && spec.forme === "cone") { S.notes = []; cone(c, ang, spec); finLancer(nom); return; }
     if (spec && spec.forme === "anneau") { S.notes = []; anneau(spec.r); finLancer(nom); return; }
     var col = S.megaK > 1 ? "#F2C230" : melangeCouleur(r), mk = S.megaK;
-    S.P.push({ t: 0, dur: 0.28, x0: S.hero.x, y0: S.hero.y, x1: P.x, y1: P.y, c: col, cb: function () {
+    S.P.push({ t: 0, dur: 0.28, x0: S.hero.x, y0: S.hero.y, x1: P.x, y1: P.y, c: col, cle: cle, cb: function () {
       S.notes = []; nouvelleChaine(); var mk0 = S.megaK; S.megaK = mk;
       if (mk > 1) fx({ k: "onde", x: P.x, y: P.y, r: RAYONS[Math.max(1, r.length)] * mk + 30, c: "242,194,48", dur: .45 });
       if (spec && spec.forme === "colonnes") colonnes(P.x, P.y, spec.r * S.megaK);
@@ -8264,7 +8626,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     var nT = 0;
     S.E.forEach(function (e) {
       if (d2(e, h) > R + e.r || e.etat === "bulle" || e.statue > 0) return;
-      if ((dansTrace(e, "savon") || dansTrace(e, "bain")) && e.etat !== "vol" && !e.attrape) {
+      if (!e.boss && (dansTrace(e, "savon") || dansTrace(e, "bain")) && e.etat !== "vol" && !e.attrape) {
         e.tourb = { t: 1.3, a: Math.atan2(e.y - h.y, e.x - h.x), R: clamp(d2(e, h), 45, 120), chaine: S.chaineCour }; e.etat = "debout"; e.terreT = 0; e.lie = null; nT++;
         return;
       }
@@ -8910,7 +9272,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     if (e.mouille > 0) { ctx.strokeStyle = "rgba(79,163,240,.7)"; ctx.lineWidth = 2; ell(x, Y, e.r + 5, (e.r + 5) * 0.45); ctx.stroke(); }
     ombre(x, Y, e.r * (e.z > 0 ? Math.max(0.5, 1 - e.z / 160) : 1));
     var w = e.r * 1.35, hh = T.h, rot = 0, couche = e.etat === "glisse" || e.etat === "terre";
-    if ((e.attrape && e.attrape.feu > 0) || e.tourb || e.toupie > 0) rot = Math.sin(e.spin) * 0.9;
+    if ((e.attrape && e.attrape.feu > 0) || e.tourb || e.toupie > 0 || e.balance) rot = Math.sin(e.spin) * 0.9;
     else if (e.etat === "bulle") rot = Math.sin(e.spin) * 0.25;
     else if (e.etat === "vol") rot = e.leger ? 0.3 * e.cote : e.cote * Math.min(1.45, e.volT * 2.4);
     else if (e.etat === "glisse") rot = e.cote * 1.45;
@@ -8928,7 +9290,16 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     if (e.etat === "debout") { if (spF < 8) vxF = S.hero.x - e.x; face = clamp(vxF / (Math.abs(vxF) + 25), -0.85, 0.85); } else face = e.cote * 0.4;
     e.faceL = (e.faceL || 0) + (face - (e.faceL || 0)) * 0.12;
     var marche = e.etat === "debout" && !(e.etourdi > 0) && !(e.colle > 0) && !e.attrape && !(e.statue > 0) ? Math.min(1, spF / Math.max(20, T.v * 0.8)) : 0;
-    dessinAutomate(e, tps, { marche: marche, face: e.faceL, sansBouclier: e.t === "bouclier" && !e.shield,
+    // (version 14) les gros boss : ce qu'ils font se voit sur eux (la bouche du Glouton, ses yeux fermés, le Frileux qui chauffe…)
+    var EB = null;
+    if (e.boss) {
+      var hop = e.t === "sauteur" && e.etat === "debout" && !e.rebond ? Math.abs(Math.sin(tps * 7 + e.id)) * (0.35 + marche) : 0;
+      EB = { dort: e.dort > 0 && e.etat === "debout", bouche: e.mangeT > 0 ? Math.floor(tps * 7) % 2 : 0, gonfle: e.digere > 0 || e.dort > 0 ? 1 : 0,
+             chaud: Math.round(Math.min(1, e.chaleur / 100) * 4) / 4, ressort: e.t === "sauteur" ? (e.etat === "vol" ? 0 : hop > 0.6 ? 0.5 : 1) : 0, ouvert: e.ouvert > 0 };
+      if (hop) ctx.translate(0, -hop * 9);
+      if (EB.dort) marche = 0;
+    }
+    dessinAutomate(e, tps, { marche: marche, face: e.faceL, sansBouclier: e.t === "bouclier" && !e.shield, eb: EB,
       etats: { feu: e.panique > 0, mouille: e.mouille > 0, farine: e.enfarine > 0, boue: e.colle > 0, statue: e.statue > 0, elec: e.elec > 0, meche: e.meche > 0, aveugle: e.aveugle > 0 && e.etat === "debout" },
       charge: e.t === "cracheur" && e.tirT < 0.6 ? (0.6 - e.tirT) / 0.6 : 0, souffle: e.souffleAnim > 0 ? Math.sin((1 - e.souffleAnim / 0.6) * Math.PI) : 0 });
     if (e.attrape) { ctx.strokeStyle = e.attrape.feu > 0 ? "#FF8A3D" : "#4E9A2E"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(-w / 2 - 2, -4); ctx.lineTo(w / 2 + 2, -hh * 0.4); ctx.moveTo(-w / 2 - 2, -hh * 0.6); ctx.lineTo(w / 2 + 2, -hh * 0.2); ctx.stroke(); }
@@ -8948,12 +9319,73 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
       ctx.fillStyle = e.denude > 0 ? "#F2C230" : "#B48CFF"; ctx.fillRect(x - 30, top - 8, 60 * Math.max(0, e.pv / T.pv), 6);
       texte(e.denude > 0 ? "SANS ARMURE !" : "Le Colosse", x, top - 12, 10, e.denude > 0 ? "#FFE14A" : "#D8C8FF");
     }
-    ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(x - e.r, top, e.r * 2, 3.5);
-    ctx.fillStyle = "#E5572A"; ctx.fillRect(x - e.r, top, e.r * 2 * Math.max(0, e.pv / T.pv), 3.5);
+    if (e.boss) dessinerBossHaut(e, x, Y, top, tps);
+    else {
+      ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(x - e.r, top, e.r * 2, 3.5);
+      ctx.fillStyle = "#E5572A"; ctx.fillRect(x - e.r, top, e.r * 2 * Math.max(0, e.pv / T.pv), 3.5);
+    }
     if ((e.etourdi > 0.4 || (e.etat === "terre" && e.ko)) && e.z <= 0) { for (var s = 0; s < 3; s++) { var as = tps * 5 + s * 2.09; texte("✦", x + Math.cos(as) * 9, top - 2 + Math.sin(as) * 3, 9, "#FFE08A"); } }
-    var tag = e.meche > 0 ? "mèche !" : e.statue > 0 ? "" : e.panique > 0 ? "" : e.mange ? "il mange" : e.colle > 0 ? "collé" : e.attrape ? "attrapé" : "";
+    var tag = e.boss ? "" : e.meche > 0 ? "mèche !" : e.statue > 0 ? "" : e.panique > 0 ? "" : e.mange ? "il mange" : e.colle > 0 ? "collé" : e.attrape ? "attrapé" : "";
     if (tag) texte(tag, x, Y + 13, 9.5, "#FFD9A0");
     ctx.globalAlpha = 1;
+  }
+  // (version 14) au-dessus d'un gros boss : sa barre, ce qu'il fait, sa bulle d'envie ; le thermomètre du Frileux
+  function dessinerBossHaut(e, x, Y, top, tps) {
+    var I = BOSS_INFO[e.t], T = e.T, lab = T.nom, c = "#FFE3B0";
+    if (e.mangeT > 0) { lab = "IL MANGE !"; c = "#FFE08A"; }
+    else if (e.digere > 0) { lab = "IL DIGÈRE…"; c = "#FFE08A"; }
+    else if (e.dort > 0) { lab = "IL DORT !"; c = "#CFE3FF"; }
+    else if (e.balance) { lab = "IL SE BALANCE !"; c = "#BDF0A0"; }
+    else if (e.rebond) { lab = "BOING !"; c = "#F0F5E1"; }
+    else if (e.t === "frileux" && e.brulant > 0) { lab = "BRÛLANT !"; c = "#FF9A5A"; }
+    else if (e.ouvert > 0) { lab = "SONNÉ !"; c = "#FFE14A"; }
+    var bw = 64, by = top - 10;
+    ctx.fillStyle = "rgba(0,0,0,.7)"; pave(x - bw / 2 - 1, by - 1, bw + 2, 8, 3); ctx.fill();
+    ctx.fillStyle = e.ouvert > 0 ? "#F2C230" : "#D8485A"; pave(x - bw / 2, by, Math.max(3, bw * Math.max(0, e.pv / T.pv)), 6, 2.5); ctx.fill();
+    texte(lab, x, by - 4, 10.5, c);
+    if (e.ouvert > 0) { ctx.strokeStyle = "rgba(255,225,80," + (0.5 + 0.4 * Math.sin(tps * 12)) + ")"; ctx.lineWidth = 2; ell(x, Y - e.z, e.r + 8, (e.r + 8) * 0.45); ctx.stroke(); }
+    // la bulle de ce qu'il veut (le même dessin que l'aide aux potions)
+    var envie = null;
+    if (e.t === "glouton" && !(e.mangeT > 0) && !(e.digere > 0) && !(e.dort > 0)) envie = I.envie;
+    else if (e.t === "frileux") envie = e.brulant > 0 ? "💧" : "🔥";
+    else if (e.t === "singe" && !e.balance) envie = I.envie;
+    else if (e.t === "sauteur" && !e.rebond) envie = I.envie;
+    // à côté de lui, à sa hauteur de tête (de l'autre côté s'il est trop près du bord)
+    var cote = x + e.r + 44 > W ? -1 : 1;
+    if (envie && e.etat !== "terre") pensee(x + cote * (e.r + 22), Y - e.z - T.h * 0.8, envie, tps, e.t === "frileux" && e.brulant > 0, cote);
+    if (e.t === "frileux") thermometre(x - e.r - 12, Y - e.z - 8, e, tps);
+  }
+  var CACHE_P = {};
+  function pensee(x, y, ico, tps, urgent, cote) {
+    var s = 1 + Math.sin(tps * (urgent ? 9 : 3)) * (urgent ? 0.1 : 0.05), k = L.s * L.dpr, cle = ico + (urgent ? "u" : "") + (cote || 1) + "|" + k;
+    var c = CACHE_P[cle];
+    if (!c) {
+      c = document.createElement("canvas"); c.width = Math.ceil(48 * k); c.height = Math.ceil(48 * k);
+      var g0 = ctx; ctx = c.getContext("2d"); ctx.setTransform(k, 0, 0, k, 24 * k, 24 * k);
+      penseeDessin(ico, urgent, cote); ctx = g0; CACHE_P[cle] = c;
+    }
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.drawImage(c, -24, -24, 48, 48); ctx.restore();
+  }
+  function penseeDessin(ico, urgent, cote) {
+    ctx.save();
+    var bouts = [[-7, -2, 9], [6, -4, 10], [0, 4, 10], [-9, 6, 7], [10, 5, 7]];
+    ctx.fillStyle = urgent ? "#FFE9E0" : "#FFF8E6"; ctx.strokeStyle = urgent ? "#B3261E" : "#1A1410"; ctx.lineWidth = 3;
+    bouts.forEach(function (b) { rond(b[0], b[1], b[2]); ctx.stroke(); });
+    var cq = -(cote || 1);
+    rond(cq * 17, 15, 2.6); ctx.stroke(); rond(cq * 12, 11, 3.6); ctx.stroke();
+    bouts.forEach(function (b) { rond(b[0], b[1], b[2]); ctx.fill(); });
+    rond(cq * 17, 15, 2.6); ctx.fill(); rond(cq * 12, 11, 3.6); ctx.fill();
+    ctx.font = "15px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillStyle = "#000"; ctx.fillText(ico, 0, 1.5); ctx.textBaseline = "alphabetic";
+    ctx.restore();
+  }
+  function thermometre(x, y, e, tps) {
+    var k = Math.min(1, e.chaleur / 100), h = 30, chaud = e.brulant > 0;
+    ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.strokeStyle = "#1A1410"; ctx.lineWidth = 1.4;
+    pave(x - 3.5, y - h, 7, h, 3.5); ctx.fill(); ctx.stroke(); rond(x, y + 2, 5.5); ctx.fill(); ctx.stroke();
+    var col = chaud ? (Math.sin(tps * 14) > 0 ? "#FF3A2A" : "#FF8A3D") : k > 0.6 ? "#FF7A3A" : k > 0.3 ? "#F2B030" : "#4F9AE0";
+    ctx.fillStyle = col; rond(x, y + 2, 4); ctx.fill(); pave(x - 2, y - (h - 3) * k, 4, (h - 3) * k + 2, 2); ctx.fill();
+    ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.lineWidth = 0.8; for (var g = 1; g < 4; g++) { ctx.beginPath(); ctx.moveTo(x + 3.5, y - h * g / 4); ctx.lineTo(x + 1, y - h * g / 4); ctx.stroke(); }
   }
   // la vague : une nappe d'eau, un bourrelet bleu, l'écume blanche qui bouillonne, des gouttes
   function dessinerVagues(tps) {
@@ -9159,19 +9591,22 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   /* ================= les dessins gardés (automates, Grosbec) ================= */
   // Chaque allure d'un automate (sa sorte, comment il est tourné, son pas, ses états) est dessinée une fois dans une petite toile ;
   // ensuite, on la recopie. Il n'y a jamais plus de quelques dizaines d'allures à la fois.
-  var CACHE_A = new Map(), CA_K = 0;
-  var CA_BOITE = { lourd: [-33, 33, -55, 12], autre: [-26, 26, -48, 6], colosse: [-60, 60, -100, 22] };
+  var CACHE_A = new Map(), CA_K = 0, CACHE_B = new Map(), CB_K = 0;
+  var CA_BOITE = { lourd: [-33, 33, -55, 12], autre: [-26, 26, -48, 6], colosse: [-60, 60, -100, 22], boss: [-56, 56, -104, 18] };
   var CADENCE = {};
   function automateGarde(type, o, cle) {
-    var k = L.s * L.dpr;
-    if (k !== CA_K) { CACHE_A.clear(); CA_K = k; }
-    var c = CACHE_A.get(cle), B = CA_BOITE[type === "lourd" || type === "colosse" ? type : "autre"];
+    // (version 14) les gros boss ont leur propre réserve, plus petite et un peu moins fine (leurs toiles sont grandes : la mémoire du téléphone)
+    var gros = TYPES[type] && TYPES[type].boss, C = gros ? CACHE_B : CACHE_A, cap = gros ? 110 : 520;
+    var k = gros ? Math.min(2.2, L.s * L.dpr) : L.s * L.dpr;
+    if (gros) { if (k !== CB_K) { CACHE_B.clear(); CB_K = k; } } else if (k !== CA_K) { CACHE_A.clear(); CA_K = k; }
+    var c = C.get(cle); if (c) { C.delete(cle); C.set(cle, c); }
+    var B = CA_BOITE[type === "lourd" || type === "colosse" ? type : gros ? "boss" : "autre"];
     if (!c) {
-      if (CACHE_A.size > 320) CACHE_A.clear();
+      if (C.size > cap) { var nS = 0, nE = gros ? 20 : 80; C.forEach(function (v, kk) { if (nS++ < nE) C.delete(kk); }); }
       c = document.createElement("canvas"); c.width = Math.ceil((B[1] - B[0]) * k); c.height = Math.ceil((B[3] - B[2]) * k);
       var g = c.getContext("2d"); g.setTransform(k, 0, 0, k, -B[0] * k, -B[2] * k);
       PersosCombat.automate(g, type, o);
-      CACHE_A.set(cle, c);
+      C.set(cle, c);
     }
     ctx.drawImage(c, B[0], B[2], B[1] - B[0], B[3] - B[2]);
   }
@@ -9183,14 +9618,17 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   // un automate : on arrondit ce qui varie (8 images par pas, 5 façons d'être tourné), puis on recopie l'allure gardée
   function dessinAutomate(e, tps, o) {
     var E = o.etats, bits = (E.feu ? 1 : 0) | (E.mouille ? 2 : 0) | (E.farine ? 4 : 0) | (E.boue ? 8 : 0) | (E.statue ? 16 : 0) | (E.elec ? 32 : 0) | (E.meche ? 64 : 0) | (E.aveugle ? 128 : 0);
-    var fq = Math.round(o.face * 2.5) / 2.5, m = E.statue ? 0 : o.marche < 0.15 ? 0 : o.marche < 0.6 ? 0.5 : 1, t = tps + e.id * 0.37, tq = 0, ph = 0;
-    if (m > 0) { var r = cadence(e.t), cyc = 2 * Math.PI / r; ph = Math.floor(((t % cyc) / cyc) * 8); tq = (ph + 0.5) / 8 * cyc; }
+    var gros = e.boss, fq = gros ? Math.round(o.face * 1.25) / 1.25 : Math.round(o.face * 2.5) / 2.5, m = E.statue ? 0 : o.marche < 0.15 ? 0 : o.marche < 0.6 ? 0.5 : 1, t = tps + e.id * 0.37, tq = 0, ph = 0;
+    if (gros && m) m = 1;
+    if (m > 0) { var r = cadence(e.t), cyc = 2 * Math.PI / r, nP = gros ? 6 : 8; ph = Math.floor(((t % cyc) / cyc) * nP); tq = (ph + 0.5) / nP * cyc; }
     else if (e.t === "cracheur") { ph = Math.floor(t * 8) % 10; tq = ph / 8; }
     else if (e.t === "souffleur") { ph = Math.floor(t * 6) % 17; tq = ph / 6; }
     var fl = bits & (1 | 32 | 64) ? Math.floor(t * 12) % 3 : 0;
     var cq = Math.round((o.charge || 0) * 4) / 4, sq = Math.round((o.souffle || 0) * 4) / 4;
     o.porte = e.porte; o.denude = e.denude > 0; o.grille = e.grille > 0;
-    var cle = e.t + "|" + fq + "|" + m + "|" + ph + "|" + bits + "|" + cq + "|" + sq + "|" + (o.sansBouclier ? 1 : 0) + "|" + fl + "|" + (e.porte || 0) + (o.denude ? "d" : "") + (o.grille ? "g" : "");
+    var EB = o.eb, cb = EB ? (EB.dort ? "z" : "") + EB.bouche + EB.gonfle + "c" + EB.chaud + "r" + EB.ressort + (EB.ouvert ? "o" : "") : "";
+    if (EB) { o.dort = EB.dort; o.bouche = EB.bouche; o.gonfle = EB.gonfle; o.chaud = EB.chaud; o.ressort = EB.ressort; o.ouvert = EB.ouvert; }
+    var cle = e.t + "|" + fq + "|" + m + "|" + ph + "|" + bits + "|" + cq + "|" + sq + "|" + (o.sansBouclier ? 1 : 0) + "|" + fl + "|" + (e.porte || 0) + (o.denude ? "d" : "") + (o.grille ? "g" : "") + cb;
     o.t = tq; o.face = fq; o.marche = m; o.charge = cq; o.souffle = sq;
     automateGarde(e.t, o, cle);
   }
@@ -9345,6 +9783,6 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   redim();
   dessiner();
   setTimeout(monterAlchi, 50);
-  window.__v4 = { mega: function () { S.mega = 100; majMega(); }, degat: function (e, d, s2) { return degat(e, d, s2); }, barricade: function (x, y) { creerBarricade(x, y); }, pb: function () { demarrerPB(); }, sortir: function (t, x, y) { sortir(t, true); var e = S.E[S.E.length - 1]; e.x = x; e.y = y; return e; }, leger: function () { return LEGER; }, perf: PERF, essai: { lancerSalve: function (d) { lancerSalve(d); }, SALVES: SALVES, SEUILS: SEUILS, colere: function () { grosseColere(); } }, vitesse: function (v) { VITESSE = v; }, alchi: function () { return alchi; }, etat: function () { return S; }, L: L, lancer: function (x, y) { lancer({ x: x, y: y }); }, boire: function () { boire(); }, ajouter: ajouter };
+  window.__v4 = { boss: function (t, x, y) { sortir(t, true); var e = S.E[S.E.length - 1]; if (x !== undefined) { e.x = x; e.y = y; } return e; }, paliers: function (n) { programmerBoss(n); }, mega: function () { S.mega = 100; majMega(); }, degat: function (e, d, s2) { return degat(e, d, s2); }, barricade: function (x, y) { creerBarricade(x, y); }, pb: function () { demarrerPB(); }, sortir: function (t, x, y) { sortir(t, true); var e = S.E[S.E.length - 1]; e.x = x; e.y = y; return e; }, leger: function () { return LEGER; }, perf: PERF, essai: { lancerSalve: function (d) { lancerSalve(d); }, SALVES: SALVES, SEUILS: SEUILS, colere: function () { grosseColere(); } }, vitesse: function (v) { VITESSE = v; }, alchi: function () { return alchi; }, etat: function () { return S; }, L: L, lancer: function (x, y) { lancer({ x: x, y: y }); }, boire: function () { boire(); }, ajouter: ajouter };
 })();
 </script>

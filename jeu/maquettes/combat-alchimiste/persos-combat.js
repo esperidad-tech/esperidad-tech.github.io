@@ -79,8 +79,16 @@
     berserker:{ email: "#B3262B", jambe: 9.2, rJ: 2.4, hanche: 3.4, bw: 8.4, bh: 10.2, rT: 5.0, rB: 2.4, bras: 9.4, poids: 0.85 },
     chevalier:{ email: "#8D9AA8", jambe: 8.4, rJ: 2.9, hanche: 4.1, bw: 9.4, bh: 11, rT: 5.4, rB: 2.7, bras: 8.6, poids: 1.25 },
     porteur:  { email: "#9C7A44", jambe: 8.4, rJ: 2.6, hanche: 3.8, bw: 8.2, bh: 10, rT: 5.0, rB: 2.3, bras: 8.4, poids: 1 },
-    colosse:  { email: "#4B3F63", jambe: 7.2, rJ: 4.1, hanche: 6.4, bw: 14.5, bh: 14.5, rT: 5.4, rB: 3.8, bras: 12.5, poids: 1.6 }
+    colosse:  { email: "#4B3F63", jambe: 7.2, rJ: 4.1, hanche: 6.4, bw: 14.5, bh: 14.5, rT: 5.4, rB: 3.8, bras: 12.5, poids: 1.6 },
+    // (version 14) les quatre gros boss, dessinés 1,5 fois plus grands : le Glouton (un gros ventre, une bouche sur le ventre, sa
+    // serviette et sa fourchette), le Frileux (bonnet, écharpe, glaçons ; il rougit quand il chauffe), le Singe (longs bras, oreilles,
+    // museau, une queue en ressort), le Sauteur (monté sur deux gros ressorts, des antennes à ressort)
+    glouton:  { email: "#C0703A", jambe: 6.6, rJ: 4.0, hanche: 6.6, bw: 16.5, bh: 16, rT: 5.6, rB: 3.7, bras: 11.5, poids: 1.7 },
+    frileux:  { email: "#4F95C8", jambe: 8.6, rJ: 3.0, hanche: 4.4, bw: 10.5, bh: 12, rT: 5.8, rB: 2.8, bras: 9.2, poids: 1.25 },
+    singe:    { email: "#7A4E2A", jambe: 7.4, rJ: 2.5, hanche: 3.8, bw: 9.0, bh: 10.6, rT: 5.6, rB: 2.4, bras: 13.5, poids: 0.85 },
+    sauteur:  { email: "#4E9A36", jambe: 6.2, rJ: 2.6, hanche: 4.2, bw: 9.6, bh: 11, rT: 5.3, rB: 2.4, bras: 8, poids: 1.0 }
   };
+  var BOSS = { glouton: 1, frileux: 1, singe: 1, sauteur: 1 };
   var ACIER = "#9AA8B6";
   PC.SORTES = SORTES;
   var TERRE = { coque: "#C2703F", metal: "#9A5530", email: "#A85C34" };
@@ -92,6 +100,7 @@
   PC.automate = function (ctx, type, o) {
     o = o || {};
     if (type === "colosse") { ctx.save(); ctx.scale(1.75, 1.75); var rc0 = colosse(ctx, o); ctx.restore(); return rc0; }
+    if (BOSS[type]) { ctx.save(); ctx.scale(1.5, 1.5); grosBoss(ctx, type, o); ctx.restore(); return; }
     return automate(ctx, type, o);
   };
   function colosse(ctx, o) {
@@ -118,8 +127,12 @@
     }
   }
   function automate(ctx, type, o) {
-    var S = SORTES[type] || SORTES.rapide, E = o.etats || {}, t = o.t || 0, f = Math.max(-1, Math.min(1, o.face || 0)), LOURD = type === "lourd" || type === "colosse";
+    var S = SORTES[type] || SORTES.rapide, E = o.etats || {}, t = o.t || 0, f = Math.max(-1, Math.min(1, o.face || 0)), LOURD = type === "lourd" || type === "colosse" || type === "glouton";
     var coque = COQUE, metal = METAL, email = S.email, noyau = NOYAU;
+    if (type === "frileux") { var chf = o.chaud || 0; coque = mix("#DCEEFA", "#FFB08A", chf * 0.85); metal = mix("#7FA6C4", "#B0604A", chf * 0.7); email = mix(S.email, "#D8402A", chf); }
+    if (type === "singe") { coque = "#D8B68A"; metal = "#7A5A40"; }
+    if (type === "sauteur") { coque = "#E4ECD2"; metal = "#5F7A55"; }
+    if (type === "glouton") { coque = "#F1E4CA"; }
     if (type === "chevalier") { coque = ACIER; metal = "#5D6B7A"; }
     if (type === "colosse") { metal = "#4E5566"; }
     if (o.grille) { coque = sombre(coque, 0.35); email = sombre(email, 0.35); }
@@ -279,7 +292,9 @@
         [-1, 1].forEach(function (c) { ctx.beginPath(); ctx.moveTo(c * rT * 0.55, yT - rT * 0.6); ctx.quadraticCurveTo(c * rT * 1.6, yT - rT * 0.9, c * rT * 1.35, yT - rT * 1.9); ctx.quadraticCurveTo(c * rT * 1.1, yT - rT * 1.1, c * rT * 0.25, yT - rT * 0.85); ctx.closePath();
           ctx.fillStyle = volume(ctx, c * rT, yT - rT * 1.1, rT, "#E8DCC4", true); ctx.fill(); trait(ctx, "#B9A98C", 0.6); });
       }
-      if (type === "rapide") { // un seul grand œil rond, comme une lentille
+      if (o.dort) { // les yeux fermés (le Glouton qui dort)
+        ctx.strokeStyle = "#C9D6E2"; ctx.lineWidth = 0.75; [-1, 1].forEach(function (c) { ctx.beginPath(); ctx.arc(hdx + c * rT * 0.3, yT + rT * 0.02, rT * 0.17, 0.25, Math.PI - 0.25); ctx.stroke(); });
+      } else if (type === "rapide") { // un seul grand œil rond, comme une lentille
         lueur(ctx, hdx, yT + rT * 0.12, rT * 0.9, yeux, 0.5); ctx.fillStyle = yeux; ell(ctx, hdx, yT + rT * 0.12, rT * 0.3, rT * 0.27); ctx.fill();
         ctx.fillStyle = "#fff"; ell(ctx, hdx - rT * 0.1, yT + rT * 0.03, rT * 0.09, rT * 0.08); ctx.fill();
         ctx.strokeStyle = metal; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(rT * 0.4, yT - rT * 0.8); ctx.lineTo(rT * 0.9, yT - rT * 1.7); ctx.stroke(); ctx.fillStyle = email; ell(ctx, rT * 0.92, yT - rT * 1.78, 1.1, 1.1); ctx.fill();
@@ -350,6 +365,111 @@
     }
     ctx.restore();
   };
+
+  /* ---------- les quatre gros boss (version 14) ---------- */
+  function grosBoss(ctx, type, o) {
+    var S = SORTES[type], E = o.etats || {}, t = o.t || 0, f = Math.max(-1, Math.min(1, o.face || 0)), LOURD = type === "glouton";
+    // les mêmes mesures que dans automate() (pour poser ce qu'on ajoute au bon endroit)
+    var vit = E.statue ? 0 : (o.marche || 0), ph = t * (S.poids > 1.3 ? 6 : S.poids < 0.9 ? 11 : 8.5), bob = -Math.abs(Math.sin(ph)) * 0.9 * vit * (2 - S.poids * 0.5), sw = Math.sin(ph) * 0.38 * vit;
+    var bw = S.bw * (1 - 0.1 * Math.abs(f)), bh = S.bh, rT = S.rT, yH = -S.jambe + bob, yB = yH - bh, yT = yB - rT * 0.72 - (LOURD ? -rT * 0.55 : 0), dx = f * bw * 0.42, hdx = f * rT * 0.42;
+    var devant = f > 0 ? -1 : 1;   // le côté du bras de devant
+    function main(cote) {
+      var sx = cote * (bw + S.rB * 0.4), sy0 = yB + bh * 0.22, ang = (cote * 0.18) + (cote > 0 ? sw : -sw);
+      var ex = sx + Math.sin(ang) * S.bras * 0.55 + cote * 1.2, ey = sy0 + Math.cos(ang) * S.bras * 0.55;
+      return { x: ex + Math.sin(ang * 1.4) * S.bras * 0.5, y: ey + Math.cos(ang * 1.4) * S.bras * 0.48 };
+    }
+    if (type === "glouton") {
+      automate(ctx, type, o);
+      var cq = "#F1E4CA";
+      if (o.gonfle) { ell(ctx, 0, yB + bh * 0.7, bw * 1.14, bh * 0.52); ctx.fillStyle = volume(ctx, 0, yB + bh * 0.5, bw * 1.15, cq, true); ctx.fill(); trait(ctx, cq, 1); }
+      // la grande bouche sur le ventre, avec des dents ; elle mâche quand il mange ; fermée quand il dort
+      var bx = dx * 0.8, byy = yB + bh * 0.8, bl = bw * 0.6, ouvre = o.bouche ? 1 : o.dort ? 0 : 0.4, bhh = bh * (0.05 + 0.15 * ouvre);
+      if (ouvre > 0.1) {
+        ell(ctx, bx, byy, bl, bhh); ctx.fillStyle = "#3A1410"; ctx.fill(); trait(ctx, "#5A2A1A", 0.8);
+        ell(ctx, bx, byy + bhh * 0.45, bl * 0.5, bhh * 0.45); ctx.fillStyle = "#C2424A"; ctx.fill();
+        ctx.fillStyle = "#FFF6E0";
+        for (var d = -3; d <= 3; d++) { var tx = bx + d * bl * 0.27, ky = Math.sqrt(Math.max(0, 1 - Math.pow(d * 0.27, 2)));
+          ctx.beginPath(); ctx.moveTo(tx - 1.2, byy - bhh * ky); ctx.lineTo(tx, byy - bhh * ky + 2.2); ctx.lineTo(tx + 1.2, byy - bhh * ky); ctx.fill();
+          if (d % 2 === 0) { ctx.beginPath(); ctx.moveTo(tx - 1.1, byy + bhh * ky); ctx.lineTo(tx, byy + bhh * ky - 2); ctx.lineTo(tx + 1.1, byy + bhh * ky); ctx.fill(); } }
+      } else { ctx.strokeStyle = "#5A2A1A"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(bx - bl, byy - 1); ctx.quadraticCurveTo(bx, byy + 2.5, bx + bl, byy - 1); ctx.stroke(); }
+      // la serviette nouée au cou, à carreaux rouges
+      var nx = dx * 0.3, ny = yB + rT * 0.85;
+      ctx.save(); ctx.beginPath(); ctx.moveTo(nx - bw * 0.55, ny); ctx.lineTo(nx + bw * 0.55, ny); ctx.lineTo(dx * 0.6, yB + bh * 0.6); ctx.closePath();
+      ctx.fillStyle = "#FFFDF6"; ctx.fill(); trait(ctx, "#D8D0C0", 0.6); ctx.clip();
+      ctx.strokeStyle = "rgba(200,40,40,.55)"; ctx.lineWidth = 1.1;
+      for (var q = -12; q <= 12; q += 3) { ctx.beginPath(); ctx.moveTo(nx + q, ny - 2); ctx.lineTo(nx + q, yB + bh * 0.65); ctx.stroke(); ctx.beginPath(); ctx.moveTo(nx - 12, ny + 1.5 + (q + 12) * 0.5); ctx.lineTo(nx + 12, ny + 1.5 + (q + 12) * 0.5); ctx.stroke(); }
+      ctx.restore();
+      [-1, 1].forEach(function (c) { ctx.beginPath(); ctx.moveTo(nx, ny); ctx.lineTo(nx + c * 3.2, ny - 2.2); ctx.lineTo(nx + c * 3.2, ny + 1.6); ctx.closePath(); ctx.fillStyle = "#FFFDF6"; ctx.fill(); trait(ctx, "#C8C0B0", 0.5); });
+      // la fourchette, dans la main de devant
+      var M = main(f === 0 ? 1 : devant);
+      ctx.strokeStyle = "#C9D2DA"; ctx.lineWidth = 1.1; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(M.x, M.y + 1.5); ctx.lineTo(M.x + 0.8, M.y - 11); ctx.stroke();
+      ctx.lineWidth = 0.7; for (var dn = -1; dn <= 1; dn++) { ctx.beginPath(); ctx.moveTo(M.x + 0.8 + dn * 1.3, M.y - 11); ctx.lineTo(M.x + 0.8 + dn * 1.3, M.y - 15); ctx.stroke(); }
+      ctx.beginPath(); ctx.moveTo(M.x - 0.5, M.y - 11); ctx.lineTo(M.x + 2.1, M.y - 11); ctx.stroke();
+      return;
+    }
+    if (type === "frileux") {
+      var ch = o.chaud || 0;
+      if (ch >= 0.75) lueur(ctx, 0, yB + bh * 0.5, bw * 2.4, "#FF5A2A", 0.3 + 0.15 * Math.sin(t * 9));
+      automate(ctx, type, o);
+      // l'écharpe rayée, et son bout qui pend
+      var ex0 = dx * 0.3, ey0 = yB - 0.4;
+      rrect(ctx, ex0 - bw * 0.55, ey0 - 1.6, bw * 1.1, 3.2, 1.5); ctx.fillStyle = "#C8323A"; ctx.fill(); trait(ctx, "#C8323A", 0.6);
+      ctx.strokeStyle = "#FFF2E8"; ctx.lineWidth = 0.9; for (var r1 = -2; r1 <= 2; r1++) { ctx.beginPath(); ctx.moveTo(ex0 + r1 * bw * 0.22, ey0 - 1.5); ctx.lineTo(ex0 + r1 * bw * 0.22 + 0.8, ey0 + 1.5); ctx.stroke(); }
+      var bout = -devant * bw * 0.35 + dx * 0.4, fl = Math.sin(t * 4) * 1.2;
+      ctx.beginPath(); ctx.moveTo(bout - 1.6, ey0 + 1); ctx.quadraticCurveTo(bout - 2 + fl, ey0 + bh * 0.3, bout - 1 + fl * 1.5, ey0 + bh * 0.62); ctx.lineTo(bout + 2.2 + fl * 1.5, ey0 + bh * 0.62); ctx.quadraticCurveTo(bout + 1.5 + fl, ey0 + bh * 0.3, bout + 1.6, ey0 + 1); ctx.closePath();
+      ctx.fillStyle = "#C8323A"; ctx.fill(); trait(ctx, "#C8323A", 0.5);
+      ctx.strokeStyle = "#FFF2E8"; ctx.lineWidth = 1; [0.3, 0.5].forEach(function (k) { ctx.beginPath(); ctx.moveTo(bout - 1.6 + fl * k, ey0 + bh * 0.62 * k + 1); ctx.lineTo(bout + 2 + fl * k, ey0 + bh * 0.62 * k + 1); ctx.stroke(); });
+      // le bonnet à pompon
+      ctx.beginPath(); ctx.moveTo(-rT * 1.05, yT - rT * 0.25); ctx.quadraticCurveTo(-rT * 1.0, yT - rT * 1.6, hdx * 0.4, yT - rT * 1.55); ctx.quadraticCurveTo(rT * 1.0, yT - rT * 1.6, rT * 1.05, yT - rT * 0.25); ctx.closePath();
+      ctx.fillStyle = volume(ctx, 0, yT - rT, rT * 1.2, "#C8323A", true); ctx.fill(); trait(ctx, "#C8323A", 0.7);
+      rrect(ctx, -rT * 1.1, yT - rT * 0.5, rT * 2.2, rT * 0.42, rT * 0.2); ctx.fillStyle = volume(ctx, 0, yT - rT * 0.3, rT, "#FFF2E8"); ctx.fill(); trait(ctx, "#D8CCC0", 0.5);
+      ell(ctx, hdx * 0.4, yT - rT * 1.65, 1.9, 1.9); ctx.fillStyle = volume(ctx, hdx * 0.4, yT - rT * 1.65, 2, "#FFFFFF", true); ctx.fill(); trait(ctx, "#D8CCC0", 0.5);
+      // les glaçons (ils fondent quand il chauffe)
+      var n = Math.round((1 - ch) * 4);
+      var glacons = [[-(bw + S.rB * 0.4), yB + bh * 0.22 + 2.5], [bw + S.rB * 0.4, yB + bh * 0.22 + 2.5], [hdx - 2, yT + rT * 0.95], [hdx + 2.2, yT + rT * 0.9]];
+      for (var gi = 0; gi < n; gi++) { var G = glacons[gi], lg = 3.5 + (gi % 2) * 1.5; ctx.beginPath(); ctx.moveTo(G[0] - 1.2, G[1]); ctx.lineTo(G[0], G[1] + lg); ctx.lineTo(G[0] + 1.2, G[1]); ctx.closePath(); ctx.fillStyle = "rgba(210,240,255,.95)"; ctx.fill(); ctx.strokeStyle = "rgba(120,180,220,.9)"; ctx.lineWidth = 0.4; ctx.stroke(); }
+      if (ch <= 0.25) { ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.lineWidth = 0.5; [[-bw * 0.6, yB + 3], [bw * 0.5, yB + bh * 0.6], [-bw * 0.2, yB + bh * 0.85]].forEach(function (P) { ctx.beginPath(); ctx.moveTo(P[0] - 1.2, P[1]); ctx.lineTo(P[0] + 1.2, P[1]); ctx.moveTo(P[0], P[1] - 1.2); ctx.lineTo(P[0], P[1] + 1.2); ctx.stroke(); }); }
+      return;
+    }
+    if (type === "singe") {
+      // la queue en spirale, derrière
+      var cq2 = -devant, qb = "#7A4E2A";
+      ctx.beginPath(); ctx.moveTo(cq2 * bw * 0.3, yH - 2); ctx.bezierCurveTo(cq2 * bw * 1.5, yH + 1, cq2 * bw * 2.1, yB + bh * 0.3, cq2 * bw * 1.6, yB - 1);
+      ctx.arc(cq2 * bw * 1.35, yB - 1, bw * 0.25, 0, Math.PI * 1.6, cq2 < 0);
+      ctx.strokeStyle = qb; ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.stroke(); ctx.strokeStyle = "rgba(255,230,200,.35)"; ctx.lineWidth = 0.7; ctx.stroke();
+      automate(ctx, type, o);
+      // les oreilles, le museau, la touffe
+      [-1, 1].forEach(function (c) { var ox = hdx * 0.3 + c * rT * 1.02, oy = yT - rT * 0.1;
+        ell(ctx, ox, oy, rT * 0.42, rT * 0.44); ctx.fillStyle = volume(ctx, ox, oy, rT * 0.5, "#7A4E2A"); ctx.fill(); trait(ctx, "#7A4E2A", 0.6);
+        ell(ctx, ox, oy, rT * 0.24, rT * 0.26); ctx.fillStyle = "#E3A7A0"; ctx.fill(); });
+      ell(ctx, hdx, yT + rT * 0.66, rT * 0.56, rT * 0.34); ctx.fillStyle = volume(ctx, hdx, yT + rT * 0.6, rT * 0.6, "#F0D8B0", true); ctx.fill(); trait(ctx, "#C8A880", 0.5);
+      ctx.fillStyle = "#3A2418"; ell(ctx, hdx - 0.9, yT + rT * 0.55, 0.45, 0.35); ctx.fill(); ell(ctx, hdx + 0.9, yT + rT * 0.55, 0.45, 0.35); ctx.fill();
+      ctx.strokeStyle = "#3A2418"; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.arc(hdx, yT + rT * 0.62, rT * 0.28, 0.35, Math.PI - 0.35); ctx.stroke();
+      ctx.fillStyle = "#7A4E2A"; for (var k = -1; k <= 1; k++) { ctx.beginPath(); ctx.moveTo(hdx * 0.5 + k * 1.6 - 1, yT - rT * 0.78); ctx.lineTo(hdx * 0.5 + k * 2.2, yT - rT * 1.35 - (k ? 0 : 0.8)); ctx.lineTo(hdx * 0.5 + k * 1.6 + 1, yT - rT * 0.78); ctx.fill(); }
+      return;
+    }
+    if (type === "sauteur") {
+      // monté sur deux gros ressorts : écrasés quand il touche le sol, tendus en l'air
+      var c = o.ressort || 0, hS = c >= 1 ? 4.5 : c >= 0.5 ? 7.5 : 11;
+      [-1, 1].forEach(function (cote) {
+        var cx = cote * (S.hanche + 0.6);
+        ell(ctx, cx, -0.6, 3.8, 1.4); ctx.fillStyle = "#3E6E2A"; ctx.fill();
+        ctx.beginPath(); ctx.moveTo(cx, -0.8); for (var i = 1; i <= 8; i++) ctx.lineTo(cx + (i % 2 ? 2.6 : -2.6), -0.8 - (hS - 0.8) * i / 8.5); ctx.lineTo(cx, -hS);
+        ctx.strokeStyle = "#8E9AA4"; ctx.lineWidth = 1.5; ctx.lineJoin = "round"; ctx.stroke(); ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = 0.5; ctx.stroke();
+      });
+      ctx.save(); ctx.translate(0, -hS);
+      automate(ctx, type, o);
+      // des antennes à ressort, une boule jaune au bout
+      [-1, 1].forEach(function (cote) {
+        var ax = hdx * 0.6 + cote * rT * 0.45, ay = yT - rT * 0.8, sp = Math.sin(t * 8 + cote) * 0.8;
+        ctx.beginPath(); ctx.moveTo(ax, ay); for (var i = 1; i <= 6; i++) ctx.lineTo(ax + cote * i * 0.5 + (i % 2 ? 1.1 : -1.1) + sp * i / 6, ay - i * 1.3);
+        ctx.strokeStyle = "#6F8597"; ctx.lineWidth = 0.7; ctx.stroke();
+        ell(ctx, ax + cote * 3 + sp, ay - 8.4, 1.6, 1.6); ctx.fillStyle = volume(ctx, ax + cote * 3 + sp, ay - 8.4, 1.8, "#F2D24A", true); ctx.fill(); trait(ctx, "#C8A82A", 0.4);
+      });
+      ctx.restore();
+      return;
+    }
+  }
 
   /* ---------- Grosbec dans son armure ---------- */
   /* Une énorme armure faite des pièces de la ville d'en bas (un métal bleuté) cerclée de bronze ; un casque en grand bec
