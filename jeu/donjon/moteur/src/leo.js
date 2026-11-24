@@ -16,6 +16,7 @@
 (function(){
 'use strict';
 var SALLE = window.SALLE, DJ = window.DJ, D = window.DonjonDonnees, LR = window.LeoRegles, L = LR.L;
+var POTION_ANCIEN = L.DUREES.potion;          /* (les moments de la potion de l'ancien Alchimiste — voir la création des héros) */
 var el = DJ.el, q = DJ.q, qa = DJ.qa, esc = DJ.esc, attendre = DJ.attendre, HER = DJ.HER, hCx = DJ.hCx, hPt = DJ.hPt;
 var ORDRE = D.ORDRE, Fx, E = null, jeu, fx, hud, bandeEl;
 function son(){ DJ.son.apply(null, arguments); }
@@ -127,6 +128,10 @@ function construire(){
     pv.innerHTML = '<div class="barre"><i></i></div><b></b>';
     hud.appendChild(pv);
   });
+  /* (24 novembre — Romain, 10 h 17 : « l'alchimiste, il met trop de temps à jeter ses potions […] contre le combat de Léo ») :
+     l'Alchimiste en volume prépare et lance sa fiole plus vite (1,2 s + 0,4 s, hv-alchimiste.js) ; la potion tombe donc plus tôt
+     — 2,16 s au lieu de 2,54 — et il peut en relancer une plus tôt (l'ancien Alchimiste garde ses moments à lui) */
+  try{ var VA = window.HerosVuesDonjon && window.HerosVuesDonjon.Volume; L.DUREES.potion = VA && E.A.h.alchimiste instanceof VA ? {impact:2.16, fin:2.37} : POTION_ANCIEN; }catch(e){}
   /* le bâton de lune dans la main du Sage, s'il l'a (c'est lui qui rallume la salle) */
   try{ var OL = D.OBJETS['cristal-lune']; if(OL && OL.equipe && (E.partie.heros.sage.objets || []).indexOf('cristal-lune') >= 0) E.A.h.sage.equiper(OL.equipe, true, {discret:true}); }catch(e){}
   /* Léo, et l'endroit où on le touche */
@@ -823,7 +828,8 @@ function geste(ev){
   if(g === 'dague' || (g.indexOf('l:') === 0 && g !== 'l:gourde')){
     to = viser(c); var arme = g === 'dague' ? null : g.slice(2);
     bruit('swish', {cale:.7}, ['dague']);
-    Promise.resolve(H.pisteur.dague(fx, {x:Math.max(hCx('pisteur') + 90, to.x - 70), y:to.y})).catch(function(){});
+    /* (24 novembre : impact — la Pisteuse en volume joue son geste au rythme qu'il faut pour que sa lame tombe avec le son) */
+    Promise.resolve(H.pisteur.dague(fx, {x:Math.max(hCx('pisteur') + 90, to.x - 70), y:to.y}, {impact:ev.impact / (E.vite || 1)})).catch(function(){});
     if(arme){
       /* l'outil de Léo, dans la main du Pisteur : on le voit s'abattre */
       var e = el('div', 'leo-outil frappe', icArme(arme)); e.style.left = (to.x - 60) + 'px'; e.style.top = (to.y - 70) + 'px'; fx.appendChild(e);

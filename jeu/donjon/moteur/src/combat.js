@@ -79,7 +79,7 @@ function lancer(partie, salle){
       E.c = Regles.combat(partie, salle);
       E.ph = E.c.etat();
       E.baton = batonGarde();
-      jouer(E.c.entree()).then(function(){ if(DJ.temoinCharge) DJ.temoinCharge(false); q('#combat').classList.add('ouvert'); return attendre(300); }).then(tourHeros);
+      jouer(E.c.entree()).then(function(){ var h = E.entreeH; E.entreeH = null; return h; }).then(function(){ if(DJ.temoinCharge) DJ.temoinCharge(false); q('#combat').classList.add('ouvert'); return attendre(300); }).then(tourHeros);
     });
   });
 }
@@ -597,7 +597,7 @@ async function apres(){
 /* les évènements d'une liste, rangés en blocs : un bloc = ce qui arrive à UNE bête (ou un moment du système) */
 var COTE_HEROS = {degats:1, tombe:1, releve:1, soin:1, pare:1, etat:1, passe:1};
 /* le tour des bêtes en accéléré (Romain, 24 novembre, 0 h 11) : 1,5 fois plus vite que les gestes des héros */
-var RYTHME = 1.5;
+var RYTHME = 1.5, RYTHME_GONG = 2.5;      /* (RYTHME_GONG : la réaction du Roi des rats au bruit — voir « touche », plus bas) */
 function cleDe(ev){
   if(ev.t === 'arrive') return ev.de ? 'b:' + ev.de : 'arrivees';
   /* le geste d'un héros ouvre toujours son propre bloc, même quand il vise une bête : c'est là que le héros s'anime
@@ -714,7 +714,17 @@ async function un(ev, bl, ctx){
       ctx.touche[a.id] = 1;
       sonTouche(a, ev);
       /* (19 novembre : le tintement des morceaux qui tombent est branché ici aussi — c'est touche() qui les fait tomber) */
-      return a.touche(ev.coup, a.module === 'roirats' && ev.coup === 'bruit' ? {vers:hPt('alchimiste'), onImpact:function(){ son('morsure'); Fx.tremble(6, 260); }} : a.rat ? null : rappels(a));
+      /* (24 novembre — Romain, 10 h 03 : « le roi des rats […] quand on a tapé sur le gong […] la réaction du rat, elle est 10 fois
+         trop longue […] au moins 2 fois plus vite ») : sa réaction au bruit (la panique, ils tirent, ils chargent l'Alchimiste, le
+         sursaut) est jouée RYTHME_GONG fois plus vite — tout ce que le module prévoit au moment du coup (animations, minuteries, sons
+         calés) ; on rend le rythme d'avant tout de suite après. */
+      if(a.module === 'roirats' && ev.coup === 'bruit'){
+        var k0 = window.DJ_RYTHME || 1, rr;
+        DJ.rythme(k0 * RYTHME_GONG);
+        try{ rr = a.touche(ev.coup, {vers:hPt('alchimiste'), onImpact:function(){ son('morsure'); Fx.tremble(6, 260); }}); }finally{ DJ.rythme(k0); }
+        return rr;
+      }
+      return a.touche(ev.coup, a.rat ? null : rappels(a));
     case 'rebond':
       if(!a) return;
       bruit('rebond', {}, ['clic']); if(a.module === 'gardien' || a.module === 'ratcuir') bruit('metal');
@@ -917,10 +927,13 @@ async function entreeHeros(ev){
   E.ph = E.c.etat(); majBarres();
   await attendre(450);
   son('pasHeros', 1.7, 3);
-  await Promise.all(EXPOSES.map(function(h, k){
+  /* (24 novembre — Romain, 9 h 55 : « les méchants, ils arrivent tard. D'abord, il y a les héros qui arrivent, ils s'arrêtent. Et ça
+     met longtemps avant que les ennemis arrivent. J'aimerais bien qu'ils arrivent presque en même temps ») : on n'attend plus que les
+     héros soient arrivés — les bêtes partent 0,35 s après eux (arrivees() attend les héros à la fin, et le combat aussi : E.entreeH) */
+  E.entreeH = Promise.all(EXPOSES.map(function(h, k){
     return attendre(k * 230).then(function(){ slotH(h).style.visibility = 'visible'; return E.A.h[h].entrer(HER[h].x + 260); }).then(function(){ return E.A.h[h].attendre(); });
-  }));
-  await attendre(250);
+  })).then(function(){ return attendre(250); });
+  await attendre(350);
 }
 async function arrivees(gr){
   var debut = gr[0].par === 'debut';
@@ -938,9 +951,15 @@ async function arrivees(gr){
       var o = {};
       /* (un seul « boum » par pas : le son de l'Atelier en contient deux, d'où le boum en trop — Romain, 11 novembre) */
       if(a.module === 'gardien') o.onPas = function(){ bruit(S.pas, {un:1}, ['tombe']); Fx.tremble(7, 300); };
-      return a.entrer(gr[k].par, o);
+      /* (24 novembre — Romain, 9 h 55, l'atelier : « les méchants, ils apparaissent d'un coup ») : pendant qu'elle arrive, la bête
+         passe DEVANT celles qui sont déjà là — le rat cuirassé courait derrière le Gardien et ne se montrait qu'une fois à sa place */
+      var z0 = a.el.style.zIndex;
+      if(debut && a.module !== 'bourbe') a.el.style.zIndex = 9 - k;          /* (toujours derrière les héros : 10 et plus) */
+      return Promise.resolve(a.entrer(gr[k].par, o)).then(function(){ if(debut) a.el.style.zIndex = z0; }, function(){ if(debut) a.el.style.zIndex = z0; });
     });
   }));
+  /* (les héros arrivent en même temps : on les attend ici — entreeHeros) */
+  if(debut && E.entreeH){ var h0 = E.entreeH; E.entreeH = null; await h0; }
   E.ph = E.c.etat(); majBarres(); placerTout();
   await attendre(debut ? 250 : 150);
 }

@@ -391,7 +391,8 @@ function etoilesFilm(u, c){
 function givre(me, os, o){
   if(o <= 0) return '';
   var s = '', c = me.ecranF(os.bassin);
-  [['tete', 0, -44, 1.15], ['epauleG', 0, 0, 1], ['epauleD', 0, 0, 0.9], ['coudeD', 0, 0, 0.75], ['genouG', 0, 0, 0.8]].forEach(function(z, i){
+  /* (24 novembre : les cristaux de la tête sur le haut du crâne, dans la neige — à -44, ils tombaient sur son visage) */
+  [['tete', 0, -135, 1.3], ['epauleG', 0, 0, 1], ['epauleD', 0, 0, 0.9], ['coudeD', 0, 0, 0.75], ['genouG', 0, 0, 0.8]].forEach(function(z, i){
     var q = me.ecranF(os[z[0]]), x = q[0] + z[1], y = q[1] + z[2], dx = x - c[0], dy = y - c[1] - 60, l0 = Math.sqrt(dx * dx + dy * dy) || 1, a0 = Math.atan2(dy / l0, dx / l0);
     [-0.5, 0, 0.45].forEach(function(da, k){
       var a = a0 + da + (i % 2 ? 0.08 : -0.06), l = (k === 1 ? 34 : 24) * z[3] * (0.4 + 0.6 * o), w = (k === 1 ? 8 : 6) * z[3], ca = Math.cos(a), sa = Math.sin(a), nx = -sa, ny = ca;
@@ -403,14 +404,99 @@ function givre(me, os, o){
   });
   return s;
 }
+/* LA BRÛLURE FROIDE DU FEU FOLLET, PLUS FORTE (24 novembre — Romain, 9 h 49 : « quand le feu follet frappe, les personnages deviennent
+   plus bleus. Et l'effet est un petit peu soft. Il faudrait que tu remettes ça mieux ») : comme l'ancien héros — de la neige gelée qui
+   se pose sur sa tête et ses épaules, avec des glaçons qui pendent (elle fond en gouttes à la fin), deux petits nuages de buée devant
+   sa bouche ; et (froidFiltre, plus bas) un éclair blanc au moment du coup, puis des couleurs pâles et un liseré bleu glacé autour de
+   lui. u : le temps depuis le coup ; o : de 0 à 1 (elle se pose, puis fond) */
+function f1(v){ return v.toFixed(1); }
+function neige(me, os, o, u){
+  if(o <= 0 && u < 2.6) return '';
+  var s = '', e = (me.p.K && me.p.K.echelle) || 1;
+  var T = me.ecranF(os.tete), Cc = me.ecranF(os.cou || os.tete), EG = me.ecranF(os.epauleG), ED = me.ecranF(os.epauleD);
+  function unite(x, y){ var l = Math.sqrt(x * x + y * y) || 1; return [x / l, y / l]; }
+  /* (le haut de la tête : dans le prolongement du cou) */
+  var up = unite(T[0] - Cc[0], T[1] - Cc[1]); if(up[1] > -0.3) up = [0, -1];
+  /* une plaque de neige : un dôme au-dessus, le bord du dessous en festons, des glaçons qui pendent */
+  function plaque(c, tg, n, w, h, glacons, graine){
+    var k = 0.35 + 0.65 * Math.min(1, o), W = w * e * (0.6 + 0.4 * k), Hh = h * e * k, haut = [], bas = [], i, N = 9;
+    for(i = 0; i <= N; i++){ var a = -1 + 2 * i / N, b = Math.pow(Math.max(0, 1 - a * a), 0.55);
+      haut.push([c[0] + tg[0] * a * W + n[0] * Hh * b, c[1] + tg[1] * a * W + n[1] * Hh * b]); }
+    for(i = N; i >= 0; i--){ var a2 = -1 + 2 * i / N, fe = (i % 2 ? 4.5 : 1.5) * e * k;
+      bas.push([c[0] + tg[0] * a2 * W * 0.98 - n[0] * fe, c[1] + tg[1] * a2 * W * 0.98 - n[1] * fe]); }
+    var d = 'M' + haut.map(function(p){ return f1(p[0]) + ' ' + f1(p[1]); }).join(' L') + ' L' + bas.map(function(p){ return f1(p[0]) + ' ' + f1(p[1]); }).join(' L') + ' Z';
+    var r = '<path d="' + d + '" fill="url(#' + me.idGel + 'n)" stroke="#3f84b8" stroke-width="2.4" stroke-linejoin="round" opacity="' + Math.min(1, o * 1.6).toFixed(2) + '"/>';
+    /* (le reflet sur le dessus) */
+    var r1 = haut[2], r2 = haut[5];
+    r += '<path d="M' + f1(r1[0] - n[0] * 3) + ' ' + f1(r1[1] - n[1] * 3) + ' Q' + f1((r1[0] + r2[0]) / 2 + n[0] * 2) + ' ' + f1((r1[1] + r2[1]) / 2 + n[1] * 2) + ' ' + f1(r2[0] - n[0] * 3) + ' ' + f1(r2[1] - n[1] * 3) + '" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="' + (0.9 * Math.min(1, o)).toFixed(2) + '"/>';
+    glacons.forEach(function(g, j){
+      var a = g[0], L = g[1] * e * k * (u > 2.6 ? Math.max(0.2, 1 - (u - 2.6) / 0.9) : 1), b0 = [c[0] + tg[0] * a * W - n[0] * 3 * e, c[1] + tg[1] * a * W - n[1] * 3 * e], lw = 4.2 * e;
+      if(o > 0.05) r += '<path d="M' + f1(b0[0] - tg[0] * lw) + ' ' + f1(b0[1] - tg[1] * lw) + ' L' + f1(b0[0] - n[0] * L) + ' ' + f1(b0[1] - n[1] * L) + ' L' + f1(b0[0] + tg[0] * lw) + ' ' + f1(b0[1] + tg[1] * lw) + ' Z" fill="#dff5ff" stroke="#3f84b8" stroke-width="1.8" stroke-linejoin="round" opacity="' + Math.min(1, o * 1.6).toFixed(2) + '"/>';
+      /* (à la fin, elle fond : une goutte tombe de chaque glaçon) */
+      var tg0 = 2.75 + 0.18 * ((graine + j) % 3), ag = u - tg0;
+      if(ag > 0 && ag < 0.7){ var gy = 30 * ag + 260 * ag * ag, gx = b0[0] - n[0] * L, gy0 = b0[1] - n[1] * L + gy;
+        r += '<path d="M' + f1(gx) + ' ' + f1(gy0 - 9 * e) + ' C' + f1(gx + 5 * e) + ' ' + f1(gy0 - 2 * e) + ' ' + f1(gx + 5 * e) + ' ' + f1(gy0 + 4 * e) + ' ' + f1(gx) + ' ' + f1(gy0 + 4 * e) + ' C' + f1(gx - 5 * e) + ' ' + f1(gy0 + 4 * e) + ' ' + f1(gx - 5 * e) + ' ' + f1(gy0 - 2 * e) + ' ' + f1(gx) + ' ' + f1(gy0 - 9 * e) + ' Z" fill="#bfeaff" stroke="#3f84b8" stroke-width="1.4" opacity="' + (1 - ag / 0.7).toFixed(2) + '"/>'; }
+    });
+    return r;
+  }
+  /* (le bonnet de neige : posé sur le haut du crâne, un peu de côté) */
+  /* (os.tete est le bas de la tête, au-dessus du cou : le haut du crâne est ~150 plus haut dans ce repère) */
+  var tgT = [-up[1], up[0]], cT = [T[0] + up[0] * 100 * e + tgT[0] * 4, T[1] + up[1] * 100 * e + tgT[1] * 4];
+  s += plaque(cT, tgT, up, 58, 34, [[-0.62, 26], [-0.1, 34], [0.45, 22], [0.85, 16]], 0);
+  /* (les épaules : le long de la ligne des épaules, chacune vers l'extérieur) */
+  var ax = unite(ED[0] - EG[0], ED[1] - EG[1]), nE = [ax[1], -ax[0]]; if(nE[1] > 0) nE = [-nE[0], -nE[1]];
+  [[EG, -1, 1], [ED, 1, 2]].forEach(function(z){
+    var c = [z[0][0] + ax[0] * z[1] * 4 * e + nE[0] * 6 * e, z[0][1] + ax[1] * z[1] * 4 * e + nE[1] * 6 * e];
+    s += plaque(c, ax, nE, 40, 19, z[1] < 0 ? [[-0.45, 22], [0.35, 16]] : [[-0.3, 18], [0.5, 24]], z[2]);
+  });
+  return s;
+}
+/* deux petits nuages de buée qui sortent de sa bouche (il grelotte) */
+function buee(me, os, u){
+  var s = '', e = (me.p.K && me.p.K.echelle) || 1, T = me.ecranF(os.tete);
+  [0.55, 1.2, 1.85].forEach(function(t0, i){
+    var a = (u - t0) / 0.95; if(a <= 0 || a >= 1) return;
+    var x = T[0] + (60 + 70 * a) * e, y = T[1] + (-40 - 50 * a) * e, r = (14 + 30 * a) * e, op = 0.8 * (1 - a) * Math.min(1, a * 5);
+    s += '<ellipse cx="' + f1(x) + '" cy="' + f1(y) + '" rx="' + f1(r * 1.25) + '" ry="' + f1(r) + '" fill="#f2fbff" opacity="' + op.toFixed(2) + '"/>' +
+      '<ellipse cx="' + f1(x + r * 0.7) + '" cy="' + f1(y - r * 0.5) + '" rx="' + f1(r * 0.8) + '" ry="' + f1(r * 0.65) + '" fill="#ffffff" opacity="' + (op * 0.8).toFixed(2) + '"/>';
+  });
+  return s;
+}
+/* les couleurs du coup de froid, sans filtre (un filtre sur le héros cuit fait tout repeindre à chaque image, et sur iPhone c'est
+   le plus cher de tout) : deux voiles posés une fois, dont seule l'opacité bouge (la carte graphique) — un halo bleu glacé DERRIÈRE
+   lui (il dépasse de sa silhouette : le liseré bleu) et un voile blanc-bleu PAR-DESSUS lui (l'éclair blanc du coup, puis il reste
+   pâle, comme sous la glace), jusqu'à ce qu'il s'ébroue */
+V.froidFiltre = function(){
+  if(!this._froidV){
+    var der = document.createElement('div'), dev = document.createElement('div'), z = 'position:absolute;pointer-events:none;opacity:0;';
+    der.style.cssText = z + 'left:29%;right:29%;top:10%;bottom:3%;border-radius:50%;background:radial-gradient(closest-side,rgba(150,225,255,.9),rgba(90,190,255,.5) 62%,rgba(90,190,255,0))';
+    dev.style.cssText = z + 'left:34%;right:34%;top:14%;bottom:8%;border-radius:50%;background:radial-gradient(closest-side,rgba(235,250,255,.62),rgba(190,235,255,.36) 55%,rgba(170,225,255,0))';
+    this.boite.insertBefore(der, this.svg);
+    this.boite.insertBefore(dev, this.calque);
+    this._froidV = [der, dev];
+  }
+  if(this._froidA) this._froidA.forEach(function(a){ try{ a.cancel(); }catch(e){} });
+  this._froidA = [
+    this._froidV[0].animate([{opacity:0}, {opacity:1, offset:0.05}, {opacity:0.8, offset:0.2}, {opacity:0.75, offset:0.72}, {opacity:0}], {duration:3400, easing:'linear'}),
+    this._froidV[1].animate([{opacity:0}, {opacity:1, offset:0.04}, {opacity:0.5, offset:0.14}, {opacity:0.42, offset:0.72}, {opacity:0}], {duration:3400, easing:'linear'})];
+};
+/* il recule sous le coup, puis grelotte (toute sa boîte, comme l'ancien héros) */
+V.secousse = function(){
+  var c = this.racine; if(!c || !c.animate) return;
+  var k = Math.max(0.6, (this.boite.offsetWidth || 200) / 200), X = function(v){ return {transform:'translateX(' + (v * k).toFixed(1) + 'px)'}; };
+  var L = [X(0), X(-18), X(-11), X(-13.5), X(-8.5), X(-13), X(-9), X(-12), X(-9.5), X(-11.5), X(-10), X(-11), X(-10.5), X(0)];
+  var off = [0, 0.07, 0.17, 0.22, 0.27, 0.32, 0.37, 0.42, 0.47, 0.52, 0.57, 0.62, 0.67, 1];
+  c.animate(L.map(function(f, i){ f.offset = off[i]; return f; }), {duration:1700, easing:'ease-out'});
+};
 /* (le filtre « elle bleuit » : on passe de ses vraies couleurs, k = 0, à des couleurs glacées, k = 1 — moins vives, tirées vers le
-   bleu clair) */
+   bleu clair) — plus utilisé au donjon depuis le 24 novembre (froidFiltre, plus haut) ; gardé pour ses dégradés (idGel + 'c', 'n') */
 var GEL = [0.68, 0.1, 0.08, 0, 0.02, 0.07, 0.78, 0.14, 0, 0.05, 0.06, 0.14, 0.84, 0, 0.17, 0, 0, 0, 1, 0], NEUTRE = [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0];
 V.gelGel = function(k){
   if(!this._gelF){
     var d = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
     d.innerHTML = '<filter id="' + this.idGel + '" color-interpolation-filters="sRGB" x="-20%" y="-20%" width="140%" height="140%"><feColorMatrix type="matrix" values="' + NEUTRE.join(' ') + '"/></filter>' +
-      '<linearGradient id="' + this.idGel + 'c" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4fdff"/><stop offset=".5" stop-color="#c4ecff"/><stop offset="1" stop-color="#7cc4ec"/></linearGradient>';
+      '<linearGradient id="' + this.idGel + 'c" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4fdff"/><stop offset=".5" stop-color="#c4ecff"/><stop offset="1" stop-color="#7cc4ec"/></linearGradient>' +
+      '<linearGradient id="' + this.idGel + 'n" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#e6f7ff"/><stop offset="1" stop-color="#a9dcf5"/></linearGradient>';
     this.calque.parentNode.insertBefore(this._gelSvg(d), this.calque);
     this._gelF = document.getElementById(this.idGel).firstChild;
   }
@@ -564,8 +650,11 @@ V.touche = function(type, opt){
     if(g === 'coup') L.push(this.ombreFait('touche'));
     if(g === 'froid'){
       L.push(this.ombreFait('touche', 'froid', opt));
+      /* (24 novembre : plus fort — l'éclair, le recul et le grelottement, la neige et ses glaçons, la buée ; voir neige()) */
       this.gelGel(0);
-      this.effet('givre', function(u, os){ var o = u < 0.3 ? u / 0.3 : u < 2.25 ? 1 : Math.max(0, 1 - (u - 2.25) / 0.3); this.gelGel(0.85 * o); return givre(this, os, o); }, 2.7);
+      this.froidFiltre();
+      this.secousse();
+      this.effet('givre', function(u, os){ var o = u < 0.18 ? u / 0.18 : u < 2.6 ? 1 : Math.max(0, 1 - (u - 2.6) / 0.8); return givre(this, os, o) + neige(this, os, o, u) + buee(this, os, u); }, 3.5);
     }
     if(g === 'rats'){
       this.effet('rats', function(u, os){ return rats(this, os, u); }, 3.0);
@@ -665,24 +754,31 @@ V.dague = function(scene, to, opt){
       if(!dernier) return; sig(to); try{ if(opt.onImpact) opt.onImpact(to); }catch(e){ if(G.console) console.error(e); }
     };
     var lame = function(){ try{ if(me._lame) me._lame(scene, to); }catch(e){} };
+    /* (24 novembre — Romain, 10 h 17, contre Léo : « quand on appuie en boucle sur la dague […] il devrait sauter sur Léo et donner le
+       coup de dague et le son qui soit bien calé au bon moment. Là tout est décalé ») : opt.impact (en secondes) = le moment où les
+       règles font tomber le coup (Léo : 0,71 s, et le son est calé dessus) ; tout le geste est joué au rythme qu'il faut pour que la
+       lame tombe à cet instant-là — le saut (1,05 s d'habitude) devient plus vif et finit bien avant le geste suivant. */
+    var k = 1, imp0 = dx > SEUIL_SAUT ? HV.SAUT.frappe : 0.54;
+    if(opt.impact > 0) k = Math.max(0.5, Math.min(1.4, opt.impact / imp0));
+    function ms(s){ return s * k * 1000; }
     if(dx > SEUIL_SAUT){
       var S = HV.SAUT;
-      this.plus(S.decolle * 1000, function(){ me._poussiere(); me.glisse(0, dx, S.frappe - S.decolle, lisse); });
-      this.plus((S.frappe - 0.08) * 1000, lame);
-      this.plus(S.frappe * 1000, function(){ coup(true); me._poussiere(); });
-      this.plus(S.repart * 1000, function(){ me.glisse(dx, 0, S.revient - S.repart, lisse); });
-      this.plus(S.revient * 1000, function(){ me._poussiere(); });
-      this.effetRuban([[S.frappe - 0.16, S.frappe + 0.04]], 2.0);
-      return this.jouer(HV.DONJON.dagueSaut);
+      this.plus(ms(S.decolle), function(){ me._poussiere(); me.glisse(0, dx, (S.frappe - S.decolle) * k, lisse); });
+      this.plus(ms(S.frappe - 0.08), lame);
+      this.plus(ms(S.frappe), function(){ coup(true); me._poussiere(); });
+      this.plus(ms(S.repart), function(){ me.glisse(dx, 0, (S.revient - S.repart) * k, lisse); });
+      this.plus(ms(S.revient), function(){ me._poussiere(); });
+      this.effetRuban([[(S.frappe - 0.16) * k, (S.frappe + 0.04) * k]], 2.0 * k);
+      return this.jouer(k === 1 ? HV.DONJON.dagueSaut : etirer(HV.DONJON.dagueSaut, k));
     }
     /* (près : elle avance d'un bond pendant qu'elle arme, frappe deux fois, puis recule à sa place) */
     var av = Math.max(0, dx - 30);
-    this.plus(300, function(){ me.glisse(0, av, 0.22, lisse); });
-    this.plus(480, lame); this.plus(540, function(){ coup(true); });
-    this.plus(840, lame); this.plus(900, function(){ coup(false); });
-    this.plus(1300, function(){ me.glisse(av, 0, 0.36, lisse); });
-    this.effetRuban([[0.46, 0.66], [0.84, 1.02]], 1.4);
-    return this.jouer(HV.DONJON.dague);
+    this.plus(ms(0.3), function(){ me.glisse(0, av, 0.22 * k, lisse); });
+    this.plus(ms(0.48), lame); this.plus(ms(0.54), function(){ coup(true); });
+    this.plus(ms(0.84), lame); this.plus(ms(0.9), function(){ coup(false); });
+    this.plus(ms(1.3), function(){ me.glisse(av, 0, 0.36 * k, lisse); });
+    this.effetRuban([[0.46 * k, 0.66 * k], [0.84 * k, 1.02 * k]], 1.4 * k);
+    return this.jouer(k === 1 ? HV.DONJON.dague : etirer(HV.DONJON.dague, k));
   });
 };
 /* ==========================================================
@@ -723,9 +819,11 @@ V.preparer = function(couleur){
     var c = POTIONS[couleur] || couleur || '#5fd08a';
     this._fioleC = c;
     this.p.K.potion = EAU; this.p.K.potion2 = c;
-    this.plus((A.VERSE + 0.16) * 1000, function(){ me.p.K.potion = c; });
-    this.effet('fiole', function(u, os){
-      var f = this.ecranF(fioleOs(os)), s = '', i;
+    /* (vp : le geste est joué plus vite depuis le 24 novembre — HV.ALCHI.VITE ; les moments du filet et des lueurs suivent) */
+    var vp = A.VITE || 1;
+    this.plus((A.VERSE + 0.16 * vp) * 1000, function(){ me.p.K.potion = c; });
+    this.effet('fiole', function(u0, os){
+      var f = this.ecranF(fioleOs(os)), s = '', i, u = A.VERSE + (u0 - A.VERSE) / vp;
       /* (le filet de potion : du goulot de la fiole penchée au goulot de l'autre, dans le poing droit) */
       var uv = u - A.VERSE;
       if(uv > 0.02 && uv < 0.36){
@@ -741,7 +839,7 @@ V.preparer = function(couleur){
       var ue = u - (A.VERSE + 0.16);
       if(ue < 0.35) s += lueur(f[0], f[1], 24 + 50 * ue, c, 1 - ue / 0.35);
       /* (le mélange s'illumine) */
-      var ul = u - A.ECLAT;
+      var ul = u - (A.VERSE + (A.ECLAT - A.VERSE) / vp);
       if(ul > -0.04 && ul < 0.5){ var ol = ul < 0.06 ? Math.max(0, (ul + 0.04) / 0.1) : 1 - (ul - 0.06) / 0.44;
         s += lueur(f[0], f[1], 52, c, ol) + etincelles(f[0], f[1], Math.min(1, Math.max(0, ul) / 0.5), 8, c, 14, 62, 0.4); }
       /* (et elle luit doucement, tant qu'il la tient) */
@@ -1012,8 +1110,9 @@ V._dome = function(L, scene, cible, opt){
 function bulle(vol, opt){
   var C = PAL_BOUC[opt.sorte === 'chene' ? 'bleu' : 'jaune'], id = 'hvb' + (++NB), figer = !!(G.SALLE && G.SALLE.tempsReel);
   var os = vol.os(), F = vol.p.F || {}, tt = vol.versSvg(os.tete), pa = vol.versSvg(F.piedG || [-25, 386, 0]), pb = vol.versSvg(F.piedD || [25, 386, 0]);
-  /* (sa taille : du sol — y 414 — jusqu'un peu au-dessus de la tête ; sa largeur : celle d'un héros et un peu d'air) */
-  var cx = (pa[0] + pb[0]) / 2, G0 = 414, T = tt[1] - 78, rx = 72, H = G0 - T, ry = 12;
+  /* (sa taille : du sol — y 414 — jusqu'au-dessus de la tête ; sa largeur : celle d'un héros et de l'air autour — plus grande depuis
+     le 24 novembre, Romain, 9 h 51 : « je le trouve un peu petit » ; avant : rx 72, 78 au-dessus de la tête) */
+  var cx = (pa[0] + pb[0]) / 2, G0 = 414, T = tt[1] - 104, rx = 108, H = G0 - T, ry = 17;
   function n1(v){ return v.toFixed(1); }
   var gauche = 'M' + n1(cx - rx) + ' ' + G0 + ' C ' + n1(cx - rx) + ' ' + n1(G0 - H * 0.64) + ' ' + n1(cx - rx * 0.8) + ' ' + n1(T) + ' ' + n1(cx) + ' ' + n1(T);
   var droite = 'M' + n1(cx + rx) + ' ' + G0 + ' C ' + n1(cx + rx) + ' ' + n1(G0 - H * 0.64) + ' ' + n1(cx + rx * 0.8) + ' ' + n1(T) + ' ' + n1(cx) + ' ' + n1(T);
@@ -1225,6 +1324,11 @@ V.cuitMonter = function(){
   var rw = 0; try{ rw = this.boite.getBoundingClientRect().width; }catch(e){}
   var k = (rw || this.boite.offsetWidth || 200) / CADRE[2], res = Math.max(0.8, Math.min(2, k * (G.devicePixelRatio || 1) * 1.05));
   this.cuit = HV.Cuit.monter(this.boite, this.h, {cadre:CADRE.join(' '), cap:CAP, res:res, K:this.p.K});
+  /* (24 novembre — Romain, 9 h 51 : « on a l'impression que le personnage, il est en dehors du bouclier ») le dessin cuit prend la place
+     du dessin d'avant, JUSTE APRÈS lui : la moitié de devant de la bulle du bouclier et le calque des effets des films (givre, toile,
+     rats…) restent par-dessus le héros, la moitié de derrière dessous. Avant, il était ajouté tout au bout de la boîte : devant tout. */
+  this.cuit.racine.style.zIndex = '0';
+  this.boite.insertBefore(this.cuit.racine, this.svg ? this.svg.nextSibling : this.calque);
   this.cuit.racine.style.visibility = 'hidden';
   this.cuit.anneauP = this.base;
   this._cuitGen = 0;
@@ -1237,7 +1341,9 @@ V.cuitMonter = function(){
     me.cuit.racine.style.visibility = '';
     me.cuit.ajuster();
     me.cuitPlan();
-    me.cuitPrecuire();
+    /* (24 novembre — Romain : chez Léo, « juste après la cinématique, ça a quitté » : sur iPhone, la page se ferme quand elle prend
+       trop de mémoire d'un coup. Chez Léo, la cuisson d'avance attend 3 s que la cinématique soit partie, puis avance doucement) */
+    if(G.SALLE && G.SALLE.tempsReel) me.plus(3000, function(){ me.cuitPrecuire(); }); else me.cuitPrecuire();
   });
 };
 /* ce que le pantin cuit doit jouer, d'après l'état du moment : le geste en cours (ou la course) jusqu'au bout, puis ce qui suit — la
@@ -1308,7 +1414,8 @@ V.cuitPrecuire = function(){
   if(this.role === 'pisteur'){ g(D.dague); g(D.dagueSaut); g(D.tir); }
   if(this.role === 'alchimiste' && A){ g(A.preparer); g(A.lancer); g(A.louche); g(A.herbes); }
   if(this.role === 'sage' && S){ g(S.sort); g(S.appel); g(S.bouclier); g(S.eclairSalle); g(S.etudier); }
-  g(D.choisi); g(D.coup); g(D.chute); g([[0.01, HV.SONNEE]].concat(decale(HV.RELEVE, 0.5))); g(D.joie); g(D.froid); g(D.rats); g(D.poing);
+  /* (24 novembre : la victoire en tournant n'était pas cuite d'avance — son buste restait de face pendant tout le tour) */
+  g(D.choisi); g(D.coup); g(D.chute); g([[0.01, HV.SONNEE]].concat(decale(HV.RELEVE, 0.5))); g(D.joie); g(D.joieTour); g(D.froid); g(D.rats); g(D.poing);
   g(D.toile); g(D.crapaud); g(D.amulette);
   var at = HV.attentes ? HV.attentes(this.role, b) : {}; Object.keys(at).forEach(function(n){ g(at[n]); });
   var vies = [b, HV.SONNEE]; if(this.role === 'alchimiste' && A && A.PRET) vies.push(HV.avec(b, A.PRET));
@@ -1319,9 +1426,12 @@ V.cuitPrecuire = function(){
     if(i < vies.length){ im = R.imagesVie(vies[i++]).filter(function(x, j){ return j % 3 === 0; }); }
     else {
       var cl = L[i - vies.length]; if(!cl) return; i++;
+      /* (tous les dixièmes de seconde : au pas du jeu, 1/30 s, il y avait 50 % de dessins en plus — 61 Mo de toiles au lieu de 40 sur
+         un téléphone ; ce qui manque est remplacé par la variante cuite la plus proche — CP.variante, hv-cuit.js) */
       var fin = HV.dureeGeste(cl), t; for(t = 0; t <= fin + 1e-6; t += 0.1) im.push({t:t, P:HV.gesteImage(b, cl, Math.min(t, fin))});
     }
-    R.cuireImages(im, libre).then(function(){ setTimeout(suite, 50); });
+    /* (24 novembre : chez Léo, en temps réel, chaque dessin cuit d'avance est un petit à-coup — on en fait un toutes les 0,15 s) */
+    R.cuireImages(im, libre, G.SALLE && G.SALLE.tempsReel ? 150 : 16).then(function(){ setTimeout(suite, 50); });
   })();
 };
 

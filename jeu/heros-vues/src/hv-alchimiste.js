@@ -75,6 +75,13 @@ var preparer = [
   /* (il arme la fiole derrière l'épaule, face aux ennemis, décidé) */
   [2.1, PRET], [2.22, PRET]];
 
+/* (24 novembre — Romain, 10 h 17 : « depuis le début, l'alchimiste, il met trop de temps à jeter ses potions […] faire en sorte que il
+   la jette plus vite ») : le même geste, joué presque deux fois plus vite — préparée en 1,2 s au lieu de 2,2 s ; le lancer (plus bas)
+   lâche la fiole à 0,4 s au lieu de 0,5. HV.ALCHI.VITE : l'adaptateur cale le filet de potion et les lueurs dessus. */
+var VITE_P = 0.55, VITE_L = 0.8;
+preparer = preparer.map(function(k){ return [Math.round(k[0] * VITE_P * 1000) / 1000, k[1]]; });
+VERSE *= VITE_P; ECLAT *= VITE_P;
+
 /* ---------- LANCER (depuis PRET), LE BUSTE TOURNÉ VERS NOUS ---------- */
 var LACHE = 0.5;
 var lancer = [[0.01, PRET],
@@ -94,6 +101,8 @@ var lancer = [[0.01, PRET],
   [0.78, {mainG:[44, 196, 46], relG:1, coudeG:[-0.4, 0.6, 0.3], poingG:0.3, bang:[6, 0, -6], dos:[8, 0, -6], bas:[0, 14, 8], hoche:3, tete:6, regX:0.8, sourcils:-0.4, sourire:0.3}],
   [1.0, {mainG:[10, 210, 40], relG:1, coudeG:[-0.6, 0.4, -0.2], poingG:0.5, bang:[6, 0, -2], dos:[8, 0, -2], regX:0.5, sourire:0.5, sourcils:-0.2}],
   [1.35, {}]];
+lancer = lancer.map(function(k){ return [Math.round(k[0] * VITE_L * 1000) / 1000, k[1]]; });
+LACHE *= VITE_L;
 
 /* ---------- LA LOUCHE (le BONG à 0,6 s) ---------- */
 var BONG = 0.6;
@@ -139,6 +148,6 @@ var herbes = [
   [1.8, versNous({mainD:[40, 170, 36], relD:1, coudeD:[0.9, 0.4, -0.2], poingD:0.2, regX:-0.3, sourire:0.9, sourcils:0.5, plisse:0.4})],
   [2.15, {}]];
 
-HV.ALCHI = {preparer:preparer, lancer:lancer, louche:louche, herbes:herbes, PRET:PRET, LACHE:LACHE, BONG:BONG, HERBES:HERBES, VERSE:VERSE, ECLAT:ECLAT};
+HV.ALCHI = {preparer:preparer, lancer:lancer, louche:louche, herbes:herbes, PRET:PRET, LACHE:LACHE, BONG:BONG, HERBES:HERBES, VERSE:VERSE, ECLAT:ECLAT, VITE:VITE_P};
 HV.NOMS_ALCHI = {preparer:'Il prépare une potion', lancer:'Il lance la fiole', louche:'La louche : BONG !', herbes:'Les herbes, pour un ami'};
 })(window);

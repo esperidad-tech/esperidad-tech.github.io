@@ -254,12 +254,22 @@ CP.preparer = function(P0){
   return Promise.all(travail);
 };
 CP.garder = function(nom, cle, v){ (this.variantes[nom] = this.variantes[nom] || {})[cle] = v; this.nVariantes = (this.nVariantes || 0) + 1; return v; };
-/* la variante la plus proche quand celle qu'il faut n'est pas encore cuite : la même vue d'abord, sinon n'importe laquelle */
+/* la variante la plus proche quand celle qu'il faut n'est pas encore cuite : la même vue d'abord, sinon LA VUE LA PLUS PROCHE
+   (24 novembre — Romain, 9 h 52 : « quand ils tournent sur eux-mêmes […] ils tournent que les jambes et la tête et pas le corps » :
+   avant, à défaut de la même vue, on prenait la première variante cuite — le buste de face — pendant tout le tour) */
+function vueDeCle(c){ var m = /v(-?\d+)/.exec(c) || /^[a-z]+(-?\d+)/i.exec(c); return m ? +m[1] : null; }
 CP.variante = function(nom, cle){
   var t = this.variantes[nom]; if(!t) return null;
   if(t[cle]) return {cle:cle, v:t[cle]};
   var ks = Object.keys(t), vue = cle.split(/[a-z]+/i)[1], i;
   for(i = 0; i < ks.length; i++) if(ks[i].split(/[a-z]+/i)[1] === vue) return {cle:ks[i], v:t[ks[i]]};
+  var a = vueDeCle(cle), meilleur = null, ecart = 1e9;
+  if(a != null) for(i = 0; i < ks.length; i++){
+    var b = vueDeCle(ks[i]); if(b == null) continue;
+    var d = Math.abs(tour(b - a)) + (ks[i].replace(/-?\d+/g, '') === cle.replace(/-?\d+/g, '') ? 0 : 0.5);
+    if(d < ecart){ ecart = d; meilleur = ks[i]; }
+  }
+  if(meilleur) return {cle:meilleur, v:t[meilleur]};
   return ks.length ? {cle:ks[0], v:t[ks[0]]} : null;
 };
 
@@ -355,9 +365,12 @@ CP.jouer = function(images, o){
   plan.forEach(function(p){ Object.keys(p.choix).forEach(function(nom){ var c = p.choix[nom]; util[nom + '|' + c.cle + '|' + c.couche] = [nom, c.cle, c.couche]; }); });
   var t0 = o.debut || performance.now(), dureeMs = D * 1000;
   /* (les exemplaires d'avant qui ne servent plus : cachés) */
-  Object.keys(this.inst).forEach(function(id){ if(!util[id]) me.inst[id].el.style.opacity = 0; });
+  /* (24 novembre : et sortis de l'affichage — chacun a sa propre couche pour la carte graphique ; au bout de quelques combats, des
+     centaines de couches cachées restaient en mémoire. Romain : le jeu « quitte » sur iPhone à l'ossuaire et chez Léo) */
+  Object.keys(this.inst).forEach(function(id){ if(!util[id]){ var e = me.inst[id].el; e.style.opacity = 0; e.style.display = 'none'; } });
   Object.keys(util).forEach(function(id){
     var u = util[id], x = me.exemplaire(u[0], u[1], u[2]), ref = null, dernier = null;
+    if(x.el.style.display) x.el.style.display = '';
     var pls = plan.map(function(p){
       var pl = placer(x.v, u[0], p.S, p.P, ref) || dernier || {x:0, y:0, a:0, sx:1, sy:1, b:0}; ref = pl.a; dernier = pl;
       pl.lv = p.lv; pl.vis = !!(p.choix[u[0]] && p.choix[u[0]].cle === u[1] && p.choix[u[0]].couche === u[2]);
@@ -458,8 +471,9 @@ CP.imagesVie = function(P0){
 };
 /* ---------- CUIRE D'AVANCE les morceaux d'un geste (images = [{t, P}]) : un morceau à la fois, en laissant la page respirer entre
    deux ; libre() dit si on peut travailler maintenant (pas pendant un geste) → promesse ---------- */
-CP.cuireImages = function(images, libre){
-  var me = this, i = 0;
+CP.cuireImages = function(images, libre, pause){
+  /* (pause : le repos entre deux dessins, en ms — 16 d'habitude ; plus long quand chaque image compte : Léo, en temps réel) */
+  var me = this, i = 0, P0 = pause || 16;
   marquer(images);
   return new Promise(function(fini){
     (function suite(){
@@ -469,7 +483,7 @@ CP.cuireImages = function(images, libre){
       /* (on avance jusqu'à la prochaine image qui a quelque chose à cuire) */
       while(i < images.length && !me.aCuire(images[i].P)){ i++; if(performance.now() - n0 > 8) return setTimeout(suite, 0); }
       if(i >= images.length) return fini();
-      me.preparer(images[i++].P).then(function(){ setTimeout(suite, 16); }, function(){ setTimeout(suite, 16); });
+      me.preparer(images[i++].P).then(function(){ setTimeout(suite, P0); }, function(){ setTimeout(suite, P0); });
     })();
   });
 };
