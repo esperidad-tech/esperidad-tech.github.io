@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Alegreya+Sans:wght@400;500;700;800&display=swap">
 <style>
-/* Version 9 : Grosbec mène le combat (salves à thème, colère, bouclier, 8 minutes), la vraie vague. Version 8 : les vrais personnages (Grosbec dans son armure, ses automates, l'Alchimiste du donjon vu de dos). Des corps lourds, pas des balles. La foule arrive sans arrêt. Grosbec est hors de portée : on ne le blesse qu'en lui renvoyant ses automates. Un seul doigt suffit : les potions en bas, on touche la place pour lancer, on fait glisser l'Alchimiste. */
+/* Version 10 : l'étagère des potions, l'aide aux mélanges, des sorts plus beaux. Version 9 : Grosbec mène le combat (salves à thème, colère, bouclier, 8 minutes), la vraie vague. Version 8 : les vrais personnages (Grosbec dans son armure, ses automates, l'Alchimiste du donjon vu de dos). Des corps lourds, pas des balles. La foule arrive sans arrêt. Grosbec est hors de portée : on ne le blesse qu'en lui renvoyant ses automates. Un seul doigt suffit : les potions en bas, on touche la place pour lancer, on fait glisser l'Alchimiste. */
 :root {
   --bg: #0E1213; --surface: #1B2326; --surface-2: #232E31; --ink: #E8ECEA; --muted: #9AA7A3; --line: #33413F;
   --jaune: #F2C230; --jaune-ombre: #A5831B;
@@ -23,15 +23,45 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
 .jeu canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
 .haut { position: absolute; top: 6px; right: 8px; display: flex; gap: 6px; z-index: 3; }
 .rond-btn { width: 34px; height: 34px; border-radius: 50%; border: 0; background: rgba(0,0,0,.45); color: #fff; display: grid; place-items: center; cursor: pointer; font-size: 15px; padding: 0; }
-.bande { position: absolute; left: 0; right: 0; bottom: 0; height: 86px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 4px 10px 8px; background: linear-gradient(#151a1b, #0e1213); z-index: 2; }
-.potions { display: flex; gap: clamp(6px, 2.4vw, 12px); align-items: center; }
-.pot { position: relative; width: clamp(42px, 13vw, 54px); height: clamp(42px, 13vw, 54px); border-radius: 50%; border: 3px solid color-mix(in srgb, var(--c) 60%, #000); background: var(--c); color: #fff; display: grid; place-items: center; cursor: pointer; padding: 0; box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 50%, #000); }
-.pot:active { transform: translateY(2px); box-shadow: 0 1px 0 color-mix(in srgb, var(--c) 50%, #000); }
-.pot.farine { color: #4A3D24; }
-.pot:disabled { opacity: .45; }
-.pot .touche { position: absolute; left: 0; right: 0; bottom: -15px; text-align: center; font-size: 10px; color: var(--muted); display: none; }
+/* l'étagère de l'Alchimiste : le chaudron, puis les cinq fioles */
+.bande { position: absolute; left: 0; right: 0; bottom: 0; height: 104px; display: flex; align-items: flex-end; justify-content: center; gap: 6px; padding: 0 6px 18px; z-index: 2;
+  background: linear-gradient(180deg, rgba(14,10,8,0) 0, rgba(26,18,13,.96) 16px, #2a1c13 55%, #1b120c 100%); }
+.bande, .msg, .haut { will-change: transform; }
+.bande::before { content: ""; position: absolute; left: 4px; right: 4px; bottom: 8px; height: 12px; border-radius: 3px;
+  background: linear-gradient(#93613a, #6a4426 55%, #45291a); box-shadow: 0 3px 0 #22150c, inset 0 1px 0 rgba(255,220,170,.4); }
+.bande::after { content: ""; position: absolute; left: 4px; right: 4px; bottom: 13px; height: 1px; background: rgba(40,24,14,.6); }
+.potions { position: relative; display: flex; gap: clamp(2px, 1vw, 7px); align-items: flex-end; z-index: 1; }
+.pot { position: relative; width: clamp(48px, 13.6vw, 60px); height: 62px; border: 0; background: none; padding: 0; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; }
+.pot svg.fiole { width: 100%; height: 58px; overflow: visible; filter: drop-shadow(0 3px 2px rgba(0,0,0,.55)); transition: transform .12s ease-out; transform-origin: 50% 90%; }
+.pot.saute svg.fiole { animation: saute .32s ease-out; }
+@keyframes saute { 0% { transform: translateY(0) rotate(0); } 40% { transform: translateY(-12px) rotate(-14deg); } 100% { transform: translateY(0) rotate(0); } }
+.pot:disabled { opacity: .38; cursor: default; }
+.pot .etiq { position: absolute; left: 50%; bottom: 60px; transform: translateX(-50%) translateY(4px); width: max-content; max-width: 66px; font-size: 10px; line-height: 1.05; font-weight: 800; text-align: center;
+  color: #FFF3D6; background: rgba(22,15,10,.94); border: 1px solid rgba(242,194,48,.5); border-radius: 7px; padding: 2px 5px 3px; opacity: 0; transition: opacity .15s, transform .15s; pointer-events: none; }
+.pot.aide .etiq { opacity: 1; transform: translateX(-50%) translateY(0); }
+.pot.etoile .etiq { border-color: var(--jaune); color: #111; background: var(--jaune); box-shadow: 0 0 10px rgba(242,194,48,.6); }
+.pot.etoile svg.fiole { filter: drop-shadow(0 0 7px rgba(242,194,48,.95)) drop-shadow(0 3px 2px rgba(0,0,0,.55)); }
+.pot .touche { position: absolute; left: 0; right: 0; bottom: -15px; text-align: center; font-size: 10px; color: #b9a98f; display: none; }
 @media (hover: hover) and (pointer: fine) { .pot .touche { display: block; } }
-.vider { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: rgba(255,255,255,.06); color: #ddd; cursor: pointer; padding: 0; font-size: 14px; flex: none; }
+.chaudron { position: relative; width: clamp(52px, 14vw, 62px); height: 62px; border: 0; background: none; padding: 0; cursor: pointer; flex: none; z-index: 1; }
+.chaudron svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 3px 2px rgba(0,0,0,.55)); }
+.chaudron .x { position: absolute; top: 4px; right: 0; width: 19px; height: 19px; border-radius: 50%; background: #2b201a; border: 1px solid #8a7560; color: #f1e6d6; font-size: 11px; line-height: 17px; text-align: center; display: none; }
+.chaudron.plein .x { display: block; }
+.chaudron .bul { animation: bulle 1.4s ease-in infinite; opacity: 0; }
+.chaudron.plein .bul { opacity: 1; }
+.chaudron .bul:nth-child(2) { animation-delay: .5s; } .chaudron .bul:nth-child(3) { animation-delay: .95s; }
+@keyframes bulle { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: .9; } 100% { transform: translateY(-14px); opacity: 0; } }
+/* le message du conteur, en haut, avec son bouton 🔊 */
+.msg { position: absolute; top: 42px; left: 50%; transform: translateX(-50%); z-index: 3; display: flex; align-items: center; gap: 6px; width: max-content; max-width: calc(100% - 16px);
+  padding: 4px 4px 4px 11px; border-radius: 12px; background: rgba(16,12,9,.88); border: 1px solid rgba(242,194,48,.45); color: #F3EADB; font-size: 12.5px; line-height: 1.15; font-weight: 700; white-space: nowrap;
+  box-shadow: 0 3px 8px rgba(0,0,0,.35); transition: opacity .35s; opacity: 0; pointer-events: none; }
+.msg.on { opacity: 1; pointer-events: auto; }
+.msg #msg-t { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.msg.mal { color: #FFB3A3; border-color: rgba(229,87,42,.6); }
+.msg.bon { color: #B9F0A0; border-color: rgba(120,200,90,.6); }
+.msg.aide { color: #FFF3D6; border-color: var(--jaune); }
+.lire { flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(242,194,48,.6); background: rgba(242,194,48,.14); color: #F2C230; font-size: 13px; cursor: pointer; padding: 0; display: grid; place-items: center; }
+.boite .lire { display: inline-grid; vertical-align: middle; margin-left: 6px; width: 26px; height: 26px; }
 
 .voile { position: fixed; inset: 0; z-index: 20; background: rgba(8,11,12,.93); overflow: auto; display: grid; place-items: center;
   padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
@@ -63,27 +93,45 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
 <div class="jeu" id="jeu">
   <canvas id="cv" aria-label="La place : touche un endroit pour lancer, fais glisser l'Alchimiste pour bouger, touche-le pour boire"></canvas>
   <div class="haut">
-    <button type="button" class="rond-btn" id="btn-son" aria-label="Couper le son">🔊</button>
+    <button type="button" class="rond-btn" id="btn-son" aria-label="Couper les bruits et la musique">♪</button>
     <button type="button" class="rond-btn" id="btn-pause" aria-label="Pause, règles et combos">⏸</button>
   </div>
+  <div class="msg" id="msg" role="status"><span id="msg-t"></span><button type="button" class="lire" id="msg-lire" aria-label="Écouter">🔊</button></div>
   <div class="bande">
+    <button type="button" class="chaudron" id="vider" aria-label="Le chaudron : touche-le pour le vider">
+      <svg viewBox="0 0 62 62" aria-hidden="true">
+        <defs><radialGradient id="g-ch" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="#5b5b66"/><stop offset=".55" stop-color="#2b2b33"/><stop offset="1" stop-color="#121216"/></radialGradient></defs>
+        <path d="M16 50 l-4 9 M46 50 l4 9" stroke="#18181c" stroke-width="3.4" stroke-linecap="round"/>
+        <path d="M7 27 Q6 56 31 56 Q56 56 55 27 Z" fill="url(#g-ch)" stroke="#0c0c0f" stroke-width="1.2"/>
+        <path d="M12 33 Q13 47 22 51" stroke="rgba(255,255,255,.22)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="31" cy="27" rx="25" ry="7.5" fill="#26262d" stroke="#55555f" stroke-width="2"/>
+        <ellipse id="ch-liq" cx="31" cy="28" rx="20.5" ry="5" fill="#1a1a1f"/>
+        <g fill="rgba(255,255,255,.75)"><circle class="bul" cx="24" cy="27" r="1.8"/><circle class="bul" cx="34" cy="28" r="1.4"/><circle class="bul" cx="29" cy="26" r="2"/></g>
+        <circle id="ch-s0" cx="20" cy="42" r="4.4" fill="none" stroke="rgba(255,255,255,.3)" stroke-dasharray="2 2"/>
+        <circle id="ch-s1" cx="31" cy="44" r="4.4" fill="none" stroke="rgba(255,255,255,.3)" stroke-dasharray="2 2"/>
+        <circle id="ch-s2" cx="42" cy="42" r="4.4" fill="none" stroke="rgba(255,255,255,.3)" stroke-dasharray="2 2"/>
+      </svg>
+      <span class="x" aria-hidden="true">✕</span>
+    </button>
     <div class="potions" id="potions"></div>
-    <button type="button" class="vider" id="vider" aria-label="Vider le chaudron">✕</button>
   </div>
 </div>
 
 <div class="voile" id="regles">
   <div class="boite">
     <h2>Les Pièges de l'Alchimiste</h2>
-    <p>Version 9. Grosbec reste tout au fond : tes fioles ne vont pas jusqu'à lui. Il envoie ses automates par vagues. <b>Détruis-les</b> : chaque automate détruit l'affaiblit. <b>Renvoie-les-lui à la figure</b> : ça lui fait encore plus mal… et ça l'énerve.</p>
+    <p>Version 10. Grosbec reste tout au fond : tes fioles ne vont pas jusqu'à lui. Il envoie ses automates par vagues. <b>Détruis-les</b> : chaque automate détruit l'affaiblit. <b>Renvoie-les-lui à la figure</b> : ça lui fait encore plus mal… et ça l'énerve.</p>
     <h3>Jouer avec un seul doigt</h3>
     <div class="regle"><span class="tuile" style="--c:#3D2F5C">☝️</span><p>Choisis 1 à 3 potions en bas, puis <b>touche la place</b> : tu vois la zone, tu peux glisser, tu lâches. <b>Fais glisser l'Alchimiste</b> pour bouger, <b>touche-le</b> pour boire.</p></div>
     <div class="regle"><span class="tuile">💥</span><p><b>Tes potions projettent, elles ne tuent presque pas.</b> Une explosion souffle toujours en éventail, loin de toi, vers le fond. Un automate projeté vole, retombe, glisse un tout petit peu et met 2 secondes à se relever. S'il percute un ami, les deux restent assommés 5 secondes. S'il percute Grosbec… aïe, pour Grosbec !</p></div>
-    <div class="regle"><span class="tuile">🛡️</span><p>Les petits te font perdre 1, les moyens 3, les gros 5.</p></div>
+    <div class="regle"><span class="tuile">🛡️</span><p>Les petits te font perdre 1, les moyens 3, les gros 5. Quand personne ne te touche, tu reprends des forces.</p></div>
+    <div class="regle"><span class="tuile" style="--c:#2E86D6">🌊</span><p><b>La vague</b> (eau + eau) emporte tout jusqu'au bout de la place. <b>Trempés</b>, ils avancent cinq fois moins vite.</p></div>
+    <div class="regle"><span class="tuile" style="--c:#5DB338">🧪</span><p><b>Les boucliers</b> résistent aux explosions. L'acide ronge leur bouclier.</p></div>
+    <div class="regle"><span class="tuile" style="--c:#7A5A1A">✨</span><p>Choisis une potion : au-dessus de chaque fiole, tu vois ce que donnerait le mélange. Une étoile : un très bon mélange.</p></div>
     <h3>Les réactions</h3>
     <p style="font-size:.9rem">feu + farine = <b>BOUM</b> (ça projette) · eau + eau = <b>vague</b> · acide + fleur = <b>savon</b> (ça glisse) · eau + farine = <b>boue</b> (ça colle) · farine + acide = <b>volcan</b> (ça envoie en l'air) · eau + acide = <b>électricité</b> · eau + fleur = <b>lianes</b> · feu + fleur = <b>pollen</b> (atchoum) · farine + fleur + fleur = <b>gâteau</b> (appât).</p>
     <p style="font-size:.9rem"><b>En feu</b>, un automate brûle doucement et passe le feu à ceux qu'il touche. <b>Mouillé</b>, il conduit l'électricité. <b>Enfariné</b> puis du feu : <b>la mèche s'allume</b>, il fonce tout droit comme un dératé et explose 3 secondes plus tard ! Le <b>lourd</b> est une boule de bowling : il renverse tous ceux qu'il croise. Les <b>tonneaux</b> aussi.</p>
-    <p style="font-size:.9rem">Deux automates de plus arrivent après 30 secondes : <b>le cracheur</b>, qui te crache du feu de loin (s'il traverse un nuage de farine… boum chez ses amis), et <b>le souffleur</b>, qui pousse tes nuages et ton pollen vers toi.</p>
+    <p style="font-size:.9rem">Grosbec envoie aussi <b>le cracheur</b>, qui te crache du feu de loin (mouillé, il ne crache plus), et <b>le souffleur</b>, qui pousse tes nuages et ton pollen vers toi.</p>
     <p style="font-size:.9rem">Sur la place, il y a aussi <b>la charrette</b> (trop lourde pour rouler… sauf avec du savon sous les roues), <b>la fontaine</b> (essaie d'y verser quelque chose) et la <b>mousse du volcan</b>, qui fait rebondir ceux qui tombent dessus.</p>
     <h3>Le carnet des combos</h3>
     <div class="carnet" id="carnet"></div>
@@ -97,6 +145,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   <div class="boite" style="text-align:center">
     <h2 id="fin-titre"></h2>
     <p id="fin-texte"></p>
+    <button type="button" class="lire" id="fin-lire" aria-label="Écouter" style="justify-self:center">🔊</button>
     <p class="stats" id="fin-stats"></p>
     <button type="button" class="go" id="btn-rejouer">Rejouer</button>
   </div>
@@ -107,7 +156,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
 (function () {
   "use strict";
   /* ================= réglages ================= */
-  var W = 360, FY = 0.75, BANDE = 86;
+  var W = 360, FY = 0.75, BANDE = 104;
   var PV_J = 100, PV_B = 1200, DUREE = 480, VITESSE = 1, V_IMPACT = 110, V_BOSS = 60, STUN = 5, LEVE = 2, G = 650, PORTEE_F = 0.24, MAX_E = 36;
   var ING = [
     { id: "feu", nom: "Feu", hex: "#E5572A" }, { id: "eau", nom: "Eau", hex: "#2E86D6" },
@@ -279,6 +328,77 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     c.fillStyle = "#0E1213"; c.fillRect(0, L.bot + 12, W, L.H);
   }
 
+  /* ================= l'aide aux potions (version 10) ================= */
+  // Romain, 24 nov. 11 h 46 : « quand on clique sur une potion, on peut avoir une petite orientation vers quelle potion aller. Et quand
+  // on a fait 2 potions, une petite aide qui affiche ce que pourrait faire la 3e ». Au-dessus de chaque fiole : ce que donnerait le
+  // mélange ; une étoile sur les deux meilleurs (selon le moment : boucliers sur la place → l'acide ; peu de vie → les fleurs).
+  var AIDE = {
+    "feu": ["🔥", "Flamme", "Une petite flamme. Ils prennent feu… et se le passent."],
+    "eau": ["💧", "Jet d'eau", "Un jet d'eau. Trempés, ils avancent tout doucement."],
+    "farine": ["☁️", "Farine", "Un nuage de farine. Ils ne voient plus rien."],
+    "acide": ["🧪", "Acide", "Une goutte d'acide. Elle ronge les boucliers."],
+    "fleur": ["🌸", "Fleurs", "Des fleurs. Bois-les : elles te soignent."],
+    "feu feu": ["🔥", "Boule de feu", "Une boule de feu. Plus grande, plus chaude."],
+    "eau eau": ["🌊", "Vague", "Une vague ! Elle emporte tout, jusqu'à Grosbec."],
+    "farine farine": ["☁️", "Gros nuage", "Un gros nuage. Approche une flamme… pour voir."],
+    "acide acide": ["🧪", "Jet d'acide", "Un jet d'acide. Promène-le sur leurs boucliers."],
+    "fleur fleur": ["🌸", "Tapis de fleurs", "Un tapis de fleurs. Bois-le : il soigne bien."],
+    "feu eau": ["🌫️", "Vapeur", "De la vapeur. Ils tournent en rond, aveugles."],
+    "feu farine": ["💥", "BOUM", "BOUM ! Tout le monde s'envole."],
+    "feu acide": ["🟢", "Fumée verte", "Une fumée verte. Ils ne voient plus rien."],
+    "feu fleur": ["🤧", "Pollen", "Du pollen. Atchoum ! Ils sautent en éternuant."],
+    "eau farine": ["🟤", "Boue", "De la boue. Ils restent collés."],
+    "eau acide": ["⚡", "Éclairs", "Une flaque électrique. Les mouillés grillent !"],
+    "eau fleur": ["🌿", "Lianes", "Des lianes qui attrapent. Mets-y le feu !"],
+    "farine acide": ["🌋", "Volcan", "Un volcan. Ils montent… et retombent sur les autres."],
+    "farine fleur": ["🥞", "Crêpe", "Une crêpe. Bof : un nuage et quelques fleurs."],
+    "acide fleur": ["🫧", "Savon", "Du savon. Tout le monde glisse !"],
+    "feu feu feu": ["🔥", "Colonnes", "Des colonnes de feu. Tout s'envole en flammes."],
+    "eau eau eau": ["🌊", "Raz-de-marée", "Un raz-de-marée, tout autour de toi."],
+    "farine farine farine": ["☁️", "Tempête", "Une tempête de farine."],
+    "acide acide acide": ["🧪", "Bain d'acide", "Un grand bain d'acide."],
+    "fleur fleur fleur": ["❤️", "Grand remède", "Le grand remède. Bois-le !"],
+    "feu feu farine": ["💥", "GROS BOUM", "Un GROS BOUM !"],
+    "feu farine farine": ["🎆", "Artifice", "Un feu d'artifice : un énorme boum."],
+    "eau eau fleur": ["🌿", "Grandes lianes", "De grandes lianes qui attrapent tout."],
+    "eau farine farine": ["🤝", "Siamois", "Une pâte : collés deux par deux !"],
+    "farine fleur fleur": ["🎂", "Gâteau", "Un gâteau. Les gourmands accourent."],
+    "eau eau farine": ["🟤", "Grande boue", "Une grande flaque de boue."],
+    "eau eau acide": ["⚡", "Grands éclairs", "Une grande flaque électrique."],
+    "farine farine acide": ["🌋", "Gros volcan", "Un gros volcan."],
+    "eau acide fleur": ["🫧", "Savon + éclairs", "Du savon… et des étincelles."],
+    "feu fleur fleur": ["🍵", "Tisane chaude", "Une tisane. Bois-la : elle soigne."],
+    "eau fleur fleur": ["🍵", "Grande tisane", "Une grande tisane. Bois-la !"]
+  };
+  var PRIO = ["feu farine", "acide fleur", "eau acide", "farine acide", "eau fleur", "feu fleur", "eau farine", "feu eau", "feu acide", "farine fleur"];
+  function aide(cle) {
+    if (AIDE[cle]) return AIDE[cle];
+    var r = cle.split(" "), nom = NOMS[cle] || cle;
+    for (var i = 0; i < PRIO.length; i++) { var p = PRIO[i].split(" "), c = r.slice(), ok = p.every(function (id) { var j = c.indexOf(id); if (j < 0) return false; c.splice(j, 1); return true; }); if (ok) return [AIDE[PRIO[i]][0], nom.length > 14 ? AIDE[PRIO[i]][1] + " +" : nom, nom + " : " + AIDE[PRIO[i]][2].charAt(0).toLowerCase() + AIDE[PRIO[i]][2].slice(1)]; }
+    return ["✨", nom.length > 14 ? nom.slice(0, 13) + "…" : nom, nom + "."];
+  }
+  var SCORE = { "eau eau": 5, "feu farine": 5, "acide fleur": 4, "eau acide": 4, "eau fleur": 4, "farine acide": 4, "eau farine": 3,
+    "eau eau eau": 5, "feu feu farine": 5, "feu farine farine": 5, "eau farine farine": 4, "eau eau fleur": 4, "feu feu feu": 4, "farine fleur fleur": 3, "eau eau acide": 4, "eau eau farine": 3, "farine farine acide": 4 };
+  function scoreMelange(cle) {
+    var sc = SCORE[cle] || 0;
+    if (!S) return sc;
+    var bouc = S.E.filter(function (e) { return e.shield; }).length;
+    if (bouc >= 3 && cle.indexOf("acide") >= 0 && cle.indexOf("eau eau") < 0) sc += 2;
+    if (S.pv < 40 && cle.indexOf("fleur") >= 0 && cle.indexOf("acide") < 0 && cle.indexOf("eau") < 0) sc += 4;
+    return sc;
+  }
+  // lire à voix haute (seulement quand on touche 🔊 : jamais tout seul)
+  var VOIX = null;
+  function choisirVoix() { try { var v = speechSynthesis.getVoices().filter(function (x) { return /^fr/i.test(x.lang); }); VOIX = v.filter(function (x) { return /google|amelie|thomas|audrey|marie|denise/i.test(x.name); })[0] || v[0] || null; } catch (e) {} }
+  try { choisirVoix(); speechSynthesis.onvoiceschanged = choisirVoix; } catch (e) {}
+  function lire(txt) {
+    try {
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(String(txt).replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "").replace(/·/g, ","));
+      u.lang = "fr-FR"; if (VOIX) u.voice = VOIX; u.rate = 0.98; speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
   /* ================= sons (bruitages seulement) ================= */
   var AC = null, BRUIT = null, muet = false, dernierSon = {};
   function initAudio() {
@@ -361,7 +481,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
           temps: 0, tues: 0, enCours: true, pause: false, vise: null, glisse: null, ptr: { x: 180, y: 200 }, notes: [], nid: 0,
           shake: 0, ralenti: 0, msg: null, big: null, compteur: null, chaines: {}, nChaine: 0, chaineCour: 0, chaineMax: 0, rage: 0,
           coupsBoss: 0, coolHeros: 0, combosPartie: {}, rageV: 0, ordreT: -9,
-          V: [], file: [], fileT: 0, GA: null, bulle: null, banniere: null, portesT: [0, 0, 0, 0], bouclierB: 0, bouclierV: 0, bouclierFlash: 0,
+          PA: [], V: [], file: [], fileT: 0, GA: null, bulle: null, banniere: null, portesT: [0, 0, 0, 0], bouclierB: 0, bouclierV: 0, bouclierFlash: 0,
           colere: 0, nColeres: 0, coolColere: 0, coolOccup: 0, dernierCoupB: -99, dir: { i: 0, seuil: 0, decal: 0, attente: 0, apres: 0 } };
     [[70, 0.46], [292, 0.56], [244, 0.32]].forEach(function (p) { S.O.push(tonneau(p[0], p[1] * L.D)); });
     S.O.push(charrette(150, 0.5 * L.D));
@@ -373,15 +493,23 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     majPotions();
     dernierT = performance.now(); rafId = requestAnimationFrame(boucle);
   }
+  var PERF = { av: 0, de: 0, im: 16, lent: 0 }, LEGER = false;
   function boucle(now) {
     if (!S || !S.enCours) return;
+    // l'appareil peine-t-il ? (l'écart entre deux images, lissé)
+    var ecart = now - dernierT;
+    if (ecart > 0 && ecart < 200) { PERF.im += (ecart - PERF.im) * 0.08; if (!LEGER && PERF.im > 25) { PERF.lent += ecart / 1000; if (PERF.lent > 2) LEGER = true; } else PERF.lent = 0; }
     var dt = Math.min(0.05, Math.max(0, (now - dernierT) / 1000)) * VITESSE; dernierT = now;
     if (!S.pause) {
       if (S.ralenti > 0) { S.ralenti -= dt; dt *= 0.3; }
       var n = Math.max(1, Math.ceil(dt / 0.017));
+      var tA = performance.now();
       for (var i = 0; i < n; i++) avancer(dt / n);
+      PERF.av += (performance.now() - tA - PERF.av) * 0.05;
     }
+    var tD = performance.now();
     dessiner();
+    PERF.de += (performance.now() - tD - PERF.de) * 0.05;
     if (S.B.pv <= 0) return fin(true);
     if (S.pv <= 0) return fin(false);
     rafId = requestAnimationFrame(boucle);
@@ -417,6 +545,8 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     S.P.forEach(function (p) { p.t += dt; if (p.t >= p.dur && !p.fini) { p.fini = true; p.cb(); } });
     S.P = S.P.filter(function (p) { return !p.fini; });
     S.FX.forEach(function (f) { f.t += dt; }); S.FX = S.FX.filter(function (f) { return f.t < f.dur; });
+    S.T.forEach(function (t) { emettre(t, dt); });
+    majParts(dt);
     nettoyer();
   }
   function choixType() {
@@ -608,6 +738,8 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       V.t += dt;
       if (V.fini) { V.finT -= dt; return V.finT > 0; }
       var d0 = V.d; V.d = Math.min(V.len, V.d + V.v * dt);
+      V.em = (V.em || 0) + dt * (LEGER ? 6 : V.half >= 3 ? 40 : 26);
+      while (V.em >= 1) { V.em -= 1; var aw = V.half >= 3 ? Math.random() * 6.283 : V.ang + (Math.random() * 2 - 1) * V.half; part({ x: V.x + Math.cos(aw) * V.d, y: V.y + Math.sin(aw) * V.d, z: 10, vx: Math.cos(aw) * V.v * 0.5, vy: Math.sin(aw) * V.v * 0.35, vz: 90 + Math.random() * 90, g: 520, dur: 0.55, r: 2.4, r1: 1, c: "eau" }); }
       S.E.forEach(function (e) {
         if (e.vague || e.etat === "bulle" || e.statue > 0 || e.tourb || e.z > 30 || (e.attrape && e.attrape.feu > 0)) return;
         var d = Math.hypot(e.x - V.x, e.y - V.y);
@@ -711,6 +843,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     }
     liste.forEach(function (e, i) {
       e.etourdi = Math.max(e.etourdi, 3); e.elec = 3; e.immuElec = 5; e.pv -= 3; e.vx *= 0.2; e.vy *= 0.2;
+      gerbe(e.x, e.y, 6, "elec", { v: 90, vz: 120, z: 14, g: 400, dur: 0.35, r: 2.6, r1: 0.5, add: true });
       if (i > 0) fx({ k: "eclair", x: liste[i - 1].x, y: liste[i - 1].y, x2: e.x, y2: e.y, dur: .35 });
     });
     if (liste.length) son("zap");
@@ -1052,7 +1185,8 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     var dm = blesserBoss(Math.round((8 + Math.min(sp, 400) / 20) * Math.sqrt(e.T ? e.T.m : (e.m || 2))), { lance: true });
     S.B.hit = dm ? 0.35 : 0.15; S.coupsBoss++;
     fxTxt(S.B.x, S.B.y, -80, dm ? "−" + dm : "bloqué !", dm ? "#FFD25A" : "#F2C230");
-    fx({ k: "etoile", x: S.B.x, y: S.B.y, dur: .45 }); son(dm ? "gong" : "bloque"); S.shake = Math.max(S.shake, dm ? 0.35 : 0.15);
+    fx({ k: "etoile", x: S.B.x, y: S.B.y, dur: .45 }); son(dm ? "gong" : "bloque");
+    gerbe(S.B.x, S.B.y, dm ? 12 : 6, "or", { v: 140, vz: 120, z: 40, g: 400, dur: 0.6, r: 3, r1: 0.5, add: true }); S.shake = Math.max(S.shake, dm ? 0.35 : 0.15);
     if (e.T) {
       e.pv -= 6;
       // il s'écrase sur Grosbec et tombe à ses pieds
@@ -1282,7 +1416,10 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   // une explosion pousse très fort mais blesse peu : ce sont les chocs qui font mal
   function exploser(x, y, r, o) {
     o = o || {};
-    fx({ k: "boom", x: x, y: y, r: r, dur: .45 }); son("boom"); S.shake = Math.max(S.shake, 0.35);
+    fx({ k: "boom", x: x, y: y, r: r, dur: .55 }); son("boom"); S.shake = Math.max(S.shake, 0.35);
+    gerbe(x, y, 22, "feu", { v: r * 2.6, vz: 160, g: 260, dur: 0.7, r: 6, r1: 1, add: true, dr: r * 0.3 });
+    gerbe(x, y, 9, "fumee", { v: r * 0.8, vz: 40, g: -10, dur: 1.6, r: 9, r1: 22, fr: 2, dr: r * 0.4, a: 0.8 });
+    for (var ec = 0; ec < 7; ec++) { var ae = Math.random() * 6.283, ve = 80 + Math.random() * 120; part({ x: x, y: y, z: 2, vx: Math.cos(ae) * ve, vy: Math.sin(ae) * ve * 0.7, vz: 180 + Math.random() * 120, g: 700, dur: 1, r: 2.2, r1: 2, c: "boue", rebond: true, fr: 0.8 }); }
     var garde = S.chaineCour; nouvelleChaine();
     S.T.filter(function (t) { return t.type === "lianes" && Math.hypot(t.x - x, t.y - y) < r + t.r * 0.5; }).forEach(enflammerLianes);
     // le souffle éjecte chacun dans sa direction, en cloche
@@ -1326,8 +1463,14 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     } });
   }
   function finLancer(nom) { dire(nom + (S.notes.length ? " · " + S.notes.join(" · ") : ""), ""); }
+  function eclabousser(x, y, c, R) {
+    gerbe(x, y, 6, "verre", { v: 90, vz: 150, g: 600, dur: 0.6, r: 2, r1: 1.5, rebond: true });
+    var cs = { feu: "feu", eau: "eau", farine: "farine", acide: "acide", fleur: "petale" };
+    Object.keys(cs).forEach(function (id) { if (c[id]) gerbe(x, y, 6 * c[id], cs[id], { v: R * 2.2, vz: 170, g: 520, dur: 0.6, r: id === "farine" ? 6 : 3.5, r1: id === "farine" ? 12 : 1, add: id === "feu", dr: 4 }); });
+  }
   function cercle(x, y, c, n) {
     var R = RAYONS[n], fX = FONTAINE.x, fY = FONTAINE.fy * L.D;
+    eclabousser(x, y, c, R);
     if (Math.hypot(x - fX, y - fY) < R + FONTAINE.r) {
       if (c.acide && !c.eau) { S.fontaine = { type: "elec", t: 10, tic: 0 }; note("la fontaine crépite !"); son("zap"); }
       else if (c.farine && !c.feu) { S.fontaine = { type: "boue", t: 10 }; brut("boue", fX, fY, 78, 10); S.E.forEach(function (e) { if (e.etat !== "vol" && Math.hypot(e.x - fX, e.y - fY) < 78) e.colle = Math.max(e.colle, 6); }); note("la fontaine crache de la boue !"); son("splat"); }
@@ -1379,6 +1522,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   }
   function volcan(x, y, R) {
     fx({ k: "volcan", x: x, y: y, r: R, dur: .6 }); son("splat");
+    gerbe(x, y, 20, "mousse", { v: R * 1.2, vz: 320, g: 500, dur: 1, r: 5, r1: 3, dr: R * 0.4 });
     S.E.forEach(function (e) {
       if (Math.hypot(e.x - x, e.y - y) > R + e.r * 0.5) return;
       ejecter(e, Math.random() * 6.28, 10 + Math.random() * 25, 520);
@@ -1389,6 +1533,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   }
   function colonnes(x, y, R) {
     fx({ k: "col", x: x, y: y, r: R, dur: .7 }); son("boom"); S.shake = Math.max(S.shake, .3);
+    gerbe(x, y, 34, "feu", { v: 40, vz: 330, g: 120, dur: 0.9, r: 7, r1: 1.5, add: true, dr: R * 0.8 });
     S.E.forEach(function (e) {
       if (Math.hypot(e.x - x, e.y - y) > R + e.r * 0.5) return;
       if (e.attrape) enflammerLianes(e.attrape);
@@ -1536,14 +1681,197 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   /* ================= effets ================= */
   function fx(o) { o.t = 0; S.FX.push(o); if (S.FX.length > 120) S.FX.shift(); }
   function fxTxt(x, y, dz, txt, c) { fx({ k: "txt", x: x + (Math.random() * 10 - 5), y: y, dz: dz, txt: txt, c: c, dur: .9 }); }
-  function dire(txt, ton) { if (S) S.msg = { txt: txt, ton: ton || "", t: 3.5 }; }
+  var MSG = { el: null, on: false };
+  function dire(txt, ton) {
+    if (!S) return;
+    S.msg = { txt: txt, ton: ton || "", t: ton === "aide" ? 6 : 3.5 };
+    $("msg-t").textContent = txt; $("msg").className = "msg on " + (ton || ""); MSG.on = true;
+  }
   function melangeCouleur(r) {
     var R = 0, G = 0, B = 0;
     r.forEach(function (id) { var h = ING[IDX[id]].hex; R += parseInt(h.substr(1, 2), 16); G += parseInt(h.substr(3, 2), 16); B += parseInt(h.substr(5, 2), 16); });
     var n = r.length || 1; return "rgb(" + Math.round(R / n) + "," + Math.round(G / n) + "," + Math.round(B / n) + ")";
   }
 
+  /* ================= les particules (version 10) ================= */
+  // Des petites toiles rondes, dessinées une fois (une par couleur), recopiées : des braises, de la fumée, des gouttes, de la farine,
+  // des bulles, des pétales, des éclats de verre. 260 au plus à la fois.
+  var SPR = {};
+  function sprite(nom, c0, c1, dur) {
+    var c = document.createElement("canvas"); c.width = c.height = 32; var g = c.getContext("2d");
+    var gr = g.createRadialGradient(16, 16, 0, 16, 16, 16); gr.addColorStop(0, c0); gr.addColorStop(dur ? 0.55 : 0.35, c1); gr.addColorStop(1, "rgba(0,0,0,0)");
+    g.fillStyle = gr; g.fillRect(0, 0, 32, 32); SPR[nom] = c;
+  }
+  sprite("feu", "rgba(255,250,215,1)", "rgba(255,150,40,.85)"); sprite("braise", "rgba(255,230,150,1)", "rgba(255,110,30,.7)");
+  sprite("fumee", "rgba(90,90,92,.55)", "rgba(70,70,74,.3)", true); sprite("eau", "rgba(230,245,255,1)", "rgba(70,160,235,.8)");
+  sprite("farine", "rgba(250,244,228,.9)", "rgba(225,212,182,.5)", true); sprite("acide", "rgba(220,255,190,1)", "rgba(100,200,60,.75)");
+  sprite("elec", "rgba(255,255,230,1)", "rgba(140,200,255,.8)"); sprite("petale", "rgba(255,220,240,1)", "rgba(240,140,200,.8)");
+  sprite("verre", "rgba(255,255,255,1)", "rgba(200,230,255,.7)"); sprite("or", "rgba(255,250,210,1)", "rgba(242,194,48,.85)");
+  sprite("mousse", "rgba(255,255,250,1)", "rgba(230,240,220,.7)", true); sprite("vapeur", "rgba(240,244,248,.7)", "rgba(220,228,236,.35)", true);
+  sprite("boue", "rgba(150,110,70,1)", "rgba(110,76,44,.8)");
+  // le fond d'une flaque (son dégradé, son reflet), dessiné une fois par sorte et par taille ; une flamme, dessinée une fois
+  var FONDS = new Map(), FONDS_K = 0;
+  var COUL_FOND = { eau: ["90,170,240", "30,100,190"], elec: ["150,210,255", "40,90,200"], acide: ["160,230,110", "50,140,40"], boue: ["130,94,58", "76,52,30"], savon: ["250,230,250", "190,220,250"], feu: ["255,200,90", "230,80,30"] };
+  function fondTrace(type, r) {
+    var k = L.s * L.dpr, rq = Math.max(8, Math.round(r / 4) * 4);
+    if (k !== FONDS_K) { FONDS.clear(); FONDS_K = k; }
+    var cle = type + "|" + rq, c = FONDS.get(cle);
+    if (c) return c;
+    var cc = COUL_FOND[type], w = Math.ceil(rq * 2.2 * k), h = Math.ceil(rq * 2.2 * FY * k);
+    c = document.createElement("canvas"); c.width = w; c.height = h;
+    var g = c.getContext("2d"); g.setTransform(k, 0, 0, k * FY, w / 2, h / 2);
+    var gr = g.createRadialGradient(-rq * 0.2, -rq * 0.15, rq * 0.1, 0, 0, rq);
+    if (type === "feu") { gr.addColorStop(0, "rgba(255,200,90,.55)"); gr.addColorStop(0.6, "rgba(230,80,30,.4)"); gr.addColorStop(1, "rgba(120,30,10,0)"); }
+    else { gr.addColorStop(0, "rgba(" + cc[0] + ",.55)"); gr.addColorStop(0.75, "rgba(" + cc[1] + ",.45)"); gr.addColorStop(1, "rgba(" + cc[1] + ",.12)"); }
+    g.fillStyle = gr; g.beginPath(); g.arc(0, 0, type === "feu" ? rq * 1.08 : rq, 0, Math.PI * 2); g.fill();
+    if (type !== "feu") { g.strokeStyle = "rgba(255,255,255,.35)"; g.lineWidth = 1.2; g.beginPath(); g.arc(0, 0, rq * 0.92, Math.PI * 1.1, Math.PI * 1.6); g.stroke(); }
+    if (type === "savon") { g.strokeStyle = "rgba(255,255,255,.8)"; g.lineWidth = 1.1; for (var j = 0; j < 9; j++) { var an = j * 1.9, rr3 = (0.2 + (j % 4) * 0.19) * rq; g.beginPath(); g.arc(Math.cos(an) * rr3, Math.sin(an) * rr3 - 3, 2.5 + (j % 3) * 1.6, 0, Math.PI * 2); g.stroke(); } }
+    FONDS.set(cle, c);
+    return c;
+  }
+  // un nuage (farine, vapeur, fumée) ou des lianes au repos : une image par sorte et par taille ; on renvoie [toile, décalage x, décalage y, largeur, hauteur]
+  function imageTrace(type, r) {
+    var k = L.s * L.dpr, rq = Math.max(8, Math.round(r / 4) * 4);
+    if (k !== FONDS_K) { FONDS.clear(); FONDS_K = k; }
+    var cle = "img|" + type + "|" + rq, c = FONDS.get(cle);
+    if (c) return c;
+    var W2 = rq * 2.3, H2 = rq * 2.3 * FY + 30, cv2 = document.createElement("canvas"); cv2.width = Math.ceil(W2 * k); cv2.height = Math.ceil(H2 * k);
+    var g = cv2.getContext("2d"), j, an, rr3; g.setTransform(k, 0, 0, k, W2 / 2 * k, (H2 - rq * 1.15 * FY) * k);
+    if (type === "lianes") {
+      g.lineCap = "round";
+      for (j = 0; j < 7; j++) {
+        an = j * 0.9; var bx = Math.cos(an) * rq * 0.95, by = Math.sin(an) * rq * 0.95 * FY, mx = bx / 2 + Math.sin(j * 3) * 5, my = by / 2 - 10;
+        g.strokeStyle = "rgba(60,140,50,.95)"; g.lineWidth = 3.4; g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(mx, my, bx, by - 6); g.stroke();
+        g.strokeStyle = "rgba(130,200,90,.8)"; g.lineWidth = 1.2; g.stroke();
+        g.fillStyle = "rgba(110,190,70,.95)"; g.save(); g.translate((mx + bx) / 2, (my + by - 6) / 2); g.rotate(an + 0.6); g.beginPath(); g.ellipse(0, 0, 4, 2, 0, 0, Math.PI * 2); g.fill(); g.restore();
+      }
+    } else {
+      var sp2 = SPR[type === "nuage" ? "farine" : "vapeur"], nb = Math.max(4, Math.min(7, Math.round(rq / 9)));
+      if (type === "fumee") { g.fillStyle = "rgba(80,150,60,.3)"; g.beginPath(); g.ellipse(0, -8, rq, rq * FY, 0, 0, Math.PI * 2); g.fill(); }
+      for (j = 0; j < nb; j++) { an = j * 2.399; rr3 = Math.sqrt((j + 0.5) / nb) * rq * 0.75; var rb = rq * 0.42 + (j % 3) * 4; g.drawImage(sp2, Math.cos(an) * rr3 - rb, Math.sin(an) * rr3 * FY - 10 - rb, rb * 2, rb * 2); }
+    }
+    c = [cv2, -W2 / 2, -(H2 - rq * 1.15 * FY), W2, H2];
+    FONDS.set(cle, c);
+    return c;
+  }
+  var FLAMME = (function () {
+    var c = document.createElement("canvas"); c.width = 24; c.height = 48; var g = c.getContext("2d");
+    function goutte(lx, h, col) { g.fillStyle = col; g.beginPath(); g.moveTo(12 - lx, 48); g.quadraticCurveTo(12 - lx * 0.7, 48 - h * 0.6, 12, 48 - h); g.quadraticCurveTo(12 + lx * 0.7, 48 - h * 0.6, 12 + lx, 48); g.closePath(); g.fill(); }
+    goutte(11, 47, "rgba(255,110,30,.9)"); goutte(6, 30, "rgba(255,225,120,.95)"); goutte(3, 15, "rgba(255,250,220,.9)");
+    return c;
+  })();
+  function part(o) {
+    if (!S) return;
+    if (S.PA.length > (LEGER ? 70 : 180)) S.PA.shift();
+    o.t = 0; o.z = o.z || 0; o.vx = o.vx || 0; o.vy = o.vy || 0; o.vz = o.vz || 0; o.a = o.a === undefined ? 1 : o.a; o.r1 = o.r1 === undefined ? o.r : o.r1;
+    S.PA.push(o);
+  }
+  // une gerbe : n particules autour de (x, y), vers le haut
+  function gerbe(x, y, n, c, o) {
+    o = o || {}; if (LEGER) n = Math.ceil(n / 3);
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * 6.283, v = (o.v || 120) * (0.4 + Math.random() * 0.8);
+      part({ x: x + Math.cos(a) * (o.dr || 0) * Math.random(), y: y + Math.sin(a) * (o.dr || 0) * Math.random(), z: o.z || 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.7, vz: (o.vz || 140) * (0.5 + Math.random() * 0.8),
+        g: o.g === undefined ? 420 : o.g, fr: o.fr || 1.2, dur: (o.dur || 0.7) * (0.6 + Math.random() * 0.7), r: (o.r || 4) * (0.7 + Math.random() * 0.6), r1: o.r1 === undefined ? 1 : o.r1, c: c, add: !!o.add, a: o.a, rebond: o.rebond });
+    }
+  }
+  function majParts(dt) {
+    S.PA = S.PA.filter(function (p) {
+      p.t += dt; if (p.t >= p.dur) return false;
+      p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; p.vz -= (p.g || 0) * dt;
+      if (p.fr) { var f = Math.exp(-p.fr * dt); p.vx *= f; p.vy *= f; }
+      if (p.z < 0) { p.z = 0; if (p.rebond) { p.vz = -p.vz * 0.35; p.vx *= 0.6; p.vy *= 0.6; } else p.vz = 0; }
+      return true;
+    });
+  }
+  function dessinerParts() {
+    var add = false;
+    S.PA.forEach(function (p) {
+      var k = p.t / p.dur, r = p.r + (p.r1 - p.r) * k, sp = SPR[p.c]; if (!sp || r <= 0.2) return;
+      // (pas de mélange « lumière » : sur une tablette sans carte graphique, il coûte trois fois plus cher)
+      ctx.globalAlpha = p.a * (k < 0.15 ? k / 0.15 : 1 - (k - 0.15) / 0.85 * (p.c === "fumee" || p.c === "vapeur" || p.c === "farine" ? 1 : 0.85));
+      ctx.drawImage(sp, p.x - r, sy(p.y) - p.z - r, r * 2, r * 2);
+    });
+    ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
+  }
+  // les traces au sol qui crachent des particules (les braises du feu, les bulles de l'acide, les étincelles, les pétales)
+  function emettre(t, dt) {
+    var dens = { feu: 7, acide: 3, elec: 5, fleurs: 2, boue: 1.2, vapeur: 1.5, fumee: 1.5, nuage: 1.8 }[t.type];
+    if (!dens || LEGER) return;
+    t.em = (t.em || 0) + dt * dens * Math.max(0.6, t.r / 45);
+    while (t.em >= 1) {
+      t.em -= 1;
+      var a = Math.random() * 6.283, d = Math.sqrt(Math.random()) * t.r * 0.85, x = t.x + Math.cos(a) * d, y = t.y + Math.sin(a) * d;
+      if (t.type === "feu") part({ x: x, y: y, z: 3, vx: (Math.random() - 0.5) * 20, vz: 45 + Math.random() * 50, dur: 0.7 + Math.random() * 0.6, r: 3.2, r1: 0.6, c: Math.random() < 0.3 ? "feu" : "braise", add: true, fr: 0.5 });
+      else if (t.type === "acide") part({ x: x, y: y, z: 1, dur: 0.5, r: 1, r1: 3.5, c: "acide", a: 0.9 });
+      else if (t.type === "elec") part({ x: x, y: y, z: 2, vx: (Math.random() - 0.5) * 120, vy: (Math.random() - 0.5) * 80, vz: 60 + Math.random() * 80, g: 500, dur: 0.25, r: 2.4, r1: 0.5, c: "elec", add: true });
+      else if (t.type === "fleurs") part({ x: x, y: y, z: 22 + Math.random() * 10, vx: 10 + Math.random() * 10, vz: -8, dur: 1.6, r: 2.3, r1: 1.6, c: "petale", a: 0.9, fr: 0.3 });
+      else if (t.type === "boue") part({ x: x, y: y, z: 0.5, dur: 0.6, r: 0.8, r1: 3, c: "boue", a: 0.9 });
+      else part({ x: x, y: y, z: 6 + Math.random() * 10, vx: (Math.random() - 0.5) * 12, vz: 6, dur: 1.6, r: 6, r1: 13, c: t.type === "nuage" ? "farine" : "vapeur", a: 0.55 });
+    }
+  }
+  // une trace au sol, plus belle : une flaque qui brille, un feu qui flambe, un nuage en boules…
+  function dessinerTrace(t, tps) {
+    var a = TA[t.type] * Math.min(1, t.t / 1.2), X = t.x, Y = sy(t.y), r = t.r, j, an, rr2, k = Math.min(1, t.t / 1.2);
+    var g0;
+    if (t.type === "eau" || t.type === "elec" || t.type === "acide" || t.type === "boue" || t.type === "savon") {
+      ctx.globalAlpha = k; ctx.drawImage(fondTrace(t.type, r), X - r * 1.1, Y - r * 1.1 * FY, r * 2.2, r * 2.2 * FY); ctx.globalAlpha = 1;
+      if ((t.type === "eau" || t.type === "elec") && !LEGER) for (j = 0; j < 2; j++) { var q = ((tps * 0.6 + j * 0.5 + t.x * 0.01) % 1); ctx.strokeStyle = "rgba(255,255,255," + (0.35 * (1 - q) * k) + ")"; ctx.lineWidth = 1; ell(X + Math.sin(j * 4 + t.y) * r * 0.25, Y, r * 0.25 + r * 0.55 * q, (r * 0.25 + r * 0.55 * q) * FY); ctx.stroke(); }
+
+      if (t.type === "elec") {
+        ctx.strokeStyle = "rgba(255,250,170," + (0.55 + 0.45 * Math.random()) + ")"; ctx.lineWidth = 1.6;
+        for (j = 0; j < 3; j++) { var a0 = Math.random() * 6.28, px = X + Math.cos(a0) * r * 0.6, py = Y + Math.sin(a0) * r * 0.6 * FY; ctx.beginPath(); ctx.moveTo(px, py); for (var qq = 0; qq < 4; qq++) { px += (Math.random() - 0.5) * 14; py += (Math.random() - 0.5) * 10; ctx.lineTo(px, py); } ctx.stroke(); }
+      }
+      return;
+    }
+    if (t.type === "feu") {
+      ctx.globalAlpha = k; ctx.drawImage(fondTrace("feu", r), X - r * 1.1, Y - r * 1.1 * FY, r * 2.2, r * 2.2 * FY);
+      var nf = LEGER ? 3 : Math.max(4, Math.min(8, Math.round(r / 7)));
+      for (j = 0; j < nf; j++) {
+        an = j * 2.399 + t.x; rr2 = Math.sqrt((j + 0.5) / nf) * r * 0.75;
+        var fx0 = X + Math.cos(an) * rr2, fy0 = Y + Math.sin(an) * rr2 * FY, hf = 11 + 8 * Math.abs(Math.sin(tps * 11 + j * 1.7)), lf = 5 + (j % 3);
+        ctx.drawImage(FLAMME, fx0 - lf, fy0 - hf, lf * 2, hf);
+      }
+      ctx.globalAlpha = 1;
+      return;
+    }
+    if (t.type === "nuage" || t.type === "vapeur" || t.type === "fumee") {
+      var im = imageTrace(t.type, r), bob = Math.sin(tps * 1.3 + t.x) * 2, ech = r / Math.max(8, Math.round(r / 4) * 4);
+      ctx.globalAlpha = (t.type === "fumee" ? 0.6 : 0.85) * k;
+      ctx.drawImage(im[0], X + im[1] * ech + Math.sin(tps * 0.7 + t.y) * 2, Y + im[2] * ech + bob, im[3] * ech, im[4] * ech);
+      ctx.globalAlpha = 1;
+      return;
+    }
+    // les autres : comme avant (fleurs, lianes, pollen, mousse, bain, pop-corn)
+    ctx.fillStyle = "rgba(" + TC[t.type] + "," + a + ")"; ell(X, Y, r, r * FY); ctx.fill();
+    ctx.strokeStyle = "rgba(" + TC[t.type] + "," + Math.min(1, a * 2) + ")"; ctx.lineWidth = 1.5; ctx.stroke();
+    if (t.type === "fleurs") {
+      for (j = 0; j < 9; j++) { an = j * 2.4; rr2 = Math.sqrt((j + 0.5) / 9) * r * 0.8; var fx1 = X + Math.cos(an) * rr2, fy1 = Y + Math.sin(an) * rr2 * FY;
+        ctx.fillStyle = j % 2 ? "rgba(240,150,210," + (0.9 * k) + ")" : "rgba(180,160,255," + (0.9 * k) + ")";
+        for (var pe = 0; pe < 5; pe++) { var pa = pe * 1.2566 + tps * 0.3; ell(fx1 + Math.cos(pa) * 2.4, fy1 + Math.sin(pa) * 1.8, 1.9, 1.5); ctx.fill(); }
+        ctx.fillStyle = "rgba(255,230,120," + k + ")"; rond(fx1, fy1, 1.3); ctx.fill(); }
+    }
+    else if (t.type === "bain" || t.type === "popcorn" || t.type === "mousse") {
+      ctx.strokeStyle = "rgba(255,255,255," + Math.min(1, a * 1.8) + ")"; ctx.fillStyle = "rgba(255,255,255," + a * 0.6 + ")"; ctx.lineWidth = 1.3;
+      for (j = 0; j < 16; j++) { an = j * 2.1 + tps * (t.type === "popcorn" ? 3 : 0.4); rr2 = (0.15 + (j % 5) * 0.17) * r; var bz = t.type === "popcorn" ? Math.abs(Math.sin(tps * 7 + j)) * 6 : 0; rond(X + Math.cos(an) * rr2, Y + Math.sin(an) * rr2 * FY - bz, 3 + (j % 3) * 2.2); ctx.fill(); ctx.stroke(); }
+    }
+    else if (t.type === "pollen") { ctx.fillStyle = "rgba(255,230,90," + a * 1.8 + ")"; for (j = 0; j < 12; j++) { an = j * 2.3 + tps; rr2 = ((j * 37) % 10) / 10 * r; rond(X + Math.cos(an) * rr2, Y + Math.sin(an) * rr2 * FY - 4 - Math.sin(tps * 2 + j) * 3, 1.8); ctx.fill(); } }
+    else if (t.type === "lianes" && !(t.feu > 0)) { var iml = imageTrace("lianes", r), el = r / Math.max(8, Math.round(r / 4) * 4); ctx.drawImage(iml[0], X + iml[1] * el, Y + iml[2] * el, iml[3] * el, iml[4] * el); }
+    else if (t.type === "lianes") {
+      ctx.lineCap = "round";
+      for (j = 0; j < 7; j++) {
+        an = j * 0.9 + (t.feu > 0 ? t.ang : Math.sin(tps * 2 + j) * 0.2); var bx = X + Math.cos(an) * r * 0.95, by = Y + Math.sin(an) * r * 0.95 * FY, mx = (X + bx) / 2 + Math.sin(tps * 3 + j) * 6, my = (Y + by) / 2 - 10;
+        ctx.strokeStyle = t.feu > 0 ? "rgba(255,140,50,.95)" : "rgba(60,140,50,.95)"; ctx.lineWidth = 3.4; ctx.beginPath(); ctx.moveTo(X, Y); ctx.quadraticCurveTo(mx, my, bx, by - 6); ctx.stroke();
+        ctx.strokeStyle = t.feu > 0 ? "rgba(255,220,120,.9)" : "rgba(130,200,90,.8)"; ctx.lineWidth = 1.2; ctx.stroke();
+        ctx.fillStyle = t.feu > 0 ? "rgba(255,170,60,.95)" : "rgba(110,190,70,.95)";
+        ctx.save(); ctx.translate((mx + bx) / 2, (my + by - 6) / 2); ctx.rotate(an + 0.6); ell(0, 0, 4, 2); ctx.fill(); ctx.restore();
+      }
+      if (t.feu > 0) for (j = 0; j < 2; j++) part({ x: X + (Math.random() - 0.5) * r, y: t.y + (Math.random() - 0.5) * r * 0.6, z: 8, vz: 60, vx: (Math.random() - 0.5) * 30, dur: 0.5, r: 3, r1: 0.5, c: "braise", add: true });
+    }
+  }
+
   /* ================= dessin ================= */
+  function pave(x, y, w, h, r) { ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); }
   function ell(x, y, rx, ry) { ctx.beginPath(); ctx.ellipse(x, y, Math.max(0.1, rx), Math.max(0.1, ry), 0, 0, Math.PI * 2); }
   function rond(x, y, r) { ctx.beginPath(); ctx.arc(x, y, Math.max(0.1, r), 0, Math.PI * 2); }
   function texte(t, x, y, taille, coul, align) {
@@ -1558,27 +1886,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     ctx.setTransform(k, 0, 0, k, sx, syk);
     if (!S) return;
     var tps = S.temps, i;
-    S.T.forEach(function (t) {
-      var a = TA[t.type] * Math.min(1, t.t / 1.2), X = t.x, Y = sy(t.y), r = t.r, j, an, rr;
-      ctx.fillStyle = "rgba(" + TC[t.type] + "," + a + ")"; ell(X, Y, r, r * FY); ctx.fill();
-      ctx.strokeStyle = "rgba(" + TC[t.type] + "," + Math.min(1, a * 2) + ")"; ctx.lineWidth = 1.5; ctx.stroke();
-      if (t.type === "fleurs") { ctx.fillStyle = "rgba(200,190,255," + a * 2 + ")"; for (j = 0; j < 7; j++) { an = j * 2.4; rr = (j / 7) * r * 0.8; rond(X + Math.cos(an) * rr, Y + Math.sin(an) * rr * FY, 2.5); ctx.fill(); } }
-      else if (t.type === "boue") { ctx.fillStyle = "rgba(70,45,25," + a + ")"; ell(X - r * .3, Y, r * .25, r * .18); ctx.fill(); ell(X + r * .35, Y + r * .1, r * .2, r * .14); ctx.fill(); }
-      else if (t.type === "bain" || t.type === "popcorn") {
-        ctx.strokeStyle = "rgba(255,255,255," + Math.min(1, a * 1.8) + ")"; ctx.fillStyle = "rgba(255,255,255," + a * 0.6 + ")"; ctx.lineWidth = 1.3;
-        for (j = 0; j < 16; j++) { an = j * 2.1 + tps * (t.type === "popcorn" ? 3 : 0.4); rr = (0.15 + (j % 5) * 0.17) * r; var bz = t.type === "popcorn" ? Math.abs(Math.sin(tps * 7 + j)) * 6 : 0; rond(X + Math.cos(an) * rr, Y + Math.sin(an) * rr * FY - bz, 3 + (j % 3) * 2.2); ctx.fill(); ctx.stroke(); }
-      }
-      else if (t.type === "savon") { ctx.strokeStyle = "rgba(255,255,255," + a * 1.6 + ")"; ctx.lineWidth = 1.2; for (j = 0; j < 8; j++) { an = j * 1.9 + tps * 0.5; rr = (0.25 + (j % 4) * 0.18) * r; rond(X + Math.cos(an) * rr, Y + Math.sin(an) * rr * FY, 2.5 + (j % 2) * 2); ctx.stroke(); } }
-      else if (t.type === "elec") {
-        ctx.strokeStyle = "rgba(255,240,120," + (0.5 + 0.5 * Math.random()) + ")"; ctx.lineWidth = 1.5;
-        for (j = 0; j < 3; j++) { var a0 = Math.random() * 6.28, px = X + Math.cos(a0) * r * 0.6, py = Y + Math.sin(a0) * r * 0.6 * FY; ctx.beginPath(); ctx.moveTo(px, py); for (var q = 0; q < 4; q++) { px += (Math.random() - 0.5) * 14; py += (Math.random() - 0.5) * 10; ctx.lineTo(px, py); } ctx.stroke(); }
-      }
-      else if (t.type === "pollen") { ctx.fillStyle = "rgba(255,230,90," + a * 1.8 + ")"; for (j = 0; j < 10; j++) { an = j * 2.3 + tps; rr = ((j * 37) % 10) / 10 * r; rond(X + Math.cos(an) * rr, Y + Math.sin(an) * rr * FY - 4, 1.8); ctx.fill(); } }
-      else if (t.type === "lianes") {
-        ctx.strokeStyle = t.feu > 0 ? "rgba(255,140,50,.95)" : "rgba(80,170,70,.9)"; ctx.lineWidth = 3; ctx.lineCap = "round";
-        for (j = 0; j < 6; j++) { an = j * 1.05 + (t.feu > 0 ? t.ang : Math.sin(tps * 2 + j) * 0.2); var bx = X + Math.cos(an) * r * 0.9, by = Y + Math.sin(an) * r * 0.9 * FY; ctx.beginPath(); ctx.moveTo(X, Y); ctx.quadraticCurveTo((X + bx) / 2 + Math.sin(tps * 3 + j) * 6, (Y + by) / 2 - 10, bx, by - 6); ctx.stroke(); }
-      }
-    });
+    S.T.forEach(function (t) { dessinerTrace(t, tps); });
     if (S.gateau) {
       var GX = S.gateau.x, GY = sy(S.gateau.y);
       ctx.fillStyle = "rgba(0,0,0,.35)"; ell(GX, GY + 4, 14, 5); ctx.fill();
@@ -1604,7 +1912,16 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     S.P.forEach(function (q) {
       if (q.invisible) return;
       var kq = Math.min(1, q.t / q.dur), x = q.x0 + (q.x1 - q.x0) * kq, y = sy(q.y0 + (q.y1 - q.y0) * kq) - 30 * (1 - kq) - Math.sin(Math.PI * kq) * 50;
-      ctx.fillStyle = q.c; ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; rond(x, y, 6); ctx.fill(); ctx.stroke();
+      for (var tr = 1; tr <= 4; tr++) { var k3 = Math.max(0, kq - tr * 0.06), x3 = q.x0 + (q.x1 - q.x0) * k3, y3 = sy(q.y0 + (q.y1 - q.y0) * k3) - 30 * (1 - k3) - Math.sin(Math.PI * k3) * 50; ctx.globalAlpha = 0.5 - tr * 0.1; ctx.fillStyle = q.c; rond(x3, y3, 3.5 - tr * 0.6); ctx.fill(); }
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "rgba(0,0,0,.3)"; ell(q.x0 + (q.x1 - q.x0) * kq, sy(q.y0 + (q.y1 - q.y0) * kq), 4, 1.6); ctx.fill();
+      ctx.save(); ctx.translate(x, y); ctx.rotate(kq * 9);
+      ctx.fillStyle = q.c; rond(0, 2.5, 5.2); ctx.fill();
+      ctx.fillStyle = "rgba(220,236,246,.5)"; ctx.fillRect(-1.8, -6, 3.6, 5);
+      ctx.fillStyle = "#9a7449"; ctx.fillRect(-2, -8, 4, 2.5);
+      ctx.strokeStyle = "rgba(255,255,255,.85)"; ctx.lineWidth = 1.1; rond(0, 2.5, 5.2); ctx.stroke();
+      ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.beginPath(); ctx.arc(0, 2.5, 3.4, Math.PI * 1.1, Math.PI * 1.5); ctx.stroke();
+      ctx.restore();
     });
     // les siamois : la pâte qui les tient
     S.E.forEach(function (e) {
@@ -1631,11 +1948,18 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       trait(R.a, R.b);
       if (R.b2) { trait(R.p, R.b2); ctx.fillStyle = "rgba(255,240,180,.9)"; rond(R.p.x, sy(R.p.y) - 22, 9 + Math.sin(tps * 30) * 3); ctx.fill(); }
     }
+    dessinerParts();
     if (S.vise && S.slots.length) dessinerVisee();
     S.FX.forEach(function (f) {
       var kf = f.t / f.dur, X = f.x, Y = f.y !== undefined ? sy(f.y) : 0;
-      if (f.k === "boom") { ctx.fillStyle = "rgba(255,170,60," + (0.55 * (1 - kf)) + ")"; ell(X, Y, f.r * (0.4 + 0.6 * kf), f.r * FY * (0.4 + 0.6 * kf)); ctx.fill(); ctx.strokeStyle = "rgba(255,230,140," + (1 - kf) + ")"; ctx.lineWidth = 3; ctx.stroke();
-        ctx.fillStyle = "rgba(255,220,120," + (0.6 * (1 - kf)) + ")"; rond(X, Y - 18 - kf * 20, f.r * 0.35 * (1 - kf * 0.5)); ctx.fill(); }
+      if (f.k === "boom") {
+        // le sol brûlé, l'onde de choc, la boule de feu qui monte
+        ctx.fillStyle = "rgba(30,20,12," + (0.35 * (1 - kf)) + ")"; ell(X, Y, f.r * 0.7, f.r * 0.7 * FY); ctx.fill();
+        ctx.strokeStyle = "rgba(255,235,170," + (0.9 * (1 - kf)) + ")"; ctx.lineWidth = 4 * (1 - kf) + 1; ell(X, Y, f.r * (0.3 + 1.0 * kf), f.r * FY * (0.3 + 1.0 * kf)); ctx.stroke();
+        var rb2 = f.r * (0.35 + 0.45 * Math.min(1, kf * 2.5)) * (1 - kf * 0.35), yb2 = Y - 12 - kf * 26;
+        var gbm = ctx.createRadialGradient(X, yb2, 0, X, yb2, rb2); gbm.addColorStop(0, "rgba(255,255,230," + (1 - kf) + ")"); gbm.addColorStop(0.35, "rgba(255,200,80," + (0.9 * (1 - kf)) + ")"); gbm.addColorStop(0.75, "rgba(240,90,30," + (0.6 * (1 - kf)) + ")"); gbm.addColorStop(1, "rgba(120,40,20,0)");
+        ctx.fillStyle = gbm; rond(X, yb2, rb2); ctx.fill();
+      }
       else if (f.k === "onde") { ctx.strokeStyle = "rgba(" + f.c + "," + (1 - kf) + ")"; ctx.lineWidth = 3; ell(X, Y, f.r * (0.6 + 0.4 * kf), f.r * FY * (0.6 + 0.4 * kf)); ctx.stroke(); }
       else if (f.k === "cone") {
         ctx.fillStyle = "rgba(" + f.c + "," + (0.45 * (1 - kf)) + ")"; ctx.beginPath(); ctx.moveTo(f.x, sy(f.y));
@@ -1678,18 +2002,18 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       }
       else if (f.k === "txt") { ctx.globalAlpha = 1 - kf; texte(f.txt, X, Y + f.dz - kf * 24, 14, f.c); ctx.globalAlpha = 1; }
     });
-    // en haut : ta vie, le nombre d'automates, le message
-    ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.fillRect(12, 10, 110, 9);
-    ctx.fillStyle = S.pv > 35 ? "#5FBF58" : "#E5A93A"; ctx.fillRect(12, 10, 110 * Math.max(0, S.pv / PV_J), 9);
-    texte(Math.max(0, Math.ceil(S.pv)) + "", 128, 19, 11, "#fff", "left");
-    texte(S.E.length + " automate" + (S.E.length > 1 ? "s" : ""), 12, 33, 11, S.E.length > 18 ? "#F0806A" : "#C9D2CF", "left");
-    if (S.msg && S.msg.t > 0) {
-      ctx.globalAlpha = Math.min(1, S.msg.t);
-      var mt = S.msg.txt.length > 66 ? S.msg.txt.slice(0, 64) + "…" : S.msg.txt;
-      ctx.fillStyle = "rgba(10,12,14,.78)"; ctx.fillRect(0, 38, W, 20);
-      texte(mt, W / 2, 52, 11.5, S.msg.ton === "mal" ? "#F0806A" : S.msg.ton === "bon" ? "#8BD46A" : "#E8ECEA");
-      ctx.globalAlpha = 1;
-    }
+    // en haut : ta vie (un cœur, une barre), le nombre d'automates
+    var pvk = Math.max(0, S.pv / PV_J);
+    ctx.fillStyle = "rgba(14,10,8,.78)"; pave(8, 7, 156, 30, 10); ctx.fill(); ctx.strokeStyle = "rgba(242,194,48,.4)"; ctx.lineWidth = 1; ctx.stroke();
+    ctx.save(); ctx.translate(22, 18 + (S.pv < 35 ? Math.sin(tps * 10) * 0.8 : 0));
+    ctx.fillStyle = S.pv < 35 ? "#FF5A5A" : "#E85A8A"; ctx.beginPath(); ctx.moveTo(0, 6); ctx.bezierCurveTo(-9, -1, -6, -9, 0, -4); ctx.bezierCurveTo(6, -9, 9, -1, 0, 6); ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,.55)"; ell(-3, -3, 1.6, 1.1); ctx.fill(); ctx.restore();
+    ctx.fillStyle = "rgba(0,0,0,.6)"; pave(34, 12, 96, 10, 5); ctx.fill();
+    if (pvk > 0) { var gpv = ctx.createLinearGradient(34, 0, 130, 0); gpv.addColorStop(0, pvk > 0.35 ? "#3E9A44" : "#B8402A"); gpv.addColorStop(1, pvk > 0.35 ? "#8BD46A" : "#F0A040"); ctx.fillStyle = gpv; pave(34, 12, Math.max(10, 96 * pvk), 10, 5); ctx.fill(); ctx.fillStyle = "rgba(255,255,255,.25)"; pave(36, 13, Math.max(6, 96 * pvk - 4), 3, 1.5); ctx.fill(); }
+    texte(Math.max(0, Math.ceil(S.pv)) + "", 136, 21.5, 11, "#fff", "left");
+    ctx.fillStyle = "#8FA5B5"; rond(38, 30, 2.6); ctx.fill(); ctx.fillStyle = "#FFB347"; rond(38, 30, 1.1); ctx.fill();
+    texte(S.E.length + " automate" + (S.E.length > 1 ? "s" : "") + (S.file.length ? " · " + S.file.length + " arrivent" : ""), 44, 33, 9.5, S.E.length > 18 ? "#F0A08A" : "#C9C1B2", "left");
+    if (MSG.on && (!S.msg || S.msg.t <= 0)) { MSG.on = false; $("msg").classList.remove("on"); }
     // la salve qui arrive : son nom
     if (S.banniere) {
       var kb0 = S.banniere.t, yb = sy(S.B.y) + 36;
@@ -1711,7 +2035,9 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       ctx.save(); ctx.translate(W / 2, L.top + (L.bot - L.top) * 0.42); ctx.scale(sc, sc); ctx.globalAlpha = Math.min(1, S.big.t * 2);
       ctx.font = "800 27px 'Alegreya Sans', sans-serif"; ctx.textAlign = "center"; ctx.lineWidth = 6; ctx.strokeStyle = "rgba(0,0,0,.85)";
       var lb = ctx.measureText(S.big.txt).width; if (lb * sc > W - 24) ctx.scale((W - 24) / (lb * sc), (W - 24) / (lb * sc));
-      ctx.strokeText(S.big.txt, 0, 0); ctx.fillStyle = "#F2C230"; ctx.fillText(S.big.txt, 0, 0);
+      ctx.rotate(-0.04); ctx.strokeText(S.big.txt, 0, 0);
+      var gbig = ctx.createLinearGradient(0, -22, 0, 4); gbig.addColorStop(0, "#FFF2B0"); gbig.addColorStop(0.5, "#F2C230"); gbig.addColorStop(1, "#C9781C");
+      ctx.fillStyle = gbig; ctx.fillText(S.big.txt, 0, 0);
       if (S.big.neuf) { ctx.font = "800 13px 'Alegreya Sans', sans-serif"; ctx.lineWidth = 3; ctx.strokeText("Nouveau combo dans le carnet !", 0, 22); ctx.fillStyle = "#fff"; ctx.fillText("Nouveau combo dans le carnet !", 0, 22); }
       ctx.restore(); ctx.globalAlpha = 1;
     }
@@ -1785,9 +2111,12 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       ctx.restore();
       ctx.strokeStyle = "rgba(255,240,170," + Math.min(1, 0.7 * al) + ")"; ctx.lineWidth = 1.6; ell(x, cy, rx, ry); ctx.stroke();
     }
-    ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(x - 55, Y + 8, 110, 7);
-    ctx.fillStyle = S.bouclierV > 0.5 ? "#F2C230" : "#E5572A"; ctx.fillRect(x - 55, Y + 8, 110 * Math.max(0, B.pv / PV_B), 7);
-    texte((S.bouclierV > 0.5 ? "🛡 " : "") + "Grosbec", x, Y + 27, 11, "#F2C86A");
+    var bk = Math.max(0, B.pv / PV_B);
+    ctx.fillStyle = "rgba(10,8,6,.8)"; pave(x - 58, Y + 6, 116, 11, 5.5); ctx.fill(); ctx.strokeStyle = "rgba(242,194,48,.7)"; ctx.lineWidth = 1; ctx.stroke();
+    if (bk > 0) { var gb = ctx.createLinearGradient(x - 56, 0, x + 56, 0); gb.addColorStop(0, S.bouclierV > 0.5 ? "#B8901E" : "#9E1F1A"); gb.addColorStop(1, S.bouclierV > 0.5 ? "#F2C230" : "#F05A2A"); ctx.fillStyle = gb; pave(x - 56, Y + 8, Math.max(7, 112 * bk), 7, 3.5); ctx.fill(); }
+    ctx.strokeStyle = "rgba(255,240,200,.45)"; ctx.lineWidth = 1; [0.25, 0.5, 0.75].forEach(function (q) { ctx.beginPath(); ctx.moveTo(x - 56 + 112 * q, Y + 8); ctx.lineTo(x - 56 + 112 * q, Y + 15); ctx.stroke(); });
+    ctx.font = "400 13px 'IM Fell English SC', Georgia, serif"; ctx.textAlign = "center"; ctx.lineWidth = 3; ctx.strokeStyle = "rgba(0,0,0,.8)";
+    var nomB = (S.bouclierV > 0.5 ? "🛡 " : "") + "Grosbec"; ctx.strokeText(nomB, x, Y + 30); ctx.fillStyle = "#F2C86A"; ctx.fillText(nomB, x, Y + 30);
     // ce qu'il crie (une bulle de bande dessinée)
     if (S.bulle) {
       var bt = S.bulle, sc2 = bt.t > 1.3 ? 0.6 + (1.5 - bt.t) * 2 : 1;
@@ -2098,16 +2427,58 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   }
 
   /* ================= commandes ================= */
-  function majPotions() { var n = S ? S.slots.length : 0; document.querySelectorAll(".pot").forEach(function (b) { b.disabled = n >= 3; }); }
-  $("potions").innerHTML = ING.map(function (g, i) { return '<button type="button" class="pot ' + g.id + '" data-ing="' + g.id + '" style="--c:' + g.hex + '" aria-label="' + g.nom + '">' + ico(g.id) + '<span class="touche">' + (i + 1) + '</span></button>'; }).join("");
+  function majPotions() {
+    var sl = S ? S.slots : [], n = sl.length, cands = [];
+    if (n >= 1 && n < 3) ING.forEach(function (g) { var cle = cleTxt(sl.concat([g.id])); cands.push({ id: g.id, sc: scoreMelange(cle) }); });
+    var top = cands.filter(function (c) { return c.sc >= 4; }).sort(function (a, b) { return b.sc - a.sc; }).slice(0, 2).map(function (c) { return c.id; });
+    document.querySelectorAll(".pot").forEach(function (b) {
+      var id = b.dataset.ing, et = b.querySelector(".etiq");
+      b.disabled = n >= 3;
+      if (n >= 1 && n < 3) { var A = aide(cleTxt(sl.concat([id]))); et.textContent = A[0] + " " + A[1]; b.classList.add("aide"); }
+      else b.classList.remove("aide");
+      b.classList.toggle("etoile", top.indexOf(id) >= 0);
+    });
+    // le chaudron : la couleur du mélange, les trois places
+    $("ch-liq").setAttribute("fill", n ? melangeCouleur(sl) : "#1a1a1f");
+    for (var i = 0; i < 3; i++) {
+      var c = $("ch-s" + i);
+      if (i < n) { c.setAttribute("fill", ING[IDX[sl[i]]].hex); c.setAttribute("stroke", "#fff"); c.removeAttribute("stroke-dasharray"); }
+      else { c.setAttribute("fill", "none"); c.setAttribute("stroke", "rgba(255,255,255,.3)"); c.setAttribute("stroke-dasharray", "2 2"); }
+    }
+    $("vider").classList.toggle("plein", n > 0);
+  }
+  function fioleSVG(g) {
+    var fonce = g.id === "farine" ? "#4A3D24" : "#fff";
+    return '<svg class="fiole" viewBox="0 0 48 58" aria-hidden="true">' +
+      '<rect x="18" y="0.5" width="12" height="8" rx="2.2" fill="#9a7449" stroke="#5d4127" stroke-width="1"/>' +
+      '<path d="M18.5 8 L29.5 8 L29.5 20.5 A18 18 0 1 1 18.5 20.5 Z" fill="rgba(220,236,246,.16)"/>' +
+      '<path d="M9.4 31 A16.4 16.4 0 1 0 38.6 31 Q24 34.5 9.4 31 Z" fill="' + g.hex + '"/>' +
+      '<path d="M9.4 31 Q24 34.5 38.6 31" stroke="rgba(255,255,255,.45)" stroke-width="1.2" fill="none"/>' +
+      '<path d="M18.5 8 L29.5 8 L29.5 20.5 A18 18 0 1 1 18.5 20.5 Z" fill="none" stroke="rgba(235,244,250,.85)" stroke-width="1.6"/>' +
+      '<path d="M12.5 30 Q11 41 17 48" stroke="rgba(255,255,255,.6)" stroke-width="2.4" fill="none" stroke-linecap="round"/>' +
+      '<use href="#i-' + g.id + '" x="14.5" y="31" width="19" height="19" fill="none" stroke="' + fonce + '" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '</svg>';
+  }
+  $("potions").innerHTML = ING.map(function (g, i) { return '<button type="button" class="pot ' + g.id + '" data-ing="' + g.id + '" style="--c:' + g.hex + '" aria-label="' + g.nom + '"><span class="etiq"></span>' + fioleSVG(g) + '<span class="touche">' + (i + 1) + '</span></button>'; }).join("");
   function ajouter(id) {
     if (!S || !S.enCours || S.pause || S.slots.length >= 3) return;
     S.slots.push(id); majPotions();
-    var cle = cleTxt(S.slots), spec = SPEC[cle];
-    dire(NOMS[cle] + " · " + (spec ? spec.lab : LABR[S.slots.length]), "");
+    var b = document.querySelector('.pot[data-ing="' + id + '"]'); if (b) { b.classList.remove("saute"); void b.offsetWidth; b.classList.add("saute"); }
+    son("fiole");
+    var cle = cleTxt(S.slots), A = aide(cle);
+    dire(A[0] + " " + A[2], "aide");
   }
   $("potions").addEventListener("click", function (ev) { var b = ev.target.closest("[data-ing]"); if (b) ajouter(b.dataset.ing); });
-  $("vider").addEventListener("click", function () { if (S) { S.slots = []; majPotions(); dire("Chaudron vidé", ""); } });
+  $("vider").addEventListener("click", function () { if (S && S.slots.length) { S.slots = []; majPotions(); dire("Le chaudron est vide. On recommence ?", ""); } });
+  $("msg-lire").addEventListener("click", function () { lire($("msg-t").textContent); });
+  $("fin-lire").addEventListener("click", function () { lire($("fin-titre").textContent + ". " + $("fin-texte").textContent); });
+  // les règles : un bouton 🔊 pour chaque paragraphe
+  document.querySelectorAll("#regles .boite p").forEach(function (pp) {
+    if (pp.classList.contains("stats")) return;
+    var bt = document.createElement("button"); bt.type = "button"; bt.className = "lire"; bt.textContent = "🔊"; bt.setAttribute("aria-label", "Écouter");
+    bt.addEventListener("click", function () { lire(pp.textContent.replace("🔊", "")); });
+    pp.appendChild(bt);
+  });
   function versSol(ev) {
     var r = cv.getBoundingClientRect();
     var lx = (ev.clientX - r.left) / L.s, ly = (ev.clientY - r.top) / L.s;
@@ -2182,6 +2553,6 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   redim();
   dessiner();
   setTimeout(monterAlchi, 50);
-  window.__v4 = { essai: { lancerSalve: function (d) { lancerSalve(d); }, SALVES: SALVES, SEUILS: SEUILS, colere: function () { grosseColere(); } }, vitesse: function (v) { VITESSE = v; }, alchi: function () { return alchi; }, etat: function () { return S; }, L: L, lancer: function (x, y) { lancer({ x: x, y: y }); }, boire: function () { boire(); }, ajouter: ajouter };
+  window.__v4 = { leger: function () { return LEGER; }, perf: PERF, essai: { lancerSalve: function (d) { lancerSalve(d); }, SALVES: SALVES, SEUILS: SEUILS, colere: function () { grosseColere(); } }, vitesse: function (v) { VITESSE = v; }, alchi: function () { return alchi; }, etat: function () { return S; }, L: L, lancer: function (x, y) { lancer({ x: x, y: y }); }, boire: function () { boire(); }, ajouter: ajouter };
 })();
 </script>
