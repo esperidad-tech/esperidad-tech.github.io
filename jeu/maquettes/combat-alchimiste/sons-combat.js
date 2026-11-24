@@ -97,12 +97,30 @@
     crie: function (t, B) { voix(t, { f: 165, forme: "cri", d: 0.55, rauque: 0.5, g: 0.32, lp: 1200 }, B.salle); voix(t + 0.62, { f: 180, forme: "cri", d: 0.45, rauque: 0.5, g: 0.3, lp: 1200 }, B.salle); },
     aieBoss: function (t, B) { voix(t, { f: 150, forme: "aie", d: 0.25, rauque: 0.45, g: 0.3 }, B.salle); },
     colere: function (t, B) { voix(t, { f: 120, forme: "effort", d: 0.4, rauque: 0.8, g: 0.32 }, B.salle); voix(t + 0.45, { f: 135, forme: "cri", d: 0.9, rauque: 0.95, g: 0.36, lp: 1100 }, B.salle); A.bruit(t + 0.4, { coul: "brun", lp: 200, env: [[0, 0], [0.2, 1], [1, 0]], g: 0.35 }, B.loin); },
+    // ---- version 12 ----
+    // « ALLEZ ! ALLEZ ! ALLEZ ! » : trois cris rauques et forts, qui montent
+    allez: function (t, B) { [0, 0.34, 0.68].forEach(function (d, k) { voix(t + d, { f: 160 + k * 18, forme: "cri", d: 0.28, rauque: 0.75, g: 0.42, lp: 1400 }, B.salle); }); A.tambour(t, { f: 70, d: 0.5, g: 0.35 }, B.salle); A.tambour(t + 0.68, { f: 70, d: 0.5, g: 0.4 }, B.salle); },
+    // le berserker frappe : un cri de rage métallique, une lame
+    berserker: function (t, B) { A.cri(t, { f: 260, forme: "cri", d: 0.22, rauque: 0.8, grain: 0.8, hp: 150, lp: 2600, souffle: 0.3, g: 0.2 }, B.sec); O.swish(A, t + 0.05, 0.12, { f1: 1200, f2: 4200, f3: 2000, g: 0.35 }, B.sec); },
+    // une armure : le coup rebondit (clang)
+    armure: function (t, B) { O.tinc(A, t, h(900, 1100), { g: 0.16, clic: 0.6 }, B.sec); A.choc(t, { f: 260, f2: 160, d: 0.06, g: 0.2 }, B.sec); A.cloche(t, m(64), { d: 0.6, rapport: 3.1, indice: 1.4, g: 0.04 }, B.sec); },
+    // le court-circuit : un grand claquement électrique qui grésille
+    courtcircuit: function (t, B) { O.claque(A, t, 0.5, B.salle); A.joue(t, A.crepitement(0.9, 220, { forme: function (u) { return 1 - u * 0.8; } }), { g: 0.6, hp: 1200, env: [[0, 1], [0.9, 0]] }, B.salle); A.ton(t, { type: "sawtooth", f: 90, f2: 40, gl: 0.8, env: A.perc(0.005, 0.8), g: 0.18, trem: [40, 0.9], lp: 1800 }, B.salle); },
+    // la cuirasse du Colosse tombe : des plaques de fer sur les pavés
+    armureTombe: function (t, B) { [0, 0.12, 0.27, 0.36].forEach(function (d) { A.choc(t + d, { f: h(140, 200), f2: 70, d: 0.18, g: 0.4, sat: 3 }, B.salle); O.tinc(A, t + d, h(600, 900), { g: 0.15 }, B.salle); }); },
+    // le porte-barricade plante ses pieux
+    planter: function (t, B) { O.toc(A, t, 180, { g: 0.4, long: 1.4 }, B.sec); O.toc(A, t + 0.14, 200, { g: 0.3 }, B.sec); },
+    // le bois qui prend feu ; la barricade qui casse
+    feuBois: function (t, B) { O.embrase(A, t, 0.5, B.sec); A.joue(t + 0.1, A.crepitement(1.2, 30), { g: 0.4, hp: 1500 }, B.sec); },
+    brise: function (t, B) { O.craque(A, t, 0.3, 0.6, B.salle); A.choc(t, { f: 160, f2: 70, d: 0.15, g: 0.35 }, B.salle); },
+    // le Colosse arrive : trois pas qui font trembler, et le cor grave
+    colosse: function (t, B) { [0, 0.55, 1.1].forEach(function (d) { O.chuteGrave(A, t + d, 0.7, 0.6, B.salle); A.choc(t + d, { f: 70, f2: 35, d: 0.3, g: 0.5, sat: 3 }, B.salle); }); cor(t + 0.2, m(33), 1.8, 0.1, B.loin); cor(t + 0.2, m(40), 1.8, 0.07, B.loin); },
     // la fin
     victoire: function (t, B) { if (G.BRUITAGES && G.BRUITAGES.victoireA) G.BRUITAGES.victoireA(A, { t: t, sec: B.P.sec, cave: B.P.cave, grotte: B.P.grotte }); },
     defaite: function (t, B) { [[0, 50], [0.5, 49], [1.0, 45], [1.6, 38]].forEach(function (n) { cor(t + n[0], m(n[1] - 12), 0.9, 0.08, B.loin); }); O.timbale(A, t + 1.6, 0.8, B.salle); }
   };
   // pour ne pas tout noyer : un même bruit pas plus souvent que…
-  var LIMITE = { thud: 0.07, pop: 0.06, mort: 0.08, etincelle: 0.15, boom: 0.09, gong: 0.12, bam: 0.08, zap: 0.12, splat: 0.08, verre: 0.06, pschitt: 0.12, atchoum: 0.12, crac: 0.08, bloque: 0.15, aie: 0.2, aieBoss: 0.6, grogne: 0.8 };
+  var LIMITE = { allez: 0.9, berserker: 0.25, armure: 0.12, courtcircuit: 0.3, planter: 0.3, feuBois: 0.4, brise: 0.15, thud: 0.07, pop: 0.06, mort: 0.08, etincelle: 0.15, boom: 0.09, gong: 0.12, bam: 0.08, zap: 0.12, splat: 0.08, verre: 0.06, pschitt: 0.12, atchoum: 0.12, crac: 0.08, bloque: 0.15, aie: 0.2, aieBoss: 0.6, grogne: 0.8 };
   SC.jouer = function (nom) {
     if (!A || MUET) return;
     var f = BR[nom]; if (!f) return;

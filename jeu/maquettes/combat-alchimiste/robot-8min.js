@@ -12,12 +12,12 @@ const DUREE = +(process.argv[2] || 90000); const VIT = +(process.env.VIT || 3); 
     await p.goto("file://" + process.cwd() + "/apercu-v4.html"); await p.waitForTimeout(300);
     await p.screenshot({ path: "v4-regles-" + nom + ".png" });
     await p.click("#btn-go"); await p.waitForTimeout(300);
-    await p.evaluate(([v, im]) => { window.__v4.vitesse(v); if (im) setInterval(() => { const S = window.__v4.etat(); if (S && S.enCours) S.pv = Math.max(S.pv, 60); }, 100); }, [VIT, IMMORTEL]);
+    await p.evaluate(([v, im]) => { window.__v4.vitesse(v); if (im) setInterval(() => { const S = window.__v4.etat(); if (S && S.enCours) S.pv = Math.max(S.pv, 6); }, 100); }, [VIT, IMMORTEL]);
     let journal = 0, moitie = null;
     const dims = await p.evaluate(() => ({ sw: document.documentElement.scrollWidth, sh: document.documentElement.scrollHeight, vw: innerWidth, vh: innerHeight, bande: document.querySelector(".bande").scrollWidth, bandeW: document.querySelector(".bande").clientWidth }));
     const t0 = Date.now(); let tours = 0, shot = 0, boumShots = 0;
     while (Date.now() - t0 < DUREE) {
-      const st = await p.evaluate(() => { const S = window.__v4.etat(); if (!S || !S.enCours) return null; return { L: window.__v4.L, pv: S.pv, B: { x: S.B.x, y: S.B.y }, h: { x: S.hero.x, y: S.hero.y }, E: S.E.map(e => ({ x: e.x, y: e.y, t: e.t, enf: e.enfarine > 0, m: e.mouille > 0 })), O: S.O.filter(o => o.actif).map(o => ({ x: o.x, y: o.y })) }; });
+      const st = await p.evaluate(() => { const S = window.__v4.etat(); if (!S || !S.enCours) return null; return { L: window.__v4.L, bouclier: S.eauS > 1, pv: S.pv, B: { x: S.B.x, y: S.B.y }, h: { x: S.hero.x, y: S.hero.y }, E: S.E.map(e => ({ x: e.x, y: e.y, t: e.t, enf: e.enfarine > 0, m: e.mouille > 0 })), O: S.O.filter(o => o.actif).map(o => ({ x: o.x, y: o.y })) }; });
       if (!st) break;
       tours++;
       const J = await p.evaluate(() => { const S = window.__v4.etat(); return { t: Math.round(S.temps), B: Math.round(S.B.pv), pl: Math.round(1200 * Math.max(0, 1 - S.temps / 480)), E: S.E.length, f: S.file.length, pv: Math.round(S.pv), salve: S.dir.i, seuil: S.dir.seuil, bouclier: S.bouclierB > 0, col: S.nColeres, tues: S.tues }; });
@@ -44,7 +44,8 @@ const DUREE = +(process.argv[2] || 90000); const VIT = +(process.env.VIT || 3); 
         const proche = st.E.slice().sort((a, b) => Math.hypot(a.x - st.h.x, a.y - st.h.y) - Math.hypot(b.x - st.h.x, b.y - st.h.y))[0];
         rec = ["feu", "farine"]; cible = { x: proche.x, y: proche.y };
       }
-      else if (st.pv < 40 && tours % 4 === 0) { rec = ["fleur", "fleur"]; boireIt = true; }
+      else if (st.pv < 5 && tours % 2 === 0) { rec = ["fleur", "fleur", "fleur"]; boireIt = true; }
+      else if (pres >= 2 && !st.bouclier) { rec = ["eau", "eau"]; boireIt = true; }
       else if (pres >= 5) { rec = ["eau", "eau", "eau"]; cible = { x: st.h.x, y: st.h.y - 50 }; }
       else if (r === 0 || r === 4) { rec = ["eau", "eau"]; cible = { x: st.B.x, y: st.B.y + 80 }; }
       else if (r === 1) { rec = ["acide", "fleur"]; cible = { x: (best.x + st.B.x) / 2, y: (best.y + 140) / 2 }; }
@@ -63,7 +64,7 @@ const DUREE = +(process.argv[2] || 90000); const VIT = +(process.env.VIT || 3); 
       if (shot < 6 && Date.now() - t0 > 25000 * (shot + 1)) { shot++; await p.screenshot({ path: "v9-jeu-" + nom + "-" + shot + ".png" }); }
     }
     await p.waitForTimeout(1600);
-    const fin = await p.evaluate(() => { const S = window.__v4.etat(); return { fin: !S.enCours, temps: Math.round(S.temps), pv: Math.round(S.pv), boss: Math.round(S.B.pv), nE: S.E.length, tues: S.tues, coups: S.coupsBoss, chaine: S.chaineMax, combos: S.combosPartie, titre: document.getElementById("fin-titre").textContent }; });
+    const fin = await p.evaluate(() => { const S = window.__v4.etat(); return { fin: !S.enCours, temps: Math.round(S.temps), pv: Math.round(S.pv), boss: Math.round(S.B.pv), bless: S.bless, nE: S.E.length, tues: S.tues, coups: S.coupsBoss, chaine: S.chaineMax, combos: S.combosPartie, titre: document.getElementById("fin-titre").textContent }; });
     await p.screenshot({ path: "v9-fin-" + nom + ".png" });
     console.log(nom, JSON.stringify(dims), "tours", tours, JSON.stringify(fin));
     await ctx.close();

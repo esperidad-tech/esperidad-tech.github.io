@@ -73,17 +73,56 @@
     bouclier: { email: "#5E7FA6", jambe: 8.2, rJ: 2.7, hanche: 3.9, bw: 8.4, bh: 10.5, rT: 5.2, rB: 2.3, bras: 8.4, poids: 1 },
     lourd:    { email: "#9A6B3E", jambe: 7.2, rJ: 4.1, hanche: 6.4, bw: 14.5, bh: 14.5, rT: 5.4, rB: 3.8, bras: 12.5, poids: 1.6 },
     cracheur: { email: "#C0582C", jambe: 8.2, rJ: 2.7, hanche: 3.9, bw: 9.0, bh: 10.8, rT: 4.9, rB: 2.4, bras: 8.0, poids: 1 },
-    souffleur:{ email: "#5F8C7C", jambe: 8.2, rJ: 2.7, hanche: 4.0, bw: 9.6, bh: 10.8, rT: 5.0, rB: 2.4, bras: 8.0, poids: 1 }
+    souffleur:{ email: "#5F8C7C", jambe: 8.2, rJ: 2.7, hanche: 4.0, bw: 9.6, bh: 10.8, rT: 5.0, rB: 2.4, bras: 8.0, poids: 1 },
+    // (version 12) le berserker : rouge, des lames aux bras, des cornes ; le soldat en armure : tout d'acier ; le porte-barricade :
+    // du bois sur le dos ; le Colosse : un gros, deux fois plus grand, cuirassé de fer sombre
+    berserker:{ email: "#B3262B", jambe: 9.2, rJ: 2.4, hanche: 3.4, bw: 8.4, bh: 10.2, rT: 5.0, rB: 2.4, bras: 9.4, poids: 0.85 },
+    chevalier:{ email: "#8D9AA8", jambe: 8.4, rJ: 2.9, hanche: 4.1, bw: 9.4, bh: 11, rT: 5.4, rB: 2.7, bras: 8.6, poids: 1.25 },
+    porteur:  { email: "#9C7A44", jambe: 8.4, rJ: 2.6, hanche: 3.8, bw: 8.2, bh: 10, rT: 5.0, rB: 2.3, bras: 8.4, poids: 1 },
+    colosse:  { email: "#4B3F63", jambe: 7.2, rJ: 4.1, hanche: 6.4, bw: 14.5, bh: 14.5, rT: 5.4, rB: 3.8, bras: 12.5, poids: 1.6 }
   };
+  var ACIER = "#9AA8B6";
   PC.SORTES = SORTES;
   var TERRE = { coque: "#C2703F", metal: "#9A5530", email: "#A85C34" };
 
   /* o : t (secondes), marche (0 à 1), face (-1 à 1 : il se tourne vers SA droite / gauche), etats {feu, mouille, farine, boue,
-     statue, elec, meche, aveugle}, charge (le cracheur va cracher, 0 à 1), souffle (le soufflet, 0 à 1) */
+     statue, elec, meche, aveugle}, charge (le cracheur va cracher, 0 à 1), souffle (le soufflet, 0 à 1)
+     (version 12) porte (le porte-barricade : combien de barricades sur son dos), denude (le Colosse a perdu son armure),
+     grille (le soldat en armure a pris un court-circuit : il fume) */
   PC.automate = function (ctx, type, o) {
     o = o || {};
-    var S = SORTES[type] || SORTES.rapide, E = o.etats || {}, t = o.t || 0, f = Math.max(-1, Math.min(1, o.face || 0));
+    if (type === "colosse") { ctx.save(); ctx.scale(1.75, 1.75); var rc0 = colosse(ctx, o); ctx.restore(); return rc0; }
+    return automate(ctx, type, o);
+  };
+  function colosse(ctx, o) {
+    var E = o.etats || {};
+    automate(ctx, "colosse", o);
+    var S = SORTES.colosse, t = o.t || 0, f = Math.max(-1, Math.min(1, o.face || 0)), yH = -S.jambe, yB = yH - S.bh, bw = S.bw, bh = S.bh, dx = f * bw * 0.42;
+    if (!o.denude) {
+      // la cuirasse de fer sombre, rivetée, et ses pointes ; la couronne de pointes sur la tête
+      var fer = E.statue ? TERRE.metal : "#3B3448";
+      ctx.beginPath(); ctx.ellipse(0, yB + bh * 0.55, bw * 1.06, bh * 0.66, 0, Math.PI * 0.08, Math.PI * 0.92); ctx.lineTo(-bw * 0.9, yB + bh * 0.25); ctx.quadraticCurveTo(0, yB + bh * 0.05, bw * 0.9, yB + bh * 0.25); ctx.closePath();
+      ctx.fillStyle = volume(ctx, 0, yB + bh * 0.5, bw * 1.1, fer, true); ctx.fill(); trait(ctx, fer, 1);
+      ctx.strokeStyle = "rgba(200,180,255,.35)"; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(-bw * 0.8, yB + bh * 0.55); ctx.quadraticCurveTo(0, yB + bh * 0.68, bw * 0.8, yB + bh * 0.55); ctx.stroke();
+      for (var r = -3; r <= 3; r++) rivet(ctx, r * bw * 0.26 + dx * 0.4, yB + bh * 0.3, 0.9, "#6A5E80");
+      [-1, 1].forEach(function (c) { var px = c * (bw + 1), py = yB + bh * 0.2;
+        ctx.beginPath(); ctx.moveTo(px - 3, py + 2); ctx.lineTo(px + c * 3, py - 7); ctx.lineTo(px + 3, py + 2); ctx.closePath(); ctx.fillStyle = volume(ctx, px, py - 2, 4, "#4E4562", true); ctx.fill(); trait(ctx, "#4E4562", 0.7); });
+      var yT = yB + S.rT * 0.55 - S.rT * 0.72;
+      for (var k = -2; k <= 2; k++) { var cx = k * 2.6 + f * 2, h = 4 + (2 - Math.abs(k)) * 1.6; ctx.beginPath(); ctx.moveTo(cx - 1.4, yT - S.rT * 0.7); ctx.lineTo(cx, yT - S.rT * 0.7 - h); ctx.lineTo(cx + 1.4, yT - S.rT * 0.7); ctx.closePath(); ctx.fillStyle = "#5A4E72"; ctx.fill(); trait(ctx, "#5A4E72", 0.5); }
+      lueur(ctx, dx, yB + bh * 0.5, 9, "#B48CFF", 0.25 + 0.15 * Math.sin(t * 3));
+    } else {
+      // sans armure : la porcelaine fendue, des étincelles
+      ctx.strokeStyle = "rgba(40,30,20,.8)"; ctx.lineWidth = 0.7;
+      ctx.beginPath(); ctx.moveTo(-bw * 0.5, yB + bh * 0.2); ctx.lineTo(-bw * 0.1, yB + bh * 0.55); ctx.lineTo(-bw * 0.35, yB + bh * 0.9); ctx.moveTo(bw * 0.45, yB + bh * 0.3); ctx.lineTo(bw * 0.1, yB + bh * 0.6); ctx.stroke();
+      ctx.strokeStyle = "rgba(230,250,255,.9)"; ctx.lineWidth = 0.6; var rnd = Math.random; for (var z = 0; z < 2; z++) eclair(ctx, (rnd() - 0.5) * bw * 2, yB + rnd() * bh, 4, rnd);
+    }
+  }
+  function automate(ctx, type, o) {
+    var S = SORTES[type] || SORTES.rapide, E = o.etats || {}, t = o.t || 0, f = Math.max(-1, Math.min(1, o.face || 0)), LOURD = type === "lourd" || type === "colosse";
     var coque = COQUE, metal = METAL, email = S.email, noyau = NOYAU;
+    if (type === "chevalier") { coque = ACIER; metal = "#5D6B7A"; }
+    if (type === "colosse") { metal = "#4E5566"; }
+    if (o.grille) { coque = sombre(coque, 0.35); email = sombre(email, 0.35); }
     if (E.statue) { coque = TERRE.coque; metal = TERRE.metal; email = TERRE.email; }
     else if (E.farine) { coque = mix(coque, "#FFFFFF", 0.45); metal = mix(metal, "#EFEAE0", 0.55); email = mix(email, "#EFEAE0", 0.55); }
     else if (E.mouille) { coque = sombre(coque, 0.12); metal = sombre(metal, 0.1); email = sombre(email, 0.1); }
@@ -95,6 +134,20 @@
     var yH = -S.jambe + bob, bw = S.bw * (1 - 0.1 * Math.abs(f)), bh = S.bh, yB = yH - bh, rT = S.rT;
     var dx = f * bw * 0.42;            // les traits de devant glissent quand il se tourne
     ctx.save();
+    if (type === "porteur" && o.porte > 0) {
+      // une barricade de pieux sur le dos : une traverse, deux croix de pieux taillés en pointe
+      // (sur le dos, de travers : une longue traverse, et trois croix de pieux taillés en pointe, comme un cheval de frise)
+      var by0 = yB - 3, bc = E.statue ? TERRE.coque : "#8A5A2E";
+      for (var pk = 0; pk < Math.min(2, o.porte); pk++) {
+        ctx.save(); ctx.translate(-f * 2, by0 - pk * 4); ctx.rotate(-0.18);
+        [-9, 0, 9].forEach(function (px2) { [[-1], [1]].forEach(function (dd) { ctx.save(); ctx.translate(px2, 0); ctx.rotate(dd[0] * 0.62); rrect(ctx, -0.9, -6, 1.8, 12, 0.6); ctx.fillStyle = volume(ctx, 0, 0, 3, bc); ctx.fill(); trait(ctx, bc, 0.5);
+          ctx.beginPath(); ctx.moveTo(-0.9, -6); ctx.lineTo(0, -8); ctx.lineTo(0.9, -6); ctx.closePath(); ctx.fillStyle = "#D2AE78"; ctx.fill(); ctx.restore(); }); });
+        rrect(ctx, -14, -1.5, 28, 3, 1.4); ctx.fillStyle = volume(ctx, 0, 0, 14, "#6E4524"); ctx.fill(); trait(ctx, "#6E4524", 0.6);
+        ctx.strokeStyle = "#C9B48A"; ctx.lineWidth = 0.6; [-9, 0, 9].forEach(function (px2) { ctx.beginPath(); ctx.moveTo(px2 - 1.2, -1.2); ctx.lineTo(px2 + 1.2, 1.2); ctx.moveTo(px2 + 1.2, -1.2); ctx.lineTo(px2 - 1.2, 1.2); ctx.stroke(); });
+        ctx.restore();
+      }
+      ctx.strokeStyle = "#5A4630"; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(-bw * 0.6, yB + 2); ctx.lineTo(bw * 0.6, yB + bh * 0.6); ctx.stroke();
+    }
 
     /* le bras du fond (celui du côté où il ne se tourne pas) passe derrière */
     function bras(cote, devant) {
@@ -108,9 +161,25 @@
       capsule(ctx, ex, ey, hx, hy, S.rB * 0.9, S.rB * 0.85); ctx.fillStyle = volume(ctx, (ex + hx) / 2, (ey + hy) / 2, S.rB * 2, c); ctx.fill(); trait(ctx, c);
       // l'épaule : une coque claire ; la main : une pince
       ell(ctx, sx, sy0, S.rB * 1.35, S.rB * 1.15); ctx.fillStyle = volume(ctx, sx, sy0, S.rB * 1.4, devant ? email : sombre(email, 0.15)); ctx.fill(); trait(ctx, email);
-      var rm = type === "lourd" ? S.rB * 1.12 : S.rB * 1.05, cm = type === "lourd" ? sombre(email, 0.1) : coque;
+      var rm = LOURD ? S.rB * 1.12 : S.rB * 1.05, cm = LOURD ? sombre(email, 0.1) : coque;
       ell(ctx, hx, hy, rm, rm * 0.95); ctx.fillStyle = volume(ctx, hx, hy, rm, devant ? cm : sombre(cm, 0.12), true); ctx.fill(); trait(ctx, cm);
-      if (type === "lourd") { ctx.strokeStyle = sombre(coque, 0.45); ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(hx - rm * 0.6, hy - rm * 0.1); ctx.lineTo(hx + rm * 0.6, hy - rm * 0.1); ctx.stroke(); }
+      if (LOURD) { ctx.strokeStyle = sombre(coque, 0.45); ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(hx - rm * 0.6, hy - rm * 0.1); ctx.lineTo(hx + rm * 0.6, hy - rm * 0.1); ctx.stroke(); }
+      if (type === "berserker") {
+        // une lame courbe au bout de chaque bras
+        var la = cote * 0.5 + sw * cote, lx = hx + Math.sin(la) * 1.5, ly = hy;
+        ctx.beginPath(); ctx.moveTo(lx - 0.8, ly - 1); ctx.quadraticCurveTo(lx + cote * 6, ly + 2, lx + cote * 4, ly + 9); ctx.quadraticCurveTo(lx + cote * 2.5, ly + 3, lx + 0.8, ly + 0.5); ctx.closePath();
+        ctx.fillStyle = volume(ctx, lx + cote * 3, ly + 4, 5, devant ? "#D9DEE4" : "#AEB5BD", true); ctx.fill(); trait(ctx, "#8A939C", 0.6);
+        ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(lx + cote * 1.5, ly + 0.5); ctx.quadraticCurveTo(lx + cote * 4.6, ly + 2.5, lx + cote * 3.8, ly + 7.5); ctx.stroke();
+      }
+      if (type === "chevalier") {
+        // la spalière d'acier sur l'épaule
+        ctx.beginPath(); ctx.ellipse(sx, sy0 - 0.5, S.rB * 1.9, S.rB * 1.3, cote * 0.3, Math.PI * 0.95, Math.PI * 2.05); ctx.closePath();
+        ctx.fillStyle = volume(ctx, sx, sy0 - 1, S.rB * 2, devant ? ACIER : sombre(ACIER, 0.15), true); ctx.fill(); trait(ctx, ACIER, 0.7);
+        if (devant && cote > 0) { // l'épée, pointe en bas
+          rrect(ctx, hx - 0.8, hy - 1, 1.6, 12, 0.5); ctx.fillStyle = volume(ctx, hx, hy + 5, 3, "#E4E9EE", true); ctx.fill(); trait(ctx, "#9AA4AE", 0.5);
+          rrect(ctx, hx - 2.6, hy - 1.6, 5.2, 1.4, 0.5); ctx.fillStyle = "#B8902F"; ctx.fill();
+        }
+      }
       return { hx: hx, hy: hy };
     }
     var cFond = f > 0 ? 1 : -1;
@@ -133,7 +202,7 @@
     rrect(ctx, -bw * 0.62, yH - 2.6, bw * 1.24, 3.8, 1.6); ctx.fillStyle = volume(ctx, 0, yH - 1, bw * 0.7, metal); ctx.fill(); trait(ctx, metal);
 
     /* le corps */
-    if (type === "lourd") {
+    if (LOURD) {
       // un gros tonneau de porcelaine cerclé de bronze
       ell(ctx, 0, yB + bh * 0.55, bw, bh * 0.62); ctx.fillStyle = volume(ctx, 0, yB + bh * 0.5, bw * 1.05, coque); ctx.fill(); trait(ctx, coque, 1);
       ctx.strokeStyle = sombre(email, 0.1); ctx.lineWidth = 2.2;
@@ -168,11 +237,13 @@
       ctx.fillStyle = volume(ctx, 0, yB + bh * 0.4, bw * 1.1, coque); ctx.fill(); trait(ctx, coque, 0.9);
       ctx.beginPath(); ctx.moveTo(-bw * 0.62 + dx, yB + 1.4); ctx.lineTo(bw * 0.62 + dx, yB + 1.4); ctx.lineTo(bw * 0.42 + dx, yB + bh * 0.78); ctx.quadraticCurveTo(dx, yB + bh * 0.98, -bw * 0.42 + dx, yB + bh * 0.78); ctx.closePath();
       ctx.fillStyle = volume(ctx, dx - 1, yB + bh * 0.35, bw * 0.8, email, true); ctx.fill(); trait(ctx, email, 0.6);
+      if (type === "chevalier") { ctx.strokeStyle = sombre(ACIER, 0.35); ctx.lineWidth = 0.7; [0.36, 0.56, 0.74].forEach(function (k) { ctx.beginPath(); ctx.moveTo(-bw * 0.66 + dx * 0.5, yB + bh * k); ctx.quadraticCurveTo(dx, yB + bh * k + 1.6, bw * 0.66 + dx * 0.5, yB + bh * k); ctx.stroke(); }); }
+      if (type === "berserker") { ctx.strokeStyle = "rgba(30,10,10,.7)"; ctx.lineWidth = 0.8; for (var gf2 = 0; gf2 < 3; gf2++) { ctx.beginPath(); ctx.moveTo(-bw * 0.4 + gf2 * 2.2 + dx, yB + 2); ctx.lineTo(-bw * 0.1 + gf2 * 2.2 + dx, yB + bh * 0.6); ctx.stroke(); } }
       if (type === "rapide") { ctx.strokeStyle = clair(email, 0.75); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(1.4 + dx, yB + 2.4); ctx.lineTo(-1.2 + dx, yB + bh * 0.42); ctx.lineTo(1 + dx, yB + bh * 0.42); ctx.lineTo(-1.4 + dx, yB + bh * 0.72); ctx.stroke(); }
     }
     /* le cœur de cristal, qui bat de la lumière de Grosbec */
     if (type !== "cracheur" && type !== "souffleur") {
-      var bat = 0.6 + 0.4 * Math.sin(t * 4 + type.length), cx0 = dx, cy0 = type === "lourd" ? yB + bh * 0.5 : yB + bh * 0.33, rc = type === "lourd" ? 2.6 : 1.7;
+      var bat = 0.6 + 0.4 * Math.sin(t * 4 + type.length), cx0 = dx, cy0 = LOURD ? yB + bh * 0.5 : yB + bh * 0.33, rc = LOURD ? 2.6 : 1.7;
       lueur(ctx, cx0, cy0, rc * 3.2, E.statue ? "#C2703F" : noyau, E.statue ? 0 : 0.35 * bat);
       ctx.beginPath(); ctx.moveTo(cx0, cy0 - rc * 1.3); ctx.lineTo(cx0 + rc, cy0); ctx.lineTo(cx0, cy0 + rc * 1.3); ctx.lineTo(cx0 - rc, cy0); ctx.closePath();
       ctx.fillStyle = E.statue ? sombre(TERRE.coque, 0.2) : clair(noyau, 0.3 * bat); ctx.fill(); trait(ctx, noyau, 0.5);
@@ -180,9 +251,18 @@
     liseré(ctx, 0, yB + bh * 0.5, bw * 0.98, bh * 0.55, -0.9, 0.7, 0.8);
 
     /* la tête */
-    var yT = yB - rT * 0.72 - (type === "lourd" ? -rT * 0.55 : 0), hdx = f * rT * 0.42;
+    var yT = yB - rT * 0.72 - (LOURD ? -rT * 0.55 : 0), hdx = f * rT * 0.42;
     if (type !== "lourd") { rrect(ctx, -1.4, yB - rT * 0.5, 2.8, rT * 0.6, 0.8); ctx.fillStyle = metal; ctx.fill(); }
-    if (type === "bouclier") {
+    if (type === "chevalier") {
+      // un heaume d'acier : une fente pour les yeux, des trous pour respirer, un plumet rouge
+      rrect(ctx, -rT * 1.02, yT - rT * 1.05, rT * 2.04, rT * 2.0, rT * 0.7); ctx.fillStyle = volume(ctx, 0, yT - rT * 0.3, rT * 1.25, ACIER, true); ctx.fill(); trait(ctx, ACIER, 0.9);
+      ctx.fillStyle = "#101418"; rrect(ctx, -rT * 0.75 + hdx, yT - rT * 0.18, rT * 1.5, rT * 0.26, 0.4); ctx.fill();
+      var ye = E.aveugle ? "#8E8E8E" : E.elec ? "#BFEFFF" : "#FFC266"; ctx.fillStyle = ye; ell(ctx, -rT * 0.35 + hdx, yT - rT * 0.05, rT * 0.14, rT * 0.07); ctx.fill(); ell(ctx, rT * 0.35 + hdx, yT - rT * 0.05, rT * 0.14, rT * 0.07); ctx.fill();
+      ctx.fillStyle = "#2A3038"; for (var tr = 0; tr < 3; tr++) { ell(ctx, hdx + (tr - 1) * rT * 0.3, yT + rT * 0.45, 0.45, 0.45); ctx.fill(); }
+      ctx.strokeStyle = clair(ACIER, 0.5); ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(hdx, yT - rT * 1.02); ctx.lineTo(hdx, yT - rT * 0.25); ctx.stroke();
+      ctx.fillStyle = "#C2342A"; ctx.beginPath(); ctx.moveTo(hdx * 0.6, yT - rT * 1.0); ctx.quadraticCurveTo(hdx * 0.6 - 6 - f * 2, yT - rT * 2.2, hdx * 0.6 - 9 - f * 3, yT - rT * 0.6); ctx.quadraticCurveTo(hdx * 0.6 - 4, yT - rT * 1.3, hdx * 0.6, yT - rT * 1.0); ctx.fill();
+      liseré(ctx, 0, yT - rT * 0.1, rT * 0.98, rT * 0.98, -1.2, 0.6, 0.7);
+    } else if (type === "bouclier") {
       // un casque rond avec une visière en T
       ctx.beginPath(); ctx.arc(0, yT, rT * 1.05, Math.PI, 0); ctx.lineTo(rT * 1.05, yT + rT * 0.55); ctx.quadraticCurveTo(0, yT + rT * 1.1, -rT * 1.05, yT + rT * 0.55); ctx.closePath();
       ctx.fillStyle = volume(ctx, 0, yT - rT * 0.2, rT * 1.2, email, true); ctx.fill(); trait(ctx, email, 0.9);
@@ -190,14 +270,23 @@
       ctx.fillStyle = "#FFC266"; ell(ctx, -rT * 0.42 + hdx, yT + rT * 0.04, rT * 0.18, rT * 0.08); ctx.fill(); ell(ctx, rT * 0.42 + hdx, yT + rT * 0.04, rT * 0.18, rT * 0.08); ctx.fill();
       ctx.strokeStyle = clair(email, 0.5); ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(hdx, yT - rT * 1.05); ctx.lineTo(hdx, yT - rT * 0.25); ctx.stroke();
     } else {
-      ell(ctx, 0, yT, rT * (type === "lourd" ? 1.05 : 1), rT * 0.92); ctx.fillStyle = volume(ctx, 0, yT, rT * 1.05, coque); ctx.fill(); trait(ctx, coque, 0.9);
+      ell(ctx, 0, yT, rT * (LOURD ? 1.05 : 1), rT * 0.92); ctx.fillStyle = volume(ctx, 0, yT, rT * 1.05, coque); ctx.fill(); trait(ctx, coque, 0.9);
       // le masque : une fente d'yeux qui luit
       ell(ctx, hdx, yT + rT * 0.12, rT * 0.72, rT * 0.42); ctx.fillStyle = "#171B1F"; ctx.fill();
-      var yeux = E.aveugle ? "#8E8E8E" : (E.elec ? "#BFEFFF" : "#FFC266");
+      var yeux = E.aveugle ? "#8E8E8E" : (E.elec ? "#BFEFFF" : type === "berserker" ? "#FF3A2A" : "#FFC266");
+      if (type === "berserker") {
+        // deux cornes recourbées
+        [-1, 1].forEach(function (c) { ctx.beginPath(); ctx.moveTo(c * rT * 0.55, yT - rT * 0.6); ctx.quadraticCurveTo(c * rT * 1.6, yT - rT * 0.9, c * rT * 1.35, yT - rT * 1.9); ctx.quadraticCurveTo(c * rT * 1.1, yT - rT * 1.1, c * rT * 0.25, yT - rT * 0.85); ctx.closePath();
+          ctx.fillStyle = volume(ctx, c * rT, yT - rT * 1.1, rT, "#E8DCC4", true); ctx.fill(); trait(ctx, "#B9A98C", 0.6); });
+      }
       if (type === "rapide") { // un seul grand œil rond, comme une lentille
         lueur(ctx, hdx, yT + rT * 0.12, rT * 0.9, yeux, 0.5); ctx.fillStyle = yeux; ell(ctx, hdx, yT + rT * 0.12, rT * 0.3, rT * 0.27); ctx.fill();
         ctx.fillStyle = "#fff"; ell(ctx, hdx - rT * 0.1, yT + rT * 0.03, rT * 0.09, rT * 0.08); ctx.fill();
         ctx.strokeStyle = metal; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(rT * 0.4, yT - rT * 0.8); ctx.lineTo(rT * 0.9, yT - rT * 1.7); ctx.stroke(); ctx.fillStyle = email; ell(ctx, rT * 0.92, yT - rT * 1.78, 1.1, 1.1); ctx.fill();
+      } else if (type === "berserker") {
+        // des yeux rouges en colère (en biais)
+        lueur(ctx, hdx, yT + rT * 0.12, rT * 1.3, yeux, 0.55);
+        ctx.fillStyle = yeux; [-1, 1].forEach(function (c) { ctx.beginPath(); ctx.moveTo(hdx + c * rT * 0.12, yT + rT * 0.02); ctx.lineTo(hdx + c * rT * 0.52, yT - rT * 0.08); ctx.lineTo(hdx + c * rT * 0.46, yT + rT * 0.22); ctx.closePath(); ctx.fill(); });
       } else {
         lueur(ctx, hdx, yT + rT * 0.12, rT * 1.0, yeux, 0.4);
         ctx.fillStyle = yeux; ell(ctx, hdx - rT * 0.3, yT + rT * 0.12, rT * 0.17, rT * 0.11); ctx.fill(); ell(ctx, hdx + rT * 0.3, yT + rT * 0.12, rT * 0.17, rT * 0.11); ctx.fill();
@@ -213,7 +302,7 @@
         ctx.fillStyle = volume(ctx, tx, ty + rT * 0.5, rT, "#C99A4A", true); ctx.fill(); trait(ctx, "#C99A4A", 0.6);
         ell(ctx, tx, ty + rT * 0.98 * ev, rT * 0.55 * ev, rT * 0.16); ctx.fillStyle = "#3A2A18"; ctx.fill();
       }
-      if (type === "lourd") { ctx.strokeStyle = sombre(email, 0.1); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(0, yT, rT * 1.02, Math.PI * 1.12, Math.PI * 1.88); ctx.stroke(); }
+      if (LOURD) { ctx.strokeStyle = sombre(email, 0.1); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(0, yT, rT * 1.02, Math.PI * 1.12, Math.PI * 1.88); ctx.stroke(); }
       liseré(ctx, 0, yT, rT * 0.95, rT * 0.88, -1.2, 0.6, 0.7);
     }
 
@@ -253,6 +342,7 @@
       lueur(ctx, 0, yB, bw * 2.2, "#FF8A3D", 0.35);
       flamme(ctx, -rT * 0.5, yT - rT * 0.5, rT * 1.6, t, 0); flamme(ctx, rT * 0.55, yT - rT * 0.3, rT * 1.3, t, 1); flamme(ctx, bw * 0.8, yB + 1, rT * 1.1, t, 2); flamme(ctx, -bw * 0.85, yB + 1.5, rT, t, 3);
     }
+    if (o.grille) { ctx.fillStyle = "rgba(60,60,64,.45)"; for (var fm = 0; fm < 3; fm++) { var fa3 = t * 2 + fm * 2.1; ell(ctx, Math.sin(fa3) * 3, yT - rT * 1.2 - ((t * 9 + fm * 4) % 10), 2.4 + fm * 0.4, 2); ctx.fill(); } }
     if (E.meche) {
       var ty0 = yT - rT * 0.95;
       ctx.strokeStyle = "#5A4630"; ctx.lineWidth = 1.1; ctx.beginPath(); ctx.moveTo(0, ty0); ctx.quadraticCurveTo(3, ty0 - 4, 1.5, ty0 - 7); ctx.stroke();

@@ -15,7 +15,7 @@ const DUREE = +(process.argv[2] || 90000);
     const dims = await p.evaluate(() => ({ sw: document.documentElement.scrollWidth, sh: document.documentElement.scrollHeight, vw: innerWidth, vh: innerHeight, bande: document.querySelector(".bande").scrollWidth, bandeW: document.querySelector(".bande").clientWidth }));
     const t0 = Date.now(); let tours = 0, shot = 0, boumShots = 0;
     while (Date.now() - t0 < DUREE) {
-      const st = await p.evaluate(() => { const S = window.__v4.etat(); if (!S || !S.enCours) return null; return { L: window.__v4.L, pv: S.pv, B: { x: S.B.x, y: S.B.y }, h: { x: S.hero.x, y: S.hero.y }, E: S.E.map(e => ({ x: e.x, y: e.y, t: e.t, enf: e.enfarine > 0, m: e.mouille > 0 })), O: S.O.filter(o => o.actif).map(o => ({ x: o.x, y: o.y })) }; });
+      const st = await p.evaluate(() => { const S = window.__v4.etat(); if (!S || !S.enCours) return null; return { L: window.__v4.L, bouclier: S.eauS > 1, pv: S.pv, B: { x: S.B.x, y: S.B.y }, h: { x: S.hero.x, y: S.hero.y }, E: S.E.map(e => ({ x: e.x, y: e.y, t: e.t, enf: e.enfarine > 0, m: e.mouille > 0 })), O: S.O.filter(o => o.actif).map(o => ({ x: o.x, y: o.y })) }; });
       if (!st) break;
       tours++;
       const box = await p.$eval("#cv", c => { const r = c.getBoundingClientRect(); return { x: r.left, y: r.top }; });
@@ -39,7 +39,8 @@ const DUREE = +(process.argv[2] || 90000);
         const proche = st.E.slice().sort((a, b) => Math.hypot(a.x - st.h.x, a.y - st.h.y) - Math.hypot(b.x - st.h.x, b.y - st.h.y))[0];
         rec = ["feu", "farine"]; cible = { x: proche.x, y: proche.y };
       }
-      else if (st.pv < 40 && tours % 4 === 0) { rec = ["fleur", "fleur"]; boireIt = true; }
+      else if (st.pv < 5 && tours % 2 === 0) { rec = ["fleur", "fleur", "fleur"]; boireIt = true; }
+      else if (pres >= 2 && !st.bouclier) { rec = ["eau", "eau"]; boireIt = true; }
       else if (pres >= 5) { rec = ["eau", "eau", "eau"]; cible = { x: st.h.x, y: st.h.y - 50 }; }
       else if (r === 0 || r === 4) { rec = ["eau", "eau"]; cible = { x: st.B.x, y: st.B.y + 80 }; }
       else if (r === 1) { rec = ["acide", "fleur"]; cible = { x: (best.x + st.B.x) / 2, y: (best.y + 140) / 2 }; }
