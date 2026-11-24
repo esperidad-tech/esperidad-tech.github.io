@@ -5743,3 +5743,28 @@ Romain (9 h 49 à 10 h 20, sur son iPhone, avec `?volume=1`) : « le donjon a l'
 - les questions du §14.3 restent ouvertes pour les six autres zones ; **« qui lève la brume dans l'histoire »** a maintenant un début de réponse : **les cloches d'Anselme** (Bertille, la plus petite, la repousse « un petit peu »).
 
 **Pas vérifié** : une vraie tablette, un vrai téléphone (la fluidité quand deux zones sont dessinées sans brume, et l'effacement de cinq secondes).
+
+## 15. L'enquête 10, le combat final — le combat du Sage contre le cœur de l'armure (maquette, 23-24 novembre) — FINI POUR ROMAIN (24 novembre, 19 h 16) ; HORS DU JEU, RIEN EN LIGNE SUR LE SITE
+
+**Tout le détail** (ce que Romain a dit heure par heure, les chiffres, les mesures du robot) : `jeu/maquettes/combat-sage/LISEZ-MOI.md`. **La maquette jouable (version 15)** : https://claude.ai/artifact/S3UzmZhUvPFUscZeZs6DTy (la même page, toute faite : `jeu/maquettes/combat-sage/combat-sage.html`).
+
+### 15.1 Le principe [Romain]
+- Au combat final, chaque héros a son propre combat. **Le Sage protège les trois autres** (au milieu de la place), en temps réel, contre les golems du cœur de l'armure : un mélange de Vampire Survivors et du pinceau d'Okami [Romain, 24 nov., 0 h 57]. Le Sage court là où on garde le doigt ; son bâton tire tout seul ; son corps arrête les pierres.
+- **Les codes des amis** : quand un ami gagne son combat, il crie son code ; le Sage le tape ; l'ami vient l'aider avec son pouvoir (le Pisteur : flèches et sauts à la dague ; l'Alchimiste : fioles de boue, de lianes ou de feu ; le Barde : partitions qui font faire demi-tour, danser ou qui repoussent). **Les trois codes = gagné** (« L'armure tombe ! »). **À 15 minutes, ingagnable.**
+- **Ça durcit** : les golems ont plus de vies avec le temps, les grosses vagues arrivent d'un côté de plus toutes les 3 minutes, deux fois plus de lanceurs après 10 minutes.
+
+### 15.2 Les runes
+- On grave sur un parchemin (le temps ralentit) ; encre à prix fixe. **Trait** (la lumière, 2) : fait éclater un golem sonné, dont les éclats font éclater les sonnés voisins. **V** (la chasse, 2) : chasse par l'ouverture tout ce qui est dedans, 90° au plus. **Escargot** (la repousse, la moitié de l'encre) : tout le monde au loin, sans dégâts. **Arc de cercle** (le mur, 2) : un mur courbe de la forme du tracé, qui ralentit et renvoie les pierres. Un golem projeté qui cogne quelque chose est sonné 3 secondes.
+
+### 15.3 Les pages du grimoire et les combos [Romain : « la page à ramasser », « des combos jouissifs… plus on les cumule, plus ils deviennent complètement pétés, mais les ennemis doivent reprendre le dessus »]
+- Les gros golems lâchent des pages dorées ; une page = **un choix de 3 cartes** (le combat attend) : 20 cartes (le bâton, les runes, 6 nouveaux sorts, des cadeaux), chacune jusqu'au niveau 3, 4 sorts au plus.
+- **10 combos en cartes dorées, à 3 niveaux, qui se cumulent** : golems-boulets, orage, volcan, pluie d'étoiles, la comète, le scribe fou, tornade de pages, sanctuaire, parlement des chouettes, rune miroir. Les plus forts : orage, rune miroir, volcan (et volcan + miroir ensemble).
+- **La colère du cœur** : à 12 et 14 minutes, des golems plus nombreux et plus rapides ; après 15 minutes, la fureur (golems cuirassés qu'on ne peut plus sonner, toujours plus de vies) : personne ne tient éternellement.
+
+### 15.4 Les sons [Romain]
+- Une **musique de combat 8 bits** (150 battements par minute, 11 parties, elle change de tonalité à chaque tour : plus de 9 minutes avant de se répéter) et des **bruitages doux** — pas trop forts, parce que tout le monde joue en même temps et que le jeu du Barde est basé sur la musique. **Deux curseurs de volume** (musique, bruitages). La première musique (« petite maison dans la prairie ») a été refusée.
+
+### 15.5 Ce qui reste
+- **Peut-être à refaire** [Romain, 24 nov., 19 h 16] : les dessins des golems et du sol, selon les graphismes du jeu du Barde (« c'est pas sûr, on va voir »).
+- **Rien n'est dans le jeu** : la place du combat dans l'enquête 10 et le passage des codes (à la voix, les tablettes ne se parlent pas) sont à faire quand le combat final sera construit ; il faudra aussi les boutons 🔊 et les héros en volume.
+- **Questions encore ouvertes** : un golem qui danse (partition du Barde) compte-t-il comme sonné ? La dague du Pisteur « 2 coups » = 2 dégâts d'un coup (compris ainsi) ?
