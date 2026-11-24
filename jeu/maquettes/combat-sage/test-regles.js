@@ -1,4 +1,4 @@
-const G = require('./logic15.js');
+const G = require('./logic16.js');
 const ok = (c, m) => console.log((c ? 'ok   ' : 'RATÉ ') + m);
 const mk = (s, type, x, y, extra = {}) => { const T = G.TYPES[type]; const u = { id: s.nextId++, type, x, y, r: T.r, hp: 50, max: 50, vx: 0, vy: 0, atk: 0.5, daze: 0, flash: 0, burn: 0, burnCd: 0, burnTick: 0, held: false, fear: 0, dance: 0, charmCd: 0, ...extra }; s.soldiers.push(u); return u; };
 const quiet = s => { s.spawnT = 1e9; s.burstT = 1e9; };

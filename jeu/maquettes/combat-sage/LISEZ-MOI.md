@@ -1,16 +1,20 @@
-# Combat final — le Sage contre le cœur de l'armure : maquettes de test
+# Combat final — le Sage contre Grosbec (jusqu'à la version 15 : « contre le cœur de l'armure ») : maquettes de test
 
-Maquette jouable (pas le vrai jeu, rien n'est construit dans Brumeval) : https://claude.ai/artifact/S3UzmZhUvPFUscZeZs6DTy — **version 15** (en ligne le 24 novembre, 19 h 21) : **tornade, comète et golems-boulets renforcés** (voir « Les combos à 10 minutes »). **Pour Romain, ce combat est fini** (24 nov., 19 h 16). Version 14 (18 h 56) : **un bouton 🎚️ avec deux curseurs de volume**, musique et bruitages. Version 13 (18 h 21) : **une vraie musique de combat**.
+Maquette jouable (pas le vrai jeu, rien n'est construit dans Brumeval) : https://claude.ai/artifact/S3UzmZhUvPFUscZeZs6DTy — **version 16** (en ligne le 24 novembre, 23 h 25) : **la grande salle de Grosbec vue de haut, Grosbec dans son armure à la place du cœur, ses golems (ceux du combat du Barde), les trois amis de dos qui tirent sur lui** — voir « La version 16 ». **Les dessins de la version 16 n'ont pas encore été vus par Romain.** Les règles, les combos et les sons sont ceux de la version 15 (19 h 21), que Romain avait jugée finie (19 h 16 : « le jeu, pour moi, il est fini »).
+- Dans ce document, « le cœur » (versions 9 à 15) = **Grosbec** depuis la version 16 ; « soldats » = golems ; « lanceurs » et « pierres » = frondeurs et braises.
 - **Où est le code** (Romain, 19 h 44 : « Publie-la sur GitHub ») : **branche `brumeval-sources`, dossier `jeu/maquettes/combat-sage/`** (ce document y est en `LISEZ-MOI.md`). Rien n'est en ligne sur le site : la maquette se joue à l'adresse ci-dessus.
-  - `combat-sage.html` : la page toute faite (un seul fichier : règles, dessins, sons) = la version 15 en ligne, à l'identique.
-  - `python3 construire.py` la refabrique à partir de : `ui7.html` (la page, ses boutons, l'aide-mémoire), `render15.js` (les dessins), `logic15.js` (les règles : `window.G`, utilisable aussi dans Node), `sound14.js` (les sons et la partition de la musique, `SON`), `build12_part.py` et `build14_part.py` (les retouches de la page des versions 12 et 14, appliquées dans l'ordre).
-  - `node test-regles.js` : 56 vérifications des règles et des combos. `node robot.js games=8 think=1 modes=combos at=600 extra=8 build=orage:3` : le robot (`at=600` = partir à 10 minutes, `extra` = cartes au hasard en plus, `build` = combos donnés au départ, `modes=cercle` = il court en rond autour des amis). `python3 photos-combos.py` : les photos des 10 combos (dans `/tmp`).
-  - Bible : §15 (court résumé et renvoi ici).
-- **Peut-être à refaire** (Romain, 19 h 16) : **les dessins des golems et du sol**, selon les graphismes qu'il prépare dans la conversation du jeu du Barde — « c'est pas sûr, on va voir ». Version 12 (17 h 38) : **10 combos à 3 niveaux**, de plus en plus fous et qui se cumulent, **la colère du cœur** (à 12 et 14 minutes, puis la fureur après 15 minutes, pour que les ennemis finissent par gagner), et **les sons**, avec les boutons 🎶 et 🔔. Le reste vient des versions 8 (dessins, plein écran), 9 (le combat qui durcit, les pouvoirs des amis, 3 codes = gagné), 10 (les pages) et 11 (cartes en plus, clavier). Les versions 1 à 12 sont remplacées à la même adresse.
+  - `combat-sage.html` : la page toute faite (un seul fichier : règles, dessins, sons) = la version 16 en ligne, à l'identique.
+  - `python3 construire.py` la refabrique, en trois temps :
+    1. `v16/assembler.py` refait `render16.js` (les dessins) à partir de `render15.js` (gardé pour les effets des runes et des combos, les pouvoirs des amis, le Sage, l'affichage) et des morceaux neufs de `v16/` : `salle.js` (la salle), `grosbec.js` (Grosbec, ses gestes, les tirs des amis sur lui), `golems.js` (les golems), `herosdos.js` et `heros.js` (les trois amis de dos), `sprites.js` (les images préparées), `entete.js` ;
+    2. `ui7.html` (la page, ses boutons, l'aide-mémoire) reçoit les retouches des versions 8 à 16 : `construire.py`, puis `build12_part.py`, `build14_part.py`, `build16_part.py` (les mots, la finesse automatique, la ligne de mesures) ;
+    3. on y colle `logic16.js` (les règles : `window.G`, utilisable aussi dans Node), `sound14.js` (les sons et la partition, `SON`) et **les modèles du combat du Barde** : `barde/outils.js`, `barde/golems.js`, `barde/grosbec.js` (copies de sa **version 9**, non modifiées), retouchés au passage par `modeles_barde.py` (golems cuits plus petits et sans leur ombre ; Grosbec regardé de plus haut et cuit plus petit).
+  - `node test-regles.js` : 56 vérifications des règles et des combos. `node robot.js games=8 think=1 modes=combos at=600 extra=8 build=orage:3` : le robot (`at=600` = partir à 10 minutes, `extra` = cartes au hasard en plus, `build` = combos donnés au départ, `modes=cercle` = il court en rond autour des amis).
+  - Avec le navigateur (Playwright) : `python3 partie-entiere.py` (une partie jouée jusqu'au bout avec le vrai clavier des codes), `photos-salle.py` et `photos-moments.py` (les photos de la salle, des golems qui arrivent, de Grosbec touché, de la victoire), `vitesse.py` (les images par seconde sur quatre appareils imités), `cuisson.py` (les images préparées d'avance), `photos-combos.py` (les 10 combos ; pas relancé depuis la version 15). Les photos vont dans `/tmp`.
+  - Bible : §15 (court résumé et renvoi ici) ; §16 pour le combat du Barde, d'où viennent Grosbec, les golems et la salle.
 - Sur l'écran d'explication, **« Pour l'essai, tes amis finissent leur combat vers : 4 min / 8 min / 12 min »** (8 par défaut) : le dernier ami gagne à ce moment-là, les deux autres vers la moitié et les trois quarts (à ±10 %), dans un ordre tiré au hasard à chaque partie. Leur code s'affiche alors en haut ; on le tape avec « Taper un code » ; l'ami vient aider avec son pouvoir.
 - **Au clavier** (ordinateur) : Entrée ou Espace pour graver / revenir ; 1, 2, 3 pour choisir une carte.
 - Avec `#rapide` au bout de l'adresse, les codes arrivent après 10, 18 et 26 secondes ; avec `#plein`, la page s'ouvre en plein écran (`#rapide-plein` pour les deux). Ces raccourcis d'adresse n'ont pas été vérifiés dans la page Claude.
-- Sources : un seul fichier HTML, fabriqué par `build14.py` (+ `build12_part.py`, `build14_part.py`) à partir de `ui7.html` (la page), `render12.js` (les dessins), `logic12.js` (les règles) et `sound14.js` (les sons ; la partition est écrite en notes dedans, partie par partie). Robot « à partir de 10 minutes » : `bot14.js` (options `at=600`, `extra=8`, `build=…`) ; photos des combos : `scene14.py`, dans l'espace de travail de la conversation du 23-24 novembre. Tests : `test12.js` (cartes et combos, 56 vérifications) et `test9.js` (le reste) ; robot : `bot12.js` (option `build=volcan:3,orage:3` pour partir avec des combos) ; photos et mesure du son : `scene12.py`.
+- Les anciens fichiers de travail (versions 1 à 14) ne servent plus : tout ce qu'il faut est sur GitHub (voir « Où est le code »). La partition de la musique est écrite en notes dans `sound14.js`, partie par partie.
 
 ## Ce que Romain a dit (23-24 novembre)
 - 23 nov., 22 h 29 : façon Into the Breach (protéger les trois autres héros). Pinceau d'Okami refusé comme coup spécial.
@@ -32,7 +36,77 @@ Maquette jouable (pas le vrai jeu, rien n'est construit dans Brumeval) : https:/
 - **18 h 16** (après la version 12) : « La musique, ça va pas » : c'est « une petite musique tranquille, dans **la petite maison dans la prairie** », alors qu'« on est **en combat** ». Il veut **une musique de combat, version 8 bits**, « avec des **petits sons un peu spéciaux, sympas** », une **mélodie de combat**, et **une mélodie qui dure longtemps, qui ne se répète pas**. → version 13.
 - **18 h 53** (après la version 13) : « Mets-moi **un curseur pour la musique, un curseur de volume**. » Et : « **parle-moi de toutes les combos à partir de 10 minutes, les combos pétés** pour chaque type de combo… parle-moi de ce que tu as fait, parce que **j'ai pas envie de jouer 10 000 fois** ». → version 14 (les curseurs) et « Les combos à 10 minutes » ci-dessous.
 - **19 h 16** : « Ok, vas-y, **renforce les combos**, comme tu m'as proposé. » Il prépare **les graphismes dans une autre discussion, sur le jeu du Barde** : « ça se trouve, tu devras **changer les modèles des golems. Et aussi le modèle du sol.** Mais c'est pas sûr, on va voir. » Et : « **le jeu, pour moi, il est fini.** » → version 15.
+- **22 h 22** (il a vu les images du combat du Barde, faites par une autre conversation) : « Tu peux **remplacer tous les golems** par […] **le nouveau genre de golem**. Et tu peux **remplacer le cœur qui est en haut par l'armure du corbeau** là, **l'armure de Grosbec**. Mais par contre, tu me fais **une version vue de haut**, mais tu fais en sorte que **ça prenne pas de ressources**. » « Il faudrait que **les trois personnages au centre, ils soient tournés vers Grosbec. Et que de temps en temps ils envoient des flèches, des éclairs et des potions sur Grosbec.** » « Pour la salle, tu reprends **les textures de la salle** et tu les adaptes. Enfin, en gros, tu adaptes tout par rapport au jeu du Barde. Et tu me fais une version, bien sûr, vue de haut, **bien moins travaillée forcément et surtout très économe en énergie. Faut surtout pas que ça rame ce mini-jeu.** Mais **il faut qu'on reconnaisse la salle, Grosbec, il faut qu'on reconnaisse les golems.** […] Et la salle, il faut que ça soit **la même, mais vue de haut**. »
+- **22 h 25** : « Tu peux faire ça et me mettre en ligne. » → version 16.
 - Rappel : Pisteur = combat classique + combos ; Barde = rythme + Guitar Hero ; Alchimiste = façon Magicka.
+
+## La version 16 (24 novembre, 23 h 25) — la salle, Grosbec et ses golems, vus de haut
+**Seuls les dessins changent** (et quelques mots). Les règles, les runes, les pages, les 10 combos, les vies, les vagues, les codes, la musique et les bruitages sont ceux de la version 15. Tout vient du combat du Barde (Bible §16) : ses modèles sont repris tels quels, puis regardés d'un autre endroit.
+
+### Ce qu'on voit
+- **La salle** = la grande salle du combat du Barde, **regardée de haut** : le sol en grandes dalles polies bleu nuit, leurs losanges de bronze, **l'allée de bronze et ses deux rigoles d'or** qui va de l'estrade de Grosbec à la rosace des amis, les reflets de lumière. En haut de l'écran, **le mur du fond** : les pierres bleu nuit, **la grande arche ouverte sur la ville d'en bas, floue**, ses cristaux, **les deux portes de bronze** ouvertes sur le rouge des forges, les lanternes, les frises. Sur les côtés et en bas : **les galeries sombres** et leurs piliers. La salle est peinte une seule fois, puis recopiée ; seules les lanternes et les portes ont une petite lueur qui bat.
+- **Grosbec, dans son armure, à la place du cœur** : debout sur son estrade, en haut au milieu. C'est **le même modèle** que dans le combat du Barde (`barde/grosbec.js`, celui que Romain a trouvé « vraiment magnifique »), regardé d'un peu plus haut. Seize poses sont peintes d'avance ; à chaque image du jeu, on en recopie une seule.
+  - Il tourne la tête de temps en temps.
+  - **Il envoie ses golems** à chaque grosse vague : il se tourne du bon côté et tend le bras ; un mot s'affiche (« Allez, allez ! », « Écrasez-les ! », « Allez ! Plus vite ! », « Attrapez-les ! »).
+  - **Il encaisse** quand un code d'ami est tapé : il part en arrière, bras écartés, des étincelles ; son casque est un peu plus fendu à chaque ami vainqueur.
+  - **Sa colère** (12 et 14 minutes) : les deux bras levés, « ASSEZ ! », ses lanternes virent au rouge.
+  - **À la victoire** : il est pris dans le cristal, casque fendu.
+- **Les golems** = ceux du combat du Barde (`barde/golems.js`, Bible §16.4) :
+
+| Dans les règles | Devient | Ce qu'il fait ici |
+|---|---|---|
+| le cogneur (3 vies) | **le lancier** (heaume à crête, grande faux) | le golem de base |
+| le coureur (1 vie) | **le rôdeur** (gueule de piège à loups) | rapide, fragile |
+| la brute (7 vies) | **le bélier** (tête de fer, cornes enroulées) | gros : lâche une page |
+| le costaud (16 vies) | **le colosse** (chaudière, deux cheminées, grandes cornes) | très gros, frappe pour 2 : lâche une page |
+| le lanceur (2 vies) | **le frondeur** (canon de bronze sur des pattes de crabe) | reste loin et crache des braises |
+
+  - Ils **marchent pas à pas** (quatre images par pas), **se tournent** vers là où ils vont (trois angles), **arment et frappent**. Projetés, ils tournent en l'air ; sonnés, ils penchent sous des étoiles ; touchés, ils s'éclairent.
+  - **Ceux du fond sortent par les deux portes de bronze** (avant : de tout le bord du haut). **Ceux des côtés et du bas sautent des galeries** et retombent sur les dalles.
+  - Les « cuirassés » de la fureur portent un casque et une plaque de fer par-dessus.
+  - Deux golems du Barde ne servent pas ici : le porte-dalle et le tourbillon.
+- **Les trois amis, de dos, tournés vers Grosbec** : le Pisteur (cape verte, carquois, arc), l'Alchimiste (en violet, sa sacoche, une fiole levée), le Barde (en rubis, son luth, son chapeau rubis à plume blanche, comme dans son combat). **De temps en temps, ils tirent sur Grosbec** : une flèche, une fiole qui fait une cloche, un éclair de musique. **C'est du décor** : ça ne change rien au combat. Un ami venu aider le Sage tire moins souvent sur Grosbec (il est occupé avec les golems).
+- **Les mots** : « Le Sage contre Grosbec », « La colère de Grosbec », « FUREUR de Grosbec », « golems », « frondeurs », « braises ».
+- **Une ligne de chiffres** sur l'écran de pause et sur l'écran de fin (« Mesures (version 16) : 60 images par seconde, pire seconde 57 · finesse 61 %… ») : si ça rame sur un vrai appareil, Romain peut la lire à Claude. (Idée reprise du combat du Barde.)
+
+### Pour que ça ne rame pas [Romain : « surtout très économe en énergie. Faut surtout pas que ça rame »]
+- **Tout est peint une fois, puis recopié** : la salle (une image), Grosbec (16 poses), les golems (150 images au plus : 5 golems × 3 angles × 10 poses ; la réserve a 260 places, donc aucune n'est jamais jetée). **Tout est préparé pendant qu'on lit l'explication** (moins d'une seconde) ; **rien n'est repeint en plein combat**. Un golem à l'écran = deux images recopiées (son ombre, lui).
+- **La finesse automatique** : la page ne dessine jamais plus de 1,7 million de points. Pendant le jeu, elle compte ses images : **sous 25 images par seconde pendant 1,4 seconde, elle dessine un peu moins fin** (quatre crans, jusqu'à 42 %). Elle s'en souvient pour la fois suivante, et retente alors un cran plus fin. Un appareil faible (deux cœurs, ou peu de mémoire) part à 61 %. Avec `?finesse=1` au bout de l'adresse, la finesse est bloquée (pour les photos).
+- **Les leçons du combat du Barde** (Bible §16.7, l'iPhone de Romain qui ramait) sont appliquées : les images préparées gardent leur taille quand la finesse baisse (rien à repeindre) ; une image qu'on jette est vidée tout de suite (Safari garde longtemps la mémoire d'une image jetée) ; une image pendant laquelle on a préparé un dessin ne compte pas comme une image lente.
+- **Les autres économies** : les étincelles sont de petits carrés (320 au plus) ; les textes sont écrits une fois dans une petite image ; dix grandes lueurs au plus par image ; les éclairs sont simplifiés quand il y a plus de 36 golems.
+- **Mesuré** (images par seconde : moyenne, puis pire seconde ; navigateur **sans carte graphique**, processeur ralenti exprès, finesse automatique) :
+
+| Appareil imité | Un moment ordinaire (25 golems, sans combo) | Une scène très lourde (70 golems, quatre combos au maximum) |
+|---|---|---|
+| Téléphone 390 × 844 (écran fin), ralenti 4 fois | 55, pire 43 | 26, pire 18 |
+| Tablette 1024 × 768 (écran fin), ralentie 4 fois | 46, pire 39 | 22, pire 16 |
+| Vieille tablette 768 × 1024, ralentie 4 fois | 56, pire 52 | 29, pire 21 |
+| Grande tablette 800 × 1280, ralentie 6 fois | 30, pire 22 | 15, pire 12 |
+
+  **La version 15, dans la même scène très lourde : 5 à 11 images par seconde.** La version 16 est donc deux à trois fois plus rapide que l'ancienne, avec des dessins plus riches. Mais **la scène très lourde reste sous les 25 images par seconde** sur une machine ralentie 4 fois : c'est la fin d'une longue partie avec plusieurs combos au maximum.
+- **Pas vérifié : un vrai iPhone, une vraie tablette.** Ces chiffres viennent d'un ordinateur ralenti exprès. Le combat du Barde ramait sur l'iPhone de Romain à l'acte III (22 h 25) sans que ça se voie sur ces machines-là.
+
+### Vérifié
+- Les 56 vérifications des règles passent. Une partie jouée jusqu'au bout avec le vrai clavier des codes : les trois amis viennent, Grosbec est pris dans le cristal, l'écran « L'armure tombe ! » arrive. Aucune erreur de page.
+- **Le combat n'est pas plus dur ni plus facile** : le robot, sans les codes, tient 2 min 06 avec les anciennes règles et 2 min 28 avec les nouvelles (médiane de 24 parties chacune ; d'une partie à l'autre il va de 1 min 20 à 8 minutes, donc l'écart ne veut rien dire).
+- Photos regardées : fenêtre, plein écran, téléphone, tablette ; les golems qui sortent des portes et sautent des galeries ; Grosbec qui envoie, qui encaisse, en colère, dans le cristal.
+
+### Choix de Claude, à valider par Romain
+- **« Vue de haut »** : le sol est vu de haut, mais **les personnages restent debout** (comme avant). Vraiment à la verticale, on ne verrait que des crêtes de casque et des épaules : on ne reconnaîtrait ni Grosbec ni les golems.
+- **Quel golem remplace lequel** (le tableau ci-dessus).
+- **Les golems du fond arrivent en deux files, par les portes.** Le robot ne voit pas de différence de difficulté.
+- **Les tirs des amis sur Grosbec ne font rien** (décor).
+- Les mots de Grosbec ; « ASSEZ ! » pour sa colère (dans le combat du Barde, c'est « SILENCE ! »).
+- **Les amis sont dessinés simplement, de dos** : ce ne sont pas les héros « en volume » du jeu (trop lourd pour ce mini-jeu, et ils sont petits à l'écran).
+- **Grosbec n'a ni voix ni bruits d'armure** ici (il en a dans le combat du Barde) : les sons n'ont pas été touchés.
+- **Dans la petite fenêtre, sur un téléphone, les jauges cachent les deux portes.** En plein écran (bouton jaune « Commencer en plein écran »), elles passent au-dessus de la salle.
+- À la victoire, le message se pose sous l'estrade, comme les autres (avant, il descendait sur le Sage).
+
+### Pas vérifié
+- Un vrai iPhone, une vraie tablette (voir plus haut).
+- Les sons : inchangés, et toujours jamais écoutés par Claude.
+- Les 10 combos n'ont pas été repris en photo un par un avec les nouveaux dessins (`photos-combos.py`) ; leurs effets n'ont pas été modifiés.
+- Les modèles du Barde sont ceux de sa **version 9**. Sa version 10 (23 h) a encore allégé ses golems (le golem tourné à gauche est le reflet de celui de droite) : pas repris ici, ce n'est pas nécessaire (150 images, moins d'une seconde de préparation).
 
 ## La version 12 (24 novembre, 17 h 38)
 ### Ce que Romain a demandé (17 h 01)
@@ -145,7 +219,7 @@ Maquette jouable (pas le vrai jeu, rien n'est construit dans Brumeval) : https:/
 - **L'aide-mémoire** (runes, pages, les 10 combos, la colère du cœur, pouvoirs des amis, ce qui durcit, codes des amis, Pause, Nouvelle partie) devient un volet, ouvert par le bouton 📜 ; le jeu attend tant qu'il est ouvert.
 - **Limite** : si la page Claude ne laisse pas passer en vrai plein écran, la barre du navigateur reste visible.
 
-## Les dessins (version 8, choix de Claude, à valider par Romain ; ajouts version 12)
+## Les dessins des versions 8 à 15 (remplacés en version 16 pour la salle, le cœur, les golems et les trois amis ; les effets des runes et des combos, et le Sage, sont gardés)
 - **Vue de trois quarts** : tout le monde est dessiné debout ; là où on voit le golem, c'est là qu'on le touche.
 - **Les golems** (pierre et éléments naturels, éclat de cristal rouge dans la poitrine) : **cogneur** (pierre grise), **coureur** (jambes de cristal rouge), **brute** (moussu), **costaud** (pierres blanches et racines), **lanceur** (grès, lève une pierre). En version 12 : **cuirassé** (casque à crête rouge et plaque de fer).
 - **La marche pas à pas**, les coups, sonné (étoiles), projeté (il tourne), touché (blanc), détruit (il s'écroule en cailloux). En version 12 : boulet (traînée dorée), tornade (entonnoir violet plein de pages), traînée de la comète, coulée de lave, foudre du ciel, onde du sceau, golems en panique (« !! »), bords rouges de la colère, case « FRÉNÉSIE ».
@@ -169,6 +243,8 @@ Maquette jouable (pas le vrai jeu, rien n'est construit dans Brumeval) : https:/
 ## Questions encore ouvertes
 - Un golem qui danse (partition du Barde) doit-il compter comme sonné (donc éclater au trait) ? Aujourd'hui : non.
 - La dague du Pisteur, « 2 coups » : compris comme 2 dégâts d'un coup.
+- Version 16 : les choix de Claude à valider (voir « La version 16 »), surtout la vue (sol vu de haut, personnages debout) et les golems du fond qui passent par les portes.
+- Dans le vrai jeu : les codes de cette maquette sont des codes d'essai (Pisteur 🔥 🌙 ⭐, Alchimiste ⭐ 🔥 💧, Barde 🔑 💧 🍃 — celui du Barde est bien celui que son combat donne à la fin, Bible §16.9 ; les deux autres sont à accorder avec les combats du Pisteur et de l'Alchimiste).
 
 ## Les versions précédentes
-- **Version 1** (tour par tour, 7 runes) : une poussée suffisait. **Version 2** (Into the Breach) : un jeu d'énigmes. **Version 3** (temps réel, coûts fixes 2-3-3) : déséquilibrée. **Version 4** (encre à la longueur du tracé) : frustrante. **Version 5** : escargot trop facile, mur mal fait. **Version 6** : mur remplacé par l'arc de cercle. **Version 7** (règles des runes d'aujourd'hui) : « le jeu est pas mal ». **Version 8** (dessins, plein écran) : « un peu trop facile ». **Version 9** (ça durcit, pouvoirs des amis, 3 codes = gagné) : « beaucoup plus dur ». **Version 10** (les pages, 16 cartes) : « j'aime beaucoup ». **Version 11** (20 cartes, 8 combos, clavier) : combos « pas assez jouissifs », et pas de sons. **Version 12** (10 combos, colère du cœur, sons) : musique « petite maison dans la prairie », pas une musique de combat. **Version 13** (musique de combat) : il demande des curseurs de volume. **Version 14** (curseurs de volume) : il demande de renforcer les combos faibles. **Version 15** (tornade, comète, boulets renforcés) : « le jeu, pour moi, il est fini ».
+- **Version 1** (tour par tour, 7 runes) : une poussée suffisait. **Version 2** (Into the Breach) : un jeu d'énigmes. **Version 3** (temps réel, coûts fixes 2-3-3) : déséquilibrée. **Version 4** (encre à la longueur du tracé) : frustrante. **Version 5** : escargot trop facile, mur mal fait. **Version 6** : mur remplacé par l'arc de cercle. **Version 7** (règles des runes d'aujourd'hui) : « le jeu est pas mal ». **Version 8** (dessins, plein écran) : « un peu trop facile ». **Version 9** (ça durcit, pouvoirs des amis, 3 codes = gagné) : « beaucoup plus dur ». **Version 10** (les pages, 16 cartes) : « j'aime beaucoup ». **Version 11** (20 cartes, 8 combos, clavier) : combos « pas assez jouissifs », et pas de sons. **Version 12** (10 combos, colère du cœur, sons) : musique « petite maison dans la prairie », pas une musique de combat. **Version 13** (musique de combat) : il demande des curseurs de volume. **Version 14** (curseurs de volume) : il demande de renforcer les combos faibles. **Version 15** (tornade, comète, boulets renforcés) : « le jeu, pour moi, il est fini ». **Version 16** (la salle, Grosbec et ses golems du combat du Barde, vus de haut) : pas encore vue par Romain.

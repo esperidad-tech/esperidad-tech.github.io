@@ -24,7 +24,7 @@ const DUREE = +(process.argv[2] || 90000); const VIT = +(process.env.VIT || 3); 
       if (J.t >= journal) { journal += 30; console.log(nom, JSON.stringify(J)); }
       if (moitie === null && J.B <= 600) { moitie = J.t; console.log(nom, "moitié à", J.t, "s"); }
       const box = await p.$eval("#cv", c => { const r = c.getBoundingClientRect(); return { x: r.left, y: r.top }; });
-      const scr = (gx, gy) => ({ x: box.x + gx * st.L.s, y: box.y + (st.L.top + gy * 0.75) * st.L.s });
+      const scr = (gx, gy) => ({ x: box.x + gx * st.L.s, y: box.y + (st.L.top + gy * (st.L.bot - st.L.top) / st.L.D) * st.L.s });
       if (!st.E.length) { await p.waitForTimeout(300); continue; }
       // la grappe la plus dense
       let best = st.E[0], bn = 0;
@@ -73,11 +73,11 @@ const DUREE = +(process.argv[2] || 90000); const VIT = +(process.env.VIT || 3); 
         if (apres.n) console.log("lancer raté", rec.join(), JSON.stringify(cible), JSON.stringify(q), JSON.stringify(apres)); }
       if (rec.join() === "feu,farine" && boumShots < 2 && Date.now() - t0 > 15000 * (boumShots + 1)) { boumShots++; await p.waitForTimeout(380); await p.screenshot({ path: "v5-boum-" + nom + "-" + boumShots + ".png" }); await p.waitForTimeout(700); await p.screenshot({ path: "v5-apres-" + nom + "-" + boumShots + ".png" }); }
       await p.waitForTimeout(+(process.argv[4] || 420));
-      if (shot < 6 && Date.now() - t0 > 25000 * (shot + 1)) { shot++; await p.screenshot({ path: "v14-jeu-" + nom + "-" + shot + ".png" }); }
+      if (shot < 6 && Date.now() - t0 > 25000 * (shot + 1)) { shot++; await p.screenshot({ path: "v15-jeu-" + nom + "-" + shot + ".png" }); }
     }
     await p.waitForTimeout(1600);
     const fin = await p.evaluate(() => { const S = window.__v4.etat(); return { fin: !S.enCours, temps: Math.round(S.temps), pv: Math.round(S.pv), boss: Math.round(S.B.pv), bless: S.bless, nE: S.E.length, tues: S.tues, coups: S.coupsBoss, nMega: S.nMega, bossKO: S.bossKO, chaine: S.chaineMax, combos: S.combosPartie, titre: document.getElementById("fin-titre").textContent }; });
-    await p.screenshot({ path: "v14-fin-" + nom + ".png" });
+    await p.screenshot({ path: "v15-fin-" + nom + ".png" });
     console.log(nom, JSON.stringify(dims), "tours", tours, JSON.stringify(fin));
     await ctx.close();
   }
