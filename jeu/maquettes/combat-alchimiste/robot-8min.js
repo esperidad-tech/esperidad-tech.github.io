@@ -36,6 +36,9 @@ const DUREE = +(process.argv[2] || 90000); const VIT = +(process.env.VIT || 3); 
         const a = scr(st.h.x, st.h.y - 10), z = scr(visX, st.h.y - 10);
         await p.mouse.move(a.x, a.y); await p.mouse.down(); await p.mouse.move(a.x + (z.x - a.x) / 2, a.y, { steps: 3 }); await p.mouse.move(z.x, z.y, { steps: 3 }); await p.mouse.up();
       }
+      const ray = await p.evaluate(() => { const S = window.__v4.etat(); if (S.slots.length && !S.rayon) document.getElementById("vider").click(); return !!S.rayon; });
+      if (ray) { const q = scr(best.x, Math.min(best.y, st.h.y - 60)); await p.mouse.move(q.x, q.y); await p.mouse.down(); await p.mouse.up(); await p.waitForTimeout(250); continue; }
+      await p.evaluate(() => { const S = window.__v4.etat(); if (S.mega >= 100 && !S.megaArme) { document.getElementById("btn-mega").click(); S.nMega = (S.nMega || 0) + 1; } });
       let rec, cible, boireIt = false;
       const r = tours % 8;
       const MODE = process.argv[5] || "";
@@ -44,6 +47,7 @@ const DUREE = +(process.argv[2] || 90000); const VIT = +(process.env.VIT || 3); 
         const proche = st.E.slice().sort((a, b) => Math.hypot(a.x - st.h.x, a.y - st.h.y) - Math.hypot(b.x - st.h.x, b.y - st.h.y))[0];
         rec = ["feu", "farine"]; cible = { x: proche.x, y: proche.y };
       }
+      else if (tours % 11 === 5) { rec = ["eau", "eau", "eau"]; boireIt = true; }
       else if (st.pv < 5 && tours % 2 === 0) { rec = ["fleur", "fleur", "fleur"]; boireIt = true; }
       else if (pres >= 2 && !st.bouclier) { rec = ["eau", "eau"]; boireIt = true; }
       else if (pres >= 5) { rec = ["eau", "eau", "eau"]; cible = { x: st.h.x, y: st.h.y - 50 }; }
@@ -61,11 +65,11 @@ const DUREE = +(process.argv[2] || 90000); const VIT = +(process.env.VIT || 3); 
         if (apres.n) console.log("lancer raté", rec.join(), JSON.stringify(cible), JSON.stringify(q), JSON.stringify(apres)); }
       if (rec.join() === "feu,farine" && boumShots < 2 && Date.now() - t0 > 15000 * (boumShots + 1)) { boumShots++; await p.waitForTimeout(380); await p.screenshot({ path: "v5-boum-" + nom + "-" + boumShots + ".png" }); await p.waitForTimeout(700); await p.screenshot({ path: "v5-apres-" + nom + "-" + boumShots + ".png" }); }
       await p.waitForTimeout(+(process.argv[4] || 420));
-      if (shot < 6 && Date.now() - t0 > 25000 * (shot + 1)) { shot++; await p.screenshot({ path: "v9-jeu-" + nom + "-" + shot + ".png" }); }
+      if (shot < 6 && Date.now() - t0 > 25000 * (shot + 1)) { shot++; await p.screenshot({ path: "v13-jeu-" + nom + "-" + shot + ".png" }); }
     }
     await p.waitForTimeout(1600);
-    const fin = await p.evaluate(() => { const S = window.__v4.etat(); return { fin: !S.enCours, temps: Math.round(S.temps), pv: Math.round(S.pv), boss: Math.round(S.B.pv), bless: S.bless, nE: S.E.length, tues: S.tues, coups: S.coupsBoss, chaine: S.chaineMax, combos: S.combosPartie, titre: document.getElementById("fin-titre").textContent }; });
-    await p.screenshot({ path: "v9-fin-" + nom + ".png" });
+    const fin = await p.evaluate(() => { const S = window.__v4.etat(); return { fin: !S.enCours, temps: Math.round(S.temps), pv: Math.round(S.pv), boss: Math.round(S.B.pv), bless: S.bless, nE: S.E.length, tues: S.tues, coups: S.coupsBoss, nMega: S.nMega, chaine: S.chaineMax, combos: S.combosPartie, titre: document.getElementById("fin-titre").textContent }; });
+    await p.screenshot({ path: "v13-fin-" + nom + ".png" });
     console.log(nom, JSON.stringify(dims), "tours", tours, JSON.stringify(fin));
     await ctx.close();
   }

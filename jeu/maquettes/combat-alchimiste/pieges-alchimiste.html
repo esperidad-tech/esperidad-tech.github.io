@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Alegreya+Sans:wght@400;500;700;800&display=swap">
 <style>
-/* Version 12 : le berserker, le soldat en armure, le porte-barricade, le Colosse ; les points faibles ; 10 cœurs ; le bouclier de Grosbec qui lance des vagues sans fin. Version 11 : les sons d'armée et la musique de combat (moteur de l'Atelier des sons). Version 10 : l'étagère des potions, l'aide aux mélanges, des sorts plus beaux. Version 9 : Grosbec mène le combat (salves à thème, colère, bouclier, 8 minutes), la vraie vague. Version 8 : les vrais personnages (Grosbec dans son armure, ses automates, l'Alchimiste du donjon vu de dos). Des corps lourds, pas des balles. La foule arrive sans arrêt. Grosbec est hors de portée : on ne le blesse qu'en lui renvoyant ses automates. Un seul doigt suffit : les potions en bas, on touche la place pour lancer, on fait glisser l'Alchimiste. */
+/* Version 13 : la méga-potion, le rayon d'eau, les rayons animés, la tornade de feu, la boule de boue, le lancer du marteau, la toupie. Version 12 : le berserker, le soldat en armure, le porte-barricade, le Colosse ; les points faibles ; 10 cœurs ; le bouclier de Grosbec qui lance des vagues sans fin. Version 11 : les sons d'armée et la musique de combat (moteur de l'Atelier des sons). Version 10 : l'étagère des potions, l'aide aux mélanges, des sorts plus beaux. Version 9 : Grosbec mène le combat (salves à thème, colère, bouclier, 8 minutes), la vraie vague. Version 8 : les vrais personnages (Grosbec dans son armure, ses automates, l'Alchimiste du donjon vu de dos). Des corps lourds, pas des balles. La foule arrive sans arrêt. Grosbec est hors de portée : on ne le blesse qu'en lui renvoyant ses automates. Un seul doigt suffit : les potions en bas, on touche la place pour lancer, on fait glisser l'Alchimiste. */
 :root {
   --bg: #0E1213; --surface: #1B2326; --surface-2: #232E31; --ink: #E8ECEA; --muted: #9AA7A3; --line: #33413F;
   --jaune: #F2C230; --jaune-ombre: #A5831B;
@@ -45,6 +45,10 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
 @media (hover: hover) and (pointer: fine) { .pot .touche { display: block; } }
 .chaudron { position: relative; width: clamp(52px, 14vw, 62px); height: 62px; border: 0; background: none; padding: 0; cursor: pointer; flex: none; z-index: 1; }
 .chaudron svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 3px 2px rgba(0,0,0,.55)); }
+.mega { position: absolute; left: 50%; bottom: 60px; transform: translateX(-50%); z-index: 3; border: 0; border-radius: 12px; padding: 5px 9px; font: 800 12px 'Alegreya Sans', sans-serif;
+  background: var(--jaune); color: #111; box-shadow: 0 0 0 2px #111, 0 0 14px rgba(242,194,48,.9); cursor: pointer; animation: megaPulse 1s ease-in-out infinite; white-space: nowrap; }
+.mega.arme { background: #fff3b0; animation: none; box-shadow: 0 0 0 2px #111, 0 0 22px rgba(255,240,150,1); }
+@keyframes megaPulse { 50% { transform: translateX(-50%) scale(1.08); } }
 .chaudron .x { position: absolute; top: 4px; right: 0; width: 19px; height: 19px; border-radius: 50%; background: #2b201a; border: 1px solid #8a7560; color: #f1e6d6; font-size: 11px; line-height: 17px; text-align: center; display: none; }
 .chaudron.plein .x { display: block; }
 .chaudron .bul { animation: bulle 1.4s ease-in infinite; opacity: 0; }
@@ -107,12 +111,15 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
         <ellipse cx="31" cy="27" rx="25" ry="7.5" fill="#26262d" stroke="#55555f" stroke-width="2"/>
         <ellipse id="ch-liq" cx="31" cy="28" rx="20.5" ry="5" fill="#1a1a1f"/>
         <g fill="rgba(255,255,255,.75)"><circle class="bul" cx="24" cy="27" r="1.8"/><circle class="bul" cx="34" cy="28" r="1.4"/><circle class="bul" cx="29" cy="26" r="2"/></g>
+        <circle cx="31" cy="37" r="28" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="3"/>
+        <circle id="ch-jauge" cx="31" cy="37" r="28" fill="none" stroke="#F2C230" stroke-width="3" stroke-linecap="round" stroke-dasharray="0 176" transform="rotate(-90 31 37)"/>
         <circle id="ch-s0" cx="20" cy="42" r="4.4" fill="none" stroke="rgba(255,255,255,.3)" stroke-dasharray="2 2"/>
         <circle id="ch-s1" cx="31" cy="44" r="4.4" fill="none" stroke="rgba(255,255,255,.3)" stroke-dasharray="2 2"/>
         <circle id="ch-s2" cx="42" cy="42" r="4.4" fill="none" stroke="rgba(255,255,255,.3)" stroke-dasharray="2 2"/>
       </svg>
       <span class="x" aria-hidden="true">✕</span>
     </button>
+    <button type="button" class="mega" id="btn-mega" hidden>✦ MÉGA</button>
     <div class="potions" id="potions"></div>
   </div>
 </div>
@@ -120,13 +127,14 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
 <div class="voile" id="regles">
   <div class="boite">
     <h2>Les Pièges de l'Alchimiste</h2>
-    <p>Version 12. Grosbec reste tout au fond : tes fioles ne vont pas jusqu'à lui. Il envoie ses automates par vagues. <b>Détruis-les</b> : chaque automate détruit l'affaiblit. <b>Renvoie-les-lui à la figure</b> : ça lui fait encore plus mal… et ça l'énerve.</p>
+    <p>Version 13. Grosbec reste tout au fond : tes fioles ne vont pas jusqu'à lui. Il envoie ses automates par vagues. <b>Détruis-les</b> : chaque automate détruit l'affaiblit. <b>Renvoie-les-lui à la figure</b> : ça lui fait encore plus mal… et ça l'énerve.</p>
     <h3>Jouer avec un seul doigt</h3>
     <div class="regle"><span class="tuile" style="--c:#3D2F5C">☝️</span><p>Choisis 1 à 3 potions en bas, puis <b>touche la place</b> : tu vois la zone, tu peux glisser, tu lâches. <b>Fais glisser l'Alchimiste</b> pour bouger, <b>touche-le</b> pour boire.</p></div>
     <div class="regle"><span class="tuile">💥</span><p><b>Tes potions projettent, elles ne tuent presque pas.</b> Une explosion souffle toujours en éventail, loin de toi, vers le fond. Un automate projeté vole, retombe, glisse un tout petit peu et met 2 secondes à se relever. S'il percute un ami, les deux restent assommés 5 secondes. S'il percute Grosbec… aïe, pour Grosbec !</p></div>
     <div class="regle"><span class="tuile">🛡️</span><p>Les petits te font perdre 1, les moyens 3, les gros 5. Quand personne ne te touche, tu reprends des forces.</p></div>
     <div class="regle"><span class="tuile" style="--c:#2E86D6">🌊</span><p><b>La vague</b> (eau + eau) emporte tout jusqu'au bout de la place. <b>Trempés</b>, ils avancent cinq fois moins vite.</p></div>
     <div class="regle"><span class="tuile" style="--c:#5DB338">🧪</span><p><b>Les boucliers</b> résistent aux explosions. L'acide ronge leur bouclier.</p></div>
+    <div class="regle"><span class="tuile" style="--c:#B8902F">✦</span><p><b>La méga-potion</b> : détruis des automates, trouve des combos ; quand le cercle doré du chaudron est plein, touche <b>MÉGA</b> : ton prochain mélange part deux fois, en plus grand.</p></div>
     <div class="regle"><span class="tuile" style="--c:#7A5A1A">✨</span><p>Choisis une potion : au-dessus de chaque fiole, tu vois ce que donnerait le mélange. Une étoile : un très bon mélange.</p></div>
     <h3>Les réactions</h3>
     <p style="font-size:.9rem">feu + farine = <b>BOUM</b> (ça projette) · eau + eau = <b>vague</b> · acide + fleur = <b>savon</b> (ça glisse) · eau + farine = <b>boue</b> (ça colle) · farine + acide = <b>volcan</b> (ça envoie en l'air) · eau + acide = <b>électricité</b> · eau + fleur = <b>lianes</b> · feu + fleur = <b>pollen</b> (atchoum) · farine + fleur + fleur = <b>gâteau</b> (appât).</p>
@@ -6434,12 +6442,27 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     brise: function (t, B) { O.craque(A, t, 0.3, 0.6, B.salle); A.choc(t, { f: 160, f2: 70, d: 0.15, g: 0.35 }, B.salle); },
     // le Colosse arrive : trois pas qui font trembler, et le cor grave
     colosse: function (t, B) { [0, 0.55, 1.1].forEach(function (d) { O.chuteGrave(A, t + d, 0.7, 0.6, B.salle); A.choc(t + d, { f: 70, f2: 35, d: 0.3, g: 0.5, sat: 3 }, B.salle); }); cor(t + 0.2, m(33), 1.8, 0.1, B.loin); cor(t + 0.2, m(40), 1.8, 0.07, B.loin); },
+    // ---- version 13 ----
+    // la méga-potion : une montée dorée, un éclat de cuivres
+    mega: function (t, B) { [62, 66, 69, 74, 78].forEach(function (n, k) { A.harpe(t + k * 0.035, m(n), { t60: 1.4, g: 0.07, lp: 5000 }, B.salle); }); O.cuivre(A, t + 0.18, m(50), 0.6, 0.08, B.salle); O.cuivre(A, t + 0.18, m(57), 0.6, 0.06, B.salle); O.timbale(A, t + 0.18, 0.7, B.salle); A.cloche(t + 0.18, m(86), { d: 1.6, rapport: 2, indice: 0.5, g: 0.05 }, B.loin); },
+    // la jauge est pleine : un petit carillon
+    megaPrete: function (t, B) { [74, 81, 86].forEach(function (n, k) { A.cloche(t + k * 0.08, m(n), { d: 1.2, rapport: 2, indice: 0.4, g: 0.05 }, B.loin); }); },
+    // la lance à incendie : un jet d'eau puissant
+    jet: function (t, B) { A.bruit(t, { coul: "rose", filtres: [{ type: "bandpass", f: 1400, q: 0.7 }], env: [[0, 0], [0.08, 1], [2.1, 0.8], [2.4, 0]], g: 0.4, rugueux: 0.4, rugVit: 18 }, B.sec); A.joue(t, A.eau(2.3, 70, { fmin: 700, fmax: 2400 }), { g: 0.35, env: [[0, 0], [0.1, 1], [2.3, 0]] }, B.sec); A.bruit(t, { coul: "brun", lp: 260, env: [[0, 0], [0.1, 1], [2.3, 0]], g: 0.3 }, B.loin); },
+    // le lancer du marteau : un grand « vroumm » qui file
+    marteau: function (t, B) { O.swish(A, t, 0.45, { f1: 300, f2: 1600, f3: 500, g: 0.6 }, B.salle); O.embrase(A, t, 0.4, B.sec); },
+    // la tornade de feu : un vent qui tourne et qui flambe
+    tornade: function (t, B) { A.bruit(t, { coul: "rose", filtres: [{ type: "bandpass", f: 500, pts: [[0.6, 1800], [1.6, 600]], q: 2 }], env: [[0, 0], [0.3, 1], [1.8, 0]], g: 0.4, rugueux: 0.6, rugVit: 6 }, B.salle); [0, 0.2, 0.45].forEach(function (d) { O.embrase(A, t + d, 0.5, B.salle); }); },
+    // la boule de boue : un gros « splorch » qui roule
+    bouleBoue: function (t, B) { O.sploutch(A, t, { g: 0.7, f: 160 }, B.salle); A.choc(t, { f: 90, f2: 45, d: 0.2, g: 0.4 }, B.salle); A.joue(t + 0.05, A.eau(0.5, 40, { fmin: 200, fmax: 700 }), { g: 0.4 }, B.sec); },
+    // le berserker en toupie : une lame qui tourne
+    toupie: function (t, B) { for (var k = 0; k < 6; k++) O.swish(A, t + k * 0.11, 0.1, { f1: 1500, f2: 4000, f3: 1800, g: 0.25 }, B.sec); O.glisse(A, t, 0.25, B.sec); },
     // la fin
     victoire: function (t, B) { if (G.BRUITAGES && G.BRUITAGES.victoireA) G.BRUITAGES.victoireA(A, { t: t, sec: B.P.sec, cave: B.P.cave, grotte: B.P.grotte }); },
     defaite: function (t, B) { [[0, 50], [0.5, 49], [1.0, 45], [1.6, 38]].forEach(function (n) { cor(t + n[0], m(n[1] - 12), 0.9, 0.08, B.loin); }); O.timbale(A, t + 1.6, 0.8, B.salle); }
   };
   // pour ne pas tout noyer : un même bruit pas plus souvent que…
-  var LIMITE = { allez: 0.9, berserker: 0.25, armure: 0.12, courtcircuit: 0.3, planter: 0.3, feuBois: 0.4, brise: 0.15, thud: 0.07, pop: 0.06, mort: 0.08, etincelle: 0.15, boom: 0.09, gong: 0.12, bam: 0.08, zap: 0.12, splat: 0.08, verre: 0.06, pschitt: 0.12, atchoum: 0.12, crac: 0.08, bloque: 0.15, aie: 0.2, aieBoss: 0.6, grogne: 0.8 };
+  var LIMITE = { mega: 0.4, megaPrete: 1, jet: 1.5, marteau: 0.4, tornade: 1, bouleBoue: 0.25, toupie: 0.5, allez: 0.9, berserker: 0.25, armure: 0.12, courtcircuit: 0.3, planter: 0.3, feuBois: 0.4, brise: 0.15, thud: 0.07, pop: 0.06, mort: 0.08, etincelle: 0.15, boom: 0.09, gong: 0.12, bam: 0.08, zap: 0.12, splat: 0.08, verre: 0.06, pschitt: 0.12, atchoum: 0.12, crac: 0.08, bloque: 0.15, aie: 0.2, aieBoss: 0.6, grogne: 0.8 };
   SC.jouer = function (nom) {
     if (!A || MUET) return;
     var f = BR[nom]; if (!f) return;
@@ -6607,6 +6630,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   var TA = { feu: .34, eau: .30, nuage: .42, acide: .32, fleurs: .28, boue: .55, vapeur: .38, fumee: .40, savon: .45, elec: .35, lianes: .25, pollen: .40, mousse: .45, bain: .55, popcorn: .5 };
   var COMBOS = {
     courtcircuit: "COURT-CIRCUIT !", barricadeFeu: "LA BARRICADE EN FEU !",
+    marteau: "LANCER DU MARTEAU !", tornadeFeu: "TORNADE DE FEU !", bouleBoue: "LA BOULE DE BOUE !", toupie: "LE BERSERKER EN TOUPIE !", jet: "LANCE À INCENDIE !", mega: "MÉGA-POTION !",
     boulet: "BOULET DE CANON !", carambolage: "CARAMBOLAGE !", bowling: "BOWLING !", catapulte: "CATAPULTE !",
     meche: "MÈCHE SUR PATTES !", panique: "TOUT LE MONDE EN FEU !", massue: "MASSUE DE LIANES !", elec: "ÉLECTROCUTÉS !", tonneau: "TONNEAU DANS LE MILLE !",
     charrette: "LA CHARRETTE FOLLE !", trampoline: "TRAMPOLINE !", fontaine: "LA FONTAINE ÉLECTRIQUE !",
@@ -6764,7 +6788,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     "farine fleur": ["🥞", "Crêpe", "Une crêpe. Bof : un nuage et quelques fleurs."],
     "acide fleur": ["🫧", "Savon", "Du savon. Tout le monde glisse !"],
     "feu feu feu": ["🔥", "Colonnes", "Des colonnes de feu. Tout s'envole en flammes."],
-    "eau eau eau": ["🌊", "Raz-de-marée", "Un raz-de-marée, tout autour de toi."],
+    "eau eau eau": ["🌊", "Raz-de-marée", "Lancé : un raz-de-marée autour de toi. Bu : une lance à incendie !"],
     "farine farine farine": ["☁️", "Tempête", "Une tempête de farine."],
     "acide acide acide": ["🧪", "Bain d'acide", "Un grand bain d'acide."],
     "fleur fleur fleur": ["❤️", "Grand remède", "Le grand remède. Bois-le !"],
@@ -6874,6 +6898,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     S.big = { k: k, txt: COMBOS[k], t: 1.5, neuf: neuf };
     son("combo");
     if (neuf) { vus[k] = 1; try { localStorage.setItem(CLE_CARNET, JSON.stringify(vus)); } catch (e) {} }
+    if (k !== "mega") gagnerMega(S.combosPartie[k] === 1 ? 8 : 0.3);
   }
   // la chaîne : chaque choc qui arrive peu après le précédent fait monter le compteur
   function nouvelleChaine() { S.chaineCour = ++S.nChaine; return S.chaineCour; }
@@ -6896,7 +6921,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
           temps: 0, tues: 0, enCours: true, pause: false, vise: null, glisse: null, ptr: { x: 180, y: 200 }, notes: [], nid: 0,
           shake: 0, ralenti: 0, msg: null, big: null, compteur: null, chaines: {}, nChaine: 0, chaineCour: 0, chaineMax: 0, rage: 0,
           coupsBoss: 0, coolHeros: 0, combosPartie: {}, rageV: 0, ordreT: -9,
-          PA: [], BAR: [], PB: null, nPB: 0, coolPB: 0, V: [], file: [], fileT: 0, GA: null, bulle: null, banniere: null, portesT: [0, 0, 0, 0], bouclierB: 0, bouclierV: 0, bouclierFlash: 0,
+          PA: [], BB: [], mega: 0, megaArme: false, megaK: 1, BAR: [], PB: null, nPB: 0, coolPB: 0, V: [], file: [], fileT: 0, GA: null, bulle: null, banniere: null, portesT: [0, 0, 0, 0], bouclierB: 0, bouclierV: 0, bouclierFlash: 0,
           colere: 0, nColeres: 0, coolColere: 0, coolOccup: 0, dernierCoupB: -99, dir: { i: 0, seuil: 0, decal: 0, attente: 0, apres: 0 } };
     [[70, 0.46], [292, 0.56], [244, 0.32]].forEach(function (p) { S.O.push(tonneau(p[0], p[1] * L.D)); });
     S.O.push(charrette(150, 0.5 * L.D));
@@ -6949,6 +6974,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     if (S.gateau) { S.gateau.t -= dt; if (S.gateau.t <= 0) S.gateau = null; }
     majHeros(dt);
     majVagues(dt);
+    majBoules2(dt);
     S.E.forEach(function (e) { majAuto(e, dt); });
     majBarricades(dt);
     var enFeu = S.E.filter(function (e) { return e.panique > 0; }).length;
@@ -7263,6 +7289,56 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     if (brule) for (var j = 0; j < 4; j++) { var fx0 = X - 16 + j * 11, hf = 12 + 7 * Math.abs(Math.sin(tps * 11 + j * 1.9)); ctx.drawImage(FLAMME, fx0 - 5, Y - 8 - hf, 10, hf); }
   }
 
+  /* ================= la boule de boue (version 13) ================= */
+  // La vague roule sur une flaque de boue : la boue s'enroule en boule, la vague l'emporte ; la boule colle tous ceux qu'elle
+  // touche (elle grossit), et quand elle s'arrête ou cogne (un mur, une barricade, Grosbec), elle éclate et les envoie valser.
+  function creerBouleBoue(x, y, V) { S.BB.push({ x: x, y: y, r: 14, n: 0, vx: 0, vy: 0, V: V, rot: 0, chaine: V.chaine }); combo("bouleBoue"); son("bouleBoue"); }
+  function majBoules2(dt) {
+    S.BB.forEach(function (B) {
+      if (B.V && !B.V.fini) {
+        var ra = Math.atan2(B.y - B.V.y, B.x - B.V.x), dc = Math.hypot(B.x - B.V.x, B.y - B.V.y), av = Math.max(0, B.V.d - 6 - dc);
+        B.x += Math.cos(ra) * av; B.y += Math.sin(ra) * av; B.vx = Math.cos(ra) * B.V.v; B.vy = Math.sin(ra) * B.V.v;
+      } else {
+        B.V = null; B.x += B.vx * dt; B.y += B.vy * dt; B.vx *= Math.exp(-0.9 * dt); B.vy *= Math.exp(-0.9 * dt);
+      }
+      var v = Math.hypot(B.vx, B.vy); B.rot += v * dt / B.r;
+      S.E.forEach(function (e) {
+        if (e.dansBoule || e.z > 24 || e.t === "colosse" || e.etat === "bulle" || e.tourb) return;
+        if (Math.hypot(e.x - B.x, e.y - B.y) < B.r + e.r * 0.6) { e.dansBoule = B; e.vague = null; e.attrape = null; B.n++; B.r = 14 + 5 * Math.sqrt(B.n); son("thud"); }
+      });
+      var cogne = B.x < B.r || B.x > W - B.r || B.y < 10 + B.r * 0.3 || B.y > L.D - B.r;
+      var boss = Math.hypot(B.x - S.B.x, B.y - S.B.y) < B.r + S.B.r;
+      var barr = S.BAR.some(function (b) { return Math.hypot(B.x - b.x, B.y - b.y) < B.r + b.r; });
+      if (cogne || boss || barr || (!B.V && v < 30)) eclaterBoule(B, boss);
+    });
+    S.BB = S.BB.filter(function (B) { return !B.fin; });
+  }
+  function eclaterBoule(B, boss) {
+    B.fin = true; S.chaineCour = B.chaine;
+    fx({ k: "boom", x: B.x, y: B.y, r: B.r + 20, dur: .4 }); gerbe(B.x, B.y, 18, "boue", { v: 160, vz: 220, g: 600, dur: 1, r: 3.4, r1: 2.6, rebond: true });
+    brut("boue", B.x, B.y, B.r + 18, 5).roule = true; son("bouleBoue"); S.shake = Math.max(S.shake, 0.35);
+    S.E.forEach(function (e) {
+      if (e.dansBoule !== B) return;
+      e.dansBoule = null; e.x = B.x + (Math.random() - 0.5) * B.r; e.y = B.y + (Math.random() - 0.5) * B.r * 0.6; e.colle = 2.5; e.mouille = Math.max(e.mouille, 4);
+      degat(e, 6, "choc"); ejecter(e, Math.random() * 6.283, 180 + Math.random() * 120, 260 + Math.random() * 80);
+    });
+    if (boss) { var dm = blesserBoss(14 + 7 * B.n, { lance: true }); S.B.hit = 0.35; fxTxt(S.B.x, S.B.y, -80, dm ? "−" + dm : "bloqué !", dm ? "#FFD25A" : "#F2C230"); son(dm ? "gong" : "bloque"); combo("boulet"); }
+    if (B.n >= 3) combo("bouleBoue");
+  }
+  function dessinerBoule(B) {
+    var X = B.x, Y = sy(B.y) - B.r * 0.85;
+    ombre(B.x, sy(B.y), B.r);
+    var g = ctx.createRadialGradient(X - B.r * 0.35, Y - B.r * 0.4, B.r * 0.1, X, Y, B.r); g.addColorStop(0, "#A47A4E"); g.addColorStop(0.6, "#6E4A2C"); g.addColorStop(1, "#3E2814");
+    ctx.fillStyle = g; rond(X, Y, B.r); ctx.fill();
+    // des bouts d'automates qui dépassent (des bras de métal, des sabots de porcelaine), qui tournent avec la boule
+    for (var i = 0; i < Math.min(8, B.n * 2); i++) {
+      var a = B.rot + i * 2.4, px = X + Math.cos(a) * B.r * 0.92, py = Y + Math.sin(a) * B.r * 0.92;
+      ctx.strokeStyle = i % 2 ? "#6F8597" : "#E9E1CF"; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + Math.cos(a) * 6, py + Math.sin(a) * 6); ctx.stroke();
+    }
+    ctx.fillStyle = "rgba(40,24,12,.6)"; for (var j = 0; j < 5; j++) { var a2 = B.rot * 1.1 + j * 1.3; rond(X + Math.cos(a2) * B.r * 0.5, Y + Math.sin(a2) * B.r * 0.5, 2 + (j % 2)); ctx.fill(); }
+    ctx.fillStyle = "rgba(255,255,255,.18)"; rond(X - B.r * 0.35, Y - B.r * 0.4, B.r * 0.3); ctx.fill();
+  }
+
   /* ================= la vague (eau + eau) et le raz-de-marée (eau × 3) ================= */
   // Une vraie vague qui avance : ceux qu'elle prend, elle les emporte (jusqu'au bout de la place, et sur Grosbec si elle y va) ;
   // le gros et les boucliers résistent un peu (ils sont emportés moins loin). Tous ressortent trempés : 5 fois moins vite.
@@ -7283,7 +7359,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
       V.em = (V.em || 0) + dt * (LEGER ? 6 : V.half >= 3 ? 40 : 26);
       while (V.em >= 1) { V.em -= 1; var aw = V.half >= 3 ? Math.random() * 6.283 : V.ang + (Math.random() * 2 - 1) * V.half; part({ x: V.x + Math.cos(aw) * V.d, y: V.y + Math.sin(aw) * V.d, z: 10, vx: Math.cos(aw) * V.v * 0.5, vy: Math.sin(aw) * V.v * 0.35, vz: 90 + Math.random() * 90, g: 520, dur: 0.55, r: 2.4, r1: 1, c: "eau" }); }
       S.E.forEach(function (e) {
-        if (e.vague || e.etat === "bulle" || e.statue > 0 || e.tourb || e.z > 30 || (e.attrape && e.attrape.feu > 0)) return;
+        if (e.vague || e.dansBoule || e.etat === "bulle" || e.statue > 0 || e.tourb || e.z > 30 || (e.attrape && e.attrape.feu > 0)) return;
         var d = Math.hypot(e.x - V.x, e.y - V.y);
         if (d < d0 - e.r - 8 || d > V.d + e.r || !dansArc(V, e.x, e.y)) return;
         if (abrite(V, e.x, e.y)) return;    // derrière une barricade : à l'abri
@@ -7295,6 +7371,12 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
         e.etat = "glisse"; e.apresVol = false; e.z = 0; e.vz = 0; e.touche = {}; e.stunSol = 0; e.terreT = 0; e.chaine = V.chaine;
         e.cote = Math.cos(Math.atan2(e.y - V.y, e.x - V.x)) >= 0 ? 1 : -1;
         V.n++;
+      });
+      // une flaque de boue sur son passage : elle s'enroule en boule
+      S.T.forEach(function (t) {
+        if (t.type !== "boue" || t.roule || t.t <= 0) return; var dt2 = Math.hypot(t.x - V.x, t.y - V.y);
+        if (dt2 < d0 - 6 || dt2 > V.d + 6 || !dansArc(V, t.x, t.y)) return;
+        t.roule = true; t.t = 0; creerBouleBoue(t.x, t.y, V);
       });
       S.BAR.forEach(function (b) {
         if (V["b" + b.id]) return; var db = Math.hypot(b.x - V.x, b.y - V.y);
@@ -7372,6 +7454,13 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   /* ================= états des automates ================= */
   function feuSur(e) {
     if (e.statue > 0) return;
+    // un automate qui tourne dans le tourbillon prend feu : tout le tourbillon s'embrase et s'élargit (la tornade de feu)
+    if (e.tourb && !e.tourb.feu) {
+      var tous = S.E.filter(function (o) { return o.tourb; });
+      tous.forEach(function (o) { o.tourb.feu = true; o.tourb.t = Math.max(o.tourb.t, 3.2); o.panique = 3.5; o.mouille = 0; });
+      combo("tornadeFeu"); son("tornade"); fx({ k: "onde", x: S.hero.x, y: S.hero.y, r: 120, c: "255,140,50", dur: .5 });
+      return;
+    }
     if (e.etat === "bulle") { eclaterBulle(e); return; }
     if ((e.colle > 0 || dansTrace(e, "boue")) && e.etat !== "vol") { cuire(e); return; }
     if (e.mouille > 0) { e.mouille = 0; fxTxt(e.x, e.y, -30, "pschitt", "#9FC6EA"); son("pschitt"); return; }
@@ -7490,12 +7579,14 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   }
   // le tourbillon : sur le savon, le raz-de-marée les fait tourner autour de toi, puis les éjecte
   function majTourb(e, dt) {
-    var T2 = e.tourb, h = S.hero; T2.t -= dt; T2.a += 6.5 * dt;
+    var T2 = e.tourb, h = S.hero; T2.t -= dt; T2.a += (T2.feu ? 8 : 6.5) * dt;
+    if (!T2.feu && dansTrace(e, "feu")) feuSur(e);
+    if (T2.feu) { T2.R = Math.min(150, T2.R + 35 * dt); e.panique = Math.max(e.panique, 0.5); if (Math.random() < dt * 25) part({ x: e.x, y: e.y, z: 10, vx: (Math.random() - 0.5) * 40, vz: 60, dur: 0.6, r: 4, r1: 1, c: Math.random() < 0.5 ? "feu" : "braise" }); }
     e.x = clamp(h.x + Math.cos(T2.a) * T2.R, e.r, W - e.r); e.y = clamp(h.y + Math.sin(T2.a) * T2.R * 0.8, 8, L.D - e.r);
     e.z = 6; e.spin += dt * 10; e.vx = -Math.sin(T2.a) * T2.R * 6.5; e.vy = Math.cos(T2.a) * T2.R * 6.5;
     S.E.forEach(function (o) {
       if (o === e || o.tourb || o.coolTon > 0 || o.z > 30 || o.etat === "bulle") return;
-      if (d2(o, e) < o.r + e.r + 6) { o.coolTon = 0.8; degat(o, 6, "choc"); S.chaineCour = T2.chaine; fx({ k: "etoile", x: o.x, y: o.y, dur: .3 }); son("thud"); ejecter(o, angDe(o, h.x, h.y), 330, 300); choc(o.x, o.y, T2.chaine); }
+      if (d2(o, e) < o.r + e.r + 6) { o.coolTon = 0.8; degat(o, 6, "choc"); if (T2.feu) feuSur(o); S.chaineCour = T2.chaine; fx({ k: "etoile", x: o.x, y: o.y, dur: .3 }); son("thud"); ejecter(o, angDe(o, h.x, h.y), 330, 300); choc(o.x, o.y, T2.chaine); }
     });
     if (T2.t <= 0) { e.tourb = null; e.z = 1; S.chaineCour = T2.chaine; ejecter(e, angDe(e, h.x, h.y), 340, 300); }
   }
@@ -7576,6 +7667,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
 
   /* ================= automates ================= */
   function majAuto(e, dt) {
+    if (e.dansBoule) { e.x = e.dansBoule.x; e.y = e.dansBoule.y; e.vx = e.vy = 0; e.z = 0; return; }
     ["colle", "aveugle", "etourdi", "mouille", "enfarine", "elec", "lent", "coolHit", "coolTon", "immuFeu", "immuElec", "lieT", "souffleAnim", "app", "denude", "grille", "retourT"].forEach(function (k) { e[k] = Math.max(0, e[k] - dt); });
     // en feu : il brûle doucement, sans courir ; s'il prend de la farine, la mèche s'allume
     if (e.panique > 0) {
@@ -7636,6 +7728,13 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
       }
     });
     if (e.etat === "vol") return; // il vient d'éternuer
+    // le berserker fonce sur du savon : il part en toupie, tout droit, et renverse tout ce qu'il croise
+    if (e.t === "berserker" && surSavon && e.etat === "debout" && !(e.toupie > 0) && vit(e) > 50) {
+      var at = Math.atan2(e.vy, e.vx); e.toupie = 2.5; nouvelleChaine();
+      e.etat = "glisse"; e.apresVol = false; e.touche = {}; e.stunSol = 1.5; e.vx = Math.cos(at) * 330; e.vy = Math.sin(at) * 330; e.chaine = S.chaineCour;
+      combo("toupie"); son("toupie"); fxTxt(e.x, e.y, -40, "il part en toupie !", "#FFD25A");
+    }
+    if (e.toupie > 0) { e.toupie -= dt; e.spin += dt * 30; }
     if (e.attrape) { e.vx = 0; e.vy = 0; e.tension = Math.min(3, (e.tension || 0) + dt); return; }
     e.tension = 0;
     // renversé, il glisse sur les pavés
@@ -7802,6 +7901,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     var E = S.E, i, j;
     for (i = 0; i < E.length; i++) for (j = i + 1; j < E.length; j++) {
       var a = E[i], b = E[j];
+      if (a.dansBoule || b.dansBoule) continue;
       if ((a.attrape && a.attrape.feu > 0) || (b.attrape && b.attrape.feu > 0)) continue;
       if (a.etat === "bulle" || b.etat === "bulle" || a.tourb || b.tourb) continue;
       var d = d2(a, b), m = a.r + b.r;
@@ -7824,7 +7924,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
       a.x -= nx * kk * pa; a.y -= ny * kk * pa; b.x += nx * kk * (1 - pa); b.y += ny * kk * (1 - pa);
     }
     E.forEach(function (e) {
-      if (e.etat === "bulle" || e.tourb) return;
+      if (e.etat === "bulle" || e.tourb || e.dansBoule) return;
       var v = vit(e), db = d2(e, S.B), mb = e.r + S.B.r;
       if (db < mb && e.z < 110) {
         var lance = (e.etat === "vol" && e.volT > 0.05 && !e.leger) || (e.etat === "glisse" && v > V_BOSS);
@@ -7843,7 +7943,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
       if (e.pv > 0) return true;
       S.tues++; fxTxt(e.x, e.y, -20, "Pouf !", "#8BD46A"); fx({ k: "poussiere", x: e.x, y: e.y, r: e.r + 10, dur: .45 });
       // son cœur de lumière retourne à l'armure de Grosbec… et la fait sauter un peu
-      var val = VAL_KILL[e.t] || 6; son("mort");
+      var val = VAL_KILL[e.t] || 6; son("mort"); gagnerMega(e.t === "colosse" ? 25 : 0.7);
       fx({ k: "etincelle", x: e.x, y: e.y, x2: S.B.x, y2: S.B.y, dur: .6 });
       S.P.push({ t: 0, dur: 0.6, invisible: true, cb: function () { var dmK = blesserBoss(val); son("etincelle"); if (dmK) { fxTxt(S.B.x + (Math.random() - 0.5) * 34, S.B.y, -64, "−" + dmK, "#F2C230"); S.B.hit = Math.max(S.B.hit, 0.1); } else S.bouclierFlash = 0.3; } });
       if (e.attrape) { var i = e.attrape.prises.indexOf(e.id); if (i >= 0) e.attrape.prises.splice(i, 1); }
@@ -7988,7 +8088,9 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
           if (e.coolTon <= 0 && d2(e, S.B) < e.r + S.B.r) { e.coolTon = 0.8; frapperBoss(e, 420); combo("massue"); }
         });
         if (t.feu <= 0) {
-          S.chaineCour = t.chaine; tenus.forEach(function (e) { e.attrape = null; e.z = 10; ejecter(e, e.angLiane + Math.PI / 2, 300, 240); });
+          // la liane brûlée lâche : ils partent à toute vitesse, dans le sens où ils tournaient (le lancer du marteau)
+          S.chaineCour = t.chaine; tenus.forEach(function (e) { e.attrape = null; e.z = 10; e.marteau = true; ejecter(e, e.angLiane + Math.PI / 2, 480, 200); });
+          if (tenus.length) { combo("marteau"); son("marteau"); }
           fx({ k: "poussiere", x: t.x, y: t.y, r: t.r, dur: .5 }); t.t = 0;
         }
       }
@@ -8032,17 +8134,24 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   function lancer(P) {
     nouvelleChaine(); alchiLancer(P.x);
     var r = S.slots.slice(); S.slots = []; majPotions();
+    if (S.megaArme && S.megaK === 1) {
+      S.megaArme = false; majMega(); combo("mega"); son("mega");
+      fx({ k: "onde", x: S.hero.x, y: S.hero.y, r: 70, c: "242,194,48", dur: .5 }); gerbe(S.hero.x, S.hero.y, 16, "or", { v: 120, vz: 160, z: 20, g: 300, dur: 0.8, r: 3.4, r1: 0.6 });
+      S.P.push({ t: 0, dur: 0.5, invisible: true, cb: function () { if (!S.enCours) return; S.slots = r.slice(); S.megaK = 1.4; lancer(P); S.megaK = 1; } });
+    }
     var cle = cleTxt(r), c = compter(r), spec = SPEC[cle], nom = NOMS[cle];
     var ang = Math.atan2(P.y - S.hero.y, P.x - S.hero.x);
     son("fiole");
     if (spec && spec.forme === "cone") { S.notes = []; cone(c, ang, spec); finLancer(nom); return; }
     if (spec && spec.forme === "anneau") { S.notes = []; anneau(spec.r); finLancer(nom); return; }
-    var col = melangeCouleur(r);
+    var col = S.megaK > 1 ? "#F2C230" : melangeCouleur(r), mk = S.megaK;
     S.P.push({ t: 0, dur: 0.28, x0: S.hero.x, y0: S.hero.y, x1: P.x, y1: P.y, c: col, cb: function () {
-      S.notes = []; nouvelleChaine();
-      if (spec && spec.forme === "colonnes") colonnes(P.x, P.y, spec.r);
+      S.notes = []; nouvelleChaine(); var mk0 = S.megaK; S.megaK = mk;
+      if (mk > 1) fx({ k: "onde", x: P.x, y: P.y, r: RAYONS[Math.max(1, r.length)] * mk + 30, c: "242,194,48", dur: .45 });
+      if (spec && spec.forme === "colonnes") colonnes(P.x, P.y, spec.r * S.megaK);
       else if (spec && spec.forme === "pose") { S.gateau = { x: P.x, y: P.y, t: 7 }; note("les automates gourmands accourent"); }
       else cercle(P.x, P.y, c, r.length);
+      S.megaK = mk0;
       finLancer(nom);
     } });
   }
@@ -8054,7 +8163,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     Object.keys(cs).forEach(function (id) { if (c[id]) gerbe(x, y, 6 * c[id], cs[id], { v: R * 2.2, vz: 170, g: 520, dur: 0.6, r: id === "farine" ? 6 : 3.5, r1: id === "farine" ? 12 : 1, add: id === "feu", dr: 4 }); });
   }
   function cercle(x, y, c, n) {
-    var R = RAYONS[n], fX = FONTAINE.x, fY = FONTAINE.fy * L.D;
+    var R = RAYONS[n] * S.megaK, fX = FONTAINE.x, fY = FONTAINE.fy * L.D;
     eclabousser(x, y, c, R);
     if (Math.hypot(x - fX, y - fY) < R + FONTAINE.r) {
       if (c.acide && !c.eau) { S.fontaine = { type: "elec", t: 10, tic: 0 }; note("la fontaine crépite !"); son("zap"); }
@@ -8087,6 +8196,9 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     if (c.feu) {
       son("feu"); brulerBarricades(x, y, R);
       dedans().forEach(feuSur);
+      // du feu sur le cercle du tourbillon : la tornade de feu (pas besoin de viser pile un automate qui tourne)
+      var tb = S.E.filter(function (e) { return e.tourb && !e.tourb.feu && Math.abs(Math.hypot(x - S.hero.x, y - S.hero.y) - e.tourb.R) < R + 45; })[0];
+      if (tb) feuSur(tb);
       if (Math.hypot(S.hero.x - x, S.hero.y - y) < R + S.hero.r * 0.5 && S.eauS <= 0) { blesser(4 * c.feu); note("tu te brûles !"); }
       ajouterTrace("feu", x, y, R * 0.9, 3 + c.feu);
     }
@@ -8131,7 +8243,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   }
   function cone(c, ang, spec) {
     var h = S.hero, vague = !c.feu;
-    if (vague) { creerVague(h.x, h.y - 6, ang, spec.half, spec.len, 330); son("vague"); note("la vague emporte tout sur son passage"); return; }
+    if (vague) { creerVague(h.x, h.y - 6, ang, spec.half * S.megaK, spec.len * Math.min(1.2, S.megaK), 330 * S.megaK); son("vague"); note("la vague emporte tout sur son passage"); return; }
     fx({ k: "cone", x: h.x, y: h.y, ang: ang, len: spec.len, half: spec.half, c: "230,230,235", dur: .45 });
     son("pschitt");
     var n = 0;
@@ -8158,24 +8270,37 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
       }
     });
     if (nT) { combo("tourbillon"); note("ils tournent sur le savon !"); }
-    creerVague(h.x, h.y, 0, Math.PI, R + 40, 300); son("vague");
+    creerVague(h.x, h.y, 0, Math.PI, (R + 40) * S.megaK, 300 * S.megaK); son("vague");
     note("tout le monde est repoussé !");
   }
   function majRayon(dt) {
     var R = S.rayon; R.t -= dt;
     if (R.t <= 0 || R.lache) { S.rayon = null; return; }
+    // des gouttes, des braises, des bulles le long du rayon et au bout
+    if (R.a && R.b) {
+      var pc = R.kind === "eau" ? "eau" : R.kind === "feu" ? "braise" : "acide";
+      for (var gi = 0; gi < (LEGER ? 1 : 3); gi++) { var u = Math.random(); part({ x: R.a.x + (R.b.x - R.a.x) * u, y: R.a.y + (R.b.y - R.a.y) * u, z: 22, vx: (Math.random() - 0.5) * 60, vy: (Math.random() - 0.5) * 30, vz: 40 + Math.random() * 80, g: 400, dur: 0.45, r: 2.4, r1: 0.6, c: pc }); }
+      if (Math.random() < dt * 30) gerbe(R.b.x, R.b.y, LEGER ? 1 : 3, pc, { v: 110, vz: 150, z: 20, g: 500, dur: 0.5, r: 3, r1: 0.6 });
+    }
     var h = S.hero, ang = Math.atan2(S.ptr.y - h.y, S.ptr.x - h.x), cs = Math.cos(ang), sn = Math.sin(ang);
     var a = { x: h.x, y: h.y }, b = { x: h.x + cs * 700, y: h.y + sn * 700 };
-    // le bouclier d'un automate : le rayon de feu rebondit dessus ; l'acide, lui, le ronge
+    // le bouclier d'un automate : le rayon de feu rebondit dessus ; l'acide, lui, le ronge ; l'eau, elle, le pousse
     var miroir = null, best = 1e9;
     S.E.forEach(function (e) {
-      if (!e.shield || e.etat !== "debout") return;
+      if (!e.shield || e.etat !== "debout" || R.kind === "eau") return;
       var rs = e.r + R.large, tc = (e.x - a.x) * cs + (e.y - a.y) * sn, d2c = Math.pow(e.x - a.x, 2) + Math.pow(e.y - a.y, 2) - tc * tc;
       if (tc <= 0 || d2c > rs * rs) return;
       var th = tc - Math.sqrt(rs * rs - d2c);
       if (th > 0 && th < best) { best = th; miroir = e; }
     });
     R.p = null; R.b2 = null;
+    // une barricade arrête tous les rayons (le feu la fait brûler)
+    var barr = null, bestB = 1e9;
+    S.BAR.forEach(function (bb) {
+      var tc = (bb.x - a.x) * cs + (bb.y - a.y) * sn, d2c = Math.pow(bb.x - a.x, 2) + Math.pow(bb.y - a.y, 2) - tc * tc, rs = bb.r + R.large * 0.5;
+      if (tc <= 0 || d2c > rs * rs) return; var th = tc - Math.sqrt(rs * rs - d2c); if (th > 0 && th < bestB) { bestB = th; barr = bb; }
+    });
+    if (barr && (!miroir || bestB < best)) { miroir = null; b = { x: a.x + cs * bestB, y: a.y + sn * bestB }; if (Math.random() < dt * 20) gerbe(b.x, b.y, 2, R.kind === "eau" ? "eau" : R.kind === "feu" ? "feu" : "acide", { v: 90, vz: 140, z: 20, g: 500, dur: 0.4, r: 2.6, r1: 0.6 }); }
     var segs = [[a, b, ang]];
     if (miroir && R.kind === "acide") { miroir.shield = false; fxTxt(miroir.x, miroir.y, -34, "bouclier rongé", "#9BE07A"); son("pschitt"); }
     else if (miroir) {
@@ -8199,6 +8324,19 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
       if (e.etat === "bulle") { if (distSeg(e, a, b) < e.r * 2) eclaterBulle(e); return; }
       if (distSeg(e, a, b) > e.r + R.large) return;
       if (iS === 1 && R.kind === "feu") combo("miroir");
+      if (R.kind === "eau") {
+        // la lance à incendie : trempé, et poussé très fort le long du jet — même les gros (un peu moins), pas le Colosse en armure
+        mouiller(e); e.form = null;
+        if (e.etat !== "vol" && !e.attrape) {
+          if (!R.chaine) R.chaine = ++S.nChaine;
+          if (e.etat !== "glisse") { e.etat = "glisse"; e.apresVol = false; e.touche = {}; e.stunSol = 0; e.cote = Math.cos(ang) >= 0 ? 1 : -1; e.chaine = R.chaine; }
+          var kk = e.t === "colosse" && !(e.denude > 0) ? 0.12 : Math.max(0.55, e.T.kv);
+          e.vx += Math.cos(ang) * 1700 * dt * kk; e.vy += Math.sin(ang) * 1700 * dt * kk;
+          var vv = Math.hypot(e.vx, e.vy), vmax = 600 * Math.max(0.5, kk); if (vv > vmax) { e.vx *= vmax / vv; e.vy *= vmax / vv; }
+          if (e.rayonVu !== R.id) { e.rayonVu = R.id; if (Math.random() < 0.5) combo("jet"); }
+        }
+        return;
+      }
       if (e.etat !== "vol" && !e.attrape) {
         if (!R.chaine) R.chaine = ++S.nChaine;
         if (e.etat !== "glisse") { e.etat = "glisse"; e.apresVol = false; e.touche = {}; e.stunSol = 0; e.vx *= 0.3; e.vy *= 0.3; e.cote = Math.cos(ang) >= 0 ? 1 : -1; e.chaine = R.chaine; }
@@ -8214,6 +8352,9 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
       S.T.filter(function (t) { return t.type === "mousse" && distSeg(t, a, b) < t.r; }).forEach(function (t) { t.type = "popcorn"; t.t = 3; t.dur = 3; t.chaine = ++S.nChaine; combo("popcorn"); });
       S.E.forEach(function (e) { if (e.etat !== "vol" && !(e.statue > 0) && (e.colle > 0) && distSeg(e, a, b) < e.r + R.large) cuire(e); });
       tonneauxDans(function (o) { return distSeg(o, a, b) < o.r + R.large; });
+    } else if (R.kind === "eau") {
+      S.T.filter(function (t) { return t.type === "feu" && distSeg(t, a, b) < t.r; }).forEach(function (t) { retirer(t); ajouterTrace("vapeur", t.x, t.y, t.r, 3); son("pschitt"); });
+      S.O.forEach(function (o) { if (o.actif && distSeg(o, a, b) < o.r + R.large) { o.vx += Math.cos(ang) * 1400 * dt; o.vy += Math.sin(ang) * 1400 * dt; } });
     } else {
       S.T.filter(function (t) { return t.type === "lianes" && !(t.feu > 0) && distSeg(t, a, b) < t.r; }).forEach(couperLianes);
       S.O.forEach(function (o) { if (o.actif && distSeg(o, a, b) < o.r + R.large) { o.vx += Math.cos(ang) * 500 * dt; o.vy += Math.sin(ang) * 500 * dt; } });
@@ -8224,23 +8365,31 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   function boire() {
     nouvelleChaine(); alchiBoire();
     var r = S.slots.slice(); S.slots = []; majPotions();
-    var cle = cleTxt(r), c = compter(r), nom = NOMS[cle], h = S.hero;
+    if (S.megaArme && S.megaK === 1) {
+      S.megaArme = false; majMega(); combo("mega"); son("mega");
+      gerbe(S.hero.x, S.hero.y, 16, "or", { v: 120, vz: 160, z: 20, g: 300, dur: 0.8, r: 3.4, r1: 0.6 });
+      S.P.push({ t: 0, dur: 0.5, invisible: true, cb: function () { if (!S.enCours) return; S.slots = r.slice(); S.megaK = 1.4; boire(); S.megaK = 1; } });
+    }
+    var cle = cleTxt(r), c = compter(r), nom = cle === "eau eau eau" ? "la lance à incendie" : NOMS[cle], h = S.hero;
     S.notes = [];
     var haut = -Math.PI / 2;
     if (c.acide && c.fleur) { var k = Math.min(c.acide, c.fleur); c.acide -= k; c.fleur -= k; ajouterTrace("savon", h.x, h.y - 60, 70, 12); note("tu craches du savon devant toi !"); }
     if (c.feu && c.farine) { exploser(h.x, h.y, 130, { soi: true }); c.feu = 0; c.farine = 0; note("tu exploses : tout le monde valse !"); }
     if (c.feu === 3) {
-      blesser(25); S.rayon = { id: ++S.nRayon, kind: "feu", t: 3, large: 12, tenu: false }; S.ptr = { x: S.hero.x, y: S.B.y };
+      blesser(25); S.rayon = { id: ++S.nRayon, kind: "feu", t: 3 * (S.megaK > 1 ? 1.5 : 1), large: 12 * S.megaK, tenu: false }; S.ptr = { x: S.hero.x, y: S.B.y };
       note("tu craches du feu : touche la place pour le diriger ! (−25)"); c.feu = 0;
     } else if (c.feu) {
-      var lg = 460, half = c.feu === 2 ? 0.5 : 0.3, force = c.feu === 2 ? 380 : 260, soi = c.feu === 2 ? 12 : 6;
+      var lg = 460 * S.megaK, half = c.feu === 2 ? 0.5 : 0.3, force = c.feu === 2 ? 380 : 260, soi = c.feu === 2 ? 12 : 6;
       fx({ k: "cone", x: h.x, y: h.y, ang: haut, len: lg, half: half, c: "245,120,50", dur: .55 }); son("boom");
       S.E.forEach(function (e) { if (dansCone(e, h, haut, lg + e.r, half)) { if (e.attrape) enflammerLianes(e.attrape); feuSur(e); balayer(e, haut, force); } });
       tonneauxDans(function (o) { return dansCone(o, h, haut, lg + o.r, half); });
       S.T.filter(function (t) { return t.type === "lianes" && dansCone(t, h, haut, lg, half); }).forEach(enflammerLianes);
       blesser(soi); note((c.feu === 2 ? "rot de feu géant" : "hoquet de feu") + " (−" + soi + ")"); c.feu = 0;
     }
-    if (c.eau) { S.eauS = Math.max(S.eauS, [0, 4, 7, 10][c.eau]); note("bouclier d'eau : ils glissent sur toi"); }
+    if (c.eau === 3) {
+      S.eauS = Math.max(S.eauS, 3); S.rayon = { id: ++S.nRayon, kind: "eau", t: 2.4 * (S.megaK > 1 ? 1.5 : 1), large: 15 * S.megaK, tenu: false }; S.ptr = { x: S.hero.x, y: S.B.y };
+      son("jet"); note("touche la place pour la diriger !");
+    } else if (c.eau) { S.eauS = Math.max(S.eauS, [0, 4, 7, 10][c.eau] * S.megaK); note("bouclier d'eau : ils glissent sur toi"); }
     if (c.farine) { ajouterTrace("nuage", h.x, h.y - 30, 60, 4); note("nuage devant toi"); }
     if (c.acide) { var pa = c.acide === 3 ? 40 : 8 * c.acide; blesser(pa); note("aïe, tu te ronges ! (−" + pa + ")"); }
     if (c.fleur) {
@@ -8492,9 +8641,21 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
       ctx.fillStyle = gp; ell(px, 100, 44, 16); ctx.fill();
     });
     dessinerVagues(tps);
+    // la tornade de feu : des anneaux de flammes qui tournent autour de l'Alchimiste
+    var tf = null; for (var it = 0; it < S.E.length; it++) if (S.E[it].tourb && S.E[it].tourb.feu) { tf = S.E[it].tourb; break; }
+    if (tf) {
+      var hx = S.hero.x, hy = sy(S.hero.y) - 8, al2 = Math.min(1, tf.t / 0.6);
+      if (ctx.setLineDash) ctx.setLineDash([22, 14]);
+      [[0, "255,120,40", 9], [12, "255,190,80", 6], [24, "255,240,170", 3]].forEach(function (q, k) {
+        var rx = Math.max(20, tf.R - q[0]); ctx.lineDashOffset = -tps * (260 + k * 90);
+        ctx.strokeStyle = "rgba(" + q[1] + "," + (0.55 * al2) + ")"; ctx.lineWidth = q[2]; ctx.beginPath(); ctx.ellipse(hx, hy, rx, rx * 0.8 * FY, 0, 0, 6.283); ctx.stroke();
+      });
+      if (ctx.setLineDash) ctx.setLineDash([]);
+    }
     var debout = [];
     debout.push({ y: S.B.y, f: dessinerBoss });
     S.BAR.forEach(function (b) { debout.push({ y: b.y, f: function (tps2) { dessinerBarricade(b, tps2); } }); });
+    S.BB.forEach(function (B) { debout.push({ y: B.y, f: function () { dessinerBoule(B); } }); });
     debout.push({ y: FONTAINE.fy * L.D, f: dessinerFontaine });
     S.O.forEach(function (o) { if (o.actif) debout.push({ y: o.y, f: function () { dessinerTonneau(o); } }); });
     S.E.forEach(function (e) { debout.push({ y: e.y, f: function () { dessinerAuto(e, tps); } }); });
@@ -8529,12 +8690,24 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
       ctx.fillStyle = "rgba(0,0,0,.3)"; ell(b.x, sy(b.y), 5, 2); ctx.fill();
     });
     if (S.rayon && S.rayon.a) {
-      var R = S.rayon, c1 = R.kind === "feu" ? "255,140,60" : "120,220,80";
+      var R = S.rayon, CR = { feu: ["255,130,50", "255,236,170"], acide: ["110,210,70", "225,255,190"], eau: ["60,150,235", "235,248,255"] }[R.kind] || ["255,255,255", "255,255,255"], c1 = CR[0], lg = R.large;
       var trait = function (p1, p2) {
-        var ax = p1.x, ay = sy(p1.y) - 22, bx3 = p2.x, by3 = sy(p2.y) - 22;
-        ctx.lineCap = "round";
-        ctx.strokeStyle = "rgba(" + c1 + ",.35)"; ctx.lineWidth = R.kind === "feu" ? 28 : 18; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx3, by3); ctx.stroke();
-        ctx.strokeStyle = "rgba(" + c1 + ",.95)"; ctx.lineWidth = (R.kind === "feu" ? 10 : 6) + Math.sin(tps * 40) * 2; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx3, by3); ctx.stroke();
+        var ax = p1.x, ay = sy(p1.y) - 22, bx3 = p2.x, by3 = sy(p2.y) - 22, L2 = Math.hypot(bx3 - ax, by3 - ay) || 1, nx = -(by3 - ay) / L2, ny = (bx3 - ax) / L2;
+        ctx.lineCap = "round"; ctx.lineJoin = "round";
+        // la lueur
+        ctx.strokeStyle = "rgba(" + c1 + ",.22)"; ctx.lineWidth = lg * 3; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx3, by3); ctx.stroke();
+        // le corps, qui ondule
+        ctx.strokeStyle = "rgba(" + c1 + ",.85)"; ctx.lineWidth = lg * 1.25; ctx.beginPath(); ctx.moveTo(ax, ay);
+        for (var q = 1; q <= 12; q++) { var u = q / 12, w = Math.sin(u * 14 - tps * 30) * lg * 0.18 * Math.min(1, u * 4); ctx.lineTo(ax + (bx3 - ax) * u + nx * w, ay + (by3 - ay) * u + ny * w); }
+        ctx.stroke();
+        // le cœur brillant
+        ctx.strokeStyle = "rgba(" + CR[1] + ",.95)"; ctx.lineWidth = Math.max(2, lg * 0.42) + Math.sin(tps * 40) * 1.2; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx3, by3); ctx.stroke();
+        // des traits qui filent le long du rayon
+        if (ctx.setLineDash) { ctx.setLineDash([lg * 0.9, lg * 1.6]); ctx.lineDashOffset = -tps * 520; ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = Math.max(1.4, lg * 0.22); ctx.beginPath(); ctx.moveTo(ax + nx * lg * 0.3, ay + ny * lg * 0.3); ctx.lineTo(bx3 + nx * lg * 0.3, by3 + ny * lg * 0.3); ctx.stroke(); ctx.setLineDash([]); }
+        // là où il frappe : une gerbe
+        var gb = ctx.createRadialGradient(bx3, by3, 0, bx3, by3, lg * 1.8); gb.addColorStop(0, "rgba(" + CR[1] + ",.95)"); gb.addColorStop(1, "rgba(" + c1 + ",0)");
+        ctx.fillStyle = gb; rond(bx3, by3, lg * 1.8 + Math.sin(tps * 33) * 2); ctx.fill();
+        ctx.fillStyle = "rgba(" + CR[1] + ",.9)"; rond(ax, ay, lg * 0.7); ctx.fill();
       };
       trait(R.a, R.b);
       if (R.b2) { trait(R.p, R.b2); ctx.fillStyle = "rgba(255,240,180,.9)"; rond(R.p.x, sy(R.p.y) - 22, 9 + Math.sin(tps * 30) * 3); ctx.fill(); }
@@ -8731,12 +8904,13 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     }
   }
   function dessinerAuto(e, tps) {
+    if (e.dansBoule) return;
     var T = e.T, x = e.x, Y = sy(e.y);
     if (e.app > 0) ctx.globalAlpha = Math.max(0, 1 - e.app / 0.4);
     if (e.mouille > 0) { ctx.strokeStyle = "rgba(79,163,240,.7)"; ctx.lineWidth = 2; ell(x, Y, e.r + 5, (e.r + 5) * 0.45); ctx.stroke(); }
     ombre(x, Y, e.r * (e.z > 0 ? Math.max(0.5, 1 - e.z / 160) : 1));
     var w = e.r * 1.35, hh = T.h, rot = 0, couche = e.etat === "glisse" || e.etat === "terre";
-    if ((e.attrape && e.attrape.feu > 0) || e.tourb) rot = Math.sin(e.spin) * 0.9;
+    if ((e.attrape && e.attrape.feu > 0) || e.tourb || e.toupie > 0) rot = Math.sin(e.spin) * 0.9;
     else if (e.etat === "bulle") rot = Math.sin(e.spin) * 0.25;
     else if (e.etat === "vol") rot = e.leger ? 0.3 * e.cote : e.cote * Math.min(1.45, e.volT * 2.4);
     else if (e.etat === "glisse") rot = e.cote * 1.45;
@@ -9053,7 +9227,16 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
       else { c.setAttribute("fill", "none"); c.setAttribute("stroke", "rgba(255,255,255,.3)"); c.setAttribute("stroke-dasharray", "2 2"); }
     }
     $("vider").classList.toggle("plein", n > 0);
+    majMega();
   }
+  // la jauge de la méga-potion (autour du chaudron), et son bouton
+  function majMega() {
+    var k = S ? Math.min(1, S.mega / 100) : 0;
+    $("ch-jauge").setAttribute("stroke-dasharray", (176 * k).toFixed(1) + " 176");
+    var b = $("btn-mega"); b.hidden = !(S && (S.mega >= 100 || S.megaArme)); b.classList.toggle("arme", !!(S && S.megaArme));
+    b.textContent = S && S.megaArme ? "✦ MÉGA PRÊTE" : "✦ MÉGA";
+  }
+  function gagnerMega(x) { if (!S || S.megaArme) return; var avant = S.mega; S.mega = Math.min(100, S.mega + x); if (avant < 100 && S.mega >= 100) { dire("La méga-potion est prête : touche le bouton doré !", "aide"); son("megaPrete"); } majMega(); }
   function fioleSVG(g) {
     var fonce = g.id === "farine" ? "#4A3D24" : "#fff";
     return '<svg class="fiole" viewBox="0 0 48 58" aria-hidden="true">' +
@@ -9077,6 +9260,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   }
   $("potions").addEventListener("click", function (ev) { var b = ev.target.closest("[data-ing]"); if (b) ajouter(b.dataset.ing); });
   $("vider").addEventListener("click", function () { if (S && S.slots.length) { S.slots = []; majPotions(); dire("Le chaudron est vide. On recommence ?", ""); } });
+  $("btn-mega").addEventListener("click", function () { if (!S || !S.enCours || S.pause || S.mega < 100) return; S.megaArme = true; S.mega = 0; son("megaPrete"); dire("Méga ! Ton prochain mélange partira deux fois, en plus grand.", "aide"); majMega(); });
   $("msg-lire").addEventListener("click", function () { lire($("msg-t").textContent); });
   $("fin-lire").addEventListener("click", function () { lire($("fin-titre").textContent + ". " + $("fin-texte").textContent); });
   // les règles : un bouton 🔊 pour chaque paragraphe
@@ -9107,6 +9291,7 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
     if (spec && spec.forme === "rayon") {
       S.slots = []; majPotions();
       S.rayon = { id: ++S.nRayon, kind: "acide", t: 2, large: 8, tenu: true, pid: ev.pointerId };
+      if (S.megaArme) { S.megaArme = false; majMega(); S.rayon.t = 4; S.rayon.large = 14; combo("mega"); son("mega"); }
       dire("Jet d'acide : promène-le, il pousse tout ce qu'il touche", ""); return;
     }
     S.vise = { pid: ev.pointerId };
@@ -9160,6 +9345,6 @@ G.MUSIQUES_OUTILS = {Instance:Instance, bourdon:bourdon, souffle:souffle, ruisse
   redim();
   dessiner();
   setTimeout(monterAlchi, 50);
-  window.__v4 = { degat: function (e, d, s2) { return degat(e, d, s2); }, barricade: function (x, y) { creerBarricade(x, y); }, pb: function () { demarrerPB(); }, sortir: function (t, x, y) { sortir(t, true); var e = S.E[S.E.length - 1]; e.x = x; e.y = y; return e; }, leger: function () { return LEGER; }, perf: PERF, essai: { lancerSalve: function (d) { lancerSalve(d); }, SALVES: SALVES, SEUILS: SEUILS, colere: function () { grosseColere(); } }, vitesse: function (v) { VITESSE = v; }, alchi: function () { return alchi; }, etat: function () { return S; }, L: L, lancer: function (x, y) { lancer({ x: x, y: y }); }, boire: function () { boire(); }, ajouter: ajouter };
+  window.__v4 = { mega: function () { S.mega = 100; majMega(); }, degat: function (e, d, s2) { return degat(e, d, s2); }, barricade: function (x, y) { creerBarricade(x, y); }, pb: function () { demarrerPB(); }, sortir: function (t, x, y) { sortir(t, true); var e = S.E[S.E.length - 1]; e.x = x; e.y = y; return e; }, leger: function () { return LEGER; }, perf: PERF, essai: { lancerSalve: function (d) { lancerSalve(d); }, SALVES: SALVES, SEUILS: SEUILS, colere: function () { grosseColere(); } }, vitesse: function (v) { VITESSE = v; }, alchi: function () { return alchi; }, etat: function () { return S; }, L: L, lancer: function (x, y) { lancer({ x: x, y: y }); }, boire: function () { boire(); }, ajouter: ajouter };
 })();
 </script>

@@ -115,12 +115,27 @@
     brise: function (t, B) { O.craque(A, t, 0.3, 0.6, B.salle); A.choc(t, { f: 160, f2: 70, d: 0.15, g: 0.35 }, B.salle); },
     // le Colosse arrive : trois pas qui font trembler, et le cor grave
     colosse: function (t, B) { [0, 0.55, 1.1].forEach(function (d) { O.chuteGrave(A, t + d, 0.7, 0.6, B.salle); A.choc(t + d, { f: 70, f2: 35, d: 0.3, g: 0.5, sat: 3 }, B.salle); }); cor(t + 0.2, m(33), 1.8, 0.1, B.loin); cor(t + 0.2, m(40), 1.8, 0.07, B.loin); },
+    // ---- version 13 ----
+    // la méga-potion : une montée dorée, un éclat de cuivres
+    mega: function (t, B) { [62, 66, 69, 74, 78].forEach(function (n, k) { A.harpe(t + k * 0.035, m(n), { t60: 1.4, g: 0.07, lp: 5000 }, B.salle); }); O.cuivre(A, t + 0.18, m(50), 0.6, 0.08, B.salle); O.cuivre(A, t + 0.18, m(57), 0.6, 0.06, B.salle); O.timbale(A, t + 0.18, 0.7, B.salle); A.cloche(t + 0.18, m(86), { d: 1.6, rapport: 2, indice: 0.5, g: 0.05 }, B.loin); },
+    // la jauge est pleine : un petit carillon
+    megaPrete: function (t, B) { [74, 81, 86].forEach(function (n, k) { A.cloche(t + k * 0.08, m(n), { d: 1.2, rapport: 2, indice: 0.4, g: 0.05 }, B.loin); }); },
+    // la lance à incendie : un jet d'eau puissant
+    jet: function (t, B) { A.bruit(t, { coul: "rose", filtres: [{ type: "bandpass", f: 1400, q: 0.7 }], env: [[0, 0], [0.08, 1], [2.1, 0.8], [2.4, 0]], g: 0.4, rugueux: 0.4, rugVit: 18 }, B.sec); A.joue(t, A.eau(2.3, 70, { fmin: 700, fmax: 2400 }), { g: 0.35, env: [[0, 0], [0.1, 1], [2.3, 0]] }, B.sec); A.bruit(t, { coul: "brun", lp: 260, env: [[0, 0], [0.1, 1], [2.3, 0]], g: 0.3 }, B.loin); },
+    // le lancer du marteau : un grand « vroumm » qui file
+    marteau: function (t, B) { O.swish(A, t, 0.45, { f1: 300, f2: 1600, f3: 500, g: 0.6 }, B.salle); O.embrase(A, t, 0.4, B.sec); },
+    // la tornade de feu : un vent qui tourne et qui flambe
+    tornade: function (t, B) { A.bruit(t, { coul: "rose", filtres: [{ type: "bandpass", f: 500, pts: [[0.6, 1800], [1.6, 600]], q: 2 }], env: [[0, 0], [0.3, 1], [1.8, 0]], g: 0.4, rugueux: 0.6, rugVit: 6 }, B.salle); [0, 0.2, 0.45].forEach(function (d) { O.embrase(A, t + d, 0.5, B.salle); }); },
+    // la boule de boue : un gros « splorch » qui roule
+    bouleBoue: function (t, B) { O.sploutch(A, t, { g: 0.7, f: 160 }, B.salle); A.choc(t, { f: 90, f2: 45, d: 0.2, g: 0.4 }, B.salle); A.joue(t + 0.05, A.eau(0.5, 40, { fmin: 200, fmax: 700 }), { g: 0.4 }, B.sec); },
+    // le berserker en toupie : une lame qui tourne
+    toupie: function (t, B) { for (var k = 0; k < 6; k++) O.swish(A, t + k * 0.11, 0.1, { f1: 1500, f2: 4000, f3: 1800, g: 0.25 }, B.sec); O.glisse(A, t, 0.25, B.sec); },
     // la fin
     victoire: function (t, B) { if (G.BRUITAGES && G.BRUITAGES.victoireA) G.BRUITAGES.victoireA(A, { t: t, sec: B.P.sec, cave: B.P.cave, grotte: B.P.grotte }); },
     defaite: function (t, B) { [[0, 50], [0.5, 49], [1.0, 45], [1.6, 38]].forEach(function (n) { cor(t + n[0], m(n[1] - 12), 0.9, 0.08, B.loin); }); O.timbale(A, t + 1.6, 0.8, B.salle); }
   };
   // pour ne pas tout noyer : un même bruit pas plus souvent que…
-  var LIMITE = { allez: 0.9, berserker: 0.25, armure: 0.12, courtcircuit: 0.3, planter: 0.3, feuBois: 0.4, brise: 0.15, thud: 0.07, pop: 0.06, mort: 0.08, etincelle: 0.15, boom: 0.09, gong: 0.12, bam: 0.08, zap: 0.12, splat: 0.08, verre: 0.06, pschitt: 0.12, atchoum: 0.12, crac: 0.08, bloque: 0.15, aie: 0.2, aieBoss: 0.6, grogne: 0.8 };
+  var LIMITE = { mega: 0.4, megaPrete: 1, jet: 1.5, marteau: 0.4, tornade: 1, bouleBoue: 0.25, toupie: 0.5, allez: 0.9, berserker: 0.25, armure: 0.12, courtcircuit: 0.3, planter: 0.3, feuBois: 0.4, brise: 0.15, thud: 0.07, pop: 0.06, mort: 0.08, etincelle: 0.15, boom: 0.09, gong: 0.12, bam: 0.08, zap: 0.12, splat: 0.08, verre: 0.06, pschitt: 0.12, atchoum: 0.12, crac: 0.08, bloque: 0.15, aie: 0.2, aieBoss: 0.6, grogne: 0.8 };
   SC.jouer = function (nom) {
     if (!A || MUET) return;
     var f = BR[nom]; if (!f) return;
