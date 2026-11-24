@@ -398,7 +398,9 @@ HV.DONJON.toile = [[0.1, {sourcils:0.6, ouvre:0.45, bas:[0, 30, -4], plisse:-0.2
    l'image) ; puis il la recrache : elle revient en volant, roulée en boule, retombe assise, couverte de bave ; elle s'ébroue comme
    un chien, dégoûtée, se relève et s'essuie la figure.
    HV.CRAPAUD : quand elle part (avalee), quand elle revient (recrachee), quand elle touche le sol (pose) — pour le film. */
-HV.CRAPAUD = {colle:0.5, avalee:1.05, recrachee:2.2, pose:2.62};
+HV.CRAPAUD = {colle:0.5, avalee:1.05, recrachee:2.2, pose:2.62, ebroue:2.9, debout:3.95};
+/* (24 novembre — Romain, 13 h 19 : « pas assez rapide […] on attend trop ». Après la chute : assise 0,28 s au lieu de 0,5, quatre
+   secousses de chien en 0,34 s au lieu de 0,5, debout à 3,95 s au lieu de 4,6 ; ebroue, debout : pour le film et les sons.) */
 var BOULE = {leve:40, bas:[0, 96, -10], bang:[-30, 0, 0], dos:[30, 0, 0], hoche:24, piedG:[-20, 330, 40], piedD:[20, 330, 40], pointeG:20, pointeD:20, genouG:[-0.2, -1, 0.6], genouD:[0.2, -1, 0.6],
   mainD:[24, 230, 60], relD:1, coudeD:[0.8, 0.4, -0.2], mainG:[-28, 232, 60], relG:1, coudeG:[-0.8, 0.4, -0.2], arcAxe:[-0.6, 0.8, 0.2], arcDir:[-0.4, 0, 1],
   plisse:1, sourcilsIn:0.9, ouvre:0.3, largeB:0.6, sourire:-0.6};
@@ -414,18 +416,18 @@ HV.DONJON.crapaud = [[0.45, {sourcils:-0.6}],
   /* (recrachée : en boule, elle vole) */
   [HV.CRAPAUD.recrachee, BOULE], [HV.CRAPAUD.pose - 0.08, avec(BOULE, {leve:6})],
   /* (elle retombe assise, couverte de bave) */
-  [HV.CRAPAUD.pose, avec(BAVE, ASSISE)], [3.0, avec(BAVE, ASSISE)],
+  [HV.CRAPAUD.pose, avec(BAVE, ASSISE)], [HV.CRAPAUD.ebroue - 0.08, avec(BAVE, ASSISE)],
   /* (elle s'ébroue comme un chien : la tête et les épaules de droite à gauche) */
-  [3.12, avec(BAVE, avec(ASSISE, {pen:-12, dos:[18, 0, -14]}))], [3.24, avec(BAVE, avec(ASSISE, {pen:12, dos:[18, 0, 14]}))],
-  [3.36, avec(BAVE, avec(ASSISE, {pen:-12, dos:[18, 0, -14]}))], [3.48, avec(BAVE, avec(ASSISE, {pen:12, dos:[18, 0, 14]}))], [3.62, avec(BAVE, ASSISE)],
+  [2.9, avec(BAVE, avec(ASSISE, {pen:-12, dos:[18, 0, -14]}))], [2.98, avec(BAVE, avec(ASSISE, {pen:12, dos:[18, 0, 14]}))],
+  [3.06, avec(BAVE, avec(ASSISE, {pen:-12, dos:[18, 0, -14]}))], [3.14, avec(BAVE, avec(ASSISE, {pen:12, dos:[18, 0, 14]}))], [3.24, avec(BAVE, ASSISE)],
   /* (elle se relève : un genou, puis debout) */
-  [4.1, avec(BAVE, {bas:[0, 86, -12], bang:[16, 0, 0], dos:[16, 0, 0], piedD:[15, 394, -60], pointeD:88, genouD:[0.1, 0.9, 1], piedG:[-27, 386, 46], genouG:[-0.3, -0.5, 1],
+  [3.6, avec(BAVE, {bas:[0, 86, -12], bang:[16, 0, 0], dos:[16, 0, 0], piedD:[15, 394, -60], pointeD:88, genouD:[0.1, 0.9, 1], piedG:[-27, 386, 46], genouG:[-0.3, -0.5, 1],
     mainD:[-18, 316, 50], relD:0, mdirD:[-1, 0.4, 0.3], poingD:0.2, mainG:[-62, 330, 50], relG:0, hoche:8, arcAxe:[0, 0.45, 0.9], arcDir:[-1, 0, 0.2]})],
-  [4.6, avec(BAVE, {bas:[0, 34, -4], bang:[12, 0, 0], dos:[12, 0, 0], hoche:4})],
+  [HV.CRAPAUD.debout, avec(BAVE, {bas:[0, 34, -4], bang:[12, 0, 0], dos:[12, 0, 0], hoche:4})],
   /* (elle s'essuie la figure avec sa manche) */
-  [5.0, avec(BAVE, {mainD:[-6, 112, 44], relD:1, coudeD:[1, 0.6, -0.1], mdirD:[-1, 0.2, 0.1], poingD:0.6, hoche:6})],
-  [5.25, avec(BAVE, {mainD:[-26, 118, 40], relD:1, coudeD:[1, 0.6, -0.1], mdirD:[-1, 0.2, 0.1], poingD:0.6, hoche:6})],
-  [5.7, {sourire:-0.5, bouchex:0.4, sourcils:-0.6, plisse:0.3}], [6.2, {}]];
+  [4.35, avec(BAVE, {mainD:[-6, 112, 44], relD:1, coudeD:[1, 0.6, -0.1], mdirD:[-1, 0.2, 0.1], poingD:0.6, hoche:6})],
+  [4.6, avec(BAVE, {mainD:[-26, 118, 40], relD:1, coudeD:[1, 0.6, -0.1], mdirD:[-1, 0.2, 0.1], poingD:0.6, hoche:6})],
+  [5.05, {sourire:-0.5, bouchex:0.4, sourcils:-0.6, plisse:0.3}], [5.55, {}]];
 
 /* LÉO L'ATTRAPE ET LA JETTE (phase 3) : sa grande main la saisit par la taille et la soulève ; elle se débat, les jambes dans le
    vide, pousse sur ses doigts ; il la secoue, prend son élan… et la jette au loin : elle vole, retombe sur le dos, et se relève

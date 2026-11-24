@@ -818,6 +818,66 @@ S.bourbeRireB = function(A, P){
   A.bruit(t + 1.25, {coul:'rose', bp:900, bq:1, env:[[0, 0], [.05, 1], [.35, 0]], g:.5}, o);                                            /* pfff */
   return {duree:1.7};
 };
+/* — il recrache le héros avalé (24 novembre — Romain, 13 h 19 : « il faut le son du crachat […] le son où il se fait éjecter, puis
+   le son où il tombe, puis le son dégoûtant ») ; moment : la toux qui l'éjecte / le départ du vol / le sol / la secousse — */
+S.bourbeCracheA = function(A, P){                                                                          /* « hrrk… PTOU ! » */
+  var t = P.t, o = A.bus(P, {rev:.45, grotte:.4, pan:0}), c = t + .14;
+  coasse(A, t, .12, {f:70, coups:40, g:.3, chute:1.3, f1:380, sat:3}, o);                                  /* la gorge qui se serre */
+  A.bruit(t, {coul:'rose', bp:600, bq:1.5, env:[[0, 0], [.1, 1], [.14, 0]], g:.5, rugueux:1, rugVit:20}, o);
+  A.choc(c, {f:150, f2:50, d:.18, g:.8, sat:3, corps:1.2, corpsF:400}, o);                                  /* PTOU : le coup de gorge */
+  A.bruit(c, {filtres:[{type:'lowpass', f:3200, pts:[[.25, 350]], q:5}], env:[[0, 0], [.004, 1], [.06, .5], [.28, 0]], g:1.1}, o);   /* le gros paquet mouillé */
+  O.sploutch(A, c + .02, {g:.8, f:300, bulles:5}, o);
+  return {duree:.9};
+};
+S.bourbeCracheB = function(A, P){                                                                          /* « kheu… PTÂ ! » : un raclement, et ça gicle */
+  var t = P.t, o = A.bus(P, {rev:.45, grotte:.4, pan:0}), c = t + .2;
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:300, pts:[[.2, 900]], q:3}], env:[[0, 0], [.05, .8], [.18, 1], [.2, 0]], g:.9, rugueux:1, rugVit:28, sat:2}, o);
+  A.ton(c, {f:240, f2:70, gl:.1, env:A.perc(.002, .14), g:.6, sat:2.4, lp:1600}, o);
+  A.bruit(c, {bp:1400, bq:.9, env:[[0, 0], [.003, 1], [.05, .4], [.22, 0]], g:1, sat:1.6}, o);
+  eclabousse(A, c + .03, 1, {g:.6, d:.4, fmin:500, fmax:2600}, o);
+  return {duree:.9};
+};
+S.recracheVoleA = function(A, P){                                                                          /* la sortie mouillée, puis le vol en arc */
+  var t = P.t, o = A.bus(P, {rev:.35, pan:-.2});
+  A.bruit(t, {filtres:[{type:'lowpass', f:2400, pts:[[.08, 500]], q:6}], env:A.perc(.002, .08), g:.7}, o);
+  O.swish(A, t + .02, .38, {f1:500, f2:1800, f3:700, q:2, g:.9}, o);
+  for(var k = 0; k < 4; k++) A.goutte(t + .05 + k * .07, {f:h(900, 1800), g:.05}, o);                     /* ça goutte en l'air */
+  return {duree:.6};
+};
+S.recracheVoleB = function(A, P){                                                                          /* il tournoie en boule : whou-whou-whou */
+  var t = P.t, o = A.bus(P, {rev:.35, pan:-.2});
+  O.sploutch(A, t, {g:.5, f:420, bulles:2}, o);
+  A.bruit(t + .02, {filtres:[{type:'bandpass', f:900, pts:[[.2, 1600], [.42, 700]], q:3}], env:[[0, 0], [.1, 1], [.34, .8], [.42, 0]], g:1, trem:[11, .7]}, o);
+  return {duree:.6};
+};
+S.recracheTombeA = function(A, P){                                                                         /* il retombe : splotch, sur les fesses */
+  var t = P.t, o = A.bus(P, {rev:.4, grotte:.3, pan:-.3});
+  A.choc(t, {f:110, f2:45, d:.22, g:.8, sat:2.5, corps:1.3, corpsF:320}, o);
+  O.sploutch(A, t + .005, {g:1.2, f:260, bulles:6}, o);
+  pluie(A, P, t + .05, .5, 7, .8);
+  return {duree:.8};
+};
+S.recracheTombeB = function(A, P){                                                                         /* flaaatch : à plat dans la flaque */
+  var t = P.t, o = A.bus(P, {rev:.4, grotte:.3, pan:-.3});
+  A.choc(t, {f:95, f2:40, d:.25, g:.7, sat:3, corps:1.5, corpsF:260}, o);
+  A.bruit(t, {coul:'rose', filtres:[{type:'lowpass', f:4200, pts:[[.3, 400]], q:1}], env:[[0, 0], [.004, 1], [.08, .45], [.35, 0]], g:1.1}, o);
+  eclabousse(A, t + .01, 1, {g:.7, d:.5, fmin:400, fmax:2200}, o);
+  return {duree:.8};
+};
+S.recracheBeurkA = function(A, P){                                                                         /* beurk : la bave colle, s'étire, lâche, dégouline */
+  var t = P.t, o = A.bus(P, {rev:.35, pan:-.3});
+  [0, .13, .27, .38].forEach(function(x, n){ O.etire(A, t + x, {d:h(.08, .13), g:.7 - n * .08}, o); });
+  O.sploutch(A, t + .48, {g:.6, f:320, bulles:3}, o);
+  for(var k = 0; k < 6; k++) A.goutte(t + .5 + Math.pow(Math.random(), 1.3) * .6, {f:h(500, 1100), g:h(.05, .09)}, o);   /* plic… ploc */
+  return {duree:1.3};
+};
+S.recracheBeurkB = function(A, P){                                                                         /* schlllorp : un long bruit gluant, puis des gouttes */
+  var t = P.t, o = A.bus(P, {rev:.35, pan:-.3});
+  A.bruit(t, {filtres:[{type:'bandpass', f:350, pts:[[.25, 900], [.5, 420]], q:6}], env:[[0, 0], [.06, 1], [.4, .8], [.55, 0]], g:1.3, rugueux:.8, rugVit:16}, o);
+  glouglou(A, t + .1, 5, {f:260, g:.12, i1:.06, i2:.1}, o);
+  for(var k = 0; k < 5; k++) A.goutte(t + .55 + k * h(.09, .16), {f:h(500, 1000), g:h(.05, .08)}, o);
+  return {duree:1.4};
+};
 /* — touché — */
 S.bourbeToucheA = function(A, P){
   var t = P.t, o = A.bus(P, {rev:.45, grotte:.3, pan:0});
@@ -977,7 +1037,9 @@ S.couronneTombeA = function(A, P){
   return {duree:x + .5};
 };
 /* (24 novembre : l'instant clé des sons du gong — le jeu les cale sur l'image avec {cale}) */
-[['roiCorde', {A:.4, B:.3}], ['ratsCouinent', {A:0, B:0}], ['roiRetourne', {A:.3, B:0}]].forEach(function(x){
+[['roiCorde', {A:.4, B:.3}], ['ratsCouinent', {A:0, B:0}], ['roiRetourne', {A:.3, B:0}],
+ /* (et ceux du héros recraché par Bourbe) */
+ ['bourbeCrache', {A:.14, B:.2}], ['recracheVole', {A:0, B:0}], ['recracheTombe', {A:0, B:0}], ['recracheBeurk', {A:0, B:0}]].forEach(function(x){
   Object.keys(x[1]).forEach(function(v){ S[x[0] + v].moment = x[1][v]; });
 });
 

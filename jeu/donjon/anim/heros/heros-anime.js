@@ -3109,7 +3109,9 @@ H.recrache = function(scene, depuis, opt){
     this._mesure();
     var me = this, g = this.garde(), F2 = this.fx, c0 = this._px(125, 160), dep = depuis ? this._versBoite(scene, depuis) : {x:c0.x + 360, y:c0.y - 60};
     var C = this._calques('bave');
-    var ox = dep.x - c0.x, oy = dep.y - c0.y, D = opt.d || 720, N = 16, kf = [], hautV = Math.max(70, Math.abs(ox) * .28);
+    /* (24 novembre — Romain, 13 h 19 : « pas assez rapide […] on attend trop » : le vol 0,52 s au lieu de 0,72, quatre secousses
+       au lieu de six, 1,73 s en tout au lieu de 2,62 ; opt.sons({atterrit, ebroue}) au vrai départ, pour les sons du combat) */
+    var ox = dep.x - c0.x, oy = dep.y - c0.y, D = opt.d || 520, N = 16, kf = [], hautV = Math.max(70, Math.abs(ox) * .28);
     /* le vol : une cloche, il tourne en boule */
     for(var i = 0; i <= N; i++){
       var t = i / N, u = 1 - t, mx = ox / 2, my = Math.min(oy, 0) / 2 - hautV, x = u * u * ox + 2 * u * t * mx, y = u * u * oy + 2 * u * t * my;
@@ -3145,10 +3147,11 @@ H.recrache = function(scene, depuis, opt){
       pluie(F2, a.x, a.y, {n:9, forme:'goutte', c:['#a6e07a', '#c8f0a0'], angle:-90, ecart:85, v0:140, v1:260, g:800, t0:6, t1:9, d0:550, d1:850, etale:300});
       pluie(F2, b.x, b.y, {n:8, forme:'goutte', c:['#a6e07a', '#7ac85a'], angle:-90, ecart:85, v0:120, v1:240, g:800, t0:5, t1:8, d0:550, d1:850, etale:300});
     };
-    var seq = [{d:D, p:boule, e:'lin'}, {d:110, p:splat, e:'oo', f0:atterrit}, {d:240, p:splat, e:'lin'}, {d:260, p:beurk, e:'io', f0:function(){ me.expr('surpris'); goutter(); }},
-      {d:300, p:beurk, e:'lin', f0:function(){ me.expr('aie'); }}];
-    for(var k = 0; k < 6; k++) seq.push({d:95, p:k % 2 ? se2 : se1, e:'io', f0:k ? null : secoue});
-    seq.push({d:380, p:g, e:'b', f0:function(){ me.expr('content'); }, f:function(){ me.expr('garde'); me.cligner(); }});
+    var seq = [{d:D, p:boule, e:'lin'}, {d:90, p:splat, e:'oo', f0:atterrit}, {d:150, p:splat, e:'lin'}, {d:180, p:beurk, e:'io', f0:function(){ me.expr('surpris'); goutter(); }},
+      {d:150, p:beurk, e:'lin', f0:function(){ me.expr('aie'); }}];
+    for(var k = 0; k < 4; k++) seq.push({d:85, p:k % 2 ? se2 : se1, e:'io', f0:k ? null : secoue});
+    seq.push({d:300, p:g, e:'b', f0:function(){ me.expr('content'); }, f:function(){ me.expr('garde'); me.cligner(); }});
+    if(opt.sons) try{ opt.sons({atterrit:D / 1000, ebroue:(D + 90 + 150 + 180 + 150) / 1000}); }catch(e){}
     return this.jouer(seq);
   });
 };

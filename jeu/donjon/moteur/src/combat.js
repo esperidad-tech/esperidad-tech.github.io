@@ -625,7 +625,7 @@ async function jouer(evs, avant){
   if(!evs || !evs.length) return;
   E.avant = avant || E.ph;
   suivre(true);
-  var blocs = enBlocs(evs), k = 0, large = false, ctx = {touche:{}};
+  var blocs = enBlocs(evs), k = 0, large = false, ctx = {touche:{}, evs:evs};
   /* Bourbe remonte en retombant sur tout le monde : UNE seule remontée (Romain, 11 novembre, 19 h 21 : « c'est bizarre, le
      gros qui remonte de l'eau deux fois »). Avant : il émergeait, puis il sautait. Maintenant il jaillit du fond d'un bond. */
   var ret = evs.filter(function(x){ return x.t === 'attaque' && x.retour; })[0];
@@ -711,6 +711,9 @@ async function un(ev, bl, ctx){
 
     case 'touche':
       if(!a || (ev.critique && !ev.petit)) return;
+      /* (24 novembre — Romain, 13 h 23) les guilis ne le blessent pas : plus de « touché » (le sursaut d'une flèche, 1,5 s, que
+         Romain voyait comme une toux) — Bourbe rit tout de suite, et c'est sa toux qui fait sortir le héros (voir special) */
+      if(ev.coup === 'chatouille') return;
       ctx.touche[a.id] = 1;
       sonTouche(a, ev);
       /* (19 novembre : le tintement des morceaux qui tombent est branché ici aussi — c'est touche() qui les fait tomber) */
@@ -830,7 +833,9 @@ async function un(ev, bl, ctx){
     case 'releve': return relever(ev);
     case 'pare': Fx.bulleTexte(hCx(h), 296, '🛡️ ' + (ev.quoi === 'toile' ? 'La toile glisse !' : 'La langue glisse !'), 'bleu'); son('absorbe'); return attendre(350);
     case 'avale': return avale(ev);
-    case 'recrache': return recrache(ev);
+    case 'recrache':                            /* (déjà parti à la toux de Bourbe, s'il toussait : voir special) */
+      if(!ev._p) ev._p = recrache(ev);
+      return ev._p;
   }
 }
 function photoAvant(id){ var l = E.avant ? E.avant.betes : []; for(var k = 0; k < l.length; k++) if(l[k].id === id) return l[k]; return null; }
@@ -932,7 +937,20 @@ function special(a, ev, ctx){
     if(ev.nom === 'plonger'){ if(ec.gele) bruit(S.glace, {cale:.63}); else bruit(S.plonge, {cale:ec.berge ? 2.28 : 1.18}); }
     if(ev.nom === 'remonter') bruit(S.plonge, {cale:.82});
     if(ev.nom === 'chatouille') bruit(S.rire);
-    if(ev.nom === 'recrache') bruit(S.rot);
+    /* (24 novembre — Romain, 13 h 19 et 13 h 23 : plus vite, « c'est le toussement qui fait sortir le personnage », « le son du
+       crachat », puis le son où il se fait éjecter, celui où il tombe, et le son dégoûtant.) Le héros sort AU MOMENT de la toux
+       (le module appelle o.onImpact) : son recrachage part tout de suite, pendant que Bourbe finit son geste ; l'évènement
+       « recrache » qui suit ne fait plus qu'attendre la fin. Avant : le héros attendait que Bourbe ait tout fini (≈ 6 s). */
+    if(ev.nom === 'chatouille' || ev.nom === 'recrache'){
+      var mR = 0; try{ mR = a.acteur.momentRecrache(ev.nom) || 0; }catch(x){}
+      o.onToux = function(dans){ bruit(S.crache, {cale:dans}); };
+      var evR = (ctx.evs || []).filter(function(x, n){ return x.t === 'recrache' && x.bete === a.id && n > (ctx.evs || []).indexOf(ev); })[0];
+      if(evR){
+        o.onImpact = function(){ if(!evR._p) evR._p = recrache(evR, true); };
+        /* (si le module ne l'appelle pas — mort pendant le geste —, le héros sort quand même au moment prévu) */
+        setTimeout(function(){ if(o.onImpact) o.onImpact(); }, (mR + .4) * 1000);
+      }
+    }
   }
   if(S.speciaux && S.speciaux[ev.nom] && !(ctx.touche[a.id] && a._auto && a._auto.indexOf(ev.nom) >= 0)) jouerSons(S.speciaux[ev.nom]);
   return a.special(ev.nom, o, !!ctx.touche[a.id]);
@@ -1122,7 +1140,7 @@ async function geste(ev, evs){
       return false;
     case 'chatouille':
       Fx.mot(a ? a.ancre('centre').x : 700, a ? a.ancre('centre').y - 40 : 200, 'guili-guili !', 'croc');
-      await attendre(500);
+      await attendre(250);                     /* (24 novembre : 500 avant — Bourbe rit tout de suite) */
       return false;
   }
   return false;
@@ -1384,13 +1402,18 @@ async function avale(ev){
   if(a) a.etat('avale', true);
   return attendre(300);
 }
-async function recrache(ev){
-  var h = ev.heros, a = B(ev.bete), dep = a ? a.ancre('bouche') : {x:640, y:220};
+/* toux : il sort à la toux de Bourbe (le crachat est déjà parti, voir special) ; sinon (Bourbe est tombé), le crachat ici.
+   (24 novembre, Romain, 13 h 19 : « le son où il se fait éjecter, puis le son où il tombe, puis le son dégoûtant » — calés par le
+   héros au vrai départ de son geste : opt.sons({atterrit, ebroue}), en secondes) */
+async function recrache(ev, toux){
+  var h = ev.heros, a = B(ev.bete), dep = a ? a.ancre('bouche') : {x:640, y:220}, S = a ? DJ.Betes.SONS[a.module] || {} : {};
   slotH(h).classList.remove('avale');
   if(a) a.etat('avale', false);
-  try{ if(E.A.h[h].recrache) await Promise.resolve(E.A.h[h].recrache(fx, dep)); }catch(e){}
+  if(!toux && S.crache) bruit(S.crache);
+  var sons = function(m){ bruit('recracheVole', {cale:0}); bruit('recracheTombe', {cale:m.atterrit}); bruit('recracheBeurk', {cale:m.ebroue}); };
+  try{ if(E.A.h[h].recrache) await Promise.resolve(E.A.h[h].recrache(fx, dep, {sons:sons})); }catch(e){}
   try{ E.A.h[h].attendre(); }catch(e){}
-  return attendre(200);
+  return attendre(80);
 }
 
 /* ====================================================================== 7. LA FIN : victoire, fuite, défaite */

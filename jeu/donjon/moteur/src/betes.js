@@ -65,7 +65,7 @@ var SONS = {
   /* (le givre : son module se gèle tout seul dans touche() ; la colle, la lumière : toute la masse couine — pris en tas, ou roulés en boule) */
   roirats:{cri:'roiCri', touche:'roiTouche', mort:'roiFin', att:{grouillement:'roiAttaque', charge:'roiAttaque'}, apres:{givre:[['gelPris', .15, 'gele']], colle:[['roiCri', .4]], lumiere:[['roiCri', .3]]}},
   gardien:{cri:'gardienRunes', touche:'gardienTouche', mort:'gardienFin', att:{poing:'gardienPoing'}, pas:'gardienPas'},
-  bourbe:{cri:'bourbeCri', touche:'bourbeTouche', mort:'bourbeFin', att:{langue:'bourbeLangue', saut:'bourbeSaut'}, gobe:'bourbeGobe', rot:'bourbeRot', plonge:'bourbePlonge', rire:'bourbeRire',
+  bourbe:{cri:'bourbeCri', touche:'bourbeTouche', mort:'bourbeFin', att:{langue:'bourbeLangue', saut:'bourbeSaut'}, gobe:'bourbeGobe', rot:'bourbeRot', plonge:'bourbePlonge', rire:'bourbeRire', crache:'bourbeCrache',
     /* (son arrivée : l'eau s'ouvre à 1,9 s, il ouvre l'œil et voit les héros à 4,1 s — R.entrer) */
     entree:[['bourbeSort', {cale:1.9}], ['bourbeCri', {dt:4.1}]], sort:'bourbeSort', glace:'glaceChoc', gele:'bassinGele', degele:'glaceCasse', bulles:'bullesFond'}
 };

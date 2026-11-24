@@ -273,6 +273,7 @@ Ses mots : « pour le donjon, c'est plutôt joli » ; « l'effet de froid, je su
 - **Le givre** s'envole quand le héros s'ébroue (`EBROUE` = 2,15 s) au lieu de rester en l'air ; les voiles en 2,5 s ; le voile de devant sous la bulle.
 - **L'Alchimiste** : `preparer` refait (1,3 s) — il prend UNE fiole à sa bandoulière, la lève à ses yeux, la secoue trois fois, elle s'allume, il sourit (`SANS_VERSER` : plus de filet versé d'une fiole à l'autre).
 - **`hv-donjon.js`, `tape()`** (les rats sur les jambes) : le pied monte plus haut (`leve` 12), les héros retapent des pieds ; les rats plus petits (`G2` = 1,5 dans `rats()` de `hv-adaptateur.js`). Leur dessin reste à revoir (pas fait).
+- **Le crapaud (14 h 08, Bible §13.102)** : `HV.CRAPAUD` gagne `ebroue` (2,9) et `debout` (3,95) ; après la chute (2,62), tout est resserré — assise 0,28 s, quatre secousses de 0,08 s, debout à 3,95 (avant 4,6), l'essuyage décalé de -0,65 s. `V.recrache(scene, depuis, opt)` : `opt.sons({atterrit, ebroue})` au vrai départ ; le combat n'attend plus que jusqu'à `debout` + 0,15 s. La page `essai/film-donjon.html` suit (`C.ebroue`). Les anciens héros (`heros-anime.js`, `H.recrache`) : vol 520 ms, quatre secousses, `opt.sons` aussi.
 
 ## Ce qui n'est PAS fait (dit à Romain)
 - *(24 novembre)* La barbe ; les autres coiffures en volume (trois seulement) ; le capuchon et la cape ; les objets portés. Sur les tablettes lentes, ce sont les anciens héros qui jouent (pour les y mettre aussi, il faudrait « cuire » les gestes en images : un vrai chantier).

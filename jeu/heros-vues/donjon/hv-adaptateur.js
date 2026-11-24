@@ -1305,8 +1305,10 @@ V.avale = function(){
     return Promise.all([this.jouer(L), a.finished]).then(function(){ me._avale = true; me.boite.style.opacity = '0'; me.boite.style.transform = ''; a.cancel(); });
   });
 };
-V.recrache = function(scene, depuis){
-  if(scene && scene.x !== undefined){ depuis = scene; scene = null; }
+/* opt.sons({atterrit, ebroue}) : appelé au vrai départ du geste, en secondes (le combat y cale ses sons — 24 novembre) */
+V.recrache = function(scene, depuis, opt){
+  if(scene && scene.x !== undefined){ opt = depuis; depuis = scene; scene = null; }
+  opt = opt || {};
   return this.file(function(){
     var me = this, C = HV.CRAPAUD, dv = C.pose - C.recrachee, c0 = this.rep('bassin', this.fx);
     var dep = depuis ? (scene ? this.versRefDepuis(scene, depuis) : this.versRefEcran(depuis)) : {x:c0.x + 360, y:c0.y - 60};
@@ -1318,10 +1320,12 @@ V.recrache = function(scene, depuis){
     this.boite.style.opacity = ''; this._avale = false;
     this.ombreFait('recrache', scene, depuis);
     this.boite.animate(kf, {duration:dv * 1000, easing:'linear'});
-    /* (la fin de son geste, sans l'essuyage de la figure : le combat attend) */
-    var L = morceau(HV.DONJON.crapaud, C.recrachee - 0.01, 4.6), fin = L[L.length - 1][0];
-    L.push([fin + 0.5, {}]);
-    this.plus(dv * 1000, function(){ var t0 = maintenant(); me.effet('bave', function(u2, os){ var v = maintenant() - t0; return bave(this, os, v < 2.2 ? 1 : Math.max(0, 1 - (v - 2.2) / 0.6), v - (3.05 - C.pose)); }, 3.0); });
+    if(opt.sons) try{ opt.sons({atterrit:dv, ebroue:C.ebroue - C.recrachee}); }catch(e){}
+    /* (la fin de son geste, sans l'essuyage de la figure : le combat attend — 24 novembre : debout à 3,95 s au lieu de 4,6, et
+       0,15 s d'arrêt au lieu de 0,5) */
+    var L = morceau(HV.DONJON.crapaud, C.recrachee - 0.01, C.debout), fin = L[L.length - 1][0];
+    L.push([fin + 0.15, {}]);
+    this.plus(dv * 1000, function(){ var t0 = maintenant(); me.effet('bave', function(u2, os){ var v = maintenant() - t0; return bave(this, os, v < 1.6 ? 1 : Math.max(0, 1 - (v - 1.6) / 0.5), v - (C.ebroue - 0.05 - C.pose)); }, 2.2); });
     return this.jouer(L);
   });
 };

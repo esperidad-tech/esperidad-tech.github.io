@@ -71,7 +71,8 @@ with sync_playwright() as p:
         pg.click('details[data-id="%s"] > summary' % sid); pg.wait_for_timeout(80)
     verif(pg.evaluate("document.querySelector('details[data-id=e-bourbe]').open"), 'on ouvre une section en touchant son titre')
     haut = pg.evaluate('document.documentElement.scrollHeight')
-    verif(haut <= 1100, 'Donjon › Ennemis › Bourbe ouverts : la page reste courte (%d px)' % haut)
+    # (24 novembre : 1300 au lieu de 1100 — quatre sons de plus chez Bourbe, le héros recraché)
+    verif(haut <= 1300, 'Donjon › Ennemis › Bourbe ouverts : la page reste courte (%d px)' % haut)
     if CAP: pg.screenshot(path=os.path.join(CAP, 'paysage-bourbe.png'))
     pg.reload(); pg.wait_for_timeout(400)
     verif(pg.evaluate("['donjon', 'ennemis', 'e-bourbe'].every(id => document.querySelector('details[data-id=' + id + ']').open) && document.querySelectorAll('details.sec[open]').length === 3"),
@@ -131,7 +132,7 @@ with sync_playwright() as p:
         ko.append('presse-papiers illisible %s' % e)
     verif(pg.evaluate("/\\d+ cochés/.test(document.getElementById('compte').textContent)"), 'le nombre de cases cochées est affiché en bas')
     neuf_avant = pg.evaluate("document.querySelector('details[data-id=e-bourbe] > summary .neuf').textContent")
-    verif(neuf_avant.startswith('8'), 'le compteur 🆕 de Bourbe baisse quand on valide (%s)' % neuf_avant)
+    verif(neuf_avant.startswith('12'), 'le compteur 🆕 de Bourbe baisse quand on valide (%s)' % neuf_avant)   # (24 novembre : 8 + les 4 du héros recraché)
     pg.reload(); pg.wait_for_timeout(400)
     verif(pg.is_checked('.v[data-cle="bourbeCriB"] input') and not pg.is_checked('.v[data-cle="arcB"] input') and pg.is_checked('.v[data-cle="arcA"] input'), 'les choix restent après rechargement')
 

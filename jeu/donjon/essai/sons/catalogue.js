@@ -17,7 +17,7 @@ window.CATALOGUE = [
       ]},
       {id:'h-dague', titre:'La dague', sons:[
         {id:'swish', t:'Le swish', v:'ABC'}, {id:'chairD', t:'Dans la chair', v:'ABC'}, {id:'metal', t:'Sur le métal', v:'ABC'},
-        {id:'sautDague', t:'Le saut (discret)', v:'ABC'}, {id:'grandeLame', t:'La lame du saut', v:'ABC'}
+        {id:'sautDague', t:'Le saut (discret)', v:'ABC'}, {id:'grandeLame', t:'Lame du saut', v:'ABC'}
       ], chaines:[
         {t:'Coup complet', etapes:[{id:'swish', apres:'moment'}, {id:'chairD'}, {id:'ratDague', decal:.01}]},
         {t:'Sur une armure', etapes:[{id:'swish', apres:'moment'}, {id:'metal'}]}
@@ -28,7 +28,7 @@ window.CATALOGUE = [
         {id:'s_potion', t:'Potion lancée', x:1}
       ]},
       {id:'h-sage', titre:'Le Sage', sons:[
-        {id:'lumiere', t:'Rune de lumière (sans ding)', v:'ABC'},
+        {id:'lumiere', t:'Rune de lumière', v:'ABC'},
         {id:'cristal', t:'Cristal de lune', v:'AB'}, {id:'baton', t:'Bâton de chêne', v:'AB'},
         {id:'s_page', t:'Il étudie', x:1}, {id:'s_magie', t:'Rune de lumière', x:1}, {id:'s_dome', t:'Le bouclier', x:1}, {id:'s_absorbe', t:'Bouclier mordu', x:1}
       ]},
@@ -67,14 +67,15 @@ window.CATALOGUE = [
       ]},
       {id:'e-roi', titre:'Roi des rats', sons:[
         {id:'roiCri', t:'Grouillement', v:'ABC'}, {id:'roiAttaque', t:'Son attaque', v:'AB'}, {id:'roiTouche', t:'Touché', v:'AB'}, {id:'roiFin', t:'Défaite', v:'AB'},
-        {id:'roiCorde', t:'Le gong : la corde tendue', v:'AB'}, {id:'ratsCouinent', t:'Le gong : ils couinent', v:'AB'}, {id:'roiRetourne', t:'Le gong : il bascule', v:'AB'}
+        {id:'roiCorde', t:'Corde tendue (gong)', v:'AB'}, {id:'ratsCouinent', t:'Rats qui couinent', v:'AB'}, {id:'roiRetourne', t:'Il bascule', v:'AB'}
       ]},
       {id:'e-gardien', titre:'Gardien de rouille', sons:[
         {id:'gardienPas', t:'Pas de fer', v:'AB'}, {id:'gardienPoing', t:'Son poing', v:'AB'}, {id:'gardienRunes', t:'Ses runes', v:'AB'}, {id:'gardienTouche', t:'Touché', v:'AB'}, {id:'gardienFin', t:'Effondrement', v:'AB'}
       ]},
       {id:'e-bourbe', titre:'Bourbe (boss)', sons:[
         {id:'bourbeCri', t:'Coassement', v:'ABC'}, {id:'bourbeLangue', t:'Sa langue', v:'AB'}, {id:'bourbeGobe', t:'Il gobe', v:'AB'}, {id:'bourbeRot', t:'Le rot', v:'AB'},
-        {id:'bourbePlonge', t:'Le plongeon', v:'AB'}, {id:'bourbeSaut', t:'Le saut', v:'AB'}, {id:'bourbeRire', t:'Chatouillé', v:'AB'}, {id:'bourbeTouche', t:'Touché', v:'AB'}, {id:'bourbeFin', t:'Défaite', v:'AB'}
+        {id:'bourbePlonge', t:'Le plongeon', v:'AB'}, {id:'bourbeSaut', t:'Le saut', v:'AB'}, {id:'bourbeRire', t:'Chatouillé', v:'AB'}, {id:'bourbeTouche', t:'Touché', v:'AB'}, {id:'bourbeFin', t:'Défaite', v:'AB'},
+        {id:'bourbeCrache', t:'Il recrache', v:'AB'}, {id:'recracheVole', t:'Le héros éjecté', v:'AB'}, {id:'recracheTombe', t:'Le héros retombe', v:'AB'}, {id:'recracheBeurk', t:'Tout dégoûtant', v:'AB'}
       ]},
       /* 19 novembre (Romain : « quand il replonge dans l'eau, il n'y a pas de son […] quand le sol est gelé, il n'y a pas vraiment de son […]
          dès qu'un ennemi fait une action, il y a un son ») : les sons neufs de Bourbe (sa sortie de l'eau, le bassin qui gèle, la glace)
