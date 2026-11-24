@@ -1929,30 +1929,41 @@ R.special = function(nom, o){
   }
   return Promise.resolve();
 };
-/* il recrache le héros avalé (o.onImpact : le héros sort, au point ancre('bouche')) */
-R._recracheSeq = function(o){
-  var self = this, A = {ajout: true}, T = 2300;
+/* il recrache le héros avalé (o.onImpact : le héros sort, au point ancre('bouche'))
+   (24 novembre — Romain, 13 h 19 : « quand il relâche la personne qui était dans son ventre […] c'est pas assez rapide […] on
+   attend trop » ; 13 h 23 : « quand il fait le toussement, c'est là où il faut faire tout de suite sortir le personnage, comme si
+   c'est le toussement qui faisait sortir le personnage ». Avant : 2,3 s, le « PTOU » à 0,76 s après deux haut-le-cœur.
+   Maintenant : un haut-le-cœur, le PTOU à 0,46 s, 1,5 s en tout ; « vite » (après les guilis : il rit déjà, la toux l'éjecte) :
+   le PTOU à 0,2 s, 0,6 s, sans s'essuyer — il roule sur le dos juste après.) RECRACHE : les moments, pour le combat. */
+var RECRACHE = {ptou: .46, ptouVite: .2};
+R._recracheSeq = function(o, vite){
+  var self = this, A = {ajout: true}, P = (vite ? RECRACHE.ptouVite : RECRACHE.ptou) * 1000, T = vite ? 600 : 1500;
   /* la bosse remonte vers la gorge, puis disparaît */
-  this._seq([{t: 0, p: {bosse: {sx: 1, sy: 1}}}, {t: .2, p: {bosse: {x: 150, y: 300, sx: 1.2, sy: .9}}}, {t: .3, p: {bosse: {x: 120, y: 280, sx: .6, sy: .6}}}], T);
-  setTimeout(function(){ self._bosseBoucle(false); }, T * .28);
+  this._seq([{t: 0, p: {bosse: {sx: 1, sy: 1}}}, {t: (P - 90) / T, p: {bosse: {x: 150, y: 300, sx: 1.2, sy: .9}}}, {t: (P - 20) / T, p: {bosse: {x: 120, y: 280, sx: .6, sy: .6}}}], T);
+  setTimeout(function(){ self._bosseBoucle(false); }, P - 40);
+  /* (o.onToux : 0,2 s avant le PTOU — le combat y cale le son du crachat, sur l'horloge de l'animation même quand la page rame) */
+  setTimeout(function(){ if(o.onToux) try{ o.onToux(.2); }catch(er){} }, Math.max(0, P - 200));
   this.etat.avale = false;
   function t(ms){ return ms / T; }
-  this._seq([
-    {t: 0, p: {ventre: {sx: 1, sy: 1}, gorge: {sx: 1, sy: 1}, secousse: {x: 0, y: 0, a: 0}, oeil: {s: 1}, paupB: {y: 0}, machoire: {a: 0}, langue: {sy: 1}, saut: {y: 0, sy: 1}, paupiere: {y: 0}}},
-    /* ça remonte : le ventre se serre, la gorge se bombe, deux haut-le-cœur */
-    {t: t(260), p: {ventre: {sx: .95, sy: .9}, gorge: {sx: 1.2, sy: 1.4}, secousse: {y: 5, a: -2}, oeil: {s: 1.1}, langue: {sy: .2}}, e: 'ease-out'},
-    {t: t(420), p: {ventre: {sx: 1.02, sy: 1.02}, gorge: {sx: 1.05, sy: 1.1}, secousse: {y: 0, a: 0}}},
-    {t: t(620), p: {ventre: {sx: .93, sy: .88}, gorge: {sx: 1.6, sy: 2.3}, secousse: {y: 6, a: -3}, oeil: {s: 1.18}, paupB: {y: -6}}, e: 'ease-out'},
-    /* PTOU ! */
-    {t: t(760), p: {machoire: {a: -30}, secousse: {x: -26, y: -2, a: -4}, gorge: {sx: .8, sy: .7}, ventre: {sx: 1, sy: 1}, saut: {y: -6, sy: 1.04}, oeil: {s: 1.05}}, e: 'cubic-bezier(.1,.9,.3,1)'},
-    {t: t(1050), p: {machoire: {a: -6}, secousse: {x: -4, y: 0, a: 0}, gorge: {sx: 1, sy: 1}, saut: {y: 0, sy: 1}, oeil: {s: 1}, paupiere: {y: 0}, bras: {a: 0}, avbras: {a: 0}, main: {a: 0}}, e: 'ease-out'},
-    /* beurk : il s'essuie la bouche d'un revers de main, secoue la tête */
-    {t: t(1300), p: {machoire: {a: 0}, paupiere: {y: 20}, paupB: {y: -6}, bras: {a: 40}, avbras: {a: 58}, main: {a: 24}}, e: 'ease-out'},
-    {t: t(1500), p: {bras: {a: 28}, avbras: {a: 40}, main: {a: 8}, secousse: {a: 2}}, e: 'ease-in-out'},
-    {t: t(1700), p: {bras: {a: 0}, avbras: {a: 0}, main: {a: 0}, secousse: {a: -2.5}}},
-    {t: t(1850), p: {secousse: {a: 2}}}, {t: t(2000), p: {secousse: {a: -1}}},
-    {t: 1, p: {ventre: {sx: 1, sy: 1}, gorge: {sx: 1, sy: 1}, secousse: {x: 0, y: 0, a: 0}, oeil: {s: 1}, paupB: {y: 0}, machoire: {a: 0}, langue: {sy: 1}, saut: {y: 0, sy: 1}, paupiere: {y: 0}, bras: {a: 0}, avbras: {a: 0}, main: {a: 0}}, e: 'ease-in-out'}
-  ], T, A);
+  var k = [{t: 0, p: {ventre: {sx: 1, sy: 1}, gorge: {sx: 1, sy: 1}, secousse: {x: 0, y: 0, a: 0}, oeil: {s: 1}, paupB: {y: 0}, machoire: {a: 0}, langue: {sy: 1}, saut: {y: 0, sy: 1}, paupiere: {y: 0}}}];
+  /* ça remonte : le ventre se serre, la gorge se bombe (sans les guilis : un premier haut-le-cœur avant) */
+  if(!vite){
+    k.push({t: t(150), p: {ventre: {sx: .95, sy: .9}, gorge: {sx: 1.2, sy: 1.4}, secousse: {y: 5, a: -2}, oeil: {s: 1.1}, langue: {sy: .2}}, e: 'ease-out'});
+    k.push({t: t(250), p: {ventre: {sx: 1.02, sy: 1.02}, gorge: {sx: 1.05, sy: 1.1}, secousse: {y: 0, a: 0}}});
+  }
+  k.push({t: t(P - 120), p: {ventre: {sx: .93, sy: .88}, gorge: {sx: 1.6, sy: 2.3}, secousse: {y: 6, a: -3}, oeil: {s: 1.18}, paupB: {y: -6}}, e: 'ease-out'});
+  /* PTOU ! (la toux qui l'éjecte) */
+  k.push({t: t(P), p: {machoire: {a: -30}, secousse: {x: -26, y: -2, a: -4}, gorge: {sx: .8, sy: .7}, ventre: {sx: 1, sy: 1}, saut: {y: -6, sy: 1.04}, oeil: {s: 1.05}}, e: 'cubic-bezier(.1,.9,.3,1)'});
+  k.push({t: t(P + 240), p: {machoire: {a: -6}, secousse: {x: -4, y: 0, a: 0}, gorge: {sx: 1, sy: 1}, saut: {y: 0, sy: 1}, oeil: {s: 1}, paupiere: {y: 0}, bras: {a: 0}, avbras: {a: 0}, main: {a: 0}}, e: 'ease-out'});
+  /* beurk : il s'essuie la bouche d'un revers de main, secoue la tête */
+  if(!vite){
+    k.push({t: t(P + 400), p: {machoire: {a: 0}, paupiere: {y: 20}, paupB: {y: -6}, bras: {a: 40}, avbras: {a: 58}, main: {a: 24}}, e: 'ease-out'});
+    k.push({t: t(P + 560), p: {bras: {a: 28}, avbras: {a: 40}, main: {a: 8}, secousse: {a: 2}}, e: 'ease-in-out'});
+    k.push({t: t(P + 700), p: {bras: {a: 0}, avbras: {a: 0}, main: {a: 0}, secousse: {a: -2.5}}});
+    k.push({t: t(P + 800), p: {secousse: {a: 2}}}, {t: t(P + 900), p: {secousse: {a: -1}}});
+  }
+  k.push({t: 1, p: {ventre: {sx: 1, sy: 1}, gorge: {sx: 1, sy: 1}, secousse: {x: 0, y: 0, a: 0}, oeil: {s: 1}, paupB: {y: 0}, machoire: {a: 0}, langue: {sy: 1}, saut: {y: 0, sy: 1}, paupiere: {y: 0}, bras: {a: 0}, avbras: {a: 0}, main: {a: 0}}, e: 'ease-in-out'});
+  this._seq(k, T, A);
   /* le gros paquet de bave qui gicle */
   setTimeout(function(){
     var p = self._ou('bouche'), sol = self.etat.berge ? self._ou('pieds')[1] : 380, arr = [p[0] - 230, sol];
@@ -1966,12 +1977,16 @@ R._recracheSeq = function(o){
     });
     for(var i = 0; i < 8; i++){ var a = Math.PI + hasard(-.5, .4), v = hasard(40, 110), e = self._fxEl('<circle r="' + f1(hasard(2, 4.5)) + '" fill="#e8f4ff" stroke="' + O + '" stroke-width="1"/>'); e.animate([{transform: 'translate(' + f1(p[0]) + 'px,' + f1(p[1]) + 'px)'}, {transform: 'translate(' + f1(p[0] + Math.cos(a) * v) + 'px,' + f1(p[1] + Math.sin(a) * v + 50) + 'px)', opacity: 0}], {duration: 600, easing: 'ease-out', fill: 'forwards'}).finished.then((function(q){ return function(){ q.remove(); }; })(e)); }
     if(o.onImpact) try{ o.onImpact(); }catch(er){}
-  }, T * 760 / T);
+  }, P);
   return attendreMs(T);
 };
-/* un héros avalé le chatouille de l'intérieur : il rit, hoquette, se tortille, recrache… et roule sur le dos */
+/* un héros avalé le chatouille de l'intérieur : il rit, hoquette, se tortille, recrache… et roule sur le dos
+   (24 novembre, Romain, 13 h 23 : plus vite, et c'est la toux qui fait sortir le héros. Avant : 2,8 s de rire, puis le
+   recrachage entier (2,3 s), puis la culbute. Maintenant : 0,75 s de rire, la toux (le PTOU à 0,95 s : rire + ptouVite),
+   la culbute ; ≈ 2,5 s en tout.) */
+RECRACHE.rire = .75;
 R._chatouille = function(o){
-  var self = this, j = this._debutAction(), A = {ajout: true}, T = 2800;
+  var self = this, j = this._debutAction(), A = {ajout: true}, T = RECRACHE.rire * 1000;
   /* la bosse s'agite dans tous les sens */
   this._bosseBoucle(true);
   var bz = [{t: 0, p: {bosse: {x: 200, y: 345, sx: 1, sy: 1}}}];
@@ -1979,22 +1994,25 @@ R._chatouille = function(o){
   bz.push({t: 1, p: {bosse: {x: 200, y: 345, sx: 1, sy: 1}}});
   this._seq(bz, T);
   var k = [{t: 0, p: {saut: {y: 0}, secousse: {a: 0, x: 0}, machoire: {a: 0}, paupiere: {y: 0}, paupB: {y: 0}, langue: {a: 0}, bras: {a: 0}, avbras: {a: 0}, main: {a: 0}, cuisse: {a: 0}, gorge: {sx: 1, sy: 1}}}];
-  k.push({t: .08, p: {paupiere: {y: 32}, paupB: {y: -8}, bras: {a: 18}, avbras: {a: 30}, main: {a: 18}}, e: 'ease-out'});
-  for(var i = 0; i < 12; i++){
-    var tt = .1 + i * .07, hic = (i === 5 || i === 9);
+  k.push({t: .03, p: {paupiere: {y: 32}, paupB: {y: -8}, bras: {a: 18}, avbras: {a: 30}, main: {a: 18}}, e: 'ease-out'});
+  /* quatre secousses de rire et un « hic » (avant : douze, et deux « hic ») — sur les « BWA-HA-HA-HA » du son (bourbeRire A :
+     toutes les 0,17 s ; son « hic ! » à 0,9 s tombe juste avant le PTOU, à 0,95 s) ; au « hic », la gorge se serre : la toux arrive */
+  var RIRES = [.06, .28, .5, .72, .9];
+  for(var i = 0; i < RIRES.length; i++){
+    var tt = RIRES[i], hic = (i === RIRES.length - 1);
     k.push({t: tt, p: {saut: {y: hic ? -22 : -9}, secousse: {a: i % 2 ? 3.5 : -3.5, x: i % 2 ? 4 : -4}, machoire: {a: hic ? -4 : -15}, langue: {a: i % 2 ? 18 : -14}, avbras: {a: i % 2 ? 36 : 26}, cuisse: {a: i % 2 ? -8 : 6}, gorge: {sx: hic ? .8 : 1.15, sy: hic ? .7 : 1.25}}, e: 'ease-out'});
-    k.push({t: tt + .035, p: {saut: {y: 0}, machoire: {a: -2}, gorge: {sx: 1, sy: 1}}, e: 'ease-in'});
+    k.push({t: tt + (hic ? .05 : .08), p: {saut: {y: 0}, machoire: {a: -2}, gorge: {sx: 1, sy: 1}}, e: 'ease-in'});
   }
   k.push({t: 1, p: {saut: {y: 0}, secousse: {a: 0, x: 0}, machoire: {a: 0}, paupiere: {y: 0}, paupB: {y: 0}, langue: {a: 0}, bras: {a: 0}, avbras: {a: 0}, main: {a: 0}, cuisse: {a: 0}, gorge: {sx: 1, sy: 1}}});
   this._seq(k, T, A);
-  /* des larmes de rire, des « hic », les traits de chatouille */
-  [300, 900, 1500, 2100].forEach(function(ms){ setTimeout(function(){ var p = self._ou('oeilC'); for(var n = 0; n < 2; n++) self._goutte([p[0] + hasard(-20, 10), p[1] + 10], {coul: '#9ad8ff', dx: hasard(-60, 30), saute: hasard(20, 40), r: 3}); }, ms); });
-  [.1 + 5 * .07, .1 + 9 * .07].forEach(function(tt){ setTimeout(function(){ var p = self._ou('bouche'); self._bouffee([p[0] - 4, p[1] - 4], {r: 7, coul: '#e8ffd0', op: .85, dx: -20, dy: -36, duree: 700, s1: 2, liser: true}); }, tt * T); });
+  /* des larmes de rire, le « hic », les traits de chatouille */
+  [100, 380, 620].forEach(function(ms){ setTimeout(function(){ var p = self._ou('oeilC'); for(var n = 0; n < 2; n++) self._goutte([p[0] + hasard(-20, 10), p[1] + 10], {coul: '#9ad8ff', dx: hasard(-60, 30), saute: hasard(20, 40), r: 3}); }, ms); });
+  setTimeout(function(){ var p = self._ou('bouche'); self._bouffee([p[0] - 4, p[1] - 4], {r: 7, coul: '#e8ffd0', op: .85, dx: -20, dy: -36, duree: 700, s1: 2, liser: true}); }, RIRES[RIRES.length - 1] * T);
   var zz = 'M0 0 l 6 -8 l 6 8 l 6 -8 l 6 8';
-  [200, 700, 1200, 1700, 2200].forEach(function(ms, n){ setTimeout(function(){ var p = self._ou('pointfaible'), q = [p[0] + hasard(-90, 60), p[1] + hasard(-20, 40)], g = self._fxEl(L(zz, O, 5) + L(zz, '#fff6c0', 2.6)); g.animate([{transform: 'translate(' + f1(q[0]) + 'px,' + f1(q[1]) + 'px) rotate(' + (n % 2 ? 20 : -20) + 'deg) scale(.4)', opacity: 0}, {offset: .3, opacity: 1, transform: 'translate(' + f1(q[0]) + 'px,' + f1(q[1] - 6) + 'px) rotate(' + (n % 2 ? 20 : -20) + 'deg) scale(1)'}, {transform: 'translate(' + f1(q[0]) + 'px,' + f1(q[1] - 14) + 'px) rotate(' + (n % 2 ? 20 : -20) + 'deg) scale(1.1)', opacity: 0}], {duration: 500, fill: 'forwards'}).finished.then(function(){ g.remove(); }); }, ms); });
-  [600, 1400, 2200].forEach(function(ms){ setTimeout(function(){ if(self._mode() === 'eau') self._rides(self._ou('centre')[0] + hasard(-150, 150), 1, 1.1); }, ms); });
+  [60, 260, 460, 660].forEach(function(ms, n){ setTimeout(function(){ var p = self._ou('pointfaible'), q = [p[0] + hasard(-90, 60), p[1] + hasard(-20, 40)], g = self._fxEl(L(zz, O, 5) + L(zz, '#fff6c0', 2.6)); g.animate([{transform: 'translate(' + f1(q[0]) + 'px,' + f1(q[1]) + 'px) rotate(' + (n % 2 ? 20 : -20) + 'deg) scale(.4)', opacity: 0}, {offset: .3, opacity: 1, transform: 'translate(' + f1(q[0]) + 'px,' + f1(q[1] - 6) + 'px) rotate(' + (n % 2 ? 20 : -20) + 'deg) scale(1)'}, {transform: 'translate(' + f1(q[0]) + 'px,' + f1(q[1] - 14) + 'px) rotate(' + (n % 2 ? 20 : -20) + 'deg) scale(1.1)', opacity: 0}], {duration: 500, fill: 'forwards'}).finished.then(function(){ g.remove(); }); }, ms); });
+  [250, 600].forEach(function(ms){ setTimeout(function(){ if(self._mode() === 'eau') self._rides(self._ou('centre')[0] + hasard(-150, 150), 1, 1.1); }, ms); });
   return attendreMs(T).then(function(){
-    return self._recracheSeq(o);
+    return self._recracheSeq(o, true);
   }).then(function(){
     if(j !== self.jeton) return;
     return self._retourner(true, j);
@@ -2474,6 +2492,8 @@ function creer(conteneur, options){
     attaquer: function(nom, o){ return b.attaquer(nom, o); },
     touche: function(type, o){ return b.touche(type, o); },
     special: function(nom, o){ return b.special(nom, o); },
+    /* (24 novembre) quand le héros sort, en secondes depuis le début du moment : pour caler les sons du combat */
+    momentRecrache: function(nom){ return nom === 'chatouille' ? RECRACHE.rire + RECRACHE.ptouVite : RECRACHE.ptou; },
     tousser: function(){ return b.tousser(); },
     fuir: function(){ return b.mourir(); },
     mourir: function(){ return b.mourir(); },

@@ -3803,7 +3803,9 @@ HV.DONJON.toile = [[0.1, {sourcils:0.6, ouvre:0.45, bas:[0, 30, -4], plisse:-0.2
    l'image) ; puis il la recrache : elle revient en volant, roulée en boule, retombe assise, couverte de bave ; elle s'ébroue comme
    un chien, dégoûtée, se relève et s'essuie la figure.
    HV.CRAPAUD : quand elle part (avalee), quand elle revient (recrachee), quand elle touche le sol (pose) — pour le film. */
-HV.CRAPAUD = {colle:0.5, avalee:1.05, recrachee:2.2, pose:2.62};
+HV.CRAPAUD = {colle:0.5, avalee:1.05, recrachee:2.2, pose:2.62, ebroue:2.9, debout:3.95};
+/* (24 novembre — Romain, 13 h 19 : « pas assez rapide […] on attend trop ». Après la chute : assise 0,28 s au lieu de 0,5, quatre
+   secousses de chien en 0,34 s au lieu de 0,5, debout à 3,95 s au lieu de 4,6 ; ebroue, debout : pour le film et les sons.) */
 var BOULE = {leve:40, bas:[0, 96, -10], bang:[-30, 0, 0], dos:[30, 0, 0], hoche:24, piedG:[-20, 330, 40], piedD:[20, 330, 40], pointeG:20, pointeD:20, genouG:[-0.2, -1, 0.6], genouD:[0.2, -1, 0.6],
   mainD:[24, 230, 60], relD:1, coudeD:[0.8, 0.4, -0.2], mainG:[-28, 232, 60], relG:1, coudeG:[-0.8, 0.4, -0.2], arcAxe:[-0.6, 0.8, 0.2], arcDir:[-0.4, 0, 1],
   plisse:1, sourcilsIn:0.9, ouvre:0.3, largeB:0.6, sourire:-0.6};
@@ -3819,18 +3821,18 @@ HV.DONJON.crapaud = [[0.45, {sourcils:-0.6}],
   /* (recrachée : en boule, elle vole) */
   [HV.CRAPAUD.recrachee, BOULE], [HV.CRAPAUD.pose - 0.08, avec(BOULE, {leve:6})],
   /* (elle retombe assise, couverte de bave) */
-  [HV.CRAPAUD.pose, avec(BAVE, ASSISE)], [3.0, avec(BAVE, ASSISE)],
+  [HV.CRAPAUD.pose, avec(BAVE, ASSISE)], [HV.CRAPAUD.ebroue - 0.08, avec(BAVE, ASSISE)],
   /* (elle s'ébroue comme un chien : la tête et les épaules de droite à gauche) */
-  [3.12, avec(BAVE, avec(ASSISE, {pen:-12, dos:[18, 0, -14]}))], [3.24, avec(BAVE, avec(ASSISE, {pen:12, dos:[18, 0, 14]}))],
-  [3.36, avec(BAVE, avec(ASSISE, {pen:-12, dos:[18, 0, -14]}))], [3.48, avec(BAVE, avec(ASSISE, {pen:12, dos:[18, 0, 14]}))], [3.62, avec(BAVE, ASSISE)],
+  [2.9, avec(BAVE, avec(ASSISE, {pen:-12, dos:[18, 0, -14]}))], [2.98, avec(BAVE, avec(ASSISE, {pen:12, dos:[18, 0, 14]}))],
+  [3.06, avec(BAVE, avec(ASSISE, {pen:-12, dos:[18, 0, -14]}))], [3.14, avec(BAVE, avec(ASSISE, {pen:12, dos:[18, 0, 14]}))], [3.24, avec(BAVE, ASSISE)],
   /* (elle se relève : un genou, puis debout) */
-  [4.1, avec(BAVE, {bas:[0, 86, -12], bang:[16, 0, 0], dos:[16, 0, 0], piedD:[15, 394, -60], pointeD:88, genouD:[0.1, 0.9, 1], piedG:[-27, 386, 46], genouG:[-0.3, -0.5, 1],
+  [3.6, avec(BAVE, {bas:[0, 86, -12], bang:[16, 0, 0], dos:[16, 0, 0], piedD:[15, 394, -60], pointeD:88, genouD:[0.1, 0.9, 1], piedG:[-27, 386, 46], genouG:[-0.3, -0.5, 1],
     mainD:[-18, 316, 50], relD:0, mdirD:[-1, 0.4, 0.3], poingD:0.2, mainG:[-62, 330, 50], relG:0, hoche:8, arcAxe:[0, 0.45, 0.9], arcDir:[-1, 0, 0.2]})],
-  [4.6, avec(BAVE, {bas:[0, 34, -4], bang:[12, 0, 0], dos:[12, 0, 0], hoche:4})],
+  [HV.CRAPAUD.debout, avec(BAVE, {bas:[0, 34, -4], bang:[12, 0, 0], dos:[12, 0, 0], hoche:4})],
   /* (elle s'essuie la figure avec sa manche) */
-  [5.0, avec(BAVE, {mainD:[-6, 112, 44], relD:1, coudeD:[1, 0.6, -0.1], mdirD:[-1, 0.2, 0.1], poingD:0.6, hoche:6})],
-  [5.25, avec(BAVE, {mainD:[-26, 118, 40], relD:1, coudeD:[1, 0.6, -0.1], mdirD:[-1, 0.2, 0.1], poingD:0.6, hoche:6})],
-  [5.7, {sourire:-0.5, bouchex:0.4, sourcils:-0.6, plisse:0.3}], [6.2, {}]];
+  [4.35, avec(BAVE, {mainD:[-6, 112, 44], relD:1, coudeD:[1, 0.6, -0.1], mdirD:[-1, 0.2, 0.1], poingD:0.6, hoche:6})],
+  [4.6, avec(BAVE, {mainD:[-26, 118, 40], relD:1, coudeD:[1, 0.6, -0.1], mdirD:[-1, 0.2, 0.1], poingD:0.6, hoche:6})],
+  [5.05, {sourire:-0.5, bouchex:0.4, sourcils:-0.6, plisse:0.3}], [5.55, {}]];
 
 /* LÉO L'ATTRAPE ET LA JETTE (phase 3) : sa grande main la saisit par la taille et la soulève ; elle se débat, les jambes dans le
    vide, pousse sur ses doigts ; il la secoue, prend son élan… et la jette au loin : elle vole, retombe sur le dos, et se relève
@@ -6134,8 +6136,10 @@ V.avale = function(){
     return Promise.all([this.jouer(L), a.finished]).then(function(){ me._avale = true; me.boite.style.opacity = '0'; me.boite.style.transform = ''; a.cancel(); });
   });
 };
-V.recrache = function(scene, depuis){
-  if(scene && scene.x !== undefined){ depuis = scene; scene = null; }
+/* opt.sons({atterrit, ebroue}) : appelé au vrai départ du geste, en secondes (le combat y cale ses sons — 24 novembre) */
+V.recrache = function(scene, depuis, opt){
+  if(scene && scene.x !== undefined){ opt = depuis; depuis = scene; scene = null; }
+  opt = opt || {};
   return this.file(function(){
     var me = this, C = HV.CRAPAUD, dv = C.pose - C.recrachee, c0 = this.rep('bassin', this.fx);
     var dep = depuis ? (scene ? this.versRefDepuis(scene, depuis) : this.versRefEcran(depuis)) : {x:c0.x + 360, y:c0.y - 60};
@@ -6147,10 +6151,12 @@ V.recrache = function(scene, depuis){
     this.boite.style.opacity = ''; this._avale = false;
     this.ombreFait('recrache', scene, depuis);
     this.boite.animate(kf, {duration:dv * 1000, easing:'linear'});
-    /* (la fin de son geste, sans l'essuyage de la figure : le combat attend) */
-    var L = morceau(HV.DONJON.crapaud, C.recrachee - 0.01, 4.6), fin = L[L.length - 1][0];
-    L.push([fin + 0.5, {}]);
-    this.plus(dv * 1000, function(){ var t0 = maintenant(); me.effet('bave', function(u2, os){ var v = maintenant() - t0; return bave(this, os, v < 2.2 ? 1 : Math.max(0, 1 - (v - 2.2) / 0.6), v - (3.05 - C.pose)); }, 3.0); });
+    if(opt.sons) try{ opt.sons({atterrit:dv, ebroue:C.ebroue - C.recrachee}); }catch(e){}
+    /* (la fin de son geste, sans l'essuyage de la figure : le combat attend — 24 novembre : debout à 3,95 s au lieu de 4,6, et
+       0,15 s d'arrêt au lieu de 0,5) */
+    var L = morceau(HV.DONJON.crapaud, C.recrachee - 0.01, C.debout), fin = L[L.length - 1][0];
+    L.push([fin + 0.15, {}]);
+    this.plus(dv * 1000, function(){ var t0 = maintenant(); me.effet('bave', function(u2, os){ var v = maintenant() - t0; return bave(this, os, v < 1.6 ? 1 : Math.max(0, 1 - (v - 1.6) / 0.5), v - (C.ebroue - 0.05 - C.pose)); }, 2.2); });
     return this.jouer(L);
   });
 };
@@ -9936,7 +9942,9 @@ H.recrache = function(scene, depuis, opt){
     this._mesure();
     var me = this, g = this.garde(), F2 = this.fx, c0 = this._px(125, 160), dep = depuis ? this._versBoite(scene, depuis) : {x:c0.x + 360, y:c0.y - 60};
     var C = this._calques('bave');
-    var ox = dep.x - c0.x, oy = dep.y - c0.y, D = opt.d || 720, N = 16, kf = [], hautV = Math.max(70, Math.abs(ox) * .28);
+    /* (24 novembre — Romain, 13 h 19 : « pas assez rapide […] on attend trop » : le vol 0,52 s au lieu de 0,72, quatre secousses
+       au lieu de six, 1,73 s en tout au lieu de 2,62 ; opt.sons({atterrit, ebroue}) au vrai départ, pour les sons du combat) */
+    var ox = dep.x - c0.x, oy = dep.y - c0.y, D = opt.d || 520, N = 16, kf = [], hautV = Math.max(70, Math.abs(ox) * .28);
     /* le vol : une cloche, il tourne en boule */
     for(var i = 0; i <= N; i++){
       var t = i / N, u = 1 - t, mx = ox / 2, my = Math.min(oy, 0) / 2 - hautV, x = u * u * ox + 2 * u * t * mx, y = u * u * oy + 2 * u * t * my;
@@ -9972,10 +9980,11 @@ H.recrache = function(scene, depuis, opt){
       pluie(F2, a.x, a.y, {n:9, forme:'goutte', c:['#a6e07a', '#c8f0a0'], angle:-90, ecart:85, v0:140, v1:260, g:800, t0:6, t1:9, d0:550, d1:850, etale:300});
       pluie(F2, b.x, b.y, {n:8, forme:'goutte', c:['#a6e07a', '#7ac85a'], angle:-90, ecart:85, v0:120, v1:240, g:800, t0:5, t1:8, d0:550, d1:850, etale:300});
     };
-    var seq = [{d:D, p:boule, e:'lin'}, {d:110, p:splat, e:'oo', f0:atterrit}, {d:240, p:splat, e:'lin'}, {d:260, p:beurk, e:'io', f0:function(){ me.expr('surpris'); goutter(); }},
-      {d:300, p:beurk, e:'lin', f0:function(){ me.expr('aie'); }}];
-    for(var k = 0; k < 6; k++) seq.push({d:95, p:k % 2 ? se2 : se1, e:'io', f0:k ? null : secoue});
-    seq.push({d:380, p:g, e:'b', f0:function(){ me.expr('content'); }, f:function(){ me.expr('garde'); me.cligner(); }});
+    var seq = [{d:D, p:boule, e:'lin'}, {d:90, p:splat, e:'oo', f0:atterrit}, {d:150, p:splat, e:'lin'}, {d:180, p:beurk, e:'io', f0:function(){ me.expr('surpris'); goutter(); }},
+      {d:150, p:beurk, e:'lin', f0:function(){ me.expr('aie'); }}];
+    for(var k = 0; k < 4; k++) seq.push({d:85, p:k % 2 ? se2 : se1, e:'io', f0:k ? null : secoue});
+    seq.push({d:300, p:g, e:'b', f0:function(){ me.expr('content'); }, f:function(){ me.expr('garde'); me.cligner(); }});
+    if(opt.sons) try{ opt.sons({atterrit:D / 1000, ebroue:(D + 90 + 150 + 180 + 150) / 1000}); }catch(e){}
     return this.jouer(seq);
   });
 };
