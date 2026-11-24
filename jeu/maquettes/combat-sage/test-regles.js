@@ -1,0 +1,84 @@
+const G = require('./logic15.js');
+const ok = (c, m) => console.log((c ? 'ok   ' : 'RATÉ ') + m);
+const mk = (s, type, x, y, extra = {}) => { const T = G.TYPES[type]; const u = { id: s.nextId++, type, x, y, r: T.r, hp: 50, max: 50, vx: 0, vy: 0, atk: 0.5, daze: 0, flash: 0, burn: 0, burnCd: 0, burnTick: 0, held: false, fear: 0, dance: 0, charmCd: 0, ...extra }; s.soldiers.push(u); return u; };
+const quiet = s => { s.spawnT = 1e9; s.burstT = 1e9; };
+const run = (s, sec) => { for (let i = 0; i < sec * 60; i++) G.step(s, 1 / 60, false); };
+const give = (s, id, l = 1) => { for (let i = 0; i < l; i++) { s.choice = { cards: [id] }; G.choose(s, id); } };
+// les pages : 2 gros, puis 3, puis 4
+{ const s = G.newGame({ seed: 1 }); quiet(s); s.boltT = 1e9; const got = [];
+  for (let k = 1; k <= 9; k++) { const u = mk(s, 'brute', 200, 200, { hp: 1 }); s.soldiers = s.soldiers.filter(v => v === u); s.sage.x = 800; s.sage.y = 800; u.hp = 1; G.cast(s, { kind: 'trait', a: { x: 100, y: 200 }, b: { x: 300, y: 200 } }); s.ink = 12; got.push(s.pages.length); }
+  ok(JSON.stringify(got) === JSON.stringify([1, 1, 2, 2, 2, 2, 3, 3, 3]), 'pages tombées après chaque gros : ' + got.join(' ')); }
+// ramasser la page : 3 cartes, le jeu attend
+{ const s = G.newGame({ seed: 2 }); quiet(s); s.pages.push({ x: 450, y: 600, t: 0 }); run(s, 0.1); ok(s.choice && s.choice.cards.length === 3, 'page touchée : 3 cartes ' + JSON.stringify(s.choice && s.choice.cards));
+  const t0 = s.realT; run(s, 1); ok(s.realT === t0, 'le jeu attend pendant le choix');
+  const id = s.choice.cards[0]; G.choose(s, id); ok(!s.choice && (G.lv(s, id) === 1 || id === 'soin'), 'carte prise : ' + s.msg); }
+{ const s = G.newGame({ seed: 3 }); quiet(s); s.pages.push({ x: 450, y: 600, t: 0 }); for (let i = 0; i < 6; i++) G.step(s, 1 / 60, true); ok(!s.choice, 'pas de choix pendant qu’on grave'); }
+// pas plus de 4 sorts, pas plus du niveau 3
+{ const s = G.newGame({ seed: 4 }); for (const id of ['pages', 'sceau', 'piege', 'chaine']) give(s, id); const pool = G.cardPool(s);
+  ok(!pool.includes('bouclier') && !pool.includes('chouette') && pool.includes('pages'), '4 sorts : plus de nouveaux sorts proposés');
+  give(s, 'lourd', 3); ok(!G.cardPool(s).includes('lourd'), 'niveau 3 : la carte n’est plus proposée'); }
+// le bâton
+const volley = (cfg) => { const s = G.newGame({ seed: 5 }); quiet(s); for (const [id, l] of cfg) give(s, id, l); const us = [mk(s, 'cogneur', 450, 420), mk(s, 'cogneur', 520, 470), mk(s, 'cogneur', 380, 470), mk(s, 'cogneur', 450, 330)]; s.sage.x = 450; s.sage.y = 600; s.boltT = 0; G.step(s, 1 / 60, false); return { s, us }; };
+{ const { s } = volley([['double', 2]]); ok(s.bolts.length === 3, `double orbe niveau 2 : ${s.bolts.length} orbes`); }
+{ const { s } = volley([['lourd', 1]]); ok(s.bolts[0].dmg === 2, 'orbe lourd : 2 dégâts'); }
+{ const s = G.newGame({ seed: 6 }); quiet(s); give(s, 'rapide', 3); mk(s, 'costaud', 450, 420, { hp: 999 }); let n = 0; for (let i = 0; i < 600; i++) { const b = s.bolts.length; G.step(s, 1 / 60, false); if (s.bolts.length > b) n++; } ok(n >= 34, `tir rapide niveau 3 : ${n} tirs en 10 s (au lieu de ~18)`); }
+{ const s = G.newGame({ seed: 7 }); quiet(s); give(s, 'percant', 1); const a = mk(s, 'cogneur', 450, 520, { hp: 9 }), b = mk(s, 'cogneur', 450, 470, { hp: 9 }), c = mk(s, 'cogneur', 450, 420, { hp: 9 }); s.sage.x = 450; s.sage.y = 600; s.boltT = 0; for (let i = 0; i < 30; i++) G.step(s, 1 / 60, false); ok(a.hp < 9 && b.hp < 9 && c.hp === 9, `orbe perçant niveau 1 : traverse 2 golems (${9 - a.hp}, ${9 - b.hp}, ${9 - c.hp})`); }
+// les runes
+{ const s = G.newGame({ seed: 8 }); give(s, 'encrier', 2); ok(s.cfg.inkMax === 16 && s.ink === 16, 'grand encrier niveau 2 : 16, rempli'); }
+{ const s = G.newGame({ seed: 9 }); quiet(s); give(s, 'brulant'); s.ink = 12; G.cast(s, { kind: 'trait', a: { x: 200, y: 300 }, b: { x: 400, y: 300 } }); const u = mk(s, 'cogneur', 300, 360); for (let i = 0; i < 40; i++) { u.y = 360 - i; G.step(s, 1 / 60, false); } ok(u.burn > 0 || u.hp < 50, 'trait brûlant : le golem qui passe prend feu'); }
+{ const s = G.newGame({ seed: 10 }); quiet(s); s.boltT = 1e9; give(s, 'epines', 2); s.walls.push({ pts: [{ x: 300, y: 300 }, { x: 400, y: 300 }], half: 15, life: 3, max: 3 }); const u = mk(s, 'cogneur', 350, 330); run(s, 1.5); ok(50 - u.hp >= 2, `mur d’épines niveau 2 : ${50 - u.hp} dégâts en 1,5 s`); }
+{ const s = G.newGame({ seed: 11 }); quiet(s); give(s, 'tonnerre', 1); s.ink = 12; const u = mk(s, 'cogneur', 450, 250); G.cast(s, { kind: 'poussee', tip: { x: 450, y: 330 }, a: { x: 380, y: 200 }, b: { x: 520, y: 200 }, dir: [0, -1] }); ok(u.daze >= 1.4, 'V tonnerre : sonné ' + u.daze);
+  G.cast(s, { kind: 'trait', a: { x: 300, y: u.y }, b: { x: 600, y: u.y } }); ok(u.hp <= 0, 'V tonnerre + trait : il éclate'); }
+// les sorts
+{ const s = G.newGame({ seed: 12 }); quiet(s); s.boltT = 1e9; give(s, 'pages', 1); const u = mk(s, 'cogneur', 450 + 75, 600); u.hp = 50; for (let i = 0; i < 120; i++) { u.x = 525; u.y = 600; G.step(s, 1 / 60, false); } ok(50 - u.hp >= 2, `pages volantes : ${50 - u.hp} dégâts en 2 s`); }
+{ const s = G.newGame({ seed: 13 }); quiet(s); s.boltT = 1e9; give(s, 'sceau'); const u = mk(s, 'cogneur', 450, 330); run(s, 2.1); ok(50 - u.hp >= 2, `sceau de garde : ${50 - u.hp} dégâts en 2 s`); }
+{ const s = G.newGame({ seed: 14 }); quiet(s); s.boltT = 1e9; give(s, 'piege'); s.trapT = 0; const u = mk(s, 'cogneur', 450, 300), v = mk(s, 'cogneur', 480, 310); for (let i = 0; i < 50; i++) { G.step(s, 1 / 60, false); } ok(u.daze > 0 && v.daze > 0, 'rune piège : les deux golems sonnés'); }
+{ const s = G.newGame({ seed: 15 }); quiet(s); s.boltT = 1e9; give(s, 'chaine'); s.chainT = 0; const us = [0, 1, 2, 3, 4].map(i => mk(s, 'cogneur', 250 + i * 110, 300)); G.step(s, 1 / 60, false); const n = us.filter(u => u.hp < 50).length; ok(n === 3, `lumière en chaîne niveau 1 : ${n} golems touchés`); }
+{ const s = G.newGame({ seed: 16 }); quiet(s); give(s, 'bouclier'); const p0 = s.protection; const f = s.friends[0]; const u = mk(s, 'cogneur', f.x, f.y - 50, { atk: 0 }); s.boltT = 1e9; run(s, 1.2); ok(f.shield === 0 && s.protection >= p0 - 1, `bouclier : premier coup encaissé (protection ${p0} → ${s.protection})`); }
+{ const s = G.newGame({ seed: 17 }); quiet(s); s.boltT = 1e9; give(s, 'chouette'); const l = mk(s, 'lanceur', 700, 300), c = mk(s, 'cogneur', 450, 560); run(s, 2.5); ok(50 - l.hp >= 3 && c.hp === 50, `chouette : elle fond sur le lanceur (${50 - l.hp} dégâts), pas sur le cogneur`); }
+{ const s = G.newGame({ seed: 18 }); give(s, 'aimant', 2); ok(s.cfg.magnet === 320, 'aimant niveau 2 : 320'); }
+{ const s = G.newGame({ seed: 19 }); s.protection = 10; s.choice = { cards: ['soin'] }; G.choose(s, 'soin'); ok(s.protection === 15, 'protection : +5'); }
+// ===== version 11 =====
+{ const s = G.newGame({ seed: 30 }); s.realT = 90; ok(G.TYPES.cogneur.hp + G.bonusHp(s, 'cogneur') === 4 && G.TYPES.brute.hp + G.bonusHp(s, 'brute') === 9, 'vies : +1 aux petits dès 90 s, gros inchangés'); }
+// les cartes simples en plus
+{ const s = G.newGame({ seed: 31 }); give(s, 'solide', 2); ok(s.cfg.wallLife === 5, 'mur solide niveau 2 : 5 s'); give(s, 'large', 3); ok(s.cfg.traitWidth === 64, 'trait large niveau 3 : 64'); give(s, 'pas', 1); ok(s.cfg.sageSpeed === 360, 'pas léger : 360'); }
+{ const s = G.newGame({ seed: 32 }); quiet(s); s.boltT = 1e9; give(s, 'moisson', 2); const u = mk(s, 'brute', 300, 300, { hp: 1 }); s.ink = 12; G.cast(s, { kind: 'trait', a: { x: 200, y: 300 }, b: { x: 400, y: 300 } }); ok(s.shards.length === G.TYPES.brute.shards + 2, `moisson d’encre niveau 2 : ${s.shards.length} éclats (au lieu de ${G.TYPES.brute.shards})`); }
+// le Barde qui repousse
+{ const s = G.newGame({ seed: 42 }); quiet(s); s.boltT = 1e9; G.enterCode(s, G.CODES.B); const kinds = {}; for (let k = 0; k < 30; k++) { s.soldiers = []; const u = mk(s, 'cogneur', 450, 220); s.friends.find(f => f.id === 'B').cd = 0; s.notes = []; for (let i = 0; i < 60; i++) G.step(s, 1 / 60, false); if (u.dance > 0) kinds.danse = (kinds.danse || 0) + 1; else if (u.fear > 0) kinds.demitour = (kinds.demitour || 0) + 1; else if (Math.hypot(u.vx, u.vy) > 100 || u.y < 200) kinds.repousse = (kinds.repousse || 0) + 1; }
+  ok(kinds.danse && kinds.demitour && kinds.repousse, 'les trois partitions du Barde : ' + JSON.stringify(kinds)); }
+// ===== version 12 : les 10 combos à 3 niveaux =====
+{ const s = G.newGame({ seed: 33 }); give(s, 'lourd', 1); give(s, 'chouette', 1); ok(!G.combosReady(s).length, 'combo pas prêt tant que les deux cartes sont au niveau 1'); give(s, 'lourd', 1); ok(G.combosReady(s).includes('chouettes'), 'combo prêt dès le niveau 2 : parlement des chouettes');
+  s.pages.push({ x: s.sage.x, y: s.sage.y, t: 0 }); quiet(s); G.step(s, 1 / 60, false); ok(s.choice && s.choice.cards[0] === 'chouettes', 'la carte dorée sort à coup sûr : ' + JSON.stringify(s.choice && s.choice.cards));
+  G.choose(s, 'chouettes'); ok(G.combosReady(s).includes('chouettes'), 'le niveau 2 du combo est proposé ensuite'); give(s, 'chouettes', 2); ok(s.owls.length === 4 && !G.combosReady(s).includes('chouettes'), 'niveau 3 : 4 chouettes, plus proposé'); }
+const combo = (seed, id, L) => { const s = G.newGame({ seed }); quiet(s); s.boltT = 1e9; for (const c of G.CARDS[id].of) give(s, c, 2); give(s, id, L); return s; };
+// 1. golems-boulets
+{ const s = combo(50, 'bowling', 1); s.ink = 30; const u = mk(s, 'cogneur', 450, 250, { hp: 50 }); const pins = [mk(s, 'cogneur', 450, 140), mk(s, 'cogneur', 425, 95), mk(s, 'cogneur', 475, 95)];
+  G.cast(s, { kind: 'poussee', tip: { x: 450, y: 330 }, a: { x: 380, y: 200 }, b: { x: 520, y: 200 }, dir: [0, -1] }); let bounced = false; for (let i = 0; i < 60; i++) { G.step(s, 1 / 60, false); if (u.vy > 200) bounced = true; }
+  ok(u.ball || bounced, 'boulet : il rebondit sur le bord au lieu de s’arrêter'); ok(pins.filter(p => p.daze > 0).length >= 2, 'boulet : les golems touchés sont renversés (' + pins.filter(p => p.daze > 0).length + ')'); }
+{ const s = combo(51, 'bowling', 2); s.ink = 30; mk(s, 'cogneur', 450, 250); const row = [[450, 140], [425, 95], [475, 95], [395, 50], [505, 50]].map(([x, y]) => mk(s, 'cogneur', x, y)); G.cast(s, { kind: 'poussee', tip: { x: 450, y: 330 }, a: { x: 380, y: 200 }, b: { x: 520, y: 200 }, dir: [0, -1] }); let mx = 0; for (let i = 0; i < 120; i++) { G.step(s, 1 / 60, false); mx = Math.max(mx, s.soldiers.filter(u => u.ball).length); }
+  ok(mx >= 2, `boulets niveau 2 : réaction en chaîne (${mx} boulets en même temps)`); }
+{ const s = combo(52, 'bowling', 3); s.ink = 30; const u = mk(s, 'cogneur', 450, 250, { hp: 4 }); const v = mk(s, 'cogneur', 600, 600, { hp: 50 }); G.cast(s, { kind: 'poussee', tip: { x: 450, y: 330 }, a: { x: 380, y: 200 }, b: { x: 520, y: 200 }, dir: [0, -1] }); u.ball.t = 0.05; v.x = 450; v.y = 210; for (let i = 0; i < 6; i++) G.step(s, 1 / 60, false); ok(u.hp <= 0 || v.hp < 50, 'boulet niveau 3 : il explose à la fin'); }
+// 2. orage
+{ const s = combo(53, 'orage', 2); s.ink = 30; const a = mk(s, 'cogneur', 300, 300, { daze: 3 }), b = mk(s, 'cogneur', 380, 400, { daze: 3 }), c = mk(s, 'cogneur', 470, 480, { daze: 3 }), d = mk(s, 'cogneur', 560, 560, { daze: 3 }); G.cast(s, { kind: 'trait', a: { x: 250, y: 300 }, b: { x: 330, y: 300 } }); ok([a, b, c, d].every(u => u.hp <= 0), 'orage niveau 2 : la foudre fait éclater toute la file de golems sonnés'); }
+{ const s = combo(54, 'orage', 3); const us = [0, 1, 2, 3, 4, 5].map(i => mk(s, 'cogneur', 150 + i * 110, 200)); s.stormT = 0.01; G.step(s, 1 / 60, false); ok(us.filter(u => u.daze > 0).length === 5, 'orage niveau 3 : l’orage tombe tout seul sur 5 golems'); }
+// 3. volcan
+{ const s = combo(55, 'volcan', 2); const u = mk(s, 'cogneur', 300, 300, { hp: 1, burn: 3, burnTick: 0.01 }), v = mk(s, 'cogneur', 350, 320); G.step(s, 1 / 60, false); ok(u.hp <= 0 && v.burn > 0 && 50 - v.hp >= 3, 'volcan niveau 2 : la boule de feu enflamme le voisin'); }
+{ const s = combo(56, 'volcan', 3); const u = mk(s, 'cogneur', 300, 300, { hp: 50, burn: 3, burnTick: 1 }); const x0 = u.x, y0 = u.y; run(s, 2); const toC = Math.hypot(450 - u.x, 445 - u.y) < Math.hypot(450 - x0, 445 - y0) - 60; ok(!toC && Math.hypot(u.x - x0, u.y - y0) > 20, 'volcan niveau 3 : le golem en feu court partout au lieu d’attaquer'); }
+// 4. pluie d'étoiles
+{ const s = combo(57, 'etoiles', 2); mk(s, 'costaud', 100, 100, { hp: 999 }); s.novaT = 0.01; G.step(s, 1 / 60, false); ok(s.bolts.filter(b => b.star).length === 12 && s.novaT === 3, 'étoiles niveau 2 : 12 étoiles toutes les 3 s'); }
+{ const s = combo(58, 'etoiles', 3); const u = mk(s, 'cogneur', 600, 600, { hp: 1 }); s.bolts.push({ x: 600, y: 590, vx: 0, vy: 10, life: 1, dmg: 2, pierce: 0, hit: [], star: true }); G.step(s, 1 / 60, false); ok(u.hp <= 0 && s.bolts.filter(b => b.small).length === 3, 'étoiles niveau 3 : l’étoile qui tue éclate en 3'); }
+// 5. la comète
+{ const s = combo(59, 'comete', 3); const u = mk(s, 'cogneur', 300, 600, { hp: 50 }); s.sage.x = 200; s.sage.y = 600; s.sage.tx = 700; s.sage.ty = 600; s.target = { x: 700, y: 600 }; for (let i = 0; i < 60; i++) { if (s.sage.x < 690) s.sage.x += 6; G.step(s, 1 / 60, false); } ok(s.trail.length > 5 || 50 - u.hp >= 2, `comète : traînée (${s.trail.length} points), golem touché (${50 - u.hp} dégâts)`); }
+// 6. le scribe fou
+{ const s = combo(60, 'scribe', 2); s.ink = 30; const us = [0, 1, 2, 3].map(i => mk(s, 'cogneur', 200 + i * 40, 300, { hp: 1 })); G.cast(s, { kind: 'trait', a: { x: 150, y: 300 }, b: { x: 400, y: 300 } }); const i0 = s.ink; ok(s.frenzy > 0, 'scribe fou niveau 2 : ×4 → frénésie'); G.cast(s, { kind: 'trait', a: { x: 150, y: 500 }, b: { x: 400, y: 500 } }); ok(s.ink === i0, 'frénésie : la rune ne coûte rien'); }
+// 7. tornade
+{ const s = combo(61, 'tornade', 2); s.ink = 30; s.sage.x = 800; s.sage.y = 800; const us = [mk(s, 'cogneur', 400, 250), mk(s, 'cogneur', 300, 400)]; G.cast(s, { kind: 'spirale', x: 250, y: 250 }); for (let i = 0; i < 40; i++) G.step(s, 1 / 60, false); const near = us.every(u => Math.hypot(u.x - 250, u.y - 250) < 120); run(s, 1.3); const far = us.filter(u => Math.hypot(u.x - 250, u.y - 250) > 200).length; ok(near && far === 2, `tornade : aspire puis recrache (${far} loin)`); }
+// 8. sanctuaire
+{ const s = combo(62, 'sanctuaire', 3); const d = mk(s, 'cogneur', 520, 445, { daze: 3, hp: 3 }), n = mk(s, 'cogneur', 380, 445); s.pulseT = 0.01; s.sealT = 99; G.step(s, 1 / 60, false); ok(d.hp <= 0 && Math.hypot(n.vx, n.vy) > 500, 'sanctuaire niveau 3 : l’onde fait éclater le sonné et projette l’autre'); }
+// 9. chouettes qui jettent
+{ const s = combo(63, 'chouettes', 3); const l = mk(s, 'lanceur', 700, 300, { hp: 50 }); [0, 1, 2].forEach(i => mk(s, 'cogneur', 200 + i * 20, 700)); s.owls.forEach(o => o.cd = 9); s.owls[0].cd = 0; let mx = 0; for (let i = 0; i < 60; i++) { G.step(s, 1 / 60, false); mx = Math.max(mx, Math.hypot(l.vx, l.vy)); } ok(mx > 600, `chouette niveau 3 : le golem est jeté (${Math.round(mx)})`); }
+// 10. rune miroir
+{ const s = combo(64, 'miroir', 1); s.ink = 30; const a = mk(s, 'cogneur', 450, 250, { hp: 1 }), b = mk(s, 'cogneur', 450, 640, { hp: 1 }); G.cast(s, { kind: 'trait', a: { x: 350, y: 250 }, b: { x: 550, y: 250 } }); ok(a.hp <= 0 && b.hp <= 0, 'rune miroir : la copie touche le golem d’en face'); }
+{ const s = combo(65, 'miroir', 3); s.ink = 30; const us = [0, 1, 2, 3, 4, 5, 6, 7].map(k => { const a = k * Math.PI / 4; return mk(s, 'cogneur', 450 + Math.sin(a) * 200, 445 - Math.cos(a) * 200, { hp: 1 }); }); const i0 = s.ink; G.cast(s, { kind: 'trait', a: { x: 400, y: 245 }, b: { x: 500, y: 245 } }); ok(us.every(u => u.hp <= 0), 'mandala : les 8 golems autour sont touchés'); ok(i0 - s.ink === G.costOf(s, { kind: 'trait' }), 'les copies sont gratuites'); }
+// la colère du cœur
+{ const s = G.newGame({ seed: 66 }); quiet(s); s.realT = 719; run(s, 1.1); ok(s.rage === 1, 'colère à 12 minutes'); s.realT = 840; G.step(s, 1 / 60, false); ok(s.rage === 2, 'rage à 14 minutes'); }
