@@ -457,7 +457,7 @@ B.special = function(nom, o){
   var f = this['_s_' + (nom || '').replace(/-/g, '_')];
   return f ? f.call(this, o || {}) : Promise.resolve();
 };
-B.mourir = function(){ return this.fuir(); };
+B.mourir = function(o){ return this.fuir(o); };
 
 /* =====================================================================
    5. Petits effets : des particules simples, sans filtre, retirées à la fin (repère « monde »)
@@ -821,9 +821,9 @@ function acteur(b){
     touche: function(type, o){ return b.touche(type, o); },
     special: function(nom, o){ return b.special(nom, o); },
     tousser: function(){ return b.tousser(); },
-    fuir: function(){ return b.fuir(); },
-    mourir: function(){ return b.mourir(); },
-    exploser: function(scene){ return b.exploser(scene); },
+    fuir: function(o){ return b.fuir(o); },
+    mourir: function(o){ return b.mourir(o); },
+    exploser: function(scene, o){ return b.exploser(scene, o); },
     etat: function(nom, on){ return b.etatPublic(nom, on); },
     etatCourant: function(){ return b.etatCourant(); },
     cible: function(on){ return b.etatPublic('cible', on); },
@@ -1801,9 +1801,23 @@ R.tousser = function(){
   return this._seq(k, T).fini.then(function(){ return self._finAction(j, 220); });
 };
 /* la peur : il sursaute (le casque saute), fait demi-tour et détale */
-R.fuir = function(){
+R.fuir = function(o){
+  o = o || {};
   var self = this, j = this._debutAction();
   ['ebloui', 'dos', 'colle', 'cible', 'tournis', 'gele'].forEach(function(n){ self.etat[n] = false; });
+  /* (24 novembre, Romain : « quand on tue un ennemi, que ça soit avec un critique ou sans critique, qu'il laisse un truc sur place […]
+     et que tu fasses un bruit ») : battu, il détale — mais une plaque de son armure (son casque s'il l'a encore) se détache, tombe
+     derrière lui et reste au sol ; o.onTombe() sonne quand elle le touche */
+  if(o.laisser){
+    var nP = !this.etat['sans-casque'] ? 'casque+casqueAv' : ['ep1', 'plq2', 'cuissarde', 'plq3', 'ep2'].filter(function(n){ return !self.tombees[n]; })[0];
+    if(nP){
+      var dP = this._detacher(nP.split('+')), xP = dP.c[0] + hasard(-20, 30), bbP = dP.bb;
+      if(nP.indexOf('casque') === 0) this.etat['sans-casque'] = true;
+      var aP = this._voler(dP.g, dP.c, [xP, SOL - Math.max(4, (bbP.y + bbP.height) * .8)], {haut: 70, rot: choisir([-200, 200]) - dP.ang, duree: 700, rebond: 10, glisse: hasard(-10, 10),
+        onSol: function(){ self._etincelles([xP, SOL - 4], 6, {v: 34, grav: 10}); if(o.onTombe) try{ o.onTombe('plaque'); }catch(e){} }});
+      aP.finished.then(function(){ try{ aP.commitStyles(); aP.cancel(); }catch(e){} self.S.fixeArr.appendChild(dP.g); }, function(){});
+    }
+  }
   this._eteindreEtoiles('etoiles'); this._enleverFlaque('colle'); this._enleverFlaque('huile');
   this._tous('[data-colle],[data-gel]').forEach(function(e){ self._fondu(e, 0, 200); });
   this._fondu('patteYeux', 0, 200);
@@ -1821,7 +1835,7 @@ R.fuir = function(){
   }).then(function(){
     self._couperBoucles();
     self.J.pos.style.opacity = 0;
-    self.el.style.visibility = 'hidden';
+    if(!o.laisser) self.el.style.visibility = 'hidden';            /* (sa plaque reste au sol : on ne cache que lui) */
     self.enAction = false;
   });
 };
@@ -1993,7 +2007,8 @@ R._s_armure_eclate = function(o){
 /* =====================================================================
    G. La mort par critique : il éclate tout de suite en brume noire (19 novembre : il n'enfle plus), l'armure saute ; restent cendres, os et ferraille
    ===================================================================== */
-R.exploser = function(scene){
+R.exploser = function(scene, o){
+  o = o || {};
   var self = this, j = this._debutAction(), boomOk, boomP = new Promise(function(r){ boomOk = r; });
   if(this.etat.brule) this._e_brule(false);
   this._pulser('oeilRage', false);
@@ -2020,9 +2035,12 @@ R.exploser = function(scene){
     restantes.forEach(function(n, q){
       var d = self._detacher(n.split('+')), dx = d.c[0] - c0[0], x = d.c[0] + dx * hasard(.8, 1.6) + hasard(-60, 60);
       x = Math.max(-40, Math.min(600, x));
-      var plat = Math.random() < .6, bb = d.bb, basY = plat ? bb.y + bb.height : -bb.y;
-      var an = self._voler(d.g, d.c, [x, SOL - Math.max(4, basY * .8)], {haut: hasard(60, 150), rot: (plat ? 0 : 180) - d.ang + choisir([-360, 360, 720]) + hasard(-15, 15), duree: hasard(700, 920), rebond: 10, glisse: hasard(-14, 14),
+      var plat = Math.random() < .6, bb = d.bb, basY = plat ? bb.y + bb.height : -bb.y, duree = hasard(700, 920);
+      var an = self._voler(d.g, d.c, [x, SOL - Math.max(4, basY * .8)], {haut: hasard(60, 150), rot: (plat ? 0 : 180) - d.ang + choisir([-360, 360, 720]) + hasard(-15, 15), duree: duree, rebond: 10, glisse: hasard(-14, 14),
         onSol: function(){ self._etincelles([x, SOL - 4], 5, {v: 34, grav: 10}); }});
+      /* (24 novembre : le combat fait sonner chaque plaque quand elle touche le sol — un minuteur à part : ceux de la bête sont coupés
+         juste après, par _couperBoucles) */
+      if(o.onTombe) setTimeout(function(){ try{ o.onTombe('plaque'); }catch(e){} }, duree * .78);
       (function(g, an){ an.finished.then(function(){ try{ an.commitStyles(); an.cancel(); }catch(e){} self.S.fixeArr.appendChild(g); }, function(){}); })(d.g, an);
     });
     /* des os projetés, qui retombent près du tas */
