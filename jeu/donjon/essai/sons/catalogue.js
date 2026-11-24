@@ -16,7 +16,8 @@ window.CATALOGUE = [
         {t:'Tir raté', etapes:[{id:'arc', apres:'moment'}, {id:'vol', apres:'duree'}, {id:'bois'}]}
       ]},
       {id:'h-dague', titre:'La dague', sons:[
-        {id:'swish', t:'Le swish', v:'ABC'}, {id:'chairD', t:'Dans la chair', v:'ABC'}, {id:'metal', t:'Sur le métal', v:'ABC'}
+        {id:'swish', t:'Le swish', v:'ABC'}, {id:'chairD', t:'Dans la chair', v:'ABC'}, {id:'metal', t:'Sur le métal', v:'ABC'},
+        {id:'sautDague', t:'Le saut (discret)', v:'ABC'}, {id:'grandeLame', t:'La lame du saut', v:'ABC'}
       ], chaines:[
         {t:'Coup complet', etapes:[{id:'swish', apres:'moment'}, {id:'chairD'}, {id:'ratDague', decal:.01}]},
         {t:'Sur une armure', etapes:[{id:'swish', apres:'moment'}, {id:'metal'}]}
@@ -27,6 +28,7 @@ window.CATALOGUE = [
         {id:'s_potion', t:'Potion lancée', x:1}
       ]},
       {id:'h-sage', titre:'Le Sage', sons:[
+        {id:'lumiere', t:'Rune de lumière (sans ding)', v:'ABC'},
         {id:'cristal', t:'Cristal de lune', v:'AB'}, {id:'baton', t:'Bâton de chêne', v:'AB'},
         {id:'s_page', t:'Il étudie', x:1}, {id:'s_magie', t:'Rune de lumière', x:1}, {id:'s_dome', t:'Le bouclier', x:1}, {id:'s_absorbe', t:'Bouclier mordu', x:1}
       ]},
@@ -34,7 +36,7 @@ window.CATALOGUE = [
         {id:'amulette', t:'Amulette de vie', v:'AB'}, {id:'s_soin', t:'Un soin', x:1}, {id:'s_coeur', t:'Cœur vaillant', x:1}, {id:'s_tombe', t:'Un héros tombe', x:1}
       ]},
       {id:'h-combat', titre:'Le combat', sons:[
-        {id:'icone', t:'Toucher une icône', v:'ABC'}, {id:'rebond', t:'Ça rebondit', v:'ABC'}, {id:'faible', t:'Point faible ouvert', v:'AB'},
+        {id:'bandeMonte', t:'Les icônes remontent', v:'ABC'}, {id:'icone', t:'Toucher une icône', v:'ABC'}, {id:'rebond', t:'Ça rebondit', v:'ABC'}, {id:'faible', t:'Point faible ouvert', v:'AB'},
         {id:'s_clic', t:'Choisir', x:1}, {id:'s_pasHeros', t:'Entrée des héros', x:1}, {id:'victoire', t:'Victoire', v:'AB'}, {id:'fuite', t:'Fuite', v:'AB'}
       ]}
     ]},
@@ -64,7 +66,8 @@ window.CATALOGUE = [
         {id:'tetardCri', t:'Glouglou', v:'AB'}, {id:'tetardTouche', t:'Touché', v:'AB'}, {id:'tetardMort', t:'Défaite', v:'AB'}
       ]},
       {id:'e-roi', titre:'Roi des rats', sons:[
-        {id:'roiCri', t:'Grouillement', v:'ABC'}, {id:'roiAttaque', t:'Son attaque', v:'AB'}, {id:'roiTouche', t:'Touché', v:'AB'}, {id:'roiFin', t:'Défaite', v:'AB'}
+        {id:'roiCri', t:'Grouillement', v:'ABC'}, {id:'roiAttaque', t:'Son attaque', v:'AB'}, {id:'roiTouche', t:'Touché', v:'AB'}, {id:'roiFin', t:'Défaite', v:'AB'},
+        {id:'roiCorde', t:'Le gong : la corde tendue', v:'AB'}, {id:'ratsCouinent', t:'Le gong : ils couinent', v:'AB'}, {id:'roiRetourne', t:'Le gong : il bascule', v:'AB'}
       ]},
       {id:'e-gardien', titre:'Gardien de rouille', sons:[
         {id:'gardienPas', t:'Pas de fer', v:'AB'}, {id:'gardienPoing', t:'Son poing', v:'AB'}, {id:'gardienRunes', t:'Ses runes', v:'AB'}, {id:'gardienTouche', t:'Touché', v:'AB'}, {id:'gardienFin', t:'Effondrement', v:'AB'}

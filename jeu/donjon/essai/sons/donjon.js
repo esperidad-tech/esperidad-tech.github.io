@@ -423,4 +423,99 @@ S.brumeCarteB = function(A, P){
   return {duree:2.8};
 };
 
+/* =================== 24 NOVEMBRE : LA RUNE DE LUMIÈRE DU SAGE (sans « ding ») =================== */
+/* (Romain, 12 h 52 : « le son du sage quand il fait son sort de lumière, ça fait plein de ding ding ding. Et c'est quasiment les mêmes
+   ding que quand on découvre le point faible […] des sons un peu plus appropriés ») : de la lumière qui monte et qui éclate, en souffle
+   et en nappe — aucune note qui tinte (les tintements restent au point faible). moment : l'instant où la lumière éclate. */
+S.lumiereA = function(A, P){                                                                                            /* le soleil qui se lève */
+  var t = P.t, o = A.bus(P, {rev:.55, grotte:.3});
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:300, pts:[[.7, 3800], [1.5, 2400]], q:1.2}], env:[[0, 0], [.6, 1], [1.5, 0]], g:.9}, o);      /* le souffle qui monte */
+  A.ton(t, {f:70, f2:140, gl:.7, env:[[0, 0], [.6, 1], [1.4, 0]], g:.16, lp:500}, o);                                  /* le grave qui gonfle */
+  [m(60), m(64), m(67), m(72)].forEach(function(f, k){ A.ton(t + .25, {f:f, det:k * 4 - 6, env:[[0, 0], [.5, 1], [1.4, .4], [1.9, 0]], g:.035, vib:[5, 3]}, o); });   /* la nappe chaude */
+  A.bruit(t + .62, {hp:5000, env:[[0, 0], [.05, 1], [.9, 0]], g:.12}, o);                                              /* l'éclat, en souffle clair */
+  return {duree:2.0, moment:.65};
+};
+S.lumiereB = function(A, P){                                                                                            /* l'éclair de lumière */
+  var t = P.t, o = A.bus(P, {rev:.45, pan:-.3, pan2:.4, pant:.6});
+  A.bruit(t, {filtres:[{type:'bandpass', f:500, pts:[[.32, 4200]], q:1.6}], env:[[0, 0], [.3, 1], [.36, 0]], g:1}, o);    /* fwoooush */
+  A.choc(t + .34, {f:110, f2:55, d:.35, g:.35, sat:1.5}, o);                                                             /* le flash : vwoum */
+  A.bruit(t + .34, {hp:3000, env:[[0, 0], [.01, 1], [.25, .4], [1.1, 0]], g:.35}, o);
+  [m(55), m(62), m(67), m(74)].forEach(function(f, k){ A.ton(t + .34, {f:f, det:k % 2 ? 7 : -7, env:[[0, 0], [.15, 1], [1.2, 0]], g:.03}, o); });          /* la lueur qui reste */
+  return {duree:1.6, moment:.34};
+};
+S.lumiereC = function(A, P){                                                                                            /* le chœur */
+  var t = P.t, o = A.bus(P, {rev:.7, grotte:.4});
+  A.bruit(t, {coul:'rose', bp:900, bp2:2400, bpt:1, bq:.9, env:[[0, 0], [.5, 1], [1.4, 0]], g:.45}, o);                  /* le vent de lumière */
+  A.choeur(t + .1, [m(60), m(64), m(67)], 1.0, {voyelle:'a', a:.45, r:.6, g:.05}, o);
+  A.choeur(t + .55, [m(65), m(69), m(72)], 1.3, {voyelle:'a', a:.15, r:1.0, g:.06}, o);                                 /* … qui s'ouvre */
+  return {duree:2.2, moment:.6};
+};
+
+/* =================== 24 NOVEMBRE : LE SAUT DU PISTEUR À LA DAGUE =================== */
+/* (Romain, 12 h 56 : « quand le pisteur il saute, on ait un petit bruit de saut, mais discret, très discret. Et après, quand il frappe,
+   il faut un grand coup de lame […] un peu différent, avec un switch […] calé sur l'animation ») ; moment : l'appel du pied / la lame */
+S.sautDagueA = function(A, P){                                                                                          /* un pied qui pousse, l'étoffe qui part */
+  var t = P.t, o = A.bus(P, {rev:.15, pan:.1});
+  A.choc(t, {f:140, f2:80, d:.07, g:.12, sat:1.2, corps:.6}, o);
+  A.bruit(t + .01, {bp:900, bp2:1700, bpt:.16, bq:1.4, env:[[0, 0], [.04, 1], [.18, 0]], g:.18}, o);
+  return {duree:.25, moment:0};
+};
+S.sautDagueB = function(A, P){                                                                                          /* juste l'étoffe, frrt */
+  var t = P.t, o = A.bus(P, {rev:.12, pan:.1});
+  A.bruit(t, {coul:'rose', bp:1300, bq:2, env:[[0, 0], [.02, 1], [.06, .4], [.14, 0]], g:.22, rugueux:.6, rugVit:30}, o);
+  return {duree:.2, moment:0};
+};
+S.sautDagueC = function(A, P){                                                                                          /* un « hop » d'air */
+  var t = P.t, o = A.bus(P, {rev:.15, pan:.1});
+  A.bruit(t, {bp:380, bp2:900, bpt:.12, bq:2.2, env:[[0, 0], [.03, 1], [.15, 0]], g:.3}, o);
+  A.choc(t, {f:120, f2:70, d:.05, g:.08, sat:1, bruit:0}, o);
+  return {duree:.2, moment:0};
+};
+S.grandeLameA = function(A, P){                                                                                         /* le grand revers : SWIIISH, et la lame qui chante */
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.15}), d = .34;
+  O.swish(A, t, d, {f1:450, f2:3800, f3:1100, q:2, g:1.7}, o);
+  A.ton(t, {f:160, f2:70, gl:d, env:[[0, 0], [d * .7, 1], [d + .05, 0]], g:.18, lp:400}, o);                          /* le poids du bras */
+  O.chantLame(A, t + d * .62, {f:3300, g:.05}, o);
+  return {duree:1.0, moment:d * .62};
+};
+S.grandeLameB = function(A, P){                                                                                         /* l'air fendu en deux : swiCHHH */
+  var t = P.t, o = A.bus(P, {rev:.25, pan:.15});
+  O.swish(A, t, .2, {f1:600, f2:3000, f3:1500, g:.8}, o);
+  A.bruit(t + .19, {hp:2500, env:[[0, 0], [.004, 1], [.09, 0]], g:.7, sat:2}, o);                                        /* le claquement de la lame */
+  A.choc(t + .19, {f:200, f2:90, d:.12, g:.25, sat:2}, o);
+  O.chantLame(A, t + .2, {f:2700, g:.045}, o);
+  return {duree:.9, moment:.19};
+};
+S.grandeLameC = function(A, P){                                                                                         /* le coup qui tombe d'en haut : vwoooSH */
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.15}), d = .3;
+  A.bruit(t, {filtres:[{type:'bandpass', f:2600, pts:[[d * .8, 700], [d, 400]], q:2.2}], env:[[0, 0], [d * .8, 1], [d, 0]], g:1.4}, o);   /* il descend */
+  A.choc(t + d * .8, {f:130, f2:55, d:.2, g:.3, sat:2}, o);
+  O.chantLame(A, t + d * .8, {f:2900, g:.04}, o);
+  return {duree:1.0, moment:d * .8};
+};
+/* =================== 24 NOVEMBRE : LA BANDE DES ICÔNES QUI REMONTE (le combat commence) =================== */
+/* (Romain, 13 h 18 : « quand ils remontent, tu mets un petit son ») */
+S.bandeMonteA = function(A, P){                                                                                        /* fwip, et un petit clac de bois */
+  var t = P.t, o = A.bus(P, {rev:.2});
+  A.bruit(t, {bp:500, bp2:1800, bpt:.16, bq:1.6, env:[[0, 0], [.12, 1], [.18, 0]], g:.35}, o);
+  O.toc(A, t + .18, 420, {long:.6, fc:200, gc:.15, clicF:2600, g:.12}, o);
+  return {duree:.5};
+};
+S.bandeMonteB = function(A, P){                                                                                        /* deux notes douces qui montent */
+  var t = P.t, o = A.bus(P, {rev:.35});
+  [m(67), m(74)].forEach(function(f, k){ A.ton(t + k * .08, {type:'triangle', f:f, env:A.perc(.004, .35), g:.05}, o); });
+  A.bruit(t, {hp:3000, env:[[0, 0], [.08, 1], [.2, 0]], g:.06}, o);
+  return {duree:.6};
+};
+S.bandeMonteC = function(A, P){                                                                                        /* un parchemin qu'on déroule vers le haut */
+  var t = P.t, o = A.bus(P, {rev:.2});
+  papier(A, t, .2, 1, o);
+  O.clic(A, t + .2, 2200, .3, o);
+  return {duree:.4};
+};
+/* (l'instant clé de chaque version, connu d'avance : le jeu cale le son sur l'animation — DJ.bruit(id, {cale}) ; voir bruitages.js) */
+[['lumiere', {A:.65, B:.34, C:.6}], ['sautDague', {A:0, B:0, C:0}], ['grandeLame', {A:.34 * .62, B:.19, C:.24}]].forEach(function(x){
+  Object.keys(x[1]).forEach(function(v){ S[x[0] + v].moment = x[1][v]; });
+});
+
 })(window);

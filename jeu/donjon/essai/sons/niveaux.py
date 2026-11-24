@@ -13,6 +13,8 @@ CIBLE_PAS = -27.0                         # les pas sur la carte : discrets, on 
 CIBLE_FEU = -27.0                         # l'ambiance du feu de camp (en boucle, sous la musique du repos)
 CIBLE_PETIT = -21.0                       # les petits bruits de Léo qui reviennent souvent (14 novembre au soir) : les glous, le pied qui racle, les naseaux…
 PETITS = ('leoNaseaux', 'leoRacle', 'leoGlou', 'leoBouchon', 'leoSac')
+CIBLE_DISCRET = -30.0                     # (24 novembre) le saut du Pisteur à la dague : « un petit bruit de saut, mais discret, très discret »
+DISCRETS = ('sautDague',)
 CHOCS = ('arc', 'chairF', 'bois', 'chairD', 'fuiteA', 'ratCritique',                  # des chocs très brefs : le compresseur les rattrape
          'flecheLourde', 'gardienPoing', 'gardienFin', 'bourbeSaut', 'portePierre', 'cuirCasque', 'bourbeLangue', 'roiAttaque', 'potColle', 'coffre')
 COULEURS = ('donjon', 'puits', 'toiles', 'atelier', 'canaux', 'ossuaire')
@@ -22,13 +24,13 @@ niv = {}
 atteint = {}
 for k, r in b.items():
     plafond = PIC_CHOC if k.startswith(CHOCS) else PIC_SFX
-    cible_k = CIBLE_CRIT if k.startswith('ratCritique') else (CIBLE_ICONE if k.startswith(('icone', 'leoSaigne')) else (CIBLE_PAS if k.startswith('pasCouloir') else (CIBLE_PETIT if k.startswith(PETITS) else CIBLE_SFX)))   # le critique : plus fort que tout le reste
+    cible_k = CIBLE_CRIT if k.startswith('ratCritique') else (CIBLE_ICONE if k.startswith(('icone', 'leoSaigne', 'bandeMonte')) else (CIBLE_PAS if k.startswith('pasCouloir') else (CIBLE_PETIT if k.startswith(PETITS) else (CIBLE_DISCRET if k.startswith(DISCRETS) else CIBLE_SFX))))   # le critique : plus fort que tout le reste
     atteint[k] = min(cible_k, r['sonie'] + 20 * math.log10(plafond / r['pic']))
 # 2) dans une même carte, toutes les versions au même niveau (sinon la plus forte paraît meilleure)
 cartes = {}
 for k in b: cartes.setdefault(re.sub(r'[A-D]$', '', k), []).append(k)
 for c, ks in cartes.items():
-    cible = max(min(atteint[k] for k in ks), min(atteint[k] for k in ks) if ks[0].startswith(('ratCritique', 'icone', 'pasCouloir', 'leoSaigne') + PETITS) else CIBLE_SFX - 6)
+    cible = max(min(atteint[k] for k in ks), min(atteint[k] for k in ks) if ks[0].startswith(('ratCritique', 'icone', 'pasCouloir', 'leoSaigne', 'bandeMonte') + PETITS + DISCRETS) else CIBLE_SFX - 6)
     for k in ks:
         r = b[k]; f = 10 ** ((min(cible, atteint[k]) - r['sonie']) / 20); niv[k] = f
         print('%-14s sonie %6.1f -> x%.2f  (%6.1f, pic %.2f)' % (k, r['sonie'], f, r['sonie'] + 20 * math.log10(f), r['pic'] * f))

@@ -24,7 +24,7 @@
 var HV = G.HerosVues, U = HV.outils, RAD = HV.RAD;
 var CU = HV.Cuit = {};
 var NUM = 0;
-CU.cache = {};
+CU.cache = {}; CU.resDe = {};
 
 /* ---------- la géométrie ---------- */
 function ang(a, b){ return Math.atan2(b[1] - a[1], b[0] - a[0]) / RAD; }
@@ -172,7 +172,12 @@ function Cuit(hote, h, o){
   hote.appendChild(this.racine);
   this.hote = hote;
   /* (les variantes sont gardées pour toute la partie, pour ce héros avec cette allure : d'un combat à l'autre, rien n'est à recuire) */
-  var ch = JSON.stringify(h) + '|' + this.res;
+  /* (24 novembre : la même finesse d'une salle à l'autre pour la même allure — sur un téléphone, la taille de la page bouge un peu
+     (la barre d'adresse) ; une finesse à peine différente faisait TOUT recuire dans chaque salle, et garder l'ancienne cuisson en
+     mémoire) */
+  var hj = JSON.stringify(h), r0 = CU.resDe[hj];
+  if(r0 && Math.abs(this.res / r0 - 1) < 0.3) this.res = r0; else CU.resDe[hj] = this.res;
+  var ch = hj + '|' + this.res;
   this.variantes = (CU.cache[ch] = CU.cache[ch] || {});          /* nom → clé → variante {cv, x, y, w, h, A0, th0, L0, tete:{…}} */
   this.inst = {};               /* nom + '|' + clé + '|' + couche → {el, v} */
   this.anims = [];
@@ -262,6 +267,17 @@ CP.variante = function(nom, cle){
   var t = this.variantes[nom]; if(!t) return null;
   if(t[cle]) return {cle:cle, v:t[cle]};
   var ks = Object.keys(t), vue = cle.split(/[a-z]+/i)[1], i;
+  /* (la tête : le même angle ET la même inclinaison d'abord — une tête du bon angle mais penchée autrement est dessinée plus haut ou
+     plus bas dans son cadre : elle flottait à côté du cou — Romain, 24 novembre, 12 h 50) */
+  if(nom === 'tete'){
+    var m = /^y(-?\d+)h(-?\d+)/.exec(cle), best = null, bd = 1e9;
+    if(m) for(i = 0; i < ks.length; i++){
+      var n2 = /^y(-?\d+)h(-?\d+)/.exec(ks[i]); if(!n2) continue;
+      var d2 = Math.abs(tour(+n2[1] - +m[1])) + 2 * Math.abs(+n2[2] - +m[2]) + (ks[i].slice(n2[0].length) === cle.slice(m[0].length) ? 0 : 0.5);
+      if(d2 < bd){ bd = d2; best = ks[i]; }
+    }
+    if(best) return {cle:best, v:t[best]};
+  }
   for(i = 0; i < ks.length; i++) if(ks[i].split(/[a-z]+/i)[1] === vue) return {cle:ks[i], v:t[ks[i]]};
   var a = vueDeCle(cle), meilleur = null, ecart = 1e9;
   if(a != null) for(i = 0; i < ks.length; i++){
@@ -384,7 +400,17 @@ CP.jouer = function(images, o){
     var tr = [], op = [], n0 = 0, toujours = pls.every(function(pl){ return pl.vis; });
     garde.forEach(function(i){ tr.push({offset:Math.min(1, plan[i].t / D), transform:css(pls[i], pls[i].lv)}); });
     if(!toujours){
-      pls.forEach(function(pl, i){ if(i === 0 || pl.vis !== pls[i - 1].vis) op.push({offset:Math.min(1, plan[i].t / D), opacity:pl.vis ? 1 : 0, easing:'steps(1, end)'}); n0++; });
+      /* (24 novembre — Romain, 13 h 06, sur son iPhone : « quand le pisteur saute […] sa tête qui se détache en double ») : l'opacité passe
+         d'une version à l'autre par deux images clés presque collées (0,5 ms), en ligne droite — plus de « steps() » : Safari ne sait
+         pas le jouer sur la carte graphique et le jouait sur le fil principal ; quand la page ramait, l'ancienne tête restait affichée
+         pendant que la nouvelle bougeait déjà avec le corps */
+      var eps = Math.min(0.0005 / D, 0.002);
+      pls.forEach(function(pl, i){
+        if(i === 0){ op.push({offset:0, opacity:pl.vis ? 1 : 0}); return; }
+        if(pl.vis === pls[i - 1].vis) return;
+        var o1 = Math.min(1, plan[i].t / D), o0 = Math.max(op[op.length - 1].offset, o1 - eps);
+        op.push({offset:o0, opacity:pls[i - 1].vis ? 1 : 0}); op.push({offset:o1, opacity:pl.vis ? 1 : 0}); n0++;
+      });
       if(op[op.length - 1].offset < 1) op.push({offset:1, opacity:pls[pls.length - 1].vis ? 1 : 0});
     }
     var opt = {duration:dureeMs, iterations:o.boucle ? Infinity : 1, fill:'both', easing:'linear'};

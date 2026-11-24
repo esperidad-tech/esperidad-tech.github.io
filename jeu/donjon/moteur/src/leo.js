@@ -129,9 +129,9 @@ function construire(){
     hud.appendChild(pv);
   });
   /* (24 novembre — Romain, 10 h 17 : « l'alchimiste, il met trop de temps à jeter ses potions […] contre le combat de Léo ») :
-     l'Alchimiste en volume prépare et lance sa fiole plus vite (1,2 s + 0,4 s, hv-alchimiste.js) ; la potion tombe donc plus tôt
-     — 2,16 s au lieu de 2,54 — et il peut en relancer une plus tôt (l'ancien Alchimiste garde ses moments à lui) */
-  try{ var VA = window.HerosVuesDonjon && window.HerosVuesDonjon.Volume; L.DUREES.potion = VA && E.A.h.alchimiste instanceof VA ? {impact:2.16, fin:2.37} : POTION_ANCIEN; }catch(e){}
+     l'Alchimiste en volume prépare et lance sa fiole plus vite (1,3 s + 0,4 s, hv-alchimiste.js — la préparation refaite à 12 h 55) ;
+     la potion tombe donc plus tôt — 2,24 s au lieu de 2,54 — et il peut en relancer une plus tôt (l'ancien garde ses moments à lui) */
+  try{ var VA = window.HerosVuesDonjon && window.HerosVuesDonjon.Volume; L.DUREES.potion = VA && E.A.h.alchimiste instanceof VA ? {impact:2.24, fin:2.45} : POTION_ANCIEN; }catch(e){}
   /* le bâton de lune dans la main du Sage, s'il l'a (c'est lui qui rallume la salle) */
   try{ var OL = D.OBJETS['cristal-lune']; if(OL && OL.equipe && (E.partie.heros.sage.objets || []).indexOf('cristal-lune') >= 0) E.A.h.sage.equiper(OL.equipe, true, {discret:true}); }catch(e){}
   /* Léo, et l'endroit où on le touche */

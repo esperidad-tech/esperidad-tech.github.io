@@ -1260,6 +1260,11 @@ R._lancerX = function(){
   var self = this;
   this._couperX('eng-'); this._couperX('pistons'); this._couperX('anneau'); this._couperX('etincelle');
   this.rouages = [];
+  /* (24 novembre — Romain, 13 h 04 et 13 h 06, sur son iPhone : « l'atelier des fondateurs, il rame la machine […] ça rame
+     énormément ») : dans le donjon, PLUS DE BOUCLES SANS FIN au repos — les engrenages, les pistons, l'anneau de runes, le fil et la
+     lueur du cœur faisaient repeindre tout son grand dessin à chaque image (un dessin vivant, pas « cuit » en images comme les
+     rats). Il reste la vapeur des cheminées, moins souvent. Dans la page du module seule (sans le donjon), tout tourne comme avant. */
+  if(window.DJ){ this._couperX('battement'); this._souffler(); return; }
   ROUAGES.forEach(function(r){ self.rouages = self.rouages.concat(self._boucleX('eng-' + r[0], [{transform: 'rotate(0deg)'}, {transform: 'rotate(' + (360 * r[2]) + 'deg)'}], r[1])); });
   this._boucleX('pistons', [{transform: 'translate(0px,0px)'}, {transform: 'translate(0px,-5px)'}, {transform: 'translate(0px,0px)'}], 1400, {e: 'ease-in-out'});
   /* la lueur du cœur bat derrière la plaque : boum… boum */
@@ -1284,7 +1289,8 @@ R._souffler = function(){
       self._bouffee(c, {r: hasard(6, 9), grad: rouge ? self.G.vapeurR : self.G.vapeur, op: .75, dx: hasard(6, 22), dy: hasard(-60, -40), duree: hasard(1300, 1700), s0: .4, s1: 2.6, ambiant: true});
       if(n % 5 === 0 && Math.random() < .5) self._etincelles(self._pt('fil'), 3, {v: 26, grav: 30, ep: 1.6});
     }
-    self.fx.vapeur = setTimeout(function(){ souffle(n + 1); }, hasard(520, 900) / (self.etat.enrage ? 1.5 : 1));
+    /* (dans le donjon, deux fois moins souvent : chaque bouffée fait repeindre — 24 novembre) */
+    self.fx.vapeur = setTimeout(function(){ souffle(n + 1); }, hasard(520, 900) * (window.DJ ? 2 : 1) / (self.etat.enrage ? 1.5 : 1));
   })(0);
 };
 /* les petits gestes de l'attente : tics mécaniques de la tête, jets de vapeur, regard, grincement, étincelles… */
@@ -1616,6 +1622,22 @@ R.entrer = function(o){
   this._majRunes(0);
   this._rouages(.05);
   var N = POSES.dormant, Zp = {pos: {x: 2 * S}};
+  /* (24 novembre — Romain, 13 h 03 : « la grosse machine, elle apparaît d'un coup, sans arriver. Il faut que tu la fasses arriver avec
+     ses pieds, avec ses bruits de gros pas […] tu cales bien le son sur les pas ») : il ARRIVE de la droite, en quatre gros pas (un
+     « boum » et la salle qui tremble à chaque pied posé : onPas) ; ses runes s'allument une à une pendant qu'il marche, ses yeux à
+     la fin. Avant : il était déjà là, endormi, se réveillait (3 s), puis faisait deux pas. (o.reveil : l'ancienne entrée) */
+  if(!o.reveil){
+    var S2 = 70, base = fus(melange(N, {}, 1), {pos: {x: 2 * S + 2 * S2}});
+    return this._allerA(base, 1, null, true).then(function(){
+      if(j !== self.jeton) return;
+      REVEIL.forEach(function(n, k){ self._minuteur(function(){ delete self.eteintes[n]; self._majRunes(200); }, 150 + k * 80); });
+      [[300, 1], [900, 5], [1500, 3], [2100, 8]].forEach(function(v){ self._minuteur(function(){ var jt = JOINTS[v[1]]; self._jet(self._pt(jt[0]), jt[1], {n: 3, blanc: true}); }, v[0]); });
+      [[200, .4], [1000, .8], [1800, 1]].forEach(function(v){ self._minuteur(function(){ self._rouages(v[1]); }, v[0]); });
+      self._minuteur(function(){ delete self.eteintes.yeux; self._majRunes(120); self._clignerFort(0, 600); }, 2300);
+      return self._marcher(S2, o.onPas, 2 * S, 1500);
+    }).then(function(){ if(j === self.jeton) return self._marcher(S, o.onPas, 0, 1400); })
+      .then(function(){ return self._finAction(j, 300); });
+  }
   return this._allerA(fus(N, Zp), 1, null, true).then(function(){
     if(j !== self.jeton) return;
     /* 1. les runes s'allument une à une, le cœur d'abord, chacune avec un petit éclat */
@@ -1656,8 +1678,9 @@ R.entrer = function(o){
 };
 /* deux pas lourds (le pied de devant d'abord) : les pieds posés restent collés au sol (cinématique inverse),
    le corps plonge à chaque pas ; onPas(n) au moment où le pied frappe le sol */
-R._marcher = function(S, onPas){
-  var self = this, T = 2200, N = 14, k = [], X0 = 2 * S;
+R._marcher = function(S, onPas, base, duree){
+  /* (24 novembre : base — d'où il part, en plus des deux pas ; duree — plus vite pour arriver de loin) */
+  var self = this, T = duree || 2200, N = 14, k = [], X0 = (base || 0) + 2 * S;
   function lisse(t){ return t * t * (3 - 2 * t); }
   function ph(t, a, b){ return Math.max(0, Math.min(1, (t - a) / (b - a))); }
   for(var i = 0; i <= 2 * N; i++){
@@ -1712,9 +1735,11 @@ R.attaquer = function(nom, o){
       jambe('F', 0, -3), jambe('P', Lg, -3, -10)), e: 'cubic-bezier(.4,0,1,.7)'},
     /* 3. l'impact : le bras rebondit un peu */
     {t: .6, p: fus(retour, {pos: {x: -Lg + 12}, buste: {a: bA + 3}, saut: {y: 0, sy: .98}, chaineF: {a: 30}}, jambe('P', Lg - 12, 0, -8)), e: 'cubic-bezier(.2,.8,.3,1)'},
-    /* 4. le gros recul de vapeur : il est repoussé en arrière, il souffle */
-    {t: .78, p: fus(membre('F', [116, 250], -10), {pos: {x: -Lg * .3}, buste: {a: 6, y: 2}, saut: {y: 4, sy: .97}, tete: {a: 8, x: 0, y: -1}, machoire: {a: -16}, epaule: {a: -4, y: -3}, chaineF: {a: -20}, bras: {a: -6}, avbras: {a: 4}, poing: {a: 0}},
-      jambe('F', -Lg * .7, -4), jambe('P', Lg * .3, -4)), e: 'cubic-bezier(.3,.6,.4,1)'},
+    /* 4. (24 novembre — Romain, 13 h 05 : « quand elle a tapé […] après, elle a comme si elle se prenait un coup, alors qu'en fait il se
+       passe rien ») : plus de recul en arrière, tête renversée et gueule ouverte ; il ramène son bras en garde, toujours penché en
+       avant, et souffle sa vapeur (les jets, plus bas) */
+    {t: .78, p: fus(membre('F', [116, 250], -10), {pos: {x: -Lg * .7}, buste: {a: bA + 4, y: 1}, saut: {y: 2, sy: .99}, tete: {a: -4, x: -2, y: 1}, machoire: {a: -3}, epaule: {a: 0, y: -1}, chaineF: {a: -20}, bras: {a: -6}, avbras: {a: 4}, poing: {a: 0}},
+      jambe('F', -Lg * .3, -2), jambe('P', Lg * .7, -2)), e: 'cubic-bezier(.3,.6,.4,1)'},      /* (les pieds restent où ils sont) */
     {t: .88, p: jambe('F', -Lg * .2, -12, -6), e: 'ease-in-out'},
     {t: 1, p: fin, e: 'cubic-bezier(.4,0,.3,1.1)'}];
   function ms(t){ return T * t; }

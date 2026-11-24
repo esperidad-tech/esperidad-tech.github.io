@@ -103,7 +103,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 #persos{position:static}
 #fx{z-index:40}
 #fumee{z-index:45;overflow:hidden}
-#hud{z-index:50;transition:opacity .5s}
+#hud{z-index:50;transition:opacity .2s}
 #hud .zone{pointer-events:auto}
 #ecran-fx{position:absolute;left:0;top:0;width:960px;height:540px;z-index:60;pointer-events:none;overflow:hidden}
 /* la salle est vide au début : la bande, la bulle et les barres arrivent après l'entrée des héros et des rats */
@@ -111,7 +111,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 #combat:not(.ouvert) #fuite, #combat:not(.ouvert) #volumes{opacity:0;pointer-events:none}
 #fuite, #combat #volumes{transition:opacity .5s .2s}
 #combat:not(.ouvert) #bande{transform:translateY(100%)}
-#bande{transition:transform .6s cubic-bezier(.2,.8,.3,1)}
+#bande{transition:transform .22s cubic-bezier(.2,.8,.3,1)}      /* (24 novembre — Romain, 13 h 18 : « 3 fois plus vite » ; avant .6s) */
 
 /* les places des personnages (le jeu) et leurs acteurs (images ou modules d'animation) */
 .perso{position:absolute}

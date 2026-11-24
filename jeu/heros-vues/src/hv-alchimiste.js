@@ -35,52 +35,40 @@ var g = P.aGarde;
 var FACE = HV.tour(g, -55, 4);
 function versNous(plus){ return avec(FACE, plus || {}); }
 
-/* ---------- PRÉPARER (2,2 s) ----------
-   Le buste un peu tourné vers nous (TQ : la tête, les épaules, les hanches ; les pieds restent plantés) pour qu'on voie ses mains.
-   0 → 0,3 : la main droite prend une fiole sur sa poitrine (de l'eau claire : la couleur de l'adaptateur) ;
-   → 0,62 : la main gauche en prend une deuxième (K.potion2 : la couleur de la potion) ;
-   → 1,24 : il lève la deuxième au-dessus de la première et la penche : elle s'y verse (HV.ALCHI.VERSE → HV.ALCHI.VERSE + 0,3) ;
-   → 1,46 : il range la fiole vide sur sa sangle ;
-   → 1,8 : il secoue le mélange, qui s'illumine (HV.ALCHI.ECLAT) ; → 2,1 : la fiole armée derrière l'épaule (HV.ALCHI.PRET). */
+/* ---------- PRÉPARER (1,3 s), REFAIT LE 24 NOVEMBRE ----------
+   (Romain, 12 h 55 : « l'animation de préparation des potions […] elle est un peu buggée ou alors elle est pas très claire. Retravaille-moi
+   ça pour que ça soit un peu plus sympa » ; avant : deux fioles, l'une versée dans l'autre, rangée, puis secouée — en 2,2 s, puis jouée
+   presque deux fois plus vite à 10 h 17 : on n'y comprenait plus rien.) UNE seule fiole, et chaque moment se voit :
+   0 → 0,24 : la main droite attrape une fiole sur sa sangle (de l'eau claire : la couleur de l'adaptateur) ;
+   → 0,42 : il la lève devant ses yeux, et la regarde ;
+   → 0,7 : il la secoue trois fois, fort — elle s'allume de la couleur de la potion (HV.ALCHI.ECLAT : l'éclair, les étincelles) ;
+   → 0,95 : il la lève, content de lui ; → 1,2 : la fiole armée derrière l'épaule (HV.ALCHI.PRET). */
 var PRET = avec(g, {fioleG:1, mainG:[-42, 148, -8], relG:1, coudeG:[-0.7, 0.5, -0.4], pouceG:[0, -1, 0], mdirG:[0, -0.3, 1], poingG:0.9, sourcils:-0.6, plisse:0.3, sourire:0.2});
 var TQ = HV.tour(g, -38, 2);
 function tq(plus){ return avec(TQ, plus || {}); }
-/* (la fiole de la main droite, tenue devant sa poitrine ; y : plus bas quand il secoue) */
+/* (la fiole de la main droite, tenue devant lui ; y : sa hauteur — plus petit, plus haut) */
 function fiole1(y, plus){ return avec({fioleG:1, mainG:[-16, y, 44], relG:1, coudeG:[-0.85, 0.45, -0.3], pouceG:[0, -1, 0], mdirG:[0.3, 0, 1], poingG:0.92}, plus || {}); }
-/* (la fiole de la main gauche : droite, ou penchée pour verser — le goulot du côté du pouce, tourné vers l'autre fiole) */
-function fiole2(x, y, penche, plus){ return avec({fioleD:1, mainD:[x, y, 48], relD:1, coudeD:[0.85, 0.45, -0.3], pouceD:penche ? [-0.85, 0.5, 0.1] : [0, -1, 0], mdirD:[-0.3, 0, 1], poingD:0.92}, plus || {}); }
-var VERSE = 0.88, ECLAT = 1.8;
+/* (VERSE + 0,16 : le moment où la fiole prend sa couleur — ici, pendant qu'il la secoue ; plus rien n'est versé : SANS_VERSER) */
+var ECLAT = 0.66, VERSE = ECLAT - 0.16, SANS_VERSER = true;
+var SECOUE = {sourcils:0.5, plisse:0.35, ouvre:0.15, largeB:0.7, regY:-0.05};
 var preparer = [
-  /* (la main droite va chercher une fiole sur sa poitrine ; il la regarde) */
-  [0.18, tq({mainG:[-16, 170, 24], relG:1, coudeG:[-0.9, 0.3, -0.2], poingG:0.3, pouceG:[0, -1, 0.3], hoche:10, regY:0.6, regX:-0.2, sourcils:0.2})],
-  [0.3, tq({mainG:[-16, 168, 26], relG:1, coudeG:[-0.9, 0.3, -0.2], poingG:0.92, pouceG:[0, -1, 0.3], fioleG:1, hoche:10, regY:0.6, regX:-0.2})],
-  /* (la main gauche en prend une deuxième) */
-  [0.5, tq(fiole1(160, {mainD:[16, 176, 26], relD:1, coudeD:[0.9, 0.3, -0.2], poingD:0.3, pouceD:[0, -1, 0.3], hoche:8, regY:0.5, regX:0.2, sourcils:0.3}))],
-  [0.62, tq(fiole1(160, {fioleD:1, mainD:[16, 174, 28], relD:1, coudeD:[0.9, 0.3, -0.2], poingD:0.92, pouceD:[0, -1, 0.3], hoche:8, regY:0.5, regX:0.2}))],
-  /* (il la lève au-dessus de la première, concentré, et la penche : elle s'y verse) */
-  [0.8, tq(fiole1(162, fiole2(6, 118, false, {hoche:4, regY:0.3, sourcils:0.5, plisse:0.25, ouvre:0.1, largeB:0.6})))],
-  [0.92, tq(fiole1(162, fiole2(4, 116, true, {hoche:4, regY:0.35, sourcils:0.6, plisse:0.3, ouvre:0.15, largeB:0.5})))],
-  [1.1, tq(fiole1(164, fiole2(2, 114, true, {hoche:5, regY:0.4, sourcils:0.6, plisse:0.3, ouvre:0.15, largeB:0.5})))],
-  [1.24, tq(fiole1(162, fiole2(12, 132, false, {hoche:4, regY:0.3, sourcils:0.4, sourire:0.5})))],
-  /* (il range la fiole vide sur sa sangle) */
-  [1.38, tq(fiole1(162, {fioleD:1, mainD:[20, 176, 26], relD:1, coudeD:[0.9, 0.3, -0.2], poingD:0.92, pouceD:[0, -1, 0.3], regY:0.2, sourire:0.5}))],
-  [1.46, tq(fiole1(162, {fioleD:0, mainD:[22, 180, 26], relD:1, coudeD:[0.9, 0.3, -0.2], poingD:0.4, regY:0.1, sourire:0.5}))],
-  /* (il secoue le mélange, de haut en bas, l'œil dessus) */
-  [1.54, tq(fiole1(146, {mainD:[34, 200, 28], relD:1, poingD:0.5, regY:0.1, sourcils:0.3, sourire:0.6, plisse:0.2}))],
-  [1.61, tq(fiole1(166, {mainD:[34, 200, 28], relD:1, poingD:0.5, regY:0.2, sourcils:0.3, sourire:0.6, plisse:0.2}))],
-  [1.68, tq(fiole1(146, {mainD:[34, 200, 28], relD:1, poingD:0.5, regY:0.1, sourcils:0.3, sourire:0.6, plisse:0.2}))],
-  [1.75, tq(fiole1(164, {mainD:[34, 200, 28], relD:1, poingD:0.5, regY:0.2, sourcils:0.3, sourire:0.6, plisse:0.2}))],
-  /* (le mélange s'illumine : il le lève un peu, content de lui) */
-  [ECLAT + 0.04, tq(fiole1(140, {mainD:[36, 200, 28], relD:1, poingD:0.5, regY:-0.1, sourcils:0.6, sourire:0.9, plisse:0.35, ouvre:0.15}))],
+  /* (la main droite va chercher une fiole sur sa sangle ; il la regarde) */
+  [0.14, tq({mainG:[-16, 170, 24], relG:1, coudeG:[-0.9, 0.3, -0.2], poingG:0.3, pouceG:[0, -1, 0.3], hoche:10, regY:0.6, regX:-0.2, sourcils:0.2})],
+  [0.24, tq({mainG:[-16, 168, 26], relG:1, coudeG:[-0.9, 0.3, -0.2], poingG:0.92, pouceG:[0, -1, 0.3], fioleG:1, hoche:10, regY:0.6, regX:-0.2})],
+  /* (il la lève devant ses yeux et la regarde, curieux) */
+  [0.42, tq(fiole1(124, {hoche:0, regY:0.05, regX:-0.1, sourcils:0.6, plisse:0.1, ouvre:0.1}))],
+  /* (il la secoue trois fois, fort, de haut en bas) */
+  [0.49, tq(fiole1(108, SECOUE))], [0.55, tq(fiole1(134, SECOUE))], [0.61, tq(fiole1(108, SECOUE))], [0.67, tq(fiole1(134, SECOUE))],
+  /* (elle s'est allumée : il la lève, content de lui) */
+  [0.8, tq(fiole1(110, {regY:-0.2, sourcils:0.7, sourire:0.9, plisse:0.35, ouvre:0.2}))],
+  [0.95, tq(fiole1(114, {regY:-0.1, sourcils:0.5, sourire:0.8, plisse:0.3}))],
   /* (il arme la fiole derrière l'épaule, face aux ennemis, décidé) */
-  [2.1, PRET], [2.22, PRET]];
+  [1.2, PRET], [1.3, PRET]];
 
 /* (24 novembre — Romain, 10 h 17 : « depuis le début, l'alchimiste, il met trop de temps à jeter ses potions […] faire en sorte que il
-   la jette plus vite ») : le même geste, joué presque deux fois plus vite — préparée en 1,2 s au lieu de 2,2 s ; le lancer (plus bas)
-   lâche la fiole à 0,4 s au lieu de 0,5. HV.ALCHI.VITE : l'adaptateur cale le filet de potion et les lueurs dessus. */
-var VITE_P = 0.55, VITE_L = 0.8;
-preparer = preparer.map(function(k){ return [Math.round(k[0] * VITE_P * 1000) / 1000, k[1]]; });
-VERSE *= VITE_P; ECLAT *= VITE_P;
+   la jette plus vite ») : le lancer (plus bas) lâche la fiole à 0,4 s au lieu de 0,5. La préparation est faite à sa nouvelle durée
+   (1,3 s) : VITE_P = 1. HV.ALCHI.VITE : l'adaptateur cale les lueurs dessus. */
+var VITE_P = 1, VITE_L = 0.8;
 
 /* ---------- LANCER (depuis PRET), LE BUSTE TOURNÉ VERS NOUS ---------- */
 var LACHE = 0.5;
@@ -148,6 +136,6 @@ var herbes = [
   [1.8, versNous({mainD:[40, 170, 36], relD:1, coudeD:[0.9, 0.4, -0.2], poingD:0.2, regX:-0.3, sourire:0.9, sourcils:0.5, plisse:0.4})],
   [2.15, {}]];
 
-HV.ALCHI = {preparer:preparer, lancer:lancer, louche:louche, herbes:herbes, PRET:PRET, LACHE:LACHE, BONG:BONG, HERBES:HERBES, VERSE:VERSE, ECLAT:ECLAT, VITE:VITE_P};
+HV.ALCHI = {preparer:preparer, lancer:lancer, louche:louche, herbes:herbes, PRET:PRET, LACHE:LACHE, BONG:BONG, HERBES:HERBES, VERSE:VERSE, ECLAT:ECLAT, VITE:VITE_P, SANS_VERSER:SANS_VERSER};
 HV.NOMS_ALCHI = {preparer:'Il prépare une potion', lancer:'Il lance la fiole', louche:'La louche : BONG !', herbes:'Les herbes, pour un ami'};
 })(window);

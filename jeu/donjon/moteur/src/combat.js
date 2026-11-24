@@ -79,7 +79,7 @@ function lancer(partie, salle){
       E.c = Regles.combat(partie, salle);
       E.ph = E.c.etat();
       E.baton = batonGarde();
-      jouer(E.c.entree()).then(function(){ var h = E.entreeH; E.entreeH = null; return h; }).then(function(){ if(DJ.temoinCharge) DJ.temoinCharge(false); q('#combat').classList.add('ouvert'); return attendre(300); }).then(tourHeros);
+      jouer(E.c.entree()).then(function(){ var h = E.entreeH; E.entreeH = null; return h; }).then(function(){ if(DJ.temoinCharge) DJ.temoinCharge(false); q('#combat').classList.add('ouvert'); bruit('bandeMonte'); return attendre(100);   /* (24 novembre — Romain, 13 h 18 : « les icônes en bas […] 3 fois plus vite. Et quand ils remontent, tu mets un petit son » ; avant 300 ms) */ }).then(tourHeros);
     });
   });
 }
@@ -588,7 +588,7 @@ async function apres(){
     await jouer(E.c.tourMonstres(), avant);
   }finally{ DJ.rythme(1); }
   if(E.c.fini()) return finCombat();
-  await attendre(150);
+  /* (24 novembre : plus d'attente avant que ce soit à nous — avant, 150 ms) */
   /* un tour où plus aucun héros ne peut jouer (tous entoilés…) : on enchaîne */
   if(!(E.c.aJouer() || []).length) return apres();
   tourHeros();
@@ -597,7 +597,7 @@ async function apres(){
 /* les évènements d'une liste, rangés en blocs : un bloc = ce qui arrive à UNE bête (ou un moment du système) */
 var COTE_HEROS = {degats:1, tombe:1, releve:1, soin:1, pare:1, etat:1, passe:1};
 /* le tour des bêtes en accéléré (Romain, 24 novembre, 0 h 11) : 1,5 fois plus vite que les gestes des héros */
-var RYTHME = 1.5, RYTHME_GONG = 2.5;      /* (RYTHME_GONG : la réaction du Roi des rats au bruit — voir « touche », plus bas) */
+var RYTHME = 1.5, RYTHME_GONG = 2.5, RYTHME_NUAGE = 3;      /* (RYTHME_GONG : la réaction du Roi des rats au bruit — voir « touche », plus bas) */
 function cleDe(ev){
   if(ev.t === 'arrive') return ev.de ? 'b:' + ev.de : 'arrivees';
   /* le geste d'un héros ouvre toujours son propre bloc, même quand il vise une bête : c'est là que le héros s'anime
@@ -719,10 +719,30 @@ async function un(ev, bl, ctx){
          sursaut) est jouée RYTHME_GONG fois plus vite — tout ce que le module prévoit au moment du coup (animations, minuteries, sons
          calés) ; on rend le rythme d'avant tout de suite après. */
       if(a.module === 'roirats' && ev.coup === 'bruit'){
-        var k0 = window.DJ_RYTHME || 1, rr;
+        var k0 = window.DJ_RYTHME || 1, rr, kG = k0 * RYTHME_GONG, eR = etatDuModule(a) || {};
+        /* (24 novembre — Romain, 13 h 12 : « il manque des bruitages pour le roi des rats […] des petits bruits de rats […] une corde qui
+           était tendue et le bruit du rat qui se retourne ») : calés sur ce que le module va jouer (roirats-anime.js, _t_bruit) */
+        var gong = function(id, s){ bruit(id, {cale:s / kG}); };
+        if(eR.boule || eR.ouvert || eR.dos) gong('ratsCouinent', .2);                                 /* le sursaut */
+        else if(eR.noeud){ gong('ratsCouinent', .2); gong('roiCorde', .76); gong('roiRetourne', 1.46); }  /* ils tirent tous : le nœud cède */
+        else if(eR.etale){ gong('ratsCouinent', .15); gong('roiRetourne', 1.68); }                       /* la panique */
+        else gong('ratsCouinent', .3);                                                                  /* ils se fâchent et chargent */
         DJ.rythme(k0 * RYTHME_GONG);
         try{ rr = a.touche(ev.coup, {vers:hPt('alchimiste'), onImpact:function(){ son('morsure'); Fx.tremble(6, 260); }}); }finally{ DJ.rythme(k0); }
         return rr;
+      }
+      /* (24 novembre — Romain, 13 h 14 : « du moment où on a balancé le fumigène et que le nœud se tend, c'est trop long. Ils toussent trop
+         longtemps, ensuite ils prennent le temps de tirer. Il faut réduire par 3 ce temps. Et il faut mettre des sons ») : la toux puis le
+         nœud qui se tend (roirats-anime.js : tousser, puis _e_noeud), joués 3 fois plus vite JUSQU'AU BOUT (le nœud part après la toux :
+         le rythme reste le temps de la réaction, 3 s au plus), avec les rats qui toussent, puis la corde qui se tend et les couinements */
+      if(a.module === 'roirats' && ev.coup === 'nuage' && !(etatDuModule(a) || {}).boule){
+        var k1 = window.DJ_RYTHME || 1, kN = k1 * RYTHME_NUAGE, eN = etatDuModule(a) || {};
+        [.52, 1.52, 2.52].forEach(function(s){ bruit('ratNuage', {dt:s / kN}); });
+        if(!eN.ouvert && !eN.noeud){ bruit('roiCorde', {cale:(3.4 + .3) / kN}); bruit('ratsCouinent', {cale:(3.4 + .15) / kN}); }
+        DJ.rythme(kN);
+        var rN; try{ rN = a.touche(ev.coup, rappels(a)); }catch(x){ DJ.rythme(k1); throw x; }
+        /* (attendre() divise par le rythme du moment : 3000 × kN → 3 s pour de vrai) */
+        return Promise.race([Promise.resolve(rN), attendre(3000 * kN)]).then(function(v){ DJ.rythme(k1); return v; }, function(){ DJ.rythme(k1); });
       }
       return a.touche(ev.coup, a.rat ? null : rappels(a));
     case 'rebond':
@@ -932,7 +952,7 @@ async function entreeHeros(ev){
      héros soient arrivés — les bêtes partent 0,35 s après eux (arrivees() attend les héros à la fin, et le combat aussi : E.entreeH) */
   E.entreeH = Promise.all(EXPOSES.map(function(h, k){
     return attendre(k * 230).then(function(){ slotH(h).style.visibility = 'visible'; return E.A.h[h].entrer(HER[h].x + 260); }).then(function(){ return E.A.h[h].attendre(); });
-  })).then(function(){ return attendre(250); });
+  })).then(function(){ return attendre(80); });
   await attendre(350);
 }
 async function arrivees(gr){
@@ -961,7 +981,7 @@ async function arrivees(gr){
   /* (les héros arrivent en même temps : on les attend ici — entreeHeros) */
   if(debut && E.entreeH){ var h0 = E.entreeH; E.entreeH = null; await h0; }
   E.ph = E.c.etat(); majBarres(); placerTout();
-  await attendre(debut ? 250 : 150);
+  await attendre(debut ? 80 : 150);
 }
 /* l'araignée : son cocon brûle, deux œufs tombent ; les petites sortent des œufs, devant */
 async function eclosion(l, i, ctx){
@@ -989,6 +1009,8 @@ var SON_POTION = {givre:'potGivre', acide:'potAcide', huile:'potHuile', colle:'p
 /* rend true si le geste touche toute la salle (les bêtes réagissent alors ensemble) */
 async function geste(ev, evs){
   var H = E.A.h, a = ev.bete ? B(ev.bete) : null, avant = a ? photoAvant(a.id) : null, to, coul, R;
+  /* (24 novembre : il réagissait encore à un coup — on coupe sa réaction, son geste part tout de suite, et ses sons avec) */
+  if(ev.heros && H[ev.heros] && H[ev.heros].couper) try{ H[ev.heros].couper(); }catch(x){}
   switch(ev.t){
     case 'tir':
       to = a.cible(avant && avant.ouvert);
@@ -1005,9 +1027,18 @@ async function geste(ev, evs){
     case 'dague':
       to = a.cible(avant && avant.ouvert);
       var cD = {x:Math.max(hCx('pisteur') + 90, a.ancre('centre').x - Math.min(70, a.cadre.w * .3)), y:to.y};
-      /* (24 novembre : un « swish » à chaque coup de lame, à l'instant où le héros frappe — H.pisteur.moments, héros en volume) */
-      (H.pisteur.moments ? H.pisteur.moments('dague', fx, cD) : [lame()]).forEach(function(t){ bruit('swish', {cale:t}, ['dague']); });
-      await H.pisteur.dague(fx, cD);
+      /* (24 novembre : un « swish » à chaque coup de lame, à l'instant où le héros frappe — héros en volume : programmés par le héros
+         lui-même quand son geste démarre vraiment (opt.sons) ; Romain, 12 h 54 : « le son arrive trop tôt ». Quand il saute (12 h 56) :
+         un petit bruit de saut très discret à l'appel du pied, puis un grand coup de lame, autre que le swish, sur la lame qui tombe) */
+      if(H.pisteur.moments){
+        await H.pisteur.dague(fx, cD, {sons:function(s){
+          if(s.saut){ bruit('sautDague', {dt:s.decolle, vol:.6}); s.moments.forEach(function(t){ bruit('grandeLame', {cale:t}, ['dague']); }); }
+          else s.moments.forEach(function(t){ bruit('swish', {cale:t}, ['dague']); });
+        }});
+      } else {
+        bruit('swish', {cale:lame()}, ['dague']);
+        await H.pisteur.dague(fx, cD);
+      }
       bruit('chairD');
       return false;
     case 'potion':
@@ -1049,27 +1080,31 @@ async function geste(ev, evs){
       E.ph = E.c.etat(); majBadges();
       return false;
     case 'rune':
-      son('magie');
+      /* (24 novembre — Romain, 12 h 52 : « le son du sage quand il fait son sort de lumière, ça fait plein de ding ding ding […]
+         quasiment les mêmes ding que quand on découvre le point faible ») : plus de « magie » ni de cristal qui tintent ; un son de
+         lumière (Atelier des sons : « Rune de lumière (sans ding) »), dont l'éclat tombe quand la lumière part du bâton */
+      var mL = H.sage.moments ? H.sage.moments(ev.salle ? 'eclairSalle' : 'sort') : [];
+      bruit('lumiere', mL.length ? {cale:mL[0]} : {});
       if(ev.salle){
         var pts = E.ordre.map(B).filter(function(x){ return x && !x.mort; }).map(function(x){ return x.ancre('centre'); });
-        bruit('cristal');
         if(H.sage.eclairSalle) await H.sage.eclairSalle(fx, {cibles:pts}); else await H.sage.sort(fx, pts[0] || milieuBetes());
-        son('magie', .05);
         return true;
       }
       to = a.ancre('centre');
       await H.sage.sort(fx, to, {cristal:false});
       Fx.eclat(to.x, to.y, 260, 'radial-gradient(closest-side,#fff,rgba(191,248,255,.9) 30%,rgba(63,208,255,.4) 60%,rgba(63,208,255,0))', 600);
       Fx.etincelles(to.x, to.y, 14, ['#ffffff', '#bff8ff', '#8ff3ff']);
-      son('magie', .05);
       return false;
     case 'pose-bouclier':
-      son('dome'); if(ev.cibles.length > 1) bruit('baton');
+      /* (24 novembre — Romain, 13 h : « quand on met un bouclier, le son il est pas bien calé ») : héros en volume — le son part quand
+         la bulle naît (le Sage lève d'abord son bâton : 1,1 s), programmé par le Sage au vrai départ de son geste (opt.sons) */
+      var sonsB = function(s){ setTimeout(function(){ son('dome'); }, Math.max(0, s.moment * 1000 - 60)); if(ev.cibles.length > 1) bruit('baton', {dt:Math.max(0, s.moment - 0.1)}); };
+      if(!H.sage.moments){ son('dome'); if(ev.cibles.length > 1) bruit('baton'); }
       var conts = ev.cibles.map(function(h){ return q('.acteur', slotH(h)); });
       /* (un garde-fou : si l'animation du dôme ne finissait jamais, le combat resterait figé — on continue sans elle) */
       /* (13 novembre) le bouclier jaune du bâton normal (75 %), ou les boucliers du bâton de chêne (50 %, sur les trois héros depuis le 14 novembre) */
       var chene = ev.sorte === 'chene', part = chene ? D.CHIFFRES.bouclierChene : D.CHIFFRES.bouclier;
-      var d = await Promise.race([Promise.resolve(H.sage.bouclier(fx, conts.length > 1 ? conts : conts[0], {pct:Math.round((1 - part) * 100), sorte:chene ? 'chene' : 'jaune'})).catch(function(){ return null; }), attendre(6000).then(function(){ return null; })]);
+      var d = await Promise.race([Promise.resolve(H.sage.bouclier(fx, conts.length > 1 ? conts : conts[0], {pct:Math.round((1 - part) * 100), sorte:chene ? 'chene' : 'jaune', sons:sonsB})).catch(function(){ return null; }), attendre(6000).then(function(){ return null; })]);
       if(d) ev.cibles.forEach(function(h, k){ E.domes[h] = Array.isArray(d) ? d[k] : d; });
       await attendre(450);
       return false;
@@ -1271,7 +1306,8 @@ async function attaque(l, i, ctx){
     var h0 = ev.cibles[0], prise = coups.some(function(g){ return g.some(function(x){ return x.t === 'etat' && x.nom === 'entoile' && x.on; }); });
     if(prise) E.toiles[h0] = ret; else { try{ ret(); }catch(e){} }
   }
-  await attendre(coups.some(function(g){ return g.some(function(x){ return x.t === 'tombe'; }); }) ? 600 : 250);
+  /* (24 novembre — Romain : « dès qu'on s'est pris les dégâts, hop, tout de suite, c'est à nous » : 250 → 60 ms ; une chute : 600 → 350) */
+  await attendre(coups.some(function(g){ return g.some(function(x){ return x.t === 'tombe'; }); }) ? 350 : 60);
   return j - 1;
 }
 /* un coup reçu par un héros : le chiffre, la barre, sa réaction, et ce qui suit (il tombe, il est entoilé, avalé…) */
@@ -1294,7 +1330,11 @@ async function degatsHeros(ev, tombe, a, rang){
   var att = animDe(ev.attaque), type = att === 'brulure' ? 'froid' : att === 'grouillement' || att === 'charge' ? 'grouillement' : att === 'poing' ? 'poing' : undefined;
   if(tombe){ slotH(h).classList.add('sol'); son('tombe'); return Promise.resolve(E.A.h[h].tomber()).catch(function(){}); }
   if(ev.attaque === 'langue') return;                    /* il est happé : pas de réaction, la suite (avale) s'en charge */
-  return Promise.resolve(E.A.h[h].touche(type)).catch(function(){});
+  /* (24 novembre — Romain, 12 h 53 : « dès qu'un ennemi l'a frappé […] il y a 1 seconde ou un peu plus d'attente où il se passait rien
+     […] dès qu'on s'est pris les dégâts, hop, tout de suite, c'est à nous ») : le combat n'attend plus la fin de sa réaction (il recule,
+     il grelotte…) — elle continue pendant qu'on choisit ; si on le fait agir avant, elle est coupée net (V.couper, héros en volume) */
+  var pr = Promise.resolve(E.A.h[h].touche(type)).catch(function(){});
+  if(!E.A.h[h].couper) return pr;
 }
 function tomber(h){ slotH(h).classList.add('sol'); son('tombe'); return Promise.resolve(E.A.h[h].tomber()).catch(function(){}); }
 async function relever(ev){

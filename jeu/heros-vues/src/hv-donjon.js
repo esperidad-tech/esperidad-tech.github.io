@@ -330,8 +330,11 @@ HV.DONJON.froid = [[0.08, avec(AIE, {bas:[0, 30, -6], dos:[-10, 0, 4], hoche:-10
 var RATS_V = {hoche:20, regY:1, sourire:-0.9, bouchex:0.6, sourcilsIn:0.7, ouvre:0.3, plisse:0.4};
 function tape(cote, haut){
   var R = avec(RATS_V, {bas:[cote === 'D' ? -4 : 4, 26, 2], mainD:[62, 204, 18], relD:1, coudeD:[1, 0.2, -0.3], poingD:0.2});
-  if(cote === 'D') R.piedD = [30, haut ? 352 : 386, -10]; else R.piedG = [-32, haut ? 352 : 386, 18];
-  R['pointe' + cote] = haut ? 25 : 0; R['genou' + cote] = cote === 'D' ? [0.5, -0.2, 1] : [-0.5, -0.2, 1];
+  /* (24 novembre — Romain, 13 h 14 : « avant, ils tapaient des pieds, et là, ils font plus rien ») : au donjon, on la voit de loin —
+     le pied monte bien plus haut (330 au lieu de 352), et à chaque pied levé elle sautille (leve), comme l'ancien héros qui sautait */
+  if(cote === 'D') R.piedD = [30, haut ? 330 : 386, -10]; else R.piedG = [-32, haut ? 330 : 386, 18];
+  R['pointe' + cote] = haut ? 30 : 0; R['genou' + cote] = cote === 'D' ? [0.5, -0.2, 1] : [-0.5, -0.2, 1];
+  if(haut) R.leve = 12;
   return R;
 }
 HV.DONJON.rats = [[0.12, {hoche:16, regY:0.9, sourcils:0.7, ouvre:0.5, plisse:-0.3, bas:[0, 20, -4]}],

@@ -521,6 +521,48 @@ S.roiCriC = function(A, P){
   foule(A, P, t + 1.3, .6, 10);
   return {duree:2.1};
 };
+/* — (24 novembre — Romain, 13 h 12 : « un coup de bruit avec sa louche sur le roi des rats […] il manque des bruitages pour le roi des
+   rats […] des petits bruits de rats […] comme si une corde qui était tendue et le bruit du rat qui se retourne ») : sa réaction au
+   bruit, en trois sons — les queues nouées qui se tendent (roiCorde), les rats qui couinent de peur (ratsCouinent), le roi qui bascule
+   à la renverse (roiRetourne). Le combat les cale sur l'image (combat.js, « touche » du Roi des rats). — */
+S.roiCordeA = function(A, P){                                                                             /* la corde qui se tend… et vibre */
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.3});
+  var buf = A.grincement(.42, {i0:.03, i1:.009, irr:.45, forme:function(u){ return .3 + .7 * Math.min(1, u * 1.4); }});
+  [260, 610, 1240].forEach(function(f, k){ A.joue(t, buf, {filtres:[{type:'bandpass', f:f, q:9}], g:[3, 2.2, 1.4][k], env:[[0, 0], [.05, 1], [.38, 1], [.42, 0]]}, o); });
+  A.joue(t + .4, A.pince(92, {t60:.5, eclat:.35, pos:.12}), {g:.7, lp:1800, sat:1.4}, o);              /* twang : elle est tendue à rompre */
+  return {duree:1.0, moment:.4};
+};
+S.roiCordeB = function(A, P){                                                                             /* elles grincent, puis claquent d'un coup */
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.3});
+  var buf = A.grincement(.3, {i0:.025, i1:.007, irr:.5, forme:function(u){ return .4 + .6 * u; }});
+  [330, 820].forEach(function(f, k){ A.joue(t, buf, {filtres:[{type:'bandpass', f:f, q:10}], g:[2.6, 1.6][k], env:[[0, 0], [.04, 1], [.28, 1], [.3, 0]]}, o); });
+  A.bruit(t + .3, {bp:1600, bq:1.2, env:A.perc(.001, .04), g:.8, sat:2}, o);                              /* clac */
+  A.joue(t + .3, A.pince(150, {t60:.35, eclat:.5}), {g:.5, lp:2500}, o);
+  return {duree:.9, moment:.3};
+};
+S.ratsCouinentA = function(A, P){                                                                         /* ils paniquent, ils couinent */
+  foule(A, P, P.t, .7, 11, {forme:'peur', h1:1, h2:1.4});
+  return {duree:1.0, moment:0};
+};
+S.ratsCouinentB = function(A, P){                                                                         /* des petits cris aigus, en cascade */
+  var t = P.t;
+  for(var k = 0; k < 7; k++){ var tt = t + k * .07 + h(0, .03); A.cri(tt, {forme:ch(['iik', 'aie']), d:h(.06, .11), h:1.05 + k * .05, grain:.6, g:h(.14, .2)}, A.bus(ici(P, tt), {rev:.3, pan:h(-.3, .9)})); }
+  return {duree:.8, moment:0};
+};
+S.roiRetourneA = function(A, P){                                                                          /* il bascule sur le dos : frrt, poc ! et il piaille */
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.35});
+  A.joue(t, A.griffes(.35, 40), {g:.4, hp:2200}, o);
+  A.choc(t + .3, {f:150, f2:70, d:.12, g:.4, sat:2}, o);
+  A.cri(t + .32, {forme:'aie', d:.22, h:.85, grain:.5, rauque:.4, g:.28}, o);
+  return {duree:.8, moment:.3};
+};
+S.roiRetourneB = function(A, P){                                                                          /* poc, et tout le tas qui couine */
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.35});
+  A.choc(t, {f:130, f2:60, d:.14, g:.45, sat:2}, o);
+  A.bruit(t, {coul:'rose', bp:900, bq:1, env:A.perc(.002, .08), g:.4}, o);
+  foule(A, P, t + .03, .4, 7, {forme:'aie', h1:.9, h2:1.2});
+  return {duree:.7, moment:0};
+};
 /* — l'attaque : le grouillement sur chaque héros — */
 S.roiAttaqueA = function(A, P){
   var t = P.t, o = A.bus(P, {rev:.3, pan:.9, pan2:-.8, pant:1.2});
@@ -934,5 +976,9 @@ S.couronneTombeA = function(A, P){
   for(var k = 0; k < 7; k++){ tinte(A, t + x, .8 * g, o); x += iv; iv *= .72; g *= .8; }
   return {duree:x + .5};
 };
+/* (24 novembre : l'instant clé des sons du gong — le jeu les cale sur l'image avec {cale}) */
+[['roiCorde', {A:.4, B:.3}], ['ratsCouinent', {A:0, B:0}], ['roiRetourne', {A:.3, B:0}]].forEach(function(x){
+  Object.keys(x[1]).forEach(function(v){ S[x[0] + v].moment = x[1][v]; });
+});
 
 })(window);
