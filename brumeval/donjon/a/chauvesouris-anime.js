@@ -1,3 +1,4 @@
+(function(setTimeout){
 /* chauvesouris-anime.js — la chauve-souris de la brume, animée (Les Enquêteurs de Brumeval, donjon du puits)
    Module autonome, sans dépendance ; il injecte son propre CSS (préfixe .bt-chauvesouris-…). Il ne joue aucun son.
    Contrat commun : jeu/donjon/anim/betes/CONTRAT.md. Dessin validé : bestiaire/betes/03-chauvesouris.js
@@ -1263,3 +1264,5 @@ function creer(conteneur, options){
 global.BETES = global.BETES || {};
 global.BETES[ID] = {info: INFO, creer: creer};
 })(typeof window !== 'undefined' ? window : this);
+
+})(function(f, ms){ var a = Array.prototype.slice.call(arguments); a[1] = (+ms || 0) / (window.DJ_RYTHME || 1); return window.setTimeout.apply(window, a); });

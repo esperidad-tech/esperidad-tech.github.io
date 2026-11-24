@@ -1,3 +1,4 @@
+(function(setTimeout){
 /* petitearaignee-anime.js — la petite araignée animée (Les Enquêteurs de Brumeval, donjon du puits)
    Née des œufs de l'araignée des caves quand le feu les fait éclore (araignee.special('eclosion')). 15 PV, morsure 6.
    Module autonome, sans dépendance ; il injecte son propre CSS (préfixe .bt-petitearaignee-…). Contrat : anim/betes/CONTRAT.md.
@@ -1188,3 +1189,5 @@ Petite.prototype.info = INFO;
 global.BETES = global.BETES || {};
 global.BETES[ID] = {info: INFO, creer: function(conteneur, options){ return acteur(new Petite(conteneur, options)); }};
 })(typeof window !== 'undefined' ? window : this);
+
+})(function(f, ms){ var a = Array.prototype.slice.call(arguments); a[1] = (+ms || 0) / (window.DJ_RYTHME || 1); return window.setTimeout.apply(window, a); });

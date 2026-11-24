@@ -1,3 +1,4 @@
+(function(setTimeout){
 /* roirats-anime.js — Le Roi des rats, l'élite animé de l'ossuaire (Les Enquêteurs de Brumeval, donjon du puits)
    Module autonome, sans dépendance. Il injecte son propre CSS (préfixe .bt-roirats-). Il ne joue aucun son.
    Contrat commun : jeu/donjon/anim/betes/CONTRAT.md. Dessin validé : bestiaire/betes/07-roirats.js (dix rats aux queues
@@ -2040,18 +2041,20 @@ R._e_ouvert = function(on){
     var k = [{t: 0, p: {}}, {t: .3, p: reunir(poseDehors(70, {lean: 16, dy: 6, tete: -8, bouche: -24}), {roi: {x: 10, y: 6, a: 40}, roiT: {a: 20}, roiP: {a: -80}})}, {t: .6, p: reunir(RENVERSE, {roi: {x: 22, y: 92, a: 160}}), e: 'cubic-bezier(.6,0,.9,.6)'}, {t: 1, p: POSES.ouvert, e: 'cubic-bezier(.3,.6,.4,1.3)'}];
     return this._seq(k, 1500).fini.then(function(){ self.etat.ouvert = true; self.etat.dos = false; return self._finAction(j, 200); });
   }
-  /* le nœud se resserre, le roi se remet sur ses pattes et remonte sur le tas */
+  /* le nœud se resserre, le roi se remet sur ses pattes et remonte sur le tas — D'UN COUP (Romain, 24 novembre, 0 h 11 :
+     « quand ils se retournent avec les queues qui sont serrées, c'est trop long… que le rat se retourne très vite d'un coup » ;
+     avant : 1,5 s, l'ombre revenait à 0,9 s) */
   this.etat.ouvert = false;
   this._pulseX(false);
-  this._fondu('lache', 0, 400);
-  this._fondu('noeud', 1, 400);
-  this._fondu('ombreRoi', 1, 600, 900);
-  this._fondu('colleRoi', 0, 600);
-  var k2 = [{t: 0, p: {}}, {t: .35, p: {roi: {x: 30, y: 40, a: 250}, roiP: {a: 0}, roiPF: {a: 0}}, e: 'cubic-bezier(.3,.6,.5,1)'}, {t: .65, p: {roi: {x: 6, y: -24, a: 352}}, e: 'cubic-bezier(.2,.8,.4,1)'}, {t: 1, p: reunir(this._base(), {roi: {x: 0, y: 0, a: 360}})}];
-  return this._seq(k2, 1500).fini.then(function(){
+  this._fondu('lache', 0, 200);
+  this._fondu('noeud', 1, 200);
+  this._fondu('ombreRoi', 1, 250, 350);
+  this._fondu('colleRoi', 0, 300);
+  var k2 = [{t: 0, p: {}}, {t: .4, p: {roi: {x: 30, y: 40, a: 250}, roiP: {a: 0}, roiPF: {a: 0}}, e: 'cubic-bezier(.3,.6,.5,1)'}, {t: .75, p: {roi: {x: 6, y: -24, a: 352}}, e: 'cubic-bezier(.2,.8,.4,1)'}, {t: 1, p: reunir(this._base(), {roi: {x: 0, y: 0, a: 360}})}];
+  return this._seq(k2, 600).fini.then(function(){
     self.J.roi.forEach(function(e){ e.getAnimations().forEach(function(a){ a.cancel(); }); e.style.transform = tf(fusion(Z)); });
     self.v.roi = fusion(Z);
-    return self._finAction(j, 300);
+    return self._finAction(j, 120);
   });
 };
 R._e_dos = function(on){
@@ -2060,15 +2063,16 @@ R._e_dos = function(on){
   this._fondu('ombreRoi', on ? 0 : 1, 400, on ? 0 : 700);
   if(on){
     var k = [{t: 0, p: {}}, {t: .35, p: {roi: {x: 14, y: 4, a: 60}, roiT: {a: 24}, roiP: {a: -90}}, e: 'cubic-bezier(.4,0,.6,1)'}, {t: .7, p: reunir(RENVERSE, {roi: {x: 22, y: 92, a: 160}}), e: 'cubic-bezier(.6,0,.9,.6)'}, {t: 1, p: this._base(), e: 'cubic-bezier(.3,.6,.4,1.3)'}];
-    this._minuteur(function(){ self._cri(self._ou('roiB'), 1.2, 1); }, 300);
-    return this._seq(k, 1300).fini.then(function(){ return self._finAction(j, 200); });
+    this._minuteur(function(){ self._cri(self._ou('roiB'), 1.2, 1); }, 200);
+    return this._seq(k, 900).fini.then(function(){ return self._finAction(j, 150); });      /* (24 novembre : 1,3 s avant) */
   }
-  if(this.etat.ouvert) return this._finAction(j, 300);
-  var k2 = [{t: 0, p: {}}, {t: .35, p: {roi: {x: 30, y: 40, a: 250}}, e: 'cubic-bezier(.3,.6,.5,1)'}, {t: .65, p: {roi: {x: 6, y: -24, a: 352}}, e: 'cubic-bezier(.2,.8,.4,1)'}, {t: 1, p: reunir(this._base(), {roi: {x: 0, y: 0, a: 360}})}];
-  return this._seq(k2, 1400).fini.then(function(){
+  if(this.etat.ouvert) return this._finAction(j, 150);
+  /* (24 novembre : d'un coup, comme le nœud qui se resserre — avant 1,4 s) */
+  var k2 = [{t: 0, p: {}}, {t: .4, p: {roi: {x: 30, y: 40, a: 250}}, e: 'cubic-bezier(.3,.6,.5,1)'}, {t: .75, p: {roi: {x: 6, y: -24, a: 352}}, e: 'cubic-bezier(.2,.8,.4,1)'}, {t: 1, p: reunir(this._base(), {roi: {x: 0, y: 0, a: 360}})}];
+  return this._seq(k2, 600).fini.then(function(){
     self.J.roi.forEach(function(e){ e.getAnimations().forEach(function(a){ a.cancel(); }); e.style.transform = tf(fusion(Z)); });
     self.v.roi = fusion(Z);
-    return self._finAction(j, 300);
+    return self._finAction(j, 120);
   });
 };
 /* étalés après l'attaque ; ils se rassemblent quand l'état s'en va */
@@ -2309,3 +2313,5 @@ function acteur(b){
 global.BETES = global.BETES || {};
 global.BETES[ID] = {info: INFO, creer: function(conteneur, options){ return acteur(new Roi(conteneur, options)); }};
 })(typeof window !== 'undefined' ? window : this);
+
+})(function(f, ms){ var a = Array.prototype.slice.call(arguments); a[1] = (+ms || 0) / (window.DJ_RYTHME || 1); return window.setTimeout.apply(window, a); });

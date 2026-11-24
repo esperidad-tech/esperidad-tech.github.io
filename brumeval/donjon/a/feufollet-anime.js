@@ -1,3 +1,4 @@
+(function(setTimeout){
 /* feufollet-anime.js — le feu follet, animé (Les Enquêteurs de Brumeval, donjon du puits)
    Module autonome, sans dépendance ; il injecte son propre CSS (préfixe .bt-feufollet-…). Il ne joue aucun son.
    Contrat commun : jeu/donjon/anim/betes/CONTRAT.md. Dessin validé : bestiaire/betes/04-feufollet.js
@@ -977,3 +978,5 @@ function creer(conteneur, options){
 global.BETES = global.BETES || {};
 global.BETES[ID] = {info: INFO, creer: creer};
 })(typeof window !== 'undefined' ? window : this);
+
+})(function(f, ms){ var a = Array.prototype.slice.call(arguments); a[1] = (+ms || 0) / (window.DJ_RYTHME || 1); return window.setTimeout.apply(window, a); });

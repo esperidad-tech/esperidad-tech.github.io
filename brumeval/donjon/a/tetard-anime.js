@@ -1,3 +1,4 @@
+(function(setTimeout){
 /* tetard-anime.js — le têtard du puits, animé (Les Enquêteurs de Brumeval)
    Module autonome, sans dépendance, léger. Il injecte son propre CSS (préfixe .bt-tetard-). Il ne joue aucun son.
    Contrat commun : jeu/donjon/anim/betes/CONTRAT.md. Dessin validé : bestiaire/betes/06-tetard.js
@@ -594,3 +595,5 @@ function creer(conteneur, options){
 global.BETES = global.BETES || {};
 global.BETES.tetard = {info: INFO, creer: creer};
 })(typeof window !== 'undefined' ? window : this);
+
+})(function(f, ms){ var a = Array.prototype.slice.call(arguments); a[1] = (+ms || 0) / (window.DJ_RYTHME || 1); return window.setTimeout.apply(window, a); });

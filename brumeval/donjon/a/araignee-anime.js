@@ -1,3 +1,4 @@
+(function(setTimeout){
 /* araignee-anime.js — l'araignée des caves animée (Les Enquêteurs de Brumeval, donjon du puits)
    Module autonome, sans dépendance ; il injecte son propre CSS (préfixe .bt-araignee-…). Contrat : anim/betes/CONTRAT.md.
 
@@ -1650,3 +1651,5 @@ global.BETES[ID] = {
   }
 };
 })(typeof window !== 'undefined' ? window : this);
+
+})(function(f, ms){ var a = Array.prototype.slice.call(arguments); a[1] = (+ms || 0) / (window.DJ_RYTHME || 1); return window.setTimeout.apply(window, a); });

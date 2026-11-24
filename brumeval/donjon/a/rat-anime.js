@@ -1,3 +1,4 @@
+(function(setTimeout){
 /* rat-anime.js — le rat d'égout animé (Les Enquêteurs de Brumeval)
    Module autonome, sans dépendance. Il injecte son propre CSS.
 
@@ -1494,3 +1495,5 @@ global.RatAnime = {
   _interne: {POSES: POSES, COURSE: COURSE}
 };
 })(typeof window !== 'undefined' ? window : this);
+
+})(function(f, ms){ var a = Array.prototype.slice.call(arguments); a[1] = (+ms || 0) / (window.DJ_RYTHME || 1); return window.setTimeout.apply(window, a); });

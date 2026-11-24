@@ -1,3 +1,4 @@
+(function(setTimeout){
 /* gardien-anime.js — le Gardien de rouille, l'élite animé de l'atelier des Fondateurs (Les Enquêteurs de Brumeval, donjon du puits)
    Module autonome, sans dépendance. Il injecte son propre CSS (préfixe .bt-gardien-). Il ne joue aucun son.
    Contrat commun : jeu/donjon/anim/betes/CONTRAT.md. Dessin validé : bestiaire/betes/08-gardien.js (vieil automate en fer
@@ -2386,3 +2387,5 @@ function acteur(b){
 global.BETES = global.BETES || {};
 global.BETES[ID] = {info: INFO, creer: function(conteneur, options){ return acteur(new Gardien(conteneur, options)); }};
 })(typeof window !== 'undefined' ? window : this);
+
+})(function(f, ms){ var a = Array.prototype.slice.call(arguments); a[1] = (+ms || 0) / (window.DJ_RYTHME || 1); return window.setTimeout.apply(window, a); });

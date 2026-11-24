@@ -1,3 +1,4 @@
+(function(setTimeout){
 /* ratcuir-anime.js — le rat cuirassé animé (Les Enquêteurs de Brumeval, donjon du puits)
    Module autonome, sans dépendance ; il injecte son propre CSS (préfixe .bt-ratcuir-…). Contrat : anim/betes/CONTRAT.md.
 
@@ -2069,3 +2070,5 @@ global.BETES[ID] = {
   creer: function(conteneur, options){ return acteur(new RatCuir(conteneur, options)); }
 };
 })(typeof window !== 'undefined' ? window : this);
+
+})(function(f, ms){ var a = Array.prototype.slice.call(arguments); a[1] = (+ms || 0) / (window.DJ_RYTHME || 1); return window.setTimeout.apply(window, a); });
