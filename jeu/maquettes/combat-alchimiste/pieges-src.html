@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Alegreya+Sans:wght@400;500;700;800&display=swap">
 <style>
-/* Version 14 : les quatre gros boss (le Glouton, le Frileux, le Singe, le Sauteur), un, deux, trois puis quatre aux quatre paliers de Grosbec ; plus de monde quand il s'énerve. Version 13 : la méga-potion, le rayon d'eau, les rayons animés, la tornade de feu, la boule de boue, le lancer du marteau, la toupie. Version 12 : le berserker, le soldat en armure, le porte-barricade, le Colosse ; les points faibles ; 10 cœurs ; le bouclier de Grosbec qui lance des vagues sans fin. Version 11 : les sons d'armée et la musique de combat (moteur de l'Atelier des sons). Version 10 : l'étagère des potions, l'aide aux mélanges, des sorts plus beaux. Version 9 : Grosbec mène le combat (salves à thème, colère, bouclier, 8 minutes), la vraie vague. Version 8 : les vrais personnages (Grosbec dans son armure, ses automates, l'Alchimiste du donjon vu de dos). Des corps lourds, pas des balles. La foule arrive sans arrêt. Grosbec est hors de portée : on ne le blesse qu'en lui renvoyant ses automates. Un seul doigt suffit : les potions en bas, on touche la place pour lancer, on fait glisser l'Alchimiste. */
+/* Version 15 : les modèles du combat du Barde (Grosbec en volume, les golems de roche et de métal, la grande salle), et huit golems de plus dans la même veine. Version 14 : les quatre gros boss (le Glouton, le Frileux, le Singe, le Sauteur), un, deux, trois puis quatre aux quatre paliers de Grosbec ; plus de monde quand il s'énerve. Version 13 : la méga-potion, le rayon d'eau, les rayons animés, la tornade de feu, la boule de boue, le lancer du marteau, la toupie. Version 12 : le berserker, le soldat en armure, le porte-barricade, le Colosse ; les points faibles ; 10 cœurs ; le bouclier de Grosbec qui lance des vagues sans fin. Version 11 : les sons d'armée et la musique de combat (moteur de l'Atelier des sons). Version 10 : l'étagère des potions, l'aide aux mélanges, des sorts plus beaux. Version 9 : Grosbec mène le combat (salves à thème, colère, bouclier, 8 minutes), la vraie vague. Version 8 : les vrais personnages (Grosbec dans son armure, ses golems, l'Alchimiste du donjon vu de dos). Des corps lourds, pas des balles. La foule arrive sans arrêt. Grosbec est hors de portée : on ne le blesse qu'en lui renvoyant ses golems. Un seul doigt suffit : les potions en bas, on touche la place pour lancer, on fait glisser l'Alchimiste. */
 :root {
   --bg: #0E1213; --surface: #1B2326; --surface-2: #232E31; --ink: #E8ECEA; --muted: #9AA7A3; --line: #33413F;
   --jaune: #F2C230; --jaune-ombre: #A5831B;
@@ -56,11 +56,11 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
 .chaudron .bul:nth-child(2) { animation-delay: .5s; } .chaudron .bul:nth-child(3) { animation-delay: .95s; }
 @keyframes bulle { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: .9; } 100% { transform: translateY(-14px); opacity: 0; } }
 /* le message du conteur, en haut, avec son bouton 🔊 */
-.msg { position: absolute; top: 42px; left: 50%; transform: translateX(-50%); z-index: 3; display: flex; align-items: center; gap: 6px; width: max-content; max-width: calc(100% - 16px);
-  padding: 4px 4px 4px 11px; border-radius: 12px; background: rgba(16,12,9,.88); border: 1px solid rgba(242,194,48,.45); color: #F3EADB; font-size: 12.5px; line-height: 1.15; font-weight: 700; white-space: nowrap;
+.msg { position: absolute; top: 7px; left: 8px; z-index: 3; display: flex; align-items: center; gap: 6px; width: max-content; max-width: calc(100% - 100px);
+  padding: 4px 4px 4px 11px; border-radius: 12px; background: rgba(16,12,9,.88); border: 1px solid rgba(242,194,48,.45); color: #F3EADB; font-size: 12.5px; line-height: 1.18; font-weight: 700; white-space: normal;
   box-shadow: 0 3px 8px rgba(0,0,0,.35); transition: opacity .35s; opacity: 0; pointer-events: none; }
 .msg.on { opacity: 1; pointer-events: auto; }
-.msg #msg-t { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.msg #msg-t { overflow: hidden; min-width: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
 .msg.mal { color: #FFB3A3; border-color: rgba(229,87,42,.6); }
 .msg.bon { color: #B9F0A0; border-color: rgba(120,200,90,.6); }
 .msg.aide { color: #FFF3D6; border-color: var(--jaune); }
@@ -95,7 +95,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
 </svg>
 
 <div class="jeu" id="jeu">
-  <canvas id="cv" aria-label="La place : touche un endroit pour lancer, fais glisser l'Alchimiste pour bouger, touche-le pour boire"></canvas>
+  <canvas id="cv" aria-label="La grande salle : touche un endroit pour lancer, fais glisser l'Alchimiste pour bouger, touche-le pour boire"></canvas>
   <div class="haut">
     <button type="button" class="rond-btn" id="btn-son" aria-label="Couper les bruits et la musique">♪</button>
     <button type="button" class="rond-btn" id="btn-pause" aria-label="Pause, règles et combos">⏸</button>
@@ -127,21 +127,21 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
 <div class="voile" id="regles">
   <div class="boite">
     <h2>Les Pièges de l'Alchimiste</h2>
-    <p>Version 14. Grosbec reste tout au fond : tes fioles ne vont pas jusqu'à lui. Il envoie ses automates par vagues. <b>Détruis-les</b> : chaque automate détruit l'affaiblit. <b>Renvoie-les-lui à la figure</b> : ça lui fait encore plus mal… et ça l'énerve.</p>
+    <p>Version 15. Grosbec reste tout au fond : tes fioles ne vont pas jusqu'à lui. Il envoie ses golems par vagues. <b>Détruis-les</b> : chaque golem détruit l'affaiblit. <b>Renvoie-les-lui à la figure</b> : ça lui fait encore plus mal… et ça l'énerve.</p>
     <h3>Jouer avec un seul doigt</h3>
-    <div class="regle"><span class="tuile" style="--c:#3D2F5C">☝️</span><p>Choisis 1 à 3 potions en bas, puis <b>touche la place</b> : tu vois la zone, tu peux glisser, tu lâches. <b>Fais glisser l'Alchimiste</b> pour bouger, <b>touche-le</b> pour boire.</p></div>
-    <div class="regle"><span class="tuile">💥</span><p><b>Tes potions projettent, elles ne tuent presque pas.</b> Une explosion souffle toujours en éventail, loin de toi, vers le fond. Un automate projeté vole, retombe, glisse un tout petit peu et met 2 secondes à se relever. S'il percute un ami, les deux restent assommés 5 secondes. S'il percute Grosbec… aïe, pour Grosbec !</p></div>
+    <div class="regle"><span class="tuile" style="--c:#3D2F5C">☝️</span><p>Choisis 1 à 3 potions en bas, puis <b>touche le sol de la salle</b> : tu vois la zone, tu peux glisser, tu lâches. <b>Fais glisser l'Alchimiste</b> pour bouger, <b>touche-le</b> pour boire.</p></div>
+    <div class="regle"><span class="tuile">💥</span><p><b>Tes potions projettent, elles ne tuent presque pas.</b> Une explosion souffle toujours en éventail, loin de toi, vers le fond. Un golem projeté vole, retombe, glisse un tout petit peu et met 2 secondes à se relever. S'il percute un ami, les deux restent assommés 5 secondes. S'il percute Grosbec… aïe, pour Grosbec !</p></div>
     <div class="regle"><span class="tuile">🛡️</span><p>Tu as dix cœurs. Les petits t'en prennent un demi, les moyens un, les gros deux. Quand personne ne te touche, tu reprends des forces.</p></div>
     <div class="regle"><span class="tuile" style="--c:#8E2A2A">👹</span><p><b>Quatre gros boss</b> viendront aider Grosbec. Rien ne leur fait mal… sauf ce dont ils ont envie. <b>Regarde la bulle au-dessus de leur tête.</b></p></div>
-    <div class="regle"><span class="tuile" style="--c:#2E86D6">🌊</span><p><b>La vague</b> (eau + eau) emporte tout jusqu'au bout de la place. <b>Trempés</b>, ils avancent cinq fois moins vite.</p></div>
+    <div class="regle"><span class="tuile" style="--c:#2E86D6">🌊</span><p><b>La vague</b> (eau + eau) emporte tout jusqu'au bout de la salle. <b>Trempés</b>, ils avancent cinq fois moins vite.</p></div>
     <div class="regle"><span class="tuile" style="--c:#5DB338">🧪</span><p><b>Les boucliers</b> résistent aux explosions. L'acide ronge leur bouclier.</p></div>
-    <div class="regle"><span class="tuile" style="--c:#B8902F">✦</span><p><b>La méga-potion</b> : détruis des automates, trouve des combos ; quand le cercle doré du chaudron est plein, touche <b>MÉGA</b> : ton prochain mélange part deux fois, en plus grand.</p></div>
+    <div class="regle"><span class="tuile" style="--c:#B8902F">✦</span><p><b>La méga-potion</b> : détruis des golems, trouve des combos ; quand le cercle doré du chaudron est plein, touche <b>MÉGA</b> : ton prochain mélange part deux fois, en plus grand.</p></div>
     <div class="regle"><span class="tuile" style="--c:#7A5A1A">✨</span><p>Choisis une potion : au-dessus de chaque fiole, tu vois ce que donnerait le mélange. Une étoile : un très bon mélange.</p></div>
     <h3>Les réactions</h3>
     <p style="font-size:.9rem">feu + farine = <b>BOUM</b> (ça projette) · eau + eau = <b>vague</b> · acide + fleur = <b>savon</b> (ça glisse) · eau + farine = <b>boue</b> (ça colle) · farine + acide = <b>volcan</b> (ça envoie en l'air) · eau + acide = <b>électricité</b> · eau + fleur = <b>lianes</b> · feu + fleur = <b>pollen</b> (atchoum) · farine + fleur + fleur = <b>gâteau</b> (appât).</p>
-    <p style="font-size:.9rem"><b>En feu</b>, un automate brûle doucement et passe le feu à ceux qu'il touche. <b>Mouillé</b>, il conduit l'électricité. <b>Enfariné</b> puis du feu : <b>la mèche s'allume</b>, il fonce tout droit comme un dératé et explose 3 secondes plus tard ! Le <b>lourd</b> est une boule de bowling : il renverse tous ceux qu'il croise. Les <b>tonneaux</b> aussi.</p>
+    <p style="font-size:.9rem"><b>En feu</b>, un golem brûle doucement et passe le feu à ceux qu'il touche. <b>Mouillé</b>, il conduit l'électricité. <b>Enfariné</b> puis du feu : <b>la mèche s'allume</b>, il fonce tout droit comme un dératé et explose 3 secondes plus tard ! Le <b>lourd</b> est une boule de bowling : il renverse tous ceux qu'il croise. Les <b>tonneaux</b> aussi.</p>
     <p style="font-size:.9rem">Grosbec envoie aussi <b>le cracheur</b>, qui te crache du feu de loin (mouillé, il ne crache plus), et <b>le souffleur</b>, qui pousse tes nuages et ton pollen vers toi.</p>
-    <p style="font-size:.9rem">Sur la place, il y a aussi <b>la charrette</b> (trop lourde pour rouler… sauf avec du savon sous les roues), <b>la fontaine</b> (essaie d'y verser quelque chose) et la <b>mousse du volcan</b>, qui fait rebondir ceux qui tombent dessus.</p>
+    <p style="font-size:.9rem">Dans la salle, il y a aussi <b>la charrette</b> (trop lourde pour rouler… sauf avec du savon sous les roues), <b>la fontaine</b> (essaie d'y verser quelque chose) et la <b>mousse du volcan</b>, qui fait rebondir ceux qui tombent dessus.</p>
     <h3>Le carnet des combos</h3>
     <div class="carnet" id="carnet"></div>
     <p class="stats">Au clavier : flèches (ou Q et D) pour glisser, 1 à 5 pour les potions, la souris pour lancer, Espace pour boire.</p>
@@ -165,7 +165,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
 (function () {
   "use strict";
   /* ================= réglages ================= */
-  var W = 360, FY = 0.75, BANDE = 104;
+  var W = 360, FY = 0.65, BANDE = 104, TOP = 150, B_Y = 66, G_DECOR = 0.62;
   var PV_J = 10, PV_B = 1200, DUREE = 480, VITESSE = 1, V_IMPACT = 110, V_BOSS = 60, STUN = 5, LEVE = 2, G = 650, PORTEE_F = 0.24, MAX_E = 36;
   var ING = [
     { id: "feu", nom: "Feu", hex: "#E5572A" }, { id: "eau", nom: "Eau", hex: "#2E86D6" },
@@ -213,6 +213,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     singe:    { nom: "Le Singe", pv: 100, v: 62, r: 18, h: 50, m: 4, kv: 0.6, coup: 0.5, cad: 1.4, coul: "#7A4E2A", tete: "#8E6038", boss: true },
     sauteur:  { nom: "Le Sauteur", pv: 110, v: 44, r: 19, h: 52, m: 5, kv: 0.3, coup: 1, cad: 2.2, coul: "#4E9A36", tete: "#62B048", boss: true }
   };
+  Object.keys(TYPES).forEach(function (t) { TYPES[t].h = Math.round(GolemsA.haut(t)); });   // (version 15) leur hauteur : celle de leur modèle
   // les points faibles (Romain : « il y a des effets qui sont plus forts sur certains personnages… quand ils lancent une grosse vague de
   // mecs avec des armures, tu sais qu'il faut les électrocuter ») ; sorte : choc, explo, feu, elec, acide, poison
   var FAIBLE = {
@@ -319,7 +320,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   /* ================= écran ================= */
   var box = $("jeu"), cv = $("cv"), ctx = cv.getContext("2d");
   var fond = document.createElement("canvas"), fx2 = fond.getContext("2d");
-  var L = { H: 640, top: 96, bot: 530, D: 580, s: 1, dpr: 1 };
+  var L = { H: 640, top: TOP, bot: 530, D: 580, s: 1, dpr: 1 };
   var S = null, dernierT = 0, clavier = {}, rafId = 0;
   function sy(gy) { return L.top + gy * FY; }
   function portee() { return L.D * PORTEE_F; }
@@ -328,47 +329,40 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     L.s = r.width / W; L.H = r.height / L.s; L.dpr = dpr;
     cv.width = Math.max(1, Math.round(r.width * dpr)); cv.height = Math.max(1, Math.round(r.height * dpr));
     fond.width = cv.width; fond.height = cv.height;
-    L.top = 96; L.bot = L.H - BANDE / L.s - 12; L.D = Math.max(200, (L.bot - L.top) / FY);
+    L.top = TOP; L.bot = L.H - BANDE / L.s - 12; L.D = Math.max(200, (L.bot - L.top) / FY);
     peindreFond();
     if (S) { S.hero.y = L.D - 30; S.E.forEach(function (e) { e.y = Math.min(e.y, L.D - e.r); }); }
   }
   window.addEventListener("resize", redim);
-  function arche(g, cx, top, w, h) { g.beginPath(); g.moveTo(cx - w / 2, top + h); g.lineTo(cx - w / 2, top + w / 2); g.arc(cx, top + w / 2, w / 2, Math.PI, 0); g.lineTo(cx + w / 2, top + h); g.closePath(); }
+  // (version 15) LA GRANDE SALLE de la ville d'en bas : le décor du combat du Barde (modeles/decor.js), peint une fois. Le mur du
+  // fond et sa grande arche ouverte sur la ville floue, les deux portes de bronze (les golems sortent par là), les murs de côté et
+  // leurs galeries (d'autres en sautent), le sol de dalles polies. Par-dessus : ce qui est à ce combat (la ligne des fioles, le muret).
   function peindreFond() {
-    var c = fx2; c.setTransform(L.s * L.dpr, 0, 0, L.s * L.dpr, 0, 0);
-    var g = c.createLinearGradient(0, 0, 0, 96); g.addColorStop(0, "#0D1424"); g.addColorStop(1, "#1D2433");
-    c.fillStyle = g; c.fillRect(0, 0, W, L.H);
-    function maison(x0, x1, haut, pointe, coul) { c.fillStyle = coul; c.beginPath(); c.moveTo(x0, haut); c.lineTo((x0 + x1) / 2, pointe); c.lineTo(x1, haut); c.lineTo(x1, 92); c.lineTo(x0, 92); c.closePath(); c.fill(); }
-    maison(0, 60, 44, 24, "#3A2F2A"); maison(60, 112, 36, 16, "#45372F"); maison(112, 248, 30, 4, "#514238"); maison(248, 300, 36, 16, "#45372F"); maison(300, 360, 44, 24, "#3A2F2A");
-    c.fillStyle = "#F2C86A";
-    [[14, 56], [38, 70], [74, 50], [92, 68], [132, 58], [214, 58], [262, 50], [280, 68], [316, 56], [340, 70]].forEach(function (p) { c.fillRect(p[0], p[1], 9, 11); });
-    c.fillStyle = "#E8D9B0"; c.beginPath(); c.arc(180, 30, 8, 0, 7); c.fill();
-    c.strokeStyle = "#3A2F2A"; c.lineWidth = 1.6; c.beginPath(); c.moveTo(180, 25); c.lineTo(180, 30); c.lineTo(184, 33); c.stroke();
-    // les portes d'où sortent les automates : deux ruelles sous un porche, deux portes de la mairie
-    PORTES.forEach(function (px, i) {
-      var m = i === 1 || i === 2, w = m ? 22 : 20, h = m ? 24 : 26, y0 = 92 - h;
-      c.fillStyle = m ? "#7A6650" : "#4F443A"; arche(c, px, y0 - 3, w + 6, h + 3); c.fill();
-      c.fillStyle = "#120D0A"; arche(c, px, y0, w, h); c.fill();
-      if (m) { c.strokeStyle = "#B0923F"; c.lineWidth = 1; arche(c, px, y0 - 1.5, w + 3, h + 1.5); c.stroke(); c.fillStyle = "#3A2A1C"; c.fillRect(px - 0.5, y0 + 6, 1, h - 6); }
-    });
-    c.fillStyle = "#26231F"; c.fillRect(0, 88, W, 8);
-    c.fillStyle = "#34332F"; c.fillRect(0, L.top, W, L.bot - L.top);
-    c.strokeStyle = "rgba(0,0,0,.30)"; c.lineWidth = 1;
-    var row = 0;
-    for (var y = L.top; y < L.bot; y += 18, row++) {
-      c.beginPath(); c.moveTo(0, y + .5); c.lineTo(W, y + .5); c.stroke();
-      for (var x = (row % 2) * 20; x < W; x += 40) { c.beginPath(); c.moveTo(x + .5, y); c.lineTo(x + .5, Math.min(y + 18, L.bot)); c.stroke(); }
-    }
+    var K = L.s * L.dpr, Ld = { W: W, H: L.H, placeY0: L.top + 10, bardeY: sy(L.D - 30), bardeX: W / 2, grosY: sy(B_Y) - 6, gk: G_DECOR };
+    Ld.ruelleY = Math.round((Ld.placeY0 + Ld.bardeY) / 2 - 20);
+    var F = Decor.construire(Ld, W, L.H, K), c = fx2;
+    c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(F.fond, 0, 0, fond.width, fond.height);
+    F.fond.width = F.fond.height = 0;   // recopiée dans notre toile : on rend sa mémoire tout de suite (iPhone)
+    c.setTransform(K, 0, 0, K, 0, 0);
+    PORTES = [34, F.portes[0].x, F.portes[1].x, W - 34];
     // la ligne au-delà de laquelle les fioles ne vont pas
     var yp = sy(portee());
-    c.strokeStyle = "rgba(242,194,48,.35)"; c.lineWidth = 1.5; c.setLineDash([6, 6]); c.beginPath(); c.moveTo(0, yp); c.lineTo(W, yp); c.stroke(); c.setLineDash([]);
-    c.font = "700 9px 'Alegreya Sans', sans-serif"; c.fillStyle = "rgba(242,194,48,.6)"; c.textAlign = "right"; c.fillText("tes fioles ne vont pas plus loin", W - 6, yp - 4);
-    c.fillStyle = "#5B5850"; c.fillRect(0, L.bot, W, 12);
-    c.fillStyle = "#77736A"; c.fillRect(0, L.bot, W, 4);
-    c.strokeStyle = "rgba(0,0,0,.3)";
+    c.strokeStyle = "rgba(242,194,48,.4)"; c.lineWidth = 1.5; c.setLineDash([6, 6]); c.beginPath(); c.moveTo(0, yp); c.lineTo(W, yp); c.stroke(); c.setLineDash([]);
+    c.font = "700 9px 'Alegreya Sans', sans-serif"; c.fillStyle = "rgba(242,194,48,.7)"; c.textAlign = "right"; c.fillText("tes fioles ne vont pas plus loin", W - 6, yp - 4);
+    // le muret de l'Alchimiste : de la pierre bleu nuit, un bandeau de bronze, un liseré d'or
+    var gm = c.createLinearGradient(0, L.bot, 0, L.bot + 12); gm.addColorStop(0, "#3d5b6c"); gm.addColorStop(0.35, "#1a2c3a"); gm.addColorStop(1, "#0a131b");
+    c.fillStyle = gm; c.fillRect(0, L.bot, W, 12);
+    var gz = c.createLinearGradient(0, L.bot, 0, L.bot + 4); gz.addColorStop(0, "#b3925c"); gz.addColorStop(1, "#5d4831"); c.fillStyle = gz; c.fillRect(0, L.bot, W, 4);
+    c.fillStyle = "rgba(244,210,124,.85)"; c.fillRect(0, L.bot, W, 1);
+    c.strokeStyle = "rgba(2,6,10,.7)"; c.lineWidth = 1;
     for (var k = 30; k < W; k += 50) { c.beginPath(); c.moveTo(k, L.bot + 4); c.lineTo(k, L.bot + 12); c.stroke(); }
-    c.fillStyle = "#0E1213"; c.fillRect(0, L.bot + 12, W, L.H);
+    c.fillStyle = "#05090d"; c.fillRect(0, L.bot + 12, W, L.H);
+    GolemsA.regler(K);
   }
+  // jusqu'où le mur de côté avance sur les dalles, à cette profondeur (0 : il est sorti de l'écran)
+  function bordX(y) { var F = Decor.F; if (!F) return 0; var b = F.bord(sy(y)); return b <= 16 ? 0 : b - 14; }
+  // plus c'est près de nous, plus c'est grand (la salle est en perspective)
+  function prof(y) { return 0.84 + 0.22 * clamp(y / L.D, 0, 1); }
 
   /* ================= l'aide aux potions (version 10) ================= */
   // Romain, 24 nov. 11 h 46 : « quand on clique sur une potion, on peut avoir une petite orientation vers quelle potion aller. Et quand
@@ -538,13 +532,14 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     S.fontaine = null;
     $("fin").hidden = true; $("regles").hidden = true; $("btn-go").textContent = "Reprendre";
     if (alchi) { alchi.geste = null; alchi.capVise = 180; alchi.capAff = 180; alchi.capT = 0; alchi.prochain = maintenant() + 4; }
-    dire("Grosbec t'attend devant la mairie… ses automates vont sortir.", "");
+    GolemsA.prevoir(["rapide", "bouclier"], PREVOIR);
+    dire("Grosbec t'attend au fond de la grande salle… ses golems vont sortir.", "");
     S.phaseMus = 0;
     if (window.SonsCombat && window.SonsCombat.pret()) { window.SonsCombat.musique(false); window.SonsCombat.phase(0); window.SonsCombat.musique(true); }
     majPotions();
     dernierT = performance.now(); rafId = requestAnimationFrame(boucle);
   }
-  var PERF = { av: 0, de: 0, im: 16, lent: 0 }, LEGER = false;
+  var PERF = { av: 0, de: 0, im: 16, lent: 0 }, LEGER = false, PREVOIR = { sauteur: { ressort: 1 }, porteur: { porte: 1 } };
   function boucle(now) {
     if (!S || !S.enCours) return;
     // l'appareil peine-t-il ? (l'écart entre deux images, lissé)
@@ -561,6 +556,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     var tD = performance.now();
     dessiner();
     PERF.de += (performance.now() - tD - PERF.de) * 0.05;
+    GolemsA.precuire(LEGER ? 1.5 : 3);   // on peint d'avance les golems annoncés, un peu à chaque image
     if (S.B.pv <= 0) return fin(true);
     if (S.pv <= 0) return fin(false);
     rafId = requestAnimationFrame(boucle);
@@ -622,8 +618,8 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   // Romain, 24 nov. 11 h 46 : « que ça soit vraiment rythmé par le boss », des vagues à thème (les rapides, puis les armures, puis les
   // gros…), « que le combat dure à peu près 8 minutes » : à 4 minutes, Grosbec n'a pas perdu plus de la moitié de sa vie, et il ne
   // meurt pas avant 8 minutes. S'il perd trop vite, il se protège (un bouclier qu'on voit) et envoie de quoi t'occuper. Détruire ses
-  // automates le blesse un peu ; les lui envoyer dessus le blesse plus… et l'énerve : il s'énerve, puis envoie une salve plus grosse.
-  var PORTES = [30, 124, 236, 330];   // les deux ruelles (sous les porches) et les deux portes de la mairie
+  // golems le blesse un peu ; les lui envoyer dessus le blesse plus… et l'énerve : il s'énerve, puis envoie une salve plus grosse.
+  var PORTES = [34, 62, 298, 326];   // (version 15) la galerie de gauche, les deux portes de bronze, la galerie de droite (recalculé par peindreFond)
   var VAL_KILL = { rapide: 6, bouclier: 9, lourd: 14, cracheur: 8, souffleur: 8, berserker: 10, chevalier: 12, porteur: 8, colosse: 60, glouton: 50, frileux: 50, singe: 50, sauteur: 50 };
   // chaque salve dit (une fois, par le conteur, avec son bouton 🔊) ce qui marche contre elle : « faible »
   var SALVES = [
@@ -633,7 +629,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     { t: 100, nom: "Les gros", cri: "Mes gros, écrasez-la !", g: [["lourd", 4], ["rapide", 4]], portes: [1, 2], faible: "Les gros détestent l'électricité… et le poison de l'acide." },
     { t: 140, nom: "Les berserkers", cri: "Berserkers ! Foncez !", g: [["berserker", 4], ["rapide", 4]], faible: "La boue et l'eau freinent les berserkers. Le feu ? Il les rend fous." },
     { t: 180, nom: "Les cracheurs", cri: "Cracheurs, feu à volonté !", g: [["bouclier", 4], ["cracheur", 3]], form: true, faible: "Un cracheur mouillé ne crache plus rien." },
-    { t: 220, nom: "Les porte-barricades", cri: "Barricadez la place !", g: [["porteur", 3], ["rapide", 6]], faible: "Leurs barricades arrêtent ta vague. Une seule solution : le feu." },
+    { t: 220, nom: "Les porte-barricades", cri: "Barricadez la salle !", g: [["porteur", 3], ["rapide", 6]], faible: "Leurs barricades arrêtent ta vague. Une seule solution : le feu." },
     { t: 260, nom: "Les soldats en armure", cri: "Soldats, en ligne !", g: [["chevalier", 8]], form: true, faible: "Le feu glisse sur les armures. L'électricité, elle, passe à travers." },
     { t: 305, nom: "Les souffleurs", cri: "Soufflez-lui ses potions au nez !", g: [["souffleur", 3], ["rapide", 8]], faible: "Les lianes tiennent les souffleurs." },
     { t: 345, nom: "Le grand mélange", cri: "Tout le monde dehors !", g: [["chevalier", 3], ["lourd", 3], ["cracheur", 2], ["porteur", 2]], form: true },
@@ -648,7 +644,16 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   function sortirPorte(t, porte, lane) {
     sortir(t, true);
     var e = S.E[S.E.length - 1];
-    e.x = PORTES[porte] + (Math.random() - 0.5) * 10; e.y = 9; e.app = 0.4; e.form = lane === null || lane === undefined ? null : lane;
+    e.form = lane === null || lane === undefined ? null : lane;
+    if ((porte === 0 || porte === 3) && !e.T.lourd && !e.boss) {
+      // (version 15) il saute de la galerie du mur de côté, et retombe sur les dalles
+      var c2 = porte ? 1 : -1, ax = W / 2 + c2 * (W / 2 - 46 - Math.random() * 16);
+      e.x = ax + c2 * 30; e.y = L.D * (0.03 + Math.random() * 0.07); e.z = 96; e.vz = 60; e.vx = -c2 * 46; e.vy = 14;
+      e.etat = "vol"; e.leger = true; e.volT = 0; e.touche = {}; e.app = 0.2; e.cote = -c2;
+    } else {
+      if (porte === 0) porte = 1; else if (porte === 3) porte = 2;   // les gros passent par les portes de bronze
+      e.x = PORTES[porte] + (Math.random() - 0.5) * 10; e.y = 9; e.app = 0.4;
+    }
     S.portesT[porte] = Math.max(S.portesT[porte], 1.3);
     return e;
   }
@@ -656,6 +661,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   // il lance une salve : on le voit donner l'ordre (le bras levé ; les deux bras et des coups de pied par terre pour les grosses)
   function lancerSalve(def) {
     son(def.grande ? "tambours" : "crie");
+    GolemsA.prevoir(def.g.map(function (x) { return x[0]; }), PREVOIR);
     S.GA = { nom: def.grande ? "grande" : "salve", t: 0, dur: def.grande ? 2.3 : 1.5, lache: def.grande ? 1.3 : 0.55, def: def, fait: false };
   }
   function lacherSalve(def) {
@@ -672,7 +678,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     bulleBoss([def.grande ? "EN AVANT !!" : "ALLEZ !"]);
     if (def.deux) S.P.push({ t: 0, dur: 7, invisible: true, cb: function () { lancerSalve({ nom: def.nom + " : la deuxième", cri: "Et une deuxième vague !", g: def.g, form: def.form, grande: true }); } });
   }
-  // il tape du pied : la place tremble, les pavés sautent, une onde de poussière, et ses automates proches font un bond
+  // il tape du pied : la place tremble, les pavés sautent, une onde de poussière, et ses golems proches font un bond
   function piedBoss(k) {
     S.shake = Math.max(S.shake, 0.75 * k); son("pied");
     fx({ k: "onde", x: S.B.x, y: S.B.y + 4, r: 90 * k, c: "242,194,48", dur: .6 }); fx({ k: "onde", x: S.B.x, y: S.B.y + 4, r: 55 * k, c: "255,240,200", dur: .4 });
@@ -703,24 +709,6 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     }
     if (A.t >= A.dur) { S.GA = null; if (A.ensuite) A.ensuite(); }
   }
-  // sa pose du moment (persos-combat.js : brasG, brasD, saut, tremble, ordre)
-  function grosbecPose() {
-    var A = S.GA, p = { brasG: 0, brasD: 0, saut: 0, tremble: 0, ordre: 0 };
-    if (!A) { if (S.bouclierV > 0.05) p.brasG = p.brasD = 0.42 * S.bouclierV; return p; }
-    var u = A.t;
-    function env(a, b, c, d) { return u < a ? 0 : u < b ? (u - a) / (b - a) : u < c ? 1 : u < d ? 1 - (u - c) / (d - c) : 0; }
-    function bond(a, d) { return Math.max(0, Math.sin(Math.PI * clamp((u - a) / d, 0, 1))); }
-    if (A.nom === "salve") p.ordre = env(0, 0.35, 1.05, 1.5);
-    else if (A.nom === "grande") { p.saut = 7 * (bond(0.1, 0.28) + bond(0.62, 0.28)); p.brasG = p.brasD = env(1.0, 1.3, 2.0, 2.3); }
-    else if (A.nom === "colere") {
-      p.tremble = u < A.dur - 0.15 ? 1 : 0; var f = Math.sin(u * 13);
-      p.brasG = 0.6 * Math.max(0, f); p.brasD = 0.6 * Math.max(0, -f);
-      if (A.gros) p.saut = 9 * bond(0.95, 0.22);
-    }
-    else if (A.nom === "bouclier") p.brasG = p.brasD = 0.5 * Math.min(1, u / 0.3);
-    else if (A.nom === "allez") { var fa = Math.sin(u * 9); p.brasG = Math.max(0.35, fa); p.brasD = Math.max(0.35, -fa); p.tremble = 0.6; p.saut = 3 * Math.max(0, Math.sin(u * 18)); }
-    return p;
-  }
   // le bouclier de Grosbec : il le lève quand tu le blesses plus vite que prévu
   // la limite : au début, il peut perdre un peu d'avance (8 %), qui se résorbe avant 4 minutes (à 4 min : la moitié, pile)
   function plancher() { var t = S.temps, g = t < 240 ? 40 * (1 - t / 240) : 0; return PV_B * Math.max(0, 1 - (t + g) / DUREE); }
@@ -747,7 +735,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   function majPB(dt) {
     var P = S.PB; P.t += dt;
     if (P.t >= P.prochain && P.t < P.dur - 1) {
-      // une vague toutes les 2,6 s (s'il n'y a pas déjà 18 automates) : un berserker et un soldat en armure, ou deux rapides
+      // une vague toutes les 2,6 s (s'il n'y a pas déjà 18 golems) : un berserker et un soldat en armure, ou deux rapides
       // (et des porte-barricades à partir de la 2e fois)
       P.prochain += 2.6; P.n = (P.n || 0) + 1;
       if (S.E.length + S.file.length >= 18) return;
@@ -782,7 +770,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     S.dernierCoupB = t;
     if (o.lance) {
       S.colere += 1;
-      // chaque fois qu'il s'énerve, deux automates de plus sortent (« À MOI ! »)
+      // chaque fois qu'il s'énerve, deux golems de plus sortent (« À MOI ! »)
       if (S.coolPetite <= 0 && S.E.length + S.file.length < 22) { S.coolPetite = 5; for (var pc = 0; pc < 2; pc++) S.file.push({ t: Math.random() < 0.3 ? "berserker" : "rapide", porte: [0, 3][pc], lane: null, vite: true }); S.portesT[0] = S.portesT[3] = 1.3; }
       if (!S.GA) S.GA = { nom: "colere", t: 0, dur: 0.9 }; else bulleBoss(["AÏE !", "OUILLE !", "HMPF !"]);
     }
@@ -799,7 +787,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     S.colere = Math.max(0, S.colere - dt / 9);
     for (var i = 0; i < S.portesT.length; i++) S.portesT[i] = Math.max(0, S.portesT[i] - dt);
     majGA(dt);
-    // les automates sortent par les portes, un par un
+    // les golems sortent par les portes, un par un
     S.fileT -= dt;
     if (S.file.length && S.fileT <= 0 && S.E.length < MAX_E) { var f = S.file.shift(); sortirPorte(f.t, f.porte, f.lane); S.fileT = f.vite ? 0.16 : 0.3; }
     majBouclierBoss(dt);
@@ -816,7 +804,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     if (S.GA) return;   // il est déjà en train de faire quelque chose
     // 1. il a perdu un quart de sa vie : une très grosse salve, et les gros boss du palier suivant
     if (D.seuil < SEUILS.length && S.B.pv <= PV_B * SEUILS[D.seuil].pv) { lancerSalve(SEUILS[D.seuil]); D.seuil++; if (!S.palier) programmerBoss(1); programmerBoss(D.seuil + 1); return; }
-    // 2. tu lui as jeté ses automates dessus trop souvent : il explose de colère
+    // 2. tu lui as jeté ses golems dessus trop souvent : il explose de colère
     if (S.colere >= 3 && S.coolColere <= 0) { grosseColere(); return; }
     // 3. il se protège : il envoie de quoi t'occuper
     if (S.PB) return;
@@ -833,7 +821,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       }
     } else if (S.temps - D.apres > 40 && vivants < 14) {
       D.apres = S.temps;
-      lancerSalve({ nom: "Encore des automates", cri: "Je n'ai pas dit mon dernier mot !", g: [["rapide", 6], ["bouclier", 3], ["lourd", 2], [Math.random() < 0.5 ? "cracheur" : "souffleur", 2]] });
+      lancerSalve({ nom: "Encore des golems", cri: "Je n'ai pas dit mon dernier mot !", g: [["rapide", 6], ["bouclier", 3], ["lourd", 2], [Math.random() < 0.5 ? "cracheur" : "souffleur", 2]] });
     }
   }
 
@@ -873,6 +861,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     var I = BOSS_INFO[t], deja = S.bossVus[t]; S.bossVus[t] = (deja || 0) + 1;
     S.file.unshift({ t: t, porte: S.nBossApp++ % 2 ? 2 : 1, lane: null, vite: true });
     S.portesT[1] = S.portesT[2] = 1.6;
+    GolemsA.prevoir([t], PREVOIR);
     S.banniere = { txt: I.nom, t: 3.2 }; son("bossArrive"); S.shake = Math.max(S.shake, 0.4);
     dire(deja ? I.revoila : I.intro, "mal");
     if (!S.GA) S.GA = { nom: "salve", t: 0, dur: 1.5, lache: 99, fait: true };   // il le montre du doigt : « à toi ! »
@@ -1141,7 +1130,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     ombre(B.x, sy(B.y), B.r);
     var g = ctx.createRadialGradient(X - B.r * 0.35, Y - B.r * 0.4, B.r * 0.1, X, Y, B.r); g.addColorStop(0, "#A47A4E"); g.addColorStop(0.6, "#6E4A2C"); g.addColorStop(1, "#3E2814");
     ctx.fillStyle = g; rond(X, Y, B.r); ctx.fill();
-    // des bouts d'automates qui dépassent (des bras de métal, des sabots de porcelaine), qui tournent avec la boule
+    // des bouts de golems qui dépassent (des bras de métal, des sabots de porcelaine), qui tournent avec la boule
     for (var i = 0; i < Math.min(8, B.n * 2); i++) {
       var a = B.rot + i * 2.4, px = X + Math.cos(a) * B.r * 0.92, py = Y + Math.sin(a) * B.r * 0.92;
       ctx.strokeStyle = i % 2 ? "#6F8597" : "#E9E1CF"; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + Math.cos(a) * 6, py + Math.sin(a) * 6); ctx.stroke();
@@ -1208,7 +1197,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       return true;
     });
   }
-  // un automate emporté : il reste sur la crête
+  // un golem emporté : il reste sur la crête
   function majEmporte(e, dt) {
     var V = e.vague, ra = Math.atan2(e.y - V.y, e.x - V.x), dc = Math.hypot(e.x - V.x, e.y - V.y);
     if (V.fini || dc >= e.vagueFin || e.etat !== "glisse") { var vr = 220 / Math.sqrt(e.T.m); e.vague = null; e.vx = Math.cos(ra) * vr; e.vy = Math.sin(ra) * vr; return false; }
@@ -1262,13 +1251,13 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   }
   function soigner(h) { h = h / 10; son("soin"); S.pv = Math.min(PV_J, S.pv + h); fxTxt(S.hero.x, S.hero.y, -44, "+" + demi(h) + " ♥", "#EE86B6"); }
 
-  /* ================= états des automates ================= */
+  /* ================= états des golems ================= */
   function feuSur(e) {
     if (e.statue > 0) return;
     // (version 14) le Frileux : le feu le réchauffe ; les autres gros boss : ils brûlent un peu, sans plus (ni mèche, ni terre cuite)
     if (e.t === "frileux") { chauffer(e, 30); return; }
     if (e.boss) { if (e.panique <= 0 && !(e.immuFeu > 0)) { fxTxt(e.x, e.y, -(e.T.h + 20), "au feu !", "#FF8A3D"); e.panique = 3; } return; }
-    // un automate qui tourne dans le tourbillon prend feu : tout le tourbillon s'embrase et s'élargit (la tornade de feu)
+    // un golem qui tourne dans le tourbillon prend feu : tout le tourbillon s'embrase et s'élargit (la tornade de feu)
     if (e.tourb && !e.tourb.feu) {
       var tous = S.E.filter(function (o) { return o.tourb; });
       tous.forEach(function (o) { o.tourb.feu = true; o.tourb.t = Math.max(o.tourb.t, 3.2); o.panique = 3.5; o.mouille = 0; });
@@ -1295,7 +1284,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     if (e.enfarine > 0) { e.colle = Math.max(e.colle, 7); e.enfarine = 0; fxTxt(e.x, e.y, -30, "boue !", "#C9A46E"); return; }
     e.mouille = Math.max(e.mouille, 7);
   }
-  // électricité : elle saute d'un automate mouillé à l'autre
+  // électricité : elle saute d'un golem mouillé à l'autre
   // mouillé, une armure qui prend l'électricité : COURT-CIRCUIT. Le soldat grille (son armure ne protège plus pendant 6 s) ;
   // le Colosse perd sa cuirasse pendant 8 s : il prend deux fois plus, et redevient assez léger pour être projeté (sur Grosbec !)
   function courtCircuit(e) {
@@ -1355,7 +1344,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       fxTxt(e.x, e.y, -30, "bulle !", "#F4EEFF");
     });
     for (var i = 0; i < 5; i++) fx({ k: "bulleVide", x: t.x + (Math.random() - 0.5) * t.r, y: t.y + (Math.random() - 0.5) * t.r * 0.6, r: 6 + Math.random() * 8, dur: 2 + Math.random() });
-    son("pop"); note(n ? n + " automate" + (n > 1 ? "s" : "") + " dans des bulles !" : "des bulles s'envolent");
+    son("pop"); note(n ? n + " golem" + (n > 1 ? "s" : "") + " dans des bulles !" : "des bulles s'envolent");
   }
   function majBulle(e, dt) {
     var B = e.bulle; B.t -= dt;
@@ -1373,7 +1362,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     e.deBulle = true; e.chaine = nouvelleChaine();
     if (surBoss) { e.touche.boss = 1; frapperBoss(e, 260); combo("bulles"); }
   }
-  // les siamois : la pâte épaisse colle deux automates ensemble
+  // les siamois : la pâte épaisse colle deux golems ensemble
   function lier(a, b) {
     a.lie = b; b.lie = a; a.lieT = b.lieT = 14; a.lieD = b.lieD = a.r + b.r;
     fxTxt((a.x + b.x) / 2, (a.y + b.y) / 2, -30, "collés !", "#C9A46E");
@@ -1406,7 +1395,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     });
     if (T2.t <= 0) { e.tourb = null; e.z = 1; S.chaineCour = T2.chaine; ejecter(e, angDe(e, h.x, h.y), 340, 300); }
   }
-  // le lance-pierre : l'acide coupe la liane, l'automate qui tirait part en arrière
+  // le lance-pierre : l'acide coupe la liane, le golem qui tirait part en arrière
   function couperLianes(t) {
     var tenus = S.E.filter(function (e) { return e.attrape === t; });
     retirer(t);
@@ -1481,7 +1470,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     combo("elec");
   }
 
-  /* ================= automates ================= */
+  /* ================= golems ================= */
   function majAuto(e, dt) {
     if (e.dansBoule) { e.x = e.dansBoule.x; e.y = e.dansBoule.y; e.vx = e.vy = 0; e.z = 0; return; }
     ["colle", "aveugle", "etourdi", "mouille", "enfarine", "elec", "lent", "coolHit", "coolTon", "immuFeu", "immuElec", "lieT", "souffleAnim", "app", "denude", "grille", "retourT"].forEach(function (k) { e[k] = Math.max(0, e[k] - dt); });
@@ -1619,9 +1608,9 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     var mur = murs(e);
     if (mur && court) e.dir = Math.atan2(mur.ny, mur.nx) + (Math.random() - 0.5) * 1.8;
     if (!bloque && !court && !versGateau && !veut && e.aveugle <= 0 && d <= contact + 1) {
-      e.cd -= dt;
+      e.cd -= dt; e.contactT = S.temps;
       if (e.cd <= 0) {
-        e.cd = e.T.cad * (S.pv < 3 ? 1.5 : 1);
+        e.cd = e.T.cad * (S.pv < 3 ? 1.5 : 1); e.coupT = S.temps;
         if (S.eauS > 0) { fxTxt(S.hero.x, S.hero.y, -40, "il glisse !", "#9FC6EA"); balayer(e, -Math.PI / 2, 260); son("splat"); }
         else {
           blesser(e.T.coup, e.T.nom + " te frappe !", true);
@@ -1665,8 +1654,9 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   // les murs et la fontaine arrêtent net : rien ne rebondit
   function murs(o) {
     var sp = vit(o), hit = null;
-    if (o.x < o.r) { o.x = o.r; if (o.vx < 0) o.vx = 0; hit = { nx: 1, ny: 0 }; }
-    if (o.x > W - o.r) { o.x = W - o.r; if (o.vx > 0) o.vx = 0; hit = { nx: -1, ny: 0 }; }
+    var bm = bordX(o.y) + o.r;   // (version 15) au fond de la salle, les murs de côté avancent sur les dalles
+    if (o.x < bm) { o.x = bm; if (o.vx < 0) o.vx = 0; hit = { nx: 1, ny: 0 }; }
+    if (o.x > W - bm) { o.x = W - bm; if (o.vx > 0) o.vx = 0; hit = { nx: -1, ny: 0 }; }
     if (o.y < 8) { o.y = 8; if (o.vy < 0) o.vy = 0; hit = { nx: 0, ny: 1 }; }
     if (o.y > L.D - o.r) { o.y = L.D - o.r; if (o.vy > 0) o.vy = 0; hit = { nx: 0, ny: -1 }; }
     var f = { x: FONTAINE.x, y: FONTAINE.fy * L.D }, df = d2(o, f), mf = o.r + FONTAINE.r;
@@ -1696,7 +1686,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       else if (!e.attrape) { e.etat = "terre"; e.terreT = Math.max(e.terreT, 3); e.vx = e.vy = 0; }
     }
     choc(S.B.x, S.B.y, e.chaine);
-    var cris = ["Aïe ! Mes propres automates !", "Ouille, ma lanterne !", "Mais visez-la, elle !", "Arrêtez de me foncer dessus !", "Mon beau masque !"];
+    var cris = ["Aïe ! Mes propres golems !", "Ouille, ma lanterne !", "Mais visez-la, elle !", "Arrêtez de me foncer dessus !", "Mon beau masque !"];
     if (dm) { dire("Grosbec : « " + cris[Math.floor(Math.random() * cris.length)] + " » −" + dm, "bon"); son("aieBoss"); }
     else dire("Grosbec se protège : ton coup rebondit sur son bouclier.", "");
   }
@@ -1737,7 +1727,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       // le feu passe de l'un à l'autre
       if (a.panique > 0 && b.panique <= 0 && b.meche <= 0 && b.mouille <= 0) feuSur(b);
       else if (b.panique > 0 && a.panique <= 0 && a.meche <= 0 && a.mouille <= 0) feuSur(a);
-      // l'automate électrique : tout ce qu'il touche prend la décharge
+      // le golem électrique : tout ce qu'il touche prend la décharge
       if (a.elec > 0.5 && b.immuElec <= 0 && b.statue <= 0) electrocuter([b]);
       else if (b.elec > 0.5 && a.immuElec <= 0 && a.statue <= 0) electrocuter([a]);
       var nx = (b.x - a.x) / d, ny = (b.y - a.y) / d, kk = m - d, pa = a.statue > 0 ? 0 : b.statue > 0 ? 1 : 0.5;
@@ -1753,7 +1743,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       }
       if (bouge(e) && e.z < 30 && !e.touche.heros && d2(e, S.hero) < e.r + S.hero.r) {
         e.touche.heros = 1;
-        if (S.eauS <= 0) blesser(3, "Un automate projeté te percute ! −3");
+        if (S.eauS <= 0) blesser(3, "Un golem projeté te percute ! −3");
         if (e.etat === "vol") { e.vx *= 0.1; e.vy *= 0.1; } else { e.etat = "terre"; e.terreT = Math.max(e.terreT, LEVE); e.vx = e.vy = 0; }
       }
     });
@@ -1970,7 +1960,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       S.notes = []; nouvelleChaine(); var mk0 = S.megaK; S.megaK = mk;
       if (mk > 1) fx({ k: "onde", x: P.x, y: P.y, r: RAYONS[Math.max(1, r.length)] * mk + 30, c: "242,194,48", dur: .45 });
       if (spec && spec.forme === "colonnes") colonnes(P.x, P.y, spec.r * S.megaK);
-      else if (spec && spec.forme === "pose") { S.gateau = { x: P.x, y: P.y, t: 7 }; note("les automates gourmands accourent"); }
+      else if (spec && spec.forme === "pose") { S.gateau = { x: P.x, y: P.y, t: 7 }; note("les golems gourmands accourent"); }
       else cercle(P.x, P.y, c, r.length);
       S.megaK = mk0;
       finLancer(nom);
@@ -2017,7 +2007,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     if (c.feu) {
       son("feu"); brulerBarricades(x, y, R);
       dedans().forEach(feuSur);
-      // du feu sur le cercle du tourbillon : la tornade de feu (pas besoin de viser pile un automate qui tourne)
+      // du feu sur le cercle du tourbillon : la tornade de feu (pas besoin de viser pile un golem qui tourne)
       var tb = S.E.filter(function (e) { return e.tourb && !e.tourb.feu && Math.abs(Math.hypot(x - S.hero.x, y - S.hero.y) - e.tourb.R) < R + 45; })[0];
       if (tb) feuSur(tb);
       if (Math.hypot(S.hero.x - x, S.hero.y - y) < R + S.hero.r * 0.5 && S.eauS <= 0) { blesser(4 * c.feu); note("tu te brûles !"); }
@@ -2076,7 +2066,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     });
     if (vague) S.O.forEach(function (o) { if (o.actif && dansCone(o, h, ang, spec.len + o.r, spec.half)) lancerDir(o, ang, spec.force * 1.1); });
     var px = h.x + Math.cos(ang) * spec.len * 0.55, py = h.y + Math.sin(ang) * spec.len * 0.55;
-    if (vague) { ajouterTrace("eau", px, py, 42, 10); note(n ? "la vague emporte " + n + " automate" + (n > 1 ? "s" : "") : "la vague passe"); }
+    if (vague) { ajouterTrace("eau", px, py, 42, 10); note(n ? "la vague emporte " + n + " golem" + (n > 1 ? "s" : "") : "la vague passe"); }
     else { brut("vapeur", px, py, 42, 3); note("vapeur : ils ne voient plus rien"); }
   }
   function anneau(R) {
@@ -2105,7 +2095,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     }
     var h = S.hero, ang = Math.atan2(S.ptr.y - h.y, S.ptr.x - h.x), cs = Math.cos(ang), sn = Math.sin(ang);
     var a = { x: h.x, y: h.y }, b = { x: h.x + cs * 700, y: h.y + sn * 700 };
-    // le bouclier d'un automate : le rayon de feu rebondit dessus ; l'acide, lui, le ronge ; l'eau, elle, le pousse
+    // le bouclier d'un golem : le rayon de feu rebondit dessus ; l'acide, lui, le ronge ; l'eau, elle, le pousse
     var miroir = null, best = 1e9;
     S.E.forEach(function (e) {
       if (!e.shield || e.etat !== "debout" || R.kind === "eau") return;
@@ -2198,7 +2188,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     if (c.feu && c.farine) { exploser(h.x, h.y, 130, { soi: true }); c.feu = 0; c.farine = 0; note("tu exploses : tout le monde valse !"); }
     if (c.feu === 3) {
       blesser(25); S.rayon = { id: ++S.nRayon, kind: "feu", t: 3 * (S.megaK > 1 ? 1.5 : 1), large: 12 * S.megaK, tenu: false }; S.ptr = { x: S.hero.x, y: S.B.y };
-      note("tu craches du feu : touche la place pour le diriger ! (−25)"); c.feu = 0;
+      note("tu craches du feu : touche le sol pour le diriger ! (−25)"); c.feu = 0;
     } else if (c.feu) {
       var lg = 460 * S.megaK, half = c.feu === 2 ? 0.5 : 0.3, force = c.feu === 2 ? 380 : 260, soi = c.feu === 2 ? 12 : 6;
       fx({ k: "cone", x: h.x, y: h.y, ang: haut, len: lg, half: half, c: "245,120,50", dur: .55 }); son("boom");
@@ -2209,7 +2199,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     }
     if (c.eau === 3) {
       S.eauS = Math.max(S.eauS, 3); S.rayon = { id: ++S.nRayon, kind: "eau", t: 2.4 * (S.megaK > 1 ? 1.5 : 1), large: 15 * S.megaK, tenu: false }; S.ptr = { x: S.hero.x, y: S.B.y };
-      son("jet"); note("touche la place pour la diriger !");
+      son("jet"); note("touche le sol pour la diriger !");
     } else if (c.eau) { S.eauS = Math.max(S.eauS, [0, 4, 7, 10][c.eau] * S.megaK); note("bouclier d'eau : ils glissent sur toi"); }
     if (c.farine) { ajouterTrace("nuage", h.x, h.y - 30, 60, 4); note("nuage devant toi"); }
     if (c.acide) { var pa = c.acide === 3 ? 40 : 8 * c.acide; blesser(pa); note("aïe, tu te ronges ! (−" + pa + ")"); }
@@ -2232,8 +2222,8 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   }
   function montrerFin(gagne) {
     $("fin-titre").textContent = gagne ? "Gagné !" : "Perdu…";
-    $("fin-texte").textContent = gagne ? "Grosbec est assommé par ses propres automates !" : "La foule d'automates a eu le dessus.";
-    $("fin-stats").textContent = "Temps : " + Math.round(S.temps) + " s · Automates cassés : " + S.tues + " · Coups sur Grosbec : " + S.coupsBoss + " · Plus longue chaîne : ×" + S.chaineMax + " · Combos découverts : " + Object.keys(vus).length + " / " + Object.keys(COMBOS).length;
+    $("fin-texte").textContent = gagne ? "Grosbec est assommé par ses propres golems !" : "La foule de golems a eu le dessus.";
+    $("fin-stats").textContent = "Temps : " + Math.round(S.temps) + " s · Golems cassés : " + S.tues + " · Coups sur Grosbec : " + S.coupsBoss + " · Plus longue chaîne : ×" + S.chaineMax + " · Combos découverts : " + Object.keys(vus).length + " / " + Object.keys(COMBOS).length;
     $("fin").hidden = false; $("btn-rejouer").focus();
   }
 
@@ -2453,14 +2443,18 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       ctx.fillStyle = "#E9A6C8"; ctx.strokeStyle = "#7A3E5C"; ctx.lineWidth = 2; ctx.beginPath(); ctx.rect(GX - 12, GY - 12, 24, 14); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "#9B8CF0"; rond(GX, GY - 15, 4); ctx.fill();
     }
-    // les portes qui s'ouvrent : la lumière de Grosbec en sort
-    S.portesT.forEach(function (pt, i) {
-      if (pt <= 0) return;
-      var px = PORTES[i], m = i === 1 || i === 2, al = Math.min(1, pt / 0.4);
-      ctx.fillStyle = "rgba(255,190,90," + (0.6 * al) + ")"; arche(ctx, px, 92 - (m ? 24 : 26), m ? 22 : 20, m ? 24 : 26); ctx.fill();
-      var gp = ctx.createRadialGradient(px, 97, 2, px, 100, 44); gp.addColorStop(0, "rgba(255,190,90," + (0.4 * al) + ")"); gp.addColorStop(1, "rgba(255,190,90,0)");
-      ctx.fillStyle = gp; ell(px, 100, 44, 16); ctx.fill();
-    });
+    // (version 15) la lumière de la salle (les cristaux, les lanternes, les rigoles d'or), les portes de bronze qui s'ouvrent sur le
+    // rouge des forges, la lueur des galeries d'où sautent les golems
+    var DF = Decor.F;
+    if (DF) {
+      Decor.lumieres(ctx, tps, Math.pow(Math.max(0, Math.sin(tps * 5.86)), 2) * 0.6, Math.min(3, S.phaseMus || 0), S.megaArme ? 0.5 : 0, LEGER ? 1 : 2);
+      S.portesT.forEach(function (pt, i) {
+        if (pt <= 0) return;
+        var al = Math.min(1, pt / 0.5);
+        if (i === 1 || i === 2) Decor.porte(ctx, i - 1, al);
+        else { var c2 = i ? 1 : -1; Ou.poser(ctx, Ou.lueur(46, "255,120,50", 1, 0.5, 1), W / 2 + c2 * (W / 2 - 8), DF.y0 - 130, 1.3, al * 0.85); }
+      });
+    }
     dessinerVagues(tps);
     // la tornade de feu : des anneaux de flammes qui tournent autour de l'Alchimiste
     var tf = null; for (var it = 0; it < S.E.length; it++) if (S.E[it].tourb && S.E[it].tourb.feu) { tf = S.E[it].tourb; break; }
@@ -2584,7 +2578,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
         for (var fi = 0; fi < 7; fi++) { var fa0 = fi * 0.9 + 0.3, px1 = X, py1 = Y; ctx.beginPath(); ctx.moveTo(px1, py1); for (var fs = 1; fs <= 3; fs++) { px1 = X + Math.cos(fa0 + Math.sin(fi * 3 + fs) * 0.3) * f.r * fs / 3; py1 = Y + Math.sin(fa0 + Math.sin(fi * 3 + fs) * 0.3) * f.r * fs / 3 * FY; ctx.lineTo(px1, py1); } ctx.stroke(); }
       }
       else if (f.k === "etincelle") {
-        // le cœur d'un automate détruit file vers Grosbec
+        // le cœur d'un golem détruit file vers Grosbec
         var ex = f.x + (f.x2 - f.x) * kf, ey = sy(f.y + (f.y2 - f.y) * kf) - 20 - Math.sin(Math.PI * kf) * 40;
         var ge = ctx.createRadialGradient(ex, ey, 0, ex, ey, 9); ge.addColorStop(0, "rgba(255,250,220,1)"); ge.addColorStop(0.4, "rgba(255,190,80,.8)"); ge.addColorStop(1, "rgba(255,170,60,0)");
         ctx.fillStyle = ge; rond(ex, ey, 9); ctx.fill();
@@ -2592,16 +2586,17 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       }
       else if (f.k === "txt") { ctx.globalAlpha = 1 - kf; texte(f.txt, X, Y + f.dz - kf * 24, 14, f.c); ctx.globalAlpha = 1; }
     });
-    // en haut : ta vie (un cœur, une barre), le nombre d'automates
+    // en haut : ta vie (un cœur, une barre), le nombre de golems
     // dix cœurs (un demi-cœur se voit) ; ils battent quand il en reste peu ; bleus sous le bouclier d'eau
-    ctx.fillStyle = "rgba(14,10,8,.78)"; pave(8, 7, 156, 30, 10); ctx.fill(); ctx.strokeStyle = "rgba(242,194,48,.4)"; ctx.lineWidth = 1; ctx.stroke();
+    // (version 15) sur le muret, juste sous l'Alchimiste (le haut de l'écran est à Grosbec et au conteur)
+    var yh = L.bot + 6.2, x0h = W / 2 - 4.5 * 13.5;
+    ctx.fillStyle = "rgba(8,10,14,.82)"; pave(x0h - 11, L.bot + 0.4, 9 * 13.5 + 22, 11.6, 5.8); ctx.fill(); ctx.strokeStyle = "rgba(244,210,124,.55)"; ctx.lineWidth = 0.8; ctx.stroke();
     for (var ci = 0; ci < PV_J; ci++) {
-      var plein = Math.max(0, Math.min(1, S.pv - ci)), cxh = 20 + ci * 14, cyh = 18 + (S.pv < 3.5 ? Math.sin(tps * 10 + ci) * 0.8 : 0);
-      coeur(cxh, cyh, 1, "rgba(0,0,0,.55)");
-      if (plein > 0) { ctx.save(); ctx.beginPath(); ctx.rect(cxh - 7, cyh - 8, 14 * (plein >= 0.75 ? 1 : 0.5), 16); ctx.clip(); coeur(cxh, cyh, 1, S.eauS > 0 ? "#6FB8F0" : S.pv < 3.5 ? "#FF4A4A" : "#E8507E"); ctx.restore(); }
+      var plein = Math.max(0, Math.min(1, S.pv - ci)), cxh = x0h + ci * 13.5, cyh = yh + (S.pv < 3.5 ? Math.sin(tps * 10 + ci) * 0.6 : 0);
+      coeur(cxh, cyh - 1, 0.8, "rgba(0,0,0,.6)");
+      if (plein > 0) { ctx.save(); ctx.beginPath(); ctx.rect(cxh - 6, cyh - 8, 12 * (plein >= 0.75 ? 1 : 0.5), 16); ctx.clip(); coeur(cxh, cyh - 1, 0.8, S.eauS > 0 ? "#6FB8F0" : S.pv < 3.5 ? "#FF4A4A" : "#F0558A"); ctx.restore(); }
     }
-    ctx.fillStyle = "#8FA5B5"; rond(38, 30, 2.6); ctx.fill(); ctx.fillStyle = "#FFB347"; rond(38, 30, 1.1); ctx.fill();
-    texte(S.E.length + " automate" + (S.E.length > 1 ? "s" : "") + (S.file.length ? " · " + S.file.length + " arrivent" : ""), 44, 33, 9.5, S.E.length > 18 ? "#F0A08A" : "#C9C1B2", "left");
+    texte(S.E.length + " golem" + (S.E.length > 1 ? "s" : "") + (S.file.length ? " · " + S.file.length + " arrivent" : ""), 7, L.bot + 9.6, 8.5, S.E.length > 18 ? "#F0A08A" : "#C9C1B2", "left");
     if (MSG.on && (!S.msg || S.msg.t <= 0)) { MSG.on = false; $("msg").classList.remove("on"); }
     // la salve qui arrive : son nom
     if (S.banniere) {
@@ -2634,8 +2629,9 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   function ombre(x, Y, r) { ctx.fillStyle = "rgba(0,0,0,.42)"; ell(x, Y, r, r * 0.42); ctx.fill(); }
   function dessinerFontaine() {
     var x = FONTAINE.x, Y = sy(FONTAINE.fy * L.D), r = FONTAINE.r;
-    ctx.fillStyle = "#4A4944"; ell(x, Y + 6, r, r * FY); ctx.fill(); ctx.fillRect(x - r, Y - 6, 2 * r, 12);
-    ctx.fillStyle = "#5B5A55"; ell(x, Y - 6, r, r * FY); ctx.fill();
+    ctx.fillStyle = "#12222f"; ell(x, Y + 6, r, r * FY); ctx.fill(); ctx.fillRect(x - r, Y - 6, 2 * r, 12);
+    ctx.fillStyle = "#5d4831"; ctx.fillRect(x - r, Y - 1, 2 * r, 3);
+    ctx.fillStyle = "#2f4a5c"; ell(x, Y - 6, r, r * FY); ctx.fill(); ctx.strokeStyle = "rgba(244,210,124,.75)"; ctx.lineWidth = 1.2; ctx.stroke();
     var F = S.fontaine;
     ctx.fillStyle = F && F.type === "boue" ? "rgba(122,86,52,.95)" : "rgba(46,134,214,.85)"; ell(x, Y - 6, r - 5, (r - 5) * FY); ctx.fill();
     if (F && F.type === "elec") {
@@ -2643,7 +2639,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       for (var z = 0; z < 4; z++) { var a0 = Math.random() * 6.28, px = x + Math.cos(a0) * (r - 6), py = Y - 6 + Math.sin(a0) * (r - 6) * FY; ctx.beginPath(); ctx.moveTo(px, py); for (var q = 0; q < 3; q++) { px += (Math.random() - 0.5) * 16; py -= Math.random() * 10; ctx.lineTo(px, py); } ctx.stroke(); }
       ctx.strokeStyle = "rgba(255,240,120,.25)"; ctx.lineWidth = 2; ell(x, Y, r + 46, (r + 46) * FY); ctx.stroke();
     }
-    ctx.fillStyle = "#6A6963"; ctx.fillRect(x - 3, Y - 30, 6, 24);
+    ctx.fillStyle = "#8a7046"; ctx.fillRect(x - 3, Y - 30, 6, 24); ctx.fillStyle = "rgba(244,210,124,.8)"; ctx.fillRect(x - 3, Y - 30, 1.2, 24);
     ctx.strokeStyle = F && F.type === "boue" ? "rgba(140,100,60,.95)" : F && F.type === "elec" ? "rgba(255,240,140,.95)" : "rgba(150,200,245,.9)"; ctx.lineWidth = F && F.type === "boue" ? 3 : 1.8;
     ctx.beginPath(); ctx.moveTo(x, Y - 30); ctx.quadraticCurveTo(x - 10, Y - 34, x - 12, Y - 14); ctx.moveTo(x, Y - 30); ctx.quadraticCurveTo(x + 10, Y - 34, x + 12, Y - 14); ctx.stroke();
   }
@@ -2683,25 +2679,53 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     ctx.fillStyle = "#F4EBD5"; ctx.font = "800 9px 'Alegreya Sans', sans-serif"; ctx.textAlign = "center"; ctx.fillText("F", 0, 5);
     ctx.restore();
   }
+  // (version 15) GROSBEC : le modèle en volume du combat du Barde (modeles/grosbec.js : la grande armure, les lanternes aux épaules,
+  // le casque à bec). Ses gestes d'ici sont branchés sur ceux du modèle : il envoie (« envoi »), les grosses salves (deux coups de
+  // pied, les deux poings au ciel), sa colère (les poings qui battent ; la grosse : « silence », les poings au ciel puis il les abat),
+  // son bouclier (les deux paumes en avant), un coup reçu (« touché »). Son casque se fend à mesure qu'il perd de la vie.
+  var G_ECH = 0.5, GB = { k: 0, vu: null, tHit: -9, tAllez: -9, tGarde: -9, cote: 1, dernier: 0 };
+  Gros.G.grande = function () {
+    var H = { gx: -64, gy: -152, gz: 12, dx: 64, dy: -152, dz: 12, penche: -0.18, hoche: -0.32, bas: 4, yeux: 2.4, cape: -0.5, lumC: 2.2, lumG: 2, lumD: 2 };
+    return [[0, {}], [0.12, { pied: 1, bas: 2, penche: -0.06 }], [0.3, { pied: 1, bas: 3 }], [0.38, { pied: 0, bas: 16, penche: 0.2 }], [0.6, { pied: 1, bas: 2, penche: -0.06 }], [0.82, { pied: 1, bas: 3 }], [0.9, { pied: 0, bas: 16, penche: 0.2 }],
+      [1.25, H], [1.95, Object.assign({}, H, { gy: -158, dy: -158 })], [2.35, {}]];
+  };
+  Gros.G.rage = function (sd, P) {
+    var k = [[0, {}]];
+    for (var t = 0.12, i = 0; t < P - 0.2; t += 0.2, i++) k.push([t, i % 2 ? { gx: -70, gy: -70, gz: 30, dx: 84, dy: 0, dz: 20, penche: 0.14, tete: 0.3, yeux: 2.4, bas: 8 } : { gx: -84, gy: 0, gz: 20, dx: 70, dy: -70, dz: 30, penche: 0.14, tete: -0.3, yeux: 2.4, bas: 8 }]);
+    k.push([P, {}]); return k;
+  };
+  Gros.G.garde = function () { var H = { gx: -34, gy: -52, gz: 64, dx: 34, dy: -52, dz: 64, go: 1, do_: 1, penche: 0.1, bas: 6, lumC: 2, lumG: 1.8, lumD: 1.8 }; return [[0, H], [0.7, H], [1.1, {}]]; };
   function dessinerBoss(tps) {
-    var B = S.B, x = B.x, Y = sy(B.y), P = grosbecPose();
-    ombre(x, Y, 34 - P.saut * 0.8);
-    if (S.rageV > 0.05) {
-      var ga = ctx.createRadialGradient(x, Y - 50, 10, x, Y - 50, 80); ga.addColorStop(0, "rgba(255,70,40," + (0.35 * S.rageV * (0.7 + 0.3 * Math.sin(tps * 12))) + ")"); ga.addColorStop(1, "rgba(255,70,40,0)");
-      ctx.fillStyle = ga; rond(x, Y - 50, 80); ctx.fill();
-      if (Math.random() < 0.5 * S.rageV) part({ x: x + (Math.random() - 0.5) * 16, y: S.B.y, z: 96 - P.saut, vx: (Math.random() - 0.5) * 30, vz: 70, g: -20, dur: 0.9, r: 4, r1: 11, c: "vapeur", a: 0.75 });
+    var B = S.B, x = B.x, Y = sy(B.y), A = S.GA, kG = L.s * L.dpr;
+    if (GB.k !== kG) { Gros.construire(kG, G_ECH); GB.k = kG; }
+    if (tps < GB.dernier - 0.5) { GB.tHit = GB.tAllez = GB.tGarde = -9; GB.vu = null; } GB.dernier = tps;
+    if (A !== GB.vu) {
+      GB.vu = A;
+      if (A && A.nom === "salve") { GB.cote = -GB.cote; Gros.jouer("envoi", tps + 0.55, GB.cote, 0.55); }
+      else if (A && A.nom === "grande") Gros.jouer("grande", tps);
+      else if (A && A.nom === "colere") { if (A.gros) Gros.jouer("silence", tps + 0.5); else Gros.jouer("rage", tps, 1, A.dur); }
+      else if (A && A.nom === "bouclier") Gros.jouer("garde", tps);
     }
-    ctx.save(); ctx.translate(x, Y); ctx.scale(0.86, 0.86);
-    grosbecGarde({ t: tps, coup: Math.max(0, B.hit / 0.35), rage: S.rageV, ordre: P.ordre, brasG: P.brasG, brasD: P.brasD, saut: P.saut, tremble: P.tremble }, 0.86);
-    ctx.restore();
+    if (A && A.nom === "allez") { if (tps > GB.tAllez) { GB.cote = -GB.cote; Gros.jouer("envoi", tps + 0.5, GB.cote, 0.5); GB.tAllez = tps + 1.05; } }
+    else if (!A && S.bouclierV > 0.3 && tps > GB.tGarde) { Gros.jouer("garde", tps); GB.tGarde = tps + 0.6; }
+    if (B.hit > 0.3 && tps - GB.tHit > 0.9 && (!A || A.nom === "bouclier")) { GB.tHit = tps; Gros.jouer("touche", tps, Math.random() < 0.5 ? -1 : 1); }
+    var rage = Math.max(S.rageV || 0, Math.min(1, (S.colere || 0) / 3) * 0.6);
+    Gros.rafraichir(tps, { pul: Math.pow(Math.max(0, Math.sin(tps * 5.86)), 2) * 0.7, mode: "combat", colere: rage, fissures: Math.min(5, Math.floor((1 - B.pv / PV_B) * 5.3)) },
+      A || B.hit > 0 || tps - GB.tHit < 1 ? (LEGER ? 9 : 14) : (LEGER ? 5 : 8));   // il n'est repeint que quelques fois par seconde (plus souvent quand il fait un geste)
+    if (S.rageV > 0.05) {
+      var ga = ctx.createRadialGradient(x, Y - 70, 12, x, Y - 70, 100); ga.addColorStop(0, "rgba(255,70,40," + (0.35 * S.rageV * (0.7 + 0.3 * Math.sin(tps * 12))) + ")"); ga.addColorStop(1, "rgba(255,70,40,0)");
+      ctx.fillStyle = ga; rond(x, Y - 70, 100); ctx.fill();
+      if (Math.random() < 0.5 * S.rageV) part({ x: x + (Math.random() - 0.5) * 16, y: S.B.y, z: 132, vx: (Math.random() - 0.5) * 30, vz: 70, g: -20, dur: 0.9, r: 4, r1: 11, c: "vapeur", a: 0.75 });
+    }
+    Gros.dessiner(ctx, x, Y + 2);
     // son bouclier : un dôme doré, nid d'abeilles, qui s'allume quand un coup rebondit
     if (S.bouclierV > 0.02) {
-      var al = S.bouclierV * (1 + S.bouclierFlash * 2), cy = Y - 46, rx = 50, ry = 64;
+      var al = S.bouclierV * (1 + S.bouclierFlash * 2), cy = Y - 66, rx = 66, ry = 86;
       var gd = ctx.createRadialGradient(x, cy, 12, x, cy, ry); gd.addColorStop(0, "rgba(242,194,48,0)"); gd.addColorStop(0.75, "rgba(242,194,48," + (0.12 * al) + ")"); gd.addColorStop(1, "rgba(255,230,140," + Math.min(0.9, 0.5 * al) + ")");
       ctx.fillStyle = gd; ell(x, cy, rx, ry); ctx.fill();
       ctx.save(); ell(x, cy, rx, ry); ctx.clip();
       ctx.strokeStyle = "rgba(255,225,120," + Math.min(0.8, 0.35 * al) + ")"; ctx.lineWidth = 0.8;
-      for (var hy = -4; hy <= 4; hy++) for (var hx = -4; hx <= 4; hx++) { var hcx = x + hx * 15 + (hy % 2 ? 7.5 : 0), hcy = cy + hy * 13 + Math.sin(tps * 2) * 2; ctx.beginPath(); for (var hk = 0; hk < 6; hk++) { var ha = hk * Math.PI / 3 + Math.PI / 6; ctx.lineTo(hcx + Math.cos(ha) * 8, hcy + Math.sin(ha) * 8); } ctx.closePath(); ctx.stroke(); }
+      for (var hy = -4; hy <= 4; hy++) for (var hx = -4; hx <= 4; hx++) { var hcx = x + hx * 20 + (hy % 2 ? 10 : 0), hcy = cy + hy * 17.5 + Math.sin(tps * 2) * 2; ctx.beginPath(); for (var hk = 0; hk < 6; hk++) { var ha = hk * Math.PI / 3 + Math.PI / 6; ctx.lineTo(hcx + Math.cos(ha) * 11, hcy + Math.sin(ha) * 11); } ctx.closePath(); ctx.stroke(); }
       ctx.restore();
       ctx.strokeStyle = "rgba(255,240,170," + Math.min(1, 0.7 * al) + ")"; ctx.lineWidth = 1.6; ell(x, cy, rx, ry); ctx.stroke();
     }
@@ -2715,7 +2739,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     if (S.bulle) {
       var bt = S.bulle, sc2 = bt.t > 1.3 ? 0.6 + (1.5 - bt.t) * 2 : 1;
       ctx.font = "800 13px 'Alegreya Sans', sans-serif"; var bw = ctx.measureText(bt.txt).width + 16;
-      var bx = clamp(x + 30 + bw / 2, bw / 2 + 4, W - bw / 2 - 4), byy = Y - 58;
+      var bx = clamp(x + 40 + bw / 2, bw / 2 + 4, W - bw / 2 - 4), byy = Y - 112;
       ctx.save(); ctx.translate(bx, byy); ctx.scale(sc2, sc2); ctx.globalAlpha = Math.min(1, bt.t * 3);
       ctx.fillStyle = "#FFF8E6"; ctx.strokeStyle = "#1A1410"; ctx.lineWidth = 2;
       ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(-bw / 2, -13, bw, 24, 10); else ctx.rect(-bw / 2, -13, bw, 24);
@@ -2726,11 +2750,12 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   }
   function dessinerAuto(e, tps) {
     if (e.dansBoule) return;
-    var T = e.T, x = e.x, Y = sy(e.y);
+    var T = e.T, x = e.x, Y = sy(e.y), pf = prof(e.y);
     if (e.app > 0) ctx.globalAlpha = Math.max(0, 1 - e.app / 0.4);
     if (e.mouille > 0) { ctx.strokeStyle = "rgba(79,163,240,.7)"; ctx.lineWidth = 2; ell(x, Y, e.r + 5, (e.r + 5) * 0.45); ctx.stroke(); }
-    ombre(x, Y, e.r * (e.z > 0 ? Math.max(0.5, 1 - e.z / 160) : 1));
-    var w = e.r * 1.35, hh = T.h, rot = 0, couche = e.etat === "glisse" || e.etat === "terre";
+    ombre(x, Y, e.r * 1.15 * (e.z > 0 ? Math.max(0.5, 1 - e.z / 160) : 1));
+    if (e.z <= 0 && !(e.statue > 0)) { ctx.fillStyle = "rgba(255,70,30,.10)"; ell(x, Y, e.r * 1.45, e.r * 0.55); ctx.fill(); }   // le rouge de son fourneau, sur les dalles
+    var w = e.r * 1.35, hh = T.h * pf, rot = 0, couche = e.etat === "glisse" || e.etat === "terre";
     if ((e.attrape && e.attrape.feu > 0) || e.tourb || e.toupie > 0 || e.balance) rot = Math.sin(e.spin) * 0.9;
     else if (e.etat === "bulle") rot = Math.sin(e.spin) * 0.25;
     else if (e.etat === "vol") rot = e.leger ? 0.3 * e.cote : e.cote * Math.min(1.45, e.volT * 2.4);
@@ -2758,9 +2783,8 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       if (hop) ctx.translate(0, -hop * 9);
       if (EB.dort) marche = 0;
     }
-    dessinAutomate(e, tps, { marche: marche, face: e.faceL, sansBouclier: e.t === "bouclier" && !e.shield, eb: EB,
-      etats: { feu: e.panique > 0, mouille: e.mouille > 0, farine: e.enfarine > 0, boue: e.colle > 0, statue: e.statue > 0, elec: e.elec > 0, meche: e.meche > 0, aveugle: e.aveugle > 0 && e.etat === "debout" },
-      charge: e.t === "cracheur" && e.tirT < 0.6 ? (0.6 - e.tirT) / 0.6 : 0, souffle: e.souffleAnim > 0 ? Math.sin((1 - e.souffleAnim / 0.6) * Math.PI) : 0 });
+    dessinAutomate(e, tps, { marche: marche, face: e.faceL, eb: EB, vit: spF, pf: pf, geste: gesteDe(e, spF),
+      etats: { feu: e.panique > 0, mouille: e.mouille > 0, farine: e.enfarine > 0, boue: e.colle > 0, statue: e.statue > 0, elec: e.elec > 0, meche: e.meche > 0, aveugle: e.aveugle > 0 && e.etat === "debout" } });
     if (e.attrape) { ctx.strokeStyle = e.attrape.feu > 0 ? "#FF8A3D" : "#4E9A2E"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(-w / 2 - 2, -4); ctx.lineTo(w / 2 + 2, -hh * 0.4); ctx.moveTo(-w / 2 - 2, -hh * 0.6); ctx.lineTo(w / 2 + 2, -hh * 0.2); ctx.stroke(); }
     ctx.restore();
     if (e.etat === "bulle") {
@@ -2771,7 +2795,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
       ctx.strokeStyle = "rgba(255,255,255,.8)"; ctx.lineWidth = 1.5; ctx.stroke();
       ctx.fillStyle = "rgba(255,255,255,.85)"; ell(x - bR * 0.4, bY - bR * 0.45, bR * 0.22, bR * 0.12); ctx.fill();
     }
-    var top = Y - e.z - (couche ? e.r * 1.7 + 8 : T.h + 7);
+    var top = Y - e.z - (couche ? e.r * 1.7 + 8 : hh + 7);
     if (e.t === "colosse") {
       // le Colosse : une grande barre, et son nom
       ctx.fillStyle = "rgba(0,0,0,.65)"; ctx.fillRect(x - 30, top - 8, 60, 6);
@@ -3047,61 +3071,47 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     return true;
   }
 
-  /* ================= les dessins gardés (automates, Grosbec) ================= */
-  // Chaque allure d'un automate (sa sorte, comment il est tourné, son pas, ses états) est dessinée une fois dans une petite toile ;
-  // ensuite, on la recopie. Il n'y a jamais plus de quelques dizaines d'allures à la fois.
-  var CACHE_A = new Map(), CA_K = 0, CACHE_B = new Map(), CB_K = 0;
-  var CA_BOITE = { lourd: [-33, 33, -55, 12], autre: [-26, 26, -48, 6], colosse: [-60, 60, -100, 22], boss: [-56, 56, -104, 18] };
-  var CADENCE = {};
-  function automateGarde(type, o, cle) {
-    // (version 14) les gros boss ont leur propre réserve, plus petite et un peu moins fine (leurs toiles sont grandes : la mémoire du téléphone)
-    var gros = TYPES[type] && TYPES[type].boss, C = gros ? CACHE_B : CACHE_A, cap = gros ? 110 : 520;
-    var k = gros ? Math.min(2.2, L.s * L.dpr) : L.s * L.dpr;
-    if (gros) { if (k !== CB_K) { CACHE_B.clear(); CB_K = k; } } else if (k !== CA_K) { CACHE_A.clear(); CA_K = k; }
-    var c = C.get(cle); if (c) { C.delete(cle); C.set(cle, c); }
-    var B = CA_BOITE[type === "lourd" || type === "colosse" ? type : gros ? "boss" : "autre"];
-    if (!c) {
-      if (C.size > cap) { var nS = 0, nE = gros ? 20 : 80; C.forEach(function (v, kk) { if (nS++ < nE) C.delete(kk); }); }
-      c = document.createElement("canvas"); c.width = Math.ceil((B[1] - B[0]) * k); c.height = Math.ceil((B[3] - B[2]) * k);
-      var g = c.getContext("2d"); g.setTransform(k, 0, 0, k, -B[0] * k, -B[2] * k);
-      PersosCombat.automate(g, type, o);
-      C.set(cle, c);
-    }
-    ctx.drawImage(c, B[0], B[2], B[1] - B[0], B[3] - B[2]);
+  /* ================= les golems (version 15) ================= */
+  // Les modèles : modeles/golems.js (le bestiaire du combat du Barde) et golems-alchimiste.js (les huit de plus). Chaque image est
+  // peinte une fois (par GolemsA), puis recopiée. Ici : quelle image montrer (tourné à gauche, de face, à droite ; le pas en quatre
+  // images ; il arme, il frappe), sa teinte (trempé, enfariné, boue, terre cuite, en feu), et ce qui bouge par-dessus (les flammes,
+  // les gouttes, les éclairs, la fumée, la mèche).
+  function gesteDe(e, sp) {
+    if (e.etat !== "debout" || e.statue > 0) return null;
+    var t = S.temps;
+    if (e.coupT !== undefined && t - e.coupT < 0.28) return "frappe";
+    if (e.t === "cracheur") return e.tirT > e.T.tir - 0.28 ? "frappe" : null;
+    if (e.t === "souffleur") return e.souffleAnim > 0.12 ? "frappe" : e.souffleT < 0.5 ? "arme" : null;
+    if (e.t === "porteur" && e.plante > 0) return Math.floor(e.plante * 6) % 2 ? "frappe" : "arme";
+    if (e.t === "singe" && e.balance) return "arme";
+    if (e.t === "berserker" && sp > 95) return "charge";
+    if (e.contactT !== undefined && t - e.contactT < 0.12 && e.cd < 0.4) return "arme";
+    return null;
   }
-  function cadence(type) {
-    if (CADENCE[type]) return CADENCE[type];
-    var S0 = (PersosCombat.SORTES || {})[type] || { poids: 1 };
-    return (CADENCE[type] = S0.poids > 1.3 ? 6 : S0.poids < 0.9 ? 11 : 8.5);
-  }
-  // un automate : on arrondit ce qui varie (8 images par pas, 5 façons d'être tourné), puis on recopie l'allure gardée
   function dessinAutomate(e, tps, o) {
-    var E = o.etats, bits = (E.feu ? 1 : 0) | (E.mouille ? 2 : 0) | (E.farine ? 4 : 0) | (E.boue ? 8 : 0) | (E.statue ? 16 : 0) | (E.elec ? 32 : 0) | (E.meche ? 64 : 0) | (E.aveugle ? 128 : 0);
-    var gros = e.boss, fq = gros ? Math.round(o.face * 1.25) / 1.25 : Math.round(o.face * 2.5) / 2.5, m = E.statue ? 0 : o.marche < 0.15 ? 0 : o.marche < 0.6 ? 0.5 : 1, t = tps + e.id * 0.37, tq = 0, ph = 0;
-    if (gros && m) m = 1;
-    if (m > 0) { var r = cadence(e.t), cyc = 2 * Math.PI / r, nP = gros ? 6 : 8; ph = Math.floor(((t % cyc) / cyc) * nP); tq = (ph + 0.5) / nP * cyc; }
-    else if (e.t === "cracheur") { ph = Math.floor(t * 8) % 10; tq = ph / 8; }
-    else if (e.t === "souffleur") { ph = Math.floor(t * 6) % 17; tq = ph / 6; }
-    var fl = bits & (1 | 32 | 64) ? Math.floor(t * 12) % 3 : 0;
-    var cq = Math.round((o.charge || 0) * 4) / 4, sq = Math.round((o.souffle || 0) * 4) / 4;
-    o.porte = e.porte; o.denude = e.denude > 0; o.grille = e.grille > 0;
-    var EB = o.eb, cb = EB ? (EB.dort ? "z" : "") + EB.bouche + EB.gonfle + "c" + EB.chaud + "r" + EB.ressort + (EB.ouvert ? "o" : "") : "";
-    if (EB) { o.dort = EB.dort; o.bouche = EB.bouche; o.gonfle = EB.gonfle; o.chaud = EB.chaud; o.ressort = EB.ressort; o.ouvert = EB.ouvert; }
-    var cle = e.t + "|" + fq + "|" + m + "|" + ph + "|" + bits + "|" + cq + "|" + sq + "|" + (o.sansBouclier ? 1 : 0) + "|" + fl + "|" + (e.porte || 0) + (o.denude ? "d" : "") + (o.grille ? "g" : "") + cb;
-    o.t = tq; o.face = fq; o.marche = m; o.charge = cq; o.souffle = sq;
-    automateGarde(e.t, o, cle);
-  }
-  // Grosbec : un seul, redessiné 15 fois par seconde dans sa toile
-  var CACHE_G = { c: null, k: 0, cle: "" }, G_BOITE = [-62, 62, -150, 8];
-  function grosbecGarde(o, ech) {
-    var k = L.s * L.dpr * ech, G = CACHE_G, B = G_BOITE;
-    if (!G.c || G.k !== k) { G.c = document.createElement("canvas"); G.c.width = Math.ceil((B[1] - B[0]) * k); G.c.height = Math.ceil((B[3] - B[2]) * k); G.k = k; G.cle = ""; }
-    var tq = Math.floor(o.t * 15) / 15, cle = tq + "|" + Math.round(o.coup * 10) + "|" + Math.round(o.rage * 10) + "|" + Math.round(o.ordre * 10) + "|" + Math.round((o.brasG || 0) * 10) + "|" + Math.round((o.brasD || 0) * 10) + "|" + Math.round(o.saut || 0) + "|" + Math.round((o.tremble || 0) * 4);
-    if (G.cle !== cle) {
-      var g = G.c.getContext("2d"); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, G.c.width, G.c.height);
-      g.setTransform(k, 0, 0, k, -B[0] * k, -B[2] * k); o.t = tq; PersosCombat.grosbec(g, o); G.cle = cle;
-    }
-    ctx.drawImage(G.c, B[0], B[2], B[1] - B[0], B[3] - B[2]);
+    var E = o.etats, t = tps + e.id * 0.37, pf = o.pf;
+    // tourné à gauche, de face ou à droite (avec un peu de mou, pour qu'il ne clignote pas entre deux)
+    var yw = e.yawL || 0; if (o.face > 0.34) yw = 1; else if (o.face < -0.34) yw = -1; else if (Math.abs(o.face) < 0.2) yw = 0; e.yawL = yw;
+    var g = { yaw: yw, etat: "marche", k: 2, pied: 0 };
+    // le pas : quatre images (le pied tape, debout, l'autre se lève, il est en l'air) ; plus il va vite, plus il presse le pas
+    if (o.marche > 0.15 && !E.statue) { var q = t / clamp(15 / Math.max(18, o.vit), 0.17, 0.55), n = Math.floor(q), u = q - n; g.pied = n % 2; g.k = u < 0.22 ? 0 : u < 0.5 ? 2 : u < 0.76 ? 3 : 4; }
+    if (o.geste) { g.etat = o.geste; g.k = 0; g.pied = 0; if (o.geste === "charge") ctx.translate(0, -Math.abs(Math.sin(t * 22)) * 2.5); }
+    if (e.t === "bouclier" && !e.shield) g.sansBouclier = true;
+    if (e.t === "chevalier" && e.grille > 0) g.grille = true;
+    if (e.t === "colosse" && e.denude > 0) g.denude = true;
+    if (e.t === "porteur" && e.porte) g.porte = 1;
+    var EB = o.eb;
+    if (EB) { if (e.t === "glouton") { g.dort = EB.dort; g.bouche = EB.bouche; g.gonfle = EB.gonfle; } else if (e.t === "frileux") g.chaud = EB.chaud; else if (e.t === "sauteur") g.ressort = EB.ressort; }
+    var teinte = E.statue ? "statue" : E.farine ? "farine" : E.boue ? "boue" : E.elec && Math.floor(t * 14) % 2 ? "elec" : E.feu ? "feu" : e.poison > 0 ? "poison" : E.mouille ? "mouille" : null;
+    GolemsA.dessiner(ctx, e.t, 0, 0, pf, g, teinte);
+    // par-dessus : ce qui bouge
+    var H = e.T.h * pf, r = e.r, j;
+    if (E.feu) for (j = 0; j < 3; j++) { var hf = H * (0.36 + 0.14 * Math.abs(Math.sin(t * 11 + j * 1.9))); ctx.drawImage(FLAMME, (j - 1) * r * 0.75 - hf * 0.3, -H * (j === 1 ? 0.8 : 0.42) - hf, hf * 0.6, hf); }
+    if (E.mouille && !E.feu) { ctx.fillStyle = "rgba(160,212,255,.92)"; for (j = 0; j < 3; j++) { ell((j - 1) * r * 0.6, -H * 0.6 + ((t * 30 + j * 11) % (H * 0.55)), 1.1, 2); ctx.fill(); } }
+    if (E.elec) { ctx.strokeStyle = "rgba(236,250,255,.95)"; ctx.lineWidth = 1.3; for (j = 0; j < 3; j++) { var px = (Math.random() - 0.5) * r * 2.4, py = -Math.random() * H * 0.9; ctx.beginPath(); ctx.moveTo(px, py); for (var z = 0; z < 3; z++) { px += (Math.random() - 0.5) * 13; py += (Math.random() - 0.5) * 13; ctx.lineTo(px, py); } ctx.stroke(); } }
+    if (E.aveugle) { ctx.fillStyle = "rgba(205,205,205,.6)"; for (j = 0; j < 4; j++) { var fa = t * 1.5 + j * 1.6; ell(Math.cos(fa) * r * 0.9, -H * 0.82 + Math.sin(fa * 1.3) * 3, r * 0.5, r * 0.36); ctx.fill(); } }
+    if (g.grille) { ctx.fillStyle = "rgba(50,50,56,.5)"; for (j = 0; j < 3; j++) { ell(Math.sin(t * 2 + j * 2.1) * 4, -H - ((t * 12 + j * 6) % 16), 3 + j * 0.6, 2.4); ctx.fill(); } }
+    if (E.meche) { ctx.strokeStyle = "#5A4630"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(0, -H * 0.96); ctx.quadraticCurveTo(5, -H - 5, 2.5, -H - 10); ctx.stroke(); ctx.fillStyle = Math.sin(t * 40) > 0 ? "#FFF2B0" : "#FF8A3D"; rond(2.5, -H - 10.5, 2.6); ctx.fill(); }
   }
 
   /* ================= commandes ================= */
