@@ -1681,6 +1681,10 @@ R._t_dague = function(o){ return this._t_coup(o, 1.1, 'dague'); };
 /* IMMUNISÉ : la flèche se plante dans la masse ; un rat de devant l'attrape entre ses dents, l'arrache, la recrache… et ils ricanent */
 R._t_rebond = function(o){
   if(this.etat.boule) return this._rebondBoule(o);
+  /* (24 novembre — Romain, 13 h 15 et 13 h 16 : « quand l'alchimiste il fait un dong sur le roi des rats, il y a une flèche qui part
+     […] ça le fait aussi avec le pisteur quand il donne un coup de dague ») : la flèche plantée, arrachée et recrachée, c'est pour
+     une FLÈCHE ; une dague ou une louche qui ne lui font rien : il sursaute, c'est tout */
+  if(o && o.arme && o.arme !== 'fleche') return this._sursaut(o);
   var self = this, j = this._debutAction(), T = 2600, r = RAT.r1;
   function t(ms){ return ms / T; }
   var cible = this._ou('r1', 30 * r.s, -30 * r.s), dep = [cible[0] - 260, cible[1] - 30];

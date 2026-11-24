@@ -116,7 +116,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 #persos{position:static}
 #fx{z-index:40}
 #fumee{z-index:45;overflow:hidden}
-#hud{z-index:50;transition:opacity .5s}
+#hud{z-index:50;transition:opacity .2s}
 #hud .zone{pointer-events:auto}
 #ecran-fx{position:absolute;left:0;top:0;width:960px;height:540px;z-index:60;pointer-events:none;overflow:hidden}
 /* la salle est vide au début : la bande, la bulle et les barres arrivent après l'entrée des héros et des rats */
@@ -124,7 +124,7 @@ img{-webkit-user-drag:none;user-select:none;pointer-events:none}
 #combat:not(.ouvert) #fuite, #combat:not(.ouvert) #volumes{opacity:0;pointer-events:none}
 #fuite, #combat #volumes{transition:opacity .5s .2s}
 #combat:not(.ouvert) #bande{transform:translateY(100%)}
-#bande{transition:transform .6s cubic-bezier(.2,.8,.3,1)}
+#bande{transition:transform .22s cubic-bezier(.2,.8,.3,1)}      /* (24 novembre — Romain, 13 h 18 : « 3 fois plus vite » ; avant .6s) */
 
 /* les places des personnages (le jeu) et leurs acteurs (images ou modules d'animation) */
 .perso{position:absolute}
@@ -937,7 +937,7 @@ i.lp-flam{border-radius:50% 50% 46% 46%/64% 64% 36% 36%;background:radial-gradie
 </div>
 <script>
 /* les niveaux des sons (essai/sons/niveaux.json) */
-window.NIVEAUX = {"amuletteA":2.018,"amuletteB":1.466,"araiCriA":0.688,"araiCriB":0.661,"araiCriC":1.521,"araiMortA":0.991,"araiMortB":0.749,"araiToileA":2.063,"araiToileB":1.76,"araiToucheA":1.108,"araiToucheB":1.076,"arcA":1.908,"arcB":1.703,"arcC":1.195,"atelier":1.577,"bassinGeleA":1.583,"batonA":1.806,"batonB":1.025,"beteChuteA":1.388,"boisA":2.84,"boisB":1.615,"boisC":2.491,"bossA":1.534,"bossB":1.315,"bossC":1.681,"bourbeCriA":1.572,"bourbeCriB":1.426,"bourbeCriC":1.388,"bourbeFinA":0.862,"bourbeFinB":0.868,"bourbeGobeA":1.324,"bourbeGobeB":2.798,"bourbeLangueA":1.622,"bourbeLangueB":0.993,"bourbePlongeA":1.074,"bourbePlongeB":1.633,"bourbeRireA":1.659,"bourbeRireB":1.823,"bourbeRotA":1.059,"bourbeRotB":1.54,"bourbeSautA":0.745,"bourbeSautB":0.754,"bourbeSortA":1.611,"bourbeToucheA":1.731,"bourbeToucheB":2.027,"brumeCarteA":4.231,"brumeCarteB":4.263,"bullesFondA":4.853,"canauxA":1.408,"canauxB":1.944,"chairDA":2.505,"chairDB":2.286,"chairDC":2.213,"chairFA":2.223,"chairFB":1.821,"chairFC":2.085,"chauveAilesA":4.843,"chauveAilesB":4.948,"chauveCriA":1.376,"chauveCriB":0.827,"chauveCriC":1.343,"chauveMortA":1.331,"chauveMortB":1.719,"chauvePiqueA":1.027,"chauvePiqueB":2.191,"chauveToucheA":1.351,"chauveToucheB":1.751,"codeNonA":4.907,"codeNonB":1.857,"codeOkA":2.002,"codeOkB":2.222,"coffreA":2.213,"coffreB":1.49,"combatA":1.257,"combatB":1.196,"cristalA":1.05,"cristalB":1.487,"cuirCasqueA":1.907,"cuirCasqueB":1.538,"cuirCriA":0.524,"cuirCriB":1.804,"cuirCriC":1.757,"cuirFinA":1.082,"cuirFinB":1.112,"cuirToucheA":1.057,"cuirToucheB":1.633,"dallesA":2.71,"dallesB":1.674,"donjon":0.612,"exploA":0.718,"exploB":0.741,"exploC":0.957,"faibleA":5.168,"faibleB":4.078,"feuCampA":2.304,"feuCampB":1.833,"finDonjonA":1.149,"finDonjonB":0.77,"flecheArgentA":1.419,"flecheArgentB":1.113,"flecheLourdeA":1.591,"flecheLourdeB":1.792,"folletCriA":2.887,"folletCriB":4.486,"folletCriC":4.517,"folletFlammeA":3.439,"folletFlammeB":4.518,"folletMortA":3.491,"folletMortB":3.599,"folletToucheA":2.798,"folletToucheB":2.075,"fuiteA":1.519,"fuiteB":1.283,"gardienA":1.236,"gardienFinA":1.067,"gardienFinB":1.154,"gardienPasA":1.302,"gardienPasB":1.352,"gardienPoingA":1.098,"gardienPoingB":1.02,"gardienRunesA":5.038,"gardienRunesB":2.886,"gardienToucheA":0.773,"gardienToucheB":1.292,"gelFondA":1.536,"gelPrisA":1.848,"glaceCasseA":1.068,"glaceChocA":0.963,"grilleCanauxA":1.589,"iconeA":2.92,"iconeB":1.994,"iconeC":4.961,"leo1A":1.458,"leo2A":1.394,"leo3A":0.934,"leoAahA":1.514,"leoAttrapeA":0.939,"leoAuraA":3.082,"leoBouchonA":2.503,"leoBoumA":0.458,"leoBriseA":1.972,"leoCapeA":1.977,"leoCasseA":0.932,"leoChargeA":1.0,"leoChuteA":0.885,"leoCrochetA":1.506,"leoDechireA":1.088,"leoFarineA":1.445,"leoFauxA":1.222,"leoFauxB":1.526,"leoFauxTireA":1.842,"leoFleauA":0.94,"leoGlisseA":0.901,"leoGlouA":1.045,"leoGourdeA":2.957,"leoHurlementA":0.778,"leoJetteA":3.211,"leoLancerA":1.532,"leoMarteauA":0.798,"leoMeuleA":1.09,"leoMusclesA":0.946,"leoNaseauxA":1.977,"leoPoingA":1.562,"leoPontA":0.934,"leoPotionA":1.007,"leoRacleA":1.899,"leoRafaleA":1.215,"leoRamasseA":2.596,"leoSacA":1.581,"leoSaigneA":4.58,"leoSautA":0.618,"leoSiffletA":1.06,"leoSonneA":0.858,"leoSouffleA":1.094,"leoTorchesA":2.528,"leoToucheA":3.668,"leoTuniqueA":2.002,"metalA":1.807,"metalB":1.466,"metalC":1.397,"ossuaireA":2.409,"ossuaireB":2.356,"pageSauveA":2.532,"pageSauveB":1.713,"pasCouloirA":2.815,"pasCouloirB":3.072,"pasCouloirC":1.703,"pasCouloirD":2.803,"petiteCriA":2.223,"petiteCriB":1.812,"petiteMortA":2.449,"petiteMortB":2.069,"petiteToucheA":1.946,"petiteToucheB":1.903,"portePierreA":1.143,"portePierreB":1.133,"potAcideA":1.443,"potAcideB":2.028,"potColleA":1.784,"potColleB":1.416,"potGivreA":1.187,"potGivreB":1.795,"potHuileA":1.305,"potHuileB":1.583,"puits":1.385,"ramasseA":4.317,"ramasseB":3.585,"ratColleA":1.03,"ratColleB":0.838,"ratColleC":1.074,"ratCritiqueA":0.344,"ratCritiqueB":0.482,"ratCritiqueC":0.269,"ratDagueA":1.012,"ratDagueB":0.851,"ratDagueC":0.928,"ratFeuA":0.545,"ratFeuB":0.704,"ratFeuC":0.529,"ratFlecheA":1.106,"ratFlecheB":1.065,"ratFlecheC":0.92,"ratFuiteA":1.16,"ratFuiteB":0.787,"ratFuiteC":1.11,"ratHuileA":1.03,"ratHuileB":1.062,"ratHuileC":1.102,"ratLoucheA":0.822,"ratLoucheB":1.015,"ratLoucheC":0.694,"ratLumiereA":0.562,"ratLumiereB":0.776,"ratLumiereC":0.752,"ratNuageA":2.059,"ratNuageB":0.959,"ratNuageC":2.52,"rebondA":2.369,"rebondB":2.204,"rebondC":2.488,"reposA":1.068,"reposB":0.892,"roiA":1.216,"roiAttaqueA":1.035,"roiAttaqueB":0.62,"roiCriA":1.153,"roiCriB":1.032,"roiCriC":1.234,"roiFinA":1.043,"roiFinB":0.816,"roiToucheA":0.979,"roiToucheB":0.989,"roueCanauxA":3.776,"roueCanauxB":3.126,"swishA":2.101,"swishB":1.831,"swishC":1.79,"tetardCriA":3.914,"tetardCriB":2.529,"tetardMortA":2.062,"tetardMortB":2.07,"tetardToucheA":1.346,"tetardToucheB":1.476,"toiles":1.188,"victoireA":1.34,"victoireB":1.111,"volA":1.607,"volB":2.392,"volC":1.684};
+window.NIVEAUX = {"amuletteA":2.018,"amuletteB":1.466,"araiCriA":0.688,"araiCriB":0.661,"araiCriC":1.521,"araiMortA":0.991,"araiMortB":0.749,"araiToileA":2.063,"araiToileB":1.76,"araiToucheA":1.108,"araiToucheB":1.076,"arcA":1.908,"arcB":1.703,"arcC":1.195,"atelier":1.577,"bandeMonteA":1.541,"bandeMonteB":1.931,"bandeMonteC":1.126,"bassinGeleA":1.583,"batonA":1.806,"batonB":1.025,"beteChuteA":1.388,"boisA":2.84,"boisB":1.615,"boisC":2.491,"bossA":1.534,"bossB":1.315,"bossC":1.681,"bourbeCriA":1.572,"bourbeCriB":1.426,"bourbeCriC":1.388,"bourbeFinA":0.862,"bourbeFinB":0.868,"bourbeGobeA":1.324,"bourbeGobeB":2.798,"bourbeLangueA":1.622,"bourbeLangueB":0.993,"bourbePlongeA":1.074,"bourbePlongeB":1.633,"bourbeRireA":1.659,"bourbeRireB":1.823,"bourbeRotA":1.059,"bourbeRotB":1.54,"bourbeSautA":0.745,"bourbeSautB":0.754,"bourbeSortA":1.611,"bourbeToucheA":1.731,"bourbeToucheB":2.027,"brumeCarteA":4.231,"brumeCarteB":4.263,"bullesFondA":4.853,"canauxA":1.408,"canauxB":1.944,"chairDA":2.505,"chairDB":2.286,"chairDC":2.213,"chairFA":2.223,"chairFB":1.821,"chairFC":2.085,"chauveAilesA":4.843,"chauveAilesB":4.948,"chauveCriA":1.376,"chauveCriB":0.827,"chauveCriC":1.343,"chauveMortA":1.331,"chauveMortB":1.719,"chauvePiqueA":1.027,"chauvePiqueB":2.191,"chauveToucheA":1.351,"chauveToucheB":1.751,"codeNonA":4.907,"codeNonB":1.857,"codeOkA":2.002,"codeOkB":2.222,"coffreA":2.213,"coffreB":1.49,"combatA":1.257,"combatB":1.196,"cristalA":1.05,"cristalB":1.487,"cuirCasqueA":1.907,"cuirCasqueB":1.538,"cuirCriA":0.524,"cuirCriB":1.804,"cuirCriC":1.757,"cuirFinA":1.082,"cuirFinB":1.112,"cuirToucheA":1.057,"cuirToucheB":1.633,"dallesA":2.71,"dallesB":1.674,"donjon":0.612,"exploA":0.718,"exploB":0.741,"exploC":0.957,"faibleA":5.168,"faibleB":4.078,"feuCampA":2.304,"feuCampB":1.833,"finDonjonA":1.149,"finDonjonB":0.77,"flecheArgentA":1.419,"flecheArgentB":1.113,"flecheLourdeA":1.591,"flecheLourdeB":1.792,"folletCriA":2.887,"folletCriB":4.486,"folletCriC":4.517,"folletFlammeA":3.439,"folletFlammeB":4.518,"folletMortA":3.491,"folletMortB":3.599,"folletToucheA":2.798,"folletToucheB":2.075,"fuiteA":1.519,"fuiteB":1.283,"gardienA":1.236,"gardienFinA":1.067,"gardienFinB":1.154,"gardienPasA":1.302,"gardienPasB":1.352,"gardienPoingA":1.098,"gardienPoingB":1.02,"gardienRunesA":5.038,"gardienRunesB":2.886,"gardienToucheA":0.773,"gardienToucheB":1.292,"gelFondA":1.536,"gelPrisA":1.848,"glaceCasseA":1.068,"glaceChocA":0.963,"grandeLameA":0.842,"grandeLameB":1.316,"grandeLameC":1.832,"grilleCanauxA":1.589,"iconeA":2.92,"iconeB":1.994,"iconeC":4.961,"leo1A":1.458,"leo2A":1.394,"leo3A":0.934,"leoAahA":1.514,"leoAttrapeA":0.939,"leoAuraA":3.082,"leoBouchonA":2.503,"leoBoumA":0.458,"leoBriseA":1.972,"leoCapeA":1.977,"leoCasseA":0.932,"leoChargeA":1.0,"leoChuteA":0.885,"leoCrochetA":1.506,"leoDechireA":1.088,"leoFarineA":1.445,"leoFauxA":1.222,"leoFauxB":1.526,"leoFauxTireA":1.842,"leoFleauA":0.94,"leoGlisseA":0.901,"leoGlouA":1.045,"leoGourdeA":2.957,"leoHurlementA":0.778,"leoJetteA":3.211,"leoLancerA":1.532,"leoMarteauA":0.798,"leoMeuleA":1.09,"leoMusclesA":0.946,"leoNaseauxA":1.977,"leoPoingA":1.562,"leoPontA":0.934,"leoPotionA":1.007,"leoRacleA":1.899,"leoRafaleA":1.215,"leoRamasseA":2.596,"leoSacA":1.581,"leoSaigneA":4.58,"leoSautA":0.618,"leoSiffletA":1.06,"leoSonneA":0.858,"leoSouffleA":1.094,"leoTorchesA":2.528,"leoToucheA":3.668,"leoTuniqueA":2.002,"lumiereA":1.29,"lumiereB":0.914,"lumiereC":2.073,"metalA":1.807,"metalB":1.466,"metalC":1.397,"ossuaireA":2.409,"ossuaireB":2.356,"pageSauveA":2.532,"pageSauveB":1.713,"pasCouloirA":2.815,"pasCouloirB":3.072,"pasCouloirC":1.703,"pasCouloirD":2.803,"petiteCriA":2.223,"petiteCriB":1.812,"petiteMortA":2.449,"petiteMortB":2.069,"petiteToucheA":1.946,"petiteToucheB":1.903,"portePierreA":1.143,"portePierreB":1.133,"potAcideA":1.443,"potAcideB":2.028,"potColleA":1.784,"potColleB":1.416,"potGivreA":1.187,"potGivreB":1.795,"potHuileA":1.305,"potHuileB":1.583,"puits":1.385,"ramasseA":4.317,"ramasseB":3.585,"ratColleA":1.03,"ratColleB":0.838,"ratColleC":1.074,"ratCritiqueA":0.344,"ratCritiqueB":0.482,"ratCritiqueC":0.269,"ratDagueA":1.012,"ratDagueB":0.851,"ratDagueC":0.928,"ratFeuA":0.545,"ratFeuB":0.704,"ratFeuC":0.529,"ratFlecheA":1.106,"ratFlecheB":1.065,"ratFlecheC":0.92,"ratFuiteA":1.16,"ratFuiteB":0.787,"ratFuiteC":1.11,"ratHuileA":1.03,"ratHuileB":1.062,"ratHuileC":1.102,"ratLoucheA":0.822,"ratLoucheB":1.015,"ratLoucheC":0.694,"ratLumiereA":0.562,"ratLumiereB":0.776,"ratLumiereC":0.752,"ratNuageA":2.059,"ratNuageB":0.959,"ratNuageC":2.52,"ratsCouinentA":1.172,"ratsCouinentB":1.483,"rebondA":2.369,"rebondB":2.204,"rebondC":2.488,"reposA":1.068,"reposB":0.892,"roiA":1.216,"roiAttaqueA":1.035,"roiAttaqueB":0.62,"roiCordeA":2.132,"roiCordeB":4.43,"roiCriA":1.153,"roiCriB":1.032,"roiCriC":1.234,"roiFinA":1.043,"roiFinB":0.816,"roiRetourneA":1.211,"roiRetourneB":1.183,"roiToucheA":0.979,"roiToucheB":0.989,"roueCanauxA":3.776,"roueCanauxB":3.126,"sautDagueA":3.948,"sautDagueB":9.057,"sautDagueC":6.564,"swishA":2.101,"swishB":1.831,"swishC":1.79,"tetardCriA":3.914,"tetardCriB":2.529,"tetardMortA":2.062,"tetardMortB":2.07,"tetardToucheA":1.346,"tetardToucheB":1.476,"toiles":1.188,"victoireA":1.34,"victoireB":1.111,"volA":1.607,"volB":2.392,"volC":1.684};
 
 /* ===== essai/sons/moteur.js ===== */
 /* Atelier des sons de Brumeval — le moteur.
@@ -2739,6 +2739,48 @@ S.roiCriC = function(A, P){
   foule(A, P, t + 1.3, .6, 10);
   return {duree:2.1};
 };
+/* — (24 novembre — Romain, 13 h 12 : « un coup de bruit avec sa louche sur le roi des rats […] il manque des bruitages pour le roi des
+   rats […] des petits bruits de rats […] comme si une corde qui était tendue et le bruit du rat qui se retourne ») : sa réaction au
+   bruit, en trois sons — les queues nouées qui se tendent (roiCorde), les rats qui couinent de peur (ratsCouinent), le roi qui bascule
+   à la renverse (roiRetourne). Le combat les cale sur l'image (combat.js, « touche » du Roi des rats). — */
+S.roiCordeA = function(A, P){                                                                             /* la corde qui se tend… et vibre */
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.3});
+  var buf = A.grincement(.42, {i0:.03, i1:.009, irr:.45, forme:function(u){ return .3 + .7 * Math.min(1, u * 1.4); }});
+  [260, 610, 1240].forEach(function(f, k){ A.joue(t, buf, {filtres:[{type:'bandpass', f:f, q:9}], g:[3, 2.2, 1.4][k], env:[[0, 0], [.05, 1], [.38, 1], [.42, 0]]}, o); });
+  A.joue(t + .4, A.pince(92, {t60:.5, eclat:.35, pos:.12}), {g:.7, lp:1800, sat:1.4}, o);              /* twang : elle est tendue à rompre */
+  return {duree:1.0, moment:.4};
+};
+S.roiCordeB = function(A, P){                                                                             /* elles grincent, puis claquent d'un coup */
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.3});
+  var buf = A.grincement(.3, {i0:.025, i1:.007, irr:.5, forme:function(u){ return .4 + .6 * u; }});
+  [330, 820].forEach(function(f, k){ A.joue(t, buf, {filtres:[{type:'bandpass', f:f, q:10}], g:[2.6, 1.6][k], env:[[0, 0], [.04, 1], [.28, 1], [.3, 0]]}, o); });
+  A.bruit(t + .3, {bp:1600, bq:1.2, env:A.perc(.001, .04), g:.8, sat:2}, o);                              /* clac */
+  A.joue(t + .3, A.pince(150, {t60:.35, eclat:.5}), {g:.5, lp:2500}, o);
+  return {duree:.9, moment:.3};
+};
+S.ratsCouinentA = function(A, P){                                                                         /* ils paniquent, ils couinent */
+  foule(A, P, P.t, .7, 11, {forme:'peur', h1:1, h2:1.4});
+  return {duree:1.0, moment:0};
+};
+S.ratsCouinentB = function(A, P){                                                                         /* des petits cris aigus, en cascade */
+  var t = P.t;
+  for(var k = 0; k < 7; k++){ var tt = t + k * .07 + h(0, .03); A.cri(tt, {forme:ch(['iik', 'aie']), d:h(.06, .11), h:1.05 + k * .05, grain:.6, g:h(.14, .2)}, A.bus(ici(P, tt), {rev:.3, pan:h(-.3, .9)})); }
+  return {duree:.8, moment:0};
+};
+S.roiRetourneA = function(A, P){                                                                          /* il bascule sur le dos : frrt, poc ! et il piaille */
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.35});
+  A.joue(t, A.griffes(.35, 40), {g:.4, hp:2200}, o);
+  A.choc(t + .3, {f:150, f2:70, d:.12, g:.4, sat:2}, o);
+  A.cri(t + .32, {forme:'aie', d:.22, h:.85, grain:.5, rauque:.4, g:.28}, o);
+  return {duree:.8, moment:.3};
+};
+S.roiRetourneB = function(A, P){                                                                          /* poc, et tout le tas qui couine */
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.35});
+  A.choc(t, {f:130, f2:60, d:.14, g:.45, sat:2}, o);
+  A.bruit(t, {coul:'rose', bp:900, bq:1, env:A.perc(.002, .08), g:.4}, o);
+  foule(A, P, t + .03, .4, 7, {forme:'aie', h1:.9, h2:1.2});
+  return {duree:.7, moment:0};
+};
 /* — l'attaque : le grouillement sur chaque héros — */
 S.roiAttaqueA = function(A, P){
   var t = P.t, o = A.bus(P, {rev:.3, pan:.9, pan2:-.8, pant:1.2});
@@ -3152,6 +3194,10 @@ S.couronneTombeA = function(A, P){
   for(var k = 0; k < 7; k++){ tinte(A, t + x, .8 * g, o); x += iv; iv *= .72; g *= .8; }
   return {duree:x + .5};
 };
+/* (24 novembre : l'instant clé des sons du gong — le jeu les cale sur l'image avec {cale}) */
+[['roiCorde', {A:.4, B:.3}], ['ratsCouinent', {A:0, B:0}], ['roiRetourne', {A:.3, B:0}]].forEach(function(x){
+  Object.keys(x[1]).forEach(function(v){ S[x[0] + v].moment = x[1][v]; });
+});
 
 })(window);
 
@@ -3581,6 +3627,101 @@ S.brumeCarteB = function(A, P){
   [74, 79, 81].forEach(function(n, k){ A.harpe(t + .6 + k * .2, m(n), {t60:2.4, g:.1}, o); });
   return {duree:2.8};
 };
+
+/* =================== 24 NOVEMBRE : LA RUNE DE LUMIÈRE DU SAGE (sans « ding ») =================== */
+/* (Romain, 12 h 52 : « le son du sage quand il fait son sort de lumière, ça fait plein de ding ding ding. Et c'est quasiment les mêmes
+   ding que quand on découvre le point faible […] des sons un peu plus appropriés ») : de la lumière qui monte et qui éclate, en souffle
+   et en nappe — aucune note qui tinte (les tintements restent au point faible). moment : l'instant où la lumière éclate. */
+S.lumiereA = function(A, P){                                                                                            /* le soleil qui se lève */
+  var t = P.t, o = A.bus(P, {rev:.55, grotte:.3});
+  A.bruit(t, {coul:'rose', filtres:[{type:'bandpass', f:300, pts:[[.7, 3800], [1.5, 2400]], q:1.2}], env:[[0, 0], [.6, 1], [1.5, 0]], g:.9}, o);      /* le souffle qui monte */
+  A.ton(t, {f:70, f2:140, gl:.7, env:[[0, 0], [.6, 1], [1.4, 0]], g:.16, lp:500}, o);                                  /* le grave qui gonfle */
+  [m(60), m(64), m(67), m(72)].forEach(function(f, k){ A.ton(t + .25, {f:f, det:k * 4 - 6, env:[[0, 0], [.5, 1], [1.4, .4], [1.9, 0]], g:.035, vib:[5, 3]}, o); });   /* la nappe chaude */
+  A.bruit(t + .62, {hp:5000, env:[[0, 0], [.05, 1], [.9, 0]], g:.12}, o);                                              /* l'éclat, en souffle clair */
+  return {duree:2.0, moment:.65};
+};
+S.lumiereB = function(A, P){                                                                                            /* l'éclair de lumière */
+  var t = P.t, o = A.bus(P, {rev:.45, pan:-.3, pan2:.4, pant:.6});
+  A.bruit(t, {filtres:[{type:'bandpass', f:500, pts:[[.32, 4200]], q:1.6}], env:[[0, 0], [.3, 1], [.36, 0]], g:1}, o);    /* fwoooush */
+  A.choc(t + .34, {f:110, f2:55, d:.35, g:.35, sat:1.5}, o);                                                             /* le flash : vwoum */
+  A.bruit(t + .34, {hp:3000, env:[[0, 0], [.01, 1], [.25, .4], [1.1, 0]], g:.35}, o);
+  [m(55), m(62), m(67), m(74)].forEach(function(f, k){ A.ton(t + .34, {f:f, det:k % 2 ? 7 : -7, env:[[0, 0], [.15, 1], [1.2, 0]], g:.03}, o); });          /* la lueur qui reste */
+  return {duree:1.6, moment:.34};
+};
+S.lumiereC = function(A, P){                                                                                            /* le chœur */
+  var t = P.t, o = A.bus(P, {rev:.7, grotte:.4});
+  A.bruit(t, {coul:'rose', bp:900, bp2:2400, bpt:1, bq:.9, env:[[0, 0], [.5, 1], [1.4, 0]], g:.45}, o);                  /* le vent de lumière */
+  A.choeur(t + .1, [m(60), m(64), m(67)], 1.0, {voyelle:'a', a:.45, r:.6, g:.05}, o);
+  A.choeur(t + .55, [m(65), m(69), m(72)], 1.3, {voyelle:'a', a:.15, r:1.0, g:.06}, o);                                 /* … qui s'ouvre */
+  return {duree:2.2, moment:.6};
+};
+
+/* =================== 24 NOVEMBRE : LE SAUT DU PISTEUR À LA DAGUE =================== */
+/* (Romain, 12 h 56 : « quand le pisteur il saute, on ait un petit bruit de saut, mais discret, très discret. Et après, quand il frappe,
+   il faut un grand coup de lame […] un peu différent, avec un switch […] calé sur l'animation ») ; moment : l'appel du pied / la lame */
+S.sautDagueA = function(A, P){                                                                                          /* un pied qui pousse, l'étoffe qui part */
+  var t = P.t, o = A.bus(P, {rev:.15, pan:.1});
+  A.choc(t, {f:140, f2:80, d:.07, g:.12, sat:1.2, corps:.6}, o);
+  A.bruit(t + .01, {bp:900, bp2:1700, bpt:.16, bq:1.4, env:[[0, 0], [.04, 1], [.18, 0]], g:.18}, o);
+  return {duree:.25, moment:0};
+};
+S.sautDagueB = function(A, P){                                                                                          /* juste l'étoffe, frrt */
+  var t = P.t, o = A.bus(P, {rev:.12, pan:.1});
+  A.bruit(t, {coul:'rose', bp:1300, bq:2, env:[[0, 0], [.02, 1], [.06, .4], [.14, 0]], g:.22, rugueux:.6, rugVit:30}, o);
+  return {duree:.2, moment:0};
+};
+S.sautDagueC = function(A, P){                                                                                          /* un « hop » d'air */
+  var t = P.t, o = A.bus(P, {rev:.15, pan:.1});
+  A.bruit(t, {bp:380, bp2:900, bpt:.12, bq:2.2, env:[[0, 0], [.03, 1], [.15, 0]], g:.3}, o);
+  A.choc(t, {f:120, f2:70, d:.05, g:.08, sat:1, bruit:0}, o);
+  return {duree:.2, moment:0};
+};
+S.grandeLameA = function(A, P){                                                                                         /* le grand revers : SWIIISH, et la lame qui chante */
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.15}), d = .34;
+  O.swish(A, t, d, {f1:450, f2:3800, f3:1100, q:2, g:1.7}, o);
+  A.ton(t, {f:160, f2:70, gl:d, env:[[0, 0], [d * .7, 1], [d + .05, 0]], g:.18, lp:400}, o);                          /* le poids du bras */
+  O.chantLame(A, t + d * .62, {f:3300, g:.05}, o);
+  return {duree:1.0, moment:d * .62};
+};
+S.grandeLameB = function(A, P){                                                                                         /* l'air fendu en deux : swiCHHH */
+  var t = P.t, o = A.bus(P, {rev:.25, pan:.15});
+  O.swish(A, t, .2, {f1:600, f2:3000, f3:1500, g:.8}, o);
+  A.bruit(t + .19, {hp:2500, env:[[0, 0], [.004, 1], [.09, 0]], g:.7, sat:2}, o);                                        /* le claquement de la lame */
+  A.choc(t + .19, {f:200, f2:90, d:.12, g:.25, sat:2}, o);
+  O.chantLame(A, t + .2, {f:2700, g:.045}, o);
+  return {duree:.9, moment:.19};
+};
+S.grandeLameC = function(A, P){                                                                                         /* le coup qui tombe d'en haut : vwoooSH */
+  var t = P.t, o = A.bus(P, {rev:.3, pan:.15}), d = .3;
+  A.bruit(t, {filtres:[{type:'bandpass', f:2600, pts:[[d * .8, 700], [d, 400]], q:2.2}], env:[[0, 0], [d * .8, 1], [d, 0]], g:1.4}, o);   /* il descend */
+  A.choc(t + d * .8, {f:130, f2:55, d:.2, g:.3, sat:2}, o);
+  O.chantLame(A, t + d * .8, {f:2900, g:.04}, o);
+  return {duree:1.0, moment:d * .8};
+};
+/* =================== 24 NOVEMBRE : LA BANDE DES ICÔNES QUI REMONTE (le combat commence) =================== */
+/* (Romain, 13 h 18 : « quand ils remontent, tu mets un petit son ») */
+S.bandeMonteA = function(A, P){                                                                                        /* fwip, et un petit clac de bois */
+  var t = P.t, o = A.bus(P, {rev:.2});
+  A.bruit(t, {bp:500, bp2:1800, bpt:.16, bq:1.6, env:[[0, 0], [.12, 1], [.18, 0]], g:.35}, o);
+  O.toc(A, t + .18, 420, {long:.6, fc:200, gc:.15, clicF:2600, g:.12}, o);
+  return {duree:.5};
+};
+S.bandeMonteB = function(A, P){                                                                                        /* deux notes douces qui montent */
+  var t = P.t, o = A.bus(P, {rev:.35});
+  [m(67), m(74)].forEach(function(f, k){ A.ton(t + k * .08, {type:'triangle', f:f, env:A.perc(.004, .35), g:.05}, o); });
+  A.bruit(t, {hp:3000, env:[[0, 0], [.08, 1], [.2, 0]], g:.06}, o);
+  return {duree:.6};
+};
+S.bandeMonteC = function(A, P){                                                                                        /* un parchemin qu'on déroule vers le haut */
+  var t = P.t, o = A.bus(P, {rev:.2});
+  papier(A, t, .2, 1, o);
+  O.clic(A, t + .2, 2200, .3, o);
+  return {duree:.4};
+};
+/* (l'instant clé de chaque version, connu d'avance : le jeu cale le son sur l'animation — DJ.bruit(id, {cale}) ; voir bruitages.js) */
+[['lumiere', {A:.65, B:.34, C:.6}], ['sautDague', {A:0, B:0, C:0}], ['grandeLame', {A:.34 * .62, B:.19, C:.24}]].forEach(function(x){
+  Object.keys(x[1]).forEach(function(v){ S[x[0] + v].moment = x[1][v]; });
+});
 
 })(window);
 
@@ -9212,8 +9353,11 @@ HV.DONJON.froid = [[0.08, avec(AIE, {bas:[0, 30, -6], dos:[-10, 0, 4], hoche:-10
 var RATS_V = {hoche:20, regY:1, sourire:-0.9, bouchex:0.6, sourcilsIn:0.7, ouvre:0.3, plisse:0.4};
 function tape(cote, haut){
   var R = avec(RATS_V, {bas:[cote === 'D' ? -4 : 4, 26, 2], mainD:[62, 204, 18], relD:1, coudeD:[1, 0.2, -0.3], poingD:0.2});
-  if(cote === 'D') R.piedD = [30, haut ? 352 : 386, -10]; else R.piedG = [-32, haut ? 352 : 386, 18];
-  R['pointe' + cote] = haut ? 25 : 0; R['genou' + cote] = cote === 'D' ? [0.5, -0.2, 1] : [-0.5, -0.2, 1];
+  /* (24 novembre — Romain, 13 h 14 : « avant, ils tapaient des pieds, et là, ils font plus rien ») : au donjon, on la voit de loin —
+     le pied monte bien plus haut (330 au lieu de 352), et à chaque pied levé elle sautille (leve), comme l'ancien héros qui sautait */
+  if(cote === 'D') R.piedD = [30, haut ? 330 : 386, -10]; else R.piedG = [-32, haut ? 330 : 386, 18];
+  R['pointe' + cote] = haut ? 30 : 0; R['genou' + cote] = cote === 'D' ? [0.5, -0.2, 1] : [-0.5, -0.2, 1];
+  if(haut) R.leve = 12;
   return R;
 }
 HV.DONJON.rats = [[0.12, {hoche:16, regY:0.9, sourcils:0.7, ouvre:0.5, plisse:-0.3, bas:[0, 20, -4]}],
@@ -9390,52 +9534,40 @@ var g = P.aGarde;
 var FACE = HV.tour(g, -55, 4);
 function versNous(plus){ return avec(FACE, plus || {}); }
 
-/* ---------- PRÉPARER (2,2 s) ----------
-   Le buste un peu tourné vers nous (TQ : la tête, les épaules, les hanches ; les pieds restent plantés) pour qu'on voie ses mains.
-   0 → 0,3 : la main droite prend une fiole sur sa poitrine (de l'eau claire : la couleur de l'adaptateur) ;
-   → 0,62 : la main gauche en prend une deuxième (K.potion2 : la couleur de la potion) ;
-   → 1,24 : il lève la deuxième au-dessus de la première et la penche : elle s'y verse (HV.ALCHI.VERSE → HV.ALCHI.VERSE + 0,3) ;
-   → 1,46 : il range la fiole vide sur sa sangle ;
-   → 1,8 : il secoue le mélange, qui s'illumine (HV.ALCHI.ECLAT) ; → 2,1 : la fiole armée derrière l'épaule (HV.ALCHI.PRET). */
+/* ---------- PRÉPARER (1,3 s), REFAIT LE 24 NOVEMBRE ----------
+   (Romain, 12 h 55 : « l'animation de préparation des potions […] elle est un peu buggée ou alors elle est pas très claire. Retravaille-moi
+   ça pour que ça soit un peu plus sympa » ; avant : deux fioles, l'une versée dans l'autre, rangée, puis secouée — en 2,2 s, puis jouée
+   presque deux fois plus vite à 10 h 17 : on n'y comprenait plus rien.) UNE seule fiole, et chaque moment se voit :
+   0 → 0,24 : la main droite attrape une fiole sur sa sangle (de l'eau claire : la couleur de l'adaptateur) ;
+   → 0,42 : il la lève devant ses yeux, et la regarde ;
+   → 0,7 : il la secoue trois fois, fort — elle s'allume de la couleur de la potion (HV.ALCHI.ECLAT : l'éclair, les étincelles) ;
+   → 0,95 : il la lève, content de lui ; → 1,2 : la fiole armée derrière l'épaule (HV.ALCHI.PRET). */
 var PRET = avec(g, {fioleG:1, mainG:[-42, 148, -8], relG:1, coudeG:[-0.7, 0.5, -0.4], pouceG:[0, -1, 0], mdirG:[0, -0.3, 1], poingG:0.9, sourcils:-0.6, plisse:0.3, sourire:0.2});
 var TQ = HV.tour(g, -38, 2);
 function tq(plus){ return avec(TQ, plus || {}); }
-/* (la fiole de la main droite, tenue devant sa poitrine ; y : plus bas quand il secoue) */
+/* (la fiole de la main droite, tenue devant lui ; y : sa hauteur — plus petit, plus haut) */
 function fiole1(y, plus){ return avec({fioleG:1, mainG:[-16, y, 44], relG:1, coudeG:[-0.85, 0.45, -0.3], pouceG:[0, -1, 0], mdirG:[0.3, 0, 1], poingG:0.92}, plus || {}); }
-/* (la fiole de la main gauche : droite, ou penchée pour verser — le goulot du côté du pouce, tourné vers l'autre fiole) */
-function fiole2(x, y, penche, plus){ return avec({fioleD:1, mainD:[x, y, 48], relD:1, coudeD:[0.85, 0.45, -0.3], pouceD:penche ? [-0.85, 0.5, 0.1] : [0, -1, 0], mdirD:[-0.3, 0, 1], poingD:0.92}, plus || {}); }
-var VERSE = 0.88, ECLAT = 1.8;
+/* (VERSE + 0,16 : le moment où la fiole prend sa couleur — ici, pendant qu'il la secoue ; plus rien n'est versé : SANS_VERSER) */
+var ECLAT = 0.66, VERSE = ECLAT - 0.16, SANS_VERSER = true;
+var SECOUE = {sourcils:0.5, plisse:0.35, ouvre:0.15, largeB:0.7, regY:-0.05};
 var preparer = [
-  /* (la main droite va chercher une fiole sur sa poitrine ; il la regarde) */
-  [0.18, tq({mainG:[-16, 170, 24], relG:1, coudeG:[-0.9, 0.3, -0.2], poingG:0.3, pouceG:[0, -1, 0.3], hoche:10, regY:0.6, regX:-0.2, sourcils:0.2})],
-  [0.3, tq({mainG:[-16, 168, 26], relG:1, coudeG:[-0.9, 0.3, -0.2], poingG:0.92, pouceG:[0, -1, 0.3], fioleG:1, hoche:10, regY:0.6, regX:-0.2})],
-  /* (la main gauche en prend une deuxième) */
-  [0.5, tq(fiole1(160, {mainD:[16, 176, 26], relD:1, coudeD:[0.9, 0.3, -0.2], poingD:0.3, pouceD:[0, -1, 0.3], hoche:8, regY:0.5, regX:0.2, sourcils:0.3}))],
-  [0.62, tq(fiole1(160, {fioleD:1, mainD:[16, 174, 28], relD:1, coudeD:[0.9, 0.3, -0.2], poingD:0.92, pouceD:[0, -1, 0.3], hoche:8, regY:0.5, regX:0.2}))],
-  /* (il la lève au-dessus de la première, concentré, et la penche : elle s'y verse) */
-  [0.8, tq(fiole1(162, fiole2(6, 118, false, {hoche:4, regY:0.3, sourcils:0.5, plisse:0.25, ouvre:0.1, largeB:0.6})))],
-  [0.92, tq(fiole1(162, fiole2(4, 116, true, {hoche:4, regY:0.35, sourcils:0.6, plisse:0.3, ouvre:0.15, largeB:0.5})))],
-  [1.1, tq(fiole1(164, fiole2(2, 114, true, {hoche:5, regY:0.4, sourcils:0.6, plisse:0.3, ouvre:0.15, largeB:0.5})))],
-  [1.24, tq(fiole1(162, fiole2(12, 132, false, {hoche:4, regY:0.3, sourcils:0.4, sourire:0.5})))],
-  /* (il range la fiole vide sur sa sangle) */
-  [1.38, tq(fiole1(162, {fioleD:1, mainD:[20, 176, 26], relD:1, coudeD:[0.9, 0.3, -0.2], poingD:0.92, pouceD:[0, -1, 0.3], regY:0.2, sourire:0.5}))],
-  [1.46, tq(fiole1(162, {fioleD:0, mainD:[22, 180, 26], relD:1, coudeD:[0.9, 0.3, -0.2], poingD:0.4, regY:0.1, sourire:0.5}))],
-  /* (il secoue le mélange, de haut en bas, l'œil dessus) */
-  [1.54, tq(fiole1(146, {mainD:[34, 200, 28], relD:1, poingD:0.5, regY:0.1, sourcils:0.3, sourire:0.6, plisse:0.2}))],
-  [1.61, tq(fiole1(166, {mainD:[34, 200, 28], relD:1, poingD:0.5, regY:0.2, sourcils:0.3, sourire:0.6, plisse:0.2}))],
-  [1.68, tq(fiole1(146, {mainD:[34, 200, 28], relD:1, poingD:0.5, regY:0.1, sourcils:0.3, sourire:0.6, plisse:0.2}))],
-  [1.75, tq(fiole1(164, {mainD:[34, 200, 28], relD:1, poingD:0.5, regY:0.2, sourcils:0.3, sourire:0.6, plisse:0.2}))],
-  /* (le mélange s'illumine : il le lève un peu, content de lui) */
-  [ECLAT + 0.04, tq(fiole1(140, {mainD:[36, 200, 28], relD:1, poingD:0.5, regY:-0.1, sourcils:0.6, sourire:0.9, plisse:0.35, ouvre:0.15}))],
+  /* (la main droite va chercher une fiole sur sa sangle ; il la regarde) */
+  [0.14, tq({mainG:[-16, 170, 24], relG:1, coudeG:[-0.9, 0.3, -0.2], poingG:0.3, pouceG:[0, -1, 0.3], hoche:10, regY:0.6, regX:-0.2, sourcils:0.2})],
+  [0.24, tq({mainG:[-16, 168, 26], relG:1, coudeG:[-0.9, 0.3, -0.2], poingG:0.92, pouceG:[0, -1, 0.3], fioleG:1, hoche:10, regY:0.6, regX:-0.2})],
+  /* (il la lève devant ses yeux et la regarde, curieux) */
+  [0.42, tq(fiole1(124, {hoche:0, regY:0.05, regX:-0.1, sourcils:0.6, plisse:0.1, ouvre:0.1}))],
+  /* (il la secoue trois fois, fort, de haut en bas) */
+  [0.49, tq(fiole1(108, SECOUE))], [0.55, tq(fiole1(134, SECOUE))], [0.61, tq(fiole1(108, SECOUE))], [0.67, tq(fiole1(134, SECOUE))],
+  /* (elle s'est allumée : il la lève, content de lui) */
+  [0.8, tq(fiole1(110, {regY:-0.2, sourcils:0.7, sourire:0.9, plisse:0.35, ouvre:0.2}))],
+  [0.95, tq(fiole1(114, {regY:-0.1, sourcils:0.5, sourire:0.8, plisse:0.3}))],
   /* (il arme la fiole derrière l'épaule, face aux ennemis, décidé) */
-  [2.1, PRET], [2.22, PRET]];
+  [1.2, PRET], [1.3, PRET]];
 
 /* (24 novembre — Romain, 10 h 17 : « depuis le début, l'alchimiste, il met trop de temps à jeter ses potions […] faire en sorte que il
-   la jette plus vite ») : le même geste, joué presque deux fois plus vite — préparée en 1,2 s au lieu de 2,2 s ; le lancer (plus bas)
-   lâche la fiole à 0,4 s au lieu de 0,5. HV.ALCHI.VITE : l'adaptateur cale le filet de potion et les lueurs dessus. */
-var VITE_P = 0.55, VITE_L = 0.8;
-preparer = preparer.map(function(k){ return [Math.round(k[0] * VITE_P * 1000) / 1000, k[1]]; });
-VERSE *= VITE_P; ECLAT *= VITE_P;
+   la jette plus vite ») : le lancer (plus bas) lâche la fiole à 0,4 s au lieu de 0,5. La préparation est faite à sa nouvelle durée
+   (1,3 s) : VITE_P = 1. HV.ALCHI.VITE : l'adaptateur cale les lueurs dessus. */
+var VITE_P = 1, VITE_L = 0.8;
 
 /* ---------- LANCER (depuis PRET), LE BUSTE TOURNÉ VERS NOUS ---------- */
 var LACHE = 0.5;
@@ -9503,7 +9635,7 @@ var herbes = [
   [1.8, versNous({mainD:[40, 170, 36], relD:1, coudeD:[0.9, 0.4, -0.2], poingD:0.2, regX:-0.3, sourire:0.9, sourcils:0.5, plisse:0.4})],
   [2.15, {}]];
 
-HV.ALCHI = {preparer:preparer, lancer:lancer, louche:louche, herbes:herbes, PRET:PRET, LACHE:LACHE, BONG:BONG, HERBES:HERBES, VERSE:VERSE, ECLAT:ECLAT, VITE:VITE_P};
+HV.ALCHI = {preparer:preparer, lancer:lancer, louche:louche, herbes:herbes, PRET:PRET, LACHE:LACHE, BONG:BONG, HERBES:HERBES, VERSE:VERSE, ECLAT:ECLAT, VITE:VITE_P, SANS_VERSER:SANS_VERSER};
 HV.NOMS_ALCHI = {preparer:'Il prépare une potion', lancer:'Il lance la fiole', louche:'La louche : BONG !', herbes:'Les herbes, pour un ami'};
 })(window);
 
@@ -9818,7 +9950,7 @@ HV.NOMS_ATTENTE = {scrute:'Il surveille les ennemis', alerte:'Un bruit derrière
 var HV = G.HerosVues, U = HV.outils, RAD = HV.RAD;
 var CU = HV.Cuit = {};
 var NUM = 0;
-CU.cache = {};
+CU.cache = {}; CU.resDe = {};
 
 /* ---------- la géométrie ---------- */
 function ang(a, b){ return Math.atan2(b[1] - a[1], b[0] - a[0]) / RAD; }
@@ -9966,7 +10098,12 @@ function Cuit(hote, h, o){
   hote.appendChild(this.racine);
   this.hote = hote;
   /* (les variantes sont gardées pour toute la partie, pour ce héros avec cette allure : d'un combat à l'autre, rien n'est à recuire) */
-  var ch = JSON.stringify(h) + '|' + this.res;
+  /* (24 novembre : la même finesse d'une salle à l'autre pour la même allure — sur un téléphone, la taille de la page bouge un peu
+     (la barre d'adresse) ; une finesse à peine différente faisait TOUT recuire dans chaque salle, et garder l'ancienne cuisson en
+     mémoire) */
+  var hj = JSON.stringify(h), r0 = CU.resDe[hj];
+  if(r0 && Math.abs(this.res / r0 - 1) < 0.3) this.res = r0; else CU.resDe[hj] = this.res;
+  var ch = hj + '|' + this.res;
   this.variantes = (CU.cache[ch] = CU.cache[ch] || {});          /* nom → clé → variante {cv, x, y, w, h, A0, th0, L0, tete:{…}} */
   this.inst = {};               /* nom + '|' + clé + '|' + couche → {el, v} */
   this.anims = [];
@@ -10056,6 +10193,17 @@ CP.variante = function(nom, cle){
   var t = this.variantes[nom]; if(!t) return null;
   if(t[cle]) return {cle:cle, v:t[cle]};
   var ks = Object.keys(t), vue = cle.split(/[a-z]+/i)[1], i;
+  /* (la tête : le même angle ET la même inclinaison d'abord — une tête du bon angle mais penchée autrement est dessinée plus haut ou
+     plus bas dans son cadre : elle flottait à côté du cou — Romain, 24 novembre, 12 h 50) */
+  if(nom === 'tete'){
+    var m = /^y(-?\d+)h(-?\d+)/.exec(cle), best = null, bd = 1e9;
+    if(m) for(i = 0; i < ks.length; i++){
+      var n2 = /^y(-?\d+)h(-?\d+)/.exec(ks[i]); if(!n2) continue;
+      var d2 = Math.abs(tour(+n2[1] - +m[1])) + 2 * Math.abs(+n2[2] - +m[2]) + (ks[i].slice(n2[0].length) === cle.slice(m[0].length) ? 0 : 0.5);
+      if(d2 < bd){ bd = d2; best = ks[i]; }
+    }
+    if(best) return {cle:best, v:t[best]};
+  }
   for(i = 0; i < ks.length; i++) if(ks[i].split(/[a-z]+/i)[1] === vue) return {cle:ks[i], v:t[ks[i]]};
   var a = vueDeCle(cle), meilleur = null, ecart = 1e9;
   if(a != null) for(i = 0; i < ks.length; i++){
@@ -10178,7 +10326,17 @@ CP.jouer = function(images, o){
     var tr = [], op = [], n0 = 0, toujours = pls.every(function(pl){ return pl.vis; });
     garde.forEach(function(i){ tr.push({offset:Math.min(1, plan[i].t / D), transform:css(pls[i], pls[i].lv)}); });
     if(!toujours){
-      pls.forEach(function(pl, i){ if(i === 0 || pl.vis !== pls[i - 1].vis) op.push({offset:Math.min(1, plan[i].t / D), opacity:pl.vis ? 1 : 0, easing:'steps(1, end)'}); n0++; });
+      /* (24 novembre — Romain, 13 h 06, sur son iPhone : « quand le pisteur saute […] sa tête qui se détache en double ») : l'opacité passe
+         d'une version à l'autre par deux images clés presque collées (0,5 ms), en ligne droite — plus de « steps() » : Safari ne sait
+         pas le jouer sur la carte graphique et le jouait sur le fil principal ; quand la page ramait, l'ancienne tête restait affichée
+         pendant que la nouvelle bougeait déjà avec le corps */
+      var eps = Math.min(0.0005 / D, 0.002);
+      pls.forEach(function(pl, i){
+        if(i === 0){ op.push({offset:0, opacity:pl.vis ? 1 : 0}); return; }
+        if(pl.vis === pls[i - 1].vis) return;
+        var o1 = Math.min(1, plan[i].t / D), o0 = Math.max(op[op.length - 1].offset, o1 - eps);
+        op.push({offset:o0, opacity:pls[i - 1].vis ? 1 : 0}); op.push({offset:o1, opacity:pl.vis ? 1 : 0}); n0++;
+      });
       if(op[op.length - 1].offset < 1) op.push({offset:1, opacity:pls[pls.length - 1].vis ? 1 : 0});
     }
     var opt = {duration:dureeMs, iterations:o.boucle ? Infinity : 1, fill:'both', easing:'linear'};
@@ -10450,7 +10608,10 @@ function Volume(cont, lk, creer0, role){
   this.p.courante = function(){ return me.pose(); };
   var d0 = this.p.dessiner;
   /* (cuit : plus de dessin, seulement la pose — le pantin cuit, lui, joue ce qui a été prévu) */
-  if(CUIT) d0 = function(){ var P = me.pose(), F = {}, k; for(k in P) F[k] = P[k]; F.cap = CAP; this.F = F; this.anV = this.anC || 0; return true; };     /* (l'anneau : c'est le pantin cuit qui le montre) */
+  /* (24 novembre : tant que le pantin cuit n'est pas prêt — la course d'arrivée se cuit d'abord —, le vrai dessin continue : sinon le
+     héros glissait figé dans sa garde) */
+  var d00 = d0;
+  if(CUIT) d0 = function(dt){ if(!(me.cuit && me.cuit.pret)) return d00.call(this, dt); var P = me.pose(), F = {}, k; for(k in P) F[k] = P[k]; F.cap = CAP; this.F = F; this.anV = this.anC || 0; return true; };     /* (l'anneau : c'est le pantin cuit qui le montre) */
   this.p.dessiner = function(dt){ var t1 = horloge(), r = d0.call(this, dt); if(r !== false){ if(!CUIT) noterDessin(horloge() - t1); this._vides = 0; } else this._vides = (this._vides || 0) + 1; me.apresImage(); return r; };
   /* (au calme — elle respire, cligne des yeux —, 15 dessins par seconde suffisent ; pendant un geste, 30 : la tablette souffle ;
      en léger, 20 au plus — et au calme, quand plus rien ne bouge depuis 8 images, elle s'endort : plus rien à faire à chaque image,
@@ -10699,8 +10860,13 @@ function givre(me, os, o){
    sa bouche ; et (froidFiltre, plus bas) un éclair blanc au moment du coup, puis des couleurs pâles et un liseré bleu glacé autour de
    lui. u : le temps depuis le coup ; o : de 0 à 1 (elle se pose, puis fond) */
 function f1(v){ return v.toFixed(1); }
+var EBROUE = 2.15;          /* (l'instant où il s'ébroue, dans HV.DONJON.froid : la glace s'envole) */
 function neige(me, os, o, u){
-  if(o <= 0 && u < 2.6) return '';
+  /* (24 novembre, 12 h 59 — Romain : « quand le personnage il se redresse après avoir été gelé, la petite glace elle reste sur place ») :
+     quand il s'ébroue (HV.DONJON.froid, 2,1 s), la neige et les glaçons s'envolent de lui en éclats, et c'est fini — plus rien ne
+     reste à fondre pendant qu'il se redresse */
+  if(o <= 0) return '';
+  var vole = Math.max(0, u - EBROUE);
   var s = '', e = (me.p.K && me.p.K.echelle) || 1;
   var T = me.ecranF(os.tete), Cc = me.ecranF(os.cou || os.tete), EG = me.ecranF(os.epauleG), ED = me.ecranF(os.epauleD);
   function unite(x, y){ var l = Math.sqrt(x * x + y * y) || 1; return [x / l, y / l]; }
@@ -10708,6 +10874,8 @@ function neige(me, os, o, u){
   var up = unite(T[0] - Cc[0], T[1] - Cc[1]); if(up[1] > -0.3) up = [0, -1];
   /* une plaque de neige : un dôme au-dessus, le bord du dessous en festons, des glaçons qui pendent */
   function plaque(c, tg, n, w, h, glacons, graine){
+    /* (elle s'envole : poussée loin de lui, vers le haut, de son côté) */
+    if(vole > 0){ var dv = vole * 260 * e, cote = graine === 1 ? -1 : graine === 2 ? 1 : 0; c = [c[0] + n[0] * dv + tg[0] * dv * 0.4 * cote, c[1] + n[1] * dv + tg[1] * dv * 0.4 * cote - 60 * vole * e]; }
     var k = 0.35 + 0.65 * Math.min(1, o), W = w * e * (0.6 + 0.4 * k), Hh = h * e * k, haut = [], bas = [], i, N = 9;
     for(i = 0; i <= N; i++){ var a = -1 + 2 * i / N, b = Math.pow(Math.max(0, 1 - a * a), 0.55);
       haut.push([c[0] + tg[0] * a * W + n[0] * Hh * b, c[1] + tg[1] * a * W + n[1] * Hh * b]); }
@@ -10719,7 +10887,7 @@ function neige(me, os, o, u){
     var r1 = haut[2], r2 = haut[5];
     r += '<path d="M' + f1(r1[0] - n[0] * 3) + ' ' + f1(r1[1] - n[1] * 3) + ' Q' + f1((r1[0] + r2[0]) / 2 + n[0] * 2) + ' ' + f1((r1[1] + r2[1]) / 2 + n[1] * 2) + ' ' + f1(r2[0] - n[0] * 3) + ' ' + f1(r2[1] - n[1] * 3) + '" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="' + (0.9 * Math.min(1, o)).toFixed(2) + '"/>';
     glacons.forEach(function(g, j){
-      var a = g[0], L = g[1] * e * k * (u > 2.6 ? Math.max(0.2, 1 - (u - 2.6) / 0.9) : 1), b0 = [c[0] + tg[0] * a * W - n[0] * 3 * e, c[1] + tg[1] * a * W - n[1] * 3 * e], lw = 4.2 * e;
+      var a = g[0], L = g[1] * e * k, b0 =[c[0] + tg[0] * a * W - n[0] * 3 * e, c[1] + tg[1] * a * W - n[1] * 3 * e], lw = 4.2 * e;
       if(o > 0.05) r += '<path d="M' + f1(b0[0] - tg[0] * lw) + ' ' + f1(b0[1] - tg[1] * lw) + ' L' + f1(b0[0] - n[0] * L) + ' ' + f1(b0[1] - n[1] * L) + ' L' + f1(b0[0] + tg[0] * lw) + ' ' + f1(b0[1] + tg[1] * lw) + ' Z" fill="#dff5ff" stroke="#3f84b8" stroke-width="1.8" stroke-linejoin="round" opacity="' + Math.min(1, o * 1.6).toFixed(2) + '"/>';
       /* (à la fin, elle fond : une goutte tombe de chaque glaçon) */
       var tg0 = 2.75 + 0.18 * ((graine + j) % 3), ag = u - tg0;
@@ -10743,7 +10911,7 @@ function neige(me, os, o, u){
 /* deux petits nuages de buée qui sortent de sa bouche (il grelotte) */
 function buee(me, os, u){
   var s = '', e = (me.p.K && me.p.K.echelle) || 1, T = me.ecranF(os.tete);
-  [0.55, 1.2, 1.85].forEach(function(t0, i){
+  [0.5, 1.0, 1.45].forEach(function(t0, i){
     var a = (u - t0) / 0.95; if(a <= 0 || a >= 1) return;
     var x = T[0] + (60 + 70 * a) * e, y = T[1] + (-40 - 50 * a) * e, r = (14 + 30 * a) * e, op = 0.8 * (1 - a) * Math.min(1, a * 5);
     s += '<ellipse cx="' + f1(x) + '" cy="' + f1(y) + '" rx="' + f1(r * 1.25) + '" ry="' + f1(r) + '" fill="#f2fbff" opacity="' + op.toFixed(2) + '"/>' +
@@ -10761,13 +10929,17 @@ V.froidFiltre = function(){
     der.style.cssText = z + 'left:29%;right:29%;top:10%;bottom:3%;border-radius:50%;background:radial-gradient(closest-side,rgba(150,225,255,.9),rgba(90,190,255,.5) 62%,rgba(90,190,255,0))';
     dev.style.cssText = z + 'left:34%;right:34%;top:14%;bottom:8%;border-radius:50%;background:radial-gradient(closest-side,rgba(235,250,255,.62),rgba(190,235,255,.36) 55%,rgba(170,225,255,0))';
     this.boite.insertBefore(der, this.svg);
-    this.boite.insertBefore(dev, this.calque);
+    /* (le voile de devant juste sur le héros, SOUS la bulle du bouclier — Romain, 13 h 01, la cave aux toiles : « un bouclier à -75 […]
+       il est pas jaune, il est gris » : le voile blanc du givre passait par-dessus la bulle) */
+    var apres = this.cuit && this.cuit.racine.parentNode === this.boite ? this.cuit.racine.nextSibling : this.svg ? this.svg.nextSibling : this.calque;
+    this.boite.insertBefore(dev, apres);
     this._froidV = [der, dev];
   }
   if(this._froidA) this._froidA.forEach(function(a){ try{ a.cancel(); }catch(e){} });
   this._froidA = [
-    this._froidV[0].animate([{opacity:0}, {opacity:1, offset:0.05}, {opacity:0.8, offset:0.2}, {opacity:0.75, offset:0.72}, {opacity:0}], {duration:3400, easing:'linear'}),
-    this._froidV[1].animate([{opacity:0}, {opacity:1, offset:0.04}, {opacity:0.5, offset:0.14}, {opacity:0.42, offset:0.72}, {opacity:0}], {duration:3400, easing:'linear'})];
+    /* (jusqu'à ce qu'il s'ébroue — EBROUE —, puis ça part vite) */
+    this._froidV[0].animate([{opacity:0}, {opacity:1, offset:0.06}, {opacity:0.8, offset:0.22}, {opacity:0.75, offset:0.86}, {opacity:0}], {duration:2500, easing:'linear'}),
+    this._froidV[1].animate([{opacity:0}, {opacity:1, offset:0.05}, {opacity:0.5, offset:0.17}, {opacity:0.42, offset:0.86}, {opacity:0}], {duration:2500, easing:'linear'})];
 };
 /* il recule sous le coup, puis grelotte (toute sa boîte, comme l'ancien héros) */
 V.secousse = function(){
@@ -10809,7 +10981,8 @@ function rats(me, os, u){
     if(fuite <= 0){ var w = Math.min(1, a) * 0.85 + 0.15 * Math.sin(u * 9 + i) * 0.2; x = mixe(A[0], B[0], w) + r[3] * 10; y = mixe(A[1] + 30, B[1], w); }
     else { if(fuite > 1) return; x = A[0] + r[3] * (40 + 260 * fuite); y = A[1] + 30 - 60 * Math.sin(Math.min(1, fuite * 2) * Math.PI) * 0.4 + 40 * fuite; }
     /* (plus gros que dans le film : au donjon elle est petite à l'écran, et les rats doivent se voir — comme ceux de l'ancien) */
-    var dx = fuite > 0 ? r[3] : (i % 2 ? 0.3 : -0.3), ang = fuite > 0 ? 0 : -70, G2 = 2.2;
+    /* (24 novembre — Romain, 13 h 14 : « je les trouve un peu gros » : 2,2 → 1,5) */
+    var dx = fuite > 0 ? r[3] : (i % 2 ? 0.3 : -0.3), ang = fuite > 0 ? 0 : -70, G2 = 1.5;
     s += '<g transform="translate(' + x.toFixed(0) + ' ' + y.toFixed(0) + ') rotate(' + (ang * (dx > 0 ? -1 : 1)) + ') scale(' + (dx >= 0 ? G2 : -G2) + ' ' + G2 + ')">' +
       '<path d="M-14 4 Q-34 10 -40 -2" fill="none" stroke="' + O + '" stroke-width="5"/><path d="M-14 4 Q-34 10 -40 -2" fill="none" stroke="#d99aa0" stroke-width="2.5"/>' +
       '<ellipse cx="0" cy="0" rx="17" ry="10" fill="#6b6570" stroke="' + O + '" stroke-width="3"/><circle cx="16" cy="-3" r="7" fill="#6b6570" stroke="' + O + '" stroke-width="3"/>' +
@@ -10931,11 +11104,14 @@ V.joie = function(){
     return Promise.all([this.jouer(HV.DONJON[g] || HV.DONJON.joie), this.ombreFait('joie')]); });
 };
 /* ELLE PREND UN COUP : le coup simple, le givre, les rats, le grand coup de poing */
+/* (24 novembre — Romain, 12 h 53 : « dès qu'on s'est pris un dégât, on peut répliquer tout de suite ») : sa réaction à un coup peut être
+   coupée net par le combat quand on le fait agir (V.couper) ; la file ne l'attend plus, ni les effets de l'ancien héros (l'ombre) */
+V.couper = function(){ if(this._reaction){ this._reaction = null; this._finGeste(); } };
 V.touche = function(type, opt){
   var g = type === 'froid' || type === 'brulure' ? 'froid' : type === 'grouillement' ? 'rats' : type === 'poing' ? 'poing' : 'coup';
   return this.file(function(){
     if(this.ko) return null;
-    var me = this, L = [this.jouer(HV.DONJON[g])];
+    var me = this, jeton = this._reaction = {}, fin = this.jouer(HV.DONJON[g]).then(function(){ if(me._reaction === jeton) me._reaction = null; }), L = [fin];
     if(g === 'coup') L.push(this.ombreFait('touche'));
     if(g === 'froid'){
       L.push(this.ombreFait('touche', 'froid', opt));
@@ -10943,7 +11119,7 @@ V.touche = function(type, opt){
       this.gelGel(0);
       this.froidFiltre();
       this.secousse();
-      this.effet('givre', function(u, os){ var o = u < 0.18 ? u / 0.18 : u < 2.6 ? 1 : Math.max(0, 1 - (u - 2.6) / 0.8); return givre(this, os, o) + neige(this, os, o, u) + buee(this, os, u); }, 3.5);
+      this.effet('givre', function(u, os){ var o = u < 0.18 ? u / 0.18 : u < EBROUE ? 1 : Math.max(0, 1 - (u - EBROUE) / 0.3); return givre(this, os, o) + neige(this, os, o, u) + buee(this, os, u); }, EBROUE + 0.35);
     }
     if(g === 'rats'){
       this.effet('rats', function(u, os){ return rats(this, os, u); }, 3.0);
@@ -10954,7 +11130,9 @@ V.touche = function(type, opt){
       L.push(this.ombreFait('touche', 'poing', opt));
       this.effet('etoiles', function(u, os){ return u < 0.45 ? '' : etoilesFilm(u - 0.45, this.ecranF(os.tete)); }, 1.4);
     }
-    return Promise.all(L);
+    /* (24 novembre : on n'attend que son geste à lui — coupé net par V.couper ; les effets de l'ombre finissent de leur côté) */
+    L.slice(1).forEach(function(p){ Promise.resolve(p).catch(function(){}); });
+    return fin;
   });
 };
 /* ELLE TOMBE SUR LE DOS, sonnée (la chute validée), et reste allongée */
@@ -11022,12 +11200,13 @@ V.tirer = function(scene, to, type, opt){
    ses sons (combat.js). La dague : deux revers (0,54 et 0,90 s) — ou, loin, le saut qui retombe (HV.SAUT.frappe) ; la flèche : 1,38 s. */
 V.moments = function(nom, scene, to){
   if(nom === 'tirer') return [1.38];
-  if(nom === 'dague' && scene && to){
-    var pied = this.rep('chevilleB', scene), k = this.echelle(scene), dx = Math.max(0, to.x - pied.x - 70) / k;
-    return dx > SEUIL_SAUT ? [HV.SAUT.frappe] : [0.54, 0.90];
-  }
+  /* (24 novembre — les deux revers : là où la main va le plus vite, mesuré sur le geste — 0,52 s et 0,94 s) */
+  if(nom === 'dague' && scene && to) return this.estSaut(scene, to) ? [HV.SAUT.frappe] : [0.52, 0.94];
+  if(nom === 'sort') return [HV.SAGE.LANCE];
+  if(nom === 'eclairSalle') return [HV.SAGE.FLASH];
   return [];
 };
+V.estSaut = function(scene, to){ var pied = this.rep('chevilleB', scene), k = this.echelle(scene); return Math.max(0, to.x - pied.x - 70) / k > SEUIL_SAUT; };
 /* combien de pixels de la scène pour un pixel de sa boîte */
 V.echelle = function(scene){ var a = this.racine.getBoundingClientRect(), b = scene.getBoundingClientRect(); return (a.width / (this.racine.offsetWidth || a.width)) / ((b.width / (scene.offsetWidth || b.width)) || 1); };
 /* LA DAGUE (Romain, 18 h 51 : « plus violent et plus vers devant […] que le bras entraîne le corps ») : près de l'ennemi, deux grands
@@ -11047,9 +11226,13 @@ V.dague = function(scene, to, opt){
        coup de dague et le son qui soit bien calé au bon moment. Là tout est décalé ») : opt.impact (en secondes) = le moment où les
        règles font tomber le coup (Léo : 0,71 s, et le son est calé dessus) ; tout le geste est joué au rythme qu'il faut pour que la
        lame tombe à cet instant-là — le saut (1,05 s d'habitude) devient plus vif et finit bien avant le geste suivant. */
-    var k = 1, imp0 = dx > SEUIL_SAUT ? HV.SAUT.frappe : 0.54;
+    var k = 1, imp0 = dx > SEUIL_SAUT ? HV.SAUT.frappe : 0.52;
     if(opt.impact > 0) k = Math.max(0.5, Math.min(1.4, opt.impact / imp0));
     function ms(s){ return s * k * 1000; }
+    /* (24 novembre — Romain, 12 h 54 : « le son arrive trop tôt […] tu recales vraiment les switches sur les sons de la dague ») : les
+       sons sont programmés ICI, quand le geste démarre vraiment (après ceux qui attendaient dans la file), et plus avant : opt.sons
+       reçoit {saut, moments} — les instants (en secondes depuis maintenant) des coups de lame, et de l'appel du pied s'il saute */
+    if(opt.sons) try{ opt.sons({saut:dx > SEUIL_SAUT, decolle:HV.SAUT.decolle * k, moments:dx > SEUIL_SAUT ? [HV.SAUT.frappe * k] : [0.52 * k, 0.94 * k]}); }catch(e){ if(G.console) console.error(e); }
     if(dx > SEUIL_SAUT){
       var S = HV.SAUT;
       this.plus(ms(S.decolle), function(){ me._poussiere(); me.glisse(0, dx, (S.frappe - S.decolle) * k, lisse); });
@@ -11064,7 +11247,7 @@ V.dague = function(scene, to, opt){
     var av = Math.max(0, dx - 30);
     this.plus(ms(0.3), function(){ me.glisse(0, av, 0.22 * k, lisse); });
     this.plus(ms(0.48), lame); this.plus(ms(0.54), function(){ coup(true); });
-    this.plus(ms(0.84), lame); this.plus(ms(0.9), function(){ coup(false); });
+    this.plus(ms(0.88), lame); this.plus(ms(0.94), function(){ coup(false); });
     this.plus(ms(1.3), function(){ me.glisse(av, 0, 0.36 * k, lisse); });
     this.effetRuban([[0.46 * k, 0.66 * k], [0.84 * k, 1.02 * k]], 1.4 * k);
     return this.jouer(k === 1 ? HV.DONJON.dague : etirer(HV.DONJON.dague, k));
@@ -11115,7 +11298,7 @@ V.preparer = function(couleur){
       var f = this.ecranF(fioleOs(os)), s = '', i, u = A.VERSE + (u0 - A.VERSE) / vp;
       /* (le filet de potion : du goulot de la fiole penchée au goulot de l'autre, dans le poing droit) */
       var uv = u - A.VERSE;
-      if(uv > 0.02 && uv < 0.36){
+      if(!A.SANS_VERSER && uv > 0.02 && uv < 0.36){
         var m = this.ecranF(poingOs(os, 'D')), b = this.ecranF(poingOs(os, 'G')), o = Math.min(1, (uv - 0.02) / 0.06, (0.36 - uv) / 0.08);
         var x0 = m[0] - 14, y0 = m[1] + 6, x1 = b[0], y1 = b[1] - 10, d = 'M' + x0.toFixed(1) + ' ' + y0.toFixed(1) + ' Q' + ((x0 + x1) / 2 - 6).toFixed(1) + ' ' + (Math.min(y0, y1) - 4).toFixed(1) + ' ' + x1.toFixed(1) + ' ' + y1.toFixed(1);
         s += '<path d="' + d + '" fill="none" stroke="' + O + '" stroke-width="8" stroke-linecap="round" opacity="' + (0.5 * o).toFixed(2) + '"/>' +
@@ -11162,7 +11345,8 @@ V.louche = function(scene, to){
   var me = this, A = HV.ALCHI;
   return this.file(function(){
     if(this.ko) return null;
-    this.plus((A.BONG - 0.13) * 1000, function(){ try{ me._swoosh(); }catch(e){} });
+    /* (24 novembre — Romain, 13 h 15 : « quand l'alchimiste il fait un dong sur le roi des rats, il y a une flèche qui part. C'est un bug.
+       Enlève-la » : le trait de l'ancien héros, posé là où était SA louche, partait comme une flèche — enlevé) */
     this.plus(A.BONG * 1000, function(){ try{ me._bong(scene); }catch(e){} });
     return this.jouer(A.louche);
   });
@@ -11362,6 +11546,8 @@ V.bouclier = function(scene, cible, opt){
        s'empilaient : « les héros ont disparu »). Au plus 3 s d'attente (un geste coupé ne pose rien). */
     var pret, posees = new Promise(function(r){ pret = r; });
     function donne(v){ sig(v); pret(); }
+    /* (24 novembre : les sons, au vrai départ du geste — opt.sons reçoit l'instant où la bulle naît) */
+    if(opt.sons) try{ opt.sons({moment:S.DOME * k}); }catch(e){}
     this.cristalFlash(true);
     try{ this._runesMontent(); }catch(e){}
     this.plus(S.DOME * k * 1000, function(){
@@ -11623,7 +11809,12 @@ V.cuitMonter = function(){
   this._cuitGen = 0;
   var c0 = this.p.choisi;
   this.p.choisi = function(on){ c0.call(this, on); if(me.cuit) me.cuit.anneau(on); };
-  this.cuit.preparer(this.base).then(function(){
+  /* (24 novembre — Romain, 12 h 50 : « quand on arrive dans une salle […] la tête qui se décroche du corps ») : la course d'arrivée et
+     l'arrêt sont cuits AVANT qu'on montre le héros cuit. Avant, seule la garde l'était : pendant la course, chaque morceau pas encore
+     cuit était remplacé par un autre (une tête d'un autre angle, d'une autre inclinaison : elle flottait à côté du cou). En attendant,
+     c'est le vrai dessin qui court. */
+  var R0 = this.cuit;
+  R0.preparer(this.base).then(function(){ return R0.mort ? null : R0.cuireImages(imagesArrivee(), null, 1); }).then(function(){
     if(!me.cuit || me.cuit.mort) return;
     me.cuit.pret = true;
     if(me.svg) me.svg.style.visibility = 'hidden';
@@ -11635,6 +11826,13 @@ V.cuitMonter = function(){
     if(G.SALLE && G.SALLE.tempsReel) me.plus(3000, function(){ me.cuitPrecuire(); }); else me.cuitPrecuire();
   });
 };
+/* les poses de l'arrivée (V.entrer) : un cycle de course, puis l'arrêt net depuis le point de la foulée où elle freine */
+function imagesArrivee(){
+  var C = HV.COURSE, A = HV.ARRET, L = [], u, dep = HV.course(0.93 * C.cycle), cl = HV.arret();
+  for(u = 0; u <= C.cycle + 1e-6; u += 0.05) L.push({t:u, P:HV.course(u)});
+  for(u = 0; u <= A.duree + 1e-6; u += 0.05) L.push({t:C.cycle + 0.05 + u, P:HV.gesteImage(dep, cl, u)});
+  return L;
+}
 /* ce que le pantin cuit doit jouer, d'après l'état du moment : le geste en cours (ou la course) jusqu'au bout, puis ce qui suit — la
    pose gardée et sa petite vie, ou la boucle d'après (pris dans la toile). Tout est prévu ici, une fois ; la carte graphique joue. */
 var DT_CUIT = 1 / 30;
@@ -24836,7 +25034,7 @@ DJ.mesurerCritiqueVrai = function(){
     if(lent) SALLE.critLeger = true;
   }};
 };
-DJ.VERSION = '24/11 à 12 h 33';
+DJ.VERSION = '24/11 à 13 h 40';
 
 /* ================= les fichiers (images, scripts chargés à la demande) ================= */
 var CH = window.DJ_CHEMINS || {};
@@ -25400,7 +25598,7 @@ function lancer(partie, salle){
       E.c = Regles.combat(partie, salle);
       E.ph = E.c.etat();
       E.baton = batonGarde();
-      jouer(E.c.entree()).then(function(){ var h = E.entreeH; E.entreeH = null; return h; }).then(function(){ if(DJ.temoinCharge) DJ.temoinCharge(false); q('#combat').classList.add('ouvert'); return attendre(300); }).then(tourHeros);
+      jouer(E.c.entree()).then(function(){ var h = E.entreeH; E.entreeH = null; return h; }).then(function(){ if(DJ.temoinCharge) DJ.temoinCharge(false); q('#combat').classList.add('ouvert'); bruit('bandeMonte'); return attendre(100);   /* (24 novembre — Romain, 13 h 18 : « les icônes en bas […] 3 fois plus vite. Et quand ils remontent, tu mets un petit son » ; avant 300 ms) */ }).then(tourHeros);
     });
   });
 }
@@ -25909,7 +26107,7 @@ async function apres(){
     await jouer(E.c.tourMonstres(), avant);
   }finally{ DJ.rythme(1); }
   if(E.c.fini()) return finCombat();
-  await attendre(150);
+  /* (24 novembre : plus d'attente avant que ce soit à nous — avant, 150 ms) */
   /* un tour où plus aucun héros ne peut jouer (tous entoilés…) : on enchaîne */
   if(!(E.c.aJouer() || []).length) return apres();
   tourHeros();
@@ -25918,7 +26116,7 @@ async function apres(){
 /* les évènements d'une liste, rangés en blocs : un bloc = ce qui arrive à UNE bête (ou un moment du système) */
 var COTE_HEROS = {degats:1, tombe:1, releve:1, soin:1, pare:1, etat:1, passe:1};
 /* le tour des bêtes en accéléré (Romain, 24 novembre, 0 h 11) : 1,5 fois plus vite que les gestes des héros */
-var RYTHME = 1.5, RYTHME_GONG = 2.5;      /* (RYTHME_GONG : la réaction du Roi des rats au bruit — voir « touche », plus bas) */
+var RYTHME = 1.5, RYTHME_GONG = 2.5, RYTHME_NUAGE = 3;      /* (RYTHME_GONG : la réaction du Roi des rats au bruit — voir « touche », plus bas) */
 function cleDe(ev){
   if(ev.t === 'arrive') return ev.de ? 'b:' + ev.de : 'arrivees';
   /* le geste d'un héros ouvre toujours son propre bloc, même quand il vise une bête : c'est là que le héros s'anime
@@ -26040,10 +26238,30 @@ async function un(ev, bl, ctx){
          sursaut) est jouée RYTHME_GONG fois plus vite — tout ce que le module prévoit au moment du coup (animations, minuteries, sons
          calés) ; on rend le rythme d'avant tout de suite après. */
       if(a.module === 'roirats' && ev.coup === 'bruit'){
-        var k0 = window.DJ_RYTHME || 1, rr;
+        var k0 = window.DJ_RYTHME || 1, rr, kG = k0 * RYTHME_GONG, eR = etatDuModule(a) || {};
+        /* (24 novembre — Romain, 13 h 12 : « il manque des bruitages pour le roi des rats […] des petits bruits de rats […] une corde qui
+           était tendue et le bruit du rat qui se retourne ») : calés sur ce que le module va jouer (roirats-anime.js, _t_bruit) */
+        var gong = function(id, s){ bruit(id, {cale:s / kG}); };
+        if(eR.boule || eR.ouvert || eR.dos) gong('ratsCouinent', .2);                                 /* le sursaut */
+        else if(eR.noeud){ gong('ratsCouinent', .2); gong('roiCorde', .76); gong('roiRetourne', 1.46); }  /* ils tirent tous : le nœud cède */
+        else if(eR.etale){ gong('ratsCouinent', .15); gong('roiRetourne', 1.68); }                       /* la panique */
+        else gong('ratsCouinent', .3);                                                                  /* ils se fâchent et chargent */
         DJ.rythme(k0 * RYTHME_GONG);
         try{ rr = a.touche(ev.coup, {vers:hPt('alchimiste'), onImpact:function(){ son('morsure'); Fx.tremble(6, 260); }}); }finally{ DJ.rythme(k0); }
         return rr;
+      }
+      /* (24 novembre — Romain, 13 h 14 : « du moment où on a balancé le fumigène et que le nœud se tend, c'est trop long. Ils toussent trop
+         longtemps, ensuite ils prennent le temps de tirer. Il faut réduire par 3 ce temps. Et il faut mettre des sons ») : la toux puis le
+         nœud qui se tend (roirats-anime.js : tousser, puis _e_noeud), joués 3 fois plus vite JUSQU'AU BOUT (le nœud part après la toux :
+         le rythme reste le temps de la réaction, 3 s au plus), avec les rats qui toussent, puis la corde qui se tend et les couinements */
+      if(a.module === 'roirats' && ev.coup === 'nuage' && !(etatDuModule(a) || {}).boule){
+        var k1 = window.DJ_RYTHME || 1, kN = k1 * RYTHME_NUAGE, eN = etatDuModule(a) || {};
+        [.52, 1.52, 2.52].forEach(function(s){ bruit('ratNuage', {dt:s / kN}); });
+        if(!eN.ouvert && !eN.noeud){ bruit('roiCorde', {cale:(3.4 + .3) / kN}); bruit('ratsCouinent', {cale:(3.4 + .15) / kN}); }
+        DJ.rythme(kN);
+        var rN; try{ rN = a.touche(ev.coup, rappels(a)); }catch(x){ DJ.rythme(k1); throw x; }
+        /* (attendre() divise par le rythme du moment : 3000 × kN → 3 s pour de vrai) */
+        return Promise.race([Promise.resolve(rN), attendre(3000 * kN)]).then(function(v){ DJ.rythme(k1); return v; }, function(){ DJ.rythme(k1); });
       }
       return a.touche(ev.coup, a.rat ? null : rappels(a));
     case 'rebond':
@@ -26253,7 +26471,7 @@ async function entreeHeros(ev){
      héros soient arrivés — les bêtes partent 0,35 s après eux (arrivees() attend les héros à la fin, et le combat aussi : E.entreeH) */
   E.entreeH = Promise.all(EXPOSES.map(function(h, k){
     return attendre(k * 230).then(function(){ slotH(h).style.visibility = 'visible'; return E.A.h[h].entrer(HER[h].x + 260); }).then(function(){ return E.A.h[h].attendre(); });
-  })).then(function(){ return attendre(250); });
+  })).then(function(){ return attendre(80); });
   await attendre(350);
 }
 async function arrivees(gr){
@@ -26282,7 +26500,7 @@ async function arrivees(gr){
   /* (les héros arrivent en même temps : on les attend ici — entreeHeros) */
   if(debut && E.entreeH){ var h0 = E.entreeH; E.entreeH = null; await h0; }
   E.ph = E.c.etat(); majBarres(); placerTout();
-  await attendre(debut ? 250 : 150);
+  await attendre(debut ? 80 : 150);
 }
 /* l'araignée : son cocon brûle, deux œufs tombent ; les petites sortent des œufs, devant */
 async function eclosion(l, i, ctx){
@@ -26310,6 +26528,8 @@ var SON_POTION = {givre:'potGivre', acide:'potAcide', huile:'potHuile', colle:'p
 /* rend true si le geste touche toute la salle (les bêtes réagissent alors ensemble) */
 async function geste(ev, evs){
   var H = E.A.h, a = ev.bete ? B(ev.bete) : null, avant = a ? photoAvant(a.id) : null, to, coul, R;
+  /* (24 novembre : il réagissait encore à un coup — on coupe sa réaction, son geste part tout de suite, et ses sons avec) */
+  if(ev.heros && H[ev.heros] && H[ev.heros].couper) try{ H[ev.heros].couper(); }catch(x){}
   switch(ev.t){
     case 'tir':
       to = a.cible(avant && avant.ouvert);
@@ -26326,9 +26546,18 @@ async function geste(ev, evs){
     case 'dague':
       to = a.cible(avant && avant.ouvert);
       var cD = {x:Math.max(hCx('pisteur') + 90, a.ancre('centre').x - Math.min(70, a.cadre.w * .3)), y:to.y};
-      /* (24 novembre : un « swish » à chaque coup de lame, à l'instant où le héros frappe — H.pisteur.moments, héros en volume) */
-      (H.pisteur.moments ? H.pisteur.moments('dague', fx, cD) : [lame()]).forEach(function(t){ bruit('swish', {cale:t}, ['dague']); });
-      await H.pisteur.dague(fx, cD);
+      /* (24 novembre : un « swish » à chaque coup de lame, à l'instant où le héros frappe — héros en volume : programmés par le héros
+         lui-même quand son geste démarre vraiment (opt.sons) ; Romain, 12 h 54 : « le son arrive trop tôt ». Quand il saute (12 h 56) :
+         un petit bruit de saut très discret à l'appel du pied, puis un grand coup de lame, autre que le swish, sur la lame qui tombe) */
+      if(H.pisteur.moments){
+        await H.pisteur.dague(fx, cD, {sons:function(s){
+          if(s.saut){ bruit('sautDague', {dt:s.decolle, vol:.6}); s.moments.forEach(function(t){ bruit('grandeLame', {cale:t}, ['dague']); }); }
+          else s.moments.forEach(function(t){ bruit('swish', {cale:t}, ['dague']); });
+        }});
+      } else {
+        bruit('swish', {cale:lame()}, ['dague']);
+        await H.pisteur.dague(fx, cD);
+      }
       bruit('chairD');
       return false;
     case 'potion':
@@ -26370,27 +26599,31 @@ async function geste(ev, evs){
       E.ph = E.c.etat(); majBadges();
       return false;
     case 'rune':
-      son('magie');
+      /* (24 novembre — Romain, 12 h 52 : « le son du sage quand il fait son sort de lumière, ça fait plein de ding ding ding […]
+         quasiment les mêmes ding que quand on découvre le point faible ») : plus de « magie » ni de cristal qui tintent ; un son de
+         lumière (Atelier des sons : « Rune de lumière (sans ding) »), dont l'éclat tombe quand la lumière part du bâton */
+      var mL = H.sage.moments ? H.sage.moments(ev.salle ? 'eclairSalle' : 'sort') : [];
+      bruit('lumiere', mL.length ? {cale:mL[0]} : {});
       if(ev.salle){
         var pts = E.ordre.map(B).filter(function(x){ return x && !x.mort; }).map(function(x){ return x.ancre('centre'); });
-        bruit('cristal');
         if(H.sage.eclairSalle) await H.sage.eclairSalle(fx, {cibles:pts}); else await H.sage.sort(fx, pts[0] || milieuBetes());
-        son('magie', .05);
         return true;
       }
       to = a.ancre('centre');
       await H.sage.sort(fx, to, {cristal:false});
       Fx.eclat(to.x, to.y, 260, 'radial-gradient(closest-side,#fff,rgba(191,248,255,.9) 30%,rgba(63,208,255,.4) 60%,rgba(63,208,255,0))', 600);
       Fx.etincelles(to.x, to.y, 14, ['#ffffff', '#bff8ff', '#8ff3ff']);
-      son('magie', .05);
       return false;
     case 'pose-bouclier':
-      son('dome'); if(ev.cibles.length > 1) bruit('baton');
+      /* (24 novembre — Romain, 13 h : « quand on met un bouclier, le son il est pas bien calé ») : héros en volume — le son part quand
+         la bulle naît (le Sage lève d'abord son bâton : 1,1 s), programmé par le Sage au vrai départ de son geste (opt.sons) */
+      var sonsB = function(s){ setTimeout(function(){ son('dome'); }, Math.max(0, s.moment * 1000 - 60)); if(ev.cibles.length > 1) bruit('baton', {dt:Math.max(0, s.moment - 0.1)}); };
+      if(!H.sage.moments){ son('dome'); if(ev.cibles.length > 1) bruit('baton'); }
       var conts = ev.cibles.map(function(h){ return q('.acteur', slotH(h)); });
       /* (un garde-fou : si l'animation du dôme ne finissait jamais, le combat resterait figé — on continue sans elle) */
       /* (13 novembre) le bouclier jaune du bâton normal (75 %), ou les boucliers du bâton de chêne (50 %, sur les trois héros depuis le 14 novembre) */
       var chene = ev.sorte === 'chene', part = chene ? D.CHIFFRES.bouclierChene : D.CHIFFRES.bouclier;
-      var d = await Promise.race([Promise.resolve(H.sage.bouclier(fx, conts.length > 1 ? conts : conts[0], {pct:Math.round((1 - part) * 100), sorte:chene ? 'chene' : 'jaune'})).catch(function(){ return null; }), attendre(6000).then(function(){ return null; })]);
+      var d = await Promise.race([Promise.resolve(H.sage.bouclier(fx, conts.length > 1 ? conts : conts[0], {pct:Math.round((1 - part) * 100), sorte:chene ? 'chene' : 'jaune', sons:sonsB})).catch(function(){ return null; }), attendre(6000).then(function(){ return null; })]);
       if(d) ev.cibles.forEach(function(h, k){ E.domes[h] = Array.isArray(d) ? d[k] : d; });
       await attendre(450);
       return false;
@@ -26592,7 +26825,8 @@ async function attaque(l, i, ctx){
     var h0 = ev.cibles[0], prise = coups.some(function(g){ return g.some(function(x){ return x.t === 'etat' && x.nom === 'entoile' && x.on; }); });
     if(prise) E.toiles[h0] = ret; else { try{ ret(); }catch(e){} }
   }
-  await attendre(coups.some(function(g){ return g.some(function(x){ return x.t === 'tombe'; }); }) ? 600 : 250);
+  /* (24 novembre — Romain : « dès qu'on s'est pris les dégâts, hop, tout de suite, c'est à nous » : 250 → 60 ms ; une chute : 600 → 350) */
+  await attendre(coups.some(function(g){ return g.some(function(x){ return x.t === 'tombe'; }); }) ? 350 : 60);
   return j - 1;
 }
 /* un coup reçu par un héros : le chiffre, la barre, sa réaction, et ce qui suit (il tombe, il est entoilé, avalé…) */
@@ -26615,7 +26849,11 @@ async function degatsHeros(ev, tombe, a, rang){
   var att = animDe(ev.attaque), type = att === 'brulure' ? 'froid' : att === 'grouillement' || att === 'charge' ? 'grouillement' : att === 'poing' ? 'poing' : undefined;
   if(tombe){ slotH(h).classList.add('sol'); son('tombe'); return Promise.resolve(E.A.h[h].tomber()).catch(function(){}); }
   if(ev.attaque === 'langue') return;                    /* il est happé : pas de réaction, la suite (avale) s'en charge */
-  return Promise.resolve(E.A.h[h].touche(type)).catch(function(){});
+  /* (24 novembre — Romain, 12 h 53 : « dès qu'un ennemi l'a frappé […] il y a 1 seconde ou un peu plus d'attente où il se passait rien
+     […] dès qu'on s'est pris les dégâts, hop, tout de suite, c'est à nous ») : le combat n'attend plus la fin de sa réaction (il recule,
+     il grelotte…) — elle continue pendant qu'on choisit ; si on le fait agir avant, elle est coupée net (V.couper, héros en volume) */
+  var pr = Promise.resolve(E.A.h[h].touche(type)).catch(function(){});
+  if(!E.A.h[h].couper) return pr;
 }
 function tomber(h){ slotH(h).classList.add('sol'); son('tombe'); return Promise.resolve(E.A.h[h].tomber()).catch(function(){}); }
 async function relever(ev){
@@ -29527,9 +29765,9 @@ function construire(){
     hud.appendChild(pv);
   });
   /* (24 novembre — Romain, 10 h 17 : « l'alchimiste, il met trop de temps à jeter ses potions […] contre le combat de Léo ») :
-     l'Alchimiste en volume prépare et lance sa fiole plus vite (1,2 s + 0,4 s, hv-alchimiste.js) ; la potion tombe donc plus tôt
-     — 2,16 s au lieu de 2,54 — et il peut en relancer une plus tôt (l'ancien Alchimiste garde ses moments à lui) */
-  try{ var VA = window.HerosVuesDonjon && window.HerosVuesDonjon.Volume; L.DUREES.potion = VA && E.A.h.alchimiste instanceof VA ? {impact:2.16, fin:2.37} : POTION_ANCIEN; }catch(e){}
+     l'Alchimiste en volume prépare et lance sa fiole plus vite (1,3 s + 0,4 s, hv-alchimiste.js — la préparation refaite à 12 h 55) ;
+     la potion tombe donc plus tôt — 2,24 s au lieu de 2,54 — et il peut en relancer une plus tôt (l'ancien garde ses moments à lui) */
+  try{ var VA = window.HerosVuesDonjon && window.HerosVuesDonjon.Volume; L.DUREES.potion = VA && E.A.h.alchimiste instanceof VA ? {impact:2.24, fin:2.45} : POTION_ANCIEN; }catch(e){}
   /* le bâton de lune dans la main du Sage, s'il l'a (c'est lui qui rallume la salle) */
   try{ var OL = D.OBJETS['cristal-lune']; if(OL && OL.equipe && (E.partie.heros.sage.objets || []).indexOf('cristal-lune') >= 0) E.A.h.sage.equiper(OL.equipe, true, {discret:true}); }catch(e){}
   /* Léo, et l'endroit où on le touche */

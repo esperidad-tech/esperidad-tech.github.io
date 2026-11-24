@@ -3735,8 +3735,11 @@ HV.DONJON.froid = [[0.08, avec(AIE, {bas:[0, 30, -6], dos:[-10, 0, 4], hoche:-10
 var RATS_V = {hoche:20, regY:1, sourire:-0.9, bouchex:0.6, sourcilsIn:0.7, ouvre:0.3, plisse:0.4};
 function tape(cote, haut){
   var R = avec(RATS_V, {bas:[cote === 'D' ? -4 : 4, 26, 2], mainD:[62, 204, 18], relD:1, coudeD:[1, 0.2, -0.3], poingD:0.2});
-  if(cote === 'D') R.piedD = [30, haut ? 352 : 386, -10]; else R.piedG = [-32, haut ? 352 : 386, 18];
-  R['pointe' + cote] = haut ? 25 : 0; R['genou' + cote] = cote === 'D' ? [0.5, -0.2, 1] : [-0.5, -0.2, 1];
+  /* (24 novembre — Romain, 13 h 14 : « avant, ils tapaient des pieds, et là, ils font plus rien ») : au donjon, on la voit de loin —
+     le pied monte bien plus haut (330 au lieu de 352), et à chaque pied levé elle sautille (leve), comme l'ancien héros qui sautait */
+  if(cote === 'D') R.piedD = [30, haut ? 330 : 386, -10]; else R.piedG = [-32, haut ? 330 : 386, 18];
+  R['pointe' + cote] = haut ? 30 : 0; R['genou' + cote] = cote === 'D' ? [0.5, -0.2, 1] : [-0.5, -0.2, 1];
+  if(haut) R.leve = 12;
   return R;
 }
 HV.DONJON.rats = [[0.12, {hoche:16, regY:0.9, sourcils:0.7, ouvre:0.5, plisse:-0.3, bas:[0, 20, -4]}],
@@ -3913,52 +3916,40 @@ var g = P.aGarde;
 var FACE = HV.tour(g, -55, 4);
 function versNous(plus){ return avec(FACE, plus || {}); }
 
-/* ---------- PRÉPARER (2,2 s) ----------
-   Le buste un peu tourné vers nous (TQ : la tête, les épaules, les hanches ; les pieds restent plantés) pour qu'on voie ses mains.
-   0 → 0,3 : la main droite prend une fiole sur sa poitrine (de l'eau claire : la couleur de l'adaptateur) ;
-   → 0,62 : la main gauche en prend une deuxième (K.potion2 : la couleur de la potion) ;
-   → 1,24 : il lève la deuxième au-dessus de la première et la penche : elle s'y verse (HV.ALCHI.VERSE → HV.ALCHI.VERSE + 0,3) ;
-   → 1,46 : il range la fiole vide sur sa sangle ;
-   → 1,8 : il secoue le mélange, qui s'illumine (HV.ALCHI.ECLAT) ; → 2,1 : la fiole armée derrière l'épaule (HV.ALCHI.PRET). */
+/* ---------- PRÉPARER (1,3 s), REFAIT LE 24 NOVEMBRE ----------
+   (Romain, 12 h 55 : « l'animation de préparation des potions […] elle est un peu buggée ou alors elle est pas très claire. Retravaille-moi
+   ça pour que ça soit un peu plus sympa » ; avant : deux fioles, l'une versée dans l'autre, rangée, puis secouée — en 2,2 s, puis jouée
+   presque deux fois plus vite à 10 h 17 : on n'y comprenait plus rien.) UNE seule fiole, et chaque moment se voit :
+   0 → 0,24 : la main droite attrape une fiole sur sa sangle (de l'eau claire : la couleur de l'adaptateur) ;
+   → 0,42 : il la lève devant ses yeux, et la regarde ;
+   → 0,7 : il la secoue trois fois, fort — elle s'allume de la couleur de la potion (HV.ALCHI.ECLAT : l'éclair, les étincelles) ;
+   → 0,95 : il la lève, content de lui ; → 1,2 : la fiole armée derrière l'épaule (HV.ALCHI.PRET). */
 var PRET = avec(g, {fioleG:1, mainG:[-42, 148, -8], relG:1, coudeG:[-0.7, 0.5, -0.4], pouceG:[0, -1, 0], mdirG:[0, -0.3, 1], poingG:0.9, sourcils:-0.6, plisse:0.3, sourire:0.2});
 var TQ = HV.tour(g, -38, 2);
 function tq(plus){ return avec(TQ, plus || {}); }
-/* (la fiole de la main droite, tenue devant sa poitrine ; y : plus bas quand il secoue) */
+/* (la fiole de la main droite, tenue devant lui ; y : sa hauteur — plus petit, plus haut) */
 function fiole1(y, plus){ return avec({fioleG:1, mainG:[-16, y, 44], relG:1, coudeG:[-0.85, 0.45, -0.3], pouceG:[0, -1, 0], mdirG:[0.3, 0, 1], poingG:0.92}, plus || {}); }
-/* (la fiole de la main gauche : droite, ou penchée pour verser — le goulot du côté du pouce, tourné vers l'autre fiole) */
-function fiole2(x, y, penche, plus){ return avec({fioleD:1, mainD:[x, y, 48], relD:1, coudeD:[0.85, 0.45, -0.3], pouceD:penche ? [-0.85, 0.5, 0.1] : [0, -1, 0], mdirD:[-0.3, 0, 1], poingD:0.92}, plus || {}); }
-var VERSE = 0.88, ECLAT = 1.8;
+/* (VERSE + 0,16 : le moment où la fiole prend sa couleur — ici, pendant qu'il la secoue ; plus rien n'est versé : SANS_VERSER) */
+var ECLAT = 0.66, VERSE = ECLAT - 0.16, SANS_VERSER = true;
+var SECOUE = {sourcils:0.5, plisse:0.35, ouvre:0.15, largeB:0.7, regY:-0.05};
 var preparer = [
-  /* (la main droite va chercher une fiole sur sa poitrine ; il la regarde) */
-  [0.18, tq({mainG:[-16, 170, 24], relG:1, coudeG:[-0.9, 0.3, -0.2], poingG:0.3, pouceG:[0, -1, 0.3], hoche:10, regY:0.6, regX:-0.2, sourcils:0.2})],
-  [0.3, tq({mainG:[-16, 168, 26], relG:1, coudeG:[-0.9, 0.3, -0.2], poingG:0.92, pouceG:[0, -1, 0.3], fioleG:1, hoche:10, regY:0.6, regX:-0.2})],
-  /* (la main gauche en prend une deuxième) */
-  [0.5, tq(fiole1(160, {mainD:[16, 176, 26], relD:1, coudeD:[0.9, 0.3, -0.2], poingD:0.3, pouceD:[0, -1, 0.3], hoche:8, regY:0.5, regX:0.2, sourcils:0.3}))],
-  [0.62, tq(fiole1(160, {fioleD:1, mainD:[16, 174, 28], relD:1, coudeD:[0.9, 0.3, -0.2], poingD:0.92, pouceD:[0, -1, 0.3], hoche:8, regY:0.5, regX:0.2}))],
-  /* (il la lève au-dessus de la première, concentré, et la penche : elle s'y verse) */
-  [0.8, tq(fiole1(162, fiole2(6, 118, false, {hoche:4, regY:0.3, sourcils:0.5, plisse:0.25, ouvre:0.1, largeB:0.6})))],
-  [0.92, tq(fiole1(162, fiole2(4, 116, true, {hoche:4, regY:0.35, sourcils:0.6, plisse:0.3, ouvre:0.15, largeB:0.5})))],
-  [1.1, tq(fiole1(164, fiole2(2, 114, true, {hoche:5, regY:0.4, sourcils:0.6, plisse:0.3, ouvre:0.15, largeB:0.5})))],
-  [1.24, tq(fiole1(162, fiole2(12, 132, false, {hoche:4, regY:0.3, sourcils:0.4, sourire:0.5})))],
-  /* (il range la fiole vide sur sa sangle) */
-  [1.38, tq(fiole1(162, {fioleD:1, mainD:[20, 176, 26], relD:1, coudeD:[0.9, 0.3, -0.2], poingD:0.92, pouceD:[0, -1, 0.3], regY:0.2, sourire:0.5}))],
-  [1.46, tq(fiole1(162, {fioleD:0, mainD:[22, 180, 26], relD:1, coudeD:[0.9, 0.3, -0.2], poingD:0.4, regY:0.1, sourire:0.5}))],
-  /* (il secoue le mélange, de haut en bas, l'œil dessus) */
-  [1.54, tq(fiole1(146, {mainD:[34, 200, 28], relD:1, poingD:0.5, regY:0.1, sourcils:0.3, sourire:0.6, plisse:0.2}))],
-  [1.61, tq(fiole1(166, {mainD:[34, 200, 28], relD:1, poingD:0.5, regY:0.2, sourcils:0.3, sourire:0.6, plisse:0.2}))],
-  [1.68, tq(fiole1(146, {mainD:[34, 200, 28], relD:1, poingD:0.5, regY:0.1, sourcils:0.3, sourire:0.6, plisse:0.2}))],
-  [1.75, tq(fiole1(164, {mainD:[34, 200, 28], relD:1, poingD:0.5, regY:0.2, sourcils:0.3, sourire:0.6, plisse:0.2}))],
-  /* (le mélange s'illumine : il le lève un peu, content de lui) */
-  [ECLAT + 0.04, tq(fiole1(140, {mainD:[36, 200, 28], relD:1, poingD:0.5, regY:-0.1, sourcils:0.6, sourire:0.9, plisse:0.35, ouvre:0.15}))],
+  /* (la main droite va chercher une fiole sur sa sangle ; il la regarde) */
+  [0.14, tq({mainG:[-16, 170, 24], relG:1, coudeG:[-0.9, 0.3, -0.2], poingG:0.3, pouceG:[0, -1, 0.3], hoche:10, regY:0.6, regX:-0.2, sourcils:0.2})],
+  [0.24, tq({mainG:[-16, 168, 26], relG:1, coudeG:[-0.9, 0.3, -0.2], poingG:0.92, pouceG:[0, -1, 0.3], fioleG:1, hoche:10, regY:0.6, regX:-0.2})],
+  /* (il la lève devant ses yeux et la regarde, curieux) */
+  [0.42, tq(fiole1(124, {hoche:0, regY:0.05, regX:-0.1, sourcils:0.6, plisse:0.1, ouvre:0.1}))],
+  /* (il la secoue trois fois, fort, de haut en bas) */
+  [0.49, tq(fiole1(108, SECOUE))], [0.55, tq(fiole1(134, SECOUE))], [0.61, tq(fiole1(108, SECOUE))], [0.67, tq(fiole1(134, SECOUE))],
+  /* (elle s'est allumée : il la lève, content de lui) */
+  [0.8, tq(fiole1(110, {regY:-0.2, sourcils:0.7, sourire:0.9, plisse:0.35, ouvre:0.2}))],
+  [0.95, tq(fiole1(114, {regY:-0.1, sourcils:0.5, sourire:0.8, plisse:0.3}))],
   /* (il arme la fiole derrière l'épaule, face aux ennemis, décidé) */
-  [2.1, PRET], [2.22, PRET]];
+  [1.2, PRET], [1.3, PRET]];
 
 /* (24 novembre — Romain, 10 h 17 : « depuis le début, l'alchimiste, il met trop de temps à jeter ses potions […] faire en sorte que il
-   la jette plus vite ») : le même geste, joué presque deux fois plus vite — préparée en 1,2 s au lieu de 2,2 s ; le lancer (plus bas)
-   lâche la fiole à 0,4 s au lieu de 0,5. HV.ALCHI.VITE : l'adaptateur cale le filet de potion et les lueurs dessus. */
-var VITE_P = 0.55, VITE_L = 0.8;
-preparer = preparer.map(function(k){ return [Math.round(k[0] * VITE_P * 1000) / 1000, k[1]]; });
-VERSE *= VITE_P; ECLAT *= VITE_P;
+   la jette plus vite ») : le lancer (plus bas) lâche la fiole à 0,4 s au lieu de 0,5. La préparation est faite à sa nouvelle durée
+   (1,3 s) : VITE_P = 1. HV.ALCHI.VITE : l'adaptateur cale les lueurs dessus. */
+var VITE_P = 1, VITE_L = 0.8;
 
 /* ---------- LANCER (depuis PRET), LE BUSTE TOURNÉ VERS NOUS ---------- */
 var LACHE = 0.5;
@@ -4026,7 +4017,7 @@ var herbes = [
   [1.8, versNous({mainD:[40, 170, 36], relD:1, coudeD:[0.9, 0.4, -0.2], poingD:0.2, regX:-0.3, sourire:0.9, sourcils:0.5, plisse:0.4})],
   [2.15, {}]];
 
-HV.ALCHI = {preparer:preparer, lancer:lancer, louche:louche, herbes:herbes, PRET:PRET, LACHE:LACHE, BONG:BONG, HERBES:HERBES, VERSE:VERSE, ECLAT:ECLAT, VITE:VITE_P};
+HV.ALCHI = {preparer:preparer, lancer:lancer, louche:louche, herbes:herbes, PRET:PRET, LACHE:LACHE, BONG:BONG, HERBES:HERBES, VERSE:VERSE, ECLAT:ECLAT, VITE:VITE_P, SANS_VERSER:SANS_VERSER};
 HV.NOMS_ALCHI = {preparer:'Il prépare une potion', lancer:'Il lance la fiole', louche:'La louche : BONG !', herbes:'Les herbes, pour un ami'};
 })(window);
 
@@ -4341,7 +4332,7 @@ HV.NOMS_ATTENTE = {scrute:'Il surveille les ennemis', alerte:'Un bruit derrière
 var HV = G.HerosVues, U = HV.outils, RAD = HV.RAD;
 var CU = HV.Cuit = {};
 var NUM = 0;
-CU.cache = {};
+CU.cache = {}; CU.resDe = {};
 
 /* ---------- la géométrie ---------- */
 function ang(a, b){ return Math.atan2(b[1] - a[1], b[0] - a[0]) / RAD; }
@@ -4489,7 +4480,12 @@ function Cuit(hote, h, o){
   hote.appendChild(this.racine);
   this.hote = hote;
   /* (les variantes sont gardées pour toute la partie, pour ce héros avec cette allure : d'un combat à l'autre, rien n'est à recuire) */
-  var ch = JSON.stringify(h) + '|' + this.res;
+  /* (24 novembre : la même finesse d'une salle à l'autre pour la même allure — sur un téléphone, la taille de la page bouge un peu
+     (la barre d'adresse) ; une finesse à peine différente faisait TOUT recuire dans chaque salle, et garder l'ancienne cuisson en
+     mémoire) */
+  var hj = JSON.stringify(h), r0 = CU.resDe[hj];
+  if(r0 && Math.abs(this.res / r0 - 1) < 0.3) this.res = r0; else CU.resDe[hj] = this.res;
+  var ch = hj + '|' + this.res;
   this.variantes = (CU.cache[ch] = CU.cache[ch] || {});          /* nom → clé → variante {cv, x, y, w, h, A0, th0, L0, tete:{…}} */
   this.inst = {};               /* nom + '|' + clé + '|' + couche → {el, v} */
   this.anims = [];
@@ -4579,6 +4575,17 @@ CP.variante = function(nom, cle){
   var t = this.variantes[nom]; if(!t) return null;
   if(t[cle]) return {cle:cle, v:t[cle]};
   var ks = Object.keys(t), vue = cle.split(/[a-z]+/i)[1], i;
+  /* (la tête : le même angle ET la même inclinaison d'abord — une tête du bon angle mais penchée autrement est dessinée plus haut ou
+     plus bas dans son cadre : elle flottait à côté du cou — Romain, 24 novembre, 12 h 50) */
+  if(nom === 'tete'){
+    var m = /^y(-?\d+)h(-?\d+)/.exec(cle), best = null, bd = 1e9;
+    if(m) for(i = 0; i < ks.length; i++){
+      var n2 = /^y(-?\d+)h(-?\d+)/.exec(ks[i]); if(!n2) continue;
+      var d2 = Math.abs(tour(+n2[1] - +m[1])) + 2 * Math.abs(+n2[2] - +m[2]) + (ks[i].slice(n2[0].length) === cle.slice(m[0].length) ? 0 : 0.5);
+      if(d2 < bd){ bd = d2; best = ks[i]; }
+    }
+    if(best) return {cle:best, v:t[best]};
+  }
   for(i = 0; i < ks.length; i++) if(ks[i].split(/[a-z]+/i)[1] === vue) return {cle:ks[i], v:t[ks[i]]};
   var a = vueDeCle(cle), meilleur = null, ecart = 1e9;
   if(a != null) for(i = 0; i < ks.length; i++){
@@ -4701,7 +4708,17 @@ CP.jouer = function(images, o){
     var tr = [], op = [], n0 = 0, toujours = pls.every(function(pl){ return pl.vis; });
     garde.forEach(function(i){ tr.push({offset:Math.min(1, plan[i].t / D), transform:css(pls[i], pls[i].lv)}); });
     if(!toujours){
-      pls.forEach(function(pl, i){ if(i === 0 || pl.vis !== pls[i - 1].vis) op.push({offset:Math.min(1, plan[i].t / D), opacity:pl.vis ? 1 : 0, easing:'steps(1, end)'}); n0++; });
+      /* (24 novembre — Romain, 13 h 06, sur son iPhone : « quand le pisteur saute […] sa tête qui se détache en double ») : l'opacité passe
+         d'une version à l'autre par deux images clés presque collées (0,5 ms), en ligne droite — plus de « steps() » : Safari ne sait
+         pas le jouer sur la carte graphique et le jouait sur le fil principal ; quand la page ramait, l'ancienne tête restait affichée
+         pendant que la nouvelle bougeait déjà avec le corps */
+      var eps = Math.min(0.0005 / D, 0.002);
+      pls.forEach(function(pl, i){
+        if(i === 0){ op.push({offset:0, opacity:pl.vis ? 1 : 0}); return; }
+        if(pl.vis === pls[i - 1].vis) return;
+        var o1 = Math.min(1, plan[i].t / D), o0 = Math.max(op[op.length - 1].offset, o1 - eps);
+        op.push({offset:o0, opacity:pls[i - 1].vis ? 1 : 0}); op.push({offset:o1, opacity:pl.vis ? 1 : 0}); n0++;
+      });
       if(op[op.length - 1].offset < 1) op.push({offset:1, opacity:pls[pls.length - 1].vis ? 1 : 0});
     }
     var opt = {duration:dureeMs, iterations:o.boucle ? Infinity : 1, fill:'both', easing:'linear'};
@@ -4973,7 +4990,10 @@ function Volume(cont, lk, creer0, role){
   this.p.courante = function(){ return me.pose(); };
   var d0 = this.p.dessiner;
   /* (cuit : plus de dessin, seulement la pose — le pantin cuit, lui, joue ce qui a été prévu) */
-  if(CUIT) d0 = function(){ var P = me.pose(), F = {}, k; for(k in P) F[k] = P[k]; F.cap = CAP; this.F = F; this.anV = this.anC || 0; return true; };     /* (l'anneau : c'est le pantin cuit qui le montre) */
+  /* (24 novembre : tant que le pantin cuit n'est pas prêt — la course d'arrivée se cuit d'abord —, le vrai dessin continue : sinon le
+     héros glissait figé dans sa garde) */
+  var d00 = d0;
+  if(CUIT) d0 = function(dt){ if(!(me.cuit && me.cuit.pret)) return d00.call(this, dt); var P = me.pose(), F = {}, k; for(k in P) F[k] = P[k]; F.cap = CAP; this.F = F; this.anV = this.anC || 0; return true; };     /* (l'anneau : c'est le pantin cuit qui le montre) */
   this.p.dessiner = function(dt){ var t1 = horloge(), r = d0.call(this, dt); if(r !== false){ if(!CUIT) noterDessin(horloge() - t1); this._vides = 0; } else this._vides = (this._vides || 0) + 1; me.apresImage(); return r; };
   /* (au calme — elle respire, cligne des yeux —, 15 dessins par seconde suffisent ; pendant un geste, 30 : la tablette souffle ;
      en léger, 20 au plus — et au calme, quand plus rien ne bouge depuis 8 images, elle s'endort : plus rien à faire à chaque image,
@@ -5222,8 +5242,13 @@ function givre(me, os, o){
    sa bouche ; et (froidFiltre, plus bas) un éclair blanc au moment du coup, puis des couleurs pâles et un liseré bleu glacé autour de
    lui. u : le temps depuis le coup ; o : de 0 à 1 (elle se pose, puis fond) */
 function f1(v){ return v.toFixed(1); }
+var EBROUE = 2.15;          /* (l'instant où il s'ébroue, dans HV.DONJON.froid : la glace s'envole) */
 function neige(me, os, o, u){
-  if(o <= 0 && u < 2.6) return '';
+  /* (24 novembre, 12 h 59 — Romain : « quand le personnage il se redresse après avoir été gelé, la petite glace elle reste sur place ») :
+     quand il s'ébroue (HV.DONJON.froid, 2,1 s), la neige et les glaçons s'envolent de lui en éclats, et c'est fini — plus rien ne
+     reste à fondre pendant qu'il se redresse */
+  if(o <= 0) return '';
+  var vole = Math.max(0, u - EBROUE);
   var s = '', e = (me.p.K && me.p.K.echelle) || 1;
   var T = me.ecranF(os.tete), Cc = me.ecranF(os.cou || os.tete), EG = me.ecranF(os.epauleG), ED = me.ecranF(os.epauleD);
   function unite(x, y){ var l = Math.sqrt(x * x + y * y) || 1; return [x / l, y / l]; }
@@ -5231,6 +5256,8 @@ function neige(me, os, o, u){
   var up = unite(T[0] - Cc[0], T[1] - Cc[1]); if(up[1] > -0.3) up = [0, -1];
   /* une plaque de neige : un dôme au-dessus, le bord du dessous en festons, des glaçons qui pendent */
   function plaque(c, tg, n, w, h, glacons, graine){
+    /* (elle s'envole : poussée loin de lui, vers le haut, de son côté) */
+    if(vole > 0){ var dv = vole * 260 * e, cote = graine === 1 ? -1 : graine === 2 ? 1 : 0; c = [c[0] + n[0] * dv + tg[0] * dv * 0.4 * cote, c[1] + n[1] * dv + tg[1] * dv * 0.4 * cote - 60 * vole * e]; }
     var k = 0.35 + 0.65 * Math.min(1, o), W = w * e * (0.6 + 0.4 * k), Hh = h * e * k, haut = [], bas = [], i, N = 9;
     for(i = 0; i <= N; i++){ var a = -1 + 2 * i / N, b = Math.pow(Math.max(0, 1 - a * a), 0.55);
       haut.push([c[0] + tg[0] * a * W + n[0] * Hh * b, c[1] + tg[1] * a * W + n[1] * Hh * b]); }
@@ -5242,7 +5269,7 @@ function neige(me, os, o, u){
     var r1 = haut[2], r2 = haut[5];
     r += '<path d="M' + f1(r1[0] - n[0] * 3) + ' ' + f1(r1[1] - n[1] * 3) + ' Q' + f1((r1[0] + r2[0]) / 2 + n[0] * 2) + ' ' + f1((r1[1] + r2[1]) / 2 + n[1] * 2) + ' ' + f1(r2[0] - n[0] * 3) + ' ' + f1(r2[1] - n[1] * 3) + '" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="' + (0.9 * Math.min(1, o)).toFixed(2) + '"/>';
     glacons.forEach(function(g, j){
-      var a = g[0], L = g[1] * e * k * (u > 2.6 ? Math.max(0.2, 1 - (u - 2.6) / 0.9) : 1), b0 = [c[0] + tg[0] * a * W - n[0] * 3 * e, c[1] + tg[1] * a * W - n[1] * 3 * e], lw = 4.2 * e;
+      var a = g[0], L = g[1] * e * k, b0 =[c[0] + tg[0] * a * W - n[0] * 3 * e, c[1] + tg[1] * a * W - n[1] * 3 * e], lw = 4.2 * e;
       if(o > 0.05) r += '<path d="M' + f1(b0[0] - tg[0] * lw) + ' ' + f1(b0[1] - tg[1] * lw) + ' L' + f1(b0[0] - n[0] * L) + ' ' + f1(b0[1] - n[1] * L) + ' L' + f1(b0[0] + tg[0] * lw) + ' ' + f1(b0[1] + tg[1] * lw) + ' Z" fill="#dff5ff" stroke="#3f84b8" stroke-width="1.8" stroke-linejoin="round" opacity="' + Math.min(1, o * 1.6).toFixed(2) + '"/>';
       /* (à la fin, elle fond : une goutte tombe de chaque glaçon) */
       var tg0 = 2.75 + 0.18 * ((graine + j) % 3), ag = u - tg0;
@@ -5266,7 +5293,7 @@ function neige(me, os, o, u){
 /* deux petits nuages de buée qui sortent de sa bouche (il grelotte) */
 function buee(me, os, u){
   var s = '', e = (me.p.K && me.p.K.echelle) || 1, T = me.ecranF(os.tete);
-  [0.55, 1.2, 1.85].forEach(function(t0, i){
+  [0.5, 1.0, 1.45].forEach(function(t0, i){
     var a = (u - t0) / 0.95; if(a <= 0 || a >= 1) return;
     var x = T[0] + (60 + 70 * a) * e, y = T[1] + (-40 - 50 * a) * e, r = (14 + 30 * a) * e, op = 0.8 * (1 - a) * Math.min(1, a * 5);
     s += '<ellipse cx="' + f1(x) + '" cy="' + f1(y) + '" rx="' + f1(r * 1.25) + '" ry="' + f1(r) + '" fill="#f2fbff" opacity="' + op.toFixed(2) + '"/>' +
@@ -5284,13 +5311,17 @@ V.froidFiltre = function(){
     der.style.cssText = z + 'left:29%;right:29%;top:10%;bottom:3%;border-radius:50%;background:radial-gradient(closest-side,rgba(150,225,255,.9),rgba(90,190,255,.5) 62%,rgba(90,190,255,0))';
     dev.style.cssText = z + 'left:34%;right:34%;top:14%;bottom:8%;border-radius:50%;background:radial-gradient(closest-side,rgba(235,250,255,.62),rgba(190,235,255,.36) 55%,rgba(170,225,255,0))';
     this.boite.insertBefore(der, this.svg);
-    this.boite.insertBefore(dev, this.calque);
+    /* (le voile de devant juste sur le héros, SOUS la bulle du bouclier — Romain, 13 h 01, la cave aux toiles : « un bouclier à -75 […]
+       il est pas jaune, il est gris » : le voile blanc du givre passait par-dessus la bulle) */
+    var apres = this.cuit && this.cuit.racine.parentNode === this.boite ? this.cuit.racine.nextSibling : this.svg ? this.svg.nextSibling : this.calque;
+    this.boite.insertBefore(dev, apres);
     this._froidV = [der, dev];
   }
   if(this._froidA) this._froidA.forEach(function(a){ try{ a.cancel(); }catch(e){} });
   this._froidA = [
-    this._froidV[0].animate([{opacity:0}, {opacity:1, offset:0.05}, {opacity:0.8, offset:0.2}, {opacity:0.75, offset:0.72}, {opacity:0}], {duration:3400, easing:'linear'}),
-    this._froidV[1].animate([{opacity:0}, {opacity:1, offset:0.04}, {opacity:0.5, offset:0.14}, {opacity:0.42, offset:0.72}, {opacity:0}], {duration:3400, easing:'linear'})];
+    /* (jusqu'à ce qu'il s'ébroue — EBROUE —, puis ça part vite) */
+    this._froidV[0].animate([{opacity:0}, {opacity:1, offset:0.06}, {opacity:0.8, offset:0.22}, {opacity:0.75, offset:0.86}, {opacity:0}], {duration:2500, easing:'linear'}),
+    this._froidV[1].animate([{opacity:0}, {opacity:1, offset:0.05}, {opacity:0.5, offset:0.17}, {opacity:0.42, offset:0.86}, {opacity:0}], {duration:2500, easing:'linear'})];
 };
 /* il recule sous le coup, puis grelotte (toute sa boîte, comme l'ancien héros) */
 V.secousse = function(){
@@ -5332,7 +5363,8 @@ function rats(me, os, u){
     if(fuite <= 0){ var w = Math.min(1, a) * 0.85 + 0.15 * Math.sin(u * 9 + i) * 0.2; x = mixe(A[0], B[0], w) + r[3] * 10; y = mixe(A[1] + 30, B[1], w); }
     else { if(fuite > 1) return; x = A[0] + r[3] * (40 + 260 * fuite); y = A[1] + 30 - 60 * Math.sin(Math.min(1, fuite * 2) * Math.PI) * 0.4 + 40 * fuite; }
     /* (plus gros que dans le film : au donjon elle est petite à l'écran, et les rats doivent se voir — comme ceux de l'ancien) */
-    var dx = fuite > 0 ? r[3] : (i % 2 ? 0.3 : -0.3), ang = fuite > 0 ? 0 : -70, G2 = 2.2;
+    /* (24 novembre — Romain, 13 h 14 : « je les trouve un peu gros » : 2,2 → 1,5) */
+    var dx = fuite > 0 ? r[3] : (i % 2 ? 0.3 : -0.3), ang = fuite > 0 ? 0 : -70, G2 = 1.5;
     s += '<g transform="translate(' + x.toFixed(0) + ' ' + y.toFixed(0) + ') rotate(' + (ang * (dx > 0 ? -1 : 1)) + ') scale(' + (dx >= 0 ? G2 : -G2) + ' ' + G2 + ')">' +
       '<path d="M-14 4 Q-34 10 -40 -2" fill="none" stroke="' + O + '" stroke-width="5"/><path d="M-14 4 Q-34 10 -40 -2" fill="none" stroke="#d99aa0" stroke-width="2.5"/>' +
       '<ellipse cx="0" cy="0" rx="17" ry="10" fill="#6b6570" stroke="' + O + '" stroke-width="3"/><circle cx="16" cy="-3" r="7" fill="#6b6570" stroke="' + O + '" stroke-width="3"/>' +
@@ -5454,11 +5486,14 @@ V.joie = function(){
     return Promise.all([this.jouer(HV.DONJON[g] || HV.DONJON.joie), this.ombreFait('joie')]); });
 };
 /* ELLE PREND UN COUP : le coup simple, le givre, les rats, le grand coup de poing */
+/* (24 novembre — Romain, 12 h 53 : « dès qu'on s'est pris un dégât, on peut répliquer tout de suite ») : sa réaction à un coup peut être
+   coupée net par le combat quand on le fait agir (V.couper) ; la file ne l'attend plus, ni les effets de l'ancien héros (l'ombre) */
+V.couper = function(){ if(this._reaction){ this._reaction = null; this._finGeste(); } };
 V.touche = function(type, opt){
   var g = type === 'froid' || type === 'brulure' ? 'froid' : type === 'grouillement' ? 'rats' : type === 'poing' ? 'poing' : 'coup';
   return this.file(function(){
     if(this.ko) return null;
-    var me = this, L = [this.jouer(HV.DONJON[g])];
+    var me = this, jeton = this._reaction = {}, fin = this.jouer(HV.DONJON[g]).then(function(){ if(me._reaction === jeton) me._reaction = null; }), L = [fin];
     if(g === 'coup') L.push(this.ombreFait('touche'));
     if(g === 'froid'){
       L.push(this.ombreFait('touche', 'froid', opt));
@@ -5466,7 +5501,7 @@ V.touche = function(type, opt){
       this.gelGel(0);
       this.froidFiltre();
       this.secousse();
-      this.effet('givre', function(u, os){ var o = u < 0.18 ? u / 0.18 : u < 2.6 ? 1 : Math.max(0, 1 - (u - 2.6) / 0.8); return givre(this, os, o) + neige(this, os, o, u) + buee(this, os, u); }, 3.5);
+      this.effet('givre', function(u, os){ var o = u < 0.18 ? u / 0.18 : u < EBROUE ? 1 : Math.max(0, 1 - (u - EBROUE) / 0.3); return givre(this, os, o) + neige(this, os, o, u) + buee(this, os, u); }, EBROUE + 0.35);
     }
     if(g === 'rats'){
       this.effet('rats', function(u, os){ return rats(this, os, u); }, 3.0);
@@ -5477,7 +5512,9 @@ V.touche = function(type, opt){
       L.push(this.ombreFait('touche', 'poing', opt));
       this.effet('etoiles', function(u, os){ return u < 0.45 ? '' : etoilesFilm(u - 0.45, this.ecranF(os.tete)); }, 1.4);
     }
-    return Promise.all(L);
+    /* (24 novembre : on n'attend que son geste à lui — coupé net par V.couper ; les effets de l'ombre finissent de leur côté) */
+    L.slice(1).forEach(function(p){ Promise.resolve(p).catch(function(){}); });
+    return fin;
   });
 };
 /* ELLE TOMBE SUR LE DOS, sonnée (la chute validée), et reste allongée */
@@ -5545,12 +5582,13 @@ V.tirer = function(scene, to, type, opt){
    ses sons (combat.js). La dague : deux revers (0,54 et 0,90 s) — ou, loin, le saut qui retombe (HV.SAUT.frappe) ; la flèche : 1,38 s. */
 V.moments = function(nom, scene, to){
   if(nom === 'tirer') return [1.38];
-  if(nom === 'dague' && scene && to){
-    var pied = this.rep('chevilleB', scene), k = this.echelle(scene), dx = Math.max(0, to.x - pied.x - 70) / k;
-    return dx > SEUIL_SAUT ? [HV.SAUT.frappe] : [0.54, 0.90];
-  }
+  /* (24 novembre — les deux revers : là où la main va le plus vite, mesuré sur le geste — 0,52 s et 0,94 s) */
+  if(nom === 'dague' && scene && to) return this.estSaut(scene, to) ? [HV.SAUT.frappe] : [0.52, 0.94];
+  if(nom === 'sort') return [HV.SAGE.LANCE];
+  if(nom === 'eclairSalle') return [HV.SAGE.FLASH];
   return [];
 };
+V.estSaut = function(scene, to){ var pied = this.rep('chevilleB', scene), k = this.echelle(scene); return Math.max(0, to.x - pied.x - 70) / k > SEUIL_SAUT; };
 /* combien de pixels de la scène pour un pixel de sa boîte */
 V.echelle = function(scene){ var a = this.racine.getBoundingClientRect(), b = scene.getBoundingClientRect(); return (a.width / (this.racine.offsetWidth || a.width)) / ((b.width / (scene.offsetWidth || b.width)) || 1); };
 /* LA DAGUE (Romain, 18 h 51 : « plus violent et plus vers devant […] que le bras entraîne le corps ») : près de l'ennemi, deux grands
@@ -5570,9 +5608,13 @@ V.dague = function(scene, to, opt){
        coup de dague et le son qui soit bien calé au bon moment. Là tout est décalé ») : opt.impact (en secondes) = le moment où les
        règles font tomber le coup (Léo : 0,71 s, et le son est calé dessus) ; tout le geste est joué au rythme qu'il faut pour que la
        lame tombe à cet instant-là — le saut (1,05 s d'habitude) devient plus vif et finit bien avant le geste suivant. */
-    var k = 1, imp0 = dx > SEUIL_SAUT ? HV.SAUT.frappe : 0.54;
+    var k = 1, imp0 = dx > SEUIL_SAUT ? HV.SAUT.frappe : 0.52;
     if(opt.impact > 0) k = Math.max(0.5, Math.min(1.4, opt.impact / imp0));
     function ms(s){ return s * k * 1000; }
+    /* (24 novembre — Romain, 12 h 54 : « le son arrive trop tôt […] tu recales vraiment les switches sur les sons de la dague ») : les
+       sons sont programmés ICI, quand le geste démarre vraiment (après ceux qui attendaient dans la file), et plus avant : opt.sons
+       reçoit {saut, moments} — les instants (en secondes depuis maintenant) des coups de lame, et de l'appel du pied s'il saute */
+    if(opt.sons) try{ opt.sons({saut:dx > SEUIL_SAUT, decolle:HV.SAUT.decolle * k, moments:dx > SEUIL_SAUT ? [HV.SAUT.frappe * k] : [0.52 * k, 0.94 * k]}); }catch(e){ if(G.console) console.error(e); }
     if(dx > SEUIL_SAUT){
       var S = HV.SAUT;
       this.plus(ms(S.decolle), function(){ me._poussiere(); me.glisse(0, dx, (S.frappe - S.decolle) * k, lisse); });
@@ -5587,7 +5629,7 @@ V.dague = function(scene, to, opt){
     var av = Math.max(0, dx - 30);
     this.plus(ms(0.3), function(){ me.glisse(0, av, 0.22 * k, lisse); });
     this.plus(ms(0.48), lame); this.plus(ms(0.54), function(){ coup(true); });
-    this.plus(ms(0.84), lame); this.plus(ms(0.9), function(){ coup(false); });
+    this.plus(ms(0.88), lame); this.plus(ms(0.94), function(){ coup(false); });
     this.plus(ms(1.3), function(){ me.glisse(av, 0, 0.36 * k, lisse); });
     this.effetRuban([[0.46 * k, 0.66 * k], [0.84 * k, 1.02 * k]], 1.4 * k);
     return this.jouer(k === 1 ? HV.DONJON.dague : etirer(HV.DONJON.dague, k));
@@ -5638,7 +5680,7 @@ V.preparer = function(couleur){
       var f = this.ecranF(fioleOs(os)), s = '', i, u = A.VERSE + (u0 - A.VERSE) / vp;
       /* (le filet de potion : du goulot de la fiole penchée au goulot de l'autre, dans le poing droit) */
       var uv = u - A.VERSE;
-      if(uv > 0.02 && uv < 0.36){
+      if(!A.SANS_VERSER && uv > 0.02 && uv < 0.36){
         var m = this.ecranF(poingOs(os, 'D')), b = this.ecranF(poingOs(os, 'G')), o = Math.min(1, (uv - 0.02) / 0.06, (0.36 - uv) / 0.08);
         var x0 = m[0] - 14, y0 = m[1] + 6, x1 = b[0], y1 = b[1] - 10, d = 'M' + x0.toFixed(1) + ' ' + y0.toFixed(1) + ' Q' + ((x0 + x1) / 2 - 6).toFixed(1) + ' ' + (Math.min(y0, y1) - 4).toFixed(1) + ' ' + x1.toFixed(1) + ' ' + y1.toFixed(1);
         s += '<path d="' + d + '" fill="none" stroke="' + O + '" stroke-width="8" stroke-linecap="round" opacity="' + (0.5 * o).toFixed(2) + '"/>' +
@@ -5685,7 +5727,8 @@ V.louche = function(scene, to){
   var me = this, A = HV.ALCHI;
   return this.file(function(){
     if(this.ko) return null;
-    this.plus((A.BONG - 0.13) * 1000, function(){ try{ me._swoosh(); }catch(e){} });
+    /* (24 novembre — Romain, 13 h 15 : « quand l'alchimiste il fait un dong sur le roi des rats, il y a une flèche qui part. C'est un bug.
+       Enlève-la » : le trait de l'ancien héros, posé là où était SA louche, partait comme une flèche — enlevé) */
     this.plus(A.BONG * 1000, function(){ try{ me._bong(scene); }catch(e){} });
     return this.jouer(A.louche);
   });
@@ -5885,6 +5928,8 @@ V.bouclier = function(scene, cible, opt){
        s'empilaient : « les héros ont disparu »). Au plus 3 s d'attente (un geste coupé ne pose rien). */
     var pret, posees = new Promise(function(r){ pret = r; });
     function donne(v){ sig(v); pret(); }
+    /* (24 novembre : les sons, au vrai départ du geste — opt.sons reçoit l'instant où la bulle naît) */
+    if(opt.sons) try{ opt.sons({moment:S.DOME * k}); }catch(e){}
     this.cristalFlash(true);
     try{ this._runesMontent(); }catch(e){}
     this.plus(S.DOME * k * 1000, function(){
@@ -6146,7 +6191,12 @@ V.cuitMonter = function(){
   this._cuitGen = 0;
   var c0 = this.p.choisi;
   this.p.choisi = function(on){ c0.call(this, on); if(me.cuit) me.cuit.anneau(on); };
-  this.cuit.preparer(this.base).then(function(){
+  /* (24 novembre — Romain, 12 h 50 : « quand on arrive dans une salle […] la tête qui se décroche du corps ») : la course d'arrivée et
+     l'arrêt sont cuits AVANT qu'on montre le héros cuit. Avant, seule la garde l'était : pendant la course, chaque morceau pas encore
+     cuit était remplacé par un autre (une tête d'un autre angle, d'une autre inclinaison : elle flottait à côté du cou). En attendant,
+     c'est le vrai dessin qui court. */
+  var R0 = this.cuit;
+  R0.preparer(this.base).then(function(){ return R0.mort ? null : R0.cuireImages(imagesArrivee(), null, 1); }).then(function(){
     if(!me.cuit || me.cuit.mort) return;
     me.cuit.pret = true;
     if(me.svg) me.svg.style.visibility = 'hidden';
@@ -6158,6 +6208,13 @@ V.cuitMonter = function(){
     if(G.SALLE && G.SALLE.tempsReel) me.plus(3000, function(){ me.cuitPrecuire(); }); else me.cuitPrecuire();
   });
 };
+/* les poses de l'arrivée (V.entrer) : un cycle de course, puis l'arrêt net depuis le point de la foulée où elle freine */
+function imagesArrivee(){
+  var C = HV.COURSE, A = HV.ARRET, L = [], u, dep = HV.course(0.93 * C.cycle), cl = HV.arret();
+  for(u = 0; u <= C.cycle + 1e-6; u += 0.05) L.push({t:u, P:HV.course(u)});
+  for(u = 0; u <= A.duree + 1e-6; u += 0.05) L.push({t:C.cycle + 0.05 + u, P:HV.gesteImage(dep, cl, u)});
+  return L;
+}
 /* ce que le pantin cuit doit jouer, d'après l'état du moment : le geste en cours (ou la course) jusqu'au bout, puis ce qui suit — la
    pose gardée et sa petite vie, ou la boucle d'après (pris dans la toile). Tout est prévu ici, une fois ; la carte graphique joue. */
 var DT_CUIT = 1 / 30;
