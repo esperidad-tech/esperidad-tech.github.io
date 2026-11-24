@@ -18,6 +18,7 @@ from playwright.sync_api import sync_playwright
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 PAGE = os.environ.get('PAGE') or 'file://' + os.path.join(ICI, 'sortie', 'index.html')     # (PAGE=… : une autre page, la page d'essai)
+PLUS = os.environ.get('PLUS', '')          # (PLUS='&volume=1' : des réglages en plus dans l'adresse — les héros en volume, cuits ou pas)
 args = sys.argv[1:]
 TAUX = 4
 SORTIE = None
@@ -75,7 +76,7 @@ def toucher(pg, h, g, cible):
 def fluidite(nav, salle):
     sac, gestes = SCENARIOS[salle]
     ctx, pg, errs = ouvrir(nav, salle)
-    pg.goto(PAGE + '?combat=' + salle + '&graine=7&sac=' + sac)
+    pg.goto(PAGE + '?combat=' + salle + '&graine=7&sac=' + sac + PLUS)
     cdp = ctx.new_cdp_session(pg)
     pg.wait_for_function("!!document.querySelector('#passage') || !!document.querySelector('#combat')", timeout=30000)
     if TAUX > 1:
@@ -109,7 +110,7 @@ def fluidite(nav, salle):
 def memoire(nav, salle):
     sac, gestes = SCENARIOS[salle]
     ctx, pg, errs = ouvrir(nav, salle, iphone=True)
-    pg.goto(PAGE + '?combat=' + salle + '&graine=7&sac=' + sac)
+    pg.goto(PAGE + '?combat=' + salle + '&graine=7&sac=' + sac + PLUS)
     libre(pg, 120); pg.wait_for_timeout(400)
     pire, toiles = {'px': 0, 'quoi': ''}, 0
 

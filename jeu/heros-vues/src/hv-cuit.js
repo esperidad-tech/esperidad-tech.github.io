@@ -77,7 +77,19 @@ function coucheBras(S, cle, P){
 function q(v, pas){ return Math.round((v || 0) / pas) * pas; }
 /* (la vue d'un morceau du corps : l'angle où on le regarde, plus ce que le bassin et le dos tournent sur eux-mêmes) */
 /* (pas : tous les combien de degrés une nouvelle variante — le buste change beaucoup quand il tourne ; un bras, une botte, presque pas) */
-function vueDe(P, pas){ return q(HV.capDe(P) + ((P.bang || [0, 0, 0])[2] + (P.dos || [0, 0, 0])[2]) * 0.5, pas || 20); }
+/* (un angle ramené entre -180 et 180 : après un tour complet, on retrouve les mêmes variantes) */
+function tour(a){ a = ((a % 360) + 540) % 360 - 180; return a === -180 ? 180 : a; }
+function vueDe(P, pas){ return tour(q(HV.capDe(P) + ((P.bang || [0, 0, 0])[2] + (P.dos || [0, 0, 0])[2]) * 0.5, P._vite ? Math.max(90, pas || 20) : pas || 20)); }
+/* (quand le corps tourne vite — la victoire en tournant sur soi-même —, une variante tous les 60° suffit : on ne voit pas la différence,
+   et il y en aurait plus de cent à dessiner) */
+function marquer(images){
+  for(var i = 1; i < images.length; i++){
+    var a = images[i - 1], b = images[i], dt = Math.max(1e-3, b.t - a.t), d = Math.abs(HV.capDe(b.P) - HV.capDe(a.P)) / dt;
+    if(d > 240){ a.P = copie(a.P); b.P = copie(b.P); a.P._vite = b.P._vite = true; }
+  }
+  return images;
+}
+function copie(P){ if(P._copie) return P; var R = {}, k; for(k in P) R[k] = P[k]; R._copie = true; return R; }
 var PAS_VUE = {buste:20, carquois:20, robe:20, cou:30, arc:30, brasHautG:60, brasBasG:60, brasHautD:60, brasBasD:60, cuisseG:60, botteG:60, cuisseD:60, botteD:60};
 function cleMain(P, c, K){
   /* (la couleur des fioles de l'Alchimiste : K.potion, K.potion2 — le donjon la change pendant ses gestes) */
@@ -94,8 +106,8 @@ function cleTete(P, yaw){
 function cleDe(nom, P, S, K){
   if(nom === 'mainG') return cleMain(P, 'G', K);
   if(nom === 'mainD') return cleMain(P, 'D', K);
-  if(nom === 'tete') return cleTete(P, S.tete.yaw + HV.capDe(P));
-  if(nom === 'cheveuxDos') return 'y' + q(S.tete.yaw + HV.capDe(P), 20);
+  if(nom === 'tete') return cleTete(P, tour(P._vite ? q(S.tete.yaw + HV.capDe(P), 90) : q(S.tete.yaw + HV.capDe(P), 20)));
+  if(nom === 'cheveuxDos') return 'y' + tour(q(S.tete.yaw + HV.capDe(P), P._vite ? 90 : 20));
   if(nom === 'arc') return S.arc ? 'v' + vueDe(P, 30) + 's' + S.arc.sens + 't' + q(S.arc.td, 0.5) : null;
   if(nom === 'cordeH' || nom === 'cordeB') return S.arc ? 'c' : null;
   if(nom === 'fleche') return S.arc && S.arc.pt ? 'f' : null;
@@ -315,6 +327,7 @@ CP.jouer = function(images, o){
   o = o || {};
   var me = this, n = images.length, D = Math.max(0.001, images[n - 1].t);
   this.arreter();
+  marquer(images);
   /* 1) les os et les morceaux voulus à chaque image */
   /* (o.cle : un plan déjà fait pour ces mêmes images — la petite vie de la garde, la course — tant que rien n'a été cuit depuis) */
   this._plans = this._plans || {};
@@ -447,6 +460,7 @@ CP.imagesVie = function(P0){
    deux ; libre() dit si on peut travailler maintenant (pas pendant un geste) → promesse ---------- */
 CP.cuireImages = function(images, libre){
   var me = this, i = 0;
+  marquer(images);
   return new Promise(function(fini){
     (function suite(){
       if(me.mort) return fini();
