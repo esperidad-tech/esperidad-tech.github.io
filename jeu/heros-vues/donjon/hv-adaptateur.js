@@ -218,7 +218,7 @@ V.attente = function(){
   return L[n];
 };
 /* le mode léger (voir LEGER, plus haut) : plus de petite vie dessinée ; une respiration jouée par la carte graphique */
-V.leger = function(){ this.p.leger = true; this.p.auto = false; this.racine.classList.add('hva-leger'); };
+V.leger = function(){ this.p.leger = true; this.p.auto = false; if(!(G.SALLE && G.SALLE.tempsReel)) this.racine.classList.add('hva-leger'); };      /* (Léo, en temps réel : rien ne tourne en boucle sur les héros) */
 V.calme = function(){ return !this.cles && !this.course && !this.apresF && !this.trans && !this.effets.length && !this._glisse && Math.abs((this.p.anV || 0) - (this.p.anC || 0)) < 0.02; };
 V._finGeste = function(){ var f = this._quandFini; this._quandFini = null; if(f) f(); };
 /* jouer des images clés (sur la garde du donjon) → une promesse, à la fin ; apres : la pose à garder ensuite (ou une fonction du temps) */
@@ -233,10 +233,14 @@ V.jouer = function(cles, apres){
 };
 /* la file des ordres : un à la fois ; sig(v) rend la promesse tout de suite (la flèche a touché), le geste continue */
 V.file = function(fn){
-  var me = this;
+  /* (24 novembre — Léo, en temps réel : on pianote, et les gestes s'entassaient dans la file : à la victoire, les héros jouaient encore
+     des gestes d'il y a 40 secondes. Un geste d'attaque qui attend son tour est sauté si un plus récent est arrivé après lui : au plus
+     un geste de retard. Les chutes, les relevés, la joie ne sont jamais sautés.) */
+  var me = this, saute = !!(this._sautable && G.SALLE && G.SALLE.tempsReel), jeton = saute ? (this._jetonS = (this._jetonS || 0) + 1) : 0;
   return new Promise(function(res){
     me._q = me._q.then(function(){
       var fini = false, sig = function(v){ if(!fini){ fini = true; res(v); } };
+      if(saute && jeton !== me._jetonS){ sig(); return; }
       return Promise.resolve().then(function(){ return fn.call(me, sig); }).catch(function(e){ if(G.console) console.error('hv-adaptateur', e); }).then(function(v){ sig(v); });
     });
   });
@@ -962,7 +966,8 @@ function bulle(vol, opt){
       '<pattern id="' + id + 'p" width="' + HX + '" height="' + HY + '" patternUnits="userSpaceOnUse"><path d="M4.2 0 L 12.6 0 L 16.8 7.28 L 12.6 14.56 L 4.2 14.56 L 0 7.28 Z" fill="none" stroke="' + C.fond + '" stroke-width=".9" opacity=".6"/></pattern>' +
       '<clipPath id="' + id + 'c"><path d="' + forme + '"/></clipPath></defs>' +
     '<g class="b-voile" opacity="0"><path d="' + forme + '" fill="url(#' + id + 'h)"/>' +
-      '<g clip-path="url(#' + id + 'c)" opacity=".42"><rect class="b-hex" x="' + n1(cx - rx - 20) + '" y="' + n1(T - 30) + '" width="' + n1(2 * rx + 40) + '" height="' + n1(H + 60) + '" fill="url(#' + id + 'p)"/></g>' +
+      /* (en temps réel — Léo — pas de quadrillage découpé : rien de « masqué » dans la scène pendant les sorts) */
+      (figer ? '' : '<g clip-path="url(#' + id + 'c)" opacity=".42"><rect class="b-hex" x="' + n1(cx - rx - 20) + '" y="' + n1(T - 30) + '" width="' + n1(2 * rx + 40) + '" height="' + n1(H + 60) + '" fill="url(#' + id + 'p)"/></g>') +
       '<path class="b-reflet" d="M' + n1(cx - rx * 0.66) + ' ' + n1(T + H * 0.25) + ' Q ' + n1(cx - rx * 0.52) + ' ' + n1(T + H * 0.06) + ' ' + n1(cx - rx * 0.1) + ' ' + n1(T + H * 0.025) + '" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" opacity=".7"/></g>' +
     '<g class="b-trait">' + liseres(gauche) + liseres(droite) + '</g><g class="b-runes"></g><g class="b-sol">' + sol(avantSol) + '</g>' +
     '<path class="b-eclat" d="' + forme + '" fill="' + C.clair + '" opacity="0"/><g class="b-etinc"></g>';
@@ -1137,6 +1142,11 @@ V.arreter = function(){
 };
 V.detruire = function(){ this.arreter(); this.p.detruire(); this.racine.remove(); if(this.ombre) try{ this.ombre.detruire(); }catch(e){} };
 
+/* (les gestes d'attaque, qu'on peut sauter en temps réel : V.file) */
+['tirer', 'dague', 'preparer', 'lancer', 'louche', 'herbes', 'sort', 'bouclier', 'eclairSalle', 'etudier'].forEach(function(n){
+  var f = V[n]; if(typeof f !== 'function') return;
+  V[n] = function(){ this._sautable = true; try{ return f.apply(this, arguments); } finally{ this._sautable = false; } };
+});
 /* ---------- l'enveloppe : quand le donjon pose window.HerosAnime, son « creer » donne la Pisteuse en volume ---------- */
 /* (« ?ancien=1 » dans l'adresse : les anciens héros, comme avant le 24 novembre — au cas où) */
 var ANCIEN = /[?&]ancien=1/.test(G.location ? G.location.search : ''), VOLUME_FORCE = /[?&]volume=1/.test(G.location ? G.location.search : '');

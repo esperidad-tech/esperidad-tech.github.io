@@ -192,3 +192,19 @@ principal à chaque image — §1, point 1) ; seul le rat a des volutes « cuite
 - Le nombre de calques (~380) vient de l'ordre d'empilement des pièces (une pièce animée entre deux dessins fixes oblige
   à couper). Les prochains modules doivent limiter les pièces animées au repos (R6).
 - Mesurer sur un vrai iPhone / iPad (Safari) : la même page, sans rien changer, à l'œil et avec l'outil de Safari.
+
+## 6. La nuit du 24 novembre : le tour des bêtes en accéléré, les héros en volume
+
+- **Le tour des bêtes va 1,5 fois plus vite** (Romain, 0 h 11 : « que les tours adverses soient plus rapides… moins d'attente
+  entre les animations »). `DJ.rythme(k)` (`moteur/src/noyau.js`), posé par `apres()` de `combat.js` pendant `jouer(tourMonstres)`
+  (`RYTHME = 1.5`) : les pauses (`DJ.attendre`), les animations (`element.animate` enveloppé : durée, délai — **pas les boucles**,
+  `iterations: Infinity`), l'instant des bruitages calés (`DJ.bruit` : `cale`, `dt`), et les minuteries des modules des bêtes et
+  de `heros-anime.js` : `construire.py` les enveloppe dans `(function(setTimeout){ … })(…)` — un `setTimeout` à eux, qui lit
+  `window.DJ_RYTHME`. Le reste de la page (le moteur de son, la musique) garde le vrai `setTimeout`. Mesuré : l'ossuaire
+  15 → 11 s, le grand bassin 7 → 5 s, les rats 5,8 → 4,6 s. En plus : le roi des rats se remet sur ses pattes en 0,6 s (1,5),
+  Bourbe se retourne en 1 s / 0,65 s (1,6 / 1,3).
+- **Les héros en volume** (`jeu/heros-vues/`, dans le donjon depuis cette nuit) se dessinent sur le fil principal (un SVG
+  recalculé à chaque image) : c'est l'inverse de R1 à R3. Garde-fous (`hv-adaptateur.js`, détails dans
+  `jeu/heros-vues/LISEZ-MOI.md`) : **une tablette trop lente garde les anciens héros** (mesure au premier héros, seuil 13 ms par
+  dessin) ; sinon, au-delà de 7 ms par dessin, **le mode léger** (rien n'est redessiné quand rien ne bouge, la boucle s'endort).
+  Mesuré (`perf.py rats`, `PAGE=…`) : écran à 60 images/s ; gestes des héros 12-15 dessins/s sur la machine d'essai.

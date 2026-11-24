@@ -488,6 +488,7 @@ def test_filet(nav):
     # des sorts des trois héros en même temps (Romain : « un combo des 3 ») : aucun élément filtré, fondu ou masqué n\'apparaît dans la scène
     pg.evaluate("""() => { window.__filtres = {}; window.__sc = setInterval(function(){ var l = document.querySelectorAll('#monde *');
       for(var i = 0; i < l.length; i++){ if(l[i].classList && l[i].classList.contains('cu')) continue;      /* (les pièces cuites des héros : deux sont découpées, depuis toujours — ce ne sont pas des effets de sort) */
+        if(l[i].closest && l[i].closest('svg.hv')) continue;      /* (24 novembre : le dessin des héros en volume se découpe lui-même — ses caches font les superpositions ; il ne sert que sur les tablettes rapides) */
         var cs = getComputedStyle(l[i]); if((cs.filter && cs.filter !== 'none') || (cs.mixBlendMode && cs.mixBlendMode !== 'normal') || (cs.clipPath && cs.clipPath !== 'none')) window.__filtres[(l[i].className || l[i].tagName) + ' ' + cs.filter + ' ' + cs.mixBlendMode + ' ' + cs.clipPath] = 1; } }, 80); }""")
     pg.wait_for_function("() => DJ.Leo.etat().photo.heros.pisteur.libre", timeout=20000)
     for trio in [[('sage', 'bouclier'), ('alchimiste', 'herbes'), ('pisteur', 'dague')], [('sage', 'oeil'), ('alchimiste', 'p:huile'), ('pisteur', 'p:acide')], [('sage', 'rune'), ('alchimiste', 'p:feu'), ('pisteur', 'l:marteau')], [('sage', 'bouclier'), ('alchimiste', 'p:baume'), ('pisteur', 'l:fleau')]]:
