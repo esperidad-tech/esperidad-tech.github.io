@@ -15,6 +15,7 @@
 :root{color-scheme:dark;--bg:#0f1528;--panel:#18203a;--line:#2b365a;--ink:#eef1f8;--mute:#a9b3cc;--yellow:#ffd23f;--cyan:#6fe3ff}
 *{box-sizing:border-box;min-width:0}
 [hidden]{display:none!important}
+.carte .pour{display:block;margin-top:6px;font-size:12px;line-height:1.3;color:#ffcf66;font-weight:700}
 .mes{font-size:12px;line-height:1.4;color:#8f9bc4;margin:12px 0 0}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Nunito,system-ui,sans-serif;overflow-x:clip}
 h1,h2,h3,button{font-family:Fredoka,Nunito,sans-serif}
@@ -106,12 +107,12 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
 <body>
 <header>
   <h1>Le Sage contre Grosbec</h1>
-  <p>Maquette n° 18 : l’encre est plus rare (garde tes runes pour les gros groupes), le bâton tire plus vite et son orbe traverse deux golems (place-toi bien), les pages du grimoire tombent plus souvent. Toujours deux amis à protéger, le Barde et l’Alchimiste ; deux codes font gagner. Le bouton 🎚️ règle le volume ; au clavier, Entrée ou Espace pour graver, 1, 2, 3 pour choisir une carte.</p>
+  <p>Maquette n° 19, un essai : plus de codes, il faut tenir 10 minutes (à 10 minutes, Grosbec crie « Assez ! »). Le début se joue au bâton. L’encre se gagne au bâton, pas avec les runes ; le trait n’abat plus d’un coup un golem sonné. Quatorze builds : dix pour le bâton, un par rune. Le bouton 🎚️ règle le volume ; au clavier, Entrée ou Espace pour graver, 1, 2, 3 pour choisir une carte.</p>
 </header>
 <main class="game">
   <div class="stage" id="stage">
     <canvas id="cv" aria-label="La grande salle de Grosbec"></canvas>
-    <button class="codebtn" id="bCode">Taper un code</button>
+    <button class="codebtn" id="bCode" hidden>Taper un code</button>
     <div class="pad" id="pad" hidden>
       <div class="slots" id="slots"><span></span><span></span><span></span></div>
       <div class="keys" id="keys"></div>
@@ -122,45 +123,50 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
       <label><span>🎶 Musique</span><input type="range" id="vMus" min="0" max="200" step="5" value="100"><b id="vMusT">100 %</b></label>
       <label><span>🔔 Bruitages</span><input type="range" id="vSfx" min="0" max="200" step="5" value="100"><b id="vSfxT">100 %</b></label>
     </div>
-    <div class="tools"><button class="tool" id="bSon" aria-label="Le volume" title="Le volume">🎚️</button><button class="tool" id="bAide" aria-label="Les runes et les codes" title="Les runes et les codes">📜</button><button class="tool" id="bPlein" aria-label="Plein écran" title="Plein écran"></button></div>
+    <div class="tools"><button class="tool" id="bSon" aria-label="Le volume" title="Le volume">🎚️</button><button class="tool" id="bAide" aria-label="Les runes et les builds" title="Les runes et les builds">📜</button><button class="tool" id="bPlein" aria-label="Plein écran" title="Plein écran"></button></div>
   </div>
   <section class="panel" aria-label="Les runes du Sage">
     <div class="row closeaide"><button class="b" id="bAideClose">Fermer et reprendre</button></div>
     <h2>Les quatre runes</h2>
-    <div class="rune"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 52L54 12" stroke="#1b1206" stroke-width="7" stroke-linecap="round"/></svg><div><b>Un trait : la lumière (2)</b><p>Fait 2 à ceux qu’il traverse. Un golem sonné éclate, et ses éclats touchent ses voisins.</p></div></div>
+    <div class="rune"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 52L54 12" stroke="#1b1206" stroke-width="7" stroke-linecap="round"/></svg><div><b>Un trait : la lumière (2)</b><p>Fait 2 à ceux qu’il traverse. Un golem sonné perd la moitié de sa vie, et ses éclats touchent ses voisins.</p></div></div>
     <div class="rune"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 50L32 14 54 50" fill="none" stroke="#1b1206" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>Un V : la chasse (2)</b><p>Tout ce qui est dans le V est chassé par l’ouverture. Pas plus ouvert qu’un angle droit : 90° au plus.</p></div></div>
     <div class="rune"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 32c3 0 4 3 2 5s-7 1-8-3 3-9 9-9 11 5 10 12-8 12-15 11-14-7-13-15 7-15 16-16 19 6 19 15" fill="none" stroke="#1b1206" stroke-width="5" stroke-linecap="round"/></svg><div><b>Un escargot : la repousse (la moitié de l’encre)</b><p>Envoie tout le monde au loin, sans dégâts. Le grand coup, à garder pour les moments durs.</p></div></div>
     <div class="rune"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 46C14 24 50 24 54 46" fill="none" stroke="#1b1206" stroke-width="7" stroke-linecap="round"/></svg><div><b>Un arc de cercle : le mur (2)</b><p>Un mur courbe, exactement comme ton tracé, pendant 3 secondes. Les golems qui s’en approchent sont ralentis. Les pierres rebondissent dessus et repartent frapper (2).</p></div></div>
-    <p class="note"><b>L’encre est rare :</b> un petit golem sur huit lâche un éclat d’encre ; un bélier ou un colosse en lâche toujours un. Une rune qui détruit trois golems ou plus rend de l’encre : grave quand ils sont nombreux. Entre deux vagues, c’est le bâton et ta place qui comptent.</p>
-    <p class="note"><b>Les chocs :</b> un golem projeté qui cogne un autre golem, un mur ou le bord est sonné 3 secondes. Un trait le fait alors éclater.</p>
-    <p class="note"><b>L’ami venu t’aider</b> (le premier des deux qui gagne son combat) : l’Alchimiste lance une fiole toutes les 2 secondes : de la boue qui colle, des lianes qui bloquent ou du feu. Le Barde envoie des partitions : les golems touchés font demi-tour, se mettent à danser, ou sont repoussés au loin (et sonnés s’ils cognent quelque chose).</p>
-    <p class="note"><b>Les pages du grimoire :</b> les gros golems (les béliers et les colosses) lâchent une page dorée : la première au premier gros détruit, puis au bout de 2, 3, 4, 5… gros. Le Sage va la toucher : tu choisis un pouvoir parmi trois (le bâton, les runes, un nouveau sort, ou un cadeau). 4 sorts au plus, chaque pouvoir monte jusqu’au niveau 3.</p>
-    <p class="note"><b>Les combos :</b> quand tu as deux cartes qui vont ensemble, dont une au niveau 2, une carte dorée « Combo ! » sort à la page suivante. Chaque combo monte jusqu’au niveau 3, et ils se cumulent : plus tu en as, plus c’est fou.</p>
+    <p class="note"><b>L’encre se gagne au bâton :</b> un petit golem sur quatre détruit par le bâton lâche un éclat d’encre ; un bélier ou un colosse en lâche toujours un. Un golem détruit par une rune n’en lâche pas. Garde tes runes pour les gros groupes : entre deux vagues, c’est le bâton et ta place qui comptent.</p>
+    <p class="note"><b>Les chocs :</b> un golem projeté qui cogne un autre golem, un mur ou le bord est sonné 3 secondes. Un trait lui enlève alors la moitié de sa vie (les petits éclatent encore, les gros non).</p>
+    <p class="note"><b>Les pages du grimoire :</b> les gros golems (les béliers et les colosses) lâchent une page dorée : vite au début (il faut 1, 1, 2, 2, 3, 3 gros), puis un gros de plus à chaque page. Le Sage passe dessus : tu choisis un pouvoir parmi trois, chacun jusqu’au niveau 3. Le grimoire propose toujours une carte qui fait avancer un build commencé.</p>
+    <p class="note"><b>Les builds :</b> quand tu as deux cartes qui vont ensemble, dont une au niveau 2, une carte dorée sort à la page suivante. Chaque build monte jusqu’au niveau 3, et ils se cumulent.</p>
+    <p class="note"><b>Dix builds du bâton :</b></p>
     <ul class="combos">
-      <li>🎳 <b>Golems-boulets</b> : tonnerre + mur solide</li>
-      <li>⛈️ <b>Orage</b> : rune piège + lumière en chaîne</li>
-      <li>🌋 <b>Volcan</b> : trait brûlant + mur d’épines</li>
       <li>🌠 <b>Pluie d’étoiles</b> : double orbe + tir rapide</li>
+      <li>🎱 <b>Ricochet</b> : double orbe + orbe perçant</li>
+      <li>💥 <b>Orbes explosives</b> : double orbe + orbe lourd</li>
+      <li>🔦 <b>Le rayon</b> : tir rapide + orbe perçant</li>
+      <li>🔥 <b>Orbes de braise</b> : orbe lourd + tir rapide</li>
+      <li>❄️ <b>Orbes de givre</b> : orbe lourd + orbe perçant</li>
+      <li>⚡ <b>Bâton de foudre</b> : lumière en chaîne + tir rapide</li>
+      <li>🛡️ <b>Orbes gardiennes</b> : pages volantes + double orbe</li>
       <li>🌟 <b>La comète</b> : pas léger + orbe perçant</li>
-      <li>🐙 <b>Le scribe fou</b> : grand encrier + moisson d’encre</li>
-      <li>🌀 <b>Tornade de pages</b> : pages volantes + aimant</li>
-      <li>🏛️ <b>Sanctuaire</b> : sceau de garde + bouclier</li>
       <li>🦉 <b>Parlement des chouettes</b> : chouette + orbe lourd</li>
-      <li>🌗 <b>Rune miroir</b> : trait large + grand encrier</li>
     </ul>
-    <p class="note"><b>La colère de Grosbec :</b> à 12 minutes, puis à 14, les golems arrivent plus vite et plus nombreux. Après 15 minutes, c’est la fureur : des golems cuirassés qu’on ne peut plus sonner, et toujours plus. Personne ne tient éternellement.</p>
-    <p class="note"><b>Ça durcit :</b> toutes les 90 secondes, les golems ont une vie de plus ; les gros (les béliers et les colosses), deux de plus chaque minute. Toutes les 3 minutes, les grosses vagues arrivent d’un côté de plus. Après 10 minutes, deux fois plus de frondeurs (ceux qui crachent des braises).</p>
-    <h2>Les codes de tes amis</h2>
-    <div class="friends" id="friends"></div>
-    <p class="note">Dans le vrai jeu, ton ami te crie son code depuis sa tablette. Ici, il est simulé et s’affiche.</p>
+    <p class="note"><b>Un build par rune :</b></p>
+    <ul class="combos">
+      <li>🌋 <b>Volcan</b> (le trait) : trait brûlant + trait large</li>
+      <li>🎳 <b>Golems-boulets</b> (le V) : V tonnerre + grand encrier</li>
+      <li>🌀 <b>Tornade</b> (l’escargot) : pages volantes + aimant</li>
+      <li>🏰 <b>Rempart</b> (l’arc de cercle) : mur d’épines + mur solide</li>
+    </ul>
+    <p class="note"><b>La colère de Grosbec :</b> à 7 min 30, puis à 9 minutes, les golems arrivent plus vite et plus nombreux. À 10 minutes, Grosbec crie « Assez ! Ça suffit ! » : tu as tenu.</p>
+    <p class="note"><b>Ça durcit :</b> le début se joue au bâton. Toutes les 90 secondes, les golems ont une vie de plus ; les gros, deux de plus chaque minute. Les grosses vagues arrivent de deux côtés à 3 min 30, de trois à 7 minutes. Après 5 minutes, ça monte pour de bon : toujours plus de golems, et deux vies de plus toutes les 25 secondes.</p>
+    <div class="friends" id="friends" hidden></div>
     <div class="row"><button class="b" id="bPause">Pause</button><button class="b" id="bHow">Revoir l’explication</button><button class="b" id="bNew">Nouvelle partie</button></div>
   </section>
 </main>
 
 <div class="ov" id="ovStart">
   <div class="card">
-    <h2>Tiens jusqu’à ce que tes amis gagnent</h2>
-    <p>Tes deux amis, le Barde et l’Alchimiste, attaquent Grosbec, chacun sur sa tablette. Ici, dans sa grande salle, Grosbec envoie ses golems sur eux. Toi, le Sage, tu les protèges.</p>
+    <h2>Tiens 10 minutes</h2>
+    <p>Tes deux amis, le Barde et l’Alchimiste, attaquent Grosbec. Lui envoie ses golems sur eux. Toi, le Sage, tu les protèges pendant 10 minutes : au bout du chronomètre, Grosbec en a assez.</p>
     <div class="steps">
       <div class="step">
         <svg viewBox="0 0 240 140" aria-hidden="true">
@@ -172,7 +178,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
           <circle cx="110" cy="100" r="5" fill="#fff6c9"/><circle cx="134" cy="104" r="5" fill="#fff6c9"/>
         </svg>
         <h3>1. Le Sage court</h3>
-        <p>Garde le doigt sur l’arène : le Sage y court. Son bâton tire tout seul sur le golem le plus proche, et son orbe en traverse deux : place-toi dans l’axe de la file. Son corps arrête les braises des frondeurs. Les gros golems lâchent des pages dorées : passe dessus pour choisir un pouvoir.</p>
+        <p>Garde le doigt sur l’arène : le Sage y court. Son bâton tire tout seul sur le golem le plus proche, et son orbe en traverse deux : place-toi dans l’axe de la file. Son corps arrête les braises des frondeurs. Les gros golems lâchent des pages dorées : passe dessus pour choisir un pouvoir, et construis ton build.</p>
       </div>
       <div class="step">
         <svg viewBox="0 0 240 140" aria-hidden="true">
@@ -183,7 +189,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
           <path d="M132 122C140 92 204 92 212 122" fill="none" stroke="#1b1206" stroke-width="6" stroke-linecap="round"/>
         </svg>
         <h3>2. Graver</h3>
-        <p>Le bouton jaune ralentit le temps. Un trait, un V, un escargot ou un arc de cercle. L’encre est rare : garde-la pour les gros groupes.</p>
+        <p>Le bouton jaune ralentit le temps. Un trait, un V, un escargot ou un arc de cercle. L’encre se gagne au bâton : garde tes runes pour les gros groupes.</p>
       </div>
       <div class="step">
         <svg viewBox="0 0 240 140" aria-hidden="true">
@@ -195,21 +201,23 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
           <path d="M120 128L190 20" stroke="#fffae0" stroke-width="7" stroke-linecap="round"/>
           <rect x="10" y="10" width="96" height="24" rx="12" fill="#a8540f"/><text x="58" y="27" text-anchor="middle" font-size="14" font-family="Nunito,sans-serif" font-weight="800" fill="#fff">ça éclate !</text>
         </svg>
-        <h3>3. Les combos</h3>
-        <p>Chasse-les (V ou escargot) contre un mur, le bord ou un autre golem : sonnés 3 secondes. Un trait les fait éclater.</p>
+        <h3>3. Les chocs</h3>
+        <p>Chasse-les (V ou escargot) contre un mur, le bord ou un autre golem : sonnés 3 secondes. Un trait leur enlève alors la moitié de leur vie.</p>
       </div>
       <div class="step">
         <svg viewBox="0 0 240 140" aria-hidden="true">
           <rect width="240" height="140" fill="#1c2440"/>
-          <circle cx="54" cy="56" r="22" fill="#e8833a" stroke="#ffd23f" stroke-width="4"/><text x="54" y="64" text-anchor="middle" font-size="22" font-family="Fredoka,sans-serif" fill="#fff">B</text>
-          <rect x="98" y="34" width="124" height="44" rx="12" fill="#0b1020" stroke="#6fe3ff" stroke-width="2"/><text x="160" y="64" text-anchor="middle" font-size="22">🔑💧🍃</text>
-          <rect x="60" y="96" width="120" height="32" rx="16" fill="rgba(15,21,40,.9)" stroke="#ffd23f" stroke-width="2"/><text x="120" y="117" text-anchor="middle" font-size="14" font-family="Nunito,sans-serif" font-weight="800" fill="#fff">Taper un code</text>
+          <circle cx="120" cy="62" r="40" fill="#0b1020" stroke="#ffd23f" stroke-width="5"/>
+          <path d="M120 62V34M120 62l18 12" stroke="#fff" stroke-width="5" stroke-linecap="round" fill="none"/>
+          <rect x="108" y="10" width="24" height="10" rx="4" fill="#ffd23f"/>
+          <rect x="50" y="112" width="140" height="12" rx="6" fill="#3a2632"/><rect x="50" y="112" width="92" height="12" rx="6" fill="#ffd23f"/>
+          <text x="204" y="72" text-anchor="middle" font-size="20" font-family="Fredoka,sans-serif" fill="#fff">10</text>
         </svg>
-        <h3>4. Les codes</h3>
-        <p>Quand un ami gagne son combat, il te crie son code : tape-le, il vient t’aider avec son pouvoir. Les deux codes : c’est gagné.</p>
+        <h3>4. Le chronomètre</h3>
+        <p>Il compte 10 minutes. À zéro, Grosbec crie « Assez ! » : tu as tenu. Si la protection de tes amis tombe à zéro avant, c’est perdu.</p>
       </div>
     </div>
-    <div class="row essai" id="essai"><span>Pour l’essai, tes amis finissent leur combat vers :</span><button class="b" data-min="4">4 min</button><button class="b on" data-min="8">8 min</button><button class="b" data-min="12">12 min</button></div>
+    <div class="row essai" id="essai" hidden></div>
     <div class="row"><button class="b yellow" id="bStart">Commencer</button><button class="b yellow" id="bStartPlein">Commencer en plein écran</button></div>
   </div>
 </div>
@@ -225,25 +233,25 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
 </div>
 
 <script>
-// Le Sage contre Grosbec — maquette 18 : la grande salle vue de haut, Grosbec et ses golems (ceux du combat du Barde) ; 10 combos à 3 niveaux, la colère de Grosbec
+// Le Sage contre Grosbec — maquette 19 : la grande salle vue de haut, Grosbec et ses golems (ceux du combat du Barde) ; 10 combos à 3 niveaux, la colère de Grosbec
 const G = (() => {
   const W = 900, H = 900;
   const CFG = {
     protection: 20, inkMax: 12, inkStart: 8, cost: { trait: 2, poussee: 2, mur: 2, spirale: 'moitie' },
     // version 18 [Romain, 25 nov., 15 h 49 : « que l'attaque de base soit plus importante », « moins d'encre à ramasser », « que ça soit le placement qui soit important »] :
     // le bâton tire plus vite (0,42 s au lieu de 0,55) et son orbe traverse un golem de plus (bien placé dans l'axe d'une file, on en touche deux)
-    boltEvery: 0.42, boltDmg: 1, boltPierce: 1, boltRange: 340, boltSpeed: 760, sageSpeed: 300, slow: 0.07,
-    shardEvery: 8,   // l'encre est rare : un petit golem sur huit lâche un éclat (1 = chacun, comme jusqu'à la version 17)
+    boltEvery: 0.42, boltDmg: 2, boltPierce: 1, boltRange: 340, boltSpeed: 760, sageSpeed: 300, slow: 0.07,
+    shardEvery: 4,   // l'encre est rare : un petit golem sur huit lâche un éclat (1 = chacun, comme jusqu'à la version 17)
     grosShards: [1, 1],   // les éclats des gros : [bélier, colosse] (jusqu'à la version 17 : 2 et 3 ; null = comme avant)
     magnet: 120, pickup: 30,
     traitDmg: 2, traitWidth: 28, shatterR: 85, shatterDmg: 2,
     daze: 3, flyMin: 240, wallLife: 3, wallMax: 520, wallHalf: 15, wallSlowR: 70, wallSlow: 0.45, reflectDmg: 2, vMax: 95,
     repelR: 270, repelV: 1150, pushV: 1100,
-    duree: 480, codeTimes: null, codeBonus: 3, maxAlive: 75, regen: 10,
-    rate0: 0.35, rateAdd: 0.65, rateRamp: 180, burst0: 5, burstDiv: 35, burstEvery: 28,
+    duree: 600, rageAt: [450, 540], shatterPart: 0.5, shatterMin: 4, codeTimes: null, codeBonus: 3, maxAlive: 75, regen: 10,
+    rate0: 0.28, rateAdd: 0.5, rateRamp: 240, burst0: 4, burstDiv: 40, burstEvery: 28, rateLate: 1.1, lateFrom: 300, lateRamp: 240, hpLate: 2, hpLateEvery: 25,
     // ça durcit avec le temps (en minutes vraies, comme les combats des amis)
-    pageFirst: 1, pageStep: 1,   // les pages : il faut 1, 2, 3, 4… gros (jusqu'à la version 17 : 1, 2, 4, 5, 7, 8…) [Romain, 15 h 47 : « mettre plus de livres »]
-    hpEvery: 90, hpGrosEvery: 60, hpGros: 2, sideEvery: 180, shootersX2At: 600,
+    costaudAt: 120, pageFirst: 1, pageStep: 0.5, pageVite: 6, pageStepTard: 1,   // les pages : il faut 1, 2, 3, 4… gros (jusqu'à la version 17 : 1, 2, 4, 5, 7, 8…) [Romain, 15 h 47 : « mettre plus de livres »]
+    hpEvery: 90, hpGrosEvery: 60, hpGros: 2, sideEvery: 210, shootersX2At: 600,
     // les amis libérés
     
     potionCd: 2, puddleR: 85, puddleLife: 5, mudSlow: 0.2, burnT: 4, burnDmg: 1,
@@ -254,7 +262,7 @@ const G = (() => {
   // l = le niveau qu'on obtient en la prenant (1, 2 ou 3)
   const CARDS = {
     double: { fam: 'baton', nom: 'Double orbe', ic: '✨', max: 3, txt: l => `Le bâton tire ${l + 1} orbes à la fois.` },
-    lourd: { fam: 'baton', nom: 'Orbe lourd', ic: '☄️', max: 3, txt: l => `Chaque orbe fait ${l + 1} dégâts au lieu de 1.` },
+    lourd: { fam: 'baton', nom: 'Orbe lourd', ic: '☄️', max: 3, txt: l => `Chaque orbe fait ${l + 2} dégâts au lieu de 2.` },
     rapide: { fam: 'baton', nom: 'Tir rapide', ic: '💨', max: 3, txt: l => ['', 'Le bâton tire plus vite.', 'Le bâton tire encore plus vite.', 'Le bâton tire deux fois plus vite.'][l] },
     percant: { fam: 'baton', nom: 'Orbe perçant', ic: '🎯', max: 3, txt: l => ['', 'L’orbe traverse 3 golems.', 'L’orbe traverse 5 golems.', 'L’orbe traverse toute la file.'][l] },
     encrier: { fam: 'rune', nom: 'Grand encrier', ic: '🖋️', max: 3, txt: l => `${12 + 2 * l} d’encre au lieu de 12, et l’encrier se remplit.` },
@@ -263,7 +271,6 @@ const G = (() => {
     tonnerre: { fam: 'rune', nom: 'V tonnerre', ic: '🌩️', max: 3, txt: l => `Les golems chassés par le V sont sonnés ${['', '1,5', '2,5', '3,5'][l]} secondes.` },
     pages: { fam: 'sort', nom: 'Pages volantes', ic: '📃', max: 3, txt: l => `${l + 1} pages tournent autour du Sage et coupent les golems.` },
     sceau: { fam: 'sort', nom: 'Sceau de garde', ic: '🔆', max: 3, txt: l => l === 1 ? 'Un cercle doré autour des amis blesse les golems qui y entrent.' : 'Le cercle doré grandit et blesse plus souvent.' },
-    piege: { fam: 'sort', nom: 'Rune piège', ic: '💫', max: 3, txt: l => `Une rune s’allume sous les golems et les sonne, toutes les ${['', '5', '4', '3'][l]} secondes.` },
     chaine: { fam: 'sort', nom: 'Lumière en chaîne', ic: '⚡', max: 3, txt: l => `Un éclair saute de golem en golem : ${['', '3', '5', '7'][l]} golems.` },
     bouclier: { fam: 'sort', nom: 'Bouclier de cristal', ic: '💎', max: 3, txt: l => `Chaque ami a un bouclier qui encaisse un coup. Il revient en ${['', '20', '15', '10'][l]} secondes.` },
     chouette: { fam: 'sort', nom: 'La chouette du Sage', ic: '🦉', max: 3, txt: l => `Elle fond sur les frondeurs : ${['', '3', '5', '8'][l]} dégâts.` },
@@ -272,29 +279,42 @@ const G = (() => {
     aimant: { fam: 'cadeau', nom: 'Aimant', ic: '🧲', max: 3, txt: l => 'Les éclats d’encre viennent à toi de plus loin.' },
     pas: { fam: 'cadeau', nom: 'Pas léger', ic: '👟', max: 3, txt: l => ['', 'Le Sage court plus vite.', 'Le Sage court encore plus vite.', 'Le Sage court très vite.'][l] },
     moisson: { fam: 'cadeau', nom: 'Moisson d’encre', ic: '🦑', max: 3, txt: l => `Les gros golems lâchent ${l} éclat${l > 1 ? 's' : ''} d’encre de plus.` },
-    // les 10 combos : une carte dorée, 3 niveaux ; elle sort quand on a les deux cartes (l'une au moins au niveau 2)
-    bowling: { fam: 'combo', of: ['tonnerre', 'solide'], nom: 'Golems-boulets', ic: '🎳', max: 3, txt: l => ['', 'Le V ne coûte plus que 1. Les golems chassés deviennent des boulets : ils rebondissent partout et renversent tout ce qu’ils touchent.', 'Les golems renversés deviennent boulets à leur tour : réaction en chaîne !', 'Chaque boulet explose à la fin de sa course.'][l] },
-    orage: { fam: 'combo', of: ['piege', 'chaine'], nom: 'Orage', ic: '⛈️', max: 3, txt: l => ['', 'Un golem qui éclate fait tomber la foudre sur 3 golems autour : ils sont sonnés.', 'La foudre fait éclater les golems déjà sonnés : réaction en chaîne !', 'Toutes les 6 secondes, un orage tombe tout seul sur la place.'][l] },
-    volcan: { fam: 'combo', of: ['brulant', 'epines'], nom: 'Volcan', ic: '🌋', max: 3, txt: l => ['', 'Le feu brûle deux fois plus fort et saute de golem en golem. Le mur met le feu aussi.', 'Un golem qui meurt en brûlant explose en boule de feu et enflamme ses voisins.', 'Les golems en feu courent partout en paniquant, et le trait laisse une coulée de lave.'][l] },
-    etoiles: { fam: 'combo', of: ['double', 'rapide'], nom: 'Pluie d’étoiles', ic: '🌠', max: 3, txt: l => ['', 'Toutes les 5 secondes, 12 étoiles partent tout autour du Sage.', 'Toutes les 3 secondes, et les étoiles rebondissent sur les bords.', 'Chaque étoile qui détruit un golem éclate en 3 étoiles.'][l] },
-    comete: { fam: 'combo', of: ['pas', 'percant'], nom: 'La comète', ic: '🌟', max: 3, txt: l => ['', 'Le Sage court plus vite et laisse une large traînée d’étoiles qui brûle fort les golems et arrête les braises.', 'La traînée sonne les golems qui la touchent et renvoie les braises ; le Sage projette ceux qu’il percute.', 'La traînée explose derrière lui : les golems sonnés éclatent, les autres sont sonnés.'][l] },
-    scribe: { fam: 'combo', of: ['encrier', 'moisson'], nom: 'Le scribe fou', ic: '🐙', max: 3, txt: l => ['', 'Les runes coûtent 1 encre de moins, et l’encre remonte toute seule.', 'Combo ×4 avec une rune : FRÉNÉSIE ! 6 secondes d’encre gratuite.', 'Chaque rune a un écho : elle se relance toute seule juste après. La frénésie arrive dès ×3.'][l] },
-    tornade: { fam: 'combo', of: ['pages', 'aimant'], nom: 'Tornade de pages', ic: '🌀', max: 3, txt: l => ['', 'L’escargot ne coûte plus que 4. Les pages s’envolent en spirale jusqu’au bord de la place, puis reviennent.', 'L’escargot devient une tornade : elle aspire les golems, puis les recrache sonnés (un trait les fait éclater).', 'La tornade dure plus longtemps, se promène vers la foule et déchiquette les golems.'][l] },
-    sanctuaire: { fam: 'combo', of: ['sceau', 'bouclier'], nom: 'Sanctuaire', ic: '🏛️', max: 3, txt: l => ['', 'Quand un bouclier casse, le sceau sonne tous les golems du cercle.', 'Toutes les 8 secondes, le sceau pulse et projette les golems du cercle au loin.', 'L’onde du sceau fait éclater les golems sonnés.'][l] },
-    chouettes: { fam: 'combo', of: ['chouette', 'lourd'], nom: 'Parlement des chouettes', ic: '🦉', max: 3, txt: l => ['', 'Une deuxième chouette, et chaque coup de bec lance un éclair.', 'Quatre chouettes, et toujours les éclairs !', 'Les chouettes attrapent les golems et les jettent sur les autres.'][l] },
-    miroir: { fam: 'combo', of: ['large', 'encrier'], nom: 'Rune miroir', ic: '🌗', max: 3, txt: l => ['', 'Chaque rune est recopiée gratuitement de l’autre côté des amis.', 'Trois copies : en face, et un quart de tour de chaque côté.', 'Mandala : sept copies tout autour des amis !'][l] },
+    // les 14 builds : une carte dorée, 3 niveaux ; elle sort quand on a ses deux cartes (l'une au moins au niveau 2)
+    // --- dix builds du bâton (genre: 'baton') ---
+    etoiles: { fam: 'combo', genre: 'baton', of: ['double', 'rapide'], nom: 'Pluie d’étoiles', ic: '🌠', max: 3, txt: l => ['', 'Toutes les 5 secondes, 12 étoiles partent tout autour du Sage.', 'Toutes les 3 secondes, et les étoiles rebondissent sur les bords.', 'Chaque étoile qui détruit un golem éclate en 3 étoiles.'][l] },
+    ricochet: { fam: 'combo', genre: 'baton', of: ['double', 'percant'], nom: 'Ricochet', ic: '🎱', max: 3, txt: l => ['', 'L’orbe rebondit sur 2 golems de plus.', '4 rebonds, et l’orbe frappe plus fort à chaque rebond.', '8 rebonds, et l’orbe se dédouble au premier.'][l] },
+    explosif: { fam: 'combo', genre: 'baton', of: ['double', 'lourd'], nom: 'Orbes explosives', ic: '💥', max: 3, txt: l => ['', 'Chaque orbe explose : les golems autour sont touchés aussi.', 'L’explosion est plus grande, plus forte, et souffle les golems.', 'Un golem détruit par une explosion explose à son tour.'][l] },
+    rayon: { fam: 'combo', genre: 'baton', of: ['rapide', 'percant'], nom: 'Le rayon', ic: '🔦', max: 3, txt: l => ['', 'Toutes les 3 secondes, un rayon traverse toute la salle : place-toi dans l’axe.', 'Toutes les 2 secondes, plus large et plus fort.', 'Presque sans arrêt, et il part des deux côtés.'][l] },
+    braise: { fam: 'combo', genre: 'baton', of: ['lourd', 'rapide'], nom: 'Orbes de braise', ic: '🔥', max: 3, txt: l => ['', 'Chaque orbe met le feu au golem touché.', 'Le feu brûle plus fort et saute de golem en golem.', 'Un golem qui meurt en brûlant explose en boule de feu.'][l] },
+    givre: { fam: 'combo', genre: 'baton', of: ['lourd', 'percant'], nom: 'Orbes de givre', ic: '❄️', max: 3, txt: l => ['', 'Chaque orbe ralentit le golem touché.', 'Au troisième coup, il gèle sur place : gelé, il prend double.', 'Un golem gelé qui casse gèle ses voisins.'][l] },
+    foudre: { fam: 'combo', genre: 'baton', of: ['chaine', 'rapide'], nom: 'Bâton de foudre', ic: '⚡', max: 3, txt: l => ['', 'Un tir sur quatre est un éclair qui saute sur 4 golems.', 'Un tir sur trois : 6 golems, et le premier est sonné.', 'Un tir sur deux : 8 golems, plus fort.'][l] },
+    gardiennes: { fam: 'combo', genre: 'baton', of: ['pages', 'double'], nom: 'Orbes gardiennes', ic: '🛡️', max: 3, txt: l => ['', '3 orbes tournent tout près du Sage : elles frappent et arrêtent les braises.', '5 orbes : elles repoussent les golems qu’elles touchent.', '8 orbes, et toutes les 4 secondes elles partent en étoile.'][l] },
+    comete: { fam: 'combo', genre: 'baton', of: ['pas', 'percant'], nom: 'La comète', ic: '🌟', max: 3, txt: l => ['', 'Le Sage court plus vite et laisse une large traînée d’étoiles qui brûle fort les golems et arrête les braises.', 'La traînée sonne les golems qui la touchent et renvoie les braises ; le Sage projette ceux qu’il percute.', 'La traînée explose derrière lui : les golems sont sonnés, les sonnés perdent la moitié de leur vie.'][l] },
+    chouettes: { fam: 'combo', genre: 'baton', of: ['chouette', 'lourd'], nom: 'Parlement des chouettes', ic: '🦉', max: 3, txt: l => ['', 'Une deuxième chouette, et chaque coup de bec lance un éclair.', 'Quatre chouettes, et toujours les éclairs !', 'Les chouettes attrapent les golems et les jettent sur les autres.'][l] },
+    // --- un build par rune (genre: 'rune') ---
+    volcan: { fam: 'combo', genre: 'rune', of: ['brulant', 'large'], nom: 'Volcan (le trait)', ic: '🌋', max: 3, txt: l => ['', 'Le feu du trait brûle deux fois plus fort et saute de golem en golem.', 'Un golem qui meurt en brûlant explose en boule de feu et enflamme ses voisins.', 'Les golems en feu courent partout en paniquant, et le trait laisse une coulée de lave.'][l] },
+    bowling: { fam: 'combo', genre: 'rune', of: ['tonnerre', 'encrier'], nom: 'Golems-boulets (le V)', ic: '🎳', max: 3, txt: l => ['', 'Le V ne coûte plus que 1. Les golems chassés deviennent des boulets : ils rebondissent partout et renversent tout ce qu’ils touchent.', 'Les golems renversés deviennent boulets à leur tour : réaction en chaîne !', 'Chaque boulet explose à la fin de sa course.'][l] },
+    tornade: { fam: 'combo', genre: 'rune', of: ['pages', 'aimant'], nom: 'Tornade (l’escargot)', ic: '🌀', max: 3, txt: l => ['', 'L’escargot ne coûte plus que 4. Les pages s’envolent en spirale jusqu’au bord de la salle, puis reviennent.', 'L’escargot devient une tornade : elle aspire les golems, puis les recrache sonnés.', 'La tornade dure plus longtemps, se promène vers la foule et déchiquette les golems.'][l] },
+    rempart: { fam: 'combo', genre: 'rune', of: ['epines', 'solide'], nom: 'Rempart (l’arc de cercle)', ic: '🏰', max: 3, txt: l => ['', 'Le mur dure 2 secondes de plus et met le feu aux golems qui le touchent.', 'Le mur rejette en arrière les golems qui le touchent : ils sont sonnés.', 'Quand il disparaît, le mur explose.'][l] },
     soin: { fam: 'cadeau', nom: 'Protection', ic: '💙', max: 99, txt: () => '+5 de protection, tout de suite.' }
   };
-  const SORTS_MAX = 4;
+  const SORTS_MAX = 5;   // il n'y a plus que cinq sorts : plus de limite (une limite pouvait bloquer un build)
   const lv = (s, id) => s.up[id] || 0;
   const UP = { // les valeurs, niveau 0 à 3
-    rapide: [1, 0.8, 0.65, 0.5], percant: [0, 1, 3, 99], brulant: [0, 2, 3, 4], epines: [0, 1, 2, 3], tonnerre: [0, 1.5, 2.5, 3.5],
+    rapide: [1, 0.8, 0.65, 0.5], percant: [0, 1, 3, 99], ricoN: [0, 2, 4, 8], boumR: [0, 60, 85, 110], boumD: [0, 1, 2, 3],
+    foudreK: [0, 4, 3, 2], foudreN: [0, 4, 6, 8], foudreD: [0, 2, 3, 4], rayonT: [0, 3, 2, 1.2], rayonD: [0, 3, 4, 5], rayonW: [0, 18, 28, 28], gardN: [0, 3, 5, 8], gardR: [0, 62, 70, 80], gardD: [0, 2, 3, 3], brulant: [0, 2, 3, 4], epines: [0, 1, 2, 3], tonnerre: [0, 1.5, 2.5, 3.5],
     pagesN: [0, 2, 3, 4], pagesR: [0, 75, 85, 95], sceauR: [0, 130, 160, 190], sceauT: [0, 1, 0.8, 0.6],
     piegeT: [0, 5, 4, 3], piegeR: [0, 75, 90, 105], chaineN: [0, 3, 5, 7], chaineT: [0, 3, 2.6, 2.2],
     bouclierT: [0, 20, 15, 10], chouetteD: [0, 3, 5, 8], chouetteT: [0, 3.2, 2.6, 2], aimant: [120, 220, 320, 450]
   };
   // un combo est prêt quand on a ses deux cartes, l'une au moins au niveau 2 ; ensuite ses niveaux 2 et 3 sortent aussi
   const comboReady = (s, id) => { const [a, b] = CARDS[id].of; const l = lv(s, id); return l > 0 ? l < 3 : lv(s, a) && lv(s, b) && Math.max(lv(s, a), lv(s, b)) >= 2; };
+  // les builds pas encore pris dont « id » est une des deux cartes
+  const buildsDe = (s, id) => Object.keys(CARDS).filter(k => CARDS[k].fam === 'combo' && !lv(s, k) && CARDS[k].of.includes(id));
+  // prendre « id » fait-il avancer un build commencé ? (l'autre carte est déjà là, et le build n'est pas encore prêt)
+  const avance = (s, id) => buildsDe(s, id).some(k => { const o = CARDS[k].of.find(x => x !== id); return lv(s, o) > 0 && !comboReady(s, k); });
+  // ce qu'on écrit sous une carte : « Avec X : le build Y » (les builds que cette carte prépare)
+  const hint = (s, id) => { if (!CARDS[id] || CARDS[id].fam === 'combo' || id === 'soin') return ''; const B = buildsDe(s, id); if (!B.length) return ''; const pret = B.filter(k => lv(s, CARDS[k].of.find(x => x !== id)) > 0); return pret.length ? 'Avec « ' + CARDS[CARDS[pret[0]].of.find(x => x !== id)].nom + ' » : ' + CARDS[pret[0]].nom : 'Prépare : ' + B.slice(0, 2).map(k => CARDS[k].nom).join(', '); };
   const combosReady = s => Object.keys(CARDS).filter(id => CARDS[id].fam === 'combo' && comboReady(s, id));
   function cardPool(s) {
     const sorts = Object.keys(CARDS).filter(id => CARDS[id].fam === 'sort' && lv(s, id) > 0).length;
@@ -309,6 +329,9 @@ const G = (() => {
       cards.push(from.splice(Math.floor(rng(s) * from.length), 1)[0]);
       const rest = ready.filter(id => !cards.includes(id)); if (rest.length >= 2) cards.push(rest[Math.floor(rng(s) * rest.length)]);
     }
+    // au moins une carte qui fait avancer un build commencé (finir sa paire, ou monter une carte de la paire au niveau 2)
+    const av = pool.filter(id => avance(s, id));
+    if (av.length && cards.length < 3) { const id = av[Math.floor(rng(s) * av.length)]; cards.push(id); pool.splice(pool.indexOf(id), 1); }
     while (cards.length < 3 && pool.length) cards.push(pool.splice(Math.floor(rng(s) * pool.length), 1)[0]);
     s.choice = { cards };
   }
@@ -324,7 +347,7 @@ const G = (() => {
     if (id === 'chouettes') { const want = l >= 2 ? 4 : 2; while (s.owls.length < want) s.owls.push({ x: s.sage.x, y: s.sage.y - 60, mode: 'tour', t: 0, cd: 0.5 + s.owls.length * 0.4, a: s.owls.length * Math.PI / 2 }); }
     if (id === 'large') c.traitWidth = 28 + 12 * l;
     if (id === 'pas' || id === 'comete') c.sageSpeed = 300 + 60 * lv(s, 'pas') + (lv(s, 'comete') ? 70 : 0);
-    if (id === 'solide' || id === 'volcan') c.wallLife = 3 + lv(s, 'solide') + (lv(s, 'volcan') ? 2 : 0);
+    if (id === 'solide' || id === 'rempart') c.wallLife = 3 + lv(s, 'solide') + (lv(s, 'rempart') ? 2 : 0);
     s.choice = null; s.pagesTaken++;
     const C = CARDS[id];
     say(s, C.fam === 'combo' ? `Combo ! ${C.nom}${l > 1 ? ` niveau ${l}` : ''} : ${C.txt(l)}` : `${C.nom}${id === 'soin' ? '' : ` (niveau ${l})`} : ${C.txt(l)}`, 3.5);
@@ -340,9 +363,8 @@ const G = (() => {
   const SYMS = ['🔥', '💧', '🌙', '⭐', '🔑', '🍃'];
   // version 17 [Romain, 25 nov. : « que deux personnes à protéger, juste le Barde et l'Alchimiste », « enlève le Pisteur »] :
   // le Pisteur n'est plus dans ce combat (il a le sien, contre la garde de Grosbec) : ni au milieu, ni dans les codes.
-  const CODES = { A: ['⭐', '🔥', '💧'], B: ['🔑', '💧', '🍃'] };
-  const ORDER = ['A', 'B'];
-  const POSTE = { A: 'le bras', B: 'le casque' };
+  // version 19 [Romain, 25 nov., 16 h 42 : « on laisse tomber l'idée que les autres passent des codes », « le Sage, il doit tenir 10 minutes. À 10 minutes, Grosbec, il dit ça suffit »]
+  const CODES = {}, ORDER = [], POSTE = {};
   const HEART = { x: 450, y: 175 };
   const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
   const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
@@ -374,7 +396,7 @@ const G = (() => {
   const minutes = s => s.realT / 60;
   // après 15 minutes, la fureur du cœur : +3 vies à tous toutes les 30 secondes
   const fury = s => Math.max(0, (s.rage || 0) - 2);
-  const bonusHp = (s, type) => (GROS.includes(type) ? s.cfg.hpGros * Math.floor(s.realT / s.cfg.hpGrosEvery) : Math.floor(s.realT / s.cfg.hpEvery)) + 3 * fury(s);
+  const bonusHp = (s, type) => (GROS.includes(type) ? s.cfg.hpGros * Math.floor(s.realT / s.cfg.hpGrosEvery) : Math.floor(s.realT / s.cfg.hpEvery)) + 3 * fury(s) + s.cfg.hpLate * (GROS.includes(type) ? 3 : 1) * Math.floor(Math.max(0, s.realT - s.cfg.lateFrom) / s.cfg.hpLateEvery);
   const sidesNow = s => Math.min(4, 1 + Math.floor(s.realT / s.cfg.sideEvery));
   function say(s, m, d = 1.8) { s.msg = m; s.msgT = d; }
   const targets = s => s.friends.filter(f => !f.free);
@@ -382,7 +404,7 @@ const G = (() => {
   // ----- les soldats -----
   function pickType(s) {
     const t = s.t, r = rng(s);
-    if (t > 55 && r < 0.06) return 'costaud';
+    if (t > s.cfg.costaudAt && r < 0.06) return 'costaud';
     if (t > 40 && r < 0.17) return 'lanceur';
     if (t > 25 && r < 0.33) return 'brute';
     if (t > 12 && r < 0.55) return 'coureur';
@@ -402,7 +424,7 @@ const G = (() => {
   }
   function spawning(s, dt) {
     if (s.heart.bare) return;
-    const c = s.cfg, rate = (c.rate0 + c.rateAdd * Math.min(1, s.t / c.rateRamp)) * (1 + 0.6 * s.rage);
+    const c = s.cfg, rate = (c.rate0 + c.rateAdd * Math.min(1, s.t / c.rateRamp) + c.rateLate * Math.max(0, Math.min(1, (s.t - c.lateFrom) / c.lateRamp))) * (1 + 0.6 * s.rage);
     s.spawnT -= dt;
     const cap = c.maxAlive + 15 * fury(s);
     if (s.spawnT <= 0 && s.soldiers.length < cap) { spawn(s, pickType(s)); s.spawnT = 1 / rate * (0.6 + rng(s) * 0.8); }
@@ -422,6 +444,8 @@ const G = (() => {
   }
 
   // ----- dégâts -----
+  // ce qui vient d'une rune (le trait, le feu du trait, le mur, les boulets, la tornade) ne fait pas tomber d'encre
+  const sansEncre = (s, f) => { const o = s.noInk; s.noInk = true; try { return f(); } finally { s.noInk = o; } };
   function hurt(s, u, n) {
     if (u.hp <= 0) return 0;
     u.hp -= n; u.flash = 0.12;
@@ -432,13 +456,22 @@ const G = (() => {
   function die(s, u) {
     s.kills++;
     if (s.inRune) { s.runeKills++; s.bestCombo = Math.max(s.bestCombo, s.runeKills); }
-    let n = s.cfg.grosShards && GROS.includes(u.type) ? s.cfg.grosShards[GROS.indexOf(u.type)] : TYPES[u.type].shards;
-    if (!GROS.includes(u.type) && s.cfg.shardEvery > 1) { s.shardN = (s.shardN ?? s.cfg.shardEvery - 1) + 1; if (s.shardN % s.cfg.shardEvery) n = 0; }   // l'encre est rare : un petit golem sur « shardEvery » lâche un éclat (le tout premier en lâche un)
-    n += (s.inRune && s.runeKills >= 3 ? 1 : 0) + (GROS.includes(u.type) ? lv(s, 'moisson') : 0);
+    let n = 0;
+    if (!s.noInk) {   // l'encre se gagne au bâton
+      const gros = GROS.includes(u.type);
+      n = s.cfg.grosShards && gros ? s.cfg.grosShards[GROS.indexOf(u.type)] : TYPES[u.type].shards;
+      if (!gros && s.cfg.shardEvery > 1) { s.shardN = (s.shardN ?? s.cfg.shardEvery - 1) + 1; if (s.shardN % s.cfg.shardEvery) n = 0; }   // un petit golem sur « shardEvery » (le tout premier en lâche un)
+      if (gros) n += lv(s, 'moisson');
+    }
     for (let i = 0; i < n; i++) s.shards.push({ x: u.x + (rng(s) - .5) * 34, y: u.y + (rng(s) - .5) * 34, t: rng(s) * 6 });
     for (let i = 0; i < 8; i++) { const a = rng(s) * 6.28, v = 80 + rng(s) * 160; s.fx.push({ k: 'bit', x: u.x, y: u.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.5, max: 0.5, col: u.daze > 0 ? '#ffe58a' : '#9aa3b5' }); }
     if (u.type === 'costaud') s.shake = Math.max(s.shake, 0.25);
-    if (lv(s, 'volcan') >= 2 && u.burn > 0) {
+    // le givre : un golem gelé qui casse gèle ses voisins
+    if (lv(s, 'givre') >= 3 && u.frozen > 0 && (s.gelN = (s.gelN || 0) + 1) <= 10) {
+      s.fx.push({ k: 'gel', x: u.x, y: u.y, R: 95, life: 0.4, max: 0.4 });
+      for (const v of s.soldiers) if (v !== u && v.hp > 0 && dist(u, v) < 95 + v.r) { if (!v.iron && !(v.frozen > 0)) { v.frozen = 1.6; v.chillN = 0; } hurt(s, v, 2); }
+    }
+    if ((lv(s, 'volcan') >= 2 || lv(s, 'braise') >= 3) && u.burn > 0) {
       s.fx.push({ k: 'fireball', x: u.x, y: u.y, life: 0.5, max: 0.5 });
       for (const v of s.soldiers) if (v !== u && v.hp > 0 && dist(u, v) < 85 + v.r) { if (v.burn <= 0) { v.burn = s.cfg.burnT; v.burnTick = 0.4; } hurt(s, v, 3); }
     }
@@ -447,29 +480,24 @@ const G = (() => {
     }
     // une page du grimoire : au 2e gros détruit, puis il en faut un de plus à chaque fois (3, 4, 5…)
     if (GROS.includes(u.type) && ++s.grosKills >= s.pageNeed) {
-      s.grosKills = 0; s.pageIdx++; s.pageNeed = s.cfg.pageFirst + Math.floor(s.cfg.pageStep * s.pageIdx);
+      s.grosKills = 0; s.pageIdx++; s.pageNeed = s.pageIdx < s.cfg.pageVite ? s.cfg.pageFirst + Math.floor(s.cfg.pageStep * s.pageIdx) : s.cfg.pageFirst + Math.floor(s.cfg.pageStep * (s.cfg.pageVite - 1)) + Math.ceil(s.cfg.pageStepTard * (s.pageIdx - s.cfg.pageVite + 1));
       s.pages.push({ x: Math.max(40, Math.min(W - 40, u.x)), y: Math.max(60, Math.min(H - 40, u.y)), t: 0 });
-      say(s, 'Une page du grimoire est tombée ! Va la toucher.', 2.4);
+      say(s, 'Une page du grimoire est tombée ! Passe dessus.', 2.4);
     }
   }
-  // un soldat sonné, touché par la lumière, éclate ; ses éclats touchent les voisins (en chaîne)
-  function shatter(s, u) {
+  // un golem sonné, touché par la lumière, « éclate » : depuis la version 19 il ne meurt plus d'office,
+  // il perd la moitié de sa vie (au moins 4) et n'est plus sonné ; ses éclats touchent les voisins (les sonnés éclatent à leur tour)
+  function shatter(s, u, vus) {
     if (u.hp <= 0) return;
     if (u.iron) { hurt(s, u, 3); return; }
-    u.hp = 0; die(s, u);
+    vus = vus || new Set(); if (vus.has(u.id)) return; vus.add(u.id);
+    u.daze = 0;
     s.fx.push({ k: 'burst', x: u.x, y: u.y, R: s.cfg.shatterR, life: 0.4, max: 0.4 });
     s.shake = Math.max(s.shake, 0.15);
+    hurt(s, u, Math.max(s.cfg.shatterMin, Math.ceil(u.max * s.cfg.shatterPart)));
     for (const v of s.soldiers) {
       if (v === u || v.hp <= 0 || dist(u, v) > s.cfg.shatterR + v.r) continue;
-      if (v.daze > 0) shatter(s, v); else hurt(s, v, s.cfg.shatterDmg);
-    }
-    if (lv(s, 'orage') && s.orageLeft > 0) {
-      const near = s.soldiers.filter(v => v.hp > 0 && v !== u && dist(u, v) < 230).sort((a, b) => dist(u, a) - dist(u, b)).slice(0, Math.min(3, s.orageLeft));
-      for (const v of near) {
-        if (v.hp <= 0) continue;
-        s.orageLeft--; s.fx.push({ k: 'chain', pts: [{ x: u.x, y: u.y }, { x: v.x, y: v.y }], life: 0.35, max: 0.35, gold: true });
-        if (lv(s, 'orage') >= 2 && v.daze > 0) shatter(s, v); else { stun(s, v); hurt(s, v, 1); }
-      }
+      if (v.daze > 0) shatter(s, v, vus); else hurt(s, v, s.cfg.shatterDmg);
     }
   }
   // un soldat projeté qui cogne quelque chose est sonné
@@ -529,12 +557,14 @@ const G = (() => {
     if (s.comboT > 0) s.comboT -= dtReal;
     s.regenT += dt;
     if (s.regenT >= s.cfg.regen) { s.regenT = 0; if (s.protection < s.cfg.protection) s.protection++; }
-    for (const id of s.order) if (!s.announced.includes(id) && s.realT >= s.codeAt[id]) {
-      s.announced.push(id);
-      say(s, `${cap(s.friends.find(x => x.id === id).nom)} a cassé ${POSTE[id]} ! Il te crie son code : ${CODES[id].join(' ')}`, 7);
-    }
+    // à 10 minutes, Grosbec en a assez : le Sage a tenu
+    if (s.realT >= s.cfg.duree) { s.over = 'win'; s.heart.bare = true; s.soldiers = []; s.stones = []; s.bolts = []; s.shake = 0.4; say(s, 'Grosbec : « ASSEZ ! Ça suffit ! »', 6); return; }
     spawning(s, dt);
     for (const w of s.walls) w.life -= dt;
+    if (lv(s, 'rempart') >= 3) for (const w of s.walls) if (w.life <= 0) {   // le rempart explose en disparaissant
+      const m = w.pts[Math.floor(w.pts.length / 2)]; s.fx.push({ k: 'fireball', x: m.x, y: m.y, life: 0.45, max: 0.45, stone: true }); s.shake = Math.max(s.shake, 0.2);
+      sansEncre(s, () => { for (const u of [...s.soldiers]) if (u.hp > 0 && wallDist(w, u.x, u.y) < w.half + u.r + 75) { stun(s, u); hurt(s, u, 5); } });
+    }
     s.walls = s.walls.filter(w => w.life > 0);
     // le Sage (il passe à travers ses murs)
     const sg = s.sage;
@@ -553,8 +583,11 @@ const G = (() => {
           const tg = near[i % near.length], off = i >= near.length ? (i % 2 ? 0.18 : -0.18) * Math.ceil(i / near.length) : 0;
           const a = Math.atan2(tg.y - sg.y, tg.x - sg.x) + off;
           if (i === 0) sg.aim = [Math.cos(a), Math.sin(a)];
-          s.bolts.push({ x: sg.x, y: sg.y, vx: Math.cos(a) * s.cfg.boltSpeed, vy: Math.sin(a) * s.cfg.boltSpeed, life: s.cfg.boltRange / s.cfg.boltSpeed + 0.1, dmg: s.cfg.boltDmg + lv(s, 'lourd'), pierce: UP.percant[lv(s, 'percant')] + s.cfg.boltPierce, hit: [] });
+          s.bolts.push({ x: sg.x, y: sg.y, vx: Math.cos(a) * s.cfg.boltSpeed, vy: Math.sin(a) * s.cfg.boltSpeed, life: s.cfg.boltRange / s.cfg.boltSpeed + 0.1, dmg: s.cfg.boltDmg + lv(s, 'lourd'), pierce: UP.percant[lv(s, 'percant')] + s.cfg.boltPierce, hit: [], staff: true, rico: UP.ricoN[lv(s, 'ricochet')] });
         }
+        // le bâton de foudre : un tir sur quatre (puis trois, puis deux) est un éclair qui saute de golem en golem
+        const FO = lv(s, 'foudre');
+        if (FO && (s.shotN = (s.shotN || 0) + 1) % UP.foudreK[FO] === 0) { chainFrom(s, sg, UP.foudreN[FO], s.cfg.boltRange, UP.foudreD[FO] + lv(s, 'lourd')); if (FO >= 2) stun(s, near[0]); }
         s.boltT = s.cfg.boltEvery * UP.rapide[lv(s, 'rapide')];
       } else s.boltT = 0.1;
     }
@@ -604,16 +637,34 @@ const G = (() => {
       for (const u of s.soldiers) {
         if (u.hp <= 0 || (b.hit && b.hit.includes(u.id)) || Math.hypot(u.x - b.x, u.y - b.y) >= u.r + 6) continue;
         if (b.star) u.lastStar = true;
-        hurt(s, u, b.dmg);
+        const GI = b.staff ? lv(s, 'givre') : 0, BR = b.staff ? lv(s, 'braise') : 0, EX = b.staff ? lv(s, 'explosif') : 0;
+        hurt(s, u, b.dmg * (GI >= 2 && u.frozen > 0 ? 2 : 1));
         u.lastStar = false;
+        if (u.hp > 0) {
+          if (GI) { u.chill = 2.5; u.chillN = (u.chillN || 0) + 1; if (GI >= 2 && u.chillN >= 3 && !u.iron && !(u.frozen > 0) && !(u.gelCd > 0)) { u.frozen = 2; u.chillN = 0; s.fx.push({ k: 'pop', x: u.x, y: u.y - u.r - 10, t: 'gelé !', life: 0.7, max: 0.7, col: '#bfefff' }); } }
+          if (BR && u.burnCd <= 0) { if (u.burn <= 0) u.burnTick = 0.5; u.burn = c.burnT; u.burnRune = false; }
+        }
+        if (EX) boum(s, u, EX, 0);
         if (false) {
           const near = s.soldiers.filter(v => v !== u && v.hp > 0 && dist(u, v) < 150).sort((a, c) => dist(u, a) - dist(u, c)).slice(0, 2);
           for (const v of near) { hurt(s, v, 2); s.fx.push({ k: 'chain', pts: [{ x: u.x, y: u.y }, { x: v.x, y: v.y }], life: 0.22, max: 0.22 }); }
         }
-        if (b.pierce > 0) { b.pierce--; b.hit.push(u.id); } else { b.life = 0; break; }
+        if (b.pierce > 0) { b.pierce--; b.hit.push(u.id); }
+        else if (b.rico > 0) {   // le ricochet : l'orbe repart vers le golem le plus proche qu'elle n'a pas encore touché
+          b.hit.push(u.id);
+          const libres = s.soldiers.filter(v => v.hp > 0 && !b.hit.includes(v.id) && dist(u, v) < 260).sort((p, q) => dist(u, p) - dist(u, q));
+          if (!libres.length) { b.life = 0; break; }
+          const RI = lv(s, 'ricochet'), vers = (o, v) => { const d = dist(u, v) || 1; o.x = u.x; o.y = u.y; o.vx = (v.x - u.x) / d * s.cfg.boltSpeed; o.vy = (v.y - u.y) / d * s.cfg.boltSpeed; o.life = 0.5; };
+          b.rico--; if (RI >= 2) b.dmg++; vers(b, libres[0]);
+          if (RI >= 3 && !b.dedouble && libres[1] && s.bolts.length < 220) { b.dedouble = true; const o = { ...b, hit: [...b.hit] }; vers(o, libres[1]); s.neufs = s.neufs || []; s.neufs.push(o); }
+          break;
+        }
+        else { b.life = 0; break; }
       }
     }
+    if (s.neufs && s.neufs.length) { s.bolts.push(...s.neufs); s.neufs = []; }
     s.bolts = s.bolts.filter(b => b.life > 0);
+    s.boumN = 0; s.gelN = 0;
     // les soldats
     for (const u of s.soldiers) {
       if (u.flash > 0) u.flash -= dt;
@@ -621,7 +672,10 @@ const G = (() => {
       if (u.knockCd > 0) u.knockCd -= dt;
       if (u.spit > 0) u.spit -= dt;
       if (u.burnCd > 0) u.burnCd -= dt;
-      if (u.burn > 0) { u.burn -= dt; u.burnTick -= dt; if (u.burnTick <= 0) { u.burnTick = 1; hurt(s, u, c.burnDmg + (lv(s, 'volcan') ? 1 : 0)); if (lv(s, 'volcan')) for (const v of s.soldiers) if (v !== u && v.hp > 0 && v.burn <= 0 && v.burnCd <= 0 && dist(u, v) < u.r + v.r + 30) { v.burn = c.burnT; v.burnTick = 0.5; } } if (u.burn <= 0) u.burnCd = 3; }
+      if (u.burn > 0) { u.burn -= dt; u.burnTick -= dt; if (u.burnTick <= 0) { u.burnTick = 1; const BR = lv(s, 'braise'), dg = c.burnDmg + (lv(s, 'volcan') ? 1 : 0) + (BR >= 2 ? BR - 1 : 0); if (u.burnRune) sansEncre(s, () => hurt(s, u, dg)); else hurt(s, u, dg); if (lv(s, 'volcan') || BR >= 2) for (const v of s.soldiers) if (v !== u && v.hp > 0 && v.burn <= 0 && v.burnCd <= 0 && dist(u, v) < u.r + v.r + 30) { v.burn = c.burnT; v.burnTick = 0.5; v.burnRune = u.burnRune; } } if (u.burn <= 0) u.burnCd = 3; }
+      if (u.chill > 0) { u.chill -= dt; if (u.chill <= 0) u.chillN = 0; }
+      if (u.gelCd > 0) u.gelCd -= dt;
+      if (u.wallCd > 0) u.wallCd -= dt;
       if (u.hp <= 0) continue;
       const fl = flying(s, u);
       u.x += u.vx * dt; u.y += u.vy * dt;
@@ -650,6 +704,8 @@ const G = (() => {
         else if (p.kind === 'lianes') u.held = true;
         else if (u.burn <= 0 && u.burnCd <= 0) { u.burn = c.burnT; u.burnTick = 0.5; }
       }
+      if (u.frozen > 0) { u.frozen -= dt; if (u.frozen <= 0) u.gelCd = 3; continue; }
+      if (u.chill > 0) slow = Math.min(slow, 0.55);
       if (u.daze > 0) { u.daze -= dt; continue; }
       if (fl || u.held || u.spin) continue;
       if (u.dance > 0) { u.dance -= dt; if (u.dance <= 0) u.charmCd = 1.5; continue; }
@@ -682,7 +738,7 @@ const G = (() => {
     for (const p of s.stones) {
       p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
       if (p.back) {
-        for (const u of s.soldiers) if (u.hp > 0 && Math.hypot(p.x - u.x, p.y - u.y) < u.r + 8) { p.life = 0; hurt(s, u, s.cfg.reflectDmg); break; }
+        for (const u of s.soldiers) if (u.hp > 0 && Math.hypot(p.x - u.x, p.y - u.y) < u.r + 8) { p.life = 0; if (p.mur) sansEncre(s, () => hurt(s, u, s.cfg.reflectDmg)); else hurt(s, u, s.cfg.reflectDmg); break; }
         continue;
       }
       if (Math.hypot(p.x - sg.x, p.y - sg.y) < sg.r + 9) { p.life = 0; s.fx.push({ k: 'pop', x: sg.x, y: sg.y - 34, t: 'paré !', life: 0.6, max: 0.6, col: '#bfefff' }); continue; }
@@ -692,7 +748,7 @@ const G = (() => {
         continue;
       }
       if (s.walls.some(w => wallDist(w, p.x, p.y) < w.half + 8)) {
-        p.back = true; p.vx = -p.vx * 1.4; p.vy = -p.vy * 1.4; p.life = Math.max(p.life, 1.6);
+        p.back = true; p.mur = true; p.vx = -p.vx * 1.4; p.vy = -p.vy * 1.4; p.life = Math.max(p.life, 1.6);
         s.fx.push({ k: 'pop', x: p.x, y: p.y - 20, t: 'renvoyée !', life: 0.6, max: 0.6, col: '#ffe58a' });
         continue;
       }
@@ -709,14 +765,19 @@ const G = (() => {
         if (d < m && d > 0.01) {
           if (a.ball || b.ball) { if (a.ball) knock(s, a, b, dx / d, dy / d); if (b.ball) knock(s, b, a, -dx / d, -dy / d); }
           else if ((flying(s, a) || flying(s, b)) && !(a.spit > 0 && b.spit > 0) && !a.spin && !b.spin) { stun(s, a); stun(s, b); }
-          if (a.burn > 0 && b.burn <= 0 && b.burnCd <= 0) { b.burn = c.burnT; b.burnTick = 0.5; }
-          else if (b.burn > 0 && a.burn <= 0 && a.burnCd <= 0) { a.burn = c.burnT; a.burnTick = 0.5; }
+          if (a.burn > 0 && b.burn <= 0 && b.burnCd <= 0) { b.burn = c.burnT; b.burnTick = 0.5; b.burnRune = a.burnRune; }
+          else if (b.burn > 0 && a.burn <= 0 && a.burnCd <= 0) { a.burn = c.burnT; a.burnTick = 0.5; a.burnRune = b.burnRune; }
           const o = (m - d) / 2, nx = dx / d, ny = dy / d; a.x -= nx * o; a.y -= ny * o; b.x += nx * o; b.y += ny * o;
         }
       }
       for (const w of s.walls) {
         if (a.ball) { const q = nearOnWall(w, a.x, a.y); if (q.d < a.r + w.half) { const nx = (a.x - q.x) / (q.d || 1), ny = (a.y - q.y) / (q.d || 1), dot = a.vx * nx + a.vy * ny; if (dot < 0) { a.vx -= 2 * dot * nx; a.vy -= 2 * dot * ny; a.ball.left--; s.fx.push({ k: 'bonk', x: a.x, y: a.y, life: 0.2, max: 0.2 }); } pushOut(w, a); } continue; }
-        const fl = flying(s, a); if (pushOut(w, a) && fl) stun(s, a);
+        const fl = flying(s, a), pousse = pushOut(w, a);
+        if (pousse && fl) stun(s, a);
+        else if (pousse && lv(s, 'rempart') >= 2 && !a.iron && !(a.wallCd > 0)) {   // le rempart rejette en arrière : sonné
+          const q = nearOnWall(w, a.x, a.y), nx = (a.x - q.x) / (q.d || 1), ny = (a.y - q.y) / (q.d || 1);
+          stun(s, a); a.vx = nx * 560; a.vy = ny * 560; a.wallCd = 1.5; s.fx.push({ k: 'bonk', x: a.x, y: a.y, life: 0.2, max: 0.2 });
+        }
       }
       for (const o of s.friends) {
         const dx = a.x - o.x, dy = a.y - o.y, d = Math.hypot(dx, dy), m = a.r + o.r;
@@ -739,14 +800,25 @@ const G = (() => {
     for (const e of s.fx) { e.life -= dtReal; if (e.k === 'bit') { e.x += e.vx * dtReal; e.y += e.vy * dtReal; } }
     s.fx = s.fx.filter(e => e.life > 0);
   }
+  // une orbe explosive : les golems autour sont touchés (niveau 2 : soufflés ; niveau 3 : un golem détruit explose à son tour)
+  function boum(s, u, L, prof) {
+    if ((s.boumN = (s.boumN || 0) + 1) > 14) return;
+    const R = UP.boumR[L], d0 = UP.boumD[L];
+    s.fx.push({ k: 'boum', x: u.x, y: u.y, R, life: 0.28, max: 0.28 });
+    for (const v of [...s.soldiers]) {
+      if (v === u || v.hp <= 0) continue; const dx = v.x - u.x, dy = v.y - u.y, d = Math.hypot(dx, dy) || 1; if (d > R + v.r) continue;
+      if (L >= 2 && !v.iron && !v.ball) { v.vx += dx / d * 300; v.vy += dy / d * 300; }
+      if (hurt(s, v, d0) && L >= 3 && prof < 3) boum(s, v, L, prof + 1);
+    }
+  }
   // un éclair qui part de « from » et saute de golem en golem
-  function chainFrom(s, from, N, R0) {
+  function chainFrom(s, from, N, R0, dmg = 2) {
     const pts = [{ x: from.x, y: from.y }], done = []; let cur = from, R = R0;
     for (let k = 0; k < N; k++) {
       let tg = null, b = R; for (const u of s.soldiers) { const d = dist(u, cur); if (u.hp > 0 && u !== from && !done.includes(u) && d < b) { b = d; tg = u; } }
       if (!tg) break; done.push(tg); pts.push({ x: tg.x, y: tg.y }); cur = tg; R = 200;
     }
-    for (const u of done) hurt(s, u, 2);
+    for (const u of done) hurt(s, u, dmg);
     if (done.length) s.fx.push({ k: 'chain', pts, life: 0.3, max: 0.3 });
     return done.length;
   }
@@ -768,7 +840,7 @@ const G = (() => {
         let cx = 0, cy = 0, n = 0; for (const u of s.soldiers) if (alive(u) && Math.hypot(u.x - tn.x, u.y - tn.y) < 420) { cx += u.x; cy += u.y; n++; }
         if (n) { const dx = cx / n - tn.x, dy = cy / n - tn.y, d = Math.hypot(dx, dy) || 1, v = Math.min(d, 120 * dt); tn.x += dx / d * v; tn.y += dy / d * v; }
         const fx = tn.x - C.x, fy = tn.y - C.y, fd = Math.hypot(fx, fy) || 1; if (fd < 150) { tn.x = C.x + fx / fd * 150; tn.y = C.y + fy / fd * 150; } // elle ne marche pas sur les amis
-        tn.tick -= dt; if (tn.tick <= 0) { tn.tick = 0.4; for (const u of s.soldiers) if (alive(u) && Math.hypot(u.x - tn.x, u.y - tn.y) < 110) hurt(s, u, 2); }
+        tn.tick -= dt; if (tn.tick <= 0) { tn.tick = 0.4; for (const u of s.soldiers) if (alive(u) && Math.hypot(u.x - tn.x, u.y - tn.y) < 110) sansEncre(s, () => hurt(s, u, 2)); }
       }
       if (tn.t > 0) {
         for (const u of s.soldiers) {
@@ -828,7 +900,7 @@ const G = (() => {
       }
     }
     // la colère du cœur : à 12 et à 14 minutes, ils arrivent plus nombreux et plus vite
-    const rage = s.realT >= 900 ? 3 + Math.floor((s.realT - 900) / 30) : s.realT >= 840 ? 2 : s.realT >= 720 ? 1 : 0;
+    const rage = s.realT >= s.cfg.rageAt[1] ? 2 : s.realT >= s.cfg.rageAt[0] ? 1 : 0;   // la colère de Grosbec, avant la fin
     if (rage > s.rage) { const first = s.rage; s.rage = rage; if (rage <= 3) say(s, rage === 1 ? 'Grosbec se met en colère : les golems arrivent plus vite et plus nombreux !' : rage === 2 ? 'Grosbec est fou de rage !' : 'Grosbec devient fou furieux : plus rien ne l’arrête…', 4); if (first >= 3) return; s.fx.push({ k: 'side', side: 0, life: 2.4, max: 2.4 }); s.fx.push({ k: 'side', side: 2, life: 2.4, max: 2.4 }); s.shake = 0.4; }
   }
   // ----- les pouvoirs des cartes, à chaque instant -----
@@ -879,9 +951,43 @@ const G = (() => {
       s.novaT -= dt;
       if (s.novaT <= 0 && s.soldiers.length) {
         const L = lv(s, 'etoiles'); s.novaT = L >= 2 ? 3 : 5;
-        for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2 + s.t; s.bolts.push({ x: sg.x, y: sg.y, vx: Math.cos(a) * 700, vy: Math.sin(a) * 700, life: 1.3, dmg: s.cfg.boltDmg + lv(s, 'lourd') + 1, pierce: UP.percant[lv(s, 'percant')], hit: [], star: true, bounce: L >= 2 ? 2 : 0 }); }
+        for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2 + s.t; s.bolts.push({ x: sg.x, y: sg.y, vx: Math.cos(a) * 700, vy: Math.sin(a) * 700, life: 1.3, dmg: s.cfg.boltDmg + lv(s, 'lourd') + 1, pierce: UP.percant[lv(s, 'percant')], hit: [], star: true, staff: true, bounce: L >= 2 ? 2 : 0 }); }
         s.fx.push({ k: 'nova', x: sg.x, y: sg.y, life: 0.5, max: 0.5 });
       }
+    }
+    // le rayon : il part du Sage vers le golem le plus proche et traverse toute la salle
+    const RA = lv(s, 'rayon');
+    if (RA) {
+      s.rayT = (s.rayT ?? 1) - dt;
+      if (s.rayT <= 0) {
+        let tg = null, bd = 560; for (const u of s.soldiers) { const d = dist(u, sg); if (alive(u) && d < bd) { bd = d; tg = u; } }
+        if (!tg) s.rayT = 0.3;
+        else {
+          s.rayT = UP.rayonT[RA]; const dx = (tg.x - sg.x) / (bd || 1), dy = (tg.y - sg.y) / (bd || 1), W2 = UP.rayonW[RA], dg = UP.rayonD[RA] + lv(s, 'lourd');
+          for (const sens of RA >= 3 ? [1, -1] : [1]) {
+            const b = { x: sg.x + dx * 1300 * sens, y: sg.y + dy * 1300 * sens };
+            for (const u of [...s.soldiers]) { if (!alive(u)) continue; const q = nearOnSeg(sg, b, u.x, u.y); if (Math.hypot(u.x - q.x, u.y - q.y) < u.r + W2) hurt(s, u, dg); }
+            s.fx.push({ k: 'beam', a: { x: sg.x, y: sg.y }, b: { x: Math.max(-40, Math.min(W + 40, b.x)), y: Math.max(-40, Math.min(H + 40, b.y)) }, life: 0.3, max: 0.3, ray: true });
+          }
+        }
+      }
+    }
+    // les orbes gardiennes : elles tournent tout près du Sage
+    const GA = lv(s, 'gardiennes');
+    if (GA) {
+      s.gardA = (s.gardA || 0) + dt * 4.2; s.gardHit = s.gardHit || {};
+      for (const id in s.gardHit) { s.gardHit[id] -= dt; if (s.gardHit[id] <= 0) delete s.gardHit[id]; }
+      const n = UP.gardN[GA], R = UP.gardR[GA];
+      for (let i = 0; i < n; i++) {
+        const a = s.gardA + i * Math.PI * 2 / n, px = sg.x + Math.cos(a) * R, py = sg.y + Math.sin(a) * R;
+        for (const u of s.soldiers) if (alive(u) && !s.gardHit[u.id] && Math.hypot(u.x - px, u.y - py) < u.r + 15) {
+          s.gardHit[u.id] = 0.5;
+          if (GA >= 2 && !u.iron && !u.ball) { const dx = u.x - sg.x, dy = u.y - sg.y, d = Math.hypot(dx, dy) || 1; u.vx = dx / d * 430; u.vy = dy / d * 430; }
+          hurt(s, u, UP.gardD[GA] + lv(s, 'lourd'));
+        }
+        for (const p of s.stones) if (!p.back && Math.hypot(p.x - px, p.y - py) < 20) p.life = 0;
+      }
+      if (GA >= 3) { s.gardT = (s.gardT ?? 4) - dt; if (s.gardT <= 0 && s.soldiers.length) { s.gardT = 4; for (let i = 0; i < n; i++) { const a = s.gardA + i * Math.PI * 2 / n; s.bolts.push({ x: sg.x + Math.cos(a) * R, y: sg.y + Math.sin(a) * R, vx: Math.cos(a) * 700, vy: Math.sin(a) * 700, life: 0.9, dmg: s.cfg.boltDmg + lv(s, 'lourd') + 1, pierce: 2 + UP.percant[lv(s, 'percant')], hit: [], staff: true, star: true, rico: UP.ricoN[lv(s, 'ricochet')] }); } s.fx.push({ k: 'nova', x: sg.x, y: sg.y, life: 0.5, max: 0.5 }); } }
     }
     // encre vive
     if (lv(s, 'scribe')) { s.inkT += dt; if (s.inkT >= 2) { s.inkT = 0; s.ink = Math.min(s.cfg.inkMax, s.ink + 1); } }
@@ -918,17 +1024,17 @@ const G = (() => {
     for (const fl of s.firelines) {
       fl.life -= dt;
       const { a, b } = fl;
-      for (const u of s.soldiers) { if (!alive(u) || u.burn > 0 || u.burnCd > 0) continue; const q = nearOnSeg(a, b, u.x, u.y); if (Math.hypot(u.x - q.x, u.y - q.y) < u.r + (fl.lava ? 34 : 20)) { u.burn = s.cfg.burnT; u.burnTick = 0.3; } }
+      for (const u of s.soldiers) { if (!alive(u) || u.burn > 0 || u.burnCd > 0) continue; const q = nearOnSeg(a, b, u.x, u.y); if (Math.hypot(u.x - q.x, u.y - q.y) < u.r + (fl.lava ? 34 : 20)) { u.burn = s.cfg.burnT; u.burnTick = 0.3; u.burnRune = true; } }
     }
     s.firelines = s.firelines.filter(fl => fl.life > 0);
     // le mur d'épines
-    if (lv(s, 'volcan')) for (const w of s.walls) for (const u of s.soldiers) if (alive(u) && u.burn <= 0 && u.burnCd <= 0 && wallDist(w, u.x, u.y) < w.half + u.r + 14) { u.burn = s.cfg.burnT; u.burnTick = 0.3; }
+    if (lv(s, 'rempart')) for (const w of s.walls) for (const u of s.soldiers) if (alive(u) && u.burn <= 0 && u.burnCd <= 0 && wallDist(w, u.x, u.y) < w.half + u.r + 14) { u.burn = s.cfg.burnT; u.burnTick = 0.3; u.burnRune = true; }
     const ep = UP.epines[lv(s, 'epines')];
     if (ep) for (const w of s.walls) {
       w.thornT = (w.thornT ?? 0) - dt;
       if (w.thornT > 0) continue;
       w.thornT = 1 / ep;
-      for (const u of s.soldiers) if (alive(u) && wallDist(w, u.x, u.y) < w.half + u.r + 12) hurt(s, u, 1);
+      for (const u of s.soldiers) if (alive(u) && wallDist(w, u.x, u.y) < w.half + u.r + 12) sansEncre(s, () => hurt(s, u, 1));
     }
   }
   // la fin d'un boulet : il s'arrête sonné (au niveau 3, il explose)
@@ -936,8 +1042,7 @@ const G = (() => {
     u.ball = null; u.vx *= 0.1; u.vy *= 0.1;
     if (lv(s, 'bowling') >= 3) {
       s.fx.push({ k: 'fireball', x: u.x, y: u.y, life: 0.45, max: 0.45, stone: true }); s.shake = Math.max(s.shake, 0.15);
-      for (const v of s.soldiers) if (v.hp > 0 && v !== u && dist(u, v) < 105 + v.r) { stun(s, v); hurt(s, v, 4); }
-      hurt(s, u, 4);
+      sansEncre(s, () => { for (const v of [...s.soldiers]) if (v.hp > 0 && v !== u && dist(u, v) < 105 + v.r) { stun(s, v); hurt(s, v, 4); } hurt(s, u, 4); });
     }
     if (u.hp > 0) stun(s, u);
   }
@@ -949,7 +1054,7 @@ const G = (() => {
     if (s.strikeN === 5) { s.fx.push({ k: 'pop', x: v.x, y: v.y - 40, t: 'STRIKE !', life: 1.2, max: 1.2, col: '#ffd23f' }); s.fx.push({ k: 'strike', x: v.x, y: v.y, life: 0.5, max: 0.5 }); }
     if (lv(s, 'bowling') >= 2 && s.ballChain > 0) { s.ballChain--; v.ball = { left: 3, t: 2.2 }; v.vx = nx * 720; v.vy = ny * 720; v.daze = 0; }
     else { stun(s, v); v.vx += nx * 350; v.vy += ny * 350; }
-    hurt(s, v, 2);
+    sansEncre(s, () => hurt(s, v, 2));
   }
   function hit(s, f, n) {
     if (f.shield > 0) {
@@ -1086,7 +1191,7 @@ const G = (() => {
     if (s.ink < cost) { say(s, `Pas assez d’encre (il en faut ${cost}). Ramasse des éclats.`); return { ok: false }; }
     s.ink -= cost; s.runes++;
     const k0 = s.kills; s.inRune = true; s.runeKills = 0; s.orageLeft = lv(s, 'orage') >= 2 ? 25 : 6;
-    const hit = castAll(s, rune, false);
+    const hit = sansEncre(s, () => castAll(s, rune, false));
     if (lv(s, 'scribe') >= 3 && rune.kind !== 'mur') s.echoes.push({ rune, t: 0.55 });
     s.soldiers = s.soldiers.filter(u => u.hp > 0);
     s.inRune = false;
@@ -1164,7 +1269,7 @@ const G = (() => {
     }
     return hit;
   }
-  return { W, H, CFG, TYPES, GROS, SYMS, CODES, ORDER, POSTE, HEART, PORTES, CARDS, UP, newGame, step, recognize, cast, costOf, inside, pathLen, enterCode, dist, bonusHp, sidesNow, minutes, choose, openChoice, cardPool, lv, combosReady, turnRune };
+  return { W, H, CFG, TYPES, GROS, SYMS, CODES, ORDER, POSTE, HEART, PORTES, CARDS, UP, newGame, step, recognize, cast, costOf, inside, pathLen, enterCode, dist, bonusHp, sidesNow, minutes, choose, openChoice, cardPool, lv, combosReady, turnRune, hint, avance };
 })();
 
 // ===== Les sons du Sage : tout est fabriqué par le navigateur (aucun fichier) =====
@@ -1446,7 +1551,7 @@ const SON = (() => {
   function slow(on) { if (ac) slowLP.frequency.setTargetAtTime(on ? 850 : 16000, ac.currentTime, 0.06); }
 
   // ----- écouter le jeu : chaque nouvel effet donne son bruit -----
-  const FX = { burst: 'shatter', beam: 'beam', vee: 'vee', ring: 'ring', chain: 'zap', slash: 'slash', flaque: 'splash', trap: 'trap', shieldbreak: 'glass', side: 'side', nova: 'nova', fireball: 'fireball', sky: 'sky', pulse: 'pulse', mirror: 'mirror', echo: 'echo', strike: 'strike', tornado: 'tornado', bonk: 'bonk', pop2: 'trap', frenzy: 'frenzy', free: 'good' };
+  const FX = { burst: 'shatter', beam: 'beam', vee: 'vee', ring: 'ring', chain: 'zap', slash: 'slash', flaque: 'splash', trap: 'trap', shieldbreak: 'glass', side: 'side', nova: 'nova', fireball: 'fireball', sky: 'sky', pulse: 'pulse', mirror: 'mirror', echo: 'echo', strike: 'strike', tornado: 'tornado', bonk: 'bonk', boum: 'bonk', gel: 'glass', pop2: 'trap', frenzy: 'frenzy', free: 'good' };
   let W = null;
   function watch(s) {
     if (!ac) return;
@@ -2387,7 +2492,7 @@ if (/[?&#]finesse=([\d.]+)/.test(location.href)) { FIN = Math.min(1, Math.max(0.
 function resize() { const r = stage.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(1.7e6 / Math.max(1, r.width * r.height))) * FIN; cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); R8.dpr = cv.width / Math.max(1, r.width); if (bg && bg.getContext) bg.width = bg.height = 0; bg = null; ensureSprites(); }
 const MES = { n: 0, t: 0, sec: 0, nsec: 0, pire: 0, baisses: 0, age: 0 };   // les images comptées pendant la partie
 function mesurer(dt) { if (dt <= 0 || dt > 0.5) return; MES.n++; MES.t += dt; MES.age += dt; MES.sec += dt; MES.nsec++; if (MES.sec >= 1) { if (MES.age > 4) MES.pire = MES.pire ? Math.min(MES.pire, Math.round(MES.nsec / MES.sec)) : Math.round(MES.nsec / MES.sec); MES.sec = MES.nsec = 0; } }
-function mesuresTxt() { return MES.n < 30 ? '' : `Mesures (version 18) : ${Math.round(MES.n / MES.t)} images par seconde, pire seconde ${MES.pire || '?'} · finesse ${Math.round(FIN * 100)} %, ${MES.baisses} baisse${MES.baisses > 1 ? 's' : ''} · ${Golems.cuits} + ${Object.keys(GB.im).length} images · écran ${innerWidth} × ${innerHeight} (× ${Math.round((devicePixelRatio || 1) * 10) / 10})`; }
+function mesuresTxt() { return MES.n < 30 ? '' : `Mesures (version 19) : ${Math.round(MES.n / MES.t)} images par seconde, pire seconde ${MES.pire || '?'} · finesse ${Math.round(FIN * 100)} %, ${MES.baisses} baisse${MES.baisses > 1 ? 's' : ''} · ${Golems.cuits} + ${Object.keys(GB.im).length} images · écran ${innerWidth} × ${innerHeight} (× ${Math.round((devicePixelRatio || 1) * 10) / 10})`; }
 function finesse(dt) {   // dt : le temps depuis l'image d'avant. Sous 25 images par seconde pendant 1,4 seconde : on dessine un peu moins fin.
   if (dt <= 0 || dt > 0.5 || QUAL.fige) return; QUAL.repos -= dt; if (QUAL.repos > 0) { QUAL.lent = QUAL.vu = QUAL.t0 = 0; return; }
   // une image pendant laquelle on a cuit un dessin (Grosbec, un golem) ne compte pas : ce n'est pas l'appareil qui rame
@@ -2533,6 +2638,11 @@ function golemStates(u, a, t, P, F) {
     ctx.lineCap = 'round'; ctx.strokeStyle = '#2f7a30'; ctx.lineWidth = 3.2;
     for (let i = 0; i < 3; i++) { const yy = fy - 4 - i * P.lh * 0.38 - (i === 2 ? P.bh * 0.25 : 0), w = P.bw * (i === 2 ? 0.55 : 0.42); ctx.beginPath(); ctx.ellipse(u.x, yy, w, 4.5, Math.sin(t * 2 + i) * 0.08, 0.15, Math.PI - 0.15); ctx.stroke(); }
     ctx.fillStyle = '#5fbf4a'; for (let i = 0; i < 4; i++) { const lx = u.x + (i - 1.5) * P.bw * 0.25, ly = fy - 8 - (i % 2) * P.lh * 0.5; ctx.beginPath(); ctx.ellipse(lx, ly, 4, 2.2, i - 1, 0, TAU); ctx.fill(); }
+  }
+  if (u.frozen > 0 || u.chill > 0) {
+    const hh = P.H * 1.02, ww = P.bw * 1.25, gele = u.frozen > 0;
+    ctx.fillStyle = gele ? 'rgba(170,232,255,.5)' : 'rgba(170,232,255,.16)'; ctx.strokeStyle = gele ? 'rgba(235,250,255,.95)' : 'rgba(200,240,255,.4)'; ctx.lineWidth = gele ? 2 : 1;
+    ctx.beginPath(); ctx.moveTo(u.x - ww * 0.5, fy + 3); ctx.lineTo(u.x - ww * 0.58, fy - hh * 0.55); ctx.lineTo(u.x - ww * 0.2, fy - hh); ctx.lineTo(u.x + ww * 0.3, fy - hh * 0.96); ctx.lineTo(u.x + ww * 0.58, fy - hh * 0.5); ctx.lineTo(u.x + ww * 0.5, fy + 3); ctx.closePath(); ctx.fill(); ctx.stroke();
   }
   if (u.burn > 0) {
     const cx = u.x, cy = fy - P.lh - P.bh * 0.55;
@@ -2805,7 +2915,7 @@ function gbPoses() {
 }
 // à quelle finesse le cuire (selon l'écran), et quoi recuire quand son état change (son casque se fend à chaque code, il enrage)
 // le casque se fend à chaque ami vainqueur : de 0 à 3 fissures, quel que soit le nombre d'amis (2 depuis la version 17)
-const gbFissures = () => Math.round(s.entered.length * 3 / G.ORDER.length);
+const gbFissures = () => 0;   // version 19 : plus de codes, le casque ne se fend plus
 function gbRegler(kv, etat) {
   const kc = Math.round(Math.min(1, Math.max(0.3, GB.h / 286 * kv * 0.85)) * 20) / 20;
   if (kc === GB.kc && etat === GB.etat) return;
@@ -2828,7 +2938,7 @@ function cuisson(ms = 3) {
 }
 function gbGeste(nom, sd, t) { if (GB.g && GB.g.nom === 'silence' && t - GB.g.t0 < 1.2) return; GB.g = { nom, sd, t0: t }; }
 function gbImage(t) {
-  if (s.over === 'win') return 'fin';
+
   const g = GB.g;
   if (g) { const u = t - g.t0;
     if (g.nom === 'envoi') { if (u < 0.3) return 'ea' + g.sd; if (u < 0.62) return 'eb' + g.sd; if (u < 0.95) return 'ec' + g.sd; }
@@ -2840,7 +2950,7 @@ function gbImage(t) {
 // où le viser (sa poitrine, son casque), dans la salle
 function gbPoint(n) { const P = GB.pts.r0, q = P && P[n], gk = GB.h / 286; return q ? { x: GB.x + q[0] * gk, y: GB.y + q[1] * gk } : { x: GB.x, y: GB.y - GB.h * (n === 'tete' ? 0.86 : 0.62) }; }
 function drawGrosbec(t) {
-  const nom = gbImage(t), c = GB.im[nom] || GB.im.r0, B = GB.B, gk = GB.h / 286, won = s.over === 'win', bob = won ? 0 : Math.sin(t * 1.6) * 1.2;
+  const nom = gbImage(t), c = GB.im[nom] || GB.im.r0, B = GB.B, gk = GB.h / 286, won = false, bob = won ? 0 : Math.sin(t * 1.6) * 1.2;
   if (!c) { ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(GB.x, GB.y, 60, 16, 0, 0, TAU); ctx.fill(); return; }
   const x = GB.x + B.x0 * gk, y = GB.y + B.y0 * gk + bob, w = B.w * gk, h = B.h * gk;
   ctx.drawImage(c, x, y, w, h);
@@ -2862,10 +2972,11 @@ function drawGrosbec(t) {
 // ce que Grosbec fait quand le combat change : il envoie ses golems à chaque grosse vague, il encaisse quand un ami gagne, il enrage
 const GBMOTS = ['Allez, allez !', 'Écrasez-les !', 'Allez ! Plus vite !', 'Attrapez-les !'];
 function gbSuivre(t, dt) {
-  if (R8.jeu !== s) { R8.jeu = s; GB.g = null; GB.rage = 0; GB.flash = 0; GB.mots = null; R8.tirs = []; R8.tir = {}; R8.anim.clear(); }
+  if (R8.jeu !== s) { R8.jeu = s; GB.fini = false; GB.g = null; GB.rage = 0; GB.flash = 0; GB.mots = null; R8.tirs = []; R8.tir = {}; R8.anim.clear(); }
   if (GB.flash > 0) GB.flash -= dt;
   gbRegler(view().k / (FIN || 1), gbFissures() + '|' + (s.rage ? 1 : 0));   // la même taille que dans ensureSprites : sans la finesse
-  if ((s.rage || 0) > GB.rage) { GB.rage = s.rage; GB.g = { nom: 'silence', t0: t }; GB.mots = { t0: t, txt: s.rage === 1 ? 'ASSEZ !' : 'RRAAAH !' }; }
+  if ((s.rage || 0) > GB.rage) { GB.rage = s.rage; GB.g = { nom: 'silence', t0: t }; GB.mots = { t0: t, txt: s.rage === 1 ? 'ÉCRASEZ-LES !' : 'RRAAAH !' }; }
+  if (s.over === 'win' && !GB.fini) { GB.fini = true; GB.g = { nom: 'silence', t0: t }; GB.mots = { t0: t, txt: 'ASSEZ ! ÇA SUFFIT !' }; }
 }
 function gbFx(e, t) {
   if (e.k === 'side') {
@@ -3198,6 +3309,8 @@ function newFx() {
     if (e.k === 'tornado') burst(e.x, e.y, 20, { k: 'spark', col: '#d8b4ff', v0: 100, v1: 260, s0: 2, s1: 4, g: 60 });
     if (e.k === 'strike') burst(e.x, e.y - 20, 40, { k: 'spark', col: Math.random() < 0.5 ? '#ffd23f' : '#ffffff', v0: 160, v1: 420, vz0: 100, vz1: 300, s0: 2.5, s1: 5, g: 400 });
     if (e.k === 'bonk') { dust(e.x, e.y + 14, 14); burst(e.x, e.y - 10, 4, { k: 'spark', col: '#ffe58a', v0: 60, v1: 140, s0: 2, s1: 3, g: 200 }); }
+    if (e.k === 'boum') burst(e.x, e.y + 6, 6, { k: 'spark', col: '#ffd67a', v0: 90, v1: 240, s0: 2, s1: 3.5, g: 200 });
+    if (e.k === 'gel') burst(e.x, e.y, 12, { k: 'shard', col: '#d6f6ff', s0: 3, s1: 6, z: 10, v0: 90, v1: 240 });
     if (e.k === 'pop2') burst(e.x, e.y + 10, 10, { k: 'spark', col: '#ffd23f', v0: 80, v1: 220, s0: 2, s1: 3.5, g: 200 });
     if (e.k === 'frenzy') burst(s.sage.x, s.sage.y - 20, 40, { k: 'spark', col: Math.random() < 0.5 ? '#c77dff' : '#1a1209', v0: 100, v1: 340, vz0: 80, vz1: 260, s0: 3, s1: 6, g: 300 });
   }
@@ -3266,18 +3379,21 @@ function render(dt = 0) {
   items.sort((a, b) => a.y - b.y).forEach(i => i.d());
   for (const tn of s.tornados || []) drawTornado(tn, t);
   if (G.lv(s, 'pages')) drawOrbitPages(t);
+  if (G.lv(s, 'gardiennes')) { const GA = G.lv(s, 'gardiennes'), n = G.UP.gardN[GA], R = G.UP.gardR[GA], sg = s.sage;
+    for (let i = 0; i < n; i++) { const a = (s.gardA || 0) + i * TAU / n, x = sg.x + Math.cos(a) * R, y = sg.y + Math.sin(a) * R; ctx.globalAlpha = 0.85; ctx.drawImage(R8.spr.glowCyan, x - 17, y - 17, 34, 34); ctx.globalAlpha = 1; ctx.fillStyle = '#e9fbff'; ctx.beginPath(); ctx.arc(x, y, 6.5, 0, TAU); ctx.fill(); ctx.strokeStyle = '#6fe3ff'; ctx.lineWidth = 2; ctx.stroke(); } }
   for (const o of s.owls) drawOwl(o, t);
   // les projectiles
   drawTirs(t);
   for (const p of s.potions) drawPotion(p);
   for (const n of s.notes) drawPartition(n, t);
+  const orbCol = b => b.staff && G.lv(s, 'braise') ? '#ffb347' : b.staff && G.lv(s, 'givre') ? '#c9f2ff' : (b.dmg || 1) > 2 ? '#fff3c4' : '#ffffff';
   for (const b of s.bolts) {
     if (b.arrow) { const an = Math.atan2(b.vy, b.vx); ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(an); ctx.strokeStyle = '#7a5130'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(-16, 0); ctx.lineTo(8, 0); ctx.stroke(); ctx.fillStyle = '#c8ccd6'; ctx.beginPath(); ctx.moveTo(12, 0); ctx.lineTo(6, -3.5); ctx.lineTo(6, 3.5); ctx.fill(); ctx.fillStyle = '#e8e0d0'; ctx.fillRect(-17, -3, 5, 6); ctx.restore(); continue; }
-    const br = 4.5 + ((b.dmg || 1) - 1) * 1.6, tl = b.pierce !== undefined && G.lv(s, 'percant') ? 0.07 : 0.03;
-    if (s.bolts.length > 36) { ctx.fillStyle = (b.dmg || 1) > 1 ? 'rgba(255,214,120,.55)' : 'rgba(200,245,255,.5)'; const tx = b.x - b.vx * tl * 0.6, ty = b.y - b.vy * tl * 0.6; ctx.fillRect(tx - br * 0.6, ty - br * 0.6, br * 1.2, br * 1.2); ctx.fillStyle = (b.dmg || 1) > 1 ? '#fff3c4' : '#ffffff'; ctx.fillRect(b.x - br, b.y - br, br * 2, br * 2); continue; }
+    const br = 4.5 + Math.min(6, ((b.dmg || 1) - 2) * 1.3), tl = b.pierce !== undefined && G.lv(s, 'percant') ? 0.07 : 0.03;
+    if (s.bolts.length > 36) { ctx.fillStyle = (b.dmg || 1) > 1 ? 'rgba(255,214,120,.55)' : 'rgba(200,245,255,.5)'; const tx = b.x - b.vx * tl * 0.6, ty = b.y - b.vy * tl * 0.6; ctx.fillRect(tx - br * 0.6, ty - br * 0.6, br * 1.2, br * 1.2); ctx.fillStyle = orbCol(b); ctx.fillRect(b.x - br, b.y - br, br * 2, br * 2); continue; }
     ctx.globalAlpha = 0.8; ctx.drawImage(R8.spr.glowCyan, b.x - 15, b.y - 15, 30, 30); ctx.globalAlpha = 1;
     ctx.strokeStyle = (b.dmg || 1) > 1 ? 'rgba(255,214,120,.6)' : 'rgba(200,245,255,.5)'; ctx.lineWidth = br; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x - b.vx * tl, b.y - b.vy * tl); ctx.stroke();
-    ctx.fillStyle = (b.dmg || 1) > 1 ? '#fff3c4' : '#ffffff'; ctx.beginPath(); ctx.arc(b.x, b.y, br, 0, TAU); ctx.fill();
+    ctx.fillStyle = orbCol(b); ctx.beginPath(); ctx.arc(b.x, b.y, br, 0, TAU); ctx.fill();
   }
   if (s.stones.length) { const sp = Golems.eclat(), w = sp.w * 0.62, h = sp.h * 0.62;
     for (const p of s.stones) {
@@ -3323,6 +3439,8 @@ function render(dt = 0) {
     if (e.k === 'mirror') { ctx.save(); ctx.translate(450, 445); ctx.strokeStyle = `rgba(199,125,255,${a * 0.6})`; ctx.lineWidth = 3; for (let i = 0; i < Math.max(2, e.n + 1); i++) { ctx.rotate(TAU / Math.max(2, e.n + 1)); ctx.beginPath(); ctx.moveTo(40, 0); ctx.lineTo(80 + (1 - a) * 260, 0); ctx.stroke(); } ctx.restore(); }
     if (e.k === 'echo') { ctx.strokeStyle = `rgba(111,227,255,${a * 0.7})`; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(s.sage.x, s.sage.y, 30 + (1 - a) * 60, 0, TAU); ctx.stroke(); }
     if (e.k === 'strike') { ctx.globalAlpha = a; ctx.drawImage(R8.spr.glowGold, e.x - 120, e.y - 120, 240, 240); ctx.globalAlpha = 1; }
+    if (e.k === 'boum') { const R = e.R * (1.25 - a * 0.55); ctx.strokeStyle = `rgba(255,214,120,${a})`; ctx.lineWidth = 5 * a + 1; ctx.beginPath(); ctx.arc(e.x, e.y, R, 0, TAU); ctx.stroke(); ctx.fillStyle = `rgba(255,236,170,${a * 0.28})`; ctx.fill(); }
+    if (e.k === 'gel') { const R = e.R * (1.2 - a * 0.5); ctx.strokeStyle = `rgba(190,240,255,${a})`; ctx.lineWidth = 5 * a + 1; ctx.beginPath(); ctx.arc(e.x, e.y, R, 0, TAU); ctx.stroke(); ctx.fillStyle = `rgba(190,240,255,${a * 0.25})`; ctx.fill(); }
     if (e.k === 'pop2') { if (lueurs++ < 10) { const R = e.big ? 75 : 50; ctx.globalAlpha = a; ctx.drawImage(R8.spr.glowGold, e.x - R, e.y - R * 0.72, R * 2, R * 2); ctx.globalAlpha = 1; } }
     if (e.k === 'ice') { ctx.globalAlpha = a * 0.55; ctx.fillStyle = '#9fefff'; ctx.beginPath(); e.poly.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1; }
   }
@@ -3485,9 +3603,9 @@ function hud(cw, ch) {
   const panel = (x, y, w, h) => { rr(x, y, w, h, 10); ctx.fillStyle = 'rgba(15,21,40,.84)'; ctx.fill(); };
   // les amis qui se battent ailleurs
   panel(8, 8, pw, 42);
-  text(s.over === 'win' ? 'L’armure tombe !' : `Amis vainqueurs : ${s.entered.length} sur ${G.ORDER.length}`, 18, 8 + fs + 6, fs, '#f3c9d0', 'left', 800);
-  const sw = (pw - 20 - 4 * (G.ORDER.length - 1)) / G.ORDER.length;
-  G.ORDER.forEach((id, i) => { ctx.fillStyle = s.entered.includes(id) ? COL[id] : s.announced.includes(id) ? '#ffd23f' : '#3a2632'; rr(18 + i * (sw + 4), 36, sw, 8, 2); ctx.fill(); });
+  { const reste = Math.max(0, Math.ceil(s.cfg.duree - s.realT)), k = Math.min(1, s.realT / s.cfg.duree);
+    text(s.over === 'win' ? 'Tu as tenu !' : `Tiens encore ${Math.floor(reste / 60)}:${String(reste % 60).padStart(2, '0')}`, 18, 8 + fs + 6, fs, '#f3c9d0', 'left', 800);
+    ctx.fillStyle = '#3a2632'; rr(18, 36, pw - 20, 8, 2); ctx.fill(); if (k > 0.01) { ctx.fillStyle = s.rage ? '#ff6b5e' : '#ffd23f'; rr(18, 36, (pw - 20) * k, 8, 2); ctx.fill(); } }
   // protection
   panel(cw - 8 - pw, 8, pw, 42);
   text(`Protection : ${s.protection}`, cw - pw + 2, 8 + fs + 6, fs, '#bfefff', 'left', 800);
@@ -3546,7 +3664,7 @@ function loop(ts) {
     if (!document.hidden) { finesse(dt); mesurer(dt); }
     G.step(s, dt, brush);
     SON.watch(s);
-    if (s.over) setTimeout(finish, 800);
+    if (s.over) setTimeout(finish, s.over === 'win' ? 2300 : 800);
     if (s.choice && $('ovChoix').hidden) showChoice();
   }
   if (s) { const key = s.announced.join() + '|' + s.entered.join(); if (key !== lastPanel) { lastPanel = key; friendsPanel(); } }
@@ -3586,7 +3704,7 @@ const up = e => {
 cv.addEventListener('pointerup', up);
 cv.addEventListener('pointercancel', up);
 function setBrush(on) {
-  if (on && s && s.ink < 1 && !s.heart.bare) { s.msg = 'Plus d’encre : ramasse des éclats.'; s.msgT = 1.6; return; }
+  if (on && s && s.ink < 1 && !s.heart.bare) { s.msg = 'Plus d’encre : elle se gagne au bâton.'; s.msgT = 1.6; return; }
   if (s && !s.over && on !== brush) { SON.play(on ? 'brushOn' : 'brushOff'); SON.slow(on); }
   if (!on) SON.slow(false);
   brush = on; stroke = null; strokeLen = 0;
@@ -3632,8 +3750,8 @@ function showChoice() {
   for (const id of s.choice.cards) {
     const C = G.CARDS[id], l = id === 'soin' ? 0 : G.lv(s, id) + 1, f = FAM[C.fam];
     const b = document.createElement('button'); b.className = 'carte'; b.style.borderColor = f[1] + '66';
-    if (C.fam === 'combo') { b.classList.add('combo'); b.innerHTML = `<span class="ic">${C.ic}</span><span class="fam" style="color:${f[1]}">Combo ! ${l > 1 ? 'niveau ' + l : ''}</span><span class="nom">${C.nom}</span>${l === 1 ? `<span class="niv" style="color:${f[1]}">${G.CARDS[C.of[0]].ic} ${G.CARDS[C.of[0]].nom} + ${G.CARDS[C.of[1]].ic} ${G.CARDS[C.of[1]].nom}</span>` : `<span class="niv" style="color:${f[1]}">${'★'.repeat(l)}${'☆'.repeat(3 - l)}</span>`}<span class="txt">${C.txt(l)}</span>`; }
-    else b.innerHTML = `<span class="ic">${C.ic}</span><span class="fam" style="color:${f[1]}">${C.fam === 'sort' && l > 1 ? 'Sort' : f[0]}</span><span class="nom">${C.nom}</span>${l ? `<span class="niv" style="color:${f[1]}">${l === 1 ? (C.fam === 'sort' ? 'nouveau' : 'niveau 1') : 'niveau ' + l}</span>` : ''}<span class="txt">${C.txt(l || 1)}</span>`;
+    if (C.fam === 'combo') { b.classList.add('combo'); b.innerHTML = `<span class="ic">${C.ic}</span><span class="fam" style="color:${f[1]}">${C.genre === 'rune' ? 'Build de rune' : 'Build du bâton'}${l > 1 ? ' · niveau ' + l : ''}</span><span class="nom">${C.nom}</span>${l === 1 ? `<span class="niv" style="color:${f[1]}">${G.CARDS[C.of[0]].ic} ${G.CARDS[C.of[0]].nom} + ${G.CARDS[C.of[1]].ic} ${G.CARDS[C.of[1]].nom}</span>` : `<span class="niv" style="color:${f[1]}">${'★'.repeat(l)}${'☆'.repeat(3 - l)}</span>`}<span class="txt">${C.txt(l)}</span>`; }
+    else b.innerHTML = `<span class="ic">${C.ic}</span><span class="fam" style="color:${f[1]}">${C.fam === 'sort' && l > 1 ? 'Sort' : f[0]}</span><span class="nom">${C.nom}</span>${l ? `<span class="niv" style="color:${f[1]}">${l === 1 ? (C.fam === 'sort' ? 'nouveau' : 'niveau 1') : 'niveau ' + l}</span>` : ''}<span class="txt">${C.txt(l || 1)}</span>${G.hint(s, id) ? `<span class="pour">${G.hint(s, id)}</span>` : ''}`;
     b.onclick = () => { SON.play(C.fam === 'combo' ? 'combo' : 'card'); G.choose(s, id); $('ovChoix').hidden = true; last = 0; if (document.activeElement) document.activeElement.blur(); };
     box.appendChild(b);
   }
@@ -3648,7 +3766,7 @@ let dureeAmis = 8;
 $('essai').addEventListener('click', e => { const b = e.target.closest('[data-min]'); if (!b) return; dureeAmis = +b.dataset.min; [...$('essai').querySelectorAll('[data-min]')].forEach(x => x.classList.toggle('on', x === b)); });
 function start() {
   SON.init(); SON.music(true); SON.play('start');
-  s = G.newGame({ cfg: fast ? { codeTimes: [10, 20] } : { duree: dureeAmis * 60 } }); paused = false; last = 0; setBrush(false); typed = []; slots(); lastPanel = ''; MES.n = MES.t = MES.sec = MES.nsec = MES.pire = MES.age = 0;
+  s = G.newGame({ cfg: fast ? { duree: 40, rageAt: [20, 30] } : {} }); paused = false; last = 0; setBrush(false); typed = []; slots(); lastPanel = ''; MES.n = MES.t = MES.sec = MES.nsec = MES.pire = MES.age = 0;
   $('pad').hidden = true; $('ovStart').hidden = true; $('ovEnd').hidden = true; $('ovPause').hidden = true; closeAide(false);
   if (document.body.classList.contains('plein')) pleinAPI();
 }
@@ -3656,10 +3774,11 @@ function finish() {
   $('infoMesuresFin').textContent = mesuresTxt();
   const win = s.over === 'win', p = s.protection, max = s.cfg.protection;
   const stars = win ? (p >= max * 0.75 ? 3 : p >= max * 0.4 ? 2 : 1) : 0;
-  $('endTitle').textContent = win ? 'L’armure tombe !' : 'Perdu';
+  $('endTitle').textContent = win ? (s.cfg.duree >= 600 ? 'Tu as tenu 10 minutes !' : 'Tu as tenu !') : 'Perdu';
   $('endStars').textContent = win ? '★'.repeat(stars) + '☆'.repeat(3 - stars) : '';
   const m = Math.floor(s.realT / 60), sec = String(Math.floor(s.realT % 60)).padStart(2, '0');
-  $('endWhy').textContent = (win ? `Tes deux amis ont gagné, et tu les as protégés pendant ${m} min ${sec}. Protection restante : ${p} sur ${max}.` : `La protection est tombée à zéro après ${m} min ${sec}, avec ${s.entered.length} ami${s.entered.length > 1 ? 's' : ''} venu${s.entered.length > 1 ? 's' : ''} t’aider.`) + ` Golems détruits : ${s.kills}. Runes : ${s.runes}.${s.bestCombo >= 2 ? ` Meilleur combo : ${s.bestCombo} d’un coup.` : ''}`;
+  const BU = Object.keys(G.CARDS).filter(k => G.CARDS[k].fam === 'combo' && G.lv(s, k)).map(k => `${G.CARDS[k].ic} ${G.CARDS[k].nom.replace(/ \(.*/, '')} ${G.lv(s, k)}`);
+  $('endWhy').textContent = (win ? `Grosbec en a assez : tes deux amis sont saufs. Protection restante : ${p} sur ${max}.` : `La protection est tombée à zéro après ${m} min ${sec}.`) + (BU.length ? ` Tes builds : ${BU.join(', ')}.` : ' Aucun build.') + ` Golems détruits : ${s.kills}. Runes : ${s.runes}.${s.bestCombo >= 2 ? ` Meilleur combo : ${s.bestCombo} d’un coup.` : ''}`;
   $('ovEnd').hidden = false; $('pad').hidden = true;
 }
 $('bStart').onclick = start;

@@ -1,6 +1,6 @@
 // L'économie des pages : un robot qu'on ne peut pas battre joue 12 minutes sans les codes ; on note quand tombent les pages et quand arrivent les combos.
 // node economie.js games=12 [logic=./logic18.js] ['cfg={"pageStep":0.75}'] [pick=hasard]
-const G = require((process.argv.slice(2).find(a => a.startsWith('logic=')) || 'logic=./logic18.js').slice(6));
+const G = require((process.argv.slice(2).find(a => a.startsWith('logic=')) || 'logic=./logic19.js').slice(6));
 const A = Object.fromEntries(process.argv.slice(2).map(a => a.split('=')));
 const N = +(A.games || 16), cfg = A.cfg ? JSON.parse(A.cfg) : {}, THINK = +(A.think || 3);
 const C = { x: 450, y: 445 };

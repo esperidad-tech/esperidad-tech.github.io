@@ -1,4 +1,4 @@
-const G = require((process.argv.slice(2).find(a => a.startsWith('logic=')) || 'logic=./logic18.js').slice(6));
+const G = require((process.argv.slice(2).find(a => a.startsWith('logic=')) || 'logic=./logic19.js').slice(6));
 const A = Object.fromEntries(process.argv.slice(2).map(a => a.split('=')));
 const N = +(A.games || 16), cfg = A.cfg ? JSON.parse(A.cfg) : {}, THINK = +(A.think || 3);
 const C = { x: 450, y: 445 };
@@ -41,7 +41,11 @@ function play(seed, mode) {
       let tg = null, bd = 1e9; for (const u of s.soldiers) { const d = G.dist(u, C); if (d < bd) { bd = d; tg = u; } }
       let sh = null, sd = 1e9; for (const p of s.shards) { const d = G.dist(p, sg); if (d < sd) { sd = d; sh = p; } }
       let pg = null, pd = 1e9; for (const p of s.pages) { const d = G.dist(p, sg); if (d < pd) { pd = d; pg = p; } }
-      if (s.choice) { const c = s.choice.cards, gold = c.filter(id => G.CARDS[id].fam === 'combo'); G.choose(s, gold.length && Math.random() < 0.8 ? gold[0] : c[Math.floor(Math.random() * c.length)]); s.cards = (s.cards || 0) + 1; }
+      if (s.choice) { const c = s.choice.cards, gold = c.filter(id => G.CARDS[id].fam === 'combo'); let id;
+        if (A.pick === 'hasard') id = c[Math.floor(Math.random() * c.length)];
+        else if (gold.length) id = gold.sort((a, b) => G.lv(s, b) - G.lv(s, a))[0];            // une carte dorée : toujours, et d'abord celle qui monte un build déjà pris
+        else { const av = c.filter(x => G.avance && G.avance(s, x)), ba = c.filter(x => G.CARDS[x].fam === 'baton'); id = av.length ? av[0] : s.protection < 9 && c.includes('soin') ? 'soin' : ba.length ? ba[Math.floor(Math.random() * ba.length)] : c[Math.floor(Math.random() * c.length)]; }   // sinon ce qui fait avancer un build, sinon une carte du bâton
+        G.choose(s, id); s.cards = (s.cards || 0) + 1; if (G.CARDS[id].fam === 'combo') { s.t1 = s.t1 ?? s.realT; if (G.lv(s, id) === 3) s.t3 = s.t3 ?? s.realT; } }
       if (mode === 'cercle' && !pg) { const an = s.realT * 1.9; sg.tx = C.x + Math.cos(an) * 165; sg.ty = C.y + Math.sin(an) * 150; }
       else if (pg && !(tg && bd < 120)) { sg.tx = pg.x; sg.ty = pg.y; } else if (tg && bd < 220) { sg.tx = tg.x; sg.ty = tg.y; } else if (sh && s.ink < s.cfg.inkMax) { sg.tx = sh.x; sg.ty = sh.y; } else if (tg) { sg.tx = (tg.x + C.x) / 2; sg.ty = (tg.y + C.y) / 2; } else sg.tx = sg.ty = null;
       for (const id of s.announced) { typed[id] = typed[id] ?? s.realT + 5; if (s.realT >= typed[id] && !s.entered.includes(id)) G.enterCode(s, G.CODES[id]); }
@@ -81,8 +85,8 @@ function play(seed, mode) {
   return s;
 }
 for (const mode of (A.modes ? A.modes.split(',') : ['combos'])) {
-  const held = [], rpm = [], part = [], pg = [], enc = [], tom = []; let wins = 0;
-  for (let g = 0; g < N; g++) { const s = play(10 + g, mode); const dur = s.realT - s.t0; held.push(dur); rpm.push(s.runes / Math.max(dur / 60, 0.1)); part.push((s.kRune || 0) / Math.max(1, s.kills)); pg.push(s.pagesTaken / Math.max(dur / 60, 0.1)); enc.push((s.encre || 0) / Math.max(dur / 60, 0.1)); tom.push((s.tombes || 0) / Math.max(dur / 60, 0.1)); if (s.over === 'win') wins++; }
-  const mm = x => `${Math.floor(x / 60)} min ${String(Math.round(x % 60)).padStart(2, '0')}`, st = a => [...a].sort((x, y) => x - y), q = (a, p) => st(a)[Math.floor(p * (a.length - 1))];
-  console.log(JSON.stringify({ essai: A.label || '', parties: N, tient: mm(q(held, .5)), 'quart bas': mm(q(held, .25)), 'quart haut': mm(q(held, .75)), gagnees: wins, 'runes par minute': +q(rpm, .5).toFixed(1), 'golems détruits par une rune (part)': Math.round(q(part, .5) * 100) + ' %', 'pages par minute': +q(pg, .5).toFixed(1), 'encre ramassée par minute': +q(enc, .5).toFixed(1), 'éclats tombés par minute': +q(tom, .5).toFixed(1) }));
+  const held = [], rpm = [], pg = [], enc = [], tom = [], t1 = [], t3 = [], niv = []; let wins = 0; const morts = [0, 0, 0, 0, 0];
+  for (let g = 0; g < N; g++) { const s = play(10 + g, mode); const dur = s.realT - s.t0; held.push(dur); rpm.push(s.runes / Math.max(dur / 60, 0.1)); pg.push(s.pagesTaken); enc.push((s.encre || 0) / Math.max(dur / 60, 0.1)); tom.push((s.tombes || 0) / Math.max(dur / 60, 0.1)); t1.push(s.t1 ?? 1e9); t3.push(s.t3 ?? 1e9); niv.push(Object.keys(G.CARDS).filter(k => G.CARDS[k].fam === 'combo').reduce((a, k) => a + G.lv(s, k), 0)); if (s.over === 'win') wins++; else morts[Math.min(4, Math.floor(dur / 120))]++; }
+  const mm = x => x >= 1e8 ? 'jamais' : `${Math.floor(x / 60)} min ${String(Math.round(x % 60)).padStart(2, '0')}`, st = a => [...a].sort((x, y) => x - y), q = (a, p) => st(a)[Math.floor(p * (a.length - 1))];
+  console.log(JSON.stringify({ essai: A.label || '', parties: N, gagnees: wins, tient: mm(q(held, .5)), 'quart bas': mm(q(held, .25)), 'tombées avant 2, 4, 6, 8, 10 min': morts.join(' '), 'runes/min': +q(rpm, .5).toFixed(1), 'encre/min': +q(enc, .5).toFixed(1), 'pages': q(pg, .5), '1er build': mm(q(t1, .5)), 'build niveau 3': mm(q(t3, .5)), 'niveaux de builds': q(niv, .5) }));
 }
