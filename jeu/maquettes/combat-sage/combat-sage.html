@@ -72,7 +72,7 @@ button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
 #bAide,.closeaide{display:none}
 body.plein{overflow:hidden}
 body.plein.col .brush{right:calc(var(--col) / 2 - 78px);bottom:5%;width:156px;font-size:25px}
-body.plein.col .tools{right:10px;top:58px}
+body.plein.col .tools{right:calc((var(--col) - 144px) / 2);top:16px}
 body.plein header,body.plein .panel{display:none}
 body.plein .game{display:block;padding:0}
 body.plein .stage{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;aspect-ratio:auto;border:0;border-radius:0;margin:0}
@@ -109,7 +109,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
 <body>
 <header>
   <h1>Le Sage contre Grosbec</h1>
-  <p>Maquette n° 22 : un jeu de runes, avec plus de golems qu’en version 21. Sur tablette, tiens-la en large : la salle se range à gauche, les jauges et le bouton à droite. Tu démarres avec un trait court et un petit V, sans ralenti ; le mur, l’escargot, le bouclier et le ralenti se gagnent dans le grimoire. Comme avant : un golem sonné éclate au trait, et chaque golem lâche de l’encre. Plus de rouge, plus de builds du bâton. Il faut tenir 10 minutes de combat. Le bouton 🎚️ règle le volume ; au clavier, Entrée ou Espace pour graver, 1, 2, 3 pour choisir une carte.</p>
+  <p>Maquette n° 23 : un jeu de runes. Deux fois plus de golems qu’en version 22. Les pages du grimoire tombent maintenant à heure fixe : toujours 19 en 10 minutes. Sur tablette, tenue en large : la salle est au milieu, les jauges à gauche, le bouton Graver à droite. Tu démarres avec un trait court et un petit V, sans ralenti ; le mur, l’escargot, le bouclier et le ralenti se gagnent dans le grimoire. Comme avant : un golem sonné éclate au trait, et chaque golem lâche de l’encre. Plus de rouge, plus de builds du bâton. Il faut tenir 10 minutes de combat. Le bouton 🎚️ règle le volume ; au clavier, Entrée ou Espace pour graver, 1, 2, 3 pour choisir une carte.</p>
 </header>
 <main class="game">
   <div class="stage" id="stage">
@@ -137,7 +137,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
     <p class="note"><b>L’encre :</b> chaque golem détruit lâche un éclat d’encre (un bélier 2, un colosse 3), et une rune qui en détruit trois ou plus en fait tomber encore un par golem. Le bâton tire tout seul, mais doucement : ce sont les runes qui gagnent le combat.</p>
     <p class="note"><b>Les chocs :</b> un golem projeté qui cogne un autre golem, un mur ou le bord est sonné 3 secondes. Un trait le fait alors éclater d’un coup, quelle que soit sa vie.</p>
     <p class="note"><b>Tu démarres avec peu :</b> un trait court et un petit V, sans ralenti. Le reste se gagne dans le grimoire : la rune du mur 🚧, l’escargot 🐌, le bouclier 🛡️ (un cercle fermé : tes amis sont intouchables un moment ; 4 d’encre, 8 secondes de recharge), le sablier ⏳ (le temps ralentit quand tu graves, 2 secondes par rune), le Grand V 📐, le Long trait 📏.</p>
-    <p class="note"><b>Les pages du grimoire :</b> les gros golems (les béliers et les colosses) lâchent une page dorée : il faut 1, 1, 1 gros, puis 2, 2, 2, puis 3… Passe dessus : le combat attend, et tu choisis une carte parmi trois.</p>
+    <p class="note"><b>Les pages du grimoire :</b> elles tombent toutes seules, à heure fixe : la première après 20 secondes, puis toutes les 23 à 40 secondes. Toujours 19 pages en 10 minutes, quoi que tu détruises. Elles tombent un peu à l’écart de tes amis : va les chercher. Le combat attend pendant que tu choisis une carte parmi trois.</p>
     <p class="note"><b>Les builds :</b> quand tu as deux cartes qui vont ensemble, dont une au niveau 2, une carte dorée sort à la page suivante. Chaque build monte jusqu’au niveau 3, et ils se cumulent.</p>
     <ul class="combos">
       <li>🌋 <b>Volcan</b> (le trait) : trait brûlant + trait large</li>
@@ -152,7 +152,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
       <li>🌟 <b>La comète</b> (la course) : pas léger + aimant</li>
     </ul>
     <p class="note"><b>La colère de Grosbec :</b> à 7 min 30, puis à 9 minutes, les golems arrivent plus vite et plus nombreux. À 10 minutes de combat, Grosbec crie « Assez ! » : tu as tenu.</p>
-    <p class="note"><b>Ça durcit :</b> toutes les 2 minutes, les golems ont une vie de plus (les gros, deux de plus toutes les 2 min 30) ; après 5 minutes, encore une de plus toutes les 80 secondes. Et ils sont plus nombreux qu’en version 21. Les grosses vagues arrivent de deux côtés à 4 minutes, de trois à 8 minutes.</p>
+    <p class="note"><b>Ça durcit :</b> toutes les 2 minutes, les golems ont une vie de plus (les gros, deux de plus toutes les 2 min 30) ; après 5 minutes, encore une de plus toutes les 80 secondes. Et ils sont deux fois plus nombreux qu’en version 22. Les grosses vagues arrivent de deux côtés à 4 minutes, de trois à 8 minutes.</p>
     <div class="friends" id="friends" hidden></div>
     <div class="row"><button class="b" id="bPause">Pause</button><button class="b" id="bHow">Revoir l’explication</button><button class="b" id="bNew">Nouvelle partie</button></div>
   </section>
@@ -173,7 +173,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
           <circle cx="110" cy="100" r="5" fill="#fff6c9"/><circle cx="134" cy="104" r="5" fill="#fff6c9"/>
         </svg>
         <h3>1. Le Sage court</h3>
-        <p>Garde le doigt sur l’arène : le Sage y court. Son bâton tire tout seul sur le golem le plus proche, mais doucement : ce sont tes runes qui font le travail. Son corps arrête les braises des frondeurs. Les gros golems lâchent des pages dorées : passe dessus pour choisir un pouvoir, et construis ton build.</p>
+        <p>Garde le doigt sur l’arène : le Sage y court. Son bâton tire tout seul sur le golem le plus proche, mais doucement : ce sont tes runes qui font le travail. Son corps arrête les braises des frondeurs. Des pages dorées tombent du grimoire, à heure fixe : va les chercher pour choisir un pouvoir, et construis ton build.</p>
       </div>
       <div class="step">
         <svg viewBox="0 0 240 140" aria-hidden="true">
@@ -269,6 +269,8 @@ const G = (() => {
     // (version 21 : rate0 0.2, rateAdd 0.1, rateLate 0.1, hpEvery 180, hpGrosEvery 180, hpLateEvery 120, burstDiv 150) ; plus de golems seuls ne durcissait rien (plus de gros = plus de pages) : ils sont aussi plus solides
     rate0: 0.22, rateAdd: 0.18, rateLate: 0.3, hpEvery: 120, hpGrosEvery: 150, hpLate: 1, hpLateEvery: 80, burst0: 3, burstDiv: 90, sideEvery: 240, pageStep: 0.34, pageVite: 99
   });
+  // ----- version 23 : deux fois plus de golems (version 22 : rate0 0.22, rateAdd 0.18, rateLate 0.3, burst0 3, burstDiv 90, maxAlive 75) ; les pages à heure fixe -----
+  Object.assign(CFG, { rate0: 0.44, rateAdd: 0.36, rateLate: 0.6, burst0: 6, burstDiv: 45, maxAlive: 130, pageT0: 20, pageGap: 22, pageGapAdd: 1 });
   const MOTS = { dalle: 'Un porte-dalle ! Sa dalle arrête tes orbes : prends-le de côté, ou chasse-le.', mortier: 'Un mortier, tout au fond ! Il te vise. Va le chercher.', bombe: 'Un porteur de bombe ! Fais-le sauter loin de tes amis.' };
   const GROS = ['brute', 'costaud'];
   // ----- les cartes du grimoire : on en choisit une parmi trois à chaque page ramassée -----
@@ -570,7 +572,7 @@ const G = (() => {
       for (let i = 0; i < 3; i++) { const a = rng(s) * Math.PI * 2; s.bolts.push({ x: u.x, y: u.y, vx: Math.cos(a) * 640, vy: Math.sin(a) * 640, life: 0.7, dmg: 2, pierce: 0, hit: [u.id], star: true, small: true, bounce: 1 }); }
     }
     // une page du grimoire : au 2e gros détruit, puis il en faut un de plus à chaque fois (3, 4, 5…)
-    if (GROS.includes(u.type) && ++s.grosKills >= s.pageNeed) {
+    if (false && GROS.includes(u.type) && ++s.grosKills >= s.pageNeed) {   // version 23 : les pages ne viennent plus des gros
       s.grosKills = 0; s.pageIdx++; s.pageNeed = s.pageIdx < s.cfg.pageVite ? s.cfg.pageFirst + Math.floor(s.cfg.pageStep * s.pageIdx) : s.cfg.pageFirst + Math.floor(s.cfg.pageStep * (s.cfg.pageVite - 1)) + Math.ceil(s.cfg.pageStepTard * (s.pageIdx - s.cfg.pageVite + 1));
       s.pages.push({ x: Math.max(40, Math.min(W - 40, u.x)), y: Math.max(60, Math.min(H - 40, u.y)), t: 0 });
       say(s, 'Une page du grimoire est tombée ! Passe dessus.', 2.4);
@@ -665,6 +667,9 @@ const G = (() => {
     if (s.t >= s.cfg.duree) { s.over = 'win'; s.heart.bare = true; s.soldiers = []; s.stones = []; s.bolts = []; s.zones = []; s.shake = 0.4; say(s, 'Grosbec : « ASSEZ ! Ça suffit ! »', 6); return; }
     spawning(s, dt);
     grosbec(s, dt);
+    // version 23 : les pages tombent à heure fixe, quoi qu'on détruise : à 20 s, puis 23 s après, 24, 25… (19 pages en 10 minutes) ; un peu à l'écart des amis
+    s.pageT = (s.pageT ?? s.cfg.pageT0) - dt;
+    if (s.pageT <= 0) { s.pageT += s.cfg.pageGap + s.cfg.pageGapAdd * (++s.pageIdx); s.pagesTombees = (s.pagesTombees || 0) + 1; const a = rng(s) * 6.283, d = 170 + rng(s) * 110; s.pages.push({ x: Math.max(60, Math.min(W - 60, 450 + Math.cos(a) * d)), y: Math.max(90, Math.min(H - 60, 445 + Math.sin(a) * d * 0.9)), t: 0 }); say(s, 'Une page du grimoire est tombée ! Va la chercher.', 2.4); }
     for (const w of s.walls) w.life -= dt;
     if (lv(s, 'rempart') >= 3) for (const w of s.walls) if (w.life <= 0) {   // le rempart explose en disparaissant
       const m = w.pts[Math.floor(w.pts.length / 2)]; s.fx.push({ k: 'fireball', x: m.x, y: m.y, life: 0.45, max: 0.45, stone: true }); s.shake = Math.max(s.shake, 0.2);
@@ -2630,7 +2635,7 @@ if (/[?&#]finesse=([\d.]+)/.test(location.href)) { FIN = Math.min(1, Math.max(0.
 function resize() { const r = stage.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(1.7e6 / Math.max(1, r.width * r.height))) * FIN; cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); R8.dpr = cv.width / Math.max(1, r.width); if (bg && bg.getContext) bg.width = bg.height = 0; bg = null; ensureSprites(); }
 const MES = { n: 0, t: 0, sec: 0, nsec: 0, pire: 0, baisses: 0, age: 0 };   // les images comptées pendant la partie
 function mesurer(dt) { if (dt <= 0 || dt > 0.5) return; MES.n++; MES.t += dt; MES.age += dt; MES.sec += dt; MES.nsec++; if (MES.sec >= 1) { if (MES.age > 4) MES.pire = MES.pire ? Math.min(MES.pire, Math.round(MES.nsec / MES.sec)) : Math.round(MES.nsec / MES.sec); MES.sec = MES.nsec = 0; } }
-function mesuresTxt() { return MES.n < 30 ? '' : `Mesures (version 22) : ${Math.round(MES.n / MES.t)} images par seconde, pire seconde ${MES.pire || '?'} · finesse ${Math.round(FIN * 100)} %, ${MES.baisses} baisse${MES.baisses > 1 ? 's' : ''} · ${Golems.cuits} + ${Object.keys(GB.im).length} images · écran ${innerWidth} × ${innerHeight} (× ${Math.round((devicePixelRatio || 1) * 10) / 10})`; }
+function mesuresTxt() { return MES.n < 30 ? '' : `Mesures (version 23) : ${Math.round(MES.n / MES.t)} images par seconde, pire seconde ${MES.pire || '?'} · finesse ${Math.round(FIN * 100)} %, ${MES.baisses} baisse${MES.baisses > 1 ? 's' : ''} · ${Golems.cuits} + ${Object.keys(GB.im).length} images · écran ${innerWidth} × ${innerHeight} (× ${Math.round((devicePixelRatio || 1) * 10) / 10})`; }
 function finesse(dt) {   // dt : le temps depuis l'image d'avant. Sous 25 images par seconde pendant 1,4 seconde : on dessine un peu moins fin.
   if (dt <= 0 || dt > 0.5 || QUAL.fige) return; QUAL.repos -= dt; if (QUAL.repos > 0) { QUAL.lent = QUAL.vu = QUAL.t0 = 0; return; }
   // une image pendant laquelle on a cuit un dessin (Grosbec, un golem) ne compte pas : ce n'est pas l'appareil qui rame
@@ -2666,7 +2671,7 @@ const TOP = 132;
 // vider une réserve d'images : chaque toile est vidée avant d'être jetée (Safari garde longtemps la mémoire d'une toile jetée)
 const vider = M => { for (const v of M.values()) if (v && v.c) v.c.width = v.c.height = 0; M.clear(); };   // la place du mur du fond, au-dessus de la place (en unités du jeu)
 const R8 = { anim: new Map(), parts: [], motes: [], sc: 0, spr: {}, wallsPrev: [], sage: { x: 0, y: 0, phase: 0, face: 1, spd: 0 }, hurt: {}, t: 0, lampes: [], tirs: [], tir: {}, q: 1, jeu: null };
-function view() { const k = Math.min(cv.width / G.W, cv.height / (G.H + TOP)), libre = cv.width - G.W * k, col = document.body.classList.contains('plein') && libre >= 0.24 * cv.width && libre >= 250 * (R8.dpr || 1); R8.col = col; return { k, ox: col ? 0 : libre / 2, oy: TOP * k + (cv.height - (G.H + TOP) * k) / 2 }; }
+function view() { const k = Math.min(cv.width / G.W, cv.height / (G.H + TOP)), libre = cv.width - G.W * k, col = document.body.classList.contains('plein') && libre >= 330 * (R8.dpr || 1); R8.col = col; return { k, ox: libre / 2, oy: TOP * k + (cv.height - (G.H + TOP) * k) / 2 }; }
 const rnd = (a, b) => a + Math.random() * (b - a);
 const mk = (w, h) => { const c = document.createElement('canvas'); c.width = Math.max(1, Math.ceil(w)); c.height = Math.max(1, Math.ceil(h)); return c; };
 const seeded = seed => { let r = seed % 233280; return () => ((r = (r * 9301 + 49297) % 233280) / 233280); };
@@ -3615,9 +3620,13 @@ function render(dt = 0) {
   }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   if (R8.col) {   // la colonne de droite : les jauges et les pouvoirs s'y rangent, la salle reste dégagée
-    const X = G.W * k / dpr + 4, cle = Math.round(cw - X) + '';
+    const M = (cw - G.W * k / dpr) / 2, cle = Math.round(M) + '';   // M : la largeur de chaque marge
     if (R8.colCle !== cle) { R8.colCle = cle; document.body.classList.add('col'); document.body.style.setProperty('--col', cle + 'px'); }
-    ctx.translate(X, 0); hud(cw - X, ch); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.translate(X, 0); hudCards(cw - X, ch); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const habille = (x0, x1) => { const g = ctx.createLinearGradient(x0, 0, x1, 0); g.addColorStop(0, '#0a0f1f'); g.addColorStop(0.5, '#151d38'); g.addColorStop(1, '#0a0f1f'); ctx.fillStyle = g; ctx.fillRect(x0, 0, x1 - x0, ch);
+      ctx.strokeStyle = '#8a6a2e'; ctx.lineWidth = 2; ctx.strokeRect(x0 + 5, 5, x1 - x0 - 10, ch - 10); ctx.strokeStyle = 'rgba(201,162,90,.35)'; ctx.lineWidth = 1; ctx.strokeRect(x0 + 10, 10, x1 - x0 - 20, ch - 20);
+      ctx.fillStyle = 'rgba(201,162,90,.55)'; for (let yy = ch * 0.5; yy < ch - 190; yy += 70) { const xx = (x0 + x1) / 2; ctx.beginPath(); ctx.moveTo(xx, yy - 8); ctx.lineTo(xx + 6, yy); ctx.lineTo(xx, yy + 8); ctx.lineTo(xx - 6, yy); ctx.fill(); } };
+    habille(0, M - 1); habille(cw - M + 1, cw);
+    ctx.translate(4, 0); hud(M - 4, ch); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.translate(4, 0); hudCards(M - 4, ch); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   } else { if (R8.colCle) { R8.colCle = ''; document.body.classList.remove('col'); } hud(cw, ch); hudCards(cw, ch); }
 }
 // version 20 : le rouge (le poing, le balayage, les braises de Grosbec, l'obus du mortier). Pointillés : il suit le Sage ; trait plein : il est figé.
@@ -3737,14 +3746,14 @@ function drawOwl(o, t) {
 }
 // la rangée des pouvoirs pris (sous l'encre), et combien de gros avant la prochaine page
 function hudCards(cw, ch) {
-  const fs = R8.col ? 14 : cw < 500 ? 13 : 15, y = R8.col ? 108 : 92, ids = Object.keys(s.up).filter(id => s.up[id] > 0);
-  let x = 8; const chip = R8.col ? 40 : cw < 500 ? 30 : 34;
-  const need = s.pageNeed - s.grosKills;
+  const fs = R8.col ? 14 : cw < 500 ? 13 : 15, y = R8.col ? 146 : 92, ids = Object.keys(s.up).filter(id => s.up[id] > 0);
+  let x = 8; const chip = R8.col ? 36 : cw < 500 ? 30 : 34;
+  const need = Math.max(0, Math.ceil(s.pageT ?? 0));
   ctx.font = `800 ${fs - 1}px Nunito, sans-serif`;
-  const lab = `📄 encore ${need} gros`, lw = ctx.measureText(lab).width + 16;
+  const lab = s.pages.length ? '📄 une page t’attend !' : `📄 page dans ${need} s`, lw = ctx.measureText(lab).width + 16;
   rr(x, y, lw, chip, 8); ctx.fillStyle = 'rgba(15,21,40,.84)'; ctx.fill(); text(lab, x + 8, y + chip / 2 + fs / 2 - 2, fs - 1, '#ffe58a', 'left', 800);
   x += lw + 4;
-  let yy = y; const maxX = R8.col ? cw - 8 : cw < 700 ? cw * 0.6 : Math.max(cw * 0.35, 260);
+  let yy = y; const maxX = R8.col ? cw - 4 : cw < 700 ? cw * 0.6 : Math.max(cw * 0.35, 260);
   for (const id of ids) {
     if (x + chip > maxX) { x = 8; yy += chip + 4; } // pas de place : on passe à la ligne
     const C = G.CARDS[id], fam = { baton: '#6fe3ff', rune: '#ffd23f', sort: '#c77dff', cadeau: '#7ef0a0', combo: '#ffb000' }[C.fam];
@@ -3771,22 +3780,24 @@ function lumieres(t) {
 }
 
 function hud(cw, ch) {
-  const pw = R8.col ? (cw - 24) / 2 : Math.min(200, cw * 0.4), fs = R8.col ? 14 : cw < 500 ? 13 : 15;
+  const pw = R8.col ? cw - 16 : Math.min(200, cw * 0.4), fs = R8.col ? 14 : cw < 500 ? 13 : 15;
   const panel = (x, y, w, h) => { rr(x, y, w, h, 10); ctx.fillStyle = 'rgba(15,21,40,.84)'; ctx.fill(); };
   // les amis qui se battent ailleurs
   panel(8, 8, pw, 42);
   { const reste = Math.max(0, Math.ceil(s.cfg.duree - s.t)), k = Math.min(1, s.t / s.cfg.duree);
     text(s.over === 'win' ? 'Tu as tenu !' : `Tiens encore ${Math.floor(reste / 60)}:${String(reste % 60).padStart(2, '0')}`, 18, 8 + fs + 6, fs, '#f3c9d0', 'left', 800);
     ctx.fillStyle = '#3a2632'; rr(18, 36, pw - 20, 8, 2); ctx.fill(); if (k > 0.01) { ctx.fillStyle = s.rage ? '#ff6b5e' : '#ffd23f'; rr(18, 36, (pw - 20) * k, 8, 2); ctx.fill(); } }
-  // protection
+  // protection (dans la marge : sous le chronomètre)
+  if (R8.col) ctx.translate(0, 48);
   panel(cw - 8 - pw, 8, pw, 42);
   text(`Protection : ${s.protection}`, cw - pw + 2, 8 + fs + 6, fs, '#bfefff', 'left', 800);
   text(`${Math.floor(s.t / 60)}:${String(Math.floor(s.t % 60)).padStart(2, '0')}`, cw - 18, 8 + fs + 6, fs - 1, '#8f9bb8', 'right', 700);
   ctx.fillStyle = '#1d3347'; rr(cw - pw + 2, 36, pw - 20, 8, 3); ctx.fill();
   ctx.fillStyle = '#6fe3ff'; rr(cw - pw + 2, 36, (pw - 20) * s.protection / s.cfg.protection, 8, 3); ctx.fill();
+  if (R8.col) ctx.translate(0, -48);
   // encre (elle baisse pendant qu'on trace)
   const ink = s.ink;
-  const iy = 56;
+  const iy = R8.col ? 104 : 56;
   panel(8, iy, pw, 30);
   text('Encre', 16, iy + 20, fs - 1, '#bfefff', 'left', 800);
   const x0 = 16 + (fs - 1) * 3.4, iw = (pw - (x0 - 8) - 10) / s.cfg.inkMax;
@@ -3796,7 +3807,7 @@ function hud(cw, ch) {
     if (f > 0) { ctx.fillStyle = '#6fe3ff'; rr(x0 + i * iw, iy + 8 + 14 * (1 - f), iw - 3, 14 * f, 2); ctx.fill(); }
   }
   let y = Math.max(96, (R8.hudBottom || 0) + 8, Math.round((view().oy + 142 * view().k) * cw / cv.width));
-  if (R8.col) { y = Math.max(96, Math.round((view().oy + 142 * view().k) / R8.dpr)); ctx.setTransform(R8.dpr, 0, 0, R8.dpr, 0, 0); cw = G.W * view().k / R8.dpr; }   // les messages restent au milieu de la salle
+  if (R8.col) { y = Math.max(96, Math.round((view().oy + 142 * view().k) / R8.dpr)); ctx.setTransform(R8.dpr, 0, 0, R8.dpr, 0, 0); ctx.translate(view().ox / R8.dpr, 0); cw = G.W * view().k / R8.dpr; }   // les messages restent au milieu de la salle
   if (brush) {
     const leg = 'trait (2) · V (2)' + (G.lv(s, 'spirale') ? ' · escargot (½)' : '') + (G.lv(s, 'mur') ? ' · arc de cercle (2)' : '') + (G.lv(s, 'dome') ? ' · cercle fermé (4)' : '');   // seulement les runes qu'on connaît
     ctx.font = `700 ${fs}px Nunito, sans-serif`; const w = Math.min(cw - 16, ctx.measureText(leg).width + 28);
