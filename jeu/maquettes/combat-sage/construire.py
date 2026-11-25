@@ -1,12 +1,13 @@
 # Fabrique la maquette du combat du Sage : python3 construire.py → combat-sage.html (un seul fichier, tout dedans)
 # 1. v16/assembler.py refait render16.js (les dessins) à partir de render15.js et des morceaux de v16/ ;
-# 2. la page ui7.html reçoit les retouches des versions 8 à 20 (ici, puis build12_part.py, build14_part.py, build16_part.py, build17_part.py, build18_part.py, build19_part.py, build20_part.py) ;
-# 3. on y colle les règles (logic20.js, fabriqué par v20/regles.py à partir de logic19.js, lui-même fabriqué par v19/regles.py à partir de logic18.js), les sons (sound14.js) et les modèles du combat du Barde (barde/, retouchés par modeles_barde.py).
+# 2. la page ui7.html reçoit les retouches des versions 8 à 20 (ici, puis build12_part.py, build14_part.py, build16_part.py, build17_part.py, build18_part.py, build19_part.py, build20_part.py, build21_part.py) ;
+# 3. on y colle les règles (logic21.js, fabriqué par v21/regles.py à partir de logic20.js, lui-même fabriqué par v20/regles.py à partir de logic19.js, lui-même fabriqué par v19/regles.py à partir de logic18.js), les sons (sound14.js) et les modèles du combat du Barde (barde/, retouchés par modeles_barde.py).
 import os, sys, subprocess
 D = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, D)
 subprocess.run([sys.executable, D + '/v16/assembler.py'], check=True)
 subprocess.run([sys.executable, D + '/v19/regles.py'], check=True)   # refait logic19.js à partir de logic18.js
 subprocess.run([sys.executable, D + '/v20/regles.py'], check=True)   # refait logic20.js à partir de logic19.js
+subprocess.run([sys.executable, D + '/v21/regles.py'], check=True)   # refait logic21.js à partir de logic20.js
 import re
 HPLATE = int(re.search(r'hpLateEvery: (\d+),', open(D + '/v20/regles.py').read()).group(1))
 from modeles_barde import modeles
@@ -187,8 +188,9 @@ exec(open(D+'/build18_part.py').read())
 exec(open(D+'/build19_part.py').read())
 exec(open(D+'/build20_part.py').read())
 html = html.replace('HPLATE', str(HPLATE))
+exec(open(D+'/build21_part.py').read())
 # les sons : les nouveaux effets de la version 19 (l'explosion d'une orbe, l'éclat de givre) jouent des sons qui existent déjà
-SON19 = open(D+'/sound14.js').read(); _a = "bonk: 'bonk', pop2: 'trap',"; assert SON19.count(_a) == 1; SON19 = SON19.replace(_a, "bonk: 'bonk', boum: 'bonk', gel: 'glass', gbcoup: 'side', frappe: 'fireball', casse: 'glass', sonne: 'fail', pop2: 'trap',")
-logic='\n'.join(l for l in open(D+'/logic20.js').read().split('\n') if 'module.exports' not in l)
+SON19 = open(D+'/sound14.js').read(); _a = "bonk: 'bonk', pop2: 'trap',"; assert SON19.count(_a) == 1; SON19 = SON19.replace(_a, "bonk: 'bonk', boum: 'bonk', gel: 'glass', gbcoup: 'side', frappe: 'fireball', casse: 'glass', sonne: 'fail', dome: 'good', pop2: 'trap',")
+logic='\n'.join(l for l in open(D+'/logic21.js').read().split('\n') if 'module.exports' not in l)
 open(D+'/combat-sage.html','w').write(html.replace('/*LOGIC*/',logic + '\n' + SON19 + '\n' + modeles()))
 print('construit')

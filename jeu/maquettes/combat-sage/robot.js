@@ -1,4 +1,4 @@
-const G = require((process.argv.slice(2).find(a => a.startsWith('logic=')) || 'logic=./logic20.js').slice(6));
+const G = require((process.argv.slice(2).find(a => a.startsWith('logic=')) || 'logic=./logic21.js').slice(6));
 const A = Object.fromEntries(process.argv.slice(2).map(a => a.split('=')));
 const N = +(A.games || 16), cfg = A.cfg ? JSON.parse(A.cfg) : {}, THINK = +(A.think || 3);
 const C = { x: 450, y: 445 };
@@ -44,7 +44,7 @@ function play(seed, mode) {
       if (s.choice) { const c = s.choice.cards, gold = c.filter(id => G.CARDS[id].fam === 'combo'); let id;
         if (A.pick === 'hasard') id = c[Math.floor(Math.random() * c.length)];
         else if (gold.length) id = gold.sort((a, b) => G.lv(s, b) - G.lv(s, a))[0];            // une carte dorée : toujours, et d'abord celle qui monte un build déjà pris
-        else { const av = c.filter(x => G.avance && G.avance(s, x)), ba = c.filter(x => G.CARDS[x].fam === 'baton'); id = av.length ? av[0] : s.protection < 9 && c.includes('soin') ? 'soin' : ba.length ? ba[Math.floor(Math.random() * ba.length)] : c[Math.floor(Math.random() * c.length)]; }   // sinon ce qui fait avancer un build, sinon une carte du bâton
+        else { const av = c.filter(x => G.avance && G.avance(s, x)), ba = c.filter(x => ['mur', 'spirale', 'dome'].includes(x)).concat(c.filter(x => G.CARDS[x].fam === 'rune')); id = av.length ? av[0] : s.protection < 9 && c.includes('soin') ? 'soin' : ba.length ? ba[0] : c[Math.floor(Math.random() * c.length)]; }   // sinon ce qui fait avancer un build, sinon une carte du bâton
         G.choose(s, id); s.cards = (s.cards || 0) + 1; if (G.CARDS[id].fam === 'combo') { s.t1 = s.t1 ?? s.t; if (G.lv(s, id) === 3) s.t3 = s.t3 ?? s.t; } }
       if (mode === 'cercle' && !pg) { const an = s.t * 1.9; sg.tx = C.x + Math.cos(an) * 165; sg.ty = C.y + Math.sin(an) * 150; }
       else if (pg && !(tg && bd < 120)) { sg.tx = pg.x; sg.ty = pg.y; } else if (tg && bd < 220) { sg.tx = tg.x; sg.ty = tg.y; } else if (sh && s.ink < s.cfg.inkMax) { sg.tx = sh.x; sg.ty = sh.y; } else if (tg) { sg.tx = (tg.x + C.x) / 2; sg.ty = (tg.y + C.y) / 2; } else sg.tx = sg.ty = null;
@@ -67,7 +67,8 @@ function play(seed, mode) {
       think -= dt;
       if (mode !== 'runner' && mode !== 'campeur' && think <= 0) {
         think = THINK;
-        if (s.heart.bare) castPts(s, circle(G.HEART.x, G.HEART.y, 90));
+        if (G.lv(s, 'dome') && s.protection < 12 && !(s.domeCd > 0) && s.ink >= 4) castPts(s, circle(C.x, C.y, 90));
+        else if (s.heart.bare) castPts(s, circle(G.HEART.x, G.HEART.y, 90));
         else {
           const near = s.soldiers.filter(u => G.dist(u, C) < 200);
           const dazed = s.soldiers.filter(u => u.daze > 0.4).length;
@@ -76,12 +77,12 @@ function play(seed, mode) {
           else { // combos : d'abord projeter (V vers le bord le plus proche, ou repousse), puis couper les sonnés
             const l = bestLine(s);
             if (dazed >= 3 && l && l.h >= 6) castPts(s, l.pts);
-            else if (near.length >= 7 && s.ink >= Math.max(4, G.costOf(s, { kind: "spirale" }))) castPts(s, spiral(C.x, C.y));
+            else if (G.lv(s, 'spirale') && near.length >= 7 && s.ink >= Math.max(4, G.costOf(s, { kind: "spirale" }))) castPts(s, spiral(C.x, C.y));
             else if ((mode === 'combos' || mode === 'cercle') && s.ink >= 4) {
               const far = s.soldiers.filter(u => { const d = G.dist(u, C); return d > 230 && d < 420; });
               let bx = 0, by = 0; for (const u of far) { bx += u.x - C.x; by += u.y - C.y; }
               const bl = Math.hypot(bx, by);
-              if (far.length >= 5 && bl > far.length * 150 && !s.walls.length) castPts(s, zig(C.x + bx / bl * 175, C.y + by / bl * 175, [bx / bl, by / bl]));
+              if (G.lv(s, 'mur') && far.length >= 5 && bl > far.length * 150 && !s.walls.length) castPts(s, zig(C.x + bx / bl * 175, C.y + by / bl * 175, [bx / bl, by / bl]));
               else if (near.length >= (A.sobre ? 4 : 2)) {
                 let bestV = null, bn = A.sobre ? 3 : 1;
                 for (const g of near) { const dx = g.x - C.x, dy = g.y - C.y, d = Math.hypot(dx, dy) || 1, pts = vee(g.x, g.y, [dx / d, dy / d]), r = G.recognize(pts); if (r.kind !== 'poussee') continue; const n = s.soldiers.filter(u => inTriB(u, r.tip, r.a, r.b, u.r)).length; if (n > bn) { bn = n; bestV = pts; } }
