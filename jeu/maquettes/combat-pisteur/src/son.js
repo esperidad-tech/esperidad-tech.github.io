@@ -24,9 +24,12 @@ function bruit(dur,vol,ft,f0,f1,t0,q){
 }
 const dernierSon={};
 function son(n){
-  if(!AC||!sonOn)return;
+  if(!AC||!sonOn||demo)return;                      /* l'extrait d'avant le jeu est muet */
   const now=AC.currentTime;if(dernierSon[n]&&now-dernierSon[n]<0.045)return;dernierSon[n]=now;
   try{switch(n){
+    case 'refus':osc('square',160,120,0.07,0.06);break;
+    case 'tourb':bruit(0.34,0.3,'bandpass',700,3600,0,1.1);bruit(0.3,0.2,'bandpass',3200,900,0.08,1.4);osc('triangle',320,640,0.26,0.1);break;
+    case 'ting':osc('sine',2100,2050,0.22,0.16);osc('sine',3150,3100,0.14,0.08);bruit(0.02,0.25,'highpass',4000);break;
     case 'swish':bruit(0.12,0.26,'bandpass',1200,4200,0,1.4);break;
     case 'swishG':bruit(0.26,0.36,'bandpass',380,1500,0,1);osc('sine',120,60,0.2,0.25);break;
     case 'grogne':osc('sawtooth',82,58,0.42,0.1);bruit(0.42,0.16,'lowpass',320,160);break;
@@ -71,5 +74,4 @@ function son(n){
     case 'chute':bruit(0.2,0.3,'lowpass',400,120);osc('sine',90,45,0.2,0.35);break;
   }}catch(e){}
 }
-function lire(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='fr-FR';speechSynthesis.speak(u);}catch(e){}}
 
