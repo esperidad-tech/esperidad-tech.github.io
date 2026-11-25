@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Le Pisteur dans l'arène</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+/* VOICE: un conteur d'enquête, phrases courtes, un peu d'humour
+   IDEA: la grande salle de Grosbec vue de haut en biais, comme une arène de Brawl Stars
+   PICTURE: le combat plein écran, la caméra qui suit le Pisteur
+   COLOUR and TYPE: bleu nuit, bronze et or, turquoise d'Elyra, rouge des golems ; Cinzel + Nunito
+   LAYOUT: téléphone à l'horizontale ; le pouce gauche court, le pouce droit attaque */
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#04060b;overflow:hidden}
+body{font-family:Nunito,system-ui,sans-serif;color:#f1e7d0;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}
+#jeu{position:fixed;inset:0;width:100vw;height:100vh;display:block;touch-action:none}
+button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:none}
+.jaune{background:#ffd23a;color:#111;font-weight:900;font-size:1.05rem;border:0;border-radius:.6em;padding:.55em 1.3em;min-height:2.8em;box-shadow:0 .22em 0 #9c770c}
+.jaune:active{transform:translateY(.15em);box-shadow:0 .07em 0 #9c770c}
+.gris{background:#22304b;color:#f1e7d0;font-weight:800;font-size:.92rem;border:1px solid #3d5078;border-radius:.6em;padding:.5em 1em;min-height:2.6em}
+.hp{background:rgba(255,255,255,.08);border:1px solid rgba(243,212,138,.35);border-radius:50%;width:2.2em;height:2.2em;font-size:.85rem;flex:none;color:#fff;padding:0}
+.voile{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(4,7,14,.9);padding:max(.8em,env(safe-area-inset-top)) max(1em,env(safe-area-inset-right)) max(.8em,env(safe-area-inset-bottom)) max(1em,env(safe-area-inset-left));overflow-y:auto;z-index:5}
+.voile.on{display:flex}
+.carte{width:100%;max-width:52em;margin:auto;text-align:center}
+h1{font-family:Cinzel,Georgia,serif;font-size:1.3rem;line-height:1.1;margin:.1em 0 .2em;color:#f3d48a}
+h2{font-family:Cinzel,Georgia,serif;font-size:1.3rem;margin:.1em 0 .5em;color:#f3d48a}
+.sous{font-size:.82rem;opacity:.75;margin:0 0 .6em}
+.grille{display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:.4em}
+@media (orientation:landscape){.grille{grid-template-columns:repeat(3,1fr)}}
+@media (pointer:coarse){.clavier{display:none}}
+.ligne{display:flex;align-items:center;gap:.55em;text-align:left;background:rgba(255,255,255,.04);border:1px solid rgba(243,212,138,.16);border-radius:.7em;padding:.4em .5em}
+.ligne svg{width:3.3em;height:2.5em;flex:none}
+.ligne p{margin:0;font-size:.8rem;line-height:1.2;flex:1}
+.bas{margin-top:.7em;display:flex;justify-content:center;gap:.7em;align-items:center}
+#conteur{position:fixed;left:50%;transform:translateX(-50%);top:calc(3.2em + env(safe-area-inset-top));width:min(34em,62vw);display:flex;gap:.5em;align-items:center;background:rgba(7,11,22,.84);border:1px solid rgba(243,212,138,.32);border-radius:.7em;padding:.4em .5em;font-size:.86rem;line-height:1.22;opacity:0;transition:opacity .25s;pointer-events:none;z-index:3}
+#conteur.on{opacity:1}
+#conteur.on .hp{pointer-events:auto}
+#conteurTxt{flex:1}
+.bt{position:fixed;border-radius:50%;background:rgba(10,16,30,.5);border:2px solid rgba(243,212,138,.5);color:#f3d48a;display:none;flex-direction:column;align-items:center;justify-content:center;font-weight:900;padding:0;z-index:2}
+.bt.on{display:flex}
+.bt svg{width:52%;height:52%}
+.bt span{font-size:.68rem;margin-top:.05em;opacity:.9}
+.bt.appui{background:rgba(255,210,58,.3)}
+.bt.recharge{opacity:.55}
+#bDague{width:min(23vh,9rem);height:min(23vh,9rem);right:calc(4vh + env(safe-area-inset-right));bottom:calc(6vh + env(safe-area-inset-bottom))}
+#bArc{width:min(16vh,6.3rem);height:min(16vh,6.3rem);right:calc(min(29vh,11.4rem) + env(safe-area-inset-right));bottom:calc(4vh + env(safe-area-inset-bottom))}
+#bBond{width:min(16vh,6.3rem);height:min(16vh,6.3rem);right:calc(min(9vh,3.5rem) + env(safe-area-inset-right));bottom:calc(min(32vh,12.5rem) + env(safe-area-inset-bottom))}
+#bArc.javelot{border-color:#ffb070;color:#ffb070;background:rgba(80,40,10,.55)}
+#bPause{position:fixed;right:calc(1.2vh + env(safe-area-inset-right));top:calc(1.2vh + env(safe-area-inset-top));width:2.4em;height:2.4em;border-radius:.6em;background:rgba(10,16,30,.6);border:1px solid rgba(243,212,138,.3);color:#f3d48a;font-size:1rem;display:none;padding:0;z-index:2}
+#bPause.on{display:block}
+.anneau{animation:anneau 1s ease-in-out infinite}
+@keyframes anneau{0%,100%{box-shadow:0 0 0 .15em rgba(255,210,58,.95)}50%{box-shadow:0 0 0 .7em rgba(255,210,58,0)}}
+.menu{display:flex;flex-direction:column;gap:.5em;align-items:stretch;max-width:18em;margin:0 auto}
+.mesures{font-size:.72rem;opacity:.6;margin-top:.7em}
+.code{font-size:2.2rem;letter-spacing:.25em;margin:.2em 0 0}
+.petit{font-size:.82rem;opacity:.8;margin:.2em 0 .6em}
+.stats{display:grid;grid-template-columns:1fr auto;gap:.12em .8em;text-align:left;font-size:.84rem;background:rgba(255,255,255,.04);border-radius:.6em;padding:.5em .8em;margin:.5em auto;max-width:19em}
+.stats b{text-align:right;color:#f3d48a}
+.texte{display:flex;gap:.5em;align-items:center;text-align:left;margin:.3em auto;max-width:34em}
+.texte p{margin:0;flex:1}
+.cartes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7em;margin:.6em 0}
+.pouvoir{background:linear-gradient(#1b2640,#121a2e);border:2px solid rgba(243,212,138,.45);border-radius:.8em;padding:.6em .6em .7em;display:flex;flex-direction:column;align-items:center;gap:.35em}
+.pouvoir .ic{font-size:1.9rem;line-height:1}
+.pouvoir b{font-family:Cinzel,Georgia,serif;color:#f3d48a;font-size:.95rem}
+.pouvoir p{margin:0;font-size:.8rem;line-height:1.22;flex:1}
+#tourne{z-index:9;flex-direction:column;gap:1em;text-align:center}
+#tourne svg{width:6em;height:6em}
+@media (prefers-reduced-motion:reduce){.anneau{animation:none;box-shadow:0 0 0 .2em #ffd23a}}
+</style>
+</head>
+<body>
+<canvas id="jeu"></canvas>
+<div id="conteur"><span id="conteurTxt"></span><button class="hp" id="conteurHp" aria-label="Écouter">🔊</button></div>
+<button class="bt" id="bDague" aria-label="Dague"><svg viewBox="0 0 40 40"><path d="M30 6 L14 22 l4 4 L34 10z" fill="#d8f1f4" stroke="#5be0e6" stroke-width="1.5"/><path d="M12 24 l4 4 l-6 6 l-4 -4z" fill="#8a5a2a"/><path d="M10 20 l10 10" stroke="#c9993f" stroke-width="3" stroke-linecap="round"/></svg><span>dague</span></button>
+<button class="bt" id="bArc" aria-label="Arc"><svg viewBox="0 0 40 40" id="icArc"><path d="M12 4 Q32 20 12 36" fill="none" stroke="#c99a5a" stroke-width="3"/><path d="M12 4 L12 36" stroke="#eee" stroke-width="1"/><path d="M6 20 H36" stroke="#d8f1f4" stroke-width="2.4"/><path d="M36 20 l-6 -4 v8z" fill="#5be0e6"/></svg><span id="lArc">arc</span></button>
+<button class="bt" id="bBond" aria-label="Bond"><svg viewBox="0 0 40 40"><path d="M6 32 Q20 2 34 26" fill="none" stroke="#c8b6ff" stroke-width="3" stroke-dasharray="4 3"/><circle cx="34" cy="28" r="5" fill="#3c6b3d"/><path d="M4 30 h8 M2 36 h8" stroke="#c8b6ff" stroke-width="2" opacity=".6"/></svg><span>bond</span></button>
+<button id="bPause" aria-label="Pause">⏸</button>
+
+<div id="regles" class="voile on"><div class="carte">
+  <h1>Le Pisteur dans l'arène</h1>
+  <p class="sous">Maquette d'essai, façon Hades et Brawl Stars : des formes simples, on regarde seulement si c'est amusant.</p>
+  <div class="grille">
+    <div class="ligne"><svg viewBox="0 0 64 48"><circle cx="24" cy="26" r="17" fill="rgba(255,255,255,.08)" stroke="#f3d48a" stroke-width="1.5"/><circle cx="31" cy="21" r="8" fill="#f3d48a"/><path d="M46 20 l10 -6 M46 26 h12 M46 32 l10 6" stroke="#f3d48a" stroke-width="2"/></svg><p>Le pouce gauche, n'importe où à gauche : le Pisteur court, et regarde où il va.</p><button class="hp" data-lire>🔊</button></div>
+    <div class="ligne"><svg viewBox="0 0 64 48"><circle cx="16" cy="28" r="11" fill="rgba(10,16,30,.6)" stroke="#f3d48a" stroke-width="1.5"/><path d="M20 20 l-7 7 l2 2 l7 -7z" fill="#d8f1f4"/><circle cx="46" cy="22" r="9" fill="rgba(10,16,30,.6)" stroke="#f3d48a" stroke-width="1.5"/><path d="M42 15 Q52 22 42 29" fill="none" stroke="#c99a5a" stroke-width="2"/></svg><p>La dague frappe devant lui, trois coups d'affilée. L'arc tire droit devant, et vise un peu tout seul.</p><button class="hp" data-lire>🔊</button></div>
+    <div class="ligne"><svg viewBox="0 0 64 48"><rect x="24" y="26" width="18" height="10" fill="#5a5f6c"/><rect x="24" y="22" width="18" height="5" fill="#7a808e"/><path d="M8 38 Q33 0 58 36" fill="none" stroke="#c8b6ff" stroke-width="2.4" stroke-dasharray="4 3"/></svg><p>Le bond traverse les coups sans dommage, et saute par-dessus les murets. Les grands piliers, non.</p><button class="hp" data-lire>🔊</button></div>
+    <div class="ligne"><svg viewBox="0 0 64 48"><ellipse cx="22" cy="30" rx="16" ry="9" fill="rgba(255,50,40,.35)" stroke="#ff4a3a" stroke-width="2"/><rect x="38" y="18" width="24" height="7" fill="rgba(255,50,40,.35)" stroke="#ff4a3a" stroke-width="1.5"/></svg><p>Rouge au sol : c'est là que le coup va tomber. On s'en écarte, ou on bondit au travers.</p><button class="hp" data-lire>🔊</button></div>
+    <div class="ligne"><svg viewBox="0 0 64 48"><path d="M8 38 L44 14" stroke="#c9a060" stroke-width="3"/><path d="M44 14 l8 -5 l-3 8z" fill="#cfd8e6"/><rect x="46" y="18" width="12" height="22" fill="#5a5f6c" stroke="#ffb070" stroke-width="1.5"/></svg><p>Un javelot planté par terre ? En passant dessus, le Pisteur le ramasse. L'arc le lance, et une dalle n'y résiste pas longtemps.</p><button class="hp" data-lire>🔊</button></div>
+    <div class="ligne"><svg viewBox="0 0 64 48"><rect x="4" y="10" width="17" height="26" rx="3" fill="#1b2640" stroke="#f3d48a"/><rect x="24" y="10" width="17" height="26" rx="3" fill="#1b2640" stroke="#f3d48a"/><rect x="44" y="10" width="17" height="26" rx="3" fill="#1b2640" stroke="#f3d48a"/><text x="32" y="28" text-anchor="middle" font-size="12" fill="#ffd23a">★</text></svg><p>Entre deux vagues, un pouvoir à choisir parmi trois. Six vagues en tout.</p><button class="hp" data-lire>🔊</button></div>
+  </div>
+  <div class="bas"><p class="sous clavier" style="margin:0;max-width:24em;text-align:left">Sur ordinateur : flèches ou Z Q S D pour courir, J la dague, K l'arc, Espace le bond.</p><button class="jaune anneau" id="btnGo">En garde !</button></div>
+</div></div>
+
+<div id="choix" class="voile"><div class="carte">
+  <h2>Un pouvoir pour le Pisteur</h2>
+  <div class="texte"><p id="choixTxt">La vague est tombée. Choisis un pouvoir pour la suivante.</p><button class="hp" id="choixHp">🔊</button></div>
+  <div class="cartes" id="cartes"></div>
+</div></div>
+
+<div id="pause" class="voile"><div class="carte">
+  <h2>Pause</h2>
+  <div class="menu">
+    <button class="jaune" id="pReprendre">Reprendre</button>
+    <button class="gris" id="pSuivant">Essai : vague suivante</button>
+    <button class="gris" id="pRegles">Revoir l'explication</button>
+    <button class="gris" id="pDur">Golems : normaux</button>
+    <button class="gris" id="pSon">Son : oui</button>
+    <button class="gris" id="pRecommencer">Recommencer du début</button>
+  </div>
+  <p class="mesures" id="pMesures"></p>
+</div></div>
+
+<div id="fin" class="voile"><div class="carte" id="finCarte"></div></div>
+
+<div id="tourne" class="voile"><svg viewBox="0 0 64 64"><rect x="20" y="8" width="24" height="44" rx="4" fill="none" stroke="#f3d48a" stroke-width="3"/><path d="M50 40 A22 22 0 0 1 30 58" fill="none" stroke="#ffd23a" stroke-width="3"/><path d="M30 58 l6 -6 M30 58 l7 3" stroke="#ffd23a" stroke-width="3"/></svg><p style="font-size:1.1rem;max-width:16em">Tourne le téléphone à l'horizontale : l'arène est plus large que haute.</p></div>

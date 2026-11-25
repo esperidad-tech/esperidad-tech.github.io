@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Le Pisteur en duel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+/* VOICE: un conteur d'enquête, phrases courtes, un peu d'humour
+   IDEA: un duel dans la grande salle de Grosbec, le Pisteur vu de dos, le golem en face
+   PICTURE: le golem en grand au milieu, ses coups qui se lisent
+   COLOUR and TYPE: bleu nuit, bronze et or, turquoise d'Elyra, rouge de Raban ; Cinzel + Nunito
+   LAYOUT: une colonne de jeu en portrait, les esquives dans les deux coins du bas */
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#04060b;overflow:hidden}
+body{font-family:Nunito,system-ui,sans-serif;color:#f1e7d0;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}
+#cadre{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);overflow:hidden;background:#0a1120}
+#jeu{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:none}
+.jaune{background:#ffd23a;color:#111;font-weight:900;font-size:1.15em;border:0;border-radius:.6em;padding:.6em 1.4em;min-height:2.9em;box-shadow:0 .22em 0 #9c770c}
+.jaune:active{transform:translateY(.15em);box-shadow:0 .07em 0 #9c770c}
+.gris{background:#22304b;color:#f1e7d0;font-weight:800;font-size:.95em;border:1px solid #3d5078;border-radius:.6em;padding:.55em 1em;min-height:2.8em}
+.hp{background:rgba(255,255,255,.08);border:1px solid rgba(243,212,138,.35);border-radius:50%;width:2.3em;height:2.3em;font-size:.9em;flex:none;color:#fff;padding:0}
+.voile{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(4,7,14,.9);padding:.9em;overflow-y:auto}
+.voile.on{display:flex}
+.carte{width:100%;max-width:26em;margin:auto;text-align:center}
+h1{font-family:Cinzel,Georgia,serif;font-size:1.55em;line-height:1.1;margin:.1em 0 .25em;color:#f3d48a;text-wrap:balance}
+h2{font-family:Cinzel,Georgia,serif;font-size:1.4em;margin:.2em 0 .6em;color:#f3d48a}
+.sous{font-size:.85em;opacity:.75;margin:0 0 .7em}
+.ligne{display:flex;align-items:center;gap:.6em;text-align:left;background:rgba(255,255,255,.04);border:1px solid rgba(243,212,138,.16);border-radius:.7em;padding:.4em .55em;margin:.4em 0}
+.ligne svg{width:4.2em;height:3.15em;flex:none}
+.ligne p{margin:0;font-size:.9em;line-height:1.27;flex:1}
+.bas{margin-top:.8em;display:flex;justify-content:center;gap:.7em;align-items:center}
+#conteur{position:absolute;left:3%;right:3%;top:7.2%;display:flex;gap:.5em;align-items:center;background:rgba(7,11,22,.84);border:1px solid rgba(243,212,138,.32);border-radius:.7em;padding:.45em .55em;font-size:.95em;line-height:1.25;opacity:0;transition:opacity .25s;pointer-events:none}
+#conteur.on{opacity:1}
+#conteur.on .hp{pointer-events:auto}
+#conteurTxt{flex:1}
+.esq{position:absolute;bottom:2.2%;width:23%;aspect-ratio:1;border-radius:50%;background:rgba(10,16,30,.55);border:2px solid rgba(243,212,138,.45);color:#f3d48a;display:none;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:1em;line-height:1;padding:0}
+.esq.on{display:flex}
+.esq b{font-size:2.1em;line-height:.9}
+.esq span{font-size:.72em;opacity:.85;margin-top:.15em}
+.esq:active,.esq.appui{background:rgba(255,210,58,.25)}
+#esqG{left:3%}#esqD{right:3%}
+#btnSiff{position:absolute;right:3%;top:52%;display:none;font-size:1.05em}
+#btnSiff.on{display:block}
+#btnPause{position:absolute;right:2%;top:1.2%;width:2.4em;height:2.4em;border-radius:.6em;background:rgba(10,16,30,.6);border:1px solid rgba(243,212,138,.3);color:#f3d48a;font-size:1em;display:none;padding:0}
+#btnPause.on{display:block}
+.anneau{animation:anneau 1s ease-in-out infinite}
+@keyframes anneau{0%,100%{box-shadow:0 0 0 .15em rgba(255,210,58,.95)}50%{box-shadow:0 0 0 .6em rgba(255,210,58,0)}}
+.menu{display:flex;flex-direction:column;gap:.55em;align-items:stretch;max-width:18em;margin:0 auto}
+.mesures{font-size:.75em;opacity:.6;margin-top:.8em}
+.code{font-size:2.4em;letter-spacing:.25em;margin:.25em 0 0}
+.petit{font-size:.85em;opacity:.8;margin:.2em 0 .8em}
+.stats{display:grid;grid-template-columns:1fr auto;gap:.15em .8em;text-align:left;font-size:.88em;background:rgba(255,255,255,.04);border-radius:.6em;padding:.6em .8em;margin:.6em auto;max-width:19em}
+.stats b{text-align:right;color:#f3d48a}
+.texte{display:flex;gap:.5em;align-items:center;text-align:left;margin:.3em 0}
+.texte p{margin:0;flex:1}
+@media (prefers-reduced-motion:reduce){.anneau{animation:none;box-shadow:0 0 0 .2em #ffd23a}}
+</style>
+</head>
+<body>
+<div id="cadre">
+  <canvas id="jeu"></canvas>
+  <div id="conteur"><span id="conteurTxt"></span><button class="hp" id="conteurHp" aria-label="Écouter">🔊</button></div>
+  <button class="esq" id="esqG" aria-label="Esquive à gauche"><b>⟵</b><span>esquive</span></button>
+  <button class="esq" id="esqD" aria-label="Esquive à droite"><b>⟶</b><span>esquive</span></button>
+  <button id="btnSiff" class="jaune">🐾 Le sifflet</button>
+  <button id="btnPause" aria-label="Pause">⏸</button>
+
+  <div id="regles" class="voile on"><div class="carte">
+    <h1>Le Pisteur en duel</h1>
+    <p class="sous">Maquette d'essai : un golem à la fois, comme dans Infinity Blade.</p>
+    <div class="ligne">
+      <svg viewBox="0 0 64 48"><path d="M30 46 l2 -20 l10 -8 l10 8 l-1 20z" fill="#3a3d45" stroke="#15171b"/><path d="M38 22 l4 1 M44 22 l4 1" stroke="#ff6a2a" stroke-width="2"/><path d="M32 26 L12 8" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".9"/><path d="M0 0 h14 v48 h-14z" fill="url(#gl)"/><defs><linearGradient id="gl"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs></svg>
+      <p>Le golem prépare son coup : son bras s'allume, et on voit de quel côté il va frapper.</p>
+      <button class="hp" data-lire>🔊</button>
+    </div>
+    <div class="ligne">
+      <svg viewBox="0 0 64 48"><path d="M30 46 l2 -20 l10 -8 l10 8 l-1 20z" fill="#3a3d45" stroke="#15171b"/><path d="M32 26 L14 10" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M58 30 Q36 26 16 18" fill="none" stroke="#5be0e6" stroke-width="3.5" stroke-linecap="round"/><path d="M16 18 l8 -1 l-4 6z" fill="#5be0e6"/><circle cx="16" cy="12" r="6" fill="#ffd96a" opacity=".8"/></svg>
+      <p>La parade : glisser le doigt vers le coup qui arrive, juste avant qu'il tombe.</p>
+      <button class="hp" data-lire>🔊</button>
+    </div>
+    <div class="ligne">
+      <svg viewBox="0 0 64 48"><circle cx="13" cy="34" r="11" fill="rgba(10,16,30,.6)" stroke="#f3d48a" stroke-width="1.5"/><path d="M19 34 h-12 l4 -4 M7 34 l4 4" stroke="#f3d48a" stroke-width="2" fill="none"/><circle cx="51" cy="34" r="11" fill="rgba(10,16,30,.6)" stroke="#f3d48a" stroke-width="1.5"/><path d="M45 34 h12 l-4 -4 M57 34 l-4 4" stroke="#f3d48a" stroke-width="2" fill="none"/><path d="M26 8 h12 l-12 14 h12z" fill="none" stroke="#c8b6ff" stroke-width="2"/></svg>
+      <p>L'esquive : les deux boutons du bas, du côté opposé au coup. Au tout dernier moment, le temps ralentit.</p>
+      <button class="hp" data-lire>🔊</button>
+    </div>
+    <div class="ligne">
+      <svg viewBox="0 0 64 48"><rect x="2" y="6" width="28" height="36" rx="6" fill="#3a1010" stroke="#ff4a3a" stroke-width="2"/><text x="16" y="30" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="900" font-size="12" fill="#ff8a7a">⟵⟶</text><rect x="34" y="6" width="28" height="36" rx="6" fill="#3a3010" stroke="#ffd23a" stroke-width="2"/><path d="M40 30 Q48 14 56 30" fill="none" stroke="#5be0e6" stroke-width="3"/></svg>
+      <p>Rouge : bien trop lourd pour parer, il faut esquiver. Doré : bien trop large pour esquiver, il faut parer.</p>
+      <button class="hp" data-lire>🔊</button>
+    </div>
+    <div class="ligne">
+      <svg viewBox="0 0 64 48"><rect x="16" y="8" width="30" height="32" rx="4" fill="#3a3d45" stroke="#15171b"/><path d="M20 20 L42 28" stroke="#bff6ff" stroke-width="2.4"/><path d="M4 40 Q30 2 60 14" fill="none" stroke="#5be0e6" stroke-width="3" opacity=".8"/><path d="M31 28 l5 7 l-5 7 l-5 -7z" fill="#ff5030"/><path d="M31 32 l2.5 3 l-2.5 3 l-2.5 -3z" fill="#fff3e0"/></svg>
+      <p>Une fois paré, il est ouvert : on le taillade dans tous les sens, et plus fort dans sa faille. À genoux, son éclat brille : un doigt dessus, et la dague le brise.</p>
+      <button class="hp" data-lire>🔊</button>
+    </div>
+    <div class="ligne">
+      <svg viewBox="0 0 64 48"><text x="4" y="30" font-family="Cinzel,serif" font-weight="700" font-size="16" fill="#9aa3b2">D</text><path d="M18 24 h12" stroke="#f3d48a" stroke-width="2"/><path d="M30 24 l-4 -3 v6z" fill="#f3d48a"/><text x="33" y="32" font-family="Cinzel,serif" font-weight="700" font-size="24" fill="#ffd23a">S</text><circle cx="55" cy="34" r="4" fill="#6ff3ee"/><circle cx="50" cy="27" r="2" fill="#6ff3ee"/><circle cx="55" cy="25" r="2" fill="#6ff3ee"/><circle cx="60" cy="27" r="2" fill="#6ff3ee"/></svg>
+      <p>Varie tes gestes : ta note grimpe de D à S. À S, un coup de sifflet, et les bêtes d'Elyra s'en mêlent.</p>
+      <button class="hp" data-lire>🔊</button>
+    </div>
+    <div class="bas"><button class="jaune anneau" id="btnGo">En garde !</button></div>
+  </div></div>
+
+  <div id="pause" class="voile"><div class="carte">
+    <h2>Pause</h2>
+    <div class="menu">
+      <button class="jaune" id="pReprendre">Reprendre</button>
+      <button class="gris" id="pSuivant">Essai : golem suivant</button>
+      <button class="gris" id="pNoteS">Essai : note S tout de suite</button>
+      <button class="gris" id="pRegles">Revoir l'explication</button>
+      <button class="gris" id="pDur">Golems : normaux</button>
+      <button class="gris" id="pSon">Son : oui</button>
+      <button class="gris" id="pRecommencer">Recommencer du début</button>
+    </div>
+    <p class="mesures" id="pMesures"></p>
+  </div></div>
+
+  <div id="fin" class="voile"><div class="carte" id="finCarte"></div></div>
+</div>
