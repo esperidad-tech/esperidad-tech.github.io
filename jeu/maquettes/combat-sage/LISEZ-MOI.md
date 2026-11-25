@@ -85,7 +85,7 @@ Maquette jouable (pas le vrai jeu, rien n'est construit dans Brumeval) : https:/
 - **Le robot ne dit toujours pas si c'est amusant**, et il joue mal les runes (une toutes les 3 secondes, sans le ralenti). Cette fois il y a au moins un robot qui campe et un joueur immobile : les deux perdent vite.
 
 ### Vérifié
-- 98 vérifications des règles (27 pour la version 20 : le ralenti de 2 secondes, le chronomètre au ralenti, le trait, l'encre, le rouge qui suit puis se fige, le Sage sonné et son encre, les amis touchés, le balayage, la dalle de face et de dos, la dalle qui casse, le V qui la fait tomber, le mortier, la bombe et sa chaîne, le bélier et le mur).
+- 98 vérifications des règles (26 pour la version 20 : le ralenti de 2 secondes, le chronomètre au ralenti, le trait, l'encre, le rouge qui suit puis se fige, le Sage sonné et son encre, les amis touchés, le balayage, la dalle de face et de dos, la dalle qui casse, le V qui la fait tomber, le mortier, la bombe et sa chaîne, le bélier et le mur).
 - Dans le navigateur : l'explication, une scène avec le rouge et les golems nouveaux (photos regardées), une partie courte jouée jusqu'à « Assez ! » sur un téléphone imité : aucune erreur, 60 images par seconde (machine de test).
 
 ### Pas vérifié
