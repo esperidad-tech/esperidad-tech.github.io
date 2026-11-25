@@ -1,45 +1,105 @@
-# Le combat du Pisteur — version 4 (25 novembre 2026) : le vrai mini-jeu, hors du jeu Brumeval pour l'instant
-
-> **⚠️ 25 novembre, 15 h : la version 4 a été jouée et refusée par Romain (« ça marche pas »).** Ces sources sont le point de
-> départ de la suite, pas un jeu fini. **Le nouveau système de jeu à construire** est dans `bible-section-17.md`, §17.10 à §17.21
-> (quatre boutons qui changent dans l'ombre, un bouton d'ombre, une barre de vie, des golems chiffrés, plus de regard de Grosbec).
-> Ce qui se garde et ce qui se jette : §17.19 ; l'ordre de construction : §17.21 et l'entrée du 25 novembre, 15 h, de `PASSATION.md`.
-> La discussion orale de l'après-midi et les idées écartées : `decisions-orales-apres-midi.md`.
+# Le combat du Pisteur — version 8 (25 novembre 2026, 23 h 20) : la reprise à une vague, le réparateur, les cartes dorées, plus rien à lire
 
 Enquête 10, combat final : pendant que ses amis occupent Grosbec, le Pisteur s'occupe de sa garde (les golems). Rien n'est branché dans le
 jeu, rien n'est en ligne sur le site : c'est une page à part, comme les combats du Barde, du Sage et de l'Alchimiste.
+La page publiée : https://claude.ai/artifact/GmvcxCF5gC89M9tmnCVyGU (le canevas « Le combat du Pisteur »).
+
+**Où on en est.** Version 6 : « vachement mieux ». Version 7 (les colères) : **« là ça devient intéressant grâce aux enrages »,
+« le jeu est bien calibré »**, mais « au stage 7, c'est trop frustrant de tout recommencer ». Romain a décidé dix points à la voix
+(`decisions-orales-22h.md`), puis écrit à 22 h 18 : **« Vas-y, tu as mon go pour faire cette liste et tu peux mettre en ligne. »**
+À 22 h 42, pendant la construction : **« Enlève-moi tous les tutos, tous les textes qui expliquent »**, juste « une sorte d'extrait »
+avant de jouer, sans texte. **La version 8 est construite ici. Pas encore jouée par Romain.**
+Ce qui a changé, les choix de Claude à valider et les mesures : Bible §17.36 à §17.41 (dans `bible-section-17.md`).
+
+**La version 8 en huit points** (tous les chiffres sont dans `REG`, en tête de `src/pisteur.js`) :
+1. **Plus rien à lire.** Plus de page d'explication, plus de conteur, plus de bouton 🔊, plus de mots de refus. Avant de jouer :
+   **un extrait** (`EXTRAITS` dans `src/ecrans.js`) : le vrai jeu se joue tout seul, trois scènes en boucle, sans un mot ni un son,
+   un doigt blanc sur les boutons ; le bouton jaune est là dès le début. Un bouton refusé **tremble**, et celui qui débloque la
+   situation (le bouton d'ombre, presque toujours) **clignote**. Restent : le nom sous chaque bouton, « Vague 3 / 8 », les petits
+   mots de bande dessinée (« Paré ! », « Raté ! », « BANG ! »), les cris de Grosbec, les menus.
+2. **À terre, on choisit sa vague** (`sauves`, `choisirVague`) : une tuile jaune par vague commencée, avec la vie, les bandages et
+   les cartes qu'on avait en la commençant ; le rond jaune sur celle où on est tombé. Aussi dans la pause.
+3. **Les rôdeurs** : sur la piste ils vont à 3,6 (la course du Pisteur à découvert) ; frappés ou face à lui, ils se battent ; des
+   meutes de trois au plus.
+4. **La ruée** (`ruer`) : un golem blessé sans être tué, tout son groupe se rue sur le Pisteur pendant 2,5 s. Pas les autres groupes.
+5. **Le mortier déchaîné** (`dechainer`, `mortierDechaine`) : dès qu'il VOIT le Pisteur, il ne s'arrête plus jamais ; il vise s'il le
+   voit, sinon il bombarde à l'aveugle. Ses obus ne blessent, chez les golems, que celui qui est assommé ou endormi.
+6. **L'ombre revient après trois secondes D'AFFILÉE sans être vu** (le compte repart de zéro au moindre regard).
+7. **Le réparateur** (`GT.repare`, `reparer`, modèle `src/modeles/golems-pisteur.js`) : 30 points de vie, aucun dégât ; il rend 30
+   points toutes les 3 secondes à un blessé de son groupe ; penché, il ne voit rien.
+8. **Trois cartes dorées** (`jouerCarte`, `cibleCarte`), en haut à droite, une seule fois chacune, dans l'ombre, **un simple appui** :
+   la flèche qui endort (pas le colosse), le sifflet (le groupe part voir ailleurs 16 s), la cape d'ombre (10 s). Une petite marque
+   dorée au-dessus d'un golem montre ce que la flèche et le sifflet toucheraient.
+Et **huit vagues refaites, 47 golems** (`VAGUES`) : la 1 est douce (un rôdeur, puis deux : c'est là qu'on apprend), les nœuds
+commencent à la 3.
+
+Ce qui reste de la version 7 : les quatre boutons, les colères (la meute qui flaire, le garde collé, le bélier fou, la boule, le
+fantôme, le colosse), cinq bandages de 20 points, la vie qui ne remonte pas, le regard long à découvert, les groupes soudés.
+Les idées écartées (à ne pas reproposer) : `decisions-orales-22h.md`, `decisions-orales-coleres.md`, `decisions-orales-apres-midi.md`.
+Le son des golems, le décor : plus tard (demande de Romain).
 
 ## Fabriquer la page
-`python3 construire.py` → `combat-pisteur.html` (un seul fichier, environ 630 Ko ; c'est la page publiée dans le canevas
-https://claude.ai/artifact/GmvcxCF5gC89M9tmnCVyGU). Il lit le moteur des héros en volume dans `jeu/heros-vues/src` (hv-base, hv-tete,
-hv-cheveux, hv-corps, hv-pantin, hv-poses, hv-positions, hv-donjon). Les essais ouvrent `/home/claude/pisteur4/index.html` : changer ce
-chemin dans `tests/*.py` (ou copier `combat-pisteur.html` à cet endroit).
-Tout le détail du jeu : Bible §17. Ce que Romain a dit à l'oral : `decisions-orales.md`. Les trois maquettes d'avant (refusées ou
-dépassées) : `anciennes-maquettes/`.
+`python3 construire.py` → `combat-pisteur.html` (un seul fichier, environ 680 Ko). Il lit le moteur des héros en volume dans
+`jeu/heros-vues/src` (hv-base, hv-tete, hv-cheveux, hv-corps, hv-pantin, hv-poses, hv-positions, hv-donjon).
 
 ## Ce qui est où (`src/`)
-- `page.html` : la page, les trois boutons, les écrans (explication, cartes, pause, fin, « tourne le téléphone »).
+- `page.html` : la page, **les quatre boutons et leurs huit dessins**, les trois cartes dorées, les écrans (la barre de préparation et
+  l'extrait, la pause, la fin, le dessin « tourne le téléphone »). Plus aucun texte d'aide.
 - `base.js` : les mesures (1 pas = 46 points ; profondeur tassée à 66 % ; hauteurs entières : les personnages sont debout).
 - `son.js` : les sons fabriqués par la page (aucun fichier de son ; jamais écoutés par Claude).
-- `monde.js` : la salle (26 × 18 pas), ses obstacles (`haut` : on ne saute pas par-dessus, et ça arrête le regard de Grosbec), les chemins
-  (une grille de demi-pas), `vue()` (qui voit qui), les cachettes, les points de ronde.
-- `cartes.js` : les 33 améliorations (4 familles), les 20 cartes dorées (deux faces : caché / à découvert), le tirage de trois cartes.
-- `regles1.js` : le Pisteur (dague, arc, bond ; caché : coup d'assassin, tir visé, saut d'ombre).
-- `regles2.js` : voir et être vu (`garde` : calme / alerte / recherche), Grosbec le stratège (ses ordres, son regard), les huit golems.
-- `regles3.js` : les projectiles, l'onde, les vagues (8), le choix des cartes, les particules.
-- `sprites.js` : `PS` = le Pisteur en volume (le moteur `HV` du jeu) cuit sous 8 angles en planches ; `GS` = les golems cuits à la demande.
-- `salle.js` : la salle peinte une fois (sol, murs, estrade, ombres, lumière des torches, des vasques et de la lune), les obstacles cuits à part.
-- `dessin.js` : chaque image (fond, regard de Grosbec, champs de vision, tri par profondeur, effets, interface).
-- `ecrans.js` : les doigts, les touches, les écrans, la boucle, la cuisson pendant l'explication, `window.__pt` pour les essais.
-- `modeles/` : copies NON modifiées de `jeu/maquettes/combat-alchimiste/modeles/` (outils, golems, grosbec = les modèles du combat du
-  Barde) et de `golems-alchimiste.js` (le cuirassé). `construire.py` « ouvre » le bestiaire comme `construire-combat.py` de l'Alchimiste.
-- Quel modèle pour quel golem : trotteur = rôdeur ; danseur (le tourbillon) = javelot (son javelot est dessiné à part) ; lanceur (le frondeur)
-  = mortier ; fonceur = bélier ; bouclier = porte-dalle ; soldat (le lancier à la faux) = faucheur ; cuirasse = cuirassé ; gros = colosse.
+- `monde.js` : la salle (26 × 18 pas), ses obstacles, les chemins (une grille de demi-pas), `vue()` (qui voit qui), `rayon()`.
+- **`pisteur.js`** : **`REG`, tous les chiffres du combat au même endroit** ((R) = fixé par Romain, (C) = point de départ de Claude) ;
+  l'état ; le Pisteur : les quatre boutons (dague en trois rangs / embuscade ; rien / coup qui assomme ; saut / saut
+  d'ombre ; ombre / bandage), la piste qu'il laisse (`piste`), la chaîne du colosse (`P.etat==='chaine'`), un seul geste à la fois avec un appui gardé en mémoire (`appui`, `P.tampon`), le saut qui passe devant tout,
+  l'ombre (`entrerOmbre`, `sortirOmbre`), le bandage (`debutBandage`, `bandagePerdu`, `finBandage`), la barre de vie et le saignement
+  (`blesserP`), les trois cartes (`jouerCarte`, `cibleCarte`, `P.cibles`).
+- **`golems.js`** : ce que chaque golem voit et sait (`voitBrut`, `margeEcran`, `majPerception` : à découvert il voit à 10 pas devant
+  lui s'il est à l'écran du joueur, dans l'ombre seulement l'éventail court dessiné au sol ; `g.su` = le dernier endroit où lui **ou son
+  groupe** a vu ou entendu quelque chose ; `g.grp` = son groupe), le bruit (`crier`, `avertir`, `tuer` : tué d'un coup, seuls ceux qui
+  le regardaient s'activent), la ronde (un vrai trajet, des pauses, le regard à gauche et à droite ; le premier marche au pas du plus
+  lent), la poursuite en groupe (`chasseSansVue` : au pas du plus lent, le javelot derrière son garde) et la fouille, le regard qui
+  tourne en douceur (`g.reg` rattrape `g.regC`), `porteeRegard` (où un regard s'arrête), **les colères** (`facher` : qui se fâche et
+  quand ; `colereDe` ; `flairer`, `suivreMeute`, `coller` et `gardeDe`, `mortierAveugle`, `errer`, `rouler` et `rebond`, `fantome`,
+  `debutZoneColosse` et la chaîne dans `iaColosse`), le rouge (`dansZone` : cercle, cône, demi-disque, anneau, croix, bande ; `fuirRouge`,
+  `frapperZone` : il blesse tout le monde), et les huit golems (`iaChien`, `iaJavelot`, `iaDalle`, `iaFaucheur`, `iaMortier`, `iaBelier`,
+  `iaCuirasse`, `iaColosse`, `iaRepare`) : chacun sa façon de bouger, son coup de base, son coup spécial. **Version 8** : `ruer`,
+  `dechainer` / `mortierDechaine` / `cibleObusOk`, `endormir`, `siffler` / `leurrer`, `reparer`.
+- **`vagues.js`** : les javelots (ils volent vraiment), les obus ; les 8 vagues (47 golems, `VAGUES`, `ROUTES` : une ligne « m » = un
+  groupe soudé, le premier de la liste marche devant) ; les particules.
+- `sprites.js` : `PS` = le Pisteur en volume cuit sous 8 angles (24 poses, et les mêmes en silhouette violette pour l'ombre) ; `GS` = les
+  golems cuits à la demande (`GS.ombre` : la copie teintée).
+- `salle.js` : la salle peinte une fois ; **`Salle.fondO` : la même, sombre et bleu-violet, pour le monde de l'ombre** ; les obstacles.
+- `dessin.js` : chaque image (les deux mondes, le long regard en lueur à découvert (`dessinerRegard`), les éventails courts de l'ombre,
+  les zones rouges, les têtes de mort, la barre de vie et les cinq bandages, l'anneau vert du bandage, l'interface ; pour les colères :
+  les traces de pas, la boule, le fantôme, la chaîne, l'étoile rouge au-dessus d'un golem en colère, le bouclier du javelot couvert).
+- `ecrans.js` : les doigts, les touches, les boutons (`majBoutons`, `majRecharges`, `refuser`), les cartes (`majCartesUI`), les écrans
+  (`choisirVague`), **l'extrait** (`EXTRAITS`, `lancerExtrait`, `pasExtrait`, `finExtrait` ; `poserScene` sert aussi aux essais), la
+  boucle, `window.__pt` pour les essais.
+- `modeles/` : copies NON modifiées des modèles du combat du Barde (outils, golems, grosbec) et du cuirassé de l'Alchimiste ;
+  `golems-pisteur.js` : le réparateur (nouveau, dessiné avec les mêmes outils).
+- Quel modèle pour quel golem : trotteur = rôdeur (« le chien ») ; danseur = javelot ; lanceur = mortier ; fonceur = bélier ; bouclier =
+  porte-dalle ; soldat = faucheur ; cuirasse = cuirassé ; gros = colosse.
 
-## Les essais (`tests/`, Python + Playwright)
-- `robot.js` : un joueur automatique (caché : saut d'ombre, assassinat, tir visé ; repéré : il esquive le rouge et se bat ; contre un
-  cuirassé il va se cacher). `window.__robotMal = true` : maladroit ; `__robotBrute = true` : ne se cache jamais exprès.
-- `partie.py [inv] [dur] [mal] [brute]` : une partie entière, avec des captures. `gestes.py` : vrais gestes au doigt et écrans.
-- `vitesse.py`, `profil.py` : images par seconde, processeur ralenti 4 ou 6 fois, sans carte graphique. `salle.py` : la salle entière en image.
-- `fumee.py` : la page se charge et démarre sans erreur. `cuisson.py` : le coût d'une image du Pisteur.
-- Adresses d'essai : `?finesse=0…2` (bloque la finesse), `?sexe=m&cheveux=brun&yeux=marron&peau=p3` (un autre Pisteur).
+## Les essais (`tests/`, Python + Playwright ; ils ouvrent `combat-pisteur.html`, captures dans `/tmp/p5`)
+- `scenes.py` (+ `scenes.js`) : **les règles rejouées à pas fixes**, 29 sur 29 : celles de la version 7 (la dague, l'embuscade, chaque
+  rouge évité à pied, les colères…), et pour la version 8 : `flair` (3,6 sur la piste), `mortier`, `ombre3s`, `chienFrappe` (la ruée),
+  `reparateur`, `carteFleche`, `carteSifflet`, `carteCape`, `reprise`, `vagues`.
+- `robot.js` : un joueur automatique, à pas fixes. **Il ne joue pas les cartes et ne connaît pas les nouvelles combinaisons** : ses
+  mesures disent si une vague se finit sans carte, pas si elle est bien réglée. `lot.py bon|moyen|mal N [vague=N] [une]`,
+  `parvague.sh` (chaque vague jouée seule).
+- `gestes.py` : les vrais gestes au doigt, 36 sur 36 : l'extrait et le bouton jaune, **rien à lire** (jamais plus de trois mots
+  d'affilée à l'écran), les refus qui tremblent, les cartes en simple appui, le bandage, la pause, le choix de la vague, la victoire.
+  `extrait.py` : l'extrait regardé en vrai temps (ses trois scènes font ce qu'elles montrent). `fumee.py` : la page démarre sans erreur.
+  `essai.py fichier.js` : un essai à la main dans la page.
+- `galerie.py` : une capture de chaque coup et de chaque état. `vues.py` : l'explication, les regards, l'ombre, le bandage.
+  `partie-vue.py [inv]` : une partie entière dessinée pour de vrai, avec captures.
+- `vitesse.py` : images par seconde, processeur ralenti 4 ou 6 fois, sans carte graphique.
+- Adresses d'essai : `?extrait=non` (pas d'extrait), `?finesse=0…3` (bloque la finesse), `?sexe=m&cheveux=brun&yeux=marron&peau=p3` (un autre Pisteur).
+- `window.__pt.scene([x,y,angle],[{t:'chien',x,y,fa,immobile:1,grp:2},…])` pose une scène d'essai ; `__pt.figer(true)` puis
+  `__pt.pas(n,1/60)` avancent le jeu à la main.
+
+## Les anciennes versions
+`anciennes-maquettes/` : les trois maquettes de la nuit du 24 au 25 novembre, et `version-4/` (la page refusée, ses règles, ses essais).
+**Les versions 5, 6 et 7 n'ont jamais été rangées sur GitHub** (la conversation qui les a construites ne pouvait pas y écrire) : leurs
+sources n'existent que dans les anciennes versions du canevas. La version 8 part de la 7, retrouvée à l'identique dans le canevas.
+L'arc et la dague circulaire sont dans `plus-tard/`. `outils/` : `rustine.py` et `sansdire.py` (les petits outils de cette version).

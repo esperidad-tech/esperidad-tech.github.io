@@ -90,6 +90,14 @@ function pasVers(g,D,fuir){
     if(di&&dj&&(bloque[j*GW+ni]||bloque[nj*GW+i]))continue;
     if(fuir?D[n]>bd:D[n]<bd){bd=D[n];best=n;}
   }
+  if(best===c&&bloque[c]&&!fuir){
+    /* il s'est retrouvé collé contre un obstacle, là où aucun chemin ne passe : il rejoint la case libre la plus proche */
+    let br=1e9;
+    for(let dj=-4;dj<=4;dj++)for(let di=-4;di<=4;di++){
+      const ni=i+di,nj=j+dj;if(ni<0||nj<0||ni>=GW||nj>=GH)continue;const n=nj*GW+ni;if(bloque[n]||D[n]>=1e8)continue;
+      const r=di*di+dj*dj;if(r<br){br=r;best=n;}
+    }
+  }
   return [((best%GW)+0.5)*CEL,(((best/GW)|0)+0.5)*CEL];
 }
 function allerVers(g,tx,ty,v,dt){const dx=tx-g.x,dy=ty-g.y,d=hyp(dx,dy);if(d<1e-3)return 0;const s=Math.min(v*dt,d);g.x+=dx/d*s;g.y+=dy/d*s;g.marche=(g.marche||0)+s;g.dirM=Math.atan2(dy,dx);return s;}

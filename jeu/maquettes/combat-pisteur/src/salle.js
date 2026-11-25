@@ -6,7 +6,7 @@ const Salle=(()=>{
   const HM=4.6,BOIS=['#a87840','#7a5228','#3e2610'];
   const TORCHES=[{x:2.4,z:2.5},{x:23.6,z:2.5},{x:9.85,z:2.9},{x:16.15,z:2.9}];
   const LAMPES=[{x:-0.45,y:6.2,z:2.25},{x:26.45,y:12.4,z:2.25}];
-  let fond=null,fondA=null,SA=1,SB=1,lumX=null,sprites=new Map(),copies=new Map(),multiplie=true;
+  let fond=null,fondA=null,fondO=null,SO=1,SA=1,SB=1,lumX=null,sprites=new Map(),copies=new Map(),multiplie=true;
   const rr=(g,x,y,w,h,r)=>{g.beginPath();if(g.roundRect)g.roundRect(x,y,w,h,r);else g.rect(x,y,w,h);};
   /* une pierre taillée : sa teinte, son biseau, son grain, parfois une fissure ou une tache */
   function pierre(g,R,X,Y,W,H,ton,chaud,rel){
@@ -152,10 +152,28 @@ const Salle=(()=>{
   }
   /* quand la finesse baisse : des copies plus petites, recopiées telles quelles (rien n'est repeint) */
   function adapter(S1){
-    for(const v of copies.values())v.c.width=v.c.height=0;copies.clear();
+    for(const v of copies.values()){v.c.width=v.c.height=0;if(v.o)v.o.width=v.o.height=0;}copies.clear();
     if(fondA&&fondA!==fond)fondA.width=fondA.height=0;
-    if(Math.abs(S1-SB)<1e-3){fondA=fond;SA=SB;return;}
-    SA=S1;fondA=toile(SW*S1,SH*S1);fondA.getContext('2d').drawImage(fond,0,0,fondA.width,fondA.height);
+    if(Math.abs(S1-SB)<1e-3){fondA=fond;SA=SB;}
+    else{SA=S1;fondA=toile(SW*S1,SH*S1);fondA.getContext('2d').drawImage(fond,0,0,fondA.width,fondA.height);}
+    cuireOmbre();
+  }
+  /* le monde de l'ombre : une deuxième image de la salle, sombre et bleu-violet, cuite d'avance, à la même taille que l'autre
+     (elle se recopie telle quelle : elle ne coûte rien en vitesse) */
+  function teinter(g,w,h){
+    g.globalCompositeOperation='multiply';
+    if(g.globalCompositeOperation==='multiply'){g.fillStyle='#5a56b4';g.fillRect(0,0,w,h);g.globalCompositeOperation='source-over';g.fillStyle='rgba(30,16,84,.34)';g.fillRect(0,0,w,h);}
+    else{g.globalCompositeOperation='source-over';g.fillStyle='rgba(26,16,78,.62)';g.fillRect(0,0,w,h);}
+  }
+  function cuireOmbre(){
+    if(fondO)fondO.width=fondO.height=0;
+    SO=SA;fondO=toile(fondA.width,fondA.height);const g=fondO.getContext('2d');
+    g.drawImage(fondA,0,0);teinter(g,fondO.width,fondO.height);
+  }
+  function spriteOmbre(s){
+    if(s.o)return s.o;
+    const o=toile(s.c.width,s.c.height),x=o.getContext('2d');x.drawImage(s.c,0,0);x.globalCompositeOperation='source-atop';x.fillStyle='rgba(38,26,108,.56)';x.fillRect(0,0,o.width,o.height);
+    return s.o=o;
   }
   function spriteA(o){
     const s=sprite0(o);if(fondA===fond)return s;
@@ -261,9 +279,12 @@ const Salle=(()=>{
     }
     sprites.set(cle,brut);return brut;
   }
-  function dessinerObstacle(c,o,a){
-    if(o.fond)return;const s=spriteA(o);
-    if(a<1)c.globalAlpha=a;c.drawImage(s.c,px(o.x)-s.ox,py(o.y)-s.oy,s.w,s.h);if(a<1)c.globalAlpha=1;
+  /* om : de 0 (à découvert) à 1 (dans l'ombre) */
+  function dessinerObstacle(c,o,a,om){
+    if(o.fond)return;const s=spriteA(o),X=px(o.x)-s.ox,Y=py(o.y)-s.oy;
+    if(!(om>=1)){if(a<1)c.globalAlpha=a;c.drawImage(s.c,X,Y,s.w,s.h);}
+    if(om>0){c.globalAlpha=a*Math.min(1,om);c.drawImage(spriteOmbre(s),X,Y,s.w,s.h);}
+    c.globalAlpha=1;
   }
-  return {preparer,adapter,dessinerObstacle,sprite0,TORCHES,LAMPES,HM,get fond(){return fondA;},get SB(){return SA;}};
+  return {preparer,adapter,dessinerObstacle,sprite0,TORCHES,LAMPES,HM,get fond(){return fondA;},get SB(){return SA;},get fondO(){return fondO;},get SO(){return SO;}};
 })();
