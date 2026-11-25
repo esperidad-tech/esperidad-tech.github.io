@@ -1,4 +1,4 @@
-const G = require('./logic16.js');
+const G = require('./logic17.js');
 const ok = (c, m) => console.log((c ? 'ok   ' : 'RATÉ ') + m);
 const mk = (s, type, x, y, extra = {}) => { const T = G.TYPES[type]; const u = { id: s.nextId++, type, x, y, r: T.r, hp: 50, max: 50, vx: 0, vy: 0, atk: 0.5, daze: 0, flash: 0, burn: 0, burnCd: 0, burnTick: 0, held: false, fear: 0, dance: 0, charmCd: 0, ...extra }; s.soldiers.push(u); return u; };
 const quiet = s => { s.spawnT = 1e9; s.burstT = 1e9; };
@@ -82,3 +82,11 @@ const combo = (seed, id, L) => { const s = G.newGame({ seed }); quiet(s); s.bolt
 { const s = combo(65, 'miroir', 3); s.ink = 30; const us = [0, 1, 2, 3, 4, 5, 6, 7].map(k => { const a = k * Math.PI / 4; return mk(s, 'cogneur', 450 + Math.sin(a) * 200, 445 - Math.cos(a) * 200, { hp: 1 }); }); const i0 = s.ink; G.cast(s, { kind: 'trait', a: { x: 400, y: 245 }, b: { x: 500, y: 245 } }); ok(us.every(u => u.hp <= 0), 'mandala : les 8 golems autour sont touchés'); ok(i0 - s.ink === G.costOf(s, { kind: 'trait' }), 'les copies sont gratuites'); }
 // la colère du cœur
 { const s = G.newGame({ seed: 66 }); quiet(s); s.realT = 719; run(s, 1.1); ok(s.rage === 1, 'colère à 12 minutes'); s.realT = 840; G.step(s, 1 / 60, false); ok(s.rage === 2, 'rage à 14 minutes'); }
+// version 17 : deux amis à protéger (le Barde et l'Alchimiste), plus de Pisteur
+{ const s = G.newGame({ seed: 70 }); ok(s.friends.length === 2 && s.friends.map(f => f.id).sort().join('') === 'AB' && !G.CODES.P && G.ORDER.length === 2, 'deux amis à protéger : le Barde et l’Alchimiste, pas de Pisteur'); }
+{ const s = G.newGame({ seed: 71 }); const r = G.enterCode(s, ['🔥', '🌙', '⭐']); ok(!r.ok && s.entered.length === 0, 'l’ancien code du Pisteur ne marche plus'); }
+{ const s = G.newGame({ seed: 72 }); const p0 = (s.protection = 10); const r1 = G.enterCode(s, G.CODES.B); ok(r1.ok && !s.over && s.friends.find(f => f.id === 'B').free && s.protection === p0 + s.cfg.codeBonus, 'premier code : le Barde vient aider, pas encore gagné');
+  s.realT = 5; for (let i = 0; i < 400; i++) G.step(s, 1 / 60, false); ok(!s.over, 'un seul ami encore à protéger : le combat continue');
+  const r2 = G.enterCode(s, G.CODES.A); ok(r2.ok && s.over === 'win', 'deuxième code : gagné'); }
+{ const s = G.newGame({ seed: 73, cfg: { duree: 480 } }); const t = Object.values(s.codeAt).sort((a, b) => a - b); ok(t.length === 2 && t[1] === 480 && t[0] > 230 && t[0] < 295, 'les deux codes : le premier un peu après la moitié, le dernier à la fin ' + JSON.stringify(t)); }
+{ const s = G.newGame({ seed: 74 }); s.realT = 200; s.protection = s.cfg.protection = 1e6; const touche = { A: 0, B: 0 }; for (let i = 0; i < 60 * 90; i++) { G.step(s, 1 / 60, false); for (const f of s.friends) if (f.flash > 0) touche[f.id] = 1; } ok(touche.A && touche.B && s.protection < 1e6, 'sans le Sage, les golems frappent bien les deux amis ' + JSON.stringify(touche)); }

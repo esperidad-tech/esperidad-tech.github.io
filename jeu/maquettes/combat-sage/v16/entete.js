@@ -1,4 +1,4 @@
-// ===== Le rendu (version 16) : la grande salle vue de haut, Grosbec dans son armure, ses golems, les trois amis de dos =====
+// ===== Le rendu (version 16) : la grande salle vue de haut, Grosbec dans son armure, ses golems, les amis de dos (deux depuis la version 17 : le Barde et l'Alchimiste) =====
 // Les golems et Grosbec sont les modèles du combat du Barde (barde/golems.js, barde/grosbec.js) : chaque image est peinte UNE fois
 // (« cuite »), puis recopiée. La salle aussi est peinte une seule fois. Rien n'est redessiné à chaque image : ça ne doit jamais ramer.
 const TAU = Math.PI * 2;

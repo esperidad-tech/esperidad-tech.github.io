@@ -1,4 +1,4 @@
-// ===== Le rendu (version 16) : la grande salle vue de haut, Grosbec dans son armure, ses golems, les trois amis de dos =====
+// ===== Le rendu (version 16) : la grande salle vue de haut, Grosbec dans son armure, ses golems, les amis de dos (deux depuis la version 17 : le Barde et l'Alchimiste) =====
 // Les golems et Grosbec sont les modèles du combat du Barde (barde/golems.js, barde/grosbec.js) : chaque image est peinte UNE fois
 // (« cuite »), puis recopiée. La salle aussi est peinte une seule fois. Rien n'est redessiné à chaque image : ça ne doit jamais ramer.
 const TAU = Math.PI * 2;
@@ -233,7 +233,7 @@ function star(x, y, r, col) {
   ctx.drawImage(c, x - r, y - r, r * 2, r * 2);
 }
 
-// ----- les trois amis, vus de dos : ils font face à Grosbec (peints une fois, puis recopiés) -----
+// ----- les amis, vus de dos : ils font face à Grosbec (peints une fois, puis recopiés). Le Pisteur n'est plus dessiné depuis la version 17 (son dessin est gardé ici au cas où) -----
 function heroDos(id, sc) {
   const W = 78, H = 100, OX = 39, OY = 90, c = mk(W * sc, H * sc), x = c.getContext('2d'); x.scale(sc, sc); x.translate(OX, OY); x.lineCap = 'round';
   const E = (cx, cy, rx, ry, col, rot = 0) => { x.beginPath(); x.ellipse(cx, cy, rx, ry, rot, 0, TAU); if (col) { x.fillStyle = col; x.fill(); } };
@@ -387,6 +387,8 @@ function gbPoses() {
   };
 }
 // à quelle finesse le cuire (selon l'écran), et quoi recuire quand son état change (son casque se fend à chaque code, il enrage)
+// le casque se fend à chaque ami vainqueur : de 0 à 3 fissures, quel que soit le nombre d'amis (2 depuis la version 17)
+const gbFissures = () => Math.round(s.entered.length * 3 / G.ORDER.length);
 function gbRegler(kv, etat) {
   const kc = Math.round(Math.min(1, Math.max(0.3, GB.h / 286 * kv * 0.85)) * 20) / 20;
   if (kc === GB.kc && etat === GB.etat) return;
@@ -445,7 +447,7 @@ const GBMOTS = ['Allez, allez !', 'Écrasez-les !', 'Allez ! Plus vite !', 'Attr
 function gbSuivre(t, dt) {
   if (R8.jeu !== s) { R8.jeu = s; GB.g = null; GB.rage = 0; GB.flash = 0; GB.mots = null; R8.tirs = []; R8.tir = {}; R8.anim.clear(); }
   if (GB.flash > 0) GB.flash -= dt;
-  gbRegler(view().k / (FIN || 1), s.entered.length + '|' + (s.rage ? 1 : 0));   // la même taille que dans ensureSprites : sans la finesse
+  gbRegler(view().k / (FIN || 1), gbFissures() + '|' + (s.rage ? 1 : 0));   // la même taille que dans ensureSprites : sans la finesse
   if ((s.rage || 0) > GB.rage) { GB.rage = s.rage; GB.g = { nom: 'silence', t0: t }; GB.mots = { t0: t, txt: s.rage === 1 ? 'ASSEZ !' : 'RRAAAH !' }; }
 }
 function gbFx(e, t) {
@@ -456,7 +458,7 @@ function gbFx(e, t) {
   if (e.k === 'free') { GB.g = { nom: 'touche', t0: t }; GB.flash = 0.25; const p = gbPoint('tete'); burst(p.x, p.y, 26, { k: 'spark', col: '#ffd23f', v0: 80, v1: 300, vz0: 40, vz1: 200, s0: 2, s1: 4.5, g: 300 }); }
 }
 
-// ----- les trois amis attaquent Grosbec, de temps en temps : des flèches, des potions, des éclairs (pour le spectacle : ça ne change rien au combat) -----
+// ----- les amis attaquent Grosbec, de temps en temps : des flèches, des potions, des éclairs (pour le spectacle : ça ne change rien au combat) -----
 function tirsAmis(t, dt) {
   if (!s.over) for (const f of s.friends) {
     const T = R8.tir[f.id] || (R8.tir[f.id] = { next: t + 1.2 + Math.random() * 3.5, kick: 0 });
@@ -663,12 +665,12 @@ function ensureSprites() {
     R8.spr.parch = makeParchment();
     R8.spr.ombre = ombreSprite(sc); R8.spr.cuirasse = cuirasseSprite(sc * 1.5);
     { const c = mk(48 * sc, 20 * sc), g = c.getContext('2d'), gr = g.createRadialGradient(24 * sc, 24 * sc, 0, 24 * sc, 24 * sc, 24 * sc); gr.addColorStop(0, 'rgba(201,191,168,.9)'); gr.addColorStop(1, 'rgba(201,191,168,0)'); g.scale(1, 20 / 48); g.fillStyle = gr; g.fillRect(0, 0, 48 * sc, 48 * sc); R8.spr.fumee = c; }   // un nuage de poussière
-    R8.spr.dos = { P: heroDos('P', sc * 1.25), A: heroDos('A', sc * 1.25), B: heroDos('B', sc * 1.25) };
+    R8.spr.dos = { A: heroDos('A', sc * 1.25), B: heroDos('B', sc * 1.25) };   // version 17 : plus de Pisteur
   }
   // les golems et Grosbec sont cuits à la taille de l'écran (on ne les recuit que si elle change vraiment)
   const kg = Math.round(Math.min(1.3, Math.max(0.45, kvR * 0.64)) * 10) / 10;
   if (kg !== R8.kg) { R8.kg = kg; Golems.regler(kg); Golems.prevoir(Object.values(GOLEM).map(P => P.m)); }
-  gbRegler(kvR, s ? s.entered.length + '|' + (s.rage ? 1 : 0) : GB.etat || '0|0');
+  gbRegler(kvR, s ? gbFissures() + '|' + (s.rage ? 1 : 0) : GB.etat || '0|0');
 }
 // ----- particules (cailloux, poussière, étincelles) -----
 function burst(x, y, n, o) {

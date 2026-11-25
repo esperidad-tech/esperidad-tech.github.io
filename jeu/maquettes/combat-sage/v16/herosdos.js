@@ -1,4 +1,4 @@
-// ----- les trois amis, vus de dos : ils font face à Grosbec (peints une fois, puis recopiés) -----
+// ----- les amis, vus de dos : ils font face à Grosbec (peints une fois, puis recopiés). Le Pisteur n'est plus dessiné depuis la version 17 (son dessin est gardé ici au cas où) -----
 function heroDos(id, sc) {
   const W = 78, H = 100, OX = 39, OY = 90, c = mk(W * sc, H * sc), x = c.getContext('2d'); x.scale(sc, sc); x.translate(OX, OY); x.lineCap = 'round';
   const E = (cx, cy, rx, ry, col, rot = 0) => { x.beginPath(); x.ellipse(cx, cy, rx, ry, rot, 0, TAU); if (col) { x.fillStyle = col; x.fill(); } };

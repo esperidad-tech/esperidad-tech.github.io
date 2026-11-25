@@ -15,6 +15,8 @@ function gbPoses() {
   };
 }
 // à quelle finesse le cuire (selon l'écran), et quoi recuire quand son état change (son casque se fend à chaque code, il enrage)
+// le casque se fend à chaque ami vainqueur : de 0 à 3 fissures, quel que soit le nombre d'amis (2 depuis la version 17)
+const gbFissures = () => Math.round(s.entered.length * 3 / G.ORDER.length);
 function gbRegler(kv, etat) {
   const kc = Math.round(Math.min(1, Math.max(0.3, GB.h / 286 * kv * 0.85)) * 20) / 20;
   if (kc === GB.kc && etat === GB.etat) return;
@@ -73,7 +75,7 @@ const GBMOTS = ['Allez, allez !', 'Écrasez-les !', 'Allez ! Plus vite !', 'Attr
 function gbSuivre(t, dt) {
   if (R8.jeu !== s) { R8.jeu = s; GB.g = null; GB.rage = 0; GB.flash = 0; GB.mots = null; R8.tirs = []; R8.tir = {}; R8.anim.clear(); }
   if (GB.flash > 0) GB.flash -= dt;
-  gbRegler(view().k / (FIN || 1), s.entered.length + '|' + (s.rage ? 1 : 0));   // la même taille que dans ensureSprites : sans la finesse
+  gbRegler(view().k / (FIN || 1), gbFissures() + '|' + (s.rage ? 1 : 0));   // la même taille que dans ensureSprites : sans la finesse
   if ((s.rage || 0) > GB.rage) { GB.rage = s.rage; GB.g = { nom: 'silence', t0: t }; GB.mots = { t0: t, txt: s.rage === 1 ? 'ASSEZ !' : 'RRAAAH !' }; }
 }
 function gbFx(e, t) {
@@ -84,7 +86,7 @@ function gbFx(e, t) {
   if (e.k === 'free') { GB.g = { nom: 'touche', t0: t }; GB.flash = 0.25; const p = gbPoint('tete'); burst(p.x, p.y, 26, { k: 'spark', col: '#ffd23f', v0: 80, v1: 300, vz0: 40, vz1: 200, s0: 2, s1: 4.5, g: 300 }); }
 }
 
-// ----- les trois amis attaquent Grosbec, de temps en temps : des flèches, des potions, des éclairs (pour le spectacle : ça ne change rien au combat) -----
+// ----- les amis attaquent Grosbec, de temps en temps : des flèches, des potions, des éclairs (pour le spectacle : ça ne change rien au combat) -----
 function tirsAmis(t, dt) {
   if (!s.over) for (const f of s.friends) {
     const T = R8.tir[f.id] || (R8.tir[f.id] = { next: t + 1.2 + Math.random() * 3.5, kick: 0 });

@@ -10,10 +10,10 @@ function ensureSprites() {
     R8.spr.parch = makeParchment();
     R8.spr.ombre = ombreSprite(sc); R8.spr.cuirasse = cuirasseSprite(sc * 1.5);
     { const c = mk(48 * sc, 20 * sc), g = c.getContext('2d'), gr = g.createRadialGradient(24 * sc, 24 * sc, 0, 24 * sc, 24 * sc, 24 * sc); gr.addColorStop(0, 'rgba(201,191,168,.9)'); gr.addColorStop(1, 'rgba(201,191,168,0)'); g.scale(1, 20 / 48); g.fillStyle = gr; g.fillRect(0, 0, 48 * sc, 48 * sc); R8.spr.fumee = c; }   // un nuage de poussière
-    R8.spr.dos = { P: heroDos('P', sc * 1.25), A: heroDos('A', sc * 1.25), B: heroDos('B', sc * 1.25) };
+    R8.spr.dos = { A: heroDos('A', sc * 1.25), B: heroDos('B', sc * 1.25) };   // version 17 : plus de Pisteur
   }
   // les golems et Grosbec sont cuits à la taille de l'écran (on ne les recuit que si elle change vraiment)
   const kg = Math.round(Math.min(1.3, Math.max(0.45, kvR * 0.64)) * 10) / 10;
   if (kg !== R8.kg) { R8.kg = kg; Golems.regler(kg); Golems.prevoir(Object.values(GOLEM).map(P => P.m)); }
-  gbRegler(kvR, s ? s.entered.length + '|' + (s.rage ? 1 : 0) : GB.etat || '0|0');
+  gbRegler(kvR, s ? gbFissures() + '|' + (s.rage ? 1 : 0) : GB.etat || '0|0');
 }

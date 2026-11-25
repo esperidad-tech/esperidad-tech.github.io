@@ -5760,13 +5760,13 @@ Romain (9 h 49 à 10 h 20, sur son iPhone, avec `?volume=1`) : « le donjon a l'
 
 **Pas vérifié** : une vraie tablette, un vrai téléphone (la fluidité quand deux zones sont dessinées sans brume, et l'effacement de cinq secondes).
 
-## 15. L'enquête 10, le combat final — le combat du Sage contre Grosbec (jusqu'à la version 15 : « contre le cœur de l'armure ») (maquette, 23-24 novembre) — RÈGLES, COMBOS ET SONS FINIS POUR ROMAIN (24 novembre, 19 h 16) ; DESSINS REFAITS D'APRÈS LE COMBAT DU BARDE (version 16, 23 h 25, PAS ENCORE VUS PAR ROMAIN) ; HORS DU JEU, RIEN EN LIGNE SUR LE SITE
+## 15. L'enquête 10, le combat final — le combat du Sage contre Grosbec (jusqu'à la version 15 : « contre le cœur de l'armure ») (maquette, 23-24 novembre) — RÈGLES, COMBOS ET SONS FINIS POUR ROMAIN (24 novembre, 19 h 16) ; DESSINS REFAITS D'APRÈS LE COMBAT DU BARDE (version 16, 23 h 25) ; DEUX AMIS À PROTÉGER AU LIEU DE TROIS, LE PISTEUR ENLEVÉ (version 17, 25 novembre, 15 h 04, À LA DEMANDE DE ROMAIN, PAS ENCORE VUE) ; HORS DU JEU, RIEN EN LIGNE SUR LE SITE
 
-**Tout le détail** (ce que Romain a dit heure par heure, les chiffres, les mesures du robot) : `jeu/maquettes/combat-sage/LISEZ-MOI.md`. **La maquette jouable (version 16)** : https://claude.ai/artifact/S3UzmZhUvPFUscZeZs6DTy (la même page, toute faite : `jeu/maquettes/combat-sage/combat-sage.html`).
+**Tout le détail** (ce que Romain a dit heure par heure, les chiffres, les mesures du robot) : `jeu/maquettes/combat-sage/LISEZ-MOI.md`. **La maquette jouable (version 17)** : https://claude.ai/artifact/S3UzmZhUvPFUscZeZs6DTy (la même page, toute faite : `jeu/maquettes/combat-sage/combat-sage.html`).
 
 ### 15.1 Le principe [Romain]
-- Au combat final, chaque héros a son propre combat. **Le Sage protège les trois autres** (au milieu de la grande salle), en temps réel, contre les golems de Grosbec (jusqu'à la version 15 : « le cœur de l'armure ») : un mélange de Vampire Survivors et du pinceau d'Okami [Romain, 24 nov., 0 h 57]. Le Sage court là où on garde le doigt ; son bâton tire tout seul ; son corps arrête les pierres.
-- **Les codes des amis** : quand un ami gagne son combat, il crie son code ; le Sage le tape ; l'ami vient l'aider avec son pouvoir (le Pisteur : flèches et sauts à la dague ; l'Alchimiste : fioles de boue, de lianes ou de feu ; le Barde : partitions qui font faire demi-tour, danser ou qui repoussent). **Les trois codes = gagné** (« L'armure tombe ! »). **À 15 minutes, ingagnable.**
+- Au combat final, chaque héros a son propre combat. **Le Sage protège les autres** (au milieu de la grande salle ; **depuis le 25 novembre : seulement le Barde et l'Alchimiste**, voir §15.7 ; avant : les trois autres), en temps réel, contre les golems de Grosbec (jusqu'à la version 15 : « le cœur de l'armure ») : un mélange de Vampire Survivors et du pinceau d'Okami [Romain, 24 nov., 0 h 57]. Le Sage court là où on garde le doigt ; son bâton tire tout seul ; son corps arrête les pierres.
+- **Les codes des amis** : quand un ami gagne son combat, il crie son code ; le Sage le tape ; l'ami vient l'aider avec son pouvoir (le Pisteur : flèches et sauts à la dague ; l'Alchimiste : fioles de boue, de lianes ou de feu ; le Barde : partitions qui font faire demi-tour, danser ou qui repoussent). **Les trois codes = gagné** (« L'armure tombe ! » ; **depuis la version 17 : les deux codes**, §15.7). **À 15 minutes, ingagnable.**
 - **Ça durcit** : les golems ont plus de vies avec le temps, les grosses vagues arrivent d'un côté de plus toutes les 3 minutes, deux fois plus de lanceurs après 10 minutes.
 
 ### 15.2 Les runes
@@ -5783,7 +5783,7 @@ Romain (9 h 49 à 10 h 20, sur son iPhone, avec `?volume=1`) : « le donjon a l'
 ### 15.5 Ce qui reste
 - **Les dessins des golems et du sol** [Romain, 24 nov., 19 h 16 : « peut-être à refaire », selon les graphismes du jeu du Barde] : **refaits en version 16**, voir §15.6. À voir par Romain.
 - **Rien n'est dans le jeu** : la place du combat dans l'enquête 10 et le passage des codes (à la voix, les tablettes ne se parlent pas) sont à faire quand le combat final sera construit ; il faudra aussi les boutons 🔊 et les héros en volume.
-- **Questions encore ouvertes** : un golem qui danse (partition du Barde) compte-t-il comme sonné ? La dague du Pisteur « 2 coups » = 2 dégâts d'un coup (compris ainsi) ?
+- **Questions encore ouvertes** : un golem qui danse (partition du Barde) compte-t-il comme sonné ? La dague du Pisteur « 2 coups » = 2 dégâts d'un coup (compris ainsi) ? (ne se pose plus ici : le Pisteur est enlevé, §15.7.) **Le Pisteur doit-il quand même crier un code au Sage ? (§15.7)**
 
 ### 15.6 La version 16 : la salle, Grosbec et ses golems, vus de haut (24 novembre, 23 h 25) [Romain, 22 h 22]
 **Ce que Romain a demandé** (après avoir vu les images du combat du Barde, §16) : « **remplacer tous les golems** par le nouveau genre de golem » ; « **remplacer le cœur qui est en haut par l'armure du corbeau, l'armure de Grosbec** », « **une version vue de haut** », qui « **prenne pas de ressources** » ; « **les trois personnages au centre, tournés vers Grosbec** », qui « de temps en temps **envoient des flèches, des éclairs et des potions** sur Grosbec » ; la salle : « tu reprends les textures de la salle et tu les adaptes […] **bien moins travaillée forcément et surtout très économe en énergie. Faut surtout pas que ça rame ce mini-jeu.** Mais **il faut qu'on reconnaisse la salle, Grosbec, il faut qu'on reconnaisse les golems** […] la salle, il faut que ça soit **la même, mais vue de haut** ». 22 h 25 : « Tu peux faire ça et me mettre en ligne. »
@@ -5797,7 +5797,21 @@ Romain (9 h 49 à 10 h 20, sur son iPhone, avec `?volume=1`) : « le donjon a l'
 
 **Choix de Claude, à valider par Romain** : le sol est vu de haut mais les personnages restent debout (à la verticale, on ne reconnaîtrait ni Grosbec ni les golems) ; quel golem remplace lequel ; les golems du fond en deux files, par les portes (le robot ne voit pas de différence de difficulté) ; les tirs des amis ne font rien ; les amis dessinés simplement (pas les héros en volume) ; Grosbec sans voix ni bruits d'armure ici ; dans la petite fenêtre, sur un téléphone, les jauges cachent les deux portes (pas en plein écran).
 
-**Le code** : `jeu/maquettes/combat-sage/` (`v16/`, `render16.js`, `logic16.js`, `build16_part.py` ; les modèles du Barde, copies de sa version 9, dans `barde/`, retouchés par `modeles_barde.py`). Tout le détail : son `LISEZ-MOI.md`.
+**Le code** : `jeu/maquettes/combat-sage/` (`v16/`, `render16.js`, `logic17.js` (avant : `logic16.js`), `build16_part.py`, `build17_part.py` ; les modèles du Barde, copies de sa version 9, dans `barde/`, retouchés par `modeles_barde.py`). Tout le détail : son `LISEZ-MOI.md`.
+
+### 15.7 La version 17 : deux amis à protéger, le Pisteur enlevé (25 novembre, 15 h 04) [Romain, 14 h 52]
+**Ce que Romain a demandé** : « J'aimerais que **le Sage, il ait que deux personnes à protéger, juste le Barde et l'Alchimiste**. Juste, j'aimerais que tu **enlèves le Pisteur**. » « Fais cette modification et mets-le en ligne. » (Le Pisteur a maintenant son propre combat, contre la garde de Grosbec : §17.)
+
+**Ce qui est fait** :
+- **Deux amis au milieu**, côte à côte sur la rosace : le Barde à gauche, l'Alchimiste à droite.
+- **Le Pisteur est enlevé partout** (lecture de Claude, la plus stricte) : plus au milieu, **plus de code**, plus de pouvoir (salves de flèches, dague) dans ce combat. L'ancien code d'essai 🔥 🌙 ⭐ est refusé.
+- **Deux codes** : le premier fait venir l'ami (protection +3), **le deuxième fait gagner**. Un seul ami vient donc aider par partie, le Barde ou l'Alchimiste.
+- Tout le reste est inchangé (la salle, Grosbec, les golems, les runes, les combos, les sons).
+- **Au robot** : le début est un peu plus facile (il tient 2 min 35 au lieu de 2 min 04 sans les codes) ; avec des amis qui finissent à 4 minutes, il gagne aussi souvent qu'avant (17 parties sur 48, contre 19).
+
+**⚠️ Question ouverte, à poser à Romain — elle touche aussi le combat du Pisteur (§17)** : le Pisteur doit-il quand même crier un code au Sage à la fin de son combat (trois codes pour gagner, sans être à protéger) ? Aujourd'hui non : le Sage gagne dès que le Barde et l'Alchimiste ont gagné, même si le Pisteur se bat encore. **Le combat du Pisteur garde pour l'instant un code de fin 🔥 🌙 ⭐ (§17.9) que plus aucun combat n'attend.**
+
+**Le code** : `jeu/maquettes/combat-sage/` (`logic17.js`, `build17_part.py`, `v16/sprites.js` et `v16/grosbec.js` retouchés). Détail : son `LISEZ-MOI.md`, « La version 17 ».
 
 ## 16. L'enquête 10, le combat final — le combat du Barde contre Grosbec, et les modèles de la ville d'en bas (maquette, 24 novembre, version 11) — HORS DU JEU, RIEN EN LIGNE SUR LE SITE, PAS ENCORE SUR GITHUB
 

@@ -1,4 +1,4 @@
-// Le Sage contre Grosbec — maquette 16 : la grande salle vue de haut, Grosbec et ses golems (ceux du combat du Barde) ; 10 combos à 3 niveaux, la colère de Grosbec
+// Le Sage contre Grosbec — maquette 17 : la grande salle vue de haut, Grosbec et ses golems (ceux du combat du Barde) ; 10 combos à 3 niveaux, la colère de Grosbec
 const G = (() => {
   const W = 900, H = 900;
   const CFG = {
@@ -14,7 +14,7 @@ const G = (() => {
     pageFirst: 1, pageStep: 1.5,
     hpEvery: 90, hpGrosEvery: 60, hpGros: 2, sideEvery: 180, shootersX2At: 600,
     // les amis libérés
-    volleyCd: 2.6, volleyN: 4, arrowDmg: 2, daggerR: 70, daggerCd: 1.2, daggerDmg: 2,
+    
     potionCd: 2, puddleR: 85, puddleLife: 5, mudSlow: 0.2, burnT: 4, burnDmg: 1,
     noteCd: 2.5, noteSpeed: 330, noteRange: 520, charmT: 3
   };
@@ -107,9 +107,11 @@ const G = (() => {
     lanceur: { r: 16, hp: 2, speed: 60, dmg: 1, rate: 2.4, shards: 1, range: 240 }
   };
   const SYMS = ['🔥', '💧', '🌙', '⭐', '🔑', '🍃'];
-  const CODES = { P: ['🔥', '🌙', '⭐'], A: ['⭐', '🔥', '💧'], B: ['🔑', '💧', '🍃'] };
-  const ORDER = ['P', 'A', 'B'];
-  const POSTE = { P: 'les jambes', A: 'le bras', B: 'le casque' };
+  // version 17 [Romain, 25 nov. : « que deux personnes à protéger, juste le Barde et l'Alchimiste », « enlève le Pisteur »] :
+  // le Pisteur n'est plus dans ce combat (il a le sien, contre la garde de Grosbec) : ni au milieu, ni dans les codes.
+  const CODES = { A: ['⭐', '🔥', '💧'], B: ['🔑', '💧', '🍃'] };
+  const ORDER = ['A', 'B'];
+  const POSTE = { A: 'le bras', B: 'le casque' };
   const HEART = { x: 450, y: 175 };
   const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
   const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
@@ -121,9 +123,8 @@ const G = (() => {
     const s = {
       cfg, W, H, t: 0, realT: 0, seed: o.seed ?? ((Math.random() * 1e9) | 0),
       friends: [
-        { id: 'B', nom: 'le Barde', x: 450, y: 405, r: 27, flash: 0, free: false, cd: 0 },
-        { id: 'P', nom: 'le Pisteur', x: 410, y: 468, r: 27, flash: 0, free: false, cd: 0 },
-        { id: 'A', nom: "l'Alchimiste", x: 490, y: 468, r: 27, flash: 0, free: false, cd: 0 }],
+        { id: 'B', nom: 'le Barde', x: 411, y: 443, r: 27, flash: 0, free: false, cd: 0 },
+        { id: 'A', nom: "l'Alchimiste", x: 489, y: 443, r: 27, flash: 0, free: false, cd: 0 }],
       sage: { x: 450, y: 600, r: 22, tx: null, ty: null, aim: [0, -1] },
       heart: { bare: false },
       soldiers: [], bolts: [], stones: [], shards: [], walls: [], fx: [], puddles: [], potions: [], notes: [],
@@ -133,8 +134,9 @@ const G = (() => {
       kills: 0, runes: 0, nextId: 1, over: null, shake: 0, msg: '', msgT: 0
     };
     // l'ordre où les amis finissent leur combat change à chaque partie
-    const order = [...ORDER]; for (let i = 2; i > 0; i--) { const j = Math.floor(rng(s) * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
-    const times = cfg.codeTimes || [0.5, 0.75, 1].map((k, i) => Math.round(cfg.duree * k * (i < 2 ? 0.9 + rng(s) * 0.2 : 1)));
+    const order = [...ORDER]; for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rng(s) * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+    // le premier ami gagne un peu après la moitié du temps choisi (à 10 % près), le dernier à la fin
+    const times = cfg.codeTimes || [0.55, 1].map((k, i) => Math.round(cfg.duree * k * (i < 1 ? 0.9 + rng(s) * 0.2 : 1)));
     s.order = order; s.codeAt = Object.fromEntries(order.map((id, i) => [id, times[i]]));
     return s;
   }
@@ -332,15 +334,6 @@ const G = (() => {
       f.cd -= dt; f.cd2 = (f.cd2 || 0) - dt; if (f.shoot > 0) f.shoot -= dt;
       if (f.leap) { f.leap.t -= dt; if (f.leap.t <= 0) f.leap = null; }
       const nearest = R => { let tg = null, b = R; for (const u of s.soldiers) { const d = dist(f, u); if (u.hp > 0 && d < b && !flying(s, u)) { b = d; tg = u; } } return tg; };
-      if (f.id === 'P') {
-        // un golem trop près : il lui saute dessus avec sa dague
-        if (f.cd2 <= 0 && !f.leap) {
-          let tg = null, b = c.daggerR; for (const u of s.soldiers) { const d = dist(f, u) - u.r - f.r; if (u.hp > 0 && d < b) { b = d; tg = u; } }
-          if (tg) { f.leap = { x: tg.x, y: tg.y, t: 0.42, max: 0.42 }; s.fx.push({ k: 'slash', x: tg.x, y: tg.y, life: 0.35, max: 0.35 }); hurt(s, tg, c.daggerDmg); f.cd2 = c.daggerCd; }
-        }
-        // une salve de flèches en éventail
-        if (f.cd <= 0) { const tg = nearest(460); if (tg) { const a0 = Math.atan2(tg.y - f.y, tg.x - f.x); for (let i = 0; i < c.volleyN; i++) { const a = a0 + (i - (c.volleyN - 1) / 2) * 0.11; s.bolts.push({ x: f.x, y: f.y, vx: Math.cos(a) * 900, vy: Math.sin(a) * 900, life: 0.62, dmg: c.arrowDmg, arrow: true }); } f.cd = c.volleyCd; f.shoot = 0.35; } }
-      }
       if (f.id === 'A' && f.cd <= 0) {
         // une fiole là où les golems sont le plus serrés : boue, lianes ou feu, au hasard
         let best = null, bn = 0;
@@ -746,7 +739,7 @@ const G = (() => {
         const f = s.friends.find(x => x.id === id); f.free = true; f.cd = 0.3;
         s.protection = Math.min(s.cfg.protection, s.protection + s.cfg.codeBonus);
         s.fx.push({ k: 'free', x: f.x, y: f.y, life: 1, max: 1 });
-        if (s.entered.length === 3) { s.over = 'win'; s.heart.bare = true; s.soldiers = []; s.stones = []; s.notes = []; s.potions = []; s.puddles = []; s.shake = 0.4; say(s, 'Tes trois amis ont gagné : l’armure tombe !', 6); }
+        if (s.entered.length === ORDER.length) { s.over = 'win'; s.heart.bare = true; s.soldiers = []; s.stones = []; s.notes = []; s.potions = []; s.puddles = []; s.shake = 0.4; say(s, 'Tes deux amis ont gagné : l’armure tombe !', 6); }
         else say(s, `${cap(f.nom)} vient t’aider ! Protection +${s.cfg.codeBonus}.`, 3);
         return { ok: true, id };
       }

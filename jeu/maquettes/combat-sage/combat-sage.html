@@ -106,7 +106,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
 <body>
 <header>
   <h1>Le Sage contre Grosbec</h1>
-  <p>Maquette n° 16 : la grande salle de Grosbec vue de haut, Grosbec dans son armure et ses golems (les mêmes que dans le combat du Barde), les trois amis de dos qui l’attaquent. Les règles, les 10 combos et les sons ne changent pas. Le bouton 🎚️ règle le volume ; au clavier, Entrée ou Espace pour graver, 1, 2, 3 pour choisir une carte.</p>
+  <p>Maquette n° 17 : le Sage n’a plus que deux amis à protéger, le Barde et l’Alchimiste (le Pisteur n’est plus dans ce combat). Deux codes font gagner. Le reste ne change pas : la grande salle de Grosbec vue de haut, Grosbec dans son armure, ses golems, les runes, les 10 combos, les sons. Le bouton 🎚️ règle le volume ; au clavier, Entrée ou Espace pour graver, 1, 2, 3 pour choisir une carte.</p>
 </header>
 <main class="game">
   <div class="stage" id="stage">
@@ -132,7 +132,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
     <div class="rune"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 32c3 0 4 3 2 5s-7 1-8-3 3-9 9-9 11 5 10 12-8 12-15 11-14-7-13-15 7-15 16-16 19 6 19 15" fill="none" stroke="#1b1206" stroke-width="5" stroke-linecap="round"/></svg><div><b>Un escargot : la repousse (la moitié de l’encre)</b><p>Envoie tout le monde au loin, sans dégâts. Le grand coup, à garder pour les moments durs.</p></div></div>
     <div class="rune"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 46C14 24 50 24 54 46" fill="none" stroke="#1b1206" stroke-width="7" stroke-linecap="round"/></svg><div><b>Un arc de cercle : le mur (2)</b><p>Un mur courbe, exactement comme ton tracé, pendant 3 secondes. Les golems qui s’en approchent sont ralentis. Les pierres rebondissent dessus et repartent frapper (2).</p></div></div>
     <p class="note"><b>Les chocs :</b> un golem projeté qui cogne un autre golem, un mur ou le bord est sonné 3 secondes. Un trait le fait alors éclater.</p>
-    <p class="note"><b>Les amis venus t’aider :</b> le Pisteur tire des salves de flèches et saute à la dague sur le golem qui s’approche trop. L’Alchimiste lance une fiole toutes les 2 secondes : de la boue qui colle, des lianes qui bloquent ou du feu. Le Barde envoie des partitions : les golems touchés font demi-tour, se mettent à danser, ou sont repoussés au loin (et sonnés s’ils cognent quelque chose).</p>
+    <p class="note"><b>L’ami venu t’aider</b> (le premier des deux qui gagne son combat) : l’Alchimiste lance une fiole toutes les 2 secondes : de la boue qui colle, des lianes qui bloquent ou du feu. Le Barde envoie des partitions : les golems touchés font demi-tour, se mettent à danser, ou sont repoussés au loin (et sonnés s’ils cognent quelque chose).</p>
     <p class="note"><b>Les pages du grimoire :</b> les gros golems (les béliers et les colosses) lâchent une page dorée : la première au premier gros détruit, puis au bout de 2, 4, 5, 7, 8… gros. Le Sage va la toucher : tu choisis un pouvoir parmi trois (le bâton, les runes, un nouveau sort, ou un cadeau). 4 sorts au plus, chaque pouvoir monte jusqu’au niveau 3.</p>
     <p class="note"><b>Les combos :</b> quand tu as deux cartes qui vont ensemble, dont une au niveau 2, une carte dorée « Combo ! » sort à la page suivante. Chaque combo monte jusqu’au niveau 3, et ils se cumulent : plus tu en as, plus c’est fou.</p>
     <ul class="combos">
@@ -159,7 +159,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
 <div class="ov" id="ovStart">
   <div class="card">
     <h2>Tiens jusqu’à ce que tes amis gagnent</h2>
-    <p>Tes trois amis attaquent Grosbec, chacun sur sa tablette. Ici, dans sa grande salle, Grosbec envoie ses golems sur eux. Toi, le Sage, tu les protèges.</p>
+    <p>Tes deux amis, le Barde et l’Alchimiste, attaquent Grosbec, chacun sur sa tablette. Ici, dans sa grande salle, Grosbec envoie ses golems sur eux. Toi, le Sage, tu les protèges.</p>
     <div class="steps">
       <div class="step">
         <svg viewBox="0 0 240 140" aria-hidden="true">
@@ -200,12 +200,12 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
       <div class="step">
         <svg viewBox="0 0 240 140" aria-hidden="true">
           <rect width="240" height="140" fill="#1c2440"/>
-          <circle cx="54" cy="56" r="22" fill="#43a85a" stroke="#ffd23f" stroke-width="4"/><text x="54" y="64" text-anchor="middle" font-size="22" font-family="Fredoka,sans-serif" fill="#fff">P</text>
-          <rect x="98" y="34" width="124" height="44" rx="12" fill="#0b1020" stroke="#6fe3ff" stroke-width="2"/><text x="160" y="64" text-anchor="middle" font-size="22">🔥🌙⭐</text>
+          <circle cx="54" cy="56" r="22" fill="#e8833a" stroke="#ffd23f" stroke-width="4"/><text x="54" y="64" text-anchor="middle" font-size="22" font-family="Fredoka,sans-serif" fill="#fff">B</text>
+          <rect x="98" y="34" width="124" height="44" rx="12" fill="#0b1020" stroke="#6fe3ff" stroke-width="2"/><text x="160" y="64" text-anchor="middle" font-size="22">🔑💧🍃</text>
           <rect x="60" y="96" width="120" height="32" rx="16" fill="rgba(15,21,40,.9)" stroke="#ffd23f" stroke-width="2"/><text x="120" y="117" text-anchor="middle" font-size="14" font-family="Nunito,sans-serif" font-weight="800" fill="#fff">Taper un code</text>
         </svg>
         <h3>4. Les codes</h3>
-        <p>Quand un ami gagne son combat, il te crie son code : tape-le, il vient t’aider avec son pouvoir. Les trois codes : c’est gagné.</p>
+        <p>Quand un ami gagne son combat, il te crie son code : tape-le, il vient t’aider avec son pouvoir. Les deux codes : c’est gagné.</p>
       </div>
     </div>
     <div class="row essai" id="essai"><span>Pour l’essai, tes amis finissent leur combat vers :</span><button class="b" data-min="4">4 min</button><button class="b on" data-min="8">8 min</button><button class="b" data-min="12">12 min</button></div>
@@ -224,7 +224,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
 </div>
 
 <script>
-// Le Sage contre Grosbec — maquette 16 : la grande salle vue de haut, Grosbec et ses golems (ceux du combat du Barde) ; 10 combos à 3 niveaux, la colère de Grosbec
+// Le Sage contre Grosbec — maquette 17 : la grande salle vue de haut, Grosbec et ses golems (ceux du combat du Barde) ; 10 combos à 3 niveaux, la colère de Grosbec
 const G = (() => {
   const W = 900, H = 900;
   const CFG = {
@@ -240,7 +240,7 @@ const G = (() => {
     pageFirst: 1, pageStep: 1.5,
     hpEvery: 90, hpGrosEvery: 60, hpGros: 2, sideEvery: 180, shootersX2At: 600,
     // les amis libérés
-    volleyCd: 2.6, volleyN: 4, arrowDmg: 2, daggerR: 70, daggerCd: 1.2, daggerDmg: 2,
+    
     potionCd: 2, puddleR: 85, puddleLife: 5, mudSlow: 0.2, burnT: 4, burnDmg: 1,
     noteCd: 2.5, noteSpeed: 330, noteRange: 520, charmT: 3
   };
@@ -333,9 +333,11 @@ const G = (() => {
     lanceur: { r: 16, hp: 2, speed: 60, dmg: 1, rate: 2.4, shards: 1, range: 240 }
   };
   const SYMS = ['🔥', '💧', '🌙', '⭐', '🔑', '🍃'];
-  const CODES = { P: ['🔥', '🌙', '⭐'], A: ['⭐', '🔥', '💧'], B: ['🔑', '💧', '🍃'] };
-  const ORDER = ['P', 'A', 'B'];
-  const POSTE = { P: 'les jambes', A: 'le bras', B: 'le casque' };
+  // version 17 [Romain, 25 nov. : « que deux personnes à protéger, juste le Barde et l'Alchimiste », « enlève le Pisteur »] :
+  // le Pisteur n'est plus dans ce combat (il a le sien, contre la garde de Grosbec) : ni au milieu, ni dans les codes.
+  const CODES = { A: ['⭐', '🔥', '💧'], B: ['🔑', '💧', '🍃'] };
+  const ORDER = ['A', 'B'];
+  const POSTE = { A: 'le bras', B: 'le casque' };
   const HEART = { x: 450, y: 175 };
   const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
   const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
@@ -347,9 +349,8 @@ const G = (() => {
     const s = {
       cfg, W, H, t: 0, realT: 0, seed: o.seed ?? ((Math.random() * 1e9) | 0),
       friends: [
-        { id: 'B', nom: 'le Barde', x: 450, y: 405, r: 27, flash: 0, free: false, cd: 0 },
-        { id: 'P', nom: 'le Pisteur', x: 410, y: 468, r: 27, flash: 0, free: false, cd: 0 },
-        { id: 'A', nom: "l'Alchimiste", x: 490, y: 468, r: 27, flash: 0, free: false, cd: 0 }],
+        { id: 'B', nom: 'le Barde', x: 411, y: 443, r: 27, flash: 0, free: false, cd: 0 },
+        { id: 'A', nom: "l'Alchimiste", x: 489, y: 443, r: 27, flash: 0, free: false, cd: 0 }],
       sage: { x: 450, y: 600, r: 22, tx: null, ty: null, aim: [0, -1] },
       heart: { bare: false },
       soldiers: [], bolts: [], stones: [], shards: [], walls: [], fx: [], puddles: [], potions: [], notes: [],
@@ -359,8 +360,9 @@ const G = (() => {
       kills: 0, runes: 0, nextId: 1, over: null, shake: 0, msg: '', msgT: 0
     };
     // l'ordre où les amis finissent leur combat change à chaque partie
-    const order = [...ORDER]; for (let i = 2; i > 0; i--) { const j = Math.floor(rng(s) * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
-    const times = cfg.codeTimes || [0.5, 0.75, 1].map((k, i) => Math.round(cfg.duree * k * (i < 2 ? 0.9 + rng(s) * 0.2 : 1)));
+    const order = [...ORDER]; for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rng(s) * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+    // le premier ami gagne un peu après la moitié du temps choisi (à 10 % près), le dernier à la fin
+    const times = cfg.codeTimes || [0.55, 1].map((k, i) => Math.round(cfg.duree * k * (i < 1 ? 0.9 + rng(s) * 0.2 : 1)));
     s.order = order; s.codeAt = Object.fromEntries(order.map((id, i) => [id, times[i]]));
     return s;
   }
@@ -558,15 +560,6 @@ const G = (() => {
       f.cd -= dt; f.cd2 = (f.cd2 || 0) - dt; if (f.shoot > 0) f.shoot -= dt;
       if (f.leap) { f.leap.t -= dt; if (f.leap.t <= 0) f.leap = null; }
       const nearest = R => { let tg = null, b = R; for (const u of s.soldiers) { const d = dist(f, u); if (u.hp > 0 && d < b && !flying(s, u)) { b = d; tg = u; } } return tg; };
-      if (f.id === 'P') {
-        // un golem trop près : il lui saute dessus avec sa dague
-        if (f.cd2 <= 0 && !f.leap) {
-          let tg = null, b = c.daggerR; for (const u of s.soldiers) { const d = dist(f, u) - u.r - f.r; if (u.hp > 0 && d < b) { b = d; tg = u; } }
-          if (tg) { f.leap = { x: tg.x, y: tg.y, t: 0.42, max: 0.42 }; s.fx.push({ k: 'slash', x: tg.x, y: tg.y, life: 0.35, max: 0.35 }); hurt(s, tg, c.daggerDmg); f.cd2 = c.daggerCd; }
-        }
-        // une salve de flèches en éventail
-        if (f.cd <= 0) { const tg = nearest(460); if (tg) { const a0 = Math.atan2(tg.y - f.y, tg.x - f.x); for (let i = 0; i < c.volleyN; i++) { const a = a0 + (i - (c.volleyN - 1) / 2) * 0.11; s.bolts.push({ x: f.x, y: f.y, vx: Math.cos(a) * 900, vy: Math.sin(a) * 900, life: 0.62, dmg: c.arrowDmg, arrow: true }); } f.cd = c.volleyCd; f.shoot = 0.35; } }
-      }
       if (f.id === 'A' && f.cd <= 0) {
         // une fiole là où les golems sont le plus serrés : boue, lianes ou feu, au hasard
         let best = null, bn = 0;
@@ -972,7 +965,7 @@ const G = (() => {
         const f = s.friends.find(x => x.id === id); f.free = true; f.cd = 0.3;
         s.protection = Math.min(s.cfg.protection, s.protection + s.cfg.codeBonus);
         s.fx.push({ k: 'free', x: f.x, y: f.y, life: 1, max: 1 });
-        if (s.entered.length === 3) { s.over = 'win'; s.heart.bare = true; s.soldiers = []; s.stones = []; s.notes = []; s.potions = []; s.puddles = []; s.shake = 0.4; say(s, 'Tes trois amis ont gagné : l’armure tombe !', 6); }
+        if (s.entered.length === ORDER.length) { s.over = 'win'; s.heart.bare = true; s.soldiers = []; s.stones = []; s.notes = []; s.potions = []; s.puddles = []; s.shake = 0.4; say(s, 'Tes deux amis ont gagné : l’armure tombe !', 6); }
         else say(s, `${cap(f.nom)} vient t’aider ! Protection +${s.cfg.codeBonus}.`, 3);
         return { ok: true, id };
       }
@@ -2387,7 +2380,7 @@ if (/[?&#]finesse=([\d.]+)/.test(location.href)) { FIN = Math.min(1, Math.max(0.
 function resize() { const r = stage.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(1.7e6 / Math.max(1, r.width * r.height))) * FIN; cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); R8.dpr = cv.width / Math.max(1, r.width); if (bg && bg.getContext) bg.width = bg.height = 0; bg = null; ensureSprites(); }
 const MES = { n: 0, t: 0, sec: 0, nsec: 0, pire: 0, baisses: 0, age: 0 };   // les images comptées pendant la partie
 function mesurer(dt) { if (dt <= 0 || dt > 0.5) return; MES.n++; MES.t += dt; MES.age += dt; MES.sec += dt; MES.nsec++; if (MES.sec >= 1) { if (MES.age > 4) MES.pire = MES.pire ? Math.min(MES.pire, Math.round(MES.nsec / MES.sec)) : Math.round(MES.nsec / MES.sec); MES.sec = MES.nsec = 0; } }
-function mesuresTxt() { return MES.n < 30 ? '' : `Mesures (version 16) : ${Math.round(MES.n / MES.t)} images par seconde, pire seconde ${MES.pire || '?'} · finesse ${Math.round(FIN * 100)} %, ${MES.baisses} baisse${MES.baisses > 1 ? 's' : ''} · ${Golems.cuits} + ${Object.keys(GB.im).length} images · écran ${innerWidth} × ${innerHeight} (× ${Math.round((devicePixelRatio || 1) * 10) / 10})`; }
+function mesuresTxt() { return MES.n < 30 ? '' : `Mesures (version 17) : ${Math.round(MES.n / MES.t)} images par seconde, pire seconde ${MES.pire || '?'} · finesse ${Math.round(FIN * 100)} %, ${MES.baisses} baisse${MES.baisses > 1 ? 's' : ''} · ${Golems.cuits} + ${Object.keys(GB.im).length} images · écran ${innerWidth} × ${innerHeight} (× ${Math.round((devicePixelRatio || 1) * 10) / 10})`; }
 function finesse(dt) {   // dt : le temps depuis l'image d'avant. Sous 25 images par seconde pendant 1,4 seconde : on dessine un peu moins fin.
   if (dt <= 0 || dt > 0.5 || QUAL.fige) return; QUAL.repos -= dt; if (QUAL.repos > 0) { QUAL.lent = QUAL.vu = QUAL.t0 = 0; return; }
   // une image pendant laquelle on a cuit un dessin (Grosbec, un golem) ne compte pas : ce n'est pas l'appareil qui rame
@@ -2415,7 +2408,7 @@ function text(t, x, y, size, col, align = 'center', weight = 800) {
   ctx.drawImage(sp.c, align === 'center' ? x - sp.w / 2 : align === 'right' ? x - sp.w + 3 : x - 3, y - size * 1.2, sp.w, sp.h);
 }
 
-// ===== Le rendu (version 16) : la grande salle vue de haut, Grosbec dans son armure, ses golems, les trois amis de dos =====
+// ===== Le rendu (version 16) : la grande salle vue de haut, Grosbec dans son armure, ses golems, les amis de dos (deux depuis la version 17 : le Barde et l'Alchimiste) =====
 // Les golems et Grosbec sont les modèles du combat du Barde (barde/golems.js, barde/grosbec.js) : chaque image est peinte UNE fois
 // (« cuite »), puis recopiée. La salle aussi est peinte une seule fois. Rien n'est redessiné à chaque image : ça ne doit jamais ramer.
 const TAU = Math.PI * 2;
@@ -2650,7 +2643,7 @@ function star(x, y, r, col) {
   ctx.drawImage(c, x - r, y - r, r * 2, r * 2);
 }
 
-// ----- les trois amis, vus de dos : ils font face à Grosbec (peints une fois, puis recopiés) -----
+// ----- les amis, vus de dos : ils font face à Grosbec (peints une fois, puis recopiés). Le Pisteur n'est plus dessiné depuis la version 17 (son dessin est gardé ici au cas où) -----
 function heroDos(id, sc) {
   const W = 78, H = 100, OX = 39, OY = 90, c = mk(W * sc, H * sc), x = c.getContext('2d'); x.scale(sc, sc); x.translate(OX, OY); x.lineCap = 'round';
   const E = (cx, cy, rx, ry, col, rot = 0) => { x.beginPath(); x.ellipse(cx, cy, rx, ry, rot, 0, TAU); if (col) { x.fillStyle = col; x.fill(); } };
@@ -2804,6 +2797,8 @@ function gbPoses() {
   };
 }
 // à quelle finesse le cuire (selon l'écran), et quoi recuire quand son état change (son casque se fend à chaque code, il enrage)
+// le casque se fend à chaque ami vainqueur : de 0 à 3 fissures, quel que soit le nombre d'amis (2 depuis la version 17)
+const gbFissures = () => Math.round(s.entered.length * 3 / G.ORDER.length);
 function gbRegler(kv, etat) {
   const kc = Math.round(Math.min(1, Math.max(0.3, GB.h / 286 * kv * 0.85)) * 20) / 20;
   if (kc === GB.kc && etat === GB.etat) return;
@@ -2862,7 +2857,7 @@ const GBMOTS = ['Allez, allez !', 'Écrasez-les !', 'Allez ! Plus vite !', 'Attr
 function gbSuivre(t, dt) {
   if (R8.jeu !== s) { R8.jeu = s; GB.g = null; GB.rage = 0; GB.flash = 0; GB.mots = null; R8.tirs = []; R8.tir = {}; R8.anim.clear(); }
   if (GB.flash > 0) GB.flash -= dt;
-  gbRegler(view().k / (FIN || 1), s.entered.length + '|' + (s.rage ? 1 : 0));   // la même taille que dans ensureSprites : sans la finesse
+  gbRegler(view().k / (FIN || 1), gbFissures() + '|' + (s.rage ? 1 : 0));   // la même taille que dans ensureSprites : sans la finesse
   if ((s.rage || 0) > GB.rage) { GB.rage = s.rage; GB.g = { nom: 'silence', t0: t }; GB.mots = { t0: t, txt: s.rage === 1 ? 'ASSEZ !' : 'RRAAAH !' }; }
 }
 function gbFx(e, t) {
@@ -2873,7 +2868,7 @@ function gbFx(e, t) {
   if (e.k === 'free') { GB.g = { nom: 'touche', t0: t }; GB.flash = 0.25; const p = gbPoint('tete'); burst(p.x, p.y, 26, { k: 'spark', col: '#ffd23f', v0: 80, v1: 300, vz0: 40, vz1: 200, s0: 2, s1: 4.5, g: 300 }); }
 }
 
-// ----- les trois amis attaquent Grosbec, de temps en temps : des flèches, des potions, des éclairs (pour le spectacle : ça ne change rien au combat) -----
+// ----- les amis attaquent Grosbec, de temps en temps : des flèches, des potions, des éclairs (pour le spectacle : ça ne change rien au combat) -----
 function tirsAmis(t, dt) {
   if (!s.over) for (const f of s.friends) {
     const T = R8.tir[f.id] || (R8.tir[f.id] = { next: t + 1.2 + Math.random() * 3.5, kick: 0 });
@@ -3080,12 +3075,12 @@ function ensureSprites() {
     R8.spr.parch = makeParchment();
     R8.spr.ombre = ombreSprite(sc); R8.spr.cuirasse = cuirasseSprite(sc * 1.5);
     { const c = mk(48 * sc, 20 * sc), g = c.getContext('2d'), gr = g.createRadialGradient(24 * sc, 24 * sc, 0, 24 * sc, 24 * sc, 24 * sc); gr.addColorStop(0, 'rgba(201,191,168,.9)'); gr.addColorStop(1, 'rgba(201,191,168,0)'); g.scale(1, 20 / 48); g.fillStyle = gr; g.fillRect(0, 0, 48 * sc, 48 * sc); R8.spr.fumee = c; }   // un nuage de poussière
-    R8.spr.dos = { P: heroDos('P', sc * 1.25), A: heroDos('A', sc * 1.25), B: heroDos('B', sc * 1.25) };
+    R8.spr.dos = { A: heroDos('A', sc * 1.25), B: heroDos('B', sc * 1.25) };   // version 17 : plus de Pisteur
   }
   // les golems et Grosbec sont cuits à la taille de l'écran (on ne les recuit que si elle change vraiment)
   const kg = Math.round(Math.min(1.3, Math.max(0.45, kvR * 0.64)) * 10) / 10;
   if (kg !== R8.kg) { R8.kg = kg; Golems.regler(kg); Golems.prevoir(Object.values(GOLEM).map(P => P.m)); }
-  gbRegler(kvR, s ? s.entered.length + '|' + (s.rage ? 1 : 0) : GB.etat || '0|0');
+  gbRegler(kvR, s ? gbFissures() + '|' + (s.rage ? 1 : 0) : GB.etat || '0|0');
 }
 // ----- particules (cailloux, poussière, étincelles) -----
 function burst(x, y, n, o) {
@@ -3483,8 +3478,8 @@ function hud(cw, ch) {
   const panel = (x, y, w, h) => { rr(x, y, w, h, 10); ctx.fillStyle = 'rgba(15,21,40,.84)'; ctx.fill(); };
   // les amis qui se battent ailleurs
   panel(8, 8, pw, 42);
-  text(s.over === 'win' ? 'L’armure tombe !' : `Amis vainqueurs : ${s.entered.length} sur 3`, 18, 8 + fs + 6, fs, '#f3c9d0', 'left', 800);
-  const sw = (pw - 28) / 3;
+  text(s.over === 'win' ? 'L’armure tombe !' : `Amis vainqueurs : ${s.entered.length} sur ${G.ORDER.length}`, 18, 8 + fs + 6, fs, '#f3c9d0', 'left', 800);
+  const sw = (pw - 20 - 4 * (G.ORDER.length - 1)) / G.ORDER.length;
   G.ORDER.forEach((id, i) => { ctx.fillStyle = s.entered.includes(id) ? COL[id] : s.announced.includes(id) ? '#ffd23f' : '#3a2632'; rr(18 + i * (sw + 4), 36, sw, 8, 2); ctx.fill(); });
   // protection
   panel(cw - 8 - pw, 8, pw, 42);
@@ -3646,7 +3641,7 @@ let dureeAmis = 8;
 $('essai').addEventListener('click', e => { const b = e.target.closest('[data-min]'); if (!b) return; dureeAmis = +b.dataset.min; [...$('essai').querySelectorAll('[data-min]')].forEach(x => x.classList.toggle('on', x === b)); });
 function start() {
   SON.init(); SON.music(true); SON.play('start');
-  s = G.newGame({ cfg: fast ? { codeTimes: [10, 18, 26] } : { duree: dureeAmis * 60 } }); paused = false; last = 0; setBrush(false); typed = []; slots(); lastPanel = ''; MES.n = MES.t = MES.sec = MES.nsec = MES.pire = MES.age = 0;
+  s = G.newGame({ cfg: fast ? { codeTimes: [10, 20] } : { duree: dureeAmis * 60 } }); paused = false; last = 0; setBrush(false); typed = []; slots(); lastPanel = ''; MES.n = MES.t = MES.sec = MES.nsec = MES.pire = MES.age = 0;
   $('pad').hidden = true; $('ovStart').hidden = true; $('ovEnd').hidden = true; $('ovPause').hidden = true; closeAide(false);
   if (document.body.classList.contains('plein')) pleinAPI();
 }
@@ -3657,7 +3652,7 @@ function finish() {
   $('endTitle').textContent = win ? 'L’armure tombe !' : 'Perdu';
   $('endStars').textContent = win ? '★'.repeat(stars) + '☆'.repeat(3 - stars) : '';
   const m = Math.floor(s.realT / 60), sec = String(Math.floor(s.realT % 60)).padStart(2, '0');
-  $('endWhy').textContent = (win ? `Tes trois amis ont gagné, et tu les as protégés pendant ${m} min ${sec}. Protection restante : ${p} sur ${max}.` : `La protection est tombée à zéro après ${m} min ${sec}, avec ${s.entered.length} ami${s.entered.length > 1 ? 's' : ''} venu${s.entered.length > 1 ? 's' : ''} t’aider.`) + ` Golems détruits : ${s.kills}. Runes : ${s.runes}.${s.bestCombo >= 2 ? ` Meilleur combo : ${s.bestCombo} d’un coup.` : ''}`;
+  $('endWhy').textContent = (win ? `Tes deux amis ont gagné, et tu les as protégés pendant ${m} min ${sec}. Protection restante : ${p} sur ${max}.` : `La protection est tombée à zéro après ${m} min ${sec}, avec ${s.entered.length} ami${s.entered.length > 1 ? 's' : ''} venu${s.entered.length > 1 ? 's' : ''} t’aider.`) + ` Golems détruits : ${s.kills}. Runes : ${s.runes}.${s.bestCombo >= 2 ? ` Meilleur combo : ${s.bestCombo} d’un coup.` : ''}`;
   $('ovEnd').hidden = false; $('pad').hidden = true;
 }
 $('bStart').onclick = start;
