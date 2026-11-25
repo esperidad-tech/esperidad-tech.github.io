@@ -35,7 +35,9 @@ const G = (() => {
     gbFirst: 1e9, mortierAt: 1e9, dalleAt: 1e9, bombeAt: 1e9, belierCasse: false,          // la version 20 est éteinte
     vMaxBase: 170, traitMaxBase: 320, domeCost: 4, domeCd: 8,
     // la courbe, refaite pour un jeu de runes sans ralenti au départ (réglée au robot)
-    rate0: 0.2, rateAdd: 0.1, rateLate: 0.1, hpEvery: 180, hpGrosEvery: 180, hpLate: 1, hpLateEvery: 120, burst0: 3, burstDiv: 150, sideEvery: 240, pageStep: 0.34, pageVite: 99
+    // version 22 [Romain, 21 h 07 : « tu peux remettre un petit peu de difficulté […] vu les améliorations, tu peux quand même y aller »] : plus de golems
+    // (version 21 : rate0 0.2, rateAdd 0.1, rateLate 0.1, hpEvery 180, hpGrosEvery 180, hpLateEvery 120, burstDiv 150) ; plus de golems seuls ne durcissait rien (plus de gros = plus de pages) : ils sont aussi plus solides
+    rate0: 0.22, rateAdd: 0.18, rateLate: 0.3, hpEvery: 120, hpGrosEvery: 150, hpLate: 1, hpLateEvery: 80, burst0: 3, burstDiv: 90, sideEvery: 240, pageStep: 0.34, pageVite: 99
   });
   const MOTS = { dalle: 'Un porte-dalle ! Sa dalle arrête tes orbes : prends-le de côté, ou chasse-le.', mortier: 'Un mortier, tout au fond ! Il te vise. Va le chercher.', bombe: 'Un porteur de bombe ! Fais-le sauter loin de tes amis.' };
   const GROS = ['brute', 'costaud'];
