@@ -56,9 +56,9 @@ Maquette jouable (pas le vrai jeu, rien n'est construit dans Brumeval) : https:/
 **Romain (21 h 07)** : la version 21, « c'est mieux », mais « encore un peu trop facile » : « vu les améliorations, tu peux quand même y aller ». Et : « fais-moi une version tablette aussi […] ce jeu se joue portable et tablette ».
 
 ### La difficulté
-- **Plus de golems** : il en arrive à peu près deux fois plus au milieu du combat et trois fois plus à la fin qu'en version 21, et les grosses vagues grossissent plus vite.
+- **Plus de golems** : il en arrive un tiers de plus au milieu du combat et presque deux fois plus à la fin qu'en version 21 (0,40 puis 0,70 golem par seconde, au lieu de 0,30 puis 0,40), et les grosses vagues grossissent plus vite.
 - **Remettre des golems ne suffisait pas** : avec plus de gros, il tombe plus de pages, et le robot gagnait plus souvent (7 parties sur 16 au lieu d'une sur trois). **Ils sont donc aussi plus solides** : une vie de plus toutes les 2 minutes (3 en version 21), les gros deux de plus toutes les 2 min 30, et après 5 minutes encore une de plus toutes les 80 secondes.
-- **Au robot** (réglage retenu) : **3 parties gagnées sur 16** (une sur trois en version 21) ; il tient 4 min 30 à 7 minutes. Sans graver : 0 sur 8 en version 21, non remesuré ici. Le robot joue moins bien que Romain : c'est à lui de dire si c'est le bon cran. Un cran plus dur a été essayé (vagues de trois côtés plus tôt : 2 sur 16) et gardé de côté.
+- **Au robot** (réglage retenu) : **3 parties gagnées sur 16** (une sur trois en version 21) ; il tient 4 min 30 à 7 minutes. Sans graver : 0 sur 8, il tombe vers 3 minutes (mesuré avec plus de golems, avant de les rendre plus solides). Le robot joue moins bien que Romain : c'est à lui de dire si c'est le bon cran. Un cran plus dur a été essayé (vagues de trois côtés plus tôt : 2 sur 16) et gardé de côté.
 
 ### La tablette
 - **Tenue en large, en plein écran** (et sur tout écran plus large que haut) : **la salle se range à gauche et prend toute la hauteur ; tout le reste va dans une colonne à droite** : le chronomètre, la protection, l'encre, les trois petits boutons, les pages et les pouvoirs (plus gros), et **le bouton Graver, plus grand, en bas de la colonne**, sous le pouce. Plus rien ne recouvre la salle ni les portes. Les messages et le rappel des runes restent au milieu de la salle.
