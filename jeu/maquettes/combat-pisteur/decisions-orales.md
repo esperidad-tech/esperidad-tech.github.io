@@ -1,5 +1,7 @@
 # Combat du Pisteur — ce qui a été décidé à la voix (nuit du 24 au 25 novembre 2026)
 
+> **⚠️ Mise à jour du 25 novembre, 15 h.** Ce document a donné la version 4, que Romain a jouée et refusée le 25 novembre à midi. **Une grande partie est remplacée** par le système décidé l'après-midi (Bible §17.11 à §17.21 ; `claude/combat-pisteur-decisions-orales-25-novembre-apres-midi.md`) : quatre boutons au lieu de trois, un bouton d'ombre au lieu de la cachette par les murs seuls, plus d'arc à découvert, plus de regard de Grosbec, une barre de vie, de nouveaux golems chiffrés. **Les cartes** (les 33 améliorations, les 20 cartes dorées, les 20 façons de jouer) **seront réécrites après la bagarre de base** : elles restent ici comme matière première.
+
 **D'où vient ce document** : c'est la copie du document que Claude a tenu pendant la discussion orale avec Romain (25 novembre, entre 5 h 30 et 6 h 30 ; l'original : https://claude.ai/artifact/CKLq7JaGyGpnmVbEBbBwav), complétée à la fin par les derniers échanges qui n'y étaient pas encore. Romain, 6 h 31 : « n'oublie pas de sauvegarder tout ce qu'on s'est dit avec la discussion orale aussi ». **Ce qui a été construit à partir de ça : la version 4 du combat (Bible §17, `claude/maquette-combat-du-pisteur.md`).**
 Enquête 10, combat final. Le Pisteur affronte les golems de Grosbec, pas Grosbec lui-même. À ajouter à la Bible quand Romain aura joué la maquette suivante.
 ## La forme du jeu

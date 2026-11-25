@@ -1,5 +1,11 @@
 # Le combat du Pisteur — version 4 (25 novembre 2026) : le vrai mini-jeu, hors du jeu Brumeval pour l'instant
 
+> **⚠️ 25 novembre, 15 h : la version 4 a été jouée et refusée par Romain (« ça marche pas »).** Ces sources sont le point de
+> départ de la suite, pas un jeu fini. **Le nouveau système de jeu à construire** est dans `bible-section-17.md`, §17.10 à §17.21
+> (quatre boutons qui changent dans l'ombre, un bouton d'ombre, une barre de vie, des golems chiffrés, plus de regard de Grosbec).
+> Ce qui se garde et ce qui se jette : §17.19 ; l'ordre de construction : §17.21 et l'entrée du 25 novembre, 15 h, de `PASSATION.md`.
+> La discussion orale de l'après-midi et les idées écartées : `decisions-orales-apres-midi.md`.
+
 Enquête 10, combat final : pendant que ses amis occupent Grosbec, le Pisteur s'occupe de sa garde (les golems). Rien n'est branché dans le
 jeu, rien n'est en ligne sur le site : c'est une page à part, comme les combats du Barde, du Sage et de l'Alchimiste.
 
