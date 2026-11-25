@@ -1,4 +1,4 @@
-const G = require((process.argv.slice(2).find(a => a.startsWith('logic=')) || 'logic=./logic19.js').slice(6));
+const G = require((process.argv.slice(2).find(a => a.startsWith('logic=')) || 'logic=./logic20.js').slice(6));
 const A = Object.fromEntries(process.argv.slice(2).map(a => a.split('=')));
 const N = +(A.games || 16), cfg = A.cfg ? JSON.parse(A.cfg) : {}, THINK = +(A.think || 3);
 const C = { x: 450, y: 445 };
@@ -32,9 +32,9 @@ function play(seed, mode) {
   if (A.extra) { // des cartes en plus, au hasard (comme un joueur qui a déjà ramassé des pages)
     for (let i = 0; i < +A.extra; i++) { const pool = G.cardPool(s).filter(id => G.CARDS[id].fam !== 'combo' && id !== 'soin'); if (!pool.length) break; const id = pool[Math.floor(Math.random() * pool.length)]; s.choice = { cards: [id] }; G.choose(s, id); }
   }
-  if (A.at) { s.realT = s.t = +A.at; s.pageIdx = 10; s.pageNeed = 16; s.burstT = 5; }
-  s.t0 = s.realT; s.k0 = s.kills; s.minP2 = 99; s.msg = '';
-  while (!s.over && s.realT < +(A.limit || 960)) {
+  if (A.at) { s.t = s.t = +A.at; s.pageIdx = 10; s.pageNeed = 16; s.burstT = 5; }
+  s.t0 = s.t; s.k0 = s.kills; s.minP2 = 99; s.msg = '';
+  while (!s.over && s.t < +(A.limit || 960)) {
     const dt = 1 / 60;
     if (mode !== 'passive') {
       const sg = s.sage;
@@ -45,12 +45,27 @@ function play(seed, mode) {
         if (A.pick === 'hasard') id = c[Math.floor(Math.random() * c.length)];
         else if (gold.length) id = gold.sort((a, b) => G.lv(s, b) - G.lv(s, a))[0];            // une carte dorée : toujours, et d'abord celle qui monte un build déjà pris
         else { const av = c.filter(x => G.avance && G.avance(s, x)), ba = c.filter(x => G.CARDS[x].fam === 'baton'); id = av.length ? av[0] : s.protection < 9 && c.includes('soin') ? 'soin' : ba.length ? ba[Math.floor(Math.random() * ba.length)] : c[Math.floor(Math.random() * c.length)]; }   // sinon ce qui fait avancer un build, sinon une carte du bâton
-        G.choose(s, id); s.cards = (s.cards || 0) + 1; if (G.CARDS[id].fam === 'combo') { s.t1 = s.t1 ?? s.realT; if (G.lv(s, id) === 3) s.t3 = s.t3 ?? s.realT; } }
-      if (mode === 'cercle' && !pg) { const an = s.realT * 1.9; sg.tx = C.x + Math.cos(an) * 165; sg.ty = C.y + Math.sin(an) * 150; }
+        G.choose(s, id); s.cards = (s.cards || 0) + 1; if (G.CARDS[id].fam === 'combo') { s.t1 = s.t1 ?? s.t; if (G.lv(s, id) === 3) s.t3 = s.t3 ?? s.t; } }
+      if (mode === 'cercle' && !pg) { const an = s.t * 1.9; sg.tx = C.x + Math.cos(an) * 165; sg.ty = C.y + Math.sin(an) * 150; }
       else if (pg && !(tg && bd < 120)) { sg.tx = pg.x; sg.ty = pg.y; } else if (tg && bd < 220) { sg.tx = tg.x; sg.ty = tg.y; } else if (sh && s.ink < s.cfg.inkMax) { sg.tx = sh.x; sg.ty = sh.y; } else if (tg) { sg.tx = (tg.x + C.x) / 2; sg.ty = (tg.y + C.y) / 2; } else sg.tx = sg.ty = null;
-      for (const id of s.announced) { typed[id] = typed[id] ?? s.realT + 5; if (s.realT >= typed[id] && !s.entered.includes(id)) G.enterCode(s, G.CODES[id]); }
+      // version 20 : aller chercher le mortier, et surtout esquiver le rouge (naif=1 : il n'esquive pas ; modes=campeur : il campe entre ses amis)
+      const mo = s.soldiers.find(u => u.type === 'mortier' && u.hp > 0);
+      if (mode !== 'campeur' && mo && !pg && !(tg && bd < 150) && G.dist(mo, sg) > 290) { sg.tx = mo.x; sg.ty = mo.y; }
+      // le porte-dalle : passer derrière lui (le bâton le touche alors dans le dos)
+      const da = s.soldiers.find(u => u.dalle && u.hp > 0 && G.dist(u, C) < 300);
+      if (mode !== 'campeur' && !A.face && da && !pg) { const dx = da.x - C.x, dy = da.y - C.y, d = Math.hypot(dx, dy) || 1; sg.tx = da.x + dx / d * (da.r + 45); sg.ty = da.y + dy / d * (da.r + 45); }
+      if (mode === 'campeur') { const P = pg && G.dist(pg, C) < +(A.rayon || 170) ? pg : { x: 450, y: 485 }; sg.tx = P.x; sg.ty = P.y; }
+      else if (!A.naif) {
+        let fx = 0, fy = 0, danger = false;
+        for (const z of s.zones) {
+          if (z.suit > 0) { danger = true; const dx = sg.x - C.x, dy = sg.y - C.y, d = Math.hypot(dx, dy); if (d < 290) { fx += d > 5 ? dx / d : 0; fy += d > 5 ? dy / d : 1; } }
+          else if (G.dansZone(z, sg, 30)) { danger = true; if (z.k === 'bande') { if (z.horiz) fy += sg.y >= z.y ? 1 : -1; else fx += sg.x >= z.x ? 1 : -1; } else { const dx = sg.x - z.x, dy = sg.y - z.y, d = Math.hypot(dx, dy) || 1; fx += dx / d; fy += dy / d; } }
+        }
+        if (danger && (fx || fy)) { const d = Math.hypot(fx, fy); sg.tx = Math.max(30, Math.min(870, sg.x + fx / d * 200)); sg.ty = Math.max(80, Math.min(870, sg.y + fy / d * 200)); }
+      }
+      for (const id of s.announced) { typed[id] = typed[id] ?? s.t + 5; if (s.t >= typed[id] && !s.entered.includes(id)) G.enterCode(s, G.CODES[id]); }
       think -= dt;
-      if (mode !== 'runner' && think <= 0) {
+      if (mode !== 'runner' && mode !== 'campeur' && think <= 0) {
         think = THINK;
         if (s.heart.bare) castPts(s, circle(G.HEART.x, G.HEART.y, 90));
         else {
@@ -80,13 +95,13 @@ function play(seed, mode) {
         }
       }
     }
-    const i0 = s.ink; G.step(s, dt, false); if (s.ink > i0) s.encre = (s.encre || 0) + s.ink - i0; for (const p of s.shards) if (!p._vu) { p._vu = 1; s.tombes = (s.tombes || 0) + 1; } s.minP = Math.min(s.minP, s.protection); if (s.realT - s.t0 < 120) s.minP2 = Math.min(s.minP2, s.protection);
+    const i0 = s.ink; G.step(s, dt, false); if (s.ink > i0) s.encre = (s.encre || 0) + s.ink - i0; for (const p of s.shards) if (!p._vu) { p._vu = 1; s.tombes = (s.tombes || 0) + 1; } s.minP = Math.min(s.minP, s.protection); if (s.t - s.t0 < 120) s.minP2 = Math.min(s.minP2, s.protection);
   }
   return s;
 }
 for (const mode of (A.modes ? A.modes.split(',') : ['combos'])) {
-  const held = [], rpm = [], pg = [], enc = [], tom = [], t1 = [], t3 = [], niv = []; let wins = 0; const morts = [0, 0, 0, 0, 0];
-  for (let g = 0; g < N; g++) { const s = play(10 + g, mode); const dur = s.realT - s.t0; held.push(dur); rpm.push(s.runes / Math.max(dur / 60, 0.1)); pg.push(s.pagesTaken); enc.push((s.encre || 0) / Math.max(dur / 60, 0.1)); tom.push((s.tombes || 0) / Math.max(dur / 60, 0.1)); t1.push(s.t1 ?? 1e9); t3.push(s.t3 ?? 1e9); niv.push(Object.keys(G.CARDS).filter(k => G.CARDS[k].fam === 'combo').reduce((a, k) => a + G.lv(s, k), 0)); if (s.over === 'win') wins++; else morts[Math.min(4, Math.floor(dur / 120))]++; }
+  const per = [], bom = [], son = [], ram = [], held = [], rpm = [], pg = [], enc = [], tom = [], t1 = [], t3 = [], niv = []; let wins = 0; const morts = [0, 0, 0, 0, 0];
+  for (let g = 0; g < N; g++) { const s = play(+(A.seed || 10) + g, mode); const dur = s.t - s.t0; held.push(dur); rpm.push(s.runes / Math.max(dur / 60, 0.1)); pg.push(s.pagesTaken); enc.push((s.encre || 0) / Math.max(dur / 60, 0.1)); tom.push((s.tombes || 0) / Math.max(dur / 60, 0.1)); t1.push(s.t1 ?? 1e9); t3.push(s.t3 ?? 1e9); niv.push(Object.keys(G.CARDS).filter(k => G.CARDS[k].fam === 'combo').reduce((a, k) => a + G.lv(s, k), 0)); per.push(s.perdu || 0); bom.push(s.bombAmis || 0); son.push(s.sonnes || 0); ram.push(s.rougeAmis || 0); if (s.over === 'win') wins++; else morts[Math.min(4, Math.floor(dur / 120))]++; }
   const mm = x => x >= 1e8 ? 'jamais' : `${Math.floor(x / 60)} min ${String(Math.round(x % 60)).padStart(2, '0')}`, st = a => [...a].sort((x, y) => x - y), q = (a, p) => st(a)[Math.floor(p * (a.length - 1))];
-  console.log(JSON.stringify({ essai: A.label || '', parties: N, gagnees: wins, tient: mm(q(held, .5)), 'quart bas': mm(q(held, .25)), 'tombées avant 2, 4, 6, 8, 10 min': morts.join(' '), 'runes/min': +q(rpm, .5).toFixed(1), 'encre/min': +q(enc, .5).toFixed(1), 'pages': q(pg, .5), '1er build': mm(q(t1, .5)), 'build niveau 3': mm(q(t3, .5)), 'niveaux de builds': q(niv, .5) }));
+  console.log(JSON.stringify({ essai: A.label || '', parties: N, gagnees: wins, tient: mm(q(held, .5)), 'quart bas': mm(q(held, .25)), 'tombées avant 2, 4, 6, 8, 10 min': morts.join(' '), 'runes/min': +q(rpm, .5).toFixed(1), 'encre/min': +q(enc, .5).toFixed(1), 'pages': q(pg, .5), '1er build': mm(q(t1, .5)), 'build niveau 3': mm(q(t3, .5)), 'niveaux de builds': q(niv, .5), 'fois sonné': q(son, .5), 'protection perdue : en tout, par le rouge, par les bombes': [q(per, .5), q(ram, .5), q(bom, .5)].join(' ') }));
 }
