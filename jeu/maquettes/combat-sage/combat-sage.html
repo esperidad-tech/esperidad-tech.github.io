@@ -106,7 +106,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
 <body>
 <header>
   <h1>Le Sage contre Grosbec</h1>
-  <p>Maquette n° 17 : le Sage n’a plus que deux amis à protéger, le Barde et l’Alchimiste (le Pisteur n’est plus dans ce combat). Deux codes font gagner. Le reste ne change pas : la grande salle de Grosbec vue de haut, Grosbec dans son armure, ses golems, les runes, les 10 combos, les sons. Le bouton 🎚️ règle le volume ; au clavier, Entrée ou Espace pour graver, 1, 2, 3 pour choisir une carte.</p>
+  <p>Maquette n° 18 : l’encre est plus rare (garde tes runes pour les gros groupes), le bâton tire plus vite et son orbe traverse deux golems (place-toi bien), les pages du grimoire tombent plus souvent. Toujours deux amis à protéger, le Barde et l’Alchimiste ; deux codes font gagner. Le bouton 🎚️ règle le volume ; au clavier, Entrée ou Espace pour graver, 1, 2, 3 pour choisir une carte.</p>
 </header>
 <main class="game">
   <div class="stage" id="stage">
@@ -131,9 +131,10 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
     <div class="rune"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 50L32 14 54 50" fill="none" stroke="#1b1206" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>Un V : la chasse (2)</b><p>Tout ce qui est dans le V est chassé par l’ouverture. Pas plus ouvert qu’un angle droit : 90° au plus.</p></div></div>
     <div class="rune"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 32c3 0 4 3 2 5s-7 1-8-3 3-9 9-9 11 5 10 12-8 12-15 11-14-7-13-15 7-15 16-16 19 6 19 15" fill="none" stroke="#1b1206" stroke-width="5" stroke-linecap="round"/></svg><div><b>Un escargot : la repousse (la moitié de l’encre)</b><p>Envoie tout le monde au loin, sans dégâts. Le grand coup, à garder pour les moments durs.</p></div></div>
     <div class="rune"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 46C14 24 50 24 54 46" fill="none" stroke="#1b1206" stroke-width="7" stroke-linecap="round"/></svg><div><b>Un arc de cercle : le mur (2)</b><p>Un mur courbe, exactement comme ton tracé, pendant 3 secondes. Les golems qui s’en approchent sont ralentis. Les pierres rebondissent dessus et repartent frapper (2).</p></div></div>
+    <p class="note"><b>L’encre est rare :</b> un petit golem sur huit lâche un éclat d’encre ; un bélier ou un colosse en lâche toujours un. Une rune qui détruit trois golems ou plus rend de l’encre : grave quand ils sont nombreux. Entre deux vagues, c’est le bâton et ta place qui comptent.</p>
     <p class="note"><b>Les chocs :</b> un golem projeté qui cogne un autre golem, un mur ou le bord est sonné 3 secondes. Un trait le fait alors éclater.</p>
     <p class="note"><b>L’ami venu t’aider</b> (le premier des deux qui gagne son combat) : l’Alchimiste lance une fiole toutes les 2 secondes : de la boue qui colle, des lianes qui bloquent ou du feu. Le Barde envoie des partitions : les golems touchés font demi-tour, se mettent à danser, ou sont repoussés au loin (et sonnés s’ils cognent quelque chose).</p>
-    <p class="note"><b>Les pages du grimoire :</b> les gros golems (les béliers et les colosses) lâchent une page dorée : la première au premier gros détruit, puis au bout de 2, 4, 5, 7, 8… gros. Le Sage va la toucher : tu choisis un pouvoir parmi trois (le bâton, les runes, un nouveau sort, ou un cadeau). 4 sorts au plus, chaque pouvoir monte jusqu’au niveau 3.</p>
+    <p class="note"><b>Les pages du grimoire :</b> les gros golems (les béliers et les colosses) lâchent une page dorée : la première au premier gros détruit, puis au bout de 2, 3, 4, 5… gros. Le Sage va la toucher : tu choisis un pouvoir parmi trois (le bâton, les runes, un nouveau sort, ou un cadeau). 4 sorts au plus, chaque pouvoir monte jusqu’au niveau 3.</p>
     <p class="note"><b>Les combos :</b> quand tu as deux cartes qui vont ensemble, dont une au niveau 2, une carte dorée « Combo ! » sort à la page suivante. Chaque combo monte jusqu’au niveau 3, et ils se cumulent : plus tu en as, plus c’est fou.</p>
     <ul class="combos">
       <li>🎳 <b>Golems-boulets</b> : tonnerre + mur solide</li>
@@ -171,7 +172,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
           <circle cx="110" cy="100" r="5" fill="#fff6c9"/><circle cx="134" cy="104" r="5" fill="#fff6c9"/>
         </svg>
         <h3>1. Le Sage court</h3>
-        <p>Garde le doigt sur l’arène : le Sage y court. Son bâton tire tout seul. Son corps arrête les braises des frondeurs. Les gros golems lâchent des pages dorées : touche-les pour choisir un pouvoir.</p>
+        <p>Garde le doigt sur l’arène : le Sage y court. Son bâton tire tout seul sur le golem le plus proche, et son orbe en traverse deux : place-toi dans l’axe de la file. Son corps arrête les braises des frondeurs. Les gros golems lâchent des pages dorées : passe dessus pour choisir un pouvoir.</p>
       </div>
       <div class="step">
         <svg viewBox="0 0 240 140" aria-hidden="true">
@@ -182,7 +183,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
           <path d="M132 122C140 92 204 92 212 122" fill="none" stroke="#1b1206" stroke-width="6" stroke-linecap="round"/>
         </svg>
         <h3>2. Graver</h3>
-        <p>Le bouton jaune ralentit le temps. Un trait, un V, un escargot ou un arc de cercle.</p>
+        <p>Le bouton jaune ralentit le temps. Un trait, un V, un escargot ou un arc de cercle. L’encre est rare : garde-la pour les gros groupes.</p>
       </div>
       <div class="step">
         <svg viewBox="0 0 240 140" aria-hidden="true">
@@ -224,12 +225,16 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
 </div>
 
 <script>
-// Le Sage contre Grosbec — maquette 17 : la grande salle vue de haut, Grosbec et ses golems (ceux du combat du Barde) ; 10 combos à 3 niveaux, la colère de Grosbec
+// Le Sage contre Grosbec — maquette 18 : la grande salle vue de haut, Grosbec et ses golems (ceux du combat du Barde) ; 10 combos à 3 niveaux, la colère de Grosbec
 const G = (() => {
   const W = 900, H = 900;
   const CFG = {
     protection: 20, inkMax: 12, inkStart: 8, cost: { trait: 2, poussee: 2, mur: 2, spirale: 'moitie' },
-    boltEvery: 0.55, boltDmg: 1, boltRange: 340, boltSpeed: 760, sageSpeed: 300, slow: 0.07,
+    // version 18 [Romain, 25 nov., 15 h 49 : « que l'attaque de base soit plus importante », « moins d'encre à ramasser », « que ça soit le placement qui soit important »] :
+    // le bâton tire plus vite (0,42 s au lieu de 0,55) et son orbe traverse un golem de plus (bien placé dans l'axe d'une file, on en touche deux)
+    boltEvery: 0.42, boltDmg: 1, boltPierce: 1, boltRange: 340, boltSpeed: 760, sageSpeed: 300, slow: 0.07,
+    shardEvery: 8,   // l'encre est rare : un petit golem sur huit lâche un éclat (1 = chacun, comme jusqu'à la version 17)
+    grosShards: [1, 1],   // les éclats des gros : [bélier, colosse] (jusqu'à la version 17 : 2 et 3 ; null = comme avant)
     magnet: 120, pickup: 30,
     traitDmg: 2, traitWidth: 28, shatterR: 85, shatterDmg: 2,
     daze: 3, flyMin: 240, wallLife: 3, wallMax: 520, wallHalf: 15, wallSlowR: 70, wallSlow: 0.45, reflectDmg: 2, vMax: 95,
@@ -237,7 +242,7 @@ const G = (() => {
     duree: 480, codeTimes: null, codeBonus: 3, maxAlive: 75, regen: 10,
     rate0: 0.35, rateAdd: 0.65, rateRamp: 180, burst0: 5, burstDiv: 35, burstEvery: 28,
     // ça durcit avec le temps (en minutes vraies, comme les combats des amis)
-    pageFirst: 1, pageStep: 1.5,
+    pageFirst: 1, pageStep: 1,   // les pages : il faut 1, 2, 3, 4… gros (jusqu'à la version 17 : 1, 2, 4, 5, 7, 8…) [Romain, 15 h 47 : « mettre plus de livres »]
     hpEvery: 90, hpGrosEvery: 60, hpGros: 2, sideEvery: 180, shootersX2At: 600,
     // les amis libérés
     
@@ -251,7 +256,7 @@ const G = (() => {
     double: { fam: 'baton', nom: 'Double orbe', ic: '✨', max: 3, txt: l => `Le bâton tire ${l + 1} orbes à la fois.` },
     lourd: { fam: 'baton', nom: 'Orbe lourd', ic: '☄️', max: 3, txt: l => `Chaque orbe fait ${l + 1} dégâts au lieu de 1.` },
     rapide: { fam: 'baton', nom: 'Tir rapide', ic: '💨', max: 3, txt: l => ['', 'Le bâton tire plus vite.', 'Le bâton tire encore plus vite.', 'Le bâton tire deux fois plus vite.'][l] },
-    percant: { fam: 'baton', nom: 'Orbe perçant', ic: '🎯', max: 3, txt: l => ['', 'L’orbe traverse 2 golems.', 'L’orbe traverse 4 golems.', 'L’orbe traverse toute la file.'][l] },
+    percant: { fam: 'baton', nom: 'Orbe perçant', ic: '🎯', max: 3, txt: l => ['', 'L’orbe traverse 3 golems.', 'L’orbe traverse 5 golems.', 'L’orbe traverse toute la file.'][l] },
     encrier: { fam: 'rune', nom: 'Grand encrier', ic: '🖋️', max: 3, txt: l => `${12 + 2 * l} d’encre au lieu de 12, et l’encrier se remplit.` },
     brulant: { fam: 'rune', nom: 'Trait brûlant', ic: '🔥', max: 3, txt: l => `Le trait laisse une ligne de feu pendant ${l + 1} secondes.` },
     epines: { fam: 'rune', nom: 'Mur d’épines', ic: '🌵', max: 3, txt: l => `Le mur blesse les golems collés contre lui (${l} par seconde).` },
@@ -427,7 +432,9 @@ const G = (() => {
   function die(s, u) {
     s.kills++;
     if (s.inRune) { s.runeKills++; s.bestCombo = Math.max(s.bestCombo, s.runeKills); }
-    const n = TYPES[u.type].shards + (s.inRune && s.runeKills >= 3 ? 1 : 0) + (GROS.includes(u.type) ? lv(s, 'moisson') : 0);
+    let n = s.cfg.grosShards && GROS.includes(u.type) ? s.cfg.grosShards[GROS.indexOf(u.type)] : TYPES[u.type].shards;
+    if (!GROS.includes(u.type) && s.cfg.shardEvery > 1) { s.shardN = (s.shardN ?? s.cfg.shardEvery - 1) + 1; if (s.shardN % s.cfg.shardEvery) n = 0; }   // l'encre est rare : un petit golem sur « shardEvery » lâche un éclat (le tout premier en lâche un)
+    n += (s.inRune && s.runeKills >= 3 ? 1 : 0) + (GROS.includes(u.type) ? lv(s, 'moisson') : 0);
     for (let i = 0; i < n; i++) s.shards.push({ x: u.x + (rng(s) - .5) * 34, y: u.y + (rng(s) - .5) * 34, t: rng(s) * 6 });
     for (let i = 0; i < 8; i++) { const a = rng(s) * 6.28, v = 80 + rng(s) * 160; s.fx.push({ k: 'bit', x: u.x, y: u.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.5, max: 0.5, col: u.daze > 0 ? '#ffe58a' : '#9aa3b5' }); }
     if (u.type === 'costaud') s.shake = Math.max(s.shake, 0.25);
@@ -546,7 +553,7 @@ const G = (() => {
           const tg = near[i % near.length], off = i >= near.length ? (i % 2 ? 0.18 : -0.18) * Math.ceil(i / near.length) : 0;
           const a = Math.atan2(tg.y - sg.y, tg.x - sg.x) + off;
           if (i === 0) sg.aim = [Math.cos(a), Math.sin(a)];
-          s.bolts.push({ x: sg.x, y: sg.y, vx: Math.cos(a) * s.cfg.boltSpeed, vy: Math.sin(a) * s.cfg.boltSpeed, life: s.cfg.boltRange / s.cfg.boltSpeed + 0.1, dmg: s.cfg.boltDmg + lv(s, 'lourd'), pierce: UP.percant[lv(s, 'percant')], hit: [] });
+          s.bolts.push({ x: sg.x, y: sg.y, vx: Math.cos(a) * s.cfg.boltSpeed, vy: Math.sin(a) * s.cfg.boltSpeed, life: s.cfg.boltRange / s.cfg.boltSpeed + 0.1, dmg: s.cfg.boltDmg + lv(s, 'lourd'), pierce: UP.percant[lv(s, 'percant')] + s.cfg.boltPierce, hit: [] });
         }
         s.boltT = s.cfg.boltEvery * UP.rapide[lv(s, 'rapide')];
       } else s.boltT = 0.1;
@@ -2380,7 +2387,7 @@ if (/[?&#]finesse=([\d.]+)/.test(location.href)) { FIN = Math.min(1, Math.max(0.
 function resize() { const r = stage.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(1.7e6 / Math.max(1, r.width * r.height))) * FIN; cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); R8.dpr = cv.width / Math.max(1, r.width); if (bg && bg.getContext) bg.width = bg.height = 0; bg = null; ensureSprites(); }
 const MES = { n: 0, t: 0, sec: 0, nsec: 0, pire: 0, baisses: 0, age: 0 };   // les images comptées pendant la partie
 function mesurer(dt) { if (dt <= 0 || dt > 0.5) return; MES.n++; MES.t += dt; MES.age += dt; MES.sec += dt; MES.nsec++; if (MES.sec >= 1) { if (MES.age > 4) MES.pire = MES.pire ? Math.min(MES.pire, Math.round(MES.nsec / MES.sec)) : Math.round(MES.nsec / MES.sec); MES.sec = MES.nsec = 0; } }
-function mesuresTxt() { return MES.n < 30 ? '' : `Mesures (version 17) : ${Math.round(MES.n / MES.t)} images par seconde, pire seconde ${MES.pire || '?'} · finesse ${Math.round(FIN * 100)} %, ${MES.baisses} baisse${MES.baisses > 1 ? 's' : ''} · ${Golems.cuits} + ${Object.keys(GB.im).length} images · écran ${innerWidth} × ${innerHeight} (× ${Math.round((devicePixelRatio || 1) * 10) / 10})`; }
+function mesuresTxt() { return MES.n < 30 ? '' : `Mesures (version 18) : ${Math.round(MES.n / MES.t)} images par seconde, pire seconde ${MES.pire || '?'} · finesse ${Math.round(FIN * 100)} %, ${MES.baisses} baisse${MES.baisses > 1 ? 's' : ''} · ${Golems.cuits} + ${Object.keys(GB.im).length} images · écran ${innerWidth} × ${innerHeight} (× ${Math.round((devicePixelRatio || 1) * 10) / 10})`; }
 function finesse(dt) {   // dt : le temps depuis l'image d'avant. Sous 25 images par seconde pendant 1,4 seconde : on dessine un peu moins fin.
   if (dt <= 0 || dt > 0.5 || QUAL.fige) return; QUAL.repos -= dt; if (QUAL.repos > 0) { QUAL.lent = QUAL.vu = QUAL.t0 = 0; return; }
   // une image pendant laquelle on a cuit un dessin (Grosbec, un golem) ne compte pas : ce n'est pas l'appareil qui rame

@@ -1,4 +1,4 @@
-const G = require('./logic17.js');
+const G = require((process.argv.slice(2).find(a => a.startsWith('logic=')) || 'logic=./logic18.js').slice(6));
 const A = Object.fromEntries(process.argv.slice(2).map(a => a.split('=')));
 const N = +(A.games || 16), cfg = A.cfg ? JSON.parse(A.cfg) : {}, THINK = +(A.think || 3);
 const C = { x: 450, y: 445 };
@@ -13,7 +13,7 @@ const zigOld = (cx, cy, dir) => { const nx = -dir[1], ny = dir[0], p = []; for (
 const inTriB = (p, a, b, c, m) => { const side = (p1, p2) => { const ex = p2.x - p1.x, ey = p2.y - p1.y, L = Math.hypot(ex, ey) || 1; return ((p.x - p1.x) * ey - (p.y - p1.y) * ex) / L; }; const d1 = side(a, b), d2 = side(b, c), d3 = side(c, a), sg = Math.sign(d1 + d2 + d3) || 1; return d1 * sg > -m && d2 * sg > -m && d3 * sg > -m; };
 const zig = (cx, cy, dir) => { // un arc autour des amis, face au groupe qui arrive
   const base = Math.atan2(dir[1], dir[0]), p = []; for (let i = 0; i <= 30; i++) { const a = base + (-55 + 110 * i / 30) * Math.PI / 180; p.push({ x: C.x + Math.cos(a) * 175, y: C.y + Math.sin(a) * 175 }); } return p; };
-function castPts(s, pts) { const r = G.recognize(pts); if (!r.kind) return null; if (G.costOf(s, r) > s.ink) return null; return G.cast(s, r); }
+function castPts(s, pts) { const r = G.recognize(pts); if (!r.kind) return null; if (G.costOf(s, r) > s.ink) return null; const k0 = s.kills, x = G.cast(s, r); s.kRune = (s.kRune || 0) + s.kills - k0; return x; }
 function bestLine(s) {
   let best = null, bh = 0;
   for (const u of s.soldiers) for (const v of s.soldiers) {
@@ -63,12 +63,12 @@ function play(seed, mode) {
               let bx = 0, by = 0; for (const u of far) { bx += u.x - C.x; by += u.y - C.y; }
               const bl = Math.hypot(bx, by);
               if (far.length >= 5 && bl > far.length * 150 && !s.walls.length) castPts(s, zig(C.x + bx / bl * 175, C.y + by / bl * 175, [bx / bl, by / bl]));
-              else if (near.length >= 2) {
-                let bestV = null, bn = 1;
+              else if (near.length >= (A.sobre ? 4 : 2)) {
+                let bestV = null, bn = A.sobre ? 3 : 1;
                 for (const g of near) { const dx = g.x - C.x, dy = g.y - C.y, d = Math.hypot(dx, dy) || 1, pts = vee(g.x, g.y, [dx / d, dy / d]), r = G.recognize(pts); if (r.kind !== 'poussee') continue; const n = s.soldiers.filter(u => inTriB(u, r.tip, r.a, r.b, u.r)).length; if (n > bn) { bn = n; bestV = pts; } }
-                if (bestV) castPts(s, bestV); else if (l && l.h >= 2.4) castPts(s, l.pts);
+                if (bestV) castPts(s, bestV); else if (l && l.h >= (A.sobre ? 4.5 : 2.4)) castPts(s, l.pts);
               }
-              else if (l && l.h >= 2.4) castPts(s, l.pts);
+              else if (l && l.h >= (A.sobre ? 4.5 : 2.4)) castPts(s, l.pts);
             }
             else if (near.length >= 2 && s.ink >= 3) { const g = near[0]; const dx = g.x - C.x, dy = g.y - C.y, d = Math.hypot(dx, dy) || 1; castPts(s, vee(g.x, g.y, [dx / d, dy / d])); }
             else if (l && l.h >= 2.4) castPts(s, l.pts);
@@ -76,13 +76,13 @@ function play(seed, mode) {
         }
       }
     }
-    G.step(s, dt, false); s.minP = Math.min(s.minP, s.protection); if (s.realT - s.t0 < 120) s.minP2 = Math.min(s.minP2, s.protection);
+    const i0 = s.ink; G.step(s, dt, false); if (s.ink > i0) s.encre = (s.encre || 0) + s.ink - i0; for (const p of s.shards) if (!p._vu) { p._vu = 1; s.tombes = (s.tombes || 0) + 1; } s.minP = Math.min(s.minP, s.protection); if (s.realT - s.t0 < 120) s.minP2 = Math.min(s.minP2, s.protection);
   }
   return s;
 }
 for (const mode of (A.modes ? A.modes.split(',') : ['combos'])) {
-  const held = [], kpm = [], mp2 = []; let best = 0;
-  for (let g = 0; g < N; g++) { const s = play(10 + g, mode); const dur = s.realT - s.t0; held.push(dur); kpm.push((s.kills - s.k0) / Math.max(dur / 60, 0.1)); mp2.push(s.minP2); best = Math.max(best, s.bestCombo); }
-  const mm = x => `${Math.floor(x / 60)}:${String(Math.round(x % 60)).padStart(2, '0')}`, med = a => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)];
-  console.log(JSON.stringify({ label: A.label || mode, held: held.map(Math.round), heldMed: Math.round(med(held)), heldTxt: held.sort((a, b) => a - b).map(mm).join(' '), kpm: Math.round(med(kpm)), best, minP2: med(mp2) }));
+  const held = [], rpm = [], part = [], pg = [], enc = [], tom = []; let wins = 0;
+  for (let g = 0; g < N; g++) { const s = play(10 + g, mode); const dur = s.realT - s.t0; held.push(dur); rpm.push(s.runes / Math.max(dur / 60, 0.1)); part.push((s.kRune || 0) / Math.max(1, s.kills)); pg.push(s.pagesTaken / Math.max(dur / 60, 0.1)); enc.push((s.encre || 0) / Math.max(dur / 60, 0.1)); tom.push((s.tombes || 0) / Math.max(dur / 60, 0.1)); if (s.over === 'win') wins++; }
+  const mm = x => `${Math.floor(x / 60)} min ${String(Math.round(x % 60)).padStart(2, '0')}`, st = a => [...a].sort((x, y) => x - y), q = (a, p) => st(a)[Math.floor(p * (a.length - 1))];
+  console.log(JSON.stringify({ essai: A.label || '', parties: N, tient: mm(q(held, .5)), 'quart bas': mm(q(held, .25)), 'quart haut': mm(q(held, .75)), gagnees: wins, 'runes par minute': +q(rpm, .5).toFixed(1), 'golems détruits par une rune (part)': Math.round(q(part, .5) * 100) + ' %', 'pages par minute': +q(pg, .5).toFixed(1), 'encre ramassée par minute': +q(enc, .5).toFixed(1), 'éclats tombés par minute': +q(tom, .5).toFixed(1) }));
 }

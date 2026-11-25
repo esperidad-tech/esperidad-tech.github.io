@@ -1,7 +1,7 @@
 # Fabrique la maquette du combat du Sage : python3 construire.py → combat-sage.html (un seul fichier, tout dedans)
 # 1. v16/assembler.py refait render16.js (les dessins) à partir de render15.js et des morceaux de v16/ ;
-# 2. la page ui7.html reçoit les retouches des versions 8 à 17 (ici, puis build12_part.py, build14_part.py, build16_part.py, build17_part.py) ;
-# 3. on y colle les règles (logic17.js), les sons (sound14.js) et les modèles du combat du Barde (barde/, retouchés par modeles_barde.py).
+# 2. la page ui7.html reçoit les retouches des versions 8 à 18 (ici, puis build12_part.py, build14_part.py, build16_part.py, build17_part.py, build18_part.py) ;
+# 3. on y colle les règles (logic18.js), les sons (sound14.js) et les modèles du combat du Barde (barde/, retouchés par modeles_barde.py).
 import os, sys, subprocess
 D = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, D)
 subprocess.run([sys.executable, D + '/v16/assembler.py'], check=True)
@@ -179,6 +179,7 @@ exec(open(D+'/build12_part.py').read())
 exec(open(D+'/build14_part.py').read())
 exec(open(D+'/build16_part.py').read())
 exec(open(D+'/build17_part.py').read())
-logic='\n'.join(l for l in open(D+'/logic17.js').read().split('\n') if 'module.exports' not in l)
+exec(open(D+'/build18_part.py').read())
+logic='\n'.join(l for l in open(D+'/logic18.js').read().split('\n') if 'module.exports' not in l)
 open(D+'/combat-sage.html','w').write(html.replace('/*LOGIC*/',logic + '\n' + open(D+'/sound14.js').read() + '\n' + modeles()))
 print('construit')

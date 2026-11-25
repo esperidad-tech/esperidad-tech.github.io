@@ -5760,9 +5760,9 @@ Romain (9 h 49 à 10 h 20, sur son iPhone, avec `?volume=1`) : « le donjon a l'
 
 **Pas vérifié** : une vraie tablette, un vrai téléphone (la fluidité quand deux zones sont dessinées sans brume, et l'effacement de cinq secondes).
 
-## 15. L'enquête 10, le combat final — le combat du Sage contre Grosbec (jusqu'à la version 15 : « contre le cœur de l'armure ») (maquette, 23-24 novembre) — RÈGLES, COMBOS ET SONS FINIS POUR ROMAIN (24 novembre, 19 h 16) ; DESSINS REFAITS D'APRÈS LE COMBAT DU BARDE (version 16, 23 h 25) ; DEUX AMIS À PROTÉGER AU LIEU DE TROIS, LE PISTEUR ENLEVÉ (version 17, 25 novembre, 15 h 04, À LA DEMANDE DE ROMAIN, PAS ENCORE VUE) ; HORS DU JEU, RIEN EN LIGNE SUR LE SITE
+## 15. L'enquête 10, le combat final — le combat du Sage contre Grosbec (jusqu'à la version 15 : « contre le cœur de l'armure ») (maquette, 23-24 novembre) — RÈGLES, COMBOS ET SONS FINIS POUR ROMAIN (24 novembre, 19 h 16) ; DESSINS REFAITS D'APRÈS LE COMBAT DU BARDE (version 16, 23 h 25) ; DEUX AMIS À PROTÉGER AU LIEU DE TROIS, LE PISTEUR ENLEVÉ (version 17, 25 novembre, 15 h 04) ; ENCRE RARE, BÂTON PLUS FORT, PLUS DE PAGES (version 18, 16 h 10, À LA DEMANDE DE ROMAIN, PAS ENCORE VUE) ; HORS DU JEU, RIEN EN LIGNE SUR LE SITE
 
-**Tout le détail** (ce que Romain a dit heure par heure, les chiffres, les mesures du robot) : `jeu/maquettes/combat-sage/LISEZ-MOI.md`. **La maquette jouable (version 17)** : https://claude.ai/artifact/S3UzmZhUvPFUscZeZs6DTy (la même page, toute faite : `jeu/maquettes/combat-sage/combat-sage.html`).
+**Tout le détail** (ce que Romain a dit heure par heure, les chiffres, les mesures du robot) : `jeu/maquettes/combat-sage/LISEZ-MOI.md`. **La maquette jouable (version 18)** : https://claude.ai/artifact/S3UzmZhUvPFUscZeZs6DTy (la même page, toute faite : `jeu/maquettes/combat-sage/combat-sage.html`).
 
 ### 15.1 Le principe [Romain]
 - Au combat final, chaque héros a son propre combat. **Le Sage protège les autres** (au milieu de la grande salle ; **depuis le 25 novembre : seulement le Barde et l'Alchimiste**, voir §15.7 ; avant : les trois autres), en temps réel, contre les golems de Grosbec (jusqu'à la version 15 : « le cœur de l'armure ») : un mélange de Vampire Survivors et du pinceau d'Okami [Romain, 24 nov., 0 h 57]. Le Sage court là où on garde le doigt ; son bâton tire tout seul ; son corps arrête les pierres.
@@ -5770,10 +5770,10 @@ Romain (9 h 49 à 10 h 20, sur son iPhone, avec `?volume=1`) : « le donjon a l'
 - **Ça durcit** : les golems ont plus de vies avec le temps, les grosses vagues arrivent d'un côté de plus toutes les 3 minutes, deux fois plus de lanceurs après 10 minutes.
 
 ### 15.2 Les runes
-- On grave sur un parchemin (le temps ralentit) ; encre à prix fixe. **Trait** (la lumière, 2) : fait éclater un golem sonné, dont les éclats font éclater les sonnés voisins. **V** (la chasse, 2) : chasse par l'ouverture tout ce qui est dedans, 90° au plus. **Escargot** (la repousse, la moitié de l'encre) : tout le monde au loin, sans dégâts. **Arc de cercle** (le mur, 2) : un mur courbe de la forme du tracé, qui ralentit et renvoie les pierres. Un golem projeté qui cogne quelque chose est sonné 3 secondes.
+- On grave sur un parchemin (le temps ralentit) ; encre à prix fixe (**depuis la version 18, l'encre est rare et la gravure sert surtout contre les gros groupes : §15.8**). **Trait** (la lumière, 2) : fait éclater un golem sonné, dont les éclats font éclater les sonnés voisins. **V** (la chasse, 2) : chasse par l'ouverture tout ce qui est dedans, 90° au plus. **Escargot** (la repousse, la moitié de l'encre) : tout le monde au loin, sans dégâts. **Arc de cercle** (le mur, 2) : un mur courbe de la forme du tracé, qui ralentit et renvoie les pierres. Un golem projeté qui cogne quelque chose est sonné 3 secondes.
 
 ### 15.3 Les pages du grimoire et les combos [Romain : « la page à ramasser », « des combos jouissifs… plus on les cumule, plus ils deviennent complètement pétés, mais les ennemis doivent reprendre le dessus »]
-- Les gros golems lâchent des pages dorées ; une page = **un choix de 3 cartes** (le combat attend) : 20 cartes (le bâton, les runes, 6 nouveaux sorts, des cadeaux), chacune jusqu'au niveau 3, 4 sorts au plus.
+- Les gros golems lâchent des pages dorées (plus souvent depuis la version 18, §15.8) ; une page = **un choix de 3 cartes** (le combat attend) : 20 cartes (le bâton, les runes, 6 nouveaux sorts, des cadeaux), chacune jusqu'au niveau 3, 4 sorts au plus.
 - **10 combos en cartes dorées, à 3 niveaux, qui se cumulent** : golems-boulets, orage, volcan, pluie d'étoiles, la comète, le scribe fou, tornade de pages, sanctuaire, parlement des chouettes, rune miroir. Les plus forts : orage, rune miroir, volcan (et volcan + miroir ensemble).
 - **La colère de Grosbec** (« la colère du cœur » jusqu'à la version 15) : à 12 et 14 minutes, des golems plus nombreux et plus rapides ; après 15 minutes, la fureur (golems cuirassés qu'on ne peut plus sonner, toujours plus de vies) : personne ne tient éternellement.
 
@@ -5811,7 +5811,20 @@ Romain (9 h 49 à 10 h 20, sur son iPhone, avec `?volume=1`) : « le donjon a l'
 
 **⚠️ Question ouverte, à poser à Romain — elle touche aussi le combat du Pisteur (§17)** : le Pisteur doit-il quand même crier un code au Sage à la fin de son combat (trois codes pour gagner, sans être à protéger) ? Aujourd'hui non : le Sage gagne dès que le Barde et l'Alchimiste ont gagné, même si le Pisteur se bat encore. **Le combat du Pisteur garde pour l'instant un code de fin 🔥 🌙 ⭐ (§17.9) que plus aucun combat n'attend.**
 
-**Le code** : `jeu/maquettes/combat-sage/` (`logic17.js`, `build17_part.py`, `v16/sprites.js` et `v16/grosbec.js` retouchés). Détail : son `LISEZ-MOI.md`, « La version 17 ».
+**Le code** : `jeu/maquettes/combat-sage/` (`logic17.js` — devenu `logic18.js` en version 18 —, `build17_part.py`, `v16/sprites.js` et `v16/grosbec.js` retouchés). Détail : son `LISEZ-MOI.md`, « La version 17 ».
+
+### 15.8 La version 18 : l'encre rare, le bâton plus fort, plus de pages (25 novembre, 16 h 10) [Romain, 15 h 47 et 15 h 49]
+**Ce que Romain a dit** : « tu devrais mettre **plus de livres**. **Ne pas changer la difficulté**, mais mettre plus de livres. Pour qu'on arrive plus facilement au **méga combo**. » Puis : « que **l'attaque de base, elle soit plus importante** […] que **les dessins soient un petit peu moins présents**. Parce que là […] **on fait que graver tout le temps**. S'il pourrait y avoir **moins d'encre à ramasser**, on devrait **réfléchir un petit peu plus** […] j'aimerais plus que ça soit **le placement qui soit important**. **Le gravé est important pour les gros groupes** […] quand ils arrivent un peu entre les vagues, là, **le placement… et choisir les bons combos** […] on va peut-être pas trop passer de temps sur ce jeu-là. »
+
+**Le principe retenu [Romain]** : entre les vagues, c'est **le bâton et la place du Sage** qui font le travail ; **la gravure est pour les gros groupes** ; les pages arrivent plus vite pour construire ses combos.
+
+**Ce qui est fait** (chiffres = choix de Claude, à sentir en jouant) :
+- **L'encre est rare** : un petit golem sur huit lâche un éclat (avant : chacun), un bélier ou un colosse toujours un (avant : 2 et 3). Une rune qui détruit trois golems ou plus rend de l'encre (comme avant) : graver sur un gros groupe se rembourse. Mesuré : 52 éclats tombés par minute avant, 20 maintenant.
+- **Le bâton** tire toutes les 0,42 seconde (avant : 0,55) et **son orbe traverse deux golems** : se placer dans l'axe d'une file compte.
+- **Les pages** : il faut 1, 2, 3, 4, 5… gros pour la suivante (avant : 1, 2, 4, 5, 7, 8…). Au robot : premier combo à 3 min 16 au lieu de 4 min 25 ; premier combo au niveau 3 à 4 min 13 au lieu de 5 min 15.
+- **Les golems ne sont pas touchés.** Mais **c'est plus facile qu'avant** : le même robot tient environ 3 min 20 sans les codes (2 min 30 avant) et gagne une partie sur cinq avec des amis à 8 minutes (une sur quatorze avant). À dire à Romain ; il a demandé de ne pas toucher à la difficulté, rien n'a été durci.
+
+**Le code** : `jeu/maquettes/combat-sage/` (`logic18.js` : `shardEvery`, `grosShards`, `boltEvery`, `boltPierce`, `pageStep` ; `build18_part.py` ; `economie.js` pour mesurer les pages et les combos). Détail : son `LISEZ-MOI.md`, « La version 18 ».
 
 ## 16. L'enquête 10, le combat final — le combat du Barde contre Grosbec, et les modèles de la ville d'en bas (maquette, 24 novembre, version 11) — HORS DU JEU, RIEN EN LIGNE SUR LE SITE, PAS ENCORE SUR GITHUB
 

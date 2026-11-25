@@ -1,9 +1,13 @@
-// Le Sage contre Grosbec — maquette 17 : la grande salle vue de haut, Grosbec et ses golems (ceux du combat du Barde) ; 10 combos à 3 niveaux, la colère de Grosbec
+// Le Sage contre Grosbec — maquette 18 : la grande salle vue de haut, Grosbec et ses golems (ceux du combat du Barde) ; 10 combos à 3 niveaux, la colère de Grosbec
 const G = (() => {
   const W = 900, H = 900;
   const CFG = {
     protection: 20, inkMax: 12, inkStart: 8, cost: { trait: 2, poussee: 2, mur: 2, spirale: 'moitie' },
-    boltEvery: 0.55, boltDmg: 1, boltRange: 340, boltSpeed: 760, sageSpeed: 300, slow: 0.07,
+    // version 18 [Romain, 25 nov., 15 h 49 : « que l'attaque de base soit plus importante », « moins d'encre à ramasser », « que ça soit le placement qui soit important »] :
+    // le bâton tire plus vite (0,42 s au lieu de 0,55) et son orbe traverse un golem de plus (bien placé dans l'axe d'une file, on en touche deux)
+    boltEvery: 0.42, boltDmg: 1, boltPierce: 1, boltRange: 340, boltSpeed: 760, sageSpeed: 300, slow: 0.07,
+    shardEvery: 8,   // l'encre est rare : un petit golem sur huit lâche un éclat (1 = chacun, comme jusqu'à la version 17)
+    grosShards: [1, 1],   // les éclats des gros : [bélier, colosse] (jusqu'à la version 17 : 2 et 3 ; null = comme avant)
     magnet: 120, pickup: 30,
     traitDmg: 2, traitWidth: 28, shatterR: 85, shatterDmg: 2,
     daze: 3, flyMin: 240, wallLife: 3, wallMax: 520, wallHalf: 15, wallSlowR: 70, wallSlow: 0.45, reflectDmg: 2, vMax: 95,
@@ -11,7 +15,7 @@ const G = (() => {
     duree: 480, codeTimes: null, codeBonus: 3, maxAlive: 75, regen: 10,
     rate0: 0.35, rateAdd: 0.65, rateRamp: 180, burst0: 5, burstDiv: 35, burstEvery: 28,
     // ça durcit avec le temps (en minutes vraies, comme les combats des amis)
-    pageFirst: 1, pageStep: 1.5,
+    pageFirst: 1, pageStep: 1,   // les pages : il faut 1, 2, 3, 4… gros (jusqu'à la version 17 : 1, 2, 4, 5, 7, 8…) [Romain, 15 h 47 : « mettre plus de livres »]
     hpEvery: 90, hpGrosEvery: 60, hpGros: 2, sideEvery: 180, shootersX2At: 600,
     // les amis libérés
     
@@ -25,7 +29,7 @@ const G = (() => {
     double: { fam: 'baton', nom: 'Double orbe', ic: '✨', max: 3, txt: l => `Le bâton tire ${l + 1} orbes à la fois.` },
     lourd: { fam: 'baton', nom: 'Orbe lourd', ic: '☄️', max: 3, txt: l => `Chaque orbe fait ${l + 1} dégâts au lieu de 1.` },
     rapide: { fam: 'baton', nom: 'Tir rapide', ic: '💨', max: 3, txt: l => ['', 'Le bâton tire plus vite.', 'Le bâton tire encore plus vite.', 'Le bâton tire deux fois plus vite.'][l] },
-    percant: { fam: 'baton', nom: 'Orbe perçant', ic: '🎯', max: 3, txt: l => ['', 'L’orbe traverse 2 golems.', 'L’orbe traverse 4 golems.', 'L’orbe traverse toute la file.'][l] },
+    percant: { fam: 'baton', nom: 'Orbe perçant', ic: '🎯', max: 3, txt: l => ['', 'L’orbe traverse 3 golems.', 'L’orbe traverse 5 golems.', 'L’orbe traverse toute la file.'][l] },
     encrier: { fam: 'rune', nom: 'Grand encrier', ic: '🖋️', max: 3, txt: l => `${12 + 2 * l} d’encre au lieu de 12, et l’encrier se remplit.` },
     brulant: { fam: 'rune', nom: 'Trait brûlant', ic: '🔥', max: 3, txt: l => `Le trait laisse une ligne de feu pendant ${l + 1} secondes.` },
     epines: { fam: 'rune', nom: 'Mur d’épines', ic: '🌵', max: 3, txt: l => `Le mur blesse les golems collés contre lui (${l} par seconde).` },
@@ -201,7 +205,9 @@ const G = (() => {
   function die(s, u) {
     s.kills++;
     if (s.inRune) { s.runeKills++; s.bestCombo = Math.max(s.bestCombo, s.runeKills); }
-    const n = TYPES[u.type].shards + (s.inRune && s.runeKills >= 3 ? 1 : 0) + (GROS.includes(u.type) ? lv(s, 'moisson') : 0);
+    let n = s.cfg.grosShards && GROS.includes(u.type) ? s.cfg.grosShards[GROS.indexOf(u.type)] : TYPES[u.type].shards;
+    if (!GROS.includes(u.type) && s.cfg.shardEvery > 1) { s.shardN = (s.shardN ?? s.cfg.shardEvery - 1) + 1; if (s.shardN % s.cfg.shardEvery) n = 0; }   // l'encre est rare : un petit golem sur « shardEvery » lâche un éclat (le tout premier en lâche un)
+    n += (s.inRune && s.runeKills >= 3 ? 1 : 0) + (GROS.includes(u.type) ? lv(s, 'moisson') : 0);
     for (let i = 0; i < n; i++) s.shards.push({ x: u.x + (rng(s) - .5) * 34, y: u.y + (rng(s) - .5) * 34, t: rng(s) * 6 });
     for (let i = 0; i < 8; i++) { const a = rng(s) * 6.28, v = 80 + rng(s) * 160; s.fx.push({ k: 'bit', x: u.x, y: u.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.5, max: 0.5, col: u.daze > 0 ? '#ffe58a' : '#9aa3b5' }); }
     if (u.type === 'costaud') s.shake = Math.max(s.shake, 0.25);
@@ -320,7 +326,7 @@ const G = (() => {
           const tg = near[i % near.length], off = i >= near.length ? (i % 2 ? 0.18 : -0.18) * Math.ceil(i / near.length) : 0;
           const a = Math.atan2(tg.y - sg.y, tg.x - sg.x) + off;
           if (i === 0) sg.aim = [Math.cos(a), Math.sin(a)];
-          s.bolts.push({ x: sg.x, y: sg.y, vx: Math.cos(a) * s.cfg.boltSpeed, vy: Math.sin(a) * s.cfg.boltSpeed, life: s.cfg.boltRange / s.cfg.boltSpeed + 0.1, dmg: s.cfg.boltDmg + lv(s, 'lourd'), pierce: UP.percant[lv(s, 'percant')], hit: [] });
+          s.bolts.push({ x: sg.x, y: sg.y, vx: Math.cos(a) * s.cfg.boltSpeed, vy: Math.sin(a) * s.cfg.boltSpeed, life: s.cfg.boltRange / s.cfg.boltSpeed + 0.1, dmg: s.cfg.boltDmg + lv(s, 'lourd'), pierce: UP.percant[lv(s, 'percant')] + s.cfg.boltPierce, hit: [] });
         }
         s.boltT = s.cfg.boltEvery * UP.rapide[lv(s, 'rapide')];
       } else s.boltT = 0.1;
