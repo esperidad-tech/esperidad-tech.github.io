@@ -7126,7 +7126,7 @@ Tout le fil est gardé dans `claude/combat-pisteur-decisions-orales-25-novembre-
 |---|---|---|---|---|
 | 1 | Boucher les trous de la fin, mettre à jour le tableau des questions | conception | — | à faire |
 | 2 | Le plan des enquêtes 4 à 9 | conception | 1 conseillé | à faire |
-| 3 | **Maquette rapide de la phase 2, les trois de devant** (ajout de Romain) | maquette en formes simples | — | à faire |
+| 3 | **Maquette rapide de la phase 2, les trois de devant** (ajout de Romain) | maquette en formes simples | — | **fait le 26 novembre, 20 h 11 (§ 18.12) ; attend l'avis de Romain en jouant** |
 | 4 | Maquette rapide de la phase 3, à jouer en famille sur quatre tablettes | maquette en formes simples | — | à faire |
 | 5 | La phase 2, les trois de devant, en vrai | maquette dessinée | 3 + avis de Romain | à faire |
 | 6 | La phase 2, le jeu du Pisteur | maquette | 3 conseillé | à faire |
@@ -7196,3 +7196,36 @@ Tout le fil est gardé dans `claude/combat-pisteur-decisions-orales-25-novembre-
 
 **Chantier 13 — La section du combat de l'Alchimiste dans la Bible**
 - Il n'a pas de section dans la Bible (il est décrit dans `jeu/maquettes/combat-alchimiste/LISEZ-MOI.md` et dans le document du projet `claude/combat-alchimiste-e10.md`). En faire un chapitre comme les §15 à §17, sans rien changer au combat.
+
+### 18.12 Chantier 3 : la maquette rapide de la phase 2, les trois de devant — EN LIGNE, HORS DU JEU (26 novembre, 20 h 11) ; PAS ENCORE JOUÉE PAR ROMAIN
+
+**Le go** : Romain, 19 h 49 : « On prend le chantier 3 du § 18.11. » Rien d'autre n'a été touché.
+
+**La page** : https://claude.ai/artifact/JqMqmHTrbpStj8Y2Wrx61b (version 1). **Les sources** : `jeu/maquettes/phase2-devant/` de `brumeval-sources`, avec son `LISEZ-MOI.md` (comment jouer, les réglages, les fichiers, les essais, comment remettre en ligne). **Pas dans la salle des jeux** du site (Romain ne l'a pas demandé ; la marche à suivre est dans le `LISEZ-MOI.md`).
+
+**Ce qui est construit** (toute la phase 2 des trois de devant, en formes simples, sans son) :
+- **La vue de face, téléphone debout** : l'armure en haut (des rectangles et des ronds), la salle en bas, le héros (un rond de sa couleur) qu'on déplace au doigt ; **sur tablette, le jeu au centre de l'écran**. Avant de jouer : les trois têtes (Barde, Sage, Alchimiste) et le bouton jaune « Démarrer », rien à lire.
+- **La forme 1, l'armure entière** : **le poing** (le bras se lève, la moitié de la salle rougit, puis le poing s'écrase) ; **le souffle de flammes** (le devant de la salle s'allume en orange, puis la flamme descend : on recule au fond) ; **le gros coup à interrompre** (le cœur brille, une barre se remplit en haut ; ✋ le coupe) ; **les réparateurs** (deux petits carrés gris qui marchent vers les jambes et la réparent s'ils y arrivent).
+- **La forme 2, le ventre ouvert** (les tuyaux du drainage qui brillent) : **la surchauffe** (l'armure orange : ❄️) et **le froid** (l'armure bleue : 🔥), le bon remède la sonne et lui fait de gros dégâts, le mauvais explose sur nous, rien à temps : la chaleur explose ou le héros est gelé ; **les charges** (un éclair colle une couleur au héros, dorée ou rouge ; les deux moitiés de la salle s'allument : aller du côté de sa couleur).
+- **La forme 3, presque sans armure** : Grosbec à moitié visible dans le cockpit, une aura d'énergie ; le poing, le souffle et le gros coup **plus rapides** ; **le bouclier rouge qui renvoie** (chaque coup revient sur nous en boule rouge : il faut s'arrêter de taper).
+- **Le symbole** : quand l'armure a perdu le pourcentage réglé (une petite marque jaune sur sa barre de vie), un symbole du jeu (les 12 des codes) s'affiche en grand, avec la tête du héros et 📣, puis se range en haut à gauche pour qu'on puisse le répéter.
+- **La bulle et la danse des bandes** : la bulle dorée et calme ; le sol coupé en bandes (4, puis 5, puis 6 selon la forme) ; toutes s'allument puis explosent sauf une, et la bande sûre se promène de gauche à droite et revient ; **de plus en plus vite** tant que le code n'est pas tapé.
+- **Le code** : le cri du Pisteur s'affiche (sa tête verte et trois symboles) ; le gros bouton jaune ouvre **la fenêtre du code, transparente** (le combat se voit derrière) ; **le combat passe au ralenti** (une barre bleue montre ce qui reste), **le héros ne bouge plus** ; le bon code : la pièce tombe, l'armure change de forme ; après la forme 3 : l'armure explose, Grosbec tombe, l'écran de fin (temps, temps de chaque forme, morts, potions, sans un mot).
+- **La mort** : sous la bulle, le héros se relève et **le bouton du code est grisé avec un gros chiffre** qui descend ; avant le symbole, il recommence la forme en cours.
+- **Les soins illimités** : 🧪, rester immobile 2,5 s, toute la vie revient ; bouger ou prendre un coup coupe le soin.
+- **Le menu Pause, pour comparer en jouant** : les trois façons de faire mal à l'armure (Immobile, Bouton, Point faible) ; le Pisteur (au bouton 🏹, ou tout seul 10, 25 ou 45 s après le symbole) ; la vitesse des attaques ; le pourcentage du symbole (15, 25, 33 %) ; la durée du ralenti (3, 5, 8 s) ; les boutons qui clignotent (oui/non) ; aller tout de suite à une forme ou au symbole.
+
+**Les choix de Claude, à valider en jouant** [Claude, pas validé] :
+1. **Le héros suit le mouvement du doigt** (posé n'importe où, mouvement agrandi ×1,5), au lieu d'aller sous le doigt : le doigt ne cache jamais le héros.
+2. **Le code du Pisteur fait le reste de la forme** : le héros enlève 25 % de la vie de l'armure à chaque forme, puis le code fait tomber la barre au tiers suivant (« ça affaiblit l'armure et fait passer au tiers suivant », §18.4) ; à 33 %, le héros fait toute la forme.
+3. **Les chiffres** : 100 points de vie pour le héros ; le poing 45, le souffle 35, le gros coup pas coupé 85, une bande qui explose 70 (« presque mourir d'un coup »), la chaleur 50, le mauvais remède 50, la mauvaise charge 40, un coup renvoyé 7, un mauvais code 20 ; ✋ revient en 12 s (et il y a au moins 17 s entre deux gros coups : on peut tous les couper si on ne gâche pas le bouton) ; la bonne charge rend les coups deux fois plus forts pendant 6 s.
+4. **Les réparateurs se cassent en les touchant** avec le héros (il faut aller les chercher au milieu de la danse).
+5. **Les remèdes** : les deux boutons 🔥 et ❄️ sont là pendant toute la forme 2 ; la surchauffe et le froid viennent chacun leur tour (on voit les deux).
+6. **La danse** : on reste deux pas de suite sur la bande du bord (le moment calme pour taper le code) ; la première bande sûre est celle où se trouve le héros.
+7. **Le ralenti** : le combat à 30 % de sa vitesse ; un mauvais code ferme la fenêtre, vitesse normale tout de suite, avec un petit coup ; le bon code : le ralenti continue une seconde pendant que la pièce tombe.
+8. **Mort sous la bulle** : 10 s de bouton grisé ; **mort avant son symbole** : la forme recommence, l'armure remise à neuf pour lui (§18.4, proposition de Claude).
+9. **Les boutons qui clignotent** (le rond jaune) : ✋ pendant le gros coup, 🔥 et ❄️ ensemble pendant la surchauffe ou le froid (sans dire lequel), 🧪 sous 40 de vie, le bouton du code quand le Pisteur a crié.
+
+**Les mesures** : règles 30 scènes sur 30 (`node tests/regles.js`) ; gestes au doigt 13 sur 13 (`tests/gestes.py`) ; un robot joue des parties entières dans la vraie page avec les trois façons de taper : aucune erreur, **3 à 3,7 minutes** par partie (à peu près 30 s de vrai combat par forme, plus 25 s d'attente du Pisteur) ; 54 images par seconde en moyenne, 37 au pire, sur un téléphone ralenti 4 fois. **Pas vérifié sur un vrai téléphone ni sur une vraie tablette.**
+
+**À demander à Romain quand il aura joué** : laquelle des trois façons de faire mal à l'armure (§18.10, point 5) ; si c'est un bon boss de fin (assez de choses à gérer, pas trop) ; la danse et le code sous le ralenti (trop dur, trop facile ?) ; la longueur des formes ; le doigt posé n'importe où ; les réparateurs qu'on touche ; les remèdes (trop faciles, les deux boutons étant toujours là ?). **Ensuite seulement** : le chantier 5 (la phase 2 en vrai : la vue du Barde, les dessins, les sons).
