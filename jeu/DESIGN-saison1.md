@@ -2,7 +2,7 @@
 
 ## La Bible du jeu : elle fait foi
 
-> **Nouveau (26 novembre) : la fin de la saison est écrite au § 18** (l'enquête 10 : les phases 2 et 3, la fusion, Grosbec rajeuni, Odette et le village, Mimi aux yeux arc-en-ciel, les douze cartes dorées) : idée en cours, rien de construit.
+> **Nouveau (26 novembre) : la fin de la saison est écrite au § 18** (l'enquête 10 : les phases 2 et 3, la fusion, Grosbec rajeuni, Odette et le village, Mimi aux yeux arc-en-ciel, les douze cartes dorées) : idée en cours, rien de construit. **La liste des chantiers, validée par Romain, avec une fiche par chantier : § 18.11.** Pour lancer un chantier : « On prend le chantier N du § 18.11 ».
 >
 > **Nouveau (18 au 22 novembre) :** toute l'histoire de fond est refaite de zéro, voir **§ 0 bis** (juste après le chapitre 0). Elle remplace l'ancien scénario ; c'est une idée en cours, rien n'est construit. **Si cette Bible est remplacée par celle de GitHub, recopier le § 0 bis depuis `claude/histoire-de-fond.md`.**
 
@@ -6870,7 +6870,7 @@ Tout le fil est gardé dans `claude/combat-pisteur-decisions-orales-25-novembre-
 
 ## 18. L'enquête 10, la suite et la fin : les phases 2 et 3, l'histoire de la fin de la saison, les cartes dorées (26 novembre, après-midi, à la voix) — IDÉE EN COURS, RIEN DE CONSTRUIT, PAS DE GO
 
-**Statut** : tout ce chapitre a été dit à la voix par Romain le 26 novembre, l'après-midi, juste après la fin de la phase 1 (« maintenant que la phase 1 de l'enquête 10 des quatre personnages est terminée, j'ai besoin de réfléchir à la suite »). **Rien n'est construit, aucun go n'a été donné.** À 17 h 57, il a écrit : « tout ce qui a été dit et tout ce qui a été décidé dans cette discussion, tu me l'inscris bien au chaud dans la Bible et tu mets tout ça en ligne pour pas que ça soit perdu […] tu me fais la liste de toutes les choses à faire et je valide la liste ». **La liste des chantiers a été proposée à Romain dans la conversation ; elle attend sa validation** : quand il l'aura validée, l'écrire au §18.11. Étiquettes : **[Romain]** = son idée ou son choix ; **[Proposé]** = idée de Claude qu'il a acceptée ; **[Claude, pas validé]** = proposition de Claude sans réponse claire ; **[À voir]** = pas tranché.
+**Statut** : tout ce chapitre a été dit à la voix par Romain le 26 novembre, l'après-midi, juste après la fin de la phase 1 (« maintenant que la phase 1 de l'enquête 10 des quatre personnages est terminée, j'ai besoin de réfléchir à la suite »). **Rien n'est construit, aucun go n'a été donné.** À 17 h 57, il a écrit : « tout ce qui a été dit et tout ce qui a été décidé dans cette discussion, tu me l'inscris bien au chaud dans la Bible et tu mets tout ça en ligne pour pas que ça soit perdu […] tu me fais la liste de toutes les choses à faire et je valide la liste ». **La liste des chantiers a été validée par Romain à 19 h 44, avec un ajout (des maquettes rapides en formes simples de la phase 2) : § 18.11, avec une fiche par chantier pour lancer chaque conversation.** Étiquettes : **[Romain]** = son idée ou son choix ; **[Proposé]** = idée de Claude qu'il a acceptée ; **[Claude, pas validé]** = proposition de Claude sans réponse claire ; **[À voir]** = pas tranché.
 
 **Ce que ce chapitre change ailleurs** : § 0 bis (0b.7 bis, point 19 ; 0b.7 quater, points 4, 10, 11, 12 et 13 ; 0b.9 ; 0b.10), §15.9 (les codes reviennent, mais seulement dans la phase 2), §17.38 (les trois cartes du Pisteur seront à trouver pendant les enquêtes). Chaque endroit porte un renvoi vers ici.
 
@@ -7098,27 +7098,88 @@ Tout le fil est gardé dans `claude/combat-pisteur-decisions-orales-25-novembre-
 11. **Les ennemis et les salles des enquêtes 4 à 9** pour le Pisteur (et les petites versions des autres combats).
 12. **À concilier** : Romain a dit que Grosbec est devenu maire « en mentant et en faisant des trucs méchants », après une vie où on lui a « mis des bâtons dans les roues » et où on l'a « traîné plus bas que terre », et qu'il a « juré de se venger » ; le § 0 bis dit « maires de père en fils » et « c'est un bon maire » (0b.7 quater, points 1 et 4). Les deux peuvent tenir ensemble (un bon maire en façade, qui a menti pour arriver), mais c'est à Romain de trancher.
 
-### 18.11 La liste des chantiers — PROPOSÉE À ROMAIN LE 26 NOVEMBRE, EN ATTENTE DE SA VALIDATION
-*À remplacer par la liste qu'il aura validée. Tant qu'elle n'est pas validée, rien ne se construit.*
+### 18.11 La liste des chantiers — VALIDÉE PAR ROMAIN LE 26 NOVEMBRE (19 h 44), AVEC UN AJOUT
 
-La liste telle qu'elle a été proposée (Claude, 26 novembre, 18 h). **Un chantier = une conversation.** L'ordre conseillé : d'abord le 1, puis l'essai en famille du 3, parce que c'est le plus risqué.
+**Ce que Romain a dit (19 h 44, écrit)** : « J'aimerais bien qu'il y ait des maquettes très rapides à faire, qui montrent le système de combat avec des formes basiques. De toute la phase 2 pour les 3 de devant. Histoire de vérifier si ça fonctionne. Mets à jour ta liste. Ensuite, tu mets à jour la Bible pour que je puisse lancer d'autres conversations. Et lancer les phases sur chaque conversation. »
 
-**A. Concevoir (sans code)**
-1. **Boucher les trous de la fin** (§ 18.10, points 1 à 4, 7, 8 et 12) : comment Grosbec reprend les lanternes ; ce qu'il actionne pour enchaîner Raban, et où on l'annonce avant ; ce que la victoire de la phase 2 sauve ; sa blessure ; ce que font les pierres de protection ; comment la formule d'Odette entre dans le combat ; sa jeunesse à concilier. Et mettre à jour la page du tableau des questions (https://claude.ai/artifact/AgcEfeqeMyZwYqqcapRxmB : pas encore fait le 26 novembre).
-2. **Le plan des enquêtes 4 à 9**, une fiche par enquête : où sont les deux lanternes perdues ; quand et comment les héros libèrent Odette ; les deux cartes dorées de l'enquête ; le lieu de la carte ; la petite version du combat de chaque héros (un bouton de plus à chaque fois) ; les indices du piège de Grosbec ; la traque des villageois et des soldats ; les apparitions d'Elyra (ses yeux arc-en-ciel).
+**Comment ça marche** :
+- **Un chantier = une conversation.** Romain ouvre une conversation dans le projet et dit, par exemple : « On prend le chantier 3 du § 18.11. » **Ce message est le go de ce chantier, et de lui seul** : on ne déborde pas sur les autres.
+- **Chaque conversation** lit d'abord `PASSATION.md` (les premières entrées suffisent pour ces chantiers), puis le § 18 en entier, puis la fiche de son chantier ci-dessous. Elle récupère seule les sources sur GitHub (branche `brumeval-sources`).
+- **Quand le chantier est fini** : la conversation écrit ce qu'elle a fait **dans sa propre sous-section** (§ 18.12, § 18.13…, prise au dernier moment, juste avant d'écrire), coche son chantier dans le tableau ci-dessous, ajoute une entrée en tête de `PASSATION.md`, remplace la Bible et la passation dans le projet, et pousse sur GitHub.
+- **Plusieurs conversations peuvent tourner en même temps** (c'est arrivé le 26 novembre : le Sage, le Barde, l'Alchimiste et cette discussion). **Toujours tirer les sources (`git fetch`) juste avant d'écrire la Bible ou la passation**, ne toucher qu'à ses propres lignes, et pousser tout de suite après. Ne jamais pousser « en force ».
+- **Les maquettes rapides passent avant le vrai combat** : on vérifie d'abord que le système de combat marche, avec des formes simples ; on ne dessine et on ne sonorise qu'après l'avis de Romain.
 
-**B. Construire l'enquête 10 (des maquettes, hors du jeu, comme la phase 1)**
-3. **La phase 3 en version d'essai toute simple**, sans beaux dessins, à jouer en famille sur quatre tablettes : le départ ensemble, le hasard partagé (« Essai 3 »), les trois zones, l'élément, la partie du corps, qui est visé, « On reprend », les quatre symboles de victoire.
-4. **La phase 2, le jeu des trois de devant** (le combat façon World of Warcraft, en fausse 3D) : les trois formes de l'armure, la bulle et la danse, le ralenti du code, les soins, la mort. Avant : trancher comment on fait mal à l'armure (§ 18.10, point 5).
-5. **La phase 2, le jeu du Pisteur** : sa nouvelle salle (le dos de l'armure en haut, les pieds et leurs zones rouges), les gardes qui se compliquent avec le temps, le code reçu et donné, les bandages illimités ; à partir du moteur de son combat de la phase 1.
-6. **La phase 3 complète**, avec les vrais dessins : Grosbec de lumière rouge, la partie perdue, l'arrivée d'Odette et du village, la formule, les pierres de protection (après l'essai du 3).
-7. **Les cartes dorées dans les combats de la phase 1** : les trois runes du Sage, les trois potions de l'Alchimiste, les trois chansons du Barde ; les trois cartes du Pisteur passent « à trouver ».
-8. **Les cinématiques de l'enquête 10** : la grande (fin de la phase 2, environ deux minutes), la fin (la ville illuminée, les yeux de Mimi), les passages d'une phase à l'autre ; un bouton pour couper le son sur toutes les cinématiques du jeu.
-9. **Assembler l'enquête 10 dans le jeu** : les quatre combats de la phase 1, puis la phase 2, puis la phase 3, avec les extraits sans texte et les boutons jaunes.
+| N° | Chantier | Type | À faire après | État |
+|---|---|---|---|---|
+| 1 | Boucher les trous de la fin, mettre à jour le tableau des questions | conception | — | à faire |
+| 2 | Le plan des enquêtes 4 à 9 | conception | 1 conseillé | à faire |
+| 3 | **Maquette rapide de la phase 2, les trois de devant** (ajout de Romain) | maquette en formes simples | — | à faire |
+| 4 | Maquette rapide de la phase 3, à jouer en famille sur quatre tablettes | maquette en formes simples | — | à faire |
+| 5 | La phase 2, les trois de devant, en vrai | maquette dessinée | 3 + avis de Romain | à faire |
+| 6 | La phase 2, le jeu du Pisteur | maquette | 3 conseillé | à faire |
+| 7 | La phase 3 complète | maquette dessinée | 4 + essai en famille | à faire |
+| 8 | Les cartes dorées dans les combats de la phase 1 | combats existants | — | à faire |
+| 9 | Les cinématiques de l'enquête 10 | films | 1 | à faire |
+| 10 | Assembler l'enquête 10 dans le jeu | jeu | 5, 6, 7, 8, 9 | à faire |
+| 11 | Les petites versions des combats pour les enquêtes 4 à 9 | jeu | 2 | plus tard |
+| 12 | Les cartes dorées dans le donjon | jeu | 2 | plus tard |
+| 13 | Écrire la section du combat de l'Alchimiste dans la Bible | Bible | — | à faire |
 
-**C. Plus tard, avec chaque enquête de 4 à 9**
-10. Les petites versions des combats, dont une nouvelle salle et un nouveau monstre par enquête pour le Pisteur.
-11. Les cartes dorées dans le donjon (dont le sifflet qui fait partir un ennemi).
+**L'ordre conseillé par Claude** : le 3 et le 4 d'abord (vérifier que les deux systèmes de combat tiennent debout), le 1 en parallèle (rien à voir avec le code) ; puis le 5, le 6 et le 7 selon les avis de Romain.
 
-**D. Des restes trouvés en chemin (déjà en attente avant le 26 novembre)**
-12. Ranger sur GitHub les sources du combat du Barde (`jeu/maquettes/combat-barde/` n'existe toujours pas sur la branche) et écrire la section du combat de l'Alchimiste dans la Bible (il n'en a pas).
+**Déjà fait depuis la proposition de 18 h** : les sources du combat du Barde sont sur GitHub (`jeu/maquettes/combat-barde/`, commit 3544634, 19 h 03, par une autre conversation) : cette moitié de l'ancien chantier 12 est retirée de la liste.
+
+#### Les fiches des chantiers
+
+**Chantier 1 — Boucher les trous de la fin** (conception, à la voix ; aucun code)
+- **À lire** : § 18 ; § 0 bis (0b.7 bis, points 16 à 19 ; 0b.7 quater en entier) ; `claude/tableau-des-questions.md` (projet).
+- **À trancher avec Romain** : § 18.10, points 1 à 4, 7, 8, 10 et 12 (comment Grosbec reprend les lanternes ; ce qu'il actionne pour enchaîner Raban, et où on l'annonce avant ; ce que sauve la victoire de la phase 2 ; sa blessure, une saison 2 ; les pierres de protection et les pendentifs ; la formule d'Odette ; où elle est enfermée ; sa jeunesse et « un bon maire »).
+- **Fini quand** : chaque point a une réponse de Romain, écrite dans le § 0 bis et le § 18 ; **la page du tableau des questions** (https://claude.ai/artifact/AgcEfeqeMyZwYqqcapRxmB) est à jour (relire la page avec l'outil Artifact, changer l'état des questions, republier à la même adresse) ; la copie `claude/histoire-de-fond.md` refaite.
+
+**Chantier 2 — Le plan des enquêtes 4 à 9** (conception, à la voix ; aucun code)
+- **À lire** : § 18 (surtout 18.2, 18.3, 18.6 et 18.7) ; § 0 bis, points 17 (les lieux de la carte, façon Fallout) et 23 (le bestiaire) ; §15.9.
+- **À faire** : une fiche par enquête : le lieu de la carte ; ce qu'on y découvre de l'histoire ; les deux lanternes perdues (où) ; quand et comment les héros libèrent Odette (elle dit seulement merci) ; les deux cartes dorées de l'enquête (lesquelles, où) ; la petite version du combat de chaque héros (un bouton de plus à chaque fois) ; les ennemis neufs du Pisteur et sa salle ; les indices du piège de Grosbec ; la traque des villageois et des soldats ; les apparitions d'Elyra et de ses yeux arc-en-ciel ; le rôle de Mimi.
+- **Pas dans ce chantier** : écrire les dialogues, construire quoi que ce soit.
+- **Fini quand** : les six fiches sont validées par Romain et écrites dans la Bible (un nouveau chapitre, « 19. Les enquêtes 4 à 9 »).
+
+**Chantier 3 — Maquette rapide de la phase 2, les trois de devant** (demandée par Romain le 26 novembre, 19 h 44)
+- **Le but** : vérifier que le système de combat fonctionne, **avec des formes basiques** (des ronds, des rectangles, des couleurs franches ; aucun dessin travaillé, pas de fausse 3D, pas de musique). **Vite fait** : c'est une maquette pour juger le jeu, pas les images.
+- **À lire** : § 18.4 en entier (la partie « les trois de devant », le symbole et le code, la bulle, taper le code, la mort, les soins, les trois formes).
+- **Ce qu'elle doit montrer, toute la phase 2** : la vue de face (le héros en bas, l'armure en haut) ; le héros qu'on déplace au doigt ; **les trois formes de l'armure à la suite**, chacune avec ses attaques annoncées (forme 1 : le poing sur une moitié de la salle, le souffle de flammes, le gros coup à interrompre, les réparateurs ; forme 2 : la surchauffe et le froid avec le bon remède, les charges dorée et rouge ; forme 3 : le bouclier qui renvoie, tout plus rapide) ; **le symbole** qui s'affiche quand l'armure a perdu un certain pourcentage de vie ; **la bulle** et **la danse des bandes**, de plus en plus rapide ; **le bouton du code**, la fenêtre, **le ralenti**, le héros qu'on ne dirige plus pendant qu'on tape ; **la mort** (le bouton du code grisé avec son petit chiffre) ; **les soins illimités** (immobile deux ou trois secondes, coupé par un coup).
+- **Le Pisteur n'est pas là** : la maquette fait semblant (**[Claude, à proposer à Romain]** : un petit bouton « le Pisteur a crié son code » qui affiche le code à taper, ou un minuteur réglable qui le fait arriver tout seul).
+- **Ce que Romain n'a pas tranché, à faire essayer** (**[Claude, à proposer]**) : **comment on fait mal à l'armure** (§ 18.10, point 5) : trois façons au choix dans le menu (le héros tape tout seul quand il ne bouge pas ; un bouton d'attaque ; un point faible qui s'ouvre et se déplace), pour que Romain les compare en jouant ; et des réglages simples (vitesse des attaques, pourcentage du symbole, durée du ralenti).
+- **Les règles du projet qui tiennent** : pas de texte à lire (règle du 25 novembre, 22 h 42) : au plus un extrait sans texte et le bouton jaune à texte noir ; jouable sur téléphone et sur tablette, le jeu au centre de l'écran.
+- **Pas dans ce chantier** : le jeu du Pisteur ; les beaux dessins ; les sons ; le branchement dans le jeu.
+- **Fini quand** : la maquette est en ligne (une page Claude, comme les autres maquettes, et si Romain le veut, la salle des jeux du site), ses sources dans `jeu/maquettes/phase2-devant/` de `brumeval-sources`, avec un `LISEZ-MOI.md` ; ce qui est construit et les choix de Claude écrits dans une sous-section du § 18 ; **puis l'avis de Romain en jouant**.
+
+**Chantier 4 — Maquette rapide de la phase 3** (formes simples, à jouer en famille)
+- **Le but** : vérifier, autour d'une vraie table, que **quatre tablettes non reliées** peuvent jouer ensemble à la voix, et que la cacophonie reste jouable.
+- **À lire** : § 18.5 en entier ; §13.97 (« Mes amis » : comment chaque tablette connaît les trois autres héros).
+- **Ce qu'elle doit montrer** : quatre rôles sur quatre tablettes (le même écran, son héros à soi) ; **le départ ensemble** (« 3, 2, 1 ») ; **le hasard partagé** (la même suite calculée sur chaque tablette à partir des héros et du numéro de l'essai, « Essai 3 » affiché) ; **les quatre choses à gérer** (la zone parmi trois, l'élément parmi feu, acide, gel, la partie du corps, qui est visé) ; chaque information affichée **sur une autre tablette que celle qui en a besoin**, avec la tête du héros à qui la crier ; la montée (un cycle simple, puis ça s'enchaîne, se mélange, accélère, des informations en même temps) ; la chaîne (un mort, puis tout le monde) ; **« On reprend »** ; la vie du boss, le symbole, le mode soutien, les quatre symboles de victoire.
+- **Pour la maquette, plus simple que le vrai jeu** (**[Claude, à proposer]**) : chaque tablette choisit son rôle sur un premier écran, et les quatre tapent le même petit numéro de partie (à la place des héros de « Mes amis »).
+- **Pas dans ce chantier** : la partie perdue et l'arrivée du village (c'est le 7) ; les dessins, les sons.
+- **Fini quand** : en ligne, sources dans `jeu/maquettes/phase3-essai/`, sous-section du § 18 ; **puis l'essai en famille sur quatre tablettes et l'avis de Romain**.
+
+**Chantier 5 — La phase 2, les trois de devant, en vrai** (après le 3 et l'avis de Romain)
+- Partir de la maquette du 3, telle que Romain l'a validée. **La vue** : celle du combat du Barde de la phase 1 (§16) : le héros en fausse 3D au premier plan, l'armure de Grosbec devant, imposante, en 3D ; reprendre les modèles déjà faits (Grosbec en armure de §16, les héros en volume, les golems et le réparateur). Chaque coup du boss animé ; les trois formes dessinées (le ventre ouvert et ses tuyaux, Grosbec à moitié visible dans le cockpit). Les sons. Jamais sous 24 images par seconde sur une vieille tablette.
+
+**Chantier 6 — La phase 2, le jeu du Pisteur**
+- Partir du moteur du combat du Pisteur (§17, version 15, `jeu/maquettes/combat-pisteur/`). **À lire** : § 18.4, « le jeu du Pisteur ». Une nouvelle salle : le dos de l'armure en haut de l'écran, ses pieds et leurs zones rouges toujours là ; les gardes envoyés sans arrêt, de plus en plus compliqués tant que le code de devant n'arrive pas ; le code reçu (il peut aller frapper) et le code donné (au pourcentage de vie de l'armure) ; chaque erreur de code fait venir une vague ; bandages illimités ; ses trois cartes. **Ne pas toucher au combat du Pisteur de la phase 1** (terminé, validé).
+
+**Chantier 7 — La phase 3 complète** (après le 4 et l'essai en famille)
+- Partir de la maquette du 4. Ajouter **la partie perdue** (aucun indicateur, la moitié de la vie par coup, courte), **l'arrivée d'Odette et du village**, la formule d'Odette, les pierres de protection (selon ce que le chantier 1 aura décidé), Grosbec de lumière rouge, les vrais dessins et les sons.
+
+**Chantier 8 — Les cartes dorées dans les combats de la phase 1**
+- **À lire** : § 18.6. Le Sage (§15) : le triangle, la lune, l'étoile, à tracer ; l'Alchimiste (`jeu/maquettes/combat-alchimiste/`) : le gel, le soin de toute l'équipe, l'explosion ; le Barde (§16) : repousser, ensorceler (les lanceurs tirent sur les golems, les autres sautent sur place), l'accord de fou ; le Pisteur (§17) : ses trois cartes existent déjà. Une seule fois par combat ; pour l'essai, toutes offertes (elles seront à trouver dans les enquêtes). **Un combat à la fois, et seulement avec le go de Romain pour chacun** : ces combats sont validés, on n'y change rien d'autre.
+
+**Chantier 9 — Les cinématiques de l'enquête 10** (après le 1)
+- **À lire** : § 18.2 (la grande cinématique, en sept moments), § 18.8, §13.69 (comment les films sont faits, `jeu/cine/`). La grande (environ deux minutes), la fin (la ville illuminée, les yeux de Mimi qui deviennent arc-en-ciel), les passages entre les phases ; **un petit bouton pour couper le son** sur toutes les cinématiques du jeu.
+
+**Chantier 10 — Assembler l'enquête 10 dans le jeu** (après 5, 6, 7, 8 et 9)
+- Brancher dans le jeu les quatre combats de la phase 1, puis la phase 2, puis la phase 3 et les films ; un extrait sans texte et le bouton jaune avant chaque phase. Ne jamais toucher aux codes des enquêtes 1 et 2.
+
+**Chantiers 11 et 12 — Plus tard, avec chaque enquête de 4 à 9** (après le 2)
+- 11 : les petites versions des combats de chaque héros (§ 18.7), dont une salle et un monstre neufs par enquête pour le Pisteur. 12 : les cartes dorées dans le donjon (§ 18.6 : la cape d'ombre, la flèche, le sifflet qui fait partir un ennemi ordinaire ; les runes, potions et chansons des autres).
+
+**Chantier 13 — La section du combat de l'Alchimiste dans la Bible**
+- Il n'a pas de section dans la Bible (il est décrit dans `jeu/maquettes/combat-alchimiste/LISEZ-MOI.md` et dans le document du projet `claude/combat-alchimiste-e10.md`). En faire un chapitre comme les §15 à §17, sans rien changer au combat.
