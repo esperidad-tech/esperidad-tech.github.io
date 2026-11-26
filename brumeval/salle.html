@@ -33547,12 +33547,36 @@ function Moteur(ctx, opt){
   }
   A.sfx = ctx.createGain(); A.sfx.connect(A.volume);
   A.mus = ctx.createGain(); A.mus.connect(A.volume);
-  var cave = ctx.createConvolver(); cave.buffer = reponse(2.4, {clair:.55, sombre:.06, echos:7, ecart:.06, pre:.01}, 'cave');
-  var caveRet = ctx.createGain(); caveRet.gain.value = .7; cave.connect(caveRet); caveRet.connect(A.volume);
-  A.caveIn = ctx.createGain(); A.caveIn.connect(cave);
-  var grotte = ctx.createConvolver(); grotte.buffer = reponse(4.5, {clair:.35, sombre:.025, echos:9, ecart:.12, pre:.03}, 'grotte');
-  var grotteRet = ctx.createGain(); grotteRet.gain.value = .8; grotte.connect(grotteRet); grotteRet.connect(A.volume);
-  A.grotteIn = ctx.createGain(); A.grotteIn.connect(grotte);
+  /* LES DEUX RÉVERBÉRATIONS, FABRIQUÉES SEULEMENT QUAND UN SON EN A BESOIN, ET LIBÉRÉES APRÈS UN RENDU À L'AVANCE (24 novembre au
+     soir — Romain : « ça redémarre presque à toutes les salles », et au combat de Léo à chaque fois). Une réverbération est une
+     « convolution » : pour 2,4 et 4,5 s de queue en stéréo, le navigateur fabrique des dizaines de Mo de tables. Chaque petit son
+     fabriqué à l'avance (un moteur par son : les vingt-six bruitages de Léo à l'ouverture de son combat) avait les deux, même s'il
+     ne s'en servait pas, et elles restaient en mémoire jusqu'au prochain grand ménage : mesuré, la page montait à 1,5 Go à
+     l'ouverture du combat de Léo (0,75 Go sans les sons fabriqués à l'avance). Maintenant : A.besoinCave() / A.besoinGrotte()
+     (appelés par A.bus et A.lointain, au premier son qui y envoie quelque chose), et A.liberer() quand le rendu est fini (son.js). */
+  A.caveIn = ctx.createGain(); A.grotteIn = ctx.createGain();
+  var cave = null, grotte = null, retours = [];
+  A.besoinCave = function(){
+    if(cave) return;
+    cave = ctx.createConvolver(); cave.buffer = reponse(2.4, {clair:.55, sombre:.06, echos:7, ecart:.06, pre:.01}, 'cave');
+    var caveRet = ctx.createGain(); caveRet.gain.value = .7; cave.connect(caveRet); caveRet.connect(A.volume);
+    A.caveIn.connect(cave); retours.push(caveRet);
+  };
+  A.besoinGrotte = function(){
+    if(grotte) return;
+    grotte = ctx.createConvolver(); grotte.buffer = reponse(4.5, {clair:.35, sombre:.025, echos:9, ecart:.12, pre:.03}, 'grotte');
+    var grotteRet = ctx.createGain(); grotteRet.gain.value = .8; grotte.connect(grotteRet); grotteRet.connect(A.volume);
+    A.grotteIn.connect(grotte); retours.push(grotteRet);
+  };
+  /* (après un rendu à l'avance : les tables des réverbérations rendues tout de suite, sans attendre le ménage du navigateur) */
+  A.liberer = function(){
+    [cave, grotte].forEach(function(c){ if(!c) return; try{ c.disconnect(); }catch(e){} try{ c.buffer = null; }catch(e){} });
+    retours.forEach(function(r){ try{ r.disconnect(); }catch(e){} });
+    try{ A.caveIn.disconnect(); A.grotteIn.disconnect(); }catch(e){}
+    cave = grotte = null; retours = [];
+  };
+  /* (en direct, comme avant : les deux tout de suite — fabriquée en plein jeu, la première ferait un petit à-coup) */
+  if(!horsLigne){ A.besoinCave(); A.besoinGrotte(); }
 
   /* plus tard (seulement en direct : hors ligne, rien ne traîne) */
   A.plusTard = function(sec, fn){ if(!horsLigne) setTimeout(fn, Math.max(0, sec) * 1000); };
@@ -33585,8 +33609,8 @@ function Moteur(ctx, opt){
       s.connect(p); s = p;
     }
     s.connect(P.sec);
-    if(o.rev){ var r = g(o.rev); s.connect(r); r.connect(P.cave); e.envoiCave = r; }
-    if(o.grotte){ var r2 = g(o.grotte); s.connect(r2); r2.connect(P.grotte); e.envoiGrotte = r2; }
+    if(o.rev){ A.besoinCave(); var r = g(o.rev); s.connect(r); r.connect(P.cave); e.envoiCave = r; }
+    if(o.grotte){ A.besoinGrotte(); var r2 = g(o.grotte); s.connect(r2); r2.connect(P.grotte); e.envoiGrotte = r2; }
     return e;
   };
   /* un bus « qui s'éloigne » : le son baisse, s'assourdit, part sur le côté et sonne de plus en plus dans la salle */
@@ -33601,6 +33625,7 @@ function Moteur(ctx, opt){
     if(ctx.createStereoPanner){ var p = ctx.createStereoPanner(); p.pan.setValueAtTime(o.pan1 == null ? .1 : o.pan1, t); p.pan.linearRampToValueAtTime(o.pan2 == null ? .95 : o.pan2, t + duree); v.connect(p); s = p; }
     s.connect(P.sec);
     var r = g(0); r.gain.setValueAtTime(o.rev1 == null ? .15 : o.rev1, t); r.gain.linearRampToValueAtTime(o.rev2 == null ? .9 : o.rev2, t + duree);
+    if(o.grotte) A.besoinGrotte(); else A.besoinCave();
     lp.connect(r); r.connect(o.grotte ? P.grotte : P.cave);
     return e;
   };
@@ -37360,6 +37385,11 @@ function rendre(){
     });
     s += '</div></section>';
   });
+  /* (26 novembre) le combat final de l'enquête 10, en page à part (brumeval/combat-pisteur.html) : la difficulté choisie n'y change rien.
+     Romain, 18 h 01 : « tu le mets dans la salle des jeux […] il n'y a pas de difficulté, donc on peut mettre n'importe quel numéro ». */
+  s += '<section class="sl-role" style="--c:var(--c-pisteur)"><h2>⚔️ Combat final (enquête 10)</h2><div class="sl-jeux">' +
+    '<button class="sl-jeu" data-lien="combat-pisteur.html?depuis=salle"><span class="sl-statut" title="Validé">✅</span><span class="sl-jeu-ic">🗡️</span><b>Le combat du Pisteur</b>' +
+    '<small>Contre la garde de Grosbec, huit vagues</small><small class="sl-cal">La difficulté choisie n\'y change rien</small></button></div></section>';
   if(etat.journal.length){
     s += '<section class="sl-journal"><h2>Mes parties</h2><ol>' + etat.journal.slice(-12).reverse().map(function(j){
       var d = MJ.TYPES[j.type] || {};
@@ -37398,8 +37428,9 @@ function jouer(type, varId){
   function fermer(){ plein.hidden = true; plein.innerHTML = ''; document.body.classList.remove('sl-bloque'); rendre(); }
 }
 document.addEventListener('click', function(ev){
-  var b = ev.target.closest('[data-niv],[data-jeu],[data-effacer],[data-relire]');
+  var b = ev.target.closest('[data-niv],[data-jeu],[data-lien],[data-effacer],[data-relire]');
   if(!b) return;
+  if(b.dataset.lien){ location.href = b.dataset.lien; return; }   /* (le combat du Pisteur : sa page à lui) */
   if(b.dataset.niv){ etat.niveau = +b.dataset.niv; sauver(); rendre(); }
   else if(b.dataset.jeu) jouer(b.dataset.jeu, b.dataset.var);
   else if(b.dataset.relire !== undefined){ relire(+b.dataset.relire); }
