@@ -27,3 +27,11 @@ scripts += '<script>\n' + open(os.path.join(ici, 'sons-combat.js'), encoding='ut
 s = s.replace('<!--SCRIPTS-->', scripts)
 open(os.path.join(ici, 'pieges-alchimiste.html'), 'w', encoding='utf8').write(s)
 print(len(s) // 1024, 'Ko')
+# (26 novembre) la page du site, dans la salle des jeux : brumeval/combat-alchimiste.html de la branche main. Le canevas claude.ai
+# ajoute lui-même le début de page (doctype, charset, viewport) et une petite remise à zéro ; ici, on les écrit (body sans marge,
+# [hidden] qui cache vraiment : les voiles « règles » et « fin » en ont besoin).
+site = ('<!doctype html>\n<html lang="fr">\n<meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+        '<style>:root{color-scheme:light}body{margin:0}[hidden]{display:none!important}</style>\n' + s)
+open(os.path.join(ici, 'combat-alchimiste.html'), 'w', encoding='utf8').write(site)
+print('combat-alchimiste.html (pour le site) :', len(site) // 1024, 'Ko')

@@ -81,6 +81,8 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
 .go { justify-self: center; background: var(--jaune); color: #111; border: 0; border-radius: 14px; font-weight: 800; font-size: 1.2rem; padding: 12px 30px; box-shadow: 0 4px 0 var(--jaune-ombre); cursor: pointer; margin-top: 4px; }
 .go:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--jaune-ombre); }
 .lien { justify-self: center; background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; font-size: .9rem; }
+/* (26 novembre) ouvert depuis la salle des jeux du site (?depuis=salle) : un bouton gris pour y revenir */
+.salle-btn { justify-self: center; background: #4A4F5C; color: #F2EEE4; border: 0; border-radius: 12px; font-weight: 700; font-size: .95rem; padding: 9px 20px; cursor: pointer; margin-top: 2px; }
 .stats { color: var(--muted); font-size: .9rem; }
 </style>
 
@@ -147,6 +149,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     <p class="stats">Au clavier : flèches (ou Q et D) pour glisser, 1 à 5 pour les potions, la souris pour lancer, Espace pour boire.</p>
     <button type="button" class="go" id="btn-go">Commencer</button>
     <button type="button" class="lien" id="btn-recommencer">Recommencer la partie</button>
+    <button type="button" class="salle-btn" id="btn-salle" hidden>← La salle des jeux</button>
   </div>
 </div>
 
@@ -157,6 +160,7 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
     <button type="button" class="lire" id="fin-lire" aria-label="Écouter" style="justify-self:center">🔊</button>
     <p class="stats" id="fin-stats"></p>
     <button type="button" class="go" id="btn-rejouer">Rejouer</button>
+    <button type="button" class="salle-btn" id="btn-salle-fin" hidden>← La salle des jeux</button>
   </div>
 </div>
 
@@ -3248,6 +3252,11 @@ svg.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-wi
   $("btn-son").addEventListener("click", function () { muet = !muet; if (window.SonsCombat) window.SonsCombat.couper(muet); this.textContent = muet ? "🔇" : "🔊"; this.setAttribute("aria-label", muet ? "Remettre le son" : "Couper le son"); });
   $("btn-rejouer").addEventListener("click", function () { initAudio(); nouvellePartie(); });
   $("btn-recommencer").addEventListener("click", function () { initAudio(); if (S) S.enCours = false; nouvellePartie(); });
+  /* (26 novembre) ouvert depuis la salle des jeux du site (brumeval/salle.html → combat-alchimiste.html?depuis=salle) :
+     dans la pause et à la fin, un bouton pour y revenir */
+  if (/[?&]depuis=salle/.test(location.search)) ["btn-salle", "btn-salle-fin"].forEach(function (id) {
+    var b = $(id); b.hidden = false; b.addEventListener("click", function () { location.href = "salle.html"; });
+  });
   carnet();
   redim();
   dessiner();
