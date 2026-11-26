@@ -1,6 +1,8 @@
-# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 27 novembre, 0 h 10)
+# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 27 novembre, 0 h 40)
 
 À lire en entier par la nouvelle conversation avant de toucher à quoi que ce soit.
+
+**27 novembre, 0 h 40 — PHASE 3 REFAITE AVEC ROMAIN, À LA VOIX : TOUTES LES DÉCISIONS DANS LA BIBLE, § 18.16 (vue World of Warcraft, coéquipiers qui suivent, villageois qui montrent sans parler, fontaine / lanterne / statue cassée, six parties de Grosbec, trois sorts lents, bouclier 3 s / 10 s, zones mortelles, méga attaque, deux combats, mort 10 s, « On reprend » sans rien afficher, code en portraits). La maquette v1 (§ 18.13) est jugée « un peu nulle ». Go de Romain (0 h 25) : « Ok, vas-y, mets à jour la Bible et fais la maquette. Tu as mon go et tu peux mettre en ligne. » La maquette v2 (avec un mode seul, trois robots) est EN COURS dans cette conversation ; si cette entrée n'a pas de suite, elle n'est pas finie.**
 
 **27 novembre, 0 h 10 — EN LIGNE SUR LE SITE (commit 50b5fe8 de `main`, seul `brumeval/combat-sage.html`) ET DANS LA PAGE CLAUDE (https://claude.ai/artifact/S3UzmZhUvPFUscZeZs6DTy, version `1795734118-5a0b`) : LE COMBAT DU SAGE, VERSION 28 — LES RUNES DORÉES LUES SUR DE VRAIS DESSINS** (Romain, 26 nov., 23 h 28 : « Je viens de passer 5 minutes à essayer de faire une étoile, j'y suis jamais arrivé. […] Et pourtant, elle était pas si mal faite que ça »). Bible § 15.18 ; `jeu/maquettes/combat-sage/LISEZ-MOI.md`, « La version 28 ».
 - **La faute de la version 27** : lecture essayée seulement sur des tracés de machine ; à la main, l'étoile en contour n'était presque jamais lue, l'étoile croisée ratée une fois sur quatre, et un cercle tremblé faisait la lune deux fois sur trois.
