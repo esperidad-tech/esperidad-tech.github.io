@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Phase 3 — essai à quatre tablettes</title>
+<style>
+:root{
+  --fond:#0f1320; --panneau:#1a2134; --panneau2:#222b42; --texte:#eef1f8; --doux:#9aa6c2;
+  --jaune:#ffd23f; --rouge:#ff5548; --vert:#5fd38a; --bleu:#5fb4ff;
+  --pisteur:#5fcf86; --alchimiste:#b48cff; --barde:#ff8fb3; --sage:#6cb6ff;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0; height:100%; background:var(--fond); color:var(--texte); font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  overflow:hidden; touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none}
+button{font:inherit; color:inherit; border:0; background:none; cursor:pointer; touch-action:manipulation}
+.cache{display:none !important}
+/* l'habillage autour du jeu : un fond doux, le jeu au centre */
+body{background:radial-gradient(ellipse at 50% 30%, #1c2440 0%, #0f1320 60%, #090c15 100%)}
+#app{position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+
+/* ---------- les écrans d'avant ---------- */
+.page{width:min(100%, 760px); max-height:100%; overflow:auto; padding:2.2vmin 3vmin; display:flex; flex-direction:column; gap:2.4vmin; align-items:center}
+.titre{font-size:clamp(18px,4.2vmin,34px); font-weight:800; letter-spacing:.04em; opacity:.9; text-align:center}
+.titre small{display:block; font-size:.5em; font-weight:600; color:var(--doux); letter-spacing:.1em}
+.ligne{display:flex; gap:2vmin; flex-wrap:wrap; justify-content:center; align-items:center}
+.lbl{font-size:clamp(12px,2.6vmin,18px); color:var(--doux); font-weight:700; letter-spacing:.1em; text-transform:uppercase}
+.heros-choix{display:flex; flex-direction:column; align-items:center; gap:.8vmin; padding:1.4vmin; border-radius:18px; background:var(--panneau); border:3px solid transparent; min-width:clamp(70px,17vmin,130px)}
+.heros-choix.choisi{border-color:var(--jaune); background:var(--panneau2); transform:scale(1.04)}
+.tete{display:inline-flex; align-items:center; justify-content:center; border-radius:50%; background:var(--c); color:#111; font-size:1em; width:1.9em; height:1.9em; box-shadow:0 0 0 3px rgba(0,0,0,.35) inset}
+.heros-choix .tete{font-size:clamp(26px,6.5vmin,48px)}
+.heros-choix b{font-size:clamp(11px,2.3vmin,16px); letter-spacing:.06em}
+.numero{font-size:clamp(34px,9vmin,70px); font-weight:800; min-width:3.2em; text-align:center; background:var(--panneau); border-radius:14px; padding:.05em .3em; letter-spacing:.08em; border:3px solid #33405f}
+.numero.vide{color:#56617d}
+.pave{display:grid; grid-template-columns:repeat(5, auto); gap:1.2vmin}
+.pave button{width:clamp(42px,9vmin,68px); height:clamp(42px,9vmin,68px); border-radius:12px; background:var(--panneau2); font-size:clamp(20px,4.6vmin,32px); font-weight:800}
+.pave button:active{background:#33405f}
+.choix{display:flex; background:var(--panneau); border-radius:12px; padding:4px; gap:4px}
+.choix button{padding:.5em .8em; border-radius:9px; font-size:clamp(13px,2.7vmin,19px); font-weight:700; color:var(--doux)}
+.choix button.oui{background:#3a4769; color:var(--texte)}
+.jaune{background:var(--jaune) !important; color:#111 !important; font-weight:900; border-radius:16px; padding:.55em 1.4em; font-size:clamp(20px,5vmin,36px);
+  box-shadow:0 5px 0 #b38c00, 0 0 24px rgba(255,210,63,.35); letter-spacing:.04em}
+.jaune:active{transform:translateY(3px); box-shadow:0 2px 0 #b38c00}
+.jaune[disabled]{opacity:.35; box-shadow:none}
+.gris{background:var(--panneau2); color:var(--doux); border-radius:12px; padding:.5em 1em; font-weight:700; font-size:clamp(13px,2.7vmin,18px)}
+.go{font-size:clamp(46px,16vmin,130px); padding:.2em 1.1em; border-radius:28px}
+.compte{font-size:clamp(20px,5vmin,40px); color:var(--doux); font-weight:800; letter-spacing:.3em}
+.equipe{display:flex; gap:1.6vmin}
+.equipe .tete{font-size:clamp(18px,4.5vmin,34px)}
+.equipe .moi .tete{box-shadow:0 0 0 4px var(--jaune)}
+.reperes{font-size:clamp(14px,3vmin,22px); font-weight:700; color:var(--doux); background:var(--panneau); border-radius:12px; padding:.4em .9em; text-align:center}
+.reperes b{color:var(--texte)}
+
+/* ---------- le jeu ---------- */
+.jeu{position:relative; width:100%; height:100%; display:grid; gap:1vmin; padding:1vmin;
+  grid-template-columns:1fr; grid-template-rows:auto auto minmax(0,1fr) auto; grid-template-areas:"haut" "cartes" "arene" "commandes"}
+@media (min-aspect-ratio: 5/4){
+  .jeu{grid-template-columns:minmax(0,30fr) minmax(0,47fr) minmax(0,23fr); grid-template-rows:auto minmax(0,1fr); grid-template-areas:"haut haut haut" "cartes arene commandes"}
+}
+.haut{grid-area:haut; display:flex; align-items:center; gap:1.4vmin; background:rgba(26,33,52,.85); border-radius:14px; padding:.6vmin 1.2vmin; min-height:44px}
+.reprendre{font-size:clamp(14px,2.8vmin,20px); font-weight:800; background:var(--panneau2); border-radius:10px; padding:.35em .7em; white-space:nowrap}
+.reprendre.appel{background:var(--jaune); color:#111; animation:battre 1s infinite}
+@keyframes battre{50%{transform:scale(1.08)}}
+.ou{flex:1; min-width:0; text-align:center; font-size:clamp(11px,2.3vmin,16px); color:var(--doux); font-weight:700}
+.ou b{color:var(--texte); font-size:1.2em}
+.prog-manche{height:5px; background:#2b3550; border-radius:3px; margin-top:3px; overflow:hidden}
+.prog-manche i{display:block; height:100%; width:0; background:#7b8bb5}
+.code{display:flex; gap:.8vmin}
+.case{position:relative; width:clamp(34px,6.6vmin,52px); height:clamp(34px,6.6vmin,52px); border-radius:12px; background:var(--panneau2); border:3px solid var(--c);
+  display:flex; align-items:center; justify-content:center; font-size:clamp(17px,3.6vmin,28px)}
+.case .mini{position:absolute; left:-6px; top:-8px; font-size:.5em; width:1.6em; height:1.6em}
+.case.moi{border-style:dashed}
+.case.bon{background:#24402f}
+.case.faux{animation:secouer .4s}
+@keyframes secouer{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.case.crie{box-shadow:0 0 0 3px var(--jaune); animation:battre 1s infinite}
+
+.cartes{grid-area:cartes; display:flex; flex-direction:column; gap:1vmin; min-height:calc(2 * clamp(62px, 11vmin, 96px) + 1vmin); justify-content:flex-start}
+@media (min-aspect-ratio: 5/4){ .cartes{justify-content:center} }
+.carte{position:relative; display:flex; align-items:center; gap:1.4vmin; background:var(--panneau); border-radius:14px; border:3px solid var(--c);
+  padding:.8vmin 1.2vmin 14px; min-height:clamp(62px,11vmin,96px); animation:arrive .25s ease-out}
+@keyframes arrive{from{transform:scale(.85); opacity:0}}
+.carte .qui{display:flex; flex-direction:column; align-items:center; gap:2px; min-width:4.2em}
+.carte .qui .tete{font-size:clamp(20px,4.4vmin,34px)}
+.carte .qui b{font-size:clamp(10px,1.9vmin,14px); letter-spacing:.05em; color:var(--c)}
+.carte .infos{display:flex; gap:1.4vmin; flex-wrap:wrap; align-items:center}
+.info{display:flex; flex-direction:column; align-items:center; gap:2px}
+.info b{font-size:clamp(13px,2.9vmin,22px); letter-spacing:.04em}
+.info svg{width:clamp(34px,6.5vmin,52px); height:clamp(24px,4.6vmin,36px)}
+.pastille{display:inline-flex; align-items:center; justify-content:center; width:clamp(26px,5vmin,40px); height:clamp(26px,5vmin,40px); border-radius:50%; font-size:clamp(15px,3vmin,24px)}
+.carte.mega{background:#3a1820}
+.carte.mega .info b{color:#ffb3ad}
+.minuteur{position:absolute; left:10px; right:10px; bottom:5px; height:5px; border-radius:3px; background:#2b3550; overflow:hidden}
+.minuteur i{display:block; height:100%; background:var(--c)}
+.carte.mega .minuteur i{background:var(--rouge)}
+.carte .porte{position:absolute; right:8px; top:6px; font-size:clamp(12px,2.4vmin,18px)}
+
+.arene-boite{grid-area:arene; position:relative; display:flex; align-items:center; justify-content:center; min-height:0; min-width:0}
+/* l'arène remplit sa case ; le dessin garde ses proportions au centre (preserveAspectRatio par défaut) */
+.arene{display:block; position:absolute; inset:0; width:100%; height:100%; touch-action:none}
+
+.commandes{grid-area:commandes; display:flex; gap:1.4vmin; align-items:center; justify-content:center; flex-wrap:wrap}
+@media (min-aspect-ratio: 5/4){ .commandes{flex-wrap:nowrap} .commandes .elems,.commandes .actions{flex-direction:column} }
+.elems,.actions{display:flex; gap:1.4vmin}
+.elem{width:clamp(54px,11vmin,92px); height:clamp(54px,11vmin,92px); border-radius:50%; background:var(--c); color:#111; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  font-size:clamp(20px,4.4vmin,34px); box-shadow:0 4px 0 rgba(0,0,0,.4); border:4px solid transparent; line-height:1}
+.elem b{font-size:clamp(9px,1.8vmin,13px); letter-spacing:.05em; margin-top:3px}
+.elem.oui{border-color:#fff; box-shadow:0 0 0 4px rgba(255,255,255,.25), 0 4px 0 rgba(0,0,0,.4)}
+.elem[disabled]{filter:grayscale(1) brightness(.5)}
+.act{position:relative; width:clamp(64px,12.5vmin,104px); height:clamp(54px,11vmin,92px); border-radius:18px; background:var(--panneau2); display:flex; flex-direction:column; align-items:center; justify-content:center;
+  font-size:clamp(20px,4.4vmin,34px); line-height:1; overflow:hidden}
+.act b{font-size:clamp(9px,1.8vmin,13px); letter-spacing:.05em; margin-top:3px; position:relative}
+.act.bouclier{background:#1d3a66}
+.act.bouclier.leve{background:var(--bleu); color:#111}
+.act.bouclier.attend{filter:grayscale(1) brightness(.55)}
+.act .attente{position:absolute; right:6px; top:4px; font-size:clamp(11px,2.2vmin,16px); font-weight:900; color:#ffb3ad}
+.act.soin{background:#1f4630}
+.act .prog{position:absolute; left:0; bottom:0; height:100%; width:0; background:rgba(95,211,138,.55)}
+.act[disabled]{filter:grayscale(1) brightness(.5)}
+
+/* les fenêtres par-dessus le jeu */
+.voile{position:absolute; inset:0; background:rgba(8,10,18,.72); display:flex; align-items:center; justify-content:center; z-index:5}
+.fenetre{background:var(--panneau); border-radius:22px; padding:3vmin; display:flex; flex-direction:column; gap:2.4vmin; align-items:center; box-shadow:0 10px 40px rgba(0,0,0,.6); max-width:94vw; max-height:94vh; overflow:auto; position:relative}
+.ferme{position:absolute; right:10px; top:8px; font-size:clamp(18px,3.6vmin,26px); color:var(--doux); padding:.2em .4em}
+.pas{display:flex; align-items:center; gap:1.6vmin}
+.pas button{width:clamp(44px,9vmin,64px); height:clamp(44px,9vmin,64px); border-radius:12px; background:var(--panneau2); font-size:clamp(20px,4.6vmin,30px); font-weight:900}
+.pas .val{font-size:clamp(30px,8vmin,60px); font-weight:900; min-width:1.6em; text-align:center}
+.symboles{display:grid; grid-template-columns:repeat(5, auto); gap:1.4vmin}
+.symboles button{width:clamp(52px,11vmin,84px); height:clamp(52px,11vmin,84px); border-radius:14px; background:var(--panneau2); font-size:clamp(28px,6vmin,46px)}
+.victoire{font-size:clamp(60px,18vmin,140px)}
+
+/* les robots : quatre petites tablettes */
+.demo{width:100%; height:100%; display:flex; flex-direction:column; gap:1vmin; padding:1vmin}
+.demo-haut{display:flex; align-items:center; gap:1.4vmin; justify-content:center; flex-wrap:wrap}
+.demo-grille{flex:1; min-height:0; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:1vmin}
+.mini{position:relative; background:rgba(26,33,52,.6); border-radius:14px; border:2px solid var(--c); display:grid; grid-template-columns:1fr; grid-template-rows:auto minmax(0,1fr); min-height:0; overflow:hidden; padding:.6vmin; gap:.6vmin}
+@media (min-aspect-ratio: 5/4){ .mini{grid-template-columns:minmax(0,40fr) minmax(0,60fr); grid-template-rows:minmax(0,1fr)} }
+.mini .cartes{justify-content:center}
+.mini .cartes,.mini .arene-boite{grid-area:auto}
+@media (max-aspect-ratio: 5/4){ .mini{padding-top:calc(clamp(16px,4vmin,30px) + 10px)} }
+.mini .cartes{min-height:0; gap:.5vmin}
+.mini .carte{min-height:0; padding:.4vmin .6vmin 9px; border-width:2px; gap:.8vmin}
+.mini .carte .qui{min-width:3em}
+.mini .carte .qui .tete{font-size:clamp(12px,2.6vmin,20px)}
+.mini .carte .qui b,.mini .info b{font-size:clamp(8px,1.5vmin,12px)}
+.mini .info svg{width:clamp(20px,3.6vmin,30px); height:clamp(14px,2.6vmin,22px)}
+.mini .pastille{width:clamp(16px,2.8vmin,24px); height:clamp(16px,2.8vmin,24px); font-size:clamp(9px,1.7vmin,14px)}
+.mini .arene-boite{min-height:0}
+.mini .nomini{position:absolute; left:6px; top:4px; z-index:2; font-size:clamp(11px,2.6vmin,18px)}
+.bandeau{position:absolute; left:50%; top:46%; transform:translate(-50%,-50%); background:var(--jaune); color:#111; font-weight:900; font-size:clamp(22px,6vmin,46px); padding:.3em 1em; border-radius:18px; z-index:6; box-shadow:0 8px 30px rgba(0,0,0,.6); pointer-events:none}
+
+/* le dessin de l'arène (formes simples) */
+.zone{fill:#1b2236; stroke:#2e3a58; stroke-width:1.5}
+.zone-txt{fill:#56627f; font-size:10px; font-weight:800; letter-spacing:.08em; text-anchor:middle}
+.zone.feu{fill:#7a1f1a}
+.alerte{fill:none; stroke:var(--jaune); stroke-width:3; stroke-dasharray:8 5}
+.gb{fill:#4a1820; stroke:#ff6a55; stroke-width:2.5; stroke-linejoin:round}
+.gb-bras{stroke:#ff6a55; stroke-width:12; stroke-linecap:round}
+.gb-bras2{stroke:#4a1820; stroke-width:7; stroke-linecap:round}
+.gb.flash,.gb-bras.flash{stroke:#fff}
+.part-zone{fill:transparent; cursor:pointer}
+.viseur{fill:none; stroke:#fff; stroke-width:2.5; stroke-dasharray:5 4}
+.bb-fond{fill:#2a3049}
+.bb-vie{fill:#ff5548}
+.vie-fond{fill:#2a3049}
+.vie{fill:var(--vert)}
+.txt{font-weight:900; text-anchor:middle; dominant-baseline:central}
+</style>
+</head>
+<body>
+<div id="app"></div>

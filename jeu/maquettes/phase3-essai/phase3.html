@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Phase 3 — Grosbec de lumière (maquette v2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+/* IDEA : la maquette v2 de la phase 3 — la vue World of Warcraft de la phase 2, en formes simples, pour juger le jeu et pas les images
+   PICTURE : la salle vue d'en haut en biais, Grosbec d'énergie rouge au fond ; mon héros, mes trois amis qui me suivent, mon villageois
+   COLOUR : nuit bleue ; le rouge de Grosbec ; feu, glace, acide ; jaune réservé aux boutons « lancer »
+   TYPE : Nunito ; rien à lire en jouant (seules les bulles des robots, en mode seul, sont écrites)
+   LAYOUT : téléphone couché ; pouce gauche pour courir, six boutons sous le pouce droit, le bouclier au milieu ; le groupe en haut à gauche */
+:root{color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#070912;overflow:hidden;color:#eef0f8;font-family:Nunito,system-ui,sans-serif;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}
+#c{position:fixed;inset:0;width:100%;height:100%;touch-action:none}
+#c.mort{filter:grayscale(1) brightness(.8)}
+button{font-family:inherit;cursor:pointer;touch-action:none;color:inherit}
+.jaune{background:#ffd23a;color:#111;font-weight:900;font-size:1.15rem;border:0;border-radius:.6em;padding:.6em 1.6em;min-height:2.9em;box-shadow:0 .22em 0 #9c770c}
+.jaune:active{transform:translateY(.15em);box-shadow:0 .07em 0 #9c770c}
+.gris{background:#22304b;color:#eef0f8;font-weight:800;font-size:.95rem;border:1px solid #3d5078;border-radius:.6em;padding:.5em 1em;min-height:2.6em}
+/* les six boutons (placés par le script) */
+.bt{position:fixed;border-radius:50%;background:rgba(10,16,30,.62);border:2px solid rgba(243,212,138,.55);display:none;align-items:center;justify-content:center;padding:0;z-index:2;overflow:hidden}
+.bt.on{display:flex}
+.bt b{line-height:1;font-weight:400;pointer-events:none;position:relative}
+.bt .rc{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(rgba(3,5,12,.78) calc(var(--r,0)*360deg),transparent 0)}
+.bt .lc{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(var(--c,#fff) calc(var(--p,0)*360deg),transparent 0);opacity:.5}
+.bt.appui{background:rgba(255,210,58,.3)}
+.bt.eteint{filter:grayscale(1);opacity:.4}
+.bt.leve{background:rgba(95,180,255,.55)}
+.bt.non{animation:non .3s linear}
+@keyframes non{0%,100%{translate:0}25%{translate:-.3em}60%{translate:.3em}}
+#bBouclier{border-color:#7fc4ff;border-width:3px}
+#bFeu{border-color:#ff7a2a}#bGlace{border-color:#9fe3ff}#bAcide{border-color:#8fe03a}#bSoin{border-color:#5fe07a}
+#bSoin b{color:#5fe07a;font-weight:900}#bSaut b{color:#f3d48a;font-weight:900}
+.appel{animation:appel 1s ease-out infinite}
+@keyframes appel{0%{box-shadow:0 0 0 .1em rgba(255,210,58,1)}70%{box-shadow:0 0 0 .9em rgba(255,210,58,0)}100%{box-shadow:0 0 0 0 rgba(255,210,58,0)}}
+/* le groupe, en haut à gauche (comme les cadres d'équipe de World of Warcraft) : le portrait, la case du symbole */
+#groupe{position:fixed;left:calc(.6vh + env(safe-area-inset-left));top:calc(.6vh + env(safe-area-inset-top));display:none;flex-direction:column;align-items:flex-start;gap:.3rem;z-index:3}
+@media (max-height:480px){#groupe{font-size:12px;gap:.2rem}#groupe .cadre{min-height:1.9rem;padding:.12rem .3rem .12rem .12rem}#groupe .tete{width:1.6rem;height:1.6rem;font-size:.85rem}#groupe .sym{width:1.6rem;height:1.6rem;font-size:.95rem}#groupe .vie{width:min(18vw,6.5rem);height:.85rem}}
+#groupe.on{display:flex}
+.cadre{display:flex;align-items:center;gap:.35rem;background:rgba(10,14,26,.72);border:1.5px solid rgba(255,255,255,.18);border-radius:1.6rem;padding:.18rem .45rem .18rem .18rem;min-height:2.3rem}
+.cadre .tete{width:2rem;height:2rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.05rem;border:2px solid #11141d;flex:none}
+.cadre .sym{width:1.9rem;height:1.9rem;border-radius:.45rem;background:rgba(0,0,0,.5);border:1.5px dashed rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex:none}
+.cadre .sym.plein{border-style:solid;border-color:#ffd23a;background:rgba(80,60,0,.45)}
+.cadre .vie{width:min(22vw,8.5rem);height:1rem;border-radius:1rem;background:rgba(0,0,0,.6);overflow:hidden;position:relative}
+.cadre .vie i{display:block;height:100%;background:#5fe07a;border-radius:1rem}
+.cadre .vie span{position:absolute;left:.45rem;top:50%;transform:translateY(-50%);font-size:.68rem;font-weight:900;line-height:1}
+.cadre.mort{filter:grayscale(1);opacity:.45}
+.cadre.crie{border-color:#ffd23a;box-shadow:0 0 0 .2rem rgba(255,210,58,.35);animation:battre .7s ease-in-out infinite}
+.cadre.fait{border-color:#5fe07a}
+@keyframes battre{50%{transform:scale(1.06)}}
+.cadre.non{animation:non .3s linear 2}
+/* la petite fenêtre des symboles */
+#symboles{position:fixed;display:none;grid-template-columns:repeat(6,auto);gap:.3rem;background:rgba(8,10,22,.9);border:2px solid rgba(255,214,90,.7);border-radius:.8rem;padding:.4rem;z-index:6}
+#symboles.on{display:grid}
+#symboles button{width:2.6rem;height:2.6rem;border-radius:.5rem;border:1px solid rgba(255,255,255,.25);background:rgba(30,38,62,.9);font-size:1.35rem;padding:0}
+/* en haut à droite : la pause, « On reprend » */
+.coin{position:fixed;top:calc(1.2vh + env(safe-area-inset-top));width:2.6rem;height:2.6rem;border-radius:.6rem;background:rgba(10,16,30,.7);border:1px solid rgba(255,255,255,.25);display:none;align-items:center;justify-content:center;padding:0;z-index:4;font-size:1.25rem;font-weight:900}
+.coin.on{display:flex}
+#bPause{right:calc(1.2vh + env(safe-area-inset-right))}
+#bReprise{right:calc(1.2vh + 3.1rem + env(safe-area-inset-right))}
+#bReprise.appel{background:#ffd23a;color:#111}
+/* les écrans */
+.voile{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(4,6,14,.94);padding:max(.8em,env(safe-area-inset-top)) 1em max(.8em,env(safe-area-inset-bottom));overflow-y:auto;z-index:8}
+.voile.on{display:flex}
+.voile.clair{background:rgba(4,6,14,.55)}
+.carte{width:100%;max-width:36em;margin:auto;text-align:center}
+.roles{display:flex;gap:1em;justify-content:center;margin:0 0 1.1em;flex-wrap:wrap}
+.roles button{width:3.9em;height:3.9em;border-radius:50%;border:4px solid transparent;font-size:1.6em;padding:0;opacity:.45;filter:grayscale(.6)}
+.roles button.choisi{opacity:1;filter:none;border-color:#fff;box-shadow:0 0 0 .2em rgba(255,255,255,.2)}
+.modes{display:flex;gap:.8em;justify-content:center;margin:0 0 1em}
+.modes button{background:#1a2440;border:2px solid #33456e;border-radius:.8em;padding:.4em .9em;font-size:1.5rem;min-width:4.2em}
+.modes button.choisi{border-color:#ffd23a;background:#2d3550}
+.numero{display:none;flex-direction:column;align-items:center;gap:.5em;margin:0 0 1em}
+.numero.on{display:flex}
+.numero .val{font-size:2.2rem;font-weight:900;min-width:3em;background:#1a2440;border:2px solid #33456e;border-radius:.6em;padding:0 .4em}
+.pave{display:grid;grid-template-columns:repeat(6,auto);gap:.35em}
+.pave button{width:2.6em;height:2.6em;border-radius:.5em;background:#22304b;border:1px solid #3d5078;font-size:1.15rem;font-weight:900;padding:0}
+.go{font-size:3rem;padding:.25em 1.6em}
+.compte{font-size:1.4rem;font-weight:900;opacity:.6;letter-spacing:.3em;margin:.6em 0}
+.ligne{display:flex;flex-direction:column;align-items:stretch;gap:.25em;margin:.45em 0;text-align:left}
+.ligne > span{font-size:.82rem;font-weight:800;opacity:.75;padding-left:.2em}
+.choix{display:flex;gap:.3em;flex-wrap:wrap}
+.choix button{flex:1;min-width:4em;background:#1a2440;border:1px solid #33456e;border-radius:.55em;padding:.45em .4em;font-weight:800;font-size:.86rem;min-height:2.5em}
+.choix button.choisi{background:#ffd23a;color:#111;border-color:#ffd23a}
+.deux{display:grid;grid-template-columns:1fr 1fr;gap:0 1em}
+@media (max-width:600px){.deux{grid-template-columns:1fr}}
+.menu{display:flex;gap:.55em;justify-content:center;margin-top:.7em;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:auto auto;gap:.3em 1.2em;justify-content:center;font-size:1.2rem;font-weight:900;margin:.8em 0 1.2em}
+.stats span{text-align:right}
+.fin4{display:flex;gap:.6em;justify-content:center;margin:.6em 0}
+.fin4 div{display:flex;flex-direction:column;align-items:center;gap:.2em;font-size:1.8rem}
+.fin4 i{width:2.2rem;height:2.2rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-style:normal}
+.mesures{font-size:.72rem;opacity:.55;margin-top:.8em}
+.note{font-size:.78rem;opacity:.65;margin:.3em 0 0}
+#jaune{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:7;background:rgba(4,6,14,.35)}
+#jaune.on{display:flex}
+#jaune .ferme{position:absolute;right:1rem;top:1rem}
+#tourner{display:none;position:fixed;inset:0;z-index:20;background:#05060c;align-items:center;justify-content:center;font-size:4rem}
+@media (orientation:portrait){#tourner{display:flex}}
+</style>
+</head>
+<body>
+<div id="tourner">📱↻</div>
+<canvas id="c"></canvas>
+<button class="bt" id="bBouclier" aria-label="Bouclier"><i class="rc"></i><b>🛡️</b></button>
+<button class="bt" id="bFeu" aria-label="Feu"><i class="lc"></i><b>🔥</b></button>
+<button class="bt" id="bGlace" aria-label="Glace"><i class="lc"></i><b>❄️</b></button>
+<button class="bt" id="bAcide" aria-label="Acide"><i class="lc"></i><b>🧪</b></button>
+<button class="bt" id="bSoin" aria-label="Soin"><i class="lc"></i><b>✚</b></button>
+<button class="bt" id="bSaut" aria-label="Saut"><i class="rc"></i><b>⤴</b></button>
+<div id="groupe"></div>
+<div id="symboles"></div>
+<button class="coin" id="bReprise" aria-label="On reprend">↺</button>
+<button class="coin" id="bPause" aria-label="Pause"><svg width="18" height="18" viewBox="0 0 18 18"><rect x="3" y="2" width="4" height="14" rx="1.5" fill="#fff"/><rect x="11" y="2" width="4" height="14" rx="1.5" fill="#fff"/></svg></button>
+<!-- le gros bouton jaune pour repartir tous ensemble (« 3, 2, 1 ») : au départ, après le film d'Odette, et pour « On reprend » -->
+<div id="jaune"><button class="jaune go" id="bJaune">GO</button><button class="gris ferme" id="bJauneFerme" aria-label="Fermer">✕</button></div>
+
+<!-- avant de jouer : son héros, seul ou à quatre, le bouton jaune ; rien à lire -->
+<section id="debut" class="voile on">
+  <div class="carte">
+    <div class="roles" id="roles"></div>
+    <div class="modes" id="modes"><button data-m="seul" aria-label="Seul, avec trois robots">👤🤖🤖🤖</button><button data-m="quatre" aria-label="Quatre tablettes">📱📱📱📱</button></div>
+    <div class="numero" id="numero"><div class="val" id="numVal">—</div><div class="pave" id="pave"></div></div>
+    <button class="jaune" id="bGo">▶</button>
+    <div style="margin-top:1.1em"><button class="gris" id="bReglages" aria-label="Réglages">⚙️</button></div>
+  </div>
+</section>
+
+<section id="pause" class="voile">
+  <div class="carte">
+    <button class="jaune" id="bReprendre">Reprendre</button>
+    <p class="note" id="noteQuatre">À quatre tablettes, le combat continue pendant ce menu.</p>
+    <div class="deux">
+      <div class="ligne"><span>Les éclairs, deuxième combat (dégâts toutes les 2 s)</span><div class="choix" data-r="eclairs2"><button data-v="0">0</button><button data-v="5">5</button><button data-v="10">10</button><button data-v="15">15</button><button data-v="20">20</button></div></div>
+      <div class="ligne"><span>Les éclairs, premier combat</span><div class="choix" data-r="eclairs1"><button data-v="20">20</button><button data-v="30">30</button><button data-v="40">40</button></div></div>
+      <div class="ligne"><span>Le bouclier revient après</span><div class="choix" data-r="recharge"><button data-v="10">10 s</button><button data-v="15">15 s</button><button data-v="20">20 s</button></div></div>
+      <div class="ligne"><span>La vie de Grosbec</span><div class="choix" data-r="vie"><button data-v="court">≈ 3 min</button><button data-v="normal">≈ 6 min</button><button data-v="long">≈ 9 min</button></div></div>
+      <div class="ligne"><span>Mes trois robots (mode seul)</span><div class="choix" data-r="robots"><button data-v="0.95">attentifs</button><button data-v="0.9">un peu distraits</button><button data-v="0.75">distraits</button><button data-v="0.6">dans la lune</button></div></div>
+      <div class="ligne"><span>Commencer par</span><div class="choix" data-r="debut"><button data-v="1">le 1er combat</button><button data-v="2">le 2e combat</button><button data-v="3">le 2e, au plus dur</button></div></div>
+      <div class="ligne"><span>Les sons</span><div class="choix" data-r="sons"><button data-v="true">Oui</button><button data-v="false">Non</button></div></div>
+    </div>
+    <div class="menu"><button class="gris" id="bRecommencer">Recommencer</button><button class="gris" id="bAccueil">← Le héros</button></div>
+    <p class="mesures" id="mesures"></p>
+  </div>
+</section>
+
+<section id="fin" class="voile">
+  <div class="carte">
+    <div style="font-size:3.5rem">✨</div>
+    <div class="fin4" id="fin4"></div>
+    <div class="stats" id="stats"></div>
+    <button class="jaune" id="bRejouer">Rejouer</button>
+  </div>
+</section>
+<script>/* ===== regles.js ===== */
+/* ==========================================================
+   Phase 3 de l'enquête 10 — contre Grosbec de lumière
+   MAQUETTE RAPIDE, VERSION 2 (Bible § 18.16) : la vue World of Warcraft, en formes simples.
+   Les règles seules, sans dessin : ce fichier tourne aussi dans node (tests/).
+   Distances en pas, durées en secondes (comme la phase 2 et le combat du Pisteur).
+   (R) = décidé par Romain (§ 18.16) ; (C) = point de départ de Claude, à régler en jouant.
+
+   Les quatre tablettes ne sont pas reliées. Chacune calcule LA MÊME suite des coups de Grosbec
+   à partir du numéro de partie (aucun Math.random dans la suite), et ne simule que SON héros.
+   En mode seul, la tablette simule aussi trois robots (les amis), pour essayer sans quatre tablettes.
+   ========================================================== */
+(function (G) {
+'use strict';
+
+var ROLES = ['pisteur', 'alchimiste', 'barde', 'sage'];
+var REG = {
+  salle: {L: 14, P: 9},                       // (C) 14 pas de large, 9 de profondeur ; Grosbec au fond (y = 0)
+  grosbec: {x: 7, y: 0.8, r: 1.6},            // (C) son pied ; on ne marche pas dessus
+  heros: {pv: 100, r: 0.35, vit: 3.6, x: 7, y: 5.8},   // (R) la course de la phase 2 : 3,6 pas par seconde
+  sort: {lance: 3, vol: 0.35},                // (R) trois sorts lents, environ 3 s sur place
+  soin: {lance: 2, rend: 50},                 // (R) le soin de la phase 2
+  saut: {L: 3, dur: 0.32, recharge: 1.5},     // (R) le saut de la phase 2
+  bouclier: {dure: 3},                        // (R) 3 s ; la recharge est dans les réglages (10 s de base)
+  bouge: 0.25,                                // (C) au-delà de ce petit coup de pouce, on bouge (et le sort est coupé)
+  mort: {attente: 10, intouchable: 3},        // (R) on revient tout seul après 10 s ; (C) 3 s intouchable
+  eclair: {tous: 2, montre: 0.55, tambour: 0.45},   // (R) des éclairs en permanence ; (C) un toutes les 2 s, 0,45 s pendant le tambour
+  combat1: {tenir: 60, tambour: 10},          // (R) une minute, puis 10 s de tambour, et tout le monde tombe
+  film: 8,                                    // (C) le film d'Odette, avant le bouton jaune
+  lancement: 2,                               // (C) après le bouton jaune : deux secondes de calme
+  // les trois endroits sûrs (R : la fontaine, la lanterne, la statue cassée) ; (C) leur place et leur taille
+  lieux: [{n: 'lanterne', x: 2.4, y: 3.6}, {n: 'statue', x: 11.6, y: 3.6}, {n: 'fontaine', x: 7, y: 7.5}],
+  lieuR: 0.45, surR: 1.45,                    // l'objet (on ne marche pas dessus) ; l'endroit sûr autour de lui
+  zone: {annonce: 4},                         // (R) environ 4 s entre l'annonce et la frappe
+  mega: {annonce: 2.8},                       // (R) moins de 3 s
+  infoMontree: 6,                             // (C) la bulle du villageois reste 6 s pour un élément ou une partie
+  // la montée (R) : tranquille au début, puis ça se resserre en 3 ou 4 minutes, puis ça accélère doucement
+  montee: {fin: 210, ajoutZones: 30, ajoutMega: 60,
+    faible: {de: [22, 27], a: [15, 20]},      // (R) 15 à 20 s ; (C) 22 à 27 s au départ
+    zones: {de: [9, 12], a: [6, 9], mini: 4.8},   // (R)
+    mega: {de: [18, 22], a: [13, 17], mini: 8},   // (R) 13 à 17 s ; (C) 18 à 22 s au départ
+    apres: 0.065, plancher: 0.6},             // (C) ensuite, 6,5 % plus serré chaque minute, jusqu'à 60 %
+  reprise: 30,                                // (R) un point de reprise toutes les 30 s environ
+  coups: {court: 15, normal: 30, long: 45}    // (C) la vie de Grosbec, en sorts justes (6 min pour « normal », d'après les robots)
+};
+var DEFAUT = {
+  mode: 'seul',       // 'seul' (trois robots) | 'quatre' (quatre tablettes)
+  eclairs2: 10,       // (R : à régler en jouant) dégâts d'un éclair, deuxième combat : 0 | 5 | 10 | 15 | 20
+  eclairs1: 30,       // (R : « 30 points toutes les deux secondes ») premier combat : 20 | 30 | 40
+  recharge: 10,       // (R) la recharge du bouclier : 10 | 15 | 20 s
+  vie: 'normal',      // court | normal | long
+  robots: 0.95,       // en mode seul, la chance qu'un robot voie et crie une info : 0,95 | 0,9 | 0,75 | 0,6
+  debut: 1,           // 1 : le premier combat ; 2 : le deuxième ; 3 : le deuxième, au plus dur (3 min 30)
+  sons: true,
+  role: 'barde',
+  partie: 1
+};
+var ELEMS = ['feu', 'glace', 'acide'];
+var PARTIES = ['tete', 'torse', 'brasG', 'brasD', 'jambeG', 'jambeD'];   // (R) six parties ; gauche et droite vues de l'écran
+var MOTS = {feu: 'Feu !', glace: 'Glace !', acide: 'Acide !', tete: 'La tête !', torse: 'Le torse !', brasG: 'Bras gauche !', brasD: 'Bras droit !',
+  jambeG: 'Jambe gauche !', jambeD: 'Jambe droite !', lanterne: 'La lanterne !', statue: 'La statue !', fontaine: 'La fontaine !', mega: 'Bouclier, vite !'};
+var SYMS = ['🌙', '⭐', '☀️', '🔑', '🍄', '🐟', '🌳', '🔔', '🎩', '❤️', '🐱'];   // les symboles du jeu, sans 🔥 (c'est le sort de feu)
+
+/* ---------- le hasard partagé (le même sur les quatre tablettes) ---------- */
+function hash(s) { var h = 2166136261 >>> 0; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h >>> 0; }
+function rngDe(s) {
+  var a = hash(String(s));
+  return function () { a = (a + 0x6D2B79F5) >>> 0; var t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+function entre(r, a, b) { return a + (b - a) * r(); }
+function entier(r, n) { return Math.floor(r() * n); }
+function arr(x) { return Math.round(x * 100) / 100; }
+function lerp(a, b, k) { return a + (b - a) * k; }
+function cl(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+/* l'écart entre deux coups d'une même sorte, au temps T du deuxième combat */
+function ecart(r, sorte, T) {
+  var M = REG.montee, s = M[sorte], t0 = sorte === 'zones' ? M.ajoutZones : sorte === 'mega' ? M.ajoutMega : 0;
+  var k = cl((T - t0) / (M.fin - t0), 0, 1);
+  var a = lerp(s.de[0], s.a[0], k), b = lerp(s.de[1], s.a[1], k);
+  var f = T <= M.fin ? 1 : Math.max(M.plancher, 1 - M.apres * (T - M.fin) / 60);
+  return Math.max(s.mini || 0, entre(r, a, b) * f);
+}
+
+/* ---------- la suite des coups du deuxième combat (20 minutes, calculée une fois) ----------
+   infos : {k:'info', quoi:'elem'|'part'|'zone'|'mega', donneur, cible (null pour la zone), tA, tFin, val, ref}
+   coups : {k:'faible', h, t, elem, part, id} ; {k:'zone', id, tA, tI, lieu, donneur} ; {k:'mega', id, cible, tA, tI, donneur} */
+var CACHE = {};
+function suite(partie) {
+  if (CACHE[partie]) return CACHE[partie];
+  var r = rngDe('phase3-v2|' + partie), FIN = 20 * 60, id = 0;
+  var faibles = [], zones = [], megas = [], infos = [], cris = {pisteur: 0, alchimiste: 0, barde: 0, sage: 0};
+  // la faiblesse de chaque héros (R : élément + partie, change toutes les 15 à 20 s)
+  ROLES.forEach(function (h, i) {
+    var t = 2 + 1.5 * i, av = null;
+    while (t < FIN) {
+      var e, p;
+      do { e = entier(r, 3); p = entier(r, 6); } while (av && av.elem === e && av.part === p);
+      av = {k: 'faible', id: ++id, h: h, t: arr(t), elem: e, part: p};
+      faibles.push(av);
+      t += ecart(r, 'faible', t);
+    }
+  });
+  // les grosses zones (R : un seul endroit sûr pour toute l'équipe)
+  var t = REG.montee.ajoutZones;
+  while (t < FIN) { zones.push({k: 'zone', id: ++id, tA: arr(t), tI: arr(t + REG.zone.annonce), lieu: entier(r, 3)}); t += ecart(r, 'zones', t); }
+  // les méga attaques (R : jamais deux fois de suite sur le même ; pas en même temps qu'une zone)
+  t = REG.montee.ajoutMega; var avant = null;
+  while (t < FIN) {
+    var tI = t + REG.mega.annonce;
+    for (var z = 0; z < zones.length; z++) if (Math.abs(zones[z].tI - tI) < 0.9) { t += 1; tI += 1; z = -1; }
+    var cand = ROLES.filter(function (x) { return x !== avant; }), c = cand[entier(r, cand.length)];
+    megas.push({k: 'mega', id: ++id, tA: arr(t), tI: arr(tI), cible: c}); avant = c;
+    t += ecart(r, 'mega', t);
+  }
+  // qui montre quoi : au hasard, jamais à soi-même, en équilibrant (R : pas de rôle fixe ; chacun crie à peu près autant)
+  var tout = [];
+  faibles.forEach(function (f) { tout.push({quoi: 'elem', ref: f, t: f.t}); tout.push({quoi: 'part', ref: f, t: f.t}); });
+  zones.forEach(function (z) { tout.push({quoi: 'zone', ref: z, t: z.tA}); });
+  megas.forEach(function (m) { tout.push({quoi: 'mega', ref: m, t: m.tA}); });
+  tout.sort(function (a, b) { return a.t - b.t || a.ref.id - b.ref.id || (a.quoi < b.quoi ? -1 : 1); });
+  var dejaElem = {};
+  tout.forEach(function (x) {
+    var cible = x.quoi === 'zone' ? null : (x.ref.h || x.ref.cible);
+    var ok = ROLES.filter(function (g) { return g !== cible && !(x.quoi === 'part' && dejaElem[x.ref.id] === g); });   // (R) l'élément et la partie viennent de deux joueurs différents
+    var mini = Math.min.apply(null, ok.map(function (g) { return cris[g]; }));
+    ok = ok.filter(function (g) { return cris[g] === mini; });
+    var g = ok[entier(r, ok.length)];
+    cris[g]++;
+    if (x.quoi === 'elem') dejaElem[x.ref.id] = g;
+    var inf = {k: 'info', quoi: x.quoi, donneur: g, cible: cible, ref: x.ref.id, tA: x.t};
+    if (x.quoi === 'elem') { inf.val = x.ref.elem; inf.tFin = arr(x.t + REG.infoMontree); }
+    else if (x.quoi === 'part') { inf.val = x.ref.part; inf.tFin = arr(x.t + REG.infoMontree); }
+    else if (x.quoi === 'zone') { inf.val = x.ref.lieu; inf.tFin = x.ref.tI; x.ref.donneur = g; }
+    else { inf.val = null; inf.tFin = x.ref.tI; x.ref.donneur = g; }
+    infos.push(inf);
+  });
+  var S = {partie: partie, faibles: faibles, zones: zones, megas: megas, infos: infos, cris: cris};
+  CACHE[partie] = S;
+  return S;
+}
+/* la faiblesse d'un héros au temps T */
+function faibleA(su, h, T) {
+  var f = null;
+  for (var i = 0; i < su.faibles.length; i++) { var x = su.faibles[i]; if (x.h === h && x.t <= T) f = x; }
+  return f;
+}
+/* les symboles de victoire (quatre différents) */
+function symboles(partie) {
+  var r = rngDe('symboles3|' + partie), l = SYMS.slice(), o = {};
+  for (var i = l.length - 1; i > 0; i--) { var j = entier(r, i + 1), x = l[i]; l[i] = l[j]; l[j] = x; }
+  ROLES.forEach(function (ro, i) { o[ro] = l[i]; });
+  return o;
+}
+
+/* ---------- une partie sur une tablette ---------- */
+function nouvelle(reglages, graine) {
+  var reg = {};
+  for (var k in DEFAUT) reg[k] = (reglages && reglages[k] !== undefined) ? reglages[k] : DEFAUT[k];
+  var H = REG.heros, moi = reg.role;
+  var S = {
+    reg: reg, moi: moi, seul: reg.mode === 'seul',
+    partie: reg.mode === 'seul' ? (graine || 1) : reg.partie,
+    rnd: rngDe('local|' + (graine || 1) + '|' + Date.now()),   // le hasard local (les éclairs, les robots) : pas besoin d'être partagé
+    combat: 1, etat: 'combat', T: 0, reel: 0, attente: 0,
+    h: {x: H.x, y: H.y, pv: H.pv, dx: 0, dy: -1, lance: null, saut: null, sautT: 0, mort: 0, intouchable: 0, coupe: 0,
+        bouclierFin: -1, bouclierPret: 0, bouge: false},
+    cible: 1,                                    // la partie visée : le torse au départ
+    boss: 0, bossMax: 0, faible: null,
+    vus: {}, tirs: [], prochainEclair: 1.5, eclairs: [],
+    code: {}, symboles: null, symboleT: -1,
+    amis: {}, cris: [], relais: {},              // mode seul : les robots, leurs cris pour moi, ce que j'ai crié
+    villageois: {x: H.x, y: H.y + 1.3, court: null},
+    stats: {morts: 0, sorts: 0, justes: 0, rebonds: 0, soins: 0, zones: 0, zonesRatees: 0, megas: 0, megasRatees: 0, reprises: 0, relaisFaits: 0, relaisRates: 0, symboleT: null},
+    evts: []
+  };
+  S.symboles = symboles(S.partie);
+  S.su = suite(S.partie);
+  S.bossMax = REG.coups[reg.vie] || REG.coups.normal; S.boss = S.bossMax;   // (au premier combat, la barre ne bouge presque pas : on ne sait rien)
+  ROLES.forEach(function (ro) {
+    if (ro === moi) return;
+    S.amis[ro] = {role: ro, x: H.x, y: H.y + 0.8, hist: [], delai: ro === 'pisteur' ? 0.15 : 0.3 + 0.25 * S.rnd(), prochainSort: 1 + 3 * S.rnd(),
+      // le robot (mode seul)
+      mort: 0, bouclierFin: -1, bouclierPret: 0, boss: 0, sait: {}, prochainCoup: 0, voix: 0, symboleCrie: -99, symbole: S.symboles[ro]};
+  });
+  if (reg.debut >= 2) allerC2(S, reg.debut === 3 ? REG.montee.fin : 0);
+  return S;
+}
+function evt(S, type, o) { o = o || {}; o.type = type; o.t = S.reel; S.evts.push(o); if (S.evts.length > 120) S.evts.shift(); if (S.surEvt) S.surEvt(o); }
+function dernier(S, type, depuis) { for (var i = S.evts.length - 1; i >= 0; i--) { var e = S.evts[i]; if (S.reel - e.t > depuis) return null; if (e.type === type) return e; } return null; }
+function vivant(S) { return S.h.mort <= 0; }
+function protege(S) { return S.h.bouclierFin > S.T || S.h.intouchable > 0; }
+
+/* le deuxième combat (après le film d'Odette, ou tout de suite pour les essais) */
+function allerC2(S, T0) {
+  var H = REG.heros, h = S.h;
+  S.combat = 2; S.etat = 'combat'; S.T = T0 || 0; S.attente = REG.lancement;
+  S.bossMax = REG.coups[S.reg.vie] || REG.coups.normal; S.boss = S.bossMax;
+  h.pv = H.pv; h.mort = 0; h.intouchable = 0; h.lance = null; h.saut = null; h.x = H.x; h.y = H.y; h.bouclierFin = -1; h.bouclierPret = 0;
+  S.vus = {}; marquerPasse(S); S.prochainEclair = S.T + 1.5;
+  for (var ro in S.amis) { var a = S.amis[ro]; a.boss = S.bossMax; a.mort = 0; a.sait = {}; a.bouclierFin = -1; a.bouclierPret = 0; a.prochainCoup = 0; a.voix = 0; }
+  S.cris = [];
+  evt(S, 'combat2');
+}
+function marquerPasse(S) {   // tout ce qui a commencé avant S.T est considéré comme passé (après « On reprend »)
+  var su = S.su;
+  su.infos.forEach(function (x) { if (x.tA < S.T) S.vus['i' + x.ref + x.quoi] = 1; });
+  su.zones.forEach(function (z) { if (z.tA < S.T) { S.vus['z' + z.id] = 1; S.vus['zi' + z.id] = 1; } });
+  su.megas.forEach(function (m) { if (m.tA < S.T) { S.vus['m' + m.id] = 1; S.vus['mi' + m.id] = 1; } });
+  su.faibles.forEach(function (f) { if (f.t < S.T) S.vus['f' + f.id] = 1; });
+  S.faible = faibleA(su, S.moi, S.T);
+  for (var ro in S.amis) S.amis[ro].faible = faibleA(su, ro, S.T);
+}
+
+/* ---------- le héros prend des coups ---------- */
+function blesser(S, n, source) {
+  var h = S.h;
+  if (!vivant(S) || protege(S) || S.etat !== 'combat') return false;
+  h.pv -= n; h.coupe = 0.35;
+  evt(S, 'aie', {n: n, source: source});
+  if (h.pv <= 0) mourir(S, source);
+  return true;
+}
+function mourir(S, source) {
+  var h = S.h;
+  if (h.mort > 0) return;
+  h.pv = 0; h.mort = REG.mort.attente; h.lance = null; h.saut = null;
+  S.stats.morts++;
+  evt(S, 'mort', {source: source, x: h.x, y: h.y});
+}
+
+/* ---------- les obstacles ---------- */
+function libreEn(x, y, r) {
+  var L = REG.salle, B = REG.grosbec;
+  if (x < r || x > L.L - r || y < r || y > L.P - r) return false;
+  if (Math.hypot(x - B.x, y - B.y) < B.r + r) return false;
+  for (var i = 0; i < REG.lieux.length; i++) if (Math.hypot(x - REG.lieux[i].x, y - REG.lieux[i].y) < REG.lieuR + r) return false;
+  return true;
+}
+function pousser(o, r) {
+  var L = REG.salle, B = REG.grosbec;
+  for (var pass = 0; pass < 3; pass++) {
+    o.x = cl(o.x, r, L.L - r); o.y = cl(o.y, r, L.P - r);
+    [{x: B.x, y: B.y, m: B.r + r}].concat(REG.lieux.map(function (l) { return {x: l.x, y: l.y, m: REG.lieuR + r}; })).forEach(function (c) {
+      var dx = o.x - c.x, dy = o.y - c.y, d = Math.hypot(dx, dy);
+      if (d < c.m) { if (d < 1e-6) { dx = 0; dy = 1; d = 1; } o.x = c.x + dx / d * c.m; o.y = c.y + dy / d * c.m; }
+    });
+  }
+}
+function aLAbri(x, y, lieu) { var l = REG.lieux[lieu]; return Math.hypot(x - l.x, y - l.y) <= REG.surR; }
+
+/* ---------- les gestes ---------- */
+function lancer(S, quoi) {
+  var h = S.h;
+  if (S.etat !== 'combat' || S.attente > 0 || !vivant(S) || h.lance || h.saut) return false;
+  if (h.bouge) return false;                                         // (R) on ne lance pas en courant
+  if (quoi !== 'soin') {
+    if (S.boss <= 0 && S.combat === 2) return false;                 // (R) en soutien, les sorts sont gris
+    if (S.combat === 1 && quoi === 'acide') return false;            // (C) l'acide arrive avec le village
+  }
+  if (quoi === 'soin' && h.pv >= REG.heros.pv) return false;
+  h.lance = {quoi: quoi, t: 0, dur: quoi === 'soin' ? REG.soin.lance : REG.sort.lance};
+  evt(S, 'lance', {quoi: quoi});
+  return true;
+}
+function sauter(S, mx, my) {
+  var h = S.h;
+  if (S.etat !== 'combat' || S.attente > 0 || !vivant(S) || h.saut || h.sautT > 0) return false;
+  var n = Math.hypot(mx || 0, my || 0), dx = n > 0.2 ? mx / n : h.dx, dy = n > 0.2 ? my / n : h.dy;
+  h.saut = {t: 0, dx: dx, dy: dy}; h.sautT = REG.saut.recharge;
+  if (h.lance) { h.lance = null; evt(S, 'sortCoupe', {par: 'saut'}); }
+  evt(S, 'saut');
+  return true;
+}
+function bouclier(S) {
+  var h = S.h;
+  if (S.etat !== 'combat' || S.combat !== 2 || !vivant(S) || S.T < h.bouclierPret) return false;
+  h.bouclierFin = S.T + REG.bouclier.dure; h.bouclierPret = S.T + S.reg.recharge;   // (R) 3 s, puis la recharge (10 s)
+  evt(S, 'bouclier');
+  return true;
+}
+function viser(S, p) { if (p >= 0 && p < 6) { S.cible = p; evt(S, 'vise', {p: p}); return true; } return false; }
+
+/* ---------- le code de la fin ---------- */
+function taper(S, ami, sym) {
+  if (!vivant(S) || S.combat !== 2 || ami === S.moi) return false;   // (R) on ne tape pas le code quand on est mort
+  if (S.symboles[ami] !== sym) { evt(S, 'codeFaux', {ami: ami}); return false; }
+  S.code[ami] = sym; evt(S, 'codeBon', {ami: ami});
+  if (victoire(S)) { S.etat = 'fini'; evt(S, 'victoire'); }
+  return true;
+}
+function victoire(S) {
+  return S.combat === 2 && S.boss <= 0 && ROLES.every(function (ro) { return ro === S.moi || S.code[ro] === S.symboles[ro]; });
+}
+
+/* ---------- « On reprend » : le dernier point de reprise (toutes les 30 s), sans rien afficher ---------- */
+function pointDeReprise(T) { return Math.floor(T / REG.reprise) * REG.reprise; }
+function reprendre(S) {
+  if (S.combat !== 2) return false;
+  var h = S.h, H = REG.heros;
+  S.T = pointDeReprise(S.T); S.attente = REG.lancement;
+  h.pv = H.pv; h.mort = 0; h.intouchable = 0; h.lance = null; h.saut = null; h.bouclierFin = -1; h.bouclierPret = 0;   // (R) chacun garde la vie de Grosbec
+  S.vus = {}; marquerPasse(S); S.prochainEclair = S.T + 1.5; S.tirs = []; S.cris = [];
+  for (var ro in S.amis) { var a = S.amis[ro]; a.mort = 0; a.bouclierFin = -1; a.bouclierPret = 0; a.voix = 0; a.prochainCoup = S.T + 2 + 2 * S.rnd(); }
+  S.stats.reprises++;
+  evt(S, 'reprise');
+  return true;
+}
+
+/* ---------- mode seul : je « crie » une info en touchant le portrait d'un ami (ou la bulle du villageois pour l'endroit sûr) ---------- */
+function mesInfos(S) {   // les bulles de mon villageois : les infos dont MA tablette est le donneur, en ce moment
+  if (S.combat !== 2 || !vivant(S) || S.etat !== 'combat') return [];
+  return S.su.infos.filter(function (x) { return x.donneur === S.moi && x.tA <= S.T && S.T < x.tFin; });
+}
+function relayer(S, ami) {
+  if (!S.seul) return false;
+  var l = mesInfos(S).filter(function (x) { return x.cible === ami && !S.relais[x.ref + x.quoi]; });
+  if (!l.length) return false;
+  l.forEach(function (x) { S.relais[x.ref + x.quoi] = 1; entendre(S, S.amis[ami], x, S.T + 0.2); S.stats.relaisFaits++; });
+  evt(S, 'relais', {ami: ami});
+  return true;
+}
+function relayerZone(S) {
+  if (!S.seul) return false;
+  var l = mesInfos(S).filter(function (x) { return x.quoi === 'zone' && !S.relais[x.ref + x.quoi]; });
+  if (!l.length) return false;
+  l.forEach(function (x) { S.relais[x.ref + x.quoi] = 1; for (var ro in S.amis) entendre(S, S.amis[ro], x, S.T + 0.2); S.stats.relaisFaits++; });
+  evt(S, 'relais', {ami: 'tous'});
+  return true;
+}
+function aRelayer(S, ami) { return mesInfos(S).some(function (x) { return x.cible === ami && !S.relais[x.ref + x.quoi]; }); }
+
+/* ---------- les robots (mode seul) ---------- */
+function entendre(S, a, x, quand) {
+  if (!a) return;
+  a.sait[x.ref + x.quoi] = quand;
+}
+// un robot crie ce que son villageois lui montre (s'il est vivant), un cri à la fois ; on l'entend avec la chance « robots »
+function robotsCrient(S) {
+  var su = S.su, T = S.T;
+  su.infos.forEach(function (x) {
+    if (x.donneur === S.moi || x.tA > T || S.vus['c' + x.ref + x.quoi]) return;
+    var g = S.amis[x.donneur];
+    if (T < x.tA + 0.3) return;
+    S.vus['c' + x.ref + x.quoi] = 1;
+    if (g.mort > 0) return;                                          // sa tablette ne montre plus rien
+    if (x.quoi === 'zone') entendre(S, g, x, x.tA + 0.3);            // son villageois court : lui, il sait
+    if (S.rnd() > S.reg.robots) return;                              // il ne l'a pas vue, ou pas criée
+    var debut = Math.max(T + 0.3 + 0.7 * S.rnd(), g.voix), fin = debut + (x.quoi === 'mega' ? 0.6 : 1.0);
+    g.voix = fin;
+    var pour = x.quoi === 'zone' ? ROLES.filter(function (ro) { return ro !== x.donneur; }) : [x.cible];
+    pour.forEach(function (ro) {
+      if (ro === S.moi) S.cris.push({de: x.donneur, x: x, t: debut, fin: fin + (x.quoi === 'mega' ? 2.2 : 3)});
+      else if (S.rnd() < 0.95) entendre(S, S.amis[ro], x, fin + 0.2 + 0.4 * S.rnd());
+    });
+  });
+}
+function robotsJouent(S, dt) {
+  var su = S.su, T = S.T;
+  for (var ro in S.amis) {
+    var a = S.amis[ro];
+    if (a.mort > 0) { a.mort -= dt; continue; }
+    if (S.combat !== 2) continue;
+    var f = faibleA(su, ro, T);
+    // il tape quand il connaît l'élément ET la partie de sa faiblesse
+    if (f && a.boss > 0 && T >= a.prochainCoup) {
+      var se = a.sait[f.id + 'elem'], sp = a.sait[f.id + 'part'];
+      if (se !== undefined && sp !== undefined && se <= T && sp <= T) {
+        a.boss -= 1; a.prochainCoup = T + 4.5 + 2.5 * S.rnd();
+        if (a.boss <= 0) { a.symboleCrie = -99; evt(S, 'robotSymbole', {ami: ro}); }
+      } else a.prochainCoup = T + 0.5;
+    }
+  }
+}
+function robotZone(S, a, z) {
+  if (a.mort > 0) return;
+  if (a.bouclierFin > z.tI) return;                                  // déjà sous le bouclier
+  var su = a.sait[z.id + 'zone'], course = 1.4 + 0.8 * S.rnd();
+  if (su !== undefined && su <= z.tI - course) return;               // il a su à temps : il court à l'abri
+  if (z.tI >= a.bouclierPret && S.rnd() < 0.8) { a.bouclierFin = z.tI + 1; a.bouclierPret = z.tI + S.reg.recharge; return; }   // le joker
+  if (S.rnd() < 1 / 3) return;                                       // au bon endroit par chance
+  robotMeurt(S, a, 'zone');
+}
+function robotMega(S, a, m) {
+  if (a.mort > 0) return;
+  if (a.bouclierFin > m.tI) return;
+  var su = a.sait[m.id + 'mega'];
+  if (su !== undefined && su <= m.tI - 0.25 && su >= a.bouclierPret) { a.bouclierFin = su + REG.bouclier.dure; a.bouclierPret = su + S.reg.recharge; return; }
+  robotMeurt(S, a, 'mega');
+}
+function robotMeurt(S, a, source) { a.mort = REG.mort.attente; evt(S, 'robotMort', {ami: a.role, source: source}); }
+
+/* ---------- un pas de temps ---------- */
+function pas(S, dt, entree) {
+  S.reel += dt;
+  var h = S.h;
+  if (h.coupe > 0) h.coupe = Math.max(0, h.coupe - dt);
+  if (S.etat === 'film') { S.attente -= dt; if (S.attente <= 0) { S.etat = 'go'; evt(S, 'go'); } return; }
+  if (S.etat !== 'combat') return;
+  if (S.attente > 0) { S.attente -= dt; suivre(S, dt); return; }      // les deux secondes de calme après le bouton jaune
+  S.T += dt;
+  var T = S.T;
+  // le héros : la mort, le retour
+  if (h.mort > 0) { h.mort -= dt; if (h.mort <= 0) { h.mort = 0; h.pv = REG.heros.pv; h.intouchable = REG.mort.intouchable; evt(S, 'releve'); } }
+  if (h.intouchable > 0) h.intouchable = Math.max(0, h.intouchable - dt);
+  if (h.sautT > 0) h.sautT = Math.max(0, h.sautT - dt);
+  // se déplacer
+  var mx = entree ? entree.mx || 0 : 0, my = entree ? entree.my || 0 : 0, m = Math.hypot(mx, my);
+  h.bouge = vivant(S) && m > REG.bouge;
+  if (vivant(S)) {
+    if (h.saut) {
+      var v = REG.saut.L / REG.saut.dur;
+      h.x += h.saut.dx * v * dt; h.y += h.saut.dy * v * dt; h.saut.t += dt;
+      if (h.saut.t >= REG.saut.dur) h.saut = null;
+    } else if (h.bouge) {
+      var k = Math.min(1, m);
+      h.x += mx / m * k * REG.heros.vit * dt; h.y += my / m * k * REG.heros.vit * dt; h.dx = mx / m; h.dy = my / m;
+      if (h.lance) { h.lance = null; evt(S, 'sortCoupe', {par: 'bouge'}); }   // (R) seul le fait de bouger coupe un sort ou un soin
+    }
+    pousser(h, REG.heros.r);
+  }
+  // lancer
+  if (h.lance && vivant(S)) {
+    h.lance.t += dt;
+    if (h.lance.t >= h.lance.dur) {
+      var q = h.lance.quoi; h.lance = null;
+      if (q === 'soin') { h.pv = Math.min(REG.heros.pv, h.pv + REG.soin.rend); S.stats.soins++; evt(S, 'soigne'); }
+      else { S.tirs.push({quoi: q, x: h.x, y: h.y, t: 0, part: S.cible}); S.stats.sorts++; evt(S, 'part', {quoi: q}); }
+    }
+  }
+  // les sorts qui volent jusqu'à Grosbec : le bon élément sur la bonne partie fait mal, sinon ça rebondit
+  S.tirs = S.tirs.filter(function (s) {
+    s.t += dt;
+    if (s.t < REG.sort.vol) return true;
+    var f = S.combat === 2 ? S.faible : faibleA(suiteC1(S), S.moi, T);
+    var bon = f && ELEMS[f.elem] === s.quoi && f.part === s.part;
+    if (bon && S.boss > 0) {
+      S.boss = Math.max(0, S.boss - 1); S.stats.justes++; evt(S, 'touche', {part: s.part, quoi: s.quoi});
+      if (S.boss <= 0 && S.combat === 2) { S.symboleT = S.reel; S.stats.symboleT = T; evt(S, 'symbole'); }
+    } else { S.stats.rebonds++; evt(S, 'rebond', {part: s.part, quoi: s.quoi}); }
+    return false;
+  });
+  // les éclairs : en permanence, de sa main jusqu'au héros, impossibles à éviter (le bouclier les arrête)
+  var tambour = S.combat === 1 && T >= REG.combat1.tenir;
+  if (T >= S.prochainEclair) {
+    S.prochainEclair = T + (tambour ? REG.eclair.tambour : REG.eclair.tous);
+    if (vivant(S)) {
+      var deg = S.combat === 1 ? S.reg.eclairs1 : S.reg.eclairs2;
+      S.eclairs.push({t: S.reel, main: S.rnd() < 0.5 ? -1 : 1, vers: 'moi'});
+      if (deg > 0) blesser(S, tambour ? Math.max(deg, 25) : deg, 'eclair');
+    }
+    // et sur les amis, pour l'image
+    var ros = Object.keys(S.amis); S.eclairs.push({t: S.reel + 0.25, main: S.rnd() < 0.5 ? -1 : 1, vers: ros[Math.floor(S.rnd() * ros.length)]});
+  }
+  S.eclairs = S.eclairs.filter(function (e) { return S.reel - e.t < REG.eclair.montre; });
+  // le premier combat : au bout d'une minute il tambourine, et en 10 s tout le monde tombe ; puis le film d'Odette
+  if (S.combat === 1) {
+    if (tambour && !S.vus.tambour) { S.vus.tambour = 1; evt(S, 'tambour'); }
+    if (T >= REG.combat1.tenir + REG.combat1.tambour) {
+      if (vivant(S)) mourir(S, 'tambour');
+      for (var r1 in S.amis) S.amis[r1].mort = 99;
+      if (!S.vus.finC1) { S.vus.finC1 = 1; S.finC1 = S.reel; }
+      if (S.reel - S.finC1 > 1.5) { S.etat = 'film'; S.attente = REG.film; evt(S, 'film'); }
+    }
+    suivre(S, dt);
+    return;
+  }
+  // le deuxième combat : la suite des coups
+  var su = S.su;
+  su.faibles.forEach(function (f) {
+    if (f.t > T || S.vus['f' + f.id]) return; S.vus['f' + f.id] = 1;
+    if (f.h === S.moi) S.faible = f;                                  // (R) pas de signe : on le comprend quand le sort rebondit
+  });
+  su.infos.forEach(function (x) {
+    if (x.tA > T || S.vus['i' + x.ref + x.quoi]) return; S.vus['i' + x.ref + x.quoi] = 1;
+    if (x.donneur !== S.moi || !vivant(S)) return;
+    evt(S, 'info', {x: x});
+    if (x.quoi === 'zone') S.villageois.court = {lieu: x.val, fin: su.zones.filter(function (z) { return z.id === x.ref; })[0].tI + 0.6};
+  });
+  su.zones.forEach(function (z) {
+    if (z.tI > T || S.vus['zi' + z.id]) return; S.vus['zi' + z.id] = 1;
+    S.stats.zones++;
+    var ok = !vivant(S) || protege(S) || aLAbri(h.x, h.y, z.lieu);
+    evt(S, 'zone', {lieu: z.lieu, ok: ok});
+    if (!ok) { S.stats.zonesRatees++; mourir(S, 'zone'); }           // (R) rater une zone, c'est tomber d'un coup
+    if (S.seul) for (var ro in S.amis) robotZone(S, S.amis[ro], z);
+  });
+  su.megas.forEach(function (mg) {
+    if (mg.tI > T || S.vus['mi' + mg.id]) return; S.vus['mi' + mg.id] = 1;
+    if (mg.cible === S.moi) {
+      S.stats.megas++;
+      var ok2 = !vivant(S) || protege(S);
+      evt(S, 'mega', {moi: true, ok: ok2});
+      if (!ok2) { S.stats.megasRatees++; mourir(S, 'mega'); }        // (C) sans bouclier, on tombe
+    } else {
+      evt(S, 'mega', {moi: false, cible: mg.cible, vuIci: mg.donneur === S.moi && vivant(S)});   // le rayon ne se voit que chez celui qui a prévenu
+      if (S.seul) robotMega(S, S.amis[mg.cible], mg);
+    }
+  });
+  if (S.seul) { robotsCrient(S); robotsJouent(S, dt); }
+  S.cris = S.cris.filter(function (c) { return S.T < c.fin; });
+  // les robots qui ont fini crient leur symbole (et le redisent de temps en temps tant que je ne l'ai pas tapé)
+  if (S.seul) for (var r2 in S.amis) {
+    var a = S.amis[r2];
+    if (a.boss <= 0 && a.mort <= 0 && !S.code[r2] && S.T - a.symboleCrie > 12) { a.symboleCrie = S.T; S.cris.push({de: r2, sym: a.symbole, t: S.T + 0.5, fin: S.T + 5}); }
+  }
+  // les relais que je n'ai pas faits à temps (pour les mesures)
+  suivre(S, dt);
+}
+/* les coéquipiers et le villageois suivent mon héros, chacun avec son temps de réaction (R) */
+var PLACES = [[-1.25, 0.25], [1.25, 0.25], [0, -1.05]];   // (C) à côté et derrière moi, pour ne jamais cacher mon héros
+function suivre(S, dt) {
+  var h = S.h, i = 0;
+  for (var ro in S.amis) {
+    var a = S.amis[ro], pl = PLACES[i++];
+    a.hist.push([S.reel, h.x, h.y]); while (a.hist.length > 2 && S.reel - a.hist[1][0] > a.delai) a.hist.shift();
+    var cible = a.hist[0], tx = cible[1] + pl[0], ty = cible[2] + pl[1];
+    var dx = tx - a.x, dy = ty - a.y, d = Math.hypot(dx, dy), v = REG.heros.vit * 1.05 * dt;
+    if (d > 0.05) { var k = Math.min(1, v / d); a.x += dx * k; a.y += dy * k; }
+    pousser(a, REG.heros.r);
+    if (Math.random() < dt / 4) a.delai = ro === 'pisteur' ? 0.1 + 0.1 * Math.random() : 0.28 + 0.35 * Math.random();
+  }
+  var vg = S.villageois, cx, cy;
+  if (vg.court && S.T < vg.court.fin && vivant(S)) { var l = REG.lieux[vg.court.lieu]; cx = l.x + 0.7; cy = l.y + 0.7; }
+  else { vg.court = null; cx = h.x - 0.9; cy = h.y + 1.3; }
+  var ddx = cx - vg.x, ddy = cy - vg.y, dd = Math.hypot(ddx, ddy), vv = (vg.court ? 4.5 : 3.4) * dt;
+  if (dd > 0.05) { var kk = Math.min(1, vv / dd); vg.x += ddx * kk; vg.y += ddy * kk; }
+  pousser(vg, 0.3);
+}
+/* au premier combat, la faiblesse change aussi (on ne le sait pas) : une suite à part, partagée elle aussi */
+function suiteC1(S) {
+  if (S._c1) return S._c1;
+  var r = rngDe('c1|' + S.partie), f = [], id = 0;
+  ROLES.forEach(function (h) { var t = 0; while (t < 80) { f.push({id: ++id, h: h, t: t, elem: entier(r, 3), part: entier(r, 6)}); t += entre(r, 15, 20); } });
+  S._c1 = {faibles: f};
+  return S._c1;
+}
+function demarrerC2(S) { if (S.etat === 'go') { allerC2(S, 0); return true; } return false; }
+
+G.P3 = {REG: REG, DEFAUT: DEFAUT, ROLES: ROLES, ELEMS: ELEMS, PARTIES: PARTIES, MOTS: MOTS, SYMS: SYMS,
+  hash: hash, rngDe: rngDe, suite: suite, faibleA: faibleA, symboles: symboles, ecart: ecart,
+  nouvelle: nouvelle, pas: pas, lancer: lancer, sauter: sauter, bouclier: bouclier, viser: viser, taper: taper, victoire: victoire,
+  reprendre: reprendre, pointDeReprise: pointDeReprise, mesInfos: mesInfos, relayer: relayer, relayerZone: relayerZone, aRelayer: aRelayer,
+  allerC2: allerC2, demarrerC2: demarrerC2, dernier: dernier, vivant: vivant, protege: protege, aLAbri: aLAbri, libreEn: libreEn};
+if (typeof module !== 'undefined') module.exports = G.P3;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>/* ===== pilote.js ===== */
+/* Un pilote automatique pour MON héros (les essais seulement : node tests/regles.js, et window.__pilote dans la page).
+   Il « entend » les bulles des robots (S.cris) comme un joueur, relaie ce que montre son villageois un peu après,
+   court à l'endroit sûr, lève le bouclier quand on le lui crie, se soigne quand il est bas, tape avec ce qu'il sait. */
+(function (G) {
+'use strict';
+var P3 = G.P3;
+function Pilote(o) {
+  o = o || {};
+  this.reaction = o.reaction || 0.6;      // le temps pour comprendre une bulle ou un cri
+  this.relaisDelai = o.relais || 1.0;     // le temps pour lire sa bulle et toucher le bon portrait
+  this.oubli = o.oubli || 0;              // la chance de rater une bulle
+  this.sait = {}; this.but = null; this.r = Math.random;
+}
+Pilote.prototype.manette = function (S) {
+  var h = S.h, P = P3, REG = P.REG, T = S.T, self = this;
+  if (S.etat !== 'combat' || S.attente > 0 || !P.vivant(S)) return {mx: 0, my: 0};
+  // ce que les amis me crient
+  S.cris.forEach(function (c) {
+    if (!c.x || self.sait[c.x.ref + c.x.quoi] || T < c.t + self.reaction) return;
+    self.sait[c.x.ref + c.x.quoi] = 1;
+    if (self.r() < self.oubli) return;
+    if (c.x.quoi === 'zone') self.but = {lieu: c.x.val, fin: T + 4};
+    else if (c.x.quoi === 'mega') P.bouclier(S);
+    else if (c.x.quoi === 'elem') self.elem = c.x.val;
+    else if (c.x.quoi === 'part') P.viser(S, c.x.val);
+  });
+  // ce que montre mon villageois : je le relaie (et l'endroit sûr, j'y vais moi aussi)
+  P.mesInfos(S).forEach(function (x) {
+    if (T < x.tA + self.relaisDelai) return;
+    if (x.quoi === 'zone') { if (!self.but || self.but.lieu !== x.val) self.but = {lieu: x.val, fin: T + 4}; P.relayerZone(S); }
+    else if (x.cible) P.relayer(S, x.cible);
+  });
+  // courir à l'endroit sûr
+  if (this.but && T < this.but.fin) {
+    var l = REG.lieux[this.but.lieu], dx = l.x - h.x, dy = l.y + 0.8 - h.y, d = Math.hypot(dx, dy);
+    if (d > 0.5) { if (d > 2.5 && h.sautT <= 0) P.sauter(S, dx / d, dy / d); return {mx: dx / d, my: dy / d}; }
+  } else this.but = null;
+  // se soigner, ou taper
+  if (!h.lance) {
+    if (h.pv <= 50) P.lancer(S, 'soin');
+    else if (S.boss > 0) {
+      var e = this.elem !== undefined ? this.elem : Math.floor(this.r() * (S.combat === 1 ? 2 : 3));
+      P.lancer(S, P.ELEMS[e]);
+    }
+  }
+  return {mx: 0, my: 0};
+};
+G.Pilote = Pilote;
+if (typeof module !== 'undefined') module.exports = Pilote;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>/* ===== dessin.js ===== */
+/* Le dessin de la version 2 : la salle vue d'en haut, en biais (comme la phase 2 et le combat du Pisteur), en formes simples.
+   Grosbec de lumière au fond ; la fontaine, la lanterne, la statue cassée ; mon héros, mes trois amis, mon villageois et ses bulles. */
+(function (G) {
+'use strict';
+var P3 = G.P3, REG = P3.REG;
+var ROLES = {barde: {c: '#ff8fb3', ic: '🎻'}, sage: {c: '#6cb6ff', ic: '📜'}, alchimiste: {c: '#b48cff', ic: '⚗️'}, pisteur: {c: '#5fcf86', ic: '🏹'}};
+// (R) un villageois par tablette, toujours le même : Gaspard le boulanger, Margot la tavernière, Silas le garde, Iris l'herboriste
+var VILLAGEOIS = {alchimiste: {ic: '🥖', c: '#e8c48a'}, barde: {ic: '🍺', c: '#d9a066'}, pisteur: {ic: '🗡️', c: '#9fb0c8'}, sage: {ic: '🌿', c: '#a8d08d'}};
+var ECOUL = {feu: '#ff7a2a', glace: '#9fe3ff', acide: '#8fe03a'};
+var EMO = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+var K = 0.62, V = {T: 40, ox: 0, oy: 0};
+function X(x) { return V.ox + x * V.T; }
+function Y(y, z) { return V.oy + y * V.T * K - (z || 0) * V.T; }
+function ell(c, x, y, r, z) { c.beginPath(); c.ellipse(X(x), Y(y, z), r * V.T, r * V.T * K, 0, 0, Math.PI * 2); }
+function rond(c, x, y, r) { c.beginPath(); c.arc(x, y, Math.max(0.1, r), 0, Math.PI * 2); }
+function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+function emoji(c, e, x, y, s) { c.font = Math.round(s) + 'px ' + EMO; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(e, x, y + s * 0.04); }
+function cl(v, a, b) { return Math.max(a, Math.min(b, v)); }
+function bruit(i) { var s = Math.sin(i * 127.1) * 43758.5453; return s - Math.floor(s); }
+
+/* ---------- la forme de Grosbec : six parties, en coordonnées d'écran ---------- */
+var B = REG.grosbec;
+var FORME = {   // en pas : x dans la salle, z la hauteur
+  tete: {z: 5.35, r: 0.72},
+  torse: {z: 3.55, rx: 1.2, rz: 1.3},
+  brasG: {a: [-1.15, 4.45], b: [-2.55, 2.55], e: 0.44}, brasD: {a: [1.15, 4.45], b: [2.55, 2.55], e: 0.44},
+  jambeG: {a: [-0.55, 2.4], b: [-0.85, 0.15], e: 0.52}, jambeD: {a: [0.55, 2.4], b: [0.85, 0.15], e: 0.52}
+};
+var ORDRE = ['tete', 'torse', 'brasG', 'brasD', 'jambeG', 'jambeD'];   // le même ordre que P3.PARTIES
+function pt(dx, z, sh) { return [X(B.x + dx) + (sh || 0), Y(B.y, z)]; }
+function centrePartie(i, sh) {
+  var n = ORDRE[i], f = FORME[n];
+  if (n === 'tete' || n === 'torse') return pt(0, f.z, sh);
+  var a = pt(f.a[0], f.a[1], sh), b = pt(f.b[0], f.b[1], sh); return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+}
+function mainDe(cote, sh) { var f = FORME[cote < 0 ? 'brasG' : 'brasD']; return pt(f.b[0], f.b[1], sh); }
+function distSeg(px, py, ax, ay, bx, by) { var vx = bx - ax, vy = by - ay, l = vx * vx + vy * vy, u = l ? ((px - ax) * vx + (py - ay) * vy) / l : 0; u = cl(u, 0, 1); return Math.hypot(px - (ax + u * vx), py - (ay + u * vy)); }
+/* quelle partie est sous le doigt (ou -1) ; on prend large, pour des doigts d'enfants */
+function partieSous(sx, sy) {
+  var T = V.T, best = -1, bd = 1e9;
+  ORDRE.forEach(function (n, i) {
+    var f = FORME[n], d;
+    if (n === 'tete') { var p = pt(0, f.z); d = Math.hypot(sx - p[0], sy - p[1]) - f.r * T; }
+    else if (n === 'torse') { var q = pt(0, f.z); d = (Math.hypot((sx - q[0]) / (f.rx * T), (sy - q[1]) / (f.rz * T)) - 1) * f.rx * T; }
+    else { var a = pt(f.a[0], f.a[1]), b = pt(f.b[0], f.b[1]); d = distSeg(sx, sy, a[0], a[1], b[0], b[1]) - f.e * T / 2; }
+    if (d < bd) { bd = d; best = i; }
+  });
+  return bd < V.T * 0.45 ? best : -1;
+}
+function tracePartie(c, i, sh, grossit) {
+  var n = ORDRE[i], f = FORME[n], T = V.T, g = grossit || 0;
+  if (n === 'tete') { var p = pt(0, f.z, sh); rond(c, p[0], p[1], (f.r + g) * T); return 'fill'; }
+  if (n === 'torse') { var q = pt(0, f.z, sh); c.beginPath(); c.ellipse(q[0], q[1], (f.rx + g) * T, (f.rz + g) * T, 0, 0, Math.PI * 2); return 'fill'; }
+  var a = pt(f.a[0], f.a[1], sh), b = pt(f.b[0], f.b[1], sh);
+  c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.lineWidth = (f.e + 2 * g) * T; c.lineCap = 'round'; return 'stroke';
+}
+function remplir(c, quoi, coul) { if (quoi === 'fill') { c.fillStyle = coul; c.fill(); } else { c.strokeStyle = coul; c.stroke(); } }
+
+/* ---------- la salle et le décor ---------- */
+function salle(c, S) {
+  var L = REG.salle, T = V.T;
+  var g = c.createLinearGradient(0, Y(0, 3.2), 0, Y(0));
+  g.addColorStop(0, '#0b0e1c'); g.addColorStop(1, '#1d2236');
+  c.fillStyle = g; c.fillRect(X(0), Y(0, 3.2), L.L * T, 3.2 * T);
+  c.fillStyle = '#141a2b'; for (var i = 0; i < 7; i++) c.fillRect(X(1 + i * 2) - T * 0.25, Y(0, 3.2), T * 0.5, 3.2 * T);
+  c.fillStyle = '#242a3c'; c.fillRect(X(0), Y(0), L.L * T, L.P * T * K);
+  c.strokeStyle = 'rgba(255,255,255,.045)'; c.lineWidth = 1;
+  for (var x = 0; x <= L.L; x++) { c.beginPath(); c.moveTo(X(x), Y(0)); c.lineTo(X(x), Y(L.P)); c.stroke(); }
+  for (var y = 0; y <= L.P; y++) { c.beginPath(); c.moveTo(X(0), Y(y)); c.lineTo(X(L.L), Y(y)); c.stroke(); }
+  c.strokeStyle = '#3a4560'; c.lineWidth = 3; c.strokeRect(X(0), Y(0), L.L * T, L.P * T * K);
+  // la lueur rouge de Grosbec sur le sol
+  var gl = c.createRadialGradient(X(B.x), Y(B.y), 0, X(B.x), Y(B.y), 6 * T);
+  gl.addColorStop(0, 'rgba(255,60,50,.22)'); gl.addColorStop(1, 'rgba(255,60,50,0)');
+  c.fillStyle = gl; c.fillRect(X(0), Y(0), L.L * T, L.P * T * K);
+}
+function lieu(c, S, i) {
+  var l = REG.lieux[i], T = V.T, t = S.reel;
+  c.fillStyle = 'rgba(0,0,0,.35)'; ell(c, l.x + 0.1, l.y + 0.1, 0.55); c.fill();
+  if (l.n === 'lanterne') {        // un poteau, une grosse lanterne jaune
+    c.fillStyle = '#2b3042'; c.fillRect(X(l.x) - T * 0.12, Y(l.y, 1.9), T * 0.24, T * 1.9);
+    var g = c.createRadialGradient(X(l.x), Y(l.y, 2.1), 0, X(l.x), Y(l.y, 2.1), T * 1.1);
+    g.addColorStop(0, 'rgba(255,210,80,.55)'); g.addColorStop(1, 'rgba(255,210,80,0)'); c.fillStyle = g; rond(c, X(l.x), Y(l.y, 2.1), T * 1.1); c.fill();
+    rr(c, X(l.x) - T * 0.28, Y(l.y, 2.45), T * 0.56, T * 0.7, 5); c.fillStyle = '#ffd23a'; c.fill(); c.strokeStyle = '#6b5200'; c.lineWidth = 2; c.stroke();
+    c.fillStyle = '#fff4bf'; rr(c, X(l.x) - T * 0.14, Y(l.y, 2.32), T * 0.28, T * 0.42, 3); c.fill();
+  } else if (l.n === 'statue') {   // un socle, une statue cassée (un bras en moins, la tête tombée à côté)
+    c.fillStyle = '#5d6377'; c.fillRect(X(l.x) - T * 0.45, Y(l.y, 0.55), T * 0.9, T * 0.55);
+    c.fillStyle = '#7c8296'; c.fillRect(X(l.x) - T * 0.45, Y(l.y, 0.62), T * 0.9, T * 0.1);
+    c.fillStyle = '#9aa1b5'; rr(c, X(l.x) - T * 0.24, Y(l.y, 1.75), T * 0.48, T * 1.15, 6); c.fill();
+    c.strokeStyle = '#9aa1b5'; c.lineWidth = T * 0.14; c.lineCap = 'round'; c.beginPath(); c.moveTo(X(l.x) - T * 0.2, Y(l.y, 1.55)); c.lineTo(X(l.x) - T * 0.42, Y(l.y, 1.05)); c.stroke(); c.lineCap = 'butt';
+    c.strokeStyle = '#3b4050'; c.lineWidth = 2; c.beginPath(); c.moveTo(X(l.x) + T * 0.24, Y(l.y, 1.75)); c.lineTo(X(l.x) + T * 0.05, Y(l.y, 1.45)); c.lineTo(X(l.x) + T * 0.2, Y(l.y, 1.2)); c.stroke();
+    c.fillStyle = '#9aa1b5'; rond(c, X(l.x + 0.75), Y(l.y + 0.3, 0.2), T * 0.2); c.fill();
+  } else {                          // la fontaine : un bassin rond, de l'eau, un jet
+    c.fillStyle = '#5d6377'; ell(c, l.x, l.y, 0.75, 0.35); c.fill(); c.fillRect(X(l.x - 0.75), Y(l.y, 0.35), 1.5 * T, 0.35 * T);
+    c.fillStyle = '#4b5063'; ell(c, l.x, l.y, 0.75); c.fill();
+    c.fillStyle = '#5fb4ff'; ell(c, l.x, l.y, 0.6, 0.35); c.fill();
+    c.fillStyle = '#7c8296'; c.fillRect(X(l.x) - T * 0.08, Y(l.y, 1.1), T * 0.16, T * 0.75);
+    c.strokeStyle = 'rgba(160,220,255,.8)'; c.lineWidth = 2;
+    for (var k = 0; k < 4; k++) { var a = k / 4 * Math.PI * 2 + t; c.beginPath(); c.moveTo(X(l.x), Y(l.y, 1.1)); c.quadraticCurveTo(X(l.x + Math.cos(a) * 0.35), Y(l.y, 1.45), X(l.x + Math.cos(a) * 0.5), Y(l.y + Math.sin(a) * 0.2, 0.4)); c.stroke(); }
+  }
+}
+
+/* ---------- Grosbec de lumière : un être d'énergie rouge, translucide, parcouru d'éclairs, le cœur qui bat ---------- */
+function grosbec(c, S, ctx) {
+  var T = V.T, t = S.reel, sh = 0, mal = P3.dernier(S, 'touche', 0.35), tambour = S.combat === 1 && S.T >= REG.combat1.tenir;
+  if (mal) sh = Math.sin(t * 70) * T * 0.08;
+  if (tambour) sh += Math.sin(t * 40) * T * 0.05;
+  var lueur = 0.75 + 0.25 * Math.sin(t * 3);
+  c.save();
+  if (S.boss <= 0 && S.combat === 2) c.globalAlpha = 0.55;
+  // la lueur : un grand halo derrière lui (pas de flou d'ombre : trop lent sur une vieille tablette)
+  var hq = pt(0, 3.3, sh), halo = c.createRadialGradient(hq[0], hq[1], 0, hq[0], hq[1], T * 4.2);
+  halo.addColorStop(0, 'rgba(255,60,45,' + (0.3 * lueur) + ')'); halo.addColorStop(1, 'rgba(255,60,45,0)'); c.fillStyle = halo; rond(c, hq[0], hq[1], T * 4.2); c.fill();
+  // les jambes, les bras (pendant le tambour, les poings montent et descendent)
+  var frappe = tambour ? Math.abs(Math.sin(t * 7)) : 0;
+  ORDRE.forEach(function (n, i) {
+    if (n === 'tete' || n === 'torse') return;
+    var mode = tracePartie(c, i, sh);
+    if ((n === 'brasG' || n === 'brasD') && frappe) { var f = FORME[n], a = pt(f.a[0], f.a[1], sh), b = pt(f.b[0], f.b[1] + frappe * 1.2, sh); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); }
+    if (mode === 'stroke') { var w0 = c.lineWidth; c.lineWidth = w0 * 1.7; c.strokeStyle = 'rgba(255,70,55,.13)'; c.stroke(); c.lineWidth = w0; }
+    remplir(c, mode, 'rgba(255,70,55,' + (0.38 * lueur) + ')');
+  });
+  var tq = pt(0, FORME.torse.z, sh), g = c.createRadialGradient(tq[0], tq[1], 0, tq[0], tq[1], FORME.torse.rz * T * 1.1);
+  g.addColorStop(0, 'rgba(255,140,110,.62)'); g.addColorStop(1, 'rgba(255,50,40,.28)');
+  tracePartie(c, 1, sh); c.fillStyle = g; c.fill();
+  tracePartie(c, 0, sh); c.fillStyle = 'rgba(255,90,70,' + (0.45 * lueur) + ')'; c.fill();
+  // les contours brillants
+  ORDRE.forEach(function (n, i) {
+    var mode = tracePartie(c, i, sh);
+    if (mode === 'stroke') { var w = c.lineWidth; c.lineWidth = w; c.strokeStyle = 'rgba(255,150,120,.25)'; c.stroke(); c.lineWidth = Math.max(2, w * 0.18); c.strokeStyle = 'rgba(255,200,170,.55)'; c.stroke(); }
+    else { c.lineWidth = 2.5; c.strokeStyle = 'rgba(255,190,160,.8)'; c.stroke(); }
+  });
+  // les yeux et le bec (c'est Grosbec, rajeuni)
+  var tt = pt(0, FORME.tete.z, sh);
+  c.fillStyle = '#fff6c0'; rond(c, tt[0] - T * 0.24, tt[1] - T * 0.1, T * 0.09); c.fill(); rond(c, tt[0] + T * 0.24, tt[1] - T * 0.1, T * 0.09); c.fill();
+  c.beginPath(); c.moveTo(tt[0] - T * 0.16, tt[1] + T * 0.05); c.lineTo(tt[0] + T * 0.16, tt[1] + T * 0.05); c.lineTo(tt[0], tt[1] + T * 0.45); c.closePath(); c.fillStyle = 'rgba(255,190,80,.85)'; c.fill();
+  // les éclairs qui le parcourent (ils changent tout le temps)
+  var bucket = Math.floor(t * 9);
+  c.strokeStyle = 'rgba(255,235,220,.75)'; c.lineWidth = 1.5;
+  for (var k = 0; k < 5; k++) {
+    var x0 = tq[0] + (bruit(bucket * 13 + k) - 0.5) * T * 2, y0 = tq[1] + (bruit(bucket * 7 + k) - 0.5) * T * 2.6;
+    c.beginPath(); c.moveTo(x0, y0);
+    for (var j = 0; j < 4; j++) { x0 += (bruit(bucket * 31 + k * 5 + j) - 0.5) * T * 0.8; y0 += (bruit(bucket * 17 + k * 3 + j) - 0.5) * T * 0.8; c.lineTo(x0, y0); }
+    c.stroke();
+  }
+  // le cœur qui bat
+  var bat = 1 + 0.25 * Math.max(0, Math.sin(t * 6)), cg = c.createRadialGradient(tq[0], tq[1], 0, tq[0], tq[1], T * 0.45 * bat);
+  cg.addColorStop(0, '#fff3d0'); cg.addColorStop(0.4, '#ffb060'); cg.addColorStop(1, 'rgba(255,80,40,0)');
+  c.fillStyle = cg; rond(c, tq[0], tq[1], T * 0.45 * bat); c.fill();
+  // la partie touchée s'éclaire (le bon sort)
+  if (mal && mal.part !== undefined) { var u = (S.reel - mal.t) / 0.35; remplir(c, tracePartie(c, mal.part, sh), 'rgba(255,255,255,' + (0.8 * (1 - u)) + ')'); }
+  // (R) la partie que MON villageois montre s'allume un instant, seulement sur ma tablette
+  ctx.infos.forEach(function (x) {
+    if (x.quoi !== 'part' || S.T - x.tA > 1.6) return;
+    remplir(c, tracePartie(c, x.val, sh, 0.05), 'rgba(255,214,60,' + (0.45 + 0.35 * Math.sin(t * 14)) + ')');
+  });
+  // la partie que je vise : un trait blanc tout autour
+  if (S.combat === 2 ? S.boss > 0 : true) {
+    c.setLineDash([6, 5]); c.lineDashOffset = -t * 30;
+    var md = tracePartie(c, S.cible, sh, 0.12);
+    if (md === 'stroke') { var w2 = c.lineWidth; c.strokeStyle = 'rgba(255,255,255,.9)'; c.lineWidth = w2; c.globalAlpha *= 0.25; c.stroke(); c.globalAlpha = S.boss <= 0 && S.combat === 2 ? 0.55 : 1; }
+    else { c.strokeStyle = '#fff'; c.lineWidth = 2.5; c.stroke(); }
+    c.setLineDash([]);
+  }
+  // (R) la méga attaque : la charge ne se voit que sur la tablette du villageois qui prévient (une boule rouge au-dessus de sa tête)
+  ctx.infos.forEach(function (x) {
+    if (x.quoi !== 'mega') return;
+    var k2 = cl((S.T - x.tA) / (x.tFin - x.tA), 0, 1), hp = pt(0, FORME.tete.z + 1.2, sh), R = T * (0.3 + 0.9 * k2) * (1 + 0.08 * Math.sin(t * 30));
+    var rg = c.createRadialGradient(hp[0], hp[1], 0, hp[0], hp[1], R * 1.6); rg.addColorStop(0, 'rgba(255,240,220,.95)'); rg.addColorStop(0.35, 'rgba(255,40,30,.9)'); rg.addColorStop(1, 'rgba(255,40,30,0)');
+    c.fillStyle = rg; rond(c, hp[0], hp[1], R * 1.6); c.fill();
+  });
+  c.restore();
+}
+
+/* ---------- les personnages ---------- */
+function perso(c, x, y, R, ic, coul, o) {
+  o = o || {}; var T = V.T, r = REG.heros.r, z = o.z || 0;
+  c.fillStyle = 'rgba(0,0,0,.4)'; ell(c, x, y, r); c.fill();
+  var cx = X(x), cy = Y(y, 0.55 + z);
+  c.globalAlpha = o.alpha || 1;
+  rond(c, cx, cy, r * T * (o.taille || 1.1)); c.fillStyle = coul; c.fill(); c.strokeStyle = '#11141d'; c.lineWidth = 2.5; c.stroke();
+  emoji(c, ic, cx, cy, T * 0.42 * (o.taille || 1.1) / 1.1);
+  c.globalAlpha = 1;
+  return [cx, cy];
+}
+function heros(c, S) {
+  var h = S.h, R = ROLES[S.moi], T = V.T, r = REG.heros.r, z = 0, t = S.reel;
+  if (h.saut) z = Math.sin(Math.min(1, h.saut.t / REG.saut.dur) * Math.PI) * 0.8;
+  if (h.intouchable > 0 && Math.floor(t * 10) % 2) return;
+  var p = perso(c, h.x, h.y, R, R.ic, R.c, {z: z}), cx = p[0], cy = p[1];
+  c.fillStyle = '#fff'; rond(c, cx + h.dx * r * T * 1.25, cy + h.dy * r * T * K * 1.25, 3); c.fill();
+  if (h.lance) {   // le sort qu'on lance (ou le soin) : un cercle qui se remplit
+    var q = h.lance.t / h.lance.dur, col = h.lance.quoi === 'soin' ? '#5fe07a' : ECOUL[h.lance.quoi];
+    c.strokeStyle = 'rgba(0,0,0,.5)'; c.lineWidth = 6; rond(c, cx, cy, r * T * 1.8); c.stroke();
+    c.strokeStyle = col; c.lineWidth = 4; c.beginPath(); c.arc(cx, cy, r * T * 1.8, -Math.PI / 2, -Math.PI / 2 + q * Math.PI * 2); c.stroke();
+  }
+  if (h.bouclierFin > S.T) {   // la pierre de protection : une bulle
+    var bq = (h.bouclierFin - S.T) / REG.bouclier.dure;
+    c.fillStyle = 'rgba(110,190,255,.22)'; rond(c, cx, cy, r * T * 2.1); c.fill();
+    c.strokeStyle = 'rgba(160,215,255,' + (0.5 + 0.5 * bq) + ')'; c.lineWidth = 3; c.stroke();
+  }
+  if (h.coupe > 0) { c.fillStyle = 'rgba(255,40,40,' + h.coupe * 1.6 + ')'; rond(c, cx, cy, r * T * 1.15); c.fill(); }
+  var e = P3.dernier(S, 'soigne', 0.6); if (e) { var u = (S.reel - e.t) / 0.6; c.strokeStyle = 'rgba(95,224,122,' + (1 - u) + ')'; c.lineWidth = 3; rond(c, cx, cy, r * T * (1.2 + u * 2)); c.stroke(); }
+}
+function ami(c, S, a) {
+  var R = ROLES[a.role];
+  if (S.seul && a.mort > 0) { perso(c, a.x, a.y, R, '👻', '#555', {alpha: 0.35}); return; }   // un robot tombé : un fantôme
+  perso(c, a.x, a.y, R, R.ic, R.c, {alpha: 0.92, taille: 1.0});
+}
+function villageois(c, S) {
+  var v = S.villageois, VG = VILLAGEOIS[S.moi], p = perso(c, v.x, v.y, null, VG.ic, VG.c, {taille: 0.85});
+  v.sx = p[0]; v.sy = p[1];
+}
+
+/* ---------- les bulles : celles de mon villageois (en images), et, en mode seul, celles de mes robots (écrites) ---------- */
+function miniGrosbec(c, x, y, s, part) {
+  var col = function (i) { return i === part ? '#ffd23a' : 'rgba(255,90,70,.55)'; };
+  c.lineCap = 'round';
+  [['brasG', -0.35, -0.05, -0.62, 0.32, 2], ['brasD', 0.35, -0.05, 0.62, 0.32, 3], ['jambeG', -0.13, 0.3, -0.2, 0.75, 4], ['jambeD', 0.13, 0.3, 0.2, 0.75, 5]].forEach(function (m) {
+    c.strokeStyle = col(m[5]); c.lineWidth = s * 0.16; c.beginPath(); c.moveTo(x + m[1] * s, y + m[2] * s); c.lineTo(x + m[3] * s, y + m[4] * s); c.stroke();
+  });
+  c.lineCap = 'butt';
+  c.fillStyle = col(1); c.beginPath(); c.ellipse(x, y + 0.08 * s, 0.3 * s, 0.32 * s, 0, 0, Math.PI * 2); c.fill();
+  c.fillStyle = col(0); rond(c, x, y - 0.42 * s, 0.17 * s); c.fill();
+}
+function potion(c, x, y, s, coul) {
+  c.fillStyle = coul; c.beginPath(); c.arc(x, y + s * 0.12, s * 0.32, 0, Math.PI * 2); c.fill();
+  c.fillRect(x - s * 0.09, y - s * 0.42, s * 0.18, s * 0.3); c.strokeStyle = '#11141d'; c.lineWidth = 1.5; c.stroke();
+  c.fillStyle = '#c9a26a'; c.fillRect(x - s * 0.11, y - s * 0.5, s * 0.22, s * 0.1);
+}
+function iconeLieu(c, x, y, s, i) {
+  var n = REG.lieux[i].n;
+  if (n === 'lanterne') { rr(c, x - s * 0.22, y - s * 0.3, s * 0.44, s * 0.6, 3); c.fillStyle = '#ffd23a'; c.fill(); c.fillStyle = '#fff4bf'; rr(c, x - s * 0.1, y - s * 0.18, s * 0.2, s * 0.36, 2); c.fill(); }
+  else if (n === 'statue') { c.fillStyle = '#9aa1b5'; c.fillRect(x - s * 0.3, y + s * 0.18, s * 0.6, s * 0.18); rr(c, x - s * 0.15, y - s * 0.32, s * 0.3, s * 0.5, 3); c.fill(); c.fillStyle = '#7c8296'; rond(c, x + s * 0.32, y + s * 0.12, s * 0.1); c.fill(); }
+  else { c.fillStyle = '#7c8296'; c.beginPath(); c.ellipse(x, y + s * 0.12, s * 0.38, s * 0.18, 0, 0, Math.PI * 2); c.fill(); c.fillStyle = '#5fb4ff'; c.beginPath(); c.ellipse(x, y + s * 0.08, s * 0.3, s * 0.12, 0, 0, Math.PI * 2); c.fill(); c.strokeStyle = '#a8dcff'; c.lineWidth = 2; c.beginPath(); c.moveTo(x, y + s * 0.05); c.lineTo(x, y - s * 0.32); c.stroke(); }
+}
+function teteRonde(c, x, y, s, role) { var R = ROLES[role]; rond(c, x, y, s / 2); c.fillStyle = R.c; c.fill(); c.strokeStyle = '#11141d'; c.lineWidth = 2; c.stroke(); emoji(c, R.ic, x, y, s * 0.6); }
+function bullesVillageois(c, S, ctx) {
+  var v = S.villageois; if (v.sx === undefined || !ctx.infos.length) return;
+  var s = Math.max(22, V.T * 0.85), pad = 5, y = v.sy - V.T * 0.45, t = S.reel;
+  ctx.boites = [];
+  ctx.infos.slice().sort(function (a, b) { return a.tA - b.tA; }).forEach(function (x, k) {
+    var larg = x.quoi === 'zone' ? s + pad * 2 : s * 2 + pad * 3, haut = s + pad * 2, bx = v.sx - larg / 2, by = y - haut - 8 - k * (haut + 5);
+    var mega = x.quoi === 'mega', fait = S.seul && S.relais[x.ref + x.quoi];
+    c.fillStyle = mega ? 'rgba(70,10,14,.92)' : 'rgba(250,246,235,.95)'; rr(c, bx, by, larg, haut, 10); c.fill();
+    c.strokeStyle = mega ? 'rgba(255,70,60,' + (0.6 + 0.4 * Math.sin(t * 18)) + ')' : (fait ? '#5fe07a' : '#11141d'); c.lineWidth = mega ? 3 : 2; c.stroke();
+    if (k === 0) { c.beginPath(); c.moveTo(v.sx - 6, by + haut); c.lineTo(v.sx, by + haut + 8); c.lineTo(v.sx + 6, by + haut); c.fillStyle = mega ? 'rgba(70,10,14,.92)' : 'rgba(250,246,235,.95)'; c.fill(); }
+    var cy = by + haut / 2, x1 = bx + pad + s / 2, x2 = bx + pad * 2 + s * 1.5;
+    if (x.quoi === 'zone') iconeLieu(c, x1, cy, s, x.val);
+    else {
+      teteRonde(c, x1, cy, s * 0.9, x.cible);
+      if (x.quoi === 'elem') potion(c, x2, cy, s, ECOUL[P3.ELEMS[x.val]]);
+      else if (x.quoi === 'part') miniGrosbec(c, x2, cy, s * 0.95, x.val);
+      else emoji(c, '🛡️', x2, cy, s * 0.8);
+    }
+    if (fait) emoji(c, '✅', bx + larg - 4, by + 4, 13);
+    var tot = x.tFin - x.tA, reste = cl((x.tFin - S.T) / tot, 0, 1);
+    c.fillStyle = mega ? '#ff5a4a' : 'rgba(0,0,0,.35)'; c.fillRect(bx + 8, by + haut - 4, (larg - 16) * reste, 2.5);
+    ctx.boites.push({x: bx, y: by, w: larg, h: haut, info: x});
+  });
+}
+function crisRobots(c, S) {   // mode seul : ce que mes robots me crient (pour l'essai, c'est écrit)
+  var parAmi = {};
+  S.cris.forEach(function (cr) { if (S.T >= cr.t) (parAmi[cr.de] = parAmi[cr.de] || []).push(cr); });
+  for (var ro in parAmi) {
+    var a = S.amis[ro], cx = X(a.x), cy = Y(a.y, 1.25), l = parAmi[ro].slice(-2);
+    l.forEach(function (cr, k) {
+      var txt = cr.sym ? cr.sym : (cr.x.quoi === 'mega' ? P3.MOTS.mega : cr.x.quoi === 'zone' ? P3.MOTS[REG.lieux[cr.x.val].n] : cr.x.quoi === 'elem' ? P3.MOTS[P3.ELEMS[cr.x.val]] : P3.MOTS[P3.PARTIES[cr.x.val]]);
+      var fs = Math.max(13, Math.round(V.T * 0.42)), big = !!cr.sym;
+      c.font = '900 ' + (big ? fs * 1.8 : fs) + 'px Nunito,' + EMO;
+      var w = c.measureText(txt).width + 18, hh = (big ? fs * 1.8 : fs) + 14, by = cy - hh - 10 - k * (hh + 4);
+      c.fillStyle = cr.x && cr.x.quoi === 'mega' ? 'rgba(90,12,16,.94)' : 'rgba(255,255,255,.96)'; rr(c, cx - w / 2, by, w, hh, 10); c.fill();
+      c.strokeStyle = ROLES[ro].c; c.lineWidth = 3; c.stroke();
+      c.fillStyle = cr.x && cr.x.quoi === 'mega' ? '#fff' : '#111'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(txt, cx, by + hh / 2 + 1);
+      if (cr.x && cr.x.quoi === 'part') miniGrosbec(c, cx + w / 2 + 16, by + hh / 2, 26, cr.x.val);
+    });
+  }
+}
+
+/* ---------- les éclairs, les sorts, les frappes ---------- */
+function zigzag(c, x0, y0, x1, y1, n, amp, graine) {
+  c.beginPath(); c.moveTo(x0, y0);
+  for (var i = 1; i < n; i++) { var u = i / n, px = x0 + (x1 - x0) * u, py = y0 + (y1 - y0) * u, nx = -(y1 - y0), ny = x1 - x0, l = Math.hypot(nx, ny) || 1, d = (bruit(graine + i * 3.7) - 0.5) * amp;
+    c.lineTo(px + nx / l * d, py + ny / l * d); }
+  c.lineTo(x1, y1);
+}
+function eclairs(c, S) {
+  S.eclairs.forEach(function (e) {
+    if (S.reel < e.t) return;
+    var main = mainDe(e.main), cible;
+    if (e.vers === 'moi') { if (!P3.vivant(S)) return; cible = [X(S.h.x), Y(S.h.y, 0.55)]; }
+    else { var a = S.amis[e.vers]; if (!a || (S.seul && a.mort > 0)) return; cible = [X(a.x), Y(a.y, 0.55)]; }
+    var u = (S.reel - e.t) / REG.eclair.montre, g = Math.floor(S.reel * 30) * 7 + e.t * 13;
+    c.lineCap = 'round';
+    c.strokeStyle = 'rgba(255,60,50,' + (0.5 * (1 - u)) + ')'; c.lineWidth = 9; zigzag(c, main[0], main[1], cible[0], cible[1], 9, V.T * 0.7, g); c.stroke();
+    c.strokeStyle = 'rgba(255,235,225,' + (1 - u) + ')'; c.lineWidth = 2.5; c.stroke();
+    c.lineCap = 'butt';
+  });
+}
+function sorts(c, S, ctx) {
+  var t = S.reel;
+  S.tirs.forEach(function (s) {
+    var k = cl(s.t / REG.sort.vol, 0, 1), a = [X(s.x), Y(s.y, 0.8)], b = centrePartie(s.part);
+    var x = a[0] + (b[0] - a[0]) * k, y = a[1] + (b[1] - a[1]) * k - Math.sin(k * Math.PI) * V.T * 0.8;
+    c.fillStyle = ECOUL[s.quoi]; rond(c, x, y, V.T * 0.18); c.fill(); c.strokeStyle = '#fff'; c.lineWidth = 1.5; c.stroke();
+  });
+  // les sorts de mes amis (pour l'image)
+  for (var ro in S.amis) {
+    var a2 = S.amis[ro];
+    if (S.etat !== 'combat' || (S.seul && a2.mort > 0)) continue;
+    var ph = (t + a2.prochainSort) % 3.4;
+    if (ph < 0.35) { var kk = ph / 0.35, from = [X(a2.x), Y(a2.y, 0.8)], to = centrePartie(Math.floor(bruit(Math.floor((t + a2.prochainSort) / 3.4) + ro.length) * 6)), el = P3.ELEMS[Math.floor(bruit(a2.prochainSort * 9 + Math.floor(t / 3.4)) * 3)];
+      c.globalAlpha = 0.7; c.fillStyle = ECOUL[el]; rond(c, from[0] + (to[0] - from[0]) * kk, from[1] + (to[1] - from[1]) * kk - Math.sin(kk * Math.PI) * V.T * 0.6, V.T * 0.13); c.fill(); c.globalAlpha = 1; }
+  }
+  // les rebonds : le sort repart sur le côté, gris
+  S.evts.forEach(function (e) {
+    var u = S.reel - e.t;
+    if (e.type === 'rebond' && u < 0.45) { var p = centrePartie(e.part), d = u / 0.45; c.fillStyle = 'rgba(200,205,215,' + (1 - d) + ')'; rond(c, p[0] + d * V.T * 1.6, p[1] - d * V.T * 1.2 + d * d * V.T * 2, V.T * 0.15); c.fill();
+      for (var i = 0; i < 5; i++) { c.fillStyle = 'rgba(220,225,235,' + (1 - d) + ')'; rond(c, p[0] + Math.cos(i * 1.3) * d * 30, p[1] + Math.sin(i * 1.3) * d * 20, 2); c.fill(); } }
+    if (e.type === 'touche' && u < 0.4) { var q = centrePartie(e.part); c.strokeStyle = ECOUL[e.quoi]; c.globalAlpha = 1 - u / 0.4; c.lineWidth = 4; rond(c, q[0], q[1], V.T * (0.3 + u * 3)); c.stroke(); c.globalAlpha = 1; }
+  });
+}
+function frappes(c, S) {
+  var L = REG.salle, T = V.T;
+  // la grosse zone : tout le sol explose, sauf l'endroit sûr (on le voit après coup)
+  var z = P3.dernier(S, 'zone', 0.8);
+  if (z) {
+    var u = (S.reel - z.t) / 0.8, l = REG.lieux[z.lieu];
+    c.save(); c.beginPath(); c.rect(X(0), Y(0), L.L * T, L.P * T * K); c.ellipse(X(l.x), Y(l.y), REG.surR * T, REG.surR * T * K, 0, 0, Math.PI * 2, true);
+    c.fillStyle = 'rgba(255,' + Math.round(80 + 120 * u) + ',60,' + (0.85 * (1 - u)) + ')'; c.fill('evenodd'); c.restore();
+    c.strokeStyle = 'rgba(255,230,140,' + (1 - u) + ')'; c.lineWidth = 4; ell(c, l.x, l.y, REG.surR); c.stroke();
+  }
+  // la méga attaque : un énorme rayon rouge qui tombe sur le visé
+  var m = P3.dernier(S, 'mega', 0.6);
+  if (m && (m.moi || m.vuIci)) {
+    var u2 = (S.reel - m.t) / 0.6, hp = pt(0, FORME.tete.z + 1.2), cib = m.moi ? [X(S.h.x), Y(S.h.y, 0.55)] : [X(S.amis[m.cible].x), Y(S.amis[m.cible].y, 0.55)];
+    c.lineCap = 'round'; c.strokeStyle = 'rgba(255,40,30,' + (0.85 * (1 - u2)) + ')'; c.lineWidth = T * 0.7; c.beginPath(); c.moveTo(hp[0], hp[1]); c.lineTo(cib[0], cib[1]); c.stroke();
+    c.strokeStyle = 'rgba(255,240,220,' + (1 - u2) + ')'; c.lineWidth = T * 0.2; c.stroke(); c.lineCap = 'butt';
+    if (m.moi && m.ok) for (var i = 0; i < 12; i++) { var a = i / 12 * Math.PI * 2; c.fillStyle = 'rgba(170,220,255,' + (1 - u2) + ')'; rond(c, cib[0] + Math.cos(a) * u2 * T * 1.6, cib[1] + Math.sin(a) * u2 * T, 3); c.fill(); }
+  }
+}
+
+/* ---------- le haut de l'écran : la vie de Grosbec, mon symbole ---------- */
+function barre(c, x, y, w, h, k, col) { c.fillStyle = 'rgba(0,0,0,.6)'; rr(c, x - 2, y - 2, w + 4, h + 4, h / 2 + 2); c.fill(); c.fillStyle = col; rr(c, x, y, Math.max(0, w * k), h, h / 2); c.fill(); }
+function haut(c, S, W, H) {
+  var s = Math.max(0.7, Math.min(1.3, Math.min(W, H * 2) / 900)), aw = Math.min(W * 0.32, 320 * s), ax = W / 2 - aw / 2, ay = 12, hh = 16 * s;
+  barre(c, ax, ay, aw, hh, S.boss / S.bossMax, S.combat === 2 && S.boss <= 0 ? '#ffd23a' : '#e2483c');
+  // mon symbole : en grand au-dessus de Grosbec, puis il reste petit au bout de la barre
+  if (S.combat === 2 && S.boss <= 0) {
+    var e = P3.dernier(S, 'symbole', 3), R = ROLES[S.moi], sym = S.symboles[S.moi];
+    if (e) { var k = (S.reel - e.t) / 3, f = k < 0.75 ? 1 : 1 - (k - 0.75) / 0.25, sx = W / 2, sy = ay + hh + 20 + (H * 0.22) * f, sz = 22 * s + 60 * s * f;
+      c.fillStyle = 'rgba(0,0,0,' + 0.6 * f + ')'; rond(c, sx, sy, sz * 1.15); c.fill(); c.strokeStyle = R.c; c.lineWidth = 3 + 5 * f; c.stroke(); emoji(c, sym, sx, sy, sz * 1.25); if (k < 0.75) emoji(c, '📣', sx + sz * 1.3, sy - sz * 0.9, 30 * s); }
+    else emoji(c, sym, ax + aw + 18 * s, ay + hh / 2, 20 * s);
+  }
+  if (S.h.coupe > 0.15) { c.strokeStyle = 'rgba(255,40,40,' + S.h.coupe + ')'; c.lineWidth = 12; c.strokeRect(0, 0, W, H); }
+}
+
+/* ---------- le film d'Odette (formes simples, sans un mot) ---------- */
+function film(c, S, W, H) {
+  var u = cl(1 - S.attente / REG.film, 0, 1), T = V.T, t = S.reel;
+  salle(c, S); for (var i = 0; i < 3; i++) lieu(c, S, i);
+  grosbec(c, S, {infos: []});
+  c.fillStyle = 'rgba(0,0,10,' + (0.45 - 0.25 * u) + ')'; c.fillRect(0, 0, W, H);
+  var heros = [S.moi].concat(Object.keys(S.amis)), places = [[6, 6], [8, 6], [5.6, 7.1], [8.4, 7.1]];
+  var VGS = ['🥖', '🍺', '🗡️', '🌿'];
+  heros.forEach(function (ro, k) {   // les héros à terre, qui se relèvent
+    var p = places[k], debout = cl((u - 0.62) / 0.12, 0, 1), R = ROLES[ro];
+    perso(c, p[0], p[1], R, debout > 0.5 ? R.ic : '💤', debout > 0.5 ? R.c : '#555', {alpha: 0.5 + 0.5 * debout});
+    // les villageois arrivent depuis la gauche, chacun vers un héros, avec une pierre qui brille
+    var arr = cl((u - 0.08 - k * 0.04) / 0.4, 0, 1), vx = -1 + (p[0] - 1.2 - (-1)) * arr, vy = p[1] + 0.9;
+    perso(c, vx, vy, null, VGS[k], '#d9b98a', {taille: 0.85});
+    if (u > 0.5) { var g = c.createRadialGradient(X(p[0]), Y(p[1], 0.55), 0, X(p[0]), Y(p[1], 0.55), T * 0.9); g.addColorStop(0, 'rgba(120,200,255,' + (0.6 * cl((u - 0.5) / 0.1, 0, 1)) + ')'); g.addColorStop(1, 'rgba(120,200,255,0)'); c.fillStyle = g; rond(c, X(p[0]), Y(p[1], 0.55), T * 0.9); c.fill(); }
+    if (u > 0.8) potion(c, X(p[0]) + T * 0.5, Y(p[1], 1.35), T * 0.55, ECOUL.acide);
+  });
+  // Odette en tête, avec sa canne
+  var ao = cl((u - 0.02) / 0.4, 0, 1), ox = -1 + 5.4 * ao;
+  perso(c, ox, 5.2, null, '👵', '#c7a6e8', {taille: 1.05});
+  c.strokeStyle = '#8b6b3a'; c.lineWidth = 3; c.beginPath(); c.moveTo(X(ox) + T * 0.35, Y(5.2, 1)); c.lineTo(X(ox) + T * 0.45, Y(5.2, 0)); c.stroke();
+}
+
+/* ---------- tout ---------- */
+function tout(c, S, vue, W, H, joy, ctx) {
+  V.T = vue.T; V.ox = vue.ox; V.oy = vue.oy;
+  c.fillStyle = '#070912'; c.fillRect(0, 0, W, H);
+  if (S.etat === 'film' || S.etat === 'go') { film(c, S, W, H); return; }
+  ctx.infos = P3.mesInfos(S); ctx.boites = [];
+  var mort = !P3.vivant(S);
+  salle(c, S);
+  var objets = [];
+  REG.lieux.forEach(function (l, i) { objets.push([l.y, function () { lieu(c, S, i); }]); });
+  if (!mort) {   // (R) mort : on ne voit plus que le décor
+    objets.push([B.y + 0.01, function () { grosbec(c, S, ctx); }]);
+    for (var ro in S.amis) (function (a) { objets.push([a.y, function () { ami(c, S, a); }]); })(S.amis[ro]);
+    objets.push([S.villageois.y, function () { villageois(c, S); }]);
+    objets.push([S.h.y + 0.01, function () { heros(c, S); }]);
+  }
+  objets.sort(function (a, b) { return a[0] - b[0]; }).forEach(function (o) { o[1](); });
+  if (!mort) {
+    frappes(c, S);
+    eclairs(c, S);
+    sorts(c, S, ctx);
+    bullesVillageois(c, S, ctx);
+    if (S.seul) crisRobots(c, S);
+    haut(c, S, W, H);
+  } else { var z = P3.dernier(S, 'zone', 0.8); if (z) frappes(c, S); }
+  if (joy && joy.id !== null && !mort) {
+    c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = 3; rond(c, joy.bx, joy.by, joy.R); c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.35)'; rond(c, joy.bx + joy.vx * joy.R, joy.by + joy.vy * joy.R, joy.R * 0.42); c.fill();
+  }
+  if (S.attente > 0 && S.etat === 'combat') { c.fillStyle = 'rgba(0,0,0,' + (0.35 * S.attente / REG.lancement) + ')'; c.fillRect(0, 0, W, H); }
+}
+function versSalle(sx, sy) { return [(sx - V.ox) / V.T, (sy - V.oy) / (V.T * K)]; }
+G.Dessin = {tout: tout, ROLES: ROLES, VILLAGEOIS: VILLAGEOIS, K: K, versSalle: versSalle, X: X, Y: Y, partieSous: partieSous, centrePartie: centrePartie, V: V};
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>/* ===== ecrans.js ===== */
+/* Les écrans de la version 2 : le départ (seul ou à quatre), le pouce gauche, les six boutons, le groupe en haut à gauche,
+   le code, « On reprend », le film d'Odette, la fin, les sons, la boucle. */
+(function () {
+'use strict';
+var P3 = window.P3, REG = P3.REG, Dessin = window.Dessin;
+var VERSION = 'version 2 (27 novembre, nuit)';
+var $ = function (id) { return document.getElementById(id); };
+var cv = $('c'), ctx = cv.getContext('2d');
+var S = null, pause = false, finMontree = false, fige = false, enJeu = false;
+var W = 0, H = 0, DPR = 1, vue = {T: 40, ox: 0, oy: 0}, dctx = {infos: [], boites: []};
+
+/* ---------- les réglages, gardés d'une partie à l'autre ---------- */
+var reglages = {};
+for (var k in P3.DEFAUT) reglages[k] = P3.DEFAUT[k];
+try { var mem = JSON.parse(localStorage.getItem('phase3-v2') || '{}'); for (k in mem) if (k in reglages) reglages[k] = mem[k]; } catch (e) {}
+var numero = String(reglages.partie || '');
+function garder() { try { localStorage.setItem('phase3-v2', JSON.stringify(reglages)); } catch (e) {} }
+
+/* ---------- l'horloge : les quatre tablettes partent ensemble (le bouton jaune) et suivent l'heure, pas les images ---------- */
+var horloge = {zero: 0, reel0: 0, pauseT: 0};
+function caler() { horloge.zero = performance.now(); horloge.reel0 = S ? S.reel : 0; }
+
+/* ---------- la mise en page : la salle au centre, les pouces sur les côtés ---------- */
+var BOUTONS = ['bBouclier', 'bFeu', 'bGlace', 'bAcide', 'bSoin', 'bSaut'];
+function taille() {
+  W = innerWidth; H = innerHeight; DPR = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  var L = REG.salle, K = Dessin.K, haut = Math.max(34, H * 0.08), cote = Math.min(W * 0.15, 170), dessus = 6.6;   // dessus : Grosbec dépasse le mur du fond
+  var T = Math.min((H - haut - 6) / (dessus + L.P * K), (W - 2 * cote) / L.L);
+  vue.T = T; vue.ox = (W - L.L * T) / 2;
+  var bloc = (dessus + L.P * K) * T; vue.oy = haut + (H - haut - bloc) / 2 + dessus * T;
+  // les six boutons, sous le pouce droit : le bouclier au milieu (le bouton de panique), les trois sorts autour, le soin et le saut plus loin
+  var g = Math.min(H * 0.25, 150), p = Math.min(H * 0.16, 96), cx = W - Math.min(H * 0.05, 30) - g / 2 - (window.safeDroite || 0), cy = H - Math.min(H * 0.06, 36) - g / 2;
+  function place(id, x, y, d) { var el = $(id); el.style.width = el.style.height = d + 'px'; el.style.left = (x - d / 2) + 'px'; el.style.top = (y - d / 2) + 'px'; el.style.fontSize = (d * 0.36) + 'px'; }
+  place('bBouclier', cx, cy, g);
+  var r1 = g / 2 + p / 2 + Math.min(H * 0.02, 10);
+  [['bFeu', 180], ['bGlace', 135], ['bAcide', 90]].forEach(function (b) { var a = b[1] * Math.PI / 180; place(b[0], cx + Math.cos(a) * r1, cy - Math.sin(a) * r1, p); });
+  var r2 = r1 + p * 0.95;
+  [['bSoin', 165], ['bSaut', 115]].forEach(function (b) { var a = b[1] * Math.PI / 180; place(b[0], cx + Math.cos(a) * r2, cy - Math.sin(a) * r2, p * 0.92); });
+}
+addEventListener('resize', taille);
+
+/* ---------- les sons (tout petits, faits à la main : « tchac » quand ça porte, « ping » quand ça rebondit) ---------- */
+var AC = null;
+function audio() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } } if (AC && AC.state === 'suspended') AC.resume(); return AC; }
+function son(nom) {
+  if (!S || !S.reg.sons || !AC) return;
+  var a = AC, t = a.currentTime, o, g;
+  function env(node, v, d) { g = a.createGain(); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0008, t + d); node.connect(g); g.connect(a.destination); }
+  function bruit(d, f, q) { var b = a.createBuffer(1, Math.ceil(a.sampleRate * d), a.sampleRate), x = b.getChannelData(0); for (var i = 0; i < x.length; i++) x[i] = Math.random() * 2 - 1; var s = a.createBufferSource(); s.buffer = b; var fl = a.createBiquadFilter(); fl.type = 'bandpass'; fl.frequency.value = f; fl.Q.value = q; s.connect(fl); s.start(t); return fl; }
+  if (nom === 'tchac') { env(bruit(0.12, 1400, 1.2), 0.5, 0.12); o = a.createOscillator(); o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(60, t + 0.15); env(o, 0.5, 0.16); o.start(t); o.stop(t + 0.2); }
+  else if (nom === 'ping') { o = a.createOscillator(); o.type = 'triangle'; o.frequency.setValueAtTime(1900, t); o.frequency.exponentialRampToValueAtTime(1500, t + 0.25); env(o, 0.22, 0.28); o.start(t); o.stop(t + 0.3); }
+  else if (nom === 'boum') { env(bruit(0.6, 180, 0.6), 1.1, 0.6); }
+  else if (nom === 'victoire') { [523, 659, 784, 1046].forEach(function (f, i) { var oo = a.createOscillator(), gg = a.createGain(), tt = t + i * 0.11; oo.type = 'triangle'; oo.frequency.value = f; gg.gain.setValueAtTime(0.0001, t); gg.gain.setValueAtTime(0.25, tt); gg.gain.exponentialRampToValueAtTime(0.001, tt + 0.35); oo.connect(gg); gg.connect(a.destination); oo.start(tt); oo.stop(tt + 0.4); }); }
+  else if (nom === 'rayon') { o = a.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(55, t + 0.5); env(o, 0.25, 0.5); o.start(t); o.stop(t + 0.55); }
+}
+function surEvt(e) {
+  if (e.type === 'touche') son('tchac'); else if (e.type === 'rebond') son('ping');
+  else if (e.type === 'zone') son('boum'); else if (e.type === 'symbole' || e.type === 'victoire') son('victoire');
+  else if (e.type === 'mega' && (e.moi || e.vuIci)) son('rayon');
+}
+
+/* ---------- une partie ---------- */
+function nouvelle() {
+  reglages.partie = +numero || 1;
+  S = P3.nouvelle(reglages, (Date.now() & 0xffff) + 1);
+  S.surEvt = surEvt; S.attente = Math.max(S.attente, REG.lancement);
+  finMontree = false; $('fin').classList.remove('on'); fermerSymboles();
+  construireGroupe();
+  caler();
+}
+function demarrer() {   // le bouton jaune du départ
+  enJeu = true; $('debut').classList.remove('on');
+  audio(); nouvelle();
+  if (S.seul) { cacherJaune(); return; }
+  montrerJaune('GO', true, function () { caler(); S.attente = REG.lancement; });
+  fige = true;
+}
+
+/* ---------- le pouce gauche (il se pose où il veut, sur la moitié gauche), et toucher Grosbec pour viser ---------- */
+var joy = {id: null, bx: 0, by: 0, vx: 0, vy: 0, mx: 0, my: 0, R: 60};
+cv.addEventListener('pointerdown', function (e) {
+  e.preventDefault(); audio();
+  if (!S || pause || !enJeu || S.etat !== 'combat') return;
+  // mode seul : toucher une bulle de mon villageois, c'est la crier (l'endroit sûr à tous, le reste à l'ami concerné)
+  for (var i = 0; i < dctx.boites.length; i++) { var b = dctx.boites[i]; if (e.clientX >= b.x - 6 && e.clientX <= b.x + b.w + 6 && e.clientY >= b.y - 6 && e.clientY <= b.y + b.h + 6) {
+    if (S.seul) { if (b.info.quoi === 'zone') P3.relayerZone(S); else P3.relayer(S, b.info.cible); }
+    return; } }
+  var p = Dessin.partieSous(e.clientX, e.clientY);
+  if (p >= 0 && P3.vivant(S)) { P3.viser(S, p); return; }
+  if (e.clientX < W * 0.55 && joy.id === null) {
+    joy.id = e.pointerId; joy.bx = e.clientX; joy.by = e.clientY; joy.vx = joy.vy = joy.mx = joy.my = 0;
+    joy.R = Math.max(40, Math.min(80, H * 0.13));
+    try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+  }
+}, {passive: false});
+cv.addEventListener('pointermove', function (e) {
+  if (e.pointerId !== joy.id) return; e.preventDefault();
+  var R = joy.R, dx = e.clientX - joy.bx, dy = e.clientY - joy.by, d = Math.hypot(dx, dy);
+  if (d > R * 1.2) { joy.bx += dx / d * (d - R * 1.2); joy.by += dy / d * (d - R * 1.2); dx = e.clientX - joy.bx; dy = e.clientY - joy.by; d = Math.hypot(dx, dy); }
+  var m = Math.min(1, d / R); joy.vx = d > 0 ? dx / d * m : 0; joy.vy = d > 0 ? dy / d * m : 0;
+  var wx = dx, wy = dy / Dessin.K, n = Math.hypot(wx, wy) || 1; joy.mx = wx / n * m; joy.my = wy / n * m;
+}, {passive: false});
+function finDoigt(e) { if (e.pointerId === joy.id) { joy.id = null; joy.vx = joy.vy = joy.mx = joy.my = 0; } }
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(function (n) { cv.addEventListener(n, finDoigt); });
+cv.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+/* ---------- le clavier (sur ordinateur) ---------- */
+var touches = {};
+addEventListener('keydown', function (e) {
+  var kk = e.key.toLowerCase(); touches[kk] = true;
+  if (!S || !enJeu) return;
+  if (kk === 'escape') { basculerPause(); return; }
+  if (pause) return;
+  if (kk === '1') geste('bFeu'); else if (kk === '2') geste('bGlace'); else if (kk === '3') geste('bAcide'); else if (kk === '4') geste('bSoin');
+  else if (kk === ' ') { e.preventDefault(); geste('bSaut'); } else if (kk === 'b' || kk === 'enter') geste('bBouclier');
+});
+addEventListener('keyup', function (e) { touches[e.key.toLowerCase()] = false; });
+function entreeClavier() {
+  var x = (touches.arrowright || touches.d ? 1 : 0) - (touches.arrowleft || touches.q || touches.a ? 1 : 0);
+  var y = (touches.arrowdown || touches.s ? 1 : 0) - (touches.arrowup || touches.z || touches.w ? 1 : 0);
+  var n = Math.hypot(x, y); return n ? {mx: x / n, my: y / n} : null;
+}
+
+/* ---------- les six boutons ---------- */
+function refus(el) { el.classList.remove('non'); void el.offsetWidth; el.classList.add('non'); }
+function geste(id) {
+  if (!S || pause || !enJeu) return;
+  var el = $(id), ok = false;
+  if (id === 'bFeu') ok = P3.lancer(S, 'feu'); else if (id === 'bGlace') ok = P3.lancer(S, 'glace'); else if (id === 'bAcide') ok = P3.lancer(S, 'acide');
+  else if (id === 'bSoin') ok = P3.lancer(S, 'soin');
+  else if (id === 'bSaut') { var kb = entreeClavier(); ok = P3.sauter(S, kb ? kb.mx : joy.mx, kb ? kb.my : joy.my); }
+  else if (id === 'bBouclier') ok = P3.bouclier(S);
+  if (!ok) refus(el); else { el.classList.add('appui'); setTimeout(function () { el.classList.remove('appui'); }, 120); }
+}
+BOUTONS.forEach(function (id) { $(id).addEventListener('pointerdown', function (e) { e.preventDefault(); e.stopPropagation(); audio(); geste(id); }); });
+
+/* ---------- le groupe, en haut à gauche : les portraits, la case du symbole à côté (le code de la fin) ---------- */
+var cadres = {};
+function construireGroupe() {
+  var g = $('groupe'); g.innerHTML = ''; cadres = {};
+  [S.moi].concat(P3.ROLES.filter(function (r) { return r !== S.moi; })).forEach(function (ro) {
+    var R = Dessin.ROLES[ro], b = document.createElement('button');
+    b.className = 'cadre'; b.dataset.r = ro; b.setAttribute('aria-label', ro);
+    b.innerHTML = '<span class="tete" style="background:' + R.c + '">' + R.ic + '</span>' + (ro === S.moi ? '<span class="vie"><i></i><span></span></span>' : '') + '<span class="sym"></span>';
+    if (ro !== S.moi) b.addEventListener('pointerdown', function (e) { e.preventDefault(); e.stopPropagation(); toucherAmi(ro, b); });
+    g.appendChild(b); cadres[ro] = b;
+  });
+}
+function toucherAmi(ro, b) {
+  if (!S || pause || S.etat !== 'combat') return;
+  if (S.seul && P3.aRelayer(S, ro)) { P3.relayer(S, ro); b.classList.add('fait'); setTimeout(function () { b.classList.remove('fait'); }, 400); return; }   // mode seul : « crier » à cet ami
+  if (S.combat !== 2 || !P3.vivant(S) || S.code[ro]) { refus(b); return; }
+  ouvrirSymboles(ro, b);
+}
+var symAmi = null;
+(function () {
+  var f = $('symboles');
+  P3.SYMS.forEach(function (s) {
+    var b = document.createElement('button'); b.textContent = s; b.setAttribute('aria-label', s);
+    b.addEventListener('pointerdown', function (e) {
+      e.preventDefault(); e.stopPropagation(); if (!S || !symAmi) return;
+      var ro = symAmi; fermerSymboles();
+      if (!P3.taper(S, ro, s)) refus(cadres[ro]);
+    });
+    f.appendChild(b);
+  });
+  var x = document.createElement('button'); x.textContent = '✕'; x.setAttribute('aria-label', 'Fermer');
+  x.addEventListener('pointerdown', function (e) { e.preventDefault(); e.stopPropagation(); fermerSymboles(); }); f.appendChild(x);
+})();
+function ouvrirSymboles(ro, b) {
+  symAmi = ro; var f = $('symboles'), r = b.getBoundingClientRect();
+  f.classList.add('on'); f.style.left = (r.right + 8) + 'px'; f.style.top = Math.max(6, Math.min(H - f.offsetHeight - 6, r.top - 10)) + 'px';
+}
+function fermerSymboles() { symAmi = null; $('symboles').classList.remove('on'); }
+
+/* ---------- le gros bouton jaune (« 3, 2, 1 », tous ensemble) ---------- */
+var apresJaune = null;
+function montrerJaune(txt, ferme, fn) { $('bJaune').textContent = txt; $('bJauneFerme').hidden = !ferme; $('jaune').classList.add('on'); apresJaune = fn; }
+function cacherJaune() { $('jaune').classList.remove('on'); apresJaune = null; }
+$('bJaune').addEventListener('pointerdown', function (e) { e.preventDefault(); audio(); var fn = apresJaune; cacherJaune(); fige = false; if (fn) fn(); });
+$('bJauneFerme').addEventListener('pointerdown', function (e) { e.preventDefault(); var depart = fige; cacherJaune(); if (depart && S && S.T === 0 && !S.seul) { enJeu = false; fige = false; $('debut').classList.add('on'); } });
+$('bReprise').addEventListener('pointerdown', function (e) {
+  e.preventDefault(); if (!S || S.combat !== 2 || S.etat !== 'combat') { refus($('bReprise')); return; }
+  // (R) quand les quatre sont à terre : chacun touche ↺, puis tous ensemble le gros bouton jaune ; la tablette revient toute seule au dernier point de reprise
+  montrerJaune('↺', true, function () { P3.reprendre(S); caler(); });
+});
+
+/* ---------- chaque image : les boutons, le groupe ---------- */
+function cls(el, c, v) { if (el.classList.contains(c) !== !!v) el.classList.toggle(c, !!v); }
+function majInterface() {
+  var en = S && enJeu && S.etat === 'combat', h = S && S.h, viv = S && P3.vivant(S);
+  BOUTONS.forEach(function (id) { cls($(id), 'on', en && viv); });
+  cls($('groupe'), 'on', en && viv);   // (R) mort : plus aucune info
+  cls($('bPause'), 'on', enJeu && !finMontree); cls($('bReprise'), 'on', en && S.combat === 2);
+  cls(cv, 'mort', en && !viv);
+  if (!S || !en) return;
+  var c1 = S.combat === 1, sout = S.combat === 2 && S.boss <= 0;
+  cls($('bAcide'), 'on', en && viv && !c1); cls($('bBouclier'), 'on', en && viv && !c1);   // (C) au premier combat : ni acide ni bouclier
+  [['bFeu', 'feu'], ['bGlace', 'glace'], ['bAcide', 'acide'], ['bSoin', 'soin']].forEach(function (b) {
+    var el = $(b[0]); cls(el, 'eteint', b[1] !== 'soin' && sout);
+    el.style.setProperty('--p', h.lance && h.lance.quoi === b[1] ? (h.lance.t / h.lance.dur).toFixed(3) : 0);
+    el.style.setProperty('--c', b[1] === 'soin' ? '#5fe07a' : b[1] === 'feu' ? '#ff7a2a' : b[1] === 'glace' ? '#9fe3ff' : '#8fe03a');
+  });
+  $('bSaut').style.setProperty('--r', h.sautT > 0 ? (h.sautT / REG.saut.recharge).toFixed(3) : 0);
+  var bq = $('bBouclier'), att = Math.max(0, h.bouclierPret - S.T);
+  cls(bq, 'leve', h.bouclierFin > S.T); bq.style.setProperty('--r', h.bouclierFin > S.T ? 0 : (att / S.reg.recharge).toFixed(3));
+  cls($('bSoin'), 'appel', h.pv <= 40 && !h.lance);
+  // le groupe
+  var mc = cadres[S.moi];
+  if (mc) { var pv = Math.max(0, Math.round(h.pv)), vi = mc.querySelector('.vie i'); vi.style.width = pv + '%'; vi.style.background = pv > 70 ? '#5fe07a' : pv > 40 ? '#ffa23a' : '#ff4a3a'; mc.querySelector('.vie span').textContent = pv;
+    var ms = mc.querySelector('.sym'), t1 = sout ? S.symboles[S.moi] : ''; if (ms.textContent !== t1) { ms.textContent = t1; cls(ms, 'plein', !!t1); } cls(mc, 'crie', sout && S.reel - (S.symboleT || 0) < 6); }
+  for (var ro in cadres) {
+    if (ro === S.moi) continue;
+    var cd = cadres[ro], s2 = cd.querySelector('.sym'), t2 = S.code[ro] || '';
+    if (s2.textContent !== t2) { s2.textContent = t2; cls(s2, 'plein', !!t2); }
+    cls(cd, 'mort', S.seul && S.amis[ro].mort > 0);
+    cls(cd, 'crie', S.seul && P3.aRelayer(S, ro));   // mode seul : il y a quelque chose à lui crier
+  }
+  cls($('bReprise'), 'appel', !viv && S.seul && Object.keys(S.amis).every(function (r) { return S.amis[r].mort > 0; }));
+}
+
+/* ---------- la pause, les réglages ---------- */
+function basculerPause() {
+  if (!enJeu) return;
+  pause = !pause; $('pause').classList.toggle('on', pause);
+  if (pause) { majMenu(); horloge.pauseT = performance.now(); fermerSymboles(); }
+  else if (S && S.seul) horloge.zero += performance.now() - horloge.pauseT;   // en mode seul, le temps s'arrête ; à quatre, non
+  joy.id = null; joy.mx = joy.my = 0;
+}
+$('bPause').addEventListener('click', basculerPause);
+$('bReprendre').addEventListener('click', function () { if (!enJeu) { $('pause').classList.remove('on'); $('debut').classList.add('on'); return; } basculerPause(); });
+document.querySelectorAll('.choix[data-r]').forEach(function (g) {
+  g.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    var r = g.dataset.r, v = b.dataset.v;
+    reglages[r] = r === 'sons' ? v === 'true' : (r === 'vie' ? v : +v);
+    if (S && r !== 'debut' && r !== 'vie') S.reg[r] = reglages[r];
+    garder(); majMenu();
+  });
+});
+$('bRecommencer').addEventListener('click', function () { pause = false; $('pause').classList.remove('on'); demarrer(); });
+$('bAccueil').addEventListener('click', function () { pause = false; enJeu = false; S = null; $('pause').classList.remove('on'); cacherJaune(); $('debut').classList.add('on'); });
+function majMenu() {
+  document.querySelectorAll('.choix[data-r]').forEach(function (g) {
+    var r = g.dataset.r; g.querySelectorAll('button').forEach(function (b) { b.classList.toggle('choisi', String(reglages[r]) === b.dataset.v); });
+  });
+  $('noteQuatre').hidden = !(S && !S.seul && enJeu);
+  $('mesures').textContent = 'Maquette rapide de la phase 3, ' + VERSION + ' · ' + ips + ' images par seconde' + (S ? ' · partie ' + S.partie : '');
+}
+
+/* ---------- avant de jouer : son héros, seul ou à quatre ---------- */
+var roles = $('roles');
+P3.ROLES.forEach(function (r) {
+  var b = document.createElement('button'), R = Dessin.ROLES[r];
+  b.style.background = R.c; b.textContent = R.ic; b.dataset.r = r; b.setAttribute('aria-label', r);
+  b.addEventListener('click', function () { reglages.role = r; garder(); majDebut(); });
+  roles.appendChild(b);
+});
+$('modes').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; reglages.mode = b.dataset.m; garder(); majDebut(); });
+'1234567890'.split('').forEach(function (d) { var b = document.createElement('button'); b.textContent = d; b.addEventListener('click', function () { if (numero.length < 3) numero += d; majDebut(); }); $('pave').appendChild(b); });
+(function () { var b = document.createElement('button'); b.textContent = '⌫'; b.setAttribute('aria-label', 'Effacer'); b.addEventListener('click', function () { numero = numero.slice(0, -1); majDebut(); }); $('pave').appendChild(b); })();
+function majDebut() {
+  roles.querySelectorAll('button').forEach(function (b) { b.classList.toggle('choisi', b.dataset.r === reglages.role); });
+  $('modes').querySelectorAll('button').forEach(function (b) { b.classList.toggle('choisi', b.dataset.m === reglages.mode); });
+  cls($('numero'), 'on', reglages.mode === 'quatre'); $('numVal').textContent = numero || '—';
+  $('bGo').disabled = reglages.mode === 'quatre' && !numero; $('bGo').style.opacity = $('bGo').disabled ? 0.35 : 1;
+}
+majDebut();
+$('bGo').addEventListener('click', function () { if (!$('bGo').disabled) demarrer(); });
+$('bReglages').addEventListener('click', function () { $('debut').classList.remove('on'); $('pause').classList.add('on'); majMenu(); });
+
+/* ---------- la fin : sans un mot ---------- */
+function mmss(s) { s = Math.round(s); return Math.floor(s / 60) + ':' + ('0' + s % 60).slice(-2); }
+function montrerFin() {
+  finMontree = true;
+  $('fin4').innerHTML = P3.ROLES.map(function (ro) { var R = Dessin.ROLES[ro]; return '<div><i style="background:' + R.c + '">' + R.ic + '</i>' + S.symboles[ro] + '</div>'; }).join('');
+  $('stats').innerHTML = '<span>⏱</span><b>' + mmss(S.T) + '</b><span>💀</span><b>' + S.stats.morts + '</b><span>↺</span><b>' + S.stats.reprises + '</b>';
+  $('fin').classList.add('on');
+}
+$('bRejouer').addEventListener('click', function () { $('fin').classList.remove('on'); enJeu = false; S = null; $('debut').classList.add('on'); });
+
+/* ---------- la boucle : le temps suit l'horloge (les quatre tablettes restent calées), pas le nombre d'images ---------- */
+var avant = performance.now(), ips = 60, nImg = 0, t0 = avant;
+function boucle(maintenant) {
+  requestAnimationFrame(boucle);
+  nImg++; if (maintenant - t0 > 1000) { ips = Math.round(nImg * 1000 / (maintenant - t0)); nImg = 0; t0 = maintenant; }
+  if (S && enJeu && !fige && !(pause && S.seul)) {
+    var cible = horloge.reel0 + (maintenant - horloge.zero) / 1000, n = 0;
+    while (S.reel < cible - 1e-6 && n++ < 600) {
+      var dt = Math.min(0.05, cible - S.reel), kb = entreeClavier(), e = kb || {mx: joy.mx, my: joy.my};
+      if (window.__pilote) e = window.__pilote(S, dt) || e;   // pour les essais : un robot peut tenir la manette
+      P3.pas(S, dt, pause ? null : e);
+    }
+    if (S.etat === 'go' && !$('jaune').classList.contains('on')) montrerJaune('GO', false, function () { P3.demarrerC2(S); caler(); });
+    if (S.etat === 'fini' && !finMontree) montrerFin();
+  }
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  if (S && enJeu) Dessin.tout(ctx, S, vue, W, H, joy, dctx); else { ctx.fillStyle = '#070912'; ctx.fillRect(0, 0, W, H); }
+  majInterface();
+}
+document.addEventListener('visibilitychange', function () { if (document.hidden && S && S.seul && enJeu && !pause && !finMontree) basculerPause(); });
+taille();
+requestAnimationFrame(boucle);
+
+window.__p3 = {get S() { return S; }, set fige(v) { fige = v; }, P3: P3, geste: geste, vue: vue, dctx: dctx, demarrer: demarrer, reglages: reglages,
+  get ips() { return ips; }, VERSION: VERSION, toucherAmi: function (ro) { toucherAmi(ro, cadres[ro]); }, caler: caler,
+  jaune: function () { $('bJaune').dispatchEvent(new PointerEvent('pointerdown')); }};
+})();
+
+</script>
+</body>
+</html>
