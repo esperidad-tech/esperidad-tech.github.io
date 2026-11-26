@@ -1,6 +1,8 @@
-# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 26 novembre, 14 h 40)
+# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 26 novembre, 15 h 11)
 
 À lire en entier par la nouvelle conversation avant de toucher à quoi que ce soit.
+
+**26 novembre, 15 h 11 — LE COMBAT DU PISTEUR, VERSION 12 (EN LIGNE, MÊME ADRESSE : https://claude.ai/artifact/DRTHz5bppgsstd5ameTnba) : UNE RETOUCHE DE LA MUSIQUE** (Romain, 15 h 05 : « c'est du moment où tu t'es fait repérer et que c'est passé en enrage et on n'est pas en mode ombre, là, tu mets une musique d'action » ; une embuscade ne change rien ; « vraiment musique d'action », « pas forte », « rythmée avec un peu de tension »). **La musique de combat ne se lance que si un golem en colère voit le Pisteur (ou si le colosse est enragé), hors de l'ombre** ; elle tient cinq secondes ; l'ombre la coupe. Elle est refaite plus « action » (126 à la minute, basse en doubles-croches, caisse sur 2 et 4, cordes qui montent), au même niveau que le mystère. Bible **§17.57**. Vérifié dans le vrai jeu ; mesures des sons : zéro souci. **Le combat reste terminé.** Les sources : comme pour la version 11 (dans le canevas, **pas sur GitHub** : accès en écriture toujours refusé, revérifié à 15 h 11).
 
 **26 novembre, 14 h 40 — LE COMBAT DU PISTEUR EST TERMINÉ (Romain, 14 h 04 : « c'est validé. On peut dire qu'on a terminé ») ; LA VERSION 11 (SES DERNIÈRES RETOUCHES DU SON) EST EN LIGNE, HORS DU JEU, RIEN SUR LE SITE** ; **adresse : https://claude.ai/artifact/DRTHz5bppgsstd5ameTnba** ; Bible **§17.52 à §17.56**. **Romain n'a pas encore entendu ces retouches.**
 - **Ce qu'il a dit de la version 10** : « la musique d'ambiance, elle est bien, mais elle est trop forte » (la moitié) ; « j'aime bien les chiens » ; le javelot et le porte-dalle « pas assez prenants ».

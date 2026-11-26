@@ -1,9 +1,12 @@
-# Le combat du Pisteur — version 11 (26 novembre 2026) : TERMINÉ (« c'est validé ») — les dernières retouches du son (version 10 : le son et la musique ; version 9 : la salle en volume, les renforts)
+# Le combat du Pisteur — version 12 (26 novembre 2026) : TERMINÉ (« c'est validé ») — la musique de combat seulement quand on est repéré par un groupe en colère (version 11 : les dernières retouches du son)
 
 Enquête 10, combat final : pendant que ses amis occupent Grosbec dans la grande salle, **le Pisteur est passé par-derrière** et
 s'occupe de sa garde (les golems), dans l'arrière-salle. Rien n'est branché dans le jeu, rien n'est en ligne sur le site : c'est une
 page à part, comme les combats du Barde, du Sage et de l'Alchimiste.
 La page publiée (version 11 depuis le 26 novembre, 14 h 40) : https://claude.ai/artifact/DRTHz5bppgsstd5ameTnba (un nouveau canevas ; l'ancien, https://claude.ai/artifact/GmvcxCF5gC89M9tmnCVyGU, garde la version 8).
+
+## Version 12 : quand la musique de combat se lance (26 novembre, 15 h 11)
+Bible §17.57. Dans `src/son.js`, `musique` (la fonction `tic`) : `M.tChaud` = le dernier instant où un golem en colère voyait le Pisteur hors de l'ombre (ou où le colosse était enragé) ; le combat tient cinq secondes. La musique de combat elle-même : `musPlanifier`, la partie « le combat ». `python3 tests/sons.py regler musique` ne règle que la musique.
 
 ## Version 11 : les dernières retouches du son ; le combat est terminé (26 novembre, 14 h 40)
 Romain, 14 h 04 : Bible §17.52 (« c'est validé. On peut dire qu'on a terminé »). Tout est dans `src/son.js` :

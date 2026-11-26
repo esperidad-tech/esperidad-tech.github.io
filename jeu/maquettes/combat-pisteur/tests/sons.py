@@ -18,6 +18,7 @@ from commun import ouvrir
 SR = 32000
 WAV = len(sys.argv) > 1 and sys.argv[1] == 'wav'
 REGLER = len(sys.argv) > 1 and sys.argv[1] == 'regler'
+MUSIQUE_SEULE = REGLER and len(sys.argv) > 2 and sys.argv[2] == 'musique'   # (regler musique : ne règle que la musique, les sons gardent leurs niveaux)
 CIBLE = {'signal': 0.13, 'zone': 0.10, 'coup': 0.075, 'moi': 0.06, 'patrouille': 0.04}
 A_PART = {'renfort': 0.14, 'repere': 0.14, 'colere': 0.14, 'cherche': 0.07, 'cri': 0.10, 'dechaine': 0.12,
           'aie': 0.10, 'chute': 0.11, 'assassin': 0.10, 'bong': 0.09, 'refus': 0.035, 'saut': 0.035, 'ramasse': 0.03, 'perdu': 0.045, 'victoire': 0.07, 'choix': 0.05, 'or': 0.05,
@@ -64,7 +65,7 @@ with sync_playwright() as p:
     if REGLER:
         # (version 11) le réglage en trois passes : la sortie du moteur a un limiteur, donc la crête ne suit pas le volume en ligne droite ;
         # chaque passe repart du niveau trouvé à la précédente
-        for passe in range(3):
+        for passe in range(0 if MUSIQUE_SEULE else 3):
             for n in noms:
                 l = []
                 for ty in TYPES.get(n, [None]):
@@ -86,7 +87,10 @@ with sync_playwright() as p:
     ordre = ['moi', 'patrouille', 'coup', 'zone', 'signal']
     if REGLER:
         import json, re
-        niv = {n: round(GAINS[n], 2) for n in noms}
+        if MUSIQUE_SEULE:
+            t0 = open(os.path.join(ICI, '..', 'src', 'son.js'), encoding='utf8').read(); niv = json.loads(re.search(r'/\*NIV\*/(.*?)/\*FIN\*/', t0, re.S).group(1))
+        else:
+            niv = {n: round(GAINS[n], 2) for n in noms}
         x = rendre("__son.musique('calme',1,40,true)")[SR * 8:]; niv['musique'] = round(float(np.clip(CIBLE_MUSIQUE / max(1e-5, utile(x, True)), 0.1, 4)), 2)
         x = rendre("__son.musique('action',1,40,true)")[SR * 8:]; niv['musAction'] = round(float(np.clip(CIBLE_MUSIQUE / max(1e-5, utile(x, True)), 0.1, 4)), 2)
         src = os.path.join(ICI, '..', 'src', 'son.js'); t = open(src, encoding='utf8').read()
