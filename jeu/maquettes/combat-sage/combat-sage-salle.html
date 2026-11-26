@@ -109,7 +109,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
 <body>
 <header>
   <h1>Le Sage contre Grosbec</h1>
-  <p>Maquette n° 28 : un jeu de runes, avec 14 builds et les trois runes dorées du Sage (le triangle, la lune, l’étoile : une fois par combat chacune ; elles sont maintenant lues sur de vrais dessins à la main). Les builds (dont la Prison de cristal, le Calligraphe, le Champ de mines, le Rayon solaire, le Dompteur). Plus rien n’attaque tout seul, sauf le bâton : la chouette, le sceau et l’orage partent quand tu graves. Chaque carte n’ouvre qu’un seul build : choisis ! Le temps ralentit quand tu graves. Touche un de tes pouvoirs pour savoir ce qu’il fait (sur tablette, c’est écrit dans la marge). Deux fois plus de golems qu’en version 22. Les pages du grimoire tombent maintenant à heure fixe : toujours 19 en 10 minutes. Sur tablette, tenue en large : la salle est au milieu, les jauges à gauche, le bouton Graver à droite. Tu démarres avec un trait court et un petit V ; le mur, l’escargot et le bouclier se gagnent dans le grimoire. Comme avant : un golem sonné éclate au trait, et chaque golem lâche de l’encre. Plus de rouge, plus de builds du bâton. Il faut tenir 10 minutes de combat. Le bouton 🎚️ règle le volume ; au clavier, Entrée ou Espace pour graver, 1, 2, 3 pour choisir une carte.</p>
+  <p>Maquette n° 29 (la musique : la mélodie seulement au refrain, le reste plus discret) : un jeu de runes, avec 14 builds et les trois runes dorées du Sage (le triangle, la lune, l’étoile : une fois par combat chacune ; elles sont maintenant lues sur de vrais dessins à la main). Les builds (dont la Prison de cristal, le Calligraphe, le Champ de mines, le Rayon solaire, le Dompteur). Plus rien n’attaque tout seul, sauf le bâton : la chouette, le sceau et l’orage partent quand tu graves. Chaque carte n’ouvre qu’un seul build : choisis ! Le temps ralentit quand tu graves. Touche un de tes pouvoirs pour savoir ce qu’il fait (sur tablette, c’est écrit dans la marge). Deux fois plus de golems qu’en version 22. Les pages du grimoire tombent maintenant à heure fixe : toujours 19 en 10 minutes. Sur tablette, tenue en large : la salle est au milieu, les jauges à gauche, le bouton Graver à droite. Tu démarres avec un trait court et un petit V ; le mur, l’escargot et le bouclier se gagnent dans le grimoire. Comme avant : un golem sonné éclate au trait, et chaque golem lâche de l’encre. Plus de rouge, plus de builds du bâton. Il faut tenir 10 minutes de combat. Le bouton 🎚️ règle le volume ; au clavier, Entrée ou Espace pour graver, 1, 2, 3 pour choisir une carte.</p>
 </header>
 <main class="game">
   <div class="stage" id="stage">
@@ -1630,7 +1630,8 @@ const G = (() => {
 })();
 
 // ===== Les sons du Sage : tout est fabriqué par le navigateur (aucun fichier) =====
-// des bruitages doux, et une musique de combat 8 bits (11 parties ≈ 2 min 30, puis elle change de tonalité à chaque tour)
+// des bruitages doux, et une musique de combat 8 bits : un refrain avec la mélodie, des couplets discrets (la basse, une batterie douce, une nappe) ;
+// un tour ≈ 1 min 30, puis elle change de tonalité
 const SON = (() => {
   const LS = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
   const SV = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
@@ -1811,18 +1812,20 @@ const SON = (() => {
   // l'ordre des parties, avec leur habillage (basse, batterie, deuxième voix)
   const SEQ = [
     { s: 'I', bass: 'drive', dr: 'intro' },
-    { s: 'A', bass: 'drive', dr: 'rock' }, { s: 'A2', bass: 'drive', dr: 'rock' }, { s: 'B', bass: 'synco', dr: 'drive' }, { s: 'D', bass: 'gallop', dr: 'drive' },
-    { s: 'C', bass: 'half', dr: 'half' }, { s: 'A', bass: 'gallop', dr: 'blast', harm: true, pew: true }, { s: 'A2', bass: 'gallop', dr: 'blast', harm: true },
-    { s: 'G', bass: 'drive', dr: 'rock', pew: true }, { s: 'B', bass: 'synco', dr: 'drive', harm: true }, { s: 'D', bass: 'gallop', dr: 'blast' }, { s: 'A2', bass: 'drive', dr: 'rock', harm: true }
+    { s: 'A', bass: 'drive', dr: 'rock', refrain: true },
+    { s: 'A2', bass: 'drive', dr: 'doux', calme: true }, { s: 'C', bass: 'half', dr: 'doux', calme: true }, { s: 'G', bass: 'drive', dr: 'doux', calme: true },
+    { s: 'A', bass: 'gallop', dr: 'blast', refrain: true, harm: true, pew: true },
+    { s: 'B', bass: 'drive', dr: 'doux', calme: true }, { s: 'D', bass: 'half', dr: 'doux', calme: true }
   ];
   const LOOP = 1, TRANS = [0, 2, -3, 1]; // à chaque tour, la musique change de tonalité (ré, mi, si, mi bémol mineur)
-  const BASSP = { drive: 'R.O.R.O.R.O.R.O.', gallop: 'R.RRO.RRR.RRO.RR', synco: 'R..R..O.R..R.5O.', half: 'R.......5.....O.' };
+  const BASSP = { calme: 'R...O...R...O...', drive: 'R.O.R.O.R.O.R.O.', gallop: 'R.RRO.RRR.RRO.RR', synco: 'R..R..O.R..R.5O.', half: 'R.......5.....O.' };
   const DRUM = {
     rock: { k: 'x.......x.x.....', s: '....x.......x...', h: 'x.x.x.x.x.x.x.x.' },
     drive: { k: 'x.....x.x.....x.', s: '....x.......x...', h: 'xxxxxxxxxxxxxxxx' },
     half: { k: 'x...............', s: '........x.......', h: 'x...x...x...x...' },
     blast: { k: 'x...x...x...x...', s: '....x..x....x.x.', h: 'x.x.x.x.x.x.x.x.' },
-    intro: { k: 'x.......x.......', s: '', h: '' }
+    intro: { k: 'x.......x.......', s: '', h: '' },
+    doux: { k: 'x.......x.......', s: '........x.......', h: '..x...x...x...x.' }
   };
   let playing = false, timer = null, musT = 0, secI = 0, barI = 0, stepI = 0, pass = 0, level = 1, tempo = 1;
   const stepLen = () => 60 / (150 * tempo) / 4;
@@ -1849,6 +1852,11 @@ const SON = (() => {
     e.gain.setValueAtTime(0.0001, t); e.gain.linearRampToValueAtTime(g, t + 0.004); e.gain.setValueAtTime(g * 0.8, t + Math.max(0.006, dur - 0.025)); e.gain.linearRampToValueAtTime(0.0001, t + dur);
     os.connect(e); e.connect(dest || mus); os.start(t); os.stop(t + dur + 0.02);
   }
+  function nappe(f, dur, t, g) {
+    const os = ac.createOscillator(), e = ac.createGain(); os.type = 'sine'; os.frequency.setValueAtTime(f, t);
+    e.gain.setValueAtTime(0.0001, t); e.gain.linearRampToValueAtTime(g, t + Math.min(0.35, dur * 0.3)); e.gain.setValueAtTime(g, t + dur * 0.7); e.gain.linearRampToValueAtTime(0.0001, t + dur);
+    os.connect(e); e.connect(mus); os.start(t); os.stop(t + dur + 0.02);
+  }
   function hit(kind, t, k = 1) {
     if (kind === 'kick') { simple(150, 0.14, t, 'sine', 0.55 * k, mus, 42); return; }
     if (kind === 'tom') { simple(k, 0.16, t, 'triangle', 0.32, mus, k * 0.45); return; }
@@ -1863,12 +1871,14 @@ const SON = (() => {
     const E = SEQ[secI], S = SEC[E.s], st = stepLen(), tr = TRANS[pass % TRANS.length], C = S.chords[barI], n = S.bars[barI][stepI], last = barI === S.bars.length - 1;
     const duty = pass % 2 ? 'p12' : 'p25';
     // la mélodie, et la deuxième voix (à partir de 3 côtés, ou dans les parties fortes)
-    if (n) { lead(n, t, tr, st, duty, 0.2); if ((E.harm && level >= 3) || level >= 4) if (n.d >= 2) lead(n, t, tr, st, duty === 'p25' ? 'p12' : 'p25', 0.09, true, S.sc); }
+    if (n && !E.calme) { lead(n, t, tr, st, duty, 0.2); if ((E.harm && level >= 3) || level >= 4) if (n.d >= 2) lead(n, t, tr, st, duty === 'p25' ? 'p12' : 'p25', 0.09, true, S.sc); }
     // la basse
-    const bp = BASSP[E.bass][stepI];
-    if (bp !== '.') { let len = 1; while (stepI + len < 16 && BASSP[E.bass][stepI + len] === '.') len++; simple(hz(C.b + tr + (bp === 'O' ? 12 : bp === '5' ? 7 : 0)), st * len * 0.85, t, 'triangle', 0.3); }
+    const BN = E.calme && level < 3 ? 'calme' : E.bass, bp = BASSP[BN][stepI];
+    if (bp !== '.') { let len = 1; while (stepI + len < 16 && BASSP[BN][stepI + len] === '.') len++; simple(hz(C.b + tr + (bp === 'O' ? 12 : bp === '5' ? 7 : 0)), st * len * 0.85, t, 'triangle', E.calme ? 0.27 : 0.3); }
+    // la nappe des couplets : l'accord tenu toute la mesure, grave et doux
+    if (E.calme && stepI === 0) for (const i of C.iv.slice(0, 3)) nappe(hz(C.r - 12 + tr + i + (i < 5 ? 12 : 0)), st * 16, t, 0.05);
     // la batterie (avec un roulement de toms à la fin de chaque partie)
-    const D = DRUM[E.dr], fill = last && E.s !== 'I' && stepI >= 8;
+    const nx = SEQ[secI + 1 < SEQ.length ? secI + 1 : LOOP], D = DRUM[E.dr], fill = last && E.s !== 'I' && stepI >= 8 && nx.refrain, dk = E.calme ? 0.55 : 1;
     if (E.s === 'I') { // l'intro : ça s'ajoute mesure après mesure
       if (D.k[stepI] === 'x') hit('kick', t);
       if (barI >= 1 && stepI % 2 === 0) hit('hat', t, 0.8);
@@ -1878,15 +1888,15 @@ const SON = (() => {
       if (stepI % 2 === 0) hit('tom', t, [330, 260, 200, 150][(stepI - 8) / 2]);
       if (stepI >= 12) hit('snare', t, 0.6);
     } else {
-      if (D.k[stepI] === 'x') hit('kick', t);
-      if (D.s[stepI] === 'x') hit('snare', t);
-      if (D.h[stepI] === 'x' || (level >= 4 && E.dr !== 'half')) hit('hat', t, stepI % 4 === 2 ? 1 : 0.7);
+      if (D.k[stepI] === 'x') hit('kick', t, dk);
+      if (D.s[stepI] === 'x') hit('snare', t, dk * 0.8);
+      if (D.h[stepI] === 'x' || (level >= 4 && !E.calme && E.dr !== 'half')) hit('hat', t, (stepI % 4 === 2 ? 1 : 0.7) * dk * 0.7);
     }
-    if (barI === 0 && stepI === 0 && E.s !== 'I' && level >= 3) hit('crash', t);
+    if (barI === 0 && stepI === 0 && E.refrain && level >= 3) hit('crash', t);
     // un petit « piou » laser à l'entrée des parties fortes
     if (E.pew && barI === 0 && stepI === 0) simple(1800, 0.25, t, 'p12', 0.05, musLP, 140);
     // les arpèges (à partir de 2 côtés, et toujours dans la pause)
-    if (level >= 2 || E.s === 'C') { const iv = C.iv, tones = [0, iv[1], iv[2], 12, iv[2] + 12, 12, iv[2], iv[1]]; simple(hz(C.r + 12 + tr + tones[stepI % 8]), st * 0.7, t, 'p12', E.s === 'C' ? 0.07 : 0.045, musLP); }
+    if (!E.calme && level >= 2) { const iv = C.iv, tones = [0, iv[1], iv[2], 12, iv[2] + 12, 12, iv[2], iv[1]]; simple(hz(C.r + 12 + tr + tones[stepI % 8]), st * 0.7, t, 'p12', 0.045, musLP); }
   }
   function advance() {
     if (++stepI < 16) return; stepI = 0;
@@ -2849,7 +2859,7 @@ if (/[?&#]finesse=([\d.]+)/.test(location.href)) { FIN = Math.min(1, Math.max(0.
 function resize() { const r = stage.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(1.7e6 / Math.max(1, r.width * r.height))) * FIN; cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); R8.dpr = cv.width / Math.max(1, r.width); if (bg && bg.getContext) bg.width = bg.height = 0; bg = null; ensureSprites(); }
 const MES = { n: 0, t: 0, sec: 0, nsec: 0, pire: 0, baisses: 0, age: 0 };   // les images comptées pendant la partie
 function mesurer(dt) { if (dt <= 0 || dt > 0.5) return; MES.n++; MES.t += dt; MES.age += dt; MES.sec += dt; MES.nsec++; if (MES.sec >= 1) { if (MES.age > 4) MES.pire = MES.pire ? Math.min(MES.pire, Math.round(MES.nsec / MES.sec)) : Math.round(MES.nsec / MES.sec); MES.sec = MES.nsec = 0; } }
-function mesuresTxt() { return MES.n < 30 ? '' : `Mesures (version 28) : ${Math.round(MES.n / MES.t)} images par seconde, pire seconde ${MES.pire || '?'} · finesse ${Math.round(FIN * 100)} %, ${MES.baisses} baisse${MES.baisses > 1 ? 's' : ''} · ${Golems.cuits} + ${Object.keys(GB.im).length} images · écran ${innerWidth} × ${innerHeight} (× ${Math.round((devicePixelRatio || 1) * 10) / 10})`; }
+function mesuresTxt() { return MES.n < 30 ? '' : `Mesures (version 29) : ${Math.round(MES.n / MES.t)} images par seconde, pire seconde ${MES.pire || '?'} · finesse ${Math.round(FIN * 100)} %, ${MES.baisses} baisse${MES.baisses > 1 ? 's' : ''} · ${Golems.cuits} + ${Object.keys(GB.im).length} images · écran ${innerWidth} × ${innerHeight} (× ${Math.round((devicePixelRatio || 1) * 10) / 10})`; }
 function finesse(dt) {   // dt : le temps depuis l'image d'avant. Sous 25 images par seconde pendant 1,4 seconde : on dessine un peu moins fin.
   if (dt <= 0 || dt > 0.5 || QUAL.fige) return; QUAL.repos -= dt; if (QUAL.repos > 0) { QUAL.lent = QUAL.vu = QUAL.t0 = 0; return; }
   // une image pendant laquelle on a cuit un dessin (Grosbec, un golem) ne compte pas : ce n'est pas l'appareil qui rame

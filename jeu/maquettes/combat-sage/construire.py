@@ -1,7 +1,7 @@
 # Fabrique la maquette du combat du Sage : python3 construire.py → combat-sage.html (un seul fichier, tout dedans)
 # 1. v16/assembler.py refait render16.js (les dessins) à partir de render15.js et des morceaux de v16/ ;
-# 2. la page ui7.html reçoit les retouches des versions 8 à 20 (ici, puis build12_part.py, build14_part.py, build16_part.py, build17_part.py, build18_part.py, build19_part.py, build20_part.py, build21_part.py, build22_part.py, build23_part.py, build24_part.py, build25_part.py, build26_part.py, build27_part.py, build28_part.py) ;
-# 3. on y colle les règles (logic21.js, fabriqué par v21/regles.py à partir de logic20.js, lui-même fabriqué par v20/regles.py à partir de logic19.js, lui-même fabriqué par v19/regles.py à partir de logic18.js), les sons (sound14.js) et les modèles du combat du Barde (barde/, retouchés par modeles_barde.py).
+# 2. la page ui7.html reçoit les retouches des versions 8 à 20 (ici, puis build12_part.py, build14_part.py, build16_part.py, build17_part.py, build18_part.py, build19_part.py, build20_part.py, build21_part.py, build22_part.py, build23_part.py, build24_part.py, build25_part.py, build26_part.py, build27_part.py, build28_part.py, build29_part.py) ;
+# 3. on y colle les règles (logic21.js, fabriqué par v21/regles.py à partir de logic20.js, lui-même fabriqué par v20/regles.py à partir de logic19.js, lui-même fabriqué par v19/regles.py à partir de logic18.js), les sons (sound14.js, la musique retouchée par v29/musique.py) et les modèles du combat du Barde (barde/, retouchés par modeles_barde.py).
 import os, sys, subprocess
 D = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, D)
 subprocess.run([sys.executable, D + '/v16/assembler.py'], check=True)
@@ -202,8 +202,10 @@ exec(open(D+'/build25_part.py').read())
 exec(open(D+'/build26_part.py').read())
 exec(open(D+'/build27_part.py').read())
 exec(open(D+'/build28_part.py').read())
+exec(open(D+'/build29_part.py').read())
 # les sons : les nouveaux effets de la version 19 (l'explosion d'une orbe, l'éclat de givre) jouent des sons qui existent déjà
 SON19 = open(D+'/sound14.js').read(); _a = "bonk: 'bonk', pop2: 'trap',"; assert SON19.count(_a) == 1; SON19 = SON19.replace(_a, "bonk: 'bonk', boum: 'bonk', gel: 'glass', gbcoup: 'side', frappe: 'fireball', casse: 'glass', sonne: 'fail', dome: 'good', doree: 'frenzy', pop2: 'trap',")
+exec(open(D+'/v29/musique.py').read()); SON19 = musique29(SON19)   # version 29 : un refrain avec la mélodie, des couplets discrets
 logic='\n'.join(l for l in open(D+'/logic28.js').read().split('\n') if 'module.exports' not in l)
 open(D+'/combat-sage.html','w').write(html.replace('/*LOGIC*/',logic + '\n' + SON19 + '\n' + modeles()))
 print('construit')
