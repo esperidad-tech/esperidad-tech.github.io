@@ -109,7 +109,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
 <body>
 <header>
   <h1>Le Sage contre Grosbec</h1>
-  <p>Maquette n° 25 : un jeu de runes. Plus rien n’attaque tout seul, sauf le bâton : la chouette, le sceau et l’orage partent quand tu graves. Chaque carte n’ouvre qu’un seul build : choisis ! Le temps ralentit quand tu graves. Touche un de tes pouvoirs pour savoir ce qu’il fait (sur tablette, c’est écrit dans la marge). Deux fois plus de golems qu’en version 22. Les pages du grimoire tombent maintenant à heure fixe : toujours 19 en 10 minutes. Sur tablette, tenue en large : la salle est au milieu, les jauges à gauche, le bouton Graver à droite. Tu démarres avec un trait court et un petit V ; le mur, l’escargot et le bouclier se gagnent dans le grimoire. Comme avant : un golem sonné éclate au trait, et chaque golem lâche de l’encre. Plus de rouge, plus de builds du bâton. Il faut tenir 10 minutes de combat. Le bouton 🎚️ règle le volume ; au clavier, Entrée ou Espace pour graver, 1, 2, 3 pour choisir une carte.</p>
+  <p>Maquette n° 26 : un jeu de runes, avec 14 builds (5 nouveaux : la Prison de cristal, le Calligraphe, le Champ de mines, le Rayon solaire, le Dompteur). Plus rien n’attaque tout seul, sauf le bâton : la chouette, le sceau et l’orage partent quand tu graves. Chaque carte n’ouvre qu’un seul build : choisis ! Le temps ralentit quand tu graves. Touche un de tes pouvoirs pour savoir ce qu’il fait (sur tablette, c’est écrit dans la marge). Deux fois plus de golems qu’en version 22. Les pages du grimoire tombent maintenant à heure fixe : toujours 19 en 10 minutes. Sur tablette, tenue en large : la salle est au milieu, les jauges à gauche, le bouton Graver à droite. Tu démarres avec un trait court et un petit V ; le mur, l’escargot et le bouclier se gagnent dans le grimoire. Comme avant : un golem sonné éclate au trait, et chaque golem lâche de l’encre. Plus de rouge, plus de builds du bâton. Il faut tenir 10 minutes de combat. Le bouton 🎚️ règle le volume ; au clavier, Entrée ou Espace pour graver, 1, 2, 3 pour choisir une carte.</p>
 </header>
 <main class="game">
   <div class="stage" id="stage">
@@ -136,7 +136,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
     <div class="rune"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 46C14 24 50 24 54 46" fill="none" stroke="#1b1206" stroke-width="7" stroke-linecap="round"/></svg><div><b>Un arc de cercle : le mur (2) — à gagner dans le grimoire</b><p>Un mur courbe, exactement comme ton tracé, pendant 3 secondes. Les golems qui s’en approchent sont ralentis. Les pierres rebondissent dessus et repartent frapper (2).</p></div></div>
     <p class="note"><b>L’encre :</b> chaque golem détruit lâche un éclat d’encre (un bélier 2, un colosse 3), et une rune qui en détruit trois ou plus en fait tomber encore un par golem. Le bâton tire tout seul, mais doucement : ce sont les runes qui gagnent le combat.</p>
     <p class="note"><b>Les chocs :</b> un golem projeté qui cogne un autre golem, un mur ou le bord est sonné 3 secondes. Un trait le fait alors éclater d’un coup, quelle que soit sa vie.</p>
-    <p class="note"><b>Tu démarres avec peu :</b> un trait court et un petit V. Quand tu graves, le temps ralentit très fort (et le chronomètre aussi : graver ne fait pas gagner de temps). Le reste se gagne dans le grimoire : la rune du mur 🚧, l’escargot 🐌, le bouclier 🛡️ (un cercle fermé : tes amis sont intouchables un moment ; 4 d’encre, 8 secondes de recharge), le Grand V 📐, le Long trait 📏, la Lumière aveuglante 💫 (le trait sonne les golems qu’il ne détruit pas).</p>
+    <p class="note"><b>Tu démarres avec peu :</b> un trait court et un petit V. Quand tu graves, le temps ralentit très fort (et le chronomètre aussi : graver ne fait pas gagner de temps). Le reste se gagne dans le grimoire : la rune du mur 🚧, l’escargot 🐌, le bouclier 🛡️ (un cercle fermé : tes amis sont intouchables un moment ; 4 d’encre, 8 secondes de recharge), le Grand V 📐, le Long trait 📏, la Lumière aveuglante 💫 (le trait sonne les golems qu’il ne détruit pas), et la rune de la cage 🔒 (un cercle fermé loin de tes amis enferme les golems ; autour de tes amis, c’est le bouclier).</p>
     <p class="note"><b>Les pages du grimoire :</b> elles tombent toutes seules, à heure fixe : la première après 20 secondes, puis toutes les 23 à 40 secondes. Toujours 19 pages en 10 minutes, quoi que tu détruises. Elles tombent un peu à l’écart de tes amis : va les chercher. Le combat attend pendant que tu choisis une carte parmi trois.</p>
     <p class="note"><b>Les builds :</b> quand tu as deux cartes qui vont ensemble, dont une au niveau 2, une carte dorée sort à la page suivante. Chaque build monte jusqu’au niveau 3, et ils se cumulent. Chaque carte n’ouvre qu’un seul build. Plus rien n’attaque tout seul, sauf le bâton : les pouvoirs partent quand tu graves.</p>
     <ul class="combos">
@@ -149,6 +149,11 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
       <li>🏛️ <b>Sanctuaire</b> (le bouclier) : rune du bouclier + sceau de garde</li>
       <li>🐙 <b>Le scribe fou</b> (l’encre) : grand encrier + moisson d’encre</li>
       <li>🦉 <b>Parlement des chouettes</b> : la chouette + pas léger</li>
+      <li>💠 <b>Prison de cristal</b> (la cage) : rune de la cage + bouclier de cristal</li>
+      <li>✍️ <b>Le calligraphe</b> (enchaîner des runes de formes différentes) : plume agile + tir rapide</li>
+      <li>💣 <b>Champ de mines</b> (des pièges au sol) : traces de lumière + rune piège</li>
+      <li>🌞 <b>Rayon solaire</b> (garder son encre) : encre pure + méditation</li>
+      <li>🐂 <b>Le dompteur</b> (des golems dans ton camp) : collier de lumière + lasso de lumière</li>
     </ul>
     <p class="note"><b>La colère de Grosbec :</b> à 7 min 30, puis à 9 minutes, les golems arrivent plus vite et plus nombreux. À 10 minutes de combat, Grosbec crie « Assez ! » : tu as tenu.</p>
     <p class="note"><b>Ça durcit :</b> toutes les 2 minutes, les golems ont une vie de plus (les gros, deux de plus toutes les 2 min 30) ; après 5 minutes, encore une de plus toutes les 80 secondes. Et ils sont deux fois plus nombreux qu’en version 22. Les grosses vagues arrivent de deux côtés à 4 minutes, de trois à 8 minutes.</p>
@@ -270,7 +275,7 @@ const G = (() => {
   });
   // ----- version 23 : deux fois plus de golems (version 22 : rate0 0.22, rateAdd 0.18, rateLate 0.3, burst0 3, burstDiv 90, maxAlive 75) ; les pages à heure fixe -----
   Object.assign(CFG, { rate0: 0.44, rateAdd: 0.36, rateLate: 0.6, burst0: 6, burstDiv: 45, maxAlive: 130, pageT0: 20, pageGap: 22, pageGapAdd: 1 });
-  Object.assign(CFG, { slowMax: 1e9 });   // version 24 : le ralenti dure tant qu'on grave
+  Object.assign(CFG, { slowMax: 1e9, cageCost: 3 });   // version 24 : le ralenti dure tant qu'on grave
   const MOTS = { dalle: 'Un porte-dalle ! Sa dalle arrête tes orbes : prends-le de côté, ou chasse-le.', mortier: 'Un mortier, tout au fond ! Il te vise. Va le chercher.', bombe: 'Un porteur de bombe ! Fais-le sauter loin de tes amis.' };
   const GROS = ['brute', 'costaud'];
   // ----- les cartes du grimoire : on en choisit une parmi trois à chaque page ramassée -----
@@ -334,6 +339,22 @@ const G = (() => {
   // version 25 : la comète est enlevée ; chaque carte n'ouvre plus qu'un seul build
   delete CARDS.comete;
   CARDS.miroir.of = ['long', 'grandv']; CARDS.bowling.of = ['tonnerre', 'solide']; CARDS.rempart.of = ['mur', 'epines'];
+  // version 26 : cinq builds de plus (chacun avec deux cartes qui n'ouvrent que lui)
+  Object.assign(CARDS, {
+    cage: { fam: 'sort', nom: 'Rune de la cage', ic: '🔒', max: 3, txt: l => `Une nouvelle rune : trace un cercle fermé loin de tes amis. Les golems dedans sont enfermés ${UP.cageT[l]} secondes : ils ne bougent plus et ne frappent plus. 3 d’encre.` },
+    plume: { fam: 'rune', nom: 'Plume agile', ic: '🪶', max: 3, txt: l => `Si ta rune n’a pas la même forme que la précédente et que tu la graves moins de ${UP.plumeW[l]} secondes après, elle coûte 1 d’encre de moins.` },
+    trace: { fam: 'rune', nom: 'Traces de lumière', ic: '✨', max: 3, txt: l => `Ton trait laisse une trace dorée au sol pendant ${UP.traceT[l]} secondes : les golems qui marchent dessus sont ralentis.` },
+    mine: { fam: 'rune', nom: 'Rune piège', ic: '🪤', max: 3, need: 'trace', txt: l => `Un golem qui marche sur une trace est sonné ${String(UP.mineT[l]).replace('.', ',')} seconde${UP.mineT[l] > 1 ? 's' : ''}.` },
+    pure: { fam: 'rune', nom: 'Encre pure', ic: '☀️', max: 3, txt: l => `Quand ton encrier est plein, ton trait est surchargé : il traverse toute la salle, deux fois plus large, et fait ${UP.pure[l]} dégâts.` },
+    medit: { fam: 'cadeau', nom: 'Méditation', ic: '🕯️', max: 3, txt: l => `Quand tu ne graves pas pendant ${UP.medit[l]} secondes, ton encre remonte toute seule, 1 par seconde.` },
+    collier: { fam: 'sort', nom: 'Collier de lumière', ic: '📿', max: 3, txt: l => `Un trait qui touche un bélier ou un colosse sonné le fait passer dans ton camp au lieu de le faire éclater : il se bat pour toi ${UP.collierT[l]} secondes (${l} à la fois).` },
+    lasso: { fam: 'rune', nom: 'Lasso de lumière', ic: '➰', max: 3, txt: l => `Un bélier ou un colosse chassé par ton V est sonné ${UP.lasso[l]} secondes.` },
+    prison: { fam: 'combo', genre: 'rune', of: ['cage', 'bouclier'], nom: 'Prison de cristal', ic: '💠', max: 3, txt: l => ['', 'Les golems enfermés sont sonnés : un trait à travers la cage les fait tous éclater.', 'La cage dure 2 secondes de plus, et elle attire les golems qui passent tout près.', 'Quand la cage se brise, elle explose : 4 dégâts dedans et autour.'][l] },
+    calli: { fam: 'combo', genre: 'rune', of: ['plume', 'rapide'], nom: 'Le calligraphe', ic: '✍️', max: 3, txt: l => ['', 'Trois runes de formes différentes à la suite : la troisième part deux fois.', 'La série continue : à partir de la troisième, chaque rune part deux fois et ne coûte rien.', 'Cinq runes dans la série : une vague de lumière part de tes amis. Tous les golems sonnés de la salle éclatent, les autres sont sonnés.'][l] },
+    mines: { fam: 'combo', genre: 'rune', of: ['trace', 'mine'], nom: 'Champ de mines', ic: '💣', max: 3, txt: l => ['', 'Quand un golem marche sur une trace, elle explose : 3 dégâts autour.', 'L’explosion fait éclater les golems sonnés autour.', 'Une trace qui explose fait exploser les traces voisines, et chaque trace peut exploser deux fois.'][l] },
+    soleil: { fam: 'combo', genre: 'rune', of: ['pure', 'medit'], nom: 'Rayon solaire', ic: '🌞', max: 3, txt: l => ['', 'Le trait surchargé sonne tous les golems qu’il ne détruit pas.', 'Le trait surchargé part en croix : un deuxième rayon en travers.', 'Après le rayon, la lumière retombe en pluie sur 8 golems : ils sont sonnés, et les sonnés éclatent.'][l] },
+    dompteur: { fam: 'combo', genre: 'rune', of: ['collier', 'lasso'], nom: 'Le dompteur', ic: '🐂', max: 3, txt: l => ['', 'Tes golems domptés frappent deux fois plus fort et restent 4 secondes de plus.', 'Quand leur temps est fini, ils explosent : 4 dégâts autour, et les golems autour sont sonnés.', 'Tu peux aussi dompter les petits golems sonnés, et deux de plus à la fois.'][l] }
+  });
   CARDS.orage.of = ['chaine', 'eblouir']; CARDS.chouettes.of = ['chouette', 'pas']; CARDS.sanctuaire.of = ['dome', 'sceau'];
   Object.assign(CARDS.chouette, { txt: l => `Chaque fois que tu graves une rune, la chouette fond sur un golem (les frondeurs d’abord) : ${UP.chouetteD[l]} dégâts. Le reste du temps, elle tourne autour de toi.` });
   Object.assign(CARDS.sceau, { txt: l => `Après chaque rune, un cercle doré brûle autour des amis pendant ${UP.sceauDur[l]} secondes : 1 dégât aux golems qui y sont, ${['', 'chaque seconde', 'toutes les 0,8 seconde', 'toutes les 0,6 seconde'][l]}.` });
@@ -347,7 +368,8 @@ const G = (() => {
     foudreK: [0, 4, 3, 2], foudreN: [0, 4, 6, 8], foudreD: [0, 2, 3, 4], rayonT: [0, 3, 2, 1.2], rayonD: [0, 3, 4, 5], rayonW: [0, 18, 28, 28], gardN: [0, 3, 5, 8], gardR: [0, 62, 70, 80], gardD: [0, 2, 3, 3], brulant: [0, 2, 3, 4], epines: [0, 1, 2, 3], tonnerre: [0, 1.5, 2.5, 3.5],
     pagesN: [0, 2, 3, 4], pagesR: [0, 75, 85, 95], sceauR: [0, 130, 160, 190], sceauT: [0, 1, 0.8, 0.6],
     piegeT: [0, 5, 4, 3], piegeR: [0, 75, 90, 105], chaineN: [0, 3, 5, 7], chaineT: [0, 3, 2.6, 2.2],
-    bouclierT: [0, 20, 15, 10], sceauDur: [0, 3, 4, 5], chouetteD: [0, 3, 5, 8], chouetteT: [0, 3.2, 2.6, 2], aimant: [120, 220, 320, 450]
+    bouclierT: [0, 20, 15, 10], sceauDur: [0, 3, 4, 5],
+    cageT: [0, 3, 4, 5], plumeW: [0, 3, 4, 5], traceT: [0, 4, 6, 8], mineT: [0, 1, 1.5, 2], pure: [0, 4, 5, 6], medit: [0, 5, 4, 3], collierT: [0, 6, 9, 12], lasso: [0, 2, 3, 4], chouetteD: [0, 3, 5, 8], chouetteT: [0, 3.2, 2.6, 2], aimant: [120, 220, 320, 450]
   };
   // un combo est prêt quand on a ses deux cartes, l'une au moins au niveau 2 ; ensuite ses niveaux 2 et 3 sortent aussi
   const comboReady = (s, id) => { const [a, b] = CARDS[id].of; const l = lv(s, id); return l > 0 ? l < 3 : lv(s, a) && lv(s, b) && Math.max(lv(s, a), lv(s, b)) >= 2; };
@@ -428,7 +450,7 @@ const G = (() => {
       soldiers: [], bolts: [], stones: [], shards: [], walls: [], fx: [], puddles: [], potions: [], notes: [],
       pages: [], choice: null, up: {}, grosKills: 0, pageIdx: 0, pageNeed: cfg.pageFirst, pagesTaken: 0, orbitA: 0, orbitR: 0, tourT: 0, orbitHit: {}, sealT: 0, traps: [], trapT: 2, chainT: 1, firelines: [], owls: [], inkT: 0, novaT: 2, orageLeft: 0, ballChain: 0, strikeN: 0, echoes: [], stormT: 6, trail: [], trailHit: {}, trailD: 0, frenzy: 0, tornados: [], pulseT: 8, rage: 0,
       protection: cfg.protection, ink: cfg.inkStart, boltT: 0, spawnT: 1.5, burstT: 22, regenT: 0,
-      announced: [], entered: [], zones: [], vu: {}, combo: 0, comboT: 0, bestCombo: 0, inRune: false, runeKills: 0,
+      announced: [], entered: [], zones: [], vu: {}, cages: [], traces: [], allies: [], combo: 0, comboT: 0, bestCombo: 0, inRune: false, runeKills: 0,
       kills: 0, runes: 0, nextId: 1, over: null, shake: 0, msg: '', msgT: 0
     };
     // l'ordre où les amis finissent leur combat change à chaque partie
@@ -832,6 +854,16 @@ const G = (() => {
         else if (p.kind === 'lianes') u.held = true;
         else if (u.burn <= 0 && u.burnCd <= 0) { u.burn = c.burnT; u.burnTick = 0.5; }
       }
+      // version 26 : la cage les tient (sonnés avec la Prison de cristal) ; les traces les ralentissent, les sonnent, explosent
+      if (u.cage) { if (u.cage.t <= 0) u.cage = null; else { const cg = u.cage, dx = u.x - cg.x, dy = u.y - cg.y, d = Math.hypot(dx, dy), m = Math.max(10, cg.R - u.r * 0.5); if (d > m) { u.x = cg.x + dx / d * m; u.y = cg.y + dy / d * m; } u.vx = 0; u.vy = 0; if (lv(s, 'prison')) u.daze = Math.max(u.daze, 0.25); continue; } }
+      if (s.traces.length && !fl) for (const tr of s.traces) {
+        if (tr.t <= 0) continue;
+        const q = nearOnSeg(tr.a, tr.b, u.x, u.y); if (Math.hypot(u.x - q.x, u.y - q.y) > u.r + 8) continue;
+        slow = Math.min(slow, 0.5);
+        if (!tr.vus[u.id]) { tr.vus[u.id] = 1; if (lv(s, 'mine') && !u.iron) u.daze = Math.max(u.daze, UP.mineT[lv(s, 'mine')]); if (lv(s, 'mines')) mineBoum(s, tr, q.x, q.y, 0); }
+        if (u.hp <= 0) break;
+      }
+      if (u.hp <= 0) continue;
       if (u.frozen > 0) { u.frozen -= dt; if (u.frozen <= 0) u.gelCd = 3; continue; }
       if (u.chill > 0) slow = Math.min(slow, 0.55);
       if (u.daze > 0) { u.daze -= dt; continue; }
@@ -1129,6 +1161,34 @@ const G = (() => {
     if (s.frenzy > 0) { s.frenzy -= dt; if (s.frenzy <= 0) say(s, 'La frénésie est finie.', 1.5); }
     // bouclier de cristal : il revient
     if (lv(s, 'bouclier')) for (const f of s.friends) if (!f.shield) { f.shieldT -= dt; if (f.shieldT <= 0) { f.shield = 1; f.shieldT = 0; } }
+    // version 26 : les cages, les traces, la méditation, les golems domptés
+    for (const cg of s.cages) {
+      cg.t -= dt;
+      if (lv(s, 'prison') >= 2 && cg.t > 0) for (const v of s.soldiers) { if (v.hp <= 0 || v.cage) continue; const dx = cg.x - v.x, dy = cg.y - v.y, d = Math.hypot(dx, dy); if (d < cg.R + 70) { if (d < cg.R) { v.cage = cg; v.vx = v.vy = 0; } else { v.x += dx / d * 150 * dt; v.y += dy / d * 150 * dt; } } }
+      if (cg.t <= 0 && !cg.done) {
+        cg.done = true;
+        for (const v of s.soldiers) if (v.cage === cg) v.cage = null;
+        if (lv(s, 'prison') >= 3) { s.fx.push({ k: 'boum', x: cg.x, y: cg.y, R: cg.R + 40, life: 0.45, max: 0.45 }); s.shake = Math.max(s.shake, 0.2); for (const v of [...s.soldiers]) if (v.hp > 0 && Math.hypot(v.x - cg.x, v.y - cg.y) < cg.R + 40 + v.r) hurt(s, v, 4); }
+      }
+    }
+    s.cages = s.cages.filter(cg => !cg.done);
+    for (const tr of s.traces) tr.t -= dt;
+    s.traces = s.traces.filter(tr => tr.t > 0);
+    if (lv(s, 'medit') && s.t - (s.derniereRune ?? -99) >= UP.medit[lv(s, 'medit')]) { s.meditT = (s.meditT || 0) + dt; if (s.meditT >= 1) { s.meditT = 0; s.ink = Math.min(s.cfg.inkMax, s.ink + 1); } } else s.meditT = 0;
+    for (const a of s.allies) {
+      a.allyT -= dt; if (a.flash > 0) a.flash -= dt;
+      if (a.allyT <= 0) {
+        a.done = true; s.fx.push({ k: 'pop', x: a.x, y: a.y - a.r - 12, t: 'libéré', life: 0.7, max: 0.7, col: '#ffd23f' });
+        if (lv(s, 'dompteur') >= 2) { s.fx.push({ k: 'boum', x: a.x, y: a.y, R: 100, life: 0.45, max: 0.45 }); s.shake = Math.max(s.shake, 0.2); for (const v of [...s.soldiers]) if (v.hp > 0 && dist(a, v) < 100 + v.r) { hurt(s, v, 4); if (v.hp > 0) stun(s, v); } }
+        continue;
+      }
+      let tg = null, b = 1e9; for (const v of s.soldiers) if (v.hp > 0) { const d = dist(a, v); if (d < b) { b = d; tg = v; } }
+      if (!tg) continue;
+      const T = TYPES[a.type], reach = a.r + tg.r + 6;
+      if (b > reach) { const v = T.speed * 1.3 * dt; a.x += (tg.x - a.x) / b * v; a.y += (tg.y - a.y) / b * v; }
+      else { a.atk -= dt; if (a.atk <= 0) { a.atk = 0.8; const dmg = (a.type === 'costaud' ? 5 : GROS.includes(a.type) ? 3 : 2) * (lv(s, 'dompteur') >= 1 ? 2 : 1); hurt(s, tg, dmg); s.fx.push({ k: 'slash', x: tg.x, y: tg.y, life: 0.3, max: 0.3 }); } }
+    }
+    s.allies = s.allies.filter(a => !a.done);
     // les chouettes
     for (const o of s.owls) {
       const L = lv(s, 'chouette'); o.a += dt * 1.6;
@@ -1315,7 +1375,7 @@ const G = (() => {
     return d1 * sg > -m && d2 * sg > -m && d3 * sg > -m;
   };
   function costOf(s, rune) {
-    if (rune.kind === 'ferme') return lv(s, 'dome') ? s.cfg.domeCost : 0;
+    if (rune.kind === 'ferme') return lv(s, 'dome') ? s.cfg.domeCost : lv(s, 'cage') ? s.cfg.cageCost : 0;
     let base = rune.kind === 'spirale' ? (lv(s, 'tornade') ? 4 : s.cfg.inkMax / 2) : s.cfg.cost[rune.kind] ?? 0;
     if (rune.kind === 'poussee' && lv(s, 'bowling')) base = 1;
     return lv(s, 'scribe') ? Math.max(1, base - 1) : base;
@@ -1326,12 +1386,63 @@ const G = (() => {
     for (const o of s.owls) o.charge = Math.min(2, (o.charge || 0) + 1);
     if (lv(s, 'orage') >= 3) s.orageVeut = true;
   }
+  // version 26, le calligraphe : la série de runes de formes différentes (en vraies secondes : le ralenti ne compte pas)
+  function serieCalc(s, kind) {
+    const P = lv(s, 'plume'); if (!P) return { n: 0, reduc: 0 };
+    const suite = s.serieK && s.serieK !== kind && s.realT - s.serieT < UP.plumeW[P], n = suite ? s.serieN + 1 : 1, C = lv(s, 'calli');
+    return { kind, n, reduc: suite ? 1 : 0, gratuit: C >= 2 && n >= 3, double: C >= 1 && (n === 3 || (C >= 2 && n >= 3)), vague: C >= 3 && n >= 5 };
+  }
+  function serieOk(s, sr, rune) {
+    if (!sr.n) return;
+    s.serieN = sr.n; s.serieK = sr.kind; s.serieT = s.realT;
+    if (sr.n >= 2) s.fx.push({ k: 'pop', x: s.sage.x, y: s.sage.y - 62, t: `Série ×${sr.n}`, life: 0.9, max: 0.9, col: '#c9f2ff' });
+    if (sr.double && rune && ['trait', 'poussee', 'spirale'].includes(rune.kind)) { s.echoes.push({ rune, t: 0.3 }); s.doubles = (s.doubles || 0) + 1; }
+    if (sr.vague) {   // la vague de lumière : les sonnés éclatent, les autres sont sonnés
+      s.serieN = 0; s.serieK = null; s.vagues = (s.vagues || 0) + 1;
+      const k0 = s.kills; s.inRune = true; s.runeKills = 0;
+      for (const u of [...s.soldiers]) if (u.hp > 0) { if (u.daze > 0) shatter(s, u); else stun(s, u); }
+      s.inRune = false; const killed = s.kills - k0; if (killed >= 3) { s.combo = killed; s.comboT = 1.6; }
+      s.fx.push({ k: 'pulse', R: 640, life: 0.8, max: 0.8 }); s.shake = Math.max(s.shake, 0.3); say(s, 'Vague de lumière !', 2);
+    }
+  }
+  // version 26, la rune de la cage : un cercle loin des amis enferme les golems
+  function castCage(s, x, y, R) {
+    const c = s.cfg; if (s.sage.sonne > 0) { say(s, 'Le Sage est sonné ! Attends une seconde.'); return { ok: false }; }
+    const sr = serieCalc(s, 'ferme'), cost = s.frenzy > 0 || sr.gratuit ? 0 : Math.max(0, c.cageCost - sr.reduc);
+    if (s.ink < cost) { say(s, `Pas assez d’encre (il en faut ${cost}). Ramasse des éclats.`); return { ok: false }; }
+    s.ink -= cost; s.runes++; s.brushT = 0; runeGravee(s); serieOk(s, sr, null);
+    const T = UP.cageT[lv(s, 'cage')] + (lv(s, 'prison') >= 2 ? 2 : 0), cg = { x, y, R, t: T, max: T }; s.cages.push(cg); s.nCages = (s.nCages || 0) + 1;
+    let n = 0; for (const u of s.soldiers) if (u.hp > 0 && Math.hypot(u.x - x, u.y - y) < R + u.r * 0.5) { u.cage = cg; u.vx = 0; u.vy = 0; n++; }
+    s.fx.push({ k: 'trap', x, y, R, life: 0.5, max: 0.5 }); say(s, n ? `Cage : ${n} golem${n > 1 ? 's' : ''} enfermé${n > 1 ? 's' : ''} !` : 'Une cage… vide pour l’instant.');
+    return { ok: true, hit: n, killed: 0 };
+  }
+  // version 26, le dompteur : un gros golem sonné, touché par le trait, passe dans ton camp
+  function dompter(s, u) {
+    const C = lv(s, 'collier'), D = lv(s, 'dompteur'); if (!C || u.iron || u.hp <= 0 || u.ally) return false;
+    if (!GROS.includes(u.type) && D < 3) return false;
+    if (s.allies.length >= C + (D >= 3 ? 2 : 0)) return false;
+    s.soldiers = s.soldiers.filter(v => v !== u);
+    Object.assign(u, { ally: true, allyT: UP.collierT[C] + (D >= 1 ? 4 : 0), daze: 0, vx: 0, vy: 0, cage: null, burn: 0, atk: 0.3, ball: null });
+    s.allies.push(u); s.domptes = (s.domptes || 0) + 1;
+    s.fx.push({ k: 'pop', x: u.x, y: u.y - u.r - 16, t: 'dompté !', life: 1, max: 1, col: '#ffd23f' });
+    if (!s.vu.dompte) { s.vu.dompte = 1; say(s, 'Dompté ! Ce golem se bat pour toi.', 2.5); }
+    return true;
+  }
+  // version 26, champ de mines : une trace qui explose
+  function mineBoum(s, tr, x, y, prof, deja) {
+    deja = deja || new Set(); if (tr.t <= 0 || deja.has(tr)) return; deja.add(tr); tr.n--; if (tr.n <= 0) tr.t = 0;
+    const L = lv(s, 'mines'); s.mineBooms = (s.mineBooms || 0) + 1;
+    s.fx.push({ k: 'boum', x, y, R: 80, life: 0.4, max: 0.4 });
+    for (const v of [...s.soldiers]) if (v.hp > 0 && Math.hypot(v.x - x, v.y - y) < 80 + v.r) { if (L >= 2 && v.daze > 0) shatter(s, v); else hurt(s, v, 3); }
+    if (L >= 3 && (prof || 0) < 4) for (const o of s.traces) if (o !== tr && o.t > 0) { const q = nearOnSeg(o.a, o.b, x, y); if (Math.hypot(q.x - x, q.y - y) < 130) mineBoum(s, o, q.x, q.y, (prof || 0) + 1, deja); }
+  }
   // la rune du bouclier : un cercle fermé ; les amis sont intouchables un moment
   function castDome(s) {
     const c = s.cfg;
     if (s.domeCd > 0) { say(s, `Le bouclier se recharge (encore ${Math.ceil(s.domeCd)} s).`); return { ok: false }; }
-    if (s.ink < c.domeCost) { say(s, `Pas assez d’encre (il en faut ${c.domeCost}). Ramasse des éclats.`); return { ok: false }; }
-    s.ink -= c.domeCost; s.runes++; s.brushT = 0; runeGravee(s); s.dome = s.domeMax = [0, 2.5, 4, 5.5][lv(s, 'dome')]; s.domeCd = s.dome + c.domeCd; s.domes = (s.domes || 0) + 1;
+    const sr = serieCalc(s, 'ferme'), dcost = s.frenzy > 0 || sr.gratuit ? 0 : Math.max(0, c.domeCost - sr.reduc);
+    if (s.ink < dcost) { say(s, `Pas assez d’encre (il en faut ${dcost}). Ramasse des éclats.`); return { ok: false }; }
+    s.ink -= dcost; s.runes++; s.brushT = 0; runeGravee(s); serieOk(s, sr, null); s.dome = s.domeMax = [0, 2.5, 4, 5.5][lv(s, 'dome')]; s.domeCd = s.dome + c.domeCd; s.domes = (s.domes || 0) + 1;
     if (lv(s, 'sanctuaire')) { const R = UP.sceauR[Math.max(1, lv(s, 'sceau'))]; for (const u of s.soldiers) if (u.hp > 0 && Math.hypot(u.x - 450, u.y - 445) < R + u.r) stun(s, u); s.fx.push({ k: 'trap', x: 450, y: 445, R, life: 0.5, max: 0.5 }); }
     s.fx.push({ k: 'dome', life: 0.5, max: 0.5 }); say(s, `Bouclier ! Tes amis sont intouchables ${String(s.dome).replace('.', ',')} secondes.`);
     return { ok: true, hit: 0, killed: 0 };
@@ -1340,17 +1451,33 @@ const G = (() => {
   function cast(s, rune) {
     if (rune.kind === 'mur' && !lv(s, 'mur')) { say(s, 'Tu ne connais pas encore la rune du mur : elle est dans le grimoire.'); return { ok: false }; }
     if (rune.kind === 'spirale' && !lv(s, 'spirale')) { say(s, 'Tu ne connais pas encore l’escargot : il est dans le grimoire.'); return { ok: false }; }
-    if (rune.kind === 'ferme') { if (!lv(s, 'dome')) { say(s, 'Un cercle ne fait rien… pour l’instant.'); return { ok: false }; } return castDome(s); }
+    if (rune.kind === 'ferme') {
+      const P = rune.poly || []; let cx = 450, cy = 445, R = 90;
+      if (P.length) { cx = 0; cy = 0; for (const p of P) { cx += p.x; cy += p.y; } cx /= P.length; cy /= P.length; R = 0; for (const p of P) R += Math.hypot(p.x - cx, p.y - cy); R /= P.length; }
+      const pres = Math.hypot(cx - 450, cy - 445) < 170;
+      if (lv(s, 'cage') && (!lv(s, 'dome') || !pres)) return castCage(s, cx, cy, Math.max(55, Math.min(220, R)));
+      if (!lv(s, 'dome')) { say(s, 'Un cercle ne fait rien… pour l’instant.'); return { ok: false }; }
+      return castDome(s);
+    }
     // au début le V est petit et le trait court : on les raccourcit (les cartes Grand V et Long trait les allongent)
     if (rune.kind === 'poussee') { const M = [1, 1.5, 2, 99][lv(s, 'grandv')] * s.cfg.vMaxBase; for (const k of ['a', 'b']) { const dx = rune[k].x - rune.tip.x, dy = rune[k].y - rune.tip.y, d = Math.hypot(dx, dy); if (d > M) rune = { ...rune, [k]: { x: rune.tip.x + dx / d * M, y: rune.tip.y + dy / d * M } }; } }
     if (rune.kind === 'trait') { const M = [s.cfg.traitMaxBase, 520, 9999][lv(s, 'long')], dx = rune.b.x - rune.a.x, dy = rune.b.y - rune.a.y, d = Math.hypot(dx, dy); if (d > M) { const mx = (rune.a.x + rune.b.x) / 2, my = (rune.a.y + rune.b.y) / 2, k = M / 2 / d; rune = { ...rune, a: { x: mx - dx * k, y: my - dy * k }, b: { x: mx + dx * k, y: my + dy * k } }; } }
     if (s.sage.sonne > 0) { say(s, 'Le Sage est sonné ! Attends une seconde.'); return { ok: false }; }
-    const kind = rune.kind, cost = s.frenzy > 0 ? 0 : costOf(s, rune);
+    const kind = rune.kind, sr = serieCalc(s, kind), cost = s.frenzy > 0 || sr.gratuit ? 0 : Math.max(0, costOf(s, rune) - sr.reduc);
     if (s.ink < cost) { say(s, `Pas assez d’encre (il en faut ${cost}). Ramasse des éclats.`); return { ok: false }; }
+    // le rayon solaire : encrier plein → le trait est surchargé (toute la salle, deux fois plus large)
+    if (kind === 'trait' && lv(s, 'pure') && s.ink >= s.cfg.inkMax) { const mx = (rune.a.x + rune.b.x) / 2, my = (rune.a.y + rune.b.y) / 2, dx = rune.b.x - rune.a.x, dy = rune.b.y - rune.a.y, d = Math.hypot(dx, dy) || 1; rune = { ...rune, a: { x: mx - dx / d * 1300, y: my - dy / d * 1300 }, b: { x: mx + dx / d * 1300, y: my + dy / d * 1300 }, sur: true }; s.surcharges = (s.surcharges || 0) + 1; }
     s.ink -= cost; s.runes++; s.brushT = 0; runeGravee(s);
     const k0 = s.kills; s.inRune = true; s.runeKills = 0; s.orageLeft = lv(s, 'orage') >= 2 ? 25 : 6;
     const hit = sansEncre(s, () => castAll(s, rune, false));
     if (lv(s, 'scribe') >= 3 && rune.kind !== 'mur') s.echoes.push({ rune, t: 0.55 });
+    if (rune.sur) {   // le rayon solaire, en croix et en pluie
+      const S = lv(s, 'soleil');
+      if (S >= 2) { const mx = (rune.a.x + rune.b.x) / 2, my = (rune.a.y + rune.b.y) / 2, dx = rune.b.x - rune.a.x, dy = rune.b.y - rune.a.y, d = Math.hypot(dx, dy) || 1; castAll(s, { ...rune, a: { x: mx + dy / d * 1300, y: my - dx / d * 1300 }, b: { x: mx - dy / d * 1300, y: my + dx / d * 1300 } }, true); }
+      if (S >= 3) { const pool = s.soldiers.filter(u => u.hp > 0); for (let i = 0; i < 8 && pool.length; i++) { const v = pool.splice(Math.floor(rng(s) * pool.length), 1)[0]; s.fx.push({ k: 'sky', x: v.x, y: v.y, life: 0.4, max: 0.4 }); if (v.daze > 0) shatter(s, v); else { stun(s, v); hurt(s, v, 1); } } }
+      say(s, 'Rayon solaire !', 2);
+    }
+    serieOk(s, sr, rune);
     s.soldiers = s.soldiers.filter(u => u.hp > 0);
     s.inRune = false;
     const killed = s.kills - k0;
@@ -1390,13 +1517,14 @@ const G = (() => {
       let dernier = null;
       const near = (x, y, w) => { const t = Math.max(0, Math.min(1, ((x - a.x) * dx + (y - a.y) * dy) / L2)); return Math.hypot(x - (a.x + dx * t), y - (a.y + dy * t)) < w; };
       for (const u of [...s.soldiers]) {
-        if (u.hp <= 0 || !near(u.x, u.y, u.r + s.cfg.traitWidth)) continue;
+        if (u.hp <= 0 || !near(u.x, u.y, u.r + s.cfg.traitWidth * (rune.sur ? 2.2 : 1))) continue;
         hit++; dernier = u;
-        if (u.daze > 0) shatter(s, u); else { hurt(s, u, s.cfg.traitDmg); if (u.hp > 0 && !u.iron && lv(s, 'eblouir')) { u.daze = Math.max(u.daze, lv(s, 'eblouir')); s.eblouis = (s.eblouis || 0) + 1; } }
+        if (u.daze > 0) { if (!dompter(s, u)) shatter(s, u); } else { hurt(s, u, rune.sur ? UP.pure[lv(s, 'pure')] : s.cfg.traitDmg); if (rune.sur && lv(s, 'soleil') && u.hp > 0) stun(s, u); if (u.hp > 0 && !u.iron && lv(s, 'eblouir')) { u.daze = Math.max(u.daze, lv(s, 'eblouir')); s.eblouis = (s.eblouis || 0) + 1; } }
       }
       if (dernier && !copy && lv(s, 'chaine')) chainFrom(s, dernier, UP.chaineN[lv(s, 'chaine')], 300);
       for (const p of s.stones) if (near(p.x, p.y, 34)) p.life = 0;
-      s.fx.push({ k: 'beam', a, b, life: 0.45, max: 0.45 });
+      s.fx.push({ k: 'beam', a, b, life: rune.sur ? 0.7 : 0.45, max: rune.sur ? 0.7 : 0.45, sur: !!rune.sur });
+      if (lv(s, 'trace') && s.traces.length < 14) { const T = UP.traceT[lv(s, 'trace')]; s.traces.push({ a, b, t: T, max: T, n: lv(s, 'mines') >= 3 ? 2 : 1, vus: {} }); }
       if (lv(s, 'brulant')) { const lava = lv(s, 'volcan') >= 3, T = UP.brulant[lv(s, 'brulant')] * (lava ? 1.5 : 1); s.firelines.push({ a, b, life: T, max: T, lava }); }
     }
     if (kind === 'mur') {
@@ -1424,7 +1552,7 @@ const G = (() => {
     if (kind === 'poussee') { // tout ce qui est dans le V est chassé par l'ouverture
       const tn = UP.tonnerre[lv(s, 'tonnerre')];
       const BW = lv(s, 'bowling'); if (BW && !copy) { s.ballChain = 20; s.strikeN = 0; }
-      for (const u of s.soldiers) if (inTri(u, rune.tip, rune.a, rune.b, u.r)) { hit++; u.vx = rune.dir[0] * s.cfg.pushV; u.vy = rune.dir[1] * s.cfg.pushV; u.daze = tn; if (BW && !u.iron) u.ball = { left: 4, t: 3 }; }
+      for (const u of s.soldiers) if (inTri(u, rune.tip, rune.a, rune.b, u.r)) { hit++; u.vx = rune.dir[0] * s.cfg.pushV; u.vy = rune.dir[1] * s.cfg.pushV; u.daze = tn; if (lv(s, 'lasso') && GROS.includes(u.type) && !u.iron) u.daze = Math.max(u.daze, UP.lasso[lv(s, 'lasso')]); if (BW && !u.iron) u.ball = { left: 4, t: 3 }; }
       s.fx.push({ k: 'vee', tip: rune.tip, a: rune.a, b: rune.b, dir: rune.dir, life: 0.5, max: 0.5, thunder: tn > 0, copy });
     }
     return hit;
@@ -2652,7 +2780,7 @@ if (/[?&#]finesse=([\d.]+)/.test(location.href)) { FIN = Math.min(1, Math.max(0.
 function resize() { const r = stage.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(1.7e6 / Math.max(1, r.width * r.height))) * FIN; cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); R8.dpr = cv.width / Math.max(1, r.width); if (bg && bg.getContext) bg.width = bg.height = 0; bg = null; ensureSprites(); }
 const MES = { n: 0, t: 0, sec: 0, nsec: 0, pire: 0, baisses: 0, age: 0 };   // les images comptées pendant la partie
 function mesurer(dt) { if (dt <= 0 || dt > 0.5) return; MES.n++; MES.t += dt; MES.age += dt; MES.sec += dt; MES.nsec++; if (MES.sec >= 1) { if (MES.age > 4) MES.pire = MES.pire ? Math.min(MES.pire, Math.round(MES.nsec / MES.sec)) : Math.round(MES.nsec / MES.sec); MES.sec = MES.nsec = 0; } }
-function mesuresTxt() { return MES.n < 30 ? '' : `Mesures (version 25) : ${Math.round(MES.n / MES.t)} images par seconde, pire seconde ${MES.pire || '?'} · finesse ${Math.round(FIN * 100)} %, ${MES.baisses} baisse${MES.baisses > 1 ? 's' : ''} · ${Golems.cuits} + ${Object.keys(GB.im).length} images · écran ${innerWidth} × ${innerHeight} (× ${Math.round((devicePixelRatio || 1) * 10) / 10})`; }
+function mesuresTxt() { return MES.n < 30 ? '' : `Mesures (version 26) : ${Math.round(MES.n / MES.t)} images par seconde, pire seconde ${MES.pire || '?'} · finesse ${Math.round(FIN * 100)} %, ${MES.baisses} baisse${MES.baisses > 1 ? 's' : ''} · ${Golems.cuits} + ${Object.keys(GB.im).length} images · écran ${innerWidth} × ${innerHeight} (× ${Math.round((devicePixelRatio || 1) * 10) / 10})`; }
 function finesse(dt) {   // dt : le temps depuis l'image d'avant. Sous 25 images par seconde pendant 1,4 seconde : on dessine un peu moins fin.
   if (dt <= 0 || dt > 0.5 || QUAL.fige) return; QUAL.repos -= dt; if (QUAL.repos > 0) { QUAL.lent = QUAL.vu = QUAL.t0 = 0; return; }
   // une image pendant laquelle on a cuit un dessin (Grosbec, un golem) ne compte pas : ce n'est pas l'appareil qui rame
@@ -3411,7 +3539,7 @@ function mot(txt, col, px) {
 // ----- suivre chaque soldat d'une image à l'autre (marche, face, chute) -----
 function trackUnits(dt) {
   const seen = new Set();
-  for (const u of s.soldiers) {
+  for (const u of [...s.soldiers, ...(s.allies || [])]) {
     seen.add(u.id);
     let a = R8.anim.get(u.id);
     if (!a) { const dehors = u.x < 0 || u.x > 900 || u.y > 900; a = { x: u.x, y: u.y, phase: Math.random() * 2, yaw: u.x < 330 ? 1 : u.x > 570 ? -1 : dehors ? (u.id % 2 ? 1 : -1) : 0, face: 1, spd: 0, rot: 0, age: 0, flying: false, mx: 0, my: 0, dehors, pose: false }; R8.anim.set(u.id, a); }
@@ -3529,6 +3657,8 @@ function render(dt = 0) {
   for (const fl of s.firelines) drawFireline(fl, t);
   for (const tr of s.traps) drawTrap(tr, t);
   drawZones(t);
+  for (const tr of s.traces || []) { const f = Math.max(0, tr.t / tr.max), cl = G.lv(s, 'mines') ? '255,150,80' : '255,214,90'; ctx.save(); ctx.lineCap = 'round'; ctx.setLineDash([14, 10]); ctx.lineDashOffset = -t * 30; ctx.strokeStyle = `rgba(${cl},${0.2 + 0.45 * f})`; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(tr.a.x, tr.a.y); ctx.lineTo(tr.b.x, tr.b.y); ctx.stroke(); ctx.setLineDash([]); ctx.strokeStyle = `rgba(255,250,220,${0.15 + 0.3 * f})`; ctx.lineWidth = 2; ctx.stroke(); ctx.restore(); }
+  for (const cg of s.cages || []) { const fin = cg.t < 1 ? 0.5 + 0.5 * Math.sin(t * 24) : 1; ctx.save(); ctx.beginPath(); ctx.arc(cg.x, cg.y, cg.R, 0, TAU); ctx.fillStyle = `rgba(150,225,255,${0.13 * fin})`; ctx.fill(); ctx.lineWidth = 5; ctx.strokeStyle = `rgba(170,235,255,${0.85 * fin})`; ctx.stroke(); ctx.lineWidth = 1.5; ctx.strokeStyle = `rgba(255,255,255,${0.5 * fin})`; ctx.beginPath(); ctx.arc(cg.x, cg.y, cg.R - 7, 0, TAU); ctx.stroke(); ctx.restore(); }
   drawParts(false);
   for (const p of s.shards) {
     const b = Math.sin(p.t * 4) * 3, tw = 0.6 + Math.sin(p.t * 7) * 0.4;
@@ -3547,8 +3677,10 @@ function render(dt = 0) {
   for (const f of s.friends) items.push({ y: f.y + 28, d: () => drawHero(f, t) });
   items.push({ y: s.sage.y + 28, d: () => drawHero({ ...s.sage, id: 'S', flash: 0, free: false }, t) });
   for (const u of s.soldiers) { const a = R8.anim.get(u.id); if (a) items.push({ y: u.y + FOOT(u.type), d: () => drawGolem(u, a, t) }); }
+  for (const u of s.allies || []) { const a = R8.anim.get(u.id); if (a) items.push({ y: u.y + FOOT(u.type), d: () => { const F = FOOT(u.type), R = GOLEM[u.type].bw * 0.62, f = Math.min(1, u.allyT / 2); ctx.save(); ctx.globalAlpha = 0.45 + 0.4 * f; ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 4; ctx.beginPath(); ctx.ellipse(u.x, u.y + F, R, R * 0.38, 0, 0, TAU); ctx.stroke(); ctx.restore(); drawGolem(u, a, t); ctx.save(); ctx.fillStyle = '#ffd23f'; ctx.font = '700 18px Nunito, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('★', u.x, u.y - GOLEM[u.type].H * 1.05); ctx.restore(); } }); }
   for (const w of s.walls) { let my = 0; for (const p of w.pts) my = Math.max(my, p.y); items.push({ y: my - 10, d: () => drawWall(w, t) }); }
   items.sort((a, b) => a.y - b.y).forEach(i => i.d());
+  for (const cg of s.cages || []) { const fin = cg.t < 1 ? 0.5 + 0.5 * Math.sin(t * 24) : 1, n = Math.max(10, Math.round(cg.R / 9)); ctx.save(); ctx.globalAlpha = 0.75 * fin; for (let i = 0; i < n; i++) { const an = i / n * TAU, x = cg.x + Math.cos(an) * cg.R, y = cg.y + Math.sin(an) * cg.R; const g = ctx.createLinearGradient(x, y, x, y - 46); g.addColorStop(0, 'rgba(170,235,255,.9)'); g.addColorStop(1, 'rgba(220,250,255,.15)'); ctx.strokeStyle = g; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - 46); ctx.stroke(); ctx.fillStyle = '#e6fbff'; ctx.beginPath(); ctx.moveTo(x, y - 52); ctx.lineTo(x + 4, y - 46); ctx.lineTo(x, y - 40); ctx.lineTo(x - 4, y - 46); ctx.fill(); } ctx.restore(); }
   for (const tn of s.tornados || []) drawTornado(tn, t);
   if (G.lv(s, 'pages')) drawOrbitPages(t);
   if (G.lv(s, 'gardiennes')) { const GA = G.lv(s, 'gardiennes'), n = G.UP.gardN[GA], R = G.UP.gardR[GA], sg = s.sage;
@@ -3580,9 +3712,9 @@ function render(dt = 0) {
     const a = Math.max(0, e.life / e.max);
     if (e.k === 'beam') {
       ctx.lineCap = 'round';
-      ctx.strokeStyle = `rgba(255,200,60,${a * .3})`; ctx.lineWidth = 80; ctx.beginPath(); ctx.moveTo(e.a.x, e.a.y); ctx.lineTo(e.b.x, e.b.y); ctx.stroke();
-      ctx.strokeStyle = `rgba(255,220,110,${a * .7})`; ctx.lineWidth = 30; ctx.stroke();
-      ctx.strokeStyle = `rgba(255,255,240,${a})`; ctx.lineWidth = 9; ctx.stroke();
+      ctx.strokeStyle = `rgba(255,200,60,${a * .3})`; ctx.lineWidth = 80 * (e.sur ? 2.2 : 1); ctx.beginPath(); ctx.moveTo(e.a.x, e.a.y); ctx.lineTo(e.b.x, e.b.y); ctx.stroke();
+      ctx.strokeStyle = `rgba(255,220,110,${a * .7})`; ctx.lineWidth = 30 * (e.sur ? 2.2 : 1); ctx.stroke();
+      ctx.strokeStyle = `rgba(255,255,240,${a})`; ctx.lineWidth = 9 * (e.sur ? 2.2 : 1); ctx.stroke();
     }
     if (e.k === 'ring') {
       ctx.save(); ctx.translate(e.x, e.y); ctx.scale(1, 0.75);
@@ -3849,7 +3981,7 @@ function hud(cw, ch) {
   let y = Math.max(96, (R8.hudBottom || 0) + 8, Math.round((view().oy + 142 * view().k) * cw / cv.width));
   if (R8.col) { y = Math.max(96, Math.round((view().oy + 142 * view().k) / R8.dpr)); ctx.setTransform(R8.dpr, 0, 0, R8.dpr, 0, 0); ctx.translate(view().ox / R8.dpr, 0); cw = G.W * view().k / R8.dpr; }   // les messages restent au milieu de la salle
   if (brush) {
-    const leg = 'trait (2) · V (2)' + (G.lv(s, 'spirale') ? ' · escargot (½)' : '') + (G.lv(s, 'mur') ? ' · arc de cercle (2)' : '') + (G.lv(s, 'dome') ? ' · cercle fermé (4)' : '');   // seulement les runes qu'on connaît
+    const leg = 'trait (2) · V (2)' + (G.lv(s, 'spirale') ? ' · escargot (½)' : '') + (G.lv(s, 'mur') ? ' · arc de cercle (2)' : '') + (G.lv(s, 'dome') ? ' · cercle autour des amis : bouclier (4)' : '') + (G.lv(s, 'cage') ? ' · cercle loin des amis : cage (3)' : '');   // seulement les runes qu'on connaît
     ctx.font = `700 ${fs}px Nunito, sans-serif`; const w = Math.min(cw - 16, ctx.measureText(leg).width + 28);
     rr(cw / 2 - w / 2, y, w, fs + 16, (fs + 16) / 2); ctx.fillStyle = 'rgba(27,18,6,.85)'; ctx.fill();
     text(leg, cw / 2, y + fs + 5, fs, '#f4e6c2', 'center', 700);

@@ -1,32 +1,25 @@
-# version 21 : sur une tablette imitée (1024 × 768) — l'explication, la petite fenêtre, le plein écran, le bouclier, la fenêtre des cartes ;
-# puis une partie courte jusqu'à « ASSEZ ! » sur un téléphone imité
+# version 26 : une scène avec les cinq builds nouveaux (photo), puis la tablette et le téléphone
 import asyncio, sys, os
 from playwright.async_api import async_playwright
 PAGE = sys.argv[1] if len(sys.argv) > 1 else 'file://' + os.path.join(os.path.dirname(os.path.abspath(__file__)), 'combat-sage.html')
-OUT = sys.argv[2] if len(sys.argv) > 2 else '/tmp/s24-'
-CERCLE = "(()=>{const S=__test.s,p=[];for(let i=0;i<=42;i++){const a=i/40*6.283;p.push({x:450+Math.cos(a)*90,y:445+Math.sin(a)*90});}return G.cast(S,G.recognize(p)).ok;})()"
+OUT = sys.argv[2] if len(sys.argv) > 2 else '/tmp/s26-'
+MK = "((L)=>{const S=__test.s;for(const [t,x,y,o] of L){const T=G.TYPES[t],hp=T.hp+8;S.soldiers.push(Object.assign({id:S.nextId++,type:t,x,y,r:T.r,hp,max:hp,vx:0,vy:0,atk:0.5,daze:0,flash:0,burn:0,burnCd:0,burnTick:0,held:false,fear:0,dance:0,charmCd:0},o||{}));}})"
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox']); errs = []
-        for nom, bouton, LW, LH in (('tablette-commencer', '#bStart', 1024, 768), ('tablette-plein', '#bStartPlein', 1024, 768), ('tablette-haute', '#bStartPlein', 768, 1024)):
-            pg = await (await b.new_context(viewport={'width': LW, 'height': LH}, device_scale_factor=2, is_mobile=True, has_touch=True)).new_page()
-            pg.on('pageerror', lambda e: errs.append(str(e)[:300]))
-            await pg.goto(PAGE + '?finesse=1'); await pg.wait_for_timeout(1200)
-            pass
-            await pg.tap(bouton); await pg.wait_for_timeout(700)
-            await pg.evaluate("(()=>{const S=__test.s;S.t=150;S.protection=500;S.cfg.protection=500;for(const id of ['dome','mur','brulant','large','encrier','tonnerre','chouette','eblouir','chaine']){S.choice={cards:[id]};G.choose(S,id);}S.ink=12;})()")
-            await pg.wait_for_timeout(2500)
-            r = await pg.evaluate("(()=>{const c=document.querySelector('canvas').getBoundingClientRect();return [Math.round(c.width),Math.round(c.height),innerWidth,innerHeight];})()")
-            print(nom, ': le jeu fait', r[0], '×', r[1], 'dans un écran de', r[2], '×', r[3], '| colonne :', await pg.evaluate("document.body.classList.contains('col')+' '+getComputedStyle(document.body).getPropertyValue('--col')"), '| bouton Graver :', await pg.evaluate("(()=>{const b=document.getElementById('bBrush').getBoundingClientRect();return Math.round(b.left)+'..'+Math.round(b.right)+' × '+Math.round(b.top)+'..'+Math.round(b.bottom);})()"))
-            if nom == 'tablette-plein':
-                c = await pg.evaluate("(()=>{const c=__test.chips[2];return [c.x+c.w/2,c.y+c.h/2,c.id];})()"); await pg.touchscreen.tap(c[0], c[1]); await pg.wait_for_timeout(400)
-                print('tablette : pouvoir touché', c[2], '→ choisi :', await pg.evaluate('__test.sel'), '| détail affiché :', await pg.evaluate('__test.detailVu'), '| lignes dans la marge :', await pg.evaluate('__test.chips.length'))
-            await pg.screenshot(path=OUT + nom + '.png')
-            if nom == 'tablette-plein':
-                await pg.evaluate("(()=>{const S=__test.s;S.soldiers=[];S.pages.push({x:S.sage.x,y:S.sage.y,t:0});})()"); await pg.wait_for_timeout(700)
-                await pg.screenshot(path=OUT + 'tablette-cartes.png')
-                print('cartes :', await pg.evaluate("[...document.querySelectorAll('#cartes .carte')].map(c=>c.querySelector('.nom').textContent).join(' | ')"))
-            await pg.close()
+        pg = await (await b.new_context(viewport={'width': 1024, 'height': 768}, device_scale_factor=2, is_mobile=True, has_touch=True)).new_page()
+        pg.on('pageerror', lambda e: errs.append(str(e)[:300]))
+        await pg.goto(PAGE + '?finesse=1'); await pg.wait_for_timeout(1200)
+        await pg.tap('#bStartPlein'); await pg.wait_for_timeout(600)
+        await pg.evaluate("(()=>{const S=__test.s;S.spawnT=1e9;S.burstT=1e9;S.protection=500;S.cfg.protection=500;S.t=200;S.sage.x=450;S.sage.y=640;S.sage.tx=null;for(const id of ['cage','bouclier','bouclier','prison','trace','mine','mine','mines','collier','lasso','dompteur','pure','plume']){S.choice={cards:[id]};G.choose(S,id);}S.ink=S.cfg.inkMax;})()")
+        await pg.evaluate(MK + "([['cogneur',690,230],['coureur',720,270],['cogneur',650,280],['brute',250,250,{daze:4}],['cogneur',300,560],['coureur',600,520],['costaud',200,700],['lanceur',800,700]])")
+        await pg.evaluate("(()=>{const S=__test.s,p=[];for(let i=0;i<=42;i++){const a=i/40*6.283;p.push({x:700+Math.cos(a)*90,y:250+Math.sin(a)*90});}G.cast(S,G.recognize(p));S.ink=S.cfg.inkMax;G.cast(S,{kind:'trait',a:{x:200,y:250},b:{x:300,y:250}});S.ink=6;G.cast(S,{kind:'trait',a:{x:250,y:600},b:{x:560,y:600}});})()")
+        await pg.wait_for_timeout(350)
+        print('cages', await pg.evaluate("__test.s.cages.length"), '| domptés', await pg.evaluate("__test.s.allies.length"), '| traces', await pg.evaluate("__test.s.traces.length"), '| rayons surchargés', await pg.evaluate("__test.s.surcharges||0"))
+        await pg.screenshot(path=OUT + 'builds.png')
+        await pg.wait_for_timeout(2500); await pg.screenshot(path=OUT + 'builds-2.png')
+        print('mines qui ont sauté', await pg.evaluate("__test.s.mineBooms||0"), '| domptés encore là', await pg.evaluate("__test.s.allies.length"))
+        await pg.close()
         pg = await (await b.new_context(viewport={'width': 390, 'height': 844}, device_scale_factor=3, is_mobile=True, has_touch=True)).new_page()
         pg.on('pageerror', lambda e: errs.append(str(e)[:300]))
         await pg.goto(PAGE + '#rapide'); await pg.wait_for_timeout(1000)
@@ -36,16 +29,9 @@ async def main():
         for i in range(40):
             await pg.wait_for_timeout(2000)
             st = await pg.evaluate("(()=>{const S=__test.s;if(S.choice)G.choose(S,S.choice.cards[0]);return {t:Math.round(S.t),over:S.over,up:Object.keys(S.up)};})()")
-            if i == 8:
-                await pg.evaluate("(()=>{const S=__test.s;if(!Object.keys(S.up).length){S.choice={cards:['brulant']};G.choose(S,'brulant');}})()"); await pg.wait_for_timeout(300)
-                c = await pg.evaluate("(()=>{const c=__test.chips[0];return c?[c.x+c.w/2,c.y+c.h/2]:null;})()")
-                if c: await pg.touchscreen.tap(c[0], c[1]); await pg.wait_for_timeout(300)
-                print('téléphone : message après avoir touché un pouvoir :', await pg.evaluate('__test.s.msg'))
-                await pg.screenshot(path=OUT + 'tel-jeu.png')
             if st['over']: break
         await pg.wait_for_timeout(3200)
         print('téléphone, fin :', st['over'], 'à', st['t'], 's |', await pg.evaluate("document.getElementById('endTitle').textContent"), '| cartes prises :', st['up'])
-        print('mesures :', await pg.evaluate("typeof mesuresTxt==='function'?mesuresTxt():''"))
         print('erreurs de page :', errs or 'aucune')
         await b.close()
 asyncio.run(main())
