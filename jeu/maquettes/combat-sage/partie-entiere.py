@@ -14,7 +14,7 @@ async def main():
             await pg.goto(PAGE + '?finesse=1'); await pg.wait_for_timeout(1200)
             pass
             await pg.tap(bouton); await pg.wait_for_timeout(700)
-            await pg.evaluate("(()=>{const S=__test.s;S.t=150;S.protection=500;S.cfg.protection=500;for(const id of ['dome','mur','brulant','large','encrier','tonnerre','chouette','eblouir']){S.choice={cards:[id]};G.choose(S,id);}S.ink=12;})()")
+            await pg.evaluate("(()=>{const S=__test.s;S.t=150;S.protection=500;S.cfg.protection=500;for(const id of ['dome','mur','brulant','large','encrier','tonnerre','chouette','eblouir','chaine']){S.choice={cards:[id]};G.choose(S,id);}S.ink=12;})()")
             await pg.wait_for_timeout(2500)
             r = await pg.evaluate("(()=>{const c=document.querySelector('canvas').getBoundingClientRect();return [Math.round(c.width),Math.round(c.height),innerWidth,innerHeight];})()")
             print(nom, ': le jeu fait', r[0], '×', r[1], 'dans un écran de', r[2], '×', r[3], '| colonne :', await pg.evaluate("document.body.classList.contains('col')+' '+getComputedStyle(document.body).getPropertyValue('--col')"), '| bouton Graver :', await pg.evaluate("(()=>{const b=document.getElementById('bBrush').getBoundingClientRect();return Math.round(b.left)+'..'+Math.round(b.right)+' × '+Math.round(b.top)+'..'+Math.round(b.bottom);})()"))
