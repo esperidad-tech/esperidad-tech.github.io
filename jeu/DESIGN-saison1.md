@@ -5934,6 +5934,11 @@ Détail, réglages et choix à valider : `jeu/maquettes/combat-sage/LISEZ-MOI.md
 - **Pas vérifié** : un vrai doigt d'enfant sur une vraie tablette ; une étoile en deux traits ne marche pas (un seul trait).
 - En ligne : la page Claude (même adresse) et la salle des jeux (commit 50b5fe8 de `main`, seul `brumeval/combat-sage.html`). Détail : `jeu/maquettes/combat-sage/LISEZ-MOI.md`, « La version 28 ».
 
+### 15.19 La musique : la mélodie seulement au refrain (version 29, 27 novembre, 0 h 33) [Romain, 0 h 29] — EN LIGNE SUR LE SITE
+- **Romain** : la mélodie aiguë « elle s'arrête jamais » ; « il peut y avoir un refrain avec cette mélodie, mais tout le reste […] un peu plus discret, on met juste les basses avec des sons un peu moins stressants ».
+- **Fait** : le refrain = le thème du combat, avec sa mélodie aiguë (13 secondes, deux fois par tour d'environ 1 min 30) ; les couplets = la basse (plus calme au début), une batterie douce et des accords tenus graves, sans mélodie, sans arpèges aigus, sans cymbale ; le roulement de toms annonce le refrain. Mesuré : les couplets sont 3,5 dB plus bas, avec environ six fois moins d'aigu. [Claude, pas validé : l'ordre des parties, les couplets choisis]
+- **Pas écouté par Claude.** En ligne : la page Claude et la salle des jeux (commit 0d12722 de `main`). Détail : `jeu/maquettes/combat-sage/LISEZ-MOI.md`, « La version 29 » ; le code : `v29/musique.py`.
+
 ## 16. L'enquête 10, le combat final — le combat du Barde contre Grosbec, et les modèles de la ville d'en bas (maquette, 24 novembre, version 11) — HORS DU JEU, RIEN EN LIGNE SUR LE SITE, PAS ENCORE SUR GITHUB
 
 **Où on en est** : c'est une **maquette de test**, pas le vrai jeu. Rien n'est construit dans Brumeval. Elle se joue ici : https://claude.ai/artifact/5vCVNgJnhYV3aRgUY2ttT1 (version 11, en ligne depuis le 24 novembre, 23 h 59). Tout le détail, version par version, est dans le document du projet `claude/maquette-combat-du-barde.md`.

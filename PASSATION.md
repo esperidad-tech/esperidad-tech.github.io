@@ -1,6 +1,11 @@
-# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 27 novembre, 0 h 40)
+# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 27 novembre, 0 h 45)
 
 À lire en entier par la nouvelle conversation avant de toucher à quoi que ce soit.
+
+**27 novembre, 0 h 45 — EN LIGNE SUR LE SITE (commit 0d12722 de `main`, seul `brumeval/combat-sage.html`) ET DANS LA PAGE CLAUDE (version `1795735946-8cbb`) : LE COMBAT DU SAGE, VERSION 29 — LA MÉLODIE SEULEMENT AU REFRAIN** (Romain, 0 h 29 : la mélodie aiguë « elle s'arrête jamais » ; « un refrain avec cette mélodie, mais tout le reste […] plus discret, on met juste les basses avec des sons un peu moins stressants » ; « fais juste cette modif et c'est bon. Tu peux la mettre en ligne »). Bible § 15.19 ; `jeu/maquettes/combat-sage/LISEZ-MOI.md`, « La version 29 ».
+- **Le code** : `jeu/maquettes/combat-sage/v29/musique.py` retouche `sound14.js` dans `construire.py` (`SON19 = musique29(SON19)`) : nouvel ordre des parties (`SEQ` : intro, refrain A, trois couplets `calme`, refrain fort, deux couplets), basse `calme`, batterie `doux`, `nappe()`, roulement seulement avant le refrain, arpèges / cymbale / « piou » seulement au refrain. `build29_part.py` : le titre.
+- **Vérifié** : chaque partie enregistrée hors ligne (couplets 3,5 dB plus bas, environ six fois moins d'aigu ; refrain inchangé) ; la page sur téléphone et tablette imités, la musique en marche, aucune erreur ; 83 vérifications des règles. **Pas écouté.**
+- **La suite** : Romain a dit « c'est bon » : rien d'autre à faire sur le Sage sans un nouveau go.
 
 **27 novembre, 0 h 40 — PHASE 3 REFAITE AVEC ROMAIN, À LA VOIX : TOUTES LES DÉCISIONS DANS LA BIBLE, § 18.16 (vue World of Warcraft, coéquipiers qui suivent, villageois qui montrent sans parler, fontaine / lanterne / statue cassée, six parties de Grosbec, trois sorts lents, bouclier 3 s / 10 s, zones mortelles, méga attaque, deux combats, mort 10 s, « On reprend » sans rien afficher, code en portraits). La maquette v1 (§ 18.13) est jugée « un peu nulle ». Go de Romain (0 h 25) : « Ok, vas-y, mets à jour la Bible et fais la maquette. Tu as mon go et tu peux mettre en ligne. » La maquette v2 (avec un mode seul, trois robots) est EN COURS dans cette conversation ; si cette entrée n'a pas de suite, elle n'est pas finie.**
 
