@@ -5925,6 +5925,15 @@ Détail, réglages et choix à valider : `jeu/maquettes/combat-sage/LISEZ-MOI.md
 - **Dans la salle des jeux du site** : https://esperidad-tech.github.io/brumeval/salle.html, « ⚔️ Combat final (enquête 10) », quatrième case 🦉 « Le combat du Sage » (🟡) → https://esperidad-tech.github.io/brumeval/combat-sage.html ; venu de la salle, la pause et la fin ont un bouton « ← La salle des jeux ». Commit 14ea128 de `main` (seuls `brumeval/combat-sage.html` et `brumeval/salle.html`).
 - Détail : `jeu/maquettes/combat-sage/LISEZ-MOI.md`, « La version 27 » et « La salle des jeux ».
 
+### 15.18 Les runes dorées lues sur de vrais dessins (version 28, 27 novembre, 0 h 01) [Romain, 26 nov., 23 h 28] — EN LIGNE SUR LE SITE
+- **Romain** : « Je viens de passer 5 minutes à essayer de faire une étoile, j'y suis jamais arrivé. […] Et pourtant, elle était pas si mal faite que ça. »
+- **La faute (version 27)** : la lecture n'avait été essayée que sur des tracés de machine. À la main (imitée), l'étoile en contour n'était presque jamais lue (5 sur 200), l'étoile croisée une fois sur quatre ratée, et **un cercle tremblé faisait la lune deux fois sur trois** (on pouvait gâcher la lune en voulant le bouclier).
+- **Refait** : la forme est simplifiée en lignes droites, on compte les pointes sèches (même coupées par un doigt rapide) et on mesure si elle est creusée. **Étoile = 4 à 6 pointes, croisée ou en contour** ; triangle = 3 coins, forme pleine ; lune = 2 pointes, forme creusée, un seul tour. Carré et cercle restent le bouclier ou la cage.
+- **Mesuré à la main** : étoile croisée 284 sur 300, étoile en contour 300, triangle 299, lune 300 ; cercle et carré jamais dorés ; spirales, V et arcs jamais dorés. Dans la page, avec des doigts imités (tablette et téléphone) : 12 sur 12 pour chaque forme dorée (une lune sur 12 ratée sur téléphone).
+- En plus : la page prend tous les points envoyés par la tablette ; **on peut appuyer sur Graver sans encre tant qu'il reste une rune dorée** (elles sont gratuites). [Claude, pas validé]
+- **Pas vérifié** : un vrai doigt d'enfant sur une vraie tablette ; une étoile en deux traits ne marche pas (un seul trait).
+- En ligne : la page Claude (même adresse) et la salle des jeux (commit 50b5fe8 de `main`, seul `brumeval/combat-sage.html`). Détail : `jeu/maquettes/combat-sage/LISEZ-MOI.md`, « La version 28 ».
+
 ## 16. L'enquête 10, le combat final — le combat du Barde contre Grosbec, et les modèles de la ville d'en bas (maquette, 24 novembre, version 11) — HORS DU JEU, RIEN EN LIGNE SUR LE SITE, PAS ENCORE SUR GITHUB
 
 **Où on en est** : c'est une **maquette de test**, pas le vrai jeu. Rien n'est construit dans Brumeval. Elle se joue ici : https://claude.ai/artifact/5vCVNgJnhYV3aRgUY2ttT1 (version 11, en ligne depuis le 24 novembre, 23 h 59). Tout le détail, version par version, est dans le document du projet `claude/maquette-combat-du-barde.md`.
@@ -7134,7 +7143,7 @@ Tout le fil est gardé dans `claude/combat-pisteur-decisions-orales-25-novembre-
 | 5 | La phase 2, les trois de devant, en vrai (**d'après le § 18.14**) | maquette dessinée | 3 (version 2) + avis de Romain | à faire |
 | 6 | La phase 2, le jeu du Pisteur (**à lire : § 18.14, points 6, 10 et 11**) | maquette | 3 conseillé | à faire |
 | 7 | La phase 3 complète | maquette dessinée | 4 + essai en famille | à faire |
-| 8 | Les cartes dorées dans les combats de la phase 1 | combats existants | — | **le Sage : fait** (26 nov., 20 h 09, § 15.17) ; l'Alchimiste et le Barde : à faire |
+| 8 | Les cartes dorées dans les combats de la phase 1 | combats existants | — | **le Sage : fait** (26 nov., 20 h 09, § 15.17 ; lecture des formes refaite le 27 nov., 0 h 01, § 15.18) ; l'Alchimiste et le Barde : à faire |
 | 9 | Les cinématiques de l'enquête 10 | films | 1 | à faire |
 | 10 | Assembler l'enquête 10 dans le jeu | jeu | 5, 6, 7, 8, 9 | à faire |
 | 11 | Les petites versions des combats pour les enquêtes 4 à 9 | jeu | 2 | plus tard |

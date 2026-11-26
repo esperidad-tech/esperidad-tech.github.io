@@ -2,7 +2,7 @@
 // node joueur-immobile.js parties=6 x=450 y=470 graver=0      (graver = part du temps où le jeu reste en mode « graver », de 0 à 1)
 // Ce qu'on veut : il doit PERDRE vite, quel que soit « graver ». En version 19, avec graver=1, il gagnait (voir le LISEZ-MOI) ; depuis la version 20, il perd. Pour revoir l'ancien défaut : logic=./logic19.js
 const A = Object.fromEntries(process.argv.slice(2).map(a => a.split('=')));
-const G = require(require('path').resolve(A.logic || __dirname + '/logic27.js'));
+const G = require(require('path').resolve(A.logic || __dirname + '/logic28.js'));
 const N = +(A.parties || 6), X = +(A.x || 450), Y = +(A.y || 470), p = +(A.graver || 0);
 let wins = 0; const fin = [], combat = [], mini = [];
 for (let g = 0; g < N; g++) {

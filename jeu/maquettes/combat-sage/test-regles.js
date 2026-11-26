@@ -1,4 +1,4 @@
-const G = require('./logic27.js');
+const G = require('./logic28.js');
 const ok = (c, m) => console.log((c ? 'ok   ' : 'RATÉ ') + m);
 const mk = (s, type, x, y, extra = {}) => { const T = G.TYPES[type]; const u = { id: s.nextId++, type, x, y, r: T.r, hp: 50, max: 50, vx: 0, vy: 0, atk: 0.5, daze: 0, flash: 0, burn: 0, burnCd: 0, burnTick: 0, held: false, fear: 0, dance: 0, charmCd: 0, ...extra }; s.soldiers.push(u); return u; };
 const quiet = s => { s.spawnT = 1e9; s.burstT = 1e9; s.gbT = 1e9; s.mortT = 1e9; };
@@ -87,3 +87,14 @@ const tracer = (f, R, rot, x = 450, y = 445, amp = 1.2) => trembler(placer(FORME
 { const s = neuf(82); const u = mk(s, 'cogneur', 411, 490, { hp: 50, max: 50 }), w = mk(s, 'lanceur', 700, 445, { hp: 50, max: 50 }); const r = G.cast(s, G.recognize(tracer('lune', 90, 1.1, 650, 250))); const p0 = s.protection; run(s, 5.5); ok(r.ok && u.aveugle > 0 && s.protection === p0 && !s.stones.length, 'la lune d’or : les golems aveuglés errent sans frapper (ni pierres)'); run(s, 3); ok(!(u.aveugle > 0), 'au bout de 6 secondes, ils revoient'); }
 { const s = neuf(83); for (let i = 0; i < 20; i++) mk(s, i % 4 ? 'cogneur' : 'costaud', 100 + i * 35, 150 + (i % 3) * 300, { hp: 50, max: 50 }); const i0 = s.ink; const r = G.cast(s, G.recognize(tracer('etoile', 110, 0.2, 300, 300))); run(s, 0.1); ok(r.ok && !s.soldiers.length && r.killed === 20 && s.shards.length === 0 && s.ink === i0, 'l’étoile d’or : les 20 golems sont détruits (sans pluie d’encre), gratuite'); ok(!G.cast(s, G.recognize(tracer('etoile', 110, 0.2, 300, 300))).ok, 'une seule fois'); }
 { const s = neuf(84); give(s, 'dome'); const r = G.cast(s, G.recognize(tracer('cercle', 90, 0))); ok(r.ok && s.dome > 0 && s.dorees.triangle && s.dorees.lune && s.dorees.etoile, 'un cercle reste le bouclier, et ne gaspille aucune rune dorée'); }
+
+// ===== version 28 : les runes dorées dessinées à la main =====
+{ const fs = require('fs'); const gen = fs.readFileSync(__dirname + '/formes-a-la-main.js', 'utf8'); const M = new Function('graine', gen + '; return { F, main };');
+  const lu = {}; for (const graine of [3, 7, 99]) { const { F, main } = M(graine); for (const f of Object.keys(F)) { lu[f] = lu[f] || 0; for (let i = 0; i < 100; i++) { const r = G.recognize(main(f)); const k = r.kind === 'ferme' ? (r.forme || 'cercle') : r.kind; const bon = f === 'pentagramme' || f === 'contour' ? k === 'etoile' : f === 'carre' || f === 'cercle' ? !(r.forme) : k === f; if (bon) lu[f]++; } } }
+  ok(lu.pentagramme >= 270 && lu.contour >= 285 && lu.triangle >= 285 && lu.lune >= 285 && lu.cercle === 300 && lu.carre === 300, `à la main, sur 300 : étoile croisée ${lu.pentagramme}, étoile en contour ${lu.contour}, triangle ${lu.triangle}, lune ${lu.lune} ; cercle et carré jamais dorés (${lu.cercle}, ${lu.carre})`); }
+{ const R = (pts) => G.recognize(pts.map(([x, y]) => ({ x, y }))); const ligne = [], V = [], arc = [], sp = [];
+  for (let i = 0; i <= 40; i++) ligne.push([200 + i * 10, 300 + Math.sin(i) * 2]);
+  for (let i = 0; i <= 30; i++) V.push([290 + i * 5.3, 250 + i * 8.6]); for (let i = 0; i <= 30; i++) V.push([450 + i * 5.3, 510 - i * 8.6]);
+  for (let i = 0; i <= 40; i++) { const a = Math.PI * (1 + i / 40); arc.push([450 + Math.cos(a) * 160, 445 + Math.sin(a) * 160]); }
+  for (let i = 0; i <= 120; i++) { const a = i / 120 * 6 * Math.PI, r = 20 + i * 1.3; sp.push([450 + Math.cos(a) * r, 445 + Math.sin(a) * r]); }
+  const k = [R(ligne).kind, R(V).kind, R(arc).kind, R(sp).kind]; ok(k[1] === 'poussee' && k[3] === 'spirale' && !R(ligne).forme && !R(arc).forme, `les autres runes ne changent pas : trait ${k[0]}, V ${k[1]}, arc ${k[2]}, spirale ${k[3]}`); }
