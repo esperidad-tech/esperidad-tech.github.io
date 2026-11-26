@@ -14,7 +14,7 @@ window.__S = (function () {
   // 1. La dague : 10, 10, 20 — quarante points en deux secondes, sur le même bouton
   S.dague = function () {
     scene([13, 12, -Math.PI / 2], [{ t: 'colosse', x: 13, y: 10.2, fa: -Math.PI / 2, immobile: 1 }], { sansObstacles: 1 });
-    pt.ev('G[0].sonne=999'); const coups = []; let hp = 150, t0 = null;
+    pt.ev('G[0].sonne=999'); const coups = []; let hp = st().G[0].hp, t0 = null;   /* (version 11 : le colosse a 250 de vie) */
     pt.tenir(1, true);
     av(4.3, t => { const g = st().G[0], r = st().P.rang; if (g.hp < hp) { coups.push([+(t).toFixed(2), hp - g.hp, r]); hp = g.hp; } });
     pt.tenir(1, false);
@@ -140,7 +140,7 @@ window.__S = (function () {
     let hp = null;
     av(4, t => { const g = st().G[0]; if (g.mode === 'chasse' && pt.ev('G[0].reagit') <= 0 && hp === null) { hp = g.hp; return true; } });
     pt.tenir(1, false);
-    return { ok: hp === 100, vieQuandIlReagit: hp };
+    return { ok: hp === 200, vieQuandIlReagit: hp };   /* (version 11 : 250 de vie − l'embuscade − deux coups de dague) */
   };
 
   // 10. Le cuirassé : la dague et la dague circulaire font « ting » ; l'embuscade le blesse ; le javelot d'un autre aussi
@@ -303,7 +303,7 @@ window.__S = (function () {
   //     plus d'ombre tant qu'il est vivant
   S.chaine = function () {
     scene([13, 12.8, -Math.PI / 2], [{ t: 'colosse', x: 13, y: 10.3, fa: -Math.PI / 2, immobile: 1 }], { sansObstacles: 1 });
-    pt.appui(4); av(0.3); pt.appui(2); av(0.5); const s0 = st(), insensible = s0.G[0].sonne <= 0 && s0.stats.insensibles === 1 && !s0.P.ombre && s0.G[0].hp === 150 && !s0.G[0].enrage;
+    pt.appui(4); av(0.3); pt.appui(2); av(0.5); const s0 = st(), insensible = s0.G[0].sonne <= 0 && s0.stats.insensibles === 1 && !s0.P.ombre && s0.G[0].hp === 250 && !s0.G[0].enrage;
     scene([13, 12.8, -Math.PI / 2], [{ t: 'colosse', x: 13, y: 10.3, fa: -Math.PI / 2, immobile: 1 }], { sansObstacles: 1 });
     pt.appui(4); av(0.3); pt.appui(1); av(0.3); const enrage = st().G[0].enrage, hpC = st().G[0].hp;
     // on file tout droit vers le bas : à plus de 6,5 pas, la chaîne
@@ -316,7 +316,7 @@ window.__S = (function () {
     av(5, t => { const s = st(), g = s.G[0], P = s.P; if (g.zone) { vu = true; if (t0 === null) t0 = t; if (t - t0 >= 0.5) { const d = sortie(g.zone, P); pt.cmd({ mx: Math.cos(d), my: Math.sin(d) }); } } else if (vu) return true; });
     pt.cmd({ mx: 0, my: 0 });
     const s2 = st();
-    return { ok: insensible && enrage && hpC === 120 && tCh !== null && dMax > 6.4 && dMax < 8.2 && dApres < 2.6 && hpApres === 100 && ombreRefusee && vu && s2.P.hp === 100 && s2.stats.chaines >= 1,      // (qui sort de l'onde en courant tout droit dépasse le périmètre : une deuxième chaîne)
+    return { ok: insensible && enrage && hpC === 220 && tCh !== null && dMax > 6.4 && dMax < 8.2 && dApres < 2.6 && hpApres === 100 && ombreRefusee && vu && s2.P.hp === 100 && s2.stats.chaines >= 1,      // (qui sort de l'onde en courant tout droit dépasse le périmètre : une deuxième chaîne)
       insensible, blesse: [enrage, hpC], chaineA: +dMax.toFixed(1), rameneA: +dApres.toFixed(1), vieApresLaChaine: hpApres, ombreRefusee, ondeEvitee: s2.P.hp === 100, chaines: s2.stats.chaines };
   };
 

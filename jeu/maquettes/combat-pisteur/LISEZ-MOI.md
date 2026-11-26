@@ -1,9 +1,16 @@
-# Le combat du Pisteur — version 10 (26 novembre 2026) : le son et la musique (version 9 : l'arrière-salle rendue en volume, les renforts)
+# Le combat du Pisteur — version 11 (26 novembre 2026) : TERMINÉ (« c'est validé ») — les dernières retouches du son (version 10 : le son et la musique ; version 9 : la salle en volume, les renforts)
 
 Enquête 10, combat final : pendant que ses amis occupent Grosbec dans la grande salle, **le Pisteur est passé par-derrière** et
 s'occupe de sa garde (les golems), dans l'arrière-salle. Rien n'est branché dans le jeu, rien n'est en ligne sur le site : c'est une
 page à part, comme les combats du Barde, du Sage et de l'Alchimiste.
-La page publiée (version 10 depuis le 26 novembre, 11 h 40) : https://claude.ai/artifact/DRTHz5bppgsstd5ameTnba (un nouveau canevas ; l'ancien, https://claude.ai/artifact/GmvcxCF5gC89M9tmnCVyGU, garde la version 8).
+La page publiée (version 11 depuis le 26 novembre, 14 h 40) : https://claude.ai/artifact/DRTHz5bppgsstd5ameTnba (un nouveau canevas ; l'ancien, https://claude.ai/artifact/GmvcxCF5gC89M9tmnCVyGU, garde la version 8).
+
+## Version 11 : les dernières retouches du son ; le combat est terminé (26 novembre, 14 h 40)
+Romain, 14 h 04 : Bible §17.52 (« c'est validé. On peut dire qu'on a terminé »). Tout est dans `src/son.js` :
+- **la musique** : `musDebut` (le bourdon, et deux « couches » : `M.mys` le mystère, `M.act` le combat), `musBascule` (le fondu de l'une à l'autre, appelé quand le Pisteur entre ou sort de l'ombre), `musPlanifier` (ce qui sonne : les deux suivent la même mesure ; on ne fabrique que celle qu'on entend) ; leurs niveaux : `NIV.musique`, `NIV.musAction` ;
+- **la dague du donjon** : `O` (les morceaux recopiés de `jeu/donjon/essai/sons/bruitages.js`), `plaque`, `S.swish1` à `S.swish3` (quand on appuie), `S.dague1` à `S.dague3` (quand la lame touche, `blesserG` dans `golems.js`) ;
+- `S.acheve` (le golem qui éclate), `S.colosseArrive`, `S.gColosse1` à `S.gColosse5`, `S.pasColosse`, `S.porteOuvre`, `S.porteFerme`, `S.porteClaque` ; dans `majSon` : le portail (suivi de `porte[]`), le colosse (ses pas suivent sa marche), l'assourdissement dans l'ombre (`LP_OMBRE`) ;
+- **le réglage des niveaux** : `python3 tests/sons.py regler` (trois passes, environ dix minutes), puis `python3 construire.py` et `python3 tests/sons.py` (« SOUCIS 0 »).
 
 ## Version 10 : le son et la musique (26 novembre, 11 h 40)
 Commande de Romain (10 h 55) : Bible §17.47. **Personne n'a écouté** (Claude mesure, il n'entend pas).

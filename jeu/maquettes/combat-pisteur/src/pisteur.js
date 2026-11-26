@@ -157,7 +157,7 @@ function cibleDague(marge){
 function debutDague(){
   if(tReel-P.rangT>REG.dague.oubli)P.rang=1;
   const c=cibleDague(0.7);if(c)P.fa=Math.atan2(c.y-P.y,c.x-P.x);
-  P.etat='dague';P.t=0;P.coupFait=false;P.rangCoup=P.rang;P.dur=REG.dague.dur[P.rang-1];P.cible=c;son(P.rang===3?'swishG':'swish');
+  P.etat='dague';P.t=0;P.coupFait=false;P.rangCoup=P.rang;P.dur=REG.dague.dur[P.rang-1];P.cible=c;son('swish'+P.rang);
   return true;
 }
 function frapperDague(){

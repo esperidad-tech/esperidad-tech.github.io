@@ -90,7 +90,7 @@ function apparaitre(type,ou,spec,i){
   if(ou==='g'){x=-0.8;y=9.4;tx=1.6;ty=9.4+rnd(-0.6,0.6);}
   else if(ou==='d'){x=RW+0.8;y=9.4;tx=RW-1.6;ty=9.4+rnd(-0.6,0.6);}
   else{const px0=ou==='p1'?8:18;x=px0+rnd(-0.3,0.3);y=0.2;tx=px0+(i%3-1)*0.9;ty=3.0+Math.floor(i/3)*0.7;porte[ou==='p1'?0:1]=1;}
-  const g=nouveauGolem(type,x,y,tx,ty,spec);G.push(g);son('porte',x,y);return g;
+  const g=nouveauGolem(type,x,y,tx,ty,spec);G.push(g);                     /* (version 11 : le portail a ses sons à lui, son.js : majSon) */return g;
 }
 function lancerGroupe(gr){
   const id=++grpN,route=gr.route?ROUTES[gr.route].filter(q=>!bloque[cel(q[0],q[1])]):null;

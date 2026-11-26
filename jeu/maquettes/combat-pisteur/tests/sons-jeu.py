@@ -11,7 +11,9 @@ cache = len(sys.argv) > 3 and sys.argv[3] == 'cache'       # (caché : le Pisteu
 with sync_playwright() as p:
     b, pg, errs, tc = ouvrir(p, 844, 390, 1, suffixe='?extrait=non')
     pg.tap('#btnGo', force=True); time.sleep(0.5)
-    pg.evaluate("__pt.invincible(true);__pt.demarrer(%d);__pt.ev('P.x=13;P.y=9;P.lx=13;P.ly=9')" % (v - 1))
+    pg.evaluate("__pt.demarrer(%d);__pt.invincible(true);__pt.ev('P.x=13;P.y=9;P.lx=13;P.ly=9;P.saigne=[]')" % (v - 1))
+    if v == 8:     # (vague 8 : on fait tomber la première bande, pour que le colosse arrive)
+        time.sleep(6); pg.evaluate("__pt.ev(\"for(const g of G.slice())if(g.type!=='colosse'&&vivant(g))tuer(g,'dague')\")")
     if cache: pg.evaluate("__pt.ev('P.ombre=true;P.capeT=999')")
     t0 = time.time(); vus = []
     while time.time() - t0 < sec:

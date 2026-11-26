@@ -9,7 +9,7 @@ const GT={
   mortier:{nom:'mortier',hp:30,r:0.5,vit:1.4,tour:2.5,h:1.15,cone:0.9,reac:0.4,m:'lanceur',sc:0.58,pas:1.0},
   belier:{nom:'bélier',hp:80,r:0.62,vit:2.6,tour:2.1,h:1.1,cone:0.9,reac:0.05,m:'fonceur',sc:0.62,pas:1.1,raide:1},
   cuirasse:{nom:'cuirassé',hp:90,r:0.5,vit:1.7,tour:2.5,h:1.45,cone:0.9,reac:0.7,m:'cuirasse',sc:0.58,pas:1.1,armure:1},
-  colosse:{nom:'colosse',hp:150,r:1.05,vit:1.5,tour:1.6,h:2.6,cone:1.0,reac:1.1,m:'gros',sc:0.86,pas:1.6},
+  colosse:{nom:'colosse',hp:250,r:1.05,vit:1.5,tour:1.6,h:2.6,cone:1.0,reac:1.1,m:'gros',sc:0.86,pas:1.6},
   /* le neuvième (25 novembre, 22 h) : le réparateur. Fragile (une embuscade le tue), aucun dégât : il répare les blessés de son groupe. */
   repare:{nom:'réparateur',hp:30,r:0.42,vit:2.7,tour:5,h:1.15,cone:0.9,reac:0.4,m:'reparateur',sc:0.6,pas:0.95}
 };
@@ -196,7 +196,7 @@ function blesserG(g,dmg,src,opt){
   if(!moi){stats.entreEux+=dmg;texte(g.x,g.y,g.T.h+0.3,'−'+dmg,'#ffb070');}
   else texte(g.x+rnd(-0.2,0.2),g.y,g.T.h+0.3,'−'+dmg,src==='embuscade'?'#d6c4ff':'#fff2c0');
   hitstop=Math.max(hitstop,src==='dague'?0.04:0.02);
-  etincelles(g.x,g.y,g.T.h*0.55,src==='embuscade'?'#d6c4ff':moi?'#fff2c0':'#ff9a4a',src==='dague'?8:5);son('frappe',g);
+  etincelles(g.x,g.y,g.T.h*0.55,src==='embuscade'?'#d6c4ff':moi?'#fff2c0':'#ff9a4a',src==='dague'?8:5);if(src!=='embuscade')son(src==='dague'?'dague'+clamp(P.rangCoup||1,1,3):'frappe',g);   /* (version 11 : un son par coup de dague ; l'embuscade a le sien) */
   if(g.hp<=0){tuer(g,src);return true;}
   if(moi){
     colereDe(g);
