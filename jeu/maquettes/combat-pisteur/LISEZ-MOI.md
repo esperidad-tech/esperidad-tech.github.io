@@ -1,9 +1,12 @@
-# Le combat du Pisteur — version 14 (26 novembre 2026) : TERMINÉ (« c'est validé ») — la musique de combat refaite, plus rythmée
+# Le combat du Pisteur — version 15 (26 novembre 2026) : TERMINÉ — EN LIGNE SUR LE SITE, dans la salle des jeux (https://esperidad-tech.github.io/brumeval/combat-pisteur.html)
 
 Enquête 10, combat final : pendant que ses amis occupent Grosbec dans la grande salle, **le Pisteur est passé par-derrière** et
 s'occupe de sa garde (les golems), dans l'arrière-salle. Rien n'est branché dans le jeu, rien n'est en ligne sur le site : c'est une
 page à part, comme les combats du Barde, du Sage et de l'Alchimiste.
 La page publiée (version 11 depuis le 26 novembre, 14 h 40) : https://claude.ai/artifact/DRTHz5bppgsstd5ameTnba (un nouveau canevas ; l'ancien, https://claude.ai/artifact/GmvcxCF5gC89M9tmnCVyGU, garde la version 8).
+
+## Version 15 : sur le site, dans la salle des jeux (26 novembre, 18 h 11)
+Bible §17.60. En ligne : `brumeval/combat-pisteur.html` du site (branche `main`), et une case dans la salle des jeux (`jeu/src/salle.js`). Pour la mettre à jour : `python3 construire.py`, puis copier `combat-pisteur.html` dans `brumeval/` du site. Avant de jouer : juste « Démarrer » (`ecrans.js`, `chargement`) ; l'extrait ne se lance qu'avec `?extrait=oui`. `?depuis=salle` : le bouton « ← La salle des jeux » de la pause.
 
 ## Version 14 : la musique de combat, plus rythmée (26 novembre, 15 h 51)
 Bible §17.59. `musPlanifier`, partie « le combat » : `GR` (les quatre accords), `ARP` (l'arpège), `POMPE` (la basse qui se creuse sur la grosse caisse), la montée toutes les huit mesures (`monte`) et la reprise.

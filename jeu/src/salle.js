@@ -99,6 +99,11 @@ function rendre(){
     });
     s += '</div></section>';
   });
+  /* (26 novembre) le combat final de l'enquête 10, en page à part (brumeval/combat-pisteur.html) : la difficulté choisie n'y change rien.
+     Romain, 18 h 01 : « tu le mets dans la salle des jeux […] il n'y a pas de difficulté, donc on peut mettre n'importe quel numéro ». */
+  s += '<section class="sl-role" style="--c:var(--c-pisteur)"><h2>⚔️ Combat final (enquête 10)</h2><div class="sl-jeux">' +
+    '<button class="sl-jeu" data-lien="combat-pisteur.html?depuis=salle"><span class="sl-statut" title="Validé">✅</span><span class="sl-jeu-ic">🗡️</span><b>Le combat du Pisteur</b>' +
+    '<small>Contre la garde de Grosbec, huit vagues</small><small class="sl-cal">La difficulté choisie n\'y change rien</small></button></div></section>';
   if(etat.journal.length){
     s += '<section class="sl-journal"><h2>Mes parties</h2><ol>' + etat.journal.slice(-12).reverse().map(function(j){
       var d = MJ.TYPES[j.type] || {};
@@ -137,8 +142,9 @@ function jouer(type, varId){
   function fermer(){ plein.hidden = true; plein.innerHTML = ''; document.body.classList.remove('sl-bloque'); rendre(); }
 }
 document.addEventListener('click', function(ev){
-  var b = ev.target.closest('[data-niv],[data-jeu],[data-effacer],[data-relire]');
+  var b = ev.target.closest('[data-niv],[data-jeu],[data-lien],[data-effacer],[data-relire]');
   if(!b) return;
+  if(b.dataset.lien){ location.href = b.dataset.lien; return; }   /* (le combat du Pisteur : sa page à lui) */
   if(b.dataset.niv){ etat.niveau = +b.dataset.niv; sauver(); rendre(); }
   else if(b.dataset.jeu) jouer(b.dataset.jeu, b.dataset.var);
   else if(b.dataset.relire !== undefined){ relire(+b.dataset.relire); }

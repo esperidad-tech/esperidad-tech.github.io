@@ -86,6 +86,8 @@ h2{font-family:Cinzel,Georgia,serif;font-size:1.3rem;margin:.1em 0 .5em;color:#f
 #chargement{width:min(16em,60vw);height:.5em;margin:1.1em auto .9em;border-radius:1em;background:rgba(255,255,255,.1);overflow:hidden}
 #chargement i{display:block;height:100%;width:0;background:#f3d48a;border-radius:1em;transition:width .25s}
 #regles{transition:background .22s}
+#regles:not(.extrait){background:#04070e}   /* (version 15) avant de jouer : un fond noir et le bouton, rien d'autre */
+#regles.pret #chargement{visibility:hidden}
 #regles.extrait{background:rgba(4,7,14,0);overflow:hidden}
 #regles.extrait.noir{background:#04070e}
 #regles.extrait h1,#regles.extrait #chargement{display:none}
@@ -142,9 +144,8 @@ h2{font-family:Cinzel,Georgia,serif;font-size:1.3rem;margin:.1em 0 .5em;color:#f
 
 <!-- avant de jouer : pas un mot. La salle se prépare (une barre), puis un extrait où le jeu se joue tout seul, et le bouton jaune. -->
 <div id="regles" class="voile on"><div class="carte">
-  <h1>Le combat du Pisteur</h1>
   <div id="chargement" role="progressbar" aria-label="Le combat se prépare"><i></i></div>
-  <div class="bas"><button class="jaune" id="btnGo" disabled>En garde !</button></div>
+  <div class="bas"><button class="jaune" id="btnGo" disabled>Démarrer</button></div>
 </div></div>
 <div id="doigt"></div>
 
@@ -156,6 +157,7 @@ h2{font-family:Cinzel,Georgia,serif;font-size:1.3rem;margin:.1em 0 .5em;color:#f
     <button class="gris" id="pSuivant">Essai : vague suivante</button>
     <button class="gris" id="pSon">Son : oui</button>
     <button class="gris" id="pRecommencer">Recommencer du début</button>
+    <button class="gris" id="pSalle" hidden>← La salle des jeux</button>
   </div>
   <p class="mesures" id="pMesures"></p>
 </div></div>

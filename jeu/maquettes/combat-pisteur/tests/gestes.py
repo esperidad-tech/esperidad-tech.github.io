@@ -22,7 +22,7 @@ with sync_playwright() as p:
     cl = lambda i, c: E(pg, "document.getElementById('%s').classList.contains('%s')" % (i, c))
     # ---- avant de jouer : l'extrait, sans un mot
     time.sleep(1.0)
-    note("avant de jouer : l'extrait tourne, le bouton jaune est à l'écran", E(pg, "__pt.etat().extrait") >= 0 and box('#btnGo')['y'] + box('#btnGo')['height'] <= 390 and not E(pg, "document.getElementById('btnGo').disabled"))
+    note("avant de jouer : pas d'extrait (version 15), juste le bouton jaune à l'écran", E(pg, "__pt.etat().extrait") < 0 and box('#btnGo')['y'] + box('#btnGo')['height'] <= 390 and not E(pg, "document.getElementById('btnGo').disabled"))
     n, T = mots(pg); note("avant de jouer : rien à lire (le plus long texte à l'écran : %d mots) %s" % (n, T), n <= 3)
     note("plus de conteur, plus de bouton 🔊, plus de page d'explication", E(pg, "!document.getElementById('conteur')&&!document.querySelector('.hp,[data-lire],#regles p,#pRegles')"))
     pg.screenshot(path=SORTIE + '/t-extrait.png')

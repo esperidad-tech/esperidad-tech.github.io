@@ -4,7 +4,7 @@ import sys, json, time
 from playwright.sync_api import sync_playwright
 from commun import ouvrir, SORTIE
 with sync_playwright() as p:
-    b, pg, errs, tc = ouvrir(p)
+    b, pg, errs, tc = ouvrir(p, suffixe='?extrait=oui')   # (version 15 : l'extrait ne se montre plus tout seul)
     vu = {}; t0 = time.time(); k = 0; der = -1
     lecture = "(()=>{const s=__pt.etat();return {i:s.extrait,ombre:s.P.ombre,nV:s.nVoient,cd:+s.P.ombreCD.toFixed(1),G:s.G.map(g=>[g.type,g.hp,g.etat]),P:[+s.P.x.toFixed(1),+s.P.y.toFixed(1),s.P.etat,s.P.hp],doigt:document.getElementById('doigt').classList.contains('pose'),voile:document.getElementById('regles').className,go:document.getElementById('btnGo').disabled}})()"
     journal = []
@@ -23,6 +23,6 @@ with sync_playwright() as p:
     # le bouton jaune : le vrai combat démarre, vie pleine, vague 1, plus de doigt ni de voile
     pg.click('#btnGo', force=True); time.sleep(1.2); s = pg.evaluate("(()=>{const s=__pt.etat();return {extrait:s.extrait,phase:s.phase,vague:s.vague,hp:s.P.hp,n:s.G.length,voile:document.getElementById('regles').className,stats:s.stats.tues,cartes:s.P.cartes}})()")
     pg.screenshot(path='%s/extrait-depart.png' % SORTIE)
-    print(s); ok = ok and s['extrait'] == -1 and s['phase'] == 'vague' and s['hp'] == 100 and s['voile'] == 'voile' and s['stats'] == 0
+    print(s); ok = ok and s['extrait'] == -1 and s['phase'] == 'vague' and s['hp'] == 100 and 'on' not in s['voile'].split() and s['stats'] == 0
     print('ERREURS', errs[:6]); print('EXTRAIT', 'OK' if ok and not errs else 'NON')
     b.close()

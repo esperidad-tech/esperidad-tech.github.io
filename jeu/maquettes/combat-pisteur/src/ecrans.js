@@ -123,7 +123,7 @@ function demarrer(i,garder,sauve){
 }
 function ouvrirPause(){
   if(etatJeu!=='jeu')return;enPause=true;pauseEl.classList.add('on');
-  $('pMesures').textContent=`Mesures (version 10) : image ${can.width} × ${can.height} · ${fpsMoy.toFixed(0)} images par seconde · pire seconde ${pire<999?pire.toFixed(0):'—'} · finesse ${finesse} · appareil ${vitesseApp} · ${GS.cuits} images de golems`;
+  $('pMesures').textContent=`Mesures (version 15) : image ${can.width} × ${can.height} · ${fpsMoy.toFixed(0)} images par seconde · pire seconde ${pire<999?pire.toFixed(0):'—'} · finesse ${finesse} · appareil ${vitesseApp} · ${GS.cuits} images de golems`;
 }
 function reprendre(){enPause=false;pauseEl.classList.remove('on');regles.classList.remove('on');dernier=performance.now();}
 bPause.onclick=()=>enPause?reprendre():ouvrirPause();
@@ -132,6 +132,8 @@ $('pSuivant').onclick=()=>{reprendre();passerVague();};
 $('pVague').onclick=()=>{pauseEl.classList.remove('on');choisirVague(false);};
 $('pSon').onclick=()=>{sonOn=!sonOn;couperSon();$('pSon').textContent=sonOn?'Son : oui':'Son : non';};
 $('pRecommencer').onclick=()=>demarrer(0,false);
+/* (version 15) ouvert depuis la salle des jeux du site : un bouton pour y revenir */
+if(/[?&]depuis=salle/.test(location.search)){const b=$('pSalle');b.hidden=false;b.onclick=()=>{location.href='salle.html';};}
 btnGo.onclick=()=>{if(btnGo.disabled)return;finExtrait();demarrer(0,false);};
 function duree(){const s=Math.round(tReel-stats.debut);return `${Math.floor(s/60)} min ${String(s%60).padStart(2,'0')}`;}
 function victoire(){finDans=1.3;son('victoire');musique(false);}
@@ -172,7 +174,7 @@ function chargement(){
   if(prepare===0){prepare=1;el.style.width='6%';return;}
   if(prepare===1){preparerImages();prepare=2;chargeT0=tReel;PS.lancer(S0,()=>{});return;}
   if(prepare===2){
-    if(PS.essentiel&&Salle.pret){prepare=3;btnGo.disabled=false;btnGo.classList.add('anneau');el.style.width='100%';if(!/[?&]extrait=non/.test(location.search))lancerExtrait();}
+    if(PS.essentiel&&Salle.pret){prepare=3;btnGo.disabled=false;btnGo.classList.add('anneau');el.style.width='100%';regles.classList.add('pret');if(/[?&]extrait=oui/.test(location.search))lancerExtrait();}   /* (version 15, Romain, 26 novembre, 18 h : plus d'extrait avant de jouer, « juste un bouton démarrer » ; ?extrait=oui pour le revoir) */
     else el.style.width=Math.round(8+PS.avance*92)+'%';
   }
 }
