@@ -1,3 +1,7 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Salle des mini-jeux</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Caveat:wght@500;700&family=Macondo&display=swap">
@@ -37387,7 +37391,10 @@ function rendre(){
     '<button class="sl-jeu" data-lien="combat-pisteur.html?depuis=salle"><span class="sl-statut" title="Validé">✅</span><span class="sl-jeu-ic">🗡️</span><b>Le combat du Pisteur</b>' +
     '<small>Contre la garde de Grosbec, huit vagues</small><small class="sl-cal">La difficulté choisie n\'y change rien</small></button>' +
     '<button class="sl-jeu" data-lien="combat-barde.html?depuis=salle"><span class="sl-statut" title="À essayer">🎸</span><span class="sl-jeu-ic">🎸</span><b>Le combat du Barde</b>' +
-    '<small>Contre Grosbec, quatre actes de musique</small><small class="sl-cal">La difficulté choisie n\'y change rien</small></button></div></section>';
+    '<small>Contre Grosbec, quatre actes de musique</small><small class="sl-cal">La difficulté choisie n\'y change rien</small></button>' +
+    /* (26 novembre, 19 h 22) Romain : « Mets le jeu de l'alchimiste, mets-le en ligne sur GitHub, dans la salle des jeux. » (version 15, pas encore jouée par lui) */
+    '<button class="sl-jeu" data-lien="combat-alchimiste.html?depuis=salle"><span class="sl-statut" title="Modifié, pas encore testé">🟡</span><span class="sl-jeu-ic">⚗️</span><b>Le combat de l\'Alchimiste</b>' +
+    '<small>Contre Grosbec et ses golems, cinq potions</small><small class="sl-cal">La difficulté choisie n\'y change rien</small></button></div></section>';
   if(etat.journal.length){
     s += '<section class="sl-journal"><h2>Mes parties</h2><ol>' + etat.journal.slice(-12).reverse().map(function(j){
       var d = MJ.TYPES[j.type] || {};
