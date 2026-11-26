@@ -1,30 +1,23 @@
-/* Un robot qui joue la phase 2 (dans node, sans dessin), pour régler les chiffres.
-   node tests/robot.js [facon=immobile|bouton|faible] [niveau=bon|moyen] [parties=6] [pisteur=25] [vitesse=1] [symbole=0.25]
-   Il réagit avec un temps de retard (niveau « bon » : 0,35 s ; « moyen » : 0,6 s et des erreurs). */
+/* Un robot joue la phase 2 (version 2) en entier, dans node : node tests/robot.js [niveau=bon|moyen] [parties=4] [pisteur=30] [vie=1000] [saut=1.5]
+   Il sert à vérifier que tout s'enchaîne et à mesurer la durée de chaque tiers. */
 'use strict';
 const path = require('path');
 require(path.join(__dirname, '..', 'src', 'regles.js'));
 require(path.join(__dirname, 'robot-coeur.js'));
-const P2 = globalThis.P2, REG = P2.REG;
-
+const P2 = globalThis.P2;
 const arg = {}; process.argv.slice(2).forEach(a => { const [k, v] = a.split('='); arg[k] = v; });
-const FACON = arg.facon || 'immobile', NIVEAU = arg.niveau || 'bon', N = +(arg.parties || 6);
-const L = {W: 420, H: 860, solHaut: 300, solBas: 740, solG: 12, solD: 408, bossY: 170, bossTouche: 215};
-
+const N = +(arg.parties || 4), niveau = arg.niveau || 'bon';
 function partie(graine) {
-  const reg = {facon: FACON, pisteur: +(arg.pisteur || 25), vitesse: +(arg.vitesse || 1), symbole: +(arg.symbole || 0.25)};
-  const S = P2.nouvelle(L, reg, graine), mem = {niveau: NIVEAU};
-  const dt = 1 / 60;
-  let t = 0;
-  while (S.phase !== 'fini' && t < 1500) { const e = globalThis.RobotP2(S, mem, dt); P2.pas(S, dt, e); t += dt; }
+  const S = P2.nouvelle({pisteur: +(arg.pisteur || 30), vie: +(arg.vie || 1000), saut: +(arg.saut || 1.5)}, graine), mem = {niveau};
+  const dt = 1 / 60; let t = 0;
+  while (S.phase !== 'fini' && t < 3600) { const e = globalThis.RobotP2(S, mem, dt); P2.pas(S, dt, e); t += dt; }
   return {t, S};
 }
-
-const res = [];
+console.log(`niveau ${niveau}, Pisteur ${arg.pisteur || 30} s, vie ${arg.vie || 1000} par tiers`);
 for (let i = 0; i < N; i++) {
-  const {t, S} = partie(1000 + i * 77);
-  res.push({t, fini: S.phase === 'fini', formes: S.stats.formes.map(x => x.toFixed(0)), morts: S.stats.morts, potions: S.stats.potions,
-    coups: S.stats.coups, repare: Math.round(S.stats.reparesPV), codesFaux: S.stats.mauvaisCodes});
+  const {t, S} = partie(500 + i * 91), st = S.stats;
+  const tiers = st.tiers.map(x => `${Math.round(x.symbole)}+${Math.round((x.code || 0) - x.symbole)}`).join(' / ');
+  const coups = Object.entries(st.coups).map(([k, v]) => k + ' ' + Math.round(v)).join(', ');
+  console.log(`  ${S.phase === 'fini' ? 'fini' : 'PAS FINI (tiers ' + S.tiers + ', ' + S.phase + ', vie ' + Math.round(S.vie) + ')'} en ${(t / 60).toFixed(1)} min | tiers (combat+bulle, s) ${tiers} | morts ${st.morts} | soins ${st.soins} | glaces ${st.glaces} feux ${st.feux} coupés ${st.coupes} | orbes ${st.orbesBonnes}/${st.orbesRatees} | contres ${st.contres} | réparé ${st.reparesPV}`);
+  console.log(`     coups reçus : ${coups}`);
 }
-console.log(`façon ${FACON}, niveau ${NIVEAU}, Pisteur ${arg.pisteur || 25} s`);
-res.forEach(r => console.log(`  ${r.fini ? 'fini' : 'PAS FINI'} en ${(r.t / 60).toFixed(1)} min | formes (s) ${r.formes.join(' / ')} | morts ${r.morts} | potions ${r.potions} | réparé ${r.repare} | coups ${JSON.stringify(r.coups)}`));

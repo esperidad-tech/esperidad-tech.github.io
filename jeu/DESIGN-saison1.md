@@ -2,7 +2,7 @@
 
 ## La Bible du jeu : elle fait foi
 
-> **Nouveau (26 novembre) : la fin de la saison est écrite au § 18** (l'enquête 10 : les phases 2 et 3, la fusion, Grosbec rajeuni, Odette et le village, Mimi aux yeux arc-en-ciel, les douze cartes dorées) : idée en cours, rien de construit. **La liste des chantiers, validée par Romain, avec une fiche par chantier : § 18.11.** **La phase 2 refaite avec Romain le 26 novembre au soir (l'interface du Pisteur, deux sorts, les trois tiers en détail) : § 18.14** ; la maquette v1 du § 18.12 est dépassée. Pour lancer un chantier : « On prend le chantier N du § 18.11 ».
+> **Nouveau (26 novembre) : la fin de la saison est écrite au § 18** (l'enquête 10 : les phases 2 et 3, la fusion, Grosbec rajeuni, Odette et le village, Mimi aux yeux arc-en-ciel, les douze cartes dorées) : idée en cours, rien de construit. **La liste des chantiers, validée par Romain, avec une fiche par chantier : § 18.11.** **La phase 2 refaite avec Romain le 26 novembre au soir (l'interface du Pisteur, deux sorts, les trois tiers en détail) : § 18.14** ; **sa maquette v2 est en ligne : § 18.15** (la v1 du § 18.12 est dépassée). Pour lancer un chantier : « On prend le chantier N du § 18.11 ».
 >
 > **Nouveau (18 au 22 novembre) :** toute l'histoire de fond est refaite de zéro, voir **§ 0 bis** (juste après le chapitre 0). Elle remplace l'ancien scénario ; c'est une idée en cours, rien n'est construit. **Si cette Bible est remplacée par celle de GitHub, recopier le § 0 bis depuis `claude/histoire-de-fond.md`.**
 
@@ -7129,7 +7129,7 @@ Tout le fil est gardé dans `claude/combat-pisteur-decisions-orales-25-novembre-
 |---|---|---|---|---|
 | 1 | Boucher les trous de la fin, mettre à jour le tableau des questions | conception | — | à faire |
 | 2 | Le plan des enquêtes 4 à 9 | conception | 1 conseillé | à faire |
-| 3 | **Maquette rapide de la phase 2, les trois de devant** (ajout de Romain) | maquette en formes simples | — | version 1 faite le 26 novembre, 20 h 11 (§ 18.12) ; **dépassée le soir même par les décisions du § 18.14 : une version 2 à faire (l'interface du Pisteur), attend le go de Romain** |
+| 3 | **Maquette rapide de la phase 2, les trois de devant** (ajout de Romain) | maquette en formes simples | — | version 1 le 26 novembre, 20 h 11 (§ 18.12), dépassée ; **version 2 faite le 26 novembre, 23 h 43 (§ 18.15), d'après le § 18.14 ; attend l'avis de Romain en jouant** |
 | 4 | Maquette rapide de la phase 3, à jouer en famille sur quatre tablettes | maquette en formes simples | — | **fait le 26 novembre, 20 h 18 (§ 18.13) ; attend l'essai en famille et l'avis de Romain** |
 | 5 | La phase 2, les trois de devant, en vrai (**d'après le § 18.14**) | maquette dessinée | 3 (version 2) + avis de Romain | à faire |
 | 6 | La phase 2, le jeu du Pisteur (**à lire : § 18.14, points 6, 10 et 11**) | maquette | 3 conseillé | à faire |
@@ -7400,4 +7400,41 @@ Tout le fil est gardé dans `claude/combat-pisteur-decisions-orales-25-novembre-
 - La largeur de la salle et la taille des colonnes.
 - La recharge du saut (0,5, 1,5 ou 3 s).
 - Si le ciblage des réparateurs au doigt passe avec des enfants.
-- **La maquette v1 (§ 18.12) ne correspond plus à rien de tout ça** : il faut **une maquette v2**, toujours en formes simples, avec l'interface du Pisteur (téléphone couché, vue d'en haut). **Elle attend le go de Romain.** Le menu devra régler : la recharge du saut ; la durée de l'accélération sous la bulle (2 ou 4 minutes) ; le faux Pisteur (au bouton ou au minuteur) ; les vies du tiers ; le rythme des attaques.
+- **La maquette v1 (§ 18.12) ne correspond plus à rien de tout ça** : **la maquette v2 est faite (go de Romain à 23 h 21) : § 18.15.** Le menu devra régler : la recharge du saut ; la durée de l'accélération sous la bulle (2 ou 4 minutes) ; le faux Pisteur (au bouton ou au minuteur) ; les vies du tiers ; le rythme des attaques.
+
+### 18.15 La maquette v2 de la phase 2 (les trois de devant), d'après le § 18.14 — EN LIGNE, HORS DU JEU (26 novembre, 23 h 43) ; PAS ENCORE JOUÉE PAR ROMAIN
+
+**Le go** : Romain, 23 h 21 : « Vas-y, go pour faire la maquette. » (La maquette du chantier 3, refaite d'après le § 18.14.)
+
+**La page** : https://claude.ai/artifact/JqMqmHTrbpStj8Y2Wrx61b (**la même adresse que la v1**, version 2). **Les sources** : `jeu/maquettes/phase2-devant/` de `brumeval-sources`, avec son `LISEZ-MOI.md` (comment jouer, le menu, les fichiers, les essais) ; la v1 est rangée dans `v1/`. **Pas dans la salle des jeux** du site.
+
+**Ce qui est construit** (tout le § 18.14 côté devant, en formes simples, sans son ; le Pisteur fait semblant) :
+- **L'interface du Pisteur** : téléphone couché, la salle vue d'en haut en biais, l'armure au fond ; le pouce gauche qui se pose où il veut ; **les quatre boutons à la place de ceux du Pisteur** (le gros : le javelot de glace ; la boule de feu ; le soin à la place du bandage ; le saut à la place du saut). Sur tablette, la salle au centre.
+- **Les sorts** : lancer sur place, le cercle qui se remplit ; bouger coupe, un gros coup coupe, les dégâts continus non ; les colonnes arrêtent les sorts (la tache de feu ou de givre sur la pierre) ; toucher un réparateur le vise.
+- **Les barres avec des chiffres** et les trois couleurs ; l'armure tiers par tiers.
+- **Le premier tiers** : les crépitements (des fissures dorées), les colonnes (les ombres qui grandissent, 6 ou 7, 14 au plus, toujours un chemin), la vague de flammes (le feu qui couve, la poitrine qui rougit, la vague qui roule, les abris derrière les colonnes, les colonnes détruites, les ombres qui reviennent aussitôt), les réparateurs (les portes, le chemin autour des colonnes, écrasés par une colonne, rouge vif dans les flammes).
+- **Le deuxième tiers** : les colonnes et la vague ; la main glacée (le givre qui grandit depuis nos pieds, 60 % plus lent) et la main brûlante (la pierre bouillante, 5 par seconde), avec leur contre ; les orbes (elles tombent devant l'armure, au-dessus de la tête quand on les porte, les deux lanternes, le bonus ×2 pendant 15 s, l'explosion à 10 s, projetées par une colonne).
+- **Le troisième tiers** : la main d'énergie à cinq doigts et ses cinq lignes, le rayon d'une lanterne (on le coupe en se mettant dessus), la coque d'énergie, la danse des anneaux, les crevasses (on les saute ; un saut trop court s'arrête au bord).
+- **La bulle** : le symbole, les attaques qui accélèrent de 4 s à 2 s (2 ou 4 minutes), les réparateurs qui mettent leurs 50 points de côté, le faux Pisteur, la fenêtre du code au ralenti, le tiers suivant ; à la fin, l'armure détruite et l'écran de fin sans un mot (temps, temps de chaque tiers, morts, soins).
+- **La mort** : 10 s à terre, l'armure garde sa vie, pas de nouveau réparateur, 4 s intouchable.
+- **Le menu Pause** : la recharge du saut (0,5, 1,5, 3 s), la durée de l'accélération sous la bulle (2 ou 4 minutes), le faux Pisteur (au bouton, 15, 30, 60 s), la vie de chaque tiers (400 pour essayer vite, ou 1000), le ralenti (3, 5, 8 s), les boutons qui clignotent, et « Essais » pour sauter à un tiers ou au symbole.
+
+**Les choix de Claude, à valider en jouant** [Claude, pas validé] (tous les chiffres sont dans `REG`, en haut de `src/regles.js`) :
+1. **La salle** : 14 pas de large, 10 de profondeur ; colonnes de 1,3 pas de large, au moins 2,1 pas entre deux centres (le chemin libre).
+2. **La vague** roule en rond depuis l'armure ; chaque endroit brûle 3 s après le passage du front ; un tic de 30 en entrant dans le feu, puis un par seconde ; **l'abri** est un rond de la taille d'une colonne, collé derrière elle (vu depuis l'armure) ; les colonnes s'écroulent quand les flammes s'éteignent. Pendant la vague (et la danse), le tirage attend.
+3. **Bouger** : un petit coup de pouce suffit à couper le sort ; on ne peut pas commencer un sort en bougeant (le bouton tremble) ; un nouveau sort remplace celui qu'on lançait.
+4. **Le saut** part dans la direction du pouce (ou du regard si le pouce est lâché) ; il ne protège de rien et ne traverse pas les colonnes.
+5. **Les mains** : 1 s pour lever la main, puis la flaque part de l'endroit où l'on se tient ; le sort qui contre doit atteindre l'armure (une colonne l'arrête) ; il marche aussi sous la bulle.
+6. **Les orbes** tombent dans une bande devant l'armure ; on les ramasse en passant dessus, on les dépose en passant contre la lanterne ; leur explosion touche partout.
+7. **Les doigts** : cinq lignes de 0,9 pas, 30° entre elles, l'éventail tourné au hasard à chaque fois.
+8. **Le rayon** : 3 s de répit, puis 8 s ; on le coupe en se tenant sur sa trace au sol ; **sous la bulle du troisième tiers, ni rayon ni coque** (Grosbec ne peut plus perdre de vie, ce serait de fausses menaces).
+9. **La coque** prend tous les coups à la place de Grosbec (le surplus est perdu).
+10. **La danse** : cinq anneaux de 1,45 pas ; l'anneau sûr va du plus proche au plus loin et revient, en neuf pas de 2,2 s ; la première danse au bout de 40 s.
+11. **Les crevasses** : 4 à 6 pas de long, 1,4 de large, annoncées 1,5 s par une fissure qui brille ; la première au bout de 8 s.
+12. **Après la mort**, on réapparaît au milieu du devant de la salle.
+13. **Les réparateurs** marchent à 1,35 pas par seconde ; trois au plus en même temps.
+14. **Les boutons qui clignotent** : seulement le soin quand la barre est rouge, et le bouton du code quand le Pisteur a crié (rien pour dire quel sort contre quelle main).
+
+**Les mesures** : règles 55 scènes sur 55 (`node tests/regles.js`) ; gestes au doigt 12 sur 12, téléphone couché (`tests/gestes.py`) ; un robot qui joue bien finit une partie **en 10 à 13 minutes** avec 1000 points par tiers (à peu près 3 minutes de combat par tiers, le troisième le plus long), **en 3 minutes** avec 400 ; deux parties entières dans la vraie page, sans erreur, toutes les attaques vues ; 60 images par seconde sur un téléphone ralenti 4 fois. **Pas vérifié sur un vrai téléphone ni sur une vraie tablette.**
+
+**À demander à Romain quand il aura joué** : la durée (13 minutes pour un robot qui joue bien, sans compter le Pisteur : c'est long pour des enfants ?) ; la recharge du saut ; si le troisième tiers est trop chargé ; si viser un réparateur au doigt passe ; le givre (lancer 3 s de feu en étant ralenti) ; la taille des colonnes et des abris.

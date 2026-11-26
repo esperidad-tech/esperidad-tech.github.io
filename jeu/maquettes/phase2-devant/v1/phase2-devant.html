@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Phase 2 — l'armure (maquette rapide)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+/* IDEA : une maquette pour juger le jeu, pas les images — des ronds, des rectangles, des couleurs franches
+   PICTURE : l'armure en haut, la salle en bas, le héros au doigt ; chaque attaque s'annonce sur le sol
+   COLOUR : nuit bleue, acier, rouge du danger, or de la bulle ; jaune réservé aux boutons « lancer »
+   LAYOUT : téléphone debout ; sur tablette, le jeu au centre de l'écran */
+:root{color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#05060c;overflow:hidden;color:#eef0f8;font-family:Nunito,system-ui,sans-serif;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}
+#cadre{position:absolute;top:0;height:100%;overflow:hidden;background:#0b0d18}
+#c{position:absolute;left:0;top:0;touch-action:none}
+button{font-family:inherit;cursor:pointer;touch-action:none;color:inherit}
+.jaune{background:#ffd23a;color:#111;font-weight:900;font-size:1.15rem;border:0;border-radius:.6em;padding:.6em 1.6em;min-height:2.9em;box-shadow:0 .22em 0 #9c770c}
+.jaune:active{transform:translateY(.15em);box-shadow:0 .07em 0 #9c770c}
+.gris{background:#22304b;color:#eef0f8;font-weight:800;font-size:.95rem;border:1px solid #3d5078;border-radius:.6em;padding:.5em 1em;min-height:2.6em}
+/* les boutons du combat */
+.bt{position:absolute;border-radius:22%;border:3px solid rgba(255,255,255,.22);background:rgba(20,26,44,.86);display:none;align-items:center;justify-content:center;padding:0;overflow:hidden;box-shadow:0 .25em 0 rgba(0,0,0,.45);z-index:3}
+.bt.on{display:flex}
+.bt b{font-size:2.1em;line-height:1;pointer-events:none;font-weight:400}
+.bt .rc{position:absolute;inset:0;pointer-events:none;background:conic-gradient(rgba(3,5,12,.78) calc(var(--r,0)*360deg),transparent 0)}
+.bt .nb{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:1.6em;font-weight:900;color:#fff;text-shadow:0 0 .3em #000;pointer-events:none}
+.bt.bloque .nb{display:flex}
+.bt.bloque b,.bt.bloque .cases{opacity:0}
+#bCode .nb{font-size:2.2em}
+#bCode.bloque{background:#5a5f6e;border-color:#8a8f9e}
+.bt.eteint{filter:grayscale(1);opacity:.45}
+.bt.appui{transform:translateY(.15em);box-shadow:0 .08em 0 rgba(0,0,0,.45);background:rgba(255,210,58,.3)}
+#bPotion{border-color:#5fe07a}
+#bCouper{border-color:#fff1a0}
+#bFeu{border-color:#ff7a2a;background:rgba(80,24,8,.88)}
+#bGlace{border-color:#9fe3ff;background:rgba(10,40,70,.88)}
+#bTape{border-color:#ffd23a;border-radius:50%}
+#bCode{background:#ffd23a;border-color:#fff3b0;color:#111;border-radius:1em}
+#bCode .cases{display:flex;gap:.18em;pointer-events:none}
+#bCode .cases i{display:block;width:.9em;height:.9em;border-radius:.2em;background:#111}
+#bPisteur{border-radius:50%;border-color:#5fcf86;background:rgba(18,50,30,.9)}
+#bPause{position:absolute;border-radius:.6em;background:rgba(10,16,30,.7);border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;padding:0;z-index:4}
+.appel{animation:appel 1s ease-out infinite}
+@keyframes appel{0%{box-shadow:0 0 0 .1em rgba(255,210,58,1)}70%{box-shadow:0 0 0 .9em rgba(255,210,58,0)}100%{box-shadow:0 0 0 0 rgba(255,210,58,0)}}
+.non{animation:non .3s linear}
+@keyframes non{0%,100%{translate:0}25%{translate:-.35em}60%{translate:.35em}}
+/* la fenêtre du code : transparente, le combat se voit derrière */
+#fen{position:absolute;display:none;flex-direction:column;align-items:center;gap:.45em;background:rgba(8,10,22,.62);border:2px solid rgba(255,214,90,.7);border-radius:1em;padding:.55em .6em .65em;z-index:5}
+#fen.on{display:flex}
+#fen .lent{width:100%;height:.45em;border-radius:1em;background:rgba(255,255,255,.12);overflow:hidden}
+#fen .lent i{display:block;height:100%;background:#7fa8ff;border-radius:1em}
+#fen .haut{display:flex;align-items:center;gap:.5em}
+#fen .case{width:2.7em;height:2.7em;border-radius:.5em;background:rgba(0,0,0,.55);border:2px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;font-size:1.45em}
+#fen .clavier{display:grid;grid-template-columns:repeat(6,1fr);gap:.32em;width:100%}
+#fen .clavier button{height:2.55em;border-radius:.5em;border:1px solid rgba(255,255,255,.25);background:rgba(30,38,62,.85);font-size:1.25em;padding:0}
+#fen .clavier button:active{background:rgba(255,210,58,.4)}
+#fen .petitbt{width:2.4em;height:2.4em;border-radius:.5em;border:1px solid rgba(255,255,255,.3);background:rgba(30,38,62,.85);font-size:1.15em;padding:0}
+#fen.faux{animation:non .3s linear 2}
+/* les écrans */
+.voile{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(4,6,14,.94);padding:max(.8em,env(safe-area-inset-top)) 1em max(.8em,env(safe-area-inset-bottom));overflow-y:auto;z-index:8}
+.voile.on{display:flex}
+.carte{width:100%;max-width:30em;margin:auto;text-align:center}
+#debut{background:#04050b}
+.roles{display:flex;gap:1.1em;justify-content:center;margin:0 0 1.6em}
+.roles button{width:4.4em;height:4.4em;border-radius:50%;border:4px solid transparent;font-size:1.7em;padding:0;opacity:.45;filter:grayscale(.6)}
+.roles button.choisi{filter:none}
+.roles button.choisi{opacity:1;border-color:#fff;box-shadow:0 0 0 .2em rgba(255,255,255,.2)}
+.ligne{display:flex;flex-direction:column;align-items:stretch;gap:.3em;margin:.55em 0;text-align:left}
+.ligne > span{font-size:.85rem;font-weight:800;opacity:.75;padding-left:.2em}
+.choix{display:flex;gap:.3em;flex-wrap:wrap}
+.choix button{flex:1;min-width:4.2em;background:#1a2440;border:1px solid #33456e;border-radius:.55em;padding:.5em .4em;font-weight:800;font-size:.9rem;min-height:2.6em}
+.choix button.choisi{background:#ffd23a;color:#111;border-color:#ffd23a}
+.menu{display:flex;flex-direction:column;gap:.55em;margin-top:.8em}
+.stats{display:grid;grid-template-columns:auto auto;gap:.35em 1.2em;justify-content:center;font-size:1.25rem;font-weight:900;margin:1em 0 1.4em}
+.stats span{text-align:right}
+.mesures{font-size:.72rem;opacity:.55;margin-top:.9em}
+#tourner{display:none;position:fixed;inset:0;z-index:20;background:#05060c;align-items:center;justify-content:center;font-size:4rem}
+@media (orientation:landscape) and (max-height:500px){#tourner{display:flex}}
+</style>
+</head>
+<body>
+<div id="tourner">📱↻</div>
+<div id="cadre">
+  <canvas id="c"></canvas>
+  <button class="bt" id="bPotion" aria-label="Potion"><b>🧪</b><i class="rc"></i></button>
+  <button class="bt" id="bCouper" aria-label="Couper le gros coup"><b>✋</b><i class="rc"></i></button>
+  <button class="bt" id="bFeu" aria-label="Feu"><b>🔥</b></button>
+  <button class="bt" id="bGlace" aria-label="Glace"><b>❄️</b></button>
+  <button class="bt" id="bTape" aria-label="Taper"><b>💥</b><i class="rc"></i></button>
+  <button class="bt" id="bCode" aria-label="Taper le code du Pisteur"><span class="cases"><i></i><i></i><i></i></span><span class="nb"></span></button>
+  <button class="bt" id="bPisteur" aria-label="Essai : le Pisteur crie son code"><b>🏹</b></button>
+  <button id="bPause" aria-label="Pause"><svg width="18" height="18" viewBox="0 0 18 18"><rect x="3" y="2" width="4" height="14" rx="1.5" fill="#fff"/><rect x="11" y="2" width="4" height="14" rx="1.5" fill="#fff"/></svg></button>
+  <div id="fen">
+    <div class="lent"><i></i></div>
+    <div class="haut">
+      <button class="petitbt" id="fFerme" aria-label="Fermer">✕</button>
+      <div class="case"></div><div class="case"></div><div class="case"></div>
+      <button class="petitbt" id="fEfface" aria-label="Effacer">⌫</button>
+    </div>
+    <div class="clavier"></div>
+  </div>
+</div>
+
+<!-- avant de jouer : le héros, et le bouton jaune ; rien à lire -->
+<section id="debut" class="voile on">
+  <div class="carte">
+    <div class="roles" id="roles"></div>
+    <button class="jaune" id="bGo">Démarrer</button>
+    <div style="margin-top:1.4em"><button class="gris" id="bReglages" aria-label="Réglages">⚙️</button></div>
+  </div>
+</section>
+
+<section id="pause" class="voile">
+  <div class="carte">
+    <button class="jaune" id="bReprendre">Reprendre</button>
+    <div class="ligne"><span>Comment on fait mal à l'armure</span><div class="choix" data-r="facon"><button data-v="immobile">Immobile</button><button data-v="bouton">Bouton</button><button data-v="faible">Point faible</button></div></div>
+    <div class="ligne"><span>Le Pisteur crie son code</span><div class="choix" data-r="pisteur"><button data-v="0">Au bouton 🏹</button><button data-v="10">10 s</button><button data-v="25">25 s</button><button data-v="45">45 s</button></div></div>
+    <div class="ligne"><span>Vitesse des attaques</span><div class="choix" data-r="vitesse"><button data-v="0.8">Lente</button><button data-v="1">Normale</button><button data-v="1.25">Rapide</button></div></div>
+    <div class="ligne"><span>Le symbole, après…</span><div class="choix" data-r="symbole"><button data-v="0.15">15 %</button><button data-v="0.25">25 %</button><button data-v="0.333">33 %</button></div></div>
+    <div class="ligne"><span>Durée du ralenti (le code)</span><div class="choix" data-r="ralenti"><button data-v="3">3 s</button><button data-v="5">5 s</button><button data-v="8">8 s</button></div></div>
+    <div class="ligne"><span>Les boutons qui clignotent</span><div class="choix" data-r="aides"><button data-v="true">Oui</button><button data-v="false">Non</button></div></div>
+    <div class="ligne"><span>Essais</span><div class="choix" id="essais"><button data-f="1">Forme 1</button><button data-f="2">Forme 2</button><button data-f="3">Forme 3</button><button data-f="s">Le symbole</button></div></div>
+    <div class="menu">
+      <button class="gris" id="bRecommencer">Recommencer</button>
+      <button class="gris" id="bSalle" hidden>← La salle des jeux</button>
+    </div>
+    <p class="mesures" id="mesures"></p>
+  </div>
+</section>
+
+<section id="fin" class="voile">
+  <div class="carte">
+    <canvas id="finImg" width="160" height="120" style="width:160px;height:120px"></canvas>
+    <div class="stats" id="stats"></div>
+    <button class="jaune" id="bRejouer">Rejouer</button>
+    <div style="margin-top:1em"><button class="gris" id="bFinReglages" aria-label="Réglages">⚙️</button></div>
+  </div>
+</section>
+<script>
+/* ==========================================================
+   Phase 2 de l'enquête 10 — les trois de devant contre l'armure de Grosbec
+   MAQUETTE RAPIDE EN FORMES SIMPLES (chantier 3 du § 18.11 de la Bible)
+   Les règles seules, sans dessin : ce fichier tourne aussi dans node (tests/).
+   (R) = décidé par Romain (§ 18.4) ; (C) = point de départ de Claude, à régler.
+   ========================================================== */
+(function (G) {
+'use strict';
+
+var REG = {
+  vie: 3000,                       // (C) la vie de l'armure : trois tiers de 1000 (R : trois formes)
+  heros: {pv: 100, vitesse: 640, rayon: 20},
+  tir: {cadence: 0.45, degat: 13, vitesse: 900},          // (C) un coup toutes les 0,45 s
+  immobileApres: 0.3,              // façon « immobile » : il tape tout seul après 0,3 s sans bouger
+  faible: {ouvert: 5, ferme: 1.8, vitesse: 48, largeur: 38, bonus: 1.5}, // façon « point faible »
+  potion: {duree: 2.5, bouge: 7},  // (R) rester immobile deux ou trois secondes ; un coup le coupe
+  couper: {recharge: 12},          // (R) le bouton pour couper le gros coup « ne revient pas vite » ; (C) 12 s, et 17 s au moins entre deux gros coups
+  ralentiForce: 0.3,               // (R) « pas mal ralenti » : le combat à 30 %
+  mortBloque: 10,                  // (R) mort sous la bulle : bouton du code grisé ; (C) 10 s
+  mortDuree: 2,                    // (C) le temps de se relever
+  degats: {                        // en points de vie du héros (il en a 100)
+    poing: 45, souffle: 35, grosCoup: 85, bande: 70, chaud: 50, froid: 20,
+    mauvaisRemede: 50, charge: 40, renvoi: 7, mauvaisCode: 20
+  },
+  remedeBon: 200,                  // (C) le bon remède : l'armure sonnée, gros dégâts
+  sonnee: 3,
+  reparateur: {vitesse: 70, soin: 30, rayon: 11},         // soin : points de vie de l'armure par seconde
+  bonusCharge: {duree: 6, fois: 2},                        // (C) la bonne couleur : coups deux fois plus forts
+  // les attaques : durées en secondes à la vitesse « normale »
+  att: {
+    poing: {prep: 1.7, coup: 0.55},
+    souffle: {prep: 1.8, balaie: 0.7, brule: 0.6, part: 0.68},   // part : la part du sol brûlée (on recule au fond)
+    grosCoup: {prep: 3.5},
+    reparateurs: {prep: 0.8},
+    chaud: {monte: 1.2, fenetre: 4.5},
+    froid: {monte: 1.2, fenetre: 4.5, gel: 2.5},
+    charge: {eclair: 0.8, attente: 3.2}
+  },
+  // le programme de chaque forme : on tourne en boucle (R : les attaques de § 18.4 ; C : l'ordre)
+  formes: {
+    1: {prog: ['poing', 'souffle', 'poing', 'reparateurs', 'grosCoup', 'souffle', 'poing', 'reparateurs', 'poing', 'grosCoup'], pause: 1.4, vite: 1},
+    2: {prog: ['charge', 'poing', 'remede', 'charge', 'poing', 'remede'], pause: 1.3, vite: 1},
+    3: {prog: ['poing', 'souffle', 'poing', 'grosCoup', 'poing', 'souffle'], pause: 0.9, vite: 1 / 0.72}
+  },
+  bouclier: {premier: 5, monte: 0.8, actif: 4.5, entre: 9},  // forme 3 : le bouclier qui renvoie
+  // la danse des bandes sous la bulle (R : de plus en plus rapide, plus dure à chaque forme)
+  bandes: {
+    1: {n: 4, t0: 2.4, tmin: 1.0, pas: 0.06},
+    2: {n: 5, t0: 2.1, tmin: 0.9, pas: 0.06},
+    3: {n: 6, t0: 1.9, tmin: 0.8, pas: 0.06}
+  },
+  alerte: 0.6,                     // la part du pas où les bandes s'allument avant d'exploser
+  danseAttente: 1.8,               // après le symbole, avant la première bande
+  transfo: 2.6,                    // la pièce qui tombe, l'armure qui change
+  explose: 3.2                     // la fin
+};
+
+var SYMS = ['🌙', '⭐', '☀️', '🔑', '🍄', '🐟', '🌳', '🔔', '🎩', '❤️', '🔥', '🐱'];
+
+// les réglages du menu (C) : ce que Romain compare en jouant
+var REGLAGES_DEFAUT = {
+  facon: 'immobile',   // 'immobile' | 'bouton' | 'faible'  (§ 18.10, point 5 : pas tranché)
+  pisteur: 25,         // secondes après le symbole ; 0 = seulement au bouton
+  vitesse: 1,          // 0.8 | 1 | 1.25
+  symbole: 0.25,       // la part de la vie de l'armure à enlever à chaque forme : 0.15 | 0.25 | 0.333
+  ralenti: 5,          // secondes : 3 | 5 | 8
+  aides: true,         // les boutons qui clignotent quand c'est le moment
+  role: 'barde'        // 'barde' | 'sage' | 'alchimiste'
+};
+
+// un hasard qu'on peut rejouer (les tests)
+function hasard(graine) {
+  var s = (graine >>> 0) || 1;
+  return function () { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return (s % 1000000) / 1000000; };
+}
+
+function hautTier(forme) { return REG.vie * (4 - forme) / 3; }   // 3000, 2000, 1000
+function seuil(S) { return Math.max(hautTier(S.forme) - S.reg.symbole * REG.vie, hautTier(S.forme + 1) + 1); }
+
+function nouvelle(L, reglages, graine) {
+  var reg = {};
+  for (var k in REGLAGES_DEFAUT) reg[k] = (reglages && reglages[k] !== undefined) ? reglages[k] : REGLAGES_DEFAUT[k];
+  var S = {
+    L: L, reg: reg, rnd: hasard(graine || 12345),
+    t: 0, reel: 0, forme: 1, phase: 'combat',
+    vie: REG.vie,
+    h: {x: L.W / 2, y: L.solBas - 70, pv: REG.heros.pv, mort: 0, invul: 0, gel: 0, calme: 0,
+        potion: 0, px: 0, py: 0, charge: null, bonus: 0, tirT: 0, coupe: 0},
+    cible: {x: L.W / 2, y: L.solBas - 70},
+    att: null, idx: 0, attente: 2, dernierCote: [], sonnee: 0,
+    reps: [], tirs: [], renvois: [],
+    bouc: {avant: REG.bouclier.premier, monte: 0, actif: 0},
+    pf: {x: L.W / 2, dir: 1, ouvert: true, t: REG.faible.ouvert},
+    couperT: 0,
+    symbole: null, cri: null, pisteurT: 0,
+    danse: null,
+    code: {ouvert: false, saisie: [], ralenti: 0, bloque: 0},
+    transfoT: 0, piece: null,
+    lent: 1,
+    stats: {debutForme: 0, formes: [], morts: 0, potions: 0, coups: {}, coupes: 0, remedes: 0, mauvaisRemedes: 0, mauvaisCodes: 0, reparesPV: 0},
+    evts: []
+  };
+  return S;
+}
+
+function evt(S, type, o) { o = o || {}; o.type = type; o.t = S.reel; S.evts.push(o); if (S.evts.length > 60) S.evts.shift(); }
+
+/* ---------- le héros prend un coup ---------- */
+function coup(S, n, source) {
+  var h = S.h;
+  if (h.mort > 0 || h.invul > 0 || S.phase === 'explose' || S.phase === 'fini') return false;
+  if (h.potion > 0) { h.potion = 0; evt(S, 'potionCoupee'); }
+  h.pv -= n; h.coupe = 0.35;
+  S.stats.coups[source] = (S.stats.coups[source] || 0) + n;
+  evt(S, 'aie', {n: n, source: source, x: h.x, y: h.y});
+  if (h.pv <= 0) mourir(S);
+  return true;
+}
+
+function mourir(S) {
+  var h = S.h;
+  h.pv = 0; h.mort = REG.mortDuree; h.potion = 0; h.charge = null; h.gel = 0;
+  S.stats.morts++;
+  evt(S, 'mort', {x: h.x, y: h.y, phase: S.phase});
+  if (S.code.ouvert) fermerCode(S);
+  if (S.phase === 'combat') { S.att = null; S.tirs = []; S.renvois = []; }
+}
+
+function relever(S) {
+  var h = S.h;
+  h.pv = REG.heros.pv; h.invul = 1.2;
+  if (S.phase === 'combat') {
+    // (C, pas validé) mort avant son symbole : on recommence la forme en cours, l'armure remise à neuf pour lui
+    S.vie = hautTier(S.forme); S.att = null; S.idx = 0; S.attente = 2; S.reps = []; S.tirs = []; S.renvois = [];
+    S.bouc = {avant: REG.bouclier.premier, monte: 0, actif: 0}; S.sonnee = 0;
+    evt(S, 'reprise');
+  } else if (S.phase === 'bulle') {
+    // (R) mort pendant la bulle : il refait la danse ; le bouton du code est grisé, avec un petit chiffre
+    S.code.bloque = REG.mortBloque;
+  }
+  evt(S, 'releve', {x: h.x, y: h.y});
+}
+
+/* ---------- les gestes du joueur ---------- */
+function libre(S) { var h = S.h; return h.mort <= 0 && h.gel <= 0 && !S.code.ouvert; }
+
+function potion(S) {
+  var h = S.h;
+  if (!libre(S) || h.potion > 0 || h.pv >= REG.heros.pv || S.phase === 'explose' || S.phase === 'fini') return false;
+  h.potion = REG.potion.duree; h.px = h.x; h.py = h.y;
+  S.cible.x = h.x; S.cible.y = h.y;   // il s'arrête pour boire
+  evt(S, 'potion');
+  return true;
+}
+
+function couper(S) {
+  var a = S.att;
+  if (!libre(S) || S.couperT > 0 || !a || a.type !== 'grosCoup' || a.t >= a.prep) return false;
+  S.att = null; S.attente = 1.2; S.sonnee = 1.2; S.couperT = REG.couper.recharge;
+  S.stats.coupes++;
+  evt(S, 'coupe');
+  return true;
+}
+
+function remede(S, el) {
+  var a = S.att;
+  if (!libre(S) || S.phase !== 'combat' || !a || (a.type !== 'chaud' && a.type !== 'froid') || a.fait) return false;
+  a.fait = true;
+  var bon = (a.type === 'chaud' && el === 'glace') || (a.type === 'froid' && el === 'feu');
+  if (bon) {
+    S.stats.remedes++;
+    S.att = null; S.sonnee = REG.sonnee; S.attente = REG.sonnee;
+    evt(S, 'remedeBon', {el: el});
+    blesser(S, REG.remedeBon, {x: S.L.W / 2, y: S.L.bossY});
+  } else {
+    S.stats.mauvaisRemedes++;
+    S.att = null; S.attente = 1.2;
+    evt(S, 'remedeMauvais', {el: el});
+    coup(S, REG.degats.mauvaisRemede, 'remede');
+  }
+  return true;
+}
+
+function ouvrirCode(S) {
+  if (S.phase !== 'bulle' || S.h.mort > 0 || S.code.bloque > 0 || S.code.ouvert || S.h.gel > 0) return false;
+  S.code.ouvert = true; S.code.saisie = []; S.code.ralenti = S.reg.ralenti;
+  S.h.potion = 0;
+  S.cible.x = S.h.x; S.cible.y = S.h.y;     // (R) pendant qu'on tape, on ne dirige plus son héros
+  evt(S, 'codeOuvert');
+  return true;
+}
+
+function fermerCode(S) {
+  if (!S.code.ouvert) return false;
+  S.code.ouvert = false; S.code.saisie = []; S.code.ralenti = 0;
+  return true;
+}
+
+function taper(S, sym) {
+  var c = S.code;
+  if (!c.ouvert || c.saisie.length >= 3) return false;
+  c.saisie.push(sym);
+  if (c.saisie.length === 3) {
+    var bon = S.cri && c.saisie.join('') === S.cri.join('');
+    if (bon) reussir(S); else rater(S);
+  }
+  return true;
+}
+
+function effacer(S) { if (!S.code.ouvert || !S.code.saisie.length) return false; S.code.saisie.pop(); return true; }
+
+function rater(S) {
+  S.stats.mauvaisCodes++;
+  S.code.ouvert = false; S.code.ralenti = 0; S.code.saisie = [];
+  evt(S, 'codeFaux');
+  coup(S, REG.degats.mauvaisCode, 'code');   // (C, pas validé) un mauvais code : vitesse normale tout de suite, avec un coup en plus
+}
+
+function reussir(S) {
+  S.code.ouvert = false; S.code.saisie = [];
+  S.code.ralenti = 1.0;          // (C) le ralenti continue un instant pendant que la pièce tombe
+  S.stats.formes.push(S.t - S.stats.debutForme);
+  S.danse = null;
+  S.piece = {forme: S.forme, t: 0};
+  S.vie = hautTier(S.forme + 1);
+  evt(S, 'codeBon', {forme: S.forme});
+  if (S.forme >= 3) { S.vie = 0; S.phase = 'explose'; S.transfoT = REG.explose; evt(S, 'explose'); }
+  else { S.phase = 'transfo'; S.transfoT = REG.transfo; }
+}
+
+function pisteurCrie(S) {
+  if (S.phase !== 'bulle' || S.cri) return false;
+  var c = [];
+  do { c = [0, 0, 0].map(function () { return SYMS[Math.floor(S.rnd() * SYMS.length)]; }); } while (c[0] === c[1] && c[1] === c[2]);
+  S.cri = c;
+  evt(S, 'cri');
+  return true;
+}
+
+/* ---------- les dégâts sur l'armure ---------- */
+function blesser(S, n, ou) {
+  if (S.phase !== 'combat') return;
+  var s = seuil(S);
+  S.vie = Math.max(s, S.vie - n);
+  evt(S, 'touche', {n: n, x: ou.x, y: ou.y});
+  if (S.vie <= s + 0.01) symbole(S);
+}
+
+function symbole(S) {
+  // (R) un certain pourcentage de vie en moins : un symbole s'affiche, un seul ; l'armure se met sous la bulle
+  S.phase = 'bulle';
+  S.symbole = SYMS[Math.floor(S.rnd() * SYMS.length)];
+  S.cri = null;
+  S.pisteurT = S.reg.pisteur > 0 ? S.reg.pisteur : Infinity;
+  S.att = null; S.reps = []; S.tirs = []; S.renvois = []; S.sonnee = 0;
+  S.bouc.actif = 0; S.bouc.monte = 0;
+  S.h.charge = null;
+  S.danse = {attente: REG.danseAttente, k: 0, t: 0, pos: -1, explose: false, motif: motif(REG.bandes[S.forme].n)};
+  evt(S, 'symbole', {sym: S.symbole});
+}
+
+function motif(n) { // (R) la danse de Heigan ; (C) on reste deux pas de suite au bord : le moment calme pour taper le code
+  var m = [0, 0];
+  for (var i = 1; i < n - 1; i++) m.push(i);
+  m.push(n - 1, n - 1);
+  for (i = n - 2; i >= 1; i--) m.push(i);
+  return m;
+}
+
+function bandeDe(S, x) {
+  var L = S.L, n = REG.bandes[S.forme].n, w = (L.solD - L.solG) / n;
+  return Math.max(0, Math.min(n - 1, Math.floor((x - L.solG) / w)));
+}
+
+function pasDanse(S, k) { var b = REG.bandes[S.forme]; return Math.max(b.tmin, b.t0 - k * b.pas); }
+
+/* ---------- les zones des attaques (servent au dessin et au robot) ---------- */
+function dansPoing(S, a, x) { return a.cote === 'g' ? x < S.L.W / 2 : x >= S.L.W / 2; }
+function basSouffle(S) { var L = S.L; return L.solHaut + (L.solBas - L.solHaut) * REG.att.souffle.part; }
+function coteOr(S, a, x) { return a.orGauche ? x < S.L.W / 2 : x >= S.L.W / 2; }
+
+/* ---------- le programme de l'armure ---------- */
+function lancer(S, type) {
+  var A = REG.att, a = {type: type, t: 0};
+  if (type === 'poing') {
+    var dc = S.dernierCote, c = S.rnd() < 0.5 ? 'g' : 'd';
+    if (dc.length >= 2 && dc[dc.length - 1] === dc[dc.length - 2]) c = dc[dc.length - 1] === 'g' ? 'd' : 'g'; // jamais trois fois le même côté
+    dc.push(c); if (dc.length > 4) dc.shift();
+    a.cote = c; a.prep = A.poing.prep; a.fin = A.poing.prep + A.poing.coup;
+  } else if (type === 'souffle') {
+    a.prep = A.souffle.prep; a.fin = A.souffle.prep + A.souffle.balaie + A.souffle.brule;
+  } else if (type === 'grosCoup') {
+    a.prep = A.grosCoup.prep; a.fin = A.grosCoup.prep + 0.6;
+  } else if (type === 'reparateurs') {
+    a.prep = A.reparateurs.prep; a.fin = a.prep;
+  } else if (type === 'remede') {
+    // (C) le premier au hasard, puis chacun son tour : on voit les deux
+    a.type = S.dernierRemede ? (S.dernierRemede === 'chaud' ? 'froid' : 'chaud') : (S.rnd() < 0.5 ? 'chaud' : 'froid');
+    S.dernierRemede = a.type;
+    a.prep = A[a.type].monte; a.fin = A[a.type].monte + A[a.type].fenetre;
+  } else if (type === 'charge') {
+    a.prep = A.charge.eclair; a.fin = A.charge.eclair + A.charge.attente; a.orGauche = S.rnd() < 0.5;
+    a.couleur = S.rnd() < 0.5 ? 'or' : 'rouge';
+  }
+  S.att = a;
+  evt(S, 'annonce', {att: a.type});
+}
+
+function avancerArmure(S, dt) {
+  var F = REG.formes[S.forme], v = S.reg.vitesse * F.vite, d = dt * v;
+  if (S.sonnee > 0) S.sonnee -= dt;
+  var a = S.att, h = S.h, D = REG.degats;
+  if (!a) {
+    S.attente -= d;
+    if (S.attente <= 0) { lancer(S, F.prog[S.idx % F.prog.length]); S.idx++; }
+  }
+  var avant = a ? a.t : 0; if (a) a.t += d;
+  switch (a && a.type) {
+    case 'poing':
+      if (avant < a.prep && a.t >= a.prep) { evt(S, 'boum', {cote: a.cote}); if (h.mort <= 0 && dansPoing(S, a, h.x)) coup(S, D.poing, 'poing'); }
+      break;
+    case 'souffle':
+      if (a.t >= a.prep && !a.touche) {
+        var A = REG.att.souffle, L = S.L, k = Math.min(1, (a.t - a.prep) / A.balaie);
+        var front = L.solHaut + (basSouffle(S) - L.solHaut) * k;
+        if (h.y - REG.heros.rayon * 0.6 < front && h.y < basSouffle(S) + REG.heros.rayon * 0.4) { a.touche = true; coup(S, D.souffle, 'souffle'); }
+      }
+      break;
+    case 'grosCoup':
+      if (avant < a.prep && a.t >= a.prep) { evt(S, 'grosBoum'); coup(S, D.grosCoup, 'grosCoup'); }
+      break;
+    case 'reparateurs':
+      if (avant < a.prep && a.t >= a.prep) {
+        var L2 = S.L;
+        S.reps.push({x: L2.solG + 14, y: L2.solBas - 14, tx: L2.W * 0.36, ty: L2.solHaut + 10, ok: false});
+        S.reps.push({x: L2.solD - 14, y: L2.solBas - 14, tx: L2.W * 0.64, ty: L2.solHaut + 10, ok: false});
+        evt(S, 'reparateurs');
+      }
+      break;
+    case 'chaud': case 'froid':
+      if (a.t >= a.fin && !a.fait) {
+        a.fait = true;
+        if (a.type === 'chaud') { evt(S, 'chaudBoum'); coup(S, D.chaud, 'chaud'); }
+        else { evt(S, 'gel'); if (h.mort <= 0 && h.invul <= 0) { coup(S, D.froid, 'froid'); if (h.mort <= 0) { h.gel = REG.att.froid.gel; h.potion = 0; } } }
+      }
+      break;
+    case 'charge':
+      if (avant < a.prep && a.t >= a.prep && h.mort <= 0) { h.charge = a.couleur; evt(S, 'charge', {c: a.couleur}); }
+      if (avant < a.fin && a.t >= a.fin && h.charge) {
+        var bon = (h.charge === 'or') === coteOr(S, a, h.x);
+        if (bon) { h.bonus = REG.bonusCharge.duree; evt(S, 'chargeBonne'); }
+        else { evt(S, 'chargeMauvaise'); coup(S, D.charge, 'charge'); }
+        h.charge = null;
+      }
+      break;
+  }
+  if (a && S.att === a && a.t >= a.fin) { S.att = null; S.attente = F.pause; }
+
+  // forme 3 : le bouclier qui renvoie, en même temps que le reste
+  if (S.forme === 3) {
+    var B = REG.bouclier, b = S.bouc;
+    if (b.actif > 0) { b.actif -= d; if (b.actif <= 0) { b.actif = 0; b.avant = B.entre; evt(S, 'bouclierFin'); } }
+    else if (b.monte > 0) { b.monte -= d; if (b.monte <= 0) { b.monte = 0; b.actif = B.actif; evt(S, 'bouclier'); } }
+    else { b.avant -= d; if (b.avant <= 0) { b.monte = B.monte; evt(S, 'bouclierMonte'); } }
+  }
+
+  // les réparateurs
+  var R = REG.reparateur;
+  for (var i = S.reps.length - 1; i >= 0; i--) {
+    var r = S.reps[i];
+    if (!r.ok) {
+      var dx = r.tx - r.x, dy = r.ty - r.y, dd = Math.hypot(dx, dy), pas = R.vitesse * d;
+      if (dd <= pas) { r.x = r.tx; r.y = r.ty; r.ok = true; evt(S, 'repareArrive'); }
+      else { r.x += dx / dd * pas; r.y += dy / dd * pas; }
+    } else if (S.phase === 'combat') {
+      var avantVie = S.vie;
+      S.vie = Math.min(hautTier(S.forme), S.vie + R.soin * d);
+      S.stats.reparesPV += S.vie - avantVie;
+    }
+    if (h.mort <= 0 && Math.hypot(r.x - h.x, r.y - h.y) < REG.heros.rayon + R.rayon) { S.reps.splice(i, 1); evt(S, 'repareCasse', {x: r.x, y: r.y}); }
+  }
+}
+
+/* ---------- la danse des bandes ---------- */
+function avancerDanse(S, dt) {
+  var D = S.danse; if (!D) return;
+  var d = dt * S.reg.vitesse;
+  if (D.attente > 0) {
+    D.attente -= d;
+    if (D.attente <= 0) {
+      // (C) la première bande sûre est celle où se trouve le héros
+      var b = bandeDe(S, S.h.x); D.pos = D.motif.indexOf(b); D.k = 0; D.t = 0; D.explose = false; D.T = pasDanse(S, 0) + 0.6;
+    }
+    return;
+  }
+  D.t += d;
+  if (!D.explose && D.t >= D.T * REG.alerte) {
+    D.explose = true;
+    var sur = D.motif[D.pos % D.motif.length];
+    evt(S, 'bandes', {sur: sur});
+    if (S.h.mort <= 0 && bandeDe(S, S.h.x) !== sur) coup(S, REG.degats.bande, 'bande');
+  }
+  if (D.t >= D.T) { D.k++; D.pos++; D.t = 0; D.explose = false; D.T = pasDanse(S, D.k); }
+}
+
+function surDanse(S) { var D = S.danse; if (!D || D.attente > 0) return -1; return D.motif[D.pos % D.motif.length]; }
+
+/* ---------- les coups du héros ---------- */
+function tirer(S, entree) {
+  var h = S.h, f = S.reg.facon;
+  if (S.phase !== 'combat' || !libre(S) || h.potion > 0 || h.tirT > 0) return;
+  var veut = f === 'immobile' ? h.calme >= REG.immobileApres : f === 'bouton' ? !!entree.tirer : true;
+  if (!veut) return;
+  h.tirT = REG.tir.cadence;
+  var L = S.L, tx = f === 'faible' ? h.x : L.W / 2 + (h.x - L.W / 2) * 0.25;
+  S.tirs.push({x: h.x, y: h.y - REG.heros.rayon, x0: h.x, y0: h.y - REG.heros.rayon, tx: tx, ty: L.bossTouche, k: 0, fort: h.bonus > 0});
+}
+
+function avancerTirs(S, dt) {
+  var L = S.L, V = REG.tir.vitesse;
+  for (var i = S.tirs.length - 1; i >= 0; i--) {
+    var s = S.tirs[i], dist = Math.hypot(s.tx - s.x0, s.ty - s.y0) || 1;
+    s.k += V * dt / dist;
+    s.x = s.x0 + (s.tx - s.x0) * Math.min(1, s.k); s.y = s.y0 + (s.ty - s.y0) * Math.min(1, s.k);
+    if (s.k < 1) continue;
+    S.tirs.splice(i, 1);
+    if (S.phase !== 'combat') continue;
+    var n = REG.tir.degat * (s.fort ? REG.bonusCharge.fois : 1);
+    if (S.reg.facon === 'faible') {
+      var p = S.pf;
+      if (!(p.ouvert && Math.abs(s.x - p.x) < REG.faible.largeur)) { evt(S, 'ting', {x: s.x, y: s.y}); continue; }
+      n *= REG.faible.bonus;
+    }
+    if (S.forme === 3 && S.bouc.actif > 0) { // (R) le bouclier renvoie : on voit le coup revenir sur nous
+      S.renvois.push({x: s.x, y: s.y});
+      evt(S, 'renvoi', {x: s.x, y: s.y});
+      continue;
+    }
+    blesser(S, n, {x: s.x, y: s.y});
+  }
+  for (i = S.renvois.length - 1; i >= 0; i--) {
+    var r = S.renvois[i], h = S.h, dx = h.x - r.x, dy = h.y - r.y, dd = Math.hypot(dx, dy), pas = 560 * dt;
+    if (dd <= pas + REG.heros.rayon) { S.renvois.splice(i, 1); coup(S, REG.degats.renvoi, 'renvoi'); continue; }
+    r.x += dx / dd * pas; r.y += dy / dd * pas;
+  }
+}
+
+function avancerPointFaible(S, dt) {
+  var p = S.pf, F = REG.faible, L = S.L, lo = L.W * 0.3, hi = L.W * 0.7;
+  p.t -= dt;
+  if (p.t <= 0) {
+    p.ouvert = !p.ouvert; p.t = p.ouvert ? F.ouvert : F.ferme;
+    if (p.ouvert) { p.x = lo + S.rnd() * (hi - lo); p.dir = S.rnd() < 0.5 ? -1 : 1; evt(S, 'faibleOuvre'); }
+  }
+  if (p.ouvert) { p.x += p.dir * F.vitesse * dt * S.reg.vitesse; if (p.x < lo) { p.x = lo; p.dir = 1; } if (p.x > hi) { p.x = hi; p.dir = -1; } }
+}
+
+/* ---------- un pas de temps ---------- */
+// dtReel : le temps vrai ; entree : {tirer: bouton d'attaque gardé}
+function pas(S, dtReel, entree) {
+  entree = entree || {};
+  dtReel = Math.min(0.05, Math.max(0, dtReel));
+  S.reel += dtReel;
+  var c = S.code;
+  if (c.ralenti > 0) c.ralenti = Math.max(0, c.ralenti - dtReel);
+  S.lent = c.ralenti > 0 ? REG.ralentiForce : 1;
+  var dt = dtReel * S.lent;
+  S.t += dt;
+  if (c.bloque > 0) c.bloque = Math.max(0, c.bloque - dtReel);
+  if (S.couperT > 0) S.couperT = Math.max(0, S.couperT - dt);
+
+  var h = S.h, L = S.L, H = REG.heros;
+  // le héros
+  if (h.mort > 0) { h.mort -= dt; if (h.mort <= 0) { h.mort = 0; relever(S); } }
+  if (h.invul > 0) h.invul = Math.max(0, h.invul - dt);
+  if (h.gel > 0) h.gel = Math.max(0, h.gel - dt);
+  if (h.bonus > 0) h.bonus = Math.max(0, h.bonus - dt);
+  if (h.coupe > 0) h.coupe = Math.max(0, h.coupe - dtReel);
+  if (h.tirT > 0) h.tirT -= dt;
+  var bouge = false;
+  if (libre(S) && S.phase !== 'explose' && S.phase !== 'fini') {
+    var cx = Math.max(L.solG + H.rayon, Math.min(L.solD - H.rayon, S.cible.x));
+    var cy = Math.max(L.solHaut + H.rayon, Math.min(L.solBas - H.rayon, S.cible.y));
+    var dx = cx - h.x, dy = cy - h.y, dd = Math.hypot(dx, dy), max = H.vitesse * dt;
+    if (dd > 0.01) {
+      if (dd <= max) { h.x = cx; h.y = cy; } else { h.x += dx / dd * max; h.y += dy / dd * max; }
+      bouge = Math.min(dd, max) > 0.3;
+    }
+  }
+  h.calme = bouge ? 0 : h.calme + dt;
+  if (h.potion > 0) {
+    if (Math.hypot(h.x - h.px, h.y - h.py) > REG.potion.bouge) { h.potion = 0; evt(S, 'potionCoupee'); }
+    else { h.potion -= dt; if (h.potion <= 0) { h.potion = 0; h.pv = H.pv; S.stats.potions++; evt(S, 'potionBue'); } }
+  }
+
+  if (S.phase === 'combat') {
+    avancerArmure(S, dt);
+    if (S.reg.facon === 'faible') avancerPointFaible(S, dt);
+    tirer(S, entree);
+  } else if (S.phase === 'bulle') {
+    avancerDanse(S, dt);
+    if (!S.cri) { S.pisteurT -= dtReel; if (S.pisteurT <= 0) pisteurCrie(S); }
+  } else if (S.phase === 'transfo') {
+    S.transfoT -= dt; if (S.piece) S.piece.t += dt;
+    if (S.transfoT <= 0) {
+      S.forme++; S.phase = 'combat'; S.att = null; S.idx = 0; S.attente = 1.5; S.symbole = null; S.cri = null; S.piece = null;
+      S.bouc = {avant: REG.bouclier.premier, monte: 0, actif: 0};
+      S.stats.debutForme = S.t;
+      evt(S, 'forme', {forme: S.forme});
+    }
+  } else if (S.phase === 'explose') {
+    S.transfoT -= dt; if (S.piece) S.piece.t += dt;
+    if (S.transfoT <= 0) { S.phase = 'fini'; evt(S, 'fini'); }
+  }
+  avancerTirs(S, dt);
+}
+
+// pour les essais : aller tout de suite à une forme, ou au symbole
+function aller(S, forme) {
+  S.forme = forme; S.phase = 'combat'; S.vie = hautTier(forme); S.att = null; S.idx = 0; S.attente = 1.5;
+  S.symbole = null; S.cri = null; S.danse = null; S.reps = []; S.tirs = []; S.renvois = []; S.piece = null;
+  S.code.ouvert = false; S.code.ralenti = 0; S.code.bloque = 0; S.h.pv = REG.heros.pv; S.h.mort = 0; S.h.gel = 0; S.h.charge = null;
+  S.bouc = {avant: REG.bouclier.premier, monte: 0, actif: 0}; S.stats.debutForme = S.t;
+  evt(S, 'forme', {forme: forme});
+}
+function symboleTout(S) { if (S.phase === 'combat') { S.vie = seuil(S); symbole(S); return true; } return false; }
+
+G.P2 = {
+  REG: REG, SYMS: SYMS, REGLAGES_DEFAUT: REGLAGES_DEFAUT,
+  nouvelle: nouvelle, pas: pas,
+  potion: potion, couper: couper, remede: remede,
+  ouvrirCode: ouvrirCode, fermerCode: fermerCode, taper: taper, effacer: effacer, pisteurCrie: pisteurCrie,
+  aller: aller, symboleTout: symboleTout,
+  hautTier: hautTier, seuil: seuil, bandeDe: bandeDe, surDanse: surDanse, motif: motif,
+  dansPoing: dansPoing, basSouffle: basSouffle, coteOr: coteOr, libre: libre
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* Le dessin, en formes simples : des ronds, des rectangles, des couleurs franches. Rien de travaillé (c'est voulu). */
+(function (G) {
+'use strict';
+var P2 = G.P2, REG = P2.REG;
+var ROLES = {
+  barde: {c: '#ff8fb3', ic: '🎻'}, sage: {c: '#6cb6ff', ic: '📜'}, alchimiste: {c: '#b48cff', ic: '⚗️'}, pisteur: {c: '#5fcf86', ic: '🏹'}
+};
+var EMO = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+
+function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+function rond(c, x, y, r) { c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); }
+function emoji(c, e, x, y, taille) { c.font = taille + 'px ' + EMO; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(e, x, y + taille * 0.04); }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+function dernier(S, type, depuis) { for (var i = S.evts.length - 1; i >= 0; i--) { var e = S.evts[i]; if (S.reel - e.t > depuis) return null; if (e.type === type) return e; } return null; }
+
+/* ---------- l'armure ---------- */
+function armure(c, S, L) {
+  var a = S.att, k = L.bk, cx = L.W / 2, f = S.forme, t = S.reel;
+  var top = L.bossHaut, bodyW = 170 * k, bodyH = 128 * k, bodyY = L.bossY - bodyH / 2;
+  var sh = 0, boum = dernier(S, 'boum', 0.35) || dernier(S, 'grosBoum', 0.5) || dernier(S, 'chaudBoum', 0.5);
+  if (boum) sh = (Math.random() - 0.5) * 10 * (1 - (S.reel - boum.t) / 0.5);
+  c.save(); c.translate(sh, 0);
+  var acier = '#7f8aa3', fonce = '#3f475c', bord = '#c9a25a';
+  if (S.sonnee > 0) { acier = '#8b8b8b'; fonce = '#4a4a4a'; }
+  if (f === 3) { acier = '#5b6278'; }
+  // l'aura de la forme 3 : l'énergie lui sert d'armure
+  if (f === 3 && S.phase !== 'explose' && S.phase !== 'fini') {
+    var g = c.createRadialGradient(cx, L.bossY, 30 * k, cx, L.bossY, 150 * k);
+    g.addColorStop(0, 'rgba(255,120,60,.32)'); g.addColorStop(0.6, 'rgba(255,200,80,.12)'); g.addColorStop(1, 'rgba(255,120,60,0)');
+    c.fillStyle = g; c.fillRect(cx - 160 * k, L.bossY - 150 * k, 320 * k, 300 * k);
+  }
+  // les jambes, jusqu'au sol
+  var jy = bodyY + bodyH - 6 * k;
+  c.fillStyle = fonce; c.strokeStyle = '#11141d'; c.lineWidth = 2;
+  [-1, 1].forEach(function (s) {
+    var jx = cx + s * 48 * k - 18 * k;
+    if (f === 3) { c.strokeStyle = acier; c.lineWidth = 7 * k; c.beginPath(); c.moveTo(jx + 18 * k, jy); c.lineTo(jx + 18 * k, L.solHaut + 4); c.stroke(); c.lineWidth = 2; c.strokeStyle = '#11141d'; }
+    else { rr(c, jx, jy, 36 * k, L.solHaut + 6 - jy, 6 * k); c.fill(); c.stroke(); }
+    rr(c, jx - 6 * k, L.solHaut - 6, 48 * k, 14, 5); c.fillStyle = '#2a3042'; c.fill(); c.stroke(); c.fillStyle = fonce;
+  });
+  // les bras : celui du poing se lève pendant l'annonce
+  [-1, 1].forEach(function (s) {
+    var cote = s < 0 ? 'g' : 'd', lev = 0, frappe = false;
+    if (a && a.type === 'poing' && a.cote === cote) { if (a.t < a.prep) lev = clamp(a.t / a.prep, 0, 1); else frappe = true; }
+    var ex = cx + s * (bodyW / 2 + 4 * k), ey = bodyY + 18 * k;
+    var fx = cx + s * (bodyW / 2 + 34 * k), fy = bodyY + bodyH + 10 * k - lev * (bodyH + 40 * k);
+    if (frappe) { fx = cx + s * (L.W * 0.27); fy = L.solHaut + 30; }
+    c.strokeStyle = f === 3 ? acier : fonce; c.lineWidth = (f === 3 ? 9 : 22) * k; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(ex, ey); c.lineTo(fx, fy); c.stroke();
+    c.lineCap = 'butt'; c.lineWidth = 2;
+    rond(c, fx, fy, (frappe ? 30 : 22) * k); c.fillStyle = lev > 0.75 ? '#e0574a' : acier; c.fill(); c.strokeStyle = '#11141d'; c.stroke();
+  });
+  // le corps
+  if (f < 3) { rr(c, cx - bodyW / 2, bodyY, bodyW, bodyH, 16 * k); c.fillStyle = acier; c.fill(); c.strokeStyle = bord; c.lineWidth = 3; c.stroke(); c.lineWidth = 2; }
+  else { // presque sans armure : juste le cadre
+    c.strokeStyle = acier; c.lineWidth = 6 * k; rr(c, cx - bodyW / 2, bodyY, bodyW, bodyH, 16 * k); c.stroke();
+    c.beginPath(); c.moveTo(cx - bodyW / 2, bodyY); c.lineTo(cx + bodyW / 2, bodyY + bodyH); c.moveTo(cx + bodyW / 2, bodyY); c.lineTo(cx - bodyW / 2, bodyY + bodyH); c.stroke(); c.lineWidth = 2;
+  }
+  // le ventre : la plaque (forme 1), les tuyaux du drainage (forme 2)
+  var vx = cx - 52 * k, vy = bodyY + 22 * k, vw = 104 * k, vh = 86 * k;
+  var coeurR = 16 * k, coeurC = '#5be0e6';
+  if (a && a.type === 'grosCoup' && a.t < a.prep) { var p = a.t / a.prep; coeurR = (16 + 14 * p + Math.sin(t * 18) * 2 * p) * k; coeurC = p > 0.7 ? '#ffffff' : '#fff1a0'; }
+  if (f === 1) {
+    rr(c, vx, vy, vw, vh, 10 * k); c.fillStyle = '#a7b1c8'; c.fill(); c.strokeStyle = fonce; c.stroke();
+  } else {
+    rr(c, vx, vy, vw, vh, 10 * k); c.fillStyle = '#141824'; c.fill();
+    for (var i = 0; i < 3; i++) {
+      var tx = vx + vw * (0.22 + i * 0.28), on = 0.55 + 0.45 * Math.sin(t * 4 + i * 2);
+      c.strokeStyle = 'rgba(255,' + Math.round(150 + 80 * on) + ',70,' + (0.55 + 0.4 * on) + ')'; c.lineWidth = 6 * k;
+      c.beginPath(); c.moveTo(tx, vy + 4); c.bezierCurveTo(tx - 8 * k, vy + vh * 0.4, tx + 8 * k, vy + vh * 0.6, tx, vy + vh - 4); c.stroke();
+    }
+    c.lineWidth = 2;
+  }
+  rond(c, cx, vy + vh / 2, coeurR); c.fillStyle = coeurC; c.fill(); c.strokeStyle = '#11141d'; c.stroke();
+  // la tête (le cockpit à la forme 3, avec Grosbec dedans, à moitié visible)
+  var hw = 70 * k, hh = 46 * k, hy = bodyY - hh + 6 * k;
+  if (f < 3) {
+    rr(c, cx - hw / 2, hy, hw, hh, 10 * k); c.fillStyle = acier; c.fill(); c.strokeStyle = bord; c.lineWidth = 3; c.stroke(); c.lineWidth = 2;
+    c.fillStyle = S.sonnee > 0 ? '#555' : '#ff4b3e';
+    rr(c, cx - 24 * k, hy + 16 * k, 16 * k, 7 * k, 3); c.fill(); rr(c, cx + 8 * k, hy + 16 * k, 16 * k, 7 * k, 3); c.fill();
+  } else {
+    rr(c, cx - hw / 2, hy, hw, hh, 10 * k); c.fillStyle = 'rgba(140,210,255,.18)'; c.fill(); c.strokeStyle = acier; c.lineWidth = 4 * k; c.stroke(); c.lineWidth = 2;
+    grosbec(c, cx, hy + hh * 0.62, 15 * k);
+  }
+  // chaud, froid
+  if (a && (a.type === 'chaud' || a.type === 'froid')) {
+    var m = clamp(a.t / a.prep, 0, 1), pul = 0.5 + 0.5 * Math.sin(t * (a.type === 'chaud' ? 12 : 5));
+    c.globalAlpha = m * (0.4 + 0.3 * pul);
+    rr(c, cx - bodyW / 2 - 8 * k, hy - 8 * k, bodyW + 16 * k, bodyY + bodyH - hy + 16 * k, 22 * k);
+    c.fillStyle = a.type === 'chaud' ? '#ff5a1f' : '#9fe3ff'; c.fill();
+    c.globalAlpha = 1;
+    if (a.type === 'froid') { c.fillStyle = '#ffffff'; for (var j = 0; j < 9; j++) { rond(c, cx + Math.sin(j * 7.3) * bodyW * 0.45, bodyY + ((j * 37 + t * 20) % bodyH), 2.5 * k); c.fill(); } }
+    else { c.fillStyle = '#ffd23a'; for (j = 0; j < 7; j++) { var yy = bodyY + bodyH - ((j * 29 + t * 90) % (bodyH + 30 * k)); rond(c, cx + Math.sin(j * 5.1) * bodyW * 0.42, yy, 3 * k); c.fill(); } }
+    // la jauge qui se vide : le temps qui reste pour trouver le bon remède
+    if (a.t >= a.prep) { var rest = 1 - (a.t - a.prep) / (a.fin - a.prep); c.fillStyle = 'rgba(0,0,0,.5)'; rr(c, cx - 50 * k, bodyY + bodyH + 8 * k, 100 * k, 8, 4); c.fill(); c.fillStyle = a.type === 'chaud' ? '#ff7a2a' : '#9fe3ff'; rr(c, cx - 50 * k, bodyY + bodyH + 8 * k, 100 * k * rest, 8, 4); c.fill(); }
+  }
+  // sonnée : des étoiles qui tournent
+  if (S.sonnee > 0) for (j = 0; j < 4; j++) { var an = t * 3 + j * Math.PI / 2; emoji(c, '⭐', cx + Math.cos(an) * 40 * k, hy - 4 + Math.sin(an) * 10 * k, 15 * k); }
+  // le point faible
+  if (S.reg.facon === 'faible' && S.phase === 'combat') {
+    var pf = S.pf;
+    if (pf.ouvert) {
+      var pr = 1 - Math.max(0, pf.t - (REG.faible.ouvert - 0.25)) / 0.25;
+      rond(c, pf.x, L.bossTouche, 22 * k * pr); c.fillStyle = 'rgba(255,210,58,.9)'; c.fill(); c.strokeStyle = '#11141d'; c.lineWidth = 3; c.stroke();
+      rond(c, pf.x, L.bossTouche, 9 * k * pr); c.fillStyle = '#e0574a'; c.fill(); c.lineWidth = 2;
+      if (pf.t < 0.8) { c.globalAlpha = 0.5 + 0.5 * Math.sin(t * 30); rond(c, pf.x, L.bossTouche, 26 * k); c.strokeStyle = '#fff'; c.stroke(); c.globalAlpha = 1; }
+    }
+  }
+  // forme 3 : le bouclier qui renvoie (rouge, qui crépite)
+  if (f === 3 && (S.bouc.monte > 0 || S.bouc.actif > 0)) {
+    var on2 = S.bouc.actif > 0 ? 1 : (Math.random() < 0.5 ? 0.25 : 0.7);
+    c.globalAlpha = on2; c.strokeStyle = '#ff3b3b'; c.lineWidth = 4;
+    var R = 118 * k; c.beginPath();
+    for (var q = 0; q <= 6; q++) { var aa = q / 6 * Math.PI * 2 + Math.PI / 6; var px = cx + Math.cos(aa) * R, py = L.bossY - 10 * k + Math.sin(aa) * R * 0.86; if (q) c.lineTo(px, py); else c.moveTo(px, py); }
+    c.stroke(); c.fillStyle = 'rgba(255,40,40,.12)'; c.fill();
+    if (S.bouc.actif > 0) { c.lineWidth = 2; c.strokeStyle = '#ffb3b3'; for (q = 0; q < 5; q++) { var a1 = Math.random() * Math.PI * 2; c.beginPath(); c.moveTo(cx + Math.cos(a1) * R, L.bossY + Math.sin(a1) * R * 0.86); c.lineTo(cx + Math.cos(a1 + 0.2) * R * 0.85, L.bossY + Math.sin(a1 + 0.3) * R * 0.75); c.stroke(); } }
+    c.globalAlpha = 1; c.lineWidth = 2;
+  }
+  // la bulle : dorée et calme
+  if (S.phase === 'bulle') {
+    var since = S.reel - (dernier(S, 'symbole', 9999) || {t: 0}).t, gr = clamp(since / 0.6, 0, 1);
+    var R2 = 140 * k * gr, gg = c.createRadialGradient(cx, L.bossY - 10 * k, R2 * 0.5, cx, L.bossY - 10 * k, R2);
+    gg.addColorStop(0, 'rgba(255,214,90,0)'); gg.addColorStop(0.85, 'rgba(255,214,90,.22)'); gg.addColorStop(1, 'rgba(255,230,140,.55)');
+    c.fillStyle = gg; rond(c, cx, L.bossY - 10 * k, R2); c.fill();
+    c.strokeStyle = 'rgba(255,230,140,' + (0.6 + 0.2 * Math.sin(t * 2)) + ')'; c.lineWidth = 3; c.stroke(); c.lineWidth = 2;
+  }
+  c.restore();
+}
+
+function grosbec(c, x, y, r) {
+  rond(c, x, y, r); c.fillStyle = '#f2b8a0'; c.fill(); c.strokeStyle = '#11141d'; c.stroke();
+  c.beginPath(); c.moveTo(x - r * 0.35, y + r * 0.05); c.lineTo(x + r * 0.35, y + r * 0.05); c.lineTo(x, y + r * 0.95); c.closePath(); c.fillStyle = '#f0a020'; c.fill(); c.stroke();
+  c.fillStyle = '#11141d'; rond(c, x - r * 0.38, y - r * 0.3, r * 0.14); c.fill(); rond(c, x + r * 0.38, y - r * 0.3, r * 0.14); c.fill();
+  c.fillStyle = '#ececec'; rr(c, x - r * 0.9, y - r * 1.05, r * 1.8, r * 0.45, r * 0.2); c.fill();
+}
+
+/* la pièce qui tombe, et la fin */
+function piece(c, S, L) {
+  var p = S.piece; if (!p) return;
+  var k = L.bk, cx = L.W / 2, u = clamp(p.t / 1.6, 0, 1);
+  if (S.phase === 'explose') {
+    for (var i = 0; i < 10; i++) {
+      var an = i / 10 * Math.PI * 2, d = u * 220 * k;
+      c.globalAlpha = 1 - u * 0.7;
+      rr(c, cx + Math.cos(an) * d - 14 * k, L.bossY + Math.sin(an) * d + u * u * 160 - 10 * k, 28 * k, 20 * k, 4); c.fillStyle = i % 2 ? '#7f8aa3' : '#5b6278'; c.fill();
+    }
+    c.globalAlpha = clamp(1 - p.t * 1.5, 0, 1) * 0.8; c.fillStyle = '#fff4c0'; c.fillRect(0, 0, L.W, L.H); c.globalAlpha = 1;
+    var gy = L.bossY + u * (L.solHaut + (L.solBas - L.solHaut) * 0.5 - L.bossY);
+    grosbec(c, cx, gy, 18 * k);
+    return;
+  }
+  c.save(); c.globalAlpha = 1 - u;
+  var y = L.bossY - 20 * k + u * u * (L.solBas - L.bossY);
+  c.translate(cx, y); c.rotate(u * (p.forme === 1 ? 0.7 : -0.9));
+  rr(c, -52 * k, -43 * k, 104 * k, 86 * k, 10 * k); c.fillStyle = p.forme === 1 ? '#a7b1c8' : '#7f8aa3'; c.fill(); c.strokeStyle = '#3f475c'; c.stroke();
+  c.restore();
+}
+
+/* ---------- le sol, et ce qui s'annonce dessus ---------- */
+function sol(c, S, L) {
+  var x0 = L.solG, y0 = L.solHaut, w = L.solD - L.solG, h = L.solBas - L.solHaut, t = S.reel;
+  c.fillStyle = '#1b2131'; c.fillRect(x0, y0, w, h);
+  c.strokeStyle = 'rgba(255,255,255,.04)'; c.lineWidth = 1;
+  for (var gx = x0; gx <= x0 + w; gx += 42) { c.beginPath(); c.moveTo(gx, y0); c.lineTo(gx, y0 + h); c.stroke(); }
+  for (var gy = y0; gy <= y0 + h; gy += 42) { c.beginPath(); c.moveTo(x0, gy); c.lineTo(x0 + w, gy); c.stroke(); }
+  c.lineWidth = 2;
+  var a = S.att;
+  if (S.phase === 'combat' && a) {
+    if (a.type === 'poing') {
+      var hx = a.cote === 'g' ? x0 : L.W / 2, hw = a.cote === 'g' ? L.W / 2 - x0 : x0 + w - L.W / 2;
+      if (a.t < a.prep) {
+        var p = a.t / a.prep;
+        c.fillStyle = 'rgba(255,60,50,' + (0.1 + 0.35 * p) + ')'; c.fillRect(hx, y0, hw, h);
+        c.strokeStyle = 'rgba(255,90,80,' + (0.5 + 0.5 * Math.sin(t * (8 + 14 * p))) + ')'; c.lineWidth = 4; c.strokeRect(hx + 2, y0 + 2, hw - 4, h - 4); c.lineWidth = 2;
+        emoji(c, '👊', hx + hw / 2, y0 + h / 2, 44 + 20 * p);
+      } else {
+        var q = clamp((a.t - a.prep) / 0.12, 0, 1);
+        rr(c, hx + 6, y0 + 4, hw - 12, (h - 8) * q, 18); c.fillStyle = 'rgba(160,170,195,.85)'; c.fill(); c.strokeStyle = '#11141d'; c.stroke();
+        for (var i = 1; i < 4; i++) { c.fillStyle = 'rgba(80,88,110,.8)'; rr(c, hx + hw * i / 4 - 6, y0 + 12, 12, (h - 30) * q * 0.4, 6); c.fill(); }
+      }
+    } else if (a.type === 'souffle') {
+      var bas = P2.basSouffle(S);
+      if (a.t < a.prep) {
+        var p2 = a.t / a.prep;
+        c.fillStyle = 'rgba(255,140,30,' + (0.08 + 0.3 * p2) + ')'; c.fillRect(x0, y0, w, bas - y0);
+        c.strokeStyle = 'rgba(255,170,60,' + (0.4 + 0.5 * Math.sin(t * (7 + 12 * p2))) + ')'; c.lineWidth = 4;
+        c.beginPath(); c.moveTo(x0, bas); c.lineTo(x0 + w, bas); c.stroke(); c.lineWidth = 2;
+        for (i = 0; i < 6; i++) emoji(c, '🔥', x0 + w * (i + 0.5) / 6, y0 + (bas - y0) * 0.5 + Math.sin(t * 6 + i) * 6, 22 + 10 * p2);
+      } else {
+        var A = REG.att.souffle, k2 = clamp((a.t - a.prep) / A.balaie, 0, 1), front = y0 + (bas - y0) * k2;
+        var g = c.createLinearGradient(0, y0, 0, front + 1);
+        g.addColorStop(0, 'rgba(255,90,20,.85)'); g.addColorStop(1, 'rgba(255,220,80,.95)');
+        c.fillStyle = g; c.fillRect(x0, y0, w, front - y0);
+        for (i = 0; i < 9; i++) emoji(c, '🔥', x0 + w * (i + 0.5) / 9, front - 10 + Math.sin(t * 20 + i) * 5, 30);
+      }
+    } else if (a.type === 'charge' && a.t >= a.prep) {
+      var gauche = a.orGauche, pul = 0.22 + 0.1 * Math.sin(t * 6);
+      c.fillStyle = 'rgba(255,205,60,' + pul + ')'; c.fillRect(gauche ? x0 : L.W / 2, y0, w / 2, h);
+      c.fillStyle = 'rgba(255,50,60,' + pul + ')'; c.fillRect(gauche ? L.W / 2 : x0, y0, w / 2, h);
+      var rest = 1 - (a.t - a.prep) / (a.fin - a.prep);
+      c.fillStyle = 'rgba(255,255,255,.7)'; c.fillRect(x0, y0 + h - 6, w * rest, 6);
+    }
+  }
+  // les bandes de la danse
+  if (S.phase === 'bulle' && S.danse && S.danse.attente <= 0) {
+    var D = S.danse, n = REG.bandes[S.forme].n, bw = w / n, sur = P2.surDanse(S);
+    for (var b = 0; b < n; b++) {
+      var bx = x0 + b * bw;
+      c.strokeStyle = 'rgba(255,255,255,.08)'; c.strokeRect(bx, y0, bw, h);
+      if (b === sur) continue;
+      if (!D.explose) { var pa = D.t / (D.T * REG.alerte); c.fillStyle = 'rgba(255,150,40,' + (0.08 + 0.42 * pa * pa) + ')'; c.fillRect(bx + 2, y0, bw - 4, h); }
+      else { // l'explosion : un éclair blanc, puis rouge vif
+        var pe = (D.t - D.T * REG.alerte) / (D.T * (1 - REG.alerte));
+        c.fillStyle = pe < 0.15 ? 'rgba(255,250,230,.95)' : 'rgba(235,40,30,' + (0.9 - 0.5 * pe) + ')'; c.fillRect(bx + 2, y0, bw - 4, h);
+        for (var e2 = 0; e2 < 4; e2++) emoji(c, '💥', bx + bw / 2 + Math.sin(e2 * 2.1 + D.k) * bw * 0.25, y0 + h * (e2 + 0.5) / 4, 26 + 10 * (1 - pe));
+      }
+    }
+  }
+  c.strokeStyle = '#3a4560'; c.lineWidth = 3; c.strokeRect(x0, y0, w, h); c.lineWidth = 2;
+}
+
+function plein(c, S, L) { // ce qui touche toute la salle : le gros coup, l'explosion de chaleur, le gel
+  var e = dernier(S, 'grosBoum', 0.6) || dernier(S, 'chaudBoum', 0.6);
+  if (e) { var u = (S.reel - e.t) / 0.6; c.fillStyle = (e.type === 'grosBoum' ? 'rgba(255,255,230,' : 'rgba(255,110,30,') + (0.75 * (1 - u)) + ')'; c.fillRect(L.solG, L.solHaut, L.solD - L.solG, L.solBas - L.solHaut); }
+  var g = dernier(S, 'gel', 0.8);
+  if (g) { c.fillStyle = 'rgba(170,230,255,' + 0.6 * (1 - (S.reel - g.t) / 0.8) + ')'; c.fillRect(L.solG, L.solHaut, L.solD - L.solG, L.solBas - L.solHaut); }
+}
+
+/* ---------- les réparateurs, les coups ---------- */
+function reparateurs(c, S, L) {
+  S.reps.forEach(function (r) {
+    if (r.ok) { c.strokeStyle = 'rgba(120,255,160,' + (0.5 + 0.5 * Math.sin(S.reel * 20)) + ')'; c.lineWidth = 3; c.beginPath(); c.moveTo(r.x, r.y); c.lineTo(r.x, r.y - 40); c.stroke(); c.lineWidth = 2; }
+    rr(c, r.x - 11, r.y - 11, 22, 22, 5); c.fillStyle = '#9aa0ac'; c.fill(); c.strokeStyle = '#11141d'; c.stroke();
+    emoji(c, '🔧', r.x, r.y, 14);
+  });
+}
+function tirs(c, S, L, col) {
+  S.tirs.forEach(function (s) { rond(c, s.x, s.y, s.fort ? 7 : 5); c.fillStyle = s.fort ? '#ffd23a' : col; c.fill(); });
+  S.renvois.forEach(function (r) { rond(c, r.x, r.y, 7); c.fillStyle = '#ff3b3b'; c.fill(); c.strokeStyle = '#ffd0d0'; c.stroke(); });
+  S.evts.forEach(function (e) {
+    var u = (S.reel - e.t);
+    if (e.type === 'touche' && u < 0.25) { rond(c, e.x, e.y, 6 + u * 50); c.strokeStyle = 'rgba(255,255,255,' + (1 - u * 4) + ')'; c.stroke(); }
+    if (e.type === 'ting' && u < 0.3) { c.strokeStyle = 'rgba(180,190,210,' + (1 - u * 3.3) + ')'; c.beginPath(); c.moveTo(e.x - 8, e.y + 4); c.lineTo(e.x + 8, e.y - 4); c.moveTo(e.x - 8, e.y - 4); c.lineTo(e.x + 8, e.y + 4); c.stroke(); }
+    if (e.type === 'repareCasse' && u < 0.4) { for (var i = 0; i < 6; i++) { var an = i * 1.05; rond(c, e.x + Math.cos(an) * u * 80, e.y + Math.sin(an) * u * 80, 4); c.fillStyle = 'rgba(160,165,175,' + (1 - u * 2.5) + ')'; c.fill(); } }
+    if (e.type === 'remedeBon' && u < 0.7) { c.fillStyle = (e.el === 'feu' ? 'rgba(255,140,40,' : 'rgba(150,220,255,') + 0.6 * (1 - u / 0.7) + ')'; rond(c, L.W / 2, L.bossY, 40 + u * 150); c.fill(); }
+    if (e.type === 'charge' && u < 0.4) { c.strokeStyle = e.c === 'or' ? '#ffd23a' : '#ff3b3b'; c.lineWidth = 4; c.beginPath(); c.moveTo(L.W / 2, L.bossY); for (var j = 1; j <= 6; j++) c.lineTo(L.W / 2 + (S.h.x - L.W / 2) * j / 6 + (j < 6 ? (Math.random() - 0.5) * 30 : 0), L.bossY + (S.h.y - L.bossY) * j / 6); c.stroke(); c.lineWidth = 2; }
+    if (e.type === 'codeFaux' && u < 0.4) { c.strokeStyle = '#ff3b3b'; c.lineWidth = 4; c.beginPath(); c.moveTo(L.W / 2, L.bossY); c.lineTo(S.h.x, S.h.y); c.stroke(); c.lineWidth = 2; }
+  });
+}
+
+/* ---------- le héros ---------- */
+function heros(c, S, L) {
+  var h = S.h, R = ROLES[S.reg.role] || ROLES.barde, r = REG.heros.rayon, t = S.reel;
+  if (h.invul > 0 && Math.floor(t * 12) % 2) return;
+  c.save();
+  if (h.mort > 0) c.globalAlpha = 0.45;
+  rond(c, h.x, h.y + r * 0.85, r * 0.9); c.fillStyle = 'rgba(0,0,0,.35)'; c.fill();
+  if (h.bonus > 0) { rond(c, h.x, h.y, r + 8 + Math.sin(t * 10) * 2); c.fillStyle = 'rgba(255,210,58,.35)'; c.fill(); }
+  if (h.charge) { rond(c, h.x, h.y, r + 6); c.strokeStyle = h.charge === 'or' ? '#ffd23a' : '#ff3b3b'; c.lineWidth = 5; c.stroke(); c.lineWidth = 2; }
+  rond(c, h.x, h.y, r); c.fillStyle = h.mort > 0 ? '#777' : R.c; c.fill(); c.strokeStyle = '#11141d'; c.lineWidth = 3; c.stroke(); c.lineWidth = 2;
+  emoji(c, h.mort > 0 ? '💀' : R.ic, h.x, h.y, 19);
+  if (h.potion > 0) {
+    var p = 1 - h.potion / REG.potion.duree;
+    c.strokeStyle = '#5fe07a'; c.lineWidth = 5; c.beginPath(); c.arc(h.x, h.y, r + 9, -Math.PI / 2, -Math.PI / 2 + p * Math.PI * 2); c.stroke(); c.lineWidth = 2;
+    emoji(c, '🧪', h.x + r + 6, h.y - r - 6, 16);
+  }
+  if (h.gel > 0) { rr(c, h.x - r - 5, h.y - r - 5, (r + 5) * 2, (r + 5) * 2, 6); c.fillStyle = 'rgba(170,230,255,.6)'; c.fill(); c.strokeStyle = '#e6f8ff'; c.stroke(); }
+  if (h.coupe > 0) { rond(c, h.x, h.y, r + 2); c.fillStyle = 'rgba(255,40,40,' + h.coupe * 1.6 + ')'; c.fill(); }
+  c.restore();
+  var e = dernier(S, 'potionBue', 0.6);
+  if (e) { var u = (S.reel - e.t) / 0.6; rond(c, h.x, h.y, r + u * 30); c.strokeStyle = 'rgba(95,224,122,' + (1 - u) + ')'; c.lineWidth = 4; c.stroke(); c.lineWidth = 2; }
+}
+
+/* ---------- les barres, le symbole, le cri du Pisteur ---------- */
+function barres(c, S, L) {
+  var x0 = 16, w = L.W - 32 - 54, y = 14, hh = 14;
+  // la vie de l'armure, en trois tiers
+  c.fillStyle = 'rgba(0,0,0,.5)'; rr(c, x0 - 2, y - 2, w + 4, hh + 4, 6); c.fill();
+  var part = S.vie / REG.vie;
+  c.fillStyle = '#d84a3a'; rr(c, x0, y, w * part, hh, 4); c.fill();
+  for (var i = 1; i < 3; i++) { c.fillStyle = '#0b0d18'; c.fillRect(x0 + w * i / 3 - 1.5, y - 2, 3, hh + 4); }
+  if (S.phase === 'combat') { // la marque du symbole
+    var sx = x0 + w * P2.seuil(S) / REG.vie;
+    c.fillStyle = '#ffd23a'; c.beginPath(); c.moveTo(sx, y + hh + 1); c.lineTo(sx - 6, y + hh + 9); c.lineTo(sx + 6, y + hh + 9); c.closePath(); c.fill();
+  }
+  if (S.phase === 'bulle') { c.fillStyle = 'rgba(255,214,90,.45)'; rr(c, x0, y, w * part, hh, 4); c.fill(); }
+  // la barre du gros coup
+  var a = S.att;
+  if (a && a.type === 'grosCoup' && a.t < a.prep && S.phase === 'combat') {
+    var p = a.t / a.prep, by = y + hh + 12;
+    c.fillStyle = 'rgba(0,0,0,.6)'; rr(c, L.W / 2 - 100, by, 200, 12, 6); c.fill();
+    c.fillStyle = p > 0.75 ? '#ffffff' : '#fff1a0'; rr(c, L.W / 2 - 100, by, 200 * p, 12, 6); c.fill();
+    c.strokeStyle = '#ffd23a'; rr(c, L.W / 2 - 100, by, 200, 12, 6); c.stroke();
+  }
+  // la vie du héros
+  var R = ROLES[S.reg.role] || ROLES.barde, hy = L.solBas + 14, hx = 46, hw2 = L.W - hx - 18;
+  rond(c, 26, hy + 7, 13); c.fillStyle = R.c; c.fill(); c.strokeStyle = '#11141d'; c.stroke(); emoji(c, R.ic, 26, hy + 7, 14);
+  c.fillStyle = 'rgba(0,0,0,.55)'; rr(c, hx, hy, hw2, 14, 7); c.fill();
+  var pv = Math.max(0, S.h.pv) / REG.heros.pv;
+  c.fillStyle = pv < 0.35 ? '#ff6a4a' : '#5fe07a'; rr(c, hx, hy, hw2 * pv, 14, 7); c.fill();
+  if (S.h.coupe > 0) { c.fillStyle = 'rgba(255,60,60,' + S.h.coupe * 2 + ')'; rr(c, hx, hy, hw2, 14, 7); c.fill(); }
+}
+
+function symboles(c, S, L) {
+  var R = ROLES[S.reg.role] || ROLES.barde;
+  if (S.symbole) {
+    var e = dernier(S, 'symbole', 1.9);
+    if (e) { // le symbole s'affiche en grand, puis va se ranger en haut à gauche
+      var u = (S.reel - e.t) / 1.9, gros = u < 0.75, k2 = gros ? 1 : 1 - (u - 0.75) / 0.25;
+      var x = 32 + (L.W / 2 - 32) * k2, y = 52 + (L.solHaut + 60 - 52) * k2, s = 26 + 54 * k2;
+      c.fillStyle = 'rgba(0,0,0,' + 0.55 * k2 + ')'; rond(c, x, y, s * 1.15); c.fill();
+      c.strokeStyle = R.c; c.lineWidth = 6 * k2 + 2; rond(c, x, y, s * 1.15); c.stroke(); c.lineWidth = 2;
+      emoji(c, S.symbole, x, y, s * 1.3);
+      if (gros) emoji(c, '📣', x + s * 1.3, y - s * 0.9, 34);
+    } else {
+      c.fillStyle = 'rgba(0,0,0,.55)'; rr(c, 10, 34, 78, 36, 18); c.fill();
+      c.strokeStyle = R.c; c.lineWidth = 3; rr(c, 10, 34, 78, 36, 18); c.stroke(); c.lineWidth = 2;
+      rond(c, 28, 52, 12); c.fillStyle = R.c; c.fill(); emoji(c, R.ic, 28, 52, 13);
+      emoji(c, S.symbole, 64, 52, 24);
+    }
+  }
+  if (S.cri && S.phase === 'bulle') { // le Pisteur a crié son code
+    var P = ROLES.pisteur, e2 = dernier(S, 'cri', 0.5), z = e2 ? 1 + 0.25 * (1 - (S.reel - e2.t) / 0.5) : 1;
+    var cx = L.W / 2, cy = L.solHaut - 34;
+    c.save(); c.translate(cx, cy); c.scale(z, z);
+    c.fillStyle = 'rgba(10,14,24,.85)'; rr(c, -96, -24, 192, 48, 24); c.fill(); c.strokeStyle = P.c; c.lineWidth = 3; rr(c, -96, -24, 192, 48, 24); c.stroke(); c.lineWidth = 2;
+    rond(c, -72, 0, 17); c.fillStyle = P.c; c.fill(); c.strokeStyle = '#11141d'; c.stroke(); emoji(c, P.ic, -72, 0, 18);
+    for (var i = 0; i < 3; i++) emoji(c, S.cri[i], -24 + i * 44, 0, 28);
+    c.restore();
+  }
+}
+
+function fond(c, S, L) {
+  c.fillStyle = '#0b0d18'; c.fillRect(0, 0, L.W, L.H);
+  c.fillStyle = '#121626'; c.fillRect(0, 0, L.W, L.solHaut);
+  c.fillStyle = '#171c2e';
+  for (var i = 0; i < 5; i++) c.fillRect(20 + i * 95, 40, 22, L.solHaut - 40);
+}
+
+function tout(c, S, L) {
+  fond(c, S, L);
+  sol(c, S, L);
+  armure(c, S, L);
+  piece(c, S, L);
+  reparateurs(c, S, L);
+  tirs(c, S, L, (ROLES[S.reg.role] || ROLES.barde).c);
+  heros(c, S, L);
+  plein(c, S, L);
+  barres(c, S, L);
+  symboles(c, S, L);
+  if (S.lent < 1) { c.fillStyle = 'rgba(90,140,255,.10)'; c.fillRect(0, 0, L.W, L.H); }
+  // un coup reçu : le bord de l'écran rougit
+  if (S.h.coupe > 0) { c.strokeStyle = 'rgba(255,40,40,' + S.h.coupe * 1.8 + ')'; c.lineWidth = 16; c.strokeRect(0, 0, L.W, L.H); c.lineWidth = 2; }
+}
+
+G.Dessin = {tout: tout, ROLES: ROLES, grosbec: grosbec, emoji: emoji};
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* Les écrans, les boutons, le doigt, la boucle. */
+(function () {
+'use strict';
+var P2 = window.P2, REG = P2.REG, Dessin = window.Dessin;
+var VERSION = 'version 1 (26 novembre)';
+var $ = function (id) { return document.getElementById(id); };
+var cadre = $('cadre'), cv = $('c'), ctx = cv.getContext('2d');
+var L = {W: 420}, Sc = 1, K = 1, cvX = 0, cvY = 0;
+var S = null, pause = false, debut = true, finMontree = false, fige = false;   // fige : pour les captures des essais
+var SENS = 1.5;   // (C) le héros suit le doigt, en un peu plus grand : on n'a pas besoin de traverser tout l'écran
+
+/* ---------- les réglages, gardés d'une partie à l'autre ---------- */
+var reglages = {};
+for (var k in P2.REGLAGES_DEFAUT) reglages[k] = P2.REGLAGES_DEFAUT[k];
+try { var mem = JSON.parse(localStorage.getItem('phase2-devant') || '{}'); for (k in mem) if (k in reglages) reglages[k] = mem[k]; } catch (e) {}
+function garder() { try { localStorage.setItem('phase2-devant', JSON.stringify(reglages)); } catch (e) {} }
+
+/* ---------- la mise en page : téléphone debout ; sur tablette, le jeu au centre ---------- */
+function taille() {
+  var vw = innerWidth, vh = innerHeight, fw = vw;
+  if (vw / vh > 0.7) fw = Math.round(vh * 0.62);
+  cadre.style.width = fw + 'px'; cadre.style.left = Math.round((vw - fw) / 2) + 'px';
+  var W = 420, H = Math.round(Math.max(680, Math.min(940, W * vh / fw)));
+  Sc = Math.min(fw / W, vh / H);
+  var dpr = Math.min(2, window.devicePixelRatio || 1); K = Sc * dpr;
+  cv.width = Math.round(W * K); cv.height = Math.round(H * K);
+  cv.style.width = W * Sc + 'px'; cv.style.height = H * Sc + 'px';
+  cvX = Math.round((fw - W * Sc) / 2); cvY = Math.round((vh - H * Sc) / 2);
+  cv.style.left = cvX + 'px'; cv.style.top = cvY + 'px';
+  L.W = W; L.H = H;
+  L.solHaut = Math.round(H * 0.36); L.solBas = H - 120; L.solG = 12; L.solD = W - 12;
+  L.bossHaut = 64; L.bk = Math.max(0.7, Math.min(1.15, (L.solHaut - 64) / 250));
+  L.bossY = Math.round(64 + (L.solHaut - 64) * 0.5); L.bossTouche = Math.round(L.bossY + 14 * L.bk);
+  placer();
+  if (S) { S.L = L; S.cible.x = Math.min(L.solD, Math.max(L.solG, S.cible.x)); S.cible.y = Math.min(L.solBas, Math.max(L.solHaut, S.cible.y)); S.h.y = Math.min(S.h.y, L.solBas - 20); }
+}
+function poser(el, x, y, w, h) {
+  el.style.left = (cvX + x * Sc) + 'px'; el.style.top = (cvY + y * Sc) + 'px';
+  el.style.width = (w * Sc) + 'px'; el.style.height = (h * Sc) + 'px'; el.style.fontSize = (15 * Sc) + 'px';
+}
+function placer() {
+  var y = L.H - 92, h = 80, w = 76, g = 6, x0 = 12, fx = function (i) { return x0 + i * (w + g); };
+  poser($('bPotion'), fx(0), y, w, h); poser($('bCouper'), fx(1), y, w, h);
+  poser($('bFeu'), fx(2), y, w, h); poser($('bGlace'), fx(3), y, w, h);
+  poser($('bTape'), fx(4), y - 4, w, h + 4);
+  poser($('bCode'), fx(2), y, w * 2 + g, h);
+  poser($('bPisteur'), L.W - 54, 62, 44, 44);
+  poser($('bPause'), L.W - 52, 8, 42, 38);
+  var f = $('fen'); f.style.left = (cvX + 10 * Sc) + 'px'; f.style.top = (cvY + 34 * Sc) + 'px'; f.style.width = (400 * Sc) + 'px'; f.style.fontSize = (12.5 * Sc) + 'px';
+}
+addEventListener('resize', taille);
+
+/* ---------- la partie ---------- */
+function nouvelle() {
+  S = P2.nouvelle(L, reglages, (Date.now() & 0xffff) + 1);
+  S.h.y = L.solBas - 70; S.cible.y = S.h.y;
+  finMontree = false;
+  $('fen').classList.remove('on');
+}
+
+/* ---------- le doigt : le héros suit le mouvement du doigt, où qu'on le pose ---------- */
+var doigt = null;
+function horsJeu(t) { return t.closest && t.closest('button,.voile,#fen'); }
+addEventListener('pointerdown', function (e) {
+  if (!S || pause || debut || horsJeu(e.target)) return;
+  if (doigt) return;
+  doigt = {id: e.pointerId, x: e.clientX, y: e.clientY};
+  S.cible.x = S.h.x; S.cible.y = S.h.y;
+  e.preventDefault();
+}, {passive: false});
+addEventListener('pointermove', function (e) {
+  if (!doigt || e.pointerId !== doigt.id || !S) return;
+  var dx = (e.clientX - doigt.x) / Sc * SENS, dy = (e.clientY - doigt.y) / Sc * SENS;
+  doigt.x = e.clientX; doigt.y = e.clientY;
+  if (!P2.libre(S)) return;
+  S.cible.x = Math.max(L.solG, Math.min(L.solD, S.cible.x + dx));
+  S.cible.y = Math.max(L.solHaut, Math.min(L.solBas, S.cible.y + dy));
+  e.preventDefault();
+}, {passive: false});
+function lacher(e) { if (doigt && e.pointerId === doigt.id) doigt = null; }
+addEventListener('pointerup', lacher); addEventListener('pointercancel', lacher);
+
+/* le clavier (sur ordinateur) : flèches ou ZQSD, Espace pour taper, 1 potion, 2 couper, 3 feu, 4 glace, Entrée le code */
+var touches = {};
+addEventListener('keydown', function (e) {
+  touches[e.key.toLowerCase()] = true;
+  if (!S || debut) return;
+  var kk = e.key.toLowerCase();
+  if (kk === 'escape') { basculerPause(); return; }
+  if (pause) return;
+  if (S.code.ouvert) {
+    if (kk === 'backspace') P2.effacer(S);
+    return;
+  }
+  if (kk === '1') geste('bPotion'); else if (kk === '2') geste('bCouper'); else if (kk === '3') geste('bFeu'); else if (kk === '4') geste('bGlace');
+  else if (kk === 'enter') geste('bCode'); else if (kk === 'p') geste('bPisteur');
+}, false);
+addEventListener('keyup', function (e) { touches[e.key.toLowerCase()] = false; });
+function clavier(dt) {
+  if (!S || !P2.libre(S)) return;
+  var vx = (touches.arrowright || touches.d ? 1 : 0) - (touches.arrowleft || touches.q || touches.a ? 1 : 0);
+  var vy = (touches.arrowdown || touches.s ? 1 : 0) - (touches.arrowup || touches.z || touches.w ? 1 : 0);
+  if (!vx && !vy) return;
+  S.cible.x = Math.max(L.solG, Math.min(L.solD, S.h.x + vx * 40));
+  S.cible.y = Math.max(L.solHaut, Math.min(L.solBas, S.h.y + vy * 40));
+}
+
+/* ---------- les boutons ---------- */
+var tape = false;
+function refus(el) { el.classList.remove('non'); void el.offsetWidth; el.classList.add('non'); }
+function geste(id) {
+  if (!S || pause || debut) return;
+  var el = $(id), ok = false;
+  if (id === 'bPotion') ok = P2.potion(S);
+  else if (id === 'bCouper') ok = P2.couper(S);
+  else if (id === 'bFeu') ok = P2.remede(S, 'feu');
+  else if (id === 'bGlace') ok = P2.remede(S, 'glace');
+  else if (id === 'bCode') { ok = P2.ouvrirCode(S); if (ok) majFenetre(); }
+  else if (id === 'bPisteur') ok = P2.pisteurCrie(S);
+  if (!ok) refus(el);
+  else { el.classList.add('appui'); setTimeout(function () { el.classList.remove('appui'); }, 120); }
+}
+['bPotion', 'bCouper', 'bFeu', 'bGlace', 'bCode', 'bPisteur'].forEach(function (id) {
+  $(id).addEventListener('pointerdown', function (e) { e.preventDefault(); geste(id); });
+});
+var bTape = $('bTape');
+bTape.addEventListener('pointerdown', function (e) { e.preventDefault(); tape = true; bTape.classList.add('appui'); try { bTape.setPointerCapture(e.pointerId); } catch (x) {} });
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(function (n) { bTape.addEventListener(n, function () { tape = false; bTape.classList.remove('appui'); }); });
+
+/* la fenêtre du code */
+var clav = document.querySelector('#fen .clavier');
+P2.SYMS.forEach(function (s) {
+  var b = document.createElement('button'); b.textContent = s; b.setAttribute('aria-label', s);
+  b.addEventListener('pointerdown', function (e) {
+    e.preventDefault(); if (!S || !S.code.ouvert) return;
+    var n = S.stats.mauvaisCodes, saisie = S.code.saisie.concat([s]);
+    P2.taper(S, s);
+    if (S.stats.mauvaisCodes > n) secouer(saisie); else majFenetre();
+  });
+  clav.appendChild(b);
+});
+$('fFerme').addEventListener('pointerdown', function (e) { e.preventDefault(); if (S) P2.fermerCode(S); majFenetre(); });
+$('fEfface').addEventListener('pointerdown', function (e) { e.preventDefault(); if (S) P2.effacer(S); majFenetre(); });
+function secouer(saisie) { // un mauvais code : la fenêtre tremble avec ce qu'on a tapé, puis se ferme
+  var f = $('fen'), cases = f.querySelectorAll('.case');
+  f.classList.add('on', 'faux');
+  for (var i = 0; i < 3; i++) cases[i].textContent = saisie[i] || '';
+  setTimeout(function () { f.classList.remove('faux'); majFenetre(); }, 650);
+}
+function majFenetre() {
+  var f = $('fen'), on = S && S.code.ouvert;
+  f.classList.toggle('on', !!on);
+  var cases = f.querySelectorAll('.case');
+  for (var i = 0; i < 3; i++) cases[i].textContent = on ? (S.code.saisie[i] || '') : '';
+}
+
+/* chaque image : qui est montré, qui est grisé, qui clignote */
+function cls(el, c, v) { if (el.classList.contains(c) !== !!v) el.classList.toggle(c, !!v); }
+function majBoutons() {
+  var en = S && !debut && S.phase !== 'fini', a = S && S.att, aides = S && S.reg.aides;
+  var combat = en && S.phase === 'combat', bulle = en && S.phase === 'bulle';
+  cls($('bPotion'), 'on', en); cls($('bCouper'), 'on', en && S.phase !== 'bulle');
+  cls($('bFeu'), 'on', combat && S.forme === 2); cls($('bGlace'), 'on', combat && S.forme === 2);
+  cls($('bTape'), 'on', en && S.reg.facon === 'bouton' && S.phase !== 'bulle');
+  cls($('bCode'), 'on', bulle); cls($('bPisteur'), 'on', bulle && !S.cri);
+  $('bPause').style.display = (!debut && !finMontree) ? 'flex' : 'none';
+  if (!S) return;
+  // le bouton pour couper : sa recharge en camembert
+  $('bCouper').style.setProperty('--r', (S.couperT / REG.couper.recharge).toFixed(3));
+  var gros = a && a.type === 'grosCoup' && a.t < a.prep;
+  cls($('bCouper'), 'eteint', S.couperT > 0);
+  cls($('bCouper'), 'appel', aides && gros && S.couperT <= 0);
+  var rem = a && (a.type === 'chaud' || a.type === 'froid') && !a.fait;
+  cls($('bFeu'), 'appel', aides && rem); cls($('bGlace'), 'appel', aides && rem);
+  $('bPotion').style.setProperty('--r', S.h.potion > 0 ? (S.h.potion / REG.potion.duree).toFixed(3) : 0);
+  cls($('bPotion'), 'appel', aides && combat && S.h.pv < 40 && S.h.potion <= 0 && S.h.mort <= 0);
+  cls($('bTape'), 'eteint', S.bouc.actif > 0);
+  var bc = $('bCode'), bl = S.code.bloque > 0;
+  cls(bc, 'bloque', bl);
+  if (bl) bc.querySelector('.nb').textContent = Math.ceil(S.code.bloque);
+  cls(bc, 'appel', aides && bulle && S.cri && !bl && !S.code.ouvert);
+  var f = $('fen'); if (!f.classList.contains('faux') && f.classList.contains('on') !== S.code.ouvert) majFenetre();
+  if (S.code.ouvert) f.querySelector('.lent i').style.width = (100 * S.code.ralenti / S.reg.ralenti).toFixed(1) + '%';
+}
+
+/* ---------- la pause, les réglages ---------- */
+function basculerPause() { if (debut) return; pause = !pause; $('pause').classList.toggle('on', pause); if (pause) majMenu(); doigt = null; tape = false; }
+$('bPause').addEventListener('click', basculerPause);
+$('bReprendre').addEventListener('click', function () {
+  if (debut) { $('pause').classList.remove('on'); $('debut').classList.add('on'); return; }
+  if (finMontree) { $('pause').classList.remove('on'); $('fin').classList.add('on'); return; }
+  basculerPause();
+});
+document.querySelectorAll('.choix[data-r]').forEach(function (g) {
+  g.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    var r = g.dataset.r, v = b.dataset.v;
+    reglages[r] = r === 'facon' ? v : r === 'aides' ? v === 'true' : +v;
+    if (S) S.reg[r] = reglages[r];
+    garder(); majMenu();
+  });
+});
+$('essais').addEventListener('click', function (e) {
+  var b = e.target.closest('button'); if (!b || !S || debut) return;
+  if (b.dataset.f === 's') P2.symboleTout(S); else P2.aller(S, +b.dataset.f);
+  $('fin').classList.remove('on'); finMontree = false;
+  basculerPause();
+});
+$('bRecommencer').addEventListener('click', function () { nouvelle(); $('fin').classList.remove('on'); if (pause) basculerPause(); });
+function majMenu() {
+  document.querySelectorAll('.choix[data-r]').forEach(function (g) {
+    var r = g.dataset.r;
+    g.querySelectorAll('button').forEach(function (b) { b.classList.toggle('choisi', String(reglages[r]) === b.dataset.v); });
+  });
+  $('essais').style.opacity = debut ? 0.35 : 1;
+  $('mesures').textContent = 'Maquette rapide de la phase 2, ' + VERSION + ' · ' + ips + ' images par seconde';
+}
+if (/depuis=salle/.test(location.search)) { var bs = $('bSalle'); bs.hidden = false; bs.addEventListener('click', function () { location.href = 'salle.html'; }); }
+
+/* ---------- avant de jouer ---------- */
+var roles = $('roles');
+['barde', 'sage', 'alchimiste'].forEach(function (r) {
+  var b = document.createElement('button'), R = Dessin.ROLES[r];
+  b.style.background = R.c; b.textContent = R.ic; b.dataset.r = r; b.setAttribute('aria-label', r);
+  b.addEventListener('click', function () { reglages.role = r; garder(); majRoles(); });
+  roles.appendChild(b);
+});
+function majRoles() { roles.querySelectorAll('button').forEach(function (b) { b.classList.toggle('choisi', b.dataset.r === reglages.role); }); }
+majRoles();
+$('bGo').addEventListener('click', function () { debut = false; $('debut').classList.remove('on'); nouvelle(); });
+$('bReglages').addEventListener('click', function () { $('debut').classList.remove('on'); $('pause').classList.add('on'); majMenu(); });
+$('bFinReglages').addEventListener('click', function () { $('fin').classList.remove('on'); $('pause').classList.add('on'); majMenu(); });
+$('bRejouer').addEventListener('click', function () { $('fin').classList.remove('on'); nouvelle(); });
+
+/* ---------- la fin ---------- */
+function mmss(s) { s = Math.round(s); return Math.floor(s / 60) + ':' + ('0' + s % 60).slice(-2); }
+function montrerFin() {
+  finMontree = true;
+  var st = S.stats, h = '';
+  h += '<span>⏱</span><b>' + mmss(S.t) + '</b>';
+  st.formes.forEach(function (t, i) { h += '<span>' + ['①', '②', '③'][i] + '</span><b>' + mmss(t) + '</b>'; });
+  h += '<span>💀</span><b>' + st.morts + '</b><span>🧪</span><b>' + st.potions + '</b>';
+  $('stats').innerHTML = h;
+  var fc = $('finImg').getContext('2d'); fc.clearRect(0, 0, 160, 120); Dessin.grosbec(fc, 80, 64, 34);
+  $('fin').classList.add('on');
+}
+
+/* ---------- la boucle ---------- */
+var avant = performance.now(), ips = 60, nImg = 0, t0 = avant;
+function boucle(maintenant) {
+  requestAnimationFrame(boucle);
+  var dt = Math.min(0.05, (maintenant - avant) / 1000); avant = maintenant;
+  nImg++; if (maintenant - t0 > 1000) { ips = Math.round(nImg * 1000 / (maintenant - t0)); nImg = 0; t0 = maintenant; }
+  if (S && !pause && !debut && !fige) {
+    clavier(dt);
+    P2.pas(S, dt, {tirer: tape || !!touches[' ']});
+    if (S.phase === 'fini' && !finMontree) montrerFin();
+  }
+  if (S) { ctx.setTransform(K, 0, 0, K, 0, 0); Dessin.tout(ctx, S, L); }
+  else { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#05060c'; ctx.fillRect(0, 0, cv.width, cv.height); }
+  majBoutons();
+}
+document.addEventListener('visibilitychange', function () { if (document.hidden && S && !pause && !debut && !finMontree) basculerPause(); });
+
+taille();
+requestAnimationFrame(boucle);
+
+// pour les essais (tests/)
+window.__p2 = {get S() { return S; }, set fige(v) { fige = v; }, majBoutons: majBoutons, dessiner: function () { ctx.setTransform(K, 0, 0, K, 0, 0); Dessin.tout(ctx, S, L); }, P2: P2, L: L, nouvelle: nouvelle, geste: geste, demarrer: function () { $('bGo').click(); }, get ips() { return ips; }, VERSION: VERSION};
+})();
+
+</script>
+</body>
+</html>

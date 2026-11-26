@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Assemble la maquette en un seul fichier : phase2-devant.html (c'est aussi l'index.html de la page Claude)."""
+"""Assemble la maquette (version 2) en un seul fichier : phase2-devant.html (c'est aussi l'index.html de la page Claude).
+La version 1 (téléphone debout) est rangée dans v1/."""
 import pathlib
 ici = pathlib.Path(__file__).resolve().parent
 src = ici / 'src'

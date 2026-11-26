@@ -1,537 +1,707 @@
 /* ==========================================================
    Phase 2 de l'enquête 10 — les trois de devant contre l'armure de Grosbec
-   MAQUETTE RAPIDE EN FORMES SIMPLES (chantier 3 du § 18.11 de la Bible)
+   MAQUETTE RAPIDE, VERSION 2 (Bible § 18.14) : l'interface du combat du Pisteur, en formes simples.
    Les règles seules, sans dessin : ce fichier tourne aussi dans node (tests/).
-   (R) = décidé par Romain (§ 18.4) ; (C) = point de départ de Claude, à régler.
+   Les distances sont en pas, les durées en secondes, comme dans le moteur du Pisteur.
+   (R) = décidé par Romain (§ 18.14) ; (C) = point de départ de Claude, à régler en jouant.
    ========================================================== */
 (function (G) {
 'use strict';
 
 var REG = {
-  vie: 3000,                       // (C) la vie de l'armure : trois tiers de 1000 (R : trois formes)
-  heros: {pv: 100, vitesse: 640, rayon: 20},
-  tir: {cadence: 0.45, degat: 13, vitesse: 900},          // (C) un coup toutes les 0,45 s
-  immobileApres: 0.3,              // façon « immobile » : il tape tout seul après 0,3 s sans bouger
-  faible: {ouvert: 5, ferme: 1.8, vitesse: 48, largeur: 38, bonus: 1.5}, // façon « point faible »
-  potion: {duree: 2.5, bouge: 7},  // (R) rester immobile deux ou trois secondes ; un coup le coupe
-  couper: {recharge: 12},          // (R) le bouton pour couper le gros coup « ne revient pas vite » ; (C) 12 s, et 17 s au moins entre deux gros coups
-  ralentiForce: 0.3,               // (R) « pas mal ralenti » : le combat à 30 %
-  mortBloque: 10,                  // (R) mort sous la bulle : bouton du code grisé ; (C) 10 s
-  mortDuree: 2,                    // (C) le temps de se relever
-  degats: {                        // en points de vie du héros (il en a 100)
-    poing: 45, souffle: 35, grosCoup: 85, bande: 70, chaud: 50, froid: 20,
-    mauvaisRemede: 50, charge: 40, renvoi: 7, mauvaisCode: 20
-  },
-  remedeBon: 200,                  // (C) le bon remède : l'armure sonnée, gros dégâts
-  sonnee: 3,
-  reparateur: {vitesse: 70, soin: 30, rayon: 11},         // soin : points de vie de l'armure par seconde
-  bonusCharge: {duree: 6, fois: 2},                        // (C) la bonne couleur : coups deux fois plus forts
-  // les attaques : durées en secondes à la vitesse « normale »
-  att: {
-    poing: {prep: 1.7, coup: 0.55},
-    souffle: {prep: 1.8, balaie: 0.7, brule: 0.6, part: 0.68},   // part : la part du sol brûlée (on recule au fond)
-    grosCoup: {prep: 3.5},
-    reparateurs: {prep: 0.8},
-    chaud: {monte: 1.2, fenetre: 4.5},
-    froid: {monte: 1.2, fenetre: 4.5, gel: 2.5},
-    charge: {eclair: 0.8, attente: 3.2}
-  },
-  // le programme de chaque forme : on tourne en boucle (R : les attaques de § 18.4 ; C : l'ordre)
-  formes: {
-    1: {prog: ['poing', 'souffle', 'poing', 'reparateurs', 'grosCoup', 'souffle', 'poing', 'reparateurs', 'poing', 'grosCoup'], pause: 1.4, vite: 1},
-    2: {prog: ['charge', 'poing', 'remede', 'charge', 'poing', 'remede'], pause: 1.3, vite: 1},
-    3: {prog: ['poing', 'souffle', 'poing', 'grosCoup', 'poing', 'souffle'], pause: 0.9, vite: 1 / 0.72}
-  },
-  bouclier: {premier: 5, monte: 0.8, actif: 4.5, entre: 9},  // forme 3 : le bouclier qui renvoie
-  // la danse des bandes sous la bulle (R : de plus en plus rapide, plus dure à chaque forme)
-  bandes: {
-    1: {n: 4, t0: 2.4, tmin: 1.0, pas: 0.06},
-    2: {n: 5, t0: 2.1, tmin: 0.9, pas: 0.06},
-    3: {n: 6, t0: 1.9, tmin: 0.8, pas: 0.06}
-  },
-  alerte: 0.6,                     // la part du pas où les bandes s'allument avant d'exploser
-  danseAttente: 1.8,               // après le symbole, avant la première bande
-  transfo: 2.6,                    // la pièce qui tombe, l'armure qui change
-  explose: 3.2                     // la fin
+  salle: {L: 14, P: 10},                     // (C) 14 pas de large, 10 de profondeur ; l'armure au fond (y = 0)
+  armure: {x: 7, y: 0.9, r: 1.5},            // son pied ; on ne peut pas marcher dessus
+  heros: {pv: 100, r: 0.35, vit: 3.6, x: 7, y: 8.2},   // (R) la course du Pisteur : 3,6 pas par seconde
+  glace: {lance: 1.5, degat: 10},            // (R) le javelot de glace : 1,5 s sur place, 10 points
+  feu: {lance: 3, degat: 50},                // (R) la boule de feu : 3 s sur place, 50 points
+  soin: {lance: 2, rend: 50},                // (R) 2 s sur place, +50
+  saut: {L: 3, dur: 0.32},                   // (R) 3 pas, comme le Pisteur ; la recharge est dans les réglages
+  tir: {vit: 10},                            // (C) les sorts volent à 10 pas par seconde
+  bouge: 0.25,                               // (C) au-delà de ce petit coup de pouce, on bouge (et le sort est coupé)
+  gros: 60,                                  // (R) un gros coup : 60 ; rien ne tue d'un coup
+  rythme: 4,                                 // (R) une attaque toutes les 4 s
+  crepite: {annonce: 3},                     // (R) une moitié de la salle crépite 3 s, puis explose
+  colonnes: {n: [6, 7], ombre: 2, r: 0.65, maxi: 14, ecart: 2.1},   // (R) 6 ou 7, ombre 2 s, 14 au plus ; (C) taille, écart (un chemin libre)
+  vague: {annonce: 2, traverse: 1.5, flammes: 3, tic: 30},          // (R)
+  rep: {vit: 1.35, portes: [[0.45, 6.2], [13.55, 6.2]], rend: 50, arrive: 1.95},   // (R) ~5 s jusqu'à l'armure ; un sort rapide le casse
+  main: {leve: 1, givre: 10, braise: 6, ralenti: 0.4, braiseParSec: 5},  // (R) givre : 10 s, 60 % plus lent ; pierre brûlante : 6 s, 5 par seconde
+  orbe: {zone: [3, 11, 2.4, 4.2], chute: 0.6, meche: 10, degat: 20, prise: 0.75, depot: 1.15, fois: 2, bonus: 15},  // (R)
+  lanternes: {or: [0.75, 5.6], rouge: [13.25, 5.6]},                // (R) la dorée à gauche, la rouge à droite, jamais changées
+  doigts: {n: 5, ecart: 30, annonce: 2, demi: 0.45},               // (R) cinq lignes, 2 s ; (C) 30° entre deux lignes, 0,9 pas de large
+  rayon: {tous: 15, grace: 3, dure: 8, brule: 15, soigne: 10, demi: 0.5},   // (R) 15 par seconde dedans, +10 par seconde à Grosbec ; (C) dure 8 s
+  coque: {tous: [15, 20], pv: 50, dure: 8},                          // (R) 50 points en 8 s ; (C) toutes les 15 à 20 s
+  danse: {tous: 60, dure: 20, n: 5, r0: 1.75, w: 1.45, alerte: 0.6, degat: 30, premiere: 40},   // (R) 1 par minute, 20 s, 30 par anneau ; (C) 5 anneaux
+  crevasse: {tous: 30, maxi: 3, large: 1.4, long: [4, 6], annonce: 1.5, premiere: 8, entreLanternes: 2},   // (R) 3 au plus ; (C) toutes les 30 s
+  mort: {attente: 10, intouchable: 4},       // (R)
+  bulle: {de: 4, a: 2},                      // (R) sous la bulle : de 4 s à 2 s entre deux attaques
+  ralentiForce: 0.3,                         // (R) le ralenti pour taper le code, devant
+  transfo: 2.2, explose: 3.2
 };
 
 var SYMS = ['🌙', '⭐', '☀️', '🔑', '🍄', '🐟', '🌳', '🔔', '🎩', '❤️', '🔥', '🐱'];
 
-// les réglages du menu (C) : ce que Romain compare en jouant
-var REGLAGES_DEFAUT = {
-  facon: 'immobile',   // 'immobile' | 'bouton' | 'faible'  (§ 18.10, point 5 : pas tranché)
-  pisteur: 25,         // secondes après le symbole ; 0 = seulement au bouton
-  vitesse: 1,          // 0.8 | 1 | 1.25
-  symbole: 0.25,       // la part de la vie de l'armure à enlever à chaque forme : 0.15 | 0.25 | 0.333
-  ralenti: 5,          // secondes : 3 | 5 | 8
-  aides: true,         // les boutons qui clignotent quand c'est le moment
-  role: 'barde'        // 'barde' | 'sage' | 'alchimiste'
+var DEFAUT = {
+  saut: 1.5,      // (R : « mouais ») la recharge du saut : 0,5 | 1,5 | 3 s
+  accel: 4,       // (R) minutes pour passer de 4 s à 2 s sous la bulle : 2 | 4
+  pisteur: 30,    // le faux Pisteur crie son code N s après le symbole ; 0 = au bouton seulement
+  ralenti: 5,     // secondes de ralenti pour taper le code : 3 | 5 | 8
+  vie: 1000,      // (R) la vie de chaque tiers ; 400 pour essayer vite
+  aides: true,
+  role: 'barde'
 };
 
-// un hasard qu'on peut rejouer (les tests)
 function hasard(graine) {
   var s = (graine >>> 0) || 1;
   return function () { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return (s % 1000000) / 1000000; };
 }
+function d2(ax, ay, bx, by) { return Math.hypot(ax - bx, ay - by); }
+function distSeg(px, py, ax, ay, bx, by) {
+  var vx = bx - ax, vy = by - ay, l = vx * vx + vy * vy, u = l ? ((px - ax) * vx + (py - ay) * vy) / l : 0;
+  u = Math.max(0, Math.min(1, u));
+  return Math.hypot(px - (ax + u * vx), py - (ay + u * vy));
+}
 
-function hautTier(forme) { return REG.vie * (4 - forme) / 3; }   // 3000, 2000, 1000
-function seuil(S) { return Math.max(hautTier(S.forme) - S.reg.symbole * REG.vie, hautTier(S.forme + 1) + 1); }
-
-function nouvelle(L, reglages, graine) {
+function nouvelle(reglages, graine) {
   var reg = {};
-  for (var k in REGLAGES_DEFAUT) reg[k] = (reglages && reglages[k] !== undefined) ? reglages[k] : REGLAGES_DEFAUT[k];
+  for (var k in DEFAUT) reg[k] = (reglages && reglages[k] !== undefined) ? reglages[k] : DEFAUT[k];
+  var H = REG.heros;
   var S = {
-    L: L, reg: reg, rnd: hasard(graine || 12345),
-    t: 0, reel: 0, forme: 1, phase: 'combat',
-    vie: REG.vie,
-    h: {x: L.W / 2, y: L.solBas - 70, pv: REG.heros.pv, mort: 0, invul: 0, gel: 0, calme: 0,
-        potion: 0, px: 0, py: 0, charge: null, bonus: 0, tirT: 0, coupe: 0},
-    cible: {x: L.W / 2, y: L.solBas - 70},
-    att: null, idx: 0, attente: 2, dernierCote: [], sonnee: 0,
-    reps: [], tirs: [], renvois: [],
-    bouc: {avant: REG.bouclier.premier, monte: 0, actif: 0},
-    pf: {x: L.W / 2, dir: 1, ouvert: true, t: REG.faible.ouvert},
-    couperT: 0,
-    symbole: null, cri: null, pisteurT: 0,
-    danse: null,
-    code: {ouvert: false, saisie: [], ralenti: 0, bloque: 0},
-    transfoT: 0, piece: null,
-    lent: 1,
-    stats: {debutForme: 0, formes: [], morts: 0, potions: 0, coups: {}, coupes: 0, remedes: 0, mauvaisRemedes: 0, mauvaisCodes: 0, reparesPV: 0},
+    reg: reg, rnd: hasard(graine || 777),
+    t: 0, reel: 0, tiers: 1, phase: 'combat',
+    vie: reg.vie, vieMax: reg.vie, reserve: 0,
+    h: {x: H.x, y: H.y, pv: H.pv, dx: 0, dy: -1, lance: null, saut: null, sautT: 0, mort: 0, intouchable: 0, coupe: 0,
+        bonus: 0, orbe: null, flammeT: 0, lent: false, bouge: false},
+    cible: null,
+    prochaine: 2.5, derniers: [], forcer: null,
+    colonnes: [], ombres: [], crepite: null, vague: null, main: null, orbe: null,
+    doigts: [], rayon: null, coque: null, danse: null, crevasses: [], fentes: [],
+    t3: {rayon: 13, coque: 17, danse: REG.danse.premiere, crev: REG.crevasse.premiere},
+    reps: [], tirs: [], taches: [],
+    bulleT: 0, symbole: null, cri: null, pisteurT: 0,
+    code: {ouvert: false, saisie: [], ralenti: 0},
+    transfoT: 0, lent: 1, debutTiers: 0,
+    stats: {tiers: [], morts: 0, soins: 0, glaces: 0, feux: 0, coupes: 0, coups: {}, reparesPV: 0, orbesBonnes: 0, orbesRatees: 0, contres: 0, mauvaisCodes: 0},
     evts: []
   };
   return S;
 }
+function evt(S, type, o) { o = o || {}; o.type = type; o.t = S.reel; S.evts.push(o); if (S.evts.length > 80) S.evts.shift(); }
+function dernier(S, type, depuis) { for (var i = S.evts.length - 1; i >= 0; i--) { var e = S.evts[i]; if (S.reel - e.t > depuis) return null; if (e.type === type) return e; } return null; }
 
-function evt(S, type, o) { o = o || {}; o.type = type; o.t = S.reel; S.evts.push(o); if (S.evts.length > 60) S.evts.shift(); }
-
-/* ---------- le héros prend un coup ---------- */
-function coup(S, n, source) {
+/* ============ le héros prend des coups ============ */
+function vivant(S) { return S.h.mort <= 0; }
+function blesser(S, n, source, gros) {
   var h = S.h;
-  if (h.mort > 0 || h.invul > 0 || S.phase === 'explose' || S.phase === 'fini') return false;
-  if (h.potion > 0) { h.potion = 0; evt(S, 'potionCoupee'); }
-  h.pv -= n; h.coupe = 0.35;
+  if (h.mort > 0 || h.intouchable > 0 || S.phase === 'explose' || S.phase === 'fini' || S.phase === 'transfo') return false;
+  h.pv -= n; h.coupe = gros ? 0.45 : Math.max(h.coupe, 0.18);
   S.stats.coups[source] = (S.stats.coups[source] || 0) + n;
-  evt(S, 'aie', {n: n, source: source, x: h.x, y: h.y});
+  if (gros && h.lance) { h.lance = null; S.stats.coupes++; evt(S, 'sortCoupe', {par: source}); }   // (R) un gros coup interrompt ; les dégâts continus, non
+  evt(S, gros ? 'aie' : 'brule', {n: n, source: source});
   if (h.pv <= 0) mourir(S);
   return true;
 }
-
 function mourir(S) {
   var h = S.h;
-  h.pv = 0; h.mort = REG.mortDuree; h.potion = 0; h.charge = null; h.gel = 0;
+  h.pv = 0; h.mort = REG.mort.attente; h.lance = null; h.saut = null;
+  if (h.orbe) { var o = h.orbe; o.porte = false; o.x = h.x; o.y = h.y; h.orbe = null; }
   S.stats.morts++;
-  evt(S, 'mort', {x: h.x, y: h.y, phase: S.phase});
   if (S.code.ouvert) fermerCode(S);
-  if (S.phase === 'combat') { S.att = null; S.tirs = []; S.renvois = []; }
+  evt(S, 'mort', {x: h.x, y: h.y});
 }
-
 function relever(S) {
+  var h = S.h, p = placeLibre(S, REG.heros.x, REG.heros.y);
+  h.x = p[0]; h.y = p[1]; h.pv = REG.heros.pv; h.intouchable = REG.mort.intouchable;
+  evt(S, 'releve');
+}
+function placeLibre(S, x, y) {
+  for (var r = 0; r < 6; r += 0.4) for (var a = 0; a < 12; a++) {
+    var px = x + Math.cos(a / 12 * Math.PI * 2) * r, py = y + Math.sin(a / 12 * Math.PI * 2) * r;
+    if (libreEn(S, px, py, REG.heros.r)) return [px, py];
+  }
+  return [x, y];
+}
+
+/* ============ les obstacles ============ */
+function dansSalle(x, y, r) { var L = REG.salle; return x >= r && x <= L.L - r && y >= r && y <= L.P - r; }
+function libreEn(S, x, y, r) {
+  if (!dansSalle(x, y, r)) return false;
+  var A = REG.armure;
+  if (d2(x, y, A.x, A.y) < A.r + r) return false;
+  for (var i = 0; i < S.colonnes.length; i++) if (d2(x, y, S.colonnes[i].x, S.colonnes[i].y) < REG.colonnes.r + r) return false;
+  for (i = 0; i < S.crevasses.length; i++) { var c = S.crevasses[i]; if (distSeg(x, y, c.ax, c.ay, c.bx, c.by) < REG.crevasse.large / 2 + r) return false; }
+  return true;
+}
+// pousse le héros hors des obstacles (murs, colonnes, armure, crevasses ; sauf les crevasses pendant un saut)
+function pousser(S, o, r, enSaut) {
+  var L = REG.salle, A = REG.armure;
+  for (var pass = 0; pass < 3; pass++) {
+    o.x = Math.max(r, Math.min(L.L - r, o.x)); o.y = Math.max(r, Math.min(L.P - r, o.y));
+    var dx = o.x - A.x, dy = o.y - A.y, d = Math.hypot(dx, dy), m = A.r + r;
+    if (d < m) { if (d < 1e-6) { dx = 0; dy = 1; d = 1; } o.x = A.x + dx / d * m; o.y = A.y + dy / d * m; }
+    for (var i = 0; i < S.colonnes.length; i++) {
+      var c = S.colonnes[i]; dx = o.x - c.x; dy = o.y - c.y; d = Math.hypot(dx, dy); m = REG.colonnes.r + r;
+      if (d < m) { if (d < 1e-6) { dx = 0; dy = 1; d = 1; } o.x = c.x + dx / d * m; o.y = c.y + dy / d * m; }
+    }
+    if (!enSaut) for (i = 0; i < S.crevasses.length; i++) {
+      var k = S.crevasses[i], vx = k.bx - k.ax, vy = k.by - k.ay, l = vx * vx + vy * vy;
+      var u = Math.max(0, Math.min(1, ((o.x - k.ax) * vx + (o.y - k.ay) * vy) / l)), qx = k.ax + u * vx, qy = k.ay + u * vy;
+      dx = o.x - qx; dy = o.y - qy; d = Math.hypot(dx, dy); m = REG.crevasse.large / 2 + r;
+      if (d < m) { if (d < 1e-6) { dx = -vy; dy = vx; d = Math.hypot(dx, dy); } o.x = qx + dx / d * m; o.y = qy + dy / d * m; }
+    }
+  }
+}
+function dansCrevasse(S, x, y, r) {
+  for (var i = 0; i < S.crevasses.length; i++) { var c = S.crevasses[i]; if (distSeg(x, y, c.ax, c.ay, c.bx, c.by) < REG.crevasse.large / 2 + r) return c; }
+  return null;
+}
+
+/* ============ les quatre boutons ============ */
+function peutAgir(S) { var h = S.h; return h.mort <= 0 && !S.code.ouvert && !h.saut && S.phase !== 'explose' && S.phase !== 'fini' && S.phase !== 'transfo'; }
+// (R) lancer, c'est rester sur place : on ne commence pas en bougeant, et bouger coupe le sort
+function lancer(S, quoi) {
   var h = S.h;
-  h.pv = REG.heros.pv; h.invul = 1.2;
-  if (S.phase === 'combat') {
-    // (C, pas validé) mort avant son symbole : on recommence la forme en cours, l'armure remise à neuf pour lui
-    S.vie = hautTier(S.forme); S.att = null; S.idx = 0; S.attente = 2; S.reps = []; S.tirs = []; S.renvois = [];
-    S.bouc = {avant: REG.bouclier.premier, monte: 0, actif: 0}; S.sonnee = 0;
-    evt(S, 'reprise');
-  } else if (S.phase === 'bulle') {
-    // (R) mort pendant la bulle : il refait la danse ; le bouton du code est grisé, avec un petit chiffre
-    S.code.bloque = REG.mortBloque;
-  }
-  evt(S, 'releve', {x: h.x, y: h.y});
+  if (!peutAgir(S)) return false;
+  if (h.bouge) { evt(S, 'bougeEncore'); return false; }
+  if (quoi === 'soin' && h.pv >= REG.heros.pv) return false;
+  if (h.lance && h.lance.quoi === quoi) return false;
+  var dur = quoi === 'glace' ? REG.glace.lance : quoi === 'feu' ? REG.feu.lance : REG.soin.lance;
+  h.lance = {quoi: quoi, t: 0, dur: dur};
+  evt(S, 'lance', {quoi: quoi});
+  return true;
 }
-
-/* ---------- les gestes du joueur ---------- */
-function libre(S) { var h = S.h; return h.mort <= 0 && h.gel <= 0 && !S.code.ouvert; }
-
-function potion(S) {
+function sauter(S, dx, dy) {
   var h = S.h;
-  if (!libre(S) || h.potion > 0 || h.pv >= REG.heros.pv || S.phase === 'explose' || S.phase === 'fini') return false;
-  h.potion = REG.potion.duree; h.px = h.x; h.py = h.y;
-  S.cible.x = h.x; S.cible.y = h.y;   // il s'arrête pour boire
-  evt(S, 'potion');
-  return true;
-}
-
-function couper(S) {
-  var a = S.att;
-  if (!libre(S) || S.couperT > 0 || !a || a.type !== 'grosCoup' || a.t >= a.prep) return false;
-  S.att = null; S.attente = 1.2; S.sonnee = 1.2; S.couperT = REG.couper.recharge;
-  S.stats.coupes++;
-  evt(S, 'coupe');
-  return true;
-}
-
-function remede(S, el) {
-  var a = S.att;
-  if (!libre(S) || S.phase !== 'combat' || !a || (a.type !== 'chaud' && a.type !== 'froid') || a.fait) return false;
-  a.fait = true;
-  var bon = (a.type === 'chaud' && el === 'glace') || (a.type === 'froid' && el === 'feu');
-  if (bon) {
-    S.stats.remedes++;
-    S.att = null; S.sonnee = REG.sonnee; S.attente = REG.sonnee;
-    evt(S, 'remedeBon', {el: el});
-    blesser(S, REG.remedeBon, {x: S.L.W / 2, y: S.L.bossY});
-  } else {
-    S.stats.mauvaisRemedes++;
-    S.att = null; S.attente = 1.2;
-    evt(S, 'remedeMauvais', {el: el});
-    coup(S, REG.degats.mauvaisRemede, 'remede');
+  if (!peutAgir(S) || h.sautT > 0) return false;
+  var n = Math.hypot(dx, dy);
+  if (n < 0.1) { dx = h.dx; dy = h.dy; n = Math.hypot(dx, dy) || 1; }
+  dx /= n; dy /= n;
+  if (h.lance) { h.lance = null; evt(S, 'sortCoupe', {par: 'saut'}); }
+  // (R) un saut qui ne peut pas atteindre l'autre côté d'une crevasse s'arrête au bord
+  var L = REG.saut.L, r = REG.heros.r, fin = L;
+  for (var s = L; s >= 0; s -= 0.05) { if (!dansCrevasse(S, h.x + dx * s, h.y + dy * s, r)) { fin = s; break; } }
+  if (fin < L) { // le bout tombe dans une crevasse : on recule jusqu'au bord le plus proche du départ
+    for (s = 0; s <= L; s += 0.05) { if (dansCrevasse(S, h.x + dx * (s + 0.05), h.y + dy * (s + 0.05), r)) { fin = s; break; } }
+    var finLoin = -1;
+    for (s = L; s >= 0; s -= 0.05) { if (!dansCrevasse(S, h.x + dx * s, h.y + dy * s, r)) { finLoin = s; break; } }
+    if (finLoin > fin + 0.4 && finLoin <= L) fin = finLoin;
   }
+  h.saut = {x0: h.x, y0: h.y, dx: dx, dy: dy, L: fin, t: 0};
+  h.sautT = S.reg.saut; h.dx = dx; h.dy = dy;
+  evt(S, 'saut');
   return true;
 }
-
-function ouvrirCode(S) {
-  if (S.phase !== 'bulle' || S.h.mort > 0 || S.code.bloque > 0 || S.code.ouvert || S.h.gel > 0) return false;
-  S.code.ouvert = true; S.code.saisie = []; S.code.ralenti = S.reg.ralenti;
-  S.h.potion = 0;
-  S.cible.x = S.h.x; S.cible.y = S.h.y;     // (R) pendant qu'on tape, on ne dirige plus son héros
-  evt(S, 'codeOuvert');
-  return true;
+function viser(S, x, y) { // on touche un réparateur pour le prendre pour cible ; ailleurs, la cible revient sur l'armure
+  var best = null, bd = 0.9;
+  S.reps.forEach(function (p) { var d = d2(x, y, p.x, p.y); if (d < bd) { bd = d; best = p; } });
+  S.cible = best;
+  if (best) evt(S, 'cible');
+  return !!best;
+}
+function finirSort(S) {
+  var h = S.h, l = h.lance; h.lance = null;
+  if (l.quoi === 'soin') { h.pv = Math.min(REG.heros.pv, h.pv + REG.soin.rend); S.stats.soins++; evt(S, 'soigne'); return; }
+  if (l.quoi === 'glace') S.stats.glaces++; else S.stats.feux++;
+  var c = S.cible && S.reps.indexOf(S.cible) >= 0 ? S.cible : null;
+  S.tirs.push({x: h.x, y: h.y, quoi: l.quoi, cible: c, fort: h.bonus > 0});
+  evt(S, 'tir', {quoi: l.quoi});
 }
 
-function fermerCode(S) {
-  if (!S.code.ouvert) return false;
-  S.code.ouvert = false; S.code.saisie = []; S.code.ralenti = 0;
-  return true;
-}
-
-function taper(S, sym) {
-  var c = S.code;
-  if (!c.ouvert || c.saisie.length >= 3) return false;
-  c.saisie.push(sym);
-  if (c.saisie.length === 3) {
-    var bon = S.cri && c.saisie.join('') === S.cri.join('');
-    if (bon) reussir(S); else rater(S);
+/* ============ les sorts en vol ============ */
+function avancerTirs(S, dt) {
+  var A = REG.armure, v = REG.tir.vit * dt;
+  for (var i = S.tirs.length - 1; i >= 0; i--) {
+    var s = S.tirs[i], tx, ty;
+    if (s.cible && S.reps.indexOf(s.cible) >= 0) { tx = s.cible.x; ty = s.cible.y; } else { s.cible = null; tx = A.x; ty = A.y; }
+    var dx = tx - s.x, dy = ty - s.y, d = Math.hypot(dx, dy), nx = s.x + (d > v ? dx / d * v : dx), ny = s.y + (d > v ? dy / d * v : dy);
+    // (R) les colonnes bloquent les sorts : le feu ou le givre reste collé sur la pierre
+    var bloque = null;
+    for (var j = 0; j < S.colonnes.length; j++) { var c = S.colonnes[j]; if (distSeg(c.x, c.y, s.x, s.y, nx, ny) < REG.colonnes.r) { bloque = c; break; } }
+    if (bloque) { S.tirs.splice(i, 1); S.taches.push({col: bloque, quoi: s.quoi, t: S.reel}); evt(S, 'surColonne', {x: bloque.x, y: bloque.y, quoi: s.quoi}); continue; }
+    s.x = nx; s.y = ny;
+    var arrive = s.cible ? d2(s.x, s.y, tx, ty) < 0.3 : d2(s.x, s.y, A.x, A.y) < A.r + 0.1;
+    if (!arrive) continue;
+    S.tirs.splice(i, 1);
+    var n = (s.quoi === 'glace' ? REG.glace.degat : REG.feu.degat) * (s.fort ? REG.orbe.fois : 1);
+    if (s.cible) { casserRep(S, s.cible, n); continue; }
+    toucherArmure(S, s, n);
   }
-  return true;
+}
+function toucherArmure(S, s, n) {
+  // (R) le bon sort contre la main : la boule de feu fait fondre le givre, le javelot de glace refroidit la pierre
+  var m = S.main;
+  if (m && !m.fini && ((m.type === 'givre' && s.quoi === 'feu') || (m.type === 'braise' && s.quoi === 'glace'))) {
+    m.fini = true; S.main = null; S.stats.contres++; evt(S, 'contre', {main: m.type});
+  }
+  if (S.phase !== 'combat') { evt(S, 'surBulle', {quoi: s.quoi}); return; }
+  if (S.coque) { S.coque.pv -= n; evt(S, 'surCoque', {n: n}); if (S.coque.pv <= 0) { S.coque = null; evt(S, 'coqueCassee'); } return; }
+  S.vie = Math.max(0, S.vie - n);
+  evt(S, 'touche', {n: n, quoi: s.quoi});
+  if (S.vie <= 0) entrerBulle(S);
 }
 
-function effacer(S) { if (!S.code.ouvert || !S.code.saisie.length) return false; S.code.saisie.pop(); return true; }
-
-function rater(S) {
-  S.stats.mauvaisCodes++;
-  S.code.ouvert = false; S.code.ralenti = 0; S.code.saisie = [];
-  evt(S, 'codeFaux');
-  coup(S, REG.degats.mauvaisCode, 'code');   // (C, pas validé) un mauvais code : vitesse normale tout de suite, avec un coup en plus
+/* ============ les réparateurs (le chemin autour des colonnes) ============ */
+var GR = 0.5, GW = 28, GH = 20;
+function carte(S) { // la distance à l'armure, case par case, en contournant les colonnes
+  var D = new Float32Array(GW * GH).fill(1e9), file = [], A = REG.armure;
+  function bloque(i, j) { var x = (i + 0.5) * GR, y = (j + 0.5) * GR;
+    for (var k = 0; k < S.colonnes.length; k++) if (d2(x, y, S.colonnes[k].x, S.colonnes[k].y) < REG.colonnes.r + 0.3) return true;
+    return false; }
+  for (var j = 0; j < GH; j++) for (var i = 0; i < GW; i++) {
+    var x = (i + 0.5) * GR, y = (j + 0.5) * GR;
+    if (d2(x, y, A.x, A.y) < REG.rep.arrive) { D[j * GW + i] = 0; file.push(j * GW + i); }
+  }
+  var B = new Uint8Array(GW * GH); for (j = 0; j < GH; j++) for (i = 0; i < GW; i++) B[j * GW + i] = bloque(i, j) ? 1 : 0;
+  for (var q = 0; q < file.length; q++) {
+    var c = file[q], ci = c % GW, cj = (c / GW) | 0;
+    for (var di = -1; di <= 1; di++) for (var dj = -1; dj <= 1; dj++) {
+      if (!di && !dj) continue;
+      var ni = ci + di, nj = cj + dj; if (ni < 0 || nj < 0 || ni >= GW || nj >= GH) continue;
+      var n = nj * GW + ni; if (B[n]) continue;
+      var nd = D[c] + (di && dj ? 1.414 : 1);
+      if (nd < D[n]) { D[n] = nd; file.push(n); }
+    }
+  }
+  S.carte = D; S.carteN = S.colonnes.length + ':' + S.colonnes.map(function (c) { return c.x.toFixed(1); }).join(',');
+}
+function avancerReps(S, dt) {
+  if (!S.reps.length) return;
+  var cle = S.colonnes.length + ':' + S.colonnes.map(function (c) { return c.x.toFixed(1); }).join(',');
+  if (!S.carte || S.carteN !== cle) carte(S);
+  var A = REG.armure, v = REG.rep.vit * dt;
+  for (var k = S.reps.length - 1; k >= 0; k--) {
+    var p = S.reps[k];
+    if (d2(p.x, p.y, A.x, A.y) < REG.rep.arrive + 0.05) {
+      // (R) il rend 50 points à l'armure puis s'en va ; sous la bulle, les 50 points attendent le tiers suivant
+      if (S.phase === 'combat') { var av = S.vie; S.vie = Math.min(S.vieMax, S.vie + REG.rep.rend); S.stats.reparesPV += S.vie - av; }
+      else if (S.phase === 'bulle') { S.reserve += REG.rep.rend; S.stats.reparesPV += REG.rep.rend; }
+      S.reps.splice(k, 1); if (S.cible === p) S.cible = null;
+      evt(S, 'repare', {x: p.x, y: p.y}); continue;
+    }
+    var i = Math.max(0, Math.min(GW - 1, Math.floor(p.x / GR))), j = Math.max(0, Math.min(GH - 1, Math.floor(p.y / GR)));
+    var best = null, bd = S.carte[j * GW + i];
+    for (var di = -1; di <= 1; di++) for (var dj = -1; dj <= 1; dj++) {
+      var ni = i + di, nj = j + dj; if (ni < 0 || nj < 0 || ni >= GW || nj >= GH) continue;
+      var dd = S.carte[nj * GW + ni]; if (dd < bd - 0.01) { bd = dd; best = [(ni + 0.5) * GR, (nj + 0.5) * GR]; }
+    }
+    var tx = best ? best[0] : A.x, ty = best ? best[1] : A.y, dx = tx - p.x, dy = ty - p.y, d = Math.hypot(dx, dy) || 1;
+    p.x += dx / d * Math.min(v, d); p.y += dy / d * Math.min(v, d);
+  }
+}
+function casserRep(S, p, n) {
+  var i = S.reps.indexOf(p); if (i < 0) return;
+  S.reps.splice(i, 1); if (S.cible === p) S.cible = null;
+  evt(S, 'repCasse', {x: p.x, y: p.y});
 }
 
-function reussir(S) {
-  S.code.ouvert = false; S.code.saisie = [];
-  S.code.ralenti = 1.0;          // (C) le ralenti continue un instant pendant que la pièce tombe
-  S.stats.formes.push(S.t - S.stats.debutForme);
-  S.danse = null;
-  S.piece = {forme: S.forme, t: 0};
-  S.vie = hautTier(S.forme + 1);
-  evt(S, 'codeBon', {forme: S.forme});
-  if (S.forme >= 3) { S.vie = 0; S.phase = 'explose'; S.transfoT = REG.explose; evt(S, 'explose'); }
-  else { S.phase = 'transfo'; S.transfoT = REG.transfo; }
+/* ============ le tirage des attaques ============ */
+function intervalle(S) {
+  if (S.phase !== 'bulle') return REG.rythme;
+  var B = REG.bulle, k = Math.min(1, S.bulleT / (S.reg.accel * 60));
+  return B.de - (B.de - B.a) * k;   // (R) 4 s au départ, 3 s à mi-chemin, 2 s au bout
+}
+function eligibles(S) {
+  var t = S.tiers, d = S.derniers, L = [];
+  function pas3(x) { return !(d.length >= 2 && d[d.length - 1] === x && d[d.length - 2] === x); }   // (R) jamais trois fois de suite la même
+  var debout = S.colonnes.length + S.ombres.length;
+  if (t === 1 || t === 2) {
+    if (debout <= REG.colonnes.maxi - REG.colonnes.n[0] && !S.ombres.length && pas3('colonnes')) L.push(['colonnes', 3]);
+    if (S.colonnes.length && !S.vague && !S.ombres.length && pas3('vague')) L.push(['vague', 2]);   // (R) seulement s'il y a déjà des colonnes
+  }
+  if (t === 1) {
+    if (!S.crepite && pas3('crepite')) L.push(['crepite', 3]);
+    if (S.h.mort <= 0 && S.reps.length < 3 && pas3('reparateurs')) L.push(['reparateurs', 2]);   // (R) pas de nouveau réparateur pendant qu'on est mort
+  }
+  if (t === 2) {
+    if (!S.main && pas3('main')) L.push(['main', 3]);          // (R) jamais les deux mains en même temps
+    if (!S.orbe && pas3('orbe')) L.push(['orbe', 2]);          // (R) une seule orbe à la fois
+  }
+  return L;
+}
+function tirer(S) {
+  if (S.tiers === 3) { lancerDoigts(S); return; }
+  var L = eligibles(S), choix = null;
+  if (S.forcer && L.some(function (e) { return e[0] === S.forcer; })) choix = S.forcer;
+  S.forcer = null;
+  if (!choix) {
+    var tot = 0; L.forEach(function (e) { tot += e[1]; });
+    if (!tot) return;
+    var r = S.rnd() * tot;
+    for (var i = 0; i < L.length; i++) { r -= L[i][1]; if (r <= 0) { choix = L[i][0]; break; } }
+    choix = choix || L[L.length - 1][0];
+  }
+  S.derniers.push(choix); if (S.derniers.length > 4) S.derniers.shift();
+  ({colonnes: lancerColonnes, vague: lancerVague, crepite: lancerCrepite, reparateurs: lancerReps, main: lancerMain, orbe: lancerOrbe})[choix](S);
+  evt(S, 'attaque', {quoi: choix});
 }
 
-function pisteurCrie(S) {
-  if (S.phase !== 'bulle' || S.cri) return false;
-  var c = [];
-  do { c = [0, 0, 0].map(function () { return SYMS[Math.floor(S.rnd() * SYMS.length)]; }); } while (c[0] === c[1] && c[1] === c[2]);
-  S.cri = c;
-  evt(S, 'cri');
-  return true;
+/* --- premier tiers --- */
+function lancerCrepite(S) {
+  var d = S.derniers.filter(function (x) { return x === 'crepite'; }).length;
+  var c = S.rnd() < 0.5 ? 'g' : 'd', h = S.cotes || [];
+  if (h.length >= 2 && h[h.length - 1] === h[h.length - 2]) c = h[h.length - 1] === 'g' ? 'd' : 'g';   // (C, accepté) jamais trois fois le même côté
+  h.push(c); if (h.length > 4) h.shift(); S.cotes = h;
+  S.crepite = {cote: c, t: 0};
+}
+function lancerColonnes(S) {
+  var C = REG.colonnes, n = C.n[0] + (S.rnd() < 0.5 ? 1 : 0), place = REG.colonnes.maxi - S.colonnes.length;
+  n = Math.min(n, place);
+  var A = REG.armure, Lt = REG.lanternes, faites = 0;
+  for (var essai = 0; essai < 400 && faites < n; essai++) {
+    var x = 1.2 + S.rnd() * (REG.salle.L - 2.4), y = 2.7 + S.rnd() * (REG.salle.P - 3.5), ok = true;
+    if (d2(x, y, A.x, A.y) < 3) ok = false;
+    if (ok && (d2(x, y, Lt.or[0], Lt.or[1]) < 1.6 || d2(x, y, Lt.rouge[0], Lt.rouge[1]) < 1.6)) ok = false;
+    var tous = S.colonnes.concat(S.ombres);
+    for (var i = 0; ok && i < tous.length; i++) if (d2(x, y, tous[i].x, tous[i].y) < C.ecart) ok = false;   // (R) toujours un chemin libre
+    if (ok) { S.ombres.push({x: x, y: y, t: 0}); faites++; }
+  }
+}
+function lancerVague(S) {
+  var A = REG.armure, r = REG.colonnes.r;
+  // (R) le feu contourne chaque colonne et se referme derrière : un abri de la taille d'une colonne, juste derrière elle
+  var abris = S.colonnes.map(function (c) { var dx = c.x - A.x, dy = c.y - A.y, d = Math.hypot(dx, dy) || 1; return {x: c.x + dx / d * 2 * r, y: c.y + dy / d * 2 * r}; });
+  var L = REG.salle, rMax = Math.max(d2(A.x, A.y, 0, L.P), d2(A.x, A.y, L.L, L.P));
+  S.vague = {t: 0, abris: abris, rMax: rMax};
+}
+function lancerReps(S) {
+  var n = S.rnd() < 0.5 ? 1 : 2, P = REG.rep.portes, k = S.rnd() < 0.5 ? 0 : 1;
+  for (var i = 0; i < n; i++) { var p = P[(k + i) % 2]; S.reps.push({x: p[0], y: p[1], rouge: 0}); }
+}
+/* --- deuxième tiers --- */
+function lancerMain(S) {
+  var type = S.rnd() < 0.5 ? 'givre' : 'braise';
+  if (S.derniereMain === type && S.rnd() < 0.6) type = type === 'givre' ? 'braise' : 'givre';
+  S.derniereMain = type;
+  S.main = {type: type, t: 0, cx: null, cy: null};
+}
+function lancerOrbe(S) {
+  var Z = REG.orbe.zone, x, y;
+  for (var e = 0; e < 50; e++) { x = Z[0] + S.rnd() * (Z[1] - Z[0]); y = Z[2] + S.rnd() * (Z[3] - Z[2]); if (libreEn(S, x, y, 0.3)) break; }
+  S.orbe = {x: x, y: y, couleur: S.rnd() < 0.5 ? 'or' : 'rouge', t: 0, porte: false};   // (R) la couleur au hasard
+}
+/* --- troisième tiers --- */
+function lancerDoigts(S) {
+  var D = REG.doigts, a0 = 15 + S.rnd() * 30, lignes = [];
+  for (var i = 0; i < D.n; i++) lignes.push((a0 + i * D.ecart) * Math.PI / 180);
+  S.doigts.push({lignes: lignes, t: 0});
+  evt(S, 'attaque', {quoi: 'doigts'});
+}
+function lancerRayon(S) {
+  var c = S.rnd() < 0.5 ? 'or' : 'rouge';   // (R) une seule lanterne, au hasard
+  S.rayon = {couleur: c, t: 0, coupe: false};
+  evt(S, 'attaque', {quoi: 'rayon'});
+}
+function lancerCoque(S) { S.coque = {pv: REG.coque.pv, t: 0}; evt(S, 'attaque', {quoi: 'coque'}); }
+function lancerDanse(S) {
+  S.danse = {t: 0, k: 0, st: 0, motif: [0, 1, 2, 3, 4, 3, 2, 1, 0], explose: false};
+  S.doigts = []; S.coque = null; S.rayon = null;   // (R) la danse arrive toute seule
+  evt(S, 'attaque', {quoi: 'danse'});
+}
+function lancerCrevasse(S) {
+  var C = REG.crevasse, A = REG.armure, Lt = REG.lanternes;
+  if (S.crevasses.length + S.fentes.length >= C.maxi) return;
+  for (var e = 0; e < 200; e++) {
+    var cx = 1.8 + S.rnd() * (REG.salle.L - 3.6), cy = 3 + S.rnd() * (REG.salle.P - 4.2), a = S.rnd() * Math.PI, l = C.long[0] + S.rnd() * (C.long[1] - C.long[0]);
+    var k = {ax: cx - Math.cos(a) * l / 2, ay: cy - Math.sin(a) * l / 2, bx: cx + Math.cos(a) * l / 2, by: cy + Math.sin(a) * l / 2, t: 0};
+    if (!dansSalle(k.ax, k.ay, 0.6) || !dansSalle(k.bx, k.by, 0.6)) continue;
+    if (distSeg(A.x, A.y, k.ax, k.ay, k.bx, k.by) < A.r + 1.4) continue;
+    if (distSeg(Lt.or[0], Lt.or[1], k.ax, k.ay, k.bx, k.by) < 1.6 || distSeg(Lt.rouge[0], Lt.rouge[1], k.ax, k.ay, k.bx, k.by) < 1.6) continue;
+    var gene = false, toutes = S.crevasses.concat(S.fentes);
+    for (var i = 0; i < toutes.length && !gene; i++) {
+      var o = toutes[i];
+      if (Math.min(distSeg(o.ax, o.ay, k.ax, k.ay, k.bx, k.by), distSeg(o.bx, o.by, k.ax, k.ay, k.bx, k.by), distSeg(k.ax, k.ay, o.ax, o.ay, o.bx, o.by), distSeg(k.bx, k.by, o.ax, o.ay, o.bx, o.by)) < 2.2) gene = true;
+    }
+    if (gene) continue;
+    // (C, accepté) jamais plus de deux crevasses à sauter pour aller d'une lanterne à l'autre
+    var n = 0; toutes.concat([k]).forEach(function (o) { if (coupe(o, Lt.or[0], Lt.or[1], Lt.rouge[0], Lt.rouge[1])) n++; });
+    if (n > C.entreLanternes) continue;
+    S.fentes.push(k); evt(S, 'fente'); return;
+  }
+}
+function coupe(o, x1, y1, x2, y2) { // le segment o croise-t-il le segment (x1,y1)-(x2,y2) ?
+  function cote(ax, ay, bx, by, px, py) { return (bx - ax) * (py - ay) - (by - ay) * (px - ax); }
+  var a = cote(x1, y1, x2, y2, o.ax, o.ay), b = cote(x1, y1, x2, y2, o.bx, o.by), c = cote(o.ax, o.ay, o.bx, o.by, x1, y1), d = cote(o.ax, o.ay, o.bx, o.by, x2, y2);
+  return a * b < 0 && c * d < 0;
 }
 
-/* ---------- les dégâts sur l'armure ---------- */
-function blesser(S, n, ou) {
-  if (S.phase !== 'combat') return;
-  var s = seuil(S);
-  S.vie = Math.max(s, S.vie - n);
-  evt(S, 'touche', {n: n, x: ou.x, y: ou.y});
-  if (S.vie <= s + 0.01) symbole(S);
+/* ============ chaque attaque avance ============ */
+function avancerAttaques(S, dt) {
+  var h = S.h, A = REG.armure;
+  // les crépitements : une moitié de la salle
+  if (S.crepite) {
+    var c = S.crepite; c.t += dt;
+    if (c.t >= REG.crepite.annonce) {
+      evt(S, 'crepiteBoum', {cote: c.cote});
+      if (h.mort <= 0 && (c.cote === 'g' ? h.x < REG.salle.L / 2 : h.x >= REG.salle.L / 2)) blesser(S, REG.gros, 'crepite', true);
+      S.crepite = null;
+    }
+  }
+  // les colonnes qui tombent
+  for (var i = S.ombres.length - 1; i >= 0; i--) {
+    var o = S.ombres[i]; o.t += dt;
+    if (o.t < REG.colonnes.ombre) continue;
+    S.ombres.splice(i, 1);
+    var R = REG.colonnes.r;
+    if (h.mort <= 0 && d2(h.x, h.y, o.x, o.y) < R + REG.heros.r * 0.6) blesser(S, REG.gros, 'colonne', true);
+    for (var k = S.reps.length - 1; k >= 0; k--) if (d2(S.reps[k].x, S.reps[k].y, o.x, o.y) < R + 0.2) { evt(S, 'repEcrase', {x: S.reps[k].x, y: S.reps[k].y}); if (S.cible === S.reps[k]) S.cible = null; S.reps.splice(k, 1); }
+    if (S.orbe && !S.orbe.porte && d2(S.orbe.x, S.orbe.y, o.x, o.y) < R + 0.35) {   // (R) l'orbe est projetée sur le côté
+      var dx = S.orbe.x - o.x, dy = S.orbe.y - o.y, dd = Math.hypot(dx, dy);
+      if (dd < 1e-3) { var an = S.rnd() * Math.PI * 2; dx = Math.cos(an); dy = Math.sin(an); dd = 1; } S.orbe.x = o.x + dx / dd * 1.9; S.orbe.y = o.y + dy / dd * 1.9;
+      var p = {x: S.orbe.x, y: S.orbe.y}; pousser(S, p, 0.3); S.orbe.x = p.x; S.orbe.y = p.y; evt(S, 'orbeProjetee');
+    }
+    S.colonnes.push({x: o.x, y: o.y, nee: S.reel});
+    var hp = {x: h.x, y: h.y}; pousser(S, hp, REG.heros.r); h.x = hp.x; h.y = hp.y;
+    evt(S, 'colonneTombe', {x: o.x, y: o.y});
+  }
+  // la vague de flammes
+  if (S.vague) {
+    var v = S.vague, V = REG.vague; v.t += dt;
+    S.reps.forEach(function (p) { if (brule(S, p.x, p.y)) p.rouge = 1; });   // (R) rouge vif, sans mourir
+    if (h.mort <= 0 && brule(S, h.x, h.y) && !abrite(S, h.x, h.y)) {
+      if (h.flammeT <= 0) { blesser(S, V.tic, 'flammes', false); h.flammeT = 1; }   // (R) 30 par seconde ; ça ne coupe pas les sorts
+    }
+    if (v.t >= V.annonce + V.traverse + V.flammes) {
+      S.vague = null; S.colonnes = []; S.taches = [];   // (R) la vague détruit toutes les colonnes
+      evt(S, 'colonnesDetruites');
+      if (S.tiers <= 2) { S.forcer = 'colonnes'; S.prochaine = Math.min(S.prochaine, 0.3); }   // (R) à peine les flammes éteintes, les ombres arrivent
+    }
+  }
+  if (h.flammeT > 0) h.flammeT -= dt;
+  // les mains
+  if (S.main) {
+    var m = S.main, M = REG.main; m.t += dt;
+    if (m.t >= M.leve && m.cx === null) { m.cx = h.x; m.cy = h.y; }   // (R) depuis nos pieds
+    if (m.cx !== null) {
+      var full = m.type === 'givre' ? M.givre : M.braise, Rm = rayonMain(m);
+      var dedans = d2(h.x, h.y, m.cx, m.cy) < Rm;
+      if (m.type === 'braise' && dedans && h.mort <= 0) { h.braise = (h.braise || 0) + M.braiseParSec * dt; if (h.braise >= 1) { var nb = Math.floor(h.braise); h.braise -= nb; blesser(S, nb, 'braise', false); } }
+      if (m.t - M.leve >= full) {
+        evt(S, m.type === 'givre' ? 'givreEclate' : 'braiseExplose');
+        if (h.mort <= 0) blesser(S, REG.gros, m.type, true);
+        S.main = null;
+      }
+    }
+  }
+  // l'orbe
+  if (S.orbe) {
+    var ob = S.orbe, O = REG.orbe, Lt = REG.lanternes; ob.t += dt;
+    if (ob.porte) { ob.x = h.x; ob.y = h.y; }
+    else if (ob.t > O.chute && h.mort <= 0 && d2(h.x, h.y, ob.x, ob.y) < O.prise) { ob.porte = true; h.orbe = ob; evt(S, 'orbePrise'); }
+    if (ob.porte) {
+      var bonne = Lt[ob.couleur], mauvaise = Lt[ob.couleur === 'or' ? 'rouge' : 'or'];
+      if (d2(h.x, h.y, bonne[0], bonne[1]) < O.depot) { S.orbe = null; h.orbe = null; h.bonus = O.bonus; S.stats.orbesBonnes++; evt(S, 'orbeBonne', {couleur: ob.couleur}); }
+      else if (d2(h.x, h.y, mauvaise[0], mauvaise[1]) < O.depot) { S.orbe = null; h.orbe = null; S.stats.orbesRatees++; evt(S, 'orbeExplose', {x: h.x, y: h.y}); blesser(S, O.degat, 'orbe', true); }
+    }
+    if (S.orbe && ob.t >= O.chute + O.meche) {   // (R) 10 s : elle explose, à travers les colonnes, 20 points
+      S.orbe = null; h.orbe = null; S.stats.orbesRatees++; evt(S, 'orbeExplose', {x: ob.x, y: ob.y});
+      blesser(S, O.degat, 'orbe', true);
+    }
+  }
+  // les doigts
+  for (i = S.doigts.length - 1; i >= 0; i--) {
+    var dg = S.doigts[i]; dg.t += dt;
+    if (!dg.boum && dg.t >= REG.doigts.annonce) {
+      dg.boum = true; evt(S, 'doigtsBoum');
+      if (h.mort <= 0 && surLigne(S, dg, h.x, h.y)) blesser(S, REG.gros, 'doigts', true);
+    }
+    if (dg.t >= REG.doigts.annonce + 0.45) S.doigts.splice(i, 1);
+  }
+  // le rayon d'une lanterne
+  if (S.rayon) {
+    var ry = S.rayon, RY = REG.rayon; ry.t += dt;
+    var lx = REG.lanternes[ry.couleur];
+    ry.coupe = h.mort <= 0 && distSeg(h.x, h.y, lx[0], lx[1], A.x, A.y) < RY.demi;
+    if (ry.t >= RY.grace) {
+      if (ry.coupe) { h.rayonAcc = (h.rayonAcc || 0) + RY.brule * dt; if (h.rayonAcc >= 1) { var nr = Math.floor(h.rayonAcc); h.rayonAcc -= nr; blesser(S, nr, 'rayon', false); } }
+      else if (S.phase === 'combat') { var av = S.vie; S.vie = Math.min(S.vieMax, S.vie + RY.soigne * dt); ry.soigne = (ry.soigne || 0) + S.vie - av; }
+    }
+    if (ry.t >= RY.grace + RY.dure) { S.rayon = null; evt(S, 'rayonFin'); }
+  }
+  // la coque
+  if (S.coque) {
+    S.coque.t += dt;
+    if (S.coque.t >= REG.coque.dure) { S.coque = null; evt(S, 'coqueExplose'); if (h.mort <= 0) blesser(S, REG.gros, 'coque', true); }
+  }
+  // la danse des anneaux
+  if (S.danse) {
+    var dz = S.danse, DZ = REG.danse; dz.t += dt; dz.st += dt;
+    var T = DZ.dure / dz.motif.length;
+    if (!dz.explose && dz.st >= T * DZ.alerte) {
+      dz.explose = true; evt(S, 'anneauxBoum');
+      if (h.mort <= 0 && anneau(h.x, h.y) !== dz.motif[dz.k]) blesser(S, DZ.degat, 'anneaux', true);
+    }
+    if (dz.st >= T) { dz.k++; dz.st = 0; dz.explose = false; if (dz.k >= dz.motif.length) { S.danse = null; S.prochaine = 1.5; evt(S, 'danseFin'); } }
+  }
+  // les crevasses qui s'ouvrent
+  for (i = S.fentes.length - 1; i >= 0; i--) {
+    var f = S.fentes[i]; f.t += dt;
+    if (f.t >= REG.crevasse.annonce) {
+      S.fentes.splice(i, 1); S.crevasses.push(f);
+      var hp2 = {x: h.x, y: h.y}; pousser(S, hp2, REG.heros.r); h.x = hp2.x; h.y = hp2.y;   // on ne tombe pas : poussé au bord
+      evt(S, 'crevasse');
+    }
+  }
+}
+function rayonMain(m) {
+  if (m.cx === null) return 0;
+  var M = REG.main, full = m.type === 'givre' ? M.givre : M.braise, L = REG.salle;
+  var rMax = Math.max(d2(m.cx, m.cy, 0, 0), d2(m.cx, m.cy, L.L, 0), d2(m.cx, m.cy, 0, L.P), d2(m.cx, m.cy, L.L, L.P));
+  return rMax * Math.min(1, (m.t - M.leve) / full);
+}
+function brule(S, x, y) { // la vague : ce point est-il en flammes maintenant ?
+  var v = S.vague; if (!v) return false;
+  var V = REG.vague, A = REG.armure, d = d2(x, y, A.x, A.y), k = Math.max(0, (d - A.r) / (v.rMax - A.r));
+  var arrive = V.annonce + V.traverse * k;
+  return v.t >= arrive && v.t < arrive + V.flammes;
+}
+function abrite(S, x, y) {
+  var v = S.vague; if (!v) return false;
+  for (var i = 0; i < v.abris.length; i++) if (d2(x, y, v.abris[i].x, v.abris[i].y) < REG.colonnes.r) return true;
+  return false;
+}
+function surLigne(S, dg, x, y) {
+  var A = REG.armure, L = 20;
+  for (var i = 0; i < dg.lignes.length; i++) { var a = dg.lignes[i];
+    if (distSeg(x, y, A.x, A.y, A.x + Math.cos(a) * L, A.y + Math.sin(a) * L) < REG.doigts.demi + REG.heros.r * 0.5) return true; }
+  return false;
+}
+function anneau(x, y) {
+  var D = REG.danse, A = REG.armure, d = d2(x, y, A.x, A.y);
+  return Math.max(0, Math.min(D.n - 1, Math.floor((d - D.r0) / D.w)));
 }
 
-function symbole(S) {
-  // (R) un certain pourcentage de vie en moins : un symbole s'affiche, un seul ; l'armure se met sous la bulle
-  S.phase = 'bulle';
+/* ============ la bulle, le symbole, le code ============ */
+function entrerBulle(S) {
+  S.phase = 'bulle'; S.bulleT = 0;
   S.symbole = SYMS[Math.floor(S.rnd() * SYMS.length)];
-  S.cri = null;
-  S.pisteurT = S.reg.pisteur > 0 ? S.reg.pisteur : Infinity;
-  S.att = null; S.reps = []; S.tirs = []; S.renvois = []; S.sonnee = 0;
-  S.bouc.actif = 0; S.bouc.monte = 0;
-  S.h.charge = null;
-  S.danse = {attente: REG.danseAttente, k: 0, t: 0, pos: -1, explose: false, motif: motif(REG.bandes[S.forme].n)};
+  S.cri = null; S.pisteurT = S.reg.pisteur > 0 ? S.reg.pisteur : Infinity;
+  S.coque = null; S.rayon = null;   // (C) sous la bulle du troisième tiers : ni rayon ni coque (Grosbec ne peut plus perdre de vie)
+  S.stats.tiers.push({symbole: S.t - S.debutTiers});
   evt(S, 'symbole', {sym: S.symbole});
 }
-
-function motif(n) { // (R) la danse de Heigan ; (C) on reste deux pas de suite au bord : le moment calme pour taper le code
-  var m = [0, 0];
-  for (var i = 1; i < n - 1; i++) m.push(i);
-  m.push(n - 1, n - 1);
-  for (i = n - 2; i >= 1; i--) m.push(i);
-  return m;
+function pisteurCrie(S) {
+  if (S.phase !== 'bulle' || S.cri) return false;
+  var c; do { c = [0, 0, 0].map(function () { return SYMS[Math.floor(S.rnd() * SYMS.length)]; }); } while (c[0] === c[1] && c[1] === c[2]);
+  S.cri = c; evt(S, 'cri'); return true;
+}
+function ouvrirCode(S) {
+  if (S.phase !== 'bulle' || S.h.mort > 0 || S.code.ouvert) return false;
+  S.code.ouvert = true; S.code.saisie = []; S.code.ralenti = S.reg.ralenti;
+  if (S.h.lance) S.h.lance = null;
+  evt(S, 'codeOuvert'); return true;
+}
+function fermerCode(S) { if (!S.code.ouvert) return false; S.code.ouvert = false; S.code.saisie = []; S.code.ralenti = 0; return true; }
+function effacer(S) { if (!S.code.ouvert || !S.code.saisie.length) return false; S.code.saisie.pop(); return true; }
+function taper(S, sym) {
+  var c = S.code; if (!c.ouvert || c.saisie.length >= 3) return false;
+  c.saisie.push(sym);
+  if (c.saisie.length === 3) {
+    if (S.cri && c.saisie.join('') === S.cri.join('')) reussir(S);
+    else { S.stats.mauvaisCodes++; c.ouvert = false; c.ralenti = 0; c.saisie = []; evt(S, 'codeFaux'); }
+  }
+  return true;
+}
+function reussir(S) {
+  var c = S.code; c.ouvert = false; c.saisie = []; c.ralenti = 0.8;
+  var st = S.stats.tiers[S.stats.tiers.length - 1]; if (st) st.code = S.t - S.debutTiers;
+  S.crepite = null; S.ombres = []; S.vague = null; S.main = null; S.reps = []; S.tirs = []; S.doigts = []; S.danse = null; S.fentes = [];
+  if (S.orbe && S.orbe.porte) S.h.orbe = null; S.orbe = null; S.cible = null;
+  evt(S, 'codeBon', {tiers: S.tiers});
+  if (S.tiers >= 3) { S.phase = 'explose'; S.transfoT = REG.explose; evt(S, 'explose'); }
+  else { S.phase = 'transfo'; S.transfoT = REG.transfo; }
+}
+function tiersSuivant(S) {
+  S.tiers++; S.phase = 'combat';
+  S.vieMax = S.reg.vie + S.reserve; S.vie = S.vieMax; S.reserve = 0;   // (C, accepté) les réparateurs arrivés sous la bulle comptent maintenant
+  S.symbole = null; S.cri = null; S.derniers = []; S.forcer = null; S.prochaine = 2;
+  if (S.tiers === 3) { S.colonnes = []; S.taches = []; S.t3 = {rayon: 13, coque: 17, danse: REG.danse.premiere, crev: REG.crevasse.premiere}; }   // (R) rien ne reste des deux premiers tiers
+  S.debutTiers = S.t;
+  evt(S, 'tiers', {tiers: S.tiers});
 }
 
-function bandeDe(S, x) {
-  var L = S.L, n = REG.bandes[S.forme].n, w = (L.solD - L.solG) / n;
-  return Math.max(0, Math.min(n - 1, Math.floor((x - L.solG) / w)));
-}
-
-function pasDanse(S, k) { var b = REG.bandes[S.forme]; return Math.max(b.tmin, b.t0 - k * b.pas); }
-
-/* ---------- les zones des attaques (servent au dessin et au robot) ---------- */
-function dansPoing(S, a, x) { return a.cote === 'g' ? x < S.L.W / 2 : x >= S.L.W / 2; }
-function basSouffle(S) { var L = S.L; return L.solHaut + (L.solBas - L.solHaut) * REG.att.souffle.part; }
-function coteOr(S, a, x) { return a.orGauche ? x < S.L.W / 2 : x >= S.L.W / 2; }
-
-/* ---------- le programme de l'armure ---------- */
-function lancer(S, type) {
-  var A = REG.att, a = {type: type, t: 0};
-  if (type === 'poing') {
-    var dc = S.dernierCote, c = S.rnd() < 0.5 ? 'g' : 'd';
-    if (dc.length >= 2 && dc[dc.length - 1] === dc[dc.length - 2]) c = dc[dc.length - 1] === 'g' ? 'd' : 'g'; // jamais trois fois le même côté
-    dc.push(c); if (dc.length > 4) dc.shift();
-    a.cote = c; a.prep = A.poing.prep; a.fin = A.poing.prep + A.poing.coup;
-  } else if (type === 'souffle') {
-    a.prep = A.souffle.prep; a.fin = A.souffle.prep + A.souffle.balaie + A.souffle.brule;
-  } else if (type === 'grosCoup') {
-    a.prep = A.grosCoup.prep; a.fin = A.grosCoup.prep + 0.6;
-  } else if (type === 'reparateurs') {
-    a.prep = A.reparateurs.prep; a.fin = a.prep;
-  } else if (type === 'remede') {
-    // (C) le premier au hasard, puis chacun son tour : on voit les deux
-    a.type = S.dernierRemede ? (S.dernierRemede === 'chaud' ? 'froid' : 'chaud') : (S.rnd() < 0.5 ? 'chaud' : 'froid');
-    S.dernierRemede = a.type;
-    a.prep = A[a.type].monte; a.fin = A[a.type].monte + A[a.type].fenetre;
-  } else if (type === 'charge') {
-    a.prep = A.charge.eclair; a.fin = A.charge.eclair + A.charge.attente; a.orGauche = S.rnd() < 0.5;
-    a.couleur = S.rnd() < 0.5 ? 'or' : 'rouge';
-  }
-  S.att = a;
-  evt(S, 'annonce', {att: a.type});
-}
-
-function avancerArmure(S, dt) {
-  var F = REG.formes[S.forme], v = S.reg.vitesse * F.vite, d = dt * v;
-  if (S.sonnee > 0) S.sonnee -= dt;
-  var a = S.att, h = S.h, D = REG.degats;
-  if (!a) {
-    S.attente -= d;
-    if (S.attente <= 0) { lancer(S, F.prog[S.idx % F.prog.length]); S.idx++; }
-  }
-  var avant = a ? a.t : 0; if (a) a.t += d;
-  switch (a && a.type) {
-    case 'poing':
-      if (avant < a.prep && a.t >= a.prep) { evt(S, 'boum', {cote: a.cote}); if (h.mort <= 0 && dansPoing(S, a, h.x)) coup(S, D.poing, 'poing'); }
-      break;
-    case 'souffle':
-      if (a.t >= a.prep && !a.touche) {
-        var A = REG.att.souffle, L = S.L, k = Math.min(1, (a.t - a.prep) / A.balaie);
-        var front = L.solHaut + (basSouffle(S) - L.solHaut) * k;
-        if (h.y - REG.heros.rayon * 0.6 < front && h.y < basSouffle(S) + REG.heros.rayon * 0.4) { a.touche = true; coup(S, D.souffle, 'souffle'); }
-      }
-      break;
-    case 'grosCoup':
-      if (avant < a.prep && a.t >= a.prep) { evt(S, 'grosBoum'); coup(S, D.grosCoup, 'grosCoup'); }
-      break;
-    case 'reparateurs':
-      if (avant < a.prep && a.t >= a.prep) {
-        var L2 = S.L;
-        S.reps.push({x: L2.solG + 14, y: L2.solBas - 14, tx: L2.W * 0.36, ty: L2.solHaut + 10, ok: false});
-        S.reps.push({x: L2.solD - 14, y: L2.solBas - 14, tx: L2.W * 0.64, ty: L2.solHaut + 10, ok: false});
-        evt(S, 'reparateurs');
-      }
-      break;
-    case 'chaud': case 'froid':
-      if (a.t >= a.fin && !a.fait) {
-        a.fait = true;
-        if (a.type === 'chaud') { evt(S, 'chaudBoum'); coup(S, D.chaud, 'chaud'); }
-        else { evt(S, 'gel'); if (h.mort <= 0 && h.invul <= 0) { coup(S, D.froid, 'froid'); if (h.mort <= 0) { h.gel = REG.att.froid.gel; h.potion = 0; } } }
-      }
-      break;
-    case 'charge':
-      if (avant < a.prep && a.t >= a.prep && h.mort <= 0) { h.charge = a.couleur; evt(S, 'charge', {c: a.couleur}); }
-      if (avant < a.fin && a.t >= a.fin && h.charge) {
-        var bon = (h.charge === 'or') === coteOr(S, a, h.x);
-        if (bon) { h.bonus = REG.bonusCharge.duree; evt(S, 'chargeBonne'); }
-        else { evt(S, 'chargeMauvaise'); coup(S, D.charge, 'charge'); }
-        h.charge = null;
-      }
-      break;
-  }
-  if (a && S.att === a && a.t >= a.fin) { S.att = null; S.attente = F.pause; }
-
-  // forme 3 : le bouclier qui renvoie, en même temps que le reste
-  if (S.forme === 3) {
-    var B = REG.bouclier, b = S.bouc;
-    if (b.actif > 0) { b.actif -= d; if (b.actif <= 0) { b.actif = 0; b.avant = B.entre; evt(S, 'bouclierFin'); } }
-    else if (b.monte > 0) { b.monte -= d; if (b.monte <= 0) { b.monte = 0; b.actif = B.actif; evt(S, 'bouclier'); } }
-    else { b.avant -= d; if (b.avant <= 0) { b.monte = B.monte; evt(S, 'bouclierMonte'); } }
-  }
-
-  // les réparateurs
-  var R = REG.reparateur;
-  for (var i = S.reps.length - 1; i >= 0; i--) {
-    var r = S.reps[i];
-    if (!r.ok) {
-      var dx = r.tx - r.x, dy = r.ty - r.y, dd = Math.hypot(dx, dy), pas = R.vitesse * d;
-      if (dd <= pas) { r.x = r.tx; r.y = r.ty; r.ok = true; evt(S, 'repareArrive'); }
-      else { r.x += dx / dd * pas; r.y += dy / dd * pas; }
-    } else if (S.phase === 'combat') {
-      var avantVie = S.vie;
-      S.vie = Math.min(hautTier(S.forme), S.vie + R.soin * d);
-      S.stats.reparesPV += S.vie - avantVie;
-    }
-    if (h.mort <= 0 && Math.hypot(r.x - h.x, r.y - h.y) < REG.heros.rayon + R.rayon) { S.reps.splice(i, 1); evt(S, 'repareCasse', {x: r.x, y: r.y}); }
-  }
-}
-
-/* ---------- la danse des bandes ---------- */
-function avancerDanse(S, dt) {
-  var D = S.danse; if (!D) return;
-  var d = dt * S.reg.vitesse;
-  if (D.attente > 0) {
-    D.attente -= d;
-    if (D.attente <= 0) {
-      // (C) la première bande sûre est celle où se trouve le héros
-      var b = bandeDe(S, S.h.x); D.pos = D.motif.indexOf(b); D.k = 0; D.t = 0; D.explose = false; D.T = pasDanse(S, 0) + 0.6;
-    }
-    return;
-  }
-  D.t += d;
-  if (!D.explose && D.t >= D.T * REG.alerte) {
-    D.explose = true;
-    var sur = D.motif[D.pos % D.motif.length];
-    evt(S, 'bandes', {sur: sur});
-    if (S.h.mort <= 0 && bandeDe(S, S.h.x) !== sur) coup(S, REG.degats.bande, 'bande');
-  }
-  if (D.t >= D.T) { D.k++; D.pos++; D.t = 0; D.explose = false; D.T = pasDanse(S, D.k); }
-}
-
-function surDanse(S) { var D = S.danse; if (!D || D.attente > 0) return -1; return D.motif[D.pos % D.motif.length]; }
-
-/* ---------- les coups du héros ---------- */
-function tirer(S, entree) {
-  var h = S.h, f = S.reg.facon;
-  if (S.phase !== 'combat' || !libre(S) || h.potion > 0 || h.tirT > 0) return;
-  var veut = f === 'immobile' ? h.calme >= REG.immobileApres : f === 'bouton' ? !!entree.tirer : true;
-  if (!veut) return;
-  h.tirT = REG.tir.cadence;
-  var L = S.L, tx = f === 'faible' ? h.x : L.W / 2 + (h.x - L.W / 2) * 0.25;
-  S.tirs.push({x: h.x, y: h.y - REG.heros.rayon, x0: h.x, y0: h.y - REG.heros.rayon, tx: tx, ty: L.bossTouche, k: 0, fort: h.bonus > 0});
-}
-
-function avancerTirs(S, dt) {
-  var L = S.L, V = REG.tir.vitesse;
-  for (var i = S.tirs.length - 1; i >= 0; i--) {
-    var s = S.tirs[i], dist = Math.hypot(s.tx - s.x0, s.ty - s.y0) || 1;
-    s.k += V * dt / dist;
-    s.x = s.x0 + (s.tx - s.x0) * Math.min(1, s.k); s.y = s.y0 + (s.ty - s.y0) * Math.min(1, s.k);
-    if (s.k < 1) continue;
-    S.tirs.splice(i, 1);
-    if (S.phase !== 'combat') continue;
-    var n = REG.tir.degat * (s.fort ? REG.bonusCharge.fois : 1);
-    if (S.reg.facon === 'faible') {
-      var p = S.pf;
-      if (!(p.ouvert && Math.abs(s.x - p.x) < REG.faible.largeur)) { evt(S, 'ting', {x: s.x, y: s.y}); continue; }
-      n *= REG.faible.bonus;
-    }
-    if (S.forme === 3 && S.bouc.actif > 0) { // (R) le bouclier renvoie : on voit le coup revenir sur nous
-      S.renvois.push({x: s.x, y: s.y});
-      evt(S, 'renvoi', {x: s.x, y: s.y});
-      continue;
-    }
-    blesser(S, n, {x: s.x, y: s.y});
-  }
-  for (i = S.renvois.length - 1; i >= 0; i--) {
-    var r = S.renvois[i], h = S.h, dx = h.x - r.x, dy = h.y - r.y, dd = Math.hypot(dx, dy), pas = 560 * dt;
-    if (dd <= pas + REG.heros.rayon) { S.renvois.splice(i, 1); coup(S, REG.degats.renvoi, 'renvoi'); continue; }
-    r.x += dx / dd * pas; r.y += dy / dd * pas;
-  }
-}
-
-function avancerPointFaible(S, dt) {
-  var p = S.pf, F = REG.faible, L = S.L, lo = L.W * 0.3, hi = L.W * 0.7;
-  p.t -= dt;
-  if (p.t <= 0) {
-    p.ouvert = !p.ouvert; p.t = p.ouvert ? F.ouvert : F.ferme;
-    if (p.ouvert) { p.x = lo + S.rnd() * (hi - lo); p.dir = S.rnd() < 0.5 ? -1 : 1; evt(S, 'faibleOuvre'); }
-  }
-  if (p.ouvert) { p.x += p.dir * F.vitesse * dt * S.reg.vitesse; if (p.x < lo) { p.x = lo; p.dir = 1; } if (p.x > hi) { p.x = hi; p.dir = -1; } }
-}
-
-/* ---------- un pas de temps ---------- */
-// dtReel : le temps vrai ; entree : {tirer: bouton d'attaque gardé}
+/* ============ un pas de temps ============ */
+// entree : {mx, my} la direction du pouce gauche dans la salle (longueur 0 à 1)
 function pas(S, dtReel, entree) {
   entree = entree || {};
   dtReel = Math.min(0.05, Math.max(0, dtReel));
   S.reel += dtReel;
-  var c = S.code;
-  if (c.ralenti > 0) c.ralenti = Math.max(0, c.ralenti - dtReel);
+  var c = S.code; if (c.ralenti > 0) c.ralenti = Math.max(0, c.ralenti - dtReel);
   S.lent = c.ralenti > 0 ? REG.ralentiForce : 1;
-  var dt = dtReel * S.lent;
-  S.t += dt;
-  if (c.bloque > 0) c.bloque = Math.max(0, c.bloque - dtReel);
-  if (S.couperT > 0) S.couperT = Math.max(0, S.couperT - dt);
+  var dt = dtReel * S.lent; S.t += dt;
+  var h = S.h, H = REG.heros;
 
-  var h = S.h, L = S.L, H = REG.heros;
-  // le héros
   if (h.mort > 0) { h.mort -= dt; if (h.mort <= 0) { h.mort = 0; relever(S); } }
-  if (h.invul > 0) h.invul = Math.max(0, h.invul - dt);
-  if (h.gel > 0) h.gel = Math.max(0, h.gel - dt);
-  if (h.bonus > 0) h.bonus = Math.max(0, h.bonus - dt);
+  if (h.intouchable > 0) h.intouchable = Math.max(0, h.intouchable - dt);
   if (h.coupe > 0) h.coupe = Math.max(0, h.coupe - dtReel);
-  if (h.tirT > 0) h.tirT -= dt;
-  var bouge = false;
-  if (libre(S) && S.phase !== 'explose' && S.phase !== 'fini') {
-    var cx = Math.max(L.solG + H.rayon, Math.min(L.solD - H.rayon, S.cible.x));
-    var cy = Math.max(L.solHaut + H.rayon, Math.min(L.solBas - H.rayon, S.cible.y));
-    var dx = cx - h.x, dy = cy - h.y, dd = Math.hypot(dx, dy), max = H.vitesse * dt;
-    if (dd > 0.01) {
-      if (dd <= max) { h.x = cx; h.y = cy; } else { h.x += dx / dd * max; h.y += dy / dd * max; }
-      bouge = Math.min(dd, max) > 0.3;
-    }
-  }
-  h.calme = bouge ? 0 : h.calme + dt;
-  if (h.potion > 0) {
-    if (Math.hypot(h.x - h.px, h.y - h.py) > REG.potion.bouge) { h.potion = 0; evt(S, 'potionCoupee'); }
-    else { h.potion -= dt; if (h.potion <= 0) { h.potion = 0; h.pv = H.pv; S.stats.potions++; evt(S, 'potionBue'); } }
-  }
+  if (h.sautT > 0) h.sautT = Math.max(0, h.sautT - dt);
+  if (h.bonus > 0) h.bonus = Math.max(0, h.bonus - dt);
 
-  if (S.phase === 'combat') {
-    avancerArmure(S, dt);
-    if (S.reg.facon === 'faible') avancerPointFaible(S, dt);
-    tirer(S, entree);
-  } else if (S.phase === 'bulle') {
-    avancerDanse(S, dt);
-    if (!S.cri) { S.pisteurT -= dtReel; if (S.pisteurT <= 0) pisteurCrie(S); }
-  } else if (S.phase === 'transfo') {
-    S.transfoT -= dt; if (S.piece) S.piece.t += dt;
-    if (S.transfoT <= 0) {
-      S.forme++; S.phase = 'combat'; S.att = null; S.idx = 0; S.attente = 1.5; S.symbole = null; S.cri = null; S.piece = null;
-      S.bouc = {avant: REG.bouclier.premier, monte: 0, actif: 0};
-      S.stats.debutForme = S.t;
-      evt(S, 'forme', {forme: S.forme});
+  // le déplacement
+  var mx = entree.mx || 0, my = entree.my || 0, m = Math.hypot(mx, my);
+  if (m > 1) { mx /= m; my /= m; m = 1; }
+  var vivantLibre = h.mort <= 0 && !c.ouvert && S.phase !== 'explose' && S.phase !== 'fini';
+  h.bouge = vivantLibre && m > REG.bouge;
+  if (h.bouge && h.lance) { h.lance = null; S.stats.coupes++; evt(S, 'sortCoupe', {par: 'bouge'}); }   // (R) bouger interrompt
+  h.lent = !!(S.main && S.main.type === 'givre' && S.main.cx !== null && d2(h.x, h.y, S.main.cx, S.main.cy) < rayonMain(S.main));
+  if (h.saut) {
+    var sj = h.saut; sj.t += dt; var k = Math.min(1, sj.t / REG.saut.dur);
+    var o = {x: sj.x0 + sj.dx * sj.L * k, y: sj.y0 + sj.dy * sj.L * k}; pousser(S, o, H.r, k < 1);
+    h.x = o.x; h.y = o.y; if (k >= 1) h.saut = null;
+  } else if (h.bouge) {
+    var v = H.vit * (h.lent ? REG.main.ralenti : 1) * Math.min(1, (m - REG.bouge * 0.5) / 0.6);
+    h.dx = mx / m; h.dy = my / m;
+    var p = {x: h.x + h.dx * v * dt, y: h.y + h.dy * v * dt}; pousser(S, p, H.r); h.x = p.x; h.y = p.y;
+  }
+  // les sorts qu'on lance
+  if (h.lance && h.mort <= 0) { h.lance.t += dt; if (h.lance.t >= h.lance.dur) finirSort(S); }
+
+  if (S.phase === 'combat' || S.phase === 'bulle') {
+    if (S.phase === 'bulle') {
+      S.bulleT += dt;
+      if (!S.cri) { S.pisteurT -= dtReel; if (S.pisteurT <= 0) pisteurCrie(S); }
     }
+    // le tirage : une attaque toutes les 4 s (la vague et la danse prennent toute la place)
+    if (!S.vague && !S.danse) {
+      S.prochaine -= dt;
+      if (S.prochaine <= 0) { tirer(S); S.prochaine = intervalle(S); }
+    }
+    if (S.tiers === 3 && !S.danse) {   // le troisième tiers : chaque chose à son heure
+      var t3 = S.t3;
+      t3.rayon -= dt; t3.coque -= dt; t3.danse -= dt; t3.crev -= dt;
+      if (t3.danse <= 0) { lancerDanse(S); t3.danse = REG.danse.tous; }
+      else {
+        if (t3.rayon <= 0) { if (S.phase === 'combat' && !S.rayon) lancerRayon(S); t3.rayon = REG.rayon.tous - 2 + S.rnd() * 4; }
+        if (t3.coque <= 0) { if (S.phase === 'combat' && !S.coque) lancerCoque(S); var C = REG.coque.tous; t3.coque = C[0] + S.rnd() * (C[1] - C[0]); }
+        if (t3.crev <= 0) { lancerCrevasse(S); t3.crev = REG.crevasse.tous; }
+      }
+    }
+    avancerAttaques(S, dt);
+    avancerReps(S, dt);
+  } else if (S.phase === 'transfo') {
+    S.transfoT -= dt; if (S.transfoT <= 0) tiersSuivant(S);
   } else if (S.phase === 'explose') {
-    S.transfoT -= dt; if (S.piece) S.piece.t += dt;
-    if (S.transfoT <= 0) { S.phase = 'fini'; evt(S, 'fini'); }
+    S.transfoT -= dt; if (S.transfoT <= 0) { S.phase = 'fini'; S.stats.total = S.t; evt(S, 'fini'); }
   }
   avancerTirs(S, dt);
+  for (var i = S.taches.length - 1; i >= 0; i--) if (S.reel - S.taches[i].t > 2.5) S.taches.splice(i, 1);
 }
 
-// pour les essais : aller tout de suite à une forme, ou au symbole
-function aller(S, forme) {
-  S.forme = forme; S.phase = 'combat'; S.vie = hautTier(forme); S.att = null; S.idx = 0; S.attente = 1.5;
-  S.symbole = null; S.cri = null; S.danse = null; S.reps = []; S.tirs = []; S.renvois = []; S.piece = null;
-  S.code.ouvert = false; S.code.ralenti = 0; S.code.bloque = 0; S.h.pv = REG.heros.pv; S.h.mort = 0; S.h.gel = 0; S.h.charge = null;
-  S.bouc = {avant: REG.bouclier.premier, monte: 0, actif: 0}; S.stats.debutForme = S.t;
-  evt(S, 'forme', {forme: forme});
+// pour les essais
+function aller(S, tiers) {
+  S.tiers = tiers - 1; S.reserve = 0;
+  S.crepite = null; S.ombres = []; S.vague = null; S.main = null; S.reps = []; S.tirs = []; S.doigts = []; S.danse = null; S.fentes = [];
+  S.orbe = null; S.h.orbe = null; S.coque = null; S.rayon = null; S.crevasses = []; S.colonnes = []; S.cible = null;
+  S.code.ouvert = false; S.code.ralenti = 0; S.h.mort = 0; S.h.pv = REG.heros.pv;
+  tiersSuivant(S);
 }
-function symboleTout(S) { if (S.phase === 'combat') { S.vie = seuil(S); symbole(S); return true; } return false; }
+function symboleTout(S) { if (S.phase !== 'combat') return false; S.vie = 0; entrerBulle(S); return true; }
 
 G.P2 = {
-  REG: REG, SYMS: SYMS, REGLAGES_DEFAUT: REGLAGES_DEFAUT,
+  REG: REG, SYMS: SYMS, DEFAUT: DEFAUT,
   nouvelle: nouvelle, pas: pas,
-  potion: potion, couper: couper, remede: remede,
+  lancer: lancer, sauter: sauter, viser: viser,
   ouvrirCode: ouvrirCode, fermerCode: fermerCode, taper: taper, effacer: effacer, pisteurCrie: pisteurCrie,
   aller: aller, symboleTout: symboleTout,
-  hautTier: hautTier, seuil: seuil, bandeDe: bandeDe, surDanse: surDanse, motif: motif,
-  dansPoing: dansPoing, basSouffle: basSouffle, coteOr: coteOr, libre: libre
+  brule: brule, abrite: abrite, surLigne: surLigne, anneau: anneau, rayonMain: rayonMain, dansCrevasse: dansCrevasse,
+  libreEn: libreEn, intervalle: intervalle, d2: d2, distSeg: distSeg, dernier: dernier
 };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -1,54 +1,54 @@
 # Maquette rapide de la phase 2 — les trois de devant contre l'armure (enquête 10)
 
-> **⚠️ Cette version 1 est dépassée** : le 26 novembre au soir, Romain a refait la phase 2 à la voix (Bible **§ 18.14** : l'interface du combat du Pisteur, deux sorts, un soin, un saut, plus de danse sous la bulle, trois tiers tout nouveaux). Une version 2 est à faire, avec son go ; ce dossier peut lui servir de départ (le doigt, la fenêtre du code, le robot, les essais).
+**Version 2 (26 novembre, nuit)** : d'après les décisions de Romain à la voix, **Bible § 18.14** ; ce qui est construit et les choix de Claude : **Bible § 18.15**.
+Go de Romain : « Vas-y, go pour faire la maquette » (26 novembre, 23 h 21). La version 1 (téléphone debout, vue de face, danse sous la bulle : § 18.12) est rangée dans `v1/`.
 
-**Chantier 3 du § 18.11 de la Bible** (go de Romain le 26 novembre, 19 h 49 : « On prend le chantier 3 du § 18.11 »).
-**Ce qui a été construit, et les choix de Claude : Bible § 18.12.**
+Une maquette pour **juger le système de combat**, pas les images : des ronds, des rectangles, des couleurs franches, **aucun son**. **Le Pisteur n'est pas là** : un faux Pisteur crie son code (au bouton 🏹, ou tout seul après un temps réglable).
 
-Une maquette pour **juger le système de combat**, pas les images : des ronds, des rectangles, des couleurs franches, aucun son, pas de fausse 3D. Le Pisteur n'est pas là : la maquette fait semblant.
+- **La page** : https://claude.ai/artifact/JqMqmHTrbpStj8Y2Wrx61b (la même adresse que la v1 ; identifiant `906be6d8-fd34-478f-9b45-30a028166e5e` ; version 2 : `1795732992-8911`, en ligne le 26 novembre à 23 h 43).
+- **Pas dans la salle des jeux du site** (Romain ne l'a pas demandé). Pour l'y mettre : copier `phase2-devant.html` dans `brumeval/` de la branche `main` et ajouter une case dans `jeu/src/salle.js` (section « ⚔️ Combat final (enquête 10) ») ; la pause sait afficher « ← La salle des jeux » avec `?depuis=salle`.
 
-- **La page** : https://claude.ai/artifact/JqMqmHTrbpStj8Y2Wrx61b (identifiant `906be6d8-fd34-478f-9b45-30a028166e5e`, version 1 : `1795720300-e5d3`, en ligne le 26 novembre à 20 h 11).
-- **Pas dans la salle des jeux du site** (Romain ne l'a pas demandé). Pour l'y mettre : copier `phase2-devant.html` dans `brumeval/` de la branche `main`, ajouter une case dans `jeu/src/salle.js` (section « ⚔️ Combat final (enquête 10) »), reconstruire la salle (voir `PASSATION.md`, entrée du 26 novembre, 19 h 45). La page sait déjà afficher « ← La salle des jeux » dans sa pause quand l'adresse finit par `?depuis=salle`.
+## Comment on joue (comme le combat du Pisteur)
 
-## Comment on joue
+- **Téléphone couché.** La salle vue d'en haut, en biais ; l'armure au fond. Sur tablette, la salle au centre, les pouces sur les côtés.
+- **Le pouce gauche** se pose où il veut sur la moitié gauche de l'écran : le héros court (3,6 pas par seconde).
+- **Les quatre boutons, à la place de ceux du Pisteur** : le gros bouton ❄️ = **le javelot de glace** (1,5 s, 10 points) ; 🔥 = **la boule de feu** (3 s, 50 points) ; ✚ = **le soin** (2 s, +50 ; à la place du bandage) ; ⤴ = **le saut** (3 pas ; à la place du saut du Pisteur ; il part dans la direction du pouce).
+- **Lancer, c'est rester sur place** : on ne commence pas un sort en courant (le bouton tremble), et bouger le coupe. Un gros coup le coupe aussi ; les flammes, la pierre brûlante et le rayon, non. Le cercle autour du héros, et le bouton lui-même, se remplissent pendant qu'on lance.
+- **Viser** : les sorts partent tout seuls vers l'armure. **Toucher un réparateur** le prend pour cible (un cercle jaune sous lui).
+- **Les colonnes arrêtent les sorts** (le feu ou le givre reste collé sur la pierre).
+- **Les barres, avec des chiffres** : ma vie en haut à gauche (verte, orange de 70 à 61, rouge à 60 et moins) ; celle de l'armure en haut au milieu (dorée sous la bulle), avec les trois tiers en petits ronds.
+- **La bulle** : quand le tiers n'a plus de vie, mon symbole s'affiche en grand puis se range sous ma barre ; le gros bouton jaune aux trois cases ouvre la fenêtre du code (ralenti) ; le cri du faux Pisteur s'affiche à gauche, sous mon symbole.
+- **Sur ordinateur** : flèches ou ZQSD ; 1 glace, 2 feu, 3 soin, Espace le saut, Entrée le code, P le Pisteur, Échap la pause ; clic sur un réparateur.
 
-- **Téléphone debout** (couché, la page demande de le tourner) ; **sur tablette, le jeu est au centre** et on peut poser le doigt sur les bandes vides des côtés.
-- **Le héros suit le mouvement du doigt**, où qu'on le pose sur l'écran (pas besoin de toucher le héros : le doigt ne le cache pas). Le mouvement est un peu agrandi (×1,5).
-- **Les boutons, en bas** : 🧪 la potion (illimitée : rester immobile 2,5 s, toute la vie revient ; bouger ou prendre un coup la coupe) ; ✋ couper le gros coup (12 s de recharge, en camembert) ; 🔥 et ❄️ les remèdes (forme 2 seulement) ; 💥 taper (seulement dans la façon « Bouton »).
-- **Sous la bulle** : le gros bouton jaune aux trois cases ouvre la fenêtre du code ; le rond vert 🏹 en haut à droite = « le Pisteur a crié son code » (pour faire semblant).
-- **Sur ordinateur** : flèches ou ZQSD, Espace pour taper, 1 potion, 2 couper, 3 feu, 4 glace, Entrée le code, P le Pisteur, Échap la pause.
+## Le menu Pause (gardé d'une partie à l'autre)
 
-## Le menu Pause (les réglages, gardés d'une partie à l'autre)
-
-- **Comment on fait mal à l'armure** (§ 18.10, point 5, pas tranché) : **Immobile** (le héros tape tout seul après 0,3 s sans bouger) ; **Bouton** (un bouton 💥 à garder appuyé, deux doigts : un qui bouge, un qui tape) ; **Point faible** (le héros tape tout le temps, mais seuls les coups sous le rond jaune font mal ; il s'ouvre 5 s, bouge, se ferme 1,8 s, se rouvre ailleurs ; ×1,5).
-- **Le Pisteur crie son code** : au bouton 🏹 seulement, ou tout seul 10, 25 (de base) ou 45 s après le symbole.
-- **Vitesse des attaques** : lente (×0,8), normale, rapide (×1,25).
-- **Le symbole, après…** 15, 25 (de base) ou 33 % de la vie de l'armure enlevés à chaque forme.
-- **Durée du ralenti** pendant qu'on tape le code : 3, 5 (de base) ou 8 s.
-- **Les boutons qui clignotent** (le rond jaune quand c'est le moment) : oui / non.
-- **Essais** : aller tout de suite à la forme 1, 2 ou 3, ou au symbole.
+- **Le saut revient après** 0,5, 1,5 (de base) ou 3 s.
+- **Sous la bulle, de 4 s à 2 s en** 2 ou 4 minutes (de base).
+- **Le Pisteur crie son code** : au bouton 🏹, ou après 15, 30 (de base) ou 60 s.
+- **La vie de chaque tiers** : 400 (pour essayer vite) ou 1000 (la vraie).
+- **Le ralenti pour taper le code** : 3, 5 (de base) ou 8 s.
+- **Les boutons qui clignotent** : le soin quand la barre est rouge, le bouton du code quand le Pisteur a crié.
+- **Essais** : aller tout de suite au tiers 1, 2 ou 3, ou au symbole.
 
 ## Ce qu'il y a ici
 
-- `phase2-devant.html` : la maquette en un seul fichier (c'est l'`index.html` de la page Claude).
-- `construire.py` : fabrique `phase2-devant.html` à partir de `src/` (`python3 construire.py`).
-- `src/regles.js` : **toutes les règles, sans dessin** (tourne aussi dans node). **Tous les chiffres sont dans `REG`, en haut**, avec (R) = décidé par Romain, (C) = point de départ de Claude.
-- `src/dessin.js` : le dessin en formes simples.
-- `src/ecrans.js` : la mise en page, le doigt, les boutons, les menus, la boucle ; `window.__p2` pour les essais (`fige` arrête le temps pour les captures).
-- `src/page.html` : la page et ses styles.
-- `tests/regles.js` : `node tests/regles.js` — **30 scènes** (le poing, le souffle, le gros coup coupé ou pas, les réparateurs, le symbole, la bulle, la danse, le code, le Pisteur au minuteur, les remèdes, les charges, le bouclier, les deux morts, la potion, la fin). 30 sur 30.
-- `tests/robot.js` (+ `tests/robot-coeur.js`, le cerveau) : `node tests/robot.js facon=immobile|bouton|faible niveau=bon|moyen parties=6 pisteur=25` — un robot joue des parties entières.
-- `tests/partie.py` : le même robot joue **dans la vraie page** (règles, dessin et boutons à chaque image), une partie par façon de taper, puis 25 s en vrai sur un téléphone ralenti 4 fois.
-- `tests/gestes.py` : **les vrais gestes au doigt** (écran tactile simulé) : glisser, deux doigts à la fois, la potion, couper, le code tapé touche par touche, la mort sous la bulle. 13 sur 13.
-- `tests/voir.py` : des captures de chaque scène, sur iPhone et sur iPad.
+- `phase2-devant.html` : la maquette en un seul fichier (l'`index.html` de la page Claude), fabriquée par `python3 construire.py` à partir de `src/`.
+- `src/regles.js` : **toutes les règles, sans dessin** (tourne dans node). **Tous les chiffres sont dans `REG`, en haut**, marqués (R) Romain ou (C) Claude ; les réglages du menu dans `DEFAUT`.
+- `src/dessin.js` : la vue en biais, en formes simples. `src/ecrans.js` : le pouce, les boutons, les menus, la boucle (`window.__p2` pour les essais ; `fige` arrête le temps ; `window.__pilote` laisse un robot tenir la manette). `src/page.html` : la page et ses styles.
+- `tests/regles.js` : `node tests/regles.js` — **55 scènes** (les sorts, les coups qui coupent ou pas, les colonnes, la vague et ses abris, le tirage, les réparateurs, les mains, les orbes, les doigts, le rayon, la coque, la danse, les crevasses et le saut, la mort, la bulle, le code, la fin). 55 sur 55.
+- `tests/robot.js` + `tests/robot-coeur.js` : `node tests/robot.js niveau=bon|moyen parties=4 pisteur=30 vie=1000` — un robot joue des parties entières.
+- `tests/partie.py` : le même robot **dans la vraie page** (règles, dessin, boutons) ; puis les trois tiers en vrai sur un téléphone ralenti 4 fois.
+- `tests/gestes.py` : **les vrais gestes au doigt**, téléphone couché (le pouce, deux doigts avec le saut, un sort, le soin, toucher un réparateur, le code, la mort). 12 sur 12.
+- `tests/voir.py` : des captures de chaque scène, téléphone couché et tablette.
+- `v1/` : la version 1 (Bible § 18.12), telle quelle.
 
 Il faut Python, Playwright et Chrome (`/usr/bin/google-chrome`) pour les essais `.py`.
 
-## Les mesures (26 novembre, version 1)
+## Les mesures (version 2)
 
-- **Le robot** (il réagit 0,35 à 0,6 s après l'annonce, Pisteur à 25 s) : une partie entière en **3 à 3,7 minutes**, toutes façons de taper ; à peu près 30 s de vrai combat par forme, plus l'attente du Pisteur. Un enfant mettra sans doute deux fois plus de temps au combat. La façon « Point faible » est la plus lente (≈ 10 % de plus).
-- **Dans la vraie page** : trois parties entières, aucune erreur, l'écran de fin s'affiche ; toutes les attaques et toutes les phases vues.
-- **Vitesse** : 54 images par seconde en moyenne, 37 au pire, sur un téléphone ralenti 4 fois. **Pas vérifié sur un vrai appareil.**
+- **Le robot « bon »** (il réagit 0,35 s après l'annonce), 1000 points par tiers, Pisteur à 30 s : **une partie en 10 à 13 minutes** ; à peu près 3 minutes de combat par tiers, le troisième le plus long (2,5 à 5,5 minutes) ; 1 à 7 morts. Avec 400 points par tiers : **3 minutes**. Un enfant mettra plus longtemps. Le robot reçoit surtout les doigts, les flammes et le rayon.
+- **Dans la vraie page** : deux parties entières, aucune erreur, toutes les attaques vues, l'écran de fin s'affiche.
+- **Vitesse** : 60 images par seconde sur un téléphone ralenti 4 fois, dans les trois tiers. **Pas vérifié sur un vrai appareil.**
 
 ## Pour remettre la page en ligne après un changement
 

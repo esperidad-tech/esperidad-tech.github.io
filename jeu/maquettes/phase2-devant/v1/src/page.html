@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Phase 2 — l'armure (maquette rapide)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+/* IDEA : une maquette pour juger le jeu, pas les images — des ronds, des rectangles, des couleurs franches
+   PICTURE : l'armure en haut, la salle en bas, le héros au doigt ; chaque attaque s'annonce sur le sol
+   COLOUR : nuit bleue, acier, rouge du danger, or de la bulle ; jaune réservé aux boutons « lancer »
+   LAYOUT : téléphone debout ; sur tablette, le jeu au centre de l'écran */
+:root{color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#05060c;overflow:hidden;color:#eef0f8;font-family:Nunito,system-ui,sans-serif;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}
+#cadre{position:absolute;top:0;height:100%;overflow:hidden;background:#0b0d18}
+#c{position:absolute;left:0;top:0;touch-action:none}
+button{font-family:inherit;cursor:pointer;touch-action:none;color:inherit}
+.jaune{background:#ffd23a;color:#111;font-weight:900;font-size:1.15rem;border:0;border-radius:.6em;padding:.6em 1.6em;min-height:2.9em;box-shadow:0 .22em 0 #9c770c}
+.jaune:active{transform:translateY(.15em);box-shadow:0 .07em 0 #9c770c}
+.gris{background:#22304b;color:#eef0f8;font-weight:800;font-size:.95rem;border:1px solid #3d5078;border-radius:.6em;padding:.5em 1em;min-height:2.6em}
+/* les boutons du combat */
+.bt{position:absolute;border-radius:22%;border:3px solid rgba(255,255,255,.22);background:rgba(20,26,44,.86);display:none;align-items:center;justify-content:center;padding:0;overflow:hidden;box-shadow:0 .25em 0 rgba(0,0,0,.45);z-index:3}
+.bt.on{display:flex}
+.bt b{font-size:2.1em;line-height:1;pointer-events:none;font-weight:400}
+.bt .rc{position:absolute;inset:0;pointer-events:none;background:conic-gradient(rgba(3,5,12,.78) calc(var(--r,0)*360deg),transparent 0)}
+.bt .nb{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:1.6em;font-weight:900;color:#fff;text-shadow:0 0 .3em #000;pointer-events:none}
+.bt.bloque .nb{display:flex}
+.bt.bloque b,.bt.bloque .cases{opacity:0}
+#bCode .nb{font-size:2.2em}
+#bCode.bloque{background:#5a5f6e;border-color:#8a8f9e}
+.bt.eteint{filter:grayscale(1);opacity:.45}
+.bt.appui{transform:translateY(.15em);box-shadow:0 .08em 0 rgba(0,0,0,.45);background:rgba(255,210,58,.3)}
+#bPotion{border-color:#5fe07a}
+#bCouper{border-color:#fff1a0}
+#bFeu{border-color:#ff7a2a;background:rgba(80,24,8,.88)}
+#bGlace{border-color:#9fe3ff;background:rgba(10,40,70,.88)}
+#bTape{border-color:#ffd23a;border-radius:50%}
+#bCode{background:#ffd23a;border-color:#fff3b0;color:#111;border-radius:1em}
+#bCode .cases{display:flex;gap:.18em;pointer-events:none}
+#bCode .cases i{display:block;width:.9em;height:.9em;border-radius:.2em;background:#111}
+#bPisteur{border-radius:50%;border-color:#5fcf86;background:rgba(18,50,30,.9)}
+#bPause{position:absolute;border-radius:.6em;background:rgba(10,16,30,.7);border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;padding:0;z-index:4}
+.appel{animation:appel 1s ease-out infinite}
+@keyframes appel{0%{box-shadow:0 0 0 .1em rgba(255,210,58,1)}70%{box-shadow:0 0 0 .9em rgba(255,210,58,0)}100%{box-shadow:0 0 0 0 rgba(255,210,58,0)}}
+.non{animation:non .3s linear}
+@keyframes non{0%,100%{translate:0}25%{translate:-.35em}60%{translate:.35em}}
+/* la fenêtre du code : transparente, le combat se voit derrière */
+#fen{position:absolute;display:none;flex-direction:column;align-items:center;gap:.45em;background:rgba(8,10,22,.62);border:2px solid rgba(255,214,90,.7);border-radius:1em;padding:.55em .6em .65em;z-index:5}
+#fen.on{display:flex}
+#fen .lent{width:100%;height:.45em;border-radius:1em;background:rgba(255,255,255,.12);overflow:hidden}
+#fen .lent i{display:block;height:100%;background:#7fa8ff;border-radius:1em}
+#fen .haut{display:flex;align-items:center;gap:.5em}
+#fen .case{width:2.7em;height:2.7em;border-radius:.5em;background:rgba(0,0,0,.55);border:2px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;font-size:1.45em}
+#fen .clavier{display:grid;grid-template-columns:repeat(6,1fr);gap:.32em;width:100%}
+#fen .clavier button{height:2.55em;border-radius:.5em;border:1px solid rgba(255,255,255,.25);background:rgba(30,38,62,.85);font-size:1.25em;padding:0}
+#fen .clavier button:active{background:rgba(255,210,58,.4)}
+#fen .petitbt{width:2.4em;height:2.4em;border-radius:.5em;border:1px solid rgba(255,255,255,.3);background:rgba(30,38,62,.85);font-size:1.15em;padding:0}
+#fen.faux{animation:non .3s linear 2}
+/* les écrans */
+.voile{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(4,6,14,.94);padding:max(.8em,env(safe-area-inset-top)) 1em max(.8em,env(safe-area-inset-bottom));overflow-y:auto;z-index:8}
+.voile.on{display:flex}
+.carte{width:100%;max-width:30em;margin:auto;text-align:center}
+#debut{background:#04050b}
+.roles{display:flex;gap:1.1em;justify-content:center;margin:0 0 1.6em}
+.roles button{width:4.4em;height:4.4em;border-radius:50%;border:4px solid transparent;font-size:1.7em;padding:0;opacity:.45;filter:grayscale(.6)}
+.roles button.choisi{filter:none}
+.roles button.choisi{opacity:1;border-color:#fff;box-shadow:0 0 0 .2em rgba(255,255,255,.2)}
+.ligne{display:flex;flex-direction:column;align-items:stretch;gap:.3em;margin:.55em 0;text-align:left}
+.ligne > span{font-size:.85rem;font-weight:800;opacity:.75;padding-left:.2em}
+.choix{display:flex;gap:.3em;flex-wrap:wrap}
+.choix button{flex:1;min-width:4.2em;background:#1a2440;border:1px solid #33456e;border-radius:.55em;padding:.5em .4em;font-weight:800;font-size:.9rem;min-height:2.6em}
+.choix button.choisi{background:#ffd23a;color:#111;border-color:#ffd23a}
+.menu{display:flex;flex-direction:column;gap:.55em;margin-top:.8em}
+.stats{display:grid;grid-template-columns:auto auto;gap:.35em 1.2em;justify-content:center;font-size:1.25rem;font-weight:900;margin:1em 0 1.4em}
+.stats span{text-align:right}
+.mesures{font-size:.72rem;opacity:.55;margin-top:.9em}
+#tourner{display:none;position:fixed;inset:0;z-index:20;background:#05060c;align-items:center;justify-content:center;font-size:4rem}
+@media (orientation:landscape) and (max-height:500px){#tourner{display:flex}}
+</style>
+</head>
+<body>
+<div id="tourner">📱↻</div>
+<div id="cadre">
+  <canvas id="c"></canvas>
+  <button class="bt" id="bPotion" aria-label="Potion"><b>🧪</b><i class="rc"></i></button>
+  <button class="bt" id="bCouper" aria-label="Couper le gros coup"><b>✋</b><i class="rc"></i></button>
+  <button class="bt" id="bFeu" aria-label="Feu"><b>🔥</b></button>
+  <button class="bt" id="bGlace" aria-label="Glace"><b>❄️</b></button>
+  <button class="bt" id="bTape" aria-label="Taper"><b>💥</b><i class="rc"></i></button>
+  <button class="bt" id="bCode" aria-label="Taper le code du Pisteur"><span class="cases"><i></i><i></i><i></i></span><span class="nb"></span></button>
+  <button class="bt" id="bPisteur" aria-label="Essai : le Pisteur crie son code"><b>🏹</b></button>
+  <button id="bPause" aria-label="Pause"><svg width="18" height="18" viewBox="0 0 18 18"><rect x="3" y="2" width="4" height="14" rx="1.5" fill="#fff"/><rect x="11" y="2" width="4" height="14" rx="1.5" fill="#fff"/></svg></button>
+  <div id="fen">
+    <div class="lent"><i></i></div>
+    <div class="haut">
+      <button class="petitbt" id="fFerme" aria-label="Fermer">✕</button>
+      <div class="case"></div><div class="case"></div><div class="case"></div>
+      <button class="petitbt" id="fEfface" aria-label="Effacer">⌫</button>
+    </div>
+    <div class="clavier"></div>
+  </div>
+</div>
+
+<!-- avant de jouer : le héros, et le bouton jaune ; rien à lire -->
+<section id="debut" class="voile on">
+  <div class="carte">
+    <div class="roles" id="roles"></div>
+    <button class="jaune" id="bGo">Démarrer</button>
+    <div style="margin-top:1.4em"><button class="gris" id="bReglages" aria-label="Réglages">⚙️</button></div>
+  </div>
+</section>
+
+<section id="pause" class="voile">
+  <div class="carte">
+    <button class="jaune" id="bReprendre">Reprendre</button>
+    <div class="ligne"><span>Comment on fait mal à l'armure</span><div class="choix" data-r="facon"><button data-v="immobile">Immobile</button><button data-v="bouton">Bouton</button><button data-v="faible">Point faible</button></div></div>
+    <div class="ligne"><span>Le Pisteur crie son code</span><div class="choix" data-r="pisteur"><button data-v="0">Au bouton 🏹</button><button data-v="10">10 s</button><button data-v="25">25 s</button><button data-v="45">45 s</button></div></div>
+    <div class="ligne"><span>Vitesse des attaques</span><div class="choix" data-r="vitesse"><button data-v="0.8">Lente</button><button data-v="1">Normale</button><button data-v="1.25">Rapide</button></div></div>
+    <div class="ligne"><span>Le symbole, après…</span><div class="choix" data-r="symbole"><button data-v="0.15">15 %</button><button data-v="0.25">25 %</button><button data-v="0.333">33 %</button></div></div>
+    <div class="ligne"><span>Durée du ralenti (le code)</span><div class="choix" data-r="ralenti"><button data-v="3">3 s</button><button data-v="5">5 s</button><button data-v="8">8 s</button></div></div>
+    <div class="ligne"><span>Les boutons qui clignotent</span><div class="choix" data-r="aides"><button data-v="true">Oui</button><button data-v="false">Non</button></div></div>
+    <div class="ligne"><span>Essais</span><div class="choix" id="essais"><button data-f="1">Forme 1</button><button data-f="2">Forme 2</button><button data-f="3">Forme 3</button><button data-f="s">Le symbole</button></div></div>
+    <div class="menu">
+      <button class="gris" id="bRecommencer">Recommencer</button>
+      <button class="gris" id="bSalle" hidden>← La salle des jeux</button>
+    </div>
+    <p class="mesures" id="mesures"></p>
+  </div>
+</section>
+
+<section id="fin" class="voile">
+  <div class="carte">
+    <canvas id="finImg" width="160" height="120" style="width:160px;height:120px"></canvas>
+    <div class="stats" id="stats"></div>
+    <button class="jaune" id="bRejouer">Rejouer</button>
+    <div style="margin-top:1em"><button class="gris" id="bFinReglages" aria-label="Réglages">⚙️</button></div>
+  </div>
+</section>
