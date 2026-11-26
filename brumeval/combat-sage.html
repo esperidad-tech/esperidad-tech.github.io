@@ -109,7 +109,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
 <body>
 <header>
   <h1>Le Sage contre Grosbec</h1>
-  <p>Maquette n° 27 : un jeu de runes, avec 14 builds et les trois runes dorées du Sage (le triangle, la lune, l’étoile : une fois par combat chacune). Les builds (dont la Prison de cristal, le Calligraphe, le Champ de mines, le Rayon solaire, le Dompteur). Plus rien n’attaque tout seul, sauf le bâton : la chouette, le sceau et l’orage partent quand tu graves. Chaque carte n’ouvre qu’un seul build : choisis ! Le temps ralentit quand tu graves. Touche un de tes pouvoirs pour savoir ce qu’il fait (sur tablette, c’est écrit dans la marge). Deux fois plus de golems qu’en version 22. Les pages du grimoire tombent maintenant à heure fixe : toujours 19 en 10 minutes. Sur tablette, tenue en large : la salle est au milieu, les jauges à gauche, le bouton Graver à droite. Tu démarres avec un trait court et un petit V ; le mur, l’escargot et le bouclier se gagnent dans le grimoire. Comme avant : un golem sonné éclate au trait, et chaque golem lâche de l’encre. Plus de rouge, plus de builds du bâton. Il faut tenir 10 minutes de combat. Le bouton 🎚️ règle le volume ; au clavier, Entrée ou Espace pour graver, 1, 2, 3 pour choisir une carte.</p>
+  <p>Maquette n° 28 : un jeu de runes, avec 14 builds et les trois runes dorées du Sage (le triangle, la lune, l’étoile : une fois par combat chacune ; elles sont maintenant lues sur de vrais dessins à la main). Les builds (dont la Prison de cristal, le Calligraphe, le Champ de mines, le Rayon solaire, le Dompteur). Plus rien n’attaque tout seul, sauf le bâton : la chouette, le sceau et l’orage partent quand tu graves. Chaque carte n’ouvre qu’un seul build : choisis ! Le temps ralentit quand tu graves. Touche un de tes pouvoirs pour savoir ce qu’il fait (sur tablette, c’est écrit dans la marge). Deux fois plus de golems qu’en version 22. Les pages du grimoire tombent maintenant à heure fixe : toujours 19 en 10 minutes. Sur tablette, tenue en large : la salle est au milieu, les jauges à gauche, le bouton Graver à droite. Tu démarres avec un trait court et un petit V ; le mur, l’escargot et le bouclier se gagnent dans le grimoire. Comme avant : un golem sonné éclate au trait, et chaque golem lâche de l’encre. Plus de rouge, plus de builds du bâton. Il faut tenir 10 minutes de combat. Le bouton 🎚️ règle le volume ; au clavier, Entrée ou Espace pour graver, 1, 2, 3 pour choisir une carte.</p>
 </header>
 <main class="game">
   <div class="stage" id="stage">
@@ -137,7 +137,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
     <p class="note"><b>L’encre :</b> chaque golem détruit lâche un éclat d’encre (un bélier 2, un colosse 3), et une rune qui en détruit trois ou plus en fait tomber encore un par golem. Le bâton tire tout seul, mais doucement : ce sont les runes qui gagnent le combat.</p>
     <p class="note"><b>Les chocs :</b> un golem projeté qui cogne un autre golem, un mur ou le bord est sonné 3 secondes. Un trait le fait alors éclater d’un coup, quelle que soit sa vie.</p>
     <p class="note"><b>Tu démarres avec peu :</b> un trait court et un petit V. Quand tu graves, le temps ralentit très fort (et le chronomètre aussi : graver ne fait pas gagner de temps). Le reste se gagne dans le grimoire : la rune du mur 🚧, l’escargot 🐌, le bouclier 🛡️ (un cercle fermé : tes amis sont intouchables un moment ; 4 d’encre, 8 secondes de recharge), le Grand V 📐, le Long trait 📏, la Lumière aveuglante 💫 (le trait sonne les golems qu’il ne détruit pas), et la rune de la cage 🔒 (un cercle fermé loin de tes amis enferme les golems ; autour de tes amis, c’est le bouclier).</p>
-    <p class="note"><b>Les trois runes dorées</b> (une fois par combat chacune, gratuites ; pour l’essai, tu les as toutes dès le début) : trace un <b>triangle</b> △ : tous les golems sont projetés contre les murs ; une <b>lune</b> ☾ (un croissant, d’un seul trait) : ils sont aveuglés 6 secondes et errent sans frapper ; une <b>étoile</b> ★ à cinq branches, d’un seul trait (la plus dure) : tous les golems de la salle sont détruits. Les cases dorées montrent celles qui te restent ; touche-en une pour savoir ce qu’elle fait.</p>
+    <p class="note"><b>Les trois runes dorées</b> (une fois par combat chacune, gratuites ; pour l’essai, tu les as toutes dès le début) : trace un <b>triangle</b> △ : tous les golems sont projetés contre les murs ; une <b>lune</b> ☾ (un croissant, d’un seul trait) : ils sont aveuglés 6 secondes et errent sans frapper ; une <b>étoile</b> ★ à cinq branches, d’un seul trait (croisée, ou juste le contour) : tous les golems de la salle sont détruits. Les cases dorées montrent celles qui te restent ; touche-en une pour savoir ce qu’elle fait.</p>
     <p class="note"><b>Les pages du grimoire :</b> elles tombent toutes seules, à heure fixe : la première après 20 secondes, puis toutes les 23 à 40 secondes. Toujours 19 pages en 10 minutes, quoi que tu détruises. Elles tombent un peu à l’écart de tes amis : va les chercher. Le combat attend pendant que tu choisis une carte parmi trois.</p>
     <p class="note"><b>Les builds :</b> quand tu as deux cartes qui vont ensemble, dont une au niveau 2, une carte dorée sort à la page suivante. Chaque build monte jusqu’au niveau 3, et ils se cumulent. Chaque carte n’ouvre qu’un seul build. Plus rien n’attaque tout seul, sauf le bâton : les pouvoirs partent quand tu graves.</p>
     <ul class="combos">
@@ -1314,19 +1314,36 @@ const G = (() => {
   // version 27 : un tracé fermé est-il un triangle, une lune ou une étoile ?
   // On compte les coins (les virages secs) et on regarde si le tracé se creuse (la lune a un côté rentrant).
   function formeDoree(pts) {
-    const ferme = [...pts, pts[0]], L = pathLen(ferme); if (L < 150) return null;
-    const N = 72, P = resample(ferme, L / N).slice(0, N); if (P.length < 30) return null;
+    const n0 = pts.length; if (n0 < 12) return null;
+    // 1. la boucle : les deux points les plus proches entre le début et la fin du tracé
+    let bi = 0, bj = n0 - 1, bd = 1e9;
+    for (let i = 0; i <= Math.floor(n0 * 0.2); i++) for (let j = Math.floor(n0 * 0.7); j < n0; j++) { const d = Math.hypot(pts[i].x - pts[j].x, pts[i].y - pts[j].y); if (d < bd) { bd = d; bi = i; bj = j; } }
+    const boucle = pts.slice(bi, bj + 1), ferme = [...boucle, boucle[0]], L = pathLen(ferme); if (L < 150) return null;
+    const N = 96, P = resample(ferme, L / N).slice(0, N); if (P.length < 40) return null;
     const n = P.length, ang = (u, v) => { let d = Math.atan2(v.y, v.x) - Math.atan2(u.y, u.x); while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return d; };
-    const pas = []; for (let i = 0; i < n; i++) { const a = P[(i - 1 + n) % n], b = P[i], c = P[(i + 1) % n]; pas.push(ang({ x: b.x - a.x, y: b.y - a.y }, { x: c.x - b.x, y: c.y - b.y })); }
-    const tot = pas.reduce((x, y) => x + y, 0), sg = Math.sign(tot) || 1;
-    // le côté rentrant : les virages dans l'autre sens, sur un tracé un peu lissé
-    let creux = 0; for (let i = 0; i < n; i++) { let m = 0; for (let k = -2; k <= 2; k++) m += pas[(i + k + n) % n]; m /= 5; if (m * sg < 0) creux += -m * sg; }
-    const k = 3, vir = []; for (let i = 0; i < n; i++) { const a = P[(i - k + n) % n], b = P[i], c = P[(i + k) % n]; vir.push(ang({ x: b.x - a.x, y: b.y - a.y }, { x: c.x - b.x, y: c.y - b.y })); }
-    const coins = []; for (let i = 0; i < n; i++) { const v = Math.abs(vir[i]); if (v < 1.1) continue; let max = true; for (let d = -4; d <= 4; d++) if (d && Math.abs(vir[(i + d + n) % n]) > v) max = false; if (max && !coins.some(j => Math.min(Math.abs(j - i), n - Math.abs(j - i)) < 5)) coins.push(i); }
-    const c = coins.length, T = Math.abs(tot);
-    if (T > 3 * Math.PI && c >= 4 && c <= 6) return 'etoile';
-    if (creux > 1.2 && c >= 1 && c <= 3 && T < 3 * Math.PI) return 'lune';
-    if (c === 3 && creux < 0.8 && T < 3 * Math.PI) return 'triangle';
+    // 2. les coins : on simplifie le tracé en lignes droites (on garde les points qui s'écartent de plus de 5 % de la taille),
+    //    puis on mesure le virage à chaque coin, entre des points assez loin de lui (un coin coupé par un doigt rapide compte en entier)
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const p of P) { x0 = Math.min(x0, p.x); y0 = Math.min(y0, p.y); x1 = Math.max(x1, p.x); y1 = Math.max(y1, p.y); }
+    const taille = Math.hypot(x1 - x0, y1 - y0), eps = 0.05 * taille, loin = 0.12 * taille;
+    const ecart = (p, a, b) => { const dx = b.x - a.x, dy = b.y - a.y, l = Math.hypot(dx, dy) || 1; return Math.abs((p.x - a.x) * dy - (p.y - a.y) * dx) / l; };
+    const simplifie = (A, i, j, o) => { let m = -1, im = -1; for (let t = i + 1; t < j; t++) { const e = ecart(A[t], A[i], A[j]); if (e > m) { m = e; im = t; } } if (m > eps) { simplifie(A, i, im, o); o.push(im); simplifie(A, im, j, o); } };
+    let i0 = 0; { let cx = 0, cy = 0; P.forEach(p => { cx += p.x; cy += p.y; }); cx /= n; cy /= n; let dm = -1; P.forEach((p, i) => { const d = Math.hypot(p.x - cx, p.y - cy); if (d > dm) { dm = d; i0 = i; } }); }
+    const Z = [...P.slice(i0), ...P.slice(0, i0)]; let i1 = 0, d1 = -1; Z.forEach((p, i) => { const d = Math.hypot(p.x - Z[0].x, p.y - Z[0].y); if (d > d1) { d1 = d; i1 = i; } });
+    const Ab = [...Z, Z[0]], idx = [0]; simplifie(Ab, 0, i1, idx); idx.push(i1); simplifie(Ab, i1, n, idx);
+    const V = idx.map(i => Ab[i]), m = V.length, tours = [];
+    for (let i = 0; i < m; i++) { let j = i, k = i; do { j = (j - 1 + m) % m; } while (j !== i && Math.hypot(V[j].x - V[i].x, V[j].y - V[i].y) < loin); do { k = (k + 1) % m; } while (k !== i && Math.hypot(V[k].x - V[i].x, V[k].y - V[i].y) < loin); tours.push(j === i || k === i ? 0 : ang({ x: V[i].x - V[j].x, y: V[i].y - V[j].y }, { x: V[k].x - V[i].x, y: V[k].y - V[i].y })); }
+    const coins = seuil => { const o = []; for (let i = 0; i < m; i++) { const v = Math.abs(tours[i]); if (v < seuil) continue; if ([...Array(m).keys()].some(j => j !== i && Math.abs(tours[j]) > v && Math.hypot(V[j].x - V[i].x, V[j].y - V[i].y) < loin)) continue; if (!o.some(j => Math.hypot(V[j].x - V[i].x, V[j].y - V[i].y) < loin)) o.push(i); } return o.length; };
+    const secs = coins(1.83), forts = coins(1.4);
+    // 3. pleine ou creusée : la surface de la forme / la surface de l'élastique tendu autour
+    let A = 0; for (let i = 0; i < n; i++) { const p = P[i], q = P[(i + 1) % n]; A += p.x * q.y - q.x * p.y; } A = Math.abs(A) / 2;
+    const Q = [...P].sort((a, b) => a.x - b.x || a.y - b.y), cr = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x), lo = [], hi = [];
+    for (const p of Q) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
+    for (let i = Q.length - 1; i >= 0; i--) { const p = Q[i]; while (hi.length >= 2 && cr(hi[hi.length - 2], hi[hi.length - 1], p) <= 0) hi.pop(); hi.push(p); }
+    const H = [...lo.slice(0, -1), ...hi.slice(0, -1)]; let AH = 0; for (let i = 0; i < H.length; i++) { const p = H[i], q = H[(i + 1) % H.length]; AH += p.x * q.y - q.x * p.y; } AH = Math.abs(AH) / 2;
+    const plein = AH > 0 ? A / AH : 1;
+    if ((secs >= 4 && secs <= 6) || (forts >= 4 && forts <= 7 && plein < 0.75)) return 'etoile';
+    if (forts === 3 && secs >= 2 && plein > 0.85) return 'triangle';
+    if (forts >= 1 && forts <= 3 && secs <= 2 && plein < (forts === 3 ? 0.84 : 0.9)) return 'lune';
     return null;
   }
   function recognize(pts) {
@@ -1346,7 +1363,7 @@ const G = (() => {
     let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
     for (const p of pts) { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); }
     const diag = Math.hypot(x1 - x0, y1 - y0);
-    if (chord < 0.4 * diag) { const f = formeDoree(pts); if (f) return { kind: 'ferme', poly: pts, forme: f }; }
+    if (chord < 0.45 * diag || T > 1.6 * Math.PI) { const f = formeDoree(pts); if (f && !(f === 'lune' && T > 2.5 * Math.PI)) return { kind: 'ferme', poly: pts, forme: f }; }   // une lune fait un seul tour (une spirale, plus)
     if (T > 3 * Math.PI) return { kind: 'spirale', x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
     if (T > 1.3 * Math.PI && chord < 0.4 * diag) return { kind: 'ferme', poly: pts };
     // on lisse le tracé (le doigt tremble), puis on regarde ses virages
@@ -2832,7 +2849,7 @@ if (/[?&#]finesse=([\d.]+)/.test(location.href)) { FIN = Math.min(1, Math.max(0.
 function resize() { const r = stage.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(1.7e6 / Math.max(1, r.width * r.height))) * FIN; cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); R8.dpr = cv.width / Math.max(1, r.width); if (bg && bg.getContext) bg.width = bg.height = 0; bg = null; ensureSprites(); }
 const MES = { n: 0, t: 0, sec: 0, nsec: 0, pire: 0, baisses: 0, age: 0 };   // les images comptées pendant la partie
 function mesurer(dt) { if (dt <= 0 || dt > 0.5) return; MES.n++; MES.t += dt; MES.age += dt; MES.sec += dt; MES.nsec++; if (MES.sec >= 1) { if (MES.age > 4) MES.pire = MES.pire ? Math.min(MES.pire, Math.round(MES.nsec / MES.sec)) : Math.round(MES.nsec / MES.sec); MES.sec = MES.nsec = 0; } }
-function mesuresTxt() { return MES.n < 30 ? '' : `Mesures (version 27) : ${Math.round(MES.n / MES.t)} images par seconde, pire seconde ${MES.pire || '?'} · finesse ${Math.round(FIN * 100)} %, ${MES.baisses} baisse${MES.baisses > 1 ? 's' : ''} · ${Golems.cuits} + ${Object.keys(GB.im).length} images · écran ${innerWidth} × ${innerHeight} (× ${Math.round((devicePixelRatio || 1) * 10) / 10})`; }
+function mesuresTxt() { return MES.n < 30 ? '' : `Mesures (version 28) : ${Math.round(MES.n / MES.t)} images par seconde, pire seconde ${MES.pire || '?'} · finesse ${Math.round(FIN * 100)} %, ${MES.baisses} baisse${MES.baisses > 1 ? 's' : ''} · ${Golems.cuits} + ${Object.keys(GB.im).length} images · écran ${innerWidth} × ${innerHeight} (× ${Math.round((devicePixelRatio || 1) * 10) / 10})`; }
 function finesse(dt) {   // dt : le temps depuis l'image d'avant. Sous 25 images par seconde pendant 1,4 seconde : on dessine un peu moins fin.
   if (dt <= 0 || dt > 0.5 || QUAL.fige) return; QUAL.repos -= dt; if (QUAL.repos > 0) { QUAL.lent = QUAL.vu = QUAL.t0 = 0; return; }
   // une image pendant laquelle on a cuit un dessin (Grosbec, un golem) ne compte pas : ce n'est pas l'appareil qui rame
@@ -3978,7 +3995,7 @@ function detailPouvoirs(cw, ch, M) {
   R8.detailVu = true;
 }
 // version 27 : les trois runes dorées (une case chacune ; grise quand elle a servi)
-const DOREES = [['triangle', 'Le triangle d’or', 'tous les golems sont projetés contre les murs, et se cognent.'], ['lune', 'La lune d’or', 'tous les golems sont aveuglés 6 secondes : ils errent sans frapper.'], ['etoile', 'L’étoile d’or', 'tous les golems de la salle sont détruits. Une étoile à cinq branches, d’un seul trait : la plus dure à tracer.']];
+const DOREES = [['triangle', 'Le triangle d’or', 'tous les golems sont projetés contre les murs, et se cognent.'], ['lune', 'La lune d’or', 'tous les golems sont aveuglés 6 secondes : ils errent sans frapper.'], ['etoile', 'L’étoile d’or', 'tous les golems de la salle sont détruits. Une étoile à cinq branches, d’un seul trait : croisée, ou juste le contour.']];
 function glyphe(f, x, y, r) {
   ctx.beginPath();
   if (f === 'triangle') { for (let i = 0; i < 3; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / 3; i ? ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r * 1.05) : ctx.moveTo(x + Math.cos(a) * r, y + Math.sin(a) * r * 1.05); } ctx.closePath(); }
@@ -4126,8 +4143,8 @@ cv.addEventListener('pointermove', e => {
   if (!s) return;
   const p = toWorld(e);
   if (brush && stroke) {
-    const q = stroke[stroke.length - 1], d = Math.hypot(p.x - q.x, p.y - q.y);
-    if (d > 3) { stroke.push(p); strokeLen += d; }
+    const L = e.getCoalescedEvents ? e.getCoalescedEvents() : []; for (const ev of (L.length ? L : [e])) { const p = toWorld(ev), q = stroke[stroke.length - 1], d = Math.hypot(p.x - q.x, p.y - q.y);
+    if (d > 3) { stroke.push(p); strokeLen += d; } }
     return;
   }
   if (pointerMove === e.pointerId) { s.sage.tx = p.x; s.sage.ty = p.y; }
@@ -4145,7 +4162,7 @@ const up = e => {
 cv.addEventListener('pointerup', up);
 cv.addEventListener('pointercancel', up);
 function setBrush(on) {
-  if (on && s && s.ink < 1 && !s.heart.bare) { s.msg = 'Plus d’encre : ramasse des éclats.'; s.msgT = 1.6; return; }
+  if (on && s && s.ink < 1 && !s.heart.bare && !(s.dorees && (s.dorees.triangle || s.dorees.lune || s.dorees.etoile))) { s.msg = 'Plus d’encre : ramasse des éclats.'; s.msgT = 1.6; return; }
   if (s && !s.over && on !== brush) { SON.play(on ? 'brushOn' : 'brushOff'); SON.slow(on); }
   if (!on) SON.slow(false);
   brush = on; stroke = null; strokeLen = 0;
