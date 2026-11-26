@@ -109,7 +109,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
 <body>
 <header>
   <h1>Le Sage contre Grosbec</h1>
-  <p>Maquette n° 26 : un jeu de runes, avec 14 builds (5 nouveaux : la Prison de cristal, le Calligraphe, le Champ de mines, le Rayon solaire, le Dompteur). Plus rien n’attaque tout seul, sauf le bâton : la chouette, le sceau et l’orage partent quand tu graves. Chaque carte n’ouvre qu’un seul build : choisis ! Le temps ralentit quand tu graves. Touche un de tes pouvoirs pour savoir ce qu’il fait (sur tablette, c’est écrit dans la marge). Deux fois plus de golems qu’en version 22. Les pages du grimoire tombent maintenant à heure fixe : toujours 19 en 10 minutes. Sur tablette, tenue en large : la salle est au milieu, les jauges à gauche, le bouton Graver à droite. Tu démarres avec un trait court et un petit V ; le mur, l’escargot et le bouclier se gagnent dans le grimoire. Comme avant : un golem sonné éclate au trait, et chaque golem lâche de l’encre. Plus de rouge, plus de builds du bâton. Il faut tenir 10 minutes de combat. Le bouton 🎚️ règle le volume ; au clavier, Entrée ou Espace pour graver, 1, 2, 3 pour choisir une carte.</p>
+  <p>Maquette n° 27 : un jeu de runes, avec 14 builds et les trois runes dorées du Sage (le triangle, la lune, l’étoile : une fois par combat chacune). Les builds (dont la Prison de cristal, le Calligraphe, le Champ de mines, le Rayon solaire, le Dompteur). Plus rien n’attaque tout seul, sauf le bâton : la chouette, le sceau et l’orage partent quand tu graves. Chaque carte n’ouvre qu’un seul build : choisis ! Le temps ralentit quand tu graves. Touche un de tes pouvoirs pour savoir ce qu’il fait (sur tablette, c’est écrit dans la marge). Deux fois plus de golems qu’en version 22. Les pages du grimoire tombent maintenant à heure fixe : toujours 19 en 10 minutes. Sur tablette, tenue en large : la salle est au milieu, les jauges à gauche, le bouton Graver à droite. Tu démarres avec un trait court et un petit V ; le mur, l’escargot et le bouclier se gagnent dans le grimoire. Comme avant : un golem sonné éclate au trait, et chaque golem lâche de l’encre. Plus de rouge, plus de builds du bâton. Il faut tenir 10 minutes de combat. Le bouton 🎚️ règle le volume ; au clavier, Entrée ou Espace pour graver, 1, 2, 3 pour choisir une carte.</p>
 </header>
 <main class="game">
   <div class="stage" id="stage">
@@ -137,6 +137,7 @@ body.plein.aide .panel{display:grid;position:fixed;top:0;right:0;bottom:0;width:
     <p class="note"><b>L’encre :</b> chaque golem détruit lâche un éclat d’encre (un bélier 2, un colosse 3), et une rune qui en détruit trois ou plus en fait tomber encore un par golem. Le bâton tire tout seul, mais doucement : ce sont les runes qui gagnent le combat.</p>
     <p class="note"><b>Les chocs :</b> un golem projeté qui cogne un autre golem, un mur ou le bord est sonné 3 secondes. Un trait le fait alors éclater d’un coup, quelle que soit sa vie.</p>
     <p class="note"><b>Tu démarres avec peu :</b> un trait court et un petit V. Quand tu graves, le temps ralentit très fort (et le chronomètre aussi : graver ne fait pas gagner de temps). Le reste se gagne dans le grimoire : la rune du mur 🚧, l’escargot 🐌, le bouclier 🛡️ (un cercle fermé : tes amis sont intouchables un moment ; 4 d’encre, 8 secondes de recharge), le Grand V 📐, le Long trait 📏, la Lumière aveuglante 💫 (le trait sonne les golems qu’il ne détruit pas), et la rune de la cage 🔒 (un cercle fermé loin de tes amis enferme les golems ; autour de tes amis, c’est le bouclier).</p>
+    <p class="note"><b>Les trois runes dorées</b> (une fois par combat chacune, gratuites ; pour l’essai, tu les as toutes dès le début) : trace un <b>triangle</b> △ : tous les golems sont projetés contre les murs ; une <b>lune</b> ☾ (un croissant, d’un seul trait) : ils sont aveuglés 6 secondes et errent sans frapper ; une <b>étoile</b> ★ à cinq branches, d’un seul trait (la plus dure) : tous les golems de la salle sont détruits. Les cases dorées montrent celles qui te restent ; touche-en une pour savoir ce qu’elle fait.</p>
     <p class="note"><b>Les pages du grimoire :</b> elles tombent toutes seules, à heure fixe : la première après 20 secondes, puis toutes les 23 à 40 secondes. Toujours 19 pages en 10 minutes, quoi que tu détruises. Elles tombent un peu à l’écart de tes amis : va les chercher. Le combat attend pendant que tu choisis une carte parmi trois.</p>
     <p class="note"><b>Les builds :</b> quand tu as deux cartes qui vont ensemble, dont une au niveau 2, une carte dorée sort à la page suivante. Chaque build monte jusqu’au niveau 3, et ils se cumulent. Chaque carte n’ouvre qu’un seul build. Plus rien n’attaque tout seul, sauf le bâton : les pouvoirs partent quand tu graves.</p>
     <ul class="combos">
@@ -275,7 +276,7 @@ const G = (() => {
   });
   // ----- version 23 : deux fois plus de golems (version 22 : rate0 0.22, rateAdd 0.18, rateLate 0.3, burst0 3, burstDiv 90, maxAlive 75) ; les pages à heure fixe -----
   Object.assign(CFG, { rate0: 0.44, rateAdd: 0.36, rateLate: 0.6, burst0: 6, burstDiv: 45, maxAlive: 130, pageT0: 20, pageGap: 22, pageGapAdd: 1 });
-  Object.assign(CFG, { slowMax: 1e9, cageCost: 3 });   // version 24 : le ralenti dure tant qu'on grave
+  Object.assign(CFG, { slowMax: 1e9, cageCost: 3, luneT: 6 });   // version 24 : le ralenti dure tant qu'on grave
   const MOTS = { dalle: 'Un porte-dalle ! Sa dalle arrête tes orbes : prends-le de côté, ou chasse-le.', mortier: 'Un mortier, tout au fond ! Il te vise. Va le chercher.', bombe: 'Un porteur de bombe ! Fais-le sauter loin de tes amis.' };
   const GROS = ['brute', 'costaud'];
   // ----- les cartes du grimoire : on en choisit une parmi trois à chaque page ramassée -----
@@ -450,7 +451,7 @@ const G = (() => {
       soldiers: [], bolts: [], stones: [], shards: [], walls: [], fx: [], puddles: [], potions: [], notes: [],
       pages: [], choice: null, up: {}, grosKills: 0, pageIdx: 0, pageNeed: cfg.pageFirst, pagesTaken: 0, orbitA: 0, orbitR: 0, tourT: 0, orbitHit: {}, sealT: 0, traps: [], trapT: 2, chainT: 1, firelines: [], owls: [], inkT: 0, novaT: 2, orageLeft: 0, ballChain: 0, strikeN: 0, echoes: [], stormT: 6, trail: [], trailHit: {}, trailD: 0, frenzy: 0, tornados: [], pulseT: 8, rage: 0,
       protection: cfg.protection, ink: cfg.inkStart, boltT: 0, spawnT: 1.5, burstT: 22, regenT: 0,
-      announced: [], entered: [], zones: [], vu: {}, cages: [], traces: [], allies: [], combo: 0, comboT: 0, bestCombo: 0, inRune: false, runeKills: 0,
+      announced: [], entered: [], zones: [], vu: {}, cages: [], traces: [], allies: [], dorees: { triangle: true, lune: true, etoile: true }, combo: 0, comboT: 0, bestCombo: 0, inRune: false, runeKills: 0,
       kills: 0, runes: 0, nextId: 1, over: null, shake: 0, msg: '', msgT: 0
     };
     // l'ordre où les amis finissent leur combat change à chaque partie
@@ -845,6 +846,7 @@ const G = (() => {
       if (u.x < u.r || u.x > W - u.r || u.y < u.r || u.y > H - u.r) {
         u.x = Math.max(u.r, Math.min(W - u.r, u.x)); u.y = Math.max(u.r, Math.min(H - u.r, u.y));
         if (fl && !u.spin) stun(s, u);
+        if (u.mur) { hurt(s, u, u.mur); u.mur = 0; }
       }
       // les flaques de l'Alchimiste
       let slow = 1; u.held = false; u.mud = false;
@@ -867,7 +869,13 @@ const G = (() => {
       if (u.frozen > 0) { u.frozen -= dt; if (u.frozen <= 0) u.gelCd = 3; continue; }
       if (u.chill > 0) slow = Math.min(slow, 0.55);
       if (u.daze > 0) { u.daze -= dt; continue; }
+      if (!fl) u.mur = 0;
       if (fl || u.held || u.spin) continue;
+      if (u.aveugle > 0) {   // la lune d'or : il erre au hasard, sans frapper
+        u.aveugle -= dt; u.blindA += (rng(s) - 0.5) * 5 * dt; const v = TYPES[u.type].speed * 0.45 * dt; u.x += Math.cos(u.blindA) * v; u.y += Math.sin(u.blindA) * v;
+        if (u.x < u.r + 5 || u.x > W - u.r - 5 || u.y < u.r + 5 || u.y > H - u.r - 5) { u.blindA += Math.PI; u.x = Math.max(u.r + 5, Math.min(W - u.r - 5, u.x)); u.y = Math.max(u.r + 5, Math.min(H - u.r - 5, u.y)); }
+        continue;
+      }
       if (u.dance > 0) { u.dance -= dt; if (u.dance <= 0) u.charmCd = 1.5; continue; }
       const T = TYPES[u.type];
       if (lv(s, 'volcan') >= 3 && u.burn > 0) { // ils courent partout en paniquant (et passent le feu)
@@ -1303,6 +1311,24 @@ const G = (() => {
     let sag = 0; for (const p of pts) sag = Math.max(sag, Math.abs((p.x - a.x) * (b.y - a.y) - (p.y - a.y) * (b.x - a.x)) / (c || 1));
     return sag / (c || 1) < 0.11;
   }
+  // version 27 : un tracé fermé est-il un triangle, une lune ou une étoile ?
+  // On compte les coins (les virages secs) et on regarde si le tracé se creuse (la lune a un côté rentrant).
+  function formeDoree(pts) {
+    const ferme = [...pts, pts[0]], L = pathLen(ferme); if (L < 150) return null;
+    const N = 72, P = resample(ferme, L / N).slice(0, N); if (P.length < 30) return null;
+    const n = P.length, ang = (u, v) => { let d = Math.atan2(v.y, v.x) - Math.atan2(u.y, u.x); while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return d; };
+    const pas = []; for (let i = 0; i < n; i++) { const a = P[(i - 1 + n) % n], b = P[i], c = P[(i + 1) % n]; pas.push(ang({ x: b.x - a.x, y: b.y - a.y }, { x: c.x - b.x, y: c.y - b.y })); }
+    const tot = pas.reduce((x, y) => x + y, 0), sg = Math.sign(tot) || 1;
+    // le côté rentrant : les virages dans l'autre sens, sur un tracé un peu lissé
+    let creux = 0; for (let i = 0; i < n; i++) { let m = 0; for (let k = -2; k <= 2; k++) m += pas[(i + k + n) % n]; m /= 5; if (m * sg < 0) creux += -m * sg; }
+    const k = 3, vir = []; for (let i = 0; i < n; i++) { const a = P[(i - k + n) % n], b = P[i], c = P[(i + k) % n]; vir.push(ang({ x: b.x - a.x, y: b.y - a.y }, { x: c.x - b.x, y: c.y - b.y })); }
+    const coins = []; for (let i = 0; i < n; i++) { const v = Math.abs(vir[i]); if (v < 1.1) continue; let max = true; for (let d = -4; d <= 4; d++) if (d && Math.abs(vir[(i + d + n) % n]) > v) max = false; if (max && !coins.some(j => Math.min(Math.abs(j - i), n - Math.abs(j - i)) < 5)) coins.push(i); }
+    const c = coins.length, T = Math.abs(tot);
+    if (T > 3 * Math.PI && c >= 4 && c <= 6) return 'etoile';
+    if (creux > 1.2 && c >= 1 && c <= 3 && T < 3 * Math.PI) return 'lune';
+    if (c === 3 && creux < 0.8 && T < 3 * Math.PI) return 'triangle';
+    return null;
+  }
   function recognize(pts) {
     if (pts.length < 3) return { kind: null };
     const len = pathLen(pts);
@@ -1320,6 +1346,7 @@ const G = (() => {
     let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
     for (const p of pts) { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); }
     const diag = Math.hypot(x1 - x0, y1 - y0);
+    if (chord < 0.4 * diag) { const f = formeDoree(pts); if (f) return { kind: 'ferme', poly: pts, forme: f }; }
     if (T > 3 * Math.PI) return { kind: 'spirale', x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
     if (T > 1.3 * Math.PI && chord < 0.4 * diag) return { kind: 'ferme', poly: pts };
     // on lisse le tracé (le doigt tremble), puis on regarde ses virages
@@ -1405,6 +1432,27 @@ const G = (() => {
       s.fx.push({ k: 'pulse', R: 640, life: 0.8, max: 0.8 }); s.shake = Math.max(s.shake, 0.3); say(s, 'Vague de lumière !', 2);
     }
   }
+  // version 27, les runes dorées du Sage : une fois par combat chacune, gratuites
+  const NOMD = { triangle: 'Le triangle d’or', lune: 'La lune d’or', etoile: 'L’étoile d’or' };
+  function castDoree(s, f) {
+    if (s.sage.sonne > 0) { say(s, 'Le Sage est sonné ! Attends une seconde.'); return { ok: false }; }
+    s.dorees[f] = false; s.runes++; s.brushT = 0; runeGravee(s); s.doreesUsees = (s.doreesUsees || 0) + 1;
+    const C = { x: 450, y: 445 }, vivants = s.soldiers.filter(u => u.hp > 0); let n = 0;
+    if (f === 'triangle') {   // tous contre les murs : ils prennent des dégâts en heurtant le mur
+      for (const u of vivants) { const dx = u.x - C.x, dy = u.y - C.y, d = Math.hypot(dx, dy) || 1; u.vx = dx / d * 1500; u.vy = dy / d * 1500; u.daze = 0; u.cage = null; u.mur = 5; n++; }
+      s.shake = Math.max(s.shake, 0.5); say(s, 'Le triangle d’or ! Tous contre les murs !', 2.5);
+    } else if (f === 'lune') {   // aveuglés : ils errent sans frapper
+      for (const u of vivants) { u.aveugle = s.cfg.luneT; u.blindA = rng(s) * 6.28; n++; }
+      say(s, 'La lune d’or ! Les golems ne voient plus rien.', 2.5);
+    } else {   // l'étoile : plus un seul golem
+      const k0 = s.kills, o = s.noInk; s.noInk = true;
+      for (const u of vivants) { u.hp = 0; die(s, u); n++; }
+      s.noInk = o; s.soldiers = s.soldiers.filter(u => u.hp > 0); s.stones = [];
+      s.shake = Math.max(s.shake, 0.6); say(s, 'L’étoile d’or ! Plus un seul golem !', 2.5);
+    }
+    s.fx.push({ k: 'doree', f, life: 1.2, max: 1.2 });
+    return { ok: true, hit: n, killed: f === 'etoile' ? n : 0 };
+  }
   // version 26, la rune de la cage : un cercle loin des amis enferme les golems
   function castCage(s, x, y, R) {
     const c = s.cfg; if (s.sage.sonne > 0) { say(s, 'Le Sage est sonné ! Attends une seconde.'); return { ok: false }; }
@@ -1451,6 +1499,10 @@ const G = (() => {
   function cast(s, rune) {
     if (rune.kind === 'mur' && !lv(s, 'mur')) { say(s, 'Tu ne connais pas encore la rune du mur : elle est dans le grimoire.'); return { ok: false }; }
     if (rune.kind === 'spirale' && !lv(s, 'spirale')) { say(s, 'Tu ne connais pas encore l’escargot : il est dans le grimoire.'); return { ok: false }; }
+    if (rune.kind === 'ferme' && rune.forme) {
+      if (s.dorees && s.dorees[rune.forme]) return castDoree(s, rune.forme);
+      say(s, `${NOMD[rune.forme]} : déjà utilisée dans ce combat.`); return { ok: false };
+    }
     if (rune.kind === 'ferme') {
       const P = rune.poly || []; let cx = 450, cy = 445, R = 90;
       if (P.length) { cx = 0; cy = 0; for (const p of P) { cx += p.x; cy += p.y; } cx /= P.length; cy /= P.length; R = 0; for (const p of P) R += Math.hypot(p.x - cx, p.y - cy); R /= P.length; }
@@ -1557,7 +1609,7 @@ const G = (() => {
     }
     return hit;
   }
-  return { W, H, CFG, TYPES, GROS, SYMS, CODES, ORDER, POSTE, HEART, PORTES, CARDS, UP, newGame, step, recognize, cast, costOf, inside, pathLen, enterCode, dist, bonusHp, sidesNow, minutes, choose, openChoice, cardPool, lv, combosReady, turnRune, hint, avance, dansZone };
+  return { W, H, CFG, TYPES, GROS, SYMS, CODES, ORDER, POSTE, HEART, PORTES, CARDS, UP, newGame, step, recognize, cast, costOf, inside, pathLen, enterCode, dist, bonusHp, sidesNow, minutes, choose, openChoice, cardPool, lv, combosReady, turnRune, hint, avance, dansZone, formeDoree, NOMD };
 })();
 
 // ===== Les sons du Sage : tout est fabriqué par le navigateur (aucun fichier) =====
@@ -1839,7 +1891,7 @@ const SON = (() => {
   function slow(on) { if (ac) slowLP.frequency.setTargetAtTime(on ? 850 : 16000, ac.currentTime, 0.06); }
 
   // ----- écouter le jeu : chaque nouvel effet donne son bruit -----
-  const FX = { burst: 'shatter', beam: 'beam', vee: 'vee', ring: 'ring', chain: 'zap', slash: 'slash', flaque: 'splash', trap: 'trap', shieldbreak: 'glass', side: 'side', nova: 'nova', fireball: 'fireball', sky: 'sky', pulse: 'pulse', mirror: 'mirror', echo: 'echo', strike: 'strike', tornado: 'tornado', bonk: 'bonk', boum: 'bonk', gel: 'glass', gbcoup: 'side', frappe: 'fireball', casse: 'glass', sonne: 'fail', dome: 'good', pop2: 'trap', frenzy: 'frenzy', free: 'good' };
+  const FX = { burst: 'shatter', beam: 'beam', vee: 'vee', ring: 'ring', chain: 'zap', slash: 'slash', flaque: 'splash', trap: 'trap', shieldbreak: 'glass', side: 'side', nova: 'nova', fireball: 'fireball', sky: 'sky', pulse: 'pulse', mirror: 'mirror', echo: 'echo', strike: 'strike', tornado: 'tornado', bonk: 'bonk', boum: 'bonk', gel: 'glass', gbcoup: 'side', frappe: 'fireball', casse: 'glass', sonne: 'fail', dome: 'good', doree: 'frenzy', pop2: 'trap', frenzy: 'frenzy', free: 'good' };
   let W = null;
   function watch(s) {
     if (!ac) return;
@@ -2780,7 +2832,7 @@ if (/[?&#]finesse=([\d.]+)/.test(location.href)) { FIN = Math.min(1, Math.max(0.
 function resize() { const r = stage.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(1.7e6 / Math.max(1, r.width * r.height))) * FIN; cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); R8.dpr = cv.width / Math.max(1, r.width); if (bg && bg.getContext) bg.width = bg.height = 0; bg = null; ensureSprites(); }
 const MES = { n: 0, t: 0, sec: 0, nsec: 0, pire: 0, baisses: 0, age: 0 };   // les images comptées pendant la partie
 function mesurer(dt) { if (dt <= 0 || dt > 0.5) return; MES.n++; MES.t += dt; MES.age += dt; MES.sec += dt; MES.nsec++; if (MES.sec >= 1) { if (MES.age > 4) MES.pire = MES.pire ? Math.min(MES.pire, Math.round(MES.nsec / MES.sec)) : Math.round(MES.nsec / MES.sec); MES.sec = MES.nsec = 0; } }
-function mesuresTxt() { return MES.n < 30 ? '' : `Mesures (version 26) : ${Math.round(MES.n / MES.t)} images par seconde, pire seconde ${MES.pire || '?'} · finesse ${Math.round(FIN * 100)} %, ${MES.baisses} baisse${MES.baisses > 1 ? 's' : ''} · ${Golems.cuits} + ${Object.keys(GB.im).length} images · écran ${innerWidth} × ${innerHeight} (× ${Math.round((devicePixelRatio || 1) * 10) / 10})`; }
+function mesuresTxt() { return MES.n < 30 ? '' : `Mesures (version 27) : ${Math.round(MES.n / MES.t)} images par seconde, pire seconde ${MES.pire || '?'} · finesse ${Math.round(FIN * 100)} %, ${MES.baisses} baisse${MES.baisses > 1 ? 's' : ''} · ${Golems.cuits} + ${Object.keys(GB.im).length} images · écran ${innerWidth} × ${innerHeight} (× ${Math.round((devicePixelRatio || 1) * 10) / 10})`; }
 function finesse(dt) {   // dt : le temps depuis l'image d'avant. Sous 25 images par seconde pendant 1,4 seconde : on dessine un peu moins fin.
   if (dt <= 0 || dt > 0.5 || QUAL.fige) return; QUAL.repos -= dt; if (QUAL.repos > 0) { QUAL.lent = QUAL.vu = QUAL.t0 = 0; return; }
   // une image pendant laquelle on a cuit un dessin (Grosbec, un golem) ne compte pas : ce n'est pas l'appareil qui rame
@@ -2910,6 +2962,7 @@ function drawGolem(u, a, t) {
   if (fl) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = fl * born; ctx.drawImage(sp.c, x, y, w, h); ctx.globalCompositeOperation = 'source-over'; }   // touché : il s'éclaire
   if (u.type === 'bombe') { ctx.globalAlpha = born; const by = -P.H * 0.92, br = 9 + Math.sin(t * 14 + u.id) * 1.2; ctx.fillStyle = '#15141c'; ctx.beginPath(); ctx.arc(0, by, br, 0, TAU); ctx.fill(); ctx.strokeStyle = '#c9a25a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(3, by - br + 1); ctx.lineTo(7, by - br - 7); ctx.stroke(); ctx.fillStyle = Math.sin(t * 20 + u.id) > 0 ? '#ffd23f' : '#ff4d5e'; ctx.beginPath(); ctx.arc(7, by - br - 8, 3.2, 0, TAU); ctx.fill(); }
   if (u.type === 'mortier') { ctx.strokeStyle = '#ff4d5e'; ctx.lineWidth = 3; ctx.globalAlpha = (0.55 + 0.35 * Math.sin(t * 5 + u.id)) * born; ctx.beginPath(); ctx.ellipse(0, 0, P.bw * 0.62, P.bw * 0.24, 0, 0, TAU); ctx.stroke(); }
+  if (u.aveugle > 0) { ctx.globalAlpha = born * (0.6 + 0.4 * Math.sin(t * 6 + u.id)); ctx.fillStyle = '#c9b8ff'; ctx.font = '800 20px Nunito, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('?', Math.sin(t * 3 + u.id) * 6, -P.H * 1.02); ctx.globalAlpha = born; }
   if (u.iron) { ctx.globalAlpha = born; const cw = Math.max(15, P.bw * 0.42); ctx.drawImage(R8.spr.cuirasse, -cw / 2, -P.lh - P.bh * 0.82, cw, cw * 1.07); }
   ctx.restore();
   golemStates(u, a, t, P, F);
@@ -3606,6 +3659,7 @@ function newFx() {
     if (e.k === 'boum') burst(e.x, e.y + 6, 6, { k: 'spark', col: '#ffd67a', v0: 90, v1: 240, s0: 2, s1: 3.5, g: 200 });
     if (e.k === 'gel') burst(e.x, e.y, 12, { k: 'shard', col: '#d6f6ff', s0: 3, s1: 6, z: 10, v0: 90, v1: 240 });
     if (e.k === 'frappe') { const z = e.z; if (z.k === 'bande') { for (let i = 0; i < 24; i++) { const u = Math.random() * 900, v = (Math.random() - .5) * 2 * z.half; burst(z.horiz ? u : z.x + v, z.horiz ? z.y + v : u, 1, { k: 'spark', col: '#ffb347', v0: 60, v1: 220, vz0: 80, vz1: 260, s0: 2, s1: 4, g: 500 }); } } else { burst(z.x, z.y, z.k === 'poing' ? 28 : 10, { k: 'spark', col: '#ffb347', v0: 100, v1: 320, vz0: 80, vz1: 260, s0: 2, s1: 4.5, g: 500 }); dust(z.x, z.y + 10, z.k === 'poing' ? 18 : 6); } }
+    if (e.k === 'doree') for (let i = 0; i < 60; i++) { const an = i / 60 * TAU; burst(450 + Math.cos(an) * 120, 445 + Math.sin(an) * 100, 1, { k: 'spark', col: i % 2 ? '#ffd23f' : '#fff6c9', v0: 120, v1: 420, vz0: 80, vz1: 260, s0: 2, s1: 5, g: 300 }); }
     if (e.k === 'dome') for (let i = 0; i < 26; i++) { const an = i / 26 * TAU; burst(450 + Math.cos(an) * 100, 436 + Math.sin(an) * 80, 1, { k: 'spark', col: '#ffe58a', v0: 40, v1: 140, vz0: 60, vz1: 200, s0: 2, s1: 4, g: 300 }); }
     if (e.k === 'bloc') burst(e.x, e.y - 14, 3, { k: 'spark', col: '#ffe58a', v0: 60, v1: 160, s0: 1.5, s1: 3, g: 300 });
     if (e.k === 'casse') { burst(e.x, e.y, 14, { k: 'shard', col: '#bff3ff', s0: 3, s1: 6, z: 10, v0: 90, v1: 240 }); dust(e.x, e.y + 10, 10); }
@@ -3775,8 +3829,8 @@ function render(dt = 0) {
       ctx.strokeStyle = '#8a6a2e'; ctx.lineWidth = 2; ctx.strokeRect(x0 + 5, 5, x1 - x0 - 10, ch - 10); ctx.strokeStyle = 'rgba(201,162,90,.35)'; ctx.lineWidth = 1; ctx.strokeRect(x0 + 10, 10, x1 - x0 - 20, ch - 20);
       ctx.fillStyle = 'rgba(201,162,90,.55)'; for (let yy = ch * 0.5; yy < ch - 190; yy += 70) { const xx = (x0 + x1) / 2; ctx.beginPath(); ctx.moveTo(xx, yy - 8); ctx.lineTo(xx + 6, yy); ctx.lineTo(xx, yy + 8); ctx.lineTo(xx - 6, yy); ctx.fill(); } };
     habille(0, M - 1); habille(cw - M + 1, cw);
-    ctx.translate(4, 0); hud(M - 4, ch); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.translate(4, 0); hudCards(M - 4, ch); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); detailPouvoirs(cw, ch, M);
-  } else { if (R8.colCle) { R8.colCle = ''; document.body.classList.remove('col'); } hud(cw, ch); hudCards(cw, ch); }
+    ctx.translate(4, 0); hud(M - 4, ch); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.translate(4, 0); hudCards(M - 4, ch); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); detailPouvoirs(cw, ch, M); { const S = Math.min(50, (M - 44) / 3); drawDorees((M - 3 * S - 16) / 2, ch * 0.95 - S - 6, S, 8); }
+  } else { if (R8.colCle) { R8.colCle = ''; document.body.classList.remove('col'); } hud(cw, ch); hudCards(cw, ch); { const S = cw < 500 ? 32 : 38; drawDorees(10, ch - S - 12, S, 6); } }
 }
 // version 20 : le rouge (le poing, le balayage, les braises de Grosbec, l'obus du mortier). Pointillés : il suit le Sage ; trait plein : il est figé.
 function drawZones(t) {
@@ -3792,6 +3846,14 @@ function drawZones(t) {
 }
 // ce qui tombe du ciel dans le rouge, juste avant le coup : l'obus, les braises ; et les étoiles du Sage sonné
 function drawChutes() {
+  for (const e of s.fx) if (e.k === 'doree') {
+    const a = e.life / e.max, p = 1 - a;
+    ctx.save();
+    if (e.f === 'etoile') { ctx.fillStyle = `rgba(255,250,225,${0.75 * a * a})`; ctx.fillRect(-60, -60, 1020, 1020); }
+    if (e.f === 'lune') { ctx.fillStyle = `rgba(16,18,60,${0.55 * Math.sin(Math.PI * p)})`; ctx.fillRect(-60, -60, 1020, 1020); }
+    glyphe(e.f, 450, 445, 60 + p * (e.f === 'lune' ? 260 : 520)); ctx.lineJoin = 'round'; ctx.lineWidth = 10 * a + 2; ctx.strokeStyle = `rgba(255,214,90,${a})`; ctx.stroke(); ctx.lineWidth = 3; ctx.strokeStyle = `rgba(255,255,240,${a})`; ctx.stroke();
+    ctx.restore();
+  }
   if (s.dome > 0) { const fin = s.dome < 1 ? 0.5 + 0.5 * Math.sin(R8.t * 22) : 1, a = (0.75 + 0.25 * Math.sin(R8.t * 5)) * fin; ctx.save(); ctx.translate(450, 436); ctx.scale(1, 0.8); ctx.beginPath(); ctx.arc(0, 0, 104, 0, TAU); ctx.fillStyle = `rgba(255,224,130,${0.16 * a})`; ctx.fill(); ctx.lineWidth = 5; ctx.strokeStyle = `rgba(255,232,150,${0.9 * a})`; ctx.stroke(); ctx.beginPath(); ctx.arc(0, 0, 104, Math.PI, TAU); ctx.lineWidth = 2; ctx.strokeStyle = `rgba(255,255,255,${0.6 * a})`; ctx.stroke(); ctx.beginPath(); ctx.arc(0, -10, 86, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke(); ctx.restore(); }
   for (const z of s.zones) { if (z.k === 'bande' || z.k === 'poing') continue; const h = Math.max(0, z.t) * 620; if (h > 210) continue; const r = z.k === 'obus' ? 10 : 7; ctx.fillStyle = z.k === 'braise' ? '#ffb347' : '#1b1a22'; ctx.beginPath(); ctx.arc(z.x, z.y - h, r, 0, TAU); ctx.fill(); if (z.k !== 'braise') { ctx.strokeStyle = '#c9a25a'; ctx.lineWidth = 2; ctx.stroke(); } }
   if (s.sage.sonne > 0) for (let i = 0; i < 3; i++) { const an = R8.t * 6 + i * TAU / 3; star(s.sage.x + Math.cos(an) * 18, s.sage.y - 46 + Math.sin(an) * 5, 5, '#ffd23f'); }
@@ -3915,6 +3977,25 @@ function detailPouvoirs(cw, ch, M) {
   lines.forEach((ln, i) => text(ln, x0, y + 36 + i * 16, 12, '#dfe6f7', 'left', 600));
   R8.detailVu = true;
 }
+// version 27 : les trois runes dorées (une case chacune ; grise quand elle a servi)
+const DOREES = [['triangle', 'Le triangle d’or', 'tous les golems sont projetés contre les murs, et se cognent.'], ['lune', 'La lune d’or', 'tous les golems sont aveuglés 6 secondes : ils errent sans frapper.'], ['etoile', 'L’étoile d’or', 'tous les golems de la salle sont détruits. Une étoile à cinq branches, d’un seul trait : la plus dure à tracer.']];
+function glyphe(f, x, y, r) {
+  ctx.beginPath();
+  if (f === 'triangle') { for (let i = 0; i < 3; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / 3; i ? ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r * 1.05) : ctx.moveTo(x + Math.cos(a) * r, y + Math.sin(a) * r * 1.05); } ctx.closePath(); }
+  else if (f === 'lune') { ctx.arc(x, y, r, Math.PI * 0.3, Math.PI * 1.7); ctx.arc(x + r * 0.45, y, r * 0.78, Math.PI * 1.62, Math.PI * 0.38, true); ctx.closePath(); }
+  else { for (let i = 0; i <= 5; i++) { const a = -Math.PI / 2 + i * 4 * Math.PI / 5; i ? ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r) : ctx.moveTo(x + Math.cos(a) * r, y + Math.sin(a) * r); } }
+}
+function drawDorees(x, y, S, gap) {
+  if (!s.dorees) return;
+  DOREES.forEach(([f], i) => {
+    const X = x + i * (S + gap), on = s.dorees[f];
+    ctx.save(); ctx.globalAlpha = on ? 1 : 0.3;
+    rr(X, y, S, S, S * 0.2); ctx.fillStyle = on ? 'rgba(60,44,8,.88)' : 'rgba(20,20,28,.7)'; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = on ? '#ffd23f' : '#777'; ctx.stroke();
+    glyphe(f, X + S / 2, y + S / 2 + (f === 'triangle' ? S * 0.05 : 0), S * 0.3); ctx.lineWidth = Math.max(2, S * 0.07); ctx.lineJoin = 'round'; ctx.strokeStyle = on ? '#ffe58a' : '#999'; ctx.stroke();
+    ctx.restore();
+    (R8.chips = R8.chips || []).push({ id: 'd:' + f, dore: f, x: X, y, w: S, h: S });
+  });
+}
 function hudCards(cw, ch) {
   const fs = R8.col ? 14 : cw < 500 ? 13 : 15, y = R8.col ? 146 : 92, ids = Object.keys(s.up).filter(id => s.up[id] > 0);
   let x = 8; const chip = R8.col ? 36 : cw < 500 ? 30 : 34;
@@ -3981,7 +4062,7 @@ function hud(cw, ch) {
   let y = Math.max(96, (R8.hudBottom || 0) + 8, Math.round((view().oy + 142 * view().k) * cw / cv.width));
   if (R8.col) { y = Math.max(96, Math.round((view().oy + 142 * view().k) / R8.dpr)); ctx.setTransform(R8.dpr, 0, 0, R8.dpr, 0, 0); ctx.translate(view().ox / R8.dpr, 0); cw = G.W * view().k / R8.dpr; }   // les messages restent au milieu de la salle
   if (brush) {
-    const leg = 'trait (2) · V (2)' + (G.lv(s, 'spirale') ? ' · escargot (½)' : '') + (G.lv(s, 'mur') ? ' · arc de cercle (2)' : '') + (G.lv(s, 'dome') ? ' · cercle autour des amis : bouclier (4)' : '') + (G.lv(s, 'cage') ? ' · cercle loin des amis : cage (3)' : '');   // seulement les runes qu'on connaît
+    const leg = 'trait (2) · V (2)' + (G.lv(s, 'spirale') ? ' · escargot (½)' : '') + (G.lv(s, 'mur') ? ' · arc de cercle (2)' : '') + (G.lv(s, 'dome') ? ' · cercle autour des amis : bouclier (4)' : '') + (G.lv(s, 'cage') ? ' · cercle loin des amis : cage (3)' : '') + (s.dorees && (s.dorees.triangle || s.dorees.lune || s.dorees.etoile) ? ' · dorées : ' + [['triangle', '△'], ['lune', '☾'], ['etoile', '★']].filter(([k]) => s.dorees[k]).map(([, g]) => g).join(' ') : '');   // seulement les runes qu'on connaît
     ctx.font = `700 ${fs}px Nunito, sans-serif`; const w = Math.min(cw - 16, ctx.measureText(leg).width + 28);
     rr(cw / 2 - w / 2, y, w, fs + 16, (fs + 16) / 2); ctx.fillStyle = 'rgba(27,18,6,.85)'; ctx.fill();
     text(leg, cw / 2, y + fs + 5, fs, '#f4e6c2', 'center', 700);
@@ -4034,6 +4115,7 @@ cv.addEventListener('pointerdown', e => {
   if (!s || paused || s.over) return;
   // toucher un pouvoir : sur tablette, son détail s'affiche dans la marge ; sinon un petit message dit ce que c'est
   if (!brush) { const r0 = cv.getBoundingClientRect(), px = e.clientX - r0.left, py = e.clientY - r0.top, c = (R8.chips || []).find(c => px >= c.x - 2 && px <= c.x + c.w + 2 && py >= c.y - 2 && py <= c.y + c.h + 2);
+    if (c && c.dore) { e.preventDefault(); const D = DOREES.find(d => d[0] === c.dore); s.msg = `${D[1]}${s.dorees[c.dore] ? '' : ' (déjà utilisée)'} : ${D[2]}`; s.msgT = 5; SON.play('brushOn'); return; }
     if (c && G.CARDS[c.id]) { e.preventDefault(); R8.sel = c.id; R8.detailVu = false; const C = G.CARDS[c.id], l = s.up[c.id]; if (!R8.col) { s.msg = `${C.ic} ${C.nom} (niveau ${l}) : ${C.txt(l)}`; s.msgT = 5; } else setTimeout(() => { if (!R8.detailVu) { s.msg = `${C.ic} ${C.nom} (niveau ${l}) : ${C.txt(l)}`; s.msgT = 5; } }, 120); SON.play('brushOn'); return; } }
   e.preventDefault(); cv.setPointerCapture(e.pointerId);
   const p = toWorld(e);

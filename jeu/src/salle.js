@@ -108,7 +108,11 @@ function rendre(){
     '<small>Contre Grosbec, quatre actes de musique</small><small class="sl-cal">La difficulté choisie n\'y change rien</small></button>' +
     /* (26 novembre, 19 h 22) Romain : « Mets le jeu de l'alchimiste, mets-le en ligne sur GitHub, dans la salle des jeux. » (version 15, pas encore jouée par lui) */
     '<button class="sl-jeu" data-lien="combat-alchimiste.html?depuis=salle"><span class="sl-statut" title="Modifié, pas encore testé">🟡</span><span class="sl-jeu-ic">⚗️</span><b>Le combat de l\'Alchimiste</b>' +
-    '<small>Contre Grosbec et ses golems, cinq potions</small><small class="sl-cal">La difficulté choisie n\'y change rien</small></button></div></section>';
+    '<small>Contre Grosbec et ses golems, cinq potions</small><small class="sl-cal">La difficulté choisie n\'y change rien</small></button>' +
+    /* (26 novembre, 20 h 03) Romain : « Est-ce que tu peux m'intégrer les 3 cartes dorées ? […] quand tu auras fait cette modification aussi, tu pourras le mettre en ligne dans la salle des jeux. »
+       (version 27 de la maquette du Sage : jeu/maquettes/combat-sage/, pas encore jouée par Romain) */
+    '<button class="sl-jeu" data-lien="combat-sage.html?depuis=salle"><span class="sl-statut" title="Modifié, pas encore testé">🟡</span><span class="sl-jeu-ic">🦉</span><b>Le combat du Sage</b>' +
+    '<small>Contre les golems de Grosbec, des runes à tracer</small><small class="sl-cal">La difficulté choisie n\'y change rien</small></button></div></section>';
   if(etat.journal.length){
     s += '<section class="sl-journal"><h2>Mes parties</h2><ol>' + etat.journal.slice(-12).reverse().map(function(j){
       var d = MJ.TYPES[j.type] || {};

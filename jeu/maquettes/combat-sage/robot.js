@@ -1,4 +1,4 @@
-const G = require((process.argv.slice(2).find(a => a.startsWith('logic=')) || 'logic=./logic26.js').slice(6));
+const G = require((process.argv.slice(2).find(a => a.startsWith('logic=')) || 'logic=./logic27.js').slice(6));
 const A = Object.fromEntries(process.argv.slice(2).map(a => a.split('=')));
 const N = +(A.games || 16), cfg = A.cfg ? JSON.parse(A.cfg) : {}, THINK = +(A.think || 3);
 const C = { x: 450, y: 445 };
