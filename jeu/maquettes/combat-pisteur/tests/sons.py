@@ -92,7 +92,7 @@ with sync_playwright() as p:
         else:
             niv = {n: round(GAINS[n], 2) for n in noms}
         x = rendre("__son.musique('calme',1,40,true)")[SR * 8:]; niv['musique'] = round(float(np.clip(CIBLE_MUSIQUE / max(1e-5, utile(x, True)), 0.1, 4)), 2)
-        x = rendre("__son.musique('action',1,40,true)")[SR * 8:]; niv['musAction'] = round(float(np.clip(CIBLE_MUSIQUE / max(1e-5, utile(x, True)), 0.1, 4)), 2)
+        x = rendre("__son.musique('action',1,40,true)")[SR * 8:]; niv['musAction'] = round(float(np.clip(CIBLE_MUSIQUE * 1.2 / max(1e-5, utile(x, True)), 0.1, 4)), 2)   # (version 14 : le combat un peu plus présent que le mystère)
         src = os.path.join(ICI, '..', 'src', 'son.js'); t = open(src, encoding='utf8').read()
         t2 = re.sub(r'/\*NIV\*/.*?/\*FIN\*/', lambda m: '/*NIV*/' + json.dumps(niv, separators=(',', ':')) + '/*FIN*/', t, count=1, flags=re.S); assert t2 != t or '/*NIV*/' in t
         open(src, 'w', encoding='utf8').write(t2); print('niveaux écrits dans src/son.js :', json.dumps(niv)); b.close(); sys.exit(0)

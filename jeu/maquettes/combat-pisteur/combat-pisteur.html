@@ -5525,7 +5525,7 @@ function prise(E,t,vers,o){
   return Q;
 }
 /* (version 11 : coupé plus haut, à 5 000 Hz, pour que la dague du donjon reste claire ; dans l'ombre, tout passe sous 1 300 Hz : assourdi) */
-const EQ_SONS={hp:60,shf:180,sh:-10,pkf:650,pk:4,lp:5000},LP_OMBRE=1300,EQ_MUS={hp:42,shf:110,sh:-5,pkf:420,pk:3,lp:3000};
+const EQ_SONS={hp:60,shf:180,sh:-10,pkf:650,pk:4,lp:5000},LP_OMBRE=1300,EQ_MUS={hp:42,shf:110,sh:-5,pkf:420,pk:3,lp:4000};
 function couperSon(){if(A)A.volume.gain.setTargetAtTime(sonOn?VOL:0,AC.currentTime,0.05);}
 
 /* ---------- les briques ---------- */
@@ -5723,7 +5723,7 @@ function ecoute(x,y,r,p){
   return [Math.max(p,a),clamp((x-P.x)/8,-0.8,0.8)];
 }
 /* le niveau de chaque son, réglé par la mesure (tests/sons.py regler) pour que chaque sorte ait sa place : ne pas toucher à la main */
-const NIV=/*NIV*/{"refus":3.4,"ombre":1.8,"saut":2.91,"swish1":0.39,"swish2":0.39,"swish3":0.45,"dague1":0.42,"dague2":0.58,"dague3":0.36,"frappe":0.68,"assassin":0.3,"bong":1.39,"ting":0.83,"aie":0.49,"chute":0.71,"perdu":3.44,"ramasse":2.26,"choix":0.82,"or":1.03,"tirVise":4.5,"sifflet":0.51,"victoire":0.67,"swishG":2.84,"bang":1.02,"impact":0.81,"casse":0.99,"acheve":0.58,"jav":0.84,"mortier":1.1,"obus":0.84,"onde":0.84,"porteOuvre":2.47,"porteFerme":3.42,"porteClaque":0.43,"fantome":1.8,"bond":2.21,"soin":3.19,"chaine":3.11,"repere":0.83,"cherche":1.11,"cri":0.63,"colere":0.88,"dechaine":1.27,"renfort":1.15,"zChien":0.97,"zJavelot":1.07,"zDalle":1.02,"chargeDalle":0.99,"zFaux":2.32,"zMortier":2.0,"zBelier":1.62,"chargeBelier":1.08,"zBoule":1.91,"zCuirasse":2.68,"zonde":1.41,"zpilon":1.16,"zanneau":1.4,"zcroix":1.39,"iChien":5.63,"iChienGrogne":0.88,"aboie":0.89,"iJavelot":0.98,"iDalle":1.04,"iFaux":2.42,"iMortier":2.4,"iBelier":1.93,"iCuirasse":3.16,"colosseArrive":0.68,"gColosse1":1.37,"gColosse2":0.86,"gColosse3":1.49,"gColosse4":1.88,"gColosse5":0.67,"pasColosse":0.74,"iRepare":5.85,"iFantome":1.14,"boule":0.59,"musique":0.35,"musAction":0.27}/*FIN*/;
+const NIV=/*NIV*/{"refus":3.4,"ombre":1.8,"saut":2.91,"swish1":0.39,"swish2":0.39,"swish3":0.45,"dague1":0.42,"dague2":0.58,"dague3":0.36,"frappe":0.68,"assassin":0.3,"bong":1.39,"ting":0.83,"aie":0.49,"chute":0.71,"perdu":3.44,"ramasse":2.26,"choix":0.82,"or":1.03,"tirVise":4.5,"sifflet":0.51,"victoire":0.67,"swishG":2.84,"bang":1.02,"impact":0.81,"casse":0.99,"acheve":0.58,"jav":0.84,"mortier":1.1,"obus":0.84,"onde":0.84,"porteOuvre":2.47,"porteFerme":3.42,"porteClaque":0.43,"fantome":1.8,"bond":2.21,"soin":3.19,"chaine":3.11,"repere":0.83,"cherche":1.11,"cri":0.63,"colere":0.88,"dechaine":1.27,"renfort":1.15,"zChien":0.97,"zJavelot":1.07,"zDalle":1.02,"chargeDalle":0.99,"zFaux":2.32,"zMortier":2.0,"zBelier":1.62,"chargeBelier":1.08,"zBoule":1.91,"zCuirasse":2.68,"zonde":1.41,"zpilon":1.16,"zanneau":1.4,"zcroix":1.39,"iChien":5.63,"iChienGrogne":0.88,"aboie":0.89,"iJavelot":0.98,"iDalle":1.04,"iFaux":2.42,"iMortier":2.4,"iBelier":1.93,"iCuirasse":3.16,"colosseArrive":0.68,"gColosse1":1.37,"gColosse2":0.86,"gColosse3":1.49,"gColosse4":1.88,"gColosse5":0.67,"pasColosse":0.74,"iRepare":5.85,"iFantome":1.14,"boule":0.59,"musique":0.35,"musAction":0.29}/*FIN*/;
 const dernierSon={},JOUES={},ERR=[];let recents=[];       /* (JOUES, ERR : pour les essais — ce qui a sonné, ce qui a raté) */
 function son(n,a,b){
   if(!A||!sonOn||demo)return;                       /* l'extrait d'avant le jeu est muet */
@@ -5880,31 +5880,38 @@ function musPlanifier(M,jusqua,maintenant){
   }
   while(M.tLoin<jusqua){if(mysOn)E.cloche(M.tLoin,m2f([38,45,50,41][Math.floor(Math.random()*4)]),{d:5.5,rapport:2.76,indice:1.8,g:0.03,a:0.01},L.fond);M.tLoin+=rnd(13,28)-niv*2;}
   while(M.tVent<jusqua){if(mysOn)E.bruit(M.tVent,{coul:'brun',bp:170,bq:1,env:[[0,0],[3,1],[7,0]],g:0.16},L.fond);M.tVent+=rnd(22,38);}
-  /* ---- le combat (version 13 : Romain, 15 h 15 : « je veux vraiment une musique d'action qui soit entraînante, qui soit prenante »).
-     La mesure tourne toujours ; on ne la remplit que quand on l'entend. 138 à la minute (le colosse : 144). Quatre accords qui
-     tournent (ré mineur, si bémol, sol mineur, la majeur : le la appelle le retour au ré, c'est ce qui entraîne) ; une basse qui
-     galope (da-da-DOUM) ; des tambours graves façon tambours de guerre et une caisse mate sur 2 et 4 ; l'accroche : des cordes
-     courtes qui tournent sur l'accord ; un cuivre qui gronde sur chaque accord ; toutes les huit mesures, un roulement et un
-     frottement qui monte. Rien d'aigu (tout sous 1 500 Hz). ---- */
-  const tps=60/(col?144:138),q=tps/4,fort=col?1:[0.72,0.82,0.92,1][niv];
-  const GR=[{b:38,r:[62,65,69]},{b:34,r:[62,65,70]},{b:31,r:[62,67,70]},{b:33,r:[61,64,69]}];
-  const GALOP=[1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1],RIFF=[0,0,1,0,2,0,1,0];
+  /* ---- le combat (version 14 : Romain, 15 h 37 : « plus rythmé, plus d'action […] pas de la techno quand même, mais pas loin »).
+     De l'électro-orchestral sombre, 140 à la minute (le colosse : 146). La mesure tourne toujours ; on ne la remplit que quand on
+     l'entend. Quatre accords qui tournent (ré mineur, si bémol, do, la majeur). Une grosse caisse sur chaque temps, une caisse claire
+     sur 2 et 4, un frottement en doubles-croches qui fait avancer ; une basse de synthé qui pulse en doubles-croches et qui « pompe »
+     (elle se creuse sur chaque coup de grosse caisse) ; un arpège de synthé qui court sur l'accord ; des cuivres qui frappent à chaque
+     accord ; toutes les huit mesures, une montée (la caisse claire en rafale, un souffle qui monte) et un grand coup sourd à la
+     reprise. Rien au-dessus de 3 000 Hz, sauf le frottement, très bas. ---- */
+  const tps=60/(col?146:140),q=tps/4,fort=col?1:[0.8,0.87,0.94,1][niv];
+  const GR=[{b:38,a:[62,65,69,74]},{b:34,a:[58,62,65,70]},{b:36,a:[60,64,67,72]},{b:33,a:[57,61,64,69]}];
+  const ARP=[0,1,2,3,2,1,0,1,2,3,2,1,0,2,1,3],POMPE=[0.3,0.6,0.85,1];
   while(M.tMes<jusqua){
-    const t=M.tMes,c=GR[M.mes%4];
+    const t=M.tMes,c=GR[M.mes%4],monte=M.mes%8===7,reprise=M.mes%8===0&&M.mes>0;
     if(actOn){
-      /* la basse qui galope */
-      for(let i=0;i<16;i++)if(GALOP[i])E.ton(t+i*q,{type:'sawtooth',f:m2f(c.b+12+(i%8===0?-12:0)),env:[[0,0],[0.004,1],[0.09,0]],g:0.075*(i%4===0?1:0.62)*fort,lp:560,lq:1.5,sat:1.8},K.pres);
-      /* les tambours de guerre : 1, le « et » de 2, 3 ; la caisse mate sur 2 et 4 (en fantôme avant le 4) */
-      [[0,0.34],[1.5,0.24],[2,0.3],[2.75,0.16]].forEach(b=>E.tambour(t+b[0]*tps,{f:70,d:0.4,g:b[1]*fort},K.pres));
-      [[1,1],[3,1],[3.75,0.35]].forEach(b=>{E.tambour(t+b[0]*tps,{f:170,d:0.14,g:0.15*b[1]*fort},K.pres);E.bruit(t+b[0]*tps,{bp:1400,bq:0.9,env:E.perc(0.001,0.1),g:0.12*b[1]*fort},K.pres);});
-      /* l'accroche : des cordes courtes qui tournent sur l'accord (deux voix, à l'octave) */
-      for(let i=0;i<8;i++){const n=c.r[RIFF[i]],u=t+i*tps/2,e=[[0,0],[0.008,1],[0.14,0]],g=0.034*(i%2?0.7:1)*(0.75+0.25*fort);
-        E.ton(u,{type:'sawtooth',f:m2f(n),det:-5,env:e,g:g,lp:1400,lq:1.2},K.loin);E.ton(u,{type:'sawtooth',f:m2f(n-12),det:5,env:e,g:g*0.7,lp:900},K.loin);}
-      /* le cuivre qui gronde sur chaque accord */
-      {const d=tps*3.6,env=[[0,0],[0.05,1],[d*0.6,0.7],[d,0]];[c.b+12,c.b+19,c.b+24].forEach((m,k)=>E.ton(t,{type:'sawtooth',f:m2f(m),det:k*6-6,env:env,g:0.04*(0.6+0.4*fort),sat:1.3,filtres:[{type:'lowpass',f:420,pts:[[0.08,1300],[d,450]],q:1.3}]},K.loin));}
-      /* toutes les huit mesures : un roulement de toms qui descend, et un frottement qui monte pendant la dernière mesure */
-      if(M.mes%8===7){for(let k=0;k<8;k++)E.tambour(t+(2+k/4)*tps,{f:[130,122,114,106,98,90,84,78][k],d:0.2,g:(0.1+k*0.025)*fort},K.pres);
-        E.ton(t,{type:'sawtooth',f:m2f(57),f2:m2f(62),gl:tps*4,det:4,env:[[0,0],[tps*3.8,1],[tps*4,0]],g:0.03*fort,lp:900},K.loin);}
+      /* la grosse caisse : chaque temps (et un coup en plus avant le 4) */
+      [[0,1],[1,0.85],[2,1],[2.75,0.45],[3,0.9]].forEach(b=>E.choc(t+b[0]*tps,{f:150,f2:46,d:0.22,g:0.42*b[1]*fort,sat:2.2},K.pres));
+      /* la caisse claire sur 2 et 4 (un claquement mat, deux fois serré) ; dans la montée, une rafale qui grossit */
+      if(!monte)[1,3].forEach(b=>{E.tambour(t+b*tps,{f:190,d:0.13,g:0.16*fort},K.pres);[0,0.012,0.024].forEach(u=>E.bruit(t+b*tps+u,{bp:1700,bq:0.8,env:E.perc(0.001,0.09),g:0.085*fort},K.pres));});
+      else for(let k=0;k<16;k++){const u=t+k*q,g=(0.03+0.11*k/15)*fort;E.tambour(u,{f:180+k*4,d:0.09,g:g*1.2},K.pres);E.bruit(u,{bp:1500+k*60,bq:0.8,env:E.perc(0.001,0.07),g:g},K.pres);}
+      /* le frottement en doubles-croches (filtré, très bas) */
+      for(let k=0;k<16;k++)E.bruit(t+k*q,{bp:2700,bq:1.4,env:E.perc(0.001,k%2?0.025:0.045),g:(k%4===2?0.05:0.028)*fort},K.pres);
+      /* la basse de synthé qui pulse et qui pompe */
+      for(let k=0;k<16;k++){const n=c.b+12+(k%8===6?12:0),g=0.085*POMPE[k%4]*fort;
+        E.ton(t+k*q,{type:'sawtooth',f:m2f(n),det:-7,env:[[0,0],[0.004,1],[q*0.85,0.4],[q,0]],g:g,lp:monte?420+k*40:520,lq:3,sat:1.6},K.pres);
+        E.ton(t+k*q,{type:'square',f:m2f(n-12),env:[[0,0],[0.004,1],[q*0.9,0]],g:g*0.55,lp:260},K.pres);}
+      /* l'arpège qui court sur l'accord */
+      for(let k=0;k<16;k++)E.ton(t+k*q,{type:'square',f:m2f(c.a[ARP[k]]),env:[[0,0],[0.003,1],[q*0.8,0.2],[q,0]],g:0.024*(k%4===0?1:0.75)*fort,lp:monte?1200+k*80:1500,lq:4},K.loin);
+      /* les cuivres qui frappent à chaque accord (deux coups : le temps, et le « et » du 2) */
+      [[0,0.5],[1.5,0.32]].forEach(b=>[c.b+12,c.b+19,c.b+24].forEach((m,k)=>E.ton(t+b[0]*tps,{type:'sawtooth',f:m2f(m),det:k*6-6,env:[[0,0],[0.01,1],[0.18,0.35],[0.35,0]],g:0.06*b[1]*fort,sat:1.4,filtres:[{type:'lowpass',f:500,pts:[[0.03,1600],[0.3,500]],q:1.3}]},K.loin)));
+      /* la montée : un souffle qui monte toute la mesure */
+      if(monte)E.bruit(t,{coul:'rose',filtres:[{type:'bandpass',f:300,pts:[[4*tps,2400]],q:1.2}],env:[[0,0],[4*tps*0.95,1],[4*tps,0]],g:0.12*fort},K.loin);
+      /* la reprise : un grand coup sourd */
+      if(reprise){E.choc(t,{f:90,f2:30,d:0.6,g:0.55*fort,sat:3},K.pres);E.bruit(t,{coul:'brun',lp:300,env:[[0,0],[0.01,1],[1.4,0]],g:0.3*fort},K.loin);}
     }
     M.mes++;M.tMes+=4*tps;
   }
