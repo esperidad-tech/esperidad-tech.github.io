@@ -60,9 +60,9 @@ let grpColere={},grpFrappe={},piste=[],pisteBase=0,nFlair=0;      /* les groupes
 let sauves=[];                                                    /* au début de chaque vague : la vie, les bandages et les cartes (pour repartir de cette vague-là) */
 const CARTES=['fleche','sifflet','cape'];
 let demo=null,demoPose=false;                      /* l'extrait d'avant le jeu (voir les écrans) */
-const GBE={colere:0,sonne:0,bulle:'',bulleT:-9};
-function gbGeste(nom,sd){if(typeof Gros!=='undefined')Gros.jouer(nom,tReel,sd||1);}
-function gbDire(t){GBE.bulle=t;GBE.bulleT=tReel;}
+/* Grosbec n'apparaît plus (version 9, Romain : « on voit pas le Grosbec ») : ses gestes et ses cris ne font plus rien */
+function gbGeste(){}
+function gbDire(){}
 function resetP(){
   Object.assign(P,{x:13,y:16.4,z:0,fa:-Math.PI/2,etat:'libre',t:0,dur:0,hp:REG.vie,max:REG.vie,saigne:[],
     cartes:{fleche:1,sifflet:1,cape:1},capeT:0,cibles:{fleche:null,sifflet:null},tirT:-9,

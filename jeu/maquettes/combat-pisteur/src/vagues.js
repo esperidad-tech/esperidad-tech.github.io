@@ -1,5 +1,5 @@
 /* ======================= ce qui vole : les javelots, les obus ======================= */
-const porte=[0,0];
+const porte=[0,0],alerte=[0,0],alerteT=[0,0];   /* les deux portes : ouverte (de 1 à 0), l'œil allumé, et le temps qu'il lui reste à l'être */
 function majProjectiles(dt){
   /* le javelot vole vraiment : plus on est loin, plus on a de temps. Un mur l'arrête ; il blesse le premier qu'il touche, golems compris. */
   for(const j of javs){
@@ -36,8 +36,14 @@ function majProjectiles(dt){
    Romain, 25 novembre, 22 h : des meutes de trois rôdeurs au plus, parfois deux (quatre, c'était répétitif) ; un nouveau golem, le
    réparateur, toujours au milieu d'un groupe ; des combinaisons « vraiment très compliquées à gérer », que les trois cartes dorées
    aident à dénouer. Chaque vague dure a son nœud, et chaque nœud a sa clé… mais la vague se finit aussi sans carte.
-   Un groupe « apres » n'entre que quand tout le reste est tombé. Dans « m », le premier de la liste marche devant. « ri » : où le groupe
-   commence sa ronde (deux groupes sur la même route marchent l'un près de l'autre). */
+   LES RENFORTS (Romain, 26 novembre, à la voix : « à chaque fois qu'on a tué une bande, il y a l'autre qui arrive […] pour qu'il y ait
+   toujours du monde », dans toutes les vagues, dès la première) : les groupes sans « apres » entrent au début de la vague ; les groupes
+   « apres » attendent en réserve, et dès qu'UNE bande est entièrement tombée, le suivant entre (avec ceux qui le suivent et portent
+   « avec ») : il y a toujours autant de bandes dans la salle, tant qu'il en reste en réserve. Avant chaque bande : le cor des
+   renforts, l'œil de sa porte s'allume, et elle sort deux secondes après (DELAI_RENFORT). Elle arrive comme les autres : si le
+   Pisteur est caché, elle ne le voit pas.
+   Dans « m », le premier de la liste marche devant. « ri » : où le groupe commence sa ronde (deux groupes sur la même route marchent
+   l'un près de l'autre). */
 const ROUTES={
   A:[[3,3.6],[7.2,6.2],[6.6,10.6],[3,12.2],[2.6,7]],
   B:[[23,3.6],[19,8.6],[23.6,11],[23,15.8],[18.2,13.4]],
@@ -77,7 +83,8 @@ const VAGUES=[
     groupes:[{porte:'p1',route:'F',m:M('belier','repare','belier')},{porte:'p2',route:'E',m:M('chien','chien','chien')},{apres:1,porte:'p1',route:'C',m:M('colosse','repare')},{apres:1,avec:1,porte:'p2',m:M({t:'mortier',poste:[22.6,3.6],a:2.2})}]}
 ];
 const CRIS=['Allez, allez !','Trouvez-le !','Attrapez-moi ça !','Écrasez-le !','Débusquez-le !'];
-let grpN=0,groupesFaits=0;
+let grpN=0,groupesFaits=0,renforts=[],debutFait=false;
+const DELAI_RENFORT=2.0;
 function apparaitre(type,ou,spec,i){
   let x,y,tx,ty;
   if(ou==='g'){x=-0.8;y=9.4;tx=1.6;ty=9.4+rnd(-0.6,0.6);}
@@ -87,40 +94,44 @@ function apparaitre(type,ou,spec,i){
 }
 function lancerGroupe(gr){
   const id=++grpN,route=gr.route?ROUTES[gr.route].filter(q=>!bloque[cel(q[0],q[1])]):null;
-  gbGeste('envoi',gr.porte==='p1'?-1:1);gbDire(CRIS[Math.floor(Math.random()*CRIS.length)]);son('allez');
+  /* le cor des renforts, l'œil de la porte qui s'allume ; la bande sort deux secondes après */
+  const pi=gr.porte==='p1'?0:gr.porte==='p2'?1:-1;
+  son('renfort');if(pi>=0){alerteT[pi]=Math.max(alerteT[pi],DELAI_RENFORT+(gr.m.length-1)*0.5+0.25);}
   gr.m.forEach((m,i)=>{
     const o=typeof m==='string'?{t:m}:m;
-    file.push({quand:phaseT+0.4+i*0.5,type:o.t,ou:gr.porte,i,spec:{grp:id,route:o.poste?null:route,ri:gr.ri||0,poste:o.poste,a:o.a}});
+    file.push({quand:phaseT+DELAI_RENFORT+i*0.5,type:o.t,ou:gr.porte,i,spec:{grp:id,route:o.poste?null:route,ri:gr.ri||0,poste:o.poste,a:o.a}});
   });
+  renforts.push({id,morte:false});
 }
 function demarrerVague(i){
-  vague=i;phase='vague';phaseT=0;file=[];tVague=0;groupesFaits=0;dernierPlaquage=-9;
+  vague=i;phase='vague';phaseT=0;file=[];tVague=0;groupesFaits=0;renforts=[];debutFait=false;dernierPlaquage=-9;
   /* la vie ne remonte plus entre les vagues : une barre et cinq bandages pour tout le combat */
   P.lentT=0;if(BLOQUE[P.etat]){P.etat='libre';P.t=0;}
   if(OBS.some(o=>o.plantee)){OBS=OBS.filter(o=>!o.plantee);majGrille();}
   javs=[];obus=[];leurres=[];
   /* on garde ce qu'il a en commençant cette vague : à terre, il pourra repartir d'ici */
   sauves[i]={hp:P.hp,bandages:P.bandages,cartes:Object.assign({},P.cartes)};
-  const V=VAGUES[i];bandeau={a:`Vague ${i+1} / ${VAGUES.length}`,b:V.nom,t:tReel};son('cor');majBoutons();
+  const V=VAGUES[i];bandeau={a:`Vague ${i+1} / ${VAGUES.length}`,b:V.nom,t:tReel};majBoutons();
 }
 function majVagues(dt){
   phaseT+=dt;
+  for(let i=0;i<2;i++){alerteT[i]-=dt;alerte[i]=alerteT[i]>0?Math.min(1,alerte[i]+dt*5):Math.max(0,alerte[i]-dt*2.5);}   /* l'œil des portes */
   for(const s of file)if(!s.fait&&phaseT>=s.quand){s.fait=true;apparaitre(s.type,s.ou,s.spec,s.i);}
   file=file.filter(s=>!s.fait);
   if(essai)return;                                    /* une scène d'essai : pas de vague */
   if(phase==='vague'){
     tVague+=dt;
-    const V=VAGUES[vague],viv=G.filter(g=>g.etat!=='mort').length+file.length;
-    /* les groupes du début entrent ensemble ; les groupes « apres » attendent que la salle soit vide */
-    while(groupesFaits<V.groupes.length){
-      const gr=V.groupes[groupesFaits];
-      if(gr.apres&&(viv>0||phaseT<1))break;
-      if(!gr.apres&&phaseT<0.8)break;
-      lancerGroupe(gr);groupesFaits++;
-      if(gr.apres){const s=V.groupes[groupesFaits];if(!(s&&s.apres&&s.avec))break;}
+    const V=VAGUES[vague];
+    /* au début de la vague : toutes les bandes qui ne sont pas en réserve sont annoncées ensemble */
+    if(!debutFait&&phaseT>=0.5){debutFait=true;while(groupesFaits<V.groupes.length&&!V.groupes[groupesFaits].apres)lancerGroupe(V.groupes[groupesFaits++]);}
+    /* dès qu'une bande est entièrement tombée, la suivante de la réserve est annoncée (et celles qui entrent « avec » elle) */
+    for(const b of renforts){
+      if(b.morte||G.some(g=>g.grp===b.id&&g.etat!=='mort')||file.some(s=>s.spec.grp===b.id))continue;
+      b.morte=true;
+      if(groupesFaits<V.groupes.length){lancerGroupe(V.groupes[groupesFaits++]);while(groupesFaits<V.groupes.length&&V.groupes[groupesFaits].avec)lancerGroupe(V.groupes[groupesFaits++]);}
     }
-    if(groupesFaits>=V.groupes.length&&phaseT>1.5&&!file.length&&!G.some(g=>g.etat!=='mort')){
-      phase='fin';phaseT=0;stats.vieFin.push(Math.ceil(P.hp));gbGeste('touche',1);gbDire(vague+1<VAGUES.length?'GRRR… Encore !':'ASSEZ !');sortirOmbre('fin');majBoutons();
+    if(debutFait&&groupesFaits>=V.groupes.length&&phaseT>1.5&&!file.length&&!G.some(g=>g.etat!=='mort')){
+      phase='fin';phaseT=0;stats.vieFin.push(Math.ceil(P.hp));sortirOmbre('fin');majBoutons();
       texte(P.x,P.y,2.3,'Vague nettoyée !','#9fe6c0');son('choix');
     }
   }else if(phase==='fin'&&phaseT>2.4){
@@ -128,7 +139,7 @@ function majVagues(dt){
     if(vague+1<VAGUES.length)demarrerVague(vague+1);else victoire();
   }
 }
-function passerVague(){for(const g of G)if(g.etat!=='mort'){g.etat='mort';g.t=0;g.zone=null;}file=[];groupesFaits=VAGUES[vague].groupes.length;javs=[];obus=[];}
+function passerVague(){for(const g of G)if(g.etat!=='mort'){g.etat='mort';g.t=0;g.zone=null;}file=[];groupesFaits=VAGUES[vague].groupes.length;debutFait=true;for(const b of renforts)b.morte=true;javs=[];obus=[];}
 
 /* ======================= les particules ======================= */
 function secousse(a){sec=Math.max(sec,a);}

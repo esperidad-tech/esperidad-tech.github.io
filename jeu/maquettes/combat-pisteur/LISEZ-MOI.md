@@ -1,4 +1,41 @@
-# Le combat du Pisteur — version 8 (25 novembre 2026, 23 h 20) : la reprise à une vague, le réparateur, les cartes dorées, plus rien à lire
+# Le combat du Pisteur — version 9 (26 novembre 2026) : l'arrière-salle rendue en volume, les renforts
+
+Enquête 10, combat final : pendant que ses amis occupent Grosbec dans la grande salle, **le Pisteur est passé par-derrière** et
+s'occupe de sa garde (les golems), dans l'arrière-salle. Rien n'est branché dans le jeu, rien n'est en ligne sur le site : c'est une
+page à part, comme les combats du Barde, du Sage et de l'Alchimiste.
+La page publiée (version 9) : https://claude.ai/artifact/DRTHz5bppgsstd5ameTnba (un nouveau canevas ; l'ancien, https://claude.ai/artifact/GmvcxCF5gC89M9tmnCVyGU, garde la version 8).
+
+**Où on en est.** Romain a joué la version 8 dans la nuit du 25 au 26 novembre : **« je me suis beaucoup amusé à ce petit jeu. Je
+pense qu'on va pouvoir le valider. »** Les règles ne bougent donc plus, sauf une demande : **les renforts** (dès qu'une bande est
+tombée, la suivante arrive). Puis : **« il va falloir s'attaquer au chantier musique, son, et refaire les graphismes »** ; les
+golems lui vont, **c'est la salle qui fait maquette**. Après un essai raté avec une IA d'images, il a écrit à 1 h 26 : **« essaie de
+me faire un truc vraiment très joli, avec un gros travail, prends ton temps. Fais-moi rêver. »** **La version 9 est construite ici.
+Pas encore vue par Romain.** Tout le détail : Bible §17.42 à §17.46 (dans `bible-section-17.md`).
+
+**La version 9 en cinq points** :
+1. **La salle est rendue en volume** (`decor3d/`, à lire : `decor3d/LISEZ-MOI.md`). Blender, piloté par des scripts, construit
+   l'arrière-salle, l'éclaire, et la « photographie » exactement sous l'angle du jeu : une seule perspective pour tout, de vraies
+   ombres, des dégradés partout, puis un trait sombre autour de chaque pièce (la charte du jeu). Le jeu recopie ces images
+   (`src/decor.js`, fabriqué par `decor3d/paquet.py` ; `src/salle.js`). **Les obstacles sont à la même place** (`OBS0`).
+2. **Grosbec n'est plus là** (ni lui, ni ses cris, ni sa statue, ni son estrade) : deux grandes portes de bois, et entre elles
+   une réserve (étagère, coffre, sacs). La statue renversée est devenue trois tonneaux couchés. Son modèle n'est plus embarqué
+   dans la page.
+3. **Les renforts** (`src/vagues.js`) : dès qu'UNE bande est entièrement tombée, la suivante de la réserve arrive (les groupes
+   « apres » de `VAGUES`), dans toutes les vagues. Avant chaque bande : **le cor** (`son('renfort')`), **l'œil rouge de sa porte
+   s'allume**, et elle sort **deux secondes après** (`DELAI_RENFORT`) par la porte qui s'ouvre. Vague 8 : le colosse arrive dès que
+   la meute ou les béliers sont tombés.
+4. **Les portes vivent** (`alerte`, `porte`, `Salle.dessinerPorte`) : deux images par porte, fondues par-dessus le fond.
+5. **Les flammes sont redessinées** (`flamme` dans `src/dessin.js`), et de la poussière flotte dans les rayons de lune.
+
+**Pour refaire la page** : `python3 construire.py` (il lit `src/decor.js`, 1,4 Mo : ne pas l'ouvrir dans un éditeur). **La page pèse maintenant 2,1 Mo** (0,7 Mo en version 8) : c'est le poids des images de la salle. Pour refaire
+le décor : `decor3d/LISEZ-MOI.md`.
+
+**Les essais** : `tests/scenes.py` a une scène de plus, `renforts` (30 scènes ; `mortier` et `belierFou` dépendent du hasard,
+en version 8 aussi : les relancer seules si elles échouent). `/home/claude/outils/vues9.py` n'est pas rangé ici : pour des captures, `tests/vues.py` et `tests/galerie.py`.
+
+## La version 8 (25 novembre 2026, 23 h 20) : la reprise à une vague, le réparateur, les cartes dorées, plus rien à lire
+
+*(Tout ce qui suit décrit la version 8. Il reste vrai pour la version 9, sauf le décor, Grosbec, et l'arrivée des bandes : voir au-dessus.)*
 
 Enquête 10, combat final : pendant que ses amis occupent Grosbec, le Pisteur s'occupe de sa garde (les golems). Rien n'est branché dans le
 jeu, rien n'est en ligne sur le site : c'est une page à part, comme les combats du Barde, du Sage et de l'Alchimiste.

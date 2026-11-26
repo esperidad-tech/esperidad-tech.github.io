@@ -107,7 +107,7 @@ const regles=$('regles'),pauseEl=$('pause'),finEl=$('fin'),finCarte=$('finCarte'
 let essai=false,fige=false;
 function nettoyerMonde(){
   OBS=OBS0.map(o=>({...o}));majGrille();
-  G=[];javs=[];obus=[];parts=[];file=[];leurres=[];porte[0]=porte[1]=0;grpVoit={};grpColere={};grpFrappe={};piste=[];pisteBase=0;nFlair=0;
+  G=[];javs=[];obus=[];parts=[];file=[];leurres=[];porte[0]=porte[1]=0;alerte[0]=alerte[1]=0;alerteT[0]=alerteT[1]=0;grpVoit={};grpColere={};grpFrappe={};piste=[];pisteBase=0;nFlair=0;
   hitstop=0;sec=0;flashR=0;flashB=0;flashV=0;defaiteDans=0;finDans=0;nVoient=0;
 }
 function nouveauxStats(){return {cartes:0,repares:0,dechaines:0,endormis:0,siffles:0,reprises:0,tues:0,tuesEntreEux:0,degats:0,entreEux:0,recus:0,saignement:0,coups:0,esquives:0,embuscades:0,assommes:0,dagues:0,sauts:0,sautsOmbre:0,coleres:0,pares:0,flaires:0,chaines:0,boules:0,insensibles:0,
@@ -123,7 +123,7 @@ function demarrer(i,garder,sauve){
 }
 function ouvrirPause(){
   if(etatJeu!=='jeu')return;enPause=true;pauseEl.classList.add('on');
-  $('pMesures').textContent=`Mesures (version 8) : image ${can.width} × ${can.height} · ${fpsMoy.toFixed(0)} images par seconde · pire seconde ${pire<999?pire.toFixed(0):'—'} · finesse ${finesse} · appareil ${vitesseApp} · ${GS.cuits} images de golems`;
+  $('pMesures').textContent=`Mesures (version 9) : image ${can.width} × ${can.height} · ${fpsMoy.toFixed(0)} images par seconde · pire seconde ${pire<999?pire.toFixed(0):'—'} · finesse ${finesse} · appareil ${vitesseApp} · ${GS.cuits} images de golems`;
 }
 function reprendre(){enPause=false;pauseEl.classList.remove('on');regles.classList.remove('on');dernier=performance.now();}
 bPause.onclick=()=>enPause?reprendre():ouvrirPause();
@@ -172,7 +172,7 @@ function chargement(){
   if(prepare===0){prepare=1;el.style.width='6%';return;}
   if(prepare===1){preparerImages();prepare=2;chargeT0=tReel;PS.lancer(S0,()=>{});return;}
   if(prepare===2){
-    if(PS.essentiel){prepare=3;btnGo.disabled=false;btnGo.classList.add('anneau');el.style.width='100%';if(!/[?&]extrait=non/.test(location.search))lancerExtrait();}
+    if(PS.essentiel&&Salle.pret){prepare=3;btnGo.disabled=false;btnGo.classList.add('anneau');el.style.width='100%';if(!/[?&]extrait=non/.test(location.search))lancerExtrait();}
     else el.style.width=Math.round(8+PS.avance*92)+'%';
   }
 }

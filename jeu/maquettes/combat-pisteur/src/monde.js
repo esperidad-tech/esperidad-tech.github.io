@@ -3,7 +3,7 @@ const OBS0=[
   {k:'pilier',c:1,x:5,y:4.9,r:0.75,h:4.3,haut:1},{k:'pilier',c:1,x:21,y:4.9,r:0.75,h:4.3,haut:1},
   {k:'pilier',c:1,x:5.2,y:13.7,r:0.75,h:4.3,haut:1},{k:'pilier',c:1,x:20.8,y:13.7,r:0.75,h:4.3,haut:1},
   {k:'pan',x:8.9,y:8.0,w:3.4,d:0.8,h:2.3,haut:1},{k:'pan',x:17.6,y:11.2,w:3.4,d:0.8,h:2.3,haut:1},
-  {k:'statue',x:16.6,y:6.2,w:3.2,d:1.2,h:0.9},
+  {k:'tonneaux',x:16.6,y:6.2,w:3.2,d:1.2,h:0.9},
   {k:'muret',x:9.4,y:12.4,w:0.8,d:2.8,h:1.0},
   {k:'muret',x:14.9,y:14.7,w:2.8,d:0.8,h:1.0},
   {k:'gravats',c:1,x:10.3,y:4.3,r:1.0,h:0.7},
@@ -11,9 +11,10 @@ const OBS0=[
   {k:'chariot',x:21.4,y:8.3,w:2.4,d:1.3,h:1.1},
   {k:'caisse',x:7.1,y:15.8,w:1.5,d:1.5,h:1.1},
   {k:'caisse',x:18.6,y:16.1,w:1.4,d:1.4,h:1.1},
-  {k:'estrade',x:13,y:2.25,w:4.8,d:1.9,h:0.9,haut:1,fond:1}
+  {k:'reserve',x:13,y:2.25,w:4.8,d:1.9,h:0.9,haut:1,fond:1}
 ];
-const GBX=13,GBY=2.2,GBZ=0.9;              /* où se tient Grosbec */
+OBS0.forEach((o,i)=>{o.i=i;});     /* le numéro de l'obstacle : celui de son image dans le décor (src/decor.js) */
+/* Grosbec n'est plus dans cette salle (version 9) : le Pisteur est passé par-derrière, dans l'arrière-salle */
 let OBS=[],nuages=[];
 function dansObs(x,y,o,m){return o.c?hyp(x-o.x,y-o.y)<o.r+m:(Math.abs(x-o.x)<o.w/2+m&&Math.abs(y-o.y)<o.d/2+m);}
 function horsSalle(x,y,r){return x<0.2+r||x>RW-0.2-r||y<Y0+r*0.5||y>RD-0.2-r;}

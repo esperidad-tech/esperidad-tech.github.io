@@ -505,5 +505,34 @@ window.__S = (function () {
     return Object.assign({ ok: r.meute <= 3 && r.seul === 0 && r.mur === 0 && r.n === 8 }, r);
   };
 
+  // 30. Les renforts (version 9, Romain, 26 novembre) : avant chaque bande le cor, l'œil de la porte allumé, la bande deux secondes
+  //     après ; dès qu'UNE bande est tombée, la suivante de la réserve arrive (pas besoin que la salle soit vide) ; vague 8 : le
+  //     colosse et son mortier entrent quand la première bande est morte ; la vague ne finit que quand tout est tombé.
+  S.renforts = function () {
+    const E = c => JSON.parse(pt.ev('JSON.stringify(' + c + ')'));
+    const etat = () => E("({al:[alerteT[0]>0,alerteT[1]>0],G:G.filter(g=>g.etat!=='mort').map(g=>g.type),file:file.length,faits:groupesFaits,phase,t:+phaseT.toFixed(2)})");
+    const tuer = t => pt.ev("for(const g of G)if(g.etat!=='mort'&&(" + t + ")){g.etat='mort';g.t=0;g.zone=null;}");
+    pt.figer(true); pt.tenir(1, false); pt.tenir(4, false); pt.cmd({ mx: 0, my: 0 }); pt.demarrer(7); pt.invincible(true); pt.ev('P.x=13;P.y=17.2;P.lx=13;P.ly=17.2');
+    av(0.4); const a = etat();                    // rien n'est encore annoncé
+    av(0.3); const b = etat();                    // les deux bandes du début sont annoncées : les deux portes allumées, personne dans la salle
+    av(1.6); const c = etat();                    // 2,3 s : toujours personne (elles sortent deux secondes après l'annonce)
+    av(3.2); const d = etat();                    // tout le monde est sorti : deux béliers, leur réparateur, trois rôdeurs
+    av(2.0); const d2 = etat();                   // les portes se sont éteintes
+    tuer("g.type==='chien'"); av(0.1); const e = etat();        // la meute est tombée : le colosse (porte 1) et le mortier (porte 2) sont annoncés…
+    av(1.7); const f = etat();                    // … mais pas encore là, 1,8 s après
+    av(2.0); const g = etat();                    // … ils sont là ; les béliers sont toujours vivants
+    tuer("g.type!=='colosse'"); av(3); const h = etat();        // il ne reste que le colosse : la vague n'est pas finie, et plus personne n'arrive
+    tuer("true"); av(0.3); const i = etat();      // tout est tombé : la vague est finie
+    // vague 1 : un rôdeur seul ; à sa mort, les deux suivants sont annoncés, puis arrivent
+    pt.demarrer(0); pt.invincible(true); pt.ev('P.x=13;P.y=17.2;P.lx=13;P.ly=17.2'); av(3.4); const v1 = etat();
+    tuer("true"); av(0.1); const v2 = etat(); av(3.2); const v3 = etat();
+    const n = (s, t) => s.G.filter(x => x === t).length;
+    const ok = !a.al[0] && !a.al[1] && a.file === 0 && b.al[0] && b.al[1] && b.file === 6 && b.G.length === 0 && c.G.length === 0 && c.file === 6 &&
+      d.G.length === 6 && d.file === 0 && !d2.al[0] && !d2.al[1] && e.al[0] && e.al[1] && e.file === 3 && e.faits === 4 && n(f, 'colosse') === 0 && n(g, 'colosse') === 1 && n(g, 'belier') === 2 && n(g, 'mortier') === 1 &&
+      h.phase === 'vague' && h.G.length === 1 && h.file === 0 && i.phase === 'fin' &&
+      v1.G.length === 1 && v2.al[1] && v2.file === 2 && v2.G.length === 0 && v3.G.length === 2;
+    return { ok, avant: a, annonce: b, a2s3: c, sortis: d, portesEteintes: d2.al, meuteTombee: e, pasEncore: f.G, puis: g.G, resteLeColosse: [h.phase, h.G, h.file], toutTombe: i.phase, vague1: [v1.G, v2.al, v2.file, v3.G] };
+  };
+
   return S;
 })();

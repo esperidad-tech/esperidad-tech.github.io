@@ -22,6 +22,17 @@ function bruit(dur,vol,ft,f0,f1,t0,q){
   const g=AC.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+0.005);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
   s.connect(f);f.connect(g);g.connect(sortie);s.start(t,Math.random()*0.5);s.stop(t+dur+0.05);
 }
+/* un cor : une note tenue, cuivrée (des dents de scie adoucies par un filtre qui s'ouvre), qui monte un peu en arrivant */
+function corne(f,t0,dur,vol){
+  const t=AC.currentTime+t0,g=AC.createGain(),lp=AC.createBiquadFilter();lp.type='lowpass';lp.Q.value=2.2;
+  lp.frequency.setValueAtTime(420,t);lp.frequency.linearRampToValueAtTime(1500,t+0.14);lp.frequency.linearRampToValueAtTime(820,t+dur);
+  g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(vol,t+0.07);g.gain.setValueAtTime(vol,t+Math.max(0.08,dur-0.24));g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  for(const [m,v] of [[1,1],[2,0.5],[3,0.28],[0.5,0.45]]){
+    const o=AC.createOscillator(),og=AC.createGain();o.type='sawtooth';o.frequency.setValueAtTime(f*m*0.965,t);o.frequency.linearRampToValueAtTime(f*m,t+0.1);
+    og.gain.value=v;o.connect(og);og.connect(lp);o.start(t);o.stop(t+dur+0.05);
+  }
+  lp.connect(g);g.connect(sortie);
+}
 const dernierSon={};
 function son(n){
   if(!AC||!sonOn||demo)return;                      /* l'extrait d'avant le jeu est muet */
@@ -68,6 +79,8 @@ function son(n){
     case 'betes':bruit(1.6,0.4,'lowpass',300,120);for(let i=0;i<4;i++)osc('sawtooth',90+Math.random()*30,60,0.5,0.1,0.1+i*0.25);break;
     case 'allez':osc('sawtooth',98,92,0.14,0.15);osc('sawtooth',110,100,0.2,0.15,0.18);break;
     case 'cor':osc('sawtooth',147,147,0.9,0.1);osc('sawtooth',220,220,0.9,0.07);break;
+    /* le cor des renforts (Romain, 26 novembre) : deux notes, « ta — taaa », une quinte qui monte ; la bande sort deux secondes après */
+    case 'renfort':corne(146.8,0,0.44,0.17);corne(220,0.42,1.05,0.2);bruit(1.3,0.035,'bandpass',500,380,0.05,0.8);break;
     case 'porte':bruit(0.5,0.22,'lowpass',300,100);osc('sine',60,45,0.5,0.25);break;
     case 'bang':bruit(0.3,0.55,'lowpass',700,150);osc('sine',70,35,0.4,0.65);break;
     case 'victoire':[523,659,784,1047].forEach((f,i)=>osc('triangle',f,f,0.5,0.18,i*0.12));break;

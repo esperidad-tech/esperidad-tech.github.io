@@ -6,7 +6,7 @@ if(/[?&]finesse=(\d)/.test(location.search))finesse=Math.min(3,+RegExp.$1);
 /* un appareil lent commence tout de suite avec une image moins fine (mesuré en comptant ce qu'il calcule en 40 ms) */
 function mesurerAppareil(){const t0=performance.now();let n=0;while(performance.now()-t0<40){champ(13,10);n++;}vitesseApp=n;if(finesse<0)finesse=n<26?2:n<48?1:0;}
 const sonde=document.createElement('div');sonde.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;visibility:hidden;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)';document.body.appendChild(sonde);
-let fondPret=false,grosPret=false,S0=0;
+let fondPret=false,S0=0;
 function taille(){
   const vw=innerWidth,vh=innerHeight;
   Hs=vw/vh*410<620?620*vh/vw:410;
@@ -20,8 +20,7 @@ function verifTourne(){const t=innerHeight>innerWidth*1.05;if(t!==tourne){tourne
 addEventListener('resize',taille);addEventListener('orientationchange',()=>setTimeout(taille,200));
 /* tout ce qui est cuit garde sa taille quand la finesse baisse (rien n'est recuit en plein combat) */
 function preparerImages(){
-  Salle.preparer(S0);fondPret=true;
-  Gros.construire(clamp(S0,1,2),0.36);grosPret=true;
+  Salle.preparer(S0,()=>{fondPret=true;});
   GS.regler(S0);
   GS.prevoir([['trotteur',GT.chien.sc],['danseur',GT.javelot.sc],['bouclier',GT.dalle.sc],['lanceur',GT.mortier.sc],['fonceur',GT.belier.sc,['gratte','charge','arme','frappe']],['soldat',GT.faucheur.sc],['cuirasse',GT.cuirasse.sc],['gros',GT.colosse.sc],['reparateur',GT.repare.sc]]);
 }
@@ -361,34 +360,51 @@ function dessinerParts(){
   }
 }
 function visible(X,Y,m){return X>camX-m&&X<camX+Ws+m&&Y>camY-m&&Y<camY+Hs+m;}
+/* une flamme : trois gouttes emboîtées qui dansent, quelques étincelles qui montent (violette quand le Pisteur est dans l'ombre) */
+function flamme(X,Y,s,ph,violet){
+  const t=tReel,w=Math.sin(t*9.3+ph)*0.55+Math.sin(t*15.1+ph*1.7)*0.45,h=1+0.12*Math.sin(t*6.1+ph*2.3)+0.06*w;
+  const C=violet?['#3a2aa8','#7a6cff','#b9b0ff','#f0ecff']:['#b8300a','#ff7a1c','#ffb62e','#fff3c4'];
+  const goutte=(k,dy)=>{const H=s*2.1*h*k,wd=s*0.62*k,dx=w*s*0.2*k;
+    cx.beginPath();cx.moveTo(X-wd,Y+dy);cx.bezierCurveTo(X-wd*1.25,Y+dy-H*0.42,X+dx*0.5-wd*0.2,Y+dy-H*0.62,X+dx,Y+dy-H);
+    cx.bezierCurveTo(X+dx*0.5+wd*0.35,Y+dy-H*0.6,X+wd*1.25,Y+dy-H*0.4,X+wd,Y+dy);cx.quadraticCurveTo(X,Y+dy+wd*0.55,X-wd,Y+dy);cx.closePath();};
+  cx.fillStyle=C[0];goutte(1.14,1);cx.fill();cx.fillStyle=C[1];goutte(1,0);cx.fill();cx.fillStyle=C[2];goutte(0.66,0);cx.fill();cx.fillStyle=C[3];goutte(0.36,0);cx.fill();
+  if(finesse<2){cx.fillStyle=C[2];for(let i=0;i<3;i++){const u=(t*0.55+i*0.37+ph*0.13)%1;cx.globalAlpha=(1-u)*0.9;cx.fillRect(X+Math.sin(t*2.3+i*2.1+ph)*s*0.7*u+w*s*0.2,Y-s*1.6-u*s*3.2,1.7,1.7);}cx.globalAlpha=1;}
+}
+/* la poussière qui flotte dans les deux rayons de lune (seulement quand l'image est fine, et à découvert) */
+const RAYONS=[[3.2,11.6,7.6,3.4],[17.2,5.4,7.4,3.6]];
+function dessinerPoussieres(){
+  if(finesse||P.fondu>0.5)return;
+  cx.fillStyle='#dfe8ff';
+  for(let r=0;r<2;r++){const [x0,y0,w,h]=RAYONS[r];
+    for(let i=0;i<16;i++){
+      const s=i*12.9898+r*78.233,u=(Math.sin(s)*43758.5453)%1,v=(Math.sin(s*1.7)*24634.6345)%1,ph=i*1.31+r*2.1;
+      const x=x0+((Math.abs(u)+tReel*0.012*(1+i%3))%1)*w,y=y0+Math.abs(v)*h+Math.sin(tReel*0.31+ph)*0.25,z=0.5+((i*0.37+tReel*0.035)%1)*2.2;
+      const X=px(x),Y=py(y,z);if(!visible(X,Y,8))continue;
+      cx.globalAlpha=0.16+0.2*(0.5+0.5*Math.sin(tReel*1.3+ph*3));cx.fillRect(X,Y,i%4?1.5:2.2,i%4?1.5:2.2);
+    }}
+  cx.globalAlpha=1;
+}
 function dessinerFondVivant(){
-  /* les flammes des torches */
-  for(const t of Salle.TORCHES.concat(Salle.LAMPES)){
-    const X=px(t.x),Y=py(t.y==null?Y0:t.y,t.z);if(!visible(X,Y,80))continue;
+  const om=P.fondu,vio=om>0.5;
+  /* les torches du mur : leur halo, leur flamme */
+  for(const t of Salle.TORCHES){
+    const X=px(t.x),Y=py(t.y,t.z);if(!visible(X,Y,90))continue;
     const f=Math.sin(tReel*11+t.x*3)*0.5+Math.sin(tReel*17+t.x)*0.5;
-    if(!finesse)lueur(X,Y-8,70+f*6,'255,160,70',0.55+f*0.08);
-    polyE([[X-6,Y],[X+6,Y],[X+f*3,Y-17-f*4]],'#ff9a30');polyE([[X-3.2,Y],[X+3.2,Y],[X-f*2,Y-10]],'#fff0b0');
+    if(!finesse)lueur(X,Y-10,74+f*6,vio?'150,130,255':'255,160,70',0.5+f*0.08);
+    flamme(X,Y+1,7.5,t.x*3,vio);
   }
-  /* les battants des deux portes */
-  for(const [i,dx] of [[0,8],[1,18]]){
-    const x0=px(dx-1.3),x1=px(dx+1.3),yb=py(Y0),yt=py(Y0,3.0),c=(x0+x1)/2;if(!visible(c,yb-70,120))continue;
-    const o=porte[i],w=(x1-x0)/2*(1-o*0.86);
-    cx.save();cx.beginPath();cx.moveTo(x0,yb);cx.lineTo(x0,yt+26);cx.quadraticCurveTo(c,yt-22,x1,yt+26);cx.lineTo(x1,yb);cx.closePath();cx.clip();
-    if(o>0.02){cx.fillStyle=`rgba(255,80,30,${o*0.5})`;cx.fillRect(x0,yt,x1-x0,yb-yt);}
-    for(const [a,b] of [[x0,x0+w],[x1-w,x1]]){cx.fillStyle='#6a5236';cx.fillRect(a,yt-10,b-a,yb-yt+10);cx.fillStyle='#8f7448';cx.fillRect(a+3,yt-10,Math.max(0,b-a-6),yb-yt+10);cx.fillStyle='#2a1f14';for(let k=a+9;k<b-3;k+=13)cx.fillRect(k,yt-10,1.6,yb-yt+10);cx.fillStyle='#f4d27c';if(b-a>12)for(let k=0;k<4;k++)disque(a+6,yt+30+k*26,2);}
-    if(P.fondu>0){cx.fillStyle=`rgba(30,18,90,${0.5*P.fondu})`;cx.fillRect(x0,yt-30,x1-x0,yb-yt+30);}
-    cx.restore();
+  /* les deux lanternes des murs de côté : seulement leur halo, qui tremble */
+  if(!finesse)for(const t of Salle.LAMPES){
+    const X=px(t.x),Y=py(t.y,t.z);if(!visible(X,Y,90))continue;
+    const f=Math.sin(tReel*8+t.y*3)*0.5+Math.sin(tReel*13+t.y)*0.5;lueur(X,Y,46+f*4,vio?'150,130,255':'255,170,80',0.42+f*0.08);
   }
-  /* Grosbec, debout sur son estrade */
-  const gx=px(GBX),gy=py(GBY,GBZ);
-  if(grosPret&&visible(gx,gy-60,150)){
-    Gros.rafraichir(tReel,GBE,finesse>=2?6:finesse?9:13);Gros.dessiner(cx,gx,gy);
-    if(tReel-GBE.bulleT<2&&GBE.bulle){
-      const a=Math.min(1,(2-(tReel-GBE.bulleT))*3);cx.globalAlpha=a;cx.font='900 14px Nunito,sans-serif';
-      const w=cx.measureText(GBE.bulle).width+20,bx=gx+46,by=gy-124;
-      cx.fillStyle='rgba(30,10,8,.92)';cx.strokeStyle='#ff6a4a';cx.lineWidth=1.5;cx.beginPath();if(cx.roundRect)cx.roundRect(bx,by,w,27,9);else cx.rect(bx,by,w,27);cx.fill();cx.stroke();
-      cx.fillStyle='#ffd8c8';cx.textAlign='left';cx.textBaseline='middle';cx.fillText(GBE.bulle,bx+10,by+14);cx.globalAlpha=1;
-    }
+  /* les deux portes des renforts : l'œil s'allume (ils arrivent), puis les battants s'ouvrent */
+  for(let i=0;i<2;i++){
+    const al=alerte[i],ou=Math.min(1,porte[i]*2.4);if(!(al>0.01||ou>0.01))continue;
+    const q=Salle.portes[i];if(!q||!visible(px(q.dx),py(Y0,1.6),260))continue;
+    const bat=0.8+0.2*Math.sin(tReel*10);
+    Salle.dessinerPorte(cx,i,al*bat,ou,om);
+    if(!finesse&&al>0.01)lueur(px(q.dx),py(Y0,3.25),95+bat*26,'255,96,40',0.42*al*bat);
   }
 }
 
@@ -489,13 +505,13 @@ function dessiner(dt){
       /* un grand obstacle devient transparent quand le Pisteur passe derrière */
       let a=1;if(o.haut){const dyH=o.h*ZH/(T*K),lw=(o.c?o.r:o.w/2);if(P.y<o.y&&P.y>o.y-dyH-0.4&&Math.abs(P.x-o.x)<lw+0.5)a=0.42;}
       if(visible(px(o.x),py(o.y)-o.h*ZH/2,(o.c?o.r:o.w/2)*T+o.h*ZH/2+60)){Salle.dessinerObstacle(cx,o,a,om);
-        if(o.k==='pilier'){const X=px(o.x),Y=py(o.y,o.h)-14,f=Math.sin(tReel*10+o.x*3)*0.5+Math.sin(tReel*16+o.y)*0.5;if(!finesse)lueur(X,Y-10,84+f*7,om>0.5?'150,130,255':'255,160,70',0.6+f*0.08);
-          polyE([[X-13,Y],[X+13,Y],[X+6+f*3,Y-14],[X+f*5,Y-30-f*5],[X-6+f*2,Y-12]],om>0.5?'#8a7cff':'#ff9a30');polyE([[X-7,Y],[X+7,Y],[X-f*3,Y-17]],om>0.5?'#e6e0ff':'#fff0b0');}
+        if(o.k==='pilier'){const X=px(o.x),Y=py(o.y,o.h)-10,f=Math.sin(tReel*10+o.x*3)*0.5+Math.sin(tReel*16+o.y)*0.5;if(!finesse)lueur(X,Y-14,92+f*8,om>0.5?'150,130,255':'255,160,70',(0.55+f*0.08)*a);
+          if(a<1)cx.globalAlpha=Math.max(a,0.6);flamme(X,Y,20,o.x*2+o.y,om>0.5);cx.globalAlpha=1;}
       }
     }else if(k===1)dessinerGolem(o);else dessinerPisteur();
   }
   const q4=PR?performance.now():0;
-  dessinerAir();dessinerParts();
+  dessinerPoussieres();dessinerAir();dessinerParts();
   const q5=PR?performance.now():0;
   cx.setTransform(S,0,0,S,0,0);
   if(flashR>0){cx.globalAlpha=flashR*0.5;cx.fillStyle='#a01010';cx.fillRect(0,0,Ws,Hs);cx.globalAlpha=1;}
