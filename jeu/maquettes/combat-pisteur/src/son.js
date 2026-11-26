@@ -239,7 +239,7 @@ function ecoute(x,y,r,p){
   return [Math.max(p,a),clamp((x-P.x)/8,-0.8,0.8)];
 }
 /* le niveau de chaque son, réglé par la mesure (tests/sons.py regler) pour que chaque sorte ait sa place : ne pas toucher à la main */
-const NIV=/*NIV*/{"refus":3.4,"ombre":1.8,"saut":2.91,"swish1":0.39,"swish2":0.39,"swish3":0.45,"dague1":0.42,"dague2":0.58,"dague3":0.36,"frappe":0.68,"assassin":0.3,"bong":1.39,"ting":0.83,"aie":0.49,"chute":0.71,"perdu":3.44,"ramasse":2.26,"choix":0.82,"or":1.03,"tirVise":4.5,"sifflet":0.51,"victoire":0.67,"swishG":2.84,"bang":1.02,"impact":0.81,"casse":0.99,"acheve":0.58,"jav":0.84,"mortier":1.1,"obus":0.84,"onde":0.84,"porteOuvre":2.47,"porteFerme":3.42,"porteClaque":0.43,"fantome":1.8,"bond":2.21,"soin":3.19,"chaine":3.11,"repere":0.83,"cherche":1.11,"cri":0.63,"colere":0.88,"dechaine":1.27,"renfort":1.15,"zChien":0.97,"zJavelot":1.07,"zDalle":1.02,"chargeDalle":0.99,"zFaux":2.32,"zMortier":2.0,"zBelier":1.62,"chargeBelier":1.08,"zBoule":1.91,"zCuirasse":2.68,"zonde":1.41,"zpilon":1.16,"zanneau":1.4,"zcroix":1.39,"iChien":5.63,"iChienGrogne":0.88,"aboie":0.89,"iJavelot":0.98,"iDalle":1.04,"iFaux":2.42,"iMortier":2.4,"iBelier":1.93,"iCuirasse":3.16,"colosseArrive":0.68,"gColosse1":1.37,"gColosse2":0.86,"gColosse3":1.49,"gColosse4":1.88,"gColosse5":0.67,"pasColosse":0.74,"iRepare":5.85,"iFantome":1.14,"boule":0.59,"musique":0.35,"musAction":0.29}/*FIN*/;
+const NIV=/*NIV*/{"refus":3.4,"ombre":1.8,"saut":2.91,"swish1":0.39,"swish2":0.39,"swish3":0.45,"dague1":0.42,"dague2":0.58,"dague3":0.36,"frappe":0.68,"assassin":0.3,"bong":1.39,"ting":0.83,"aie":0.49,"chute":0.71,"perdu":3.44,"ramasse":2.26,"choix":0.82,"or":1.03,"tirVise":4.5,"sifflet":0.51,"victoire":0.67,"swishG":2.84,"bang":1.02,"impact":0.81,"casse":0.99,"acheve":0.58,"jav":0.84,"mortier":1.1,"obus":0.84,"onde":0.84,"porteOuvre":2.47,"porteFerme":3.42,"porteClaque":0.43,"fantome":1.8,"bond":2.21,"soin":3.19,"chaine":3.11,"repere":0.83,"cherche":1.11,"cri":0.63,"colere":0.88,"dechaine":1.27,"renfort":1.15,"zChien":0.97,"zJavelot":1.07,"zDalle":1.02,"chargeDalle":0.99,"zFaux":2.32,"zMortier":2.0,"zBelier":1.62,"chargeBelier":1.08,"zBoule":1.91,"zCuirasse":2.68,"zonde":1.41,"zpilon":1.16,"zanneau":1.4,"zcroix":1.39,"iChien":5.63,"iChienGrogne":0.88,"aboie":0.89,"iJavelot":0.98,"iDalle":1.04,"iFaux":2.42,"iMortier":2.4,"iBelier":1.93,"iCuirasse":3.16,"colosseArrive":0.68,"gColosse1":1.37,"gColosse2":0.86,"gColosse3":1.49,"gColosse4":1.88,"gColosse5":0.67,"pasColosse":0.74,"iRepare":5.85,"iFantome":1.14,"boule":0.59,"musique":0.35,"musAction":0.27}/*FIN*/;
 const dernierSon={},JOUES={},ERR=[];let recents=[];       /* (JOUES, ERR : pour les essais — ce qui a sonné, ce qui a raté) */
 function son(n,a,b){
   if(!A||!sonOn||demo)return;                       /* l'extrait d'avant le jeu est muet */
@@ -366,7 +366,8 @@ function musDebut(E,P0,t,nm,na){
 function musBascule(M,cible,t){
   if(cible===M.cible)return;
   const vers=cible==='act';
-  fondu(M.act,vers?M.na:0,t,vers?0.45:1.1);fondu(M.mys,vers?0:M.nm,t,vers?0.5:1.1);
+  fondu(M.act,vers?M.na:0,t,vers?0.3:1.1);fondu(M.mys,vers?0:M.nm,t,vers?0.4:1.1);
+  M.base.gain.cancelScheduledValues(t);M.base.gain.setTargetAtTime(M.nm*(vers?0.35:1),t,vers?0.4:1.1);   /* (le bourdon s'efface sous le combat : c'est le rythme qu'on doit entendre) */
   if(vers&&t-M.tBascule>4){                                  /* le combat revient : un roulement de tambour grave qui enfle */
     for(let k=0;k<7;k++)M.E.tambour(t+k*0.085,{f:k%2?92:78,d:0.3,g:0.06+k*0.03},M.act.pres);
     M.E.ton(t,{type:'sawtooth',f:m2f(38),env:[[0,0],[0.6,1],[1.0,0]],g:0.06,sat:1.3,lp:500},M.act.loin);
@@ -395,22 +396,31 @@ function musPlanifier(M,jusqua,maintenant){
   }
   while(M.tLoin<jusqua){if(mysOn)E.cloche(M.tLoin,m2f([38,45,50,41][Math.floor(Math.random()*4)]),{d:5.5,rapport:2.76,indice:1.8,g:0.03,a:0.01},L.fond);M.tLoin+=rnd(13,28)-niv*2;}
   while(M.tVent<jusqua){if(mysOn)E.bruit(M.tVent,{coul:'brun',bp:170,bq:1,env:[[0,0],[3,1],[7,0]],g:0.16},L.fond);M.tVent+=rnd(22,38);}
-  /* ---- le combat (version 12 : « vraiment musique d'action […] rythmée avec un peu de tension », « pas forte ») : la mesure tourne
-     toujours ; on ne la remplit que quand on l'entend. 126 à la minute (le colosse : 134) : une basse en doubles-croches qui roule,
-     le pied et une caisse grave et mate sur 2 et 4, des toms qui roulent toutes les deux mesures, des cordes courtes qui montent d'un
-     demi-ton toutes les deux mesures (la tension), un accord de cuivres qui frappe ---- */
-  const tps=60/(col?134:126),fort=col?1:[0.6,0.72,0.85,0.95][niv];
-  const BAS=[38,38,50,38,38,41,38,39,38,38,50,38,41,39,38,37],COR=[62,62,63,62,62,65,63,62];
+  /* ---- le combat (version 13 : Romain, 15 h 15 : « je veux vraiment une musique d'action qui soit entraînante, qui soit prenante »).
+     La mesure tourne toujours ; on ne la remplit que quand on l'entend. 138 à la minute (le colosse : 144). Quatre accords qui
+     tournent (ré mineur, si bémol, sol mineur, la majeur : le la appelle le retour au ré, c'est ce qui entraîne) ; une basse qui
+     galope (da-da-DOUM) ; des tambours graves façon tambours de guerre et une caisse mate sur 2 et 4 ; l'accroche : des cordes
+     courtes qui tournent sur l'accord ; un cuivre qui gronde sur chaque accord ; toutes les huit mesures, un roulement et un
+     frottement qui monte. Rien d'aigu (tout sous 1 500 Hz). ---- */
+  const tps=60/(col?144:138),q=tps/4,fort=col?1:[0.72,0.82,0.92,1][niv];
+  const GR=[{b:38,r:[62,65,69]},{b:34,r:[62,65,70]},{b:31,r:[62,67,70]},{b:33,r:[61,64,69]}];
+  const GALOP=[1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1],RIFF=[0,0,1,0,2,0,1,0];
   while(M.tMes<jusqua){
-    const t=M.tMes,haut=M.mes%4>=2?1:0;
+    const t=M.tMes,c=GR[M.mes%4];
     if(actOn){
-      for(let i=0;i<16;i++)E.ton(t+i*tps/4,{type:'sawtooth',f:m2f(BAS[i]+(haut&&i>=8?1:0)),env:[[0,0],[0.005,1],[0.1,0]],g:0.075*(i%4===0?1:0.6)*(0.75+0.25*fort),lp:520,lq:1.6,sat:1.8},K.pres);
-      [0,1.5,2].forEach(b=>E.tambour(t+b*tps,{f:72,d:0.35,g:0.3*fort},K.pres));
-      [1,3].forEach(b=>{E.tambour(t+b*tps,{f:165,d:0.16,g:0.15*fort},K.pres);E.bruit(t+b*tps,{bp:1500,bq:0.9,env:E.perc(0.001,0.11),g:0.11*fort},K.pres);});
-      if(M.mes%2===1)for(let k=0;k<4;k++)E.tambour(t+(3+k/4)*tps,{f:[118,104,92,82][k],d:0.2,g:(0.12+k*0.03)*fort},K.pres);
-      for(let i=0;i<8;i++)E.ton(t+i*tps/2,{type:'sawtooth',f:m2f(COR[i]+haut),det:i%2?6:-6,env:[[0,0],[0.01,1],[0.13,0]],g:0.028*(0.7+0.3*fort),lp:950},K.loin);
-      if(M.mes%4===0||col&&M.mes%2===0){const d=tps*1.6;[38,45,50].forEach((m,k)=>E.ton(t,{type:'sawtooth',f:m2f(m),det:k*5,env:[[0,0],[0.02,1],[d*0.5,0.6],[d,0]],g:0.055*(0.6+0.4*fort),sat:1.3,filtres:[{type:'lowpass',f:400,pts:[[0.05,1300],[d,380]],q:1.2}]},K.loin));}
-      if(M.mes%4===3){const d=tps*4;E.ton(t,{type:'sawtooth',f:m2f(51),det:4,env:[[0,0],[d*0.9,1],[d,0]],g:0.035*fort,lp:700},K.loin);}   /* le frottement qui monte avant la reprise */
+      /* la basse qui galope */
+      for(let i=0;i<16;i++)if(GALOP[i])E.ton(t+i*q,{type:'sawtooth',f:m2f(c.b+12+(i%8===0?-12:0)),env:[[0,0],[0.004,1],[0.09,0]],g:0.075*(i%4===0?1:0.62)*fort,lp:560,lq:1.5,sat:1.8},K.pres);
+      /* les tambours de guerre : 1, le « et » de 2, 3 ; la caisse mate sur 2 et 4 (en fantôme avant le 4) */
+      [[0,0.34],[1.5,0.24],[2,0.3],[2.75,0.16]].forEach(b=>E.tambour(t+b[0]*tps,{f:70,d:0.4,g:b[1]*fort},K.pres));
+      [[1,1],[3,1],[3.75,0.35]].forEach(b=>{E.tambour(t+b[0]*tps,{f:170,d:0.14,g:0.15*b[1]*fort},K.pres);E.bruit(t+b[0]*tps,{bp:1400,bq:0.9,env:E.perc(0.001,0.1),g:0.12*b[1]*fort},K.pres);});
+      /* l'accroche : des cordes courtes qui tournent sur l'accord (deux voix, à l'octave) */
+      for(let i=0;i<8;i++){const n=c.r[RIFF[i]],u=t+i*tps/2,e=[[0,0],[0.008,1],[0.14,0]],g=0.034*(i%2?0.7:1)*(0.75+0.25*fort);
+        E.ton(u,{type:'sawtooth',f:m2f(n),det:-5,env:e,g:g,lp:1400,lq:1.2},K.loin);E.ton(u,{type:'sawtooth',f:m2f(n-12),det:5,env:e,g:g*0.7,lp:900},K.loin);}
+      /* le cuivre qui gronde sur chaque accord */
+      {const d=tps*3.6,env=[[0,0],[0.05,1],[d*0.6,0.7],[d,0]];[c.b+12,c.b+19,c.b+24].forEach((m,k)=>E.ton(t,{type:'sawtooth',f:m2f(m),det:k*6-6,env:env,g:0.04*(0.6+0.4*fort),sat:1.3,filtres:[{type:'lowpass',f:420,pts:[[0.08,1300],[d,450]],q:1.3}]},K.loin));}
+      /* toutes les huit mesures : un roulement de toms qui descend, et un frottement qui monte pendant la dernière mesure */
+      if(M.mes%8===7){for(let k=0;k<8;k++)E.tambour(t+(2+k/4)*tps,{f:[130,122,114,106,98,90,84,78][k],d:0.2,g:(0.1+k*0.025)*fort},K.pres);
+        E.ton(t,{type:'sawtooth',f:m2f(57),f2:m2f(62),gl:tps*4,det:4,env:[[0,0],[tps*3.8,1],[tps*4,0]],g:0.03*fort,lp:900},K.loin);}
     }
     M.mes++;M.tMes+=4*tps;
   }
@@ -435,7 +445,9 @@ function musique(on){
     /* (version 12, Romain, 15 h 05) le combat seulement quand on s'est fait repérer par un groupe en colère (ou le colosse enragé) et
        qu'on n'est pas dans l'ombre ; une embuscade réussie ne change rien. Il tient cinq secondes après le dernier regard ; l'ombre le
        coupe tout de suite (le mystère revient doucement). */
-    if(jeu&&!P.ombre&&G.some(g=>vivant(g)&&(g.voit&&g.colere||g.type==='colosse'&&g.enrage)))M.tChaud=now;
+    /* (version 13 : Romain a essayé, les chiens lui couraient après et la musique ne changeait pas : ils n'étaient pas « en colère ».
+       Maintenant : dès qu'un golem le voit, hors de l'ombre.) */
+    if(jeu&&!P.ombre&&(nVoient>0||G.some(g=>g.type==='colosse'&&g.enrage&&vivant(g))))M.tChaud=now;
     if(!enPause)musBascule(M,jeu&&!P.ombre&&now-(M.tChaud||-99)<5?'act':'mys',now);
     musPlanifier(M,now+1.2,now);
   };
@@ -461,7 +473,7 @@ window.__son={joues:JOUES,erreurs:ERR,etat:()=>({ac:AC?AC.state:null,musique:MUS
     const sr=32000,c=new OfflineAudioContext(1,Math.ceil(sr*dur),sr),E=window.Moteur(c,{volume:VOL,horsLigne:true}),
       M=musDebut(E,prise(E,0,'mus',EQ_MUS),0.05,sansNiv?1:(NIV.musique||1),sansNiv?1:(NIV.musAction||1));
     const act=mode==='action'||mode==='colosse';M.mode=mode.slice(0,7)==='colosse'?'colosse':'calme';M.niv=niv;
-    if(act){fondu(M.act,M.na,0,0.01);fondu(M.mys,0,0,0.01);M.cible='act';}
+    if(act){fondu(M.act,M.na,0,0.01);fondu(M.mys,0,0,0.01);M.base.gain.setTargetAtTime(M.nm*0.35,0,0.01);M.cible='act';}
     musPlanifier(M,dur,-99);
     return c.startRendering().then(b=>Array.from(b.getChannelData(0)));
   }};
