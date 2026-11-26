@@ -20,6 +20,8 @@ for f in ['outils', 'golems']:           # (version 9 : plus de Grosbec dans cet
         t = golems_ouverts(t) + '\n' + open(os.path.join(mod, 'golems-alchimiste.js'), encoding='utf8').read()
         t += '\n/* le réparateur (combat du Pisteur, version 8) */\n' + open(os.path.join(mod, 'golems-pisteur.js'), encoding='utf8').read()
     sc += '<script>/* modèles du combat du Barde : ' + f + '.js */\n' + t + '\n</script>\n'
+# le moteur de l'Atelier des sons du jeu (version 10 : les sons et la musique du combat sont fabriqués avec lui, src/son.js)
+sc += '<script>/* Atelier des sons : jeu/donjon/essai/sons/moteur.js */\n' + open(os.path.join(ici, '..', '..', 'donjon', 'essai', 'sons', 'moteur.js'), encoding='utf8').read() + '\n</script>\n'
 jeu = ''
 for f in ['base', 'son', 'monde', 'pisteur', 'golems', 'vagues', 'sprites', 'salle', 'dessin', 'ecrans']:
     jeu += '/* ===== ' + f + '.js ===== */\n' + open(os.path.join(ici, 'src', f + '.js'), encoding='utf8').read() + '\n'

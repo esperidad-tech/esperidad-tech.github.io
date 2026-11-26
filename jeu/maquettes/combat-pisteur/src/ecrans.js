@@ -113,7 +113,7 @@ function nettoyerMonde(){
 function nouveauxStats(){return {cartes:0,repares:0,dechaines:0,endormis:0,siffles:0,reprises:0,tues:0,tuesEntreEux:0,degats:0,entreEux:0,recus:0,saignement:0,coups:0,esquives:0,embuscades:0,assommes:0,dagues:0,sauts:0,sautsOmbre:0,coleres:0,pares:0,flaires:0,chaines:0,boules:0,insensibles:0,
   bandagesPoses:0,bandagesPerdus:0,soins:0,ombres:0,reperages:0,semes:0,murs:0,chutes:0,tings:0,colles:0,dalles:0,javelots:0,obus:0,caram:0,bang:0,abris:0,tOmbre:0,tVu:0,par:{},vieFin:[],debut:tReel};}
 function demarrer(i,garder,sauve){
-  if(!demoPose)initSon();
+  if(!demoPose){initSon();musique(true);}
   for(const el of [regles,finEl,pauseEl])el.classList.remove('on');enPause=false;essai=false;
   const st=stats;resetP();if(!garder){stats=nouveauxStats();sauves=[];}else stats=st;
   if(sauve){P.hp=sauve.hp;P.bandages=sauve.bandages;P.cartes=Object.assign({},sauve.cartes);stats.reprises++;}
@@ -123,18 +123,18 @@ function demarrer(i,garder,sauve){
 }
 function ouvrirPause(){
   if(etatJeu!=='jeu')return;enPause=true;pauseEl.classList.add('on');
-  $('pMesures').textContent=`Mesures (version 9) : image ${can.width} × ${can.height} · ${fpsMoy.toFixed(0)} images par seconde · pire seconde ${pire<999?pire.toFixed(0):'—'} · finesse ${finesse} · appareil ${vitesseApp} · ${GS.cuits} images de golems`;
+  $('pMesures').textContent=`Mesures (version 10) : image ${can.width} × ${can.height} · ${fpsMoy.toFixed(0)} images par seconde · pire seconde ${pire<999?pire.toFixed(0):'—'} · finesse ${finesse} · appareil ${vitesseApp} · ${GS.cuits} images de golems`;
 }
 function reprendre(){enPause=false;pauseEl.classList.remove('on');regles.classList.remove('on');dernier=performance.now();}
 bPause.onclick=()=>enPause?reprendre():ouvrirPause();
 $('pReprendre').onclick=reprendre;
 $('pSuivant').onclick=()=>{reprendre();passerVague();};
 $('pVague').onclick=()=>{pauseEl.classList.remove('on');choisirVague(false);};
-$('pSon').onclick=()=>{sonOn=!sonOn;$('pSon').textContent=sonOn?'Son : oui':'Son : non';};
+$('pSon').onclick=()=>{sonOn=!sonOn;couperSon();$('pSon').textContent=sonOn?'Son : oui':'Son : non';};
 $('pRecommencer').onclick=()=>demarrer(0,false);
 btnGo.onclick=()=>{if(btnGo.disabled)return;finExtrait();demarrer(0,false);};
 function duree(){const s=Math.round(tReel-stats.debut);return `${Math.floor(s/60)} min ${String(s%60).padStart(2,'0')}`;}
-function victoire(){finDans=1.3;son('victoire');}
+function victoire(){finDans=1.3;son('victoire');musique(false);}
 function montrerVictoire(){
   etatJeu='fin';boutonsJeu(false);
   finCarte.innerHTML=`<h1>La garde est en miettes !</h1>
@@ -160,7 +160,7 @@ function choisirVague(aTerre){
   if(aTerre)$('fDebut').onclick=()=>demarrer(0,false);else $('fRetour').onclick=()=>{finEl.classList.remove('on');pauseEl.classList.add('on');};
 }
 function defaite(){
-  etatJeu='fin';boutonsJeu(false);
+  musique(false);etatJeu='fin';boutonsJeu(false);
   choisirVague(true);
 }
 
@@ -208,6 +208,7 @@ function boucle(now){
     if(finDans>0){finDans-=dt;if(finDans<=0)montrerVictoire();}
   }
   sec=Math.max(0,sec-dt*26);flashR=Math.max(0,flashR-dt*1.6);flashB=Math.max(0,flashB-dt*1.2);flashV=Math.max(0,flashV-dt*2.2);
+  majSon(actif);
   dessiner(dt);
 }
 

@@ -20,7 +20,7 @@ function majProjectiles(dt){
   for(const o of obus){
     o.t+=dt;
     if(o.t>=o.dur&&!o.fini){
-      o.fini=true;son('impact');secousse(5);etincelles(o.x1,o.y1,0.2,'#ff8a3a',14);poussiere(o.x1,o.y1,1.4);parts.push({k:'onde',x:o.x1,y:o.y1,z:0,ox:0,oy:0,vie:.3,max:.3,s:1.3});
+      o.fini=true;son('impact',o.x1,o.y1);secousse(5);etincelles(o.x1,o.y1,0.2,'#ff8a3a',14);poussiere(o.x1,o.y1,1.4);parts.push({k:'onde',x:o.x1,y:o.y1,z:0,ox:0,oy:0,vie:.3,max:.3,s:1.3});
       /* l'obus blesse tout le monde… mais les golems en sortent toujours à temps (fuirRouge), et le mortier ne tire pas là où un des siens
          est coincé (cibleObusOk). Celui qui ne PEUT PAS sortir, parce que le Pisteur l'a assommé ou endormi, celui-là le prend. */
       { const z={k:'cercle',x:o.x1,y:o.y1,r:o.r};
@@ -90,13 +90,13 @@ function apparaitre(type,ou,spec,i){
   if(ou==='g'){x=-0.8;y=9.4;tx=1.6;ty=9.4+rnd(-0.6,0.6);}
   else if(ou==='d'){x=RW+0.8;y=9.4;tx=RW-1.6;ty=9.4+rnd(-0.6,0.6);}
   else{const px0=ou==='p1'?8:18;x=px0+rnd(-0.3,0.3);y=0.2;tx=px0+(i%3-1)*0.9;ty=3.0+Math.floor(i/3)*0.7;porte[ou==='p1'?0:1]=1;}
-  const g=nouveauGolem(type,x,y,tx,ty,spec);G.push(g);son('porte');return g;
+  const g=nouveauGolem(type,x,y,tx,ty,spec);G.push(g);son('porte',x,y);return g;
 }
 function lancerGroupe(gr){
   const id=++grpN,route=gr.route?ROUTES[gr.route].filter(q=>!bloque[cel(q[0],q[1])]):null;
-  /* le cor des renforts, l'œil de la porte qui s'allume ; la bande sort deux secondes après */
+  /* les renforts : Grosbec grogne derrière la porte (version 10 : plus de cor), l'œil de la porte s'allume ; la bande sort deux secondes après */
   const pi=gr.porte==='p1'?0:gr.porte==='p2'?1:-1;
-  son('renfort');if(pi>=0){alerteT[pi]=Math.max(alerteT[pi],DELAI_RENFORT+(gr.m.length-1)*0.5+0.25);}
+  son('renfort',pi===0?8:pi===1?18:13,1.3);if(pi>=0){alerteT[pi]=Math.max(alerteT[pi],DELAI_RENFORT+(gr.m.length-1)*0.5+0.25);}
   gr.m.forEach((m,i)=>{
     const o=typeof m==='string'?{t:m}:m;
     file.push({quand:phaseT+DELAI_RENFORT+i*0.5,type:o.t,ou:gr.porte,i,spec:{grp:id,route:o.poste?null:route,ri:gr.ri||0,poste:o.poste,a:o.a}});
@@ -148,7 +148,7 @@ function poussiere(x,y,s){for(let i=0;i<5;i++)parts.push({k:'p',x:x+rnd(-0.4,0.4
 function cailloux(g){const n=g.type==='colosse'?30:14,sz=g.type==='colosse'?1.8:1,acier=g.T.armure;for(let i=0;i<n;i++){const a=rnd(-Math.PI,0),v=rnd(60,220);parts.push({k:'c',x:g.x+rnd(-0.3,0.3),y:g.y+rnd(-0.2,0.2),z:g.T.h*0.5,sx:Math.cos(a)*v,sy:Math.sin(a)*v-60,ox:0,oy:0,sol:rnd(-4,8),vie:rnd(1.4,2.2),max:2.2,s:rnd(4,9)*sz,r:Math.random()*6,vr:rnd(-8,8),c:acier?(Math.random()<.5?'#aab8c6':'#5a6674'):Math.random()<.25?'#8a6a30':Math.random()<.5?'#3a3d45':'#4f545e'});}parts.push({k:'tas',x:g.x,y:g.y,z:0,ox:0,oy:0,s:sz,vie:3.5,max:3.5});}
 function eclatBrise(x,y,z,s){for(let i=0;i<16*s;i++){const a=Math.random()*TAU,v=rnd(100,320);parts.push({k:'cr',x,y,z,sx:Math.cos(a)*v,sy:Math.sin(a)*v,ox:0,oy:0,vie:rnd(.3,.6),max:.6,s:rnd(3,5)});}parts.push({k:'onde',x,y,z,ox:0,oy:0,vie:.35,max:.35,s});}
 function eclatOmbre(x,y,z){for(let i=0;i<12;i++){const a=Math.random()*TAU,v=rnd(40,150);parts.push({k:'o',x,y,z,sx:Math.cos(a)*v,sy:Math.sin(a)*v*0.6-30,ox:0,oy:0,vie:rnd(.3,.6),max:.6,s:rnd(5,11)});}}
-function eclatsBois(x,y){for(let i=0;i<8;i++){const a=Math.random()*TAU,v=rnd(60,200);parts.push({k:'c',x,y,z:0.9,sx:Math.cos(a)*v,sy:Math.sin(a)*v-50,ox:0,oy:0,sol:rnd(18,28),vie:1,max:1,s:rnd(3,6),r:Math.random()*6,vr:rnd(-10,10),c:'#8a6236'});}son('casse');}
+function eclatsBois(x,y){for(let i=0;i<8;i++){const a=Math.random()*TAU,v=rnd(60,200);parts.push({k:'c',x,y,z:0.9,sx:Math.cos(a)*v,sy:Math.sin(a)*v-50,ox:0,oy:0,sol:rnd(18,28),vie:1,max:1,s:rnd(3,6),r:Math.random()*6,vr:rnd(-10,10),c:'#8a6236'});}son('casse',x,y);}
 let texteN=0,texteT=-9;
 function texte(x,y,z,t,c){if(tReel-texteT>0.35)texteN=0;texteT=tReel;parts.push({k:'t',x,y,z,ox:0,oy:-(texteN++%3)*18,t,c,vie:1.15,max:1.15});}
 function majParts(dt){

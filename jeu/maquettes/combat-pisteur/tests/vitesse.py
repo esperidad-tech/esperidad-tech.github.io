@@ -13,12 +13,14 @@ for (w, h, dpr, nom, ral, vag) in cas:
             time.sleep(0.25)
             if pg.evaluate("__pt.ev('PS.complet')"): break
         pg.evaluate(robot)
+        pg.tap('#btnGo', force=True); time.sleep(0.3)        # (version 10 : un vrai toucher, pour que le son et la musique tournent pendant la mesure)
         pg.evaluate("__pt.demarrer(%d);__pt.invincible(true);window.__rb=__robot5({});window.__prof={};window.__ri=setInterval(()=>{const t0=performance.now();const s=__pt.etat();if(s.etatJeu==='jeu')__rb.pas(0.1);window.__rt=(window.__rt||0)+performance.now()-t0},100)" % vag)
         pg.evaluate("window.__fp=[];(function f(){const s=__pt.etat();window.__fp.push([s.fps,s.finesse,s.G.length,s.P.ombre?1:0]);setTimeout(f,1000)})()")
         time.sleep(50); fp = pg.evaluate("window.__fp")[5:]
         om = [f[0] for f in fp if f[3]]; de = [f[0] for f in fp if not f[3]]
         moy = lambda a: round(sum(a) / len(a)) if a else None
         pr = pg.evaluate("JSON.stringify({n:__prof.n,regles:__prof.regles/__prof.n,dessin:__prof.s.map(v=>+(v/__prof.n).toFixed(2)),robot:window.__rt/__prof.n})")
+        print('   le son :', pg.evaluate('JSON.stringify([__son.etat(), Object.values(__son.joues).reduce((a,b)=>a+b,0), __son.erreurs])'))
         print('   par image (ms) :', pr, '[fond, fond vivant, sol, personnages, air, interface]')
         print(f"{nom} ralenti x{ral}, vague {vag+1} : chargement {tc:.0f} s ; images/s moyenne {moy([f[0] for f in fp])}, pire {min(f[0] for f in fp):.0f} ; à découvert {moy(de)}, dans l'ombre {moy(om)} ({len(om)} s sur {len(fp)}) ; finesse finale {fp[-1][1]}, golems max {max(f[2] for f in fp)}, image {pg.evaluate('__pt.etat().taille')}", errs[:3], flush=True)
         b.close()

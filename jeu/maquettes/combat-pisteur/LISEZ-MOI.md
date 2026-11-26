@@ -1,9 +1,16 @@
-# Le combat du Pisteur — version 9 (26 novembre 2026) : l'arrière-salle rendue en volume, les renforts
+# Le combat du Pisteur — version 10 (26 novembre 2026) : le son et la musique (version 9 : l'arrière-salle rendue en volume, les renforts)
 
 Enquête 10, combat final : pendant que ses amis occupent Grosbec dans la grande salle, **le Pisteur est passé par-derrière** et
 s'occupe de sa garde (les golems), dans l'arrière-salle. Rien n'est branché dans le jeu, rien n'est en ligne sur le site : c'est une
 page à part, comme les combats du Barde, du Sage et de l'Alchimiste.
-La page publiée (version 9) : https://claude.ai/artifact/DRTHz5bppgsstd5ameTnba (un nouveau canevas ; l'ancien, https://claude.ai/artifact/GmvcxCF5gC89M9tmnCVyGU, garde la version 8).
+La page publiée (version 10 depuis le 26 novembre, 11 h 40) : https://claude.ai/artifact/DRTHz5bppgsstd5ameTnba (un nouveau canevas ; l'ancien, https://claude.ai/artifact/GmvcxCF5gC89M9tmnCVyGU, garde la version 8).
+
+## Version 10 : le son et la musique (26 novembre, 11 h 40)
+Commande de Romain (10 h 55) : Bible §17.47. **Personne n'a écouté** (Claude mesure, il n'entend pas).
+- **`src/son.js`** (réécrit) : tous les sons et la musique, fabriqués par le moteur de l'Atelier des sons du jeu (`jeu/donjon/essai/sons/moteur.js`, que `construire.py` embarque avant le jeu). Un son = une ligne (`S.nom = …`). `son(nom)` : au milieu ; `son(nom, golem)` ou `son(nom, x, y)` : à cet endroit (le volume suit la distance au Pisteur). `SORTE` : les cinq sortes de sons (patrouille, coup, zone, signal, moi) avec leur rayon et leur résonance. `majSon` : les bruits qui viennent tout seuls (patrouille, flair, aboiements, pas du colosse, la boule). `musDebut`, `musPlanifier`, `musique(true / false)` : la musique.
+- **`NIV` (dans `son.js`) ne se touche pas à la main** : `python3 tests/sons.py regler` mesure chaque son et écrit son niveau ; puis `python3 construire.py` et `python3 tests/sons.py` pour vérifier (il doit finir par « SOUCIS 0 »). Les niveaux voulus : `CIBLE` et `A_PART` en tête de `tests/sons.py`. `python3 tests/sons.py wav` écrit les sons dans `tests/sons-wav/` pour les écouter.
+- **`tests/sons-jeu.py [vague] [secondes] [cache]`** : le vrai jeu en temps réel, la liste de ce qui a sonné, les sons ratés.
+- **Les accroches dans le jeu** : `majGolems` pose `sonSrc` (le golem dont c'est le tour) ; `majPerception` joue « repéré » ; `debutFouille` « il cherche » ; `facher` → `sonColere` ; `crier` ; chaque début de zone rouge a son `son('z…')` ; `lancerGroupe` (les renforts) ; `demarrer`, `victoire`, `defaite` (la musique) ; `boucle` appelle `majSon`.
 
 **Où on en est.** Romain a joué la version 8 dans la nuit du 25 au 26 novembre : **« je me suis beaucoup amusé à ce petit jeu. Je
 pense qu'on va pouvoir le valider. »** Les règles ne bougent donc plus, sauf une demande : **les renforts** (dès qu'une bande est
@@ -30,7 +37,7 @@ Pas encore vue par Romain.** Tout le détail : Bible §17.42 à §17.46 (dans `b
 **Pour refaire la page** : `python3 construire.py` (il lit `src/decor.js`, 1,4 Mo : ne pas l'ouvrir dans un éditeur). **La page pèse maintenant 2,1 Mo** (0,7 Mo en version 8) : c'est le poids des images de la salle. Pour refaire
 le décor : `decor3d/LISEZ-MOI.md`.
 
-**Les essais** : `tests/scenes.py` a une scène de plus, `renforts` (30 scènes ; `mortier` et `belierFou` dépendent du hasard,
+**Les essais** (version 10 : plus `tests/sons.py` et `tests/sons-jeu.py`) : `tests/scenes.py` a une scène de plus, `renforts` (30 scènes ; `mortier` et `belierFou` dépendent du hasard,
 en version 8 aussi : les relancer seules si elles échouent). `/home/claude/outils/vues9.py` n'est pas rangé ici : pour des captures, `tests/vues.py` et `tests/galerie.py`.
 
 ## La version 8 (25 novembre 2026, 23 h 20) : la reprise à une vague, le réparateur, les cartes dorées, plus rien à lire

@@ -81,9 +81,11 @@ function porteeRegard(x,y,a,max){
   }
   return Math.max(0,L);
 }
+let dernierVuT=-9;
 function majPerception(dt){
   let n=0;const gv={};
   for(const g of G){
+    const av=g.voit;
     if(!vivant(g)||g.dort){g.voit=false;g.rem=0;g.hes=0;continue;}
     const brut=voitBrut(g);
     if(P.ombre){
@@ -97,13 +99,16 @@ function majPerception(dt){
       else{g.rem=Math.max(0,g.rem-dt*3);g.voit=false;}
     }
     if(g.voit){
+      /* il vient de le voir : le son qui le dit — quand plus personne ne le voyait depuis une bonne seconde, ou quand ce golem-là n'était pas déjà à ses trousses
+         (pas à chaque fois qu'un bélier le perd des yeux une demi-seconde : le signal ne voudrait plus rien dire) */
+      if(!av&&(tReel-dernierVuT>1.2||g.mode!=='chasse'))son('repere',g);
       n++;gv[g.grp]=1;g.su.x=P.x;g.su.y=P.y;g.suT=tReel;g.bruit=false;g.leurre=null;
       if(g.type==='mortier'&&!g.dechaine)dechainer(g);          /* le mortier qui VOIT le Pisteur ne s'arrêtera plus de tirer */
       /* ils viennent de voir tomber ou crier un des leurs, et voilà le Pisteur : ils ont compris */
       if(grpFrappe[g.grp]!=null&&tReel-grpFrappe[g.grp]<REG.colere.lien)facher(g.grp);
       if(g.mode!=='chasse'){
         g.mode='chasse';g.reagit=g.T.reac;g.excl=tReel+0.8;g.ch=null;
-        if(!stats.alerte1){stats.alerte1=1;son('alerte');}
+        stats.alerte1=1;
       }
     }
   }
@@ -129,7 +134,7 @@ function majPerception(dt){
   if(nVoient>0&&n===0&&phase==='vague'&&P.etat!=='aterre'){
     stats.semes++;
   }
-  nVoient=n;
+  nVoient=n;if(n>0)dernierVuT=tReel;
   if(phase==='vague'){if(P.ombre)stats.tOmbre+=dt;else if(n>0)stats.tVu+=dt;}
 }
 /* un bruit : le golem sait d'où il vient, pas où est le Pisteur ; il va voir */
@@ -143,6 +148,7 @@ function avertir(o,x,y,seul){
 }
 /* un golem touché qui n'est pas mort crie : ceux d'à côté sont avertis (et leur groupe), et tout son groupe à lui, même loin */
 function crier(g){
+  son('cri',g);
   for(const o of G){if(o===g||!vivant(o))continue;if(o.grp===g.grp||hyp(o.x-g.x,o.y-g.y)<REG.cri*(o.type==='mortier'?2:1))avertir(o,g.x,g.y);}
   parts.push({k:'cri',x:g.x,y:g.y,z:g.T.h*0.6,ox:0,oy:0,vie:.5,max:.5,s:1});
 }
@@ -174,14 +180,14 @@ function blesserG(g,dmg,src,opt){
     /* le javelot couvert par son garde : la dalle pare tout ce qui vient du Pisteur */
     const gd=gardeDe(g);
     if(gd){
-      son('ting');etincelles(g.x,g.y,g.T.h*0.6,'#e8f4ff',8);texte(g.x,g.y,g.T.h+0.5,'Paré !','#cfd8e6');stats.pares++;gd.flash=1;
+      son('ting',g);etincelles(g.x,g.y,g.T.h*0.6,'#e8f4ff',8);texte(g.x,g.y,g.T.h+0.5,'Paré !','#cfd8e6');stats.pares++;gd.flash=1;
       ruer(g);
       return 'pare';
     }
   }
   if(g.T.armure&&src==='dague'){
     /* le cuirassé : la lame fait « ting », sa barre de vie ne bouge pas */
-    son('ting');etincelles(g.x,g.y,g.T.h*0.6,'#e8f4ff',6);texte(g.x,g.y,g.T.h+0.4,'Ting !','#cfd8e6');stats.tings++;
+    son('ting',g);etincelles(g.x,g.y,g.T.h*0.6,'#e8f4ff',6);texte(g.x,g.y,g.T.h+0.4,'Ting !','#cfd8e6');stats.tings++;
     colereDe(g);
     if(g.sonne<=0){ruer(g);facher(g.grp);}
     return 'ting';
@@ -190,7 +196,7 @@ function blesserG(g,dmg,src,opt){
   if(!moi){stats.entreEux+=dmg;texte(g.x,g.y,g.T.h+0.3,'−'+dmg,'#ffb070');}
   else texte(g.x+rnd(-0.2,0.2),g.y,g.T.h+0.3,'−'+dmg,src==='embuscade'?'#d6c4ff':'#fff2c0');
   hitstop=Math.max(hitstop,src==='dague'?0.04:0.02);
-  etincelles(g.x,g.y,g.T.h*0.55,src==='embuscade'?'#d6c4ff':moi?'#fff2c0':'#ff9a4a',src==='dague'?8:5);son('frappe');
+  etincelles(g.x,g.y,g.T.h*0.55,src==='embuscade'?'#d6c4ff':moi?'#fff2c0':'#ff9a4a',src==='dague'?8:5);son('frappe',g);
   if(g.hp<=0){tuer(g,src);return true;}
   if(moi){
     colereDe(g);
@@ -205,7 +211,7 @@ function blesserG(g,dmg,src,opt){
 }
 function tuer(g,src){
   g.etat='mort';g.t=0;g.zone=null;g.z=0;g.lim=null;stats.tues++;if(!DU_PISTEUR[src])stats.tuesEntreEux++;
-  son('acheve');secousse(g.type==='colosse'?10:4);
+  son('acheve',g);secousse(g.type==='colosse'?10:4);
   eclatBrise(g.x,g.y,g.T.h*0.55,g.type==='colosse'?2:1);cailloux(g);
   if(g.type==='colosse'){flashB=0.5;}
   /* tué d'un coup, il ne prévient personne : seuls ceux qui avaient la vue sur lui s'activent et viennent chercher.
@@ -330,7 +336,7 @@ function chasseSansVue(g,dt){
   if(allerBut(g,g.su.x,g.su.y,v,dt,0.6)||tReel-g.suT>8)debutFouille(g);
 }
 /* …et s'il ne trouve personne, il reste là et cherche autour de lui, puis reprend sa ronde */
-function debutFouille(g){g.mode='fouille';g.fouilleT=4;g.fouilleA=g.fa;g.inter=tReel+4;g.ch=null;}
+function debutFouille(g){son('cherche',g);g.mode='fouille';g.fouilleT=4;g.fouilleA=g.fa;g.inter=tReel+4;g.ch=null;}
 function fouille(g,dt){
   g.fouilleT-=dt;
   const k=Math.min(3,Math.floor(4-g.fouilleT)),c=g.fouilleA+[-1.3,1.3,Math.PI-0.8,Math.PI+0.8][k];
@@ -356,7 +362,7 @@ function iaChien(g,dt,d){
     case 'normal':{
       g.regC=versP;tourner(g,versP,dt);
       if(g.cdS<=0&&d>2.2&&d<4.4&&pPeutBouger()&&P.etat!=='saut'&&tReel-dernierPlaquage>C.entrePlaq&&jeton()){
-        g.etat='vise';g.t=0;g.va=versP;g.vL=C.plaqL;dernierPlaquage=tReel;son('grogne');
+        g.etat='vise';g.t=0;g.va=versP;g.vL=C.plaqL;dernierPlaquage=tReel;son('zChien');
         break;}
       if(d<=g.r+0.72){if(g.cd<=0){g.etat='base';g.t=0;}break;}
       if(g.cdM<=0&&d>1.9&&d<3.3){g.etat='bondit';g.t=0;viseSaut(g,versP,Math.min(1.5,d-g.r-0.6)*fV(g));g.cdM=rnd(2.4,3.2);break;}
@@ -376,7 +382,7 @@ function iaChien(g,dt,d){
       const fige=g.t>=C.plaqFige;if(!fige)g.va=versP;
       g.fa=g.va;g.regC=g.va;
       g.zone={k:'fleche',x:g.x,y:g.y,a:g.va,L:Math.min(g.vL,rayonSol(g.x,g.y,g.va,g.vL,g.r)),l:0.8,p:g.t/C.plaqT,fige};
-      if(g.t>=C.plaqT){const L=g.zone.L*fV(g);g.zone=null;g.etat='plaque';g.t=0;viseSaut(g,g.va,L);g.aTouche=false;son('saut');}
+      if(g.t>=C.plaqT){const L=g.zone.L*fV(g);g.zone=null;g.etat='plaque';g.t=0;viseSaut(g,g.va,L);g.aTouche=false;son('bond');}
       break;}
     case 'plaque':{
       const fini=sautDe(g,0.28,0.6);
@@ -408,7 +414,7 @@ function reculJavelot(g){
     if(s>bs){bs=s;best=[x,y];}
   }
   if(!best){g.cdM=1.5;return;}
-  g.zone=null;g.etat='recul';g.t=0;g.sx=g.x;g.sy=g.y;g.ex=best[0];g.ey=best[1];g.cdM=REG.javelot.cdRecul;son('saut');
+  g.zone=null;g.etat='recul';g.t=0;g.sx=g.x;g.sy=g.y;g.ex=best[0];g.ey=best[1];g.cdM=REG.javelot.cdRecul;son('bond');
 }
 function iaJavelot(g,dt,d){
   const versP=Math.atan2(P.y-g.y,P.x-g.x),J=REG.javelot;
@@ -417,7 +423,7 @@ function iaJavelot(g,dt,d){
       g.regC=versP;tourner(g,versP,dt);
       if(d<2.2&&g.cdM<=0){reculJavelot(g);if(g.etat==='recul')break;}
       if(g.cdS<=0&&d>2.3&&d<13&&pPeutBouger()&&jeton()){
-        g.etat='arme';g.t=0;g.va=versP;son('vise');
+        g.etat='arme';g.t=0;g.va=versP;son('zJavelot');
         break;}
       if(d<g.r+0.85){if(g.cd<=0){g.etat='base';g.t=0;}break;}
       /* son but : rester loin, sans quitter le Pisteur des yeux */
@@ -450,7 +456,7 @@ function iaJavelot(g,dt,d){
 
 /* ---- le porte-dalle : une charge qui colle, un coup de patte, la dalle qui assomme ---- */
 function debutLeve(g){
-  g.etat='leve';g.t=0;son('gratte');
+  g.etat='leve';g.t=0;son('zDalle');
 }
 function planterDalle(g){
   /* raté : la dalle reste plantée dans le sol, et lui se retrouve à mains nues */
@@ -469,7 +475,7 @@ function planterDalle(g){
   if(libre){
     OBS.push(o);majGrille();pousserHors(P,0.33,false);for(const q of G)if(vivant(q)){pousserHors(q,q.r,false);q.ch=null;}
   }else{
-    eclatBrise(o.x,o.y,0.6,1);son('casse');
+    eclatBrise(o.x,o.y,0.6,1);son('casse',o.x,o.y);
   }
 }
 function iaDalle(g,dt,d){
@@ -484,7 +490,7 @@ function iaDalle(g,dt,d){
         break;
       }
       if(g.cdM<=0&&d>1.8&&d<D.porteeCharge&&P.etat!=='saut'&&P.etat!=='vol'){
-        g.etat='charge';g.t=0;g.cdM=D.cdCharge;son('rouge');
+        g.etat='charge';g.t=0;g.cdM=D.cdCharge;son('chargeDalle');
         break;}
       if(g.aDalle&&g.cdS<=0&&d<1.9&&pPeutBouger()&&jeton()){debutLeve(g);break;}
       if(d<g.r+0.85){if(g.cd<=0){g.etat='base';g.t=0;}break;}
@@ -521,13 +527,13 @@ function iaDalle(g,dt,d){
 
 /* ---- le faucheur : la volte, un petit coup de faux, le grand fauchage ---- */
 function debutFauche(g){
-  g.etat='fauche';g.t=0;g.va=g.fa;son('gratte');
+  g.etat='fauche';g.t=0;g.va=g.fa;son('zFaux');
 }
 function debutVolte(g){
   /* un petit bond en pivotant : il retombe face au Pisteur, à deux pas */
   const base=Math.atan2(g.y-P.y,g.x-P.x);let ex=g.x,ey=g.y;
   for(const da of [0,0.5,-0.5,1,-1]){const x=P.x+Math.cos(base+da)*2,y=P.y+Math.sin(base+da)*2;if(!horsSalle(x,y,g.r)&&!obsEn(x,y,g.r,false)){ex=x;ey=y;break;}}
-  g.etat='volte';g.t=0;g.sx=g.x;g.sy=g.y;g.ex=ex;g.ey=ey;g.cdM=REG.faucheur.cdVolte;son('saut');
+  g.etat='volte';g.t=0;g.sx=g.x;g.sy=g.y;g.ex=ex;g.ey=ey;g.cdM=REG.faucheur.cdVolte;son('bond');
 }
 function iaFaucheur(g,dt,d){
   const versP=Math.atan2(P.y-g.y,P.x-g.x),ecart=Math.abs(ang(versP-g.fa)),F=REG.faucheur;
@@ -568,7 +574,7 @@ function iaMortier(g,dt,d){
   switch(g.etat){
     case 'normal':
       g.regC=versP;tourner(g,versP,dt);
-      if(g.cdS<=0&&d>1.5&&pPeutBouger()){g.etat='tire';g.t=0;g.tirX=null;son('vise');break;}
+      if(g.cdS<=0&&d>1.5&&pPeutBouger()){g.etat='tire';g.t=0;g.tirX=null;son('zMortier');break;}
       if(d<3.5){allerVers(g,g.x-Math.cos(versP),g.y-Math.sin(versP),g.vit*fV(g),dt);}
       break;
     case 'tire':
@@ -579,7 +585,7 @@ function iaMortier(g,dt,d){
         /* jamais un obus là où un des siens n'aurait pas le temps de sortir (il attend) */
         if(!cibleObusOk(clamp(tx,0.8,RW-0.8),clamp(ty,1.8,RD-0.6),g)){g.etat='normal';g.t=0;g.cdS=0.3;g.aveugle=false;break;}
         obus.push({x0:g.x,y0:g.y,x1:clamp(tx,0.8,RW-0.8),y1:clamp(ty,1.8,RD-0.6),t:0,dur:M.obusT,r:M.rayon,de:g});
-        g.cdS=g.aveugle?M.aveugle:M.cd;finCoup(g,g.aveugle?0.2:0.5);g.aveugle=false;son('mortier');stats.obus++;
+        g.cdS=g.aveugle?M.aveugle:M.cd;finCoup(g,g.aveugle?0.2:0.5);g.aveugle=false;son('mortier');{const ob=obus[obus.length-1];son('obus',ob.x1,ob.y1);}stats.obus++;
       }
       break;
     case 'recup':if(g.t>=g.recup){g.etat='normal';g.t=0;}break;
@@ -594,7 +600,7 @@ function iaBelier(g,dt,d){
       g.regC=g.fa;tourner(g,versP,dt);                     /* derrière lui, on est tranquille le temps de son demi-tour */
       if(d<g.r+1.2&&ecart<0.6){if(g.cd<=0){g.etat='tete';g.t=0;}break;}
       if(g.cdS<=0&&d>3.2&&d<B.L-1&&ecart<0.35&&pPeutBouger()&&P.etat!=='saut'&&jeton()){
-        g.etat='gratte';g.t=0;g.va=g.fa;son('gratte');
+        g.etat='gratte';g.t=0;g.va=g.fa;son('zBelier');
         break;}
       if(ecart<1.0&&d>g.r+0.95)versLeP(g,g.vit*fV(g),dt);
       break;}
@@ -611,7 +617,7 @@ function iaBelier(g,dt,d){
       g.fa=g.va;
       g.zone={k:'ligne',x:g.x,y:g.y,a:g.va,L:Math.min(B.L,rayonSol(g.x,g.y,g.va,B.L,g.r*0.7)),l:1.3,p:g.t/B.gratteT,fige};
       if(Math.random()<dt*10)poussiere(g.x-Math.cos(g.fa)*0.5,g.y-Math.sin(g.fa)*0.5,0.7);
-      if(g.t>=B.gratteT){g.etat='charge';g.t=0;g.zone=null;g.parcouru=0;g.aTouche=false;g.touches=[];son('rouge');}
+      if(g.t>=B.gratteT){g.etat='charge';g.t=0;g.zone=null;g.parcouru=0;g.aTouche=false;g.touches=[];son('chargeBelier');}
       break;}
     case 'charge':{
       const pas=B.vCharge*fV(g)*dt,n=Math.ceil(pas/0.12),ux=Math.cos(g.fa),uy=Math.sin(g.fa);
@@ -638,7 +644,7 @@ function iaBelier(g,dt,d){
 /* ---- le cuirassé : il marche sur le Pisteur, sans jamais courir ; un coup lent ; son arme, c'est son armure.
         EN COLÈRE (frappé une fois) : il se met en boule et ne s'arrête plus de rouler ---- */
 function debutRamasse(g){
-  g.etat='ramasse';g.t=0;g.zone=null;son('gratte');
+  g.etat='ramasse';g.t=0;g.zone=null;son('zBoule');
 }
 function rebond(g,nx,ny){
   const vx=Math.cos(g.va),vy=Math.sin(g.va),k=vx*nx+vy*ny;if(k>=0)return;        /* il s'en éloignait déjà */
@@ -689,7 +695,7 @@ function iaCuirasse(g,dt,d){
     case 'ramasse':
       /* il se ramasse (une seconde la première fois, pour qu'on le voie venir), puis il part */
       if(g.t>=REG.cuirasse.ramasseT*(g.aRoule?0.5:1)){
-        g.etat='roule';g.t=0;g.aRoule=true;g.va=P.ombre?Math.atan2(g.su.y-g.y,g.su.x-g.x)+rnd(-0.5,0.5):versP;g.fa=g.va;son('rouge');
+        g.etat='roule';g.t=0;g.aRoule=true;g.va=P.ombre?Math.atan2(g.su.y-g.y,g.su.x-g.x)+rnd(-0.5,0.5):versP;g.fa=g.va;son('zCuirasse');
       }
       break;
     case 'roule':rouler(g,dt);break;
@@ -719,13 +725,13 @@ function debutZoneColosse(g,nom){
     let i=g.sac.findIndex(q=>dansZone(zoneColosse(g,q,0),P.x,P.y,0.25));if(i<0)i=g.sac.indexOf('onde');if(i<0)i=0;
     nom=g.sac.splice(i,1)[0];
   }
-  g.zk=nom;g.etat='zone';g.t=0;g.va=g.fa;g.lim=null;son('gratte');
+  g.zk=nom;g.etat='zone';g.t=0;g.va=g.fa;g.lim=null;son('z'+nom);
 }
 function iaColosse(g,dt,d){
   const versP=Math.atan2(P.y-g.y,P.x-g.x),ecart=Math.abs(ang(versP-g.fa)),C=REG.colosse;
   /* blessé, il ne laisse plus partir le Pisteur : la chaîne */
   if(g.enrage&&g.etat!=='chaine'&&d>C.perimetre&&!BLOQUE[P.etat]&&P.etat!=='saut'&&P.etat!=='sautOmbre'){
-    g.zone=null;g.lim=null;g.etat='chaine';g.t=0;g.accroche=false;son('jav');stats.chaines++;
+    g.zone=null;g.lim=null;g.etat='chaine';g.t=0;g.accroche=false;son('chaine');stats.chaines++;
   }
   switch(g.etat){
     case 'normal':
@@ -780,7 +786,7 @@ function facher(grp){
   grpColere[grp]=tReel;stats.coleres++;
   const fin=pisteBase+piste.length-1;
   for(const g of G){if(g.grp!==grp||g.etat==='mort')continue;g.colere=true;g.pi=fin;g.piT=tReel;g.excl=tReel+0.9;g.but=null;}
-  son('ordre');
+  sonColere(grp);
 }
 function colereDe(g){
   if(g.type==='faucheur'&&!g.furie){g.furie=true;g.fenetre=tReel+REG.faucheur.fenetre;}
@@ -868,7 +874,7 @@ function enColere(g,dt,d){
 /* le faucheur frappé qu'on n'a pas fini : un fantôme. On le voit rôder, on ne peut pas le toucher. Dès que le Pisteur se montre,
    il fonce sur lui, surgit et fauche ; après son coup, il reste visible cinq secondes. */
 function devenirFantome(g){
-  g.fantome=true;g.zone=null;g.but=null;eclatOmbre(g.x,g.y,g.T.h*0.5);texte(g.x,g.y,g.T.h+0.5,"Il s'efface…",'#c8b6ff');son('ombre');
+  g.fantome=true;g.zone=null;g.but=null;eclatOmbre(g.x,g.y,g.T.h*0.5);texte(g.x,g.y,g.T.h+0.5,"Il s'efface…",'#c8b6ff');son('fantome');
 }
 function fantome(g,dt,d){
   const F=REG.faucheur,versP=Math.atan2(P.y-g.y,P.x-g.x);
@@ -876,7 +882,7 @@ function fantome(g,dt,d){
     g.regC=versP;
     if(d<2.5&&vue(g.x,g.y,P.x,P.y)){
       tourner(g,versP,dt);
-      if(pPeutBouger()&&P.etat!=='saut'&&jeton()){g.fantome=false;g.fa=versP;g.reg=versP;eclatOmbre(g.x,g.y,g.T.h*0.5);son('ombre');debutFauche(g);}
+      if(pPeutBouger()&&P.etat!=='saut'&&jeton()){g.fantome=false;g.fa=versP;g.reg=versP;eclatOmbre(g.x,g.y,g.T.h*0.5);son('fantome');debutFauche(g);}
       return;
     }
     allerBut(g,P.x,P.y,g.vit*F.vFantome,dt,1.2);tourner(g,g.dirM,dt);
@@ -899,12 +905,12 @@ function ruer(g){
 /* LE MORTIER : dès qu'il voit le Pisteur de ses yeux, il se déchaîne, et il ne s'arrête plus jamais (même si le Pisteur disparaît).
    Il vise quand lui ou son groupe voit le Pisteur ; sinon il bombarde à l'aveugle, tout autour de lui. */
 function dechainer(g){
-  g.dechaine=true;g.excl=tReel+0.9;g.cdS=Math.min(g.cdS,0.2);son('ordre');stats.dechaines++;
+  g.dechaine=true;g.excl=tReel+0.9;g.cdS=Math.min(g.cdS,0.2);son('dechaine');stats.dechaines++;
 }
 function mortierDechaine(g,dt,d){
   if(g.voit||(grpVoit[g.grp]&&tReel-g.suT<0.5)){
     const versP=Math.atan2(P.y-g.y,P.x-g.x);g.regC=versP;tourner(g,versP,dt);
-    if(g.cdS<=0&&d>1.5&&pPeutBouger()){g.etat='tire';g.t=0;g.tirX=null;g.aveugle=false;son('vise');return;}
+    if(g.cdS<=0&&d>1.5&&pPeutBouger()){g.etat='tire';g.t=0;g.tirX=null;g.aveugle=false;son('zMortier');return;}
     if(d<3.5)allerVers(g,g.x-Math.cos(versP),g.y-Math.sin(versP),g.vit*fV(g),dt);
   }else mortierAveugle(g,dt);
 }
@@ -977,7 +983,7 @@ function reparer(g,dt){
   g.penche=true;const a=Math.atan2(o.y-g.y,o.x-g.x);tourner(g,a,dt);g.regC=a;g.soinT+=dt;
   if(g.soinT>=R.T){
     g.soinT=0;const av=o.hp;o.hp=Math.min(o.max,o.hp+R.soin);stats.repares+=o.hp-av;g.tFrappe=tReel;
-    texte(o.x,o.y,o.T.h+0.4,'+'+(o.hp-av),'#9fe6c0');etincelles(o.x,o.y,o.T.h*0.5,'#9fe6c0',10);son('choix');
+    texte(o.x,o.y,o.T.h+0.4,'+'+(o.hp-av),'#9fe6c0');etincelles(o.x,o.y,o.T.h*0.5,'#9fe6c0',10);son('soin',o.x,o.y);
   }
   return true;
 }
@@ -992,6 +998,7 @@ function iaRepare(g,dt,d){
 /* ======================= tous les golems, image après image ======================= */
 function majGolems(dt){
   for(const g of G){
+    sonSrc=g;                                               /* (son.js : les sons de son tour partent de lui) */
     g.t+=dt;g.cd-=dt;g.cdS-=dt;g.cdM-=dt;if(g.flash>0)g.flash=Math.max(0,g.flash-dt*6);
     if(g.etat==='mort')continue;
     g.colle=null;g.penche=false;
@@ -1026,6 +1033,7 @@ function majGolems(dt){
     { const lim=g.T.raide?0:1.25,c=g.fa+clamp(ang(g.regC-g.fa),-lim,lim),dr=ang(c-g.reg),v=REG.regard*(g.voit?2:1)*dt;g.reg=ang(g.reg+clamp(dr,-v,v)); }
     g.bouge=g.marche!==avant;
   }
+  sonSrc=null;
   const libre=g=>!vivant(g)||g.z>0.1||g.etat==='charge'||g.etat==='roule'||g.fantome;
   for(let i=0;i<G.length;i++){const a=G[i];if(libre(a))continue;
     for(let j=i+1;j<G.length;j++){const b=G[j];if(libre(b))continue;
