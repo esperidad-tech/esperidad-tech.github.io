@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Combat du Barde</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Pirata+One&display=swap" rel="stylesheet">
+<style>
+/* VOICE  : un conteur d'enquête qui s'amuse, phrases courtes
+   IDEA   : une place de village la nuit qui devient une piste de danse
+   PICTURE: la place elle-même, la mairie de Grosbec au fond, le Barde sur son tapis
+   COLOUR : nuit violette, pierre chaude, or des lanternes ; jaune réservé aux boutons « lancer »
+   TYPE   : Fredoka (lisible, rond) + Pirata One pour les grands cris */
+:root{color-scheme:dark;--nuit:#0d0820;--violet:#7c3aed;--jaune:#ffd23f;--ink:#f3ecff;--doux:#cbbbe8}
+*{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#07050f;color:var(--ink);font:16px/1.5 Fredoka,system-ui,sans-serif;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+#cadre{position:absolute;top:0;height:100%;overflow:hidden;background:#0b0818}
+#c{position:absolute;left:0;top:0;touch-action:none}
+button{font:inherit;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.rond{position:absolute;top:calc(8px + env(safe-area-inset-top));right:10px;width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.25);background:rgba(20,12,40,.75);color:#fff;display:grid;place-items:center;z-index:5}
+#cmd{position:absolute;left:0;right:0;bottom:0;display:flex;gap:10px;padding:10px 12px calc(12px + env(safe-area-inset-bottom));z-index:4;transition:opacity .25s,transform .25s}
+#cmd.cache{opacity:0;transform:translateY(30px);pointer-events:none}
+.cmd{flex:1;height:78px;border-radius:22px;border:0;color:#fff;font-weight:600;font-size:18px;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 0 rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.25)}
+.cmd svg{width:30px;height:30px;flex:none}
+.cmd:active,.cmd.appui{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.25)}
+#cmd{gap:8px}
+.cmd{position:relative;flex-direction:column;gap:2px;font-size:14px;height:76px;border-radius:20px;overflow:visible}
+.cmd svg{width:30px;height:30px}
+.cmd::after{content:"";position:absolute;inset:0;border-radius:20px;pointer-events:none;background:conic-gradient(rgba(8,4,20,.62) calc((1 - var(--cd,1)) * 360deg),transparent 0)}
+.cmd.neuf{animation:neuf 1s ease-in-out infinite}
+@keyframes neuf{50%{box-shadow:0 0 0 5px var(--jaune),0 0 22px 6px rgba(255,210,63,.7)}}
+#bNote{flex:1.35;background:linear-gradient(#8b4ae8,#5b21b6)}
+#bRep{background:linear-gradient(#f0743e,#b23a12)}
+#bStop{background:linear-gradient(#2fb5d6,#14708a)}
+#bVague{background:linear-gradient(#3b82f6,#1d4ed8)}
+#jam{position:absolute;left:0;right:0;bottom:0;display:flex;gap:6px;padding:10px 10px calc(12px + env(safe-area-inset-bottom));z-index:4;animation:jamEntre .35s ease-out}
+@keyframes jamEntre{from{opacity:0;transform:translateY(30px)}}
+.jam{flex:1;min-width:0;height:76px;border-radius:18px;border:0;color:#fff;font-weight:700;font-size:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;box-shadow:0 6px 0 rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.3);text-shadow:0 1px 2px rgba(0,0,0,.45);padding:0}
+.jam i{font-style:normal;font-size:26px;line-height:1;text-shadow:none}
+.jam:active,.jam.appui{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.3);filter:brightness(1.25)}
+.jam.neuf{animation:neuf 1s ease-in-out infinite}
+.carte-ennemi{display:grid;grid-template-columns:118px minmax(0,1fr);gap:12px;align-items:center;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:10px;margin:10px 0}
+.carte-ennemi canvas{width:118px;height:96px;border-radius:12px;background:#1c1430}
+.carte-ennemi p{margin:0;font-size:15.5px;line-height:1.4}
+.carte-ennemi b{color:#ffe28a;font-weight:600}
+.puce{display:inline-flex;align-items:center;gap:6px;border-radius:12px;padding:3px 10px 3px 6px;color:#fff;font-weight:600;font-size:14px;vertical-align:middle}
+.puce svg{width:20px;height:20px}
+.jaune{background:var(--jaune);color:#111;border:0;border-radius:18px;font-weight:700;font-size:20px;padding:15px 26px;box-shadow:0 5px 0 #b8901a}
+.jaune:active{transform:translateY(3px);box-shadow:0 2px 0 #b8901a}
+#bSolo{position:absolute;left:50%;transform:translateX(-50%);z-index:6;font-family:'Pirata One',Fredoka,serif;font-size:30px;padding:10px 34px;letter-spacing:.5px;animation:solo 0.9s ease-in-out infinite}
+#bSolo::after{content:"";position:absolute;inset:-9px;border-radius:24px;border:4px solid var(--jaune);opacity:.7;animation:anneau 0.9s ease-out infinite}
+@keyframes solo{50%{transform:translateX(-50%) scale(1.07)}}
+@keyframes anneau{from{transform:scale(.92);opacity:.9}to{transform:scale(1.18);opacity:0}}
+.cache{display:none!important}
+.ecran{position:absolute;inset:0;z-index:10;background:rgba(9,6,22,.94);overflow-y:auto;padding:calc(18px + env(safe-area-inset-top)) 18px calc(24px + env(safe-area-inset-bottom));touch-action:pan-y}
+.boite{max-width:560px;margin:0 auto}
+h1{font-family:'Pirata One',serif;font-weight:400;font-size:44px;line-height:1.05;margin:6px 0 2px;color:#fff;text-wrap:balance}
+h2{font-family:'Pirata One',serif;font-weight:400;font-size:34px;line-height:1.05;margin:8px 0 10px;text-wrap:balance}
+.sous{color:var(--doux);margin:0 0 14px}
+.etape{display:grid;grid-template-columns:118px minmax(0,1fr);gap:12px;align-items:center;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:10px;margin:10px 0}
+.etape canvas{width:118px;height:96px;border-radius:12px;background:#1c1430}
+.etape p{margin:0;font-size:15.5px;line-height:1.4}
+.etape b{color:#ffe28a;font-weight:600}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
+.second{background:transparent;color:#e9ddff;border:2px solid #6b4fa0;border-radius:16px;padding:12px 18px;font-weight:500;font-size:16px}
+.petit{font-size:13.5px;color:#a99bc7;margin-top:14px}
+.liste{display:grid;gap:10px;margin-top:10px}
+.liste button{width:100%;text-align:left}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0}
+.stats div{background:rgba(255,255,255,.06);border-radius:14px;padding:10px;text-align:center}
+.stats b{display:block;font-size:26px;color:#ffe28a}
+.stats span{font-size:13px;color:var(--doux)}
+#zoneCalib{margin:14px 0;height:190px;border-radius:20px;border:3px dashed #6b4fa0;display:grid;place-items:center;font-size:19px;text-align:center;padding:10px;background:rgba(124,58,237,.12)}
+#zoneCalib.toc{background:rgba(255,210,63,.25)}
+.points{display:flex;gap:6px;justify-content:center;margin:6px 0}
+.points i{width:12px;height:12px;border-radius:50%;background:#3a2c5a}
+.points i.ok{background:var(--jaune)}
+.symboles{display:flex;gap:12px;justify-content:center;margin:8px 0}
+.symboles span{font-size:50px;line-height:1;background:#0b1020;border:3px solid #6fe3ff;border-radius:18px;padding:12px 14px}
+.mots{text-align:center;font-size:21px;font-weight:600;color:#ffe28a;margin:4px 0 0}
+#fin.fete{display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(rgba(9,6,22,0) 30%,rgba(9,6,22,.93) 52%)}
+#fin.fete .boite{width:100%}
+#tourner{display:none;position:fixed;inset:0;z-index:50;background:#0d0820;color:#fff;place-items:center;text-align:center;padding:24px;font-size:20px}
+@media (orientation:landscape) and (max-height:500px){#tourner{display:grid}}
+</style>
+</head>
+<body>
+<div id="tourner"><div><b style="font-family:'Pirata One',serif;font-size:34px;font-weight:400">Tourne ton téléphone</b><br>Le combat du Barde se joue téléphone debout.</div></div>
+<div id="cadre">
+  <canvas id="c"></canvas>
+  <button id="bPause" class="rond" aria-label="Pause"><svg width="18" height="18" viewBox="0 0 18 18"><rect x="3" y="2" width="4" height="14" rx="1.5" fill="#fff"/><rect x="11" y="2" width="4" height="14" rx="1.5" fill="#fff"/></svg></button>
+  <div id="cmd" class="cache">
+    <button id="bVague" class="cmd" aria-label="Vague"><svg viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"><path d="M3 12c4-5 8-5 12 0s8 5 13 0"/><path d="M3 21c4-5 8-5 12 0s8 5 13 0"/></svg>Vague</button>
+    <button id="bStop" class="cmd" aria-label="Stop"><svg viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"><path d="M4 22a12 12 0 0 1 24 0"/><circle cx="16" cy="20" r="3.2" fill="#fff" stroke="none"/></svg>Stop</button>
+    <button id="bRep" class="cmd" aria-label="Repousse"><svg viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><circle cx="16" cy="16" r="3.4" fill="#fff" stroke="none"/><path d="M9 9a10 10 0 0 0 0 14M23 9a10 10 0 0 1 0 14"/><path d="M4.5 5a16 16 0 0 0 0 22M27.5 5a16 16 0 0 1 0 22"/></svg>Repousse</button>
+    <button id="bNote" class="cmd" aria-label="Note"><svg viewBox="0 0 32 32"><ellipse cx="10" cy="24" rx="6" ry="4.6" transform="rotate(-20 10 24)" fill="#fff"/><path d="M15 23V5c5 1 9 4 10 9" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg>Note</button>
+  </div>
+  <div id="jam" class="cache"></div>
+
+  <section id="intro" class="ecran">
+    <div class="boite">
+      <h1>Le combat du Barde</h1>
+      <p class="sous">Sous la ville, Grosbec a réveillé ses golems. Le Barde, lui, a réveillé son luth.</p>
+      <div class="etape"><canvas data-illu="1" width="236" height="192"></canvas><p>Ici, <b>tout marche en musique</b>. Les golems tapent du pied à chaque temps, la rosace d'or brille sous tes pieds : tu joues à ce moment-là. Plus tu fais de Parfait, plus il y a d'instruments… jusqu'au <b>méga refrain</b>, qui te rend un cœur.</p></div>
+      <div class="etape"><canvas data-illu="2" width="236" height="192"></canvas><p><b>Note</b> : elle part et cogne le golem le plus proche… s'il est à portée de ta voix (le cercle sur la place). Pile sur le temps ? Ça cogne deux fois plus fort.</p></div>
+      <div class="etape"><canvas data-illu="3" width="236" height="192"></canvas><p><b>Repousse</b> : un grand accord qui envoie valser ceux qui sont trop près, et fait lâcher leur dalle aux porte-dalles. Il lui faut une mesure pour revenir.</p></div>
+      <div class="etape"><canvas data-illu="4" width="236" height="192"></canvas><p>Grosbec déteste perdre ses golems. Quand il n'en a plus, <b>il coupe la musique</b> ! Rejoue-la note à note pour la relancer : d'abord une touche, puis deux, puis trois… puis le solo.</p></div>
+      <p class="petit">À côté du temps, c'est la fausse note : la série retombe à zéro. À chaque silence arrivent d'autres golems, et d'autres boutons avec eux. Monte le son ! Sur ordinateur : Espace pour la Note, A Z E pour les autres boutons, D F J K pour la relance.</p>
+      <div class="actions">
+        <button id="bGo" class="jaune">Commencer</button>
+        <button id="bReglerIntro" class="second">Régler le son</button>
+      </div>
+      <p class="petit">Maquette pour essayer, pas le vrai jeu. La musique est fabriquée en direct par la page.</p>
+    </div>
+  </section>
+
+  <section id="pause" class="ecran cache">
+    <div class="boite">
+      <h2>Pause</h2>
+      <div class="liste">
+        <button id="bReprendre" class="jaune">Reprendre</button>
+        <button id="bRegler" class="second">Régler le son (si les notes tombent à côté)</button>
+        <button id="bCouper" class="second">Essai : Grosbec coupe la musique tout de suite</button>
+        <button id="bMega" class="second">Essai : le méga refrain tout de suite</button>
+        <button id="bActe" class="second">Essai : aller à l'acte suivant (et sa chanson)</button>
+        <button id="bRecommencer" class="second">Recommencer la partie</button>
+        <button id="bSalle" class="second" hidden>Retour à la salle des jeux</button>
+      </div>
+      <p class="petit" id="infoDecal"></p>
+      <p class="petit" id="infoMesures"></p>
+    </div>
+  </section>
+
+  <section id="calib" class="ecran cache">
+    <div class="boite">
+      <h2>Régler le son</h2>
+      <p>Avec un casque sans fil, le son arrive un peu en retard. On va mesurer ça. Écoute les « toc »… et tape dans la zone à chaque toc, pile en même temps.</p>
+      <div id="zoneCalib">Prêt ?</div>
+      <div class="points" id="pointsCalib"></div>
+      <p id="resCalib"></p>
+      <div class="actions">
+        <button id="bCalibGo" class="jaune">Lancer les toc</button>
+        <button id="bCalibFin" class="second">Terminé</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="carte" class="ecran cache">
+    <div class="boite">
+      <h2 id="carteTitre"></h2>
+      <p id="carteTexte"></p>
+      <div id="carteEnnemis"></div>
+      <p id="cartePlus" class="sous"></p>
+      <div class="carte-ennemi"><canvas id="carteRelance" width="236" height="192"></canvas><p id="carteRelanceTexte"></p></div>
+      <div class="actions"><button id="bRelancer" class="jaune">Relancer la musique</button></div>
+    </div>
+  </section>
+
+  <section id="fin" class="ecran cache">
+    <div class="boite">
+      <h2 id="finTitre"></h2>
+      <p id="finTexte"></p>
+      <div class="stats" id="finStats"></div>
+      <div id="finCode" class="cache">
+        <p class="sous">Ton code pour le Sage : crie-le-lui !</p>
+        <div class="symboles"><span>🔑</span><span>💧</span><span>🍃</span></div>
+        <p class="mots">la clé · la goutte · la feuille</p>
+        <p class="petit">Le Sage le tape sur sa tablette. Quand il a les codes du Pisteur, de l'Alchimiste et du Barde, la première phase est gagnée.</p>
+      </div>
+      <p class="petit" id="finNote"></p>
+      <div class="actions"><button id="bRejouer" class="jaune">Rejouer</button><button id="bDebut" class="second cache">Recommencer du début</button></div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,21 @@
+import pathlib
+from playwright.sync_api import sync_playwright
+url = (pathlib.Path(__file__).resolve().parent.parent / 'combat-barde.html').as_uri()
+with sync_playwright() as p:
+    nav = p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--autoplay-policy=no-user-gesture-required'])
+    pg = nav.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True).new_page()
+    err = []; pg.on('pageerror', lambda e: err.append(str(e)))
+    pg.goto(url); pg.wait_for_timeout(600); pg.click('#bGo'); pg.evaluate('__barde.robot(true,0.03,0.9,0.9)')
+    pg.wait_for_timeout(10000); a = pg.evaluate('__barde.etat()')
+    pg.click('#bPause'); pg.wait_for_timeout(2000); b = pg.evaluate('__barde.etat()')
+    pg.click('#bRegler'); pg.wait_for_timeout(300); pg.click('#bCalibGo')
+    for i in range(12): pg.wait_for_timeout(500); pg.click('#zoneCalib')
+    pg.wait_for_timeout(1500); res = pg.inner_text('#resCalib'); pg.click('#bCalibFin'); pg.wait_for_timeout(300)
+    pg.click('#bRemplir'); pg.wait_for_timeout(5000); c = pg.evaluate('__barde.etat()')
+    vis = pg.evaluate("!document.getElementById('bSolo').classList.contains('cache')")
+    pg.wait_for_timeout(15000); d = pg.evaluate('__barde.etat()')
+    pg.screenshot(path='captures/apres-pause.png')
+    print('avant pause', a['sec'], a['etat'], '| en pause', b['etat'], '| calibrage :', res)
+    print('après reprise', c['etat'], c['mode'], c['sec'], 'jauge', c['jauge'], 'bouton solo visible', vis, '| 15 s plus tard', d['mode'], d['sec'], d['soloN'], d['casque'])
+    print('erreurs :', err or 'aucune')
+    nav.close()

@@ -1,0 +1,29 @@
+au repos (page, carte graphique) Mo : (353, 149)
+  20s acte 1 combat    U   page   359 Mo | JS   19 Mo | 60 img/s niveau 1 baisses 0 golems 80
+  40s acte 1 combat    M   page   357 Mo | JS   17 Mo | 60 img/s niveau 1 baisses 0 golems 80
+  60s acte 1 combat    U   page   354 Mo | JS   20 Mo | 60 img/s niveau 1 baisses 0 golems 80
+  80s acte 1 relance   G1  page   359 Mo | JS   20 Mo | 60 img/s niveau 1 baisses 0 golems 100
+ 100s acte 1 relance   G3  page   355 Mo | JS   17 Mo | 60 img/s niveau 1 baisses 0 golems 100
+ 120s acte 2 combat    C   page   358 Mo | JS   17 Mo | 60 img/s niveau 1 baisses 0 golems 100
+ 140s acte 2 combat    C   page   360 Mo | JS   18 Mo | 60 img/s niveau 1 baisses 0 golems 100
+ 160s acte 2 combat    M   page   363 Mo | JS   17 Mo | 60 img/s niveau 1 baisses 0 golems 100
+ 180s acte 2 combat    C   page   358 Mo | JS   15 Mo | 60 img/s niveau 1 baisses 0 golems 100
+ 200s acte 2 combat    M   page   362 Mo | JS   18 Mo | 60 img/s niveau 1 baisses 0 golems 100
+ 220s acte 2 relance   G2  page   372 Mo | JS   13 Mo | 60 img/s niveau 1 baisses 0 golems 154
+ 240s acte 2 relance   G4  page   376 Mo | JS   17 Mo | 60 img/s niveau 1 baisses 0 golems 154
+ 260s acte 3 combat    C   page   382 Mo | JS   18 Mo | 60 img/s niveau 1 baisses 0 golems 154
+ 280s acte 3 combat    C   page   381 Mo | JS   17 Mo | 60 img/s niveau 1 baisses 0 golems 154
+ 300s acte 3 combat    M   page   384 Mo | JS   19 Mo | 60 img/s niveau 1 baisses 0 golems 154
+ 320s acte 3 combat    C   page   382 Mo | JS   18 Mo | 60 img/s niveau 1 baisses 0 golems 154
+ 340s acte 3 relance   G2  page   361 Mo | JS   11 Mo | 60 img/s niveau 1 baisses 0 golems 174
+ 360s acte 3 relance   G4  page   361 Mo | JS    8 Mo | 60 img/s niveau 1 baisses 0 golems 174
+ 380s acte 4 combat    C   page   365 Mo | JS   12 Mo | 60 img/s niveau 1 baisses 0 golems 174
+ 400s acte 4 combat    C   page   365 Mo | JS   11 Mo | 60 img/s niveau 1 baisses 0 golems 174
+ 420s acte 4 combat    M   page   367 Mo | JS   12 Mo | 60 img/s niveau 1 baisses 0 golems 174
+ 440s acte 4 silence   C   page   365 Mo | JS   13 Mo | 60 img/s niveau 1 baisses 0 golems 174
+ 460s acte 4 relance   G3  page   361 Mo | JS    8 Mo | 60 img/s niveau 1 baisses 0 golems 174
+ 480s acte 4 victoire  TI  page   363 Mo | JS    9 Mo | 60 img/s niveau 1 baisses 0 golems 174
+ 500s acte 4 victoire  TM  page   365 Mo | JS    9 Mo | 60 img/s niveau 1 baisses 0 golems 174
+ 520s acte 4 victoire  TN  page   365 Mo | JS    9 Mo | 60 img/s niveau 1 baisses 0 golems 174
+ 540s acte 4 victoire  TF  page   363 Mo | JS   10 Mo | 60 img/s niveau 1 baisses 0 golems 174
+erreurs : aucune

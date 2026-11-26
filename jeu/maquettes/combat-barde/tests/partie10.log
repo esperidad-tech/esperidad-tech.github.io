@@ -1,0 +1,32 @@
+erreurs : aucune
+fin : {"etat": "fin", "mode": "victoire", "acte": 3, "coeurs": 5, "victoire": true, "temps": 565, "st": {"notes": 556, "parfaits": 556, "fausses": 0, "meilleur": 210, "tues": 199, "cales": 0, "debut": 1944.7999999999302, "relances": [88, 75, 88, 92], "coups": {"boulon": 5, "plume": 2}, "megas": 10}}
+   1s  combat    acte 0 C   bpm 100 cœurs 6 groupes 0/18 relance None niv 0 méga False
+  89s  silence   acte 0 C   bpm 100 cœurs 6 groupes 18/18 relance None niv 3 méga False
+  91s  relance   acte 0 G0  bpm 112 cœurs 6 groupes 18/18 relance {'k': 0, 'essai': None, 'notes': 16} niv 3 méga False
+  93s  relance   acte 0 G1  bpm 112 cœurs 6 groupes 18/18 relance {'k': 1, 'essai': 0, 'notes': 41} niv 3 méga False
+ 102s  relance   acte 0 G2  bpm 112 cœurs 6 groupes 18/18 relance {'k': 2, 'essai': 0, 'notes': 64} niv 3 méga False
+ 110s  relance   acte 0 G3  bpm 112 cœurs 6 groupes 18/18 relance {'k': 3, 'essai': 0, 'notes': 114} niv 3 méga False
+ 119s  relance   acte 0 G4  bpm 112 cœurs 6 groupes 18/18 relance {'k': 4, 'essai': 0, 'notes': 114} niv 3 méga False
+ 136s  combat    acte 1 C   bpm 112 cœurs 6 groupes 0/20 relance None niv 1 méga False
+ 222s  silence   acte 1 C   bpm 112 cœurs 6 groupes 20/20 relance None niv 3 méga False
+ 223s  relance   acte 1 G0  bpm 124 cœurs 6 groupes 20/20 relance {'k': 0, 'essai': None, 'notes': 0} niv 3 méga False
+ 226s  relance   acte 1 G1  bpm 124 cœurs 6 groupes 20/20 relance {'k': 0, 'essai': None, 'notes': 36} niv 3 méga False
+ 234s  relance   acte 1 G2  bpm 124 cœurs 6 groupes 20/20 relance {'k': 2, 'essai': 0, 'notes': 58} niv 3 méga False
+ 242s  relance   acte 1 G3  bpm 124 cœurs 6 groupes 20/20 relance {'k': 3, 'essai': 0, 'notes': 109} niv 3 méga False
+ 249s  relance   acte 1 G4  bpm 124 cœurs 6 groupes 20/20 relance {'k': 3, 'essai': 0, 'notes': 109} niv 3 méga False
+ 265s  combat    acte 2 C   bpm 124 cœurs 6 groupes 0/21 relance None niv 1 méga False
+ 350s  silence   acte 2 M   bpm 124 cœurs 4 groupes 21/21 relance None niv 3 méga False
+ 352s  relance   acte 2 G0  bpm 136 cœurs 4 groupes 21/21 relance {'k': 0, 'essai': None, 'notes': 16} niv 3 méga False
+ 354s  relance   acte 2 G1  bpm 136 cœurs 4 groupes 21/21 relance {'k': 1, 'essai': 0, 'notes': 38} niv 3 méga False
+ 361s  relance   acte 2 G2  bpm 136 cœurs 4 groupes 21/21 relance {'k': 2, 'essai': 0, 'notes': 63} niv 3 méga False
+ 368s  relance   acte 2 G3  bpm 136 cœurs 4 groupes 21/21 relance {'k': 3, 'essai': 0, 'notes': 135} niv 3 méga False
+ 375s  relance   acte 2 G4  bpm 136 cœurs 4 groupes 21/21 relance {'k': 4, 'essai': 0, 'notes': 135} niv 3 méga False
+ 389s  combat    acte 3 C   bpm 136 cœurs 6 groupes 0/20 relance None niv 1 méga False
+ 469s  silence   acte 3 M   bpm 136 cœurs 5 groupes 20/20 relance None niv 3 méga False
+ 470s  relance   acte 3 G0  bpm 136 cœurs 5 groupes 20/20 relance {'k': 0, 'essai': None, 'notes': 0} niv 3 méga False
+ 472s  relance   acte 3 G1  bpm 136 cœurs 5 groupes 20/20 relance {'k': 0, 'essai': None, 'notes': 38} niv 3 méga False
+ 479s  relance   acte 3 G2  bpm 136 cœurs 5 groupes 20/20 relance {'k': 1, 'essai': 0, 'notes': 63} niv 3 méga False
+ 486s  relance   acte 3 G3  bpm 136 cœurs 5 groupes 20/20 relance {'k': 2, 'essai': 0, 'notes': 138} niv 3 méga False
+ 493s  relance   acte 3 G4  bpm 136 cœurs 5 groupes 20/20 relance {'k': 3, 'essai': 0, 'notes': 138} niv 3 méga False
+ 507s  relance   acte 3 TI  bpm 140 cœurs 5 groupes 20/20 relance {'k': 4, 'essai': 0, 'notes': 138} niv 3 méga False
+ 508s  victoire  acte 3 TI  bpm 140 cœurs 5 groupes 20/20 relance {'k': 4, 'essai': 0, 'notes': 138} niv 3 méga False
