@@ -1,5 +1,7 @@
 # Maquette rapide de la phase 2 — les trois de devant contre l'armure (enquête 10)
 
+> **⚠️ Cette version 1 est dépassée** : le 26 novembre au soir, Romain a refait la phase 2 à la voix (Bible **§ 18.14** : l'interface du combat du Pisteur, deux sorts, un soin, un saut, plus de danse sous la bulle, trois tiers tout nouveaux). Une version 2 est à faire, avec son go ; ce dossier peut lui servir de départ (le doigt, la fenêtre du code, le robot, les essais).
+
 **Chantier 3 du § 18.11 de la Bible** (go de Romain le 26 novembre, 19 h 49 : « On prend le chantier 3 du § 18.11 »).
 **Ce qui a été construit, et les choix de Claude : Bible § 18.12.**
 

@@ -2,7 +2,7 @@
 
 ## La Bible du jeu : elle fait foi
 
-> **Nouveau (26 novembre) : la fin de la saison est écrite au § 18** (l'enquête 10 : les phases 2 et 3, la fusion, Grosbec rajeuni, Odette et le village, Mimi aux yeux arc-en-ciel, les douze cartes dorées) : idée en cours, rien de construit. **La liste des chantiers, validée par Romain, avec une fiche par chantier : § 18.11.** Pour lancer un chantier : « On prend le chantier N du § 18.11 ».
+> **Nouveau (26 novembre) : la fin de la saison est écrite au § 18** (l'enquête 10 : les phases 2 et 3, la fusion, Grosbec rajeuni, Odette et le village, Mimi aux yeux arc-en-ciel, les douze cartes dorées) : idée en cours, rien de construit. **La liste des chantiers, validée par Romain, avec une fiche par chantier : § 18.11.** **La phase 2 refaite avec Romain le 26 novembre au soir (l'interface du Pisteur, deux sorts, les trois tiers en détail) : § 18.14** ; la maquette v1 du § 18.12 est dépassée. Pour lancer un chantier : « On prend le chantier N du § 18.11 ».
 >
 > **Nouveau (18 au 22 novembre) :** toute l'histoire de fond est refaite de zéro, voir **§ 0 bis** (juste après le chapitre 0). Elle remplace l'ancien scénario ; c'est une idée en cours, rien n'est construit. **Si cette Bible est remplacée par celle de GitHub, recopier le § 0 bis depuis `claude/histoire-de-fond.md`.**
 
@@ -6899,6 +6899,7 @@ Tout le fil est gardé dans `claude/combat-pisteur-decisions-orales-25-novembre-
 - **Grosbec a tout prévu** [Romain] : il a bien caché son jeu, il connaît absolument tout, il étudie le problème depuis plus de vingt ans et a réfléchi à comment tout contrer ; il agit à la toute fin, quand personne ne s'y attend. **Il est plus malin et plus fort que Raban.** C'est un très grand alchimiste, qui s'est servi de son alchimie pour tromper, cacher, manipuler. [Romain] (Sur sa jeunesse, voir le point à concilier au §18.10.)
 - **Le piège des lanternes** **[Proposé, Romain : « c'est une bonne idée »]** : c'est Grosbec qui laisse les héros s'évader avec la Lanterne d'Or au début de l'enquête 4, pour qu'ils aillent chercher à sa place les deux lanternes perdues pendant les enquêtes 4 à 9 ; puis il les leur reprend. Les enfants découvriront qu'ils ont fait son travail sans le savoir. **Il faut semer de petits indices bien avant**, sinon ça fera tricherie [Claude]. Au début de l'enquête 10, **il a les quatre lanternes** [Romain] ; comment il les reprend : **[À voir]**.
 - **Ce qu'il en fait** [Romain] : avec les quatre lanternes, il récupère tellement d'énergie qu'il peut alimenter sa machine (l'armure). Il **affaiblit Elyra** (un système de drainage qui lui prend son énergie) ; et l'énergie absorbée fait **un lien avec les golems de Raban** : il les **active** et peut les contrôler. **Mais l'énergie est dans son armure, pas en lui** : lui reste **vieux et sans énergie** dans sa « boîte de conserve ».
+- **Où il s'installe** [Romain, 26 novembre au soir, § 18.14, point 12] : **Grosbec s'est installé exprès dans la salle où les quatre lanternes alimentaient son armure** (deux dans la salle de devant, une dorée et une rouge ; deux dans la salle du Pisteur) ; il comptait y rester jusqu'à ce que tout soit drainé, l'armure prête, puis partir.
 - **La grande peur de toute la saison** [Romain] : le retour de Raban, et surtout **qu'il fusionne avec Elyra** : ce serait une source d'énergie bien trop puissante (§ 0 bis, 0b.7 bis, point 19).
 
 **La phase 1** [Romain]
@@ -6939,6 +6940,8 @@ Tout le fil est gardé dans `claude/combat-pisteur-decisions-orales-25-novembre-
 - **[Claude, pas validé]** : quand il faut combattre des villageois, on les assomme ou on les fait fuir, jamais plus, pour que les enfants ne se sentent pas mal en retrouvant Gaspard ou Margot à leurs côtés à la fin.
 
 ### 18.4 La phase 2, contre l'armure
+> **⚠️ 26 novembre au soir : la phase 2 a été refaite en grande partie avec Romain, à la voix — voir § 18.14.** L'interface du combat du Pisteur pour les trois de devant ; deux sorts (glace, feu), un soin, un saut, pas d'attaque automatique ; plus de gros coup à couper, plus de danse sous la bulle, plus de charges ni de bouclier qui renvoie ; le symbole au bout des 1 000 points du tiers ; une console dans la salle du Pisteur ; la mort refaite ; rien ne tue d'un coup. **Ce que le § 18.14 ne cite pas tient toujours** (deux jeux, la trappe, les cases à têtes, les bandages du Pisteur…).
+
 **Deux jeux, pas quatre** [Romain : « comme ça, on n'a plus ou moins que deux jeux »] :
 - **le Pisteur**, de son côté, **avec le moteur de son combat de la phase 1** (§17 : l'ombre, la dague, les golems, les colères), **dans une autre salle** [Romain] ;
 - **les trois de devant** (le Barde, le Sage, l'Alchimiste) : **un nouveau mini-jeu, créé exprès, le même pour les trois** [Romain].
@@ -7102,7 +7105,7 @@ Tout le fil est gardé dans `claude/combat-pisteur-decisions-orales-25-novembre-
 2. **Ce qu'il actionne pour enchaîner Raban** ; **[Claude]** : il faut l'avoir annoncé avant, sinon ça ressemblera à de la magie sortie de nulle part (pistes : la bague au corbeau et son éclat du cristal, les notes de Raban où Grosbec a trouvé sa faiblesse).
 3. **Que la victoire de la phase 2 compte** : si on casse l'armure et que c'est « trop tard » quand même, les enfants peuvent se dire qu'ils se sont battus pour rien. **[Claude, pas validé]** : en cassant le drainage, ils sauvent une toute petite étincelle d'Elyra, celle qui finit dans les yeux de Mimi.
 4. **La blessure de Grosbec à la fin** (laquelle ?) ; **[Claude, pas validé]** : une main changée en cristal, là où il portait la bague au corbeau, qui gagne doucement ; **une saison 2** ? (Romain : « ouais, c'est ça », réponse pas claire.)
-5. **Comment on fait mal à l'armure** (phase 2) : taper immobile, un bouton d'attaque, un point faible qui bouge.
+5. **Comment on fait mal à l'armure** (phase 2) : taper immobile, un bouton d'attaque, un point faible qui bouge. → **tranché le 26 novembre au soir : deux sorts à lancer sur place, sans attaque automatique (§ 18.14, point 2).**
 6. **La liste des symboles** et **l'ordre des cases** du code de la phase 2.
 7. **Ce que font les pierres de protection** des villageois dans le combat ; **leur lien avec les pendentifs** (0b.7 quater, point 13).
 8. **Comment la formule d'Odette entre dans le combat**.
@@ -7126,10 +7129,10 @@ Tout le fil est gardé dans `claude/combat-pisteur-decisions-orales-25-novembre-
 |---|---|---|---|---|
 | 1 | Boucher les trous de la fin, mettre à jour le tableau des questions | conception | — | à faire |
 | 2 | Le plan des enquêtes 4 à 9 | conception | 1 conseillé | à faire |
-| 3 | **Maquette rapide de la phase 2, les trois de devant** (ajout de Romain) | maquette en formes simples | — | **fait le 26 novembre, 20 h 11 (§ 18.12) ; attend l'avis de Romain en jouant** |
+| 3 | **Maquette rapide de la phase 2, les trois de devant** (ajout de Romain) | maquette en formes simples | — | version 1 faite le 26 novembre, 20 h 11 (§ 18.12) ; **dépassée le soir même par les décisions du § 18.14 : une version 2 à faire (l'interface du Pisteur), attend le go de Romain** |
 | 4 | Maquette rapide de la phase 3, à jouer en famille sur quatre tablettes | maquette en formes simples | — | **fait le 26 novembre, 20 h 18 (§ 18.13) ; attend l'essai en famille et l'avis de Romain** |
-| 5 | La phase 2, les trois de devant, en vrai | maquette dessinée | 3 + avis de Romain | à faire |
-| 6 | La phase 2, le jeu du Pisteur | maquette | 3 conseillé | à faire |
+| 5 | La phase 2, les trois de devant, en vrai (**d'après le § 18.14**) | maquette dessinée | 3 (version 2) + avis de Romain | à faire |
+| 6 | La phase 2, le jeu du Pisteur (**à lire : § 18.14, points 6, 10 et 11**) | maquette | 3 conseillé | à faire |
 | 7 | La phase 3 complète | maquette dessinée | 4 + essai en famille | à faire |
 | 8 | Les cartes dorées dans les combats de la phase 1 | combats existants | — | **le Sage : fait** (26 nov., 20 h 09, § 15.17) ; l'Alchimiste et le Barde : à faire |
 | 9 | Les cinématiques de l'enquête 10 | films | 1 | à faire |
@@ -7197,7 +7200,7 @@ Tout le fil est gardé dans `claude/combat-pisteur-decisions-orales-25-novembre-
 **Chantier 13 — La section du combat de l'Alchimiste dans la Bible**
 - Il n'a pas de section dans la Bible (il est décrit dans `jeu/maquettes/combat-alchimiste/LISEZ-MOI.md` et dans le document du projet `claude/combat-alchimiste-e10.md`). En faire un chapitre comme les §15 à §17, sans rien changer au combat.
 
-### 18.12 Chantier 3 : la maquette rapide de la phase 2, les trois de devant — EN LIGNE, HORS DU JEU (26 novembre, 20 h 11) ; PAS ENCORE JOUÉE PAR ROMAIN
+### 18.12 Chantier 3 : la maquette rapide de la phase 2, les trois de devant — EN LIGNE, HORS DU JEU (26 novembre, 20 h 11) ; PAS ENCORE JOUÉE PAR ROMAIN ; ⚠️ DÉPASSÉE LE SOIR MÊME PAR LES DÉCISIONS DU § 18.14
 
 **Le go** : Romain, 19 h 49 : « On prend le chantier 3 du § 18.11. » Rien d'autre n'a été touché.
 
@@ -7261,3 +7264,140 @@ Tout le fil est gardé dans `claude/combat-pisteur-decisions-orales-25-novembre-
 **Pas dans ce chantier** (c'est le chantier 7, après l'essai en famille) : la partie perdue, l'arrivée d'Odette et du village, la formule, les pierres de protection, les dessins, les sons, les héros de « Mes amis ».
 
 **À demander à Romain après l'essai en famille** : est-ce que les quatre arrivent à se parler en même temps (à partir de quelle manche ça devient trop) ; les cartes (assez lisibles ? trois mots à crier, c'est trop ?) ; le tir automatique ou taper soi-même ; la boule rouge et son bouclier ; « On reprend » (facile de se mettre d'accord sur la manche ?) ; la longueur du combat (vie du boss) ; si les enfants comprennent sans explication. **Ensuite seulement** : le chantier 7 (la phase 3 complète).
+
+### 18.14 La phase 2 refaite avec Romain, à la voix (26 novembre, de 20 h 30 à 23 h) — DÉCIDÉE, RIEN DE CONSTRUIT ; REMPLACE UNE GRANDE PARTIE DU § 18.4 ET LA MAQUETTE V1 DU § 18.12
+
+**D'où ça vient** : après la maquette v1 (§ 18.12), qu'il n'a pas jouée, Romain a repris toute la phase 2 à la voix : « J'aimerais bien que ça soit comme World of Warcraft. » Il est un ancien joueur de World of Warcraft, « vraiment doué ». **Claude a prévenu** : ce boss sera joué par des enfants de 11 ans qui n'ont jamais fait de raid ; ce qui paraît simple à un joueur de raid peut être très dur pour eux ; il faudra l'essayer avec eux, pas seulement avec Romain.
+**Le go de Romain (23 h 15, écrit)** : mettre toute la Bible à jour. **Ce n'est pas un go pour refaire la maquette** : la maquette v2 attend son go.
+**Comment lire** : [Romain] = dit ou choisi par Romain ; [Claude, accepté] = proposé par Claude, Romain a dit oui ; [Claude, pas validé] = proposé, Romain n'a pas répondu clairement. Les chiffres se règleront en jouant, dans le menu de la maquette.
+
+**Ce qui est remplacé dans le § 18.4** (le reste du § 18.4 tient toujours) :
+- **La vue** du combat du Barde → **l'interface du combat du Pisteur** (point 1 ci-dessous).
+- **« Comment on fait mal au boss »** (§ 18.10, point 5) → **tranché** : deux sorts, pas d'attaque automatique (point 2).
+- **Le gros coup à interrompre** → **enlevé** [Romain : « on va pas faire de coups à interrompre »].
+- **La danse des bandes sous la bulle** → **enlevée** : sous la bulle, les attaques du tiers continuent en accélérant (point 6). Une danse revient au troisième tiers, en anneaux, hors de la bulle (point 8).
+- **Les charges de Thaddius** (dorée et rouge, collées au héros) → **remplacées par les orbes** (point 7).
+- **Le bouclier qui renvoie** → **enlevé** [Romain : « je suis pas fan », « il faut une nouvelle mécanique »].
+- **Le symbole à un pourcentage de vie** → **à la fin des 1 000 points du tiers** (point 6).
+- **La mort** (l'armure remise à neuf, le bouton du code grisé 10 s) → **refaite** (point 10) [Romain : « je suis pas fan »].
+- **Les soins** (rester immobile, toute la vie revient) → **un sort de soin de 2 s qui rend 50** (point 2).
+- **« Certaines attaques font presque mourir d'un coup »** → **rien ne tue d'un coup** (point 3).
+- **Le Pisteur qui tape le code où il est** → **une console dans sa salle** (point 6).
+- **Refusé aussi ce soir** : voir le point 13.
+
+**1. L'interface des trois de devant** [Romain : « la même interface que le Pisteur, la phase 1 du Pisteur dans l'enquête 10 »]
+- Comme le combat du Pisteur : **téléphone couché, la salle vue d'en haut, en biais** ; le pouce gauche pour courir, les boutons sous le pouce droit.
+- **L'armure est au fond de la salle**, et les attaques sont des zones au sol.
+- **Les annonces, façon World of Warcraft, pas de zones rouges « style schéma »** [Romain] : une ombre qui grandit au sol, des fissures qui s'allument, un feu qui couve, le geste du boss. [Claude, accepté : « c'est parfait »] des fissures dorées, nourries par l'énergie des lanternes. Dans la maquette rapide, ce seront quand même des formes simples ; le vrai look, c'est le chantier 5.
+- **Chaque tablette a sa propre armure** [Romain].
+- **Les barres de vie bien affichées, avec des chiffres** [Romain] : le héros a 100 points de vie. La barre est **verte au-dessus de 70**, **orange de 70 à 61** (par exemple après un seul tic de flammes : on n'a plus de marge), **rouge à 60 et moins** (un seul gros coup tue) [Romain et Claude, accordés].
+- **Un héros caché par une colonne se voit en silhouette à travers** [Claude, accepté].
+
+**2. Les quatre boutons** [Romain] — les mêmes pour les trois, seule l'image change
+- **Pas d'attaque automatique** [Romain, après avoir hésité : « Non, non, on l'enlève »] : l'armure ne perd de la vie qu'avec les sorts.
+- **Le sort rapide : la glace** (un javelot de glace, comme une stalactite qu'on lance) : **1,5 s à lancer**, sur place ; **10 points**. [Romain : pas de sort instantané, « sinon il suffit de courir et de spammer »]
+- **Le gros sort : le feu** (la boule de feu) : **3 s à lancer**, sur place ; **50 points** [Romain : d'abord 40, puis 50 : « il faut quand même qu'on soit récompensé de pouvoir rester 3 secondes »]. Pour faire 50 points au sort rapide, il faut 7,5 s.
+- **Le soin** : **2 s**, sur place ; **rend 50 points**. Illimité.
+- **Le saut** : **comme le Pisteur** [Romain] : **3 pas** ; la course du héros aussi (3,6 pas par seconde). **La recharge** : Romain a d'abord voulu « pas de recharge, ou 0,5 s » (« pas faire la sauterelle »), puis « comme le Pisteur » (3 s), puis est revenu en arrière à cause des crevasses ; **on part sur 1,5 s** (Romain : « mouais ») ; **le menu de la maquette proposera 0,5, 1,5 et 3 s**. **On ne saute pas par-dessus les colonnes** [Romain] ; le saut sert à aller vite dans un passage libre.
+- **Lancer un sort, c'est rester sur place** : **bouger interrompt** le sort ; **un gros coup reçu l'interrompt aussi** [Romain]. **Les dégâts qui coulent en continu** (les flammes, le rayon, la pierre brûlante) **ne coupent rien** [Claude, accepté : « ça me va bien »] ; sinon on ne pourrait jamais se soigner dans le rayon.
+- **Viser** : les sorts partent tout seuls vers l'armure. **Pour changer de cible, on touche un réparateur** : un cercle s'affiche sous lui, les sorts partent vers lui ; quand il est cassé, la cible repasse toute seule sur l'armure [Claude, accepté : « ça me semble pas mal » ; à essayer dans la maquette : lâcher un pouce pour toucher un petit truc qui bouge, c'est peut-être dur pour des enfants].
+- **Les colonnes bloquent les sorts** [Romain] : ce sont des projectiles ; la fiole de feu de l'Alchimiste s'écrase sur la colonne. **On voit le feu ou le givre rester collé un moment sur la pierre.**
+- **Les six effets** (chantier 5 ; dans la maquette rapide : un petit rond bleu et un gros rond orange pour tout le monde) :
+  - **le Barde** : une **note glacée**, et une **note de feu plus grosse** (pour qu'on voie que c'est le gros sort) ; derrière chaque note, **les cinq lignes d'une portée**, comme une traînée [Romain] ;
+  - **l'Alchimiste** : une **petite fiole de glace**, et une **fiole de feu avec une flamme au-dessus, comme un cocktail Molotov** [Romain] ;
+  - **le Sage** : d'un coup de bâton, **un petit trait bleu** tracé dans l'air, qui part comme un éclat de glace ; pour le gros sort, **une grande rune de feu** (un cercle avec un signe au milieu) **qui se dessine petit à petit pendant les 3 s** (elle sert de barre de chargement), puis part en tournant comme une roue de feu [Claude, accepté : « c'est très bien »].
+
+**3. Les règles qui valent pour tout le combat**
+- **Rien ne tue d'un coup** [Romain : « sinon le soin il sert plus à rien »]. Les gros coups font **60 points** : deux erreurs sans se soigner entre les deux, et on meurt.
+- **Les attaques sont tirées au hasard** [Romain : « je veux que ça soit aléatoire »], **une toutes les 4 secondes** [Romain : d'abord 3 s, puis « allez, je change, toutes les 4 secondes »]. **Jamais trois fois de suite la même attaque** [Romain]. **Il reste toujours un endroit sûr** [Romain] : le jeu vérifie le hasard (par exemple, pas de colonne pile sur le seul côté sans fissures) [Claude, accepté].
+- **Les moments où on n'a pas besoin de bouger, ce sont les moments pour les gros sorts** [Romain : « c'est là où on peut envoyer du sort, du sort, du sort »]. Savoir les reconnaître, c'est ce qui sépare un débutant d'un bon joueur.
+- **La bonne habitude : se tenir vers le milieu de la salle** [Romain : « en général, il faut se mettre milieu de salle »] ; de là, on rejoint vite l'autre moitié.
+
+**4. Le premier tiers : l'armure entière (1 000 points)** [Romain : « on commence simple »]
+- **Le but du joueur** : tirer sur l'armure, éviter les zones au sol, tuer les réparateurs quand ils arrivent. « Et c'est tout. Pas plus. » [Romain]
+- **Quatre attaques dans le tirage** :
+  - **Les crépitements** (c'est l'ancien coup de poing, annoncé par des fissures) : **une moitié de la salle, gauche ou droite au hasard**, se met à crépiter **pendant 3 s**, puis explose : **60 points**. Jamais trois fois de suite le même côté [Claude, accepté]. Si on est au milieu du mauvais côté, il faut parfois sauter pour sortir à temps.
+  - **Les colonnes** : le boss fait écrouler le plafond. **6 ou 7 colonnes tombent en même temps, n'importe où, au hasard** ; chacune est **annoncée par son ombre, qui grandit en 2 s** ; puis boum, elles s'écrasent et **le sol tremble**. Une colonne sur la tête : **60 points**. Ensuite **elles restent debout**, comme cachettes, jusqu'à la prochaine vague. **Assez grosses pour se cacher derrière, pas trop pour qu'il reste toujours un chemin libre**. Une nouvelle colonne ne tombe jamais sur une colonne debout ; **14 colonnes au plus** (deux séries de suite) [Romain]. **Plus il y a de colonnes, moins on voit le boss** : comme elles bloquent les sorts, on doit s'avancer pour tirer, et on a moins de temps pour se cacher quand la vague part [Romain].
+  - **La vague de flammes rouges** : un raz-de-marée de flammes **qui part de l'armure** (comme la vague d'eau de l'Alchimiste avec deux potions d'eau, dans l'enquête 10) **et va jusqu'au bout de la salle** : reculer ne sert à rien, **il faut se cacher derrière une colonne** [Romain]. **Elle ne vient que s'il y a déjà des colonnes au sol** [Romain]. **L'annonce, 2 s** : l'armure se penche en arrière, sa poitrine rougit de plus en plus fort, de petites flammes rouges courent à ses pieds ; **la traversée, 1,5 s** [Claude, accepté : « c'est parfait »]. **Derrière le front, toute la salle reste en flammes 3 s**, **30 points par seconde** (prise en entier : 90 points ; on survit seulement avec toute sa vie) [Romain]. **Le feu contourne chaque colonne et se referme derrière elle : seule une zone de la taille d'une colonne reste à l'abri, juste derrière** [Romain]. Sauter par-dessus la vague ne sert à rien : on retombe dans le feu. **La vague détruit toutes les colonnes.** **À peine les flammes éteintes, les ombres des nouvelles colonnes arrivent** [Romain].
+  - **Les réparateurs** : à leur tour dans le tirage, **1 ou 2** au hasard ; ils sortent de **portes sur les côtés gauche et droit** de la salle (éventuellement vers le fond) et vont vers l'armure **en contournant les colonnes**, en **environ 5 s** [Claude, accepté]. **Un sort rapide suffit pour en casser un** [Romain]. Un réparateur qui arrive jusqu'à l'armure **lui rend 50 points, puis s'en va** [Romain : « il répare un certain nombre de points de vie, et après, il s'en va »]. **Une colonne qui leur tombe dessus les écrase** (« ça peut être rigolo ») ; **la vague les rend rouge vif, sans les tuer** (juste pour l'image) [Romain].
+- **Un enchaînement type, raconté par Romain** : on s'est caché contre une colonne au bord ; juste après, ce côté-là se met à crépiter ; il faut traverser la moitié de la salle en 3 s, et le saut sert à ça.
+
+**5. Le deuxième tiers : le ventre ouvert (1 000 points)**
+- **Restent** : les colonnes et la vague. **Enlevés** : les crépitements et les réparateurs [Romain : l'armure est à moitié cassée, les réparateurs ne peuvent plus faire grand-chose].
+- **Les deux mains** [Romain] : l'armure a **une main glacée** et **une main bouillante** ; on voit tout de suite de quelle main vient le danger. **Jamais les deux en même temps** [Romain]. Ça vient **du sol** : se cacher derrière une colonne ne protège pas [Romain : pas de projectile, il donnerait l'impression qu'on est à l'abri derrière les colonnes].
+  - **La main glacée levée** : **une flaque de givre grandit depuis nos pieds** ; elle ne fait pas de dégâts mais **nous ralentit de 60 %** (très embêtant pour esquiver les colonnes et la vague) ; elle **remplit toute la salle en 10 s** [Romain : 6 s « un peu court » ; on raccourcira si c'est trop facile], puis **le boss fait éclater le givre : 60 points**. **On l'arrête avec la boule de feu** lancée sur l'armure (3 s sur place, et ralenti : c'est le plus dur).
+  - **La main brûlante levée** : **la pierre devient bouillante sous nos pieds** (incandescente, pas de la lave) ; elle **remplit la salle en 6 s**, **5 points par seconde**, puis **explose : 60 points** (en l'ignorant : 90 points en tout) [Romain]. **On l'arrête avec le javelot de glace** (1,5 s).
+  - Le sort qui contre fait **ses dégâts normaux à l'armure**, pas plus [Romain]. Comme toujours, une colonne entre soi et l'armure bloque le sort : pour contrer, il faut sortir de derrière sa colonne.
+  - **Le sol change de texture** (givre, pierre bouillante) **mais reste un peu transparent** : **les ombres des colonnes doivent toujours se voir**, dessinées par-dessus, bien sombres [Romain].
+- **Les orbes** (remplacent les charges de Thaddius ; dans le tirage, à la place des réparateurs) :
+  - **La logique** [Claude, accepté : « j'aime bien »] : le ventre de l'armure est ouvert, ses tuyaux de drainage fuient ; l'énergie dorée d'Elyra, mêlée à l'énergie rouge de Raban, s'en échappe en orbes.
+  - **L'orbe tombe de l'armure** dans **une zone assez grande devant elle** (pas au milieu de la salle, pas au fond) [Romain] : **aller la chercher est un risque** (la vague peut arriver). **Sa couleur est tirée au hasard** (dorée ou rouge) ; **une seule orbe à la fois** [Romain].
+  - **On la porte au-dessus de sa tête** et on peut tout faire en la portant (courir, lancer ses sorts) [Romain].
+  - **On la rapporte à la lanterne de sa couleur** : **une lanterne dorée d'un côté de la salle, une lanterne rouge de l'autre ; elles ne changent jamais de côté** [Romain].
+  - **Sortie de l'armure, elle devient instable : sa lumière grandit** ; **10 s** avant qu'elle explose [Romain]. **Pas rapportée à temps, ou à la mauvaise lanterne** : une petite auréole d'explosion **qui passe à travers les colonnes**, **20 points**, et pas de bonus [Romain].
+  - **Bien rapportée : les sorts font deux fois plus de dégâts pendant 15 s** [Romain : « il faut qu'on soit récompensé plus longtemps »] ; c'est **le trop-plein** : les lanternes sont déjà pleines, l'orbe déborde, et ce trop-plein passe dans le héros [Claude, accepté].
+  - **La vague ne détruit pas l'orbe** ; **une colonne qui tombe sur une orbe par terre la projette sur le côté** [Romain].
+
+**6. La bulle, le symbole et le code : l'aller-retour** [Romain]
+- **L'armure a 3 000 points, 1 000 par tiers.** **Quand un héros a enlevé les 1 000 points de son tiers**, l'armure se met **sous un méga bouclier** (la bulle) sur sa tablette, et **son symbole s'affiche** ; il le crie.
+- **Sous la bulle, pas de danse** [Romain] : **les attaques du tiers continuent, de plus en plus serrées** : **une toutes les 4 s au départ, 3 s au bout de 2 minutes, 2 s au bout de 4 minutes**, en accélérant doucement et régulièrement [Romain : « s'il y a des joueurs qui sont pas doués » ; l'attente dépend des trois de devant et du Pisteur, elle peut durer plusieurs minutes]. Le menu de la maquette réglera cette durée.
+  - **Premier tiers** : des réparateurs arrivent encore ; **chaque réparateur qui atteint l'armure lui rendra 50 points dès que la bulle tombe**, au tiers suivant [Claude, accepté ; Romain a refusé des réparateurs « qui ne réparent rien »].
+  - **Deuxième tiers** : les orbes tombent toujours ; on les rapporte **juste pour ne pas prendre les 20 points** (le bonus ne sert à rien sous la bulle) [Romain].
+  - **Le plus rapide des trois attend le plus longtemps sous la bulle** : « tant pis, il est puni d'avoir bien joué » ; il est aussi le plus doué, donc le plus apte à esquiver [Romain].
+- **L'aller-retour** :
+  1. **Les trois de devant crient chacun leur symbole** (les cases à têtes du § 18.4 tiennent toujours).
+  2. **Le Pisteur va jusqu'à une console dans sa salle** (pas une fenêtre) et **tape les trois symboles** ; **pas de ralenti chez lui** : les vagues de gardes continuent, il peut être débordé, stressé, mourir [Romain]. Il peut y aller dans l'ombre.
+  3. **Le code fait partir la zone rouge** qui l'empêchait d'approcher l'armure ; **l'armure est étourdie** (rien à esquiver de son côté) ; **le Pisteur la frappe : 200 points**, environ 10 s de coups (sa série de dague : 10, 10 et 20 points en 2 s, § 17) [Romain : « il faudrait que ça dure 10 secondes »].
+  4. **Un code apparaît chez lui** ; il le crie aux trois.
+  5. **Les trois le tapent** : **devant, on garde la fenêtre du code et le ralenti** [Romain : « comme il faut éviter les zones, c'est un peu plus tendu, ils ont besoin d'un ralenti »] ; **la bulle tombe** et on passe au tiers suivant.
+
+**7. Le troisième tiers : il n'y a plus d'armure, plus que de l'énergie (1 000 points)** [Romain : « il a perdu toutes les capacités de son robot », « il faut recommencer avec des nouvelles mécaniques, basées sur l'énergie »]
+- **Rien ne reste des deux premiers tiers** (ni colonnes, ni vague, ni mains, ni orbes).
+- **L'image** : **un bras d'armure brisé, et à partir du coude, une main d'énergie rouge et dorée, à cinq doigts** [Romain : « ce serait même plus joli encore »].
+- **Les doigts d'énergie** (dans le tirage, toutes les 4 s) : il tend la main vers le sol ; **de chaque doigt part une ligne d'énergie, en éventail (cinq lignes)** ; elles **s'allument 2 s**, puis **explosent : 60 points** ; **les lignes restent immobiles** [Romain]. **On se place entre deux lignes et on continue à taper** : c'est l'attaque qu'on esquive en choisissant sa place, pas en courant [Romain : « il faut créer un truc où on peut esquiver tout en faisant des dégâts »].
+- **Le rayon d'une lanterne** (environ toutes les 15 s) : **une seule lanterne s'allume, la dorée ou la rouge, au hasard (gauche ou droite)** [Romain] ; son rayon part vers Grosbec, tout fin d'abord : **pendant 3 s, il ne le soigne pas encore**, le temps de courir [Romain : « il faut laisser le temps au héros de venir le couper »] ; ensuite, **tant qu'il n'est pas coupé, Grosbec reprend 10 points par seconde**. **Pour le couper, on se met dedans** : il brûle, **15 points par seconde** [Romain : « 15, ça fait peur : les gens qui ont peur vont faire que se soigner, les plus téméraires vont alterner » sort rapide et soin]. Durée du rayon : **environ 8 s** [Claude, pas validé]. Arriver en retard n'est pas un drame : Grosbec reprend juste quelques points [Romain].
+- **La coque d'énergie** (à part, au hasard, **par-dessus les autres attaques, sauf pendant la danse**) : Grosbec s'entoure d'une boule d'énergie qui grossit et brille ; **il faut lui enlever 50 points en 8 s** ; sinon **elle explose dans toute la salle : 60 points** [Romain]. **N'importe quel sort la casse.** Elle peut tomber **pendant un rayon** : il faut alors choisir entre se soigner et la casser (une boule de feu dans le rayon coûte 45 points de vie : le choix du téméraire) [Romain : « c'est carrément cool »]. Environ **toutes les 15 à 20 s** [Claude, pas validé].
+- **La danse des anneaux** (la danse de Heigan, en anneaux) : **une fois par minute, pendant 20 s, toute seule** (rien d'autre pendant) [Romain]. Grosbec libère son énergie dans le sol : **la salle est découpée en anneaux autour de lui, du plus proche au fond de la salle** ; **l'anneau sûr avance vers le fond, puis revient vers lui** ; tous les autres explosent de lumière [Romain : « en arc de cercle », « les anneaux »]. **30 points par anneau raté** [Romain : « il faut qu'on puisse se louper »]. On n'a pas le temps de lancer des sorts [Romain]. **Cinq anneaux** [Claude, pas validé].
+- **Les crevasses** (la salle qui se fend) [Romain : « c'est l'utilisation du saut »] : **le sol se fend en crevasses, dans tous les sens, au hasard** (en long, en travers, en biais) ; **moins larges que le saut** ; **on ne tombe pas : la crevasse bloque comme un mur**, et **on la franchit en sautant** ; **un saut trop court s'arrête au bord**, sans tomber (on a juste perdu son saut) [Romain]. **Trois crevasses au plus** [Romain], **jamais plus de deux à sauter pour aller d'une lanterne à l'autre** [Claude, accepté] ; une nouvelle **environ toutes les 30 s** [Claude, pas validé]. Avec les doigts : si les lignes tombent du mauvais côté d'une crevasse, il faut vite sauter [Romain].
+- **Le rythme, en résumé** : les doigts toutes les 4 s ; un rayon toutes les 15 s environ ; la coque à part, toutes les 15 à 20 s ; la danse une fois par minute, pendant 20 s ; les crevasses qui découpent la salle petit à petit [Romain : « ça me paraît bien »]. **[Claude, pas validé]** : que tout s'accélère au fil du tiers (de 4 s à 2,5 s), pour que la fin soit la plus intense.
+- **Le troisième tiers garde 1 000 points** [Claude, pas redit ; Romain avait dit « 3 000 en tout, 1 000 par tiers »] : on y tape moins souvent, il sera sans doute plus long que les autres ; à régler en jouant.
+
+**8. La fin de la phase 2** [Romain : « voilà, on fait ça »] : au bout du troisième tiers, la même chose qu'aux autres : les symboles, le code du Pisteur à sa console, ses 200 points, le dernier code ; quand les trois l'ont tapé, **l'armure est détruite** et la grande cinématique se lance (§ 18.2).
+
+**9. La largeur de la salle** : pas encore fixée [Claude] ; vers **14 pas**, la traverser prend environ 4 s, et 2 s depuis le milieu.
+
+**10. La mort**
+- **Devant** [Romain] : **l'armure garde sa vie** (rien n'est perdu) ; on a juste **un temps de réapparition : 10 s** [Claude, accepté]. **Les malus ne doivent pas s'accumuler** [Romain : « on a déjà le malus de ne pas pouvoir faire de dégâts »] : **pendant la mort, aucun nouveau réparateur** ; les autres attaques continuent, et on les voit. **En réapparaissant, on est intouchable pendant 4 s** [Romain : par exemple le temps que des flammes s'éteignent].
+- **Le Pisteur** [Romain] : **il garde ce qu'il a fait** (les pièces cassées le restent) ; il **réapparaît après 10 s**, **dans un coin de sa salle où les ennemis ne vont jamais**, **en mode furtif (dans l'ombre)** ; **pas d'invulnérabilité** ; **aucune nouvelle vague de gardes pendant sa mort**. La vraie punition, c'est le temps : pendant ce temps, devant, les attaques sous la bulle accélèrent.
+
+**11. Le Pisteur pendant la phase 2** (pour le chantier 6)
+- **Sa salle** [Romain] : des murs un peu comme l'arrière-salle de la phase 1, en version différente (un autre sol, pas le même tapis) ; **au fond, l'armure vue de dos**, à peu près en entier, **environ 6 mètres de haut**. **Deux lanternes** dans sa salle, une dorée et une rouge (deux devant, deux derrière : les quatre lanternes, point 12).
+- **Avant le code** : il ne peut pas taper l'armure : **une zone rouge autour d'elle fait des dégâts en continu** et l'empêche d'approcher [Romain].
+- **Des vagues de gardes sans fin** [Romain] : il doit les enchaîner sans perdre de temps ; s'il se laisse submerger, « ça va devenir l'enfer », et il peut mourir. **Une nouvelle escouade toutes les 30 s** [Romain] ; **quatre escouades au plus dans la salle**, la suivante attend derrière la porte [Romain : il faut une limite, « faut pas mettre 100 golems dans la salle »]. Le menu de sa maquette réglera la cadence.
+  - **Le repère de Romain** : il finit le combat du Pisteur de la phase 1 en **10 à 12 minutes** (il s'estime bon joueur) ; dans la phase 1, deux escouades entrent à la fois : il faut choisir, attendre qu'elles se séparent, et en tuer une peut faire repérer par l'autre.
+  - **Le Pisteur peut rester dans l'ombre tout le temps** (les dernières versions de son combat) : **la punition de celui qui se cache sans se battre, c'est l'accumulation des escouades** ; au moment d'aller à la console puis de taper l'armure, il sera entouré. Refusés : un golem à l'œil qui voit à travers l'ombre (« on peut toujours se cacher derrière les murs ») ; des escouades qui se mettent en colère après 30 s (« les colères sont pas faites pour ça »).
+- **La console et le code** : voir le point 6. **Après le code, plus aucune nouvelle escouade n'arrive** [Romain] ; **celles qui sont déjà dans la salle restent** [Claude, accepté]. Pendant qu'il est à la console, une dernière escouade peut entrer sans qu'il la voie ; il observe sa ronde, puis **soit il se glisse jusqu'à l'armure sans être repéré, soit il nettoie d'abord** [Romain].
+- **Deuxième tiers** : **les orbes tombent aussi chez lui** [Romain], avec ses deux lanternes ; **il peut rester dans l'ombre en portant l'orbe** [Romain : « courir quand t'es pas en furtif, c'est l'enfer »] ; **son bonus dure 20 s** : **sa dague fait deux fois plus de dégâts** (l'embuscade passe de 30 à 60 : elle tue d'un coup les rôdeurs, les javelots et les mortiers ; le porte-dalle, 80, résiste) ; en échange, **des escouades un peu plus difficiles à enchaîner** [Romain : « tu fais juste des combos un peu plus difficiles, c'est tout »], pas trop, pour que l'orbe aide sans être indispensable [Claude, accepté].
+- **Troisième tiers** : **des cuirassés** (quand ils enragent, ils se transforment en boule : « super chiant à attraper ») **et un seul colosse, au milieu du tiers** [Romain]. **Plus d'orbes** (« il faut que ça soit raccord avec les autres ») ; **pas de rayon chez lui** [Romain, après avoir hésité]. **La danse des anneaux touche aussi sa salle** : les anneaux partent de Grosbec dans les deux sens ; **les gardes prennent les explosions eux aussi, et dansent vraiment** : pendant la danse, ils oublient le Pisteur pour survivre (un moment de répit, et une occasion pour les téméraires) [Romain].
+- **Les 200 points à taper restent les mêmes à chaque tiers** [Romain].
+- Ce qui tient toujours du § 18.4 : les bandages, et « à chaque erreur sur le code, une vague de gardes en plus » (pas rediscuté ce soir).
+
+**12. L'histoire : les quatre lanternes** [Romain] (vaut aussi pour la fin de la saison, § 18.2)
+- **Grosbec s'est installé dans cette salle exprès** : **les quatre lanternes y alimentaient son armure** ; il comptait rester là jusqu'à ce que tout soit drainé, l'armure prête, puis partir.
+- **Deux lanternes dans la salle de devant** (une dorée, une rouge, chacune de son côté), **deux dans la salle du Pisteur**.
+- **Le trop-plein** [Claude, accepté] : les lanternes sont déjà pleines ; l'énergie qu'on y rapporte déborde et passe dans le héros.
+
+**13. Les idées refusées ce soir** (pour ne pas les reproposer)
+- Une attaque automatique très lente, comme filet de sécurité (Romain l'a proposée, puis enlevée).
+- Le sort rapide instantané (« il suffit de courir et de spammer »).
+- Des réparateurs sous la bulle qui ne réparent rien (proposé par Romain, Claude contre : une fausse menace).
+- Pour la main glacée : un projectile à tête chercheuse (il traverserait les colonnes).
+- Pour le troisième tiers : garder le bouclier qui renvoie ; le rayon qui tourne ; l'aspiration ; la boule à absorber ; la foudre (« ça n'a rien à voir, on est en énergie ») ; la boule qui suit ; la pluie d'énergie (« toujours un peu le même délire » que les colonnes) ; les deux énergies rouge et dorée qui alternent (« pas logique » : on ne fait pas le lien entre le rouge et le feu) ; la coque comme récompense après la danse ; le lien d'énergie.
+- Pour le Pisteur au troisième tiers : l'éclair de lumière qui inonde la salle ; un rayon de lanterne chez lui (« juste un rayon qui ferait chier ») ; un mur d'énergie qui coupe sa salle.
+
+**14. Ce qui reste à régler** (en jouant, ou à demander à Romain)
+- Les chiffres marqués [Claude, pas validé] : la durée du rayon (8 s), le rythme de la coque (15 à 20 s) et des crevasses (30 s), les cinq anneaux, l'accélération dans le troisième tiers, la vie du troisième tiers.
+- La largeur de la salle et la taille des colonnes.
+- La recharge du saut (0,5, 1,5 ou 3 s).
+- Si le ciblage des réparateurs au doigt passe avec des enfants.
+- **La maquette v1 (§ 18.12) ne correspond plus à rien de tout ça** : il faut **une maquette v2**, toujours en formes simples, avec l'interface du Pisteur (téléphone couché, vue d'en haut). **Elle attend le go de Romain.** Le menu devra régler : la recharge du saut ; la durée de l'accélération sous la bulle (2 ou 4 minutes) ; le faux Pisteur (au bouton ou au minuteur) ; les vies du tiers ; le rythme des attaques.
