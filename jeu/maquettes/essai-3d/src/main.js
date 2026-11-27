@@ -133,8 +133,31 @@ charger('barde.json', g => {
   if (g.animations.length) actions.garde = melangeur.clipAction(g.animations[0]);
   let reste = Object.keys(ANIMS).length; if (!reste) pret('barde');
   for (const [nom, fichier] of Object.entries(ANIMS)) charger(fichier, a => { if (a.animations[0]) { const act = melangeur.clipAction(a.animations[0]); actions[nom] = act; if (nom === 'feu' || nom === 'glace') { act.setLoop(THREE.LoopOnce); act.clampWhenFinished = true; } } if (--reste === 0) pret('barde'); }, () => { if (--reste === 0) pret('barde'); });
-  jouer('garde');
+  if (actions.garde) actions.garde.play();
 }, e => { $('charge').textContent = '⚠'; console.error(e); });
+/* ---------- marcher, courir : le pouce un peu poussé, il marche ; à fond, il court ----------
+   Les deux mouvements avancent ensemble, au même « pas » (même moment du pied gauche posé), et à la vitesse
+   où il avance vraiment : les pieds ne glissent pas (mesuré sur les mouvements : outils/pas.py). */
+const ALLURE = {
+  marche: { debut: 1.619, cycle: 1.4, foulee: 0.837 },   // (un cycle = deux pas ; foulée en pas du jeu, le Barde fait 1,55 pas)
+  course: { debut: 0.049, cycle: 0.7333, foulee: 2.49 }
+};
+const loco = { garde: 1, marche: 0, course: 0, phase: 0 };
+function locomotion(dt, v) {
+  const b = doux((v - 1.0) / 1.0), arret = v < 0.05 ? 1 : 0;
+  const cible = { garde: arret, marche: (1 - arret) * (1 - b), course: (1 - arret) * b };
+  const k = Math.min(1, dt * 9); let somme = 0;
+  for (const n in cible) { loco[n] += (cible[n] - loco[n]) * k; somme += loco[n]; }
+  for (const n in cible) loco[n] /= somme || 1;
+  const L = ALLURE.marche.foulee + (ALLURE.course.foulee - ALLURE.marche.foulee) * b;
+  if (v > 0.05) loco.phase = (loco.phase + dt * v / L) % 1;
+  for (const n of ['garde', 'marche', 'course']) {
+    const a = actions[n]; if (!a) continue;
+    if (!a.__lance) { a.play(); a.__lance = true; }
+    a.setEffectiveWeight(loco[n]);
+    if (n !== 'garde') { const al = ALLURE[n]; a.timeScale = 0; a.time = (al.debut + loco.phase * al.cycle) % a.getClip().duration; }
+  }
+}
 function jouer(nom, fondu) {
   const a = actions[nom] || actions.garde; if (!a || a === enCours) return;
   a.reset().setEffectiveWeight(1).play(); if (enCours) a.crossFadeFrom(enCours, fondu || 0.25, true); enCours = a;
@@ -220,11 +243,34 @@ function animerLuth(dt, t) {
   grattage += dt * (h.sort && h.luth === 'main' || (h.luth === 'sort' && h.sort) ? 1 : -1) * 4; grattage = clamp(grattage, 0, 1);
   const g = Math.sin(t * 2 * Math.PI * 4.5);
   const cordes = surLuth(0.05 + 0.015 * g * grattage, 0.045 * g * grattage, 0.05 + 0.012 * Math.abs(g) * grattage);   // la main droite va et vient sur les cordes
-  const manche = surLuth(0.33 + 0.01 * Math.sin(t * 9) * grattage, -0.03, -0.02);
-  const cibleR = prise.clone().lerp(cordes, r.sR);
+  // le repère du luth tel qu'il est maintenant : le long du manche (u), la face des cordes (f), « vers le haut » autour du manche (hautU)
+  const u = LU.axe.clone().transformDirection(LUmat), f = LU.face.clone().transformDirection(LUmat);
+  const hautU = new THREE.Vector3(0, 1, 0).sub(u.clone().multiplyScalar(u.y)).normalize();
+  // main gauche : derrière le manche, la paume contre lui, les doigts qui passent par-dessus (la paume sur le manche, pas le poignet)
+  const manche = surLuth(0.31 + 0.012 * Math.sin(t * 9) * grattage, 0, 0.0);
+  const Fg = hautU.clone().multiplyScalar(0.8).addScaledVector(f, 0.45).normalize();
+  const Pg = f.clone().sub(Fg.clone().multiplyScalar(f.dot(Fg))).normalize();
+  const poignetG = manche.clone().addScaledVector(Pg, -0.032).addScaledVector(Fg, -MAIN.paume);
+  // main droite : devant les cordes, la paume vers elles, les doigts vers le bas
+  const Fd = hautU.clone().multiplyScalar(-0.85).addScaledVector(u, -0.35).normalize();
+  const Pd = f.clone().negate().sub(Fd.clone().multiplyScalar(-f.dot(Fd))).normalize();
+  const poignetD = cordes.clone().addScaledVector(Pd, -0.03).addScaledVector(Fd, -MAIN.paume);
+  const cibleR = prise.clone().lerp(poignetD, r.sR);
   const poleR = new THREE.Vector3(-0.6, 0.5, 0.2).lerp(new THREE.Vector3(-0.7, -0.6, -0.3), clamp(r.k * 1.2, 0, 1));
   guider(OS.RightArm, OS.RightForeArm, OS.RightHand, cibleR, poleR, r.wR);
-  guider(OS.LeftArm, OS.LeftForeArm, OS.LeftHand, manche, new THREE.Vector3(0.7, -0.6, -0.2), r.wL);
+  orienter(OS.RightHand, Fd, Pd, MAIN.paumeD, r.wR * r.sR);
+  guider(OS.LeftArm, OS.LeftForeArm, OS.LeftHand, poignetG, new THREE.Vector3(0.7, -0.6, -0.2), r.wL);
+  orienter(OS.LeftHand, Fg, Pg, MAIN.paumeG, r.wL);
+}
+/* tourner la main : ses doigts (l'axe y de l'os) vers F, sa paume vers P (repère du modèle) */
+const MAIN = { paume: 0.075, paumeG: new THREE.Vector3(1, 0, 0), paumeD: new THREE.Vector3(-1, 0, 0) };   // (au repos les paumes regardent les cuisses : +x de l'os à gauche, -x à droite)
+function orienter(os, F, P, paumeLocale, poids) {
+  if (poids <= 0.001) return;
+  const fl = new THREE.Vector3(0, 1, 0), pl = paumeLocale, tl = new THREE.Vector3().crossVectors(fl, pl);
+  const T = new THREE.Vector3().crossVectors(F, P);
+  const Mc = new THREE.Matrix4().makeBasis(F, P, T), Ml = new THREE.Matrix4().makeBasis(fl, pl, tl);
+  const q = new THREE.Quaternion().setFromRotationMatrix(Mc.multiply(Ml.transpose()));
+  poserQuatM(os, quatM(os).slerp(q, poids));
 }
 function bouchePosJeu(devant) {   // le trou de la caisse (ou un peu devant), en coordonnées du jeu (x, y, z)
   const v = LU.centre.clone().addScaledVector(LU.face, 0.03 + (devant || 0)).applyMatrix4(LUTH.matrixWorld);
@@ -239,7 +285,6 @@ function lancer(q) {
   h.sort = q; h.sortT = 0; h.sortD = DUREE[q];
   if (h.luth === 'dos') { h.luth = 'sort'; h.tl = 0; }
   else if (h.luth === 'range') { const k = reglagesLuth().k; h.luth = 'sort'; h.tl = 0.25 + 0.4 * k; }
-  jouer('garde', 0.2);
 }
 /* des lumières toujours là (éteintes) : en ajouter une en plein jeu ferait recalculer tous les dessins (un à-coup) */
 const reserve = [];
@@ -330,14 +375,15 @@ function avancer(sec) { for (let k = 0; k < Math.round(sec * 60); k++) { tSim +=
 function etape(dt, t) {
   /* déplacer le héros */
   let mx = joy.mx, my = joy.my; const kx = (touches.arrowright || touches.d ? 1 : 0) - (touches.arrowleft || touches.q || touches.a ? 1 : 0), ky = (touches.arrowdown || touches.s ? 1 : 0) - (touches.arrowup || touches.z || touches.w ? 1 : 0);
-  if (kx || ky) { const n = Math.hypot(kx, ky); mx = kx / n; my = ky / n; }
+  if (kx || ky) { const n = Math.hypot(kx, ky), lent = touches.shift ? 0.25 : 1; mx = kx / n * lent; my = ky / n * lent; }
   const bouge = !h.sort && Math.hypot(mx, my) > 0.15;
-  if (bouge) { const v = 3.6 * Math.min(1, Math.hypot(mx, my)); const nx = h.x + mx * v * dt, ny = h.y + my * v * dt; if (libre(nx, h.y)) h.x = nx; if (libre(h.x, ny)) h.y = ny; h.a = Math.atan2(my, mx); }
+  let vit = 0;
+  if (bouge) { const v = 3.6 * Math.min(1, Math.hypot(mx, my)); vit = v; const nx = h.x + mx * v * dt, ny = h.y + my * v * dt; if (libre(nx, h.y)) h.x = nx; if (libre(h.x, ny)) h.y = ny; h.a = Math.atan2(my, mx); }
   h.tl += dt;
   if (h.luth === 'sort' && h.tl >= 0.85) { h.luth = 'main'; h.tl = 0; }
   if (h.luth === 'range' && h.tl >= 0.8) { h.luth = 'dos'; h.tl = 0; }
   if (h.sort) {
-    h.sortT += dt; h.a = window.__face ? Math.PI / 2 : Math.atan2(ARM.y - h.y, ARM.x - h.x);
+    h.sortT += dt; h.a = window.__face !== undefined && window.__face !== false ? (typeof window.__face === 'number' ? window.__face : Math.PI / 2) : Math.atan2(ARM.y - h.y, ARM.x - h.x);
     const joue = h.luth === 'main' || (h.luth === 'sort' && h.tl > 0.6);
     if (joue && LUTH) {   // il gratte : des petites notes, et une lueur qui monte dans le luth
       h.petite = (h.petite || 0) - dt; if (h.petite <= 0) { petiteNote(h.sort === 'feu'); h.petite = 0.22; }
@@ -345,15 +391,14 @@ function etape(dt, t) {
       if (lumCharge) { const d = bouchePosJeu(0.3); lumCharge.position.copy(G(d.x, d.y, d.z)); lumCharge.intensity = 9 * doux(h.sortT / h.sortD); }
     }
     if (h.sortT >= h.sortD) { partir(h.sort, LUTH ? bouchePosJeu() : null); h.sort = null; h.garde = 0.9; rendreL(lumCharge); lumCharge = null; }
-    jouer('garde', 0.2);
   } else {
     if (h.luth === 'main') { h.garde -= dt; if (bouge || h.garde <= 0) { h.luth = 'range'; h.tl = 0; } }
-    jouer(bouge ? 'course' : 'garde', 0.2);
+
   }
   /* le Barde tourne doucement vers où il va */
   const cible = Math.PI / 2 - h.a; let da = cible - barde.rotation.z; da = Math.atan2(Math.sin(da), Math.cos(da)); barde.rotation.z += da * Math.min(1, dt * 12);
   barde.position.copy(G(h.x, h.y, 0));
-  if (melangeur) melangeur.update(dt);
+  if (melangeur) { locomotion(dt, vit); melangeur.update(dt); }
   redresser();
   barde.updateMatrixWorld(true); animerLuth(dt, t);
   avancerTirs(dt); avancerEclats(dt); avancerNotes(dt);
@@ -369,4 +414,4 @@ function etape(dt, t) {
   cadrer(); fondMat.uniforms.fen.value.set(camX / SW, camY / SH, (camX + Ws) / SW, (camY + Hs) / SH);
 }
 requestAnimationFrame(boucle);
-window.__essai = { avancer, taille, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };
+window.__essai = { avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };

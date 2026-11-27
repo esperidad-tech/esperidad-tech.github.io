@@ -7665,6 +7665,15 @@ Tout le fil est gardé dans `claude/combat-pisteur-decisions-orales-25-novembre-
 - **Les limites, franchement** : les doigts ne bougent pas (pas d'os dans les doigts) ; vu de la caméra du jeu, le Barde joue **de dos** (l'armure est au fond de la salle) : on voit surtout le manche dépasser à sa gauche et les notes qui montent ; le geste est fait par programme, il peut paraître un peu raide.
 - **À demander à Romain** : le geste (assez naturel ? assez rapide ?) ; la lueur et les petites notes ; la pièce dans le dos se voit-elle chez lui ? Ensuite seulement : l'armure en 3D (son go) puis les autres héros.
 
+**L'avis de Romain sur le luth, et la suite (à la voix, 27 novembre vers 17 h 30 ; go écrit 17 h 46 : « Allez, vas-y. »)** :
+- [Romain] « C'est vachement mieux » : le luth ne se déforme plus, il le prend bien quand on appuie. **Mais la main qui tient le manche est complètement à côté.**
+- [Romain] **Le Barde n'est pas encore fini** : avec le pouce pas poussé à fond, il doit **marcher lentement** (il faisait le geste de courir et ses pieds glissaient). [Claude, accepté] Une marche de la bibliothèque (8 crédits) ; pouce un peu poussé, il marche ; à fond, il court ; entre les deux, le geste passe de l'un à l'autre, à la bonne vitesse pour que les pieds ne glissent pas.
+
+**Fait (en ligne à 17 h 53, même adresse, version `1795798430-4f16`)** :
+- **La main gauche tient le manche** : on visait le poignet, maintenant la paume ; la main est tournée, derrière le manche, les doigts par-dessus. La main droite est tournée vers les cordes.
+- **La marche** (Higgsfield « Casual_Walk », 8 crédits ; **79 crédits dépensés en tout pour l'essai**). La vitesse suit la poussée du pouce : il marche, trottine (les deux mêlés), puis court ; marche et course avancent au même pas et à la vitesse mesurée sur les pieds, pour qu'ils ne glissent pas.
+- **À demander à Romain** : la main, c'est bon ? La marche et le passage à la course ? Encore quelque chose sur le Barde avant de le dire fini ?
+
 ### 18.22 Chantier 1 : les trous de la fin, et les nouvelles règles de la pierre (26 novembre au soir, par écrit ; 27 novembre, à la voix) — DÉCIDÉ EN GRANDE PARTIE, RIEN DE CONSTRUIT ; DEUX POINTS ENCORE OUVERTS (point 9)
 
 **D'où ça vient** : le go de Romain, le 26 novembre à 19 h 50 (« On prend le chantier 1 du § 18.11 »). Claude a proposé une réponse pour chaque point du § 18.10 que la fiche lui donnait (1, 2, 3, 4, 7, 8, 10, 12) ; Romain a répondu par écrit à 20 h 20. Puis, le 27 novembre, il a tout repris à la voix, et il est allé beaucoup plus loin : **il a changé les règles de la pierre** (« pour moi, c'est important que tout soit logique » ; « il y a de la magie, je dis pas, mais pas trop : une magie soft »). Le 27 novembre à 16 h 24, il a écrit : « Vas-y, mets à jour, avec tout ce qui a été dit là, mets à jour la bible. » Les étiquettes sont celles du § 18 ; en plus, **[Lecture de Claude]** marque ce que Claude a compris d'une phrase dictée : à confirmer.
