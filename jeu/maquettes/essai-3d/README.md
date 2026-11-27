@@ -15,7 +15,7 @@ plate qui ne prend pas la lumière, trop peu de poses). Cet essai teste une autr
 Rien de tout ça n'est dans le jeu. C'est un essai, à montrer à Romain, sans « go » pour la suite.
 
 **En ligne (page Claude, hors du jeu)** : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP
-(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`). Pour republier : `publish_files` des fichiers
+(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795792188-c937`). Pour republier : `publish_files` des fichiers
 de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json), `base_version` = la version en ligne.
 La page Claude ne sert pas les `.glb` : les modèles y sont en glTF « texte » (`.json`, tout dedans en
 base64, `outils/enjson.mjs`) ; les `.glb` sont gardés dans `origine/glb/`.

@@ -7624,3 +7624,20 @@ Tout le fil est gardé dans `claude/combat-pisteur-decisions-orales-25-novembre-
 **Ce qui est moins bien, franchement** : c'est toujours du dessin à la main (pas un vrai modèle 3D ni des images peintes) : de près, il reste des formes simples ; quand tout arrive en même temps (une zone qui frappe, un coup juste, la méga attaque), l'écran est très chargé ; sur une vieille tablette, il faudra voir la vitesse ; les héros restent des pastilles.
 
 **À demander à Romain quand il aura joué** : Grosbec (assez impressionnant ? assez vivant ?) ; la partie faible (on la voit bien ? 6 s, c'est assez ?) ; le rebond à 15 ; les 6 s d'annonce ; les effets (trop chargé ?) ; la vitesse sur son iPhone. **Ensuite seulement** : la phase 3 en vrai (chantier 7).
+
+### 18.21 L'essai « en vraie 3D » : le Barde dans la salle de l'armure — EN LIGNE, HORS DU JEU (27 novembre, 16 h 10) ; PAS ENCORE VU PAR ROMAIN ; RIEN NE CHANGE DANS LE JEU SANS SON GO
+
+**Ce que Romain a dit (à la voix, 27 novembre après-midi)** : sur l'ordinateur, en grand, la phase 2 en vrai (§ 18.19) est « très moche », « tout bricolé », ça fait « petit jeu pourri », « pas du tout professionnel ». Même le combat du Pisteur : dès qu'on l'agrandit, l'image est floue ; le héros ne prend pas la lumière (il reste clair dans les endroits sombres, on sent qu'il est « posé par-dessus ») ; il n'a que cinq poses. Il demande si on peut faire mieux avec Higgsfield. Go pour un petit essai avec le Barde (« OK, vas-y », puis à 15 h 08, écrit : « Vas-y, fais l'essai pour tester. »).
+
+**Ce qui est fait** (https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP ; sources `jeu/maquettes/essai-3d/`, `README.md` : tout y est) :
+- **Le Barde en vrai volume** : une image propre du Barde en trois vues (Higgsfield, Nano Banana 2), changée en modèle 3D texturé et articulé (Meshy), avec quatre mouvements pris dans une bibliothèque : repos, course, sort de feu, sort de glace. Il se tourne dans la direction où il court.
+- **La salle de l'armure** calculée par Blender comme pour le jeu, mais **une fois et demie plus fine** (2580 × 1668), avec les deux lanternes, et **la profondeur de chaque point** : le Barde passe vraiment **derrière** les lanternes et devant elles.
+- **La lumière** : le Barde est éclairé en direct par les quatre brasiers (qui vacillent), les deux lanternes (dorée et rouge), la lueur du cercle et la fente du plafond, qui lui donne une vraie ombre au sol. La note de feu est une vraie lumière qui l'éclaire et éclaire le sol en passant.
+- **Le jeu** : le pouce à gauche, 🎶 la note de feu, 🎵 la note glacée ; les notes partent vers le centre du cercle et éclatent.
+- **Coût** : environ 71 crédits Higgsfield (image 4, modèle 35, quatre mouvements 4 × 8).
+
+**Pas fait, pas vérifié** : l'armure de Grosbec n'est pas en 3D (la création de son image a été bloquée pendant l'essai ; avec le go de Romain : environ 40 crédits) ; la vitesse sur un vrai téléphone ou une vraie tablette (dans un navigateur sans carte graphique, ça ne veut rien dire) ; le décor reste une image : la lumière des sorts éclaire le Barde et le sol, pas les murs.
+
+**L'avis de Claude, franchement** : ça règle les deux défauts que Romain a vus (le héros prend la lumière, et il a de vrais mouvements, autant qu'on veut : 8 crédits le mouvement). Mais à la taille d'un téléphone, le Barde reste petit et le modèle de Higgsfield n'est pas très fin de près (visage, mains) ; et si on fait les héros en 3D, il faudra faire les ennemis (armure, golems) en 3D aussi, sinon c'est eux qui auront l'air « posés par-dessus ».
+
+**À demander à Romain** : le Barde en 3D, c'est mieux que le héros dessiné ? Le fond plus fin suffit sur grand écran ? Faut-il continuer (l'armure en 3D, environ 40 crédits ; chaque autre héros environ 70 crédits pour quatre mouvements), et par quel combat commencer ?
