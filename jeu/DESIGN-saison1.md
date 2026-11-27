@@ -7695,6 +7695,21 @@ Tout le fil est gardé dans `claude/combat-pisteur-decisions-orales-25-novembre-
 - **La marche** (Higgsfield « Casual_Walk », 8 crédits ; **79 crédits dépensés en tout pour l'essai**). La vitesse suit la poussée du pouce : il marche, trottine (les deux mêlés), puis court ; marche et course avancent au même pas et à la vitesse mesurée sur les pieds, pour qu'ils ne glissent pas.
 - **À demander à Romain** : la main, c'est bon ? La marche et le passage à la course ? Encore quelque chose sur le Barde avant de le dire fini ?
 
+**L'avis de Romain sur la main et la marche, et la suite (à la voix, 27 novembre vers 18 h ; go écrit 18 h 06 : « Vas-y. »)** :
+- [Romain] « C'est mieux pour le luth », mais **la course flotte** : « ce n'est pas la même course que tout à l'heure », « on dirait qu'il flotte sur le sol ». [Romain] « Il ne faut pas que le personnage ait l'impression qu'il flotte. »
+- [Romain] **Une vraie course** : il a choisi **la charge** (« Standard_Forward_Charge ») pour le Barde ; la course seulement **le pouce au bord**, toujours **à son vrai rythme** ; **la marche, un peu accélérée**, pour le reste.
+- [Romain] **Le demi-tour** : seulement **quand il court à fond** et que le pouce part d'un coup dans l'autre sens : il s'arrête net et repart. [Claude, accepté] Court (le héros ne répond pas pendant ce moment).
+- [Romain] **Quand la note part, la main droite se tend vers la cible**, en même temps que le sort ; la gauche garde le manche.
+- [Romain, pour plus tard, pas de go] Une course différente par héros : **la course rapide** (« RunFast ») pour le Pisteur, **le sprint penché** (« Lean_Forward_Sprint ») pour l'Alchimiste, **« Run_03 »** peut-être pour le Sage.
+
+**Fait (en ligne à 18 h 36, même adresse, version `1795800990-04e9`)** :
+- **Pourquoi il flottait** (deux erreurs de Claude, corrigées) : le mouvement de repos était chargé deux fois et l'un des deux continuait de jouer en douce, à plein poids, mélangé à la marche et à la course (les jambes ne bougeaient qu'à moitié) ; et la vitesse ne suivait pas la poussée du pouce comme le geste (pouce à moitié : il avançait quatre fois moins vite que ses jambes).
+- **La charge** (8 crédits) au pouce au bord, à 4 pas par seconde, son vrai rythme ; **la marche** du pouce un peu poussé jusqu'à 85 %, de son rythme à 1,6 fois plus vite ; les jambes ne sont jamais au ralenti.
+- **Le demi-tour** (le « virage serré » de la bibliothèque, 8 crédits) : en pleine course, le pouce à l'opposé : il freine, pivote, repart dans l'autre sens, en 0,65 s.
+- **La main qui lance** : quand la note part, la main droite se tend vers l'avant, paume ouverte, puis revient, et il range son luth.
+- **Vérifié en film et en mesure** : la vitesse des pieds posés, image par image (marche 0,1 pas/s, course 0,2 pas/s : ils ne glissent plus ; dans la version vue par Romain, jusqu'à 1,8) ; de petits films (marche, course, demi-tour, sort). **95 crédits dépensés en tout pour l'essai.**
+- **À demander à Romain** : la course ne flotte plus ? La marche est-elle assez rapide (au plus 1 pas/s, contre 4 en courant) ? Le demi-tour ? Le geste de la main ?
+
 ### 18.22 Chantier 1 : les trous de la fin, et les nouvelles règles de la pierre (26 novembre au soir, par écrit ; 27 novembre, à la voix, deux fois) — DÉCIDÉ EN GRANDE PARTIE, RIEN DE CONSTRUIT ; QUELQUES POINTS ENCORE OUVERTS (point 3)
 
 **D'où ça vient** : le go de Romain, le 26 novembre à 19 h 50 (« On prend le chantier 1 du § 18.11 »). Claude a proposé une réponse pour chaque point du § 18.10 que la fiche lui donnait (1, 2, 3, 4, 7, 8, 10, 12) ; Romain a répondu par écrit à 20 h 20. Le 27 novembre, il a tout repris à la voix, deux fois, et il est allé beaucoup plus loin : **il a refait les règles de la pierre** (« pour moi, c'est important que tout soit logique » ; « il y a de la magie, je dis pas, mais pas trop : une magie soft »). À 16 h 24 : « Vas-y, mets à jour, avec tout ce qui a été dit là, mets à jour la bible. » À 17 h 44, après la deuxième séance : « Allez, mets à jour la bible et enlève tous les trucs qui sont obsolètes. » Les étiquettes sont celles du § 18 ; en plus, **[Lecture de Claude]** marque ce que Claude a compris d'une phrase dictée : à confirmer.
