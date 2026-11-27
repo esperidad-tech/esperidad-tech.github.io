@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Phase 2 — l'armure de Grosbec</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+/* La phase 2 de l'enquête 10, les trois de devant contre l'armure de Grosbec — la vraie version (chantier 5).
+   La salle rendue en volume, en plein écran, la caméra qui suit le héros (comme le combat du Pisteur) ; les boutons posés par-dessus.
+   Jaune réservé aux boutons « lancer ». Téléphone couché ; sur tablette, toute la salle tient dans l'écran. */
+:root{color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#070912;overflow:hidden;color:#eef0f8;font-family:Nunito,system-ui,sans-serif;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}
+#jeu{position:fixed;inset:0;width:100%;height:100%;touch-action:none;display:block}
+button{font-family:inherit;cursor:pointer;touch-action:none;color:inherit}
+.jaune{background:#ffd23a;color:#111;font-weight:900;font-size:1.15rem;border:0;border-radius:.6em;padding:.6em 1.6em;min-height:2.9em;box-shadow:0 .22em 0 #9c770c}
+.jaune:active{transform:translateY(.15em);box-shadow:0 .07em 0 #9c770c}
+.gris{background:#22304b;color:#eef0f8;font-weight:800;font-size:.95rem;border:1px solid #3d5078;border-radius:.6em;padding:.5em 1em;min-height:2.6em}
+/* les quatre boutons, à la place de ceux du Pisteur */
+.bt{position:fixed;border-radius:50%;background:rgba(10,16,30,.42);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);border:2px solid rgba(243,212,138,.55);display:none;align-items:center;justify-content:center;padding:0;z-index:2;overflow:hidden}
+.bt.on{display:flex}
+.bt b{font-size:2.1em;line-height:1;font-weight:400;pointer-events:none}
+.bt .rc{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(rgba(3,5,12,.74) calc(var(--r,0)*360deg),transparent 0)}
+.bt .lc{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(var(--c,#fff) calc(var(--p,0)*360deg),transparent 0);opacity:.45}
+.bt.appui{background:rgba(255,210,58,.3)}
+.bt.eteint{filter:grayscale(1);opacity:.42}
+.bt.non{animation:non .3s linear}
+@keyframes non{0%,100%{translate:0}25%{translate:-.3em}60%{translate:.3em}}
+#bGlace{width:min(23vh,9rem);height:min(23vh,9rem);right:calc(4vh + env(safe-area-inset-right));bottom:calc(6vh + env(safe-area-inset-bottom));border-color:#9fe3ff;font-size:1.25rem}
+#bFeu{width:min(17vh,6.6rem);height:min(17vh,6.6rem);right:calc(min(29vh,11.4rem) + env(safe-area-inset-right));bottom:calc(4vh + env(safe-area-inset-bottom));border-color:#ff7a2a}
+#bSaut{width:min(17vh,6.6rem);height:min(17vh,6.6rem);right:calc(min(7vh,2.8rem) + env(safe-area-inset-right));bottom:calc(min(32vh,12.5rem) + env(safe-area-inset-bottom))}
+#bSoin{width:min(17vh,6.6rem);height:min(17vh,6.6rem);right:calc(min(27vh,10.6rem) + env(safe-area-inset-right));bottom:calc(min(24vh,9.4rem) + env(safe-area-inset-bottom));border-color:#5fe07a}
+#bFeu b,#bSaut b,#bSoin b{font-size:1.7em}
+#bSoin b{color:#5fe07a;font-weight:900}
+#bSaut b{color:#f3d48a;font-weight:900}
+.appel{animation:appel 1s ease-out infinite}
+@keyframes appel{0%{box-shadow:0 0 0 .1em rgba(255,210,58,1)}70%{box-shadow:0 0 0 .9em rgba(255,210,58,0)}100%{box-shadow:0 0 0 0 rgba(255,210,58,0)}}
+#bCode{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(3vh + env(safe-area-inset-bottom));width:min(30vh,10rem);height:min(15vh,5rem);border-radius:1em;background:#ffd23a;border:2px solid #fff3b0;display:none;align-items:center;justify-content:center;z-index:3;padding:0}
+#bCode.on{display:flex}
+#bCode .cases{display:flex;gap:.3em;pointer-events:none}
+#bCode .cases i{display:block;width:1.1em;height:1.1em;border-radius:.25em;background:#111}
+#bPisteur{position:fixed;right:calc(1.2vh + env(safe-area-inset-right));top:calc(10vh + 2.6rem);width:3rem;height:3rem;border-radius:50%;border:2px solid #5fcf86;background:rgba(18,50,30,.9);display:none;align-items:center;justify-content:center;font-size:1.4rem;z-index:3;padding:0}
+#bPisteur.on{display:flex}
+#bPause{position:fixed;right:calc(1.2vh + env(safe-area-inset-right));top:calc(1.2vh + env(safe-area-inset-top));width:2.6rem;height:2.6rem;border-radius:.6rem;background:rgba(10,16,30,.7);border:1px solid rgba(255,255,255,.25);display:none;align-items:center;justify-content:center;padding:0;z-index:4}
+#bPause.on{display:flex}
+/* la fenêtre du code : transparente, le combat se voit derrière */
+#fen{position:fixed;left:50%;top:calc(2vh + env(safe-area-inset-top));transform:translateX(-50%);width:min(92vw,28rem);display:none;flex-direction:column;align-items:center;gap:.4em;background:rgba(8,10,22,.6);border:2px solid rgba(255,214,90,.7);border-radius:1em;padding:.5em .6em .6em;z-index:5}
+#fen.on{display:flex}
+#fen .lent{width:100%;height:.4em;border-radius:1em;background:rgba(255,255,255,.12);overflow:hidden}
+#fen .lent i{display:block;height:100%;background:#7fa8ff}
+#fen .haut{display:flex;align-items:center;gap:.5em}
+#fen .case{width:2.6em;height:2.6em;border-radius:.5em;background:rgba(0,0,0,.55);border:2px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;font-size:1.3em}
+#fen .clavier{display:grid;grid-template-columns:repeat(6,1fr);gap:.3em;width:100%}
+#fen .clavier button{height:2.3em;border-radius:.5em;border:1px solid rgba(255,255,255,.25);background:rgba(30,38,62,.85);font-size:1.2em;padding:0}
+#fen .petitbt{width:2.3em;height:2.3em;border-radius:.5em;border:1px solid rgba(255,255,255,.3);background:rgba(30,38,62,.85);font-size:1.1em;padding:0}
+#fen.faux{animation:non .3s linear 2}
+/* les écrans */
+.voile{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(4,6,14,.94);padding:max(.8em,env(safe-area-inset-top)) 1em max(.8em,env(safe-area-inset-bottom));overflow-y:auto;z-index:8}
+.voile.on{display:flex}
+.carte{width:100%;max-width:34em;margin:auto;text-align:center}
+#debut{background:radial-gradient(ellipse at 50% 55%,rgba(4,5,11,.35),rgba(4,5,11,.82))}
+.jaune.attend{background:linear-gradient(90deg,#ffd23a var(--p,0%),#8a7a3a var(--p,0%));color:#2a2410}
+.titre{font-size:2.6rem;margin:0 0 .4em;filter:drop-shadow(0 0 .3em rgba(255,200,80,.6))}
+.roles{display:flex;gap:1.1em;justify-content:center;margin:0 0 1.4em}
+.roles button{width:4.2em;height:4.2em;border-radius:50%;border:4px solid transparent;font-size:1.6em;padding:0;opacity:.45;filter:grayscale(.6)}
+.roles button.choisi{opacity:1;filter:none;border-color:#fff;box-shadow:0 0 0 .2em rgba(255,255,255,.2)}
+.ligne{display:flex;flex-direction:column;align-items:stretch;gap:.25em;margin:.45em 0;text-align:left}
+.ligne > span{font-size:.82rem;font-weight:800;opacity:.75;padding-left:.2em}
+.choix{display:flex;gap:.3em;flex-wrap:wrap}
+.choix button{flex:1;min-width:4em;background:#1a2440;border:1px solid #33456e;border-radius:.55em;padding:.45em .4em;font-weight:800;font-size:.88rem;min-height:2.5em}
+.choix button.choisi{background:#ffd23a;color:#111;border-color:#ffd23a}
+.deux{display:grid;grid-template-columns:1fr 1fr;gap:0 1em}
+@media (max-width:600px){.deux{grid-template-columns:1fr}}
+.menu{display:flex;gap:.55em;justify-content:center;margin-top:.7em}
+.stats{display:grid;grid-template-columns:auto auto;gap:.3em 1.2em;justify-content:center;font-size:1.2rem;font-weight:900;margin:.8em 0 1.2em}
+.stats span{text-align:right}
+.mesures{font-size:.72rem;opacity:.55;margin-top:.8em}
+#tourner{display:none;position:fixed;inset:0;z-index:20;background:#05060c;align-items:center;justify-content:center;font-size:4rem}
+@media (orientation:portrait){#tourner{display:flex}}
+</style>
+</head>
+<body>
+<div id="tourner">📱↻</div>
+<canvas id="jeu"></canvas>
+<button class="bt" id="bGlace" aria-label="Javelot de glace"><i class="lc"></i><b>❄️</b></button>
+<button class="bt" id="bFeu" aria-label="Boule de feu"><i class="lc"></i><b>🔥</b></button>
+<button class="bt" id="bSaut" aria-label="Saut"><i class="rc"></i><b>⤴</b></button>
+<button class="bt" id="bSoin" aria-label="Soin"><i class="lc"></i><b>✚</b></button>
+<button id="bCode" aria-label="Taper le code du Pisteur"><span class="cases"><i></i><i></i><i></i></span></button>
+<button id="bPisteur" aria-label="Essai : le Pisteur crie son code">🏹</button>
+<button id="bPause" aria-label="Pause"><svg width="18" height="18" viewBox="0 0 18 18"><rect x="3" y="2" width="4" height="14" rx="1.5" fill="#fff"/><rect x="11" y="2" width="4" height="14" rx="1.5" fill="#fff"/></svg></button>
+<div id="fen">
+  <div class="lent"><i></i></div>
+  <div class="haut">
+    <button class="petitbt" id="fFerme" aria-label="Fermer">✕</button>
+    <div class="case"></div><div class="case"></div><div class="case"></div>
+    <button class="petitbt" id="fEfface" aria-label="Effacer">⌫</button>
+  </div>
+  <div class="clavier"></div>
+</div>
+
+<!-- avant de jouer : le héros, et le bouton jaune ; rien à lire -->
+<section id="debut" class="voile on">
+  <div class="carte">
+    <div class="roles" id="roles"></div>
+    <button class="jaune" id="bGo">Démarrer</button>
+    <div style="margin-top:1.2em"><button class="gris" id="bReglages" aria-label="Réglages">⚙️</button></div>
+  </div>
+</section>
+
+<section id="pause" class="voile">
+  <div class="carte">
+    <button class="jaune" id="bReprendre">Reprendre</button>
+    <div class="deux">
+      <div class="ligne"><span>Le saut revient après</span><div class="choix" data-r="saut"><button data-v="0.5">0,5 s</button><button data-v="1.5">1,5 s</button><button data-v="3">3 s</button></div></div>
+      <div class="ligne"><span>Sous la bulle, de 4 s à 2 s en</span><div class="choix" data-r="accel"><button data-v="2">2 min</button><button data-v="4">4 min</button></div></div>
+      <div class="ligne"><span>Le Pisteur crie son code</span><div class="choix" data-r="pisteur"><button data-v="0">Au bouton 🏹</button><button data-v="15">15 s</button><button data-v="30">30 s</button><button data-v="60">60 s</button></div></div>
+      <div class="ligne"><span>La vie de chaque tiers</span><div class="choix" data-r="vie"><button data-v="400">400 (essai)</button><button data-v="1000">1000</button></div></div>
+      <div class="ligne"><span>Le ralenti pour taper le code</span><div class="choix" data-r="ralenti"><button data-v="3">3 s</button><button data-v="5">5 s</button><button data-v="8">8 s</button></div></div>
+      <div class="ligne"><span>Le son</span><div class="choix" data-r="son"><button data-v="true">🔊</button><button data-v="false">🔇</button></div></div>
+      <div class="ligne"><span>Les boutons qui clignotent</span><div class="choix" data-r="aides"><button data-v="true">Oui</button><button data-v="false">Non</button></div></div>
+    </div>
+    <div class="ligne"><span>Essais (pour régler)</span><div class="choix" id="essais"><button data-f="1">Tiers 1</button><button data-f="2">Tiers 2</button><button data-f="3">Tiers 3</button><button data-f="s">Le symbole</button></div></div>
+    <div class="menu"><button class="gris" id="bRecommencer">Recommencer</button><button class="gris" id="bSalle" hidden>← La salle des jeux</button></div>
+    <p class="mesures" id="mesures"></p>
+  </div>
+</section>
+
+<section id="fin" class="voile">
+  <div class="carte">
+    <canvas id="finImg" width="160" height="110" style="width:160px;height:110px"></canvas>
+    <div class="stats" id="stats"></div>
+    <button class="jaune" id="bRejouer">Rejouer</button>
+    <div style="margin-top:.8em;display:flex;gap:.55em;justify-content:center"><button class="gris" id="bFinReglages" aria-label="Réglages">⚙️</button><button class="gris" id="bSalleFin" hidden>← La salle des jeux</button></div>
+  </div>
+</section>
+</body>
+</html>

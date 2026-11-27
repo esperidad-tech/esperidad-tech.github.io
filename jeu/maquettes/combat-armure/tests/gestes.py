@@ -1,0 +1,45 @@
+# Au doigt, téléphone couché : le pouce gauche fait courir, les boutons lancent, toucher un réparateur le vise, la pause, le code.
+import pathlib
+from playwright.sync_api import sync_playwright
+ici = pathlib.Path(__file__).resolve().parent.parent; url = (ici / 'combat-armure.html').as_uri()
+ok = ko = 0
+def v(nom, c, info=''):
+    global ok, ko
+    ok, ko = ok + bool(c), ko + (not c); print(('OK   ' if c else 'RATÉ ') + nom + (f'  ({info})' if info != '' else ''))
+with sync_playwright() as p:
+    b = p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
+    ctx = b.new_context(viewport={'width': 844, 'height': 390}, device_scale_factor=3, is_mobile=True, has_touch=True)
+    pg = ctx.new_page(); err = []; pg.on('pageerror', lambda e: err.append(str(e)))
+    pg.goto(url + '?depuis=salle'); pg.wait_for_function('window.__p2&&window.__p2.pret', timeout=90000)
+    pg.tap('#bGo'); pg.wait_for_timeout(300); pg.evaluate("__p2.S.prochaine=999")
+    v('le jeu a démarré', pg.evaluate("!!__p2.S&&__p2.S.phase==='combat'"))
+    x0 = pg.evaluate("__p2.S.h.x")
+    cdp = ctx.new_cdp_session(pg)
+    def doigt(t, pts): cdp.send('Input.dispatchTouchEvent', {'type': t, 'touchPoints': pts})
+    doigt('touchStart', [{'x': 150, 'y': 300, 'id': 1}]); pg.wait_for_timeout(50)
+    for i in range(10): doigt('touchMove', [{'x': 150 + i * 6, 'y': 300, 'id': 1}]); pg.wait_for_timeout(30)
+    pg.wait_for_timeout(500); doigt('touchEnd', [])
+    x1 = pg.evaluate("__p2.S.h.x"); v('le pouce gauche fait courir à droite', x1 > x0 + 0.5, f'{x0:.1f} → {x1:.1f}')
+    pg.wait_for_timeout(200); pg.tap('#bGlace'); pg.wait_for_timeout(100)
+    v('le bouton de glace lance le sort', pg.evaluate("!!__p2.S.h.lance&&__p2.S.h.lance.quoi==='glace'"))
+    pg.wait_for_timeout(2600); v('… et il touche l\'armure', pg.evaluate("__p2.S.vie<1000"), pg.evaluate("__p2.S.vie"))
+    pg.tap('#bFeu'); pg.wait_for_timeout(100); v('la boule de feu se prépare', pg.evaluate("!!__p2.S.h.lance&&__p2.S.h.lance.quoi==='feu'"))
+    pg.wait_for_timeout(3300); pg.evaluate("__p2.S.h.pv=40"); pg.tap('#bSoin'); pg.wait_for_timeout(2300)
+    v('le soin rend 50', pg.evaluate("__p2.S.h.pv")==90, pg.evaluate("__p2.S.h.pv"))
+    pg.tap('#bSaut'); pg.wait_for_timeout(100); v('le saut', pg.evaluate("!!__p2.S.h.saut||__p2.S.h.sautT>0"))
+    # toucher un réparateur sur son corps (pas à ses pieds)
+    pg.evaluate("__p2.S.reps.push({x:5,y:5,rouge:0})"); pg.wait_for_timeout(100)
+    pos = pg.evaluate("(()=>{const r=__p2.S.reps[0];return __p2.versEcran(r.x,r.y,0.8);})()")
+    pg.mouse.click(pos[0], pos[1]); pg.wait_for_timeout(100)
+    v('toucher un réparateur (sur son corps) le vise', pg.evaluate("__p2.S.cible===__p2.S.reps[0]"), f'{pos[0]:.0f},{pos[1]:.0f}')
+    pg.tap('#bPause'); pg.wait_for_timeout(150); v('la pause', pg.evaluate("document.getElementById('pause').classList.contains('on')"))
+    v('le bouton « ← La salle des jeux »', pg.evaluate("!document.getElementById('bSalle').hidden"))
+    pg.tap('#bReprendre'); pg.wait_for_timeout(150)
+    pg.evaluate("__p2.P2.symboleTout(__p2.S);__p2.P2.pisteurCrie(__p2.S)"); pg.wait_for_timeout(200)
+    pg.tap('#bCode'); pg.wait_for_timeout(150); v('la fenêtre du code s\'ouvre', pg.evaluate("__p2.S.code.ouvert"))
+    code = pg.evaluate("__p2.S.cri")
+    for s in code:
+        pg.locator('#fen .clavier button', has_text=s).first.dispatch_event('pointerdown'); pg.wait_for_timeout(80)
+    pg.wait_for_timeout(300); v('le bon code fait passer au tiers 2', pg.evaluate("__p2.S.tiers===2||__p2.S.phase==='transfo'"), pg.evaluate("__p2.S.phase"))
+    b.close()
+print(f'{ok} sur {ok + ko}'); print('erreurs :', err or 'aucune')
