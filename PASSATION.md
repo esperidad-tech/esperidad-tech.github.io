@@ -1,6 +1,11 @@
-# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 27 novembre, 18 h 45)
+# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 27 novembre, 20 h 10)
 
 À lire en entier par la nouvelle conversation avant de toucher à quoi que ce soit.
+
+**27 novembre, 20 h 10 — ESSAI HORS DU JEU, RIEN SUR LE SITE : « EN VRAIE 3D », LE FLAMENCO, LE SORT COUPÉ, LE DÉRAPAGE, LA NOTE ET SA PORTÉE ; même adresse : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP (version `1795806399-5c74`, en ligne à 20 h 06) ; sources `jeu/maquettes/essai-3d/` (`README.md`, dernière partie) ; Bible § 18.21 (fin). PAS ENCORE VU PAR ROMAIN.** À la voix, Romain a validé la course (« très très bien ») et demandé quatre choses. Go écrit (19 h 38) : « Vas-y. »
+- **Construit** (aucun crédit) : `annulerSort()` (le pouce coupe le sort) ; le grattage qui s'emballe puis la main droite qui part grand avec un éclair (`eclairMain()`) ; le dérapage (groupe `incline`, poussière) à la place du virage de la bibliothèque ; la note brillante et le ruban de portée toujours de face (`texNoteBrillante`, `ruban()`, `notePortee()`), d'après son image (`origine/reference/effet-note-romain.png`).
+- **Vérifié** : `outils/film.py` (derapage, annule, jeu, tout), `glisse.py`, la page sous les règles de la page Claude. Pas vérifié : un vrai appareil.
+- **La suite** : son avis ; le Barde fini ou pas. Pas de go pour l'armure en 3D ni pour les autres héros. **Ne rien construire de plus sans son go.**
 
 **27 novembre, 18 h 45 — ESSAI HORS DU JEU, RIEN SUR LE SITE : « EN VRAIE 3D », LA CHARGE, LA MARCHE, LE DEMI-TOUR, LA MAIN QUI LANCE ; même adresse : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP (version `1795800990-04e9`, en ligne à 18 h 36) ; sources `jeu/maquettes/essai-3d/` (`README.md`, dernière partie) ; Bible § 18.21 (fin). PAS ENCORE VU PAR ROMAIN.** À la voix, Romain a trouvé que la course « flotte » ; il a choisi la charge pour le Barde, la course seulement au pouce au bord, la marche accélérée pour le reste, un demi-tour en pleine course, la main droite qui se tend quand la note part. Go écrit (18 h 06) : « Vas-y. »
 - **Construit** : la charge (n° 510) et le virage serré (n° 581), 16 crédits (95 en tout pour l'essai), remis sur place (`outils/surplace_glb.py`) ; `avancerHeros()` et `locomotion()` dans `src/main.js` (allures, vitesses mesurées, jamais de ralenti, demi-tour) ; le geste de la main droite au départ de la note.
