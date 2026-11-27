@@ -95,7 +95,22 @@ const texNote = (coul, dbl) => toile(64, 72, x => { x.translate(32, 40); x.lineC
   const tige = () => { x.beginPath(); if (dbl) { x.moveTo(-6, 15); x.lineTo(-6, -26); x.lineTo(18, -34); x.lineTo(18, 7); x.moveTo(-6, -16); x.lineTo(18, -24); } else { x.moveTo(7, 13); x.lineTo(7, -29); x.quadraticCurveTo(21, -19, 19, -3); } };
   const tete = () => { x.beginPath(); if (dbl) { x.ellipse(-13, 16, 9, 7, -0.4, 0, 7); x.moveTo(20, 8); x.ellipse(11, 8, 9, 7, -0.4, 0, 7); } else x.ellipse(-2, 16, 10, 8, -0.4, 0, 7); };
   x.strokeStyle = coul; x.lineWidth = 6; tige(); x.stroke(); x.fillStyle = coul; tete(); x.fill(); x.strokeStyle = 'rgba(255,255,255,.9)'; x.lineWidth = 2; tige(); x.stroke(); });
-const T_LUEUR = { or: texLueur('rgba(255,200,90,.95)'), feu: texLueur('rgba(255,120,40,.95)'), glace: texLueur('rgba(140,220,255,.95)'), rouge: texLueur('rgba(255,70,40,.95)') };
+const texNoteBrillante = (coeur, lueur, bord) => toile(128, 128, x => { x.translate(60, 64); x.lineCap = 'round'; x.lineJoin = 'round';
+  const forme = () => { x.beginPath(); x.ellipse(-14, 30, 19, 14, -0.45, 0, 7); x.fill(); x.beginPath(); x.moveTo(1, 26); x.lineTo(1, -46); x.stroke();
+    x.beginPath(); x.moveTo(1, -46); x.bezierCurveTo(22, -36, 34, -22, 30, -2); x.bezierCurveTo(28, -14, 18, -22, 3, -26); x.fill(); };
+  x.shadowColor = lueur; x.shadowBlur = 20; x.fillStyle = lueur; x.strokeStyle = lueur; x.lineWidth = 11; forme();
+  x.shadowBlur = 0; x.fillStyle = bord; x.strokeStyle = bord; x.lineWidth = 9; forme();   // (un bord foncé : on reconnaît la forme de la note)
+  x.fillStyle = coeur; x.strokeStyle = coeur; x.lineWidth = 4.5; x.save(); x.scale(0.86, 0.86); forme(); x.restore(); });
+const texPortee = coul => { const t = toile(64, 128, x => { x.shadowColor = coul; x.shadowBlur = 10; x.strokeStyle = coul; x.lineWidth = 7;
+    for (let k = 0; k < 5; k++) { const y = 14 + k * 25; x.beginPath(); x.moveTo(-10, y); x.lineTo(74, y); x.stroke(); }
+    x.shadowBlur = 0; x.strokeStyle = 'rgba(255,255,255,.95)'; x.lineWidth = 2.5; for (let k = 0; k < 5; k++) { const y = 14 + k * 25; x.beginPath(); x.moveTo(-10, y); x.lineTo(74, y); x.stroke(); } });
+  t.wrapS = THREE.RepeatWrapping; return t; };
+const texFlocon = toile(48, 48, x => { x.translate(24, 24); x.strokeStyle = 'rgba(235,250,255,1)'; x.shadowColor = 'rgba(140,220,255,1)'; x.shadowBlur = 6; x.lineWidth = 2.5; x.lineCap = 'round';
+  for (let k = 0; k < 6; k++) { x.save(); x.rotate(k * Math.PI / 3); x.beginPath(); x.moveTo(0, 0); x.lineTo(0, -18); x.moveTo(0, -10); x.lineTo(-5, -15); x.moveTo(0, -10); x.lineTo(5, -15); x.stroke(); x.restore(); } });
+const NOTE_SORT = { glace: texNoteBrillante('#eefbff', 'rgba(120,210,255,1)', 'rgba(25,90,170,1)'), feu: texNoteBrillante('#fff3d6', 'rgba(255,140,40,1)', 'rgba(150,50,10,1)') };
+const PORTEE = { glace: texPortee('rgba(150,225,255,1)'), feu: texPortee('rgba(255,170,70,1)') };
+const PETITES = { glace: [texNote('#e6f8ff', false), texNote('#e6f8ff', true)], feu: [texNote('#ffd9a0', false), texNote('#ffd9a0', true)] };
+const T_LUEUR = { or: texLueur('rgba(255,200,90,.95)'), feu: texLueur('rgba(255,120,40,.95)'), glace: texLueur('rgba(140,220,255,.95)'), rouge: texLueur('rgba(255,70,40,.95)'), poussiere: texLueur('rgba(225,205,175,.55)') };
 function sprite(tex, s, add) { const m = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending, toneMapped: false }); const sp = new THREE.Sprite(m); sp.scale.set(s, s, 1); return sp; }
 /* les flammes des brasiers, la lumière des lanternes */
 const flammes = [];
@@ -107,7 +122,8 @@ for (const b of BRAS) {
 for (const n of ['or', 'rouge']) { const s = sprite(T_LUEUR[n], 1.4, true); s.position.copy(G(LANT[n][0], LANT[n][1], 1.95)); s.material.opacity = 0.7; s.material.depthTest = false; monde.add(s); }
 
 /* ---------- le Barde ---------- */
-const barde = new THREE.Group(); monde.add(barde);
+const incline = new THREE.Group(); monde.add(incline);   // (pour pencher tout le corps : le dérapage)
+const barde = new THREE.Group(); incline.add(barde);
 const corps = new THREE.Group(); corps.rotation.x = Math.PI / 2; barde.add(corps);   // (les modèles glTF ont la hauteur en y)
 const ombrePied = sprite(toile(64, 64, x => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(0,0,0,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); }), 1, false);
 const ombreMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.8), new THREE.MeshBasicMaterial({ map: ombrePied.material.map, transparent: true, depthWrite: false, toneMapped: false }));
@@ -138,50 +154,39 @@ charger('barde.json', g => {
 /* ---------- marcher, courir, le demi-tour ----------
    Le pouce un peu poussé : il marche (de son rythme à 1,6 fois plus vite) ; le pouce au bord : il court (la charge, à son vrai rythme).
    Jamais de jambes au ralenti (c'est ce qui donnait l'impression de flotter). En pleine course, si le pouce part d'un coup à
-   l'opposé : il freine, pivote et repart (le virage de la bibliothèque, son pivot porté à un demi-tour).
+   l'opposé : il repart tout de suite dans l'autre sens, le corps dérape un quart de seconde (fait par programme, sans film).
    Les vitesses sont mesurées sur les pieds des mouvements (outils/pas.py), en pas du jeu (le Barde fait 1,55 pas). */
 const ALLURE = {
   marche: { vitesse: 0.60, max: 1.0 },       // Casual_Walk : 0,58 m/s
   course: { vitesse: 4.0 },                   // Standard_Forward_Charge : 3,95 m/s (on court à 4 pas/s, au rythme du film)
-  virage: { debut: 0.35, fin: 1.2, rythme: 1.3,
-            t: [0.35, 0.43, 0.5, 0.57, 0.63, 0.7, 0.77, 0.83, 0.9, 0.97, 1.03, 1.1, 1.17, 1.2],
-            v: [3.35, 2.65, 2.29, 2.28, 2.10, 1.55, 1.25, 1.19, 1.33, 1.70, 1.78, 1.96, 2.04, 2.1] }   // (m/s, mesurées sur le bassin)
 };
-const loco = { garde: 1, marche: 0, course: 0, virage: 0, v: 0, allure: 'garde', tm: 1.619, tc: 0 };
-function vitesseVirage(tv) { const T = ALLURE.virage.t, V = ALLURE.virage.v; let k = 1; while (k < T.length - 1 && T[k] < tv) k++; const a = clamp((tv - T[k - 1]) / (T[k] - T[k - 1]), 0, 1); return (V[k - 1] + (V[k] - V[k - 1]) * a) * 1.033 * ALLURE.virage.rythme; }
+const loco = { garde: 1, marche: 0, course: 0, v: 0, allure: 'garde', tm: 1.619, tc: 0 };
 /* déplacer le héros et choisir son allure ; mx, my : le pouce (ou le clavier) */
 function avancerHeros(dt, mx, my) {
   const m = Math.min(1, Math.hypot(mx, my)), dirA = Math.atan2(my, mx);
   let veut = 'garde';
   if (!h.sort && m > 0.15) veut = (m >= 0.85 || (loco.allure === 'course' && m >= 0.75)) ? 'course' : 'marche';
   // le demi-tour : seulement en pleine course, quand le pouce part à l'opposé
-  if (!h.virage && veut === 'course' && loco.allure === 'course' && loco.v > 3.2 && actions.virage) {
+  if (!h.derap && veut === 'course' && loco.allure === 'course' && loco.v > 3.2) {
     const ecart = Math.abs(Math.atan2(Math.sin(dirA - h.a), Math.cos(dirA - h.a)));
-    if (ecart > 140 * Math.PI / 180) h.virage = { s: 0, a0: h.a, rz0: barde.rotation.z };
+    if (ecart > 140 * Math.PI / 180) {   // il repart tout de suite dans l'autre sens ; le corps dérape un quart de seconde (pour faire joli)
+      const rz1 = Math.PI / 2 - dirA; let da = rz1 - barde.rotation.z; da = Math.atan2(Math.sin(da), Math.cos(da));
+      h.derap = { t: 0, rz0: barde.rotation.z, da, a1: dirA, aOld: h.a }; loco.v *= 0.65; poussiere(h.x, h.y, h.a);
+    }
   }
-  if (h.virage) {
-    const V = ALLURE.virage, duree = (V.fin - V.debut) / V.rythme;
-    h.virage.s += dt / duree; const sv = Math.min(1, h.virage.s);
-    const p = doux((sv - 0.1) / 0.75);
-    barde.rotation.z = h.virage.rz0 - Math.PI * p; h.a = Math.PI / 2 - barde.rotation.z;
-    loco.v = vitesseVirage(V.debut + sv * (V.fin - V.debut));
-    loco.allure = 'virage';
-    if (h.virage.s >= 1) { h.a = h.virage.a0 + Math.PI; h.virage = null; loco.allure = 'course'; }
-  } else {
-    const vc = veut === 'garde' ? 0 : veut === 'marche' ? ALLURE.marche.vitesse + (ALLURE.marche.max - ALLURE.marche.vitesse) * clamp((m - 0.15) / 0.7, 0, 1) : ALLURE.course.vitesse;
-    loco.v += clamp(vc - loco.v, -14 * dt, 10 * dt);
-    if (veut !== 'garde') h.a = dirA;
-    loco.allure = veut === 'course' ? 'course' : veut === 'marche' ? (loco.allure === 'course' && loco.v > 1.6 ? 'course' : 'marche') : (loco.v > 1.6 && loco.allure === 'course' ? 'course' : loco.v > 0.05 ? (loco.allure === 'garde' ? 'marche' : loco.allure) : 'garde');
-  }
+  const vc = veut === 'garde' ? 0 : veut === 'marche' ? ALLURE.marche.vitesse + (ALLURE.marche.max - ALLURE.marche.vitesse) * clamp((m - 0.15) / 0.7, 0, 1) : ALLURE.course.vitesse;
+  loco.v += clamp(vc - loco.v, -14 * dt, 10 * dt);
+  if (veut !== 'garde') h.a = dirA;
+  loco.allure = veut === 'course' ? 'course' : veut === 'marche' ? (loco.allure === 'course' && loco.v > 1.6 ? 'course' : 'marche') : (loco.v > 1.6 && loco.allure === 'course' ? 'course' : loco.v > 0.05 ? (loco.allure === 'garde' ? 'marche' : loco.allure) : 'garde');
   if (loco.v > 0.001 && !window.__surplace) { const nx = h.x + Math.cos(h.a) * loco.v * dt, ny = h.y + Math.sin(h.a) * loco.v * dt; if (libre(nx, h.y)) h.x = nx; if (libre(h.x, ny)) h.y = ny; }
 }
 function locomotion(dt) {
   const k = Math.min(1, dt * 10); let somme = 0;
-  for (const n of ['garde', 'marche', 'course', 'virage']) { loco[n] += ((loco.allure === n ? 1 : 0) - loco[n]) * k; somme += loco[n]; }
-  for (const n of ['garde', 'marche', 'course', 'virage']) loco[n] /= somme || 1;
+  for (const n of ['garde', 'marche', 'course']) { loco[n] += ((loco.allure === n ? 1 : 0) - loco[n]) * k; somme += loco[n]; }
+  for (const n of ['garde', 'marche', 'course']) loco[n] /= somme || 1;
   loco.tm += dt * clamp(loco.v / ALLURE.marche.vitesse, 0.8, 1.7);
   loco.tc += dt * Math.max(0.85, loco.v / ALLURE.course.vitesse);
-  for (const n of ['garde', 'marche', 'course', 'virage']) {
+  for (const n of ['garde', 'marche', 'course']) {
     const a = actions[n]; if (!a) continue;
     if (!a.__lance) { a.play(); a.__lance = true; }
     a.setEffectiveWeight(loco[n]);
@@ -189,7 +194,6 @@ function locomotion(dt) {
     a.timeScale = 0; const d = a.getClip().duration;
     if (n === 'marche') a.time = loco.tm % d;
     else if (n === 'course') a.time = loco.tc % d;
-    else if (h.virage) a.time = ALLURE.virage.debut + Math.min(1, h.virage.s) * (ALLURE.virage.fin - ALLURE.virage.debut);
   }
 }
 function jouer(nom, fondu) {
@@ -239,7 +243,7 @@ function guider(haut, bas, main, cible, pole, poids) {
 const _tw = new THREE.Quaternion();
 function redresser() {
   const hips = MOD && MOD.getObjectByName('Hips'); if (!hips || !actions.garde) return;
-  const w = Math.min(1, actions.garde.getEffectiveWeight() + (actions.virage ? actions.virage.getEffectiveWeight() : 0)); if (w <= 0) return;
+  const w = actions.garde.getEffectiveWeight(); if (w <= 0) return;
   const q = hips.quaternion; _tw.set(0, q.y, 0, q.w).normalize();
   const sans = _tw.clone().invert().premultiply(q.clone());   // q × (torsion)⁻¹ : sans la rotation autour de la verticale
   sans.copy(q.clone().multiply(_tw.clone().invert()));
@@ -275,8 +279,11 @@ function animerLuth(dt, t) {
   const surLuth = (le, cote, haut) => LU.centre.clone().addScaledVector(LU.axe, le).addScaledVector(LU.face, haut).addScaledVector(new THREE.Vector3().crossVectors(LU.axe, LU.face).normalize(), cote).applyMatrix4(LUmat);
   const prise = surLuth(0.36, 0, 0.0);                              // le manche, côté tête
   grattage += dt * (h.sort && h.luth === 'main' || (h.luth === 'sort' && h.sort) ? 1 : -1) * 4; grattage = clamp(grattage, 0, 1);
-  const g = Math.sin(t * 2 * Math.PI * 4.5);
-  const cordes = surLuth(0.05 + 0.015 * g * grattage, 0.045 * g * grattage, 0.05 + 0.012 * Math.abs(g) * grattage);   // la main droite va et vient sur les cordes
+  // il gratte, puis juste avant que la note parte : « ta ta tan », très vite et plus fort (façon flamenco)
+  const reste = h.sort ? h.sortD - h.sortT : 9, rasg = h.sort ? doux((0.42 - reste) / 0.12) : 0;
+  h.phaseG = (h.phaseG || 0) + dt * (4.5 + 8 * rasg);
+  const g = Math.sin(h.phaseG * 2 * Math.PI), amp = grattage * (1 + 0.7 * rasg);
+  const cordes = surLuth(0.05 + 0.015 * g * amp, 0.05 * g * amp, 0.05 + 0.014 * Math.abs(g) * amp);   // la main droite va et vient sur les cordes
   // le repère du luth tel qu'il est maintenant : le long du manche (u), la face des cordes (f), « vers le haut » autour du manche (hautU)
   const u = LU.axe.clone().transformDirection(LUmat), f = LU.face.clone().transformDirection(LUmat);
   const hautU = new THREE.Vector3(0, 1, 0).sub(u.clone().multiplyScalar(u.y)).normalize();
@@ -292,10 +299,11 @@ function animerLuth(dt, t) {
   let cibleR = prise.clone().lerp(poignetD, r.sR), FdF = Fd, PdF = Pd;
   if (h.geste !== undefined && h.geste < GESTE.duree) {   // la note part : la main droite quitte les cordes et se tend vers la cible
     const g = h.geste < GESTE.monte ? doux(h.geste / GESTE.monte) : 1 - doux((h.geste - GESTE.tient) / (GESTE.duree - GESTE.tient));
-    const S = posM(OS.RightArm), tendu = S.clone().add(new THREE.Vector3(0.05, 0.03, 0.33));
+    const S = posM(OS.RightArm), tendu = S.clone().add(new THREE.Vector3(-0.2, 0.17, 0.24));   // le bras part grand : sur le côté, vers le haut et vers la cible
     cibleR = cibleR.lerp(tendu, g);
-    FdF = Fd.clone().lerp(new THREE.Vector3(0.1, 0.95, 0.3).normalize(), g).normalize();
-    PdF = Pd.clone().lerp(new THREE.Vector3(0, -0.3, 1).normalize(), g); PdF.sub(FdF.clone().multiplyScalar(PdF.dot(FdF))).normalize();
+    FdF = Fd.clone().lerp(new THREE.Vector3(-0.35, 0.75, 0.55).normalize(), g).normalize();
+    PdF = Pd.clone().lerp(new THREE.Vector3(-0.15, -0.25, 1).normalize(), g); PdF.sub(FdF.clone().multiplyScalar(PdF.dot(FdF))).normalize();
+    if (h.geste > 0.05 && !h.eclair) { h.eclair = true; eclairMain(); }
   }
   const poleR = new THREE.Vector3(-0.6, 0.5, 0.2).lerp(new THREE.Vector3(-0.7, -0.6, -0.3), clamp(r.k * 1.2, 0, 1));
   guider(OS.RightArm, OS.RightForeArm, OS.RightHand, cibleR, poleR, r.wR);
@@ -304,7 +312,23 @@ function animerLuth(dt, t) {
   orienter(OS.LeftHand, Fg, Pg, MAIN.paumeG, r.wL);
 }
 /* tourner la main : ses doigts (l'axe y de l'os) vers F, sa paume vers P (repère du modèle) */
-const GESTE = { monte: 0.12, tient: 0.3, duree: 0.55 };
+const GESTE = { monte: 0.07, tient: 0.2, duree: 0.38 };   // (« et hop » : très vite)
+/* l'éclair sur la main quand elle claque vers la cible */
+const eclairs = [];
+function eclairMain() {
+  const q = h.dernier || 'glace', v = new THREE.Vector3(); OS.RightHand.getWorldPosition(v);
+  const jeu = { x: v.x, y: -v.y, z: v.z / ZS };
+  const sp = sprite(T_LUEUR[q === 'feu' ? 'feu' : 'glace'], 0.3, true); sp.position.copy(G(jeu.x, jeu.y, jeu.z)); monde.add(sp);
+  const l = prendre(q === 'feu' ? 0xffa050 : 0xa8e8ff, 22, 4); if (l) l.position.copy(G(jeu.x, jeu.y, jeu.z));
+  eclairs.push({ sp, l, t: 0 });
+}
+function avancerEclairs(dt) {
+  for (let i = eclairs.length - 1; i >= 0; i--) {
+    const e = eclairs[i]; e.t += dt; const u = e.t / 0.28;
+    if (u >= 1) { monde.remove(e.sp); e.sp.material.dispose(); rendreL(e.l); eclairs.splice(i, 1); continue; }
+    const k = 0.3 + 1.1 * Math.sin(Math.min(1, u * 2.2) * Math.PI / 2); e.sp.scale.set(k, k, 1); e.sp.material.opacity = 1 - u * u; if (e.l) e.l.intensity = 22 * (1 - u);
+  }
+}
 const MAIN = { paume: 0.075, paumeG: new THREE.Vector3(1, 0, 0), paumeD: new THREE.Vector3(-1, 0, 0) };   // (au repos les paumes regardent les cuisses : +x de l'os à gauche, -x à droite)
 function orienter(os, F, P, paumeLocale, poids) {
   if (poids <= 0.001) return;
@@ -322,6 +346,11 @@ function bouchePosJeu(devant) {   // le trou de la caisse (ou un peu devant), en
 /* ---------- le sort : une note qui vole vers l'armure, une vraie lumière qui éclaire au passage ---------- */
 const tirs = [], eclats = [], notes = [];
 let lumCharge = null;
+function annulerSort() {
+  h.sort = null; h.sortT = 0; rendreL(lumCharge); lumCharge = null; h.garde = 0; h.geste = undefined;
+  if (h.luth === 'main') { h.luth = 'range'; h.tl = 0; }
+  else if (h.luth === 'sort') { const k = reglagesLuth().k; h.luth = 'range'; h.tl = clamp(0.15 + 0.4 * (1 - k), 0, 0.55); }
+}
 function lancer(q) {
   if (h.sort) return;
   h.sort = q; h.sortT = 0; h.sortD = DUREE[q];
@@ -336,20 +365,65 @@ function rendreL(l) { if (l) { l.intensity = 0; l.libre = true; } }
 function partir(q, d) {
   const feu = q === 'feu', gr = new THREE.Group(), main = d ? G(d.x, d.y, d.z) : G(h.x + Math.cos(h.a) * 0.4, h.y + Math.sin(h.a) * 0.4, 1.1);
   gr.position.copy(main); monde.add(gr);
-  const halo = sprite(feu ? T_LUEUR.feu : T_LUEUR.glace, feu ? 1.3 : 0.9, true); gr.add(halo);
-  const n = sprite(texNote(feu ? '#ffb04a' : '#bff0ff', feu), feu ? 0.6 : 0.45, false); gr.add(n);
+  const halo = sprite(feu ? T_LUEUR.feu : T_LUEUR.glace, 0.9, true); halo.material.opacity = 0.45; gr.add(halo);
+  const n = sprite(NOTE_SORT[q], 0.95, false); gr.add(n);
+  // la traînée : cinq lignes de partition qui ondulent derrière la note, toujours tournées vers la caméra
+  const N = 30, geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N * 2 * 3), 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(N * 2 * 3), 3));
+  const uv = new Float32Array(N * 2 * 2); for (let i = 0; i < N; i++) { uv[i * 4] = i / (N - 1) * 3; uv[i * 4 + 1] = 0; uv[i * 4 + 2] = i / (N - 1) * 3; uv[i * 4 + 3] = 1; }
+  geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  const idx = []; for (let i = 0; i < N - 1; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } geo.setIndex(idx);
+  const ruban = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: PORTEE[q], vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false }));
+  ruban.frustumCulled = false; ruban.visible = false; scene.add(ruban);
   const l = prendre(feu ? 0xff7a2a : 0x7fd8ff, feu ? 40 : 22, feu ? 7 : 5); if (l) l.position.copy(main);
   const sol = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: feu ? T_LUEUR.feu : T_LUEUR.glace, transparent: true, opacity: 0.45, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false })); monde.add(sol);   // (à plat sur le sol)
-  tirs.push({ gr, l, sol, feu, x: main.x, y: -main.y, z: d ? d.z : 1.1, t: 0 });
+  tirs.push({ gr, l, sol, feu, q, ruban, hist: [], N, x: main.x, y: -main.y, z: d ? d.z : 1.1, t: 0, petite: 0 });
 }
 function avancerTirs(dt) {
   for (let i = tirs.length - 1; i >= 0; i--) {
     const s = tirs[i]; s.t += dt; const dx = ARM.x - s.x, dy = ARM.y + 0.6 - s.y, dd = Math.hypot(dx, dy), v = s.feu ? 9 : 12;
-    if (dd < 0.5) { rendreL(s.l); boum(s); monde.remove(s.gr); monde.remove(s.sol); tirs.splice(i, 1); continue; }
+    if (dd < 0.5) { rendreL(s.l); boum(s); monde.remove(s.gr); monde.remove(s.sol); scene.remove(s.ruban); s.ruban.geometry.dispose(); s.ruban.material.dispose(); tirs.splice(i, 1); continue; }
     s.x += dx / dd * v * dt; s.y += dy / dd * v * dt; s.z += (2.3 - s.z) * Math.min(1, dt * 2);
-    s.gr.position.copy(G(s.x, s.y, s.z + Math.sin(s.t * 10) * 0.05)); if (s.l) s.l.position.copy(s.gr.position); s.gr.children[1].material.rotation = Math.sin(s.t * 8) * 0.4;
+    s.gr.position.copy(G(s.x, s.y, s.z + Math.sin(s.t * 10) * 0.05)); if (s.l) s.l.position.copy(s.gr.position); s.gr.children[1].material.rotation = Math.sin(s.t * 8) * 0.25;
+    ruban(s);
+    s.petite -= dt; if (s.petite <= 0 && s.hist.length > 6) { s.petite = 0.06; notePortee(s); }
     s.sol.position.copy(G(s.x, s.y, 0.02)); s.sol.scale.set(s.feu ? 2.6 : 1.8, s.feu ? 2.6 : 1.8, 1);
     if (Math.random() < dt * 40) etincelle(s.x, s.y, s.z, s.feu);
+  }
+}
+/* la traînée de portée : les dernières positions de la note, un ruban de 5 lignes, penché vers la caméra */
+const _dirCam = new THREE.Vector3();
+function ruban(s) {
+  const p = new THREE.Vector3(); s.gr.getWorldPosition(p);
+  if (!s.hist.length || s.hist[0].distanceTo(p) > 0.04) { s.hist.unshift(p); if (s.hist.length > s.N) s.hist.pop(); }
+  const H = s.hist, n = H.length; if (n < 3) return;
+  cam.getWorldDirection(_dirCam);
+  const pos = s.ruban.geometry.attributes.position, col = s.ruban.geometry.attributes.color, w = 0.5;
+  for (let i = 0; i < s.N; i++) {
+    const k = Math.min(i, n - 1), a = H[Math.max(0, k - 1)], b = H[Math.min(n - 1, k + 1)];
+    const d = a.clone().sub(b); if (d.lengthSq() < 1e-8) d.set(1, 0, 0); d.normalize();
+    const o = new THREE.Vector3().crossVectors(d, _dirCam).normalize();
+    const vague = 0.09 * Math.sin(s.t * 10 - i * 0.45) * Math.min(1, i / 4);
+    const c = H[k].clone().addScaledVector(o, vague);
+    const e = (i >= n - 1 ? 0 : 1) * Math.pow(1 - i / (s.N - 1), 1.2) * Math.min(1, i / 2);
+    pos.setXYZ(i * 2, c.x + o.x * w / 2, c.y + o.y * w / 2, c.z + o.z * w / 2);
+    pos.setXYZ(i * 2 + 1, c.x - o.x * w / 2, c.y - o.y * w / 2, c.z - o.z * w / 2);
+    col.setXYZ(i * 2, e, e, e); col.setXYZ(i * 2 + 1, e, e, e);
+  }
+  pos.needsUpdate = true; col.needsUpdate = true; s.ruban.visible = true;
+}
+/* des petites notes posées sur la portée, qui restent derrière et s'éteignent (et des flocons pour la glace) */
+function notePortee(s) {
+  const H = s.hist, k = 2 + Math.floor(Math.random() * Math.min(8, H.length - 3)); const a = H[k - 1], b = H[k + 1];
+  const d = a.clone().sub(b).normalize(); cam.getWorldDirection(_dirCam); const o = new THREE.Vector3().crossVectors(d, _dirCam).normalize();
+  const ligne = (Math.floor(Math.random() * 5) - 2) * 0.1, w = H[k].clone().addScaledVector(o, ligne);
+  const jeu = { x: w.x, y: -w.y, z: w.z / ZS };
+  const sp = sprite(PETITES[s.q][Math.random() < 0.5 ? 0 : 1], 0.2 + Math.random() * 0.06, true); sp.position.copy(G(jeu.x, jeu.y, jeu.z)); monde.add(sp);
+  notes.push({ sp, x: jeu.x, y: jeu.y, z: jeu.z, vx: 0, vy: 0, vz: 0.15, t: 0, vie: 0.6 });
+  if (!s.feu && Math.random() < 0.6) {
+    const f = sprite(texFlocon, 0.13 + Math.random() * 0.08, true); const j2 = { x: jeu.x + (Math.random() - 0.5) * 0.4, y: jeu.y + (Math.random() - 0.5) * 0.3, z: jeu.z + (Math.random() - 0.5) * 0.3 };
+    f.position.copy(G(j2.x, j2.y, j2.z)); monde.add(f); notes.push({ sp: f, ...j2, vx: 0, vy: 0, vz: -0.2, t: 0, vie: 0.7, tourne: (Math.random() - 0.5) * 4 });
   }
 }
 function etincelle(x, y, z, feu, v) {
@@ -368,8 +442,25 @@ function petiteNote(feu) {
 }
 function avancerNotes(dt) {
   for (let i = notes.length - 1; i >= 0; i--) {
-    const n = notes[i]; n.t += dt; if (n.t > 0.9) { monde.remove(n.sp); notes.splice(i, 1); continue; }
-    n.x += n.vx * dt; n.y += n.vy * dt; n.z += 0.9 * dt; n.sp.position.copy(G(n.x, n.y, n.z)); n.sp.material.opacity = 1 - n.t / 0.9; n.sp.material.rotation = Math.sin(n.t * 9) * 0.3;
+    const n = notes[i], vie = n.vie || 0.9; n.t += dt; if (n.t > vie) { monde.remove(n.sp); n.sp.material.dispose(); notes.splice(i, 1); continue; }
+    n.x += n.vx * dt; n.y += n.vy * dt; n.z += (n.vz !== undefined ? n.vz : 0.9) * dt; n.sp.position.copy(G(n.x, n.y, n.z)); n.sp.material.opacity = 1 - n.t / vie;
+    n.sp.material.rotation = n.tourne ? n.sp.material.rotation + n.tourne * dt : Math.sin(n.t * 9) * 0.3;
+  }
+}
+/* la poussière du dérapage */
+const poussieres = [];
+function poussiere(x, y, a) {
+  for (let i = 0; i < 7; i++) {
+    const sp = sprite(T_LUEUR.poussiere, 0.25, false); const ox = (Math.random() - 0.5) * 0.5, oy = (Math.random() - 0.5) * 0.4;
+    sp.position.copy(G(x + ox, y + oy, 0.12)); monde.add(sp);
+    poussieres.push({ sp, x: x + ox, y: y + oy, vx: Math.cos(a) * (0.8 + Math.random()) + (Math.random() - 0.5), vy: Math.sin(a) * (0.8 + Math.random()) + (Math.random() - 0.5), t: 0 });
+  }
+}
+function avancerPoussiere(dt) {
+  for (let i = poussieres.length - 1; i >= 0; i--) {
+    const p = poussieres[i]; p.t += dt; const u = p.t / 0.5;
+    if (u >= 1) { monde.remove(p.sp); p.sp.material.dispose(); poussieres.splice(i, 1); continue; }
+    p.x += p.vx * dt * (1 - u); p.y += p.vy * dt * (1 - u); p.sp.position.copy(G(p.x, p.y, 0.12 + 0.25 * u)); const k = 0.25 + 0.6 * u; p.sp.scale.set(k, k, 1); p.sp.material.opacity = 0.7 * (1 - u);
   }
 }
 function avancerEclats(dt) {
@@ -418,6 +509,7 @@ function etape(dt, t) {
   /* déplacer le héros */
   let mx = joy.mx, my = joy.my; const kx = (touches.arrowright || touches.d ? 1 : 0) - (touches.arrowleft || touches.q || touches.a ? 1 : 0), ky = (touches.arrowdown || touches.s ? 1 : 0) - (touches.arrowup || touches.z || touches.w ? 1 : 0);
   if (kx || ky) { const n = Math.hypot(kx, ky), lent = touches.shift ? 0.25 : 1; mx = kx / n * lent; my = ky / n * lent; }
+  if (h.sort && Math.hypot(mx, my) > 0.15) annulerSort();   // pousser le pouce pendant le sort le coupe : il range son luth en courant
   const bouge = !h.sort && Math.hypot(mx, my) > 0.15;
   avancerHeros(dt, mx, my);
   h.tl += dt; if (h.geste !== undefined) h.geste += dt;
@@ -431,18 +523,24 @@ function etape(dt, t) {
       if (!lumCharge) lumCharge = prendre(h.sort === 'feu' ? 0xff8a3a : 0x8fe0ff, 0, 2.5);
       if (lumCharge) { const d = bouchePosJeu(0.3); lumCharge.position.copy(G(d.x, d.y, d.z)); lumCharge.intensity = 9 * doux(h.sortT / h.sortD); }
     }
-    if (h.sortT >= h.sortD) { partir(h.sort, LUTH ? bouchePosJeu() : null); h.sort = null; h.garde = 0.9; h.geste = 0; rendreL(lumCharge); lumCharge = null; }
+    if (h.sortT >= h.sortD) { partir(h.sort, LUTH ? bouchePosJeu() : null); h.dernier = h.sort; h.sort = null; h.garde = 0.9; h.geste = 0; h.eclair = false; rendreL(lumCharge); lumCharge = null; }
   } else {
     if (h.luth === 'main') { h.garde -= dt; if (bouge || h.garde <= 0) { h.luth = 'range'; h.tl = 0; } }
 
   }
   /* le Barde tourne doucement vers où il va */
-  if (!h.virage) { const cible = Math.PI / 2 - h.a; let da = cible - barde.rotation.z; da = Math.atan2(Math.sin(da), Math.cos(da)); barde.rotation.z += da * Math.min(1, dt * 12); }
-  barde.position.copy(G(h.x, h.y, 0));
+  if (h.derap) {   // le dérapage : le corps pivote vite, penché vers où il repart, puis se redresse
+    const D = h.derap; D.t += dt; const u = Math.min(1, D.t / 0.22), e = 1 - Math.pow(1 - u, 3);
+    barde.rotation.z = D.rz0 + D.da * e;
+    const pen = 0.38 * Math.sin(Math.min(1, D.t / 0.3) * Math.PI), dw = new THREE.Vector3(Math.cos(D.a1), -Math.sin(D.a1), 0);
+    incline.quaternion.setFromAxisAngle(new THREE.Vector3(0, 0, 1).cross(dw).normalize(), pen);
+    if (D.t >= 0.3) { h.derap = null; incline.quaternion.identity(); }
+  } else { const cible = Math.PI / 2 - h.a; let da = cible - barde.rotation.z; da = Math.atan2(Math.sin(da), Math.cos(da)); barde.rotation.z += da * Math.min(1, dt * 12); }
+  incline.position.copy(G(h.x, h.y, 0));
   if (melangeur) { locomotion(dt); melangeur.update(dt); }
   redresser();
   barde.updateMatrixWorld(true); animerLuth(dt, t);
-  avancerTirs(dt); avancerEclats(dt); avancerNotes(dt);
+  avancerTirs(dt); avancerEclats(dt); avancerNotes(dt); avancerEclairs(dt); avancerPoussiere(dt);
   /* les flammes, les lumières qui vacillent */
   for (const f of flammes) { const k = 0.85 + 0.15 * Math.sin(t * 11 + f.b[0] + f.i * 2) + 0.08 * Math.sin(t * 27 + f.i); const w = (0.42 - f.i * 0.09) * k; f.f.scale.set(w, w * 1.6, 1); f.f.position.x = Math.sin(t * 7 + f.i * 2.1) * 0.04 + (f.i - 1) * 0.06; }
   brasiers.forEach((l, i) => { l.intensity = 40 * (0.85 + 0.12 * Math.sin(t * 9 + i * 3) + 0.06 * Math.sin(t * 23 + i)); });

@@ -15,7 +15,7 @@ plate qui ne prend pas la lumière, trop peu de poses). Cet essai teste une autr
 Rien de tout ça n'est dans le jeu. C'est un essai, à montrer à Romain, sans « go » pour la suite.
 
 **En ligne (page Claude, hors du jeu)** : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP
-(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795800990-04e9`). Pour republier : `publish_files` des fichiers
+(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795806399-5c74`). Pour republier : `publish_files` des fichiers
 de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json), `base_version` = la version en ligne.
 **Piège de la page Claude** (vu par Romain : un ⚠ à la place du jeu) : elle ne sert pas les `.glb`, et
 elle interdit à la page de « télécharger » une adresse `data:` (fetch). Un glTF avec ses données en
@@ -163,6 +163,32 @@ paume en avant (0,12 s pour monter, tenue jusqu'à 0,3 s, retour à 0,55 s), pui
 quand le pied est posé (elle doit être presque nulle) : marche 0,08 à 0,14 pas/s, course 0,2 pas/s (avant : 0,65,
 et 1,8 dans la version que Romain a vue) ; `outils/film.py` fait de petits films en temps du jeu exact
 (`captures/film-barde.mp4` : marche, course, demi-tour, sort).
+
+## Le flamenco, le sort coupé, le dérapage, la note et sa portée (27 novembre, 20 h 05 ; go 19 h 38)
+
+Romain (à la voix) : la course ne flotte plus (« très très bien ») ; mais la main qui lance ne se voit pas ; il veut
+**un geste façon flamenco** (gratté très vite, « ta ta tan », et hop la main part) ; **pousser le pouce pendant le
+sort doit le couper** (on doit pouvoir fuir) ; **le demi-tour ne doit pas faire perdre de temps**, et on avait
+l'impression qu'il allait tomber ; et **le projectile doit être une note avec une traînée de lignes de partition**
+(son image : `origine/reference/effet-note-romain.png`), penchée vers la caméra pour qu'on la reconnaisse.
+
+- **Le sort coupé** (`annulerSort()`) : le pouce poussé pendant le sort : plus de sort, pas de note, il part tout de
+  suite et range son luth en courant.
+- **Le flamenco** : dans les 0,42 dernières secondes du sort, le grattage passe de 4,5 à 12,5 allers-retours par
+  seconde et devient plus ample ; à la note, la main droite part **grand** (sur le côté, vers le haut, vers la cible :
+  épaule + (-0,2 ; 0,17 ; 0,24) dans le repère du modèle), en 0,07 s, tenue jusqu'à 0,2 s, revenue à 0,38 s ;
+  **un éclair** (lueur + lumière) sur la main (`eclairMain()`).
+- **Le dérapage** remplace le virage de la bibliothèque (plus utilisé ; `origine/glb/anim-virage*.glb` gardés) :
+  en pleine course, le pouce à plus de 140° : il part **tout de suite** dans l'autre sens (sa vitesse tombe à 65 %
+  puis remonte en un instant) ; le corps pivote en 0,22 s, **penché vers où il repart** (le groupe `incline`, au-dessus
+  de `barde`), et un peu de poussière ; le pouce répond tout de suite.
+- **La note** : une croche brillante avec un bord foncé (pour qu'on reconnaisse sa forme, `texNoteBrillante`),
+  bleue (glace) ou orange (feu), toujours face à la caméra ; derrière elle, **un ruban de cinq lignes de portée** qui
+  ondule (`ruban()`), toujours de face (les lignes s'écartent perpendiculairement au trajet ET au regard de la
+  caméra), qui s'efface vers la queue ; de petites notes posées sur la portée (et des flocons pour la glace)
+  restent derrière et s'éteignent (`notePortee()`).
+- Vérifié en films (`outils/film.py derapage | annule | jeu | tout`) : `captures/derapage.png`, `note-glace.png`,
+  `note-feu.png`, `sort-coupe.png` ; les pieds ne glissent toujours pas (`glisse.py` : marche 0,1, course 0,18 pas/s).
 
 ## Ce qui n'est pas fait
 
