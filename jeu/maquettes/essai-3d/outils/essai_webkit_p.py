@@ -14,6 +14,6 @@ with sync_playwright() as p:
     if qui == 'pisteur':
         pg.evaluate('window.__pilote = true; __essai.avancer(0.3); __essai.basculerOmbre(); __essai.avancer(0.6); __essai.joy.mx = 0.6; __essai.avancer(0.6); __essai.joy.mx = 0')
     else:
-        pg.evaluate('window.__pilote = true; __essai.avancer(0.3); __essai.lancer("glace"); __essai.avancer(1.8)')
+        pg.evaluate('window.__pilote = true; __essai.avancer(0.3); __essai.fissurer(); __essai.avancer(2); __essai.lancer("glace"); __essai.avancer(1.8)')
     pg.wait_for_timeout(400); pg.screenshot(path='/tmp/pisteur/wk-%s.png' % qui)
     print(err[:8]); b.close()

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <link rel="icon" href="data:,">
-<title>Essai en vraie 3D — le Barde et le Pisteur dans la salle de l'armure</title>
+<title>Essai en vraie 3D — le Barde sur la place de nuit, le Pisteur dans la salle de l'armure</title>
 <style>
 html,body{margin:0;height:100%;background:#030406;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;font-family:system-ui,sans-serif}
 #jeu{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
@@ -29,6 +29,9 @@ html,body{margin:0;height:100%;background:#030406;overflow:hidden;touch-action:n
 #choix .rang{display:flex;gap:22px}
 .jaune{background:#ffd23a;color:#111;border:0;border-radius:16px;padding:16px 26px;font-size:1.35rem;font-weight:700;box-shadow:0 4px 0 #b8901a,0 8px 18px rgba(0,0,0,.4);cursor:pointer}
 .jaune:active{transform:translateY(2px)}
+#bFissure{position:fixed;right:calc(104px + env(safe-area-inset-right));top:8px;z-index:6;background:rgba(10,16,30,.55);color:#f3e6c4;border:1px solid rgba(190,140,255,.6);border-radius:12px;padding:6px 10px;font-size:.95rem}
+#bFissure.fait{opacity:.35;pointer-events:none}
+body:not(.barde) #bFissure{display:none}
 #autre{position:fixed;right:calc(10px + env(safe-area-inset-right));top:8px;z-index:6;background:rgba(10,16,30,.55);color:#f3e6c4;border:1px solid rgba(243,212,138,.45);border-radius:12px;padding:6px 10px;font-size:.95rem}
 body.barde .p,body.pisteur .b{display:none}
 body:not(.barde):not(.pisteur) .bt,body:not(.barde):not(.pisteur) #zone,body:not(.barde):not(.pisteur) #autre{display:none}
@@ -58,6 +61,7 @@ body.ombre #voile{opacity:1}
 <button class="bt p" id="pOmbre" aria-label="Ombre">🌑</button>
 <button class="bt p" id="pDague" aria-label="Dague"><span id="pDagueIc">🗡️</span><i id="pRang">1</i></button>
 <button id="autre">↺ héros</button>
+<button id="bFissure">⚡ Fissures</button>
 <div id="ips"></div>
 <div id="charge" style="display:none"><i></i></div>
 <div id="choix"><div class="titre">Qui veux-tu essayer ?</div><div class="rang"><button class="jaune" data-q="barde">🎵 Le Barde</button><button class="jaune" data-q="pisteur">🗡️ Le Pisteur</button></div></div>

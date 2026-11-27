@@ -1,4 +1,4 @@
-# Essai en vraie 3D — le Barde et le Pisteur dans la salle de l'armure (27 novembre)
+# Essai en vraie 3D — le Barde sur la place de nuit, le Pisteur dans la salle de l'armure (27 novembre)
 
 Pourquoi : Romain trouve les combats « bricolés » sur grand écran (fond flou, héros en image
 plate qui ne prend pas la lumière, trop peu de poses). Cet essai teste une autre façon de faire,
@@ -15,8 +15,8 @@ plate qui ne prend pas la lumière, trop peu de poses). Cet essai teste une autr
 Rien de tout ça n'est dans le jeu. C'est un essai, à montrer à Romain, sans « go » pour la suite.
 
 **En ligne (page Claude, hors du jeu)** : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP
-(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795812886-6397` depuis le Pisteur, 21 h 54). Pour republier : `publish_files` des fichiers
-de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json), `base_version` = la version en ligne.
+(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795815581-a175` depuis la place de nuit, 22 h 40). Pour republier : `publish_files` des fichiers
+de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json, et le dossier `nuit/` : fond.jpg, crev.jpg, crev-a.png, pilier-g.png, pilier-d.png), `base_version` = la version en ligne.
 **Piège de la page Claude** (vu par Romain : un ⚠ à la place du jeu) : elle ne sert pas les `.glb`, et
 elle interdit à la page de « télécharger » une adresse `data:` (fetch). Un glTF avec ses données en
 `data:` ne se charge donc pas. Solution : chaque `.glb` est rangé tel quel en base64 dans un `.json`
@@ -296,6 +296,54 @@ pas de loup 1,22 m/s → **1 à 1,8 pas/s** selon le pouce ; marche 0,59 m/s.
 - **Pas fait** : les bandages (3 s dans l'ombre, § 17) ; la marche est celle du Barde ; pas de vrais golems ; la
   caméra qui suit le héros (demandée par Romain, pour plus tard) ; l'Alchimiste et le Sage.
 - Crédits : **114 pour le Pisteur** (les deux images 4, le modèle 38, neuf mouvements 72) ; **217 en tout** pour l'essai.
+
+## La place de nuit, pour le Barde (27 novembre, en ligne à 22 h 40, version `1795815581-a175` ; go de Romain à 22 h 16 : « Voilà, je t'ai fait toutes les images. Essaye de faire un truc bien »)
+
+Romain a peint (Higgsfield) **une place de ville souterraine, la nuit** : un grand dallage, deux lanternes sur pied,
+des massifs de cristaux violets et bleu-vert, des escaliers, et au fond **le temple et sa porte blanche** (Elyra y
+retient la prison de cristal de Raban, d'après ce qu'il a dit à la voix). Il a fait plusieurs versions de la même
+image, exactement alignées : vide, avec les lanternes (et un petit Barde peint au milieu), avec des crevasses
+(trois sortes), avec des cristaux qui tombent, en feu, de jour. **Le Barde joue maintenant sur cette place** ; le
+Pisteur garde la salle de l'armure (ses murets, son mannequin).
+
+- **Le fond** : l'image avec les lanternes (`origine/nuit/place-lanternes.jpg`), le Barde peint effacé (remplacé
+  par la place vide au même endroit, à la même lumière). Réduite à 4096 px de large (`site/nuit/fond.jpg`) : les
+  téléphones n'acceptent pas toujours plus grand.
+- **La caméra 3D est celle de la peinture** (`outils/salle-nuit/camera.py`) : un appareil photo penché de 16°, à
+  11,8 m de haut, calé sur les lignes du dallage (où elles se rejoignent à l'horizon) et sur les colonnes (comment
+  elles penchent) ; **la hauteur vient du Barde que Romain a peint** (147 pixels pour 1,55 pas). Vérification : les
+  deux lanternes tombent à la même distance, symétriques (x −8,1 et +8,5, à 23,7 m), et la place fait à peu près
+  un carré (20 × 19 pas). Le Barde 3D posé à la place du Barde peint a la même taille.
+- **Les deux lanternes sont de vrais obstacles** : leur contour est découpé (l'outil libre rembg, modèle isnet ;
+  `origine/nuit/pg_masque.png`, `pd_masque2.png`) ; une plaque debout à leur place montre exactement les pixels de
+  la peinture et **cache le héros quand il passe derrière**. On ne traverse pas leur socle.
+- **Les lumières** : un ciel bleu sombre ; **la porte blanche du temple dans le dos** (elle dessine le bord du
+  héros) ; **les deux lanternes**, chaudes, qui vacillent un peu, et qui font **sa vraie ombre** sur le dallage
+  (seulement près d'elles) ; **les cristaux** des massifs (violet, bleu-vert) qui le colorent quand il passe à côté.
+- **La caméra suit le héros** (demandé par Romain à la voix) : elle montre un morceau de la peinture et le déplace
+  doucement. **L'armure reste toujours à l'image** (Romain) : quand le héros descend vers nous, la caméra recule un
+  peu. Elle ne sort pas de la peinture sur les côtés ; en bas, au bord, un fondu vers le noir.
+- **La place de l'armure** : en haut des marches, devant la porte (un cercle doré, en attendant l'armure). Les
+  notes y volent (plus vite qu'avant : c'est plus loin).
+- **Les crevasses** (l'image aux deux crevasses lumineuses, `origine/nuit/place-crevasses.jpg`) : le bouton
+  **⚡ Fissures** (ou la touche F). **Le sol tremble**, les deux crevasses **partent du haut des marches et filent
+  vers nous** en 1,3 s, de la poussière grise jaillit le long ; ensuite **elles restent** (Romain : une seule fois,
+  pour tout le combat). Leur fond violet et bleu-vert pulse, et quatre lumières au fond éclairent le héros par en
+  dessous quand il passe au-dessus. **On ne marche pas dessus** (on s'arrête au bord) : **il faut sauter** (💨). Si
+  la crevasse est trop large pour 3 pas, il saute juste assez loin pour passer. S'il était dessus quand elles
+  s'ouvrent, il est poussé au bord. Les cases du sol (0,2 pas) : `site/nuit/nuit.json` (rangé dans `essai3d.js`).
+- **Refaire** : `cd outils/salle-nuit && python3 generer.py` (le fond, les crevasses, les lanternes, les cases,
+  les repères), puis reconstruire `essai3d.js`.
+- Vérifié image par image (`outils/essai_nuit.py`, `essai_nuit2.py`, `captures/nuit-*.png`) et sous WebKit avec la
+  règle de sécurité du téléphone (`captures/webkit-nuit-et-pisteur.png` : le Barde sur la place, le Pisteur dans
+  l'ancienne salle).
+- **Limites** : la peinture n'est pas tout à fait d'aplomb au fond (les marches et la porte ne collent pas tout à
+  fait à la caméra) : la place de l'armure est une estimation. **Le héros est assez petit sur un téléphone** (il
+  fait environ un huitième de la hauteur de l'écran) parce que l'armure doit rester à l'image : à Romain de dire.
+  **Les crevasses vont du temple jusqu'au bord devant** : on ne peut pas les contourner, seulement sauter.
+- **Pas fait** : Grosbec et son armure (Romain : sa forme va peut-être changer), ses sorts et ses attaques ; les
+  autres images (cristaux qui tombent, feu, jour) ne sont pas utilisées. **Aucun crédit Higgsfield dépensé** pour
+  cette étape (les images sont celles de Romain).
 
 ## Ce qui n'est pas fait
 
