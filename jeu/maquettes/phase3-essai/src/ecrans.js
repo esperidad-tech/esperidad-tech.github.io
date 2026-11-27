@@ -1,9 +1,9 @@
-/* Les écrans de la version 2 : le départ (seul ou à quatre), le pouce gauche, les six boutons, le groupe en haut à gauche,
-   le code, « On reprend », le film d'Odette, la fin, les sons, la boucle. */
+/* Les écrans de la version 3 : le départ (seul ou à quatre), le combat sur tout l'écran, le pouce gauche (courir, le bouclier au-dessus),
+   le pouce droit (les trois sorts, le soin, le saut), le groupe en haut à gauche, le code, « On reprend », le film d'Odette, la fin, les sons, la boucle. */
 (function () {
 'use strict';
 var P3 = window.P3, REG = P3.REG, Dessin = window.Dessin;
-var VERSION = 'version 2 (27 novembre, nuit)';
+var VERSION = 'version 3 (27 novembre, nuit)';
 var $ = function (id) { return document.getElementById(id); };
 var cv = $('c'), ctx = cv.getContext('2d');
 var S = null, pause = false, finMontree = false, fige = false, enJeu = false;
@@ -20,23 +20,30 @@ function garder() { try { localStorage.setItem('phase3-v2', JSON.stringify(regla
 var horloge = {zero: 0, reel0: 0, pauseT: 0};
 function caler() { horloge.zero = performance.now(); horloge.reel0 = S ? S.reel : 0; }
 
-/* ---------- la mise en page : la salle au centre, les pouces sur les côtés ---------- */
+/* ---------- la mise en page (v3) : la salle sur tout l'écran ; à gauche, courir et le bouclier ; à droite, les sorts, le soin, le saut ---------- */
 var BOUTONS = ['bBouclier', 'bFeu', 'bGlace', 'bAcide', 'bSoin', 'bSaut'];
+var sonde = document.createElement('div');   // les bords de l'iPhone (l'encoche, les coins ronds) : env(safe-area-inset-*)
+sonde.style.cssText = 'position:fixed;left:0;top:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';
+document.body.appendChild(sonde);
+function marges() { var cs = getComputedStyle(sonde); return {h: parseFloat(cs.paddingTop) || 0, d: parseFloat(cs.paddingRight) || 0, b: parseFloat(cs.paddingBottom) || 0, g: parseFloat(cs.paddingLeft) || 0}; }
+function place(id, x, y, d) { var el = $(id); el.style.width = el.style.height = d + 'px'; el.style.left = (x - d / 2) + 'px'; el.style.top = (y - d / 2) + 'px'; el.style.fontSize = (d * 0.36) + 'px'; }
 function taille() {
   W = innerWidth; H = innerHeight; DPR = Math.min(2, window.devicePixelRatio || 1);
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-  var L = REG.salle, K = Dessin.K, haut = Math.max(34, H * 0.08), cote = Math.min(W * 0.15, 170), dessus = 6.6;   // dessus : Grosbec dépasse le mur du fond
-  var T = Math.min((H - haut - 6) / (dessus + L.P * K), (W - 2 * cote) / L.L);
-  vue.T = T; vue.ox = (W - L.L * T) / 2;
-  var bloc = (dessus + L.P * K) * T; vue.oy = haut + (H - haut - bloc) / 2 + dessus * T;
-  // les six boutons, sous le pouce droit : le bouclier au milieu (le bouton de panique), les trois sorts autour, le soin et le saut plus loin
-  var g = Math.min(H * 0.25, 150), p = Math.min(H * 0.16, 96), cx = W - Math.min(H * 0.05, 30) - g / 2 - (window.safeDroite || 0), cy = H - Math.min(H * 0.06, 36) - g / 2;
-  function place(id, x, y, d) { var el = $(id); el.style.width = el.style.height = d + 'px'; el.style.left = (x - d / 2) + 'px'; el.style.top = (y - d / 2) + 'px'; el.style.fontSize = (d * 0.36) + 'px'; }
-  place('bBouclier', cx, cy, g);
-  var r1 = g / 2 + p / 2 + Math.min(H * 0.02, 10);
-  [['bFeu', 180], ['bGlace', 135], ['bAcide', 90]].forEach(function (b) { var a = b[1] * Math.PI / 180; place(b[0], cx + Math.cos(a) * r1, cy - Math.sin(a) * r1, p); });
-  var r2 = r1 + p * 0.95;
-  [['bSoin', 165], ['bSaut', 115]].forEach(function (b) { var a = b[1] * Math.PI / 180; place(b[0], cx + Math.cos(a) * r2, cy - Math.sin(a) * r2, p * 0.92); });
+  var L = REG.salle, K = Dessin.K, sa = marges();
+  // la salle aussi grande que l'écran le permet : le sol touche le bas, Grosbec touche presque le haut ; le mur et le sol continuent sur les côtés
+  var u = Math.min(H, 0.5 * W, 450);   // la taille des pouces : la hauteur d'un téléphone couché (un pouce reste un pouce : plafonnée sur tablette)
+  var T = Math.min(H / (Dessin.DESSUS + L.P * K), (W - 2 * u * 0.12) / L.L);   // sur une tablette, on garde un bord de chaque côté pour les pouces
+  vue.T = T; vue.ox = (W - L.L * T) / 2; vue.oy = H - L.P * T * K;
+  // à droite, près du coin : les trois sorts en arc ; un cran plus loin, le saut et le soin
+  var p = u * 0.19, px = W - sa.d - u * 0.04, py = H - sa.b - u * 0.04, R1 = u * 0.38, R2 = R1 + p * 1.03;
+  [['bFeu', 168], ['bGlace', 136], ['bAcide', 104]].forEach(function (b) { var a = b[1] * Math.PI / 180; place(b[0], px + Math.cos(a) * R1, py - Math.sin(a) * R1, p); });
+  [['bSaut', 96], ['bSoin', 126]].forEach(function (b) { var a = b[1] * Math.PI / 180; place(b[0], px + Math.cos(a) * R2, py - Math.sin(a) * R2, p * 0.92); });
+  // à gauche : le pouce qui court (en bas), le bouclier juste au-dessus
+  joy.R = Math.max(40, Math.min(80, u * 0.13));
+  joy.rx = sa.g + u * 0.06 + joy.R * 1.1; joy.ry = H - sa.b - u * 0.1 - joy.R;
+  var g = u * 0.24; place('bBouclier', Math.max(sa.g + u * 0.04 + g / 2, joy.rx), joy.ry - joy.R - u * 0.05 - g / 2, g);
+  dctx.evite = BOUTONS.map(function (id) { var el = $(id), d = parseFloat(el.style.width); return {x: parseFloat(el.style.left) + d / 2, y: parseFloat(el.style.top) + d / 2, r: d / 2}; });   // la bulle ne passe pas dessous
 }
 addEventListener('resize', taille);
 
@@ -69,8 +76,9 @@ function nouvelle() {
   construireGroupe();
   caler();
 }
+function pleinEcran() { var d = document.documentElement; try { var f = d.requestFullscreen || d.webkitRequestFullscreen; if (f && !document.fullscreenElement && !document.webkitFullscreenElement) { var r = f.call(d); if (r && r.catch) r.catch(function () {}); } } catch (e) {} }
 function demarrer() {   // le bouton jaune du départ
-  enJeu = true; $('debut').classList.remove('on');
+  enJeu = true; $('debut').classList.remove('on'); pleinEcran();
   audio(); nouvelle();
   if (S.seul) { cacherJaune(); return; }
   montrerJaune('GO', true, function () { caler(); S.attente = REG.lancement; });
@@ -78,11 +86,11 @@ function demarrer() {   // le bouton jaune du départ
 }
 
 /* ---------- le pouce gauche (il se pose où il veut, sur la moitié gauche), et toucher Grosbec pour viser ---------- */
-var joy = {id: null, bx: 0, by: 0, vx: 0, vy: 0, mx: 0, my: 0, R: 60};
+var joy = {id: null, bx: 0, by: 0, vx: 0, vy: 0, mx: 0, my: 0, R: 60, rx: 0, ry: 0};
 cv.addEventListener('pointerdown', function (e) {
   e.preventDefault(); audio();
   if (!S || pause || !enJeu || S.etat !== 'combat') return;
-  // mode seul : toucher une bulle de mon villageois, c'est la crier (l'endroit sûr à tous, le reste à l'ami concerné)
+  // mode seul : toucher la bulle de mon villageois, c'est la crier (l'endroit sûr à tous, le reste à l'ami concerné)
   for (var i = 0; i < dctx.boites.length; i++) { var b = dctx.boites[i]; if (e.clientX >= b.x - 6 && e.clientX <= b.x + b.w + 6 && e.clientY >= b.y - 6 && e.clientY <= b.y + b.h + 6) {
     if (S.seul) { if (b.info.quoi === 'zone') P3.relayerZone(S); else P3.relayer(S, b.info.cible); }
     return; } }
@@ -90,7 +98,6 @@ cv.addEventListener('pointerdown', function (e) {
   if (p >= 0 && P3.vivant(S)) { P3.viser(S, p); return; }
   if (e.clientX < W * 0.55 && joy.id === null) {
     joy.id = e.pointerId; joy.bx = e.clientX; joy.by = e.clientY; joy.vx = joy.vy = joy.mx = joy.my = 0;
-    joy.R = Math.max(40, Math.min(80, H * 0.13));
     try { cv.setPointerCapture(e.pointerId); } catch (_) {}
   }
 }, {passive: false});

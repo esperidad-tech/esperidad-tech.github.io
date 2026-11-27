@@ -14,9 +14,9 @@
 
 var ROLES = ['pisteur', 'alchimiste', 'barde', 'sage'];
 var REG = {
-  salle: {L: 14, P: 9},                       // (C) 14 pas de large, 9 de profondeur ; Grosbec au fond (y = 0)
-  grosbec: {x: 7, y: 0.8, r: 1.6},            // (C) son pied ; on ne marche pas dessus
-  heros: {pv: 100, r: 0.35, vit: 3.6, x: 7, y: 5.8},   // (R) la course de la phase 2 : 3,6 pas par seconde
+  salle: {L: 16, P: 6.5},                     // (C, v3) plus large que profonde, pour remplir l'écran d'un téléphone couché ; Grosbec au fond (y = 0)
+  grosbec: {x: 8, y: 0.7, r: 1.5},            // (C) son pied ; on ne marche pas dessus
+  heros: {pv: 100, r: 0.35, vit: 3.6, x: 8, y: 4.1},   // (R) la course de la phase 2 : 3,6 pas par seconde
   sort: {lance: 3, vol: 0.35},                // (R) trois sorts lents, environ 3 s sur place
   soin: {lance: 2, rend: 50},                 // (R) le soin de la phase 2
   saut: {L: 3, dur: 0.32, recharge: 1.5},     // (R) le saut de la phase 2
@@ -28,8 +28,8 @@ var REG = {
   film: 8,                                    // (C) le film d'Odette, avant le bouton jaune
   lancement: 2,                               // (C) après le bouton jaune : deux secondes de calme
   // les trois endroits sûrs (R : la fontaine, la lanterne, la statue cassée) ; (C) leur place et leur taille
-  lieux: [{n: 'lanterne', x: 2.4, y: 3.6}, {n: 'statue', x: 11.6, y: 3.6}, {n: 'fontaine', x: 7, y: 7.5}],
-  lieuR: 0.45, surR: 1.45,                    // l'objet (on ne marche pas dessus) ; l'endroit sûr autour de lui
+  lieux: [{n: 'lanterne', x: 3.6, y: 2.6}, {n: 'statue', x: 12.4, y: 2.6}, {n: 'fontaine', x: 8, y: 5.2}],
+  lieuR: 0.45, surR: 1.4,                    // l'objet (on ne marche pas dessus) ; l'endroit sûr autour de lui
   zone: {annonce: 4},                         // (R) environ 4 s entre l'annonce et la frappe
   mega: {annonce: 2.8},                       // (R) moins de 3 s
   infoMontree: 6,                             // (C) la bulle du villageois reste 6 s pour un élément ou une partie
@@ -169,7 +169,7 @@ function nouvelle(reglages, graine) {
     vus: {}, tirs: [], prochainEclair: 1.5, eclairs: [],
     code: {}, symboles: null, symboleT: -1,
     amis: {}, cris: [], relais: {},              // mode seul : les robots, leurs cris pour moi, ce que j'ai crié
-    villageois: {x: H.x, y: H.y + 1.3, court: null},
+    villageois: {x: H.x - 0.85, y: H.y + 1.0, court: null}, bulle: null, dit: {},
     stats: {morts: 0, sorts: 0, justes: 0, rebonds: 0, soins: 0, zones: 0, zonesRatees: 0, megas: 0, megasRatees: 0, reprises: 0, relaisFaits: 0, relaisRates: 0, symboleT: null},
     evts: []
   };
@@ -223,7 +223,7 @@ function blesser(S, n, source) {
 function mourir(S, source) {
   var h = S.h;
   if (h.mort > 0) return;
-  h.pv = 0; h.mort = REG.mort.attente; h.lance = null; h.saut = null;
+  h.pv = 0; h.mort = REG.mort.attente; h.lance = null; h.saut = null; S.bulle = null;
   S.stats.morts++;
   evt(S, 'mort', {source: source, x: h.x, y: h.y});
 }
@@ -299,7 +299,7 @@ function reprendre(S) {
   var h = S.h, H = REG.heros;
   S.T = pointDeReprise(S.T); S.attente = REG.lancement;
   h.pv = H.pv; h.mort = 0; h.intouchable = 0; h.lance = null; h.saut = null; h.bouclierFin = -1; h.bouclierPret = 0;   // (R) chacun garde la vie de Grosbec
-  S.vus = {}; marquerPasse(S); S.prochainEclair = S.T + 1.5; S.tirs = []; S.cris = [];
+  S.vus = {}; marquerPasse(S); S.prochainEclair = S.T + 1.5; S.tirs = []; S.cris = []; S.bulle = null;
   for (var ro in S.amis) { var a = S.amis[ro]; a.mort = 0; a.bouclierFin = -1; a.bouclierPret = 0; a.voix = 0; a.prochainCoup = S.T + 2 + 2 * S.rnd(); }
   S.stats.reprises++;
   evt(S, 'reprise');
@@ -313,21 +313,63 @@ function mesInfos(S) {   // les bulles de mon villageois : les infos dont MA tab
 }
 function relayer(S, ami) {
   if (!S.seul) return false;
-  var l = mesInfos(S).filter(function (x) { return x.cible === ami && !S.relais[x.ref + x.quoi]; });
-  if (!l.length) return false;
-  l.forEach(function (x) { S.relais[x.ref + x.quoi] = 1; entendre(S, S.amis[ami], x, S.T + 0.2); S.stats.relaisFaits++; });
+  var bu = S.bulle;
+  if (!bu || bu.type !== 'villageois' || bu.x.cible !== ami || S.relais[bu.x.ref + bu.x.quoi]) return false;   // (v3) seulement ce que montre la bulle
+  S.relais[bu.x.ref + bu.x.quoi] = 1; entendre(S, S.amis[ami], bu.x, S.T + 0.2); S.stats.relaisFaits++;
   evt(S, 'relais', {ami: ami});
   return true;
 }
 function relayerZone(S) {
   if (!S.seul) return false;
-  var l = mesInfos(S).filter(function (x) { return x.quoi === 'zone' && !S.relais[x.ref + x.quoi]; });
-  if (!l.length) return false;
-  l.forEach(function (x) { S.relais[x.ref + x.quoi] = 1; for (var ro in S.amis) entendre(S, S.amis[ro], x, S.T + 0.2); S.stats.relaisFaits++; });
+  var bu = S.bulle;
+  if (!bu || bu.type !== 'villageois' || bu.x.quoi !== 'zone' || S.relais[bu.x.ref + 'zone']) return false;
+  S.relais[bu.x.ref + 'zone'] = 1; for (var ro in S.amis) entendre(S, S.amis[ro], bu.x, S.T + 0.2); S.stats.relaisFaits++;
   evt(S, 'relais', {ami: 'tous'});
   return true;
 }
-function aRelayer(S, ami) { return mesInfos(S).some(function (x) { return x.cible === ami && !S.relais[x.ref + x.quoi]; }); }
+function aRelayer(S, ami) { var bu = S.bulle; return !!(S.seul && bu && bu.type === 'villageois' && bu.x.cible === ami && !S.relais[bu.x.ref + bu.x.quoi]); }
+
+/* ---------- (v3, Romain : « une seule bulle à la fois ») : ce que montre l'écran, une chose à la fois ----------
+   Les candidats : ce que montre mon villageois (à crier aux autres), et, en mode seul, ce que mes robots me crient.
+   L'endroit sûr passe avant tout (il coupe la bulle en cours), puis le bouclier, puis le reste, du plus ancien au plus récent.
+   Une bulle reste au moins 1,8 s (2,2 s pour un cri), puis laisse la place s'il y a autre chose à montrer ;
+   l'endroit sûr et le bouclier disparaissent à la frappe ; en mode seul, une info relayée disparaît. */
+function prioBulle(c) { var q = c.x ? c.x.quoi : 'sym'; return q === 'zone' ? 0 : q === 'mega' ? 1 : c.type === 'villageois' ? 2 : q === 'sym' ? 4 : 3; }
+function candidatsBulle(S) {
+  var l = [], T = S.T;
+  mesInfos(S).forEach(function (x) {
+    var cle = 'v' + x.ref + x.quoi;
+    if (S.dit[cle] || (S.seul && S.relais[x.ref + x.quoi])) return;
+    l.push({cle: cle, type: 'villageois', x: x, age: x.tA, fin: x.tFin, mini: 1.8});
+  });
+  S.cris.forEach(function (c, i) {
+    var cle = 'c' + (c.x ? c.x.ref + c.x.quoi : 's' + c.de + Math.round(c.t));
+    if (T < c.t || T >= c.fin || S.dit[cle]) return;
+    l.push({cle: cle, type: 'ami', de: c.de, x: c.x || null, sym: c.sym || null, age: c.t, fin: c.fin, mini: 2.2});
+  });
+  l.forEach(function (c) { c.prio = prioBulle(c); });
+  l.sort(function (a, b) { return a.prio - b.prio || a.age - b.age; });
+  return l;
+}
+function choisirBulle(S) {
+  if (!vivant(S) || S.combat !== 2 || S.etat !== 'combat') { S.bulle = null; return; }
+  var T = S.T, cur = S.bulle, l = candidatsBulle(S);
+  if (cur) {
+    var fini = T >= cur.fin || (cur.type === 'villageois' && S.seul && S.relais[cur.x.ref + cur.x.quoi]);
+    if (!fini && !l.some(function (c) { return c.cle === cur.cle; })) fini = true;
+    if (fini) { S.dit[cur.cle] = 1; cur = S.bulle = null; }
+  }
+  var autres = l.filter(function (c) { return !cur || c.cle !== cur.cle; });
+  if (cur && autres.length) {
+    var mieux = autres[0];
+    if (mieux.prio <= 1 && mieux.prio < cur.prio) cur = S.bulle = null;                        // l'endroit sûr ou le bouclier coupe la bulle (elle reviendra)
+    else if (T - cur.debut >= cur.mini) { S.dit[cur.cle] = 1; cur = S.bulle = null; }          // assez montrée : au suivant
+  }
+  if (!cur && l.length) {
+    var n = l.filter(function (c) { return !S.dit[c.cle]; })[0];
+    if (n) { n.debut = T; S.bulle = n; if (n.type === 'villageois') evt(S, 'bulle', {x: n.x}); }
+  }
+}
 
 /* ---------- les robots (mode seul) ---------- */
 function entendre(S, a, x, quand) {
@@ -335,6 +377,10 @@ function entendre(S, a, x, quand) {
   a.sait[x.ref + x.quoi] = quand;
 }
 // un robot crie ce que son villageois lui montre (s'il est vivant), un cri à la fois ; on l'entend avec la chance « robots »
+function finFaiblesse(su, x, debut) {   // (v3) un cri d'élément ou de partie reste valable jusqu'à la faiblesse suivante (12 s au plus)
+  var f = null; su.faibles.forEach(function (y) { if (y.h === x.cible && y.t > x.tA && (!f || y.t < f.t)) f = y; });
+  return Math.min(f ? f.t : debut + 12, debut + 12);
+}
 function robotsCrient(S) {
   var su = S.su, T = S.T;
   su.infos.forEach(function (x) {
@@ -345,11 +391,12 @@ function robotsCrient(S) {
     if (g.mort > 0) return;                                          // sa tablette ne montre plus rien
     if (x.quoi === 'zone') entendre(S, g, x, x.tA + 0.3);            // son villageois court : lui, il sait
     if (S.rnd() > S.reg.robots) return;                              // il ne l'a pas vue, ou pas criée
-    var debut = Math.max(T + 0.3 + 0.7 * S.rnd(), g.voix), fin = debut + (x.quoi === 'mega' ? 0.6 : 1.0);
+    var urgent = x.quoi === 'zone' || x.quoi === 'mega';            // l'endroit sûr et le bouclier : on les crie tout de suite, avant le reste
+    var debut = urgent ? T + 0.2 + 0.5 * S.rnd() : Math.max(T + 0.3 + 0.7 * S.rnd(), g.voix), fin = debut + (x.quoi === 'mega' ? 0.6 : 1.0);
     g.voix = fin;
     var pour = x.quoi === 'zone' ? ROLES.filter(function (ro) { return ro !== x.donneur; }) : [x.cible];
     pour.forEach(function (ro) {
-      if (ro === S.moi) S.cris.push({de: x.donneur, x: x, t: debut, fin: fin + (x.quoi === 'mega' ? 2.2 : 3)});
+      if (ro === S.moi) S.cris.push({de: x.donneur, x: x, t: debut, fin: urgent ? x.tFin : finFaiblesse(su, x, debut)});   // (v3) l'endroit sûr et le bouclier : jamais après la frappe ; l'élément et la partie attendent leur tour tant qu'ils sont vrais
       else if (S.rnd() < 0.95) entendre(S, S.amis[ro], x, fin + 0.2 + 0.4 * S.rnd());
     });
   });
@@ -435,7 +482,7 @@ function pas(S, dt, entree) {
     var bon = f && ELEMS[f.elem] === s.quoi && f.part === s.part;
     if (bon && S.boss > 0) {
       S.boss = Math.max(0, S.boss - 1); S.stats.justes++; evt(S, 'touche', {part: s.part, quoi: s.quoi});
-      if (S.boss <= 0 && S.combat === 2) { S.symboleT = S.reel; S.stats.symboleT = T; evt(S, 'symbole'); }
+      if (S.boss <= 0 && S.combat === 2) { S.symboleT = S.reel; S.stats.symboleT = T; evt(S, 'symbole'); if (victoire(S)) { S.etat = 'fini'; evt(S, 'victoire'); } }   // les trois autres déjà tapés : c'est gagné
     } else { S.stats.rebonds++; evt(S, 'rebond', {part: s.part, quoi: s.quoi}); }
     return false;
   });
@@ -498,6 +545,7 @@ function pas(S, dt, entree) {
   });
   if (S.seul) { robotsCrient(S); robotsJouent(S, dt); }
   S.cris = S.cris.filter(function (c) { return S.T < c.fin; });
+  choisirBulle(S);
   // les robots qui ont fini crient leur symbole (et le redisent de temps en temps tant que je ne l'ai pas tapé)
   if (S.seul) for (var r2 in S.amis) {
     var a = S.amis[r2];
@@ -507,7 +555,7 @@ function pas(S, dt, entree) {
   suivre(S, dt);
 }
 /* les coéquipiers et le villageois suivent mon héros, chacun avec son temps de réaction (R) */
-var PLACES = [[-1.25, 0.25], [1.25, 0.25], [0, -1.05]];   // (C) à côté et derrière moi, pour ne jamais cacher mon héros
+var PLACES = [[-1.25, 0.15], [1.25, 0.15], [0, -0.95]];   // (C) à côté et derrière moi, pour ne jamais cacher mon héros
 function suivre(S, dt) {
   var h = S.h, i = 0;
   for (var ro in S.amis) {
@@ -521,7 +569,7 @@ function suivre(S, dt) {
   }
   var vg = S.villageois, cx, cy;
   if (vg.court && S.T < vg.court.fin && vivant(S)) { var l = REG.lieux[vg.court.lieu]; cx = l.x + 0.7; cy = l.y + 0.7; }
-  else { vg.court = null; cx = h.x - 0.9; cy = h.y + 1.3; }
+  else { vg.court = null; cx = h.x - 0.85; cy = h.y + 1.0; }
   var ddx = cx - vg.x, ddy = cy - vg.y, dd = Math.hypot(ddx, ddy), vv = (vg.court ? 4.5 : 3.4) * dt;
   if (dd > 0.05) { var kk = Math.min(1, vv / dd); vg.x += ddx * kk; vg.y += ddy * kk; }
   pousser(vg, 0.3);
@@ -539,7 +587,7 @@ function demarrerC2(S) { if (S.etat === 'go') { allerC2(S, 0); return true; } re
 G.P3 = {REG: REG, DEFAUT: DEFAUT, ROLES: ROLES, ELEMS: ELEMS, PARTIES: PARTIES, MOTS: MOTS, SYMS: SYMS,
   hash: hash, rngDe: rngDe, suite: suite, faibleA: faibleA, symboles: symboles, ecart: ecart,
   nouvelle: nouvelle, pas: pas, lancer: lancer, sauter: sauter, bouclier: bouclier, viser: viser, taper: taper, victoire: victoire,
-  reprendre: reprendre, pointDeReprise: pointDeReprise, mesInfos: mesInfos, relayer: relayer, relayerZone: relayerZone, aRelayer: aRelayer,
+  reprendre: reprendre, pointDeReprise: pointDeReprise, mesInfos: mesInfos, choisirBulle: choisirBulle, candidatsBulle: candidatsBulle, relayer: relayer, relayerZone: relayerZone, aRelayer: aRelayer,
   allerC2: allerC2, demarrerC2: demarrerC2, dernier: dernier, vivant: vivant, protege: protege, aLAbri: aLAbri, libreEn: libreEn};
 if (typeof module !== 'undefined') module.exports = G.P3;
 })(typeof window !== 'undefined' ? window : globalThis);

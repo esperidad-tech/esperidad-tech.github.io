@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Les vrais gestes dans la page (téléphone couché, puis tablette), et quatre tablettes calées ensemble.
-   python3 tests/gestes.py  → vérifications + captures dans /tmp/p3v2
+   python3 tests/gestes.py  → vérifications + captures dans /tmp/p3v3
+   0. (v3) la mise en page : la salle sur tout l'écran ; le bouclier à gauche au-dessus du pouce, les sorts, le soin et le saut à droite ; rien ne se chevauche
    1. mode seul, premier combat : les éclairs, ni acide ni bouclier ; le tambour ; le film d'Odette ; le bouton jaune ;
    2. deuxième combat : le pouce gauche fait courir ; toucher une partie de Grosbec la vise ; un sort se lance ; bouger le coupe ;
-      le bouclier se lève ; une bulle pour un ami, relayée en touchant son portrait ;
+      le bouclier se lève ; une seule bulle à la fois ; une bulle pour un ami, relayée en touchant son portrait ;
    3. une zone ratée : l'écran en noir et blanc, plus rien ; « On reprend » et le bouton jaune ;
    4. le code : mon symbole, la petite fenêtre, un faux, les bons, la fin ;
    5. quatre tablettes, le même numéro, le bouton jaune « ensemble » : même temps, chaque info sur une seule tablette, jamais chez celui qu'elle concerne."""
@@ -11,7 +12,7 @@ import os, sys, time
 from playwright.sync_api import sync_playwright
 ICI = os.path.dirname(os.path.abspath(__file__))
 PAGE = 'file://' + os.path.join(os.path.dirname(ICI), 'phase3.html')
-OUT = os.environ.get('P3_SORTIE', '/tmp/p3v2'); os.makedirs(OUT, exist_ok=True)
+OUT = os.environ.get('P3_SORTIE', '/tmp/p3v3'); os.makedirs(OUT, exist_ok=True)
 soucis = []
 def non(c, m):
     print(('  ✓ ' if c else '  ✗ ') + m)
@@ -20,7 +21,28 @@ AVANCE = """(function(n){ var S=__p3.S; for (var k=0;k<n;k++) __p3.P3.pas(S,0.05
 
 with sync_playwright() as p:
     b = p.chromium.launch()
-    ctx = b.new_context(viewport={'width': 844, 'height': 390}, device_scale_factor=2, has_touch=True, is_mobile=True)
+    # 0. la mise en page, sur trois écrans couchés
+    for (w, h) in [(932, 430), (852, 393), (667, 375), (1180, 820), (1024, 768)]:
+        c0 = b.new_context(viewport={'width': w, 'height': h}, device_scale_factor=1, has_touch=True, is_mobile=True); q = c0.new_page()
+        q.goto(PAGE); q.evaluate("localStorage.clear()"); q.reload(); q.wait_for_timeout(150)
+        q.evaluate("Object.assign(__p3.reglages, {mode:'seul', debut:2})"); q.evaluate("__p3.demarrer()"); q.wait_for_timeout(2700)
+        r = q.evaluate("""(function(){ var v=__p3.vue, L=__p3.P3.REG.salle, K=Dessin.K, o={};
+            ['bBouclier','bFeu','bGlace','bAcide','bSoin','bSaut'].forEach(function(id){ var e=document.getElementById(id).getBoundingClientRect(); o[id]={x:e.left+e.width/2, y:e.top+e.height/2, r:e.width/2, vu:e.width>0}; });
+            var tete = Dessin.centrePartie(0);
+            return {o:o, gauche:v.ox, droite:innerWidth-(v.ox+L.L*v.T), bas:innerHeight-(v.oy+L.P*v.T*K), haut:tete[1]-0.64*v.T, T:v.T,
+              lieux:__p3.P3.REG.lieux.map(function(l){ return [Dessin.X(l.x), Dessin.Y(l.y), 1.4*v.T]; })}; })()""")
+        o = r['o']; ids = list(o)
+        dedans = all(b_['vu'] and b_['x'] - b_['r'] >= 0 and b_['x'] + b_['r'] <= w + 0.5 and b_['y'] - b_['r'] >= 0 and b_['y'] + b_['r'] <= h + 0.5 for b_ in o.values())
+        chev = [(i, j) for k, i in enumerate(ids) for j in ids[k + 1:] if ((o[i]['x'] - o[j]['x']) ** 2 + (o[i]['y'] - o[j]['y']) ** 2) ** 0.5 < o[i]['r'] + o[j]['r']]
+        cotes = o['bBouclier']['x'] < w * 0.25 and all(o[i]['x'] > w * 0.6 for i in ['bFeu', 'bGlace', 'bAcide', 'bSoin', 'bSaut'])
+        # les objets des endroits sûrs ne passent pas sous un bouton
+        sous = [n for n, (lx, ly, rr) in zip(['lanterne', 'statue', 'fontaine'], r['lieux']) for i in ids if ((o[i]['x'] - lx) ** 2 + (o[i]['y'] - ly) ** 2) ** 0.5 < o[i]['r'] + 0.5 * r['T']]
+        non(dedans and not chev and cotes and not sous, '%dx%d : bouclier à gauche, sorts/soin/saut à droite, tout dans l\'écran, rien ne se chevauche, aucun endroit sûr sous un bouton %s %s' % (w, h, chev, sous))
+        couche = w / h > 1.9
+        non(r['bas'] < 1 and r['haut'] > 0 and (not couche or r['gauche'] < w * 0.12), '%dx%d : la salle prend l\'écran (sol au bord du bas, marge des côtés %d px, la tête de Grosbec à %d px du haut)' % (w, h, r['gauche'], r['haut']))
+        if (w, h) == (932, 430): q.screenshot(path=OUT + '/0-mise-en-page-max.png')
+        c0.close()
+    ctx = b.new_context(viewport={'width': 852, 'height': 393}, device_scale_factor=2, has_touch=True, is_mobile=True)
     pg = ctx.new_page(); errs = []
     pg.on('pageerror', lambda e: errs.append(str(e)[:300]))
     pg.goto(PAGE); pg.evaluate("localStorage.clear()"); pg.reload(); pg.wait_for_timeout(300)
@@ -64,13 +86,16 @@ with sync_playwright() as p:
     non(pg.evaluate("__p3.S.h.bouclierFin > __p3.S.T"), 'le bouclier se lève')
     pg.locator('#bBouclier').tap(force=True); pg.wait_for_timeout(100)
     non(pg.evaluate("__p3.S.stats") is not None and 'non' in (pg.locator('#bBouclier').get_attribute('class') or ''), 'puis il se recharge (le bouton tremble)')
-    # une bulle pour un ami : la relayer en touchant son portrait
+    # une bulle pour un ami : la relayer en touchant son portrait (v3 : seulement celle qui est à l'écran ; jamais deux bulles)
     pg.evaluate("__p3.fige = true")
-    ami = None
+    ami = None; deux = 0
     for k in range(400):
-        ami = pg.evaluate("(function(){ var S=__p3.S; for (var k=0;k<4;k++) __p3.P3.pas(S,0.05,null); S.h.pv=100; var l=__p3.P3.mesInfos(S).filter(function(x){return (x.quoi==='elem'||x.quoi==='part') && x.tFin - S.T > 4 && !S.relais[x.ref+x.quoi];}); return l.length ? l[0].cible : null; })()")
+        ami = pg.evaluate("(function(){ var S=__p3.S; for (var k=0;k<4;k++) __p3.P3.pas(S,0.05,null); S.h.pv=100; var b=S.bulle; return b && b.type==='villageois' && (b.x.quoi==='elem'||b.x.quoi==='part') ? b.x.cible : null; })()")
+        pg.evaluate("__p3.caler()"); pg.wait_for_timeout(20)
+        deux += pg.evaluate("__p3.dctx.boites.length > 1 ? 1 : 0")
         if ami: break
     pg.evaluate("__p3.caler()"); pg.wait_for_timeout(60)
+    non(deux == 0 and pg.evaluate("__p3.dctx.boites.length") == 1, 'une seule bulle à l\'écran à la fois')
     non(ami is not None and 'crie' in (pg.locator('.cadre[data-r="' + str(ami) + '"]').get_attribute('class') or ''), 'mon villageois montre une info pour un ami : son portrait clignote (' + str(ami) + ')')
     pg.screenshot(path=OUT + '/8-bulle-tel.png')
     if ami:
@@ -123,7 +148,7 @@ with sync_playwright() as p:
 
     # 5. quatre tablettes, le même numéro, le bouton jaune ensemble
     pages, errs4 = {}, []
-    tailles = {'pisteur': (844, 390), 'alchimiste': (1180, 820), 'barde': (1024, 768), 'sage': (915, 412)}
+    tailles = {'pisteur': (852, 393), 'alchimiste': (1180, 820), 'barde': (1024, 768), 'sage': (932, 430)}
     for ro, (w, h) in tailles.items():
         c2 = b.new_context(viewport={'width': w, 'height': h}, device_scale_factor=1, has_touch=True, is_mobile=True)
         q = c2.new_page(); q.on('pageerror', lambda e, ro=ro: errs4.append(ro + ': ' + str(e)[:200]))

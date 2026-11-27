@@ -101,16 +101,37 @@ function verif() {
   S = S0(); S.boss = 0;
   non(!P3.taper(S, 'barde', '❌'), 'un faux symbole'); ['barde', 'pisteur'].forEach(function (r) { P3.taper(S, r, S.symboles[r]); });
   non(!P3.victoire(S), 'pas encore'); P3.taper(S, 'alchimiste', S.symboles.alchimiste); non(P3.victoire(S) && S.etat === 'fini', 'la victoire');
+  S = S0(); ['barde', 'pisteur', 'alchimiste'].forEach(function (r) { P3.taper(S, r, S.symboles[r]); }); non(S.etat === 'combat', 'les trois tapés, mon boss vivant : pas encore');
+  S.boss = 1; S.faible = {id: -1, elem: 0, part: S.cible}; S.tirs.push({quoi: 'feu', part: S.cible, x: S.h.x, y: S.h.y, t: 0.34}); P3.pas(S, 0.05, null); S.faible = {id: -1, elem: 0, part: S.cible}; non(S.etat === 'fini', 'mon boss tombe après les trois symboles : la victoire tout de suite');
   // le premier combat : une minute, le tambour, tout le monde tombe, le film, le bouton jaune
   S = P3.nouvelle({mode: 'quatre', role: 'pisteur', partie: 3, debut: 1}, 1);
   non(!P3.lancer(S, 'acide') && !P3.bouclier(S), 'pas d\'acide ni de bouclier au premier combat');
   for (k = 0; k < 2000 && S.etat === 'combat'; k++) P3.pas(S, 0.05, null);
   non(S.etat === 'film' && S.T >= 70 && S.T < 72, 'le film arrive après 70 s (' + S.T + ')');
   for (k = 0; k < 200; k++) P3.pas(S, 0.05, null); non(S.etat === 'go' && P3.demarrerC2(S) && S.combat === 2, 'le bouton jaune lance le deuxième combat');
-  // mode seul : une info pour un robot, relayée en touchant son portrait
+  // mode seul : une info pour un robot, relayée en touchant son portrait (seulement celle que montre la bulle)
   S = P3.nouvelle({mode: 'seul', role: 'barde', debut: 2, robots: 1}, 9); S.attente = 0;
-  var x = null; while (!x && S.T < 60) { P3.pas(S, 0.05, null); x = P3.mesInfos(S).filter(function (i) { return i.cible; })[0]; }
-  non(!!x && P3.aRelayer(S, x.cible) && P3.relayer(S, x.cible) && !P3.aRelayer(S, x.cible), 'je relaie une info à un robot');
+  while (S.T < 60 && !(S.bulle && S.bulle.type === 'villageois' && S.bulle.x.cible)) P3.pas(S, 0.05, null);
+  var bu = S.bulle, autre = P3.ROLES.filter(function (r) { return r !== 'barde' && r !== (bu && bu.x.cible); })[0];
+  non(!!bu && !P3.relayer(S, autre), 'on ne relaie pas à quelqu\'un d\'autre que celui de la bulle');
+  non(!!bu && P3.aRelayer(S, bu.x.cible) && P3.relayer(S, bu.x.cible) && !P3.aRelayer(S, bu.x.cible), 'je relaie l\'info de la bulle à son ami');
+  // (v3) une seule bulle à la fois : l'endroit sûr passe avant tout et ne reste jamais après la frappe
+  [3, 7, 11].forEach(function (g) {
+    var S2 = P3.nouvelle({mode: 'seul', role: P3.ROLES[g % 4], debut: 3, robots: 1}, g); S2.attente = 0;
+    var p2 = new Pilote({}), apres = 0, zonesVues = {}, retard = [], T0 = S2.T;   // (la partie commence en route : une zone déjà annoncée compte depuis le départ)
+    while (S2.T < 420) {
+      P3.pas(S2, 0.05, p2.manette(S2));
+      var b2 = S2.bulle;
+      if (!P3.vivant(S2)) P3.suite(S2.partie).zones.forEach(function (z) { if (z.tA <= S2.T && S2.T < z.tI) zonesVues[z.id] = 1; });   // mort pendant l'annonce : pas compté
+      if (b2 && b2.x && b2.x.quoi === 'zone') { if (S2.T >= b2.x.tFin) apres++; if (!zonesVues[b2.x.ref]) { zonesVues[b2.x.ref] = 1; retard.push(S2.T - Math.max(b2.x.tA, T0)); } }
+      // une zone que mon villageois montre est à l'écran (sauf si je suis mort)
+      var zv = P3.mesInfos(S2).filter(function (x) { return x.quoi === 'zone' && S2.T > x.tA + 0.06 && !S2.relais[x.ref + 'zone']; })[0];
+      if (zv && P3.vivant(S2)) non(b2 && b2.x && b2.x.ref === zv.ref, 'mon villageois montre l\'endroit sûr : il prend la bulle tout de suite');
+    }
+    non(apres === 0, 'l\'endroit sûr ne reste jamais après la frappe (' + apres + ')');
+    var m = retard.length ? Math.max.apply(null, retard) : 0;
+    non(m < 2.2, 'l\'endroit sûr arrive à l\'écran moins de 2,2 s après l\'annonce (le plus long : ' + m.toFixed(2) + ' s)');
+  });
   console.log(n + ' vérifications, ' + soucis + ' souci(s)');
 }
 

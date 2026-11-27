@@ -14,22 +14,23 @@ function Pilote(o) {
 Pilote.prototype.manette = function (S) {
   var h = S.h, P = P3, REG = P.REG, T = S.T, self = this;
   if (S.etat !== 'combat' || S.attente > 0 || !P.vivant(S)) return {mx: 0, my: 0};
-  // ce que les amis me crient
-  S.cris.forEach(function (c) {
-    if (!c.x || self.sait[c.x.ref + c.x.quoi] || T < c.t + self.reaction) return;
-    self.sait[c.x.ref + c.x.quoi] = 1;
-    if (self.r() < self.oubli) return;
-    if (c.x.quoi === 'zone') self.but = {lieu: c.x.val, fin: T + 4};
-    else if (c.x.quoi === 'mega') P.bouclier(S);
-    else if (c.x.quoi === 'elem') self.elem = c.x.val;
-    else if (c.x.quoi === 'part') P.viser(S, c.x.val);
-  });
-  // ce que montre mon villageois : je le relaie (et l'endroit sûr, j'y vais moi aussi)
-  P.mesInfos(S).forEach(function (x) {
-    if (T < x.tA + self.relaisDelai) return;
-    if (x.quoi === 'zone') { if (!self.but || self.but.lieu !== x.val) self.but = {lieu: x.val, fin: T + 4}; P.relayerZone(S); }
-    else if (x.cible) P.relayer(S, x.cible);
-  });
+  // (v3) il ne voit qu'une bulle à la fois, comme le joueur
+  var bu = S.bulle;
+  if (bu && T >= bu.debut + (bu.type === 'ami' ? this.reaction : this.relaisDelai) && !this.sait[bu.cle]) {
+    this.sait[bu.cle] = 1;
+    if (this.r() >= this.oubli) {
+      var x = bu.x;
+      if (bu.type === 'ami' && x) {
+        if (x.quoi === 'zone') this.but = {lieu: x.val, fin: T + 4};
+        else if (x.quoi === 'mega') P.bouclier(S);
+        else if (x.quoi === 'elem') this.elem = x.val;
+        else if (x.quoi === 'part') P.viser(S, x.val);
+      } else if (bu.type === 'villageois') {
+        if (x.quoi === 'zone') { this.but = {lieu: x.val, fin: T + 4}; P.relayerZone(S); }
+        else P.relayer(S, x.cible);
+      }
+    }
+  }
   // courir à l'endroit sûr
   if (this.but && T < this.but.fin) {
     var l = REG.lieux[this.but.lieu], dx = l.x - h.x, dy = l.y + 0.8 - h.y, d = Math.hypot(dx, dy);

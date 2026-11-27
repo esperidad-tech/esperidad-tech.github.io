@@ -8,7 +8,8 @@ var ROLES = {barde: {c: '#ff8fb3', ic: '🎻'}, sage: {c: '#6cb6ff', ic: '📜'}
 var VILLAGEOIS = {alchimiste: {ic: '🥖', c: '#e8c48a'}, barde: {ic: '🍺', c: '#d9a066'}, pisteur: {ic: '🗡️', c: '#9fb0c8'}, sage: {ic: '🌿', c: '#a8d08d'}};
 var ECOUL = {feu: '#ff7a2a', glace: '#9fe3ff', acide: '#8fe03a'};
 var EMO = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
-var K = 0.62, V = {T: 40, ox: 0, oy: 0};
+var K = 0.55, V = {T: 40, ox: 0, oy: 0, W: 800, H: 400};   // (v3) un peu plus à plat : la salle tient sur un téléphone couché
+var DESSUS = 5.6;   // (v3) ce qui dépasse au-dessus du mur du fond, en pas : la tête de Grosbec et la barre de sa vie
 function X(x) { return V.ox + x * V.T; }
 function Y(y, z) { return V.oy + y * V.T * K - (z || 0) * V.T; }
 function ell(c, x, y, r, z) { c.beginPath(); c.ellipse(X(x), Y(y, z), r * V.T, r * V.T * K, 0, 0, Math.PI * 2); }
@@ -20,11 +21,11 @@ function bruit(i) { var s = Math.sin(i * 127.1) * 43758.5453; return s - Math.fl
 
 /* ---------- la forme de Grosbec : six parties, en coordonnées d'écran ---------- */
 var B = REG.grosbec;
-var FORME = {   // en pas : x dans la salle, z la hauteur
-  tete: {z: 5.35, r: 0.72},
-  torse: {z: 3.55, rx: 1.2, rz: 1.3},
-  brasG: {a: [-1.15, 4.45], b: [-2.55, 2.55], e: 0.44}, brasD: {a: [1.15, 4.45], b: [2.55, 2.55], e: 0.44},
-  jambeG: {a: [-0.55, 2.4], b: [-0.85, 0.15], e: 0.52}, jambeD: {a: [0.55, 2.4], b: [0.85, 0.15], e: 0.52}
+var FORME = {   // en pas : x dans la salle, z la hauteur (v3 : un peu plus petit, la salle est moins profonde)
+  tete: {z: 4.7, r: 0.64},
+  torse: {z: 3.12, rx: 1.06, rz: 1.14},
+  brasG: {a: [-1.0, 3.9], b: [-2.25, 2.25], e: 0.4}, brasD: {a: [1.0, 3.9], b: [2.25, 2.25], e: 0.4},
+  jambeG: {a: [-0.48, 2.1], b: [-0.75, 0.13], e: 0.46}, jambeD: {a: [0.48, 2.1], b: [0.75, 0.13], e: 0.46}
 };
 var ORDRE = ['tete', 'torse', 'brasG', 'brasD', 'jambeG', 'jambeD'];   // le même ordre que P3.PARTIES
 function pt(dx, z, sh) { return [X(B.x + dx) + (sh || 0), Y(B.y, z)]; }
@@ -58,16 +59,19 @@ function remplir(c, quoi, coul) { if (quoi === 'fill') { c.fillStyle = coul; c.f
 
 /* ---------- la salle et le décor ---------- */
 function salle(c, S) {
-  var L = REG.salle, T = V.T;
-  var g = c.createLinearGradient(0, Y(0, 3.2), 0, Y(0));
-  g.addColorStop(0, '#0b0e1c'); g.addColorStop(1, '#1d2236');
-  c.fillStyle = g; c.fillRect(X(0), Y(0, 3.2), L.L * T, 3.2 * T);
-  c.fillStyle = '#141a2b'; for (var i = 0; i < 7; i++) c.fillRect(X(1 + i * 2) - T * 0.25, Y(0, 3.2), T * 0.5, 3.2 * T);
+  var L = REG.salle, T = V.T, W = V.W, H = V.H;
+  // (v3) le mur du fond et le sol vont d'un bord à l'autre de l'écran ; la salle où l'on court est la partie claire, bordée de deux murets
+  var g = c.createLinearGradient(0, 0, 0, Y(0));
+  g.addColorStop(0, '#080b17'); g.addColorStop(1, '#1d2236');
+  c.fillStyle = g; c.fillRect(0, 0, W, Y(0));
+  c.fillStyle = '#141a2b'; for (var i = -6; i < L.L + 7; i += 2) c.fillRect(X(1 + i) - T * 0.25, 0, T * 0.5, Y(0));
+  c.fillStyle = '#171b29'; c.fillRect(0, Y(0), W, H - Y(0));
   c.fillStyle = '#242a3c'; c.fillRect(X(0), Y(0), L.L * T, L.P * T * K);
   c.strokeStyle = 'rgba(255,255,255,.045)'; c.lineWidth = 1;
   for (var x = 0; x <= L.L; x++) { c.beginPath(); c.moveTo(X(x), Y(0)); c.lineTo(X(x), Y(L.P)); c.stroke(); }
   for (var y = 0; y <= L.P; y++) { c.beginPath(); c.moveTo(X(0), Y(y)); c.lineTo(X(L.L), Y(y)); c.stroke(); }
-  c.strokeStyle = '#3a4560'; c.lineWidth = 3; c.strokeRect(X(0), Y(0), L.L * T, L.P * T * K);
+  c.strokeStyle = '#3a4560'; c.lineWidth = 3; c.beginPath(); c.moveTo(0, Y(0)); c.lineTo(W, Y(0)); c.stroke();
+  c.fillStyle = '#3a4560'; c.fillRect(X(0) - T * 0.22, Y(0), T * 0.22, L.P * T * K); c.fillRect(X(L.L), Y(0), T * 0.22, L.P * T * K);   // les deux murets
   // la lueur rouge de Grosbec sur le sol
   var gl = c.createRadialGradient(X(B.x), Y(B.y), 0, X(B.x), Y(B.y), 6 * T);
   gl.addColorStop(0, 'rgba(255,60,50,.22)'); gl.addColorStop(1, 'rgba(255,60,50,0)');
@@ -108,8 +112,8 @@ function grosbec(c, S, ctx) {
   c.save();
   if (S.boss <= 0 && S.combat === 2) c.globalAlpha = 0.55;
   // la lueur : un grand halo derrière lui (pas de flou d'ombre : trop lent sur une vieille tablette)
-  var hq = pt(0, 3.3, sh), halo = c.createRadialGradient(hq[0], hq[1], 0, hq[0], hq[1], T * 4.2);
-  halo.addColorStop(0, 'rgba(255,60,45,' + (0.3 * lueur) + ')'); halo.addColorStop(1, 'rgba(255,60,45,0)'); c.fillStyle = halo; rond(c, hq[0], hq[1], T * 4.2); c.fill();
+  var hq = pt(0, 2.9, sh), halo = c.createRadialGradient(hq[0], hq[1], 0, hq[0], hq[1], T * 3.7);
+  halo.addColorStop(0, 'rgba(255,60,45,' + (0.3 * lueur) + ')'); halo.addColorStop(1, 'rgba(255,60,45,0)'); c.fillStyle = halo; rond(c, hq[0], hq[1], T * 3.7); c.fill();
   // les jambes, les bras (pendant le tambour, les poings montent et descendent)
   var frappe = tambour ? Math.abs(Math.sin(t * 7)) : 0;
   ORDRE.forEach(function (n, i) {
@@ -148,11 +152,10 @@ function grosbec(c, S, ctx) {
   c.fillStyle = cg; rond(c, tq[0], tq[1], T * 0.45 * bat); c.fill();
   // la partie touchée s'éclaire (le bon sort)
   if (mal && mal.part !== undefined) { var u = (S.reel - mal.t) / 0.35; remplir(c, tracePartie(c, mal.part, sh), 'rgba(255,255,255,' + (0.8 * (1 - u)) + ')'); }
-  // (R) la partie que MON villageois montre s'allume un instant, seulement sur ma tablette
-  ctx.infos.forEach(function (x) {
-    if (x.quoi !== 'part' || S.T - x.tA > 1.6) return;
-    remplir(c, tracePartie(c, x.val, sh, 0.05), 'rgba(255,214,60,' + (0.45 + 0.35 * Math.sin(t * 14)) + ')');
-  });
+  // (R) la partie que MON villageois montre s'allume un instant, seulement sur ma tablette (v3 : seulement quand sa bulle est à l'écran)
+  var bu = S.bulle;
+  if (bu && bu.type === 'villageois' && bu.x.quoi === 'part' && S.T - bu.debut < 1.6)
+    remplir(c, tracePartie(c, bu.x.val, sh, 0.05), 'rgba(255,214,60,' + (0.45 + 0.35 * Math.sin(t * 14)) + ')');
   // la partie que je vise : un trait blanc tout autour
   if (S.combat === 2 ? S.boss > 0 : true) {
     c.setLineDash([6, 5]); c.lineDashOffset = -t * 30;
@@ -162,12 +165,11 @@ function grosbec(c, S, ctx) {
     c.setLineDash([]);
   }
   // (R) la méga attaque : la charge ne se voit que sur la tablette du villageois qui prévient (une boule rouge au-dessus de sa tête)
-  ctx.infos.forEach(function (x) {
-    if (x.quoi !== 'mega') return;
-    var k2 = cl((S.T - x.tA) / (x.tFin - x.tA), 0, 1), hp = pt(0, FORME.tete.z + 1.2, sh), R = T * (0.3 + 0.9 * k2) * (1 + 0.08 * Math.sin(t * 30));
+  if (bu && bu.type === 'villageois' && bu.x.quoi === 'mega') {
+    var x = bu.x, k2 = cl((S.T - x.tA) / (x.tFin - x.tA), 0, 1), hp = pt(0, FORME.tete.z + 0.95, sh), R = T * (0.25 + 0.65 * k2) * (1 + 0.08 * Math.sin(t * 30));
     var rg = c.createRadialGradient(hp[0], hp[1], 0, hp[0], hp[1], R * 1.6); rg.addColorStop(0, 'rgba(255,240,220,.95)'); rg.addColorStop(0.35, 'rgba(255,40,30,.9)'); rg.addColorStop(1, 'rgba(255,40,30,0)');
     c.fillStyle = rg; rond(c, hp[0], hp[1], R * 1.6); c.fill();
-  });
+  }
   c.restore();
 }
 
@@ -234,46 +236,60 @@ function iconeLieu(c, x, y, s, i) {
   else { c.fillStyle = '#7c8296'; c.beginPath(); c.ellipse(x, y + s * 0.12, s * 0.38, s * 0.18, 0, 0, Math.PI * 2); c.fill(); c.fillStyle = '#5fb4ff'; c.beginPath(); c.ellipse(x, y + s * 0.08, s * 0.3, s * 0.12, 0, 0, Math.PI * 2); c.fill(); c.strokeStyle = '#a8dcff'; c.lineWidth = 2; c.beginPath(); c.moveTo(x, y + s * 0.05); c.lineTo(x, y - s * 0.32); c.stroke(); }
 }
 function teteRonde(c, x, y, s, role) { var R = ROLES[role]; rond(c, x, y, s / 2); c.fillStyle = R.c; c.fill(); c.strokeStyle = '#11141d'; c.lineWidth = 2; c.stroke(); emoji(c, R.ic, x, y, s * 0.6); }
-function bullesVillageois(c, S, ctx) {
-  var v = S.villageois; if (v.sx === undefined || !ctx.infos.length) return;
-  var s = Math.max(22, V.T * 0.85), pad = 5, y = v.sy - V.T * 0.45, t = S.reel;
-  ctx.boites = [];
-  ctx.infos.slice().sort(function (a, b) { return a.tA - b.tA; }).forEach(function (x, k) {
-    var larg = x.quoi === 'zone' ? s + pad * 2 : s * 2 + pad * 3, haut = s + pad * 2, bx = v.sx - larg / 2, by = y - haut - 8 - k * (haut + 5);
-    var mega = x.quoi === 'mega', fait = S.seul && S.relais[x.ref + x.quoi];
-    c.fillStyle = mega ? 'rgba(70,10,14,.92)' : 'rgba(250,246,235,.95)'; rr(c, bx, by, larg, haut, 10); c.fill();
-    c.strokeStyle = mega ? 'rgba(255,70,60,' + (0.6 + 0.4 * Math.sin(t * 18)) + ')' : (fait ? '#5fe07a' : '#11141d'); c.lineWidth = mega ? 3 : 2; c.stroke();
-    if (k === 0) { c.beginPath(); c.moveTo(v.sx - 6, by + haut); c.lineTo(v.sx, by + haut + 8); c.lineTo(v.sx + 6, by + haut); c.fillStyle = mega ? 'rgba(70,10,14,.92)' : 'rgba(250,246,235,.95)'; c.fill(); }
-    var cy = by + haut / 2, x1 = bx + pad + s / 2, x2 = bx + pad * 2 + s * 1.5;
-    if (x.quoi === 'zone') iconeLieu(c, x1, cy, s, x.val);
-    else {
-      teteRonde(c, x1, cy, s * 0.9, x.cible);
-      if (x.quoi === 'elem') potion(c, x2, cy, s, ECOUL[P3.ELEMS[x.val]]);
-      else if (x.quoi === 'part') miniGrosbec(c, x2, cy, s * 0.95, x.val);
-      else emoji(c, '🛡️', x2, cy, s * 0.8);
-    }
-    if (fait) emoji(c, '✅', bx + larg - 4, by + 4, 13);
-    var tot = x.tFin - x.tA, reste = cl((x.tFin - S.T) / tot, 0, 1);
-    c.fillStyle = mega ? '#ff5a4a' : 'rgba(0,0,0,.35)'; c.fillRect(bx + 8, by + haut - 4, (larg - 16) * reste, 2.5);
-    ctx.boites.push({x: bx, y: by, w: larg, h: haut, info: x});
-  });
+function texteCri(bu) {
+  if (bu.sym) return bu.sym;
+  var x = bu.x;
+  return x.quoi === 'mega' ? P3.MOTS.mega : x.quoi === 'zone' ? P3.MOTS[REG.lieux[x.val].n] : x.quoi === 'elem' ? P3.MOTS[P3.ELEMS[x.val]] : P3.MOTS[P3.PARTIES[x.val]];
 }
-function crisRobots(c, S) {   // mode seul : ce que mes robots me crient (pour l'essai, c'est écrit)
-  var parAmi = {};
-  S.cris.forEach(function (cr) { if (S.T >= cr.t) (parAmi[cr.de] = parAmi[cr.de] || []).push(cr); });
-  for (var ro in parAmi) {
-    var a = S.amis[ro], cx = X(a.x), cy = Y(a.y, 1.25), l = parAmi[ro].slice(-2);
-    l.forEach(function (cr, k) {
-      var txt = cr.sym ? cr.sym : (cr.x.quoi === 'mega' ? P3.MOTS.mega : cr.x.quoi === 'zone' ? P3.MOTS[REG.lieux[cr.x.val].n] : cr.x.quoi === 'elem' ? P3.MOTS[P3.ELEMS[cr.x.val]] : P3.MOTS[P3.PARTIES[cr.x.val]]);
-      var fs = Math.max(13, Math.round(V.T * 0.42)), big = !!cr.sym;
-      c.font = '900 ' + (big ? fs * 1.8 : fs) + 'px Nunito,' + EMO;
-      var w = c.measureText(txt).width + 18, hh = (big ? fs * 1.8 : fs) + 14, by = cy - hh - 10 - k * (hh + 4);
-      c.fillStyle = cr.x && cr.x.quoi === 'mega' ? 'rgba(90,12,16,.94)' : 'rgba(255,255,255,.96)'; rr(c, cx - w / 2, by, w, hh, 10); c.fill();
-      c.strokeStyle = ROLES[ro].c; c.lineWidth = 3; c.stroke();
-      c.fillStyle = cr.x && cr.x.quoi === 'mega' ? '#fff' : '#111'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(txt, cx, by + hh / 2 + 1);
-      if (cr.x && cr.x.quoi === 'part') miniGrosbec(c, cx + w / 2 + 16, by + hh / 2, 26, cr.x.val);
-    });
+/* (v3) une seule bulle à l'écran : celle que choisissent les règles (S.bulle) — l'endroit sûr d'abord, puis le bouclier, puis le reste, chacun son tour */
+function bulle(c, S, ctx) {
+  var bu = S.bulle; ctx.boites = [];
+  if (!bu) return;
+  var t = S.reel, x = bu.x, pop = cl((S.T - bu.debut) / 0.16, 0, 1), sc = 0.6 + 0.4 * pop;
+  var cx, cy, larg, haut, s, pad, mega = !!(x && x.quoi === 'mega');
+  if (bu.type === 'villageois') {   // en images, au-dessus de mon villageois
+    var v = S.villageois; if (v.sx === undefined) return;
+    s = Math.max(28, V.T * 1.0); pad = 7;
+    larg = x.quoi === 'zone' ? s + pad * 2 : s * 2 + pad * 3; haut = s + pad * 2;
+    cx = v.sx; cy = v.sy - V.T * 0.5;
+  } else {                          // mode seul : ce que me crie un robot (pour l'essai, c'est écrit), au-dessus de lui
+    var a = S.amis[bu.de], txt = texteCri(bu), fs = Math.max(15, Math.round(V.T * 0.46)), big = !!bu.sym;
+    c.font = '900 ' + (big ? fs * 1.8 : fs) + 'px Nunito,' + EMO;
+    larg = c.measureText(txt).width + 22 + (x && x.quoi === 'part' ? fs * 1.9 : 0); haut = (big ? fs * 1.8 : fs) + 16;
+    cx = X(a.x); cy = Y(a.y, 1.3);
   }
+  var bx = cl(cx - larg / 2, 6, V.W - larg - 6), by = Math.max(6, cy - haut - 10);
+  (ctx.evite || []).forEach(function (o) {   // (v3) jamais sous un bouton : on la pousse vers le milieu de l'écran
+    var px = cl(o.x, bx, bx + larg), py = cl(o.y, by, by + haut);
+    if (Math.hypot(px - o.x, py - o.y) >= o.r + 4) return;
+    if (o.x < V.W / 2) bx = Math.max(bx, o.x + o.r + 6); else bx = Math.min(bx, o.x - o.r - 6 - larg);
+  });
+  c.save(); c.translate(cx, by + haut); c.scale(sc, sc); c.translate(-cx, -(by + haut));
+  var fond = mega ? 'rgba(70,10,14,.94)' : 'rgba(250,246,235,.97)';
+  c.fillStyle = fond; rr(c, bx, by, larg, haut, 11); c.fill();
+  c.strokeStyle = mega ? 'rgba(255,70,60,' + (0.6 + 0.4 * Math.sin(t * 18)) + ')' : bu.type === 'ami' ? ROLES[bu.de].c : '#11141d'; c.lineWidth = mega || bu.type === 'ami' ? 3 : 2; c.stroke();
+  var qx = cl(cx, bx + 12, bx + larg - 12);
+  c.beginPath(); c.moveTo(qx - 7, by + haut - 1); c.lineTo(cx, by + haut + 9); c.lineTo(qx + 7, by + haut - 1); c.fillStyle = fond; c.fill();
+  var my = by + haut / 2;
+  if (bu.type === 'villageois') {
+    var x1 = bx + pad + s / 2, x2 = bx + pad * 2 + s * 1.5;
+    if (x.quoi === 'zone') iconeLieu(c, x1, my, s, x.val);
+    else {
+      teteRonde(c, x1, my, s * 0.9, x.cible);
+      if (x.quoi === 'elem') potion(c, x2, my, s, ECOUL[P3.ELEMS[x.val]]);
+      else if (x.quoi === 'part') miniGrosbec(c, x2, my, s * 0.95, x.val);
+      else emoji(c, '🛡️', x2, my, s * 0.8);
+    }
+    var reste = cl((x.tFin - S.T) / (x.tFin - x.tA), 0, 1);
+    c.fillStyle = mega ? '#ff5a4a' : 'rgba(0,0,0,.35)'; c.fillRect(bx + 9, by + haut - 4.5, (larg - 18) * reste, 2.5);
+    ctx.boites.push({x: bx, y: by, w: larg, h: haut, info: x});
+  } else {
+    c.fillStyle = mega ? '#fff' : '#111'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    var tx = x && x.quoi === 'part' ? bx + (larg - fs * 1.9) / 2 : bx + larg / 2;
+    c.fillText(texteCri(bu), tx, my + 1);
+    if (x && x.quoi === 'part') miniGrosbec(c, bx + larg - fs * 1.05, my, fs * 1.45, x.val);
+  }
+  c.restore();
 }
 
 /* ---------- les éclairs, les sorts, les frappes ---------- */
@@ -332,7 +348,7 @@ function frappes(c, S) {
   // la méga attaque : un énorme rayon rouge qui tombe sur le visé
   var m = P3.dernier(S, 'mega', 0.6);
   if (m && (m.moi || m.vuIci)) {
-    var u2 = (S.reel - m.t) / 0.6, hp = pt(0, FORME.tete.z + 1.2), cib = m.moi ? [X(S.h.x), Y(S.h.y, 0.55)] : [X(S.amis[m.cible].x), Y(S.amis[m.cible].y, 0.55)];
+    var u2 = (S.reel - m.t) / 0.6, hp = pt(0, FORME.tete.z + 0.95), cib = m.moi ? [X(S.h.x), Y(S.h.y, 0.55)] : [X(S.amis[m.cible].x), Y(S.amis[m.cible].y, 0.55)];
     c.lineCap = 'round'; c.strokeStyle = 'rgba(255,40,30,' + (0.85 * (1 - u2)) + ')'; c.lineWidth = T * 0.7; c.beginPath(); c.moveTo(hp[0], hp[1]); c.lineTo(cib[0], cib[1]); c.stroke();
     c.strokeStyle = 'rgba(255,240,220,' + (1 - u2) + ')'; c.lineWidth = T * 0.2; c.stroke(); c.lineCap = 'butt';
     if (m.moi && m.ok) for (var i = 0; i < 12; i++) { var a = i / 12 * Math.PI * 2; c.fillStyle = 'rgba(170,220,255,' + (1 - u2) + ')'; rond(c, cib[0] + Math.cos(a) * u2 * T * 1.6, cib[1] + Math.sin(a) * u2 * T, 3); c.fill(); }
@@ -358,9 +374,9 @@ function haut(c, S, W, H) {
 function film(c, S, W, H) {
   var u = cl(1 - S.attente / REG.film, 0, 1), T = V.T, t = S.reel;
   salle(c, S); for (var i = 0; i < 3; i++) lieu(c, S, i);
-  grosbec(c, S, {infos: []});
+  grosbec(c, S, {});
   c.fillStyle = 'rgba(0,0,10,' + (0.45 - 0.25 * u) + ')'; c.fillRect(0, 0, W, H);
-  var heros = [S.moi].concat(Object.keys(S.amis)), places = [[6, 6], [8, 6], [5.6, 7.1], [8.4, 7.1]];
+  var heros = [S.moi].concat(Object.keys(S.amis)), places = [[6.8, 4.2], [9.2, 4.2], [5.8, 5.6], [10.2, 5.6]];
   var VGS = ['🥖', '🍺', '🗡️', '🌿'];
   heros.forEach(function (ro, k) {   // les héros à terre, qui se relèvent
     var p = places[k], debout = cl((u - 0.62) / 0.12, 0, 1), R = ROLES[ro];
@@ -373,23 +389,23 @@ function film(c, S, W, H) {
   });
   // Odette en tête, avec sa canne
   var ao = cl((u - 0.02) / 0.4, 0, 1), ox = -1 + 5.4 * ao;
-  perso(c, ox, 5.2, null, '👵', '#c7a6e8', {taille: 1.05});
-  c.strokeStyle = '#8b6b3a'; c.lineWidth = 3; c.beginPath(); c.moveTo(X(ox) + T * 0.35, Y(5.2, 1)); c.lineTo(X(ox) + T * 0.45, Y(5.2, 0)); c.stroke();
+  perso(c, ox, 4.9, null, '👵', '#c7a6e8', {taille: 1.05});
+  c.strokeStyle = '#8b6b3a'; c.lineWidth = 3; c.beginPath(); c.moveTo(X(ox) + T * 0.35, Y(4.9, 1)); c.lineTo(X(ox) + T * 0.45, Y(4.9, 0)); c.stroke();
 }
 
 /* ---------- tout ---------- */
 function tout(c, S, vue, W, H, joy, ctx) {
-  V.T = vue.T; V.ox = vue.ox; V.oy = vue.oy;
+  V.T = vue.T; V.ox = vue.ox; V.oy = vue.oy; V.W = W; V.H = H;
   c.fillStyle = '#070912'; c.fillRect(0, 0, W, H);
   if (S.etat === 'film' || S.etat === 'go') { film(c, S, W, H); return; }
-  ctx.infos = P3.mesInfos(S); ctx.boites = [];
+  ctx.boites = [];
   var mort = !P3.vivant(S);
   salle(c, S);
   var objets = [];
   REG.lieux.forEach(function (l, i) { objets.push([l.y, function () { lieu(c, S, i); }]); });
   if (!mort) {   // (R) mort : on ne voit plus que le décor
     objets.push([B.y + 0.01, function () { grosbec(c, S, ctx); }]);
-    for (var ro in S.amis) (function (a) { objets.push([a.y, function () { ami(c, S, a); }]); })(S.amis[ro]);
+    for (var ro in S.amis) (function (a) { objets.push([Math.min(a.y, S.h.y - 0.001), function () { ami(c, S, a); }]); })(S.amis[ro]);   // (v3) un ami ne passe jamais devant mon héros
     objets.push([S.villageois.y, function () { villageois(c, S); }]);
     objets.push([S.h.y + 0.01, function () { heros(c, S); }]);
   }
@@ -398,10 +414,13 @@ function tout(c, S, vue, W, H, joy, ctx) {
     frappes(c, S);
     eclairs(c, S);
     sorts(c, S, ctx);
-    bullesVillageois(c, S, ctx);
-    if (S.seul) crisRobots(c, S);
+    bulle(c, S, ctx);
     haut(c, S, W, H);
   } else { var z = P3.dernier(S, 'zone', 0.8); if (z) frappes(c, S); }
+  if (joy && joy.id === null && !mort && joy.rx) {   // (v3) le pouce gauche au repos : un rond pâle, pour savoir où le poser
+    c.strokeStyle = 'rgba(255,255,255,.14)'; c.lineWidth = 2; rond(c, joy.rx, joy.ry, joy.R); c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.1)'; rond(c, joy.rx, joy.ry, joy.R * 0.42); c.fill();
+  }
   if (joy && joy.id !== null && !mort) {
     c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = 3; rond(c, joy.bx, joy.by, joy.R); c.stroke();
     c.fillStyle = 'rgba(255,255,255,.35)'; rond(c, joy.bx + joy.vx * joy.R, joy.by + joy.vy * joy.R, joy.R * 0.42); c.fill();
@@ -409,5 +428,5 @@ function tout(c, S, vue, W, H, joy, ctx) {
   if (S.attente > 0 && S.etat === 'combat') { c.fillStyle = 'rgba(0,0,0,' + (0.35 * S.attente / REG.lancement) + ')'; c.fillRect(0, 0, W, H); }
 }
 function versSalle(sx, sy) { return [(sx - V.ox) / V.T, (sy - V.oy) / (V.T * K)]; }
-G.Dessin = {tout: tout, ROLES: ROLES, VILLAGEOIS: VILLAGEOIS, K: K, versSalle: versSalle, X: X, Y: Y, partieSous: partieSous, centrePartie: centrePartie, V: V};
+G.Dessin = {tout: tout, ROLES: ROLES, VILLAGEOIS: VILLAGEOIS, K: K, DESSUS: DESSUS, versSalle: versSalle, X: X, Y: Y, partieSous: partieSous, centrePartie: centrePartie, V: V};
 })(typeof window !== 'undefined' ? window : globalThis);
