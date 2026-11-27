@@ -112,7 +112,11 @@ function rendre(){
     /* (26 novembre, 20 h 03) Romain : « Est-ce que tu peux m'intégrer les 3 cartes dorées ? […] quand tu auras fait cette modification aussi, tu pourras le mettre en ligne dans la salle des jeux. »
        (version 27 de la maquette du Sage : jeu/maquettes/combat-sage/, pas encore jouée par Romain) */
     '<button class="sl-jeu" data-lien="combat-sage.html?depuis=salle"><span class="sl-statut" title="Modifié, pas encore testé">🟡</span><span class="sl-jeu-ic">🦉</span><b>Le combat du Sage</b>' +
-    '<small>Contre les golems de Grosbec, des runes à tracer</small><small class="sl-cal">La difficulté choisie n\'y change rien</small></button></div></section>';
+    '<small>Contre les golems de Grosbec, des runes à tracer</small><small class="sl-cal">La difficulté choisie n\'y change rien</small></button>' +
+    /* (27 novembre, 0 h 41) Romain : « Tu peux attaquer le gros chantier […] tu peux mettre en ligne dans la salle des jeux dès que c'est fait. »
+       (la phase 2, les trois de devant : jeu/maquettes/combat-armure/, Bible § 18.19 ; pas encore jouée par Romain) */
+    '<button class="sl-jeu" data-lien="combat-armure.html?depuis=salle"><span class="sl-statut" title="Modifié, pas encore testé">🟡</span><span class="sl-jeu-ic">🛡️</span><b>L\'armure de Grosbec</b>' +
+    '<small>Phase 2 : le Barde, le Sage ou l\'Alchimiste contre l\'armure</small><small class="sl-cal">La difficulté choisie n\'y change rien</small></button></div></section>';
   if(etat.journal.length){
     s += '<section class="sl-journal"><h2>Mes parties</h2><ol>' + etat.journal.slice(-12).reverse().map(function(j){
       var d = MJ.TYPES[j.type] || {};
