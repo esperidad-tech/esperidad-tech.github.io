@@ -27,7 +27,7 @@ rendu.autoClear = true; rendu.setClearColor(0x030406, 1);
 let Ws = 860, Hs = 410, camX = 0, camY = 0;
 function taille() {
   const vw = innerWidth, vh = innerHeight;
-  Hs = Math.max(410, 800 * vh / vw); Ws = Hs * vw / vh;
+  Hs = Math.max(410, 800 * vh / vw) / (window.__zoom || 1); Ws = Hs * vw / vh;
   rendu.setSize(vw, vh, false);
 }
 addEventListener('resize', taille); taille();
@@ -112,7 +112,7 @@ const corps = new THREE.Group(); corps.rotation.x = Math.PI / 2; barde.add(corps
 const ombrePied = sprite(toile(64, 64, x => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(0,0,0,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); }), 1, false);
 const ombreMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.8), new THREE.MeshBasicMaterial({ map: ombrePied.material.map, transparent: true, depthWrite: false, toneMapped: false }));
 ombreMesh.position.z = 0.004; barde.add(ombreMesh);
-const h = { x: 9, y: 7.6, a: -Math.PI / 2, vx: 0, vy: 0, etat: 'garde', tSort: 0 };
+const h = { x: 9, y: 7.6, a: -Math.PI / 2, sort: null, sortT: 0, sortD: 0, luth: 'dos', tl: 0, garde: 0 };
 let melangeur = null, actions = {}, enCours = null;
 /* La page Claude interdit de « télécharger » une adresse data: : le modèle est donc rangé en base64 dans un
    .json de la page (lu avec fetch, permis), décodé ici, puis lu d'un bloc ; les images passent par <img> (permis). */
@@ -129,6 +129,7 @@ charger('barde.json', g => {
   const m = g.scene; m.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = false; o.frustumCulled = false; if (o.material) { o.material.metalness = 0; o.material.envMapIntensity = 0.5; } } });
   m.scale.setScalar(1.55 / 1.5);   // (le modèle fait 1,5 m ; un héros fait environ 1,55 pas)
   corps.add(m); melangeur = new THREE.AnimationMixer(m);
+  preparerLuth(m);
   if (g.animations.length) actions.garde = melangeur.clipAction(g.animations[0]);
   let reste = Object.keys(ANIMS).length; if (!reste) pret('barde');
   for (const [nom, fichier] of Object.entries(ANIMS)) charger(fichier, a => { if (a.animations[0]) { const act = melangeur.clipAction(a.animations[0]); actions[nom] = act; if (nom === 'feu' || nom === 'glace') { act.setLoop(THREE.LoopOnce); act.clampWhenFinished = true; } } if (--reste === 0) pret('barde'); }, () => { if (--reste === 0) pret('barde'); });
@@ -139,25 +140,120 @@ function jouer(nom, fondu) {
   a.reset().setEffectiveWeight(1).play(); if (enCours) a.crossFadeFrom(enCours, fondu || 0.25, true); enCours = a;
 }
 
+/* ---------- le luth : sur le dos quand il court ; pendant un sort, il l'attrape par-dessus l'épaule, le ramène devant, gratte, et la note part du luth ----------
+   Tout se calcule dans le repère du modèle (glTF : y en haut, le Barde regarde vers +z, sa gauche vers +x). */
+const LU = { centre: new THREE.Vector3(0.035, 0.846, -0.146), axe: new THREE.Vector3(-0.526, 0.85, 0.036).normalize(), face: new THREE.Vector3(-0.066, 0.001, -0.998).normalize() };
+const DUREE = { glace: 1.5, feu: 3.0 };   // (comme dans le jeu : javelot de glace 1,5 s, boule de feu 3 s)
+let MOD = null, LUTH = null, OS = {}, spineRepos = new THREE.Matrix4(), JEU = new THREE.Matrix4();
+const _m = new THREE.Matrix4(), _mi = new THREE.Matrix4(), _v = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3();
+function preparerLuth(m) {
+  MOD = m; m.updateMatrixWorld(true);
+  for (const n of ['Spine', 'RightArm', 'RightForeArm', 'RightHand', 'LeftArm', 'LeftForeArm', 'LeftHand']) OS[n] = m.getObjectByName(n);
+  LUTH = m.getObjectByName('luth'); if (!LUTH) return;
+  LUTH.matrixAutoUpdate = false;
+  spineRepos.copy(matM(OS.Spine)).invert();   // (au repos, le luth est déjà à sa place sur le dos)
+  // la pose pour jouer : la caisse devant le ventre (un peu à droite), le manche vers sa gauche et vers le haut, les cordes vers l'avant
+  const u = new THREE.Vector3(0.8, 0.5, 0.25).normalize(), n0 = new THREE.Vector3(0, 0.3, 1);
+  const n = n0.sub(u.clone().multiplyScalar(n0.dot(u))).normalize(), w = new THREE.Vector3().crossVectors(u, n);
+  const w0 = new THREE.Vector3().crossVectors(LU.axe, LU.face).normalize(), f0 = new THREE.Vector3().crossVectors(w0, LU.axe).normalize();
+  const A = new THREE.Matrix4().makeBasis(LU.axe, f0, w0), B = new THREE.Matrix4().makeBasis(u, n, w);
+  const Rm = B.multiply(A.transpose());
+  const Pc = new THREE.Vector3(-0.06, 0.86, 0.24);
+  JEU.copy(new THREE.Matrix4().makeTranslation(Pc.x, Pc.y, Pc.z)).multiply(Rm).multiply(new THREE.Matrix4().makeTranslation(-LU.centre.x, -LU.centre.y, -LU.centre.z));
+}
+function matM(o) { return _m.copy(_mi.copy(MOD.matrixWorld).invert()).multiply(o.matrixWorld).clone(); }   // (la place d'un objet dans le repère du modèle)
+function posM(o, v) { return (v || new THREE.Vector3()).setFromMatrixPosition(o.matrixWorld).applyMatrix4(_mi.copy(MOD.matrixWorld).invert()); }
+function quatM(o) { const q = new THREE.Quaternion(); matM(o).decompose(_v, q, _s); return q; }
+function poserQuatM(os, qm) { os.quaternion.copy(quatM(os.parent).invert().multiply(qm)); os.updateMatrixWorld(true); }
+/* le bras guidé par la main (deux os : bras et avant-bras), le coude tiré vers « pole » */
+function guider(haut, bas, main, cible, pole, poids) {
+  if (poids <= 0.001) return;
+  const S = posM(haut), E = posM(bas), W = posM(main);
+  const T = W.clone().lerp(cible, poids);
+  const a = E.distanceTo(S), b = W.distanceTo(E); let d = T.distanceTo(S); d = clamp(d, Math.abs(a - b) + 1e-4, a + b - 1e-4);
+  const dir = T.clone().sub(S).normalize(); const ca = clamp((a * a + d * d - b * b) / (2 * a * d), -1, 1), sa = Math.sqrt(1 - ca * ca);
+  const p = pole.clone().sub(dir.clone().multiplyScalar(pole.dot(dir))); if (p.lengthSq() < 1e-8) p.set(0, -1, 0); p.normalize();
+  const E2 = S.clone().addScaledVector(dir, a * ca).addScaledVector(p, a * sa);
+  poserQuatM(haut, new THREE.Quaternion().setFromUnitVectors(E.clone().sub(S).normalize(), E2.clone().sub(S).normalize()).multiply(quatM(haut)));
+  const E3 = posM(bas), W3 = posM(main), T2 = S.clone().addScaledVector(dir, d);
+  poserQuatM(bas, new THREE.Quaternion().setFromUnitVectors(W3.clone().sub(E3).normalize(), T2.clone().sub(E3).normalize()).multiply(quatM(bas)));
+}
+/* le « repos » de Higgsfield fait tourner tout le corps (jusqu'à 80°) : on garde le bassin face à où le jeu le tourne */
+const _tw = new THREE.Quaternion();
+function redresser() {
+  const hips = MOD && MOD.getObjectByName('Hips'); if (!hips || !actions.garde) return;
+  const w = actions.garde.getEffectiveWeight(); if (w <= 0) return;
+  const q = hips.quaternion; _tw.set(0, q.y, 0, q.w).normalize();
+  const sans = _tw.clone().invert().premultiply(q.clone());   // q × (torsion)⁻¹ : sans la rotation autour de la verticale
+  sans.copy(q.clone().multiply(_tw.clone().invert()));
+  hips.quaternion.slerp(sans, w);
+}
+const doux = x => { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); };
+/* l'état du luth : quatre réglages qui glissent (main droite, luth, main gauche, main droite sur les cordes) */
+function reglagesLuth() {
+  const t = h.tl;
+  if (h.luth === 'dos') return { wR: 0, k: 0, wL: 0, sR: 0 };
+  if (h.luth === 'main') return { wR: 1, k: 1, wL: 1, sR: 1 };
+  if (h.luth === 'sort') return { wR: doux(t / 0.25), k: doux((t - 0.25) / 0.4), wL: doux((t - 0.5) / 0.2), sR: doux((t - 0.55) / 0.25) };
+  /* 'range' */ return { wR: 1 - doux((t - 0.55) / 0.2), k: 1 - doux((t - 0.15) / 0.4), wL: 1 - doux(t / 0.2), sR: 1 - doux(t / 0.2) };
+}
+const ARC = new THREE.Vector3(-0.34, 1.12, 0.02);   // (en passant par-dessus son épaule droite)
+const LUmat = new THREE.Matrix4(), _p0 = new THREE.Vector3(), _p1 = new THREE.Vector3(), _q0 = new THREE.Quaternion(), _q1 = new THREE.Quaternion();
+let grattage = 0;
+function animerLuth(dt, t) {
+  if (!LUTH || !MOD) return;
+  MOD.updateMatrixWorld(true);
+  const r = reglagesLuth(), sp = matM(OS.Spine);
+  const Mdos = sp.clone().multiply(spineRepos), Mjeu = sp.clone().multiply(spineRepos).multiply(JEU);
+  Mdos.decompose(_p0, _q0, _s); Mjeu.decompose(_p1, _q1, _s);
+  // le centre de la caisse suit une courbe par-dessus l'épaule, le luth tourne en même temps
+  const c0 = LU.centre.clone().applyMatrix4(Mdos), c1 = LU.centre.clone().applyMatrix4(Mjeu), k = r.k;
+  const cc = c0.clone().multiplyScalar((1 - k) * (1 - k)).addScaledVector(ARC.clone().applyMatrix4(sp.clone().multiply(spineRepos)), 2 * k * (1 - k)).addScaledVector(c1, k * k);
+  const q = _q0.clone().slerp(_q1, k);
+  LUmat.makeRotationFromQuaternion(q).scale(_s); const decal = LU.centre.clone().applyMatrix4(LUmat);
+  LUmat.setPosition(cc.clone().sub(decal));
+  LUTH.matrix.copy(LUmat); LUTH.matrixWorldNeedsUpdate = true; LUTH.updateMatrixWorld(true);
+  if (r.wR <= 0.001 && r.wL <= 0.001) return;
+  // les points de prise, sur le luth tel qu'il est maintenant
+  const surLuth = (le, cote, haut) => LU.centre.clone().addScaledVector(LU.axe, le).addScaledVector(LU.face, haut).addScaledVector(new THREE.Vector3().crossVectors(LU.axe, LU.face).normalize(), cote).applyMatrix4(LUmat);
+  const prise = surLuth(0.36, 0, 0.0);                              // le manche, côté tête
+  grattage += dt * (h.sort && h.luth === 'main' || (h.luth === 'sort' && h.sort) ? 1 : -1) * 4; grattage = clamp(grattage, 0, 1);
+  const g = Math.sin(t * 2 * Math.PI * 4.5);
+  const cordes = surLuth(0.05 + 0.015 * g * grattage, 0.045 * g * grattage, 0.05 + 0.012 * Math.abs(g) * grattage);   // la main droite va et vient sur les cordes
+  const manche = surLuth(0.33 + 0.01 * Math.sin(t * 9) * grattage, -0.03, -0.02);
+  const cibleR = prise.clone().lerp(cordes, r.sR);
+  const poleR = new THREE.Vector3(-0.6, 0.5, 0.2).lerp(new THREE.Vector3(-0.7, -0.6, -0.3), clamp(r.k * 1.2, 0, 1));
+  guider(OS.RightArm, OS.RightForeArm, OS.RightHand, cibleR, poleR, r.wR);
+  guider(OS.LeftArm, OS.LeftForeArm, OS.LeftHand, manche, new THREE.Vector3(0.7, -0.6, -0.2), r.wL);
+}
+function bouchePosJeu(devant) {   // le trou de la caisse (ou un peu devant), en coordonnées du jeu (x, y, z)
+  const v = LU.centre.clone().addScaledVector(LU.face, 0.03 + (devant || 0)).applyMatrix4(LUTH.matrixWorld);
+  return { x: v.x, y: -v.y, z: v.z / ZS };
+}
+
 /* ---------- le sort : une note qui vole vers l'armure, une vraie lumière qui éclaire au passage ---------- */
-const tirs = [], eclats = [];
+const tirs = [], eclats = [], notes = [];
+let lumCharge = null;
 function lancer(q) {
-  if (h.tSort > 0) return; h.tSort = q === 'feu' ? 1.5 : 0.9; h.sort = q; h.lanceA = 0;
-  jouer(q, 0.15); h.etat = q;
+  if (h.sort) return;
+  h.sort = q; h.sortT = 0; h.sortD = DUREE[q];
+  if (h.luth === 'dos') { h.luth = 'sort'; h.tl = 0; }
+  else if (h.luth === 'range') { const k = reglagesLuth().k; h.luth = 'sort'; h.tl = 0.25 + 0.4 * k; }
+  jouer('garde', 0.2);
 }
 /* des lumières toujours là (éteintes) : en ajouter une en plein jeu ferait recalculer tous les dessins (un à-coup) */
 const reserve = [];
 for (let i = 0; i < 5; i++) { const l = new THREE.PointLight(0xffffff, 0, 7, 1.6); l.libre = true; monde.add(l); reserve.push(l); }
 function prendre(coul, I, dist) { const l = reserve.find(r => r.libre); if (!l) return null; l.libre = false; l.color.setHex(coul); l.intensity = I; l.distance = dist; return l; }
 function rendreL(l) { if (l) { l.intensity = 0; l.libre = true; } }
-function partir(q) {
-  const feu = q === 'feu', gr = new THREE.Group(), main = G(h.x + Math.cos(h.a) * 0.4, h.y + Math.sin(h.a) * 0.4, 1.1);
+function partir(q, d) {
+  const feu = q === 'feu', gr = new THREE.Group(), main = d ? G(d.x, d.y, d.z) : G(h.x + Math.cos(h.a) * 0.4, h.y + Math.sin(h.a) * 0.4, 1.1);
   gr.position.copy(main); monde.add(gr);
   const halo = sprite(feu ? T_LUEUR.feu : T_LUEUR.glace, feu ? 1.3 : 0.9, true); gr.add(halo);
   const n = sprite(texNote(feu ? '#ffb04a' : '#bff0ff', feu), feu ? 0.6 : 0.45, false); gr.add(n);
   const l = prendre(feu ? 0xff7a2a : 0x7fd8ff, feu ? 40 : 22, feu ? 7 : 5); if (l) l.position.copy(main);
   const sol = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: feu ? T_LUEUR.feu : T_LUEUR.glace, transparent: true, opacity: 0.45, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false })); monde.add(sol);   // (à plat sur le sol)
-  tirs.push({ gr, l, sol, feu, x: main.x, y: -main.y, z: 1.1, t: 0 });
+  tirs.push({ gr, l, sol, feu, x: main.x, y: -main.y, z: d ? d.z : 1.1, t: 0 });
 }
 function avancerTirs(dt) {
   for (let i = tirs.length - 1; i >= 0; i--) {
@@ -177,6 +273,17 @@ function etincelle(x, y, z, feu, v) {
 function boum(s) {
   const l = prendre(s.feu ? 0xff8a3a : 0x9fe8ff, s.feu ? 60 : 30, 8); if (l) { l.position.copy(G(s.x, s.y, s.z)); eclats.push({ lum: l, t: 0, vie: 0.45, I: l.intensity }); }
   for (let i = 0; i < (s.feu ? 26 : 16); i++) etincelle(s.x, s.y, s.z, s.feu, 3);
+}
+function petiteNote(feu) {
+  if (!LUTH) return; const d = bouchePosJeu();
+  const sp = sprite(texNote(feu ? '#ffc070' : '#d8f6ff', Math.random() < 0.5), 0.2, false); sp.position.copy(G(d.x, d.y, d.z)); monde.add(sp);
+  notes.push({ sp, x: d.x, y: d.y, z: d.z, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.3, t: 0 });
+}
+function avancerNotes(dt) {
+  for (let i = notes.length - 1; i >= 0; i--) {
+    const n = notes[i]; n.t += dt; if (n.t > 0.9) { monde.remove(n.sp); notes.splice(i, 1); continue; }
+    n.x += n.vx * dt; n.y += n.vy * dt; n.z += 0.9 * dt; n.sp.position.copy(G(n.x, n.y, n.z)); n.sp.material.opacity = 1 - n.t / 0.9; n.sp.material.rotation = Math.sin(n.t * 9) * 0.3;
+  }
 }
 function avancerEclats(dt) {
   for (let i = eclats.length - 1; i >= 0; i--) {
@@ -211,22 +318,45 @@ function libre(x, y) {
 const attendu = new Set(['fond', 'prof', 'barde']); let demarre = false;
 function pret(n) { attendu.delete(n); if (!attendu.size && !demarre) { demarre = true; $('charge').style.display = 'none'; } }
 let avant = performance.now(), ips = 60, nImg = 0, t0 = avant;
+let tSim = 0;
 function boucle(maint) {
   requestAnimationFrame(boucle);
-  const dt = Math.min(0.05, (maint - avant) / 1000); avant = maint; const t = maint / 1000;
+  const dt = Math.min(0.05, (maint - avant) / 1000); avant = maint;
   nImg++; if (maint - t0 > 1000) { ips = Math.round(nImg * 1000 / (maint - t0)); nImg = 0; t0 = maint; $('ips').textContent = ips; }
+  if (!window.__pilote) { tSim += dt; etape(dt, tSim); }
+  rendu.render(scene, cam);
+}
+function avancer(sec) { for (let k = 0; k < Math.round(sec * 60); k++) { tSim += 1 / 60; etape(1 / 60, tSim); } }   // (pour les essais : le temps du jeu pas à pas)
+function etape(dt, t) {
   /* déplacer le héros */
   let mx = joy.mx, my = joy.my; const kx = (touches.arrowright || touches.d ? 1 : 0) - (touches.arrowleft || touches.q || touches.a ? 1 : 0), ky = (touches.arrowdown || touches.s ? 1 : 0) - (touches.arrowup || touches.z || touches.w ? 1 : 0);
   if (kx || ky) { const n = Math.hypot(kx, ky); mx = kx / n; my = ky / n; }
-  const bouge = h.tSort <= 0 && Math.hypot(mx, my) > 0.15;
+  const bouge = !h.sort && Math.hypot(mx, my) > 0.15;
   if (bouge) { const v = 3.6 * Math.min(1, Math.hypot(mx, my)); const nx = h.x + mx * v * dt, ny = h.y + my * v * dt; if (libre(nx, h.y)) h.x = nx; if (libre(h.x, ny)) h.y = ny; h.a = Math.atan2(my, mx); }
-  if (h.tSort > 0) { const avantT = h.tSort; h.tSort -= dt; h.a = Math.atan2(ARM.y - h.y, ARM.x - h.x); const depart = h.sort === 'feu' ? 0.55 : 0.45; if (avantT > depart && h.tSort <= depart) partir(h.sort); if (h.tSort <= 0) h.etat = ''; }
-  else jouer(bouge ? 'course' : 'garde', 0.2);
+  h.tl += dt;
+  if (h.luth === 'sort' && h.tl >= 0.85) { h.luth = 'main'; h.tl = 0; }
+  if (h.luth === 'range' && h.tl >= 0.8) { h.luth = 'dos'; h.tl = 0; }
+  if (h.sort) {
+    h.sortT += dt; h.a = window.__face ? Math.PI / 2 : Math.atan2(ARM.y - h.y, ARM.x - h.x);
+    const joue = h.luth === 'main' || (h.luth === 'sort' && h.tl > 0.6);
+    if (joue && LUTH) {   // il gratte : des petites notes, et une lueur qui monte dans le luth
+      h.petite = (h.petite || 0) - dt; if (h.petite <= 0) { petiteNote(h.sort === 'feu'); h.petite = 0.22; }
+      if (!lumCharge) lumCharge = prendre(h.sort === 'feu' ? 0xff8a3a : 0x8fe0ff, 0, 2.5);
+      if (lumCharge) { const d = bouchePosJeu(0.3); lumCharge.position.copy(G(d.x, d.y, d.z)); lumCharge.intensity = 9 * doux(h.sortT / h.sortD); }
+    }
+    if (h.sortT >= h.sortD) { partir(h.sort, LUTH ? bouchePosJeu() : null); h.sort = null; h.garde = 0.9; rendreL(lumCharge); lumCharge = null; }
+    jouer('garde', 0.2);
+  } else {
+    if (h.luth === 'main') { h.garde -= dt; if (bouge || h.garde <= 0) { h.luth = 'range'; h.tl = 0; } }
+    jouer(bouge ? 'course' : 'garde', 0.2);
+  }
   /* le Barde tourne doucement vers où il va */
   const cible = Math.PI / 2 - h.a; let da = cible - barde.rotation.z; da = Math.atan2(Math.sin(da), Math.cos(da)); barde.rotation.z += da * Math.min(1, dt * 12);
   barde.position.copy(G(h.x, h.y, 0));
   if (melangeur) melangeur.update(dt);
-  avancerTirs(dt); avancerEclats(dt);
+  redresser();
+  barde.updateMatrixWorld(true); animerLuth(dt, t);
+  avancerTirs(dt); avancerEclats(dt); avancerNotes(dt);
   /* les flammes, les lumières qui vacillent */
   for (const f of flammes) { const k = 0.85 + 0.15 * Math.sin(t * 11 + f.b[0] + f.i * 2) + 0.08 * Math.sin(t * 27 + f.i); const w = (0.42 - f.i * 0.09) * k; f.f.scale.set(w, w * 1.6, 1); f.f.position.x = Math.sin(t * 7 + f.i * 2.1) * 0.04 + (f.i - 1) * 0.06; }
   brasiers.forEach((l, i) => { l.intensity = 40 * (0.85 + 0.12 * Math.sin(t * 9 + i * 3) + 0.06 * Math.sin(t * 23 + i)); });
@@ -237,7 +367,6 @@ function boucle(maint) {
   let cyT = Math.max(haut - 30, hy + 50 - Hs); cyT = SH <= Hs ? (SH - Hs) / 2 : clamp(cyT, 0, SH - Hs);
   if (!boucle.vu) { camX = cxT; camY = cyT; boucle.vu = 1; } const kc = Math.min(1, dt * 5); camX += (cxT - camX) * kc; camY += (cyT - camY) * kc;
   cadrer(); fondMat.uniforms.fen.value.set(camX / SW, camY / SH, (camX + Ws) / SW, (camY + Hs) / SH);
-  rendu.render(scene, cam);
 }
 requestAnimationFrame(boucle);
-window.__essai = { h, get ips() { return ips; }, lancer, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };
+window.__essai = { avancer, taille, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };

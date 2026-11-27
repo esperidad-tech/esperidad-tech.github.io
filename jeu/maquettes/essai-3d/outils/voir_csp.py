@@ -10,5 +10,5 @@ with sync_playwright() as p:
         if pg.evaluate('!!(window.__essai&&window.__essai.pret)'): print('OK prêt après', i / 2, 's'); break
         time.sleep(0.5)
     else: print('PAS PRÊT', pg.evaluate("document.getElementById('charge').textContent"))
-    pg.wait_for_timeout(1500); pg.keyboard.press('2'); pg.wait_for_timeout(900)
+    pg.evaluate('window.__pilote = true; window.__zoom = 2.2; __essai.taille(); __essai.avancer(0.5)'); pg.keyboard.press('2'); pg.evaluate('__essai.avancer(1.6)'); pg.wait_for_timeout(400)
     pg.screenshot(path='/tmp/barde3d/csp.png'); print(err[:6]); b.close()
