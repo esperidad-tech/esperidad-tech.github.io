@@ -132,30 +132,64 @@ charger('barde.json', g => {
   preparerLuth(m);
   if (g.animations.length) actions.garde = melangeur.clipAction(g.animations[0]);
   let reste = Object.keys(ANIMS).length; if (!reste) pret('barde');
-  for (const [nom, fichier] of Object.entries(ANIMS)) charger(fichier, a => { if (a.animations[0]) { const act = melangeur.clipAction(a.animations[0]); actions[nom] = act; if (nom === 'feu' || nom === 'glace') { act.setLoop(THREE.LoopOnce); act.clampWhenFinished = true; } } if (--reste === 0) pret('barde'); }, () => { if (--reste === 0) pret('barde'); });
+  for (const [nom, fichier] of Object.entries(ANIMS)) charger(fichier, a => { if (a.animations[0]) { const act = melangeur.clipAction(a.animations[0]); if (actions[nom] && actions[nom] !== act) actions[nom].stop(); actions[nom] = act; /* (sinon l'ancien mouvement continue en douce, à plein poids : il « flottait ») */ if (nom === 'feu' || nom === 'glace') { act.setLoop(THREE.LoopOnce); act.clampWhenFinished = true; } } if (--reste === 0) pret('barde'); }, () => { if (--reste === 0) pret('barde'); });
   if (actions.garde) actions.garde.play();
 }, e => { $('charge').textContent = '⚠'; console.error(e); });
-/* ---------- marcher, courir : le pouce un peu poussé, il marche ; à fond, il court ----------
-   Les deux mouvements avancent ensemble, au même « pas » (même moment du pied gauche posé), et à la vitesse
-   où il avance vraiment : les pieds ne glissent pas (mesuré sur les mouvements : outils/pas.py). */
+/* ---------- marcher, courir, le demi-tour ----------
+   Le pouce un peu poussé : il marche (de son rythme à 1,6 fois plus vite) ; le pouce au bord : il court (la charge, à son vrai rythme).
+   Jamais de jambes au ralenti (c'est ce qui donnait l'impression de flotter). En pleine course, si le pouce part d'un coup à
+   l'opposé : il freine, pivote et repart (le virage de la bibliothèque, son pivot porté à un demi-tour).
+   Les vitesses sont mesurées sur les pieds des mouvements (outils/pas.py), en pas du jeu (le Barde fait 1,55 pas). */
 const ALLURE = {
-  marche: { debut: 1.619, cycle: 1.4, foulee: 0.837 },   // (un cycle = deux pas ; foulée en pas du jeu, le Barde fait 1,55 pas)
-  course: { debut: 0.049, cycle: 0.7333, foulee: 2.49 }
+  marche: { vitesse: 0.60, max: 1.0 },       // Casual_Walk : 0,58 m/s
+  course: { vitesse: 4.0 },                   // Standard_Forward_Charge : 3,95 m/s (on court à 4 pas/s, au rythme du film)
+  virage: { debut: 0.35, fin: 1.2, rythme: 1.3,
+            t: [0.35, 0.43, 0.5, 0.57, 0.63, 0.7, 0.77, 0.83, 0.9, 0.97, 1.03, 1.1, 1.17, 1.2],
+            v: [3.35, 2.65, 2.29, 2.28, 2.10, 1.55, 1.25, 1.19, 1.33, 1.70, 1.78, 1.96, 2.04, 2.1] }   // (m/s, mesurées sur le bassin)
 };
-const loco = { garde: 1, marche: 0, course: 0, phase: 0 };
-function locomotion(dt, v) {
-  const b = doux((v - 1.0) / 1.0), arret = v < 0.05 ? 1 : 0;
-  const cible = { garde: arret, marche: (1 - arret) * (1 - b), course: (1 - arret) * b };
-  const k = Math.min(1, dt * 9); let somme = 0;
-  for (const n in cible) { loco[n] += (cible[n] - loco[n]) * k; somme += loco[n]; }
-  for (const n in cible) loco[n] /= somme || 1;
-  const L = ALLURE.marche.foulee + (ALLURE.course.foulee - ALLURE.marche.foulee) * b;
-  if (v > 0.05) loco.phase = (loco.phase + dt * v / L) % 1;
-  for (const n of ['garde', 'marche', 'course']) {
+const loco = { garde: 1, marche: 0, course: 0, virage: 0, v: 0, allure: 'garde', tm: 1.619, tc: 0 };
+function vitesseVirage(tv) { const T = ALLURE.virage.t, V = ALLURE.virage.v; let k = 1; while (k < T.length - 1 && T[k] < tv) k++; const a = clamp((tv - T[k - 1]) / (T[k] - T[k - 1]), 0, 1); return (V[k - 1] + (V[k] - V[k - 1]) * a) * 1.033 * ALLURE.virage.rythme; }
+/* déplacer le héros et choisir son allure ; mx, my : le pouce (ou le clavier) */
+function avancerHeros(dt, mx, my) {
+  const m = Math.min(1, Math.hypot(mx, my)), dirA = Math.atan2(my, mx);
+  let veut = 'garde';
+  if (!h.sort && m > 0.15) veut = (m >= 0.85 || (loco.allure === 'course' && m >= 0.75)) ? 'course' : 'marche';
+  // le demi-tour : seulement en pleine course, quand le pouce part à l'opposé
+  if (!h.virage && veut === 'course' && loco.allure === 'course' && loco.v > 3.2 && actions.virage) {
+    const ecart = Math.abs(Math.atan2(Math.sin(dirA - h.a), Math.cos(dirA - h.a)));
+    if (ecart > 140 * Math.PI / 180) h.virage = { s: 0, a0: h.a, rz0: barde.rotation.z };
+  }
+  if (h.virage) {
+    const V = ALLURE.virage, duree = (V.fin - V.debut) / V.rythme;
+    h.virage.s += dt / duree; const sv = Math.min(1, h.virage.s);
+    const p = doux((sv - 0.1) / 0.75);
+    barde.rotation.z = h.virage.rz0 - Math.PI * p; h.a = Math.PI / 2 - barde.rotation.z;
+    loco.v = vitesseVirage(V.debut + sv * (V.fin - V.debut));
+    loco.allure = 'virage';
+    if (h.virage.s >= 1) { h.a = h.virage.a0 + Math.PI; h.virage = null; loco.allure = 'course'; }
+  } else {
+    const vc = veut === 'garde' ? 0 : veut === 'marche' ? ALLURE.marche.vitesse + (ALLURE.marche.max - ALLURE.marche.vitesse) * clamp((m - 0.15) / 0.7, 0, 1) : ALLURE.course.vitesse;
+    loco.v += clamp(vc - loco.v, -14 * dt, 10 * dt);
+    if (veut !== 'garde') h.a = dirA;
+    loco.allure = veut === 'course' ? 'course' : veut === 'marche' ? (loco.allure === 'course' && loco.v > 1.6 ? 'course' : 'marche') : (loco.v > 1.6 && loco.allure === 'course' ? 'course' : loco.v > 0.05 ? (loco.allure === 'garde' ? 'marche' : loco.allure) : 'garde');
+  }
+  if (loco.v > 0.001 && !window.__surplace) { const nx = h.x + Math.cos(h.a) * loco.v * dt, ny = h.y + Math.sin(h.a) * loco.v * dt; if (libre(nx, h.y)) h.x = nx; if (libre(h.x, ny)) h.y = ny; }
+}
+function locomotion(dt) {
+  const k = Math.min(1, dt * 10); let somme = 0;
+  for (const n of ['garde', 'marche', 'course', 'virage']) { loco[n] += ((loco.allure === n ? 1 : 0) - loco[n]) * k; somme += loco[n]; }
+  for (const n of ['garde', 'marche', 'course', 'virage']) loco[n] /= somme || 1;
+  loco.tm += dt * clamp(loco.v / ALLURE.marche.vitesse, 0.8, 1.7);
+  loco.tc += dt * Math.max(0.85, loco.v / ALLURE.course.vitesse);
+  for (const n of ['garde', 'marche', 'course', 'virage']) {
     const a = actions[n]; if (!a) continue;
     if (!a.__lance) { a.play(); a.__lance = true; }
     a.setEffectiveWeight(loco[n]);
-    if (n !== 'garde') { const al = ALLURE[n]; a.timeScale = 0; a.time = (al.debut + loco.phase * al.cycle) % a.getClip().duration; }
+    if (n === 'garde') continue;
+    a.timeScale = 0; const d = a.getClip().duration;
+    if (n === 'marche') a.time = loco.tm % d;
+    else if (n === 'course') a.time = loco.tc % d;
+    else if (h.virage) a.time = ALLURE.virage.debut + Math.min(1, h.virage.s) * (ALLURE.virage.fin - ALLURE.virage.debut);
   }
 }
 function jouer(nom, fondu) {
@@ -205,7 +239,7 @@ function guider(haut, bas, main, cible, pole, poids) {
 const _tw = new THREE.Quaternion();
 function redresser() {
   const hips = MOD && MOD.getObjectByName('Hips'); if (!hips || !actions.garde) return;
-  const w = actions.garde.getEffectiveWeight(); if (w <= 0) return;
+  const w = Math.min(1, actions.garde.getEffectiveWeight() + (actions.virage ? actions.virage.getEffectiveWeight() : 0)); if (w <= 0) return;
   const q = hips.quaternion; _tw.set(0, q.y, 0, q.w).normalize();
   const sans = _tw.clone().invert().premultiply(q.clone());   // q × (torsion)⁻¹ : sans la rotation autour de la verticale
   sans.copy(q.clone().multiply(_tw.clone().invert()));
@@ -255,14 +289,22 @@ function animerLuth(dt, t) {
   const Fd = hautU.clone().multiplyScalar(-0.85).addScaledVector(u, -0.35).normalize();
   const Pd = f.clone().negate().sub(Fd.clone().multiplyScalar(-f.dot(Fd))).normalize();
   const poignetD = cordes.clone().addScaledVector(Pd, -0.03).addScaledVector(Fd, -MAIN.paume);
-  const cibleR = prise.clone().lerp(poignetD, r.sR);
+  let cibleR = prise.clone().lerp(poignetD, r.sR), FdF = Fd, PdF = Pd;
+  if (h.geste !== undefined && h.geste < GESTE.duree) {   // la note part : la main droite quitte les cordes et se tend vers la cible
+    const g = h.geste < GESTE.monte ? doux(h.geste / GESTE.monte) : 1 - doux((h.geste - GESTE.tient) / (GESTE.duree - GESTE.tient));
+    const S = posM(OS.RightArm), tendu = S.clone().add(new THREE.Vector3(0.05, 0.03, 0.33));
+    cibleR = cibleR.lerp(tendu, g);
+    FdF = Fd.clone().lerp(new THREE.Vector3(0.1, 0.95, 0.3).normalize(), g).normalize();
+    PdF = Pd.clone().lerp(new THREE.Vector3(0, -0.3, 1).normalize(), g); PdF.sub(FdF.clone().multiplyScalar(PdF.dot(FdF))).normalize();
+  }
   const poleR = new THREE.Vector3(-0.6, 0.5, 0.2).lerp(new THREE.Vector3(-0.7, -0.6, -0.3), clamp(r.k * 1.2, 0, 1));
   guider(OS.RightArm, OS.RightForeArm, OS.RightHand, cibleR, poleR, r.wR);
-  orienter(OS.RightHand, Fd, Pd, MAIN.paumeD, r.wR * r.sR);
+  orienter(OS.RightHand, FdF, PdF, MAIN.paumeD, r.wR * r.sR);
   guider(OS.LeftArm, OS.LeftForeArm, OS.LeftHand, poignetG, new THREE.Vector3(0.7, -0.6, -0.2), r.wL);
   orienter(OS.LeftHand, Fg, Pg, MAIN.paumeG, r.wL);
 }
 /* tourner la main : ses doigts (l'axe y de l'os) vers F, sa paume vers P (repère du modèle) */
+const GESTE = { monte: 0.12, tient: 0.3, duree: 0.55 };
 const MAIN = { paume: 0.075, paumeG: new THREE.Vector3(1, 0, 0), paumeD: new THREE.Vector3(-1, 0, 0) };   // (au repos les paumes regardent les cuisses : +x de l'os à gauche, -x à droite)
 function orienter(os, F, P, paumeLocale, poids) {
   if (poids <= 0.001) return;
@@ -377,9 +419,8 @@ function etape(dt, t) {
   let mx = joy.mx, my = joy.my; const kx = (touches.arrowright || touches.d ? 1 : 0) - (touches.arrowleft || touches.q || touches.a ? 1 : 0), ky = (touches.arrowdown || touches.s ? 1 : 0) - (touches.arrowup || touches.z || touches.w ? 1 : 0);
   if (kx || ky) { const n = Math.hypot(kx, ky), lent = touches.shift ? 0.25 : 1; mx = kx / n * lent; my = ky / n * lent; }
   const bouge = !h.sort && Math.hypot(mx, my) > 0.15;
-  let vit = 0;
-  if (bouge) { const v = 3.6 * Math.min(1, Math.hypot(mx, my)); vit = v; const nx = h.x + mx * v * dt, ny = h.y + my * v * dt; if (libre(nx, h.y)) h.x = nx; if (libre(h.x, ny)) h.y = ny; h.a = Math.atan2(my, mx); }
-  h.tl += dt;
+  avancerHeros(dt, mx, my);
+  h.tl += dt; if (h.geste !== undefined) h.geste += dt;
   if (h.luth === 'sort' && h.tl >= 0.85) { h.luth = 'main'; h.tl = 0; }
   if (h.luth === 'range' && h.tl >= 0.8) { h.luth = 'dos'; h.tl = 0; }
   if (h.sort) {
@@ -390,15 +431,15 @@ function etape(dt, t) {
       if (!lumCharge) lumCharge = prendre(h.sort === 'feu' ? 0xff8a3a : 0x8fe0ff, 0, 2.5);
       if (lumCharge) { const d = bouchePosJeu(0.3); lumCharge.position.copy(G(d.x, d.y, d.z)); lumCharge.intensity = 9 * doux(h.sortT / h.sortD); }
     }
-    if (h.sortT >= h.sortD) { partir(h.sort, LUTH ? bouchePosJeu() : null); h.sort = null; h.garde = 0.9; rendreL(lumCharge); lumCharge = null; }
+    if (h.sortT >= h.sortD) { partir(h.sort, LUTH ? bouchePosJeu() : null); h.sort = null; h.garde = 0.9; h.geste = 0; rendreL(lumCharge); lumCharge = null; }
   } else {
     if (h.luth === 'main') { h.garde -= dt; if (bouge || h.garde <= 0) { h.luth = 'range'; h.tl = 0; } }
 
   }
   /* le Barde tourne doucement vers où il va */
-  const cible = Math.PI / 2 - h.a; let da = cible - barde.rotation.z; da = Math.atan2(Math.sin(da), Math.cos(da)); barde.rotation.z += da * Math.min(1, dt * 12);
+  if (!h.virage) { const cible = Math.PI / 2 - h.a; let da = cible - barde.rotation.z; da = Math.atan2(Math.sin(da), Math.cos(da)); barde.rotation.z += da * Math.min(1, dt * 12); }
   barde.position.copy(G(h.x, h.y, 0));
-  if (melangeur) { locomotion(dt, vit); melangeur.update(dt); }
+  if (melangeur) { locomotion(dt); melangeur.update(dt); }
   redresser();
   barde.updateMatrixWorld(true); animerLuth(dt, t);
   avancerTirs(dt); avancerEclats(dt); avancerNotes(dt);
@@ -414,4 +455,14 @@ function etape(dt, t) {
   cadrer(); fondMat.uniforms.fen.value.set(camX / SW, camY / SH, (camX + Ws) / SW, (camY + Hs) / SH);
 }
 requestAnimationFrame(boucle);
-window.__essai = { avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };
+function pieds() {   // (pour les essais) les orteils, en coordonnées du jeu
+  const r = {}; if (!MOD) return r;
+  for (const n of ['LeftToeBase', 'RightToeBase']) { const o = MOD.getObjectByName(n); if (!o) continue; o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); r[n] = [v.x, -v.y, v.z / ZS]; }
+  return r;
+}
+function piedsModele() { const r = {}; for (const n of ['LeftToeBase', 'Hips']) { const o = MOD.getObjectByName(n); o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); MOD.worldToLocal(v); r[n] = [v.x, v.y, v.z]; } r.t = actions.marche ? actions.marche.time : 0; r.ts = actions.marche ? actions.marche.getEffectiveTimeScale() : 0; return r; }
+function poser(nom, t) {   // (essai) un seul mouvement, à un instant donné
+  for (const n in actions) { actions[n].play(); actions[n].setEffectiveWeight(n === nom ? 1 : 0); actions[n].timeScale = 0; }
+  actions[nom].time = t; melangeur.update(0); MOD.updateMatrixWorld(true); const r = piedsModele(); for (const n of ['LeftUpLeg', 'LeftLeg', 'Hips']) { const o = MOD.getObjectByName(n); r[n + '_q'] = o.quaternion.toArray(); r[n + '_p'] = o.position.toArray(); } r.pistes = actions[nom].getClip().tracks.slice(0, 6).map(k => k.name); r.nbPistes = actions[nom].getClip().tracks.length; r.duree = actions[nom].getClip().duration; return r;
+}
+window.__essai = { poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };

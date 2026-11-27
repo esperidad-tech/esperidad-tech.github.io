@@ -15,7 +15,7 @@ plate qui ne prend pas la lumière, trop peu de poses). Cet essai teste une autr
 Rien de tout ça n'est dans le jeu. C'est un essai, à montrer à Romain, sans « go » pour la suite.
 
 **En ligne (page Claude, hors du jeu)** : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP
-(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795798430-4f16`). Pour republier : `publish_files` des fichiers
+(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795800990-04e9`). Pour republier : `publish_files` des fichiers
 de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json), `base_version` = la version en ligne.
 **Piège de la page Claude** (vu par Romain : un ⚠ à la place du jeu) : elle ne sert pas les `.glb`, et
 elle interdit à la page de « télécharger » une adresse `data:` (fetch). Un glTF avec ses données en
@@ -125,6 +125,44 @@ Dans `src/main.js` (`locomotion()`) : vitesse = 3,6 × la poussée du pouce ; en
 au-dessus de 2 il court, entre les deux les deux mouvements se mêlent ; ils avancent **au même pas** (une
 « phase » commune, le pied gauche posé au même moment) et à la vitesse réelle : les pieds ne glissent pas.
 Au clavier : Maj + flèches = marcher. `voir9.py` : marche, entre-deux, course (`captures/allures.png`).
+
+## La charge, la marche accélérée, le demi-tour, la main qui lance (27 novembre, 18 h 40 ; go 18 h 06)
+
+Romain (à la voix) : la course « flotte », ce n'est plus la même ; il veut une vraie course (il a choisi **la charge**,
+« Standard_Forward_Charge » n° 510), seulement le pouce au bord, toujours à son vrai rythme ; la marche (un peu
+accélérée) pour le reste ; **un demi-tour** quand il court à fond et repart d'un coup dans l'autre sens ; et quand la
+note part, **la main droite se tend vers la cible**. (Pour plus tard, ses choix : course rapide « RunFast » pour le
+Pisteur, sprint penché « Lean_Forward_Sprint » pour l'Alchimiste, « Run_03 » peut-être pour le Sage.)
+
+**Pourquoi ça flottait (deux erreurs de Claude)** :
+1. Le « repos » était chargé deux fois (dans `barde.json` et dans `anim-garde.json`) : le second remplaçait le
+   premier dans `actions`, mais le premier continuait de jouer **à plein poids**, en douce ; marche et course
+   n'étaient appliquées qu'à moitié (pieds qui bougent à peine). Corrigé : l'ancien est arrêté, et `anim-garde.json`
+   n'est plus chargé. `outils/compare.py` compare la pose du jeu et celle calculée depuis le fichier.
+2. La vitesse valait 3,6 × la poussée au carré (le pouce à moitié : 4 fois moins vite), alors que le geste suivait
+   3,6 × la poussée. Corrigé.
+
+**Les allures** (`avancerHeros()`, `locomotion()`) : pouce de 15 % à 85 % : la marche, de 0,6 à 1 pas/s (le film de
+1 à 1,7 fois sa vitesse) ; pouce au bord (85 %, on garde la course jusqu'à 75 %) : **la charge, 4 pas/s, à son
+rythme** (3,95 m/s mesurés) ; la vitesse monte et descend vite (10 et 14 pas/s²) ; les jambes ne descendent jamais
+sous 0,8 fois (marche) ou 0,85 fois (course) leur rythme : **jamais de ralenti**.
+La charge et le virage de la bibliothèque **avancent tout seuls** (le bassin part devant) : `outils/surplace_glb.py`
+les remet sur place (la charge : on retire 4,02 m/s ; le virage : le bassin gelé **à sa place de repos** — au début,
+gelé à sa première image, il était décalé d'un mètre).
+
+**Le demi-tour** (« Run_Sharp_Turn_Right » n° 581) : seulement en pleine course (plus de 3,2 pas/s) quand le pouce
+part à plus de 140° ; on joue le morceau 0,35 → 1,2 s du film à 1,3 fois (0,65 s) ; il freine, pivote et repart ;
+le pivot du film n'est que d'environ 90° : c'est le jeu qui tourne le corps d'un demi-tour (vers sa droite), le
+bassin du film est redressé (`redresser()`), la vitesse suit celle mesurée dans le film. Pendant ces 0,65 s, le
+pouce ne répond pas.
+
+**La main qui lance** : quand la note part, la main droite quitte les cordes, se tend vers l'avant (vers la cible),
+paume en avant (0,12 s pour monter, tenue jusqu'à 0,3 s, retour à 0,55 s), puis il range son luth.
+
+**Vérifié autrement que sur des images fixes** : `outils/glisse.py` mesure, image par image, la vitesse des orteils
+quand le pied est posé (elle doit être presque nulle) : marche 0,08 à 0,14 pas/s, course 0,2 pas/s (avant : 0,65,
+et 1,8 dans la version que Romain a vue) ; `outils/film.py` fait de petits films en temps du jeu exact
+(`captures/film-barde.mp4` : marche, course, demi-tour, sort).
 
 ## Ce qui n'est pas fait
 
