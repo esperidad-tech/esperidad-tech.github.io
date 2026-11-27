@@ -4,7 +4,7 @@ with sync_playwright() as p:
     b = p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'])
     pg = b.new_page(viewport={'width': 844, 'height': 390}, device_scale_factor=1); err = []
     pg.on('pageerror', lambda e: err.append(str(e))); pg.on('console', lambda m: err.append(m.text[:160]) if m.type == 'error' else None)
-    pg.goto('http://localhost:8766/index.html')
+    pg.goto('http://localhost:8766/index.html'); pg.evaluate(\"choisir('barde')\")
     import time
     for i in range(120):
         if pg.evaluate('!!(window.__essai&&window.__essai.pret)'): print('OK prêt après', i / 2, 's'); break

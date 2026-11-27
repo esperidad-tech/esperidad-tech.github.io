@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <link rel="icon" href="data:,">
-<title>Essai en vraie 3D — le Barde dans la salle de l'armure</title>
+<title>Essai en vraie 3D — le Barde et le Pisteur dans la salle de l'armure</title>
 <style>
 html,body{margin:0;height:100%;background:#030406;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;font-family:system-ui,sans-serif}
 #jeu{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
@@ -23,20 +23,58 @@ html,body{margin:0;height:100%;background:#030406;overflow:hidden;touch-action:n
 #ips{position:fixed;left:8px;top:6px;color:rgba(255,255,255,.35);font-size:11px}
 #tourne{display:none;position:fixed;inset:0;background:#04060b;color:#fff;align-items:center;justify-content:center;font-size:4rem}
 @media (orientation:portrait){#tourne{display:flex}}
+/* le choix du héros (boutons jaunes, texte noir) */
+#choix{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:radial-gradient(circle at 50% 40%,#1c2442,#05070c)}
+#choix .titre{color:#f3e6c4;font-size:1.5rem}
+#choix .rang{display:flex;gap:22px}
+.jaune{background:#ffd23a;color:#111;border:0;border-radius:16px;padding:16px 26px;font-size:1.35rem;font-weight:700;box-shadow:0 4px 0 #b8901a,0 8px 18px rgba(0,0,0,.4);cursor:pointer}
+.jaune:active{transform:translateY(2px)}
+#autre{position:fixed;right:calc(10px + env(safe-area-inset-right));top:8px;z-index:6;background:rgba(10,16,30,.55);color:#f3e6c4;border:1px solid rgba(243,212,138,.45);border-radius:12px;padding:6px 10px;font-size:.95rem}
+body.barde .p,body.pisteur .b{display:none}
+body:not(.barde):not(.pisteur) .bt,body:not(.barde):not(.pisteur) #zone,body:not(.barde):not(.pisteur) #autre{display:none}
+/* les boutons du Pisteur */
+#pDague{right:calc(18px + env(safe-area-inset-right));bottom:calc(20px + env(safe-area-inset-bottom));width:86px;height:86px;border-color:#e8eef8}
+#pAssomme{right:calc(116px + env(safe-area-inset-right));bottom:calc(22px + env(safe-area-inset-bottom));width:66px;height:66px;border-color:#ffd96a;font-size:1.5rem}
+#pSaut{right:calc(104px + env(safe-area-inset-right));bottom:calc(100px + env(safe-area-inset-bottom));width:66px;height:66px;border-color:#ffe28a;font-size:1.5rem}
+#pOmbre{right:calc(28px + env(safe-area-inset-right));bottom:calc(120px + env(safe-area-inset-bottom));width:66px;height:66px;border-color:#b58cff;font-size:1.5rem}
+#pSaut,#pOmbre{--r:0;background:conic-gradient(rgba(0,0,0,.62) calc(var(--r) * 1turn),rgba(10,16,30,.42) 0)}
+#pDague i{position:absolute;right:6px;top:4px;font-style:normal;font-size:.8rem;font-weight:700;color:#fff;background:rgba(0,0,0,.45);border-radius:8px;padding:1px 5px}
+body.ombre .p{border-color:#a06bff!important;box-shadow:0 0 14px rgba(150,90,255,.8)}
+#voile{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:0;transition:opacity .35s;background:radial-gradient(ellipse at 50% 50%,rgba(40,10,80,0) 35%,rgba(40,10,80,.55) 100%)}
+body.ombre #voile{opacity:1}
 </style>
 </head>
 <body>
 <canvas id="jeu"></canvas>
 <div id="zone"><div id="pouce"></div></div>
-<button class="bt" id="bSaut" aria-label="Saut">💨</button>
-<button class="bt" id="bGlace" aria-label="Note glacée">❄️</button>
-<button class="bt" id="bAcide" aria-label="Note d'acide">🧪</button>
-<button class="bt" id="bSoin" aria-label="Soin">💚</button>
-<button class="bt" id="bFeu" aria-label="Note de feu">🔥</button>
+<div id="voile"></div>
+<button class="bt b" id="bSaut" aria-label="Saut">💨</button>
+<button class="bt b" id="bGlace" aria-label="Note glacée">❄️</button>
+<button class="bt b" id="bAcide" aria-label="Note d'acide">🧪</button>
+<button class="bt b" id="bSoin" aria-label="Soin">💚</button>
+<button class="bt b" id="bFeu" aria-label="Note de feu">🔥</button>
+<button class="bt p" id="pSaut" aria-label="Saut">💨</button>
+<button class="bt p" id="pAssomme" aria-label="Coup qui assomme">💫</button>
+<button class="bt p" id="pOmbre" aria-label="Ombre">🌑</button>
+<button class="bt p" id="pDague" aria-label="Dague"><span id="pDagueIc">🗡️</span><i id="pRang">1</i></button>
+<button id="autre">↺ héros</button>
 <div id="ips"></div>
-<div id="charge"><i></i></div>
+<div id="charge" style="display:none"><i></i></div>
+<div id="choix"><div class="titre">Qui veux-tu essayer ?</div><div class="rang"><button class="jaune" data-q="barde">🎵 Le Barde</button><button class="jaune" data-q="pisteur">🗡️ Le Pisteur</button></div></div>
 <div id="tourne">📱↻</div>
-<script>window.ANIMS={marche:'anim-marche.json',course:'anim-charge.json',saut:'anim-saut.json'};</script>
-<script src="essai3d.js"></script>
+<script>
+/* le héros choisi : ses mouvements, puis le jeu */
+var MOUVEMENTS = {
+  barde: { marche: 'anim-marche.json', course: 'anim-charge.json', saut: 'anim-saut.json' },
+  pisteur: { marche: 'p-marche.json', course: 'p-course.json', furtif: 'p-furtif.json', guet: 'p-guet.json', saut: 'p-saut.json', d1: 'p-dague1.json', d2: 'p-dague2.json', d3: 'p-dague3.json', assomme: 'p-assomme.json' }
+};
+function choisir(q) {
+  window.QUI = q; window.ANIMS = MOUVEMENTS[q]; document.body.classList.add(q);
+  document.getElementById('choix').remove(); document.getElementById('charge').style.display = 'flex';
+  var s = document.createElement('script'); s.src = 'essai3d.js'; document.body.appendChild(s);
+}
+document.querySelectorAll('#choix .jaune').forEach(function (b) { b.addEventListener('click', function () { choisir(b.dataset.q); }); });
+document.getElementById('autre').addEventListener('click', function () { location.reload(); });
+</script>
 </body>
 </html>

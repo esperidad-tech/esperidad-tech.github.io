@@ -1,4 +1,4 @@
-# Essai en vraie 3D — le Barde dans la salle de l'armure (27 novembre)
+# Essai en vraie 3D — le Barde et le Pisteur dans la salle de l'armure (27 novembre)
 
 Pourquoi : Romain trouve les combats « bricolés » sur grand écran (fond flou, héros en image
 plate qui ne prend pas la lumière, trop peu de poses). Cet essai teste une autre façon de faire,
@@ -15,7 +15,7 @@ plate qui ne prend pas la lumière, trop peu de poses). Cet essai teste une autr
 Rien de tout ça n'est dans le jeu. C'est un essai, à montrer à Romain, sans « go » pour la suite.
 
 **En ligne (page Claude, hors du jeu)** : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP
-(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795806399-5c74`). Pour republier : `publish_files` des fichiers
+(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795812886-6397` depuis le Pisteur, 21 h 54). Pour republier : `publish_files` des fichiers
 de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json), `base_version` = la version en ligne.
 **Piège de la page Claude** (vu par Romain : un ⚠ à la place du jeu) : elle ne sert pas les `.glb`, et
 elle interdit à la page de « télécharger » une adresse `data:` (fetch). Un glTF avec ses données en
@@ -238,6 +238,64 @@ réception est fondue dans la course en 0,1 s (`SAUT.sortie` = 0,70, `SAUT.fin` 
 suite (5,1 pas/s en l'air, puis 4) ; pouce lâché : **un petit pas d'élan** (`SAUT.elan` = 2,5 pas/s, qui retombe en
 0,2 s), puis il s'arrête. Il avance aussi **dès l'appel** (`SAUT.air[0]` = 0 : plus de petit arrêt au départ).
 Mesuré image par image (`outils/essai_atterrir.py`) et vu (`outils/essai_atterrir2.py`, `captures/atterrissage.png`).
+
+## Le Pisteur (27 novembre, en ligne à 21 h 54, version `1795812886-6397` ; go de Romain à 21 h 21 : « Ok, vas-y, tu peux t'y mettre »)
+
+Ce que Romain a dit à la voix (vers 21 h 15) : faire les autres héros comme le Barde, en commençant par **le
+Pisteur** ; « sa course différente » (la course rapide, RunFast, choisie plus tôt), « peut-être des sauts
+différents », « les sorts, évidemment, c'est pas les mêmes » ; « il faut que ça soit logique : le Pisteur, c'est le plus
+agile ; les autres sont un peu moins agiles » ; « je te laisse faire ». Et : « fais gaffe, le Pisteur doit sauter
+par-dessus des murs, sur la phase 1 » (donc pas une roulade).
+
+**La page commence par un choix** (deux boutons jaunes : « 🎵 Le Barde », « 🗡️ Le Pisteur ») ; « ↺ héros » en haut à
+droite revient au choix. `index.html` charge `essai3d.js` après le choix, avec les mouvements du héros
+(`MOUVEMENTS`) ; `src/main.js` sait lequel par `window.QUI` (`PIST`).
+
+**Le modèle** (Higgsfield, 42 crédits) : la Pisteuse rousse du jeu (les héros en volume, `jeu/heros-vues`, rendue en
+trois vues : `origine/pisteur-ref-3vues.png`) → une feuille de personnage 3D dans le style du Barde (Nano Banana 2.1,
+deux essais, 4 crédits ; `origine/pisteur-image-a.jpg`, `-b.jpg`) → les trois vues découpées (`origine/pisteur-vues/`)
+→ Meshy « multi image to 3D », texturé, articulé, posé en A, 1,5 m, avec son mouvement de garde (38 crédits) :
+`origine/pisteur-base.glb` (**ne pas jeter** : les mouvements se refont depuis lui). Pas d'arc à la main (le combat du
+Pisteur n'en a plus, § 17) ; le carquois au dos et la dague au fourreau sont dans le modèle.
+
+**Ses mouvements** (bibliothèque Higgsfield, 8 crédits chacun, 72 crédits) : garde `Idle_5` (n° 245 : prête à bondir,
+genoux pliés) ; marche `Casual_Walk` (30) ; **course `RunFast` (16)** ; **à pas de loup dans l'ombre
+`Cautious_Crouch_Walk_Forward_inplace` (616)** ; **à l'affût dans l'ombre `CrouchLookAroundBow` (258)** (accroupie,
+elle regarde autour) ; **le saut `Unarmed_Vault` (428)** : un bond genoux repliés, une main vers l'obstacle, les pieds
+montent à 0,86 m — il passe un muret ; **la dague** : 1er temps `Right_Hand_Sword_Slash` (219, un revers), 2e temps
+`Thrust_Slash` (240, le début : un grand pas et un coup d'estoc), 3e temps `Charged_Upward_Slash` (221, l'élan puis un
+grand coup de bas en haut) ; **le coup qui assomme `Spartan_Kick` (206)** : un coup de pied haut. Les mouvements qui
+avancent tout seuls (saut, coups, affût) sont remis sur place (`surplace_glb.py … fixe`) : c'est le jeu qui fait avancer.
+Mesuré avec `outils/coups.py` (la main, les pieds, le bassin, image par image) : course 4,2 m/s aux pieds → **4,4 pas/s** ;
+pas de loup 1,22 m/s → **1 à 1,8 pas/s** selon le pouce ; marche 0,59 m/s.
+
+**Ses gestes** (`src/main.js`, partie « LE PISTEUR ») :
+- **La dague en trois temps** (bouton 🗡️, le gros ; touche J) : le coup suivant ne vient **que si le précédent a
+  touché** (le chiffre sur le bouton : 1, 2, 3 ; au 3e, l'icône change) ; le 3e est plus fort. Chaque coup ne joue
+  que le morceau utile du film, accéléré (`COUPS` : début, impact, fin) : 0,6 à 0,85 s. Près du mannequin, il se tourne
+  vers lui et fait un pas vers lui avant de frapper (« le bras entraîne le corps »). **La dague apparaît dans sa main**
+  (faite par programme, accrochée à l'os de la main) et laisse **une traînée** de lumière. Un appui pendant un coup est
+  gardé pour après (« comme Valeera »).
+- **Le coup qui assomme** (💫 ; touche K) : le coup de pied ; s'il touche, **des étoiles tournent** au-dessus de la tête
+  du mannequin pendant 2 s.
+- **L'ombre** (🌑 ; touche L) : il devient **une silhouette sombre et violette**, à moitié transparente, **accroupi** ;
+  il avance à pas de loup ; **l'écran se teinte de violet** sur les bords, **les boutons deviennent violets**, la dague
+  devient 💀 **l'embuscade** (le grand coup, plus rapide, des éclats violets). **Frapper fait sortir de l'ombre**, et il
+  faut **3 s** avant de pouvoir y retourner (le bouton se remplit d'ombre). Appuyer encore sur 🌑 en sort aussi.
+- **Le saut** (💨 ; espace) : 3 pas, **recharge 3 s** (comme le Pisteur, § 18.14) ; **il passe par-dessus les murets**
+  (s'il retomberait dessus, il saute un peu plus loin) mais pas à travers les murs, l'armure, les lanternes ;
+  il retombe sans bruit (un peu de poussière) et repart aussitôt, comme le Barde.
+- **Pour essayer** : **un mannequin d'entraînement** (un poteau, un corps de paille, une tête de toile, une barre
+  pour les bras) au milieu de la salle, qui bascule sous les coups (un ressort), s'éclaire, lâche des éclats ; **deux
+  murets de pierre** (de vrais volumes, éclairés par les brasiers, qui le cachent quand il passe derrière). Ils
+  n'existent que pour le Pisteur.
+- Vérifié image par image (`outils/essai_pisteur.py`, `essai_pisteur2.py`, `captures/pisteur-*.png`), en film
+  (`outils/film.py pisteur`, `captures/film-pisteur.mp4`), et sous WebKit, le moteur de l'iPhone, avec la règle de
+  sécurité du téléphone (`outils/essai_webkit_p.py`, `captures/webkit-choix-pisteur-barde.png`). Les outils du Barde
+  choisissent maintenant « le Barde » sur le premier écran (`choisir('barde')`).
+- **Pas fait** : les bandages (3 s dans l'ombre, § 17) ; la marche est celle du Barde ; pas de vrais golems ; la
+  caméra qui suit le héros (demandée par Romain, pour plus tard) ; l'Alchimiste et le Sage.
+- Crédits : **114 pour le Pisteur** (les deux images 4, le modèle 38, neuf mouvements 72) ; **217 en tout** pour l'essai.
 
 ## Ce qui n'est pas fait
 

@@ -4,7 +4,7 @@ with sync_playwright() as p:
     b = p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'])
     pg = b.new_page(viewport={'width': 844, 'height': 390}); err = []
     pg.on('pageerror', lambda e: err.append(str(e)))
-    pg.goto('http://localhost:8766/index.html')
+    pg.goto('http://localhost:8766/index.html'); pg.evaluate(\"choisir('barde')\")
     for i in range(200):
         if pg.evaluate('!!(window.__essai&&window.__essai.pret)'): break
         time.sleep(0.5)

@@ -117,7 +117,8 @@ const NOTE_SORT = { glace: texNoteBrillante('#eefbff', 'rgba(120,210,255,1)', 'r
 const PORTEE = { glace: texPortee('rgba(150,225,255,1)'), feu: texPortee('rgba(255,170,70,1)'), acide: texPortee('rgba(200,255,50,1)') };
 const PETITES = { glace: [texNote('#e6f8ff', false), texNote('#e6f8ff', true)], feu: [texNote('#ffd9a0', false), texNote('#ffd9a0', true)], acide: [texNote('#eaff8a', false), texNote('#eaff8a', true)], soin: [texNote('#d2ffdc', false), texNote('#d2ffdc', true)], or: [texNote('#ffe7a6', false), texNote('#ffe7a6', true)] };
 const T_LUEUR = { or: texLueur('rgba(255,200,90,.95)'), feu: texLueur('rgba(255,120,40,.95)'), glace: texLueur('rgba(140,220,255,.95)'), rouge: texLueur('rgba(255,70,40,.95)'), poussiere: texLueur('rgba(225,205,175,.55)'),
-  acide: texLueur('rgba(190,255,40,.95)'), fumee: texLueur('rgba(215,240,150,.5)'), soin: texLueur('rgba(130,240,165,.95)') };
+  acide: texLueur('rgba(190,255,40,.95)'), fumee: texLueur('rgba(215,240,150,.5)'), soin: texLueur('rgba(130,240,165,.95)'),
+  violet: texLueur('rgba(175,110,255,.95)'), fumeeOmbre: texLueur('rgba(70,30,120,.55)') };
 const SORTS = {
   glace: { lum: 0x7fd8ff, I: 22, dist: 5, v: 12, taille: 1.2, sol: 1.8, petite: '#d8f6ff', charge: 0x8fe0ff, boum: 0x9fe8ff, main: 0xa8e8ff },
   feu: { lum: 0xff7a2a, I: 40, dist: 7, v: 9, taille: 1.45, sol: 2.6, petite: '#ffc070', charge: 0xff8a3a, boum: 0xff8a3a, main: 0xffa050 },   // (la note de feu plus grosse : c'est le gros sort)
@@ -154,11 +155,12 @@ function charger(fichier, ok, ko) {
   }).catch(ko);
 }
 const ANIMS = window.ANIMS || {};
-charger('barde.json', g => {
+const PIST = window.QUI === 'pisteur';   // (le héros choisi sur le premier écran : le Barde ou le Pisteur)
+charger(PIST ? 'pisteur.json' : 'barde.json', g => {
   const m = g.scene; m.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = false; o.frustumCulled = false; if (o.material) { o.material.metalness = 0; o.material.envMapIntensity = 0.5; } } });
   m.scale.setScalar(1.55 / 1.5);   // (le modèle fait 1,5 m ; un héros fait environ 1,55 pas)
   corps.add(m); melangeur = new THREE.AnimationMixer(m);
-  preparerLuth(m);
+  if (PIST) preparerPisteur(m); else preparerLuth(m);
   if (g.animations.length) actions.garde = melangeur.clipAction(g.animations[0]);
   let reste = Object.keys(ANIMS).length; if (!reste) pret('barde');
   for (const [nom, fichier] of Object.entries(ANIMS)) charger(fichier, a => { if (a.animations[0]) { const act = melangeur.clipAction(a.animations[0]); if (actions[nom] && actions[nom] !== act) actions[nom].stop(); actions[nom] = act; /* (sinon l'ancien mouvement continue en douce, à plein poids : il « flottait ») */ if (nom === 'feu' || nom === 'glace') { act.setLoop(THREE.LoopOnce); act.clampWhenFinished = true; } } if (--reste === 0) pret('barde'); }, () => { if (--reste === 0) pret('barde'); });
@@ -169,16 +171,29 @@ charger('barde.json', g => {
    Jamais de jambes au ralenti (c'est ce qui donnait l'impression de flotter). En pleine course, si le pouce part d'un coup à
    l'opposé : il repart tout de suite dans l'autre sens, le corps dérape un quart de seconde (fait par programme, sans film).
    Les vitesses sont mesurées sur les pieds des mouvements (outils/pas.py), en pas du jeu (le Barde fait 1,55 pas). */
-const ALLURE = {
+const ALLURE = PIST ? {
+  marche: { vitesse: 0.60, max: 1.0 },       // Casual_Walk (le même que le Barde)
+  course: { vitesse: 4.4 },                   // RunFast : ses pieds reculent de 4,2 m/s (outils/coups.py) : 4,4 pas/s
+  furtif: { vitesse: 1.26, min: 1.0, max: 1.8 },   // Cautious_Crouch_Walk_Forward : 1,22 m/s, accroupi, dans l'ombre
+} : {
   marche: { vitesse: 0.60, max: 1.0 },       // Casual_Walk : 0,58 m/s
   course: { vitesse: 4.0 },                   // Standard_Forward_Charge : 3,95 m/s (on court à 4 pas/s, au rythme du film)
 };
-const loco = { garde: 1, marche: 0, course: 0, v: 0, allure: 'garde', tm: 1.619, tc: 0 };
+const LOCO = PIST ? ['garde', 'marche', 'course', 'furtif', 'guet'] : ['garde', 'marche', 'course'];
+const loco = { garde: 1, marche: 0, course: 0, furtif: 0, guet: 0, v: 0, allure: 'garde', tm: 1.619, tc: 0, tf: 0 };
 /* déplacer le héros et choisir son allure ; mx, my : le pouce (ou le clavier) */
 function avancerHeros(dt, mx, my) {
   const m = Math.min(1, Math.hypot(mx, my)), dirA = Math.atan2(my, mx);
   let veut = 'garde';
   if (!h.sort && m > 0.15) veut = (m >= 0.85 || (loco.allure === 'course' && m >= 0.75)) ? 'course' : 'marche';
+  if (PIST && h.ombre) {   // dans l'ombre : accroupi, à pas de loup (jamais de course)
+    const vf = m > 0.15 ? ALLURE.furtif.min + (ALLURE.furtif.max - ALLURE.furtif.min) * clamp((m - 0.15) / 0.7, 0, 1) : 0;
+    loco.v += clamp(vf - loco.v, -10 * dt, 8 * dt); if (m > 0.15) h.a = dirA;
+    loco.allure = m > 0.15 || loco.v > 0.1 ? 'furtif' : 'guet';
+    if (loco.v > 0.001) { const nx = h.x + Math.cos(h.a) * loco.v * dt, ny = h.y + Math.sin(h.a) * loco.v * dt; if (libre(nx, h.y)) h.x = nx; if (libre(h.x, ny)) h.y = ny; }
+    return;
+  }
+  if (PIST && (loco.allure === 'furtif' || loco.allure === 'guet')) loco.allure = loco.v > 0.05 ? 'marche' : 'garde';
   // le demi-tour : seulement en pleine course, quand le pouce part à l'opposé
   if (!h.derap && veut === 'course' && loco.allure === 'course' && loco.v > 3.2) {
     const ecart = Math.abs(Math.atan2(Math.sin(dirA - h.a), Math.cos(dirA - h.a)));
@@ -195,20 +210,23 @@ function avancerHeros(dt, mx, my) {
 }
 function locomotion(dt) {
   const k = Math.min(1, dt * 10); let somme = 0;
-  for (const n of ['garde', 'marche', 'course']) { loco[n] += ((loco.allure === n ? 1 : 0) - loco[n]) * k; somme += loco[n]; }
-  for (const n of ['garde', 'marche', 'course']) loco[n] /= somme || 1;
+  for (const n of LOCO) { loco[n] += ((loco.allure === n ? 1 : 0) - loco[n]) * k; somme += loco[n]; }
+  for (const n of LOCO) loco[n] /= somme || 1;
   loco.tm += dt * clamp(loco.v / ALLURE.marche.vitesse, 0.8, 1.7);
   loco.tc += dt * Math.max(0.85, loco.v / ALLURE.course.vitesse);
-  const ws = poidsSaut();
-  if (actions.saut) { const a = actions.saut; if (!a.__lance) { a.play(); a.__lance = true; } a.timeScale = 0; a.setEffectiveWeight(ws); a.time = h.saut ? Math.min(h.saut.t * SAUT.vitesse, a.getClip().duration - 1e-3) : 0; }
-  for (const n of ['garde', 'marche', 'course']) {
+  if (ALLURE.furtif) loco.tf += dt * clamp(loco.v / ALLURE.furtif.vitesse, 0.8, 1.7);
+  const ws = poidsSaut(), wc = PIST ? poidsCoup() : 0, wx = Math.max(ws, wc);
+  if (actions.saut) { const a = actions.saut; if (!a.__lance) { a.play(); a.__lance = true; } a.timeScale = 0; a.setEffectiveWeight(ws); a.time = h.saut ? Math.min(SAUT.depart + h.saut.t * SAUT.vitesse, a.getClip().duration - 1e-3) : 0; }
+  if (PIST) animerCoups(wc);
+  for (const n of LOCO) {
     const a = actions[n]; if (!a) continue;
     if (!a.__lance) { a.play(); a.__lance = true; }
-    a.setEffectiveWeight(loco[n] * (1 - ws));
-    if (n === 'garde') continue;
+    a.setEffectiveWeight(loco[n] * (1 - wx));
+    if (n === 'garde' || n === 'guet') continue;
     a.timeScale = 0; const d = a.getClip().duration;
     if (n === 'marche') a.time = loco.tm % d;
     else if (n === 'course') a.time = loco.tc % d;
+    else if (n === 'furtif') a.time = loco.tf % d;
   }
 }
 function jouer(nom, fondu) {
@@ -367,7 +385,7 @@ function annulerSort() {
   else if (h.luth === 'sort') { const k = reglagesLuth().k; h.luth = 'range'; h.tl = clamp(0.15 + 0.4 * (1 - k), 0, 0.55); }
 }
 function lancer(q) {
-  if (h.sort || h.saut) return;
+  if (PIST || h.sort || h.saut) return;
   h.sort = q; h.sortT = 0; h.sortD = DUREE[q];
   if (h.luth === 'dos') { h.luth = 'sort'; h.tl = 0; }
   else if (h.luth === 'range') { const k = reglagesLuth().k; h.luth = 'sort'; h.tl = 0.25 + 0.4 * k; }
@@ -528,23 +546,209 @@ function avancerSoins(dt) {
     if (s.t > 1.5) { rendreL(s.l); monde.remove(s.anneau, s.aura); s.anneau.material.dispose(); s.aura.material.dispose(); soins.splice(i, 1); }
   }
 }
+/* ================= LE PISTEUR =================
+   Ses gestes viennent du combat du Pisteur (phase 1, Bible § 17) : la dague en trois temps (le coup suivant ne vient que si
+   le précédent a touché ; le troisième est plus fort), le coup qui assomme, le saut (par-dessus les murets), l'ombre façon
+   Valeera (accroupi, sombre et violet ; dans l'ombre, la dague devient l'embuscade, et frapper fait sortir de l'ombre).
+   Un mannequin d'entraînement et deux murets pour essayer. Les moments des films (début, coup, fin) sont mesurés sur les
+   mouvements Higgsfield (outils/coups.py). */
+const PISTEUR_SAUT = { dist: 3, recharge: 3, vitesse: 1.2, depart: 0.05, air: [0.08, 0.65], sortie: 0.66, fin: 0.8, elan: 2.5, murets: true };   // (Unarmed_Vault : il décolle à 0,08 s du film, retombe à 0,65 ; les pieds montent à 0,86 : il passe un muret)
+const COUPS = {   // anim : le mouvement ; a, b : le morceau joué ; impact : le moment du coup (temps du film) ; v : sa vitesse
+  d1: { anim: 'd1', a: 0.15, b: 1.05, impact: 0.57, v: 1.5, portee: 1.35 },                          // Right_Hand_Sword_Slash : un revers (la main la plus rapide à 0,57 s)
+  d2: { anim: 'd2', a: 0.30, b: 1.25, impact: 0.82, v: 1.5, portee: 1.45 },                          // Thrust_Slash, le début : un grand pas et un coup d'estoc
+  d3: { anim: 'd3', a: 0.35, b: 1.55, impact: 1.07, v: 1.4, portee: 1.5, fort: true },               // Charged_Upward_Slash : l'élan, puis un grand coup de bas en haut
+  embuscade: { anim: 'd3', a: 0.45, b: 1.55, impact: 1.07, v: 1.7, portee: 1.6, fort: true, ombre: true },
+  assomme: { anim: 'assomme', a: 0.10, b: 1.25, impact: 0.58, v: 1.4, portee: 1.5, assomme: true }, // Spartan_Kick : un coup de pied haut (le pied monte à 1,07 m)
+};
+const OMBRE_RECHARGE = 3;   // (Romain : 3 s avant de pouvoir redisparaître)
+const MURETS = PIST ? [{ x: 5.4, y: 7.0, lx: 2.6, ly: 0.45 }, { x: 13.0, y: 6.4, lx: 0.45, ly: 2.6 }] : [];
+const MANNEQUIN = { x: 9, y: 4.9, r: 0.35 };
+let dagueMain = null, traineeLame = null;
+const matsOmbre = [];
+function preparerPisteur(m) {
+  MOD = m; m.updateMatrixWorld(true);
+  for (const n of ['Spine', 'RightArm', 'RightForeArm', 'RightHand', 'LeftArm', 'LeftForeArm', 'LeftHand', 'Head']) OS[n] = m.getObjectByName(n);
+  // la dague tirée, dans SA main droite (en centimètres : les os du modèle sont en centimètres)
+  const g = new THREE.Group(), acier = new THREE.MeshStandardMaterial({ color: 0xdfe6ee, metalness: 0.85, roughness: 0.25, emissive: 0x223344, emissiveIntensity: 0.3 }), cuir = new THREE.MeshStandardMaterial({ color: 0x4a2c18, roughness: 0.8 }), laiton = new THREE.MeshStandardMaterial({ color: 0xc9a040, metalness: 0.7, roughness: 0.35 });
+  const lame = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 2.1, 26, 4, 1), acier); lame.scale.set(1, 1, 0.28); lame.rotation.x = Math.PI / 2; lame.position.z = 17;   // (une lame plate qui s'affine vers la pointe)
+  const garde = new THREE.Mesh(new THREE.BoxGeometry(7, 1.4, 1.4), laiton); garde.position.z = 3.8; garde.rotation.z = Math.PI / 2;
+  const poignee = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 8, 8), cuir); poignee.rotation.x = Math.PI / 2;
+  const pommeau = new THREE.Mesh(new THREE.SphereGeometry(1.1, 10, 8), laiton); pommeau.position.z = -4.3;
+  g.add(lame, garde, poignee, pommeau); g.position.set(-1.5, 8, 0); g.visible = false;
+  g.traverse(o => { if (o.isMesh) o.castShadow = true; });
+  if (OS.RightHand) OS.RightHand.add(g);
+  dagueMain = g; g.userData.pointe = new THREE.Vector3(0, 0, 30); g.userData.base = new THREE.Vector3(0, 0, 5);
+  // l'ombre : chaque matière a sa jumelle sombre et violette, à moitié transparente
+  m.traverse(o => { if (o.isMesh && o.material) { const a = o.material, b = a.clone(); b.color = (b.color || new THREE.Color(1, 1, 1)).clone().multiplyScalar(0.28); b.emissive = new THREE.Color(0x5a2aa8); b.emissiveIntensity = 0.55; b.transparent = true; b.opacity = 0.62; matsOmbre.push({ o, a, b }); } });
+}
+/* les murets (de vrais volumes 3D : la lumière des brasiers les éclaire, ils cachent le héros) */
+function texPierre() {
+  return toile(256, 128, x => {
+    x.fillStyle = '#7d7468'; x.fillRect(0, 0, 256, 128);
+    for (let r = 0; r < 4; r++) for (let c = -1; c < 5; c++) {
+      const w = 64, ox = (r % 2) * 32 + c * w, y = r * 32, v = 95 + Math.random() * 40;
+      const g = x.createLinearGradient(0, y, 0, y + 32); g.addColorStop(0, `rgb(${v + 22},${v + 18},${v + 10})`); g.addColorStop(1, `rgb(${v - 4},${v - 7},${v - 12})`);
+      x.fillStyle = g; x.fillRect(ox + 2, y + 2, w - 4, 28);
+      for (let k = 0; k < 18; k++) { x.fillStyle = `rgba(0,0,0,${Math.random() * 0.12})`; x.fillRect(ox + 2 + Math.random() * (w - 6), y + 3 + Math.random() * 24, 3, 2); }
+    }
+  });
+}
+if (PIST) {
+  const tex = texPierre(); tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  for (const M of MURETS) {
+    const hM = 0.62, mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.92 }), dessus = new THREE.MeshStandardMaterial({ map: tex, color: 0xcfc3ae, roughness: 0.9 });
+    const geo = new THREE.BoxGeometry(M.lx, M.ly, hM), mesh = new THREE.Mesh(geo, [mat, mat, mat, mat, dessus, mat]);
+    mesh.position.copy(G(M.x, M.y, hM / 2)); mesh.castShadow = true; mesh.receiveShadow = true; monde.add(mesh);
+    const uv = geo.attributes.uv, dims = [[M.ly, hM], [M.ly, hM], [M.lx, hM], [M.lx, hM], [M.lx, M.ly], [M.lx, M.ly]];   // (chaque face : sa largeur, sa hauteur ; des pierres de 1,3 × 0,65 pas)
+    for (let i = 0; i < uv.count; i++) { const f = dims[Math.floor(i / 4)]; uv.setXY(i, uv.getX(i) * f[0] / 1.3, uv.getY(i) * f[1] / 0.65); }
+  }
+}
+function dansMuret(x, y, r) { r = r || 0.35; for (const M of MURETS) if (Math.abs(x - M.x) < M.lx / 2 + r && Math.abs(y - M.y) < M.ly / 2 + r) return true; return false; }
+/* le mannequin d'entraînement : un poteau, un corps de paille, une tête de toile, une barre pour les bras */
+let mannequin = null;
+const mq = { ax: 0, ay: 0, vx: 0, vy: 0, sonne: 0, etoiles: [], eclair: 0 };
+if (PIST) {
+  const gr = new THREE.Group(), pivot = new THREE.Group(), bois = new THREE.MeshStandardMaterial({ color: 0x6b4a2b, roughness: 0.85 }), paille = new THREE.MeshStandardMaterial({ color: 0xc9a55a, roughness: 0.95, emissive: 0xffffff, emissiveIntensity: 0 }), toileM = new THREE.MeshStandardMaterial({ color: 0xb89a6a, roughness: 0.95, emissive: 0xffffff, emissiveIntensity: 0 }), corde = new THREE.MeshStandardMaterial({ color: 0x5a3a1c, roughness: 0.9 });
+  const cyl = (r1, r2, h, mat, z) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r1, r2, h, 14), mat); m.rotation.x = Math.PI / 2; m.position.z = z; m.castShadow = true; return m; };
+  gr.add(cyl(0.32, 0.36, 0.08, bois, 0.04));
+  pivot.add(cyl(0.05, 0.06, 0.7, bois, 0.4), cyl(0.2, 0.24, 0.66, paille, 0.98), cyl(0.205, 0.205, 0.04, corde, 0.8), cyl(0.205, 0.205, 0.04, corde, 1.16));
+  const bras = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.9, 8), bois); bras.rotation.z = Math.PI / 2; bras.position.z = 1.18; bras.castShadow = true; pivot.add(bras);
+  const tete = new THREE.Mesh(new THREE.SphereGeometry(0.15, 14, 10), toileM); tete.position.z = 1.45; tete.castShadow = true; pivot.add(tete);
+  gr.add(pivot); gr.position.copy(G(MANNEQUIN.x, MANNEQUIN.y, 0)); monde.add(gr);
+  mannequin = { gr, pivot, mats: [paille, toileM] };
+}
+function libreSaut(x, y) { return libreSans(x, y); }
+/* frapper : la dague (trois temps), l'embuscade dans l'ombre, le coup qui assomme */
+h.rang = 1; h.coup = null; h.tampon = null; h.ombre = false; h.ombreR = 0;
+function versMannequin() { const dx = MANNEQUIN.x - h.x, dy = MANNEQUIN.y - h.y; return { d: Math.hypot(dx, dy), a: Math.atan2(dy, dx) }; }
+function frapper(quoi) {
+  if (!PIST || h.saut) return;
+  if (h.coup) { if (h.coup.tc > (h.coup.C.a + h.coup.C.impact) / 2) h.tampon = quoi; return; }   // (un seul appui d'avance, comme Valeera)
+  let nom = quoi === 'assomme' ? 'assomme' : h.ombre ? 'embuscade' : 'd' + h.rang;
+  const C = COUPS[nom]; if (!actions[C.anim]) return;
+  const vm = versMannequin(); if (vm.d < 2.4) h.a = vm.a;   // (tout près du mannequin : il se tourne vers lui)
+  h.coup = { nom, C, t: 0, tc: C.a, touche: false, fait: false, elan: vm.d < 2.4 ? Math.max(0, Math.min(0.7, vm.d - 0.95)) : 0, avance: 0 };
+  if (dagueMain) dagueMain.visible = nom !== 'assomme';
+  if (C.ombre || (h.ombre && nom === 'assomme')) sortirOmbre();   // (frapper fait sortir de l'ombre)
+  traineeDebut(nom === 'embuscade' ? 0xb27bff : 0xdff3ff);
+}
+function annulerCoup() { h.coup = null; h.tampon = null; traineeFin(); }
+function poidsCoup() {
+  const c = h.coup; if (!c) return 0; const C = c.C;
+  return Math.min(doux((c.tc - C.a) / (0.06 * C.v)), 1 - doux((c.tc - (C.b - 0.16 * C.v)) / (0.16 * C.v)));
+}
+function animerCoups(w) {
+  for (const n of ['d1', 'd2', 'd3', 'assomme']) {
+    const a = actions[n]; if (!a) continue; if (!a.__lance) { a.play(); a.__lance = true; } a.timeScale = 0;
+    const actif = h.coup && h.coup.C.anim === n; a.setEffectiveWeight(actif ? w : 0); if (actif) a.time = Math.min(h.coup.tc, a.getClip().duration - 1e-3);
+  }
+}
+function avancerCoup(dt) {
+  const c = h.coup; if (!c) return; const C = c.C;
+  c.t += dt; c.tc = C.a + c.t * C.v;
+  if (c.elan > c.avance && c.tc < C.impact) { const pas = Math.min(c.elan - c.avance, dt * 4.5), nx = h.x + Math.cos(h.a) * pas, ny = h.y + Math.sin(h.a) * pas; if (libre(nx, ny)) { h.x = nx; h.y = ny; } c.avance += pas; }   // (le bras entraîne le corps : un pas vers lui)
+  if (!c.fait && c.tc >= C.impact) {
+    c.fait = true; const vm = versMannequin(), ecart = Math.abs(Math.atan2(Math.sin(vm.a - h.a), Math.cos(vm.a - h.a)));
+    c.touche = vm.d <= C.portee && ecart < 1.2;
+    if (c.touche) toucherMannequin(C, vm.a);
+    if (c.nom.startsWith('d')) h.rang = c.touche ? (h.rang % 3) + 1 : 1;   // (le coup suivant ne vient que si celui-ci a touché)
+    if (c.nom === 'embuscade') h.rang = 1;
+    majRang();
+  }
+  if (c.tc >= C.b) { h.coup = null; traineeFin(); h.cacheDague = 0.5; const t = h.tampon; h.tampon = null; if (t) frapper(t); }
+}
+function majRang() { const r = $('pRang'); if (r) r.textContent = h.ombre ? '' : String(h.rang); const ic = $('pDagueIc'); if (ic) ic.textContent = h.ombre ? '💀' : h.rang === 3 ? '⚔️' : '🗡️'; }
+/* le mannequin touché : il bascule, la paille s'éclaire, des éclats ; assommé : des étoiles qui tournent au-dessus de sa tête */
+const texEtoile = toile(48, 48, x => { x.translate(24, 24); x.beginPath(); for (let i = 0; i < 10; i++) { const r = i % 2 ? 8 : 20, a = i * Math.PI / 5 - Math.PI / 2; x.lineTo(Math.cos(a) * r, Math.sin(a) * r); } x.closePath(); x.shadowColor = 'rgba(255,220,80,1)'; x.shadowBlur = 8; x.fillStyle = '#ffe27a'; x.fill(); x.lineWidth = 2; x.strokeStyle = '#a06a10'; x.stroke(); });
+function toucherMannequin(C, a) {
+  const f = C.fort ? 1.9 : C.assomme ? 1.4 : 1; mq.vx += Math.cos(a) * 2.4 * f; mq.vy += Math.sin(a) * 2.4 * f; mq.eclair = 1;
+  const z = 1.05, cx = MANNEQUIN.x - Math.cos(a) * 0.18, cy = MANNEQUIN.y - Math.sin(a) * 0.18;
+  for (let i = 0; i < (C.fort ? 22 : 12); i++) { const sp = sprite(C.ombre ? T_LUEUR.violet : T_LUEUR.or, 0.12, true); sp.position.copy(G(cx, cy, z)); monde.add(sp); const b = a + Math.PI + (Math.random() - 0.5) * 2.2, v = 1.5 + Math.random() * 2.5 * f; eclats.push({ sp, vx: Math.cos(b) * v, vy: Math.sin(b) * v, vz: Math.random() * 2 - 0.3, vie: 0.3 + Math.random() * 0.25, t: 0, s0: 0.12 }); }
+  const l = prendre(C.ombre ? 0xb070ff : 0xffe0a0, C.fort ? 30 : 16, 4); if (l) { l.position.copy(G(cx, cy, z)); eclats.push({ lum: l, t: 0, vie: 0.25, I: l.intensity }); }
+  if (C.assomme) { mq.sonne = 2; if (!mq.etoiles.length) for (let i = 0; i < 3; i++) { const sp = sprite(texEtoile, 0.2, false); sp.renderOrder = 5; monde.add(sp); mq.etoiles.push(sp); } }
+  if (C.ombre) for (let i = 0; i < 10; i++) { const sp = sprite(T_LUEUR.violet, 0.4, true); sp.position.copy(G(cx, cy, 0.9 + Math.random() * 0.5)); monde.add(sp); eclats.push({ sp, vx: (Math.random() - 0.5) * 1.5, vy: (Math.random() - 0.5) * 1.5, vz: 0.6 + Math.random(), vie: 0.6, t: 0, s0: 0.4, grossit: 1 }); }
+}
+function avancerMannequin(dt, t) {
+  if (!mannequin) return;
+  // un ressort amorti : il bascule sous le coup puis revient
+  mq.vx += (-mq.ax * 60 - mq.vx * 7) * dt; mq.vy += (-mq.ay * 60 - mq.vy * 7) * dt; mq.ax += mq.vx * dt; mq.ay += mq.vy * dt;
+  const ang = Math.hypot(mq.ax, mq.ay), axe = new THREE.Vector3(-mq.ay, -mq.ax, 0);   // (le monde a y inversé)
+  if (ang > 1e-5) mannequin.pivot.quaternion.setFromAxisAngle(axe.normalize(), Math.min(0.6, ang)); else mannequin.pivot.quaternion.identity();
+  mq.eclair = Math.max(0, mq.eclair - dt * 5); for (const m of mannequin.mats) m.emissiveIntensity = 0.45 * mq.eclair;
+  if (mq.sonne > 0) {
+    mq.sonne -= dt; const tete = new THREE.Vector3(0, 0, 1.45).applyQuaternion(mannequin.pivot.quaternion);
+    mq.etoiles.forEach((sp, i) => { const a = t * 4 + i * 2.09; sp.position.copy(G(MANNEQUIN.x + tete.x + Math.cos(a) * 0.26, MANNEQUIN.y - tete.y + Math.sin(a) * 0.14, (tete.z + 0.28) )); sp.material.opacity = Math.min(1, mq.sonne * 2); sp.material.rotation = a; });
+    if (mq.sonne <= 0) { mq.etoiles.forEach(sp => { monde.remove(sp); sp.material.dispose(); }); mq.etoiles = []; }
+  }
+}
+/* la traînée de la lame : un ruban entre la base et la pointe de la dague, image après image */
+const _pb = new THREE.Vector3(), _pp = new THREE.Vector3();
+function traineeDebut(coul) {
+  traineeFin(); const N = 16, geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N * 2 * 3), 3)); geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(N * 2 * 3), 3));
+  const idx = []; for (let i = 0; i < N - 1; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } geo.setIndex(idx);
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: coul, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false }));
+  m.frustumCulled = false; m.renderOrder = 4; scene.add(m); traineeLame = { m, N, hist: [] };
+}
+const traineesFinies = [];
+function traineeFin() { if (traineeLame) { const T = traineeLame; T.fin = true; T.vie = 0.18; traineesFinies.push(T); traineeLame = null; } }   // (elle s'efface en 0,18 s)
+function avancerTrainee(dt) {
+  for (let i = traineesFinies.length - 1; i >= 0; i--) { const T = traineesFinies[i]; T.vie -= dt; if (T.vie <= 0) { scene.remove(T.m); T.m.geometry.dispose(); T.m.material.dispose(); traineesFinies.splice(i, 1); } else dessinerTrainee(T); }
+  const T = traineeLame; if (!T) return;
+  if (dagueMain && dagueMain.visible && h.coup && h.coup.nom !== 'assomme') {
+    dagueMain.updateMatrixWorld(true); _pb.copy(dagueMain.userData.base).applyMatrix4(dagueMain.matrixWorld); _pp.copy(dagueMain.userData.pointe).applyMatrix4(dagueMain.matrixWorld);
+    T.hist.unshift([_pb.clone(), _pp.clone()]); if (T.hist.length > T.N) T.hist.pop();
+  }
+  dessinerTrainee(T);
+}
+function dessinerTrainee(T) {
+  const H = T.hist, pos = T.m.geometry.attributes.position, col = T.m.geometry.attributes.color, kf = T.fin ? Math.max(0, T.vie / 0.18) : 1;
+  for (let i = 0; i < T.N; i++) {
+    const e = H[Math.min(i, H.length - 1)]; if (!e) continue; const v = (1 - i / (T.N - 1)) * kf * (i < H.length ? 1 : 0);
+    pos.setXYZ(i * 2, e[0].x, e[0].y, e[0].z); pos.setXYZ(i * 2 + 1, e[1].x, e[1].y, e[1].z); col.setXYZ(i * 2, v * 0.3, v * 0.3, v * 0.3); col.setXYZ(i * 2 + 1, v, v, v);
+  }
+  pos.needsUpdate = true; col.needsUpdate = true;
+}
+/* l'ombre : il devient une silhouette sombre et violette, accroupi ; l'écran se teinte (comme Valeera) */
+function entrerOmbre() {
+  if (h.ombre || h.ombreR > 0 || h.coup) return;
+  h.ombre = true; fumeeOmbre(); for (const e of matsOmbre) e.o.material = e.b; document.body.classList.add('ombre'); majRang();
+}
+function sortirOmbre() {
+  if (!h.ombre) return;
+  h.ombre = false; h.ombreR = OMBRE_RECHARGE; fumeeOmbre(); for (const e of matsOmbre) e.o.material = e.a; document.body.classList.remove('ombre'); majRang();
+}
+function basculerOmbre() { if (h.ombre) sortirOmbre(); else entrerOmbre(); }
+function fumeeOmbre() {
+  for (let i = 0; i < 14; i++) { const sp = sprite(T_LUEUR.fumeeOmbre, 0.5, false); const a = Math.random() * 6.28, r = Math.random() * 0.4, z = 0.2 + Math.random() * 1.2; sp.position.copy(G(h.x + Math.cos(a) * r, h.y + Math.sin(a) * r * 0.8, z)); monde.add(sp); eclats.push({ sp, vx: Math.cos(a) * 0.8, vy: Math.sin(a) * 0.6, vz: 0.3 + Math.random() * 0.5, vie: 0.6 + Math.random() * 0.3, t: 0, s0: 0.5, grossit: 1 }); }
+}
+function avancerPisteur(dt, t) {
+  h.ombreR = Math.max(0, h.ombreR - dt);
+  avancerCoup(dt); avancerTrainee(dt); avancerMannequin(dt, t);
+  if (dagueMain && !h.coup) { h.cacheDague = (h.cacheDague || 0) - dt; if (h.cacheDague <= 0) dagueMain.visible = false; }
+  const r = h.ombreR / OMBRE_RECHARGE; if (r !== avancerPisteur.r) { avancerPisteur.r = r; $('pOmbre').style.setProperty('--r', r.toFixed(3)); }
+  const rs = h.sautR / SAUT.recharge; if (rs !== avancerPisteur.rs) { avancerPisteur.rs = rs; $('pSaut').style.setProperty('--r', rs.toFixed(3)); }
+}
 /* ---------- le saut : un vrai saut (Higgsfield, Jump_Over_Obstacle_2, sur place) ; le jeu le fait avancer de 3 pas ----------
    Le film dure 0,9 s : il quitte le sol vers 0,08 s, retombe vers 0,70 s. On le joue un peu plus vite (×1,2). Il avance dès l’appel et, dès que ses pieds touchent le sol, il repart (la réception sur place est fondue dans la course en 0,1 s).
    On ne passe pas à travers les murs, l'armure, les lanternes : le saut s'arrête au bord (comme les colonnes du vrai jeu). */
-const SAUT = { dist: 3, recharge: 1.5, vitesse: 1.2, air: [0, 0.70],   // (il avance dès l'appel du saut : pas d'arrêt au départ non plus)
+const SAUT = PIST ? PISTEUR_SAUT : { dist: 3, recharge: 1.5, vitesse: 1.2, depart: 0, air: [0, 0.70],   // (il avance dès l'appel du saut : pas d'arrêt au départ non plus)
    sortie: 0.70, fin: 0.82, elan: 2.5 };   // (à l'atterrissage, il enchaîne tout de suite : le reste du film, la réception sur place, est fondu dans la course en 0,1 s)
 function sauter(mx, my) {
   if (h.saut || h.sautR > 0 || !actions.saut) return;
   if (h.sort) annulerSort();
   const a = Math.hypot(mx || 0, my || 0) > 0.15 ? Math.atan2(my, mx) : h.a;
-  h.saut = { t: 0, a, fait: 0, pose: false }; h.a = a; h.sautR = SAUT.recharge; h.derap = null; incline.quaternion.identity();
+  h.saut = { t: 0, a, fait: 0, pose: false, dist: SAUT.dist }; h.a = a; h.sautR = SAUT.recharge; h.derap = null; incline.quaternion.identity();
+  if (PIST) { annulerCoup(); poussiere(h.x, h.y, a + Math.PI); }
 }
 function avancerSaut(dt) {
-  const S = h.saut; S.t += dt; const tc = S.t * SAUT.vitesse;
-  const p = clamp((tc - SAUT.air[0]) / (SAUT.air[1] - SAUT.air[0]), 0, 1), voulu = SAUT.dist * p;
+  const S = h.saut; S.t += dt; const tc = SAUT.depart + S.t * SAUT.vitesse;
+  const p = clamp((tc - SAUT.air[0]) / (SAUT.air[1] - SAUT.air[0]), 0, 1);
+  if (SAUT.murets && p > 0.7 && !S.allonge && dansMuret(h.x + Math.cos(S.a) * (S.dist - S.fait), h.y + Math.sin(S.a) * (S.dist - S.fait))) { S.dist += 1.2; S.allonge = true; }   // (il retomberait sur un muret : il saute un peu plus loin, par-dessus)
+  const voulu = S.dist * p;
   while (S.fait < voulu - 1e-6 && !S.bloque) {   // par petits bouts, pour s'arrêter au bord d'un obstacle
     const pas = Math.min(0.05, voulu - S.fait), nx = h.x + Math.cos(S.a) * pas, ny = h.y + Math.sin(S.a) * pas;
-    if (libre(nx, ny)) { h.x = nx; h.y = ny; S.fait += pas; } else S.bloque = true;
+    if (SAUT.murets ? libreSaut(nx, ny) : libre(nx, ny)) { h.x = nx; h.y = ny; S.fait += pas; } else S.bloque = true;
   }
   if (!S.pose && tc >= SAUT.air[1]) {   // les pieds touchent le sol : il repart aussitôt (le pouce poussé : il court ; lâché : un petit pas d'élan, puis il s'arrête)
     S.pose = true; atterrir();
@@ -554,12 +758,13 @@ function avancerSaut(dt) {
   return !S.pose;   // (vrai tant qu'il est en l'air)
 }
 function poidsSaut() {
-  if (!h.saut) return 0; const tc = h.saut.t * SAUT.vitesse;
-  return Math.min(doux(tc / 0.07), 1 - doux((tc - SAUT.sortie) / (SAUT.fin - SAUT.sortie)));
+  if (!h.saut) return 0; const tc = SAUT.depart + h.saut.t * SAUT.vitesse;
+  return Math.min(doux((tc - SAUT.depart) / 0.07), 1 - doux((tc - SAUT.sortie) / (SAUT.fin - SAUT.sortie)));
 }
 /* à l'atterrissage : un peu de poussière, et des petites notes dorées qui rebondissent autour des pieds */
 function atterrir() {
   poussiere(h.x, h.y, h.a + Math.PI);
+  if (PIST) return;   // (le Pisteur retombe sans bruit : juste un peu de poussière)
   for (let i = 0; i < 9; i++) {
     const a = i / 9 * 6.28 + Math.random() * 0.4, sp = sprite(PETITES.or[i % 2], 0.2 + Math.random() * 0.06, true); const x = h.x + Math.cos(a) * 0.2, y = h.y + Math.sin(a) * 0.15;
     sp.position.copy(G(x, y, 0.15)); monde.add(sp); notes.push({ sp, x, y, z: 0.15, vx: Math.cos(a) * 1.3, vy: Math.sin(a) * 1.0, vz: 1.1 + Math.random() * 0.5, g: 4, t: 0, vie: 0.55 });
@@ -601,9 +806,15 @@ const fin = e => { if (e.pointerId === joy.id) { joy.id = null; joy.mx = joy.my 
 const touches = {}; addEventListener('keydown', e => { touches[e.key.toLowerCase()] = 1; const q = { 1: 'glace', 2: 'feu', 3: 'acide', 4: 'soin' }[e.key]; if (q) lancer(q); if (e.key === ' ') sauter(h.mx, h.my); }); addEventListener('keyup', e => { touches[e.key.toLowerCase()] = 0; });
 for (const [id, q] of [['bGlace', 'glace'], ['bFeu', 'feu'], ['bAcide', 'acide'], ['bSoin', 'soin']]) $(id).addEventListener('pointerdown', e => { e.preventDefault(); lancer(q); });
 $('bSaut').addEventListener('pointerdown', e => { e.preventDefault(); sauter(h.mx, h.my); });
+$('pSaut').addEventListener('pointerdown', e => { e.preventDefault(); sauter(h.mx, h.my); });
+$('pDague').addEventListener('pointerdown', e => { e.preventDefault(); frapper('dague'); });
+$('pAssomme').addEventListener('pointerdown', e => { e.preventDefault(); frapper('assomme'); });
+$('pOmbre').addEventListener('pointerdown', e => { e.preventDefault(); basculerOmbre(); });
+if (PIST) addEventListener('keydown', e => { if (e.key === 'j' || e.key === 'J') frapper('dague'); if (e.key === 'k' || e.key === 'K') frapper('assomme'); if (e.key === 'l' || e.key === 'L') basculerOmbre(); });
 
 /* ---------- où on peut marcher (comme les règles du jeu) ---------- */
-function libre(x, y) {
+function libre(x, y) { return libreSans(x, y) && !dansMuret(x, y) && !(PIST && Math.hypot(x - MANNEQUIN.x, y - MANNEQUIN.y) < MANNEQUIN.r + 0.3); }   // (les murets et le mannequin bloquent la marche, pas le saut)
+function libreSans(x, y) {
   const r = 0.35, c = L.coin + r * Math.SQRT2;
   if (x < r || x > L.L - r || y < r || y > L.P - r || x + y < c || L.L - x + y < c) return false;
   if (Math.hypot(x - ARM.x, y - ARM.y) < ARM.r + r) return false;
@@ -631,7 +842,8 @@ function etape(dt, t) {
   if (h.sort && Math.hypot(mx, my) > 0.15) annulerSort();   // pousser le pouce pendant le sort le coupe : il range son luth en courant
   const bouge = !h.sort && Math.hypot(mx, my) > 0.15;
   h.sautR = Math.max(0, (h.sautR || 0) - dt); h.mx = mx; h.my = my;
-  if (!h.saut || !avancerSaut(dt)) avancerHeros(dt, mx, my);   // (en l'air, c'est le saut qui le fait avancer ; dès qu'il touche le sol, le pouce reprend la main)
+  if (PIST && h.coup) { loco.v = Math.max(0, loco.v - 20 * dt); if (loco.v < 0.05) loco.allure = h.ombre ? 'guet' : 'garde'; }   // (il frappe sur place)
+  else if (!h.saut || !avancerSaut(dt)) avancerHeros(dt, mx, my);   // (en l'air, c'est le saut qui le fait avancer ; dès qu'il touche le sol, le pouce reprend la main)
   h.tl += dt; if (h.geste !== undefined) h.geste += dt;
   if (h.luth === 'sort' && h.tl >= 0.85) { h.luth = 'main'; h.tl = 0; }
   if (h.luth === 'range' && h.tl >= 0.8) { h.luth = 'dos'; h.tl = 0; }
@@ -655,13 +867,13 @@ function etape(dt, t) {
     const pen = 0.38 * Math.sin(Math.min(1, D.t / 0.3) * Math.PI), dw = new THREE.Vector3(Math.cos(D.a1), -Math.sin(D.a1), 0);
     incline.quaternion.setFromAxisAngle(new THREE.Vector3(0, 0, 1).cross(dw).normalize(), pen);
     if (D.t >= 0.3) { h.derap = null; incline.quaternion.identity(); }
-  } else { const cible = Math.PI / 2 - h.a; let da = cible - barde.rotation.z; da = Math.atan2(Math.sin(da), Math.cos(da)); barde.rotation.z += da * Math.min(1, dt * (h.saut ? 30 : 12)); }
+  } else { const cible = Math.PI / 2 - h.a; let da = cible - barde.rotation.z; da = Math.atan2(Math.sin(da), Math.cos(da)); barde.rotation.z += da * Math.min(1, dt * (h.saut || h.coup ? 30 : 12)); }
   incline.position.copy(G(h.x, h.y, 0));
   const r = h.sautR / SAUT.recharge; if (r !== etape.r) { etape.r = r; $('bSaut').style.setProperty('--r', r.toFixed(3)); }
   if (melangeur) { locomotion(dt); melangeur.update(dt); }
   redresser();
   barde.updateMatrixWorld(true); animerLuth(dt, t);
-  avancerTirs(dt); avancerEclats(dt); avancerNotes(dt); avancerEclairs(dt); avancerPoussiere(dt); avancerGouttes(dt); avancerSoins(dt);
+  avancerTirs(dt); avancerEclats(dt); avancerNotes(dt); avancerEclairs(dt); avancerPoussiere(dt); avancerGouttes(dt); avancerSoins(dt); if (PIST) avancerPisteur(dt, t);
   /* les flammes, les lumières qui vacillent */
   for (const f of flammes) { const k = 0.85 + 0.15 * Math.sin(t * 11 + f.b[0] + f.i * 2) + 0.08 * Math.sin(t * 27 + f.i); const w = (0.42 - f.i * 0.09) * k; f.f.scale.set(w, w * 1.6, 1); f.f.position.x = Math.sin(t * 7 + f.i * 2.1) * 0.04 + (f.i - 1) * 0.06; }
   brasiers.forEach((l, i) => { l.intensity = 40 * (0.85 + 0.12 * Math.sin(t * 9 + i * 3) + 0.06 * Math.sin(t * 23 + i)); });
@@ -684,4 +896,4 @@ function poser(nom, t) {   // (essai) un seul mouvement, à un instant donné
   for (const n in actions) { actions[n].play(); actions[n].setEffectiveWeight(n === nom ? 1 : 0); actions[n].timeScale = 0; }
   actions[nom].time = t; melangeur.update(0); MOD.updateMatrixWorld(true); const r = piedsModele(); for (const n of ['LeftUpLeg', 'LeftLeg', 'Hips']) { const o = MOD.getObjectByName(n); r[n + '_q'] = o.quaternion.toArray(); r[n + '_p'] = o.position.toArray(); } r.pistes = actions[nom].getClip().tracks.slice(0, 6).map(k => k.name); r.nbPistes = actions[nom].getClip().tracks.length; r.duree = actions[nom].getClip().duration; return r;
 }
-window.__essai = { sauter, SAUT, get tirs() { return tirs.map(s => ({ x: s.x, y: s.y, z: s.z, q: s.q })); }, ecran: (x, y, z) => ({ x: (px(x) - camX) * innerWidth / Ws, y: (py(y, z) - camY) * innerHeight / Hs }), poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };
+window.__essai = { osM: noms => { const r = {}; for (const n of noms) { const o = MOD.getObjectByName(n); if (!o) continue; o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); MOD.worldToLocal(v); r[n] = [v.x, v.y, v.z]; } return r; }, frapper, basculerOmbre, mq, MURETS, COUPS, sauter, SAUT, get tirs() { return tirs.map(s => ({ x: s.x, y: s.y, z: s.z, q: s.q })); }, ecran: (x, y, z) => ({ x: (px(x) - camX) * innerWidth / Ws, y: (py(y, z) - camY) * innerHeight / Hs }), poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };
