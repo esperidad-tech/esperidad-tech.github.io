@@ -529,9 +529,10 @@ function avancerSoins(dt) {
   }
 }
 /* ---------- le saut : un vrai saut (Higgsfield, Jump_Over_Obstacle_2, sur place) ; le jeu le fait avancer de 3 pas ----------
-   Le film dure 0,9 s : il quitte le sol vers 0,08 s, retombe vers 0,70 s. On le joue un peu plus vite (×1,2) : 0,75 s en tout.
+   Le film dure 0,9 s : il quitte le sol vers 0,08 s, retombe vers 0,70 s. On le joue un peu plus vite (×1,2). Il avance dès l’appel et, dès que ses pieds touchent le sol, il repart (la réception sur place est fondue dans la course en 0,1 s).
    On ne passe pas à travers les murs, l'armure, les lanternes : le saut s'arrête au bord (comme les colonnes du vrai jeu). */
-const SAUT = { dist: 3, recharge: 1.5, vitesse: 1.2, air: [0.08, 0.70], sortie: 0.72, fin: 0.9 };
+const SAUT = { dist: 3, recharge: 1.5, vitesse: 1.2, air: [0, 0.70],   // (il avance dès l'appel du saut : pas d'arrêt au départ non plus)
+   sortie: 0.70, fin: 0.82, elan: 2.5 };   // (à l'atterrissage, il enchaîne tout de suite : le reste du film, la réception sur place, est fondu dans la course en 0,1 s)
 function sauter(mx, my) {
   if (h.saut || h.sautR > 0 || !actions.saut) return;
   if (h.sort) annulerSort();
@@ -545,9 +546,12 @@ function avancerSaut(dt) {
     const pas = Math.min(0.05, voulu - S.fait), nx = h.x + Math.cos(S.a) * pas, ny = h.y + Math.sin(S.a) * pas;
     if (libre(nx, ny)) { h.x = nx; h.y = ny; S.fait += pas; } else S.bloque = true;
   }
-  if (!S.pose && tc >= SAUT.air[1]) { S.pose = true; atterrir(); }
+  if (!S.pose && tc >= SAUT.air[1]) {   // les pieds touchent le sol : il repart aussitôt (le pouce poussé : il court ; lâché : un petit pas d'élan, puis il s'arrête)
+    S.pose = true; atterrir();
+    loco.v = Math.max(loco.v, SAUT.elan); loco.allure = 'course'; loco.course = 1; loco.marche = 0; loco.garde = 0;
+  }
   if (tc >= SAUT.fin) h.saut = null;
-  return tc;
+  return !S.pose;   // (vrai tant qu'il est en l'air)
 }
 function poidsSaut() {
   if (!h.saut) return 0; const tc = h.saut.t * SAUT.vitesse;
@@ -627,7 +631,7 @@ function etape(dt, t) {
   if (h.sort && Math.hypot(mx, my) > 0.15) annulerSort();   // pousser le pouce pendant le sort le coupe : il range son luth en courant
   const bouge = !h.sort && Math.hypot(mx, my) > 0.15;
   h.sautR = Math.max(0, (h.sautR || 0) - dt); h.mx = mx; h.my = my;
-  if (h.saut) avancerSaut(dt); else avancerHeros(dt, mx, my);
+  if (!h.saut || !avancerSaut(dt)) avancerHeros(dt, mx, my);   // (en l'air, c'est le saut qui le fait avancer ; dès qu'il touche le sol, le pouce reprend la main)
   h.tl += dt; if (h.geste !== undefined) h.geste += dt;
   if (h.luth === 'sort' && h.tl >= 0.85) { h.luth = 'main'; h.tl = 0; }
   if (h.luth === 'range' && h.tl >= 0.8) { h.luth = 'dos'; h.tl = 0; }

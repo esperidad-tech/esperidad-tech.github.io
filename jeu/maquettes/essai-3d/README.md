@@ -231,6 +231,14 @@ d'un **jaune-vert qui pique** (pour ne pas la confondre avec le vert doux du soi
   (`captures/film-nouveaux.mp4`, `captures/note-centree.png`, `soin.png`, `saut.png`, `acide.png`).
 - Crédits : 8 de plus (le saut) : **103 en tout** pour l'essai.
 
+**Retouche du saut (27 novembre, en ligne à 21 h 15, version `1795810551-64cd` ; Romain à la voix : « juste après la fin du saut, il y a un petit arrêt, c'est bizarre » ; go écrit 21 h 13 : « Vas-y, fais la modif »)** :
+la fin du film du saut (la réception sur place, 0,1 s ×1,2) le laissait immobile. Maintenant, **dès que ses pieds
+touchent le sol, le pouce reprend la main** (`avancerSaut()` rend « en l'air » ; `avancerHeros()` reprend aussitôt) et la
+réception est fondue dans la course en 0,1 s (`SAUT.sortie` = 0,70, `SAUT.fin` = 0,82). Pouce poussé : il court tout de
+suite (5,1 pas/s en l'air, puis 4) ; pouce lâché : **un petit pas d'élan** (`SAUT.elan` = 2,5 pas/s, qui retombe en
+0,2 s), puis il s'arrête. Il avance aussi **dès l'appel** (`SAUT.air[0]` = 0 : plus de petit arrêt au départ).
+Mesuré image par image (`outils/essai_atterrir.py`) et vu (`outils/essai_atterrir2.py`, `captures/atterrissage.png`).
+
 ## Ce qui n'est pas fait
 
 - L'armure de Grosbec n'est pas en 3D (la création de son image de référence a été bloquée
