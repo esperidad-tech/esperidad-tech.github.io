@@ -97,11 +97,15 @@ if (!NUIT) {
 } else {
   /* la nuit : la peinture de Romain (les lanternes allumées, le Barde peint effacé), et ses crevasses qui s'ouvrent une fois pour toutes */
   fondNuit = tex('nuit/fond.jpg', 'fond', true); crevTex = tex('nuit/crev.jpg', 'crev', true); crevA = tex('nuit/crev-a.png', 'crevA', false);
+  const feuTex = tex('nuit/feu.jpg', 'feu', true);   // (la place en feu, peinte par Romain : ce que la vague laisse derrière elle)
   fondMat = new THREE.ShaderMaterial({
     uniforms: { fond: { value: fondNuit }, crev: { value: crevTex }, crevA: { value: crevA }, fen: { value: new THREE.Vector4(0, 0, IMW, IMH) },
-      img: { value: new THREE.Vector2(IMW, IMH) }, rc: { value: new THREE.Vector4(...NJ.crev) }, ouvre: { value: 0 }, lueur: { value: 0 } },
+      img: { value: new THREE.Vector2(IMW, IMH) }, rc: { value: new THREE.Vector4(...NJ.crev) }, ouvre: { value: 0 }, lueur: { value: 0 },
+      feu: { value: feuTex }, camA: { value: new THREE.Vector4(NJ.f, NJ.cx, NJ.cy, NJ.phi) }, camB: { value: new THREE.Vector3(NJ.camH, NJ.xoff, NJ.dmax) },
+      vague: { value: 0 }, front: { value: -100 }, vit: { value: 6 }, temps: { value: 0 }, cri: { value: [new THREE.Vector4(), new THREE.Vector4(), new THREE.Vector4()] } },
     vertexShader: 'varying vec2 vU; void main(){ vU = position.xy*0.5+0.5; gl_Position = vec4(position.xy, 0.0, 1.0); }',
     fragmentShader: `uniform sampler2D fond; uniform sampler2D crev; uniform sampler2D crevA; uniform vec4 fen; uniform vec2 img; uniform vec4 rc; uniform float ouvre; uniform float lueur; varying vec2 vU;
+      uniform sampler2D feu; uniform vec4 camA; uniform vec3 camB; uniform float vague; uniform float front; uniform float vit; uniform float temps; uniform vec4 cri[3];
       float bruit(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
       void main(){
         vec2 p = vec2(mix(fen.x, fen.z, vU.x), mix(fen.w, fen.y, vU.y));   // (en pixels de la peinture, y vers le bas)
@@ -115,6 +119,22 @@ if (!NUIT) {
           vec3 k = texture2D(crev, vec2(q.x, 1.0 - q.y)).rgb;
           k += k * lueur * smoothstep(0.35, 0.9, max(k.b, k.r) - k.g) * 1.2;   // (le violet et le bleu-vert du fond qui pulsent)
           c = mix(c, k, a);
+        }
+        if (vague > 0.0) {   // la vague de flammes : le sol de la peinture, sous la caméra, en coordonnées du jeu
+          float s = sin(camA.w), co = cos(camA.w), Zr = -camB.x, kk = camA.z - p.y, den = kk * co - camA.x * s;
+          float D = Zr * (camA.x * co + kk * s) / den;
+          if (den < 0.0 && D > 0.0) {
+            float zc = D * co - Zr * s; vec2 g = vec2((p.x - camA.y) * zc / camA.x + camB.y, camB.z - D);
+            float bord = smoothstep(-1.0, 0.5, g.x) * smoothstep(22.5, 21.0, g.x) * smoothstep(-1.5, 0.0, g.y) * smoothstep(20.6, 19.6, g.y);
+            float passe = (front - g.y) / vit;   // (depuis combien de secondes la vague est passée ici)
+            float brule = smoothstep(0.0, 0.2, passe) * (1.0 - smoothstep(3.0, 3.8, passe));
+            float abri = 0.0;
+            for (int i = 0; i < 3; i++) { vec4 C = cri[i]; if (C.w > 0.5) { float dy = g.y - C.y; if (dy > -0.3) abri = max(abri, (1.0 - smoothstep(C.z * 0.75, C.z * 1.05, abs(g.x - C.x))) * (1.0 - smoothstep(4.2, 5.0, dy)) * smoothstep(-0.3, 0.2, dy)); } }
+            brule *= (1.0 - abri) * bord;
+            vec3 f = texture2D(feu, vec2(uv.x, 1.0 - uv.y)).rgb * (0.85 + 0.2 * sin(temps * 13.0 + p.x * 0.05 + p.y * 0.07) + 0.1 * sin(temps * 29.0 - p.x * 0.11));
+            c = mix(c, f, brule);
+            float devant = g.y - front; if (devant > 0.0) c += vec3(1.0, 0.42, 0.1) * 0.45 * exp(-devant / 2.2) * bord * vague;   // (la lueur du feu qui arrive)
+          }
         }
         float hors = smoothstep(img.y - 110.0, img.y + 4.0, p.y) + smoothstep(-6.0, -150.0, p.x) + smoothstep(img.x + 6.0, img.x + 150.0, p.x);   // (au bord de la peinture : la nuit)
         c *= 1.0 - clamp(hors, 0.0, 1.0);
@@ -622,7 +642,7 @@ function avancerNotes(dt) {
       n.sp.material.rotation = Math.sin(n.t * 4 + n.ph) * 0.25; continue;
     }
     n.sp.material.opacity = 1 - n.t / vie;
-    n.sp.material.rotation = n.tourne ? n.sp.material.rotation + n.tourne * dt : Math.sin(n.t * 9) * 0.3;
+    n.sp.material.rotation = n.fixe ? 0 : n.tourne ? n.sp.material.rotation + n.tourne * dt : Math.sin(n.t * 9) * 0.3;
   }
 }
 /* ---------- le soin : il gratte 2 s, puis des notes vert doux s'allument tout autour de lui et montent en brillant ---------- */
@@ -843,10 +863,20 @@ function sauter(mx, my) {
   if (h.sort) annulerSort();
   const a = Math.hypot(mx || 0, my || 0) > 0.15 ? Math.atan2(my, mx) : h.a;
   h.saut = { t: 0, a, fait: 0, pose: false, dist: SAUT.dist }; h.a = a;
-  if (NUIT && crev.ouvert) for (let e = 0; e <= 2.6; e += 0.2) {   // il retomberait dans la crevasse : il saute plus loin, juste de quoi passer
-    const D = SAUT.dist + e; if (!dansCrevasse(h.x + Math.cos(a) * D, h.y + Math.sin(a) * D, 0.3)) { h.saut.dist = D + (e > 0 ? 0.3 : 0); break; }
-  } h.sautR = SAUT.recharge; h.derap = null; incline.quaternion.identity();
+  if (NUIT && crev.ouvert) h.saut.dist = longueurSaut(a);
+  h.sautR = SAUT.recharge; h.derap = null; incline.quaternion.identity();
   if (PIST) { annulerCoup(); poussiere(h.x, h.y, a + Math.PI); }
+}
+/* la nuit, avec les crevasses (Romain, à la voix, 27 novembre 23 h) : il ne retombe JAMAIS dans une crevasse.
+   Assez près du bord : le saut s'allonge (jusqu'à 1,5 pas de plus) et il passe. Trop loin : le saut se raccourcit, il retombe
+   au bord, de son côté (un saut raté ; tout contre le bord, il saute sur place). */
+const SAUT_PLUS = 1.5;
+function longueurSaut(a) {
+  const ok = D => libre(h.x + Math.cos(a) * D, h.y + Math.sin(a) * D);
+  if (ok(SAUT.dist)) return SAUT.dist;
+  for (let e = 0.1; e <= SAUT_PLUS + 1e-6; e += 0.1) if (ok(SAUT.dist + e)) return SAUT.dist + e + (ok(SAUT.dist + e + 0.2) ? 0.2 : 0);
+  for (let D = SAUT.dist - 0.1; D > 0.05; D -= 0.1) if (ok(D)) return D;
+  return 0;
 }
 function avancerSaut(dt) {
   const S = h.saut; S.t += dt; const tc = SAUT.depart + S.t * SAUT.vitesse;
@@ -915,7 +945,8 @@ const touches = {}; addEventListener('keydown', e => { touches[e.key.toLowerCase
 for (const [id, q] of [['bGlace', 'glace'], ['bFeu', 'feu'], ['bAcide', 'acide'], ['bSoin', 'soin']]) $(id).addEventListener('pointerdown', e => { e.preventDefault(); lancer(q); });
 $('bSaut').addEventListener('pointerdown', e => { e.preventDefault(); sauter(h.mx, h.my); });
 if ($('bFissure')) $('bFissure').addEventListener('click', e => { e.preventDefault(); fissurer(); });
-if (NUIT) addEventListener('keydown', e => { if (e.key === 'f' || e.key === 'F') fissurer(); });
+if (NUIT) addEventListener('keydown', e => { if (e.key === 'f' || e.key === 'F') fissurer(); if (e.key === 'v' || e.key === 'V') lancerVague(); });
+if ($('bVague')) $('bVague').addEventListener('click', e => { e.preventDefault(); lancerVague(); });
 $('pSaut').addEventListener('pointerdown', e => { e.preventDefault(); sauter(h.mx, h.my); });
 $('pDague').addEventListener('pointerdown', e => { e.preventDefault(); frapper('dague'); });
 $('pAssomme').addEventListener('pointerdown', e => { e.preventDefault(); frapper('assomme'); });
@@ -923,7 +954,7 @@ $('pOmbre').addEventListener('pointerdown', e => { e.preventDefault(); basculerO
 if (PIST) addEventListener('keydown', e => { if (e.key === 'j' || e.key === 'J') frapper('dague'); if (e.key === 'k' || e.key === 'K') frapper('assomme'); if (e.key === 'l' || e.key === 'L') basculerOmbre(); });
 
 /* ---------- où on peut marcher (comme les règles du jeu) ---------- */
-function libre(x, y) { if (NUIT) return caseDe(GR.libre, x, y) === 1 && !dansCrevasse(x, y, 0.25); return libreSans(x, y) && !dansMuret(x, y) && !(PIST && Math.hypot(x - MANNEQUIN.x, y - MANNEQUIN.y) < MANNEQUIN.r + 0.3); }   // (les murets et le mannequin bloquent la marche, pas le saut)
+function libre(x, y) { if (NUIT) return caseDe(GR.libre, x, y) === 1 && !dansCrevasse(x, y, 0.25) && !contreCristal(x, y); return libreSans(x, y) && !dansMuret(x, y) && !(PIST && Math.hypot(x - MANNEQUIN.x, y - MANNEQUIN.y) < MANNEQUIN.r + 0.3); }   // (les murets et le mannequin bloquent la marche, pas le saut)
 function libreSans(x, y) {
   const r = 0.35, c = L.coin + r * Math.SQRT2;
   if (x < r || x > L.L - r || y < r || y > L.P - r || x + y < c || L.L - x + y < c) return false;
@@ -965,7 +996,7 @@ function avancerCrevasses(dt, t) {
   if (crev.t < 0) return; crev.t += dt;
   const u = clamp(crev.t / 1.3, 0, 1), front = u * 1.35;
   fondMat.uniforms.ouvre.value = u; fondMat.uniforms.lueur.value = 0.3 + 0.3 * Math.sin(t * 2.3);
-  fen.bouge = crev.t < 1.8 ? 1 - crev.t / 1.8 : 0;   // (le sol tremble)
+  if (crev.t < 1.8) fen.bouge = Math.max(fen.bouge, 1 - crev.t / 1.8);   // (le sol tremble)
   if (u < 1) { crev.pouss = (crev.pouss || 0) - dt; if (crev.pouss <= 0) { crev.pouss = 0.07; const c = crev.cases.filter(c => Math.abs(c.q - front + 0.06) < 0.05); for (let k = 0; k < 1 && c.length; k++) { const m = c[Math.floor(Math.random() * c.length)]; poussiere(m.x, m.y, Math.random() * 6.28); } } }
   crev.lum.forEach((l, k) => { l.intensity = u * (6 + 2.5 * Math.sin(t * 2.3 + k * 1.7)); });
 }
@@ -979,6 +1010,7 @@ function cameraNuit(dt) {
   const x0 = Ww >= IMW ? (IMW - Ww) / 2 : clamp(pied.u - Ww / 2, 0, IMW - Ww);
   const k = cameraNuit.vu ? Math.min(1, dt * 4) : 1; cameraNuit.vu = 1;
   fen.cx = (fen.cx === undefined ? x0 : fen.cx + (x0 - fen.cx) * k); fen.cy = (fen.cy === undefined ? y0 : fen.cy + (y0 - fen.cy) * k); fen.H = (fen.H === undefined ? Hw : fen.H + (Hw - fen.H) * k);
+  if (fen.bouge > 0) fen.bouge = Math.max(0, fen.bouge - dt * 1.4);
   const W2 = fen.H * A, tx = fen.bouge ? (Math.random() - 0.5) * 30 * fen.bouge : 0, ty = fen.bouge ? (Math.random() - 0.5) * 22 * fen.bouge : 0;
   fen.x0 = fen.cx + tx; fen.y0 = fen.cy + ty; fen.x1 = fen.x0 + W2; fen.y1 = fen.y0 + fen.H;
   cadrerNuit(); fondMat.uniforms.fen.value.set(fen.x0, fen.y0, fen.x1, fen.y1);
@@ -990,8 +1022,225 @@ if (NUIT) {   // la place de l'armure (en attendant Grosbec et son armure) : un 
   cible.position.copy(G(ARM.x, ARM.y, NJ.armure.z + 0.03)); monde.add(cible);
 }
 
+/* ================= LE PREMIER TIERS DE LA PHASE 2 : LES CRISTAUX ET LA VAGUE DE FLAMMES =================
+   (Romain, à la voix, 27 novembre vers 23 h 15 ; go écrit 23 h 34 : « Ok, vas-y. »)
+   Trois cristaux tombent du plafond, au hasard, et se plantent dans la place (de vrais modèles 3D Higgsfield, faits d'après
+   ses cristaux peints, redressés) ; le sol se fend autour (la fissure de sa peinture). Puis l'armure, en haut des marches,
+   se charge et lance une vague de flammes qui déferle sur la place, vers nous. Derrière un cristal, on est à l'abri.
+   Le feu reste 3 s ; pendant ce temps les cristaux rougissent, puis éclatent en morceaux et disparaissent. */
+const CRISTAUX = ['violet', 'turquoise', 'vert'];
+const TEINTE = { violet: 0xb07aff, turquoise: 0x3fe6d0, vert: 0x6dff8a };
+const CR = { haut: 3.0, r: 0.7, abri: 0.95, abriL: 5.0, chute: 18 };   // (3 m de haut ; on s'y abrite sur 5 pas derrière)
+const vg = { t: -1, cristaux: [], front: -100, vit: 6, lums: [], touche: 0, msg: null };
+const modelesCristal = {};
+const texFissure = NUIT ? tex('nuit/fissure.png', 'fissure', true) : null;
+if (NUIT) {
+  let reste = CRISTAUX.length;
+  for (const n of CRISTAUX) charger('nuit/cristal-' + n + '.json', g => {
+    const m = g.scene; let mesh = null; m.traverse(o => { if (o.isMesh && !mesh) mesh = o; });
+    const box = new THREE.Box3().setFromObject(m), k = CR.haut / (box.max.y - box.min.y);
+    modelesCristal[n] = { geo: mesh.geometry, mat: mesh.material, k, bas: box.min.y, eclats: decouper(mesh.geometry, 14) };
+    if (--reste === 0) pret('cristaux');
+  }, e => { console.error(e); if (--reste === 0) pret('cristaux'); });
+  for (let i = 0; i < 3; i++) { const l = new THREE.PointLight(0xffffff, 0, 5, 1.5); monde.add(l); vg.lums.push(l); }   // (la lueur de chaque cristal)
+  vg.feux = [0, 1, 2].map(() => { const l = new THREE.PointLight(0xff7a2a, 0, 8, 1.4); monde.add(l); return l; });   // (la lumière qui avance avec la vague)
+  vg.charge = new THREE.PointLight(0xff3018, 0, 10, 1.4); vg.charge.position.copy(G(ARM.x, ARM.y + 0.5, ARM.zc)); monde.add(vg.charge);
+}
+/* découper un cristal en morceaux (pour l'éclatement) : on range ses triangles en paquets voisins */
+function decouper(geo, n) {
+  const g = geo.index ? geo.toNonIndexed() : geo.clone(), P = g.attributes.position, nt = P.count / 3, cen = [];
+  for (let i = 0; i < nt; i++) { let x = 0, y = 0, z = 0; for (let k = 0; k < 3; k++) { x += P.getX(i * 3 + k); y += P.getY(i * 3 + k); z += P.getZ(i * 3 + k); } cen.push([x / 3, y / 3, z / 3]); }
+  let C = []; for (let k = 0; k < n; k++) C.push(cen[Math.floor((k + 0.5) / n * nt)].slice());
+  const lab = new Int32Array(nt);
+  for (let it = 0; it < 8; it++) {
+    for (let i = 0; i < nt; i++) { let b = 0, bd = 1e9; for (let k = 0; k < n; k++) { const d = (cen[i][0] - C[k][0]) ** 2 + (cen[i][1] - C[k][1]) ** 2 * 0.6 + (cen[i][2] - C[k][2]) ** 2; if (d < bd) { bd = d; b = k; } } lab[i] = b; }
+    const S = C.map(() => [0, 0, 0, 0]); for (let i = 0; i < nt; i++) { const s = S[lab[i]]; s[0] += cen[i][0]; s[1] += cen[i][1]; s[2] += cen[i][2]; s[3]++; }
+    C = S.map((s, k) => s[3] ? [s[0] / s[3], s[1] / s[3], s[2] / s[3]] : C[k]);
+  }
+  const morceaux = [];
+  for (let k = 0; k < n; k++) {
+    const idx = []; for (let i = 0; i < nt; i++) if (lab[i] === k) idx.push(i); if (!idx.length) continue;
+    const ng = new THREE.BufferGeometry();
+    for (const nom of Object.keys(g.attributes)) { const A = g.attributes[nom], it = A.itemSize, arr = new Float32Array(idx.length * 3 * it);
+      idx.forEach((t, j) => { for (let v = 0; v < 3; v++) for (let c = 0; c < it; c++) arr[(j * 3 + v) * it + c] = A.array[(t * 3 + v) * it + c] - (nom === 'position' ? C[k][c] : 0); });
+      ng.setAttribute(nom, new THREE.BufferAttribute(arr, it)); }
+    morceaux.push({ geo: ng, c: C[k] });
+  }
+  return morceaux;
+}
+function contreCristal(x, y) { for (const c of vg.cristaux) if (c.etat !== 'chute' && c.etat !== 'fini' && Math.hypot(x - c.x, y - c.y) < CR.r) return true; return false; }
+function abrite(x, y) {   // à l'abri derrière un cristal (de l'autre côté de l'armure : la vague vient du fond)
+  for (const c of vg.cristaux) { if (c.etat === 'chute' || c.etat === 'fini' || c.etat === 'eclate') continue; const dy = y - c.y; if (dy > 0.2 && dy < CR.abriL && Math.abs(x - c.x) < CR.abri * 0.9) return true; }
+  return false;
+}
+function placeCristal(pris) {
+  for (let essai = 0; essai < 200; essai++) {
+    const x = 3 + Math.random() * 15, y = 4 + Math.random() * 10.5;
+    if (!libre(x, y) || !libre(x, y + 2.5) || Math.hypot(x - h.x, y - h.y) < 2.2) continue;
+    if (pris.some(p => Math.hypot(x - p.x, y - p.y) < 4.5)) continue;
+    if (crev.ouvert && (dansCrevasse(x, y, 1) || dansCrevasse(x, y + 2, 0.6))) continue;
+    if (piliers.some(P => Math.hypot(x - P.x, y - P.y) < 2.2)) continue;
+    return { x, y };
+  }
+  return { x: 5 + pris.length * 5, y: 8 };
+}
+function lancerVague() {
+  if (!NUIT || vg.t >= 0 || !modelesCristal.violet) return;
+  for (const c of vg.cristaux) nettoyerCristal(c); vg.cristaux = [];
+  vg.t = 0; vg.front = -100; vg.passeHeros = false; vg.touche = 0;
+  const pris = [];
+  CRISTAUX.forEach((n, i) => {
+    const p = placeCristal(pris); pris.push(p); const M = modelesCristal[n];
+    const mat = M.mat.clone(); mat.emissive = new THREE.Color(TEINTE[n]); mat.emissiveMap = M.mat.map; mat.emissiveIntensity = 0.55; mat.metalness = 0; mat.roughness = 0.25; mat.envMapIntensity = 1.2;
+    const mesh = new THREE.Mesh(M.geo, mat); mesh.castShadow = true; mesh.scale.setScalar(M.k); mesh.position.y = -M.bas * M.k - 0.28;   // (planté un peu dans le sol)
+    const pivot = new THREE.Group(); pivot.rotation.x = Math.PI / 2; pivot.add(mesh); const gr = new THREE.Group(); gr.add(pivot); gr.rotation.z = Math.random() * 6.28;
+    gr.position.copy(G(p.x, p.y, CR.chute)); gr.visible = false; monde.add(gr);
+    const anneau = new THREE.Mesh(new THREE.RingGeometry(0.55, 0.8, 40), new THREE.MeshBasicMaterial({ color: TEINTE[n], transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+    anneau.position.copy(G(p.x, p.y, 0.03)); monde.add(anneau);
+    const fis = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 4.2), new THREE.MeshBasicMaterial({ map: texFissure, transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
+    fis.position.copy(G(p.x, p.y, 0.012)); fis.rotation.z = Math.random() * 6.28; monde.add(fis);
+    const trainee = sprite(T_LUEUR[n === 'violet' ? 'violet' : 'glace'], 1.4, true); trainee.visible = false; monde.add(trainee);
+    vg.cristaux.push({ n, x: p.x, y: p.y, z: CR.chute, vz: 0, gr, mat, anneau, fis, trainee, etat: 'chute', debut: 0.35 + i * 0.3, l: vg.lums[i], rouge: 0, couleur: new THREE.Color(TEINTE[n]) });
+  });
+  const b = $('bVague'); if (b) b.classList.add('fait');
+  vg.video = videoFlammes(); if (vg.video) { try { vg.video.currentTime = 0; vg.video.play().catch(() => {}); } catch (_) {} }
+}
+/* la vidéo des flammes (Higgsfield, sur fond noir : le noir devient transparent) ; plusieurs panneaux de flammes côte à côte forment le mur */
+let videoEl = null, videoTex = null, murFlammes = [];
+function videoFlammes() {
+  if (videoEl) return videoEl;
+  videoEl = document.createElement('video'); videoEl.muted = true; videoEl.loop = true; videoEl.playsInline = true; videoEl.setAttribute('playsinline', ''); videoEl.preload = 'auto';
+  // (la vidéo est lue d'un bloc puis donnée au lecteur par une adresse blob: : l'iPhone exige sinon un serveur qui sert les vidéos par morceaux)
+  const fic = videoEl.canPlayType('video/mp4') ? 'nuit/flammes.mp4' : 'nuit/flammes.webm';
+  fetch(fic).then(r => r.blob()).then(b => { videoEl.src = URL.createObjectURL(b); if (vg.t >= 0) videoEl.play().catch(() => {}); }).catch(e => console.error(e));
+  videoTex = new THREE.VideoTexture(videoEl); videoTex.colorSpace = THREE.SRGBColorSpace;
+  const N = 8;
+  for (let i = 0; i < N; i++) {
+    const m = new THREE.ShaderMaterial({
+      uniforms: { vid: { value: videoTex }, off: { value: (i * 0.37) % 0.55 }, front: fondMat.uniforms.front, cri: fondMat.uniforms.cri, force: { value: 0 } },
+      vertexShader: 'varying vec2 vUv; varying vec3 vW; void main(){ vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }',
+      fragmentShader: `uniform sampler2D vid; uniform float off; uniform float front; uniform vec4 cri[3]; uniform float force; varying vec2 vUv; varying vec3 vW;
+        void main(){
+          vec3 col = texture2D(vid, vec2(off + vUv.x * 0.45, vUv.y)).rgb;
+          col = max(col - 0.06, 0.0) * 1.25;   // (le fond noir de la vidéo disparaît)
+          float abri = 0.0;
+          for (int i = 0; i < 3; i++) { vec4 C = cri[i]; if (C.w > 0.5) { float dy = front - C.y; if (dy > -0.2 && dy < 5.0) abri = max(abri, (1.0 - smoothstep(C.z * 0.75, C.z * 1.05, abs(vW.x - C.x))) * (1.0 - smoothstep(4.2, 5.0, dy))); } }
+          float a = force * (1.0 - abri) * smoothstep(0.0, 0.18, vUv.x) * smoothstep(1.0, 0.82, vUv.x) * smoothstep(0.0, 0.06, vUv.y) * smoothstep(1.0, 0.7, vUv.y);
+          gl_FragColor = vec4(col * a, 1.0);
+          #include <colorspace_fragment>
+        }`,
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false
+    });
+    const q = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 3.0), m); q.frustumCulled = false; q.visible = false; q.userData.x = -0.4 + i * 22.4 / (N - 1); monde.add(q); murFlammes.push(q);
+  }
+  return videoEl;
+}
+if (NUIT) videoFlammes();   // (prête avant la vague)
+function nettoyerCristal(c) { for (const o of [c.gr, c.anneau, c.fis, c.trainee]) if (o) monde.remove(o); if (c.morceaux) for (const m of c.morceaux) monde.remove(m.mesh); c.l.intensity = 0; }
+const MSG = {};
+function bulle(texte, coul) {   // un petit mot au-dessus du héros (« Touché ! », « À l'abri ! »)
+  if (!MSG[texte]) MSG[texte] = toile(256, 64, x => { x.font = 'bold 40px system-ui, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineWidth = 7; x.strokeStyle = 'rgba(0,0,0,.85)'; x.strokeText(texte, 128, 34); x.fillStyle = coul; x.fillText(texte, 128, 34); });
+  const sp = sprite(MSG[texte], 1.6, false); sp.scale.set(1.9, 0.48, 1); sp.material.depthTest = false; sp.renderOrder = 10; monde.add(sp);
+  notes.push({ sp, x: h.x, y: h.y, z: 2.2, vx: 0, vy: 0, vz: 0.5, t: 0, vie: 1.3, fixe: true });
+}
+function toucher() {
+  if (vg.touche > 0) return; vg.touche = 1.0; bulle('Touché !', '#ff6a4a');
+  const v = $('rouge'); if (v) { v.style.transition = 'none'; v.style.opacity = '1'; requestAnimationFrame(() => { v.style.transition = 'opacity .6s'; v.style.opacity = '0'; }); }
+  h.brule = 0.6;
+}
+function eclater(c) {
+  c.etat = 'eclate'; c.gr.visible = false; c.te = 0; c.morceaux = [];
+  const M = modelesCristal[c.n], mat = c.mat.clone(); mat.transparent = true; mat.side = THREE.DoubleSide;
+  const base = new THREE.Matrix4().compose(G(c.x, c.y, 0), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, c.gr.rotation.z)), new THREE.Vector3(1, 1, 1));
+  const local = new THREE.Matrix4().makeRotationX(Math.PI / 2).multiply(new THREE.Matrix4().compose(new THREE.Vector3(0, -M.bas * M.k - 0.28, 0), new THREE.Quaternion(), new THREE.Vector3(M.k, M.k, M.k)));
+  for (const mo of M.eclats) {
+    const mesh = new THREE.Mesh(mo.geo, mat); const p = new THREE.Vector3(...mo.c).applyMatrix4(local).applyMatrix4(base);
+    mesh.position.copy(p); mesh.quaternion.setFromRotationMatrix(new THREE.Matrix4().extractRotation(base.clone().multiply(local))); mesh.scale.setScalar(M.k); monde.add(mesh);
+    const d = new THREE.Vector3(p.x - c.x, p.y + c.y, 0); if (d.lengthSq() < 1e-4) d.set(Math.random() - 0.5, Math.random() - 0.5, 0); d.normalize();
+    const v = 2.5 + Math.random() * 3.5;
+    c.morceaux.push({ mesh, v: new THREE.Vector3(d.x * v, d.y * v, 2 + Math.random() * 4 + p.z * 0.4), w: new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(9) });
+  }
+  for (let i = 0; i < 28; i++) etincelle(c.x, c.y, 0.5 + Math.random() * 2.2, 'feu', 4);
+  const l = prendre(0xff5a30, 70, 9); if (l) { l.position.copy(G(c.x, c.y, 1.5)); eclats.push({ lum: l, t: 0, vie: 0.5, I: 70 }); }
+  fen.bouge = Math.max(fen.bouge, 0.35); fen.finBouge = 0.35;
+}
+function avancerVague(dt, t) {
+  fondMat.uniforms.temps.value = t;
+  if (vg.touche > 0) vg.touche -= dt;
+  if (h.brule > 0) h.brule -= dt;
+  if (vg.t < 0) return; vg.t += dt; const T = vg.t;
+  // les cristaux : l'anneau d'alerte, la chute, l'impact, la fissure, la lueur ; puis le rouge et l'éclatement
+  vg.cristaux.forEach((c, i) => {
+    const cri = fondMat.uniforms.cri.value[i];
+    if (c.etat === 'chute') {
+      const u = clamp((T - c.debut + 0.7) / 0.7, 0, 1); c.anneau.material.opacity = 0.65 * u; const k = 1.8 - 0.8 * u; c.anneau.scale.set(k, k, 1);
+      if (T >= c.debut) {
+        c.gr.visible = true; c.trainee.visible = true; c.vz -= 40 * dt; c.z = Math.max(0, c.z + c.vz * dt); c.gr.position.copy(G(c.x, c.y, c.z));
+        c.trainee.position.copy(G(c.x, c.y, c.z + 2.4)); c.trainee.scale.set(1.3, 2.6, 1);
+        c.l.color.copy(c.couleur); c.l.intensity = 6; c.l.position.copy(G(c.x, c.y + 0.5, c.z + 1.6));
+        if (c.z <= 0) {   // l'impact : le sol tremble, se fend, de la poussière, un éclair de lumière
+          c.etat = 'plante'; c.ti = 0; c.trainee.visible = false; monde.remove(c.anneau);
+          fen.bouge = Math.max(fen.bouge, 0.6); fen.finBouge = 0.5;
+          for (let k = 0; k < 4; k++) poussiere(c.x, c.y, k * 1.57 + Math.random());
+          const l = prendre(TEINTE[c.n], 45, 7); if (l) { l.position.copy(G(c.x, c.y, 0.8)); eclats.push({ lum: l, t: 0, vie: 0.35, I: 45 }); }
+          if (Math.hypot(h.x - c.x, h.y - c.y) < CR.r + 0.35) { toucher(); const a = Math.atan2(h.y - c.y, h.x - c.x); h.pousse = { x: c.x + Math.cos(a) * (CR.r + 0.7), y: c.y + Math.sin(a) * (CR.r + 0.7) }; }
+        }
+      }
+    }
+    if (c.etat === 'plante' || c.etat === 'rougit') {
+      c.ti = (c.ti || 0) + dt; c.fis.material.opacity = Math.min(1, c.ti / 0.12) * 0.92; const k = 0.4 + 0.6 * Math.min(1, c.ti / 0.12); c.fis.scale.set(k, k, 1);
+      cri.set(c.x, c.y, CR.abri, 1);
+      c.l.intensity = 4.5 + 1.2 * Math.sin(t * 2 + i); c.l.position.copy(G(c.x, c.y + 0.6, 1.4));
+      if (c.etat === 'plante' && vg.front > c.y) { c.etat = 'rougit'; c.tr = 0; }
+      if (c.etat === 'rougit') {   // il chauffe 3 s : de plus en plus rouge, il tremble, puis il éclate
+        c.tr += dt; const r = clamp(c.tr / 3, 0, 1);
+        if (c.mat.emissiveMap) { c.mat.emissiveMap = null; c.mat.needsUpdate = true; }   // (la lueur devient une seule couleur, qui vire au rouge)
+        c.mat.emissive.copy(c.couleur).multiplyScalar(0.45 * (1 - r)).lerp(new THREE.Color(0xff2208), Math.min(1, r * 1.3)); c.mat.emissiveIntensity = 0.5 + 1.7 * r; c.mat.color.setRGB(1, 1 - 0.9 * r, 1 - 0.92 * r);
+        c.l.color.copy(c.couleur).lerp(new THREE.Color(0xff3010), r); c.l.intensity = 4.5 + 14 * r;
+        const tr = r > 0.6 ? (r - 0.6) * 0.12 : 0; c.gr.position.copy(G(c.x + (Math.random() - 0.5) * tr, c.y + (Math.random() - 0.5) * tr, 0));
+        if (c.tr >= 3) { eclater(c); cri.w = 0; c.l.intensity = 0; }
+      }
+    }
+    if (c.etat === 'eclate') {
+      c.te += dt; const u = c.te / 1.3;
+      for (const m of c.morceaux) { m.v.z -= 12 * dt; m.mesh.position.x += m.v.x * dt; m.mesh.position.y += m.v.y * dt; m.mesh.position.z = Math.max(0.05, m.mesh.position.z + m.v.z * dt); if (m.mesh.position.z <= 0.05) { m.v.multiplyScalar(0.6); m.v.z = Math.abs(m.v.z) * 0.3; }
+        m.mesh.rotation.x += m.w.x * dt; m.mesh.rotation.y += m.w.y * dt; m.mesh.rotation.z += m.w.z * dt; m.mesh.material.opacity = 1 - clamp((u - 0.4) / 0.6, 0, 1); }
+      if (u >= 1) { for (const m of c.morceaux) monde.remove(m.mesh); c.morceaux = []; c.etat = 'fini'; monde.remove(c.gr); }
+    }
+  });
+  // l'armure se charge (2 s) : une lueur rouge en haut des marches, le sol gronde
+  const T0 = 2.3, T1 = 4.3;
+  vg.charge.intensity = T > T0 && T < T1 + 0.3 ? 60 * clamp((T - T0) / (T1 - T0), 0, 1) * (0.85 + 0.15 * Math.sin(t * 25)) : 0;
+  if (T > T0 && T < T1) fen.bouge = Math.max(fen.bouge, 0.12);
+  // la vague : elle part du haut des marches et déferle vers nous à 6 pas/s
+  if (T >= T1) {
+    vg.front = ARM.y + 2 + (T - T1) * vg.vit; fondMat.uniforms.front.value = vg.front;
+    const sur = vg.front < 21.5; fondMat.uniforms.vague.value = vg.front < 21.5 + vg.vit * 3.9 ? 1 : 0;   // (le sol brûle encore 3 s derrière la vague)
+    murFlammes.forEach((q, i) => { q.visible = sur && vg.front > -1.5; q.position.copy(G(q.userData.x, vg.front, 1.25)); q.up.set(0, 0, 1); q.lookAt(new THREE.Vector3(cam.position.x, cam.position.y, 1.25)); q.material.uniforms.force.value = clamp((vg.front + 1.5) / 2, 0, 1); });
+    vg.feux.forEach((l, i) => { l.intensity = sur ? 45 : 0; l.position.copy(G(3.5 + i * 7, vg.front - 0.3, 1.3)); });
+    // si la vidéo ne tourne pas (un appareil qui la bloque), des flammes dessinées prennent le relais
+    if (videoEl && sur && vg.front > -1.5) {
+      if (videoEl.currentTime !== vg.tv) { vg.tv = videoEl.currentTime; vg.tvT = T; }
+      if (T - (vg.tvT || T1) > 0.6) { vg.secours = true; murFlammes.forEach(q => q.visible = false); }
+      if (vg.secours) for (let k = 0; k < 7; k++) {
+        const x = -0.5 + Math.random() * 22.5; if (vg.cristaux.some(c => (c.etat === 'plante' || c.etat === 'rougit') && vg.front > c.y && vg.front - c.y < CR.abriL && Math.abs(x - c.x) < CR.abri)) continue;
+        const sp = sprite(texFlamme, 1, true); sp.center.set(0.5, 0.05); sp.position.copy(G(x, vg.front + (Math.random() - 0.5) * 0.6, 0)); monde.add(sp);
+        eclats.push({ sp, vx: 0, vy: 0, vz: 1.2 + Math.random(), vie: 0.45 + Math.random() * 0.25, t: 0, s0: 1.4 + Math.random() * 1.2 });
+      }
+    }
+    // le héros : la vague lui passe dessus ; ou il marche dans le feu (3 s après son passage)
+    if (!vg.passeHeros && vg.front >= h.y) { vg.passeHeros = true; if (abrite(h.x, h.y)) bulle('À l’abri !', '#8dffb0'); else toucher(); }
+    const passe = (vg.front - h.y) / vg.vit; if (vg.passeHeros && passe > 0.25 && passe < 3.2 && !abrite(h.x, h.y) && !h.saut) toucher();
+  }
+  if (T >= T1 && vg.front > 21.5 + vg.vit * 3.8 && vg.cristaux.every(c => c.etat === 'fini')) {   // fini : la nuit revient ; on peut relancer
+    vg.t = -1; fondMat.uniforms.vague.value = 0; fondMat.uniforms.front.value = -100; murFlammes.forEach(q => q.visible = false); vg.feux.forEach(l => l.intensity = 0);
+    for (const c of vg.cristaux) { monde.remove(c.fis); } vg.cristaux = []; fondMat.uniforms.cri.value.forEach(v => v.set(0, 0, 0, 0));
+    const b = $('bVague'); if (b) b.classList.remove('fait'); if (videoEl) videoEl.pause();
+  }
+}
+
 /* ---------- la boucle ---------- */
-const attendu = new Set(NUIT ? ['fond', 'crev', 'crevA', 'pilier-g', 'pilier-d', 'barde'] : ['fond', 'prof', 'barde']); let demarre = false;
+const attendu = new Set(NUIT ? ['fond', 'crev', 'crevA', 'feu', 'fissure', 'pilier-g', 'pilier-d', 'barde', 'cristaux'] : ['fond', 'prof', 'barde']); let demarre = false;
 function pret(n) { attendu.delete(n); if (!attendu.size && !demarre) { demarre = true; $('charge').style.display = 'none'; } }
 let avant = performance.now(), ips = 60, nImg = 0, t0 = avant;
 let tSim = 0;
@@ -1041,7 +1290,7 @@ function etape(dt, t) {
   if (melangeur) { locomotion(dt); melangeur.update(dt); }
   redresser();
   barde.updateMatrixWorld(true); animerLuth(dt, t);
-  if (NUIT) avancerCrevasses(dt, t);
+  if (NUIT) { avancerCrevasses(dt, t); avancerVague(dt, t); }
   avancerTirs(dt); avancerEclats(dt); avancerNotes(dt); avancerEclairs(dt); avancerPoussiere(dt); avancerGouttes(dt); avancerSoins(dt); if (PIST) avancerPisteur(dt, t);
   /* les flammes, les lumières qui vacillent */
   for (const f of flammes) { const k = 0.85 + 0.15 * Math.sin(t * 11 + f.b[0] + f.i * 2) + 0.08 * Math.sin(t * 27 + f.i); const w = (0.42 - f.i * 0.09) * k; f.f.scale.set(w, w * 1.6, 1); f.f.position.x = Math.sin(t * 7 + f.i * 2.1) * 0.04 + (f.i - 1) * 0.06; }
@@ -1071,4 +1320,4 @@ function poser(nom, t) {   // (essai) un seul mouvement, à un instant donné
   for (const n in actions) { actions[n].play(); actions[n].setEffectiveWeight(n === nom ? 1 : 0); actions[n].timeScale = 0; }
   actions[nom].time = t; melangeur.update(0); MOD.updateMatrixWorld(true); const r = piedsModele(); for (const n of ['LeftUpLeg', 'LeftLeg', 'Hips']) { const o = MOD.getObjectByName(n); r[n + '_q'] = o.quaternion.toArray(); r[n + '_p'] = o.position.toArray(); } r.pistes = actions[nom].getClip().tracks.slice(0, 6).map(k => k.name); r.nbPistes = actions[nom].getClip().tracks.length; r.duree = actions[nom].getClip().duration; return r;
 }
-window.__essai = { osM: noms => { const r = {}; for (const n of noms) { const o = MOD.getObjectByName(n); if (!o) continue; o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); MOD.worldToLocal(v); r[n] = [v.x, v.y, v.z]; } return r; }, frapper, basculerOmbre, mq, MURETS, COUPS, sauter, SAUT, get tirs() { return tirs.map(s => ({ x: s.x, y: s.y, z: s.z, q: s.q })); }, ecran: (x, y, z) => { if (NUIT) { cam.updateMatrixWorld(); const v = G(x, y, z).project(cam); return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; } return { x: (px(x) - camX) * innerWidth / Ws, y: (py(y, z) - camY) * innerHeight / Hs }; }, fissurer, imgDe, solImg, fen, crev, NJ, libre, dansCrevasse, nuit, piliers, poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };
+window.__essai = { osM: noms => { const r = {}; for (const n of noms) { const o = MOD.getObjectByName(n); if (!o) continue; o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); MOD.worldToLocal(v); r[n] = [v.x, v.y, v.z]; } return r; }, frapper, basculerOmbre, mq, MURETS, COUPS, sauter, SAUT, get tirs() { return tirs.map(s => ({ x: s.x, y: s.y, z: s.z, q: s.q })); }, ecran: (x, y, z) => { if (NUIT) { cam.updateMatrixWorld(); const v = G(x, y, z).project(cam); return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; } return { x: (px(x) - camX) * innerWidth / Ws, y: (py(y, z) - camY) * innerHeight / Hs }; }, fissurer, lancerVague, get vague() { return vg; }, video: () => videoEl ? [videoEl.currentSrc.split('/').pop(), videoEl.readyState, videoEl.paused, videoEl.currentTime] : null, cristaux: () => vg.cristaux.map(c => ({ x: c.x, y: c.y, etat: c.etat })), abrite: () => abrite(h.x, h.y), imgDe, solImg, fen, crev, NJ, libre, dansCrevasse, nuit, piliers, poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };

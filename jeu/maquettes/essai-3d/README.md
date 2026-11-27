@@ -15,8 +15,8 @@ plate qui ne prend pas la lumière, trop peu de poses). Cet essai teste une autr
 Rien de tout ça n'est dans le jeu. C'est un essai, à montrer à Romain, sans « go » pour la suite.
 
 **En ligne (page Claude, hors du jeu)** : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP
-(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795815581-a175` depuis la place de nuit, 22 h 40). Pour republier : `publish_files` des fichiers
-de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json, et le dossier `nuit/` : fond.jpg, crev.jpg, crev-a.png, pilier-g.png, pilier-d.png), `base_version` = la version en ligne.
+(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795819812-04f2` depuis la vague de flammes, 23 h 50). Pour republier : `publish_files` des fichiers
+de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json, et le dossier `nuit/` : fond.jpg, crev.jpg, crev-a.png, pilier-g.png, pilier-d.png, feu.jpg, fissure.png, cristal-*.json, flammes.mp4, flammes.webm), `base_version` = la version en ligne.
 **Piège de la page Claude** (vu par Romain : un ⚠ à la place du jeu) : elle ne sert pas les `.glb`, et
 elle interdit à la page de « télécharger » une adresse `data:` (fetch). Un glTF avec ses données en
 `data:` ne se charge donc pas. Solution : chaque `.glb` est rangé tel quel en base64 dans un `.json`
@@ -344,6 +344,46 @@ Pisteur garde la salle de l'armure (ses murets, son mannequin).
 - **Pas fait** : Grosbec et son armure (Romain : sa forme va peut-être changer), ses sorts et ses attaques ; les
   autres images (cristaux qui tombent, feu, jour) ne sont pas utilisées. **Aucun crédit Higgsfield dépensé** pour
   cette étape (les images sont celles de Romain).
+
+## La vague de flammes et les cristaux (premier tiers de la phase 2), le saut corrigé (27 novembre, en ligne à 23 h 50, version `1795819812-04f2` ; go de Romain à 23 h 34 : « Ok, vas-y. »)
+
+Décidé à la voix juste avant (Bible § 18.21, fin). **La place de nuit, c'est la phase 2** : au premier tiers, des
+cristaux tombent et on se cache derrière pour échapper à la vague de flammes de l'armure ; les crevasses, c'est le
+troisième tiers (pas la phase 3).
+
+- **Le saut près des crevasses** (Romain) : il ne retombe **jamais** dans une crevasse. Assez près du bord, le saut
+  s'allonge (jusqu'à 1,5 pas de plus) et il passe ; trop loin, il se raccourcit et il retombe au bord de son côté (un
+  saut raté ; tout contre le bord, il saute sur place). `longueurSaut()` ; vérifié par `outils/essai_nuit3.py`.
+- **Le bouton 🔥 Vague** (ou la touche V) lance le premier tiers :
+  1. **Trois anneaux** de couleur au sol, au hasard (jamais sur le héros, loin des lanternes, écartés), puis **trois
+     cristaux 3D tombent du plafond** et se plantent : violet, turquoise, vert. **Faits par Higgsfield** (Romain :
+     « tu devrais prendre les cristaux en 3D faits par Higgsfield ») d'après **ses cristaux peints**
+     (`origine/nuit/place-cristaux.jpg`), découpés, **redressés** (Romain : ils tombent du plafond, penchés « ça fait
+     bizarre »), 3 m de haut, éclairés en vrai, qui font leur ombre et cachent le héros. À l'impact : le sol tremble,
+     de la poussière, un éclair de leur couleur, et **la fissure de sa peinture** (Romain : « récupérer les fissures,
+     c'est sympa ») : le sol de son image « déplié » vu de dessus avec la caméra, les traits sombres gardés
+     (`outils/salle-nuit/cristaux.py`, `site/nuit/fissure.png`). Sous un cristal qui tombe : touché, repoussé.
+  2. **L'armure se charge 2 s** en haut des marches (lueur rouge, le sol gronde).
+  3. **La vague** : un mur de flammes (une vidéo Higgsfield de 5 s sur fond noir, bouclée sans raccord,
+     `site/nuit/flammes.mp4` / `.webm` ; le noir devient transparent) part du haut des marches et déferle vers nous à
+     6 pas/s ; trois vraies lumières orange avancent avec lui ; devant lui, le sol rougeoie. **Derrière lui, la place
+     brûle avec la peinture en feu de Romain** (`site/nuit/feu.jpg`, son image « en feu ») **pendant 3 s**, puis la
+     nuit revient. **Derrière chaque cristal (5 pas, de l'autre côté de l'armure), une bande reste intacte : l'abri** ;
+     le mur de flammes s'ouvre aussi derrière lui. Le héros : « À l'abri ! » ou « Touché ! » (et un voile rouge) ;
+     marcher dans le feu touche aussi. Pas de vie dans l'essai : juste le mot.
+  4. **Les cristaux rougissent** pendant ces 3 s (Romain), tremblent, puis **éclatent** : le modèle est découpé en
+     14 morceaux (des paquets de triangles voisins) qui partent, tournent, retombent et s'effacent, avec des
+     étincelles et un éclair. Fait dans le code : une vidéo d'explosion Higgsfield serait plate et ne collerait ni à
+     l'angle ni à la place du cristal.
+- **Si la vidéo ne défile pas** sur un appareil, des flammes dessinées prennent le relais d'elles-mêmes (moins
+  belles). La vidéo est lue d'un bloc et passée au lecteur par une adresse `blob:` (l'iPhone exige sinon un serveur
+  qui sert les vidéos par morceaux). **Pas vérifié sur un vrai iPhone** : le WebKit des essais ne fait pas avancer les
+  vidéos (c'est ce qui a montré le relais : `captures/webkit-vague-flammes-dessinees.png`).
+- Vérifié image par image (`outils/essai_vague.py`, `essai_vague2.py`, `captures/vague-*.png`) et sous WebKit
+  (`outils/essai_webkit_vague.py`).
+- **Crédits Higgsfield : 125** (trois cristaux 3D à 30, la vidéo à 35), annoncés à Romain avant de lancer.
+- **Pas fait** : l'armure elle-même (toujours le cercle doré) ; les deuxième et troisième tiers enchaînés (les
+  crevasses restent sur leur bouton d'essai) ; des points de vie.
 
 ## Ce qui n'est pas fait
 
