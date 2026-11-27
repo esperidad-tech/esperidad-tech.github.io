@@ -33,6 +33,14 @@ with sync_playwright() as p:
         pg.evaluate('__essai.joy.mx = 0'); jouer(0.5, 1 / 30)
         pg.evaluate('window.__zoom = 1.6; __essai.taille()'); pg.evaluate("__essai.lancer('glace')"); jouer(2.3, 1 / 30)
         pg.evaluate("__essai.lancer('feu')"); jouer(3.7, 1 / 30)
+    elif quoi == 'nouveaux':
+        pg.evaluate('window.__zoom = 2.2; __essai.taille(); __essai.h.x = 3.5; __essai.h.y = 7.4'); jouer(0.4, 1 / 30)
+        pg.evaluate('__essai.joy.mx = 1; __essai.joy.my = 0'); jouer(1.0, 1 / 30)
+        pg.evaluate('__essai.sauter(1, 0)'); jouer(1.1, 1 / 30)
+        pg.evaluate('__essai.joy.mx = 0'); jouer(0.7, 1 / 30)
+        pg.evaluate('window.__zoom = 1.6; __essai.taille()'); pg.evaluate("__essai.lancer('acide')"); jouer(2.6, 1 / 30)
+        pg.evaluate("__essai.lancer('soin')"); jouer(3.9, 1 / 30)
+        pg.evaluate("__essai.lancer('feu')"); jouer(3.8, 1 / 30)
     elif quoi == 'derapage':
         pg.evaluate('__essai.h.x = 4; __essai.h.y = 7.0; __essai.joy.mx = 1; __essai.joy.my = 0'); jouer(1.3)
         pg.evaluate('__essai.joy.mx = -1'); jouer(1.2)
@@ -52,4 +60,4 @@ os.makedirs('/tmp/film/c', exist_ok=True)
 for i, v in enumerate(vues):
     k = W / v['Ws']; sx, sy = (v['hx'] - v['camX']) * k * DSF, (v['hy'] - v['camY']) * k * DSF
     Image.open('/tmp/film/%04d.png' % i).crop((int(sx - 330), int(sy - 600), int(sx + 330), int(sy + 60))).resize((330, 330)).save('/tmp/film/c/%04d.png' % i)
-subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-framerate', '30' if quoi == 'tout' else ('20' if quoi == 'jeu' else '15'), '-i', '/tmp/film/%04d.png', '-vf', 'scale=844:-2', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '/tmp/barde3d/film-%s.mp4' % quoi])
+subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-framerate', '30' if quoi in ('tout', 'nouveaux') else ('20' if quoi == 'jeu' else '15'), '-i', '/tmp/film/%04d.png', '-vf', 'scale=844:-2', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '/tmp/barde3d/film-%s.mp4' % quoi])

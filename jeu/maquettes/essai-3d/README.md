@@ -190,6 +190,47 @@ l'impression qu'il allait tomber ; et **le projectile doit être une note avec u
 - Vérifié en films (`outils/film.py derapage | annule | jeu | tout`) : `captures/derapage.png`, `note-glace.png`,
   `note-feu.png`, `sort-coupe.png` ; les pieds ne glissent toujours pas (`glisse.py` : marche 0,1, course 0,18 pas/s).
 
+## La note corrigée, le soin, le saut, l'acide (27 novembre, en ligne à 21 h 00, version `1795809626-1986` ; go de Romain à 20 h 42 : « Ok, vas-y, occupe-toi du barde »)
+
+Ce que Romain avait dit à la voix (après 20 h 10) : la note est « décalée », « pas dans l'axe », et « les lignes de la
+partition, elles sont devant elle » ; la faire un peu plus grande ; **le soin** : il gratte son luth **2 s**, puis
+« des notes un peu partout qui brillent autour du personnage », **vertes** (il se soigne lui-même) ; **le saut** :
+un vrai saut, **3 pas**, recharge **1,5 s** ; **l'acide** : une note verte « avec des petites gouttes qui tombent »,
+d'un **jaune-vert qui pique** (pour ne pas la confondre avec le vert doux du soin ; Romain : « Ouais »).
+
+- **La note** (`partir()`) : le centre du dessin est maintenant **la tête ronde de la note** (`n.center`), posée pile
+  sur la ligne du milieu de la portée ; plus de petit tremblement en hauteur (il décalait la note de la portée) ;
+  **la note est toujours dessinée par-dessus les lignes** (`renderOrder` : portée 2, halo 3, note 4) ; la portée part
+  **de la tête de la note** (son premier point suit toujours la note, `ruban()`), sans vague contre elle.
+  **Plus grande** : glace 1,2 (avant 0,95), acide 1,2, **feu 1,45** (la Bible : « une note de feu plus grosse »).
+- **L'acide** (`SORTS.acide`, bouton 🧪, touche 3) : note jaune-vert à bord vert foncé, portée jaune-vert ; **des
+  gouttes tombent de la note** (une toutes les 0,05 à 0,1 s, `goutte()`), et **grésillent** en touchant le sol : une
+  petite flaque qui luit et s'éteint, deux bouffées de fumée qui montent en grossissant, trois bulles qui sautent
+  (`gresille()`) ; à l'arrivée, l'acide **éclabousse** (14 gouttes). Temps de lancement : **1,5 s**, choisi par
+  Claude en attendant que Romain décide (la Bible ne dit rien de l'acide du Barde).
+- **Le soin** (`DUREE.soin` = 2 s, bouton 💚, touche 4) : il sort son luth et gratte 2 s **sans se tourner vers
+  l'armure** (petites notes vertes qui sortent du luth, lueur verte dans la caisse) ; le flamenco de la fin, puis la
+  main droite part **vers le ciel** (au lieu de vers la cible) ; alors `soigner()` : **24 notes vert doux**
+  s'allument tout autour de lui (en 1 s, de ses pieds au-dessus de sa tête), tournent doucement, montent, scintillent
+  et s'éteignent ; un rond de lumière verte s'élargit sous lui, une lueur verte l'entoure, une vraie lumière verte
+  l'éclaire 1,5 s. Elles le suivent s'il repart. Pas de chiffre « +50 » : il n'y a pas de vie dans l'essai.
+- **Le saut** (bouton 💨, touche espace ; `sauter()`, `avancerSaut()`) : un **vrai saut** Higgsfield, choisi parmi
+  les sauts de la bibliothèque : **Jump_Over_Obstacle_2_inplace** (n° 642, 8 crédits ; un bond en avant genoux
+  repliés, qui part et retombe en courant ; le « Regular_Jump » est un saut vertical, accroupi, trop lent ; les
+  autres font des saltos). Le film dure 0,9 s ; il est joué **×1,2** (0,75 s) ; il quitte le sol à 0,08 s du film et
+  retombe à 0,70 s : **le jeu le fait avancer de 3 pas pendant qu'il est en l'air** (vers où pousse le pouce, sinon
+  devant lui). Il s'arrête au bord d'un mur, de l'armure ou d'une lanterne (« on ne saute pas par-dessus les
+  colonnes »). **La recharge : 1,5 s** depuis le moment où on touche le bouton ; le bouton se remplit d'ombre et se
+  vide pendant la recharge. Un saut coupe le sort en cours. À l'atterrissage : de la poussière, **9 petites notes
+  dorées qui rebondissent** autour de ses pieds, un éclair doré au sol. Pouce toujours poussé : il repart en courant
+  sans s'arrêter. Mesuré : 3 pas en une demi-seconde environ, les pieds montent jusqu’à 0,72 pas du sol.
+- **Les cinq boutons** (à droite) : 🔥 feu (le gros), ❄️ glace à sa gauche, 🧪 acide au-dessus, 💚 soin au-dessus
+  du feu, 💨 saut tout à gauche de la rangée. Ce n'est pas encore l'interface du combat du Pisteur.
+- Fichiers : `origine/glb/anim-saut.glb` (le mouvement seul), `site/anim-saut.json` (le même en base64) ;
+  vérifié avec `outils/essai_sorts.py` (sous la règle de sécurité du téléphone) et `outils/film.py nouveaux`
+  (`captures/film-nouveaux.mp4`, `captures/note-centree.png`, `soin.png`, `saut.png`, `acide.png`).
+- Crédits : 8 de plus (le saut) : **103 en tout** pour l'essai.
+
 ## Ce qui n'est pas fait
 
 - L'armure de Grosbec n'est pas en 3D (la création de son image de référence a été bloquée
@@ -197,3 +238,5 @@ l'impression qu'il allait tomber ; et **le projectile doit être une note avec u
   partent vers le centre du cercle, là où l'armure se tiendra.
 - Le fond (`out/essai3d/`, `site/fond.jpg`, `site/prof.png`) se refait avec `essai3d.py`.
 - La vitesse sur un vrai téléphone n'est pas mesurée.
+- Le bouclier de la phase 3 (3 s, recharge 10 s) : évoqué à la voix, Romain n'a pas répondu : pas fait.
+- L'ennemi de la phase 3 a changé dans une autre conversation : plus tard (Romain : « on va s'occuper d'abord de Grosbec et de la phase 2 »).
