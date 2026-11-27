@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Phase 3 — Grosbec de lumière (maquette v3)</title>
+<title>Phase 3 — Grosbec de lumière (maquette v4)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
-/* IDEA : la maquette v3 de la phase 3 — la vue World of Warcraft de la phase 2, en formes simples, pour juger le jeu et pas les images
+/* IDEA : la maquette v4 de la phase 3 — la vue World of Warcraft ; Grosbec de lumière en volume, vivant, et beaucoup d'effets
    PICTURE : la salle vue d'en haut en biais, Grosbec d'énergie rouge au fond ; mon héros, mes trois amis qui me suivent, mon villageois
-   COLOUR : nuit bleue ; le rouge de Grosbec ; feu, glace, acide ; jaune réservé aux boutons « lancer »
+   COLOUR : nuit bleue ; le rouge et l'or de Grosbec ; la couleur de chaque héros pour son attaque ; jaune réservé aux boutons « lancer »
    TYPE : Nunito ; rien à lire en jouant (seules les bulles des robots, en mode seul, sont écrites)
-   LAYOUT : téléphone couché, la salle sur tout l'écran ; pouce gauche : courir, le bouclier juste au-dessus ; pouce droit : les trois sorts, le saut, le soin ;
+   LAYOUT : téléphone couché, la salle sur tout l'écran ; pouce gauche : courir, le bouclier juste au-dessus ; pouce droit : l'attaque, le soin, le saut ;
             le groupe en haut à gauche ; une seule bulle à la fois */
 :root{color-scheme:dark}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -34,7 +34,7 @@ button{font-family:inherit;cursor:pointer;touch-action:none;color:inherit}
 .bt.non{animation:non .3s linear}
 @keyframes non{0%,100%{translate:0}25%{translate:-.3em}60%{translate:.3em}}
 #bBouclier{border-color:#7fc4ff;border-width:3px}
-#bFeu{border-color:#ff7a2a}#bGlace{border-color:#9fe3ff}#bAcide{border-color:#8fe03a}#bSoin{border-color:#5fe07a}
+#bAttaque{border-width:3px}#bAttaque b{font-size:1.25em}#bSoin{border-color:#5fe07a}
 #bSoin b{color:#5fe07a;font-weight:900}#bSaut b{color:#f3d48a;font-weight:900}
 .appel{animation:appel 1s ease-out infinite}
 @keyframes appel{0%{box-shadow:0 0 0 .1em rgba(255,210,58,1)}70%{box-shadow:0 0 0 .9em rgba(255,210,58,0)}100%{box-shadow:0 0 0 0 rgba(255,210,58,0)}}
@@ -108,9 +108,7 @@ button{font-family:inherit;cursor:pointer;touch-action:none;color:inherit}
 <div id="tourner">📱↻</div>
 <canvas id="c"></canvas>
 <button class="bt" id="bBouclier" aria-label="Bouclier"><i class="rc"></i><b>🛡️</b></button>
-<button class="bt" id="bFeu" aria-label="Feu"><i class="lc"></i><b>🔥</b></button>
-<button class="bt" id="bGlace" aria-label="Glace"><i class="lc"></i><b>❄️</b></button>
-<button class="bt" id="bAcide" aria-label="Acide"><i class="lc"></i><b>🧪</b></button>
+<button class="bt" id="bAttaque" aria-label="Attaque"><i class="lc"></i><b>⚔️</b></button>
 <button class="bt" id="bSoin" aria-label="Soin"><i class="lc"></i><b>✚</b></button>
 <button class="bt" id="bSaut" aria-label="Saut"><i class="rc"></i><b>⤴</b></button>
 <div id="groupe"></div>
@@ -160,7 +158,8 @@ button{font-family:inherit;cursor:pointer;touch-action:none;color:inherit}
 <script>/* ===== regles.js ===== */
 /* ==========================================================
    Phase 3 de l'enquête 10 — contre Grosbec de lumière
-   MAQUETTE RAPIDE, VERSION 2 (Bible § 18.16) : la vue World of Warcraft, en formes simples.
+   MAQUETTE, VERSION 4 (Bible § 18.19) : la vue World of Warcraft ; une seule faiblesse pour toute l'équipe (une partie
+   de Grosbec, montrée sur une seule tablette), une seule attaque par héros, le sort qui rebondit revient sur celui qui l'a lancé.
    Les règles seules, sans dessin : ce fichier tourne aussi dans node (tests/).
    Distances en pas, durées en secondes (comme la phase 2 et le combat du Pisteur).
    (R) = décidé par Romain (§ 18.16) ; (C) = point de départ de Claude, à régler en jouant.
@@ -177,7 +176,7 @@ var REG = {
   salle: {L: 16, P: 6.5},                     // (C, v3) plus large que profonde, pour remplir l'écran d'un téléphone couché ; Grosbec au fond (y = 0)
   grosbec: {x: 8, y: 0.7, r: 1.5},            // (C) son pied ; on ne marche pas dessus
   heros: {pv: 100, r: 0.35, vit: 3.6, x: 8, y: 4.1},   // (R) la course de la phase 2 : 3,6 pas par seconde
-  sort: {lance: 3, vol: 0.35},                // (R) trois sorts lents, environ 3 s sur place
+  sort: {lance: 3, vol: 0.5, retour: 0.55, rebond: 15},   // (R, v4) une seule attaque, lente (3 s sur place) ; sur la mauvaise partie, elle revient sur moi : 15
   soin: {lance: 2, rend: 50},                 // (R) le soin de la phase 2
   saut: {L: 3, dur: 0.32, recharge: 1.5},     // (R) le saut de la phase 2
   bouclier: {dure: 3},                        // (R) 3 s ; la recharge est dans les réglages (10 s de base)
@@ -190,17 +189,17 @@ var REG = {
   // les trois endroits sûrs (R : la fontaine, la lanterne, la statue cassée) ; (C) leur place et leur taille
   lieux: [{n: 'lanterne', x: 3.6, y: 2.6}, {n: 'statue', x: 12.4, y: 2.6}, {n: 'fontaine', x: 8, y: 5.2}],
   lieuR: 0.45, surR: 1.4,                    // l'objet (on ne marche pas dessus) ; l'endroit sûr autour de lui
-  zone: {annonce: 4},                         // (R) environ 4 s entre l'annonce et la frappe
+  zone: {annonce: 6},                         // (R, v4) 6 s entre l'annonce et la frappe (4 s : « carrément trop court »)
   mega: {annonce: 2.8},                       // (R) moins de 3 s
-  infoMontree: 6,                             // (C) la bulle du villageois reste 6 s pour un élément ou une partie
+  infoMontree: 6,                             // (C) la partie faible bouge sur Grosbec pendant 6 s, sur la tablette qui doit la crier
   // la montée (R) : tranquille au début, puis ça se resserre en 3 ou 4 minutes, puis ça accélère doucement
   montee: {fin: 210, ajoutZones: 30, ajoutMega: 60,
     faible: {de: [22, 27], a: [15, 20]},      // (R) 15 à 20 s ; (C) 22 à 27 s au départ
-    zones: {de: [9, 12], a: [6, 9], mini: 4.8},   // (R)
+    zones: {de: [9, 12], a: [6, 9], mini: 7},     // (R) ; (C, v4) jamais moins de 7 s : avec 6 s d'annonce, un seul endroit sûr à la fois
     mega: {de: [18, 22], a: [13, 17], mini: 8},   // (R) 13 à 17 s ; (C) 18 à 22 s au départ
     apres: 0.065, plancher: 0.6},             // (C) ensuite, 6,5 % plus serré chaque minute, jusqu'à 60 %
   reprise: 30,                                // (R) un point de reprise toutes les 30 s environ
-  coups: {court: 15, normal: 30, long: 45}    // (C) la vie de Grosbec, en sorts justes (6 min pour « normal », d'après les robots)
+  coups: {court: 22, normal: 45, long: 65}    // (C, v4) la vie de Grosbec, en attaques justes (environ 6 min pour « normal », d'après les robots)
 };
 var DEFAUT = {
   mode: 'seul',       // 'seul' (trois robots) | 'quatre' (quatre tablettes)
@@ -214,11 +213,10 @@ var DEFAUT = {
   role: 'barde',
   partie: 1
 };
-var ELEMS = ['feu', 'glace', 'acide'];
 var PARTIES = ['tete', 'torse', 'brasG', 'brasD', 'jambeG', 'jambeD'];   // (R) six parties ; gauche et droite vues de l'écran
-var MOTS = {feu: 'Feu !', glace: 'Glace !', acide: 'Acide !', tete: 'La tête !', torse: 'Le torse !', brasG: 'Bras gauche !', brasD: 'Bras droit !',
+var MOTS = {tete: 'La tête !', torse: 'Le torse !', brasG: 'Bras gauche !', brasD: 'Bras droit !',
   jambeG: 'Jambe gauche !', jambeD: 'Jambe droite !', lanterne: 'La lanterne !', statue: 'La statue !', fontaine: 'La fontaine !', mega: 'Bouclier, vite !'};
-var SYMS = ['🌙', '⭐', '☀️', '🔑', '🍄', '🐟', '🌳', '🔔', '🎩', '❤️', '🐱'];   // les symboles du jeu, sans 🔥 (c'est le sort de feu)
+var SYMS = ['🌙', '⭐', '☀️', '🔑', '🍄', '🐟', '🌳', '🔔', '🎩', '❤️', '🐱'];   // les symboles du jeu
 
 /* ---------- le hasard partagé (le même sur les quatre tablettes) ---------- */
 function hash(s) { var h = 2166136261 >>> 0; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h >>> 0; }
@@ -242,24 +240,24 @@ function ecart(r, sorte, T) {
 }
 
 /* ---------- la suite des coups du deuxième combat (20 minutes, calculée une fois) ----------
-   infos : {k:'info', quoi:'elem'|'part'|'zone'|'mega', donneur, cible (null pour la zone), tA, tFin, val, ref}
-   coups : {k:'faible', h, t, elem, part, id} ; {k:'zone', id, tA, tI, lieu, donneur} ; {k:'mega', id, cible, tA, tI, donneur} */
+   infos : {k:'info', quoi:'part'|'zone'|'mega', donneur, cible (null pour la partie et la zone : c'est pour tous), tA, tFin, val, ref}
+   coups : {k:'faible', t, part, id} (v4 : la même pour toute l'équipe) ; {k:'zone', id, tA, tI, lieu, donneur} ; {k:'mega', id, cible, tA, tI, donneur} */
 var CACHE = {};
 function suite(partie) {
   if (CACHE[partie]) return CACHE[partie];
-  var r = rngDe('phase3-v2|' + partie), FIN = 20 * 60, id = 0;
+  var r = rngDe('phase3-v4|' + partie), FIN = 20 * 60, id = 0;
   var faibles = [], zones = [], megas = [], infos = [], cris = {pisteur: 0, alchimiste: 0, barde: 0, sage: 0};
-  // la faiblesse de chaque héros (R : élément + partie, change toutes les 15 à 20 s)
-  ROLES.forEach(function (h, i) {
-    var t = 2 + 1.5 * i, av = null;
+  // (R, v4) la faiblesse : UNE partie de Grosbec, la même pour toute l'équipe ; elle change toutes les 15 à 20 s (22 à 27 au début)
+  (function () {
+    var t = 2, av = null;
     while (t < FIN) {
-      var e, p;
-      do { e = entier(r, 3); p = entier(r, 6); } while (av && av.elem === e && av.part === p);
-      av = {k: 'faible', id: ++id, h: h, t: arr(t), elem: e, part: p};
+      var p;
+      do { p = entier(r, 6); } while (av && av.part === p);
+      av = {k: 'faible', id: ++id, t: arr(t), part: p};
       faibles.push(av);
       t += ecart(r, 'faible', t);
     }
-  });
+  })();
   // les grosses zones (R : un seul endroit sûr pour toute l'équipe)
   var t = REG.montee.ajoutZones;
   while (t < FIN) { zones.push({k: 'zone', id: ++id, tA: arr(t), tI: arr(t + REG.zone.annonce), lieu: entier(r, 3)}); t += ecart(r, 'zones', t); }
@@ -274,22 +272,19 @@ function suite(partie) {
   }
   // qui montre quoi : au hasard, jamais à soi-même, en équilibrant (R : pas de rôle fixe ; chacun crie à peu près autant)
   var tout = [];
-  faibles.forEach(function (f) { tout.push({quoi: 'elem', ref: f, t: f.t}); tout.push({quoi: 'part', ref: f, t: f.t}); });
+  faibles.forEach(function (f) { tout.push({quoi: 'part', ref: f, t: f.t}); });
   zones.forEach(function (z) { tout.push({quoi: 'zone', ref: z, t: z.tA}); });
   megas.forEach(function (m) { tout.push({quoi: 'mega', ref: m, t: m.tA}); });
   tout.sort(function (a, b) { return a.t - b.t || a.ref.id - b.ref.id || (a.quoi < b.quoi ? -1 : 1); });
-  var dejaElem = {};
   tout.forEach(function (x) {
-    var cible = x.quoi === 'zone' ? null : (x.ref.h || x.ref.cible);
-    var ok = ROLES.filter(function (g) { return g !== cible && !(x.quoi === 'part' && dejaElem[x.ref.id] === g); });   // (R) l'élément et la partie viennent de deux joueurs différents
+    var cible = x.quoi === 'mega' ? x.ref.cible : null;
+    var ok = ROLES.filter(function (g) { return g !== cible; });
     var mini = Math.min.apply(null, ok.map(function (g) { return cris[g]; }));
     ok = ok.filter(function (g) { return cris[g] === mini; });
     var g = ok[entier(r, ok.length)];
     cris[g]++;
-    if (x.quoi === 'elem') dejaElem[x.ref.id] = g;
     var inf = {k: 'info', quoi: x.quoi, donneur: g, cible: cible, ref: x.ref.id, tA: x.t};
-    if (x.quoi === 'elem') { inf.val = x.ref.elem; inf.tFin = arr(x.t + REG.infoMontree); }
-    else if (x.quoi === 'part') { inf.val = x.ref.part; inf.tFin = arr(x.t + REG.infoMontree); }
+    if (x.quoi === 'part') { inf.val = x.ref.part; inf.tFin = arr(x.t + REG.infoMontree); x.ref.donneur = g; }
     else if (x.quoi === 'zone') { inf.val = x.ref.lieu; inf.tFin = x.ref.tI; x.ref.donneur = g; }
     else { inf.val = null; inf.tFin = x.ref.tI; x.ref.donneur = g; }
     infos.push(inf);
@@ -298,10 +293,10 @@ function suite(partie) {
   CACHE[partie] = S;
   return S;
 }
-/* la faiblesse d'un héros au temps T */
-function faibleA(su, h, T) {
+/* la faiblesse (la même pour tous) au temps T */
+function faibleA(su, T) {
   var f = null;
-  for (var i = 0; i < su.faibles.length; i++) { var x = su.faibles[i]; if (x.h === h && x.t <= T) f = x; }
+  for (var i = 0; i < su.faibles.length; i++) { var x = su.faibles[i]; if (x.t <= T) f = x; else break; }
   return f;
 }
 /* les symboles de victoire (quatre différents) */
@@ -367,8 +362,7 @@ function marquerPasse(S) {   // tout ce qui a commencé avant S.T est considér�
   su.zones.forEach(function (z) { if (z.tA < S.T) { S.vus['z' + z.id] = 1; S.vus['zi' + z.id] = 1; } });
   su.megas.forEach(function (m) { if (m.tA < S.T) { S.vus['m' + m.id] = 1; S.vus['mi' + m.id] = 1; } });
   su.faibles.forEach(function (f) { if (f.t < S.T) S.vus['f' + f.id] = 1; });
-  S.faible = faibleA(su, S.moi, S.T);
-  for (var ro in S.amis) S.amis[ro].faible = faibleA(su, ro, S.T);
+  S.faible = faibleA(su, S.T);
 }
 
 /* ---------- le héros prend des coups ---------- */
@@ -413,10 +407,8 @@ function lancer(S, quoi) {
   var h = S.h;
   if (S.etat !== 'combat' || S.attente > 0 || !vivant(S) || h.lance || h.saut) return false;
   if (h.bouge) return false;                                         // (R) on ne lance pas en courant
-  if (quoi !== 'soin') {
-    if (S.boss <= 0 && S.combat === 2) return false;                 // (R) en soutien, les sorts sont gris
-    if (S.combat === 1 && quoi === 'acide') return false;            // (C) l'acide arrive avec le village
-  }
+  if (quoi !== 'soin' && quoi !== 'sort') return false;
+  if (quoi === 'sort' && S.boss <= 0 && S.combat === 2) return false;   // (R) en soutien, l'attaque est grise
   if (quoi === 'soin' && h.pv >= REG.heros.pv) return false;
   h.lance = {quoi: quoi, t: 0, dur: quoi === 'soin' ? REG.soin.lance : REG.sort.lance};
   evt(S, 'lance', {quoi: quoi});
@@ -438,7 +430,12 @@ function bouclier(S) {
   evt(S, 'bouclier');
   return true;
 }
-function viser(S, p) { if (p >= 0 && p < 6) { S.cible = p; evt(S, 'vise', {p: p}); return true; } return false; }
+function viser(S, p) {
+  if (!(p >= 0 && p < 6)) return false;
+  S.cible = p; evt(S, 'vise', {p: p});
+  var x = partMontree(S); if (x && x.val === p) relayerPart(S);   // (v4, mode seul) toucher la partie qui bouge, c'est aussi la crier à tous
+  return true;
+}
 
 /* ---------- le code de la fin ---------- */
 function taper(S, ami, sym) {
@@ -487,6 +484,16 @@ function relayerZone(S) {
   evt(S, 'relais', {ami: 'tous'});
   return true;
 }
+/* (v4) la partie faible que MA tablette montre en ce moment (sur Grosbec), ou null */
+function partMontree(S) { var l = mesInfos(S).filter(function (x) { return x.quoi === 'part'; }); return l.length ? l[l.length - 1] : null; }
+function relayerPart(S) {
+  if (!S.seul) return false;
+  var x = partMontree(S);
+  if (!x || S.relais[x.ref + 'part']) return false;
+  S.relais[x.ref + 'part'] = 1; for (var ro in S.amis) entendre(S, S.amis[ro], x, S.T + 0.2); S.stats.relaisFaits++;
+  evt(S, 'relais', {ami: 'tous', part: x.val});
+  return true;
+}
 function aRelayer(S, ami) { var bu = S.bulle; return !!(S.seul && bu && bu.type === 'villageois' && bu.x.cible === ami && !S.relais[bu.x.ref + bu.x.quoi]); }
 
 /* ---------- (v3, Romain : « une seule bulle à la fois ») : ce que montre l'écran, une chose à la fois ----------
@@ -498,6 +505,7 @@ function prioBulle(c) { var q = c.x ? c.x.quoi : 'sym'; return q === 'zone' ? 0 
 function candidatsBulle(S) {
   var l = [], T = S.T;
   mesInfos(S).forEach(function (x) {
+    if (x.quoi === 'part') return;                                   // (v4) la partie faible ne passe pas par une bulle : elle bouge sur Grosbec
     var cle = 'v' + x.ref + x.quoi;
     if (S.dit[cle] || (S.seul && S.relais[x.ref + x.quoi])) return;
     l.push({cle: cle, type: 'villageois', x: x, age: x.tA, fin: x.tFin, mini: 1.8});
@@ -537,8 +545,8 @@ function entendre(S, a, x, quand) {
   a.sait[x.ref + x.quoi] = quand;
 }
 // un robot crie ce que son villageois lui montre (s'il est vivant), un cri à la fois ; on l'entend avec la chance « robots »
-function finFaiblesse(su, x, debut) {   // (v3) un cri d'élément ou de partie reste valable jusqu'à la faiblesse suivante (12 s au plus)
-  var f = null; su.faibles.forEach(function (y) { if (y.h === x.cible && y.t > x.tA && (!f || y.t < f.t)) f = y; });
+function finFaiblesse(su, x, debut) {   // (v3) un cri de partie reste valable jusqu'à la faiblesse suivante (12 s au plus)
+  var f = null; su.faibles.forEach(function (y) { if (y.t > x.tA && (!f || y.t < f.t)) f = y; });
   return Math.min(f ? f.t : debut + 12, debut + 12);
 }
 function robotsCrient(S) {
@@ -554,9 +562,10 @@ function robotsCrient(S) {
     var urgent = x.quoi === 'zone' || x.quoi === 'mega';            // l'endroit sûr et le bouclier : on les crie tout de suite, avant le reste
     var debut = urgent ? T + 0.2 + 0.5 * S.rnd() : Math.max(T + 0.3 + 0.7 * S.rnd(), g.voix), fin = debut + (x.quoi === 'mega' ? 0.6 : 1.0);
     g.voix = fin;
-    var pour = x.quoi === 'zone' ? ROLES.filter(function (ro) { return ro !== x.donneur; }) : [x.cible];
+    var pour = x.quoi === 'mega' ? [x.cible] : ROLES.filter(function (ro) { return ro !== x.donneur; });   // (v4) la partie et l'endroit sûr : à tout le monde
+    if (x.quoi === 'part') entendre(S, g, x, x.tA + 0.3);            // celui qui la voit bouger, lui, il sait
     pour.forEach(function (ro) {
-      if (ro === S.moi) S.cris.push({de: x.donneur, x: x, t: debut, fin: urgent ? x.tFin : finFaiblesse(su, x, debut)});   // (v3) l'endroit sûr et le bouclier : jamais après la frappe ; l'élément et la partie attendent leur tour tant qu'ils sont vrais
+      if (ro === S.moi) S.cris.push({de: x.donneur, x: x, t: debut, fin: urgent ? x.tFin : finFaiblesse(su, x, debut)});   // (v3) l'endroit sûr et le bouclier : jamais après la frappe ; la partie attend son tour tant qu'elle est vraie
       else if (S.rnd() < 0.95) entendre(S, S.amis[ro], x, fin + 0.2 + 0.4 * S.rnd());
     });
   });
@@ -567,11 +576,11 @@ function robotsJouent(S, dt) {
     var a = S.amis[ro];
     if (a.mort > 0) { a.mort -= dt; continue; }
     if (S.combat !== 2) continue;
-    var f = faibleA(su, ro, T);
-    // il tape quand il connaît l'élément ET la partie de sa faiblesse
+    var f = faibleA(su, T);
+    // il tape quand il connaît la partie faible (v4)
     if (f && a.boss > 0 && T >= a.prochainCoup) {
-      var se = a.sait[f.id + 'elem'], sp = a.sait[f.id + 'part'];
-      if (se !== undefined && sp !== undefined && se <= T && sp <= T) {
+      var sp = a.sait[f.id + 'part'];
+      if (sp !== undefined && sp <= T) {
         a.boss -= 1; a.prochainCoup = T + 4.5 + 2.5 * S.rnd();
         if (a.boss <= 0) { a.symboleCrie = -99; evt(S, 'robotSymbole', {ami: ro}); }
       } else a.prochainCoup = T + 0.5;
@@ -631,21 +640,32 @@ function pas(S, dt, entree) {
     if (h.lance.t >= h.lance.dur) {
       var q = h.lance.quoi; h.lance = null;
       if (q === 'soin') { h.pv = Math.min(REG.heros.pv, h.pv + REG.soin.rend); S.stats.soins++; evt(S, 'soigne'); }
-      else { S.tirs.push({quoi: q, x: h.x, y: h.y, t: 0, part: S.cible}); S.stats.sorts++; evt(S, 'part', {quoi: q}); }
+      else { S.tirs.push({quoi: q, x: h.x, y: h.y, t: 0, part: S.cible}); S.stats.sorts++; evt(S, 'part', {quoi: q, cible: S.cible}); }
     }
   }
-  // les sorts qui volent jusqu'à Grosbec : le bon élément sur la bonne partie fait mal, sinon ça rebondit
+  // l'attaque vole jusqu'à Grosbec : sur la partie faible, elle fait mal ; ailleurs, elle rebondit et revient sur moi (v4 : 15)
+  var neufs = [];
   S.tirs = S.tirs.filter(function (s) {
     s.t += dt;
+    if (s.retour) {
+      if (s.t < REG.sort.retour) return true;
+      if (blesser(S, REG.sort.rebond, 'rebond')) S.stats.retours = (S.stats.retours || 0) + 1;
+      evt(S, 'retour', {part: s.part, x: h.x, y: h.y});
+      return false;
+    }
     if (s.t < REG.sort.vol) return true;
-    var f = S.combat === 2 ? S.faible : faibleA(suiteC1(S), S.moi, T);
-    var bon = f && ELEMS[f.elem] === s.quoi && f.part === s.part;
+    var f = S.combat === 2 ? S.faible : faibleA(suiteC1(S), T);
+    var bon = f && f.part === s.part;
     if (bon && S.boss > 0) {
-      S.boss = Math.max(0, S.boss - 1); S.stats.justes++; evt(S, 'touche', {part: s.part, quoi: s.quoi});
+      S.boss = Math.max(0, S.boss - 1); S.stats.justes++; evt(S, 'touche', {part: s.part, quoi: s.quoi, reste: S.boss});
       if (S.boss <= 0 && S.combat === 2) { S.symboleT = S.reel; S.stats.symboleT = T; evt(S, 'symbole'); if (victoire(S)) { S.etat = 'fini'; evt(S, 'victoire'); } }   // les trois autres déjà tapés : c'est gagné
-    } else { S.stats.rebonds++; evt(S, 'rebond', {part: s.part, quoi: s.quoi}); }
+    } else {
+      S.stats.rebonds++; evt(S, 'rebond', {part: s.part, quoi: s.quoi});
+      if (vivant(S)) neufs.push({quoi: s.quoi, part: s.part, t: 0, retour: true});
+    }
     return false;
   });
+  if (neufs.length) S.tirs = S.tirs.concat(neufs);
   // les éclairs : en permanence, de sa main jusqu'au héros, impossibles à éviter (le bouclier les arrête)
   var tambour = S.combat === 1 && T >= REG.combat1.tenir;
   if (T >= S.prochainEclair) {
@@ -675,7 +695,7 @@ function pas(S, dt, entree) {
   var su = S.su;
   su.faibles.forEach(function (f) {
     if (f.t > T || S.vus['f' + f.id]) return; S.vus['f' + f.id] = 1;
-    if (f.h === S.moi) S.faible = f;                                  // (R) pas de signe : on le comprend quand le sort rebondit
+    S.faible = f;                                                      // (R) pas de signe : on le comprend quand l'attaque rebondit
   });
   su.infos.forEach(function (x) {
     if (x.tA > T || S.vus['i' + x.ref + x.quoi]) return; S.vus['i' + x.ref + x.quoi] = 1;
@@ -687,7 +707,7 @@ function pas(S, dt, entree) {
     if (z.tI > T || S.vus['zi' + z.id]) return; S.vus['zi' + z.id] = 1;
     S.stats.zones++;
     var ok = !vivant(S) || protege(S) || aLAbri(h.x, h.y, z.lieu);
-    evt(S, 'zone', {lieu: z.lieu, ok: ok});
+    evt(S, 'zone', {lieu: z.lieu, ok: ok, id: z.id});
     if (!ok) { S.stats.zonesRatees++; mourir(S, 'zone'); }           // (R) rater une zone, c'est tomber d'un coup
     if (S.seul) for (var ro in S.amis) robotZone(S, S.amis[ro], z);
   });
@@ -737,17 +757,17 @@ function suivre(S, dt) {
 /* au premier combat, la faiblesse change aussi (on ne le sait pas) : une suite à part, partagée elle aussi */
 function suiteC1(S) {
   if (S._c1) return S._c1;
-  var r = rngDe('c1|' + S.partie), f = [], id = 0;
-  ROLES.forEach(function (h) { var t = 0; while (t < 80) { f.push({id: ++id, h: h, t: t, elem: entier(r, 3), part: entier(r, 6)}); t += entre(r, 15, 20); } });
+  var r = rngDe('c1|' + S.partie), f = [], id = 0, t = 0;
+  while (t < 80) { f.push({id: ++id, t: t, part: entier(r, 6)}); t += entre(r, 15, 20); }
   S._c1 = {faibles: f};
   return S._c1;
 }
 function demarrerC2(S) { if (S.etat === 'go') { allerC2(S, 0); return true; } return false; }
 
-G.P3 = {REG: REG, DEFAUT: DEFAUT, ROLES: ROLES, ELEMS: ELEMS, PARTIES: PARTIES, MOTS: MOTS, SYMS: SYMS,
+G.P3 = {REG: REG, DEFAUT: DEFAUT, ROLES: ROLES, PARTIES: PARTIES, MOTS: MOTS, SYMS: SYMS,
   hash: hash, rngDe: rngDe, suite: suite, faibleA: faibleA, symboles: symboles, ecart: ecart,
   nouvelle: nouvelle, pas: pas, lancer: lancer, sauter: sauter, bouclier: bouclier, viser: viser, taper: taper, victoire: victoire,
-  reprendre: reprendre, pointDeReprise: pointDeReprise, mesInfos: mesInfos, choisirBulle: choisirBulle, candidatsBulle: candidatsBulle, relayer: relayer, relayerZone: relayerZone, aRelayer: aRelayer,
+  reprendre: reprendre, pointDeReprise: pointDeReprise, mesInfos: mesInfos, choisirBulle: choisirBulle, candidatsBulle: candidatsBulle, relayer: relayer, relayerZone: relayerZone, aRelayer: aRelayer, relayerPart: relayerPart, partMontree: partMontree,
   allerC2: allerC2, demarrerC2: demarrerC2, dernier: dernier, vivant: vivant, protege: protege, aLAbri: aLAbri, libreEn: libreEn};
 if (typeof module !== 'undefined') module.exports = G.P3;
 })(typeof window !== 'undefined' ? window : globalThis);
@@ -756,20 +776,29 @@ if (typeof module !== 'undefined') module.exports = G.P3;
 <script>/* ===== pilote.js ===== */
 /* Un pilote automatique pour MON héros (les essais seulement : node tests/regles.js, et window.__pilote dans la page).
    Il « entend » les bulles des robots (S.cris) comme un joueur, relaie ce que montre son villageois un peu après,
-   court à l'endroit sûr, lève le bouclier quand on le lui crie, se soigne quand il est bas, tape avec ce qu'il sait. */
+   court à l'endroit sûr, lève le bouclier quand on le lui crie, se soigne quand il est bas.
+   (v4) Il ne tape que quand il connaît la partie faible : quand il la voit bouger sur Grosbec (il la touche : ça la crie aux robots),
+   ou quand un robot la lui crie ; dès qu'une attaque rebondit, il l'oublie ; au bout de 10 s sans rien savoir, il tente au hasard. */
 (function (G) {
 'use strict';
 var P3 = G.P3;
 function Pilote(o) {
   o = o || {};
   this.reaction = o.reaction || 0.6;      // le temps pour comprendre une bulle ou un cri
-  this.relaisDelai = o.relais || 1.0;     // le temps pour lire sa bulle et toucher le bon portrait
+  this.relaisDelai = o.relais || 1.0;     // le temps pour voir la partie bouger, ou lire sa bulle, et toucher
   this.oubli = o.oubli || 0;              // la chance de rater une bulle
-  this.sait = {}; this.but = null; this.r = Math.random;
+  this.sait = {}; this.but = null; this.r = Math.random; this.connue = false; this.rebonds = 0; this.depuis = 0;
 }
 Pilote.prototype.manette = function (S) {
   var h = S.h, P = P3, REG = P.REG, T = S.T, self = this;
   if (S.etat !== 'combat' || S.attente > 0 || !P.vivant(S)) return {mx: 0, my: 0};
+  if (S.stats.rebonds > this.rebonds) { this.rebonds = S.stats.rebonds; this.connue = false; this.depuis = T; }   // ça a rebondi : la faiblesse a changé
+  // (v4) la partie qui bouge sur MON Grosbec : je la touche (je vise, et je la crie)
+  var pm = P.partMontree(S);
+  if (pm && T >= pm.tA + this.relaisDelai && !this.sait['p' + pm.ref]) {
+    this.sait['p' + pm.ref] = 1;
+    if (this.r() >= this.oubli) { P.viser(S, pm.val); this.connue = true; }
+  }
   // (v3) il ne voit qu'une bulle à la fois, comme le joueur
   var bu = S.bulle;
   if (bu && T >= bu.debut + (bu.type === 'ami' ? this.reaction : this.relaisDelai) && !this.sait[bu.cle]) {
@@ -777,12 +806,11 @@ Pilote.prototype.manette = function (S) {
     if (this.r() >= this.oubli) {
       var x = bu.x;
       if (bu.type === 'ami' && x) {
-        if (x.quoi === 'zone') this.but = {lieu: x.val, fin: T + 4};
+        if (x.quoi === 'zone') this.but = {lieu: x.val, fin: T + 6};
         else if (x.quoi === 'mega') P.bouclier(S);
-        else if (x.quoi === 'elem') this.elem = x.val;
-        else if (x.quoi === 'part') P.viser(S, x.val);
+        else if (x.quoi === 'part') { P.viser(S, x.val); this.connue = true; }
       } else if (bu.type === 'villageois') {
-        if (x.quoi === 'zone') { this.but = {lieu: x.val, fin: T + 4}; P.relayerZone(S); }
+        if (x.quoi === 'zone') { this.but = {lieu: x.val, fin: T + 6}; P.relayerZone(S); }
         else P.relayer(S, x.cible);
       }
     }
@@ -795,9 +823,10 @@ Pilote.prototype.manette = function (S) {
   // se soigner, ou taper
   if (!h.lance) {
     if (h.pv <= 50) P.lancer(S, 'soin');
+    else if (S.combat === 1) { if (h.pv > 75 && this.r() < 0.02) P.lancer(S, 'sort'); }
     else if (S.boss > 0) {
-      var e = this.elem !== undefined ? this.elem : Math.floor(this.r() * (S.combat === 1 ? 2 : 3));
-      P.lancer(S, P.ELEMS[e]);
+      if (!this.connue && T - this.depuis > 10) { P.viser(S, Math.floor(this.r() * 6)); this.connue = true; }   // il tente au hasard
+      if (this.connue) P.lancer(S, 'sort');
     }
   }
   return {mx: 0, my: 0};
@@ -807,183 +836,910 @@ if (typeof module !== 'undefined') module.exports = Pilote;
 })(typeof window !== 'undefined' ? window : globalThis);
 
 </script>
-<script>/* ===== dessin.js ===== */
-/* Le dessin de la version 2 : la salle vue d'en haut, en biais (comme la phase 2 et le combat du Pisteur), en formes simples.
-   Grosbec de lumière au fond ; la fontaine, la lanterne, la statue cassée ; mon héros, mes trois amis, mon villageois et ses bulles. */
+<script>/* ===== effets.js ===== */
+/* ==========================================================
+   LES EFFETS (phase 3, version 4) : des étincelles, des braises, des notes, des éclats, des ondes, l'écran qui tremble.
+   Tout est dessiné en « lumière » (on ajoute de la lumière à l'image), avec des lueurs peintes une fois.
+   Les coordonnées sont celles de l'écran (en points CSS).
+   ========================================================== */
 (function (G) {
 'use strict';
-var P3 = G.P3, REG = P3.REG;
-var ROLES = {barde: {c: '#ff8fb3', ic: '🎻'}, sage: {c: '#6cb6ff', ic: '📜'}, alchimiste: {c: '#b48cff', ic: '⚗️'}, pisteur: {c: '#5fcf86', ic: '🏹'}};
+var TAU = Math.PI * 2;
+var parts = [], ondes = [], secousse = {f: 0}, LUEURS = {}, temps = 0;
+function toile(w, h) { var c = document.createElement('canvas'); c.width = Math.max(1, Math.ceil(w)); c.height = Math.max(1, Math.ceil(h)); return c; }
+function lueur(rgb, blanc) {
+  var cle = rgb + '|' + blanc; if (LUEURS[cle]) return LUEURS[cle];
+  var c = toile(96, 96), x = c.getContext('2d'), gr = x.createRadialGradient(48, 48, 0, 48, 48, 48);
+  gr.addColorStop(0, 'rgba(255,255,255,' + blanc + ')'); gr.addColorStop(0.16, 'rgba(' + rgb + ',' + (0.62 + blanc * 0.33) + ')');
+  gr.addColorStop(0.45, 'rgba(' + rgb + ',.2)'); gr.addColorStop(1, 'rgba(' + rgb + ',0)');
+  x.fillStyle = gr; x.fillRect(0, 0, 96, 96); return (LUEURS[cle] = c);
+}
+function halo(c, x, y, r, rgb, a, blanc) { if (a <= 0.01 || r <= 0.3) return; c.globalAlpha = Math.min(1, a); c.drawImage(lueur(rgb, blanc === undefined ? 0.5 : blanc), x - r, y - r, r * 2, r * 2); c.globalAlpha = 1; }
+/* une particule : {x, y, vx, vy, g (pesanteur), frein, vie, max, r, rgb, blanc, sorte : 'g' lueur | 't' trait | 'n' note | 'e' éclat | 'f' fumée} */
+var QE = 2;
+function qualite(q) { QE = q; }
+function ajouter(o) { if (QE === 0 && Math.random() < 0.5) return o; o.vie = 0; o.max = o.max || 0.6; o.r = o.r || 3; o.rgb = o.rgb || '255,200,120'; o.sorte = o.sorte || 'g'; o.g = o.g || 0; o.frein = o.frein === undefined ? 0.985 : o.frein; o.rot = o.rot || Math.random() * TAU; o.vr = o.vr || (Math.random() - 0.5) * 10; parts.push(o); if (parts.length > 700) parts.splice(0, parts.length - 700); return o; }
+/* une gerbe : n particules qui partent d'un point */
+function gerbe(x, y, n, o) {
+  o = o || {};
+  for (var i = 0; i < n; i++) {
+    var a = o.angle !== undefined ? o.angle + (Math.random() - 0.5) * (o.ecart || 1) : Math.random() * TAU, v = (o.vit || 160) * (0.3 + Math.random() * 0.9);
+    ajouter({x: x + (Math.random() - 0.5) * (o.disp || 0), y: y + (Math.random() - 0.5) * (o.disp || 0), vx: Math.cos(a) * v, vy: Math.sin(a) * v - (o.monte || 0), g: o.g || 0, frein: o.frein,
+      max: (o.vie || 0.6) * (0.6 + Math.random() * 0.7), r: (o.r || 3) * (0.6 + Math.random() * 0.8), rgb: o.rgb, blanc: o.blanc, sorte: o.sorte});
+  }
+}
+function onde(x, y, r0, r1, dur, rgb, w, aplati) { ondes.push({x: x, y: y, r0: r0, r1: r1, dur: dur, rgb: rgb, w: w || 3, ap: aplati || 1, t: 0, hex: false}); }
+function hexa(x, y, r, dur) { ondes.push({x: x, y: y, r0: r * 0.6, r1: r * 1.2, dur: dur, rgb: '255,214,90', w: 2, ap: 1, t: 0, hex: true}); }
+function secouer(f) { secousse.f = Math.max(secousse.f, f); }
+function decalage() { var f = secousse.f; return f < 0.2 ? [0, 0] : [Math.sin(temps * 91) * f, Math.cos(temps * 77) * f * 0.8]; }
+function maj(dt) {
+  temps += dt; secousse.f *= Math.exp(-9 * dt);
+  parts = parts.filter(function (p) { p.vie += dt; if (p.vie >= p.max) return false; p.vx *= p.frein; p.vy = p.vy * p.frein + p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt; return true; });
+  ondes = ondes.filter(function (o) { o.t += dt; return o.t < o.dur; });
+}
+function vider() { parts = []; ondes = []; secousse.f = 0; }
+function dessinerHex(c, x, y, r, a) {
+  c.strokeStyle = 'rgba(255,220,110,' + a + ')'; c.lineWidth = 1.5;
+  var s = r / 3.2;
+  for (var i = -3; i <= 3; i++) for (var j = -3; j <= 3; j++) {
+    var hx = x + (i + (j % 2 ? 0.5 : 0)) * s * 1.73, hy = y + j * s * 1.5;
+    if (Math.hypot(hx - x, hy - y) > r) continue;
+    c.beginPath(); for (var k = 0; k < 6; k++) { var an = k / 6 * TAU + Math.PI / 6, px = hx + Math.cos(an) * s * 0.95, py = hy + Math.sin(an) * s * 0.95; if (k) c.lineTo(px, py); else c.moveTo(px, py); } c.closePath(); c.stroke();
+  }
+}
+function dessiner(c) {
+  c.save(); c.globalCompositeOperation = 'lighter';
+  ondes.forEach(function (o) {
+    var u = o.t / o.dur, r = o.r0 + (o.r1 - o.r0) * (1 - Math.pow(1 - u, 2)), a = (1 - u);
+    if (o.hex) { dessinerHex(c, o.x, o.y, r, 0.85 * a); c.strokeStyle = 'rgba(255,230,140,' + a + ')'; c.lineWidth = 3; c.beginPath(); c.arc(o.x, o.y, r, 0, TAU); c.stroke(); return; }
+    c.strokeStyle = 'rgba(' + o.rgb + ',' + (0.9 * a) + ')'; c.lineWidth = o.w * (1 - u * 0.6); c.beginPath(); c.ellipse(o.x, o.y, r, r * o.ap, 0, 0, TAU); c.stroke();
+    c.strokeStyle = 'rgba(' + o.rgb + ',' + (0.25 * a) + ')'; c.lineWidth = o.w * 4; c.stroke();
+  });
+  parts.forEach(function (p) {
+    var u = p.vie / p.max, a = u < 0.15 ? u / 0.15 : 1 - (u - 0.15) / 0.85;
+    if (p.sorte === 't') { var l = 0.05; c.strokeStyle = 'rgba(' + p.rgb + ',' + a + ')'; c.lineWidth = p.r * 0.7; c.lineCap = 'round'; c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(p.x - p.vx * l, p.y - p.vy * l); c.stroke(); halo(c, p.x, p.y, p.r * 2.2, p.rgb, a * 0.6, p.blanc); }
+    else if (p.sorte === 'n') { c.save(); c.globalAlpha = a; c.translate(p.x, p.y); c.rotate(Math.sin(p.rot) * 0.5); c.fillStyle = 'rgb(' + p.rgb + ')'; c.font = '900 ' + Math.round(p.r * 4) + 'px Nunito,serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(p.note || '♪', 0, 0); c.restore(); halo(c, p.x, p.y, p.r * 3, p.rgb, a * 0.5, 0.3); }
+    else if (p.sorte === 'e') { c.save(); c.globalAlpha = a; c.translate(p.x, p.y); c.rotate(p.rot); c.fillStyle = 'rgb(' + p.rgb + ')'; c.beginPath(); c.moveTo(0, -p.r * 1.6); c.lineTo(p.r * 0.8, p.r); c.lineTo(-p.r * 0.8, p.r); c.closePath(); c.fill(); c.restore(); halo(c, p.x, p.y, p.r * 2, p.rgb, a * 0.5, 0.4); }
+    else if (p.sorte === 'f') { c.globalCompositeOperation = 'source-over'; c.globalAlpha = a * 0.35; c.fillStyle = 'rgb(' + p.rgb + ')'; c.beginPath(); c.arc(p.x, p.y, p.r * (1 + u * 2), 0, TAU); c.fill(); c.globalAlpha = 1; c.globalCompositeOperation = 'lighter'; }
+    else halo(c, p.x, p.y, p.r * 2.2, p.rgb, a, p.blanc);
+  });
+  c.restore();
+}
+G.Eff = {qualite: qualite, ajouter: ajouter, gerbe: gerbe, onde: onde, hexa: hexa, secouer: secouer, decalage: decalage, maj: maj, dessiner: dessiner, vider: vider, halo: halo, lueur: lueur,
+  get nb() { return parts.length; }};
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>/* ===== grosbec.js ===== */
+/* ==========================================================
+   GROSBEC DE LUMIÈRE (phase 3, version 4) : un géant fait d'énergie, en volume.
+   Un pantin décrit dans l'espace, comme l'armure du combat du Pisteur : un squelette en 3D (il se tourne, se penche,
+   plie les genoux, tend les bras ; les coudes et les genoux se placent tout seuls), puis, par-dessus, un corps de
+   lumière rouge et or : des membres translucides avec leur « os » de lumière blanche, l'énergie qui coule dedans,
+   des éclairs qui le parcourent, une crinière de flammes, deux anneaux d'énergie qui tournent autour de lui (devant et
+   derrière son corps), une cape de lumière, le cœur qui bat, des braises qui montent.
+   Un geste pour chaque chose qu'il fait (les éclairs, la grosse zone, la méga attaque, le tambour) et pour chaque chose
+   qu'il reçoit (un coup juste sur chacune des six parties, un sort qui rebondit : il rit).
+   Il est peint dans SA toile, 30 fois par seconde au plus, puis recopié à chaque image (la règle des vieilles tablettes).
+   Unités : 50 pour un pas ; y vers le haut ; z vers nous.
+   ========================================================== */
+(function (G) {
+'use strict';
+var P3 = G.P3, REG = P3.REG, B = REG.grosbec;
+var TAU = Math.PI * 2, U = 50, KV = 0.55;
+var BOITE = {x0: -260, y0: -345, w: 520, h: 405};
+var cv = null, g = null, kc = 1, dpr = 1, k = 1, tDessin = -9, V = {T: 40, ox: 0, oy: 0}, QUAL = 2, IPS = [15, 20, 26];   // la qualité : 2 (belle), 1, 0 (vieille tablette)
+var P = null, R = null, J = null, PARTS = null, vuEvt = -1, vuEcl = -1, dernierMaj = 0, braises = [], arcsT = -9, arcs = [];
+var file = [], flash = {}, rire = -9, coupT = -9, vict = -9, oubliZone = {};
+function cl(v, a, b) { return Math.max(a, Math.min(b, v)); }
+function mel(a, b, u) { return a + (b - a) * u; }
+function doux(u) { u = cl(u, 0, 1); return u * u * (3 - 2 * u); }
+function bruit(i) { var s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); }
+function toile(w, h) { var c = document.createElement('canvas'); c.width = Math.max(1, Math.ceil(w)); c.height = Math.max(1, Math.ceil(h)); return c; }
+
+/* ---------- les lueurs, peintes une fois ---------- */
+var LUEURS = {};
+function lueur(rgb, blanc) {
+  var cle = rgb + '|' + blanc; if (LUEURS[cle]) return LUEURS[cle];
+  var c = toile(128, 128), x = c.getContext('2d'), gr = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+  gr.addColorStop(0, 'rgba(255,255,255,' + blanc + ')'); gr.addColorStop(0.14, 'rgba(' + rgb + ',' + (0.6 + blanc * 0.35) + ')');
+  gr.addColorStop(0.42, 'rgba(' + rgb + ',.22)'); gr.addColorStop(0.75, 'rgba(' + rgb + ',.05)'); gr.addColorStop(1, 'rgba(' + rgb + ',0)');
+  x.fillStyle = gr; x.fillRect(0, 0, 128, 128); return (LUEURS[cle] = c);
+}
+function halo(x, y, r, rgb, a, blanc) { if (a <= 0.01 || r <= 0) return; g.globalAlpha = Math.min(1, a); g.drawImage(lueur(rgb, blanc === undefined ? 0.5 : blanc), x - r, y - r, r * 2, r * 2); g.globalAlpha = 1; }
+
+/* ---------- la pose : tout ce qui bouge ---------- */
+var REPOS = {cap: 0, tors: 0, penche: 0.02, roulis: 0, bas: 0, flotte: 0, tete: 0, hoche: 0,
+  gx: -84, gy: 22, gz: 26, dx: 84, dy: 22, dz: 26, go: 0.7, do_: 0.7,   // les mains (g : à gauche de l'écran), dans le repère du buste (depuis le bassin)
+  piedG: 0, piedD: 0, ecart: 0, lum: 1, yeux: 1, bouche: 0, cape: 0, orbe: 0, poing: 0};
+var VIT = {cap: 7, tors: 9, penche: 10, roulis: 9, bas: 11, flotte: 6, tete: 9, hoche: 10, gx: 14, gy: 14, gz: 14, dx: 14, dy: 14, dz: 14, go: 18, do_: 18,
+  piedG: 14, piedD: 14, ecart: 10, lum: 12, yeux: 14, bouche: 16, cape: 4, orbe: 10, poing: 10};
+
+/* le repère : le bassin (il se tourne de « cap »), le buste (il se tourne encore de « tors », se penche, roule), la tête */
+function reperes(P) {
+  var yb = P.cap + P.tors, cb = Math.cos(yb), sb = Math.sin(yb), cp = Math.cos(P.penche), sp = Math.sin(P.penche), cr = Math.cos(P.roulis), sr = Math.sin(P.roulis);
+  var py = 112 + P.bas + P.flotte, ch = Math.cos(P.cap), sh = Math.sin(P.cap);
+  function bu(x, y, z) { var x1 = x * cb + z * sb, z1 = -x * sb + z * cb, y2 = y * cp - z1 * sp, z2 = y * sp + z1 * cp; return [x1 * cr + y2 * sr, py + (-x1 * sr + y2 * cr), z2]; }
+  function ha(x, y, z) { var x1 = x * ch + z * sh, z1 = -x * sh + z * ch; return [x1, py + y, z1]; }
+  var ct = Math.cos(P.tete), st = Math.sin(P.tete), cn = Math.cos(P.hoche), sn = Math.sin(P.hoche);
+  function te(x, y, z) { var x1 = x * ct + z * st, z1 = -x * st + z * ct, y2 = y * cn - z1 * sn, z2 = y * sn + z1 * cn; return bu(x1, 102 + y2, z2); }
+  return {bu: bu, ha: ha, te: te, yb: yb, yt: yb + P.tete};
+}
+/* l'espace → la toile (en unités) : la même vue en biais que la salle */
+function pr(q) { var p = 1 + q[2] * 0.0016; return [q[0] * p, (-q[1] + q[2] * KV) * p, p, q[2]]; }
+function ik(A, H, a, b, pole) {   // deux os : où est le coude (ou le genou) ?
+  var d = [H[0] - A[0], H[1] - A[1], H[2] - A[2]], L = Math.hypot(d[0], d[1], d[2]) || 1, Lc = cl(L, Math.abs(a - b) + 1, a + b - 0.5);
+  d = d.map(function (v) { return v / L; });
+  var m = (a * a - b * b + Lc * Lc) / (2 * Lc), hh = Math.sqrt(Math.max(0, a * a - m * m)), dp = pole[0] * d[0] + pole[1] * d[1] + pole[2] * d[2];
+  var q = [pole[0] - d[0] * dp, pole[1] - d[1] * dp, pole[2] - d[2] * dp], ql = Math.hypot(q[0], q[1], q[2]) || 1; q = q.map(function (v) { return v / ql; });
+  return [[A[0] + d[0] * m + q[0] * hh, A[1] + d[1] * m + q[1] * hh, A[2] + d[2] * m + q[2] * hh], [A[0] + d[0] * Lc, A[1] + d[1] * Lc, A[2] + d[2] * Lc]];
+}
+
+/* ---------- ses gestes : des images clés [quand, ce qui change] ; entre deux, tout glisse ---------- */
+function geste(cles, t) {
+  if (t < cles[0][0] || t > cles[cles.length - 1][0]) return null;
+  var i = 0; while (i < cles.length - 2 && t > cles[i + 1][0]) i++;
+  var a = cles[i], b = cles[i + 1], u = doux((t - a[0]) / Math.max(0.001, b[0] - a[0])), o = {}, kk;
+  for (kk in a[1]) o[kk] = mel(a[1][kk], kk in b[1] ? b[1][kk] : REPOS[kk], u);
+  for (kk in b[1]) if (!(kk in o)) o[kk] = mel(REPOS[kk], b[1][kk], u);
+  return o;
+}
+function main(sd, x, y, z, o) { return sd < 0 ? {gx: x, gy: y, gz: z, go: o} : {dx: x, dy: y, dz: z, do_: o}; }
+function fusion(a, b) { var o = {}, kk; for (kk in a) o[kk] = a[kk]; for (kk in b) o[kk] = b[kk]; return o; }
+var GESTES = {
+  // un éclair : la main part vers le héros, d'un coup sec, puis revient
+  eclair: function (sd) { return [[0, {}], [0.09, fusion(main(sd, sd * 70, 70, 40, 0.2), {tors: -0.12 * sd, lum: 1.25})], [0.2, fusion(main(sd, sd * 46, 62, 108, 1), {tors: 0.06 * sd, penche: 0.07, lum: 1.4})], [0.62, {}]]; },
+  // un coup juste, selon la partie touchée
+  touche0: function () { return [[0, {hoche: -0.55, penche: -0.22, tete: 0.3, bas: -4, yeux: 0.2, bouche: 0.9, lum: 1.9}], [0.22, {hoche: -0.3, penche: -0.12, tete: -0.15, bouche: 0.6, yeux: 0.6}], [0.7, {}]]; },
+  touche1: function () { return [[0, {penche: 0.42, bas: -14, hoche: 0.25, gx: -26, gy: 64, gz: 40, dx: 26, dy: 60, dz: 42, go: 0.2, do_: 0.2, bouche: 0.8, lum: 1.9, flotte: -4}], [0.3, {penche: 0.24, bas: -8, gx: -40, gy: 56, gz: 46, dx: 40, dy: 56, dz: 46}], [0.8, {}]]; },
+  touche2: function () { return [[0, fusion(main(-1, -122, 92, -60, 1), {tors: 0.42, cap: 0.12, roulis: 0.08, tete: 0.4, bouche: 0.8, lum: 1.8})], [0.28, fusion(main(-1, -106, 60, -20, 0.5), {tors: 0.2, roulis: 0.04})], [0.75, {}]]; },
+  touche3: function () { return [[0, fusion(main(1, 122, 92, -60, 1), {tors: -0.42, cap: -0.12, roulis: -0.08, tete: -0.4, bouche: 0.8, lum: 1.8})], [0.28, fusion(main(1, 106, 60, -20, 0.5), {tors: -0.2, roulis: -0.04})], [0.75, {}]]; },
+  touche4: function () { return [[0, {piedG: 1, bas: -20, roulis: 0.16, penche: 0.12, tete: -0.2, hoche: 0.2, bouche: 0.7, lum: 1.8}], [0.34, {piedG: 0.4, bas: -10, roulis: 0.07}], [0.85, {}]]; },
+  touche5: function () { return [[0, {piedD: 1, bas: -20, roulis: -0.16, penche: 0.12, tete: 0.2, hoche: 0.2, bouche: 0.7, lum: 1.8}], [0.34, {piedD: 0.4, bas: -10, roulis: -0.07}], [0.85, {}]]; },
+  // un sort qui rebondit : il le chasse d'un revers de main, puis il rit (la tête en arrière, les épaules qui sautent)
+  rebond: function (sd) { return [[0, fusion(main(sd, sd * 60, 84, 70, 1), {tors: 0.18 * sd})], [0.2, fusion(main(sd, sd * 112, 74, 30, 1), {tors: -0.12 * sd, hoche: -0.32, bouche: 0.7})],
+    [0.5, {hoche: -0.38, bas: 3, bouche: 0.9, yeux: 1.6}], [0.65, {hoche: -0.3, bas: -3, bouche: 0.5}], [0.8, {hoche: -0.36, bas: 3, bouche: 0.9}], [0.95, {hoche: -0.28, bas: -2, bouche: 0.4}], [1.3, {}]]; },
+  // il prend un coup de trop (le symbole) : il titube
+  titube: function () { return [[0, {penche: 0.4, bas: -26, roulis: 0.18, hoche: 0.35, lum: 0.5, yeux: 0.3, gx: -60, gy: 10, gz: 50, dx: 70, dy: 40, dz: 20}], [0.7, {penche: 0.3, bas: -18, roulis: -0.1}], [1.6, {}]]; },
+  // la fin : il se cambre, les bras ouverts, la lumière lui sort de partout ; puis il se défait en lumière
+  chute: function () { return [[0, {penche: -0.1, bas: 4, hoche: -0.3, bouche: 1, yeux: 2.4, lum: 2.2, gx: -120, gy: 150, gz: 0, dx: 120, dy: 150, dz: 0, go: 1, do_: 1, flotte: 10}],
+    [0.7, {penche: -0.3, bas: 10, hoche: -0.55, roulis: 0.05, bouche: 1, yeux: 3, lum: 2.8, gx: -140, gy: 170, gz: -10, dx: 140, dy: 170, dz: -10, go: 1, do_: 1, flotte: 22}],
+    [2.4, {penche: 0.25, bas: -24, hoche: 0.4, roulis: -0.06, yeux: 0.4, lum: 1.6, gx: -70, gy: 20, gz: 50, dx: 70, dy: 20, dz: 50, go: 0.3, do_: 0.3, flotte: 6}]]; }
+};
+function jouer(nom, t0, arg) { file.push({nom: nom, t0: t0, cles: GESTES[nom](arg)}); if (file.length > 8) file.shift(); }
+
+/* ---------- ce qu'il fait, d'après la partie : chaque tablette le calcule elle-même ---------- */
+function posture(S, C, now) {
+  var T = S.T, su = S.su;
+  if (S.etat === 'film' || S.etat === 'go') { C.lum = 0.75; C.yeux = 0.8; return; }
+  // (R) le tambour, à la fin du premier combat : accroupi, il frappe le sol des deux poings, l'un après l'autre
+  if (S.combat === 1 && T >= REG.combat1.tenir) {
+    var ph = (T - REG.combat1.tenir) * 3.2, cote = Math.floor(ph) % 2 ? 1 : -1, u = ph % 1, bas = u < 0.45 ? doux(u / 0.45) : 1 - doux((u - 0.45) / 0.55);
+    C.bas = -34; C.penche = 0.42; C.flotte = 0; C.hoche = 0.1; C.yeux = 2; C.bouche = 0.6; C.lum = 1.5 + 0.3 * bas; C.go = 0; C.do_ = 0;
+    var hy = 60 - 120 * bas, ho = 70 + 30 * (1 - bas);
+    if (cote < 0) { C.gx = -50; C.gy = hy; C.gz = ho; C.dx = 60; C.dy = 70; C.dz = 70; C.roulis = 0.06 * bas; }
+    else { C.dx = 50; C.dy = hy; C.dz = ho; C.gx = -60; C.gy = 70; C.gz = 70; C.roulis = -0.06 * bas; }
+    return;
+  }
+  if (S.combat !== 2) return;
+  // la grosse zone (tout le monde la voit venir, personne ne sait où) : il s'élève, ouvre les bras, l'énergie du sol monte dans ses mains,
+  // il la serre contre lui en une boule, la lève, et l'abat sur le sol
+  for (var i = 0; i < su.zones.length; i++) {
+    var z = su.zones[i]; if (z.tA > T) break;
+    if (T >= z.tI + 1.1 || oubliZone[z.id]) continue;
+    var u2 = (T - z.tA) / (z.tI - z.tA);
+    if (u2 < 1) {
+      var a = doux(u2 / 0.25), b = doux((u2 - 0.62) / 0.24), c = doux((u2 - 0.88) / 0.12);
+      C.flotte = 22 * a * (1 - c); C.penche = -0.1 * a + 0.25 * b - 0.05 * c; C.hoche = -0.25 * a + 0.2 * b; C.yeux = 1.3 + 0.9 * u2; C.lum = 1.1 + 0.6 * u2; C.cape = a;
+      C.go = C.do_ = 1 - 0.8 * b; C.orbe = b * (1 - c * 0.3) + 0.25 * a * (1 - b);
+      C.gx = mel(mel(-84, -150, a), -22, b); C.gy = mel(mel(22, 112, a), 70, b); C.gz = mel(mel(26, 0, a), 70, b);
+      C.dx = -C.gx; C.dy = C.gy; C.dz = C.gz;
+      if (c > 0) { C.gx = mel(C.gx, -26, c); C.gy = mel(C.gy, 150, c); C.gz = mel(C.gz, 40, c); C.dx = -C.gx; C.dy = C.gy; C.dz = C.gz; C.poing = c; }
+    } else {   // l'impact : il s'abat, accroupi, les poings au sol
+      var v = (T - z.tI) / 1.1, f = 1 - doux(v);
+      C.bas = -40 * f; C.penche = 0.5 * f; C.hoche = 0.15 * f; C.gx = -30; C.gy = mel(30, -70, f); C.gz = mel(30, 90, f); C.dx = 30; C.dy = C.gy; C.dz = C.gz; C.go = C.do_ = 0; C.lum = 1 + 0.9 * f; C.yeux = 1 + f;
+    }
+    break;
+  }
+  // la méga attaque, seulement sur la tablette de celui qui prévient (R) : il montre sa cible du doigt, la boule grossit au bout
+  var mg = null;
+  for (var j = 0; j < su.megas.length; j++) { var m = su.megas[j]; if (m.tA > T) break; if (T < m.tI && m.donneur === S.moi && P3.vivant(S)) mg = m; }
+  if (mg) {
+    var a2 = S.amis[mg.cible], dxh = a2 ? a2.x - B.x : 0, dzh = a2 ? a2.y - B.y : 3, sd = dxh < 0 ? -1 : 1, w = doux((T - mg.tA) / 0.5), ch = (T - mg.tA) / (mg.tI - mg.tA);
+    var vx = dxh * U - sd * 60, vy = -(112 + 92), vz = dzh * U, vl = Math.hypot(vx, vy, vz) || 1;   // de l'épaule vers le visé
+    var tx = mel(sd * 84, sd * 60 + vx / vl * 98, w), ty = mel(22, 90 + vy / vl * 98, w), tz = mel(26, vz / vl * 98, w);
+    if (sd < 0) { C.gx = tx; C.gy = ty; C.gz = tz; C.go = 1; } else { C.dx = tx; C.dy = ty; C.dz = tz; C.do_ = 1; }
+    C.tete = cl(dxh / 6, -0.8, 0.8); C.hoche = 0.3; C.tors = 0; C.cap = 0; C.yeux = 1.6 + ch; C.lum = 1.2 + 0.5 * ch;
+    C.mega = sd * ch;
+  }
+  // mon symbole : ma barre est à zéro ; il continue, mais affaibli
+  if (S.boss <= 0) { C.lum *= 0.55; C.yeux *= 0.6; C.bas -= 6; C.penche += 0.08; }
+}
+function majPose(S, dt) {
+  var now = S.reel, C = {}, kk;
+  for (kk in REPOS) C[kk] = REPOS[kk];
+  C.mega = 0;
+  // sa vie au repos : il flotte un peu, il respire, sa tête suit mon héros, ses mains s'ouvrent et se ferment
+  C.flotte = 4 + Math.sin(now * 1.3) * 3.5; C.cap = 0.07 * Math.sin(now * 0.37); C.tors = 0.05 * Math.sin(now * 0.61 + 1);
+  C.tete = cl((S.h.x - B.x) / 9, -0.6, 0.6) + 0.08 * Math.sin(now * 0.9); C.hoche = 0.12 + 0.04 * Math.sin(now * 0.7);
+  C.gy += Math.sin(now * 1.1) * 5; C.dy += Math.sin(now * 1.1 + 2) * 5; C.go = 0.55 + 0.35 * Math.sin(now * 0.8); C.do_ = 0.55 + 0.35 * Math.sin(now * 0.8 + 1.7);
+  C.lum = 1 + 0.12 * Math.sin(now * 3);
+  posture(S, C, now);
+  for (var i = file.length - 1; i >= 0; i--) { var f = file[i], o = geste(f.cles, now - f.t0); if (o) for (kk in o) C[kk] = o[kk]; else if (now - f.t0 > f.cles[f.cles.length - 1][0]) file.splice(i, 1); }
+  if (vict > 0) { var o2 = geste(GESTES.chute(), now - vict); if (o2) for (kk in o2) C[kk] = o2[kk]; else { var o3 = GESTES.chute(); for (kk in o3[o3.length - 1][1]) C[kk] = o3[o3.length - 1][1][kk]; } }
+  if (!P) { P = {}; for (kk in C) P[kk] = C[kk]; }
+  var d = Math.min(0.1, dt);
+  for (kk in C) { if (P[kk] === undefined) P[kk] = C[kk]; var vit = VIT[kk] || 12; P[kk] += (C[kk] - P[kk]) * (1 - Math.exp(-vit * d)); }
+}
+/* les nouveautés de la partie : les coups reçus, les rebonds, les éclairs */
+function lireEvts(S) {
+  var l = S.evts;
+  for (var i = 0; i < l.length; i++) {
+    var e = l[i]; if (e._g) continue; e._g = 1;
+    if (e.type === 'touche') { jouer('touche' + e.part, e.t); flash[e.part] = e.t; coupT = e.t; }
+    else if (e.type === 'rebond') { jouer('rebond', e.t, e.part === 2 || e.part === 4 ? -1 : 1); flash['r' + e.part] = e.t; rire = e.t; }
+    else if (e.type === 'symbole') jouer('titube', e.t);
+    else if (e.type === 'victoire') vict = e.t;
+    else if (e.type === 'reprise' || e.type === 'combat2') { file = []; oubliZone = {}; }
+  }
+  for (var j = 0; j < S.eclairs.length; j++) { var ec = S.eclairs[j]; if (ec._g || ec.t > S.reel) continue; ec._g = 1; jouer('eclair', ec.t, ec.main); }
+}
+
+/* ---------- le squelette en place, et les six parties (pour viser) ---------- */
+function construireCorps() {
+  R = reperes(P);
+  var bu = R.bu, ha = R.ha, te = R.te, j = {};
+  j.bassin = ha(0, 0, 0); j.taille = bu(0, 24, 4); j.poitrine = bu(0, 70, 6); j.cou = bu(0, 100, 0); j.tete = te(0, 26, 2);
+  j.coeur = bu(0, 70, 26);
+  [-1, 1].forEach(function (sd) {
+    var m = sd < 0 ? 'G' : 'D', ep = bu(sd * 60, 90, -2), cible = bu(sd < 0 ? P.gx : P.dx, sd < 0 ? P.gy : P.dy, sd < 0 ? P.gz : P.dz);
+    var r = ik(ep, cible, 54, 52, (function () { var q = bu(sd * 0.85, -0.25, -0.5), o = bu(0, 0, 0); return [q[0] - o[0], q[1] - o[1], q[2] - o[2]]; })());
+    j['epaule' + m] = ep; j['coude' + m] = r[0]; j['main' + m] = r[1];
+    var hp = ha(sd * 22, -4, 0), lev = sd < 0 ? P.piedG : P.piedD, pied = [sd * (30 + P.ecart) + Math.sin(R.yb) * 0, 6 + lev * 22, 8 + lev * 26];
+    var ch = Math.cos(P.cap), sh = Math.sin(P.cap); pied = [pied[0] * ch + pied[2] * sh, pied[1] + Math.max(0, P.flotte) * 0.6, -pied[0] * sh + pied[2] * ch];
+    var rj = ik(hp, pied, 56, 52, [sd * 0.25, 0.1, 1]);
+    j['hanche' + m] = hp; j['genou' + m] = rj[0]; j['pied' + m] = rj[1];
+  });
+  J = {}; for (var n in j) J[n] = pr(j[n]);
+  J._monde = j;
+  // les parties, en unités de la toile : la tête (un rond), le torse (une forme), les bras et les jambes (des os épais)
+  PARTS = [
+    {n: 'tete', c: J.tete, r: 28 * J.tete[2]},
+    {n: 'torse', c: pr(bu(0, 56, 10)), rx: 50 * J.poitrine[2], ry: 62 * J.poitrine[2]},
+    {n: 'brasG', a: J.epauleG, b: J.coudeG, d: J.mainG, e: 15},
+    {n: 'brasD', a: J.epauleD, b: J.coudeD, d: J.mainD, e: 15},
+    {n: 'jambeG', a: J.hancheG, b: J.genouG, d: J.piedG, e: 17},
+    {n: 'jambeD', a: J.hancheD, b: J.genouD, d: J.piedD, e: 17}
+  ];
+}
+
+/* ---------- le dessin : un membre de lumière ---------- */
+function ligne(A, B) { g.beginPath(); g.moveTo(A[0], A[1]); g.lineTo(B[0], B[1]); }
+function capsule(A, B, rA, rB) {
+  var dx = B[0] - A[0], dy = B[1] - A[1], L = Math.hypot(dx, dy) || 0.01, nx = -dy / L, ny = dx / L, a = Math.atan2(dy, dx);
+  g.beginPath(); g.moveTo(A[0] + nx * rA, A[1] + ny * rA); g.lineTo(B[0] + nx * rB, B[1] + ny * rB);
+  g.arc(B[0], B[1], rB, a + Math.PI / 2, a - Math.PI / 2, true); g.lineTo(A[0] - nx * rA, A[1] - ny * rA);
+  g.arc(A[0], A[1], rA, a - Math.PI / 2, a + Math.PI / 2, true); g.closePath();
+  return [nx, ny];
+}
+function membre(A, B, rA, rB, lum, now, graine) {
+  rA *= A[2]; rB *= B[2];
+  var r = (rA + rB) / 2;
+  g.globalCompositeOperation = 'lighter'; g.lineCap = 'round';
+  g.strokeStyle = 'rgba(255,60,35,' + (0.16 * lum) + ')'; g.lineWidth = r * 3.2; ligne(A, B); g.stroke();
+  g.globalCompositeOperation = 'source-over';
+  var n = capsule(A, B, rA, rB), mx = (A[0] + B[0]) / 2, my = (A[1] + B[1]) / 2, s = n[0] < 0 ? -1 : 1;
+  // un être d'énergie : les bords brillent, le dedans est rouge sombre et transparent (la lumière vient un peu d'en haut à gauche)
+  var gr = g.createLinearGradient(mx - n[0] * r * s, my - n[1] * r * s, mx + n[0] * r * s, my + n[1] * r * s);
+  gr.addColorStop(0, 'rgba(255,190,130,.92)'); gr.addColorStop(0.16, 'rgba(255,96,58,.7)'); gr.addColorStop(0.5, 'rgba(176,22,36,.5)'); gr.addColorStop(0.84, 'rgba(240,60,44,.62)'); gr.addColorStop(1, 'rgba(255,130,90,.8)');
+  g.fillStyle = gr; g.fill();
+  g.strokeStyle = 'rgba(255,205,160,' + (0.55 * lum) + ')'; g.lineWidth = 1.4; g.stroke();
+  // le cœur du membre : une lumière douce, et l'énergie qui coule dedans
+  g.globalCompositeOperation = 'lighter';
+  g.strokeStyle = 'rgba(255,140,90,' + (0.3 * lum) + ')'; g.lineWidth = r * 0.9; ligne(A, B); g.stroke();
+  g.strokeStyle = 'rgba(255,236,200,' + (0.32 * lum) + ')'; g.lineWidth = Math.max(1, r * 0.14); ligne(A, B); g.stroke();
+  g.setLineDash([r * 0.5, r * 1.6]); g.lineDashOffset = -now * 70 - graine * 13;
+  g.strokeStyle = 'rgba(255,226,160,' + (0.7 * lum) + ')'; g.lineWidth = Math.max(1, r * 0.22); ligne(A, B); g.stroke(); g.setLineDash([]);
+  g.globalCompositeOperation = 'source-over';
+}
+function articulation(Q, r, lum) { r *= Q[2]; g.globalCompositeOperation = 'lighter'; halo(Q[0], Q[1], r * 2.6, '255,120,70', 0.55 * lum, 0.5); g.globalCompositeOperation = 'source-over'; }
+function epaule(Q, sd, lum, now) {
+  var r = 21 * Q[2], gr = g.createRadialGradient(Q[0] - sd * r * 0.2 - r * 0.25, Q[1] - r * 0.35, 1, Q[0], Q[1], r);
+  gr.addColorStop(0, 'rgba(255,200,150,.85)'); gr.addColorStop(0.45, 'rgba(210,40,40,.55)'); gr.addColorStop(0.85, 'rgba(240,70,46,.7)'); gr.addColorStop(1, 'rgba(255,160,110,.9)');
+  g.fillStyle = gr; g.beginPath(); g.arc(Q[0], Q[1], r, 0, TAU); g.fill(); g.strokeStyle = 'rgba(255,210,170,' + 0.6 * lum + ')'; g.lineWidth = 1.4; g.stroke();
+  g.globalCompositeOperation = 'lighter';
+  for (var i = 0; i < 4; i++) { var u = (i - 1.5) / 1.5, bx = Q[0] + u * r * 0.7, by = Q[1] - r * 0.6, h = (16 + 10 * Math.sin(now * 7 + i * 1.9 + sd)) * Q[2], tx = bx + sd * h * 0.35 + Math.sin(now * 3 + i) * 3, ty = by - h;
+    var fl = g.createLinearGradient(bx, by, tx, ty); fl.addColorStop(0, 'rgba(255,214,140,' + 0.7 * lum + ')'); fl.addColorStop(1, 'rgba(255,40,20,0)');
+    g.fillStyle = fl; g.beginPath(); g.moveTo(bx - 5 * Q[2], by); g.quadraticCurveTo(bx, by - h * 0.5, tx, ty); g.quadraticCurveTo(bx + 2, by - h * 0.4, bx + 5 * Q[2], by); g.fill(); }
+  halo(Q[0], Q[1], r * 2, '255,90,50', 0.4 * lum, 0.2);
+  g.globalCompositeOperation = 'source-over';
+}
+/* la main : la paume et cinq doigts, ouverte ou en poing (rouge et or, comme le bras brisé de la phase 2) */
+function mainDe(Cd, Co, ouvert, lum, now) {
+  var ang = Math.atan2(Cd[1] - Co[1], Cd[0] - Co[0]), p = Cd[2], ouv = cl(ouvert, 0, 1);
+  g.globalCompositeOperation = 'lighter';
+  halo(Cd[0], Cd[1], 30 * p, '255,150,60', 0.7 * lum, 0.6);
+  g.lineCap = 'round';
+  for (var i = 0; i < 5; i++) {
+    var sp = (i - 2) * (0.22 + 0.2 * ouv) + (i === 0 ? -0.5 : 0), L = (i === 0 ? 11 : 15 - Math.abs(i - 2.2) * 1.5) * p * (0.45 + 0.55 * ouv), a = ang + sp;
+    var x0 = Cd[0] + Math.cos(ang) * 4 * p, y0 = Cd[1] + Math.sin(ang) * 4 * p, x1 = x0 + Math.cos(a) * L, y1 = y0 + Math.sin(a) * L;
+    g.strokeStyle = 'rgba(255,90,50,.55)'; g.lineWidth = 6 * p; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
+    g.strokeStyle = 'rgba(255,224,150,' + (0.85 * lum) + ')'; g.lineWidth = 2.2 * p; g.stroke();
+  }
+  g.fillStyle = 'rgba(255,120,70,.7)'; g.beginPath(); g.ellipse(Cd[0], Cd[1], 10 * p, 8 * p, ang, 0, TAU); g.fill();
+  g.globalCompositeOperation = 'source-over';
+}
+
+/* ---------- le torse : un buste de héros, en lumière ; le cœur ; les lignes d'or ---------- */
+function torse(now, lum, battement) {
+  var bu = R.bu, ha = R.ha, q = function (x, y, z) { return pr(bu(x, y, z)); };
+  var NL = q(-19, 104, 2), NR = q(19, 104, 2), SL = J.epauleG, SR = J.epauleD, CL = q(-57, 68, 4), CR = q(57, 68, 4), WL = q(-33, 22, 6), WR = q(33, 22, 6);
+  var PL = pr(ha(-31, -2, 4)), PR = pr(ha(31, -2, 4)), PB = pr(ha(0, -14, 8));
+  function forme() {
+    g.beginPath(); g.moveTo(NL[0], NL[1]); g.quadraticCurveTo(SL[0] * 0.6 + NL[0] * 0.4, SL[1] - 10, SL[0], SL[1]);
+    g.quadraticCurveTo(CL[0] - 6, CL[1] - 6, CL[0], CL[1]); g.quadraticCurveTo(WL[0] - 4, WL[1] - 18, WL[0], WL[1]);
+    g.lineTo(PL[0], PL[1]); g.quadraticCurveTo(PB[0], PB[1] + 10, PR[0], PR[1]); g.lineTo(WR[0], WR[1]);
+    g.quadraticCurveTo(WR[0] + 4, WR[1] - 18, CR[0], CR[1]); g.quadraticCurveTo(CR[0] + 6, CR[1] - 6, SR[0], SR[1]);
+    g.quadraticCurveTo(SR[0] * 0.6 + NR[0] * 0.4, SR[1] - 10, NR[0], NR[1]); g.closePath();
+  }
+  // la lueur autour
+  forme(); g.globalCompositeOperation = 'lighter'; g.strokeStyle = 'rgba(255,50,30,' + 0.16 * lum + ')'; g.lineWidth = 26; g.lineJoin = 'round'; g.stroke();
+  g.strokeStyle = 'rgba(255,80,40,' + 0.16 * lum + ')'; g.lineWidth = 12; g.stroke(); g.globalCompositeOperation = 'source-over';
+  // le corps : chaud au milieu, sombre sur les bords ; le côté qui tourne s'assombrit
+  var C = J.coeur, gr = g.createRadialGradient(C[0], C[1], 4, C[0], C[1] + 10, 92 * C[2]);
+  gr.addColorStop(0, 'rgba(255,170,120,.7)'); gr.addColorStop(0.35, 'rgba(190,30,40,.5)'); gr.addColorStop(0.75, 'rgba(170,20,34,.52)'); gr.addColorStop(1, 'rgba(255,110,70,.78)');
+  forme(); g.fillStyle = gr; g.fill();
+  var gh = g.createLinearGradient(0, SL[1] - 10, 0, PB[1]); gh.addColorStop(0, 'rgba(255,170,120,.35)'); gh.addColorStop(0.4, 'rgba(255,120,80,0)'); g.fillStyle = gh; forme(); g.fill();   // le haut du buste, éclairé
+  var sy = Math.sin(R.yb);
+  if (Math.abs(sy) > 0.02) { var gx = g.createLinearGradient(SL[0], 0, SR[0], 0); gx.addColorStop(sy > 0 ? 1 : 0, 'rgba(40,0,8,' + Math.min(0.55, Math.abs(sy) * 1.3) + ')'); gx.addColorStop(0.5, 'rgba(40,0,8,0)'); g.fillStyle = gx; forme(); g.fill(); }
+  g.strokeStyle = 'rgba(255,200,160,' + 0.75 * lum + ')'; g.lineWidth = 1.8; forme(); g.stroke();
+  g.globalCompositeOperation = 'lighter'; g.strokeStyle = 'rgba(255,110,60,' + 0.35 * lum + ')'; g.lineWidth = 6; forme(); g.stroke(); g.globalCompositeOperation = 'source-over';
+  // dedans : l'énergie qui tourbillonne
+  g.globalCompositeOperation = 'lighter';
+  for (var i = 0; i < 4; i++) { var a0 = now * (1.4 + i * 0.37) + i * 1.7, rr = (16 + i * 9) * C[2];
+    g.strokeStyle = 'rgba(255,' + (110 + i * 25) + ',60,' + (0.22 * lum) + ')'; g.lineWidth = 3 - i * 0.4; g.beginPath(); g.ellipse(C[0], C[1] + 6, rr * 1.3, rr * 0.8, 0.4 * i, a0, a0 + 2.2); g.stroke(); }
+  g.globalCompositeOperation = 'source-over';
+  // les lignes d'or : les pectoraux, le ventre, la ligne du milieu (posées sur le devant : elles glissent quand il se tourne)
+  var face = Math.cos(R.yb);
+  if (face > 0.15) {
+    g.globalCompositeOperation = 'lighter'; g.strokeStyle = 'rgba(255,214,140,' + (0.55 * lum * face) + ')'; g.lineWidth = 1.5; g.lineCap = 'round';
+    var Z = 24;
+    [[-1], [1]].forEach(function (s) { s = s[0]; var a = q(s * 44, 84, Z - 8), b = q(s * 22, 60, Z), c2 = q(s * 4, 62, Z + 2); g.beginPath(); g.moveTo(a[0], a[1]); g.quadraticCurveTo(b[0], b[1] + 6, c2[0], c2[1]); g.stroke(); });
+    var m1 = q(0, 94, Z - 2), m2 = q(0, 22, Z); g.beginPath(); g.moveTo(m1[0], m1[1]); g.lineTo(m2[0], m2[1]); g.stroke();
+    [46, 34, 24].forEach(function (y, k2) { var w = 15 - k2 * 2, a = q(-w, y, Z), b = q(w, y, Z); g.beginPath(); g.moveTo(a[0], a[1]); g.quadraticCurveTo((a[0] + b[0]) / 2, a[1] + 3, b[0], b[1]); g.stroke(); });
+    g.globalCompositeOperation = 'source-over';
+  }
+  // le cœur qui bat (le noyau de puissance qu'il a pris)
+  g.globalCompositeOperation = 'lighter';
+  var bat = 1 + 0.3 * battement;
+  halo(C[0], C[1], 46 * bat * C[2], '255,90,40', 0.7 * lum, 0.3);
+  halo(C[0], C[1], 20 * bat * C[2], '255,220,160', 0.95 * lum, 1);
+  g.strokeStyle = 'rgba(255,230,180,' + (0.35 * lum) + ')'; g.lineWidth = 1.2;
+  for (var r2 = 0; r2 < 8; r2++) { var aa = r2 / 8 * TAU + now * 0.6, l1 = 12 * bat, l2 = (26 + 10 * bruit(r2 + Math.floor(now * 8))) * bat; g.beginPath(); g.moveTo(C[0] + Math.cos(aa) * l1, C[1] + Math.sin(aa) * l1); g.lineTo(C[0] + Math.cos(aa) * l2, C[1] + Math.sin(aa) * l2); g.stroke(); }
+  g.globalCompositeOperation = 'source-over';
+  return forme;
+}
+
+/* ---------- la tête : un visage jeune, des yeux de feu blanc, une crinière de flammes ---------- */
+function tete(now, lum) {
+  var te = R.te, q = function (x, y, z) { return pr(te(x, y, z)); }, H = J.tete, p = H[2], face = Math.cos(R.yt);
+  // la crinière : des langues de feu qui partent du crâne, vers le haut et l'arrière
+  g.globalCompositeOperation = 'lighter';
+  for (var i = 0; i < 9; i++) {
+    var u = i / 8 - 0.5, base = q(u * 34, 44 - Math.abs(u) * 14, -2 - Math.abs(u) * 8), haut = 34 + 18 * Math.sin(now * 3.1 + i * 1.7) + 10 * bruit(i * 3 + Math.floor(now * 6));
+    var bout = q(u * 46 + Math.sin(now * 2 + i) * 6, 52 + haut, -26 - haut * 0.4), mi = q(u * 40, 58 + haut * 0.5, -10);
+    var gr = g.createLinearGradient(base[0], base[1], bout[0], bout[1]);
+    gr.addColorStop(0, 'rgba(255,220,140,' + 0.8 * lum + ')'); gr.addColorStop(0.4, 'rgba(255,90,40,' + 0.6 * lum + ')'); gr.addColorStop(1, 'rgba(200,20,20,0)');
+    var w = (9 - Math.abs(u) * 6) * p;
+    g.fillStyle = gr; g.beginPath(); g.moveTo(base[0] - w, base[1]); g.quadraticCurveTo(mi[0] - w * 0.6, mi[1], bout[0], bout[1]); g.quadraticCurveTo(mi[0] + w * 0.6, mi[1], base[0] + w, base[1]); g.closePath(); g.fill();
+  }
+  halo(H[0], H[1], 60 * p, '255,60,40', 0.35 * lum, 0.2);
+  g.globalCompositeOperation = 'source-over';
+  // le visage : un œuf, la mâchoire carrée
+  var mL = q(-16, 6, 8), mR = q(16, 6, 8), men = q(0, -6, 14), tL = q(-21, 30, 0), tR = q(21, 30, 0), haut2 = q(0, 52, -4);
+  function forme() { g.beginPath(); g.moveTo(haut2[0], haut2[1]); g.bezierCurveTo(tL[0] - 4 * p, haut2[1], tL[0] - 2 * p, tL[1], tL[0], tL[1]); g.quadraticCurveTo(tL[0] + 1, mL[1] - 4 * p, mL[0], mL[1]); g.quadraticCurveTo(men[0] - 6 * p, men[1] + 2 * p, men[0], men[1]);
+    g.quadraticCurveTo(men[0] + 6 * p, men[1] + 2 * p, mR[0], mR[1]); g.quadraticCurveTo(tR[0] - 1, mR[1] - 4 * p, tR[0], tR[1]); g.bezierCurveTo(tR[0] + 2 * p, tR[1], tR[0] + 4 * p, haut2[1], haut2[0], haut2[1]); g.closePath(); }
+  var gr2 = g.createRadialGradient(H[0] - 6 * p, H[1] - 8 * p, 2, H[0], H[1], 34 * p);
+  gr2.addColorStop(0, 'rgba(255,200,160,.88)'); gr2.addColorStop(0.45, 'rgba(255,92,64,.8)'); gr2.addColorStop(1, 'rgba(120,8,20,.75)');
+  forme(); g.fillStyle = gr2; g.fill(); g.strokeStyle = 'rgba(255,170,130,' + 0.75 * lum + ')'; g.lineWidth = 1.5; g.stroke();
+  if (face < 0.2) return;
+  var a = cl((face - 0.2) / 0.4, 0, 1);
+  g.globalCompositeOperation = 'lighter'; g.lineCap = 'round';
+  // les sourcils, durs ; le nez (un bec fin : c'est Grosbec) ; la bouche (elle s'ouvre et brûle quand il crie ou rit)
+  g.strokeStyle = 'rgba(255,200,150,' + 0.6 * a * lum + ')'; g.lineWidth = 2;
+  [[-1], [1]].forEach(function (s) { s = s[0]; var b1 = q(s * 3, 33, 18), b2 = q(s * 15, 38, 15); g.beginPath(); g.moveTo(b1[0], b1[1]); g.lineTo(b2[0], b2[1]); g.stroke(); });
+  var n1 = q(0, 31, 20), n2 = q(0, 18, 24), n3 = q(-3, 16, 20); g.beginPath(); g.moveTo(n1[0], n1[1]); g.lineTo(n2[0], n2[1]); g.lineTo(n3[0], n3[1]); g.stroke();
+  var b = P.bouche, bo = q(0, 9, 17);
+  if (b > 0.05) { halo(bo[0], bo[1], 12 * p * (0.6 + b), '255,200,120', 0.8 * a * b, 0.9); g.fillStyle = 'rgba(255,240,200,' + (0.8 * a * b) + ')'; g.beginPath(); g.ellipse(bo[0], bo[1], 7 * p, (1.5 + 5 * b) * p, 0, 0, TAU); g.fill(); }
+  else { var l1 = q(-7, 10, 16), l2 = q(7, 10, 16); g.beginPath(); g.moveTo(l1[0], l1[1]); g.quadraticCurveTo(bo[0], bo[1] - 1, l2[0], l2[1]); g.stroke(); }
+  // les yeux : deux fentes de lumière blanche, et leur traînée quand il bouge
+  var y = P.yeux;
+  [[-1], [1]].forEach(function (s) { s = s[0]; var e = q(s * 9, 28, 17);
+    halo(e[0], e[1], 14 * p * (0.7 + 0.3 * y), '255,230,170', 0.8 * a * Math.min(1.5, y), 0.9);
+    g.fillStyle = 'rgba(255,255,240,' + Math.min(1, 0.8 * a * y) + ')'; g.beginPath(); g.ellipse(e[0], e[1], 6 * p, 1.8 * p, s * 0.18, 0, TAU); g.fill(); });
+  g.globalCompositeOperation = 'source-over';
+  return forme;
+}
+
+/* ---------- les anneaux d'énergie qui tournent autour de lui (une moitié derrière, une moitié devant) ---------- */
+function anneaux(now, lum, devant) {
+  var bu = R.bu;
+  g.globalCompositeOperation = 'lighter'; g.lineCap = 'round';
+  [[86, 0.32, 0.5, 1.1, '255,90,50'], [74, -0.42, -0.3, -0.8, '255,190,90']].forEach(function (a, ia) {
+    var Rr = a[0], ti = a[1], tz = a[2], vit = a[3], pts = [];
+    for (var i = 0; i <= 40; i++) {
+      var f = i / 40 * TAU + now * vit, x = Math.cos(f) * Rr, z = Math.sin(f) * Rr, y = 0;
+      var y1 = y * Math.cos(ti) - z * Math.sin(ti), z1 = y * Math.sin(ti) + z * Math.cos(ti), x2 = x * Math.cos(tz) - y1 * Math.sin(tz), y2 = x * Math.sin(tz) + y1 * Math.cos(tz);
+      var wq = bu(x2, 58 + y2, z1); pts.push([pr(wq), wq[2] - J._monde.poitrine[2]]);
+    }
+    g.beginPath(); var dedans = false;
+    for (var j = 0; j < 40; j++) {
+      var A = pts[j], Bq = pts[j + 1], dv = (A[1] + Bq[1]) / 2 > 0;
+      if (dv !== devant) { dedans = false; continue; }
+      if (!dedans) g.moveTo(A[0][0], A[0][1]); g.lineTo(Bq[0][0], Bq[0][1]); dedans = true;
+    }
+    g.strokeStyle = 'rgba(' + a[4] + ',' + (0.2 * lum) + ')'; g.lineWidth = 7; g.stroke();
+    g.strokeStyle = 'rgba(255,240,200,' + (0.6 * lum) + ')'; g.lineWidth = 1.6; g.stroke();
+    var u = (now * 0.35 * vit) % 1, pj = pts[Math.floor((u < 0 ? u + 1 : u) * 40)];   // une perle de lumière qui court sur l'anneau
+    if (pj && (pj[1] > 0) === devant) halo(pj[0][0], pj[0][1], 12, '255,230,180', 0.9 * lum, 0.9);
+  });
+  g.globalCompositeOperation = 'source-over';
+}
+/* ---------- la cape de lumière, derrière lui ---------- */
+function cape(now, lum) {
+  var bu = R.bu, ha = R.ha, L = pr(bu(-52, 96, -14)), Rr = pr(bu(52, 96, -14)), ouv = 1 + P.cape * 0.5;
+  var bas = function (s, k2) { var w = Math.sin(now * 1.6 + s * 0.8 + k2) * 14; return pr(ha(s * (70 + 18 * ouv) + w, -96 - P.bas * 0.5 + Math.sin(now * 1.2 + s) * 6, -46 - 20 * P.cape)); };
+  var BL = bas(-1, 0), BR = bas(1, 1), BM = pr(ha(Math.sin(now * 1.3) * 16, -110, -50));
+  var gr = g.createLinearGradient(0, L[1], 0, BM[1]);
+  gr.addColorStop(0, 'rgba(255,70,40,' + 0.5 * lum + ')'); gr.addColorStop(0.5, 'rgba(190,20,30,' + 0.32 * lum + ')'); gr.addColorStop(1, 'rgba(120,0,20,0)');
+  g.globalCompositeOperation = 'lighter'; g.fillStyle = gr;
+  g.beginPath(); g.moveTo(L[0], L[1]); g.quadraticCurveTo(L[0] - 40, (L[1] + BL[1]) / 2, BL[0], BL[1]); g.quadraticCurveTo((BL[0] + BM[0]) / 2, BM[1] + 14, BM[0], BM[1]);
+  g.quadraticCurveTo((BM[0] + BR[0]) / 2, BM[1] + 14, BR[0], BR[1]); g.quadraticCurveTo(Rr[0] + 40, (Rr[1] + BR[1]) / 2, Rr[0], Rr[1]); g.closePath(); g.fill();
+  g.strokeStyle = 'rgba(255,170,110,' + 0.25 * lum + ')'; g.lineWidth = 1;
+  for (var i = 1; i < 6; i++) { var u = i / 6, x0 = mel(L[0], Rr[0], u), y0 = mel(L[1], Rr[1], u), x1 = mel(BL[0], BR[0], u) + Math.sin(now * 2 + i) * 8, y1 = BM[1] - 10 + Math.sin(u * Math.PI) * 10; g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo(x0 + Math.sin(now * 1.7 + i) * 12, (y0 + y1) / 2, x1, y1); g.stroke(); }
+  g.globalCompositeOperation = 'source-over';
+}
+/* ---------- les pieds : ils ne touchent pas tout à fait le sol ; des flammes en dessous ---------- */
+function pied(F, sd, now, lum) {
+  var p = F[2], T2 = [F[0] + sd * 4 * p, F[1] + 9 * p, p];
+  membre(F, T2, 10, 8, lum, now, sd + 7);
+  g.globalCompositeOperation = 'lighter';
+  for (var i = 0; i < 4; i++) { var x = T2[0] + (i - 1.5) * 6 * p, h = (14 + 10 * Math.sin(now * 9 + i * 2 + sd)) * p; var gr = g.createLinearGradient(x, T2[1] + 4, x, T2[1] - h);
+    gr.addColorStop(0, 'rgba(255,210,140,' + 0.6 * lum + ')'); gr.addColorStop(1, 'rgba(255,40,20,0)'); g.fillStyle = gr; g.beginPath(); g.moveTo(x - 4 * p, T2[1] + 4); g.quadraticCurveTo(x, T2[1] - h * 0.3, x + Math.sin(now * 5 + i) * 3, T2[1] - h); g.quadraticCurveTo(x, T2[1] - h * 0.3, x + 4 * p, T2[1] + 4); g.fill(); }
+  g.globalCompositeOperation = 'source-over';
+}
+
+/* ---------- les éclairs qui le parcourent, les braises qui montent ---------- */
+var CHAINES = [['epauleG', 'coudeG'], ['coudeG', 'mainG'], ['epauleD', 'coudeD'], ['coudeD', 'mainD'], ['hancheG', 'genouG'], ['genouG', 'piedG'], ['hancheD', 'genouD'], ['genouD', 'piedD'],
+  ['cou', 'tete'], ['poitrine', 'epauleG'], ['poitrine', 'epauleD'], ['taille', 'hancheG'], ['taille', 'hancheD'], ['coeur', 'tete'], ['coeur', 'taille']];
+function eclairsSurLui(now, lum) {
+  if (now - arcsT > 0.09) { arcsT = now; arcs = []; for (var i = 0; i < 4; i++) { var c = CHAINES[Math.floor(Math.random() * CHAINES.length)]; arcs.push({a: c[0], b: c[1], s: Math.random() * 1000}); } }
+  g.globalCompositeOperation = 'lighter'; g.lineCap = 'round'; g.lineJoin = 'round';
+  arcs.forEach(function (ar) {
+    var A = J[ar.a], Bq = J[ar.b]; if (!A || !Bq) return;
+    g.beginPath(); g.moveTo(A[0], A[1]);
+    for (var i = 1; i < 7; i++) { var u = i / 7, dx = Bq[0] - A[0], dy = Bq[1] - A[1], L = Math.hypot(dx, dy) || 1, d = (bruit(ar.s + i * 7.3) - 0.5) * 16; g.lineTo(A[0] + dx * u - dy / L * d, A[1] + dy * u + dx / L * d); }
+    g.lineTo(Bq[0], Bq[1]);
+    g.strokeStyle = 'rgba(255,90,90,' + 0.3 * lum + ')'; g.lineWidth = 5; g.stroke();
+    g.strokeStyle = 'rgba(255,245,245,' + 0.85 * lum + ')'; g.lineWidth = 1.3; g.stroke();
+  });
+  g.globalCompositeOperation = 'source-over';
+}
+var NOMS_BRAISES = ['epauleG', 'epauleD', 'coudeG', 'coudeD', 'mainG', 'mainD', 'tete', 'tete', 'coeur', 'genouG', 'genouD', 'piedG', 'piedD'];
+function majBraises(dt, lum, faible) {
+  var n = dt * [8, 14, 20][QUAL] * lum;
+  while (n > 0) { if (Math.random() < n) { var nom = NOMS_BRAISES[Math.floor(Math.random() * NOMS_BRAISES.length)], q = J[nom];
+    braises.push({x: q[0] + (Math.random() - 0.5) * 14, y: q[1] + (Math.random() - 0.5) * 14, vx: (Math.random() - 0.5) * 12, vy: -24 - Math.random() * 34, vie: 0, max: 0.6 + Math.random() * 0.8, r: 2.5 + Math.random() * 3, or: Math.random() < 0.3}); } n -= 1; }
+  if (faible) for (var i = 0; i < dt * 50; i++) { var c = faible; braises.push({x: c[0] + (Math.random() - 0.5) * 26, y: c[1] + (Math.random() - 0.5) * 26, vx: (Math.random() - 0.5) * 90, vy: -40 - Math.random() * 70, vie: 0, max: 0.5 + Math.random() * 0.6, r: 3 + Math.random() * 3, or: true, blanc: true}); }
+  braises = braises.filter(function (b) { b.vie += dt; b.x += b.vx * dt + Math.sin(b.vie * 5 + b.r) * 0.6; b.y += b.vy * dt; b.vy *= 0.99; return b.vie < b.max; });
+  if (braises.length > 260) braises.splice(0, braises.length - 260);
+}
+function dessinBraises() {
+  g.globalCompositeOperation = 'lighter';
+  braises.forEach(function (b) { var u = b.vie / b.max, a = Math.sin(u * Math.PI); halo(b.x, b.y, b.r * 2.2, b.blanc ? '255,240,190' : b.or ? '255,190,90' : '255,80,40', a * 0.9, b.blanc ? 0.9 : 0.5); });
+  g.globalCompositeOperation = 'source-over';
+}
+
+/* ---------- les boules d'énergie : celle de la grosse zone (entre ses poings), celle de la méga attaque (au bout de son doigt) ---------- */
+function boule(x, y, r, now, rgb) {
+  g.globalCompositeOperation = 'lighter';
+  halo(x, y, r * 3.2, rgb, 0.55, 0.2); halo(x, y, r * 1.6, '255,200,150', 0.8, 0.8); halo(x, y, r * 0.8, '255,255,240', 1, 1);
+  g.strokeStyle = 'rgba(255,230,200,.7)'; g.lineWidth = 1.2;
+  for (var i = 0; i < 5; i++) { var a = now * 7 + i * 1.3; g.beginPath(); g.moveTo(x + Math.cos(a) * r * 0.5, y + Math.sin(a) * r * 0.5); g.lineTo(x + Math.cos(a + 0.4) * r * 1.4, y + Math.sin(a + 0.4) * r * 1.4); g.lineTo(x + Math.cos(a - 0.2) * r * 2.1, y + Math.sin(a - 0.2) * r * 2.1); g.stroke(); }
+  g.globalCompositeOperation = 'source-over';
+}
+
+/* ---------- la partie faible (seulement sur la tablette qui doit la crier) : elle tremble, se fendille de lumière blanche, crache des étincelles ---------- */
+function dessinPartie(i, mode, coul, grossit) {
+  var pt = PARTS[i];
+  if (pt.n === 'tete') { g.beginPath(); g.arc(pt.c[0], pt.c[1], pt.r * (1 + grossit), 0, TAU); }
+  else if (pt.n === 'torse') { g.beginPath(); g.ellipse(pt.c[0], pt.c[1], pt.rx * (1 + grossit), pt.ry * (1 + grossit), 0, 0, TAU); }
+  else { g.beginPath(); g.moveTo(pt.a[0], pt.a[1]); g.lineTo(pt.b[0], pt.b[1]); g.lineTo(pt.d[0], pt.d[1]); g.lineCap = 'round'; g.lineJoin = 'round'; g.lineWidth = pt.e * 2 * (1 + grossit * 2); if (mode === 'fill') { g.strokeStyle = coul; g.stroke(); return; } }
+  if (mode === 'fill') { g.fillStyle = coul; g.fill(); } else { g.strokeStyle = coul; g.stroke(); }
+}
+function centreU(i) { var pt = PARTS[i]; if (pt.c) return pt.c; return [(pt.a[0] + pt.b[0] * 2 + pt.d[0]) / 4, (pt.a[1] + pt.b[1] * 2 + pt.d[1]) / 4]; }
+function faibleVue(i, now) {
+  var c = centreU(i), pulse = 0.5 + 0.5 * Math.sin(now * 11), jx = (bruit(Math.floor(now * 24)) - 0.5) * 6, jy = (bruit(Math.floor(now * 24) + 50) - 0.5) * 6;
+  g.save(); g.translate(jx, jy);   // elle tremble
+  g.globalCompositeOperation = 'lighter';
+  var membre2 = PARTS[i].a !== undefined;
+  dessinPartie(i, 'fill', membre2 ? 'rgba(255,200,90,' + (0.28 + 0.3 * pulse) + ')' : 'rgba(255,236,170,' + (0.35 + 0.3 * pulse) + ')', 0.05 * pulse);
+  if (!membre2) dessinPartie(i, 'stroke', 'rgba(255,250,220,' + (0.6 + 0.4 * pulse) + ')', 0.1);
+  halo(c[0], c[1], 70, '255,220,120', 0.5 + 0.4 * pulse, 0.7);
+  // les fentes de lumière
+  var s = Math.floor(now * 7);
+  g.strokeStyle = 'rgba(255,255,240,.95)'; g.lineWidth = 1.8; g.lineCap = 'round';
+  var pt2 = PARTS[i];
+  for (var f = 0; f < 6; f++) { var a = bruit(s * 3 + f) * TAU, base = pt2.a ? [pt2.a, pt2.b, pt2.d][f % 3] : c, x = (membre2 ? (base[0] + c[0]) / 2 : c[0]) + Math.cos(a) * 6, y = (membre2 ? (base[1] + c[1]) / 2 : c[1]) + Math.sin(a) * 6; g.beginPath(); g.moveTo(x, y);
+    for (var j = 0; j < 4; j++) { a += (bruit(s * 7 + f * 5 + j) - 0.5) * 1.6; x += Math.cos(a) * 9; y += Math.sin(a) * 9; g.lineTo(x, y); } g.stroke(); }
+  // l'onde qui bat
+  for (var o = 0; o < 2; o++) { var w = (now * 1.6 + o * 0.5) % 1; g.strokeStyle = 'rgba(255,230,150,' + (0.9 * (1 - w)) + ')'; g.lineWidth = 4 * (1 - w) + 0.5; g.beginPath(); g.arc(c[0], c[1], 24 + w * 70, 0, TAU); g.stroke(); }
+  g.globalCompositeOperation = 'source-over'; g.restore();
+}
+
+/* ---------- la toile de Grosbec : tout, dans l'ordre de la profondeur ---------- */
+function peindre(S, now) {
+  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, cv.width, cv.height);
+  g.setTransform(kc, 0, 0, kc, -BOITE.x0 * kc, -BOITE.y0 * kc);
+  var lum = P.lum, bat = Math.max(0, Math.sin(now * 6.2)) * Math.max(0, Math.sin(now * 6.2 + 0.9));
+  if (vict > 0) { var dv = now - vict; lum *= 1 + Math.max(0, 1.5 - dv); }
+  // derrière lui : une lueur (la grande est peinte avec la salle), la cape, la moitié arrière des anneaux
+  g.globalCompositeOperation = 'lighter';
+  halo(J.poitrine[0], J.poitrine[1] + 10, 130 * (1 + 0.04 * Math.sin(now * 2)), '255,50,30', 0.38 * lum, 0.05);
+  g.globalCompositeOperation = 'source-over';
+  cape(now, lum);
+  anneaux(now, lum, false);
+  // les membres, du plus loin au plus près ; le torse et la tête au milieu
+  var el = [];
+  [['G', -1], ['D', 1]].forEach(function (m) {
+    var s = m[0], sd = m[1];
+    el.push({z: (J['hanche' + s][3] + J['pied' + s][3]) / 2 - 30, f: function () { membre(J['hanche' + s], J['genou' + s], 24, 17, lum, now, sd); membre(J['genou' + s], J['pied' + s], 17, 11, lum, now, sd + 2); articulation(J['genou' + s], 9, lum); pied(J['pied' + s], sd, now, lum); }});
+    el.push({z: (J['epaule' + s][3] + J['coude' + s][3] + J['main' + s][3]) / 3, f: function () { membre(J['epaule' + s], J['coude' + s], 19, 14, lum, now, sd + 4); membre(J['coude' + s], J['main' + s], 15, 10, lum, now, sd + 5); articulation(J['coude' + s], 9, lum); epaule(J['epaule' + s], sd, lum, now); mainDe(J['main' + s], J['coude' + s], s === 'G' ? P.go : P.do_, lum, now); }});
+  });
+  var formeTorse = null, formeTete = null;
+  el.push({z: J.poitrine[3] - 4, f: function () { formeTorse = torse(now, lum, bat); }});
+  el.push({z: J.tete[3] - 3, f: function () { membre(J.cou, pr(R.te(0, 4, 0)), 15, 13, lum, now, 9); formeTete = tete(now, lum); }});
+  el.sort(function (a, b) { return a.z - b.z; }).forEach(function (e) { e.f(); });
+  anneaux(now, lum, true);
+  eclairsSurLui(now, lum);
+  // les boules
+  if (P.orbe > 0.03) { var mG = J.mainG, mD = J.mainD; boule((mG[0] + mD[0]) / 2, (mG[1] + mD[1]) / 2 - 6, 8 + 26 * P.orbe, now, '255,50,30'); }
+  if (Math.abs(P.mega || 0) > 0.02) { var mm = P.mega < 0 ? J.mainG : J.mainD, ang = Math.atan2(mm[1] - (P.mega < 0 ? J.coudeG : J.coudeD)[1], mm[0] - (P.mega < 0 ? J.coudeG : J.coudeD)[0]);
+    boule(mm[0] + Math.cos(ang) * 18, mm[1] + Math.sin(ang) * 18, 8 + 34 * Math.abs(P.mega), now, '255,20,40'); }
+  // les coups reçus : la partie touchée s'éclaire en blanc ; un rebond : un éclat d'or
+  for (var i = 0; i < 6; i++) {
+    var tf = flash[i]; if (tf !== undefined && now - tf < 0.45) { var u = (now - tf) / 0.45; g.globalCompositeOperation = 'lighter'; dessinPartie(i, 'fill', 'rgba(255,255,255,' + (0.6 * (1 - u)) + ')', 0.06 * (1 - u)); var cc = centreU(i); halo(cc[0], cc[1], 60 * (1 - u * 0.5), '255,240,210', 0.8 * (1 - u), 1); g.globalCompositeOperation = 'source-over'; }
+    var tr = flash['r' + i]; if (tr !== undefined && now - tr < 0.4) { var v = (now - tr) / 0.4; g.globalCompositeOperation = 'lighter'; dessinPartie(i, 'stroke', 'rgba(255,214,90,' + (0.9 * (1 - v)) + ')', 0.1 + v * 0.3); g.globalCompositeOperation = 'source-over'; }
+  }
+  // la partie faible, sur la tablette qui doit la crier
+  var pm = S.combat === 2 && S.etat === 'combat' ? P3.partMontree(S) : null;
+  if (pm) faibleVue(pm.val, now);
+  dessinBraises();
+}
+
+/* ---------- pour le jeu ---------- */
+function cadre(vue, K) { V = vue; KV = K; }
+function construire(T, dpr0, q) {
+  if (q !== undefined) QUAL = q;
+  dpr = Math.min(2, dpr0 || 1); k = T / U; kc = Math.min([1.0, 1.3, 2.0][QUAL], k * dpr);
+  cv = toile(BOITE.w * kc, BOITE.h * kc); g = cv.getContext('2d'); tDessin = -9;
+}
+function reset() { P = null; file = []; flash = {}; braises = []; vuEvt = -1; vuEcl = -1; vict = -9; oubliZone = {}; }
+function maj(S, dt) {
+  if (!S) return;
+  lireEvts(S); majPose(S, dt); construireCorps();
+}
+function dessiner(c, S) {
+  if (!cv || !P) return;
+  var now = S.reel;
+  if (now - tDessin >= 1 / IPS[QUAL] - 0.002 || now < tDessin) {
+    var dtB = cl(now - tDessin, 0, 0.1); tDessin = now;
+    var pm = S.combat === 2 && S.etat === 'combat' ? P3.partMontree(S) : null;
+    majBraises(dtB, P.lum * (vict > 0 ? 4 : 1), pm ? centreU(pm.val) : null);
+    peindre(S, now);
+  }
+  var x0 = V.ox + B.x * V.T + BOITE.x0 * k, y0 = V.oy + B.y * V.T * KV + BOITE.y0 * k, a = 1;
+  if (vict > 0) a = 1 - cl((now - vict - 0.9) / 1.3, 0, 1);   // la fin : il se défait en lumière
+  if (a <= 0) return;
+  c.globalAlpha = a; c.drawImage(cv, x0, y0, BOITE.w * k, BOITE.h * k); c.globalAlpha = 1;
+}
+/* son reflet dans le sol (renversé, écrasé) */
+function reflet(c) {
+  if (!cv || !P || QUAL < 2) return;
+  var x0 = V.ox + B.x * V.T + BOITE.x0 * k, y0 = V.oy + B.y * V.T * KV + BOITE.y0 * k, base = V.oy + B.y * V.T * KV;
+  c.save(); c.translate(0, base); c.scale(1, -0.42); c.translate(0, -base); c.drawImage(cv, x0, y0, BOITE.w * k, BOITE.h * k); c.restore();
+}
+/* d'un point de la toile (en unités) à l'écran */
+function ecran(q) { return [V.ox + B.x * V.T + q[0] * k, V.oy + B.y * V.T * KV + q[1] * k]; }
+function point(nom) { var q = J && J[nom]; return q ? ecran(q) : [V.ox + B.x * V.T, V.oy + B.y * V.T * KV - 150 * k]; }
+function centrePartie(i) { return PARTS ? ecran(centreU(i)) : point('poitrine'); }
+function distSeg(px, py, ax, ay, bx, by) { var vx = bx - ax, vy = by - ay, l = vx * vx + vy * vy, u = l ? ((px - ax) * vx + (py - ay) * vy) / l : 0; u = cl(u, 0, 1); return Math.hypot(px - (ax + u * vx), py - (ay + u * vy)); }
+/* quelle partie est sous le doigt (ou -1) ; on prend large, pour des doigts d'enfants */
+function partieSous(sx, sy) {
+  if (!PARTS) return -1;
+  var x = (sx - (V.ox + B.x * V.T)) / k, y = (sy - (V.oy + B.y * V.T * KV)) / k, best = -1, bd = 1e9;
+  PARTS.forEach(function (pt, i) {
+    var d;
+    if (pt.n === 'tete') d = Math.hypot(x - pt.c[0], y - pt.c[1]) - pt.r;
+    else if (pt.n === 'torse') d = (Math.hypot((x - pt.c[0]) / pt.rx, (y - pt.c[1]) / pt.ry) - 1) * pt.rx;
+    else d = Math.min(distSeg(x, y, pt.a[0], pt.a[1], pt.b[0], pt.b[1]), distSeg(x, y, pt.b[0], pt.b[1], pt.d[0], pt.d[1])) - pt.e;
+    if (d < bd) { bd = d; best = i; }
+  });
+  return bd < 22 ? best : -1;
+}
+/* la partie visée : un réticule blanc qui tourne autour d'elle */
+function traceVisee(c, i, t) {
+  if (!PARTS) return;
+  var pt = PARTS[i], q = ecran(centreU(i)), r = (pt.n === 'tete' ? pt.r + 8 : pt.n === 'torse' ? Math.min(pt.rx, pt.ry) + 4 : 30) * k;
+  c.save(); c.translate(q[0], q[1]); c.rotate(t * 1.6);
+  c.strokeStyle = 'rgba(255,255,255,.92)'; c.lineWidth = 2.4; c.lineCap = 'round';
+  for (var j = 0; j < 4; j++) { c.beginPath(); c.arc(0, 0, r, j * Math.PI / 2 + 0.25, j * Math.PI / 2 + Math.PI / 2 - 0.25); c.stroke(); c.beginPath(); c.moveTo(Math.cos(j * Math.PI / 2) * (r - 6), Math.sin(j * Math.PI / 2) * (r - 6)); c.lineTo(Math.cos(j * Math.PI / 2) * (r + 6), Math.sin(j * Math.PI / 2) * (r + 6)); c.stroke(); }
+  c.restore();
+}
+G.GB = {cadre: cadre, construire: construire, reset: reset, maj: maj, dessiner: dessiner, reflet: reflet, point: point, centrePartie: centrePartie, partieSous: partieSous, traceVisee: traceVisee,
+  get pose() { return P; }, get pts() { return J; }, BOITE: BOITE};
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>/* ===== dessin.js ===== */
+/* Le dessin de la version 4 : la salle vue d'en haut, en biais, sur tout l'écran ; Grosbec de lumière en volume (grosbec.js) ;
+   la fontaine, la lanterne, la statue cassée ; mon héros, mes trois amis, mon villageois et sa bulle ;
+   les attaques des quatre héros (la flèche de lumière du Pisteur, la fiole de l'Alchimiste, les ondes du Barde, la rune du Sage),
+   les éclairs de Grosbec, la grosse zone qui fait jaillir le sol, le rayon de la méga attaque ; les étincelles (effets.js). */
+(function (G) {
+'use strict';
+var P3 = G.P3, REG = P3.REG, GB = G.GB, Eff = G.Eff;
+var ROLES = {barde: {c: '#ff8fb3', ic: '🎻', rgb: '255,140,190'}, sage: {c: '#6cb6ff', ic: '📜', rgb: '120,190,255'}, alchimiste: {c: '#b48cff', ic: '⚗️', rgb: '190,140,255'}, pisteur: {c: '#5fcf86', ic: '🏹', rgb: '110,255,150'}};
 // (R) un villageois par tablette, toujours le même : Gaspard le boulanger, Margot la tavernière, Silas le garde, Iris l'herboriste
 var VILLAGEOIS = {alchimiste: {ic: '🥖', c: '#e8c48a'}, barde: {ic: '🍺', c: '#d9a066'}, pisteur: {ic: '🗡️', c: '#9fb0c8'}, sage: {ic: '🌿', c: '#a8d08d'}};
-var ECOUL = {feu: '#ff7a2a', glace: '#9fe3ff', acide: '#8fe03a'};
 var EMO = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
 var K = 0.55, V = {T: 40, ox: 0, oy: 0, W: 800, H: 400};   // (v3) un peu plus à plat : la salle tient sur un téléphone couché
 var DESSUS = 5.6;   // (v3) ce qui dépasse au-dessus du mur du fond, en pas : la tête de Grosbec et la barre de sa vie
+var TAU = Math.PI * 2;
 function X(x) { return V.ox + x * V.T; }
 function Y(y, z) { return V.oy + y * V.T * K - (z || 0) * V.T; }
-function ell(c, x, y, r, z) { c.beginPath(); c.ellipse(X(x), Y(y, z), r * V.T, r * V.T * K, 0, 0, Math.PI * 2); }
-function rond(c, x, y, r) { c.beginPath(); c.arc(x, y, Math.max(0.1, r), 0, Math.PI * 2); }
+function ell(c, x, y, r, z) { c.beginPath(); c.ellipse(X(x), Y(y, z), r * V.T, r * V.T * K, 0, 0, TAU); }
+function rond(c, x, y, r) { c.beginPath(); c.arc(x, y, Math.max(0.1, r), 0, TAU); }
 function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 function emoji(c, e, x, y, s) { c.font = Math.round(s) + 'px ' + EMO; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(e, x, y + s * 0.04); }
 function cl(v, a, b) { return Math.max(a, Math.min(b, v)); }
 function bruit(i) { var s = Math.sin(i * 127.1) * 43758.5453; return s - Math.floor(s); }
-
-/* ---------- la forme de Grosbec : six parties, en coordonnées d'écran ---------- */
+function toile(w, h) { var c = document.createElement('canvas'); c.width = Math.max(1, Math.ceil(w)); c.height = Math.max(1, Math.ceil(h)); return c; }
 var B = REG.grosbec;
-var FORME = {   // en pas : x dans la salle, z la hauteur (v3 : un peu plus petit, la salle est moins profonde)
-  tete: {z: 4.7, r: 0.64},
-  torse: {z: 3.12, rx: 1.06, rz: 1.14},
-  brasG: {a: [-1.0, 3.9], b: [-2.25, 2.25], e: 0.4}, brasD: {a: [1.0, 3.9], b: [2.25, 2.25], e: 0.4},
-  jambeG: {a: [-0.48, 2.1], b: [-0.75, 0.13], e: 0.46}, jambeD: {a: [0.48, 2.1], b: [0.75, 0.13], e: 0.46}
-};
-var ORDRE = ['tete', 'torse', 'brasG', 'brasD', 'jambeG', 'jambeD'];   // le même ordre que P3.PARTIES
-function pt(dx, z, sh) { return [X(B.x + dx) + (sh || 0), Y(B.y, z)]; }
-function centrePartie(i, sh) {
-  var n = ORDRE[i], f = FORME[n];
-  if (n === 'tete' || n === 'torse') return pt(0, f.z, sh);
-  var a = pt(f.a[0], f.a[1], sh), b = pt(f.b[0], f.b[1], sh); return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-}
-function mainDe(cote, sh) { var f = FORME[cote < 0 ? 'brasG' : 'brasD']; return pt(f.b[0], f.b[1], sh); }
-function distSeg(px, py, ax, ay, bx, by) { var vx = bx - ax, vy = by - ay, l = vx * vx + vy * vy, u = l ? ((px - ax) * vx + (py - ay) * vy) / l : 0; u = cl(u, 0, 1); return Math.hypot(px - (ax + u * vx), py - (ay + u * vy)); }
-/* quelle partie est sous le doigt (ou -1) ; on prend large, pour des doigts d'enfants */
-function partieSous(sx, sy) {
-  var T = V.T, best = -1, bd = 1e9;
-  ORDRE.forEach(function (n, i) {
-    var f = FORME[n], d;
-    if (n === 'tete') { var p = pt(0, f.z); d = Math.hypot(sx - p[0], sy - p[1]) - f.r * T; }
-    else if (n === 'torse') { var q = pt(0, f.z); d = (Math.hypot((sx - q[0]) / (f.rx * T), (sy - q[1]) / (f.rz * T)) - 1) * f.rx * T; }
-    else { var a = pt(f.a[0], f.a[1]), b = pt(f.b[0], f.b[1]); d = distSeg(sx, sy, a[0], a[1], b[0], b[1]) - f.e * T / 2; }
-    if (d < bd) { bd = d; best = i; }
-  });
-  return bd < V.T * 0.45 ? best : -1;
-}
-function tracePartie(c, i, sh, grossit) {
-  var n = ORDRE[i], f = FORME[n], T = V.T, g = grossit || 0;
-  if (n === 'tete') { var p = pt(0, f.z, sh); rond(c, p[0], p[1], (f.r + g) * T); return 'fill'; }
-  if (n === 'torse') { var q = pt(0, f.z, sh); c.beginPath(); c.ellipse(q[0], q[1], (f.rx + g) * T, (f.rz + g) * T, 0, 0, Math.PI * 2); return 'fill'; }
-  var a = pt(f.a[0], f.a[1], sh), b = pt(f.b[0], f.b[1], sh);
-  c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.lineWidth = (f.e + 2 * g) * T; c.lineCap = 'round'; return 'stroke';
-}
-function remplir(c, quoi, coul) { if (quoi === 'fill') { c.fillStyle = coul; c.fill(); } else { c.strokeStyle = coul; c.stroke(); } }
+function piedsHeros(S) { return [X(S.h.x), Y(S.h.y, 0.6)]; }
 
-/* ---------- la salle et le décor ---------- */
-function salle(c, S) {
-  var L = REG.salle, T = V.T, W = V.W, H = V.H;
-  // (v3) le mur du fond et le sol vont d'un bord à l'autre de l'écran ; la salle où l'on court est la partie claire, bordée de deux murets
-  var g = c.createLinearGradient(0, 0, 0, Y(0));
-  g.addColorStop(0, '#080b17'); g.addColorStop(1, '#1d2236');
+/* ---------- la salle, peinte une fois (elle ne bouge pas) ---------- */
+var fond = null, fondCle = '';
+function salleCuite(W, H) {
+  var cle = [W, H, V.T, V.ox, V.oy].join('|'); if (fond && fondCle === cle) return fond;
+  fondCle = cle; var d = Math.min(2, window.devicePixelRatio || 1); fond = toile(W * d, H * d); var c = fond.getContext('2d'); c.scale(d, d);
+  var L = REG.salle, T = V.T;
+  var g = c.createLinearGradient(0, 0, 0, Y(0)); g.addColorStop(0, '#05070f'); g.addColorStop(1, '#1a1f33');
   c.fillStyle = g; c.fillRect(0, 0, W, Y(0));
-  c.fillStyle = '#141a2b'; for (var i = -6; i < L.L + 7; i += 2) c.fillRect(X(1 + i) - T * 0.25, 0, T * 0.5, Y(0));
-  c.fillStyle = '#171b29'; c.fillRect(0, Y(0), W, H - Y(0));
-  c.fillStyle = '#242a3c'; c.fillRect(X(0), Y(0), L.L * T, L.P * T * K);
-  c.strokeStyle = 'rgba(255,255,255,.045)'; c.lineWidth = 1;
+  for (var i = -6; i < L.L + 7; i += 2) {   // les piliers du mur du fond
+    var px = X(1 + i), gp = c.createLinearGradient(px - T * 0.3, 0, px + T * 0.3, 0);
+    gp.addColorStop(0, '#0c1020'); gp.addColorStop(0.5, '#1c2238'); gp.addColorStop(1, '#0a0d19'); c.fillStyle = gp; c.fillRect(px - T * 0.3, 0, T * 0.6, Y(0));
+  }
+  c.fillStyle = '#12151f'; c.fillRect(0, Y(0), W, H - Y(0));
+  var gs = c.createLinearGradient(0, Y(0), 0, Y(L.P)); gs.addColorStop(0, '#2b3146'); gs.addColorStop(1, '#1f2435');
+  c.fillStyle = gs; c.fillRect(X(0), Y(0), L.L * T, L.P * T * K);
+  c.strokeStyle = 'rgba(255,255,255,.05)'; c.lineWidth = 1;
   for (var x = 0; x <= L.L; x++) { c.beginPath(); c.moveTo(X(x), Y(0)); c.lineTo(X(x), Y(L.P)); c.stroke(); }
   for (var y = 0; y <= L.P; y++) { c.beginPath(); c.moveTo(X(0), Y(y)); c.lineTo(X(L.L), Y(y)); c.stroke(); }
   c.strokeStyle = '#3a4560'; c.lineWidth = 3; c.beginPath(); c.moveTo(0, Y(0)); c.lineTo(W, Y(0)); c.stroke();
-  c.fillStyle = '#3a4560'; c.fillRect(X(0) - T * 0.22, Y(0), T * 0.22, L.P * T * K); c.fillRect(X(L.L), Y(0), T * 0.22, L.P * T * K);   // les deux murets
-  // la lueur rouge de Grosbec sur le sol
-  var gl = c.createRadialGradient(X(B.x), Y(B.y), 0, X(B.x), Y(B.y), 6 * T);
-  gl.addColorStop(0, 'rgba(255,60,50,.22)'); gl.addColorStop(1, 'rgba(255,60,50,0)');
-  c.fillStyle = gl; c.fillRect(X(0), Y(0), L.L * T, L.P * T * K);
+  c.fillStyle = '#3a4560'; c.fillRect(X(0) - T * 0.22, Y(0), T * 0.22, L.P * T * K); c.fillRect(X(L.L), Y(0), T * 0.22, L.P * T * K);
+  // la lumière rouge de Grosbec sur le mur et sur le sol (peinte avec la salle : elle coûte cher à peindre à chaque image)
+  c.save(); c.globalCompositeOperation = 'lighter';
+  Eff.halo(c, X(B.x), Y(B.y, 2.6), T * 7.5, '255,40,30', 0.3, 0);
+  c.beginPath(); c.rect(0, Y(0), W, H - Y(0)); c.clip();
+  c.translate(X(B.x), Y(B.y)); c.scale(1, K); Eff.halo(c, 0, 0, T * 8, '255,50,30', 0.38, 0.05);
+  c.restore();
+  return fond;
+}
+function salle(c, S, W, H) {
+  c.drawImage(salleCuite(W, H), 0, 0, W, H);
+  // la lueur sous ses pieds bat avec son cœur
+  var t = S.reel, T = V.T, pul = Math.max(0, Math.sin(t * 6.2));
+  if (pul > 0.05) { c.save(); c.globalCompositeOperation = 'lighter'; c.translate(X(B.x), Y(B.y)); c.scale(1, K); Eff.halo(c, 0, 0, T * 3, '255,80,40', 0.25 * pul, 0.1); c.restore(); }
 }
 function lieu(c, S, i) {
   var l = REG.lieux[i], T = V.T, t = S.reel;
   c.fillStyle = 'rgba(0,0,0,.35)'; ell(c, l.x + 0.1, l.y + 0.1, 0.55); c.fill();
-  if (l.n === 'lanterne') {        // un poteau, une grosse lanterne jaune
+  if (l.n === 'lanterne') {
     c.fillStyle = '#2b3042'; c.fillRect(X(l.x) - T * 0.12, Y(l.y, 1.9), T * 0.24, T * 1.9);
-    var g = c.createRadialGradient(X(l.x), Y(l.y, 2.1), 0, X(l.x), Y(l.y, 2.1), T * 1.1);
-    g.addColorStop(0, 'rgba(255,210,80,.55)'); g.addColorStop(1, 'rgba(255,210,80,0)'); c.fillStyle = g; rond(c, X(l.x), Y(l.y, 2.1), T * 1.1); c.fill();
+    c.save(); c.globalCompositeOperation = 'lighter'; Eff.halo(c, X(l.x), Y(l.y, 2.1), T * 1.3, '255,210,80', 0.55 + 0.08 * Math.sin(t * 7), 0.3); c.restore();
     rr(c, X(l.x) - T * 0.28, Y(l.y, 2.45), T * 0.56, T * 0.7, 5); c.fillStyle = '#ffd23a'; c.fill(); c.strokeStyle = '#6b5200'; c.lineWidth = 2; c.stroke();
     c.fillStyle = '#fff4bf'; rr(c, X(l.x) - T * 0.14, Y(l.y, 2.32), T * 0.28, T * 0.42, 3); c.fill();
-  } else if (l.n === 'statue') {   // un socle, une statue cassée (un bras en moins, la tête tombée à côté)
+  } else if (l.n === 'statue') {
     c.fillStyle = '#5d6377'; c.fillRect(X(l.x) - T * 0.45, Y(l.y, 0.55), T * 0.9, T * 0.55);
     c.fillStyle = '#7c8296'; c.fillRect(X(l.x) - T * 0.45, Y(l.y, 0.62), T * 0.9, T * 0.1);
     c.fillStyle = '#9aa1b5'; rr(c, X(l.x) - T * 0.24, Y(l.y, 1.75), T * 0.48, T * 1.15, 6); c.fill();
     c.strokeStyle = '#9aa1b5'; c.lineWidth = T * 0.14; c.lineCap = 'round'; c.beginPath(); c.moveTo(X(l.x) - T * 0.2, Y(l.y, 1.55)); c.lineTo(X(l.x) - T * 0.42, Y(l.y, 1.05)); c.stroke(); c.lineCap = 'butt';
     c.strokeStyle = '#3b4050'; c.lineWidth = 2; c.beginPath(); c.moveTo(X(l.x) + T * 0.24, Y(l.y, 1.75)); c.lineTo(X(l.x) + T * 0.05, Y(l.y, 1.45)); c.lineTo(X(l.x) + T * 0.2, Y(l.y, 1.2)); c.stroke();
     c.fillStyle = '#9aa1b5'; rond(c, X(l.x + 0.75), Y(l.y + 0.3, 0.2), T * 0.2); c.fill();
-  } else {                          // la fontaine : un bassin rond, de l'eau, un jet
+  } else {
     c.fillStyle = '#5d6377'; ell(c, l.x, l.y, 0.75, 0.35); c.fill(); c.fillRect(X(l.x - 0.75), Y(l.y, 0.35), 1.5 * T, 0.35 * T);
     c.fillStyle = '#4b5063'; ell(c, l.x, l.y, 0.75); c.fill();
     c.fillStyle = '#5fb4ff'; ell(c, l.x, l.y, 0.6, 0.35); c.fill();
     c.fillStyle = '#7c8296'; c.fillRect(X(l.x) - T * 0.08, Y(l.y, 1.1), T * 0.16, T * 0.75);
     c.strokeStyle = 'rgba(160,220,255,.8)'; c.lineWidth = 2;
-    for (var k = 0; k < 4; k++) { var a = k / 4 * Math.PI * 2 + t; c.beginPath(); c.moveTo(X(l.x), Y(l.y, 1.1)); c.quadraticCurveTo(X(l.x + Math.cos(a) * 0.35), Y(l.y, 1.45), X(l.x + Math.cos(a) * 0.5), Y(l.y + Math.sin(a) * 0.2, 0.4)); c.stroke(); }
+    for (var k = 0; k < 4; k++) { var a = k / 4 * TAU + t; c.beginPath(); c.moveTo(X(l.x), Y(l.y, 1.1)); c.quadraticCurveTo(X(l.x + Math.cos(a) * 0.35), Y(l.y, 1.45), X(l.x + Math.cos(a) * 0.5), Y(l.y + Math.sin(a) * 0.2, 0.4)); c.stroke(); }
   }
 }
 
-/* ---------- Grosbec de lumière : un être d'énergie rouge, translucide, parcouru d'éclairs, le cœur qui bat ---------- */
-function grosbec(c, S, ctx) {
-  var T = V.T, t = S.reel, sh = 0, mal = P3.dernier(S, 'touche', 0.35), tambour = S.combat === 1 && S.T >= REG.combat1.tenir;
-  if (mal) sh = Math.sin(t * 70) * T * 0.08;
-  if (tambour) sh += Math.sin(t * 40) * T * 0.05;
-  var lueur = 0.75 + 0.25 * Math.sin(t * 3);
-  c.save();
-  if (S.boss <= 0 && S.combat === 2) c.globalAlpha = 0.55;
-  // la lueur : un grand halo derrière lui (pas de flou d'ombre : trop lent sur une vieille tablette)
-  var hq = pt(0, 2.9, sh), halo = c.createRadialGradient(hq[0], hq[1], 0, hq[0], hq[1], T * 3.7);
-  halo.addColorStop(0, 'rgba(255,60,45,' + (0.3 * lueur) + ')'); halo.addColorStop(1, 'rgba(255,60,45,0)'); c.fillStyle = halo; rond(c, hq[0], hq[1], T * 3.7); c.fill();
-  // les jambes, les bras (pendant le tambour, les poings montent et descendent)
-  var frappe = tambour ? Math.abs(Math.sin(t * 7)) : 0;
-  ORDRE.forEach(function (n, i) {
-    if (n === 'tete' || n === 'torse') return;
-    var mode = tracePartie(c, i, sh);
-    if ((n === 'brasG' || n === 'brasD') && frappe) { var f = FORME[n], a = pt(f.a[0], f.a[1], sh), b = pt(f.b[0], f.b[1] + frappe * 1.2, sh); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); }
-    if (mode === 'stroke') { var w0 = c.lineWidth; c.lineWidth = w0 * 1.7; c.strokeStyle = 'rgba(255,70,55,.13)'; c.stroke(); c.lineWidth = w0; }
-    remplir(c, mode, 'rgba(255,70,55,' + (0.38 * lueur) + ')');
-  });
-  var tq = pt(0, FORME.torse.z, sh), g = c.createRadialGradient(tq[0], tq[1], 0, tq[0], tq[1], FORME.torse.rz * T * 1.1);
-  g.addColorStop(0, 'rgba(255,140,110,.62)'); g.addColorStop(1, 'rgba(255,50,40,.28)');
-  tracePartie(c, 1, sh); c.fillStyle = g; c.fill();
-  tracePartie(c, 0, sh); c.fillStyle = 'rgba(255,90,70,' + (0.45 * lueur) + ')'; c.fill();
-  // les contours brillants
-  ORDRE.forEach(function (n, i) {
-    var mode = tracePartie(c, i, sh);
-    if (mode === 'stroke') { var w = c.lineWidth; c.lineWidth = w; c.strokeStyle = 'rgba(255,150,120,.25)'; c.stroke(); c.lineWidth = Math.max(2, w * 0.18); c.strokeStyle = 'rgba(255,200,170,.55)'; c.stroke(); }
-    else { c.lineWidth = 2.5; c.strokeStyle = 'rgba(255,190,160,.8)'; c.stroke(); }
-  });
-  // les yeux et le bec (c'est Grosbec, rajeuni)
-  var tt = pt(0, FORME.tete.z, sh);
-  c.fillStyle = '#fff6c0'; rond(c, tt[0] - T * 0.24, tt[1] - T * 0.1, T * 0.09); c.fill(); rond(c, tt[0] + T * 0.24, tt[1] - T * 0.1, T * 0.09); c.fill();
-  c.beginPath(); c.moveTo(tt[0] - T * 0.16, tt[1] + T * 0.05); c.lineTo(tt[0] + T * 0.16, tt[1] + T * 0.05); c.lineTo(tt[0], tt[1] + T * 0.45); c.closePath(); c.fillStyle = 'rgba(255,190,80,.85)'; c.fill();
-  // les éclairs qui le parcourent (ils changent tout le temps)
-  var bucket = Math.floor(t * 9);
-  c.strokeStyle = 'rgba(255,235,220,.75)'; c.lineWidth = 1.5;
-  for (var k = 0; k < 5; k++) {
-    var x0 = tq[0] + (bruit(bucket * 13 + k) - 0.5) * T * 2, y0 = tq[1] + (bruit(bucket * 7 + k) - 0.5) * T * 2.6;
-    c.beginPath(); c.moveTo(x0, y0);
-    for (var j = 0; j < 4; j++) { x0 += (bruit(bucket * 31 + k * 5 + j) - 0.5) * T * 0.8; y0 += (bruit(bucket * 17 + k * 3 + j) - 0.5) * T * 0.8; c.lineTo(x0, y0); }
-    c.stroke();
-  }
-  // le cœur qui bat
-  var bat = 1 + 0.25 * Math.max(0, Math.sin(t * 6)), cg = c.createRadialGradient(tq[0], tq[1], 0, tq[0], tq[1], T * 0.45 * bat);
-  cg.addColorStop(0, '#fff3d0'); cg.addColorStop(0.4, '#ffb060'); cg.addColorStop(1, 'rgba(255,80,40,0)');
-  c.fillStyle = cg; rond(c, tq[0], tq[1], T * 0.45 * bat); c.fill();
-  // la partie touchée s'éclaire (le bon sort)
-  if (mal && mal.part !== undefined) { var u = (S.reel - mal.t) / 0.35; remplir(c, tracePartie(c, mal.part, sh), 'rgba(255,255,255,' + (0.8 * (1 - u)) + ')'); }
-  // (R) la partie que MON villageois montre s'allume un instant, seulement sur ma tablette (v3 : seulement quand sa bulle est à l'écran)
-  var bu = S.bulle;
-  if (bu && bu.type === 'villageois' && bu.x.quoi === 'part' && S.T - bu.debut < 1.6)
-    remplir(c, tracePartie(c, bu.x.val, sh, 0.05), 'rgba(255,214,60,' + (0.45 + 0.35 * Math.sin(t * 14)) + ')');
-  // la partie que je vise : un trait blanc tout autour
-  if (S.combat === 2 ? S.boss > 0 : true) {
-    c.setLineDash([6, 5]); c.lineDashOffset = -t * 30;
-    var md = tracePartie(c, S.cible, sh, 0.12);
-    if (md === 'stroke') { var w2 = c.lineWidth; c.strokeStyle = 'rgba(255,255,255,.9)'; c.lineWidth = w2; c.globalAlpha *= 0.25; c.stroke(); c.globalAlpha = S.boss <= 0 && S.combat === 2 ? 0.55 : 1; }
-    else { c.strokeStyle = '#fff'; c.lineWidth = 2.5; c.stroke(); }
-    c.setLineDash([]);
-  }
-  // (R) la méga attaque : la charge ne se voit que sur la tablette du villageois qui prévient (une boule rouge au-dessus de sa tête)
-  if (bu && bu.type === 'villageois' && bu.x.quoi === 'mega') {
-    var x = bu.x, k2 = cl((S.T - x.tA) / (x.tFin - x.tA), 0, 1), hp = pt(0, FORME.tete.z + 0.95, sh), R = T * (0.25 + 0.65 * k2) * (1 + 0.08 * Math.sin(t * 30));
-    var rg = c.createRadialGradient(hp[0], hp[1], 0, hp[0], hp[1], R * 1.6); rg.addColorStop(0, 'rgba(255,240,220,.95)'); rg.addColorStop(0.35, 'rgba(255,40,30,.9)'); rg.addColorStop(1, 'rgba(255,40,30,0)');
-    c.fillStyle = rg; rond(c, hp[0], hp[1], R * 1.6); c.fill();
+/* ---------- la grosse zone : pendant l'annonce, des veines de lumière rouge courent sur TOUT le sol (rien ne dit où se mettre) ;
+   à la frappe, le sol jaillit partout sauf à l'endroit sûr ---------- */
+var FLAMMES = [];
+function flamme(i) {   // trois langues de feu d'énergie, peintes une fois
+  if (FLAMMES[i]) return FLAMMES[i];
+  var c = toile(64, 192), x = c.getContext('2d'), g = x.createLinearGradient(0, 192, 0, 0);
+  g.addColorStop(0, 'rgba(255,250,230,1)'); g.addColorStop(0.12, 'rgba(255,200,130,.95)'); g.addColorStop(0.35, 'rgba(255,80,40,.8)'); g.addColorStop(0.75, 'rgba(200,10,30,.35)'); g.addColorStop(1, 'rgba(160,0,20,0)');
+  x.fillStyle = g; var b = [0.3, -0.25, 0.1][i];
+  x.beginPath(); x.moveTo(6, 192); x.bezierCurveTo(0, 120, 44 + b * 30, 90, 32 + b * 40, 0); x.bezierCurveTo(58, 70, 66, 130, 58, 192); x.closePath(); x.fill();
+  var g2 = x.createRadialGradient(32, 186, 2, 32, 186, 30); g2.addColorStop(0, 'rgba(255,255,240,.9)'); g2.addColorStop(1, 'rgba(255,200,120,0)'); x.fillStyle = g2; x.fillRect(0, 150, 64, 42);
+  return (FLAMMES[i] = c);
+}
+function annonceZone(c, S) {
+  if (S.combat !== 2 || S.etat !== 'combat') return;
+  var T = S.T, z = null, su = S.su;
+  for (var i = 0; i < su.zones.length; i++) { var zz = su.zones[i]; if (zz.tA > T) break; if (T < zz.tI) z = zz; }
+  if (!z) return;
+  var u = (T - z.tA) / (z.tI - z.tA), L = REG.salle, t = S.reel;
+  c.save(); c.beginPath(); c.rect(X(0), Y(0), L.L * V.T, L.P * V.T * K); c.clip(); c.globalCompositeOperation = 'lighter';
+  c.fillStyle = 'rgba(255,30,20,' + (0.05 + 0.13 * u * (0.7 + 0.3 * Math.sin(t * 9))) + ')'; c.fillRect(X(0), Y(0), L.L * V.T, L.P * V.T * K);
+  // les veines : elles partent de ses pieds et poussent vers les bords
+  c.lineCap = 'round';
+  for (var v = 0; v < 10; v++) {
+    var a = (v / 10) * Math.PI + 0.08 + bruit(z.id * 13 + v) * 0.2, x = B.x, y = B.y + 0.6, lg = (0.4 + u * 0.9) * (4 + bruit(z.id + v * 3) * 5);
+    c.beginPath(); c.moveTo(X(x), Y(y));
+    for (var s = 0; s < 9; s++) { a += (bruit(z.id * 7 + v * 11 + s) - 0.5) * 0.9; x += Math.cos(a) * lg / 9; y += Math.sin(a) * lg / 9 * 0.7; c.lineTo(X(x), Y(y)); }
+    c.strokeStyle = 'rgba(255,60,40,' + (0.15 + 0.3 * u) + ')'; c.lineWidth = 5; c.stroke();
+    c.strokeStyle = 'rgba(255,200,150,' + (0.25 + 0.4 * u) + ')'; c.lineWidth = 1.3; c.stroke();
   }
   c.restore();
 }
+function frappes(c, S) {
+  var L = REG.salle, T = V.T, t = S.reel;
+  var z = P3.dernier(S, 'zone', 1.1);
+  if (z) {
+    var u = (t - z.t) / 1.1, l = REG.lieux[z.lieu], id = z.id || 1;
+    c.save(); c.globalCompositeOperation = 'lighter';
+    // le sol s'embrase (tout, sauf l'endroit sûr), en partant de ses pieds
+    c.beginPath(); c.rect(X(0), Y(0), L.L * T, L.P * T * K); c.ellipse(X(l.x), Y(l.y), REG.surR * T, REG.surR * T * K, 0, 0, TAU, true);
+    var gf = c.createRadialGradient(X(B.x), Y(B.y), 0, X(B.x), Y(B.y), T * 12 * Math.min(1, u * 3 + 0.2));
+    gf.addColorStop(0, 'rgba(255,230,180,' + 0.8 * (1 - u) + ')'); gf.addColorStop(0.5, 'rgba(255,80,40,' + 0.6 * (1 - u) + ')'); gf.addColorStop(1, 'rgba(255,40,20,' + 0.25 * (1 - u) + ')');
+    c.fillStyle = gf; c.fill('evenodd');
+    // des geysers de lumière, partout, au hasard (les mêmes pour cette frappe), du fond vers l'avant
+    var jets = [];
+    for (var i = 0; i < 64; i++) { var gx = 0.3 + bruit(id * 31 + i * 1.7) * (L.L - 0.6), gy = 0.2 + bruit(id * 17 + i * 3.1) * (L.P - 0.4);
+      if (Math.hypot(gx - l.x, gy - l.y) < REG.surR + 0.25) continue; jets.push([gx, gy, bruit(id + i * 5.3), i]); }
+    jets.sort(function (a, b) { return a[1] - b[1]; });
+    jets.forEach(function (j) {
+      var d = Math.hypot(j[0] - B.x, j[1] - B.y), v = cl((u * 1.1 - d * 0.025) / 0.75, 0, 1); if (v <= 0 || v >= 1) return;   // l'onde part de ses pieds
+      var hh = Math.sin(v * Math.PI) * T * (1.3 + 1.6 * j[2]) * (0.9 + 0.1 * Math.sin(t * 40 + j[3])), w = T * (0.45 + 0.35 * j[2]);
+      c.globalAlpha = 0.9; c.drawImage(flamme(j[3] % 3), X(j[0]) - w / 2, Y(j[1]) - hh, w, hh);
+    });
+    c.globalAlpha = 1;
+    c.strokeStyle = 'rgba(255,230,140,' + (1 - u) + ')'; c.lineWidth = 5; ell(c, l.x, l.y, REG.surR); c.stroke();
+    Eff.halo(c, X(l.x), Y(l.y, 0.3), T * 1.6, '255,220,120', 0.6 * (1 - u), 0.5);
+    c.restore();
+  }
+  // la méga attaque : un énorme rayon rouge qui tombe sur le visé (chez lui, et chez celui qui a prévenu)
+  var m = P3.dernier(S, 'mega', 0.65);
+  if (m && (m.moi || m.vuIci)) {
+    var u2 = (t - m.t) / 0.65, cib = m.moi ? piedsHeros(S) : [X(S.amis[m.cible].x), Y(S.amis[m.cible].y, 0.6)];
+    var src = GB.point(cib[0] < X(B.x) ? 'mainG' : 'mainD'), a = 1 - u2, wob = 1 + 0.15 * Math.sin(t * 60);
+    c.save(); c.globalCompositeOperation = 'lighter'; c.lineCap = 'round';
+    [[T * 1.1 * wob, 'rgba(255,30,40,' + 0.3 * a + ')'], [T * 0.55 * wob, 'rgba(255,70,60,' + 0.75 * a + ')'], [T * 0.18, 'rgba(255,245,230,' + a + ')']].forEach(function (s) { c.strokeStyle = s[1]; c.lineWidth = s[0]; c.beginPath(); c.moveTo(src[0], src[1]); c.lineTo(cib[0], cib[1]); c.stroke(); });
+    Eff.halo(c, cib[0], cib[1], T * 2 * a, m.moi && m.ok ? '140,210,255' : '255,60,40', a, 0.8);
+    c.restore();
+  }
+}
+
+/* ---------- les éclairs de Grosbec : de sa main jusqu'au héros, en zigzag, avec des branches ---------- */
+function zigzag(c, x0, y0, x1, y1, n, amp, graine) {
+  c.beginPath(); c.moveTo(x0, y0); var pts = [];
+  for (var i = 1; i < n; i++) { var u = i / n, px = x0 + (x1 - x0) * u, py = y0 + (y1 - y0) * u, nx = -(y1 - y0), ny = x1 - x0, l = Math.hypot(nx, ny) || 1, d = (bruit(graine + i * 3.7) - 0.5) * amp * Math.sin(u * Math.PI) * 1.6;
+    var q = [px + nx / l * d, py + ny / l * d]; pts.push(q); c.lineTo(q[0], q[1]); }
+  c.lineTo(x1, y1); return pts;
+}
+function eclairs(c, S) {
+  c.save(); c.globalCompositeOperation = 'lighter'; c.lineCap = 'round'; c.lineJoin = 'round';
+  S.eclairs.forEach(function (e) {
+    if (S.reel < e.t) return;
+    var main = GB.point(e.main < 0 ? 'mainG' : 'mainD'), cible;
+    if (e.vers === 'moi') { if (!P3.vivant(S)) return; cible = piedsHeros(S); }
+    else { var a = S.amis[e.vers]; if (!a || (S.seul && a.mort > 0)) return; cible = [X(a.x), Y(a.y, 0.6)]; }
+    var u = (S.reel - e.t) / REG.eclair.montre, g = Math.floor(S.reel * 30) * 7 + e.t * 13, f = 1 - u;
+    var pts = zigzag(c, main[0], main[1], cible[0], cible[1], 11, V.T * 0.9, g);
+    c.strokeStyle = 'rgba(255,40,40,' + 0.28 * f + ')'; c.lineWidth = 14; c.stroke();
+    c.strokeStyle = 'rgba(255,120,110,' + 0.6 * f + ')'; c.lineWidth = 5; c.stroke();
+    c.strokeStyle = 'rgba(255,248,245,' + f + ')'; c.lineWidth = 2; c.stroke();
+    [3, 7].forEach(function (k2, ib) { var p0 = pts[k2]; if (!p0) return; var ang = Math.atan2(cible[1] - main[1], cible[0] - main[0]) + (ib ? 0.7 : -0.7), L2 = V.T * (0.8 + bruit(g + ib) * 0.8);
+      zigzag(c, p0[0], p0[1], p0[0] + Math.cos(ang) * L2, p0[1] + Math.sin(ang) * L2, 5, V.T * 0.4, g + 50 + ib); c.strokeStyle = 'rgba(255,200,200,' + 0.6 * f + ')'; c.lineWidth = 1.2; c.stroke(); });
+    Eff.halo(c, main[0], main[1], V.T * 0.8 * f, '255,200,170', f, 0.8);
+    Eff.halo(c, cible[0], cible[1], V.T * 0.9 * f, '255,90,80', f, 0.6);
+  });
+  c.restore();
+}
+
+/* ---------- les attaques des héros : chacun la sienne ---------- */
+function trajet(S, s, role, depart) {   // où est l'attaque en ce moment, et dans quelle direction elle va
+  var arrivee = GB.centrePartie(s.part), k, a, b, haut;
+  if (s.retour) { a = arrivee; b = piedsHeros(S); k = cl(s.t / REG.sort.retour, 0, 1); haut = V.T * 0.6; }
+  else { a = depart || [X(s.x), Y(s.y, 0.8)]; b = arrivee; k = cl(s.t / REG.sort.vol, 0, 1); haut = role === 'pisteur' ? V.T * 0.3 : role === 'alchimiste' ? V.T * 1.6 : V.T * 0.8; }
+  var kk = role === 'pisteur' && !s.retour ? 1 - Math.pow(1 - k, 1.6) : k;
+  var x = a[0] + (b[0] - a[0]) * kk, y = a[1] + (b[1] - a[1]) * kk - Math.sin(kk * Math.PI) * haut;
+  var k2 = Math.min(1, kk + 0.03), x2 = a[0] + (b[0] - a[0]) * k2, y2 = a[1] + (b[1] - a[1]) * k2 - Math.sin(k2 * Math.PI) * haut;
+  return {x: x, y: y, ang: Math.atan2(y2 - y, x2 - x), k: k};
+}
+function attaque(c, S, role, s, p, gris) {
+  var R = ROLES[role], rgb = gris ? '255,214,120' : R.rgb, t = S.reel, T = V.T;
+  c.save(); c.globalCompositeOperation = 'lighter';
+  if (role === 'pisteur') {   // une flèche de lumière, rapide, avec une longue traînée
+    var dx = Math.cos(p.ang), dy = Math.sin(p.ang), L = T * 1.4;
+    var gr = c.createLinearGradient(p.x - dx * L * 1.6, p.y - dy * L * 1.6, p.x, p.y); gr.addColorStop(0, 'rgba(' + rgb + ',0)'); gr.addColorStop(1, 'rgba(' + rgb + ',.9)');
+    c.strokeStyle = gr; c.lineWidth = T * 0.22; c.lineCap = 'round'; c.beginPath(); c.moveTo(p.x - dx * L * 1.6, p.y - dy * L * 1.6); c.lineTo(p.x, p.y); c.stroke();
+    c.strokeStyle = 'rgba(255,255,250,.95)'; c.lineWidth = T * 0.07; c.beginPath(); c.moveTo(p.x - dx * L * 0.6, p.y - dy * L * 0.6); c.lineTo(p.x, p.y); c.stroke();
+    c.fillStyle = 'rgba(255,255,240,.95)'; c.beginPath(); c.moveTo(p.x + dx * T * 0.32, p.y + dy * T * 0.32); c.lineTo(p.x - dy * T * 0.14, p.y + dx * T * 0.14); c.lineTo(p.x + dy * T * 0.14, p.y - dx * T * 0.14); c.closePath(); c.fill();
+    Eff.halo(c, p.x, p.y, T * 0.7, rgb, 0.9, 0.7);
+    if (Math.random() < 0.7) Eff.ajouter({x: p.x, y: p.y, vx: -dx * 60 + (Math.random() - 0.5) * 50, vy: -dy * 60 + (Math.random() - 0.5) * 50, max: 0.35, r: 2.2, rgb: rgb, sorte: 't'});
+  } else if (role === 'alchimiste') {   // une fiole qui tourne en l'air ; des bulles derrière
+    c.save(); c.translate(p.x, p.y); c.rotate(t * 14 * (gris ? -1 : 1)); c.globalCompositeOperation = 'source-over';
+    var r = T * 0.2;
+    c.fillStyle = 'rgba(210,190,255,.9)'; c.beginPath(); c.arc(0, r * 0.4, r, 0, TAU); c.fill();
+    c.fillStyle = gris ? 'rgba(255,214,120,.95)' : 'rgba(150,255,120,.95)'; c.beginPath(); c.arc(0, r * 0.4, r * 0.8, 0.1, Math.PI - 0.1); c.fill();
+    c.fillStyle = 'rgba(210,190,255,.9)'; c.fillRect(-r * 0.3, -r * 1.1, r * 0.6, r * 0.9); c.fillStyle = '#c9a26a'; c.fillRect(-r * 0.38, -r * 1.35, r * 0.76, r * 0.35);
+    c.restore();
+    Eff.halo(c, p.x, p.y, T * 0.7, gris ? rgb : '170,255,140', 0.7, 0.4);
+    if (Math.random() < 0.6) Eff.ajouter({x: p.x + (Math.random() - 0.5) * 8, y: p.y, vx: (Math.random() - 0.5) * 30, vy: -20 - Math.random() * 30, max: 0.5, r: 2.5, rgb: Math.random() < 0.5 ? '150,255,120' : '200,150,255'});
+  } else if (role === 'barde') {   // des ondes de son, et des notes
+    for (var i = 0; i < 3; i++) {
+      var off = i * T * 0.28, ox = p.x - Math.cos(p.ang) * off, oy = p.y - Math.sin(p.ang) * off, rr2 = T * (0.35 + i * 0.12);
+      c.strokeStyle = 'rgba(' + rgb + ',' + (0.9 - i * 0.25) + ')'; c.lineWidth = 3 - i * 0.6; c.beginPath(); c.arc(ox, oy, rr2, p.ang - 0.9, p.ang + 0.9); c.stroke();
+    }
+    Eff.halo(c, p.x, p.y, T * 0.6, rgb, 0.8, 0.6);
+    if (Math.random() < 0.35) Eff.ajouter({x: p.x, y: p.y, vx: (Math.random() - 0.5) * 60, vy: -30 - Math.random() * 40, max: 0.7, r: 4, rgb: rgb, sorte: 'n', note: Math.random() < 0.5 ? '♪' : '♫'});
+  } else {   // le Sage : une rune qui tourne, des éclats bleus
+    c.save(); c.translate(p.x, p.y); c.rotate(t * 6);
+    var r2 = T * 0.3;
+    c.strokeStyle = 'rgba(' + rgb + ',.95)'; c.lineWidth = 2.2; c.beginPath(); c.arc(0, 0, r2, 0, TAU); c.stroke();
+    c.beginPath(); for (var j = 0; j < 3; j++) { var an = j / 3 * TAU - Math.PI / 2; if (j) c.lineTo(Math.cos(an) * r2 * 0.8, Math.sin(an) * r2 * 0.8); else c.moveTo(Math.cos(an) * r2 * 0.8, Math.sin(an) * r2 * 0.8); } c.closePath(); c.stroke();
+    c.strokeStyle = 'rgba(255,255,255,.9)'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(0, -r2 * 0.5); c.lineTo(0, r2 * 0.5); c.moveTo(-r2 * 0.4, 0); c.lineTo(r2 * 0.4, 0); c.stroke();
+    c.restore();
+    Eff.halo(c, p.x, p.y, T * 0.75, rgb, 0.85, 0.6);
+    if (Math.random() < 0.5) Eff.ajouter({x: p.x, y: p.y, vx: (Math.random() - 0.5) * 70, vy: (Math.random() - 0.5) * 70, max: 0.4, r: 2.6, rgb: rgb, sorte: 'e'});
+  }
+  c.restore();
+}
+function mesAttaques(c, S) { S.tirs.forEach(function (s) { attaque(c, S, S.moi, s, trajet(S, s, S.moi), !!s.retour); }); }
+/* les attaques de mes amis : pour l'image seulement (elles tapent au hasard : elles ne disent rien de la partie faible) */
+var vuAmi = {};
+function attaquesAmis(c, S) {
+  if (S.etat !== 'combat' || S.attente > 0) return;
+  var i = 0;
+  for (var ro in S.amis) {
+    var a = S.amis[ro], per = 3.6 + i * 0.55, ph = (S.reel + i * 1.3) % per, cyc = Math.floor((S.reel + i * 1.3) / per); i++;
+    if (S.seul && a.mort > 0) continue;
+    if (S.combat === 2 && S.seul && a.boss <= 0) continue;
+    var part = Math.floor(bruit(cyc * 3 + i * 17) * 6), dep = [X(a.x), Y(a.y, 0.8)];
+    if (ph < 0.5) attaque(c, S, ro, {t: ph, part: part, x: a.x, y: a.y}, trajet(S, {t: ph, part: part}, ro, dep), false);
+    else if (vuAmi[ro] !== cyc && ph < 0.7) { vuAmi[ro] = cyc; var q = GB.centrePartie(part); Eff.gerbe(q[0], q[1], 7, {rgb: ROLES[ro].rgb, vit: 90, vie: 0.35, r: 2.4}); }
+  }
+}
 
 /* ---------- les personnages ---------- */
+var BOUCLIER = null;
+function spriteBouclier() {
+  if (BOUCLIER) return BOUCLIER;
+  BOUCLIER = toile(160, 160); var x = BOUCLIER.getContext('2d'), s = 13;
+  x.translate(80, 80); x.strokeStyle = 'rgba(170,225,255,.75)'; x.lineWidth = 1.6;
+  for (var i = -6; i <= 6; i++) for (var j = -6; j <= 6; j++) {
+    var hx = (i + (j % 2 ? 0.5 : 0)) * s * 1.73, hy = j * s * 1.5; if (Math.hypot(hx, hy) > 70) continue;
+    x.beginPath(); for (var k = 0; k < 6; k++) { var an = k / 6 * TAU + Math.PI / 6; if (k) x.lineTo(hx + Math.cos(an) * s * 0.92, hy + Math.sin(an) * s * 0.92); else x.moveTo(hx + Math.cos(an) * s * 0.92, hy + Math.sin(an) * s * 0.92); } x.closePath(); x.stroke();
+  }
+  return BOUCLIER;
+}
 function perso(c, x, y, R, ic, coul, o) {
   o = o || {}; var T = V.T, r = REG.heros.r, z = o.z || 0;
   c.fillStyle = 'rgba(0,0,0,.4)'; ell(c, x, y, r); c.fill();
@@ -998,20 +1754,40 @@ function heros(c, S) {
   var h = S.h, R = ROLES[S.moi], T = V.T, r = REG.heros.r, z = 0, t = S.reel;
   if (h.saut) z = Math.sin(Math.min(1, h.saut.t / REG.saut.dur) * Math.PI) * 0.8;
   if (h.intouchable > 0 && Math.floor(t * 10) % 2) return;
+  // l'anneau de mon héros, au sol (pour me retrouver)
+  c.save(); c.globalCompositeOperation = 'lighter'; c.strokeStyle = 'rgba(' + R.rgb + ',.55)'; c.lineWidth = 2; ell(c, h.x, h.y, r * 1.7); c.stroke(); c.restore();
+  // la charge : un cercle de runes au sol, la lumière qui vient dans les mains (l'attaque) ; des étincelles vertes qui montent (le soin)
+  if (h.lance) {
+    var q = h.lance.t / h.lance.dur, soin = h.lance.quoi === 'soin', rgb = soin ? '110,240,140' : R.rgb, px = X(h.x), py = Y(h.y, 0.55 + z);
+    c.save(); c.globalCompositeOperation = 'lighter';
+    c.translate(X(h.x), Y(h.y)); c.scale(1, K); c.rotate(t * (soin ? 1.5 : 2.6));
+    c.strokeStyle = 'rgba(' + rgb + ',' + (0.35 + 0.5 * q) + ')'; c.lineWidth = 2.5; c.setLineDash([T * 0.18, T * 0.1]); c.beginPath(); c.arc(0, 0, r * T * 2.6, 0, TAU); c.stroke(); c.setLineDash([]);
+    c.lineWidth = 1.5; c.beginPath(); c.arc(0, 0, r * T * 1.9, 0, TAU * q); c.stroke();
+    for (var i = 0; i < 6; i++) { var an = i / 6 * TAU; c.beginPath(); c.moveTo(Math.cos(an) * r * T * 1.9, Math.sin(an) * r * T * 1.9); c.lineTo(Math.cos(an) * r * T * 2.6, Math.sin(an) * r * T * 2.6); c.stroke(); }
+    c.restore();
+    c.save(); c.globalCompositeOperation = 'lighter'; Eff.halo(c, px, py - T * 0.2, T * (0.5 + 0.7 * q), rgb, 0.5 + 0.5 * q, 0.6); c.restore();
+    if (Math.random() < 0.9) {
+      if (soin) Eff.ajouter({x: px + (Math.random() - 0.5) * T, y: py + T * 0.3, vx: (Math.random() - 0.5) * 10, vy: -40 - Math.random() * 40, max: 0.7, r: 3, rgb: rgb, sorte: Math.random() < 0.3 ? 'n' : 'g', note: '✚'});
+      else { var a2 = Math.random() * TAU, d = T * (1.1 + Math.random() * 0.5); Eff.ajouter({x: px + Math.cos(a2) * d, y: py + Math.sin(a2) * d * 0.7, vx: -Math.cos(a2) * d / 0.3, vy: -Math.sin(a2) * d * 0.7 / 0.3, frein: 1, max: 0.3, r: 2.4, rgb: rgb, sorte: 't'}); }
+    }
+  }
   var p = perso(c, h.x, h.y, R, R.ic, R.c, {z: z}), cx = p[0], cy = p[1];
   c.fillStyle = '#fff'; rond(c, cx + h.dx * r * T * 1.25, cy + h.dy * r * T * K * 1.25, 3); c.fill();
-  if (h.lance) {   // le sort qu'on lance (ou le soin) : un cercle qui se remplit
-    var q = h.lance.t / h.lance.dur, col = h.lance.quoi === 'soin' ? '#5fe07a' : ECOUL[h.lance.quoi];
+  if (h.lance) {   // le cercle qui se remplit
+    var q2 = h.lance.t / h.lance.dur, col = h.lance.quoi === 'soin' ? '#5fe07a' : R.c;
     c.strokeStyle = 'rgba(0,0,0,.5)'; c.lineWidth = 6; rond(c, cx, cy, r * T * 1.8); c.stroke();
-    c.strokeStyle = col; c.lineWidth = 4; c.beginPath(); c.arc(cx, cy, r * T * 1.8, -Math.PI / 2, -Math.PI / 2 + q * Math.PI * 2); c.stroke();
+    c.strokeStyle = col; c.lineWidth = 4; c.beginPath(); c.arc(cx, cy, r * T * 1.8, -Math.PI / 2, -Math.PI / 2 + q2 * TAU); c.stroke();
   }
-  if (h.bouclierFin > S.T) {   // la pierre de protection : une bulle
-    var bq = (h.bouclierFin - S.T) / REG.bouclier.dure;
-    c.fillStyle = 'rgba(110,190,255,.22)'; rond(c, cx, cy, r * T * 2.1); c.fill();
-    c.strokeStyle = 'rgba(160,215,255,' + (0.5 + 0.5 * bq) + ')'; c.lineWidth = 3; c.stroke();
+  if (h.bouclierFin > S.T) {   // la pierre de protection : une bulle d'hexagones qui tourne
+    var bq = (h.bouclierFin - S.T) / REG.bouclier.dure, Rb = r * T * 2.3;
+    c.save(); c.globalCompositeOperation = 'lighter';
+    c.fillStyle = 'rgba(90,170,255,' + (0.14 + 0.08 * Math.sin(t * 9)) + ')'; rond(c, cx, cy, Rb); c.fill();
+    c.save(); c.beginPath(); c.arc(cx, cy, Rb, 0, TAU); c.clip(); c.translate(cx, cy); c.rotate(t * 0.6); c.globalAlpha = 0.45 + 0.4 * bq; var sb = spriteBouclier(); c.drawImage(sb, -Rb * 1.15, -Rb * 1.15, Rb * 2.3, Rb * 2.3); c.restore();
+    c.strokeStyle = 'rgba(190,230,255,' + (0.6 + 0.4 * bq) + ')'; c.lineWidth = 3; rond(c, cx, cy, Rb); c.stroke();
+    Eff.halo(c, cx, cy, Rb * 1.5, '120,190,255', 0.35, 0.2);
+    c.restore();
   }
   if (h.coupe > 0) { c.fillStyle = 'rgba(255,40,40,' + h.coupe * 1.6 + ')'; rond(c, cx, cy, r * T * 1.15); c.fill(); }
-  var e = P3.dernier(S, 'soigne', 0.6); if (e) { var u = (S.reel - e.t) / 0.6; c.strokeStyle = 'rgba(95,224,122,' + (1 - u) + ')'; c.lineWidth = 3; rond(c, cx, cy, r * T * (1.2 + u * 2)); c.stroke(); }
 }
 function ami(c, S, a) {
   var R = ROLES[a.role];
@@ -1023,7 +1799,8 @@ function villageois(c, S) {
   v.sx = p[0]; v.sy = p[1];
 }
 
-/* ---------- les bulles : celles de mon villageois (en images), et, en mode seul, celles de mes robots (écrites) ---------- */
+/* ---------- la bulle (une seule à la fois) : celle de mon villageois en images (l'endroit sûr, le bouclier pour un ami) ;
+   en mode seul, ce que me crie un robot, écrit ---------- */
 function miniGrosbec(c, x, y, s, part) {
   var col = function (i) { return i === part ? '#ffd23a' : 'rgba(255,90,70,.55)'; };
   c.lineCap = 'round';
@@ -1031,39 +1808,33 @@ function miniGrosbec(c, x, y, s, part) {
     c.strokeStyle = col(m[5]); c.lineWidth = s * 0.16; c.beginPath(); c.moveTo(x + m[1] * s, y + m[2] * s); c.lineTo(x + m[3] * s, y + m[4] * s); c.stroke();
   });
   c.lineCap = 'butt';
-  c.fillStyle = col(1); c.beginPath(); c.ellipse(x, y + 0.08 * s, 0.3 * s, 0.32 * s, 0, 0, Math.PI * 2); c.fill();
+  c.fillStyle = col(1); c.beginPath(); c.ellipse(x, y + 0.08 * s, 0.3 * s, 0.32 * s, 0, 0, TAU); c.fill();
   c.fillStyle = col(0); rond(c, x, y - 0.42 * s, 0.17 * s); c.fill();
-}
-function potion(c, x, y, s, coul) {
-  c.fillStyle = coul; c.beginPath(); c.arc(x, y + s * 0.12, s * 0.32, 0, Math.PI * 2); c.fill();
-  c.fillRect(x - s * 0.09, y - s * 0.42, s * 0.18, s * 0.3); c.strokeStyle = '#11141d'; c.lineWidth = 1.5; c.stroke();
-  c.fillStyle = '#c9a26a'; c.fillRect(x - s * 0.11, y - s * 0.5, s * 0.22, s * 0.1);
 }
 function iconeLieu(c, x, y, s, i) {
   var n = REG.lieux[i].n;
   if (n === 'lanterne') { rr(c, x - s * 0.22, y - s * 0.3, s * 0.44, s * 0.6, 3); c.fillStyle = '#ffd23a'; c.fill(); c.fillStyle = '#fff4bf'; rr(c, x - s * 0.1, y - s * 0.18, s * 0.2, s * 0.36, 2); c.fill(); }
   else if (n === 'statue') { c.fillStyle = '#9aa1b5'; c.fillRect(x - s * 0.3, y + s * 0.18, s * 0.6, s * 0.18); rr(c, x - s * 0.15, y - s * 0.32, s * 0.3, s * 0.5, 3); c.fill(); c.fillStyle = '#7c8296'; rond(c, x + s * 0.32, y + s * 0.12, s * 0.1); c.fill(); }
-  else { c.fillStyle = '#7c8296'; c.beginPath(); c.ellipse(x, y + s * 0.12, s * 0.38, s * 0.18, 0, 0, Math.PI * 2); c.fill(); c.fillStyle = '#5fb4ff'; c.beginPath(); c.ellipse(x, y + s * 0.08, s * 0.3, s * 0.12, 0, 0, Math.PI * 2); c.fill(); c.strokeStyle = '#a8dcff'; c.lineWidth = 2; c.beginPath(); c.moveTo(x, y + s * 0.05); c.lineTo(x, y - s * 0.32); c.stroke(); }
+  else { c.fillStyle = '#7c8296'; c.beginPath(); c.ellipse(x, y + s * 0.12, s * 0.38, s * 0.18, 0, 0, TAU); c.fill(); c.fillStyle = '#5fb4ff'; c.beginPath(); c.ellipse(x, y + s * 0.08, s * 0.3, s * 0.12, 0, 0, TAU); c.fill(); c.strokeStyle = '#a8dcff'; c.lineWidth = 2; c.beginPath(); c.moveTo(x, y + s * 0.05); c.lineTo(x, y - s * 0.32); c.stroke(); }
 }
 function teteRonde(c, x, y, s, role) { var R = ROLES[role]; rond(c, x, y, s / 2); c.fillStyle = R.c; c.fill(); c.strokeStyle = '#11141d'; c.lineWidth = 2; c.stroke(); emoji(c, R.ic, x, y, s * 0.6); }
 function texteCri(bu) {
   if (bu.sym) return bu.sym;
   var x = bu.x;
-  return x.quoi === 'mega' ? P3.MOTS.mega : x.quoi === 'zone' ? P3.MOTS[REG.lieux[x.val].n] : x.quoi === 'elem' ? P3.MOTS[P3.ELEMS[x.val]] : P3.MOTS[P3.PARTIES[x.val]];
+  return x.quoi === 'mega' ? P3.MOTS.mega : x.quoi === 'zone' ? P3.MOTS[REG.lieux[x.val].n] : P3.MOTS[P3.PARTIES[x.val]];
 }
-/* (v3) une seule bulle à l'écran : celle que choisissent les règles (S.bulle) — l'endroit sûr d'abord, puis le bouclier, puis le reste, chacun son tour */
 function bulle(c, S, ctx) {
   var bu = S.bulle; ctx.boites = [];
   if (!bu) return;
   var t = S.reel, x = bu.x, pop = cl((S.T - bu.debut) / 0.16, 0, 1), sc = 0.6 + 0.4 * pop;
-  var cx, cy, larg, haut, s, pad, mega = !!(x && x.quoi === 'mega');
-  if (bu.type === 'villageois') {   // en images, au-dessus de mon villageois
+  var cx, cy, larg, haut, s, pad, mega = !!(x && x.quoi === 'mega'), fs = 16;
+  if (bu.type === 'villageois') {
     var v = S.villageois; if (v.sx === undefined) return;
     s = Math.max(28, V.T * 1.0); pad = 7;
     larg = x.quoi === 'zone' ? s + pad * 2 : s * 2 + pad * 3; haut = s + pad * 2;
     cx = v.sx; cy = v.sy - V.T * 0.5;
-  } else {                          // mode seul : ce que me crie un robot (pour l'essai, c'est écrit), au-dessus de lui
-    var a = S.amis[bu.de], txt = texteCri(bu), fs = Math.max(15, Math.round(V.T * 0.46)), big = !!bu.sym;
+  } else {
+    var a = S.amis[bu.de], txt = texteCri(bu), big = !!bu.sym; fs = Math.max(15, Math.round(V.T * 0.46));
     c.font = '900 ' + (big ? fs * 1.8 : fs) + 'px Nunito,' + EMO;
     larg = c.measureText(txt).width + 22 + (x && x.quoi === 'part' ? fs * 1.9 : 0); haut = (big ? fs * 1.8 : fs) + 16;
     cx = X(a.x); cy = Y(a.y, 1.3);
@@ -1075,21 +1846,16 @@ function bulle(c, S, ctx) {
     if (o.x < V.W / 2) bx = Math.max(bx, o.x + o.r + 6); else bx = Math.min(bx, o.x - o.r - 6 - larg);
   });
   c.save(); c.translate(cx, by + haut); c.scale(sc, sc); c.translate(-cx, -(by + haut));
-  var fond = mega ? 'rgba(70,10,14,.94)' : 'rgba(250,246,235,.97)';
-  c.fillStyle = fond; rr(c, bx, by, larg, haut, 11); c.fill();
+  var fond2 = mega ? 'rgba(70,10,14,.94)' : 'rgba(250,246,235,.97)';
+  c.fillStyle = fond2; rr(c, bx, by, larg, haut, 11); c.fill();
   c.strokeStyle = mega ? 'rgba(255,70,60,' + (0.6 + 0.4 * Math.sin(t * 18)) + ')' : bu.type === 'ami' ? ROLES[bu.de].c : '#11141d'; c.lineWidth = mega || bu.type === 'ami' ? 3 : 2; c.stroke();
   var qx = cl(cx, bx + 12, bx + larg - 12);
-  c.beginPath(); c.moveTo(qx - 7, by + haut - 1); c.lineTo(cx, by + haut + 9); c.lineTo(qx + 7, by + haut - 1); c.fillStyle = fond; c.fill();
+  c.beginPath(); c.moveTo(qx - 7, by + haut - 1); c.lineTo(cx, by + haut + 9); c.lineTo(qx + 7, by + haut - 1); c.fillStyle = fond2; c.fill();
   var my = by + haut / 2;
   if (bu.type === 'villageois') {
     var x1 = bx + pad + s / 2, x2 = bx + pad * 2 + s * 1.5;
     if (x.quoi === 'zone') iconeLieu(c, x1, my, s, x.val);
-    else {
-      teteRonde(c, x1, my, s * 0.9, x.cible);
-      if (x.quoi === 'elem') potion(c, x2, my, s, ECOUL[P3.ELEMS[x.val]]);
-      else if (x.quoi === 'part') miniGrosbec(c, x2, my, s * 0.95, x.val);
-      else emoji(c, '🛡️', x2, my, s * 0.8);
-    }
+    else { teteRonde(c, x1, my, s * 0.9, x.cible); emoji(c, '🛡️', x2, my, s * 0.8); }
     var reste = cl((x.tFin - S.T) / (x.tFin - x.tA), 0, 1);
     c.fillStyle = mega ? '#ff5a4a' : 'rgba(0,0,0,.35)'; c.fillRect(bx + 9, by + haut - 4.5, (larg - 18) * reste, 2.5);
     ctx.boites.push({x: bx, y: by, w: larg, h: haut, info: x});
@@ -1102,75 +1868,14 @@ function bulle(c, S, ctx) {
   c.restore();
 }
 
-/* ---------- les éclairs, les sorts, les frappes ---------- */
-function zigzag(c, x0, y0, x1, y1, n, amp, graine) {
-  c.beginPath(); c.moveTo(x0, y0);
-  for (var i = 1; i < n; i++) { var u = i / n, px = x0 + (x1 - x0) * u, py = y0 + (y1 - y0) * u, nx = -(y1 - y0), ny = x1 - x0, l = Math.hypot(nx, ny) || 1, d = (bruit(graine + i * 3.7) - 0.5) * amp;
-    c.lineTo(px + nx / l * d, py + ny / l * d); }
-  c.lineTo(x1, y1);
-}
-function eclairs(c, S) {
-  S.eclairs.forEach(function (e) {
-    if (S.reel < e.t) return;
-    var main = mainDe(e.main), cible;
-    if (e.vers === 'moi') { if (!P3.vivant(S)) return; cible = [X(S.h.x), Y(S.h.y, 0.55)]; }
-    else { var a = S.amis[e.vers]; if (!a || (S.seul && a.mort > 0)) return; cible = [X(a.x), Y(a.y, 0.55)]; }
-    var u = (S.reel - e.t) / REG.eclair.montre, g = Math.floor(S.reel * 30) * 7 + e.t * 13;
-    c.lineCap = 'round';
-    c.strokeStyle = 'rgba(255,60,50,' + (0.5 * (1 - u)) + ')'; c.lineWidth = 9; zigzag(c, main[0], main[1], cible[0], cible[1], 9, V.T * 0.7, g); c.stroke();
-    c.strokeStyle = 'rgba(255,235,225,' + (1 - u) + ')'; c.lineWidth = 2.5; c.stroke();
-    c.lineCap = 'butt';
-  });
-}
-function sorts(c, S, ctx) {
-  var t = S.reel;
-  S.tirs.forEach(function (s) {
-    var k = cl(s.t / REG.sort.vol, 0, 1), a = [X(s.x), Y(s.y, 0.8)], b = centrePartie(s.part);
-    var x = a[0] + (b[0] - a[0]) * k, y = a[1] + (b[1] - a[1]) * k - Math.sin(k * Math.PI) * V.T * 0.8;
-    c.fillStyle = ECOUL[s.quoi]; rond(c, x, y, V.T * 0.18); c.fill(); c.strokeStyle = '#fff'; c.lineWidth = 1.5; c.stroke();
-  });
-  // les sorts de mes amis (pour l'image)
-  for (var ro in S.amis) {
-    var a2 = S.amis[ro];
-    if (S.etat !== 'combat' || (S.seul && a2.mort > 0)) continue;
-    var ph = (t + a2.prochainSort) % 3.4;
-    if (ph < 0.35) { var kk = ph / 0.35, from = [X(a2.x), Y(a2.y, 0.8)], to = centrePartie(Math.floor(bruit(Math.floor((t + a2.prochainSort) / 3.4) + ro.length) * 6)), el = P3.ELEMS[Math.floor(bruit(a2.prochainSort * 9 + Math.floor(t / 3.4)) * 3)];
-      c.globalAlpha = 0.7; c.fillStyle = ECOUL[el]; rond(c, from[0] + (to[0] - from[0]) * kk, from[1] + (to[1] - from[1]) * kk - Math.sin(kk * Math.PI) * V.T * 0.6, V.T * 0.13); c.fill(); c.globalAlpha = 1; }
-  }
-  // les rebonds : le sort repart sur le côté, gris
-  S.evts.forEach(function (e) {
-    var u = S.reel - e.t;
-    if (e.type === 'rebond' && u < 0.45) { var p = centrePartie(e.part), d = u / 0.45; c.fillStyle = 'rgba(200,205,215,' + (1 - d) + ')'; rond(c, p[0] + d * V.T * 1.6, p[1] - d * V.T * 1.2 + d * d * V.T * 2, V.T * 0.15); c.fill();
-      for (var i = 0; i < 5; i++) { c.fillStyle = 'rgba(220,225,235,' + (1 - d) + ')'; rond(c, p[0] + Math.cos(i * 1.3) * d * 30, p[1] + Math.sin(i * 1.3) * d * 20, 2); c.fill(); } }
-    if (e.type === 'touche' && u < 0.4) { var q = centrePartie(e.part); c.strokeStyle = ECOUL[e.quoi]; c.globalAlpha = 1 - u / 0.4; c.lineWidth = 4; rond(c, q[0], q[1], V.T * (0.3 + u * 3)); c.stroke(); c.globalAlpha = 1; }
-  });
-}
-function frappes(c, S) {
-  var L = REG.salle, T = V.T;
-  // la grosse zone : tout le sol explose, sauf l'endroit sûr (on le voit après coup)
-  var z = P3.dernier(S, 'zone', 0.8);
-  if (z) {
-    var u = (S.reel - z.t) / 0.8, l = REG.lieux[z.lieu];
-    c.save(); c.beginPath(); c.rect(X(0), Y(0), L.L * T, L.P * T * K); c.ellipse(X(l.x), Y(l.y), REG.surR * T, REG.surR * T * K, 0, 0, Math.PI * 2, true);
-    c.fillStyle = 'rgba(255,' + Math.round(80 + 120 * u) + ',60,' + (0.85 * (1 - u)) + ')'; c.fill('evenodd'); c.restore();
-    c.strokeStyle = 'rgba(255,230,140,' + (1 - u) + ')'; c.lineWidth = 4; ell(c, l.x, l.y, REG.surR); c.stroke();
-  }
-  // la méga attaque : un énorme rayon rouge qui tombe sur le visé
-  var m = P3.dernier(S, 'mega', 0.6);
-  if (m && (m.moi || m.vuIci)) {
-    var u2 = (S.reel - m.t) / 0.6, hp = pt(0, FORME.tete.z + 0.95), cib = m.moi ? [X(S.h.x), Y(S.h.y, 0.55)] : [X(S.amis[m.cible].x), Y(S.amis[m.cible].y, 0.55)];
-    c.lineCap = 'round'; c.strokeStyle = 'rgba(255,40,30,' + (0.85 * (1 - u2)) + ')'; c.lineWidth = T * 0.7; c.beginPath(); c.moveTo(hp[0], hp[1]); c.lineTo(cib[0], cib[1]); c.stroke();
-    c.strokeStyle = 'rgba(255,240,220,' + (1 - u2) + ')'; c.lineWidth = T * 0.2; c.stroke(); c.lineCap = 'butt';
-    if (m.moi && m.ok) for (var i = 0; i < 12; i++) { var a = i / 12 * Math.PI * 2; c.fillStyle = 'rgba(170,220,255,' + (1 - u2) + ')'; rond(c, cib[0] + Math.cos(a) * u2 * T * 1.6, cib[1] + Math.sin(a) * u2 * T, 3); c.fill(); }
-  }
-}
-
-/* ---------- le haut de l'écran : la vie de Grosbec, mon symbole ---------- */
+/* ---------- le haut de l'écran : la vie de Grosbec (elle tremble quand on le touche), mon symbole ---------- */
 function barre(c, x, y, w, h, k, col) { c.fillStyle = 'rgba(0,0,0,.6)'; rr(c, x - 2, y - 2, w + 4, h + 4, h / 2 + 2); c.fill(); c.fillStyle = col; rr(c, x, y, Math.max(0, w * k), h, h / 2); c.fill(); }
 function haut(c, S, W, H) {
   var s = Math.max(0.7, Math.min(1.3, Math.min(W, H * 2) / 900)), aw = Math.min(W * 0.32, 320 * s), ax = W / 2 - aw / 2, ay = 12, hh = 16 * s;
+  var e0 = P3.dernier(S, 'touche', 0.35);
+  if (e0) { var u0 = (S.reel - e0.t) / 0.35; ax += Math.sin(S.reel * 80) * 4 * (1 - u0); }
   barre(c, ax, ay, aw, hh, S.boss / S.bossMax, S.combat === 2 && S.boss <= 0 ? '#ffd23a' : '#e2483c');
-  // mon symbole : en grand au-dessus de Grosbec, puis il reste petit au bout de la barre
+  if (e0) { var u1 = (S.reel - e0.t) / 0.35, xk = ax + aw * S.boss / S.bossMax; c.fillStyle = 'rgba(255,255,255,' + (1 - u1) + ')'; rr(c, xk - 2, ay - 2, aw / S.bossMax + 4, hh + 4, 4); c.fill(); }
   if (S.combat === 2 && S.boss <= 0) {
     var e = P3.dernier(S, 'symbole', 3), R = ROLES[S.moi], sym = S.symboles[S.moi];
     if (e) { var k = (S.reel - e.t) / 3, f = k < 0.75 ? 1 : 1 - (k - 0.75) / 0.25, sx = W / 2, sy = ay + hh + 20 + (H * 0.22) * f, sz = 22 * s + 60 * s * f;
@@ -1181,52 +1886,119 @@ function haut(c, S, W, H) {
 }
 
 /* ---------- le film d'Odette (formes simples, sans un mot) ---------- */
+function potion(c, x, y, s, coul) {
+  c.fillStyle = coul; c.beginPath(); c.arc(x, y + s * 0.12, s * 0.32, 0, TAU); c.fill();
+  c.fillRect(x - s * 0.09, y - s * 0.42, s * 0.18, s * 0.3); c.strokeStyle = '#11141d'; c.lineWidth = 1.5; c.stroke();
+  c.fillStyle = '#c9a26a'; c.fillRect(x - s * 0.11, y - s * 0.5, s * 0.22, s * 0.1);
+}
 function film(c, S, W, H) {
   var u = cl(1 - S.attente / REG.film, 0, 1), T = V.T, t = S.reel;
-  salle(c, S); for (var i = 0; i < 3; i++) lieu(c, S, i);
-  grosbec(c, S, {});
+  salle(c, S, W, H); for (var i = 0; i < 3; i++) lieu(c, S, i);
+  GB.dessiner(c, S);
   c.fillStyle = 'rgba(0,0,10,' + (0.45 - 0.25 * u) + ')'; c.fillRect(0, 0, W, H);
   var heros = [S.moi].concat(Object.keys(S.amis)), places = [[6.8, 4.2], [9.2, 4.2], [5.8, 5.6], [10.2, 5.6]];
   var VGS = ['🥖', '🍺', '🗡️', '🌿'];
-  heros.forEach(function (ro, k) {   // les héros à terre, qui se relèvent
+  heros.forEach(function (ro, k) {
     var p = places[k], debout = cl((u - 0.62) / 0.12, 0, 1), R = ROLES[ro];
     perso(c, p[0], p[1], R, debout > 0.5 ? R.ic : '💤', debout > 0.5 ? R.c : '#555', {alpha: 0.5 + 0.5 * debout});
-    // les villageois arrivent depuis la gauche, chacun vers un héros, avec une pierre qui brille
     var arr = cl((u - 0.08 - k * 0.04) / 0.4, 0, 1), vx = -1 + (p[0] - 1.2 - (-1)) * arr, vy = p[1] + 0.9;
     perso(c, vx, vy, null, VGS[k], '#d9b98a', {taille: 0.85});
-    if (u > 0.5) { var g = c.createRadialGradient(X(p[0]), Y(p[1], 0.55), 0, X(p[0]), Y(p[1], 0.55), T * 0.9); g.addColorStop(0, 'rgba(120,200,255,' + (0.6 * cl((u - 0.5) / 0.1, 0, 1)) + ')'); g.addColorStop(1, 'rgba(120,200,255,0)'); c.fillStyle = g; rond(c, X(p[0]), Y(p[1], 0.55), T * 0.9); c.fill(); }
-    if (u > 0.8) potion(c, X(p[0]) + T * 0.5, Y(p[1], 1.35), T * 0.55, ECOUL.acide);
+    if (u > 0.5) { c.save(); c.globalCompositeOperation = 'lighter'; Eff.halo(c, X(p[0]), Y(p[1], 0.55), T * 0.9, '120,200,255', 0.6 * cl((u - 0.5) / 0.1, 0, 1), 0.5); c.restore(); }
+    if (u > 0.8) potion(c, X(p[0]) + T * 0.5, Y(p[1], 1.35), T * 0.55, '#8fe03a');
   });
-  // Odette en tête, avec sa canne
   var ao = cl((u - 0.02) / 0.4, 0, 1), ox = -1 + 5.4 * ao;
   perso(c, ox, 4.9, null, '👵', '#c7a6e8', {taille: 1.05});
   c.strokeStyle = '#8b6b3a'; c.lineWidth = 3; c.beginPath(); c.moveTo(X(ox) + T * 0.35, Y(4.9, 1)); c.lineTo(X(ox) + T * 0.45, Y(4.9, 0)); c.stroke();
 }
 
+/* ---------- les nouveautés de la partie : les étincelles qui vont avec ---------- */
+var vuEvt = -1, vuEcl = -1;
+function nouveautes(S) {
+  var T = V.T;
+  S.evts.forEach(function (e) {
+    if (e._d) return; e._d = 1;
+    var R = ROLES[S.moi], hp = piedsHeros(S);
+    if (e.type === 'touche') {
+      var q = GB.centrePartie(e.part);
+      Eff.gerbe(q[0], q[1], 26, {rgb: R.rgb, vit: 320, vie: 0.5, r: 3, sorte: 't', blanc: 0.8});
+      Eff.gerbe(q[0], q[1], 14, {rgb: '255,90,60', vit: 220, vie: 0.8, r: 4, sorte: 'e', g: 300});
+      Eff.gerbe(q[0], q[1], 10, {rgb: '255,230,200', vit: 120, vie: 0.5, r: 6});
+      Eff.onde(q[0], q[1], T * 0.3, T * 1.9, 0.45, '255,240,220', 4); Eff.onde(q[0], q[1], T * 0.2, T * 1.2, 0.35, R.rgb, 3);
+      Eff.secouer(7);
+    } else if (e.type === 'rebond') {
+      var q2 = GB.centrePartie(e.part);
+      Eff.hexa(q2[0], q2[1], T * 0.9, 0.45);
+      Eff.gerbe(q2[0], q2[1], 12, {rgb: '255,214,110', vit: 200, vie: 0.4, r: 2.5, sorte: 't'});
+    } else if (e.type === 'retour') {
+      Eff.gerbe(hp[0], hp[1], 22, {rgb: '255,80,60', vit: 240, vie: 0.5, r: 3, sorte: 't'}); Eff.onde(hp[0], hp[1], 4, T * 1.4, 0.4, '255,120,90', 4, K); Eff.secouer(5);
+    } else if (e.type === 'part') {
+      Eff.gerbe(hp[0], hp[1] - T * 0.3, 12, {rgb: R.rgb, vit: 160, vie: 0.35, r: 2.5, sorte: 't'}); Eff.onde(hp[0], hp[1] - T * 0.3, 4, T * 0.9, 0.3, R.rgb, 3);
+    } else if (e.type === 'zone') {
+      var L = REG.salle;
+      Eff.secouer(14); Eff.onde(X(B.x), Y(B.y), T, T * 14, 0.8, '255,120,80', 6, K);
+      for (var i = 0; i < 70; i++) { var gx = Math.random() * L.L, gy = Math.random() * L.P, l = REG.lieux[e.lieu]; if (Math.hypot(gx - l.x, gy - l.y) < REG.surR) continue;
+        Eff.ajouter({x: X(gx), y: Y(gy), vx: (Math.random() - 0.5) * 40, vy: -120 - Math.random() * 160, g: 220, max: 0.9, r: 3, rgb: Math.random() < 0.5 ? '255,120,60' : '255,220,150'}); }
+      var lu = REG.lieux[e.lieu]; Eff.gerbe(X(lu.x), Y(lu.y), 20, {rgb: '255,220,120', vit: 90, vie: 0.8, r: 3, monte: 60});
+    } else if (e.type === 'mega' && (e.moi || e.vuIci)) {
+      var cib = e.moi ? hp : [X(S.amis[e.cible].x), Y(S.amis[e.cible].y, 0.6)];
+      if (e.moi && e.ok) { Eff.gerbe(cib[0], cib[1] - T * 0.3, 40, {rgb: '150,210,255', vit: 300, vie: 0.6, r: 3, sorte: 't'}); Eff.onde(cib[0], cib[1] - T * 0.3, T * 0.5, T * 2.2, 0.5, '160,220,255', 5); }
+      else { Eff.gerbe(cib[0], cib[1], 50, {rgb: '255,60,40', vit: 340, vie: 0.7, r: 4, sorte: 't'}); Eff.onde(cib[0], cib[1], 4, T * 2.6, 0.6, '255,80,60', 6, K); }
+      Eff.secouer(e.moi ? 11 : 5);
+    } else if (e.type === 'saut') { Eff.onde(hp[0], hp[1] + T * 0.3, 2, T * 0.9, 0.35, '200,200,220', 2, K); Eff.gerbe(hp[0], hp[1] + T * 0.3, 8, {rgb: '180,180,200', vit: 60, vie: 0.4, r: 4, sorte: 'f'}); }
+    else if (e.type === 'soigne') { Eff.gerbe(hp[0], hp[1], 24, {rgb: '110,240,140', vit: 80, vie: 0.8, r: 3, monte: 80}); Eff.onde(hp[0], hp[1], 4, T * 1.3, 0.5, '110,240,140', 3, K); }
+    else if (e.type === 'bouclier') Eff.onde(hp[0], hp[1] - T * 0.3, T * 0.3, T * 1.4, 0.4, '150,210,255', 4);
+    else if (e.type === 'mort') { Eff.gerbe(hp[0], hp[1], 30, {rgb: '255,100,80', vit: 200, vie: 0.7, r: 3, sorte: 't'}); Eff.secouer(9); }
+    else if (e.type === 'relais') Eff.onde(hp[0], hp[1] - T * 0.4, T * 0.3, T * 2.2, 0.5, '255,214,90', 3);
+    else if (e.type === 'symbole') { Eff.gerbe(V.W / 2, 60, 40, {rgb: '255,214,90', vit: 260, vie: 0.9, r: 3, sorte: 't'}); }
+    else if (e.type === 'victoire') { var cc = GB.point('coeur'); Eff.gerbe(cc[0], cc[1], 120, {rgb: '255,220,160', vit: 420, vie: 1.4, r: 4, sorte: 't'}); Eff.onde(cc[0], cc[1], 10, V.W * 0.8, 1.4, '255,230,200', 8); Eff.secouer(16); }
+    else if (e.type === 'tambour') Eff.secouer(8);
+  });
+  // les éclairs : des étincelles là où ils frappent
+  S.eclairs.forEach(function (e) {
+    if (e._d || e.t > S.reel) return; e._d = 1;
+    var cible;
+    if (e.vers === 'moi') { if (!P3.vivant(S)) return; cible = piedsHeros(S); } else { var a = S.amis[e.vers]; if (!a) return; cible = [X(a.x), Y(a.y, 0.6)]; }
+    Eff.gerbe(cible[0], cible[1], 10, {rgb: '255,220,220', vit: 180, vie: 0.3, r: 2, sorte: 't'});
+  });
+  // le tambour : la salle tremble à chaque coup de poing
+  if (S.combat === 1 && S.T >= REG.combat1.tenir && S.etat === 'combat') { var ph = (S.T - REG.combat1.tenir) * 3.2; if (ph % 1 < 0.08) { Eff.secouer(6); var pn = GB.point(Math.floor(ph) % 2 ? 'mainD' : 'mainG'); Eff.onde(pn[0], pn[1], 4, V.T * 3, 0.4, '255,90,60', 4, K); } }
+}
+
 /* ---------- tout ---------- */
+var dernierReel = null;
 function tout(c, S, vue, W, H, joy, ctx) {
   V.T = vue.T; V.ox = vue.ox; V.oy = vue.oy; V.W = W; V.H = H;
+  GB.cadre(vue, K);
+  var dt = dernierReel === null ? 0 : cl(S.reel - dernierReel, 0, 0.1); dernierReel = S.reel;
+  GB.maj(S, dt); Eff.maj(dt);
   c.fillStyle = '#070912'; c.fillRect(0, 0, W, H);
-  if (S.etat === 'film' || S.etat === 'go') { film(c, S, W, H); return; }
+  var sec = Eff.decalage(); c.save(); c.translate(sec[0], sec[1]);
+  if (S.etat === 'film' || S.etat === 'go') { film(c, S, W, H); c.restore(); return; }
   ctx.boites = [];
   var mort = !P3.vivant(S);
-  salle(c, S);
+  salle(c, S, W, H);
+  annonceZone(c, S);
+  if (!mort) { c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = 0.16; c.beginPath(); c.rect(0, Y(0), W, H - Y(0)); c.clip(); GB.reflet(c); c.restore(); }
   var objets = [];
   REG.lieux.forEach(function (l, i) { objets.push([l.y, function () { lieu(c, S, i); }]); });
   if (!mort) {   // (R) mort : on ne voit plus que le décor
-    objets.push([B.y + 0.01, function () { grosbec(c, S, ctx); }]);
+    objets.push([B.y + 0.01, function () { GB.dessiner(c, S); if (S.combat === 2 ? S.boss > 0 : true) GB.traceVisee(c, S.cible, S.reel); }]);
     for (var ro in S.amis) (function (a) { objets.push([Math.min(a.y, S.h.y - 0.001), function () { ami(c, S, a); }]); })(S.amis[ro]);   // (v3) un ami ne passe jamais devant mon héros
     objets.push([S.villageois.y, function () { villageois(c, S); }]);
     objets.push([S.h.y + 0.01, function () { heros(c, S); }]);
   }
   objets.sort(function (a, b) { return a[0] - b[0]; }).forEach(function (o) { o[1](); });
   if (!mort) {
+    nouveautes(S);
     frappes(c, S);
     eclairs(c, S);
-    sorts(c, S, ctx);
+    attaquesAmis(c, S);
+    mesAttaques(c, S);
+    Eff.dessiner(c);
     bulle(c, S, ctx);
     haut(c, S, W, H);
-  } else { var z = P3.dernier(S, 'zone', 0.8); if (z) frappes(c, S); }
+  } else { var z = P3.dernier(S, 'zone', 1.1); if (z) frappes(c, S); nouveautes(S); }
+  c.restore();
   if (joy && joy.id === null && !mort && joy.rx) {   // (v3) le pouce gauche au repos : un rond pâle, pour savoir où le poser
     c.strokeStyle = 'rgba(255,255,255,.14)'; c.lineWidth = 2; rond(c, joy.rx, joy.ry, joy.R); c.stroke();
     c.fillStyle = 'rgba(255,255,255,.1)'; rond(c, joy.rx, joy.ry, joy.R * 0.42); c.fill();
@@ -1237,18 +2009,20 @@ function tout(c, S, vue, W, H, joy, ctx) {
   }
   if (S.attente > 0 && S.etat === 'combat') { c.fillStyle = 'rgba(0,0,0,' + (0.35 * S.attente / REG.lancement) + ')'; c.fillRect(0, 0, W, H); }
 }
+function nouvellePartie() { vuEvt = -1; vuEcl = -1; vuAmi = {}; dernierReel = null; Eff.vider(); GB.reset(); }
 function versSalle(sx, sy) { return [(sx - V.ox) / V.T, (sy - V.oy) / (V.T * K)]; }
-G.Dessin = {tout: tout, ROLES: ROLES, VILLAGEOIS: VILLAGEOIS, K: K, DESSUS: DESSUS, versSalle: versSalle, X: X, Y: Y, partieSous: partieSous, centrePartie: centrePartie, V: V};
+G.Dessin = {tout: tout, ROLES: ROLES, VILLAGEOIS: VILLAGEOIS, K: K, DESSUS: DESSUS, versSalle: versSalle, X: X, Y: Y, partieSous: function (x, y) { return GB.partieSous(x, y); },
+  centrePartie: function (i) { return GB.centrePartie(i); }, V: V, nouvellePartie: nouvellePartie};
 })(typeof window !== 'undefined' ? window : globalThis);
 
 </script>
 <script>/* ===== ecrans.js ===== */
-/* Les écrans de la version 3 : le départ (seul ou à quatre), le combat sur tout l'écran, le pouce gauche (courir, le bouclier au-dessus),
-   le pouce droit (les trois sorts, le soin, le saut), le groupe en haut à gauche, le code, « On reprend », le film d'Odette, la fin, les sons, la boucle. */
+/* Les écrans de la version 4 : le départ (seul ou à quatre), le combat sur tout l'écran, le pouce gauche (courir, le bouclier au-dessus),
+   le pouce droit (l'attaque de mon héros, le soin, le saut), le groupe en haut à gauche, le code, « On reprend », le film d'Odette, la fin, les sons, la boucle. */
 (function () {
 'use strict';
 var P3 = window.P3, REG = P3.REG, Dessin = window.Dessin;
-var VERSION = 'version 3 (27 novembre, nuit)';
+var VERSION = 'version 4 (27 novembre)';
 var $ = function (id) { return document.getElementById(id); };
 var cv = $('c'), ctx = cv.getContext('2d');
 var S = null, pause = false, finMontree = false, fige = false, enJeu = false;
@@ -1265,29 +2039,32 @@ function garder() { try { localStorage.setItem('phase3-v2', JSON.stringify(regla
 var horloge = {zero: 0, reel0: 0, pauseT: 0};
 function caler() { horloge.zero = performance.now(); horloge.reel0 = S ? S.reel : 0; }
 
-/* ---------- la mise en page (v3) : la salle sur tout l'écran ; à gauche, courir et le bouclier ; à droite, les sorts, le soin, le saut ---------- */
-var BOUTONS = ['bBouclier', 'bFeu', 'bGlace', 'bAcide', 'bSoin', 'bSaut'];
+/* ---------- la mise en page (v3, v4) : la salle sur tout l'écran ; à gauche, courir et le bouclier ; à droite, l'attaque, le soin, le saut ---------- */
+var BOUTONS = ['bBouclier', 'bAttaque', 'bSoin', 'bSaut'];
 var sonde = document.createElement('div');   // les bords de l'iPhone (l'encoche, les coins ronds) : env(safe-area-inset-*)
 sonde.style.cssText = 'position:fixed;left:0;top:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';
 document.body.appendChild(sonde);
 function marges() { var cs = getComputedStyle(sonde); return {h: parseFloat(cs.paddingTop) || 0, d: parseFloat(cs.paddingRight) || 0, b: parseFloat(cs.paddingBottom) || 0, g: parseFloat(cs.paddingLeft) || 0}; }
 function place(id, x, y, d) { var el = $(id); el.style.width = el.style.height = d + 'px'; el.style.left = (x - d / 2) + 'px'; el.style.top = (y - d / 2) + 'px'; el.style.fontSize = (d * 0.36) + 'px'; }
+var QUAL = 2, qualT = 0;   // (v4) la qualité baisse toute seule si l'appareil n'arrive pas à suivre (2 : belle ; 1 ; 0 : vieille tablette)
 function taille() {
-  W = innerWidth; H = innerHeight; DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight; DPR = Math.min([1, 1.5, 2][QUAL], window.devicePixelRatio || 1);
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
   var L = REG.salle, K = Dessin.K, sa = marges();
   // la salle aussi grande que l'écran le permet : le sol touche le bas, Grosbec touche presque le haut ; le mur et le sol continuent sur les côtés
   var u = Math.min(H, 0.5 * W, 450);   // la taille des pouces : la hauteur d'un téléphone couché (un pouce reste un pouce : plafonnée sur tablette)
   var T = Math.min(H / (Dessin.DESSUS + L.P * K), (W - 2 * u * 0.12) / L.L);   // sur une tablette, on garde un bord de chaque côté pour les pouces
   vue.T = T; vue.ox = (W - L.L * T) / 2; vue.oy = H - L.P * T * K;
-  // à droite, près du coin : les trois sorts en arc ; un cran plus loin, le saut et le soin
-  var p = u * 0.19, px = W - sa.d - u * 0.04, py = H - sa.b - u * 0.04, R1 = u * 0.38, R2 = R1 + p * 1.03;
-  [['bFeu', 168], ['bGlace', 136], ['bAcide', 104]].forEach(function (b) { var a = b[1] * Math.PI / 180; place(b[0], px + Math.cos(a) * R1, py - Math.sin(a) * R1, p); });
-  [['bSaut', 96], ['bSoin', 126]].forEach(function (b) { var a = b[1] * Math.PI / 180; place(b[0], px + Math.cos(a) * R2, py - Math.sin(a) * R2, p * 0.92); });
+  // (v4) à droite : la grosse attaque près du coin ; le soin à sa gauche, le saut au-dessus
+  var A = u * 0.29, p = u * 0.2, px = W - sa.d - u * 0.04 - A / 2, py = H - sa.b - u * 0.05 - A / 2, R1 = A / 2 + p / 2 + u * 0.035;
+  place('bAttaque', px, py, A);
+  [['bSoin', 140], ['bSaut', 88]].forEach(function (b) { var a = b[1] * Math.PI / 180; place(b[0], px + Math.cos(a) * R1, py - Math.sin(a) * R1, p); });
   // à gauche : le pouce qui court (en bas), le bouclier juste au-dessus
   joy.R = Math.max(40, Math.min(80, u * 0.13));
   joy.rx = sa.g + u * 0.06 + joy.R * 1.1; joy.ry = H - sa.b - u * 0.1 - joy.R;
   var g = u * 0.24; place('bBouclier', Math.max(sa.g + u * 0.04 + g / 2, joy.rx), joy.ry - joy.R - u * 0.05 - g / 2, g);
+  if (window.GB) GB.construire(vue.T, DPR, QUAL);
+  if (window.Eff) Eff.qualite(QUAL);
   dctx.evite = BOUTONS.map(function (id) { var el = $(id), d = parseFloat(el.style.width); return {x: parseFloat(el.style.left) + d / 2, y: parseFloat(el.style.top) + d / 2, r: d / 2}; });   // la bulle ne passe pas dessous
 }
 addEventListener('resize', taille);
@@ -1317,7 +2094,8 @@ function nouvelle() {
   reglages.partie = +numero || 1;
   S = P3.nouvelle(reglages, (Date.now() & 0xffff) + 1);
   S.surEvt = surEvt; S.attente = Math.max(S.attente, REG.lancement);
-  finMontree = false; $('fin').classList.remove('on'); fermerSymboles();
+  finMontree = false; $('fin').classList.remove('on'); fermerSymboles(); Dessin.nouvellePartie();
+  var bA = $('bAttaque'), RR = Dessin.ROLES[S.moi]; bA.querySelector('b').textContent = RR.ic; bA.style.borderColor = RR.c;
   construireGroupe();
   caler();
 }
@@ -1364,7 +2142,7 @@ addEventListener('keydown', function (e) {
   if (!S || !enJeu) return;
   if (kk === 'escape') { basculerPause(); return; }
   if (pause) return;
-  if (kk === '1') geste('bFeu'); else if (kk === '2') geste('bGlace'); else if (kk === '3') geste('bAcide'); else if (kk === '4') geste('bSoin');
+  if (kk === '1' || kk === 'a') geste('bAttaque'); else if (kk === '2' || kk === 'h') geste('bSoin');
   else if (kk === ' ') { e.preventDefault(); geste('bSaut'); } else if (kk === 'b' || kk === 'enter') geste('bBouclier');
 });
 addEventListener('keyup', function (e) { touches[e.key.toLowerCase()] = false; });
@@ -1374,12 +2152,12 @@ function entreeClavier() {
   var n = Math.hypot(x, y); return n ? {mx: x / n, my: y / n} : null;
 }
 
-/* ---------- les six boutons ---------- */
+/* ---------- les quatre boutons ---------- */
 function refus(el) { el.classList.remove('non'); void el.offsetWidth; el.classList.add('non'); }
 function geste(id) {
   if (!S || pause || !enJeu) return;
   var el = $(id), ok = false;
-  if (id === 'bFeu') ok = P3.lancer(S, 'feu'); else if (id === 'bGlace') ok = P3.lancer(S, 'glace'); else if (id === 'bAcide') ok = P3.lancer(S, 'acide');
+  if (id === 'bAttaque') ok = P3.lancer(S, 'sort');
   else if (id === 'bSoin') ok = P3.lancer(S, 'soin');
   else if (id === 'bSaut') { var kb = entreeClavier(); ok = P3.sauter(S, kb ? kb.mx : joy.mx, kb ? kb.my : joy.my); }
   else if (id === 'bBouclier') ok = P3.bouclier(S);
@@ -1448,11 +2226,11 @@ function majInterface() {
   cls(cv, 'mort', en && !viv);
   if (!S || !en) return;
   var c1 = S.combat === 1, sout = S.combat === 2 && S.boss <= 0;
-  cls($('bAcide'), 'on', en && viv && !c1); cls($('bBouclier'), 'on', en && viv && !c1);   // (C) au premier combat : ni acide ni bouclier
-  [['bFeu', 'feu'], ['bGlace', 'glace'], ['bAcide', 'acide'], ['bSoin', 'soin']].forEach(function (b) {
+  cls($('bBouclier'), 'on', en && viv && !c1);   // (R) au premier combat : pas de pierre de protection
+  [['bAttaque', 'sort'], ['bSoin', 'soin']].forEach(function (b) {
     var el = $(b[0]); cls(el, 'eteint', b[1] !== 'soin' && sout);
     el.style.setProperty('--p', h.lance && h.lance.quoi === b[1] ? (h.lance.t / h.lance.dur).toFixed(3) : 0);
-    el.style.setProperty('--c', b[1] === 'soin' ? '#5fe07a' : b[1] === 'feu' ? '#ff7a2a' : b[1] === 'glace' ? '#9fe3ff' : '#8fe03a');
+    el.style.setProperty('--c', b[1] === 'soin' ? '#5fe07a' : Dessin.ROLES[S.moi].c);
   });
   $('bSaut').style.setProperty('--r', h.sautT > 0 ? (h.sautT / REG.saut.recharge).toFixed(3) : 0);
   var bq = $('bBouclier'), att = Math.max(0, h.bouclierPret - S.T);
@@ -1536,7 +2314,9 @@ $('bRejouer').addEventListener('click', function () { $('fin').classList.remove(
 var avant = performance.now(), ips = 60, nImg = 0, t0 = avant;
 function boucle(maintenant) {
   requestAnimationFrame(boucle);
-  nImg++; if (maintenant - t0 > 1000) { ips = Math.round(nImg * 1000 / (maintenant - t0)); nImg = 0; t0 = maintenant; }
+  nImg++; if (maintenant - t0 > 1000) { ips = Math.round(nImg * 1000 / (maintenant - t0)); nImg = 0; t0 = maintenant;
+    // (v4) l'appareil n'arrive pas à suivre ? on dessine un peu moins fin (jamais pendant une pause ou un écran)
+    if (S && enJeu && !pause && !document.hidden && S.etat === 'combat') { if (ips < 42 && QUAL > 0) { if (++qualT >= 2) { QUAL--; qualT = 0; taille(); } } else qualT = 0; } }
   if (S && enJeu && !fige && !(pause && S.seul)) {
     var cible = horloge.reel0 + (maintenant - horloge.zero) / 1000, n = 0;
     while (S.reel < cible - 1e-6 && n++ < 600) {
@@ -1545,7 +2325,7 @@ function boucle(maintenant) {
       P3.pas(S, dt, pause ? null : e);
     }
     if (S.etat === 'go' && !$('jaune').classList.contains('on')) montrerJaune('GO', false, function () { P3.demarrerC2(S); caler(); });
-    if (S.etat === 'fini' && !finMontree) montrerFin();
+    if (S.etat === 'fini' && !finMontree) { var ev = P3.dernier(S, 'victoire', 99); if (!ev || S.reel - ev.t > 2.2) montrerFin(); }   // (v4) d'abord, il tombe
   }
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   if (S && enJeu) Dessin.tout(ctx, S, vue, W, H, joy, dctx); else { ctx.fillStyle = '#070912'; ctx.fillRect(0, 0, W, H); }
@@ -1556,7 +2336,7 @@ taille();
 requestAnimationFrame(boucle);
 
 window.__p3 = {get S() { return S; }, set fige(v) { fige = v; }, P3: P3, geste: geste, vue: vue, dctx: dctx, demarrer: demarrer, reglages: reglages,
-  get ips() { return ips; }, VERSION: VERSION, toucherAmi: function (ro) { toucherAmi(ro, cadres[ro]); }, caler: caler,
+  get ips() { return ips; }, get qualite() { return QUAL; }, VERSION: VERSION, toucherAmi: function (ro) { toucherAmi(ro, cadres[ro]); }, caler: caler,
   jaune: function () { $('bJaune').dispatchEvent(new PointerEvent('pointerdown')); }};
 })();
 

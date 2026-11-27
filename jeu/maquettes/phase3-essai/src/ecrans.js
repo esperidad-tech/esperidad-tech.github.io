@@ -1,9 +1,9 @@
-/* Les écrans de la version 3 : le départ (seul ou à quatre), le combat sur tout l'écran, le pouce gauche (courir, le bouclier au-dessus),
-   le pouce droit (les trois sorts, le soin, le saut), le groupe en haut à gauche, le code, « On reprend », le film d'Odette, la fin, les sons, la boucle. */
+/* Les écrans de la version 4 : le départ (seul ou à quatre), le combat sur tout l'écran, le pouce gauche (courir, le bouclier au-dessus),
+   le pouce droit (l'attaque de mon héros, le soin, le saut), le groupe en haut à gauche, le code, « On reprend », le film d'Odette, la fin, les sons, la boucle. */
 (function () {
 'use strict';
 var P3 = window.P3, REG = P3.REG, Dessin = window.Dessin;
-var VERSION = 'version 3 (27 novembre, nuit)';
+var VERSION = 'version 4 (27 novembre)';
 var $ = function (id) { return document.getElementById(id); };
 var cv = $('c'), ctx = cv.getContext('2d');
 var S = null, pause = false, finMontree = false, fige = false, enJeu = false;
@@ -20,29 +20,32 @@ function garder() { try { localStorage.setItem('phase3-v2', JSON.stringify(regla
 var horloge = {zero: 0, reel0: 0, pauseT: 0};
 function caler() { horloge.zero = performance.now(); horloge.reel0 = S ? S.reel : 0; }
 
-/* ---------- la mise en page (v3) : la salle sur tout l'écran ; à gauche, courir et le bouclier ; à droite, les sorts, le soin, le saut ---------- */
-var BOUTONS = ['bBouclier', 'bFeu', 'bGlace', 'bAcide', 'bSoin', 'bSaut'];
+/* ---------- la mise en page (v3, v4) : la salle sur tout l'écran ; à gauche, courir et le bouclier ; à droite, l'attaque, le soin, le saut ---------- */
+var BOUTONS = ['bBouclier', 'bAttaque', 'bSoin', 'bSaut'];
 var sonde = document.createElement('div');   // les bords de l'iPhone (l'encoche, les coins ronds) : env(safe-area-inset-*)
 sonde.style.cssText = 'position:fixed;left:0;top:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';
 document.body.appendChild(sonde);
 function marges() { var cs = getComputedStyle(sonde); return {h: parseFloat(cs.paddingTop) || 0, d: parseFloat(cs.paddingRight) || 0, b: parseFloat(cs.paddingBottom) || 0, g: parseFloat(cs.paddingLeft) || 0}; }
 function place(id, x, y, d) { var el = $(id); el.style.width = el.style.height = d + 'px'; el.style.left = (x - d / 2) + 'px'; el.style.top = (y - d / 2) + 'px'; el.style.fontSize = (d * 0.36) + 'px'; }
+var QUAL = 2, qualT = 0;   // (v4) la qualité baisse toute seule si l'appareil n'arrive pas à suivre (2 : belle ; 1 ; 0 : vieille tablette)
 function taille() {
-  W = innerWidth; H = innerHeight; DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight; DPR = Math.min([1, 1.5, 2][QUAL], window.devicePixelRatio || 1);
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
   var L = REG.salle, K = Dessin.K, sa = marges();
   // la salle aussi grande que l'écran le permet : le sol touche le bas, Grosbec touche presque le haut ; le mur et le sol continuent sur les côtés
   var u = Math.min(H, 0.5 * W, 450);   // la taille des pouces : la hauteur d'un téléphone couché (un pouce reste un pouce : plafonnée sur tablette)
   var T = Math.min(H / (Dessin.DESSUS + L.P * K), (W - 2 * u * 0.12) / L.L);   // sur une tablette, on garde un bord de chaque côté pour les pouces
   vue.T = T; vue.ox = (W - L.L * T) / 2; vue.oy = H - L.P * T * K;
-  // à droite, près du coin : les trois sorts en arc ; un cran plus loin, le saut et le soin
-  var p = u * 0.19, px = W - sa.d - u * 0.04, py = H - sa.b - u * 0.04, R1 = u * 0.38, R2 = R1 + p * 1.03;
-  [['bFeu', 168], ['bGlace', 136], ['bAcide', 104]].forEach(function (b) { var a = b[1] * Math.PI / 180; place(b[0], px + Math.cos(a) * R1, py - Math.sin(a) * R1, p); });
-  [['bSaut', 96], ['bSoin', 126]].forEach(function (b) { var a = b[1] * Math.PI / 180; place(b[0], px + Math.cos(a) * R2, py - Math.sin(a) * R2, p * 0.92); });
+  // (v4) à droite : la grosse attaque près du coin ; le soin à sa gauche, le saut au-dessus
+  var A = u * 0.29, p = u * 0.2, px = W - sa.d - u * 0.04 - A / 2, py = H - sa.b - u * 0.05 - A / 2, R1 = A / 2 + p / 2 + u * 0.035;
+  place('bAttaque', px, py, A);
+  [['bSoin', 140], ['bSaut', 88]].forEach(function (b) { var a = b[1] * Math.PI / 180; place(b[0], px + Math.cos(a) * R1, py - Math.sin(a) * R1, p); });
   // à gauche : le pouce qui court (en bas), le bouclier juste au-dessus
   joy.R = Math.max(40, Math.min(80, u * 0.13));
   joy.rx = sa.g + u * 0.06 + joy.R * 1.1; joy.ry = H - sa.b - u * 0.1 - joy.R;
   var g = u * 0.24; place('bBouclier', Math.max(sa.g + u * 0.04 + g / 2, joy.rx), joy.ry - joy.R - u * 0.05 - g / 2, g);
+  if (window.GB) GB.construire(vue.T, DPR, QUAL);
+  if (window.Eff) Eff.qualite(QUAL);
   dctx.evite = BOUTONS.map(function (id) { var el = $(id), d = parseFloat(el.style.width); return {x: parseFloat(el.style.left) + d / 2, y: parseFloat(el.style.top) + d / 2, r: d / 2}; });   // la bulle ne passe pas dessous
 }
 addEventListener('resize', taille);
@@ -72,7 +75,8 @@ function nouvelle() {
   reglages.partie = +numero || 1;
   S = P3.nouvelle(reglages, (Date.now() & 0xffff) + 1);
   S.surEvt = surEvt; S.attente = Math.max(S.attente, REG.lancement);
-  finMontree = false; $('fin').classList.remove('on'); fermerSymboles();
+  finMontree = false; $('fin').classList.remove('on'); fermerSymboles(); Dessin.nouvellePartie();
+  var bA = $('bAttaque'), RR = Dessin.ROLES[S.moi]; bA.querySelector('b').textContent = RR.ic; bA.style.borderColor = RR.c;
   construireGroupe();
   caler();
 }
@@ -119,7 +123,7 @@ addEventListener('keydown', function (e) {
   if (!S || !enJeu) return;
   if (kk === 'escape') { basculerPause(); return; }
   if (pause) return;
-  if (kk === '1') geste('bFeu'); else if (kk === '2') geste('bGlace'); else if (kk === '3') geste('bAcide'); else if (kk === '4') geste('bSoin');
+  if (kk === '1' || kk === 'a') geste('bAttaque'); else if (kk === '2' || kk === 'h') geste('bSoin');
   else if (kk === ' ') { e.preventDefault(); geste('bSaut'); } else if (kk === 'b' || kk === 'enter') geste('bBouclier');
 });
 addEventListener('keyup', function (e) { touches[e.key.toLowerCase()] = false; });
@@ -129,12 +133,12 @@ function entreeClavier() {
   var n = Math.hypot(x, y); return n ? {mx: x / n, my: y / n} : null;
 }
 
-/* ---------- les six boutons ---------- */
+/* ---------- les quatre boutons ---------- */
 function refus(el) { el.classList.remove('non'); void el.offsetWidth; el.classList.add('non'); }
 function geste(id) {
   if (!S || pause || !enJeu) return;
   var el = $(id), ok = false;
-  if (id === 'bFeu') ok = P3.lancer(S, 'feu'); else if (id === 'bGlace') ok = P3.lancer(S, 'glace'); else if (id === 'bAcide') ok = P3.lancer(S, 'acide');
+  if (id === 'bAttaque') ok = P3.lancer(S, 'sort');
   else if (id === 'bSoin') ok = P3.lancer(S, 'soin');
   else if (id === 'bSaut') { var kb = entreeClavier(); ok = P3.sauter(S, kb ? kb.mx : joy.mx, kb ? kb.my : joy.my); }
   else if (id === 'bBouclier') ok = P3.bouclier(S);
@@ -203,11 +207,11 @@ function majInterface() {
   cls(cv, 'mort', en && !viv);
   if (!S || !en) return;
   var c1 = S.combat === 1, sout = S.combat === 2 && S.boss <= 0;
-  cls($('bAcide'), 'on', en && viv && !c1); cls($('bBouclier'), 'on', en && viv && !c1);   // (C) au premier combat : ni acide ni bouclier
-  [['bFeu', 'feu'], ['bGlace', 'glace'], ['bAcide', 'acide'], ['bSoin', 'soin']].forEach(function (b) {
+  cls($('bBouclier'), 'on', en && viv && !c1);   // (R) au premier combat : pas de pierre de protection
+  [['bAttaque', 'sort'], ['bSoin', 'soin']].forEach(function (b) {
     var el = $(b[0]); cls(el, 'eteint', b[1] !== 'soin' && sout);
     el.style.setProperty('--p', h.lance && h.lance.quoi === b[1] ? (h.lance.t / h.lance.dur).toFixed(3) : 0);
-    el.style.setProperty('--c', b[1] === 'soin' ? '#5fe07a' : b[1] === 'feu' ? '#ff7a2a' : b[1] === 'glace' ? '#9fe3ff' : '#8fe03a');
+    el.style.setProperty('--c', b[1] === 'soin' ? '#5fe07a' : Dessin.ROLES[S.moi].c);
   });
   $('bSaut').style.setProperty('--r', h.sautT > 0 ? (h.sautT / REG.saut.recharge).toFixed(3) : 0);
   var bq = $('bBouclier'), att = Math.max(0, h.bouclierPret - S.T);
@@ -291,7 +295,9 @@ $('bRejouer').addEventListener('click', function () { $('fin').classList.remove(
 var avant = performance.now(), ips = 60, nImg = 0, t0 = avant;
 function boucle(maintenant) {
   requestAnimationFrame(boucle);
-  nImg++; if (maintenant - t0 > 1000) { ips = Math.round(nImg * 1000 / (maintenant - t0)); nImg = 0; t0 = maintenant; }
+  nImg++; if (maintenant - t0 > 1000) { ips = Math.round(nImg * 1000 / (maintenant - t0)); nImg = 0; t0 = maintenant;
+    // (v4) l'appareil n'arrive pas à suivre ? on dessine un peu moins fin (jamais pendant une pause ou un écran)
+    if (S && enJeu && !pause && !document.hidden && S.etat === 'combat') { if (ips < 42 && QUAL > 0) { if (++qualT >= 2) { QUAL--; qualT = 0; taille(); } } else qualT = 0; } }
   if (S && enJeu && !fige && !(pause && S.seul)) {
     var cible = horloge.reel0 + (maintenant - horloge.zero) / 1000, n = 0;
     while (S.reel < cible - 1e-6 && n++ < 600) {
@@ -300,7 +306,7 @@ function boucle(maintenant) {
       P3.pas(S, dt, pause ? null : e);
     }
     if (S.etat === 'go' && !$('jaune').classList.contains('on')) montrerJaune('GO', false, function () { P3.demarrerC2(S); caler(); });
-    if (S.etat === 'fini' && !finMontree) montrerFin();
+    if (S.etat === 'fini' && !finMontree) { var ev = P3.dernier(S, 'victoire', 99); if (!ev || S.reel - ev.t > 2.2) montrerFin(); }   // (v4) d'abord, il tombe
   }
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   if (S && enJeu) Dessin.tout(ctx, S, vue, W, H, joy, dctx); else { ctx.fillStyle = '#070912'; ctx.fillRect(0, 0, W, H); }
@@ -311,6 +317,6 @@ taille();
 requestAnimationFrame(boucle);
 
 window.__p3 = {get S() { return S; }, set fige(v) { fige = v; }, P3: P3, geste: geste, vue: vue, dctx: dctx, demarrer: demarrer, reglages: reglages,
-  get ips() { return ips; }, VERSION: VERSION, toucherAmi: function (ro) { toucherAmi(ro, cadres[ro]); }, caler: caler,
+  get ips() { return ips; }, get qualite() { return QUAL; }, VERSION: VERSION, toucherAmi: function (ro) { toucherAmi(ro, cadres[ro]); }, caler: caler,
   jaune: function () { $('bJaune').dispatchEvent(new PointerEvent('pointerdown')); }};
 })();

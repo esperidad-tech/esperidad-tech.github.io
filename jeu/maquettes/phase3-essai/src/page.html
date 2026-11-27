@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Phase 3 — Grosbec de lumière (maquette v3)</title>
+<title>Phase 3 — Grosbec de lumière (maquette v4)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
-/* IDEA : la maquette v3 de la phase 3 — la vue World of Warcraft de la phase 2, en formes simples, pour juger le jeu et pas les images
+/* IDEA : la maquette v4 de la phase 3 — la vue World of Warcraft ; Grosbec de lumière en volume, vivant, et beaucoup d'effets
    PICTURE : la salle vue d'en haut en biais, Grosbec d'énergie rouge au fond ; mon héros, mes trois amis qui me suivent, mon villageois
-   COLOUR : nuit bleue ; le rouge de Grosbec ; feu, glace, acide ; jaune réservé aux boutons « lancer »
+   COLOUR : nuit bleue ; le rouge et l'or de Grosbec ; la couleur de chaque héros pour son attaque ; jaune réservé aux boutons « lancer »
    TYPE : Nunito ; rien à lire en jouant (seules les bulles des robots, en mode seul, sont écrites)
-   LAYOUT : téléphone couché, la salle sur tout l'écran ; pouce gauche : courir, le bouclier juste au-dessus ; pouce droit : les trois sorts, le saut, le soin ;
+   LAYOUT : téléphone couché, la salle sur tout l'écran ; pouce gauche : courir, le bouclier juste au-dessus ; pouce droit : l'attaque, le soin, le saut ;
             le groupe en haut à gauche ; une seule bulle à la fois */
 :root{color-scheme:dark}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -34,7 +34,7 @@ button{font-family:inherit;cursor:pointer;touch-action:none;color:inherit}
 .bt.non{animation:non .3s linear}
 @keyframes non{0%,100%{translate:0}25%{translate:-.3em}60%{translate:.3em}}
 #bBouclier{border-color:#7fc4ff;border-width:3px}
-#bFeu{border-color:#ff7a2a}#bGlace{border-color:#9fe3ff}#bAcide{border-color:#8fe03a}#bSoin{border-color:#5fe07a}
+#bAttaque{border-width:3px}#bAttaque b{font-size:1.25em}#bSoin{border-color:#5fe07a}
 #bSoin b{color:#5fe07a;font-weight:900}#bSaut b{color:#f3d48a;font-weight:900}
 .appel{animation:appel 1s ease-out infinite}
 @keyframes appel{0%{box-shadow:0 0 0 .1em rgba(255,210,58,1)}70%{box-shadow:0 0 0 .9em rgba(255,210,58,0)}100%{box-shadow:0 0 0 0 rgba(255,210,58,0)}}
@@ -108,9 +108,7 @@ button{font-family:inherit;cursor:pointer;touch-action:none;color:inherit}
 <div id="tourner">📱↻</div>
 <canvas id="c"></canvas>
 <button class="bt" id="bBouclier" aria-label="Bouclier"><i class="rc"></i><b>🛡️</b></button>
-<button class="bt" id="bFeu" aria-label="Feu"><i class="lc"></i><b>🔥</b></button>
-<button class="bt" id="bGlace" aria-label="Glace"><i class="lc"></i><b>❄️</b></button>
-<button class="bt" id="bAcide" aria-label="Acide"><i class="lc"></i><b>🧪</b></button>
+<button class="bt" id="bAttaque" aria-label="Attaque"><i class="lc"></i><b>⚔️</b></button>
 <button class="bt" id="bSoin" aria-label="Soin"><i class="lc"></i><b>✚</b></button>
 <button class="bt" id="bSaut" aria-label="Saut"><i class="rc"></i><b>⤴</b></button>
 <div id="groupe"></div>

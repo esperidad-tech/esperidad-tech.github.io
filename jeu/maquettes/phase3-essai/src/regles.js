@@ -1,6 +1,7 @@
 /* ==========================================================
    Phase 3 de l'enquête 10 — contre Grosbec de lumière
-   MAQUETTE RAPIDE, VERSION 2 (Bible § 18.16) : la vue World of Warcraft, en formes simples.
+   MAQUETTE, VERSION 4 (Bible § 18.19) : la vue World of Warcraft ; une seule faiblesse pour toute l'équipe (une partie
+   de Grosbec, montrée sur une seule tablette), une seule attaque par héros, le sort qui rebondit revient sur celui qui l'a lancé.
    Les règles seules, sans dessin : ce fichier tourne aussi dans node (tests/).
    Distances en pas, durées en secondes (comme la phase 2 et le combat du Pisteur).
    (R) = décidé par Romain (§ 18.16) ; (C) = point de départ de Claude, à régler en jouant.
@@ -17,7 +18,7 @@ var REG = {
   salle: {L: 16, P: 6.5},                     // (C, v3) plus large que profonde, pour remplir l'écran d'un téléphone couché ; Grosbec au fond (y = 0)
   grosbec: {x: 8, y: 0.7, r: 1.5},            // (C) son pied ; on ne marche pas dessus
   heros: {pv: 100, r: 0.35, vit: 3.6, x: 8, y: 4.1},   // (R) la course de la phase 2 : 3,6 pas par seconde
-  sort: {lance: 3, vol: 0.35},                // (R) trois sorts lents, environ 3 s sur place
+  sort: {lance: 3, vol: 0.5, retour: 0.55, rebond: 15},   // (R, v4) une seule attaque, lente (3 s sur place) ; sur la mauvaise partie, elle revient sur moi : 15
   soin: {lance: 2, rend: 50},                 // (R) le soin de la phase 2
   saut: {L: 3, dur: 0.32, recharge: 1.5},     // (R) le saut de la phase 2
   bouclier: {dure: 3},                        // (R) 3 s ; la recharge est dans les réglages (10 s de base)
@@ -30,17 +31,17 @@ var REG = {
   // les trois endroits sûrs (R : la fontaine, la lanterne, la statue cassée) ; (C) leur place et leur taille
   lieux: [{n: 'lanterne', x: 3.6, y: 2.6}, {n: 'statue', x: 12.4, y: 2.6}, {n: 'fontaine', x: 8, y: 5.2}],
   lieuR: 0.45, surR: 1.4,                    // l'objet (on ne marche pas dessus) ; l'endroit sûr autour de lui
-  zone: {annonce: 4},                         // (R) environ 4 s entre l'annonce et la frappe
+  zone: {annonce: 6},                         // (R, v4) 6 s entre l'annonce et la frappe (4 s : « carrément trop court »)
   mega: {annonce: 2.8},                       // (R) moins de 3 s
-  infoMontree: 6,                             // (C) la bulle du villageois reste 6 s pour un élément ou une partie
+  infoMontree: 6,                             // (C) la partie faible bouge sur Grosbec pendant 6 s, sur la tablette qui doit la crier
   // la montée (R) : tranquille au début, puis ça se resserre en 3 ou 4 minutes, puis ça accélère doucement
   montee: {fin: 210, ajoutZones: 30, ajoutMega: 60,
     faible: {de: [22, 27], a: [15, 20]},      // (R) 15 à 20 s ; (C) 22 à 27 s au départ
-    zones: {de: [9, 12], a: [6, 9], mini: 4.8},   // (R)
+    zones: {de: [9, 12], a: [6, 9], mini: 7},     // (R) ; (C, v4) jamais moins de 7 s : avec 6 s d'annonce, un seul endroit sûr à la fois
     mega: {de: [18, 22], a: [13, 17], mini: 8},   // (R) 13 à 17 s ; (C) 18 à 22 s au départ
     apres: 0.065, plancher: 0.6},             // (C) ensuite, 6,5 % plus serré chaque minute, jusqu'à 60 %
   reprise: 30,                                // (R) un point de reprise toutes les 30 s environ
-  coups: {court: 15, normal: 30, long: 45}    // (C) la vie de Grosbec, en sorts justes (6 min pour « normal », d'après les robots)
+  coups: {court: 22, normal: 45, long: 65}    // (C, v4) la vie de Grosbec, en attaques justes (environ 6 min pour « normal », d'après les robots)
 };
 var DEFAUT = {
   mode: 'seul',       // 'seul' (trois robots) | 'quatre' (quatre tablettes)
@@ -54,11 +55,10 @@ var DEFAUT = {
   role: 'barde',
   partie: 1
 };
-var ELEMS = ['feu', 'glace', 'acide'];
 var PARTIES = ['tete', 'torse', 'brasG', 'brasD', 'jambeG', 'jambeD'];   // (R) six parties ; gauche et droite vues de l'écran
-var MOTS = {feu: 'Feu !', glace: 'Glace !', acide: 'Acide !', tete: 'La tête !', torse: 'Le torse !', brasG: 'Bras gauche !', brasD: 'Bras droit !',
+var MOTS = {tete: 'La tête !', torse: 'Le torse !', brasG: 'Bras gauche !', brasD: 'Bras droit !',
   jambeG: 'Jambe gauche !', jambeD: 'Jambe droite !', lanterne: 'La lanterne !', statue: 'La statue !', fontaine: 'La fontaine !', mega: 'Bouclier, vite !'};
-var SYMS = ['🌙', '⭐', '☀️', '🔑', '🍄', '🐟', '🌳', '🔔', '🎩', '❤️', '🐱'];   // les symboles du jeu, sans 🔥 (c'est le sort de feu)
+var SYMS = ['🌙', '⭐', '☀️', '🔑', '🍄', '🐟', '🌳', '🔔', '🎩', '❤️', '🐱'];   // les symboles du jeu
 
 /* ---------- le hasard partagé (le même sur les quatre tablettes) ---------- */
 function hash(s) { var h = 2166136261 >>> 0; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h >>> 0; }
@@ -82,24 +82,24 @@ function ecart(r, sorte, T) {
 }
 
 /* ---------- la suite des coups du deuxième combat (20 minutes, calculée une fois) ----------
-   infos : {k:'info', quoi:'elem'|'part'|'zone'|'mega', donneur, cible (null pour la zone), tA, tFin, val, ref}
-   coups : {k:'faible', h, t, elem, part, id} ; {k:'zone', id, tA, tI, lieu, donneur} ; {k:'mega', id, cible, tA, tI, donneur} */
+   infos : {k:'info', quoi:'part'|'zone'|'mega', donneur, cible (null pour la partie et la zone : c'est pour tous), tA, tFin, val, ref}
+   coups : {k:'faible', t, part, id} (v4 : la même pour toute l'équipe) ; {k:'zone', id, tA, tI, lieu, donneur} ; {k:'mega', id, cible, tA, tI, donneur} */
 var CACHE = {};
 function suite(partie) {
   if (CACHE[partie]) return CACHE[partie];
-  var r = rngDe('phase3-v2|' + partie), FIN = 20 * 60, id = 0;
+  var r = rngDe('phase3-v4|' + partie), FIN = 20 * 60, id = 0;
   var faibles = [], zones = [], megas = [], infos = [], cris = {pisteur: 0, alchimiste: 0, barde: 0, sage: 0};
-  // la faiblesse de chaque héros (R : élément + partie, change toutes les 15 à 20 s)
-  ROLES.forEach(function (h, i) {
-    var t = 2 + 1.5 * i, av = null;
+  // (R, v4) la faiblesse : UNE partie de Grosbec, la même pour toute l'équipe ; elle change toutes les 15 à 20 s (22 à 27 au début)
+  (function () {
+    var t = 2, av = null;
     while (t < FIN) {
-      var e, p;
-      do { e = entier(r, 3); p = entier(r, 6); } while (av && av.elem === e && av.part === p);
-      av = {k: 'faible', id: ++id, h: h, t: arr(t), elem: e, part: p};
+      var p;
+      do { p = entier(r, 6); } while (av && av.part === p);
+      av = {k: 'faible', id: ++id, t: arr(t), part: p};
       faibles.push(av);
       t += ecart(r, 'faible', t);
     }
-  });
+  })();
   // les grosses zones (R : un seul endroit sûr pour toute l'équipe)
   var t = REG.montee.ajoutZones;
   while (t < FIN) { zones.push({k: 'zone', id: ++id, tA: arr(t), tI: arr(t + REG.zone.annonce), lieu: entier(r, 3)}); t += ecart(r, 'zones', t); }
@@ -114,22 +114,19 @@ function suite(partie) {
   }
   // qui montre quoi : au hasard, jamais à soi-même, en équilibrant (R : pas de rôle fixe ; chacun crie à peu près autant)
   var tout = [];
-  faibles.forEach(function (f) { tout.push({quoi: 'elem', ref: f, t: f.t}); tout.push({quoi: 'part', ref: f, t: f.t}); });
+  faibles.forEach(function (f) { tout.push({quoi: 'part', ref: f, t: f.t}); });
   zones.forEach(function (z) { tout.push({quoi: 'zone', ref: z, t: z.tA}); });
   megas.forEach(function (m) { tout.push({quoi: 'mega', ref: m, t: m.tA}); });
   tout.sort(function (a, b) { return a.t - b.t || a.ref.id - b.ref.id || (a.quoi < b.quoi ? -1 : 1); });
-  var dejaElem = {};
   tout.forEach(function (x) {
-    var cible = x.quoi === 'zone' ? null : (x.ref.h || x.ref.cible);
-    var ok = ROLES.filter(function (g) { return g !== cible && !(x.quoi === 'part' && dejaElem[x.ref.id] === g); });   // (R) l'élément et la partie viennent de deux joueurs différents
+    var cible = x.quoi === 'mega' ? x.ref.cible : null;
+    var ok = ROLES.filter(function (g) { return g !== cible; });
     var mini = Math.min.apply(null, ok.map(function (g) { return cris[g]; }));
     ok = ok.filter(function (g) { return cris[g] === mini; });
     var g = ok[entier(r, ok.length)];
     cris[g]++;
-    if (x.quoi === 'elem') dejaElem[x.ref.id] = g;
     var inf = {k: 'info', quoi: x.quoi, donneur: g, cible: cible, ref: x.ref.id, tA: x.t};
-    if (x.quoi === 'elem') { inf.val = x.ref.elem; inf.tFin = arr(x.t + REG.infoMontree); }
-    else if (x.quoi === 'part') { inf.val = x.ref.part; inf.tFin = arr(x.t + REG.infoMontree); }
+    if (x.quoi === 'part') { inf.val = x.ref.part; inf.tFin = arr(x.t + REG.infoMontree); x.ref.donneur = g; }
     else if (x.quoi === 'zone') { inf.val = x.ref.lieu; inf.tFin = x.ref.tI; x.ref.donneur = g; }
     else { inf.val = null; inf.tFin = x.ref.tI; x.ref.donneur = g; }
     infos.push(inf);
@@ -138,10 +135,10 @@ function suite(partie) {
   CACHE[partie] = S;
   return S;
 }
-/* la faiblesse d'un héros au temps T */
-function faibleA(su, h, T) {
+/* la faiblesse (la même pour tous) au temps T */
+function faibleA(su, T) {
   var f = null;
-  for (var i = 0; i < su.faibles.length; i++) { var x = su.faibles[i]; if (x.h === h && x.t <= T) f = x; }
+  for (var i = 0; i < su.faibles.length; i++) { var x = su.faibles[i]; if (x.t <= T) f = x; else break; }
   return f;
 }
 /* les symboles de victoire (quatre différents) */
@@ -207,8 +204,7 @@ function marquerPasse(S) {   // tout ce qui a commencé avant S.T est considér�
   su.zones.forEach(function (z) { if (z.tA < S.T) { S.vus['z' + z.id] = 1; S.vus['zi' + z.id] = 1; } });
   su.megas.forEach(function (m) { if (m.tA < S.T) { S.vus['m' + m.id] = 1; S.vus['mi' + m.id] = 1; } });
   su.faibles.forEach(function (f) { if (f.t < S.T) S.vus['f' + f.id] = 1; });
-  S.faible = faibleA(su, S.moi, S.T);
-  for (var ro in S.amis) S.amis[ro].faible = faibleA(su, ro, S.T);
+  S.faible = faibleA(su, S.T);
 }
 
 /* ---------- le héros prend des coups ---------- */
@@ -253,10 +249,8 @@ function lancer(S, quoi) {
   var h = S.h;
   if (S.etat !== 'combat' || S.attente > 0 || !vivant(S) || h.lance || h.saut) return false;
   if (h.bouge) return false;                                         // (R) on ne lance pas en courant
-  if (quoi !== 'soin') {
-    if (S.boss <= 0 && S.combat === 2) return false;                 // (R) en soutien, les sorts sont gris
-    if (S.combat === 1 && quoi === 'acide') return false;            // (C) l'acide arrive avec le village
-  }
+  if (quoi !== 'soin' && quoi !== 'sort') return false;
+  if (quoi === 'sort' && S.boss <= 0 && S.combat === 2) return false;   // (R) en soutien, l'attaque est grise
   if (quoi === 'soin' && h.pv >= REG.heros.pv) return false;
   h.lance = {quoi: quoi, t: 0, dur: quoi === 'soin' ? REG.soin.lance : REG.sort.lance};
   evt(S, 'lance', {quoi: quoi});
@@ -278,7 +272,12 @@ function bouclier(S) {
   evt(S, 'bouclier');
   return true;
 }
-function viser(S, p) { if (p >= 0 && p < 6) { S.cible = p; evt(S, 'vise', {p: p}); return true; } return false; }
+function viser(S, p) {
+  if (!(p >= 0 && p < 6)) return false;
+  S.cible = p; evt(S, 'vise', {p: p});
+  var x = partMontree(S); if (x && x.val === p) relayerPart(S);   // (v4, mode seul) toucher la partie qui bouge, c'est aussi la crier à tous
+  return true;
+}
 
 /* ---------- le code de la fin ---------- */
 function taper(S, ami, sym) {
@@ -327,6 +326,16 @@ function relayerZone(S) {
   evt(S, 'relais', {ami: 'tous'});
   return true;
 }
+/* (v4) la partie faible que MA tablette montre en ce moment (sur Grosbec), ou null */
+function partMontree(S) { var l = mesInfos(S).filter(function (x) { return x.quoi === 'part'; }); return l.length ? l[l.length - 1] : null; }
+function relayerPart(S) {
+  if (!S.seul) return false;
+  var x = partMontree(S);
+  if (!x || S.relais[x.ref + 'part']) return false;
+  S.relais[x.ref + 'part'] = 1; for (var ro in S.amis) entendre(S, S.amis[ro], x, S.T + 0.2); S.stats.relaisFaits++;
+  evt(S, 'relais', {ami: 'tous', part: x.val});
+  return true;
+}
 function aRelayer(S, ami) { var bu = S.bulle; return !!(S.seul && bu && bu.type === 'villageois' && bu.x.cible === ami && !S.relais[bu.x.ref + bu.x.quoi]); }
 
 /* ---------- (v3, Romain : « une seule bulle à la fois ») : ce que montre l'écran, une chose à la fois ----------
@@ -338,6 +347,7 @@ function prioBulle(c) { var q = c.x ? c.x.quoi : 'sym'; return q === 'zone' ? 0 
 function candidatsBulle(S) {
   var l = [], T = S.T;
   mesInfos(S).forEach(function (x) {
+    if (x.quoi === 'part') return;                                   // (v4) la partie faible ne passe pas par une bulle : elle bouge sur Grosbec
     var cle = 'v' + x.ref + x.quoi;
     if (S.dit[cle] || (S.seul && S.relais[x.ref + x.quoi])) return;
     l.push({cle: cle, type: 'villageois', x: x, age: x.tA, fin: x.tFin, mini: 1.8});
@@ -377,8 +387,8 @@ function entendre(S, a, x, quand) {
   a.sait[x.ref + x.quoi] = quand;
 }
 // un robot crie ce que son villageois lui montre (s'il est vivant), un cri à la fois ; on l'entend avec la chance « robots »
-function finFaiblesse(su, x, debut) {   // (v3) un cri d'élément ou de partie reste valable jusqu'à la faiblesse suivante (12 s au plus)
-  var f = null; su.faibles.forEach(function (y) { if (y.h === x.cible && y.t > x.tA && (!f || y.t < f.t)) f = y; });
+function finFaiblesse(su, x, debut) {   // (v3) un cri de partie reste valable jusqu'à la faiblesse suivante (12 s au plus)
+  var f = null; su.faibles.forEach(function (y) { if (y.t > x.tA && (!f || y.t < f.t)) f = y; });
   return Math.min(f ? f.t : debut + 12, debut + 12);
 }
 function robotsCrient(S) {
@@ -394,9 +404,10 @@ function robotsCrient(S) {
     var urgent = x.quoi === 'zone' || x.quoi === 'mega';            // l'endroit sûr et le bouclier : on les crie tout de suite, avant le reste
     var debut = urgent ? T + 0.2 + 0.5 * S.rnd() : Math.max(T + 0.3 + 0.7 * S.rnd(), g.voix), fin = debut + (x.quoi === 'mega' ? 0.6 : 1.0);
     g.voix = fin;
-    var pour = x.quoi === 'zone' ? ROLES.filter(function (ro) { return ro !== x.donneur; }) : [x.cible];
+    var pour = x.quoi === 'mega' ? [x.cible] : ROLES.filter(function (ro) { return ro !== x.donneur; });   // (v4) la partie et l'endroit sûr : à tout le monde
+    if (x.quoi === 'part') entendre(S, g, x, x.tA + 0.3);            // celui qui la voit bouger, lui, il sait
     pour.forEach(function (ro) {
-      if (ro === S.moi) S.cris.push({de: x.donneur, x: x, t: debut, fin: urgent ? x.tFin : finFaiblesse(su, x, debut)});   // (v3) l'endroit sûr et le bouclier : jamais après la frappe ; l'élément et la partie attendent leur tour tant qu'ils sont vrais
+      if (ro === S.moi) S.cris.push({de: x.donneur, x: x, t: debut, fin: urgent ? x.tFin : finFaiblesse(su, x, debut)});   // (v3) l'endroit sûr et le bouclier : jamais après la frappe ; la partie attend son tour tant qu'elle est vraie
       else if (S.rnd() < 0.95) entendre(S, S.amis[ro], x, fin + 0.2 + 0.4 * S.rnd());
     });
   });
@@ -407,11 +418,11 @@ function robotsJouent(S, dt) {
     var a = S.amis[ro];
     if (a.mort > 0) { a.mort -= dt; continue; }
     if (S.combat !== 2) continue;
-    var f = faibleA(su, ro, T);
-    // il tape quand il connaît l'élément ET la partie de sa faiblesse
+    var f = faibleA(su, T);
+    // il tape quand il connaît la partie faible (v4)
     if (f && a.boss > 0 && T >= a.prochainCoup) {
-      var se = a.sait[f.id + 'elem'], sp = a.sait[f.id + 'part'];
-      if (se !== undefined && sp !== undefined && se <= T && sp <= T) {
+      var sp = a.sait[f.id + 'part'];
+      if (sp !== undefined && sp <= T) {
         a.boss -= 1; a.prochainCoup = T + 4.5 + 2.5 * S.rnd();
         if (a.boss <= 0) { a.symboleCrie = -99; evt(S, 'robotSymbole', {ami: ro}); }
       } else a.prochainCoup = T + 0.5;
@@ -471,21 +482,32 @@ function pas(S, dt, entree) {
     if (h.lance.t >= h.lance.dur) {
       var q = h.lance.quoi; h.lance = null;
       if (q === 'soin') { h.pv = Math.min(REG.heros.pv, h.pv + REG.soin.rend); S.stats.soins++; evt(S, 'soigne'); }
-      else { S.tirs.push({quoi: q, x: h.x, y: h.y, t: 0, part: S.cible}); S.stats.sorts++; evt(S, 'part', {quoi: q}); }
+      else { S.tirs.push({quoi: q, x: h.x, y: h.y, t: 0, part: S.cible}); S.stats.sorts++; evt(S, 'part', {quoi: q, cible: S.cible}); }
     }
   }
-  // les sorts qui volent jusqu'à Grosbec : le bon élément sur la bonne partie fait mal, sinon ça rebondit
+  // l'attaque vole jusqu'à Grosbec : sur la partie faible, elle fait mal ; ailleurs, elle rebondit et revient sur moi (v4 : 15)
+  var neufs = [];
   S.tirs = S.tirs.filter(function (s) {
     s.t += dt;
+    if (s.retour) {
+      if (s.t < REG.sort.retour) return true;
+      if (blesser(S, REG.sort.rebond, 'rebond')) S.stats.retours = (S.stats.retours || 0) + 1;
+      evt(S, 'retour', {part: s.part, x: h.x, y: h.y});
+      return false;
+    }
     if (s.t < REG.sort.vol) return true;
-    var f = S.combat === 2 ? S.faible : faibleA(suiteC1(S), S.moi, T);
-    var bon = f && ELEMS[f.elem] === s.quoi && f.part === s.part;
+    var f = S.combat === 2 ? S.faible : faibleA(suiteC1(S), T);
+    var bon = f && f.part === s.part;
     if (bon && S.boss > 0) {
-      S.boss = Math.max(0, S.boss - 1); S.stats.justes++; evt(S, 'touche', {part: s.part, quoi: s.quoi});
+      S.boss = Math.max(0, S.boss - 1); S.stats.justes++; evt(S, 'touche', {part: s.part, quoi: s.quoi, reste: S.boss});
       if (S.boss <= 0 && S.combat === 2) { S.symboleT = S.reel; S.stats.symboleT = T; evt(S, 'symbole'); if (victoire(S)) { S.etat = 'fini'; evt(S, 'victoire'); } }   // les trois autres déjà tapés : c'est gagné
-    } else { S.stats.rebonds++; evt(S, 'rebond', {part: s.part, quoi: s.quoi}); }
+    } else {
+      S.stats.rebonds++; evt(S, 'rebond', {part: s.part, quoi: s.quoi});
+      if (vivant(S)) neufs.push({quoi: s.quoi, part: s.part, t: 0, retour: true});
+    }
     return false;
   });
+  if (neufs.length) S.tirs = S.tirs.concat(neufs);
   // les éclairs : en permanence, de sa main jusqu'au héros, impossibles à éviter (le bouclier les arrête)
   var tambour = S.combat === 1 && T >= REG.combat1.tenir;
   if (T >= S.prochainEclair) {
@@ -515,7 +537,7 @@ function pas(S, dt, entree) {
   var su = S.su;
   su.faibles.forEach(function (f) {
     if (f.t > T || S.vus['f' + f.id]) return; S.vus['f' + f.id] = 1;
-    if (f.h === S.moi) S.faible = f;                                  // (R) pas de signe : on le comprend quand le sort rebondit
+    S.faible = f;                                                      // (R) pas de signe : on le comprend quand l'attaque rebondit
   });
   su.infos.forEach(function (x) {
     if (x.tA > T || S.vus['i' + x.ref + x.quoi]) return; S.vus['i' + x.ref + x.quoi] = 1;
@@ -527,7 +549,7 @@ function pas(S, dt, entree) {
     if (z.tI > T || S.vus['zi' + z.id]) return; S.vus['zi' + z.id] = 1;
     S.stats.zones++;
     var ok = !vivant(S) || protege(S) || aLAbri(h.x, h.y, z.lieu);
-    evt(S, 'zone', {lieu: z.lieu, ok: ok});
+    evt(S, 'zone', {lieu: z.lieu, ok: ok, id: z.id});
     if (!ok) { S.stats.zonesRatees++; mourir(S, 'zone'); }           // (R) rater une zone, c'est tomber d'un coup
     if (S.seul) for (var ro in S.amis) robotZone(S, S.amis[ro], z);
   });
@@ -577,17 +599,17 @@ function suivre(S, dt) {
 /* au premier combat, la faiblesse change aussi (on ne le sait pas) : une suite à part, partagée elle aussi */
 function suiteC1(S) {
   if (S._c1) return S._c1;
-  var r = rngDe('c1|' + S.partie), f = [], id = 0;
-  ROLES.forEach(function (h) { var t = 0; while (t < 80) { f.push({id: ++id, h: h, t: t, elem: entier(r, 3), part: entier(r, 6)}); t += entre(r, 15, 20); } });
+  var r = rngDe('c1|' + S.partie), f = [], id = 0, t = 0;
+  while (t < 80) { f.push({id: ++id, t: t, part: entier(r, 6)}); t += entre(r, 15, 20); }
   S._c1 = {faibles: f};
   return S._c1;
 }
 function demarrerC2(S) { if (S.etat === 'go') { allerC2(S, 0); return true; } return false; }
 
-G.P3 = {REG: REG, DEFAUT: DEFAUT, ROLES: ROLES, ELEMS: ELEMS, PARTIES: PARTIES, MOTS: MOTS, SYMS: SYMS,
+G.P3 = {REG: REG, DEFAUT: DEFAUT, ROLES: ROLES, PARTIES: PARTIES, MOTS: MOTS, SYMS: SYMS,
   hash: hash, rngDe: rngDe, suite: suite, faibleA: faibleA, symboles: symboles, ecart: ecart,
   nouvelle: nouvelle, pas: pas, lancer: lancer, sauter: sauter, bouclier: bouclier, viser: viser, taper: taper, victoire: victoire,
-  reprendre: reprendre, pointDeReprise: pointDeReprise, mesInfos: mesInfos, choisirBulle: choisirBulle, candidatsBulle: candidatsBulle, relayer: relayer, relayerZone: relayerZone, aRelayer: aRelayer,
+  reprendre: reprendre, pointDeReprise: pointDeReprise, mesInfos: mesInfos, choisirBulle: choisirBulle, candidatsBulle: candidatsBulle, relayer: relayer, relayerZone: relayerZone, aRelayer: aRelayer, relayerPart: relayerPart, partMontree: partMontree,
   allerC2: allerC2, demarrerC2: demarrerC2, dernier: dernier, vivant: vivant, protege: protege, aLAbri: aLAbri, libreEn: libreEn};
 if (typeof module !== 'undefined') module.exports = G.P3;
 })(typeof window !== 'undefined' ? window : globalThis);

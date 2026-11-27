@@ -1,4 +1,4 @@
-/* Les essais du moteur v2, sans navigateur.
+/* Les essais du moteur (v4), sans navigateur.
    node tests/regles.js verif            → les règles de la suite des coups et des gestes
    node tests/regles.js parties=6 [robots=0.9] [vie=normal] [eclairs2=10] [pilote=bon|moyen] [debut=2]
                                           → des parties entières en mode seul (mon héros joué par le pilote) */
@@ -14,14 +14,16 @@ function verif() {
     delete P3.__cache;
     // le hasard partagé : deux calculs, la même suite
     non(JSON.stringify(su2) === JSON.stringify(P3.suite(partie)), 'la même suite deux fois');
-    // les infos : jamais à soi-même ; élément et partie de deux joueurs différents
+    // les infos : la méga attaque jamais chez celui qu'elle vise ; la partie et l'endroit sûr pour tous ; (v4) une seule info par faiblesse : la partie
     var parRef = {};
     su.infos.forEach(function (x) {
-      if (x.cible) non(x.donneur !== x.cible, 'une info chez celui qu\'elle concerne ' + JSON.stringify(x));
-      (parRef[x.ref] = parRef[x.ref] || {})[x.quoi] = x.donneur;
+      if (x.quoi === 'mega') non(x.cible && x.donneur !== x.cible, 'une méga attaque annoncée chez celui qu\'elle vise ' + JSON.stringify(x));
+      else non(x.cible === null, 'la partie et l\'endroit sûr sont pour tous');
+      (parRef[x.ref] = parRef[x.ref] || {})[x.quoi] = (parRef[x.ref][x.quoi] || 0) + 1;
       non(x.tFin > x.tA, 'tFin > tA');
+      non(x.quoi === 'part' || x.quoi === 'zone' || x.quoi === 'mega', 'plus d\'élément (v4)');
     });
-    su.faibles.forEach(function (f) { var p = parRef[f.id]; non(p && p.elem && p.part && p.elem !== p.part, 'élément et partie de deux joueurs différents'); });
+    su.faibles.forEach(function (f) { var p = parRef[f.id]; non(p && p.part === 1 && Object.keys(p).length === 1, 'chaque faiblesse : une seule info, la partie'); });
     // chacun crie autant
     var c = P3.ROLES.map(function (r) { return su.cris[r]; });
     non(Math.max.apply(null, c) - Math.min.apply(null, c) <= 2, 'chacun crie autant ' + c);
@@ -29,25 +31,26 @@ function verif() {
     var c6 = {}; su.infos.forEach(function (x) { if (x.tA < 360) c6[x.donneur] = (c6[x.donneur] || 0) + 1; });
     var v6 = P3.ROLES.map(function (r) { return c6[r]; });
     non(Math.max.apply(null, v6) - Math.min.apply(null, v6) <= 2, 'équilibre sur 6 minutes ' + v6);
-    // la faiblesse : 15 à 20 s une fois montée, 22 à 27 au début ; toujours différente de la précédente
-    P3.ROLES.forEach(function (h) {
-      var l = su.faibles.filter(function (f) { return f.h === h; });
+    // la faiblesse (la même pour tous) : 15 à 20 s une fois montée, 22 à 27 au début ; toujours une autre partie
+    (function () {
+      var l = su.faibles;
       for (var i = 1; i < l.length; i++) {
         var d = l[i].t - l[i - 1].t, T = l[i - 1].t;
         if (T < 5) non(d >= 21.9 && d <= 27.1, 'faiblesse au début ' + d);
         if (T >= 210 && T < 230) non(d >= 14.8 && d <= 20.1, 'faiblesse vers 3 min 30 ' + d);
         non(d >= 15 * 0.6 - 0.01, 'faiblesse jamais trop serrée ' + d);
-        non(!(l[i].elem === l[i - 1].elem && l[i].part === l[i - 1].part), 'la faiblesse change vraiment');
+        non(l[i].part !== l[i - 1].part, 'la faiblesse change vraiment');
+        non(l[i].elem === undefined && l[i].h === undefined, 'une seule faiblesse pour toute l\'équipe, sans élément');
       }
-    });
+    })();
     // les zones : rien avant 30 s ; 9 à 12 s au début, 6 à 9 s vers 3 min 30 ; jamais deux qui se chevauchent
     non(su.zones[0].tA >= 30, 'pas de zone avant 30 s');
     for (var i = 1; i < su.zones.length; i++) {
       var d = su.zones[i].tA - su.zones[i - 1].tA, T = su.zones[i - 1].tA;
       if (T < 32) non(d >= 8.9 && d <= 12.1, 'zones au début ' + d);
-      if (T >= 210 && T < 225) non(d >= 5.9 && d <= 9.1, 'zones vers 3 min 30 ' + d);
-      non(su.zones[i].tA >= su.zones[i - 1].tI + 0.79, 'deux zones qui se chevauchent');
-      non(Math.abs(su.zones[i].tI - su.zones[i].tA - 4) < 0.02, '4 s d\'annonce');
+      if (T >= 210 && T < 225) non(d >= 6.9 && d <= 9.1, 'zones vers 3 min 30 ' + d);
+      non(su.zones[i].tA >= su.zones[i - 1].tI + 0.79, 'deux zones qui se chevauchent (un seul endroit sûr à la fois)');
+      non(Math.abs(su.zones[i].tI - su.zones[i].tA - 6) < 0.02, '6 s d\'annonce (v4)');
     }
     // les méga attaques : rien avant 60 s ; jamais deux fois de suite sur le même ; pas en même temps qu'une zone
     non(su.megas[0].tA >= 60, 'pas de méga attaque avant 60 s');
@@ -59,24 +62,31 @@ function verif() {
     su.megas.forEach(function (m) { su.zones.forEach(function (z) { non(Math.abs(z.tI - m.tI) >= 0.89, 'méga et zone en même temps'); }); non(m.tI - m.tA < 3, 'moins de 3 s'); });
     // vers 10 minutes, c'est vraiment serré
     var z10 = su.zones.filter(function (z) { return z.tA > 570 && z.tA < 630; });
-    non(z10.length >= 9, 'vers 10 minutes, au moins 9 zones par minute (' + z10.length + ')');
+    non(z10.length >= 8, 'vers 10 minutes, au moins 8 zones par minute (' + z10.length + ')');
   });
   // les gestes du héros
   function S0(o) { var S = P3.nouvelle(Object.assign({mode: 'quatre', role: 'sage', partie: 47, debut: 2, eclairs2: 0}, o || {}), 1); S.attente = 0; return S; }
   var S = S0();
-  non(P3.lancer(S, 'feu'), 'on lance'); non(!P3.lancer(S, 'glace'), 'pas deux sorts à la fois');
+  non(!P3.lancer(S, 'feu'), 'plus de feu (v4)'); non(P3.lancer(S, 'sort'), 'on lance l\'attaque'); non(!P3.lancer(S, 'soin'), 'pas deux choses à la fois');
   P3.pas(S, 1, {mx: 1, my: 0}); non(!S.h.lance, 'bouger coupe le sort');
-  S = S0(); P3.pas(S, 0.05, {mx: 1, my: 0}); non(!P3.lancer(S, 'feu'), 'on ne lance pas en courant');
+  S = S0(); P3.pas(S, 0.05, {mx: 1, my: 0}); non(!P3.lancer(S, 'sort'), 'on ne lance pas en courant');
   S = S0(); S.h.pv = 40; P3.lancer(S, 'soin'); for (var k = 0; k < 41; k++) P3.pas(S, 0.05, null); non(S.h.pv === 90, 'le soin rend 50 en 2 s (' + S.h.pv + ')');
   S = S0({eclairs2: 10}); S.h.pv = 40; P3.lancer(S, 'soin'); var avant = S.h.pv; for (k = 0; k < 41; k++) P3.pas(S, 0.05, null); non(!S.h.lance && S.h.pv > avant, 'les éclairs ne coupent pas le soin');
-  // la bonne combinaison fait mal, la mauvaise rebondit
+  // la partie faible fait mal ; ailleurs, ça rebondit et ça revient sur moi : 15 (le bouclier l'arrête)
   S = S0(); for (k = 0; k < 160; k++) P3.pas(S, 0.05, null);
   var f = S.faible; non(!!f, 'une faiblesse au bout de 8 s');
-  P3.viser(S, f.part); P3.lancer(S, P3.ELEMS[f.elem]); var b0 = S.boss; for (k = 0; k < 70; k++) P3.pas(S, 0.05, null);
-  non(S.boss === b0 - 1 || S.faible !== f, 'le bon sort sur la bonne partie fait mal');
+  P3.viser(S, f.part); P3.lancer(S, 'sort'); var b0 = S.boss; for (k = 0; k < 75; k++) P3.pas(S, 0.05, null);
+  non(S.boss === b0 - 1 || S.faible !== f, 'l\'attaque sur la partie faible fait mal');
+  non(S.h.pv === 100, 'et ne me coûte rien');
   S = S0(); for (k = 0; k < 160; k++) P3.pas(S, 0.05, null); f = S.faible;
-  P3.viser(S, (f.part + 1) % 6); P3.lancer(S, P3.ELEMS[f.elem]); b0 = S.boss; for (k = 0; k < 70; k++) P3.pas(S, 0.05, null);
+  P3.viser(S, (f.part + 1) % 6); P3.lancer(S, 'sort'); b0 = S.boss; for (k = 0; k < 73; k++) P3.pas(S, 0.05, null);
   non(S.boss === b0 && S.stats.rebonds === 1, 'la mauvaise partie rebondit');
+  non(S.h.pv === 100, 'le rebond n\'est pas encore revenu');
+  for (k = 0; k < 14; k++) P3.pas(S, 0.05, null);
+  non(S.h.pv === 85, 'le rebond revient sur moi : 15 (' + S.h.pv + ')');
+  S = S0(); for (k = 0; k < 160; k++) P3.pas(S, 0.05, null); f = S.faible;
+  P3.viser(S, (f.part + 2) % 6); P3.lancer(S, 'sort'); for (k = 0; k < 73; k++) P3.pas(S, 0.05, null); P3.bouclier(S); for (k = 0; k < 20; k++) P3.pas(S, 0.05, null);
+  non(S.stats.rebonds === 1 && S.h.pv === 100, 'le bouclier arrête le rebond');
   // une zone : à l'abri on vit, ailleurs on tombe, sous le bouclier on vit
   var z = P3.suite(47).zones[0];
   S = S0(); var L = P3.REG.lieux[z.lieu]; S.h.x = L.x; S.h.y = L.y + 1; while (S.T < z.tI + 0.1) P3.pas(S, 0.05, null); non(P3.vivant(S), 'à l\'abri, la zone ne fait rien');
@@ -102,16 +112,32 @@ function verif() {
   non(!P3.taper(S, 'barde', '❌'), 'un faux symbole'); ['barde', 'pisteur'].forEach(function (r) { P3.taper(S, r, S.symboles[r]); });
   non(!P3.victoire(S), 'pas encore'); P3.taper(S, 'alchimiste', S.symboles.alchimiste); non(P3.victoire(S) && S.etat === 'fini', 'la victoire');
   S = S0(); ['barde', 'pisteur', 'alchimiste'].forEach(function (r) { P3.taper(S, r, S.symboles[r]); }); non(S.etat === 'combat', 'les trois tapés, mon boss vivant : pas encore');
-  S.boss = 1; S.faible = {id: -1, elem: 0, part: S.cible}; S.tirs.push({quoi: 'feu', part: S.cible, x: S.h.x, y: S.h.y, t: 0.34}); P3.pas(S, 0.05, null); S.faible = {id: -1, elem: 0, part: S.cible}; non(S.etat === 'fini', 'mon boss tombe après les trois symboles : la victoire tout de suite');
+  S.boss = 1; S.faible = {id: -1, part: S.cible}; S.tirs.push({quoi: 'sort', part: S.cible, x: S.h.x, y: S.h.y, t: P3.REG.sort.vol - 0.01}); P3.pas(S, 0.05, null); non(S.etat === 'fini', 'mon boss tombe après les trois symboles : la victoire tout de suite');
   // le premier combat : une minute, le tambour, tout le monde tombe, le film, le bouton jaune
   S = P3.nouvelle({mode: 'quatre', role: 'pisteur', partie: 3, debut: 1}, 1);
-  non(!P3.lancer(S, 'acide') && !P3.bouclier(S), 'pas d\'acide ni de bouclier au premier combat');
+  non(!P3.bouclier(S), 'pas de bouclier au premier combat');
   for (k = 0; k < 2000 && S.etat === 'combat'; k++) P3.pas(S, 0.05, null);
   non(S.etat === 'film' && S.T >= 70 && S.T < 72, 'le film arrive après 70 s (' + S.T + ')');
   for (k = 0; k < 200; k++) P3.pas(S, 0.05, null); non(S.etat === 'go' && P3.demarrerC2(S) && S.combat === 2, 'le bouton jaune lance le deuxième combat');
-  // mode seul : une info pour un robot, relayée en touchant son portrait (seulement celle que montre la bulle)
-  S = P3.nouvelle({mode: 'seul', role: 'barde', debut: 2, robots: 1}, 9); S.attente = 0;
-  while (S.T < 60 && !(S.bulle && S.bulle.type === 'villageois' && S.bulle.x.cible)) P3.pas(S, 0.05, null);
+  // (v4) la partie faible : sur une seule tablette, jamais dans une bulle ; en mode seul, la toucher la crie aux robots
+  var vuPart = 0, bullePart = 0;
+  [5, 6, 8].forEach(function (g) {
+    var S3 = P3.nouvelle({mode: 'seul', role: P3.ROLES[g % 4], debut: 2, robots: 1}, g); S3.attente = 0;
+    while (S3.T < 200) {
+      P3.pas(S3, 0.05, null); var pm = P3.partMontree(S3);
+      if (S3.bulle && S3.bulle.type === 'villageois' && S3.bulle.x.quoi === 'part') bullePart++;
+      if (pm && !S3.relais[pm.ref + 'part'] && P3.vivant(S3)) {
+        vuPart++;
+        var ami = Object.keys(S3.amis)[0], avant = S3.amis[ami].sait[pm.ref + 'part'];
+        P3.viser(S3, (pm.val + 1) % 6); non(!S3.relais[pm.ref + 'part'], 'toucher une autre partie ne crie rien');
+        P3.viser(S3, pm.val); non(S3.relais[pm.ref + 'part'] && S3.amis[ami].sait[pm.ref + 'part'] !== undefined && avant === undefined && S3.cible === pm.val, 'toucher la partie qui bouge : je vise et je la crie à tous les robots');
+      }
+    }
+  });
+  non(vuPart >= 3 && bullePart === 0, 'la partie faible se montre sur Grosbec, jamais dans une bulle (' + vuPart + ' fois)');
+  // mode seul : la méga attaque pour un robot, relayée en touchant son portrait (seulement celle que montre la bulle)
+  S = P3.nouvelle({mode: 'seul', role: 'barde', debut: 3, robots: 1}, 9); S.attente = 0;
+  while (S.T < 600 && !(S.bulle && S.bulle.type === 'villageois' && S.bulle.x.cible)) P3.pas(S, 0.05, null);
   var bu = S.bulle, autre = P3.ROLES.filter(function (r) { return r !== 'barde' && r !== (bu && bu.x.cible); })[0];
   non(!!bu && !P3.relayer(S, autre), 'on ne relaie pas à quelqu\'un d\'autre que celui de la bulle');
   non(!!bu && P3.aRelayer(S, bu.x.cible) && P3.relayer(S, bu.x.cible) && !P3.aRelayer(S, bu.x.cible), 'je relaie l\'info de la bulle à son ami');
@@ -155,7 +181,7 @@ function parties() {
   res.forEach(function (r, i) {
     var s = r.st;
     console.log('partie ' + (i + 1) + ' : ' + (r.fini ? 'gagnée en ' + Math.round(r.T) + ' s' : 'pas finie (' + Math.round(r.T) + ' s)') + ' ; mon symbole à ' + (s.symboleT ? Math.round(s.symboleT) : '—') +
-      ' s ; morts ' + s.morts + ' (zones ' + s.zonesRatees + '/' + s.zones + ', méga ' + s.megasRatees + '/' + s.megas + ') ; sorts ' + s.justes + ' justes / ' + s.rebonds + ' rebonds ; soins ' + s.soins + ' ; reprises ' + r.tousMorts + ' ; robots ' + r.bosses.join(','));
+      ' s ; morts ' + s.morts + ' (zones ' + s.zonesRatees + '/' + s.zones + ', méga ' + s.megasRatees + '/' + s.megas + ') ; attaques ' + s.justes + ' justes / ' + s.rebonds + ' rebonds (' + (s.retours || 0) + ' revenus) ; soins ' + s.soins + ' ; reprises ' + r.tousMorts + ' ; robots ' + r.bosses.join(','));
   });
   var gg = res.filter(function (r) { return r.fini; });
   console.log('gagnées ' + gg.length + ' sur ' + N + (gg.length ? ', en moyenne ' + Math.round(gg.reduce(function (a, r) { return a + r.T; }, 0) / gg.length) + ' s' : ''));
