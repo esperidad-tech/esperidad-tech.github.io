@@ -114,17 +114,26 @@ const ombreMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.8), new THREE.Me
 ombreMesh.position.z = 0.004; barde.add(ombreMesh);
 const h = { x: 9, y: 7.6, a: -Math.PI / 2, vx: 0, vy: 0, etat: 'garde', tSort: 0 };
 let melangeur = null, actions = {}, enCours = null;
+/* La page Claude interdit de « télécharger » une adresse data: : le modèle est donc rangé en base64 dans un
+   .json de la page (lu avec fetch, permis), décodé ici, puis lu d'un bloc ; les images passent par <img> (permis). */
 const gl = new GLTFLoader();
+gl.register(p => { p.textureLoader = new THREE.TextureLoader(p.options.manager); return { name: 'images_par_img' }; });
+function charger(fichier, ok, ko) {
+  fetch(fichier).then(r => { if (!r.ok) throw new Error(fichier + ' : ' + r.status); return r.json(); }).then(j => {
+    const t = atob(j.glb), u = new Uint8Array(t.length); for (let i = 0; i < t.length; i++) u[i] = t.charCodeAt(i);
+    gl.parse(u.buffer, '', ok, ko);
+  }).catch(ko);
+}
 const ANIMS = window.ANIMS || {};
-gl.load('barde.json', g => {
+charger('barde.json', g => {
   const m = g.scene; m.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = false; o.frustumCulled = false; if (o.material) { o.material.metalness = 0; o.material.envMapIntensity = 0.5; } } });
   m.scale.setScalar(1.55 / 1.5);   // (le modèle fait 1,5 m ; un héros fait environ 1,55 pas)
   corps.add(m); melangeur = new THREE.AnimationMixer(m);
   if (g.animations.length) actions.garde = melangeur.clipAction(g.animations[0]);
   let reste = Object.keys(ANIMS).length; if (!reste) pret('barde');
-  for (const [nom, fichier] of Object.entries(ANIMS)) gl.load(fichier, a => { if (a.animations[0]) { const act = melangeur.clipAction(a.animations[0]); actions[nom] = act; if (nom === 'feu' || nom === 'glace') { act.setLoop(THREE.LoopOnce); act.clampWhenFinished = true; } } if (--reste === 0) pret('barde'); }, undefined, () => { if (--reste === 0) pret('barde'); });
+  for (const [nom, fichier] of Object.entries(ANIMS)) charger(fichier, a => { if (a.animations[0]) { const act = melangeur.clipAction(a.animations[0]); actions[nom] = act; if (nom === 'feu' || nom === 'glace') { act.setLoop(THREE.LoopOnce); act.clampWhenFinished = true; } } if (--reste === 0) pret('barde'); }, () => { if (--reste === 0) pret('barde'); });
   jouer('garde');
-}, undefined, e => { $('charge').textContent = '⚠'; console.error(e); });
+}, e => { $('charge').textContent = '⚠'; console.error(e); });
 function jouer(nom, fondu) {
   const a = actions[nom] || actions.garde; if (!a || a === enCours) return;
   a.reset().setEffectiveWeight(1).play(); if (enCours) a.crossFadeFrom(enCours, fondu || 0.25, true); enCours = a;

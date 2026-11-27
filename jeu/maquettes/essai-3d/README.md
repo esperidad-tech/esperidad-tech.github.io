@@ -15,10 +15,16 @@ plate qui ne prend pas la lumière, trop peu de poses). Cet essai teste une autr
 Rien de tout ça n'est dans le jeu. C'est un essai, à montrer à Romain, sans « go » pour la suite.
 
 **En ligne (page Claude, hors du jeu)** : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP
-(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795792188-c937`). Pour republier : `publish_files` des fichiers
+(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795793296-4e6c`). Pour republier : `publish_files` des fichiers
 de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json), `base_version` = la version en ligne.
-La page Claude ne sert pas les `.glb` : les modèles y sont en glTF « texte » (`.json`, tout dedans en
-base64, `outils/enjson.mjs`) ; les `.glb` sont gardés dans `origine/glb/`.
+**Piège de la page Claude** (vu par Romain : un ⚠ à la place du jeu) : elle ne sert pas les `.glb`, et
+elle interdit à la page de « télécharger » une adresse `data:` (fetch). Un glTF avec ses données en
+`data:` ne se charge donc pas. Solution : chaque `.glb` est rangé tel quel en base64 dans un `.json`
+(`outils/englb.py`) ; la page le lit avec `fetch` (ses propres fichiers sont permis), le décode et le
+donne à `GLTFLoader.parse` ; les images du modèle passent par `<img>` (adresse `blob:`, permise), grâce
+au petit greffon `images_par_img` de `src/main.js`. Les `.glb` sont gardés dans `origine/glb/`.
+Pour vérifier avant de publier : `python3 serveur_csp.py <dossier> 8766` (un serveur qui imite ces
+règles) puis `python3 voir_csp.py`.
 
 ## Comment le Barde 3D a été fait (Higgsfield, environ 71 crédits)
 
@@ -34,7 +40,7 @@ base64, `outils/enjson.mjs`) ; les `.glb` sont gardés dans `origine/glb/`.
    sort de glace (132 mage_soell_cast_3).
 4. `outils/outils.mjs base` : textures en WebP 1024 → `origine/glb/barde.glb` (2,3 Mo, avec le repos).
    `outils/outils.mjs anim` : on ne garde que le mouvement → `origine/glb/anim-*.glb` (quelques ko).
-   `outils/enjson.mjs` : chacun en `.json` pour la page (`site/`).
+   `outils/englb.py` : chacun en `.json` pour la page (`site/`).
 
 Attention au modèle Meshy : l'« Armature » est à l'échelle 0,01 (os en centimètres) ; le
 personnage fait déjà 1,5 m. On le grossit juste à 1,55 pas, sans le mesurer.
