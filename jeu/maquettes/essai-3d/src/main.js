@@ -15,7 +15,7 @@ const NUIT = !PIST;   // le Barde joue sur la place de nuit peinte par Romain (2
 const T = 40, K = NUIT ? 0.4 : 0.62, OX = 70, OY = 250, SW = 860, SH = 556;   // (K : l'écrasement du sol vu par la caméra ; sert au pouce)
 const THETA = Math.asin(0.62), ZS = NUIT ? 1 : 1 / Math.cos(THETA);
 const L = { L: 18, P: 10.5, coin: 3.4 };
-const ARM = NUIT ? { x: 10.78, y: -1.9, r: 1.6, zc: 2.0, dy: 0 } : { x: 9, y: 1.25, r: 1.6, zc: 2.3, dy: 0.6 };   // (la nuit : l'armure de Grosbec au pied des marches, sur le losange du palier ; Romain, 28 nov. : « j'aime bien en bas des escaliers »)
+const ARM = NUIT ? { x: 10.95, y: -11.6, z: 2.0, r: 1.6, zc: 4.3, dy: 0 } : { x: 9, y: 1.25, r: 1.6, zc: 2.3, dy: 0.6 };   // (la nuit : l'armure de Grosbec en haut des marches, sur le seuil de la porte du temple, le dos dedans : le Pisteur arrive derrière elle ; Romain, 28 nov., 5 h)
 const LANT = { or: [1.2, 5.6], rouge: [16.8, 5.6] };
 const BRAS = [[5.15, 0.75, 2.6], [12.85, 0.75, 2.6], [0.42, 3.85, 2.3], [17.58, 3.85, 2.3]];
 const $ = id => document.getElementById(id);
@@ -1017,11 +1017,11 @@ function avancerCrevasses(dt, t) {
 }
 function cameraNuit(dt) {
   const A = innerWidth / innerHeight, pied = imgDe(h.x, h.y, 0);
-  // le cadre : assez serré pour bien voir le héros, mais l'armure (en haut des marches, ligne 430 de la peinture) reste toujours à l'image :
-  // plus il descend vers nous, plus on recule un peu
-  let Hw = Math.max(1150 / (window.__zoom || 1), (pied.v + 90 - 430) / 0.78), Ww = Hw * A;
+  // le cadre : assez serré pour bien voir le héros, mais l'armure (sur le seuil du temple : sa crête à la ligne 320 de la peinture) reste toujours
+  // à l'image : plus il descend vers nous, plus on recule un peu
+  let Hw = Math.max(1150 / (window.__zoom || 1), (pied.v + 90 - 320) / 0.78), Ww = Hw * A;
   if (Ww > IMW * 1.06) { Ww = IMW * 1.06; Hw = Ww / A; }
-  const y1 = Math.min(pied.v + 0.22 * Hw + 90, IMH + 0.12 * Hw), y0 = clamp(y1 - Hw, 0, 430);
+  const y1 = Math.min(pied.v + 0.22 * Hw + 90, IMH + 0.12 * Hw), y0 = clamp(y1 - Hw, 0, 320);
   const x0 = Ww >= IMW ? (IMW - Ww) / 2 : clamp(pied.u - Ww / 2, 0, IMW - Ww);
   const k = cameraNuit.vu ? Math.min(1, dt * 4) : 1; cameraNuit.vu = 1;
   fen.cx = (fen.cx === undefined ? x0 : fen.cx + (x0 - fen.cx) * k); fen.cy = (fen.cy === undefined ? y0 : fen.cy + (y0 - fen.cy) * k); fen.H = (fen.H === undefined ? Hw : fen.H + (Hw - fen.H) * k);
@@ -1032,45 +1032,68 @@ function cameraNuit(dt) {
   rendu.getDrawingBufferSize(_ecran); for (const P of piliers) P.m.uniforms.ecran.value.copy(_ecran);
 }
 const _ecran = new THREE.Vector2();
-/* ================= L'ARMURE DE GROSBEC, EN 3D (28 novembre ; Romain : la plus massive, 3 m, au pied des marches) =================
+/* ================= L'ARMURE DE GROSBEC, EN 3D (28 novembre ; Romain : la plus massive, 3,5 m, sur le seuil du temple) =================
    Le modèle Higgsfield (Meshy, d'après sa planche : origine/armure-base.glb), articulé, avec son mouvement d'attente (ralenti : il est lourd).
    - ses trois lanternes (les deux des épaules, celle de la poitrine) : une vraie lampe dans chacune, qui suit ses os, éclaire son armure,
      et un halo autour ; une lueur chaude sur les dalles à ses pieds (la place est peinte : ses lampes ne l'éclairent pas d'elles-mêmes) ;
    - son ombre : portée par la lumière du temple, dans son dos, elle s'étire vers nous sur la place ;
    - le rayon doré d'Elyra : il part de la porte du temple, descend les marches et entre dans son dos (la prise entre ses épaules). */
 const armure = { m: null, mix: null, lampes: [], halos: [], os: [], dec: [] };
+/* l'attente de Meshy a un genou qui démarre d'un coup (2° d'une image à l'autre, puis presque rien) : on lisse chaque piste dans le
+   temps (deux passes d'un petit filtre 1-4-6-4-1), en tournant en rond (c'est une boucle : la dernière image est la première) */
+function lisserBoucle(clip) {
+  for (const k of clip.tracks) {
+    const n = k.times.length - 1, d = k.getValueSize(), v = k.values; if (n < 6) continue;
+    for (let passe = 0; passe < 2; passe++) {
+      const src = v.slice(0), at = (i, c) => src[(((i % n) + n) % n) * d + c];
+      for (let i = 0; i < n; i++) {
+        if (d === 4) {   // (un quaternion : on aligne les signes sur le centre avant de moyenner)
+          const q = [0, 0, 0, 0];
+          [[-2, 1], [-1, 4], [0, 6], [1, 4], [2, 1]].forEach(([o, w]) => { let s = 0; for (let c = 0; c < 4; c++) s += at(i + o, c) * at(i, c); const sg = s < 0 ? -1 : 1; for (let c = 0; c < 4; c++) q[c] += sg * w * at(i + o, c); });
+          const l = Math.hypot(...q); for (let c = 0; c < 4; c++) v[i * d + c] = q[c] / l;
+        } else for (let c = 0; c < d; c++) v[i * d + c] = (at(i - 2, c) + 4 * at(i - 1, c) + 6 * at(i, c) + 4 * at(i + 1, c) + at(i + 2, c)) / 16;
+      }
+      for (let c = 0; c < d; c++) v[n * d + c] = v[c];   // (la dernière = la première)
+    }
+  }
+}
 if (NUIT) {
-  const place = new THREE.Group(); place.position.copy(G(ARM.x, ARM.y, 0)); monde.add(place);
+  const place = new THREE.Group(); place.position.copy(G(ARM.x, ARM.y, ARM.z)); monde.add(place);
+  const HAUT = 3.6;   // (3,5 m ; 1 pas ≈ 0,97 m)
   const piv = new THREE.Group(); piv.rotation.x = Math.PI / 2; place.add(piv);   // (les modèles glTF ont la hauteur en y ; il nous fait face)
   // la lueur de ses lanternes sur les dalles
   const lueurSol = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: toile(128, 128, x => { const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(255,190,90,.55)'); g.addColorStop(0.45, 'rgba(255,150,60,.18)'); g.addColorStop(1, 'rgba(255,120,40,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); }), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
-  lueurSol.scale.set(6.5, 4.2, 1); lueurSol.position.copy(G(ARM.x, ARM.y + 0.6, 0.02)); lueurSol.renderOrder = -8; monde.add(lueurSol); armure.lueurSol = lueurSol;
+  lueurSol.scale.set(6.5, 4.2, 1); lueurSol.position.copy(G(ARM.x, ARM.y + 0.8, ARM.z + 0.02)); lueurSol.renderOrder = -8; monde.add(lueurSol); armure.lueurSol = lueurSol;
   // son ombre : une lumière qui ne sert qu'à ça (aucune clarté), depuis le temple, dans son dos ; elle ne voit que les abords de l'armure
-  const lo = new THREE.DirectionalLight(0xffffff, 0); lo.position.copy(G(ARM.x - 0.4, ARM.y - 6, 4.7)); lo.target.position.copy(G(ARM.x, ARM.y + 2, 0)); monde.add(lo, lo.target);
-  lo.castShadow = true; lo.shadow.mapSize.set(1024, 1024); Object.assign(lo.shadow.camera, { left: -3.2, right: 3.2, top: 3.2, bottom: -3.2, near: 1, far: 16 }); lo.shadow.bias = -0.0006; lo.shadow.radius = 4; lo.shadow.camera.updateProjectionMatrix();
+  const lo = new THREE.DirectionalLight(0xffffff, 0); lo.position.copy(G(ARM.x - 0.4, ARM.y - 4, ARM.z + 4.5)); lo.target.position.copy(G(ARM.x, ARM.y + 2.5, ARM.z)); monde.add(lo, lo.target);
+  const palier = new THREE.Mesh(new THREE.PlaneGeometry(8, 5.6), new THREE.ShadowMaterial({ opacity: 0.5 })); palier.receiveShadow = true; palier.position.copy(G(ARM.x, -8.7, ARM.z + 0.003)); monde.add(palier);   // (le palier en haut des marches : il reçoit son ombre)
+  lo.castShadow = true; lo.shadow.mapSize.set(1024, 1024); Object.assign(lo.shadow.camera, { left: -3.6, right: 3.6, top: 3.6, bottom: -3.6, near: 1, far: 16 }); lo.shadow.bias = -0.0006; lo.shadow.radius = 4; lo.shadow.camera.updateProjectionMatrix();
   // le rayon d'Elyra : de la porte du temple à la prise dans son dos ; un cœur doré et un halo, de la lumière qui coule vers lui
-  const A0 = G(NJ.porte.x, NJ.porte.y, NJ.porte.z - 0.6), A1 = G(ARM.x, ARM.y - 0.5, 2.55), L = A0.distanceTo(A1);
+  const A0 = G(ARM.x, ARM.y - 3.5, ARM.z + 3.4), A1 = G(ARM.x, ARM.y - 0.55, ARM.z + 2.94), L = A0.distanceTo(A1);   // (d'Elyra, au fond du temple, à la prise dans son dos)
   const matRayon = (r, a) => new THREE.ShaderMaterial({ uniforms: { t: { value: 0 }, a: { value: a } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide,
     vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: 'uniform float t; uniform float a; varying vec2 vU; void main(){ float bord = 1.0 - abs(vU.x * 2.0 - 1.0); bord = pow(max(bord, 0.0), ' + (r < 0.2 ? '1.2' : '2.6') + '); float flot = 0.65 + 0.35 * sin(vU.y * 38.0 + t * 9.0); float bout = smoothstep(0.0, 0.08, vU.y) * smoothstep(1.0, 0.94, vU.y); gl_FragColor = vec4(vec3(1.0, 0.78, 0.35) * bord * flot * bout * a, 1.0); }' });
   const rayon = new THREE.Group(); rayon.position.copy(A0).lerp(A1, 0.5); rayon.lookAt(A1); monde.add(rayon);
   for (const [r, a] of [[0.07, 1.6], [0.32, 0.55]]) { const c = new THREE.Mesh(new THREE.CylinderGeometry(r, r, L, 16, 1, true), matRayon(r, a)); c.rotation.x = Math.PI / 2; c.frustumCulled = false; rayon.add(c); armure.dec.push(c.material); }
-  const eclatPorte = sprite(texLueur('rgba(255,205,110,.9)'), 1.6, true); eclatPorte.position.copy(A0); monde.add(eclatPorte); armure.eclatPorte = eclatPorte;
+  const eclatPorte = sprite(texLueur('rgba(255,205,110,.9)'), 1.0, true); eclatPorte.position.copy(A0); monde.add(eclatPorte); armure.eclatPorte = eclatPorte;
   charger('armure.json', g => {
     const m = g.scene; armure.m = m;
-    m.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = false; o.frustumCulled = false; if (o.material) { o.material.envMapIntensity = 0.5; o.material.color.multiplyScalar(0.8); o.material.emissiveIntensity = 0.7; } } });
-    m.scale.setScalar(3.1 / 3.0); piv.add(m);   // (le modèle fait 3 m ; 1 pas ≈ 0,97 m, comme le Barde)
+    m.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = false; o.frustumCulled = false; if (o.material) { o.material.envMapIntensity = 0.5; o.material.color.multiplyScalar(0.8); o.material.emissiveIntensity = 1;
+        // (ses lanternes avaient l'air éteintes : le verre, le plus clair de sa carte de lueurs, brille trois fois plus ; l'or, un peu moins qu'avant)
+        o.material.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n  float lumE = max(totalEmissiveRadiance.r, totalEmissiveRadiance.g);\n  totalEmissiveRadiance *= 0.55 + 2.6 * smoothstep(0.45, 0.85, lumE);'); }; } } });
+    m.scale.setScalar(HAUT / 3.0); piv.add(m);   // (le modèle fait 3 m ; 1 pas ≈ 0,97 m, comme le Barde)
     // ses lanternes : on les place sur la pose de repos, puis elles suivent les os
     m.updateMatrixWorld(true);
-    const os = n => m.getObjectByName(n), gauche = os('LeftShoulder'), droite = os('RightShoulder'), buste = os('Spine02');
-    const coteG = Math.sign(piv.worldToLocal(gauche.getWorldPosition(new THREE.Vector3())).x) || 1;
-    const cibles = [[gauche, new THREE.Vector3(0.58 * coteG, 2.5, -0.05), 0xffc070, 3.5, 2.6], [droite, new THREE.Vector3(-0.58 * coteG, 2.5, -0.05), 0xffc070, 3.5, 2.6], [buste, new THREE.Vector3(0, 2.02, 0.42), 0xffb050, 4.5, 2.8]];
+    const os = n => m.getObjectByName(n), buste = os('Spine'), gauche = buste, droite = buste;   // (les lanternes sont fixées à la cuirasse : chez Meshy, « Spine » est le haut du buste)
+    const coteG = Math.sign(piv.worldToLocal(os('LeftShoulder').getWorldPosition(new THREE.Vector3())).x) || 1;
+    const cibles = [[gauche, new THREE.Vector3(0.58 * coteG, 2.5, -0.05), 0xffc070, 6, 3.2], [droite, new THREE.Vector3(-0.58 * coteG, 2.5, -0.05), 0xffc070, 6, 3.2], [buste, new THREE.Vector3(0, 2.02, 0.42), 0xffb050, 6, 3.2]];
     for (const [o, p, coul, I, dist] of cibles) {
-      const monde_ = piv.localToWorld(p.clone().multiplyScalar(3.1 / 3.0)), loc = o.worldToLocal(monde_.clone());
+      const monde_ = piv.localToWorld(p.clone().multiplyScalar(HAUT / 3.0)), loc = o.worldToLocal(monde_.clone());
       const l = new THREE.PointLight(coul, I, dist, 1.6); monde.add(l); armure.lampes.push(l); armure.os.push([o, loc]);
-      const hl = sprite(texLueur('rgba(255,200,110,.85)'), 0.6, true); monde.add(hl); armure.halos.push(hl);
+      const hl = sprite(texLueur('rgba(255,200,110,.85)'), 1.0, true); monde.add(hl); armure.halos.push(hl);
     }
     if (g.animations.length) {   // son attente (Idle_02, choisi par Romain), ralentie : il est lourd ; elle le tourne d'environ 25° : on le remet face aux héros
+      lisserBoucle(g.animations[0]);
       armure.mix = new THREE.AnimationMixer(m); const a = armure.mix.clipAction(g.animations[0]); a.timeScale = 0.7; a.play(); armure.attente = a;
       const k = g.animations[0].tracks.find(k => k.name === 'Hips.quaternion');
       if (k) { let y = 0, w = 0; for (let i = 0; i < k.values.length; i += 4) { y += k.values[i + 1]; w += k.values[i + 3]; } m.rotation.y = -2 * Math.atan2(y, w); }
@@ -1095,7 +1118,7 @@ function avancerArmure(dt, t) {
     bras.quaternion.copy(_qp.invert().multiply(_qw.multiply(_qb))); bras.updateMatrixWorld(true);
   }
   armure.os.forEach(([o, loc], i) => { o.localToWorld(_va.copy(loc)); monde.worldToLocal(_va); armure.lampes[i].position.copy(_va); armure.halos[i].position.copy(_va);
-    const f = 0.92 + 0.08 * Math.sin(t * (5.1 + i) + i * 2) * Math.sin(t * 2.3 + i); armure.lampes[i].intensity = (i === 2 ? 4.5 : 3.5) * f; armure.halos[i].material.opacity = 0.55 * f; });
+    const f = 0.92 + 0.08 * Math.sin(t * (5.1 + i) + i * 2) * Math.sin(t * 2.3 + i); armure.lampes[i].intensity = 6 * f; armure.halos[i].material.opacity = 0.85 * f; });
   armure.lueurSol.material.opacity = 0.85 + 0.15 * Math.sin(t * 2.3);
   for (const mt of armure.dec) mt.uniforms.t.value = t;
   armure.eclatPorte.material.opacity = 0.7 + 0.3 * Math.sin(t * 3.1);

@@ -15,7 +15,7 @@ plate qui ne prend pas la lumière, trop peu de poses). Cet essai teste une autr
 Rien de tout ça n'est dans le jeu. C'est un essai, à montrer à Romain, sans « go » pour la suite.
 
 **En ligne (page Claude, hors du jeu)** : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP
-(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795838341-7681` depuis l'armure aux plaques raidies, 28 novembre 4 h 59). Pour republier : `publish_files` des fichiers
+(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795839107-290c` depuis l'armure sur le seuil du temple, 28 novembre 5 h 12). Pour republier : `publish_files` des fichiers
 de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json dont `armure.json` et `armure-parle.json`, et le dossier `nuit/` : fond.jpg, crev.jpg, crev-a.png, pilier-g.png, pilier-d.png, feu.jpg, arrivee.png, vague.mp4, vague.webm, et `nuit/cr/` : c, m, e, k de 00 à 19), `base_version` = la version en ligne. Les fichiers doivent être copiés sous `/home/claude` (l'outil refuse `/tmp`).
 **Piège de la page Claude** (vu par Romain : un ⚠ à la place du jeu) : elle ne sert pas les `.glb`, et
 elle interdit à la page de « télécharger » une adresse `data:` (fetch). Un glTF avec ses données en
@@ -504,6 +504,27 @@ une seule peau : chaque sommet suit plusieurs os à la fois, et les grandes plaq
   crédit. Il reste un pli aux aisselles et aux coudes quand les bras partent loin.
 - Vérifié : `outils/revue-armure/parle.py`, `parle3.py` (le mouvement de parole image par image), `essai_armure.py`,
   `essai_rigide.py`, WebKit.
+
+### Sur le seuil du temple, 3,5 m, les lanternes allumées (en ligne à 5 h 12, version `1795839107-290c` ; go de Romain à 5 h 06)
+
+Romain, à la voix : au pied des marches, **ça ne marche pas : le Pisteur doit arriver dans une salle derrière son dos** ; on la
+remet en haut, **dans l'embrasure de la porte du temple** (son dos dedans), **un peu plus grosse** ; **le bord de la plaque de
+poitrine s'étire** quand il tend les mains ; **un petit tremblement sur une image** dans l'attente ; et par écrit : **« ces
+lanternes de son épaule, on dirait qu'elles sont éteintes »**.
+- **La place** : `ARM` = (10,95 ; −11,6 ; z 2), le seuil de la porte (ligne 615 de la peinture ; le haut des marches est à la
+  ligne 690, y −5,97) ; **3,6 pas (3,5 m)** : elle remplit la porte. Le cadre de la caméra garde toujours sa crête à l'image
+  (ligne 320 au lieu de 430). Son ombre tombe sur le palier (un sol d'ombre à la hauteur du palier, z 2) ; le rayon d'Elyra vient
+  du fond du temple et entre dans son dos (on le voit à peine : il est derrière elle) ; la lueur chaude sur le palier. Le bouton
+  d'essai « 🗣 Grosbec » est passé en haut à gauche (il cachait l'armure).
+- **La cuirasse** (`outils/raidir.mjs`) : tout ce que Meshy donnait aux clavicules (le haut de la poitrine jusqu'aux aisselles,
+  et les lanternes d'épaule) suit maintenant la cuirasse ; les épaulières suivent les bras. Les lampes des lanternes sont
+  accrochées au buste. `captures/armure-cuirasse-v1-v2-v3.jpg` (à droite).
+- **Le tremblement** : dans `Idle_02`, le genou droit démarre d'un coup (2° d'une image à l'autre, puis presque rien) ;
+  `lisserBoucle()` lisse chaque piste dans le temps (deux passes d'un filtre 1-4-6-4-1, en boucle) et recolle la dernière image
+  sur la première.
+- **Les lanternes** : le verre (le plus clair de la carte de lueurs) brille trois fois plus (`onBeforeCompile` sur
+  `emissivemap_fragment`), l'or un peu moins ; les trois lampes plus fortes (6, portée 3,2) ; des halos plus grands.
+- Vérifié : `essai_armure.py` (`captures/armure-seuil-du-temple.jpg`), `essai_rigide.py` (`armure-seuil-parle.jpg`), WebKit.
 
 ## Ce qui n'est pas fait
 
