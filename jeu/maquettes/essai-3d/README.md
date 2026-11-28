@@ -554,6 +554,23 @@ lanternes de son épaule, on dirait qu'elles sont éteintes »**.
   fin (un saut de 0,8 m en une image). Elle suit maintenant le poids de l'attente (fondu), et le retour à l'attente se compte
   avec le temps du jeu au lieu d'une minuterie à part.
 
+### Les pieds tenus au sol, les lanternes presque blanches, sans le rayon (en ligne à 5 h 57, version `1795841811-8e3b` ; Romain, à la voix vers 5 h 45 puis par écrit à 5 h 47 : « Vas-y, fais la modif »)
+
+- **« Décale-le un tout petit peu vers la gauche »** : 33 cm (`ARM.x` 10,62) ; ses pieds sont centrés sur la lumière de la porte
+  (colonne 2169 de la peinture).
+- **« Image par image, les pieds flottent un peu ; l'ombre ne colle pas à son pied gauche »** : mesuré sur les sommets du dessous des
+  pieds, la semelle gauche était 3 cm au-dessus du palier, la droite 5 cm dessous. Maintenant, **à chaque image, chaque pied est
+  remis sur le palier** (le dessous exactement à la hauteur du sol) **et à sa place** : pendant l'attente, ils ne bougent plus d'un
+  millimètre. Quand il parle, son animation fait un vrai pas (30 à 50 cm) : on le laisse faire, on ne tient que la hauteur.
+  Ce qui le faisait surtout flotter à l'œil : la lueur des lanternes au sol était centrée 80 cm devant lui et éclaircissait la zone
+  de contact. Elle est poussée 2 m devant ; **une ombre de contact bien noire sous chaque pied** (elle suit le pied) ; son ombre
+  portée un peu plus foncée (0,64). `captures/armure-pieds-gros-plan.jpg`.
+- **« Enlève le faisceau de lumière dans son dos, on ne le voit pas »** : enlevé (les deux cylindres et l'éclat de la porte).
+- **« Les lanternes des épaules vraiment éclairées, le jaune presque blanc »** : sur elles seules (repérées sur le modèle au repos :
+  en haut, sur les côtés), le verre est poussé très fort et le rendu le blanchit ; leurs lampes passent de 6 à 16, presque
+  blanches, plus loin (4,2) ; leur lueur passe devant le verre, comme un éblouissement. Le disque de la poitrine ne change pas.
+  `captures/armure-pieds-au-sol-lanternes-blanches.jpg`.
+
 ## Ce qui n'est pas fait
 
 - L'armure de Grosbec n'est pas en 3D (la création de son image de référence a été bloquée

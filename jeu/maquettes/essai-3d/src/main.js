@@ -15,7 +15,7 @@ const NUIT = !PIST;   // le Barde joue sur la place de nuit peinte par Romain (2
 const T = 40, K = NUIT ? 0.4 : 0.62, OX = 70, OY = 250, SW = 860, SH = 556;   // (K : l'écrasement du sol vu par la caméra ; sert au pouce)
 const THETA = Math.asin(0.62), ZS = NUIT ? 1 : 1 / Math.cos(THETA);
 const L = { L: 18, P: 10.5, coin: 3.4 };
-const ARM = NUIT ? { x: 10.95, y: -9.45, z: 2.0, r: 1.6, zc: 4.3, dy: 0 } : { x: 9, y: 1.25, r: 1.6, zc: 2.3, dy: 0.6 };   // (la nuit : l'armure de Grosbec en haut des marches, sur le palier juste devant le seuil de la porte du temple, le dos à la porte : le Pisteur arrive derrière elle ; Romain, 28 nov., 5 h ; un peu avancée à 5 h 30 : sur le seuil même, ses pieds étaient dans la lumière de la porte et elle flottait)
+const ARM = NUIT ? { x: 10.62, y: -9.45, z: 2.0, r: 1.6, zc: 4.3, dy: 0 } : { x: 9, y: 1.25, r: 1.6, zc: 2.3, dy: 0.6 };   // (la nuit : l'armure de Grosbec en haut des marches, sur le palier juste devant le seuil de la porte du temple, le dos à la porte : le Pisteur arrive derrière elle ; Romain, 28 nov., 5 h ; un peu avancée à 5 h 30 : sur le seuil même, ses pieds étaient dans la lumière de la porte et elle flottait ; à 5 h 47, 33 cm à gauche : ses pieds sont centrés sur la porte, colonne 2169 de la peinture)
 const LANT = { or: [1.2, 5.6], rouge: [16.8, 5.6] };
 const BRAS = [[5.15, 0.75, 2.6], [12.85, 0.75, 2.6], [0.42, 3.85, 2.3], [17.58, 3.85, 2.3]];
 const $ = id => document.getElementById(id);
@@ -1048,7 +1048,7 @@ const _ecran = new THREE.Vector2();
    - ses trois lanternes (les deux des épaules, celle de la poitrine) : une vraie lampe dans chacune, qui suit ses os, éclaire son armure,
      et un halo autour ; une lueur chaude sur les dalles à ses pieds (la place est peinte : ses lampes ne l'éclairent pas d'elles-mêmes) ;
    - son ombre : portée par la lumière du temple, dans son dos, elle s'étire vers nous sur la place ;
-   - le rayon doré d'Elyra : il part de la porte du temple, descend les marches et entre dans son dos (la prise entre ses épaules). */
+   - (le rayon doré d'Elyra dans son dos : enlevé le 28 novembre à 5 h 47 ; on ne le voyait pas d'ici). */
 const armure = { m: null, mix: null, lampes: [], halos: [], os: [], dec: [] };
 /* l'attente de Meshy a un genou qui démarre d'un coup (2° d'une image à l'autre, puis presque rien) : on lisse chaque piste dans le
    temps (deux passes d'un petit filtre 1-4-6-4-1), en tournant en rond (c'est une boucle : la dernière image est la première) */
@@ -1074,37 +1074,40 @@ if (NUIT) {
   const piv = new THREE.Group(); piv.rotation.x = Math.PI / 2; place.add(piv);   // (les modèles glTF ont la hauteur en y ; il nous fait face)
   // la lueur de ses lanternes sur les dalles
   const lueurSol = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: toile(128, 128, x => { const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(255,190,90,.55)'); g.addColorStop(0.45, 'rgba(255,150,60,.18)'); g.addColorStop(1, 'rgba(255,120,40,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); }), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
-  lueurSol.scale.set(6.5, 4.2, 1); lueurSol.position.copy(G(ARM.x, ARM.y + 0.8, ARM.z + 0.02)); lueurSol.renderOrder = -8; monde.add(lueurSol); armure.lueurSol = lueurSol;
+  lueurSol.scale.set(5.5, 3.4, 1); lueurSol.position.copy(G(ARM.x, ARM.y + 2.0, ARM.z + 0.02));   // (5 h 50 : poussée devant lui ; centrée à 80 cm, elle éclaircissait le sol juste sous ses pieds, et il avait l'air de flotter)
+  lueurSol.renderOrder = -8; monde.add(lueurSol); armure.lueurSol = lueurSol;
   // son ombre : une lumière qui ne sert qu'à ça (aucune clarté), depuis le temple, dans son dos ; elle ne voit que les abords de l'armure
   const lo = new THREE.DirectionalLight(0xffffff, 0); lo.position.copy(G(ARM.x - 0.4, ARM.y - 4, ARM.z + 4.5)); lo.target.position.copy(G(ARM.x, ARM.y + 2.5, ARM.z)); monde.add(lo, lo.target);
-  const palier = new THREE.Mesh(new THREE.PlaneGeometry(8, 4.4), new THREE.ShadowMaterial({ opacity: 0.5 })); palier.receiveShadow = true; palier.position.copy(G(ARM.x, -8.1, ARM.z + 0.003)); monde.add(palier);   // (le palier en haut des marches, du seuil de la porte au haut des marches : il reçoit son ombre)
+  const palier = new THREE.Mesh(new THREE.PlaneGeometry(8, 4.4), new THREE.ShadowMaterial({ opacity: 0.64 })); palier.receiveShadow = true; palier.position.copy(G(ARM.x, -8.1, ARM.z + 0.003)); monde.add(palier);   // (le palier en haut des marches, du seuil de la porte au haut des marches : il reçoit son ombre)
   // (une ombre de contact, sombre et douce, juste sous les pieds : c'est elle qui la pose sur le sol)
-  const contact = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: toile(128, 128, x => { const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(0,0,0,.75)'); g.addColorStop(0.5, 'rgba(0,0,0,.4)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); }), transparent: true, depthWrite: false, toneMapped: false }));
+  const contact = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: toile(128, 128, x => { const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(0,0,0,.5)'); g.addColorStop(0.5, 'rgba(0,0,0,.25)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); }), transparent: true, depthWrite: false, toneMapped: false }));
   contact.scale.set(2.6, 1.5, 1); contact.position.copy(G(ARM.x, ARM.y + 0.1, ARM.z + 0.006)); contact.renderOrder = -7; monde.add(contact);
   lo.castShadow = true; lo.shadow.mapSize.set(1024, 1024); Object.assign(lo.shadow.camera, { left: -3.6, right: 3.6, top: 3.6, bottom: -3.6, near: 1, far: 9.3 }); lo.shadow.bias = -0.0006; lo.shadow.radius = 4; lo.shadow.camera.updateProjectionMatrix();   // (far 9,3 : l'ombre s'arrête au bord du palier ; plus loin, elle retombait sur la place, 2 m plus bas, au pied des marches)
-  // le rayon d'Elyra : de la porte du temple à la prise dans son dos ; un cœur doré et un halo, de la lumière qui coule vers lui
-  const A0 = G(ARM.x, ARM.y - 3.5, ARM.z + 3.4), A1 = G(ARM.x, ARM.y - 0.55, ARM.z + 2.94), L = A0.distanceTo(A1);   // (d'Elyra, au fond du temple, à la prise dans son dos)
-  const matRayon = (r, a) => new THREE.ShaderMaterial({ uniforms: { t: { value: 0 }, a: { value: a } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide,
-    vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-    fragmentShader: 'uniform float t; uniform float a; varying vec2 vU; void main(){ float bord = 1.0 - abs(vU.x * 2.0 - 1.0); bord = pow(max(bord, 0.0), ' + (r < 0.2 ? '1.2' : '2.6') + '); float flot = 0.65 + 0.35 * sin(vU.y * 38.0 + t * 9.0); float bout = smoothstep(0.0, 0.08, vU.y) * smoothstep(1.0, 0.94, vU.y); gl_FragColor = vec4(vec3(1.0, 0.78, 0.35) * bord * flot * bout * a, 1.0); }' });
-  const rayon = new THREE.Group(); rayon.position.copy(A0).lerp(A1, 0.5); rayon.lookAt(A1); monde.add(rayon);
-  for (const [r, a] of [[0.07, 1.6], [0.32, 0.55]]) { const c = new THREE.Mesh(new THREE.CylinderGeometry(r, r, L, 16, 1, true), matRayon(r, a)); c.rotation.x = Math.PI / 2; c.frustumCulled = false; rayon.add(c); armure.dec.push(c.material); }
-  const eclatPorte = sprite(texLueur('rgba(255,205,110,.9)'), 1.0, true); eclatPorte.position.copy(A0); monde.add(eclatPorte); armure.eclatPorte = eclatPorte;
+  // (le rayon d'Elyra dans son dos : enlevé à 5 h 47, Romain : « de toute façon on ne le voit pas là »)
   charger('armure.json', g => {
     const m = g.scene; armure.m = m;
     m.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = false; o.frustumCulled = false; if (o.material) { o.material.envMapIntensity = 0.5; o.material.color.multiplyScalar(0.8); o.material.emissiveIntensity = 1;
         // (ses lanternes avaient l'air éteintes : le verre, le plus clair de sa carte de lueurs, brille trois fois plus ; l'or, un peu moins qu'avant)
-        o.material.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n  float lumE = max(totalEmissiveRadiance.r, totalEmissiveRadiance.g);\n  totalEmissiveRadiance *= 0.55 + 2.6 * smoothstep(0.45, 0.85, lumE);'); }; } } });
+        // (5 h 47, Romain : « que le jaune des lanternes de ses épaules devienne presque blanc » : sur elles seules — en haut, sur les côtés du
+        //  modèle au repos —, le verre est poussé très fort, et le rendu le blanchit ; le reste garde les réglages d'avant)
+        o.material.onBeforeCompile = sh => {
+          sh.vertexShader = 'varying vec3 vPosM;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n  vPosM = position;');
+          sh.fragmentShader = 'varying vec3 vPosM;\n' + sh.fragmentShader.replace('#include <emissivemap_fragment>', [
+            '#include <emissivemap_fragment>',
+            '  vec3 E0 = totalEmissiveRadiance; float lumE = max(E0.r, E0.g);',
+            '  float verre = smoothstep(0.45, 0.85, lumE), epaule = smoothstep(2.1, 2.2, vPosM.y) * smoothstep(0.28, 0.34, abs(vPosM.x));',
+            '  vec3 Eblanc = vec3(1.0, 0.93, 0.8) * (5.0 + 16.0 * lumE);',
+            '  totalEmissiveRadiance = mix(E0 * (0.55 + 2.6 * verre), Eblanc, smoothstep(0.12, 0.45, lumE) * epaule);'].join('\n')); }; } } });
     m.scale.setScalar(HAUT / 3.0); piv.add(m);   // (le modèle fait 3 m ; 1 pas ≈ 0,97 m, comme le Barde)
     // ses lanternes : on les place sur la pose de repos, puis elles suivent les os
     m.updateMatrixWorld(true);
     const os = n => m.getObjectByName(n), buste = os('Spine'), gauche = buste, droite = buste;   // (les lanternes sont fixées à la cuirasse : chez Meshy, « Spine » est le haut du buste)
     const coteG = Math.sign(piv.worldToLocal(os('LeftShoulder').getWorldPosition(new THREE.Vector3())).x) || 1;
-    const cibles = [[gauche, new THREE.Vector3(0.58 * coteG, 2.5, -0.05), 0xffc070, 6, 3.2], [droite, new THREE.Vector3(-0.58 * coteG, 2.5, -0.05), 0xffc070, 6, 3.2], [buste, new THREE.Vector3(0, 2.02, 0.42), 0xffb050, 6, 3.2]];
+    const cibles = [[gauche, new THREE.Vector3(0.58 * coteG, 2.5, -0.05), 0xffe2b0, 16, 4.2], [droite, new THREE.Vector3(-0.58 * coteG, 2.5, -0.05), 0xffe2b0, 16, 4.2], [buste, new THREE.Vector3(0, 2.02, 0.42), 0xffb050, 6, 3.2]];   // (les épaules : lampes presque blanches et plus fortes)
     for (const [o, p, coul, I, dist] of cibles) {
       const monde_ = piv.localToWorld(p.clone().multiplyScalar(HAUT / 3.0)), loc = o.worldToLocal(monde_.clone());
-      const l = new THREE.PointLight(coul, I, dist, 1.6); monde.add(l); armure.lampes.push(l); armure.os.push([o, loc]);
-      const hl = sprite(texLueur('rgba(255,200,110,.85)'), 1.0, true); monde.add(hl); armure.halos.push(hl);
+      const l = new THREE.PointLight(coul, I, dist, 1.6); l.userData.I = I; monde.add(l); armure.lampes.push(l); armure.os.push([o, loc]);
+      const epaule = armure.halos.length < 2, hl = sprite(texLueur(epaule ? 'rgba(255,236,196,.9)' : 'rgba(255,200,110,.85)'), epaule ? 1.5 : 1.0, true); hl.userData.o = epaule ? 1 : 0.85; if (epaule) { hl.material.depthTest = false; hl.renderOrder = 5; } monde.add(hl); armure.halos.push(hl);   // (la lueur des épaules passe devant le verre, comme un éblouissement)
     }
     if (g.animations.length) {   // son attente (Idle_02, choisi par Romain), ralentie : il est lourd ; elle le tourne d'environ 25° : on le remet face aux héros
       lisserBoucle(g.animations[0]);
@@ -1112,6 +1115,14 @@ if (NUIT) {
       const k = g.animations[0].tracks.find(k => k.name === 'Hips.quaternion');
       if (k) { let y = 0, w = 0; for (let i = 0; i < k.values.length; i += 4) { y += k.values[i + 1]; w += k.values[i + 3]; } m.rotation.y = -2 * Math.atan2(y, w); }
     }
+    // ses pieds, tenus au sol (Romain, 5 h 47 : « image par image, les pieds flottent un peu ») : les sommets du dessous de chaque pied ;
+    // à chaque image, on mesure où ils sont et on remet le pied sur le palier, à la même place
+    { const S = []; m.traverse(o => { if (o.isSkinnedMesh) S.push(o); }); const P = S[0];
+      if (P) { const pos = P.geometry.attributes.position, sw = P.geometry.attributes.skinWeight, si = P.geometry.attributes.skinIndex, noms = P.skeleton.bones.map(b => b.name), so = { L: [], R: [] };
+        let y0 = 1e9, y1 = -1e9; for (let i = 0; i < pos.count; i++) { const y = pos.getY(i); if (y < y0) y0 = y; if (y > y1) y1 = y; }
+        for (let i = 0; i < pos.count; i++) { if (pos.getY(i) > y0 + (y1 - y0) * 0.03) continue; let w = 0, b = 0; for (let k = 0; k < 4; k++) if (sw.getComponent(i, k) > w) { w = sw.getComponent(i, k); b = si.getComponent(i, k); }
+          if (/^(Left|Right)(Foot|ToeBase)$/.test(noms[b])) so[noms[b][0]].push(i); }
+        armure.peau = P; armure.pieds = [['L', 'LeftFoot'], ['R', 'RightFoot']].map(([c, n]) => ({ os: m.getObjectByName(n), sommets: so[c], cible: null, brut: null })).filter(p => p.os && p.sommets.length); } }
     armure.bras = [['LeftArm', 'LeftForeArm'], ['RightArm', 'RightForeArm']].map(([a, b]) => [m.getObjectByName(a), m.getObjectByName(b)]).filter(([a, b]) => a && b);
     // il parle (Stand_Talking_Angry, ralenti de moitié : de grands gestes lourds) : le bouton « 🗣 Grosbec » de l'essai
     charger('armure-parle.json', p => { if (p.animations[0] && armure.mix) { const c = THREE.AnimationUtils.subclip(p.animations[0], 'parle', 0, 180, 30); c.tracks = c.tracks.filter(t => !t.name.startsWith('Hips.position'));   // (son film dure 21 s : on garde les 6 premières, environ 11 s à l'écran)
@@ -1119,7 +1130,8 @@ if (NUIT) {
     pret('armure');
   }, e => { console.error(e); pret('armure'); });
 }
-const _va = new THREE.Vector3(), _b1 = new THREE.Vector3(), _b2 = new THREE.Vector3(), _d1 = new THREE.Vector3(), _d2 = new THREE.Vector3(), _bas = new THREE.Vector3(0, 0, -1), _qw = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _qp = new THREE.Quaternion();
+const TEX_CONTACT = toile(128, 128, x => { const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(0,0,0,.92)'); g.addColorStop(0.45, 'rgba(0,0,0,.7)'); g.addColorStop(0.75, 'rgba(0,0,0,.25)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); });
+const _vp = new THREE.Vector3(), _dp = new THREE.Vector3(), _va = new THREE.Vector3(), _b1 = new THREE.Vector3(), _b2 = new THREE.Vector3(), _d1 = new THREE.Vector3(), _d2 = new THREE.Vector3(), _bas = new THREE.Vector3(0, 0, -1), _qw = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _qp = new THREE.Quaternion();
 function parleGrosbec() { if (!armure.parle) return; armure.parle.reset().setEffectiveWeight(1).fadeIn(0.4).play(); armure.attente.fadeOut(0.4); armure.retour = armure.parle.getClip().duration / armure.parle.timeScale - 0.6; }   // (le retour à l'attente se compte avec le temps du jeu, plus avec une minuterie à part)
 if ($('bParle')) $('bParle').addEventListener('click', e => { e.preventDefault(); parleGrosbec(); });
 function avancerArmure(dt, t) {
@@ -1128,21 +1140,31 @@ function avancerArmure(dt, t) {
   //  images, et la correction des bras de l'image d'avant restait, puis se rajoutait : un saut des bras. On remet donc chaque bras comme
   //  le mouvement l'a laissé avant de mettre à jour, et on corrige après.)
   if (armure.bras) for (const B of armure.bras) if (B[2]) B[0].quaternion.copy(B[2]);
+  if (armure.pieds) for (const p of armure.pieds) if (p.brut) p.os.position.copy(p.brut);
   if (armure.retour !== undefined && (armure.retour -= dt) <= 0) { armure.retour = undefined; armure.attente.reset().fadeIn(0.6).play(); armure.parle.fadeOut(0.6); }
   if (armure.mix) armure.mix.update(dt);
   armure.m.updateMatrixWorld(true);
   if (armure.bras) for (const B of armure.bras) (B[2] || (B[2] = new THREE.Quaternion())).copy(B[0].quaternion);
-  const wA = armure.attente ? armure.attente.getEffectiveWeight() : 0;   // (la correction suit le poids de l'attente : quand il parle, elle s'efface en douceur, et revient de même ; avant, elle se coupait d'un coup)
+  const wA = armure.attente ? armure.attente.getEffectiveWeight() : 0;
+  if (armure.pieds) for (const p of armure.pieds) {   // chaque pied : le dessous sur le palier (z du palier), et à la place qu'il avait à la première image
+    (p.brut || (p.brut = new THREE.Vector3())).copy(p.os.position);
+    let zmin = 1e9, sx = 0, sy = 0; for (const i of p.sommets) { armure.peau.getVertexPosition(i, _vp); armure.peau.localToWorld(_vp); monde.worldToLocal(_vp); if (_vp.z < zmin) zmin = _vp.z; sx += _vp.x; sy += _vp.y; }
+    sx /= p.sommets.length; sy /= p.sommets.length;
+    if (!p.cible) { p.cible = new THREE.Vector3(sx, sy, ARM.z);   // (et une ombre de contact bien noire sous ce pied : elle le colle au palier)
+      p.ombre = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: TEX_CONTACT, transparent: true, depthWrite: false, toneMapped: false })); p.ombre.scale.set(0.95, 0.85, 1); p.ombre.renderOrder = -6; monde.add(p.ombre); }
+    _dp.set((p.cible.x - sx) * wA, (p.cible.y - sy) * wA, p.cible.z - zmin); if (_dp.length() > 0.25) _dp.setLength(0.25);   // (quand il parle, son animation fait un vrai pas : on le laisse faire, on ne tient que la hauteur)
+    p.os.getWorldPosition(_va); monde.worldToLocal(_va).add(_dp); monde.localToWorld(_va); p.os.parent.worldToLocal(_va); p.os.position.copy(_va); p.os.updateMatrixWorld(true);
+    p.ombre.position.set(sx + _dp.x, sy + _dp.y - 0.04, ARM.z + 0.008);
+  }
+  // (la correction suit le poids de l'attente : quand il parle, elle s'efface en douceur, et revient de même ; avant, elle se coupait d'un coup)
   if (armure.bras && wA > 0.001) for (const [bras, avant] of armure.bras) {   // les bras redescendent d'un tiers vers le bas (Romain : « comme s'il tenait quelque chose »)
     bras.getWorldPosition(_b1); avant.getWorldPosition(_b2); _d1.subVectors(_b2, _b1).normalize(); _d2.copy(_d1).lerp(_bas, 0.4 * wA).normalize();
     _qw.setFromUnitVectors(_d1, _d2); bras.getWorldQuaternion(_qb); bras.parent.getWorldQuaternion(_qp);
     bras.quaternion.copy(_qp.invert().multiply(_qw.multiply(_qb))); bras.updateMatrixWorld(true);
   }
   armure.os.forEach(([o, loc], i) => { o.localToWorld(_va.copy(loc)); monde.worldToLocal(_va); armure.lampes[i].position.copy(_va); armure.halos[i].position.copy(_va);
-    const f = 0.92 + 0.08 * Math.sin(t * (5.1 + i) + i * 2) * Math.sin(t * 2.3 + i); armure.lampes[i].intensity = 6 * f; armure.halos[i].material.opacity = 0.85 * f; });
+    const f = 0.92 + 0.08 * Math.sin(t * (5.1 + i) + i * 2) * Math.sin(t * 2.3 + i); armure.lampes[i].intensity = armure.lampes[i].userData.I * f; armure.halos[i].material.opacity = armure.halos[i].userData.o * f; });
   armure.lueurSol.material.opacity = 0.85 + 0.15 * Math.sin(t * 2.3);
-  for (const mt of armure.dec) mt.uniforms.t.value = t;
-  armure.eclatPorte.material.opacity = 0.7 + 0.3 * Math.sin(t * 3.1);
 }
 
 /* ================= LE PREMIER TIERS DE LA PHASE 2 : LES CRISTAUX ET LA VAGUE DE FEU, PEINTS PAR ROMAIN =================
