@@ -8,12 +8,15 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import NJ from '../site/nuit/nuit.json';
-import CJ from '../site/nuit/cristaux.json';   // (les 20 cristaux peints par Romain : leur pied, leur taille, leurs découpes ; outils/salle-nuit/cristaux_peints.py…)   // (la place de nuit : la caméra de la peinture, les cases du sol, les repères ; outils/salle-nuit/generer.py)
+import CJ from '../site/nuit/cristaux.json';
+import SJ from '../site/pisteur/salle.json';   // (la salle du Pisteur peinte par Romain, de nuit : la caméra, les cases, les lumières, les portes ; outils/salle-pisteur/generer.py)   // (les 20 cristaux peints par Romain : leur pied, leur taille, leurs découpes ; outils/salle-nuit/cristaux_peints.py…)   // (la place de nuit : la caméra de la peinture, les cases du sol, les repères ; outils/salle-nuit/generer.py)
 
 const PIST = window.QUI === 'pisteur';   // (le héros choisi sur le premier écran : le Barde ou le Pisteur)
-const NUIT = !PIST;   // le Barde joue sur la place de nuit peinte par Romain (27 novembre) ; le Pisteur garde la salle de l'armure (ses murets)
-const T = 40, K = NUIT ? 0.4 : 0.62, OX = 70, OY = 250, SW = 860, SH = 556;   // (K : l'écrasement du sol vu par la caméra ; sert au pouce)
-const THETA = Math.asin(0.62), ZS = NUIT ? 1 : 1 / Math.cos(THETA);
+const NUIT = !PIST;   // le Barde joue sur la place de nuit peinte par Romain (27 novembre)
+const PEINT = true;   // les deux héros jouent sur une peinture de Romain : le Barde sur la place de nuit, le Pisteur dans sa salle de la phase 1 (28 novembre)
+const PJ = NUIT ? NJ : SJ;   // (la caméra de la peinture, ses cases)
+const T = 40, K = NUIT ? 0.4 : PIST ? 0.57 : 0.62, OX = 70, OY = 250, SW = 860, SH = 556;   // (K : l'écrasement du sol vu par la caméra ; sert au pouce)
+const THETA = Math.asin(0.62), ZS = PEINT ? 1 : 1 / Math.cos(THETA);
 const L = { L: 18, P: 10.5, coin: 3.4 };
 const ARM = NUIT ? { x: 10.62, y: -9.45, z: 2.0, r: 1.6, zc: 4.3, dy: 0 } : { x: 9, y: 1.25, r: 1.6, zc: 2.3, dy: 0.6 };   // (la nuit : l'armure de Grosbec en haut des marches, sur le palier juste devant le seuil de la porte du temple, le dos à la porte : le Pisteur arrive derrière elle ; Romain, 28 nov., 5 h ; un peu avancée à 5 h 30 : sur le seuil même, ses pieds étaient dans la lumière de la porte et elle flottait ; à 5 h 47, 33 cm à gauche : ses pieds sont centrés sur la porte, colonne 2169 de la peinture)
 const LANT = { or: [1.2, 5.6], rouge: [16.8, 5.6] };
@@ -39,11 +42,11 @@ addEventListener('resize', taille); taille();
 
 /* ---------- la caméra : exactement celle de Blender (decor3d/base.py) ; la nuit : celle de la peinture de Romain ---------- */
 const scene = new THREE.Scene();
-const cam = NUIT ? new THREE.PerspectiveCamera(40, 1, 0.5, 400) : new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 400);
-const PHI = NUIT ? NJ.phi : THETA;
+const cam = PEINT ? new THREE.PerspectiveCamera(40, 1, 0.5, 400) : new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 400);
+const PHI = PEINT ? PJ.phi : THETA;
 const d = new THREE.Vector3(0, Math.cos(PHI), -Math.sin(PHI)), up = new THREE.Vector3(0, Math.sin(PHI), Math.cos(PHI));
 const vise = new THREE.Vector3((SW / 2 - OX) / T, -(SH / 2 - OY) / (T * K), 0);
-if (NUIT) { cam.position.set(NJ.xoff, -NJ.dmax, NJ.camH); cam.up.copy(up); cam.lookAt(cam.position.clone().add(d)); }
+if (PEINT) { cam.position.set(PJ.xoff, -PJ.dmax, PJ.camH); cam.up.copy(up); cam.lookAt(cam.position.clone().add(d)); }
 else { cam.position.copy(vise).addScaledVector(d, -120); cam.up.copy(up); cam.lookAt(vise); }
 function cadrer() {
   cam.left = (camX - SW / 2) / T; cam.right = (camX + Ws - SW / 2) / T;
@@ -51,22 +54,22 @@ function cadrer() {
   cam.updateProjectionMatrix();
 }
 /* la nuit : on montre un morceau de la peinture (fen : x0, y0, x1, y1 en pixels de l'image), la caméra 3D voit exactement ce morceau */
-const IMW = NUIT ? NJ.image[0] : 1, IMH = NUIT ? NJ.image[1] : 1;
+const IMW = PEINT ? PJ.image[0] : 1, IMH = PEINT ? PJ.image[1] : 1;
 const fen = { x0: 0, y0: 0, x1: IMW, y1: IMH, bouge: 0 };
 function cadrerNuit() {
-  const n = cam.near, f = NJ.f;
-  cam.projectionMatrix.makePerspective((fen.x0 - NJ.cx) / f * n, (fen.x1 - NJ.cx) / f * n, (NJ.cy - fen.y0) / f * n, (NJ.cy - fen.y1) / f * n, n, cam.far);
+  const n = cam.near, f = PJ.f;
+  cam.projectionMatrix.makePerspective((fen.x0 - PJ.cx) / f * n, (fen.x1 - PJ.cx) / f * n, (PJ.cy - fen.y0) / f * n, (PJ.cy - fen.y1) / f * n, n, cam.far);
   cam.projectionMatrixInverse.copy(cam.projectionMatrix).invert();
 }
 /* un point de la peinture (pixels) -> le sol du jeu, à la hauteur z (le calcul de outils/salle-nuit/camera.py) */
 function solImg(u, v, z) {
-  const s = Math.sin(PHI), c = Math.cos(PHI), Zr = (z || 0) - NJ.camH, k = NJ.cy - v;
-  const D = Zr * (NJ.f * c + k * s) / (k * c - NJ.f * s), zc = D * c - Zr * s;
-  return { x: (u - NJ.cx) * zc / NJ.f + NJ.xoff, y: NJ.dmax - D };
+  const s = Math.sin(PHI), c = Math.cos(PHI), Zr = (z || 0) - PJ.camH, k = PJ.cy - v;
+  const D = Zr * (PJ.f * c + k * s) / (k * c - PJ.f * s), zc = D * c - Zr * s;
+  return { x: (u - PJ.cx) * zc / PJ.f + PJ.xoff, y: PJ.dmax - D };
 }
 function imgDe(x, y, z) {   // un point du jeu -> la peinture (pixels)
-  const s = Math.sin(PHI), c = Math.cos(PHI), X = x - NJ.xoff, D = NJ.dmax - y, Zr = (z || 0) - NJ.camH, zc = D * c - Zr * s, yu = D * s + Zr * c;
-  return { u: NJ.cx + NJ.f * X / zc, v: NJ.cy - NJ.f * yu / zc };
+  const s = Math.sin(PHI), c = Math.cos(PHI), X = x - PJ.xoff, D = PJ.dmax - y, Zr = (z || 0) - PJ.camH, zc = D * c - Zr * s, yu = D * s + Zr * c;
+  return { u: PJ.cx + PJ.f * X / zc, v: PJ.cy - PJ.f * yu / zc };
 }
 /* le monde du jeu : x à droite, y vers nous, z en haut ; étiré en hauteur comme la salle de Blender */
 const monde = new THREE.Group(); monde.scale.set(1, 1, ZS); scene.add(monde);
@@ -77,7 +80,7 @@ const px = x => OX + x * T, py = (y, z) => OY + y * T * K - (z || 0) * T;
 const chargeur = new THREE.TextureLoader();
 const tex = (f, nom, srgb) => chargeur.load(f, t => { t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = 4; t.needsUpdate = true; pret(nom); });
 let fondMat, fondNuit = null, crevTex = null, crevA = null;
-if (!NUIT) {
+if (!PEINT) {
   const fond = chargeur.load('fond.jpg', t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; t.needsUpdate = true; pret('fond'); });
   const prof = chargeur.load('prof.png', t => { t.colorSpace = THREE.NoColorSpace; t.minFilter = t.magFilter = THREE.NearestFilter; t.generateMipmaps = false; pret('prof'); });
   fondMat = new THREE.ShaderMaterial({
@@ -91,6 +94,56 @@ if (!NUIT) {
         float z = 90.0 + (p.r * 255.0 * 256.0 + p.g * 255.0) / 65535.0 * 60.0 + 0.12;
         gl_FragDepth = (z - 1.0) / 399.0;
         gl_FragColor = c;
+        #include <colorspace_fragment>
+      }`,
+    depthTest: true, depthFunc: THREE.AlwaysDepth, depthWrite: true, toneMapped: false   // (sans test, WebGL n'écrit pas la profondeur)
+  });
+} else if (PIST) {
+  /* la salle du Pisteur : la peinture de Romain, de nuit (les cristaux l'éclairent). Elle écrit aussi la profondeur des objets
+     (prof.png : piliers, pans de mur, murets, tonneaux, caisses…) : le Pisteur passe vraiment derrière eux.
+     Les deux portes : elles s'allument en rouge (2 s, les renforts arrivent), puis s'ouvrent sur le noir du couloir. */
+  fondNuit = tex('pisteur/fond.jpg', 'fond', true);
+  const prof = chargeur.load('pisteur/prof.png', t => { t.colorSpace = THREE.NoColorSpace; t.minFilter = t.magFilter = THREE.NearestFilter; t.generateMipmaps = false; t.needsUpdate = true; pret('prof'); });
+  const portes = tex('pisteur/portes.png', 'portes', false);
+  const P0 = SJ.portes[0], P1 = SJ.portes[1];
+  fondMat = new THREE.ShaderMaterial({
+    uniforms: { fond: { value: fondNuit }, prof: { value: prof }, portes: { value: portes }, fen: { value: new THREE.Vector4(0, 0, IMW, IMH) }, img: { value: new THREE.Vector2(IMW, IMH) },
+      prect: { value: new THREE.Vector4(SJ.portesRect[0], SJ.portesRect[1], SJ.portesRect[2] - SJ.portesRect[0], SJ.portesRect[3] - SJ.portesRect[1]) },
+      pc: { value: new THREE.Vector4(P0.u, P0.v, P1.u, P1.v) }, etat: { value: new THREE.Vector4(0, 0, 0, 0) }, temps: { value: 0 },
+      dp: { value: new THREE.Vector4(SJ.prof.d0, SJ.prof.d1, cam.near, cam.far) }, sc: { value: new THREE.Vector4(SJ.camH, SJ.f, SJ.cy, 0.0) } },
+    vertexShader: 'varying vec2 vU; void main(){ vU = position.xy*0.5+0.5; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+    fragmentShader: `uniform sampler2D fond; uniform sampler2D prof; uniform sampler2D portes; uniform vec4 fen; uniform vec2 img; uniform vec4 prect; uniform vec4 pc; uniform vec4 etat; uniform float temps; uniform vec4 dp; uniform vec4 sc; varying vec2 vU;
+      void main(){
+        vec2 p = vec2(mix(fen.x, fen.z, vU.x), mix(fen.w, fen.y, vU.y));   // (en pixels de la peinture, y vers le bas)
+        vec2 uv = clamp(p / img, vec2(0.0005), vec2(0.9995));
+        vec3 c = texture2D(fond, vec2(uv.x, 1.0 - uv.y)).rgb;
+        for (int i = 0; i < 2; i++) {
+          vec2 cp = i == 0 ? pc.xy : pc.zw; float ouv = i == 0 ? etat.x : etat.y, al = i == 0 ? etat.z : etat.w;
+          if (al > 0.0) {   // l'alerte : la porte et son cristal s'allument en rouge
+            vec2 d = (p - (cp - vec2(0.0, 163.0))) / vec2(180.0, 248.0); float g = exp(-dot(d, d) * 1.6);
+            vec2 dc = (p - (cp - vec2(0.0, 353.0))) / 29.0; float k = exp(-dot(dc, dc));
+            float bat = 0.75 + 0.25 * sin(temps * 9.0);
+            c += vec3(0.95, 0.10, 0.05) * al * bat * (0.45 * g * (1.0 - 0.8 * ouv) + 1.4 * k);
+          }
+          vec2 q = (p - prect.xy) / prect.zw;
+          if (ouv > 0.0 && q.x > 0.0 && q.x < 1.0 && q.y > 0.0 && q.y < 1.0 && abs(p.x - cp.x) < 137.0) {   // ouverte : le noir du couloir, une lueur rouge au fond
+            float m = texture2D(portes, vec2(q.x, 1.0 - q.y)).r;
+            vec2 fr = (p - vec2(cp.x, cp.y - 128.0)) / vec2(47.0, 77.0); float fondR = exp(-dot(fr, fr));   // (tout au fond du couloir)
+            float sol = smoothstep(cp.y - 51.0, cp.y, p.y);                                                     // (le seuil, un peu éclairé)
+            vec3 couloir = vec3(0.006, 0.005, 0.014) + vec3(0.30, 0.025, 0.012) * fondR * (0.35 + 0.65 * al) + c * 0.18 * sol;
+            c = mix(c, couloir, m * ouv);
+          }
+        }
+        float hors = smoothstep(img.y - 80.0, img.y + 4.0, p.y) + smoothstep(-6.0, -150.0, p.x) + smoothstep(img.x + 6.0, img.x + 150.0, p.x) + smoothstep(6.0, -150.0, p.y);   // (au bord de la peinture : la nuit)
+        c *= 1.0 - clamp(hors, 0.0, 1.0);
+        vec4 pr = texture2D(prof, vec2(uv.x, 1.0 - uv.y));
+        float v = floor(pr.r * 255.0 + 0.5) * 256.0 + floor(pr.g * 255.0 + 0.5);
+        // la profondeur : celle de l'objet peint (un peu reculée : son ombre peut s'y poser), celle du sol vu (calculée), sinon le loin (les murs)
+        float D = -1.0;
+        if (v > 0.5) D = dp.x + (v - 1.0) / 65534.0 * (dp.y - dp.x) + sc.w;
+        else if (pr.b > 0.5 && p.y > sc.z + 1.0) D = sc.x * sc.y / (p.y - sc.z) + 0.25;
+        gl_FragDepth = D < 0.0 ? 1.0 : dp.w * (D - dp.z) / (D * (dp.w - dp.z));
+        gl_FragColor = vec4(c, 1.0);
         #include <colorspace_fragment>
       }`,
     depthTest: true, depthFunc: THREE.AlwaysDepth, depthWrite: true, toneMapped: false   // (sans test, WebGL n'écrit pas la profondeur)
@@ -169,7 +222,8 @@ let brasiers = [], lueurArmure = null;
 const solOmbre = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShadowMaterial({ opacity: 0.5 }));   // l'ombre du héros sur le sol : un sol invisible qui ne montre que les ombres
 solOmbre.receiveShadow = true; monde.add(solOmbre);
 const nuit = { lanternes: [], cristaux: [], fissures: [], porte: null };
-if (!NUIT) {
+const salle = { lum: [], ombres: [], portes: [], recepteurs: [] };   // (la salle du Pisteur : ses lumières, celles qui font des ombres, les portes)
+if (!PEINT) {
   scene.add(new THREE.HemisphereLight(0x9aaee0, 0x5a3e2c, 1.1));
   { const pm = new THREE.PMREMGenerator(rendu); scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; scene.environmentIntensity = 0.35; }
   brasiers = BRAS.map(b => lampe(0xff8a3a, b[0], b[1] + 0.3, b[2] + 0.5, 40, 10));
@@ -181,6 +235,53 @@ if (!NUIT) {
   fente.castShadow = true; fente.shadow.mapSize.set(1024, 1024); fente.shadow.camera.near = 5; fente.shadow.camera.far = 30; fente.shadow.bias = -0.0005;
   const face = new THREE.DirectionalLight(0xd8dcff, 1.3); face.position.copy(G(9, 26, 9)); face.target.position.copy(G(9, 4, 1)); monde.add(face, face.target);
   solOmbre.geometry = new THREE.PlaneGeometry(30, 20); solOmbre.position.copy(G(9, 5, 0.002));
+} else if (PIST) {
+  /* la salle du Pisteur, de nuit : presque pas de lumière générale (un bleu-violet sombre) ; la lumière vient des cristaux.
+     Chaque cristal des piliers : une lumière qui tombe d'en haut, de sa couleur (elle fait l'ombre du Pisteur sur le dalles quand il
+     est près), et une plus douce à mi-hauteur. Les fontaines de cristal, les torches (orange, avec ombre), les appliques, les cristaux des murs. */
+  scene.add(new THREE.HemisphereLight(0x5a66c0, 0x1c1430, 0.7));
+  { const pm = new THREE.PMREMGenerator(rendu); scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; scene.environmentIntensity = 0.14; }
+  const face = new THREE.DirectionalLight(0x8c90ff, 0.35); face.position.copy(G(12.7, 40, 30)); face.target.position.copy(G(12.7, 8, 0)); monde.add(face, face.target);   // (un peu de lumière froide de face : on voit sa forme)
+  for (const L of SJ.lumieres) {
+    let l, pt = null;
+    if (L.type === 'cristal') {
+      l = new THREE.SpotLight(L.coul, 110, 17, 0.6, 0.6, 1.4); l.position.copy(G(L.x, L.y + 0.1, L.z)); l.target.position.copy(G(L.x, L.y + 0.1, 0));
+      pt = new THREE.PointLight(L.coul, 26, 8, 1.6); pt.position.copy(G(L.x, L.y + 0.7, 2.6)); monde.add(pt);
+    } else if (L.ombre) {   // les torches : une lumière orange, qui fait aussi une ombre
+      l = new THREE.SpotLight(L.coul, 60, 12, 0.6, 0.6, 1.5); l.position.copy(G(L.x, L.y - 0.3, L.z + 0.4)); l.target.position.copy(G(L.x, L.y - 2.5, 0));
+    } else {
+      const I = L.nom.startsWith('fontaine') ? 16 : L.nom.startsWith('mur') ? 18 : L.nom.startsWith('torchere') ? 10 : 9;
+      l = new THREE.PointLight(L.coul, I, L.dist, 1.6); l.position.copy(G(L.x, L.y, L.z));
+    }
+    monde.add(l); if (l.target) monde.add(l.target);
+    if (l.isSpotLight) { l.castShadow = true; l.shadow.mapSize.set(1024, 1024); l.shadow.camera.near = 0.3; l.shadow.camera.far = 30; l.shadow.bias = -0.0006; l.shadow.normalBias = 0.02; l.shadow.radius = 3; salle.ombres.push({ l, x: L.x, y: L.y, z: L.z }); }
+    salle.lum.push({ l, pt, L, I: l.intensity, Ip: pt ? pt.intensity : 0 });
+  }
+  for (const P of SJ.portes) {   // la lueur rouge des portes quand les renforts arrivent (éteinte au départ)
+    const l = new THREE.PointLight(0xff2a12, 0, 9, 1.4); l.position.copy(G(P.x, P.y + 0.9, 1.6)); monde.add(l);
+    salle.portes.push({ P, l, t: -1 });
+  }
+  solOmbre.visible = false;
+  /* ce qui reçoit l'ombre du Pisteur : la salle en formes simples, posées exactement sur la peinture (rien ne s'en voit, que
+     l'ombre) : le sol (son tour exact), les murs (des pans droits le long du tour du sol), chaque objet (sa forme au sol,
+     montée à sa hauteur), le mur du bas. Elles n'écrivent pas la profondeur : elles ne cachent jamais le Pisteur. */
+  const ombreMat = new THREE.ShadowMaterial({ opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });
+  const forme = pts => { const f = new THREE.Shape(); pts.forEach(([x, y], i) => i ? f.lineTo(x, -y) : f.moveTo(x, -y)); return f; };
+  const recoit = (geo, z) => { const m = new THREE.Mesh(geo, ombreMat); m.position.z = z || 0; m.receiveShadow = true; monde.add(m); salle.recepteurs.push(m); return m; };
+  recoit(new THREE.ShapeGeometry(forme(SJ.tour)), 0.002);
+  const mursPos = [], T = SJ.tour, devant = SJ.murBas.y0 - 0.15;
+  for (let i = 0; i < T.length; i++) {
+    const a = T[i], b = T[(i + 1) % T.length];
+    if (a[1] > devant && b[1] > devant) continue;   // (le bord de devant : pas un mur, on voit par-dessus)
+    mursPos.push(a[0], -a[1], 0, b[0], -b[1], 0, b[0], -b[1], 2.6, a[0], -a[1], 0, b[0], -b[1], 2.6, a[0], -a[1], 2.6);
+  }
+  const mg = new THREE.BufferGeometry(); mg.setAttribute('position', new THREE.Float32BufferAttribute(mursPos, 3)); mg.computeVertexNormals(); recoit(mg);
+  for (const O of SJ.objets) {
+    if (O.h < 0.15) continue;
+    if (O.rond) { const g = new THREE.CylinderGeometry(O.r, O.r, O.h, 20); g.rotateX(Math.PI / 2); g.translate(O.x, -O.y, O.h / 2); recoit(g); }
+    else recoit(new THREE.ExtrudeGeometry(forme(O.poly), { depth: O.h, bevelEnabled: false }));
+  }
+  const M = SJ.murBas, mb = new THREE.BoxGeometry(M.x1 - M.x0, M.y1 - M.y0, 1.0); mb.translate((M.x0 + M.x1) / 2, -(M.y0 + M.y1) / 2, 0.5); recoit(mb);
 } else {
   /* la nuit : un ciel bleu sombre ; la lumière blanche de la porte du temple, dans le dos (elle dessine le bord du héros) ;
      les deux lanternes (chaudes, elles font les vraies ombres) ; les cristaux violets et bleu-vert des massifs */
@@ -252,12 +353,12 @@ const SORTS = {
 function sprite(tex, s, add) { const m = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending, toneMapped: false }); const sp = new THREE.Sprite(m); sp.scale.set(s, s, 1); return sp; }
 /* les flammes des brasiers, la lumière des lanternes */
 const flammes = [];
-if (!NUIT) for (const b of BRAS) {
+if (!PEINT) for (const b of BRAS) {
   const gr = new THREE.Group(); gr.position.copy(G(b[0], b[1], b[2] + 0.02)); monde.add(gr);
   const halo = sprite(T_LUEUR.feu, 1.6, true); halo.position.z = 0.25; halo.material.opacity = 0.55; halo.material.depthTest = false; gr.add(halo);
   for (let i = 0; i < 3; i++) { const f = sprite(texFlamme, 0.45, true); f.center.set(0.5, 0.05); f.material.depthTest = false; gr.add(f); flammes.push({ f, i, b }); }
 }
-if (!NUIT) for (const n of ['or', 'rouge']) { const s = sprite(T_LUEUR[n], 1.4, true); s.position.copy(G(LANT[n][0], LANT[n][1], 1.95)); s.material.opacity = 0.7; s.material.depthTest = false; monde.add(s); }
+if (!PEINT) for (const n of ['or', 'rouge']) { const s = sprite(T_LUEUR[n], 1.4, true); s.position.copy(G(LANT[n][0], LANT[n][1], 1.95)); s.material.opacity = 0.7; s.material.depthTest = false; monde.add(s); }
 
 /* la nuit : les deux lanternes de la place sont aussi de vrais obstacles en volume : le héros passe derrière.
    Une plaque debout à leur place (invisible) ; elle montre exactement les pixels de la peinture là où la lanterne est dessinée
@@ -293,7 +394,7 @@ const corps = new THREE.Group(); corps.rotation.x = Math.PI / 2; barde.add(corps
 const ombrePied = sprite(toile(64, 64, x => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(0,0,0,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); }), 1, false);
 const ombreMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.8), new THREE.MeshBasicMaterial({ map: ombrePied.material.map, transparent: true, depthWrite: false, toneMapped: false }));
 ombreMesh.position.z = 0.004; barde.add(ombreMesh);
-const h = { x: NUIT ? NJ.depart.x : 9, y: NUIT ? NJ.depart.y : 7.6, a: -Math.PI / 2, sort: null, sortT: 0, sortD: 0, luth: 'dos', tl: 0, garde: 0 };
+const h = { x: PEINT ? PJ.depart.x : 9, y: PEINT ? PJ.depart.y : 7.6, a: -Math.PI / 2, sort: null, sortT: 0, sortD: 0, luth: 'dos', tl: 0, garde: 0 };
 let melangeur = null, actions = {}, enCours = null;
 /* La page Claude interdit de « télécharger » une adresse data: : le modèle est donc rangé en base64 dans un
    .json de la page (lu avec fetch, permis), décodé ici, puis lu d'un bloc ; les images passent par <img> (permis). */
@@ -711,8 +812,8 @@ const COUPS = {   // anim : le mouvement ; a, b : le morceau joué ; impact : le
   assomme: { anim: 'assomme', a: 0.10, b: 1.25, impact: 0.58, v: 1.4, portee: 1.5, assomme: true }, // Spartan_Kick : un coup de pied haut (le pied monte à 1,07 m)
 };
 const OMBRE_RECHARGE = 3;   // (Romain : 3 s avant de pouvoir redisparaître)
-const MURETS = PIST ? [{ x: 5.4, y: 7.0, lx: 2.6, ly: 0.45 }, { x: 13.0, y: 6.4, lx: 0.45, ly: 2.6 }] : [];
-const MANNEQUIN = { x: 9, y: 4.9, r: 0.35 };
+const MURETS = PIST && !PEINT ? [{ x: 5.4, y: 7.0, lx: 2.6, ly: 0.45 }, { x: 13.0, y: 6.4, lx: 0.45, ly: 2.6 }] : [];   // (dans la salle peinte, les murets sont dans la peinture : leurs cases)
+const MANNEQUIN = PIST && PEINT ? { x: SJ.mannequin.x, y: SJ.mannequin.y, r: 0.35 } : { x: 9, y: 4.9, r: 0.35 };   // (sur le médaillon, au milieu de la salle)
 let dagueMain = null, traineeLame = null;
 const matsOmbre = [];
 function preparerPisteur(m) {
@@ -753,7 +854,7 @@ if (PIST) {
     for (let i = 0; i < uv.count; i++) { const f = dims[Math.floor(i / 4)]; uv.setXY(i, uv.getX(i) * f[0] / 1.3, uv.getY(i) * f[1] / 0.65); }
   }
 }
-function dansMuret(x, y, r) { r = r || 0.35; for (const M of MURETS) if (Math.abs(x - M.x) < M.lx / 2 + r && Math.abs(y - M.y) < M.ly / 2 + r) return true; return false; }
+function dansMuret(x, y, r) { r = r || 0.35; if (PIST && PEINT) return caseDe(GR.muret, x, y) === 1; for (const M of MURETS) if (Math.abs(x - M.x) < M.lx / 2 + r && Math.abs(y - M.y) < M.ly / 2 + r) return true; return false; }
 /* le mannequin d'entraînement : un poteau, un corps de paille, une tête de toile, une barre pour les bras */
 let mannequin = null;
 const mq = { ax: 0, ay: 0, vx: 0, vy: 0, sonne: 0, etoiles: [], eclair: 0 };
@@ -767,7 +868,7 @@ if (PIST) {
   gr.add(pivot); gr.position.copy(G(MANNEQUIN.x, MANNEQUIN.y, 0)); monde.add(gr);
   mannequin = { gr, pivot, mats: [paille, toileM] };
 }
-function libreSaut(x, y) { return NUIT ? caseDe(GR.libre, x, y) === 1 : libreSans(x, y); }   // (en l'air : on passe par-dessus les murets et les crevasses)
+function libreSaut(x, y) { return PEINT ? caseDe(GR.libre, x, y) === 1 && !(PIST && Math.hypot(x - MANNEQUIN.x, y - MANNEQUIN.y) < MANNEQUIN.r + 0.3) : libreSans(x, y); }   // (en l'air : on passe par-dessus les murets et les crevasses)
 /* frapper : la dague (trois temps), l'embuscade dans l'ombre, le coup qui assomme */
 h.rang = 1; h.coup = null; h.tampon = null; h.ombre = false; h.ombreR = 0;
 function versMannequin() { const dx = MANNEQUIN.x - h.x, dy = MANNEQUIN.y - h.y; return { d: Math.hypot(dx, dy), a: Math.atan2(dy, dx) }; }
@@ -914,7 +1015,7 @@ function avancerSaut(dt) {
     if (SAUT.murets || NUIT ? libreSaut(nx, ny) : libre(nx, ny)) { h.x = nx; h.y = ny; S.fait += pas; } else S.bloque = true;
   }
   if (!S.pose && tc >= SAUT.air[1]) {   // les pieds touchent le sol : il repart aussitôt (le pouce poussé : il court ; lâché : un petit pas d'élan, puis il s'arrête)
-    S.pose = true; atterrir(); if (NUIT && !libre(h.x, h.y)) horsDuTrou();
+    S.pose = true; atterrir(); if (PEINT && !libre(h.x, h.y)) horsDuTrou();
     loco.v = Math.max(loco.v, SAUT.elan); loco.allure = 'course'; loco.course = 1; loco.marche = 0; loco.garde = 0;
   }
   if (tc >= SAUT.fin) h.saut = null;
@@ -939,7 +1040,7 @@ const poussieres = [];
 function poussiere(x, y, a) {
   for (let i = 0; i < 7; i++) {
     const sp = sprite(T_LUEUR.poussiere, 0.25, false); const ox = (Math.random() - 0.5) * 0.5, oy = (Math.random() - 0.5) * 0.4;
-    if (NUIT) sp.material.color.setHex(0x8f8696);   // (la nuit : une poussière grise, pas des boules blanches)
+    if (PEINT) sp.material.color.setHex(0x8f8696);   // (la nuit : une poussière grise, pas des boules blanches)
     sp.position.copy(G(x + ox, y + oy, 0.12)); monde.add(sp);
     poussieres.push({ sp, x: x + ox, y: y + oy, vx: Math.cos(a) * (0.8 + Math.random()) + (Math.random() - 0.5), vy: Math.sin(a) * (0.8 + Math.random()) + (Math.random() - 0.5), t: 0 });
   }
@@ -980,7 +1081,9 @@ $('pOmbre').addEventListener('pointerdown', e => { e.preventDefault(); basculerO
 if (PIST) addEventListener('keydown', e => { if (e.key === 'j' || e.key === 'J') frapper('dague'); if (e.key === 'k' || e.key === 'K') frapper('assomme'); if (e.key === 'l' || e.key === 'L') basculerOmbre(); });
 
 /* ---------- où on peut marcher (comme les règles du jeu) ---------- */
-function libre(x, y) { if (NUIT) return caseDe(GR.libre, x, y) === 1 && !dansCrevasse(x, y, 0.25) && !contreCristal(x, y); return libreSans(x, y) && !dansMuret(x, y) && !(PIST && Math.hypot(x - MANNEQUIN.x, y - MANNEQUIN.y) < MANNEQUIN.r + 0.3); }   // (les murets et le mannequin bloquent la marche, pas le saut)
+function libre(x, y) { if (NUIT) return caseDe(GR.libre, x, y) === 1 && !dansCrevasse(x, y, 0.25) && !contreCristal(x, y);
+  if (PIST && PEINT) return caseDe(GR.libre, x, y) === 1 && caseDe(GR.muret, x, y) === 0 && Math.hypot(x - MANNEQUIN.x, y - MANNEQUIN.y) >= MANNEQUIN.r + 0.3;   // (les murets et le mannequin bloquent la marche, pas le saut)
+  return libreSans(x, y) && !dansMuret(x, y) && !(PIST && Math.hypot(x - MANNEQUIN.x, y - MANNEQUIN.y) < MANNEQUIN.r + 0.3); }   // (les murets et le mannequin bloquent la marche, pas le saut)
 function libreSans(x, y) {
   const r = 0.35, c = L.coin + r * Math.SQRT2;
   if (x < r || x > L.L - r || y < r || y > L.P - r || x + y < c || L.L - x + y < c) return false;
@@ -990,8 +1093,8 @@ function libreSans(x, y) {
 }
 
 /* ---------- la nuit : les cases du sol (0,2 pas), les crevasses, la caméra qui suit ---------- */
-const GR = NUIT ? (() => { const g = NJ.grille, dec = b => { const t = atob(b), u = new Uint8Array(g.nx * g.ny); for (let i = 0; i < u.length; i++) u[i] = (t.charCodeAt(i >> 3) >> (7 - (i & 7))) & 1; return u; };
-  return { pas: g.pas, nx: g.nx, ny: g.ny, x0: g.x0 || 0, libre: dec(g.libre), crev: dec(g.crevasse) }; })() : null;   // (x0 : la grille commence à x = −3, pour passer à gauche de la lanterne gauche)
+const GR = PEINT ? (() => { const g = PJ.grille, dec = b => { const t = atob(b), u = new Uint8Array(g.nx * g.ny); for (let i = 0; i < u.length; i++) u[i] = (t.charCodeAt(i >> 3) >> (7 - (i & 7))) & 1; return u; };
+  return { pas: g.pas, nx: g.nx, ny: g.ny, x0: g.x0 || 0, libre: dec(g.libre), crev: g.crevasse ? dec(g.crevasse) : null, muret: g.muret ? dec(g.muret) : null }; })() : null;   // (x0 : la grille de la nuit commence à x = −3, pour passer à gauche de la lanterne gauche ; muret : la salle du Pisteur)
 function caseDe(A, x, y) { const i = Math.floor((x - GR.x0) / GR.pas), j = Math.floor(y / GR.pas); return i >= 0 && j >= 0 && i < GR.nx && j < GR.ny ? A[j * GR.nx + i] : 0; }
 const crev = { ouvert: false, t: -1, cases: [], lum: [] };
 function dansCrevasse(x, y, r) {
@@ -1043,6 +1146,53 @@ function cameraNuit(dt) {
   rendu.getDrawingBufferSize(_ecran); for (const P of piliers) P.m.uniforms.ecran.value.copy(_ecran);
 }
 const _ecran = new THREE.Vector2();
+/* ---------- la salle du Pisteur : la caméra qui le suit, les lumières qui vivent, les portes des renforts ---------- */
+function cameraSalle(dt) {
+  const A = innerWidth / innerHeight, pied = imgDe(h.x, h.y, 0);
+  let Hw = 1250 / (window.__zoom || 1), Ww = Hw * A;
+  if (Ww < 1500 / (window.__zoom || 1)) { Ww = 1500 / (window.__zoom || 1); Hw = Ww / A; }   // (un écran étroit : assez de largeur pour voir autour de lui)
+  if (Ww > IMW) { Ww = IMW; Hw = Ww / A; }
+  const x0 = Ww >= IMW ? (IMW - Ww) / 2 : clamp(pied.u - Ww / 2, 0, IMW - Ww);
+  const y0 = Hw >= IMH - 120 ? (IMH - 60 - Hw) / 2 + 30 : clamp(pied.v - 0.6 * Hw, 60, IMH - Hw);   // (il est un peu sous le milieu : on voit plus loin devant lui, vers le fond)
+  const k = cameraSalle.vu ? Math.min(1, dt * 4) : 1; cameraSalle.vu = 1;
+  fen.cx = (fen.cx === undefined ? x0 : fen.cx + (x0 - fen.cx) * k); fen.cy = (fen.cy === undefined ? y0 : fen.cy + (y0 - fen.cy) * k); fen.H = (fen.H === undefined ? Hw : fen.H + (Hw - fen.H) * k);
+  fen.x0 = fen.cx; fen.y0 = fen.cy; fen.x1 = fen.x0 + fen.H * A; fen.y1 = fen.y0 + fen.H;
+  cadrerNuit(); fondMat.uniforms.fen.value.set(fen.x0, fen.y0, fen.x1, fen.y1);
+}
+/* les renforts (comme dans le combat du Pisteur, § 17) : la porte s'allume en rouge pendant 2 s, puis s'ouvre ; la bande sortira de là.
+   Pour l'essai : le bouton « 🚪 Renforts » (ou la touche P), une porte après l'autre. */
+let prochainePorte = 0;
+function renforts(i) {
+  if (!(PIST && PEINT)) return; const P = salle.portes[i === undefined ? prochainePorte : i]; if (!P || P.t >= 0) return;
+  P.t = 0; prochainePorte = 1 - salle.portes.indexOf(P);
+}
+function avancerSalle(dt, t) {
+  if (h.pousse) { const dx = h.pousse.x - h.x, dy = h.pousse.y - h.y, dd = Math.hypot(dx, dy), v = 7 * dt; if (dd <= v) { h.x = h.pousse.x; h.y = h.pousse.y; h.pousse = null; } else { h.x += dx / dd * v; h.y += dy / dd * v; } }
+  for (const S of salle.lum) {   // les cristaux respirent un peu, les flammes vacillent
+    const n = S.L.nom, feu = n.startsWith('torche') || n.startsWith('bougie');
+    const k = feu ? 0.86 + 0.1 * Math.sin(t * 9 + S.L.x) + 0.05 * Math.sin(t * 23 + S.L.y) : 0.93 + 0.07 * Math.sin(t * 1.3 + S.L.x * 0.7);
+    S.l.intensity = S.I * k; if (S.pt) S.pt.intensity = S.Ip * k;
+  }
+  for (const O of salle.ombres) {   // (son ombre ne se voit que près de la lumière ; le cône suit le Pisteur : une ombre nette, jamais coupée)
+    const d = Math.hypot(h.x - O.x, h.y - O.y); O.l.shadow.intensity = clamp(1.7 - d / 5.2, 0, 1);
+    O.l.target.position.copy(G(h.x, h.y, 0.6)); O.l.target.updateMatrixWorld();
+    O.l.angle = clamp(Math.atan2(d + 2.4, Math.max(0.5, O.z - 0.6)) - Math.atan2(Math.max(0, d - 2.4), Math.max(0.5, O.z - 0.6)), 0.35, 1.2) / 2 + 0.08;
+  }
+  const e = fondMat.uniforms.etat.value; fondMat.uniforms.temps.value = t;
+  salle.portes.forEach((P, i) => {
+    let ouv = 0, al = 0;
+    if (P.t >= 0) {
+      P.t += dt; const u = P.t;
+      al = u < 2 ? doux(u / 0.3) : u < 5.5 ? 1 - 0.6 * doux((u - 2.5) / 3) : 0.4 * (1 - doux((u - 5.5) / 0.6));
+      ouv = u < 2 ? 0 : u < 2.5 ? doux((u - 2) / 0.5) : u < 5.5 ? 1 : 1 - doux((u - 5.5) / 0.6);
+      if (u > 6.1) P.t = -1;
+    }
+    if (i === 0) { e.x = ouv; e.z = al; } else { e.y = ouv; e.w = al; }
+    P.l.intensity = 34 * al * (0.8 + 0.2 * Math.sin(t * 9)) + 12 * ouv;
+  });
+}
+if ($('bPortes')) $('bPortes').addEventListener('click', e => { e.preventDefault(); renforts(); });
+if (PIST) addEventListener('keydown', e => { if (e.key === 'p' || e.key === 'P') renforts(); });
 /* ================= L'ARMURE DE GROSBEC, EN 3D (28 novembre ; Romain : la plus massive, 3,5 m, sur le seuil du temple) =================
    Le modèle Higgsfield (Meshy, d'après sa planche : origine/armure-base.glb), articulé, avec son mouvement d'attente (ralenti : il est lourd).
    - ses trois lanternes (les deux des épaules, celle de la poitrine) : une vraie lampe dans chacune, qui suit ses os, éclaire son armure,
@@ -1401,7 +1551,7 @@ function avancerVague(dt, t) {
 }
 
 /* ---------- la boucle ---------- */
-const attendu = new Set(NUIT ? ['fond', 'crev', 'crevA', 'feu', 'arrivee', 'pilier-g', 'pilier-d', 'barde', 'armure'] : ['fond', 'prof', 'barde']); let demarre = false;
+const attendu = new Set(NUIT ? ['fond', 'crev', 'crevA', 'feu', 'arrivee', 'pilier-g', 'pilier-d', 'barde', 'armure'] : PIST && PEINT ? ['fond', 'prof', 'portes', 'barde'] : ['fond', 'prof', 'barde']); let demarre = false;
 function pret(n) { attendu.delete(n); if (!attendu.size && !demarre) { demarre = true; $('charge').style.display = 'none'; } }
 let avant = performance.now(), ips = 60, nImg = 0, t0 = avant;
 let tSim = 0;
@@ -1463,6 +1613,7 @@ function etape(dt, t) {
     L.l.shadow.intensity = clamp(1.5 - Math.hypot(h.x - L.x, h.y - L.y) / 5, 0, 1);
   }
   for (const P of piliers) P.halo.material.opacity = 0.16 + 0.05 * Math.sin(t * 9 + P.x) + 0.03 * Math.sin(t * 21);
+  if (PIST && PEINT) { avancerSalle(dt, t); cameraSalle(dt); return; }
   if (NUIT) { cameraNuit(dt); return; }
   /* la caméra suit le héros (comme dans le jeu) */
   const hx = px(h.x), hy = py(h.y, 0);
@@ -1482,4 +1633,4 @@ function poser(nom, t) {   // (essai) un seul mouvement, à un instant donné
   for (const n in actions) { actions[n].play(); actions[n].setEffectiveWeight(n === nom ? 1 : 0); actions[n].timeScale = 0; }
   actions[nom].time = t; melangeur.update(0); MOD.updateMatrixWorld(true); const r = piedsModele(); for (const n of ['LeftUpLeg', 'LeftLeg', 'Hips']) { const o = MOD.getObjectByName(n); r[n + '_q'] = o.quaternion.toArray(); r[n + '_p'] = o.position.toArray(); } r.pistes = actions[nom].getClip().tracks.slice(0, 6).map(k => k.name); r.nbPistes = actions[nom].getClip().tracks.length; r.duree = actions[nom].getClip().duration; return r;
 }
-window.__essai = { armure, parleGrosbec, solOmbre, osM: noms => { const r = {}; for (const n of noms) { const o = MOD.getObjectByName(n); if (!o) continue; o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); MOD.worldToLocal(v); r[n] = [v.x, v.y, v.z]; } return r; }, frapper, basculerOmbre, mq, MURETS, COUPS, sauter, SAUT, get tirs() { return tirs.map(s => ({ x: s.x, y: s.y, z: s.z, q: s.q })); }, ecran: (x, y, z) => { if (NUIT) { cam.updateMatrixWorld(); const v = G(x, y, z).project(cam); return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; } return { x: (px(x) - camX) * innerWidth / Ws, y: (py(y, z) - camY) * innerHeight / Hs }; }, fissurer, lancerVague, get vague() { return vg; }, video: () => videoEl ? [videoEl.currentSrc.split('/').pop(), videoEl.readyState, videoEl.paused, videoEl.currentTime] : null, cristaux: () => vg.actifs.map(c => ({ i: c.i, x: c.S.x, y: c.S.y, etat: c.etat })), arriveFeu, abrite: () => abrite(h.x, h.y), imgDe, solImg, fen, crev, NJ, libre, dansCrevasse, nuit, piliers, poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };
+window.__essai = { THREE, armure, parleGrosbec, solOmbre, osM: noms => { const r = {}; for (const n of noms) { const o = MOD.getObjectByName(n); if (!o) continue; o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); MOD.worldToLocal(v); r[n] = [v.x, v.y, v.z]; } return r; }, frapper, basculerOmbre, mq, MURETS, COUPS, sauter, SAUT, get tirs() { return tirs.map(s => ({ x: s.x, y: s.y, z: s.z, q: s.q })); }, ecran: (x, y, z) => { if (PEINT) { cam.updateMatrixWorld(); const v = G(x, y, z).project(cam); return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; } return { x: (px(x) - camX) * innerWidth / Ws, y: (py(y, z) - camY) * innerHeight / Hs }; }, fissurer, lancerVague, renforts, salle, SJ, fondMat, get vague() { return vg; }, video: () => videoEl ? [videoEl.currentSrc.split('/').pop(), videoEl.readyState, videoEl.paused, videoEl.currentTime] : null, cristaux: () => vg.actifs.map(c => ({ i: c.i, x: c.S.x, y: c.S.y, etat: c.etat })), arriveFeu, abrite: () => abrite(h.x, h.y), imgDe, solImg, fen, crev, NJ, libre, dansCrevasse, nuit, piliers, poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };

@@ -1,4 +1,4 @@
-# Essai en vraie 3D — le Barde sur la place de nuit, le Pisteur dans la salle de l'armure (27 novembre)
+# Essai en vraie 3D — le Barde sur la place de nuit, le Pisteur dans sa salle de la phase 1 (27-28 novembre)
 
 Pourquoi : Romain trouve les combats « bricolés » sur grand écran (fond flou, héros en image
 plate qui ne prend pas la lumière, trop peu de poses). Cet essai teste une autre façon de faire,
@@ -15,8 +15,8 @@ plate qui ne prend pas la lumière, trop peu de poses). Cet essai teste une autr
 Rien de tout ça n'est dans le jeu. C'est un essai, à montrer à Romain, sans « go » pour la suite.
 
 **En ligne (page Claude, hors du jeu)** : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP
-(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795839675-8787` depuis les ombres des lanternes en fondu et le passage à gauche de la lanterne gauche, 28 novembre 5 h 21). Pour republier : `publish_files` des fichiers
-de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json dont `armure.json` et `armure-parle.json`, et le dossier `nuit/` : fond.jpg, crev.jpg, crev-a.png, pilier-g.png, pilier-d.png, feu.jpg, arrivee.png, vague.mp4, vague.webm, et `nuit/cr/` : c, m, e, k de 00 à 19), `base_version` = la version en ligne. Les fichiers doivent être copiés sous `/home/claude` (l'outil refuse `/tmp`).
+(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795843023-8369` depuis la salle du Pisteur, 28 novembre 6 h 17 ; avant : `1795842004-19aa`, l'armure). **⚠️ Deux conversations ont publié cette page le même matin : avant de republier, `get_artifact` + `list_files`, et partir des sources de GitHub les plus récentes (sinon on efface le travail de l'autre).** Pour republier : `publish_files` des fichiers
+de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json dont `armure.json` et `armure-parle.json`, le dossier `pisteur/` : fond.jpg, prof.png, portes.png, et le dossier `nuit/` : fond.jpg, crev.jpg, crev-a.png, pilier-g.png, pilier-d.png, feu.jpg, arrivee.png, vague.mp4, vague.webm, et `nuit/cr/` : c, m, e, k de 00 à 19), `base_version` = la version en ligne. Les fichiers doivent être copiés sous `/home/claude` (l'outil refuse `/tmp`).
 **Piège de la page Claude** (vu par Romain : un ⚠ à la place du jeu) : elle ne sert pas les `.glb`, et
 elle interdit à la page de « télécharger » une adresse `data:` (fetch). Un glTF avec ses données en
 `data:` ne se charge donc pas. Solution : chaque `.glb` est rangé tel quel en base64 dans un `.json`
@@ -572,6 +572,69 @@ lanternes de son épaule, on dirait qu'elles sont éteintes »**.
   `captures/armure-pieds-au-sol-lanternes-blanches.jpg`.
 - **Puis, 6 h (version `1795842004-19aa`), Romain : « j'ai un peu exagéré, baisse de moitié »** : le verre, les lampes (16 → 8) et la
   lueur (opacité 1 → 0,5) des épaules, tous moitié moins forts. Elles restent nettement allumées, mais n'éblouissent plus.
+
+## La salle du Pisteur (phase 1), peinte par Romain, de nuit (28 novembre, en ligne à 6 h 17, version `1795843023-8369` ; go de Romain à 5 h 10 et 5 h 38 : « Vas-y, occupe-toi d'améliorer l'image… », puis « après je te laisse mettre le Pisteur en 3D dessus ») 
+
+**Le Pisteur ne joue plus dans la salle de l'armure : il joue dans sa salle de la phase 1**, une salle de marbre blanc et d'or
+peinte par Romain avec Higgsfield, retouchée par Claude, de nuit. Le Barde ne change pas (place de nuit, armure).
+
+**L'image** (`origine/salle-pisteur/`, **pas sur GitHub** : trop lourdes, et l'envoi des images de Romain a été refusé par le garde-fou ;
+Romain les a, et les jobs Higgsfield sont notés plus bas) :
+- `romain-salle-pisteur.png` : l'image de Romain (4384 × 1872), d'après la salle du jeu en 2D qu'on lui avait sortie ;
+- `jour.png` : la même, retouchée par morceaux (Nano Banana 2.1 en retouche par masque, `is_inpaint`, puis recalée au pixel près
+  par SIFT et recollée seulement dans le masque) : gravats devant la porte enlevés ; les deux bancs → deux grands pans de mur
+  en ruine (plus hauts qu'un homme : on se cache derrière) ; les deux blocs → deux murets à hauteur de taille (on les saute) ;
+  tonneaux plus gros, le seau → un tonneau ; l'autel à l'œuf de cristal enlevé (reste le médaillon au sol, l'étoile d'or) ;
+  caisses plus grosses ; les deux piliers de devant redressés en vrai marbre (celui de droite avait un « fantôme ») ;
+  des portes en bois sombre et or dans les deux arches. Jobs : `d8ce9f03…` (murets, tonneaux, gravats), `84313237…`
+  (autel, caisses), `fc63d68d…` et `2d16ac54…` (piliers), `3f29f826…` (portes ; `c767bd6c…` : la variante en marbre blanc
+  au soleil d'or, non retenue). **27 crédits** en tout pour l'image (avec les essais).
+- `nuit1/2/3.png` : la même salle **de nuit**, éclairée par les cristaux (Romain, 5 h 49 : « trop éclairé », « plus de couleur ») :
+  Nano Banana 2.1 en 4k sur l'image entière (« ne change que la lumière »), recalée par homographie (écart médian < 1 px).
+  **La 2 est celle du jeu** (la plus colorée : des flaques turquoise et violettes au pied des piliers) ; 1 = plus chaude, 3 = bleu
+  nuit. Jobs `64cc8958…` (1), `e6cd3922…` (2), `2356e930…` (3) ; 9 crédits. `portes-masque.png` : le dessin des deux portes.
+
+**La caméra** (`outils/salle-pisteur/camera.py`) : la peinture a ses verticales bien verticales et son sol qui fuit : c'est une
+caméra **horizontale décentrée** (comme un objectif à décentrement ; `phi = 0` dans le code de la nuit, qui sait déjà faire).
+Point de fuite (2180, −2996) : les deux bords du tapis ; F = 7467 px : l'ellipse du médaillon ; hauteur 33 pas : choisie pour le
+héros (≈ 210 px au premier rang de piliers ; portes = 2 héros, pans de mur = 1,5, murets = 0,5). La salle fait **25 pas sur 14,5**
+(le jeu en 2D : 26 × 18) ; les piliers tombent presque aux places du jeu (x 6,3 / 18,5 à y 13,7 ; x 5,8 / 19,3 à y 6).
+
+**Les objets** (`outils/salle-pisteur/objets.py`, mesurés à la main) : pour chacun, sa boîte, la ligne de son pied, ses bords,
+son épaisseur ; `muret: True` pour les deux murets. `decoupes.py` : la découpe de chacun (rembg, modèle isnet, seuil bas pour le
+marbre sur le marbre ; socles des piliers du fond ajoutés à la main, chariot dessiné à la main) et le muret de devant (tout ce
+qui est sous la ligne 1545, plus les chapeaux dorés et les torches). `generer.py [nuit2]` fabrique `site/pisteur/` :
+- `fond.jpg` : la peinture de nuit (4096 px) ;
+- `prof.png` (2192 × 936) : **la profondeur des objets** (16 bits, rouge = poids fort, vert = poids faible, 0 = le sol) ; le fond
+  l'écrit dans le tampon de profondeur (`gl_FragDepth`, la formule de la perspective, `dp` = d0, d1, near, far) : **le Pisteur
+  est caché pixel par pixel** par ce qui est devant lui ; un objet a la profondeur de son pied (les ronds : leur centre) ;
+- `portes.png` : le dessin des portes (pour les ouvrir) ;
+- `salle.json` (rangé dans `essai3d.js`) : la caméra, les cases du sol (0,2 pas : `libre`, `muret`), les emprises, les
+  lumières, les portes, le mannequin (sur le médaillon), le départ.
+Refaire : `cd outils/salle-pisteur && python3 decoupes.py && python3 generer.py nuit2`, puis reconstruire `essai3d.js`
+(`cd outils && NODE_PATH=$PWD/node_modules npx esbuild ../src/main.js --bundle --format=iife --minify --outfile=../site/essai3d.js`).
+
+**Le code** (`src/main.js`) : `PEINT` (les deux héros jouent sur une peinture), `PJ` (la peinture du héros choisi : `NJ` ou `SJ`) ;
+le fond du Pisteur (`fondMat`, branche `PIST`) ; ses lumières (`salle`) : sur chaque pilier, une lumière qui tombe du cristal
+(de sa couleur, **avec ombre**) et une plus douce à mi-hauteur ; les fontaines de cristal, les deux torches (orange, avec
+ombre), les torchères, les bougies, les appliques, les cristaux des murs ; **l'ombre du Pisteur ne se voit que près d'une
+lumière** (`shadow.intensity` selon la distance) ; les cristaux respirent, les flammes vacillent (`avancerSalle`) ; la caméra
+le suit (`cameraSalle`) ; on marche sur `libre` hors `muret`, on saute par-dessus les murets (`libreSaut`), jamais à travers
+un pan de mur ; **les renforts** (`renforts()`, bouton « 🚪 Renforts » ou touche P) : la porte et son cristal s'allument en rouge
+2 s (une vraie lumière rouge éclaire le Pisteur), puis elle s'ouvre sur le noir du couloir (une lueur rouge au fond) 3 s, puis
+se referme.
+
+**Vérifié** : `outils/essai_salle_p.py` (derrière / devant chaque obstacle, près des cristaux, les portes), un essai des
+déplacements (arrêt devant un pan de mur, saut d'un muret, bords de la salle), WebKit (le moteur de l'iPhone) pour les deux
+héros. **Pas vérifié : un vrai appareil** (26 lumières, dont 6 avec ombre : à surveiller sur une vieille tablette).
+
+**⚠️ Fusion** : pendant ce travail, une autre conversation a mis l'armure de Grosbec sur la place de nuit (commits jusqu'à
+`ae03567`, page `1795842004-19aa`) ; ce travail a été **refait par-dessus** (conflits résolus à la main : la grille `GR` garde
+`x0` de la nuit et prend `muret` ; `attendu` garde `armure`). La page en ligne a les deux.
+
+**Pas fait** : les golems dans cette salle (il n'y a que le mannequin) ; la sortie des bandes par les portes ; la fin des vagues
+(§ 18.24 : les portes s'ouvrent et le Pisteur arrive dans le dos de l'armure) ; l'écran debout (la page demande de tourner le
+téléphone) ; la version de jour (`jour.png`) n'est pas branchée.
 
 ## Ce qui n'est pas fait
 
