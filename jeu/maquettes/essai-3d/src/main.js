@@ -1070,27 +1070,30 @@ if (NUIT) {
       const l = new THREE.PointLight(coul, I, dist, 1.6); monde.add(l); armure.lampes.push(l); armure.os.push([o, loc]);
       const hl = sprite(texLueur('rgba(255,200,110,.85)'), 0.6, true); monde.add(hl); armure.halos.push(hl);
     }
-    if (g.animations.length) {   // (son « Idle » regarde partout et tourne tout le corps : on garde le souffle, il reste tourné vers les héros)
-      const clip = g.animations[0], q = new THREE.Quaternion(), tw = new THREE.Quaternion(), id = new THREE.Quaternion();
-      for (const k of clip.tracks) {
-        const [n, p] = k.name.split('.'); if (p !== 'quaternion' || (n !== 'Hips' && n !== 'Head')) continue;
-        const v = k.values;
-        for (let i = 0; i < v.length; i += 4) {
-          q.fromArray(v, i); tw.set(0, q.y, 0, q.w).normalize();   // la torsion autour de la verticale
-          const sw = q.clone().multiply(tw.clone().invert());          // le reste (pencher, respirer)
-          sw.multiply(id.clone().slerp(tw, n === 'Head' ? 0.35 : 0)).toArray(v, i);
-        }
-      }
-      armure.mix = new THREE.AnimationMixer(m); const a = armure.mix.clipAction(clip); a.timeScale = 0.6; a.play();
+    if (g.animations.length) {   // son attente (Idle_02, choisi par Romain), ralentie : il est lourd ; elle le tourne d'environ 25° : on le remet face aux héros
+      armure.mix = new THREE.AnimationMixer(m); const a = armure.mix.clipAction(g.animations[0]); a.timeScale = 0.7; a.play(); armure.attente = a;
+      const k = g.animations[0].tracks.find(k => k.name === 'Hips.quaternion');
+      if (k) { let y = 0, w = 0; for (let i = 0; i < k.values.length; i += 4) { y += k.values[i + 1]; w += k.values[i + 3]; } m.rotation.y = -2 * Math.atan2(y, w); }
     }
+    armure.bras = [['LeftArm', 'LeftForeArm'], ['RightArm', 'RightForeArm']].map(([a, b]) => [m.getObjectByName(a), m.getObjectByName(b)]).filter(([a, b]) => a && b);
+    // il parle (Stand_Talking_Angry, ralenti de moitié : de grands gestes lourds) : le bouton « 🗣 Grosbec » de l'essai
+    charger('armure-parle.json', p => { if (p.animations[0] && armure.mix) { const c = THREE.AnimationUtils.subclip(p.animations[0], 'parle', 0, 180, 30); c.tracks = c.tracks.filter(t => !t.name.startsWith('Hips.position'));   // (son film dure 21 s : on garde les 6 premières, environ 11 s à l'écran)
+ armure.parle = armure.mix.clipAction(c); armure.parle.setLoop(THREE.LoopOnce, 1); armure.parle.clampWhenFinished = false; armure.parle.timeScale = 0.55; } }, e => console.error(e));
     pret('armure');
   }, e => { console.error(e); pret('armure'); });
 }
-const _va = new THREE.Vector3();
+const _va = new THREE.Vector3(), _b1 = new THREE.Vector3(), _b2 = new THREE.Vector3(), _d1 = new THREE.Vector3(), _d2 = new THREE.Vector3(), _bas = new THREE.Vector3(0, 0, -1), _qw = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _qp = new THREE.Quaternion();
+function parleGrosbec() { if (!armure.parle) return; armure.parle.reset().setEffectiveWeight(1).fadeIn(0.4).play(); armure.attente.fadeOut(0.4); setTimeout(() => { armure.attente.reset().fadeIn(0.6).play(); armure.parle.fadeOut(0.6); }, armure.parle.getClip().duration / armure.parle.timeScale * 1000 - 600); }
+if ($('bParle')) $('bParle').addEventListener('click', e => { e.preventDefault(); parleGrosbec(); });
 function avancerArmure(dt, t) {
   if (!armure.m) return;
   if (armure.mix) armure.mix.update(dt);
   armure.m.updateMatrixWorld(true);
+  if (armure.bras && !(armure.parle && armure.parle.isRunning())) for (const [bras, avant] of armure.bras) {   // les bras redescendent d'un tiers vers le bas (Romain : « comme s'il tenait quelque chose »)
+    bras.getWorldPosition(_b1); avant.getWorldPosition(_b2); _d1.subVectors(_b2, _b1).normalize(); _d2.copy(_d1).lerp(_bas, 0.4).normalize();
+    _qw.setFromUnitVectors(_d1, _d2); bras.getWorldQuaternion(_qb); bras.parent.getWorldQuaternion(_qp);
+    bras.quaternion.copy(_qp.invert().multiply(_qw.multiply(_qb))); bras.updateMatrixWorld(true);
+  }
   armure.os.forEach(([o, loc], i) => { o.localToWorld(_va.copy(loc)); monde.worldToLocal(_va); armure.lampes[i].position.copy(_va); armure.halos[i].position.copy(_va);
     const f = 0.92 + 0.08 * Math.sin(t * (5.1 + i) + i * 2) * Math.sin(t * 2.3 + i); armure.lampes[i].intensity = (i === 2 ? 4.5 : 3.5) * f; armure.halos[i].material.opacity = 0.55 * f; });
   armure.lueurSol.material.opacity = 0.85 + 0.15 * Math.sin(t * 2.3);
@@ -1413,4 +1416,4 @@ function poser(nom, t) {   // (essai) un seul mouvement, à un instant donné
   for (const n in actions) { actions[n].play(); actions[n].setEffectiveWeight(n === nom ? 1 : 0); actions[n].timeScale = 0; }
   actions[nom].time = t; melangeur.update(0); MOD.updateMatrixWorld(true); const r = piedsModele(); for (const n of ['LeftUpLeg', 'LeftLeg', 'Hips']) { const o = MOD.getObjectByName(n); r[n + '_q'] = o.quaternion.toArray(); r[n + '_p'] = o.position.toArray(); } r.pistes = actions[nom].getClip().tracks.slice(0, 6).map(k => k.name); r.nbPistes = actions[nom].getClip().tracks.length; r.duree = actions[nom].getClip().duration; return r;
 }
-window.__essai = { armure, osM: noms => { const r = {}; for (const n of noms) { const o = MOD.getObjectByName(n); if (!o) continue; o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); MOD.worldToLocal(v); r[n] = [v.x, v.y, v.z]; } return r; }, frapper, basculerOmbre, mq, MURETS, COUPS, sauter, SAUT, get tirs() { return tirs.map(s => ({ x: s.x, y: s.y, z: s.z, q: s.q })); }, ecran: (x, y, z) => { if (NUIT) { cam.updateMatrixWorld(); const v = G(x, y, z).project(cam); return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; } return { x: (px(x) - camX) * innerWidth / Ws, y: (py(y, z) - camY) * innerHeight / Hs }; }, fissurer, lancerVague, get vague() { return vg; }, video: () => videoEl ? [videoEl.currentSrc.split('/').pop(), videoEl.readyState, videoEl.paused, videoEl.currentTime] : null, cristaux: () => vg.actifs.map(c => ({ i: c.i, x: c.S.x, y: c.S.y, etat: c.etat })), arriveFeu, abrite: () => abrite(h.x, h.y), imgDe, solImg, fen, crev, NJ, libre, dansCrevasse, nuit, piliers, poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };
+window.__essai = { armure, parleGrosbec, osM: noms => { const r = {}; for (const n of noms) { const o = MOD.getObjectByName(n); if (!o) continue; o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); MOD.worldToLocal(v); r[n] = [v.x, v.y, v.z]; } return r; }, frapper, basculerOmbre, mq, MURETS, COUPS, sauter, SAUT, get tirs() { return tirs.map(s => ({ x: s.x, y: s.y, z: s.z, q: s.q })); }, ecran: (x, y, z) => { if (NUIT) { cam.updateMatrixWorld(); const v = G(x, y, z).project(cam); return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; } return { x: (px(x) - camX) * innerWidth / Ws, y: (py(y, z) - camY) * innerHeight / Hs }; }, fissurer, lancerVague, get vague() { return vg; }, video: () => videoEl ? [videoEl.currentSrc.split('/').pop(), videoEl.readyState, videoEl.paused, videoEl.currentTime] : null, cristaux: () => vg.actifs.map(c => ({ i: c.i, x: c.S.x, y: c.S.y, etat: c.etat })), arriveFeu, abrite: () => abrite(h.x, h.y), imgDe, solImg, fen, crev, NJ, libre, dansCrevasse, nuit, piliers, poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };

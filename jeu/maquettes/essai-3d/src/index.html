@@ -32,7 +32,8 @@ html,body{margin:0;height:100%;background:#030406;overflow:hidden;touch-action:n
 #bFissure{position:fixed;right:calc(104px + env(safe-area-inset-right));top:8px;z-index:6;background:rgba(10,16,30,.55);color:#f3e6c4;border:1px solid rgba(190,140,255,.6);border-radius:12px;padding:6px 10px;font-size:.95rem}
 #bFissure.fait,#bVague.fait{opacity:.35;pointer-events:none}
 #bVague{position:fixed;right:calc(232px + env(safe-area-inset-right));top:8px;z-index:6;background:rgba(10,16,30,.55);color:#f3e6c4;border:1px solid rgba(255,140,60,.7);border-radius:12px;padding:6px 10px;font-size:.95rem}
-body:not(.barde) #bFissure,body:not(.barde) #bVague{display:none}
+#bParle{position:fixed;right:calc(350px + env(safe-area-inset-right));top:8px;z-index:6;background:rgba(10,16,30,.55);color:#f3e6c4;border:1px solid rgba(255,210,120,.7);border-radius:12px;padding:6px 10px;font-size:.95rem}
+body:not(.barde) #bFissure,body:not(.barde) #bVague,body:not(.barde) #bParle{display:none}
 #rouge{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:0;background:radial-gradient(ellipse at 50% 50%,rgba(255,40,0,0) 40%,rgba(255,40,0,.55) 100%)}
 #autre{position:fixed;right:calc(10px + env(safe-area-inset-right));top:8px;z-index:6;background:rgba(10,16,30,.55);color:#f3e6c4;border:1px solid rgba(243,212,138,.45);border-radius:12px;padding:6px 10px;font-size:.95rem}
 body.barde .p,body.pisteur .b{display:none}
@@ -65,6 +66,7 @@ body.ombre #voile{opacity:1}
 <button id="autre">↺ héros</button>
 <button id="bFissure">⚡ Fissures</button>
 <button id="bVague" class="fait">🔥 Vague</button>
+<button id="bParle">🗣 Grosbec</button>
 <div id="rouge"></div>
 <div id="ips"></div>
 <div id="charge" style="display:none"><i></i></div>

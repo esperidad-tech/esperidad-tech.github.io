@@ -15,8 +15,8 @@ plate qui ne prend pas la lumière, trop peu de poses). Cet essai teste une autr
 Rien de tout ça n'est dans le jeu. C'est un essai, à montrer à Romain, sans « go » pour la suite.
 
 **En ligne (page Claude, hors du jeu)** : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP
-(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795835524-6ca1` depuis l'armure de Grosbec en 3D, 28 novembre 4 h 12). Pour republier : `publish_files` des fichiers
-de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json dont `armure.json`, et le dossier `nuit/` : fond.jpg, crev.jpg, crev-a.png, pilier-g.png, pilier-d.png, feu.jpg, arrivee.png, vague.mp4, vague.webm, et `nuit/cr/` : c, m, e, k de 00 à 19), `base_version` = la version en ligne. Les fichiers doivent être copiés sous `/home/claude` (l'outil refuse `/tmp`).
+(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795837340-bbec` depuis l'armure refaite (bec), son attente Idle 02 et « Grosbec parle », 28 novembre 4 h 43). Pour republier : `publish_files` des fichiers
+de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json dont `armure.json` et `armure-parle.json`, et le dossier `nuit/` : fond.jpg, crev.jpg, crev-a.png, pilier-g.png, pilier-d.png, feu.jpg, arrivee.png, vague.mp4, vague.webm, et `nuit/cr/` : c, m, e, k de 00 à 19), `base_version` = la version en ligne. Les fichiers doivent être copiés sous `/home/claude` (l'outil refuse `/tmp`).
 **Piège de la page Claude** (vu par Romain : un ⚠ à la place du jeu) : elle ne sert pas les `.glb`, et
 elle interdit à la page de « télécharger » une adresse `data:` (fetch). Un glTF avec ses données en
 `data:` ne se charge donc pas. Solution : chaque `.glb` est rangé tel quel en base64 dans un `.json`
@@ -467,6 +467,24 @@ plus de cristaux 3D, de fissures dessinées, de rouge ajouté ni de mur de flamm
   (`essai_vague3.py`), WebKit avec la règle de sécurité du téléphone (`essai_webkit_armure.py`, `captures/webkit-armure.jpg`).
 - **Pas fait** : ses mouvements (le coup de poing au sol, le lancer de la vague, le coup reçu : à choisir avec Romain, 8 crédits
   chacun) ; les sorts du Barde touchent sa poitrine (ARM.zc = 2) mais il ne réagit pas encore.
+
+### Refaite le même soir (en ligne à 4 h 43, version `1795837340-bbec` ; go de Romain à 4 h 20 : « Allez, vas-y, tu peux y aller »)
+
+Romain, à la voix : **le bec est « tout de travers »** ; **ses pieds glissent** (« on a l'impression qu'il fait du moonwalk »).
+- **Le bec** : la première fois, la vue de côté était de trois-quarts ; un **vrai profil** (Nano Banana 2.1, 2 essais, 4 crédits ;
+  `origine/armure/vue-profil.png`), puis Meshy avec **4 vues** (face, profil, dos, trois-quarts) et **la symétrie forcée** :
+  38 crédits. `origine/armure-base.glb` est le nouveau (l'ancien : `origine/armure/armure-base-v1-bec-de-travers.glb`) ;
+  comparaison des têtes : `captures/armure-tetes-v1-v2.jpg` (en haut l'ancien, en bas le nouveau).
+- **Son attente : `Idle_02`** (n° 11, choisie par Romain sur l'aperçu), fabriquée avec le modèle, ralentie (×0,7). Elle le
+  tourne d'environ 25° d'un bloc : le modèle entier est tourné d'autant en sens inverse (pas de torsion du bassin : plus rien ne
+  glisse). Romain : elle a les bras « comme s'il tenait quelque chose » : **chaque bras redescend de 40 % vers le bas** à chaque
+  image (calculé dans le code, sauf quand il parle).
+- **Il parle : `Stand_Talking_Angry`** (n° 311, 8 crédits, fait par « 3d_rigging » sur le nouveau modèle ; on n'en garde que le
+  mouvement : `origine/glb/armure-parle.glb` → `site/armure-parle.json`). Son film dure 21 s : on garde les 6 premières, au ralenti
+  (×0,55 : environ 11 s, de grands gestes lourds), sans son déplacement ; le bouton d'essai **« 🗣 Grosbec »** le lance (fondu
+  depuis l'attente, puis retour). Pour plus tard : quand Grosbec parle entre les tiers.
+- Vérifié : `essai_armure.py` (`captures/armure-v2-pied-des-marches.jpg`, `armure-parle.jpg`), WebKit (`essai_webkit_armure.py`).
+- **Crédits de l'armure en tout** : 6 + 6 + 38 + 4 + 38 + 8 = **100**.
 
 ## Ce qui n'est pas fait
 

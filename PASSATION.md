@@ -1,6 +1,11 @@
-# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 28 novembre, 4 h 15)
+# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 28 novembre, 4 h 45)
 
 À lire en entier par la nouvelle conversation avant de toucher à quoi que ce soit.
+
+**28 novembre, 4 h 45 — ESSAI HORS DU JEU : L'ARMURE REFAITE (LE BEC), SON ATTENTE IDLE 02, « GROSBEC PARLE » ; même adresse : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP (version `1795837340-bbec`, en ligne à 4 h 43 ; go écrit 4 h 20 : « Allez, vas-y, tu peux y aller »)** — README de l'essai, « Refaite le même soir » ; Bible § 18.21, fin.
+- **Romain, à la voix** : le bec « tout de travers » ; les pieds qui glissent (« moonwalk ») ; il choisit **Idle 02** (mais les bras « comme s'il tenait quelque chose ») et **Stand Talking Angry** (gestes vifs : ralentis) pour quand Grosbec parle.
+- **Fait** : un vrai profil (4 crédits) ; le modèle refait avec 4 vues et la symétrie forcée (38 crédits) avec Idle_02 ; le modèle tourné d'un bloc pour faire face (plus de torsion du bassin : plus de glissade) ; les bras redescendus de 40 % dans le code ; Stand_Talking_Angry (8 crédits ; 6 premières secondes, ×0,55) sur le bouton d'essai « 🗣 Grosbec ». **100 crédits pour l'armure en tout.**
+- **Ouvert** : son avis (le bec, l'attente, les bras, la parole) ; les autres mouvements (coup de poing au sol, lancer de la vague, coup reçu) ; puis l'image de la place avec lui pour la vidéo de vague. **Ne rien construire de plus sans son go.**
 
 **28 novembre, 4 h 15 — ESSAI HORS DU JEU, RIEN SUR LE SITE : « EN VRAIE 3D », L'ARMURE DE GROSBEC EN 3D AU PIED DES MARCHES ; même adresse : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP (version `1795835524-6ca1`, en ligne à 4 h 12 ; go écrit 4 h 05 : « vas-y, go alors, au travail »)** — Bible § 18.21, fin ; README de l'essai, « L'armure de Grosbec en 3D ».
 - **Décidé à la voix (4 h)** : **3 m** ; **au pied des marches** (pas en haut : il doit frapper le sol plat ; plus près, donc plus gros ; le rayon descend du temple dans son dos) ; ses lanternes doivent l'éclairer ; une ombre portée sur la place.
