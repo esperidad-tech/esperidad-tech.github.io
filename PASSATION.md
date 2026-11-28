@@ -1,10 +1,11 @@
-# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 28 novembre, 5 h 15)
+# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 28 novembre, 5 h 25)
 
 À lire en entier par la nouvelle conversation avant de toucher à quoi que ce soit.
 
 **28 novembre, 5 h 15 — ESSAI HORS DU JEU : L'ARMURE SUR LE SEUIL DU TEMPLE, 3,5 M, LES LANTERNES ALLUMÉES ; même adresse : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP (version `1795839107-290c`, en ligne à 5 h 12 ; go écrit 5 h 06 : « vas-y, fais ces modifs », et l'éclairage)** — README de l'essai, « Sur le seuil du temple ».
 - **Romain, à la voix** : **elle ne peut pas être au pied des marches** (le Pisteur doit arriver dans une salle derrière son dos) → **en haut, dans l'embrasure de la porte du temple, un peu plus grosse** ; le bord de la plaque de poitrine s'étire ; un tremblement sur une image dans l'attente ; par écrit : les lanternes des épaules ont l'air éteintes.
 - **Fait** : `ARM` sur le seuil (10,95 ; −11,6 ; z 2), 3,6 pas ; la caméra garde sa crête à l'image ; son ombre sur le palier ; le rayon d'Elyra du fond du temple ; la cuirasse prend tout ce qu'avaient les clavicules ; l'attente lissée et bouclée sans couture ; le verre des lanternes trois fois plus lumineux, lampes et halos plus forts ; le bouton « 🗣 Grosbec » en haut à gauche. Aucun crédit.
+- **Puis, 5 h 21 (version `1795839675-8787`, Romain par écrit à 5 h 11)** : l'ombre des lanternes n'est plus tranchée au bas de la place (elle s'efface avant, et vers le bord du cône) ; on passe à gauche de la lanterne gauche (zone de marche élargie jusqu'aux massifs, grille qui commence à x = −3).
 - **Ouvert** : son avis ; le coup de poing au sol (il frappe le palier, les fissures descendent les marches), le lancer de la vague, le coup reçu ; l'image de la place avec lui pour sa vidéo de vague. **Ne rien construire de plus sans son go.**
 
 **28 novembre, 5 h — ESSAI HORS DU JEU : L'ARMURE AUX PLAQUES RAIDIES ; même adresse : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP (version `1795838341-7681`, en ligne à 4 h 59 ; go écrit 4 h 52 : « Ok, bah vas-y, commence la découpe »)** — README de l'essai, « Les plaques raidies ».

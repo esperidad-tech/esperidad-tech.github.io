@@ -15,7 +15,7 @@ plate qui ne prend pas la lumière, trop peu de poses). Cet essai teste une autr
 Rien de tout ça n'est dans le jeu. C'est un essai, à montrer à Romain, sans « go » pour la suite.
 
 **En ligne (page Claude, hors du jeu)** : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP
-(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795839107-290c` depuis l'armure sur le seuil du temple, 28 novembre 5 h 12). Pour republier : `publish_files` des fichiers
+(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795839675-8787` depuis les ombres des lanternes en fondu et le passage à gauche de la lanterne gauche, 28 novembre 5 h 21). Pour republier : `publish_files` des fichiers
 de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json dont `armure.json` et `armure-parle.json`, et le dossier `nuit/` : fond.jpg, crev.jpg, crev-a.png, pilier-g.png, pilier-d.png, feu.jpg, arrivee.png, vague.mp4, vague.webm, et `nuit/cr/` : c, m, e, k de 00 à 19), `base_version` = la version en ligne. Les fichiers doivent être copiés sous `/home/claude` (l'outil refuse `/tmp`).
 **Piège de la page Claude** (vu par Romain : un ⚠ à la place du jeu) : elle ne sert pas les `.glb`, et
 elle interdit à la page de « télécharger » une adresse `data:` (fetch). Un glTF avec ses données en
@@ -525,6 +525,17 @@ lanternes de son épaule, on dirait qu'elles sont éteintes »**.
 - **Les lanternes** : le verre (le plus clair de la carte de lueurs) brille trois fois plus (`onBeforeCompile` sur
   `emissivemap_fragment`), l'or un peu moins ; les trois lampes plus fortes (6, portée 3,2) ; des halos plus grands.
 - Vérifié : `essai_armure.py` (`captures/armure-seuil-du-temple.jpg`), `essai_rigide.py` (`armure-seuil-parle.jpg`), WebKit.
+
+### Les ombres des lanternes et la lanterne gauche (en ligne à 5 h 21, version `1795839675-8787` ; Romain, par écrit à 5 h 11)
+
+- **« L'ombre créée par la lumière des lanternes est coupée à un moment donné »** : l'ombre du héros file vers nous et tombait au
+  bas de la place, hors de la peinture (là où tout est noir) : elle y était tranchée net. Elle **s'efface maintenant en douceur avant
+  le bas de la place** (y du jeu 18,2 à 19,6, sur le sol d'ombre : `onBeforeCompile` de `solOmbre`) ; le cône des lanternes est plus
+  large (1,42 au lieu de 1,25 : loin d'une lanterne, la tête du héros en sortait) et l'ombre **s'efface vers le bord du cône**
+  au lieu d'y être coupée. `captures/ombres-lanternes-fondu.jpg`.
+- **« Le Barde peut passer derrière la lanterne droite, mais pas la gauche »** : la zone de marche passait juste contre la
+  lanterne gauche (le coin bas gauche de la place était à x 730 de la peinture, contre 3765 à droite). Elle suit maintenant le
+  dallage jusqu'aux massifs (coin bas gauche à 480) ; la grille commence à x = −3 (`grille.x0` ; `outils/salle-nuit/grille.py`).
 
 ## Ce qui n'est pas fait
 

@@ -189,8 +189,8 @@ if (!NUIT) {
   const porte = new THREE.DirectionalLight(0xdfe8ff, 0.8); porte.position.copy(G(NJ.porte.x, NJ.porte.y, 5)); porte.target.position.copy(G(NJ.porte.x, 12, 0)); monde.add(porte, porte.target); nuit.porte = porte;
   for (const P of NJ.piliers) {
     const x = P.x + NJ.xoff, y = NJ.dmax - P.d;
-    const l = new THREE.SpotLight(0xffb468, 70, 13, 1.25, 0.8, 1.5); l.position.copy(G(x, y + 0.05, P.lanterne)); l.target.position.copy(G(x, y + 0.05, 0)); monde.add(l, l.target);
-    l.castShadow = true; l.shadow.mapSize.set(1024, 1024); l.shadow.camera.near = 0.5; l.shadow.camera.far = 14; l.shadow.bias = -0.0008; l.shadow.radius = 3;
+    const l = new THREE.SpotLight(0xffb468, 70, 13, 1.42, 0.8, 1.5); l.position.copy(G(x, y + 0.05, P.lanterne)); l.target.position.copy(G(x, y + 0.05, 0)); monde.add(l, l.target);
+    l.castShadow = true; l.shadow.mapSize.set(1024, 1024); l.shadow.camera.near = 0.5; l.shadow.camera.far = 30; l.shadow.bias = -0.0008; l.shadow.radius = 3;
     const pt = new THREE.PointLight(0xffb060, 18, 7, 1.6); pt.position.copy(G(x, y + 0.4, P.lanterne)); monde.add(pt);   // (pour éclairer aussi le dessus de la tête)
     nuit.lanternes.push({ l, pt, x, y, z: P.lanterne });
   }
@@ -198,6 +198,17 @@ if (!NUIT) {
     const p = solImg(u, v, z); nuit.cristaux.push(lampe(coul, p.x, p.y, z + 0.6, I, 7));
   }
   solOmbre.position.copy(G(NJ.xoff + 1, 10, 0.002));
+  /* (Romain, 28 nov. : l'ombre des lanternes « est coupée à un moment donné ») : l'ombre file vers nous et tombait hors de la peinture,
+     coupée net à son bord ; et loin d'une lanterne, la tête du héros sortait de son cône. Le cône est plus large, l'ombre s'efface en
+     douceur vers le bord du cône et avant le bas de la place. */
+  solOmbre.material.onBeforeCompile = sh => {
+    const vieux = 'shadow *= receiveShadow ? getShadow( spotShadowMap[ i ], spotLight.shadowMapSize, spotLight.shadowIntensity, spotLight.shadowBias, spotLight.shadowRadius, vSpotLightCoord[ i ] ) : 1.0;';
+    const neuf = '{ vec2 qo = vSpotLightCoord[ i ].xy / vSpotLightCoord[ i ].w - 0.5; float fo = 1.0 - smoothstep( 0.16, 0.42, length( qo ) ); shadow *= receiveShadow ? mix( 1.0, getShadow( spotShadowMap[ i ], spotLight.shadowMapSize, spotLight.shadowIntensity, spotLight.shadowBias, spotLight.shadowRadius, vSpotLightCoord[ i ] ), fo ) : 1.0; }';
+    sh.fragmentShader = sh.fragmentShader.replace('#include <shadowmask_pars_fragment>', THREE.ShaderChunk.shadowmask_pars_fragment.replace(vieux, neuf));
+    // (et surtout : la peinture s'arrête au bord de la place, au bas de l'écran ; l'ombre y était tranchée net : elle s'efface avant)
+    sh.vertexShader = sh.vertexShader.replace('void main() {', 'varying float vYJeu;\nvoid main() {').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\n  vYJeu = -( modelMatrix * vec4( transformed, 1.0 ) ).y;');
+    sh.fragmentShader = sh.fragmentShader.replace('void main() {', 'varying float vYJeu;\nvoid main() {').replace('gl_FragColor = vec4( color, opacity * ( 1.0 - getShadowMask() ) );', 'gl_FragColor = vec4( color, opacity * ( 1.0 - getShadowMask() ) * ( 1.0 - smoothstep( 18.2, 19.6, vYJeu ) ) );');
+  };
 }
 
 /* ---------- des petites images qui brillent (peintes une fois) ---------- */
@@ -980,8 +991,8 @@ function libreSans(x, y) {
 
 /* ---------- la nuit : les cases du sol (0,2 pas), les crevasses, la caméra qui suit ---------- */
 const GR = NUIT ? (() => { const g = NJ.grille, dec = b => { const t = atob(b), u = new Uint8Array(g.nx * g.ny); for (let i = 0; i < u.length; i++) u[i] = (t.charCodeAt(i >> 3) >> (7 - (i & 7))) & 1; return u; };
-  return { pas: g.pas, nx: g.nx, ny: g.ny, libre: dec(g.libre), crev: dec(g.crevasse) }; })() : null;
-function caseDe(A, x, y) { const i = Math.floor(x / GR.pas), j = Math.floor(y / GR.pas); return i >= 0 && j >= 0 && i < GR.nx && j < GR.ny ? A[j * GR.nx + i] : 0; }
+  return { pas: g.pas, nx: g.nx, ny: g.ny, x0: g.x0 || 0, libre: dec(g.libre), crev: dec(g.crevasse) }; })() : null;   // (x0 : la grille commence à x = −3, pour passer à gauche de la lanterne gauche)
+function caseDe(A, x, y) { const i = Math.floor((x - GR.x0) / GR.pas), j = Math.floor(y / GR.pas); return i >= 0 && j >= 0 && i < GR.nx && j < GR.ny ? A[j * GR.nx + i] : 0; }
 const crev = { ouvert: false, t: -1, cases: [], lum: [] };
 function dansCrevasse(x, y, r) {
   if (!crev.ouvert) return false; if (caseDe(GR.crev, x, y)) return true;
@@ -991,7 +1002,7 @@ function dansCrevasse(x, y, r) {
 if (NUIT) {   // les cases des crevasses (pour la poussière quand elles s'ouvrent), et quatre lumières tout au fond (violet, bleu-vert)
   const rc = NJ.crev, groupes = [[], [], [], []];
   for (let j = 0; j < GR.ny; j++) for (let i = 0; i < GR.nx; i++) if (GR.crev[j * GR.nx + i]) {
-    const x = (i + 0.5) * GR.pas, y = (j + 0.5) * GR.pas, p = imgDe(x, y, 0);
+    const x = GR.x0 + (i + 0.5) * GR.pas, y = (j + 0.5) * GR.pas, p = imgDe(x, y, 0);
     crev.cases.push({ x, y, q: (p.v - rc[1]) / rc[3] }); groupes[(x > NJ.xoff + 0.8 ? 2 : 0) + (y > 10 ? 1 : 0)].push({ x, y });
   }
   groupes.forEach((g, k) => { if (!g.length) return; const m = g[Math.floor(g.length / 2)]; const l = new THREE.PointLight(k % 2 ? 0x46e6d2 : 0xa064ff, 0, 3.5, 1.6); l.position.copy(G(m.x, m.y, -0.4)); monde.add(l); crev.lum.push(l); });
@@ -1439,4 +1450,4 @@ function poser(nom, t) {   // (essai) un seul mouvement, à un instant donné
   for (const n in actions) { actions[n].play(); actions[n].setEffectiveWeight(n === nom ? 1 : 0); actions[n].timeScale = 0; }
   actions[nom].time = t; melangeur.update(0); MOD.updateMatrixWorld(true); const r = piedsModele(); for (const n of ['LeftUpLeg', 'LeftLeg', 'Hips']) { const o = MOD.getObjectByName(n); r[n + '_q'] = o.quaternion.toArray(); r[n + '_p'] = o.position.toArray(); } r.pistes = actions[nom].getClip().tracks.slice(0, 6).map(k => k.name); r.nbPistes = actions[nom].getClip().tracks.length; r.duree = actions[nom].getClip().duration; return r;
 }
-window.__essai = { armure, parleGrosbec, osM: noms => { const r = {}; for (const n of noms) { const o = MOD.getObjectByName(n); if (!o) continue; o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); MOD.worldToLocal(v); r[n] = [v.x, v.y, v.z]; } return r; }, frapper, basculerOmbre, mq, MURETS, COUPS, sauter, SAUT, get tirs() { return tirs.map(s => ({ x: s.x, y: s.y, z: s.z, q: s.q })); }, ecran: (x, y, z) => { if (NUIT) { cam.updateMatrixWorld(); const v = G(x, y, z).project(cam); return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; } return { x: (px(x) - camX) * innerWidth / Ws, y: (py(y, z) - camY) * innerHeight / Hs }; }, fissurer, lancerVague, get vague() { return vg; }, video: () => videoEl ? [videoEl.currentSrc.split('/').pop(), videoEl.readyState, videoEl.paused, videoEl.currentTime] : null, cristaux: () => vg.actifs.map(c => ({ i: c.i, x: c.S.x, y: c.S.y, etat: c.etat })), arriveFeu, abrite: () => abrite(h.x, h.y), imgDe, solImg, fen, crev, NJ, libre, dansCrevasse, nuit, piliers, poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };
+window.__essai = { armure, parleGrosbec, solOmbre, osM: noms => { const r = {}; for (const n of noms) { const o = MOD.getObjectByName(n); if (!o) continue; o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); MOD.worldToLocal(v); r[n] = [v.x, v.y, v.z]; } return r; }, frapper, basculerOmbre, mq, MURETS, COUPS, sauter, SAUT, get tirs() { return tirs.map(s => ({ x: s.x, y: s.y, z: s.z, q: s.q })); }, ecran: (x, y, z) => { if (NUIT) { cam.updateMatrixWorld(); const v = G(x, y, z).project(cam); return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; } return { x: (px(x) - camX) * innerWidth / Ws, y: (py(y, z) - camY) * innerHeight / Hs }; }, fissurer, lancerVague, get vague() { return vg; }, video: () => videoEl ? [videoEl.currentSrc.split('/').pop(), videoEl.readyState, videoEl.paused, videoEl.currentTime] : null, cristaux: () => vg.actifs.map(c => ({ i: c.i, x: c.S.x, y: c.S.y, etat: c.etat })), arriveFeu, abrite: () => abrite(h.x, h.y), imgDe, solImg, fen, crev, NJ, libre, dansCrevasse, nuit, piliers, poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };
