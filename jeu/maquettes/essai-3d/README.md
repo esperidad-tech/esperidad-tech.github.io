@@ -15,7 +15,7 @@ plate qui ne prend pas la lumière, trop peu de poses). Cet essai teste une autr
 Rien de tout ça n'est dans le jeu. C'est un essai, à montrer à Romain, sans « go » pour la suite.
 
 **En ligne (page Claude, hors du jeu)** : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP
-(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795837340-bbec` depuis l'armure refaite (bec), son attente Idle 02 et « Grosbec parle », 28 novembre 4 h 43). Pour republier : `publish_files` des fichiers
+(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795838341-7681` depuis l'armure aux plaques raidies, 28 novembre 4 h 59). Pour republier : `publish_files` des fichiers
 de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json dont `armure.json` et `armure-parle.json`, et le dossier `nuit/` : fond.jpg, crev.jpg, crev-a.png, pilier-g.png, pilier-d.png, feu.jpg, arrivee.png, vague.mp4, vague.webm, et `nuit/cr/` : c, m, e, k de 00 à 19), `base_version` = la version en ligne. Les fichiers doivent être copiés sous `/home/claude` (l'outil refuse `/tmp`).
 **Piège de la page Claude** (vu par Romain : un ⚠ à la place du jeu) : elle ne sert pas les `.glb`, et
 elle interdit à la page de « télécharger » une adresse `data:` (fetch). Un glTF avec ses données en
@@ -485,6 +485,25 @@ Romain, à la voix : **le bec est « tout de travers »** ; **ses pieds glissent
   depuis l'attente, puis retour). Pour plus tard : quand Grosbec parle entre les tiers.
 - Vérifié : `essai_armure.py` (`captures/armure-v2-pied-des-marches.jpg`, `armure-parle.jpg`), WebKit (`essai_webkit_armure.py`).
 - **Crédits de l'armure en tout** : 6 + 6 + 38 + 4 + 38 + 8 = **100**.
+
+### Les plaques raidies (en ligne à 4 h 59, version `1795838341-7681` ; go de Romain à 4 h 52 : « Ok, bah vas-y, commence la découpe »)
+
+Romain, à la voix : le bec est réparé, il ne glisse plus ; mais **quand il parle et écarte les bras, toute l'armure se déforme**
+(les épaulières et les brassards s'étirent comme du caoutchouc : `captures/armure-parle-etirement.jpg`). Le modèle de Meshy est
+une seule peau : chaque sommet suit plusieurs os à la fois, et les grandes plaques s'étirent entre eux.
+- **Essai 1, couper en pièces rigides** (`outils/rigide.mjs`) : chaque triangle ne suit plus qu'un os, les sommets partagés sont
+  dédoublés. **Refusé par Claude** : les frontières entre os ne suivent pas les bords des plaques, l'armure se déchire en
+  éclats aux épaules, à la ceinture et aux bandes de cape (`captures/armure-plaques-mou-raidi-coupe.jpg`, à droite).
+- **Retenu, raidir les plaques** (`outils/raidir.mjs`, k = 6) : les poids de chaque sommet sont élevés à la puissance 6 puis
+  renormalisés : loin des jointures, chaque plaque ne suit presque plus qu'un os, le pli se resserre près des jointures, et la
+  peau reste d'un seul tenant. En plus : **le buste d'un bloc** (Spine, Spine01, Spine02 → Spine : chez Meshy, Spine est le haut
+  du buste) ; **le haut de la poitrine** que Meshy donnait aux clavicules (à moins de 0,30 m du milieu) passe à la cuirasse ;
+  le casque d'un bloc. Les épaulières et leurs lanternes suivent les clavicules. Même image, au milieu : les épaulières gardent
+  leur forme carrée, leurs bords dorés restent droits.
+- `origine/glb/armure.glb` est la version raidie (refaite par `node outils/raidir.mjs <armure allégée> <sortie> 6`) ; aucun
+  crédit. Il reste un pli aux aisselles et aux coudes quand les bras partent loin.
+- Vérifié : `outils/revue-armure/parle.py`, `parle3.py` (le mouvement de parole image par image), `essai_armure.py`,
+  `essai_rigide.py`, WebKit.
 
 ## Ce qui n'est pas fait
 

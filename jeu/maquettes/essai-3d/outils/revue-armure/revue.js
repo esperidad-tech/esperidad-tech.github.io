@@ -41,3 +41,12 @@ window.charger = (url, haut, tAnim, rot) => new Promise((ok, ko) => new GLTFLoad
   ok(g.animations.length);
 }, undefined, ko));
 window.dessiner = () => r.render(scene, cam);
+
+window.poser = (url, anim, t, rotY) => new Promise((ok, ko) => new GLTFLoader().load(url, g => new GLTFLoader().load(anim, a => {
+  if (window.dernier) scene.remove(window.dernier);
+  const m = g.scene; m.traverse(o => { if (o.isMesh) o.frustumCulled = false; });
+  m.scale.setScalar(3.1 / 3.0); const piv = new THREE.Group(); piv.rotation.x = Math.PI / 2; piv.add(m); m.rotation.y = rotY || 0;
+  const place = new THREE.Group(); place.position.copy(G(NJ.armure.x, NJ.armure.y, NJ.armure.z)); place.add(piv); scene.add(place); window.dernier = place;
+  const mx = new THREE.AnimationMixer(m), c = a.animations[0]; c.tracks = c.tracks.filter(k => !k.name.startsWith('Hips.position')); mx.clipAction(c).play(); mx.update(t);
+  ok(c.duration);
+}, undefined, ko), undefined, ko));

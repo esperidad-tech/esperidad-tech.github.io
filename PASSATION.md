@@ -1,6 +1,11 @@
-# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 28 novembre, 4 h 45)
+# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 28 novembre, 5 h)
 
 À lire en entier par la nouvelle conversation avant de toucher à quoi que ce soit.
+
+**28 novembre, 5 h — ESSAI HORS DU JEU : L'ARMURE AUX PLAQUES RAIDIES ; même adresse : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP (version `1795838341-7681`, en ligne à 4 h 59 ; go écrit 4 h 52 : « Ok, bah vas-y, commence la découpe »)** — README de l'essai, « Les plaques raidies ».
+- **Romain, à la voix** : bec réparé, il ne glisse plus ; **quand il parle et écarte les bras, l'armure se déforme** ; il faut un modèle propre parce qu'il devra faire plein de choses ; Higgsfield ne sait pas faire des pièces séparées.
+- **Fait** : la découpe en pièces rigides a été essayée et **rejetée** (elle déchire l'armure en éclats) ; **les plaques raidies** (poids durcis, buste et casque d'un bloc, haut de la poitrine à la cuirasse) : les épaulières gardent leur forme. Aucun crédit. Il reste un pli aux aisselles et aux coudes.
+- **Ouvert** : son avis ; les autres mouvements (coup de poing au sol, lancer de la vague, coup reçu) ; l'image de la place avec lui pour sa vidéo de vague. **Ne rien construire de plus sans son go.**
 
 **28 novembre, 4 h 45 — ESSAI HORS DU JEU : L'ARMURE REFAITE (LE BEC), SON ATTENTE IDLE 02, « GROSBEC PARLE » ; même adresse : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP (version `1795837340-bbec`, en ligne à 4 h 43 ; go écrit 4 h 20 : « Allez, vas-y, tu peux y aller »)** — README de l'essai, « Refaite le même soir » ; Bible § 18.21, fin.
 - **Romain, à la voix** : le bec « tout de travers » ; les pieds qui glissent (« moonwalk ») ; il choisit **Idle 02** (mais les bras « comme s'il tenait quelque chose ») et **Stand Talking Angry** (gestes vifs : ralentis) pour quand Grosbec parle.
