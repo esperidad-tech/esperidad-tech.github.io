@@ -626,12 +626,9 @@ des baignoires ; le long du bric-à-brac jusqu'au fond ; les portes (alerte, ouv
 (§ 18.24) ; l'écran debout ; les autres nuits (`nuit1.jpg`, `nuit3.jpg`) et le jour ne sont pas redressés (`redresser.py` les
 redresse, mais leurs piliers seraient à refaire).
 
-## La salle du Pisteur : tracés à la main, saut, escalier, animations (28 novembre, 16 h 45 ; PAGE À PART : https://claude.ai/artifact/V9n4i2wwUoa57jrndMSLem, slug `e3f99ab1-54ea-4b8c-b24c-9106ddaa19a2`, version `1795880777-2bc4` ; go de Romain à 16 h 08 : « Allez, vas-y au travail », puis 16 h 35 : « occupe-toi du saut, de l'escalier et des animations »)
+## La salle du Pisteur : tracés à la main, saut, escalier, animations (28 novembre, 16 h 50 ; SUR L'ESSAI PRINCIPAL, version `1795880986-6576` ; d'abord sur une page à part, https://claude.ai/artifact/V9n4i2wwUoa57jrndMSLem, version `1795880777-2bc4`, qui ne sert plus ; go de Romain à 16 h 08 : « Allez, vas-y au travail », puis 16 h 35 : « occupe-toi du saut, de l'escalier et des animations »)
 
-**Pourquoi une page à part** : l'essai principal (`1aa48eb1…`) est passé à la version `1795880638-d3ca` (une autre conversation : fournaise,
-cristaux de la vague, `armure-sort.json`…) **sans que ses sources soient sur GitHub** : republier l'essai principal d'ici effacerait ce
-travail. Celle qui réunit les deux : partir de ses sources à elle, puis reprendre `outils/salle-pisteur/` et les morceaux de `src/main.js`
-ci-dessous (cherchez `solZ`, `SAUT_HAUT`, `particulesSalle`, `flMat`, `SJ.formes`, `SJ.salle`).
+**Réuni à 16 h 50** avec le travail de l'autre conversation (`82ce2c7` : fournaise, cristaux de la vague…) : l'essai principal a tout.
 
 **Ce que Romain a dit (à la voix, 28 novembre vers 16 h)** : les découpes faites par SAM sont mauvaises partout (le Pisteur disparaît
 derrière les fleurs, derrière un rectangle au-dessus des braseros, les tonneaux, le muret de droite) : **« sans logiciel automatique,
@@ -789,12 +786,93 @@ pattes, une catapulte sur le dos), le **bélier**.
   chemin. Si une vidéo ne se lit pas, l'image de secours (l'explosion) prend le relais.
 - **Crédits** : 16 (mouvements) + 30 (éclairs) = 46 pour le coup de poing.
 
+## Le chantier du 28 novembre après-midi : vidéos calées au pixel, secousse, boule de lumière, cristaux en vidéo, abri en goutte, fournaise, images par seconde (en ligne à 16 h 43, version `1795880638-d3ca` ; Romain, à la voix l'après-midi, go écrit à 15 h 47 : « Allez, vas-y, lance tout ce chantier. Et après, une fois que tu auras fini, tu me feras une vérification, voir si les FPS ils sont corrects. Il faut être à plus de 24 sur des tablettes anciennes. »)
+
+**Sa règle (mémoire du projet)** : toute image ou vidéo qu'il envoie est **calée au pixel** sur la peinture, déformée s'il le faut, pour
+qu'en fondu on ne voie aucune différence ; un détourage (fond vert ou noir) est **réglé pour chaque vidéo et vérifié image par image en
+gros plan**, corrigé là où c'est mauvais, pas laissé à un outil automatique. Pour chaque vidéo : la caler d'abord.
+
+- **Les vidéos calées au pixel** (`outils/calage/caler.py <vidéo> <dossier> [début] [fin]`) : un premier calage (affine, sur les
+  contours) de l'image 0 sur la peinture, puis le mouvement fin de chaque zone (flux optique lissé, ±12 px au plus), puis chaque image
+  recalée sur l'image 0 là où rien ne change, et les couleurs ramenées à celles de la peinture (table par canal). Écart des contours :
+  coup droit 1,60 → 1,28 px, coup gauche 1,53 → 1,21, vague 1,52 → 1,48 (ses vidéos bougent à peine : 1,6 px au plus). Fiches :
+  `captures/calage/`. Coup droit coupé de 1,667 à 5,667 s, coup gauche de 0,29 à 4,21 s. `outils/calage/caler_image.py` fait de même
+  pour une image (sa place de jour : `site/nuit/jour.jpg`, fiche moitié-moitié `captures/calage/jour-controle.jpg`).
+- **« On voit la vidéo arriver »** : le jeu ne montre de chaque vidéo **que ce qui diffère de sa propre première image**
+  (`nuit/coup-d-ref.jpg`, `coup-g-ref.jpg`, `vague-ref.jpg`) ; ailleurs, la peinture. Le coup de poing gagne la place **depuis son
+  poing** (un rond qui s'agrandit en 0,7 s).
+- **La secousse** : une vraie secousse de la caméra, souple, qui s'amortit (plus un saut au hasard à chaque image, qui faisait
+  « flotter » les personnages) ; **un tiers moins forte** ; peinture, vidéos et personnages bougent ensemble.
+- **La lumière du gant** : une grosse boule de lumière (un cœur presque blanc, un halo de la couleur de la zone) qui cache le gant ; les
+  éclairs la dépassent ; autour de sa main, **sa place de jour** apparaît (la vraie couleur de la place éclairée), et à l'impact elle
+  éclate au sol, puis s'éteint.
+- **L'armure en morceaux** (« elle s'étire ») : la planche éclatée des pièces est faite (`origine/armure/planche-pieces-eclatee.png`,
+  2 crédits) ; **les pièces en 3D attendent son go** (≈ 280 à 350 crédits).
+- **Les cristaux** (bloc « LE PREMIER TIERS » de `src/main.js`, refait) :
+  - **il lève les deux mains** (`Charged_Spell_Cast`, n° 125, refait par Higgsfield, 8 crédits, transféré par `recaler.mjs` :
+    `site/armure-sort.json`) : il ramasse l'énergie devant sa poitrine (0,8 à 1,9 s), puis lance les deux mains au-dessus de sa tête
+    (2,1 s) ; des éclairs **violets** crépitent dans chaque main (la vidéo d'éclairs du gant), de plus en plus forts ; tout tremble un peu ;
+  - **six ombres grandissent**, n'importe où sur la place (écartées d'au moins 3,6 pas, pas sur le héros) ; **six cristaux tombent**
+    (deux vidéos décalées de 0,4 s, trois cristaux chacune, un sur deux retourné) : sa vidéo de chute sur fond vert (Higgsfield,
+    Seedance 2.5, 720p, 35 crédits : `origine/cristaux/chute.mp4`) ; à l'impact : rochers, éclats, poussière, la secousse, un éclair
+    violet, **un cratère vu du dessus posé sur le sol** (GPT Image 2.6, fond transparent, 2 crédits : `site/nuit/cristaux/cratere.png`,
+    4,4 pas de large) ; le héros trop près est touché et repoussé ;
+  - chaque cristal est un **panneau debout tourné vers nous, de la profondeur de son pied** : le héros derrière lui est caché, devant
+    lui il le cache ; on ne le traverse pas.
+- **Le détourage** (`outils/cristaux/detourer.py`, réglé pour ces vidéos, vérifié en gros plan sur blanc, gris foncé et la place :
+  `captures/cristaux/`) : le fond vert sans rien devant est reconstitué pixel par pixel (le vert le plus pur de chaque pixel sur toute la
+  vidéo) ; l'opacité vient de « combien ce pixel est encore vert » par rapport à ce fond : **l'ombre portée devient une vraie ombre**,
+  la poussière et les bords flous restent en partie transparents ; la couleur est démélangée du vert, les bords prennent la couleur de
+  l'intérieur (plus de liseré bleu-vert), le vert qui reste est retiré. Corrections vues en gros plan : traînées fantômes (un lissage dans
+  le temps, retiré) ; liseré bleu-vert (compression) ; poussière rougeâtre (la couleur des parties très transparentes, ramenée au gris) ;
+  **un voile rectangulaire de poussière** (la poussière s'éteint en rond autour de l'impact, les rochers gardent leur opacité) ;
+  **les rochers qui restaient en l'air à la fin de sa vidéo** (images 66 à 84 : ils s'effacent, le cristal planté nettoyé prend la suite,
+  `assembler_chute.py`) ; un caillou qui flottait et une tache de fond retouchée (retirés). Sortie : couleur | opacité côte à côte
+  (`site/nuit/cristaux/chute.mp4`/`.webm`, 432 × 768 par moitié, 85 images ; `cristal-plante.jpg`).
+- **La vague** : **la fournaise** devant Grosbec (Higgsfield, fond noir, 35 crédits : `origine/cristaux/fournaise.mp4` ;
+  `preparer_fournaise.py` : le noir remis à zéro, les bords éteints en ovale, la courbe de sa lumière dans `site/nuit/fournaise.json`) :
+  deux panneaux, **un devant lui** (plus petit : les flammes cachent ses jambes) et **un derrière** (plus grand, retourné) ; posée en
+  lumière, le plus vif cache aussi ce qui est derrière ; **Grosbec éclairé en orange par en dessous, au rythme du feu** ; puis sa vidéo
+  de la vague. **L'abri** (dans le fond, `cri[6]`) : derrière chaque cristal, vu de Grosbec, **une goutte couchée** — large contre le
+  cristal (2 pas), elle s'affine sur 4,6 pas en s'éloignant ; **son bord est une flamme vivante** (il bouge, il luit) qui n'apparaît que
+  là où le feu est passé : elle se forme à mesure ; le sol de l'abri est éclairé par le feu autour ; **des braises** partent du bord. Le
+  cristal **s'éclaire en orange par le bas** pendant le feu (le haut reste violet) ; la lave recouvre le cratère, qui réapparaît quand
+  elle s'éteint. Le héros : dans la goutte, rien ; dehors, « Touché ! ».
+- **Le feu s'éteint complètement** (1 s), puis **chaque cristal se brise** : sa vidéo (Higgsfield, partie de l'image du cristal planté,
+  35 crédits : `origine/cristaux/brise.mp4`), **calée au pixel sur le cristal planté** (`caler_brise.py` : la caméra de la vidéo ne
+  bouge pas, une seule déformation ; écart 7,4 → 3,0), détourée de même ; il se fissure, éclate, **ses morceaux tombent, restent un
+  instant, disparaissent** (sa vidéo les faisait partir en paillettes après l'image 50 : coupé — pas d'évaporation) ; le cratère
+  s'efface avec eux. `assembler_brise.py`.
+- **Temps** (depuis « 🔥 Vague ») : mains levées 2,2 s ; impacts 4,3 et 4,7 s ; cristaux plantés 5,8 / 6,2 s ; fournaise 6,35 s ; vague
+  6,6 s ; le feu brûle jusqu'à 13 s, s'éteint à 14 s ; bris de 14,3 à 17,5 s. Le coup de poing ne part pas pendant la vague, ni l'inverse.
+- **Retiré** : les 20 cristaux peints (`site/nuit/cr/`, `cristaux.json` : plus chargés ; gardés sur GitHub), l'abri en cône.
+- **Vérifié** : Chrome, image par image (`outils/essai_cristaux.py`, `essai_cristaux_pres.py`, `essai_cratere.py`, `essai_four.py` ;
+  `captures/cristaux/`) ; WebKit, sans erreur (`essai_webkit_cristaux.py`). **Pas vérifié : un vrai iPhone, une vraie tablette.**
+- **Crédits Higgsfield du chantier : 119** (cristal de départ 2, fournaise 35, planche de l'armure 2, chute 35, mains levées 8, bris 35,
+  cratère 2).
+
+### Les images par seconde (« plus de 24 sur des tablettes anciennes »)
+
+- **Ce qui a été mesuré ici** (pas de vraie carte graphique sur cette machine) : le travail du **processeur** pour une image, avec un
+  processeur **6 fois plus lent** que celui de la machine (`outils/mesure_cpu.py`) : 10 ms au repos, 14 ms pendant la chute, **26 ms au
+  pire** (vague, bris : surtout le passage des vidéos à la carte graphique). Pour 24 images par seconde, il faut moins de 41,7 ms : **ça
+  passe**. Ce que dessine une image (`mesure_ips.py`) : 25 lumières, 3 ombres, 26 à 46 dessins.
+- **Allégé** : **les triangles par image divisés par deux** (207 000 → 104 000) : l'ombre d'une lanterne n'est recalculée que quand le
+  héros est assez près pour qu'elle se voie ; une lumière de réserve en moins (chaque lumière, même éteinte, coûte à chaque point du
+  héros et de l'armure).
+- **La finesse de l'image s'adapte toute seule** : chaque seconde, on compte les images ; deux secondes de suite sous 27 → l'image est
+  calculée un peu moins fine (×2 → ×1,75 → … → ×1) ; à ×1, des ombres moins fines ; huit secondes de suite au-dessus de 52 → un cran plus
+  fin. Vérifié (`essai_reglage.py` : sur cette machine très lente, il descend bien jusqu'au bout).
+- **Ce que Romain voit** : le petit chiffre en haut à gauche = les images par seconde ; s'il a dû baisser la finesse : « 31 · 1.5 »
+  (et « · o » pour les ombres). **À faire par Romain** : lancer la vague sur sa tablette la plus ancienne et dire le chiffre.
+
 ## Ce qui n'est pas fait
 
 - L'armure de Grosbec n'est pas en 3D (la création de son image de référence a été bloquée
   pendant l'essai ; il faut le « go » de Romain pour la faire, ≈ 40 crédits). Les notes
   partent vers le centre du cercle, là où l'armure se tiendra.
 - Le fond (`out/essai3d/`, `site/fond.jpg`, `site/prof.png`) se refait avec `essai3d.py`.
-- La vitesse sur un vrai téléphone n'est pas mesurée.
+- La vitesse sur un vrai téléphone ou une vraie tablette n'est pas mesurée (le réglage automatique de la finesse la garde au-dessus de 24 images par seconde ; voir « Les images par seconde »).
+- L'armure en pièces rigides : la planche est faite, les pièces 3D attendent le go de Romain.
 - Le bouclier de la phase 3 (3 s, recharge 10 s) : évoqué à la voix, Romain n'a pas répondu : pas fait.
 - L'ennemi de la phase 3 a changé dans une autre conversation : plus tard (Romain : « on va s'occuper d'abord de Grosbec et de la phase 2 »).
