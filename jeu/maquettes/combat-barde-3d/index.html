@@ -1,0 +1,19 @@
+<title>Combat du Barde 3D</title>
+<style>
+/* Un écran de jeu plein cadre, de nuit (un seul thème, voulu) : la salle peinte derrière, la 3D devant, deux commandes en bas */
+:root{--nuit:#0b0a14;--jaune:#ffd23f;--encre:#14110a;--verre:rgba(20,16,36,.78);--bord:rgba(255,255,255,.28);--blanc:#f3efff;color-scheme:dark}
+html,body{height:100%;margin:0;background:var(--nuit);color:var(--blanc);overflow:hidden;font-family:system-ui,-apple-system,sans-serif}
+#fond{position:fixed;inset:0;background:var(--nuit) url(fond.jpg) center/cover no-repeat}
+#scene{position:fixed;inset:0}
+#attente{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);font-size:28px;background:var(--verre);padding:10px 18px;border-radius:14px}
+#lancer{position:fixed;left:50%;bottom:calc(22% + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--jaune);color:var(--encre);border:0;border-radius:40px;font-size:30px;font-weight:800;padding:14px 40px;box-shadow:0 6px 22px rgba(0,0,0,.5);cursor:pointer}
+#lancer:focus-visible,#tempos button:focus-visible{outline:3px solid var(--blanc);outline-offset:3px}
+#tempos{position:fixed;left:0;right:0;bottom:0;padding:0 max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+#tempos button{background:var(--verre);color:var(--blanc);border:1px solid var(--bord);border-radius:20px;font-size:15px;padding:8px 12px;font-variant-numeric:tabular-nums}
+#tempos button.choisi{background:var(--jaune);color:var(--encre);border-color:var(--jaune);font-weight:700}
+</style>
+<div id="fond"></div><div id="scene"></div>
+<div id="attente">⏳</div>
+<button id="lancer" hidden aria-label="Lancer">▶</button>
+<div id="tempos" hidden><button data-bpm="100" class="choisi">♩ 100</button><button data-bpm="112">♩ 112</button><button data-bpm="124">♩ 124</button><button data-bpm="136">♩ 136</button></div>
+<script src="combat3d.js"></script>

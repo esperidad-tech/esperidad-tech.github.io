@@ -30,10 +30,11 @@ html,body{margin:0;height:100%;background:#030406;overflow:hidden;touch-action:n
 .jaune{background:#ffd23a;color:#111;border:0;border-radius:16px;padding:16px 26px;font-size:1.35rem;font-weight:700;box-shadow:0 4px 0 #b8901a,0 8px 18px rgba(0,0,0,.4);cursor:pointer}
 .jaune:active{transform:translateY(2px)}
 #bFissure{position:fixed;right:calc(104px + env(safe-area-inset-right));top:8px;z-index:6;background:rgba(10,16,30,.55);color:#f3e6c4;border:1px solid rgba(190,140,255,.6);border-radius:12px;padding:6px 10px;font-size:.95rem}
-#bFissure.fait,#bVague.fait{opacity:.35;pointer-events:none}
+#bFissure.fait,#bVague.fait,#bCoup.fait{opacity:.35;pointer-events:none}
+#bCoup{position:fixed;right:calc(352px + env(safe-area-inset-right));top:8px;z-index:6;background:rgba(10,16,30,.55);color:#f3e6c4;border:1px solid rgba(255,205,110,.75);border-radius:12px;padding:6px 10px;font-size:.95rem}
 #bVague{position:fixed;right:calc(232px + env(safe-area-inset-right));top:8px;z-index:6;background:rgba(10,16,30,.55);color:#f3e6c4;border:1px solid rgba(255,140,60,.7);border-radius:12px;padding:6px 10px;font-size:.95rem}
 #bParle{position:fixed;left:calc(34px + env(safe-area-inset-left));top:8px;z-index:6;background:rgba(10,16,30,.55);color:#f3e6c4;border:1px solid rgba(255,210,120,.7);border-radius:12px;padding:6px 10px;font-size:.95rem}
-body:not(.barde) #bFissure,body:not(.barde) #bVague,body:not(.barde) #bParle{display:none}
+body:not(.barde) #bFissure,body:not(.barde) #bVague,body:not(.barde) #bCoup,body:not(.barde) #bParle{display:none}
 #bPortes{position:fixed;right:calc(104px + env(safe-area-inset-right));top:8px;z-index:6;background:rgba(10,16,30,.55);color:#f3e6c4;border:1px solid rgba(255,90,60,.7);border-radius:12px;padding:6px 10px;font-size:.95rem}
 body:not(.pisteur) #bPortes{display:none}
 #rouge{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:0;background:radial-gradient(ellipse at 50% 50%,rgba(255,40,0,0) 40%,rgba(255,40,0,.55) 100%)}
@@ -68,6 +69,7 @@ body.ombre #voile{opacity:1}
 <button id="autre">↺ héros</button>
 <button id="bFissure">⚡ Fissures</button>
 <button id="bVague" class="fait">🔥 Vague</button>
+<button id="bCoup">👊 Coup</button>
 <button id="bParle">🗣 Grosbec</button>
 <button id="bPortes">🚪 Renforts</button>
 <div id="rouge"></div>
@@ -78,7 +80,7 @@ body.ombre #voile{opacity:1}
 <script>
 /* le héros choisi : ses mouvements, puis le jeu */
 var MOUVEMENTS = {
-  barde: { marche: 'anim-marche.json', course: 'anim-charge.json', saut: 'anim-saut.json' },
+  barde: { marche: 'anim-marche.json', course: 'anim-charge.json', saut: 'anim-saut.json', projete: 'anim-projete.json' },
   pisteur: { marche: 'p-marche.json', course: 'p-course.json', furtif: 'p-furtif.json', guet: 'p-guet.json', saut: 'p-saut.json', d1: 'p-dague1.json', d2: 'p-dague2.json', d3: 'p-dague3.json', assomme: 'p-assomme.json' }
 };
 function choisir(q) {
