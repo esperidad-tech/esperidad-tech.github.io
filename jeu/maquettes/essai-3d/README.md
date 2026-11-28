@@ -15,8 +15,8 @@ plate qui ne prend pas la lumière, trop peu de poses). Cet essai teste une autr
 Rien de tout ça n'est dans le jeu. C'est un essai, à montrer à Romain, sans « go » pour la suite.
 
 **En ligne (page Claude, hors du jeu)** : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP
-(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795819812-04f2` depuis la vague de flammes, 23 h 50). Pour republier : `publish_files` des fichiers
-de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json, et le dossier `nuit/` : fond.jpg, crev.jpg, crev-a.png, pilier-g.png, pilier-d.png, feu.jpg, fissure.png, cristal-*.json, flammes.mp4, flammes.webm), `base_version` = la version en ligne.
+(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795828292-dfad` depuis les cristaux et la vague de Romain, 28 novembre 2 h 10). Pour republier : `publish_files` des fichiers
+de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json, et le dossier `nuit/` : fond.jpg, crev.jpg, crev-a.png, pilier-g.png, pilier-d.png, feu.jpg, arrivee.png, vague.mp4, vague.webm, et `nuit/cr/` : c, m, e, k de 00 à 19), `base_version` = la version en ligne. Les fichiers doivent être copiés sous `/home/claude` (l'outil refuse `/tmp`).
 **Piège de la page Claude** (vu par Romain : un ⚠ à la place du jeu) : elle ne sert pas les `.glb`, et
 elle interdit à la page de « télécharger » une adresse `data:` (fetch). Un glTF avec ses données en
 `data:` ne se charge donc pas. Solution : chaque `.glb` est rangé tel quel en base64 dans un `.json`
@@ -345,7 +345,11 @@ Pisteur garde la salle de l'armure (ses murets, son mannequin).
   autres images (cristaux qui tombent, feu, jour) ne sont pas utilisées. **Aucun crédit Higgsfield dépensé** pour
   cette étape (les images sont celles de Romain).
 
-## La vague de flammes et les cristaux (premier tiers de la phase 2), le saut corrigé (27 novembre, en ligne à 23 h 50, version `1795819812-04f2` ; go de Romain à 23 h 34 : « Ok, vas-y. »)
+## La vague de flammes et les cristaux, première version (27 novembre, en ligne à 23 h 50, version `1795819812-04f2` ; go de Romain à 23 h 34 : « Ok, vas-y. ») — remplacée
+
+**Jugée « très moche » par Romain** (cristaux « collés », fissures « horribles », mur de flammes en copies côte à côte,
+rouge « dégueulasse », éclatement laid) : cristaux 3D, fissures, rouge et mur de flammes ont été retirés et refaits
+avec ses images et ses vidéos (section suivante). Ce qui reste de cette version : le saut, l'abri en cône, les mots.
 
 Décidé à la voix juste avant (Bible § 18.21, fin). **La place de nuit, c'est la phase 2** : au premier tiers, des
 cristaux tombent et on se cache derrière pour échapper à la vague de flammes de l'armure ; les crevasses, c'est le
@@ -384,6 +388,56 @@ troisième tiers (pas la phase 3).
 - **Crédits Higgsfield : 125** (trois cristaux 3D à 30, la vidéo à 35), annoncés à Romain avant de lancer.
 - **Pas fait** : l'armure elle-même (toujours le cercle doré) ; les deuxième et troisième tiers enchaînés (les
   crevasses restent sur leur bouton d'essai) ; des points de vie.
+
+## Les cristaux et la vague de Romain (28 novembre, en ligne à 2 h 10, version `1795828292-dfad` ; go de Romain à 1 h 38 : « Vas-y. »)
+
+Décidé à la voix : **« toi tu peins, moi je découpe »**. Romain a peint **5 paires d'images** de la place de nuit
+(les mêmes cristaux en couleur, puis en rouge), **5 vidéos d'éclatement** (une par paire, faite d'après l'image
+rouge) et **la vidéo de la vague** (faite d'après la place : la boule de feu à la porte du temple, puis l'anneau de
+feu qui fend la place et la lave). Tout est gardé dans `origine/nuit/romain/`. Rien n'est plus fait par moi à l'œil :
+plus de cristaux 3D, de fissures dessinées, de rouge ajouté ni de mur de flammes.
+
+- **Le recalage** : chaque image et chaque image de vidéo est posée exactement sur la peinture de la place
+  (`cv2.findTransformECC`, en ne regardant que les pixels qui n'ont pas changé ; à moins d'un pixel près).
+  `outils/salle-nuit/cristaux_peints.py`.
+- **20 endroits** : les cristaux debout et assez grands de ses 5 images (`spots.py`, avec une liste de ceux qu'on
+  écarte : couchés, trop petits, collés à une lanterne ou à un bac). Pour chacun (`decoupes.py`) : un morceau de son
+  image en couleur et en rouge (`site/nuit/cr/cNN.jpg`), le corps du cristal détouré (rembg) et le sol qu'il a changé
+  (ses fissures, sa lueur) (`mNN.png`), son pied sur la place, sa hauteur. `site/nuit/cristaux.json`.
+- **La chute** : 3 endroits tirés au hasard (bien écartés, jamais sur le héros ni dans une crevasse ouverte). Le
+  cristal découpé de sa peinture tombe du plafond (une plaque debout à son pied qui montre ses pixels : le héros
+  passe derrière, comme les lanternes) et se plante ; à l'impact ses fissures et sa lueur apparaissent, le sol tremble.
+  Sous un cristal qui tombe : touché, repoussé.
+- **La vague** : sa vidéo, recalée image par image (`vague.py` ; lignes 250 à 1870 de la peinture, à moitié de taille,
+  `site/nuit/vague.mp4` / `.webm`), remplace la place 2,7 s après le début. Elle s'arrête sur sa dernière image (la
+  lave, qui vacille un peu), la place brûle jusqu'à 6,4 s, puis la nuit revient en 1 s. Les lanternes disparaissent
+  dans sa vidéo : les nôtres restent (ce sont des plaques au-dessus).
+- **Quand le feu arrive** à chaque endroit : une carte tirée de sa vidéo (`arrivee.py`, `site/nuit/arrivee.png`) :
+  l'anneau de flammes ou la lave, **pas la lueur de la boule de feu sur les dalles au début** (sinon le milieu de la
+  place brûlait dès 0,4 s). Au milieu de la place : 1,7 s après la boule de feu ; en bas : environ 3 s.
+- **L'abri** : derrière chaque cristal, vu de la porte du temple, un cône où la vidéo ne s'affiche pas (on voit la
+  place de nuit) ; le héros dedans : « À l'abri ! », ailleurs dans le feu : « Touché ! » (une fois par seconde, voile
+  rouge). Le cristal protège jusqu'à ce que le feu s'éteigne.
+- **Le rouge** monte du pied en fondu (pas de ligne nette) de son image en couleur à son image rouge, depuis le moment
+  où le feu atteint le cristal jusqu'à 1 s avant la fin du feu.
+- **L'éclatement** : sa vidéo d'éclatement de la bonne paire, recalée image par image, seulement autour de ce cristal
+  (`atlas.py` : 30 images à 10 par seconde, de 1 s avant l'éclatement à 2 s après, `eNN.jpg` ; une ellipse douce qui
+  n'attrape pas les cristaux voisins, `masque_eclat.py`, `kNN.png`). Elle part 1 s avant la fin du feu : le cristal
+  éclate quand le feu s'éteint. Chargée seulement pour les cristaux tirés, quand ils tombent.
+- **Sans halo** : de ses morceaux d'image (les fissures, l'éclatement), le jeu ne montre que ce qui diffère de la place
+  nue ; le reste est transparent et le feu passe dessous (sinon une tache de dallage sombre restait autour).
+- **Couleurs de la vidéo** : elle est lue telle quelle et convertie dans le calcul de l'image (sinon, selon le
+  navigateur, elle sortait délavée, toute la place voilée de blanc).
+- **Si la vidéo ne défile pas** (le WebKit des essais, peut-être certains iPhone), ou tant qu'elle n'a pas démarré : la
+  lave de sa dernière image (`site/nuit/feu.jpg`) se pose selon la carte d'arrivée. Pas d'anneau, mais pas de trou.
+- Vérifié image par image (`outils/essai_vague3.py`, `essai_touche.py`, `captures/cristaux-peints-*.jpg`) et sous
+  WebKit en temps réel (`outils/essai_webkit_vague3.py`, `captures/webkit-cristaux-peints-lave.jpg`).
+- **Aucun crédit Higgsfield** (tout est de Romain). Poids : 18 Mo d'images de cristaux (3 Mo chargés au début, le
+  reste quand un cristal tombe), 2,5 Mo de vidéo.
+- **Limites dites à Romain** : l'abri se voit comme une ombre sombre sur la lave ; la fumée rose de l'éclatement est
+  grosse et cache un instant le héros ; sur iPhone, si la vidéo ne démarre pas, la lave arrive d'un coup sans l'anneau.
+- **Pas fait** : l'armure elle-même (toujours le cercle doré) ; les deuxième et troisième tiers enchaînés ; des points
+  de vie.
 
 ## Ce qui n'est pas fait
 
