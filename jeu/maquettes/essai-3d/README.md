@@ -15,8 +15,8 @@ plate qui ne prend pas la lumière, trop peu de poses). Cet essai teste une autr
 Rien de tout ça n'est dans le jeu. C'est un essai, à montrer à Romain, sans « go » pour la suite.
 
 **En ligne (page Claude, hors du jeu)** : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP
-(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795828292-dfad` depuis les cristaux et la vague de Romain, 28 novembre 2 h 10). Pour republier : `publish_files` des fichiers
-de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json, et le dossier `nuit/` : fond.jpg, crev.jpg, crev-a.png, pilier-g.png, pilier-d.png, feu.jpg, arrivee.png, vague.mp4, vague.webm, et `nuit/cr/` : c, m, e, k de 00 à 19), `base_version` = la version en ligne. Les fichiers doivent être copiés sous `/home/claude` (l'outil refuse `/tmp`).
+(identifiant `1aa48eb1-9b62-479d-b64a-5d4f2246ab88`, version `1795835524-6ca1` depuis l'armure de Grosbec en 3D, 28 novembre 4 h 12). Pour republier : `publish_files` des fichiers
+de `site/` (index.html, essai3d.js, fond.jpg, prof.png, *.json dont `armure.json`, et le dossier `nuit/` : fond.jpg, crev.jpg, crev-a.png, pilier-g.png, pilier-d.png, feu.jpg, arrivee.png, vague.mp4, vague.webm, et `nuit/cr/` : c, m, e, k de 00 à 19), `base_version` = la version en ligne. Les fichiers doivent être copiés sous `/home/claude` (l'outil refuse `/tmp`).
 **Piège de la page Claude** (vu par Romain : un ⚠ à la place du jeu) : elle ne sert pas les `.glb`, et
 elle interdit à la page de « télécharger » une adresse `data:` (fetch). Un glTF avec ses données en
 `data:` ne se charge donc pas. Solution : chaque `.glb` est rangé tel quel en base64 dans un `.json`
@@ -438,6 +438,35 @@ plus de cristaux 3D, de fissures dessinées, de rouge ajouté ni de mur de flamm
   grosse et cache un instant le héros ; sur iPhone, si la vidéo ne démarre pas, la lave arrive d'un coup sans l'anneau.
 - **Pas fait** : l'armure elle-même (toujours le cercle doré) ; les deuxième et troisième tiers enchaînés ; des points
   de vie.
+
+## L'armure de Grosbec en 3D, au pied des marches (28 novembre, en ligne à 4 h 12, version `1795835524-6ca1` ; go de Romain à 4 h 05 : « vas-y, go alors, au travail »)
+
+- **Le modèle** : 3 propositions en image (Nano Banana 2.1, 6 crédits, `origine/armure/proposition*.jpg`, d'après l'armure du
+  combat du Barde rendue par `combat-barde/src/grosbec.js`) ; Romain a choisi **la plus massive** ; dans le dos, **la prise du
+  rayon** (anneau de bronze au cœur doré) et **la trappe à verrous** ; la planche trois-quarts / face / dos (3 essais, 6 crédits ;
+  `origine/armure/planche-massive.jpg`, vues découpées `vue-*.png`) ; Meshy multi-image, texturé (PBR, lueurs), articulé, posé en
+  A, 3 m, avec le mouvement `Idle` (n° 0) : **38 crédits**, `origine/armure-base.glb` (16 Mo, **ne pas jeter**). Allégé par
+  `outils.mjs base` (textures WebP 1024) : `origine/glb/armure.glb` (3,8 Mo) → `site/armure.json` (5,1 Mo).
+- **Revue avant de le poser** : `outils/revue-armure/` (une petite page à part avec la caméra de la peinture ;
+  `captures/armure-3m-ou-4m50.jpg`). Romain : **3 m** ; puis, à la voix, **au pied des marches** plutôt qu'en haut (il frappera le
+  sol plat, il est plus près donc plus gros sur le téléphone, le rayon descend du temple jusque dans son dos).
+- **Dans l'essai** (`src/main.js`, bloc « L'ARMURE DE GROSBEC, EN 3D ») : `ARM` = (10,78 ; −1,9), le losange du palier au pied des
+  marches (le haut des marches était (10,86 ; −5,97 ; z 2)) ; 3,1 pas de haut ; tournée vers les héros.
+  - **Son mouvement d'attente** ralenti (×0,6) ; l'`Idle` de la bibliothèque tourne tout le corps et regarde partout : la torsion
+    du bassin autour de la verticale est enlevée, celle de la tête gardée au tiers (il respire, il reste face aux héros).
+  - **Ses trois lanternes** (les épaules, la poitrine) : une vraie lampe dans chacune (3,5 et 4,5 d'intensité, 2,6 à 2,8 pas),
+    placée sur la pose de repos puis qui suit ses os (`LeftShoulder`, `RightShoulder`, `Spine02`), qui vacille un peu, et un halo ;
+    l'or un peu baissé (couleur ×0,8, lueurs ×0,7) pour qu'il ne paraisse pas collé ; **une lueur chaude sur les dalles** à ses
+    pieds (la place est peinte : ses lampes ne l'éclairent pas d'elles-mêmes).
+  - **Son ombre** : une lumière qui ne sert qu'à elle (intensité 0), depuis le temple dans son dos, assez haute (environ 38°) :
+    l'ombre s'étire de 4 pas vers nous ; sa carte d'ombre ne couvre que les abords de l'armure (le héros n'en a une que tout près).
+  - **Le rayon doré d'Elyra** : de la porte du temple à la prise dans son dos (un cœur et un halo, de la lumière qui coule vers
+    lui ; l'armure le cache en partie), un éclat à la porte.
+  - **Plus de cristal sur lui ni juste devant** (à moins de 3,6 pas) ; le feu de la vague et les cônes d'abri partent de lui.
+- Vérifié : `outils/essai_armure.py` (`captures/armure-depart.jpg`, `armure-pied-des-marches.jpg`), la vague avec lui
+  (`essai_vague3.py`), WebKit avec la règle de sécurité du téléphone (`essai_webkit_armure.py`, `captures/webkit-armure.jpg`).
+- **Pas fait** : ses mouvements (le coup de poing au sol, le lancer de la vague, le coup reçu : à choisir avec Romain, 8 crédits
+  chacun) ; les sorts du Barde touchent sa poitrine (ARM.zc = 2) mais il ne réagit pas encore.
 
 ## Ce qui n'est pas fait
 

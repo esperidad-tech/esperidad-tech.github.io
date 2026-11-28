@@ -15,7 +15,7 @@ const NUIT = !PIST;   // le Barde joue sur la place de nuit peinte par Romain (2
 const T = 40, K = NUIT ? 0.4 : 0.62, OX = 70, OY = 250, SW = 860, SH = 556;   // (K : l'écrasement du sol vu par la caméra ; sert au pouce)
 const THETA = Math.asin(0.62), ZS = NUIT ? 1 : 1 / Math.cos(THETA);
 const L = { L: 18, P: 10.5, coin: 3.4 };
-const ARM = NUIT ? { x: NJ.armure.x, y: NJ.armure.y, r: 1.6, zc: NJ.armure.z + 1.6, dy: 0 } : { x: 9, y: 1.25, r: 1.6, zc: 2.3, dy: 0.6 };   // (la nuit : la place de l'armure, en haut des marches, devant la porte du temple)
+const ARM = NUIT ? { x: 10.78, y: -1.9, r: 1.6, zc: 2.0, dy: 0 } : { x: 9, y: 1.25, r: 1.6, zc: 2.3, dy: 0.6 };   // (la nuit : l'armure de Grosbec au pied des marches, sur le losange du palier ; Romain, 28 nov. : « j'aime bien en bas des escaliers »)
 const LANT = { or: [1.2, 5.6], rouge: [16.8, 5.6] };
 const BRAS = [[5.15, 0.75, 2.6], [12.85, 0.75, 2.6], [0.42, 3.85, 2.3], [17.58, 3.85, 2.3]];
 const $ = id => document.getElementById(id);
@@ -1032,9 +1032,70 @@ function cameraNuit(dt) {
   rendu.getDrawingBufferSize(_ecran); for (const P of piliers) P.m.uniforms.ecran.value.copy(_ecran);
 }
 const _ecran = new THREE.Vector2();
-if (NUIT) {   // la place de l'armure (en attendant Grosbec et son armure) : un cercle doré sur le palier, en haut des marches
-  const cible = new THREE.Mesh(new THREE.RingGeometry(1.1, 1.4, 48), new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.3, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
-  cible.position.copy(G(ARM.x, ARM.y, NJ.armure.z + 0.03)); monde.add(cible);
+/* ================= L'ARMURE DE GROSBEC, EN 3D (28 novembre ; Romain : la plus massive, 3 m, au pied des marches) =================
+   Le modèle Higgsfield (Meshy, d'après sa planche : origine/armure-base.glb), articulé, avec son mouvement d'attente (ralenti : il est lourd).
+   - ses trois lanternes (les deux des épaules, celle de la poitrine) : une vraie lampe dans chacune, qui suit ses os, éclaire son armure,
+     et un halo autour ; une lueur chaude sur les dalles à ses pieds (la place est peinte : ses lampes ne l'éclairent pas d'elles-mêmes) ;
+   - son ombre : portée par la lumière du temple, dans son dos, elle s'étire vers nous sur la place ;
+   - le rayon doré d'Elyra : il part de la porte du temple, descend les marches et entre dans son dos (la prise entre ses épaules). */
+const armure = { m: null, mix: null, lampes: [], halos: [], os: [], dec: [] };
+if (NUIT) {
+  const place = new THREE.Group(); place.position.copy(G(ARM.x, ARM.y, 0)); monde.add(place);
+  const piv = new THREE.Group(); piv.rotation.x = Math.PI / 2; place.add(piv);   // (les modèles glTF ont la hauteur en y ; il nous fait face)
+  // la lueur de ses lanternes sur les dalles
+  const lueurSol = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: toile(128, 128, x => { const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(255,190,90,.55)'); g.addColorStop(0.45, 'rgba(255,150,60,.18)'); g.addColorStop(1, 'rgba(255,120,40,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); }), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+  lueurSol.scale.set(6.5, 4.2, 1); lueurSol.position.copy(G(ARM.x, ARM.y + 0.6, 0.02)); lueurSol.renderOrder = -8; monde.add(lueurSol); armure.lueurSol = lueurSol;
+  // son ombre : une lumière qui ne sert qu'à ça (aucune clarté), depuis le temple, dans son dos ; elle ne voit que les abords de l'armure
+  const lo = new THREE.DirectionalLight(0xffffff, 0); lo.position.copy(G(ARM.x - 0.4, ARM.y - 6, 4.7)); lo.target.position.copy(G(ARM.x, ARM.y + 2, 0)); monde.add(lo, lo.target);
+  lo.castShadow = true; lo.shadow.mapSize.set(1024, 1024); Object.assign(lo.shadow.camera, { left: -3.2, right: 3.2, top: 3.2, bottom: -3.2, near: 1, far: 16 }); lo.shadow.bias = -0.0006; lo.shadow.radius = 4; lo.shadow.camera.updateProjectionMatrix();
+  // le rayon d'Elyra : de la porte du temple à la prise dans son dos ; un cœur doré et un halo, de la lumière qui coule vers lui
+  const A0 = G(NJ.porte.x, NJ.porte.y, NJ.porte.z - 0.6), A1 = G(ARM.x, ARM.y - 0.5, 2.55), L = A0.distanceTo(A1);
+  const matRayon = (r, a) => new THREE.ShaderMaterial({ uniforms: { t: { value: 0 }, a: { value: a } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide,
+    vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: 'uniform float t; uniform float a; varying vec2 vU; void main(){ float bord = 1.0 - abs(vU.x * 2.0 - 1.0); bord = pow(max(bord, 0.0), ' + (r < 0.2 ? '1.2' : '2.6') + '); float flot = 0.65 + 0.35 * sin(vU.y * 38.0 + t * 9.0); float bout = smoothstep(0.0, 0.08, vU.y) * smoothstep(1.0, 0.94, vU.y); gl_FragColor = vec4(vec3(1.0, 0.78, 0.35) * bord * flot * bout * a, 1.0); }' });
+  const rayon = new THREE.Group(); rayon.position.copy(A0).lerp(A1, 0.5); rayon.lookAt(A1); monde.add(rayon);
+  for (const [r, a] of [[0.07, 1.6], [0.32, 0.55]]) { const c = new THREE.Mesh(new THREE.CylinderGeometry(r, r, L, 16, 1, true), matRayon(r, a)); c.rotation.x = Math.PI / 2; c.frustumCulled = false; rayon.add(c); armure.dec.push(c.material); }
+  const eclatPorte = sprite(texLueur('rgba(255,205,110,.9)'), 1.6, true); eclatPorte.position.copy(A0); monde.add(eclatPorte); armure.eclatPorte = eclatPorte;
+  charger('armure.json', g => {
+    const m = g.scene; armure.m = m;
+    m.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = false; o.frustumCulled = false; if (o.material) { o.material.envMapIntensity = 0.5; o.material.color.multiplyScalar(0.8); o.material.emissiveIntensity = 0.7; } } });
+    m.scale.setScalar(3.1 / 3.0); piv.add(m);   // (le modèle fait 3 m ; 1 pas ≈ 0,97 m, comme le Barde)
+    // ses lanternes : on les place sur la pose de repos, puis elles suivent les os
+    m.updateMatrixWorld(true);
+    const os = n => m.getObjectByName(n), gauche = os('LeftShoulder'), droite = os('RightShoulder'), buste = os('Spine02');
+    const coteG = Math.sign(piv.worldToLocal(gauche.getWorldPosition(new THREE.Vector3())).x) || 1;
+    const cibles = [[gauche, new THREE.Vector3(0.58 * coteG, 2.5, -0.05), 0xffc070, 3.5, 2.6], [droite, new THREE.Vector3(-0.58 * coteG, 2.5, -0.05), 0xffc070, 3.5, 2.6], [buste, new THREE.Vector3(0, 2.02, 0.42), 0xffb050, 4.5, 2.8]];
+    for (const [o, p, coul, I, dist] of cibles) {
+      const monde_ = piv.localToWorld(p.clone().multiplyScalar(3.1 / 3.0)), loc = o.worldToLocal(monde_.clone());
+      const l = new THREE.PointLight(coul, I, dist, 1.6); monde.add(l); armure.lampes.push(l); armure.os.push([o, loc]);
+      const hl = sprite(texLueur('rgba(255,200,110,.85)'), 0.6, true); monde.add(hl); armure.halos.push(hl);
+    }
+    if (g.animations.length) {   // (son « Idle » regarde partout et tourne tout le corps : on garde le souffle, il reste tourné vers les héros)
+      const clip = g.animations[0], q = new THREE.Quaternion(), tw = new THREE.Quaternion(), id = new THREE.Quaternion();
+      for (const k of clip.tracks) {
+        const [n, p] = k.name.split('.'); if (p !== 'quaternion' || (n !== 'Hips' && n !== 'Head')) continue;
+        const v = k.values;
+        for (let i = 0; i < v.length; i += 4) {
+          q.fromArray(v, i); tw.set(0, q.y, 0, q.w).normalize();   // la torsion autour de la verticale
+          const sw = q.clone().multiply(tw.clone().invert());          // le reste (pencher, respirer)
+          sw.multiply(id.clone().slerp(tw, n === 'Head' ? 0.35 : 0)).toArray(v, i);
+        }
+      }
+      armure.mix = new THREE.AnimationMixer(m); const a = armure.mix.clipAction(clip); a.timeScale = 0.6; a.play();
+    }
+    pret('armure');
+  }, e => { console.error(e); pret('armure'); });
+}
+const _va = new THREE.Vector3();
+function avancerArmure(dt, t) {
+  if (!armure.m) return;
+  if (armure.mix) armure.mix.update(dt);
+  armure.m.updateMatrixWorld(true);
+  armure.os.forEach(([o, loc], i) => { o.localToWorld(_va.copy(loc)); monde.worldToLocal(_va); armure.lampes[i].position.copy(_va); armure.halos[i].position.copy(_va);
+    const f = 0.92 + 0.08 * Math.sin(t * (5.1 + i) + i * 2) * Math.sin(t * 2.3 + i); armure.lampes[i].intensity = (i === 2 ? 4.5 : 3.5) * f; armure.halos[i].material.opacity = 0.55 * f; });
+  armure.lueurSol.material.opacity = 0.85 + 0.15 * Math.sin(t * 2.3);
+  for (const mt of armure.dec) mt.uniforms.t.value = t;
+  armure.eclatPorte.material.opacity = 0.7 + 0.3 * Math.sin(t * 3.1);
 }
 
 /* ================= LE PREMIER TIERS DE LA PHASE 2 : LES CRISTAUX ET LA VAGUE DE FEU, PEINTS PAR ROMAIN =================
@@ -1152,7 +1213,7 @@ function tirer() {   // 3 cristaux au hasard parmi les 20 : écartés, pas sur l
     const ordre = SPOTS.map((S, i) => i).sort(() => Math.random() - 0.5), pris = [];
     for (const i of ordre) {
       const S = SPOTS[i];
-      if (Math.hypot(S.x - h.x, S.y - h.y) < 2.4 || (crev.ouvert && dansCrevasse(S.x, S.y, 0.8))) continue;
+      if (Math.hypot(S.x - h.x, S.y - h.y) < 2.4 || Math.hypot(S.x - ARM.x, S.y - ARM.y) < 3.6 || (crev.ouvert && dansCrevasse(S.x, S.y, 0.8))) continue;
       if (pris.some(j => Math.hypot(S.x - SPOTS[j].x, S.y - SPOTS[j].y) < 4.6)) continue;
       pris.push(i); if (pris.length === 3) return pris;
     }
@@ -1271,7 +1332,7 @@ function avancerVague(dt, t) {
 }
 
 /* ---------- la boucle ---------- */
-const attendu = new Set(NUIT ? ['fond', 'crev', 'crevA', 'feu', 'arrivee', 'pilier-g', 'pilier-d', 'barde'] : ['fond', 'prof', 'barde']); let demarre = false;
+const attendu = new Set(NUIT ? ['fond', 'crev', 'crevA', 'feu', 'arrivee', 'pilier-g', 'pilier-d', 'barde', 'armure'] : ['fond', 'prof', 'barde']); let demarre = false;
 function pret(n) { attendu.delete(n); if (!attendu.size && !demarre) { demarre = true; $('charge').style.display = 'none'; } }
 let avant = performance.now(), ips = 60, nImg = 0, t0 = avant;
 let tSim = 0;
@@ -1319,6 +1380,7 @@ function etape(dt, t) {
   incline.position.copy(G(h.x, h.y, 0));
   const r = h.sautR / SAUT.recharge; if (r !== etape.r) { etape.r = r; $('bSaut').style.setProperty('--r', r.toFixed(3)); }
   if (melangeur) { locomotion(dt); melangeur.update(dt); }
+  if (NUIT) avancerArmure(dt, t);
   redresser();
   barde.updateMatrixWorld(true); animerLuth(dt, t);
   if (NUIT) { avancerCrevasses(dt, t); avancerVague(dt, t); }
@@ -1351,4 +1413,4 @@ function poser(nom, t) {   // (essai) un seul mouvement, à un instant donné
   for (const n in actions) { actions[n].play(); actions[n].setEffectiveWeight(n === nom ? 1 : 0); actions[n].timeScale = 0; }
   actions[nom].time = t; melangeur.update(0); MOD.updateMatrixWorld(true); const r = piedsModele(); for (const n of ['LeftUpLeg', 'LeftLeg', 'Hips']) { const o = MOD.getObjectByName(n); r[n + '_q'] = o.quaternion.toArray(); r[n + '_p'] = o.position.toArray(); } r.pistes = actions[nom].getClip().tracks.slice(0, 6).map(k => k.name); r.nbPistes = actions[nom].getClip().tracks.length; r.duree = actions[nom].getClip().duration; return r;
 }
-window.__essai = { osM: noms => { const r = {}; for (const n of noms) { const o = MOD.getObjectByName(n); if (!o) continue; o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); MOD.worldToLocal(v); r[n] = [v.x, v.y, v.z]; } return r; }, frapper, basculerOmbre, mq, MURETS, COUPS, sauter, SAUT, get tirs() { return tirs.map(s => ({ x: s.x, y: s.y, z: s.z, q: s.q })); }, ecran: (x, y, z) => { if (NUIT) { cam.updateMatrixWorld(); const v = G(x, y, z).project(cam); return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; } return { x: (px(x) - camX) * innerWidth / Ws, y: (py(y, z) - camY) * innerHeight / Hs }; }, fissurer, lancerVague, get vague() { return vg; }, video: () => videoEl ? [videoEl.currentSrc.split('/').pop(), videoEl.readyState, videoEl.paused, videoEl.currentTime] : null, cristaux: () => vg.actifs.map(c => ({ i: c.i, x: c.S.x, y: c.S.y, etat: c.etat })), arriveFeu, abrite: () => abrite(h.x, h.y), imgDe, solImg, fen, crev, NJ, libre, dansCrevasse, nuit, piliers, poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };
+window.__essai = { armure, osM: noms => { const r = {}; for (const n of noms) { const o = MOD.getObjectByName(n); if (!o) continue; o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); MOD.worldToLocal(v); r[n] = [v.x, v.y, v.z]; } return r; }, frapper, basculerOmbre, mq, MURETS, COUPS, sauter, SAUT, get tirs() { return tirs.map(s => ({ x: s.x, y: s.y, z: s.z, q: s.q })); }, ecran: (x, y, z) => { if (NUIT) { cam.updateMatrixWorld(); const v = G(x, y, z).project(cam); return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; } return { x: (px(x) - camX) * innerWidth / Ws, y: (py(y, z) - camY) * innerHeight / Hs }; }, fissurer, lancerVague, get vague() { return vg; }, video: () => videoEl ? [videoEl.currentSrc.split('/').pop(), videoEl.readyState, videoEl.paused, videoEl.currentTime] : null, cristaux: () => vg.actifs.map(c => ({ i: c.i, x: c.S.x, y: c.S.y, etat: c.etat })), arriveFeu, abrite: () => abrite(h.x, h.y), imgDe, solImg, fen, crev, NJ, libre, dansCrevasse, nuit, piliers, poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };
