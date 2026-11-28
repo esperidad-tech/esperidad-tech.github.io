@@ -99,7 +99,7 @@ if (!NUIT) {
   /* la nuit : la peinture de Romain (les lanternes allumées, le Barde peint effacé), et ses crevasses qui s'ouvrent une fois pour toutes */
   fondNuit = tex('nuit/fond.jpg', 'fond', true); crevTex = tex('nuit/crev.jpg', 'crev', true); crevA = tex('nuit/crev-a.png', 'crevA', false);
   const feuTex = tex('nuit/feu.jpg', 'feu', true);
-  var coupTex = tex('nuit/coup.jpg', 'coupImg', true);   // (l'image de l'explosion de la vidéo du coup : si sa vidéo ne défile pas)   // (la dernière image de sa vidéo, la place en lave : si la vidéo ne défile pas)
+  var coupTex = tex('nuit/coup-d.jpg', 'coupImgD', true), coupTexG = tex('nuit/coup-g.jpg', 'coupImgG', true);   // (l'image de l'explosion de la vidéo du coup : si sa vidéo ne défile pas)   // (la dernière image de sa vidéo, la place en lave : si la vidéo ne défile pas)
   const arrTex = tex('nuit/arrivee.png', 'arrivee', false); arrTex.minFilter = arrTex.magFilter = THREE.NearestFilter; arrTex.generateMipmaps = false;   // (quand le feu de la vidéo arrive à chaque endroit)
   fondMat = new THREE.ShaderMaterial({
     uniforms: { fond: { value: fondNuit }, crev: { value: crevTex }, crevA: { value: crevA }, fen: { value: new THREE.Vector4(0, 0, IMW, IMH) },
@@ -1127,7 +1127,7 @@ if (NUIT) {
     m.scale.setScalar(HAUT / 3.0); piv.add(m);   // (le modèle fait 3 m ; 1 pas ≈ 0,97 m, comme le Barde)
     // ses lanternes : on les place sur la pose de repos, puis elles suivent les os
     m.updateMatrixWorld(true);
-    const os = n => m.getObjectByName(n), buste = os('Spine'), gauche = buste, droite = buste;   // (les lanternes sont fixées à la cuirasse : chez Meshy, « Spine » est le haut du buste)
+    const os = n => m.getObjectByName(n), buste = os('Spine'), gauche = os('LeftShoulder'), droite = os('RightShoulder');   // (les lanternes suivent l'épaule, qui pivote un peu avec le bras ; le disque de la poitrine, la cuirasse : chez Meshy, « Spine » est le haut du buste)
     const coteG = Math.sign(piv.worldToLocal(os('LeftShoulder').getWorldPosition(new THREE.Vector3())).x) || 1;
     const cibles = [[gauche, new THREE.Vector3(0.58 * coteG, 2.5, -0.05), 0xffe2b0, 8, 4.2], [droite, new THREE.Vector3(-0.58 * coteG, 2.5, -0.05), 0xffe2b0, 8, 4.2], [buste, new THREE.Vector3(0, 2.02, 0.42), 0xffb050, 6, 3.2]];   // (les épaules : lampes presque blanches et plus fortes)
     for (const [o, p, coul, I, dist] of cibles) {
@@ -1139,7 +1139,7 @@ if (NUIT) {
       lisserBoucle(g.animations[0]);
       armure.mix = new THREE.AnimationMixer(m); const a = armure.mix.clipAction(g.animations[0]); a.timeScale = 0.7; a.play(); armure.attente = a;
       const k = g.animations[0].tracks.find(k => k.name === 'Hips.quaternion');
-      if (k) { let y = 0, w = 0; for (let i = 0; i < k.values.length; i += 4) { y += k.values[i + 1]; w += k.values[i + 3]; } m.rotation.y = -2 * Math.atan2(y, w); }
+      if (k) { let y = 0, w = 0; for (let i = 0; i < k.values.length; i += 4) { y += k.values[i + 1]; w += k.values[i + 3]; } m.rotation.y = -2 * Math.atan2(y, w); } armure.lacet0 = m.rotation.y; armure.vise = 0;
     }
     // ses pieds, tenus au sol (Romain, 5 h 47 : « image par image, les pieds flottent un peu ») : les sommets du dessous de chaque pied ;
     // à chaque image, on mesure où ils sont et on remet le pied sur le palier, à la même place
@@ -1192,8 +1192,9 @@ function avancerArmure(dt, t) {
     p.ombre.position.set(sx + _dp.x, sy + _dp.y - 0.04, ARM.z + 0.008);
   }
   // (la correction suit le poids de l'attente : quand il parle, elle s'efface en douceur, et revient de même ; avant, elle se coupait d'un coup)
-  if (armure.bras && wA > 0.001) for (const [bras, avant] of armure.bras) {   // les bras redescendent d'un tiers vers le bas (Romain : « comme s'il tenait quelque chose »)
-    bras.getWorldPosition(_b1); avant.getWorldPosition(_b2); _d1.subVectors(_b2, _b1).normalize(); _d2.copy(_d1).lerp(_bas, 0.4 * wA).normalize();
+  const wC = armure.coup ? armure.coup.getEffectiveWeight() * (armure.coup.isRunning() ? 1 : 0) : 0, bas = 0.4 * wA + 0.33 * wC;   // (pendant le coup de poing : ses bras montent un tiers moins haut ; levés à la verticale, l'aisselle s'étirait)
+  if (armure.bras && bas > 0.001) for (const [bras, avant] of armure.bras) {   // les bras redescendent d'un tiers vers le bas (Romain : « comme s'il tenait quelque chose »)
+    bras.getWorldPosition(_b1); avant.getWorldPosition(_b2); _d1.subVectors(_b2, _b1).normalize(); _d2.copy(_d1).lerp(_bas, bas).normalize();
     _qw.setFromUnitVectors(_d1, _d2); bras.getWorldQuaternion(_qb); bras.parent.getWorldQuaternion(_qp);
     bras.quaternion.copy(_qp.invert().multiply(_qw.multiply(_qb))); bras.updateMatrixWorld(true);
   }
@@ -1359,45 +1360,81 @@ if (NUIT) {
    il frappe le palier ; sur la place, sa vidéo recalée : les fissures dorées s'ouvrent dans la moitié droite, puis la lumière jaillit
    du sol ; le Barde encore dans la zone à ce moment-là est projeté en l'air. (outils/salle-nuit/coup.py : recalage, zone, temps) */
 const COUP_IMPACT = 1.82;   // (dans son film : son poing droit touche le palier ; mesuré sur la main, essai_coup.py)
-const CP = { t: -1, info: null, zone: null, el: null, tex: null, lance: false, frappe: false, touche: false, eclat: null };
+// (deux zones, deux vidéos de Romain : à droite les fissures dorées et les colonnes de lumière, à gauche les fissures et l'explosion de roche ;
+//  à chaque coup, Grosbec en tire une au hasard — Romain, 6 h 45 : « il en choisit qu'une seule, bien sûr » ; il se tourne vers elle, et les
+//  éclairs de son gant ont la couleur de la zone : dorés à droite, orange feu à gauche)
+const CP = { t: -1, zones: null, Z: null, lance: false, frappe: false, touche: false, eclat: null, cote: null };
+function videoCoup(nom) { const el = document.createElement('video'); el.muted = true; el.loop = false; el.playsInline = true; el.setAttribute('playsinline', ''); el.preload = 'auto';
+  fetch(el.canPlayType('video/mp4') ? 'nuit/' + nom + '.mp4' : 'nuit/' + nom + '.webm').then(r => r.blob()).then(b => { el.src = URL.createObjectURL(b); }).catch(e => console.error(e));
+  const tx = new THREE.VideoTexture(el); tx.colorSpace = THREE.NoColorSpace; return { el, tex: tx }; }
 if (NUIT) {
-  fetch('nuit/coup.json').then(r => r.json()).then(j => { CP.info = j; const t = atob(j.zone), u = new Uint8Array(GR.nx * GR.ny); for (let i = 0; i < u.length; i++) u[i] = (t.charCodeAt(i >> 3) >> (7 - (i & 7))) & 1; CP.zone = u; }).catch(e => console.error(e));
-  const el = document.createElement('video'); el.muted = true; el.loop = false; el.playsInline = true; el.setAttribute('playsinline', ''); el.preload = 'auto';
-  fetch(el.canPlayType('video/mp4') ? 'nuit/coup.mp4' : 'nuit/coup.webm').then(r => r.blob()).then(b => { el.src = URL.createObjectURL(b); }).catch(e => console.error(e));
-  CP.el = el; CP.tex = new THREE.VideoTexture(el); CP.tex.colorSpace = THREE.NoColorSpace; fondMat.uniforms.vidC.value = CP.tex;
+  fetch('nuit/coup.json').then(r => r.json()).then(j => { const Z = {};
+    for (const [cote, z] of Object.entries(j.zones)) { const t = atob(z.zone), u = new Uint8Array(GR.nx * GR.ny); for (let i = 0; i < u.length; i++) u[i] = (t.charCodeAt(i >> 3) >> (7 - (i & 7))) & 1;
+      Z[cote] = Object.assign({}, z, { cases: u, img: cote === 'gauche' ? coupTexG : coupTex, teinteC: new THREE.Color(...z.teinte) }, videoCoup(z.video)); }
+    CP.zones = Z; }).catch(e => console.error(e));
   CP.lum = new THREE.PointLight(0xffc860, 0, 18, 1.2); monde.add(CP.lum);
   CP.eclat = sprite(texLueur('rgba(255,214,120,.95)'), 2.4, true); CP.eclat.material.opacity = 0; monde.add(CP.eclat);
   CP.lumPoing = new THREE.PointLight(0xffd080, 0, 7, 1.5); monde.add(CP.lumPoing);
+  // les éclairs de son gant : une vidéo d'éclairs sur fond noir (Higgsfield, Seedance 2.5), en gris ; le noir s'efface, la teinte vient de la zone
+  const ev = document.createElement('video'); ev.muted = true; ev.loop = true; ev.playsInline = true; ev.setAttribute('playsinline', ''); ev.preload = 'auto';
+  fetch(ev.canPlayType('video/mp4') ? 'nuit/eclairs.mp4' : 'nuit/eclairs.webm').then(r => r.blob()).then(b => { ev.src = URL.createObjectURL(b); }).catch(e => console.error(e));
+  const et = new THREE.VideoTexture(ev); et.colorSpace = THREE.NoColorSpace;
+  const em = new THREE.ShaderMaterial({ uniforms: { t: { value: et }, teinte: { value: new THREE.Color(1, 0.82, 0.45) }, force: { value: 0 } }, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, toneMapped: false,
+    vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: 'uniform sampler2D t; uniform vec3 teinte; uniform float force; varying vec2 vU; void main(){ float l = texture2D(t, vU).r; l = max(0.0, l - 0.06) / 0.94; l *= 1.0 - smoothstep(0.55, 0.98, length(vU - 0.5) * 2.0); vec3 c = teinte * l + vec3(1.0) * l * l * 0.8; gl_FragColor = vec4(c * force * 1.7, 1.0); }' });
+  CP.ecl = { el: ev, mesh: new THREE.Mesh(new THREE.PlaneGeometry(1, 1), em), tourne: 0, quand: 0 }; CP.ecl.mesh.visible = false; CP.ecl.mesh.frustumCulled = false; CP.ecl.mesh.renderOrder = 6; scene.add(CP.ecl.mesh);
+  CP.lumGant = new THREE.PointLight(0xffd080, 0, 5, 1.6); scene.add(CP.lumGant);
 }
-const dansZoneCoup = (x, y) => !!(CP.zone && caseDe(CP.zone, x, y));
-function coupDePoing() {
-  if (!NUIT || CP.t >= 0 || !armure.coup || !CP.info) return;
-  CP.t = 0; CP.lance = false; CP.frappe = false; CP.touche = false; armure.retourDe = armure.coup;
+const dansZoneCoup = (x, y) => !!(CP.Z && caseDe(CP.Z.cases, x, y));
+function coupDePoing(cote) {
+  if (!NUIT || CP.t >= 0 || !armure.coup || !CP.zones) return;
+  CP.cote = cote === 'gauche' || cote === 'droite' ? cote : (Math.random() < 0.5 ? 'gauche' : 'droite'); const Z = CP.Z = CP.zones[CP.cote];
+  fondMat.uniforms.vidC.value = Z.tex; fondMat.uniforms.coupImg.value = Z.img; CP.ecl.mesh.material.uniforms.teinte.value.copy(Z.teinteC); CP.lumGant.color.copy(Z.teinteC);
+  CP.t = 0; CP.lance = false; CP.frappe = false; CP.touche = false; CP.tf = undefined; armure.retourDe = armure.coup;
+  // il vise la zone : tourné vers son milieu (un peu plus qu'en vrai, pour qu'on le voie bien)
+  armure.vise = 1.6 * Math.atan2(Z.centre[0] - ARM.x, Z.centre[1] - ARM.y);
   armure.coup.reset().setEffectiveWeight(1).fadeIn(0.3).play(); armure.attente.fadeOut(0.3); if (armure.parle && armure.parle.isRunning()) armure.parle.fadeOut(0.3);
   armure.retour = armure.coup.getClip().duration / armure.coup.timeScale - 0.5;
+  try { CP.ecl.el.currentTime = 0; if (!window.__pilote) CP.ecl.el.play().catch(() => {}); } catch (_) {}
   const b = $('bCoup'); if (b) b.classList.add('fait');
 }
 function avancerPoing(dt) {
+  if (armure.m && armure.lacet0 !== undefined) {   // (il se tourne vers la zone pendant son coup, puis revient face aux héros)
+    const cible = CP.t >= 0 && !(armure.retour !== undefined && armure.retour < 0.3) ? armure.vise : 0; armure.viseC = (armure.viseC || 0) + (cible - (armure.viseC || 0)) * Math.min(1, dt * 3);
+    armure.m.rotation.y = armure.lacet0 + armure.viseC;
+  }
   if (CP.t < 0) return; CP.t += dt;
-  const I = CP.info, imp = COUP_IMPACT / armure.coup.timeScale, vt = CP.t - (imp - I.fissures);   // (sa vidéo part pour que ses fissures s'ouvrent quand le poing touche)
+  const I = CP.Z, imp = COUP_IMPACT / armure.coup.timeScale, vt = CP.t - (imp - I.fissures);   // (sa vidéo part pour que ses fissures s'ouvrent quand le poing touche)
+  // les éclairs : ils crépitent sur son gant pendant qu'il arme, de plus en plus fort ; à l'impact, ils partent dans le sol
+  const E = CP.ecl, main = armure.m.getObjectByName('RightHand');
+  if (main) {
+    main.getWorldPosition(_vh); E.mesh.position.copy(_vh); E.mesh.quaternion.copy(cam.quaternion);
+    E.quand -= dt; if (E.quand <= 0) { E.quand = 0.12 + Math.random() * 0.12; E.tourne = Math.random() * 6.283; E.taille = 0.9 + Math.random() * 0.3; }
+    E.mesh.rotateZ(E.tourne);
+    const u = clamp(CP.t / imp, 0, 1), apres = CP.t - imp, f = apres < 0 ? (0.25 + 0.75 * u * u) * (0.8 + 0.2 * Math.random()) : Math.max(0, 1.4 * Math.exp(-apres * 7));
+    E.mesh.scale.setScalar((1.3 + 1.6 * u) * E.taille * (apres > 0 ? 1 + apres * 2 : 1)); E.mesh.material.uniforms.force.value = f; E.mesh.visible = f > 0.01;
+    CP.lumGant.position.copy(_vh); CP.lumGant.intensity = 14 * f;
+    if (window.__pilote && E.el.readyState >= 2) { try { const d = E.el.duration || 4; const c = CP.t % (d - 0.1); if (Math.abs(E.el.currentTime - c) > 0.05) E.el.currentTime = c; } catch (_) {} }
+  }
   if (!CP.frappe && CP.t >= imp) {   // l'impact : le sol tremble, un éclat doré sous ses poings
     CP.frappe = true; fen.bouge = Math.max(fen.bouge, 1);
     const m = armure.m, a = m.getObjectByName('LeftHand'), b = m.getObjectByName('RightHand'); a.getWorldPosition(_vh); b.getWorldPosition(_va); _vh.add(_va).multiplyScalar(0.5); monde.worldToLocal(_vh);
-    CP.eclat.position.set(_vh.x, _vh.y, ARM.z + 0.3); CP.lumPoing.position.set(_vh.x, _vh.y - 0.6, ARM.z + 0.8); CP.tf = 0;
+    CP.eclat.position.set(_vh.x, _vh.y, ARM.z + 0.3); CP.eclat.material.color.copy(I.teinteC); CP.lumPoing.position.set(_vh.x, _vh.y - 0.6, ARM.z + 0.8); CP.lumPoing.color.copy(I.teinteC); CP.tf = 0;
   }
   if (CP.tf !== undefined) { CP.tf += dt; const f = Math.exp(-CP.tf * 4); CP.eclat.material.opacity = f; CP.eclat.scale.setScalar(2.4 + CP.tf * 3); CP.lumPoing.intensity = 40 * f; }
-  if (vt >= 0 && CP.el) {
-    if (!CP.lance) { CP.lance = true; try { CP.el.currentTime = 0; if (!window.__pilote) CP.el.play().catch(() => {}); } catch (_) {} }
-    if (window.__pilote) { try { const c = Math.min(vt, I.fin - 0.05); if (Math.abs(CP.el.currentTime - c) > 0.03) CP.el.currentTime = c; } catch (_) {} }
+  if (vt >= 0) {
+    if (!CP.lance) { CP.lance = true; try { I.el.currentTime = 0; if (!window.__pilote) I.el.play().catch(() => {}); } catch (_) {} }
+    if (window.__pilote) { try { const c = Math.min(vt, I.fin - 0.05); if (Math.abs(I.el.currentTime - c) > 0.03) I.el.currentTime = c; } catch (_) {} }
   }
-  const ok = CP.el && CP.el.readyState >= 2 && CP.el.currentTime > 0.03, env = vt < 0 ? 0 : Math.min(1, vt / 0.25) * (1 - doux((vt - (I.fin - 0.5)) / 0.5));
+  const ok = (I.el.readyState >= 2 || I.el.seeking) && I.el.currentTime > 0.03, env = vt < 0 ? 0 : Math.min(1, vt / 0.25) * (1 - doux((vt - (I.fin - 0.5)) / 0.5));
   fondMat.uniforms.coupSec.value = ok ? 0 : 1;   // (sans vidéo : la place au moment de l'explosion, en fondu autour de l'explosion)
   fondMat.uniforms.coup.value = ok ? env : env * clamp(1 - Math.abs(vt - I.pic) / 0.9, 0, 1);
   const ex = vt - I.explosion;   // (la lumière qui jaillit éclaire les héros et l'armure)
-  CP.lum.position.copy(G(I.centre[0], I.centre[1], 1.6)); CP.lum.intensity = ex > 0 ? 90 * Math.exp(-ex * 1.5) * Math.min(1, ex / 0.25) : vt > 0 ? 10 * Math.min(1, vt / 0.6) : 0;
+  CP.lum.color.copy(I.teinteC); CP.lum.position.copy(G(I.centre[0], I.centre[1], 1.6)); CP.lum.intensity = ex > 0 ? 90 * Math.exp(-ex * 1.5) * Math.min(1, ex / 0.25) : vt > 0 ? 10 * Math.min(1, vt / 0.6) : 0;
   if (ex > 0 && ex < 0.5) fen.bouge = Math.max(fen.bouge, 0.45);
-  if (!CP.touche && ex >= 0 && ex < 0.6 && dansZoneCoup(h.x, h.y)) { CP.touche = true; projeter(); }   // (encore dans la zone quand la lumière jaillit : projeté)
-  if (vt >= I.fin) { CP.t = -1; CP.tf = undefined; CP.eclat.material.opacity = 0; CP.lumPoing.intensity = 0; fondMat.uniforms.coup.value = 0; CP.lum.intensity = 0; try { CP.el.pause(); } catch (_) {} const b = $('bCoup'); if (b) b.classList.remove('fait'); }
+  if (!CP.touche && ex >= 0 && ex < 0.6 && dansZoneCoup(h.x, h.y)) { CP.touche = true; projeter(); }   // (encore dans la zone quand ça jaillit : projeté)
+  if (vt >= I.fin) { CP.t = -1; CP.tf = undefined; CP.eclat.material.opacity = 0; CP.lumPoing.intensity = 0; fondMat.uniforms.coup.value = 0; CP.lum.intensity = 0; CP.ecl.mesh.visible = false; CP.lumGant.intensity = 0;
+    try { I.el.pause(); CP.ecl.el.pause(); } catch (_) {} const b = $('bCoup'); if (b) b.classList.remove('fait'); }
 }
 function nettoyer(c) { scene.remove(c.sol); monde.remove(c.corps, c.ombre, c.l, c.trainee); c.sol.material.dispose(); c.corps.material.dispose(); }
 const MSG = {};
@@ -1562,4 +1599,4 @@ function poser(nom, t) {   // (essai) un seul mouvement, à un instant donné
   for (const n in actions) { actions[n].play(); actions[n].setEffectiveWeight(n === nom ? 1 : 0); actions[n].timeScale = 0; }
   actions[nom].time = t; melangeur.update(0); MOD.updateMatrixWorld(true); const r = piedsModele(); for (const n of ['LeftUpLeg', 'LeftLeg', 'Hips']) { const o = MOD.getObjectByName(n); r[n + '_q'] = o.quaternion.toArray(); r[n + '_p'] = o.position.toArray(); } r.pistes = actions[nom].getClip().tracks.slice(0, 6).map(k => k.name); r.nbPistes = actions[nom].getClip().tracks.length; r.duree = actions[nom].getClip().duration; return r;
 }
-window.__essai = { armure, parleGrosbec, coupDePoing, projeter, dansZoneCoup, get CP() { return CP; }, get proj() { return h.proj; }, solOmbre, osM: noms => { const r = {}; for (const n of noms) { const o = MOD.getObjectByName(n); if (!o) continue; o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); MOD.worldToLocal(v); r[n] = [v.x, v.y, v.z]; } return r; }, frapper, basculerOmbre, mq, MURETS, COUPS, sauter, SAUT, get tirs() { return tirs.map(s => ({ x: s.x, y: s.y, z: s.z, q: s.q })); }, ecran: (x, y, z) => { if (NUIT) { cam.updateMatrixWorld(); const v = G(x, y, z).project(cam); return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; } return { x: (px(x) - camX) * innerWidth / Ws, y: (py(y, z) - camY) * innerHeight / Hs }; }, fissurer, lancerVague, get vague() { return vg; }, video: () => videoEl ? [videoEl.currentSrc.split('/').pop(), videoEl.readyState, videoEl.paused, videoEl.currentTime] : null, cristaux: () => vg.actifs.map(c => ({ i: c.i, x: c.S.x, y: c.S.y, etat: c.etat })), arriveFeu, abrite: () => abrite(h.x, h.y), imgDe, solImg, fen, crev, NJ, libre, dansCrevasse, nuit, piliers, poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };
+window.__essai = { armure, parleGrosbec, coupDePoing, projeter, dansZoneCoup, get CP() { return CP; }, cam, get fondU() { return fondMat.uniforms; }, get proj() { return h.proj; }, solOmbre, osM: noms => { const r = {}; for (const n of noms) { const o = MOD.getObjectByName(n); if (!o) continue; o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); MOD.worldToLocal(v); r[n] = [v.x, v.y, v.z]; } return r; }, frapper, basculerOmbre, mq, MURETS, COUPS, sauter, SAUT, get tirs() { return tirs.map(s => ({ x: s.x, y: s.y, z: s.z, q: s.q })); }, ecran: (x, y, z) => { if (NUIT) { cam.updateMatrixWorld(); const v = G(x, y, z).project(cam); return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; } return { x: (px(x) - camX) * innerWidth / Ws, y: (py(y, z) - camY) * innerHeight / Hs }; }, fissurer, lancerVague, get vague() { return vg; }, video: () => videoEl ? [videoEl.currentSrc.split('/').pop(), videoEl.readyState, videoEl.paused, videoEl.currentTime] : null, cristaux: () => vg.actifs.map(c => ({ i: c.i, x: c.S.x, y: c.S.y, etat: c.etat })), arriveFeu, abrite: () => abrite(h.x, h.y), imgDe, solImg, fen, crev, NJ, libre, dansCrevasse, nuit, piliers, poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };

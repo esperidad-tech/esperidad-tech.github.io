@@ -668,6 +668,37 @@ pattes, une catapulte sur le dos), le **bélier**.
   aperçus) ; les poser dans une salle ; découper les lames du tourbillon et le bras du frondeur ; couper le bout de manche du
   faucheur.
 
+### Deux zones au hasard, les éclairs du gant, l'aisselle réparée (en ligne à 7 h 23 sur la page à part, version `1795846982-0c55` ; Romain, à la voix vers 6 h 45, go écrit à 6 h 52 : « Allez au travail »)
+
+- **« Un petit peu trop écarté la zone »** : la zone de droite suit maintenant le cœur des fissures dorées (environ la moitié de
+  l'ancienne : `origine/nuit/zone-coup-droite.png`).
+- **« Normalement t'en as une deuxième de l'autre côté » ; « il en choisit qu'une seule, bien sûr »** : sa 2e vidéo
+  (`origine/nuit/romain/coup-de-poing-gauche-explosion.mp4`, 4384 × 1872, 4,3 s, son muet) est la zone de gauche : fissures autour
+  de la lanterne de gauche, puis une explosion de roche, de fumée et de lumière. Recalée comme l'autre (`outils/salle-nuit/coup.py
+  <vidéo> <dossier>`), sa zone `zone-coup-gauche.png`, `site/nuit/coup-g.mp4/.webm/.jpg` (la droite : `coup-d.*`). **Débit plafonné
+  à 6 Mbit/s** (`-maxrate 6M -bufsize 12M`) : sans ça, le moteur de Safari refusait le fichier (erreur 4). `coup.json` a les deux zones
+  (temps, milieu, teinte, cases). À chaque coup, Grosbec en tire une au hasard (`coupDePoing('gauche'|'droite')` pour les essais).
+- **Il vise** : il se tourne vers le milieu de la zone pendant son coup (1,6 × l'angle vrai, pour qu'on le voie), puis revient face
+  aux héros.
+- **« Des éclairs qui partent de son gant » ; « réalistes » ; « je te laisse t'en occuper »** : une vidéo d'éclairs sur fond noir
+  (Higgsfield, Seedance 2.5, 480p, 2 versions = 30 crédits ; la 2e, une étoile d'éclairs centrée qui crépite, est prise :
+  `origine/eclairs/`), en gris, en boucle (`site/nuit/eclairs.mp4`, 71 Ko). Posée sur sa main droite, face à la caméra, en lumière
+  ajoutée (le noir disparaît), un fondu rond sur les bords, tournée au hasard tous les 0,12 à 0,24 s ; elle grandit et s'intensifie
+  jusqu'à l'impact, puis part dans le sol. **Dorée** quand il vise la droite, **orange feu** quand il vise la gauche (les deux zones
+  sont dorées : le gris-fumée proposé à la voix n'aurait pas collé). Une petite lumière de la même couleur sur son gant.
+  `captures/eclairs-du-gant.jpg`.
+- **« Un gros bug sous ses aisselles » (bras levé)** : chaque lanterne d'épaule était à moitié sur la clavicule, à moitié sur le bras
+  (bras levé, elle se déchirait en une nappe). `outils/raidir2.mjs` : chaque lanterne d'un bloc sur sa clavicule ; la plaque de
+  poitrine reste au buste (le correctif de la parole) ; l'épaule suit la clavicule, l'épaulière un peu ; la jonction bras / épaule
+  plus souple. Et pendant le coup, ses bras montent un tiers moins haut. `outils/poids.mjs` montre à quels os tiennent les morceaux ;
+  `outils/aisselle.py` : gros plans (`captures/aisselle-avant.jpg`, `aisselle-reparee.jpg`). Les lampes des lanternes suivent leur
+  clavicule.
+- **Vérifié** : Chrome (les deux côtés : fissures, explosion, le Barde projeté ; les pieds et la vague inchangés ; `deux_zones.py`).
+  **Le moteur de Safari des essais n'affiche aucune vidéo dans la 3D quand on la fait sauter à l'arrêt** (noir) : ce n'est pas
+  vérifiable ici ; à 6 h 35, ce qui s'y voyait était l'image de secours. Sur un vrai iPhone, la vidéo de la vague passe par le même
+  chemin. Si une vidéo ne se lit pas, l'image de secours (l'explosion) prend le relais.
+- **Crédits** : 16 (mouvements) + 30 (éclairs) = 46 pour le coup de poing.
+
 ## Ce qui n'est pas fait
 
 - L'armure de Grosbec n'est pas en 3D (la création de son image de référence a été bloquée
