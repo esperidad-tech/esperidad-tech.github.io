@@ -15,7 +15,7 @@ const NUIT = !PIST;   // le Barde joue sur la place de nuit peinte par Romain (2
 const T = 40, K = NUIT ? 0.4 : 0.62, OX = 70, OY = 250, SW = 860, SH = 556;   // (K : l'écrasement du sol vu par la caméra ; sert au pouce)
 const THETA = Math.asin(0.62), ZS = NUIT ? 1 : 1 / Math.cos(THETA);
 const L = { L: 18, P: 10.5, coin: 3.4 };
-const ARM = NUIT ? { x: 10.95, y: -11.6, z: 2.0, r: 1.6, zc: 4.3, dy: 0 } : { x: 9, y: 1.25, r: 1.6, zc: 2.3, dy: 0.6 };   // (la nuit : l'armure de Grosbec en haut des marches, sur le seuil de la porte du temple, le dos dedans : le Pisteur arrive derrière elle ; Romain, 28 nov., 5 h)
+const ARM = NUIT ? { x: 10.95, y: -9.45, z: 2.0, r: 1.6, zc: 4.3, dy: 0 } : { x: 9, y: 1.25, r: 1.6, zc: 2.3, dy: 0.6 };   // (la nuit : l'armure de Grosbec en haut des marches, sur le palier juste devant le seuil de la porte du temple, le dos à la porte : le Pisteur arrive derrière elle ; Romain, 28 nov., 5 h ; un peu avancée à 5 h 30 : sur le seuil même, ses pieds étaient dans la lumière de la porte et elle flottait)
 const LANT = { or: [1.2, 5.6], rouge: [16.8, 5.6] };
 const BRAS = [[5.15, 0.75, 2.6], [12.85, 0.75, 2.6], [0.42, 3.85, 2.3], [17.58, 3.85, 2.3]];
 const $ = id => document.getElementById(id);
@@ -1077,8 +1077,11 @@ if (NUIT) {
   lueurSol.scale.set(6.5, 4.2, 1); lueurSol.position.copy(G(ARM.x, ARM.y + 0.8, ARM.z + 0.02)); lueurSol.renderOrder = -8; monde.add(lueurSol); armure.lueurSol = lueurSol;
   // son ombre : une lumière qui ne sert qu'à ça (aucune clarté), depuis le temple, dans son dos ; elle ne voit que les abords de l'armure
   const lo = new THREE.DirectionalLight(0xffffff, 0); lo.position.copy(G(ARM.x - 0.4, ARM.y - 4, ARM.z + 4.5)); lo.target.position.copy(G(ARM.x, ARM.y + 2.5, ARM.z)); monde.add(lo, lo.target);
-  const palier = new THREE.Mesh(new THREE.PlaneGeometry(8, 5.6), new THREE.ShadowMaterial({ opacity: 0.5 })); palier.receiveShadow = true; palier.position.copy(G(ARM.x, -8.7, ARM.z + 0.003)); monde.add(palier);   // (le palier en haut des marches : il reçoit son ombre)
-  lo.castShadow = true; lo.shadow.mapSize.set(1024, 1024); Object.assign(lo.shadow.camera, { left: -3.6, right: 3.6, top: 3.6, bottom: -3.6, near: 1, far: 16 }); lo.shadow.bias = -0.0006; lo.shadow.radius = 4; lo.shadow.camera.updateProjectionMatrix();
+  const palier = new THREE.Mesh(new THREE.PlaneGeometry(8, 4.4), new THREE.ShadowMaterial({ opacity: 0.5 })); palier.receiveShadow = true; palier.position.copy(G(ARM.x, -8.1, ARM.z + 0.003)); monde.add(palier);   // (le palier en haut des marches, du seuil de la porte au haut des marches : il reçoit son ombre)
+  // (une ombre de contact, sombre et douce, juste sous les pieds : c'est elle qui la pose sur le sol)
+  const contact = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: toile(128, 128, x => { const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(0,0,0,.75)'); g.addColorStop(0.5, 'rgba(0,0,0,.4)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); }), transparent: true, depthWrite: false, toneMapped: false }));
+  contact.scale.set(2.6, 1.5, 1); contact.position.copy(G(ARM.x, ARM.y + 0.1, ARM.z + 0.006)); contact.renderOrder = -7; monde.add(contact);
+  lo.castShadow = true; lo.shadow.mapSize.set(1024, 1024); Object.assign(lo.shadow.camera, { left: -3.6, right: 3.6, top: 3.6, bottom: -3.6, near: 1, far: 9.3 }); lo.shadow.bias = -0.0006; lo.shadow.radius = 4; lo.shadow.camera.updateProjectionMatrix();   // (far 9,3 : l'ombre s'arrête au bord du palier ; plus loin, elle retombait sur la place, 2 m plus bas, au pied des marches)
   // le rayon d'Elyra : de la porte du temple à la prise dans son dos ; un cœur doré et un halo, de la lumière qui coule vers lui
   const A0 = G(ARM.x, ARM.y - 3.5, ARM.z + 3.4), A1 = G(ARM.x, ARM.y - 0.55, ARM.z + 2.94), L = A0.distanceTo(A1);   // (d'Elyra, au fond du temple, à la prise dans son dos)
   const matRayon = (r, a) => new THREE.ShaderMaterial({ uniforms: { t: { value: 0 }, a: { value: a } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide,
@@ -1117,14 +1120,21 @@ if (NUIT) {
   }, e => { console.error(e); pret('armure'); });
 }
 const _va = new THREE.Vector3(), _b1 = new THREE.Vector3(), _b2 = new THREE.Vector3(), _d1 = new THREE.Vector3(), _d2 = new THREE.Vector3(), _bas = new THREE.Vector3(0, 0, -1), _qw = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _qp = new THREE.Quaternion();
-function parleGrosbec() { if (!armure.parle) return; armure.parle.reset().setEffectiveWeight(1).fadeIn(0.4).play(); armure.attente.fadeOut(0.4); setTimeout(() => { armure.attente.reset().fadeIn(0.6).play(); armure.parle.fadeOut(0.6); }, armure.parle.getClip().duration / armure.parle.timeScale * 1000 - 600); }
+function parleGrosbec() { if (!armure.parle) return; armure.parle.reset().setEffectiveWeight(1).fadeIn(0.4).play(); armure.attente.fadeOut(0.4); armure.retour = armure.parle.getClip().duration / armure.parle.timeScale - 0.6; }   // (le retour à l'attente se compte avec le temps du jeu, plus avec une minuterie à part)
 if ($('bParle')) $('bParle').addEventListener('click', e => { e.preventDefault(); parleGrosbec(); });
 function avancerArmure(dt, t) {
   if (!armure.m) return;
+  // (le mélangeur d'animations ne réécrit un os que si sa valeur a changé : au tour de boucle, l'attente garde la même pose deux ou trois
+  //  images, et la correction des bras de l'image d'avant restait, puis se rajoutait : un saut des bras. On remet donc chaque bras comme
+  //  le mouvement l'a laissé avant de mettre à jour, et on corrige après.)
+  if (armure.bras) for (const B of armure.bras) if (B[2]) B[0].quaternion.copy(B[2]);
+  if (armure.retour !== undefined && (armure.retour -= dt) <= 0) { armure.retour = undefined; armure.attente.reset().fadeIn(0.6).play(); armure.parle.fadeOut(0.6); }
   if (armure.mix) armure.mix.update(dt);
   armure.m.updateMatrixWorld(true);
-  if (armure.bras && !(armure.parle && armure.parle.isRunning())) for (const [bras, avant] of armure.bras) {   // les bras redescendent d'un tiers vers le bas (Romain : « comme s'il tenait quelque chose »)
-    bras.getWorldPosition(_b1); avant.getWorldPosition(_b2); _d1.subVectors(_b2, _b1).normalize(); _d2.copy(_d1).lerp(_bas, 0.4).normalize();
+  if (armure.bras) for (const B of armure.bras) (B[2] || (B[2] = new THREE.Quaternion())).copy(B[0].quaternion);
+  const wA = armure.attente ? armure.attente.getEffectiveWeight() : 0;   // (la correction suit le poids de l'attente : quand il parle, elle s'efface en douceur, et revient de même ; avant, elle se coupait d'un coup)
+  if (armure.bras && wA > 0.001) for (const [bras, avant] of armure.bras) {   // les bras redescendent d'un tiers vers le bas (Romain : « comme s'il tenait quelque chose »)
+    bras.getWorldPosition(_b1); avant.getWorldPosition(_b2); _d1.subVectors(_b2, _b1).normalize(); _d2.copy(_d1).lerp(_bas, 0.4 * wA).normalize();
     _qw.setFromUnitVectors(_d1, _d2); bras.getWorldQuaternion(_qb); bras.parent.getWorldQuaternion(_qp);
     bras.quaternion.copy(_qp.invert().multiply(_qw.multiply(_qb))); bras.updateMatrixWorld(true);
   }

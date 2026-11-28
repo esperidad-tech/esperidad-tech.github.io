@@ -537,6 +537,23 @@ lanternes de son épaule, on dirait qu'elles sont éteintes »**.
   lanterne gauche (le coin bas gauche de la place était à x 730 de la peinture, contre 3765 à droite). Elle suit maintenant le
   dallage jusqu'aux massifs (coin bas gauche à 480) ; la grille commence à x = −3 (`grille.x0` ; `outils/salle-nuit/grille.py`).
 
+### Posée sur le palier, et la boucle sans saut (en ligne à 5 h 43, version `1795840981-12ef` ; Romain, par écrit à 5 h 33 : « Ok, fais ces modifs »)
+
+- **« Tu l'as mis dans l'air, il flotte »** : sur le seuil, ses pieds étaient à la ligne 610 de la peinture, alors que la porte
+  s'arrête à 628 : ils étaient dans la lumière de la porte, sans sol dessous, et son ombre ne commençait que plus bas. Elle est
+  maintenant **sur le palier, juste devant le seuil** (`ARM.y` −9,45 au lieu de −11,6 ; le palier va de 628 à 692 dans la
+  peinture), toujours le dos à la porte et encadrée par elle ; le plan qui reçoit son ombre couvre le palier du seuil au haut des
+  marches ; **une ombre de contact** sombre et douce sous les pieds. Son ombre retombait aussi sur la place, 2 m plus bas, au pied
+  des marches (une tache noire) : la lumière d'ombre s'arrête maintenant au bord du palier (`far` 9,3). `captures/armure-sur-le-palier.jpg`.
+- **« Il y a toujours le bug de boucle d'animation »** : ce n'était pas l'animation elle-même mais **la correction des bras**
+  (ils descendent de 40 %). three.js ne réécrit un os que si sa valeur change ; au tour de boucle, l'attente garde la même pose deux
+  ou trois images, la correction de l'image d'avant restait et se rajoutait : les mains sautaient (14 pas/s au lieu de 0,05).
+  On remet chaque bras comme l'animation l'a laissé avant chaque mise à jour, puis on corrige : vitesse max des mains 0,11 sur
+  toute la boucle.
+- **Trouvé en passant** : quand Grosbec parlait, la correction des bras se coupait d'un coup au début et revenait d'un coup à la
+  fin (un saut de 0,8 m en une image). Elle suit maintenant le poids de l'attente (fondu), et le retour à l'attente se compte
+  avec le temps du jeu au lieu d'une minuterie à part.
+
 ## Ce qui n'est pas fait
 
 - L'armure de Grosbec n'est pas en 3D (la création de son image de référence a été bloquée
