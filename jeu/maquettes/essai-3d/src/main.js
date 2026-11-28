@@ -8,7 +8,6 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import NJ from '../site/nuit/nuit.json';
-import CJ from '../site/nuit/cristaux.json';
 import SJ from '../site/pisteur/salle.json';   // (la salle du Pisteur peinte par Romain, de nuit : la caméra, les cases, les lumières, les portes ; outils/salle-pisteur/generer.py)   // (les 20 cristaux peints par Romain : leur pied, leur taille, leurs découpes ; outils/salle-nuit/cristaux_peints.py…)   // (la place de nuit : la caméra de la peinture, les cases du sol, les repères ; outils/salle-nuit/generer.py)
 
 const PIST = window.QUI === 'pisteur';   // (le héros choisi sur le premier écran : le Barde ou le Pisteur)
@@ -152,19 +151,24 @@ if (!PEINT) {
   /* la nuit : la peinture de Romain (les lanternes allumées, le Barde peint effacé), et ses crevasses qui s'ouvrent une fois pour toutes */
   fondNuit = tex('nuit/fond.jpg', 'fond', true); crevTex = tex('nuit/crev.jpg', 'crev', true); crevA = tex('nuit/crev-a.png', 'crevA', false);
   const feuTex = tex('nuit/feu.jpg', 'feu', true);
-  var coupTex = tex('nuit/coup-d.jpg', 'coupImgD', true), coupTexG = tex('nuit/coup-g.jpg', 'coupImgG', true);   // (l'image de l'explosion de la vidéo du coup : si sa vidéo ne défile pas)   // (la dernière image de sa vidéo, la place en lave : si la vidéo ne défile pas)
+  var coupTex = tex('nuit/coup-d.jpg', 'coupImgD', false), coupTexG = tex('nuit/coup-g.jpg', 'coupImgG', false);   // (brutes, comme les vidéos : on les compare à leur première image)
+  // (la première image de chaque vidéo, recalée et corrigée comme elle : le jeu ne montre de la vidéo que ce qui en diffère ; ailleurs, la peinture)
+  var jourTex = tex('nuit/jour.jpg', 'jour', true);   // (la place de jour peinte par Romain, calée au pixel sur la nuit : là où tombe la lumière de son gant, ses vraies couleurs éclairées)
+  var refD = tex('nuit/coup-d-ref.jpg', 'refD', false), refG = tex('nuit/coup-g-ref.jpg', 'refG', false), refV = tex('nuit/vague-ref.jpg', 'refV', false);   // (l'image de l'explosion de la vidéo du coup : si sa vidéo ne défile pas)   // (la dernière image de sa vidéo, la place en lave : si la vidéo ne défile pas)
   const arrTex = tex('nuit/arrivee.png', 'arrivee', false); arrTex.minFilter = arrTex.magFilter = THREE.NearestFilter; arrTex.generateMipmaps = false;   // (quand le feu de la vidéo arrive à chaque endroit)
   fondMat = new THREE.ShaderMaterial({
     uniforms: { fond: { value: fondNuit }, crev: { value: crevTex }, crevA: { value: crevA }, fen: { value: new THREE.Vector4(0, 0, IMW, IMH) },
       img: { value: new THREE.Vector2(IMW, IMH) }, rc: { value: new THREE.Vector4(...NJ.crev) }, ouvre: { value: 0 }, lueur: { value: 0 },
       feu: { value: feuTex }, arr: { value: arrTex }, vid: { value: feuTex }, camA: { value: new THREE.Vector4(NJ.f, NJ.cx, NJ.cy, NJ.phi) }, camB: { value: new THREE.Vector3(NJ.camH, NJ.xoff, NJ.dmax) },
-      vague: { value: 0 }, tw: { value: 0 }, secours: { value: 0 }, src: { value: new THREE.Vector2(ARM.x, ARM.y) }, temps: { value: 0 }, cri: { value: [new THREE.Vector4(), new THREE.Vector4(), new THREE.Vector4()] },
-      vidC: { value: feuTex }, coup: { value: 0 }, coupSec: { value: 0 }, coupImg: { value: coupTex } },
+      vague: { value: 0 }, tw: { value: 0 }, secours: { value: 0 }, src: { value: new THREE.Vector2(ARM.x, ARM.y) }, temps: { value: 0 }, cri: { value: [0, 1, 2, 3, 4, 5].map(() => new THREE.Vector4()) },
+      vidC: { value: feuTex }, coup: { value: 0 }, coupSec: { value: 0 }, coupImg: { value: coupTex }, refC: { value: refD }, refV: { value: refV }, coupO: { value: new THREE.Vector2(2190, 640) }, coupR: { value: 0 }, jour: { value: jourTex }, jourO: { value: new THREE.Vector2(2190, 500) }, jourR: { value: 600 }, jourA: { value: 0 }, jourT: { value: new THREE.Color(1, 0.85, 0.6) } },
     vertexShader: 'varying vec2 vU; void main(){ vU = position.xy*0.5+0.5; gl_Position = vec4(position.xy, 0.0, 1.0); }',
     fragmentShader: `uniform sampler2D fond; uniform sampler2D crev; uniform sampler2D crevA; uniform vec4 fen; uniform vec2 img; uniform vec4 rc; uniform float ouvre; uniform float lueur; varying vec2 vU;
-      uniform sampler2D feu; uniform sampler2D arr; uniform sampler2D vid; uniform vec4 camA; uniform vec3 camB; uniform float vague; uniform float tw; uniform float secours; uniform vec2 src; uniform float temps; uniform vec4 cri[3];
-      uniform sampler2D vidC; uniform float coup; uniform float coupSec; uniform sampler2D coupImg;
+      uniform sampler2D feu; uniform sampler2D arr; uniform sampler2D vid; uniform vec4 camA; uniform vec3 camB; uniform float vague; uniform float tw; uniform float secours; uniform vec2 src; uniform float temps; uniform vec4 cri[6];
+      uniform sampler2D vidC; uniform float coup; uniform float coupSec; uniform sampler2D coupImg; uniform sampler2D refC; uniform sampler2D refV; uniform vec2 coupO; uniform float coupR; uniform sampler2D jour; uniform vec2 jourO; uniform float jourR; uniform float jourA; uniform vec3 jourT;
+      float change(vec3 a, vec3 b) { vec3 d = abs(a - b); return smoothstep(0.035, 0.11, max(d.r, max(d.g, d.b))); }   // (là où la vidéo diffère de sa première image)
       float bruit(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+      float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(bruit(i), bruit(i + vec2(1.0, 0.0)), f.x), mix(bruit(i + vec2(0.0, 1.0)), bruit(i + vec2(1.0, 1.0)), f.x), f.y); }
       vec3 lin(vec3 c){ return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(0.04045, c)); }
       void main(){
         vec2 p = vec2(mix(fen.x, fen.z, vU.x), mix(fen.w, fen.y, vU.y));   // (en pixels de la peinture, y vers le bas)
@@ -179,23 +183,12 @@ if (!PEINT) {
           k += k * lueur * smoothstep(0.35, 0.9, max(k.b, k.r) - k.g) * 1.2;   // (le violet et le bleu-vert du fond qui pulsent)
           c = mix(c, k, a);
         }
-        if (vague > 0.0) {   // la vague de feu : la vidéo de Romain (recalée sur sa peinture, lignes 250 à 1870) ; derrière chaque cristal, vu du temple, l'abri
-          float abri = 0.0;
-          float s = sin(camA.w), co = cos(camA.w), Zr = -camB.x, kk = camA.z - p.y, den = kk * co - camA.x * s;
-          float D = Zr * (camA.x * co + kk * s) / den;
-          if (den < 0.0 && D > 0.0) {
-            float zc = D * co - Zr * s; vec2 g = vec2((p.x - camA.y) * zc / camA.x + camB.y, camB.z - D);
-            if (g.y > -1.5 && g.y < 21.0 && g.x > -1.5 && g.x < 23.0)
-              for (int i = 0; i < 3; i++) { vec4 C = cri[i]; if (C.w > 0.5) {
-                vec2 c2 = C.xy - src; float L = length(c2); vec2 u = c2 / L; vec2 v = g - src;
-                float al = dot(v, u) - L, pe = abs(v.x * u.y - v.y * u.x), r = C.z + max(al, 0.0) * 0.12;
-                abri = max(abri, smoothstep(-0.3, 0.4, al) * (1.0 - smoothstep(4.2, 5.2, al)) * (1.0 - smoothstep(r * 0.75, r * 1.1, pe)));
-              } }
-          }
+        if (vague > 0.0) {   // la vague de feu : la vidéo de Romain (recalée au pixel sur sa peinture, lignes 250 à 1870) ; derrière chaque cristal, l'abri
           vec3 f = c; float m = vague;
           if (secours < 0.5) {
             if (p.y > 250.0 && p.y < 1870.0) {
-              f = lin(texture2D(vid, vec2(uv.x, 1.0 - (p.y - 250.0) / 1620.0)).rgb);
+              vec2 uvV = vec2(uv.x, 1.0 - (p.y - 250.0) / 1620.0); vec3 brute = texture2D(vid, uvV).rgb;
+              f = lin(brute); m *= change(brute, texture2D(refV, uvV).rgb);   // (seulement ce que la vague change : ailleurs, la peinture)
               if (tw > 5.0) f *= 1.0 + 0.12 * sin(temps * 7.0 + p.x * 0.013 + p.y * 0.021) * smoothstep(0.05, 0.4, max(f.r, f.g));   // (la dernière image : la lave vit encore)
             } else m = 0.0;
           } else {   // (la vidéo ne défile pas : la place en feu peinte par Romain, là où le feu de la vidéo serait déjà arrivé)
@@ -203,13 +196,40 @@ if (!PEINT) {
             float brule = a < 254.0 ? smoothstep(a / 24.0, a / 24.0 + 0.4, tw) : 0.0;
             vec3 lv = texture2D(feu, vec2(uv.x, 1.0 - uv.y)).rgb;
             lv *= 1.0 + 0.12 * sin(temps * 7.0 + p.x * 0.013 + p.y * 0.021) * smoothstep(0.05, 0.4, max(lv.r, lv.g));
-            f = mix(c, lv, brule);
+            f = lv; m *= brule;
+          }
+          // l'abri (Romain, 28 nov., après-midi) : une goutte couchée derrière chaque cristal, vu de Grosbec — large contre le cristal, elle
+          // s'affine en s'éloignant ; son bord est une flamme vivante (il bouge, il luit) ; il n'apparaît que là où le feu est déjà passé
+          float abri = 0.0, bord = 0.0;
+          float s = sin(camA.w), co = cos(camA.w), Zr = -camB.x, kk = camA.z - p.y, den = kk * co - camA.x * s;
+          float D = Zr * (camA.x * co + kk * s) / den;
+          if (den < 0.0 && D > 0.0 && m > 0.002) {
+            float zc = D * co - Zr * s; vec2 g = vec2((p.x - camA.y) * zc / camA.x + camB.y, camB.z - D);
+            float vit = 0.5 * vn(g * 2.3 + vec2(temps * 0.9, -temps * 1.7)) + 0.35 * vn(g * 5.1 - vec2(temps * 2.2, temps * 0.6)) + 0.15 * vn(g * 11.0 + temps * 3.1);
+            for (int i = 0; i < 6; i++) { vec4 C = cri[i]; if (C.w > 0.001) {
+              vec2 u = normalize(C.xy - src), v = g - C.xy;
+              float al = dot(v, u) - 0.15, pe = abs(v.x * u.y - v.y * u.x), Rh = C.z, Lt = 4.6;
+              float d = al < 0.0 ? length(vec2(al, pe)) - Rh : max(pe - Rh * pow(max(0.0, 1.0 - al / Lt), 0.85), al - Lt);
+              d += (vit - 0.5) * 0.34;
+              abri = max(abri, (1.0 - smoothstep(-0.05, 0.05, d)) * C.w);
+              bord = max(bord, exp(-abs(d + 0.03) * 10.0) * C.w);
+            } }
           }
           c = mix(c, f, m * (1.0 - abri));
+          c += c * vec3(0.7, 0.28, 0.08) * m * abri * 0.7;   // (le sol de l'abri, éclairé par le feu tout autour)
+          float fl = 0.72 + 0.28 * sin(temps * 13.0 + p.x * 0.031) * sin(temps * 7.3 - p.y * 0.027);
+          c += vec3(1.0, 0.42, 0.1) * bord * m * fl * 1.1;   // (la flamme du bord)
         }
         if (coup > 0.0) {   // le coup de poing de Grosbec : la vidéo de Romain (la zone dorée, puis la lumière qui jaillit du sol), recalée, la place entière
-          vec3 f = coupSec > 0.5 ? texture2D(coupImg, vec2(uv.x, 1.0 - uv.y)).rgb : lin(texture2D(vidC, vec2(uv.x, 1.0 - uv.y)).rgb);
-          c = mix(c, f, coup);
+          // (calée au pixel ; seulement là où elle change, et à partir de son poing : l'effet gagne la place en 0,7 s)
+          vec2 uvC = vec2(uv.x, 1.0 - uv.y); vec3 brute = coupSec > 0.5 ? texture2D(coupImg, uvC).rgb : texture2D(vidC, uvC).rgb;
+          float gagne = 1.0 - smoothstep(coupR - 320.0, coupR, length(p - coupO));
+          c = mix(c, lin(brute), coup * change(brute, texture2D(refC, uvC).rgb) * gagne);
+        }
+        if (jourA > 0.001) {   // la lumière de son gant : la place de jour de Romain apparaît là où elle tombe, teintée de la couleur de la zone
+          float dj = length(p - jourO) / jourR, fj = jourA * (1.0 - smoothstep(0.0, 1.0, dj)) * (1.0 - smoothstep(0.0, 1.0, dj));
+          vec3 cj = texture2D(jour, vec2(uv.x, 1.0 - uv.y)).rgb * mix(vec3(1.0), jourT, 0.55);
+          c = mix(c, max(c, cj), fj);
         }
         float hors = smoothstep(img.y - 110.0, img.y + 4.0, p.y) + smoothstep(-6.0, -150.0, p.x) + smoothstep(img.x + 6.0, img.x + 150.0, p.x);   // (au bord de la peinture : la nuit)
         c *= 1.0 - clamp(hors, 0.0, 1.0);
@@ -299,6 +319,7 @@ if (!PEINT) {
     const x = P.x + NJ.xoff, y = NJ.dmax - P.d;
     const l = new THREE.SpotLight(0xffb468, 70, 13, 1.42, 0.8, 1.5); l.position.copy(G(x, y + 0.05, P.lanterne)); l.target.position.copy(G(x, y + 0.05, 0)); monde.add(l, l.target);
     l.castShadow = true; l.shadow.mapSize.set(1024, 1024); l.shadow.camera.near = 0.5; l.shadow.camera.far = 30; l.shadow.bias = -0.0008; l.shadow.radius = 3;
+    l.shadow.camera.layers.set(1);   // (son ombre ne dessine que le héros : l'armure est trop loin de sa lumière — des images plus légères)
     const pt = new THREE.PointLight(0xffb060, 18, 7, 1.6); pt.position.copy(G(x, y + 0.4, P.lanterne)); monde.add(pt);   // (pour éclairer aussi le dessus de la tête)
     nuit.lanternes.push({ l, pt, x, y, z: P.lanterne });
   }
@@ -415,7 +436,7 @@ function charger(fichier, ok, ko) {
 }
 const ANIMS = window.ANIMS || {};
 charger(PIST ? 'pisteur.json' : 'barde.json', g => {
-  const m = g.scene; m.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = false; o.frustumCulled = false; if (o.material) { o.material.metalness = 0; o.material.envMapIntensity = 0.5; } } });
+  const m = g.scene; m.traverse(o => { if (o.isMesh) { o.castShadow = true; o.layers.enable(1); o.receiveShadow = false; o.frustumCulled = false; if (o.material) { o.material.metalness = 0; o.material.envMapIntensity = 0.5; } } });
   m.scale.setScalar(1.55 / 1.5);   // (le modèle fait 1,5 m ; un héros fait environ 1,55 pas)
   corps.add(m); melangeur = new THREE.AnimationMixer(m);
   if (PIST) preparerPisteur(m); else preparerLuth(m);
@@ -653,7 +674,7 @@ function lancer(q) {
 }
 /* des lumières toujours là (éteintes) : en ajouter une en plein jeu ferait recalculer tous les dessins (un à-coup) */
 const reserve = [];
-for (let i = 0; i < 5; i++) { const l = new THREE.PointLight(0xffffff, 0, 7, 1.6); l.libre = true; monde.add(l); reserve.push(l); }
+for (let i = 0; i < 4; i++) { const l = new THREE.PointLight(0xffffff, 0, 7, 1.6); l.libre = true; monde.add(l); reserve.push(l); }   // (4 et pas 5 : chaque lumière, même éteinte, coûte à chaque point du héros et de l'armure)
 function prendre(coul, I, dist) { const l = reserve.find(r => r.libre); if (!l) return null; l.libre = false; l.color.setHex(coul); l.intensity = I; l.distance = dist; return l; }
 function rendreL(l) { if (l) { l.intensity = 0; l.libre = true; } }
 function partir(q, d) {
@@ -1166,7 +1187,10 @@ function cameraNuit(dt) {
   const k = cameraNuit.vu ? Math.min(1, dt * 4) : 1; cameraNuit.vu = 1;
   fen.cx = (fen.cx === undefined ? x0 : fen.cx + (x0 - fen.cx) * k); fen.cy = (fen.cy === undefined ? y0 : fen.cy + (y0 - fen.cy) * k); fen.H = (fen.H === undefined ? Hw : fen.H + (Hw - fen.H) * k);
   if (fen.bouge > 0) fen.bouge = Math.max(0, fen.bouge - dt * 1.4);
-  const W2 = fen.H * A, tx = fen.bouge ? (Math.random() - 0.5) * 30 * fen.bouge : 0, ty = fen.bouge ? (Math.random() - 0.5) * 22 * fen.bouge : 0;
+  // (la secousse : une vraie secousse de caméra, souple, qui s'amortit — plus un saut au hasard à chaque image, qui faisait grésiller l'écran ;
+  //  un tiers moins forte (Romain, 28 nov. : « juste un peu moins fort ») ; peinture, vidéos et personnages bougent ensemble, puisque c'est la caméra)
+  fen.tb = (fen.tb || 0) + dt; const amp = fen.bouge * fen.bouge, tb = fen.tb * 31;
+  const W2 = fen.H * A, tx = amp ? 20 * amp * (Math.sin(tb) * 0.6 + Math.sin(tb * 1.73 + 1.3) * 0.4) : 0, ty = amp ? 14 * amp * (Math.sin(tb * 1.31 + 0.7) * 0.6 + Math.sin(tb * 2.11 + 2.1) * 0.4) : 0;
   fen.x0 = fen.cx + tx; fen.y0 = fen.cy + ty; fen.x1 = fen.x0 + W2; fen.y1 = fen.y0 + fen.H;
   cadrerNuit(); fondMat.uniforms.fen.value.set(fen.x0, fen.y0, fen.x1, fen.y1);
   rendu.getDrawingBufferSize(_ecran); for (const P of piliers) P.m.uniforms.ecran.value.copy(_ecran);
@@ -1258,11 +1282,12 @@ if (NUIT) {
   // (une ombre de contact, sombre et douce, juste sous les pieds : c'est elle qui la pose sur le sol)
   const contact = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: toile(128, 128, x => { const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(0,0,0,.5)'); g.addColorStop(0.5, 'rgba(0,0,0,.25)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); }), transparent: true, depthWrite: false, toneMapped: false }));
   contact.scale.set(2.6, 1.5, 1); contact.position.copy(G(ARM.x, ARM.y + 0.1, ARM.z + 0.006)); contact.renderOrder = -7; monde.add(contact);
+  lo.shadow.camera.layers.set(2);   // (elle ne dessine que l'armure : le héros n'approche jamais du palier)
   lo.castShadow = true; lo.shadow.mapSize.set(1024, 1024); Object.assign(lo.shadow.camera, { left: -3.6, right: 3.6, top: 3.6, bottom: -3.6, near: 1, far: 9.3 }); lo.shadow.bias = -0.0006; lo.shadow.radius = 4; lo.shadow.camera.updateProjectionMatrix();   // (far 9,3 : l'ombre s'arrête au bord du palier ; plus loin, elle retombait sur la place, 2 m plus bas, au pied des marches)
   // (le rayon d'Elyra dans son dos : enlevé à 5 h 47, Romain : « de toute façon on ne le voit pas là »)
   charger('armure.json', g => {
     const m = g.scene; armure.m = m;
-    m.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = false; o.frustumCulled = false; if (o.material) { o.material.envMapIntensity = 0.5; o.material.color.multiplyScalar(0.8); o.material.emissiveIntensity = 1;
+    m.traverse(o => { if (o.isMesh) { o.castShadow = true; o.layers.enable(2); o.receiveShadow = false; o.frustumCulled = false; if (o.material) { o.material.envMapIntensity = 0.5; o.material.color.multiplyScalar(0.8); o.material.emissiveIntensity = 1;
         // (ses lanternes avaient l'air éteintes : le verre, le plus clair de sa carte de lueurs, brille trois fois plus ; l'or, un peu moins qu'avant)
         // (5 h 47, Romain : « que le jaune des lanternes de ses épaules devienne presque blanc » : sur elles seules — en haut, sur les côtés du
         //  modèle au repos —, le verre est poussé très fort, et le rendu le blanchit ; le reste garde les réglages d'avant)
@@ -1303,12 +1328,17 @@ if (NUIT) {
     // il parle (Stand_Talking_Angry, ralenti de moitié : de grands gestes lourds) : le bouton « 🗣 Grosbec » de l'essai
     // son coup de poing au sol (Charged_Ground_Slam, n° 127 ; Romain, 6 h 11 : « Go ») : refait par Higgsfield sur un squelette de 1,70 m,
     // transféré sur le nôtre (recaler.mjs) ; tourné pour qu'il frappe face aux héros, comme son attente
-    charger('armure-coup.json', p => { if (p.animations[0] && armure.mix) { const c = p.animations[0];
+    const aligner = c => {   // (tourné comme son attente : face aux héros)
       const lacet = cl => { const k = cl.tracks.find(k => k.name === 'Hips.quaternion'); let y = 0, w = 0; for (let i = 0; i < k.values.length; i += 4) { y += k.values[i + 1]; w += k.values[i + 3]; } return 2 * Math.atan2(y, w); };
       const d = lacet(g.animations[0]) - lacet(c), qd = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), d), qk = new THREE.Quaternion(), vk = new THREE.Vector3();
       for (const k of c.tracks) { if (k.name === 'Hips.quaternion') for (let i = 0; i < k.values.length; i += 4) { qk.fromArray(k.values, i).premultiply(qd).toArray(k.values, i); }
-        if (k.name === 'Hips.position') for (let i = 0; i < k.values.length; i += 3) { vk.fromArray(k.values, i).applyQuaternion(qd).toArray(k.values, i); } }
+        if (k.name === 'Hips.position') for (let i = 0; i < k.values.length; i += 3) { vk.fromArray(k.values, i).applyQuaternion(qd).toArray(k.values, i); } } };
+    charger('armure-coup.json', p => { if (p.animations[0] && armure.mix) { const c = p.animations[0]; aligner(c);
       armure.coup = armure.mix.clipAction(c); armure.coup.setLoop(THREE.LoopOnce, 1); armure.coup.clampWhenFinished = false; armure.coup.timeScale = 0.85; } }, e => console.error(e));
+    // l'appel des cristaux : il lève les deux mains (Charged_Spell_Cast, n° 125, refait par Higgsfield sur son squelette de 1,70 m, transféré
+    // sur le nôtre ; Romain, 28 nov., après-midi : « il lève les deux mains, des éclairs dedans »)
+    charger('armure-sort.json', p => { if (p.animations[0] && armure.mix) { const c = p.animations[0]; aligner(c);
+      armure.sort = armure.mix.clipAction(c); armure.sort.setLoop(THREE.LoopOnce, 1); armure.sort.clampWhenFinished = false; armure.sort.timeScale = 0.8; } }, e => console.error(e));
     charger('armure-parle.json', p => { if (p.animations[0] && armure.mix) { const c = THREE.AnimationUtils.subclip(p.animations[0], 'parle', 0, 180, 30); c.tracks = c.tracks.filter(t => !t.name.startsWith('Hips.position'));   // (son film dure 21 s : on garde les 6 premières, environ 11 s à l'écran)
  armure.parle = armure.mix.clipAction(c); armure.parle.setLoop(THREE.LoopOnce, 1); armure.parle.clampWhenFinished = false; armure.parle.timeScale = 0.55; } }, e => console.error(e));
     pret('armure');
@@ -1342,7 +1372,7 @@ function avancerArmure(dt, t) {
     p.ombre.position.set(sx + _dp.x, sy + _dp.y - 0.04, ARM.z + 0.008);
   }
   // (la correction suit le poids de l'attente : quand il parle, elle s'efface en douceur, et revient de même ; avant, elle se coupait d'un coup)
-  const wC = armure.coup ? armure.coup.getEffectiveWeight() * (armure.coup.isRunning() ? 1 : 0) : 0, bas = 0.4 * wA + 0.33 * wC;   // (pendant le coup de poing : ses bras montent un tiers moins haut ; levés à la verticale, l'aisselle s'étirait)
+  const wC = armure.coup ? armure.coup.getEffectiveWeight() * (armure.coup.isRunning() ? 1 : 0) : 0, wS = armure.sort ? armure.sort.getEffectiveWeight() * (armure.sort.isRunning() ? 1 : 0) : 0, bas = 0.4 * wA + 0.33 * wC + 0.25 * wS;   // (pendant le coup de poing : ses bras montent un tiers moins haut ; levés à la verticale, l'aisselle s'étirait)
   if (armure.bras && bas > 0.001) for (const [bras, avant] of armure.bras) {   // les bras redescendent d'un tiers vers le bas (Romain : « comme s'il tenait quelque chose »)
     bras.getWorldPosition(_b1); avant.getWorldPosition(_b2); _d1.subVectors(_b2, _b1).normalize(); _d2.copy(_d1).lerp(_bas, bas).normalize();
     _qw.setFromUnitVectors(_d1, _d2); bras.getWorldQuaternion(_qb); bras.parent.getWorldQuaternion(_qp);
@@ -1353,28 +1383,88 @@ function avancerArmure(dt, t) {
   armure.lueurSol.material.opacity = 0.85 + 0.15 * Math.sin(t * 2.3);
 }
 
-/* ================= LE PREMIER TIERS DE LA PHASE 2 : LES CRISTAUX ET LA VAGUE DE FEU, PEINTS PAR ROMAIN =================
-   (Romain, 28 novembre, 1 h 38 : « Vas-y. ») Tout vient de ses images et de ses vidéos, rien n'est redessiné :
-   - 5 paires d'images de la place (cristaux en couleur / les mêmes en rouge), recalées au pixel sur sa peinture de nuit ;
-     20 cristaux retenus (ni couchés, ni sur les massifs, ni collés aux lanternes) ; à chaque vague, 3 au hasard, bien écartés ;
-   - le cristal (découpé dans sa peinture) tombe du plafond et se plante : sa fissure et sa lueur apparaissent (ses pixels) ;
-     il cache le héros qui passe derrière ; on ne le traverse pas ;
-   - sa vidéo de feu (faite d'après la place, recalée image par image) : la boule de feu à la porte du temple, puis l'anneau
-     de feu qui fend la place jusqu'à nous ; derrière chaque cristal, vu du temple, un cône reste intact : l'abri ;
-   - quand le feu atteint un cristal, le rouge monte de son pied en fondu (de son image en couleur à son image rouge), 3 s ;
-     puis il éclate avec sa vidéo d'éclatement (le morceau autour de ce cristal, recalé ; 30 images à 10 par seconde). */
-const SPOTS = NUIT ? CJ : [];
-const vg = { t: -1, actifs: [], touche: 0, pret: false, tw: -1 };
-const cropTex = [], maskTex = [], atlasTex = [], kTex = [];
-let aCharger = SPOTS.length * 2;
-const finiCharge = () => { if (--aCharger === 0) { vg.pret = true; const b = $('bVague'); if (b) b.classList.remove('fait'); } };
-if (NUIT) SPOTS.forEach((S, i) => { const n = String(i).padStart(2, '0');
-  cropTex[i] = chargeur.load('nuit/cr/c' + n + '.jpg', t => { t.colorSpace = THREE.SRGBColorSpace; t.needsUpdate = true; finiCharge(); }, undefined, finiCharge);
-  maskTex[i] = chargeur.load('nuit/cr/m' + n + '.png', t => { t.colorSpace = THREE.NoColorSpace; t.needsUpdate = true; finiCharge(); }, undefined, finiCharge); });
-function chargerEclat(i) {   // (la planche de l'éclatement : seulement pour les cristaux tirés, quand ils tombent)
-  if (atlasTex[i]) return; const n = String(i).padStart(2, '0');
-  atlasTex[i] = chargeur.load('nuit/cr/e' + n + '.jpg', t => { t.colorSpace = THREE.SRGBColorSpace; t.minFilter = THREE.LinearFilter; t.generateMipmaps = false; t.needsUpdate = true; t.pret = true; });
-  kTex[i] = chargeur.load('nuit/cr/k' + n + '.png', t => { t.colorSpace = THREE.NoColorSpace; t.needsUpdate = true; t.pret = true; });
+/* ================= LE PREMIER TIERS DE LA PHASE 2 : LES CRISTAUX ET LA VAGUE DE FEU =================
+   (refait le 28 novembre, après-midi ; Romain, 15 h 47 : « Allez, vas-y, lance tout ce chantier. ») Ce qu'il a demandé, à la voix :
+   - Grosbec lève les deux mains, des éclairs y crépitent, tout tremble un peu ;
+   - six ombres grandissent sur la place, n'importe où ; six cristaux y tombent : sa vidéo de chute sur fond vert (Higgsfield, en gros plan),
+     détourée finement et vérifiée image par image (outils/cristaux/) : un vrai impact, des rochers qui volent, de la poussière ; au sol,
+     un cratère vu du dessus, posé en perspective ;
+   - la vague : un départ de fournaise devant Grosbec (sa vidéo sur fond noir, posée en lumière ; Grosbec éclairé en orange par en dessous,
+     au même rythme ; des flammes devant ses jambes, d'autres derrière lui), et la vidéo de la vague de Romain, calée au pixel ;
+   - derrière chaque cristal, vu de Grosbec, l'abri : une goutte couchée, large contre le cristal, qui s'affine en s'éloignant ; son bord
+     est une flamme vivante (une lueur, des braises) qui se forme à mesure que le feu passe (dans le fond : « l'abri ») ;
+   - le feu s'éteint complètement ; puis chaque cristal se brise (sa vidéo, détourée de même) : ses morceaux tombent et disparaissent
+     (ni fumée, ni évaporation). */
+const CR = { N: 6, haut: 3.0, rayon: 0.55, abri: 1.0 };
+const CR_W = CR.haut * 432 / 340, CR_H = CR.haut * 768 / 340, CR_AU = 209 / 432, CR_AV = 1 - 663 / 768;   // (ses vidéos : 432 × 768 ; du sommet du cristal au sol, 340 px ; son pied en (209, 663))
+const T_OMBRE = 2.15, T_CHUTE = [2.3, 2.7], IMPACT = 48 / 24, CHUTE_FIN = 84 / 24, BRISE_FIN = 69 / 24, BRISE_CASSE = 40 / 24;   // (dans les vidéos : l'impact à l'image 48 ; le cristal planté à la 84 ; il casse à la 40 de l'autre)
+const DEPART_VAGUE = 6.6, FIN = 6.4, ETEINT = 1.0, BRISE_T0 = FIN + ETEINT + 0.25;   // (tw : depuis le départ de la vidéo de la vague ; la place brûle jusqu'à FIN, puis s'éteint)
+const SORT = { debut: 0.6, haut: 2.2, bas: 2.95 };   // (son mouvement : il ramasse l'énergie devant sa poitrine de 0,8 à 1,9 s, puis lance les deux mains au-dessus de sa tête à 2,1 s ; les éclairs grandissent jusque-là)
+const vg = { t: -1, actifs: [], touche: 0, pret: false, tw: -1, braises: [] };
+let aCharger = 1;
+const charge = () => { if (--aCharger === 0) { vg.pret = true; const b = $('bVague'); if (b) b.classList.remove('fait'); } };
+function videoJeu(chemin, boucle) {   // (lue d'un bloc, passée au lecteur par une adresse blob: : l'iPhone exige sinon un serveur qui sert les vidéos par morceaux)
+  const el = document.createElement('video'); el.muted = true; el.loop = !!boucle; el.playsInline = true; el.setAttribute('playsinline', ''); el.preload = 'auto';
+  aCharger++; fetch(el.canPlayType('video/mp4') ? chemin + '.mp4' : chemin + '.webm').then(r => r.blob()).then(b => { el.src = URL.createObjectURL(b); charge(); }).catch(e => { console.error(e); charge(); });
+  const tex = new THREE.VideoTexture(el); tex.colorSpace = THREE.NoColorSpace; return { el, tex, parti: false };
+}
+const VID = NUIT ? { chute: [videoJeu('nuit/cristaux/chute'), videoJeu('nuit/cristaux/chute')], brise: [videoJeu('nuit/cristaux/brise'), videoJeu('nuit/cristaux/brise')], four: videoJeu('nuit/fournaise') } : null;
+const texPlante = NUIT ? (aCharger++, chargeur.load('nuit/cristaux/cristal-plante.jpg', t => { t.colorSpace = THREE.NoColorSpace; t.minFilter = THREE.LinearFilter; t.generateMipmaps = false; charge(); }, undefined, charge)) : null;
+const texCratere = NUIT ? (aCharger++, chargeur.load('nuit/cristaux/cratere.png', t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; charge(); }, undefined, charge)) : null;
+let LUM_FOUR = null; if (NUIT) fetch('nuit/fournaise.json').then(r => r.json()).then(j => { LUM_FOUR = j.lumiere; }).catch(() => {});
+charge();
+function jouerV(V, t, debut) {   // une vidéo du jeu, à l'instant t (en s) de son film ; debut : la lancer
+  if (debut && !V.parti) { V.parti = true; try { V.el.currentTime = 0; if (!window.__pilote) V.el.play().catch(() => {}); } catch (_) {} }
+  if (window.__pilote) { try { const d = (V.el.duration || 9) - 0.04; if (Math.abs(V.el.currentTime - Math.min(t, d)) > 0.03) V.el.currentTime = Math.min(t, d); } catch (_) {} }
+  return (V.el.readyState >= 2 || V.el.seeking) && (V.el.currentTime > 0.02 || t < 0.1);
+}
+function arreter(V) { V.parti = false; try { V.el.pause(); } catch (_) {} }
+/* un panneau debout, tourné vers nous, de la profondeur de son pied : il cache ce qui est derrière lui, le héros devant le cache */
+const VS_PANNEAU = 'uniform vec3 ancre; varying vec2 vU; void main(){ vU = uv; vec4 cp = projectionMatrix * modelViewMatrix * vec4(position, 1.0); vec4 ca = projectionMatrix * viewMatrix * vec4(ancre, 1.0); gl_Position = vec4(cp.xy, clamp(ca.z / ca.w, -1.0, 1.0) * cp.w, cp.w); }';
+const GLSL_LIN = 'vec3 lin(vec3 c){ return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(0.04045, c)); }\n';
+const GEO_CR = [false, true].map(m => new THREE.PlaneGeometry(CR_W, CR_H).translate(((m ? 1 - CR_AU : CR_AU) - 0.5) * -CR_W, (CR_AV - 0.5) * -CR_H, 0));
+function matCristal(miroir) {   // (ses vidéos : la couleur à gauche, l'opacité à droite)
+  return new THREE.ShaderMaterial({
+    uniforms: { t: { value: texPlante }, ancre: { value: new THREE.Vector3() }, op: { value: 0 }, rouge: { value: 0 }, miroir: { value: miroir ? 1 : 0 }, sombre: { value: 0.9 } },
+    vertexShader: VS_PANNEAU,
+    fragmentShader: GLSL_LIN + `uniform sampler2D t; uniform float op; uniform float rouge; uniform float miroir; uniform float sombre; varying vec2 vU;
+      void main(){
+        float x = clamp(miroir > 0.5 ? 1.0 - vU.x : vU.x, 0.003, 0.997); vec2 a = vec2(x * 0.5, vU.y);
+        float al = texture2D(t, a + vec2(0.5, 0.0)).g * op; if (al < 0.004) discard;
+        vec3 c = lin(texture2D(t, a).rgb) * sombre;   // (un peu plus sombre : la place est de nuit)
+        float br = max(c.r, max(c.g, c.b)), bas = 1.0 - smoothstep(0.12, 0.62, vU.y);   // (le feu autour : il l'éclaire par en dessous, orange ; le haut reste violet)
+        c += vec3(1.0, 0.3, 0.06) * rouge * (0.35 + 0.65 * bas) * (0.06 + 0.55 * br);
+        gl_FragColor = vec4(c, al);
+        #include <colorspace_fragment>
+      }`,
+    transparent: true, depthWrite: false, depthTest: true, toneMapped: false
+  });
+}
+function matDecal(map, coul) {   // (posé sur le sol, juste après la peinture : le héros marche dessus)
+  return new THREE.MeshBasicMaterial({ map, color: coul, opacity: 0, transparent: false, blending: THREE.CustomBlending, blendSrc: THREE.SrcAlphaFactor, blendDst: THREE.OneMinusSrcAlphaFactor, depthTest: false, depthWrite: false, toneMapped: false });
+}
+const ombreChute = toile(64, 64, x => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(0,0,0,.75)'); g.addColorStop(0.6, 'rgba(0,0,0,.45)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); });
+/* la fournaise : deux panneaux de sa vidéo, l'un devant Grosbec (plus petit : les flammes cachent ses jambes), l'autre derrière lui (plus grand, retourné) */
+function matFournaise(miroir, cache) {
+  return new THREE.ShaderMaterial({
+    uniforms: { t: { value: VID.four.tex }, ancre: { value: new THREE.Vector3() }, force: { value: 0 }, miroir: { value: miroir ? 1 : 0 }, cache: { value: cache } },
+    vertexShader: VS_PANNEAU,
+    fragmentShader: GLSL_LIN + `uniform sampler2D t; uniform float force; uniform float miroir; uniform float cache; varying vec2 vU;
+      void main(){
+        vec3 f = lin(texture2D(t, vec2(miroir > 0.5 ? 1.0 - vU.x : vU.x, vU.y)).rgb) * force; float L = max(f.r, max(f.g, f.b));
+        if (L < 0.002) discard;
+        gl_FragColor = vec4(f * 1.5, clamp(L * cache, 0.0, 0.92));   // (de la lumière qui s'ajoute ; le plus vif cache aussi ce qui est derrière)
+        #include <colorspace_fragment>
+      }`,
+    transparent: true, depthWrite: false, depthTest: true, toneMapped: false, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor
+  });
+}
+const FOUR = { devant: null, derriere: null };
+if (NUIT) {
+  for (const [nom, W, H, dy, mi, cache] of [['devant', 6.2, 3.5, 1.35, false, 0.55], ['derriere', 8.6, 4.85, -1.1, true, 0.25]]) {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(W, H).translate(0, (0.5 - 0.22) * H, 0), matFournaise(mi, cache)); m.frustumCulled = false; m.visible = false;
+    m.position.copy(G(ARM.x, ARM.y + dy, ARM.z)); m.material.uniforms.ancre.value.copy(G(ARM.x, ARM.y + dy, ARM.z)); monde.add(m); FOUR[nom] = m;
+  }
 }
 /* « quand le feu arrive ici » (la carte tirée de sa vidéo), lue une fois pour savoir quand le héros et les cristaux sont touchés */
 let arrivee = null;
@@ -1383,119 +1473,46 @@ function arriveFeu(x, y) {   // (en secondes depuis le début de la vidéo ; Inf
   if (!arrivee) return Infinity; const p = imgDe(x, y, 0), u = clamp(Math.floor(p.u / IMW * arrivee.w), 0, arrivee.w - 1), v = clamp(Math.floor(p.v / IMH * arrivee.h), 0, arrivee.h - 1);
   const a = arrivee.d[(v * arrivee.w + u) * 4]; return a >= 254 ? Infinity : a / 24;
 }
-/* un morceau de la peinture posé sur l'écran (en pixels de la peinture) : le sol fendu, puis l'éclatement */
-const VS_IMAGE = 'uniform vec4 fen; uniform vec4 boite; varying vec2 vP; void main(){ vec2 p = boite.xy + (vec2(position.x, -position.y) + 0.5) * boite.zw; vP = p; gl_Position = vec4((p.x - fen.x) / (fen.z - fen.x) * 2.0 - 1.0, 1.0 - (p.y - fen.y) / (fen.w - fen.y) * 2.0, 0.0, 1.0); }';
-const FS_COMMUN = `uniform sampler2D cr; uniform sampler2D mk; uniform vec4 rect; uniform float rouge; uniform float piedV; uniform float hautV;
-  vec3 couleur(vec2 q, float py){   // la couleur de sa peinture ; le rouge monte du pied en fondu
-    vec3 c = texture2D(cr, vec2(q.x * 0.5, 1.0 - q.y)).rgb, r = texture2D(cr, vec2(0.5 + q.x * 0.5, 1.0 - q.y)).rgb;
-    float h = (piedV - py) / max(1.0, piedV - hautV), m = clamp((rouge * 1.45 - h) / 0.45, 0.0, 1.0);
-    return mix(c, r, m); }`;
-function matSol(i) {
-  const S = SPOTS[i], e = S.eclat;
-  const ux = Math.min(S.rect[0], e.rect[0]), uy = Math.min(S.rect[1], e.rect[1]), ux1 = Math.max(S.rect[0] + S.rect[2], e.rect[0] + e.rect[2]), uy1 = Math.max(S.rect[1] + S.rect[3], e.rect[1] + e.rect[3]);
-  return new THREE.ShaderMaterial({
-    uniforms: { fen: fondMat.uniforms.fen, boite: { value: new THREE.Vector4(ux, uy, ux1 - ux, uy1 - uy) }, cr: { value: cropTex[i] }, mk: { value: maskTex[i] }, at: { value: null }, km: { value: null },
-      rect: { value: new THREE.Vector4(...S.rect) }, erect: { value: new THREE.Vector4(...e.rect) }, tuile: { value: new THREE.Vector4(e.tuile[0], e.tuile[1], e.cols, e.n) }, atl: { value: new THREE.Vector2(...e.atlas) },
-      rouge: { value: 0 }, piedV: { value: S.pied[1] }, hautV: { value: S.sommet }, montre: { value: 0 }, eclat: { value: -1 }, fondu: { value: 1 }, fd: fondMat.uniforms.fond, img: fondMat.uniforms.img },
-    vertexShader: VS_IMAGE,
-    fragmentShader: FS_COMMUN + `
-      uniform sampler2D at; uniform sampler2D km; uniform vec4 erect; uniform vec4 tuile; uniform vec2 atl; uniform float montre; uniform float eclat; uniform float fondu; varying vec2 vP;
-      uniform sampler2D fd; uniform vec2 img;
-      float ecart(vec3 a, vec3 b){ vec3 d = abs(a - b); return max(d.r, max(d.g, d.b)); }
-      vec3 tuileC(float i, vec2 q){ float c = mod(i, tuile.z), r = floor(i / tuile.z); q = clamp(q, 0.003, 0.997);
-        return texture2D(at, vec2((c + q.x) * tuile.x / atl.x, 1.0 - (r + q.y) * tuile.y / atl.y)).rgb; }
-      void main(){
-        vec4 o = vec4(0.0);
-        vec3 nu = texture2D(fd, vec2(vP.x / img.x, 1.0 - vP.y / img.y)).rgb;   // (la place nue à cet endroit : ce qui lui ressemble reste transparent, le feu passe dessous)
-        vec2 q = (vP - rect.xy) / rect.zw;
-        float wA = eclat < 0.0 ? 1.0 : 1.0 - smoothstep(0.0, 2.5, eclat);
-        if (q.x > 0.0 && q.x < 1.0 && q.y > 0.0 && q.y < 1.0 && wA > 0.0) {   // le sol fendu et sa lueur (sans le corps : il est debout, en volume)
-          vec4 m = texture2D(mk, vec2(q.x, 1.0 - q.y));
-          vec3 cc = couleur(q, vP.y);
-          o = vec4(cc, m.r * (1.0 - m.g) * montre * wA * smoothstep(0.025, 0.09, ecart(cc, nu)));
-        }
-        if (eclat >= 0.0) {   // l'éclatement : sa vidéo, autour de ce cristal seulement
-          vec2 qe = (vP - erect.xy) / erect.zw;
-          if (qe.x > 0.0 && qe.x < 1.0 && qe.y > 0.0 && qe.y < 1.0) {
-            float i0 = min(floor(eclat), tuile.w - 1.0), i1 = min(i0 + 1.0, tuile.w - 1.0);
-            vec3 c = mix(tuileC(i0, qe), tuileC(i1, qe), fract(eclat));
-            float k = texture2D(km, vec2(qe.x, 1.0 - qe.y)).r * smoothstep(0.03, 0.11, ecart(c, nu));
-            o = vec4(mix(o.rgb, c, k), max(o.a, k));
-          }
-        }
-        o.a *= fondu; if (o.a < 0.004) discard;
-        gl_FragColor = o;
-        #include <colorspace_fragment>
-      }`,
-    transparent: false, blending: THREE.CustomBlending, blendSrc: THREE.SrcAlphaFactor, blendDst: THREE.OneMinusSrcAlphaFactor,   // (dessiné juste après le fond, avant le héros : il marche dessus)
-    depthTest: false, depthWrite: false, toneMapped: false
-  });
+const debout = c => c.etat === 'plante' || (c.etat === 'chute' && c.vt >= IMPACT) || (c.etat === 'brise' && c.tb < BRISE_CASSE);
+function contreCristal(x, y) { for (const c of vg.actifs) if (debout(c) && Math.hypot(x - c.x, y - c.y) < CR.rayon + 0.2) return true; return false; }
+function formeAbri(c, x, y) {   // l'abri derrière ce cristal (la même forme que dans le fond, sans la flamme qui bouge) : < 0 dedans
+  let ux = c.x - ARM.x, uy = c.y - ARM.y; const L = Math.hypot(ux, uy); ux /= L; uy /= L;
+  const vx = x - c.x, vy = y - c.y, al = vx * ux + vy * uy - 0.15, pe = Math.abs(vx * uy - vy * ux), Rh = CR.abri, Lt = 4.6;
+  return al < 0 ? Math.hypot(al, pe) - Rh : Math.max(pe - Rh * Math.pow(Math.max(0, 1 - al / Lt), 0.85), al - Lt);
 }
-function matCorps(i) {   // le corps debout (comme les lanternes : une plaque à son pied qui montre ses pixels et cache ce qui est derrière)
-  const S = SPOTS[i];
-  return new THREE.ShaderMaterial({
-    uniforms: { cr: { value: cropTex[i] }, mk: { value: maskTex[i] }, fen: fondMat.uniforms.fen, ecran: { value: _ecran }, rect: { value: new THREE.Vector4(...S.rect) },
-      rouge: { value: 0 }, piedV: { value: S.pied[1] }, hautV: { value: S.sommet }, dv: { value: 0 }, eclair: { value: 0 } },
-    vertexShader: 'void main(){ gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-    fragmentShader: FS_COMMUN + `
-      uniform vec4 fen; uniform vec2 ecran; uniform float dv; uniform float eclair;
-      void main(){
-        vec2 e = gl_FragCoord.xy / ecran, p = vec2(mix(fen.x, fen.z, e.x), mix(fen.w, fen.y, e.y)) + vec2(0.0, dv), q = (p - rect.xy) / rect.zw;
-        if (q.x < 0.0 || q.x > 1.0 || q.y < 0.0 || q.y > 1.0) discard;
-        float b = texture2D(mk, vec2(q.x, 1.0 - q.y)).g; if (b < 0.06) discard;
-        vec3 c = couleur(q, p.y); c += eclair * vec3(1.0, 0.95, 0.9);
-        gl_FragColor = vec4(c, smoothstep(0.06, 0.6, b));
-        #include <colorspace_fragment>
-      }`,
-    transparent: true, depthWrite: true, toneMapped: false, side: THREE.DoubleSide
-  });
-}
-function rayonCristal(S) { return Math.max(0.5, Math.min(1.3, S.larg * 0.42)); }
-const debout = c => c.etat === 'plante' || c.etat === 'chauffe' || c.etat === 'eclate' && vg.tw < FIN;   // (il protège tant que le feu brûle)
-function contreCristal(x, y) { for (const c of vg.actifs) if (debout(c) && Math.hypot(x - c.S.x, y - c.S.y) < rayonCristal(c.S) + 0.2) return true; return false; }
-function abrite(x, y) {   // dans le cône derrière un cristal, vu de la porte du temple (d'où vient le feu)
-  for (const c of vg.actifs) {
-    if (!debout(c)) continue;
-    const cx = c.S.x - ARM.x, cy = c.S.y - ARM.y, L = Math.hypot(cx, cy), ux = cx / L, uy = cy / L, vx = x - ARM.x, vy = y - ARM.y;
-    const al = vx * ux + vy * uy - L, pe = Math.abs(vx * uy - vy * ux), r = rayonCristal(c.S) * 1.05 + Math.max(al, 0) * 0.12;
-    if (al > 0.15 && al < 4.6 && pe < r * 0.85) return true;
+function abrite(x, y) { for (const c of vg.actifs) if (debout(c) && formeAbri(c, x, y) < -0.08) return true; return false; }
+function tirerPlaces() {   // six places au hasard sur la place : sur le sol libre, écartées, pas sur le héros
+  if (window.__tirage) return window.__tirage;   // (pour les essais : [[x, y], …])
+  const pris = [];
+  for (let essai = 0; essai < 4000 && pris.length < CR.N; essai++) {
+    const x = 0.6 + Math.random() * 19.8, y = 2.0 + Math.random() * 16.0, sep = essai < 2500 ? 3.6 : 2.8;
+    if (caseDe(GR.libre, x, y) !== 1 || caseDe(GR.libre, x + 0.6, y) !== 1 || caseDe(GR.libre, x - 0.6, y) !== 1 || (crev.ouvert && dansCrevasse(x, y, 0.9))) continue;
+    if (Math.hypot(x - h.x, y - h.y) < 2.4 || pris.some(p => Math.hypot(x - p[0], y - p[1]) < sep)) continue;
+    pris.push([x, y]);
   }
-  return false;
+  return pris;
 }
-function tirer() {   // 3 cristaux au hasard parmi les 20 : écartés, pas sur le héros, pas dans une crevasse
-  if (window.__tirage) return window.__tirage;   // (pour les essais)
-  for (let essai = 0; essai < 400; essai++) {
-    const ordre = SPOTS.map((S, i) => i).sort(() => Math.random() - 0.5), pris = [];
-    for (const i of ordre) {
-      const S = SPOTS[i];
-      if (Math.hypot(S.x - h.x, S.y - h.y) < 2.4 || Math.hypot(S.x - ARM.x, S.y - ARM.y) < 3.6 || (crev.ouvert && dansCrevasse(S.x, S.y, 0.8))) continue;
-      if (pris.some(j => Math.hypot(S.x - SPOTS[j].x, S.y - SPOTS[j].y) < 4.6)) continue;
-      pris.push(i); if (pris.length === 3) return pris;
-    }
-  }
-  return [0, 4, 19];
-}
-const ombreChute = toile(64, 64, x => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(0,0,0,.7)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); });
-const DEPART_VAGUE = 2.7, FIN = 6.4;   // (FIN : la place brûle jusque-là, depuis le départ de sa vidéo ; puis elle s'éteint en 1 s et les cristaux éclatent)
 function lancerVague() {
-  if (!NUIT || vg.t >= 0 || !vg.pret) return;
+  if (!NUIT || vg.t >= 0 || !vg.pret || CP.t >= 0) return;
   for (const c of vg.actifs) nettoyer(c); vg.actifs = [];
-  vg.t = 0; vg.tw = -1; vg.touche = 0; vg.passe = false; vg.secours = false; vg.tv = -1; vg.tvT = 0;
-  tirer().forEach((i, k) => {
-    const S = SPOTS[i]; chargerEclat(i);
-    const sol = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), matSol(i)); sol.frustumCulled = false; sol.renderOrder = -9; scene.add(sol);
-    const larg = Math.max(2.6, S.larg + 2.2), haut = S.haut + 1.6;
-    const corps = new THREE.Mesh(new THREE.PlaneGeometry(larg, haut), matCorps(i)); corps.frustumCulled = false; corps.visible = false; monde.add(corps);
-    const ombre = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: ombreChute, transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
-    ombre.position.copy(G(S.x, S.y, 0.01)); monde.add(ombre);
-    const coul = new THREE.Color(...S.couleur), l = new THREE.PointLight(coul, 0, 5.5, 1.5); l.position.copy(G(S.x, S.y + 0.6, 1.3)); monde.add(l);
-    const trainee = sprite(T_LUEUR.glace, 1, true); trainee.material.color.copy(coul); trainee.visible = false; monde.add(trainee);
-    vg.actifs.push({ i, S, sol, corps, ombre, l, coul, trainee, larg, haut, etat: 'attente', debut: 0.25 + k * 0.4, z: 15, vz: 0, t: 0 });
+  vg.t = 0; vg.tw = -1; vg.touche = 0; vg.passe = false; vg.secours = false; vg.tv = -1; vg.tvT = 0; vg.secoue = [false, false];
+  for (const V of [...VID.chute, ...VID.brise, VID.four]) arreter(V);
+  tirerPlaces().forEach(([x, y], k) => {
+    const grp = k % 2, miroir = (k >> 1) % 2 === grp;   // (deux vidéos décalées, trois cristaux chacune ; un sur deux retourné)
+    const mesh = new THREE.Mesh(GEO_CR[miroir ? 1 : 0], matCristal(miroir)); mesh.frustumCulled = false; mesh.visible = false; mesh.position.copy(G(x, y, 0)); monde.add(mesh);
+    const ombre = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), matDecal(ombreChute, 0xffffff)); ombre.renderOrder = -8; ombre.position.copy(G(x, y, 0.01)); monde.add(ombre);
+    const cratere = new THREE.Mesh(new THREE.PlaneGeometry(4.4, 4.4), matDecal(texCratere, 0xa8a3b4)); cratere.renderOrder = -7; cratere.rotation.z = Math.random() * 6.283; cratere.position.copy(G(x, y + 0.08, 0.012)); monde.add(cratere);
+    vg.actifs.push({ k, x, y, grp, miroir, mesh, ombre, cratere, etat: 'attente', vt: -9, tb: -9, rouge: 0, ta: Infinity, braiseT: 0 });
   });
+  // il lève les deux mains
+  if (armure.sort) { armure.retourDe = armure.sort; armure.sort.reset().setEffectiveWeight(1).fadeIn(0.35).play(); armure.attente.fadeOut(0.35); if (armure.parle && armure.parle.isRunning()) armure.parle.fadeOut(0.3);
+    armure.retour = armure.sort.getClip().duration / armure.sort.timeScale - 0.45; }
+  vg.mains = prendre(0xb487ff, 0, 9);
+  try { CP.ecl.el.currentTime = 0; if (!window.__pilote) CP.ecl.el.play().catch(() => {}); } catch (_) {}
   const b = $('bVague'); if (b) b.classList.add('fait');
   if (videoEl) { try { videoEl.pause(); videoEl.currentTime = 0; } catch (_) {} }
 }
-/* la vidéo de la vague (lue d'un bloc, passée au lecteur par une adresse blob: : l'iPhone exige sinon un serveur qui sert les vidéos par morceaux) */
+/* la vidéo de la vague de Romain */
 let videoEl = null, videoTex = null;
 if (NUIT) {
   videoEl = document.createElement('video'); videoEl.muted = true; videoEl.loop = false; videoEl.playsInline = true; videoEl.setAttribute('playsinline', ''); videoEl.preload = 'auto';
@@ -1504,7 +1521,7 @@ if (NUIT) {
   videoTex = new THREE.VideoTexture(videoEl); videoTex.colorSpace = THREE.NoColorSpace;   // (décodée dans le shader : sinon, selon le navigateur, elle sort délavée)
   fondMat.uniforms.vid.value = videoTex;
   vg.feuL = new THREE.PointLight(0xff7a2a, 0, 6, 1.4); monde.add(vg.feuL);   // (le feu sous le héros l'éclaire par en dessous)
-  vg.charge = new THREE.PointLight(0xff5a20, 0, 14, 1.3); vg.charge.position.copy(G(ARM.x, ARM.y + 1, ARM.zc)); monde.add(vg.charge);
+  vg.charge = new THREE.PointLight(0xff7428, 0, 13, 1.3); vg.charge.position.copy(G(ARM.x, ARM.y + 1.7, ARM.z + 0.45)); monde.add(vg.charge);   // (la fournaise éclaire Grosbec par en dessous)
 }
 /* LE COUP DE POING DE GROSBEC (Romain, 28 nov., 6 h 11 : « Go » ; sa vidéo de la zone dorée, faite à 1 h 11, envoyée à 6 h 19) :
    il frappe le palier ; sur la place, sa vidéo recalée : les fissures dorées s'ouvrent dans la moitié droite, puis la lumière jaillit
@@ -1520,7 +1537,7 @@ function videoCoup(nom) { const el = document.createElement('video'); el.muted =
 if (NUIT) {
   fetch('nuit/coup.json').then(r => r.json()).then(j => { const Z = {};
     for (const [cote, z] of Object.entries(j.zones)) { const t = atob(z.zone), u = new Uint8Array(GR.nx * GR.ny); for (let i = 0; i < u.length; i++) u[i] = (t.charCodeAt(i >> 3) >> (7 - (i & 7))) & 1;
-      Z[cote] = Object.assign({}, z, { cases: u, img: cote === 'gauche' ? coupTexG : coupTex, teinteC: new THREE.Color(...z.teinte) }, videoCoup(z.video)); }
+      Z[cote] = Object.assign({}, z, { cases: u, img: cote === 'gauche' ? coupTexG : coupTex, ref: cote === 'gauche' ? refG : refD, teinteC: new THREE.Color(...z.teinte) }, videoCoup(z.video)); }
     CP.zones = Z; }).catch(e => console.error(e));
   CP.lum = new THREE.PointLight(0xffc860, 0, 18, 1.2); monde.add(CP.lum);
   CP.eclat = sprite(texLueur('rgba(255,214,120,.95)'), 2.4, true); CP.eclat.material.opacity = 0; monde.add(CP.eclat);
@@ -1533,13 +1550,18 @@ if (NUIT) {
     vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: 'uniform sampler2D t; uniform vec3 teinte; uniform float force; varying vec2 vU; void main(){ float l = texture2D(t, vU).r; l = max(0.0, l - 0.06) / 0.94; l *= 1.0 - smoothstep(0.55, 0.98, length(vU - 0.5) * 2.0); vec3 c = teinte * l + vec3(1.0) * l * l * 0.8; gl_FragColor = vec4(c * force * 1.7, 1.0); }' });
   CP.ecl = { el: ev, mesh: new THREE.Mesh(new THREE.PlaneGeometry(1, 1), em), tourne: 0, quand: 0 }; CP.ecl.mesh.visible = false; CP.ecl.mesh.frustumCulled = false; CP.ecl.mesh.renderOrder = 6; scene.add(CP.ecl.mesh);
-  CP.lumGant = new THREE.PointLight(0xffd080, 0, 5, 1.6); scene.add(CP.lumGant);
+  CP.lumGant = new THREE.PointLight(0xffd080, 0, 7, 1.4); scene.add(CP.lumGant);
+  // (la boule de lumière qui englobe son gant — Romain : « que ça fasse un peu cache-misère, que la lumière dépasse son gant » — : un cœur presque blanc,
+  //  un grand halo de la couleur de la zone ; les éclairs en partent)
+  CP.coeur = sprite(texLueur('rgba(255,255,250,1)'), 1, true); CP.halo = sprite(texLueur('rgba(255,255,255,.85)'), 1, true);
+  for (const S of [CP.halo, CP.coeur]) { S.material.depthTest = false; S.renderOrder = 7; S.material.opacity = 0; scene.add(S); }
 }
 const dansZoneCoup = (x, y) => !!(CP.Z && caseDe(CP.Z.cases, x, y));
 function coupDePoing(cote) {
-  if (!NUIT || CP.t >= 0 || !armure.coup || !CP.zones) return;
+  if (!NUIT || CP.t >= 0 || vg.t >= 0 || !armure.coup || !CP.zones) return;
   CP.cote = cote === 'gauche' || cote === 'droite' ? cote : (Math.random() < 0.5 ? 'gauche' : 'droite'); const Z = CP.Z = CP.zones[CP.cote];
-  fondMat.uniforms.vidC.value = Z.tex; fondMat.uniforms.coupImg.value = Z.img; CP.ecl.mesh.material.uniforms.teinte.value.copy(Z.teinteC); CP.lumGant.color.copy(Z.teinteC);
+  CP.halo.material.color.copy(Z.teinteC); fondMat.uniforms.jourT.value.copy(Z.teinteC);
+  fondMat.uniforms.vidC.value = Z.tex; fondMat.uniforms.coupImg.value = Z.img; fondMat.uniforms.refC.value = Z.ref; fondMat.uniforms.coupR.value = 0; CP.ecl.mesh.material.uniforms.teinte.value.copy(Z.teinteC); CP.lumGant.color.copy(Z.teinteC);
   CP.t = 0; CP.lance = false; CP.frappe = false; CP.touche = false; CP.tf = undefined; armure.retourDe = armure.coup;
   // il vise la zone : tourné vers son milieu (un peu plus qu'en vrai, pour qu'on le voie bien)
   armure.vise = 1.6 * Math.atan2(Z.centre[0] - ARM.x, Z.centre[1] - ARM.y);
@@ -1562,15 +1584,22 @@ function avancerPoing(dt) {
     E.quand -= dt; if (E.quand <= 0) { E.quand = 0.12 + Math.random() * 0.12; E.tourne = Math.random() * 6.283; E.taille = 0.9 + Math.random() * 0.3; }
     E.mesh.rotateZ(E.tourne);
     const u = clamp(CP.t / imp, 0, 1), apres = CP.t - imp, f = apres < 0 ? (0.25 + 0.75 * u * u) * (0.8 + 0.2 * Math.random()) : Math.max(0, 1.4 * Math.exp(-apres * 7));
-    E.mesh.scale.setScalar((1.3 + 1.6 * u) * E.taille * (apres > 0 ? 1 + apres * 2 : 1)); E.mesh.material.uniforms.force.value = f; E.mesh.visible = f > 0.01;
-    CP.lumGant.position.copy(_vh); CP.lumGant.intensity = 14 * f;
+    E.mesh.scale.setScalar((2.2 + 2.6 * u) * E.taille * (apres > 0 ? 1 + apres * 2 : 1)); E.mesh.material.uniforms.force.value = f * 1.3; E.mesh.visible = f > 0.01;
+    CP.lumGant.position.copy(_vh); CP.lumGant.intensity = 30 * f;
+    const vac = 0.85 + 0.15 * Math.random(), fb = apres < 0 ? (0.45 + 0.55 * u) * vac : Math.max(0, Math.exp(-apres * 9));
+    CP.coeur.position.copy(_vh); CP.coeur.scale.setScalar(0.8 + 1.1 * u); CP.coeur.material.opacity = fb;
+    CP.halo.position.copy(_vh); CP.halo.scale.setScalar(1.8 + 2.8 * u); CP.halo.material.opacity = 0.9 * fb;
+    if (apres < 0) { monde.worldToLocal(_va.copy(_vh)); const q = imgDe(_va.x, -_va.y, _va.z); fondMat.uniforms.jourO.value.set(q.u, q.v); fondMat.uniforms.jourR.value = 420 + 700 * u; fondMat.uniforms.jourA.value = (0.12 + 0.6 * u * u) * vac; }
+    else { fondMat.uniforms.jourO.value.copy(fondMat.uniforms.coupO.value); fondMat.uniforms.jourR.value = 1000 + 900 * Math.min(1, apres * 3); fondMat.uniforms.jourA.value = 0.9 * Math.exp(-apres * 2.6); }   // (à l'impact : elle éclate au sol)
     if (window.__pilote && E.el.readyState >= 2) { try { const d = E.el.duration || 4; const c = CP.t % (d - 0.1); if (Math.abs(E.el.currentTime - c) > 0.05) E.el.currentTime = c; } catch (_) {} }
   }
   if (!CP.frappe && CP.t >= imp) {   // l'impact : le sol tremble, un éclat doré sous ses poings
     CP.frappe = true; fen.bouge = Math.max(fen.bouge, 1);
     const m = armure.m, a = m.getObjectByName('LeftHand'), b = m.getObjectByName('RightHand'); a.getWorldPosition(_vh); b.getWorldPosition(_va); _vh.add(_va).multiplyScalar(0.5); monde.worldToLocal(_vh);
+    { const q = imgDe(_vh.x, -_vh.y, ARM.z); fondMat.uniforms.coupO.value.set(q.u, q.v); }   // (l'effet part de là où son poing touche le palier)
     CP.eclat.position.set(_vh.x, _vh.y, ARM.z + 0.3); CP.eclat.material.color.copy(I.teinteC); CP.lumPoing.position.set(_vh.x, _vh.y - 0.6, ARM.z + 0.8); CP.lumPoing.color.copy(I.teinteC); CP.tf = 0;
   }
+  if (CP.frappe) fondMat.uniforms.coupR.value = 3200 * clamp((CP.t - imp) / 0.7, 0, 1) + 320;
   if (CP.tf !== undefined) { CP.tf += dt; const f = Math.exp(-CP.tf * 4); CP.eclat.material.opacity = f; CP.eclat.scale.setScalar(2.4 + CP.tf * 3); CP.lumPoing.intensity = 40 * f; }
   if (vt >= 0) {
     if (!CP.lance) { CP.lance = true; try { I.el.currentTime = 0; if (!window.__pilote) I.el.play().catch(() => {}); } catch (_) {} }
@@ -1583,10 +1612,9 @@ function avancerPoing(dt) {
   CP.lum.color.copy(I.teinteC); CP.lum.position.copy(G(I.centre[0], I.centre[1], 1.6)); CP.lum.intensity = ex > 0 ? 90 * Math.exp(-ex * 1.5) * Math.min(1, ex / 0.25) : vt > 0 ? 10 * Math.min(1, vt / 0.6) : 0;
   if (ex > 0 && ex < 0.5) fen.bouge = Math.max(fen.bouge, 0.45);
   if (!CP.touche && ex >= 0 && ex < 0.6 && dansZoneCoup(h.x, h.y)) { CP.touche = true; projeter(); }   // (encore dans la zone quand ça jaillit : projeté)
-  if (vt >= I.fin) { CP.t = -1; CP.tf = undefined; CP.eclat.material.opacity = 0; CP.lumPoing.intensity = 0; fondMat.uniforms.coup.value = 0; CP.lum.intensity = 0; CP.ecl.mesh.visible = false; CP.lumGant.intensity = 0;
+  if (vt >= I.fin) { CP.t = -1; CP.tf = undefined; CP.eclat.material.opacity = 0; CP.lumPoing.intensity = 0; fondMat.uniforms.coup.value = 0; CP.lum.intensity = 0; CP.ecl.mesh.visible = false; CP.lumGant.intensity = 0; CP.coeur.material.opacity = 0; CP.halo.material.opacity = 0; fondMat.uniforms.jourA.value = 0;
     try { I.el.pause(); CP.ecl.el.pause(); } catch (_) {} const b = $('bCoup'); if (b) b.classList.remove('fait'); }
 }
-function nettoyer(c) { scene.remove(c.sol); monde.remove(c.corps, c.ombre, c.l, c.trainee); c.sol.material.dispose(); c.corps.material.dispose(); }
 const MSG = {};
 function bulle(texte, coul) {   // un petit mot au-dessus du héros (« Touché ! », « À l'abri ! »)
   if (!MSG[texte]) MSG[texte] = toile(256, 64, x => { x.font = 'bold 40px system-ui, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineWidth = 7; x.strokeStyle = 'rgba(0,0,0,.85)'; x.strokeText(texte, 128, 34); x.fillStyle = coul; x.fillText(texte, 128, 34); });
@@ -1597,71 +1625,121 @@ function toucher() {
   if (vg.touche > 0) return; vg.touche = 1.0; bulle('Touché !', '#ff6a4a');
   const v = $('rouge'); if (v) { v.style.transition = 'none'; v.style.opacity = '1'; requestAnimationFrame(() => { v.style.transition = 'opacity .6s'; v.style.opacity = '0'; }); }
 }
+function nettoyer(c) { monde.remove(c.mesh, c.ombre, c.cratere); c.mesh.material.dispose(); c.ombre.material.dispose(); c.cratere.material.dispose(); c.ombre.geometry.dispose(); c.cratere.geometry.dispose(); }
+const _rougeL = new THREE.Color(0xff3a12), _violet = new THREE.Color(0.72, 0.5, 1.0);
+function braise(c, tw) {   // une braise qui part du bord de l'abri, là où le feu est déjà passé
+  let ux = c.x - ARM.x, uy = c.y - ARM.y; const L = Math.hypot(ux, uy); ux /= L; uy /= L;
+  const s = Math.random() * 2 - 1, cote = Math.random() < 0.5 ? -1 : 1;
+  let al, pe; if (s < -0.35) { const a = (s + 1) / 0.65 * Math.PI * 0.5 + Math.PI * 0.5; al = Math.cos(a) * CR.abri; pe = Math.sin(a) * CR.abri; } else { al = (s + 0.35) / 1.35 * 4.4; pe = CR.abri * Math.pow(Math.max(0, 1 - al / 4.6), 0.85); }
+  al += 0.15; const x = c.x + ux * al - uy * pe * cote, y = c.y + uy * al + ux * pe * cote;
+  if (arriveFeu(x, y) > tw) return;
+  const sp = sprite(Math.random() < 0.3 ? T_LUEUR.or : T_LUEUR.feu, 0.1 + Math.random() * 0.08, true); sp.material.depthTest = true;
+  sp.position.copy(G(x, y, 0.05)); monde.add(sp);
+  vg.braises.push({ sp, x, y, z: 0.05, vx: (Math.random() - 0.5) * 0.5 + ux * 0.3, vy: (Math.random() - 0.5) * 0.5 + uy * 0.3, vz: 0.7 + Math.random() * 0.9, t: 0, vie: 0.7 + Math.random() * 0.6, s0: sp.scale.x });
+}
+function avancerBraises(dt) {
+  for (let i = vg.braises.length - 1; i >= 0; i--) {
+    const b = vg.braises[i]; b.t += dt; const u = b.t / b.vie;
+    if (u >= 1) { monde.remove(b.sp); b.sp.material.dispose(); vg.braises.splice(i, 1); continue; }
+    b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt; b.vx += Math.sin(b.t * 9 + i) * dt * 0.8;
+    b.sp.position.copy(G(b.x, b.y, b.z)); b.sp.material.opacity = (u < 0.15 ? u / 0.15 : 1 - (u - 0.15) / 0.85) * (0.75 + 0.25 * Math.sin(b.t * 30 + i));
+    const k = b.s0 * (1 - 0.5 * u); b.sp.scale.set(k, k, 1);
+  }
+}
 function avancerVague(dt, t) {
   fondMat.uniforms.temps.value = t;
   if (vg.touche > 0) vg.touche -= dt;
+  avancerBraises(dt);
   if (vg.t < 0) return; vg.t += dt; const T = vg.t;
-  // la vague : sa vidéo démarre après la chute des cristaux ; elle s'arrête sur sa dernière image, la place brûle encore, puis la nuit revient
-  const tw = T - DEPART_VAGUE; vg.tw = tw; fondMat.uniforms.tw.value = Math.max(0, tw);
+  /* 1. il lève les deux mains : des éclairs violets y crépitent, tout tremble un peu */
+  const E = CP.ecl, main = armure.m;
+  if (main) {
+    if (!vg.eclM) {   // (deux éclairs, un par main, comme celui du coup de poing ; la même vidéo)
+      vg.eclM = [0, 1].map(() => { const m = new THREE.Mesh(E.mesh.geometry, E.mesh.material.clone()); m.material.uniforms.t.value = E.mesh.material.uniforms.t.value; m.material.uniforms.teinte.value.copy(_violet); m.frustumCulled = false; m.renderOrder = 6; m.visible = false; scene.add(m); return { m, tourne: 0, quand: 0, taille: 1 }; });
+      vg.halosM = [0, 1].map(() => { const s = sprite(texLueur('rgba(220,200,255,.9)'), 1, true); s.material.depthTest = false; s.renderOrder = 7; s.material.opacity = 0; scene.add(s); return s; });
+    }
+    const u = clamp((T - SORT.debut) / (SORT.haut - SORT.debut), 0, 1), fin = clamp((T - SORT.bas) / 0.45, 0, 1), f = (0.2 + 0.8 * u * u) * (1 - fin);
+    ['LeftHand', 'RightHand'].forEach((n, i) => {
+      const os = main.getObjectByName(n), M = vg.eclM[i]; if (!os) return; os.getWorldPosition(_vh);
+      M.m.position.copy(_vh); M.m.quaternion.copy(cam.quaternion);
+      M.quand -= dt; if (M.quand <= 0) { M.quand = 0.1 + Math.random() * 0.12; M.tourne = Math.random() * 6.283; M.taille = 0.85 + Math.random() * 0.35; }
+      M.m.rotateZ(M.tourne); M.m.scale.setScalar((1.6 + 1.6 * u) * M.taille); M.m.material.uniforms.force.value = f * (0.8 + 0.4 * Math.random()) * 1.2; M.m.visible = f > 0.01;
+      const H = vg.halosM[i]; H.position.copy(_vh); H.scale.setScalar(1.2 + 1.4 * u); H.material.opacity = 0.7 * f;
+      if (i === 0) _va.copy(_vh); else _va.add(_vh).multiplyScalar(0.5);
+    });
+    if (vg.mains) { monde.worldToLocal(_va); vg.mains.position.copy(_va); vg.mains.intensity = 26 * f; }
+    if (f <= 0.001 && T > SORT.bas) { vg.eclM.forEach(M => { M.m.visible = false; }); vg.halosM.forEach(H => { H.material.opacity = 0; }); if (vg.mains) { rendreL(vg.mains); vg.mains = null; } }
+    if (window.__pilote && E.el.readyState >= 2 && T < SORT.bas + 0.5) { try { const d = E.el.duration || 4; const c = T % (d - 0.1); if (Math.abs(E.el.currentTime - c) > 0.05) E.el.currentTime = c; } catch (_) {} }
+    if (T > SORT.haut - 0.1 && T < SORT.haut + 0.7) fen.bouge = Math.max(fen.bouge, 0.3);
+  }
+  /* 2. les cristaux tombent, se plantent ; le feu les fait rougir ; éteint, ils se brisent */
+  const tw = T - DEPART_VAGUE; vg.tw = tw;
+  const ok = [0, 1].map(g => { const vt = T - T_CHUTE[g]; return vt >= 0 && vt < CHUTE_FIN + 0.1 ? jouerV(VID.chute[g], vt, true) : false; });
+  const tbG = [0, 1].map(g => tw - (BRISE_T0 + g * 0.35)), okB = tbG.map((tb, g) => tb >= 0 && tb < BRISE_FIN + 0.1 ? jouerV(VID.brise[g], tb, true) : false);
+  const cri = fondMat.uniforms.cri.value;
+  vg.actifs.forEach((c, k) => {
+    const m = c.mesh.material.uniforms, g = c.grp; c.vt = T - T_CHUTE[g]; c.tb = tbG[g];
+    m.ancre.value.copy(G(c.x, c.y + 0.6, 0));   // (sa profondeur : celle de son pied, un peu vers nous — la poussière devant lui reste visible)
+    c.mesh.up.set(0, 0, 1); c.mesh.lookAt(cam.position.x, cam.position.y, 0);
+    if (c.etat === 'attente' || c.etat === 'chute') {   // son ombre grandit, de plus en plus noire, jusqu'à l'impact
+      const u = clamp((T - T_OMBRE) / (T_CHUTE[g] + IMPACT - T_OMBRE), 0, 1), r = 0.5 + 1.9 * u * u;
+      c.ombre.scale.set(r, r * 0.85, 1); c.ombre.material.opacity = 0.75 * Math.sqrt(u);
+    }
+    if (c.etat === 'attente' && c.vt >= 0) { c.etat = 'chute'; c.mesh.visible = true; }
+    if (c.etat === 'chute') {
+      if (ok[g]) { m.t.value = VID.chute[g].tex; m.op.value = 1; } else { m.t.value = texPlante; m.op.value = c.vt >= IMPACT ? Math.min(1, (c.vt - IMPACT) / 0.12) : 0; }   // (sans sa vidéo : il apparaît planté)
+      if (!c.impact && c.vt >= IMPACT) {   // l'impact : le sol tremble, le cratère, un éclair de sa couleur ; le héros trop près est repoussé
+        c.impact = true; c.ti = 0;
+        if (!vg.secoue[g]) { vg.secoue[g] = true; fen.bouge = Math.max(fen.bouge, 0.55); }
+        const l = prendre(0xb98cff, 45, 8); if (l) { l.position.copy(G(c.x, c.y + 0.5, 1.2)); eclats.push({ lum: l, t: 0, vie: 0.45, I: 45 }); }
+        const d = Math.hypot(h.x - c.x, h.y - c.y); if (d < 1.15) { toucher(); const a = Math.atan2(h.y - c.y, h.x - c.x); h.pousse = { x: c.x + Math.cos(a) * 1.5, y: c.y + Math.sin(a) * 1.5 }; }
+      }
+      if (c.impact) { c.ti += dt; c.ombre.material.opacity *= Math.max(0, 1 - c.ti / 0.25); c.cratere.material.opacity = Math.min(1, c.ti / 0.1); c.cratere.scale.setScalar(0.75 + 0.25 * doux(c.ti / 0.25)); }
+      if (c.vt >= CHUTE_FIN) { c.etat = 'plante'; m.t.value = texPlante; m.op.value = 1; c.ombre.visible = false; }
+    }
+    if (debout(c) && c.etat !== 'brise') cri[k].set(c.x, c.y, CR.abri, 1); else cri[k].w = 0;
+    // le feu : il rougit quand le feu l'atteint (côté Grosbec), reste rouge tant que la place brûle, refroidit quand elle s'éteint
+    if (c.etat === 'plante' || c.etat === 'brise') {
+      if (c.ta === Infinity && tw >= Math.min(arriveFeu(c.x, c.y - 0.8), FIN - 1.5)) c.ta = tw;
+      const r = tw < FIN ? clamp((tw - c.ta) / 1.0, 0, 1) : Math.max(0, 1 - (tw - FIN) / (ETEINT + 1.2)) ; c.rouge += (r - c.rouge) * Math.min(1, dt * 5); m.rouge.value = c.rouge;
+      if (c.etat === 'plante') c.cratere.material.opacity = 1 - 0.85 * c.rouge;   // (la lave le recouvre, puis il réapparaît quand elle s'éteint)
+      if (tw > c.ta && tw < FIN + 0.3 && vg.braises.length < 70) { c.braiseT -= dt; if (c.braiseT <= 0) { c.braiseT = 0.06 + Math.random() * 0.08; braise(c, tw); } }
+    }
+    if (c.etat === 'plante' && c.tb >= 0) c.etat = 'brise';
+    if (c.etat === 'brise') {   // il se brise : ses morceaux tombent, restent un instant, disparaissent ; le cratère s'efface avec eux
+      m.sombre.value = 0.74;   // (ses morceaux sortent très éclairés de leur vidéo : ramenés à la nuit)
+      if (okB[g]) { m.t.value = VID.brise[g].tex; m.op.value = 1; } else { m.t.value = texPlante; m.op.value = Math.max(0, 1 - c.tb / 0.5); }
+      c.cratere.material.opacity = 1 - doux((c.tb - (BRISE_FIN - 0.55)) / 0.55);
+      if (!c.casse && c.tb >= BRISE_CASSE - 0.35) { c.casse = true; const l = prendre(0xd0b0ff, 25, 6); if (l) { l.position.copy(G(c.x, c.y + 0.5, 1.0)); eclats.push({ lum: l, t: 0, vie: 0.35, I: 25 }); } }
+      if (c.tb >= BRISE_FIN) { c.etat = 'fini'; nettoyer(c); }
+    }
+  });
+  /* 3. la vague : la fournaise devant Grosbec, puis sa vidéo ; elle brûle jusqu'à FIN, puis s'éteint complètement */
+  const tf = tw + 0.25;   // (la fournaise part un quart de seconde avant la vague)
+  if (tf >= 0 && tf < 5.05) {
+    const okF = jouerV(VID.four, tf, true), i = LUM_FOUR ? clamp(Math.round(tf * 24), 0, LUM_FOUR.length - 1) : 0, L = LUM_FOUR ? LUM_FOUR[i] : Math.max(0, Math.sin(Math.PI * tf / 4.5));
+    FOUR.devant.visible = FOUR.derriere.visible = okF; FOUR.devant.material.uniforms.force.value = 1; FOUR.derriere.material.uniforms.force.value = 0.8;
+    for (const P of [FOUR.devant, FOUR.derriere]) { P.up.set(0, 0, 1); P.lookAt(cam.position.x, cam.position.y, P.position.z); }
+    vg.charge.intensity = 150 * L;   // (Grosbec éclairé en orange par en dessous, au rythme du feu)
+    if (tf > 0.3 && tf < 1.3) fen.bouge = Math.max(fen.bouge, 0.25);
+  } else if (FOUR.devant && FOUR.devant.visible) { FOUR.devant.visible = FOUR.derriere.visible = false; vg.charge.intensity = 0; arreter(VID.four); }
+  fondMat.uniforms.tw.value = Math.max(0, tw);
   if (tw >= 0 && videoEl) {
     if (!vg.lance) { vg.lance = true; try { videoEl.currentTime = 0; if (!window.__pilote) videoEl.play().catch(() => {}); } catch (_) {} }
     if (window.__pilote) { try { if (Math.abs(videoEl.currentTime - Math.min(tw, 5.1)) > 0.03) videoEl.currentTime = Math.min(tw, 5.1); } catch (_) {} }
     else if (tw < 4.8) { if (videoEl.currentTime !== vg.tv) { vg.tv = videoEl.currentTime; vg.tvT = tw; } if (tw - vg.tvT > 0.7) vg.secours = true; }   // (la vidéo ne défile pas : la place en feu peinte prend le relais)
   }
-  const vidOK = videoEl && videoEl.readyState >= 2 && videoEl.currentTime > 0.03;   // (tant que sa vidéo n'a pas démarré : la lave, posée selon la carte)
+  const vidOK = videoEl && videoEl.readyState >= 2 && videoEl.currentTime > 0.03;
   fondMat.uniforms.secours.value = vg.secours || !vidOK ? 1 : 0;
-  fondMat.uniforms.vague.value = tw < 0 ? 0 : tw < 0.3 ? tw / 0.3 : tw < FIN ? 1 : Math.max(0, 1 - (tw - FIN));
-  vg.charge.intensity = tw > 0.2 && tw < 1.6 ? 70 * Math.sin(Math.PI * (tw - 0.2) / 1.4) : 0;   // (la boule de feu à la porte du temple)
-  if (tw > 0.2 && tw < 1.2) fen.bouge = Math.max(fen.bouge, 0.15);
+  fondMat.uniforms.vague.value = tw < 0 ? 0 : tw < 0.3 ? tw / 0.3 : tw < FIN ? 1 : Math.max(0, 1 - (tw - FIN) / ETEINT);
   // le héros : le feu arrive sous lui (la carte de sa vidéo) ; à l'abri derrière un cristal, rien
   const ta = arriveFeu(h.x, h.y), brule = tw >= ta && tw < FIN, abri = abrite(h.x, h.y);
   if (brule && !vg.passe) { vg.passe = true; if (abri) bulle('À l’abri !', '#8dffb0'); }
   if (brule && !abri && !h.saut) toucher();
   vg.feuL.position.copy(G(h.x, h.y + 0.3, 0.3)); vg.feuL.intensity += ((brule && !abri ? 30 : tw > 0 && tw < FIN && Math.min(arriveFeu(h.x + 1.2, h.y), arriveFeu(h.x - 1.2, h.y), arriveFeu(h.x, h.y - 1.2)) <= tw ? 12 : 0) - vg.feuL.intensity) * Math.min(1, dt * 6);
-  // les cristaux
-  const cri = fondMat.uniforms.cri.value;
-  vg.actifs.forEach((c, k) => {
-    const S = c.S, m = c.sol.material.uniforms, mc = c.corps.material.uniforms; c.t += dt;
-    if (c.etat === 'attente' && T >= c.debut) { c.etat = 'chute'; c.corps.visible = true; c.trainee.visible = true; }
-    if (c.etat === 'attente' || c.etat === 'chute') { const u = clamp((T - c.debut + 0.6) / 1.4, 0, 1); c.ombre.material.opacity = 0.55 * u; const r = (0.6 + 1.4 * u) * Math.max(1, S.larg * 0.6); c.ombre.scale.set(r, r * 0.7, 1); }
-    if (c.etat === 'chute') {
-      c.vz -= 32 * dt; c.z = Math.max(0, c.z + c.vz * dt);
-      const p0 = imgDe(S.x, S.y, 0), p1 = imgDe(S.x, S.y, c.z); mc.dv.value = p0.v - p1.v;
-      c.corps.position.copy(G(S.x, S.y, c.haut / 2 - 0.4 + c.z)); c.corps.up.set(0, 0, 1); c.corps.lookAt(new THREE.Vector3(cam.position.x, cam.position.y, c.haut / 2 - 0.4 + c.z));
-      c.trainee.position.copy(G(S.x, S.y, c.z + c.haut * 0.85)); c.trainee.scale.set(1.2, 3.2, 1); c.trainee.material.opacity = 0.5;
-      c.l.intensity = 5; c.l.position.copy(G(S.x, S.y + 0.6, c.z + 1.3));
-      if (c.z <= 0) {   // l'impact : le sol tremble, se fend (sa fissure), de la poussière, un éclair de sa couleur
-        c.etat = 'plante'; c.t = 0; mc.dv.value = 0; c.trainee.visible = false; c.ombre.visible = false;
-        fen.bouge = Math.max(fen.bouge, 0.6);
-        for (let j = 0; j < 5; j++) poussiere(S.x, S.y, j * 1.26 + Math.random());
-        const l = prendre(0xffffff, 40, 7); if (l) { l.color.copy(c.coul); l.position.copy(G(S.x, S.y, 0.8)); eclats.push({ lum: l, t: 0, vie: 0.35, I: 40 }); }
-        if (Math.hypot(h.x - S.x, h.y - S.y) < rayonCristal(S) + 0.4) { toucher(); const a = Math.atan2(h.y - S.y, h.x - S.x); h.pousse = { x: S.x + Math.cos(a) * (rayonCristal(S) + 0.8), y: S.y + Math.sin(a) * (rayonCristal(S) + 0.8) }; }
-      }
-    }
-    if (c.etat === 'plante' || c.etat === 'chauffe') {
-      m.montre.value = Math.min(1, c.t / 0.15); mc.eclair.value = Math.max(0, 0.35 - c.t * 1.5);
-      cri[k].set(S.x, S.y, rayonCristal(S) * 1.05, 1);
-      c.l.intensity = 4 + 1 * Math.sin(t * 2 + k); c.l.position.copy(G(S.x, S.y + 0.6, 1.3));
-      if (c.etat === 'plante' && tw >= Math.min(arriveFeu(S.x, S.y - 0.3), FIN - 2.2)) { c.etat = 'chauffe'; c.tc = 0; c.ta = tw; }
-      if (c.etat === 'chauffe') {   // le rouge monte du pied en fondu, jusqu'à la fin du feu ; sa vidéo d'éclatement part 1 s avant (le cristal y éclate à sa 10e image)
-        c.tc += dt; const ta = c.ta, fe = FIN - 1.0 + k * 0.15, r = clamp((tw - ta) / Math.max(1.2, fe - ta), 0, 1); m.rouge.value = r; mc.rouge.value = r;
-        c.l.color.copy(c.coul).lerp(new THREE.Color(0xff3010), r); c.l.intensity = 4 + 10 * r;
-        if (tw >= fe && atlasTex[c.i] && atlasTex[c.i].pret && kTex[c.i].pret) { c.etat = 'eclate'; c.te = 0; m.at.value = atlasTex[c.i]; m.km.value = kTex[c.i]; }
-        else if (tw >= fe + 1.0) { c.etat = 'eclate'; c.te = 0; }   // (la planche n'est pas arrivée : il s'efface)
-      }
-    }
-    if (c.etat === 'eclate') {
-      c.te += dt; c.corps.visible = c.te < 0.25 && !!m.at.value;
-      cri[k].w = tw < FIN ? 1 : 0;
-      if (!c.boum && c.te >= 1.0) { c.boum = true; const l = prendre(0xff4020, 60, 9); if (l) { l.position.copy(G(S.x, S.y, 1.5)); eclats.push({ lum: l, t: 0, vie: 0.6, I: 60 }); } }
-      c.l.intensity = c.te < 1.0 ? 14 : Math.max(0, 14 * (1 - (c.te - 1.0) / 1.2));
-      if (m.at.value) { m.eclat.value = Math.min(29, c.te * 10); m.fondu.value = c.te < 2.6 ? 1 : Math.max(0, 1 - (c.te - 2.6) / 0.5); }
-      else { m.fondu.value = Math.max(0, 1 - c.te / 0.4); c.corps.visible = c.te < 0.4; }
-      if (c.te > 3.2) { c.etat = 'fini'; cri[k].w = 0; nettoyer(c); }
-    }
-  });
-  if (tw > FIN + 1.1 && vg.actifs.every(c => c.etat === 'fini')) {   // fini : on peut relancer
+  if (tw > BRISE_T0 + 0.35 + BRISE_FIN + 0.3 && vg.actifs.every(c => c.etat === 'fini')) {   // fini : on peut relancer
     vg.t = -1; vg.lance = false; fondMat.uniforms.vague.value = 0; vg.actifs = []; cri.forEach(v => v.set(0, 0, 0, 0)); vg.feuL.intensity = 0;
+    for (const V of [...VID.chute, ...VID.brise, VID.four]) arreter(V);
     const b = $('bVague'); if (b) b.classList.remove('fait'); if (videoEl) videoEl.pause();
   }
 }
@@ -1670,11 +1748,26 @@ function avancerVague(dt, t) {
 const attendu = new Set(NUIT ? ['fond', 'crev', 'crevA', 'feu', 'arrivee', 'pilier-g', 'pilier-d', 'barde', 'armure'] : PIST && PEINT ? ['fond', 'prof', 'portes', 'barde'] : ['fond', 'prof', 'barde']); let demarre = false;
 function pret(n) { attendu.delete(n); if (!attendu.size && !demarre) { demarre = true; $('charge').style.display = 'none'; } }
 let avant = performance.now(), ips = 60, nImg = 0, t0 = avant;
+/* la finesse de l'image s'adapte à la tablette (Romain, 28 nov. : « il faut être à plus de 24 images par seconde sur des tablettes anciennes ») :
+   chaque seconde, on compte les images ; deux secondes de suite sous 27 → l'image est calculée un peu moins fine (×2 → ×1,75 → … → ×1) ;
+   déjà à ×1 → des ombres moins fines (512 au lieu de 1024, sans recalculer les dessins) ; huit secondes de suite au-dessus de 52 → un cran plus fin.
+   Le chiffre en haut à gauche : les images par seconde (et le réglage, s'il a baissé). */
+const QUAL = { max: Math.min(devicePixelRatio || 1, 2), pr: Math.min(devicePixelRatio || 1, 2), bas: 0, haut: 0, ombres: 1024, depuis: 0 };
+function regler() {
+  if (window.__pilote || !demarre || document.visibilityState !== 'visible') return;
+  if (++QUAL.depuis < 4) return;   // (les premières secondes : le chargement fausse le compte)
+  if (ips < 27) { QUAL.bas++; QUAL.haut = 0; } else if (ips > 52) { QUAL.haut++; QUAL.bas = 0; } else { QUAL.bas = 0; QUAL.haut = 0; }
+  if (QUAL.bas >= 2) {
+    QUAL.bas = 0;
+    if (QUAL.pr > 1.001) { QUAL.pr = Math.max(1, QUAL.pr - 0.25); rendu.setPixelRatio(QUAL.pr); }
+    else if (QUAL.ombres > 512) { QUAL.ombres = 512; scene.traverse(o => { if (o.isLight && o.castShadow && o.shadow) { o.shadow.mapSize.set(512, 512); if (o.shadow.map) { o.shadow.map.dispose(); o.shadow.map = null; } } }); }
+  } else if (QUAL.haut >= 8 && QUAL.pr < QUAL.max - 0.001) { QUAL.haut = 0; QUAL.pr = Math.min(QUAL.max, QUAL.pr + 0.25); rendu.setPixelRatio(QUAL.pr); }
+}
 let tSim = 0;
 function boucle(maint) {
   requestAnimationFrame(boucle);
   const dt = Math.min(0.05, (maint - avant) / 1000); avant = maint;
-  nImg++; if (maint - t0 > 1000) { ips = Math.round(nImg * 1000 / (maint - t0)); nImg = 0; t0 = maint; $('ips').textContent = ips; }
+  nImg++; if (maint - t0 > 1000) { ips = Math.round(nImg * 1000 / (maint - t0)); nImg = 0; t0 = maint; regler(); $('ips').textContent = ips + (QUAL.pr < QUAL.max ? ' · ' + QUAL.pr.toFixed(2).replace(/0$/, '') : '') + (QUAL.ombres < 1024 ? ' · o' : ''); }
   if (!window.__pilote && demarre) { tSim += dt; etape(dt, tSim); }
   rendu.render(scene, cam);
 }
@@ -1728,6 +1821,7 @@ function etape(dt, t) {
   for (const L of nuit.lanternes) {   // les lanternes vacillent un peu ; leur ombre ne se voit que près d'elles
     const k = 0.9 + 0.07 * Math.sin(t * 9 + L.x) + 0.04 * Math.sin(t * 23 + L.y); L.l.intensity = 70 * k; L.pt.intensity = 18 * k;
     L.l.shadow.intensity = clamp(1.5 - Math.hypot(h.x - L.x, h.y - L.y) / 5, 0, 1);
+    L.l.shadow.autoUpdate = false; L.l.shadow.needsUpdate = L.l.shadow.intensity > 0;   // (loin d'elle, son ombre ne se voit pas : on ne la recalcule pas — une image plus légère)
   }
   for (const P of piliers) P.halo.material.opacity = 0.16 + 0.05 * Math.sin(t * 9 + P.x) + 0.03 * Math.sin(t * 21);
   if (PIST && PEINT) { avancerSalle(dt, t); cameraSalle(dt); return; }
@@ -1750,4 +1844,4 @@ function poser(nom, t) {   // (essai) un seul mouvement, à un instant donné
   for (const n in actions) { actions[n].play(); actions[n].setEffectiveWeight(n === nom ? 1 : 0); actions[n].timeScale = 0; }
   actions[nom].time = t; melangeur.update(0); MOD.updateMatrixWorld(true); const r = piedsModele(); for (const n of ['LeftUpLeg', 'LeftLeg', 'Hips']) { const o = MOD.getObjectByName(n); r[n + '_q'] = o.quaternion.toArray(); r[n + '_p'] = o.position.toArray(); } r.pistes = actions[nom].getClip().tracks.slice(0, 6).map(k => k.name); r.nbPistes = actions[nom].getClip().tracks.length; r.duree = actions[nom].getClip().duration; return r;
 }
-window.__essai = { THREE, armure, parleGrosbec, coupDePoing, projeter, dansZoneCoup, get CP() { return CP; }, cam, get fondU() { return fondMat.uniforms; }, get proj() { return h.proj; }, solOmbre, osM: noms => { const r = {}; for (const n of noms) { const o = MOD.getObjectByName(n); if (!o) continue; o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); MOD.worldToLocal(v); r[n] = [v.x, v.y, v.z]; } return r; }, frapper, basculerOmbre, mq, MURETS, COUPS, sauter, SAUT, get tirs() { return tirs.map(s => ({ x: s.x, y: s.y, z: s.z, q: s.q })); }, ecran: (x, y, z) => { if (NUIT) { cam.updateMatrixWorld(); const v = G(x, y, z).project(cam); return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; } return { x: (px(x) - camX) * innerWidth / Ws, y: (py(y, z) - camY) * innerHeight / Hs }; }, fissurer, lancerVague, renforts, salle, SJ, fondMat, get vague() { return vg; }, video: () => videoEl ? [videoEl.currentSrc.split('/').pop(), videoEl.readyState, videoEl.paused, videoEl.currentTime] : null, cristaux: () => vg.actifs.map(c => ({ i: c.i, x: c.S.x, y: c.S.y, etat: c.etat })), arriveFeu, abrite: () => abrite(h.x, h.y), imgDe, solImg, fen, crev, NJ, libre, dansCrevasse, nuit, piliers, poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };
+window.__essai = { THREE, rendu, scene, etape, QUAL, regler, armure, parleGrosbec, coupDePoing, projeter, dansZoneCoup, get CP() { return CP; }, cam, get fondU() { return fondMat.uniforms; }, get proj() { return h.proj; }, solOmbre, osM: noms => { const r = {}; for (const n of noms) { const o = MOD.getObjectByName(n); if (!o) continue; o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); MOD.worldToLocal(v); r[n] = [v.x, v.y, v.z]; } return r; }, frapper, basculerOmbre, mq, MURETS, COUPS, sauter, SAUT, get tirs() { return tirs.map(s => ({ x: s.x, y: s.y, z: s.z, q: s.q })); }, ecran: (x, y, z) => { if (NUIT) { cam.updateMatrixWorld(); const v = G(x, y, z).project(cam); return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; } return { x: (px(x) - camX) * innerWidth / Ws, y: (py(y, z) - camY) * innerHeight / Hs }; }, fissurer, lancerVague, renforts, salle, SJ, fondMat, get vague() { return vg; }, video: () => videoEl ? [videoEl.currentSrc.split('/').pop(), videoEl.readyState, videoEl.paused, videoEl.currentTime] : null, cristaux: () => vg.actifs.map(c => ({ x: c.x, y: c.y, etat: c.etat, vt: c.vt, tb: c.tb, rouge: c.rouge })), arriveFeu, abrite: () => abrite(h.x, h.y), imgDe, solImg, fen, crev, NJ, libre, dansCrevasse, nuit, piliers, poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };
