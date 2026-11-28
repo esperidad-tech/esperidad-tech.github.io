@@ -105,18 +105,41 @@ if (!PEINT) {
   fondNuit = tex('pisteur/fond.jpg', 'fond', true);
   const prof = chargeur.load('pisteur/prof.png', t => { t.colorSpace = THREE.NoColorSpace; t.minFilter = t.magFilter = THREE.NearestFilter; t.generateMipmaps = false; t.needsUpdate = true; pret('prof'); });
   const portes = tex('pisteur/portes.png', 'portes', false);
+  const anim = tex('pisteur/anim.png', 'anim', false);
   const P0 = SJ.portes[0], P1 = SJ.portes[1];
+  const CRv = [], CRc = [], FLv = [];
+  for (let i = 0; i < 6; i++) { const C = SJ.cristaux[i]; CRv.push(new THREE.Vector4(C.u, C.v, C.r, i * 1.7)); CRc.push(new THREE.Color(C.coul)); }
+  for (let i = 0; i < 4; i++) { const L = SJ.flammes[i]; FLv.push(new THREE.Vector4(L.u, L.v, L.r, i * 2.3)); }
+
   fondMat = new THREE.ShaderMaterial({
     uniforms: { fond: { value: fondNuit }, prof: { value: prof }, portes: { value: portes }, fen: { value: new THREE.Vector4(0, 0, IMW, IMH) }, img: { value: new THREE.Vector2(IMW, IMH) },
       prect: { value: new THREE.Vector4(SJ.portesRect[0], SJ.portesRect[1], SJ.portesRect[2] - SJ.portesRect[0], SJ.portesRect[3] - SJ.portesRect[1]) },
       pc: { value: new THREE.Vector4(P0.u, P0.v, P1.u, P1.v) }, etat: { value: new THREE.Vector4(0, 0, 0, 0) }, temps: { value: 0 },
-      dp: { value: new THREE.Vector4(SJ.prof.d0, SJ.prof.d1, cam.near, cam.far) }, sc: { value: new THREE.Vector4(SJ.camH, SJ.f, SJ.cy, 0.0) } },
+      dp: { value: new THREE.Vector4(SJ.prof.d0, SJ.prof.d1, cam.near, cam.far) }, sc: { value: new THREE.Vector4(SJ.camH, SJ.f, SJ.cy, 0.0) },
+      anim: { value: anim }, cr: { value: CRv }, crc: { value: CRc }, fl: { value: FLv } },
     vertexShader: 'varying vec2 vU; void main(){ vU = position.xy*0.5+0.5; gl_Position = vec4(position.xy, 0.0, 1.0); }',
-    fragmentShader: `uniform sampler2D fond; uniform sampler2D prof; uniform sampler2D portes; uniform vec4 fen; uniform vec2 img; uniform vec4 prect; uniform vec4 pc; uniform vec4 etat; uniform float temps; uniform vec4 dp; uniform vec4 sc; varying vec2 vU;
+    fragmentShader: `uniform sampler2D fond; uniform sampler2D prof; uniform sampler2D portes; uniform vec4 fen; uniform vec2 img; uniform vec4 prect; uniform vec4 pc; uniform vec4 etat; uniform float temps; uniform vec4 dp; uniform vec4 sc; uniform sampler2D anim; uniform vec4 cr[6]; uniform vec3 crc[6]; uniform vec4 fl[4]; varying vec2 vU;
       void main(){
         vec2 p = vec2(mix(fen.x, fen.z, vU.x), mix(fen.w, fen.y, vU.y));   // (en pixels de la peinture, y vers le bas)
         vec2 uv = clamp(p / img, vec2(0.0005), vec2(0.9995));
         vec3 c = texture2D(fond, vec2(uv.x, 1.0 - uv.y)).rgb;
+        vec4 an = texture2D(anim, vec2(uv.x, 1.0 - uv.y));
+        // les cristaux des colonnes et des fontaines : une lueur de leur couleur qui respire doucement
+        for (int i = 0; i < 6; i++) {
+          vec2 d = (p - cr[i].xy) / cr[i].z; float g = exp(-dot(d, d) * 1.2);
+          c += crc[i] * g * (0.07 + 0.07 * sin(temps * 1.5 + cr[i].w));
+        }
+        // les braseros : une lueur orange qui vacille autour de chaque flamme
+        for (int i = 0; i < 4; i++) {
+          float n = 0.5 + 0.3 * sin(temps * 11.0 + fl[i].w) + 0.2 * sin(temps * 6.7 + fl[i].w * 2.1);
+          vec2 d = (p - fl[i].xy) / (fl[i].z * vec2(2.6, 3.0)); float g = exp(-dot(d, d));
+          c += vec3(1.0, 0.5, 0.16) * g * (0.05 + 0.10 * n);
+        }
+        // l'eau des fontaines, calme : de petits reflets qui glissent, une lueur bleutée qui respire
+        if (an.g > 0.01) {
+          float o = sin(p.x * 0.09 + temps * 1.1 + sin(p.y * 0.23 - temps * 0.7) * 2.2) * sin(p.y * 0.19 - temps * 0.9 + p.x * 0.04);
+          c += an.g * (vec3(0.6, 0.92, 1.0) * smoothstep(0.55, 0.95, o) * 0.22 + vec3(0.12, 0.42, 0.62) * (0.05 + 0.04 * sin(temps * 0.8)));
+        }
         for (int i = 0; i < 2; i++) {
           vec2 cp = i == 0 ? pc.xy : pc.zw; float ouv = i == 0 ? etat.x : etat.y, al = i == 0 ? etat.z : etat.w;
           if (al > 0.0) {   // l'alerte : la porte et son cristal s'allument en rouge
@@ -221,6 +244,26 @@ if (!PEINT) {
 }
 const fondQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), fondMat); fondQuad.frustumCulled = false; fondQuad.renderOrder = -10;
 scene.add(fondQuad);
+/* salle du Pisteur : les flammes des braseros, redessinées PAR-DESSUS le Pisteur en transparence (quand il passe derrière
+   un feu, on voit sa tête à travers les flammes ; la pierre, elle, le cache). Elles vacillent. */
+if (PIST && PEINT) {
+  const flMat = new THREE.ShaderMaterial({
+    uniforms: { fond: fondMat.uniforms.fond, anim: fondMat.uniforms.anim, fen: fondMat.uniforms.fen, img: fondMat.uniforms.img, temps: fondMat.uniforms.temps, fl: fondMat.uniforms.fl },
+    vertexShader: 'varying vec2 vU; void main(){ vU = position.xy*0.5+0.5; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+    fragmentShader: `uniform sampler2D fond; uniform sampler2D anim; uniform vec4 fen; uniform vec2 img; uniform float temps; uniform vec4 fl[4]; varying vec2 vU;
+      void main(){
+        vec2 p = vec2(mix(fen.x, fen.z, vU.x), mix(fen.w, fen.y, vU.y)); vec2 uv = clamp(p / img, vec2(0.0005), vec2(0.9995));
+        float a = texture2D(anim, vec2(uv.x, 1.0 - uv.y)).r; if (a < 0.02) discard;
+        float n = 0.5;
+        for (int i = 0; i < 4; i++) { if (distance(p, fl[i].xy) < fl[i].z * 2.0) n = 0.5 + 0.3 * sin(temps * 11.0 + fl[i].w + p.y * 0.08) + 0.2 * sin(temps * 6.7 + fl[i].w * 2.1); }
+        vec3 c = texture2D(fond, vec2(uv.x, 1.0 - uv.y)).rgb * (0.85 + 0.35 * n) + vec3(0.10, 0.04, 0.0) * n;
+        gl_FragColor = vec4(c, a * 0.78);
+        #include <colorspace_fragment>
+      }`,
+    transparent: true, depthTest: false, depthWrite: false, toneMapped: false
+  });
+  const flQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), flMat); flQuad.frustumCulled = false; flQuad.renderOrder = 1000; scene.add(flQuad);
+}
 
 /* ---------- les lumières : les mêmes que dans Blender (decor3d/salle.py, REG) ; la nuit : celles de la peinture ---------- */
 const lumieres = [];
@@ -254,10 +297,10 @@ if (!PEINT) {
     if (L.type === 'cristal') {
       l = new THREE.SpotLight(L.coul, 110, 17, 0.6, 0.6, 1.4); l.position.copy(G(L.x, L.y + 0.1, L.z)); l.target.position.copy(G(L.x, L.y + 0.1, 0));
       pt = new THREE.PointLight(L.coul, 26, 8, 1.6); pt.position.copy(G(L.x, L.y + 0.7, 2.6)); monde.add(pt);
-    } else if (L.ombre) {   // les torches : une lumière orange, qui fait aussi une ombre
+    } else if (L.ombre) {   // les grandes torches du mur du bas : une lumière orange, qui fait aussi une ombre
       l = new THREE.SpotLight(L.coul, 60, 12, 0.6, 0.6, 1.5); l.position.copy(G(L.x, L.y - 0.3, L.z + 0.4)); l.target.position.copy(G(L.x, L.y - 2.5, 0));
     } else {
-      const I = L.nom.startsWith('fontaine') ? 16 : L.nom.startsWith('mur') ? 18 : L.nom.startsWith('torchere') ? 10 : 9;
+      const I = L.nom.startsWith('fontaine') ? 16 : L.nom.startsWith('mur') ? 18 : L.type === 'feu' ? 12 : 9;
       l = new THREE.PointLight(L.coul, I, L.dist, 1.6); l.position.copy(G(L.x, L.y, L.z));
     }
     monde.add(l); if (l.target) monde.add(l.target);
@@ -275,20 +318,18 @@ if (!PEINT) {
   const ombreMat = new THREE.ShadowMaterial({ opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });
   const forme = pts => { const f = new THREE.Shape(); pts.forEach(([x, y], i) => i ? f.lineTo(x, -y) : f.moveTo(x, -y)); return f; };
   const recoit = (geo, z) => { const m = new THREE.Mesh(geo, ombreMat); m.position.z = z || 0; m.receiveShadow = true; monde.add(m); salle.recepteurs.push(m); return m; };
-  recoit(new THREE.ShapeGeometry(forme(SJ.tour)), 0.002);
-  const mursPos = [], T = SJ.tour, devant = SJ.murBas.y0 - 0.15;
-  for (let i = 0; i < T.length; i++) {
-    const a = T[i], b = T[(i + 1) % T.length];
-    if (a[1] > devant && b[1] > devant) continue;   // (le bord de devant : pas un mur, on voit par-dessus)
-    mursPos.push(a[0], -a[1], 0, b[0], -b[1], 0, b[0], -b[1], 2.6, a[0], -a[1], 0, b[0], -b[1], 2.6, a[0], -a[1], 2.6);
-  }
+  const SA = SJ.salle, CN = SA.coins;
+  recoit(new THREE.ShapeGeometry(forme([[SA.x0, SA.y0], [SA.x1, SA.y0], [SA.x1, CN.y1], [CN.d, CN.y1], [CN.d, SA.y1], [CN.g, SA.y1], [CN.g, CN.y1], [SA.x0, CN.y1]])), 0.002);
+  const mursPos = [], pan = (a, b, hh) => mursPos.push(a[0], -a[1], 0, b[0], -b[1], 0, b[0], -b[1], hh, a[0], -a[1], 0, b[0], -b[1], hh, a[0], -a[1], hh);
+  pan([SA.x0, SA.y0], [SA.x1, SA.y0], 3.5); pan([SA.x0, SA.y0], [SA.x0, CN.y1], 3); pan([SA.x1, SA.y0], [SA.x1, CN.y1], 3);   // (le fond et les deux côtés)
   const mg = new THREE.BufferGeometry(); mg.setAttribute('position', new THREE.Float32BufferAttribute(mursPos, 3)); mg.computeVertexNormals(); recoit(mg);
-  for (const O of SJ.objets) {
-    if (O.h < 0.15) continue;
-    if (O.rond) { const g = new THREE.CylinderGeometry(O.r, O.r, O.h, 20); g.rotateX(Math.PI / 2); g.translate(O.x, -O.y, O.h / 2); recoit(g); }
-    else recoit(new THREE.ExtrudeGeometry(forme(O.poly), { depth: O.h, bevelEnabled: false }));
+  const boite = ([x0, x1, y0, y1], hh, z0 = 0) => { const g = new THREE.BoxGeometry(x1 - x0, y1 - y0, hh); g.translate((x0 + x1) / 2, -(y0 + y1) / 2, z0 + hh / 2); recoit(g); };
+  for (const O of SJ.formes) {
+    for (const b of O.boites) boite(b, O.h);
+    if (O.rond) { const [x, y, r] = O.rond, g = new THREE.CylinderGeometry(r, r, O.h, 20); g.rotateX(Math.PI / 2); g.translate(x, -y, O.h / 2); recoit(g); }
   }
-  const M = SJ.murBas, mb = new THREE.BoxGeometry(M.x1 - M.x0, M.y1 - M.y0, 1.0); mb.translate((M.x0 + M.x1) / 2, -(M.y0 + M.y1) / 2, 0.5); recoit(mb);
+  for (const n in SJ.contreMur) boite(SJ.contreMur[n], 1.6);
+  for (const [x0, x1] of SJ.murBas.x) boite([x0, x1, SJ.murBas.y0, SJ.murBas.y1], 1.0);
 } else {
   /* la nuit : un ciel bleu sombre ; la lumière blanche de la porte du temple, dans le dos (elle dessine le bord du héros) ;
      les deux lanternes (chaudes, elles font les vraies ombres) ; les cristaux violets et bleu-vert des massifs */
@@ -823,6 +864,13 @@ const COUPS = {   // anim : le mouvement ; a, b : le morceau joué ; impact : le
 };
 const OMBRE_RECHARGE = 3;   // (Romain : 3 s avant de pouvoir redisparaître)
 const MURETS = PIST && !PEINT ? [{ x: 5.4, y: 7.0, lx: 2.6, ly: 0.45 }, { x: 13.0, y: 6.4, lx: 0.45, ly: 2.6 }] : [];   // (dans la salle peinte, les murets sont dans la peinture : leurs cases)
+/* l'escalier du mur du bas : le Pisteur descend jusqu'en bas du mur, une marche après l'autre */
+function solZ(x, y) {
+  if (!(PIST && PEINT)) return 0;
+  const E = SJ.salle.escalier; if (x < E.x0 || x > E.x1 || y <= E.haut) return 0;
+  const u = clamp((y - E.haut) / (E.bas - E.haut), 0, 1) * E.marches, k = Math.floor(u), f = u - k;
+  return E.fond * (k + doux(clamp((f - 0.75) / 0.25, 0, 1))) / E.marches;   // (plat sur chaque marche, puis il descend la suivante)
+}
 const MANNEQUIN = PIST && PEINT ? { x: SJ.mannequin.x, y: SJ.mannequin.y, r: 0.35 } : { x: 9, y: 4.9, r: 0.35 };   // (sur le médaillon, au milieu de la salle)
 let dagueMain = null, traineeLame = null;
 const matsOmbre = [];
@@ -1022,7 +1070,7 @@ function avancerProj(dt) {
   if (!P.pose && u >= 1) { P.pose = true; poussiere(h.x, h.y, h.a); poussiere(h.x, h.y, h.a + Math.PI); fen.bouge = Math.max(fen.bouge, 0.35); }
   if (P.t >= actions.projete.getClip().duration - PROJ.debut) { h.proj = null; corps.position.z = 0; }
 }
-const SAUT_PLUS = 1.5;
+const SAUT_PLUS = 1.5, SAUT_HAUT = 0.75;
 function longueurSaut(a) {
   const ok = D => libre(h.x + Math.cos(a) * D, h.y + Math.sin(a) * D);
   if (ok(SAUT.dist)) return SAUT.dist;
@@ -1034,6 +1082,7 @@ function avancerSaut(dt) {
   const S = h.saut; S.t += dt; const tc = SAUT.depart + S.t * SAUT.vitesse;
   const p = clamp((tc - SAUT.air[0]) / (SAUT.air[1] - SAUT.air[0]), 0, 1);
   if (SAUT.murets && p > 0.7 && !S.allonge && dansMuret(h.x + Math.cos(S.a) * (S.dist - S.fait), h.y + Math.sin(S.a) * (S.dist - S.fait))) { S.dist += 1.2; S.allonge = true; }   // (il retomberait sur un muret : il saute un peu plus loin, par-dessus)
+  if (PIST && PEINT) corps.position.z = SAUT_HAUT * Math.sin(Math.PI * p);   // (le film le fait sauter sur place ; on le monte en plus)
   const voulu = S.dist * p;
   while (S.fait < voulu - 1e-6 && !S.bloque) {   // par petits bouts, pour s'arrêter au bord d'un obstacle
     const pas = Math.min(0.05, voulu - S.fait), nx = h.x + Math.cos(S.a) * pas, ny = h.y + Math.sin(S.a) * pas;
@@ -1043,7 +1092,7 @@ function avancerSaut(dt) {
     S.pose = true; atterrir(); if (PEINT && !libre(h.x, h.y)) horsDuTrou();
     loco.v = Math.max(loco.v, SAUT.elan); loco.allure = 'course'; loco.course = 1; loco.marche = 0; loco.garde = 0;
   }
-  if (tc >= SAUT.fin) h.saut = null;
+  if (tc >= SAUT.fin) { h.saut = null; if (PIST && PEINT) corps.position.z = 0; }
   return !S.pose;   // (vrai tant qu'il est en l'air)
 }
 function poidsSaut() {
@@ -1192,10 +1241,35 @@ function renforts(i) {
   if (!(PIST && PEINT)) return; const P = salle.portes[i === undefined ? prochainePorte : i]; if (!P || P.t >= 0) return;
   P.t = 0; prochainePorte = 1 - salle.portes.indexOf(P);
 }
+function particulesSalle() {
+  const c = document.createElement('canvas'); c.width = c.height = 32; const g = c.getContext('2d'), gr = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+  gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.35, 'rgba(255,255,255,0.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 32, 32);
+  const src = [];
+  for (const L of SJ.flammes) for (let i = 0; i < 9; i++) src.push({ x: L.x, y: L.y, z: L.z + 0.1, l: 0.35, vz: 1.4, vie: 0.9, coul: new THREE.Color(1, 0.55 + Math.random() * 0.25, 0.15), taille: 1 });
+  for (const C of SJ.cristaux) { const fort = C.larg > 0.5; for (let i = 0; i < (fort ? 14 : 6); i++) src.push({ x: C.x, y: C.y + (fort ? 0.8 : 0.5), z: C.z - 0.2, l: C.larg * 0.9, vz: 0.45, vie: 2.6, coul: new THREE.Color(C.coul).lerp(new THREE.Color(1, 1, 1), 0.3), taille: 0.8 }); }
+  const n = src.length, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  const mat = new THREE.PointsMaterial({ size: 0.13, map: new THREE.CanvasTexture(c), vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true });
+  const pts = new THREE.Points(geo, mat); pts.frustumCulled = false; monde.add(pts);
+  src.forEach(P => { P.t = Math.random() * P.vie; P.ox = (Math.random() - 0.5) * P.l; P.oy = (Math.random() - 0.5) * P.l * 0.4; P.dx = (Math.random() - 0.5) * 0.3; });
+  salle.part = { src, pos, col, geo };
+}
+function avancerParticules(dt) {
+  if (!salle.part) particulesSalle();
+  const { src, pos, col, geo } = salle.part;
+  src.forEach((P, i) => {
+    P.t += dt; if (P.t > P.vie) { P.t -= P.vie; P.ox = (Math.random() - 0.5) * P.l; P.oy = (Math.random() - 0.5) * P.l * 0.4; P.dx = (Math.random() - 0.5) * 0.3; }
+    const u = P.t / P.vie, a = Math.sin(Math.PI * u), w = G(P.x + P.ox + P.dx * u + 0.06 * Math.sin(u * 9 + i), P.y + P.oy, P.z + P.vz * P.t);
+    pos[i * 3] = w.x; pos[i * 3 + 1] = w.y; pos[i * 3 + 2] = w.z;
+    col[i * 3] = P.coul.r * a; col[i * 3 + 1] = P.coul.g * a; col[i * 3 + 2] = P.coul.b * a;
+  });
+  geo.attributes.position.needsUpdate = true; geo.attributes.color.needsUpdate = true;
+}
 function avancerSalle(dt, t) {
+  avancerParticules(dt);
   if (h.pousse) { const dx = h.pousse.x - h.x, dy = h.pousse.y - h.y, dd = Math.hypot(dx, dy), v = 7 * dt; if (dd <= v) { h.x = h.pousse.x; h.y = h.pousse.y; h.pousse = null; } else { h.x += dx / dd * v; h.y += dy / dd * v; } }
   for (const S of salle.lum) {   // les cristaux respirent un peu, les flammes vacillent
-    const n = S.L.nom, feu = n.startsWith('torche') || n.startsWith('bougie');
+    const n = S.L.nom, feu = n.startsWith('torche') || n.startsWith('bougie') || S.L.type === 'feu';
     const k = feu ? 0.86 + 0.1 * Math.sin(t * 9 + S.L.x) + 0.05 * Math.sin(t * 23 + S.L.y) : 0.93 + 0.07 * Math.sin(t * 1.3 + S.L.x * 0.7);
     S.l.intensity = S.I * k; if (S.pt) S.pt.intensity = S.Ip * k;
   }
@@ -1667,7 +1741,7 @@ function avancerVague(dt, t) {
 }
 
 /* ---------- la boucle ---------- */
-const attendu = new Set(NUIT ? ['fond', 'crev', 'crevA', 'feu', 'arrivee', 'pilier-g', 'pilier-d', 'barde', 'armure'] : PIST && PEINT ? ['fond', 'prof', 'portes', 'barde'] : ['fond', 'prof', 'barde']); let demarre = false;
+const attendu = new Set(NUIT ? ['fond', 'crev', 'crevA', 'feu', 'arrivee', 'pilier-g', 'pilier-d', 'barde', 'armure'] : PIST && PEINT ? ['fond', 'prof', 'portes', 'anim', 'barde'] : ['fond', 'prof', 'barde']); let demarre = false;
 function pret(n) { attendu.delete(n); if (!attendu.size && !demarre) { demarre = true; $('charge').style.display = 'none'; } }
 let avant = performance.now(), ips = 60, nImg = 0, t0 = avant;
 let tSim = 0;
@@ -1713,7 +1787,7 @@ function etape(dt, t) {
     incline.quaternion.setFromAxisAngle(new THREE.Vector3(0, 0, 1).cross(dw).normalize(), pen);
     if (D.t >= 0.3) { h.derap = null; incline.quaternion.identity(); }
   } else { const cible = Math.PI / 2 - h.a; let da = cible - barde.rotation.z; da = Math.atan2(Math.sin(da), Math.cos(da)); barde.rotation.z += da * Math.min(1, dt * (h.saut || h.coup ? 30 : 12)); }
-  incline.position.copy(G(h.x, h.y, 0));
+  incline.position.copy(G(h.x, h.y, solZ(h.x, h.y)));
   const r = h.sautR / SAUT.recharge; if (r !== etape.r) { etape.r = r; $('bSaut').style.setProperty('--r', r.toFixed(3)); }
   if (melangeur) { locomotion(dt); melangeur.update(dt); }
   if (NUIT) avancerArmure(dt, t);
