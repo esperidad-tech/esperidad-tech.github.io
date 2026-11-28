@@ -573,6 +573,40 @@ lanternes de son épaule, on dirait qu'elles sont éteintes »**.
 - **Puis, 6 h (version `1795842004-19aa`), Romain : « j'ai un peu exagéré, baisse de moitié »** : le verre, les lampes (16 → 8) et la
   lueur (opacité 1 → 0,5) des épaules, tous moitié moins forts. Elles restent nettement allumées, mais n'éblouissent plus.
 
+## Le coup de poing de Grosbec et le Barde projeté (28 novembre, 6 h 40 ; go écrit de Romain à 6 h 11 ; sa vidéo envoyée à 6 h 19)
+
+**En ligne sur une page à part** : https://claude.ai/artifact/FoNdckppEhwgzAx8i86iZa (slug `77d97c45-5f76-4690-a7ba-4ae44124233d`,
+version `1795844422-9ea4`). **Pourquoi à part** : à 6 h 17, une autre conversation a mis en ligne sur l'essai principal
+(`1aa48eb1…`, version `1795843023-8369`) la salle du Pisteur (`pisteur/fond.jpg`, `pisteur/portes.png`, `pisteur/prof.png`,
+bouton « 🚪 Renforts ») **sans mettre ses sources sur GitHub**. Son moteur contient tout ce qui était là à 6 h, plus la salle du
+Pisteur. Publier le coup de poing par-dessus aurait effacé son travail. **À faire** : quand ses sources sont sur GitHub, fusionner
+avec ce commit (les deux partent du même `src/main.js` de 6 h), reconstruire, publier sur l'essai principal avec en plus
+`armure-coup.json`, `anim-projete.json`, `nuit/coup.json`, `nuit/coup.mp4`, `nuit/coup.webm`, `nuit/coup.jpg`.
+
+- **Les deux mouvements** (Higgsfield « 3d_rigging », 8 crédits chacun, 16 en tout) : `Charged_Ground_Slam` (n° 127) pour Grosbec,
+  `Jump_and_Slam_Back_Down` (n° 382) pour le Barde (Romain l'a préféré à `BeHit_FlyUp`). Higgsfield n'accepte plus la hauteur du
+  personnage : ses squelettes sortent à 1,70 m (bassin 87,8 au lieu de 153 pour l'armure, 86 au lieu de 75,8 pour le Barde) et leurs
+  poses de repos diffèrent un peu (jusqu'à 24° pour un pied). **`outils/recaler.mjs`** transfère le mouvement : chaque os tourne,
+  dans le repère de l'armature, du même angle à partir de sa propre pose de repos ; le bassin bouge à l'échelle (×1,743 ; ×0,882) ;
+  plus de pistes de position pour les autres os. `origine/glb/armure-coup-brut.glb`, `anim-projete-brut.glb` (tels que rendus,
+  sans maillage) → `armure-coup.glb`, `anim-projete.glb` (recalés) → `site/armure-coup.json`, `site/anim-projete.json`.
+- **Grosbec** : il arme son bras, se penche et frappe le palier du poing droit (ralenti ×0,85) ; tourné pour frapper face aux héros
+  (le même tour que son attente) ; son poing touche à 1,82 s de son film (mesuré sur la main : `essai_coup.py`). À l'impact : le sol
+  tremble, un éclat et une lueur dorés sous son poing. Ses pieds : on ne les rabat plus vers le sol en dehors de l'attente (seulement
+  s'ils passent dessous).
+- **La zone dorée (la vidéo de Romain)** : `origine/nuit/romain/coup-de-poing-dore-86e65704.mp4` (la même qu'à 2 h 37). Il a aussi
+  envoyé une 2e version de la même génération (fissures à gauche, explosion de fumée, 4384 × 1872, son muet) : pas prise, il avait
+  désigné la première. `outils/salle-nuit/coup.py` : chaque image recalée sur la peinture (à moins d'un pixel), gardée de 1,67 s à
+  5,67 s, à moitié de taille (`site/nuit/coup.mp4` 1,8 Mo, `.webm` 0,8 Mo) ; image de secours (l'explosion) `coup.jpg`. Pendant le
+  coup, sa vidéo remplace toute la place (l'explosion éclaire toute la place, comme la vague) ; elle part pour que ses fissures
+  s'ouvrent quand le poing touche ; la lumière jaillit environ 1,15 s après l'impact ; une lumière dorée éclaire héros et armure.
+- **La zone** : les fissures au sol juste avant l'explosion, contour adouci (`origine/nuit/zone-coup.png`), posée sur les cases du
+  jeu (`coup.json` : moitié droite de la place, x 7,5 → 20,9, y 4,1 → 19,1). **Encore dans la zone quand la lumière jaillit** :
+  « Touché ! » et **projeté** : le film du Barde pris à son décollage (0,40 s), soulevé de 0,7 pas en plus, une culbute, il retombe
+  sur le dos (poussière, le sol tremble), se relève ; on ne le dirige plus pendant ce temps (2,4 s). Hors de la zone : rien.
+- Bouton d'essai **« 👊 Coup »** (barde). Vérifié : Chrome et WebKit (la vidéo y est lue), la vague et les pieds de l'armure
+  inchangés. `captures/coup-de-poing-et-projete.jpg`, `grosbec-coup-image-par-image.jpg`, `barde-projete-image-par-image.jpg`.
+
 ## Ce qui n'est pas fait
 
 - L'armure de Grosbec n'est pas en 3D (la création de son image de référence a été bloquée
