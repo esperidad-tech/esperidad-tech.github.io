@@ -607,6 +607,67 @@ avec ce commit (les deux partent du même `src/main.js` de 6 h), reconstruire, p
 - Bouton d'essai **« 👊 Coup »** (barde). Vérifié : Chrome et WebKit (la vidéo y est lue), la vague et les pieds de l'armure
   inchangés. `captures/coup-de-poing-et-projete.jpg`, `grosbec-coup-image-par-image.jpg`, `barde-projete-image-par-image.jpg`.
 
+## Phase 1 refaite en 3D : la salle du Barde et les golems d'Elyra (28 novembre, matin ; rien dans l'essai ni dans le jeu)
+
+Romain (27 novembre au soir, à la voix) : les quatre combats de la phase 1 de l'enquête 10 ne sont plus à jour ; **on garde
+la façon de jouer**, on refait l'image (héros en 3D, salles, ennemis). Le Pisteur se refait dans une autre conversation.
+On peut jouer **debout ou couché** (téléphone, tablette, ordinateur) : couché, le combat reste au milieu et la salle large
+remplit les côtés. Les golems ne sont plus ceux de Raban : ce sont **les golems d'Elyra** (les bâtisseurs du dôme), que
+Grosbec a modifiés : **leur lueur dorée est passée au rouge**. Le 28 au matin, par écrit : « Je te laisse gérer Higgsfield. Tu
+fais toutes tes demandes comme tu veux. Et après, tu peux générer les modèles. »
+
+### La salle du combat du Barde (`origine/salle-barde/`)
+
+- `romain-1-escalier.jpg`, `romain-2-modele.jpg` : ses deux images (le temple, la porte de cristal). Avis de Claude : très
+  belles, mais vues d'en bas, presque que des marches (un golem 3D qui descend un escalier peint glisse sur la pente) et pas de
+  sol plat en bas pour le Barde (les boutons le cachent).
+- `parvis-9x16-choisie.jpg` (GPT Image 2.6, d'après sa 2ᵉ image ; job `2021f904-24d1-48ed-bfd7-7671734a1bcc`, 1520 × 2688) :
+  la même place vue plus haut, **un grand parvis plat** sur toute la moitié basse, **cinq marches seulement** jusqu'au palier de
+  la porte, au fond. `parvis-9x16-autre.jpg` : l'autre essai (job `89330bc1-…`).
+- `parvis-16x9-agrandie.jpg` (« outpaint » de Higgsfield, job `b6e0ef36-cbdd-4cbf-81b3-912fe141b14e`, 2752 × 1536) : la même
+  image **agrandie sur les côtés** (falaises, cristaux, arcades, jardins). Le milieu correspond à la version debout (colonnes
+  942 à 1812, toute la hauteur), **mais pas au pixel près** (écart moyen 18/255 : le milieu a été un peu repeint) : le sol se
+  recale à part pour chaque image.
+- Crédits : 4 (deux essais) + 2 (agrandie).
+- **À faire** : la caméra calée sur chaque image (comme `outils/salle-nuit/camera.py`), le Barde 3D posé dessus, les
+  golems qui sortent de la porte de cristal ; le choix de l'image selon la forme de l'écran.
+
+### Les golems d'Elyra (`origine/golems/`)
+
+Le style : marbre clair à facettes, bronze et or rivetés, **un éclat de cristal rouge dans la poitrine** (runes rouges dessus),
+yeux rouges, **le corbeau de Grosbec peint** sur l'épaule. Sept golems (GPT Image 2.6, 2 crédits l'image) :
+le **rôdeur** (petit, longues pattes), le **faucheur** (soldat, faux de carrier), le **porte-dalle** (trapu, une dalle de
+construction gravée de la cité, au bras gauche comme un bouclier), le **tourbillon** (un œil dans une cage de bronze, sur
+échasses, quatre lames), le **colosse** (énorme, un four de pierre cerclé de bronze, deux cheminées), le **frondeur** (quatre
+pattes, une catapulte sur le dos), le **bélier**.
+- `idees/` : les images de départ. Le premier bélier (`belier-ancien.jpg`) avait le même corps que le colosse et le
+  porte-dalle : **refait** penché en avant, énormes épaules, longs bras jusqu'au sol, petites jambes (`belier-nouveau-choisi.jpg`,
+  job `3ccea450-e64b-4926-af76-8e90873545bd` ; l'autre essai : cornes vers l'avant).
+- `planches/` : une planche par golem (Nano Banana 2.1, 2 crédits) : **face, vrai profil, dos, trois-quarts**, posés en A
+  (leçon de l'armure : un vrai profil, sinon le modèle part de travers).
+- `vues/` : les vues découpées (`outils/revue-golems/decoupe.py` et `nettoie.py` : découpe aux creux entre les figures, la ligne de sol dessinée du rôdeur effacée, le
+  bout de catapulte voisin enlevé du dos du frondeur). Le **profil du porte-dalle** (la dalle de travers) et **celui du
+  frondeur** (coupé) ne sont pas envoyés.
+- **Modèles 3D** (Meshy « multi image to 3D », texturés, PBR, 30 000 triangles) : `origine/golems/glb/<nom>-base.glb`
+  (**ne pas jeter**, ils coûtent des crédits). Les cinq à corps humain (rôdeur, faucheur, porte-dalle, colosse, bélier) sont
+  **articulés** (squelette Meshy, posés en A, avec le mouvement `Idle` n° 0 ; 38 crédits chacun) ; le tourbillon et le frondeur
+  **sans squelette** (le squelette automatique ne marche que sur les corps humains ; 30 crédits chacun) : on les animera par le
+  code en découpant leurs pièces (les lames du tourbillon, le bras de la catapulte), comme le luth du Barde.
+- **Posés en A, le faucheur a perdu sa faux et le porte-dalle sa dalle** (Meshy enlève ce qu'ils tiennent ; il reste un
+  bout de manche fin le long de la jambe droite du faucheur, à couper). Faites **à part**, en objets rigides qu'on accrochera à
+  la main (ils ne se déformeront pas) : une image de chacune seule (GPT Image 2.6, `accessoires/faux.jpg`, `dalle.jpg`), puis
+  Meshy « image to 3D », texturé : `glb/faux-base.glb` (8 000 triangles), `glb/dalle-base.glb` (6 000) ; 30 crédits chacune.
+- **Le bélier** : le premier envoi a échoué chez Meshy (« Something went wrong ») ; refait à l'identique, il a marché.
+- Ce que donne chacun (`outils/revue-golems/photo.py`) : rôdeur 1,6 m, faucheur 2,4 m, porte-dalle 2 m, colosse 3 m,
+  bélier 2,4 m (24 os chacun, mouvement « Idle » de 4 s) ; tourbillon 1,9 m et frondeur 1,9 m (sans os) ; environ 30 000
+  triangles et 14 à 16 Mo chacun (à alléger avec `outils.mjs base` avant de les mettre dans une page).
+- **Crédits Higgsfield ce matin : 354** (images des golems, planches, salle, 7 modèles, faux et dalle).
+- Revue : `outils/revue-golems/` (`python3 photo.py <dossier> <noms>` : quatre vues sur fond neutre, taille, triangles, os,
+  mouvements) ; les images : `captures/golems/` (`les-sept.jpg` : les sept de trois-quarts, la faux et la dalle).
+- **Pas fait** : leurs mouvements (marche lourde, attaque, coup reçu, mort : 8 crédits chacun, à choisir avec Romain sur les
+  aperçus) ; les poser dans une salle ; découper les lames du tourbillon et le bras du frondeur ; couper le bout de manche du
+  faucheur.
+
 ## Ce qui n'est pas fait
 
 - L'armure de Grosbec n'est pas en 3D (la création de son image de référence a été bloquée
