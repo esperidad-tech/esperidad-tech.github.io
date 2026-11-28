@@ -1096,18 +1096,18 @@ if (NUIT) {
             '#include <emissivemap_fragment>',
             '  vec3 E0 = totalEmissiveRadiance; float lumE = max(E0.r, E0.g);',
             '  float verre = smoothstep(0.45, 0.85, lumE), epaule = smoothstep(2.1, 2.2, vPosM.y) * smoothstep(0.28, 0.34, abs(vPosM.x));',
-            '  vec3 Eblanc = vec3(1.0, 0.93, 0.8) * (5.0 + 16.0 * lumE);',
+            '  vec3 Eblanc = vec3(1.0, 0.93, 0.8) * (2.5 + 8.0 * lumE);',   // (6 h : moitié moins fort, Romain : « j'ai un peu exagéré »)
             '  totalEmissiveRadiance = mix(E0 * (0.55 + 2.6 * verre), Eblanc, smoothstep(0.12, 0.45, lumE) * epaule);'].join('\n')); }; } } });
     m.scale.setScalar(HAUT / 3.0); piv.add(m);   // (le modèle fait 3 m ; 1 pas ≈ 0,97 m, comme le Barde)
     // ses lanternes : on les place sur la pose de repos, puis elles suivent les os
     m.updateMatrixWorld(true);
     const os = n => m.getObjectByName(n), buste = os('Spine'), gauche = buste, droite = buste;   // (les lanternes sont fixées à la cuirasse : chez Meshy, « Spine » est le haut du buste)
     const coteG = Math.sign(piv.worldToLocal(os('LeftShoulder').getWorldPosition(new THREE.Vector3())).x) || 1;
-    const cibles = [[gauche, new THREE.Vector3(0.58 * coteG, 2.5, -0.05), 0xffe2b0, 16, 4.2], [droite, new THREE.Vector3(-0.58 * coteG, 2.5, -0.05), 0xffe2b0, 16, 4.2], [buste, new THREE.Vector3(0, 2.02, 0.42), 0xffb050, 6, 3.2]];   // (les épaules : lampes presque blanches et plus fortes)
+    const cibles = [[gauche, new THREE.Vector3(0.58 * coteG, 2.5, -0.05), 0xffe2b0, 8, 4.2], [droite, new THREE.Vector3(-0.58 * coteG, 2.5, -0.05), 0xffe2b0, 8, 4.2], [buste, new THREE.Vector3(0, 2.02, 0.42), 0xffb050, 6, 3.2]];   // (les épaules : lampes presque blanches et plus fortes)
     for (const [o, p, coul, I, dist] of cibles) {
       const monde_ = piv.localToWorld(p.clone().multiplyScalar(HAUT / 3.0)), loc = o.worldToLocal(monde_.clone());
       const l = new THREE.PointLight(coul, I, dist, 1.6); l.userData.I = I; monde.add(l); armure.lampes.push(l); armure.os.push([o, loc]);
-      const epaule = armure.halos.length < 2, hl = sprite(texLueur(epaule ? 'rgba(255,236,196,.9)' : 'rgba(255,200,110,.85)'), epaule ? 1.5 : 1.0, true); hl.userData.o = epaule ? 1 : 0.85; if (epaule) { hl.material.depthTest = false; hl.renderOrder = 5; } monde.add(hl); armure.halos.push(hl);   // (la lueur des épaules passe devant le verre, comme un éblouissement)
+      const epaule = armure.halos.length < 2, hl = sprite(texLueur(epaule ? 'rgba(255,236,196,.9)' : 'rgba(255,200,110,.85)'), epaule ? 1.5 : 1.0, true); hl.userData.o = epaule ? 0.5 : 0.85; if (epaule) { hl.material.depthTest = false; hl.renderOrder = 5; } monde.add(hl); armure.halos.push(hl);   // (la lueur des épaules passe devant le verre, comme un éblouissement)
     }
     if (g.animations.length) {   // son attente (Idle_02, choisi par Romain), ralentie : il est lourd ; elle le tourne d'environ 25° : on le remet face aux héros
       lisserBoucle(g.animations[0]);

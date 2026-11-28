@@ -1,4 +1,4 @@
-# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 28 novembre, 6 h)
+# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 28 novembre, 6 h 02)
 
 À lire en entier par la nouvelle conversation avant de toucher à quoi que ce soit.
 
@@ -8,6 +8,7 @@
 - **Puis, 5 h 21 (version `1795839675-8787`, Romain par écrit à 5 h 11)** : l'ombre des lanternes n'est plus tranchée au bas de la place (elle s'efface avant, et vers le bord du cône) ; on passe à gauche de la lanterne gauche (zone de marche élargie jusqu'aux massifs, grille qui commence à x = −3).
 - **Puis, 5 h 43 (version `1795840981-12ef`, Romain par écrit à 5 h 33 : « Ok, fais ces modifs »)** : il disait « il flotte » → l'armure est **sur le palier, juste devant le seuil** (`ARM.y` −9,45 ; sur le seuil, ses pieds étaient dans la lumière de la porte), ombre de contact, plus d'ombre au pied des marches ; « toujours le bug de boucle » → **réglé** : c'était la correction des bras qui s'accumulait au tour de boucle (on remet le bras brut avant chaque mise à jour) ; quand il parle, ses bras partent et reviennent en fondu. README, « Posée sur le palier ».
 - **Puis, 5 h 57 (version `1795841811-8e3b`, Romain à la voix puis par écrit à 5 h 47 : « Vas-y, fais la modif »)** : 33 cm à gauche (`ARM.x` 10,62) ; **chaque pied remis sur le palier et à sa place à chaque image** (attente ; quand il parle, son pas se fait, seule la hauteur est tenue), ombre de contact sous chaque pied, lueur au sol poussée 2 m devant ; **le rayon dans son dos enlevé** ; **les lanternes des épaules presque blanches** (verre poussé sur elles seules, lampes 16, lueur devant le verre). README, « Les pieds tenus au sol ».
+- **Puis, 6 h (version `1795842004-19aa`)** : Romain trouve qu'il a « un peu exagéré » → lumière des épaules **moitié moins forte** (verre, lampes 8, lueur 0,5).
 - **Ouvert** : son avis ; le coup de poing au sol (il frappe le palier, les fissures descendent les marches), le lancer de la vague, le coup reçu ; l'image de la place avec lui pour sa vidéo de vague. **Ne rien construire de plus sans son go.**
 
 **28 novembre, 5 h — ESSAI HORS DU JEU : L'ARMURE AUX PLAQUES RAIDIES ; même adresse : https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP (version `1795838341-7681`, en ligne à 4 h 59 ; go écrit 4 h 52 : « Ok, bah vas-y, commence la découpe »)** — README de l'essai, « Les plaques raidies ».

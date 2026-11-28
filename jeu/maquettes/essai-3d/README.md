@@ -570,6 +570,8 @@ lanternes de son épaule, on dirait qu'elles sont éteintes »**.
   en haut, sur les côtés), le verre est poussé très fort et le rendu le blanchit ; leurs lampes passent de 6 à 16, presque
   blanches, plus loin (4,2) ; leur lueur passe devant le verre, comme un éblouissement. Le disque de la poitrine ne change pas.
   `captures/armure-pieds-au-sol-lanternes-blanches.jpg`.
+- **Puis, 6 h (version `1795842004-19aa`), Romain : « j'ai un peu exagéré, baisse de moitié »** : le verre, les lampes (16 → 8) et la
+  lueur (opacité 1 → 0,5) des épaules, tous moitié moins forts. Elles restent nettement allumées, mais n'éblouissent plus.
 
 ## Ce qui n'est pas fait
 
