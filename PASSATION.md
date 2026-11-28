@@ -1,6 +1,11 @@
-# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 28 novembre, 7 h 45)
+# Passation — « Les Enquêteurs de Brumeval » (5 novembre 2026, mise à jour le 28 novembre, 16 h 50)
 
 À lire en entier par la nouvelle conversation avant de toucher à quoi que ce soit.
+
+**28 novembre, 16 h 50 — SALLE DU PISTEUR : SAUT, ESCALIER, ANIMATIONS, TRACÉS À LA MAIN ; PAGE À PART : https://claude.ai/artifact/V9n4i2wwUoa57jrndMSLem (version `1795880777-2bc4`) ; go écrits 16 h 08 et 16 h 35** — README de l'essai (« La salle du Pisteur : tracés à la main… ») ; Bible § 18.21 (« Le soir »).
+- **⚠️ L'essai principal (`1aa48eb1…`, version `1795880638-d3ca`) contient le travail d'une autre conversation (fournaise, cristaux de la vague, `armure-sort.json`…) qui N'EST PAS sur GitHub** : ne pas le republier depuis GitHub. La salle du Pisteur est donc sur une page à part. À réunir quand l'autre conversation aura mis ses sources sur GitHub.
+- **Attendu de Romain** : ses détourages Photoshop des 39 objets (guide envoyé à 16 h 40 ; numéros = ordre de `outils/salle-pisteur/trace.py`). Les brancher (contours) en gardant les formes au sol mesurées ; revérifier chaque objet en gros plan avant de lui montrer.
+- **Ensuite (son ordre)** : les golems d'Elyra dans cette salle, avec toutes les règles du combat du Pisteur et les zones rouges. **Ne rien construire d'autre sans son go.**
 
 **28 novembre, 7 h 45 — ESSAI HORS DU JEU : LA SALLE DU PISTEUR (PHASE 1) REFAITE ; https://claude.ai/artifact/4HpT1KZxu5ZvcuDkELP7rP (version `1795847852-9b53`, en ligne à 7 h 37 ; go écrits 6 h 34 : « Ok, vas-y, fais toutes tes modifs dans l'ordre que tu veux », et « Quand t'as fini, tu peux mettre en ligne sur GitHub »)** — Bible § 18.21, fin (« Refaite ») ; README de l'essai, « La salle du Pisteur… refaite » ; `claude/decor-pisteur-phase1-reference.md`.
 - **Fait** : la peinture **redressée** (`outils/salle-pisteur/redresser.py` ; l'effet « bombé » venait des verticales qui se rejoignaient sous l'image) et ses quatre piliers refaits droits ; le Pisteur **20 % plus petit** (salle ≈ 33 × 20 pas, `camera.py`) ; **chaque objet découpé par SAM** (`sam.py`, `boites.py`, 46 découpes dans `origine/salle-pisteur/masques/`) ; **le sol refait** (mur du bas, entre les caisses et le mur, coins des baignoires, bric-à-brac en cinq objets, plus de murs invisibles) ; **la salle en formes simples** pour l'ombre (sol, murs, objets, mur du bas) ; les lumières à ombre visent le Pisteur. 7 crédits Higgsfield.

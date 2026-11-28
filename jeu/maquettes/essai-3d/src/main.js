@@ -138,7 +138,7 @@ if (!PEINT) {
         // l'eau des fontaines, calme : de petits reflets qui glissent, une lueur bleutée qui respire
         if (an.g > 0.01) {
           float o = sin(p.x * 0.09 + temps * 1.1 + sin(p.y * 0.23 - temps * 0.7) * 2.2) * sin(p.y * 0.19 - temps * 0.9 + p.x * 0.04);
-          c += an.g * (vec3(0.6, 0.92, 1.0) * smoothstep(0.55, 0.95, o) * 0.22 + vec3(0.12, 0.42, 0.62) * (0.05 + 0.04 * sin(temps * 0.8)));
+          c += an.g * (vec3(0.6, 0.92, 1.0) * smoothstep(0.72, 1.0, o) * 0.12 + vec3(0.12, 0.42, 0.62) * (0.05 + 0.04 * sin(temps * 0.8)));
         }
         for (int i = 0; i < 2; i++) {
           vec2 cp = i == 0 ? pc.xy : pc.zw; float ouv = i == 0 ? etat.x : etat.y, al = i == 0 ? etat.z : etat.w;
@@ -256,7 +256,7 @@ if (PIST && PEINT) {
         float a = texture2D(anim, vec2(uv.x, 1.0 - uv.y)).r; if (a < 0.02) discard;
         float n = 0.5;
         for (int i = 0; i < 4; i++) { if (distance(p, fl[i].xy) < fl[i].z * 2.0) n = 0.5 + 0.3 * sin(temps * 11.0 + fl[i].w + p.y * 0.08) + 0.2 * sin(temps * 6.7 + fl[i].w * 2.1); }
-        vec3 c = texture2D(fond, vec2(uv.x, 1.0 - uv.y)).rgb * (0.85 + 0.35 * n) + vec3(0.10, 0.04, 0.0) * n;
+        vec3 c = texture2D(fond, vec2(uv.x, 1.0 - uv.y)).rgb * (0.88 + 0.22 * n) + vec3(0.06, 0.02, 0.0) * n;
         gl_FragColor = vec4(c, a * 0.78);
         #include <colorspace_fragment>
       }`,
@@ -1249,7 +1249,7 @@ function particulesSalle() {
   for (const C of SJ.cristaux) { const fort = C.larg > 0.5; for (let i = 0; i < (fort ? 14 : 6); i++) src.push({ x: C.x, y: C.y + (fort ? 0.8 : 0.5), z: C.z - 0.2, l: C.larg * 0.9, vz: 0.45, vie: 2.6, coul: new THREE.Color(C.coul).lerp(new THREE.Color(1, 1, 1), 0.3), taille: 0.8 }); }
   const n = src.length, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-  const mat = new THREE.PointsMaterial({ size: 0.13, map: new THREE.CanvasTexture(c), vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true });
+  const mat = new THREE.PointsMaterial({ size: 6, map: new THREE.CanvasTexture(c), vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: false });   // (en pixels d'écran : la caméra est loin, des points « en pas » seraient minuscules)
   const pts = new THREE.Points(geo, mat); pts.frustumCulled = false; monde.add(pts);
   src.forEach(P => { P.t = Math.random() * P.vie; P.ox = (Math.random() - 0.5) * P.l; P.oy = (Math.random() - 0.5) * P.l * 0.4; P.dx = (Math.random() - 0.5) * 0.3; });
   salle.part = { src, pos, col, geo };
@@ -1824,4 +1824,4 @@ function poser(nom, t) {   // (essai) un seul mouvement, à un instant donné
   for (const n in actions) { actions[n].play(); actions[n].setEffectiveWeight(n === nom ? 1 : 0); actions[n].timeScale = 0; }
   actions[nom].time = t; melangeur.update(0); MOD.updateMatrixWorld(true); const r = piedsModele(); for (const n of ['LeftUpLeg', 'LeftLeg', 'Hips']) { const o = MOD.getObjectByName(n); r[n + '_q'] = o.quaternion.toArray(); r[n + '_p'] = o.position.toArray(); } r.pistes = actions[nom].getClip().tracks.slice(0, 6).map(k => k.name); r.nbPistes = actions[nom].getClip().tracks.length; r.duree = actions[nom].getClip().duration; return r;
 }
-window.__essai = { THREE, armure, parleGrosbec, coupDePoing, projeter, dansZoneCoup, get CP() { return CP; }, cam, get fondU() { return fondMat.uniforms; }, get proj() { return h.proj; }, solOmbre, osM: noms => { const r = {}; for (const n of noms) { const o = MOD.getObjectByName(n); if (!o) continue; o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); MOD.worldToLocal(v); r[n] = [v.x, v.y, v.z]; } return r; }, frapper, basculerOmbre, mq, MURETS, COUPS, sauter, SAUT, get tirs() { return tirs.map(s => ({ x: s.x, y: s.y, z: s.z, q: s.q })); }, ecran: (x, y, z) => { if (NUIT) { cam.updateMatrixWorld(); const v = G(x, y, z).project(cam); return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; } return { x: (px(x) - camX) * innerWidth / Ws, y: (py(y, z) - camY) * innerHeight / Hs }; }, fissurer, lancerVague, renforts, salle, SJ, fondMat, get vague() { return vg; }, video: () => videoEl ? [videoEl.currentSrc.split('/').pop(), videoEl.readyState, videoEl.paused, videoEl.currentTime] : null, cristaux: () => vg.actifs.map(c => ({ i: c.i, x: c.S.x, y: c.S.y, etat: c.etat })), arriveFeu, abrite: () => abrite(h.x, h.y), imgDe, solImg, fen, crev, NJ, libre, dansCrevasse, nuit, piliers, poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };
+window.__essai = { THREE, armure, parleGrosbec, coupDePoing, projeter, dansZoneCoup, get CP() { return CP; }, cam, get fondU() { return fondMat.uniforms; }, get proj() { return h.proj; }, solOmbre, osM: noms => { const r = {}; for (const n of noms) { const o = MOD.getObjectByName(n); if (!o) continue; o.updateWorldMatrix(true, false); const v = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld); MOD.worldToLocal(v); r[n] = [v.x, v.y, v.z]; } return r; }, frapper, basculerOmbre, mq, MURETS, COUPS, sauter, SAUT, get tirs() { return tirs.map(s => ({ x: s.x, y: s.y, z: s.z, q: s.q })); }, ecran: (x, y, z) => { if (NUIT || PEINT) { cam.updateMatrixWorld(); const v = G(x, y, z).project(cam); return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; } return { x: (px(x) - camX) * innerWidth / Ws, y: (py(y, z) - camY) * innerHeight / Hs }; }, fissurer, lancerVague, renforts, salle, SJ, fondMat, get vague() { return vg; }, video: () => videoEl ? [videoEl.currentSrc.split('/').pop(), videoEl.readyState, videoEl.paused, videoEl.currentTime] : null, cristaux: () => vg.actifs.map(c => ({ i: c.i, x: c.S.x, y: c.S.y, etat: c.etat })), arriveFeu, abrite: () => abrite(h.x, h.y), imgDe, solImg, fen, crev, NJ, libre, dansCrevasse, nuit, piliers, poser, piedsModele, pieds, avancer, taille, joy, loco, h, get ips() { return ips; }, lancer, OS: () => OS, LUTH: () => LUTH, get pret() { return demarre; }, get vue() { return { camX, camY, Ws, Hs, hx: px(h.x), hy: py(h.y) }; } };

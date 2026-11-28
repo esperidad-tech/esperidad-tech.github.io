@@ -626,6 +626,43 @@ des baignoires ; le long du bric-à-brac jusqu'au fond ; les portes (alerte, ouv
 (§ 18.24) ; l'écran debout ; les autres nuits (`nuit1.jpg`, `nuit3.jpg`) et le jour ne sont pas redressés (`redresser.py` les
 redresse, mais leurs piliers seraient à refaire).
 
+## La salle du Pisteur : tracés à la main, saut, escalier, animations (28 novembre, 16 h 45 ; PAGE À PART : https://claude.ai/artifact/V9n4i2wwUoa57jrndMSLem, slug `e3f99ab1-54ea-4b8c-b24c-9106ddaa19a2`, version `1795880777-2bc4` ; go de Romain à 16 h 08 : « Allez, vas-y au travail », puis 16 h 35 : « occupe-toi du saut, de l'escalier et des animations »)
+
+**Pourquoi une page à part** : l'essai principal (`1aa48eb1…`) est passé à la version `1795880638-d3ca` (une autre conversation : fournaise,
+cristaux de la vague, `armure-sort.json`…) **sans que ses sources soient sur GitHub** : republier l'essai principal d'ici effacerait ce
+travail. Celle qui réunit les deux : partir de ses sources à elle, puis reprendre `outils/salle-pisteur/` et les morceaux de `src/main.js`
+ci-dessous (cherchez `solZ`, `SAUT_HAUT`, `particulesSalle`, `flMat`, `SJ.formes`, `SJ.salle`).
+
+**Ce que Romain a dit (à la voix, 28 novembre vers 16 h)** : les découpes faites par SAM sont mauvaises partout (le Pisteur disparaît
+derrière les fleurs, derrière un rectangle au-dessus des braseros, les tonneaux, le muret de droite) : **« sans logiciel automatique,
+tout à la main, et que ça soit logique »** ; la pierre cache, **le feu non (on voit sa tête à travers)**, les fleurs non ; il ne doit
+jamais marcher sur un objet ; **le saut trop bas** (« il saute rien du tout ») et il passe à moitié dans les petits murets ; **descendre
+l'escalier jusqu'en bas du mur**, ses murets de côté servent de cachette ; **animer** les braseros (lueur qui vacille, étincelles), les
+cristaux des colonnes (lueur qui respire, particules qui montent), les fontaines (calmes). Puis (16 h 32) : **il détoure lui-même les
+objets dans Photoshop** : Claude lui a envoyé la peinture (`nuit2-droite.png`, 4384 × 1872) et un guide des 39 objets numérotés
+(`trace.py` : l'ordre des objets). **À brancher dès qu'il les envoie** (un .psd à calques numérotés, ou des PNG ; `psd-tools` lit les .psd).
+
+**Fait (en attendant ses détourages)** :
+- **`outils/salle-pisteur/trace.py`** : tous les contours relevés à la main sur des gros plans quadrillés (21 objets, 14 morceaux du mur
+  du bas, 4 flammes) ; la forme au sol de chaque objet mesurée à la main (cylindre ou boîtes) ; les objets contre les murs (comptoirs,
+  bric-à-brac, cages, baignoires, fontaines du fond, pilastres) : seulement leur place au sol ; la salle : un rectangle (x −1,8 à 33,6,
+  y 0,2 à 20,0) + les coins des baignoires (y 20,65) ; le mur du bas : dos 19,4, devant 19,96 ; l'escalier (x 13,53 à 17,45, de 18,93 à
+  19,94, cinq marches, 1 pas plus bas en bas). **`generer.py` refait** : plus aucune découpe automatique ; la profondeur d'un pixel =
+  là où le rayon touche la forme de l'objet ; les flammes à part (`anim.png`, rouge) ; l'eau des fontaines (`anim.png`, vert).
+- **Le saut** : le Pisteur monte de 0,75 pas en plus (`SAUT_HAUT`) : il passe nettement au-dessus des deux petits murets.
+- **L'escalier** : `solZ(x, y)` : il descend marche par marche jusqu'en bas (y 20,3).
+- **Les flammes par-dessus le Pisteur** (`flMat`, une passe après lui, en transparence) : derrière un feu, on voit sa tête à travers ;
+  la pierre et le bol le cachent.
+- **Les animations** : lueur des cristaux qui respire (dans le fond), lueur orange qui vacille autour des flammes, reflets calmes sur
+  l'eau des quatre fontaines, flammes qui vacillent ; 36 étincelles qui montent des braseros et des petites lueurs qui montent des
+  cristaux (`particulesSalle`, des points de 6 px).
+- **Vérifié** (Chrome) : derrière et devant les piliers, les pans, le muret droit, les tonneaux (`/tmp/sp/verif_objets.py`) ; le saut
+  des deux murets (il retombe de l'autre côté) ; l'escalier jusqu'en bas ; derrière un brasero ; les animations à trois instants
+  (`/tmp/sp/verif_mouv.py`, `verif_anim.py`). **Pas vérifié** : un vrai téléphone.
+
+**Pas fait** : brancher les détourages de Romain ; les golems (ceux d'Elyra, de l'autre conversation) dans cette salle, avec les règles
+du combat du Pisteur et les zones rouges (Romain : après les découpes).
+
 ## Le coup de poing de Grosbec et le Barde projeté (28 novembre, 6 h 40 ; go écrit de Romain à 6 h 11 ; sa vidéo envoyée à 6 h 19)
 
 **En ligne sur une page à part** : https://claude.ai/artifact/FoNdckppEhwgzAx8i86iZa (slug `77d97c45-5f76-4690-a7ba-4ae44124233d`,
